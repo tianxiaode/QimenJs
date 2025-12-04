@@ -1,0 +1,57 @@
+{
+  "name": "@orbitjs/core",
+  "version": "1.0.0-alpha.0",
+  "description": "Core utilities for OrbitJS ecosystem - Event system, logging, and environment detection",
+  "keywords": [
+    "orbitjs",
+    "core",
+    "events",
+    "event-system",
+    "logging",
+    "environment",
+    "cross-platform",
+    "typescript",
+    "javascript"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events/index.esm.js",
+      "require": "./dist/events/index.js",
+      "types": "./dist/events/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.esm.js",
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tianxiaode/orbitjs.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/tianxiaode/orbitjs/issues"
+  },
+  "homepage": "https://github.com/tianxiaode/orbitjs/tree/main/packages/core#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  }
+}
