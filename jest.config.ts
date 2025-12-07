@@ -2,6 +2,7 @@ import type { Config } from 'jest';
 
 const config: Config = {
   preset: 'ts-jest',
+  collectCoverage: true,
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
   testMatch: [

@@ -95,5 +95,9 @@
   },
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "jest-config": "^30.2.0",
+    "ts-node": "^10.9.2"
   }
 }

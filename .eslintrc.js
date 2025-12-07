@@ -27,6 +27,7 @@ module.exports = {
             },
         ],
         'no-console': ['warn', { allow: ['warn', 'error'] }],
+        endOfLine: 'auto',
     },
     overrides: [
         // 针对 JavaScript 文件的特定配置
