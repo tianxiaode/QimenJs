@@ -1,42 +1,87 @@
 import { isString } from '../types';
 
 /**
- * 正则表达式验证函数
+ * 模式验证函数
+ * 这些函数用于验证字符串是否符合特定模式（正则表达式）
  */
 
 /**
- * 使用正则表达式验证字符串
+ * 验证字符串是否匹配正则表达式
+ * @param value 要验证的值
+ * @param pattern 正则表达式或字符串模式
+ * @param options 验证选项
  */
 export function validatePattern(
   value: string,
-  pattern: RegExp | string
+  pattern: RegExp | string,
+  options: {
+    caseSensitive?: boolean;      // 是否区分大小写
+    global?: boolean;             // 是否全局匹配
+    multiline?: boolean;          // 是否多行匹配
+    ignoreCase?: boolean;         // 是否忽略大小写
+    sticky?: boolean;             // 是否粘性匹配
+    unicode?: boolean;            // 是否启用 Unicode 模式
+  } = {}
 ): boolean {
   if (!isString(value)) {
     return false;
   }
   
-  const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+  const {
+    caseSensitive = true,
+    global = false,
+    multiline = false,
+    ignoreCase = false,
+    sticky = false,
+    unicode = false
+  } = options;
+  
+  // 构建正则表达式标志
+  let flags = '';
+  if (!caseSensitive || ignoreCase) {
+    flags += 'i';
+  }
+  if (global) {
+    flags += 'g';
+  }
+  if (multiline) {
+    flags += 'm';
+  }
+  if (sticky) {
+    flags += 'y';
+  }
+  if (unicode) {
+    flags += 'u';
+  }
+  
+  // 创建正则表达式
+  const regex = pattern instanceof RegExp 
+    ? new RegExp(pattern.source, flags)
+    : new RegExp(pattern, flags);
+  
   return regex.test(value);
 }
 
 /**
  * 验证电子邮件地址
+ * @param email 要验证的电子邮件地址
  */
 export function validateEmail(email: string): boolean {
-  // 标准电子邮件正则表达式
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  // 比较全面的电子邮件正则表达式
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return validatePattern(email, emailRegex);
 }
 
 /**
  * 验证电话号码
- * 支持国际格式、国内手机号、座机号
+ * 支持国际格式和国内手机号
+ * @param phone 要验证的电话号码
  */
 export function validatePhone(phone: string): boolean {
-  // 移除所有空格和特殊字符，只保留数字和+
+  // 移除所有空格和特殊字符
   const cleaned = phone.replace(/[\s\-()]/g, '');
   
-  // 国际号码格式
+  // 国际号码格式（E.164）
   const internationalRegex = /^\+?[1-9]\d{1,14}$/;
   
   // 中国手机号格式
@@ -54,6 +99,7 @@ export function validatePhone(phone: string): boolean {
 
 /**
  * 验证URL地址
+ * @param url 要验证的URL
  */
 export function validateURL(url: string): boolean {
   try {
@@ -66,6 +112,7 @@ export function validateURL(url: string): boolean {
 
 /**
  * 验证IPv4地址
+ * @param ip 要验证的IP地址
  */
 export function validateIPv4(ip: string): boolean {
   const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -74,6 +121,7 @@ export function validateIPv4(ip: string): boolean {
 
 /**
  * 验证IPv6地址
+ * @param ip 要验证的IP地址
  */
 export function validateIPv6(ip: string): boolean {
   const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
@@ -82,6 +130,7 @@ export function validateIPv6(ip: string): boolean {
 
 /**
  * 验证MAC地址
+ * @param mac 要验证的MAC地址
  */
 export function validateMAC(mac: string): boolean {
   const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -90,6 +139,7 @@ export function validateMAC(mac: string): boolean {
 
 /**
  * 验证十六进制颜色值
+ * @param color 要验证的颜色值
  */
 export function validateHexColor(color: string): boolean {
   const hexColorRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
@@ -97,73 +147,105 @@ export function validateHexColor(color: string): boolean {
 }
 
 /**
- * 验证身份证号（中国）
+ * 验证RGB颜色值
+ * @param color 要验证的颜色值
  */
-export function validateChineseID(id: string): boolean {
-  const idRegex = /^\d{17}[\dXx]$/;
-  if (!validatePattern(id, idRegex)) {
+export function validateRGBColor(color: string): boolean {
+  const rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
+  if (!validatePattern(color, rgbRegex)) {
     return false;
   }
   
-  // 校验位验证
-  const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-  const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+  // 提取RGB值并验证范围
+  const match = color.match(rgbRegex);
+  if (!match) return false;
   
-  let sum = 0;
-  for (let i = 0; i < 17; i++) {
-    sum += parseInt(id.charAt(i), 10) * weights[i];
-  }
+  const r = parseInt(match[1], 10);
+  const g = parseInt(match[2], 10);
+  const b = parseInt(match[3], 10);
   
-  const checkCode = checkCodes[sum % 11];
-  return id.charAt(17).toUpperCase() === checkCode;
+  return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255;
 }
 
 /**
- * 验证邮政编码（中国）
+ * 验证RGBA颜色值
+ * @param color 要验证的颜色值
  */
-export function validateChinesePostcode(postcode: string): boolean {
-  const postcodeRegex = /^[1-9]\d{5}$/;
-  return validatePattern(postcode, postcodeRegex);
+export function validateRGBAColor(color: string): boolean {
+  const rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/;
+  if (!validatePattern(color, rgbaRegex)) {
+    return false;
+  }
+  
+  // 提取RGBA值并验证范围
+  const match = color.match(rgbaRegex);
+  if (!match) return false;
+  
+  const r = parseInt(match[1], 10);
+  const g = parseInt(match[2], 10);
+  const b = parseInt(match[3], 10);
+  const a = parseFloat(match[4]);
+  
+  return r >= 0 && r <= 255 && 
+         g >= 0 && g <= 255 && 
+         b >= 0 && b <= 255 && 
+         a >= 0 && a <= 1;
 }
 
 /**
  * 验证用户名
- * @param username 用户名
- * @param options 选项：minLength, maxLength, allowDigits, allowSpecialChars
+ * @param username 要验证的用户名
+ * @param options 验证选项
  */
 export function validateUsername(
   username: string,
   options: {
-    minLength?: number;
-    maxLength?: number;
-    allowDigits?: boolean;
-    allowSpecialChars?: boolean;
+    minLength?: number;          // 最小长度
+    maxLength?: number;          // 最大长度
+    allowDigits?: boolean;       // 是否允许数字
+    allowUnderscore?: boolean;   // 是否允许下划线
+    allowHyphen?: boolean;       // 是否允许连字符
+    allowDot?: boolean;          // 是否允许点
+    allowAt?: boolean;           // 是否允许@符号
+    startWithLetter?: boolean;   // 是否必须以字母开头
   } = {}
 ): boolean {
   const {
     minLength = 3,
     maxLength = 20,
     allowDigits = true,
-    allowSpecialChars = false
+    allowUnderscore = true,
+    allowHyphen = true,
+    allowDot = false,
+    allowAt = false,
+    startWithLetter = true
   } = options;
   
-  if (!isString(username)) {
-    return false;
-  }
-  
+  // 检查长度
   if (username.length < minLength || username.length > maxLength) {
     return false;
   }
   
   // 构建正则表达式
   let pattern = '^';
-  if (allowSpecialChars) {
-    pattern += '[a-zA-Z0-9_\\-\\.@]+';
-  } else if (allowDigits) {
-    pattern += '[a-zA-Z0-9_]+';
+  
+  // 开头字符
+  if (startWithLetter) {
+    pattern += '[a-zA-Z]';
   } else {
-    pattern += '[a-zA-Z_]+';
+    pattern += '[a-zA-Z0-9]';
   }
+  
+  // 中间字符
+  pattern += '[';
+  pattern += 'a-zA-Z';
+  if (allowDigits) pattern += '0-9';
+  if (allowUnderscore) pattern += '_';
+  if (allowHyphen) pattern += '-';
+  if (allowDot) pattern += '\\.';
+  if (allowAt) pattern += '@';
+  pattern += ']*';
+  
   pattern += '$';
   
   return validatePattern(username, new RegExp(pattern));
@@ -171,17 +253,17 @@ export function validateUsername(
 
 /**
  * 验证密码强度
- * @param password 密码
- * @param options 选项：minLength, requireUppercase, requireLowercase, requireDigits, requireSpecial
+ * @param password 要验证的密码
+ * @param options 验证选项
  */
 export function validatePassword(
   password: string,
   options: {
-    minLength?: number;
-    requireUppercase?: boolean;
-    requireLowercase?: boolean;
-    requireDigits?: boolean;
-    requireSpecial?: boolean;
+    minLength?: number;          // 最小长度
+    requireUppercase?: boolean;  // 是否需要大写字母
+    requireLowercase?: boolean;  // 是否需要小写字母
+    requireDigits?: boolean;     // 是否需要数字
+    requireSpecial?: boolean;    // 是否需要特殊字符
   } = {}
 ): boolean {
   const {
@@ -192,7 +274,8 @@ export function validatePassword(
     requireSpecial = false
   } = options;
   
-  if (!isString(password) || password.length < minLength) {
+  // 检查长度
+  if (password.length < minLength) {
     return false;
   }
   
@@ -223,12 +306,160 @@ export function validatePassword(
 }
 
 /**
- * 创建自定义正则验证器
+ * 验证身份证号码（中国）
+ * @param id 要验证的身份证号码
  */
-export function createPatternValidator(pattern: RegExp | string) {
-  const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+export function validateChineseID(id: string): boolean {
+  // 基本格式验证
+  const idRegex = /^\d{17}[\dXx]$/;
+  if (!validatePattern(id, idRegex)) {
+    return false;
+  }
   
-  return function(value: string): boolean {
-    return validatePattern(value, regex);
+  // 校验位验证
+  const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+  const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+  
+  let sum = 0;
+  for (let i = 0; i < 17; i++) {
+    sum += parseInt(id.charAt(i), 10) * weights[i];
+  }
+  
+  const checkCode = checkCodes[sum % 11];
+  return id.charAt(17).toUpperCase() === checkCode;
+}
+
+/**
+ * 验证邮政编码（中国）
+ * @param postcode 要验证的邮政编码
+ */
+export function validateChinesePostcode(postcode: string): boolean {
+  const postcodeRegex = /^[1-9]\d{5}$/;
+  return validatePattern(postcode, postcodeRegex);
+}
+
+/**
+ * 验证日期字符串（YYYY-MM-DD格式）
+ * @param date 要验证的日期字符串
+ */
+export function validateDateString(date: string): boolean {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!validatePattern(date, dateRegex)) {
+    return false;
+  }
+  
+  // 验证日期有效性
+  const [year, month, day] = date.split('-').map(Number);
+  const dateObj = new Date(year, month - 1, day);
+  
+  return (
+    dateObj.getFullYear() === year &&
+    dateObj.getMonth() === month - 1 &&
+    dateObj.getDate() === day
+  );
+}
+
+/**
+ * 验证时间字符串（HH:MM:SS格式）
+ * @param time 要验证的时间字符串
+ */
+export function validateTimeString(time: string): boolean {
+  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+  return validatePattern(time, timeRegex);
+}
+
+/**
+ * 验证日期时间字符串（YYYY-MM-DD HH:MM:SS格式）
+ * @param datetime 要验证的日期时间字符串
+ */
+export function validateDateTimeString(datetime: string): boolean {
+  const [datePart, timePart] = datetime.split(' ');
+  
+  return validateDateString(datePart) && validateTimeString(timePart);
+}
+
+/**
+ * 验证JSON字符串
+ * @param json 要验证的JSON字符串
+ */
+export function validateJSONString(json: string): boolean {
+  try {
+    JSON.parse(json);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 验证Base64字符串
+ * @param base64 要验证的Base64字符串
+ */
+export function validateBase64(base64: string): boolean {
+  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+  return validatePattern(base64, base64Regex);
+}
+
+/**
+ * 验证UUID（通用唯一识别码）
+ * @param uuid 要验证的UUID
+ */
+export function validateUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return validatePattern(uuid, uuidRegex);
+}
+
+/**
+ * 验证信用卡号码（Luhn算法）
+ * @param cardNumber 要验证的信用卡号码
+ */
+export function validateCreditCard(cardNumber: string): boolean {
+  // 移除空格和连字符
+  const cleaned = cardNumber.replace(/[\s-]/g, '');
+  
+  // 检查是否全为数字
+  if (!/^\d+$/.test(cleaned)) {
+    return false;
+  }
+  
+  // Luhn算法验证
+  let sum = 0;
+  let shouldDouble = false;
+  
+  for (let i = cleaned.length - 1; i >= 0; i--) {
+    let digit = parseInt(cleaned.charAt(i), 10);
+    
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+  
+  return sum % 10 === 0;
+}
+
+/**
+ * 创建自定义模式验证器
+ * @param pattern 正则表达式或字符串模式
+ * @param options 验证选项
+ */
+export function createPatternValidator(
+  pattern: RegExp | string,
+  options: {
+    caseSensitive?: boolean;
+    global?: boolean;
+    multiline?: boolean;
+    ignoreCase?: boolean;
+    sticky?: boolean;
+    unicode?: boolean;
+  } = {}
+) {
+  return (value: string): boolean => {
+    return validatePattern(value, pattern, options);
   };
 }

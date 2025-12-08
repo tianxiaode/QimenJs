@@ -1,4 +1,20 @@
-import { isString,isNumber,isFiniteNumber   } from '../types'
+import { 
+  isString, 
+  isNumber, 
+  isBoolean, 
+  isFunction,
+  isSymbol,
+  isBigInt,
+  isPrimitive,
+  isTruthy,
+  isFalsy,
+  isInteger,
+  isPositiveInteger,
+  isNonNegativeInteger,
+  isFiniteNumber,
+  isNaN as isNaNValue
+} from '../types';
+
 /**
  * 基本类型验证函数
  * 这些函数用于验证基本数据类型，并支持约束条件
