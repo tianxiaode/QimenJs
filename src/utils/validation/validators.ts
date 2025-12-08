@@ -150,3 +150,40 @@ export function validateOneOf<T>(
 ): value is T {
   return allowedValues.includes(value);
 }
+
+/**
+ * 验证邮件地址格式并返回布尔值
+ */
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/** 验证电话号码格式并返回布尔值
+ */
+export function validatePhone(phone: string): boolean {
+  const phoneRegex = /^\+?[\d\s-]{10,}$/;
+  return phoneRegex.test(phone.replace(/\s+/g, ''));
+}
+
+/** 验证URL格式并返回布尔值
+ */
+export function validateURL(url: string): boolean { 
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+}
+
+/** 验证JSON字符串格式并返回布尔值
+ */
+export function validateJSON(str: string): boolean {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
+  }
+}        
