@@ -193,7 +193,7 @@ describe('Structure Type Validation Functions', () => {
 
   describe('isBuffer', () => {
     it('should return true for Buffer objects (if available)', () => {
-      if (typeof Buffer !== 'undefined' && Buffer.isBuffer(10)) {
+      if (typeof Buffer !== 'undefined') {
         expect(isBuffer(Buffer.from('test'))).toBe(true);
         expect(isBuffer(new Buffer(10))).toBe(true);
       } else {

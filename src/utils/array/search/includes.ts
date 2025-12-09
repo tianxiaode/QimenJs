@@ -4,7 +4,7 @@ import { assertArray } from '../../validation';
  * 检查数组是否包含某个元素（支持简单值和对象）
  */
 export function includes<T>(arr: T[], value: T, field?: keyof T): boolean {
-  assertArray(arr, 'includes');
+  assertArray(arr, { functionName:'includes'});
   
   if (arr.length === 0) {
     return false;

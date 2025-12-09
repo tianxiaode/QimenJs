@@ -4,8 +4,13 @@ import { assertArray, assertNumber } from '../../validation';
  * 随机抽取数组中的元素
  */
 export function sample<T>(arr: T[], count: number = 1): T | T[] {
-  assertArray(arr, 'sample');
-  assertNumber(count, 'sample', 'count', { min: 1 });
+  assertArray(arr, { functionName:'sample'});
+  assertNumber(count, { 
+    paramName: 'count', 
+    functionName: 'sample', 
+    min: 1, 
+    integer: true 
+  });  
   
   if (count === 1) {
     return arr[Math.floor(Math.random() * arr.length)];

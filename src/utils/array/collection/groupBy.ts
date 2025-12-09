@@ -7,7 +7,7 @@ export function groupBy<T, K extends keyof T>(
   arr: T[], 
   key: K
 ): Map<T[K], T[]> {
-  assertArray(arr, 'groupBy');
+  assertArray(arr, { functionName:'groupBy'});
   
   const groups = new Map<T[K], T[]>();
   
@@ -28,7 +28,7 @@ export function countBy<T>(
   arr: T[], 
   classifier?: (item: T) => any
 ): Map<any, number> {
-  assertArray(arr, 'countBy');
+  assertArray(arr, { functionName:'countBy'});
   
   const counts = new Map<any, number>();
   

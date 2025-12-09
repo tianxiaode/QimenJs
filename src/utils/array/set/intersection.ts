@@ -9,8 +9,8 @@ export function intersectionBy<T, K extends keyof T>(
   arr2: T[], 
   field: K
 ): T[] {
-  assertArray(arr1, 'intersectionBy.arr1');
-  assertArray(arr2, 'intersectionBy.arr2');
+  assertArray(arr1, { functionName:'intersectionBy.arr1'});
+  assertArray(arr2, { functionName:'intersectionBy.arr2'});
   
   if (typeof field !== 'string') {
     throw new ValidationError(

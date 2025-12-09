@@ -4,7 +4,7 @@ import { assertArray } from '../../validation';
  * 数组洗牌（Fisher-Yates 算法）
  */
 export function shuffle<T>(arr: T[]): T[] {
-  assertArray(arr, 'shuffle');
+  assertArray(arr, { functionName:'shuffle'});
   
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {

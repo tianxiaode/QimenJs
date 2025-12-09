@@ -5,8 +5,8 @@ import { assertArray  } from '../../validation';
  * 移除数组中指定的值
  */
 export function removeValues<T>(arr: T[], valuesToRemove: T[]): T[] {
-  assertArray(arr, 'removeValues');
-  assertArray(valuesToRemove, 'removeValues.valuesToRemove');
+  assertArray(arr, { functionName:'removeValues'});
+  assertArray(valuesToRemove, {functionName:'removeValues.valuesToRemove'});
   
   if (arr.length === 0) {
     return [];
@@ -23,7 +23,7 @@ export function splitArray<T>(
   arr: T[],
   condition: (item: T, index: number) => boolean
 ): [T[], T[]] {
-  assertArray(arr, 'splitArray');
+  assertArray(arr, { functionName:'splitArray'});
   
   if (typeof condition !== 'function') {
     throw new ValidationError(

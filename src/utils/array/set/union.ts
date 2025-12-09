@@ -8,12 +8,12 @@ export function mergeArray<T extends Record<K, any>, K extends keyof T>(
   arrays: T[][],
   field: K
 ): T[] {
-  assertArray(arrays, 'mergeArray');
+  assertArray(arrays, { functionName:'mergeArray.arrays'});
   
   const resultMap = new Map<T[K], T>();
   
   for (const array of arrays) {
-    assertArray(array, 'mergeArray.array');
+    assertArray(array, { functionName:'mergeArray.array'});
     
     for (const item of array) {
       if (field in item) {

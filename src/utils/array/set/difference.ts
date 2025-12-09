@@ -4,8 +4,8 @@ import { assertArray, assertFunction } from '../../validation';
  * 获取数组差异（arr1 中有但 arr2 中没有的元素）
  */
 export function difference<T>(arr1: T[], arr2: T[]): T[] {
-  assertArray(arr1, 'difference.arr1');
-  assertArray(arr2, 'difference.arr2');
+  assertArray(arr1, { functionName:'difference.arr1'});
+  assertArray(arr2, { functionName:'difference.arr2'});
   
   if (arr1.length === 0) {
     return [];
@@ -27,8 +27,8 @@ export function differenceBy<T, K extends keyof T>(
   arr2: T[],
   field: K
 ): T[] {
-  assertArray(arr1, 'differenceBy.arr1');
-  assertArray(arr2, 'differenceBy.arr2');
+  assertArray(arr1, { functionName:'differenceBy.arr1'});
+  assertArray(arr2, { functionName:'differenceBy.arr2'});
   
   if (arr1.length === 0) {
     return [];
@@ -50,9 +50,9 @@ export function differenceWith<T>(
   arr2: T[],
   iteratee: (item: T) => any
 ): T[] {
-  assertArray(arr1, 'differenceWith.arr1');
-  assertArray(arr2, 'differenceWith.arr2');
-  assertFunction(iteratee, 'differenceWith.iteratee');
+  assertArray(arr1, { functionName:'differenceWith.arr1'});
+  assertArray(arr2, { functionName:'differenceWith.arr2'});
+  assertFunction(iteratee, {functionName:'differenceWith.iteratee'});
   
   if (arr1.length === 0) {
     return [];
@@ -70,8 +70,8 @@ export function differenceWith<T>(
  * 获取对称差集（两个数组中不共有的元素）
  */
 export function symmetricDifference<T>(arr1: T[], arr2: T[]): T[] {
-  assertArray(arr1, 'symmetricDifference.arr1');
-  assertArray(arr2, 'symmetricDifference.arr2');
+  assertArray(arr1, { functionName:'symmetricDifference.arr1'});
+  assertArray(arr2, { functionName:'symmetricDifference.arr2'});
   
   const set1 = new Set(arr1);
   const set2 = new Set(arr2);
@@ -90,8 +90,8 @@ export function symmetricDifferenceBy<T, K extends keyof T>(
   arr2: T[],
   field: K
 ): T[] {
-  assertArray(arr1, 'symmetricDifferenceBy.arr1');
-  assertArray(arr2, 'symmetricDifferenceBy.arr2');
+  assertArray(arr1, { functionName:'symmetricDifferenceBy.arr1'});
+  assertArray(arr2, { functionName:'symmetricDifferenceBy.arr2'});
   
   if (arr1.length === 0 && arr2.length === 0) {
     return [];
@@ -114,9 +114,9 @@ export function symmetricDifferenceWith<T>(
   arr2: T[],
   iteratee: (item: T) => any
 ): T[] {
-  assertArray(arr1, 'symmetricDifferenceWith.arr1');
-  assertArray(arr2, 'symmetricDifferenceWith.arr2');
-  assertFunction(iteratee, 'symmetricDifferenceWith.iteratee');
+  assertArray(arr1, { functionName:'symmetricDifferenceWith.arr1'});
+  assertArray(arr2, { functionName:'symmetricDifferenceWith.arr2'});
+  assertFunction(iteratee, {functionName:'symmetricDifferenceWith.iteratee'});
   
   if (arr1.length === 0 && arr2.length === 0) {
     return [];

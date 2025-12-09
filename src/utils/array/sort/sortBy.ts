@@ -9,7 +9,7 @@ export function sortBy<T>(
   field: keyof T, 
   order: 'asc' | 'desc' = 'asc'
 ): T[] {
-  assertArray(arr, 'sortBy');
+    assertArray(arr, { functionName:'sortBy'});
   
   if (typeof field !== 'string') {
     throw new InvalidInputError(
@@ -67,8 +67,8 @@ export function sortWith<T>(
   arr: T[], 
   compareFn: (a: T, b: T) => number
 ): T[] {
-  assertArray(arr, 'arr', 'sortWith');
-  assertFunction(compareFn, 'compareFn', 'sortWith');
+    assertArray(arr, { functionName:'sortWith', paramName:'arr'});
+  assertFunction(compareFn, { paramName:'compareFn', functionName: 'sortWith'});
   
   // 返回新数组，不修改原数组
   return [...arr].sort(compareFn);
@@ -94,8 +94,8 @@ export function sortByKey<T, K>(
   keySelector: (item: T) => K,
   order: 'asc' | 'desc' = 'asc'
 ): T[] {
-  assertArray(arr, 'arr', 'sortByKey');
-  assertFunction(keySelector, 'keySelector', 'sortByKey');
+    assertArray(arr, { functionName:'sortByKey', paramName:'arr'});
+  assertFunction(keySelector, { paramName:'keySelector', functionName: 'sortByKey'});
   
   const compareFn = (a: T, b: T) => {
     const keyA = keySelector(a);
@@ -165,8 +165,8 @@ export function orderBy<T>(
     order?: 'asc' | 'desc';
   }>
 ): T[] {
-  assertArray(arr, 'arr', 'orderBy');
-  assertArray(orders, 'orders', 'orderBy');
+    assertArray(arr, { functionName:'orderBy', paramName:'arr'});
+    assertArray(orders, { functionName:'orderBy', paramName:'orders'});
   
   if (orders.length === 0) {
     return [...arr]; // 没有排序条件，返回副本
@@ -254,7 +254,7 @@ export function naturalSort<T>(
   keySelector?: (item: T) => string,
   order: 'asc' | 'desc' = 'asc'
 ): T[] {
-  assertArray(arr, 'arr', 'naturalSort');
+    assertArray(arr, { functionName:'naturalSort', paramName:'arr'});
   
   // 自然排序比较函数
   const naturalCompare = (a: string, b: string): number => {

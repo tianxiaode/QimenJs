@@ -4,7 +4,7 @@ import { assertArray  } from '../../validation';
  * 移除数组中的重复元素
  */
 export function removeDuplicates<T>(arr: T[]): T[] {
-  assertArray(arr, 'removeDuplicates');
+  assertArray(arr, { functionName: 'removeDuplicates' });
   
   const seen = new Set<T>();
   const result: T[] = [];
@@ -26,7 +26,7 @@ export function uniqueBy<T, K extends keyof T>(
   arr: T[], 
   key: K | ((item: T) => any)
 ): T[] {
-  assertArray(arr, 'uniqueBy');
+    assertArray(arr,{ functionName: 'uniqueBy' });
   
   const seen = new Map<any, T>();
   

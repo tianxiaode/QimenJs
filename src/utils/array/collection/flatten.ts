@@ -4,7 +4,7 @@ import { InvalidInputError } from '../../error';
  * 数组扁平化
  */
 export function flatten<T>(arr: any[], depth: number = 1): T[] {
-  assertArray(arr, 'flatten');
+  assertArray(arr, { functionName:'flatten'});
   
   if (depth < 0) {
     throw new InvalidInputError(

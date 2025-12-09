@@ -8,7 +8,7 @@ export function findItem<T, K extends keyof T>(
   field: K,
   value: T[K]
 ): T | undefined {
-  assertArray(arr, 'findItem');
+  assertArray(arr, { functionName:'findItem'});
   
   if (arr.length === 0) {
     return undefined;
