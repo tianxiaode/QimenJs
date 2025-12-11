@@ -1,168 +1,162 @@
-import { InvalidInputError } from '../../error';
+import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
+import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import {
-  isArray,
-  isArrayLike,
-  isObject,
-  isPlainObject,
-  isDate,
-  isRegExp,
-  isMap,
-  isSet,
-  isPromise,
-  isError,
-  isTypedArray,
-  isBuffer,
-  isFormData,
-  isURLSearchParams,
-  isFile,
-  isBlob,
-  isEmptyArray,
-  isEmptyObject,
-  isEmptyMap,
-  isEmptySet
-} from '../types';
+  validateArray,
+  validateArrayLike,
+  validateObject,
+  validatePlainObject,
+  validateDate,
+  validateRegExp,
+  validateMap,
+  validateSet,
+  validatePromise,
+  validateError,
+  validateTypedArray,
+  validateBuffer,
+  validateFormData,
+  validateURLSearchParams,
+  validateFile,
+  validateBlob,
+  validateEmptyArray,
+  validateEmptyObject,
+  validateEmptyMap,
+  validateEmptySet,
+  validateNested
+} from '../validators';
+import { getLength } from './error-context';
 
 /**
- * 结构类型断言函数
- * 这些函数用于断言结构化数据类型，验证失败时抛出 InvalidInputError
- */
-
-/**
- * 断言值为数组
+ * 数组断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertArray<T = any>(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
+  options: {
     nonEmpty?: boolean;
     minLength?: number;
     maxLength?: number;
     itemValidator?: (item: any, index: number) => boolean;
     allowEmptyItems?: boolean;
     unique?: boolean;
-  }
+  } = {},
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is T[] {
-  const {
-    paramName,
-    functionName,
-    message,
-    nonEmpty = false,
-    minLength,
-    maxLength,
-    itemValidator,
-    allowEmptyItems = true,
-    unique = false
-  } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isArray(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an array${functionText}`,
-      { value, paramName, functionName, expected: 'array' } as any
-    );
+  // 先检查是否是数组
+  if (!Array.isArray(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
   }
   
-  // 检查非空
-  if (nonEmpty && isEmptyArray(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a non-empty array${functionText}`,
-      { value, paramName, functionName } as any
-    );
-  }
-  
-  // 检查最小长度
-  if (minLength !== undefined && value.length < minLength) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at least ${minLength} items${functionText}`,
-      { value, paramName, functionName, minLength } as any
-    );
-  }
-  
-  // 检查最大长度
-  if (maxLength !== undefined && value.length > maxLength) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at most ${maxLength} items${functionText}`,
-      { value, paramName, functionName, maxLength } as any
-    );
-  }
-  
-  // 检查元素唯一性
-  if (unique) {
-    const seen = new Set();
-    for (const item of value) {
-      const key = typeof item === 'object' && item !== null ? 
-        Symbol.for('object') : item;
-      if (seen.has(key)) {
-        throw new InvalidInputError(
-          message || `${paramText} must contain unique items${functionText}`,
-          { value, paramName, functionName, duplicate: item } as any
-        );
-      }
-      seen.add(key);
+  // 复用验证函数
+  if (!validateArray(value, options)) {
+    const {
+      nonEmpty = false,
+      minLength,
+      maxLength,
+      allowEmptyItems = true,
+      unique = false
+    } = options;
+    
+    // 检查非空
+    if (nonEmpty && value.length === 0) {
+      ctx.throwError(ValidationErrorCode.NON_EMPTY_ARRAY);
     }
-  }
-  
-  // 检查项目验证器
-  if (itemValidator) {
-    for (let i = 0; i < value.length; i++) {
-      const item = value[i];
-      
-      // 检查是否允许空项目
-      if (!allowEmptyItems && (item === null || item === undefined)) {
-        throw new InvalidInputError(
-          message || `${paramText}[${i}] must not be null or undefined${functionText}`,
-          { value, paramName, functionName, index: i } as any
-        );
-      }
-      
-      // 使用项目验证器
-      if (!itemValidator(item, i)) {
-        throw new InvalidInputError(
-          message || `${paramText}[${i}] is invalid${functionText}`,
-          { value, paramName, functionName, index: i, item } as any
-        );
+    
+    // 检查最小长度
+    if (minLength !== undefined && value.length < minLength) {
+      ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
+        min: minLength, 
+        actualLength: value.length 
+      });
+    }
+    
+    // 检查最大长度
+    if (maxLength !== undefined && value.length > maxLength) {
+      ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
+        max: maxLength, 
+        actualLength: value.length 
+      });
+    }
+    
+    // 检查是否允许空项目
+    if (!allowEmptyItems) {
+      for (let i = 0; i < value.length; i++) {
+        if (value[i] === null || value[i] === undefined) {
+          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
+            index: i,
+            value: value[i]
+          });
+        }
       }
     }
+    
+    // 检查唯一性
+    if (unique) {
+      const seenRefs = new Set();
+      const seenValues = new Set();
+      
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i];
+        if (typeof item === 'object' && item !== null) {
+          if (seenRefs.has(item)) {
+            ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
+              index: i,
+              duplicate: item
+            });
+          }
+          seenRefs.add(item);
+        } else {
+          if (seenValues.has(item)) {
+            ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
+              index: i,
+              duplicate: item
+            });
+          }
+          seenValues.add(item);
+        }
+      }
+    }
+    
+    // 检查项目验证器
+    if (options.itemValidator) {
+      for (let i = 0; i < value.length; i++) {
+        if (!options.itemValidator(value[i], i)) {
+          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
+            index: i,
+            value: value[i]
+          });
+        }
+      }
+    }
+    
+    // 未知原因
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
   }
 }
 
 /**
- * 断言值为类数组对象
+ * 类数组对象断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertArrayLike(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is ArrayLike<any> {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isArrayLike(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an array-like object${functionText}`,
-      { value, paramName, functionName, expected: 'array-like' } as any
-    );
+  if (!validateArrayLike(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY_LIKE);
   }
 }
 
 /**
- * 断言值为对象
+ * 对象断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertObject(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
+  options: {
     nonEmpty?: boolean;
     requiredKeys?: string[];
     allowedKeys?: string[];
@@ -170,677 +164,555 @@ export function assertObject(
     minKeys?: number;
     maxKeys?: number;
     valueValidator?: (key: string, value: any) => boolean;
-  }
+  } = {},
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Record<string, any> {
-  const {
-    paramName,
-    functionName,
-    message,
-    nonEmpty = false,
-    requiredKeys,
-    allowedKeys,
-    disallowedKeys,
-    minKeys,
-    maxKeys,
-    valueValidator
-  } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isObject(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an object${functionText}`,
-      { value, paramName, functionName, expected: 'object' } as any
-    );
+  // 先检查是否是对象
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
   }
   
-  const keys = Object.keys(value);
-  
-  // 检查非空
-  if (nonEmpty && isEmptyObject(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a non-empty object${functionText}`,
-      { value, paramName, functionName } as any
-    );
-  }
-  
-  // 检查最少键数
-  if (minKeys !== undefined && keys.length < minKeys) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at least ${minKeys} keys${functionText}`,
-      { value, paramName, functionName, minKeys, actualKeys: keys.length } as any
-    );
-  }
-  
-  // 检查最多键数
-  if (maxKeys !== undefined && keys.length > maxKeys) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at most ${maxKeys} keys${functionText}`,
-      { value, paramName, functionName, maxKeys, actualKeys: keys.length } as any
-    );
-  }
-  
-  // 检查必需的键
-  if (requiredKeys !== undefined) {
-    for (const key of requiredKeys) {
-      if (!(key in value)) {
-        throw new InvalidInputError(
-          message || `${paramText} must have required key '${key}'${functionText}`,
-          { value, paramName, functionName, missingKey: key } as any
-        );
+  // 复用验证函数
+  if (!validateObject(value, options)) {
+    const {
+      nonEmpty = false,
+      requiredKeys,
+      allowedKeys,
+      disallowedKeys,
+      minKeys,
+      maxKeys
+    } = options;
+    
+    const keys = Object.keys(value);
+    
+    // 检查非空
+    if (nonEmpty && keys.length === 0) {
+      ctx.throwError(ValidationErrorCode.NON_EMPTY_OBJECT);
+    }
+    
+    // 检查最少键数
+    if (minKeys !== undefined && keys.length < minKeys) {
+      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
+        min: minKeys, 
+        actual: keys.length,
+        value: 'keys'
+      });
+    }
+    
+    // 检查最多键数
+    if (maxKeys !== undefined && keys.length > maxKeys) {
+      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
+        max: maxKeys, 
+        actual: keys.length,
+        value: 'keys'
+      });
+    }
+    
+    // 检查必需的键
+    if (requiredKeys !== undefined) {
+      for (const key of requiredKeys) {
+        if (!(key in value)) {
+          ctx.throwError(ValidationErrorCode.REQUIRED_KEY_MISSING, { 
+            missingKey: key 
+          });
+        }
       }
     }
-  }
-  
-  // 检查允许的键
-  if (allowedKeys !== undefined) {
-    for (const key of keys) {
-      if (!allowedKeys.includes(key)) {
-        throw new InvalidInputError(
-          message || `${paramText} contains disallowed key '${key}'${functionText}`,
-          { value, paramName, functionName, disallowedKey: key, allowedKeys } as any
-        );
+    
+    // 检查允许的键
+    if (allowedKeys !== undefined) {
+      for (const key of keys) {
+        if (!allowedKeys.includes(key)) {
+          ctx.throwError(ValidationErrorCode.NOT_ALLOWED_KEY, { 
+            forbiddenKey: key,
+            allowedKeys
+          });
+        }
       }
     }
-  }
-  
-  // 检查不允许的键
-  if (disallowedKeys !== undefined) {
-    for (const key of keys) {
-      if (disallowedKeys.includes(key)) {
-        throw new InvalidInputError(
-          message || `${paramText} contains forbidden key '${key}'${functionText}`,
-          { value, paramName, functionName, forbiddenKey: key, disallowedKeys } as any
-        );
+    
+    // 检查不允许的键
+    if (disallowedKeys !== undefined) {
+      for (const key of keys) {
+        if (disallowedKeys.includes(key)) {
+          ctx.throwError(ValidationErrorCode.DISALLOWED_KEY_PRESENT, { 
+            disallowedKey: key 
+          });
+        }
       }
     }
-  }
-  
-  // 检查值验证器
-  if (valueValidator) {
-    for (const key of keys) {
-      if (!valueValidator(key, value[key])) {
-        throw new InvalidInputError(
-          message || `${paramText}.${key} has invalid value${functionText}`,
-          { value, paramName, functionName, key, keyValue: value[key] } as any
-        );
+    
+    // 检查值验证器
+    if (options.valueValidator) {
+      for (const key of keys) {
+        if (!options.valueValidator(key, value[key])) {
+          ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
+            key,
+            keyValue: value[key]
+          });
+        }
       }
     }
+    
+    // 未知原因
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
   }
 }
 
 /**
- * 断言值为纯对象
+ * 纯对象断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertPlainObject(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Record<string, any> {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isPlainObject(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a plain object${functionText}`,
-      { value, paramName, functionName, expected: 'plain object' } as any
-    );
+  if (!validatePlainObject(value)) {
+    // 检查是否是对象
+    if (typeof value !== 'object' || value === null) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
+    }
+    
+    // 如果是数组或其他对象类型
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_PLAIN_OBJECT);
   }
 }
 
 /**
- * 断言值为日期
+ * 日期断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertDate(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
+  options: {
     min?: Date;
     max?: Date;
     past?: boolean;
     future?: boolean;
-  }
+  } = {},
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Date {
-  const {
-    paramName,
-    functionName,
-    message,
-    min,
-    max,
-    past = false,
-    future = false
-  } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isDate(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a valid date${functionText}`,
-      { value, paramName, functionName, expected: 'Date' } as any
-    );
-  }
-  
-  const timestamp = value.getTime();
-  
-  // 检查最小日期
-  if (min !== undefined && timestamp < min.getTime()) {
-    throw new InvalidInputError(
-      message || `${paramText} must be on or after ${min.toISOString()}${functionText}`,
-      { value, paramName, functionName, min } as any
-    );
-  }
-  
-  // 检查最大日期
-  if (max !== undefined && timestamp > max.getTime()) {
-    throw new InvalidInputError(
-      message || `${paramText} must be on or before ${max.toISOString()}${functionText}`,
-      { value, paramName, functionName, max } as any
-    );
-  }
-  
-  const now = Date.now();
-  
-  // 检查过去日期
-  if (past && timestamp >= now) {
-    throw new InvalidInputError(
-      message || `${paramText} must be in the past${functionText}`,
-      { value, paramName, functionName } as any
-    );
-  }
-  
-  // 检查未来日期
-  if (future && timestamp <= now) {
-    throw new InvalidInputError(
-      message || `${paramText} must be in the future${functionText}`,
-      { value, paramName, functionName } as any
-    );
+  if (!validateDate(value, options)) {
+    // 检查是否是日期对象
+    if (!(value instanceof Date)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_DATE);
+    }
+    
+    const { min, max, past = false, future = false } = options;
+    const timestamp = value.getTime();
+    
+    // 检查最小日期
+    if (min !== undefined && timestamp < min.getTime()) {
+      ctx.throwError(ValidationErrorCode.DATE_TOO_EARLY, { 
+        minDate: min,
+        date: value
+      });
+    }
+    
+    // 检查最大日期
+    if (max !== undefined && timestamp > max.getTime()) {
+      ctx.throwError(ValidationErrorCode.DATE_TOO_LATE, { 
+        maxDate: max,
+        date: value
+      });
+    }
+    
+    const now = Date.now();
+    
+    // 检查过去日期
+    if (past && timestamp >= now) {
+      ctx.throwError(ValidationErrorCode.DATE_NOT_PAST, { 
+        date: value 
+      });
+    }
+    
+    // 检查未来日期
+    if (future && timestamp <= now) {
+      ctx.throwError(ValidationErrorCode.DATE_NOT_FUTURE, { 
+        date: value 
+      });
+    }
+    
+    // 未知原因
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_DATE);
   }
 }
 
 /**
- * 断言值为正则表达式
+ * 正则表达式断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertRegExp(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is RegExp {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isRegExp(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a regular expression${functionText}`,
-      { value, paramName, functionName, expected: 'RegExp' } as any
-    );
+  if (!validateRegExp(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_REGEXP);
   }
 }
 
 /**
- * 断言值为 Map
+ * Map断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertMap<K = any, V = any>(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
+  options: {
     nonEmpty?: boolean;
     minSize?: number;
     maxSize?: number;
     keyValidator?: (key: K) => boolean;
     valueValidator?: (value: V) => boolean;
-  }
+  } = {},
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Map<K, V> {
-  const {
-    paramName,
-    functionName,
-    message,
-    nonEmpty = false,
-    minSize,
-    maxSize,
-    keyValidator,
-    valueValidator
-  } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isMap(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a Map${functionText}`,
-      { value, paramName, functionName, expected: 'Map' } as any
-    );
-  }
-  
-  // 检查非空
-  if (nonEmpty && isEmptyMap(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a non-empty Map${functionText}`,
-      { value, paramName, functionName } as any
-    );
-  }
-  
-  const size = value.size;
-  
-  // 检查最小大小
-  if (minSize !== undefined && size < minSize) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at least ${minSize} entries${functionText}`,
-      { value, paramName, functionName, minSize, actualSize: size } as any
-    );
-  }
-  
-  // 检查最大大小
-  if (maxSize !== undefined && size > maxSize) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at most ${maxSize} entries${functionText}`,
-      { value, paramName, functionName, maxSize, actualSize: size } as any
-    );
-  }
-  
-  // 检查键和值验证器
-  if (keyValidator || valueValidator) {
-    let index = 0;
-    for (const [key, val] of value as Map<K, V>) {
-      if (keyValidator && !keyValidator(key)) {
-        throw new InvalidInputError(
-          message || `${paramText} has invalid key at index ${index}${functionText}`,
-          { value, paramName, functionName, index, key } as any
-        );
-      }
-      
-      if (valueValidator && !valueValidator(val)) {
-        throw new InvalidInputError(
-          message || `${paramText} has invalid value at index ${index}${functionText}`,
-          { value, paramName, functionName, index, origin: val } as any
-        );
-      }
-      index++;
+  if (!validateMap(value, options)) {
+    // 检查是否是Map
+    if (!(value instanceof Map)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
     }
+    
+    const {
+      nonEmpty = false,
+      minSize,
+      maxSize
+    } = options;
+    
+    const size = value.size;
+    
+    // 检查非空
+    if (nonEmpty && size === 0) {
+      ctx.throwError(ValidationErrorCode.NON_EMPTY_MAP);
+    }
+    
+    // 检查最小大小
+    if (minSize !== undefined && size < minSize) {
+      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
+        min: minSize, 
+        actual: size,
+        value: 'size'
+      });
+    }
+    
+    // 检查最大大小
+    if (maxSize !== undefined && size > maxSize) {
+      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
+        max: maxSize, 
+        actual: size,
+        value: 'size'
+      });
+    }
+    
+    // 检查键和值验证器
+    if (options.keyValidator || options.valueValidator) {
+      for (const [key, val] of value) {
+        if (options.keyValidator && !options.keyValidator(key as K)) {
+          ctx.throwError(ValidationErrorCode.INVALID_KEY, { 
+            key,
+            keyValue: key
+          });
+        }
+        
+        if (options.valueValidator && !options.valueValidator(val as V)) {
+          ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
+            key,
+            keyValue: val
+          });
+        }
+      }
+    }
+    
+    // 未知原因
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
   }
 }
 
 /**
- * 断言值为 Set
+ * Set断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertSet<T = any>(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
+  options: {
     nonEmpty?: boolean;
     minSize?: number;
     maxSize?: number;
     itemValidator?: (item: T) => boolean;
-  }
+  } = {},
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Set<T> {
-  const {
-    paramName,
-    functionName,
-    message,
-    nonEmpty = false,
-    minSize,
-    maxSize,
-    itemValidator
-  } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isSet(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a Set${functionText}`,
-      { value, paramName, functionName, expected: 'Set' } as any
-    );
-  }
-  
-  // 检查非空
-  if (nonEmpty && isEmptySet(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a non-empty Set${functionText}`,
-      { value, paramName, functionName } as any
-    );
-  }
-  
-  const size = value.size;
-  
-  // 检查最小大小
-  if (minSize !== undefined && size < minSize) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at least ${minSize} items${functionText}`,
-      { value, paramName, functionName, minSize, actualSize: size } as any
-    );
-  }
-  
-  // 检查最大大小
-  if (maxSize !== undefined && size > maxSize) {
-    throw new InvalidInputError(
-      message || `${paramText} must have at most ${maxSize} items${functionText}`,
-      { value, paramName, functionName, maxSize, actualSize: size } as any
-    );
-  }
-  
-  // 检查项目验证器
-  if (itemValidator) {
-    let index = 0;
-    for (const item of value as Set<T>) {
-      if (!itemValidator(item)) {
-        throw new InvalidInputError(
-          message || `${paramText} contains invalid item at index ${index}${functionText}`,
-          { value, paramName, functionName, index, item } as any
-        );
-      }
-      index++;
+  if (!validateSet(value, options)) {
+    // 检查是否是Set
+    if (!(value instanceof Set)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
     }
+    
+    const {
+      nonEmpty = false,
+      minSize,
+      maxSize
+    } = options;
+    
+    const size = value.size;
+    
+    // 检查非空
+    if (nonEmpty && size === 0) {
+      ctx.throwError(ValidationErrorCode.NON_EMPTY_SET);
+    }
+    
+    // 检查最小大小
+    if (minSize !== undefined && size < minSize) {
+      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
+        min: minSize, 
+        actual: size,
+        value: 'size'
+      });
+    }
+    
+    // 检查最大大小
+    if (maxSize !== undefined && size > maxSize) {
+      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
+        max: maxSize, 
+        actual: size,
+        value: 'size'
+      });
+    }
+    
+    // 检查项目验证器
+    if (options.itemValidator) {
+      for (const item of value) {
+        if (!options.itemValidator(item as T)) {
+          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
+            value: item
+          });
+        }
+      }
+    }
+    
+    // 未知原因
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
   }
 }
 
 /**
- * 断言值为 Promise
+ * Promise断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertPromise(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Promise<any> {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isPromise(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a Promise${functionText}`,
-      { value, paramName, functionName, expected: 'Promise' } as any
-    );
+  if (!validatePromise(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_PROMISE);
   }
 }
 
 /**
- * 断言值为 Error
+ * Error断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertError(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Error {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isError(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an Error${functionText}`,
-      { value, paramName, functionName, expected: 'Error' } as any
-    );
+  if (!validateError(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_ERROR);
   }
 }
 
 /**
- * 断言值为 TypedArray
+ * TypedArray断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertTypedArray(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): void {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isTypedArray(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a TypedArray${functionText}`,
-      { value, paramName, functionName, expected: 'TypedArray' } as any
-    );
+  if (!validateTypedArray(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_TYPED_ARRAY);
   }
 }
 
 /**
- * 断言值为 Buffer（Node.js 环境）
+ * Buffer断言函数（Node.js 环境）
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertBuffer(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Buffer {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isBuffer(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a Buffer${functionText}`,
-      { value, paramName, functionName, expected: 'Buffer' } as any
-    );
+  if (!validateBuffer(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_BUFFER);
   }
 }
 
 /**
- * 断言值为 FormData（浏览器环境）
+ * FormData断言函数（浏览器环境）
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertFormData(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is FormData {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isFormData(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a FormData${functionText}`,
-      { value, paramName, functionName, expected: 'FormData' } as any
-    );
+  if (!validateFormData(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_FORM_DATA);
   }
 }
 
 /**
- * 断言值为 URLSearchParams（浏览器环境）
+ * URLSearchParams断言函数（浏览器环境）
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertURLSearchParams(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is URLSearchParams {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isURLSearchParams(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a URLSearchParams${functionText}`,
-      { value, paramName, functionName, expected: 'URLSearchParams' } as any
-    );
+  if (!validateURLSearchParams(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_URL_SEARCH_PARAMS);
   }
 }
 
 /**
- * 断言值为 File（浏览器环境）
+ * File断言函数（浏览器环境）
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertFile(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is File {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isFile(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a File${functionText}`,
-      { value, paramName, functionName, expected: 'File' } as any
-    );
+  if (!validateFile(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_FILE);
   }
 }
 
 /**
- * 断言值为 Blob（浏览器环境）
+ * Blob断言函数（浏览器环境）
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertBlob(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Blob {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isBlob(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be a Blob${functionText}`,
-      { value, paramName, functionName, expected: 'Blob' } as any
-    );
+  if (!validateBlob(value)) {
+    ctx.throwError(ValidationErrorCode.TYPE_NOT_BLOB);
   }
 }
 
 /**
- * 断言数组为空
+ * 空数组断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertEmptyArray(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is [] {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isEmptyArray(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an empty array${functionText}`,
-      { value, paramName, functionName } as any
-    );
+  if (!validateEmptyArray(value)) {
+    // 检查是否是数组
+    if (!Array.isArray(value)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
+    }
+    
+    // 如果不是空数组
+    ctx.throwError(ValidationErrorCode.EMPTY_ARRAY);
   }
 }
 
 /**
- * 断言对象为空
+ * 空对象断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertEmptyObject(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is {} {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isEmptyObject(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an empty object${functionText}`,
-      { value, paramName, functionName } as any
-    );
+  if (!validateEmptyObject(value)) {
+    // 检查是否是对象
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
+    }
+    
+    // 如果不是空对象
+    ctx.throwError(ValidationErrorCode.EMPTY_OBJECT);
   }
 }
 
 /**
- * 断言 Map 为空
+ * 空Map断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertEmptyMap(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Map<any, any> {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isEmptyMap(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an empty Map${functionText}`,
-      { value, paramName, functionName } as any
-    );
+  if (!validateEmptyMap(value)) {
+    // 检查是否是Map
+    if (!(value instanceof Map)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
+    }
+    
+    // 如果不是空Map
+    ctx.throwError(ValidationErrorCode.EMPTY_MAP);
   }
 }
 
 /**
- * 断言 Set 为空
+ * 空Set断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertEmptySet(
   value: any,
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): asserts value is Set<any> {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  if (!isEmptySet(value)) {
-    throw new InvalidInputError(
-      message || `${paramText} must be an empty Set${functionText}`,
-      { value, paramName, functionName } as any
-    );
+  if (!validateEmptySet(value)) {
+    // 检查是否是Set
+    if (!(value instanceof Set)) {
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
+    }
+    
+    // 如果不是空Set
+    ctx.throwError(ValidationErrorCode.EMPTY_SET);
   }
 }
 
 /**
- * 断言嵌套结构
+ * 嵌套结构断言函数
+ * @throws {InvalidInputError} 当验证失败时
  */
 export function assertNested(
   value: any,
@@ -850,142 +722,290 @@ export function assertNested(
     keySchema?: any;
     valueSchema?: any;
   },
-  options?: {
-    paramName?: string;
-    functionName?: string;
-    message?: string;
-  }
+  contextOptions?: AssertErrorContextOptions
 ): void {
-  const { paramName, functionName, message } = options || {};
+  const ctx = createAssetErrorContext(contextOptions);
   
-  const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-  const functionText = functionName ? ` in ${functionName}` : '';
-  
-  switch (schema.type) {
-    case 'array':
-      assertArray(value, { paramName, functionName, message });
-      if (schema.itemSchema) {
-        const array = value as any[];
-        for (let i = 0; i < array.length; i++) {
-          try {
-            assertNested(array[i], schema.itemSchema, {
-              paramName: `${paramName}[${i}]`,
-              functionName,
-              message
-            });
-          } catch (error) {
-            if (error instanceof InvalidInputError) {
-              throw error;
-            }
-            throw new InvalidInputError(
-              message || `${paramText}[${i}] has invalid structure${functionText}`,
-              { value: array[i], paramName: `${paramName}[${i}]`, functionName, index: i } as any
-            );
-          }
+  if (!validateNested(value, schema)) {
+    switch (schema.type) {
+      case 'array':
+        if (!Array.isArray(value)) {
+          ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
         }
-      }
-      break;
-      
-    case 'object':
-      assertObject(value, { paramName, functionName, message });
-      if (schema.valueSchema) {
-        const obj = value as Record<string, any>;
-        for (const key in obj) {
-          try {
-            assertNested(obj[key], schema.valueSchema, {
-              paramName: `${paramName}.${key}`,
-              functionName,
-              message
-            });
-          } catch (error) {
-            if (error instanceof InvalidInputError) {
-              throw error;
-            }
-            throw new InvalidInputError(
-              message || `${paramText}.${key} has invalid structure${functionText}`,
-              { value: obj[key], paramName: `${paramName}.${key}`, functionName, key } as any
-            );
-          }
+        break;
+        
+      case 'object':
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+          ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
         }
-      }
-      break;
-      
-    case 'map':
-      assertMap(value, { paramName, functionName, message });
-      if (schema.keySchema || schema.valueSchema) {
-        const map = value as Map<any, any>;
-        let index = 0;
-        for (const [key, val] of map) {
-          if (schema.keySchema) {
-            try {
-              assertNested(key, schema.keySchema, {
-                paramName: `${paramName}[key@${index}]`,
-                functionName,
-                message
-              });
-            } catch (error) {
-              if (error instanceof InvalidInputError) {
-                throw error;
-              }
-              throw new InvalidInputError(
-                message || `${paramText} has invalid key at index ${index}${functionText}`,
-                { value: key, paramName: `${paramName}[key@${index}]`, functionName, index } as any
-              );
-            }
-          }
-          
-          if (schema.valueSchema) {
-            try {
-              assertNested(val, schema.valueSchema, {
-                paramName: `${paramName}[value@${index}]`,
-                functionName,
-                message
-              });
-            } catch (error) {
-              if (error instanceof InvalidInputError) {
-                throw error;
-              }
-              throw new InvalidInputError(
-                message || `${paramText} has invalid value at index ${index}${functionText}`,
-                { value: val, paramName: `${paramName}[value@${index}]`, functionName, index } as any
-              );
-            }
-          }
-          index++;
+        break;
+        
+      case 'map':
+        if (!(value instanceof Map)) {
+          ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
         }
-      }
-      break;
-      
-    case 'set':
-      assertSet(value, { paramName, functionName, message });
-      if (schema.itemSchema) {
-        const set = value as Set<any>;
-        let index = 0;
-        for (const item of set) {
-          try {
-            assertNested(item, schema.itemSchema, {
-              paramName: `${paramName}[${index}]`,
-              functionName,
-              message
-            });
-          } catch (error) {
-            if (error instanceof InvalidInputError) {
-              throw error;
-            }
-            throw new InvalidInputError(
-              message || `${paramText} has invalid item at index ${index}${functionText}`,
-              { value: item, paramName: `${paramName}[${index}]`, functionName, index } as any
-            );
-          }
-          index++;
+        break;
+        
+      case 'set':
+        if (!(value instanceof Set)) {
+          ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
         }
-      }
-      break;
-      
-    default:
-      throw new InvalidInputError(
-        message || `${paramText} has unsupported schema type '${(schema as any).type}'${functionText}`,
-        { value, paramName, functionName, schemaType: (schema as any).type } as any
-      );
+        break;
+    }
+    
+    ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, { schema });
   }
+}
+
+/**
+ * 创建数组断言器
+ */
+export function createArrayAssert<T>(
+  options: {
+    nonEmpty?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    itemValidator?: (item: any, index: number) => boolean;
+    allowEmptyItems?: boolean;
+    unique?: boolean;
+  } = {},
+  contextOptions?: AssertErrorContextOptions
+): (value: any) => asserts value is T[] {
+  const ctx = createAssetErrorContext(contextOptions);
+  
+  return (value: any): asserts value is T[] => {
+    if (!validateArray(value, options)) {
+      if (!Array.isArray(value)) {
+        ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
+      }
+      
+      // 检查具体失败原因
+      const {
+        nonEmpty = false,
+        minLength,
+        maxLength,
+        allowEmptyItems = true,
+        unique = false
+      } = options;
+      
+      if (nonEmpty && value.length === 0) {
+        ctx.throwError(ValidationErrorCode.NON_EMPTY_ARRAY);
+      }
+      
+      if (minLength !== undefined && value.length < minLength) {
+        ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
+          min: minLength, 
+          actualLength: value.length 
+        });
+      }
+      
+      if (maxLength !== undefined && value.length > maxLength) {
+        ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
+          max: maxLength, 
+          actualLength: value.length 
+        });
+      }
+      
+      if (!allowEmptyItems) {
+        for (let i = 0; i < value.length; i++) {
+          if (value[i] === null || value[i] === undefined) {
+            ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
+              index: i,
+              value: value[i]
+            });
+          }
+        }
+      }
+      
+      if (unique) {
+        const seenRefs = new Set();
+        const seenValues = new Set();
+        
+        for (let i = 0; i < value.length; i++) {
+          const item = value[i];
+          if (typeof item === 'object' && item !== null) {
+            if (seenRefs.has(item)) {
+              ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
+                index: i,
+                duplicate: item
+              });
+            }
+            seenRefs.add(item);
+          } else {
+            if (seenValues.has(item)) {
+              ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
+                index: i,
+                duplicate: item
+              });
+            }
+            seenValues.add(item);
+          }
+        }
+      }
+      
+      if (options.itemValidator) {
+        for (let i = 0; i < value.length; i++) {
+          if (!options.itemValidator(value[i], i)) {
+            ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
+              index: i,
+              value: value[i]
+            });
+          }
+        }
+      }
+      
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
+    }
+  };
+}
+
+/**
+ * 创建对象断言器
+ */
+export function createObjectAssert(
+  options: {
+    nonEmpty?: boolean;
+    requiredKeys?: string[];
+    allowedKeys?: string[];
+    disallowedKeys?: string[];
+    minKeys?: number;
+    maxKeys?: number;
+    valueValidator?: (key: string, value: any) => boolean;
+  } = {},
+  contextOptions?: AssertErrorContextOptions
+): (value: any) => asserts value is Record<string, any> {
+  const ctx = createAssetErrorContext(contextOptions);
+  
+  return (value: any): asserts value is Record<string, any> => {
+    if (!validateObject(value, options)) {
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
+      }
+      
+      // 检查具体失败原因
+      const {
+        nonEmpty = false,
+        requiredKeys,
+        allowedKeys,
+        disallowedKeys,
+        minKeys,
+        maxKeys
+      } = options;
+      
+      const keys = Object.keys(value);
+      
+      if (nonEmpty && keys.length === 0) {
+        ctx.throwError(ValidationErrorCode.NON_EMPTY_OBJECT);
+      }
+      
+      if (minKeys !== undefined && keys.length < minKeys) {
+        ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
+          min: minKeys, 
+          actual: keys.length,
+          value: 'keys'
+        });
+      }
+      
+      if (maxKeys !== undefined && keys.length > maxKeys) {
+        ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
+          max: maxKeys, 
+          actual: keys.length,
+          value: 'keys'
+        });
+      }
+      
+      if (requiredKeys !== undefined) {
+        for (const key of requiredKeys) {
+          if (!(key in value)) {
+            ctx.throwError(ValidationErrorCode.REQUIRED_KEY_MISSING, { 
+              missingKey: key 
+            });
+          }
+        }
+      }
+      
+      if (allowedKeys !== undefined) {
+        for (const key of keys) {
+          if (!allowedKeys.includes(key)) {
+            ctx.throwError(ValidationErrorCode.NOT_ALLOWED_KEY, { 
+              forbiddenKey: key,
+              allowedKeys
+            });
+          }
+        }
+      }
+      
+      if (disallowedKeys !== undefined) {
+        for (const key of keys) {
+          if (disallowedKeys.includes(key)) {
+            ctx.throwError(ValidationErrorCode.DISALLOWED_KEY_PRESENT, { 
+              disallowedKey: key 
+            });
+          }
+        }
+      }
+      
+      if (options.valueValidator) {
+        for (const key of keys) {
+          if (!options.valueValidator(key, value[key])) {
+            ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
+              key,
+              keyValue: value[key]
+            });
+          }
+        }
+      }
+      
+      ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
+    }
+  };
+}
+
+/**
+ * 组合结构验证：同时验证多个结构属性
+ */
+export function assertStructure(
+  value: any,
+  validations: Array<(value: any) => void>
+): void {
+  for (const validation of validations) {
+    validation(value);
+  }
+}
+
+/**
+ * 深度断言：验证整个嵌套结构
+ */
+export function deepAssert(
+  value: any,
+  validator: (value: any) => boolean,
+  errorCode: ValidationErrorCode = ValidationErrorCode.NOT_SATISFY_CONDITION,
+  contextOptions?: AssertErrorContextOptions
+): void {
+  const ctx = createAssetErrorContext(contextOptions);
+  
+  const validateRecursive = (val: any, path: string[] = []): void => {
+    if (Array.isArray(val)) {
+      for (let i = 0; i < val.length; i++) {
+        validateRecursive(val[i], [...path, `[${i}]`]);
+      }
+    } else if (val && typeof val === 'object' && !(val instanceof Date) && !(val instanceof RegExp)) {
+      for (const key in val) {
+        if (val.hasOwnProperty(key)) {
+          validateRecursive(val[key], [...path, `.${key}`]);
+        }
+      }
+    }
+    
+    if (!validator(val)) {
+      const pathStr = path.join('');
+      ctx.throwError(errorCode, { 
+        value: val,
+        path: pathStr || '.',
+        fullPath: pathStr ? `value${pathStr}` : 'value'
+      });
+    }
+  };
+  
+  validateRecursive(value);
 }

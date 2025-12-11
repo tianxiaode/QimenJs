@@ -72,15 +72,23 @@ export function validateArray<T = any>(
   
   // 检查元素唯一性
   if (unique) {
-    const seen = new Set();
+    const seenRefs = new Set(); // 跟踪对象引用
+    const seenValues = new Set(); // 跟踪基本类型值
+    
     for (const item of value) {
-      // 对于对象，使用引用相等性
-      const key = typeof item === 'object' && item !== null ? 
-        Symbol.for('object') : item;
-      if (seen.has(key)) {
-        return false;
+      if (typeof item === 'object' && item !== null) {
+        // 对于对象，只检查引用唯一性
+        if (seenRefs.has(item)) {
+          return false;
+        }
+        seenRefs.add(item);
+      } else {
+        // 对于基本类型，检查值唯一性
+        if (seenValues.has(item)) {
+          return false;
+        }
+        seenValues.add(item);
       }
-      seen.add(key);
     }
   }
   
@@ -103,6 +111,7 @@ export function validateArray<T = any>(
   
   return true;
 }
+
 
 /**
  * 验证类数组对象

@@ -1,10 +1,12 @@
 import { InvalidInputError } from '../../error';
+import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
+import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 /**
  * 断言函数统一导出
  * 这些函数用于断言值的各种条件，验证失败时抛出 InvalidInputError
  */
 
-// 从 primitives.ts 导出基本类型断言
+// 从断言文件导出基本类型断言
 import {
   assertString,
   assertNumber,
@@ -24,10 +26,11 @@ import {
   assertNotEqual,
   assertNil,
   assertNotNil,
-  createAssertion as createPrimitiveAssertion
+  createAssert,
+  createConditionalAssert
 } from './primitives';
 
-// 从 structures.ts 导出结构类型断言
+// 从断言文件导出结构类型断言
 import {
   assertArray,
   assertArrayLike,
@@ -49,10 +52,13 @@ import {
   assertEmptyObject,
   assertEmptyMap,
   assertEmptySet,
-  assertNested
+  assertNested,
+  createArrayAssert,
+  createObjectAssert,
+  deepAssert
 } from './structures';
 
-// 从 constraints.ts 导出约束断言
+// 从断言文件导出约束断言
 import {
   assertMinLength,
   assertMaxLength,
@@ -62,9 +68,9 @@ import {
   assertRange,
   assertIn,
   assertNotIn,
-  assertAll,
-  assertAny,
-  assertNot,
+  assertAllConstraints,
+  assertAnyConstraints,
+  assertNotConstraints,
   assertEqualTo,
   assertNotEqualTo,
   assertStrictEqualTo,
@@ -79,12 +85,14 @@ import {
   assertNotEmpty,
   assertTruthyConstraint,
   assertFalsyConstraint,
-  createRangeAssertion,
-  createLengthAssertion,
-  createInAssertion
+  createRangeAssert,
+  createLengthAssert,
+  createInAssert,
+  composeAssertions,
+  conditionalAssert
 } from './constraints';
 
-// 从 patterns.ts 导出模式断言
+// 从断言文件导出模式断言
 import {
   assertPattern,
   assertEmail,
@@ -107,7 +115,13 @@ import {
   assertBase64,
   assertUUID,
   assertCreditCard,
-  createPatternAssertion
+  createPatternAssert,
+  createUsernameAssert,
+  createPasswordAssert,
+  assertPatterns,
+  conditionalPatternAssert,
+  patternValidationChain,
+  createPatternValidationChainAssert
 } from './patterns';
 
 // 断言工具对象
@@ -164,9 +178,9 @@ export const Assert = {
   range: assertRange,
   in: assertIn,
   notIn: assertNotIn,
-  all: assertAll,
-  any: assertAny,
-  not: assertNot,
+  allConstraints: assertAllConstraints,
+  anyConstraints: assertAnyConstraints,
+  notConstraints: assertNotConstraints,
   equalTo: assertEqualTo,
   notEqualTo: assertNotEqualTo,
   strictEqualTo: assertStrictEqualTo,
@@ -205,14 +219,34 @@ export const Assert = {
   uuid: assertUUID,
   creditCard: assertCreditCard,
   
+  // 高级断言
+  deep: deepAssert,
+  patterns: assertPatterns,
+  compose: composeAssertions,
+  
   // 创建断言器
   create: {
-    primitive: createPrimitiveAssertion,
-    range: createRangeAssertion,
-    length: createLengthAssertion,
-    in: createInAssertion,
-    pattern: createPatternAssertion
+    primitive: createAssert,
+    conditional: createConditionalAssert,
+    range: createRangeAssert,
+    length: createLengthAssert,
+    in: createInAssert,
+    array: createArrayAssert,
+    object: createObjectAssert,
+    pattern: createPatternAssert,
+    username: createUsernameAssert,
+    password: createPasswordAssert,
+    patternValidationChain: createPatternValidationChainAssert
   },
+  
+  // 条件断言
+  conditional: conditionalAssert,
+  conditionalPattern: conditionalPatternAssert,
+  
+  /**
+   * 创建断言上下文
+   */
+  context: (options?: AssertErrorContextOptions) => createAssetErrorContext(options),
   
   /**
    * 断言条件满足，否则抛出错误
@@ -220,10 +254,16 @@ export const Assert = {
   that(
     condition: boolean,
     message: string,
-    context?: Record<string, any>
+    params: ValidationErrorParams = {},
+    contextOptions?: AssertErrorContextOptions
   ): asserts condition {
+    const ctx = createAssetErrorContext(contextOptions);
+    
     if (!condition) {
-      throw new InvalidInputError(message, context);
+      ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, {
+        ...params,
+        _customMessage: message
+      });
     }
   },
   
@@ -233,19 +273,16 @@ export const Assert = {
   satisfiesAll<T>(
     value: T,
     validators: ((v: T) => boolean)[],
-    message?: string,
-    paramName?: string,
-    functionName?: string
+    contextOptions?: AssertErrorContextOptions
   ): asserts value is T {
-    const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-    const functionText = functionName ? ` in ${functionName}` : '';
+    const ctx = createAssetErrorContext(contextOptions);
     
     for (let i = 0; i < validators.length; i++) {
       if (!validators[i](value)) {
-        throw new InvalidInputError(
-          message || `${paramText} failed validation at index ${i}${functionText}`,
-          { value, paramName, functionName, validatorIndex: i } as any
-        );
+        ctx.throwError(ValidationErrorCode.ALL_VALIDATIONS_FAILED, { 
+          value, 
+          validatorIndex: i 
+        });
       }
     }
   },
@@ -256,35 +293,106 @@ export const Assert = {
   satisfiesAny<T>(
     value: T,
     validators: ((v: T) => boolean)[],
-    message?: string,
-    paramName?: string,
-    functionName?: string
+    contextOptions?: AssertErrorContextOptions
   ): asserts value is T {
-    const paramText = paramName ? `Parameter '${paramName}'` : 'Value';
-    const functionText = functionName ? ` in ${functionName}` : '';
+    const ctx = createAssetErrorContext(contextOptions);
     
-    for (const validator of validators) {
-      if (validator(value)) {
+    for (let i = 0; i < validators.length; i++) {
+      if (validators[i](value)) {
         return;
       }
     }
     
-    throw new InvalidInputError(
-      message || `${paramText} failed all validations${functionText}`,
-      { value, paramName, functionName } as any
-    );
+    ctx.throwError(ValidationErrorCode.ANY_VALIDATION_FAILED, { 
+      value 
+    });
+  },
+  
+  /**
+   * 断言值不满足条件
+   */
+  satisfiesNot<T>(
+    value: T,
+    validator: (v: T) => boolean,
+    contextOptions?: AssertErrorContextOptions
+  ): asserts value is T {
+    const ctx = createAssetErrorContext(contextOptions);
+    
+    if (validator(value)) {
+      ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, { 
+        value 
+      });
+    }
   },
   
   /**
    * 组合多个断言
    */
   combine<T>(
-    ...assertions: ((value: T, paramName?: string, functionName?: string) => void)[]
-  ): (value: T, paramName?: string, functionName?: string) => void {
-    return (value: T, paramName?: string, functionName?: string): void => {
+    ...assertions: ((value: T, contextOptions?: AssertErrorContextOptions) => void)[]
+  ): (value: T, contextOptions?: AssertErrorContextOptions) => void {
+    return (value: T, contextOptions?: AssertErrorContextOptions): void => {
       for (const assertion of assertions) {
-        assertion(value, paramName, functionName);
+        assertion(value, contextOptions);
       }
     };
+  },
+  
+  /**
+   * 可选断言：仅当值不为null或undefined时执行
+   */
+  optional<T>(
+    value: T | null | undefined,
+    assertion: (value: T, contextOptions?: AssertErrorContextOptions) => void,
+    contextOptions?: AssertErrorContextOptions
+  ): void {
+    if (value !== null && value !== undefined) {
+      assertion(value, contextOptions);
+    }
+  },
+  
+  /**
+   * 链式断言：按顺序执行断言，第一个失败就停止
+   */
+  chain<T>(
+    ...assertions: ((value: T, contextOptions?: AssertErrorContextOptions) => void)[]
+  ): (value: T, contextOptions?: AssertErrorContextOptions) => void {
+    return (value: T, contextOptions?: AssertErrorContextOptions): void => {
+      for (const assertion of assertions) {
+        assertion(value, contextOptions);
+      }
+    };
+  },
+  
+  /**
+   * 安全断言：捕获断言错误并返回错误信息
+   */
+  safe<T>(
+    value: T,
+    assertion: (value: T, contextOptions?: AssertErrorContextOptions) => void,
+    contextOptions?: AssertErrorContextOptions
+  ): { success: boolean; error?: InvalidInputError } {
+    try {
+      assertion(value, contextOptions);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error as InvalidInputError 
+      };
+    }
   }
 } as const;
+
+// 导出类型
+export type {
+  AssertErrorContextOptions,
+  ValidationErrorParams,
+  ValidationErrorCode
+};
+
+// 导出错误上下文创建函数
+export { createAssetErrorContext };
+
+// 导出Assert类型
+export type Assert = typeof Assert;

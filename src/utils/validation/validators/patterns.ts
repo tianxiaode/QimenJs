@@ -78,25 +78,33 @@ export function validateEmail(email: string): boolean {
  * @param phone 要验证的电话号码
  */
 export function validatePhone(phone: string): boolean {
-  // 移除所有空格和特殊字符
+  // 移除所有空格和特殊字符，但保留数字和+
   const cleaned = phone.replace(/[\s\-()]/g, '');
   
-  // 国际号码格式（E.164）
-  const internationalRegex = /^\+?[1-9]\d{1,14}$/;
+  // 如果清理后的字符串为空或太短，则无效
+  if (cleaned.length < 3) {
+    return false;
+  }
   
   // 中国手机号格式
   const chineseMobileRegex = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/;
   
-  // 中国座机号格式
+  // 中国座机号格式（原始格式）
   const chineseLandlineRegex = /^(?:(?:0\d{2,3})-)?\d{7,8}$/;
   
+  // 中国座机号格式（清理后格式）
+  const chineseLandlineCleanedRegex = /^(0\d{2,3})?\d{7,8}$/;
+  
+  // 国际号码格式（E.164）- 必须以+开头且至少8位数字
+  const internationalRegex = /^\+[1-9]\d{7,14}$/;
+  
   return (
-    validatePattern(cleaned, internationalRegex) ||
     validatePattern(phone, chineseMobileRegex) ||
-    validatePattern(phone, chineseLandlineRegex)
+    validatePattern(phone, chineseLandlineRegex) ||
+    validatePattern(cleaned, chineseLandlineCleanedRegex) ||
+    validatePattern(cleaned, internationalRegex)
   );
 }
-
 /**
  * 验证URL地址
  * @param url 要验证的URL
@@ -152,9 +160,6 @@ export function validateHexColor(color: string): boolean {
  */
 export function validateRGBColor(color: string): boolean {
   const rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
-  if (!validatePattern(color, rgbRegex)) {
-    return false;
-  }
   
   // 提取RGB值并验证范围
   const match = color.match(rgbRegex);
@@ -173,9 +178,6 @@ export function validateRGBColor(color: string): boolean {
  */
 export function validateRGBAColor(color: string): boolean {
   const rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/;
-  if (!validatePattern(color, rgbaRegex)) {
-    return false;
-  }
   
   // 提取RGBA值并验证范围
   const match = color.match(rgbaRegex);
@@ -241,8 +243,8 @@ export function validateUsername(
   pattern += 'a-zA-Z';
   if (allowDigits) pattern += '0-9';
   if (allowUnderscore) pattern += '_';
-  if (allowHyphen) pattern += '-';
-  if (allowDot) pattern += '\\.';
+  if (allowHyphen) pattern += '\\-';  // 修复：正确转义连字符
+  if (allowDot) pattern += '\\.';     // 修复：正确转义点号
   if (allowAt) pattern += '@';
   pattern += ']*';
   

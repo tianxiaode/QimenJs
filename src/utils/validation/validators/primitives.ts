@@ -55,12 +55,12 @@ export function validateString(
   if (trim) {
     validatedValue = validatedValue.trim();
   }
-  
+
   // 检查非空
   if (nonEmpty && validatedValue.length === 0) {
     return false;
   }
-  
+
   // 检查最小长度
   if (minLength !== undefined && validatedValue.length < minLength) {
     return false;

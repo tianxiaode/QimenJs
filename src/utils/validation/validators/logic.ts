@@ -245,7 +245,6 @@ export function createCachedValidator(
   cacheSize: number = 100
 ): (v: any) => boolean {
   const cache = new Map<any, boolean>();
-  const keys: any[] = [];
   
   return (value: any): boolean => {
     // 对于原始值，直接使用值作为键
@@ -254,19 +253,22 @@ export function createCachedValidator(
       : value;
     
     if (cache.has(key)) {
-      return cache.get(key)!;
+      // LRU: 将访问的项移到最后（最近使用）
+      const result = cache.get(key)!;
+      cache.delete(key);  // 先删除
+      cache.set(key, result);  // 再添加到末尾
+      return result;
     }
     
     const result = validator(value);
     
     // 更新缓存
     cache.set(key, result);
-    keys.push(key);
     
-    // 如果缓存已满，移除最旧的条目
-    if (keys.length > cacheSize) {
-      const oldestKey = keys.shift();
-      cache.delete(oldestKey!);
+    // 如果缓存已满，移除最旧的条目（Map的第一个元素）
+    if (cache.size > cacheSize) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
     }
     
     return result;

@@ -11,27 +11,28 @@ import { isString, isArray, isObject, isMap, isSet } from '../types';
  * @param min 最小长度
  */
 export function validateMinLength(value: any, min: number): boolean {
-  if (isString(value)) {
-    return value.length >= min;
-  }
-  
-  if (isArray(value)) {
-    return value.length >= min;
-  }
-  
-  if (isObject(value)) {
-    return Object.keys(value).length >= min;
-  }
-  
-  if (isMap(value)) {
-    return value.size >= min;
-  }
-  
-  if (isSet(value)) {
-    return value.size >= min;
-  }
-  
-  return false;
+    if (isString(value)) {
+        return value.length >= min;
+    }
+
+    if (isArray(value)) {
+        return value.length >= min;
+    }
+
+    if (isMap(value)) {
+        return value.size >= min;
+    }
+
+    if (isSet(value)) {
+        return value.size >= min;
+    }
+
+    if (isObject(value)) {
+        return Object.keys(value).length >= min;
+    }
+
+
+    return false;
 }
 
 /**
@@ -40,27 +41,27 @@ export function validateMinLength(value: any, min: number): boolean {
  * @param max 最大长度
  */
 export function validateMaxLength(value: any, max: number): boolean {
-  if (isString(value)) {
-    return value.length <= max;
-  }
-  
-  if (isArray(value)) {
-    return value.length <= max;
-  }
-  
-  if (isObject(value)) {
-    return Object.keys(value).length <= max;
-  }
-  
-  if (isMap(value)) {
-    return value.size <= max;
-  }
-  
-  if (isSet(value)) {
-    return value.size <= max;
-  }
-  
-  return false;
+    if (isString(value)) {
+        return value.length <= max;
+    }
+
+    if (isArray(value)) {
+        return value.length <= max;
+    }
+
+    if (isMap(value)) {
+        return value.size <= max;
+    }
+
+    if (isSet(value)) {
+        return value.size <= max;
+    }
+
+    if (isObject(value)) {
+        return Object.keys(value).length <= max;
+    }
+
+    return false;
 }
 
 /**
@@ -70,7 +71,7 @@ export function validateMaxLength(value: any, max: number): boolean {
  * @param max 最大长度
  */
 export function validateLengthRange(value: any, min: number, max: number): boolean {
-  return validateMinLength(value, min) && validateMaxLength(value, max);
+    return validateMinLength(value, min) && validateMaxLength(value, max);
 }
 
 /**
@@ -79,7 +80,7 @@ export function validateLengthRange(value: any, min: number, max: number): boole
  * @param min 最小值
  */
 export function validateMin(value: any, min: number): boolean {
-  return typeof value === 'number' && value >= min;
+    return typeof value === 'number' && value >= min;
 }
 
 /**
@@ -88,7 +89,7 @@ export function validateMin(value: any, min: number): boolean {
  * @param max 最大值
  */
 export function validateMax(value: any, max: number): boolean {
-  return typeof value === 'number' && value <= max;
+    return typeof value === 'number' && value <= max;
 }
 
 /**
@@ -98,7 +99,7 @@ export function validateMax(value: any, max: number): boolean {
  * @param max 最大值
  */
 export function validateRange(value: any, min: number, max: number): boolean {
-  return typeof value === 'number' && value >= min && value <= max;
+    return typeof value === 'number' && value >= min && value <= max;
 }
 
 /**
@@ -106,20 +107,23 @@ export function validateRange(value: any, min: number, max: number): boolean {
  * @param value 要验证的值
  * @param collection 集合（数组、Set 或对象的值数组）
  */
-export function validateIn(value: any, collection: any[] | Set<any> | Record<string, any>): boolean {
-  if (isArray(collection)) {
-    return collection.includes(value);
-  }
-  
-  if (isSet(collection)) {
-    return collection.has(value);
-  }
-  
-  if (isObject(collection)) {
-    return Object.values(collection).includes(value);
-  }
-  
-  return false;
+export function validateIn(
+    value: any,
+    collection: any[] | Set<any> | Record<string, any>
+): boolean {
+    if (isArray(collection)) {
+        return collection.includes(value);
+    }
+
+    if (isSet(collection)) {
+        return collection.has(value);
+    }
+
+    if (isObject(collection)) {
+        return Object.values(collection).includes(value);
+    }
+
+    return false;
 }
 
 /**
@@ -127,8 +131,11 @@ export function validateIn(value: any, collection: any[] | Set<any> | Record<str
  * @param value 要验证的值
  * @param collection 集合
  */
-export function validateNotIn(value: any, collection: any[] | Set<any> | Record<string, any>): boolean {
-  return !validateIn(value, collection);
+export function validateNotIn(
+    value: any,
+    collection: any[] | Set<any> | Record<string, any>
+): boolean {
+    return !validateIn(value, collection);
 }
 
 /**
@@ -137,7 +144,7 @@ export function validateNotIn(value: any, collection: any[] | Set<any> | Record<
  * @param validators 验证器数组
  */
 export function validateAllConstraints(value: any, validators: ((v: any) => boolean)[]): boolean {
-  return validators.every(validator => validator(value));
+    return validators.every(validator => validator(value));
 }
 
 /**
@@ -146,7 +153,7 @@ export function validateAllConstraints(value: any, validators: ((v: any) => bool
  * @param validators 验证器数组
  */
 export function validateAnyConstraints(value: any, validators: ((v: any) => boolean)[]): boolean {
-  return validators.some(validator => validator(value));
+    return validators.some(validator => validator(value));
 }
 
 /**
@@ -155,7 +162,7 @@ export function validateAnyConstraints(value: any, validators: ((v: any) => bool
  * @param validator 验证器
  */
 export function validateNotConstraints(value: any, validator: (v: any) => boolean): boolean {
-  return !validator(value);
+    return !validator(value);
 }
 
 /**
@@ -164,7 +171,7 @@ export function validateNotConstraints(value: any, validator: (v: any) => boolea
  * @param other 要比较的值
  */
 export function validateEqualTo(value: any, other: any): boolean {
-  return value === other;
+    return value === other;
 }
 
 /**
@@ -173,7 +180,7 @@ export function validateEqualTo(value: any, other: any): boolean {
  * @param other 要比较的值
  */
 export function validateNotEqualTo(value: any, other: any): boolean {
-  return value !== other;
+    return value !== other;
 }
 
 /**
@@ -182,7 +189,7 @@ export function validateNotEqualTo(value: any, other: any): boolean {
  * @param other 要比较的值
  */
 export function validateStrictEqualTo(value: any, other: any): boolean {
-  return value === other;
+    return value === other;
 }
 
 /**
@@ -191,7 +198,7 @@ export function validateStrictEqualTo(value: any, other: any): boolean {
  * @param other 要比较的值
  */
 export function validateStrictNotEqualTo(value: any, other: any): boolean {
-  return value !== other;
+    return value !== other;
 }
 
 /**
@@ -200,7 +207,7 @@ export function validateStrictNotEqualTo(value: any, other: any): boolean {
  * @param other 要比较的值
  */
 export function validateGreaterThan(value: any, other: number): boolean {
-  return typeof value === 'number' && value > other;
+    return typeof value === 'number' && value > other;
 }
 
 /**
@@ -209,7 +216,7 @@ export function validateGreaterThan(value: any, other: number): boolean {
  * @param other 要比较的值
  */
 export function validateGreaterThanOrEqualTo(value: any, other: number): boolean {
-  return typeof value === 'number' && value >= other;
+    return typeof value === 'number' && value >= other;
 }
 
 /**
@@ -218,7 +225,7 @@ export function validateGreaterThanOrEqualTo(value: any, other: number): boolean
  * @param other 要比较的值
  */
 export function validateLessThan(value: any, other: number): boolean {
-  return typeof value === 'number' && value < other;
+    return typeof value === 'number' && value < other;
 }
 
 /**
@@ -227,7 +234,7 @@ export function validateLessThan(value: any, other: number): boolean {
  * @param other 要比较的值
  */
 export function validateLessThanOrEqualTo(value: any, other: number): boolean {
-  return typeof value === 'number' && value <= other;
+    return typeof value === 'number' && value <= other;
 }
 
 /**
@@ -237,7 +244,7 @@ export function validateLessThanOrEqualTo(value: any, other: number): boolean {
  * @param upper 上界
  */
 export function validateBetween(value: any, lower: number, upper: number): boolean {
-  return validateRange(value, lower, upper);
+    return validateRange(value, lower, upper);
 }
 
 /**
@@ -247,7 +254,7 @@ export function validateBetween(value: any, lower: number, upper: number): boole
  * @param upper 上界
  */
 export function validateBetweenExclusive(value: any, lower: number, upper: number): boolean {
-  return typeof value === 'number' && value > lower && value < upper;
+    return typeof value === 'number' && value > lower && value < upper;
 }
 
 /**
@@ -255,31 +262,32 @@ export function validateBetweenExclusive(value: any, lower: number, upper: numbe
  * @param value 要验证的值
  */
 export function validateEmpty(value: any): boolean {
-  if (value === null || value === undefined) {
-    return true;
-  }
-  
-  if (isString(value)) {
-    return value.trim().length === 0;
-  }
-  
-  if (isArray(value)) {
-    return value.length === 0;
-  }
-  
-  if (isObject(value)) {
-    return Object.keys(value).length === 0;
-  }
-  
-  if (isMap(value)) {
-    return value.size === 0;
-  }
-  
-  if (isSet(value)) {
-    return value.size === 0;
-  }
-  
-  return false;
+    if (value === null || value === undefined) {
+        return true;
+    }
+
+    if (isString(value)) {
+        return value.trim().length === 0;
+    }
+
+    if (isArray(value)) {
+        return value.length === 0;
+    }
+
+    if (isMap(value)) {
+        return value.size === 0;
+    }
+
+    if (isSet(value)) {
+        return value.size === 0;
+    }
+
+    if (isObject(value)) {
+        return Object.keys(value).length === 0;
+    }
+
+
+    return false;
 }
 
 /**
@@ -287,7 +295,7 @@ export function validateEmpty(value: any): boolean {
  * @param value 要验证的值
  */
 export function validateNotEmpty(value: any): boolean {
-  return !validateEmpty(value);
+    return !validateEmpty(value);
 }
 
 /**
@@ -295,7 +303,7 @@ export function validateNotEmpty(value: any): boolean {
  * 与 primitives.ts 中的 validateTruthy 功能相同，但用于约束验证上下文
  */
 export function validateTruthyConstraint(value: any): boolean {
-  return !!value;
+    return !!value;
 }
 
 /**
@@ -303,7 +311,7 @@ export function validateTruthyConstraint(value: any): boolean {
  * 与 primitives.ts 中的 validateFalsy 功能相同，但用于约束验证上下文
  */
 export function validateFalsyConstraint(value: any): boolean {
-  return !value;
+    return !value;
 }
 
 /**
@@ -312,7 +320,7 @@ export function validateFalsyConstraint(value: any): boolean {
  * @param max 最大值
  */
 export function createRangeValidator(min: number, max: number) {
-  return (value: any): boolean => validateRange(value, min, max);
+    return (value: any): boolean => validateRange(value, min, max);
 }
 
 /**
@@ -321,7 +329,7 @@ export function createRangeValidator(min: number, max: number) {
  * @param max 最大长度
  */
 export function createLengthValidator(min: number, max: number) {
-  return (value: any): boolean => validateLengthRange(value, min, max);
+    return (value: any): boolean => validateLengthRange(value, min, max);
 }
 
 /**
@@ -329,5 +337,5 @@ export function createLengthValidator(min: number, max: number) {
  * @param collection 集合
  */
 export function createInValidator(collection: any[] | Set<any>) {
-  return (value: any): boolean => validateIn(value, collection);
+    return (value: any): boolean => validateIn(value, collection);
 }

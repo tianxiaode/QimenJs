@@ -15,6 +15,11 @@ export function isArray(value: any): value is any[] {
  * 检查是否为类数组对象（有 length 属性）
  */
 export function isArrayLike(value: any): value is ArrayLike<any> {
+  // 特殊处理字符串 - 它们是类数组的
+  if (typeof value === 'string') {
+    return true;
+  }
+      
   return (
     value != null &&
     typeof value === 'object' &&
