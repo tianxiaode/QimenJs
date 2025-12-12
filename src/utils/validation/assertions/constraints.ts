@@ -1,3 +1,4 @@
+// constraints.ts
 import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import { getLength, isValidCollection, getCollectionText } from './error-context';
@@ -39,9 +40,10 @@ import {
 export function assertMinLength(
   value: any,
   min: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMinLength(value, min)) {
     const length = getLength(value);
@@ -60,9 +62,10 @@ export function assertMinLength(
 export function assertMaxLength(
   value: any,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMaxLength(value, max)) {
     const length = getLength(value);
@@ -82,9 +85,10 @@ export function assertLengthRange(
   value: any,
   min: number,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateLengthRange(value, min, max)) {
     const length = getLength(value);
@@ -123,9 +127,10 @@ export function assertLengthRange(
 export function assertMin(
   value: any,
   min: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMin(value, min)) {
     if (typeof value !== 'number') {
@@ -146,9 +151,10 @@ export function assertMin(
 export function assertMax(
   value: any,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMax(value, max)) {
     if (typeof value !== 'number') {
@@ -170,9 +176,10 @@ export function assertRange(
   value: any,
   min: number,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateRange(value, min, max)) {
     if (typeof value !== 'number') {
@@ -208,9 +215,10 @@ export function assertRange(
 export function assertIn(
   value: any,
   collection: any[] | Set<any> | Record<string, any>,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateIn(value, collection)) {
     if (!isValidCollection(collection)) {
@@ -233,9 +241,10 @@ export function assertIn(
 export function assertNotIn(
   value: any,
   collection: any[] | Set<any> | Record<string, any>,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotIn(value, collection)) {
     if (!isValidCollection(collection)) {
@@ -258,9 +267,10 @@ export function assertNotIn(
 export function assertAllConstraints(
   value: any,
   validators: ((v: any) => boolean)[],
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateAllConstraints(value, validators)) {
     // 找到第一个失败的验证器
@@ -285,9 +295,10 @@ export function assertAllConstraints(
 export function assertAnyConstraints(
   value: any,
   validators: ((v: any) => boolean)[],
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateAnyConstraints(value, validators)) {
     ctx.throwError(ValidationErrorCode.ANY_VALIDATION_FAILED, { value });
@@ -301,9 +312,10 @@ export function assertAnyConstraints(
 export function assertNotConstraints(
   value: any,
   validator: (v: any) => boolean,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotConstraints(value, validator)) {
     ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, { value });
@@ -317,9 +329,10 @@ export function assertNotConstraints(
 export function assertEqualTo<T>(
   value: any,
   other: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEqualTo(value, other)) {
     ctx.throwError(ValidationErrorCode.NOT_EQUAL, { 
@@ -336,9 +349,10 @@ export function assertEqualTo<T>(
 export function assertNotEqualTo<T>(
   value: any,
   other: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotEqualTo(value, other)) {
     ctx.throwError(ValidationErrorCode.EQUAL, { 
@@ -355,9 +369,10 @@ export function assertNotEqualTo<T>(
 export function assertStrictEqualTo<T>(
   value: any,
   other: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is T {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateStrictEqualTo(value, other)) {
     ctx.throwError(ValidationErrorCode.NOT_EQUAL, { 
@@ -374,9 +389,10 @@ export function assertStrictEqualTo<T>(
 export function assertStrictNotEqualTo<T>(
   value: any,
   other: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateStrictNotEqualTo(value, other)) {
     ctx.throwError(ValidationErrorCode.EQUAL, { 
@@ -393,9 +409,10 @@ export function assertStrictNotEqualTo<T>(
 export function assertGreaterThan(
   value: any,
   other: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateGreaterThan(value, other)) {
     if (typeof value !== 'number') {
@@ -416,9 +433,10 @@ export function assertGreaterThan(
 export function assertGreaterThanOrEqualTo(
   value: any,
   other: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateGreaterThanOrEqualTo(value, other)) {
     if (typeof value !== 'number') {
@@ -439,9 +457,10 @@ export function assertGreaterThanOrEqualTo(
 export function assertLessThan(
   value: any,
   other: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateLessThan(value, other)) {
     if (typeof value !== 'number') {
@@ -462,9 +481,10 @@ export function assertLessThan(
 export function assertLessThanOrEqualTo(
   value: any,
   other: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateLessThanOrEqualTo(value, other)) {
     if (typeof value !== 'number') {
@@ -486,9 +506,10 @@ export function assertBetween(
   value: any,
   lower: number,
   upper: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBetween(value, lower, upper)) {
     if (typeof value !== 'number') {
@@ -525,9 +546,10 @@ export function assertBetweenExclusive(
   value: any,
   lower: number,
   upper: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBetweenExclusive(value, lower, upper)) {
     if (typeof value !== 'number') {
@@ -562,9 +584,10 @@ export function assertBetweenExclusive(
  */
 export function assertEmpty(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmpty(value)) {
     ctx.throwError(ValidationErrorCode.NOT_EMPTY, { value });
@@ -577,9 +600,10 @@ export function assertEmpty(
  */
 export function assertNotEmpty(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotEmpty(value)) {
     ctx.throwError(ValidationErrorCode.EMPTY, { value });
@@ -592,9 +616,10 @@ export function assertNotEmpty(
  */
 export function assertTruthyConstraint(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateTruthyConstraint(value)) {
     ctx.throwError(ValidationErrorCode.NOT_TRUTHY, { value });
@@ -607,9 +632,10 @@ export function assertTruthyConstraint(
  */
 export function assertFalsyConstraint(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFalsyConstraint(value)) {
     ctx.throwError(ValidationErrorCode.NOT_FALSY, { value });
@@ -622,9 +648,10 @@ export function assertFalsyConstraint(
 export function createRangeAssert(
   min: number,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is number => {
     if (!validateRange(value, min, max)) {
@@ -653,9 +680,10 @@ export function createRangeAssert(
 export function createLengthAssert(
   min: number,
   max: number,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): void => {
     if (!validateLengthRange(value, min, max)) {
@@ -692,9 +720,10 @@ export function createLengthAssert(
  */
 export function createInAssert(
   collection: any[] | Set<any>,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): void => {
     if (!validateIn(value, collection)) {

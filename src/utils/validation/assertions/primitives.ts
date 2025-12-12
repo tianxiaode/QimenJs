@@ -1,3 +1,4 @@
+// primitives.ts
 import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import {
@@ -36,22 +37,27 @@ export function assertString(
     trim?: boolean;
     allowedValues?: string[];
     disallowedValues?: string[];
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   // 复用现有的验证函数
-  if (!validateString(value, options)) {
+  if (!validateString(value, validationOptions)) {
     // 根据失败原因抛出适当的错误
     if (typeof value !== 'string') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
     }
     
-    const { nonEmpty = false, minLength, maxLength, allowedValues, disallowedValues } = options;
+    const { nonEmpty = false, minLength, maxLength, allowedValues, disallowedValues } = validationOptions;
     let validatedValue = value;
     
-    if (options.trim) {
+    if (validationOptions.trim) {
       validatedValue = validatedValue.trim();
     }
     
@@ -108,19 +114,24 @@ export function assertNumber(
     nonNegative?: boolean;
     finite?: boolean;
     allowedValues?: number[];
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateNumber(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateNumber(value, validationOptions)) {
     if (typeof value !== 'number') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
     }
     
     const { 
       min, max, integer, positive, negative, nonNegative, finite = true, allowedValues 
-    } = options;
+    } = validationOptions;
     
     // 检查具体失败原因
     if (finite && !Number.isFinite(value)) {
@@ -168,9 +179,10 @@ export function assertNumber(
  */
 export function assertBoolean(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is boolean {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBoolean(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_BOOLEAN);
@@ -183,9 +195,10 @@ export function assertBoolean(
  */
 export function assertFunction(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Function {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFunction(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_FUNCTION);
@@ -198,9 +211,10 @@ export function assertFunction(
  */
 export function assertSymbol(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is symbol {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateSymbol(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_SYMBOL);
@@ -213,9 +227,10 @@ export function assertSymbol(
  */
 export function assertBigInt(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is bigint {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBigInt(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_BIGINT);
@@ -228,9 +243,10 @@ export function assertBigInt(
  */
 export function assertPrimitive(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePrimitive(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_PRIMITIVE);
@@ -243,9 +259,10 @@ export function assertPrimitive(
  */
 export function assertTruthy(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateTruthy(value)) {
     ctx.throwError(ValidationErrorCode.NOT_TRUTHY);
@@ -258,9 +275,10 @@ export function assertTruthy(
  */
 export function assertFalsy(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFalsy(value)) {
     ctx.throwError(ValidationErrorCode.NOT_FALSY);
@@ -279,12 +297,17 @@ export function assertInteger(
     positive?: boolean;
     negative?: boolean;
     nonNegative?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateInteger(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateInteger(value, validationOptions)) {
     if (typeof value !== 'number') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
     }
@@ -293,7 +316,7 @@ export function assertInteger(
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'integer' });
     }
     
-    const { min, max, positive, negative, nonNegative } = options;
+    const { min, max, positive, negative, nonNegative } = validationOptions;
     
     // 检查具体失败原因
     if (positive && value <= 0) {
@@ -329,12 +352,17 @@ export function assertPositiveInteger(
   options: {
     min?: number;
     max?: number;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validatePositiveInteger(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validatePositiveInteger(value, validationOptions)) {
     if (typeof value !== 'number') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
     }
@@ -347,7 +375,7 @@ export function assertPositiveInteger(
       ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { min: 0, actual: value });
     }
     
-    const { min, max } = options;
+    const { min, max } = validationOptions;
     
     if (min !== undefined && value < min) {
       ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
@@ -370,12 +398,17 @@ export function assertNonNegativeInteger(
   options: {
     min?: number;
     max?: number;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateNonNegativeInteger(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateNonNegativeInteger(value, validationOptions)) {
     if (typeof value !== 'number') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
     }
@@ -388,7 +421,7 @@ export function assertNonNegativeInteger(
       ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min: 0, actual: value });
     }
     
-    const { min, max } = options;
+    const { min, max } = validationOptions;
     
     if (min !== undefined && value < min) {
       ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
@@ -411,12 +444,17 @@ export function assertFiniteNumber(
   options: {
     min?: number;
     max?: number;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateFiniteNumber(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateFiniteNumber(value, validationOptions)) {
     if (typeof value !== 'number') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
     }
@@ -425,7 +463,7 @@ export function assertFiniteNumber(
       ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'finite number' });
     }
     
-    const { min, max } = options;
+    const { min, max } = validationOptions;
     
     if (min !== undefined && value < min) {
       ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
@@ -445,9 +483,10 @@ export function assertFiniteNumber(
  */
 export function assertNaN(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is number {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNaN(value)) {
     ctx.throwError(ValidationErrorCode.NOT_EQUAL, { expected: 'NaN', actual: value });
@@ -461,9 +500,10 @@ export function assertNaN(
 export function assertEqual<T>(
   value: any,
   expected: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is T {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEqual(value, expected)) {
     ctx.throwError(ValidationErrorCode.NOT_EQUAL, { expected, actual: value } as any);
@@ -477,9 +517,10 @@ export function assertEqual<T>(
 export function assertNotEqual<T>(
   value: any,
   notExpected: T,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotEqual(value, notExpected)) {
     ctx.throwError(ValidationErrorCode.EQUAL, { expected: notExpected, actual: value } as any);
@@ -492,9 +533,10 @@ export function assertNotEqual<T>(
  */
 export function assertNil(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is null | undefined {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNil(value)) {
     ctx.throwError(ValidationErrorCode.NOT_NULL_OR_UNDEFINED, { actual: value });
@@ -507,9 +549,10 @@ export function assertNil(
  */
 export function assertNotNil<T>(
   value: T | null | undefined,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is T {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotNil(value)) {
     ctx.throwError(ValidationErrorCode.NULL_OR_UNDEFINED, { actual: value });
@@ -522,9 +565,10 @@ export function assertNotNil<T>(
 export function createAssert<T>(
   validator: (value: any) => value is T,
   errorCode: ValidationErrorCode = ValidationErrorCode.NOT_SATISFY_CONDITION,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => asserts value is T {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is T => {
     if (!validator(value)) {
@@ -540,9 +584,10 @@ export function createConditionalAssert<T>(
   validator: (value: any) => value is T,
   condition: (value: T) => boolean,
   errorCode: ValidationErrorCode = ValidationErrorCode.NOT_SATISFY_CONDITION,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => asserts value is T {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is T => {
     if (!validator(value)) {
@@ -561,9 +606,10 @@ export function createConditionalAssert<T>(
  */
 export function assertAll(
   assertions: Array<() => void>,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   for (const assertion of assertions) {
     try {
@@ -581,8 +627,9 @@ export function assertAll(
 export function assertOptional<T>(
   value: T | null | undefined,
   assertion: (value: T) => void,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
+  const { paramName, functionName } = options;
   if (value !== null && value !== undefined) {
     assertion(value);
   }

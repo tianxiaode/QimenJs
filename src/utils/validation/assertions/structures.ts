@@ -1,3 +1,4 @@
+// structures.ts
 import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import {
@@ -38,10 +39,15 @@ export function assertArray<T = any>(
     itemValidator?: (item: any, index: number) => boolean;
     allowEmptyItems?: boolean;
     unique?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is T[] {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   // 先检查是否是数组
   if (!Array.isArray(value)) {
@@ -49,14 +55,14 @@ export function assertArray<T = any>(
   }
   
   // 复用验证函数
-  if (!validateArray(value, options)) {
+  if (!validateArray(value, validationOptions)) {
     const {
       nonEmpty = false,
       minLength,
       maxLength,
       allowEmptyItems = true,
       unique = false
-    } = options;
+    } = validationOptions;
     
     // 检查非空
     if (nonEmpty && value.length === 0) {
@@ -119,9 +125,9 @@ export function assertArray<T = any>(
     }
     
     // 检查项目验证器
-    if (options.itemValidator) {
+    if (validationOptions.itemValidator) {
       for (let i = 0; i < value.length; i++) {
-        if (!options.itemValidator(value[i], i)) {
+        if (!validationOptions.itemValidator(value[i], i)) {
           ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
             index: i,
             value: value[i]
@@ -141,9 +147,10 @@ export function assertArray<T = any>(
  */
 export function assertArrayLike(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is ArrayLike<any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateArrayLike(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY_LIKE);
@@ -164,10 +171,15 @@ export function assertObject(
     minKeys?: number;
     maxKeys?: number;
     valueValidator?: (key: string, value: any) => boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is Record<string, any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   // 先检查是否是对象
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -175,7 +187,7 @@ export function assertObject(
   }
   
   // 复用验证函数
-  if (!validateObject(value, options)) {
+  if (!validateObject(value, validationOptions)) {
     const {
       nonEmpty = false,
       requiredKeys,
@@ -183,7 +195,7 @@ export function assertObject(
       disallowedKeys,
       minKeys,
       maxKeys
-    } = options;
+    } = validationOptions;
     
     const keys = Object.keys(value);
     
@@ -245,9 +257,9 @@ export function assertObject(
     }
     
     // 检查值验证器
-    if (options.valueValidator) {
+    if (validationOptions.valueValidator) {
       for (const key of keys) {
-        if (!options.valueValidator(key, value[key])) {
+        if (!validationOptions.valueValidator(key, value[key])) {
           ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
             key,
             keyValue: value[key]
@@ -267,9 +279,10 @@ export function assertObject(
  */
 export function assertPlainObject(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Record<string, any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePlainObject(value)) {
     // 检查是否是对象
@@ -293,18 +306,23 @@ export function assertDate(
     max?: Date;
     past?: boolean;
     future?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is Date {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateDate(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateDate(value, validationOptions)) {
     // 检查是否是日期对象
     if (!(value instanceof Date)) {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_DATE);
     }
     
-    const { min, max, past = false, future = false } = options;
+    const { min, max, past = false, future = false } = validationOptions;
     const timestamp = value.getTime();
     
     // 检查最小日期
@@ -350,9 +368,10 @@ export function assertDate(
  */
 export function assertRegExp(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is RegExp {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateRegExp(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_REGEXP);
@@ -371,12 +390,17 @@ export function assertMap<K = any, V = any>(
     maxSize?: number;
     keyValidator?: (key: K) => boolean;
     valueValidator?: (value: V) => boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is Map<K, V> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateMap(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateMap(value, validationOptions)) {
     // 检查是否是Map
     if (!(value instanceof Map)) {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
@@ -386,7 +410,7 @@ export function assertMap<K = any, V = any>(
       nonEmpty = false,
       minSize,
       maxSize
-    } = options;
+    } = validationOptions;
     
     const size = value.size;
     
@@ -414,16 +438,16 @@ export function assertMap<K = any, V = any>(
     }
     
     // 检查键和值验证器
-    if (options.keyValidator || options.valueValidator) {
+    if (validationOptions.keyValidator || validationOptions.valueValidator) {
       for (const [key, val] of value) {
-        if (options.keyValidator && !options.keyValidator(key as K)) {
+        if (validationOptions.keyValidator && !validationOptions.keyValidator(key as K)) {
           ctx.throwError(ValidationErrorCode.INVALID_KEY, { 
             key,
             keyValue: key
           });
         }
         
-        if (options.valueValidator && !options.valueValidator(val as V)) {
+        if (validationOptions.valueValidator && !validationOptions.valueValidator(val as V)) {
           ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
             key,
             keyValue: val
@@ -448,12 +472,17 @@ export function assertSet<T = any>(
     minSize?: number;
     maxSize?: number;
     itemValidator?: (item: T) => boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is Set<T> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateSet(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateSet(value, validationOptions)) {
     // 检查是否是Set
     if (!(value instanceof Set)) {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
@@ -463,7 +492,7 @@ export function assertSet<T = any>(
       nonEmpty = false,
       minSize,
       maxSize
-    } = options;
+    } = validationOptions;
     
     const size = value.size;
     
@@ -491,9 +520,9 @@ export function assertSet<T = any>(
     }
     
     // 检查项目验证器
-    if (options.itemValidator) {
+    if (validationOptions.itemValidator) {
       for (const item of value) {
-        if (!options.itemValidator(item as T)) {
+        if (!validationOptions.itemValidator(item as T)) {
           ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
             value: item
           });
@@ -512,9 +541,10 @@ export function assertSet<T = any>(
  */
 export function assertPromise(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Promise<any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePromise(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_PROMISE);
@@ -527,9 +557,10 @@ export function assertPromise(
  */
 export function assertError(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Error {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateError(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_ERROR);
@@ -542,9 +573,10 @@ export function assertError(
  */
 export function assertTypedArray(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateTypedArray(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_TYPED_ARRAY);
@@ -557,9 +589,10 @@ export function assertTypedArray(
  */
 export function assertBuffer(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Buffer {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBuffer(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_BUFFER);
@@ -572,9 +605,10 @@ export function assertBuffer(
  */
 export function assertFormData(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is FormData {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFormData(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_FORM_DATA);
@@ -587,9 +621,10 @@ export function assertFormData(
  */
 export function assertURLSearchParams(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is URLSearchParams {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateURLSearchParams(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_URL_SEARCH_PARAMS);
@@ -602,9 +637,10 @@ export function assertURLSearchParams(
  */
 export function assertFile(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is File {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFile(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_FILE);
@@ -617,9 +653,10 @@ export function assertFile(
  */
 export function assertBlob(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Blob {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBlob(value)) {
     ctx.throwError(ValidationErrorCode.TYPE_NOT_BLOB);
@@ -632,9 +669,10 @@ export function assertBlob(
  */
 export function assertEmptyArray(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is [] {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyArray(value)) {
     // 检查是否是数组
@@ -653,9 +691,10 @@ export function assertEmptyArray(
  */
 export function assertEmptyObject(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is {} {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyObject(value)) {
     // 检查是否是对象
@@ -674,9 +713,10 @@ export function assertEmptyObject(
  */
 export function assertEmptyMap(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Map<any, any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyMap(value)) {
     // 检查是否是Map
@@ -695,9 +735,10 @@ export function assertEmptyMap(
  */
 export function assertEmptySet(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is Set<any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptySet(value)) {
     // 检查是否是Set
@@ -722,9 +763,10 @@ export function assertNested(
     keySchema?: any;
     valueSchema?: any;
   },
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNested(value, schema)) {
     switch (schema.type) {
@@ -768,13 +810,18 @@ export function createArrayAssert<T>(
     itemValidator?: (item: any, index: number) => boolean;
     allowEmptyItems?: boolean;
     unique?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): (value: any) => asserts value is T[] {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is T[] => {
-    if (!validateArray(value, options)) {
+    if (!validateArray(value, validationOptions)) {
       if (!Array.isArray(value)) {
         ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
       }
@@ -786,7 +833,7 @@ export function createArrayAssert<T>(
         maxLength,
         allowEmptyItems = true,
         unique = false
-      } = options;
+      } = validationOptions;
       
       if (nonEmpty && value.length === 0) {
         ctx.throwError(ValidationErrorCode.NON_EMPTY_ARRAY);
@@ -843,9 +890,9 @@ export function createArrayAssert<T>(
         }
       }
       
-      if (options.itemValidator) {
+      if (validationOptions.itemValidator) {
         for (let i = 0; i < value.length; i++) {
-          if (!options.itemValidator(value[i], i)) {
+          if (!validationOptions.itemValidator(value[i], i)) {
             ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
               index: i,
               value: value[i]
@@ -871,13 +918,18 @@ export function createObjectAssert(
     minKeys?: number;
     maxKeys?: number;
     valueValidator?: (key: string, value: any) => boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): (value: any) => asserts value is Record<string, any> {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is Record<string, any> => {
-    if (!validateObject(value, options)) {
+    if (!validateObject(value, validationOptions)) {
       if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
       }
@@ -890,7 +942,7 @@ export function createObjectAssert(
         disallowedKeys,
         minKeys,
         maxKeys
-      } = options;
+      } = validationOptions;
       
       const keys = Object.keys(value);
       
@@ -945,9 +997,9 @@ export function createObjectAssert(
         }
       }
       
-      if (options.valueValidator) {
+      if (validationOptions.valueValidator) {
         for (const key of keys) {
-          if (!options.valueValidator(key, value[key])) {
+          if (!validationOptions.valueValidator(key, value[key])) {
             ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
               key,
               keyValue: value[key]
@@ -980,9 +1032,10 @@ export function deepAssert(
   value: any,
   validator: (value: any) => boolean,
   errorCode: ValidationErrorCode = ValidationErrorCode.NOT_SATISFY_CONDITION,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): void {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   const validateRecursive = (val: any, path: string[] = []): void => {
     if (Array.isArray(val)) {

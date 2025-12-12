@@ -1,17 +1,12 @@
 /**
  * 🎯 基础错误类
- * 提供标准化的错误接口和扩展能力
+ * 提供标准化的错误接口
  */
 export abstract class BaseError extends Error {
   /**
-   * 错误代码（可选）
+   * 错误代码
    */
-  public readonly code?: string | number;
-  
-  /**
-   * 原始错误（如果有）
-   */
-  public readonly originalError?: Error;
+  public readonly code: string | number;
   
   /**
    * 错误发生的时间戳
@@ -24,20 +19,15 @@ export abstract class BaseError extends Error {
   public readonly context?: Record<string, any>;
   
   constructor(
-    message: string,
-    options: {
-      name?: string;
-      code?: string | number;
-      originalError?: Error;
-      context?: Record<string, any>;
-    } = {}
+    message: string,                    // 错误消息
+    code: string | number,              // 错误代码
+    context?: Record<string, any>       // 上下文信息（可选）
   ) {
     super(message);
     
-    this.name = options.name || this.constructor.name;
-    this.code = options.code;
-    this.originalError = options.originalError;
-    this.context = options.context;
+    this.name = this.constructor.name;
+    this.code = code;
+    this.context = context;
     this.timestamp = new Date();
     
     // 保持正确的原型链
@@ -59,8 +49,7 @@ export abstract class BaseError extends Error {
       code: this.code,
       stack: this.stack,
       timestamp: this.timestamp.toISOString(),
-      context: this.context,
-      originalError: this.originalError
+      context: this.context
     };
   }
   

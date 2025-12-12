@@ -1,23 +1,14 @@
-import { BaseError } from '@/utils/error/BaseError';
+import { BaseError } from '@/utils';
 
 // 创建一个具体的错误类用于测试 BaseError 的功能
 class TestError extends BaseError {
     constructor(
         message: string,
-        options: {
-            name?: string;
-            code?: string | number;
-            originalError?: Error;
-            context?: Record<string, any>;
-        } = {}
+        code: string | number = 'TEST_ERROR',
+        context?: Record<string, any>
     ) {
-        // 提供默认名称
-        super(message, {
-            name: options.name || 'TestError',
-            code: options.code,
-            originalError: options.originalError,
-            context: options.context,
-        });
+        super(message, code, context);
+        this.name = 'TestError';
     }
 }
 
@@ -25,11 +16,9 @@ class TestError extends BaseError {
 class CustomTestError extends TestError {
     customProperty = 'custom';
 
-    constructor(message: string, extraData?: any) {
-        super(message, {
-            name: 'CustomTestError',
-            context: { extraData },
-        });
+    constructor(message: string, context?: Record<string, any>) {
+        super(message, 'CUSTOM_TEST_ERROR', context);
+        this.name = 'CustomTestError';
     }
 }
 
@@ -56,11 +45,12 @@ describe('BaseError (抽象类测试)', () => {
 
     describe('基本功能', () => {
         test('应该能够创建继承类实例', () => {
-            const error = new TestError('测试错误');
+            const error = new TestError('测试错误', 'TEST_001');
 
             expect(error).toBeInstanceOf(TestError);
             expect(error.name).toBe('TestError');
             expect(error.message).toBe('测试错误');
+            expect(error.code).toBe('TEST_001');
         });
 
         test('应该继承 Error 的正确原型链', () => {
@@ -82,73 +72,28 @@ describe('BaseError (抽象类测试)', () => {
         });
     });
 
-    describe('构造函数选项', () => {
-        test('应该支持自定义错误名称', () => {
-            const error = new TestError('自定义名称测试', {
-                name: 'MyCustomError',
-            });
-
-            expect(error.name).toBe('MyCustomError');
-            expect(error.message).toBe('自定义名称测试');
-        });
-
+    describe('构造函数参数', () => {
         test('应该支持错误代码', () => {
-            const error = new TestError('错误代码测试', {
-                code: 'ERR_001',
-            });
+            const error = new TestError('错误代码测试', 'ERR_001');
 
             expect(error.code).toBe('ERR_001');
         });
 
         test('应该支持字符串和数字错误代码', () => {
-            const stringCodeError = new TestError('字符串代码', {
-                code: 'INVALID_INPUT',
-            });
-
-            const numberCodeError = new TestError('数字代码', {
-                code: 400,
-            });
+            const stringCodeError = new TestError('字符串代码', 'INVALID_INPUT');
+            const numberCodeError = new TestError('数字代码', 400);
 
             expect(stringCodeError.code).toBe('INVALID_INPUT');
             expect(numberCodeError.code).toBe(400);
         });
 
-        test('应该支持原始错误', () => {
-            const originalError = new Error('原始错误');
-            const wrappedError = new TestError('包装错误', {
-                originalError,
-            });
-
-            expect(wrappedError.originalError).toBe(originalError);
-            expect(wrappedError.originalError?.message).toBe('原始错误');
-        });
-    });
-
-    describe('上下文数据', () => {
-        test('应该支持简单上下文对象', () => {
+        test('应该支持上下文数据', () => {
             const context = { field: 'username', value: 'test' };
-            const error = new TestError('上下文测试', {
-                context,
-            });
+            const error = new TestError('上下文测试', 'CONTEXT_TEST', context);
 
             expect(error.context).toBeDefined();
             expect(error.context).toEqual(context);
             expect(error.context?.field).toBe('username');
-        });
-
-        test('应该合并多个上下文属性', () => {
-            const error = new TestError('多属性测试', {
-                name: 'ValidationError',
-                code: 'VALIDATION_001',
-                context: { userId: 123, action: 'login' },
-            });
-
-            expect(error.name).toBe('ValidationError');
-            expect(error.code).toBe('VALIDATION_001');
-            expect(error.context).toEqual({
-                userId: 123,
-                action: 'login',
-            });
         });
 
         test('应该包含时间戳', () => {
@@ -164,13 +109,7 @@ describe('BaseError (抽象类测试)', () => {
 
     describe('序列化方法', () => {
         test('toJSON() 应该返回正确的JSON对象', () => {
-            const originalError = new Error('内部错误');
-            const error = new TestError('JSON测试', {
-                name: 'TestError',
-                code: 500,
-                originalError,
-                context: { key: 'value' },
-            });
+            const error = new TestError('JSON测试', 500, { key: 'value' });
 
             const json = error.toJSON();
 
@@ -181,7 +120,6 @@ describe('BaseError (抽象类测试)', () => {
             expect(json.timestamp).toBeDefined();
             expect(typeof json.timestamp).toBe('string');
             expect(json.context).toEqual({ key: 'value' });
-            expect(json.originalError).toBeDefined();
             expect(json.stack).toBeDefined();
         });
 
@@ -189,17 +127,14 @@ describe('BaseError (抽象类测试)', () => {
             const error = new TestError('简单错误');
             const json = error.toJSON();
 
-            expect(json.code).toBeUndefined();
+            expect(json.code).toBe('TEST_ERROR');
             expect(json.context).toBeUndefined();
-            expect(json.originalError).toBeUndefined();
             expect(json.name).toBe('TestError');
             expect(json.message).toBe('简单错误');
         });
 
         test('toString() 应该返回格式化的字符串', () => {
-            const error = new TestError('格式化测试', {
-                code: 'ERR_001',
-            });
+            const error = new TestError('格式化测试', 'ERR_001');
 
             const str = error.toString();
 
@@ -210,8 +145,9 @@ describe('BaseError (抽象类测试)', () => {
         });
 
         test('toString() 应该包含上下文信息', () => {
-            const error = new TestError('带上下文的错误', {
-                context: { userId: 123, reason: 'invalid' },
+            const error = new TestError('带上下文的错误', 'CONTEXT_ERR', { 
+                userId: 123, 
+                reason: 'invalid' 
             });
 
             const str = error.toString();
@@ -232,7 +168,7 @@ describe('BaseError (抽象类测试)', () => {
             expect(customError).toBeInstanceOf(Error);
             expect(customError.name).toBe('CustomTestError');
             expect(customError.customProperty).toBe('custom');
-            expect(customError.context?.extraData).toEqual({ extra: 'data' });
+            expect(customError.context?.extra).toBe('data');
         });
 
         test('子类应该有正确的原型链', () => {
@@ -252,11 +188,18 @@ describe('BaseError (抽象类测试)', () => {
                 }
 
                 public customProperty = 'custom value';
+                
+                constructor(
+                    message: string, 
+                    code: string | number = 'EXTENDED_ERROR',
+                    context?: Record<string, any>
+                ) {
+                    super(message, code, context);
+                    this.name = 'ExtendedError';
+                }
             }
 
-            const extendedError = new ExtendedError('扩展错误', {
-                name: 'ExtendedError',
-            });
+            const extendedError = new ExtendedError('扩展错误');
 
             expect(extendedError.customMethod()).toBe('custom method result');
             expect(extendedError.customProperty).toBe('custom value');
@@ -271,42 +214,26 @@ describe('BaseError (抽象类测试)', () => {
             expect(error.name).toBe('TestError');
         });
 
-        test('空选项对象应该被正确处理', () => {
-            const error = new TestError('测试', {});
+        test('undefined 上下文应该被正确处理', () => {
+            const error = new TestError('测试', 'TEST_CODE', undefined);
 
-            expect(error.name).toBe('TestError');
-            expect(error.code).toBeUndefined();
+            expect(error.code).toBe('TEST_CODE');
             expect(error.context).toBeUndefined();
-            expect(error.originalError).toBeUndefined();
-        });
-
-        test('undefined 作为选项应该被正确处理', () => {
-            const error = new TestError('测试');
-
-            expect(error.code).toBeUndefined();
-            expect(error.context).toBeUndefined();
-            expect(error.originalError).toBeUndefined();
         });
     });
 
     describe('集成测试', () => {
         test('应该能正确序列化和反序列化', () => {
-            const originalError = new TypeError('类型错误');
-            const testError = new TestError('包装错误', {
-                name: 'WrappedError',
-                code: 'WRAP_001',
-                originalError,
-                context: { timestamp: Date.now() },
+            const testError = new TestError('包装错误', 'WRAP_001', { 
+                timestamp: Date.now() 
             });
 
             const json = testError.toJSON();
-            expect(json).toHaveProperty('name', 'WrappedError');
+            expect(json).toHaveProperty('name', 'TestError');
             expect(json).toHaveProperty('code', 'WRAP_001');
-            expect(json).toHaveProperty('originalError');
-            expect(json.originalError).toHaveProperty('message', '类型错误');
-
+            
             const str = testError.toString();
-            expect(str).toContain('[WrappedError]');
+            expect(str).toContain('[TestError]');
             expect(str).toContain('(WRAP_001)');
             expect(str).toContain('包装错误');
         });
@@ -317,30 +244,24 @@ describe('BaseError (抽象类测试)', () => {
         class DatabaseError extends BaseError {
             constructor(
                 message: string,
-                options: {
-                    query?: string;
-                    params?: any[];
-                    code?: string;
-                } = {}
+                code: string | number = 'DB_ERROR',
+                context?: Record<string, any>
             ) {
-                super(message, {
-                    name: 'DatabaseError',
-                    code: options.code || 'DB_ERROR',
-                    context: {
-                        query: options.query,
-                        params: options.params,
-                        timestamp: new Date().toISOString(),
-                    },
-                });
+                super(message, code, context);
+                this.name = 'DatabaseError';
             }
         }
 
         test('实际场景：数据库错误', () => {
-            const dbError = new DatabaseError('连接数据库失败', {
-                query: 'SELECT * FROM users WHERE id = ?',
-                params: [123],
-                code: 'DB_CONNECTION_ERROR',
-            });
+            const dbError = new DatabaseError(
+                '连接数据库失败', 
+                'DB_CONNECTION_ERROR',
+                { 
+                    query: 'SELECT * FROM users WHERE id = ?',
+                    params: [123],
+                    timestamp: new Date().toISOString(),
+                }
+            );
 
             expect(dbError).toBeInstanceOf(DatabaseError);
             expect(dbError.name).toBe('DatabaseError');
@@ -352,18 +273,6 @@ describe('BaseError (抽象类测试)', () => {
             expect(json.context).toHaveProperty('query');
             expect(json.context).toHaveProperty('params');
             expect(json.context).toHaveProperty('timestamp');
-        });
-
-        // 添加一个新的测试用例
-        test('应该在未提供 name 时使用构造函数名称', () => {
-            class UnnamedError extends BaseError {
-                constructor(message: string) {
-                    super(message, {}); // 不传递 name 选项
-                }
-            }
-
-            const error = new UnnamedError('测试消息');
-            expect(error.name).toBe('UnnamedError');
         });
     });
 });

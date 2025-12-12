@@ -1,5 +1,4 @@
-import { BaseError } from './BaseError';
-
+import { BaseError } from "./BaseError";
 /**
  * 🎯 验证错误
  * 数据验证失败时抛出
@@ -9,18 +8,15 @@ export class ValidationError extends BaseError {
   
   constructor(
     message: string,
+    code: string | number = 'VALIDATION_FAILED',
     errors: Array<{ field: string; message: string }> = [],
-    options: {
-      code?: string | number;
-      context?: Record<string, any>;
-    } = {}
+    context?: Record<string, any>
   ) {
-    super(message, {
-      name: 'ValidationError',
-      code: options.code || 'VALIDATION_FAILED',
-      context: { ...options.context, errors }
-    });
+    // 将 errors 添加到上下文中
+    const extendedContext = context ? { ...context, errors } : { errors };
     
+    super(message, code, extendedContext);
+    this.name = 'ValidationError';
     this.errors = errors;
   }
   
@@ -29,6 +25,10 @@ export class ValidationError extends BaseError {
    */
   addError(field: string, message: string): this {
     this.errors.push({ field, message });
+    // 同步更新上下文中的 errors
+    if (this.context) {
+      this.context.errors = this.errors;
+    }
     return this;
   }
   

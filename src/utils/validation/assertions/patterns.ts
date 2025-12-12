@@ -1,3 +1,4 @@
+// patterns.ts
 import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import {
@@ -39,12 +40,17 @@ export function assertPattern(
     ignoreCase?: boolean;
     sticky?: boolean;
     unicode?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validatePattern(value, pattern, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validatePattern(value, pattern, validationOptions)) {
     // 检查是否是字符串
     if (typeof value !== 'string') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -65,9 +71,10 @@ export function assertPattern(
  */
 export function assertEmail(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmail(value)) {
     // 检查是否是字符串
@@ -85,9 +92,10 @@ export function assertEmail(
  */
 export function assertPhone(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePhone(value)) {
     // 检查是否是字符串
@@ -105,9 +113,10 @@ export function assertPhone(
  */
 export function assertURL(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateURL(value)) {
     // 检查是否是字符串
@@ -125,9 +134,10 @@ export function assertURL(
  */
 export function assertIPv4(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateIPv4(value)) {
     // 检查是否是字符串
@@ -145,9 +155,10 @@ export function assertIPv4(
  */
 export function assertIPv6(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateIPv6(value)) {
     // 检查是否是字符串
@@ -165,9 +176,10 @@ export function assertIPv6(
  */
 export function assertMAC(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMAC(value)) {
     // 检查是否是字符串
@@ -185,9 +197,10 @@ export function assertMAC(
  */
 export function assertHexColor(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateHexColor(value)) {
     // 检查是否是字符串
@@ -205,9 +218,10 @@ export function assertHexColor(
  */
 export function assertRGBColor(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateRGBColor(value)) {
     // 检查是否是字符串
@@ -225,9 +239,10 @@ export function assertRGBColor(
  */
 export function assertRGBAColor(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateRGBAColor(value)) {
     // 检查是否是字符串
@@ -254,12 +269,17 @@ export function assertUsername(
     allowDot?: boolean;
     allowAt?: boolean;
     startWithLetter?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validateUsername(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateUsername(value, validationOptions)) {
     // 检查是否是字符串
     if (typeof value !== 'string') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -274,7 +294,7 @@ export function assertUsername(
       allowDot = false,
       allowAt = false,
       startWithLetter = true
-    } = options;
+    } = validationOptions;
     
     // 检查长度
     if (value.length < minLength) {
@@ -323,12 +343,17 @@ export function assertPassword(
     requireLowercase?: boolean;
     requireDigits?: boolean;
     requireSpecial?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
   
-  if (!validatePassword(value, options)) {
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validatePassword(value, validationOptions)) {
     // 检查是否是字符串
     if (typeof value !== 'string') {
       ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -340,7 +365,7 @@ export function assertPassword(
       requireLowercase = true,
       requireDigits = true,
       requireSpecial = false
-    } = options;
+    } = validationOptions;
     
     // 检查长度
     if (value.length < minLength) {
@@ -388,9 +413,10 @@ export function assertPassword(
  */
 export function assertChineseID(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateChineseID(value)) {
     // 检查是否是字符串
@@ -408,9 +434,10 @@ export function assertChineseID(
  */
 export function assertChinesePostcode(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateChinesePostcode(value)) {
     // 检查是否是字符串
@@ -428,9 +455,10 @@ export function assertChinesePostcode(
  */
 export function assertDateString(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateDateString(value)) {
     // 检查是否是字符串
@@ -470,9 +498,10 @@ export function assertDateString(
  */
 export function assertTimeString(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateTimeString(value)) {
     // 检查是否是字符串
@@ -493,9 +522,10 @@ export function assertTimeString(
  */
 export function assertDateTimeString(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateDateTimeString(value)) {
     // 检查是否是字符串
@@ -516,9 +546,10 @@ export function assertDateTimeString(
  */
 export function assertJSONString(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateJSONString(value)) {
     // 检查是否是字符串
@@ -546,9 +577,10 @@ export function assertJSONString(
  */
 export function assertBase64(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateBase64(value)) {
     // 检查是否是字符串
@@ -566,9 +598,10 @@ export function assertBase64(
  */
 export function assertUUID(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateUUID(value)) {
     // 检查是否是字符串
@@ -586,9 +619,10 @@ export function assertUUID(
  */
 export function assertCreditCard(
   value: any,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateCreditCard(value)) {
     // 检查是否是字符串
@@ -612,13 +646,18 @@ export function createPatternAssert(
     ignoreCase?: boolean;
     sticky?: boolean;
     unicode?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): (value: any) => asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is string => {
-    if (!validatePattern(value, pattern, options)) {
+    if (!validatePattern(value, pattern, validationOptions)) {
       // 检查是否是字符串
       if (typeof value !== 'string') {
         ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -647,13 +686,18 @@ export function createUsernameAssert(
     allowDot?: boolean;
     allowAt?: boolean;
     startWithLetter?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): (value: any) => asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is string => {
-    if (!validateUsername(value, options)) {
+    if (!validateUsername(value, validationOptions)) {
       // 检查是否是字符串
       if (typeof value !== 'string') {
         ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -668,7 +712,7 @@ export function createUsernameAssert(
         allowDot = false,
         allowAt = false,
         startWithLetter = true
-      } = options;
+      } = validationOptions;
       
       // 检查长度
       if (value.length < minLength) {
@@ -716,13 +760,18 @@ export function createPasswordAssert(
     requireLowercase?: boolean;
     requireDigits?: boolean;
     requireSpecial?: boolean;
-  } = {},
-  contextOptions?: AssertErrorContextOptions
+  } & AssertErrorContextOptions = {}
 ): (value: any) => asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { 
+    paramName, 
+    functionName,
+    ...validationOptions 
+  } = options;
+  
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is string => {
-    if (!validatePassword(value, options)) {
+    if (!validatePassword(value, validationOptions)) {
       // 检查是否是字符串
       if (typeof value !== 'string') {
         ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
@@ -734,7 +783,7 @@ export function createPasswordAssert(
         requireLowercase = true,
         requireDigits = true,
         requireSpecial = false
-      } = options;
+      } = validationOptions;
       
       // 检查长度
       if (value.length < minLength) {
@@ -823,9 +872,10 @@ export function patternValidationChain(
 export function createPatternValidationChainAssert(
   validators: Array<(value: any) => boolean>,
   errorCode: ValidationErrorCode = ValidationErrorCode.PATTERN_MISMATCH,
-  contextOptions?: AssertErrorContextOptions
+  options: AssertErrorContextOptions = {}
 ): (value: any) => asserts value is string {
-  const ctx = createAssetErrorContext(contextOptions);
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
   
   return (value: any): asserts value is string => {
     if (!patternValidationChain(value, validators)) {
