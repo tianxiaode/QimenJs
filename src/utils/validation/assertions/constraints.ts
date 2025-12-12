@@ -16,8 +16,6 @@ import {
   validateNotConstraints,
   validateEqualTo,
   validateNotEqualTo,
-  validateStrictEqualTo,
-  validateStrictNotEqualTo,
   validateGreaterThan,
   validateGreaterThanOrEqualTo,
   validateLessThan,
@@ -30,7 +28,7 @@ import {
   validateFalsyConstraint,
   createRangeValidator,
   createLengthValidator,
-  createInValidator
+  createInValidator,
 } from '../validators';
 
 /**
@@ -91,119 +89,11 @@ export function assertLengthRange(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateLengthRange(value, min, max)) {
-    const length = getLength(value);
-    
-    // 检查具体是哪个约束失败
-    if (length !== undefined) {
-      if (length < min) {
-        ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
-          min, 
-          actualLength: length,
-          value
-        });
-      } else if (length > max) {
-        ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
-          max, 
-          actualLength: length,
-          value
-        });
-      }
-    }
-    
-    // 如果无法获取长度或未知原因
     ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
       lower: min, 
       upper: max, 
-      actual: length,
+      actual: getLength(value),
       value
-    });
-  }
-}
-
-/**
- * 最小值断言函数
- * @throws {InvalidInputError} 当验证失败时
- */
-export function assertMin(
-  value: any,
-  min: number,
-  options: AssertErrorContextOptions = {}
-): asserts value is number {
-  const { paramName, functionName } = options;
-  const ctx = createAssetErrorContext({ paramName, functionName });
-  
-  if (!validateMin(value, min)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
-      min, 
-      actual: value 
-    });
-  }
-}
-
-/**
- * 最大值断言函数
- * @throws {InvalidInputError} 当验证失败时
- */
-export function assertMax(
-  value: any,
-  max: number,
-  options: AssertErrorContextOptions = {}
-): asserts value is number {
-  const { paramName, functionName } = options;
-  const ctx = createAssetErrorContext({ paramName, functionName });
-  
-  if (!validateMax(value, max)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
-      max, 
-      actual: value 
-    });
-  }
-}
-
-/**
- * 数值范围断言函数
- * @throws {InvalidInputError} 当验证失败时
- */
-export function assertRange(
-  value: any,
-  min: number,
-  max: number,
-  options: AssertErrorContextOptions = {}
-): asserts value is number {
-  const { paramName, functionName } = options;
-  const ctx = createAssetErrorContext({ paramName, functionName });
-  
-  if (!validateRange(value, min, max)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    // 检查具体是哪个约束失败
-    if (value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
-        min, 
-        actual: value 
-      });
-    } else if (value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
-        max, 
-        actual: value 
-      });
-    }
-    
-    // 未知原因
-    ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
-      lower: min, 
-      upper: max, 
-      actual: value 
     });
   }
 }
@@ -221,10 +111,6 @@ export function assertIn(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateIn(value, collection)) {
-    if (!isValidCollection(collection)) {
-      ctx.throwError(ValidationErrorCode.INVALID_COLLECTION_TYPE);
-    }
-    
     const collectionText = getCollectionText(collection);
     ctx.throwError(ValidationErrorCode.NOT_IN_COLLECTION, { 
       collection: Array.isArray(collection) ? collection : undefined,
@@ -247,10 +133,6 @@ export function assertNotIn(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNotIn(value, collection)) {
-    if (!isValidCollection(collection)) {
-      ctx.throwError(ValidationErrorCode.INVALID_COLLECTION_TYPE);
-    }
-    
     const collectionText = getCollectionText(collection);
     ctx.throwError(ValidationErrorCode.IN_COLLECTION, { 
       collection: Array.isArray(collection) ? collection : undefined,
@@ -273,17 +155,6 @@ export function assertAllConstraints(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateAllConstraints(value, validators)) {
-    // 找到第一个失败的验证器
-    for (let i = 0; i < validators.length; i++) {
-      if (!validators[i](value)) {
-        ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, { 
-          validatorIndex: i,
-          value
-        });
-      }
-    }
-    
-    // 如果所有验证器都通过但validateAllConstraints返回false，这是不应该发生的
     ctx.throwError(ValidationErrorCode.ALL_VALIDATIONS_FAILED, { value });
   }
 }
@@ -323,18 +194,19 @@ export function assertNotConstraints(
 }
 
 /**
- * 相等断言函数（宽松）
+ * 相等断言函数
  * @throws {InvalidInputError} 当验证失败时
  */
 export function assertEqualTo<T>(
   value: any,
   other: T,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
 ): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateEqualTo(value, other)) {
+  if (!validateEqualTo(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_EQUAL, { 
       expected: other, 
       actual: value 
@@ -343,58 +215,19 @@ export function assertEqualTo<T>(
 }
 
 /**
- * 不相等断言函数（宽松）
+ * 不相等断言函数
  * @throws {InvalidInputError} 当验证失败时
  */
 export function assertNotEqualTo<T>(
   value: any,
   other: T,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
 ): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateNotEqualTo(value, other)) {
-    ctx.throwError(ValidationErrorCode.EQUAL, { 
-      expected: other, 
-      actual: value 
-    } as any);
-  }
-}
-
-/**
- * 严格相等断言函数
- * @throws {InvalidInputError} 当验证失败时
- */
-export function assertStrictEqualTo<T>(
-  value: any,
-  other: T,
-  options: AssertErrorContextOptions = {}
-): asserts value is T {
-  const { paramName, functionName } = options;
-  const ctx = createAssetErrorContext({ paramName, functionName });
-  
-  if (!validateStrictEqualTo(value, other)) {
-    ctx.throwError(ValidationErrorCode.NOT_EQUAL, { 
-      expected: other, 
-      actual: value 
-    } as any);
-  }
-}
-
-/**
- * 严格不相等断言函数
- * @throws {InvalidInputError} 当验证失败时
- */
-export function assertStrictNotEqualTo<T>(
-  value: any,
-  other: T,
-  options: AssertErrorContextOptions = {}
-): void {
-  const { paramName, functionName } = options;
-  const ctx = createAssetErrorContext({ paramName, functionName });
-  
-  if (!validateStrictNotEqualTo(value, other)) {
+  if (!validateNotEqualTo(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.EQUAL, { 
       expected: other, 
       actual: value 
@@ -408,17 +241,14 @@ export function assertStrictNotEqualTo<T>(
  */
 export function assertGreaterThan(
   value: any,
-  other: number,
+  other: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateGreaterThan(value, other)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
+  if (!validateGreaterThan(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { 
       min: other, 
       actual: value 
@@ -432,17 +262,14 @@ export function assertGreaterThan(
  */
 export function assertGreaterThanOrEqualTo(
   value: any,
-  other: number,
+  other: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateGreaterThanOrEqualTo(value, other)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
+  if (!validateGreaterThanOrEqualTo(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
       min: other, 
       actual: value 
@@ -456,17 +283,14 @@ export function assertGreaterThanOrEqualTo(
  */
 export function assertLessThan(
   value: any,
-  other: number,
+  other: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateLessThan(value, other)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
+  if (!validateLessThan(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_LESS_THAN, { 
       max: other, 
       actual: value 
@@ -480,17 +304,14 @@ export function assertLessThan(
  */
 export function assertLessThanOrEqualTo(
   value: any,
-  other: number,
+  other: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateLessThanOrEqualTo(value, other)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
+  if (!validateLessThanOrEqualTo(value, other, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
       max: other, 
       actual: value 
@@ -504,32 +325,15 @@ export function assertLessThanOrEqualTo(
  */
 export function assertBetween(
   value: any,
-  lower: number,
-  upper: number,
+  lower: any,
+  upper: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateBetween(value, lower, upper)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    // 检查具体是哪个约束失败
-    if (value < lower) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
-        min: lower, 
-        actual: value 
-      });
-    } else if (value > upper) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
-        max: upper, 
-        actual: value 
-      });
-    }
-    
-    // 未知原因
+  if (!validateBetween(value, lower, upper, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
       lower, 
       upper, 
@@ -544,35 +348,83 @@ export function assertBetween(
  */
 export function assertBetweenExclusive(
   value: any,
-  lower: number,
-  upper: number,
+  lower: any,
+  upper: any,
+  strict: boolean = false,
   options: AssertErrorContextOptions = {}
-): asserts value is number {
+): void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  if (!validateBetweenExclusive(value, lower, upper)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    // 检查具体是哪个约束失败
-    if (value <= lower) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { 
-        min: lower, 
-        actual: value 
-      });
-    } else if (value >= upper) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN, { 
-        max: upper, 
-        actual: value 
-      });
-    }
-    
-    // 未知原因
+  if (!validateBetweenExclusive(value, lower, upper, strict)) {
     ctx.throwError(ValidationErrorCode.NOT_BETWEEN_EXCLUSIVE, { 
       lower, 
       upper, 
+      actual: value 
+    });
+  }
+}
+
+/**
+ * 最小值断言函数
+ * @throws {InvalidInputError} 当验证失败时
+ */
+export function assertMin(
+  value: any,
+  min: number,
+  strict: boolean = false,
+  options: AssertErrorContextOptions = {}
+): void {
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateMin(value, min, strict)) {
+    ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
+      min, 
+      actual: value 
+    });
+  }
+}
+
+/**
+ * 最大值断言函数
+ * @throws {InvalidInputError} 当验证失败时
+ */
+export function assertMax(
+  value: any,
+  max: number,
+  strict: boolean = false,
+  options: AssertErrorContextOptions = {}
+): void {
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateMax(value, max, strict)) {
+    ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
+      max, 
+      actual: value 
+    });
+  }
+}
+
+/**
+ * 数值范围断言函数
+ * @throws {InvalidInputError} 当验证失败时
+ */
+export function assertRange(
+  value: any,
+  min: number,
+  max: number,
+  strict: boolean = false,
+  options: AssertErrorContextOptions = {}
+): void {
+  const { paramName, functionName } = options;
+  const ctx = createAssetErrorContext({ paramName, functionName });
+  
+  if (!validateRange(value, min, max, strict)) {
+    ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
+      lower: min, 
+      upper: max, 
       actual: value 
     });
   }
@@ -646,30 +498,20 @@ export function assertFalsyConstraint(
  * 创建范围断言器
  */
 export function createRangeAssert(
-  min: number,
-  max: number,
+  min: any,
+  max: any,
   options: AssertErrorContextOptions = {}
-): (value: any) => asserts value is number {
+): (value: any) => void {
   const { paramName, functionName } = options;
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  return (value: any): asserts value is number => {
+  return (value: any): void => {
     if (!validateRange(value, min, max)) {
-      if (typeof value !== 'number') {
-        ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-      }
-      
-      if (value < min) {
-        ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
-          min, 
-          actual: value 
-        });
-      } else {
-        ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { 
-          max, 
-          actual: value 
-        });
-      }
+      ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
+        lower: min, 
+        upper: max, 
+        actual: value 
+      });
     }
   };
 }
@@ -687,28 +529,10 @@ export function createLengthAssert(
   
   return (value: any): void => {
     if (!validateLengthRange(value, min, max)) {
-      const length = getLength(value);
-      
-      if (length !== undefined) {
-        if (length < min) {
-          ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
-            min, 
-            actualLength: length,
-            value
-          });
-        } else {
-          ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
-            max, 
-            actualLength: length,
-            value
-          });
-        }
-      }
-      
       ctx.throwError(ValidationErrorCode.NOT_BETWEEN, { 
         lower: min, 
         upper: max, 
-        actual: length,
+        actual: getLength(value),
         value
       });
     }

@@ -195,7 +195,7 @@ describe('Structure Type Validation Functions', () => {
     it('should return true for Buffer objects (if available)', () => {
       if (typeof Buffer !== 'undefined' && Buffer.isBuffer(10)) {
         expect(isBuffer(Buffer.from('test'))).toBe(true);
-        expect(isBuffer(new Buffer(10))).toBe(true);
+        expect(isBuffer(Buffer.alloc(10))).toBe(true);
       } else {
         // Skip test if Buffer is not available (browser environment)
         expect(true).toBe(true);

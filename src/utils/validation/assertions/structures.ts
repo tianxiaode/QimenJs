@@ -49,94 +49,7 @@ export function assertArray<T = any>(
   
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  // 先检查是否是数组
-  if (!Array.isArray(value)) {
-    ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
-  }
-  
-  // 复用验证函数
   if (!validateArray(value, validationOptions)) {
-    const {
-      nonEmpty = false,
-      minLength,
-      maxLength,
-      allowEmptyItems = true,
-      unique = false
-    } = validationOptions;
-    
-    // 检查非空
-    if (nonEmpty && value.length === 0) {
-      ctx.throwError(ValidationErrorCode.NON_EMPTY_ARRAY);
-    }
-    
-    // 检查最小长度
-    if (minLength !== undefined && value.length < minLength) {
-      ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
-        min: minLength, 
-        actualLength: value.length 
-      });
-    }
-    
-    // 检查最大长度
-    if (maxLength !== undefined && value.length > maxLength) {
-      ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
-        max: maxLength, 
-        actualLength: value.length 
-      });
-    }
-    
-    // 检查是否允许空项目
-    if (!allowEmptyItems) {
-      for (let i = 0; i < value.length; i++) {
-        if (value[i] === null || value[i] === undefined) {
-          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
-            index: i,
-            value: value[i]
-          });
-        }
-      }
-    }
-    
-    // 检查唯一性
-    if (unique) {
-      const seenRefs = new Set();
-      const seenValues = new Set();
-      
-      for (let i = 0; i < value.length; i++) {
-        const item = value[i];
-        if (typeof item === 'object' && item !== null) {
-          if (seenRefs.has(item)) {
-            ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
-              index: i,
-              duplicate: item
-            });
-          }
-          seenRefs.add(item);
-        } else {
-          if (seenValues.has(item)) {
-            ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
-              index: i,
-              duplicate: item
-            });
-          }
-          seenValues.add(item);
-        }
-      }
-    }
-    
-    // 检查项目验证器
-    if (validationOptions.itemValidator) {
-      for (let i = 0; i < value.length; i++) {
-        if (!validationOptions.itemValidator(value[i], i)) {
-          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
-            index: i,
-            value: value[i]
-          });
-        }
-      }
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
   }
 }
@@ -181,94 +94,7 @@ export function assertObject(
   
   const ctx = createAssetErrorContext({ paramName, functionName });
   
-  // 先检查是否是对象
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
-  }
-  
-  // 复用验证函数
   if (!validateObject(value, validationOptions)) {
-    const {
-      nonEmpty = false,
-      requiredKeys,
-      allowedKeys,
-      disallowedKeys,
-      minKeys,
-      maxKeys
-    } = validationOptions;
-    
-    const keys = Object.keys(value);
-    
-    // 检查非空
-    if (nonEmpty && keys.length === 0) {
-      ctx.throwError(ValidationErrorCode.NON_EMPTY_OBJECT);
-    }
-    
-    // 检查最少键数
-    if (minKeys !== undefined && keys.length < minKeys) {
-      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
-        min: minKeys, 
-        actual: keys.length,
-        value: 'keys'
-      });
-    }
-    
-    // 检查最多键数
-    if (maxKeys !== undefined && keys.length > maxKeys) {
-      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
-        max: maxKeys, 
-        actual: keys.length,
-        value: 'keys'
-      });
-    }
-    
-    // 检查必需的键
-    if (requiredKeys !== undefined) {
-      for (const key of requiredKeys) {
-        if (!(key in value)) {
-          ctx.throwError(ValidationErrorCode.REQUIRED_KEY_MISSING, { 
-            missingKey: key 
-          });
-        }
-      }
-    }
-    
-    // 检查允许的键
-    if (allowedKeys !== undefined) {
-      for (const key of keys) {
-        if (!allowedKeys.includes(key)) {
-          ctx.throwError(ValidationErrorCode.NOT_ALLOWED_KEY, { 
-            forbiddenKey: key,
-            allowedKeys
-          });
-        }
-      }
-    }
-    
-    // 检查不允许的键
-    if (disallowedKeys !== undefined) {
-      for (const key of keys) {
-        if (disallowedKeys.includes(key)) {
-          ctx.throwError(ValidationErrorCode.DISALLOWED_KEY_PRESENT, { 
-            disallowedKey: key 
-          });
-        }
-      }
-    }
-    
-    // 检查值验证器
-    if (validationOptions.valueValidator) {
-      for (const key of keys) {
-        if (!validationOptions.valueValidator(key, value[key])) {
-          ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
-            key,
-            keyValue: value[key]
-          });
-        }
-      }
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
   }
 }
@@ -285,12 +111,6 @@ export function assertPlainObject(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePlainObject(value)) {
-    // 检查是否是对象
-    if (typeof value !== 'object' || value === null) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
-    }
-    
-    // 如果是数组或其他对象类型
     ctx.throwError(ValidationErrorCode.TYPE_NOT_PLAIN_OBJECT);
   }
 }
@@ -317,47 +137,6 @@ export function assertDate(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateDate(value, validationOptions)) {
-    // 检查是否是日期对象
-    if (!(value instanceof Date)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_DATE);
-    }
-    
-    const { min, max, past = false, future = false } = validationOptions;
-    const timestamp = value.getTime();
-    
-    // 检查最小日期
-    if (min !== undefined && timestamp < min.getTime()) {
-      ctx.throwError(ValidationErrorCode.DATE_TOO_EARLY, { 
-        minDate: min,
-        date: value
-      });
-    }
-    
-    // 检查最大日期
-    if (max !== undefined && timestamp > max.getTime()) {
-      ctx.throwError(ValidationErrorCode.DATE_TOO_LATE, { 
-        maxDate: max,
-        date: value
-      });
-    }
-    
-    const now = Date.now();
-    
-    // 检查过去日期
-    if (past && timestamp >= now) {
-      ctx.throwError(ValidationErrorCode.DATE_NOT_PAST, { 
-        date: value 
-      });
-    }
-    
-    // 检查未来日期
-    if (future && timestamp <= now) {
-      ctx.throwError(ValidationErrorCode.DATE_NOT_FUTURE, { 
-        date: value 
-      });
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_DATE);
   }
 }
@@ -401,62 +180,6 @@ export function assertMap<K = any, V = any>(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateMap(value, validationOptions)) {
-    // 检查是否是Map
-    if (!(value instanceof Map)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
-    }
-    
-    const {
-      nonEmpty = false,
-      minSize,
-      maxSize
-    } = validationOptions;
-    
-    const size = value.size;
-    
-    // 检查非空
-    if (nonEmpty && size === 0) {
-      ctx.throwError(ValidationErrorCode.NON_EMPTY_MAP);
-    }
-    
-    // 检查最小大小
-    if (minSize !== undefined && size < minSize) {
-      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
-        min: minSize, 
-        actual: size,
-        value: 'size'
-      });
-    }
-    
-    // 检查最大大小
-    if (maxSize !== undefined && size > maxSize) {
-      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
-        max: maxSize, 
-        actual: size,
-        value: 'size'
-      });
-    }
-    
-    // 检查键和值验证器
-    if (validationOptions.keyValidator || validationOptions.valueValidator) {
-      for (const [key, val] of value) {
-        if (validationOptions.keyValidator && !validationOptions.keyValidator(key as K)) {
-          ctx.throwError(ValidationErrorCode.INVALID_KEY, { 
-            key,
-            keyValue: key
-          });
-        }
-        
-        if (validationOptions.valueValidator && !validationOptions.valueValidator(val as V)) {
-          ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
-            key,
-            keyValue: val
-          });
-        }
-      }
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
   }
 }
@@ -483,54 +206,6 @@ export function assertSet<T = any>(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateSet(value, validationOptions)) {
-    // 检查是否是Set
-    if (!(value instanceof Set)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
-    }
-    
-    const {
-      nonEmpty = false,
-      minSize,
-      maxSize
-    } = validationOptions;
-    
-    const size = value.size;
-    
-    // 检查非空
-    if (nonEmpty && size === 0) {
-      ctx.throwError(ValidationErrorCode.NON_EMPTY_SET);
-    }
-    
-    // 检查最小大小
-    if (minSize !== undefined && size < minSize) {
-      ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
-        min: minSize, 
-        actual: size,
-        value: 'size'
-      });
-    }
-    
-    // 检查最大大小
-    if (maxSize !== undefined && size > maxSize) {
-      ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
-        max: maxSize, 
-        actual: size,
-        value: 'size'
-      });
-    }
-    
-    // 检查项目验证器
-    if (validationOptions.itemValidator) {
-      for (const item of value) {
-        if (!validationOptions.itemValidator(item as T)) {
-          ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
-            value: item
-          });
-        }
-      }
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
   }
 }
@@ -675,12 +350,6 @@ export function assertEmptyArray(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyArray(value)) {
-    // 检查是否是数组
-    if (!Array.isArray(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
-    }
-    
-    // 如果不是空数组
     ctx.throwError(ValidationErrorCode.EMPTY_ARRAY);
   }
 }
@@ -697,12 +366,6 @@ export function assertEmptyObject(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyObject(value)) {
-    // 检查是否是对象
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
-    }
-    
-    // 如果不是空对象
     ctx.throwError(ValidationErrorCode.EMPTY_OBJECT);
   }
 }
@@ -719,12 +382,6 @@ export function assertEmptyMap(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptyMap(value)) {
-    // 检查是否是Map
-    if (!(value instanceof Map)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
-    }
-    
-    // 如果不是空Map
     ctx.throwError(ValidationErrorCode.EMPTY_MAP);
   }
 }
@@ -741,12 +398,6 @@ export function assertEmptySet(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateEmptySet(value)) {
-    // 检查是否是Set
-    if (!(value instanceof Set)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
-    }
-    
-    // 如果不是空Set
     ctx.throwError(ValidationErrorCode.EMPTY_SET);
   }
 }
@@ -769,32 +420,6 @@ export function assertNested(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNested(value, schema)) {
-    switch (schema.type) {
-      case 'array':
-        if (!Array.isArray(value)) {
-          ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
-        }
-        break;
-        
-      case 'object':
-        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-          ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
-        }
-        break;
-        
-      case 'map':
-        if (!(value instanceof Map)) {
-          ctx.throwError(ValidationErrorCode.TYPE_NOT_MAP);
-        }
-        break;
-        
-      case 'set':
-        if (!(value instanceof Set)) {
-          ctx.throwError(ValidationErrorCode.TYPE_NOT_SET);
-        }
-        break;
-    }
-    
     ctx.throwError(ValidationErrorCode.NOT_SATISFY_CONDITION, { schema });
   }
 }
@@ -822,85 +447,6 @@ export function createArrayAssert<T>(
   
   return (value: any): asserts value is T[] => {
     if (!validateArray(value, validationOptions)) {
-      if (!Array.isArray(value)) {
-        ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
-      }
-      
-      // 检查具体失败原因
-      const {
-        nonEmpty = false,
-        minLength,
-        maxLength,
-        allowEmptyItems = true,
-        unique = false
-      } = validationOptions;
-      
-      if (nonEmpty && value.length === 0) {
-        ctx.throwError(ValidationErrorCode.NON_EMPTY_ARRAY);
-      }
-      
-      if (minLength !== undefined && value.length < minLength) {
-        ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
-          min: minLength, 
-          actualLength: value.length 
-        });
-      }
-      
-      if (maxLength !== undefined && value.length > maxLength) {
-        ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
-          max: maxLength, 
-          actualLength: value.length 
-        });
-      }
-      
-      if (!allowEmptyItems) {
-        for (let i = 0; i < value.length; i++) {
-          if (value[i] === null || value[i] === undefined) {
-            ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
-              index: i,
-              value: value[i]
-            });
-          }
-        }
-      }
-      
-      if (unique) {
-        const seenRefs = new Set();
-        const seenValues = new Set();
-        
-        for (let i = 0; i < value.length; i++) {
-          const item = value[i];
-          if (typeof item === 'object' && item !== null) {
-            if (seenRefs.has(item)) {
-              ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
-                index: i,
-                duplicate: item
-              });
-            }
-            seenRefs.add(item);
-          } else {
-            if (seenValues.has(item)) {
-              ctx.throwError(ValidationErrorCode.DUPLICATE_ITEM, { 
-                index: i,
-                duplicate: item
-              });
-            }
-            seenValues.add(item);
-          }
-        }
-      }
-      
-      if (validationOptions.itemValidator) {
-        for (let i = 0; i < value.length; i++) {
-          if (!validationOptions.itemValidator(value[i], i)) {
-            ctx.throwError(ValidationErrorCode.INVALID_ITEM, { 
-              index: i,
-              value: value[i]
-            });
-          }
-        }
-      }
-      
       ctx.throwError(ValidationErrorCode.TYPE_NOT_ARRAY);
     }
   };
@@ -930,84 +476,6 @@ export function createObjectAssert(
   
   return (value: any): asserts value is Record<string, any> => {
     if (!validateObject(value, validationOptions)) {
-      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-        ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
-      }
-      
-      // 检查具体失败原因
-      const {
-        nonEmpty = false,
-        requiredKeys,
-        allowedKeys,
-        disallowedKeys,
-        minKeys,
-        maxKeys
-      } = validationOptions;
-      
-      const keys = Object.keys(value);
-      
-      if (nonEmpty && keys.length === 0) {
-        ctx.throwError(ValidationErrorCode.NON_EMPTY_OBJECT);
-      }
-      
-      if (minKeys !== undefined && keys.length < minKeys) {
-        ctx.throwError(ValidationErrorCode.MIN_VALUE, { 
-          min: minKeys, 
-          actual: keys.length,
-          value: 'keys'
-        });
-      }
-      
-      if (maxKeys !== undefined && keys.length > maxKeys) {
-        ctx.throwError(ValidationErrorCode.MAX_VALUE, { 
-          max: maxKeys, 
-          actual: keys.length,
-          value: 'keys'
-        });
-      }
-      
-      if (requiredKeys !== undefined) {
-        for (const key of requiredKeys) {
-          if (!(key in value)) {
-            ctx.throwError(ValidationErrorCode.REQUIRED_KEY_MISSING, { 
-              missingKey: key 
-            });
-          }
-        }
-      }
-      
-      if (allowedKeys !== undefined) {
-        for (const key of keys) {
-          if (!allowedKeys.includes(key)) {
-            ctx.throwError(ValidationErrorCode.NOT_ALLOWED_KEY, { 
-              forbiddenKey: key,
-              allowedKeys
-            });
-          }
-        }
-      }
-      
-      if (disallowedKeys !== undefined) {
-        for (const key of keys) {
-          if (disallowedKeys.includes(key)) {
-            ctx.throwError(ValidationErrorCode.DISALLOWED_KEY_PRESENT, { 
-              disallowedKey: key 
-            });
-          }
-        }
-      }
-      
-      if (validationOptions.valueValidator) {
-        for (const key of keys) {
-          if (!validationOptions.valueValidator(key, value[key])) {
-            ctx.throwError(ValidationErrorCode.INVALID_VALUE, { 
-              key,
-              keyValue: value[key]
-            });
-          }
-        }
-      }
-      
       ctx.throwError(ValidationErrorCode.TYPE_NOT_OBJECT);
     }
   };

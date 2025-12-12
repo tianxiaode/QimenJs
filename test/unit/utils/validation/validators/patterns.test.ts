@@ -13,9 +13,7 @@ import {
     validatePassword,
     validateChineseID,
     validateChinesePostcode,
-    validateDateString,
-    validateTimeString,
-    validateDateTimeString,
+    validateDateTime,
     validateJSONString,
     validateBase64,
     validateUUID,
@@ -216,11 +214,11 @@ line3`;
             expect(validateUsername('user123', { allowDigits: false })).toBe(false);
             expect(validateUsername('ab', { minLength: 3 })).toBe(false);
             expect(validateUsername('verylongusername', { maxLength: 10 })).toBe(false);
-            
+
             // 测试 allowDot 选项
             expect(validateUsername('user.name', { allowDot: true })).toBe(true);
             expect(validateUsername('user.name', { allowDot: false })).toBe(false);
-            
+
             // 测试 allowAt 选项
             expect(validateUsername('user@domain', { allowAt: true })).toBe(true);
             expect(validateUsername('user@domain', { allowAt: false })).toBe(false);
@@ -246,14 +244,14 @@ line3`;
                     requireLowercase: false,
                 })
             ).toBe(true);
-            
+
             // 测试 requireSpecial 选项
             expect(
                 validatePassword('Password123!', {
                     requireSpecial: true,
                 })
             ).toBe(true);
-            
+
             expect(
                 validatePassword('Password123', {
                     requireSpecial: true,
@@ -282,8 +280,16 @@ line3`;
             expect(validateChineseID('11010119900101351')).toBe(false); // 长度不够
             expect(validateChineseID('1101011990010135145')).toBe(false); // 长度过长
         });
+
+        // 添加这一部分来测试非字符串输入
+        it('should return false for non-string inputs', () => {
+            expect(validateChineseID(null as any)).toBe(false);
+            expect(validateChineseID(undefined as any)).toBe(false);
+            expect(validateChineseID(123456789012345678 as any)).toBe(false);
+            expect(validateChineseID({} as any)).toBe(false);
+            expect(validateChineseID([] as any)).toBe(false);
+        });
     });
-    
     describe('validateChinesePostcode', () => {
         it('should validate Chinese postcodes', () => {
             expect(validateChinesePostcode('100000')).toBe(true);
@@ -296,45 +302,62 @@ line3`;
         });
     });
 
-    describe('validateDateString', () => {
-        it('should validate date strings', () => {
-            expect(validateDateString('2023-01-01')).toBe(true);
-            expect(validateDateString('2023-12-31')).toBe(true);
+    // 修改 patterns.test.ts 中的 validateDateTime 测试用例
+    describe('validateDateTime', () => {
+        it('should validate valid dates', () => {
+            // 字符串格式
+            expect(validateDateTime('2023-01-01')).toBe(true);
+            expect(validateDateTime('2023-01-01 12:30:45')).toBe(true);
+            expect(validateDateTime('2023-01-01T12:30:45Z')).toBe(true);
+            expect(validateDateTime('Sun, 01 Jan 2023 00:00:00 GMT')).toBe(true);
+
+            // 时间戳
+            expect(validateDateTime(1672531200000)).toBe(true); // 毫秒时间戳
+            expect(validateDateTime(1672531200)).toBe(true); // 秒时间戳
+
+            // Date 对象
+            expect(validateDateTime(new Date('2023-01-01'))).toBe(true);
+            expect(validateDateTime(new Date())).toBe(true);
         });
 
         it('should reject invalid dates', () => {
-            expect(validateDateString('2023-02-30')).toBe(false);
-            expect(validateDateString('invalid')).toBe(false);
-            expect(validateDateString('2023/01/01')).toBe(false);
+            // 无效字符串
+            expect(validateDateTime('invalid-date')).toBe(false);
+            expect(validateDateTime('')).toBe(false);
+            expect(validateDateTime('not-a-date')).toBe(false);
+
+            // 无效数字
+            expect(validateDateTime(NaN)).toBe(false);
+            expect(validateDateTime(Infinity)).toBe(false);
+            expect(validateDateTime(-Infinity)).toBe(false);
+
+            // 无效对象
+            expect(validateDateTime(null)).toBe(false);
+            expect(validateDateTime(undefined)).toBe(false);
+            expect(validateDateTime({})).toBe(false);
+            expect(validateDateTime([])).toBe(false);
+
+            // 无效 Date 对象
+            expect(validateDateTime(new Date('invalid'))).toBe(false);
+            expect(validateDateTime(new Date(NaN))).toBe(false);
+        });
+
+        it('should handle edge cases', () => {
+            // 边界日期
+            expect(validateDateTime('1970-01-01')).toBe(true);
+            expect(validateDateTime(0)).toBe(true);
+            expect(validateDateTime(new Date(0))).toBe(true);
+
+            // 负数时间戳（早期日期）
+            expect(validateDateTime(-86400000)).toBe(true); // 1969-12-31
+
+            // 非常大的数值（这些实际上可能仍被视为有效日期）
+            expect(validateDateTime(9999999999999)).toBe(true); // 远未来日期
+            // 移除或修改这个测试，因为非常大的数值在 JavaScript 中可能仍被视为有效
+            // 我们可以测试一个更明显的无效值
+            expect(validateDateTime(new Date(NaN))).toBe(false); // 明确的无效日期
         });
     });
-
-    describe('validateTimeString', () => {
-        it('should validate time strings', () => {
-            expect(validateTimeString('12:30:45')).toBe(true);
-            expect(validateTimeString('00:00:00')).toBe(true);
-            expect(validateTimeString('23:59:59')).toBe(true);
-        });
-
-        it('should reject invalid times', () => {
-            expect(validateTimeString('25:00:00')).toBe(false);
-            expect(validateTimeString('12:60:00')).toBe(false);
-            expect(validateTimeString('invalid')).toBe(false);
-        });
-    });
-
-    describe('validateDateTimeString', () => {
-        it('should validate datetime strings', () => {
-            expect(validateDateTimeString('2023-01-01 12:30:45')).toBe(true);
-            expect(validateDateTimeString('2023-12-31 23:59:59')).toBe(true);
-        });
-
-        it('should reject invalid datetimes', () => {
-            expect(validateDateTimeString('invalid')).toBe(false);
-            expect(validateDateTimeString('2023-01-01')).toBe(false);
-        });
-    });
-
     describe('validateJSONString', () => {
         it('should validate JSON strings', () => {
             expect(validateJSONString('{"key": "value"}')).toBe(true);
@@ -410,17 +433,17 @@ line3`;
 line2
 line3`;
             expect(multilineValidator(multilineText)).toBe(true);
-            
+
             // 测试 ignoreCase 选项
             const caseInsensitiveValidator = createPatternValidator('hello', { ignoreCase: true });
             expect(caseInsensitiveValidator('HELLO')).toBe(true);
             expect(caseInsensitiveValidator('Hello')).toBe(true);
-            
+
             // 测试 sticky 选项
             const stickyValidator = createPatternValidator('hello', { sticky: true });
             expect(stickyValidator('hello world')).toBe(true);
             expect(stickyValidator('world hello')).toBe(false);
-            
+
             // 测试 global 选项
             const globalValidator = createPatternValidator('hello', { global: true });
             expect(globalValidator('hello world hello')).toBe(true);

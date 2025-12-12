@@ -12,8 +12,6 @@ import {
     validateNotConstraints,
     validateEqualTo,
     validateNotEqualTo,
-    validateStrictEqualTo,
-    validateStrictNotEqualTo,
     validateGreaterThan,
     validateGreaterThanOrEqualTo,
     validateLessThan,
@@ -61,7 +59,6 @@ describe('Validation Constraints', () => {
             expect(validateMinLength(new Set(), 1)).toBe(false);
         });
 
-        // 在 "should validate maximum length for strings and arrays" 测试中添加 Map 和 Set 的测试用例
         it('should validate maximum length for strings, arrays, maps, and sets', () => {
             // 字符串测试
             expect(validateMaxLength('hello', 10)).toBe(true);
@@ -94,6 +91,7 @@ describe('Validation Constraints', () => {
             expect(validateMaxLength(set1, 5)).toBe(true);
             expect(validateMaxLength(set2, 3)).toBe(false);
         });
+
         it('should validate length range', () => {
             expect(validateLengthRange('hello', 3, 10)).toBe(true);
             expect(validateLengthRange('hi', 3, 10)).toBe(false);
@@ -102,60 +100,110 @@ describe('Validation Constraints', () => {
     });
 
     describe('Numeric validations', () => {
-        it('should validate minimum value', () => {
+        it('should validate minimum value with same types', () => {
             expect(validateMin(5, 3)).toBe(true);
             expect(validateMin(2, 3)).toBe(false);
-            expect(validateMin('5', 3)).toBe(false); // Not a number
         });
 
-        it('should validate maximum value', () => {
+        it('should validate minimum value with different types (loose comparison)', () => {
+            expect(validateMin('5', 3)).toBe(true); // 字符串数字现在可以比较
+            expect(validateMin(5, '3' as any)).toBe(true);
+            expect(validateMin('2', 3)).toBe(false);
+        });
+
+        it('should validate maximum value with same types', () => {
             expect(validateMax(5, 10)).toBe(true);
             expect(validateMax(15, 10)).toBe(false);
-            expect(validateMax('5', 10)).toBe(false); // Not a number
         });
 
-        it('should validate numeric range', () => {
+        it('should validate maximum value with different types (loose comparison)', () => {
+            expect(validateMax('5', 10)).toBe(true); // 字符串数字现在可以比较
+            expect(validateMax(5, '10' as any)).toBe(true);
+            expect(validateMax('15', 10)).toBe(false);
+        });
+
+        it('should validate numeric range with same types', () => {
             expect(validateRange(5, 3, 10)).toBe(true);
             expect(validateRange(2, 3, 10)).toBe(false);
             expect(validateRange(15, 3, 10)).toBe(false);
         });
 
-        it('should validate greater than', () => {
-            expect(validateGreaterThan(5, 3)).toBe(true);
-            expect(validateGreaterThan(3, 5)).toBe(false);
-            expect(validateGreaterThan('5', 3)).toBe(false);
+        it('should validate numeric range with different types (loose comparison)', () => {
+            expect(validateRange('7', 3, 10)).toBe(true); // 字符串数字现在可以比较
+            expect(validateRange(7, '3' as any, '10' as any)).toBe(true);
+            expect(validateRange('2', 3, 10)).toBe(false);
         });
 
-        it('should validate greater than or equal to', () => {
+        it('should validate greater than with same types', () => {
+            expect(validateGreaterThan(5, 3)).toBe(true);
+            expect(validateGreaterThan(3, 5)).toBe(false);
+        });
+
+        it('should validate greater than with different types (loose comparison)', () => {
+            expect(validateGreaterThan('5', 3)).toBe(true); // 字符串数字现在可以比较
+            expect(validateGreaterThan(5, '3')).toBe(true);
+            expect(validateGreaterThan('3', 5)).toBe(false);
+        });
+
+        it('should validate greater than or equal to with same types', () => {
             expect(validateGreaterThanOrEqualTo(5, 3)).toBe(true);
             expect(validateGreaterThanOrEqualTo(5, 5)).toBe(true);
             expect(validateGreaterThanOrEqualTo(3, 5)).toBe(false);
         });
 
-        it('should validate less than', () => {
-            expect(validateLessThan(3, 5)).toBe(true);
-            expect(validateLessThan(5, 3)).toBe(false);
-            expect(validateLessThan('3', 5)).toBe(false);
+        it('should validate greater than or equal to with different types (loose comparison)', () => {
+            expect(validateGreaterThanOrEqualTo('5', 5)).toBe(true); // 字符串数字现在可以比较
+            expect(validateGreaterThanOrEqualTo(5, '5')).toBe(true);
+            expect(validateGreaterThanOrEqualTo('3', 5)).toBe(false);
         });
 
-        it('should validate less than or equal to', () => {
+        it('should validate less than with same types', () => {
+            expect(validateLessThan(3, 5)).toBe(true);
+            expect(validateLessThan(5, 3)).toBe(false);
+        });
+
+        it('should validate less than with different types (loose comparison)', () => {
+            expect(validateLessThan('3', 5)).toBe(true); // 字符串数字现在可以比较
+            expect(validateLessThan(3, '5')).toBe(true);
+            expect(validateLessThan('5', 3)).toBe(false);
+        });
+
+        it('should validate less than or equal to with same types', () => {
             expect(validateLessThanOrEqualTo(3, 5)).toBe(true);
             expect(validateLessThanOrEqualTo(5, 5)).toBe(true);
             expect(validateLessThanOrEqualTo(7, 5)).toBe(false);
         });
 
-        it('should validate between inclusive', () => {
+        it('should validate less than or equal to with different types (loose comparison)', () => {
+            expect(validateLessThanOrEqualTo('5', 5)).toBe(true); // 字符串数字现在可以比较
+            expect(validateLessThanOrEqualTo(5, '5')).toBe(true);
+            expect(validateLessThanOrEqualTo('7', 5)).toBe(false);
+        });
+
+        it('should validate between inclusive with same types', () => {
             expect(validateBetween(5, 3, 10)).toBe(true);
             expect(validateBetween(3, 3, 10)).toBe(true);
             expect(validateBetween(10, 3, 10)).toBe(true);
             expect(validateBetween(2, 3, 10)).toBe(false);
         });
 
-        it('should validate between exclusive', () => {
+        it('should validate between inclusive with different types (loose comparison)', () => {
+            expect(validateBetween('5', 3, 10)).toBe(true); // 字符串数字现在可以比较
+            expect(validateBetween(5, '3', '10')).toBe(true);
+            expect(validateBetween('2', 3, 10)).toBe(false);
+        });
+
+        it('should validate between exclusive with same types', () => {
             expect(validateBetweenExclusive(5, 3, 10)).toBe(true);
             expect(validateBetweenExclusive(3, 3, 10)).toBe(false);
             expect(validateBetweenExclusive(10, 3, 10)).toBe(false);
             expect(validateBetweenExclusive(2, 3, 10)).toBe(false);
+        });
+
+        it('should validate between exclusive with different types (loose comparison)', () => {
+            expect(validateBetweenExclusive('5', 3, 10)).toBe(true); // 字符串数字现在可以比较
+            expect(validateBetweenExclusive(5, '3', '10')).toBe(true);
+            expect(validateBetweenExclusive('3', 3, 10)).toBe(false);
         });
     });
 
@@ -173,7 +221,7 @@ describe('Validation Constraints', () => {
 
         it('should validate inclusion in object values', () => {
             const obj = { a: 1, b: 2, c: 3 };
-            expect(validateIn(2, obj)).toBe(true);
+            expect(validateIn('b', obj)).toBe(true);
             expect(validateIn(4, obj)).toBe(false);
         });
 
@@ -184,25 +232,46 @@ describe('Validation Constraints', () => {
     });
 
     describe('Equality validations', () => {
-        it('should validate equality', () => {
-            expect(validateEqualTo(5, 5)).toBe(true);
-            expect(validateEqualTo(5, '5')).toBe(false);
-            expect(validateEqualTo({}, {})).toBe(false); // Different references
+        it('should validate equality with strict comparison', () => {
+            expect(validateEqualTo(5, 5, true)).toBe(true);
+            expect(validateEqualTo(5, '5', true)).toBe(false); // 严格比较
+            expect(validateEqualTo({}, {}, true)).toBe(false); // Different references
         });
 
-        it('should validate inequality', () => {
-            expect(validateNotEqualTo(5, 3)).toBe(true);
+        it('should validate equality with loose comparison (default)', () => {
+            expect(validateEqualTo(5, 5)).toBe(true); // 默认宽松比较
+            expect(validateEqualTo(5, '5')).toBe(true); // 宽松比较
+            expect(validateEqualTo('5', 5)).toBe(true);
+            expect(validateEqualTo(true, 1)).toBe(true);
+            expect(validateEqualTo(false, 0)).toBe(true);
+            expect(validateEqualTo(null, undefined)).toBe(true);
+        });
+
+        it('should validate inequality with strict comparison', () => {
+            expect(validateNotEqualTo(5, 3, true)).toBe(true);
+            expect(validateNotEqualTo(5, 5, true)).toBe(false);
+            expect(validateNotEqualTo(5, '5', true)).toBe(true); // 严格比较
+        });
+
+        it('should validate inequality with loose comparison (default)', () => {
+            expect(validateNotEqualTo(5, 3)).toBe(true); // 默认宽松比较
+            expect(validateNotEqualTo(5, '3')).toBe(true);
             expect(validateNotEqualTo(5, 5)).toBe(false);
+            expect(validateNotEqualTo(5, '5')).toBe(false); // 宽松比较
+            expect(validateNotEqualTo(true, 1)).toBe(false);
         });
 
-        it('should validate strict equality', () => {
-            expect(validateStrictEqualTo(5, 5)).toBe(true);
-            expect(validateStrictEqualTo(5, '5')).toBe(false);
-        });
+        it('should validate string numeric comparisons', () => {
+            // 字符串数字比较（数字转换）
+            expect(validateEqualTo('5', '5')).toBe(true);
+            expect(validateEqualTo('5', '5.0')).toBe(true);
+            expect(validateGreaterThan('10', '5')).toBe(true); // 数字比较，不是字典序
+            expect(validateLessThan('5', '10')).toBe(true); // 数字比较，不是字典序
 
-        it('should validate strict inequality', () => {
-            expect(validateStrictNotEqualTo(5, 3)).toBe(true);
-            expect(validateStrictNotEqualTo(5, 5)).toBe(false);
+            // 字符串数字与普通字符串
+            expect(validateEqualTo('abc', 'abc')).toBe(true);
+            expect(validateGreaterThan('def', 'abc')).toBe(true); // 字典序比较
+            expect(validateLessThan('abc', 'def')).toBe(true); // 字典序比较
         });
     });
 
@@ -267,12 +336,196 @@ describe('Validation Constraints', () => {
         });
     });
 
+    describe('Cross-type comparisons', () => {
+        it('should validate cross-type numeric comparisons', () => {
+            // 字符串数字与数字比较
+            expect(validateGreaterThan('10', 5)).toBe(true);
+            expect(validateLessThan('5', 10)).toBe(true);
+            expect(validateEqualTo('5', 5)).toBe(true);
+
+            // 日期比较
+            const date1 = new Date('2023-01-01');
+            const date2 = new Date('2023-12-31');
+            expect(validateGreaterThan(date2, date1)).toBe(true);
+
+            // 日期字符串与日期对象比较
+            expect(validateGreaterThan(new Date('2023-12-31'), '2023-01-01')).toBe(true);
+
+            // 时间戳与日期比较
+            const timestamp = Date.now();
+            const date = new Date(timestamp);
+            expect(validateEqualTo(date, timestamp)).toBe(true);
+        });
+
+        it('should handle invalid comparisons gracefully', () => {
+            expect(validateGreaterThan('abc', 'def')).toBe(false);
+            expect(validateLessThan({}, [])).toBe(false);
+            expect(validateGreaterThan(null, undefined)).toBe(false);
+        });
+
+        it('should handle generic number conversion', () => {
+            // 测试通用数字转换逻辑
+            expect(validateEqualTo(true, 1)).toBe(true);
+            expect(validateEqualTo(false, 0)).toBe(true);
+            expect(validateGreaterThan(true, false)).toBe(true);
+
+            // null/undefined 转换 - 这些应该是 false，因为:
+            // undefined == 0 是 false
+            // Number(undefined) 是 NaN
+            expect(validateEqualTo(null, 0)).toBe(true); // null == 0 为 false, 但 Number(null) == 0 为 true
+            expect(validateEqualTo(undefined, 0)).toBe(false); // undefined == 0 为 false, Number(undefined) 是 NaN
+
+            // 更准确的测试:
+            expect(validateEqualTo(null, 0)).toBe(true); // null 转换为数字是 0
+            expect(validateEqualTo(undefined, 0)).toBe(false); // undefined 转换为数字是 NaN，NaN 不等于 0
+        });
+
+        // 添加到 Cross-type comparisons 描述块中
+        it('should handle date conversions', () => {
+            const date = new Date('2023-01-01');
+            const timestamp = date.getTime();
+            const dateString = '2023-01-01';
+
+            // Date 与字符串比较
+            expect(validateEqualTo(date, dateString)).toBe(true);
+            expect(validateGreaterThan(date, '2022-12-31')).toBe(true);
+            expect(validateLessThan(date, '2023-01-02')).toBe(true);
+
+            // Date 与时间戳比较
+            expect(validateEqualTo(date, timestamp)).toBe(true);
+            expect(validateGreaterThan(date, timestamp - 1000)).toBe(true);
+            expect(validateLessThan(date, timestamp + 1000)).toBe(true);
+
+            // 字符串与 Date 比较
+            expect(validateEqualTo(dateString, date)).toBe(true);
+            expect(validateGreaterThan('2023-01-02', date)).toBe(true);
+            expect(validateLessThan('2022-12-31', date)).toBe(true);
+
+            // 数字与 Date 比较
+            expect(validateEqualTo(timestamp, date)).toBe(true);
+            expect(validateGreaterThan(timestamp + 1000, date)).toBe(true);
+            expect(validateLessThan(timestamp - 1000, date)).toBe(true);
+        });
+
+        it('should handle string-number bidirectional conversions', () => {
+            // 字符串转数字
+            expect(validateEqualTo('5', 5)).toBe(true);
+            expect(validateGreaterThan('10', 5)).toBe(true);
+            expect(validateLessThan('5', 10)).toBe(true);
+
+            // 数字转字符串
+            expect(validateEqualTo(5, '5')).toBe(true);
+            expect(validateGreaterThan(10, '5')).toBe(true);
+            expect(validateLessThan(5, '10')).toBe(true);
+
+            // 边界情况
+            expect(validateEqualTo('0', 0)).toBe(true);
+            expect(validateEqualTo('-5', -5)).toBe(true);
+            expect(validateEqualTo('5.5', 5.5)).toBe(true);
+        });
+
+        // 可以添加到 Cross-type comparisons 描述块中（可选）
+        it('should handle exceptions gracefully', () => {
+            // 创建一个会抛出异常的对象
+            const evilObject = {
+                valueOf() {
+                    throw new Error('Evil object!');
+                },
+                toString() {
+                    throw new Error('Evil object!');
+                },
+            };
+
+            // 这些比较应该不会抛出异常，而是返回 false（因为内部会返回 NaN）
+            expect(validateEqualTo(evilObject, 5)).toBe(false);
+            expect(validateGreaterThan(evilObject, 5)).toBe(false);
+            expect(validateLessThan(evilObject, 5)).toBe(false);
+        });
+
+        // 可以添加到 Equality validations 或 Cross-type comparisons 中
+        it('should handle string dictionary comparisons', () => {
+            // 相等的情况
+            expect(validateEqualTo('abc', 'abc', true)).toBe(true);
+
+            // 小于的情况
+            expect(validateLessThan('abc', 'def', true)).toBe(true);
+            expect(validateGreaterThan('abc', 'def', true)).toBe(false);
+
+            // 大于的情况
+            expect(validateGreaterThan('def', 'abc', true)).toBe(true);
+            expect(validateLessThan('def', 'abc', true)).toBe(false);
+
+            // 边界情况
+            expect(validateLessThan('a', 'aa', true)).toBe(true); // 较短的字符串
+            expect(validateGreaterThan('aa', 'a', true)).toBe(true); // 较长的字符串
+        });
+
+        // 添加到 Cross-type comparisons 描述块中
+        it('should handle date comparisons with all branches', () => {
+            const date1 = new Date('2023-01-01');
+            const date2 = new Date('2023-12-31');
+            const invalidDate = new Date(NaN); // 无效日期
+
+            // 测试无效日期比较 (覆盖 isNaN 分支)
+            expect(validateEqualTo(invalidDate, date1, true)).toBe(false);
+            expect(validateEqualTo(date1, invalidDate, true)).toBe(false);
+            expect(validateEqualTo(invalidDate, invalidDate, true)).toBe(true);
+
+            // 测试相等的日期 (覆盖 diff === 0 分支)
+            const sameDate1 = new Date('2023-01-01');
+            const sameDate2 = new Date('2023-01-01');
+            expect(validateEqualTo(sameDate1, sameDate2, true)).toBe(true);
+
+            // 测试小于的情况 (覆盖 diff < 0 为 true 分支)
+            expect(validateLessThan(date1, date2, true)).toBe(true);
+            expect(validateGreaterThan(date1, date2, true)).toBe(false);
+
+            // 测试大于的情况 (覆盖 diff < 0 为 false 分支)
+            expect(validateGreaterThan(date2, date1, true)).toBe(true);
+            expect(validateLessThan(date2, date1, true)).toBe(false);
+        });
+
+        // 添加到 Cross-type comparisons 描述块中
+        it('should handle boolean comparisons with all branches', () => {
+            // 情况1：相等的布尔值 (value === other 为 true)
+            expect(validateEqualTo(true, true, true)).toBe(true); // true === true
+            expect(validateEqualTo(false, false, true)).toBe(true); // false === false
+
+            // 情况2：true > false (value === other 为 false 且 value 为 true)
+            expect(validateGreaterThan(true, false, true)).toBe(true);
+            expect(validateLessThan(true, false, true)).toBe(false);
+
+            // 情况3：false < true (value === other 为 false 且 value 为 false)
+            expect(validateLessThan(false, true, true)).toBe(true);
+            expect(validateGreaterThan(false, true, true)).toBe(false);
+
+            // 验证相等性
+            expect(validateEqualTo(true, false, true)).toBe(false); // true !== false
+            expect(validateEqualTo(false, true, true)).toBe(false); // false !== true
+        });
+
+        // 添加到 Cross-type comparisons 描述块中
+        it('should return NaN for unsupported types comparison', () => {
+            // 测试不支持的类型比较（严格模式下）
+            expect(validateEqualTo({}, [], true)).toBe(false); // 对象 vs 数组
+            expect(validateGreaterThan(/regex/, function () {}, true)).toBe(false); // 正则 vs 函数
+            expect(validateLessThan(Symbol('a'), Symbol('b'), true)).toBe(false); // Symbol 比较
+
+            // 测试不同类型间的比较（严格模式下）
+            expect(validateEqualTo([], {}, true)).toBe(false); // 数组 vs 对象
+            expect(validateGreaterThan(new Map(), new Set(), true)).toBe(false); // Map vs Set
+
+            // 验证这些比较返回 false（因为 smartCompare 返回 NaN，而 validateEqualTo 检查是否等于 0）
+        });
+    });
+
     describe('Factory functions', () => {
         it('should create range validator', () => {
             const validator = createRangeValidator(3, 10);
             expect(validator(5)).toBe(true);
             expect(validator(2)).toBe(false);
             expect(validator(15)).toBe(false);
+            expect(validator('7')).toBe(true); // 字符串数字现在可以比较
         });
 
         it('should create length validator', () => {
@@ -312,14 +565,12 @@ describe('Validation Constraints', () => {
             expect(validateMinLength(undefined, 5)).toBe(false); // undefined
         });
 
-        // 在 Collection validations 描述块中添加
         it('should return false for non-supported collection types in validateIn', () => {
             expect(validateIn(1, 'string' as any)).toBe(false); // 字符串不是支持的集合类型
-            expect(validateIn(1, 123  as any)).toBe(false); // 数字不是支持的集合类型
-            expect(validateIn(1, true  as any)).toBe(false); // 布尔值不是支持的集合类型
+            expect(validateIn(1, 123 as any)).toBe(false); // 数字不是支持的集合类型
+            expect(validateIn(1, true as any)).toBe(false); // 布尔值不是支持的集合类型
         });
 
-        // 在 Emptiness validations 描述块中添加
         it('should return false for non-supported types in validateEmpty', () => {
             expect(validateEmpty(123)).toBe(false); // 数字不是支持的类型
             expect(validateEmpty(true)).toBe(false); // 布尔值不是支持的类型

@@ -1,3 +1,4 @@
+// patterns.ts
 import { isString } from '../types';
 
 /**
@@ -67,6 +68,10 @@ export function validatePattern(
  * @param email 要验证的电子邮件地址
  */
 export function validateEmail(email: string): boolean {
+  if (!isString(email)) {
+    return false;
+  }
+  
   // 比较全面的电子邮件正则表达式
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return validatePattern(email, emailRegex);
@@ -78,6 +83,10 @@ export function validateEmail(email: string): boolean {
  * @param phone 要验证的电话号码
  */
 export function validatePhone(phone: string): boolean {
+  if (!isString(phone)) {
+    return false;
+  }
+  
   // 移除所有空格和特殊字符，但保留数字和+
   const cleaned = phone.replace(/[\s\-()]/g, '');
   
@@ -105,11 +114,16 @@ export function validatePhone(phone: string): boolean {
     validatePattern(cleaned, internationalRegex)
   );
 }
+
 /**
  * 验证URL地址
  * @param url 要验证的URL
  */
 export function validateURL(url: string): boolean {
+  if (!isString(url)) {
+    return false;
+  }
+  
   try {
     new URL(url);
     return true;
@@ -123,6 +137,10 @@ export function validateURL(url: string): boolean {
  * @param ip 要验证的IP地址
  */
 export function validateIPv4(ip: string): boolean {
+  if (!isString(ip)) {
+    return false;
+  }
+  
   const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   return validatePattern(ip, ipv4Regex);
 }
@@ -132,6 +150,10 @@ export function validateIPv4(ip: string): boolean {
  * @param ip 要验证的IP地址
  */
 export function validateIPv6(ip: string): boolean {
+  if (!isString(ip)) {
+    return false;
+  }
+  
   const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
   return validatePattern(ip, ipv6Regex);
 }
@@ -141,6 +163,10 @@ export function validateIPv6(ip: string): boolean {
  * @param mac 要验证的MAC地址
  */
 export function validateMAC(mac: string): boolean {
+  if (!isString(mac)) {
+    return false;
+  }
+  
   const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
   return validatePattern(mac, macRegex);
 }
@@ -150,6 +176,10 @@ export function validateMAC(mac: string): boolean {
  * @param color 要验证的颜色值
  */
 export function validateHexColor(color: string): boolean {
+  if (!isString(color)) {
+    return false;
+  }
+  
   const hexColorRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
   return validatePattern(color, hexColorRegex);
 }
@@ -159,6 +189,10 @@ export function validateHexColor(color: string): boolean {
  * @param color 要验证的颜色值
  */
 export function validateRGBColor(color: string): boolean {
+  if (!isString(color)) {
+    return false;
+  }
+  
   const rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
   
   // 提取RGB值并验证范围
@@ -177,6 +211,10 @@ export function validateRGBColor(color: string): boolean {
  * @param color 要验证的颜色值
  */
 export function validateRGBAColor(color: string): boolean {
+  if (!isString(color)) {
+    return false;
+  }
+  
   const rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/;
   
   // 提取RGBA值并验证范围
@@ -212,6 +250,10 @@ export function validateUsername(
     startWithLetter?: boolean;   // 是否必须以字母开头
   } = {}
 ): boolean {
+  if (!isString(username)) {
+    return false;
+  }
+  
   const {
     minLength = 3,
     maxLength = 20,
@@ -268,6 +310,10 @@ export function validatePassword(
     requireSpecial?: boolean;    // 是否需要特殊字符
   } = {}
 ): boolean {
+  if (!isString(password)) {
+    return false;
+  }
+  
   const {
     minLength = 8,
     requireUppercase = true,
@@ -312,6 +358,10 @@ export function validatePassword(
  * @param id 要验证的身份证号码
  */
 export function validateChineseID(id: string): boolean {
+  if (!isString(id)) {
+    return false;
+  }
+  
   // 基本格式验证
   const idRegex = /^\d{17}[\dXx]$/;
   if (!validatePattern(id, idRegex)) {
@@ -336,48 +386,30 @@ export function validateChineseID(id: string): boolean {
  * @param postcode 要验证的邮政编码
  */
 export function validateChinesePostcode(postcode: string): boolean {
+  if (!isString(postcode)) {
+    return false;
+  }
+  
   const postcodeRegex = /^[1-9]\d{5}$/;
   return validatePattern(postcode, postcodeRegex);
 }
 
 /**
- * 验证日期字符串（YYYY-MM-DD格式）
- * @param date 要验证的日期字符串
+ * 验证日期时间是否有效
+ * @param datetime 要验证的日期时间值
+ * @returns boolean 表示日期时间是否有效
  */
-export function validateDateString(date: string): boolean {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!validatePattern(date, dateRegex)) {
+export function validateDateTime(datetime: any): boolean {
+  // 处理 null/undefined
+  if (datetime === null || datetime === undefined) {
     return false;
   }
   
-  // 验证日期有效性
-  const [year, month, day] = date.split('-').map(Number);
-  const dateObj = new Date(year, month - 1, day);
+  // 直接使用 Date 构造函数验证
+  const date = new Date(datetime);
   
-  return (
-    dateObj.getFullYear() === year &&
-    dateObj.getMonth() === month - 1 &&
-    dateObj.getDate() === day
-  );
-}
-
-/**
- * 验证时间字符串（HH:MM:SS格式）
- * @param time 要验证的时间字符串
- */
-export function validateTimeString(time: string): boolean {
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
-  return validatePattern(time, timeRegex);
-}
-
-/**
- * 验证日期时间字符串（YYYY-MM-DD HH:MM:SS格式）
- * @param datetime 要验证的日期时间字符串
- */
-export function validateDateTimeString(datetime: string): boolean {
-  const [datePart, timePart] = datetime.split(' ');
-  
-  return validateDateString(datePart) && validateTimeString(timePart);
+  // 检查是否是有效日期
+  return !isNaN(date.getTime());
 }
 
 /**
@@ -385,6 +417,10 @@ export function validateDateTimeString(datetime: string): boolean {
  * @param json 要验证的JSON字符串
  */
 export function validateJSONString(json: string): boolean {
+  if (!isString(json)) {
+    return false;
+  }
+  
   try {
     JSON.parse(json);
     return true;
@@ -398,6 +434,10 @@ export function validateJSONString(json: string): boolean {
  * @param base64 要验证的Base64字符串
  */
 export function validateBase64(base64: string): boolean {
+  if (!isString(base64)) {
+    return false;
+  }
+  
   const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
   return validatePattern(base64, base64Regex);
 }
@@ -407,6 +447,10 @@ export function validateBase64(base64: string): boolean {
  * @param uuid 要验证的UUID
  */
 export function validateUUID(uuid: string): boolean {
+  if (!isString(uuid)) {
+    return false;
+  }
+  
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return validatePattern(uuid, uuidRegex);
 }
@@ -416,6 +460,10 @@ export function validateUUID(uuid: string): boolean {
  * @param cardNumber 要验证的信用卡号码
  */
 export function validateCreditCard(cardNumber: string): boolean {
+  if (!isString(cardNumber)) {
+    return false;
+  }
+  
   // 移除空格和连字符
   const cleaned = cardNumber.replace(/[\s-]/g, '');
   

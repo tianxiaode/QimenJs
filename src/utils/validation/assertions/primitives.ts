@@ -49,52 +49,6 @@ export function assertString(
   
   // 复用现有的验证函数
   if (!validateString(value, validationOptions)) {
-    // 根据失败原因抛出适当的错误
-    if (typeof value !== 'string') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
-    }
-    
-    const { nonEmpty = false, minLength, maxLength, allowedValues, disallowedValues } = validationOptions;
-    let validatedValue = value;
-    
-    if (validationOptions.trim) {
-      validatedValue = validatedValue.trim();
-    }
-    
-    // 检查具体失败原因
-    if (nonEmpty && validatedValue.length === 0) {
-      ctx.throwError(ValidationErrorCode.NOT_EMPTY);
-    }
-    
-    if (minLength !== undefined && validatedValue.length < minLength) {
-      ctx.throwError(ValidationErrorCode.MIN_LENGTH, { 
-        min: minLength, 
-        actualLength: validatedValue.length 
-      });
-    }
-    
-    if (maxLength !== undefined && validatedValue.length > maxLength) {
-      ctx.throwError(ValidationErrorCode.MAX_LENGTH, { 
-        max: maxLength, 
-        actualLength: validatedValue.length 
-      });
-    }
-    
-    if (allowedValues !== undefined && !allowedValues.includes(validatedValue)) {
-      ctx.throwError(ValidationErrorCode.NOT_IN_COLLECTION, { 
-        collection: allowedValues,
-        collectionText: `[${allowedValues.join(', ')}]`
-      });
-    }
-    
-    if (disallowedValues !== undefined && disallowedValues.includes(validatedValue)) {
-      ctx.throwError(ValidationErrorCode.IN_COLLECTION, { 
-        collection: disallowedValues,
-        collectionText: `[${disallowedValues.join(', ')}]`
-      });
-    }
-    
-    // 未知原因
     ctx.throwError(ValidationErrorCode.TYPE_NOT_STRING);
   }
 }
@@ -125,53 +79,10 @@ export function assertNumber(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNumber(value, validationOptions)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    const { 
-      min, max, integer, positive, negative, nonNegative, finite = true, allowedValues 
-    } = validationOptions;
-    
-    // 检查具体失败原因
-    if (finite && !Number.isFinite(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'finite number' });
-    }
-    
-    if (integer && !Number.isInteger(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'integer' });
-    }
-    
-    if (positive && value <= 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { min: 0, actual: value });
-    }
-    
-    if (negative && value >= 0) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN, { max: 0, actual: value });
-    }
-    
-    if (nonNegative && value < 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min: 0, actual: value });
-    }
-    
-    if (min !== undefined && value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
-    }
-    
-    if (max !== undefined && value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { max, actual: value });
-    }
-    
-    if (allowedValues !== undefined && !allowedValues.includes(value)) {
-      ctx.throwError(ValidationErrorCode.NOT_IN_COLLECTION, { 
-        collection: allowedValues,
-        collectionText: `[${allowedValues.join(', ')}]`
-      });
-    }
-    
     ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
   }
 }
+
 
 /**
  * 布尔值断言函数
@@ -308,40 +219,10 @@ export function assertInteger(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateInteger(value, validationOptions)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    if (!Number.isInteger(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'integer' });
-    }
-    
-    const { min, max, positive, negative, nonNegative } = validationOptions;
-    
-    // 检查具体失败原因
-    if (positive && value <= 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { min: 0, actual: value });
-    }
-    
-    if (negative && value >= 0) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN, { max: 0, actual: value });
-    }
-    
-    if (nonNegative && value < 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min: 0, actual: value });
-    }
-    
-    if (min !== undefined && value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
-    }
-    
-    if (max !== undefined && value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { max, actual: value });
-    }
-    
     ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
   }
 }
+
 
 /**
  * 正整数断言函数
@@ -363,28 +244,6 @@ export function assertPositiveInteger(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validatePositiveInteger(value, validationOptions)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    if (!Number.isInteger(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'integer' });
-    }
-    
-    if (value <= 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN, { min: 0, actual: value });
-    }
-    
-    const { min, max } = validationOptions;
-    
-    if (min !== undefined && value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
-    }
-    
-    if (max !== undefined && value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { max, actual: value });
-    }
-    
     ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
   }
 }
@@ -409,31 +268,10 @@ export function assertNonNegativeInteger(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateNonNegativeInteger(value, validationOptions)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    if (!Number.isInteger(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'integer' });
-    }
-    
-    if (value < 0) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min: 0, actual: value });
-    }
-    
-    const { min, max } = validationOptions;
-    
-    if (min !== undefined && value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
-    }
-    
-    if (max !== undefined && value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { max, actual: value });
-    }
-    
     ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
   }
 }
+
 
 /**
  * 有限数断言函数
@@ -455,24 +293,6 @@ export function assertFiniteNumber(
   const ctx = createAssetErrorContext({ paramName, functionName });
   
   if (!validateFiniteNumber(value, validationOptions)) {
-    if (typeof value !== 'number') {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
-    }
-    
-    if (!Number.isFinite(value)) {
-      ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER, { expected: 'finite number' });
-    }
-    
-    const { min, max } = validationOptions;
-    
-    if (min !== undefined && value < min) {
-      ctx.throwError(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { min, actual: value });
-    }
-    
-    if (max !== undefined && value > max) {
-      ctx.throwError(ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL, { max, actual: value });
-    }
-    
     ctx.throwError(ValidationErrorCode.TYPE_NOT_NUMBER);
   }
 }
