@@ -1,5 +1,8 @@
 // rules/base.ts
-export interface RuleError {
+/**
+ * 验证规则错误信息接口
+ */
+export interface ValidationRuleError {
   /**
    * 错误代码
    */
@@ -16,7 +19,10 @@ export interface RuleError {
   errorMessage?: string;
 }
 
-export interface RuleResult {
+/**
+ * 验证规则结果接口
+ */
+export interface ValidationRuleResult {
   /**
    * 验证是否通过
    */
@@ -25,5 +31,15 @@ export interface RuleResult {
   /**
    * 错误列表（可以为空）
    */
-  errors: RuleError[];
+  errors: ValidationRuleError[];
 }
+
+/**
+ * 单一验证规则函数类型
+ */
+export type ValidationSingleRule<T = any> = (value: T, options?: any) => ValidationRuleResult;
+
+/**
+ * 复合验证规则函数类型
+ */
+export type ValidationCompositeRule<T = any> = (value: T, options?: any) => ValidationRuleResult;

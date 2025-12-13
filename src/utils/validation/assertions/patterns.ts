@@ -1,5 +1,5 @@
 // patterns.ts
-import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
+import { ValidationErrorCode, ValidationErrorParams } from '../rules/error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 import {
   validatePattern,

@@ -1,5 +1,5 @@
 import { InvalidInputError } from '../../error';
-import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
+import { ValidationErrorCode, ValidationErrorParams } from '../rules/error-codes';
 import { createAssetErrorContext, AssertErrorContextOptions } from './error-context';
 /**
  * 断言函数统一导出

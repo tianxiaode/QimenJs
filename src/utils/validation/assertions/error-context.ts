@@ -1,5 +1,5 @@
 import { InvalidInputError } from '../../error';
-import { ValidationErrorCode, ValidationErrorParams } from './error-codes';
+import { ValidationErrorCode, ValidationErrorParams } from '../rules/error-codes';
 
 export interface AssertErrorContextOptions {
     paramName?: string;
