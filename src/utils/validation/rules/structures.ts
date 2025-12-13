@@ -38,6 +38,7 @@ export function isArrayLike(value: any): ValidationRuleResult {
  * 检查是否为纯对象（plain object，通过 {} 或 new Object() 创建）
  */
 export function isPlainObject(value: any): ValidationRuleResult {
+  // 首先检查基本类型
   if (typeof value !== 'object' || value === null) {
     return {
       isValid: false,
@@ -47,14 +48,26 @@ export function isPlainObject(value: any): ValidationRuleResult {
       }]
     };
   }
-  
+
+  // 排除数组
+  if (Array.isArray(value)) {
+    return {
+      isValid: false,
+      errors: [{
+        errorCode: ValidationErrorCode.TYPE_NOT_PLAIN_OBJECT,
+        errorParams: { value }
+      }]
+    };
+  }
+
+  // 检查原型链
   const proto = Object.getPrototypeOf(value);
   const isValid = proto === null || proto === Object.prototype;
-  
+
   if (isValid) {
     return { isValid: true, errors: [] };
   }
-  
+
   return {
     isValid: false,
     errors: [{
@@ -63,7 +76,6 @@ export function isPlainObject(value: any): ValidationRuleResult {
     }]
   };
 }
-
 /**
  * 检查是否为 Map 对象
  */
@@ -261,7 +273,7 @@ export function isBlob(value: any): ValidationRuleResult {
  * 检查值是否可迭代（实现了 Symbol.iterator）
  */
 export function isIterable(value: any): ValidationRuleResult {
-  const isValid = !isNil(value) && typeof value[Symbol.iterator] === 'function';
+  const isValid = !isNil(value).isValid && typeof value[Symbol.iterator] === 'function';
   
   if (isValid) {
     return { isValid: true, errors: [] };
@@ -302,7 +314,7 @@ export function isIterableButNotString(value: any): ValidationRuleResult {
  * 检查值是否为类 Promise 对象（有 then 方法）
  */
 export function isThenable(value: any): ValidationRuleResult {
-  const isValid = !isNil(value) && typeof value === 'object' && typeof value.then === 'function';
+  const isValid = !isNil(value).isValid && typeof value === 'object' && typeof value.then === 'function';
   
   if (isValid) {
     return { isValid: true, errors: [] };

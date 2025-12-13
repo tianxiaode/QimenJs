@@ -6,3 +6,4 @@ export * from './structures';
 export * from './patterns';
 export * from './constraints';
 export * from './utils';
+export * from './ValidationRules';

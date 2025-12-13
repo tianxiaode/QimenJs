@@ -66,7 +66,7 @@ export function isBoolean(value: any): ValidationRuleResult {
 export function isDate(value: any): ValidationRuleResult {
   if (value instanceof Date) {
     // 检查是否为有效日期
-    if (isNaN(value.getTime())) {
+    if (globalThis.isNaN(value.getTime())) {
       return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { 
         value, 
         reason: 'Invalid Date' 
