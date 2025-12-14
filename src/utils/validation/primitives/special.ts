@@ -102,7 +102,7 @@ export function isFalsy(value: any): ValidationResult {
 /**
  * 检查是否为 NaN（使用 Number.isNaN，比 isNaN 更严格）
  */
-export function isNaN(value: any): ValidationResult {
+export function isNumericNaN(value: any): ValidationResult {
   if (Number.isNaN(value)) {
     return createValidationSuccess();
   }
@@ -111,4 +111,29 @@ export function isNaN(value: any): ValidationResult {
     expected: 'NaN', 
     actual: value 
   });
+}
+
+/**
+ * 检查值是否为必填（非空）
+ */
+export function isRequired(value: any): ValidationResult {
+  // 检查各种空值情况
+  if (
+    value === null || 
+    value === undefined || 
+    (typeof value === 'string' && value.trim() === '') ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (Array.isArray(value) && value.length === 0) ||
+    (value instanceof Map && value.size === 0) ||
+    (value instanceof Set && value.size === 0) ||
+    (typeof value === 'number' && isNaN(value)) ||
+    (value instanceof Date && isNaN(value.getTime())) // 添加对无效日期的检查
+  ) {
+    return createValidationFailure(ValidationErrorCode.REQUIRED, { 
+      value,
+      errorMessage: 'Value is required'
+    });
+  }
+
+  return createValidationSuccess();
 }
