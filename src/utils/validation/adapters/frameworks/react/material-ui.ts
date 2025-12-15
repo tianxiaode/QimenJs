@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/react/material-ui.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getGlobalErrorMessageHandler } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../errors';
 
 /**
  * 创建 Material-UI 兼容的验证器
@@ -10,14 +10,14 @@ import { getGlobalErrorMessageHandler } from '../../../errors';
  */
 export function createMaterialUIValidator(rules: any, message?: string) {
   const validator = convertExternalRules(rules);
-  const errorHandler = getGlobalErrorMessageHandler();
+
   return function(value: any) {
     const result = validator(value);
     if (result.isValid) {
       return null;
     } else {
       // 使用统一的错误信息格式化方法
-      const errorMessage = errorHandler.getFormattedMessage(result.errors, message);
+      const errorMessage = getValidationFormattedMessage(result.errors, message);
       return errorMessage;
     }
   };
@@ -31,14 +31,13 @@ export function createMaterialUIValidator(rules: any, message?: string) {
  */
 export function createMaterialUIPromiseValidator(rules: any, message?: string) {
   const validator = convertExternalRules(rules);
-  const errorHandler = getGlobalErrorMessageHandler();
   return function(value: any) {
     const result = validator(value);
     if (result.isValid) {
       return Promise.resolve();
     } else {
       // 使用统一的错误信息格式化方法
-      const errorMessage = errorHandler.getFormattedMessage(result.errors, message);
+      const errorMessage = getValidationFormattedMessage(result.errors, message);
       return Promise.reject(new Error(errorMessage));
     }
   };
