@@ -6,3 +6,4 @@ export * from './primitives';
 export * from './structures';
 export * from './Validation';
 export * from './adapters';
+export * from './errors';

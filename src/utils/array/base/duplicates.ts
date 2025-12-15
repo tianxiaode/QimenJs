@@ -1,10 +1,13 @@
-import { assertArray  } from '../../validation';
+import { isArray  } from '../../validation';
+import { InvalidInputError } from '@/utils/error';
 
 /**
  * 移除数组中的重复元素
  */
 export function removeDuplicates<T>(arr: T[]): T[] {
-  assertArray(arr, { functionName: 'removeDuplicates' });
+
+  if(isArray(arr)) throw new In;
+  
   
   const seen = new Set<T>();
   const result: T[] = [];

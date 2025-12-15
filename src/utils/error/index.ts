@@ -1,6 +1,5 @@
 export * from './BaseError';
 export * from './InvalidInputError';
-export * from './ValidationError';
 
 
 /**
