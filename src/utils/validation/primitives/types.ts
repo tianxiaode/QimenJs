@@ -17,7 +17,7 @@ export function isString(value: any): ValidationResult {
  * 检查是否为数字
  */
 export function isNumber(value: any): ValidationResult {
-  if (typeof value === 'number') {
+  if (typeof value === 'number' && !isNaN(value)) {
     return createValidationSuccess();
   }
   

@@ -7,3 +7,6 @@ export * from './structures';
 export * from './Validation';
 export * from './adapters';
 export * from './errors';
+export * from './assertion'
+export * from './builders'
+export * from './validators'

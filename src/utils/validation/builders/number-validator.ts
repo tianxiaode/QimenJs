@@ -1,83 +1,52 @@
-import { ValidationResult, NumberValidationRules } from '../base';
+import {
+    ValidationResult,
+    NumberValidationRules,
+    createValidationSuccess,
+    createValidationFailure,
+} from '../base';
 import { isNumber, isInteger, isRequired } from '../primitives';
 import { hasMinValue, hasMaxValue } from '../constraints';
-import { allRules, conditionalRule } from '../composition';
+import { allRules } from '../composition';
 
 /**
  * 构建数字验证器
  * @param rules 数字验证规则配置
  * @returns 验证函数
  */
-export function buildNumberValidator(rules: NumberValidationRules): (value: number) => ValidationResult {
-  const validators: Array<(value: number) => ValidationResult> = [];
+export function buildNumberValidator(
+    rules: NumberValidationRules
+): (value: number) => ValidationResult {
+    return (value: number): ValidationResult => {
+        // 1. 类型检查
+        const numberCheck = isNumber(value);
+        if (!numberCheck.isValid) {
+            return numberCheck;
+        }
 
-  // 类型检查
-  validators.push((value: number) => isNumber(value));
+        // 2. 如果值为空且不是必填，直接通过
+        if ((value === null || value === undefined) && !rules.required) {
+            return createValidationSuccess();
+        }
 
-  // 必填验证（对于数字来说，通常是检查是否为 NaN 或 null/undefined）
-  if (rules.required) {
-    validators.push((value: number) => isRequired(value));
-  }
+        // 3. 构建验证规则数组
+        const validators: Array<(value: number) => ValidationResult> = [];
 
-  // 最小值验证
-  if (rules.min !== undefined) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        (value: number) => hasMinValue(rules.min!, true)(value)
-      )
-    );
-  }
+        // 4. 添加规则（由于第2步已经处理了非必填的空值情况，这里可以简化）
+        if (rules.required) {
+            validators.push(isRequired);
+        }
 
-  // 最大值验证
-  if (rules.max !== undefined) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        (value: number) => hasMaxValue(rules.max!, true)(value)
-      )
-    );
-  }
+        // 只有在值不为空时才添加这些规则
+        if (value !== null && value !== undefined) {
+            if (rules.min !== undefined) validators.push(hasMinValue(rules.min, true));
+            if (rules.max !== undefined) validators.push(hasMaxValue(rules.max, true));
+            if (rules.integer) validators.push(isInteger);
+            if (rules.positive) validators.push(hasMinValue(0, false));
+            if (rules.negative) validators.push(hasMaxValue(0, false));
+            if (rules.custom) validators.push(rules.custom);
+        }
 
-  // 整数验证
-  if (rules.integer) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        (value: number) => isInteger(value)
-      )
-    );
-  }
-
-  // 正数验证
-  if (rules.positive) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        (value: number) => hasMinValue(0, false)(value) // 大于0
-      )
-    );
-  }
-
-  // 负数验证
-  if (rules.negative) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        (value: number) => hasMaxValue(0, false)(value) // 小于0
-      )
-    );
-  }
-
-  // 自定义验证
-  if (rules.custom) {
-    validators.push(
-      conditionalRule(
-        (value: number) => value !== null && value !== undefined && !isNaN(value),
-        rules.custom
-      )
-    );
-  }
-
-  return allRules(...validators);
+        // 5. 执行验证
+        return validators.length > 0 ? allRules(...validators)(value) : createValidationSuccess();
+    };
 }

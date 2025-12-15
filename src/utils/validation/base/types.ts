@@ -59,7 +59,7 @@ export interface ValidationErrorParams {
 }
 
 
-export interface ValidationError {
+export interface ValidationRuleError {
   /**
    * 错误代码
    */
@@ -88,7 +88,7 @@ export interface ValidationResult {
   /**
    * 错误列表（可以为空）
    */
-  errors: ValidationError[];
+  errors: ValidationRuleError[];
 }
 
 /**
@@ -159,7 +159,7 @@ export interface ErrorMessageHandler {
    * @param error 验证错误信息
    * @returns 本地化的错误消息字符串
    */
-  getMessage(error: ValidationError): string;
+  getMessage(error: ValidationRuleError): string;
   
   /**
    * 批量处理错误消息
@@ -167,6 +167,6 @@ export interface ErrorMessageHandler {
    * @param customMessage 自定义错误消息
    * @returns 格式化后的完整错误消息
    */
-  getFormattedMessage(errors: ValidationError[], customMessage?: string): string;
+  getFormattedMessage(errors: ValidationRuleError[], customMessage?: string): string;
 }
 

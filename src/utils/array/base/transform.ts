@@ -1,12 +1,12 @@
-import { ValidationError } from '../../error';
-import { assertArray  } from '../../validation';
+import {  } from '../../error';
+import { assertArray } from '../../validation';
 
 /**
  * 移除数组中指定的值
  */
 export function removeValues<T>(arr: T[], valuesToRemove: T[]): T[] {
-  assertArray(arr, { functionName:'removeValues'});
-  assertArray(valuesToRemove, {functionName:'removeValues.valuesToRemove'});
+  assertArray(arr, {},  { functionName: 'removeValues' })
+  assertArray(valuesToRemove, {},  { functionName: 'removeValues', paramName: 'valuesToRemove' })
   
   if (arr.length === 0) {
     return [];
@@ -23,14 +23,10 @@ export function splitArray<T>(
   arr: T[],
   condition: (item: T, index: number) => boolean
 ): [T[], T[]] {
-  assertArray(arr, { functionName:'splitArray'});
-  
-  if (typeof condition !== 'function') {
-    throw new ValidationError(
-      "Condition must be a function",
-      { value: condition, expected: 'Function' } as any
-    );
-  }
+  assertArray(arr, {},  { functionName: 'splitArray' })
+  assertArray(valuesToRemove, {},  { functionName: 'removeValues', paramName: 'valuesToRemove' })
+  assert(isArray(arr), { functionName:'splitArray'});
+  assert(isFunction(condition), { functionName:'splitArray', value: condition, expect: 'Function'})
   
   const matches: T[] = [];
   const nonMatches: T[] = [];
