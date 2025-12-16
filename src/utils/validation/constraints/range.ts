@@ -1,7 +1,7 @@
 // rules/constraints/range.ts
-import { ValidationErrorCode } from '../constants';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
-import { isNumber } from '../primitives';
+import { ValidationErrorCode } from '../core/constants';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
+import { isNumber } from '../rules';
 
 /**
  * 检查是否为有效索引（非负整数）

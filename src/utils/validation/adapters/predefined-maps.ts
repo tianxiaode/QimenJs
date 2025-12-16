@@ -7,7 +7,7 @@ import {
     isBoolean,
     isFalsy,
     isTruthy,
-} from '../primitives';
+} from '../rules';
 import {
     hasMinLength,
     hasMaxLength,

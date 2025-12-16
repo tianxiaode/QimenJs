@@ -1,6 +1,6 @@
 // rules/constraints/comparison/core.ts
-import { ValidationErrorCode } from '../../constants';
-import { ValidationResult,createValidationFailure, createValidationSuccess } from '../../base';
+import { ValidationErrorCode } from '../../core/constants';
+import { ValidationResult,createValidationFailure, createValidationSuccess } from '../../core';
 
 /**
  * 严格比较两个值

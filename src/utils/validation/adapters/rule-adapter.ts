@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/rule-adapter.ts
 import { allRules } from '../composition';
-import { ValidationResult } from '../base';
+import { ValidationResult } from '../core';
 import { PREDEFINED_KEYWORD_MAP, KEYWORD_ALIASES } from './predefined-maps';
 
 // 定义转换器接口，便于扩展

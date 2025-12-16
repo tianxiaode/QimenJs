@@ -1,6 +1,6 @@
 // rules/constraints/empty.ts
-import { ValidationErrorCode } from '../constants';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 检查字符串是否为空

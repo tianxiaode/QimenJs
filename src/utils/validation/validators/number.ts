@@ -1,6 +1,6 @@
-import { NumberValidationRules, ValidationResult } from '../base';
+import { NumberValidationRules, ValidationResult } from '../core';
 import { buildNumberValidator } from '../builders';
-import { assert } from '../assertion';
+import { assertValidation } from '../core/assertion';
 /**
  * 快捷验证函数 - 简化调用
  * @param value 要验证的值
@@ -25,7 +25,7 @@ export function assertNumber(
   context?: Record<string, any>
 ): number {
   const result = validateNumber(value, rules);
-  assert(result, context)
+  assertValidation(result, context)
   
   return value; // 返回原始值，便于链式调用
 }

@@ -1,6 +1,6 @@
-import { ValidationResult, StringValidationRules } from '../base';
+import { ValidationResult, StringValidationRules } from '../core';
 import { isEmpty, hasMinLength, hasMaxLength } from '../constraints';
-import { isString, isRequired } from '../primitives';
+import { isString, isRequired } from '../rules';
 import { matchesPattern } from '../patterns';
 import { allRules, conditionalRule } from '../composition';
 

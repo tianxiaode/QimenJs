@@ -1,7 +1,7 @@
 // rules/structures/special.ts
-import { ValidationErrorCode } from '../constants';
-import { isNil } from '../primitives';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants';
+import { isNil } from '../rules';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 检查是否为 Promise 对象

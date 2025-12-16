@@ -1,6 +1,6 @@
 // rules/constraints/comparison/numeric.ts
 import { ValidationErrorCode } from '../../core/constants';
-import { isNumber } from '../../rules';
+import { isNumber } from '..';
 import { smartCompare, createComparisonValidationResult } from './core';
 import { ValidationResult, createValidationSuccess, createValidationFailure } from '../../core';
 

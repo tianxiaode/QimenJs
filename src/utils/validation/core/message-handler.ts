@@ -1,9 +1,14 @@
-// src/utils/validation/errors/message-handler.ts
-import { ValidationRuleError } from "../base";
+import { ValidationRuleError } from "./types";
 import { globalConfig } from '../../config'
+
 /**
  * 默认错误消息处理器实现
- */
+ * - 如果错误消息存在，则直接返回
+ * - 否则，使用全局配置的错误消息处理器处理
+ * @param error 错误对象
+ * @param customMessage 自定义消息
+ * @returns 错误消息
+ */ 
 export function getValidationMessage(error: ValidationRuleError, customMessage?: string): string {
     // 如果已经有自定义错误消息，直接返回
     if (error.errorMessage) {
@@ -15,6 +20,14 @@ export function getValidationMessage(error: ValidationRuleError, customMessage?:
     return messageHandler?.getValidationMessage(error, customMessage) ||  error.errorCode || 'VALIDATION_FAILED';
   }
 
+  /**
+   * 默认格式化错误消息处理器实现
+   * - 如果有自定义格式化消息处理器，则使用
+   * - 否则，使用全局配置的格式化消息处理器处理
+   * @param errors 错误列表
+   * @param customMessage 自定义消息
+   * @returns 格式化后的错误消息
+   */
   export function getValidationFormattedMessage(errors: ValidationRuleError[], customMessage?: string): string {
     // 如果有自定义消息，优先使用
     if (customMessage) {

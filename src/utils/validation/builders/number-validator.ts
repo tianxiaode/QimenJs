@@ -3,8 +3,8 @@ import {
     NumberValidationRules,
     createValidationSuccess,
     createValidationFailure,
-} from '../base';
-import { isNumber, isInteger, isRequired } from '../primitives';
+} from '../core';
+import { isNumber, isInteger, isRequired } from '../rules';
 import { hasMinValue, hasMaxValue } from '../constraints';
 import { allRules } from '../composition';
 

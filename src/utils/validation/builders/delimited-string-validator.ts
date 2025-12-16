@@ -1,11 +1,11 @@
-import { ValidationResult, DelimitedStringValidationRules } from '../base';
-import { ValidationErrorCode } from '../constants';
+import { ValidationResult, DelimitedStringValidationRules } from '../core';
+import { ValidationErrorCode } from '../core/constants';
 import { isEmpty } from '../constraints';
-import { isString, isRequired } from '../primitives';
+import { isString, isRequired } from '../rules';
 import { matchesPattern } from '../patterns';
 import { allRules, conditionalRule } from '../composition';
 import { buildArrayValidator } from './array-validator';
-import { createValidationSuccess, createValidationFailure } from '../base/results';
+import { createValidationSuccess, createValidationFailure } from '../core/results';
 
 /**
  * 构建分隔符分隔的字符串验证器

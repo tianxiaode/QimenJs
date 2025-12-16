@@ -1,6 +1,6 @@
 // rules/constraints/membership.ts
-import { ValidationErrorCode } from '../constants';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 检查集合成员关系的通用函数

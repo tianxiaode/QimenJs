@@ -1,11 +1,11 @@
-import { isArray, assert, buildNumberValidator  } from '../../validation';
+import { isArray, assertValidation, buildNumberValidator  } from '../../validation';
 
 /**
  * 将数组分块
  */
 export function chunk<T>(arr: T[], size: number): T[][] {
-    assert(isArray(arr), { functionName: 'chunk'})
-  assert(buildNumberValidator({ required: true, min: 1, integer: true})(size), { 
+    assertValidation(isArray(arr), { functionName: 'chunk'})
+  assertValidation(buildNumberValidator({ required: true, min: 1, integer: true})(size), { 
     require: true, 
     functionName: 'chunk', 
     min: 1, 

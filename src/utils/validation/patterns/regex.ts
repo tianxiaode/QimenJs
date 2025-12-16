@@ -1,6 +1,6 @@
 // rules/patterns/regex.ts
-import { ValidationErrorCode } from '../constants/error-codes';
-import { ValidationResult,createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants/ValidationErrorCode';
+import { ValidationResult,createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 通用模式匹配规则

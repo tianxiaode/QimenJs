@@ -1,5 +1,5 @@
-import { ValidationResult, DateValidationRules } from '../base';
-import { isDate, isRequired } from '../primitives';
+import { ValidationResult, DateValidationRules } from '../core';
+import { isDate, isRequired } from '../rules';
 import { isGreaterThan, isLessThan } from '../constraints';
 import { allRules, conditionalRule } from '../composition';
 

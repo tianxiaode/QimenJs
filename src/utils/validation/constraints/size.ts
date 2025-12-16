@@ -1,7 +1,7 @@
 // rules/constraints/length.ts
-import { ValidationErrorCode } from '../constants';
-import { isString, isArray, isObject, isMap, isSet } from '../primitives';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core';
+import { isString, isArray, isObject, isMap, isSet } from '../rules/types';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 获取值的长度

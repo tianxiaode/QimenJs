@@ -1,9 +1,9 @@
 // rules/patterns/password.ts
-import { ValidationResult } from '../base';
+import { ValidationResult } from '../core';
 import { allRules } from '../composition';
 import { hasMinLength } from '../constraints';
 import { matchesPattern } from './regex';
-import { UPPERCASE_PATTERN, LOWERCASE_PATTERN, DIGIT_PATTERN, SPECIAL_CHAR_PATTERN  } from '../constants'
+import { UPPERCASE_PATTERN, LOWERCASE_PATTERN, DIGIT_PATTERN, SPECIAL_CHAR_PATTERN  } from '../core/constants'
 
 
 /**

@@ -1,6 +1,6 @@
 // rules/primitives/types.ts
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
-import { ValidationErrorCode } from '../constants';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
+import { ValidationErrorCode } from '../core/constants';
 
 /**
  * 检查是否为字符串
@@ -151,4 +151,90 @@ export function isSet(value: any): ValidationResult {
       errorParams: { value }
     }]
   };
+}
+
+/**
+ * 检查是否为原始类型
+ */
+export function isPrimitive(value: any): ValidationResult {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'symbol' ||
+    typeof value === 'bigint' ||
+    value === null ||
+    value === undefined
+  ) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.TYPE_NOT_PRIMITIVE, { value });
+}
+
+/**
+ * 检查是否为undefined
+ */
+export function isUndefined(value: any): ValidationResult {
+  if (value === undefined) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.NOT_UNDEFINED, { value });
+}
+
+/**
+ * 检查是否为有限数字（排除 Infinity 和 NaN）
+ */
+export function isFiniteNumber(value: any): ValidationResult {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.TYPE_NOT_NUMBER, { 
+    value, 
+    expected: 'finite number' 
+  });
+}
+
+/**
+ * 检查是否为整数
+ */
+export function isInteger(value: any): ValidationResult {
+  if (Number.isInteger(value)) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.TYPE_NOT_NUMBER, { 
+    value, 
+    expected: 'integer' 
+  });
+}
+
+/**
+ * 检查是否为正整数（大于0的整数）
+ */
+export function isPositiveInteger(value: any): ValidationResult {
+  if (Number.isInteger(value) && value > 0) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.NOT_GREATER_THAN, { 
+    min: 0, 
+    actual: value 
+  });
+}
+
+/**
+ * 检查是否为非负整数（大于等于0的整数）
+ */
+export function isNonNegativeInteger(value: any): ValidationResult {
+  if (Number.isInteger(value) && value >= 0) {
+    return createValidationSuccess();
+  }
+  
+  return createValidationFailure(ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL, { 
+    min: 0, 
+    actual: value 
+  });
 }

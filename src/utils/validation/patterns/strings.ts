@@ -1,7 +1,7 @@
 // rules/patterns/strings.ts
-import { ValidationErrorCode } from '../constants';
+import { ValidationErrorCode } from '../core/constants';
 import { matchesPattern } from './regex';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 import {
     EMAIL_PATTERN,
     URL_PATTERN,
@@ -11,7 +11,7 @@ import {
     PHONE_PATTERN,
     USERNAME_PATTERN,
     UUID_PATTERN
-} from '../constants/patterns';
+} from '../core/constants/patterns';
 
 /**
  * 创建基于特定模式和错误代码的验证函数

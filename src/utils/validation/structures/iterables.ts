@@ -1,7 +1,7 @@
 // rules/structures/iterables.ts
-import { ValidationErrorCode } from '../constants';
-import { isNil,isString } from '../primitives';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants';
+import { isNil,isString } from '../rules';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 检查值是否可迭代（实现了 Symbol.iterator）

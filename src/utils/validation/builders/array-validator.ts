@@ -1,11 +1,11 @@
 // rules/builders/array-validator.ts
-import { ValidationResult, ArrayValidationRules, ValidationRuleError } from '../base';
-import { isArray, isRequired } from '../primitives';
+import { ValidationResult, ArrayValidationRules, ValidationRuleError } from '../core';
+import { isArray, isRequired } from '../rules';
 import { hasMinLength, hasMaxLength, hasExactLength, hasLengthBetween } from '../constraints/length';
 import { isEmptyArray } from '../constraints/empty';
 import { isInCollection, isNotInCollection } from '../constraints/membership';
 import { allRules } from '../composition';
-import { createValidationSuccess, createValidationFailure } from '../base/results';
+import { createValidationSuccess, createValidationFailure } from '../core/results';
 
 /**
  * 构建数组验证器

@@ -1,4 +1,3 @@
-// rules/error-codes.ts
 /**
  * 验证错误代码枚举
  * 遵循命名规范：VALIDATION_[领域]_[错误类型]
@@ -41,6 +40,7 @@ export enum ValidationErrorCode {
     EMPTY_ITEMS_NOT_ALLOWED = 'VALIDATION_EMPTY_ITEMS_NOT_ALLOWED',
     ITEM_MIN_LENGTH = 'VALIDATION_ITEM_MIN_LENGTH',
     ITEM_MAX_LENGTH = 'VALIDATION_ITEM_MAX_LENGTH',
+    PRESENT_REQUIRED = 'VALIDATION_PRESENT_REQUIRED',
 
     // === 约束错误 ===
     MIN_LENGTH = 'VALIDATION_CONSTRAINT_MIN_LENGTH',

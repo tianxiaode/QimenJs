@@ -1,6 +1,6 @@
-import { ArrayValidationRules, ValidationResult } from '../base';
+import { ArrayValidationRules, ValidationResult } from '../core';
 import { buildArrayValidator } from '../builders';
-import { assert } from '../assertion';
+import { assertValidation } from '../core/assertion';
 /**
  * 快捷验证函数 - 简化调用
  * @param value 要验证的值
@@ -25,7 +25,7 @@ export function assertArray(
   context?: Record<string, any>
 ): any[] {
   const result = validateArray(value, rules);
-  assert(result, context)
+  assertValidation(result, context)
   
   return value; // 返回原始值，便于链式调用
 }

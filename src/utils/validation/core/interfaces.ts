@@ -1,105 +1,7 @@
-// rules/base.ts
+import { ValidationResult } from "./types";
 /**
- * 验证规则错误信息接口
+ * 字符串验证规则接口
  */
-export interface ValidationErrorParams {
-    // 基础信息
-    value?: any;
-    expected?: string | string[];
-    actual?: any;
-
-    // 约束参数
-    min?: number | string;
-    max?: number | string;
-    lower?: number;
-    upper?: number;
-
-    // 集合参数
-    collection?: any[];
-    collectionText?: string;
-    duplicate?: any;
-    missingKey?: string;
-    disallowedKey?: string;
-    forbiddenKey?: string;
-    allowedKeys?: string[];
-    disallowedKeys?: string[];
-
-    // 模式参数
-    pattern?: string;
-    patternText?: string;
-    missing?: string[];
-    missingRequirements?: string;
-
-    // 结构参数
-    index?: number;
-    key?: string;
-    keyValue?: any;
-    minLength?: number;
-    maxLength?: number;
-    minKeys?: number;
-    maxKeys?: number;
-    minSize?: number;
-    maxSize?: number;
-    actualLength?: number;
-    actualKeys?: number;
-    actualSize?: number;
-
-    // 日期参数
-    date?: Date | string;
-    minDate?: Date | string;
-    maxDate?: Date | string;
-
-    // 上下文参数
-    paramName?: string;
-    functionName?: string;
-    validatorIndex?: number;
-
-    // 扩展参数
-    [key: string]: any;
-}
-
-export interface ValidationRuleError {
-    /**
-     * 错误代码
-     */
-    errorCode: string;
-
-    /**
-     * 错误参数
-     */
-    errorParams?: ValidationErrorParams;
-
-    /**
-     * 可选的详细错误信息
-     */
-    errorMessage?: string;
-}
-
-/**
- * 验证规则结果接口
- */
-export interface ValidationResult {
-    /**
-     * 验证是否通过
-     */
-    isValid: boolean;
-
-    /**
-     * 错误列表（可以为空）
-     */
-    errors: ValidationRuleError[];
-}
-
-/**
- * 单一验证规则函数类型
- */
-export type ValidationSingleRule<T = any> = (value: T, options?: any) => ValidationResult;
-
-/**
- * 复合验证规则函数类型
- */
-export type ValidationCompositeRule<T = any> = (value: T, options?: any) => ValidationResult;
-
 export interface StringValidationRules {
     required?: boolean;
     minLength?: number;
@@ -112,6 +14,9 @@ export interface StringValidationRules {
     blacklist?: string[]; // 黑名单
 }
 
+/**
+ * 数值验证规则接口
+ */
 export interface NumberValidationRules {
     required?: boolean;
     min?: number;
@@ -122,6 +27,9 @@ export interface NumberValidationRules {
     custom?: (value: number) => ValidationResult;
 }
 
+/**
+ * 布尔验证规则接口
+ */
 export interface DateValidationRules {
     required?: boolean;
     min?: Date;
@@ -131,6 +39,9 @@ export interface DateValidationRules {
     custom?: (value: Date) => ValidationResult;
 }
 
+/**
+ * 带分隔符字符串验证规则
+ */
 export interface DelimitedStringValidationRules {
     required?: boolean;
     delimiter?: string; // 分隔符，默认为逗号
@@ -144,6 +55,17 @@ export interface DelimitedStringValidationRules {
     validateItem?: (item: string) => ValidationResult; // 自定义单项验证
 }
 
+
+/**
+ * 数组验证规则接口
+ * 
+ * 注意：
+ * - 数组元素的验证规则是通过 `items` 属性来实现的，而不是直接在数组规则中定义。
+ * - 数组元素的验证规则可以是一个函数，也可以是一个对象。
+ * - 如果数组元素的验证规则是一个函数，则该函数接收数组元素作为参数，返回一个验证结果。
+ * - 如果数组元素的验证规则是一个对象，则该对象可以包含多个验证规则。
+ * - 数组元素的验证规则可以是复合规则，也可以是单一规则。
+ */
 export interface ArrayValidationRules {
   /**
    * 存在性控制：
@@ -186,19 +108,23 @@ export interface ArrayValidationRules {
   custom?: (value: any[]) => ValidationResult;
 }
 
-export interface ErrorMessageHandler {
-    /**
-     * 根据错误信息生成本地化消息
-     * @param error 验证错误信息
-     * @returns 本地化的错误消息字符串
-     */
-    getMessage(error: ValidationRuleError): string;
 
-    /**
-     * 批量处理错误消息
-     * @param errors 验证错误信息数组
-     * @param customMessage 自定义错误消息
-     * @returns 格式化后的完整错误消息
-     */
-    getFormattedMessage(errors: ValidationRuleError[], customMessage?: string): string;
+/**
+ * 布尔验证规则接口
+ */
+export interface BooleanValidationRules {
+    required?: boolean;
+    custom?: (value: boolean) => ValidationResult;
+}
+
+/**
+ * 对象验证规则接口
+ */
+export interface ObjectValidationRules {
+    required?: boolean;
+    minKeys?: number;
+    maxKeys?: number;
+    allowedKeys?: string[];
+    disallowedKeys?: string[];
+    custom?: (value: object) => ValidationResult;
 }

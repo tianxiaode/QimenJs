@@ -1,5 +1,5 @@
 import { BaseError } from "../../error";
-import { ValidationResult } from '../base';
+import { ValidationResult } from './types';
 
 export class ValidationError extends BaseError {
   /**

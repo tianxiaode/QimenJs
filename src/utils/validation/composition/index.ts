@@ -1,5 +1,5 @@
 // rules/composition/index.ts
-import { ValidationResult, ValidationRuleError } from '../base';
+import { ValidationResult, ValidationRuleError } from '../core';
 
 /**
  * 组合多个规则，全部通过才算通过 (AND 逻辑)

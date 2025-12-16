@@ -1,7 +1,7 @@
 // rules/constraints/comparison/equality.ts
 import { ComparisonOperation, createComparisonValidator } from './numeric';
-import { ValidationResult, createValidationSuccess, createValidationFailure } from '../../base';
-import { ValidationErrorCode } from '../../constants';
+import { ValidationResult, createValidationSuccess, createValidationFailure } from '../../core';
+import { ValidationErrorCode } from '../../core/constants';
 
 /**
  * 检查值是否等于期望值

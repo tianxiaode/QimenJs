@@ -1,6 +1,6 @@
 // rules/structures/browser.ts
-import { ValidationErrorCode } from '../constants';
-import { ValidationResult, createValidationFailure, createValidationSuccess } from '../base';
+import { ValidationErrorCode } from '../core/constants';
+import { ValidationResult, createValidationFailure, createValidationSuccess } from '../core';
 
 /**
  * 检查是否为 FormData 对象（浏览器环境）
