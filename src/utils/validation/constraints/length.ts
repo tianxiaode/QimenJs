@@ -84,3 +84,49 @@ export function hasLengthBetween(min: number, max: number): (value: any) => Vali
         return hasMaxLength(max)(value);
     };
 }
+
+/**
+ * 检查是否有精确长度
+ */
+export function hasExactLength(expectedLength: number): (value: any) => ValidationResult {
+    return (value: any): ValidationResult => {
+        const length = getLength(value);
+        
+        if (length === undefined) {
+            return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_LENGTH, { value });
+        }
+        
+        if (length === expectedLength) {
+            return createValidationSuccess();
+        }
+        
+        return createValidationFailure(ValidationErrorCode.LENGTH_MISMATCH, {
+            value,
+            expected: expectedLength,
+            actual: length
+        });
+    };
+}
+
+/**
+ * 检查长度是否为指定值之一
+ */
+export function hasLengthOneOf(allowedLengths: number[]): (value: any) => ValidationResult {
+    return (value: any): ValidationResult => {
+        const length = getLength(value);
+        
+        if (length === undefined) {
+            return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_LENGTH, { value });
+        }
+        
+        if (allowedLengths.includes(length)) {
+            return createValidationSuccess();
+        }
+        
+        return createValidationFailure(ValidationErrorCode.LENGTH_NOT_ONE_OF, {
+            value,
+            allowedLengths,
+            actual: length
+        });
+    };
+}
