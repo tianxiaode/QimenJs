@@ -66,7 +66,7 @@ export interface StringValidationOptions {
  */
 export interface DelimitedStringValidationOptions extends StringValidationOptions {
   /** 分隔符 */
-  delimiter: string;
+  delimiter?: string;
   /** 子字符串的最小数量 */
   minCount?: number;
   /** 子字符串的最大数量 */
@@ -83,3 +83,4 @@ export interface DelimitedStringValidationOptions extends StringValidationOption
   transformItems?: (items: string[]) => string[];
 }
 
+export type ExtendedStringValidationOptions = StringValidationOptions & DelimitedStringValidationOptions;

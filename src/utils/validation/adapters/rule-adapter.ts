@@ -1,119 +1,123 @@
-// src/utils/validation/adapters/rule-adapter.ts
-import { allRules } from '../composition';
 import { ValidationResult } from '../core';
-import { getRuleFunctions } from '../rules';
+import {
+    validateString,
+    validateNumber,
+    validateArray,
+    validateObject,
+    validateBoolean,
+    validateDate,
+} from '../validators';
 
-// 定义转换器接口，便于扩展
-interface RuleConverter {
-  canHandle(externalRule: any): boolean;
-  convert(externalRule: any): Array<(value: any) => ValidationResult>;
-}
+// 数据类型映射
+export const DataType = {
+    STRING: 'string',
+    NUMBER: 'number',
+    BOOLEAN: 'boolean',
+    ARRAY: 'array',
+    OBJECT: 'object',
+    DATE: 'date',
+    ANY: 'any',
+} as const;
 
-// 默认转换器
-class DefaultRuleConverter {
-  canHandle(externalRule: any): boolean {
-    return typeof externalRule === 'object' && externalRule !== null;
-  }
+type DataType = (typeof DataType)[keyof typeof DataType];
 
-  convert(externalRule: any): Array<(value: any) => ValidationResult> {
-    // 直接使用已有的映射工厂函数
-    return getRuleFunctions(externalRule);
-  }
-}
+/**
+ * 根据数据类型转换通用规则为特定规则
+ */
+function convertRulesByType(rules: Record<string, any>, dataType: DataType): Record<string, any> {
+    const convertedRules = { ...rules };
 
-// 转换器管理器
-class RuleAdapterManager {
-  private converters: RuleConverter[] = [];
-  private customKeywordMap: Record<string, Function> = {};
-  
-  constructor() {
-    this.converters.push(new DefaultRuleConverter());
-  }
-  
-  registerConverter(converter: RuleConverter) {
-    this.converters.unshift(converter);
-  }
-  
-  // 注册自定义关键词
-  registerKeyword(keyword: string, validatorFactory: Function) {
-    this.customKeywordMap[keyword] = validatorFactory;
-    
-    // 如果还没有自定义转换器，则创建一个
-    if (!this.converters.some(c => c instanceof CustomRuleConverter)) {
-      this.converters.unshift(new CustomRuleConverter(this.customKeywordMap));
-    }
-  }
-  
-  convert(externalRule: any) {
-    for (const converter of this.converters) {
-      if (converter.canHandle(externalRule)) {
-        const validators = converter.convert(externalRule);
-        return allRules(...validators);
-      }
-    }
-    
-    return () => ({ isValid: true, errors: [] });
-  }
-}
+    // 删除可能的type字段，避免重复
+    delete convertedRules.type;
 
-// 自定义规则转换器
-class CustomRuleConverter {
-  private customKeywordMap: Record<string, Function>;
-  
-  constructor(customKeywordMap: Record<string, Function>) {
-    this.customKeywordMap = customKeywordMap;
-  }
-  
-  canHandle(externalRule: any): boolean {
-    return typeof externalRule === 'object' && externalRule !== null;
-  }
-
-  convert(externalRule: any): Array<(value: any) => ValidationResult> {
-    const validators: Array<(value: any) => ValidationResult> = [];
-    
-    // 先使用标准规则
-    const standardValidators = getRuleFunctions(externalRule);
-    validators.push(...standardValidators);
-    
-    // 再处理自定义规则
-    for (const [keyword, ruleValue] of Object.entries(externalRule)) {
-      if (keyword in this.customKeywordMap) {
-        const validatorFactory = this.customKeywordMap[keyword];
-        if (typeof validatorFactory === 'function') {
-          try {
-            const validator = ruleValue !== undefined ? validatorFactory(ruleValue) : validatorFactory();
-            if (typeof validator === 'function') {
-              validators.push(validator);
+    // 根据数据类型转换通用规则
+    switch (dataType) {
+        case DataType.STRING:
+            // 字符串：min/max -> minLength/maxLength
+            if (rules.min !== undefined) {
+                convertedRules.minLength = rules.min;
+                delete convertedRules.min;
             }
-          } catch (error) {
-            console.warn(`Failed to create custom validator for keyword: ${keyword}`, error);
-          }
-        }
-      }
+            if (rules.max !== undefined) {
+                convertedRules.maxLength = rules.max;
+                delete convertedRules.max;
+            }
+            if (rules.length !== undefined) {
+                convertedRules.exactLength = rules.length;
+                delete convertedRules.length;
+            }
+            break;
+
+        case DataType.NUMBER:
+            // 数字：min/max -> minValue/maxValue
+            if (rules.min !== undefined) {
+                convertedRules.minValue = rules.min;
+                delete convertedRules.min;
+            }
+            if (rules.max !== undefined) {
+                convertedRules.maxValue = rules.max;
+                delete convertedRules.max;
+            }
+            break;
+
+        case DataType.ARRAY:
+            // 数组：min/max -> minArrayLength/maxArrayLength
+            if (rules.min !== undefined) {
+                convertedRules.minArrayLength = rules.min;
+                delete convertedRules.min;
+            }
+            if (rules.max !== undefined) {
+                convertedRules.maxArrayLength = rules.max;
+                delete convertedRules.max;
+            }
+            if (rules.length !== undefined) {
+                convertedRules.exactArrayLength = rules.length;
+                delete convertedRules.length;
+            }
+            break;
     }
-    
-    return validators;
-  }
+
+    return convertedRules;
 }
 
-// 创建全局实例
-const adapterManager = new RuleAdapterManager();
-
-// 导出公共方法
-export function convertExternalRules(externalRule: any) {
-  return adapterManager.convert(externalRule);
+/**
+ * 根据数据类型选择验证函数
+ */
+function getValidatorByType(dataType: DataType) {
+    switch (dataType) {
+        case DataType.STRING:
+            return validateString;
+        case DataType.NUMBER:
+            return validateNumber;
+        case DataType.ARRAY:
+            return validateArray;
+        case DataType.OBJECT:
+            return validateObject;
+        case DataType.BOOLEAN:
+            return validateBoolean;
+        case DataType.DATE:
+            return validateDate;
+        default:
+            // 默认使用字符串验证器
+            return validateString;
+    }
 }
 
-// 导出自定义关键词注册方法
-export function registerCustomKeyword(keyword: string, validatorFactory: Function) {
-  adapterManager.registerKeyword(keyword, validatorFactory);
-}
+/**
+ * 创建 UI 框架验证器
+ */
+export function createUIValidator(uiRules: any) {
+    // 确定数据类型
+    const dataType = uiRules.type || DataType.STRING;
 
-export function registerRuleConverter(converter: RuleConverter) {
-  adapterManager.registerConverter(converter);
-}
+    // 转换规则
+    const convertedRules = convertRulesByType(uiRules, dataType);
 
-// 快捷转换函数
-export function createValidator(externalRules: any) {
-  return convertExternalRules(externalRules);
+    // 获取对应的验证函数
+    const validator = getValidatorByType(dataType);
+
+    // 返回验证器函数
+    return (value: any) => {
+        return validator(value, convertedRules as any) as ValidationResult;
+    };
 }

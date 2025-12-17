@@ -1,9 +1,8 @@
-// src/utils/validation/adapters/frameworks/native/index.ts
-import { convertExternalRules } from '../../rule-adapter';
+import { createUIValidator } from '../../rule-adapter';
 import { getValidationFormattedMessage } from '../../../core';
 
 export function createNativeValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
   
   return function(value: any): Promise<void> {
     const result = validator(value);

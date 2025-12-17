@@ -194,3 +194,32 @@ export function isFutureDate(): (value: any) => ValidationResult {
         return createValidationFailure(ValidationErrorCode.NOT_FUTURE_DATE, { value });
     };
 }
+
+/**
+ * 检查日期是否为指定的星期几
+ * @param weekdays 允许的星期几 (0-6, 周日-周六) 或其数组
+ */
+export function isWeekday(weekdays: number | number[]): (value: any) => ValidationResult {
+    return (value: any): ValidationResult => {
+        if (!isDate(value).isValid) {
+            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+        }
+
+        if (isNaN(value.getTime())) {
+            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+        }
+
+        const day = value.getDay(); // 0-6 (周日-周六)
+        const allowedWeekdays = Array.isArray(weekdays) ? weekdays : [weekdays];
+        
+        if (allowedWeekdays.includes(day)) {
+            return createValidationSuccess();
+        }
+
+        return createValidationFailure(ValidationErrorCode.INVALID_WEEKDAY, {
+            value,
+            weekday: day,
+            allowedWeekdays,
+        });
+    };
+}

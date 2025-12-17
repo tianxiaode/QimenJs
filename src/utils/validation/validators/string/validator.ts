@@ -1,10 +1,12 @@
-import { StringValidationOptions } from './types';
+// src/utils/validation/validators/validator.ts
+import { ExtendedStringValidationOptions, DelimitedStringValidationOptions, StringValidationOptions } from './types';
 import {
     ValidationErrorCode,
     ValidationResult,
     createValidationSuccess,
     createValidationFailure,
     assertValidation,
+    mergeValidationResults,
 } from '../../core';
 import { allRules } from '../../composition';
 import {
@@ -12,12 +14,64 @@ import {
     getRuleFunctions,
     isFunction
 } from '../../rules';
+import { validateArray } from '../array';
+import { validateSingleItem } from './delimited-utils'; // 新增工具函数
+
+
+/**
+ * 验证带分隔符的字符串
+ */
+function validateDelimitedString(
+    processedValue: string,
+    options: DelimitedStringValidationOptions
+): ValidationResult {
+    // 1. 分割和处理字符串
+    let items = processedValue.split(options.delimiter!);
+    
+    if (options.trimItems) {
+        items = items.map(item => item.trim());
+    }
+    
+    if (!options.allowEmptyItems) {
+        items = items.filter(item => item !== '');
+    }
+    
+    if (options.deduplicate) {
+        items = Array.from(new Set(items));
+    }
+    
+    if (typeof options.transformItems === 'function') {
+        items = options.transformItems(items);
+    }
+
+    // 2. 构建数组验证选项
+    const arrayValidationOptions = {
+        // 长度验证
+        minLength: options.minCount,
+        maxLength: options.maxCount,
+        
+        // 是否允许空数组
+        allowEmpty: options.allowEmptyItems || processedValue === '',
+        
+        // 唯一性验证
+        unique: options.deduplicate,
+        
+        // 元素验证
+        itemValidation: options.itemValidation 
+            ? (item: string, index: number) => validateSingleItem(item, options.itemValidation!)
+            : undefined,
+    };
+
+    // 3. 调用数组验证器
+    return validateArray(items, arrayValidationOptions);
+}
+
 
 export function validateString(
     value: any,
-    options: StringValidationOptions = {}
+    options: ExtendedStringValidationOptions = {}
 ): ValidationResult {
-    const defaultOptions: StringValidationOptions = {
+    const defaultOptions: ExtendedStringValidationOptions = {
         required: false,
         nullable: false,
         trim: false,
@@ -83,22 +137,31 @@ export function validateString(
         rules.push(defaultOptions.custom!);
     }
 
-    // 8. 执行所有验证规则
-    return rules.length > 0 
-        ? allRules(...rules)(processedValue) 
-        : createValidationSuccess();
+
+    // 8. 执行字符串基础验证
+    let stringResult: ValidationResult = createValidationSuccess();
+    if (rules.length > 0) {
+        stringResult = allRules(...rules)(processedValue);
+    }
+
+    if(!stringResult.isValid) return stringResult; // 跳过分隔符验证
+
+
+    // 9. 如果有分隔符，进行分隔符验证
+    if (defaultOptions.delimiter) {
+        return validateDelimitedString(processedValue, defaultOptions);
+    }
+
+    return stringResult;
+    
 }
 
 /**
  * 断言字符串
- * @param value 要验证的值
- * @param rules 验证规则
- * @param context 验证上下文 
- * @returns 
  */
 export function assertString(
   value: string,
-  rules: StringValidationOptions,
+  rules: ExtendedStringValidationOptions,
   context?: Record<string, any>
 ): string {
   const result = validateString(value, rules);
@@ -106,4 +169,3 @@ export function assertString(
   
   return value; // 返回原始值，便于链式调用
 }
-

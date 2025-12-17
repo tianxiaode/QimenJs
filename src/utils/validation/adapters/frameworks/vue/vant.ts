@@ -1,5 +1,5 @@
 // src/utils/validation/adapters/frameworks/vue/vant.ts
-import { convertExternalRules } from '../../rule-adapter';
+import { createUIValidator } from '../../rule-adapter';
 import { getValidationFormattedMessage } from '../../../core';
 
 /**
@@ -9,7 +9,7 @@ import { getValidationFormattedMessage } from '../../../core';
  * @returns Vant 格式的验证函数
  */
 export function createVantValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
 
   return function(rule: any, value: any, callback: Function) {
     const result = validator(value);
@@ -30,7 +30,7 @@ export function createVantValidator(rules: any, message?: string) {
  * @returns 返回 Promise 的验证函数
  */
 export function createVantPromiseValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
   
   return function(rule: any, value: any) {
     const result = validator(value);

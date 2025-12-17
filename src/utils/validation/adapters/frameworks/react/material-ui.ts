@@ -1,5 +1,5 @@
 // src/utils/validation/adapters/frameworks/react/material-ui.ts
-import { convertExternalRules } from '../../rule-adapter';
+import { createUIValidator } from '../../rule-adapter';
 import { getValidationFormattedMessage } from '../../../core';
 
 /**
@@ -9,7 +9,7 @@ import { getValidationFormattedMessage } from '../../../core';
  * @returns Material-UI 格式的验证函数
  */
 export function createMaterialUIValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
 
   return function(value: any) {
     const result = validator(value);
@@ -30,7 +30,7 @@ export function createMaterialUIValidator(rules: any, message?: string) {
  * @returns 返回 Promise 的验证函数
  */
 export function createMaterialUIPromiseValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
   return function(value: any) {
     const result = validator(value);
     if (result.isValid) {

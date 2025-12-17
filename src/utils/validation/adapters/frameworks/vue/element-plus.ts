@@ -1,9 +1,9 @@
 // src/utils/validation/adapters/frameworks/vue/element-plus.ts
-import { convertExternalRules } from '../../rule-adapter';
+import { createUIValidator } from '../../rule-adapter';
 import { getValidationFormattedMessage } from '../../../core';
 
 export function createElementPlusValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
 
   return function(rule: any, value: any, callback: Function) {
     const result = validator(value);
@@ -17,7 +17,7 @@ export function createElementPlusValidator(rules: any, message?: string) {
 }
 
 export function createElementPlusPromiseValidator(rules: any, message?: string) {
-  const validator = convertExternalRules(rules);
+  const validator = createUIValidator(rules);
 
   return function(rule: any, value: any) {
     const result = validator(value);

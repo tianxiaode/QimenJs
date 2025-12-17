@@ -17,7 +17,7 @@ export interface DateValidationOptions {
   /** 日期范围 */
   range?: [min: Date | string | number, max: Date | string | number];
   /** 自定义验证函数 */
-  custom?: (value: Date) => ValidationResult | Promise<ValidationResult>;
+  custom?: (value: Date) => ValidationResult;
   /** 是否为过去日期 */
   past?: boolean;
   /** 是否为将来日期 */
@@ -40,51 +40,4 @@ export interface DateValidationOptions {
   excludedDates?: Array<Date | string | number>;
   /** 允许的日期 */
   allowedDates?: Array<Date | string | number>;
-}
-
-/**
- * 日期验证器的函数类型
- */
-export type DateValidator = {
-  (value: any): ValidationResult;
-  (value: any): Promise<ValidationResult>;
-  options: DateValidationOptions;
-};
-
-/**
- * 日期验证规则构造器
- */
-export interface DateValidationRules {
-  /** 创建一个日期验证器 */
-  create(options?: DateValidationOptions): DateValidator;
-  
-  /** 预设验证器 */
-  presets: {
-    /** 过去日期验证器 */
-    pastDate: DateValidator;
-    /** 将来日期验证器 */
-    futureDate: DateValidator;
-    /** 今天日期验证器 */
-    today: DateValidator;
-    /** 工作日验证器 */
-    weekday: DateValidator;
-    /** 日期范围验证器 */
-    dateRange: DateValidator;
-    /** 生日验证器 */
-    birthday: DateValidator;
-  };
-}
-
-/**
- * 日期验证上下文
- */
-export interface DateValidationContext {
-  /** 原始值 */
-  originalValue: any;
-  /** 日期值 */
-  value: Date | null;
-  /** 验证选项 */
-  options: DateValidationOptions;
-  /** 验证结果 */
-  result: ValidationResult;
 }

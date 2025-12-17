@@ -28,6 +28,23 @@ import{
     isDate,
     isFunction,
     isRegExp,
+    isPositive,
+    isNegative,
+    isZero,
+    isNonZero,
+    isNonNegative,
+    isNonPositive,
+    isEven,
+    isOdd,
+    isInRange,
+    isInExclusiveRange,
+    isPrime,
+    isNotNaN,
+    isNotInfinite,
+    isPerfectSquare,
+    isPerfectCube,
+    isSafeInteger,
+    isOneOf,    
 } from '../types'
 import { 
     // comparison
@@ -126,7 +143,9 @@ import {
     containsAny,
     containsNone, 
     containsOnly,
+    isWeekday,
 } from '../structure';
+import { isIn, isNotIn } from '../comparison/collection'
 
 /**
  * 预定义的关键词到验证函数的映射
@@ -153,7 +172,6 @@ export const RULE_MAP = {
     map: () => isMap,
     set: () => isSet,
     bigInt: () => isBigInt,
-    finite: () => isFiniteNumber,
     integer: () => isInteger,
     positiveInteger: () => isPositiveInteger,
     nonNegativeInteger: () => isNonNegativeInteger,
@@ -163,10 +181,8 @@ export const RULE_MAP = {
     regexp: () => isRegExp,
 
     // 长度验证关键词
-    min: (value: number) => hasMinLength(value),
-    minimum: (value: number) => hasMinLength(value), // 别名
-    max: (value: number) => hasMaxLength(value),
-    maximum: (value: number) => hasMaxLength(value), // 别名
+    minLength: (value: number) => hasMinLength(value),
+    maxLength: (value: number) => hasMaxLength(value),
     exactLength: (value: number) => hasExactLength(value),
     length: (value: number) => hasExactLength(value), // 别名
     lengthBetween: (value: [number, number]) => hasLengthBetween(value[0], value[1]),
@@ -191,6 +207,39 @@ export const RULE_MAP = {
     // 数值范围验证关键词
     minValue: (value: number) => hasMinValue(value),
     maxValue: (value: number) => hasMaxValue(value),
+    min: (value: number) => hasMinValue(value),
+    max: (value: number) => hasMaxValue(value),
+
+    // 数字类型验证
+    bigint: () => isBigInt,
+    
+    // 数字特性验证
+    int: () => isInteger, // 别名
+    positive: () => isPositive,
+    negative: () => isNegative,
+    zero: () => isZero,
+    nonZero: () => isNonZero,
+    nonNegative: () => isNonNegative,
+    nonPositive: () => isNonPositive,
+    even: () => isEven,
+    odd: () => isOdd,
+    finite: () => isFiniteNumber, // 使用重命名后的函数
+    safeInteger: () => isSafeInteger,
+    prime: () => isPrime,
+    notNaN: () => isNotNaN,
+    notInfinite: () => isNotInfinite,
+    perfectSquare: () => isPerfectSquare,
+    perfectCube: () => isPerfectCube,
+    
+    // 数值比较验证（使用已有的比较函数）
+    exclusiveMin: (value: number) => isGreaterThan(value),
+    exclusiveMax: (value: number) => isLessThan(value),
+    exact: (value: number) => isEqualTo(value),
+    
+    // 范围验证
+    range: (value: [number, number]) => isInRange(value[0], value[1]),
+    exclusiveRange: (value: [number, number]) => isInExclusiveRange(value[0], value[1]),
+
 
     // 正则表达式相关关键词
     pattern: (value: RegExp | string) => matchesPattern(value),
@@ -246,6 +295,7 @@ export const RULE_MAP = {
     today: () => isToday,
     pastDate: () => isPastDate,
     futureDate: () => isFutureDate,
+    weekday: (value: number | number[]) => isWeekday(value),
 
     // 浏览器API对象验证
     formData: () => isFormData,
@@ -293,6 +343,17 @@ export const RULE_MAP = {
         hasItemType(type),
     itemTypeCheck: (checkFn: (item: any) => boolean) => hasItemTypeCheck(checkFn),
 
+    // 集合验证关键词
+    in: (values: any[]) => isIn(values),
+    notIn: (values: any[]) => isNotIn(values),
+    oneOf: (values: any[]) => isOneOf(values),
+
+    // 值列表验证（使用集合验证函数）
+    allowedValues: (values: any[]) => isIn(values), // 作为in的别名
+    disallowedValues: (values: any[]) => isNotIn(values), // 作为notIn的别名
+    
+    // 枚举验证
+    enum: (values: any[]) => isIn(values),    
 } as const;
 
 // 预定义的关键词别名映射
@@ -311,6 +372,13 @@ export const RULE_ALIASES = {
     gt: 'greaterThan',
     lte: 'lessThanOrEqual',
     gte: 'greaterThanOrEqual',
+    past: 'pastDate',
+    future: 'futureDate',
+    // 集合验证别名
+    allowedValues: 'in',
+    disallowedValues: 'notIn',
+    enum: 'in',
+    oneOf: 'in',    
 } as const;
 
 
@@ -321,3 +389,4 @@ export const NON_RULE_KEYS = [
 ] as const;
 
 export type NonRuleKey = typeof NON_RULE_KEYS[number];
+
