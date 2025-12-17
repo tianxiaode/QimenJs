@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/react/antd.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getValidationFormattedMessage } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../core';
 
 /**
  * 创建 Ant Design 兼容的验证器

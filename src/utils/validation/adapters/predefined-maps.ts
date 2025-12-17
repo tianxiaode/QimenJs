@@ -7,8 +7,6 @@ import {
     isBoolean,
     isFalsy,
     isTruthy,
-} from '../rules';
-import {
     hasMinLength,
     hasMaxLength,
     hasLengthBetween,
@@ -21,10 +19,6 @@ import {
     isGreaterThan,
     isGreaterThanOrEqual,
     isLessThanOrEqual,
-    isInCollection,
-    isNotInCollection,
-} from '../constraints';
-import {
     isEmail,
     isIPv4,
     isIPv6,
@@ -36,8 +30,7 @@ import {
     isUUID,
     hasPasswordStrength,
     matchesPattern,
-} from '../patterns';
-import { buildDelimitedStringValidator } from '../builders';
+} from '../rules';
 
 /**
  * 预定义的关键词到验证函数的映射
@@ -102,11 +95,6 @@ export const PREDEFINED_KEYWORD_MAP = {
     minValue: (value: number) => hasMinValue(value),
     maxValue: (value: number) => hasMaxValue(value),
 
-    // 集合成员验证
-    in: (value: any[]) => isInCollection(value),
-    notIn: (value: any[]) => isNotInCollection(value),
-    includes: (value: any[]) => isInCollection(value), // 别名
-    excludes: (value: any[]) => isNotInCollection(value), // 别名
 
     // 正则表达式相关关键词
     pattern: (value: RegExp) => matchesPattern(value),
@@ -128,9 +116,6 @@ export const PREDEFINED_KEYWORD_MAP = {
     // 密码强度验证
     passwordStrength: (value: any) => hasPasswordStrength(value),
 
-    // 分隔符字符串验证器构建器
-    delimited: (config: { delimiter?: string; trim?: boolean; required?: boolean }) => 
-        buildDelimitedStringValidator(config),
 } as const;
 
 // 预定义的关键词别名映射

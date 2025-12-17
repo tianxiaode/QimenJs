@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/vue/vant.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getValidationFormattedMessage } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../core';
 
 /**
  * 创建 Vant 兼容的验证器

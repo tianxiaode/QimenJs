@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/native/index.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getValidationFormattedMessage } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../core';
 
 export function createNativeValidator(rules: any, message?: string) {
   const validator = convertExternalRules(rules);

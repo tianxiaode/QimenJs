@@ -10,7 +10,7 @@ import {
  * 检查是否为null
  */
 export function isNullable(value: any): ValidationResult {
-  if (value === null) {
+  if (value === null || value === undefined) {
     return createValidationSuccess();
   }
   

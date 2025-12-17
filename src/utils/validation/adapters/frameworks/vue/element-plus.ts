@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/vue/element-plus.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getValidationFormattedMessage } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../core';
 
 export function createElementPlusValidator(rules: any, message?: string) {
   const validator = convertExternalRules(rules);

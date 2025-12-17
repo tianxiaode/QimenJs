@@ -1,6 +1,6 @@
 // src/utils/validation/adapters/frameworks/react/material-ui.ts
 import { convertExternalRules } from '../../rule-adapter';
-import { getValidationFormattedMessage } from '../../../errors';
+import { getValidationFormattedMessage } from '../../../core';
 
 /**
  * 创建 Material-UI 兼容的验证器
