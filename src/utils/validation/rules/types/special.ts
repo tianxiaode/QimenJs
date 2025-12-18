@@ -11,18 +11,23 @@ import {
 export function isDate(value: any): ValidationResult {
   if (value instanceof Date) {
     // 检查是否为有效日期
-    if (globalThis.isNaN(value.getTime())) {
-      return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { 
+    if (isNaN(value.getTime())) {
+      return createValidationFailure(ValidationErrorCode.INVALID_VALUE, { 
         value, 
-        reason: 'Invalid Date' 
+        reason: 'Invalid Date',
+        errorMessage: 'Value must be a valid date'
       });
     }
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'Date',
+    actual: typeof value,
+    errorMessage: 'Value must be a Date object'
+  });
 }
-
 
 /**
  * 检查是否为函数
@@ -32,7 +37,12 @@ export function isFunction(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_FUNCTION, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'function',
+    actual: typeof value,
+    errorMessage: 'Value must be a function'
+  });
 }
 
 /**
@@ -43,7 +53,12 @@ export function isRegExp(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_REGEXP, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'RegExp',
+    actual: typeof value,
+    errorMessage: 'Value must be a RegExp object'
+  });
 }
 
 /**
@@ -54,7 +69,12 @@ export function isSymbol(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_SYMBOL, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'symbol',
+    actual: typeof value,
+    errorMessage: 'Value must be a symbol'
+  });
 }
 
 /**
@@ -65,5 +85,10 @@ export function isUndefined(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.NOT_UNDEFINED, { value });
+  return createValidationFailure(ValidationErrorCode.INVALID_VALUE, { 
+    value,
+    expected: 'undefined',
+    actual: typeof value,
+    errorMessage: 'Value must be undefined'
+  });
 }

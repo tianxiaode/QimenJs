@@ -13,7 +13,12 @@ export function isArray(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_ARRAY, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'array',
+    actual: typeof value,
+    errorMessage: 'Value must be an array'
+  });
 }
 
 /**
@@ -24,7 +29,12 @@ export function isObject(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'object',
+    actual: typeof value,
+    errorMessage: 'Value must be an object'
+  });
 }
 
 /**
@@ -32,16 +42,15 @@ export function isObject(value: any): ValidationResult {
  */
 export function isMap(value: any): ValidationResult {
   if (value instanceof Map) {
-    return { isValid: true, errors: [] };
+    return createValidationSuccess();
   }
   
-  return {
-    isValid: false,
-    errors: [{
-      errorCode: ValidationErrorCode.TYPE_NOT_MAP,
-      errorParams: { value }
-    }]
-  };
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'Map',
+    actual: typeof value,
+    errorMessage: 'Value must be a Map'
+  });
 }
 
 /**
@@ -49,14 +58,13 @@ export function isMap(value: any): ValidationResult {
  */
 export function isSet(value: any): ValidationResult {
   if (value instanceof Set) {
-    return { isValid: true, errors: [] };
+    return createValidationSuccess();
   }
   
-  return {
-    isValid: false,
-    errors: [{
-      errorCode: ValidationErrorCode.TYPE_NOT_SET,
-      errorParams: { value }
-    }]
-  };
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'Set',
+    actual: typeof value,
+    errorMessage: 'Value must be a Set'
+  });
 }
