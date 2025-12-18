@@ -41,7 +41,12 @@ export function checkLength(
         const length = getLength(value);
 
         if (length === undefined) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_LENGTH, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'type with length property',
+                actual: typeof value,
+                errorMessage: 'Value must have a length property'
+            });
         }
 
         if (condition(length)) {
@@ -52,6 +57,7 @@ export function checkLength(
             ...errorParams,
             actualLength: length,
             value,
+            errorMessage: 'Length check failed'
         });
     };
 }
@@ -60,14 +66,28 @@ export function checkLength(
  * 检查是否有最小长度
  */
 export function hasMinLength(min: number): (value: any) => ValidationResult {
-    return checkLength(length => length >= min, ValidationErrorCode.MIN_LENGTH, { min });
+    return checkLength(
+        length => length >= min, 
+        ValidationErrorCode.TOO_SMALL, 
+        { 
+            min,
+            errorMessage: `Length must be at least ${min}`
+        }
+    );
 }
 
 /**
  * 检查是否有最大长度
  */
 export function hasMaxLength(max: number): (value: any) => ValidationResult {
-    return checkLength(length => length <= max, ValidationErrorCode.MAX_LENGTH, { max });
+    return checkLength(
+        length => length <= max, 
+        ValidationErrorCode.TOO_LARGE, 
+        { 
+            max,
+            errorMessage: `Length must be at most ${max}`
+        }
+    );
 }
 
 /**
@@ -77,10 +97,29 @@ export function hasLengthBetween(min: number, max: number): (value: any) => Vali
     return (value: any): ValidationResult => {
         const minLengthCheck = hasMinLength(min)(value);
         if (!minLengthCheck.isValid) {
-            return minLengthCheck;
+            return createValidationFailure(
+                ValidationErrorCode.TOO_SMALL,
+                {
+                    value,
+                    min,
+                    errorMessage: `Length must be between ${min} and ${max}`
+                }
+            );
         }
 
-        return hasMaxLength(max)(value);
+        const maxLengthCheck = hasMaxLength(max)(value);
+        if (!maxLengthCheck.isValid) {
+            return createValidationFailure(
+                ValidationErrorCode.TOO_LARGE,
+                {
+                    value,
+                    max,
+                    errorMessage: `Length must be between ${min} and ${max}`
+                }
+            );
+        }
+
+        return createValidationSuccess();
     };
 }
 
@@ -92,17 +131,23 @@ export function hasExactLength(expectedLength: number): (value: any) => Validati
         const length = getLength(value);
 
         if (length === undefined) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_LENGTH, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'type with length property',
+                actual: typeof value,
+                errorMessage: 'Value must have a length property'
+            });
         }
 
         if (length === expectedLength) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.LENGTH_MISMATCH, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value,
             expected: expectedLength,
             actual: length,
+            errorMessage: `Length must be exactly ${expectedLength}, but got ${length}`
         });
     };
 }
@@ -115,17 +160,23 @@ export function hasLengthOneOf(allowedLengths: number[]): (value: any) => Valida
         const length = getLength(value);
 
         if (length === undefined) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_LENGTH, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'type with length property',
+                actual: typeof value,
+                errorMessage: 'Value must have a length property'
+            });
         }
 
         if (allowedLengths.includes(length)) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.LENGTH_NOT_ONE_OF, {
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, {
             value,
             allowedLengths,
             actual: length,
+            errorMessage: `Length must be one of [${allowedLengths.join(', ')}], but got ${length}`
         });
     };
 }

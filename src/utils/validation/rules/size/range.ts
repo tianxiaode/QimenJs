@@ -4,9 +4,17 @@ import { ValidationResult, createValidationFailure, createValidationSuccess } fr
 
 /**
  * 通用大小验证，可用于数组/对象/Map/Set
- * @param value 
- * @param min 
- * @param max 
+ * 
+ * 支持的数据类型：
+ * - 数组 (Array)
+ * - 对象 (Object)
+ * - Map
+ * - Set
+ * 
+ * @param value 要验证的值
+ * @param min 最小大小
+ * @param max 最大大小
+ * @returns ValidationResult 验证结果
  */
 export function hasSize(value: any, min: number, max: number): ValidationResult {
     let size: number | undefined;
@@ -20,17 +28,33 @@ export function hasSize(value: any, min: number, max: number): ValidationResult 
     }
     
     if (size === undefined) {
-        return createValidationFailure(ValidationErrorCode.TYPE_NOT_HAS_SIZE, { value });
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+            value,
+            expected: 'type with size property (Array, Object, Map, or Set)',
+            actual: typeof value,
+            errorMessage: 'Value must have a size property'
+        });
     }
     
     if (size >= min && size <= max) {
         return createValidationSuccess();
     }
     
-    return createValidationFailure(ValidationErrorCode.SIZE_OUT_OF_RANGE, {
+    if (size < min) {
+        return createValidationFailure(ValidationErrorCode.TOO_SMALL, {
+            value,
+            min,
+            actual: size,
+            actualSize: size,
+            errorMessage: `Size must be at least ${min}, but got ${size}`
+        });
+    }
+    
+    return createValidationFailure(ValidationErrorCode.TOO_LARGE, {
         value,
-        min,
         max,
-        actualSize: size
+        actual: size,
+        actualSize: size,
+        errorMessage: `Size must be at most ${max}, but got ${size}`
     });
 }
