@@ -1,3 +1,4 @@
+// rules/structures/object.ts
 import { ValidationErrorCode } from '../../core';
 import { ValidationResult, createValidationFailure, createValidationSuccess } from '../../core';
 import { isObject } from '../types';
@@ -8,14 +9,23 @@ import { isObject } from '../types';
 export function hasKey(key: string): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
         if (Object.prototype.hasOwnProperty.call(value, key)) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_KEY, { value, key });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, { 
+            value, 
+            key,
+            errorMessage: `Object is missing required key: ${key}`
+        });
     };
 }
 
@@ -25,16 +35,31 @@ export function hasKey(key: string): (value: any) => ValidationResult {
 export function hasKeys(requiredKeys: string[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
+        const missingKeys: string[] = [];
         for (const key of requiredKeys) {
             if (!Object.prototype.hasOwnProperty.call(value, key)) {
-                return createValidationFailure(ValidationErrorCode.MISSING_KEY, { value, key });
+                missingKeys.push(key);
             }
         }
 
-        return createValidationSuccess();
+        if (missingKeys.length === 0) {
+            return createValidationSuccess();
+        }
+
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, { 
+            value, 
+            missingKeys,
+            requiredKeys,
+            errorMessage: `Object is missing required keys: ${missingKeys.join(', ')}`
+        });
     };
 }
 
@@ -44,7 +69,12 @@ export function hasKeys(requiredKeys: string[]): (value: any) => ValidationResul
 export function hasAnyKey(keys: string[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
         for (const key of keys) {
@@ -53,7 +83,11 @@ export function hasAnyKey(keys: string[]): (value: any) => ValidationResult {
             }
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_KEYS, { value, keys });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, { 
+            value, 
+            keys,
+            errorMessage: `Object must have at least one of the specified keys: ${keys.join(', ')}`
+        });
     };
 }
 
@@ -63,16 +97,30 @@ export function hasAnyKey(keys: string[]): (value: any) => ValidationResult {
 export function hasNoKey(forbiddenKeys: string[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
+        const foundForbiddenKeys: string[] = [];
         for (const key of forbiddenKeys) {
             if (Object.prototype.hasOwnProperty.call(value, key)) {
-                return createValidationFailure(ValidationErrorCode.FORBIDDEN_KEY, { value, key });
+                foundForbiddenKeys.push(key);
             }
         }
 
-        return createValidationSuccess();
+        if (foundForbiddenKeys.length === 0) {
+            return createValidationSuccess();
+        }
+
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, { 
+            value, 
+            forbiddenKeys: foundForbiddenKeys,
+            errorMessage: `Object contains forbidden keys: ${foundForbiddenKeys.join(', ')}`
+        });
     };
 }
 
@@ -82,16 +130,23 @@ export function hasNoKey(forbiddenKeys: string[]): (value: any) => ValidationRes
 export function isEmptyObject(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
-        if (Object.keys(value).length === 0) {
+        const keys = Object.keys(value);
+        if (keys.length === 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_EMPTY_OBJECT, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value,
-            actualKeys: Object.keys(value),
+            actualKeys: keys,
+            errorMessage: 'Object must be empty'
         });
     };
 }
@@ -102,13 +157,24 @@ export function isEmptyObject(): (value: any) => ValidationResult {
 export function isNonEmptyObject(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isObject(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_OBJECT, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+                value,
+                expected: 'object',
+                actual: typeof value,
+                errorMessage: 'Value must be an object'
+            });
         }
 
-        if (Object.keys(value).length > 0) {
+        const keys = Object.keys(value);
+        if (keys.length > 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.EMPTY_OBJECT, { value });
+        return createValidationFailure(ValidationErrorCode.TOO_SMALL, { 
+            value,
+            min: 1,
+            actual: keys.length,
+            errorMessage: 'Object must not be empty'
+        });
     };
 }

@@ -12,7 +12,12 @@ export function isFormData(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_FORM_DATA, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+        value,
+        expected: 'FormData',
+        actual: typeof value,
+        errorMessage: 'Value must be a FormData object'
+    });
 }
 
 /**
@@ -26,7 +31,12 @@ export function isURLSearchParams(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_URL_SEARCH_PARAMS, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+        value,
+        expected: 'URLSearchParams',
+        actual: typeof value,
+        errorMessage: 'Value must be a URLSearchParams object'
+    });
 }
 
 /**
@@ -39,7 +49,12 @@ export function isFile(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_FILE, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+        value,
+        expected: 'File',
+        actual: typeof value,
+        errorMessage: 'Value must be a File object'
+    });
 }
 
 /**
@@ -52,5 +67,10 @@ export function isBlob(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_BLOB, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+        value,
+        expected: 'Blob',
+        actual: typeof value,
+        errorMessage: 'Value must be a Blob object'
+    });
 }

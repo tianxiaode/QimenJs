@@ -8,14 +8,22 @@ import { isDate } from '../types';
 export function isValidDate(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (!isNaN(value.getTime())) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+            value,
+            errorMessage: 'Value must be a valid date',
+        });
     };
 }
 
@@ -25,20 +33,30 @@ export function isValidDate(): (value: any) => ValidationResult {
 export function isDateBefore(date: Date): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         if (value < date) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.DATE_NOT_BEFORE, {
+        return createValidationFailure(ValidationErrorCode.TOO_LARGE, {
             value,
-            comparisonDate: date,
+            max: date,
+            actual: value,
+            errorMessage: `Date must be before ${date.toISOString()}`,
         });
     };
 }
@@ -49,20 +67,30 @@ export function isDateBefore(date: Date): (value: any) => ValidationResult {
 export function isDateAfter(date: Date): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         if (value > date) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.DATE_NOT_AFTER, {
+        return createValidationFailure(ValidationErrorCode.TOO_SMALL, {
             value,
-            comparisonDate: date,
+            min: date,
+            actual: value,
+            errorMessage: `Date must be after ${date.toISOString()}`,
         });
     };
 }
@@ -73,21 +101,31 @@ export function isDateAfter(date: Date): (value: any) => ValidationResult {
 export function isDateBetween(startDate: Date, endDate: Date): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         if (value >= startDate && value <= endDate) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.DATE_NOT_BETWEEN, {
+        return createValidationFailure(ValidationErrorCode.OUT_OF_RANGE, {
             value,
-            startDate,
-            endDate,
+            min: startDate,
+            max: endDate,
+            actual: value,
+            errorMessage: `Date must be between ${startDate.toISOString()} and ${endDate.toISOString()}`,
         });
     };
 }
@@ -98,11 +136,19 @@ export function isDateBetween(startDate: Date, endDate: Date): (value: any) => V
 export function isExactDate(expectedDate: Date): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         // 比较日期部分，忽略时间部分
@@ -117,9 +163,11 @@ export function isExactDate(expectedDate: Date): (value: any) => ValidationResul
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.DATE_MISMATCH, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value,
-            expectedDate,
+            expected: expectedDateOnly,
+            actual: valueDate,
+            errorMessage: `Date must be exactly ${expectedDateOnly.toDateString()}`,
         });
     };
 }
@@ -130,11 +178,19 @@ export function isExactDate(expectedDate: Date): (value: any) => ValidationResul
 export function isToday(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         const today = new Date();
@@ -145,7 +201,10 @@ export function isToday(): (value: any) => ValidationResult {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_TODAY, { value });
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+            value,
+            errorMessage: 'Date must be today',
+        });
     };
 }
 
@@ -155,11 +214,19 @@ export function isToday(): (value: any) => ValidationResult {
 export function isPastDate(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         const now = new Date();
@@ -168,7 +235,12 @@ export function isPastDate(): (value: any) => ValidationResult {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_PAST_DATE, { value });
+        return createValidationFailure(ValidationErrorCode.TOO_LARGE, {
+            value,
+            max: now,
+            actual: value,
+            errorMessage: 'Date must be in the past',
+        });
     };
 }
 
@@ -178,11 +250,19 @@ export function isPastDate(): (value: any) => ValidationResult {
 export function isFutureDate(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         const now = new Date();
@@ -191,7 +271,12 @@ export function isFutureDate(): (value: any) => ValidationResult {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_FUTURE_DATE, { value });
+        return createValidationFailure(ValidationErrorCode.TOO_SMALL, {
+            value,
+            min: now,
+            actual: value,
+            errorMessage: 'Date must be in the future',
+        });
     };
 }
 
@@ -202,24 +287,33 @@ export function isFutureDate(): (value: any) => ValidationResult {
 export function isWeekday(weekdays: number | number[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isDate(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Date',
+                actual: typeof value,
+                errorMessage: 'Value must be a Date object',
+            });
         }
 
         if (isNaN(value.getTime())) {
-            return createValidationFailure(ValidationErrorCode.INVALID_DATE, { value });
+            return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
+                value,
+                errorMessage: 'Value must be a valid date',
+            });
         }
 
         const day = value.getDay(); // 0-6 (周日-周六)
         const allowedWeekdays = Array.isArray(weekdays) ? weekdays : [weekdays];
-        
+
         if (allowedWeekdays.includes(day)) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.INVALID_WEEKDAY, {
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, {
             value,
-            weekday: day,
-            allowedWeekdays,
+            day,
+            allowedValues: allowedWeekdays,
+            errorMessage: `Date must be on one of the allowed weekdays: ${allowedWeekdays.join(', ')}`,
         });
     };
 }

@@ -1,4 +1,3 @@
-// rules/structures/node.ts
 import {
     ValidationResult,
     createValidationFailure,
@@ -16,7 +15,12 @@ export function isTypedArray(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_TYPED_ARRAY, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+        value,
+        expected: 'TypedArray',
+        actual: typeof value,
+        errorMessage: 'Value must be a TypedArray (e.g., Uint8Array, Float32Array)',
+    });
 }
 
 /**
@@ -29,5 +33,10 @@ export function isBuffer(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_BUFFER, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+        value,
+        expected: 'Buffer',
+        actual: typeof value,
+        errorMessage: 'Value must be a Buffer',
+    });
 }

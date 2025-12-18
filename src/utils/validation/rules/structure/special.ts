@@ -18,7 +18,7 @@ export function isPromise(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_PROMISE, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }
 
 /**
@@ -29,7 +29,7 @@ export function isError(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_ERROR, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }
 
 /**
@@ -47,7 +47,7 @@ export function isThenable(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_THENABLE, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }
 
 /**
@@ -63,7 +63,7 @@ export function isAsyncFunction(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_ASYNC_FUNCTION, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }
 
 /**
@@ -79,7 +79,7 @@ export function isGeneratorFunction(value: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.TYPE_NOT_GENERATOR_FUNCTION, { value });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }
 
 /**
@@ -88,15 +88,7 @@ export function isGeneratorFunction(value: any): ValidationResult {
 export function isPlainObject(value: any): ValidationResult {
     // 首先检查基本类型
     if (typeof value !== 'object' || value === null) {
-        return {
-            isValid: false,
-            errors: [
-                {
-                    errorCode: ValidationErrorCode.TYPE_NOT_OBJECT,
-                    errorParams: { value },
-                },
-            ],
-        };
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
     }
 
     // 检查原型链
@@ -104,16 +96,8 @@ export function isPlainObject(value: any): ValidationResult {
     const isValid = proto === null || proto === Object.prototype;
 
     if (isValid) {
-        return { isValid: true, errors: [] };
+        return createValidationSuccess();
     }
 
-    return {
-        isValid: false,
-        errors: [
-            {
-                errorCode: ValidationErrorCode.TYPE_NOT_PLAIN_OBJECT,
-                errorParams: { value },
-            },
-        ],
-    };
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
 }

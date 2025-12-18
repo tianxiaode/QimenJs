@@ -8,14 +8,14 @@ import { isSet } from '../types';
 export function hasSetValue(valueToCheck: any): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         if (value.has(valueToCheck)) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_VALUE, { value, valueToCheck });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, { value, valueToCheck });
     };
 }
 
@@ -25,12 +25,12 @@ export function hasSetValue(valueToCheck: any): (value: any) => ValidationResult
 export function hasSetValues(requiredValues: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         for (const val of requiredValues) {
             if (!value.has(val)) {
-                return createValidationFailure(ValidationErrorCode.MISSING_VALUE, {
+                return createValidationFailure(ValidationErrorCode.MISSING_FIELD, {
                     value,
                     origin: val,
                 });
@@ -47,7 +47,7 @@ export function hasSetValues(requiredValues: any[]): (value: any) => ValidationR
 export function hasAnySetValue(values: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         for (const val of values) {
@@ -56,7 +56,7 @@ export function hasAnySetValue(values: any[]): (value: any) => ValidationResult 
             }
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_VALUES, { value, values });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, { value, values });
     };
 }
 
@@ -66,12 +66,12 @@ export function hasAnySetValue(values: any[]): (value: any) => ValidationResult 
 export function hasNoSetValue(forbiddenValues: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         for (const val of forbiddenValues) {
             if (value.has(val)) {
-                return createValidationFailure(ValidationErrorCode.FORBIDDEN_VALUE, {
+                return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, {
                     value,
                     origin: val,
                 });
@@ -88,14 +88,14 @@ export function hasNoSetValue(forbiddenValues: any[]): (value: any) => Validatio
 export function isEmptySet(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         if (value.size === 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_EMPTY_SET, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value,
             actualSize: value.size,
         });
@@ -108,13 +108,13 @@ export function isEmptySet(): (value: any) => ValidationResult {
 export function isNonEmptySet(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isSet(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_SET, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { value });
         }
 
         if (value.size > 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.EMPTY_SET, { value });
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, { value });
     };
 }

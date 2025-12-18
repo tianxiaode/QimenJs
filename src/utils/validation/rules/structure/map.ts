@@ -8,14 +8,23 @@ import { isMap } from '../types';
 export function hasMapKey(key: any): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
         if (value.has(key)) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_KEY, { value, key });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, {
+            value,
+            key,
+            errorMessage: `Map is missing required key: ${String(key)}`,
+        });
     };
 }
 
@@ -25,16 +34,31 @@ export function hasMapKey(key: any): (value: any) => ValidationResult {
 export function hasMapKeys(requiredKeys: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
+        const missingKeys: any[] = [];
         for (const key of requiredKeys) {
             if (!value.has(key)) {
-                return createValidationFailure(ValidationErrorCode.MISSING_KEY, { value, key });
+                missingKeys.push(key);
             }
         }
 
-        return createValidationSuccess();
+        if (missingKeys.length === 0) {
+            return createValidationSuccess();
+        }
+
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, {
+            value,
+            missingKeys,
+            requiredKeys,
+            errorMessage: `Map is missing required keys: ${missingKeys.map(k => String(k)).join(', ')}`,
+        });
     };
 }
 
@@ -44,7 +68,12 @@ export function hasMapKeys(requiredKeys: any[]): (value: any) => ValidationResul
 export function hasAnyMapKey(keys: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
         for (const key of keys) {
@@ -53,7 +82,11 @@ export function hasAnyMapKey(keys: any[]): (value: any) => ValidationResult {
             }
         }
 
-        return createValidationFailure(ValidationErrorCode.MISSING_KEYS, { value, keys });
+        return createValidationFailure(ValidationErrorCode.MISSING_FIELD, {
+            value,
+            keys,
+            errorMessage: `Map must have at least one of the specified keys: ${keys.map(k => String(k)).join(', ')}`,
+        });
     };
 }
 
@@ -63,16 +96,30 @@ export function hasAnyMapKey(keys: any[]): (value: any) => ValidationResult {
 export function hasNoMapKey(forbiddenKeys: any[]): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
+        const foundForbiddenKeys: any[] = [];
         for (const key of forbiddenKeys) {
             if (value.has(key)) {
-                return createValidationFailure(ValidationErrorCode.FORBIDDEN_KEY, { value, key });
+                foundForbiddenKeys.push(key);
             }
         }
 
-        return createValidationSuccess();
+        if (foundForbiddenKeys.length === 0) {
+            return createValidationSuccess();
+        }
+
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, {
+            value,
+            forbiddenKeys: foundForbiddenKeys,
+            errorMessage: `Map contains forbidden keys: ${foundForbiddenKeys.map(k => String(k)).join(', ')}`,
+        });
     };
 }
 
@@ -82,16 +129,22 @@ export function hasNoMapKey(forbiddenKeys: any[]): (value: any) => ValidationRes
 export function isEmptyMap(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
         if (value.size === 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_EMPTY_MAP, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value,
             actualSize: value.size,
+            errorMessage: 'Map must be empty',
         });
     };
 }
@@ -102,13 +155,23 @@ export function isEmptyMap(): (value: any) => ValidationResult {
 export function isNonEmptyMap(): (value: any) => ValidationResult {
     return (value: any): ValidationResult => {
         if (!isMap(value).isValid) {
-            return createValidationFailure(ValidationErrorCode.TYPE_NOT_MAP, { value });
+            return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, {
+                value,
+                expected: 'Map',
+                actual: typeof value,
+                errorMessage: 'Value must be a Map',
+            });
         }
 
         if (value.size > 0) {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.EMPTY_MAP, { value });
+        return createValidationFailure(ValidationErrorCode.TOO_SMALL, {
+            value,
+            min: 1,
+            actual: value.size,
+            errorMessage: 'Map must not be empty',
+        });
     };
 }
