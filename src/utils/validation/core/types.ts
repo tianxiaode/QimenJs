@@ -23,6 +23,7 @@ export interface ValidationError {
   path?: string | string[]
 }
 
+export type ValidatorResult = ValidationError | null
 /**
  * 验证结果接口
  * 描述一次验证操作的整体结果

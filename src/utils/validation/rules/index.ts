@@ -1,8 +1,6 @@
-// rules/primitives/index.ts
-export * from './types';
-export * from './existence';
-export * from './comparison';
-export * from './size';
-export * from './patterns';
-export * from './structure';
-export * from './mapping';
+export * from './string';
+export * from './number';
+export * from './array';
+export * from './object';
+export * from './date';
+export * from './boolean';
