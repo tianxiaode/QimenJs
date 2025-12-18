@@ -21,6 +21,27 @@ export enum ComparisonOperation {
 
 /**
  * 创建比较验证器的工厂函数
+ * 
+ * 支持比较的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string)
+ * - 日期 (Date)
+ * - 布尔值 (boolean)
+ * 
+ * 根据 strict 参数决定使用严格比较还是宽松比较：
+ * - 严格比较 (strict=true): 只有相同类型才能比较
+ * - 宽松比较 (strict=false): 允许不同类型间转换比较
+ * 
+ * 比较规则：
+ * - 对于大小比较（>, >=, <, <=），要求值必须是数字类型
+ * - 对于相等性比较（==, !=），不限制数据类型
+ * - 日期类型支持与字符串或数字的时间戳进行比较
+ * - 字符串可以转换为数字进行比较（宽松模式下）
+ * 
+ * @param operation 比较操作类型
+ * @param compareValue 要比较的值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function createComparisonValidator(
     operation: ComparisonOperation,
@@ -111,6 +132,15 @@ export function createComparisonValidator(
 
 /**
  * 检查值是否大于某个值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param compareValue 比较值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function isGreaterThan(
     compareValue: number,
@@ -121,6 +151,15 @@ export function isGreaterThan(
 
 /**
  * 检查值是否大于等于某个值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param compareValue 比较值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function isGreaterThanOrEqual(
     compareValue: number,
@@ -135,6 +174,15 @@ export function isGreaterThanOrEqual(
 
 /**
  * 检查值是否小于某个值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param compareValue 比较值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function isLessThan(
     compareValue: number,
@@ -145,6 +193,15 @@ export function isLessThan(
 
 /**
  * 检查值是否小于等于某个值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param compareValue 比较值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function isLessThanOrEqual(
     compareValue: number,
@@ -155,6 +212,15 @@ export function isLessThanOrEqual(
 
 /**
  * 检查是否有最小值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param min 最小值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function hasMinValue(min: number, strict: boolean = true): (value: any) => ValidationResult {
     return createComparisonValidator(ComparisonOperation.GREATER_THAN_OR_EQUAL, min, strict);
@@ -162,6 +228,15 @@ export function hasMinValue(min: number, strict: boolean = true): (value: any) =
 
 /**
  * 检查是否有最大值
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param max 最大值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function hasMaxValue(max: number, strict: boolean = true): (value: any) => ValidationResult {
     return createComparisonValidator(ComparisonOperation.LESS_THAN_OR_EQUAL, max, strict);
@@ -169,6 +244,16 @@ export function hasMaxValue(max: number, strict: boolean = true): (value: any) =
 
 /**
  * 检查值是否在范围内
+ * 
+ * 支持的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string) - 可转换为数字时
+ * - 日期 (Date) - 可转换为时间戳时
+ * 
+ * @param min 最小值
+ * @param max 最大值
+ * @param strict 是否使用严格比较，默认为true
+ * @returns 验证函数
  */
 export function isBetween(
     min: number,

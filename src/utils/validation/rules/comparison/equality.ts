@@ -35,7 +35,13 @@ export function isSameType(a: any, b: any): ValidationResult {
             return createValidationSuccess();
         }
 
-        return createValidationFailure(ValidationErrorCode.NOT_SAME_TYPE, { a, b });
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+            value: a,
+            other: b,
+            errorMessage: 'Values must be of the same type',
+            expected: typeof b,
+            actual: typeof a
+        });
     }
 
     // 特殊处理数组
@@ -46,7 +52,13 @@ export function isSameType(a: any, b: any): ValidationResult {
     }
 
     if (aIsArray !== bIsArray) {
-        return createValidationFailure(ValidationErrorCode.NOT_SAME_TYPE, { a, b });
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+            value: a,
+            other: b,
+            errorMessage: 'Values must be of the same type',
+            expected: bIsArray ? 'array' : typeof b,
+            actual: aIsArray ? 'array' : typeof a
+        });
     }
 
     // 特殊处理对象
@@ -62,5 +74,11 @@ export function isSameType(a: any, b: any): ValidationResult {
         return createValidationSuccess();
     }
 
-    return createValidationFailure(ValidationErrorCode.NOT_SAME_TYPE, { a, b });
+    return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+        value: a,
+        other: b,
+        errorMessage: 'Values must be of the same type',
+        expected: typeof b,
+        actual: typeof a
+    });
 }

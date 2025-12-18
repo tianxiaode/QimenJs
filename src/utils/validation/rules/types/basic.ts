@@ -13,7 +13,12 @@ export function isString(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_STRING, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'string',
+    actual: typeof value,
+    errorMessage: 'Value must be a string'
+  });
 }
 
 /**
@@ -24,7 +29,12 @@ export function isNumber(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_NUMBER, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'number',
+    actual: typeof value,
+    errorMessage: 'Value must be a number'
+  });
 }
 
 /**
@@ -35,9 +45,13 @@ export function isBoolean(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_BOOLEAN, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'boolean',
+    actual: typeof value,
+    errorMessage: 'Value must be a boolean'
+  });
 }
-
 
 /**
  * 检查是否为原始类型
@@ -55,5 +69,10 @@ export function isPrimitive(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.TYPE_NOT_PRIMITIVE, { value });
+  return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+    value,
+    expected: 'primitive type',
+    actual: typeof value,
+    errorMessage: 'Value must be a primitive type'
+  });
 }

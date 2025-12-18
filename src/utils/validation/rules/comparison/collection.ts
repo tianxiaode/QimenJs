@@ -1,4 +1,3 @@
-import { create } from 'domain';
 import { createValidationFailure, createValidationSuccess, ValidationErrorCode, ValidationResult } from '../../core';
 
 /**
@@ -7,8 +6,16 @@ import { createValidationFailure, createValidationSuccess, ValidationErrorCode, 
 export function isIn<T>(allowedValues: T[]): (value: T) => ValidationResult {
     return (value: T): ValidationResult => {
         const isValid = allowedValues.includes(value);
-        return isValid ? createValidationSuccess() :
-            createValidationFailure(ValidationErrorCode.NOT_IN_ALLOWED_VALUES, { allowedValues, actualValue: value })
+        if (isValid) {
+            return createValidationSuccess();
+        }
+        
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, { 
+            value,
+            allowedValues,
+            errorMessage: 'Value is not in the allowed values list',
+            expected: `one of [${allowedValues.map(v => String(v)).join(', ')}]`
+        });
     };
 }
 
@@ -18,8 +25,16 @@ export function isIn<T>(allowedValues: T[]): (value: T) => ValidationResult {
 export function isNotIn<T>(disallowedValues: T[]): (value: T) => ValidationResult {
     return (value: T): ValidationResult => {
         const isValid = !disallowedValues.includes(value);
-        return isValid ? createValidationSuccess() :
-            createValidationFailure(ValidationErrorCode.IN_DISALLOWED_VALUES, { disallowedValues, actualValue: value })
+        if (isValid) {
+            return createValidationSuccess();
+        }
+        
+        return createValidationFailure(ValidationErrorCode.NOT_ALLOWED, { 
+            value,
+            disallowedValues,
+            errorMessage: 'Value is in the disallowed values list',
+            expected: `not one of [${disallowedValues.map(v => String(v)).join(', ')}]`
+        });
     };
 }
 

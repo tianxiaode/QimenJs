@@ -1,9 +1,19 @@
-// rules/constraints/comparison/core.ts
 import { ValidationErrorCode } from '../../core/constants';
-import { ValidationResult,createValidationFailure, createValidationSuccess } from '../../core';
+import { ValidationResult, createValidationFailure } from '../../core';
 
 /**
  * 严格比较两个值
+ * 支持比较的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string)
+ * - 日期 (Date)
+ * - 布尔值 (boolean)
+ * 
+ * 比较规则：
+ * - 只有相同类型才能比较
+ * - 不同类型返回 NaN (无法比较)
+ * - NaN 与任何值比较都返回 NaN
+ * 
  * @param value 第一个值
  * @param other 第二个值
  * @returns 比较结果：-1 表示 value < other，0 表示相等，1 表示 value > other，NaN 表示无法比较
@@ -53,6 +63,18 @@ export function strictCompare(value: any, other: any): number {
 
 /**
  * 宽松比较两个值
+ * 支持比较的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string)
+ * - 日期 (Date)
+ * - 布尔值 (boolean)
+ * 
+ * 比较规则：
+ * - 允许不同类型间的转换比较
+ * - 字符串可以转换为数字进行比较
+ * - 日期字符串可以转换为日期对象进行比较
+ * - 数字和日期可以相互转换比较
+ * 
  * @param value 第一个值
  * @param other 第二个值
  * @returns 比较结果：-1 表示 value < other，0 表示相等，1 表示 value > other，NaN 表示无法比较
@@ -176,6 +198,16 @@ export function looseCompare(value: any, other: any): number {
 
 /**
  * 智能比较两个值
+ * 支持比较的数据类型：
+ * - 数字 (number)
+ * - 字符串 (string)
+ * - 日期 (Date)
+ * - 布尔值 (boolean)
+ * 
+ * 根据 strict 参数决定使用严格比较还是宽松比较：
+ * - 严格比较 (strict=true): 只有相同类型才能比较
+ * - 宽松比较 (strict=false): 允许不同类型间转换比较
+ * 
  * @param value 第一个值
  * @param other 第二个值
  * @param strict 是否使用严格比较，默认为true
@@ -191,6 +223,13 @@ export function smartCompare(value: any, other: any, strict: boolean = true): nu
 
 /**
  * 创建基于比较结果的验证结果
+ * 
+ * @param comparisonResult 比较结果
+ * @param errorCode 错误码
+ * @param expected 期望值
+ * @param actual 实际值
+ * @param additionalData 额外数据
+ * @returns ValidationResult 验证结果
  */
 export function createComparisonValidationResult(
     comparisonResult: number,
@@ -200,9 +239,10 @@ export function createComparisonValidationResult(
     additionalData: Record<string, any> = {}
 ): ValidationResult {
     if (isNaN(comparisonResult)) {
-        return createValidationFailure(ValidationErrorCode.CANNOT_COMPARE, {
+        return createValidationFailure(ValidationErrorCode.INVALID_VALUE, {
             value: actual,
             other: expected,
+            errorMessage: 'Cannot compare values',
             ...additionalData,
         });
     }
@@ -210,6 +250,7 @@ export function createComparisonValidationResult(
     return createValidationFailure(errorCode, {
         expected,
         actual,
+        errorMessage: 'Comparison failed',
         ...additionalData,
     });
 }
