@@ -10,7 +10,7 @@ import {
 // 对于IPv4这样需要额外验证的，传入额外验证函数
 export const isIPv4 = createPatternValidator(
     IPV4_PATTERN,
-    ValidationErrorCode.IPV4_INVALID,
+    ValidationErrorCode.INVALID_FORMAT,
     (value: string) => {
         const parts = value.split('.');
         for (const part of parts) {
@@ -24,9 +24,9 @@ export const isIPv4 = createPatternValidator(
 );
 
 // IPv6保持简单形式
-export const isIPv6 = createPatternValidator(IPV6_PATTERN, ValidationErrorCode.IPV6_INVALID);
+export const isIPv6 = createPatternValidator(IPV6_PATTERN, ValidationErrorCode.INVALID_FORMAT);
 
 export const isMACAddress = createPatternValidator(
     MAC_ADDRESS_PATTERN,
-    ValidationErrorCode.MAC_INVALID
+    ValidationErrorCode.INVALID_FORMAT
 );

@@ -24,6 +24,14 @@ export const ValidationErrorCode = {
   // === 条件/逻辑 (2个) ===
   CONDITION_FAILED: 'VALIDATION_CONDITION_FAILED', // 条件失败
   CUSTOM: 'VALIDATION_CUSTOM',               // 自定义错误
+
+  // === 密码专用错误代码 ===
+  PASSWORD_TOO_SHORT: 'VALIDATION_PASSWORD_TOO_SHORT',     // 密码太短
+  PASSWORD_MISSING_UPPERCASE: 'VALIDATION_PASSWORD_MISSING_UPPERCASE', // 缺少大写字母
+  PASSWORD_MISSING_LOWERCASE: 'VALIDATION_PASSWORD_MISSING_LOWERCASE', // 缺少小写字母
+  PASSWORD_MISSING_DIGIT: 'VALIDATION_PASSWORD_MISSING_DIGIT',     // 缺少数字
+  PASSWORD_MISSING_SPECIAL: 'VALIDATION_PASSWORD_MISSING_SPECIAL',   // 缺少特殊字符
+
 } as const;
 
 export type ValidationErrorCode = typeof ValidationErrorCode[keyof typeof ValidationErrorCode];

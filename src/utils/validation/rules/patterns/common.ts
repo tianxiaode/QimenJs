@@ -1,3 +1,4 @@
+// utils/validation/rules/patterns/common.ts
 import { createPatternValidator } from './regex';
 import {
     ValidationErrorCode,
@@ -11,17 +12,31 @@ import {
     UUID_PATTERN,
 } from '../../core';
 
+
 // 使用工厂函数创建所有验证函数
-export const isEmail = createPatternValidator(EMAIL_PATTERN, ValidationErrorCode.EMAIL_INVALID);
-export const isURL = createPatternValidator(URL_PATTERN, ValidationErrorCode.URL_INVALID);
+export const isEmail = createPatternValidator(
+    EMAIL_PATTERN, 
+    ValidationErrorCode.INVALID_FORMAT
+);
+
+export const isURL = createPatternValidator(
+    URL_PATTERN, 
+    ValidationErrorCode.INVALID_FORMAT
+);
+
 export const isPhoneNumber = createPatternValidator(
     PHONE_PATTERN,
-    ValidationErrorCode.PHONE_INVALID
+    ValidationErrorCode.INVALID_FORMAT
 );
-export const isUUID = createPatternValidator(UUID_PATTERN, ValidationErrorCode.UUID_INVALID);
+
+export const isUUID = createPatternValidator(
+    UUID_PATTERN, 
+    ValidationErrorCode.INVALID_FORMAT
+);
+
 export const isUsername = createPatternValidator(
     USERNAME_PATTERN,
-    ValidationErrorCode.USERNAME_INVALID
+    ValidationErrorCode.INVALID_FORMAT
 );
 
 /**
@@ -30,16 +45,21 @@ export const isUsername = createPatternValidator(
 export function isNumericString(value: any): ValidationResult {
     // 首先检查是否为字符串
     if (typeof value !== 'string') {
-        return createValidationFailure(ValidationErrorCode.TYPE_NOT_STRING, { value });
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+            value,
+            expected: 'string',
+            actual: typeof value,
+            errorMessage: 'Value must be a string'
+        });
     }
 
     // 检查是否为数字字符串（包括小数、科学计数法）
     const num = Number(value);
     if (isNaN(num) || value.trim() === '') {
         return createValidationFailure(ValidationErrorCode.PATTERN_MISMATCH, {
-            pattern: 'numeric string',
-            patternText: '数字字符串',
             value,
+            pattern: 'numeric string',
+            errorMessage: 'Value must be a valid numeric string'
         });
     }
 
@@ -52,15 +72,20 @@ export function isNumericString(value: any): ValidationResult {
 export function isIntegerString(value: any): ValidationResult {
     // 首先检查是否为字符串
     if (typeof value !== 'string') {
-        return createValidationFailure(ValidationErrorCode.TYPE_NOT_STRING, { value });
+        return createValidationFailure(ValidationErrorCode.TYPE_MISMATCH, { 
+            value,
+            expected: 'string',
+            actual: typeof value,
+            errorMessage: 'Value must be a string'
+        });
     }
 
     const num = Number(value);
     if (!Number.isInteger(num) || isNaN(num) || value.trim() === '') {
         return createValidationFailure(ValidationErrorCode.PATTERN_MISMATCH, {
-            pattern: 'integer string',
-            patternText: '整数字符串',
             value,
+            pattern: 'integer string',
+            errorMessage: 'Value must be a valid integer string'
         });
     }
 
