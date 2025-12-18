@@ -1,93 +1,60 @@
 /**
- * 验证规则错误信息接口
+ * 验证错误信息接口
+ * 用于描述单个验证错误的结构
  */
-export interface ValidationErrorParams {
-    // 基础信息
-    code?: string;
-    value?: any;
-    expected?: string | string[];
-    actual?: any;
-
-    // 约束参数
-    min?: number | string;
-    max?: number | string;
-    lower?: number;
-    upper?: number;
-
-    // 集合参数
-    collection?: any[];
-    collectionText?: string;
-    duplicate?: any;
-    missingKey?: string;
-    disallowedKey?: string;
-    forbiddenKey?: string;
-    allowedKeys?: string[];
-    disallowedKeys?: string[];
-
-    // 模式参数
-    pattern?: string;
-    patternText?: string;
-    missing?: string[];
-    missingRequirements?: string;
-
-    // 结构参数
-    index?: number;
-    key?: string;
-    keyValue?: any;
-    minLength?: number;
-    maxLength?: number;
-    minKeys?: number;
-    maxKeys?: number;
-    minSize?: number;
-    maxSize?: number;
-    actualLength?: number;
-    actualKeys?: number;
-    actualSize?: number;
-
-    // 日期参数
-    date?: Date | string;
-    minDate?: Date | string;
-    maxDate?: Date | string;
-
-    // 上下文参数
-    paramName?: string;
-    functionName?: string;
-    validatorIndex?: number;
-
-    // 扩展参数
-    [key: string]: any;
-}
-
-export interface ValidationRuleError {
-    /**
-     * 错误代码
-     */
-    errorCode: string;
-
-    /**
-     * 错误参数
-     */
-    errorParams?: ValidationErrorParams;
-
-    /**
-     * 可选的详细错误信息
-     */
-    errorMessage?: string;
+export interface ValidationError {
+  /**
+   * 错误代码，用于标识错误类型
+   * 例如: 'required', 'minLength', 'patternMismatch' 等
+   */
+  code: string
+  
+  /**
+   * 错误参数，可选字段，用于提供错误详情
+   * 例如: { min: 5, max: 10 } 用于描述数值范围限制
+   */
+  params?: Record<string, any>
+  
+  /**
+   * 错误路径，指示验证失败的数据位置
+   * 可以是字符串或字符串数组形式的路径
+   * 例如: 'user.name' 或 ['user', 'name']
+   */
+  path?: string | string[]
 }
 
 /**
- * 验证规则结果接口
+ * 验证结果接口
+ * 描述一次验证操作的整体结果
  */
 export interface ValidationResult {
-    /**
-     * 验证是否通过
-     */
-    isValid: boolean;
-
-    /**
-     * 错误列表（可以为空）
-     */
-    errors: ValidationRuleError[];
+  /**
+   * 验证是否通过的标志
+   * true表示验证通过，false表示验证失败
+   */
+  valid: boolean
+  
+  /**
+   * 验证错误列表，可选字段
+   * 当valid为false时，包含具体的错误信息数组
+   */
+  errors?: ValidationError[]
 }
 
-
+/**
+ * 验证器函数类型定义
+ * 通用的验证函数签名，可用于各种验证场景
+ * 
+ * @template T - 要验证的值的类型
+ * @template R - 验证规则的类型
+ * 
+ * @param value - 需要验证的值
+ * @param rule - 验证规则，可选参数
+ * @param path - 验证路径，用于定位嵌套对象中的字段，可选参数
+ * @returns 如果验证通过返回null，验证失败则返回ValidationError对象
+ */
+export type Validator<T = any, R = any> = (
+  value: T,
+  rule?: R,
+  path?: string | string[]
+) => ValidationError | null
