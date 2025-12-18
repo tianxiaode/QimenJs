@@ -1,5 +1,5 @@
 // validators/object/additional.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { ObjectRule } from '../../rules'
 import { ValidationErrorCode } from '../../core/error-codes'
 import { createError } from '../../core/errors'
@@ -8,7 +8,7 @@ export function validateObjectAdditionalProperties(
   value: any,
   rule: ObjectRule,
   path?: string
-): ValidationError | null {
+): ValidationRuleError | null {
 
   if (typeof value !== 'object' || value === null) return null
   if (rule.additionalProperties !== false) return null

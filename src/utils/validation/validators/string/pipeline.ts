@@ -1,5 +1,4 @@
-// validators/string/pipeline.ts
-import { ValidationError, ValidatorResult } from '../../core'
+import { ValidationRuleError } from '../../core'
 import { StringRule } from '../../rules'
 
 import { validateStringRequired } from './required'
@@ -12,7 +11,7 @@ export function validateString(
   value: any,
   rule: StringRule,
   path?: string
-): ValidationError[] {
+): ValidationRuleError[] | null {  // 修改这里，返回null而不是空数组
 
   const validators = [
     validateStringRequired,
@@ -22,15 +21,15 @@ export function validateString(
     validateStringEnum,
   ]
 
-  const errors: ValidationError[] = []
+  const errors: ValidationRuleError[] = []
 
   for (const validator of validators) {
     const error = validator(value, rule, path)
     if (error) {
       errors.push(error)
-      break // ⭐ 第一版：直接 short-circuit
     }
   }
 
-  return errors
+  // 如果验证没有错误，返回null，否则返回错误列表
+  return errors.length > 0 ? errors : null
 }

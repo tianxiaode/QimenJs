@@ -1,5 +1,5 @@
 // validators/number/pipeline.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { NumberRule } from '../../rules'
 
 import { validateNumberRequired } from './required'
@@ -12,7 +12,7 @@ export function validateNumber(
   value: any,
   rule: NumberRule,
   path?: string
-): ValidationError[] {
+): ValidationRuleError[] {
 
   const validators = [
     validateNumberRequired,
@@ -22,7 +22,7 @@ export function validateNumber(
     validateNumberEnum,
   ]
 
-  const errors: ValidationError[] = []
+  const errors: ValidationRuleError[] = []
 
   for (const validator of validators) {
     const error = validator(value, rule, path)

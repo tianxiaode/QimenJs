@@ -1,5 +1,5 @@
 // validators/array/items.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { ArrayRule } from '../../rules'
 import { InternalValidate } from '../../core/internal'
 
@@ -8,7 +8,7 @@ export function validateArrayItems(
   rule: ArrayRule,
   validate: InternalValidate,
   path?: string
-): ValidationError | null {
+): ValidationRuleError | null {
 
   if (!Array.isArray(value)) return null
   if (!rule.items) return null

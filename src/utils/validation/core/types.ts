@@ -2,7 +2,7 @@
  * 验证错误信息接口
  * 用于描述单个验证错误的结构
  */
-export interface ValidationError {
+export interface ValidationRuleError {
   /**
    * 错误代码，用于标识错误类型
    * 例如: 'required', 'minLength', 'patternMismatch' 等
@@ -23,7 +23,7 @@ export interface ValidationError {
   path?: string | string[]
 }
 
-export type ValidatorResult = ValidationError | null
+export type ValidatorResult = ValidationRuleError | null
 /**
  * 验证结果接口
  * 描述一次验证操作的整体结果
@@ -39,7 +39,7 @@ export interface ValidationResult {
    * 验证错误列表，可选字段
    * 当valid为false时，包含具体的错误信息数组
    */
-  errors?: ValidationError[]
+  errors?: ValidationRuleError[]
 }
 
 /**
@@ -58,4 +58,4 @@ export type Validator<T = any, R = any> = (
   value: T,
   rule?: R,
   path?: string | string[]
-) => ValidationError | null
+) => ValidationRuleError | null

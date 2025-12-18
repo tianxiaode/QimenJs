@@ -1,5 +1,5 @@
 // validators/date/range.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { DateRule } from '../../rules'
 import { createError } from '../../core/errors'
 import { ValidationErrorCode } from '../../core/error-codes'
@@ -8,7 +8,7 @@ export function validateDateRange(
   value: any,
   rule: DateRule,
   path?: string
-): ValidationError | null {
+): ValidationRuleError | null {
 
   if (!(value instanceof Date) || isNaN(value.getTime())) return null
 

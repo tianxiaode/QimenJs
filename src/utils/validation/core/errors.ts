@@ -1,5 +1,5 @@
 import { ValidationErrorCode } from './error-codes'
-import { ValidationError } from './types'
+import { ValidationRuleError } from './types'
 
 export function createError(
   code: ValidationErrorCode,
@@ -7,7 +7,7 @@ export function createError(
     params?: Record<string, any>
     path?: string | string[]
   }
-): ValidationError {
+): ValidationRuleError {
   return {
     code,
     params: options?.params,

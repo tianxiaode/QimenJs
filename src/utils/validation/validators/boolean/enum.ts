@@ -1,5 +1,5 @@
 // validators/boolean/enum.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { BooleanRule } from '../../rules'
 import { createError } from '../../core/errors'
 import { ValidationErrorCode } from '../../core/error-codes'
@@ -8,7 +8,7 @@ export function validateBooleanEnum(
   value: any,
   rule: BooleanRule,
   path?: string
-): ValidationError | null {
+): ValidationRuleError | null {
 
   if (typeof value !== 'boolean') return null
   if (!rule.enum) return null

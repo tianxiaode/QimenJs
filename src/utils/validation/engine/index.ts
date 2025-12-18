@@ -1,1 +1,2 @@
-export * from './validate';
+export * from './assertions';
+export * from './validates';

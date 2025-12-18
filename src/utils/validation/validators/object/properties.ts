@@ -1,4 +1,4 @@
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { ObjectRule } from '../../rules'
 import { InternalValidate } from '../../core/internal'
 import { ValidationErrorCode } from '../../core/error-codes'
@@ -9,7 +9,7 @@ export function validateObjectProperties(
   rule: ObjectRule,
   validate: InternalValidate,
   path?: string
-): ValidationError | null {
+): ValidationRuleError | null {
 
   if (typeof value !== 'object' || value === null) return null
   if (!rule.properties) return null

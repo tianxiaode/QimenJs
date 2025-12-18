@@ -1,5 +1,5 @@
 // validators/boolean/pipeline.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { BooleanRule } from '../../rules'
 
 import { validateBooleanRequired } from './required'
@@ -10,9 +10,9 @@ export function validateBoolean(
   value: any,
   rule: BooleanRule,
   path?: string
-): ValidationError[] {
+): ValidationRuleError[] {
 
-  const errors: ValidationError[] = []
+  const errors: ValidationRuleError[] = []
 
   const validators = [
     validateBooleanRequired,

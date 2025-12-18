@@ -1,5 +1,5 @@
 // validators/array/pipeline.ts
-import { ValidationError } from '../../core/types'
+import { ValidationRuleError } from '../../core/types'
 import { ArrayRule } from '../../rules'
 import { InternalValidate } from '../../core/internal'
 import { validateArrayRequired } from './required'
@@ -13,9 +13,9 @@ export function validateArray(
   rule: ArrayRule,
   validate: InternalValidate,
   path?: string
-): ValidationError[] {
+): ValidationRuleError[] {
 
-  const errors: ValidationError[] = []
+  const errors: ValidationRuleError[] = []
 
   const validators = [
     validateArrayRequired,
