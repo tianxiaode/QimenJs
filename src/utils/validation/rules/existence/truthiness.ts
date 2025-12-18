@@ -5,7 +5,6 @@ import {
     ValidationErrorCode,
 } from '../../core';
 
-
 /**
  * 检查值是否为真值（truthy）
  */
@@ -14,7 +13,12 @@ export function isTruthy(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.NOT_TRUTHY, { value });
+  return createValidationFailure(ValidationErrorCode.CONDITION_FAILED, { 
+    value,
+    errorMessage: 'Value must be truthy',
+    expected: 'truthy value',
+    actual: value
+  });
 }
 
 /**
@@ -25,5 +29,10 @@ export function isFalsy(value: any): ValidationResult {
     return createValidationSuccess();
   }
   
-  return createValidationFailure(ValidationErrorCode.NOT_FALSY, { value });
+  return createValidationFailure(ValidationErrorCode.CONDITION_FAILED, { 
+    value,
+    errorMessage: 'Value must be falsy',
+    expected: 'falsy value',
+    actual: value
+  });
 }

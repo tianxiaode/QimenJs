@@ -39,9 +39,9 @@ export function isRequired(value: any): ValidationResult {
 export function isOptional(value: any): ValidationResult {
   // isOptional 单独使用时：允许值为空
   if (value === undefined || value === null || value === '') {
-    return { isValid: true, errors: [] };
+    return createValidationSuccess();
   }
-  return { isValid: true, errors: [] };
+  return createValidationSuccess();
 }
 
 
@@ -50,10 +50,11 @@ export function isOptional(value: any): ValidationResult {
  */
 export function isPresent(value: any): ValidationResult {
   if (value === undefined || value === null) {
-    return { 
-      isValid: false, 
-      errors: [{ errorCode: ValidationErrorCode.PRESENT_REQUIRED }] 
-    };
+    return createValidationFailure(ValidationErrorCode.REQUIRED, {
+      value,
+      errorMessage: 'Value must be present',
+      expected: 'non-null value'
+    });
   }
-  return { isValid: true, errors: [] };
+  return createValidationSuccess();
 }

@@ -1,4 +1,3 @@
-// rules/constraints/comparison/numeric.ts
 import { isNumber } from '../types';
 import { smartCompare, createComparisonValidationResult } from './core';
 import {
@@ -52,44 +51,56 @@ export function createComparisonValidator(
                 if (compareResult === 1) {
                     return createValidationSuccess();
                 }
-                return createComparisonValidationResult(
-                    compareResult,
-                    ValidationErrorCode.NOT_GREATER_THAN,
-                    compareValue,
-                    value
+                return createValidationFailure(
+                    ValidationErrorCode.TOO_SMALL,
+                    {
+                        value,
+                        min: compareValue,
+                        actual: value,
+                        errorMessage: `Value must be greater than ${compareValue}`
+                    }
                 );
 
             case ComparisonOperation.GREATER_THAN_OR_EQUAL:
                 if (compareResult === 1 || compareResult === 0) {
                     return createValidationSuccess();
                 }
-                return createComparisonValidationResult(
-                    compareResult,
-                    ValidationErrorCode.NOT_GREATER_THAN_OR_EQUAL,
-                    compareValue,
-                    value
+                return createValidationFailure(
+                    ValidationErrorCode.TOO_SMALL,
+                    {
+                        value,
+                        min: compareValue,
+                        actual: value,
+                        errorMessage: `Value must be greater than or equal to ${compareValue}`
+                    }
                 );
 
             case ComparisonOperation.LESS_THAN:
                 if (compareResult === -1) {
                     return createValidationSuccess();
                 }
-                return createComparisonValidationResult(
-                    compareResult,
-                    ValidationErrorCode.NOT_LESS_THAN,
-                    compareValue,
-                    value
+                return createValidationFailure(
+                    ValidationErrorCode.TOO_LARGE,
+                    {
+                        value,
+                        max: compareValue,
+                        actual: value,
+                        errorMessage: `Value must be less than ${compareValue}`
+                    }
                 );
 
             case ComparisonOperation.LESS_THAN_OR_EQUAL:
                 if (compareResult === -1 || compareResult === 0) {
                     return createValidationSuccess();
                 }
-                return createComparisonValidationResult(
-                    compareResult,
-                    ValidationErrorCode.NOT_LESS_THAN_OR_EQUAL,
-                    compareValue,
-                    value
+                return createValidationFailure(
+                    ValidationErrorCode.TOO_LARGE,
+                    {
+                        value,
+                        max: compareValue,
+                        actual: value,
+                        errorMessage: `Value must be less than or equal to ${compareValue}`
+                    }
                 );
 
             default:
@@ -167,10 +178,30 @@ export function isBetween(
     return (value: any): ValidationResult => {
         const minCheck = isGreaterThanOrEqual(min, strict)(value);
         if (!minCheck.isValid) {
-            return minCheck;
+            return createValidationFailure(
+                ValidationErrorCode.TOO_SMALL,
+                {
+                    value,
+                    min,
+                    actual: value,
+                    errorMessage: `Value must be between ${min} and ${max}`
+                }
+            );
         }
 
-        return isLessThanOrEqual(max, strict)(value);
+        const maxCheck = isLessThanOrEqual(max, strict)(value);
+        if (!maxCheck.isValid) {
+            return createValidationFailure(
+                ValidationErrorCode.TOO_LARGE,
+                {
+                    value,
+                    max,
+                    actual: value,
+                    errorMessage: `Value must be between ${min} and ${max}`
+                }
+            );
+        }
+        
+        return createValidationSuccess();
     };
 }
-
