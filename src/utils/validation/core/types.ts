@@ -91,24 +91,3 @@ export interface ValidationResult {
 }
 
 
-/**
- * 错误信息处理器接口
- * - getMessage: 根据错误信息生成本地化消息
- * - getFormattedMessage: 批量处理错误消息
- */
-export interface ErrorMessageHandler {
-    /**
-     * 根据错误信息生成本地化消息
-     * @param error 验证错误信息
-     * @returns 本地化的错误消息字符串
-     */
-    getMessage(error: ValidationRuleError): string;
-
-    /**
-     * 批量处理错误消息
-     * @param errors 验证错误信息数组
-     * @param customMessage 自定义错误消息
-     * @returns 格式化后的完整错误消息
-     */
-    getFormattedMessage(errors: ValidationRuleError[], customMessage?: string): string;
-}
