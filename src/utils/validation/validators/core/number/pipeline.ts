@@ -1,0 +1,34 @@
+import { ValidationErrorContext,ValidationRuleError } from '../../../core';
+import { NumberRule } from '../../../rules';
+
+import { validateNumberRequired } from './required';
+import { validateNumberType } from './type';
+import { validateNumberInteger } from './integer';
+import { validateNumberRange } from './range';
+import { validateNumberEnum } from './enum';
+
+export function validateNumber(
+    value: any,
+    rule: NumberRule,
+    context?: ValidationErrorContext
+): ValidationRuleError[] {
+    const validators = [
+        validateNumberRequired,
+        validateNumberType,
+        validateNumberInteger,
+        validateNumberRange,
+        validateNumberEnum,
+    ];
+
+    const errors: ValidationRuleError[] = [];
+
+    for (const validator of validators) {
+        const error = validator(value, rule, context);
+        if (error) {
+            errors.push(error);
+            break; // short-circuit
+        }
+    }
+
+    return errors;
+}
