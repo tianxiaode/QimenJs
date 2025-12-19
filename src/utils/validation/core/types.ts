@@ -91,3 +91,4 @@ export type Validator<T = any, R = any> = (
   rule?: R,
   context?: ValidationErrorContext | string[]
 ) => ValidationRuleError | null
+
