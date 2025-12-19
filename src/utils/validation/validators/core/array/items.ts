@@ -4,8 +4,8 @@ import { ValidationErrorContext, InternalValidate, ValidatorResult } from '../..
 export function validateArrayItems(
     value: any,
     rule: ArrayRule,
-    validate: InternalValidate,
-    context?: ValidationErrorContext
+    context: ValidationErrorContext = {},
+    validate: InternalValidate
 ): ValidatorResult {
     if (!Array.isArray(value)) return null;
     if (!rule.items) return null;

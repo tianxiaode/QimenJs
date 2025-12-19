@@ -28,3 +28,16 @@ export interface NumberRule {
   /** 枚举值限制 */
   enum?: readonly number[]
 }
+
+export interface NumberAdvanceRule extends NumberRule {
+  int?: boolean;
+  positive?: boolean;
+  negative?: boolean;
+  odd?: boolean;
+  even?: boolean;
+  finite?: boolean;
+  infinite?: boolean;
+
+  allowsValues?: readonly number[];
+  disallowsValues?: readonly number[];
+}

@@ -11,7 +11,7 @@ export function validateNumber(
     value: any,
     rule: NumberRule,
     context?: ValidationErrorContext
-): ValidationRuleError[] {
+): ValidationRuleError[] | null {
     const validators = [
         validateNumberRequired,
         validateNumberType,
@@ -30,5 +30,5 @@ export function validateNumber(
         }
     }
 
-    return errors;
+    return errors.length > 0? errors : null;
 }

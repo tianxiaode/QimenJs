@@ -1,3 +1,5 @@
+import { ValidationRuleBase } from "./types"
+
 /**
  * 数组验证规则接口
  */
@@ -36,4 +38,34 @@ export interface ArrayRule {
    * 很少用，但 schema 里是合法的
    */
   enum?: readonly any[][]
+}
+
+export interface ArrayAdvanceRule<T = any> extends ArrayRule {
+
+  /** 数量限制 */
+  minLength?: number;
+  maxLength?: number;
+  length?: number;
+
+  /** 是否允许空数组 */
+  allowEmpty?: boolean;
+
+  /** 元素规则 */
+  items?: ValidationRuleBase | ValidationRuleBase[];
+
+  /** 集合约束 */
+  unique?: boolean;
+  uniqueBy?: string | ((item: T) => any);
+
+  contains?: readonly T[];
+  minContains?: number;
+  maxContains?: number;
+
+  /** 关系约束 */
+  some?: ValidationRuleBase;
+  every?: ValidationRuleBase;
+  none?: ValidationRuleBase;
+
+  /** 排序约束 */
+  sorted?: 'asc' | 'desc' | ((a: T, b: T) => number);
 }

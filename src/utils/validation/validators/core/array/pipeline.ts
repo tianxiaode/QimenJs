@@ -10,9 +10,9 @@ import { validateArrayItems } from './items';
 export function validateArray(
     value: any,
     rule: ArrayRule,
+    context: ValidationErrorContext = {},
     validate: InternalValidate,
-    context?: ValidationErrorContext
-): ValidationRuleError[] {
+): ValidationRuleError[] | null {
     const errors: ValidationRuleError[] = [];
 
     const validators = [
@@ -20,7 +20,7 @@ export function validateArray(
         validateArrayType,
         validateArrayLength,
         validateArrayEnum,
-        (v: any, r: ArrayRule, p: ValidationErrorContext) => validateArrayItems(v, r, validate, p),
+        (v: any, r: ArrayRule, p: ValidationErrorContext) => validateArrayItems(v, r, p, validate),
     ];
 
     for (const validator of validators) {
@@ -31,5 +31,5 @@ export function validateArray(
         }
     }
 
-    return errors;
+    return errors.length > 0? errors : null;
 }

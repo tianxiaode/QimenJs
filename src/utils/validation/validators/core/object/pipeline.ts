@@ -9,9 +9,9 @@ import { validateObjectAdditionalProperties } from './additional';
 export function validateObject(
     value: any,
     rule: ObjectRule,
+    context: ValidationErrorContext = {},
     validate: InternalValidate,
-    context?: ValidationErrorContext,
-): ValidationRuleError[] {
+): ValidationRuleError[] | null {
     const errors: ValidationRuleError[] = [];
 
     const validators = [
@@ -30,5 +30,5 @@ export function validateObject(
         }
     }
 
-    return errors;
+    return errors.length > 0 ? errors : null;
 }

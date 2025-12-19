@@ -10,7 +10,7 @@ export function validateDate(
   value: any,
   rule: DateRule,
   context?: ValidationErrorContext
-): ValidationRuleError[] {
+): ValidationRuleError[] | null{
 
   const errors: ValidationRuleError[] = []
 
@@ -28,5 +28,5 @@ export function validateDate(
     }
   }
 
-  return errors
+  return errors.length > 0 ? errors : null
 }

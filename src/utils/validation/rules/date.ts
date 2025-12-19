@@ -16,3 +16,12 @@ export interface DateRule {
   /** 最大日期（含） */
   max?: Date
 }
+
+export interface DateAdvanceRule extends DateRule {
+    today?: boolean;
+    yesterday?: boolean;
+    tomorrow?: boolean;
+    past?: boolean;
+    future?: boolean;
+    weekend?: number | number[];
+}

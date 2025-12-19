@@ -1,10 +1,10 @@
-import { IValidationRule } from './types';
+import { ValidationRuleBase } from './types';
 
 /**
  * 字符串验证规则接口
  * 定义了用于字符串类型数据验证的各种规则选项
  */
-export interface StringRule extends IValidationRule {
+export interface StringRule extends ValidationRuleBase {
     /**
      * 规则类型标识，固定为'string'，表明这是字符串验证规则
      */
@@ -86,3 +86,35 @@ export type PatternRule =
     | HexRule
     | RGBRule
     | RGBARule;
+
+
+
+export interface StringSplitRule extends StringRule {
+  separator: string | RegExp;
+
+  /**
+   * 拆分后的最小项数
+   */
+  minItems?: number;
+
+  /**
+   * 拆分后的最大项数
+   */
+  maxItems?: number;
+
+  /**
+   * 每一项是否允许为空字符串
+   */
+  allowEmptyItem?: boolean;
+
+  /**
+   * 每一项的验证规则（关键）
+   */
+  itemRule?: StringRule;
+
+  /**
+   * 是否去除每项的首尾空白
+   */
+  trim?: boolean;
+}
+

@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationRuleError } from '../../../core';
+import { ValidationErrorContext, ValidationRuleError, ValidatorResult } from '../../../core';
 import { StringRule } from '../../../rules';
 
 import { validateStringRequired } from './required';

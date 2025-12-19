@@ -1,14 +1,21 @@
-import { validateCompare } from "../../common";
+import { CompareRule } from '@/utils/validation/rules';
+import { validateCompare } from '../../common';
+import { ValidationErrorContext } from '@/utils/validation/core';
 
-export const validateEq = (a: any, b: any, strict = true) =>
-    validateCompare(a, b, { operator: 'eq', strict });
+export const validateEq = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'eq' }, context);
 
-export const validateGt = (a: any, b: any) => validateCompare(a, b, { operator: 'gt' });
+export const validateGt = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'gt' }, context);
 
-export const validateGte = (a: any, b: any) => validateCompare(a, b, { operator: 'gte' });
+export const validateGte = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'gte' }, context);
 
-export const validateLt = (a: any, b: any) => validateCompare(a, b, { operator: 'lt' });
+export const validateLt = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'lt' }, context);
 
-export const validateLte = (a: any, b: any) => validateCompare(a, b, { operator: 'lte' });
+export const validateLte = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'lte' }, context);
 
-export const validateNeq = (a: any, b: any) => validateCompare(a, b, { operator: 'neq' });
+export const validateNeq = (value: any, rule: CompareRule, context?: ValidationErrorContext) =>
+    validateCompare(value, { strict: false, ...rule, operator: 'neq' }, context);

@@ -10,7 +10,7 @@ export function validateBoolean(
     value: any,
     rule: BooleanRule,
     context?: ValidationErrorContext
-): ValidationRuleError[] {
+): ValidationRuleError[] | null {
     const errors: ValidationRuleError[] = [];
 
     const validators = [validateBooleanRequired, validateBooleanType, validateBooleanEnum];
@@ -23,5 +23,5 @@ export function validateBoolean(
         }
     }
 
-    return errors;
+    return errors.length > 0 ? errors : null;
 }

@@ -5,3 +5,4 @@ export * from './internal';
 export * from './ValidationError';
 export * from './patterns';
 export * from './comparison';
+export * from './utils';

@@ -1,60 +1,44 @@
 // validators/common/compare/validateCompare.ts
-import { smartCompare } from '../../../core';
-import { ValidationErrorBuilder, ValidatorResult } from '../../../core';
-import { CompareOperator } from './types';
-
-interface ValidateCompareOptions {
-    operator: CompareOperator;
-    strict?: boolean;
-    context?: any;
-}
+import { CompareRule } from '@/utils/validation/rules';
+import { smartCompare, ValidationErrorCode, ValidationErrorContext, ValidationRuleError } from '../../../core';
+import { ValidationErrorBuilder } from '../../../core';
 
 export function validateCompare(
-    value: any,
-    other: any,
-    options: ValidateCompareOptions
-): ValidatorResult {
-    const { operator, strict = true, context } = options;
+    value: unknown,
+    rule: CompareRule,
+    context?: ValidationErrorContext
+): ValidationRuleError[] | null {
+    const strict = rule.strict ?? true;
 
-    const result = smartCompare(value, other, strict);
+    // 1. 解析 target
+    let targetValue = typeof rule.target === 'function' ? rule.target(context) : rule.target;
 
-    // 无法比较
+    // 2. 执行比较
+    const result = smartCompare(value, targetValue, strict);
+
     if (Number.isNaN(result)) {
-        return ValidationErrorBuilder.invalid_value(value, context);
+        return [ValidationErrorBuilder.invalid_value('target', {
+            ...context,
+            expectedType: 'comparable value',
+        })];
     }
 
-    let valid = false;
+    // 3. 判断是否通过
+    const pass =
+        (rule.operator === 'eq' && result === 0) ||
+        (rule.operator === 'neq' && result !== 0) ||
+        (rule.operator === 'gt' && result > 0) ||
+        (rule.operator === 'gte' && result >= 0) ||
+        (rule.operator === 'lt' && result < 0) ||
+        (rule.operator === 'lte' && result <= 0);
 
-    switch (operator) {
-        case 'eq':
-            valid = result === 0;
-            break;
-        case 'neq':
-            valid = result !== 0;
-            break;
-        case 'gt':
-            valid = result > 0;
-            break;
-        case 'gte':
-            valid = result >= 0;
-            break;
-        case 'lt':
-            valid = result < 0;
-            break;
-        case 'lte':
-            valid = result <= 0;
-            break;
-    }
-
-    if (!valid) {
-        return ValidationErrorBuilder.condition_failed(
-            context?.field,
-            operator,
-            { value, other },
-            context
-        );
+    if (!pass) {
+        return ValidationErrorBuilder.condition_failed(context?.field ?? '', rule.operator, {
+            value,
+            target: targetValue,
+            operator: rule.operator,
+        });
     }
 
     return null;
-}
-
+};
