@@ -1,7 +1,5 @@
-// validators/object/pipeline.ts
-import { ValidationRuleError } from '../../core/types';
+import { ValidationRuleError,InternalValidate, ValidationErrorContext } from '../../core';
 import { ObjectRule } from '../../rules';
-import { InternalValidate } from '../../core/internal';
 
 import { validateObjectRequired } from './required';
 import { validateObjectType } from './type';
@@ -12,20 +10,20 @@ export function validateObject(
     value: any,
     rule: ObjectRule,
     validate: InternalValidate,
-    path?: string
+    context?: ValidationErrorContext,
 ): ValidationRuleError[] {
     const errors: ValidationRuleError[] = [];
 
     const validators = [
         validateObjectRequired,
         validateObjectType,
-        (v: any, r: ObjectRule, p: string | undefined) =>
+        (v: any, r: ObjectRule, p: ValidationErrorContext) =>
             validateObjectProperties(v, r, validate, p),
         validateObjectAdditionalProperties,
     ];
 
     for (const validator of validators) {
-        const error = validator(value, rule, path);
+        const error = validator(value, rule, context as any);
         if (error) {
             errors.push(error);
             break;

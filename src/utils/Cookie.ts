@@ -43,7 +43,7 @@ export class Cookie {
         name: string,
         value: any,
         expires?: number | string | Date,
-        path?: string,
+        context?: ValidationErrorContext,
         domain?: string,
         secure?: boolean
     ) {
@@ -78,7 +78,7 @@ export class Cookie {
         return true;
     }
 
-    static  removeItem(name: string, path?: string, domain?: string) {
+    static  removeItem(name: string, context?: ValidationErrorContext, domain?: string) {
         if (!name || !this.hasItem(name)) {
             return false;
         }

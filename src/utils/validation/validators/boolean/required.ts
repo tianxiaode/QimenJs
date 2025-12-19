@@ -1,24 +1,20 @@
-// validators/boolean/required.ts
-import { ValidatorResult } from '../../core/types'
-import { BooleanRule } from '../../rules'
-import { createError } from '../../core/errors'
-import { ValidationErrorCode } from '../../core/error-codes'
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
+import { BooleanRule } from '../../rules';
 
 export function validateBooleanRequired(
-  value: any,
-  rule: BooleanRule,
-  path?: string
+    value: any,
+    rule: BooleanRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (!rule.required) return null;
 
-  if (!rule.required) return null
+    if (value === undefined) {
+        return ValidationErrorBuilder.required(context);
+    }
 
-  if (value === undefined) {
-    return createError(ValidationErrorCode.REQUIRED, { path })
-  }
+    if (value === null && rule.nullable !== true) {
+        return ValidationErrorBuilder.required(context);
+    }
 
-  if (value === null && rule.nullable !== true) {
-    return createError(ValidationErrorCode.REQUIRED, { path })
-  }
-
-  return null
+    return null;
 }

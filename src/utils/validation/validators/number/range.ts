@@ -1,44 +1,33 @@
-// validators/number/range.ts
-import { createError } from '../../core/errors'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { ValidatorResult } from '../../core/types'
-import { NumberRule } from '../../rules'
+import {
+    ValidationErrorBuilder,
+    ValidationErrorCode,
+    ValidationErrorContext,
+    ValidatorResult,
+} from '../../core';
+import { NumberRule } from '../../rules';
 
 export function validateNumberRange(
-  value: any,
-  rule: NumberRule,
-  path?: string
+    value: any,
+    rule: NumberRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (value === null || value === undefined) return null;
 
-  if (value === null || value === undefined) return null
+    if (rule.min !== undefined && value < rule.min) {
+        return ValidationErrorBuilder.too_small(rule.min, value, false, context);
+    }
 
-  if (rule.min !== undefined && value < rule.min) {
-    return createError(ValidationErrorCode.TOO_SMALL, {
-      params: { min: rule.min, value },
-      path,
-    })
-  }
+    if (rule.exclusiveMin !== undefined && value <= rule.exclusiveMin) {
+        return ValidationErrorBuilder.too_small(rule.exclusiveMin, value, true, context);
+    }
 
-  if (rule.exclusiveMin !== undefined && value <= rule.exclusiveMin) {
-    return createError(ValidationErrorCode.TOO_SMALL, {
-      params: { min: rule.exclusiveMin, exclusive: true, value },
-      path,
-    })
-  }
+    if (rule.max !== undefined && value > rule.max) {
+        return ValidationErrorBuilder.too_large(rule.max, value, false, context);
+    }
 
-  if (rule.max !== undefined && value > rule.max) {
-    return createError(ValidationErrorCode.TOO_LARGE, {
-      params: { max: rule.max, value },
-      path,
-    })
-  }
+    if (rule.exclusiveMax !== undefined && value >= rule.exclusiveMax) {
+        return ValidationErrorBuilder.too_small(rule.exclusiveMax, value, true, context);
+    }
 
-  if (rule.exclusiveMax !== undefined && value >= rule.exclusiveMax) {
-    return createError(ValidationErrorCode.TOO_LARGE, {
-      params: { max: rule.exclusiveMax, exclusive: true, value },
-      path,
-    })
-  }
-
-  return null
+    return null;
 }

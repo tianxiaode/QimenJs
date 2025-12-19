@@ -1,19 +1,20 @@
-import { createError, ValidationErrorCode, ValidatorResult } from "../../core"
-import { StringRule } from "../../rules"
+import {
+    ValidationErrorBuilder,
+    ValidationErrorContext,
+    ValidatorResult,
+} from '../../core';
+import { StringRule } from '../../rules';
 
 export function validateStringPattern(
-  value: string,
-  rule: StringRule,
-  path?: string
+    value: string,
+    rule: StringRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
-  if (!rule.pattern) return null
+    if (!rule.pattern) return null;
 
-  if (!rule.pattern.test(value)) {
-    return createError(ValidationErrorCode.PATTERN_MISMATCH, {
-      params: { pattern: rule.pattern.source },
-      path,
-    })
-  }
+    if (!rule.pattern.test(value)) {
+        return ValidationErrorBuilder.pattern_mismatch(rule.pattern.source, context);
+    }
 
-  return null
+    return null;
 }

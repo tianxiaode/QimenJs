@@ -1,23 +1,21 @@
-// validators/number/enum.ts
-import { createError } from '../../core/errors'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { ValidatorResult } from '../../core/types'
+import {
+    ValidationErrorBuilder,
+    ValidationErrorContext,
+    ValidatorResult,
+} from '../../core';
 import { NumberRule } from '../../rules'
 
 export function validateNumberEnum(
   value: any,
   rule: NumberRule,
-  path?: string
+  context?: ValidationErrorContext
 ): ValidatorResult {
 
   if (!rule.enum) return null
   if (value === null || value === undefined) return null
 
   if (!rule.enum.includes(value)) {
-    return createError(ValidationErrorCode.NOT_ALLOWED, {
-      params: { allowed: rule.enum, value },
-      path,
-    })
+    return ValidationErrorBuilder.not_allowed(value, rule.enum as number[], context)
   }
 
   return null

@@ -1,22 +1,21 @@
-import { createError } from '../../core'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { ValidatorResult } from '../../core/types'
-import { StringRule } from '../../rules'
+import {
+    ValidationErrorContext,
+    ValidatorResult,
+    ValidationErrorCode,
+    ValidationErrorBuilder,
+} from '../../core';
+import { StringRule } from '../../rules';
 
 export function validateStringType(
-  value: any,
-  _rule: StringRule,
-  path?: string
+    value: any,
+    _rule: StringRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (value === null || value === undefined) return null;
 
-  if (value === null || value === undefined) return null
+    if (typeof value !== 'string') {
+        return ValidationErrorBuilder.type_mismatch('string', typeof value, context);
+    }
 
-  if (typeof value !== 'string') {
-    return createError(ValidationErrorCode.TYPE_MISMATCH, {
-      params: { expected: 'string', actual: typeof value },
-      path,
-    })
-  }
-
-  return null
+    return null;
 }

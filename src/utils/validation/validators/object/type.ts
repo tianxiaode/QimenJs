@@ -1,23 +1,16 @@
-// validators/object/type.ts
-import { createError } from '../../core/errors'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { ValidatorResult } from '../../core/types'
-import { ObjectRule } from '../../rules'
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
+import { ObjectRule } from '../../rules';
 
 export function validateObjectType(
-  value: any,
-  _rule: ObjectRule,
-  path?: string
+    value: any,
+    _rule: ObjectRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (value === null || value === undefined) return null;
 
-  if (value === null || value === undefined) return null
+    if (typeof value !== 'object' || Array.isArray(value)) {
+        return ValidationErrorBuilder.type_mismatch('object', typeof value, context);
+    }
 
-  if (typeof value !== 'object' || Array.isArray(value)) {
-    return createError(ValidationErrorCode.TYPE_MISMATCH, {
-      params: { expected: 'object', actual: typeof value },
-      path,
-    })
-  }
-
-  return null
+    return null;
 }

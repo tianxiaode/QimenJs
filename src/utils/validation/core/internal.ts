@@ -1,7 +1,7 @@
-import { ValidationResult } from './types'
+import { ValidationErrorContext, ValidationResult } from './types'
 
 export type InternalValidate = (
   value: any,
   rule: any,
-  path?: string
+  context?: ValidationErrorContext
 ) => ValidationResult

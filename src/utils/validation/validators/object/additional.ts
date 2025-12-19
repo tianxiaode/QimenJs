@@ -1,30 +1,26 @@
-// validators/object/additional.ts
-import { ValidationRuleError } from '../../core/types'
-import { ObjectRule } from '../../rules'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { createError } from '../../core/errors'
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
+import { ObjectRule } from '../../rules';
 
 export function validateObjectAdditionalProperties(
-  value: any,
-  rule: ObjectRule,
-  path?: string
-): ValidationRuleError | null {
+    value: any,
+    rule: ObjectRule,
+    context?: ValidationErrorContext
+): ValidatorResult {
+    if (typeof value !== 'object' || value === null) return null;
+    if (rule.additionalProperties !== false) return null;
+    if (!rule.properties) return null;
 
-  if (typeof value !== 'object' || value === null) return null
-  if (rule.additionalProperties !== false) return null
-  if (!rule.properties) return null
+    const allowedKeys = new Set(Object.keys(rule.properties));
 
-  const allowedKeys = new Set(Object.keys(rule.properties))
-
-  for (const key of Object.keys(value)) {
-    if (!allowedKeys.has(key)) {
-      const fieldPath = path ? `${path}.${key}` : key
-      return createError(ValidationErrorCode.NOT_ALLOWED, {
-        params: { field: key },
-        path: fieldPath,
-      })
+    for (const key of Object.keys(value)) {
+        if (!allowedKeys.has(key)) {
+            const fieldPath = context && context.path ? `${context.path}.${key}` : key;
+            return ValidationErrorBuilder.not_allowed(key, Array.from(allowedKeys), {
+                ...context,
+                field: fieldPath,
+            });
+        }
     }
-  }
 
-  return null
+    return null;
 }

@@ -1,23 +1,16 @@
-// validators/string/enum.ts
-import { createError } from '../../core'
-import { ValidationErrorCode } from '../../core/error-codes'
-import { ValidatorResult } from '../../core/types'
-import { StringRule } from '../../rules'
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
+import { StringRule } from '../../rules';
 
 export function validateStringEnum(
-  value: string,
-  rule: StringRule,
-  path?: string
+    value: string,
+    rule: StringRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (!rule.enum) return null;
 
-  if (!rule.enum) return null
+    if (!rule.enum.includes(value)) {
+        return ValidationErrorBuilder.not_allowed(value, rule.enum as string[], context);
+    }
 
-  if (!rule.enum.includes(value)) {
-    return createError(ValidationErrorCode.NOT_ALLOWED, {
-      params: { allowed: rule.enum },
-      path,
-    })
-  }
-
-  return null
+    return null;
 }

@@ -1,5 +1,5 @@
 // validators/date/pipeline.ts
-import { ValidationRuleError } from '../../core/types'
+import { ValidationErrorContext, ValidationRuleError } from '../../core'
 import { DateRule } from '../../rules'
 
 import { validateDateRequired } from './required'
@@ -9,7 +9,7 @@ import { validateDateRange } from './range'
 export function validateDate(
   value: any,
   rule: DateRule,
-  path?: string
+  context?: ValidationErrorContext
 ): ValidationRuleError[] {
 
   const errors: ValidationRuleError[] = []
@@ -21,7 +21,7 @@ export function validateDate(
   ]
 
   for (const validator of validators) {
-    const error = validator(value, rule, path)
+    const error = validator(value, rule, context)
     if (error) {
       errors.push(error)
       break

@@ -1,30 +1,21 @@
-import { createError, ValidationErrorCode, ValidatorResult } from '../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
 import { StringRule } from '../../rules';
 
 export function validateStringLength(
     value: string,
     rule: StringRule,
-    path?: string
+    context?: ValidationErrorContext
 ): ValidatorResult {
     if (rule.exactLength !== undefined && value.length !== rule.exactLength) {
-        return createError(ValidationErrorCode.INVALID_VALUE, {
-            params: { exactLength: rule.exactLength },
-            path,
-        });
+        return ValidationErrorBuilder.invalid_value(rule.exactLength, context);
     }
 
     if (rule.minLength !== undefined && value.length < rule.minLength) {
-        return createError(ValidationErrorCode.TOO_SMALL, {
-            params: { minLength: rule.minLength },
-            path,
-        });
+        return ValidationErrorBuilder.too_small(rule.minLength, context);
     }
 
     if (rule.maxLength !== undefined && value.length > rule.maxLength) {
-        return createError(ValidationErrorCode.TOO_LARGE, {
-            params: { maxLength: rule.maxLength },
-            path,
-        });
+        return ValidationErrorBuilder.too_large(rule.maxLength, context);
     }
 
     return null;

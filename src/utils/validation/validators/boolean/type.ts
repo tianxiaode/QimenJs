@@ -1,23 +1,16 @@
-// validators/boolean/type.ts
-import { ValidatorResult } from '../../core/types'
-import { BooleanRule } from '../../rules'
-import { createError } from '../../core/errors'
-import { ValidationErrorCode } from '../../core/error-codes'
+import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../core';
+import { BooleanRule } from '../../rules';
 
 export function validateBooleanType(
-  value: any,
-  _rule: BooleanRule,
-  path?: string
+    value: any,
+    _rule: BooleanRule,
+    context?: ValidationErrorContext
 ): ValidatorResult {
+    if (value === null || value === undefined) return null;
 
-  if (value === null || value === undefined) return null
+    if (typeof value !== 'boolean') {
+        return ValidationErrorBuilder.type_mismatch('boolean', typeof value, context);
+    }
 
-  if (typeof value !== 'boolean') {
-    return createError(ValidationErrorCode.TYPE_MISMATCH, {
-      params: { expected: 'boolean', actual: typeof value },
-      path,
-    })
-  }
-
-  return null
+    return null;
 }
