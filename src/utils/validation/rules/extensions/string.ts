@@ -37,7 +37,7 @@ export interface FormatOptions {
 }
 export interface StringSplitRule
     extends ExtensionRule, StringTrimOptions, Omit<StringRule, 'type'> {
-    type: 'stringSplit';
+    type: 'split';
     separator: string | RegExp;
 
     /**
@@ -68,60 +68,16 @@ export interface StringSplitRule
 
 export interface StringAdvanceRule
     extends ExtensionRule, StringTrimOptions, FormatOptions, Omit<StringRule, 'type'> {
-    type: 'stringAdvance';
+    type: 'stringEx';
 }
 
 export interface PasswordRule extends ExtensionRule, Omit<StringRule, 'type'> {
     type: 'password';
     minLength: 8;
     maxLength: 16;
-    uppercase?: boolean;
-    lowercase?: boolean;
-    number?: boolean;
-    specialChar?: boolean;
+    uppercase?: false;
+    lowercase?: true;
+    number?: true;
+    specialChar?:true;
 }
 
-// export interface EmailRule extends StringRule {}
-// export interface PhoneRule extends StringRule {}
-// export interface UsernameRule extends StringRule {}
-// export interface UUIDRule extends StringRule {}
-// export interface CreditCardRule extends StringRule {}
-// export interface ChineseIDRule extends StringRule {}
-// export interface ChinesePostcodeRule extends StringRule {}
-
-// export interface PasswordRule extends StringRule {
-//     minLength: 8;
-//     maxLength: 16;
-//     uppercase?: boolean;
-//     lowercase?: boolean;
-//     number?: boolean;
-//     specialChar?: boolean;
-// }
-
-// export interface UrlRule extends StringRule {}
-// export interface IPV4Rule extends StringRule {}
-// export interface IPV6Rule extends StringRule {}
-// export interface MacAddressRule extends StringRule {}
-
-// export interface Base64Rule extends StringRule {}
-
-// export interface HexRule extends StringRule {}
-// export interface RGBRule extends StringRule {}
-// export interface RGBARule extends StringRule {}
-
-// export type PatternRule =
-//     | EmailRule
-//     | UrlRule
-//     | IPV4Rule
-//     | IPV6Rule
-//     | MacAddressRule
-//     | PhoneRule
-//     | UsernameRule
-//     | UUIDRule
-//     | CreditCardRule
-//     | ChineseIDRule
-//     | ChinesePostcodeRule
-//     | Base64Rule
-//     | HexRule
-//     | RGBRule
-//     | RGBARule;

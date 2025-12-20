@@ -66,9 +66,7 @@ export type ValidationResult = ValidationRuleError[] | null;
  */
 export type AnyValidationResult = CheckResult | ValidationResult;
 
-
 export interface CommonRule {
-    type: string;
     message?: string;
 }
 
@@ -89,7 +87,7 @@ export interface PresenceOptions {
     empty?: boolean;
 }
 
-export interface CoreRule extends CommonRule , PresenceOptions {}
+export interface CoreRule extends CommonRule, PresenceOptions {}
 
 export interface ExtensionRule extends CoreRule {}
 
@@ -105,16 +103,14 @@ export interface HasPropertiesRule extends ExtensionRule {
     allPropertiesError?: boolean;
 }
 
-export type ValidatorFunction<R extends ExtensionRule = ExtensionRule> = (
+export type ValidatorFunction = (
     value: any,
-    rule: R,
+    rule: any,
     context?: ValidationErrorContext
 ) => ValidationResult;
 
-export type CheckFunction<R extends CoreRule = CoreRule> = (
+export type CheckFunction = (
     value: any,
-    rule: R,
+    rule: any,
     context?: ValidationErrorContext
 ) => CheckResult;
-
-

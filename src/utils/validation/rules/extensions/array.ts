@@ -2,7 +2,7 @@ import { ExtensionRule } from '../../core';
 import { ArrayRule } from '../core';
 
 export interface ArrayAdvanceRule<T = any> extends ExtensionRule, Omit<ArrayRule, 'type'> {
-    type: 'arrayAdvance';
+    type: 'arrayEx';
     
     /** 是否允许空数组 */
     allowEmpty?: boolean;

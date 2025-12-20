@@ -2,7 +2,7 @@ import { ExtensionRule } from "../../core";
 import { DateRule } from "../core";
 
 export interface DateAdvanceRule extends ExtensionRule , Omit<DateRule, 'type'> {
-    type: 'dateAdvance';
+    type: 'dateEx';
     today?: boolean;
     yesterday?: boolean;
     tomorrow?: boolean;

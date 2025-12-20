@@ -2,6 +2,7 @@ import { ValidationErrorBuilder, CheckResult } from '../../../core';
 import { validateNumber } from '../../core/number';
 import { NumberAdvanceRule } from '../../../rules';
 import { numberPredicates } from './predicates';
+import { ValidatorBase } from '@/utils/validation/core/ValidatorBase';
 
 export function validateNumberAdvance(
     value: any,
@@ -46,3 +47,5 @@ export function validateNumberAdvance(
 
     return null;
 }
+
+ValidatorBase.registerValidator('numberEx', validateNumberAdvance);

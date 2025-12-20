@@ -2,7 +2,7 @@ import { ExtensionRule } from '../../core';
 import { NumberRule } from '../core';
 
 export interface NumberAdvanceRule extends ExtensionRule, Omit<NumberRule, 'type'> {
-    type: 'numberAdvance';
+    type: 'numberEx';
     positive?: boolean;
     negative?: boolean;
     odd?: boolean;
@@ -13,3 +13,4 @@ export interface NumberAdvanceRule extends ExtensionRule, Omit<NumberRule, 'type
     allowsValues?: readonly number[];
     disallowsValues?: readonly number[];
 }
+

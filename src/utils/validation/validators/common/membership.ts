@@ -4,7 +4,8 @@ import {
     ValidationErrorContext,
     ValidationResult,
 } from '../../core';
-import { ContainsRule, UniqueRule } from '../../rules';
+import { ValidatorBase } from '../../core/ValidatorBase';
+import { ContainsRule } from '../../rules';
 
 export function validateContains(
     value: unknown,
@@ -42,7 +43,7 @@ export function validateContains(
 }
 export function validateUnique(
     values: readonly any[],
-    _rule: UniqueRule = { type: 'unique' },
+    _rule: {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     if (!Array.isArray(values)) {
@@ -65,3 +66,6 @@ export function validateUnique(
 
     return null;
 }
+
+ValidatorBase.registerValidator('contains', validateContains);
+ValidatorBase.registerValidator('unique', validateUnique);

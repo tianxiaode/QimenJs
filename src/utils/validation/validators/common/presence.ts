@@ -4,6 +4,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
 } from '../../core';
+import { ValidatorBase } from '../../core/ValidatorBase';
 import { PresenceRule } from '../../rules';
 
 export function validatePresence(
@@ -32,3 +33,5 @@ export function validatePresence(
 
     return null;
 }
+
+ValidatorBase.registerValidator('presence', validatePresence);

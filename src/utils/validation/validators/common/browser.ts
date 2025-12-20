@@ -1,9 +1,9 @@
 import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult } from '../../core';
-import { BlobRule, FileRule, FormDataRule, URLSearchParamsRule } from '../../rules';
+import { ValidatorBase } from '../../core/ValidatorBase';
 
 export function validateFormDate(
     value: any,
-    _rule: FormDataRule = { type: 'formData' },
+    _rule: {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     const isFormDataObj = typeof FormData !== 'undefined' && value instanceof FormData;
@@ -15,7 +15,7 @@ export function validateFormDate(
 
 export function validateURLSearchParams(
     value: any,
-    _rule: URLSearchParamsRule = { type: 'urlSearchParams' },
+    _rule: {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     const isURLSearchParamsObj =
@@ -28,7 +28,7 @@ export function validateURLSearchParams(
 
 export function validateBlob(
     value: any,
-    _rule: BlobRule = { type: 'blob' },
+    _rule: {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     const isBlobObj = typeof Blob !== 'undefined' && value instanceof Blob;
@@ -40,7 +40,7 @@ export function validateBlob(
 
 export function validateFile(
     value: any,
-    _rule: FileRule = { type: 'file' },
+    _rule: {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     const isFileObj = typeof File !== 'undefined' && value instanceof File;
@@ -49,3 +49,8 @@ export function validateFile(
     }
     return null;
 }
+
+ValidatorBase.registerValidator('formData', validateFormDate);
+ValidatorBase.registerValidator('urlSearchParams', validateURLSearchParams);
+ValidatorBase.registerValidator('blob', validateBlob);
+ValidatorBase.registerValidator('file', validateFile);

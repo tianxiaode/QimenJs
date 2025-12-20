@@ -4,13 +4,13 @@ import {
     ValidationResult,
     ValidationErrorBuilder,
 } from '../../core';
+import { ValidatorBase } from '../../core/ValidatorBase';
 import { CompareRule } from '../../rules';
 
-export type CompareOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
 
 export function validateCompare(
     value: unknown,
-    rule: CompareRule,
+    rule: CompareRule = {operator: 'eq', target: 0},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     const strict = rule.strict ?? true;
@@ -51,3 +51,5 @@ export function validateCompare(
 
     return null;
 }
+
+ValidatorBase.registerValidator('compare', validateCompare);

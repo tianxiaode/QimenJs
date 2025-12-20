@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorFunction } from "./types";
+import { CommonRule, ValidationErrorContext, ValidationResult, ValidatorFunction } from "./types";
 
 class ValidatorBase {
     private static validators: Record<

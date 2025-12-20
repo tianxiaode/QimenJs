@@ -1,8 +1,8 @@
 import { CommonRule, ValidationErrorContext } from '../../core';
-import { CompareOperator } from '../../validators';
 
-export interface CompareRule<T = unknown> extends CommonRule {
-    type: 'compare';
+export type CompareOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
+
+export interface CompareRule extends CommonRule {
     /**
      * 比较操作符
      */
@@ -14,7 +14,7 @@ export interface CompareRule<T = unknown> extends CommonRule {
      * - 字段路径
      * - 函数（高级用法）
      */
-    target: T | ((ctx?: ValidationErrorContext) => T);
+    target: unknown | ((ctx?: ValidationErrorContext) => unknown);
 
     /**
      * 是否严格比较
@@ -23,3 +23,5 @@ export interface CompareRule<T = unknown> extends CommonRule {
      */
     strict?: boolean;
 }
+
+
