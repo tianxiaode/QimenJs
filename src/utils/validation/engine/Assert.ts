@@ -1,5 +1,5 @@
 // core/assert.ts
-import { ValidatorBase } from './ValidatorBase';
+import { ValidatorBase } from '../core/ValidatorBase';
 import { ValidationError} from '../core';
 
 class Assert extends ValidatorBase {

@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { BooleanRule } from '../../../rules';
 
-export function validateBooleanType(
+export function checkBooleanType(
     value: any,
     _rule: BooleanRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (typeof value !== 'boolean') {

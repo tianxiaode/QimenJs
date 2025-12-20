@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { NumberRule } from '../../../rules';
 
-export function validateNumberInteger(
+export function checkNumberInteger(
     value: any,
     rule: NumberRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!rule.integer) return null;
     if (value === null || value === undefined) return null;
 

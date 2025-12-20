@@ -1,18 +1,17 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core'
-import { BooleanRule } from '../../../rules'
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
+import { BooleanRule } from '../../../rules';
 
-export function validateBooleanEnum(
-  value: any,
-  rule: BooleanRule,
-  context?: ValidationErrorContext
-): ValidatorResult {
+export function checkBooleanEnum(
+    value: any,
+    rule: BooleanRule,
+    context?: ValidationErrorContext
+): CheckResult {
+    if (typeof value !== 'boolean') return null;
+    if (!rule.enum) return null;
 
-  if (typeof value !== 'boolean') return null
-  if (!rule.enum) return null
+    if (!rule.enum.includes(value)) {
+        return ValidationErrorBuilder.not_allowed(value, rule.enum as boolean[], context);
+    }
 
-  if (!rule.enum.includes(value)) {
-    return ValidationErrorBuilder.not_allowed(value, rule.enum as boolean[], context)
-  }
-
-  return null
+    return null;
 }

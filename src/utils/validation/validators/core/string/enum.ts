@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { StringRule } from '../../../rules';
 
-export function validateStringEnum(
+export function checkStringEnum(
     value: string,
     rule: StringRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!rule.enum) return null;
 
     if (!rule.enum.includes(value)) {

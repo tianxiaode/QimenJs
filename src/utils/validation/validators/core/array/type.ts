@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { ArrayRule } from '../../../rules';
 
-export function validateArrayType(
+export function checkArrayType(
     value: any,
     _rule: ArrayRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (!Array.isArray(value)) {

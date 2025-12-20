@@ -5,7 +5,7 @@ import {
     ValidationRuleError,
 } from '../../../core';
 import { PasswordRule } from '@/utils/validation/rules';
-import { validateString, validateStringPattern } from '../../core';
+import { validateString, checkStringPattern } from '../../core';
 
 export function validatePassword(value: string, rule: PasswordRule, context?: ValidationErrorContext): ValidationRuleError[] | null {
     const validateStringResult = validateString(value, rule, context);
@@ -34,7 +34,7 @@ function validateAndCollectPatternError(
 ): void {
     if (rule[ruleKey]) {
         const pattern = getValidationPattern(patternType);
-        const error = validateStringPattern(value, { type: 'string', pattern }, context);
+        const error = checkStringPattern(value, { type: 'string', pattern }, context);
         if (error) {
             errors.push(error);
         }

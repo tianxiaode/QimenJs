@@ -1,16 +1,11 @@
-import {
-    ValidationErrorContext,
-    ValidatorResult,
-    ValidationErrorCode,
-    ValidationErrorBuilder,
-} from '../../../core';
+import { ValidationErrorContext, CheckResult, ValidationErrorBuilder } from '../../../core';
 import { StringRule } from '../../../rules';
 
-export function validateStringType(
+export function checkStringType(
     value: any,
     _rule: StringRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (typeof value !== 'string') {

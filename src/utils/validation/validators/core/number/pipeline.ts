@@ -1,34 +1,17 @@
-import { ValidationErrorContext,ValidationRuleError } from '../../../core';
+import { ValidationErrorContext, ValidationResult } from '../../../core';
 import { NumberRule } from '../../../rules';
 
-import { validateNumberRequired } from './required';
-import { validateNumberType } from './type';
-import { validateNumberInteger } from './integer';
-import { validateNumberRange } from './range';
-import { validateNumberEnum } from './enum';
+import { checkNumberType } from './type';
+import { checkNumberInteger } from './integer';
+import { checkNumberRange } from './range';
+import { checkNumberEnum } from './enum';
+import { checkPresence } from '../presence';
+import { createCoreValidator } from '../factory';
 
-export function validateNumber(
-    value: any,
-    rule: NumberRule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    const validators = [
-        validateNumberRequired,
-        validateNumberType,
-        validateNumberInteger,
-        validateNumberRange,
-        validateNumberEnum,
-    ];
-
-    const errors: ValidationRuleError[] = [];
-
-    for (const validator of validators) {
-        const error = validator(value, rule, context);
-        if (error) {
-            errors.push(error);
-            break; // short-circuit
-        }
-    }
-
-    return errors.length > 0? errors : null;
-}
+export const validateNumber = createCoreValidator<NumberRule>([
+    checkPresence,
+    checkNumberType,
+    checkNumberInteger,
+    checkNumberRange,
+    checkNumberEnum,
+]);

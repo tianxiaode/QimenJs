@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { DateRule } from '../../../rules';
 
-export function validateDateType(
+export function checkDateType(
     value: any,
     _rule: DateRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (!(value instanceof Date) || isNaN(value.getTime())) {

@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { ArrayRule } from '../../../rules';
 
-export function validateArrayLength(
+export function checkArrayLength(
     value: any,
     rule: ArrayRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!Array.isArray(value)) return null;
 
     const length = value.length;

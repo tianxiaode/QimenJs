@@ -1,6 +1,6 @@
 // core/validator.ts
 import { ValidationRuleError } from '../core';
-import { ValidatorBase } from './ValidatorBase';
+import { ValidatorBase } from '../core/ValidatorBase';
 
 class Validator extends ValidatorBase {
   constructor() {

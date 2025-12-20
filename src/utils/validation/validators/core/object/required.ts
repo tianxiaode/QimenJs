@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { ObjectRule } from '../../../rules';
 
-export function validateObjectRequired(
+export function checkObjectRequired(
     value: any,
     rule: ObjectRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!rule.required) return null;
 
     if (value === undefined) {

@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { StringRule } from '../../../rules';
 
-export function validateStringLength(
+export function checkStringLength(
     value: string,
     rule: StringRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (rule.exactLength !== undefined && value.length !== rule.exactLength) {
         return ValidationErrorBuilder.invalid_value(rule.exactLength, context);
     }

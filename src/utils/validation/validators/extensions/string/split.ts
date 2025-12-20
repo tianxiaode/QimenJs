@@ -1,12 +1,12 @@
 import { validateString } from '../../core/string';
-import { ValidationErrorBuilder, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, CheckResult } from '../../../core';
 import { StringSplitRule } from '../../../rules';
 
 export function validateStringSplit(
     value: any,
     rule: StringSplitRule,
     context?: any
-): ValidatorResult {
+): CheckResult {
     // 1️⃣ 确保是字符串
     const baseError = validateString(value, { ...rule, required: true, nullable: false }, context);
     if (baseError && baseError.length > 0) return baseError[0];

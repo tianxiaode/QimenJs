@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { ArrayRule } from '../../../rules';
 
 function isSameArray(a: any[], b: any[]): boolean {
@@ -6,11 +6,11 @@ function isSameArray(a: any[], b: any[]): boolean {
     return a.every((v, i) => v === b[i]);
 }
 
-export function validateArrayEnum(
+export function checkArrayEnum(
     value: any,
     rule: ArrayRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!Array.isArray(value)) return null;
     if (!rule.enum) return null;
 

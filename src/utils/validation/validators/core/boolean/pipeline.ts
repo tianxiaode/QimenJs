@@ -1,27 +1,13 @@
-// validators/boolean/pipeline.ts
-import { ValidationErrorContext, ValidationRuleError } from '../../../core';
+import { ValidationErrorContext, ValidationResult } from '../../../core';
 import { BooleanRule } from '../../../rules';
 
-import { validateBooleanRequired } from './required';
-import { validateBooleanType } from './type';
-import { validateBooleanEnum } from './enum';
+import { checkBooleanType } from './type';
+import { checkBooleanEnum } from './enum';
+import { checkPresence } from '../presence';
+import { createCoreValidator } from '../factory';
 
-export function validateBoolean(
-    value: any,
-    rule: BooleanRule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    const errors: ValidationRuleError[] = [];
-
-    const validators = [validateBooleanRequired, validateBooleanType, validateBooleanEnum];
-
-    for (const validator of validators) {
-        const error = validator(value, rule, context);
-        if (error) {
-            errors.push(error);
-            break;
-        }
-    }
-
-    return errors.length > 0 ? errors : null;
-}
+export const validateBoolean = createCoreValidator<BooleanRule>([
+    checkPresence,
+    checkBooleanType,
+    checkBooleanEnum,
+]);

@@ -1,11 +1,11 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { ObjectRule } from '../../../rules';
 
-export function validateObjectType(
+export function checkObjectType(
     value: any,
     _rule: ObjectRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (typeof value !== 'object' || Array.isArray(value)) {

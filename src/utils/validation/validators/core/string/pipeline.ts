@@ -1,36 +1,20 @@
-import { ValidationErrorContext, ValidationRuleError, ValidatorResult } from '../../../core';
+import {
+    ValidationErrorContext,
+    ValidationResult,
+} from '../../../core';
 import { StringRule } from '../../../rules';
 
-import { validateStringRequired } from './required';
-import { validateStringType } from './type';
-import { validateStringLength } from './length';
-import { validateStringPattern } from './pattern';
-import { validateStringEnum } from './enum';
+import { checkStringType } from './type';
+import { checkStringLength } from './length';
+import { checkStringPattern } from './pattern';
+import { checkStringEnum } from './enum';
+import { checkPresence } from '../presence';
+import { createCoreValidator } from '../factory';
 
-export function validateString(
-    value: any,
-    rule: StringRule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    // 修改这里，返回null而不是空数组
-
-    const validators = [
-        validateStringRequired,
-        validateStringType,
-        validateStringLength,
-        validateStringPattern,
-        validateStringEnum,
-    ];
-
-    const errors: ValidationRuleError[] = [];
-
-    for (const validator of validators) {
-        const error = validator(value, rule, context);
-        if (error) {
-            errors.push(error);
-        }
-    }
-
-    // 如果验证没有错误，返回null，否则返回错误列表
-    return errors.length > 0 ? errors : null;
-}
+export const validateString = createCoreValidator<StringRule>([
+    checkPresence,
+    checkStringType,
+    checkStringLength,
+    checkStringPattern,
+    checkStringEnum,
+]);

@@ -1,12 +1,11 @@
-// validators/number/type.ts
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { NumberRule } from '../../../rules';
 
-export function validateNumberType(
+export function checkNumberType(
     value: any,
     _rule: NumberRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (typeof value !== 'number') {

@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidatorResult } from '../../../core';
+import { ValidationErrorBuilder, CheckResult } from '../../../core';
 import { validateNumber } from '../../core/number';
 import { NumberAdvanceRule } from '../../../rules';
 import { numberPredicates } from './predicates';
@@ -7,7 +7,7 @@ export function validateNumberAdvance(
     value: any,
     rule: NumberAdvanceRule,
     context?: any
-): ValidatorResult {
+): CheckResult {
     // 1️⃣ 基础 number 校验
     const error = validateNumber(value, { ...rule, required: true, nullable: false }, context);
     if (error && error.length > 0) return error[0];

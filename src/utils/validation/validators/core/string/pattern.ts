@@ -1,15 +1,11 @@
-import {
-    ValidationErrorBuilder,
-    ValidationErrorContext,
-    ValidatorResult,
-} from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { StringRule } from '../../../rules';
 
-export function validateStringPattern(
+export function checkStringPattern(
     value: string,
     rule: StringRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (!rule.pattern) return null;
 
     if (!rule.pattern.test(value)) {

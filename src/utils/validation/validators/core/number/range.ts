@@ -1,16 +1,11 @@
-import {
-    ValidationErrorBuilder,
-    ValidationErrorCode,
-    ValidationErrorContext,
-    ValidatorResult,
-} from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, CheckResult } from '../../../core';
 import { NumberRule } from '../../../rules';
 
-export function validateNumberRange(
+export function checkNumberRange(
     value: any,
     rule: NumberRule,
     context?: ValidationErrorContext
-): ValidatorResult {
+): CheckResult {
     if (value === null || value === undefined) return null;
 
     if (rule.min !== undefined && value < rule.min) {

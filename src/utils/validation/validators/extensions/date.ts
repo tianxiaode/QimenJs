@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorResult } from '../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, CheckResult } from '../../core';
 import { DateAdvanceRule } from '../../rules';
 import { validateCompare } from '../common';
 import { validateDate } from '../core';

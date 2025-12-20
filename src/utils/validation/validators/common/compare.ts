@@ -1,13 +1,18 @@
-// validators/common/compare/validateCompare.ts
-import { CompareRule } from '@/utils/validation/rules';
-import { smartCompare, ValidationErrorCode, ValidationErrorContext, ValidationRuleError } from '../../../core';
-import { ValidationErrorBuilder } from '../../../core';
+import {
+    smartCompare,
+    ValidationErrorContext,
+    ValidationResult,
+    ValidationErrorBuilder,
+} from '../../core';
+import { CompareRule } from '../../rules';
+
+export type CompareOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
 
 export function validateCompare(
     value: unknown,
     rule: CompareRule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
+    context: ValidationErrorContext = {}
+): ValidationResult {
     const strict = rule.strict ?? true;
 
     // 1. 解析 target
@@ -17,10 +22,12 @@ export function validateCompare(
     const result = smartCompare(value, targetValue, strict);
 
     if (Number.isNaN(result)) {
-        return [ValidationErrorBuilder.invalid_value('target', {
-            ...context,
-            expectedType: 'comparable value',
-        })];
+        return [
+            ValidationErrorBuilder.invalid_value('target', {
+                ...context,
+                expectedType: 'comparable value',
+            }),
+        ];
     }
 
     // 3. 判断是否通过
@@ -33,12 +40,14 @@ export function validateCompare(
         (rule.operator === 'lte' && result <= 0);
 
     if (!pass) {
-        return ValidationErrorBuilder.condition_failed(context?.field ?? '', rule.operator, {
-            value,
-            target: targetValue,
-            operator: rule.operator,
-        });
+        return [
+            ValidationErrorBuilder.condition_failed(context?.field ?? '', rule.operator, {
+                value,
+                target: targetValue,
+                operator: rule.operator,
+            }),
+        ];
     }
 
     return null;
-};
+}
