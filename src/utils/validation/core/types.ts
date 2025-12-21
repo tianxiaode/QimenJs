@@ -141,7 +141,16 @@ export interface RuleRangeOptions<T extends number | Date> extends RuleLengthOpt
  * ❌ 不应在核心校验逻辑中传播
  */
 export interface RuleArrayItemsOptions {
+    /**
+     * 子项规则
+     * 数组项必须满足的规则     *
+     */
+
     itemRule: ValidatorFunction | RuleArrayItemsOptions;
+
+    /**
+     * 是否收集所有子项错误
+     */
     allItemsError?: boolean;
 }
 
@@ -151,10 +160,32 @@ export interface RuleArrayItemsOptions {
  * ❌ 不应在核心校验逻辑中传播
  */
 export interface RuleObjectPropertiesOptions {
+    /**
+     * 属性规则
+     * 对象属性必须满足的规则
+     */
     properties?: Record<string, ValidatorFunction | RuleObjectPropertiesOptions>;
+
+    /**
+     * 要求的属性列表
+     */
     requiredFields?: readonly string[];
+    /**
+     * 是否允许额外的属性
+     */
     additionalProperties?: boolean;
+    /**
+     * 是否收集所有属性错误
+     */
     allPropertiesError?: boolean;
+}
+
+export interface RulePatternOptions {
+    /**
+     * 正则表达式模式匹配
+     * 字符串必须匹配指定的正则表达式模式
+     */
+    pattern?: RegExp;
 }
 
 /**

@@ -1,39 +1,83 @@
+// 导入所需的类型定义和工具函数
+import { StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
 import {
-    ValidationErrorContext,
-    ValidationPatternType,
+    ValidationErrorContext,         // 验证错误上下文类型
+    ValidationPatternType,          // 验证模式枚举类型
+    ValidationResult,               // 验证结果类型
     ValidationRuleError,
+    ValidatorBase,            // 验证规则错误类型
 } from '../../../core';
-import { IPV4Rule, IPV6Rule, MacAddressRule, UrlRule } from '../../../rules';
-import { validateByPattern } from './pattern';
+import { validateBySpecifiedPattern } from './pattern';                     // 使用指定模式进行验证的函数
 
+/**
+ * 验证URL格式是否正确
+ * 
+ * @param value - 待验证的URL字符串
+ * @param rule - 字符串高级规则选项
+ * @param context - 验证错误上下文，默认为空对象
+ * @returns 验证结果
+ */
 export function validateUrl(
     value: string,
-    rule: UrlRule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    return validateByPattern(value, rule, ValidationPatternType.URL, context);
+    rule: StringExtensionRuleOptions,
+    context: ValidationErrorContext = {}
+): ValidationResult {
+    // 使用指定的URL模式进行验证
+    return validateBySpecifiedPattern(value, rule, ValidationPatternType.URL, context);
 }
 
+/**
+ * 验证IPv4地址格式是否正确
+ * 
+ * @param value - 待验证的IPv4地址字符串
+ * @param rule - 字符串高级规则选项
+ * @param context - 验证错误上下文，默认为空对象
+ * @returns 如果验证失败返回错误数组，否则返回null
+ */
 export function validateIPv4(
     value: string,
-    rule: IPV4Rule,
-    context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    return validateByPattern(value, rule, ValidationPatternType.IPV4, context);
+    rule: StringExtensionRuleOptions,
+    context: ValidationErrorContext = {}
+): ValidationResult {
+    // 使用指定的IPv4模式进行验证
+    return validateBySpecifiedPattern(value, rule, ValidationPatternType.IPV4, context);
 }
 
+/**
+ * 验证IPv6地址格式是否正确
+ * 
+ * @param value - 待验证的IPv6地址字符串
+ * @param rule - 字符串高级规则选项
+ * @param context - 验证错误上下文，可选参数
+ * @returns 如果验证失败返回错误数组，否则返回null
+ */
 export function validateIPv6(
     value: string,
-    rule: IPV6Rule,
+    rule: StringExtensionRuleOptions,
     context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    return validateByPattern(value, rule, ValidationPatternType.IPV6, context);
+): ValidationResult {
+    // 使用指定的IPv6模式进行验证
+    return validateBySpecifiedPattern(value, rule, ValidationPatternType.IPV6, context);
 }
 
+/**
+ * 验证MAC地址格式是否正确
+ * 
+ * @param value - 待验证的MAC地址字符串
+ * @param rule - 字符串高级规则选项
+ * @param context - 验证错误上下文，可选参数
+ * @returns 如果验证失败返回错误数组，否则返回null
+ */
 export function validateMacAddress(
     value: string,
-    rule: MacAddressRule,
+    rule: StringExtensionRuleOptions,
     context?: ValidationErrorContext
-): ValidationRuleError[] | null {
-    return validateByPattern(value, rule, ValidationPatternType.MAC_ADDRESS, context);
+): ValidationResult {
+    // 使用指定的MAC地址模式进行验证
+    return validateBySpecifiedPattern(value, rule, ValidationPatternType.MAC_ADDRESS, context);
 }
+
+ValidatorBase.registerValidator('url', validateUrl);
+ValidatorBase.registerValidator('ipv4', validateIPv4);
+ValidatorBase.registerValidator('ipv6', validateIPv6);
+ValidatorBase.registerValidator('macAddress', validateMacAddress);

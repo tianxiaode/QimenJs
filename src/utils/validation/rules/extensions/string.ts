@@ -1,7 +1,7 @@
-import { ExtensionRule, ValidatorFunction } from '../../core';
+import { RuleArrayItemsOptions, RuleBaseOptions, ValidatorFunction } from '../../core';
 import { StringRuleOptions } from '../core';
 
-export interface StringTrimOptions {
+export interface StringTrimRuleOptions {
     /**
      * 是否去除首尾空白
      */
@@ -18,26 +18,7 @@ export interface StringTrimOptions {
     trimNewline?: boolean;
 }
 
-export interface FormatOptions {
-    email?: boolean;
-    phone?: boolean;
-    username?: boolean;
-    uuid?: boolean;
-    creditCard?: boolean;
-    chineseID?: boolean;
-    chinesePostcode?: boolean;
-    url?: boolean;
-    ipv4?: boolean;
-    ipv6?: boolean;
-    macAddress?: boolean;
-    base64?: boolean;
-    hex?: boolean;
-    rgb?: boolean;
-    rgba?: boolean;
-}
-export interface StringSplitRule
-    extends ExtensionRule, StringTrimOptions, Omit<StringRuleOptions, 'type'> {
-    type: 'split';
+export interface StringSplitRuleOptions extends StringExtensionRuleOptions, RuleArrayItemsOptions {
     separator: string | RegExp;
 
     /**
@@ -56,28 +37,20 @@ export interface StringSplitRule
     allowEmptyItem?: boolean;
 
     /**
-     * 每一项的验证规则（关键）
-     */
-    itemRule?: ExtensionRule | ValidatorFunction;
-
-    /**
      * 是否去除每项的首尾空白
      */
     trim?: boolean;
 }
 
-export interface StringAdvanceRule
-    extends ExtensionRule, StringTrimOptions, FormatOptions, Omit<StringRuleOptions, 'type'> {
-    type: 'stringEx';
+export interface StringExtensionRuleOptions extends StringRuleOptions, StringTrimRuleOptions {}
+{
 }
 
-export interface PasswordRule extends ExtensionRule, Omit<StringRuleOptions, 'type'> {
-    type: 'password';
+export interface PasswordRuleOptions extends StringRuleOptions {
     minLength: 8;
     maxLength: 16;
     uppercase?: false;
     lowercase?: true;
     number?: true;
-    specialChar?:true;
+    specialChar?: true;
 }
-

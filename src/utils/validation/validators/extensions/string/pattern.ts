@@ -1,27 +1,32 @@
+// 导入所需的工具函数、类型定义和规则选项
 import {
-    getValidationPattern,
-    ValidationErrorContext,
-    ValidationPatternType,
-    ValidationRuleError,
-} from '@/utils/validation/core';
-import { validateString } from '../../core';
-import { PatternRule } from '../../../rules';
+    getValidationPattern,           // 获取预定义验证模式的正则表达式
+    ValidationErrorContext,         // 验证错误上下文类型
+    ValidationPatternType,          // 验证模式枚举类型
+    ValidationRuleError,            // 验证规则错误类型
+} from '../../../core';
+import { StringExtensionRuleOptions } from '../../../rules';     // 字符串高级规则选项类型
+import { validateStringExtension } from './extension';            // 字符串高级验证函数
 
-
-export function validateByPattern(
+/**
+ * 使用指定的模式类型对字符串进行验证
+ * 
+ * @param value - 待验证的字符串值
+ * @param rule - 字符串高级规则选项
+ * @param patternType - 要使用的验证模式类型
+ * @param context - 验证错误上下文，默认为空对象
+ * @returns 如果验证失败返回错误数组，否则返回null
+ */
+export function validateBySpecifiedPattern(
     value: string,
-    rule: PatternRule,
+    rule: StringExtensionRuleOptions,
     patternType: ValidationPatternType,
-    context?: ValidationErrorContext
+    context: ValidationErrorContext = {}
 ): ValidationRuleError[] | null {
+    // 根据模式类型获取对应的正则表达式
     const pattern = getValidationPattern(patternType);
-    const errors = validateString(value, {
-        required: true,
-        nullable: false,
-        minLength: rule.minLength,
-        maxLength: rule.maxLength,
-        pattern: pattern,
-        ...rule,
-    }, context);
-    return errors;
+    
+    // 结合传入的规则和获取的模式进行字符串高级验证
+    // 使用展开运算符(...)将rule中的属性与pattern合并
+    return validateStringExtension(value, { pattern: pattern, ...rule }, context);
 }

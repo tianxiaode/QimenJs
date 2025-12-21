@@ -1,8 +1,6 @@
-import { ExtensionRule } from '../../core';
 import { NumberRuleOptions } from '../core';
 
-export interface NumberAdvanceRule extends ExtensionRule, Omit<NumberRuleOptions, 'type'> {
-    type: 'numberEx';
+export interface NumberExtensionRule extends NumberRuleOptions {
     positive?: boolean;
     negative?: boolean;
     odd?: boolean;

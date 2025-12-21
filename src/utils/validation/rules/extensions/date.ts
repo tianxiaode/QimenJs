@@ -1,12 +1,8 @@
-import { ExtensionRule } from "../../core";
 import { DateRuleOptions } from "../core";
 
-export interface DateAdvanceRule extends ExtensionRule , Omit<DateRuleOptions, 'type'> {
-    type: 'dateEx';
-    today?: boolean;
-    yesterday?: boolean;
-    tomorrow?: boolean;
-    past?: boolean;
-    future?: boolean;
-    weekend?: number | number[];
+export interface DateExtensionRule extends  Omit<DateRuleOptions, "required" | 'nullable'> {
+}
+
+export interface WeekendRuleOptions extends Omit<DateRuleOptions, "required" | 'nullable'> {
+    weekend: number | number[];
 }

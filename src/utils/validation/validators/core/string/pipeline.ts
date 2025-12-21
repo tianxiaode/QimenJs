@@ -6,6 +6,8 @@ import { checkStringPattern } from './pattern';
 import { checkStringEnum } from './enum';
 import { checkPresence } from '../presence';
 import { createCoreValidator } from '../factory';
+import { StringRuleOptions } from '@/utils/validation/rules';
+import { validatePattern } from '../../common';
 
 /**
  * 字符串验证管道
@@ -36,7 +38,15 @@ export const validateString = createCoreValidator([
     
     // 5. 检查字符串是否在预定义的枚举值列表中
     checkStringEnum,
-]);
+],   (
+        value: any,
+        rule: StringRuleOptions,
+        context: ValidationErrorContext = {}
+    ): ValidationResult => {
+
+        //6.附加规则检查
+        return validatePattern(value, rule, context);
+});
 
 // 注册字符串验证器
 ValidatorBase.registerValidator('string', validateString);
