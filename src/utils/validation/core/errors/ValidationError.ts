@@ -1,4 +1,4 @@
-import { BaseError } from "../../error";
+import { BaseError } from "../../../error";
 /**
  * 🎯 验证错误
  * 数据验证失败时抛出

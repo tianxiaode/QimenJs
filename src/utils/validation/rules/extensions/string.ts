@@ -1,5 +1,5 @@
 import { ExtensionRule, ValidatorFunction } from '../../core';
-import { StringRule } from '../core';
+import { StringRuleOptions } from '../core';
 
 export interface StringTrimOptions {
     /**
@@ -36,7 +36,7 @@ export interface FormatOptions {
     rgba?: boolean;
 }
 export interface StringSplitRule
-    extends ExtensionRule, StringTrimOptions, Omit<StringRule, 'type'> {
+    extends ExtensionRule, StringTrimOptions, Omit<StringRuleOptions, 'type'> {
     type: 'split';
     separator: string | RegExp;
 
@@ -67,11 +67,11 @@ export interface StringSplitRule
 }
 
 export interface StringAdvanceRule
-    extends ExtensionRule, StringTrimOptions, FormatOptions, Omit<StringRule, 'type'> {
+    extends ExtensionRule, StringTrimOptions, FormatOptions, Omit<StringRuleOptions, 'type'> {
     type: 'stringEx';
 }
 
-export interface PasswordRule extends ExtensionRule, Omit<StringRule, 'type'> {
+export interface PasswordRule extends ExtensionRule, Omit<StringRuleOptions, 'type'> {
     type: 'password';
     minLength: 8;
     maxLength: 16;

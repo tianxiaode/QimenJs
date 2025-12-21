@@ -1,5 +1,5 @@
 // core/validator.ts
-import { StringRule, EmailRule, ValidationRuleError } from '../../rules';
+import { StringRuleOptions, EmailRule, ValidationRuleError } from '../../rules';
 import { validateString } from '../../validators';
 import { validateEmail } from './string';
 
@@ -8,7 +8,7 @@ type ValidatorFn<T> = (value: any, rule: T) => ValidationRuleError[] | null;
 
 // 验证规则映射表类型
 type ValidatorMap = {
-  string: ValidatorFn<StringRule>;
+  string: ValidatorFn<StringRuleOptions>;
   email: ValidatorFn<EmailRule>;
   // 可以继续扩展其他内置类型
 };
@@ -72,7 +72,7 @@ const customErrors = validator.validate('custom', 5, {});
 console.log(customErrors);  // 输出自定义验证错误
 
 // 替换现有的验证规则
-validator.register('string', (value: any, rule: StringRule) => {
+validator.register('string', (value: any, rule: StringRuleOptions) => {
   if (value.length < 10) {
     return [{ message: 'Custom string validation failed', code: 'VALIDATION_FAILED' }];
   }

@@ -1,4 +1,3 @@
-// validation/error-codes/core.ts
 // 精简到15个核心错误代码，但保持详细的参数接口
 
 export const ValidationErrorCode = {

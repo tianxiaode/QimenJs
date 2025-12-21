@@ -1,33 +1,10 @@
-import { CoreRule } from '../../core';
+import { CoreRuleOptions, RuleLengthOptions } from '../../core';
 
 /**
  * 字符串验证规则接口
  * 定义了用于字符串类型数据验证的各种规则选项
  */
-export interface StringRule extends CoreRule {
-    /**
-     * 规则类型标识，固定为'string'，表明这是字符串验证规则
-     */
-    type: 'string';
-
-    /**
-     * 最小长度限制
-     * 字符串长度不能少于指定数值
-     */
-    minLength?: number;
-
-    /**
-     * 最大长度限制
-     * 字符串长度不能超过指定数值
-     */
-    maxLength?: number;
-
-    /**
-     * 精确长度限制
-     * 字符串长度必须等于指定数值
-     * 如果设置了此属性，minLength和maxLength将被忽略
-     */
-    exactLength?: number;
+export interface StringRuleOptions extends CoreRuleOptions, RuleLengthOptions {
 
     /**
      * 正则表达式模式匹配

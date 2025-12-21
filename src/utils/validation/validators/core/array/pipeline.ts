@@ -3,8 +3,9 @@ import {
     ValidationErrorContext,
     ValidationResult,
     ValidationRuleError,
+    ValidatorBase,
 } from '../../../core';
-import { ArrayRule } from '../../../rules';
+import { ArrayRuleOptions } from '../../../rules';
 import { checkArrayType } from './type';
 import { checkArrayLength } from './length';
 import { checkArrayEnum } from './enum';
@@ -12,28 +13,66 @@ import { createCoreValidator } from '../factory';
 import { checkPresence } from '../presence';
 import { normalizeChildRule } from '../convert';
 
-export const validateArray = createCoreValidator<ArrayRule>(
+/**
+ * 数组验证器 - 组合多个验证函数形成完整的数组验证管道
+ * 
+ * 验证顺序：
+ * 1. 存在性检查 (checkPresence)
+ * 2. 类型检查 (checkArrayType) 
+ * 3. 长度检查 (checkArrayLength)
+ * 4. 枚举值检查 (checkArrayEnum)
+ * 5. 子元素验证 (自定义逻辑)
+ */
+export const validateArray = createCoreValidator(
+    // 基础验证器列表，按顺序执行
     [checkPresence, checkArrayType, checkArrayLength, checkArrayEnum],
-    (value: any, rule: ArrayRule, context: ValidationErrorContext = {}): ValidationResult => {
+    
+    /**
+     * 自定义验证逻辑 - 主要用于验证数组中的每个子元素
+     * 
+     * @param value - 待验证的数组值
+     * @param rule - 数组验证规则选项
+     * @param context - 验证上下文
+     * @returns 验证结果
+     */
+    (value: any, rule: ArrayRuleOptions, context: ValidationErrorContext = {}): ValidationResult => {
+        // 如果值不是数组或者没有定义子元素规则，则跳过子元素验证
         if (!Array.isArray(value) || !rule.childRule) return null;
+        
+        // 获取并标准化子元素验证规则
         const childRule = rule.childRule;
         const validate = normalizeChildRule(childRule);
 
+        // 是否需要收集所有子元素错误（true）还是遇到第一个错误就停止（false）
         const allChildsError = rule.allChildsError;
         let errors: ValidationRuleError[] = [];
+        
+        // 遍历数组中的每个元素进行验证
         for (let i = 0; i < value.length; i++) {
+            // 为每个子元素创建独立的验证上下文，包括路径信息
             const itemContext = {
                 ...context,
                 path: context.path ? `${context.path}[${i}]` : `[${i}]`,
                 parent: value,
             };
+            
+            // 执行子元素验证
             const result = validate(value[i], rule, itemContext);
+            
+            // 根据 allChildsError 设置决定如何处理错误：
+            // 如果为 false 且有错误，则立即返回第一个错误
+            // 如果为 true，则收集所有错误
             if (result && !allChildsError) {
                 return result;
             } else {
                 errors = errors.concat(result || []);
             }
         }
+        
+        // 标准化并返回所有收集到的错误
         return normalizeValidationResult(errors);
     }
 );
+
+// 注册数组验证器
+ValidatorBase.registerValidator('array', validateArray);

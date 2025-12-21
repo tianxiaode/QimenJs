@@ -1,6 +1,6 @@
-import { CommonRule, ValidationErrorContext } from "../../core";
+import { RuleBaseOptions, ValidationErrorContext } from "../../core";
 
-export interface ContainsRule<T = unknown> extends CommonRule {
+export interface ContainsRuleOptions<T = unknown> extends RuleBaseOptions {
     target: readonly T[] | ((ctx?: ValidationErrorContext) => readonly T[]);
     contains?: boolean;
     strict?: boolean;

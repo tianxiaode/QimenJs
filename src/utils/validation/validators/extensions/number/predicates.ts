@@ -1,9 +1,9 @@
-import { NumberAdvanceRule, NumberRule } from '@/utils/validation/rules';
+import { NumberAdvanceRule, NumberRuleOptions } from '@/utils/validation/rules';
 
 type Predicate = (value: number) => boolean;
 
 export const numberPredicates: Record<
-  keyof Omit<NumberAdvanceRule, keyof NumberRule | 'allowsValues' | 'disallowsValues'>,
+  keyof Omit<NumberAdvanceRule, keyof NumberRuleOptions | 'allowsValues' | 'disallowsValues'>,
   Predicate
 > = {
   int: (v) => Number.isInteger(v),

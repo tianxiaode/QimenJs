@@ -66,11 +66,20 @@ export type ValidationResult = ValidationRuleError[] | null;
  */
 export type AnyValidationResult = CheckResult | ValidationResult;
 
-export interface CommonRule {
+/**
+ * 验证规则选项接口
+ * 用于描述单个验证规则的选项结构
+ */
+export interface RuleBaseOptions {
+    type?: string;
     message?: string;
+    [key: string]: any;
 }
 
-export interface PresenceOptions {
+/**
+ * 用于定义必填、可选、空值规则
+ */
+export interface RulePresenceOptions {
     /**
      * 是否必填（不允许 undefined）
      */
@@ -87,28 +96,89 @@ export interface PresenceOptions {
     empty?: boolean;
 }
 
-export interface CoreRule extends CommonRule, PresenceOptions {}
+/**
+ * 用于定义字符串或数组的长度规则
+ */
+export interface RuleLengthOptions {
+    /**
+     * 最小长度限制
+     * 字符串长度不能少于指定数值
+     */
+    minLength?: number;
 
-export interface ExtensionRule extends CoreRule {}
+    /**
+     * 最大长度限制
+     * 字符串长度不能超过指定数值
+     */
+    maxLength?: number;
 
-export interface HasChildRule extends ExtensionRule {
-    childRule: ValidatorFunction | HasChildRule;
-    allChildsError?: boolean;
+    /**
+     * 精确长度限制
+     * 字符串长度必须等于指定数值
+     * 如果设置了此属性，minLength和maxLength将被忽略
+     */
+    exactLength?: number;
 }
 
-export interface HasPropertiesRule extends ExtensionRule {
-    properties?: Record<string, ValidatorFunction | HasPropertiesRule>;
+/**
+ * 用于定义数值范围规则
+ */
+export interface RuleRangeOptions<T extends number | Date> extends RuleLengthOptions {
+    /**
+     * 最小值
+     */
+    min?: T;
+
+    /**
+     * 最大值
+     */
+    max?: T;
+}
+
+/**
+ * 用于定义数组子项规则
+ * 仅用于兼容不同校验函数返回值的适配层类型
+ * ❌ 不应在核心校验逻辑中传播
+ */
+export interface RuleArrayItemsOptions {
+    itemRule: ValidatorFunction | RuleArrayItemsOptions;
+    allItemsError?: boolean;
+}
+
+/**
+ * 用于定义对象属性规则
+ * 仅用于兼容不同校验函数返回值的适配层类型
+ * ❌ 不应在核心校验逻辑中传播
+ */
+export interface RuleObjectPropertiesOptions {
+    properties?: Record<string, ValidatorFunction | RuleObjectPropertiesOptions>;
     requiredFields?: readonly string[];
     additionalProperties?: boolean;
     allPropertiesError?: boolean;
 }
 
+/**
+ * 核心验证规则选项接口
+ * 用于描述核心验证规则的选项结构
+ */
+export interface CoreRuleOptions extends RuleBaseOptions, RulePresenceOptions {}
+
+/**
+ * 验证规则接口
+ * 用于描述单个验证规则的结构
+ * 包含校验函数、错误信息、选项等
+ * 该接口仅用于描述，不应在核心校验逻辑中传播
+ */
 export type ValidatorFunction = (
     value: any,
     rule: any,
     context?: ValidationErrorContext
 ) => ValidationResult;
 
+/**
+ * 仅用于核心验证的子验证，不应在核心校验逻辑中传播
+ * ❌ 不应在核心校验逻辑中传播
+ */
 export type CheckFunction = (
     value: any,
     rule: any,

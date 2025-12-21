@@ -1,25 +1,45 @@
 import {
-    ValidationRuleError,
     ValidationErrorContext,
     ValidationResult,
-    normalizeValidationResult,
-    HasPropertiesRule,
-    ValidatorFunction,
-    ValidationErrorBuilder,
+    ValidatorBase,
 } from '../../../core';
-import { ObjectRule } from '../../../rules';
+import { ObjectRuleOptions } from '../../../rules';
 
 import { checkObjectType } from './type';
 import { createCoreValidator } from '../factory';
 import { checkPresence } from '../presence';
-import { normalizeChildRule } from '../convert';
+import { validateRequiredFields } from './required-fields';
+import { validateProperties } from './properties';
+import { validateAdditionalProperties } from './additional-properties';
 
-export const validateObject = createCoreValidator<ObjectRule>(
+/**
+ * 对象验证器
+ * 
+ * 组合基础验证函数和自定义验证逻辑，形成完整的对象验证流程。
+ * 验证按照以下顺序执行：
+ * 1. 存在性检查 - 验证值是否符合 required/nullable/empty 规则
+ * 2. 类型检查 - 验证值是否为对象类型
+ * 3. 对象属性检查 - 验证对象的属性是否符合规则要求
+ * 
+ * 对象属性检查包括：
+ * - 必需字段验证
+ * - 属性规则验证
+ * - 额外属性验证
+ */
+export const validateObject = createCoreValidator(
+    // 基础验证函数数组
     [checkPresence, checkObjectType],
-    (value: any, rule: ObjectRule, context: ValidationErrorContext = {}): ValidationResult => {
+    
+    // 自定义对象验证逻辑
+    (
+        value: any,
+        rule: ObjectRuleOptions,
+        context: ValidationErrorContext = {}
+    ): ValidationResult => {
+        // 如果值不是对象或为 null，跳过对象属性验证
         if (typeof value !== 'object' || value === null) return null;
 
-        // 验证要求字段是否存在
+        // 验证必需字段是否存在
         if (rule.requiredFields) {
             const requiredFieldsResult = validateRequiredFields(
                 value,
@@ -31,10 +51,11 @@ export const validateObject = createCoreValidator<ObjectRule>(
             }
         }
 
+        // 获取对象属性规则配置
         const properties = rule.properties;
 
         if (properties) {
-            const allPropertiesError = rule.allPropertiesError ?? false;
+            // 验证已定义的属性是否符合规则
             const propertiesResult = validateProperties(
                 value,
                 properties,
@@ -45,6 +66,7 @@ export const validateObject = createCoreValidator<ObjectRule>(
                 return propertiesResult;
             }
 
+            // 验证是否包含未定义的额外属性
             return validateAdditionalProperties(value, properties, context);
         }
 
@@ -52,59 +74,5 @@ export const validateObject = createCoreValidator<ObjectRule>(
     }
 );
 
-function validateRequiredFields(
-    value: any,
-    requiredFields: readonly string[],
-    context: ValidationErrorContext
-) {
-    for (const key of requiredFields) {
-        if (!(key in value)) {
-            const fieldPath = context && context.path ? `${context.path}.${key}` : key;
-            return ValidationErrorBuilder.missing_field(key, { ...context, field: fieldPath });
-        }
-    }
-}
-
-function validateProperties(
-    value: any,
-    properties: Record<string, ValidatorFunction | HasPropertiesRule>,
-    allPropertiesError: boolean = false,
-    context: ValidationErrorContext = {}
-): ValidationResult {
-    let errors: ValidationRuleError[] = [];
-    for (const key of Object.keys(properties)) {
-        const fieldRule: ValidatorFunction | HasPropertiesRule = properties[key];
-        const fieldValue = value[key];
-        const fieldPath = context && context.path ? `${context.path}.${key}` : key;
-        const validate = normalizeChildRule(fieldRule);
-        const result = validate(fieldValue, {} as any, { ...context, path: fieldPath });
-
-        if (result && allPropertiesError) {
-            errors = errors.concat(result);
-        } else {
-            return result;
-        }
-    }
-
-    return normalizeValidationResult(errors);
-}
-
-function validateAdditionalProperties(
-    value: any,
-    properties: Record<string, ValidatorFunction | HasPropertiesRule>,
-    context: ValidationErrorContext = {}
-): ValidationResult {
-    const allowedKeys = new Set(Object.keys(properties));
-
-    for (const key of Object.keys(value)) {
-        if (!allowedKeys.has(key)) {
-            const fieldPath = context && context.path ? `${context.path}.${key}` : key;
-            return [ValidationErrorBuilder.not_allowed(key, Array.from(allowedKeys), {
-                ...context,
-                field: fieldPath,
-            })];
-        }
-    }
-
-    return null;
-}
+// 注册对象验证器
+ValidatorBase.registerValidator('object', validateObject);

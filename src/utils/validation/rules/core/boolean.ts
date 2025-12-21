@@ -1,8 +1,6 @@
-import { CoreRule } from "../../core"
+import { CoreRuleOptions } from "../../core"
 
 /**
  * 布尔值验证规则
  */
-export interface BooleanRule extends CoreRule {
-  type: 'boolean'
-}
+export interface BooleanRuleOptions extends CoreRuleOptions {}

@@ -1,8 +1,6 @@
-import { HasPropertiesRule } from '../../core';
+import { CoreRuleOptions, RuleBaseOptions, RuleObjectPropertiesOptions } from '../../core';
 
 /**
  * 对象验证规则接口
  */
-export interface ObjectRule extends HasPropertiesRule {
-    type: 'object';
-}
+export interface ObjectRuleOptions extends CoreRuleOptions, RuleObjectPropertiesOptions {}

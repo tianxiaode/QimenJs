@@ -1,8 +1,8 @@
-import { CommonRule, ValidationErrorContext } from '../../core';
+import { RuleBaseOptions, ValidationErrorContext } from '../../core';
 
 export type CompareOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
 
-export interface CompareRule extends CommonRule {
+export interface CompareRuleOptions extends RuleBaseOptions {
     /**
      * 比较操作符
      */

@@ -1,19 +1,9 @@
-import { HasChildRule } from '../../core';
+import { CoreRuleOptions, RuleArrayItemsOptions, RuleLengthOptions } from '../../core';
 
 /**
  * 数组验证规则接口
  */
-export interface ArrayRule extends HasChildRule {
-    type: 'array';
-
-    /** 最小长度 */
-    minLength?: number;
-
-    /** 最大长度 */
-    maxLength?: number;
-
-    /** 精确长度 */
-    exactLength?: number;
+export interface ArrayRuleOptions extends CoreRuleOptions, RuleArrayItemsOptions, RuleLengthOptions {
 
     /**
      * 是否允许空数组
