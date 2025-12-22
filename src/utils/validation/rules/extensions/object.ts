@@ -1,4 +1,6 @@
 import { ObjectRuleOptions } from '../core';
 
-export interface ObjectExtensionRule extends ObjectRuleOptions, Omit<ObjectRuleOptions,'type'> {
+export interface ObjectKeysRuleOptions extends ObjectRuleOptions {
+  keys: string | string[];
+  allErrors: boolean;
 }

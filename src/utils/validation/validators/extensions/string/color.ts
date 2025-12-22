@@ -6,7 +6,7 @@ import {
     ValidatorBase,                  // 验证器基类
 } from '../../../core';
 import { StringExtensionRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
-import { validateBySpecifiedPattern } from './pattern';        // 使用指定模式进行验证的函数
+import { validateStringByPresetPattern } from './pattern';        // 使用指定模式进行验证的函数
 
 /**
  * 验证十六进制颜色值格式是否正确
@@ -22,7 +22,7 @@ export function validateHexColor(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用HEX_COLOR模式对十六进制颜色值进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.HEX_COLOR, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.HEX_COLOR, context);
 }
 
 /**
@@ -39,7 +39,7 @@ export function validateRGBColor(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用RGB_COLOR模式对RGB颜色值进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.RGB_COLOR, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.RGB_COLOR, context);
 }
 
 /**
@@ -56,7 +56,7 @@ export function validateRGBAColor(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用RGBA_COLOR模式对RGBA颜色值进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.RGBA_COLOR, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.RGBA_COLOR, context);
 }
 
 // 注册颜色验证器到验证器基类中

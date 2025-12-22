@@ -17,7 +17,7 @@ import { validateStringExtension } from './extension';            // 字符串�
  * @param context - 验证错误上下文，默认为空对象
  * @returns 如果验证失败返回错误数组，否则返回null
  */
-export function validateBySpecifiedPattern(
+export function validateStringByPresetPattern(
     value: string,
     rule: StringExtensionRuleOptions,
     patternType: ValidationPatternType,

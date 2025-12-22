@@ -6,7 +6,7 @@ import {
     ValidationResult,               // 验证结果类型
     ValidatorBase,                  // 验证器基类
 } from '../../../core';
-import { validateBySpecifiedPattern } from './pattern';                     // 使用指定模式进行验证的函数
+import { validateStringByPresetPattern } from './pattern';                     // 使用指定模式进行验证的函数
 
 /**
  * 验证邮箱地址格式是否正确
@@ -22,7 +22,7 @@ export function validateEmail(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用EMAIL模式对邮箱地址进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.EMAIL, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.EMAIL, context);
 }
 
 /**
@@ -39,7 +39,7 @@ export function validatePhone(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用PHONE模式对电话号码进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.PHONE, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.PHONE, context);
 }
 
 /**
@@ -56,7 +56,7 @@ export function validateUsername(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用USERNAME模式对用户名进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.USERNAME, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.USERNAME, context);
 }
 
 /**
@@ -73,7 +73,7 @@ export function validateUUID(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用UUID模式对UUID进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.UUID, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.UUID, context);
 }
 
 /**
@@ -90,7 +90,7 @@ export function validateCreditCard(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CREDIT_CARD模式对信用卡号进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.CREDIT_CARD, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.CREDIT_CARD, context);
 }
 
 /**
@@ -107,7 +107,7 @@ export function validateChineseID(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_ID模式对中国身份证号进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.CHINESE_ID, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.CHINESE_ID, context);
 }
 
 /**
@@ -124,7 +124,7 @@ export function validateChinesePostcode(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_POSTCODE模式对中国邮政编码进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.CHINESE_POSTCODE, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.CHINESE_POSTCODE, context);
 }
 
 // 注册各种身份验证器到验证器基类中

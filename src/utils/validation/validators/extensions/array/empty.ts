@@ -14,7 +14,7 @@ import { validateArray } from "../../core";
  * @param context - 验证上下文
  * @returns 验证结果，如果验证失败返回错误数组，否则返回null
  */
-export function validateArrayEmpty(
+export function validateEmptyArray(
     value: any,
     /**
      * 接收除了 allowEmpty 之外的所有数组规则选项
@@ -30,4 +30,4 @@ export function validateArrayEmpty(
 
 // 注册验证器到全局验证器基础类
 // 名称为 'emptyArray'，可以通过此名称在规则中引用
-ValidatorBase.registerValidator('emptyArray', validateArrayEmpty);
+ValidatorBase.registerValidator('emptyArray', validateEmptyArray);

@@ -7,7 +7,7 @@ import {
     ValidationRuleError,
     ValidatorBase,            // 验证规则错误类型
 } from '../../../core';
-import { validateBySpecifiedPattern } from './pattern';                     // 使用指定模式进行验证的函数
+import { validateStringByPresetPattern } from './pattern';                     // 使用指定模式进行验证的函数
 
 /**
  * 验证URL格式是否正确
@@ -23,7 +23,7 @@ export function validateUrl(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的URL模式进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.URL, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.URL, context);
 }
 
 /**
@@ -40,7 +40,7 @@ export function validateIPv4(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的IPv4模式进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.IPV4, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.IPV4, context);
 }
 
 /**
@@ -57,7 +57,7 @@ export function validateIPv6(
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的IPv6模式进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.IPV6, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.IPV6, context);
 }
 
 /**
@@ -74,7 +74,7 @@ export function validateMacAddress(
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的MAC地址模式进行验证
-    return validateBySpecifiedPattern(value, rule, ValidationPatternType.MAC_ADDRESS, context);
+    return validateStringByPresetPattern(value, rule, ValidationPatternType.MAC_ADDRESS, context);
 }
 
 ValidatorBase.registerValidator('url', validateUrl);
