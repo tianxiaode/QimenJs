@@ -4,3 +4,4 @@ export * from './password';
 export * from './pattern';
 export * from './encoding';
 export * from './color';
+export * from './extension';

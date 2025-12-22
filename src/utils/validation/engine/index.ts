@@ -1,2 +1,1 @@
-export * from './assertions';
-export * from './validates';
+export * from './proxy';
