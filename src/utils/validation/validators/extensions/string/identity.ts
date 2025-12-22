@@ -4,7 +4,7 @@ import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
     ValidationResult,               // 验证结果类型
-    ValidatorBase,                  // 验证器基类
+    Validator,                  // 验证器基类
 } from '../../../core';
 import { validateStringByPresetPattern } from './pattern';                     // 使用指定模式进行验证的函数
 
@@ -128,10 +128,10 @@ export function validateChinesePostcode(
 }
 
 // 注册各种身份验证器到验证器基类中
-ValidatorBase.registerValidator('email', validateEmail);                // 注册邮箱验证器
-ValidatorBase.registerValidator('phone', validatePhone);                // 注册电话验证器
-ValidatorBase.registerValidator('username', validateUsername);          // 注册用户名验证器
-ValidatorBase.registerValidator('uuid', validateUUID);                  // 注册UUID验证器
-ValidatorBase.registerValidator('creditCard', validateCreditCard);      // 注册信用卡验证器
-ValidatorBase.registerValidator('chineseID', validateChineseID);        // 注册中国身份证验证器
-ValidatorBase.registerValidator('chinesePostcode', validateChinesePostcode); // 注册中国邮编验证器
+Validator.registerValidator('email', validateEmail);                // 注册邮箱验证器
+Validator.registerValidator('phone', validatePhone);                // 注册电话验证器
+Validator.registerValidator('username', validateUsername);          // 注册用户名验证器
+Validator.registerValidator('uuid', validateUUID);                  // 注册UUID验证器
+Validator.registerValidator('creditCard', validateCreditCard);      // 注册信用卡验证器
+Validator.registerValidator('chineseID', validateChineseID);        // 注册中国身份证验证器
+Validator.registerValidator('chinesePostcode', validateChinesePostcode); // 注册中国邮编验证器

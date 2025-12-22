@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 
 import { checkDateType } from './type';
 import { checkDateRange } from './range';
@@ -32,4 +32,4 @@ export const validateDate = createCoreValidator([
 ]);
 
 // 将日期验证器注册到全局验证器库中，使其可以通过 'date' 类型名称调用
-ValidatorBase.registerValidator('date', validateDate);
+Validator.registerValidator('date', validateDate);

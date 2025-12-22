@@ -4,7 +4,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
 } from '../../core';
-import { ValidatorBase } from '../../core/ValidatorBase';
+import { Validator } from '../../core/Validator';
 import { ContainsRuleOptions } from '../../rules';
 
 /**
@@ -96,5 +96,5 @@ export function validateUnique(
 }
 
 // 注册验证器到全局验证器基础类
-ValidatorBase.registerValidator('contains', validateContains);
-ValidatorBase.registerValidator('unique', validateUnique);
+Validator.registerValidator('contains', validateContains);
+Validator.registerValidator('unique', validateUnique);

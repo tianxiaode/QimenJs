@@ -3,7 +3,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
     ValidationRuleError,
-    ValidatorBase,
+    Validator,
 } from '../../../core';
 import { ArrayRuleOptions } from '../../../rules';
 import { checkArrayType } from './type';
@@ -75,4 +75,4 @@ export const validateArray = createCoreValidator(
 );
 
 // 注册数组验证器
-ValidatorBase.registerValidator('array', validateArray);
+Validator.registerValidator('array', validateArray);

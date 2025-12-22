@@ -5,7 +5,7 @@ import {
     ValidationPatternType,          // 验证模式枚举类型
     ValidationResult,               // 验证结果类型
     ValidationRuleError,
-    ValidatorBase,            // 验证规则错误类型
+    Validator,            // 验证规则错误类型
 } from '../../../core';
 import { validateStringByPresetPattern } from './pattern';                     // 使用指定模式进行验证的函数
 
@@ -77,7 +77,7 @@ export function validateMacAddress(
     return validateStringByPresetPattern(value, rule, ValidationPatternType.MAC_ADDRESS, context);
 }
 
-ValidatorBase.registerValidator('url', validateUrl);
-ValidatorBase.registerValidator('ipv4', validateIPv4);
-ValidatorBase.registerValidator('ipv6', validateIPv6);
-ValidatorBase.registerValidator('macAddress', validateMacAddress);
+Validator.registerValidator('url', validateUrl);
+Validator.registerValidator('ipv4', validateIPv4);
+Validator.registerValidator('ipv6', validateIPv6);
+Validator.registerValidator('macAddress', validateMacAddress);

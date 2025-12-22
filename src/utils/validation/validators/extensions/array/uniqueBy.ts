@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidationErrorBuilder, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, ValidationResult, ValidationErrorBuilder, Validator } from '../../../core';
 import { UniqueByRuleOptions } from '../../../rules';
 import { validateArray } from '../../core';
 
@@ -89,4 +89,4 @@ export function validateUniqueBy(
 
 // 注册验证器到全局验证器基础类
 // 名称为 'uniqueBy'，可以在规则中通过 type: 'uniqueBy' 来引用此验证器
-ValidatorBase.registerValidator('uniqueBy', validateUniqueBy);
+Validator.registerValidator('uniqueBy', validateUniqueBy);

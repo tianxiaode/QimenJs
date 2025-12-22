@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { DateExtensionRule } from '../../../rules';
 import { validateDate } from '../../core';
 
@@ -62,4 +62,4 @@ export function validateDateTomorrow(
         }),
     ];
 }
-ValidatorBase.registerValidator('tomorrow', validateDateTomorrow);
+Validator.registerValidator('tomorrow', validateDateTomorrow);

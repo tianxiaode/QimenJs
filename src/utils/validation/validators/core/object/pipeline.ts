@@ -1,7 +1,7 @@
 import {
     ValidationErrorContext,
     ValidationResult,
-    ValidatorBase,
+    Validator,
 } from '../../../core';
 import { ObjectRuleOptions } from '../../../rules';
 
@@ -75,4 +75,4 @@ export const validateObject = createCoreValidator(
 );
 
 // 注册对象验证器
-ValidatorBase.registerValidator('object', validateObject);
+Validator.registerValidator('object', validateObject);

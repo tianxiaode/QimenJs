@@ -1,7 +1,7 @@
 import {
     ValidationErrorContext,
     ValidationResult,
-    ValidatorBase,
+    Validator,
     ValidationTypeNotDefinedError,
 } from '@orbitjs/utils';
 
@@ -16,20 +16,9 @@ export function validateSync(
     value: any,
     context: ValidationErrorContext = {}
 ): ValidationResult {
-    // 直接从 rules 中获取 type
-    const type = rules.type;
-
-    // 如果没有指定 type，则抛出专门的错误
-    if (!type) {
-        throw new ValidationTypeNotDefinedError('Validation type is not defined in rules', {
-            rules,
-            value,
-            context,
-        });
-    }
 
     // 直接调用 ValidatorBase.executeValidator
-    return ValidatorBase.executeValidator(type, value, rules, context);
+    return Validator.executeValidator(value, rules, context);
 }
 
 /**

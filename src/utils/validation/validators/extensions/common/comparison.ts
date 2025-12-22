@@ -1,6 +1,6 @@
 import { CompareOperatorRuleOptions, CompareRuleOptions } from '../../../rules';
 import { validateCompare } from '../../common';
-import { ValidationErrorContext, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, Validator } from '../../../core';
 
 /**
  * 验证值是否等于目标值
@@ -87,9 +87,9 @@ export const validateNeq = (
 ) => validateCompare(value, { ...rule, operator: 'neq' }, context);
 
 // 注册验证器到全局验证器库中
-ValidatorBase.registerValidator('eq', validateEq);
-ValidatorBase.registerValidator('gt', validateGt);
-ValidatorBase.registerValidator('gte', validateGte);
-ValidatorBase.registerValidator('lt', validateLt);
-ValidatorBase.registerValidator('lte', validateLte);
-ValidatorBase.registerValidator('neq', validateNeq);
+Validator.registerValidator('eq', validateEq);
+Validator.registerValidator('gt', validateGt);
+Validator.registerValidator('gte', validateGte);
+Validator.registerValidator('lt', validateLt);
+Validator.registerValidator('lte', validateLte);
+Validator.registerValidator('neq', validateNeq);

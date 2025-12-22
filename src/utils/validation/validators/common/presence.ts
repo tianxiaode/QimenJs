@@ -5,7 +5,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
 } from '../../core';
-import { ValidatorBase } from '../../core/ValidatorBase';
+import { Validator } from '../../core/Validator';
 
 /**
  * 验证值的存在性规则
@@ -45,4 +45,4 @@ export function validatePresence(
 }
 
 // 将存在性验证器注册到验证器基础类中，使其可以被全局使用
-ValidatorBase.registerValidator('presence', validatePresence);
+Validator.registerValidator('presence', validatePresence);

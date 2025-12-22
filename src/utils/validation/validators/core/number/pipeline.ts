@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 
 import { checkNumberType } from './type';
 import { checkNumberInteger } from './integer';
@@ -39,4 +39,4 @@ export const validateNumber = createCoreValidator([
 ]);
 
 // 将数字验证器注册到全局验证器库中，使其可以通过 'number' 类型名称调用
-ValidatorBase.registerValidator('number', validateNumber);
+Validator.registerValidator('number', validateNumber);

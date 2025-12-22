@@ -3,7 +3,7 @@ import {
     ValidationErrorBuilder,          // 验证错误构建器
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationResult,               // 验证结果类型
-    ValidatorBase,                  // 验证器基类
+    Validator,                  // 验证器基类
 } from '../../../core';
 import { validateNumber } from '../../core/number';            // 基础数字验证函数
 import { NumberExtensionRule } from '../../../rules';           // 数字高级规则类型
@@ -163,11 +163,11 @@ export const validateInfinite = (
 ) => validateNumberExtension(value, { ...rule, infinite: true }, context);
 
 // 注册高级数字验证器到验证器基础类中
-ValidatorBase.registerValidator('numberEx', validateNumberExtension);  // 注册高级数字验证器
-ValidatorBase.registerValidator('integer', validateInteger);        // 注册整数验证器
-ValidatorBase.registerValidator('positive', validatePositive);      // 注册正数验证器
-ValidatorBase.registerValidator('negative', validateNegative);      // 注册负数验证器
-ValidatorBase.registerValidator('odd', validateOdd);                // 注册奇数验证器
-ValidatorBase.registerValidator('even', validateEven);              // 注册偶数验证器
-ValidatorBase.registerValidator('finite', validateFinite);          // 注册有限数验证器
-ValidatorBase.registerValidator('infinite', validateInfinite);      // 注册无限数验证器
+Validator.registerValidator('numberEx', validateNumberExtension);  // 注册高级数字验证器
+Validator.registerValidator('integer', validateInteger);        // 注册整数验证器
+Validator.registerValidator('positive', validatePositive);      // 注册正数验证器
+Validator.registerValidator('negative', validateNegative);      // 注册负数验证器
+Validator.registerValidator('odd', validateOdd);                // 注册奇数验证器
+Validator.registerValidator('even', validateEven);              // 注册偶数验证器
+Validator.registerValidator('finite', validateFinite);          // 注册有限数验证器
+Validator.registerValidator('infinite', validateInfinite);      // 注册无限数验证器

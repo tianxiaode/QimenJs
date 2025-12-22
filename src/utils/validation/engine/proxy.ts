@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidatorBase } from '../core';
+import { ValidationErrorBuilder, ValidationErrorContext, Validator } from '../core';
 
 /**
  * 创建验证器代理对象
@@ -21,7 +21,7 @@ const createValidatorProxy = () => {
             // 当访问如 .string, .email 等验证器时，
             // 返回一个函数来执行对应的验证逻辑
             return (value: any, rule: any, context: ValidationErrorContext = {}) =>
-                ValidatorBase.executeValidator(prop, value, rule, context);
+                Validator.executeValidator(value, rule, context);
         },
     });
 };
@@ -49,7 +49,7 @@ const createAssertProxy = () => {
             // 返回一个函数来执行验证并在失败时抛出异常
             return (value: any, rule: any, context: ValidationErrorContext = {}) => {
                 // 执行验证器
-                const result = ValidatorBase.executeValidator(prop, value, rule, context);
+                const result = Validator.executeValidator(value, rule, context);
                 
                 // 如果有验证错误，抛出异常
                 if (result && result.length > 0) {

@@ -1,13 +1,7 @@
 import { Logger } from './Logger';
 import type { LoggerOptions } from './types';
 
-export function createLogger(options: LoggerOptions) {
-  const root = new Logger(options);
-  Logger.root = root;
-  return root;
-}
-
-export { Logger };
+export { Logger, LoggerOptions };
 
 //使用方法
 

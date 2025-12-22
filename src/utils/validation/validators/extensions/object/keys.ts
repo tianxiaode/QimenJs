@@ -4,7 +4,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
     ValidationRuleError,
-    ValidatorBase,
+    Validator,
 } from '../../../core';
 import { ObjectKeysRuleOptions } from '../../../rules';
 import { validateObject } from '../../core';
@@ -61,4 +61,4 @@ export function validateHasKeys(
 }
 
 // 将键验证器注册到全局验证器基础类中，使其可以通过 'hasKeys' 名称调用
-ValidatorBase.registerValidator('hasKeys', validateHasKeys);
+Validator.registerValidator('hasKeys', validateHasKeys);

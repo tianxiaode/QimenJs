@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorBase } from "../../../core";
+import { ValidationErrorContext, ValidationResult, Validator } from "../../../core";
 import { ArrayRuleOptions } from "../../../rules";
 import { validateArray } from "../../core";
 
@@ -30,4 +30,4 @@ export function validateEmptyArray(
 
 // 注册验证器到全局验证器基础类
 // 名称为 'emptyArray'，可以通过此名称在规则中引用
-ValidatorBase.registerValidator('emptyArray', validateEmptyArray);
+Validator.registerValidator('emptyArray', validateEmptyArray);

@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 
 import { checkStringType } from './type';
 import { checkStringLength } from './length';
@@ -49,4 +49,4 @@ export const validateString = createCoreValidator([
 });
 
 // 注册字符串验证器
-ValidatorBase.registerValidator('string', validateString);
+Validator.registerValidator('string', validateString);

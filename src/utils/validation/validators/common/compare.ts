@@ -3,7 +3,7 @@ import {
     ValidationErrorContext,
     ValidationResult,
     ValidationErrorBuilder,
-    ValidatorBase,
+    Validator,
 } from '../../core';
 import { CompareRuleOptions } from '../../rules';
 
@@ -88,4 +88,4 @@ export function validateCompare(
 }
 
 // 将比较验证器注册到验证器基础类中，键名为'compare'
-ValidatorBase.registerValidator('compare', validateCompare);
+Validator.registerValidator('compare', validateCompare);

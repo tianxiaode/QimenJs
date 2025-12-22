@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { StringExtensionRuleOptions } from '../../../rules';
 import { validatePresence } from '../../common';
 import { validateString } from '../../core';
@@ -47,4 +47,4 @@ export function validateStringExtension(
 }
 
 // 注册高级字符串验证器到验证器基础类中
-ValidatorBase.registerValidator('stringEx', validateStringExtension);
+Validator.registerValidator('stringEx', validateStringExtension);

@@ -1,26 +1,24 @@
-import { DuplicateValidatorError } from "./errors";
-import { ValidationErrorContext, ValidationResult, ValidatorFunction } from "./types";
+import {
+    DuplicateValidatorError,
+    ValidationTypeNotDefinedError,
+    ValidatorNotFoundError,
+} from './errors';
+import { ValidationErrorContext, ValidationResult, ValidatorFunction } from './types';
 
-export class ValidatorBase {
-    private static validators: Record<
-        string,
-        ValidatorFunction
-    > = {};
+export class Validator {
+    private static validators: Record<string, ValidatorFunction> = {};
 
     /**
      * 注册验证器
      * @param key 验证器的唯一标识
      * @param validator 验证器函数
      */
-    public static registerValidator(
-        key: string,
-        validator: ValidatorFunction
-    ) {
+    public static registerValidator(key: string, validator: ValidatorFunction) {
         if (this.validators[key]) {
             // 获取已存在的验证器信息
             const existingValidator = this.validators[key];
             const existingValidatorInfo = this.getValidatorInfo(existingValidator);
-            
+
             // 创建错误并传递详细信息
             throw new DuplicateValidatorError(key, existingValidatorInfo);
         }
@@ -32,9 +30,7 @@ export class ValidatorBase {
      * @param key 验证器的唯一标识
      * @returns 验证器函数
      */
-    public static getValidator(
-        key: string
-    ): ValidatorFunction {
+    public static getValidator(key: string): ValidatorFunction {
         return this.validators[key];
     }
 
@@ -46,12 +42,22 @@ export class ValidatorBase {
      * @returns 错误信息或null
      */
     public static executeValidator(
-        key: string,
         value: any,
         rule: any,
         context: ValidationErrorContext = {}
     ): ValidationResult {
-        const validator = this.getValidator(key);
+        const type = rule.type;
+        if (!type) {
+            throw new ValidationTypeNotDefinedError('Validation type is not defined in rules', {
+                rule,
+                value,
+                context,
+            });
+        }
+        const validator = this.getValidator(type);
+        if (!validator) {
+            throw new ValidatorNotFoundError(type, { ...context, value, rule });
+        }
         return validator(value, rule, context);
     }
 
@@ -71,13 +77,12 @@ export class ValidatorBase {
     private static getValidatorInfo(validator: ValidatorFunction): string {
         // 尝试获取函数名
         const functionName = validator.name || 'anonymous';
-        
+
         // 获取函数源码的前100个字符作为预览
         const functionString = validator.toString();
-        const preview = functionString.length > 100 
-            ? functionString.substring(0, 100) + '...' 
-            : functionString;
-            
+        const preview =
+            functionString.length > 100 ? functionString.substring(0, 100) + '...' : functionString;
+
         return `${functionName} (${preview})`;
     }
 
@@ -111,4 +116,3 @@ Source:
 ${validator.toString()}`);
     }
 }
-

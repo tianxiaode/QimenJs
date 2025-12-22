@@ -2,7 +2,7 @@ import {
     ValidationErrorBuilder,
     ValidationErrorContext,
     ValidationResult,
-    ValidatorBase,
+    Validator,
 } from '../../../core';
 import { ObjectRuleOptions } from '../../../rules';
 import { validateObject } from '../../core';
@@ -36,4 +36,4 @@ export function validateEmptyObject(
 }
 
 // 将空对象验证器注册到全局验证器基础类中，使其可以通过 'emptyObject' 名称调用
-ValidatorBase.registerValidator('emptyObject', validateEmptyObject);
+Validator.registerValidator('emptyObject', validateEmptyObject);

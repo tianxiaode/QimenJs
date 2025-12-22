@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { ContainsExtensionRuleOptions } from '../../../rules';
 import { validateContains } from '../../common';
 
@@ -59,4 +59,4 @@ export function validateContainsExtension(
 }
 
 
-ValidatorBase.registerValidator('containsEx', validateContainsExtension)
+Validator.registerValidator('containsEx', validateContainsExtension)

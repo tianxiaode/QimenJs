@@ -2,7 +2,7 @@ import {
     ValidationErrorBuilder,
     ValidationErrorContext,
     ValidationResult,
-    ValidatorBase,
+    Validator,
 } from '../../core';
 
 /**
@@ -119,7 +119,7 @@ export function validateFile(
 }
 
 // 注册验证器到全局验证器库中，使其可以通过类型名称调用
-ValidatorBase.registerValidator('formData', validateFormDate);
-ValidatorBase.registerValidator('urlSearchParams', validateURLSearchParams);
-ValidatorBase.registerValidator('blob', validateBlob);
-ValidatorBase.registerValidator('file', validateFile);
+Validator.registerValidator('formData', validateFormDate);
+Validator.registerValidator('urlSearchParams', validateURLSearchParams);
+Validator.registerValidator('blob', validateBlob);
+Validator.registerValidator('file', validateFile);

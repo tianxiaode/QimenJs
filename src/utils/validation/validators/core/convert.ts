@@ -1,5 +1,5 @@
 import {
-    ValidatorBase,
+    Validator,
     ValidatorFunction,
     ValidationTypeNotDefinedError,
     ValidatorNotFoundError,
@@ -38,12 +38,12 @@ export function normalizeChildRule(rule: any): ValidatorFunction {
     const type = rule.type;
 
     // 根据类型获取对应的验证器函数
-    const validator = ValidatorBase.getValidator(type);
+    const validator = Validator.getValidator(type);
 
     // 如果找不到对应类型的验证器，抛出错误
     if (!validator) {
         throw new ValidatorNotFoundError(type, {
-            availableValidators: Array.from(ValidatorBase.getRegisteredTypes()),
+            availableValidators: Array.from(Validator.getRegisteredTypes()),
         });
     }
 

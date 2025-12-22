@@ -3,7 +3,7 @@ import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
     ValidationResult,               // 验证结果类型
-    ValidatorBase,                  // 验证器基类
+    Validator,                  // 验证器基类
 } from '../../../core';
 import { StringExtensionRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
 import { validateStringByPresetPattern } from './pattern';        // 使用指定模式进行验证的函数
@@ -26,4 +26,4 @@ export function validateBase64(
 }
 
 // 注册Base64验证器到验证器基类中
-ValidatorBase.registerValidator('base64', validateBase64);
+Validator.registerValidator('base64', validateBase64);

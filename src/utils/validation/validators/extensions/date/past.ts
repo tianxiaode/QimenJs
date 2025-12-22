@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { DateExtensionRule } from '../../../rules';
 import { validateDate } from '../../core';
 
@@ -59,4 +59,4 @@ export function validateDatePast(
 }
 
 // 注册验证器
-ValidatorBase.registerValidator('past', validateDatePast);
+Validator.registerValidator('past', validateDatePast);

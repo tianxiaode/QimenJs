@@ -3,7 +3,7 @@ import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
     ValidationResult,               // 验证结果类型
-    ValidatorBase,                  // 验证器基类
+    Validator,                  // 验证器基类
 } from '../../../core';
 import { StringExtensionRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
 import { validateStringByPresetPattern } from './pattern';        // 使用指定模式进行验证的函数
@@ -60,6 +60,6 @@ export function validateRGBAColor(
 }
 
 // 注册颜色验证器到验证器基类中
-ValidatorBase.registerValidator('hexColor', validateHexColor);   // 注册十六进制颜色验证器
-ValidatorBase.registerValidator('rgbColor', validateRGBColor);   // 注册RGB颜色验证器
-ValidatorBase.registerValidator('rgbaColor', validateRGBAColor); // 注册RGBA颜色验证器
+Validator.registerValidator('hexColor', validateHexColor);   // 注册十六进制颜色验证器
+Validator.registerValidator('rgbColor', validateRGBColor);   // 注册RGB颜色验证器
+Validator.registerValidator('rgbaColor', validateRGBAColor); // 注册RGBA颜色验证器

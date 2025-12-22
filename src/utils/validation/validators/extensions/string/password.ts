@@ -5,7 +5,7 @@ import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
     ValidationRuleError,            // 验证规则错误类型
-    ValidatorBase,                  // 验证器基类
+    Validator,                  // 验证器基类
 } from '../../../core';
 import { PasswordRuleOptions } from '@/utils/validation/rules';  // 密码规则选项类型
 import { validateStringExtension } from './extension';              // 字符串高级验证函数
@@ -59,4 +59,4 @@ export function validatePassword(
 }
 
 // 注册密码验证器到验证器基类中
-ValidatorBase.registerValidator('password', validatePassword);
+Validator.registerValidator('password', validatePassword);

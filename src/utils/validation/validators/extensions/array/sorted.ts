@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { SortedRuleOptions } from '../../../rules';
 import { validateArray } from '../../core';
 
@@ -69,4 +69,4 @@ export function validateSorted(
 
 // 注册验证器到全局验证器基础类
 // 名称为 'sorted'，可以在规则中通过 type: 'sorted' 来引用此验证器
-ValidatorBase.registerValidator('sorted', validateSorted);
+Validator.registerValidator('sorted', validateSorted);

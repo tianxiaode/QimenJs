@@ -4,7 +4,7 @@ import {
     ValidationErrorBuilder,          // 验证错误构建器
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationResult,               // 验证结果类型
-    ValidationRuleError,            ValidatorBase,            // 验证规则错误类型
+    ValidationRuleError,            Validator,            // 验证规则错误类型
     normalizeValidationResult,      // 标准化验证结果函数
 } from '../../../core';
 import { StringSplitRuleOptions } from '../../../rules';                   // 字符串拆分规则选项类型
@@ -88,4 +88,4 @@ export function validateStringSplit(
     return null;
 }
 
-ValidatorBase.registerValidator('split', validateStringSplit);
+Validator.registerValidator('split', validateStringSplit);

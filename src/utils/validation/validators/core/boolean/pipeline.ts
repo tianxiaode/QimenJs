@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationResult, ValidatorBase } from '../../../core';
+import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 
 import { checkBooleanType } from './type';
 import { checkBooleanEnum } from './enum';
@@ -29,4 +29,4 @@ export const validateBoolean = createCoreValidator([
 ]);
 
 // 将布尔值验证器注册到全局验证器库中，使其可以通过 'boolean' 类型名称调用
-ValidatorBase.registerValidator('boolean', validateBoolean);
+Validator.registerValidator('boolean', validateBoolean);
