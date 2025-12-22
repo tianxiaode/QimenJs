@@ -1,220 +1,180 @@
-/**
- * 严格比较两个值
- * 支持比较的数据类型：
- * - 数字 (number)
- * - 字符串 (string)
- * - 日期 (Date)
- * - 布尔值 (boolean)
- * 
- * 比较规则：
- * - 只有相同类型才能比较
- * - 不同类型返回 NaN (无法比较)
- * - NaN 与任何值比较都返回 NaN
- * 
- * @param value 第一个值
- * @param other 第二个值
- * @returns 比较结果：-1 表示 value < other，0 表示相等，1 表示 value > other，NaN 表示无法比较
- */
-export function strictCompare(value: any, other: any): number {
-    try {
-        // 类型不同直接返回无法比较
-        if (typeof value !== typeof other) {
-            return NaN;
-        }
+// 定义比较结果类型：-1表示小于，0表示等于，1表示大于，NaN表示无法比较
+export type CompareResult = -1 | 0 | 1 | number;
 
-        // 只有全等才算相等
-        if (value === other) {
-            return 0;
-        }
+// 可比较的数据类型定义
+type Comparable = number | string | boolean | Date;
 
-        // 相同类型直接比较
-        // 数字比较
-        if (typeof value === 'number') {
-            if (isNaN(value) || isNaN(other)) return NaN;
-            return value === other ? 0 : value < other ? -1 : 1;
-        }
-
-        // 字符串比较（严格模式下只进行字典序比较）
-        if (typeof value === 'string') {
-            return value === other ? 0 : value < other ? -1 : 1;
-        }
-
-        // Date对象比较
-        if (value instanceof Date && other instanceof Date) {
-            if (isNaN(value.getTime()) || isNaN(other.getTime())) return NaN;
-            const diff = value.getTime() - other.getTime();
-            return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-        }
-
-        // 布尔值比较
-        if (typeof value === 'boolean') {
-            return value === other ? 0 : value ? 1 : -1;
-        }
-
-        // 其他类型无法比较
-        return NaN;
-    } catch (e) {
-        return NaN;
-    }
+// 比较规则接口定义
+export interface CompareRule {
+    // 判断条件函数：确定两个值是否适用此规则
+    when(a: unknown, b: unknown): boolean;
+    // 比较函数：执行具体的比较操作
+    compare(a: any, b: any): CompareResult;
 }
 
 /**
- * 宽松比较两个值
- * 支持比较的数据类型：
- * - 数字 (number)
- * - 字符串 (string)
- * - 日期 (Date)
- * - 布尔值 (boolean)
- * 
- * 比较规则：
- * - 允许不同类型间的转换比较
- * - 字符串可以转换为数字进行比较
- * - 日期字符串可以转换为日期对象进行比较
- * - 数字和日期可以相互转换比较
- * 
- * @param value 第一个值
- * @param other 第二个值
- * @returns 比较结果：-1 表示 value < other，0 表示相等，1 表示 value > other，NaN 表示无法比较
+ * 验证是否为有效的日期对象
+ * @param v 待验证的值
+ * @returns 如果是有效日期返回true，否则返回false
  */
-export function looseCompare(value: any, other: any): number {
-    try {
-        // 首先检查宽松相等性
-        // eslint-disable-next-line eqeqeq
-        if (value == other) {
-            return 0;
-        }
-
-        // 相同类型直接比较
-        if (typeof value === typeof other) {
-            // 数字比较
-            if (typeof value === 'number') {
-                if (isNaN(value) || isNaN(other)) return NaN;
-                return value === other ? 0 : value < other ? -1 : 1;
-            }
-
-            // 字符串比较（宽松模式下尝试数字比较）
-            if (typeof value === 'string') {
-                // 尝试数字比较
-                const numValue = Number(value);
-                const numOther = Number(other);
-
-                if (!isNaN(numValue) && !isNaN(numOther)) {
-                    return numValue === numOther ? 0 : numValue < numOther ? -1 : 1;
-                }
-
-                // 字典序比较
-                return value === other ? 0 : value < other ? -1 : 1;
-            }
-
-            // Date对象比较
-            if (value instanceof Date && other instanceof Date) {
-                if (isNaN(value.getTime()) || isNaN(other.getTime())) return NaN;
-                const diff = value.getTime() - other.getTime();
-                return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-            }
-
-            // 布尔值比较
-            if (typeof value === 'boolean') {
-                return value === other ? 0 : value ? 1 : -1;
-            }
-        }
-
-        // 不同类型尝试转换比较
-        // 如果value是Date，尝试将other转为Date
-        if (value instanceof Date && !isNaN(value.getTime())) {
-            if (typeof other === 'string') {
-                const dateOther = new Date(other);
-                if (!isNaN(dateOther.getTime())) {
-                    const diff = value.getTime() - dateOther.getTime();
-                    return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-                }
-            }
-
-            if (typeof other === 'number') {
-                const dateOther = new Date(other);
-                if (!isNaN(dateOther.getTime())) {
-                    const diff = value.getTime() - dateOther.getTime();
-                    return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-                }
-            }
-        }
-
-        // 如果other是Date，尝试将value转为Date
-        if (other instanceof Date && !isNaN(other.getTime())) {
-            if (typeof value === 'string') {
-                const dateValue = new Date(value);
-                if (!isNaN(dateValue.getTime())) {
-                    const diff = dateValue.getTime() - other.getTime();
-                    return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-                }
-            }
-
-            if (typeof value === 'number') {
-                const dateValue = new Date(value);
-                if (!isNaN(dateValue.getTime())) {
-                    const diff = dateValue.getTime() - other.getTime();
-                    return diff === 0 ? 0 : diff < 0 ? -1 : 1;
-                }
-            }
-        }
-
-        // 如果other是数字，尝试将value转为数字
-        if (typeof other === 'number' && !isNaN(other)) {
-            if (typeof value === 'string') {
-                const numValue = Number(value);
-                if (!isNaN(numValue)) {
-                    return numValue === other ? 0 : numValue < other ? -1 : 1;
-                }
-            }
-        }
-
-        // 如果value是数字，尝试将other转为数字
-        if (typeof value === 'number' && !isNaN(value)) {
-            if (typeof other === 'string') {
-                const numOther = Number(other);
-                if (!isNaN(numOther)) {
-                    return value === numOther ? 0 : value < numOther ? -1 : 1;
-                }
-            }
-        }
-
-        // 尝试通用数字转换
-        const numValue = Number(value);
-        const numOther = Number(other);
-
-        if (!isNaN(numValue) && !isNaN(numOther)) {
-            return numValue === numOther ? 0 : numValue < numOther ? -1 : 1;
-        }
-
-        // 无法比较
-        return NaN;
-    } catch (e) {
-        return NaN;
-    }
+function isValidDate(v: unknown): v is Date {
+    return v instanceof Date && !Number.isNaN(v.getTime());
 }
 
 /**
- * 智能比较两个值
- * 支持比较的数据类型：
- * - 数字 (number)
- * - 字符串 (string)
- * - 日期 (Date)
- * - 布尔值 (boolean)
- * 
- * 根据 strict 参数决定使用严格比较还是宽松比较：
- * - 严格比较 (strict=true): 只有相同类型才能比较
- * - 宽松比较 (strict=false): 允许不同类型间转换比较
- * 
- * @param value 第一个值
- * @param other 第二个值
- * @param strict 是否使用严格比较，默认为true
- * @returns 比较结果：-1 表示 value < other，0 表示相等，1 表示 value > other，NaN 表示无法比较
+ * 判断值是否可比较
+ * @param v 待判断的值
+ * @returns 如果值属于可比较类型返回true，否则返回false
  */
-export function smartCompare(value: any, other: any, strict: boolean = true): number {
+function isComparable(v: unknown): v is Comparable {
+    return (
+        (typeof v === 'number' && !Number.isNaN(v)) ||
+        typeof v === 'string' ||
+        typeof v === 'boolean' ||
+        isValidDate(v)
+    );
+}
+
+/**
+ * 数字比较函数
+ * @param a 第一个数字
+ * @param b 第二个数字
+ * @returns 比较结果 (-1, 0, 1)
+ */
+const compareNumber = (a: number, b: number): CompareResult => (a === b ? 0 : a < b ? -1 : 1);
+
+/**
+ * 字符串比较函数
+ * @param a 第一个字符串
+ * @param b 第二个字符串
+ * @returns 比较结果 (-1, 0, 1)
+ */
+const compareString = (a: string, b: string): CompareResult => (a === b ? 0 : a < b ? -1 : 1);
+
+/**
+ * 布尔值比较函数
+ * @param a 第一个布尔值
+ * @param b 第二个布尔值
+ * @returns 比较结果 (-1, 0, 1)
+ */
+const compareBoolean = (a: boolean, b: boolean): CompareResult => (a === b ? 0 : a ? 1 : -1);
+
+/**
+ * 日期比较函数
+ * @param a 第一个日期
+ * @param b 第二个日期
+ * @returns 比较结果 (-1, 0, 1)
+ */
+const compareDate = (a: Date, b: Date): CompareResult => {
+    const diff = a.getTime() - b.getTime();
+    return diff === 0 ? 0 : diff < 0 ? -1 : 1;
+};
+
+// 定义比较规则数组，按照优先级排序
+const rules: CompareRule[] = [
+    // 同类型比较规则
+    // number ↔ number
+    {
+        when: (a, b) => typeof a === 'number' && typeof b === 'number',
+        compare: compareNumber,
+    },
+
+    // string ↔ string
+    {
+        when: (a, b) => typeof a === 'string' && typeof b === 'string',
+        compare: compareString,
+    },
+
+    // boolean ↔ boolean
+    {
+        when: (a, b) => typeof a === 'boolean' && typeof b === 'boolean',
+        compare: compareBoolean,
+    },
+
+    // date ↔ date
+    {
+        when: (a, b) => a instanceof Date && b instanceof Date,
+        compare: compareDate,
+    },
+
+    // 跨类型比较规则
+    // string → number (字符串转数字比较)
+    {
+        when: (a, b) => typeof a === 'string' && typeof b === 'number',
+        compare: (a: string, b: number) => {
+            const n = Number(a);
+            return Number.isNaN(n) ? NaN : compareNumber(n, b);
+        },
+    },
+
+    // number → string (数字转字符串比较)
+    {
+        when: (a, b) => typeof a === 'number' && typeof b === 'string',
+        compare: (a: number, b: string) => {
+            const n = Number(b);
+            return Number.isNaN(n) ? NaN : compareNumber(a, n);
+        },
+    },
+
+    // date ↔ string | number (日期与字符串或数字比较)
+    {
+        when: (a, b) => a instanceof Date && (typeof b === 'string' || typeof b === 'number'),
+        compare: (a: Date, b: string | number) => {
+            const d = new Date(b);
+            return Number.isNaN(d.getTime()) ? NaN : compareDate(a, d);
+        },
+    },
+
+    {
+        when: (a, b) => (typeof a === 'string' || typeof a === 'number') && b instanceof Date,
+        compare: (a: string | number, b: Date) => {
+            const d = new Date(a);
+            return Number.isNaN(d.getTime()) ? NaN : compareDate(d, b);
+        },
+    },
+];
+
+/**
+ * 应用比较规则
+ * @param rules 规则数组
+ * @param a 第一个比较值
+ * @param b 第二个比较值
+ * @returns 比较结果
+ */
+function applyRules(rules: CompareRule[], a: unknown, b: unknown): CompareResult {
+    for (const rule of rules) {
+        if (rule.when(a, b)) {
+            return rule.compare(a, b);
+        }
+    }
+    return NaN;
+}
+
+/**
+ * 智能比较函数
+ * @param a 第一个比较值
+ * @param b 第二个比较值
+ * @param strict 是否启用严格模式(默认true)
+ * @returns 比较结果
+ * 
+ * 在严格模式下，只允许相同类型的值进行比较
+ * 在宽松模式下，允许不同类型但可转换的值进行比较
+ */
+export function smartCompare(a: unknown, b: unknown, strict: boolean = true): CompareResult {
+    // 入口封闭值域：检查输入值是否为可比较类型
+    if (!isComparable(a) || !isComparable(b)) {
+        return NaN;
+    }
+
+    // 严格模式：只允许同类型规则
     if (strict) {
-        return strictCompare(value, other);
-    } else {
-        return looseCompare(value, other);
+        return applyRules(
+            rules.filter(r => r.when(a, b) && typeof a === typeof b),
+            a,
+            b
+        );
     }
-}
 
+    // 宽松模式：应用所有规则
+    return applyRules(rules, a, b);
+}
