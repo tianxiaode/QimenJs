@@ -1,0 +1,7 @@
+{
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "exclude": ["**/node_modules/**", "**/*.spec.ts"],
+  "theme": "default"
+}

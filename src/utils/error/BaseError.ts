@@ -18,6 +18,12 @@ export abstract class BaseError extends Error {
    */
   public readonly context?: Record<string, any>;
   
+  /**
+   * 构造函数
+   * @param message 错误消息
+   * @param code 错误代码
+   * @param context 上下文信息（可选）
+   */
   constructor(
     message: string,                    // 错误消息
     code: string | number,              // 错误代码
@@ -41,6 +47,7 @@ export abstract class BaseError extends Error {
   
   /**
    * 转换为 JSON 格式
+   * @returns 包含错误信息的对象
    */
   public toJSON(): Record<string, any> {
     return {
@@ -55,6 +62,7 @@ export abstract class BaseError extends Error {
   
   /**
    * 转换为字符串
+   * @returns 格式化的错误字符串
    */
   public toString(): string {
     const parts = [`[${this.name}]`];
