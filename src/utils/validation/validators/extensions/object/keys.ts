@@ -1,5 +1,4 @@
 import {
-    normalizeValidationResult,
     ValidationErrorBuilder,
     ValidationErrorContext,
     ValidationResult,
@@ -57,7 +56,7 @@ export function validateHasKeys(
             }            
         }
     }
-    return normalizeValidationResult(errors);
+    return ValidationErrorBuilder.normalizeResult(errors);
 }
 
 // 将键验证器注册到全局验证器基础类中，使其可以通过 'hasKeys' 名称调用

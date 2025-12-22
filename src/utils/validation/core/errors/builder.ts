@@ -1,46 +1,12 @@
-import { ValidationErrorCode } from './codes';
 import {
     AnyValidationResult,
+    RuleBaseOptions,
     ValidationErrorContext,
     ValidationResult,
     ValidationRuleError,
 } from '../types';
+import { ValidationErrorCode } from './codes';
 import { ValidationError } from './ValidationError';
-
-/**
- * 错误详情参数接口
- * 用于存储错误相关的附加信息
- */
-interface ErrorParams {
-    [key: string]: any;
-}
-
-/**
- * 创建验证错误的选项
- * 包含错误参数和上下文信息
- */
-interface CreateErrorOptions {
-    params?: ErrorParams;
-    context?: ValidationErrorContext;
-}
-
-/**
- * 创建基础验证错误对象
- *
- * @param code - 错误代码
- * @param options - 错误选项，包括参数和上下文
- * @returns 标准化的验证错误对象
- */
-function createValidationError(
-    code: ValidationErrorCode,
-    options?: CreateErrorOptions
-): ValidationRuleError {
-    return {
-        code,
-        params: options?.params || {},
-        context: options?.context,
-    };
-}
 
 /**
  * 错误工厂对象 - 提供便捷的错误创建方法
@@ -49,6 +15,21 @@ function createValidationError(
  */
 export const ValidationErrorBuilder = {
     /**
+     * 创建基础验证错误对象
+     *
+     * @param code - 错误代码
+     * @param options - 错误选项，包括参数和上下文
+     * @returns 标准化的验证错误对象
+     */
+    createError(code: ValidationErrorCode, options?: RuleBaseOptions): ValidationRuleError {
+        return {
+            code,
+            params: options?.params || {},
+            context: options?.context,
+        };
+    },
+
+    /**
      * 创建必填验证错误
      * 当字段被标记为必需但未提供值时使用
      *
@@ -56,7 +37,7 @@ export const ValidationErrorBuilder = {
      * @returns 必填错误对象
      */
     required(context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.REQUIRED, {
+        return this.createError(ValidationErrorCode.REQUIRED, {
             context,
         });
     },
@@ -75,7 +56,7 @@ export const ValidationErrorBuilder = {
         actualType: string,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.TYPE_MISMATCH, {
+        return this.createError(ValidationErrorCode.TYPE_MISMATCH, {
             params: { expectedType, actualType },
             context,
         });
@@ -90,7 +71,7 @@ export const ValidationErrorBuilder = {
      * @returns 无效值错误对象
      */
     invalid_value(value: any, context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.INVALID_VALUE, {
+        return this.createError(ValidationErrorCode.INVALID_VALUE, {
             params: { value },
             context,
         });
@@ -112,7 +93,7 @@ export const ValidationErrorBuilder = {
         exclusive: boolean = false,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.TOO_SMALL, {
+        return this.createError(ValidationErrorCode.TOO_SMALL, {
             params: { min, value, exclusive },
             context,
         });
@@ -134,7 +115,7 @@ export const ValidationErrorBuilder = {
         exclusive: boolean = false,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.TOO_LARGE, {
+        return this.createError(ValidationErrorCode.TOO_LARGE, {
             params: { max, value, exclusive },
             context,
         });
@@ -156,7 +137,7 @@ export const ValidationErrorBuilder = {
         value: any,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.OUT_OF_RANGE, {
+        return this.createError(ValidationErrorCode.OUT_OF_RANGE, {
             params: { min, max, value },
             context,
         });
@@ -178,7 +159,7 @@ export const ValidationErrorBuilder = {
         format: string,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.INVALID_FORMAT, {
+        return this.createError(ValidationErrorCode.INVALID_FORMAT, {
             params: { field, value, format },
             context,
         });
@@ -198,8 +179,9 @@ export const ValidationErrorBuilder = {
         value: any,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PATTERN_MISMATCH, {
-            params: { pattern: pattern.toString(), value },
+        const patternStr = typeof pattern === 'string' ? pattern : pattern.toString();
+        return this.createError(ValidationErrorCode.PATTERN_MISMATCH, {
+            params: { pattern: patternStr, value },
             context,
         });
     },
@@ -218,7 +200,7 @@ export const ValidationErrorBuilder = {
         allowedValues: any[],
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.NOT_ALLOWED, {
+        return this.createError(ValidationErrorCode.NOT_ALLOWED, {
             params: { value, allowedValues },
             context,
         });
@@ -233,7 +215,7 @@ export const ValidationErrorBuilder = {
      * @returns 缺少字段错误对象
      */
     missing_field(field: string, context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.MISSING_FIELD, {
+        return this.createError(ValidationErrorCode.MISSING_FIELD, {
             params: { field },
             context,
         });
@@ -249,7 +231,7 @@ export const ValidationErrorBuilder = {
      * @returns 重复值错误对象
      */
     duplicate(field: string, value: any, context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.DUPLICATE, {
+        return this.createError(ValidationErrorCode.DUPLICATE, {
             params: { field, value },
             context,
         });
@@ -271,7 +253,7 @@ export const ValidationErrorBuilder = {
         value: any,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.CONDITION_FAILED, {
+        return this.createError(ValidationErrorCode.CONDITION_FAILED, {
             params: { field, condition, value },
             context,
         });
@@ -291,7 +273,7 @@ export const ValidationErrorBuilder = {
         message: string,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.CUSTOM, {
+        return this.createError(ValidationErrorCode.CUSTOM, {
             params: { customCode, message },
             context,
         });
@@ -311,7 +293,7 @@ export const ValidationErrorBuilder = {
         actualLength: number,
         context?: ValidationErrorContext
     ): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PASSWORD_TOO_SHORT, {
+        return this.createError(ValidationErrorCode.PASSWORD_TOO_SHORT, {
             params: { minLength, actualLength },
             context,
         });
@@ -325,7 +307,7 @@ export const ValidationErrorBuilder = {
      * @returns 缺少大写字母错误对象
      */
     password_missing_uppercase(context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PASSWORD_MISSING_UPPERCASE, {
+        return this.createError(ValidationErrorCode.PASSWORD_MISSING_UPPERCASE, {
             params: {},
             context,
         });
@@ -339,7 +321,7 @@ export const ValidationErrorBuilder = {
      * @returns 缺少小写字母错误对象
      */
     password_missing_lowercase(context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PASSWORD_MISSING_LOWERCASE, {
+        return this.createError(ValidationErrorCode.PASSWORD_MISSING_LOWERCASE, {
             params: {},
             context,
         });
@@ -353,7 +335,7 @@ export const ValidationErrorBuilder = {
      * @returns 缺少数字错误对象
      */
     password_missing_digit(context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PASSWORD_MISSING_DIGIT, {
+        return this.createError(ValidationErrorCode.PASSWORD_MISSING_DIGIT, {
             params: {},
             context,
         });
@@ -367,10 +349,22 @@ export const ValidationErrorBuilder = {
      * @returns 缺少特殊字符错误对象
      */
     password_missing_special(context?: ValidationErrorContext): ValidationRuleError {
-        return createValidationError(ValidationErrorCode.PASSWORD_MISSING_SPECIAL, {
+        return this.createError(ValidationErrorCode.PASSWORD_MISSING_SPECIAL, {
             params: {},
             context,
         });
+    },
+
+    /**
+     * 规范化验证结果
+     * 将不同类型的验证结果统一为标准格式
+     *
+     * @param result - 原始验证结果（可能是单个错误或错误数组）
+     * @returns 标准化后的验证结果（错误数组或null）
+     */
+    normalizeResult(result: AnyValidationResult): ValidationResult {
+        if (!result) return null;
+        return Array.isArray(result) ? result : [result];
     },
 
     /**
@@ -398,15 +392,3 @@ export const ValidationErrorBuilder = {
         }
     },
 };
-
-/**
- * 规范化验证结果
- * 将不同类型的验证结果统一为标准格式
- *
- * @param result - 原始验证结果（可能是单个错误或错误数组）
- * @returns 标准化后的验证结果（错误数组或null）
- */
-export function normalizeValidationResult(result: AnyValidationResult): ValidationResult {
-    if (!result) return null;
-    return Array.isArray(result) ? result : [result];
-}

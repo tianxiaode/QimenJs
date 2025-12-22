@@ -1,7 +1,7 @@
 import {
     ValidationResult,
     ValidationRuleError,
-    normalizeValidationResult,
+    ValidationErrorBuilder,
     ValidationErrorContext,
     CheckFunction,
 } from '../../core';
@@ -51,6 +51,6 @@ export function createCoreValidator(
         }
 
         // 标准化验证结果：如果有错误则返回错误数组，无错误则返回null
-        return normalizeValidationResult(errors);
+        return ValidationErrorBuilder.normalizeResult(errors);
     };
 }

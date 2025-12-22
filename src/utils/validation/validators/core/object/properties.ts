@@ -2,7 +2,7 @@ import {
     ValidationRuleError,
     ValidationErrorContext,
     ValidationResult,
-    normalizeValidationResult,
+    ValidationErrorBuilder,
     ValidatorFunction,
     RuleObjectPropertiesOptions,
 } from '../../../core';
@@ -53,5 +53,5 @@ export function validateProperties(
     }
 
     // 返回规范化后的错误结果
-    return normalizeValidationResult(errors);
+    return ValidationErrorBuilder.normalizeResult(errors);
 }

@@ -5,7 +5,6 @@ import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationResult,               // 验证结果类型
     ValidationRuleError,            Validator,            // 验证规则错误类型
-    normalizeValidationResult,      // 标准化验证结果函数
 } from '../../../core';
 import { StringSplitRuleOptions } from '../../../rules';                   // 字符串拆分规则选项类型
 import { validateStringExtension } from './extension';                        // 字符串高级验证函数
@@ -81,7 +80,7 @@ export function validateStringSplit(
             }
         }
         // 返回标准化的验证结果
-        return normalizeValidationResult(errors);
+        return ValidationErrorBuilder.normalizeResult(errors);
     }
 
     // 所有验证通过

@@ -1,5 +1,5 @@
 import {
-    normalizeValidationResult,
+    ValidationErrorBuilder,
     ValidationErrorContext,
     ValidationResult,
     ValidationRuleError,
@@ -70,7 +70,7 @@ export const validateArray = createCoreValidator(
         }
         
         // 标准化并返回所有收集到的错误
-        return normalizeValidationResult(errors);
+        return ValidationErrorBuilder.normalizeResult(errors);
     }
 );
 

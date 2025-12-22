@@ -1,7 +1,7 @@
 // 导入所需的工具函数和类型定义
 import {
     getValidationPattern,           // 获取预定义的验证模式正则表达式
-    normalizeValidationResult,      // 标准化验证结果
+    ValidationErrorBuilder,      // 标准化验证结果
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
     ValidationRuleError,            // 验证规则错误类型
@@ -55,7 +55,7 @@ export function validatePassword(
     }
 
     // 标准化并返回验证结果
-    return normalizeValidationResult(errors);
+    return ValidationErrorBuilder.normalizeResult(errors);
 }
 
 // 注册密码验证器到验证器基类中
