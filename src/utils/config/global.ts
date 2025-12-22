@@ -99,6 +99,7 @@ export const globalConfig = {
      * 动态更新配置项（按需使用）
      */
     update(updates: Partial<GlobalConfig>) {
+        //这里应该修改为对象复制，而不是直接赋值
         currentConfig = {
             ...currentConfig,
             ...updates,

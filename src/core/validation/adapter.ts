@@ -3,7 +3,7 @@ import {
     ValidationResult,
     ValidatorBase,
     ValidationTypeNotDefinedError,
-} from '../core';
+} from '@orbitjs/utils';
 
 /**
  * 同步验证函数

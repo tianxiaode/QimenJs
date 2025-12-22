@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@orbitjs/core": ["src/core"],
-      "@orbitjs/utils": ["src/utils"]
+      "@orbitjs/utils": ["src/utils"],
     }
   },
   "include": [

@@ -9,7 +9,6 @@ export function createLogger(options: LoggerOptions) {
 
 export { Logger };
 
-
 //使用方法
 
 // bootstrap / global.ts
