@@ -7,7 +7,7 @@ import { ObjectRuleOptions } from '../../../rules';
 
 import { checkObjectType } from './type';
 import { createCoreValidator } from '../factory';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 import { validateRequiredFields } from './required-fields';
 import { validateProperties } from './properties';
 import { validateAdditionalProperties } from './additional-properties';

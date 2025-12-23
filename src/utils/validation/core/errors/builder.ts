@@ -364,7 +364,7 @@ export const ValidationErrorBuilder = {
      */
     normalizeResult(result: AnyValidationResult): ValidationResult {
         if (!result) return null;
-        return Array.isArray(result) ? result : [result];
+        return Array.isArray(result) ? (result.length > 0 ? result : null) : [result];
     },
 
     /**

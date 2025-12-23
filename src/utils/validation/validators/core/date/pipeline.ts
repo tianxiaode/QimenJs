@@ -3,7 +3,7 @@ import { ValidationErrorContext, ValidationResult, Validator } from '../../../co
 import { checkDateType } from './type';
 import { checkDateRange } from './range';
 import { createCoreValidator } from '../factory';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 
 /**
  * 日期验证管道

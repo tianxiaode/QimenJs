@@ -4,7 +4,7 @@ import {
     RulePresenceOptions,
     ValidationErrorBuilder,
     ValidationErrorContext,
-} from '../../core';
+} from '../../../core';
 
 /**
  * 检查值的存在性规则

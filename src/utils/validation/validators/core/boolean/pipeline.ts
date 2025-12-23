@@ -2,7 +2,7 @@ import { ValidationErrorContext, ValidationResult, Validator } from '../../../co
 
 import { checkBooleanType } from './type';
 import { checkBooleanEnum } from './enum';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 import { createCoreValidator } from '../factory';
 
 /**

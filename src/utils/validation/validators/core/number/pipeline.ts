@@ -4,7 +4,7 @@ import { checkNumberType } from './type';
 import { checkNumberInteger } from './integer';
 import { checkNumberRange } from './range';
 import { checkNumberEnum } from './enum';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 import { createCoreValidator } from '../factory';
 
 /**

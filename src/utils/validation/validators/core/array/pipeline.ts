@@ -10,7 +10,7 @@ import { checkArrayType } from './type';
 import { checkArrayLength } from './length';
 import { checkArrayEnum } from './enum';
 import { createCoreValidator } from '../factory';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 import { normalizeChildRule } from '../convert';
 
 /**

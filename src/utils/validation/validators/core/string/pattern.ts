@@ -24,7 +24,7 @@ export function checkStringPattern(
     if (!rule.pattern.test(value)) {
         // 字符串不匹配指定的正则表达式模式，返回模式不匹配错误
         // 使用 pattern.source 获取正则表达式的源文本作为错误信息的一部分
-        return ValidationErrorBuilder.pattern_mismatch(rule.pattern.source, context);
+        return ValidationErrorBuilder.pattern_mismatch(rule.pattern.source, value, context);
     }
 
     // 字符串匹配模式，验证通过

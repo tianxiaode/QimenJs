@@ -19,7 +19,7 @@ export function checkStringEnum(
 ): CheckResult {
     // 如果规则中没有定义 enum 属性，则跳过枚举验证
     if (!rule.enum) return null;
-
+    
     // 检查值是否在枚举值列表中
     if (!rule.enum.includes(value)) {
         // 值不在允许的枚举列表中，返回 not_allowed 错误

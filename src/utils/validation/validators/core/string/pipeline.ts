@@ -4,7 +4,7 @@ import { checkStringType } from './type';
 import { checkStringLength } from './length';
 import { checkStringPattern } from './pattern';
 import { checkStringEnum } from './enum';
-import { checkPresence } from '../presence';
+import { checkPresence } from '../../common';
 import { createCoreValidator } from '../factory';
 import { StringRuleOptions } from '@/utils/validation/rules';
 import { validatePattern } from '../../common';
