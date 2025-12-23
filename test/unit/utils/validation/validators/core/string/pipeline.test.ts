@@ -103,7 +103,6 @@ describe('validateString', () => {
                 // 确保结果是数组且不为空
                 expect(Array.isArray(result)).toBe(true);
                 expect(result.length).toBeGreaterThan(0);
-                console.log(result);
 
                 // 检查是否包含 TOO_SMALL 错误（因为长度 0 < 5）
                 const lengthError = result.find(err => err.code === ValidationErrorCode.TOO_SMALL);
