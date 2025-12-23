@@ -3,7 +3,7 @@ import { ArrayRuleOptions } from '../../../rules';
 
 /**
  * 检查数组长度是否符合规则要求
- * 
+ *
  * @param value - 需要验证的值
  * @param rule - 数组规则选项，包含长度限制条件
  * @param context - 验证错误上下文信息
@@ -21,16 +21,18 @@ export function checkArrayLength(
     const length = value.length;
 
     // exactLength：检查数组长度是否等于指定的确切长度
-    if (rule.exactLength !== undefined && length !== rule.exactLength) {
-        return ValidationErrorBuilder.invalid_value(rule.exactLength, context);
+    if (rule.exactLength !== undefined) {
+        return length === rule.exactLength
+            ? null
+            : ValidationErrorBuilder.invalid_value(rule.exactLength, context);
     }
 
-    // minLength：检查数组长度是否小于最小长度要求
+    // minLength：检查数组长度是否小于最小长度要求（当未设置exactLength时）
     if (rule.minLength !== undefined && length < rule.minLength) {
         return ValidationErrorBuilder.too_small(rule.minLength, length, false, context);
     }
 
-    // maxLength：检查数组长度是否超过最大长度限制
+    // maxLength：检查数组长度是否超过最大长度限制（当未设置exactLength时）
     if (rule.maxLength !== undefined && length > rule.maxLength) {
         return ValidationErrorBuilder.too_large(rule.maxLength, length, false, context);
     }
