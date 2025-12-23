@@ -282,4 +282,30 @@ describe('validateArray', () => {
             expect(true).toBeTruthy(); // 不失败测试
         }
     });
+
+    it('当allChildsError为true时收集所有子元素错误', () => {
+        const value = ['invalid1', 'invalid2', 'invalid3'];
+        const itemValidator = (value: any, rule: any, context?: any): ValidationResult => {
+            if (typeof value === 'string' && value.startsWith('invalid')) {
+                return [{ code: 'VALIDATION_ERROR', params: { value }, context }];
+            }
+            return null;
+        };
+        const rule: ArrayRuleOptions = {
+            itemRule: () => null, // 添加必需的itemRule
+            childRule: itemValidator,
+            allChildsError: true,  // 关键：设置为true以收集所有错误
+        };
+
+        const result = validateArray(value, rule);
+
+        // 应该收集所有错误，而不是立即返回第一个错误
+        expect(result).not.toBeNull();
+        if (result) {
+            expect(result.length).toBe(3); // 三个元素都应产生错误
+            expect(result[0].code).toBe('VALIDATION_ERROR');
+            expect(result[1].code).toBe('VALIDATION_ERROR');
+            expect(result[2].code).toBe('VALIDATION_ERROR');
+        }
+    });
 });
