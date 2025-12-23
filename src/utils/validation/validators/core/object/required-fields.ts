@@ -1,4 +1,4 @@
-import { ValidationErrorBuilder, ValidationErrorContext, ValidationRuleError } from '../../../core';
+import { CheckResult, ValidationErrorBuilder, ValidationErrorContext, ValidationRuleError } from '../../../core';
 
 /**
  * 验证对象必需字段
@@ -10,11 +10,11 @@ import { ValidationErrorBuilder, ValidationErrorContext, ValidationRuleError } f
  * @param context - 验证上下文
  * @returns 验证结果，缺少字段时返回错误，否则返回 undefined
  */
-export function validateRequiredFields(
+export function checkRequiredFields(
     value: any,
     requiredFields: readonly string[],
     context: ValidationErrorContext
-): ValidationRuleError | undefined {
+): CheckResult {
     // 遍历所有必需字段
     for (const key of requiredFields) {
         // 检查字段是否存在（即使是 undefined 值也算存在）
@@ -26,5 +26,5 @@ export function validateRequiredFields(
         }
     }
 
-    return undefined;
+    return null;
 }

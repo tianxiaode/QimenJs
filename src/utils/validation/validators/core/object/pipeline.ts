@@ -8,7 +8,7 @@ import { ObjectRuleOptions } from '../../../rules';
 import { checkObjectType } from './type';
 import { createCoreValidator } from '../factory';
 import { checkPresence } from '../../common';
-import { validateRequiredFields } from './required-fields';
+import { checkRequiredFields } from './required-fields';
 import { validateProperties } from './properties';
 import { validateAdditionalProperties } from './additional-properties';
 
@@ -41,7 +41,7 @@ export const validateObject = createCoreValidator(
 
         // 验证必需字段是否存在
         if (rule.requiredFields) {
-            const requiredFieldsResult = validateRequiredFields(
+            const requiredFieldsResult = checkRequiredFields(
                 value,
                 rule.requiredFields,
                 context
