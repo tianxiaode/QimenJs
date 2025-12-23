@@ -23,9 +23,12 @@ export function checkStringLength(
     context?: ValidationErrorContext
 ): CheckResult {
     // 检查精确长度限制：如果设置了精确长度且当前值长度不匹配
-    if (rule.exactLength !== undefined && value.length !== rule.exactLength) {
+    const exactLength = rule.exactLength;
+    if (exactLength !== undefined) {
         // 返回无效值错误，期望值为指定的精确长度
-        return ValidationErrorBuilder.invalid_value(rule.exactLength, context);
+        return value.length === exactLength
+            ? null
+            : ValidationErrorBuilder.out_of_range(exactLength, exactLength, value.length, context);
     }
 
     // 检查最小长度限制：如果设置了最小长度且当前值长度小于最小长度
