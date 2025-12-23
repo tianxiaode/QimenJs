@@ -134,14 +134,34 @@ describe('validateCompare', () => {
     describe('错误信息内容', () => {
         test('失败时应该包含正确的错误信息', () => {
             const result = validateCompare(5, { operator: 'gt', target: 10 }, { field: 'testField' }) as ValidationError[];
-            
+            const params = (result[0] as any).params;
             expect(result).not.toBeNull();
-            expect(result[0]).toHaveProperty('type', 'condition_failed');
-            expect(result[0]).toHaveProperty('field', 'testField');
-            expect(result[0]).toHaveProperty('details');
-            expect(result[0].context).toHaveProperty('value', 5);
+            expect(result[0]).toHaveProperty('code', ValidationErrorCode.CONDITION_FAILED);
+            expect(params).toHaveProperty('field', 'testField');
+            expect(params).toHaveProperty('value', 5);
+            expect(params).toHaveProperty('condition', 'gt');
             expect(result[0].context).toHaveProperty('target', 10);
             expect(result[0].context).toHaveProperty('operator', 'gt');
+        });
+        
+        test('当context中没有field时应该使用空字符串', () => {
+            // 这个测试用例专门覆盖 context?.field ?? '' 的情况
+            const result = validateCompare(5, { operator: 'gt', target: 10 }, {}) as ValidationError[];
+            expect(result).not.toBeNull();
+            expect(result[0]).toHaveProperty('code', ValidationErrorCode.CONDITION_FAILED);
+            // 验证在没有field的情况下，错误信息使用了空字符串
+            const params = (result[0] as any).params;
+            expect(params).toHaveProperty('field', '');
+        });
+        
+        test('当context为undefined时应该使用空字符串', () => {
+            // 这个测试用例覆盖 context?.field ?? '' 的另一种情况
+            const result = validateCompare(5, { operator: 'gt', target: 10 }) as ValidationError[];
+            expect(result).not.toBeNull();
+            expect(result[0]).toHaveProperty('code', ValidationErrorCode.CONDITION_FAILED);
+            // 验证在没有context的情况下，错误信息使用了空字符串
+            const params = (result[0] as any).params;
+            expect(params).toHaveProperty('field', '');
         });
     });
 });

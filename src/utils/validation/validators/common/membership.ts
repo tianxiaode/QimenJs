@@ -66,7 +66,7 @@ export function validateContains(
  */
 export function validateUnique(
     values: readonly any[],
-    _rule: {},
+    _rule: any = {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 检查输入是否为数组

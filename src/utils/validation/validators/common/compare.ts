@@ -75,8 +75,7 @@ export function validateCompare(
     // 如果未通过验证，构建并返回错误信息
     if (!pass) {
         return [
-            ValidationErrorBuilder.condition_failed(context?.field ?? '', rule.operator, {
-                value,
+            ValidationErrorBuilder.condition_failed(context?.field ?? '', rule.operator, value, {
                 target: targetValue,
                 operator: rule.operator,
             }),

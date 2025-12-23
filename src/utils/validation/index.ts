@@ -12,6 +12,7 @@ export {
     validateContains,
     validateUnique,
     validatePresence,
+    validatePattern,
 
     //core validators
     validateString,

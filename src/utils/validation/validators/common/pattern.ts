@@ -24,11 +24,18 @@ export function validatePattern(
     // 如果规则中没有定义 pattern 属性，则跳过模式验证
     if (!rule.pattern) return null;
 
+    // 只有当值是字符串类型时才进行模式匹配
+    if (typeof value !== 'string') {
+        // 对于非字符串值，直接返回类型不匹配错误
+        return [ValidationErrorBuilder.type_mismatch('string', typeof value, context)];
+    }
+
+
     // 使用正则表达式的 test 方法检查字符串是否匹配模式
     if (!rule.pattern.test(value)) {
         // 字符串不匹配指定的正则表达式模式，返回模式不匹配错误
         // 使用 pattern.source 获取正则表达式的源文本作为错误信息的一部分
-        return [ValidationErrorBuilder.pattern_mismatch(rule.pattern.source, context)];
+        return [ValidationErrorBuilder.pattern_mismatch(rule.pattern.source, value,context)];
     }
 
     // 字符串匹配模式，验证通过
