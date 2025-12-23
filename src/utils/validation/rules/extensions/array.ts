@@ -45,3 +45,5 @@ export interface SortedRuleOptions<T = any> extends Omit<ArrayRuleOptions, 'requ
      */
     sorted: 'asc' | 'desc' | ((a: T, b: T) => number);
 }
+
+export interface NotEmptyArrayRuleOptions extends Omit<ArrayRuleOptions, 'nullable' | 'empty' | 'required'> {}

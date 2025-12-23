@@ -5,8 +5,8 @@ import { ValidationErrorBuilder, ValidationErrorContext, Validator } from '../co
  * 该代理允许通过属性访问的方式调用各种验证器
  * 例如: validator.string, validator.number 等
  */
-const createValidatorProxy = () => {
-    return new Proxy({} as any, {
+const createValidatorProxy = (target: any = {} as any) => {
+    return new Proxy(target, {
         /**
          * Proxy 的 get 陷阱，拦截属性访问
          * @param target - 目标对象
@@ -32,8 +32,8 @@ const createValidatorProxy = () => {
  * 例如: assert.string, assert.number 等
  * 与 validator 不同的是，验证失败时会抛出异常而不是返回错误
  */
-const createAssertProxy = () => {
-    return new Proxy({} as any, {
+const createAssertProxy = (target: any = {} as any) => {
+    return new Proxy(target, {
         /**
          * Proxy 的 get 陷阱，拦截属性访问
          * @param target - 目标对象
@@ -71,4 +71,4 @@ const validator: any = createValidatorProxy();
 const assert: any = createAssertProxy();
 
 // 导出验证器和断言对象供外部使用
-export { validator, assert };
+export { validator, assert, createValidatorProxy, createAssertProxy };
