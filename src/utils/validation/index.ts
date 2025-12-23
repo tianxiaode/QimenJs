@@ -75,6 +75,7 @@ export {
     validateLt,
     validateLte,
     validateNeq,
+    validateContainsExtension,
 
 }from './validators'
 export * from './engine'
