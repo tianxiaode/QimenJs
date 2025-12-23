@@ -1,19 +1,19 @@
 // 导入所需的工具函数和类型定义
 import {
-    getValidationPattern,           // 获取预定义的验证模式正则表达式
-    ValidationErrorBuilder,      // 标准化验证结果
-    ValidationErrorContext,         // 验证错误上下文类型
-    ValidationPatternType,          // 验证模式枚举类型
-    ValidationRuleError,            // 验证规则错误类型
-    Validator,                  // 验证器基类
+    getValidationPattern, // 获取预定义的验证模式正则表达式
+    ValidationErrorBuilder, // 标准化验证结果
+    ValidationErrorContext, // 验证错误上下文类型
+    ValidationPatternType, // 验证模式枚举类型
+    ValidationRuleError, // 验证规则错误类型
+    Validator, // 验证器基类
 } from '../../../core';
-import { PasswordRuleOptions } from '@/utils/validation/rules';  // 密码规则选项类型
-import { validateStringExtension } from './extension';              // 字符串高级验证函数
-import { validatePattern } from '../../common';                 // 模式验证函数
+import { PasswordRuleOptions } from '@/utils/validation/rules'; // 密码规则选项类型
+import { validateStringExtension } from './extension'; // 字符串高级验证函数
+import { validatePattern } from '../../common'; // 模式验证函数
 
 /**
  * 验证密码是否符合指定规则
- * 
+ *
  * @param value - 待验证的值
  * @param rule - 密码验证规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -21,11 +21,29 @@ import { validatePattern } from '../../common';                 // 模式验证�
  */
 export function validatePassword(
     value: any,
-    rule: PasswordRuleOptions,
+    rule: PasswordRuleOptions = {
+        minLength: 8,
+        maxLength: 16,
+        uppercase: false,
+        lowercase: true,
+        number: true,
+        specialChar: true,
+    },
     context: ValidationErrorContext = {}
 ): ValidationRuleError[] | null {
     // 先执行字符串高级验证（如长度、必填等）
-    const validateStringResult = validateStringExtension(value, rule, context);
+    const validateStringResult = validateStringExtension(
+        value,
+        {
+            ...rule,
+            required: true,
+            minLength: rule.minLength || 8,
+            maxLength: rule.maxLength || 16,
+            nullable: false,
+            empty: false,
+        },
+        context
+    );
     if (validateStringResult) {
         // 如果字符串验证失败，直接返回错误结果
         return validateStringResult;
@@ -33,13 +51,13 @@ export function validatePassword(
 
     // 初始化错误数组
     const errors: ValidationRuleError[] = [];
-    
+
     // 定义需要检查的密码模式类型
     const patterns = [
-        ValidationPatternType.UPPERCASE,      // 大写字母
-        ValidationPatternType.LOWERCASE,      // 小写字母
-        ValidationPatternType.DIGIT,          // 数字
-        ValidationPatternType.SPECIAL_CHAR,   // 特殊字符
+        ValidationPatternType.UPPERCASE, // 大写字母
+        ValidationPatternType.LOWERCASE, // 小写字母
+        ValidationPatternType.DIGIT, // 数字
+        ValidationPatternType.SPECIAL_CHAR, // 特殊字符
     ];
 
     // 依次验证每个模式要求

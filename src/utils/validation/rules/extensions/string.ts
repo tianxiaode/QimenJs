@@ -46,11 +46,11 @@ export interface StringExtensionRuleOptions extends StringRuleOptions, StringTri
 {
 }
 
-export interface PasswordRuleOptions extends StringRuleOptions {
-    minLength: 8;
-    maxLength: 16;
-    uppercase?: false;
-    lowercase?: true;
-    number?: true;
-    specialChar?: true;
+export interface PasswordRuleOptions extends Omit<StringExtensionRuleOptions, 'required' | 'nullable' | 'empty'> {
+    minLength: number;
+    maxLength: number;
+    uppercase?: boolean;
+    lowercase?: boolean;
+    number?: boolean;
+    specialChar?: boolean;
 }
