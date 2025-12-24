@@ -30,13 +30,15 @@ export function preprocessRequiredRule<T extends Record<string, any>>(
 
 /**
  * 工厂函数生成核心验证函数
+ * @param preProcessRule 前置处理函数，签名为 (rule) => rule，用于根据规则调整参数
+ * @param gates 验证门函数数组，这些验证器检查值的基本条件（如存在性、类型等），如果任一门验证返回特定错误码，则后续验证器不执行
  * @param validators 验证函数数组，每个函数签名为 (value, rule, context) => CheckResult
  * @param handleChildren 子元素验证函数，签名为 (value, rule, context) => ValidationResult
- * @param preProcessRule 前置处理函数，签名为 (rule) => rule，用于根据规则调整参数
  * @returns 返回一个验证函数，该函数会对值进行一系列验证并将结果标准化
  */
 export function createCoreValidator(
     preProcessRule: (rule: any) => any,
+    gates: CheckFunction[],
     validators: CheckFunction[],
     handleChildren?: (value: any, rule: any, context: ValidationErrorContext) => ValidationResult,
 ) {
@@ -61,19 +63,18 @@ export function createCoreValidator(
         // 存储所有验证过程中产生的错误
         let errors: ValidationRuleError[] = [];
 
-        // 顺序执行所有基础验证器，按照验证优先级（空值 → 类型 → 业务规则）
+        // 首先执行所有gates验证器
+        for (const gate of gates) {
+            const error = gate(value, processedRule, context);
+            if (error) {
+                return [error]; // 对于任何一个gate验证器返回错误，立即返回                
+            }
+        }
+
+        // gates验证通过后，执行所有业务验证器
         for (const validator of validators) {
             const error = validator(value, processedRule, context);
-            // 检查是否是存在性或类型验证错误，如果是，则跳过后续业务规则验证
-            // presenceError 通常表示值不存在，typeError 表示类型不匹配
-            // 根据错误代码判断是否为存在性或类型错误
             if (error) {
-                if (
-                    error.code === ValidationErrorCode.REQUIRED ||
-                    error.code === ValidationErrorCode.TYPE_MISMATCH
-                ) {
-                    return [error];
-                }
                 errors.push(error);
             }
         }

@@ -308,4 +308,84 @@ describe('validateArray', () => {
             expect(result[2].code).toBe('VALIDATION_ERROR');
         }
     });
+
+    // 预处理功能测试
+    describe('预处理功能测试', () => {
+        it('当规则包含minLength时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ArrayRuleOptions = { 
+                minLength: 2,
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含maxLength时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ArrayRuleOptions = { 
+                maxLength: 5,
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含exactLength时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ArrayRuleOptions = { 
+                exactLength: 3,
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含enum时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ArrayRuleOptions = { 
+                enum: [[1, 2, 3], [4, 5, 6]],
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含长度或枚举约束时，null值应该被拒绝', () => {
+            const value = null;
+            const rule: ArrayRuleOptions = { 
+                minLength: 2,
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_INVALID_VALUE');
+        });
+
+        it('当规则不包含长度或枚举约束时，预处理不应该改变required和nullable', () => {
+            const value = 'not an array';
+            const rule: ArrayRuleOptions = { 
+                itemRule: () => null  // 添加必需的itemRule
+            };
+
+            const result = validateArray(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+        });
+    });
 });

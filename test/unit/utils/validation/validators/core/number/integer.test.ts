@@ -20,22 +20,26 @@ describe('checkNumberInteger', () => {
         expect(result).toBeNull();
     });
 
-    it('当值为null且规则要求整数时，应跳过验证并返回null', () => {
+    it('当值为null且规则要求整数时，应返回invalid_value错误', () => {
         const value = null;
         const rule: NumberRuleOptions = { integer: true };
 
         const result = checkNumberInteger(value, rule);
 
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        expect(result!.code).toBe('VALIDATION_INVALID_VALUE');
+        expect(result!.params).toEqual({ value: null });
     });
 
-    it('当值为undefined且规则要求整数时，应跳过验证并返回null', () => {
+    it('当值为undefined且规则要求整数时，应返回invalid_value错误', () => {
         const value = undefined;
         const rule: NumberRuleOptions = { integer: true };
 
         const result = checkNumberInteger(value, rule);
 
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        expect(result!.code).toBe('VALIDATION_INVALID_VALUE');
+        expect(result!.params).toEqual({ value: undefined });
     });
 
     it('当值是整数且规则要求整数时，应返回null', () => {

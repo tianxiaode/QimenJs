@@ -28,22 +28,25 @@ const requiresObjectValuesCheck = (rule: ObjectRuleOptions): boolean => {
  *
  * 组合基础验证函数和自定义验证逻辑，形成完整的对象验证流程。
  * 验证按照以下顺序执行：
- * 1. 存在性检查 - 验证值是否符合 required/nullable/empty 规则
- * 2. 类型检查 - 验证值是否为对象类型
+ * 1. Gates检查 - 验证值的存在性规则和类型（如果任一检查失败，则后续验证不执行）
+ * 2. 必需字段检查 - 验证对象是否包含所有必需字段
  * 3. 对象属性检查 - 验证对象的属性是否符合规则要求
  *
- * 对象属性检查包括：
- * - 必需字段验证
- * - 属性规则验证
- * - 额外属性验证
+ * Gates验证包括：
+ * - 存在性检查 - 验证值是否符合 required/nullable/empty 规则
+ * - 类型检查 - 验证值是否为对象类型
+ * 
+ * 如果任一gates验证失败，后续验证将不会执行。
  */
 export const validateObject = createCoreValidator(
     (rule: ObjectRuleOptions): ObjectRuleOptions => {
         // 使用通用的预处理函数，传入特定于对象的检查函数
         return preprocessRequiredRule(rule, requiresObjectValuesCheck);
     },
-    // 基础验证函数数组
-    [checkPresence, checkObjectType, checkRequiredFields],
+    // Gates验证函数数组
+    [checkPresence, checkObjectType],
+    // 业务验证函数数组 - 必需字段检查现在是业务验证，不是gates
+    [checkRequiredFields],
 
     // 自定义对象验证逻辑
     (

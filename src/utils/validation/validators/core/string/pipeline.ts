@@ -56,12 +56,13 @@ export const validateString = createCoreValidator(
         return preprocessRequiredRule(rule, requiresStringValuesCheck);
     },
     [
-        // 1. 首先检查值的存在性规则（required, nullable, empty）
+        // Gates: 首先检查值的存在性规则（required, nullable, empty）
         checkPresence,
 
-        // 2. 检查值是否为字符串类型
+        // Gates: 检查值是否为字符串类型
         checkStringType,
-
+    ],
+    [
         // 3. 检查字符串长度是否符合要求（minLength, maxLength, exactLength）
         checkStringLength,
 

@@ -154,18 +154,17 @@ describe('密码验证函数测试', () => {
     });
 
     it('当密码为null时返回无效值错误', () => {
-        const value = null;
-        const rule: TestPasswordRuleOptions = {
-            minLength: 8,
-            maxLength: 16,
-            uppercase: true,
-            lowercase: true,
-            number: true,
-            specialChar: true,
+        const rule = { 
+            minLength: 8, 
+            maxLength: 128,
+            uppercase: true, 
+            lowercase: true, 
+            number: true, 
+            specialChar: true 
         };
+        const value = null;
 
-        // @ts-ignore - 测试 null 值
-        const result = validatePassword(value, rule as any, {});
+        const result = validatePassword(value, rule, {});
 
         expect(result).not.toBeNull();
         if (result && result[0]) {

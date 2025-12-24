@@ -24,12 +24,14 @@ const requiresBooleanValuesCheck = (rule: BooleanRuleOptions): boolean => {
  * 
  * 组合多个布尔值相关的验证函数，形成完整的布尔值验证流程。
  * 验证按照以下顺序执行：
- * 1. 存在性检查 - 验证值是否符合 required/nullable/empty 规则
- * 2. 类型检查 - 验证值是否为布尔类型
- * 3. 枚举检查 - 验证布尔值是否在允许的枚举值列表中
+ * 1. Gates检查 - 验证值的存在性规则和类型（如果任一检查失败，则后续验证不执行）
+ * 2. 枚举检查 - 验证布尔值是否在允许的枚举值列表中
+ *
+ * Gates验证包括：
+ * - 存在性检查 - 验证值是否符合 required/nullable/empty 规则
+ * - 类型检查 - 验证值是否为布尔类型
  * 
- * 每个验证函数都会在前一个验证通过后依次执行，
- * 任何一个验证失败都会中断后续验证并返回错误结果。
+ * 如果任一gates验证失败，后续验证将不会执行。
  */
 export const validateBoolean = createCoreValidator(
     (rule: BooleanRuleOptions): BooleanRuleOptions => {
@@ -37,12 +39,13 @@ export const validateBoolean = createCoreValidator(
         return preprocessRequiredRule(rule, requiresBooleanValuesCheck);
     },
     [
-        // 1. 首先检查值的存在性规则（required, nullable, empty）
+        // Gates: 首先检查值的存在性规则（required, nullable, empty）
         checkPresence,
         
-        // 2. 检查值是否为布尔类型（true 或 false）
+        // Gates: 检查值是否为布尔类型（true 或 false）
         checkBooleanType,
-        
+    ],
+    [
         // 3. 检查布尔值是否在预定义的枚举值列表中
         checkBooleanEnum,
     ]

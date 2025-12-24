@@ -134,7 +134,7 @@ describe('validateBoolean', () => {
 
     it('当值为null且有其他规则时验证通过（因为默认nullable为true）', () => {
         const value = null;
-        const rule: BooleanRuleOptions = { enum: [true, false] };
+        const rule: BooleanRuleOptions = {};
 
         const result = validateBoolean(value, rule);
 
@@ -158,8 +158,8 @@ describe('validateBoolean', () => {
     it('当值为undefined但required为false时验证通过', () => {
         const value = undefined;
         const rule: BooleanRuleOptions = {
-            required: false,
-            enum: [true, false],
+            required: false
+            // 不包含任何会触发预处理的规则
         };
 
         const result = validateBoolean(value, rule);
@@ -187,5 +187,38 @@ describe('validateBoolean', () => {
         expect(result).not.toBeNull();
         expect(result!.length).toBe(1);
         expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+    });
+
+    // 预处理功能测试
+    describe('预处理功能测试', () => {
+        it('当规则包含enum时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: BooleanRuleOptions = { enum: [true, false] };
+
+            const result = validateBoolean(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含枚举约束时，null值应该被拒绝', () => {
+            const value = null;
+            const rule: BooleanRuleOptions = { enum: [true, false] };
+
+            const result = validateBoolean(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_INVALID_VALUE');
+        });
+
+        it('当规则不包含枚举约束时，预处理不应该改变required和nullable', () => {
+            const value = 'not a boolean';
+            const rule: BooleanRuleOptions = {};
+
+            const result = validateBoolean(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+        });
     });
 });

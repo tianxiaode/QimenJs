@@ -52,12 +52,7 @@ describe('validateObject', () => {
 
     it('当值为null时跳过对象属性验证', () => {
         const value = null;
-        const rule: ObjectRuleOptions = {
-            properties: {
-                field1: mockStringValidator,
-                field2: mockNumberValidator,
-            },
-        };
+        const rule: ObjectRuleOptions = {};
 
         const result = validateObject(value, rule, {});
 
@@ -66,12 +61,7 @@ describe('validateObject', () => {
 
     it('当值为undefined时跳过对象属性验证', () => {
         const value = undefined;
-        const rule: ObjectRuleOptions = {
-            properties: {
-                field1: mockStringValidator,
-                field2: mockNumberValidator,
-            },
-        };
+        const rule: ObjectRuleOptions = {};
 
         const result = validateObject(value, rule, {});
 
@@ -304,5 +294,69 @@ describe('validateObject', () => {
             expect(result[0].code).toBe('VALIDATION_NOT_ALLOWED');
             expect(result[0].params.value).toBe('extraField');
         }
+    });
+
+    // 预处理功能测试
+    describe('预处理功能测试', () => {
+        it('当规则包含requiredFields时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ObjectRuleOptions = { requiredFields: ['field1'] };
+
+            const result = validateObject(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含properties时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ObjectRuleOptions = { 
+                properties: {
+                    field1: mockStringValidator,
+                }
+            };
+
+            const result = validateObject(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含additionalProperties时，应该自动设置required为true和nullable为false', () => {
+            const value = undefined;
+            const rule: ObjectRuleOptions = { additionalProperties: false };
+
+            const result = validateObject(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含对象约束时，null值应该被拒绝', () => {
+            const rule = {
+                requiredFields: ['field1'],
+                properties: { field1: { type: 'string' } },
+                additionalProperties: false
+            };
+            
+            // 使用null值和预处理规则
+            const result = validateObject(null, rule);
+            
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                // 在新的gates实现中，null值会触发存在性检查，返回INVALID_VALUE而不是NULL_VALUE
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当规则不包含对象特定约束时，预处理不应该改变required和nullable', () => {
+            const value = 'not an object';
+            const rule: ObjectRuleOptions = {};
+
+            const result = validateObject(value, rule);
+
+            expect(result).not.toBeNull();
+            expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+        });
     });
 });

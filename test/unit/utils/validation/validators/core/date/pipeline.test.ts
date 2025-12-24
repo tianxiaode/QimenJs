@@ -196,10 +196,7 @@ describe('validateDate', () => {
 
     it('当值为null且有其他规则时验证通过（因为默认nullable为true）', () => {
         const value = null;
-        const rule: DateRuleOptions = {
-            min: new Date('2023-01-01'),
-            max: new Date('2023-12-31'),
-        };
+        const rule: DateRuleOptions = {};
 
         const result = validateDate(value, rule);
 
@@ -224,9 +221,8 @@ describe('validateDate', () => {
     it('当值为undefined但required为false时验证通过', () => {
         const value = undefined;
         const rule: DateRuleOptions = {
-            required: false,
-            min: new Date('2023-01-01'),
-            max: new Date('2023-12-31'),
+            required: false
+            // 不包含任何会触发预处理的规则
         };
 
         const result = validateDate(value, rule);
@@ -261,6 +257,49 @@ describe('validateDate', () => {
         expect(result).not.toBeNull();
         expect(result!.length).toBe(1); // 只有类型错误，因为NaN不是Date实例
         expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+      });
+
+      // 预处理功能测试
+      describe('预处理功能测试', () => {
+        it('当规则包含min时，应该自动设置required为true和nullable为false', () => {
+          const value = undefined;
+          const rule: DateRuleOptions = { min: new Date('2023-01-01') };
+
+          const result = validateDate(value, rule);
+
+          expect(result).not.toBeNull();
+          expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含max时，应该自动设置required为true和nullable为false', () => {
+          const value = undefined;
+          const rule: DateRuleOptions = { max: new Date('2023-12-31') };
+
+          const result = validateDate(value, rule);
+
+          expect(result).not.toBeNull();
+          expect(result![0].code).toBe('VALIDATION_REQUIRED');
+        });
+
+        it('当规则包含范围约束时，null值应该被拒绝', () => {
+          const value = null;
+          const rule: DateRuleOptions = { min: new Date('2023-01-01') };
+
+          const result = validateDate(value, rule);
+
+          expect(result).not.toBeNull();
+          expect(result![0].code).toBe('VALIDATION_INVALID_VALUE');
+        });
+
+        it('当规则不包含范围约束时，预处理不应该改变required和nullable', () => {
+          const value = 'not a date';
+          const rule: DateRuleOptions = {};
+
+          const result = validateDate(value, rule);
+
+          expect(result).not.toBeNull();
+          expect(result![0].code).toBe('VALIDATION_TYPE_MISMATCH');
+        });
       });
 
 });

@@ -33,19 +33,26 @@ const requiresArrayValuesCheck = (rule: ArrayRuleOptions): boolean => {
  * 数组验证器 - 组合多个验证函数形成完整的数组验证管道
  * 
  * 验证顺序：
- * 1. 存在性检查 (checkPresence)
- * 2. 类型检查 (checkArrayType) 
- * 3. 长度检查 (checkArrayLength)
- * 4. 枚举值检查 (checkArrayEnum)
- * 5. 子元素验证 (自定义逻辑)
+ * 1. Gates检查 - 验证值的存在性规则和类型（如果任一检查失败，则后续验证不执行）
+ * 2. 长度检查 (checkArrayLength)
+ * 3. 枚举值检查 (checkArrayEnum)
+ * 4. 子元素验证 (自定义逻辑)
+ *
+ * Gates验证包括：
+ * - 存在性检查 - 验证值是否符合 required/nullable/empty 规则
+ * - 类型检查 - 验证值是否为数组类型
+ * 
+ * 如果任一gates验证失败，后续验证将不会执行。
  */
 export const validateArray = createCoreValidator(
     (rule: ArrayRuleOptions): ArrayRuleOptions => {
         // 使用通用的预处理函数，传入特定于数组的检查函数
         return preprocessRequiredRule(rule, requiresArrayValuesCheck);
     },
-    // 基础验证器列表，按顺序执行
-    [checkPresence, checkArrayType, checkArrayLength, checkArrayEnum],
+    // Gates验证器列表
+    [checkPresence, checkArrayType],
+    // 业务验证器列表
+    [checkArrayLength, checkArrayEnum],
     
     /**
      * 自定义验证逻辑 - 主要用于验证数组中的每个子元素

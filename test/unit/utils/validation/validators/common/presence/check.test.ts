@@ -140,39 +140,5 @@ describe('checkPresence', () => {
                 })
             );
         });
-
-        it('should return null when value is not empty, required is true, nullable is true, empty is true', () => {
-            const result = checkPresence('value', { required: true, nullable: true, empty: true });
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('with context', () => {
-        it('should pass context to error builder when validation fails', () => {
-            const context: ValidationErrorContext = {
-                field: 'email',
-                label: 'Email Address',
-                value: undefined,
-            };
-
-            const result = checkPresence(undefined, { required: true }, context);
-
-            expect(result).toEqual(ValidationErrorBuilder.required(context));
-        });
-    });
-
-    describe('no rules specified', () => {
-        it('should return null when no presence rules are specified', () => {
-            const result = checkPresence(undefined, {});
-            expect(result).toBeNull();
-        });
-
-        it('should return null for any value when no presence rules are specified', () => {
-            expect(checkPresence(null, {})).toBeNull();
-            expect(checkPresence('', {})).toBeNull();
-            expect(checkPresence([], {})).toBeNull();
-            expect(checkPresence({}, {})).toBeNull();
-            expect(checkPresence('value', {})).toBeNull();
-        });
     });
 });

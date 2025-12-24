@@ -8,9 +8,9 @@ describe('checkRequiredFields', () => {
       field2: 'value2', 
       field3: 'value3' 
     };
-    const requiredFields = ['field1', 'field2', 'field3'];
+    const rule = { requiredFields: ['field1', 'field2', 'field3'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).toBeNull();
   });
@@ -21,9 +21,9 @@ describe('checkRequiredFields', () => {
       field2: undefined, 
       field3: 'value3' 
     };
-    const requiredFields = ['field1', 'field2', 'field3'];
+    const rule = { requiredFields: ['field1', 'field2', 'field3'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).toBeNull();
   });
@@ -33,9 +33,9 @@ describe('checkRequiredFields', () => {
       field1: 'value1', 
       field3: 'value3' 
     };
-    const requiredFields = ['field1', 'field2', 'field3'];
+    const rule = { requiredFields: ['field1', 'field2', 'field3'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
@@ -49,9 +49,9 @@ describe('checkRequiredFields', () => {
     const value = { 
       field1: 'value1' 
     };
-    const requiredFields = ['field1', 'field2', 'field3', 'field4'];
+    const rule = { requiredFields: ['field1', 'field2', 'field3', 'field4'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
@@ -66,18 +66,18 @@ describe('checkRequiredFields', () => {
       field1: 'value1', 
       field2: 'value2' 
     };
-    const requiredFields: string[] = [];
+    const rule = { requiredFields: [] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).toBeNull();
   });
 
   it('当值为空对象且必需字段列表不为空时返回第一个missing_field错误', () => {
     const value = {};
-    const requiredFields = ['field1', 'field2'];
+    const rule = { requiredFields: ['field1', 'field2'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
@@ -92,9 +92,9 @@ describe('checkRequiredFields', () => {
       field1: null, 
       field2: 'value2' 
     };
-    const requiredFields = ['field1', 'field2'];
+    const rule = { requiredFields: ['field1', 'field2'] };
 
-    const result = checkRequiredFields(value, requiredFields, {});
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).toBeNull();
   });
@@ -103,23 +103,21 @@ describe('checkRequiredFields', () => {
     const value = { 
       field1: 'value1' 
     };
-    const requiredFields = ['field1', 'field2'];
+    const rule = { requiredFields: ['field1', 'field2'] };
     const context: ValidationErrorContext = { 
-      field: 'testObject', 
-      value 
+      field: 'testField', 
+      value: 'testValue',
+      path: 'parentPath'
     };
 
-    const result = checkRequiredFields(value, requiredFields, context);
+    const result = checkRequiredFields(value, rule, context);
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
     if (result && result.params && result.context) {
       expect(result.code).toBe('VALIDATION_MISSING_FIELD');
       expect(result.params.field).toBe('field2');
-      expect(result.context).toEqual({ 
-        ...context, 
-        field: 'field2' 
-      });
+      expect(result.context.field).toBe('parentPath.field2');
     }
   });
 
@@ -127,40 +125,31 @@ describe('checkRequiredFields', () => {
     const value = { 
       field1: 'value1' 
     };
-    const requiredFields = ['field1', 'field2'];
-    const context: ValidationErrorContext = { 
-      path: 'parent.child', 
-      value 
-    };
+    const rule = { requiredFields: ['field1', 'field2', 'field3'] };
+    const context: ValidationErrorContext = { path: 'user.profile' };
 
-    const result = checkRequiredFields(value, requiredFields, context);
+    const result = checkRequiredFields(value, rule, context);
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
     if (result && result.params && result.context) {
       expect(result.code).toBe('VALIDATION_MISSING_FIELD');
       expect(result.params.field).toBe('field2');
-      expect(result.context).toEqual({ 
-        ...context, 
-        field: 'parent.child.field2' 
-      });
+      expect(result.context.field).toBe('user.profile.field2');
     }
   });
 
   it('当字段名称包含特殊字符时正确处理', () => {
-    const value = { 
-      'field-with-dash': 'value1',
-      'field with space': 'value2'
-    };
-    const requiredFields = ['field-with-dash', 'field with space', 'missing-field'];
-
-    const result = checkRequiredFields(value, requiredFields, {});
+    const value = {};
+    const rule = { requiredFields: ['field.with.dot', 'field-with-dash', 'field with space'] };
+    
+    const result = checkRequiredFields(value, rule, {});
 
     expect(result).not.toBeNull();
     expect(result).toBeDefined();
     if (result && result.params) {
       expect(result.code).toBe('VALIDATION_MISSING_FIELD');
-      expect(result.params.field).toBe('missing-field');
+      expect(result.params.field).toBe('field.with.dot');
     }
   });
 });
