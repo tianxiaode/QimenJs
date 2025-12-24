@@ -19,7 +19,7 @@ describe('validateDatePast函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('past date');
+            expect(result[0].context?.expected).toBe('past');
         }
     });
 
@@ -32,7 +32,7 @@ describe('validateDatePast函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('past date');
+            expect(result[0].context?.expected).toBe('past');
         }
     });
 

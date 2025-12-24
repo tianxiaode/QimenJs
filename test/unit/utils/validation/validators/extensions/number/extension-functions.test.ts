@@ -164,7 +164,7 @@ describe('扩展数字验证函数测试', () => {
 
             expect(result).not.toBeNull();
             if (result && result[0]) {
-                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE'); // 修正：小数不是整数，所以无法判断奇偶
             }
         });
     });
@@ -199,7 +199,7 @@ describe('扩展数字验证函数测试', () => {
 
             expect(result).not.toBeNull();
             if (result && result[0]) {
-                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE'); // 修正：小数不是整数，所以无法判断奇偶
             }
         });
     });
@@ -240,8 +240,20 @@ describe('扩展数字验证函数测试', () => {
     });
 
     describe('validateInfinite函数测试', () => {
-        it('当输入为无限数时返回错误（基础验证会排除无限数）', () => {
+        it('当输入为无限数时返回错误（因为基础验证会排除无限数）', () => {
             const value = Infinity;
+            const rule: Omit<NumberExtensionRule, 'infinite'> = {};
+
+            const result = validateInfinite(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当输入为负无限数时返回错误（因为基础验证会排除无限数）', () => {
+            const value = -Infinity;
             const rule: Omit<NumberExtensionRule, 'infinite'> = {};
 
             const result = validateInfinite(value, rule, {});

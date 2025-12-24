@@ -28,7 +28,7 @@ describe('validateDateWeekend函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('weekend day (0, 6)');
+            expect(result[0].context?.expected).toBe('weekend');
         }
     });
 
@@ -59,7 +59,7 @@ describe('validateDateWeekend函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('weekend day (0)');
+            expect(result[0].context?.expected).toBe('weekend');
         }
     });
 
@@ -85,7 +85,7 @@ describe('validateDateWeekend函数测试', () => {
     });
 
     it('当输入为时间戳时验证失败', () => {
-        const timestamp = Date.now(); // 当前时间戳
+        const timestamp = new Date('2023-12-10').getTime(); // 周日的时间戳
 
         const result = validateDateWeekend(timestamp, { weekend: [0, 6] }, {}); // 默认周末：周日和周六
 

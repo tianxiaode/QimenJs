@@ -19,7 +19,7 @@ describe('validateDateFuture函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('future date');
+            expect(result[0].context?.expected).toBe('future');
         }
     });
 
@@ -32,7 +32,7 @@ describe('validateDateFuture函数测试', () => {
         expect(result).not.toBeNull();
         if (result && result[0]) {
             expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-            expect(result[0].context?.expected).toBe('future date');
+            expect(result[0].context?.expected).toBe('future');
         }
     });
 

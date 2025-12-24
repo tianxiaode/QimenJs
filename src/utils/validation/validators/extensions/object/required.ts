@@ -1,18 +1,18 @@
 import { ValidationErrorContext, ValidationResult, Validator } from "../../../core";
 import { ObjectRequiredRuleOptions } from "../../../rules";
-import { validateDate, validateObject } from "../../core";
+import { validateObject } from "../../core"; // 修正导入，移除错误的validateDate
 import { enforceRuleRequirement } from "../../core/factory";
 
 /**
- * 必需日期验证器 - 验证值是否为日期，且必须存在、不为null
+ * 必需对象验证器 - 验证值是否为对象，且必须存在、不为null
  *
  * 此验证器固定了以下参数：
  * - required: true - 值必须存在（不能是undefined）
  * - nullable: false - 值不能为null
- * - empty: true - 允许空日期（由具体日期验证器决定）
+ * - empty: true - 允许空对象（由具体对象验证器决定）
  *
  * @param value - 待验证的值
- * @param rule - 日期验证规则选项
+ * @param rule - 对象验证规则选项
  * @param context - 验证上下文
  * @returns 验证结果
  */
