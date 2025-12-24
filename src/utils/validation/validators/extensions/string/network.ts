@@ -1,5 +1,5 @@
 // 导入所需的类型定义和工具函数
-import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
+import { StringRequiredRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
 import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
@@ -22,7 +22,7 @@ import { validateStringByPresetPattern } from './pattern';                     /
  */
 export function validateUrl(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的URL模式进行验证
@@ -42,7 +42,7 @@ export function validateUrl(
  */
 export function validateIPv4(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的IPv4模式进行验证
@@ -62,7 +62,7 @@ export function validateIPv4(
  */
 export function validateIPv6(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的IPv6模式进行验证
@@ -82,7 +82,7 @@ export function validateIPv6(
  */
 export function validateMacAddress(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的MAC地址模式进行验证

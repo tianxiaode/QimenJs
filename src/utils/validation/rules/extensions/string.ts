@@ -47,12 +47,12 @@ export interface StringSplitRuleOptions extends StringExtensionRuleOptions, Rule
 }
 
 
-export interface RequiredStringRuleOptions extends Omit<
+export interface StringRequiredRuleOptions extends Omit<
     StringExtensionRuleOptions,
     'required' | 'nullable' | 'empty'
 > {}
 
-export interface PasswordRuleOptions extends RequiredStringRuleOptions {
+export interface PasswordRuleOptions extends StringRequiredRuleOptions {
     minLength: number;
     maxLength: number;
     uppercase?: boolean;

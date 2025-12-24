@@ -1,8 +1,10 @@
-import { DateRuleOptions } from "../core";
+import { DateRuleOptions } from '../core';
 
-export interface DateExtensionRule extends  Omit<DateRuleOptions, "required" | 'nullable'> {
-}
+export interface DateRequiredRuleOptions extends Omit<
+    DateRuleOptions,
+    'required' | 'nullable' | 'empty'
+> {}
 
-export interface WeekendRuleOptions extends Omit<DateRuleOptions, "required" | 'nullable'> {
+export interface WeekendRuleOptions extends DateRequiredRuleOptions {
     weekend: number | number[];
 }

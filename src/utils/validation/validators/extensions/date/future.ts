@@ -1,6 +1,6 @@
 import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
-import { DateExtensionRule } from '../../../rules';
-import { validateDate } from '../../core';
+import { DateRequiredRuleOptions } from '../../../rules';
+import { validateRequiredDate } from './index';
 
 /**
  * 日期是否为未来日期的验证器
@@ -24,12 +24,12 @@ import { validateDate } from '../../core';
  */
 export function validateDateFuture(
     value: any,
-    rule: DateExtensionRule,
-    context?: ValidationErrorContext
+    rule: DateRequiredRuleOptions = {},
+    context: ValidationErrorContext =  {}
 ): ValidationResult {
-    // 先进行基础日期验证，要求值必须存在且不为 null (required: true, nullable: false)
+    // 先进行基础日期验证，要求值必须存在且不为 null
     // 这确保了传入的值是有效的日期格式
-    const baseResult = validateDate(value, { ...rule, required: true, nullable: false }, context);
+    const baseResult = validateRequiredDate(value, rule, context);
     if (baseResult) {
         return baseResult;
     }
@@ -53,7 +53,7 @@ export function validateDateFuture(
     return [
         ValidationErrorBuilder.invalid_value(value, {
             ...context,
-            expected: 'future date',
+            expected: 'future',
         }),
     ];
 }

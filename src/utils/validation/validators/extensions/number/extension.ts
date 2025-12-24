@@ -1,13 +1,14 @@
 // 导入所需的工具函数、类型定义和规则选项
 import {
-    ValidationErrorBuilder,          // 验证错误构建器
-    ValidationErrorContext,         // 验证错误上下文类型
-    ValidationResult,               // 验证结果类型
-    Validator,                  // 验证器基类
+    ValidationErrorBuilder, // 验证错误构建器
+    ValidationErrorContext, // 验证错误上下文类型
+    ValidationResult, // 验证结果类型
+    Validator, // 验证器基类
 } from '../../../core';
-import { validateNumber } from '../../core/number';            // 基础数字验证函数
-import { NumberExtensionRule } from '../../../rules';           // 数字高级规则类型
-import { numberPredicates } from './predicates';             // 数字谓词验证函数集合
+import { validateNumber } from '../../core/number'; // 基础数字验证函数
+import { NumberExtensionRule } from '../../../rules'; // 数字高级规则类型
+import { numberPredicates } from './predicates'; // 数字谓词验证函数集合
+import { validateRequiredNumber } from './required';
 
 /**
  * 高级数字验证函数
@@ -19,10 +20,10 @@ import { numberPredicates } from './predicates';             // 数字谓词验�
 export function validateNumberExtension(
     value: any,
     rule: NumberExtensionRule,
-    context:  ValidationErrorContext = {}
+    context: ValidationErrorContext = {}
 ): ValidationResult {
     // 1️⃣ 基础 number 校验，检查是否为有效数字
-    const error = validateNumber(value, { ...rule, required: true, nullable: false }, context);
+    const error = validateRequiredNumber(value, rule, context);
     if (error && error.length > 0) return error;
 
     const num = value as number;
@@ -80,7 +81,7 @@ export function validateNumberExtension(
  */
 export const validateInteger = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'integer'>,
+    rule: Omit<NumberExtensionRule, 'integer'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumber(value, { ...rule, integer: true }, context);
 
@@ -93,7 +94,7 @@ export const validateInteger = (
  */
 export const validatePositive = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'positive'>,
+    rule: Omit<NumberExtensionRule, 'positive'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, positive: true }, context);
 
@@ -106,7 +107,7 @@ export const validatePositive = (
  */
 export const validateNegative = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'negative'>,
+    rule: Omit<NumberExtensionRule, 'negative'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, negative: true }, context);
 
@@ -119,7 +120,7 @@ export const validateNegative = (
  */
 export const validateOdd = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'odd'>,
+    rule: Omit<NumberExtensionRule, 'odd'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, odd: true }, context);
 
@@ -132,7 +133,7 @@ export const validateOdd = (
  */
 export const validateEven = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'even'>,
+    rule: Omit<NumberExtensionRule, 'even'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, even: true }, context);
 
@@ -145,7 +146,7 @@ export const validateEven = (
  */
 export const validateFinite = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'finite'>,
+    rule: Omit<NumberExtensionRule, 'finite'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, finite: true }, context);
 
@@ -158,16 +159,16 @@ export const validateFinite = (
  */
 export const validateInfinite = (
     value: any,
-    rule: Omit<NumberExtensionRule, 'infinite'>,
+    rule: Omit<NumberExtensionRule, 'infinite'> = {},
     context: ValidationErrorContext = {}
 ) => validateNumberExtension(value, { ...rule, infinite: true }, context);
 
 // 注册高级数字验证器到验证器基础类中
-Validator.registerValidator('numberEx', validateNumberExtension);  // 注册高级数字验证器
-Validator.registerValidator('integer', validateInteger);        // 注册整数验证器
-Validator.registerValidator('positive', validatePositive);      // 注册正数验证器
-Validator.registerValidator('negative', validateNegative);      // 注册负数验证器
-Validator.registerValidator('odd', validateOdd);                // 注册奇数验证器
-Validator.registerValidator('even', validateEven);              // 注册偶数验证器
-Validator.registerValidator('finite', validateFinite);          // 注册有限数验证器
-Validator.registerValidator('infinite', validateInfinite);      // 注册无限数验证器
+Validator.registerValidator('numberEx', validateNumberExtension); // 注册高级数字验证器
+Validator.registerValidator('integer', validateInteger); // 注册整数验证器
+Validator.registerValidator('positive', validatePositive); // 注册正数验证器
+Validator.registerValidator('negative', validateNegative); // 注册负数验证器
+Validator.registerValidator('odd', validateOdd); // 注册奇数验证器
+Validator.registerValidator('even', validateEven); // 注册偶数验证器
+Validator.registerValidator('finite', validateFinite); // 注册有限数验证器
+Validator.registerValidator('infinite', validateInfinite); // 注册无限数验证器

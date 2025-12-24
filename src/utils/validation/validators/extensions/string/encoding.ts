@@ -5,7 +5,7 @@ import {
     ValidationResult,               // 验证结果类型
     Validator,                  // 验证器基类
 } from '../../../core';
-import { RequiredStringRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
+import { StringRequiredRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
 import { validateStringByPresetPattern } from './pattern';        // 使用指定模式进行验证的函数
 
 /**
@@ -21,7 +21,7 @@ import { validateStringByPresetPattern } from './pattern';        // 使用指�
  */
 export function validateBase64(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用BASE64模式对Base64编码进行验证

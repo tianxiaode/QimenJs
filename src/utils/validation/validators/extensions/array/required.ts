@@ -1,6 +1,7 @@
 import { validateArray } from '../../core';
-import { RequiredArrayRuleOptions } from '../../../rules';
+import { ArrayRequiredRuleOptions } from '../../../rules';
 import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
+import { enforceRuleRequirement } from '../../core/factory';
 
 /**
  * 必需数组验证器 - 验证值是否为数组，且必须存在、不为null、不为空数组
@@ -17,18 +18,10 @@ import { ValidationErrorContext, ValidationResult, Validator } from '../../../co
  */
 export function validateRequiredArray(
     value: any,
-    rule: RequiredArrayRuleOptions = {},
+    rule: ArrayRequiredRuleOptions = {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
-    // 固定required为true, nullable为false, allowEmpty为true
-    const requiredRule = {
-        ...rule,
-        required: true,
-        nullable: false,
-        empty: true,
-    };
-
-    return validateArray(value, requiredRule, context);
+    return validateArray(value, enforceRuleRequirement(rule, true), context);
 }
 
 // 注册验证器

@@ -1,6 +1,11 @@
 import { NumberRuleOptions } from '../core';
 
-export interface NumberExtensionRule extends NumberRuleOptions {
+export interface NumberRequiredRuleOptions extends Omit<
+    NumberRuleOptions,
+    'required' | 'nullable' | 'empty'
+> {}
+
+export interface NumberExtensionRule extends NumberRequiredRuleOptions {
     positive?: boolean;
     negative?: boolean;
     odd?: boolean;
@@ -11,4 +16,3 @@ export interface NumberExtensionRule extends NumberRuleOptions {
     allowsValues?: readonly number[];
     disallowsValues?: readonly number[];
 }
-

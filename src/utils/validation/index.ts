@@ -49,10 +49,12 @@ export {
     validateRequiredArray,
 
     //extensions/object
+    validateRequiredObject,
     validateEmptyObject,
     validateHasKeys,
 
     //extensions/number
+    validateRequiredNumber,
     validateNumberExtension,
     validateInteger,
     validatePositive,
@@ -63,6 +65,7 @@ export {
     validateInfinite,
 
     //extensions/date
+    validateRequiredDate,
     validateDateToday,
     validateDateTomorrow,
     validateDatePast,

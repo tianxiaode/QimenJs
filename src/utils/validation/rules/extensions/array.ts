@@ -1,6 +1,6 @@
 import { ArrayRuleOptions } from '../core';
 
-export interface RequiredArrayRuleOptions extends Omit<
+export interface ArrayRequiredRuleOptions extends Omit<
     ArrayRuleOptions,
     'required' | 'nullable' | 'empty'
 > {}
@@ -10,7 +10,7 @@ export interface RequiredArrayRuleOptions extends Omit<
 //   every?: ValidationRuleBase;
 //   none?: ValidationRuleBase;
 
-export interface UniqueByRuleOptions<T = any> extends RequiredArrayRuleOptions {
+export interface UniqueByRuleOptions<T = any> extends ArrayRequiredRuleOptions {
     /**
      * 指定用于唯一性比较的属性名或计算函数
      *
@@ -40,7 +40,7 @@ export interface UniqueByRuleOptions<T = any> extends RequiredArrayRuleOptions {
  * };
  * ```
  */
-export interface SortedRuleOptions<T = any> extends RequiredArrayRuleOptions {
+export interface SortedRuleOptions<T = any> extends ArrayRequiredRuleOptions {
     /**
      * 排序方式或自定义排序函数
      *

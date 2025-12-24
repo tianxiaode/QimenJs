@@ -8,6 +8,21 @@ import {
 } from '../../core';
 
 /**
+ * 将验证规则设置为必需且不可为空，可选择是否允许空值
+ * 
+ * @template T 验证规则类型
+ * @param rule 验证规则对象
+ * @param allowEmpty 是否允许空值，默认为false
+ * @returns 设置了 required: true, nullable: false 的新规则对象，以及根据allowEmpty参数设置的empty字段
+ */
+export function enforceRuleRequirement<T extends Record<string, any>>(
+    rule: T,
+    allowEmpty: boolean = true
+): T {
+    return { ...rule, required: true, nullable: false, empty: allowEmpty } as T;
+}
+
+/**
  * 预处理验证规则函数
  * 根据特定条件自动设置 required 和 nullable 属性
  * 
@@ -23,7 +38,7 @@ export function preprocessRequiredRule<T extends Record<string, any>>(
     const needsValue = requiresValueCheck(rule);
     
     if (needsValue) {
-        return { ...rule, required: true, nullable: false } as T;
+        return enforceRuleRequirement(rule);
     }
     return rule;
 }

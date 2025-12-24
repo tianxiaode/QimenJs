@@ -7,6 +7,7 @@ import {
 } from '../../../core';
 import { ObjectKeysRuleOptions } from '../../../rules';
 import { validateObject } from '../../core';
+import { validateRequiredObject } from './required';
 
 /**
  * 验证对象是否包含指定的必需键
@@ -22,11 +23,7 @@ export function validateHasKeys(
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 首先执行基本的对象类型验证
-    const baseResult = validateObject(
-        value,
-        { ...rule, required: true, nullable: false, empty: false },
-        context
-    );
+    const baseResult = validateRequiredObject(value, rule, context);
     // 如果基本验证失败，直接返回验证结果
     if (baseResult) return baseResult;
 

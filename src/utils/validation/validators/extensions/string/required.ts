@@ -1,5 +1,5 @@
 import { validateString } from '../../core';
-import { RequiredStringRuleOptions } from '../../../rules';
+import { StringRequiredRuleOptions } from '../../../rules';
 import { ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 
 /**
@@ -17,7 +17,7 @@ import { ValidationErrorContext, ValidationResult, Validator } from '../../../co
  */
 export function validateRequiredString(
     value: any,
-    rule: RequiredStringRuleOptions = {},
+    rule: StringRequiredRuleOptions = {},
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 固定required为true, nullable为false, empty为true

@@ -1,5 +1,5 @@
 // 导入所需的规则选项和核心验证工具
-import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
+import { StringRequiredRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
 import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
@@ -21,7 +21,7 @@ import { validateStringByPresetPattern } from './pattern';                     /
  */
 export function validateEmail(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用EMAIL模式对邮箱地址进行验证
@@ -41,7 +41,7 @@ export function validateEmail(
  */
 export function validatePhone(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用PHONE模式对电话号码进行验证
@@ -61,7 +61,7 @@ export function validatePhone(
  */
 export function validateUsername(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用USERNAME模式对用户名进行验证
@@ -81,7 +81,7 @@ export function validateUsername(
  */
 export function validateUUID(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用UUID模式对UUID进行验证
@@ -101,7 +101,7 @@ export function validateUUID(
  */
 export function validateCreditCard(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CREDIT_CARD模式对信用卡号进行验证
@@ -121,7 +121,7 @@ export function validateCreditCard(
  */
 export function validateChineseID(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_ID模式对中国身份证号进行验证
@@ -141,7 +141,7 @@ export function validateChineseID(
  */
 export function validateChinesePostcode(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_POSTCODE模式对中国邮政编码进行验证

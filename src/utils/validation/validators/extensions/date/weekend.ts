@@ -1,6 +1,6 @@
 import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { WeekendRuleOptions } from '../../../rules';
-import { validateDate } from '../../core';
+import { validateRequiredDate } from './index';
 
 /**
  * 日期是否为周末的验证器
@@ -28,11 +28,11 @@ import { validateDate } from '../../core';
 export function validateDateWeekend(
     value: any,
     rule: WeekendRuleOptions,
-    context?: ValidationErrorContext
+    context: ValidationErrorContext = {}
 ): ValidationResult {
-    // 先进行基础日期验证，要求值必须存在且不为 null (required: true, nullable: false)
+    // 先进行基础日期验证，要求值必须存在且不为 null
     // 这确保了传入的值是有效的日期格式
-    const baseResult = validateDate(value, { ...rule, required: true, nullable: false }, context);
+    const baseResult = validateRequiredDate(value, rule, context);
     if (baseResult) {
         return baseResult;
     }
@@ -50,17 +50,18 @@ export function validateDateWeekend(
     // 获取日期的星期几（0-6，其中0表示周日）
     const dayOfWeek = date.getDay();
     
-    // 检查当前日期是否为指定的周末日期
+    // 检查当前日期是否为指定的周末日期之一
     if (weekendDays.includes(dayOfWeek)) {
-        // 日期是指定的周末日期，验证通过
+        // 日期是周末，验证通过
         return null;
     }
     
-    // 日期不是指定的周末日期，返回错误
+    // 日期不是周末，返回错误
     return [
         ValidationErrorBuilder.invalid_value(value, {
             ...context,
-            expected: `weekend day (${weekendDays.join(', ')})`,
+            expected: 'weekend',
+            allowedValues: weekendDays,
         }),
     ];
 }

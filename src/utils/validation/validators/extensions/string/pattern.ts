@@ -5,7 +5,7 @@ import {
     ValidationPatternType,          // 验证模式枚举类型
     ValidationRuleError,            // 验证规则错误类型
 } from '../../../core';
-import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';     // 字符串高级规则选项类型
+import { StringRequiredRuleOptions, StringExtensionRuleOptions } from '../../../rules';     // 字符串高级规则选项类型
 import { validateRequiredString } from './required';
 
 /**
@@ -22,7 +22,7 @@ import { validateRequiredString } from './required';
  */
 export function validateStringByPresetPattern(
     value: string,
-    rule: RequiredStringRuleOptions,
+    rule: StringRequiredRuleOptions,
     patternType: ValidationPatternType,
     context: ValidationErrorContext = {}
 ): ValidationRuleError[] | null {
