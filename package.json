@@ -53,8 +53,11 @@
   "scripts": {
     "clean": "rimraf dist coverage",
     "build": "node scripts/build.js",
-    "build:core": "node scripts/build-core.js",
-    "build:utils": "node scripts/build-utils.js",
+    "build:clean": "node scripts/build.js --clean",
+    "build:core": "node scripts/build.js core",
+    "build:utils": "node scripts/build.js utils",
+    "build:validation": "node scripts/build.js validation",
+    "build:core-clean": "node scripts/build.js core --clean",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:core": "jest --testPathPattern=test/unit/core",

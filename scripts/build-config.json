@@ -1,0 +1,33 @@
+{
+  "modules": {
+    "core": {
+      "entry": "src/core/index.ts",
+      "outDir": "dist/core",
+      "rootDir": "src/core",
+      "dependencies": ["utils"],
+      "packageName": "@orbitjs/core"
+    },
+    "utils": {
+      "entry": "src/utils/index.ts",
+      "outDir": "dist/utils", 
+      "rootDir": "src/utils",
+      "dependencies": [],
+      "packageName": "@orbitjs/utils"
+    },
+    "validation": {
+      "entry": "src/validation/index.ts",
+      "outDir": "dist/validation",
+      "rootDir": "src/validation", 
+      "dependencies": [],
+      "packageName": "@orbitjs/validation"
+    }
+  },
+  
+  "build": {
+    "tsconfig": "tsconfig.build.json",
+    "formats": ["cjs", "esm"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  }
+}
