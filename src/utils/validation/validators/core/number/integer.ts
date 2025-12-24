@@ -20,10 +20,6 @@ export function checkNumberInteger(
     // 如果规则中没有要求整数，则跳过整数验证
     if (!rule.integer) return null;
     
-    // 如果值为 null 或 undefined，跳过整数验证
-    // 这些值的存在性应该由专门的 presence 验证器处理
-    if (value === null || value === undefined) return null;
-
     // 使用 Number.isInteger 检查值是否为整数
     if (!Number.isInteger(value)) {
         // 值不是整数，返回 invalid_value 错误

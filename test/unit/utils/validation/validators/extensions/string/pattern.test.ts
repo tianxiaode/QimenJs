@@ -1,5 +1,5 @@
 import { validateStringByPresetPattern } from '@/utils/validation/validators/extensions/string/pattern';
-import { ValidationPatternType, ValidationErrorContext, StringExtensionRuleOptions } from '@/utils';
+import { ValidationPatternType, ValidationErrorContext, StringExtensionRuleOptions, ValidationErrorCode } from '@/utils';
 
 describe('validateStringByPresetPattern函数测试', () => {
     it('当使用EMAIL模式且输入有效邮箱时验证通过', () => {
@@ -117,7 +117,7 @@ describe('validateStringByPresetPattern函数测试', () => {
         }
     });
 
-    it('当输入为null时验证通过（跳过验证）', () => {
+    it('当输入为null时返回错误', () => {
         const value = null;
         const rule: StringExtensionRuleOptions = {};
         const patternType = ValidationPatternType.EMAIL;
@@ -125,7 +125,24 @@ describe('validateStringByPresetPattern函数测试', () => {
         // @ts-ignore - 测试 null 值
         const result = validateStringByPresetPattern(value, rule, patternType, {});
 
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        if (result && result[0]) {
+            expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+        }
+    });
+
+    it('当输入为undefined时返回错误', () => {
+        const value = undefined;
+        const rule: StringExtensionRuleOptions = {};
+        const patternType = ValidationPatternType.EMAIL;
+
+        // @ts-ignore - 测试 undefined 值
+        const result = validateStringByPresetPattern(value, rule, patternType, {});
+
+        expect(result).not.toBeNull();
+        if (result && result[0]) {
+            expect(result[0].code).toBe('VALIDATION_REQUIRED');
+        }
     });
 
     it('当输入为非字符串类型时返回类型错误', () => {

@@ -5,11 +5,14 @@ import {
     ValidationPatternType,          // 验证模式枚举类型
     ValidationRuleError,            // 验证规则错误类型
 } from '../../../core';
-import { StringExtensionRuleOptions } from '../../../rules';     // 字符串高级规则选项类型
-import { validateStringExtension } from './extension';            // 字符串高级验证函数
+import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';     // 字符串高级规则选项类型
+import { validateRequiredString } from './required';
 
 /**
  * 使用指定的模式类型对字符串进行验证
+ * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
  * 
  * @param value - 待验证的字符串值
  * @param rule - 字符串高级规则选项
@@ -19,7 +22,7 @@ import { validateStringExtension } from './extension';            // 字符串�
  */
 export function validateStringByPresetPattern(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     patternType: ValidationPatternType,
     context: ValidationErrorContext = {}
 ): ValidationRuleError[] | null {
@@ -28,5 +31,5 @@ export function validateStringByPresetPattern(
     
     // 结合传入的规则和获取的模式进行字符串高级验证
     // 使用展开运算符(...)将rule中的属性与pattern合并
-    return validateStringExtension(value, { pattern: pattern, ...rule }, context);
+    return validateRequiredString(value, { pattern: pattern, ...rule }, context);
 }

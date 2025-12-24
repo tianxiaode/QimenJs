@@ -1,4 +1,4 @@
-import { validateBase64, ValidationErrorContext, StringExtensionRuleOptions } from '@/utils';
+import { validateBase64, ValidationErrorContext, StringExtensionRuleOptions, ValidationErrorCode } from '@/utils';
 
 describe('validateBase64', () => {
     it('当值为有效的Base64编码时验证通过', () => {
@@ -82,24 +82,30 @@ describe('validateBase64', () => {
         }
     });
 
-    it('当值为null时验证通过（跳过验证）', () => {
+    it('当值为null时返回错误', () => {
         const value = null;
         const rule: StringExtensionRuleOptions = {};
 
         // @ts-ignore - 测试 null 值
         const result = validateBase64(value, rule, {});
 
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        if (result && result[0]) {
+            expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+        }
     });
 
-    it('当值为undefined时验证通过（跳过验证）', () => {
+    it('当值为undefined时返回错误', () => {
         const value = undefined;
         const rule: StringExtensionRuleOptions = {};
 
         // @ts-ignore - 测试 undefined 值
         const result = validateBase64(value, rule, {});
 
-        expect(result).toBeNull();
+        expect(result).not.toBeNull();
+        if (result && result[0]) {
+            expect(result[0].code).toBe('VALIDATION_REQUIRED');
+        }
     });
 
     it('应该正确传递上下文信息', () => {

@@ -8,6 +8,7 @@ import {
     validateChinesePostcode,
     ValidationErrorContext,
     StringExtensionRuleOptions,
+    ValidationErrorCode,
 } from '@/utils';
 
 describe('身份验证函数测试', () => {
@@ -54,14 +55,30 @@ describe('身份验证函数测试', () => {
             }
         });
 
-        it('当值为null时验证通过（跳过验证）', () => {
+        it('当值为null时返回错误', () => {
             const value = null;
             const rule: StringExtensionRuleOptions = {};
 
             // @ts-ignore - 测试 null 值
             const result = validateEmail(value, rule, {});
 
-            expect(result).toBeNull();
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateEmail(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
         });
     });
 
@@ -105,6 +122,32 @@ describe('身份验证函数测试', () => {
             expect(result).not.toBeNull();
             if (result && result[0]) {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
+            }
+        });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validatePhone(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validatePhone(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
             }
         });
     });
@@ -160,6 +203,32 @@ describe('身份验证函数测试', () => {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
             }
         });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateUsername(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateUsername(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
+        });
     });
 
     describe('validateUUID', () => {
@@ -202,6 +271,32 @@ describe('身份验证函数测试', () => {
             expect(result).not.toBeNull();
             if (result && result[0]) {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
+            }
+        });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateUUID(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateUUID(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
             }
         });
     });
@@ -257,6 +352,32 @@ describe('身份验证函数测试', () => {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
             }
         });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateCreditCard(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateCreditCard(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
+        });
     });
 
     describe('validateChineseID', () => {
@@ -301,6 +422,32 @@ describe('身份验证函数测试', () => {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
             }
         });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateChineseID(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateChineseID(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
+        });
     });
 
     describe('validateChinesePostcode', () => {
@@ -343,6 +490,32 @@ describe('身份验证函数测试', () => {
             expect(result).not.toBeNull();
             if (result && result[0]) {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
+            }
+        });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateChinesePostcode(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateChinesePostcode(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
             }
         });
 

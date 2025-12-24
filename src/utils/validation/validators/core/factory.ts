@@ -4,17 +4,41 @@ import {
     ValidationErrorBuilder,
     ValidationErrorContext,
     CheckFunction,
+    ValidationErrorCode,
 } from '../../core';
+
+/**
+ * 预处理验证规则函数
+ * 根据特定条件自动设置 required 和 nullable 属性
+ * 
+ * @template T 验证规则类型
+ * @param rule 验证规则对象
+ * @param requiresValueCheck 检查是否需要值存在的函数
+ * @returns 处理后的验证规则对象
+ */
+export function preprocessRequiredRule<T extends Record<string, any>>(
+    rule: T, 
+    requiresValueCheck: (rule: T) => boolean
+): T {
+    const needsValue = requiresValueCheck(rule);
+    
+    if (needsValue) {
+        return { ...rule, required: true, nullable: false } as T;
+    }
+    return rule;
+}
 
 /**
  * 工厂函数生成核心验证函数
  * @param validators 验证函数数组，每个函数签名为 (value, rule, context) => CheckResult
  * @param handleChildren 子元素验证函数，签名为 (value, rule, context) => ValidationResult
+ * @param preProcessRule 前置处理函数，签名为 (rule) => rule，用于根据规则调整参数
  * @returns 返回一个验证函数，该函数会对值进行一系列验证并将结果标准化
  */
 export function createCoreValidator(
+    preProcessRule: (rule: any) => any,
     validators: CheckFunction[],
-    handleChildren?: (value: any, rule: any, context: ValidationErrorContext) => ValidationResult
+    handleChildren?: (value: any, rule: any, context: ValidationErrorContext) => ValidationResult,
 ) {
     /**
      * 核心验证函数
@@ -28,22 +52,35 @@ export function createCoreValidator(
         rule: any,
         context: ValidationErrorContext = {}
     ): ValidationResult {
+        // 如果有前置处理函数，先处理规则
+        let processedRule = rule;
+        if (preProcessRule) {
+            processedRule = preProcessRule(rule);
+        }
+
         // 存储所有验证过程中产生的错误
         let errors: ValidationRuleError[] = [];
 
-        // 顺序执行所有基础验证器
+        // 顺序执行所有基础验证器，按照验证优先级（空值 → 类型 → 业务规则）
         for (const validator of validators) {
-            const error = validator(value, rule, context);
-            // 如果某个验证器返回错误，则将其添加到错误列表中
-            // 注意：这里不会因为一个验证失败而中断后续验证
+            const error = validator(value, processedRule, context);
+            // 检查是否是存在性或类型验证错误，如果是，则跳过后续业务规则验证
+            // presenceError 通常表示值不存在，typeError 表示类型不匹配
+            // 根据错误代码判断是否为存在性或类型错误
             if (error) {
+                if (
+                    error.code === ValidationErrorCode.REQUIRED ||
+                    error.code === ValidationErrorCode.TYPE_MISMATCH
+                ) {
+                    return [error];
+                }
                 errors.push(error);
             }
         }
 
         // 如果提供了处理子元素的验证函数，则执行子元素验证
         if (handleChildren) {
-            const childError = handleChildren(value, rule, context);
+            const childError = handleChildren(value, processedRule, context);
             // 将子元素验证的错误合并到主错误列表中
             if (childError) {
                 errors = [...errors, ...childError];

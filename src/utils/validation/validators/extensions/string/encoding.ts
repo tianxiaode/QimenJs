@@ -5,11 +5,14 @@ import {
     ValidationResult,               // 验证结果类型
     Validator,                  // 验证器基类
 } from '../../../core';
-import { StringExtensionRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
+import { RequiredStringRuleOptions } from '../../../rules';       // 字符串高级规则选项类型
 import { validateStringByPresetPattern } from './pattern';        // 使用指定模式进行验证的函数
 
 /**
  * 验证Base64编码格式是否正确
+ * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
  * 
  * @param value - 待验证的Base64编码字符串
  * @param rule - 字符串高级规则选项
@@ -18,7 +21,7 @@ import { validateStringByPresetPattern } from './pattern';        // 使用指�
  */
 export function validateBase64(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用BASE64模式对Base64编码进行验证

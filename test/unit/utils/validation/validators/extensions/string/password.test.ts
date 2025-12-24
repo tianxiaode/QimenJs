@@ -1,4 +1,4 @@
-import { validatePassword, ValidationErrorContext } from '@/utils';
+import { validatePassword, ValidationErrorContext, ValidationErrorCode } from '@/utils';
 
 // 定义测试用的密码规则接口，覆盖默认值
 interface TestPasswordRuleOptions {
@@ -153,32 +153,9 @@ describe('密码验证函数测试', () => {
         }
     });
 
-    it('当密码为null且nullable为true时返回无效值错误（当前实现会先进行类型检查）', () => {
+    it('当密码为null时返回无效值错误', () => {
         const value = null;
         const rule: TestPasswordRuleOptions = {
-            nullable: true, // 允许null值
-            minLength: 8,
-            maxLength: 16,
-            uppercase: true,
-            lowercase: true,
-            number: true,
-            specialChar: true,
-        };
-
-        // @ts-ignore - 测试 null 值
-        const result = validatePassword(value, rule as any, {});
-
-        // 当前实现会先进行类型检查，所以会返回无效值错误
-        expect(result).not.toBeNull();
-        if (result && result[0]) {
-            expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
-        }
-    });
-
-    it('当密码为null且nullable为false时返回无效值错误', () => {
-        const value = null;
-        const rule: TestPasswordRuleOptions = {
-            nullable: false, // 不允许null值
             minLength: 8,
             maxLength: 16,
             uppercase: true,
@@ -196,32 +173,9 @@ describe('密码验证函数测试', () => {
         }
     });
 
-    it('当密码为undefined且required为false时返回必填错误（当前实现会先进行类型检查）', () => {
+    it('当密码为undefined时返回必填错误', () => {
         const value = undefined;
         const rule: TestPasswordRuleOptions = {
-            required: false, // 不是必需的
-            minLength: 8,
-            maxLength: 16,
-            uppercase: true,
-            lowercase: true,
-            number: true,
-            specialChar: true,
-        };
-
-        // @ts-ignore - 测试 undefined 值
-        const result = validatePassword(value, rule as any, {});
-
-        // 当前实现会先进行类型检查，所以会返回必填错误
-        expect(result).not.toBeNull();
-        if (result && result[0]) {
-            expect(result[0].code).toBe('VALIDATION_REQUIRED');
-        }
-    });
-
-    it('当密码为undefined且required为true时返回必填错误', () => {
-        const value = undefined;
-        const rule: TestPasswordRuleOptions = {
-            required: true, // 是必需的
             minLength: 8,
             maxLength: 16,
             uppercase: true,

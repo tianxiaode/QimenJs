@@ -18,6 +18,10 @@ export interface StringTrimRuleOptions {
     trimNewline?: boolean;
 }
 
+
+export interface StringExtensionRuleOptions extends StringRuleOptions, StringTrimRuleOptions {
+}
+
 export interface StringSplitRuleOptions extends StringExtensionRuleOptions, RuleArrayItemsOptions {
     separator: string | RegExp;
 
@@ -42,11 +46,13 @@ export interface StringSplitRuleOptions extends StringExtensionRuleOptions, Rule
     trim?: boolean;
 }
 
-export interface StringExtensionRuleOptions extends StringRuleOptions, StringTrimRuleOptions {}
-{
-}
 
-export interface PasswordRuleOptions extends Omit<StringExtensionRuleOptions, 'required' | 'nullable' | 'empty'> {
+export interface RequiredStringRuleOptions extends Omit<
+    StringExtensionRuleOptions,
+    'required' | 'nullable' | 'empty'
+> {}
+
+export interface PasswordRuleOptions extends RequiredStringRuleOptions {
     minLength: number;
     maxLength: number;
     uppercase?: boolean;

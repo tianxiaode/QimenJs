@@ -9,9 +9,25 @@ import { ArrayRuleOptions } from '../../../rules';
 import { checkArrayType } from './type';
 import { checkArrayLength } from './length';
 import { checkArrayEnum } from './enum';
-import { createCoreValidator } from '../factory';
+import { createCoreValidator, preprocessRequiredRule } from '../factory';
 import { checkPresence } from '../../common';
 import { normalizeChildRule } from '../convert';
+
+/**
+ * 检查数组验证规则是否需要值存在
+ * 当规则中包含长度或枚举约束时，值必须存在
+ * 
+ * @param rule 数组验证规则
+ * @returns 如果规则需要值存在则返回 true，否则返回 false
+ */
+const requiresArrayValuesCheck = (rule: ArrayRuleOptions): boolean => {
+    return (
+        rule.maxLength !== undefined ||
+        rule.minLength !== undefined ||
+        rule.exactLength !== undefined ||
+        rule.enum !== undefined 
+    );
+};
 
 /**
  * 数组验证器 - 组合多个验证函数形成完整的数组验证管道
@@ -24,6 +40,10 @@ import { normalizeChildRule } from '../convert';
  * 5. 子元素验证 (自定义逻辑)
  */
 export const validateArray = createCoreValidator(
+    (rule: ArrayRuleOptions): ArrayRuleOptions => {
+        // 使用通用的预处理函数，传入特定于数组的检查函数
+        return preprocessRequiredRule(rule, requiresArrayValuesCheck);
+    },
     // 基础验证器列表，按顺序执行
     [checkPresence, checkArrayType, checkArrayLength, checkArrayEnum],
     

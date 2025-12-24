@@ -1,6 +1,7 @@
 import { ValidationErrorBuilder, ValidationErrorContext, ValidationResult, Validator } from '../../../core';
 import { SortedRuleOptions } from '../../../rules';
 import { validateArray } from '../../core';
+import { validateRequiredArray } from './required';
 
 /**
  * 数组排序验证器
@@ -37,7 +38,7 @@ export function validateSorted(
 ): ValidationResult {
     // 先进行基础数组验证，确保值存在且为数组
     // 通过覆盖 required 和 nullable 属性确保值必须存在且不为 null
-    const baseResult = validateArray(value, { ...rule, required: true, nullable: false }, context);
+    const baseResult = validateRequiredArray(value, rule, context);
     if (baseResult) return baseResult;
     
     // 创建比较函数

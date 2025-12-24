@@ -1,5 +1,5 @@
 // 导入所需的规则选项和核心验证工具
-import { StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
+import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
 import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
@@ -11,6 +11,9 @@ import { validateStringByPresetPattern } from './pattern';                     /
 /**
  * 验证邮箱地址格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的邮箱地址字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -18,7 +21,7 @@ import { validateStringByPresetPattern } from './pattern';                     /
  */
 export function validateEmail(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用EMAIL模式对邮箱地址进行验证
@@ -28,6 +31,9 @@ export function validateEmail(
 /**
  * 验证电话号码格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的电话号码字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -35,7 +41,7 @@ export function validateEmail(
  */
 export function validatePhone(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用PHONE模式对电话号码进行验证
@@ -45,6 +51,9 @@ export function validatePhone(
 /**
  * 验证用户名格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的用户名字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -52,7 +61,7 @@ export function validatePhone(
  */
 export function validateUsername(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用USERNAME模式对用户名进行验证
@@ -62,6 +71,9 @@ export function validateUsername(
 /**
  * 验证UUID格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的UUID字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -69,7 +81,7 @@ export function validateUsername(
  */
 export function validateUUID(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用UUID模式对UUID进行验证
@@ -79,6 +91,9 @@ export function validateUUID(
 /**
  * 验证信用卡号格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的信用卡号字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -86,7 +101,7 @@ export function validateUUID(
  */
 export function validateCreditCard(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CREDIT_CARD模式对信用卡号进行验证
@@ -96,6 +111,9 @@ export function validateCreditCard(
 /**
  * 验证中国身份证号格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的中国身份证号字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -103,7 +121,7 @@ export function validateCreditCard(
  */
 export function validateChineseID(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_ID模式对中国身份证号进行验证
@@ -113,6 +131,9 @@ export function validateChineseID(
 /**
  * 验证中国邮政编码格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的中国邮政编码字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -120,7 +141,7 @@ export function validateChineseID(
  */
 export function validateChinesePostcode(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用CHINESE_POSTCODE模式对中国邮政编码进行验证

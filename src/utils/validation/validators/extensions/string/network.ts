@@ -1,5 +1,5 @@
 // 导入所需的类型定义和工具函数
-import { StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
+import { RequiredStringRuleOptions, StringExtensionRuleOptions } from '../../../rules';                    // 字符串高级规则选项类型
 import {
     ValidationErrorContext,         // 验证错误上下文类型
     ValidationPatternType,          // 验证模式枚举类型
@@ -12,6 +12,9 @@ import { validateStringByPresetPattern } from './pattern';                     /
 /**
  * 验证URL格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的URL字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -19,7 +22,7 @@ import { validateStringByPresetPattern } from './pattern';                     /
  */
 export function validateUrl(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的URL模式进行验证
@@ -29,6 +32,9 @@ export function validateUrl(
 /**
  * 验证IPv4地址格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的IPv4地址字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，默认为空对象
@@ -36,7 +42,7 @@ export function validateUrl(
  */
 export function validateIPv4(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context: ValidationErrorContext = {}
 ): ValidationResult {
     // 使用指定的IPv4模式进行验证
@@ -46,6 +52,9 @@ export function validateIPv4(
 /**
  * 验证IPv6地址格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的IPv6地址字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，可选参数
@@ -53,7 +62,7 @@ export function validateIPv4(
  */
 export function validateIPv6(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的IPv6模式进行验证
@@ -63,6 +72,9 @@ export function validateIPv6(
 /**
  * 验证MAC地址格式是否正确
  * 
+ * 此验证器要求值必须存在且不为null，但允许空字符串
+ * 如果值为 null 或 undefined，验证器将返回相应的错误
+ * 
  * @param value - 待验证的MAC地址字符串
  * @param rule - 字符串高级规则选项
  * @param context - 验证错误上下文，可选参数
@@ -70,7 +82,7 @@ export function validateIPv6(
  */
 export function validateMacAddress(
     value: string,
-    rule: StringExtensionRuleOptions,
+    rule: RequiredStringRuleOptions,
     context?: ValidationErrorContext
 ): ValidationResult {
     // 使用指定的MAC地址模式进行验证

@@ -5,4 +5,4 @@ export { checkArrayEnum } from '../../core/array/enum';
 export { validateEmptyArray } from './empty';
 export { validateSorted } from './sorted';
 export { validateUniqueBy } from './uniqueBy';
-export { validateNotEmptydArray as validateRequiredArray } from './not-empty';
+export { validateRequiredArray } from './required';

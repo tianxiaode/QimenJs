@@ -1,29 +1,35 @@
-import { ValidationErrorContext, ValidationResult, ValidationErrorBuilder, Validator } from '../../../core';
+import {
+    ValidationErrorContext,
+    ValidationResult,
+    ValidationErrorBuilder,
+    Validator,
+} from '../../../core';
 import { UniqueByRuleOptions } from '../../../rules';
 import { validateArray } from '../../core';
+import { validateRequiredArray } from './required';
 
 /**
  * 基于指定属性或函数的数组唯一性验证器
- * 
+ *
  * 该验证器用于验证数组中元素的唯一性，但不同于简单的值唯一性检查，
  * 它允许指定根据对象的某个属性或通过函数计算出的值来进行唯一性判断。
- * 
+ *
  * 验证流程：
  * 1. 首先执行基础数组验证（类型检查、存在性检查等）
  * 2. 如果提供了 uniqueBy 选项，则执行唯一性检查
  * 3. 使用指定的属性名或函数提取比较键值
  * 4. 检查所有键值是否唯一
- * 
+ *
  * @param value - 待验证的值，应为数组类型
  * @param rule - 唯一性验证规则选项
  * @param context - 验证上下文，包含路径等信息
  * @returns 验证结果，如果验证失败返回错误数组，否则返回null
- * 
+ *
  * @example
  * ```typescript
  * // 验证用户数组中每个用户的ID唯一
  * validateUniqueBy(users, { uniqueBy: 'id' });
- * 
+ *
  * // 验证用户数组中每个用户的邮箱唯一（忽略大小写）
  * validateUniqueBy(users, { uniqueBy: user => user.email.toLowerCase() });
  * ```
@@ -37,7 +43,7 @@ export function validateUniqueBy(
 
     // 先进行基础数组验证，确保值存在且为数组
     // 通过覆盖 required 和 nullable 属性确保值必须存在且不为 null
-    const baseResult = validateArray(value, { ...rule, required: true, nullable: false }, context);
+    const baseResult = validateRequiredArray(value, rule, context);
     if (baseResult) {
         return baseResult;
     }

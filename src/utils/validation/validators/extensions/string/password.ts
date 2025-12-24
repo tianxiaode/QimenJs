@@ -10,6 +10,7 @@ import {
 import { PasswordRuleOptions } from '@/utils/validation/rules'; // 密码规则选项类型
 import { validateStringExtension } from './extension'; // 字符串高级验证函数
 import { validatePattern } from '../../common'; // 模式验证函数
+import { validateRequiredString } from './required';
 
 /**
  * 验证密码是否符合指定规则
@@ -32,15 +33,12 @@ export function validatePassword(
     context: ValidationErrorContext = {}
 ): ValidationRuleError[] | null {
     // 先执行字符串高级验证（如长度、必填等）
-    const validateStringResult = validateStringExtension(
+    const validateStringResult = validateRequiredString(
         value,
         {
             ...rule,
-            required: true,
             minLength: rule.minLength || 8,
             maxLength: rule.maxLength || 16,
-            nullable: false,
-            empty: false,
         },
         context
     );

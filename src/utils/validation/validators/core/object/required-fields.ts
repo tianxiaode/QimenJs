@@ -1,3 +1,4 @@
+import { ObjectRuleOptions } from '../../../rules';
 import { CheckResult, ValidationErrorBuilder, ValidationErrorContext, ValidationRuleError } from '../../../core';
 
 /**
@@ -12,10 +13,11 @@ import { CheckResult, ValidationErrorBuilder, ValidationErrorContext, Validation
  */
 export function checkRequiredFields(
     value: any,
-    requiredFields: readonly string[],
-    context: ValidationErrorContext
+    rule: ObjectRuleOptions,
+    context: ValidationErrorContext = {}
 ): CheckResult {
     // 遍历所有必需字段
+    const requiredFields = rule.requiredFields || [];
     for (const key of requiredFields) {
         // 检查字段是否存在（即使是 undefined 值也算存在）
         if (!(key in value)) {

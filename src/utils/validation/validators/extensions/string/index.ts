@@ -5,3 +5,4 @@ export * from './pattern';
 export * from './encoding';
 export * from './color';
 export * from './extension';
+export * from './required';

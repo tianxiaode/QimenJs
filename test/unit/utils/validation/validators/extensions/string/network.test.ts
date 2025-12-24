@@ -5,6 +5,7 @@ import {
     validateMacAddress,
     ValidationErrorContext,
     StringExtensionRuleOptions,
+    ValidationErrorCode,
 } from '@/utils';
 
 describe('网络格式验证函数测试', () => {
@@ -60,14 +61,30 @@ describe('网络格式验证函数测试', () => {
             }
         });
 
-        it('当值为null时验证通过（跳过验证）', () => {
+        it('当值为null时返回错误', () => {
             const value = null;
             const rule: StringExtensionRuleOptions = {};
 
             // @ts-ignore - 测试 null 值
             const result = validateUrl(value, rule, {});
 
-            expect(result).toBeNull();
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateUrl(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
         });
     });
 
@@ -134,6 +151,32 @@ describe('网络格式验证函数测试', () => {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
             }
         });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateIPv4(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateIPv4(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
+        });
     });
 
     describe('validateIPv6', () => {
@@ -187,6 +230,32 @@ describe('网络格式验证函数测试', () => {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
             }
         });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateIPv6(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateIPv6(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
+            }
+        });
     });
 
     describe('validateMacAddress', () => {
@@ -238,6 +307,32 @@ describe('网络格式验证函数测试', () => {
             expect(result).not.toBeNull();
             if (result && result[0]) {
                 expect(result[0].code).toBe('VALIDATION_PATTERN_MISMATCH');
+            }
+        });
+
+        it('当值为null时返回错误', () => {
+            const value = null;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 null 值
+            const result = validateMacAddress(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            }
+        });
+
+        it('当值为undefined时返回错误', () => {
+            const value = undefined;
+            const rule: StringExtensionRuleOptions = {};
+
+            // @ts-ignore - 测试 undefined 值
+            const result = validateMacAddress(value, rule, {});
+
+            expect(result).not.toBeNull();
+            if (result && result[0]) {
+                expect(result[0].code).toBe('VALIDATION_REQUIRED');
             }
         });
 

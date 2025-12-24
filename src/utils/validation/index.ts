@@ -23,6 +23,7 @@ export {
     validateDate,
 
     //extensions/string
+    validateRequiredString,
     validateHexColor,
     validateRGBColor,
     validateRGBAColor,
@@ -45,6 +46,7 @@ export {
     validateEmptyArray,
     validateSorted,
     validateUniqueBy,
+    validateRequiredArray,
 
     //extensions/object
     validateEmptyObject,
