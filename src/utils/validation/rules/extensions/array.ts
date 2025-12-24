@@ -1,9 +1,31 @@
+import { RuleBaseOptions } from '../../core';
 import { ArrayRuleOptions } from '../core';
 
+/**
+ * 数组唯一性验证规则选项
+ */
+export interface ArrayUniqueRuleOptions extends ArrayRuleOptions {
+  /**
+   * 是否要求数组元素唯一
+   * 默认为 false
+   */
+  unique?: boolean;
+}
+
+/**
+ * 数组必需验证规则选项
+ * 忽略 required、nullable 和 empty 选项，因为扩展规则通常在值存在时才验证
+ */
 export interface ArrayRequiredRuleOptions extends Omit<
-    ArrayRuleOptions,
-    'required' | 'nullable' | 'empty'
+  ArrayUniqueRuleOptions,
+  'required' | 'nullable' | 'empty'
 > {}
+
+/**
+ * 数组扩展规则选项
+ * 继承基本数组规则选项和唯一性规则选项
+ */
+export interface ArrayExtensionRuleOptions extends ArrayRuleOptions, ArrayUniqueRuleOptions {}
 
 /** 关系约束 */
 //   some?: ValidationRuleBase;

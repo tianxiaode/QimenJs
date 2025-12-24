@@ -4,12 +4,11 @@ import {
     ValidationErrorBuilder,
     ValidationErrorContext,
     CheckFunction,
-    ValidationErrorCode,
 } from '../../core';
 
 /**
  * 将验证规则设置为必需且不可为空，可选择是否允许空值
- * 
+ *
  * @template T 验证规则类型
  * @param rule 验证规则对象
  * @param allowEmpty 是否允许空值，默认为false
@@ -17,26 +16,30 @@ import {
  */
 export function enforceRuleRequirement<T extends Record<string, any>>(
     rule: T,
-    allowEmpty: boolean = true
+    allowEmpty: boolean = false
 ): T {
-    return { ...rule, required: true, nullable: false, empty: allowEmpty } as T;
+    const newRule: any = { ...rule, required: true, nullable: false };
+    if (allowEmpty) {
+        newRule.empty = allowEmpty;
+    }
+    return newRule;
 }
 
 /**
  * 预处理验证规则函数
  * 根据特定条件自动设置 required 和 nullable 属性
- * 
+ *
  * @template T 验证规则类型
  * @param rule 验证规则对象
  * @param requiresValueCheck 检查是否需要值存在的函数
  * @returns 处理后的验证规则对象
  */
 export function preprocessRequiredRule<T extends Record<string, any>>(
-    rule: T, 
+    rule: T,
     requiresValueCheck: (rule: T) => boolean
 ): T {
     const needsValue = requiresValueCheck(rule);
-    
+
     if (needsValue) {
         return enforceRuleRequirement(rule);
     }
@@ -55,7 +58,7 @@ export function createCoreValidator(
     preProcessRule: (rule: any) => any,
     gates: CheckFunction[],
     validators: CheckFunction[],
-    handleChildren?: (value: any, rule: any, context: ValidationErrorContext) => ValidationResult,
+    handleChildren?: (value: any, rule: any, context: ValidationErrorContext) => ValidationResult
 ) {
     /**
      * 核心验证函数
@@ -82,7 +85,7 @@ export function createCoreValidator(
         for (const gate of gates) {
             const error = gate(value, processedRule, context);
             if (error) {
-                return [error]; // 对于任何一个gate验证器返回错误，立即返回                
+                return [error]; // 对于任何一个gate验证器返回错误，立即返回
             }
         }
 

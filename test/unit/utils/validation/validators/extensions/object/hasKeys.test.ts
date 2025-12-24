@@ -73,7 +73,7 @@ describe('validateHasKeys函数测试', () => {
 
         expect(result).not.toBeNull();
         if (result) {
-            expect(result[0].code).toBe('VALIDATION_INVALID_VALUE');
+            expect(result[0].code).toBe('VALIDATION_TYPE_MISMATCH');
         }
     });
 
