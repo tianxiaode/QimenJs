@@ -79,6 +79,17 @@ export class EventScope<Events extends EventMap> {
         });
     }
 
+    /**
+     * 添加一个清理函数，在作用域销毁时执行
+     * 
+     * @param cleanup 要在作用域销毁时执行的清理函数
+     */
+    addCleanup(cleanup: () => void): void {
+        if (!this.disposed) {
+            this.disposers.push(cleanup);
+        }
+    }
+
     /** 
      * 销毁当前作用域，取消所有绑定到此作用域的事件订阅
      * 
@@ -88,7 +99,16 @@ export class EventScope<Events extends EventMap> {
         if (this.disposed) return;
 
         this.disposed = true;
-        this.disposers.forEach((off) => off());
+        
+        // 执行所有清理函数
+        this.disposers.forEach((cleanup) => {
+            try {
+                cleanup();
+            } catch (error) {
+                console.error('Error during scope disposal:', error);
+            }
+        });
+        
         this.disposers.length = 0;
     }
 }
