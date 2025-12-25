@@ -1,3 +1,5 @@
+import { has } from './has';
+
 /**
  * 删除指定名称的 Cookie
  * @param {string} name - 要删除的 Cookie 名称
@@ -7,7 +9,7 @@
  * @returns {boolean} - 如果成功删除返回 true，否则返回 false
  */
 export function remove(name: string, path?: string, domain?: string, secure?: boolean): boolean {
-  if (!name || !hasLocal(name)) {
+  if (!name || !has(name)) {
     return false;
   }
 
@@ -17,23 +19,6 @@ export function remove(name: string, path?: string, domain?: string, secure?: bo
     (domain ? `; domain=${domain}` : '') +
     (secure ? '; secure' : '');
 
-  return !hasLocal(name);
+  return !has(name);
 }
 
-/**
- * 检查指定名称的 Cookie 是否存在（内部函数）
- * @param {string} name - 要检查的 Cookie 名称
- * @returns {boolean} - 如果 Cookie 存在返回 true，否则返回 false
- */
-function hasLocal(name: string): boolean {
-  if (!name) {
-    return false;
-  }
-
-  // 使用正则表达式检查 Cookie 是否存在
-  return new RegExp(
-    "(?:^|;\\s*)" +
-    encodeURIComponent(name).replace(/[-.+*]/g, "\\$&") +
-    "\\s*\\="
-  ).test(document.cookie);
-}

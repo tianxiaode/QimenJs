@@ -170,4 +170,90 @@ describe('orderBy utility function', () => {
     expect(original).toEqual(originalCopy);
     expect(result).not.toBe(original);
   });
+
+  it('should sort by date fields in ascending order', () => {
+    interface Event {
+      name: string;
+      date: Date;
+    }
+
+    const events: Event[] = [
+      { name: 'Event C', date: new Date(2023, 11, 15) }, // Dec 15, 2023
+      { name: 'Event A', date: new Date(2023, 0, 15) },  // Jan 15, 2023
+      { name: 'Event B', date: new Date(2023, 5, 15) },  // Jun 15, 2023
+    ];
+
+    const result = orderBy(events, [{ key: 'date', order: 'asc' }]);
+    expect(result).toEqual([
+      { name: 'Event A', date: new Date(2023, 0, 15) },
+      { name: 'Event B', date: new Date(2023, 5, 15) },
+      { name: 'Event C', date: new Date(2023, 11, 15) },
+    ]);
+  });
+
+  it('should sort by date fields in descending order', () => {
+    interface Event {
+      name: string;
+      date: Date;
+    }
+
+    const events: Event[] = [
+      { name: 'Event C', date: new Date(2023, 11, 15) }, // Dec 15, 2023
+      { name: 'Event A', date: new Date(2023, 0, 15) },  // Jan 15, 2023
+      { name: 'Event B', date: new Date(2023, 5, 15) },  // Jun 15, 2023
+    ];
+
+    const result = orderBy(events, [{ key: 'date', order: 'desc' }]);
+    expect(result).toEqual([
+      { name: 'Event C', date: new Date(2023, 11, 15) },
+      { name: 'Event B', date: new Date(2023, 5, 15) },
+      { name: 'Event A', date: new Date(2023, 0, 15) },
+    ]);
+  });
+
+  it('should sort by string fields using localeCompare', () => {
+    interface Product {
+      name: string;
+      category: string;
+    }
+
+    const products: Product[] = [
+      { name: 'Z Product', category: 'B' },
+      { name: 'A Product', category: 'C' },
+      { name: 'M Product', category: 'A' },
+    ];
+
+    const result = orderBy(products, [{ key: 'name', order: 'asc' }]);
+    expect(result).toEqual([
+      { name: 'A Product', category: 'C' },
+      { name: 'M Product', category: 'A' },
+      { name: 'Z Product', category: 'B' },
+    ]);
+  });
+
+  it('should handle multiple sort criteria with different data types', () => {
+    interface Item {
+      name: string;
+      date: Date;
+      priority: number;
+    }
+
+    const items: Item[] = [
+      { name: 'Item C', date: new Date(2023, 5, 15), priority: 1 },
+      { name: 'Item A', date: new Date(2023, 5, 15), priority: 2 },
+      { name: 'Item B', date: new Date(2023, 0, 15), priority: 1 },
+    ];
+
+    // Sort by date (asc) then by name (asc)
+    const result = orderBy(items, [
+      { key: 'date', order: 'asc' },
+      { key: 'name', order: 'asc' },
+    ]);
+
+    expect(result).toEqual([
+      { name: 'Item B', date: new Date(2023, 0, 15), priority: 1 },
+      { name: 'Item A', date: new Date(2023, 5, 15), priority: 2 },
+      { name: 'Item C', date: new Date(2023, 5, 15), priority: 1 },
+    ]);
+  });
 });
