@@ -69,6 +69,13 @@
             "rootDir": "src/core",
             "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
             "packageName": "@orbitjs/core"
+        },
+        "http": {
+            "entry": "src/http/index.ts",
+            "outDir": "dist/http",
+            "rootDir": "src/http",
+            "dependencies": ["utils", "validation", "error", "logger", "event-core"],
+            "packageName": "@orbitjs/http"
         }
     },
 

@@ -68,6 +68,11 @@
       "import": "./dist/validation/index.esm.js",
       "require": "./dist/validation/index.js",
       "types": "./dist/validation/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http/index.esm.js",
+      "require": "./dist/http/index.js",
+      "types": "./dist/http/index.d.ts"
     }
   },
   "files": [
