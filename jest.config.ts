@@ -15,7 +15,7 @@ const config = {
     '!src/**/index.ts'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'html', 'lcov'],
   coverageThreshold: {
     global: {
       branches: 80,
@@ -27,7 +27,7 @@ const config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@orbitjs/core$': '<rootDir>/src/core',
-    '^@orbitjs/utils$': '<rootDir>/src/utils'
+    '^@orbitjs/utils$': '<rootDir>/src/utils',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,
