@@ -1,6 +1,6 @@
 import type { Config } from 'jest';
 
-const config: Config = {
+const config = {
   preset: 'ts-jest',
   collectCoverage: true,
   testEnvironment: 'node',
