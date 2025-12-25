@@ -55,6 +55,13 @@
             "dependencies": ["event-core", "runtime-env"],
             "packageName": "@orbitjs/event-dom"
         },
+        "async": {
+            "entry": "src/async/index.ts",
+            "outDir": "dist/async",
+            "rootDir": "src/async",
+            "dependencies": [],
+            "packageName": "@orbitjs/async"
+        },
 
         "core": {
             "entry": "src/core/index.ts",
