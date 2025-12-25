@@ -9,7 +9,7 @@ Object.defineProperty(window.document, 'cookie', {
 });
 
 // Mock set 函数
-jest.mock('@orbitjs/utils/cookie/set', () => {
+jest.mock('@/utils/cookie/set', () => {
   return {
     set: jest.fn((name, value) => {
       // 模仿set函数的行为：如果name有效则返回true

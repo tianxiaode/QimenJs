@@ -3,7 +3,7 @@ import type { Config } from 'jest';
 const config = {
   preset: 'ts-jest',
   collectCoverage: true,
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/test'],
   testMatch: [
     '<rootDir>/test/unit/**/*.test.ts',
