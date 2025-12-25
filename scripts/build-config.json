@@ -1,33 +1,75 @@
 {
-  "modules": {
-    "core": {
-      "entry": "src/core/index.ts",
-      "outDir": "dist/core",
-      "rootDir": "src/core",
-      "dependencies": ["utils"],
-      "packageName": "@orbitjs/core"
+    "modules": {
+        "runtime-env": {
+            "entry": "src/runtime-env/index.ts",
+            "outDir": "dist/runtime-env",
+            "rootDir": "src/runtime-env",
+            "dependencies": [],
+            "packageName": "@orbitjs/runtime-env"
+        },
+
+        "utils": {
+            "entry": "src/utils/index.ts",
+            "outDir": "dist/utils",
+            "rootDir": "src/utils",
+            "dependencies": ["runtime-env"],
+            "packageName": "@orbitjs/utils"
+        },
+
+        "validation": {
+            "entry": "src/validation/index.ts",
+            "outDir": "dist/validation",
+            "rootDir": "src/validation",
+            "dependencies": ["error"],
+            "packageName": "@orbitjs/validation"
+        },
+
+        "error": {
+            "entry": "src/error/index.ts",
+            "outDir": "dist/error",
+            "rootDir": "src/error",
+            "dependencies": [],
+            "packageName": "@orbitjs/error"
+        },
+
+        "logger": {
+            "entry": "src/logger/index.ts",
+            "outDir": "dist/logger",
+            "rootDir": "src/logger",
+            "dependencies": ["runtime-env", "error"],
+            "packageName": "@orbitjs/logger"
+        },
+
+        "event-core": {
+            "entry": "src/event-core/index.ts",
+            "outDir": "dist/event-core",
+            "rootDir": "src/event-core",
+            "dependencies": [],
+            "packageName": "@orbitjs/event-core"
+        },
+
+        "event-dom": {
+            "entry": "src/event-dom/index.ts",
+            "outDir": "dist/event-dom",
+            "rootDir": "src/event-dom",
+            "dependencies": ["event-core", "runtime-env"],
+            "packageName": "@orbitjs/event-dom"
+        },
+
+        "core": {
+            "entry": "src/core/index.ts",
+            "outDir": "dist/core",
+            "rootDir": "src/core",
+            "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
+            "packageName": "@orbitjs/core"
+        }
     },
-    "utils": {
-      "entry": "src/utils/index.ts",
-      "outDir": "dist/utils", 
-      "rootDir": "src/utils",
-      "dependencies": [],
-      "packageName": "@orbitjs/utils"
-    },
-    "validation": {
-      "entry": "src/validation/index.ts",
-      "outDir": "dist/validation",
-      "rootDir": "src/validation", 
-      "dependencies": [],
-      "packageName": "@orbitjs/validation"
+
+    "build": {
+        "tsconfig": "tsconfig.build.json",
+        "formats": ["cjs", "esm"],
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true
     }
-  },
-  
-  "build": {
-    "tsconfig": "tsconfig.build.json",
-    "formats": ["cjs", "esm"],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true
-  }
 }
