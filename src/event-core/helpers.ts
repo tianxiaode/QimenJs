@@ -1,5 +1,5 @@
 import { EventBus } from "./EventBus";
-
+import { Logger } from "@orbitjs/logger";
 /** 
  * 🔧 在这里定义全局事件表
  * 
@@ -21,7 +21,9 @@ export type AppEvents = {
 };
 
 // 创建全局事件总线实例
-const bus = new EventBus<AppEvents>();
+const bus = new EventBus<AppEvents>(
+  Logger.for('event.bus')
+);
 
 /** 
  * 函数风格 API（业务层只用这些）

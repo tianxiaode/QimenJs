@@ -10,10 +10,8 @@ let idSeed = 0;
  * @returns 生成的唯一ID字符串
  */
 export function getId(prefix: string = "id"): string {
-    if (typeof prefix !== "string") {
-        throw new Error("Prefix must be a string");
-    }
-    return `${prefix}-${idSeed++}`;
+    idSeed += 1;
+    return `${prefix}-${Date.now()}-${idSeed}`;
 }
 
 /**

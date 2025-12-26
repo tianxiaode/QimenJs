@@ -1,9 +1,12 @@
-import { EventHandler, EventMap } from "./types";
-import { EventScope } from "./EventScope";
+import { EventHandler, EventMap } from './types';
+import { EventScope } from './EventScope';
+import { ILogger } from '@orbitjs/logger';
+import { string } from '@orbitjs/utils';
+import { logBus, logEvent } from './EventLog';
 
 /**
  * 事件总线 - 用于管理事件订阅、发布和取消订阅的核心类
- * 
+ *
  * @template Events 事件映射类型，定义了事件名称和载荷类型的对应关系
  * @example
  * ```ts
@@ -12,36 +15,32 @@ import { EventScope } from "./EventScope";
  *   'user:login': { userId: string };
  *   'user:logout': void;
  * };
- * 
+ *
  * // 创建事件总线实例
  * const bus = new EventBus<MyEvents>();
- * 
+ *
  * // 订阅事件
  * const unsubscribe = bus.on('user:login', (payload) => {
  *   console.log('用户登录:', payload.userId);
  * });
- * 
+ *
  * // 发布事件
  * bus.emit('user:login', { userId: '123' });
- * 
+ *
  * // 取消订阅
  * unsubscribe();
  * ```
  */
-export class EventBus<Events extends EventMap = EventMap> {
-    private listeners = new Map<keyof Events, Set<EventHandler>>();
+export class EventBus<Events extends EventMap> {
+    private readonly busId = string.getId('event-bus');
+    private readonly listeners = new Map<keyof Events, Set<EventHandler>>();
+    private readonly logger?: ILogger;
 
-    /**
-     * 订阅事件
-     * 
-     * @param event 要订阅的事件名称
-     * @param handler 事件处理器函数
-     * @returns 返回一个取消订阅的函数，调用它可以取消事件订阅
-     */
-    on<K extends keyof Events>(
-        event: K,
-        handler: EventHandler<Events[K]>
-    ): () => void {
+    constructor(logger?: ILogger) {
+        this.logger = logger;
+    }
+
+    on<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): () => void {
         let set = this.listeners.get(event);
         if (!set) {
             set = new Set();
@@ -49,7 +48,6 @@ export class EventBus<Events extends EventMap = EventMap> {
         }
         set.add(handler);
 
-        // 返回取消订阅函数
         return () => {
             set?.delete(handler);
             if (set?.size === 0) {
@@ -58,73 +56,71 @@ export class EventBus<Events extends EventMap = EventMap> {
         };
     }
 
-    /**
-     * 订阅只执行一次的事件
-     * 
-     * @param event 要订阅的事件名称
-     * @param handler 事件处理器函数，执行后会自动取消订阅
-     */
-    once<K extends keyof Events>(
-        event: K,
-        handler: EventHandler<Events[K]>
-    ): void {
-        const off = this.on(event, (payload) => {
+    off<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): void {
+        const set = this.listeners.get(event);
+
+        if (!set || !set.has(handler)) {
+            // 可选：低级别日志，帮助排查误用
+            logBus(this.logger, 'debug', 'off', this.busId, {
+                event: String(event),
+                found: false,
+            });
+            return;
+        }
+
+        set.delete(handler);
+
+        if (set.size === 0) {
+            this.listeners.delete(event);
+        }
+
+        logBus(this.logger, 'debug', 'off', this.busId, {
+            event: String(event),
+            found: true,
+        });
+    }
+
+    once<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): void {
+        const off = this.on(event, payload => {
             off();
             handler(payload);
         });
     }
 
-    /**
-     * 取消订阅特定事件的处理器
-     * 
-     * @param event 要取消订阅的事件名称
-     * @param handler 要取消的事件处理器
-     */
-    off<K extends keyof Events>(
-        event: K,
-        handler: EventHandler<Events[K]>
-    ): void {
-        this.listeners.get(event)?.delete(handler);
-    }
+    emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+        const handlers = this.listeners.get(event);
 
-    /**
-     * 发布事件
-     * 
-     * @param event 要发布的事件名称
-     * @param payload 事件载荷数据
-     */
-    emit<K extends keyof Events>(
-        event: K,
-        payload: Events[K]
-    ): void {
-        this.listeners.get(event)?.forEach((handler) => {
+        if (!handlers || handlers.size === 0) {
+            logBus(this.logger, 'debug', 'emit_no_listeners', this.busId, { event: String(event) });
+            return;
+        }
+
+        logEvent(this.logger, 'debug', 'emit', this.busId, String(event), {
+            handlerCount: handlers.size,
+        });
+
+        handlers.forEach(handler => {
             try {
                 handler(payload);
             } catch (err) {
-                console.error(`[EventBus] "${String(event)}" handler error`, err);
+                logEvent(this.logger, 'error', 'handler_error', this.busId, String(event), {
+                    error: err,
+                });
             }
         });
     }
 
-    /**
-     * 清理事件订阅
-     * 
-     * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
-     */
     clear(event?: keyof Events): void {
         if (event) {
             this.listeners.delete(event);
         } else {
             this.listeners.clear();
         }
+
+        logBus(this.logger, 'warn', 'clear', this.busId, { event: event ? String(event) : 'all' });
     }
 
-    /** 
-     * 创建生命周期作用域
-     * 
-     * @returns 返回一个EventScope实例，可以用于管理一组相关事件的生命周期
-     */
     createScope(): EventScope<Events> {
-        return new EventScope(this);
+        return new EventScope(this, this.busId, this.logger);
     }
 }

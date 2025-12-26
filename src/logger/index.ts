@@ -1,7 +1,7 @@
 import { Logger } from './Logger';
-import type { LoggerOptions } from './types';
+import type { LoggerOptions, ILogger,LogLevel } from './types';
 
-export { Logger, LoggerOptions };
+export { Logger, LoggerOptions, ILogger, LogLevel };
 
 //使用方法
 

@@ -1,4 +1,4 @@
-import { LogEntry, LogLevel, LoggerOptions } from './types';
+import { ILogger, LogEntry, LogLevel, LoggerOptions } from './types';
 import { format } from './format';
 import { consoleSink } from './sinks/console';
 import { LoggerChild } from './LoggerChild';
@@ -31,7 +31,7 @@ const LEVEL_ORDER: LogLevel[] = ['debug', 'info', 'warn', 'error'];
  */
 export class Logger {
     // 存储已创建的子记录器实例
-    private static children = new Map<string, LoggerChild>();
+    private static children = new Map<string, ILogger>();
 
     /**
      * 构造一个新的日志记录器实例
@@ -58,7 +58,7 @@ export class Logger {
      * const logger = Logger.for(UserService);
      * ```
      */
-    static for(target: string | Function): LoggerChild {
+    static for(target: string | Function): ILogger {
         // 确定目标的名称
         const name =
             typeof target === 'string' ? target : (target as any).$ClassName || target.name;

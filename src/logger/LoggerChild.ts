@@ -1,6 +1,6 @@
 // logger/LoggerChild.ts
 import { Logger } from './Logger';
-import { LogLevel } from './types';
+import { ILogger, LogLevel } from './types';
 
 /**
  * 子日志记录器类
@@ -20,7 +20,7 @@ import { LogLevel } from './types';
  * logger.error(new Error('Something went wrong'));
  * ```
  */
-export class LoggerChild {
+export class LoggerChild implements ILogger {
   /**
    * 创建一个新的子日志记录器实例
    * 

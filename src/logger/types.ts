@@ -65,3 +65,10 @@ export interface LoggerOptions {
      */
     color?: boolean;
 }
+
+export interface ILogger {
+  debug(message?: any, ...data: any[]): void;
+  info(message?: any, ...data: any[]): void;
+  warn(message?: any, ...data: any[]): void;
+  error(err: Error | any, ...data: any[]): void;
+}
