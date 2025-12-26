@@ -60,4 +60,27 @@ describe('colorLevel', () => {
     expect(colorLevel('DEBUG', true as boolean)).toBe(`\x1b[90mDEBUG\x1b[0m`);
     expect(colorLevel('WARN', Boolean(1) as boolean)).toBe(`\x1b[33mWARN\x1b[0m`);
   });
+
+  // 测试 7: 验证INFO级别不会被着色
+  test('should not colorize INFO level even when enabled', () => {
+    expect(colorLevel('INFO', true)).toBe('INFO');
+    expect(colorLevel('INFO', false)).toBe('INFO');
+  });
+
+  // 测试 8: 验证所有支持的颜色级别
+  test('should colorize all supported levels', () => {
+    const reset = '\x1b[0m';
+    
+    expect(colorLevel('DEBUG', true)).toBe(`\x1b[90mDEBUG${reset}`);
+    expect(colorLevel('WARN', true)).toBe(`\x1b[33mWARN${reset}`);
+    expect(colorLevel('ERROR', true)).toBe(`\x1b[31mERROR${reset}`);
+  });
+
+  // 测试 9: 验证颜色禁用时所有级别都不被着色
+  test('should not colorize any levels when disabled', () => {
+    expect(colorLevel('DEBUG', false)).toBe('DEBUG');
+    expect(colorLevel('WARN', false)).toBe('WARN');
+    expect(colorLevel('ERROR', false)).toBe('ERROR');
+    expect(colorLevel('INFO', false)).toBe('INFO');
+  });
 });

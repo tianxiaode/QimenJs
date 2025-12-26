@@ -134,6 +134,16 @@ describe('Logger', () => {
             expect(format).toHaveBeenCalledWith(errorEntry, { level: 'warn' });
             expect(consoleSink).toHaveBeenCalledWith('formatted error', 'error');
         });
+
+        it('should not emit logs when below minimum level', () => {
+            const debugEntry: LogEntry = { ...mockEntry, level: 'debug' };
+            const loggerWithInfoMinLevel = new Logger({ level: 'info' });
+
+            loggerWithInfoMinLevel.emit(debugEntry);
+
+            expect(format).not.toHaveBeenCalled();
+            expect(consoleSink).not.toHaveBeenCalled();
+        });
     });
 
     describe('shouldLog', () => {
@@ -169,11 +179,41 @@ describe('Logger', () => {
                 expect((logger as any).shouldLog(level)).toBe(true);
             });
         });
+
+        it('should return true when log level matches the set minimum', () => {
+            const logger = new Logger({ level: 'debug' });
+
+            expect((logger as any).shouldLog('debug')).toBe(true);
+            expect((logger as any).shouldLog('info')).toBe(true);
+            expect((logger as any).shouldLog('warn')).toBe(true);
+            expect((logger as any).shouldLog('error')).toBe(true);
+        });
     });
 
     describe('root', () => {
         it('should have a static root property', () => {
             expect(Logger.root).toBeDefined();
+        });
+
+        it('should be able to set the root logger', () => {
+            const newRoot = new Logger({ level: 'debug' });
+            Logger.root = newRoot;
+
+            expect(Logger.root).toBe(newRoot);
+        });
+    });
+
+    describe('default options', () => {
+        it('should use default options when none are provided', () => {
+            const logger = new Logger();
+
+            expect((logger as any).options).toEqual({});
+        });
+
+        it('should properly handle undefined options', () => {
+            const logger = new Logger(undefined);
+
+            expect(logger).toBeInstanceOf(Logger);
         });
     });
 });

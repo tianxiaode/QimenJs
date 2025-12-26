@@ -66,9 +66,44 @@ export interface LoggerOptions {
     color?: boolean;
 }
 
+/**
+ * 日志记录器接口
+ * 定义了日志记录器应实现的方法
+ */
 export interface ILogger {
+  /**
+   * 记录调试级别日志
+   * 用于记录调试信息，仅在日志级别设为 'debug' 或更低时才会输出
+   * 
+   * @param message - 要记录的消息
+   * @param data - 附加的数据参数
+   */
   debug(message?: any, ...data: any[]): void;
+  
+  /**
+   * 记录信息级别日志
+   * 用于记录一般信息，默认情况下会被输出
+   * 
+   * @param message - 要记录的消息
+   * @param data - 附加的数据参数
+   */
   info(message?: any, ...data: any[]): void;
+  
+  /**
+   * 记录警告级别日志
+   * 用于记录潜在的问题或不寻常但不影响程序运行的情况
+   * 
+   * @param message - 要记录的消息
+   * @param data - 附加的数据参数
+   */
   warn(message?: any, ...data: any[]): void;
+  
+  /**
+   * 记录错误级别日志
+   * 用于记录错误信息。如果传入的是 Error 实例，会特别处理其堆栈跟踪信息
+   * 
+   * @param err - 错误对象或错误消息
+   * @param data - 附加的数据参数
+   */
   error(err: Error | any, ...data: any[]): void;
 }

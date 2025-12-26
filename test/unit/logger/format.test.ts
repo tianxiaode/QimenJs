@@ -141,4 +141,54 @@ describe('format', () => {
 
         expect(result).toContain('12345');
     });
+
+    it('should format log entries with all required fields', () => {
+        const result = format(mockEntry, mockOptions);
+
+        expect(result).toContain('2023-01-01T12:00:00.000Z'); // timestamp
+        expect(result).toContain('INFO'); // level
+        expect(result).toContain('TestCategory'); // category
+        expect(result).toContain('Test message'); // message
+    });
+
+    it('should handle entries with both error and message fields', () => {
+        const entryWithBoth: LogEntry = {
+            ...mockEntry,
+            error: new Error('Test error'),
+        };
+
+        const result = format(entryWithBoth, mockOptions);
+
+        // When error is present, it should take precedence
+        expect(result).toContain('Test error');
+    });
+
+    it('should format entries with empty string message', () => {
+        const entryWithEmptyMessage: LogEntry = {
+            ...mockEntry,
+            message: '',
+        };
+
+        const result = format(entryWithEmptyMessage, mockOptions);
+
+        // 检查时间戳、级别和类别是否存在
+        expect(result).toContain('2023-01-01T12:00:00.000Z');
+        expect(result).toContain('INFO');
+        expect(result).toContain('TestCategory');
+        // 消息部分应该是空的，但后面可能还有空格
+    });
+
+    it('should format different log levels correctly', () => {
+        const levels: string[] = ['debug', 'info', 'warn', 'error'];
+        
+        levels.forEach(level => {
+            const entryWithLevel: LogEntry = {
+                ...mockEntry,
+                level: level as any,
+            };
+            
+            const result = format(entryWithLevel, mockOptions);
+            expect(result).toContain(level.toUpperCase());
+        });
+    });
 });
