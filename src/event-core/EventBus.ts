@@ -103,6 +103,11 @@ export class EventBus<Events extends EventMap> {
         });
     }
 
+    /**
+     * 清理事件订阅
+     * 
+     * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
+     */
     clear(event?: keyof Events): void {
         if (event) this.listeners.delete(event);
         else this.listeners.clear();
@@ -110,10 +115,22 @@ export class EventBus<Events extends EventMap> {
         this.logBus('warn', 'clear', { event: event ? String(event) : 'all' });
     }
 
+    /**
+     * 创建事件作用域
+     * 
+     * 用于管理一组相关事件的生命周期
+     * 
+     * @returns 返回一个EventScope实例
+     */
     createScope(): EventScope<Events> {
         return new EventScope(this, this.logger);
     }
 
+    /**
+     * 获取事件总线的唯一标识符
+     * 
+     * @returns 返回事件总线的ID
+     */
     getBusId(): string {
         return this.busId;
     }

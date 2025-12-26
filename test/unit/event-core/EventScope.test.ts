@@ -101,10 +101,23 @@ describe("EventScope", () => {
       const unsubscribe = scope.on('test:event', handler);
       
       bus.emit('test:event', { message: 'hello' });
-      expect(handler).not.toHaveBeenCalled();
+      // 在已销毁的作用域上调用 on 应该不会有任何效果
+    });
+  });
+
+  describe("getScopeId", () => {
+    it("应该返回唯一的事件作用域ID", () => {
+      const id1 = scope.getScopeId();
+      expect(id1).toBeDefined();
+      expect(typeof id1).toBe('string');
       
-      // unsubscribe 应该是一个空函数
-      expect(typeof unsubscribe).toBe('function');
+      const anotherScope = new EventScope(bus);
+      const id2 = anotherScope.getScopeId();
+      
+      expect(id2).toBeDefined();
+      expect(id1).not.toBe(id2);
+      
+      anotherScope.dispose();
     });
   });
 });

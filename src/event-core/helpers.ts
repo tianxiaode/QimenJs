@@ -67,7 +67,7 @@ export const emit = bus.emit.bind(bus);
 /** 
  * 清理事件订阅
  * 
- * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
+ * @param event 要清理的事件名称，如果不提供则清理所有事件订阅
  */
 export const clear = bus.clear.bind(bus);
 

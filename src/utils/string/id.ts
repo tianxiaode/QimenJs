@@ -15,6 +15,18 @@ export function getId(prefix: string = "id"): string {
 }
 
 /**
+ * 生成分布式追踪ID (traceId)
+ * @returns 生成的唯一追踪ID字符串，格式为16位十六进制字符串
+ */
+export function generateTraceId(): string {
+    // 生成16位十六进制字符串作为traceId
+    return Array.from({ length: 16 }, () => 
+        Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+    ).join('');
+}
+
+
+/**
  * 空字符串的表示（非断开空格字符）
  */
 export const emptyString = "\u00A0";
