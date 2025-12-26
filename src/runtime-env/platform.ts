@@ -18,3 +18,4 @@ export function getPlatform(): Platform {
     if (typeof process !== "undefined") return "node";
     return "unknown";
 }
+

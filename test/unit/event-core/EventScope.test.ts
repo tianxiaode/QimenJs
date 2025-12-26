@@ -1,6 +1,14 @@
 import { EventBus } from "@/event-core/EventBus";
 import { EventScope } from "@/event-core/EventScope";
 
+// Mock logger to prevent LoggerChild errors in tests
+const mockLogger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
+};
+
 // 定义测试用的事件类型
 type TestEvents = {
   'test:event': { message: string };
@@ -11,13 +19,19 @@ type TestEvents = {
 describe("EventScope", () => {
   let bus: EventBus<TestEvents>;
   let scope: EventScope<TestEvents>;
+  // 保存原始 console.error 以便在测试后恢复
+  const originalConsoleError = console.error;
 
   beforeEach(() => {
-    bus = new EventBus<TestEvents>();
-    scope = new EventScope(bus);
+    // Mock console.error to suppress EventBus 错误日志
+    console.error = jest.fn();
+    bus = new EventBus<TestEvents>(mockLogger);
+    scope = new EventScope(bus, mockLogger);
   });
 
   afterEach(() => {
+    // 恢复原始 console.error
+    console.error = originalConsoleError;
     scope.dispose();
   });
 

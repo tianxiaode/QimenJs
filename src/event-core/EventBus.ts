@@ -31,12 +31,10 @@ import { string } from '@orbitjs/utils';
  * ```
  */
 export class EventBus<Events extends EventMap> {
-    private busId ;
+    private readonly busId = string.getId();
     private readonly listeners = new Map<keyof Events, Set<EventHandler>>();
 
-    constructor(private readonly logger?: ILogger) {
-        this.busId = string.getId('event-bus');
-    }
+    constructor(private readonly logger?: ILogger) {}
 
     // --- 内置日志方法 ---
     logBus(level: LogLevel, action: BusAction, data?: Record<string, any>) {

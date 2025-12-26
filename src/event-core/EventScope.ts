@@ -32,7 +32,7 @@ import { string } from '@orbitjs/utils';
  * ```
  */
 export class EventScope<Events extends EventMap> {
-    private scopeId ;
+    private readonly scopeId = string.getId('event-scope');
     private readonly disposers: Array<() => void> = [];
     private disposed = false;
 
@@ -41,13 +41,24 @@ export class EventScope<Events extends EventMap> {
         private readonly logger?: ILogger
     ) {
         this.logScope('debug', 'created');
-        this.scopeId = string.getId('event-scope');
     }
 
     // --- 内置日志方法 ---
     logScope(level: LogLevel, action: ScopeLogAction, data?: Record<string, any>) {
         if (!this.logger) return;
-        this.logger[level](`[event.scope] ${action}`, { busId: this.bus.getBusId(), scopeId: this.scopeId, ...data });
+        this.logger[level](`[event.scope] ${action}`, {
+            busId: this.bus.getBusId(),
+            scopeId: this.scopeId,
+            ...data,
+        });
+    }
+
+    emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+        if (this.disposed) {
+            this.logScope('warn', 'emit_after_dispose', { event: String(event) });
+            return;
+        }
+        this.bus.emit(event, payload);
     }
 
     on<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): () => void {
