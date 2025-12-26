@@ -1,3 +1,5 @@
+import { HttpError } from "./HttpError";
+
 export interface RetryPolicy {
     retries: number;
     delay(attempt: number): number;

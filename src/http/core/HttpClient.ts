@@ -1,3 +1,8 @@
+import { HttpTransport } from "../transport/HttpTransport";
+import { HttpError } from "./HttpError";
+import { RetryPolicy } from "./RetryPolicy";
+import { BackendAdapter, HttpRequest, Middleware } from "./types";
+
 export class HttpClient {
     constructor(
         private transport: HttpTransport,
@@ -15,7 +20,7 @@ export class HttpClient {
 
                 if (!this.adapter.isSuccess(raw.body)) {
                     const errInfo = this.adapter.extractError(raw.body);
-                    throw new HttpError(errInfo.message, {
+                    throw new HttpError('code',errInfo.message, {
                         code: errInfo.code,
                         status: raw.status,
                         detail: errInfo.detail,
@@ -24,7 +29,7 @@ export class HttpClient {
 
                 return this.adapter.extractData(raw.body);
             } catch (e) {
-                const err = e instanceof HttpError ? e : new HttpError(String(e));
+                const err = e instanceof HttpError ? e : new HttpError('ddd',String(e));
 
                 if (
                     attempt < this.retry.retries &&
@@ -43,7 +48,7 @@ export class HttpClient {
     }
 
     get<T>(url: string, config?: Partial<HttpRequest>) {
-        return this.request<T>({ ...config, method: 'GET', url });
+        return this.request<T>({ ...config, method: 'GET', url } as any);
     }
 
     post<T>(url: string, body?: any, config?: Partial<HttpRequest>) {
@@ -52,7 +57,7 @@ export class HttpClient {
             method: 'POST',
             url,
             body,
-        });
+        } as any);
     }
 
     upload<T>(
@@ -65,6 +70,6 @@ export class HttpClient {
             url,
             body,
             onProgress,
-        });
+        } as any);
     }
 }

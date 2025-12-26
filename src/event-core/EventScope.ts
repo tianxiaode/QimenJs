@@ -1,8 +1,7 @@
 import { EventBus } from './EventBus';
-import { logScope } from './EventLog';
-import { EventHandler, EventMap } from './types';
+import { EventHandler, EventMap, ScopeLogAction } from './types';
 
-import { ILogger } from '@orbitjs/logger';
+import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
 
 /**
@@ -33,23 +32,27 @@ import { string } from '@orbitjs/utils';
  * ```
  */
 export class EventScope<Events extends EventMap> {
-    private readonly scopeId = string.getId('scope');
+    private scopeId ;
     private readonly disposers: Array<() => void> = [];
     private disposed = false;
 
     constructor(
         private readonly bus: EventBus<Events>,
-        private readonly busId: string,
         private readonly logger?: ILogger
     ) {
-        logScope(this.logger, 'debug', 'created', this.busId, this.scopeId);
+        this.logScope('debug', 'created');
+        this.scopeId = string.getId('event-scope');
+    }
+
+    // --- 内置日志方法 ---
+    logScope(level: LogLevel, action: ScopeLogAction, data?: Record<string, any>) {
+        if (!this.logger) return;
+        this.logger[level](`[event.scope] ${action}`, { busId: this.bus.getBusId(), scopeId: this.scopeId, ...data });
     }
 
     on<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): () => void {
         if (this.disposed) {
-            logScope(this.logger, 'warn', 'subscribe_after_dispose', this.busId, this.scopeId, {
-                event: String(event),
-            });
+            this.logScope('warn', 'subscribe_after_dispose', { event: String(event) });
             return () => {};
         }
 
@@ -66,14 +69,12 @@ export class EventScope<Events extends EventMap> {
     }
 
     addCleanup(cleanup: () => void): void {
-        if (!this.disposed) {
-            this.disposers.push(cleanup);
-        }
+        if (!this.disposed) this.disposers.push(cleanup);
     }
 
     dispose(): void {
         if (this.disposed) {
-            logScope(this.logger, 'debug', 'dispose_twice', this.busId, this.scopeId);
+            this.logScope('debug', 'dispose_twice');
             return;
         }
 
@@ -83,15 +84,15 @@ export class EventScope<Events extends EventMap> {
             try {
                 fn();
             } catch (err) {
-                // 这里可以选择加一个 scope_error action
-                logScope(this.logger, 'error', 'cleanup_error', this.busId, this.scopeId, {
-                    error: err,
-                });
+                this.logScope('error', 'cleanup_error', { error: err });
             }
         });
 
         this.disposers.length = 0;
+        this.logScope('info', 'disposed');
+    }
 
-        logScope(this.logger, 'info', 'disposed', this.busId, this.scopeId);
+    getScopeId(): string {
+        return this.scopeId;
     }
 }

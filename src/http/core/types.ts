@@ -7,5 +7,11 @@ export interface BackendAdapter {
         detail?: any;
     };
 }
+export interface HttpRequest {
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    body?: any;
+}
 
 export type Middleware = (req: HttpRequest) => void | Promise<void>;

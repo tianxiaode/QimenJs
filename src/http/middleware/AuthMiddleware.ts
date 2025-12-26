@@ -1,3 +1,5 @@
+import { Middleware } from "../core/types";
+
 export const AuthMiddleware = (getToken: () => string | null): Middleware =>
     req => {
         const token = getToken();

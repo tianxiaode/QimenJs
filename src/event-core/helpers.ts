@@ -22,7 +22,7 @@ export type AppEvents = {
 
 // 创建全局事件总线实例
 const bus = new EventBus<AppEvents>(
-  Logger.for('event.bus')
+  Logger.for('event-bus')
 );
 
 /** 
