@@ -17,7 +17,7 @@
  * }, 150); // 150ms 节流
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 import { throttle } from "@orbitjs/async";
 
 export function bindResize(

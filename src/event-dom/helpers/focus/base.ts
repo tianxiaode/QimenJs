@@ -16,7 +16,7 @@
  * });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindFocus(
     scope: EventScope<any>,

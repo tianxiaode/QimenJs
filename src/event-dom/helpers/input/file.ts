@@ -1,4 +1,4 @@
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 /**
  * 监听文件输入变化

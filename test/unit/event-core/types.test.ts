@@ -4,7 +4,7 @@ import {
   EventLogAction, 
   EventMap, 
   ScopeLogAction
-} from '@/event-core/types';
+} from '@/event/core/types';
 
 // Mock logger to prevent LoggerChild errors in tests
 const mockLogger = {

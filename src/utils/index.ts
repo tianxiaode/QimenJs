@@ -5,3 +5,4 @@ export * as cookie from './cookie';
 export * as number from './number';
 export * as string from './string';
 export * as object from './object';
+export * from './composeMixins';

@@ -1,4 +1,4 @@
-import { EventScope } from '@orbitjs/event-core';
+import { EventScope } from '@/event';
 import { bridgeInputToBus } from './bridgeInputToBus';
 
 export function bridgePress<Events extends Record<string, any>, E extends keyof Events>(

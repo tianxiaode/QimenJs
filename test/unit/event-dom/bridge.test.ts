@@ -1,4 +1,4 @@
-import { EventBus, EventScope } from '../../../src/event-core';
+import { EventBus, EventScope } from '../../../src/event';
 
 // 为测试创建一个简单的 EventTarget 模拟
 class MockElement implements EventTarget {

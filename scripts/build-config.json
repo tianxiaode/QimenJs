@@ -41,19 +41,11 @@
         },
 
         "event-core": {
-            "entry": "src/event-core/index.ts",
-            "outDir": "dist/event-core",
-            "rootDir": "src/event-core",
+            "entry": "src/event/index.ts",
+            "outDir": "dist/event",
+            "rootDir": "src/event",
             "dependencies": [],
-            "packageName": "@orbitjs/event-core"
-        },
-
-        "event-dom": {
-            "entry": "src/event-dom/index.ts",
-            "outDir": "dist/event-dom",
-            "rootDir": "src/event-dom",
-            "dependencies": ["event-core", "runtime-env"],
-            "packageName": "@orbitjs/event-dom"
+            "packageName": "@orbitjs/event"
         },
         "async": {
             "entry": "src/async/index.ts",

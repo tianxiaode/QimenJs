@@ -30,7 +30,7 @@
  * });
  * ```
  */
-import { EventBus, EventScope } from '@orbitjs/event-core';
+import { EventBus, EventScope } from '@/event';
 
 export function bridgeDomEvent<
     Events extends Record<string, any>,

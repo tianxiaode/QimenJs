@@ -1,4 +1,4 @@
-import type { EventScope } from '@orbitjs/event-core';
+import type { EventScope } from '@/event';
 
 export function bridgeOutside<Events extends Record<string, any>, E extends keyof Events>(
     scope: EventScope<Events>,

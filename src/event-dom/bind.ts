@@ -19,7 +19,7 @@
  * // 当 scope 销毁时，会自动移除事件监听器
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindDomEvent<
     T extends EventTarget,

@@ -25,7 +25,7 @@
  * }, { delay: 100 });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export interface HoverHandlers {
     onEnter?: (event: MouseEvent) => void;

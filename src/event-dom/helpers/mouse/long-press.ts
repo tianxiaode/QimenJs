@@ -17,7 +17,7 @@
  * }, { duration: 1000, feedback: true });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export interface LongPressOptions {
     duration?: number;     // 长按持续时间（毫秒），默认为 500ms

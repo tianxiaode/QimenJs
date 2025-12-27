@@ -1,4 +1,4 @@
-import { EventScope, EventBus } from '../../../../src/event-core';
+import { EventScope, EventBus } from '../../../../src/event';
 
 // 模拟 throttle 函数
 jest.mock('../../../../src/async', () => ({

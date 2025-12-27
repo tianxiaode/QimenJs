@@ -19,7 +19,7 @@
  * });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindVisibilityChange(
     scope: EventScope<any>,

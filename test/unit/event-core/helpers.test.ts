@@ -2,7 +2,7 @@ import {
   createEventScope, 
   EventBus,
   AppEvents 
-} from "@/event-core/helpers";
+} from "@/event/helpers";
 import { Logger } from "@/logger";
 
 // Mock logger to prevent LoggerChild errors in tests

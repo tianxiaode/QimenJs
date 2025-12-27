@@ -41,7 +41,7 @@ export interface KeyBindingOptions {
  * }, { ctrl: true, shift: true });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindKey(
     scope: EventScope<any>,

@@ -1,4 +1,4 @@
-import { EventScope, EventBus } from '../../../../src/event-core';
+import { EventScope, EventBus } from '../../../../src/event';
 
 describe('bindVisibilityChange', () => {
   let scope: EventScope<any>;

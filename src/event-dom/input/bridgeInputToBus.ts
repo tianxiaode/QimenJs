@@ -1,4 +1,4 @@
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 import { bridgeInput } from "./bridgeInput";
 import { InputType } from "./types";
 

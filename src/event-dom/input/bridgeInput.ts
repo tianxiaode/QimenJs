@@ -1,4 +1,4 @@
-import { EventScope } from '@orbitjs/event-core';
+import { EventScope } from '@/event';
 import { defaultInputDomMap, InputDomMap } from './input-map';
 import type { InputType } from './types';
 

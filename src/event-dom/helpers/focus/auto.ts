@@ -14,7 +14,7 @@
  * // 页面加载100ms后自动聚焦到搜索框
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindAutoFocus(
     scope: EventScope<any>,

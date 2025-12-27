@@ -39,15 +39,10 @@
       "require": "./dist/error/index.js",
       "types": "./dist/error/index.d.ts"
     },
-    "./event-core": {
-      "import": "./dist/event-core/index.esm.js",
-      "require": "./dist/event-core/index.js",
-      "types": "./dist/event-core/index.d.ts"
-    },
-    "./event-dom": {
-      "import": "./dist/event-dom/index.esm.js",
-      "require": "./dist/event-dom/index.js",
-      "types": "./dist/event-dom/index.d.ts"
+    "./event": {
+      "import": "./dist/event/index.esm.js",
+      "require": "./dist/event/index.js",
+      "types": "./dist/event/index.d.ts"
     },
     "./logger": {
       "import": "./dist/logger/index.esm.js",

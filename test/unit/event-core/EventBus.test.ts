@@ -1,5 +1,5 @@
-import { EventBus } from '@/event-core/EventBus';
-import { EventScope } from '@/event-core/EventScope';
+import { EventBus } from '@/event/core/EventBus';
+import { EventScope } from '@/event/core/EventScope';
 
 // Mock logger to prevent LoggerChild errors in tests
 const mockLogger = {

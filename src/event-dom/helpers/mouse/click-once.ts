@@ -18,7 +18,7 @@
  * });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 import { ClickOptions } from "./types";
 import { bindClick } from "./click";
 

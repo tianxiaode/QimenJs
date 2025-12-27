@@ -27,7 +27,7 @@
  * }, { holdThreshold: 200 });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export interface ClickAndHoldHandlers {
     onStart?: (event: MouseEvent) => void;          // 按下时

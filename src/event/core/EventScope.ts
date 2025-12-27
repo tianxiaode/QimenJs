@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { EventHandler, EventMap, ScopeLogAction } from './types';
+import { EventHandler, ScopeLogAction } from './types';
 
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -31,13 +31,13 @@ import { string } from '@orbitjs/utils';
  * scope.dispose();
  * ```
  */
-export class EventScope<Events extends EventMap> {
+export class EventScope {
     private readonly scopeId = string.getId('event-scope');
     private readonly disposers: Array<() => void> = [];
     private disposed = false;
 
     constructor(
-        private readonly bus: EventBus<Events>,
+        private readonly bus: EventBus,
         private readonly logger?: ILogger
     ) {
         this.logScope('debug', 'created');
@@ -53,7 +53,7 @@ export class EventScope<Events extends EventMap> {
         });
     }
 
-    emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+    emit(event: string, payload?: any): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
@@ -61,7 +61,7 @@ export class EventScope<Events extends EventMap> {
         this.bus.emit(event, payload);
     }
 
-    on<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): () => void {
+    on(event: string, handler: EventHandler): () => void {
         if (this.disposed) {
             this.logScope('warn', 'subscribe_after_dispose', { event: String(event) });
             return () => {};
@@ -72,7 +72,7 @@ export class EventScope<Events extends EventMap> {
         return off;
     }
 
-    once<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): void {
+    once(event: string, handler: EventHandler): void {
         const off = this.on(event, payload => {
             off();
             handler(payload);

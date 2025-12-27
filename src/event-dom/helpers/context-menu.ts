@@ -25,7 +25,7 @@
  * }, false); // 不阻止默认菜单
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindContextMenu(
     scope: EventScope<any>,

@@ -17,7 +17,7 @@
  * });
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 
 export function bindPreventDefaultClick(
     scope: EventScope<any>,

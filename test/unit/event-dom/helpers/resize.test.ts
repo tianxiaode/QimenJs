@@ -1,4 +1,4 @@
-import { EventScope, EventBus } from "@orbitjs/event-core";
+import { EventScope, EventBus } from "@/event";
 import { bindResize } from "../../../../src/event-dom/helpers/resize";
 
 // Mock DOM APIs

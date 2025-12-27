@@ -1,4 +1,4 @@
-import { BusAction, EventHandler, EventLogAction, EventMap } from './types';
+import { BusAction, EventHandler, EventLogAction } from './types';
 import { EventScope } from './EventScope';
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -30,9 +30,9 @@ import { string } from '@orbitjs/utils';
  * unsubscribe();
  * ```
  */
-export class EventBus<Events extends EventMap> {
+export class EventBus{
     private readonly busId = string.getId();
-    private readonly listeners = new Map<keyof Events, Set<EventHandler>>();
+    private readonly listeners = new Map<string, Set<EventHandler>>();
 
     constructor(private readonly logger?: ILogger) {}
 
@@ -48,7 +48,7 @@ export class EventBus<Events extends EventMap> {
     }
 
     // --- 事件订阅/触发 ---
-    on<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): () => void {
+    on(event: string, handler: EventHandler): () => void {
         let set = this.listeners.get(event);
         if (!set) {
             set = new Set();
@@ -62,7 +62,7 @@ export class EventBus<Events extends EventMap> {
         };
     }
 
-    off<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): void {
+    off(event: string, handler: EventHandler): void {
         const set = this.listeners.get(event);
         if (!set || !set.has(handler)) {
             this.logBus('debug', 'off', { event: String(event), found: false });
@@ -75,14 +75,14 @@ export class EventBus<Events extends EventMap> {
         this.logBus('debug', 'off', { event: String(event), found: true });
     }
 
-    once<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>): void {
+    once(event: string, handler: EventHandler): void {
         const off = this.on(event, payload => {
             off();
             handler(payload);
         });
     }
 
-    emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+    emit(event: string, payload?: any): void {
         const handlers = this.listeners.get(event);
 
         if (!handlers || handlers.size === 0) {
@@ -106,7 +106,7 @@ export class EventBus<Events extends EventMap> {
      * 
      * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
      */
-    clear(event?: keyof Events): void {
+    clear(event?: string): void {
         if (event) this.listeners.delete(event);
         else this.listeners.clear();
 
@@ -120,7 +120,7 @@ export class EventBus<Events extends EventMap> {
      * 
      * @returns 返回一个EventScope实例
      */
-    createScope(): EventScope<Events> {
+    createScope(): EventScope {
         return new EventScope(this, this.logger);
     }
 

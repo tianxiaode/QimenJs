@@ -19,7 +19,7 @@
  * }, { wait: 300 }); // 300ms节流，避免频繁请求
  * ```
  */
-import { EventScope } from "@orbitjs/event-core";
+import { EventScope } from "@/event";
 import { throttle, debounce } from "@orbitjs/async";
 
 export interface InputOptions {
