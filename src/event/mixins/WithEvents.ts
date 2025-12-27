@@ -12,6 +12,9 @@ export interface WithEventsPublic {
     bind(target: any, semantic: SemanticEvent, options?: BindOptions): void;
 }
 
+// NOTE: TypeScript mixin typing intentionally loosened here
+// to avoid TS4094 / TS2322 / TS2797 issues.
+// Internal fields are implementation details.
 export function WithEvents<TBase extends Constructor>(
     Base: TBase
 ): abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & WithEventsPublic {
