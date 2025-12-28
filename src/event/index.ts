@@ -1,3 +1,2 @@
-export { EventBus } from './core/EventBus';
-export { EventScope } from './core/EventScope';
-
+export { GlobalEventBus } from './core';
+export { WithEvents } from './mixins';
