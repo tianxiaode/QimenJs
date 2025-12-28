@@ -1,5 +1,5 @@
 // 导入基础错误类，用于扩展自定义错误类型
-import { BaseError } from "@/error";
+import { ErrorBase } from "@/error";
 
 /**
  * 验证器未找到错误
@@ -10,7 +10,7 @@ import { BaseError } from "@/error";
  * 2. 验证规则配置中引用了不存在的验证器
  * 3. 动态加载验证器时发生问题
  */
-export class ValidatorNotFoundError extends BaseError {
+export class ValidatorNotFoundError extends ErrorBase {
   /**
    * 构造函数 - 创建一个新的验证器未找到错误实例
    * 

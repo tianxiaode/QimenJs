@@ -1,7 +1,25 @@
-import { EventAdapter } from './base/EventAdapter';
-import { DomEventAdapter } from './dom/DomEventAdapter';
+// event-adapter/createEventAdapter.ts
+
+import {
+    baseMap,
+    pointerMap,
+    touchMap,
+    mouseMap,
+    keyboardMap,
+    resolveInputEventMap,
+    gestureEventMap,
+} from './semantic-map';
+import { EventAdapter } from './base';
+import { DomEventAdapter } from './dom';
 
 export function createEventAdapter(): EventAdapter {
-  // 现在只有 DOM，将来可扩展
-  return new DomEventAdapter();
+    const inputEventMap = resolveInputEventMap({
+        base: baseMap,
+        pointer: pointerMap,
+        touch: touchMap,
+        mouse: mouseMap,
+        keyboard: keyboardMap,
+    });
+
+    return new DomEventAdapter(inputEventMap, gestureEventMap);
 }

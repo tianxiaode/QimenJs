@@ -5,6 +5,8 @@ export interface GestureInput {
   time: number;
   x?: number;
   y?: number;
+  pointerType?: 'mouse' | 'pen' | 'touch';
+  buttons?: number;        // ✅ 添加鼠标按钮信息
   originalEvent?: Event;
 }
 
@@ -26,7 +28,7 @@ export interface SimpleGestureEmit extends BaseGestureEmit {}
 export type GestureEmit =
   | SimpleGestureEmit
   | PhaseGestureEmit;
-  
+
 export interface LongPressConstraints {
   minDuration?: number;   // ms, 默认 500
   maxDistance?: number;   // px, 默认 10
@@ -35,3 +37,4 @@ export interface LongPressConstraints {
 export interface DragConstraints {
   minDistance?: number;   // px, 默认 8
 }
+

@@ -1,0 +1,1 @@
+export { GestureError } from './GestureError';

@@ -1,15 +1,14 @@
 import { Constructor } from '@orbitjs/utils';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { EventHandler } from '../core/types';
-import { BindOptions, createEventAdapter, EventAdapter } from '../adapters';
-import { SemanticEvent } from '../adapters/semantic-map';
+import { BindOptions, createEventAdapter, EventAdapter, GestureSemantic } from '../adapters';
 import { EventScope } from '../core';
 
 export interface WithEventsPublic {
     on(event: string, handler: EventHandler): () => void;
     once(event: string, handler: EventHandler): void;
     emit(event: string, payload?: any): void;
-    bind(target: any, semantic: SemanticEvent, options?: BindOptions): void;
+    bind(target: any, semantic: GestureSemantic, options?: BindOptions): void;
 }
 
 // NOTE: TypeScript mixin typing intentionally loosened here
@@ -48,7 +47,7 @@ export function WithEvents<TBase extends Constructor>(
             this.eventScope.emit(event, payload);
         }
 
-        bind(target: any, semantic: SemanticEvent, options?: BindOptions): void {
+        bind(target: any, semantic: GestureSemantic, options?: BindOptions): void {
             this.adapter.bind(target, semantic, this.eventScope, options);
         }
 

@@ -1,11 +1,11 @@
 // 导入基础错误类，用于继承并创建自定义错误类型
-import { BaseError } from '@/error';
+import { ErrorBase } from '@/error';
 
 /**
  * 重复注册验证器错误
  * 当尝试注册一个已经存在的验证器时会抛出此错误
  */
-export class DuplicateValidatorError extends BaseError {
+export class DuplicateValidatorError extends ErrorBase {
     /**
      * 构造函数 - 创建一个新的 DuplicateValidatorError 实例
      * @param validatorKey - 发生冲突的验证器键名（唯一标识符）

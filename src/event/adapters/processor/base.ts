@@ -1,7 +1,7 @@
-import { GestureConstraintsMap, GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
 import { GestureEmit, GestureInput } from './types';
 
-export abstract class GestureProcessor <S extends GestureSemantic = GestureSemantic>{
+export abstract class GestureProcessor<S extends GestureSemantic = GestureSemantic> {
     protected handlers: Partial<Record<InputSignal, (input: GestureInput) => void>> = {};
 
     protected active = false;
@@ -14,7 +14,7 @@ export abstract class GestureProcessor <S extends GestureSemantic = GestureSeman
     protected lastY = 0;
 
     constructor(
-        protected readonly semantic: S,
+        protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
         protected readonly constraints?: GestureEventDescriptor<S>['constraints']
     ) {}

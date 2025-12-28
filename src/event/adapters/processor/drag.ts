@@ -2,15 +2,16 @@ import { GestureEventDescriptor, GestureSemantic } from "../semantic-map";
 import { GestureProcessor } from "./base";
 import { GestureEmit, GestureInput } from "./types";
 
-export class DragProcessor extends GestureProcessor<'drag'> {
+export class DragProcessor extends GestureProcessor {
   private dragging = false;
 
   constructor(
+        protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
         protected readonly constraints?: GestureEventDescriptor<'drag'>['constraints']
 
   ) {
-    super('drag', emit, constraints);
+    super(semantic, emit, constraints);
 
     this.handlers = {
       press: this.onPress,

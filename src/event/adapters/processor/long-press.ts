@@ -1,4 +1,4 @@
-import { GestureEventDescriptor } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './base';
 import { GestureEmit, GestureInput } from './types';
 
@@ -6,10 +6,11 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
     private timer: any = null;
 
     constructor(
+        protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
         protected readonly constraints?: GestureEventDescriptor<'longpress'>['constraints']
     ) {
-        super('longpress', emit, constraints);
+        super(semantic, emit, constraints);
 
         this.handlers = {
             press: this.onPress,

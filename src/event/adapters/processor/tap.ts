@@ -4,10 +4,11 @@ import { GestureEmit } from './types';
 
 export class TapProcessor extends GestureProcessor<'tap'> {
     constructor(
+        protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
         protected readonly constraints?: GestureEventDescriptor<'tap'>['constraints']
     ) {
-        super('tap', emit, constraints);
+        super(semantic, emit, constraints);
 
         this.handlers = {
             press: i => this.start(i),

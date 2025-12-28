@@ -6,7 +6,6 @@ export class GlobalEventBus {
     private bus = new EventBus(Logger.for('global-bus'));
 
     on = this.bus.on.bind(this.bus);
-    off = this.bus.off.bind(this.bus);
     once = this.bus.once.bind(this.bus);
     emit = this.bus.emit.bind(this.bus);
     clear = this.bus.clear.bind(this.bus);

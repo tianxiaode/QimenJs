@@ -1,11 +1,11 @@
 // 导入基础错误类，用于扩展自定义错误类型
-import { BaseError } from "@/error";
+import { ErrorBase } from "@/error";
 
 /**
  * 验证错误类
  * 在数据验证失败时抛出此错误，包含详细的验证错误信息
  */
-export class ValidationError extends BaseError {
+export class ValidationError extends ErrorBase {
   /**
    * 存储具体的验证错误列表
    * 每个错误项包含字段名和错误消息

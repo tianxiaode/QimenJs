@@ -1,4 +1,4 @@
-import { InputEventMap } from './types';
+import { AtomicSignal, InputEventMap, InputSignal } from './types';
 
 /**
  * 基础事件映射，包含与输入设备形态无关的事件
@@ -9,23 +9,35 @@ import { InputEventMap } from './types';
  *
  *     需要特定输入设备（鼠标、键盘、触摸屏等）才能产生的事件，都不进入 baseMap
  */
+
+
 export const baseMap: InputEventMap = {
-    focus: {
-        domEvents: ['focus'],
-    },
-    blur: {
-        domEvents: ['blur'],
-    },
-    input: {
-        domEvents: ['input'],
-    },
-    change: {
-        domEvents: ['change'],
-    },
-    submit: {
-        domEvents: ['submit'],
-    },
-    scroll: {
-        domEvents: ['scroll'],
-    },
+  press: {
+    pointer: ['pointerdown'],
+    touch: ['touchstart'],
+    mouse: ['mousedown'],
+  },
+  release: {
+    pointer: ['pointerup'],
+    touch: ['touchend'],
+    mouse: ['mouseup'],
+  },
+  move: {
+    pointer: ['pointermove'],
+    touch: ['touchmove'],
+    mouse: ['mousemove'],
+  },
+  cancel: {
+    pointer: ['pointercancel'],
+    touch: ['touchcancel'],
+  },
+  wheel: {
+    mouse: ['wheel'],
+  },
+  keydown: {
+    keyboard: ['keydown'],
+  },
+  keyup: {
+    keyboard: ['keyup'],
+  },
 };

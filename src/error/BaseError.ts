@@ -2,7 +2,7 @@
  * 🎯 基础错误类
  * 提供标准化的错误接口
  */
-export abstract class BaseError extends Error {
+export abstract class ErrorBase extends Error {
   /**
    * 错误代码
    */

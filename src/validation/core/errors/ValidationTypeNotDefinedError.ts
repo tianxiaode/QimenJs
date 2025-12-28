@@ -1,5 +1,5 @@
 // 导入基础错误类，作为自定义错误类型的基类
-import { BaseError } from "@/error";
+import { ErrorBase } from "@/error";
 
 /**
  * 验证类型未定义错误
@@ -10,7 +10,7 @@ import { BaseError } from "@/error";
  * 2. 验证配置中指定了无效的验证类型名称
  * 3. 验证规则引用了不存在的验证类型
  */
-export class ValidationTypeNotDefinedError extends BaseError {
+export class ValidationTypeNotDefinedError extends ErrorBase {
   /**
    * 构造函数 - 创建一个新的验证类型未定义错误实例
    * 

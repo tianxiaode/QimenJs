@@ -1,6 +1,6 @@
-import { BaseError } from "@/error";
+import { ErrorBase } from "@/error";
 
-export class HttpError extends BaseError {
+export class HttpError extends ErrorBase {
     status?: number;
     detail?: any;
     retryable?: boolean;

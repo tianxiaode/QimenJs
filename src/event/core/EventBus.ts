@@ -62,19 +62,6 @@ export class EventBus{
         };
     }
 
-    off(event: string, handler: EventHandler): void {
-        const set = this.listeners.get(event);
-        if (!set || !set.has(handler)) {
-            this.logBus('debug', 'off', { event: String(event), found: false });
-            return;
-        }
-
-        set.delete(handler);
-        if (set.size === 0) this.listeners.delete(event);
-
-        this.logBus('debug', 'off', { event: String(event), found: true });
-    }
-
     once(event: string, handler: EventHandler): void {
         const off = this.on(event, payload => {
             off();

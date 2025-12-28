@@ -1,7 +1,7 @@
-import { BaseError } from '@/error';
+import { ErrorBase } from '@/error';
 
 // 创建一个具体的错误类用于测试 BaseError 的功能
-class TestError extends BaseError {
+class TestError extends ErrorBase {
     constructor(
         message: string,
         code: string | number = 'TEST_ERROR',
@@ -38,7 +38,7 @@ describe('BaseError (抽象类测试)', () => {
             const error = new TestError('测试错误');
 
             expect(error).toBeInstanceOf(TestError);
-            expect(error).toBeInstanceOf(BaseError);
+            expect(error).toBeInstanceOf(ErrorBase);
             expect(error).toBeInstanceOf(Error);
         });
     });
@@ -57,7 +57,7 @@ describe('BaseError (抽象类测试)', () => {
             const error = new TestError('原型链测试');
 
             expect(Object.getPrototypeOf(error)).toBe(TestError.prototype);
-            expect(Object.getPrototypeOf(Object.getPrototypeOf(error))).toBe(BaseError.prototype);
+            expect(Object.getPrototypeOf(Object.getPrototypeOf(error))).toBe(ErrorBase.prototype);
             expect(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(error)))).toBe(
                 Error.prototype
             );
@@ -164,7 +164,7 @@ describe('BaseError (抽象类测试)', () => {
 
             expect(customError).toBeInstanceOf(CustomTestError);
             expect(customError).toBeInstanceOf(TestError);
-            expect(customError).toBeInstanceOf(BaseError);
+            expect(customError).toBeInstanceOf(ErrorBase);
             expect(customError).toBeInstanceOf(Error);
             expect(customError.name).toBe('CustomTestError');
             expect(customError.customProperty).toBe('custom');
@@ -182,7 +182,7 @@ describe('BaseError (抽象类测试)', () => {
         });
 
         test('子类可以添加自定义方法和属性', () => {
-            class ExtendedError extends BaseError {
+            class ExtendedError extends ErrorBase {
                 public customMethod(): string {
                     return 'custom method result';
                 }
@@ -241,7 +241,7 @@ describe('BaseError (抽象类测试)', () => {
 
     describe('实际使用场景', () => {
         // 模拟一个实际的应用场景
-        class DatabaseError extends BaseError {
+        class DatabaseError extends ErrorBase {
             constructor(
                 message: string,
                 code: string | number = 'DB_ERROR',

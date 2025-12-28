@@ -4,7 +4,7 @@ import { GestureEventMap } from './types';
  * ✔ 不涉及 DOM
  * ✔ 不涉及 mouse / touch / pointer
  * ✔ 只声明“我需要什么 + 谁来解释”
-*/
+ */
 export const gestureMap: Partial<GestureEventMap> = {
     tap: {
         requires: ['press', 'release'],
@@ -13,11 +13,13 @@ export const gestureMap: Partial<GestureEventMap> = {
             maxDuration: 250,
             maxDistance: 10,
         },
+        semantic: 'tap',
     },
 
     click: {
         requires: ['press', 'release'],
         processor: 'tapProcessor',
+        semantic: 'click',
     },
 
     dblclick: {
@@ -26,6 +28,7 @@ export const gestureMap: Partial<GestureEventMap> = {
         constraints: {
             maxDuration: 300,
         },
+        semantic: 'dblclick',
     },
 
     longpress: {
@@ -34,6 +37,7 @@ export const gestureMap: Partial<GestureEventMap> = {
         constraints: {
             minDuration: 500,
         },
+        semantic: 'longpress',
     },
 
     drag: {
@@ -42,6 +46,7 @@ export const gestureMap: Partial<GestureEventMap> = {
         constraints: {
             minDistance: 5,
         },
+        semantic: 'drag',
     },
 
     swipe: {
@@ -51,11 +56,13 @@ export const gestureMap: Partial<GestureEventMap> = {
             minDistance: 30,
             maxDuration: 300,
         },
+        semantic: 'swipe',
     },
 
     hover: {
         requires: ['enter', 'leave'],
         processor: 'hoverProcessor',
+        semantic: 'hover',
     },
 
     contextmenu: {
@@ -64,12 +71,19 @@ export const gestureMap: Partial<GestureEventMap> = {
         constraints: {
             buttons: [2], // 右键
         },
+        semantic: 'contextmenu',
     },
 };
 
 export const keyboardGestureMap: Partial<GestureEventMap> = {
-  submit: {
-    requires: ['keydown'],
-    processor: 'enterKeyProcessor',
-  },
+    submit: {
+        requires: ['keydown'],
+        processor: 'enterKeyProcessor',
+        semantic: 'submit',
+    },
 };
+
+export const gestureEventMap: GestureEventMap = {
+    ...gestureMap,
+    ...keyboardGestureMap,
+} as GestureEventMap;

@@ -80,11 +80,18 @@ export type InputSignal =
  * InputSignal → DOM AtomicSignal
  * ============================================ */
 
+export interface InputEventBinding {
+  pointer?: readonly AtomicSignal[];
+  touch?: readonly AtomicSignal[];
+  mouse?: readonly AtomicSignal[];
+  keyboard?: readonly AtomicSignal[];
+  other?: readonly AtomicSignal[];
+}
+
 export type InputEventMap = {
-    [K in InputSignal]?: {
-        domEvents: readonly AtomicSignal[];
-    };
+  [K in InputSignal]?: InputEventBinding;
 };
+
 
 /* ============================================
  * GestureSemantic：高层行为语义
@@ -176,6 +183,8 @@ export interface GestureEventDescriptor<S extends GestureSemantic = GestureSeman
 
     /** 该 gesture 的语义约束 */
     constraints?: GestureConstraintsMap[S];
+
+    semantic: S;
 }
 
 export type GestureEventMap = {
