@@ -1,4 +1,4 @@
-import { SemanticEvent } from '../../semantic';
+import { SemanticEvent } from '../semantic-map';
 import { EventScope } from '../../core/EventScope';
 import { BindOptions } from './types';
 

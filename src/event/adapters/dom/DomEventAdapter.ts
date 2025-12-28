@@ -1,4 +1,4 @@
-import { SemanticEvent } from '../../semantic';
+import { SemanticEvent } from '../semantic-map';
 import { BindOptions, EventAdapter } from '../base';
 import { EventScope } from '../../core';
 import { detectInputCapabilities, InputCapabilities } from '@orbitjs/runtime-env';

@@ -2,7 +2,7 @@ import { Constructor } from '@orbitjs/utils';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { EventHandler } from '../core/types';
 import { BindOptions, createEventAdapter, EventAdapter } from '../adapters';
-import { SemanticEvent } from '../semantic';
+import { SemanticEvent } from '../adapters/semantic-map';
 import { EventScope } from '../core';
 
 export interface WithEventsPublic {
