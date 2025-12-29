@@ -32,8 +32,17 @@ export class TapProcessor extends GestureProcessor<'tap'> {
 
         // 定义点击事件处理器
         this.handlers = {
-            press: i => this.start(i),  // 按下时开始记录
-            release: i => {
+            press: input => {
+                // 按下时开始记录
+                this.start(input);
+            },
+            move: input => {
+                if (!this.active) return;
+
+                // 移动时更新位置信息
+                this.move(input);
+            },
+            release: input => {
                 // 计算持续时间和移动距离
                 const duration = this.duration();
                 const distance = this.distance();
@@ -47,17 +56,9 @@ export class TapProcessor extends GestureProcessor<'tap'> {
                 
                 if (this.active && isValid) {
                     // 有效点击，触发手势事件
-                    this.emitGesture(i.originalEvent);
+                    this.emitGesture(input.originalEvent);
                 }
 
-                this.logProcessor('debug', 'end', {
-                    isValid,
-                    maxDuration,
-                    maxDistance,
-                    duration,
-                    distance,
-                });
-                
                 // 结束手势处理
                 this.end();
             },
