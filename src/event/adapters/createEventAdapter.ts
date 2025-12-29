@@ -1,5 +1,3 @@
-// event-adapter/createEventAdapter.ts
-
 import {
     baseMap,
     pointerMap,
