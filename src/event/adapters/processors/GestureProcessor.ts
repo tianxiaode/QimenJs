@@ -1,3 +1,12 @@
+/**
+ * @file GestureProcessor.ts
+ * @description
+ * GestureProcessor 是所有手势处理器的基类，提供了手势处理的基础功能。
+ * 它定义了手势处理的基本流程，包括记录手势开始位置、移动轨迹、计算距离和时间等。
+ * 
+ * 该基类还提供了日志记录功能，方便调试和监控手势处理过程。
+ */
+
 import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
 import { GestureEmit, GestureInput } from './types';
 import { geometry } from '@orbitjs/utils';
@@ -5,22 +14,37 @@ import { assert } from '@orbitjs/validation';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
 
+/**
+ * GestureProcessor抽象类
+ * 所有具体手势处理器的基类，提供基础的手势处理功能
+ */
 export abstract class GestureProcessor<S extends GestureSemantic = GestureSemantic> {
+    // 手势事件处理器映射
     protected handlers: Partial<Record<InputSignal, (input: GestureInput) => void>> = {};
 
+    // 标记手势是否处于活动状态
     protected active = false;
 
+    // 记录开始时间和最后时间
     protected startTime = 0;
     protected lastTime = 0;
 
+    // 记录开始位置和最后位置
     protected startX = 0;
     protected startY = 0;
     protected lastX = 0;
     protected lastY = 0;
     
+    // 处理器实例ID和日志记录器
     private readonly processorId = string.getId('gesture-processor');
     private readonly logger: ILogger;
 
+    /**
+     * 构造函数
+     * @param semantic - 手势语义信息
+     * @param emit - 用于发送手势事件的函数
+     * @param constraints - 可选的约束条件
+     */
     constructor(
         protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
@@ -29,7 +53,12 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         this.logger = Logger.for(`gesture.${this.semantic}`);
     }
 
-    // --- 内置日志方法 ---
+    /**
+     * 内置日志方法
+     * @param level - 日志级别
+     * @param action - 操作名称
+     * @param data - 附加数据
+     */
     protected logProcessor(level: LogLevel, action: string, data?: Record<string, any>) {
         this.logger[level](`[gesture.processor] ${action}`, {
             processorId: this.processorId,
@@ -38,6 +67,10 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         });
     }
 
+    /**
+     * 处理手势输入
+     * @param input - 手势输入信息
+     */
     handle(input: GestureInput): void {
         this.logProcessor('debug', 'input_received', {
             signal: input.signal,
@@ -50,6 +83,10 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         this.handlers[input.signal]?.(input);
     }
 
+    /**
+     * 开始手势处理
+     * @param input - 手势输入信息
+     */
     protected start(input: GestureInput) {
         const x = assert.finite(input.x);
         const y = assert.finite(input.y);
@@ -67,6 +104,10 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         });
     }
 
+    /**
+     * 移动手势处理
+     * @param input - 手势输入信息
+     */
     protected move(input: GestureInput) {
         if (input.x != null) {
             this.lastX = assert.finite(input.x);
@@ -81,6 +122,9 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         });
     }
 
+    /**
+     * 结束手势处理
+     */
     protected end() {
         this.logProcessor('debug', 'gesture_ended', {
             duration: this.duration(),
@@ -90,6 +134,9 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         this.reset();
     }
 
+    /**
+     * 重置手势状态
+     */
     protected reset() {
         this.active = false;
         this.startTime = 0;
@@ -97,10 +144,18 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         this.logProcessor('debug', 'gesture_reset');
     }
 
+    /**
+     * 计算手势持续时间
+     * @returns 手势持续时间（毫秒）
+     */
     protected duration(): number {
         return this.lastTime - this.startTime;
     }
 
+    /**
+     * 计算手势移动距离
+     * @returns 手势移动距离（像素）
+     */
     protected distance(): number {
         return geometry.distance(
             { x: this.startX, y: this.startY },
@@ -108,6 +163,10 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         );
     }
 
+    /**
+     * 触发手势事件
+     * @param originalEvent - 原始事件对象
+     */
     protected emitGesture(originalEvent?: Event) {
         this.logProcessor('info', 'gesture_emitted', { semantic: this.semantic });
         this.emit({
