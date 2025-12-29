@@ -14,16 +14,42 @@ export class ContextMenuProcessor extends GestureProcessor<'contextmenu'> {
             press: input => {
                 const allowedButtons = this.constraints?.buttons ?? [2]; // Right mouse button
 
+                this.logProcessor('debug', 'contextmenu_press', {
+                    buttons: input.buttons,
+                    allowedButtons,
+                    isAllowed: input.buttons && allowedButtons.includes(input.buttons),
+                });
+
                 if (input.buttons && allowedButtons.includes(input.buttons)) {
                     this.emitGesture(input.originalEvent);
+
+                    this.logProcessor('debug', 'contextmenu_emitted', {
+                        button: input.buttons,
+                        originalEvent: input.originalEvent?.type,
+                    });
                 }
             },
             // Context menu can also be triggered with keyboard (e.g., context menu key or Shift+F10)
             keydown: input => {
                 if (input.originalEvent instanceof KeyboardEvent) {
                     const event = input.originalEvent as KeyboardEvent;
-                    if (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)) {
+                    const isContextMenuKey =
+                        event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey);
+
+                    this.logProcessor('debug', 'contextmenu_keydown', {
+                        key: event.key,
+                        shiftKey: event.shiftKey,
+                        isContextMenuKey,
+                    });
+
+                    if (isContextMenuKey) {
                         this.emitGesture(input.originalEvent);
+
+                        this.logProcessor('debug', 'contextmenu_emitted', {
+                            key: event.key,
+                            shiftKey: event.shiftKey,
+                            originalEvent: input.originalEvent.type,
+                        });
                     }
                 }
             },

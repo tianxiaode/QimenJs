@@ -2,6 +2,8 @@ import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semanti
 import { GestureEmit, GestureInput } from './types';
 import { geometry } from '@orbitjs/utils';
 import { assert } from '@orbitjs/validation';
+import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
+import { string } from '@orbitjs/utils';
 
 export abstract class GestureProcessor<S extends GestureSemantic = GestureSemantic> {
     protected handlers: Partial<Record<InputSignal, (input: GestureInput) => void>> = {};
@@ -15,14 +17,35 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     protected startY = 0;
     protected lastX = 0;
     protected lastY = 0;
+    
+    private readonly processorId = string.getId('gesture-processor');
+    private readonly logger: ILogger;
 
     constructor(
         protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
         protected readonly constraints?: GestureEventDescriptor<S>['constraints']
-    ) {}
+    ) {
+        this.logger = Logger.for(`gesture.${this.semantic}`);
+    }
+
+    // --- 内置日志方法 ---
+    protected logProcessor(level: LogLevel, action: string, data?: Record<string, any>) {
+        this.logger[level](`[gesture.processor] ${action}`, {
+            processorId: this.processorId,
+            semantic: this.semantic,
+            ...data,
+        });
+    }
 
     handle(input: GestureInput): void {
+        this.logProcessor('debug', 'input_received', {
+            signal: input.signal,
+            x: input.x,
+            y: input.y,
+            time: input.time
+        });
+        
         this.lastTime = input.time;
         this.handlers[input.signal]?.(input);
     }
@@ -36,6 +59,12 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
 
         this.startX = this.lastX = x;
         this.startY = this.lastY = y;
+        
+        this.logProcessor('debug', 'gesture_started', {
+            x,
+            y,
+            time: input.time
+        });
     }
 
     protected move(input: GestureInput) {
@@ -45,15 +74,27 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
         if (input.y != null) {
             this.lastY = assert.finite(input.y);
         }
+        
+        this.logProcessor('debug', 'gesture_moved', {
+            lastX: this.lastX,
+            lastY: this.lastY
+        });
     }
 
     protected end() {
+        this.logProcessor('debug', 'gesture_ended', {
+            duration: this.duration(),
+            distance: this.distance()
+        });
+        
         this.reset();
     }
 
     protected reset() {
         this.active = false;
         this.startTime = 0;
+        
+        this.logProcessor('debug', 'gesture_reset');
     }
 
     protected duration(): number {
@@ -68,6 +109,7 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     }
 
     protected emitGesture(originalEvent?: Event) {
+        this.logProcessor('info', 'gesture_emitted', { semantic: this.semantic });
         this.emit({
             semantic: this.semantic,
             originalEvent,

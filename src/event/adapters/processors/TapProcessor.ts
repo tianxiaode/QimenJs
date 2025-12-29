@@ -14,17 +14,22 @@ export class TapProcessor extends GestureProcessor<'tap'> {
         this.handlers = {
             press: i => this.start(i),
             release: i => {
-                if (
-                    this.active &&
-                    validateTap(
-                        this.duration(),
-                        this.distance(),
-                        this.constraints?.maxDuration ?? 250,
-                        this.constraints?.maxDistance ?? 10
-                    )
-                ) {
+                const duration = this.duration();
+                const distance = this.distance();
+                const maxDistance = this.constraints?.maxDistance ?? 10;
+                const maxDuration = this.constraints?.maxDuration ?? 250;
+                const isValid = validateTap(duration, distance, maxDuration, maxDistance);
+                if (this.active && isValid) {
                     this.emitGesture(i.originalEvent);
                 }
+
+                this.logProcessor('debug', 'end', {
+                    isValid,
+                    maxDuration,
+                    maxDistance,
+                    duration,
+                    distance,
+                });
                 this.end();
             },
             cancel: () => this.reset(),

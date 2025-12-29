@@ -2,9 +2,10 @@ import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit, GestureInput } from './types';
 import { validateLongPress } from '../utils/validation';
+import { time } from '@orbitjs/utils';
 
 export class LongPressProcessor extends GestureProcessor<'longpress'> {
-    private timer: any = null;
+    private timer: time.Cancelable | null = null;
 
     constructor(
         protected readonly semantic: GestureSemantic,
@@ -27,18 +28,20 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
         const minDuration = this.constraints?.minDuration ?? 500;
         const maxDistance = this.constraints?.maxDistance ?? 10;
 
-        this.timer = setTimeout(() => {
-            if (this.active && validateLongPress(
-                this.startX, 
-                this.startY, 
-                this.lastX, 
-                this.lastY, 
-                maxDistance
-            )) {
+        this.timer = time.after(minDuration, () => {
+            if (
+                this.active &&
+                validateLongPress(this.startX, this.startY, this.lastX, this.lastY, maxDistance)
+            ) {
                 this.emitGesture(input.originalEvent);
                 this.reset();
             }
-        }, minDuration);
+        });
+
+        this.logProcessor('debug', 'longpress_start', {
+            minDuration,
+            maxDistance,
+        });
     };
 
     private onMove = (input: GestureInput) => {
@@ -47,20 +50,27 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
         this.move(input);
 
         const maxDistance = this.constraints?.maxDistance ?? 10;
-        if (!validateLongPress(
-            this.startX, 
-            this.startY, 
-            this.lastX, 
-            this.lastY, 
+        const isValid = validateLongPress(
+            this.startX,
+            this.startY,
+            this.lastX,
+            this.lastY,
             maxDistance
-        )) {
+        );
+
+        this.logProcessor('debug', 'longpress_move', {
+            maxDistance,
+            isValid,
+        });
+
+        if (!isValid) {
             this.cancel();
         }
     };
 
     private cancel = () => {
         if (this.timer) {
-            clearTimeout(this.timer);
+            this.timer.cancel();
             this.timer = null;
         }
         this.reset();

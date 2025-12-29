@@ -10,6 +10,8 @@ import {
     InputSignal,
 } from '../semantic-map';
 import { createGestureProcessor, GestureInput } from '../processors';
+import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
+import { string } from '@orbitjs/utils';
 
 /* --------------------------------------------
  * DomEventAdapter
@@ -17,10 +19,24 @@ import { createGestureProcessor, GestureInput } from '../processors';
 
 export class DomEventAdapter {
     private readonly capabilities = detectInputCapabilities();
+    private readonly adapterId = string.getId('dom-adapter');
+    
     constructor(
         private readonly inputEventMap: InputEventMap,
         private readonly gestureMap: GestureEventMap
-    ) {}
+    ) {
+        this.logger = Logger.for('dom-adapter');
+    }
+
+    private readonly logger: ILogger;
+
+    // --- 内置日志方法 ---
+    private logAdapter(level: LogLevel, action: string, data?: Record<string, any>) {
+        this.logger[level](`[dom.adapter] ${action}`, {
+            adapterId: this.adapterId,
+            ...data,
+        });
+    }
 
     /* ============================================
      * Public API
@@ -33,10 +49,16 @@ export class DomEventAdapter {
         options?: BindOptions
     ): () => void {
         const descriptor = this.gestureMap[semantic];
-        if (!descriptor) return () => {};
+        if (!descriptor) {
+            this.logAdapter('warn', 'bind_unknown_semantic', { semantic });
+            return () => {};
+        }
+
+        this.logAdapter('debug', 'bind_start', { semantic, target: target.constructor.name });
 
         // 1️⃣ 创建 gesture processor
         const processor = createGestureProcessor(descriptor, gesture => {
+            this.logAdapter('debug', 'emit_gesture', { semantic });
             scope.emit(semantic, gesture);
         });
 
@@ -46,15 +68,30 @@ export class DomEventAdapter {
         this.bindInputSignals(
             target,
             descriptor.requires,
-            input => processor.handle(input),
+            input => {
+                this.logAdapter('debug', 'process_input', { 
+                    semantic, 
+                    signal: input.signal,
+                    x: input.x,
+                    y: input.y 
+                });
+                processor.handle(input);
+            },
             scope,
             options,
             unbindFunctions
         );
 
+        this.logAdapter('info', 'bind_success', { 
+            semantic, 
+            signalCount: descriptor.requires.length,
+            target: target.constructor.name 
+        });
+
         // 返回组合的解绑函数
         return () => {
             unbindFunctions.forEach(unbind => unbind());
+            this.logAdapter('debug', 'unbind_all');
             // processor 清理逻辑
         };
     }
@@ -73,7 +110,10 @@ export class DomEventAdapter {
     ) {
         for (const signal of signals) {
             const binding = this.inputEventMap[signal];
-            if (!binding) continue;
+            if (!binding) {
+                this.logAdapter('warn', 'missing_binding', { signal });
+                continue;
+            }
 
             const domEvents = this.selectDomEvents(binding);
 
@@ -86,6 +126,12 @@ export class DomEventAdapter {
 
                 // 创建解绑函数
                 const unbind = () => target.removeEventListener(domEvent, handler, options);
+
+                this.logAdapter('debug', 'dom_event_bound', { 
+                    domEvent, 
+                    signal,
+                    target: target.constructor.name 
+                });
 
                 if (unbindFunctions) {
                     unbindFunctions.push(unbind);

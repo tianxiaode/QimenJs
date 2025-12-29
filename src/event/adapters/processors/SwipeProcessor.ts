@@ -1,6 +1,6 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit, GestureInput } from './types';
+import { GestureEmit } from './types';
 import { validateSwipe } from '../utils/validation';
 
 export class SwipeProcessor extends GestureProcessor<'swipe'> {
@@ -39,6 +39,15 @@ export class SwipeProcessor extends GestureProcessor<'swipe'> {
                 )) {
                     this.emitGesture(input.originalEvent);
                 }
+
+                this.logProcessor('debug', 'gesture_ended', {
+                    duration,
+                    distance,
+                    minDistance,
+                    maxDuration,
+                    minVelocity
+                });
+                    
 
                 this.reset();
             },

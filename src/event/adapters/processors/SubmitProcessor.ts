@@ -11,20 +11,9 @@ export class SubmitProcessor extends GestureProcessor<'submit'> {
         super(semantic, emit, constraints);
 
         this.handlers = {
-            keydown: (input) => {
-                if (input.originalEvent instanceof KeyboardEvent) {
-                    const event = input.originalEvent as KeyboardEvent;
-                    if (event.key === 'Enter' && !event.isComposing) {
-                        this.emitGesture(input.originalEvent);
-                    }
-                }
+            submit: i => {
+                this.emitGesture(i.originalEvent);
             },
-            press: (input) => {
-                // For form elements like buttons, the submit gesture can also be triggered by clicking
-                if (input.originalEvent instanceof MouseEvent) {
-                    this.emitGesture(input.originalEvent);
-                }
-            }
         };
     }
 }

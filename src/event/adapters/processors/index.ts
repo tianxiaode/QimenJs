@@ -4,7 +4,6 @@ export * from './GestureProcessor';
 export * from './ContextMenuProcessor';
 export * from './DoubleTapProcessor';
 export * from './DragProcessor';
-export * from './GestureUtils';
 export * from './HoverProcessor';
 export * from './LongPressProcessor';
 export * from './SubmitProcessor';

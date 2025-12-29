@@ -53,7 +53,7 @@ export function WithEvents<TBase extends Constructor>(
 
         dispose() {
             super.dispose?.();
-            this.eventScope.dispose();
+            this._eventScope?.dispose();
         }
     } as unknown as Constructor<InstanceType<TBase> & WithEventsPublic>;
 }

@@ -3,8 +3,6 @@ import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit } from './types';
 
 export class HoverProcessor extends GestureProcessor<'hover'> {
-    private hoverTimer: any = null;
-
     constructor(
         protected readonly semantic: GestureSemantic,
         protected readonly emit: (event: GestureEmit) => void,
@@ -13,23 +11,12 @@ export class HoverProcessor extends GestureProcessor<'hover'> {
         super(semantic, emit, constraints);
 
         this.handlers = {
-            enter: input => {
-                const delay = this.constraints?.delay ?? 0;
-
-                this.hoverTimer = setTimeout(() => {
-                    this.emitGesture(input.originalEvent);
-                }, delay);
+            enter: i => {
+                this.emitGesture(i.originalEvent);
             },
-            leave: input => {
-                this.cleanup();
+            leave: i => {
+                this.emitGesture(i.originalEvent);
             },
         };
-    }
-
-    private cleanup() {
-        if (this.hoverTimer) {
-            clearTimeout(this.hoverTimer);
-            this.hoverTimer = null;
-        }
     }
 }
