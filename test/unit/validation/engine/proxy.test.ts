@@ -102,10 +102,10 @@ describe('proxy.ts - 验证器代理测试', () => {
                 mockRule,
                 mockContext
             );
-            expect(result).toBeNull(); // 断言成功时返回 null
+            expect(result).toBe(mockValue); // 断言成功时返回传入的 value
         });
 
-        it('当验证成功时应该返回 null', () => {
+        it('当验证成功时应该返回传入的值', () => {
             const mockValue = 'test';
             const mockRule = { required: true };
             const mockResult = null; // 验证成功
@@ -119,7 +119,7 @@ describe('proxy.ts - 验证器代理测试', () => {
                 mockRule,
                 {}
             );
-            expect(result).toBeNull();
+            expect(result).toBe(mockValue);
         });
 
         it('当验证失败时应该抛出异常', () => {
@@ -162,7 +162,7 @@ describe('proxy.ts - 验证器代理测试', () => {
                 mockRule,
                 {}
             );
-            expect(result).toBeNull();
+            expect(result).toBe(mockValue);
         });
     });
 

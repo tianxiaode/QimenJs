@@ -63,7 +63,7 @@ describe("getRuntimeEnv", () => {
       }))
     };
 
-    const { getRuntimeEnv } = require("@/runttime-env/runtime");
+    const { getRuntimeEnv } = require("@/runtime-env/runtime");
     const runtimeEnv = getRuntimeEnv();
     
     expect(runtimeEnv).toHaveProperty('locale');
@@ -100,7 +100,7 @@ describe("getRuntimeEnv", () => {
       }))
     };
 
-    const { getRuntimeEnv } = require("@/runttime-env/runtime");
+    const { getRuntimeEnv } = require("@/runtime-env/runtime");
     const runtimeEnv = getRuntimeEnv();
     
     expect(runtimeEnv.locale).toBe('fr-FR');

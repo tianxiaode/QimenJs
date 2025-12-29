@@ -36,7 +36,7 @@ describe("getLocale", () => {
       vendor: 'Google Inc.',
     };
 
-    const { getLocale } = require("@/runttime-env/locale");
+    const { getLocale } = require("@/runtime-env/locale");
     
     expect(getLocale()).toBe("en-US");
   });
@@ -55,7 +55,7 @@ describe("getLocale", () => {
       vendor: 'Google Inc.',
     };
 
-    const { getLocale } = require("@/runttime-env/locale");
+    const { getLocale } = require("@/runtime-env/locale");
     
     expect(getLocale()).toBe("zh-TW");
   });
@@ -73,7 +73,7 @@ describe("getLocale", () => {
       vendor: 'Google Inc.',
     };
 
-    const { getLocale } = require("@/runttime-env/locale");
+    const { getLocale } = require("@/runtime-env/locale");
     
     expect(getLocale()).toBe("zh-CN");
   });
