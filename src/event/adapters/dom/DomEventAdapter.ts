@@ -13,10 +13,14 @@ import { createGestureProcessor, GestureInput } from '../processors';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
 
-/* --------------------------------------------
+/* ============================================
  * DomEventAdapter
- * -------------------------------------------- */
+ * ============================================ */
 
+/**
+ * DOM 事件适配器，用于将原生 DOM 事件转换为手势事件
+ * 将底层的 DOM 事件（如 mouse、touch、pointer）映射到高级手势语义（如 swipe、tap 等）
+ */
 export class DomEventAdapter {
     private readonly capabilities = detectInputCapabilities();
     private readonly adapterId = string.getId('dom-adapter');
@@ -31,6 +35,12 @@ export class DomEventAdapter {
     private readonly logger: ILogger;
 
     // --- 内置日志方法 ---
+    /**
+     * 内置日志记录方法
+     * @param level 日志级别
+     * @param action 日志动作描述
+     * @param data 附加数据
+     */
     private logAdapter(level: LogLevel, action: string, data?: Record<string, any>) {
         this.logger[level](`[dom.adapter] ${action}`, {
             adapterId: this.adapterId,
@@ -42,6 +52,14 @@ export class DomEventAdapter {
      * Public API
      * ============================================ */
 
+    /**
+     * 绑定手势事件到目标元素
+     * @param target 事件目标元素
+     * @param semantic 手势语义（如 tap、swipe 等）
+     * @param scope 事件作用域
+     * @param options 绑定选项
+     * @returns 解绑函数
+     */
     bind(
         target: EventTarget,
         semantic: GestureSemantic,
@@ -100,6 +118,15 @@ export class DomEventAdapter {
      * InputSignal → DOM 绑定
      * ============================================ */
 
+    /**
+     * 将输入信号绑定到 DOM 事件
+     * @param target 事件目标元素
+     * @param signals 需要绑定的输入信号列表
+     * @param onInput 输入处理回调
+     * @param scope 事件作用域
+     * @param options 绑定选项
+     * @param unbindFunctions 解绑函数数组
+     */
     private bindInputSignals(
         target: EventTarget,
         signals: readonly InputSignal[],
@@ -147,6 +174,12 @@ export class DomEventAdapter {
      * Event → GestureInput
      * ============================================ */
 
+    /**
+     * 将原生 DOM 事件转换为标准化的 GestureInput 对象
+     * @param signal 输入信号类型
+     * @param event 原生 DOM 事件
+     * @returns 标准化的 GestureInput 对象
+     */
     private normalizeInput(signal: InputSignal, event: Event): GestureInput {
         const time = performance.now();
 
@@ -197,6 +230,11 @@ export class DomEventAdapter {
         };
     }
 
+    /**
+     * 根据设备能力选择合适的 DOM 事件类型
+     * @param binding 输入事件绑定配置
+     * @returns 适合当前设备的原子信号列表
+     */
     private selectDomEvents(binding: InputEventBinding): readonly AtomicSignal[] {
         const cap = this.capabilities;
 
