@@ -1,5 +1,3 @@
-// semantic/types.ts
-
 export interface BindOptions {
   /** 是否阻止默认行为 */
   preventDefault?: boolean;

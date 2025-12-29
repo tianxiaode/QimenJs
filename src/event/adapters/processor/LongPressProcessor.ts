@@ -1,5 +1,5 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
-import { GestureProcessor } from './base';
+import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit, GestureInput } from './types';
 
 export class LongPressProcessor extends GestureProcessor<'longpress'> {

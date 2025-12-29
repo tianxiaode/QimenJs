@@ -1,6 +1,6 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
-import { GestureProcessor } from './base';
-import { GestureEmit, GestureInput } from './types';
+import { GestureProcessor } from './GestureProcessor';
+import { GestureEmit } from './types';
 
 export class HoverProcessor extends GestureProcessor<'hover'> {
     private hoverTimer: any = null;

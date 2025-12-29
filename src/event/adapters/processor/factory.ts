@@ -1,13 +1,13 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
-import { GestureProcessor } from './base';
-import { TapProcessor } from './tap';
-import { DragProcessor } from './drag';
-import { LongPressProcessor } from './long-press';
-import { DoubleTapProcessor } from './double-tap';
-import { SwipeProcessor } from './swipe';
-import { HoverProcessor } from './hover';
-import { ContextMenuProcessor } from './context-menu';
-import { SubmitProcessor } from './submit';
+import { GestureProcessor } from './GestureProcessor';
+import { TapProcessor } from './TapProcessor';
+import { DragProcessor } from './DragProcessor';
+import { LongPressProcessor } from './LongPressProcessor';
+import { DoubleTapProcessor } from './DoubleTapProcessor';
+import { SwipeProcessor } from './SwipeProcessor';
+import { HoverProcessor } from './HoverProcessor';
+import { ContextMenuProcessor } from './ContextMenuProcessor';
+import { SubmitProcessor } from './SubmitProcessor';
 import { GestureEmit } from './types';
 import { GestureError } from '../../errors/GestureError'; // 导入新错误类
 
@@ -37,7 +37,7 @@ export function createGestureProcessor<S extends GestureSemantic>(
     if (!ProcessorCtor) {
         throw new GestureError(`Unknown gesture processor: ${descriptor.processor}`, {
             processor: descriptor.processor,
-            semantic: descriptor.semantic
+            semantic: descriptor.semantic,
         });
     }
 

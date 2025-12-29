@@ -1,5 +1,5 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
-import { GestureProcessor } from './base';
+import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit } from './types';
 
 export class DoubleTapProcessor extends GestureProcessor<'dblclick'> {
