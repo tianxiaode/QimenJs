@@ -1,4 +1,4 @@
-import { chunk } from '../../../../../src/utils/array/collection/chunk';
+import { chunk } from '@/utils/array/collection/chunk';
 
 describe('chunk utility function', () => {
   it('should chunk array into specified size', () => {

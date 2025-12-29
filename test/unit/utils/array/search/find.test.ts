@@ -1,4 +1,4 @@
-import { findItem } from '../../../../../src/utils/array/search/find';
+import { findItem } from '@/utils/array/search/find';
 
 describe('findItem utility function', () => {
   it('should find an item by field and value', () => {

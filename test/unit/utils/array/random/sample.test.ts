@@ -1,4 +1,4 @@
-import { sample } from '../../../../../src/utils/array/random/sample';
+import { sample } from '@/utils/array/random/sample';
 
 describe('sample utility function', () => {
   it('should return a single element when count is 1 (default)', () => {

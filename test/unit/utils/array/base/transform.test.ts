@@ -1,4 +1,4 @@
-import { removeValues, splitArray } from '../../../../../src/utils/array/base/transform';
+import { removeValues, splitArray } from '@/utils/array/base/transform';
 
 describe('transform utility functions', () => {
   describe('removeValues', () => {

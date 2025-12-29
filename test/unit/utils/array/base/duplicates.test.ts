@@ -1,4 +1,4 @@
-import { removeDuplicates, uniqueBy } from '../../../../../src/utils/array/base/duplicates';
+import { removeDuplicates, uniqueBy } from '@/utils/array/base/duplicates';
 
 describe('duplicates utility functions', () => {
   describe('removeDuplicates', () => {

@@ -1,4 +1,4 @@
-import { generateColorShades } from '../../../../src/utils/color/generateColorShades';
+import { generateColorShades } from '@/utils/color/generateColorShades';
 
 describe('generateColorShades', () => {
     it('should generate color shades correctly', () => {

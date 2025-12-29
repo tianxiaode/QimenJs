@@ -1,4 +1,4 @@
-import { shuffle } from '../../../../../src/utils/array/random/shuffle';
+import { shuffle } from '@/utils/array/random/shuffle';
 
 describe('shuffle utility function', () => {
   it('should return a new array with same elements in different order', () => {

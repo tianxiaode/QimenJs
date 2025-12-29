@@ -1,4 +1,4 @@
-import { includes } from '../../../../../src/utils/array/search/includes';
+import { includes } from '@/utils/array/search/includes';
 
 describe('includes utility function', () => {
   it('should return true when array includes the value', () => {

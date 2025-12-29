@@ -1,4 +1,4 @@
-import { debounce } from '../../../src/async';
+import { debounce } from '@/async';
 
 describe('debounce', () => {
   beforeEach(() => {

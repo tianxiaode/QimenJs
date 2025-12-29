@@ -1,4 +1,4 @@
-import { sortWith } from '../../../../../src/utils/array/sort/sortWith';
+import { sortWith } from '@/utils/array/sort/sortWith';
 
 describe('sortWith utility function', () => {
   it('should sort array using custom compare function in ascending order', () => {

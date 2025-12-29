@@ -26,7 +26,7 @@ describe("getUserAgent", () => {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     };
 
-    const { getUserAgent } = require("../../../src/runttime-env/user-agent");
+    const { getUserAgent } = require("@/runttime-env/user-agent");
     
     expect(getUserAgent()).toBe('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
   });
@@ -35,7 +35,7 @@ describe("getUserAgent", () => {
     // 确保 navigator 不存在
     delete (global as any).navigator;
 
-    const { getUserAgent } = require("../../../src/runttime-env/user-agent");
+    const { getUserAgent } = require("@/runttime-env/user-agent");
     
     expect(getUserAgent()).toBe("");
   });

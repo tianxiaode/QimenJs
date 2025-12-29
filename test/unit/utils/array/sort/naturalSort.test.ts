@@ -1,4 +1,4 @@
-import { naturalSort } from '../../../../../src/utils/array/sort/naturalSort';
+import { naturalSort } from '@/utils/array/sort/naturalSort';
 
 describe('naturalSort utility function', () => {
   it('should sort string array in natural order', () => {

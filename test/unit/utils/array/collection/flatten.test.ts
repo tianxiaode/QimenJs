@@ -1,4 +1,4 @@
-import { flatten } from '../../../../../src/utils/array/collection/flatten';
+import { flatten } from '@/utils/array/collection/flatten';
 
 describe('flatten utility function', () => {
   it('should flatten array with default depth of 1', () => {

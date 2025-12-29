@@ -1,4 +1,4 @@
-import { intersection, intersectionBy } from '../../../../../src/utils/array/set/intersection';
+import { intersection, intersectionBy } from '@/utils/array/set/intersection';
 
 describe('intersection utility functions', () => {
   describe('intersection', () => {

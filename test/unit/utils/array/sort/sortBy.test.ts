@@ -1,4 +1,4 @@
-import { sortBy } from '../../../../../src/utils/array/sort/sortBy';
+import { sortBy } from '@/utils/array/sort/sortBy';
 
 describe('sortBy utility function', () => {
   it('should sort array by field in ascending order', () => {

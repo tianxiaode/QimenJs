@@ -1,4 +1,4 @@
-import { sortByKey } from '../../../../../src/utils/array/sort/sortByKey';
+import { sortByKey } from '@/utils/array/sort/sortByKey';
 
 describe('sortByKey utility function', () => {
   it('should sort array by key selector function in ascending order', () => {

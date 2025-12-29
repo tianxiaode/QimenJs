@@ -1,4 +1,4 @@
-import { groupBy, countBy } from '../../../../../src/utils/array/collection/groupBy';
+import { groupBy, countBy } from '@/utils/array/collection/groupBy';
 
 describe('groupBy utility function', () => {
   it('should group array elements by a specified key', () => {

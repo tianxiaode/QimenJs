@@ -1,4 +1,4 @@
-import { throttle } from '../../../src/async';
+import { throttle } from '@/async';
 
 describe('throttle', () => {
   beforeEach(() => {

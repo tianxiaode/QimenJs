@@ -1,4 +1,4 @@
-import { mergeArray } from '../../../../../src/utils/array/set/union';
+import { mergeArray } from '@/utils/array/set/union';
 
 interface TestUser {
   id: number;

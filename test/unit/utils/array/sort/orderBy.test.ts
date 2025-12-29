@@ -1,4 +1,4 @@
-import { orderBy } from '../../../../../src/utils/array/sort/orderBy';
+import { orderBy } from '@/utils/array/sort/orderBy';
 
 describe('orderBy utility function', () => {
   it('should sort array by multiple fields', () => {
