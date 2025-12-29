@@ -1,7 +1,7 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit } from './types';
-import { geometry } from '@orbitjs/utils';
+import { validateDoubleTap } from '../utils/validation';
 
 export class DoubleTapProcessor extends GestureProcessor<'dblclick'> {
     private lastTapTime = 0;
@@ -21,14 +21,19 @@ export class DoubleTapProcessor extends GestureProcessor<'dblclick'> {
                 const maxInterval = this.constraints?.maxInterval ?? 300;
                 const maxDistance = this.constraints?.maxDistance ?? 10;
 
-                if (now - this.lastTapTime < maxInterval) {
-                    const currentPoint = { x: input.x ?? 0, y: input.y ?? 0 };
-                    const lastPoint = { x: this.lastTapX, y: this.lastTapY };
-                    if (geometry.isWithinSquare(currentPoint, lastPoint, maxDistance)) {
-                        // Double tap detected
-                        this.emitGesture(input.originalEvent);
-                        this.resetDoubleTap();
-                    }
+                if (validateDoubleTap(
+                    now, 
+                    this.lastTapTime, 
+                    input.x ?? 0, 
+                    input.y ?? 0, 
+                    this.lastTapX, 
+                    this.lastTapY, 
+                    maxInterval, 
+                    maxDistance
+                )) {
+                    // Double tap detected
+                    this.emitGesture(input.originalEvent);
+                    this.resetDoubleTap();
                 }
 
                 // Record this tap

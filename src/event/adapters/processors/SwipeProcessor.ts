@@ -1,6 +1,7 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit, GestureInput } from './types';
+import { validateSwipe } from '../utils/validation';
 
 export class SwipeProcessor extends GestureProcessor<'swipe'> {
     constructor(
@@ -29,11 +30,14 @@ export class SwipeProcessor extends GestureProcessor<'swipe'> {
                 const duration = this.duration();
                 const distance = this.distance();
 
-                if (duration < maxDuration && distance >= minDistance) {
-                    const velocity = distance / duration;
-                    if (velocity >= minVelocity) {
-                        this.emitGesture(input.originalEvent);
-                    }
+                if (validateSwipe(
+                    distance,
+                    duration,
+                    minDistance,
+                    maxDuration,
+                    minVelocity
+                )) {
+                    this.emitGesture(input.originalEvent);
                 }
 
                 this.reset();

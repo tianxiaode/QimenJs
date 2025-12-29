@@ -1,6 +1,7 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit, GestureInput } from './types';
+import { validateLongPress } from '../utils/validation';
 
 export class LongPressProcessor extends GestureProcessor<'longpress'> {
     private timer: any = null;
@@ -27,7 +28,13 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
         const maxDistance = this.constraints?.maxDistance ?? 10;
 
         this.timer = setTimeout(() => {
-            if (this.active && this.distance() <= maxDistance) {
+            if (this.active && validateLongPress(
+                this.startX, 
+                this.startY, 
+                this.lastX, 
+                this.lastY, 
+                maxDistance
+            )) {
                 this.emitGesture(input.originalEvent);
                 this.reset();
             }
@@ -40,7 +47,13 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
         this.move(input);
 
         const maxDistance = this.constraints?.maxDistance ?? 10;
-        if (this.distance() > maxDistance) {
+        if (!validateLongPress(
+            this.startX, 
+            this.startY, 
+            this.lastX, 
+            this.lastY, 
+            maxDistance
+        )) {
             this.cancel();
         }
     };

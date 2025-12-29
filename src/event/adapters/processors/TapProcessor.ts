@@ -1,6 +1,7 @@
 import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
 import { GestureProcessor } from './GestureProcessor';
 import { GestureEmit } from './types';
+import { validateTap } from '../utils/validation';
 
 export class TapProcessor extends GestureProcessor<'tap'> {
     constructor(
@@ -15,8 +16,12 @@ export class TapProcessor extends GestureProcessor<'tap'> {
             release: i => {
                 if (
                     this.active &&
-                    this.duration() <= (this.constraints?.maxDuration ?? 250) &&
-                    this.distance() <= (this.constraints?.maxDistance ?? 10)
+                    validateTap(
+                        this.duration(),
+                        this.distance(),
+                        this.constraints?.maxDuration ?? 250,
+                        this.constraints?.maxDistance ?? 10
+                    )
                 ) {
                     this.emitGesture(i.originalEvent);
                 }
