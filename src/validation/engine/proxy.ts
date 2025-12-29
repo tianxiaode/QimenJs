@@ -56,8 +56,8 @@ const createAssertProxy = (target: any = {} as any) => {
                     ValidationErrorBuilder.throwIfAny(value, rule, result, context);
                 }
                 
-                // 验证成功返回 null
-                return null;
+                // 验证成功返回 value
+                return value;
             };
         },
     });

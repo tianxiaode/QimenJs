@@ -1,10 +1,13 @@
 import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
 import { GestureEmit, GestureInput } from './types';
+import { geometry } from '@orbitjs/utils';
+import { assert } from '@orbitjs/validation';
 
 export abstract class GestureProcessor<S extends GestureSemantic = GestureSemantic> {
     protected handlers: Partial<Record<InputSignal, (input: GestureInput) => void>> = {};
 
     protected active = false;
+
     protected startTime = 0;
     protected lastTime = 0;
 
@@ -25,15 +28,23 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     }
 
     protected start(input: GestureInput) {
+        const x = assert.finite(input.x);
+        const y = assert.finite(input.y);
+
         this.active = true;
         this.startTime = input.time;
-        this.startX = this.lastX = input.x ?? 0;
-        this.startY = this.lastY = input.y ?? 0;
+
+        this.startX = this.lastX = x;
+        this.startY = this.lastY = y;
     }
 
     protected move(input: GestureInput) {
-        this.lastX = input.x ?? this.lastX;
-        this.lastY = input.y ?? this.lastY;
+        if (input.x != null) {
+            this.lastX = assert.finite(input.x);
+        }
+        if (input.y != null) {
+            this.lastY = assert.finite(input.y);
+        }
     }
 
     protected end() {
@@ -50,9 +61,10 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     }
 
     protected distance(): number {
-        const dx = this.lastX - this.startX;
-        const dy = this.lastY - this.startY;
-        return Math.sqrt(dx * dx + dy * dy);
+        return geometry.distance(
+            { x: this.startX, y: this.startY },
+            { x: this.lastX, y: this.lastY }
+        );
     }
 
     protected emitGesture(originalEvent?: Event) {
