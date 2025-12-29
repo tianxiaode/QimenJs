@@ -2,42 +2,73 @@ import { AtomicSignal, InputEventMap, InputSignal } from './types';
 
 /**
  * 基础事件映射，包含与输入设备形态无关的事件
- * 不需要“输入动作”的事件
+ * 不需要"输入动作"的事件
  * baseMap 原则：
  *
  *     只包含"与输入设备形态无关"的事件
  *
  *     需要特定输入设备（鼠标、键盘、触摸屏等）才能产生的事件，都不进入 baseMap
+ * 
+ * @description 定义了跨平台输入设备的基础事件映射，将语义化的输入信号（press、release、move、cancel）
+ *              映射到具体的 DOM 事件上，使得上层组件可以不关心具体的输入设备类型
  */
-
-
 export const baseMap: InputEventMap = {
+  /**
+   * 按下/激活事件 - 当用户开始与元素交互时触发
+   * 支持多种输入设备，包括指针设备、触摸屏和鼠标
+   */
   press: {
-    pointer: ['pointerdown'],
-    touch: ['touchstart'],
-    mouse: ['mousedown'],
+    pointer: ['pointerdown'],  // 指针按下事件，适用于鼠标、触摸笔、触摸屏等支持 Pointer Events 的设备
+    touch: ['touchstart'],     // 触摸开始事件，用于触摸屏设备
+    mouse: ['mousedown'],      // 鼠标按下事件，用于传统鼠标设备
   },
+  /**
+   * 释放/取消激活事件 - 当用户结束与元素的交互时触发
+   * 通常与 press 事件配对使用，表示一次完整的交互周期
+   */
   release: {
-    pointer: ['pointerup'],
-    touch: ['touchend'],
-    mouse: ['mouseup'],
+    pointer: ['pointerup'],    // 指针释放事件，当指针设备按钮被释放时触发
+    touch: ['touchend'],       // 触摸结束事件，当手指离开触摸屏时触发
+    mouse: ['mouseup'],        // 鼠标释放事件，当鼠标按钮被释放时触发
   },
+  /**
+   * 移动事件 - 当输入设备在元素上移动时持续触发
+   * 用于跟踪用户的移动轨迹或位置变化
+   */
   move: {
-    pointer: ['pointermove'],
-    touch: ['touchmove'],
-    mouse: ['mousemove'],
+    pointer: ['pointermove'],  // 指针移动事件，提供跨设备的统一移动检测
+    touch: ['touchmove'],      // 触摸移动事件，当手指在屏幕上滑动时触发
+    mouse: ['mousemove'],      // 鼠标移动事件，当鼠标在元素上移动时触发
   },
+  /**
+   * 取消事件 - 当正在进行的交互被系统中断时触发
+   * 例如：电话呼入中断触摸操作、浏览器失去焦点等场景
+   */
   cancel: {
-    pointer: ['pointercancel'],
-    touch: ['touchcancel'],
+    pointer: ['pointercancel'], // 指针取消事件，当 Pointer Event 被系统强制终止时触发
+    touch: ['touchcancel'],     // 触摸取消事件，当 Touch Event 被系统中断时触发
+    // 注意：mouse 设备没有对应的 cancel 事件，因为鼠标交互通常不会被意外中断
   },
+  /**
+   * 滚轮事件 - 当用户使用滚轮或类似滚动机制时触发
+   * 目前主要由鼠标设备支持
+   */
   wheel: {
-    mouse: ['wheel'],
+    mouse: ['wheel'], // 鼠标滚轮事件，当用户滚动鼠标滚轮时触发
+    // 注意：虽然触摸板也可以产生滚动，但这里暂时只考虑传统的鼠标滚轮
   },
+  /**
+   * 键盘按键按下事件 - 当用户按下键盘上的键时触发
+   * 提供键盘输入的基本支持
+   */
   keydown: {
-    keyboard: ['keydown'],
+    keyboard: ['keydown'], // 键盘按键按下事件，当任何键被按下时触发
   },
+  /**
+   * 键盘按键释放事件 - 当用户释放键盘上的键时触发
+   * 与 keydown 事件配对，完成一次完整的按键周期
+   */
   keyup: {
-    keyboard: ['keyup'],
+    keyboard: ['keyup'], // 键盘按键释放事件，当被按下的键被释放时触发
   },
 };
