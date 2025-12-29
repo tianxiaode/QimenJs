@@ -6,6 +6,4 @@
 export * from "./types"
 export * from "./after"
 export * from "./delay"
-export * from "./debounce"
-export * from "./throttle"
 export * from "./repeat"
