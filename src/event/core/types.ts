@@ -6,14 +6,23 @@
  */
 export type EventHandler<T = any> = (payload: T) => void;
 
+/**
+ * 事件总线动作类型 - 定义事件总线可以记录的操作类型
+ */
 export type BusAction = 'emit' | 'emit_no_listeners' | 'clear' | 'handler_error' | 'off';
 
+/**
+ * 作用域日志动作类型 - 定义事件作用域可以记录的操作类型
+ */
 export type ScopeLogAction =
-    | 'created'
-    | 'disposed'
-    | 'dispose_twice'
-    | 'subscribe_after_dispose'
-    | 'cleanup_error'
-    | 'emit_after_dispose';
+    | 'created'                    // 作用域已创建
+    | 'disposed'                   // 作用域已销毁
+    | 'dispose_twice'              // 尝试重复销毁作用域
+    | 'subscribe_after_dispose'    // 在作用域销毁后尝试订阅事件
+    | 'cleanup_error'              // 清理函数执行时发生错误
+    | 'emit_after_dispose';        // 在作用域销毁后尝试触发事件
 
+/**
+ * 事件日志动作类型 - 定义事件可以记录的操作类型
+ */
 export type EventLogAction = 'emit' | 'handler_error';
