@@ -9,7 +9,7 @@ import {
     InputEventMap,
     InputSignal,
 } from '../semantic-map';
-import { createGestureProcessor, GestureInput } from '../processor';
+import { createGestureProcessor, GestureInput } from '../processors';
 
 /* --------------------------------------------
  * DomEventAdapter

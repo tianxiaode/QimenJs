@@ -5,4 +5,7 @@ export * as cookie from './cookie';
 export * as number from './number';
 export * as string from './string';
 export * as object from './object';
+export * as geometry from './geometry';
+export * as units from './units';
+export * as time from './time';
 export * from './composeMixins';
