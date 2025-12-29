@@ -187,4 +187,57 @@ describe('WithEvents Mixin', () => {
     
     expect(instanceWithDispose.disposed).toBe(true);
   });
+  
+  test('should bind gesture semantic to target element', () => {
+    const mockTarget = document.createElement('div');
+    const mockHandler = jest.fn();
+    
+    // 监听适配器的bind方法
+    const bindSpy = jest.spyOn((instance as any).adapter, 'bind');
+    
+    // 绑定一个点击手势到元素
+    instance.bind(mockTarget, 'click', { preventDefault: true });
+    
+    // 验证适配器的bind方法被正确调用
+    expect(bindSpy).toHaveBeenCalledWith(mockTarget, 'click', expect.any(Object), { preventDefault: true });
+  });
+  
+  test('should access eventScope getter to ensure it is created', () => {
+    // 访问 eventScope 属性以确保其 getter 被调用
+    const scope = (instance as any).eventScope;
+    expect(scope).toBeDefined();
+    
+    // 确保 _eventScope 已被初始化
+    expect((instance as any)._eventScope).toBeDefined();
+  });
+  
+  test('should call super.dispose when it exists', () => {
+    // 创建一个有明确dispose方法的父类
+    class ParentWithDispose extends TestClass {
+      disposeCalled = false;
+      
+      dispose() {
+        this.disposeCalled = true;
+        super.dispose();
+      }
+    }
+    
+    const ExtendedWithEvents = WithEvents(ParentWithDispose as Constructor<ParentWithDispose>);
+    
+    const ConcreteExtendedClass = class extends ExtendedWithEvents {
+      constructor() {
+        super();
+      }
+    };
+    
+    const testInstance = new ConcreteExtendedClass() as unknown as ParentWithDispose;
+    
+    // 确保在调用dispose之前super.dispose没有被调用
+    expect(testInstance.disposeCalled).toBe(false);
+    
+    testInstance.dispose();
+    
+    // 现在应该调用了super.dispose
+    expect(testInstance.disposeCalled).toBe(true);
+  });
 });
