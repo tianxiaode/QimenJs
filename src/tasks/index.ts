@@ -1,3 +1,3 @@
-export * from './types';
-export * from './WorkerManager';
 export * from './TaskQueue';
+export * from './types';
+export * from './worker';
