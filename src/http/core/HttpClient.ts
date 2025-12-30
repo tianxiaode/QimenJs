@@ -1,75 +1,52 @@
-import { HttpTransport } from "../transport/HttpTransport";
-import { HttpError } from "./HttpError";
-import { RetryPolicy } from "./RetryPolicy";
-import { BackendAdapter, HttpRequest, Middleware } from "./types";
+class HttpClient {
+  private transport: HttpTransport;
+  private middleware: Function[] = [];
 
-export class HttpClient {
-    constructor(
-        private transport: HttpTransport,
-        private adapter: BackendAdapter,
-        private retry: RetryPolicy,
-        private middlewares: Middleware[] = []
-    ) {}
+  constructor(transport: HttpTransport, middleware: Function[] = []) {
+    this.transport = transport;
+    this.middleware = middleware;
+  }
 
-    async request<T>(req: HttpRequest): Promise<T> {
-        let attempt = 0;
+  // 基础的 HTTP 请求方法
+  public async request(request: HttpRequest, options: any = {}): Promise<any> {
+    const modifiedRequest = this.applyMiddleware(request);
+    const response = await this.transport.send(modifiedRequest);
 
-        while (true) {
-            try {
-                const raw = await this.transport.request(req);
-
-                if (!this.adapter.isSuccess(raw.body)) {
-                    const errInfo = this.adapter.extractError(raw.body);
-                    throw new HttpError('code',errInfo.message, {
-                        code: errInfo.code,
-                        status: raw.status,
-                        detail: errInfo.detail,
-                    });
-                }
-
-                return this.adapter.extractData(raw.body);
-            } catch (e) {
-                const err = e instanceof HttpError ? e : new HttpError('ddd',String(e));
-
-                if (
-                    attempt < this.retry.retries &&
-                    this.retry.shouldRetry(err)
-                ) {
-                    attempt++;
-                    await new Promise(r =>
-                        setTimeout(r, this.retry.delay(attempt))
-                    );
-                    continue;
-                }
-
-                throw err;
-            }
-        }
+    // 如果需要分片下载
+    if (options.chunkedDownload) {
+      return this.chunkedDownload(response, options.chunkSize || 1024 * 1024);
     }
 
-    get<T>(url: string, config?: Partial<HttpRequest>) {
-        return this.request<T>({ ...config, method: 'GET', url } as any);
+    // 如果需要分片上传
+    if (options.chunkedUpload) {
+      return this.chunkedUpload(request.body, options.chunkSize || 1024 * 1024, options.uploadUrl);
     }
 
-    post<T>(url: string, body?: any, config?: Partial<HttpRequest>) {
-        return this.request<T>({
-            ...config,
-            method: 'POST',
-            url,
-            body,
-        } as any);
+    // 正常处理响应
+    const { error, data } = ResponseParserFactory.parseResponse(response);
+    if (error) {
+      throw error;  // 如果有错误，抛出错误
     }
 
-    upload<T>(
-        url: string,
-        body: FormData,
-        onProgress?: (e: ProgressEvent) => void
-    ) {
-        return this.request<T>({
-            method: 'POST',
-            url,
-            body,
-            onProgress,
-        } as any);
-    }
+    return data;  // 返回提取的数据
+  }
+
+  // 分片上传处理
+  private async chunkedUpload(file: File, chunkSize: number, uploadUrl: string): Promise<void> {
+    const uploader = new ChunkedUploader(uploadUrl, chunkSize);
+    await uploader.upload(file);
+  }
+
+  // 分片下载处理
+  private async chunkedDownload(response: HttpResponse, chunkSize: number): Promise<Blob> {
+    const downloadUrl = response.url;  // 假设 `response` 中有下载链接
+    const downloader = new ChunkedDownloader(downloadUrl, chunkSize);
+    return await downloader.download();
+  }
+
+  // 中间件应用
+  private applyMiddleware(request: HttpRequest): HttpRequest {
+    // 中间件处理逻辑
+    return request;
+  }
 }

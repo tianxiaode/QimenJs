@@ -62,6 +62,13 @@
             "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
             "packageName": "@orbitjs/core"
         },
+        "tasks": {
+            "entry": "src/tasks/index.ts",
+            "outDir": "dist/tasks",
+            "rootDir": "src/tasks",
+            "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
+            "packageName": "@orbitjs/tasks"
+        },
         "http": {
             "entry": "src/http/index.ts",
             "outDir": "dist/http",

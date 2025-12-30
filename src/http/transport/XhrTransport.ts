@@ -1,3 +1,4 @@
+import { HttpRequest } from "../core";
 import { HttpTransport } from "./HttpTransport";
 
 export class XhrTransport implements HttpTransport {

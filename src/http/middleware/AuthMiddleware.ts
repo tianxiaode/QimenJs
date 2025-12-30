@@ -1,12 +1,30 @@
 import { Middleware } from "../core/types";
 
-export const AuthMiddleware = (getToken: () => string | null): Middleware =>
-    req => {
-        const token = getToken();
-        if (token) {
-            req.headers = {
-                ...req.headers,
-                Authorization: `Bearer ${token}`,
-            };
-        }
-    };
+export class AuthMiddleware implements HttpMiddleware {
+  constructor(private provider: AuthProvider) {}
+
+  async handle(req, next) {
+    const authedReq = await this.provider.apply(req)
+    return next(authedReq)
+  }
+}
+
+class JwtAuthProvider implements AuthProvider {
+  apply(req: HttpRequest) {
+    return req.withHeader(
+      'Authorization',
+      `Bearer ${getToken()}`
+    )
+  }
+}
+
+class SignatureAuthProvider implements AuthProvider {
+  apply(req: HttpRequest) {
+    const signature = sign(req.url, req.body)
+    return req.withHeaders({
+      'X-App-Id': APP_ID,
+      'X-Signature': signature,
+    })
+  }
+
+  

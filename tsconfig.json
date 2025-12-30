@@ -30,6 +30,7 @@
       "@orbitjs/utils": ["src/utils"],
       "@orbitjs/validation": ["src/validation"],
       "@orbitjs/http": ["src/http"],
+      "@orbitjs/tasks": ["src/tasks"],
     }
   },
   "include": [

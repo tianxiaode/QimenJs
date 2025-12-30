@@ -64,6 +64,11 @@
       "require": "./dist/validation/index.js",
       "types": "./dist/validation/index.d.ts"
     },
+    "./tasks": {
+      "import": "./dist/tasks/index.esm.js",
+      "require": "./dist/tasks/index.js",
+      "types": "./dist/tasks/index.d.ts"
+    },
     "./http": {
       "import": "./dist/http/index.esm.js",
       "require": "./dist/http/index.js",
