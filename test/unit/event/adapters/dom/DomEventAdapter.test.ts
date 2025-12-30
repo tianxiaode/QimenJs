@@ -304,6 +304,86 @@ describe('DomEventAdapter', () => {
       // 验证警告日志被记录（至少有一次missing_binding警告）
       expect(loggerSpy).toHaveBeenCalledWith('warn', 'missing_binding', { signal: 'press' });
     });
+    
+    it('should call logAdapter when processing input', () => {
+      const mockProcessor = { handle: jest.fn() };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      // 创建适配器实例
+      const adapter = new DomEventAdapter(inputEventMap, gestureMap);
+      
+      // 创建一个模拟的事件
+      const mockEvent = new MouseEvent('mousedown', {
+        clientX: 100,
+        clientY: 200
+      });
+      
+      // 使用bind方法触发bindInputSignals的调用
+      const loggerSpy = jest.spyOn((adapter as any), 'logAdapter');
+      adapter.bind(mockTarget, 'longpress', mockEventScope); // longpress只需要press信号
+      
+      // 模拟触发事件
+      const addEventListenerCalls = (mockTarget.addEventListener as jest.Mock).mock.calls;
+      expect(addEventListenerCalls.length).toBeGreaterThan(0);
+      const eventHandler = addEventListenerCalls[0][1]; // 获取第一个事件处理程序
+      
+      // 调用事件处理程序
+      eventHandler(mockEvent);
+      
+      // 验证onInput被调用（通过processor.handle被调用）
+      expect(mockProcessor.handle).toHaveBeenCalled();
+      
+      // 验证logAdapter在处理输入时被调用
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'debug', 
+        'process_input', 
+        expect.objectContaining({
+          signal: 'press',
+          x: 100,
+          y: 200,
+        })
+      );
+    });
+    
+    it('should call onInput with normalized input when DOM event is triggered', () => {
+      const mockProcessor = { 
+        handle: jest.fn(),
+        destroy: jest.fn()
+      };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      // 创建一个包含已知事件的适配器
+      const adapter = new DomEventAdapter(inputEventMap, gestureMap);
+      
+      // 创建一个模拟的事件
+      const mockEvent = new MouseEvent('mousedown', {
+        clientX: 100,
+        clientY: 200
+      });
+      
+      // 使用bind方法触发bindInputSignals的调用
+      adapter.bind(mockTarget, 'longpress', mockEventScope); // longpress只需要press信号
+      
+      // 模拟触发事件
+      const addEventListenerCalls = (mockTarget.addEventListener as jest.Mock).mock.calls;
+      expect(addEventListenerCalls.length).toBeGreaterThan(0);
+      const eventHandler = addEventListenerCalls[0][1]; // 获取第一个事件处理程序
+      
+      // 调用事件处理程序
+      eventHandler(mockEvent);
+      
+      // 验证mockProcessor.handle被调用，并且传入了标准化的输入
+      expect(mockProcessor.handle).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signal: 'press',
+          x: 100,
+          y: 200,
+          pointerType: 'mouse',
+          buttons: 0, // 默认值
+          originalEvent: mockEvent
+        })
+      );
+    });
   });
 
   describe('normalizeInput method', () => {
@@ -377,6 +457,40 @@ describe('DomEventAdapter', () => {
       expect(result.buttons).toBeUndefined();
       expect(result.originalEvent).toBe(keyboardEvent);
     });
+
+    it('should normalize TouchEvent correctly with touches', () => {
+      const touch = new (global as any).Touch({ identifier: 0, target: document.body, clientX: 150, clientY: 250 });
+      const touchEvent = new (global as any).TouchEvent('touchstart', {
+        touches: [touch],
+        changedTouches: []
+      } as TouchEventInit);
+      
+      const normalizeInput = (domEventAdapter as any).normalizeInput as Function;
+      const result = normalizeInput('press', touchEvent);
+      
+      expect(result.signal).toBe('press');
+      expect(result.x).toBe(150);
+      expect(result.y).toBe(250);
+      expect(result.pointerType).toBe('touch');
+      expect(result.originalEvent).toBe(touchEvent);
+    });
+
+    it('should normalize TouchEvent correctly with changedTouches when touches is empty', () => {
+      const touch = new (global as any).Touch({ identifier: 0, target: document.body, clientX: 300, clientY: 400 });
+      const touchEvent = new (global as any).TouchEvent('touchstart', {
+        touches: [],
+        changedTouches: [touch]
+      } as TouchEventInit);
+      
+      const normalizeInput = (domEventAdapter as any).normalizeInput as Function;
+      const result = normalizeInput('press', touchEvent);
+      
+      expect(result.signal).toBe('press');
+      expect(result.x).toBe(300);
+      expect(result.y).toBe(400);
+      expect(result.pointerType).toBe('touch');
+      expect(result.originalEvent).toBe(touchEvent);
+    });
   });
 
   describe('selectDomEvents method', () => {
@@ -395,6 +509,55 @@ describe('DomEventAdapter', () => {
       expect(mockTarget.addEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), undefined);
       expect(mockTarget.addEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function), undefined);
     });
+    
+    it('should select touch events when only touch capability is available', () => {
+      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: false, touch: true, mouse: false });
+      
+      const mockProcessor = { handle: jest.fn() };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      const adapter = new DomEventAdapter(inputEventMap, gestureMap);
+      adapter.bind(mockTarget, 'tap', mockEventScope);
+      
+      // 验证使用 touch 事件（因为只检测到支持 touch）
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('touchstart', expect.any(Function), undefined);
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('touchend', expect.any(Function), undefined);
+    });
+    
+    it('should select mouse events when only mouse capability is available', () => {
+      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: false, touch: false, mouse: true });
+      
+      const mockProcessor = { handle: jest.fn() };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      const adapter = new DomEventAdapter(inputEventMap, gestureMap);
+      adapter.bind(mockTarget, 'tap', mockEventScope);
+      
+      // 验证使用 mouse 事件（因为只检测到支持 mouse）
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function), undefined);
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('mouseup', expect.any(Function), undefined);
+    });
+    
+    it('should return empty array when no capabilities are available', () => {
+      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: false, touch: false, mouse: false });
+      
+      // 创建一个没有任何事件映射的输入事件映射
+      const emptyInputEventMap = {
+        press: {} as InputEventMap['press'],
+        move: {} as InputEventMap['move'],
+        release: {} as InputEventMap['release']
+      };
+      
+      const mockProcessor = { handle: jest.fn() };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      const adapter = new DomEventAdapter(emptyInputEventMap, gestureMap);
+      const unbind = adapter.bind(mockTarget, 'tap', mockEventScope);
+      
+      // 验证没有添加任何事件监听器
+      expect(mockTarget.addEventListener).not.toHaveBeenCalled();
+    });
   });
+  
   
 });

@@ -24,7 +24,7 @@ import { string } from '@orbitjs/utils';
 export class DomEventAdapter {
     private readonly capabilities = detectInputCapabilities();
     private readonly adapterId = string.getId('dom-adapter');
-    
+
     constructor(
         private readonly inputEventMap: InputEventMap,
         private readonly gestureMap: GestureEventMap
@@ -87,11 +87,11 @@ export class DomEventAdapter {
             target,
             descriptor.requires,
             input => {
-                this.logAdapter('debug', 'process_input', { 
-                    semantic, 
+                this.logAdapter('debug', 'process_input', {
+                    semantic,
                     signal: input.signal,
                     x: input.x,
-                    y: input.y 
+                    y: input.y,
                 });
                 processor.handle(input);
             },
@@ -100,10 +100,10 @@ export class DomEventAdapter {
             unbindFunctions
         );
 
-        this.logAdapter('info', 'bind_success', { 
-            semantic, 
+        this.logAdapter('info', 'bind_success', {
+            semantic,
             signalCount: descriptor.requires.length,
-            target: target.constructor.name 
+            target: target.constructor.name,
         });
 
         // 返回组合的解绑函数
@@ -154,18 +154,16 @@ export class DomEventAdapter {
                 // 创建解绑函数
                 const unbind = () => target.removeEventListener(domEvent, handler, options);
 
-                this.logAdapter('debug', 'dom_event_bound', { 
-                    domEvent, 
+                this.logAdapter('debug', 'dom_event_bound', {
+                    domEvent,
                     signal,
-                    target: target.constructor.name 
+                    target: target.constructor.name,
                 });
 
                 if (unbindFunctions) {
                     unbindFunctions.push(unbind);
-                } else {
-                    // 保持向后兼容，如果没有传unbindFunctions，则使用scope清理
-                    scope.addCleanup(unbind);
                 }
+                scope.addCleanup(unbind);
             }
         }
     }
