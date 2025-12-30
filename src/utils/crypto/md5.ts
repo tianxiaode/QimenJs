@@ -9,19 +9,12 @@
  * @returns MD5哈希值（32位十六进制字符串）
  */
 export default function md5(str: string): string {
-  if (typeof str !== 'string') {
-    throw new TypeError('Input must be a string');
-  }
+    if (typeof str !== 'string') {
+        throw new TypeError('Input must be a string');
+    }
 
-  // 使用Web Crypto API（如果可用）或回退到纯JavaScript实现
-  if (typeof crypto !== 'undefined' && crypto.subtle) {
-    // 使用Web Crypto API进行SHA-256哈希，然后转换为MD5效果的模拟
-    // 但由于Web Crypto API不直接支持MD5，我们使用纯JavaScript实现
+    // 纯JavaScript MD5实现
     return calculateMd5(str);
-  }
-
-  // 纯JavaScript MD5实现
-  return calculateMd5(str);
 }
 
 /**
@@ -30,198 +23,212 @@ export default function md5(str: string): string {
  * @returns MD5哈希值
  */
 function calculateMd5(string: string): string {
-  // UTF-8编码
-  function utf8Encode(str: string): Uint8Array {
-    const utf8Str = unescape(encodeURIComponent(str));
-    const result = new Uint8Array(utf8Str.length);
-    for (let i = 0; i < utf8Str.length; i++) {
-      result[i] = utf8Str.charCodeAt(i);
+    // 将字符串转换为UTF-8字节数组
+    function str2rstrUTF8(input: string): Uint8Array {
+        const utf8Str = unescape(encodeURIComponent(input));
+        const result = new Uint8Array(utf8Str.length);
+        for (let i = 0; i < utf8Str.length; i++) {
+            result[i] = utf8Str.charCodeAt(i);
+        }
+        return result;
     }
-    return result;
-  }
 
-  // 旋转函数
-  function rotateLeft(value: number, shift: number): number {
-    return (value << shift) | (value >>> (32 - shift));
-  }
-
-  // 四个辅助函数
-  function F(x: number, y: number, z: number): number {
-    return (x & y) | (~x & z);
-  }
-
-  function G(x: number, y: number, z: number): number {
-    return (x & z) | (y & ~z);
-  }
-
-  function H(x: number, y: number, z: number): number {
-    return x ^ y ^ z;
-  }
-
-  function I(x: number, y: number, z: number): number {
-    return y ^ (x | ~z);
-  }
-
-  // 将整数转换为无符号
-  function toUnsigned(n: number): number {
-    return n < 0 ? n + 4294967296 : n;
-  }
-
-  // 初始化缓冲区
-  const x = utf8Encode(string);
-  let k: number, AA: number, BB: number, CC: number, DD: number, a: number, b: number, c: number, d: number;
-  const S11 = 7, S12 = 12, S13 = 17, S14 = 22;
-  const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
-  const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
-  const S41 = 6, S42 = 10, S43 = 15, S44 = 21;
-
-  // 初始化缓冲区A、B、C、D
-  a = 0x67452301;
-  b = 0xefcdab89;
-  c = 0x98badcfe;
-  d = 0x10325476;
-
-  // 处理字符串，每次处理64字节（512位）
-  for (k = 0; k < x.length; k += 16) {
-    AA = a;
-    BB = b;
-    CC = c;
-    DD = d;
-
-    // 第一轮
-    a = FF(a, b, c, d, toWord(x, k + 0), S11, 0xd76aa478);
-    d = FF(d, a, b, c, toWord(x, k + 1), S12, 0xe8c7b756);
-    c = FF(c, d, a, b, toWord(x, k + 2), S13, 0x242070db);
-    b = FF(b, c, d, a, toWord(x, k + 3), S14, 0xc1bdceee);
-    a = FF(a, b, c, d, toWord(x, k + 4), S11, 0xf57c0faf);
-    d = FF(d, a, b, c, toWord(x, k + 5), S12, 0x4787c62a);
-    c = FF(c, d, a, b, toWord(x, k + 6), S13, 0xa8304613);
-    b = FF(b, c, d, a, toWord(x, k + 7), S14, 0xfd469501);
-    a = FF(a, b, c, d, toWord(x, k + 8), S11, 0x698098d8);
-    d = FF(d, a, b, c, toWord(x, k + 9), S12, 0x8b44f7af);
-    c = FF(c, d, a, b, toWord(x, k + 10), S13, 0xffff5bb1);
-    b = FF(b, c, d, a, toWord(x, k + 11), S14, 0x895cd7be);
-    a = FF(a, b, c, d, toWord(x, k + 12), S11, 0x6b901122);
-    d = FF(d, a, b, c, toWord(x, k + 13), S12, 0xfd987193);
-    c = FF(c, d, a, b, toWord(x, k + 14), S13, 0xa679438e);
-    b = FF(b, c, d, a, toWord(x, k + 15), S14, 0x49b40821);
-
-    // 第二轮
-    a = GG(a, b, c, d, toWord(x, k + 1), S21, 0xf61e2562);
-    d = GG(d, a, b, c, toWord(x, k + 6), S22, 0xc040b340);
-    c = GG(c, d, a, b, toWord(x, k + 11), S23, 0x265e5a51);
-    b = GG(b, c, d, a, toWord(x, k + 0), S24, 0xe9b6c7aa);
-    a = GG(a, b, c, d, toWord(x, k + 5), S21, 0xd62f105d);
-    d = GG(d, a, b, c, toWord(x, k + 10), S22, 0x2441453);
-    c = GG(c, d, a, b, toWord(x, k + 15), S23, 0xd8a1e681);
-    b = GG(b, c, d, a, toWord(x, k + 4), S24, 0xe7d3fbc8);
-    a = GG(a, b, c, d, toWord(x, k + 9), S21, 0x21e1cde6);
-    d = GG(d, a, b, c, toWord(x, k + 14), S22, 0xc33707d6);
-    c = GG(c, d, a, b, toWord(x, k + 3), S23, 0xf4d50d87);
-    b = GG(b, c, d, a, toWord(x, k + 8), S24, 0x455a14ed);
-    a = GG(a, b, c, d, toWord(x, k + 13), S21, 0xa9e3e905);
-    d = GG(d, a, b, c, toWord(x, k + 2), S22, 0xfcefa3f8);
-    c = GG(c, d, a, b, toWord(x, k + 7), S23, 0x676f02d9);
-    b = GG(b, c, d, a, toWord(x, k + 12), S24, 0x8d2a4c8a);
-
-    // 第三轮
-    a = HH(a, b, c, d, toWord(x, k + 5), S31, 0xfffa3942);
-    d = HH(d, a, b, c, toWord(x, k + 8), S32, 0x8771f681);
-    c = HH(c, d, a, b, toWord(x, k + 11), S31, 0x6d9d6122);
-    b = HH(b, c, d, a, toWord(x, k + 14), S32, 0xfde5380c);
-    a = HH(a, b, c, d, toWord(x, k + 1), S33, 0xa4beea44);
-    d = HH(d, a, b, c, toWord(x, k + 4), S32, 0x4bdecfa9);
-    c = HH(c, d, a, b, toWord(x, k + 7), S33, 0xf6bb4b60);
-    b = HH(b, c, d, a, toWord(x, k + 10), S32, 0xbebfbc70);
-    a = HH(a, b, c, d, toWord(x, k + 13), S33, 0x289b7ec6);
-    d = HH(d, a, b, c, toWord(x, k + 0), S32, 0xeaa127fa);
-    c = HH(c, d, a, b, toWord(x, k + 3), S33, 0xd4ef3085);
-    b = HH(b, c, d, a, toWord(x, k + 6), S32, 0x4881d05);
-    a = HH(a, b, c, d, toWord(x, k + 9), S33, 0xd9d4d039);
-    d = HH(d, a, b, c, toWord(x, k + 12), S32, 0xe6db99e5);
-    c = HH(c, d, a, b, toWord(x, k + 15), S33, 0x1fa27cf8);
-    b = HH(b, c, d, a, toWord(x, k + 2), S32, 0xc4ac5665);
-
-    // 第四轮
-    a = II(a, b, c, d, toWord(x, k + 0), S41, 0xf4292244);
-    d = II(d, a, b, c, toWord(x, k + 7), S42, 0x432aff97);
-    c = II(c, d, a, b, toWord(x, k + 14), S41, 0xab9423a7);
-    b = II(b, c, d, a, toWord(x, k + 5), S42, 0xfc93a039);
-    a = II(a, b, c, d, toWord(x, k + 12), S41, 0x655b59c3);
-    d = II(d, a, b, c, toWord(x, k + 3), S42, 0x8f0ccc92);
-    c = II(c, d, a, b, toWord(x, k + 10), S41, 0xffeff47d);
-    b = II(b, c, d, a, toWord(x, k + 1), S42, 0x85845dd1);
-    a = II(a, b, c, d, toWord(x, k + 8), S41, 0x6fa87e4f);
-    d = II(d, a, b, c, toWord(x, k + 15), S42, 0xfe2ce6e0);
-    c = II(c, d, a, b, toWord(x, k + 6), S41, 0xa3014314);
-    b = II(b, c, d, a, toWord(x, k + 13), S42, 0x4e0811a1);
-    a = II(a, b, c, d, toWord(x, k + 4), S41, 0xf7537e82);
-    d = II(d, a, b, c, toWord(x, k + 11), S42, 0xbd3af235);
-    c = II(c, d, a, b, toWord(x, k + 2), S41, 0x2ad7d2bb);
-    b = II(b, c, d, a, toWord(x, k + 9), S42, 0xeb86d391);
-
-    a = toUnsigned(a + AA);
-    b = toUnsigned(b + BB);
-    c = toUnsigned(c + CC);
-    d = toUnsigned(d + DD);
-  }
-
-  // 将结果转换为16进制字符串
-  const result = wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d);
-  return result.toLowerCase();
-  
-  // 将字节序列转换为32位字
-  function toWord(bytes: Uint8Array, offset: number): number {
-    offset *= 4;
-    return (
-      (bytes[offset] || 0) |
-      ((bytes[offset + 1] || 0) << 8) |
-      ((bytes[offset + 2] || 0) << 16) |
-      ((bytes[offset + 3] || 0) << 24)
-    );
-  }
-
-  // 第一轮操作函数
-  function FF(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
-    let res = F(b, c, d) + a + x + ac;
-    res = rotateLeft(res, s);
-    res = toUnsigned(res + b);
-    return res;
-  }
-
-  // 第二轮操作函数
-  function GG(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
-    let res = G(b, c, d) + a + x + ac;
-    res = rotateLeft(res, s);
-    res = toUnsigned(res + b);
-    return res;
-  }
-
-  // 第三轮操作函数
-  function HH(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
-    let res = H(b, c, d) + a + x + ac;
-    res = rotateLeft(res, s);
-    res = toUnsigned(res + b);
-    return res;
-  }
-
-  // 第四轮操作函数
-  function II(a: number, b: number, c: number, d: number, x: number, s: number, ac: number): number {
-    let res = I(b, c, d) + a + x + ac;
-    res = rotateLeft(res, s);
-    res = toUnsigned(res + b);
-    return res;
-  }
-
-  // 将字转换为16进制
-  function wordToHex(lValue: number): string {
-    let wordToHexValue = '';
-    let wordToHexValueTemp = '';
-    for (let l = 0; l <= 3; l++) {
-      const lByte = (lValue >>> (l * 8)) & 255;
-      wordToHexValueTemp = '0' + lByte.toString(16);
-      wordToHexValue = wordToHexValue + wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2);
+    // 将字节数组转换为32位字数组
+    function rstr2binl(input: Uint8Array): number[] {
+        const output: number[] = [];
+        for (let i = 0; i < input.length * 8; i += 8) {
+            const wordIndex = i >> 5;
+            output[wordIndex] = (output[wordIndex] || 0) | (input[i / 8] << (i % 32));
+        }
+        return output;
     }
-    return wordToHexValue;
-  }
+
+    // 将32位字数组转换为字符串
+    function binl2rstr(input: number[]): string {
+        const output = [];
+        for (let i = 0; i < input.length * 32; i += 8) {
+            output.push(String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xff));
+        }
+        return output.join('');
+    }
+
+    // 将字符串转换为十六进制
+    function rstr2hex(input: string): string {
+        const hexTab = '0123456789abcdef';
+        let output = '';
+        for (let i = 0; i < input.length; i++) {
+            const x = input.charCodeAt(i);
+            output += hexTab.charAt((x >>> 4) & 0x0f) + hexTab.charAt(x & 0x0f);
+        }
+        return output;
+    }
+
+    // MD5核心算法
+    function binlMD5(x: number[], len: number): number[] {
+        x[len >> 5] |= 0x80 << (len % 32);
+        x[(((len + 64) >>> 9) << 4) + 14] = len;
+
+        let a = 1732584193;
+        let b = -271733879;
+        let c = -1732584194;
+        let d = 271733878;
+
+        for (let i = 0; i < x.length; i += 16) {
+            const olda = a;
+            const oldb = b;
+            const oldc = c;
+            const oldd = d;
+
+            a = md5ff(a, b, c, d, x[i + 0], 7, -680876936);
+            d = md5ff(d, a, b, c, x[i + 1], 12, -389564586);
+            c = md5ff(c, d, a, b, x[i + 2], 17, 606105819);
+            b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330);
+            a = md5ff(a, b, c, d, x[i + 4], 7, -176418897);
+            d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426);
+            c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341);
+            b = md5ff(b, c, d, a, x[i + 7], 22, -45705983);
+            a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416);
+            d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417);
+            c = md5ff(c, d, a, b, x[i + 10], 17, -42063);
+            b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162);
+            a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682);
+            d = md5ff(d, a, b, c, x[i + 13], 12, -40341101);
+            c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290);
+            b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329);
+
+            a = md5gg(a, b, c, d, x[i + 1], 5, -165796510);
+            d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632);
+            c = md5gg(c, d, a, b, x[i + 11], 14, 643717713);
+            b = md5gg(b, c, d, a, x[i + 0], 20, -373897302);
+            a = md5gg(a, b, c, d, x[i + 5], 5, -701558691);
+            d = md5gg(d, a, b, c, x[i + 10], 9, 38016083);
+            c = md5gg(c, d, a, b, x[i + 15], 14, -660478335);
+            b = md5gg(b, c, d, a, x[i + 4], 20, -405537848);
+            a = md5gg(a, b, c, d, x[i + 9], 5, 568446438);
+            d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690);
+            c = md5gg(c, d, a, b, x[i + 3], 14, -187363961);
+            b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501);
+            a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467);
+            d = md5gg(d, a, b, c, x[i + 2], 9, -51403784);
+            c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473);
+            b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734);
+
+            a = md5hh(a, b, c, d, x[i + 5], 4, -378558);
+            d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463);
+            c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562);
+            b = md5hh(b, c, d, a, x[i + 14], 23, -35309556);
+            a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060);
+            d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353);
+            c = md5hh(c, d, a, b, x[i + 7], 16, -155497632);
+            b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640);
+            a = md5hh(a, b, c, d, x[i + 13], 4, 681279174);
+            d = md5hh(d, a, b, c, x[i + 0], 11, -358537222);
+            c = md5hh(c, d, a, b, x[i + 3], 16, -722521979);
+            b = md5hh(b, c, d, a, x[i + 6], 23, 76029189);
+            a = md5hh(a, b, c, d, x[i + 9], 4, -640364487);
+            d = md5hh(d, a, b, c, x[i + 12], 11, -421815835);
+            c = md5hh(c, d, a, b, x[i + 15], 16, 530742520);
+            b = md5hh(b, c, d, a, x[i + 2], 23, -995338651);
+
+            a = md5ii(a, b, c, d, x[i + 0], 6, -198630844);
+            d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415);
+            c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905);
+            b = md5ii(b, c, d, a, x[i + 5], 21, -57434055);
+            a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571);
+            d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606);
+            c = md5ii(c, d, a, b, x[i + 10], 15, -1051523);
+            b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799);
+            a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359);
+            d = md5ii(d, a, b, c, x[i + 15], 10, -30611744);
+            c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380);
+            b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649);
+            a = md5ii(a, b, c, d, x[i + 4], 6, -145523070);
+            d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379);
+            c = md5ii(c, d, a, b, x[i + 2], 15, 718787259);
+            b = md5ii(b, c, d, a, x[i + 9], 21, -343485551);
+
+            a = safeAdd(a, olda);
+            b = safeAdd(b, oldb);
+            c = safeAdd(c, oldc);
+            d = safeAdd(d, oldd);
+        }
+
+        return [a, b, c, d];
+    }
+
+    // 四个辅助函数
+    function md5cmn(q: number, a: number, b: number, x: number, s: number, t: number): number {
+        return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
+    }
+
+    function md5ff(
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        x: number,
+        s: number,
+        t: number
+    ): number {
+        return md5cmn((b & c) | (~b & d), a, b, x, s, t);
+    }
+
+    function md5gg(
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        x: number,
+        s: number,
+        t: number
+    ): number {
+        return md5cmn((b & d) | (c & ~d), a, b, x, s, t);
+    }
+
+    function md5hh(
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        x: number,
+        s: number,
+        t: number
+    ): number {
+        return md5cmn(b ^ c ^ d, a, b, x, s, t);
+    }
+
+    function md5ii(
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        x: number,
+        s: number,
+        t: number
+    ): number {
+        return md5cmn(c ^ (b | ~d), a, b, x, s, t);
+    }
+
+    // 安全加法，确保结果为32位无符号整数
+    function safeAdd(x: number, y: number): number {
+        const lsw = (x & 0xffff) + (y & 0xffff);
+        const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+        return (msw << 16) | (lsw & 0xffff);
+    }
+
+    // 左循环移位
+    function bitRotateLeft(num: number, cnt: number): number {
+        return (num << cnt) | (num >>> (32 - cnt));
+    }
+
+    // 将字符串转换为字节数组
+    const bytes = str2rstrUTF8(string);
+    // 将字节数组转换为32位字数组
+    const words = rstr2binl(bytes);
+    // 计算MD5
+    const hash = binlMD5(words, string.length * 8);
+    // 转换为字符串
+    const rstr = binl2rstr(hash);
+    // 转换为十六进制
+    return rstr2hex(rstr);
 }

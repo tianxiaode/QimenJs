@@ -1,6 +1,6 @@
 /**
- * Base64编码和解码工具函数
- * 提供字符串和数据的Base64编码和解码功能
+ * Base64编码解码工具函数
+ * 提供字符串的Base64编码和解码功能
  */
 
 /**
@@ -9,10 +9,13 @@
  * @returns Base64编码的字符串
  */
 export function encode(str: string): string {
+  if (typeof str !== 'string') {
+    throw new TypeError('Input must be a string');
+  }
 
-  // 如果在浏览器环境中，优先使用原生btoa函数
+  // 如果在浏览器环境中，使用原生btoa函数
   if (typeof window !== 'undefined' && window.btoa) {
-    // 首先对字符串进行UTF-8编码以处理Unicode字符
+    // 对于非ASCII字符，需要先进行UTF-8编码
     const utf8Str = unescape(encodeURIComponent(str));
     return window.btoa(utf8Str);
   }
@@ -33,17 +36,28 @@ export function encode(str: string): string {
  * @returns 解码后的原始字符串
  */
 export function decode(str: string): string {
+  if (typeof str !== 'string') {
+    throw new TypeError('Input must be a string');
+  }
 
-  // 如果在浏览器环境中，优先使用原生atob函数
+  // 如果在浏览器环境中，使用原生atob函数
   if (typeof window !== 'undefined' && window.atob) {
-    const base64Str = str.replace(/[^A-Za-z0-9+/=]/g, '');
-    const decodedStr = window.atob(base64Str);
-    return decodeURIComponent(escape(decodedStr));
+    try {
+      // 先解码Base64，然后处理UTF-8解码
+      const utf8Str = window.atob(str);
+      return decodeURIComponent(escape(utf8Str));
+    } catch (e) {
+      return '';
+    }
   }
   // 如果在Node.js环境中，使用Buffer
   else if (typeof Buffer !== 'undefined') {
-    const buffer = Buffer.from(str, 'base64');
-    return buffer.toString('utf8');
+    try {
+      const buffer = Buffer.from(str, 'base64');
+      return buffer.toString('utf8');
+    } catch (e) {
+      return '';
+    }
   }
   // 否则使用纯JavaScript实现
   else {
@@ -127,9 +141,7 @@ function decodeJavaScript(str: string): string {
   return result;
 }
 
-/**
- * Base64对象，包含编码和解码方法
- */
+// 默认导出
 export default {
   encode,
   decode
