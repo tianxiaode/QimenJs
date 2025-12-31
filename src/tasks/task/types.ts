@@ -3,11 +3,6 @@ export type PollingData = {
   message: string;
 };
 
-export type WorkerMessage = {
-  action: string;
-  payload: any;
-};
-
 export type TaskPriority = 'HIGH' | 'NORMAL' | 'LOW';
 
 export interface Task {

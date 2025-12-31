@@ -1,6 +1,6 @@
 import { Task, TaskPriority } from '../types';
-import { ILogger, Logger } from '@/logger';
-import { time, string } from '@/utils';
+import { ILogger, Logger } from '@orbitjs/logger';
+import { time, string } from '@orbitjs/utils';
 
 /**
  * 全局任务队列 - 用于管理任务执行、优先级排序和重试的核心类
