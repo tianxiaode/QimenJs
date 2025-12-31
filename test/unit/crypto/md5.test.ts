@@ -1,4 +1,4 @@
-import md5 from '@/utils/crypto/md5';
+import md5 from '@/crypto/md5';
 
 describe('MD5加密功能测试', () => {
   it('应该正确计算空字符串的MD5值', () => {

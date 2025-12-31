@@ -31,6 +31,7 @@
       "@orbitjs/validation": ["src/validation"],
       "@orbitjs/http": ["src/http"],
       "@orbitjs/tasks": ["src/tasks"],
+      "@orbitjs/crypto": ["src/crypto"],
     }
   },
   "include": [

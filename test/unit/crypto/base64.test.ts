@@ -1,4 +1,4 @@
-import base64 from '@/utils/crypto/base64';
+import base64 from '@/crypto/base64';
 
 describe('Base64编码解码功能测试', () => {
   it('应该正确编码普通字符串', () => {

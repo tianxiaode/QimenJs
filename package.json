@@ -69,6 +69,11 @@
       "require": "./dist/tasks/index.js",
       "types": "./dist/tasks/index.d.ts"
     },
+    "./crypto": {
+      "import": "./dist/crypto/index.esm.js",
+      "require": "./dist/crypto/index.js",
+      "types": "./dist/crypto/index.d.ts"
+    },
     "./http": {
       "import": "./dist/http/index.esm.js",
       "require": "./dist/http/index.js",

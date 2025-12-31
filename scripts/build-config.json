@@ -59,21 +59,28 @@
             "entry": "src/core/index.ts",
             "outDir": "dist/core",
             "rootDir": "src/core",
-            "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
+            "dependencies": ["utils", "validation", "error", "logger", "event"],
             "packageName": "@orbitjs/core"
         },
         "tasks": {
             "entry": "src/tasks/index.ts",
             "outDir": "dist/tasks",
             "rootDir": "src/tasks",
-            "dependencies": ["utils", "validation", "error", "logger", "event-core", "event-dom"],
+            "dependencies": ["utils", "crypto", "error", "logger"],
             "packageName": "@orbitjs/tasks"
+        },
+        "crypto": {
+            "entry": "src/crypto/index.ts",
+            "outDir": "dist/crypto",
+            "rootDir": "src/crypto",
+            "dependencies": [],
+            "packageName": "@orbitjs/crypto"
         },
         "http": {
             "entry": "src/http/index.ts",
             "outDir": "dist/http",
             "rootDir": "src/http",
-            "dependencies": ["utils", "validation", "error", "logger", "event-core"],
+            "dependencies": ["utils", "validation", "error", "logger"],
             "packageName": "@orbitjs/http"
         }
     },

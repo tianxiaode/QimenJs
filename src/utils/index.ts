@@ -10,6 +10,6 @@ export * as units from './units';
 export * as time from './time';
 
 // 导入加密相关功能
-export * as crypto from './crypto';
+export * as crypto from '../crypto';
 
 export * from './composeMixins';
