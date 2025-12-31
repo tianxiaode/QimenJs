@@ -189,9 +189,63 @@ describe('GlobalTaskQueue', () => {
       expect(taskFn).toHaveBeenCalledTimes(1);
       expect((taskQueue as any).taskQueue.length).toBe(0); // 没有重试任务被添加
     });
+
+    it('should execute a polling task and continue polling on success', async () => {
+      const mockLoggerDebug = jest.spyOn((taskQueue as any).logger, 'debug');
+      const mockHandlePollingTask = jest.spyOn(taskQueue as any, 'handlePollingTask').mockResolvedValue(true);
+      
+      const taskFn = jest.fn().mockResolvedValue(undefined);
+      const task = {
+        id: 'test-id',
+        fn: taskFn,
+        retries: 0,
+        maxRetries: 3,
+        delay: 100,
+        priority: 'NORMAL',
+        isPolling: true,
+        interval: 100,
+      };
+
+      await (taskQueue as any).runTask(task);
+
+      expect(taskFn).toHaveBeenCalled();
+      expect(mockHandlePollingTask).toHaveBeenCalledWith(task);
+      expect(mockLoggerDebug).toHaveBeenCalledWith('Task executed: test-id');
+    });
+
+    it('should execute a polling task and handle error with polling', async () => {
+      const mockLoggerError = jest.spyOn((taskQueue as any).logger, 'error');
+      const mockHandlePollingTask = jest.spyOn(taskQueue as any, 'handlePollingTask').mockResolvedValue(true);
+      
+      const taskFn = jest.fn().mockRejectedValue(new Error('Test error'));
+      const task = {
+        id: 'test-id',
+        fn: taskFn,
+        retries: 0,
+        maxRetries: 3,
+        delay: 100,
+        priority: 'NORMAL',
+        isPolling: true,
+        interval: 100,
+      };
+
+      await (taskQueue as any).runTask(task);
+
+      expect(taskFn).toHaveBeenCalled();
+      expect(mockHandlePollingTask).toHaveBeenCalledWith(task);
+      expect(mockLoggerError).toHaveBeenCalledWith('Task failed: test-id', new Error('Test error'));
+    });
   });
 
   describe('handlePollingTask', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should schedule a polling task for future execution', async () => {
       const taskFn = jest.fn().mockResolvedValue(undefined);
       const task = {
@@ -205,24 +259,33 @@ describe('GlobalTaskQueue', () => {
         interval: 100,
       };
 
+      // spy on time.after to verify it's called with correct parameters
+      const afterSpy = jest.spyOn(require('@/utils/time'), 'after');
+      
+      // spy on addTask to verify it's called from the time.after callback
+      const addTaskSpy = jest.spyOn(taskQueue as any, 'addTask');
+
       // 将任务添加到队列，因为handlePollingTask会添加新任务
       (taskQueue as any).taskQueue.push(task);
 
       await (taskQueue as any).handlePollingTask(task);
 
       expect(task.retries).toBe(1);
-      // 等待调度完成
-      await new Promise(resolve => setTimeout(resolve, 10));
-      expect((taskQueue as any).taskQueue.length).toBe(1); // 轮询任务被重新添加到队列
+      
+      // 验证 time.after 被调用
+      expect(afterSpy).toHaveBeenCalledWith(100, expect.any(Function));
+      
+      // 使用fake timers来触发定时器
+      jest.advanceTimersByTime(100);
+      
+      // 等待微任务完成
+      await Promise.resolve();
+      
+      // 验证 addTask 在回调中被调用
+      expect(addTaskSpy).toHaveBeenCalled();
     });
 
     it('should not schedule a polling task if max retries exceeded', async () => {
-      const mockAfter = jest.requireMock('@/utils/time/after').after as jest.Mock;
-      mockAfter.mockImplementation((delay: number, callback: () => void) => {
-        setTimeout(callback, delay);
-        return { cancel: jest.fn() };
-      });
-
       const taskFn = jest.fn().mockResolvedValue(undefined);
       const task = {
         id: 'test-id',
@@ -235,10 +298,33 @@ describe('GlobalTaskQueue', () => {
         interval: 100,
       };
 
+      const afterSpy = jest.spyOn(require('@/utils/time'), 'after');
+
       await (taskQueue as any).handlePollingTask(task);
 
       expect(task.retries).toBe(5); // 重试次数没有增加
-      expect((taskQueue as any).taskQueue.length).toBe(0); // 没有任务被添加到队列
+      expect(afterSpy).not.toHaveBeenCalled(); // time.after 不应该被调用
+    });
+    
+    it('should log error when polling task exceeds max retries', async () => {
+      const taskFn = jest.fn().mockResolvedValue(undefined);
+      const task = {
+        id: 'test-id',
+        fn: taskFn,
+        retries: 5,
+        maxRetries: 5,
+        delay: 1000,
+        priority: 'NORMAL',
+        isPolling: true,
+        interval: 100,
+      };
+
+      const loggerErrorSpy = jest.spyOn((taskQueue as any).logger, 'error');
+
+      await (taskQueue as any).handlePollingTask(task);
+
+      expect(task.retries).toBe(5);
+      expect(loggerErrorSpy).toHaveBeenCalledWith('Polling task test-id exceeded max retries');
     });
   });
 
