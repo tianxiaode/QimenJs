@@ -54,6 +54,14 @@ export class HashTaskState {
         );
     }
 
+    /**
+     * 适配 Runner 的检查逻辑
+     * 判断任务是否因为用户操作而进入了取消状态
+     */
+    isCancelled(): boolean {
+        return this.status === 'cancelled';
+    }
+
     /* ---------------- 状态迁移 ---------------- */
 
     start(): void {
@@ -132,5 +140,22 @@ export class HashTaskState {
             finishedAt: this.finishedAt,
             pausedAt: this.pausedAt,
         };
+    }
+
+    /**
+     * 适配 Runner 的状态更新逻辑
+     * 将状态迁移封装一层，方便 Runner 调用
+     */
+    updateStatus(newStatus: TaskStatus): void {
+        // 简单的状态映射或直接赋值（如果外部已经校验过逻辑）
+        switch (newStatus) {
+            case 'running':
+                if (this.canStart()) this.start();
+                break;
+            case 'cancelled':
+                if (this.canCancel()) this.cancel();
+                break;
+            // ... 其他状态映射
+        }
     }
 }

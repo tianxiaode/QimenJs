@@ -41,9 +41,9 @@ export class HashTaskProgress {
     }
 
     /**
-     * 在成功处理一个 chunk 后调用
+     * ✅ 这样修改方便后续：Runner 直接把 chunk 丢进来，这里处理所有计数
      */
-    onChunk(chunk: Chunk): void {
+    onChunk(chunk: { data: { byteLength: number } }): void {
         this.processedChunks += 1;
         this.processedBytes += chunk.data.byteLength;
     }
@@ -52,6 +52,7 @@ export class HashTaskProgress {
      * 生成只读快照
      */
     snapshot(): TaskProgressSnapshot {
+        // ✅ 符合原则：在生成快照时计算百分比（0~1）
         const progress =
             this.totalBytes !== undefined && this.totalBytes > 0
                 ? Math.min(this.processedBytes / this.totalBytes, 1)

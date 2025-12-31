@@ -6,18 +6,10 @@ import { HashTaskState } from './HashTaskState';
 import { HashTaskResources } from './HashTaskResources';
 import { WorkerPool } from '../worker';
 
-export interface HashTaskOptions {
-    algorithm: string;
-    chunkProvider: ChunkProvider;
-    memoryManager: MemoryManager;
-    workerPool: WorkerPool;
-    totalBytes?: number;
-}
-
 type ProgressListener = (snapshot: TaskProgressSnapshot) => void;
 
 export interface HashTaskOptions {
-    algorithm: string;
+    algorithm: ((data: ArrayBuffer) => string | Promise<string>) | string;
     chunkProvider: ChunkProvider;
     memoryManager: MemoryManager;
     workerPool: WorkerPool;
@@ -36,13 +28,18 @@ export class HashTask {
     private rejectResult!: (e: Error) => void;
 
     constructor(private readonly options: HashTaskOptions) {
+        this.state = new HashTaskState();
+        this.progress = new HashTaskProgress();
+        const totalSize = options.chunkProvider.getTotalSize();
+        this.progress.init(totalSize);
+
         this.resources = new HashTaskResources(options.memoryManager, options.workerPool);
 
         this.runner = new HashTaskRunner(
             this.state,
             this.progress,
             this.resources,
-            options.chunkProvider
+            options
         );
 
         this.resultPromise = new Promise<ArrayBuffer>((resolve, reject) => {
@@ -56,7 +53,7 @@ export class HashTask {
      */
     start(): void {
         this.runner
-            .run(this.options.algorithm, this.options.totalBytes)
+            .run()
             .then(result => this.resolveResult(result))
             .catch(err => this.rejectResult(err));
 

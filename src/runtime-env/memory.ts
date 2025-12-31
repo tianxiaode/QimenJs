@@ -1,5 +1,3 @@
-
-
 export interface MemoryOptions {
     maxBytes: number; // 总内存上限
     highWatermark?: number; // 触发警告 / backpressure
@@ -12,7 +10,8 @@ export interface MemorySnapshot {
 }
 
 export interface IMemoryTicket {
-  release(): void;
+    readonly bytes: number;
+    release(): void;
 }
 
 export class MemoryTicket implements IMemoryTicket {

@@ -2,3 +2,8 @@ export * from './HashWorkerProtocol';
 export * from './HashWorker';
 export * from './WorkerPool';
 export * from './WorkerHandle';
+export * from './WorkerScriptBuilder';
+export * from './DefaultWorkerHandle';
+export * from './BrowserWorkerHandle';
+export * from './DefaultWorkerPool';
+export * from './BrowserWorkerPool';

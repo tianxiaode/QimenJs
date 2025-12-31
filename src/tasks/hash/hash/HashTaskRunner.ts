@@ -2,6 +2,9 @@ import { HashTaskResources } from './HashTaskResources';
 import { HashTaskState } from './HashTaskState';
 import { Chunk } from '../types';
 import { HashTaskProgress } from './HashTaskProgress';
+import { WorkerHandle, WorkerScriptBuilder } from '../worker';
+import { HashTaskOptions } from './HashTask';
+import { HashTaskHealthMonitor } from './HashTaskHealthMonitor';
 
 /**
  * HashTaskRunner 只负责流程控制：
@@ -17,121 +20,167 @@ import { HashTaskProgress } from './HashTaskProgress';
  * 不做任务调度
  */
 
-interface ChunkProvider {
-    next(): Promise<Chunk | null>;
-    reset?(): void;
-}
-
-interface HashAlgorithm {
-    init?(): void;
-    update(data: ArrayBuffer): void;
-    digest(): Promise<ArrayBuffer>;
-}
-
-interface WorkerMessage {
-    type: 'hash';
-    chunk: Chunk;
-}
-
-interface WorkerResult {
-    type: 'done';
-    data: ArrayBuffer;
-}
-
 export class HashTaskRunner {
-    private paused = false;
-    private cancelled = false;
+    private builder = new WorkerScriptBuilder();
 
     constructor(
         private readonly state: HashTaskState,
         private readonly progress: HashTaskProgress,
         private readonly resources: HashTaskResources,
-        private readonly chunkProvider: ChunkProvider
+        private readonly options: HashTaskOptions
     ) {}
 
-    async run(algorithm: string, totalBytes?: number): Promise<ArrayBuffer> {
-        this.state.start();
-        this.progress.init(totalBytes);
+    /**
+     * 辅助属性：让代码更易读
+     */
+    private get chunkProvider() {
+        return this.options.chunkProvider;
+    }
 
-        await this.resources.acquire(totalBytes);
+    async run(): Promise<ArrayBuffer> {
+        const scriptSource = this.builder.build(this.options.algorithm);
+
+        // 使用新定义的辅助属性计算内存
+        const memoryRequired = this.calculateRequiredMemory();
+
+        await this.resources.acquire(scriptSource, memoryRequired);
+        const monitor = new HashTaskHealthMonitor(this.state, this.progress, this.resources);
+        monitor.start();
 
         try {
-            const worker = this.resources.getWorker();
-
-            // 👇 在这里初始化算法
-            worker.postMessage({ type: 'init', algorithm });
-
-            while (!this.cancelled) {
-                await this.waitIfPaused();
-
-                const chunk = await this.chunkProvider.next();
-                if (!chunk) break;
-
-                await this.runChunk(worker, chunk);
-                this.progress.onChunk(chunk);
+            // 注意：此时 State 的迁移需要符合你上传的 HashTaskState.ts 逻辑
+            if (this.state.canStart()) {
+                this.state.start();
             }
 
-            // 👇 最终计算 digest
-            const result = await this.finalize(worker);
-
-            this.state.complete();
-            return result;
+            return await this.executeHashing();
         } catch (err) {
-            this.state.fail(err as Error);
+            // 如果 state 有 fail 方法，在这里调用
+            // this.state.fail(err);
             throw err;
         } finally {
+            monitor.stop();
             await this.resources.release();
         }
     }
 
+    /**
+     * 暂停任务：通过状态机实现
+     */
     pause(): void {
-        if (!this.state.canPause()) return;
-        this.paused = true;
-        this.state.pause();
-    }
-
-    resume(): void {
-        if (!this.state.canResume()) return;
-        this.paused = false;
-        this.state.resume();
-    }
-
-    cancel(): void {
-        this.cancelled = true;
-        this.state.cancel();
-    }
-
-    private async waitIfPaused(): Promise<void> {
-        while (this.paused && !this.cancelled) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+        if (this.state.canPause()) {
+            this.state.pause();
         }
     }
 
-    private runChunk(worker: any, chunk: Chunk): Promise<WorkerResult> {
+    /**
+     * 恢复任务：通过状态机实现
+     */
+    resume(): void {
+        if (this.state.canResume()) {
+            this.state.resume();
+        }
+    }
+
+    /**
+     * 取消任务：直接调用状态机的 cancel
+     * 状态变更为 'cancelled' 后，executeHashing 循环中的 isCancelled() 会检测到并抛出异常
+     */
+    cancel(): void {
+        if (this.state.canCancel()) {
+            this.state.cancel();
+        }
+    }
+
+    private async waitIfPaused(): Promise<void> {
+        // ✅ 统一使用 state 判定，不再需要私有变量
+        while (this.state.value === 'paused' && !this.state.isCancelled()) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    }
+
+    private runChunk(worker: WorkerHandle, chunk: Chunk): Promise<void> {
         return new Promise((resolve, reject) => {
-            const onMessage = (e: MessageEvent) => {
-                if (e.data?.type === 'done') {
-                    worker.removeEventListener('message', onMessage);
-                    resolve(e.data);
+            let unsubscribe: () => void;
+
+            // 1. 定义处理器
+            const handler = (msg: any) => {
+                // 只响应当前 chunk 的确认消息
+                if (msg.type === 'ack' && msg.chunkId === chunk.id) {
+                    if (unsubscribe) unsubscribe(); // ✨ 执行清理！
+                    resolve();
+                } else if (msg.type === 'error') {
+                    if (unsubscribe) unsubscribe(); // ✨ 出错也要清理！
+                    reject(new Error(msg.message));
                 }
             };
 
-            worker.addEventListener('message', onMessage);
-            worker.postMessage({ type: 'hash', chunk });
+            // 2. 订阅消息
+            unsubscribe = worker.onMessage(handler);
+
+            // 3. 发送数据
+            worker.post(
+                { type: 'update', chunkId: chunk.id, data: chunk.data },
+                [chunk.data] // 零拷贝转移
+            );
         });
     }
 
-    private finalize(worker: any): Promise<ArrayBuffer> {
+    private async finalize(worker: WorkerHandle): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            const onMessage = (e: MessageEvent) => {
-                if (e.data?.type === 'digest') {
-                    worker.removeEventListener('message', onMessage);
-                    resolve(e.data.result);
+            let unsubscribe: () => void;
+
+            const onMessage = (msg: any) => {
+                if (msg.type === 'digest') {
+                    if (unsubscribe) unsubscribe(); // ✨ 清理
+                    resolve(msg.result);
                 }
             };
 
-            worker.addEventListener('message', onMessage);
-            worker.postMessage({ type: 'final' });
+            unsubscribe = worker.onMessage(onMessage);
+            worker.post({ type: 'final' });
         });
+    }
+    
+    private calculateRequiredMemory(): number {
+        // 所有的 Provider 现在都有这个方法了
+        const chunkSize = this.chunkProvider.getChunkSize();
+
+        // 预留 2 个分片 + 1MB 冗余
+        return chunkSize * 2 + 1024 * 1024;
+    }
+
+    private async executeHashing(): Promise<ArrayBuffer> {
+        const worker = this.resources.getWorker();
+        const provider = this.chunkProvider;
+
+        while (provider.hasNext()) {
+            // 1. 检查暂停
+            await this.waitIfPaused();
+
+            // 2. 检查取消
+            if (this.state.isCancelled()) {
+                throw new Error('Task cancelled');
+            }
+
+            const chunk = await provider.next();
+            if (!chunk) break;
+
+            // 3. 执行哈希
+            await this.runChunk(worker, chunk);
+
+            // 4. 更新进度
+            this.progress.onChunk(chunk);
+        }
+
+        const result = await this.finalize(worker);
+
+        // ✨ 完成后同步状态机
+        if (this.state.canPause()) {
+            // 此时状态通常是 running
+            this.state.complete();
+        }
+
+        return result;
     }
 }

@@ -1,5 +1,5 @@
 import { IMemoryTicket, MemoryManager } from '@orbitjs/runtime-env';
-import { WorkerPool } from '../worker';
+import { WorkerHandle, WorkerPool } from '../worker';
 
 /**
  * HashTaskResources 只做 3 件事：
@@ -17,11 +17,6 @@ import { WorkerPool } from '../worker';
  */
 // src/hash/HashTaskResources.ts
 
-interface WorkerHandle {
-    postMessage(message: any): void;
-    terminate(): void;
-}
-
 export interface HashTaskResourceSnapshot {
     memoryBytes?: number;
     hasWorker: boolean;
@@ -38,25 +33,26 @@ export class HashTaskResources {
     ) {}
 
     /**
-     * 申请任务所需资源
-     * 任何一步失败，都会自动回滚
+     * 核心：申请计算所需的军需（内存 + 线程）
+     * @param scriptSource 经过 Builder 转换后的算法源码字符串
+     * @param memoryBytes 需要锁定的内存预算
      */
-    async acquire(memoryBytes?: number): Promise<void> {
+    async acquire(scriptSource: string, memoryBytes: number): Promise<void> {
         if (this.acquired) return;
 
         try {
-            if (memoryBytes !== undefined) {
-                this.memoryTicket = await this.memoryManager.acquire(memoryBytes);
-            }
+            // 1. 申请内存预算
+            this.memoryTicket = await this.memoryManager.acquire(memoryBytes);
 
-            this.worker = await this.workerPool.acquire();
+            // 2. 申请线程槽位（并将算法源码注入）
+            this.worker = await this.workerPool.acquire(scriptSource);
+
             this.acquired = true;
         } catch (err) {
-            await this.release();
+            await this.release(); // 申请失败需确保清理
             throw err;
         }
     }
-
     /**
      * 释放所有资源（幂等）
      */
@@ -89,8 +85,9 @@ export class HashTaskResources {
      */
     snapshot(): HashTaskResourceSnapshot {
         return {
-            memoryBytes: this.memoryTicket ? undefined : undefined,
-            hasWorker: Boolean(this.worker),
+            // ✅ 修正：如果有内存票据，返回具体的字节数
+            memoryBytes: this.memoryTicket?.bytes,
+            hasWorker: !!this.worker,
         };
     }
 }
