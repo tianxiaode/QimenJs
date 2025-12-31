@@ -1,9 +1,5 @@
-import { HttpRequest } from "../core/types";
+import { HttpRequest, HttpResponse } from "../core/types";
 
 export interface HttpTransport {
-    send(req: HttpRequest): Promise<{
-        status: number;
-        headers: Headers;
-        body: any;
-    }>;
+    send(req: HttpRequest): Promise<HttpResponse>;
 }

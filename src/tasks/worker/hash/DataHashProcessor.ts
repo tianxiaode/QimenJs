@@ -1,7 +1,6 @@
 import { ILogger } from '@orbitjs/logger';
 import { HashAlgorithm, HashFormat, HashOptions } from '../types';
 import { TaskManager } from './TaskManager';
-import { HashWorkerError } from '../errors';
 
 export class DataHashProcessor {
   private logger: ILogger;

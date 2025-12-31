@@ -1,7 +1,7 @@
 import { ILogger } from '@orbitjs/logger';
-import { HashAlgorithm, HashFormat, HashOptions, HashResult, WorkerResponse } from '../types';
+import { HashAlgorithm, HashFormat, HashResult } from '../types';
 import { TaskManager } from './TaskManager';
-import { HashWorkerError } from '../errors';
+import { HashWorkerError } from '../../errors';
 
 export class FileHashProcessor {
   private logger: ILogger;
@@ -23,61 +23,62 @@ export class FileHashProcessor {
    * 分片计算文件哈希
    */
   public hashFileByChunks(file: File, taskId: string): void {
-    const chunkCount = Math.ceil(file.size / this.chunkSize);
-    this.logger.info(`Starting chunked hash calculation for file: ${file.name}, ${chunkCount} chunks`);
+    this.logger.info(`Starting chunked hash calculation for file: ${file.name}, size: ${file.size} bytes`);
+    
+    const totalChunks = Math.ceil(file.size / this.chunkSize);
+    this.logger.debug(`File will be split into ${totalChunks} chunks`);
 
-    // 创建并发送所有分片任务
-    for (let i = 0; i < chunkCount; i++) {
+    for (let i = 0; i < totalChunks; i++) {
       const start = i * this.chunkSize;
       const end = Math.min(start + this.chunkSize, file.size);
       const chunk = file.slice(start, end);
+      const chunkTaskId = `${taskId}_${i}`;
 
-      const chunkTask: any = {
-        id: `${taskId}_${i}`,
-        chunk,
-        index: i,
-        total: chunkCount,
+      this.logger.debug(`Processing chunk ${i + 1}/${totalChunks}, size: ${end - start} bytes`);
+
+      // 发送分片计算任务给Worker
+      this.postMessage({
+        type: 'HASH_CHUNK',
+        taskId: chunkTaskId,
+        data: chunk,
         algorithm: this.algorithm,
         options: {
           format: this.format,
           seed: this.seed,
           normalizeLineEndings: this.normalizeLineEndings,
         },
-      };
-
-      this.postMessage({
-        type: 'HASH_CHUNK',
-        task: chunkTask,
       });
     }
-    
-    this.logger.debug(`Sent ${chunkCount} chunk tasks for file: ${file.name}`);
   }
 
   /**
    * 完整文件计算
    */
-  public hashFullFile(file: File, taskId: string): Promise<void> {
+  public async hashFullFile(file: File, taskId: string): Promise<void> {
     this.logger.info(`Starting full file hash calculation for: ${file.name}`);
-    
-    return file.arrayBuffer()
-      .then(buffer => {
-        this.logger.debug(`File buffer ready for: ${file.name}, size: ${buffer.byteLength}`);
-        this.postMessage({
-          type: 'HASH_FULL',
-          data: buffer,
-          algorithm: this.algorithm,
-          options: {
-            format: this.format,
-            seed: this.seed,
-            normalizeLineEndings: this.normalizeLineEndings,
-          },
-        });
-      })
-      .catch(error => {
-        this.logger.error(`Error reading file for hash calculation: ${file.name}`, error);
-        throw new HashWorkerError(`Error reading file: ${file.name}`, { fileName: file.name, error });
+
+    try {
+      // 将文件读取为ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      this.logger.debug(`Read file as ArrayBuffer, size: ${arrayBuffer.byteLength} bytes`);
+
+      // 发送完整文件计算任务给Worker
+      this.postMessage({
+        type: 'HASH_FULL',
+        data: arrayBuffer,
+        algorithm: this.algorithm,
+        options: {
+          format: this.format,
+          seed: this.seed,
+          normalizeLineEndings: this.normalizeLineEndings,
+        },
       });
+
+      this.logger.debug(`Sent HASH_FULL message for file: ${file.name}`);
+    } catch (error) {
+      this.logger.error(`Error reading file: ${file.name}`, error);
+      throw new HashWorkerError(`Error reading file: ${error}`, { taskId });
+    }
   }
 
   /**
@@ -85,20 +86,25 @@ export class FileHashProcessor {
    */
   public finalizeChunkedHash(taskId: string, startTime: number, fileSize: number): void {
     this.logger.info(`Finalizing chunked hash for task: ${taskId}`);
-    
-    // 获取排序后的分片哈希
+
+    // 获取排序后的分片哈希值
     const sortedHashes = this.taskManager.getSortedChunkHashes(taskId);
+    this.logger.debug(`Found ${sortedHashes.length} chunk hashes to combine`);
 
-    // 将分片哈希组合成字符串，再计算最终哈希
-    const combinedHashString = sortedHashes.join('');
-    const encoder = new TextEncoder();
-    const combinedData = encoder.encode(combinedHashString);
+    if (sortedHashes.length === 0) {
+      this.logger.error(`No chunk hashes found for task: ${taskId}`);
+      throw new HashWorkerError('No chunk hashes found for finalization', { taskId });
+    }
 
-    // 计算最终哈希（在后端完成或发送到Worker）
+    // 将所有分片哈希连接成一个字符串进行最终哈希计算
+    const combinedData = sortedHashes.join('');
+    
+    // 发送合并计算任务给Worker
     this.postMessage({
-      type: 'HASH_FULL',
-      data: combinedData.buffer,
+      type: 'COMBINE_HASHES',
+      data: combinedData,
       algorithm: this.algorithm,
+      taskId,
       options: {
         format: this.format,
         seed: this.seed,
@@ -106,40 +112,9 @@ export class FileHashProcessor {
       },
     });
 
-    // 等待最终结果（这里简化处理，实际应该用新的任务ID）
-    const finalTaskId = `${taskId}_final`;
-
-    this.taskManager.addTask(finalTaskId, {
-      resolve: (finalHash: any) => {
-        const result: HashResult = {
-          algorithm: this.algorithm,
-          hash: finalHash,
-          format: this.format,
-          fileSize: fileSize,
-          timeCost: performance.now() - startTime,
-          chunkCount: sortedHashes.length,
-        };
-
-        this.logger.info(`Final hash calculation complete for task: ${taskId}, time: ${result.timeCost}ms`);
-
-        // 获取原始任务并解决它
-        const originalTask = this.taskManager.getTask(taskId);
-        if (originalTask) {
-          originalTask.resolve(result);
-          this.taskManager.emit({ type: 'complete', data: result });
-        }
-
-        // 清理
-        this.taskManager.removeTask(taskId);
-        this.taskManager.removeTask(finalTaskId);
-        this.taskManager.removeChunkState(taskId);
-      },
-      reject: (originalTask: any) => {
-        if (originalTask) {
-          originalTask.reject(new Error('Final hash task failed'));
-        }
-      },
-      startTime,
-    });
+    this.logger.debug(`Sent COMBINE_HASHES message for task: ${taskId}`);
+    
+    // 移除分片处理状态
+    this.taskManager.removeChunkState(taskId);
   }
 }

@@ -1,4 +1,4 @@
-import { GlobalTaskQueue } from '@/tasks/TaskQueue';
+import { GlobalTaskQueue } from '@/tasks/task/TaskQueue';
 import { TaskPriority } from '@/tasks/types';
 import { after } from '@/utils/time/after';
 

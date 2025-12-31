@@ -1,8 +1,13 @@
-import { HttpRequest } from "../core";
+import { HttpRequest, HttpResponse } from "../core/types";
 import { HttpTransport } from "./HttpTransport";
 
+// 扩展HttpRequest接口以支持进度事件
+interface ExtendedHttpRequest extends HttpRequest {
+  onProgress?: (progressEvent: ProgressEvent) => void;
+}
+
 export class XhrTransport implements HttpTransport {
-    request(req: HttpRequest) {
+    async send(req: ExtendedHttpRequest): Promise<HttpResponse> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open(req.method, req.url);
@@ -17,14 +22,42 @@ export class XhrTransport implements HttpTransport {
 
             xhr.onload = () => {
                 resolve({
-                    status: xhr.status,
-                    headers: new Headers(),
-                    body: JSON.parse(xhr.responseText),
+                    statusCode: xhr.status,
+                    headers: {}, // 这里可以解析响应头
+                    body: xhr.responseText,
+                    getBody() {
+                        try {
+                            return JSON.parse(xhr.responseText);
+                        } catch {
+                            return xhr.responseText;
+                        }
+                    },
+                    isJsonResponse() {
+                        const contentType = xhr.getResponseHeader('content-type') || '';
+                        return contentType.includes('application/json');
+                    },
+                    isCustomBackendError() {
+                        // 根据实际后端错误判断逻辑实现
+                        return false;
+                    }
                 });
             };
 
             xhr.onerror = () => reject(new Error('Network error'));
-            xhr.send(req.body);
+            
+            // 处理请求体，将其转换为合适的格式
+            let body: Document | BodyInit | null = null;
+            if (req.body) {
+                if (typeof req.body === 'string') {
+                    body = req.body;
+                } else if (req.body instanceof Blob || req.body instanceof ArrayBuffer) {
+                    body = req.body;
+                } else {
+                    body = JSON.stringify(req.body);
+                }
+            }
+            
+            xhr.send(body);
         });
     }
 }

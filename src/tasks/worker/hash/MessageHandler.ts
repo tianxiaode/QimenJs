@@ -1,16 +1,14 @@
 import { ILogger } from '@orbitjs/logger';
 import { WorkerResponse, HashWorkerConfig } from '../types';
 import { TaskManager } from './TaskManager';
-import { AlgorithmRegistry } from './AlgorithmRegistry';
 import { FileHashProcessor } from './FileHashProcessor';
-import { HashWorkerError, AlgorithmNotSupportedError } from '../errors';
+import { HashWorkerError, AlgorithmNotSupportedError } from '../../errors';
 
 export class MessageHandler {
   private logger: ILogger;
 
   constructor(
     private taskManager: TaskManager,
-    private algorithmRegistry: AlgorithmRegistry,
     private chunkSize: number,
     private fileHashProcessor: FileHashProcessor,
     private postMessage: (data: any) => void,
@@ -129,7 +127,7 @@ export class MessageHandler {
       data: {
         processedBytes: processed,
         totalBytes: total,
-        percentage: Math.round((processed / total) * 100),
+        percentage: Math.round((processed / total) / total) * 100,
         currentChunk: 0,
         totalChunks: 0,
       },

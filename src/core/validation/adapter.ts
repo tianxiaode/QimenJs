@@ -1,9 +1,8 @@
 import {
-    ValidationErrorContext,
-    ValidationResult,
-    Validator,
     ValidationTypeNotDefinedError,
-} from '@orbitjs/utils';
+} from '../../validation/core/errors';
+import { ValidationErrorContext, ValidationResult } from '../../validation/core/types';
+import { Validator } from '../../validation/core/Validator';
 
 /**
  * 同步验证函数

@@ -1,6 +1,4 @@
 export * from './HttpClient';
 export * from './types';
-export * from './HttpError';
-export * from './HttpRequest';
-export * from './HttpRequest';
+// 移除重复导出的HttpError，因为它已经在types中导出
 export * from './RetryPolicy';

@@ -35,7 +35,7 @@ export interface ErrorParser {
 }
 
 // 错误处理类定义
-export class HttpError extends Erro {
+export class HttpError extends Error {
   constructor(
     public statusCode: number,
     public message: string,
@@ -44,4 +44,9 @@ export class HttpError extends Erro {
     super(message);
     this.name = 'HttpError';
   }
+}
+
+// HttpTransport 接口定义
+export interface HttpTransport {
+  send(req: HttpRequest): Promise<HttpResponse>;
 }

@@ -25,35 +25,16 @@ export class AlgorithmRegistry {
   }
 
   private initializeDefaultAlgorithms(): void {
-    // Web Crypto API 支持的算法
-    const webCryptoAlgorithms: HashAlgorithm[] = ['SHA-1', 'SHA-256', 'SHA-512'];
-    webCryptoAlgorithms.forEach(algo => {
+    // 本地实现的算法
+    const localAlgorithms: HashAlgorithm[] = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512', 'XXHASH64'];
+    
+    localAlgorithms.forEach(algo => {
       this.algorithms.set(algo, {
         name: algo,
-        supported: this.isWebCryptoSupported(),
-        validationFunction: () => this.isWebCryptoSupported(),
+        supported: true, // 本地实现始终可用
+        validationFunction: () => true,
       });
     });
-
-    // MD5 需要第三方库支持
-    this.algorithms.set('MD5', {
-      name: 'MD5',
-      supported: false, // 默认为false，需要手动注册
-      libraryPath: 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js', // 默认CDN路径，用户可以覆盖
-      validationFunction: () => typeof (self as any).SparkMD5 !== 'undefined',
-    });
-
-    // XXHASH64 需要第三方库支持
-    this.algorithms.set('XXHASH64', {
-      name: 'XXHASH64',
-      supported: false, // 默认为false，需要手动注册
-      libraryPath: 'https://cdn.jsdelivr.net/npm/xxhash-wasm@1.0.1/dist/xxhash-wasm.js', // 默认CDN路径，用户可以覆盖
-      validationFunction: () => typeof (self as any).XXHashWasm !== 'undefined',
-    });
-  }
-
-  private isWebCryptoSupported(): boolean {
-    return typeof crypto !== 'undefined' && !!(crypto.subtle);
   }
 
   /**
@@ -95,17 +76,8 @@ export class AlgorithmRegistry {
           name: algorithm as HashAlgorithm,
           libraryPath: config[algorithm].libraryPath,
           importFunction: config[algorithm].importFunction,
-          supported: false, // 默认为不支持，需要验证
-          validationFunction: () => {
-            // 默认验证函数，检查库是否已加载
-            if (algorithm === 'MD5') {
-              return typeof (self as any).SparkMD5 !== 'undefined';
-            } else if (algorithm === 'XXHASH64') {
-              return typeof (self as any).XXHashWasm !== 'undefined' || typeof (self as any).XXHash64 !== 'undefined';
-            }
-            // Web Crypto API 算法默认支持
-            return this.isWebCryptoSupported();
-          }
+          supported: true, // 本地实现始终可用
+          validationFunction: () => true,
         });
       }
     });
@@ -221,7 +193,63 @@ export class AlgorithmRegistry {
     return {
       supportedAlgorithms,
       fallbackAlgorithm: this.fallbackAlgorithm,
-      dynamicLoading: true,
+      dynamicLoading: false, // 不再需要动态加载外部库
     };
+  }
+  
+  /**
+   * 计算哈希值
+   */
+  public computeHash(data: string, algorithm: HashAlgorithm): string {
+    // 动态导入相应的算法实现
+    switch (algorithm) {
+      case 'MD5':
+        return this.getAlgorithmImplementation('MD5')(data);
+      case 'SHA-1':
+        return this.getAlgorithmImplementation('SHA-1')(data);
+      case 'SHA-256':
+        return this.getAlgorithmImplementation('SHA-256')(data);
+      case 'SHA-512':
+        return this.getAlgorithmImplementation('SHA-512')(data);
+      case 'XXHASH64':
+        return this.getAlgorithmImplementation('XXHASH64')(data, 0); // 默认seed为0
+      default:
+        throw new Error(`Unsupported algorithm: ${algorithm}`);
+    }
+  }
+
+  /**
+   * 获取算法实现函数
+   */
+  private getAlgorithmImplementation(algorithm: HashAlgorithm): (data: string, seed?: number) => string {
+    switch (algorithm) {
+      case 'MD5':
+        return (data: string): string => {
+          const { md5 } = require('@orbitjs/crypto');
+          return md5(data);
+        };
+      case 'SHA-1':
+        return (data: string): string => {
+          const { sha1 } = require('@orbitjs/crypto');
+          return sha1(data);
+        };
+      case 'SHA-256':
+        return (data: string): string => {
+          const { sha256 } = require('@orbitjs/crypto');
+          return sha256(data);
+        };
+      case 'SHA-512':
+        return (data: string): string => {
+          const { sha512 } = require('@orbitjs/crypto');
+          return sha512(data);
+        };
+      case 'XXHASH64':
+        return (data: string, seed: number = 0): string => {
+          const { xxhash64 } = require('@orbitjs/crypto');
+          return xxhash64(data, seed);
+        };
+      default:
+        throw new Error(`Unsupported algorithm: ${algorithm}`);
+    }
   }
 }

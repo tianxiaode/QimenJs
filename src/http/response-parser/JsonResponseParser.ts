@@ -36,4 +36,14 @@ export class JsonResponseParser implements ResponseParser {
   isJsonResponse(response: HttpResponse): boolean {
     return response.headers['Content-Type']?.includes('application/json') ?? false;
   }
+
+  // 判断是否是 Blob 响应
+  isBlobResponse(response: HttpResponse): boolean {
+    return response.headers['Content-Type']?.includes('application/octet-stream') ?? false;
+  }
+
+  // 判断是否是 Stream 响应
+  isStreamResponse(response: HttpResponse): boolean {
+    return response.headers['Content-Type']?.includes('application/stream') ?? false;
+  }
 }

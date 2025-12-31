@@ -1,4 +1,4 @@
-import { Task, TaskPriority } from './types';
+import { Task, TaskPriority } from '../types';
 import { ILogger, Logger } from '@/logger';
 import { time, string } from '@/utils';
 
