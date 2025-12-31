@@ -12,7 +12,7 @@ export interface TaskSnapshot {
   memoryUsed: number
 }
 
-export interface HashTask {
+export interface IHashTask {
   start(): Promise<void>
   pause(): void
   resume(): void

@@ -1,4 +1,4 @@
-import { TaskStateError } from '../../worker/hash/errors';
+import { TaskStateError } from '../errors';
 import { TaskStatus } from '../types';
 
 /**

@@ -1,8 +1,8 @@
 import { MemoryManager } from '@/runtime-env';
-import { BrowserWorkerPool } from './worker/BrowserWorkerPool';
-import { HashTask } from './hash';
+import { BrowserWorkerPool } from './worker';
 import { BrowserFileChunkProvider, StreamChunkProvider,FileChunkProvider } from './chunk';
 import { ChunkProvider } from './types';
+import { HashTask } from './hash';
 
 export function createHashTask(
     input: File | string | ReadableStream<Uint8Array>,

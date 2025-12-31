@@ -1,4 +1,3 @@
-export { HashWorkerManager } from './hash/HashWorkerManager';
-export { WorkerManagerBase } from './WorkerManagerBase';
-export { SimpleWorkerManager } from './SimpleWorkerManager';
+export * from './SimpleWorkerManager';
+export * from './WorkerManagerBase';
 export * from './types';

@@ -1,3 +1,4 @@
+import { ILogger, Logger } from "@orbitjs/logger";
 import { HashTaskResources } from './HashTaskResources';
 import { HashTaskState } from './HashTaskState';
 import { Chunk } from '../types';
@@ -21,6 +22,7 @@ import { HashTaskHealthMonitor } from './HashTaskHealthMonitor';
  */
 
 export class HashTaskRunner {
+    private logger: ILogger;
     private builder = new WorkerScriptBuilder();
 
     constructor(
@@ -28,7 +30,9 @@ export class HashTaskRunner {
         private readonly progress: HashTaskProgress,
         private readonly resources: HashTaskResources,
         private readonly options: HashTaskOptions
-    ) {}
+    ) {
+        this.logger = Logger.for("HashTaskRunner");
+    }
 
     /**
      * 辅助属性：让代码更易读
@@ -38,11 +42,13 @@ export class HashTaskRunner {
     }
 
     async run(): Promise<ArrayBuffer> {
+        this.logger.debug(`Starting hash task with algorithm: ${this.options.algorithm}`);
         const scriptSource = this.builder.build(this.options.algorithm);
 
         // 使用新定义的辅助属性计算内存
         const memoryRequired = this.calculateRequiredMemory();
 
+        this.logger.debug(`Acquiring resources: memory=${(memoryRequired/1024/1024).toFixed(2)}MB`);
         await this.resources.acquire(scriptSource, memoryRequired);
         const monitor = new HashTaskHealthMonitor(this.state, this.progress, this.resources);
         monitor.start();
@@ -57,8 +63,10 @@ export class HashTaskRunner {
         } catch (err) {
             // 如果 state 有 fail 方法，在这里调用
             // this.state.fail(err);
+            this.logger.error("Task failed:", err);
             throw err;
         } finally {
+            this.logger.debug("Releasing resources and stopping monitor.");
             monitor.stop();
             await this.resources.release();
         }

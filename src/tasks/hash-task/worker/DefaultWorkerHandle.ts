@@ -1,6 +1,8 @@
+import { ILogger, Logger } from '@orbitjs/logger';
 import { WorkerHandle } from './WorkerHandle';
 
 export class DefaultWorkerHandle implements WorkerHandle {
+    private logger: ILogger;
     private worker: Worker;
     public readonly id: string;
     // 内部维护一个清理函数集，确保 terminate 时彻底释放
@@ -9,7 +11,7 @@ export class DefaultWorkerHandle implements WorkerHandle {
     constructor(scriptUrl: string | URL) {
         this.id = `worker-${Math.random().toString(36).slice(2, 11)}`;
         this.worker = new Worker(scriptUrl);
-        
+        this.logger = Logger.for(this.constructor.name);
     }
 
     /**
@@ -38,7 +40,10 @@ export class DefaultWorkerHandle implements WorkerHandle {
     }
 
     onError(handler: (err: Error) => void): () => void {
-        const wrapper = (e: ErrorEvent) => handler(new Error(e.message));
+        const wrapper = (e: ErrorEvent) => {
+            this.logger.error(`Worker Error [${this.id}]:`, e.message); // 增加日志记录
+            handler(new Error(e.message));
+        };
         this.worker.addEventListener('error', wrapper);
 
         const unsubscribe = () => {
@@ -51,6 +56,7 @@ export class DefaultWorkerHandle implements WorkerHandle {
     }
 
     async terminate(): Promise<void> {
+        this.logger.debug(`Terminating worker: ${this.id}`);
         // 1. 执行所有未完成的清理（移除事件监听）
         this.cleanupFns.forEach(unsub => unsub());
         this.cleanupFns.clear();
