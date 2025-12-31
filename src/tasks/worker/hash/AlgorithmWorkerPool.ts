@@ -2,7 +2,7 @@
 
 import { ILogger, Logger } from "@orbitjs/logger";
 import { AlgorithmWorker } from "./AlgorithmWorker";
-import { HashAlgorithm, AlgorithmOptions } from "./types";
+import { HashAlgorithm, AlgorithmOptions } from "./types1";
 
 interface WorkerTask {
   chunk: ArrayBuffer;

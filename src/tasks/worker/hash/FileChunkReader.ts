@@ -1,6 +1,6 @@
 
 import { ILogger, Logger } from "@orbitjs/logger";
-import { FileChunk, ChunkReaderOptions } from "./types";
+import { FileChunk, ChunkReaderOptions } from "./types1";
 import { HashErrorFactory, FileHashErrorCodes } from "./errors";
 
 /**

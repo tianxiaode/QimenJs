@@ -2,7 +2,7 @@ import { FileHashCalculator } from './FileHashCalculator';
 import { FileChunkReader } from './FileChunkReader';
 import { AlgorithmWorkerPool } from './AlgorithmWorkerPool';
 import { WorkerScriptBuilder } from './WorkerScriptBuilder';
-import { HashAlgorithm, HashCalculatorConfig } from './types';
+import { HashAlgorithm, HashCalculatorConfig } from './types1';
 
 /**
  * 🎯 文件哈希计算器工厂函数

@@ -1,5 +1,6 @@
-import { MemoryManager } from './MemoryManager'
+import { MemoryManager } from './memory'
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy'
+
 export class HealthMonitor {
   constructor(private deps: { memory: MemoryManager }) {}
 

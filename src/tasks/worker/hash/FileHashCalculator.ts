@@ -8,7 +8,7 @@ import {
   HashResult,
   HashProgress,
   CalculatorState
-} from "./types";
+} from "./types1";
 import {
   UserOperationErrorCodes,
   HashErrorGuards

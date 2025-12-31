@@ -8,7 +8,7 @@ import {
   HashProgress, 
   FileChunk,
   HashCalculatorConfig 
-} from "./types";
+} from "./types1";
 
 interface ScheduledTask {
   chunk: FileChunk;

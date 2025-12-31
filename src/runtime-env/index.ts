@@ -4,4 +4,6 @@ export * from "./platform";
 export * from "./user-agent";
 export * from "./features";
 export * from "./runtime";
-export * from './input'
+export * from './input';
+export * from './memory';
+export * from './HealthSnapshot';

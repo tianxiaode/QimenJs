@@ -1,3 +1,5 @@
+
+
 export interface MemoryOptions {
     maxBytes: number; // 总内存上限
     highWatermark?: number; // 触发警告 / backpressure
@@ -7,6 +9,25 @@ export interface MemorySnapshot {
     used: number;
     max: number;
     highWatermark: number;
+}
+
+export interface IMemoryTicket {
+  release(): void;
+}
+
+export class MemoryTicket implements IMemoryTicket {
+    private released = false;
+
+    constructor(
+        private readonly manager: MemoryManager,
+        public readonly bytes: number
+    ) {}
+
+    release(): void {
+        if (this.released) return;
+        this.released = true;
+        this.manager.release(this.bytes);
+    }
 }
 
 export class MemoryManager {
@@ -20,7 +41,7 @@ export class MemoryManager {
         this.high = highWatermark ?? Math.floor(maxBytes * 0.8);
     }
 
-    async acquire(bytes: number): Promise<void> {
+    async acquire(bytes: number): Promise<IMemoryTicket> {
         if (bytes > this.max) {
             throw new Error(`Request ${bytes} exceeds max memory ${this.max}`);
         }
@@ -30,6 +51,7 @@ export class MemoryManager {
         }
 
         this.used += bytes;
+        return new MemoryTicket(this, bytes);
     }
 
     release(bytes: number): void {

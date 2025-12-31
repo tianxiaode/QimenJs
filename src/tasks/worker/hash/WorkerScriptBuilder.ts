@@ -1,7 +1,7 @@
 // workers/WorkerScriptBuilder.ts
 
 import { ILogger, Logger } from "@orbitjs/logger";
-import { HashAlgorithm, AlgorithmOptions } from "./types";
+import { HashAlgorithm, AlgorithmOptions } from "./types1";
 import { HashErrorFactory } from "./errors";
 
 /**

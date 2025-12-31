@@ -4,7 +4,7 @@ import {
   HashResult, 
   ChunkHashResult,
   AlgorithmOptions 
-} from "./types";
+} from "./types1";
 
 /**
  * 🎯 结果聚合器

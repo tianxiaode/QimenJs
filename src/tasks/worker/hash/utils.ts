@@ -1,7 +1,7 @@
 // utils.ts (单独创建工具函数文件)
 
 import { FileHashCalculator } from "./FileHashCalculator";
-import { HashAlgorithm, HashProgress } from "./types";
+import { HashAlgorithm, HashProgress } from "./types1";
 
 /**
  * 🎯 快速计算文件哈希（简化API）
