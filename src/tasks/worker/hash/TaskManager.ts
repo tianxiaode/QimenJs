@@ -39,6 +39,82 @@ export class TaskManager {
   }
 
   /**
+   * 创建一个新任务
+   * 
+   * @param name - 任务名称
+   * @param callback - 任务完成后的回调函数
+   * @returns 返回任务ID
+   */
+  public createTask(name: string, callback: HashCallback): string {
+    const taskId = this.generateTaskId(name);
+    const context: TaskContext = {
+      startTime: Date.now(),
+      resolve: (value: string | HashResult) => {
+        // 根据value类型决定事件类型
+        const event: HashEvent = { 
+          type: 'complete',
+          data: typeof value === 'string' 
+            ? { hash: value, algorithm: 'SHA-256', format: 'hex', fileSize: 0, timeCost: 0, chunkCount: 0 } as HashResult 
+            : value 
+        };
+        callback(event);
+      },
+      reject: (error: any) => {
+        const event: HashEvent = { 
+          type: 'error', 
+          data: error instanceof Error ? error : new Error(error?.message || error || 'Unknown error') 
+        };
+        callback(event);
+      }
+    };
+    
+    this.addTask(taskId, context);
+    return taskId;
+  }
+
+  /**
+   * 创建一个数据处理任务
+   * 
+   * @param data - 要处理的数据
+   * @param callback - 任务完成后的回调函数
+   * @returns 返回任务ID
+   */
+  public createDataTask(data: any, callback: (result: any) => void): string {
+    const taskId = this.generateTaskId('data-task');
+    const context: DataTaskContext = {
+      startTime: Date.now(),
+      resolve: (value: string) => {
+        const event: HashEvent = { 
+          type: 'complete',
+          data: { hash: value, algorithm: 'SHA-256', format: 'hex', fileSize: 0, timeCost: 0, chunkCount: 0 } as HashResult 
+        };
+        callback(event);
+      },
+      reject: (error: any) => {
+        const event: HashEvent = { 
+          type: 'error', 
+          data: error instanceof Error ? error : new Error(error?.message || error || 'Unknown error') 
+        };
+        callback(event);
+      }
+    };
+    
+    this.addDataTask(taskId, context);
+    return taskId;
+  }
+
+  /**
+   * 生成任务ID
+   * 
+   * @param prefix - ID前缀
+   * @returns 返回生成的任务ID
+   * @private
+   */
+  private generateTaskId(prefix: string): string {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
    * 添加任务（文件任务）
    */
   public addTask(taskId: string, context: TaskContext): void {

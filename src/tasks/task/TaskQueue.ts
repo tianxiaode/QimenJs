@@ -10,7 +10,7 @@ import { time, string } from '@/utils';
  *
  * @example
  * ```ts
- * // 添加一个普通任务
+ * // 获取全局任务队列实例并添加一个普通任务
  * globalTaskQueue.addTask(
  *   async () => console.log('Task executed'),
  *   'HIGH',
@@ -36,6 +36,11 @@ export class GlobalTaskQueue {
     private static instance: GlobalTaskQueue | null = null;
     private logger: ILogger;
 
+    /**
+     * 构造函数 - 创建任务队列实例
+     * 
+     * @param maxConcurrentTasks - 最大并发任务数，默认为5
+     */
     constructor(maxConcurrentTasks: number = 5) {
         this.maxConcurrentTasks = maxConcurrentTasks;
         this.logger = Logger.for('GlobalTaskQueue');
@@ -43,6 +48,9 @@ export class GlobalTaskQueue {
 
     /**
      * 获取任务队列的单例实例
+     * 
+     * @param maxConcurrentTasks - 可选参数，指定最大并发任务数
+     * @returns 返回任务队列的单例实例
      */
     public static getInstance(maxConcurrentTasks?: number): GlobalTaskQueue {
         if (!GlobalTaskQueue.instance) {
@@ -53,6 +61,9 @@ export class GlobalTaskQueue {
 
     /**
      * 根据优先级对任务队列进行排序
+     * 
+     * @returns 排序后的任务数组
+     * @private
      */
     private getSortedQueue(): Task[] {
         const priorityMap: { [key in TaskPriority]: number } = {
@@ -65,6 +76,13 @@ export class GlobalTaskQueue {
 
     /**
      * 添加任务到队列
+     * 
+     * @param fn - 要执行的任务函数，返回Promise
+     * @param priority - 任务优先级，默认为NORMAL
+     * @param maxRetries - 最大重试次数，默认为3
+     * @param delay - 重试延迟时间（毫秒），默认为1000
+     * @param isPolling - 是否为轮询任务，默认为false
+     * @param interval - 轮询间隔时间（毫秒），默认为5000
      */
     public addTask(
         fn: () => Promise<void>,
@@ -91,6 +109,10 @@ export class GlobalTaskQueue {
 
     /**
      * 处理任务的重试逻辑
+     * 
+     * @param task - 需要重试的任务
+     * @returns 如果任务将被重试则返回true，否则返回false
+     * @private
      */
     private async handleTaskRetry(task: Task): Promise<boolean> {
         if (task.retries < task.maxRetries) {
@@ -114,6 +136,10 @@ export class GlobalTaskQueue {
 
     /**
      * 处理轮询任务的重试逻辑
+     * 
+     * @param task - 需要轮询的任务
+     * @returns 如果任务将被重试则返回true，否则返回false
+     * @private
      */
     private async handlePollingTask(task: Task): Promise<boolean> {
         if (task.retries < task.maxRetries) {
@@ -137,6 +163,9 @@ export class GlobalTaskQueue {
 
     /**
      * 执行任务
+     * 
+     * @param task - 要执行的任务
+     * @private
      */
     private async runTask(task: Task): Promise<void> {
         try {
@@ -158,6 +187,8 @@ export class GlobalTaskQueue {
 
     /**
      * 执行队列中的任务
+     * 
+     * @private
      */
     private async run(): Promise<void> {
         if (this.isRunning) {

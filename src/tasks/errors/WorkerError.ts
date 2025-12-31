@@ -4,6 +4,7 @@ import { ErrorBase } from '@/error';
  * Worker相关错误类
  * 
  * 用于处理与Worker管理相关的错误，包括启动失败、通信错误等
+ * 继承自ErrorBase，提供了错误代码和上下文信息
  */
 export class WorkerError extends ErrorBase {
   /**

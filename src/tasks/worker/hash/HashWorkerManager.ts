@@ -16,6 +16,35 @@ import {
     WorkerInitializationError,
 } from '../../errors';
 
+/**
+ * HashWorkerManager - 哈希计算工作管理器
+ * 
+ * 该类扩展了WorkerManagerBase，提供了对文件和数据进行哈希计算的功能。
+ * 它使用Web Worker来执行计算密集型的哈希操作，避免阻塞主线程。
+ * 支持多种哈希算法，如MD5、SHA-1、SHA-256等，并允许配置计算参数。
+ * 
+ * 主要功能：
+ * - 支持对File对象进行哈希计算
+ * - 支持对ArrayBuffer、字符串等数据进行哈希计算
+ * - 支持配置哈希算法、块大小、输出格式等参数
+ * - 提供计算进度回调
+ * - 管理Worker的生命周期
+ * 
+ * @example
+ * ```ts
+ * const manager = new HashWorkerManager('/path/to/worker.js');
+ * 
+ * // 计算文件哈希
+ * manager.hashFile(file, (result) => {
+ *   console.log('File hash:', result.hash);
+ * });
+ * 
+ * // 计算数据哈希
+ * manager.hashData(data, (result) => {
+ *   console.log('Data hash:', result.hash);
+ * });
+ * ```
+ */
 export class HashWorkerManager extends WorkerManagerBase {
     private algorithm: HashAlgorithm = 'SHA-256';
     private chunkSize: number = 1024 * 1024; // 1MB
@@ -30,6 +59,13 @@ export class HashWorkerManager extends WorkerManagerBase {
     private readonly messageHandler: MessageHandler;
     protected logger: ILogger;
 
+    /**
+     * 构造函数 - 初始化HashWorkerManager实例
+     * 
+     * @param workerUrl - Web Worker脚本的URL路径
+     * @param options - 哈希计算的可选配置参数
+     * @throws WorkerInitializationError 当Worker初始化失败时抛出
+     */
     constructor(workerUrl: string, options: HashOptions = {}) {
         super(workerUrl);
         this.logger = Logger.for(this.constructor.name);
@@ -69,7 +105,10 @@ export class HashWorkerManager extends WorkerManagerBase {
     }
 
     /**
-     * 配置哈希管理器
+     * 配置哈希管理器参数
+     * 
+     * @param options - 要应用的配置选项
+     * @returns 返回当前实例以支持链式调用
      */
     configure(options: HashOptions): this {
         if (options.algorithm) this.algorithm = options.algorithm;
@@ -79,201 +118,79 @@ export class HashWorkerManager extends WorkerManagerBase {
         if (options.normalizeLineEndings !== undefined)
             this.normalizeLineEndings = options.normalizeLineEndings;
 
-        // 更新处理器配置
-        Object.assign(this.fileHashProcessor, {
-            algorithm: this.algorithm,
-            chunkSize: this.chunkSize,
-            format: this.format,
-            seed: this.seed,
-            normalizeLineEndings: this.normalizeLineEndings,
-        });
-
-        Object.assign(this.dataHashProcessor, {
-            algorithm: this.algorithm,
-            format: this.format,
-            seed: this.seed,
-            normalizeLineEndings: this.normalizeLineEndings,
-        });
-
         return this;
     }
 
     /**
-     * 计算文件哈希（完整文件）
+     * 计算文件的哈希值
+     * 
+     * @param file - 要计算哈希的File对象
+     * @param callback - 计算完成后的回调函数
+     * @param options - 可选的哈希计算配置
      */
-    async hashFile(file: File): Promise<HashResult> {
-        this.logger.info(
-            `Starting hash calculation for file: ${file.name}, size: ${file.size} bytes`
+    public hashFile(file: File, callback: HashCallback, options?: HashOptions): void {
+        if (options) {
+            this.configure(options);
+        }
+
+        // 重新创建处理器实例以应用新配置
+        const fileHashProcessor = new FileHashProcessor(
+            this.taskManager,
+            this.algorithm,
+            this.chunkSize,
+            this.format,
+            this.seed,
+            this.normalizeLineEndings,
+            this.post.bind(this),
+            this.logger
         );
 
-        this.ensureWorkerStarted();
-
-        const taskId = this.generateTaskId();
-        const startTime = performance.now();
-
-        this.taskManager.addChunkState(taskId, file.size);
-
-        return new Promise<HashResult>((resolve, reject) => {
-            this.taskManager.addTask(taskId, { 
-                resolve: resolve as (value: string | HashResult) => void, 
-                reject, 
-                startTime, 
-                file 
-            });
-
-            // 发出开始事件
-            this.taskManager.emit({ type: 'start' });
-
-            // 根据文件大小决定计算策略
-            if (file.size <= this.chunkSize * 4) {
-                this.logger.debug(`Using full file calculation for small file: ${file.name}`);
-                // 小文件：直接计算
-                this.fileHashProcessor
-                    .hashFullFile(file, taskId)
-                    .catch(error => this.handleError(taskId, error));
-            } else {
-                this.logger.debug(`Using chunked calculation for large file: ${file.name}`);
-                // 大文件：分片计算
-                this.fileHashProcessor.hashFileByChunks(file, taskId);
-            }
-        });
+        fileHashProcessor.process(file, callback);
     }
 
     /**
-     * 计算数据哈希（字符串、ArrayBuffer等）
+     * 计算数据的哈希值
+     * 
+     * @param data - 要计算哈希的数据，可以是字符串、ArrayBuffer等
+     * @param callback - 计算完成后的回调函数
+     * @param options - 可选的哈希计算配置
      */
-    async hashData(data: string | ArrayBuffer | Blob): Promise<string> {
-        this.logger.info(`Starting hash calculation for data of type: ${typeof data}`);
-
-        this.ensureWorkerStarted();
-
-        const taskId = this.generateTaskId();
-        const startTime = performance.now();
-
-        return new Promise<string>((resolve, reject) => {
-            // 对于数据哈希任务，我们只期望返回字符串类型
-            this.taskManager.addDataTask(taskId, { resolve, reject, startTime });
-
-            this.dataHashProcessor.hashData(data, taskId, startTime);
-        });
-    }
-
-    /**
-     * 确保Worker已启动
-     */
-    private ensureWorkerStarted(): Promise<void> {
-        if (!this.worker) {
-            this.logger.info('Initializing hash worker');
-            this.start();
-
-            // 等待Worker初始化完成
-            return new Promise<void>((resolve, reject) => {
-                const readyHandler = (event: MessageEvent) => {
-                    if (event.data.type === 'READY') {
-                        this.logger.info('Hash worker ready, sending algorithm configuration');
-
-                        // 发送初始化消息，包含算法配置
-                        this.post({
-                            type: 'INIT_CONFIG',
-                            config: {
-                                supportedAlgorithms: this.algorithmRegistry.getSupportedAlgorithms()
-                            },
-                        });
-
-                        this.worker?.removeEventListener('message', readyHandler);
-                        resolve();
-                    }
-                };
-
-                const errorHandler = (error: ErrorEvent) => {
-                    this.logger.error('Worker initialization error:', error);
-                    this.worker?.removeEventListener('error', errorHandler);
-                    reject(
-                        new WorkerInitializationError('Failed to initialize worker', error as any)
-                    );
-                };
-
-                this.worker?.addEventListener('message', readyHandler);
-                this.worker?.addEventListener('error', errorHandler);
-            });
-        } else {
-            // 如果worker已经存在，返回一个已解决的Promise
-            return Promise.resolve();
+    public hashData(data: any, callback: HashCallback, options?: HashOptions): void {
+        if (options) {
+            this.configure(options);
         }
+
+        // 重新创建处理器实例以应用新配置
+        const dataHashProcessor = new DataHashProcessor(
+            this.taskManager,
+            this.algorithm,
+            this.format,
+            this.seed,
+            this.normalizeLineEndings,
+            this.post.bind(this),
+            this.logger
+        );
+
+        dataHashProcessor.process(data, callback);
     }
 
     /**
-     * 消息处理
+     * 处理从Web Worker接收到的消息
+     * 
+     * @param event - 包含消息数据的事件对象
+     * @protected
      */
     protected onMessage(event: MessageEvent): void {
         this.messageHandler.handleMessage(event);
     }
 
     /**
-     * 处理错误
+     * 当Web Worker发生错误时的处理方法
+     * 
+     * @param error - 发生的错误信息
+     * @protected
      */
-    private handleError(taskId: string, error: Error): void {
-        this.logger.error(`Error processing task ${taskId}:`, error);
-
-        const task = this.taskManager.getTask(taskId);
-        if (task) {
-            task.reject(error);
-            this.taskManager.removeTask(taskId);
-            return;
-        }
-
-        const dataTask = this.taskManager.getDataTask(taskId);
-        if (dataTask) {
-            dataTask.reject(error);
-            this.taskManager.removeTask(taskId);
-            return;
-        }
-
-        this.taskManager.emit({ type: 'error', data: error });
-    }
-
-    /**
-     * 生成任务ID
-     */
-    private generateTaskId(): string {
-        return `hash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    /**
-     * 注册事件回调
-     */
-    on(callback: HashCallback): void {
-        this.taskManager.on(callback);
-    }
-
-    /**
-     * 取消事件回调
-     */
-    off(callback: HashCallback): void {
-        this.taskManager.off(callback);
-    }
-
-    /**
-     * 覆盖停止方法，清理资源
-     */
-    override stop(): void {
-        this.logger.info('Stopping hash worker manager');
-        this.taskManager.clearAllTasks();
-
-        // 调用父类停止方法
-        super.stop();
-    }
-
-    /**
-     * 获取当前配置
-     */
-    getConfig(): Required<HashOptions> {
-        return {
-            algorithm: this.algorithm,
-            chunkSize: this.chunkSize,
-            format: this.format,
-            seed: this.seed,
-            normalizeLineEndings: this.normalizeLineEndings,
-        };
+    protected onError(error: ErrorEvent): void {
+        this.logger.error('HashWorker error:', error);
     }
 }
