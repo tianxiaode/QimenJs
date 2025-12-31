@@ -211,7 +211,7 @@ self.postMessage({ type: 'READY' });
     try {
       // 只检查语法，不执行
       new Function(script);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Invalid JavaScript in worker script: ${error.message}`);
     }
     
