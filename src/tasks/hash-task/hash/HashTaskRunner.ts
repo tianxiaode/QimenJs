@@ -8,23 +8,33 @@ import { HashTaskOptions } from './HashTask';
 import { HashTaskHealthMonitor } from './HashTaskHealthMonitor';
 
 /**
- * HashTaskRunner 只负责流程控制：
- * 驱动任务生命周期
- * 串联 State / Progress / Resources
- * 把「计算」委托给 worker
- * 处理中断（pause / cancel）
- * ❌ 明确不做：
- * 不分 chunk（ChunkProvider 的事）
- * 不实现 hash 算法
- * 不处理内存细节
- * 不做健康监控
- * 不做任务调度
+ * HashTaskRunner类
+ * 
+ * 该类只负责流程控制：
+ * - 驱动任务生命周期
+ * - 串联 State / Progress / Resources
+ * - 把「计算」委托给 worker
+ * - 处理中断（pause / cancel）
+ * 
+ * 明确不负责：
+ * - 不分块（ChunkProvider 的事）
+ * - 不实现 hash 算法
+ * - 不处理内存细节
+ * - 不做健康监控
+ * - 不做任务调度
  */
-
 export class HashTaskRunner {
     private logger: ILogger;
     private builder = new WorkerScriptBuilder();
 
+    /**
+     * 构造函数
+     * 
+     * @param state 任务状态管理器
+     * @param progress 任务进度管理器
+     * @param resources 任务资源管理器
+     * @param options 哈希任务选项
+     */
     constructor(
         private readonly state: HashTaskState,
         private readonly progress: HashTaskProgress,
@@ -35,12 +45,17 @@ export class HashTaskRunner {
     }
 
     /**
-     * 辅助属性：让代码更易读
+     * 获取ChunkProvider的辅助属性，让代码更易读
      */
     private get chunkProvider() {
         return this.options.chunkProvider;
     }
 
+    /**
+     * 执行哈希任务
+     * 
+     * @returns Promise<ArrayBuffer> 包含哈希结果的Promise
+     */
     async run(): Promise<ArrayBuffer> {
         this.logger.debug(`Starting hash task with algorithm: ${this.options.algorithm}`);
         const scriptSource = this.builder.build(this.options.algorithm);
@@ -100,6 +115,11 @@ export class HashTaskRunner {
         }
     }
 
+    /**
+     * 等待任务恢复（如果处于暂停状态）
+     * 
+     * @private
+     */
     private async waitIfPaused(): Promise<void> {
         // ✅ 统一使用 state 判定，不再需要私有变量
         while (this.state.value === 'paused' && !this.state.isCancelled()) {
@@ -107,7 +127,15 @@ export class HashTaskRunner {
         }
     }
 
-    private runChunk(worker: WorkerHandle, chunk: Chunk): Promise<void> {
+    /**
+     * 运行单个数据块的哈希计算
+     * 
+     * @param worker Worker句柄
+     * @param chunk 要处理的数据块
+     * @returns Promise<void> 表示处理完成的Promise
+     * @private
+     */
+    private async runChunk(worker: WorkerHandle, chunk: Chunk): Promise<void> {
         return new Promise((resolve, reject) => {
             let unsubscribe: () => void;
 
@@ -134,6 +162,13 @@ export class HashTaskRunner {
         });
     }
 
+    /**
+     * 完成哈希计算并获取最终结果
+     * 
+     * @param worker Worker句柄
+     * @returns Promise<ArrayBuffer> 包含最终哈希结果的Promise
+     * @private
+     */
     private async finalize(worker: WorkerHandle): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
             let unsubscribe: () => void;
@@ -150,6 +185,12 @@ export class HashTaskRunner {
         });
     }
     
+    /**
+     * 计算所需内存大小
+     * 
+     * @returns 所需的内存大小（以字节为单位）
+     * @private
+     */
     private calculateRequiredMemory(): number {
         // 所有的 Provider 现在都有这个方法了
         const chunkSize = this.chunkProvider.getChunkSize();
@@ -158,6 +199,12 @@ export class HashTaskRunner {
         return chunkSize * 2 + 1024 * 1024;
     }
 
+    /**
+     * 执行哈希计算的主要逻辑
+     * 
+     * @returns Promise<ArrayBuffer> 包含最终哈希结果的Promise
+     * @private
+     */
     private async executeHashing(): Promise<ArrayBuffer> {
         const worker = this.resources.getWorker();
         const provider = this.chunkProvider;

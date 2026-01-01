@@ -47,7 +47,10 @@ parentPort.on('message', (msg: HashWorkerMessage) => {
         switch (msg.type) {
             case 'init': {
                 if (!ALLOWED_ALGORITHMS.has(msg.algorithm)) {
-                    throw new Error(`Unsupported algorithm: ${msg.algorithm}`);
+                    throw {
+                        code: 'UNSUPPORTED_ALGORITHM',
+                        message: `Unsupported: ${msg.algorithm}`,
+                    };
                 }
 
                 algorithm = msg.algorithm;
@@ -92,11 +95,12 @@ parentPort.on('message', (msg: HashWorkerMessage) => {
             }
 
             default:
-                throw new Error('Unknown message type');
+                throw { code: 'UNKNOWN_COMMAND', message: `Unknown type: ${(msg as any).type}` };
         }
-    } catch (err) {
+    } catch (err: any) {
         post({
             type: 'error',
+            code: err.code || 'WORKER_INTERNAL_ERROR',
             message: (err as Error).message,
         });
     }

@@ -26,7 +26,7 @@ export class DefaultWorkerPool implements WorkerPool {
         const idle = this.idleWorkers.pop();
         if (idle) {
             // 这里有一个进阶逻辑：
-            // 如果你希望 Worker 复用（不重造 Blob），你可能需要判断 idle 的 Worker 
+            // 如果你希望 Worker 复用（不重造 Blob），你可能需要判断 idle 的 Worker
             // 里面跑的代码是否和当前 scriptSource 一致。
             // 但为了简单和“不限定算法包”，我们这里选择：只要是归还的，就直接用（假设 Runner 会发 reset 消息）
             return idle;
@@ -70,11 +70,11 @@ export class DefaultWorkerPool implements WorkerPool {
      */
     async destroy(): Promise<void> {
         this.isDestroyed = true;
-        
+
         // 终止所有 Worker
         const terminations = Array.from(this.allWorkers).map(w => w.terminate());
         await Promise.all(terminations);
-        
+
         this.allWorkers.clear();
         this.idleWorkers.length = 0;
         this.waiters.length = 0;

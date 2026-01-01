@@ -61,6 +61,7 @@ export type HashWorkerDigest = {
 
 export type HashWorkerError = {
   type: 'error';
+  code: number | string;
   message: string;
 };
 
