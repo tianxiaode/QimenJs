@@ -80,6 +80,48 @@ describe('BrowserWorkerPool', () => {
     expect((pool as any).maxWorkers).toBe(4); // hardwareConcurrency is 4
   });
 
+  test('should create a pool with default size when hardwareConcurrency is 0', () => {
+    // Temporarily modify navigator to have 0 hardwareConcurrency
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        hardwareConcurrency: 0,
+      },
+      writable: true,
+    });
+    
+    const pool = new BrowserWorkerPool();
+    expect((pool as any).maxWorkers).toBe(4); // Should fallback to Math.min(4, 8) = 4
+    
+    // Restore original value
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        hardwareConcurrency: 4,
+      },
+      writable: true,
+    });
+  });
+
+  test('should create a pool with default size when hardwareConcurrency is undefined', () => {
+    // Temporarily modify navigator to have undefined hardwareConcurrency
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        hardwareConcurrency: undefined,
+      },
+      writable: true,
+    });
+    
+    const pool = new BrowserWorkerPool();
+    expect((pool as any).maxWorkers).toBe(4); // Should fallback to Math.min(4, 8) = 4
+    
+    // Restore original value
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        hardwareConcurrency: 4,
+      },
+      writable: true,
+    });
+  });
+
   test('should create a pool with specified size', () => {
     const pool = new BrowserWorkerPool(2);
     expect((pool as any).maxWorkers).toBe(2);
