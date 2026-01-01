@@ -36,6 +36,16 @@ export interface HashTaskOptions {
  * 
  * 用于处理大文件或数据流的哈希计算任务，支持进度监控、暂停/恢复/取消操作
  * 
+ * 设计原则：
+ * - 仅负责任务的生命周期管理
+ * - 串联各个组件（State, Progress, Resources, Runner）
+ * - 提供统一的外部接口
+ * 
+ * 明确不负责：
+ * - 不执行具体的哈希计算（由Runner和Worker负责）
+ * - 不管理内存（由MemoryManager负责）
+ * - 不调度Worker（由WorkerPool负责）
+ * 
  * @example
  * ```ts
  * const task = new HashTask({

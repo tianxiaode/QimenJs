@@ -37,6 +37,12 @@ export interface TaskProgressSnapshot {
  * 哈希任务进度管理类
  * 
  * 负责跟踪和管理哈希任务的执行进度
+ * 
+ * 设计原则：
+ * - 仅负责进度跟踪和快照生成
+ * - 不关心数据块的来源
+ * - 不关心哈希算法的实现
+ * - 不管理Worker或任务状态
  */
 export class HashTaskProgress {
     private processedBytes = 0;
@@ -68,6 +74,8 @@ export class HashTaskProgress {
 
     /**
      * 生成只读快照
+     * 
+     * 计算当前进度百分比并返回进度快照
      * 
      * @returns 任务进度快照
      */

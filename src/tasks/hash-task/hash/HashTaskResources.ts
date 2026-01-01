@@ -37,6 +37,12 @@ export interface HashTaskResourceSnapshot {
  * 负责管理哈希任务所需的资源，包括内存和Worker。
  * 这是一个资源管理器，用于在执行哈希任务时获取和释放必要的计算资源。
  * 设计原则是单一职责，只负责资源的申请和释放，不涉及具体的哈希计算逻辑。
+ * 
+ * 设计原则：
+ * - 仅负责资源的申请与释放
+ * - 不涉及具体哈希计算逻辑
+ * - 保证资源操作的原子性
+ * - 提供资源状态快照
  */
 export class HashTaskResources {
     private memoryTicket?: IMemoryTicket;

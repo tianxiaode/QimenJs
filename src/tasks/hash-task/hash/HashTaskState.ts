@@ -172,7 +172,8 @@ export class HashTaskState {
      * @throws TaskStateError 如果当前状态不允许完成操作
      */
     complete(): void {
-        if (!this.canPause()) {
+        // 修复：应该检查当前状态是否允许完成任务
+        if (this.status !== 'running') {
             throw new TaskStateError(`Cannot complete task from state "${this.status}"`, {
                 current: this.status,
             });
@@ -210,7 +211,8 @@ export class HashTaskState {
      * @throws TaskStateError 如果当前状态不允许取消操作
      */
     cancel(): void {
-        if (this.canCancel()) {
+        // 修复：应该检查当前状态是否允许取消任务
+        if (!this.canCancel()) {
             throw new TaskStateError(`Cannot cancel task from state "${this.status}"`, {
                 current: this.status,
             });

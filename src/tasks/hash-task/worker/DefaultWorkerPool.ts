@@ -2,6 +2,17 @@ import { WorkerHandle } from './WorkerHandle';
 import { WorkerPool } from './WorkerPool';
 import { DefaultWorkerHandle } from './DefaultWorkerHandle';
 
+/**
+ * 默认Worker池实现
+ * 
+ * 提供了Worker池的基本功能，包括Worker的获取、归还和销毁
+ * 设计原则：只负责Worker的生命周期管理，不关心具体执行的任务
+ * 
+ * 明确不负责：
+ * - 不执行具体的哈希计算
+ * - 不管理任务状态
+ * - 不处理算法逻辑
+ */
 export class DefaultWorkerPool implements WorkerPool {
     private readonly idleWorkers: WorkerHandle[] = [];
     private readonly allWorkers = new Set<WorkerHandle>();
@@ -10,14 +21,22 @@ export class DefaultWorkerPool implements WorkerPool {
     private isDestroyed = false;
 
     /**
-     * 注意：构造函数不再接收 scriptUrl，因为每个任务的代码可能是动态生成的
+     * 构造函数
+     * 
+     * @param maxWorkers 最大Worker数量，默认为硬件并发数或8，取较小值
      */
     constructor(
         private readonly maxWorkers: number = Math.min(navigator.hardwareConcurrency || 4, 8)
     ) {}
 
     /**
-     * ✅ 核心修改：acquire 现在接收 scriptSource
+     * 获取一个可用的Worker
+     * 
+     * 如果有空闲Worker则直接返回，否则如果未达到最大数量则创建新的，
+     * 否则等待其他任务释放Worker
+     * 
+     * @param scriptSource 要注入Worker的脚本源码
+     * @returns 可用的Worker句柄
      */
     async acquire(scriptSource: string): Promise<WorkerHandle> {
         if (this.isDestroyed) throw new Error('WorkerPool is destroyed');
@@ -28,7 +47,7 @@ export class DefaultWorkerPool implements WorkerPool {
             // 这里有一个进阶逻辑：
             // 如果你希望 Worker 复用（不重造 Blob），你可能需要判断 idle 的 Worker
             // 里面跑的代码是否和当前 scriptSource 一致。
-            // 但为了简单和“不限定算法包”，我们这里选择：只要是归还的，就直接用（假设 Runner 会发 reset 消息）
+            // 但为了简单和"不限定算法包"，我们这里选择：只要是归还的，就直接用（假设 Runner 会发 reset 消息）
             return idle;
         }
 
@@ -47,7 +66,11 @@ export class DefaultWorkerPool implements WorkerPool {
     }
 
     /**
-     * 归还 Worker 到池子
+     * 归还Worker到池子
+     * 
+     * 将使用完毕的Worker归还到池中，供其他任务使用
+     * 
+     * @param worker 要归还的Worker句柄
      */
     release(worker: WorkerHandle): void {
         if (this.isDestroyed) {
@@ -66,7 +89,9 @@ export class DefaultWorkerPool implements WorkerPool {
     }
 
     /**
-     * 销毁整个池子
+     * 销毁整个Worker池
+     * 
+     * 终止并清理池中的所有Worker，释放相关资源
      */
     async destroy(): Promise<void> {
         this.isDestroyed = true;

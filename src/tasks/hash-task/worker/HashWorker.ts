@@ -3,8 +3,10 @@ import * as crypto from 'crypto';
 import { HashWorkerMessage, HashWorkerResponse } from './HashWorkerProtocol';
 
 /**
- * worker 只做一件事：
- * 按固定协议，增量计算 hash
+ * Node.js环境下的哈希计算Worker
+ * 
+ * 该Worker只负责一件事：按固定协议，增量计算哈希
+ * 
  * 必须满足：
  * ❌ 不 eval
  * ❌ 不接受函数
@@ -13,7 +15,6 @@ import { HashWorkerMessage, HashWorkerResponse } from './HashWorkerProtocol';
  * ✔ 可被 reset / 重用
  * ✔ 出错可恢复
  */
-
 if (!parentPort) {
     throw new Error('hash.worker must be run in a Worker thread');
 }
@@ -33,10 +34,18 @@ const ALLOWED_ALGORITHMS = new Set([
     'md5', // 如不需要可移除
 ]);
 
+/**
+ * 向主线程发送消息的辅助函数
+ * 
+ * @param message 要发送的响应消息
+ */
 function post(message: HashWorkerResponse) {
     parentPort!.postMessage(message);
 }
 
+/**
+ * 重置内部哈希状态
+ */
 function reset() {
     hash = null;
     algorithm = null;
