@@ -8,14 +8,14 @@ import { WorkerPool } from '../worker';
 
 /**
  * 进度监听器类型
- * 
+ *
  * 定义了接收进度快照的回调函数类型
  */
 type ProgressListener = (snapshot: TaskProgressSnapshot) => void;
 
 /**
  * 哈希任务选项接口
- * 
+ *
  * 定义了创建哈希任务所需的配置参数
  */
 export interface HashTaskOptions {
@@ -33,19 +33,19 @@ export interface HashTaskOptions {
 
 /**
  * 哈希任务类
- * 
+ *
  * 用于处理大文件或数据流的哈希计算任务，支持进度监控、暂停/恢复/取消操作
- * 
+ *
  * 设计原则：
  * - 仅负责任务的生命周期管理
  * - 串联各个组件（State, Progress, Resources, Runner）
  * - 提供统一的外部接口
- * 
+ *
  * 明确不负责：
  * - 不执行具体的哈希计算（由Runner和Worker负责）
  * - 不管理内存（由MemoryManager负责）
  * - 不调度Worker（由WorkerPool负责）
- * 
+ *
  * @example
  * ```ts
  * const task = new HashTask({
@@ -54,11 +54,11 @@ export interface HashTaskOptions {
  *   memoryManager: new MemoryManager(),
  *   workerPool: new BrowserWorkerPool(),
  * });
- * 
+ *
  * task.onProgress((snapshot) => {
  *   console.log(`Progress: ${snapshot.percentage}%`);
  * });
- * 
+ *
  * task.start();
  * const result = await task.result();
  * ```
@@ -76,9 +76,9 @@ export class HashTask {
 
     /**
      * 构造函数
-     * 
+     *
      * 初始化哈希任务的各项组件和状态
-     * 
+     *
      * @param options 哈希任务配置选项
      */
     constructor(private readonly options: HashTaskOptions) {
@@ -89,12 +89,7 @@ export class HashTask {
 
         this.resources = new HashTaskResources(options.memoryManager, options.workerPool);
 
-        this.runner = new HashTaskRunner(
-            this.state,
-            this.progress,
-            this.resources,
-            options
-        );
+        this.runner = new HashTaskRunner(this.state, this.progress, this.resources, options);
 
         this.resultPromise = new Promise<ArrayBuffer>((resolve, reject) => {
             this.resolveResult = resolve;
@@ -104,21 +99,25 @@ export class HashTask {
 
     /**
      * 启动任务
-     * 
+     *
      * 开始执行哈希计算任务，并启动进度轮询机制
      */
-    start(): void {
-        this.runner
-            .run()
-            .then(result => this.resolveResult(result))
-            .catch(err => this.rejectResult(err));
-
-        this.startProgressPolling();
+    async start(): Promise<void> {
+        try {
+            const result = await this.runner.run();
+            this.resolveResult(result);
+        } catch (err: any) {
+            // 这里的处理逻辑会立刻被测试捕获
+            this.rejectResult(err);
+            // 如果需要让外部也感知到错误，可以继续 throw
+            throw err;
+        } finally {
+            this.startProgressPolling();
+        }
     }
-
     /**
      * 暂停任务
-     * 
+     *
      * 暂停当前正在执行的哈希计算任务
      */
     pause(): void {
@@ -127,7 +126,7 @@ export class HashTask {
 
     /**
      * 恢复任务
-     * 
+     *
      * 恢复之前暂停的哈希计算任务
      */
     resume(): void {
@@ -136,7 +135,7 @@ export class HashTask {
 
     /**
      * 取消任务
-     * 
+     *
      * 取消当前正在执行的哈希计算任务
      */
     cancel(): void {
@@ -145,9 +144,9 @@ export class HashTask {
 
     /**
      * 获取最终 hash 结果
-     * 
+     *
      * 返回一个Promise，当任务完成时包含哈希计算结果
-     * 
+     *
      * @returns 包含哈希结果的Promise
      */
     result(): Promise<ArrayBuffer> {
@@ -156,9 +155,9 @@ export class HashTask {
 
     /**
      * 订阅进度
-     * 
+     *
      * 添加进度监听器，当任务进度更新时会调用监听器
-     * 
+     *
      * @param listener 进度监听器函数
      * @returns 用于取消监听的函数
      */
@@ -169,9 +168,9 @@ export class HashTask {
 
     /**
      * 轮询推送进度（简单稳定）
-     * 
+     *
      * 启动一个定时器，定期向所有进度监听器发送进度更新
-     * 
+     *
      * @private
      */
     private startProgressPolling(): void {

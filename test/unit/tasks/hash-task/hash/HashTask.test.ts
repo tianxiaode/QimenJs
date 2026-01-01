@@ -71,11 +71,25 @@ describe('HashTask', () => {
     });
 
     describe('start', () => {
-        it('should call runner.run() and start progress polling', () => {
-            const runnerRunSpy = jest.spyOn((hashTask as any).runner, 'run');
+        it('should call runner.run() and eventually start progress polling', async () => {
+            const runnerRunSpy = jest.spyOn((hashTask as any).runner, 'run').mockResolvedValue(new ArrayBuffer(0));
             const startProgressPollingSpy = jest.spyOn(hashTask as any, 'startProgressPolling').mockImplementation();
             
-            hashTask.start();
+            // 执行start方法
+            await hashTask.start();
+            
+            expect(runnerRunSpy).toHaveBeenCalled();
+            // 现在startProgressPolling是在finally块中被调用的，所以它应该在run后被调用
+            expect(startProgressPollingSpy).toHaveBeenCalled();
+        });
+
+        it('should handle errors correctly and still start progress polling', async () => {
+            const error = new Error('Test error');
+            const runnerRunSpy = jest.spyOn((hashTask as any).runner, 'run').mockRejectedValue(error);
+            const rejectResultSpy = jest.spyOn(hashTask as any, 'rejectResult').mockImplementation();
+            const startProgressPollingSpy = jest.spyOn(hashTask as any, 'startProgressPolling').mockImplementation();
+            
+            await expect(hashTask.start()).rejects.toThrow('Test error');
             
             expect(runnerRunSpy).toHaveBeenCalled();
             expect(startProgressPollingSpy).toHaveBeenCalled();
