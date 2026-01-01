@@ -1,4 +1,4 @@
-import { ErrorBase } from '@/error';
+import { ErrorBase } from '@orbitjs/error';
 
 /**
  * Worker相关错误类

@@ -83,6 +83,6 @@ describe('WorkerInitializationError', () => {
     expect(error).toBeInstanceOf(Error);
     // 检查原型链
     expect(Object.getPrototypeOf(error)).toBe(WorkerInitializationError.prototype);
-    expect(Object.getPrototypeOf(Object.getPrototypeOf(error))).toBe(require('@/error/BaseError').ErrorBase.prototype);
+    expect(Object.getPrototypeOf(Object.getPrototypeOf(error))).toBe(require('@/error/ErrorBase').ErrorBase.prototype);
   });
 });

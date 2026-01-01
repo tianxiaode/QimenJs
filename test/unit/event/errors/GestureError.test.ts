@@ -88,6 +88,6 @@ describe('GestureError', () => {
     const error = new GestureError('测试错误');
     
     expect(error).toBeInstanceOf(Error);
-    expect(error).toBeInstanceOf(require('@/error/BaseError').ErrorBase);
+    expect(error).toBeInstanceOf(require('@/error/ErrorBase').ErrorBase);
   });
 });

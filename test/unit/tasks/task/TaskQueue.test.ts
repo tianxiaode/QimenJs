@@ -1,5 +1,5 @@
 import { GlobalTaskQueue, globalTaskQueue } from '@/tasks/task/TaskQueue';
-import { TaskPriority } from '@/tasks/types';
+import { TaskPriority } from '@/tasks/task/types';
 import { after } from '@/utils/time/after';
 
 // 模拟 after 函数
