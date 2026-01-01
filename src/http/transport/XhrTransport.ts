@@ -1,63 +1,112 @@
-import { HttpRequest, HttpResponse } from "../core/types";
-import { HttpTransport } from "./HttpTransport";
+import { HttpRequest, HttpResponse } from '../core';
+import { HttpTransport } from './HttpTransport';
+import { HttpTransportFailure } from './HttpTransportFailure';
+import { TransportFailureReason } from './types';
 
-// 扩展HttpRequest接口以支持进度事件
-interface ExtendedHttpRequest extends HttpRequest {
-  onProgress?: (progressEvent: ProgressEvent) => void;
-}
-
+/**
+ * 职责：
+ * - 上传 / 下载进度
+ * - 分片
+ * 输出仍然是 HttpResponse或 HttpTransportFailure
+ * 禁止：
+ * ❌ 不碰 error parser
+ * ❌ 不处理 chunk 逻辑（由上层控制）
+ */
 export class XhrTransport implements HttpTransport {
-    async send(req: ExtendedHttpRequest): Promise<HttpResponse> {
-        return new Promise((resolve, reject) => {
+    /**
+     * 补全核心方法：send
+     */
+    send(req: HttpRequest): Promise<HttpResponse | HttpTransportFailure> {
+        return new Promise(resolve => {
             const xhr = new XMLHttpRequest();
-            xhr.open(req.method, req.url);
+            const { timeout, responseType } = req.options;
 
-            Object.entries(req.headers || {}).forEach(([k, v]) =>
-                xhr.setRequestHeader(k, v as string)
-            );
+            // 1. 初始化请求
+            xhr.open(req.method, req.url, true);
 
-            if (req.onProgress) {
-                xhr.upload.onprogress = req.onProgress;
+            // 补全：正确映射 XHR 的 responseType
+            // 注意：XHR 不支持 'stream'，只能由 FetchTransport 处理，这里映射为原生支持的类型
+            if (responseType && responseType !== 'stream') {
+                xhr.responseType = responseType;
             }
 
+            if (timeout) {
+                xhr.timeout = timeout;
+            }
+
+            // 2. 设置 Headers
+            Object.entries(req.headers).forEach(([key, value]) => {
+                xhr.setRequestHeader(key, value);
+            });
+
+            // 3. 进度监听
+            if (req.options.onProgress) {
+                if (this.hasRequestBody(req)) {
+                    xhr.upload.onprogress = e => req.options.onProgress?.(e);
+                } else {
+                    xhr.onprogress = e => req.options.onProgress?.(e);
+                }
+            }
+
+            // 4. 响应处理
             xhr.onload = () => {
+                resolve(
+                    new HttpResponse({
+                        status: xhr.status,
+                        headers: this.parseResponseHeaders(xhr.getAllResponseHeaders()),
+                        rawBody: xhr.response,
+                    })
+                );
+            };
+
+            // 5. 错误处理
+            xhr.onerror = err => {
                 resolve({
-                    statusCode: xhr.status,
-                    headers: {}, // 这里可以解析响应头
-                    body: xhr.responseText,
-                    getBody() {
-                        try {
-                            return JSON.parse(xhr.responseText);
-                        } catch {
-                            return xhr.responseText;
-                        }
-                    },
-                    isJsonResponse() {
-                        const contentType = xhr.getResponseHeader('content-type') || '';
-                        return contentType.includes('application/json');
-                    },
-                    isCustomBackendError() {
-                        // 根据实际后端错误判断逻辑实现
-                        return false;
-                    }
+                    isTransportFailure: true,
+                    reason: TransportFailureReason.NetworkError,
+                    message: 'XHR network error or CORS restriction',
+                    error: err,
                 });
             };
 
-            xhr.onerror = () => reject(new Error('Network error'));
-            
-            // 处理请求体，将其转换为合适的格式
-            let body: Document | BodyInit | null = null;
-            if (req.body) {
-                if (typeof req.body === 'string') {
-                    body = req.body;
-                } else if (req.body instanceof Blob || req.body instanceof ArrayBuffer) {
-                    body = req.body;
-                } else {
-                    body = JSON.stringify(req.body);
-                }
-            }
-            
-            xhr.send(body);
+            xhr.ontimeout = () => {
+                resolve({
+                    isTransportFailure: true,
+                    reason: TransportFailureReason.Aborted,
+                    message: 'XHR request timed out',
+                });
+            };
+
+            // 6. 发送原始 Body
+            xhr.send(req.body);
         });
+    }
+
+    /**
+     * 补全：判断是否包含 Request Body
+     * 逻辑：GET 和 HEAD 方法在协议上不携带 body
+     */
+    private hasRequestBody(req: HttpRequest): boolean {
+        const method = req.method.toUpperCase();
+        return !!req.body && method !== 'GET' && method !== 'HEAD';
+    }
+
+    /**
+     * 解析 Header 字符串
+     */
+    private parseResponseHeaders(headerStr: string): Record<string, string> {
+        const headers: Record<string, string> = {};
+        if (!headerStr) return headers;
+
+        headerStr
+            .trim()
+            .split(/[\r\n]+/)
+            .forEach(line => {
+                const parts = line.split(': ');
+                const key = parts.shift()?.toLowerCase();
+                const value = parts.join(': ');
+                if (key) headers[key] = value;
+            });
+        return headers;
     }
 }
