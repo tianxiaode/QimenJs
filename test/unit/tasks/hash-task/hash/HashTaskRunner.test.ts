@@ -301,4 +301,104 @@ describe('HashTaskRunner', () => {
             expect(requiredMemory).toBe(chunkSize * 2 + 1024 * 1024);
         });
     });
+    
+    describe('executeHashing', () => {
+        it('should execute hashing successfully with chunks', async () => {
+            // Mock progress.onChunk to track calls
+            const onChunkSpy = jest.spyOn(progress, 'onChunk').mockImplementation(() => {});
+            
+            // Setup chunk provider to return chunks
+            const mockChunks = [
+                { id: 'chunk1', data: new ArrayBuffer(10) },
+                { id: 'chunk2', data: new ArrayBuffer(10) },
+            ];
+            let chunkIndex = 0;
+            
+            mockChunkProvider.hasNext = jest.fn()
+                .mockReturnValueOnce(true)
+                .mockReturnValueOnce(true)
+                .mockReturnValueOnce(false); // Return false on third call
+            mockChunkProvider.next = jest.fn()
+                .mockResolvedValueOnce(mockChunks[0])
+                .mockResolvedValueOnce(mockChunks[1])
+                .mockResolvedValue(null);
+            
+            // Mock the runChunk and finalize methods
+            const runChunkSpy = jest.spyOn(runner as any, 'runChunk')
+                .mockImplementation(() => Promise.resolve());
+            const finalizeSpy = jest.spyOn(runner as any, 'finalize')
+                .mockResolvedValue(new ArrayBuffer(16));
+            
+            // Mock state.canPause and state.complete - set status to 'running' first
+            state['status'] = 'running';
+            jest.spyOn(state, 'canPause').mockReturnValue(true);
+            const completeSpy = jest.spyOn(state, 'complete');
+            
+            // Execute the method
+            const result = await (runner as any).executeHashing();
+            
+            // Verify the calls
+            expect(mockChunkProvider.next).toHaveBeenCalledTimes(2);
+            expect(runChunkSpy).toHaveBeenCalledTimes(2);
+            expect(runChunkSpy).toHaveBeenCalledWith(mockWorker, mockChunks[0]);
+            expect(runChunkSpy).toHaveBeenCalledWith(mockWorker, mockChunks[1]);
+            expect(finalizeSpy).toHaveBeenCalledWith(mockWorker);
+            expect(onChunkSpy).toHaveBeenCalledTimes(2);
+            expect(completeSpy).toHaveBeenCalled();
+        });
+        
+        it('should throw error when task is cancelled', async () => {
+            // Setup chunk provider to return a chunk
+            const mockChunk = { id: 'chunk1', data: new ArrayBuffer(10) };
+            
+            mockChunkProvider.hasNext = jest.fn().mockReturnValue(true);
+            mockChunkProvider.next = jest.fn().mockResolvedValue(mockChunk);
+            
+            // Mock state to return 'cancelled' when isCancelled is called
+            jest.spyOn(state, 'isCancelled').mockReturnValue(true);
+            
+            await expect((runner as any).executeHashing()).rejects.toThrow('Task cancelled');
+        });
+        
+        it('should handle error in runChunk and propagate it', async () => {
+            // Setup chunk provider
+            const mockChunk = { id: 'chunk1', data: new ArrayBuffer(10) };
+            
+            mockChunkProvider.hasNext = jest.fn().mockReturnValueOnce(true);
+            mockChunkProvider.next = jest.fn().mockResolvedValue(mockChunk);
+            
+            // Mock runChunk to throw an error
+            jest.spyOn(runner as any, 'runChunk')
+                .mockRejectedValue(new Error('Worker error'));
+            
+            await expect((runner as any).executeHashing()).rejects.toThrow('Worker error');
+        });
+    });
+
+    describe('run with error handling', () => {
+        it('should catch error from executeHashing and re-throw it', async () => {
+            const mockScriptSource = 'mock script';
+            const mockBuilder = new WorkerScriptBuilder();
+            jest.spyOn(mockBuilder, 'build').mockReturnValue(mockScriptSource);
+            (runner as any).builder = mockBuilder;
+            
+            const mockMemoryRequired = 2048;
+            jest.spyOn(runner as any, 'calculateRequiredMemory').mockReturnValue(mockMemoryRequired);
+            
+            jest.spyOn(resources, 'acquire').mockResolvedValue(undefined);
+            jest.spyOn(resources, 'release').mockResolvedValue(undefined);
+            // Mock executeHashing to throw an error
+            jest.spyOn(runner as any, 'executeHashing').mockRejectedValue(new Error('Test error'));
+            
+            const healthMonitorMock = {
+                start: jest.fn(),
+                stop: jest.fn()
+            };
+            (HashTaskHealthMonitor as jest.Mock).mockImplementation(() => healthMonitorMock);
+            
+            await expect(runner.run()).rejects.toThrow('Test error');
+            expect(healthMonitorMock.stop).toHaveBeenCalled();
+            expect(resources.release).toHaveBeenCalled();
+        });
+    });
 });
