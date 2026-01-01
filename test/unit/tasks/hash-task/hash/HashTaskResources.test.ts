@@ -132,6 +132,93 @@ describe('HashTaskResources', () => {
         });
     });
 
+    describe('acquireMemory', () => {
+        it('should acquire memory successfully', async () => {
+            const memoryBytes = 1024;
+            const mockTicket = new MockMemoryTicket(memoryBytes);
+            (mockMemoryManager.acquire as jest.Mock).mockResolvedValueOnce(mockTicket);
+
+            await (resources as any).acquireMemory(memoryBytes);
+
+            expect(mockMemoryManager.acquire).toHaveBeenCalledWith(memoryBytes);
+            expect((resources as any).memoryTicket).toBe(mockTicket);
+        });
+
+        it('should throw ResourceUnavailableError with correct context when memory acquisition fails', async () => {
+            const memoryBytes = 2048;
+            const originalError = new Error('Memory unavailable');
+            (mockMemoryManager.acquire as jest.Mock).mockRejectedValueOnce(originalError);
+
+            await expect((resources as any).acquireMemory(memoryBytes)).rejects.toThrow(ResourceUnavailableError);
+
+            try {
+                await (resources as any).acquireMemory(memoryBytes);
+            } catch (err) {
+                expect(err).toBeInstanceOf(ResourceUnavailableError);
+                expect((err as ResourceUnavailableError).context).toBeDefined();
+                expect((err as ResourceUnavailableError).context!.resource).toBe('memory');
+                expect((err as ResourceUnavailableError).context!.requestedBytes).toBe(memoryBytes);
+                expect((err as ResourceUnavailableError).context!.originalError).toBe(originalError.message);
+            }
+        });
+
+        it('should handle non-Error objects in memory acquisition failure', async () => {
+            const memoryBytes = 2048;
+            const originalError = 'String error message';
+            (mockMemoryManager.acquire as jest.Mock).mockRejectedValueOnce(originalError);
+
+            try {
+                await (resources as any).acquireMemory(memoryBytes);
+            } catch (err) {
+                expect(err).toBeInstanceOf(ResourceUnavailableError);
+                expect((err as ResourceUnavailableError).context!.originalError).toBe(originalError);
+            }
+        });
+    });
+
+    describe('acquireWorker', () => {
+        it('should acquire worker successfully', async () => {
+            const scriptSource = 'test script';
+            const mockWorker = new MockWorkerHandle();
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(mockWorker);
+
+            await (resources as any).acquireWorker(scriptSource);
+
+            expect(mockWorkerPool.acquire).toHaveBeenCalledWith(scriptSource);
+            expect((resources as any).worker).toBe(mockWorker);
+        });
+
+        it('should throw ResourceUnavailableError with correct context when worker acquisition fails', async () => {
+            const scriptSource = 'test script';
+            const originalError = new Error('Worker unavailable');
+            (mockWorkerPool.acquire as jest.Mock).mockRejectedValueOnce(originalError);
+
+            await expect((resources as any).acquireWorker(scriptSource)).rejects.toThrow(ResourceUnavailableError);
+
+            try {
+                await (resources as any).acquireWorker(scriptSource);
+            } catch (err) {
+                expect(err).toBeInstanceOf(ResourceUnavailableError);
+                expect((err as ResourceUnavailableError).context).toBeDefined();
+                expect((err as ResourceUnavailableError).context!.resource).toBe('worker');
+                expect((err as ResourceUnavailableError).context!.originalError).toBe(originalError.message);
+            }
+        });
+
+        it('should handle non-Error objects in worker acquisition failure', async () => {
+            const scriptSource = 'test script';
+            const originalError = 'String error message';
+            (mockWorkerPool.acquire as jest.Mock).mockRejectedValueOnce(originalError);
+
+            try {
+                await (resources as any).acquireWorker(scriptSource);
+            } catch (err) {
+                expect(err).toBeInstanceOf(ResourceUnavailableError);
+                expect((err as ResourceUnavailableError).context!.originalError).toBe(originalError);
+            }
+        });
+    });
+
     describe('release', () => {
         it('should release worker and memory resources', async () => {
             const mockWorker = new MockWorkerHandle();
@@ -158,6 +245,74 @@ describe('HashTaskResources', () => {
             await resources.release();
             expect((resources as any).acquired).toBe(false);
         });
+        
+        it('should handle release when only memory is acquired', async () => {
+            const mockTicket = new MockMemoryTicket(1024);
+            (mockMemoryManager.acquire as jest.Mock).mockResolvedValueOnce(mockTicket);
+            
+            // Manually set acquired flag to true to simulate partial acquisition
+            (resources as any).acquired = true;
+            (resources as any).memoryTicket = mockTicket;
+            
+            await resources.release();
+            
+            expect(mockTicket.release).toHaveBeenCalled();
+            expect((resources as any).acquired).toBe(false);
+        });
+        
+        it('should handle release when only worker is acquired', async () => {
+            const mockWorker = new MockWorkerHandle();
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(mockWorker);
+            
+            // Manually set acquired flag to true to simulate partial acquisition
+            (resources as any).acquired = true;
+            (resources as any).worker = mockWorker;
+            
+            await resources.release();
+            
+            expect(mockWorkerPool.release).toHaveBeenCalledWith(mockWorker);
+            expect((resources as any).acquired).toBe(false);
+        });
+        
+        it('should handle errors when releasing worker', async () => {
+            const mockWorker = new MockWorkerHandle();
+            const mockTicket = new MockMemoryTicket(1024);
+            
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(mockWorker);
+            (mockMemoryManager.acquire as jest.Mock).mockResolvedValueOnce(mockTicket);
+            
+            // Mock release method to throw an error
+            (mockWorkerPool.release as jest.Mock).mockImplementation(() => {
+                throw new Error('Worker release failed');
+            });
+
+            await resources.acquire('script', 1024);
+            await expect(resources.release()).resolves.not.toThrow(); // Should not throw even if release fails
+
+            expect(mockWorkerPool.release).toHaveBeenCalledWith(mockWorker);
+            expect(mockTicket.release).toHaveBeenCalled();
+            expect((resources as any).acquired).toBe(false);
+        });
+        
+        it('should handle errors when releasing memory ticket', async () => {
+            const mockWorker = new MockWorkerHandle();
+            const mockTicket = new MockMemoryTicket(1024);
+            
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(mockWorker);
+            (mockMemoryManager.acquire as jest.Mock).mockResolvedValueOnce(mockTicket);
+            
+            // Mock release method to throw an error
+            (mockTicket.release as jest.Mock).mockImplementation(() => {
+                throw new Error('Memory ticket release failed');
+            });
+
+            await resources.acquire('script', 1024);
+            await expect(resources.release()).resolves.not.toThrow(); // Should not throw even if release fails
+
+            expect(mockWorkerPool.release).toHaveBeenCalledWith(mockWorker);
+            expect(mockTicket.release).toHaveBeenCalled();
+            expect((resources as any).acquired).toBe(false);
+        });
     });
 
     describe('getWorker', () => {
@@ -172,6 +327,16 @@ describe('HashTaskResources', () => {
         });
 
         it('should throw ResourceNotAcquiredError if worker is not acquired', () => {
+            expect(() => resources.getWorker()).toThrow(ResourceNotAcquiredError);
+        });
+        
+        it('should throw ResourceNotAcquiredError after resources are released', async () => {
+            const mockWorker = new MockWorkerHandle();
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(mockWorker);
+            
+            await resources.acquire('script', 1024);
+            await resources.release();
+            
             expect(() => resources.getWorker()).toThrow(ResourceNotAcquiredError);
         });
     });
@@ -195,6 +360,46 @@ describe('HashTaskResources', () => {
             const snapshot = resources.snapshot();
 
             expect(snapshot.hasWorker).toBe(false);
+            expect(snapshot.memoryBytes).toBeUndefined();
+        });
+        
+        it('should return correct snapshot after resource release', async () => {
+            const memoryBytes = 1024;
+            const memoryTicket = new MockMemoryTicket(memoryBytes);
+            (mockMemoryManager.acquire as jest.Mock).mockResolvedValueOnce(memoryTicket);
+            const worker = new MockWorkerHandle();
+            (mockWorkerPool.acquire as jest.Mock).mockResolvedValueOnce(worker);
+            
+            await resources.acquire('script', memoryBytes);
+            await resources.release();
+            
+            const snapshot = resources.snapshot();
+            expect(snapshot.hasWorker).toBe(false);
+            expect(snapshot.memoryBytes).toBeUndefined();
+        });
+        
+        it('should return correct snapshot when only memory is acquired', () => {
+            const memoryBytes = 1024;
+            const memoryTicket = new MockMemoryTicket(memoryBytes);
+            
+            // Manually set memory ticket to simulate partial acquisition
+            (resources as any).memoryTicket = memoryTicket;
+            (resources as any).acquired = true;
+            
+            const snapshot = resources.snapshot();
+            expect(snapshot.hasWorker).toBe(false);
+            expect(snapshot.memoryBytes).toBe(memoryBytes);
+        });
+        
+        it('should return correct snapshot when only worker is acquired', () => {
+            const worker = new MockWorkerHandle();
+            
+            // Manually set worker to simulate partial acquisition
+            (resources as any).worker = worker;
+            (resources as any).acquired = true;
+            
+            const snapshot = resources.snapshot();
+            expect(snapshot.hasWorker).toBe(true);
             expect(snapshot.memoryBytes).toBeUndefined();
         });
     });

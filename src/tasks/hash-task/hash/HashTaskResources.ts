@@ -37,7 +37,7 @@ export interface HashTaskResourceSnapshot {
  * 负责管理哈希任务所需的资源，包括内存和Worker。
  * 这是一个资源管理器，用于在执行哈希任务时获取和释放必要的计算资源。
  * 设计原则是单一职责，只负责资源的申请和释放，不涉及具体的哈希计算逻辑。
- * 
+ *
  * 设计原则：
  * - 仅负责资源的申请与释放
  * - 不涉及具体哈希计算逻辑
@@ -45,9 +45,9 @@ export interface HashTaskResourceSnapshot {
  * - 提供资源状态快照
  */
 export class HashTaskResources {
-    private memoryTicket?: IMemoryTicket;
-    private worker?: WorkerHandle;
-    private acquired = false;
+    private memoryTicket?: IMemoryTicket;  // 存储内存资源票据，用于后续释放
+    private worker?: WorkerHandle;         // 存储Worker句柄，用于执行哈希计算
+    private acquired = false;              // 标记资源是否已成功获取
 
     /**
      * 构造函数
@@ -72,34 +72,57 @@ export class HashTaskResources {
      * @throws 当资源申请失败时，会抛出相应的错误，并确保已申请的资源被释放
      */
     async acquire(scriptSource: string, memoryBytes: number): Promise<void> {
-        if (this.acquired) return;
+        if (this.acquired) return;  // 防止重复获取资源
 
         try {
-            // 1. 申请内存预算
-            try {
-                this.memoryTicket = await this.memoryManager.acquire(memoryBytes);
-            } catch (err) {
-                throw new ResourceUnavailableError('memory', {
-                    requestedBytes: memoryBytes,
-                    originalError: err instanceof Error ? err.message : err,
-                });
-            }
-
-            // 2. 申请线程槽位
-            try {
-                this.worker = await this.workerPool.acquire(scriptSource);
-            } catch (err) {
-                throw new ResourceUnavailableError('worker', {
-                    originalError: err instanceof Error ? err.message : err,
-                });
-            }
-
-            this.acquired = true;
+            // 按顺序获取内存和Worker资源
+            await this.acquireMemory(memoryBytes);
+            await this.acquireWorker(scriptSource);
+            this.acquired = true;  // 标记资源已获取
         } catch (err) {
-            await this.release(); // 确保原子性：失败即完全释放
-            throw err; // 继续向上抛出包装后的错误
+            // 如果获取过程中出现错误，释放已获取的资源
+            await this.release();
+            throw err;  // 重新抛出原始错误
         }
     }
+
+    /**
+     * 专用方法：获取内存资源
+     *
+     * 尝试从内存管理器获取指定数量的字节，如果失败则抛出内存资源不可用错误
+     *
+     * @param memoryBytes 需要获取的内存字节数
+     * @throws ResourceUnavailableError 如果内存不足或获取失败
+     */
+    private async acquireMemory(memoryBytes: number) {
+        try {
+            this.memoryTicket = await this.memoryManager.acquire(memoryBytes);
+        } catch (err) {
+            throw new ResourceUnavailableError('memory', {
+                requestedBytes: memoryBytes,
+                originalError: err instanceof Error ? err.message : err,
+            });
+        }
+    }
+
+    /**
+     * 专用方法：获取Worker资源
+     *
+     * 尝试从Worker池获取一个Worker实例，如果失败则抛出Worker资源不可用错误
+     *
+     * @param scriptSource 要注入到Worker中的脚本源码
+     * @throws ResourceUnavailableError 如果Worker池已满或获取失败
+     */
+    private async acquireWorker(scriptSource: string) {
+        try {
+            this.worker = await this.workerPool.acquire(scriptSource);
+        } catch (err) {
+            throw new ResourceUnavailableError('worker', {
+                originalError: err instanceof Error ? err.message : err,
+            });
+        }
+    }
+    
     /**
      * 释放所有资源（幂等）
      *
@@ -110,16 +133,29 @@ export class HashTaskResources {
      * @returns 当资源成功释放后解析的Promise
      */
     async release(): Promise<void> {
+        // 释放Worker资源（如果已获取）
         if (this.worker) {
-            this.workerPool.release(this.worker);
+            try {
+                this.workerPool.release(this.worker);
+            } catch (error) {
+                // 即使释放worker失败，也要继续释放其他资源
+                console.error('Failed to release worker:', error);
+            }
             this.worker = undefined;
         }
 
+        // 释放内存资源（如果已获取）
         if (this.memoryTicket) {
-            this.memoryTicket.release();
+            try {
+                this.memoryTicket.release();
+            } catch (error) {
+                // 即使释放内存失败，也要继续执行
+                console.error('Failed to release memory ticket:', error);
+            }
             this.memoryTicket = undefined;
         }
 
+        // 重置获取状态
         this.acquired = false;
     }
 
@@ -151,7 +187,7 @@ export class HashTaskResources {
         return {
             // ✅ 修正：如果有内存票据，返回具体的字节数
             memoryBytes: this.memoryTicket?.bytes,
-            hasWorker: !!this.worker,
+            hasWorker: !!this.worker,  // 确保返回布尔值
         };
     }
 }
