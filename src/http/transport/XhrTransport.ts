@@ -1,7 +1,11 @@
-import { HttpRequest, HttpResponse } from '../core';
-import { HttpTransport } from './HttpTransport';
-import { HttpTransportFailure } from './HttpTransportFailure';
-import { TransportFailureReason } from './types';
+import { HttpResponse } from '../models';
+import {
+    IHttpRequest,
+    IHttpTransport,
+    RequestOptions,
+    RequestResult,
+    TransportFailureReason,
+} from '../types';
 
 /**
  * 职责：
@@ -12,92 +16,98 @@ import { TransportFailureReason } from './types';
  * ❌ 不碰 error parser
  * ❌ 不处理 chunk 逻辑（由上层控制）
  */
-export class XhrTransport implements HttpTransport {
-    /**
-     * 补全核心方法：send
-     */
-    send(req: HttpRequest): Promise<HttpResponse | HttpTransportFailure> {
+export class XhrTransport implements IHttpTransport {
+    async send(req: IHttpRequest): Promise<RequestResult> {
+        const { signal, done } = this.createAbortContext(req.options);
+
         return new Promise(resolve => {
             const xhr = new XMLHttpRequest();
-            const { timeout, responseType } = req.options;
-
-            // 1. 初始化请求
             xhr.open(req.method, req.url, true);
 
-            // 补全：正确映射 XHR 的 responseType
-            // 注意：XHR 不支持 'stream'，只能由 FetchTransport 处理，这里映射为原生支持的类型
-            if (responseType && responseType !== 'stream') {
-                xhr.responseType = responseType;
-            }
+            // 1. 纯上传场景，响应通常很小，直接按 text 或 json 处理即可
+            xhr.responseType = 'text';
 
-            if (timeout) {
-                xhr.timeout = timeout;
-            }
+            // 2. 绑定取消信号
+            const onAbort = () => xhr.abort();
+            signal.addEventListener('abort', onAbort);
 
-            // 2. 设置 Headers
-            Object.entries(req.headers).forEach(([key, value]) => {
-                xhr.setRequestHeader(key, value);
-            });
+            // 3. 设置 Headers
+            Object.entries(req.headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
 
-            // 3. 进度监听
+            // 4. 核心：只处理上传进度
             if (req.options.onProgress) {
-                if (this.hasRequestBody(req)) {
-                    xhr.upload.onprogress = e => req.options.onProgress?.(e);
-                } else {
-                    xhr.onprogress = e => req.options.onProgress?.(e);
-                }
+                xhr.upload.onprogress = req.options.onProgress;
             }
 
-            // 4. 响应处理
+            // 5. 极简响应处理
             xhr.onload = () => {
                 resolve(
                     new HttpResponse({
                         status: xhr.status,
                         headers: this.parseResponseHeaders(xhr.getAllResponseHeaders()),
-                        rawBody: xhr.response,
+                        rawBody: xhr.response, // 直接返回字符串，后续由处理器 JSON.parse
                     })
                 );
             };
 
-            // 5. 错误处理
-            xhr.onerror = err => {
-                resolve({
-                    isTransportFailure: true,
-                    reason: TransportFailureReason.NetworkError,
-                    message: 'XHR network error or CORS restriction',
-                    error: err,
-                });
+            // 6. 错误处理 (复用 FetchTransport 的归因逻辑)
+            xhr.onerror = err =>
+                resolve(this.createError(TransportFailureReason.NetworkError, err));
+            xhr.onabort = () =>
+                resolve(this.createError(TransportFailureReason.Aborted, signal.reason));
+
+            // 7. 资源清理与发送
+            const finalize = (res: RequestResult) => {
+                done();
+                signal.removeEventListener('abort', onAbort);
+                resolve(res);
             };
 
-            xhr.ontimeout = () => {
-                resolve({
-                    isTransportFailure: true,
-                    reason: TransportFailureReason.Aborted,
-                    message: 'XHR request timed out',
-                });
-            };
-
-            // 6. 发送原始 Body
             xhr.send(req.body);
         });
     }
 
+    // 辅助方法：生成统一错误格式
+    private createError(reason: TransportFailureReason, err?: any): RequestResult {
+        return { isTransportFailure: true, reason, message: 'Upload failed', error: err };
+    }
     /**
-     * 补全：判断是否包含 Request Body
-     * 逻辑：GET 和 HEAD 方法在协议上不携带 body
+     * 实现断点续传：
+     * 业务层调用 cancel() -> 这里触发 xhr.abort()
+     * 业务层再次调用 upload -> 这里 new XHR() 从新偏移量开始 send(blob.slice(offset))
      */
-    private hasRequestBody(req: HttpRequest): boolean {
-        const method = req.method.toUpperCase();
-        return !!req.body && method !== 'GET' && method !== 'HEAD';
+
+    private createAbortContext(options: RequestOptions) {
+        const { timeout, signal: externalSignal } = options;
+        const internalController = new AbortController();
+        let timeoutId: any;
+
+        if (timeout && timeout > 0) {
+            timeoutId = setTimeout(() => internalController.abort('timeout'), timeout);
+        }
+
+        const onExternalAbort = () => internalController.abort(externalSignal?.reason);
+        if (externalSignal) {
+            externalSignal.addEventListener('abort', onExternalAbort);
+        }
+
+        return {
+            signal: internalController.signal,
+            done: () => {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (externalSignal) externalSignal.removeEventListener('abort', onExternalAbort);
+            },
+        };
     }
 
-    /**
-     * 解析 Header 字符串
-     */
+    private hasRequestBody(req: IHttpRequest): boolean {
+        const method = req.method.toUpperCase();
+        return !!req.body && !['GET', 'HEAD'].includes(method);
+    }
+
     private parseResponseHeaders(headerStr: string): Record<string, string> {
         const headers: Record<string, string> = {};
         if (!headerStr) return headers;
-
         headerStr
             .trim()
             .split(/[\r\n]+/)

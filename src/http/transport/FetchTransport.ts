@@ -1,7 +1,12 @@
-import { HttpRequest, HttpResponse, HttpResponseType, RawBody } from '../core';
-import { HttpTransport } from './HttpTransport';
-import { HttpTransportFailure } from './HttpTransportFailure';
-import { TransportFailureReason } from './types';
+import { HttpResponse } from '../models';
+import {
+    IHttpRequest,
+    IHttpTransport,
+    RawBody,
+    RequestOptions,
+    RequestResult,
+    TransportFailureReason,
+} from '../types';
 
 /**
  * 职责：
@@ -15,85 +20,156 @@ import { TransportFailureReason } from './types';
  * ❌ 不处理 code
  * ❌ 不判断成功失败
  */
-export class FetchTransport implements HttpTransport {
-    async send(req: HttpRequest): Promise<HttpResponse | HttpTransportFailure> {
-        const controller = new AbortController();
-        const { timeout, chunk } = req.options;
-
-        // 处理超时逻辑
-        let timeoutId: any;
-        if (timeout > 0) {
-            timeoutId = setTimeout(() => controller.abort(), timeout);
-        }
+export class FetchTransport implements IHttpTransport {
+    async send(req: IHttpRequest): Promise<RequestResult> {
+        // 1. 获取取消上下文 (包括合并后的信号和清理函数)
+        const { signal, done } = this.createAbortContext(req.options);
 
         try {
             const response = await fetch(req.url, {
                 method: req.method,
                 headers: req.headers,
-                body: this.isPayloadMethod(req.method) ? req.body : undefined,
-                signal: controller.signal,
+                body: this.hasPayload(req.method) ? this.serializeBody(req.body) : undefined,
+                signal: signal, // 绑定统一的信号
+                credentials: req.options.withCredentials ? 'include' : 'same-origin',
             });
 
-            // 清除超时定时器
-            if (timeoutId) clearTimeout(timeoutId);
+            // 2. 提取响应体 (之前拆分的方法)
+            const rawBody = await this.handleRawBody(response, req.options);
 
-            // 职责：最薄封装，直接转换，不解析内容，不判断状态码
             return new HttpResponse({
                 status: response.status,
-                headers: this.copyHeaders(response.headers),
-                rawBody: chunk
-                    ? response.body
-                    : await this.getRawBody(response, req.options.responseType),
+                headers: this.extractHeaders(response.headers),
+                rawBody: rawBody,
             });
         } catch (error: any) {
-            if (timeoutId) clearTimeout(timeoutId);
+            return this.handleError(error, signal);
+        } finally {
+            // 3. 无论成功失败，必须清理定时器和监听器
+            done();
+        }
+    }
+    /**
+     * 辅助：fetch 需要 headers 转换为普通对象
+     */
+    private extractHeaders(headers: Headers): Record<string, string> {
+        const result: Record<string, string> = {};
+        headers.forEach((value, key) => {
+            result[key] = value;
+        });
+        return result;
+    }
 
-            // 判断：是主动取消/超时，还是底层网络错误
-            if (error.name === 'AbortError') {
-                return {
-                    isTransportFailure: true,
-                    reason: TransportFailureReason.Aborted,
-                    message: 'Request was aborted or timed out',
-                    error,
-                };
-            }
+    /**
+     * 辅助：判断是否是带载荷的方法
+     */
+    private hasPayload(method: string): boolean {
+        return !['GET', 'HEAD'].includes(method.toUpperCase());
+    }
 
-            // 浏览器环境下，TypeError: Failed to fetch 通常涵盖了：
-            // 1. 网络断开 (DNS/Offline)
-            // 2. 跨域被拦截 (CORS)
-            // 3. 证书错误 (SSL)
-            return {
-                isTransportFailure: true,
-                reason: TransportFailureReason.NetworkError,
-                message: error.message || 'Network failure or CORS restriction',
-                error,
-            };
+    /**
+     * 辅助：简单的 Body 预处理
+     * 注意：Transport 层只做基础保证，复杂的序列化应由 Processor 完成
+     */
+    private serializeBody(body: any): any {
+        if (body === null || body === undefined) return undefined;
+        if (typeof body === 'object' && !(body instanceof FormData) && !(body instanceof Blob)) {
+            return JSON.stringify(body);
+        }
+        return body;
+    }
+
+    /**
+     * 核心重构：根据响应头和配置动态提取 Body
+     */
+    private async handleRawBody(response: Response, options: RequestOptions): Promise<RawBody> {
+        const contentType = response.headers.get('Content-Type') || '';
+
+        // 动态判定是否应该作为流处理
+        const isStream =
+            options.stream === true ||
+            contentType.includes('text/event-stream') ||
+            contentType.includes('application/x-ndjson') ||
+            contentType.includes('application/octet-stream');
+
+        if (isStream) {
+            // 注意：fetch 的 response.body 本身就是 ReadableStream
+            return response.body;
+        }
+
+        // 根据用户预设的类型提取，否则默认返回 ArrayBuffer 以保持数据中立
+        switch (options.responseType) {
+            case 'blob':
+                return await response.blob();
+            case 'text':
+                return await response.text();
+            case 'arraybuffer':
+            default:
+                return await response.arrayBuffer();
         }
     }
 
     /**
-     * 辅助：处理不同类型的原始 Body 提取
+     * 核心重构：取消逻辑拆分为独立方法
+     * 职责：合并超时与外部信号，返回一个统一的可观测信号
      */
-    private async getRawBody(res: Response, type: HttpResponseType): Promise<RawBody> {
-        try {
-            if (type === 'blob') return await res.blob();
-            if (type === 'arraybuffer') return await res.arrayBuffer();
-            if (type === 'stream') return res.body;
-            return await res.text(); // 默认按文本读取，但不解析 JSON
-        } catch {
-            return null;
+    private createAbortContext(options: RequestOptions) {
+        const { timeout, signal: externalSignal } = options;
+        const internalController = new AbortController();
+        let timeoutId: any;
+
+        // 处理超时：超时后触发内部取消
+        if (timeout && timeout > 0) {
+            timeoutId = setTimeout(() => {
+                internalController.abort('timeout');
+            }, timeout);
         }
+
+        // 处理外部信号联动
+        const onExternalAbort = () => {
+            internalController.abort(externalSignal?.reason);
+        };
+
+        if (externalSignal) {
+            if (externalSignal.aborted) {
+                internalController.abort(externalSignal.reason);
+            } else {
+                externalSignal.addEventListener('abort', onExternalAbort);
+            }
+        }
+
+        return {
+            signal: internalController.signal,
+            done: () => {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (externalSignal) {
+                    externalSignal.removeEventListener('abort', onExternalAbort);
+                }
+            },
+        };
     }
 
-    private copyHeaders(headers: Headers): Record<string, string> {
-        const obj: Record<string, string> = {};
-        headers.forEach((v, k) => {
-            obj[k] = v;
-        });
-        return obj;
-    }
+    /**
+     * 错误分类逻辑：也建议拆分出来，保持 send 纯净
+     */
+    private handleError(error: any, signal: AbortSignal): RequestResult {
+        // 如果是信号触发的取消
+        if (error.name === 'AbortError' || signal.aborted) {
+            const isTimeout = signal.reason === 'timeout' || error === 'timeout';
+            return {
+                isTransportFailure: true,
+                reason: TransportFailureReason.Aborted,
+                message: isTimeout ? 'Request timeout' : 'Request cancelled by user',
+                error,
+            };
+        }
 
-    private isPayloadMethod(method: string): boolean {
-        return !['GET', 'HEAD'].includes(method.toUpperCase());
+        // 其他底层网络错误
+        return {
+            isTransportFailure: true,
+            reason: TransportFailureReason.NetworkError,
+            message: error.message || 'Network communication failure',
+            error,
+        };
     }
 }

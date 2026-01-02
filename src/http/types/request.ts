@@ -1,24 +1,45 @@
 import { RetryPolicy } from './retry';
 
-// 基础配置
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD';
+export type HttpResponseType = 'json' | 'blob' | 'text' | 'arraybuffer';
+
 export interface HttpOptions {
-  timeout: number;
-  responseType: 'json' | 'blob' | 'text' | 'arraybuffer';
-  onProgress?: (ev: ProgressEvent) => void;
-  withCredentials?: boolean;
+    timeout: number;
+    responseType: HttpResponseType;
+    withCredentials?: boolean;
 }
 
-// 扩展配置
-export interface RequestOptions extends Partial<HttpOptions> {
-  params?: Record<string, any>;
-  retryPolicy?: RetryPolicy | null;
+export interface ChunkInfo {
+    index: number;
+    total: number;
+    chunkSize: number;
+    identifier: string;
 }
 
-// 核心请求接口：被 HttpClient 和 Transport 共同依赖
+export interface RequestOptions extends Partial<HttpOptions> {    
+    body?: any;
+    headers?: Record<string, string>;
+    retryPolicy?: RetryPolicy | null;
+    pathParams?: (string | number)[];
+    queryParams?: Record<string, any>;
+    stream?: boolean; 
+    chunk?: ChunkInfo;
+    signal?: AbortSignal; 
+    onProgress?: (ev: ProgressEvent) => void;
+    useXhr?: boolean;
+}
+
 export interface IHttpRequest {
-  readonly url: string;
-  readonly method: string;
-  readonly headers: Record<string, string>;
-  readonly body?: any;
-  readonly options: RequestOptions;
+    readonly url: string;
+    readonly method: string;
+    readonly headers: Record<string, string>;
+    readonly body?: any;
+    readonly options: RequestOptions;
+}
+
+/** * HttpClient.request 返回的高层对象
+ */
+export interface RequestTask<T> {
+    promise: Promise<T>;
+    cancel: () => void;
 }
