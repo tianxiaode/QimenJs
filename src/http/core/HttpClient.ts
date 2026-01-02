@@ -3,7 +3,6 @@ import {
     HttpMethod,
     HttpResponseContext,
     IHeaderProcessor,
-    IHttpRequest,
     IHttpTransport,
     IResponseProcessor,
     IUrlProcessor,
@@ -19,7 +18,7 @@ import { prepareRequest } from './request-helper';
  * 一个高度解耦、流水线驱动的 HTTP 请求协调器。
  *
  * 【核心定位】
- * - 负责 HTTP 请求生命周期的“编排（Orchestration）”，而非“决策（Decision）”。
+ * - 负责 HTTP 请求生命周期的"编排（Orchestration）"，而非"决策（Decision）"。
  * - HttpClient 只负责流程流转，不负责业务语义。
  *
  * 【它做什么】
@@ -39,12 +38,12 @@ import { prepareRequest } from './request-helper';
  * - ❌ 不内置重试机制：重试属于业务决策（涉及幂等性与副作用），应由上层 Task 层显式控制。
  *
  * 【重试决策哲学】
- * - HttpClient 这一层不适合做自动重试。重试应当由“任务层”根据业务场景决定：
+ * - HttpClient 这一层不适合做自动重试。重试应当由"任务层"根据业务场景决定：
  * GET 请求可能可以重试，但涉及资金的 POST 请求自动重试极其危险。
  *
  * 【关于状态控制 (Pause/Resume)】
- * - HttpClient 仅提供“原子级”的中断能力 (Abort)。
- * - ❌ 不内置“暂停”或“恢复”逻辑。
+ * - HttpClient 仅提供"原子级"的中断能力 (Abort)。
+ * - ❌ 不内置"暂停"或"恢复"逻辑。
  * - 暂停与继续本质上是【任务流】的控制行为，应由上层调度器通过：
  * 1. 销毁当前请求 (Cancel)
  * 2. 保持业务状态 (State)
@@ -52,7 +51,7 @@ import { prepareRequest } from './request-helper';
  * 这三者组合来实现。
  *
  * 【异常处理逻辑】
- * - HttpClient 捕获异常仅用于“上下文标准化 (Normalization)”。
+ * - HttpClient 捕获异常仅用于"上下文标准化 (Normalization)"。
  * - 它确保调用者在 `catch` 块中拿到的永远是标准的 `HttpResponseContext`。
  * - 该对象完整带回了原始的 `options`，方便上层根据请求上下文（如 retry 策略）进行二次调度。
  *
@@ -66,13 +65,22 @@ import { prepareRequest } from './request-helper';
  * });
  */
 export class HttpClient {
+    // HTTP 传输层实现（Fetch 和 XHR）
     private readonly fetchTransport: IHttpTransport;
     private readonly xhrTransport: IHttpTransport;
+    
+    // 请求处理流水线
     private readonly urlProcessors: IUrlProcessor[];
     private readonly headerProcessors: IHeaderProcessor[];
     private readonly responseProcessors: IResponseProcessor[];
+    
+    // 基础 URL
     private readonly baseUrl: string;
 
+    /**
+     * 构造函数 - 初始化 HttpClient 实例
+     * @param config 配置对象，包含传输层、处理器等
+     */
     constructor(config: {
         baseUrl?: string;
         fetchTransport?: IHttpTransport;
@@ -81,30 +89,41 @@ export class HttpClient {
         headerProcessors?: IHeaderProcessor[];
         responseProcessors?: IResponseProcessor[];
     }) {
+        // 初始化传输层（默认为 FetchTransport 和 XhrTransport）
         this.fetchTransport = config.fetchTransport || new FetchTransport();
         this.xhrTransport = config.xhrTransport || new XhrTransport();
+        
+        // 初始化处理流水线
         this.urlProcessors = config.urlProcessors || [];
         this.headerProcessors = config.headerProcessors || [];
         this.responseProcessors = config.responseProcessors || [];
+        
+        // 初始化基础 URL
         this.baseUrl = config.baseUrl || '';
     }
 
     /**
-     * 统一请求入口
+     * 统一请求入口 - 发起 HTTP 请求
+     * @param method HTTP 方法 (GET, POST, PUT, DELETE 等)
+     * @param url 请求 URL
+     * @param options 请求选项
+     * @returns RequestTask 对象，包含 promise 和 cancel 方法
      */
     public request<T>(
         method: HttpMethod,
         url: string,
         options: RequestOptions = {}
     ): RequestTask<T> {
+        // 创建 AbortController 用于取消请求（如果 options 中没有提供 signal）
         const controller = options.signal ? null : new AbortController();
         const signal = options.signal || controller!.signal;
 
+        // 创建请求 Promise
         const promise = (async (): Promise<T> => {
             let currentContext: HttpResponseContext | null = null;
 
             try {
-                // 1. 调用公共预处理函数
+                // 1. 调用公共预处理函数，处理 URL、Headers 等
                 const { finalUrl, finalHeaders, signal, controller } = prepareRequest(
                     this.baseUrl,
                     url,
@@ -114,7 +133,7 @@ export class HttpClient {
                     this.headerProcessors
                 );
 
-                // 2. 执行物理请求
+                // 2. 执行物理请求，根据 options.useXhr 选择传输方式
                 const transport = options.useXhr ? this.xhrTransport : this.fetchTransport;
                 const rawResult = await transport.send({
                     url: finalUrl,
@@ -127,18 +146,21 @@ export class HttpClient {
                 // 3. 构建并加工上下文 (合并后的工厂方法)
                 currentContext = this.toContext(rawResult, options);
 
+                // 4. 执行响应处理器流水线
                 for (const fn of this.responseProcessors) {
                     currentContext = await fn(currentContext, options);
                 }
 
+                // 5. 返回最终处理后的上下文
                 return currentContext as T;
             } catch (err: any) {
-                // 4. 异常转换：如果是 Processor reject 出来的，直接抛出；否则包装成 Context
+                // 6. 异常转换：如果是 Processor reject 出来的，直接抛出；否则包装成 Context
                 const errorContext = err && err.metadata ? err : this.toContext(err, options);
                 throw errorContext;
             }
         })();
 
+        // 返回请求任务对象，包含 promise 和取消方法
         return {
             promise,
             cancel: () => (controller ? controller.abort() : null),
@@ -150,6 +172,10 @@ export class HttpClient {
     /**
      * 统一上下文工厂：处理成功响应、物理失败、原生异常
      * 将 options 带回 context，实现闭环
+     * 
+     * @param input 原始响应结果或错误对象
+     * @param options 请求选项
+     * @returns HttpResponseContext 标准化响应上下文
      */
     private toContext(
         input: RequestResult | Error | any,
@@ -158,6 +184,7 @@ export class HttpClient {
         // 判定是否为 Transport 返回的标准结果
         const isRawResult = input && typeof (input as any).status === 'number';
 
+        // 创建标准化响应上下文
         const context: HttpResponseContext = {
             status: isRawResult ? input.status : -1,
             headers: isRawResult ? input.headers || {} : {},
@@ -177,6 +204,12 @@ export class HttpClient {
         return context;
     }
 
+    /**
+     * 标准化请求选项
+     * @param useXhr 是否使用 XHR
+     * @param options 请求选项
+     * @returns 标准化后的选项
+     */
     private normalizeOptions(useXhr: boolean, options: RequestOptions = {}): RequestOptions {
         return {
             ...options,
@@ -187,22 +220,56 @@ export class HttpClient {
 
     // --- 语义化语法糖 ---
 
+    /**
+     * GET 请求方法
+     * @param url 请求 URL
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public get<T>(url: string, options?: RequestOptions) {
         return this.request<T>('GET', url, this.normalizeOptions(false, options));
     }
 
+    /**
+     * POST 请求方法
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public post<T>(url: string, body: any, options?: RequestOptions) {
         return this.request<T>('POST', url, this.normalizeOptions(false, { ...options, body }));
     }
 
+    /**
+     * PUT 请求方法
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public put<T>(url: string, body: any, options?: RequestOptions) {
         return this.request<T>('PUT', url, this.normalizeOptions(false, { ...options, body }));
     }
 
+    /**
+     * DELETE 请求方法
+     * @param url 请求 URL
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public delete<T>(url: string, options?: RequestOptions) {
         return this.request<T>('DELETE', url, this.normalizeOptions(false, options));
     }
 
+    /**
+     * 上传文件方法
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param onProgress 进度回调
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public upload<T>(
         url: string,
         body: any,
