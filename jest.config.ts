@@ -37,6 +37,7 @@ const config = {
     '^@orbitjs/utils$': '<rootDir>/src/utils',
     '^@orbitjs/tasks$': '<rootDir>/src/tasks',
     '^@orbitjs/crypto$': '<rootDir>/src/crypto',
+    '^@orbitjs/repository$': '<rootDir>/src/repository',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

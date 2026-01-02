@@ -32,6 +32,7 @@
       "@orbitjs/http": ["src/http"],
       "@orbitjs/tasks": ["src/tasks"],
       "@orbitjs/crypto": ["src/crypto"],
+      "@orbitjs/repository": ["src/repository"],
     }
   },
   "include": [

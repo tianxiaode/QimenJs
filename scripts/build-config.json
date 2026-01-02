@@ -80,8 +80,15 @@
             "entry": "src/http/index.ts",
             "outDir": "dist/http",
             "rootDir": "src/http",
-            "dependencies": ["utils", "validation", "error", "logger"],
+            "dependencies": ["utils", "error"],
             "packageName": "@orbitjs/http"
+        },
+        "repository": {
+            "entry": "src/repository/index.ts",
+            "outDir": "dist/repository",
+            "rootDir": "src/repository",
+            "dependencies": ["utils", "validation", "error", "logger", "http"],
+            "packageName": "@orbitjs/repository"
         }
     },
 

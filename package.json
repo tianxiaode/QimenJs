@@ -74,6 +74,11 @@
       "require": "./dist/crypto/index.js",
       "types": "./dist/crypto/index.d.ts"
     },
+    "./repository": {
+      "import": "./dist/repository/index.esm.js",
+      "require": "./dist/repository/index.js",
+      "types": "./dist/repository/index.d.ts"
+    },
     "./http": {
       "import": "./dist/http/index.esm.js",
       "require": "./dist/http/index.js",
