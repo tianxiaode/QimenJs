@@ -1,0 +1,211 @@
+import { HttpClient } from '@/http/core/HttpClient';
+import { HttpMethod, IHeaderProcessor, IHttpTransport, IUrlProcessor, RequestOptions, RequestTask } from '@/http/types';
+
+// Mock 传输层
+const mockTransport = {
+  send: jest.fn(),
+};
+
+// Mock 处理器
+const mockUrlProcessor: IUrlProcessor = jest.fn((url) => url);
+const mockHeaderProcessor: IHeaderProcessor = jest.fn((headers) => headers);
+
+describe('HttpClient', () => {
+  let client: HttpClient;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    client = new HttpClient({
+      baseUrl: 'https://api.example.com',
+      fetchTransport: mockTransport as IHttpTransport,
+      xhrTransport: mockTransport as IHttpTransport,
+      urlProcessors: [mockUrlProcessor],
+      headerProcessors: [mockHeaderProcessor],
+      responseProcessors: [],
+    });
+  });
+
+  describe('constructor', () => {
+    it('should initialize with default transports and processors', () => {
+      const defaultClient = new HttpClient({});
+      expect(defaultClient).toBeInstanceOf(HttpClient);
+    });
+  });
+
+  describe('request', () => {
+    it('should make a request with proper parameters', async () => {
+      const mockResponse = {
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      };
+
+      mockTransport.send.mockResolvedValue(mockResponse);
+
+      const options: RequestOptions = { headers: { 'Content-Type': 'application/json' } };
+      const task = client.request<any>('GET', '/test', options);
+
+      const result = await task.promise;
+
+      expect(mockTransport.send).toHaveBeenCalledWith({
+        url: 'https://api.example.com/test',
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        body: undefined,
+        options: expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      });
+
+      expect(result).toEqual({
+        status: 200,
+        headers: {},
+        data: { data: 'test' },
+        options,
+        metadata: expect.objectContaining({
+          isTransportFailure: false,
+          isHttpSuccess: false,
+          isAborted: false,
+        }),
+      });
+    });
+
+    it('should handle errors properly', async () => {
+      const error = new Error('Network error');
+      mockTransport.send.mockRejectedValue(error);
+
+      const options: RequestOptions = {};
+      const task = client.request<any>('GET', '/test', options);
+
+      await expect(task.promise).rejects.toEqual({
+        status: -1,
+        headers: {},
+        data: null,
+        options,
+        metadata: expect.objectContaining({
+          isTransportFailure: true,
+          isHttpSuccess: false,
+          isAborted: false,
+          error,
+        }),
+      });
+    });
+
+    it('should allow request cancellation', () => {
+      const controllerAbortSpy = jest.spyOn(AbortController.prototype, 'abort');
+
+      const task = client.request<any>('GET', '/test', {});
+      task.cancel();
+
+      expect(controllerAbortSpy).toHaveBeenCalled();
+    });
+
+    it('should use xhr transport when options.useXhr is true', async () => {
+      const mockResponse = {
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      };
+
+      mockTransport.send.mockResolvedValue(mockResponse);
+
+      const options: RequestOptions = { useXhr: true };
+      const task = client.request<any>('GET', '/test', options);
+      await task.promise;
+
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://api.example.com/test',
+          method: 'GET',
+          options: expect.objectContaining({ useXhr: true, signal: expect.any(AbortSignal) }),
+        })
+      );
+    });
+  });
+
+  describe('HTTP method shortcuts', () => {
+    it('should handle GET requests', async () => {
+      mockTransport.send.mockResolvedValue({
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      });
+
+      const result = await client.get('/test').promise;
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it('should handle POST requests', async () => {
+      mockTransport.send.mockResolvedValue({
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      });
+
+      const body = { message: 'hello' };
+      const result = await client.post('/test', body).promise;
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          body,
+        })
+      );
+    });
+
+    it('should handle PUT requests', async () => {
+      mockTransport.send.mockResolvedValue({
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      });
+
+      const body = { id: 1, message: 'updated' };
+      const result = await client.put('/test', body).promise;
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'PUT',
+          body,
+        })
+      );
+    });
+
+    it('should handle DELETE requests', async () => {
+      mockTransport.send.mockResolvedValue({
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      });
+
+      const result = await client.delete('/test').promise;
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      );
+    });
+  });
+
+  describe('upload method', () => {
+    it('should use xhr transport for uploads', async () => {
+      mockTransport.send.mockResolvedValue({
+        status: 200,
+        headers: {},
+        rawBody: { data: 'test' },
+      });
+
+      const progressCallback = jest.fn();
+      const body = new FormData();
+      const result = await client.upload('/upload', body, progressCallback).promise;
+
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          useXhr: true,
+          onProgress: progressCallback,
+        })
+      );
+    });
+  });
+});
