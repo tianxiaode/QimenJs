@@ -1,5 +1,5 @@
 import { Constructor, DisposableBase } from '@orbitjs/utils';
-import { WithEvents } from '../../../../src/event/mixins/WithEvents';
+import { WithDomEvents } from '../../../../src/event/mixins/WithDomEvents';
 import { globalEventBus } from '../../../../src/event/core/GlobalEventBus';
 import { EventBus } from '../../../../src/event/core/EventBus';
 import { Logger } from '@orbitjs/logger';
@@ -37,7 +37,7 @@ class TestClass extends DisposableBase {
 }
 
 // 应用WithEvents混入
-const TestClassWithEvents = WithEvents(TestClass as Constructor<TestClass>);
+const TestClassWithEvents = WithDomEvents(TestClass as Constructor<TestClass>);
 
 // 定义一个类型，表示TestClass和WithEvents的合并类型
 type TestClassWithEventsType = InstanceType<typeof TestClassWithEvents> & { value: number; increment: () => void; };
@@ -173,7 +173,7 @@ describe('WithEvents Mixin', () => {
       }
     }
     
-    const TestClassWithEventsAndDispose = WithEvents(TestClassWithDispose as Constructor<TestClassWithDispose>);
+    const TestClassWithEventsAndDispose = WithDomEvents(TestClassWithDispose as Constructor<TestClassWithDispose>);
     
     const ConcreteDisposeClass = class extends TestClassWithEventsAndDispose {
       constructor() {
@@ -222,7 +222,7 @@ describe('WithEvents Mixin', () => {
       }
     }
     
-    const ExtendedWithEvents = WithEvents(ParentWithDispose as Constructor<ParentWithDispose>);
+    const ExtendedWithEvents = WithDomEvents(ParentWithDispose as Constructor<ParentWithDispose>);
     
     const ConcreteExtendedClass = class extends ExtendedWithEvents {
       constructor() {

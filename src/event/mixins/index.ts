@@ -1,1 +1,1 @@
-export * from './WithEvents';
+export * from './WithDomEvents';

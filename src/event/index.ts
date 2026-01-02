@@ -1,2 +1,2 @@
 export { GlobalEventBus } from './core';
-export { WithEvents } from './mixins';
+export { WithDomEvents as WithEvents } from './mixins';
