@@ -9,18 +9,31 @@ import {
 } from '../types';
 
 /**
+ * FetchTransport 类
+ * 
  * 职责：
- * fetch 的最薄封装
+ * - 封装浏览器原生 fetch API 的调用
+ * - 提供统一的请求处理接口
+ * - 处理请求取消逻辑（超时和外部信号）
+ * - 将原生 Response 转换为 HttpResponse 对象
+ * 
  * 负责：
- * - fetch
- * - abort
- * - 把 Response 转成 HttpResponse
+ * - 发起网络请求
+ * - abort 请求
+ * - 将 Response 转换为 HttpResponse
+ * 
  * 禁止
- * ❌ 不 parse json
- * ❌ 不处理 code
- * ❌ 不判断成功失败
+ * ❌ 不解析 json
+ * ❌ 不处理业务状态码
+ * ❌ 不判断请求成功或失败
  */
 export class FetchTransport implements IHttpTransport {
+    /**
+     * 发送 HTTP 请求
+     * 
+     * @param req - HTTP 请求对象
+     * @returns Promise<RequestResult> - 请求结果，可能是 HttpResponse 或错误
+     */
     async send(req: IHttpRequest): Promise<RequestResult> {
         // 1. 获取取消上下文 (包括合并后的信号和清理函数)
         const { signal, done } = this.createAbortContext(req.options);
@@ -49,8 +62,14 @@ export class FetchTransport implements IHttpTransport {
             done();
         }
     }
+    
     /**
-     * 辅助：fetch 需要 headers 转换为普通对象
+     * 提取响应头
+     * 
+     * 将原生 Headers 对象转换为普通对象
+     * 
+     * @param headers - 原生 Headers 对象
+     * @returns Record<string, string> - 普通对象格式的 headers
      */
     private extractHeaders(headers: Headers): Record<string, string> {
         const result: Record<string, string> = {};
@@ -61,15 +80,24 @@ export class FetchTransport implements IHttpTransport {
     }
 
     /**
-     * 辅助：判断是否是带载荷的方法
+     * 判断请求方法是否携带载荷
+     * 
+     * GET 和 HEAD 方法不携带请求体
+     * 
+     * @param method - HTTP 方法
+     * @returns boolean - 是否携带载荷
      */
     private hasPayload(method: string): boolean {
         return !['GET', 'HEAD'].includes(method.toUpperCase());
     }
 
     /**
-     * 辅助：简单的 Body 预处理
+     * 序列化请求体
+     * 
      * 注意：Transport 层只做基础保证，复杂的序列化应由 Processor 完成
+     * 
+     * @param body - 原始请求体
+     * @returns any - 序列化后的请求体
      */
     private serializeBody(body: any): any {
         if (body === null || body === undefined) return undefined;
@@ -80,7 +108,11 @@ export class FetchTransport implements IHttpTransport {
     }
 
     /**
-     * 核心重构：根据响应头和配置动态提取 Body
+     * 根据响应头和配置动态提取响应体
+     * 
+     * @param response - 原生 Response 对象
+     * @param options - 请求选项
+     * @returns Promise<RawBody> - 响应体
      */
     private async handleRawBody(response: Response, options: RequestOptions): Promise<RawBody> {
         const contentType = response.headers.get('Content-Type') || '';
@@ -110,8 +142,12 @@ export class FetchTransport implements IHttpTransport {
     }
 
     /**
-     * 核心重构：取消逻辑拆分为独立方法
-     * 职责：合并超时与外部信号，返回一个统一的可观测信号
+     * 创建取消上下文
+     * 
+     * 合并超时与外部信号，返回一个统一的可观测信号
+     * 
+     * @param options - 请求选项
+     * @returns 包含信号和清理函数的对象
      */
     private createAbortContext(options: RequestOptions) {
         const { timeout, signal: externalSignal } = options;
@@ -150,7 +186,13 @@ export class FetchTransport implements IHttpTransport {
     }
 
     /**
-     * 错误分类逻辑：也建议拆分出来，保持 send 纯净
+     * 处理请求错误
+     * 
+     * 根据错误类型返回不同的 TransportFailure 对象
+     * 
+     * @param error - 原始错误对象
+     * @param signal - 中断信号
+     * @returns RequestResult - 错误结果对象
      */
     private handleError(error: any, signal: AbortSignal): RequestResult {
         // 如果是信号触发的取消

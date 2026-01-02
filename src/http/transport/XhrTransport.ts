@@ -8,15 +8,25 @@ import {
 } from '../types';
 
 /**
+ * XhrTransport 类
+ *
  * 职责：
- * - 上传 / 下载进度
- * - 分片
- * 输出仍然是 HttpResponse或 HttpTransportFailure
+ * - 封装浏览器原生 XMLHttpRequest API
+ * - 提供上传/下载进度支持
+ * - 提供分片上传功能
+ * - 返回 HttpResponse 或 HttpTransportFailure 对象
+ *
  * 禁止：
- * ❌ 不碰 error parser
- * ❌ 不处理 chunk 逻辑（由上层控制）
+ * ❌ 不处理错误解析器
+ * ❌ 不处理分块逻辑（由上层控制）
  */
 export class XhrTransport implements IHttpTransport {
+    /**
+     * 发送 HTTP 请求
+     *
+     * @param req - HTTP 请求对象
+     * @returns Promise<RequestResult> - 请求结果，可能是 HttpResponse 或错误
+     */
     async send(req: IHttpRequest): Promise<RequestResult> {
         const { signal, done } = this.createAbortContext(req.options);
 
@@ -67,16 +77,31 @@ export class XhrTransport implements IHttpTransport {
         });
     }
 
-    // 辅助方法：生成统一错误格式
+    /**
+     * 创建统一错误格式
+     *
+     * @param reason - 失败原因
+     * @param err - 原始错误对象
+     * @returns RequestResult - 错误结果对象
+     */
     private createError(reason: TransportFailureReason, err?: any): RequestResult {
         return { isTransportFailure: true, reason, message: 'Upload failed', error: err };
     }
+
     /**
      * 实现断点续传：
      * 业务层调用 cancel() -> 这里触发 xhr.abort()
      * 业务层再次调用 upload -> 这里 new XHR() 从新偏移量开始 send(blob.slice(offset))
      */
 
+    /**
+     * 创建取消上下文
+     *
+     * 合并超时与外部信号，返回一个统一的可观测信号
+     *
+     * @param options - 请求选项
+     * @returns 包含信号和清理函数的对象
+     */
     private createAbortContext(options: RequestOptions) {
         const { timeout, signal: externalSignal } = options;
         const internalController = new AbortController();
@@ -100,11 +125,14 @@ export class XhrTransport implements IHttpTransport {
         };
     }
 
-    private hasRequestBody(req: IHttpRequest): boolean {
-        const method = req.method.toUpperCase();
-        return !!req.body && !['GET', 'HEAD'].includes(method);
-    }
-
+    /**
+     * 解析响应头
+     *
+     * 将原生响应头字符串转换为普通对象格式
+     *
+     * @param headerStr - 原生响应头字符串
+     * @returns Record<string, string> - 普通对象格式的 headers
+     */
     private parseResponseHeaders(headerStr: string): Record<string, string> {
         const headers: Record<string, string> = {};
         if (!headerStr) return headers;
