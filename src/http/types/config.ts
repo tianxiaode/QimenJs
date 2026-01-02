@@ -6,13 +6,18 @@ export interface HttpClientConfig {
     urlProcessors?: IUrlProcessor[];
     headerProcessors?: IHeaderProcessor[];
 
-    responseProcessors?: Partial<{
-        status: IResponseProcessor[]; // HTTP status / 协议级判断
-        parse: IResponseProcessor[]; // body 解析（json / text / blob / stream）
-        error: IResponseProcessor[]; // 业务错误识别
-        extract: IResponseProcessor[]; // 成功数据提取
-        extra: IResponseProcessor[]; // 额外处理（日志、metrics 等）
-    }>;
+    responseProcessors?: {
+        /** 状态层：HTTP status、协议成功判定 */
+        status?: IResponseProcessor[];
+        /** 解析层：JSON / text / blob */
+        parse?: IResponseProcessor[];
+        /** 错误层：业务错误识别 */
+        error?: IResponseProcessor[];
+        /** 提取层：data unwrap */
+        extract?: IResponseProcessor[];
+        /** 扩展层：日志、埋点等 */
+        extra?: IResponseProcessor[];
+    };
 }
 
 export interface StreamClientConfig {
@@ -20,7 +25,6 @@ export interface StreamClientConfig {
 
     urlProcessors?: IUrlProcessor[];
     headerProcessors?: IHeaderProcessor[];
-
 }
 
 export interface BaseConfig {
