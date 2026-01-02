@@ -24,9 +24,11 @@ export const AuthHeaderProcessor: IHeaderProcessor = (headers, _url, _method, _o
     const token = localStorage.getItem('token');
 
     if (token) {
+        // 先对 token 进行 trim，然后再添加 Bearer 前缀
+        const trimmedToken = token.trim();
         return {
             ...headers,
-            Authorization: `Bearer ${token}`.trim(),
+            Authorization: `Bearer ${trimmedToken}`,
         };
     }
 
