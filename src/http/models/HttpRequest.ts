@@ -48,7 +48,6 @@ export class HttpRequest implements IHttpRequest {
             // 2. 业务处理项 (直接透传)
             pathParams: payload.options?.pathParams,
             queryParams: payload.options?.queryParams,
-            retryPolicy: payload.options?.retryPolicy,
             onProgress: payload.options?.onProgress,
         };
     }

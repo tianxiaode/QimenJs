@@ -1,6 +1,6 @@
 import { IHeaderProcessor, IResponseProcessor, IUrlProcessor } from './processors';
 
-export interface AppHttpConfig {
+export interface HttpClientConfig {
     baseUrl?: string;
 
     urlProcessors?: IUrlProcessor[];
@@ -13,4 +13,17 @@ export interface AppHttpConfig {
         extract: IResponseProcessor[]; // 成功数据提取
         extra: IResponseProcessor[]; // 额外处理（日志、metrics 等）
     }>;
+}
+
+export interface StreamClientConfig {
+    baseUrl?: string;
+
+    urlProcessors?: IUrlProcessor[];
+    headerProcessors?: IHeaderProcessor[];
+
+}
+
+export interface BaseConfig {
+    httpConfig?: HttpClientConfig;
+    streamConfig?: StreamClientConfig;
 }

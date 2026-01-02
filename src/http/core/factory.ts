@@ -10,41 +10,91 @@ import {
     RestErrorProcessor,
     TransportFailureProcessor,
 } from '../processors';
-import { IResponseProcessor } from '../types';
+import {
+    BaseConfig,
+    HttpClientConfig,
+    IHeaderProcessor,
+    IResponseProcessor,
+    IUrlProcessor,
+    StreamClientConfig,
+} from '../types';
 
-import { AppHttpConfig } from '../types/config';
 import { HttpClient } from './HttpClient';
+import { StreamClient } from './StreamClient';
 
-export function createHttpClient(config: AppHttpConfig = {}) {
-    // 1. 基础参数治理
-    const normalizedBaseUrl = config.baseUrl?.trim().replace(/\/+$/, '') || '';
+export function normalizeBaseConfig(config: {
+    baseUrl?: string;
+    urlProcessors?: IUrlProcessor[];
+    headerProcessors?: IHeaderProcessor[];
+}) {
+    return {
+        // 1. BaseUrl 格式化
+        baseUrl: config.baseUrl?.trim().replace(/\/+$/, '') || '',
 
-    // 2. 准备默认插槽内容 (StandardRestful)
-    const { responseProcessors: userP = {} } = config;
+        // 2. 注入 URL 默认处理器
+        urlProcessors: config.urlProcessors || [QueryParamsProcessor, PathParamsProcessor],
 
-    // 3. 按照“生命周期顺序”进行扁平化组装
-    // 这种排列方式就是你的“隐形规则”，确保了逻辑的先后依赖关系
-    const flattenedResponseProcessors: IResponseProcessor[] = [
-        TransportFailureProcessor, // [强制] 物理层检查，必须第一
-        ...(userP.status || [HttpStatusProcessor]), // 协议状态
-        ContentTypeProcessor, // [强制] 类型识别，为解析做准备
-        ...(userP.parse || [JsonParseProcessor]), // 内容解析
-        ...(userP.error || [RestErrorProcessor]), // 业务错误识别
-        ...(userP.extract || [DataExtractorProcessor]), // 数据提取
-        ...(userP.extra || []), // 扩展插件
-    ];
+        // 3. 注入 Header 默认处理器
+        headerProcessors: config.headerProcessors || [
+            HeaderContentTypeProcessor,
+            AuthHeaderProcessor,
+        ],
+    };
+}
 
-    const urlProcessors = config.urlProcessors || [QueryParamsProcessor, PathParamsProcessor];
-    const headerProcessors = config.headerProcessors || [
-        HeaderContentTypeProcessor,
-        AuthHeaderProcessor,
-    ];
+/**
+ * HttpFactory.ts
+ * * 核心逻辑：
+ * 1. 提取 prepareRequest 相关的基础配置（BaseUrl, URL/Header Processors）
+ * 2. HttpClient：注入严格的响应流水线
+ * 3. StreamClient：注入极简的流处理配置
+ */
+export class HttpFactory {
+    /**
+     * 创建标准 HttpClient
+     */
+    static createHttpClient(config: HttpClientConfig = {}): HttpClient {
+        // 提取并归一化公共配置
+        const base = normalizeBaseConfig(config);
+        const userP = config.responseProcessors || {};
 
-    // 4. 将扁平化的数组交给 HttpClient
-    return new HttpClient({
-        baseUrl: normalizedBaseUrl,
-        urlProcessors: urlProcessors,
-        headerProcessors: headerProcessors,
-        responseProcessors: flattenedResponseProcessors, // 此时已是标准数组
-    });
+        // 按照业务逻辑顺序编排响应流水线
+        const flattenedResponseProcessors: IResponseProcessor[] = [
+            TransportFailureProcessor,
+            ...(userP.status || [HttpStatusProcessor]),
+            ContentTypeProcessor,
+            ...(userP.parse || [JsonParseProcessor]),
+            ...(userP.error || [RestErrorProcessor]),
+            ...(userP.extract || [DataExtractorProcessor]),
+            ...(userP.extra || []),
+        ];
+
+        return new HttpClient({
+            ...base,
+            responseProcessors: flattenedResponseProcessors,
+        });
+    }
+
+    /**
+     * 创建 StreamClient (AI 专用)
+     */
+    static createStreamClient(config: StreamClientConfig = {}): StreamClient {
+        // 提取并归一化公共配置
+        const base = normalizeBaseConfig(config);
+
+        return new StreamClient({
+            ...base,
+        });
+    }
+
+    /**
+     * 创建全套请求套件
+     */
+    static createSuite(baseConfig: BaseConfig) {
+        // 这里的逻辑也变简单了：如果 streamConfig 没传，直接拿 httpConfig 去归一化
+        return {
+            http: this.createHttpClient(baseConfig.httpConfig),
+            stream: this.createStreamClient(baseConfig.streamConfig || baseConfig.httpConfig),
+        };
+    }
 }

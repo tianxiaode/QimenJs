@@ -1,4 +1,3 @@
-import { RetryPolicy } from './retry';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD';
 export type HttpResponseType = 'json' | 'blob' | 'text' | 'arraybuffer';
@@ -16,15 +15,14 @@ export interface ChunkInfo {
     identifier: string;
 }
 
-export interface RequestOptions extends Partial<HttpOptions> {    
+export interface RequestOptions extends Partial<HttpOptions> {
     body?: any;
     headers?: Record<string, string>;
-    retryPolicy?: RetryPolicy | null;
     pathParams?: (string | number)[];
     queryParams?: Record<string, any>;
-    stream?: boolean; 
+    stream?: boolean;
     chunk?: ChunkInfo;
-    signal?: AbortSignal; 
+    signal?: AbortSignal;
     onProgress?: (ev: ProgressEvent) => void;
     useXhr?: boolean;
 }

@@ -11,57 +11,63 @@ import {
     RequestResult,
     RequestTask,
 } from '../types';
+import { prepareRequest } from './request-helper';
 
 /**
  * HttpClient
  * ------------------------------------------------------------------
- * 一个“纯工具型”的 HTTP 请求协调器。
+ * 一个高度解耦、流水线驱动的 HTTP 请求协调器。
+ *
+ * 【核心定位】
+ * - 负责 HTTP 请求生命周期的“编排（Orchestration）”，而非“决策（Decision）”。
+ * - HttpClient 只负责流程流转，不负责业务语义。
  *
  * 【它做什么】
- * - 负责一次 HTTP 请求的完整生命周期编排：
- *   1. 执行 URL 处理流水线（IUrlProcessor）
- *   2. 执行 Header 处理流水线（IHeaderProcessor）
- *   3. 根据 options 选择具体的传输实现（Fetch / XHR）
- *   4. 执行响应处理流水线（IResponseProcessor）
- *   5. 提供统一的取消（Abort）能力
+ * 1. 执行 URL 处理流水线 (IUrlProcessor) - 如：BaseUrl 拼接、版本号注入、参数序列化。
+ * 2. 执行 Header 处理流水线 (IHeaderProcessor) - 如：Token 注入、设备信息采集。
+ * 3. 引擎调度 - 根据 options 选择 Fetch 或 XHR 传输实现。
+ * 4. 执行响应处理流水线 (IResponseProcessor) - 顺序加工响应数据。
+ * 5. 上下文标准化 - 确保无论成功或失败，返回/抛出的结构永远一致（HttpResponseContext）。
+ * 6. 统一取消能力 - 通过 AbortController 实现对底层传输的实时中断。
  *
- * - HttpClient 只负责“流程”，不负责“语义”
+ * 【设计禁区 (The "NO" List)】
+ * - ❌ 不假设后端规范：不内置对 REST/GraphQL/RPC 等协议的偏见。
+ * - ❌ 不做成功判定：不根据 HTTP Status (200/500) 预设逻辑，判定权交由 Processor。
+ * - ❌ 不做自动转换：不预设 JSON 解析，解析逻辑应作为流水线的第一道工序。
+ * - ❌ 不识别错误结构：不做 code/message 字段提取，保持对数据结构的无感知。
+ * - ❌ 不内置业务行为：不做 UI 提示、重试、多语言处理、兜底数据包装。
+ * - ❌ 不内置重试机制：重试属于业务决策（涉及幂等性与副作用），应由上层 Task 层显式控制。
  *
- * 【它刻意不做什么（非常重要）】
- * - ❌ 不假设任何后端协议规范（REST / GraphQL / RPC 等）
- * - ❌ 不根据 HTTP status 判断成功或失败
- * - ❌ 不解析 JSON，也不假设返回一定是 JSON
- * - ❌ 不做错误结构识别（如 code / message / error 等）
- * - ❌ 不做数据提取或字段映射
- * - ❌ 不做本地化、错误提示、重试、兜底包装
- * - ❌ 不内置业务中间件或拦截器
+ * 【重试决策哲学】
+ * - HttpClient 这一层不适合做自动重试。重试应当由“任务层”根据业务场景决定：
+ * GET 请求可能可以重试，但涉及资金的 POST 请求自动重试极其危险。
  *
- * 所有“如何理解响应”的逻辑：
- * - 包括错误识别、数据提取、状态码解释、非 200 返回处理等
- * - 都应通过 IResponseProcessor 以流水线方式注入
+ * 【关于状态控制 (Pause/Resume)】
+ * - HttpClient 仅提供“原子级”的中断能力 (Abort)。
+ * - ❌ 不内置“暂停”或“恢复”逻辑。
+ * - 暂停与继续本质上是【任务流】的控制行为，应由上层调度器通过：
+ * 1. 销毁当前请求 (Cancel)
+ * 2. 保持业务状态 (State)
+ * 3. 重新发起请求 (Re-request)
+ * 这三者组合来实现。
  *
- * 【设计原则】
- * - 工具不做决定，只提供能力
- * - 不猜测、不兜底、不隐藏细节
- * - 所有复杂性外移到可组合、可替换的 Processor 中
+ * 【异常处理逻辑】
+ * - HttpClient 捕获异常仅用于“上下文标准化 (Normalization)”。
+ * - 它确保调用者在 `catch` 块中拿到的永远是标准的 `HttpResponseContext`。
+ * - 该对象完整带回了原始的 `options`，方便上层根据请求上下文（如 retry 策略）进行二次调度。
  *
- * 【关于错误】
- * - Transport 层应返回失败结果，而不是直接抛异常
- * - HttpClient 本身不捕获异常，也不包装错误
- * - 是否抛错、何时抛错，由 ResponseProcessor 决定
+ * 【扩展方式】
+ * - 所有复杂性外移到可组合、可替换的 Processor 中。
+ * - 如果你想加 `if/else` 处理某种特殊情况，请先考虑是否应新增一个 Processor。
  *
- * 【关于扩展】
- * - 不同系统、不同协议、不同错误规范：
- *   通过组合不同的 Processor 来适配
- * - 同一个 HttpClient 可以服务于多种后端，只取决于配置
- *
- * 如果你正在考虑在这里加 if / else 来处理“某种特殊情况”：
- * 👉 请先考虑是否应该新增一个 Processor。
+ * @example
+ * const client = new HttpClient({
+ * responseProcessors: [statusProcessor, jsonParser, businessErrorChecker, dataExtractor]
+ * });
  */
 export class HttpClient {
     private readonly fetchTransport: IHttpTransport;
     private readonly xhrTransport: IHttpTransport;
-
     private readonly urlProcessors: IUrlProcessor[];
     private readonly headerProcessors: IHeaderProcessor[];
     private readonly responseProcessors: IResponseProcessor[];
@@ -77,62 +83,60 @@ export class HttpClient {
     }) {
         this.fetchTransport = config.fetchTransport || new FetchTransport();
         this.xhrTransport = config.xhrTransport || new XhrTransport();
-
         this.urlProcessors = config.urlProcessors || [];
         this.headerProcessors = config.headerProcessors || [];
         this.responseProcessors = config.responseProcessors || [];
         this.baseUrl = config.baseUrl || '';
     }
 
+    /**
+     * 统一请求入口
+     */
     public request<T>(
         method: HttpMethod,
         url: string,
         options: RequestOptions = {}
     ): RequestTask<T> {
-        // 1. 确保信号控制权限
         const controller = options.signal ? null : new AbortController();
         const signal = options.signal || controller!.signal;
-        const initialUrl = this.combineBaseUrl(this.baseUrl, url);
-        // 2. 预处理：URL 流水线
-        const finalUrl = this.urlProcessors.reduce((u, fn) => fn(u, options), initialUrl);
 
-        // 3. 预处理：Headers 流水线
-        const finalHeaders = this.headerProcessors.reduce(
-            (h, fn) => fn(h, finalUrl, method, options),
-            { ...options.headers }
-        );
+        const promise = (async (): Promise<T> => {
+            let currentContext: HttpResponseContext | null = null;
 
-        // 4. 构建请求模型 (将整合后的信号存入 options)
-        const req: IHttpRequest = {
-            url: finalUrl,
-            method,
-            headers: finalHeaders,
-            body: options.body,
-            options: { ...options, signal },
-        };
+            try {
+                // 1. 调用公共预处理函数
+                const { finalUrl, finalHeaders, signal, controller } = prepareRequest(
+                    this.baseUrl,
+                    url,
+                    method,
+                    options,
+                    this.urlProcessors,
+                    this.headerProcessors
+                );
 
-        // 5. 引擎选择
-        const transport = options.useXhr ? this.xhrTransport : this.fetchTransport;
+                // 2. 执行物理请求
+                const transport = options.useXhr ? this.xhrTransport : this.fetchTransport;
+                const rawResult = await transport.send({
+                    url: finalUrl,
+                    method,
+                    headers: finalHeaders,
+                    body: options.body,
+                    options: { ...options, signal },
+                });
 
-        // 6. 执行与响应流水线
-        const promise = (async () => {
-            // 1. 获取 Transport 原始结果
-            // 假设 transport.send 返回的是：{ status: 200, headers: {...}, data: "..." }
-            const rawResult = await transport.send(req);
-            // 2. 转换为标准上下文 (隔离变化)
-            let context = this.createContext(rawResult, options);
+                // 3. 构建并加工上下文 (合并后的工厂方法)
+                currentContext = this.toContext(rawResult, options);
 
-            // 3. 顺序执行处理器流水线
-            // 现在 fn 接收的是 context，返回的也是经过加工的 context
-            for (const fn of this.responseProcessors) {
-                // 这里的 await 保证了异步处理和 reject 熔断机制
-                context = await fn(context, options);
+                for (const fn of this.responseProcessors) {
+                    currentContext = await fn(currentContext, options);
+                }
+
+                return currentContext as T;
+            } catch (err: any) {
+                // 4. 异常转换：如果是 Processor reject 出来的，直接抛出；否则包装成 Context
+                const errorContext = err && err.metadata ? err : this.toContext(err, options);
+                throw errorContext;
             }
-
-            // 4. 返回最终结果
-            // 最后一个处理器（DataExtractorProcessor）通常会直接返回 data 字段
-            // 所以这里的 context 此时可能已经是最终的业务数据对象了
-            return context as T;
         })();
 
         return {
@@ -141,7 +145,47 @@ export class HttpClient {
         };
     }
 
-    // --- 语法糖 (通过 normalizeOptions 统一收拢引擎倾向) ---
+    // --- 内部辅助方法 ---
+
+    /**
+     * 统一上下文工厂：处理成功响应、物理失败、原生异常
+     * 将 options 带回 context，实现闭环
+     */
+    private toContext(
+        input: RequestResult | Error | any,
+        options: RequestOptions
+    ): HttpResponseContext {
+        // 判定是否为 Transport 返回的标准结果
+        const isRawResult = input && typeof (input as any).status === 'number';
+
+        const context: HttpResponseContext = {
+            status: isRawResult ? input.status : -1,
+            headers: isRawResult ? input.headers || {} : {},
+            data: isRawResult ? input.rawBody : null,
+            // 将 options 存入 context，方便后续 Processor 和外部调用者读取
+            options: options,
+            metadata: {
+                isTransportFailure: !isRawResult || !!input.isTransportFailure,
+                isHttpSuccess: false,
+                isAborted: input?.name === 'AbortError' || input?.metadata?.isAborted,
+                error: isRawResult ? input.error : input,
+                contentType: '',
+                isJson: false,
+            },
+        };
+
+        return context;
+    }
+
+    private normalizeOptions(useXhr: boolean, options: RequestOptions = {}): RequestOptions {
+        return {
+            ...options,
+            useXhr: options.useXhr ?? useXhr,
+            headers: { ...options.headers },
+        };
+    }
+
+    // --- 语义化语法糖 ---
 
     public get<T>(url: string, options?: RequestOptions) {
         return this.request<T>('GET', url, this.normalizeOptions(false, options));
@@ -153,14 +197,6 @@ export class HttpClient {
 
     public put<T>(url: string, body: any, options?: RequestOptions) {
         return this.request<T>('PUT', url, this.normalizeOptions(false, { ...options, body }));
-    }
-
-    public patch<T>(url: string, body: any, options?: RequestOptions) {
-        return this.request<T>('PATCH', url, this.normalizeOptions(false, { ...options, body }));
-    }
-
-    public head<T>(url: string, options?: RequestOptions) {
-        return this.request<T>('HEAD', url, this.normalizeOptions(false, options));
     }
 
     public delete<T>(url: string, options?: RequestOptions) {
@@ -178,52 +214,5 @@ export class HttpClient {
             url,
             this.normalizeOptions(true, { ...options, body, onProgress })
         );
-    }
-
-    private normalizeOptions(useXhr: boolean, options: RequestOptions = {}): RequestOptions {
-        return {
-            useXhr: options.useXhr ?? useXhr,
-            ...options,
-            headers: { ...options.headers },
-        };
-    }
-
-    private combineBaseUrl(base: string, relative: string): string {
-        if (!base || /^https?:\/\//.test(relative)) return relative;
-        const cleanBase = base.endsWith('/') ? base : `${base}/`;
-        const cleanRelative = relative.startsWith('/') ? relative.slice(1) : relative;
-        return `${cleanBase}${cleanRelative}`;
-    }
-
-    private createContext(result: RequestResult, options: RequestOptions): HttpResponseContext {
-        // 处理传输失败的情况
-        if (result.isTransportFailure) {
-            return {
-                status: -1,
-                headers: {},
-                data: null,
-                metadata: {
-                    isTransportFailure: true,
-                    isHttpSuccess: false,
-                    error: result,
-                    contentType: '',
-                    isJson: false,
-                },
-            } as HttpResponseContext;
-        }
-
-        // 处理正常响应的情况
-        return {
-            status: result.status,
-            headers: result.headers,
-            // 将 transport 的 rawBody 映射为流水线的初始 data
-            data: result.rawBody,
-            metadata: {
-                isTransportFailure: false,
-                isHttpSuccess: false,
-                contentType: '',
-                isJson: false,
-            },
-        } as HttpResponseContext;
     }
 }

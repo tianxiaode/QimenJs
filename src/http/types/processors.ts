@@ -26,6 +26,7 @@ export interface HttpResponseContext {
         isJson?: boolean;
         isText?: boolean;
         isBlob?: boolean;
+        isAborted: boolean;
         isProcessed?: boolean;          // 是否已经被某个处理器深度处理过
         error?: any;                    // 如果发生错误，存储错误详情
 
@@ -56,4 +57,4 @@ export interface HttpResponseContext {
  * - HttpClient 不会捕获或包装 rejected 的结果
  */
 
-export type IResponseProcessor = (context: HttpResponseContext, options: RequestOptions) => Promise<HttpResponseContext | any>;
+export type IResponseProcessor = (context: HttpResponseContext, options: RequestOptions) => Promise<HttpResponseContext>;
