@@ -51,7 +51,7 @@ export class XhrTransport implements IHttpTransport {
 
             // 5. 极简响应处理
             xhr.onload = () => {
-                resolve(
+                finalize(
                     new HttpResponse({
                         status: xhr.status,
                         headers: this.parseResponseHeaders(xhr.getAllResponseHeaders()),
@@ -62,9 +62,9 @@ export class XhrTransport implements IHttpTransport {
 
             // 6. 错误处理 (复用 FetchTransport 的归因逻辑)
             xhr.onerror = err =>
-                resolve(this.createError(TransportFailureReason.NetworkError, err));
+                finalize(this.createError(TransportFailureReason.NetworkError, err));
             xhr.onabort = () =>
-                resolve(this.createError(TransportFailureReason.Aborted, signal.reason));
+                finalize(this.createError(TransportFailureReason.Aborted, signal.reason));
 
             // 7. 资源清理与发送
             const finalize = (res: RequestResult) => {

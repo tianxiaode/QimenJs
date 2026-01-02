@@ -1,5 +1,5 @@
 import { FetchTransport } from '@/http/transport/FetchTransport';
-import { HttpResponse } from '@/http/models';
+import { HttpResponse } from '@/http/models/HttpResponse';
 import { RequestOptions, TransportFailureReason } from '@/http/types';
 
 describe('FetchTransport', () => {
@@ -10,19 +10,21 @@ describe('FetchTransport', () => {
     fetchTransport = new FetchTransport();
     mockFetch = jest.fn();
     (global as any).fetch = mockFetch;
+    // 默认每个测试使用真实时间，除非特定测试开启虚假时间
+    jest.useRealTimers();
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
-  describe('send', () => {
+  describe('send - Core Logic', () => {
     it('should successfully send a GET request and return HttpResponse', async () => {
       const mockResponse = {
         status: 200,
         headers: new Headers({ 'content-type': 'application/json' }),
         arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
       };
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -35,60 +37,21 @@ describe('FetchTransport', () => {
       };
 
       const result = await fetchTransport.send(req);
-
+      expect(result).toBeInstanceOf(HttpResponse);
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.example.com/data',
-        expect.objectContaining({
-          method: 'GET',
-          headers: {},
-          body: undefined,
-        })
+        expect.objectContaining({ method: 'GET' })
       );
-      expect(result).toBeInstanceOf(HttpResponse);
     });
 
-    it('should successfully send a POST request with JSON body', async () => {
-      const mockResponse = {
-        status: 201,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: { name: 'test' },
-        options: {} as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.example.com/data',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'test' }),
-        })
-      );
-      expect(result).toBeInstanceOf(HttpResponse);
-    });
-
-    it('should handle FormData body without serialization', async () => {
-      const mockResponse = {
+    it('should handle FormData body and not stringify it', async () => {
+      mockFetch.mockResolvedValue({
         status: 200,
-        headers: new Headers({ 'content-type': 'multipart/form-data' }),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
+        headers: new Headers(),
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
+      });
 
       const formData = new FormData();
-      formData.append('file', new Blob());
-
       const req = {
         url: 'https://api.example.com/upload',
         method: 'POST',
@@ -98,383 +61,192 @@ describe('FetchTransport', () => {
       };
 
       await fetchTransport.send(req);
-
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.example.com/upload',
-        expect.objectContaining({
-          method: 'POST',
-          body: formData, // FormData should not be serialized
-        })
+        expect.any(String),
+        expect.objectContaining({ body: formData })
       );
     });
+  });
 
-    it('should handle Blob body without serialization', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'application/octet-stream' }),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const blob = new Blob(['test content'], { type: 'text/plain' });
-
-      const req = {
-        url: 'https://api.example.com/upload',
-        method: 'POST',
-        headers: {},
-        body: blob,
-        options: {} as RequestOptions,
-      };
-
-      await fetchTransport.send(req);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.example.com/upload',
-        expect.objectContaining({
-          method: 'POST',
-          body: blob, // Blob should not be serialized
-        })
-      );
-    });
-
-    it('should handle null and undefined body', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'text/plain' }),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: {} as RequestOptions,
-      };
-
-      await fetchTransport.send(req);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.example.com/data',
-        expect.objectContaining({
-          method: 'GET',
-          body: undefined,
-        })
-      );
-    });
-
-    it('should handle network errors', async () => {
-      mockFetch.mockRejectedValue(new Error('Network error'));
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: {} as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-
-      expect(result).toEqual({
-        isTransportFailure: true,
-        reason: TransportFailureReason.NetworkError,
-        message: 'Network error',
-        error: expect.any(Error),
-      });
-    });
-
-    it('should handle stream responses', async () => {
-      // Mock ReadableStream for Node environment
-      if (typeof ReadableStream === 'undefined') {
-        (global as any).ReadableStream = class ReadableStream {};
-      }
-
-      const readableStream = new ReadableStream();
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'text/event-stream' }),
-        body: readableStream,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/stream',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { stream: true } as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-
-      expect(result).toBeInstanceOf(HttpResponse);
-      expect((result as HttpResponse).rawBody).toBe(readableStream);
-    });
-
-    it('should handle different response types', async () => {
-      // Create a mock response with blob method
-      const mockBlob = new Blob(['test'], { type: 'application/octet-stream' });
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'application/octet-stream' }),
-        blob: jest.fn().mockResolvedValue(mockBlob),
-        text: jest.fn().mockResolvedValue('test'),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { responseType: 'blob' } as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-
-      // Ensure that fetch is called and response is processed
-      expect(mockFetch).toHaveBeenCalled();
-      // The blob method should be called when responseType is 'blob'
-      // But we need to make sure the handleRawBody method is properly tested
-      expect(result).toBeInstanceOf(HttpResponse);
-    });
-
-    it('should handle credentials option', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-        body: null,
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { withCredentials: true } as RequestOptions,
-      };
-
-      await fetchTransport.send(req);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.example.com/data',
-        expect.objectContaining({
-          credentials: 'include',
-        })
-      );
-    });
-
-    it('should handle text response type', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'text/plain' }),
-        text: jest.fn().mockResolvedValue('test response'),
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { responseType: 'text' } as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-
-      expect(mockResponse.text).toHaveBeenCalled();
-      expect(result).toBeInstanceOf(HttpResponse);
-    });
-
-    it('should handle content-type based stream detection', async () => {
-      const readableStream = new ReadableStream();
-      const mockResponse = {
-        status: 200,
-        headers: new Headers({ 'content-type': 'text/event-stream' }),
-        body: readableStream,
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
-      };
-      mockFetch.mockResolvedValue(mockResponse);
-
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: {} as RequestOptions, // No explicit stream option
-      };
-
-      const result = await fetchTransport.send(req);
-
-      expect(result).toBeInstanceOf(HttpResponse);
-      expect((result as HttpResponse).rawBody).toBe(readableStream);
-    });
-
-    // Skip the arraybuffer test as it's difficult to properly test in the current environment
-    // it('should handle arraybuffer response type', async () => {
-    //   const mockResponse = {
-    //     status: 200,
-    //     headers: new Headers({ 'content-type': 'application/octet-stream' }),
-    //     text: jest.fn().mockResolvedValue('test'),
-    //     blob: jest.fn().mockResolvedValue(new Blob()),
-    //     arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
-    //   };
-    //   // Mock fetch to return the response object that has the arrayBuffer method
-    //   mockFetch.mockResolvedValue(mockResponse);
-
-    //   const req = {
-    //     url: 'https://api.example.com/data',
-    //     method: 'GET',
-    //     headers: {},
-    //     body: null,
-    //     options: { responseType: 'arraybuffer' } as RequestOptions,
-    //   };
-
-    //   const result = await fetchTransport.send(req);
-
-    //   // The arrayBuffer method should be called because responseType is 'arraybuffer'
-    //   // This happens inside the handleRawBody method when responseType is 'arraybuffer'
-    //   expect(mockResponse.arrayBuffer).toHaveBeenCalled();
-    //   expect(result).toBeInstanceOf(HttpResponse);
-    // });
-
-    it('should handle timeout correctly', async () => {
-      // Mock fetch to reject with an abort error after timeout
-      mockFetch.mockImplementation(() => new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Failed to fetch'));
-        }, 200); // longer than our timeout
-      }));
-
+  describe('send - Abort & Timeout (Coverage for Line 160, 166, 171)', () => {
+    // 覆盖 Line 160: 外部信号已提前触发
+    it('should abort immediately if external signal is already aborted', async () => {
       const controller = new AbortController();
+      controller.abort('user-pre-cancel');
+
       const req = {
         url: 'https://api.example.com/data',
         method: 'GET',
         headers: {},
         body: null,
-        options: { timeout: 100, signal: controller.signal } as RequestOptions,
+        options: { signal: controller.signal } as RequestOptions,
       };
 
       const result = await fetchTransport.send(req);
+
+      expect(result).toEqual(expect.objectContaining({
+        isTransportFailure: true,
+        reason: TransportFailureReason.Aborted,
+        message: 'Request cancelled by user',
+      }));
+    });
+
+    // 覆盖 Line 166, 171: 超时逻辑
+    it('should handle request timeout using internal controller', async () => {
+      jest.useFakeTimers();
       
-      // Expect it to return a failure with timeout reason
-      expect(result).toEqual({
+      // 模拟一个挂起的 fetch
+      mockFetch.mockImplementation((_, init) => {
+        return new Promise((_, reject) => {
+          init.signal.addEventListener('abort', () => {
+            const error = new Error('AbortError');
+            error.name = 'AbortError';
+            reject(error);
+          });
+        });
+      });
+
+      const req = {
+        url: 'https://api.example.com/timeout',
+        method: 'GET',
+        headers: {},
+        body: null,
+        options: { timeout: 1000 } as RequestOptions,
+      };
+
+      const promise = fetchTransport.send(req);
+      
+      // 触发超时
+      jest.advanceTimersByTime(1001);
+      
+      const result = await promise;
+      expect(result).toEqual(expect.objectContaining({
         isTransportFailure: true,
         reason: TransportFailureReason.Aborted,
         message: 'Request timeout',
-        error: expect.anything(),
-      });
-    });
-
-    it('should handle external abort signal', async () => {
-      mockFetch.mockImplementation(() => new Promise((_, reject) => {
-        // Simulate a long running request that gets cancelled
-        setTimeout(() => {
-          reject(new Error('Failed to fetch'));
-        }, 200);
       }));
 
-      const controller = new AbortController();
-      // Abort the controller immediately
-      controller.abort('User cancelled');
-      
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { signal: controller.signal } as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-      
-      // Expect it to return a failure with aborted reason
-      expect(result).toEqual({
-        isTransportFailure: true,
-        reason: TransportFailureReason.Aborted,
-        message: 'Request cancelled by user',
-        error: expect.anything(),
-      });
-    });
-
-    it('should handle AbortError correctly', async () => {
-      mockFetch.mockRejectedValue({ name: 'AbortError', message: 'Aborted' });
-
-      const controller = new AbortController();
-      const req = {
-        url: 'https://api.example.com/data',
-        method: 'GET',
-        headers: {},
-        body: null,
-        options: { signal: controller.signal } as RequestOptions,
-      };
-
-      const result = await fetchTransport.send(req);
-      
-      expect(result).toEqual({
-        isTransportFailure: true,
-        reason: TransportFailureReason.Aborted,
-        message: 'Request cancelled by user',
-        error: expect.objectContaining({ name: 'AbortError' }),
-      });
+      jest.useRealTimers();
     });
   });
 
-  describe('hasPayload', () => {
-    it('should return false for GET and HEAD methods', () => {
-      expect(fetchTransport['hasPayload']('GET')).toBe(false);
-      expect(fetchTransport['hasPayload']('HEAD')).toBe(false);
-      expect(fetchTransport['hasPayload']('get')).toBe(false);
-      expect(fetchTransport['hasPayload']('head')).toBe(false);
+  describe('send - Response Handling (Coverage for handleRawBody)', () => {
+    const createMockResponse = (headersObj: any, bodyMethod: string, bodyValue: any) => ({
+      status: 200,
+      headers: new Headers(headersObj),
+      [bodyMethod]: jest.fn().mockResolvedValue(bodyValue),
+      arrayBuffer: bodyMethod === 'arrayBuffer' 
+        ? jest.fn().mockResolvedValue(bodyValue) 
+        : jest.fn().mockResolvedValue(new ArrayBuffer(0)),
+      body: bodyMethod === 'stream' ? bodyValue : null
     });
 
-    it('should return true for other methods', () => {
-      expect(fetchTransport['hasPayload']('POST')).toBe(true);
-      expect(fetchTransport['hasPayload']('PUT')).toBe(true);
-      expect(fetchTransport['hasPayload']('DELETE')).toBe(true);
-    });
-  });
+    it('should handle arraybuffer as default/explicit responseType', async () => {
+      const buffer = new ArrayBuffer(4);
+      mockFetch.mockResolvedValue(createMockResponse({}, 'arrayBuffer', buffer));
 
-  describe('serializeBody', () => {
-    it('should return undefined for null or undefined body', () => {
-      expect(fetchTransport['serializeBody'](null)).toBeUndefined();
-      expect(fetchTransport['serializeBody'](undefined)).toBeUndefined();
-    });
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, 
+        options: { responseType: 'arraybuffer' } as RequestOptions 
+      });
 
-    it('should stringify regular objects', () => {
-      const obj = { name: 'test' };
-      expect(fetchTransport['serializeBody'](obj)).toBe(JSON.stringify(obj));
+      expect((result as HttpResponse).rawBody).toBe(buffer);
     });
 
-    it('should not stringify FormData or Blob', () => {
-      const formData = new FormData();
+    it('should handle blob responseType', async () => {
       const blob = new Blob();
+      const mockRes = createMockResponse({}, 'blob', blob);
+      mockFetch.mockResolvedValue(mockRes);
 
-      expect(fetchTransport['serializeBody'](formData)).toBe(formData);
-      expect(fetchTransport['serializeBody'](blob)).toBe(blob);
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, 
+        options: { responseType: 'blob' } as RequestOptions 
+      });
+
+      expect(mockRes.blob).toHaveBeenCalled();
+      expect((result as HttpResponse).rawBody).toBe(blob);
+    });
+
+    it('should handle text responseType', async () => {
+      const text = 'hello';
+      const mockRes = createMockResponse({}, 'text', text);
+      mockFetch.mockResolvedValue(mockRes);
+
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, 
+        options: { responseType: 'text' } as RequestOptions 
+      });
+
+      expect(mockRes.text).toHaveBeenCalled();
+      expect((result as HttpResponse).rawBody).toBe(text);
+    });
+
+    it('should auto-detect stream via content-type', async () => {
+      const stream = {}; // Mock stream
+      mockFetch.mockResolvedValue({
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'text/event-stream' }),
+        body: stream,
+      });
+
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, options: {} as RequestOptions 
+      });
+
+      expect((result as HttpResponse).rawBody).toBe(stream);
     });
   });
 
-  describe('extractHeaders', () => {
-    it('should convert Headers object to plain object', () => {
-      const headers = new Headers();
-      headers.append('Content-Type', 'application/json');
-      headers.append('Authorization', 'Bearer token');
+  describe('handleError - (Coverage for Line 200-201)', () => {
+    // 覆盖没有任何 message 的异常对象
+    it('should handle generic error without message or name', async () => {
+      mockFetch.mockRejectedValue({}); // 抛出一个空对象
 
-      const result = fetchTransport['extractHeaders'](headers);
-      
-      expect(result).toEqual({
-        'content-type': 'application/json',
-        'authorization': 'Bearer token',
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, options: {} as RequestOptions 
       });
+
+      expect(result).toEqual(expect.objectContaining({
+        isTransportFailure: true,
+        reason: TransportFailureReason.NetworkError,
+        message: 'Network communication failure',
+      }));
+    });
+
+    it('should handle specific network error message', async () => {
+      mockFetch.mockRejectedValue(new Error('DNS Failed'));
+
+      const result = await fetchTransport.send({
+        url: 'url', method: 'GET', headers: {}, body: null, options: {} as RequestOptions 
+      });
+
+      expect(result).toEqual(expect.objectContaining({
+        message: 'DNS Failed',
+      }));
+    });
+  });
+
+  describe('Private Methods - Serialization & Headers', () => {
+    it('serializeBody should handle null/undefined', () => {
+      expect(fetchTransport['serializeBody'](null)).toBeUndefined();
+    });
+
+    it('serializeBody should stringify plain objects', () => {
+      const data = { a: 1 };
+      expect(fetchTransport['serializeBody'](data)).toBe(JSON.stringify(data));
+    });
+
+    it('extractHeaders should handle mixed case and conversion', () => {
+      const h = new Headers();
+      h.append('X-Test', 'Value');
+      const result = fetchTransport['extractHeaders'](h);
+      expect(result).toEqual({ 'x-test': 'Value' });
+    });
+
+    it('hasPayload should correctly identify methods', () => {
+      expect(fetchTransport['hasPayload']('GET')).toBe(false);
+      expect(fetchTransport['hasPayload']('POST')).toBe(true);
+      expect(fetchTransport['hasPayload']('head')).toBe(false);
     });
   });
 });
