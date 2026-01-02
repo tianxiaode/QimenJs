@@ -2,7 +2,7 @@ import { HttpMethod, IHttpRequest, RequestOptions } from '../types';
 
 /**
  * 职责：
- * 描述一个“已经标准化”的请求
+ * 描述一个"已经标准化"的请求
  * 包含：
  * url
  * method
@@ -19,12 +19,40 @@ import { HttpMethod, IHttpRequest, RequestOptions } from '../types';
  * 职责：描述一个已经标准化的请求，仅作为数据载体。
  */
 export class HttpRequest implements IHttpRequest {
+    /**
+     * 请求的完整URL
+     */
     public readonly url: string;
+
+    /**
+     * HTTP请求方法（GET, POST, PUT, DELETE等）
+     */
     public readonly method: HttpMethod;
+
+    /**
+     * 请求头对象，键值对形式存储请求头信息
+     */
     public readonly headers: Record<string, string>;
+
+    /**
+     * 请求体数据，可以是任意类型
+     */
     public readonly body: any;
+
+    /**
+     * 请求选项配置，包含超时、响应类型等设置
+     */
     public readonly options: Readonly<RequestOptions>;
 
+    /**
+     * 构造一个HttpRequest实例
+     * @param payload 包含请求信息的对象
+     * @param payload.url 请求的URL地址
+     * @param payload.method HTTP请求方法
+     * @param payload.headers 请求头信息
+     * @param payload.body 请求体数据
+     * @param payload.options 请求选项配置
+     */
     constructor(payload: {
         url: string;
         method: HttpMethod;
