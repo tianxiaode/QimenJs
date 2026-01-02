@@ -1,5 +1,18 @@
 import { IUrlProcessor, RequestOptions } from '../../types';
 
+/**
+ * 路径参数处理器
+ * 职责：将路径参数拼接到 URL 路径中
+ * 
+ * 处理逻辑：
+ * 1. 检查是否提供了路径参数
+ * 2. 如果提供了路径参数，则将它们拼接到 URL 末尾
+ * 3. 确保 URL 和路径参数之间只有一个斜杠
+ * 
+ * @param url - 原始 URL 字符串
+ * @param options - 请求选项，包含 pathParams 字段
+ * @returns 处理后的 URL 字符串
+ */
 export const PathParamsProcessor: IUrlProcessor = (url: string, options: RequestOptions) => {
     const { pathParams } = options;
 
