@@ -1,4 +1,4 @@
-import { HttpMethod, RequestOptions } from '@orbitjs/http';
+import { HttpMethod, HttpResponseContext, RequestOptions } from '@orbitjs/http';
 import { REPO_ACTION } from './action';
 
 export interface PreRequestContext {
@@ -45,4 +45,24 @@ export interface DataProcessContext<T = any> {
         [key: string]: any;
     };
     raw: any; // 原始数据，方便后续处理器处理
+}
+
+
+export interface FlowContext {
+    action: REPO_ACTION;
+    payload: any;
+    result?: DataProcessContext; // 任何阶段填入 result，后续物理请求将跳过
+    preCtx?: PreRequestContext;   // 物理请求前生成的上下文
+    httpRes?: HttpResponseContext; // HTTP 响应原件
+}
+
+/**
+ * 管道任务定义
+ */
+export interface PipelineTask {
+    name: string;
+    // 返回 true 则执行 run
+    when: (flow: FlowContext) => boolean | Promise<boolean>;
+    // 具体的逻辑执行
+    run: (flow: FlowContext) => Promise<void>;
 }

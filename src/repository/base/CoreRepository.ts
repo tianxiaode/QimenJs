@@ -11,8 +11,11 @@ import {
     DataProcessContext,
     PreProcessor,
     DataProcessor,
+    FlowContext,
+    PipelineTask,
 } from '../types';
 import { RepositoryAccessDeniedError } from '../errors';
+import { defaultCacheManager, RepositoryCacheManager } from './CacheManager';
 
 // 假设你已有的 Mixin 工具
 const BaseWithEvents = composeMixins(Object as any, [WithEvents]);
@@ -24,6 +27,9 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
     protected activeTasks = new Map<REPO_ACTION, RequestTask<any>>();
     protected localPrePipelines: PreProcessorPipelines = {};
     protected localDataPipelines: DataProcessorPipelines = {};
+    protected enableCache: boolean = false;
+    protected cacheManager: RepositoryCacheManager = defaultCacheManager;
+    protected cacheTTL?: number;
 
     constructor(protected config: RepositoryConfig) {
         super();
@@ -33,48 +39,27 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
     /**
      * 核心调度器：定义请求的生命周期骨架
      */
-    protected async sendRequest(action: REPO_ACTION, payload: any) {
+    protected async sendRequest(action: REPO_ACTION, payload: any): Promise<DataProcessContext> {
+        const flow: FlowContext = { action, payload };
+        const tasks = this.createPipeline(flow);
+
         try {
-            // 1. 权限校验
-            await this.checkAccess(action, payload);
-
-            // 2. 预处理流水线
-            const preCtx = await this.runPrePipeline(action, payload);
-            if (!preCtx) {
-                // 用户在 Pre-Processor (如确认框) 中止了操作
-                return this.createProcessContext({
-                    isAborted: true,
-                    code: 'PRE_PROCESSOR_ABORT',
-                    message: '操作已中止',
-                });
+            for (const task of tasks) {
+                if (await task.when(flow)) {
+                    await task.run(flow);
+                }
             }
 
-            this.logger.debug(`🚀 Request: [${action}]`, {
-                preCtx
-            })
+            if (!flow.result) throw new Error('PIPELINE_STUCK');
 
-            // 3. 物理传输 (此处省略 loading 和任务管理)
-            const task = this.config.httpClient.request(preCtx.method, preCtx.url, preCtx.options);
-            const httpRes = await task.promise;
-
-
-            // 4. 数据清洗流水线
-            return await this.runDataPipeline(httpRes, preCtx);
-        } catch (err: any) {
-            // 区分：是物理取消还是真正的错误
-            if (err.isCancelled) {
-                return this.createProcessContext({
-                    isCancelled: true,
-                    code: 'HTTP_CANCELLED',
-                    message: '请求已取消',
-                });
-            }
-
-            this.logger.error(`❌ Error: [${action}]`, err);
-
-            // 真正的错误 (500, 403, 业务逻辑错误等)
+            this.emit(`${action}:success`, flow.result);
+            return flow.result;
+        } catch (err) {
             this.emit(`${action}:error`, err);
-            throw err; // 只有真正的异常才抛出，触发全局错误处理
+            throw err;
+        } finally {
+            this.emit(`${action}:loading`, false);
+            this.activeTasks.delete(action);
         }
     }
 
@@ -133,7 +118,7 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
 
     protected createDataProcessContext(
         overrides: Partial<DataProcessContext['status']> & { message?: string },
-        reqCtx: PreRequestContext
+        reqCtx?: PreRequestContext
     ): DataProcessContext {
         return {
             list: [],
@@ -149,6 +134,22 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
             },
             raw: null,
         };
+    }
+
+    /**
+     * 专门处理中断/熔断的复用逻辑
+     */
+    protected createAbortedContext(action: REPO_ACTION, reason: string): DataProcessContext {
+        return this.createDataProcessContext(
+            {
+                isBusinessSuccess: false,
+                isAborted: true, // 标记为主动中断
+                code: 499, // 或者是你自定义的拦截代码
+                message: reason,
+            },
+            // 如果此时还没生成真正的 reqCtx，可以传一个最小化的模拟对象
+            { method: 'GET', url: '', options: {}, action, payload: {} } as any
+        );
     }
 
     protected getCombinedPrePipelines(action: REPO_ACTION): PreProcessor[] {
@@ -213,5 +214,103 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
         }
 
         return false;
+    }
+
+    private async execAccess(f: FlowContext) {
+        await this.checkAccess(f.action, f.payload);
+    }
+
+    private async execCacheRead(f: FlowContext) {
+        f.result = await this.cacheManager.get(this.constructor.name, f.action, f.payload);
+    }
+
+    private async execNetwork(f: FlowContext) {
+        this.emit(`${f.action}:loading`, true);
+
+        // 1. 竞态处理
+        if (this.activeTasks.has(f.action)) this.cancelAction(f.action);
+
+        // 2. 获取预处理上下文
+        const preCtx = await this.runPrePipeline(f.action, f.payload);
+
+        // --- 类型守卫：解决 ts(2322) ---
+        if (!preCtx) {
+            // 如果预处理返回 null，说明流水线被拦截了（比如表单校验未通过）
+            // 我们给 result 赋一个中断状态，这样后续的“网络请求”就不会发生了
+            f.result = this.createAbortedContext(f.action, 'PRE_PROCESSOR_CANCEL');
+            return;
+        }
+
+        // 此时 TypeScript 知道 preCtx 绝对不是 null
+        f.preCtx = preCtx;
+
+        try {
+            this.logger.debug(`⏳ Sending Request: [${f.action}]`, {
+                preCtx: preCtx,
+            });
+            
+            const task = this.config.httpClient.request(
+                f.preCtx.method,
+                f.preCtx.url,
+                f.preCtx.options
+            );
+            this.activeTasks.set(f.action, task);
+
+            f.httpRes = await task.promise;
+            f.result = await this.runDataPipeline(f.httpRes, f.preCtx);
+        } finally {
+            this.activeTasks.delete(f.action);
+        }
+    }
+
+    private async execCacheMaintain(f: FlowContext) {
+        if (!f.result?.status.isBusinessSuccess) return;
+
+        if (['create', 'update', 'delete'].includes(f.action)) {
+            await this.cacheManager.clear(this.constructor.name);
+        }
+        if (['list', 'detail', 'all'].includes(f.action) && f.result) {
+            await this.cacheManager.set(
+                this.constructor.name,
+                f.action,
+                f.payload,
+                f.result,
+                this.cacheTTL
+            );
+        }
+    }
+
+    private createPipeline(flow: FlowContext): PipelineTask[] {
+        return [
+            {
+                name: 'Access',
+                when: () => true,
+                run: this.execAccess.bind(this),
+            },
+            {
+                name: 'CacheRead',
+                when: () => this.enableCache && ['list', 'detail', 'all'].includes(flow.action),
+                run: this.execCacheRead.bind(this),
+            },
+            {
+                name: 'Network',
+                when: () => !flow.result,
+                run: this.execNetwork.bind(this),
+            },
+            {
+                name: 'CacheSave',
+                when: () => this.enableCache && !!flow.result,
+                run: this.execCacheMaintain.bind(this),
+            },
+            // 【插拔示例】以后想加埋点？
+            // { name: 'Analytics', when: () => true, run: this.execAnalytics.bind(this) }
+        ];
+    }
+
+    /**
+     * 手动清理缓存的方法 (供外部或子类调用)
+     */
+    public clearCache(): void {
+        this.cacheManager.clear(this.constructor.name);
     }
 }

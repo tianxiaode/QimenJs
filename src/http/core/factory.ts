@@ -169,14 +169,14 @@ export class HttpFactory {
         const signal = requestOptions.signal || controller.signal;
 
         let retryCount = 0;
-        let currentTask: RequestTask<T> | null = null;
+        let currentTask: RequestTask<HttpResponseContext> | null = null;
 
         // 执行函数，包含重试逻辑
-        const execute = async (): Promise<T> => {
+        const execute = async (): Promise<HttpResponseContext> => {
             while (true) {
                 try {
                     // 1. 发起实际请求
-                    currentTask = client.request<T>(method, url, { ...requestOptions, signal });
+                    currentTask = client.request(method, url, { ...requestOptions, signal });
                     return await currentTask.promise;
                 } catch (err: any) {
                     const context = err as HttpResponseContext;
@@ -206,7 +206,7 @@ export class HttpFactory {
         };
 
         return {
-            promise: execute(),
+            promise: execute() as any,
             cancel: () => {
                 controller.abort();
                 currentTask?.cancel();
@@ -244,7 +244,7 @@ export class HttpFactory {
         const taskFn = async () => {
             // 注意：这里我们不需要在 promise 后面写 .catch，
             // 因为 GlobalTaskQueue 内部已经处理了 try-catch 并负责重试逻辑。
-            const task = client.request<T>(method, url, requestOptions);
+            const task = client.request(method, url, requestOptions);
             await task.promise;
         };
 
