@@ -1,3 +1,4 @@
+CoreRepository.ts
 import { WithEvents } from '@orbitjs/event';
 import { composeMixins } from '@orbitjs/utils';
 import { ILogger, Logger } from '@orbitjs/logger';
@@ -12,6 +13,7 @@ import {
     PreProcessor,
     DataProcessor,
 } from '../types';
+import { RepositoryAccessDeniedError } from '../errors';
 
 // 假设你已有的 Mixin 工具
 const BaseWithEvents = composeMixins(Object as any, [WithEvents]);
@@ -81,7 +83,7 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
         if (this.config.accessController) {
             const hasAccess = await this.config.accessController(this.basePath, action, payload);
             if (!hasAccess) {
-                throw new Error(`PERMISSION_DENIED: ${this.basePath} -> ${action}`);
+                throw new RepositoryAccessDeniedError(this.basePath, action);
             }
         }
     }
