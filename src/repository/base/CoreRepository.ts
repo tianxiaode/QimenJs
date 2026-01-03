@@ -48,9 +48,14 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
                 });
             }
 
+            this.logger.debug(`🚀 Request: [${action}]`, {
+                preCtx
+            })
+
             // 3. 物理传输 (此处省略 loading 和任务管理)
             const task = this.config.httpClient.request(preCtx.method, preCtx.url, preCtx.options);
             const httpRes = await task.promise;
+
 
             // 4. 数据清洗流水线
             return await this.runDataPipeline(httpRes, preCtx);
@@ -63,6 +68,8 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
                     message: '请求已取消',
                 });
             }
+
+            this.logger.error(`❌ Error: [${action}]`, err);
 
             // 真正的错误 (500, 403, 业务逻辑错误等)
             this.emit(`${action}:error`, err);
