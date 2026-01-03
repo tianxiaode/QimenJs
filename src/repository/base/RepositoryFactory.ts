@@ -1,4 +1,4 @@
-import { HttpClient } from "@orbitjs/http";
+import { HttpClient } from '@orbitjs/http';
 
 export class RepositoryFactory {
     private static configs = new Map<string, RepoDomainConfig>();
@@ -35,5 +35,20 @@ export class RepositoryFactory {
         }
         // 返回该域名下预装好的 HttpClient 实例
         return config.settings.httpClient;
+    }
+
+    static get<T extends BaseRepository>(repoCtor: RepoConstructor<T>, configName: string): T {
+        const key = `${configName}:${repoCtor.name}`;
+
+        if (this.instances.has(key)) {
+            return this.instances.get(key);
+        }
+
+        const config = this.configs.get(configName);
+        if (!config) throw new Error(`Config domain ${configName} not found`);
+
+        const instance = new repoCtor(config);
+        this.instances.set(key, instance);
+        return instance;
     }
 }

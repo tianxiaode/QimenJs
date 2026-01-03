@@ -1,4 +1,3 @@
-import { Constructor } from '@orbitjs/utils';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { EventHandler } from '../core/types';
 import { EventScope } from '../core';
@@ -40,13 +39,11 @@ export interface WithEventsPublic {
 /**
  * 核心：纯逻辑层 Mixin
  */
-export function WithEvents<TBase extends Constructor>(
-    Base: TBase
-): abstract new (...args: ConstructorParameters<TBase>) => InstanceType<TBase> & WithEventsPublic {
+export function WithEvents(Base: any) {
     return class extends Base {
-        private _eventScope: EventScope | undefined;
+        protected _eventScope: EventScope | undefined;
 
-        private get eventScope() {
+        protected get eventScope() {
             if (this._eventScope === undefined) {
                 this._eventScope = globalEventBus.createEventScope();
             }
@@ -66,5 +63,5 @@ export function WithEvents<TBase extends Constructor>(
             super.dispose?.();
             this._eventScope?.dispose();
         }
-    } as unknown as Constructor<InstanceType<TBase> & WithEventsPublic>;
+    } as any;
 }

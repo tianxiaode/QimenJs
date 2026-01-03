@@ -1,5 +1,3 @@
-import { Constructor } from '@orbitjs/utils';
-import { EventHandler } from '../core/types';
 import { BindOptions, createEventAdapter, GestureSemantic } from '../adapters';
 
 /**
@@ -38,11 +36,7 @@ export interface WithDomEventsPublic {
  * 这样 WithDomEvents 才能安全地访问 this.eventScope
  */
 
-export function WithDomEvents<TBase extends Constructor<any>>(
-    Base: TBase
-): abstract new (
-    ...args: ConstructorParameters<TBase>
-) => InstanceType<TBase> & WithDomEventsPublic {
+export function WithDomEvents(Base: any){
     return class extends Base {
         private _adapter: any | undefined;
 
@@ -58,7 +52,7 @@ export function WithDomEvents<TBase extends Constructor<any>>(
          * 因为 TS 很难在 Mixin 嵌套中自动推导出动态注入的 get eventScope
          */
         bind(target: any, semantic: any, options?: any): void {
-            const scope = (this as any).eventScope;
+            const scope = this.eventScope;
             if (!scope) {
                 throw new Error(
                     'WithDomEvents requires WithEvents to be mixed in first or eventScope to be defined.'
@@ -71,5 +65,5 @@ export function WithDomEvents<TBase extends Constructor<any>>(
             super.dispose?.();
             // Adapter 如果有销毁逻辑也可以在这里处理
         }
-    } as unknown as Constructor<InstanceType<TBase>> & WithDomEventsPublic;
+    } as any;
 }

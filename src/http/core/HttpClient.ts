@@ -253,6 +253,17 @@ export class HttpClient {
     }
 
     /**
+     * PATCH 请求方法
+     * @param url 请求 URL
+     * @param body 请求体
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
+    public patch<T>(url: string, body: any, options?: RequestOptions) {
+        return this.request<T>('PATCH', url, this.normalizeOptions(false, { ...options, body }));
+    }
+
+    /**
      * DELETE 请求方法
      * @param url 请求 URL
      * @param options 请求选项
@@ -261,6 +272,7 @@ export class HttpClient {
     public delete<T>(url: string, options?: RequestOptions) {
         return this.request<T>('DELETE', url, this.normalizeOptions(false, options));
     }
+
 
     /**
      * 上传文件方法
