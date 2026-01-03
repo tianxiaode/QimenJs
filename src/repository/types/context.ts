@@ -32,16 +32,16 @@ export interface DataProcessContext<T = any> {
     /**
      * 业务状态信息
      */
-    code: number;
+    code: number | string;
     message: string;
 
     /**
      * 处理器状态快照
      */
     status: {
-        isBusinessSuccess: boolean;
-        isAborted: boolean;
-        action: string; // 从 reqCtx 同步过来，方便后续处理器快速判断
+        isBusinessSuccess: boolean; // 只有后端返回成功且通过所有 DataProcessor 才为 true
+        isAborted: boolean; // 用户在 PreProcessor 阶段点取消 (例如 Confirm 框)
+        isCancelled: boolean; // 请求发送后被物理取消 (例如 竞态条件、页面销毁)
         [key: string]: any;
     };
     raw: any; // 原始数据，方便后续处理器处理

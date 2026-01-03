@@ -33,43 +33,40 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
      * 核心调度器：定义请求的生命周期骨架
      */
     protected async sendRequest(action: REPO_ACTION, payload: any) {
-        // 1. 访问控制
-        await this.checkAccess(action, payload);
-
-        // 2. 竞态处理
-        if (this.activeTasks.has(action)) {
-            this.cancelAction(action, 'Racing condition');
-        }
-
-        // 3. 预处理 (构建意图)
-        let preCtx = await this.runPrePipeline(action, payload);
-        if (!preCtx) return null; // 优雅熔断
-
-        this.logger.debug(`⏳ Sending Action: [${action}]`, {
-            preCtx,
-        });
-
-
-        // 4. 物理传输
-        this.emit(`${action}:loading`, true);
-        const task = this.config.httpClient.request(preCtx.method, preCtx.url, preCtx.options);
-        this.activeTasks.set(action, task);
-
         try {
+            // 1. 权限校验
+            await this.checkAccess(action, payload);
+
+            // 2. 预处理流水线
+            const preCtx = await this.runPrePipeline(action, payload);
+            if (!preCtx) {
+                // 用户在 Pre-Processor (如确认框) 中止了操作
+                return this.createProcessContext({
+                    isAborted: true,
+                    code: 'PRE_PROCESSOR_ABORT',
+                    message: '操作已中止',
+                });
+            }
+
+            // 3. 物理传输 (此处省略 loading 和任务管理)
+            const task = this.config.httpClient.request(preCtx.method, preCtx.url, preCtx.options);
             const httpRes = await task.promise;
 
-            // 5. 数据处理 (洗涤结果)
-            const result = await this.runDataPipeline(httpRes, preCtx);
-
-            this.emit(`${action}:success`, result);
-            return result;
+            // 4. 数据清洗流水线
+            return await this.runDataPipeline(httpRes, preCtx);
         } catch (err: any) {
-            if (err.isCancelled) return null;
+            // 区分：是物理取消还是真正的错误
+            if (err.isCancelled) {
+                return this.createProcessContext({
+                    isCancelled: true,
+                    code: 'HTTP_CANCELLED',
+                    message: '请求已取消',
+                });
+            }
+
+            // 真正的错误 (500, 403, 业务逻辑错误等)
             this.emit(`${action}:error`, err);
-            throw err;
-        } finally {
-            this.activeTasks.delete(action);
-            this.emit(`${action}:loading`, false);
+            throw err; // 只有真正的异常才抛出，触发全局错误处理
         }
     }
 
@@ -127,17 +124,22 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
     }
 
     protected createDataProcessContext(
-        httpRes: HttpResponseContext,
+        overrides: Partial<DataProcessContext['status']> & { message?: string },
         reqCtx: PreRequestContext
     ): DataProcessContext {
         return {
             list: [],
             total: 0,
             detail: null,
-            code: httpRes.status,
-            message: '',
-            status: { isBusinessSuccess: true, isAborted: false, action: reqCtx.metadata.action },
-            raw: httpRes.data,
+            message: overrides.message || '',
+            code: overrides.code || 200,
+            status: {
+                isBusinessSuccess: false,
+                isAborted: false,
+                isCancelled: false,
+                ...overrides,
+            },
+            raw: null,
         };
     }
 
