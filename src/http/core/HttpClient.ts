@@ -109,17 +109,17 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象，包含 promise 和 cancel 方法
      */
-    public request<T>(
+    public request(
         method: HttpMethod,
         url: string,
         options: RequestOptions = {}
-    ): RequestTask<T> {
+    ): RequestTask<HttpResponseContext> {
         // 创建 AbortController 用于取消请求（如果 options 中没有提供 signal）
         const controller = options.signal ? null : new AbortController();
         const signal = options.signal || controller!.signal;
 
         // 创建请求 Promise
-        const promise = (async (): Promise<T> => {
+        const promise = (async (): Promise<HttpResponseContext> => {
             let currentContext: HttpResponseContext | null = null;
 
             try {
@@ -152,7 +152,7 @@ export class HttpClient {
                 }
 
                 // 5. 返回最终处理后的上下文
-                return currentContext as T;
+                return currentContext as HttpResponseContext;
             } catch (err: any) {
                 // 6. 异常转换：如果是 Processor reject 出来的，直接抛出；否则包装成 Context
                 const errorContext = err && err.metadata ? err : this.toContext(err, options);
@@ -226,8 +226,8 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public get<T>(url: string, options?: RequestOptions) {
-        return this.request<T>('GET', url, this.normalizeOptions(false, options));
+    public get(url: string, options?: RequestOptions) {
+        return this.request('GET', url, this.normalizeOptions(false, options));
     }
 
     /**
@@ -237,8 +237,8 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public post<T>(url: string, body: any, options?: RequestOptions) {
-        return this.request<T>('POST', url, this.normalizeOptions(false, { ...options, body }));
+    public post(url: string, body: any, options?: RequestOptions) {
+        return this.request('POST', url, this.normalizeOptions(false, { ...options, body }));
     }
 
     /**
@@ -248,8 +248,8 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public put<T>(url: string, body: any, options?: RequestOptions) {
-        return this.request<T>('PUT', url, this.normalizeOptions(false, { ...options, body }));
+    public put(url: string, body: any, options?: RequestOptions) {
+        return this.request('PUT', url, this.normalizeOptions(false, { ...options, body }));
     }
 
     /**
@@ -259,8 +259,8 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public patch<T>(url: string, body: any, options?: RequestOptions) {
-        return this.request<T>('PATCH', url, this.normalizeOptions(false, { ...options, body }));
+    public patch(url: string, body: any, options?: RequestOptions) {
+        return this.request('PATCH', url, this.normalizeOptions(false, { ...options, body }));
     }
 
     /**
@@ -269,8 +269,8 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public delete<T>(url: string, options?: RequestOptions) {
-        return this.request<T>('DELETE', url, this.normalizeOptions(false, options));
+    public delete(url: string, options?: RequestOptions) {
+        return this.request('DELETE', url, this.normalizeOptions(false, options));
     }
 
 
@@ -282,13 +282,13 @@ export class HttpClient {
      * @param options 请求选项
      * @returns RequestTask 对象
      */
-    public upload<T>(
+    public upload(
         url: string,
         body: any,
         onProgress: (ev: ProgressEvent) => void,
         options?: RequestOptions
     ) {
-        return this.request<T>(
+        return this.request(
             'POST',
             url,
             this.normalizeOptions(true, { ...options, body, onProgress })

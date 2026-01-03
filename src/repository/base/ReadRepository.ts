@@ -1,6 +1,7 @@
 import { array } from '@orbitjs/utils';
-import { PageResult, PaginationParams, RepositoryConfig, StandardListResponse } from '../types';
+import { PageResult, PaginationParams, RepositoryConfig } from '../types';
 import { CoreRepository } from './CoreRepository';
+import { RepositoryResponseContext } from '../types/response';
 
 export abstract class ReadRepository extends CoreRepository {
     // 1. 内部状态机：存储当前的查询上下文
@@ -39,7 +40,9 @@ export abstract class ReadRepository extends CoreRepository {
         this._isLocal = true;
         if (data) {
             this._rawItems = data;
-            this._lastResult = this.mapPageResult({ list: data, total: data.length }, { page: 1 });
+            this._lastResult = this.mapPageResult({ list: data, total: data.length } as any, {
+                page: 1,
+            });
         }
     }
 
@@ -191,7 +194,7 @@ export abstract class ReadRepository extends CoreRepository {
      * 理货逻辑：将后端不规范的返回格式化
      * 子类可覆写以适配不同的后端规范 (如 ABP, Spring)
      */
-    protected mapPageResult(raw: StandardListResponse, params: PaginationParams): PageResult {
+    protected mapPageResult(raw: RepositoryResponseContext, params: PaginationParams): PageResult {
         // 这里不再猜测，处理器没给 list 和 total 就是处理器的 Bug
         const { list = [], total = 0 } = raw;
         const page = params.page || 1;
@@ -242,7 +245,7 @@ export abstract class ReadRepository extends CoreRepository {
         const size = this._queryState.pageSize || this._userPageSize;
         const pagedItems = size > 0 ? result.slice((page - 1) * size, page * size) : result;
 
-        this._lastResult = this.mapPageResult({ list: pagedItems, total }, this._queryState);
+        this._lastResult = this.mapPageResult({ list: pagedItems, total } as any, this._queryState);
         return this._lastResult;
     }
 

@@ -28,7 +28,7 @@ export const DefaultRequestProcessors: RequestProcessors = {
     // 4. 更新：主键进 Path，全量数据进 Body
     update: (context, payload) => {
         context.method = 'PUT';
-        const id = payload?.[context.meta.rowKey];
+        const id = payload?.[context.metadata.rowKey];
         if (id !== undefined) context.options?.pathParams?.push(id);
         context.options.body = payload;
         return context;
@@ -37,7 +37,7 @@ export const DefaultRequestProcessors: RequestProcessors = {
     // 5. 删除：主键进 Path
     delete: (context, payload) => {
         context.method = 'DELETE';
-        const id = payload?.[context.meta.rowKey];
+        const id = payload?.[context.metadata.rowKey];
         if (id !== undefined) context.options?.pathParams?.push(id);
         return context;
     },
@@ -54,7 +54,7 @@ export const DefaultRequestProcessors: RequestProcessors = {
     // 比如: POST /users/1/toggle
     toggle: (context, payload) => {
         context.method = 'PATCH';
-        const id = payload?.[context.meta.rowKey];
+        const id = payload?.[context.metadata.rowKey];
         if (id !== undefined) {
             context.options?.pathParams?.push(id);
         }
@@ -69,7 +69,7 @@ export const DefaultRequestProcessors: RequestProcessors = {
 
         // 2. 搬运工：只负责把 ID 挪到路径里
         // 如果 payload 存在且有 id 字段
-        const id = payload?.[context.meta.rowKey];
+        const id = payload?.[context.metadata.rowKey];
         if (id !== undefined) {
             context.options?.pathParams?.push(id);
         }

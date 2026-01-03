@@ -10,14 +10,16 @@ export type CRUD_ACTION =
     | 'batchDelete' // BATCH_DELETE
     | 'toggle'; // TOGGLE
 
-export interface RequestContext {
+export type REPO_ACTION = CRUD_ACTION | 'common' | string;
+
+export interface RepositoryRequestContext {
     method: HttpMethod;
     url: string;
     // 资源元数据（新增）
-    meta: {
+    metadata: {
         basePath: string;
         rowKey: string;
-        action: CRUD_ACTION;
+        action: REPO_ACTION;
     };
     // 请求具体参数
     options: RequestOptions;
@@ -28,8 +30,8 @@ export interface RequestContext {
  * @param context - 包含 method 和 options (pathParams/queryParams/body) 的容器
  * @param payload - UI 层传来的原始生数据
  */
-export type RequestProcessor = (context: RequestContext, payload: any) => RequestContext;
+export type RequestProcessor = (context: RepositoryRequestContext, payload: any) => RepositoryRequestContext;
 
 export type RequestProcessors = {
-    [K in CRUD_ACTION]?: RequestProcessor;
+    [K in REPO_ACTION]?: RequestProcessor;
 };
