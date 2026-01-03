@@ -1,7 +1,7 @@
 import { array } from '@orbitjs/utils';
 import { PageResult, PaginationParams, RepositoryConfig } from '../types';
 import { CoreRepository } from './CoreRepository';
-import { RepositoryResponseContext } from '../types/response';
+import { DataProcessContext } from '../types';
 
 export abstract class ReadRepository extends CoreRepository {
     // 1. 内部状态机：存储当前的查询上下文
@@ -65,9 +65,9 @@ export abstract class ReadRepository extends CoreRepository {
 
         // 调度搬运工执行请求
         const raw = await this.sendRequest('list', this._queryState);
-        this._rawItems = raw.list || [];
+        this._rawItems = raw?.list || [];
         // 将后端返回的“生料”加工成标准“熟食”
-        this._lastResult = this.mapPageResult(raw, this._queryState);
+        this._lastResult = this.mapPageResult(raw || {} as any, this._queryState);
         return this._lastResult;
     }
 
@@ -194,7 +194,7 @@ export abstract class ReadRepository extends CoreRepository {
      * 理货逻辑：将后端不规范的返回格式化
      * 子类可覆写以适配不同的后端规范 (如 ABP, Spring)
      */
-    protected mapPageResult(raw: RepositoryResponseContext, params: PaginationParams): PageResult {
+    protected mapPageResult(raw: DataProcessContext, params: PaginationParams): PageResult {
         // 这里不再猜测，处理器没给 list 和 total 就是处理器的 Bug
         const { list = [], total = 0 } = raw;
         const page = params.page || 1;

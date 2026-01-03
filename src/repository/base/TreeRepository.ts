@@ -27,13 +27,13 @@ export abstract class TreeRepository extends CrudRepository {
         if (fullSync) {
             // 直接调用 all() 获取全量平铺数据
             const res = await this.all(params);
-            const treeData = this.arrayToTree(res.list);
+            const treeData = this.arrayToTree(res?.list || []);
 
             this._lastResult = {
                 items: treeData,
-                total: res.total,
+                total: res?.total || 0,
                 page: 1,
-                pageSize: res.total,
+                pageSize: res?.total || 0,
                 totalPages: 1,
                 hasNext: false,
                 hasPrev: false,
