@@ -1,4 +1,3 @@
-CoreRepository.ts
 import { WithEvents } from '@orbitjs/event';
 import { composeMixins } from '@orbitjs/utils';
 import { ILogger, Logger } from '@orbitjs/logger';
