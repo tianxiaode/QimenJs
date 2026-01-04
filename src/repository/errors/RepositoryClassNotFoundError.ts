@@ -14,7 +14,7 @@ export class RepositoryClassNotFoundError extends ErrorBase {
     public readonly repositoryName: string,
     context?: Record<string, any>
   ) {
-    const message = `[RepositoryFactory] Repository class "${repositoryName}" not found. Did you forget to register it?`;
+    const message = `"${repositoryName}" not found. Did you forget to register it?`;
     const code = 'REPO_CLASS_NOT_FOUND';
     
     super(message, code, context);

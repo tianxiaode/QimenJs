@@ -1,11 +1,13 @@
 import {
     DataProcessContext,
+    FlowStatus,
     PreProcessor,
     PreProcessorPipelines,
     PreRequestContext,
     REPO_ACTION,
 } from '@/repository/types';
 import { RepositoryContextFactory } from '../RepositoryContextFactory';
+import { RepositoryFlowAbortedError } from '@/repository/errors/RepositoryFlowAbortedError';
 
 // PreProcessorExecutor.ts
 export class PreProcessorExecutor {
@@ -20,45 +22,54 @@ export class PreProcessorExecutor {
      */
     static async run(
         repoName: string,
-        config: {
-            basePath: string;
-            rowKey: string;
-            global: PreProcessorPipelines;
-            local: PreProcessorPipelines;
-        },
+        config: any,
         action: REPO_ACTION,
         payload: any,
-        transformFn: (p: any, a: REPO_ACTION) => any
-    ): Promise<{ preCtx: PreRequestContext | null; abortedResult: DataProcessContext | null }> {
-        // 1. 获取预组装的任务数组 (使用优化的 getHandlers)
+        transformFn: any
+    ): Promise<PreRequestContext> {
         const handlers = this.getHandlers(repoName, config, action);
 
-        // 2. 调用工厂创建初始上下文
-        const preCtx = RepositoryContextFactory.createPreRequest(
+        // 初始化上下文
+        let context = RepositoryContextFactory.createPreRequest(
             { basePath: config.basePath, rowKey: config.rowKey },
             action,
             payload,
             transformFn
         );
 
-        // 3. 执行处理器链
         for (const handler of handlers) {
-            // 约定：只有显式返回 false 才认为是被拦截中断
-            const result = await handler(preCtx, payload);
-            if (!result) {
-                return {
-                    preCtx: null,
-                    abortedResult: RepositoryContextFactory.createAbortedContext(
-                        action,
-                        'Pre-Processor Rejection'
-                    ),
-                };
+            try {
+                // 1. 执行处理器：支持同步/异步，且对返回值进行保护
+                context = (await handler(context, payload)) || context;
+
+                // 2. 防御性检查：即使处理器内部没有 throw，
+                // 只要它通过 ctx.status 表达了不满，我们在此处主动断开
+                if (context.status === FlowStatus.ABORTED) {
+                    throw context;
+                }
+            } catch (errOrCtx: any) {
+                // 3. 统一拦截出口：
+                // 如果已经是 context 对象了，直接顺延向上 reject
+                if (errOrCtx?.status === FlowStatus.ABORTED) {
+                    // 这样抛出的错误里直接带着可以直接给 UI 展示的 DataProcessContext
+                    const abortedResult = RepositoryContextFactory.handleAborted(errOrCtx);
+                    throw new RepositoryFlowAbortedError(abortedResult.message, abortedResult);
+                }
+
+                // 如果是真正的代码 Bug（比如处理器内部读了空指针）
+                // 我们将 Bug 捕获并强行转化为一个“异常工单”
+                context.status = FlowStatus.ABORTED;
+                context.abortReason = `[Handler Panic] ${errOrCtx.message || 'Unknown error'}`;
+                throw new RepositoryFlowAbortedError(
+                    context.abortReason,
+                    RepositoryContextFactory.handleAborted(context)
+                );
             }
         }
 
-        return { preCtx, abortedResult: null };
+        context.status = FlowStatus.PROCEED;
+        return context;
     }
-
     /**
      * 内部方法：获取或组装处理器清单（带缓存 Map）
      */

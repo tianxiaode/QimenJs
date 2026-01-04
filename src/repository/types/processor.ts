@@ -18,7 +18,7 @@ export type AccessControlHandler = (
 export type PreProcessor = (
     context: PreRequestContext, 
     payload: any
-) => Promise<PreRequestContext | null | undefined>;
+) => Promise<PreRequestContext>;
 
 /** 数据处理器：强制异步，链式加工 */
 export type DataProcessor = (

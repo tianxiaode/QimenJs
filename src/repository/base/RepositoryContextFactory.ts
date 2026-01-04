@@ -1,5 +1,5 @@
 import { HttpResponseContext } from '@/http';
-import { REPO_ACTION, PreRequestContext, DataProcessContext } from '../types';
+import { REPO_ACTION, PreRequestContext, DataProcessContext, FlowStatus } from '../types';
 
 export class RepositoryContextFactory {
     /**
@@ -13,6 +13,7 @@ export class RepositoryContextFactory {
         transformFn: (p: any, a: REPO_ACTION) => any
     ): PreRequestContext {
         return {
+            status: FlowStatus.PROCEED,
             method: 'GET',
             url: params.basePath,
             metadata: {
@@ -67,23 +68,24 @@ export class RepositoryContextFactory {
     }
 
     /**
-     * 创建一个被中断/拦截的状态成绩单
-     * @param action 当前动作
-     * @param reason 中断原因
+     * 将 PreRequestContext 的中止状态转换为 DataProcessContext
+     * 用于：FlowRunner 捕获到中止信号后，生成给 UI 的反馈数据
      */
-    static createAbortedContext(action: REPO_ACTION, reason: string): DataProcessContext {
+    static handleAborted(preCtx: PreRequestContext): DataProcessContext {
         return {
             list: [],
             total: 0,
             detail: null,
-            message: `[${action}] ${reason}`,
-            code: 499,
+            // 从 preCtx 中提取 abortReason，如果没有则给默认提示
+            message: preCtx.abortReason || `Operation ${preCtx.metadata.action} aborted.`,
+            // 499 是一个常用的代表“客户端关闭/请求取消”的约定代码
+            code: preCtx.abortCode || 499,
             status: {
                 isBusinessSuccess: false,
                 isAborted: true,
                 isCancelled: true,
             },
-            raw: null,
+            raw: null, // 中止流程没有原始网络数据
         };
     }
 }

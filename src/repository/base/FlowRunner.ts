@@ -1,11 +1,12 @@
 import { HttpClient, HttpResponseContext, RequestTask } from '@orbitjs/http';
-import { REPO_ACTION, DataProcessContext, FlowContext, FlowOptions } from '../types';
 import {
-    AccessController,
-    AccessExecutor,
-    DataProcessorExecutor,
-    PreProcessorExecutor,
-} from './executor';
+    REPO_ACTION,
+    DataProcessContext,
+    FlowContext,
+    FlowOptions,
+} from '../types';
+import { AccessExecutor, DataProcessorExecutor, PreProcessorExecutor } from './executor';
+import { RepositoryBusinessError } from '../errors/RepositoryBusinessError';
 import { RepositoryContextFactory } from './RepositoryContextFactory';
 
 export class FlowRunner {
@@ -27,9 +28,8 @@ export class FlowRunner {
                 action,
                 payload
             );
-
             // 2. 预处理 (传参)
-            const { preCtx, abortedResult } = await PreProcessorExecutor.run(
+            const preCtx = await PreProcessorExecutor.run(
                 options.repoName,
                 {
                     basePath: options.basePath,
@@ -41,12 +41,24 @@ export class FlowRunner {
                 payload,
                 options.transformFn
             );
+
             flow.preCtx = preCtx;
-            flow.result = abortedResult;
-            if (flow.result || !flow.preCtx) return flow.result!;
+            flow.result = RepositoryContextFactory.createDataProcess(
+                {
+                    status: 0,
+                    data: null,
+                    metadata: { isHttpSuccess: false, isTransportFailure: false, isAborted: false },
+                } as any,
+                { message: 'Request Initializing' } // 这里可以传入初始状态
+            );
 
             // 3. 网络请求执行体 (传参 + 状态 Map)
             await this.executeNetworkFlow(options, flow);
+
+            if (!flow.result.status.isBusinessSuccess) {
+                // 这里 reject，业务层 list() 后续不执行
+                throw new RepositoryBusinessError(flow.result.message, flow.result);
+            }
 
             if (flow.result) {
                 options.onSuccess(flow.result);

@@ -14,7 +14,7 @@ export class RepositoryConfigNotFoundError extends ErrorBase {
     public readonly configName: string,
     context?: Record<string, any>
   ) {
-    const message = `[RepositoryFactory] Configuration domain "${configName}" not found.`;
+    const message = `Configuration domain "${configName}" not found.`;
     const code = 'REPO_CONFIG_NOT_FOUND';
     
     super(message, code, context);

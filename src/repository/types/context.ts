@@ -1,7 +1,14 @@
 import { HttpMethod, HttpResponseContext, RequestOptions } from '@orbitjs/http';
 import { REPO_ACTION } from './action';
 
+export enum FlowStatus {
+    PENDING = 'pending', // 准备中
+    PROCEED = 'proceed', // 正常进行，可以发送网络请求
+    ABORTED = 'aborted', // 已拦截/中止，持有“中止结果”
+}
+
 export interface PreRequestContext {
+    status: FlowStatus;
     method: HttpMethod;
     url: string;
     // 资源元数据（新增）
@@ -13,6 +20,8 @@ export interface PreRequestContext {
     // 请求具体参数
     options: RequestOptions;
     payload: any;
+    abortReason?: string;
+    abortCode?: number;
 }
 
 export interface DataProcessContext<T = any> {
@@ -58,7 +67,11 @@ export interface FlowOptions {
     activeTasks: Map<REPO_ACTION, any>;
     prePipelines: { global: any; local: any };
     dataPipelines: { global: any; local: any };
-    accessController?: (path: string, action: REPO_ACTION, payload: any) => Promise<boolean | string>;
+    accessController?: (
+        path: string,
+        action: REPO_ACTION,
+        payload: any
+    ) => Promise<boolean | string>;
     transformFn: (p: any, a: REPO_ACTION) => any;
     // 生命周期钩子
     onLoading: (isLoading: boolean) => void;
@@ -81,7 +94,7 @@ export interface FlowContext {
     action: REPO_ACTION;
     payload: any;
     result: DataProcessContext | null; // 任何阶段填入 result，后续物理请求将跳过
-    preCtx: PreRequestContext | null;   // 物理请求前生成的上下文
+    preCtx: PreRequestContext | null; // 物理请求前生成的上下文
     httpRes: HttpResponseContext | null; // HTTP 响应原件
 }
 
