@@ -47,13 +47,42 @@ export interface DataProcessContext<T = any> {
     raw: any; // 原始数据，方便后续处理器处理
 }
 
+/**
+ * 运行流程所需的静态资源和配置
+ */
+export interface FlowOptions {
+    repoName: string;
+    basePath: string;
+    rowKey: string;
+    httpClient: any; // 具体类型按你的项目而定
+    activeTasks: Map<REPO_ACTION, any>;
+    prePipelines: { global: any; local: any };
+    dataPipelines: { global: any; local: any };
+    accessController?: (path: string, action: REPO_ACTION, payload: any) => Promise<boolean | string>;
+    transformFn: (p: any, a: REPO_ACTION) => any;
+    // 生命周期钩子
+    onLoading: (isLoading: boolean) => void;
+    onSuccess: (result: DataProcessContext) => void;
+    onError: (err: any) => void;
+}
+
+/**
+ * 流程流转中的动态数据载体
+ */
+export interface FlowContext {
+    action: REPO_ACTION;
+    payload: any;
+    preCtx: PreRequestContext | null;
+    httpRes: HttpResponseContext | null;
+    result: DataProcessContext | null;
+}
 
 export interface FlowContext {
     action: REPO_ACTION;
     payload: any;
-    result?: DataProcessContext; // 任何阶段填入 result，后续物理请求将跳过
-    preCtx?: PreRequestContext;   // 物理请求前生成的上下文
-    httpRes?: HttpResponseContext; // HTTP 响应原件
+    result: DataProcessContext | null; // 任何阶段填入 result，后续物理请求将跳过
+    preCtx: PreRequestContext | null;   // 物理请求前生成的上下文
+    httpRes: HttpResponseContext | null; // HTTP 响应原件
 }
 
 /**
