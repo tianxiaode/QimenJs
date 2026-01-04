@@ -1,10 +1,10 @@
 /**
- * 🎯 Repository访问被拒绝错误
+ * 🎯 EntityManager访问被拒绝错误
  * 当指定的操作没有权限时抛出
  */
 import { ErrorBase } from '../../error';
 
-export class RepositoryAccessDeniedError extends ErrorBase {
+export class EntityManagerAccessDeniedError extends ErrorBase {
   /**
    * 构造函数
    * @param basePath 导致错误的API路径
@@ -17,11 +17,11 @@ export class RepositoryAccessDeniedError extends ErrorBase {
     context?: Record<string, any>
   ) {
     const message = `PERMISSION_DENIED: ${basePath} -> ${action}`;
-    const code = 'REPO_ACCESS_DENIED';
+    const code = 'ENTITY_MANAGER_ACCESS_DENIED';
     
     super(message, code, context);
     
     // 维护正确的原型链
-    Object.setPrototypeOf(this, RepositoryAccessDeniedError.prototype);
+    Object.setPrototypeOf(this, EntityManagerAccessDeniedError.prototype);
   }
 }

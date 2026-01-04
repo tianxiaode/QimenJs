@@ -1,7 +1,7 @@
 import { PageResult, PaginationParams } from '../types';
-import { CrudRepository } from './CrudRepository';
+import { CrudEntityManager } from './CrudEntityManager';
 
-export abstract class TreeRepository extends CrudRepository {
+export abstract class TreeEntityManager extends CrudEntityManager {
     // 树结构特有的配置
     protected parentKey: string = 'parentId';
     protected childrenKey: string = 'children';
@@ -42,7 +42,7 @@ export abstract class TreeRepository extends CrudRepository {
         }
 
         // 模式 B：标准模式 (懒加载或后端已处理好)
-        // 调用 CrudRepository 的 list，它会根据 _isLocal 自动决定去哪取
+        // 调用 CrudEntityManager 的 list，它会根据 _isLocal 自动决定去哪取
         const result = await super.list(params);
 
         // 如果后端给的是平铺的子节点列表，我们尝试原地转树（如果是单层，转出来还是平的）
@@ -53,7 +53,7 @@ export abstract class TreeRepository extends CrudRepository {
         return result;
     }
     /**
-     * 专门为树设计的“加载子节点”快捷方法
+     * 专门为树设计的"加载子节点"快捷方法
      * 依然复用 list 的逻辑和事件流
      */
     public async loadChildren(parentId: string | number) {

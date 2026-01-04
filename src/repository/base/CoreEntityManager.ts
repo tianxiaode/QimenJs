@@ -4,18 +4,18 @@ import { ILogger, Logger } from '@orbitjs/logger';
 import { RequestTask } from '@orbitjs/http';
 import {
     REPO_ACTION,
-    RepositoryConfig,
+    EntityManagerConfig,
     PreProcessorPipelines,
     DataProcessorPipelines,
     DataProcessContext,
 } from '../types';
-import { defaultCacheManager, RepositoryCacheManager } from './CacheManager';
+import { defaultCacheManager, EntityManagerCacheManager } from './CacheManager';
 import { FlowRunner } from './FlowRunner';
 
 // 假设你已有的 Mixin 工具
 const BaseWithEvents = composeMixins(Object as any, [WithEvents]);
 
-export abstract class CoreRepository extends (BaseWithEvents as any) {
+export abstract class CoreEntityManager extends (BaseWithEvents as any) {
     protected rowKey: string = 'id'; // 默认前端/数据库主键
     protected basePath: string = ''; // 默认 API 路径前缀
     protected logger: ILogger;
@@ -23,10 +23,10 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
     protected localPrePipelines: PreProcessorPipelines = {};
     protected localDataPipelines: DataProcessorPipelines = {};
     protected enableCache: boolean = false;
-    protected cacheManager: RepositoryCacheManager = defaultCacheManager;
+    protected cacheManager: EntityManagerCacheManager = defaultCacheManager;
     protected cacheTTL?: number;
 
-    constructor(protected config: RepositoryConfig) {
+    constructor(protected config: EntityManagerConfig) {
         super();
         this.logger = Logger.for(this.constructor.name);
     }
@@ -39,7 +39,7 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
         
         return await FlowRunner.run(
             {
-                repoName: this.constructor.name,
+                managerName: this.constructor.name,
                 httpClient: this.config.httpClient,
                 activeTasks: this.activeTasks,
                 enableCache: this.enableCache,
@@ -103,7 +103,7 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
             this.activeTasks.delete(action);
 
             // 3. 广播取消状态
-            // 提示：UI 层可以监听 cancel 事件来展示“请求已中止”的提示
+            // 提示：UI 层可以监听 cancel 事件来展示"请求已中止"的提示
             this.emit(`${action}:cancel`, { reason });
 
             // 4. 强制结束 loading 状态

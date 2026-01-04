@@ -5,7 +5,7 @@ import { ICacheManager } from './cache';
 export enum FlowStatus {
     PENDING = 'pending', // 准备中
     PROCEED = 'proceed', // 正常进行，可以发送网络请求
-    ABORTED = 'aborted', // 已拦截/中止，持有“中止结果”
+    ABORTED = 'aborted', // 已拦截/中止，持有"中止结果"
 }
 
 export interface PreRequestContext {
@@ -61,7 +61,7 @@ export interface DataProcessContext<T = any> {
  * 运行流程所需的静态资源和配置
  */
 export interface FlowOptions {
-    repoName: string;
+    managerName: string;
     basePath: string;
     rowKey: string;
     httpClient: any; // 具体类型按你的项目而定

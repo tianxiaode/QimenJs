@@ -1,10 +1,10 @@
 import { array } from '@orbitjs/utils';
-import { PageResult, PaginationParams, RepositoryConfig } from '../types';
-import { CoreRepository } from './CoreRepository';
+import { PageResult, PaginationParams, EntityManagerConfig } from '../types';
+import { CoreEntityManager } from './CoreEntityManager';
 import { DataProcessContext } from '../types';
-import { RepositoryInvalidPageError } from '../errors';
+import { EntityManagerInvalidPageError } from '../errors';
 
-export abstract class ReadRepository extends CoreRepository {
+export abstract class ReadEntityManager extends CoreEntityManager {
     // 1. 内部状态机：存储当前的查询上下文
     protected _queryState: PaginationParams;
 
@@ -20,8 +20,8 @@ export abstract class ReadRepository extends CoreRepository {
      */
     protected localSearchFields: string[] = [];
 
-    constructor(config: RepositoryConfig) {
-        super(config); // 确保 CoreRepository 已经把 config 挂载到了 this 上
+    constructor(config: EntityManagerConfig) {
+        super(config); // 确保 CoreEntityManager 已经把 config 挂载到了 this 上
 
         this._userPageSize = this.defaultPageSize;
 
@@ -70,7 +70,7 @@ export abstract class ReadRepository extends CoreRepository {
         // 调度搬运工执行请求
         const raw = await this.sendRequest('list', this._queryState);
         this._rawItems = raw?.list || [];
-        // 将后端返回的“生料”加工成标准“熟食”
+        // 将后端返回的"生料"加工成标准"熟食"
         this._lastResult = this.mapPageResult(raw || ({} as any), this._queryState);
         return this._lastResult;
     }
@@ -82,8 +82,8 @@ export abstract class ReadRepository extends CoreRepository {
         const { totalPages } = this._lastResult;
 
         if (page < 1 || page > totalPages) {
-            // 直接通过“抛异常”的方式宣告：此路不通
-            throw new RepositoryInvalidPageError(page, totalPages, { nextQuery });
+            // 直接通过"抛异常"的方式宣告：此路不通
+            throw new EntityManagerInvalidPageError(page, totalPages, { nextQuery });
         }
     }
 
@@ -140,7 +140,7 @@ export abstract class ReadRepository extends CoreRepository {
         });
     }
     /**
-     * 方便 UI 直接绑定：<select :options="repo.pageSizeOptions" />
+     * 方便 UI 直接绑定：<select :options="manager.pageSizeOptions" />
      */
     public get pageSizeOptions(): number[] {
         return this.config.pageSizeOptions || [10, 20, 50, 100];

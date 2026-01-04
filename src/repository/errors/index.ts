@@ -1,6 +1,6 @@
-export { RepositoryConfigNotFoundError } from './RepositoryConfigNotFoundError';
-export { RepositoryClassNotFoundError } from './RepositoryClassNotFoundError';
-export { RepositoryAccessDeniedError } from './RepositoryAccessDeniedError';
-export { RepositoryInvalidPageError } from './RepositoryInvalidPageError';
-export { RepositoryBusinessError } from './RepositoryBusinessError';
-export { RepositoryFlowAbortedError } from './RepositoryFlowAbortedError';
+export { EntityManagerConfigNotFoundError } from './EntityManagerConfigNotFoundError';
+export { EntityManagerClassNotFoundError } from './EntityManagerClassNotFoundError';
+export { EntityManagerAccessDeniedError } from './EntityManagerAccessDeniedError';
+export { EntityManagerInvalidPageError } from './EntityManagerInvalidPageError';
+export { EntityManagerBusinessError } from './EntityManagerBusinessError';
+export { EntityManagerFlowAbortedError } from './EntityManagerFlowAbortedError';

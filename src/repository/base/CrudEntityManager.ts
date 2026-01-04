@@ -1,10 +1,10 @@
-import { ReadRepository } from './ReadRepository';
+import { ReadEntityManager } from './ReadEntityManager';
 
 /**
- * 增删改查仓储基类
- * 继承自 ReadRepository，拥有完整的列表、搜索、翻页和本地查询能力
+ * 增删改查实体管理器基类
+ * 继承自 ReadEntityManager，拥有完整的列表、搜索、翻页和本地查询能力
  */
-export abstract class CrudRepository extends ReadRepository {
+export abstract class CrudEntityManager extends ReadEntityManager {
     /**
      * 创建记录
      * @param data 实体数据

@@ -1,7 +1,7 @@
 import { HttpClient } from '@orbitjs/http';
 import { AccessControlHandler, DataProcessorPipelines, PreProcessorPipelines } from './processor';
 
-export interface RepositoryConfig {
+export interface EntityManagerConfig {
     /** 核心搬运工 */
     httpClient: HttpClient;
 

@@ -6,7 +6,7 @@ import {
     FlowOptions,
 } from '../types';
 import { AccessExecutor, CacheExecutor, DataProcessorExecutor, PreProcessorExecutor } from './executor';
-import { RepositoryBusinessError } from '../errors/RepositoryBusinessError';
+import { EntityManagerBusinessError } from '../errors';
 import { RepositoryContextFactory } from './RepositoryContextFactory';
 
 export class FlowRunner {
@@ -68,7 +68,7 @@ export class FlowRunner {
 
             if (!flow.result.status.isBusinessSuccess) {
                 // 这里 reject，业务层 list() 后续不执行
-                throw new RepositoryBusinessError(flow.result.message, flow.result);
+                throw new EntityManagerBusinessError(flow.result.message, flow.result);
             }
 
             if (flow.result) {

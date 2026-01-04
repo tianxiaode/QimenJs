@@ -1,10 +1,10 @@
 /**
- * 🎯 Repository无效页码错误
+ * 🎯 EntityManager无效页码错误
  * 当请求的页码超出有效范围时抛出
  */
 import { ErrorBase } from '../../error';
 
-export class RepositoryInvalidPageError extends ErrorBase {
+export class EntityManagerInvalidPageError extends ErrorBase {
   /**
    * 构造函数
    * @param page 请求的页码
@@ -17,11 +17,11 @@ export class RepositoryInvalidPageError extends ErrorBase {
     context?: Record<string, any>
   ) {
     const message = `跳转页码 ${page} 超出范围 [1, ${totalPages}]`;
-    const code = 'REPO_INVALID_PAGE';
+    const code = 'ENTITY_MANAGER_INVALID_PAGE';
     
     super(message, code, context);
     
     // 维护正确的原型链
-    Object.setPrototypeOf(this, RepositoryInvalidPageError.prototype);
+    Object.setPrototypeOf(this, EntityManagerInvalidPageError.prototype);
   }
 }
