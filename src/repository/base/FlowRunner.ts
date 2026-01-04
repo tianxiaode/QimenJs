@@ -5,7 +5,7 @@ import {
     FlowContext,
     FlowOptions,
 } from '../types';
-import { AccessExecutor, DataProcessorExecutor, PreProcessorExecutor } from './executor';
+import { AccessExecutor, CacheExecutor, DataProcessorExecutor, PreProcessorExecutor } from './executor';
 import { RepositoryBusinessError } from '../errors/RepositoryBusinessError';
 import { RepositoryContextFactory } from './RepositoryContextFactory';
 
@@ -28,6 +28,25 @@ export class FlowRunner {
                 action,
                 payload
             );
+
+            if(options.enableCache){
+                const  cacheResult = await CacheExecutor.read(options.repoName, options.cacheManager!, action, payload);
+                if(cacheResult){
+                    flow.result = cacheResult;
+                    options.onSuccess(flow.result);
+                    return flow.result;
+                }
+            }
+
+            flow.result = RepositoryContextFactory.createDataProcess(
+                {
+                    status: 0,
+                    data: null,
+                    metadata: { isHttpSuccess: false, isTransportFailure: false, isAborted: false },
+                } as any,
+                { message: 'Request Initializing' } // 这里可以传入初始状态
+            );
+
             // 2. 预处理 (传参)
             const preCtx = await PreProcessorExecutor.run(
                 options.repoName,
@@ -43,14 +62,6 @@ export class FlowRunner {
             );
 
             flow.preCtx = preCtx;
-            flow.result = RepositoryContextFactory.createDataProcess(
-                {
-                    status: 0,
-                    data: null,
-                    metadata: { isHttpSuccess: false, isTransportFailure: false, isAborted: false },
-                } as any,
-                { message: 'Request Initializing' } // 这里可以传入初始状态
-            );
 
             // 3. 网络请求执行体 (传参 + 状态 Map)
             await this.executeNetworkFlow(options, flow);
@@ -62,6 +73,10 @@ export class FlowRunner {
 
             if (flow.result) {
                 options.onSuccess(flow.result);
+            }
+
+            if(options.enableCache && flow.result){
+                await CacheExecutor.save(options.repoName, options.cacheManager!, action, payload, flow.result,options.cacheTTL);
             }
 
             return flow.result!;

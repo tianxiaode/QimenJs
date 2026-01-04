@@ -2,6 +2,7 @@ import { array } from '@orbitjs/utils';
 import { PageResult, PaginationParams, RepositoryConfig } from '../types';
 import { CoreRepository } from './CoreRepository';
 import { DataProcessContext } from '../types';
+import { RepositoryInvalidPageError } from '../errors';
 
 export abstract class ReadRepository extends CoreRepository {
     // 1. 内部状态机：存储当前的查询上下文
@@ -51,8 +52,11 @@ export abstract class ReadRepository extends CoreRepository {
      * 所有的搜索、翻页、过滤最终都会汇聚到这里
      */
     public async list(params: PaginationParams = {}): Promise<PageResult> {
+        const nextQuery = { ...this._queryState, ...params };
+        this.validateQueryState(nextQuery);
+
         // 合并状态：保留之前的搜索条件，覆盖新的分页/过滤参数
-        this._queryState = { ...this._queryState, ...params };
+        this._queryState = nextQuery;
 
         if (this._isLocal) {
             // 如果还没缓存，先去同步全量数据
@@ -67,8 +71,20 @@ export abstract class ReadRepository extends CoreRepository {
         const raw = await this.sendRequest('list', this._queryState);
         this._rawItems = raw?.list || [];
         // 将后端返回的“生料”加工成标准“熟食”
-        this._lastResult = this.mapPageResult(raw || {} as any, this._queryState);
+        this._lastResult = this.mapPageResult(raw || ({} as any), this._queryState);
         return this._lastResult;
+    }
+
+    protected validateQueryState(nextQuery: PaginationParams): void {
+        if (!this._lastResult) return;
+
+        const { page = 1 } = nextQuery;
+        const { totalPages } = this._lastResult;
+
+        if (page < 1 || page > totalPages) {
+            // 直接通过“抛异常”的方式宣告：此路不通
+            throw new RepositoryInvalidPageError(page, totalPages, { nextQuery });
+        }
     }
 
     /**
@@ -134,13 +150,11 @@ export abstract class ReadRepository extends CoreRepository {
      * 翻页系列
      */
     public async nextPage() {
-        if (this._lastResult && !this._lastResult.hasNext) return this._lastResult;
         return this.list({ page: this._queryState.page! + 1 });
     }
 
     public async prePage() {
-        const pre = Math.max(1, this._queryState.page! - 1);
-        return this.list({ page: pre });
+        return this.list({ page: this._queryState.page! - 1 });
     }
 
     public async jumpTo(page: number) {

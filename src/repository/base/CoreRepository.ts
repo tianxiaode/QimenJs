@@ -42,6 +42,9 @@ export abstract class CoreRepository extends (BaseWithEvents as any) {
                 repoName: this.constructor.name,
                 httpClient: this.config.httpClient,
                 activeTasks: this.activeTasks,
+                enableCache: this.enableCache,
+                cacheManager: this.cacheManager,
+                cacheTTL: this.cacheTTL,
                 // ... pipelines ...
                 basePath: this.basePath,
                 rowKey: this.rowKey,

@@ -1,6 +1,6 @@
-import { CacheItem } from '../types';
+import { CacheItem, ICacheManager } from '../types';
 
-export class RepositoryCacheManager {
+export class RepositoryCacheManager implements ICacheManager {
     private pool = new Map<string, CacheItem>();
     // 增加最大容量控制，防止内存溢出
     private readonly MAX_ITEMS = 500;

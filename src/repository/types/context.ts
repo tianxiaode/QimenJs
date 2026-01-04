@@ -1,5 +1,6 @@
 import { HttpMethod, HttpResponseContext, RequestOptions } from '@orbitjs/http';
 import { REPO_ACTION } from './action';
+import { ICacheManager } from './cache';
 
 export enum FlowStatus {
     PENDING = 'pending', // 准备中
@@ -67,6 +68,9 @@ export interface FlowOptions {
     activeTasks: Map<REPO_ACTION, any>;
     prePipelines: { global: any; local: any };
     dataPipelines: { global: any; local: any };
+    enableCache: boolean;
+    cacheManager: ICacheManager | null;
+    cacheTTL?: number | null;
     accessController?: (
         path: string,
         action: REPO_ACTION,
