@@ -8,6 +8,7 @@ import {
     ProcessorType,
     PipelineTrigger,
     PIPELINE_MAP,
+    PriorityWeight,
 } from '../types';
 import { object } from '@orbitjs/utils';
 
@@ -92,40 +93,40 @@ export class Registry {
     // --- 2. 逻辑层：只管公共/可插拔的处理器 ---
 
     static registerProcessor(entry: ProcessorEntry) {
-        const { id, type } = entry;
+        const { id, type, weight, offset = 0 } = entry;
 
-        if (id) {
-            // 1. 查找旧索引：看看这个 ID 以前在哪个“抽屉”里
-            const oldType = this.processorIdIndexMap.get(id);
-
-            if (oldType) {
-                // 情况 A: ID 存在且类型一致 -> 准备在原位覆盖
-                // 情况 B: ID 存在但类型变了 -> 需要跨抽屉搬迁（比如从 HTTP_BEFORE 搬到 ENTITY_BEFORE）
-
-                const oldPool = this.processorMap.get(oldType) || [];
-                const index = oldPool.findIndex(p => p.id === id);
-
-                if (index !== -1) {
-                    oldPool.splice(index, 1); // 彻底从旧位置踢出
-                    this.logger.debug(`Processor ID "${id}" detected, overriding existing logic.`);
-                }
-            }
-
-            // 2. 建立新索引（或者更新原索引）
-            this.processorIdIndexMap.set(id, type);
+        // 1. 安全限制：Offset 不得超过 999
+        // 1. 严格正向约束：不允许“向下潜”
+        if (offset < 0) {
+            throw new KernelError(
+                `Illegal offset for [${id}]: ${offset}. Offset must be >= 0.`,
+                KernelErrorCode.REGISTRY_INVALID_CONFIG
+            );
         }
 
-        // 3. 正常插入新抽屉
-        if (!this.processorMap.get(type)) {
-            this.processorMap.set(type, []);
+        // 2. 范围上限约束：不允许“跨层”
+        // 确保偏移量不会让该层级膨胀到下一层
+        if (offset > 1999) {
+            throw new KernelError(
+                `Offset ${offset} is too large. Max allowed is 1999.`,
+                KernelErrorCode.REGISTRY_INVALID_CONFIG
+            );
         }
-        const pool = this.processorMap.get(type)!;
-        pool.push(entry);
+        if (id && this.processorIdIndexMap.has(id)) {
+            const oldType = this.processorIdIndexMap.get(id)!;
+            const pool = this.processorMap.get(oldType) || [];
+            const idx = pool.findIndex(p => p.id === id);
+            if (idx !== -1) pool.splice(idx, 1);
+        }
 
-        // 4. 重新排序：确保覆盖后的优先级依然正确
-        pool.sort((a, b) => b.priority - a.priority);
+        // 2. 存入抽屉 & 更新索引
+        if (id) this.processorIdIndexMap.set(id, type);
+        if (!this.processorMap.has(type)) this.processorMap.set(type, []);
+        this.processorMap.get(type)!.push(entry);
+
+        // 3. 抽屉内排序（按 Weight + Offset）
+        this.processorMap.get(type)!.sort((a, b) => b.weight - a.weight || b.offset - a.offset);
     }
-
     /**
      * 注销处理器
      * @param id 处理器的唯一标识
@@ -166,11 +167,17 @@ export class Registry {
             );
         }
 
-        // 2. 利用之前定义的原子方法从多个抽屉捞东西
         const allEntries = targetTypes.flatMap(type => this.fetchFromPool(type, context));
 
         // 3. 全局优先级大排队
-        return allEntries.sort((a, b) => b.priority - a.priority).map(p => p.handler as T);
+        return allEntries
+            .sort((a, b) => {
+                if (b.weight !== a.weight) {
+                    return b.weight - a.weight; // 权重高的排前面
+                }
+                return b.offset - a.offset; // 权重相同时，偏移量大的排前面
+            })
+            .map(p => p.handler as T);
     }
     /**
      * 内部方法：执行具体的过滤逻辑
@@ -202,47 +209,57 @@ export class Registry {
     }
 
     /**
-     * 获取当前生效的所有处理器清单
-     * 已适配 Map 分组结构，并根据执行阶段排序
+     * 获取当前生效的所有处理器清单（调试用）
      */
     static getProcessorInspector(filter?: Partial<ProcessorEntry>) {
-        // 1. 从所有抽屉里把东西都倒出来，并打上“所属抽屉”的标签
+        // 1. 展平 Map 结构
         let allEntries = Array.from(this.processorMap.entries()).flatMap(([type, pool]) => {
-            return pool.map(p => ({ ...p, type })); // 展开并保留其 type
+            return pool.map(p => ({ ...p, type }));
         });
 
-        // 2. 执行基础过滤（如果有过滤条件的话）
+        // 2. 基础过滤
         if (filter) {
             allEntries = allEntries.filter(p => {
                 return Object.entries(filter).every(([key, value]) => (p as any)[key] === value);
             });
         }
 
-        // 3. 排序逻辑：
-        //   - 首先按 Stage 排序 (BEFORE 在前，AFTER 在后)
-        //   - 其次按 Type 排序 (COMMON 通常排在业务之后或之前，这里统一按优先级看)
-        //   - 核心按优先级 (Priority) 降序
+        // 3. 进化后的排序逻辑
         return allEntries
             .sort((a, b) => {
-                // 阶段排序（简单处理：包含 BEFORE 的排前面）
+                // 维度 1: 阶段排序 (BEFORE 永远在 AFTER 之前)
                 const aIsBefore = a.type.includes('BEFORE');
                 const bIsBefore = b.type.includes('BEFORE');
                 if (aIsBefore !== bIsBefore) return aIsBefore ? -1 : 1;
 
-                // 同阶段按优先级降序
-                return b.priority - a.priority;
+                // 维度 2: 权重排序 (SYSTEM > SECURITY > CORE > ...)
+                if (b.weight !== a.weight) return b.weight - a.weight;
+
+                // 维度 3: 偏移量排序 (同权重下比数字大小)
+                return b.offset - a.offset;
             })
             .map(p => ({
                 ID: p.id || '--',
                 Type: p.type,
-                Priority: p.priority,
-                // 核心：直观展示匹配规则
+                // 将 Weight 数值还原为语义标签，调试更直观
+                Weight: this.formatWeightLabel(p.weight),
+                Offset: p.offset,
                 Scope: this.formatScope(p),
                 Domain: p.domain || '*',
                 Action: p.action || '*',
             }));
     }
 
+    /**
+     * 辅助方法：将数字权重映射回标签
+     */
+    private static formatWeightLabel(weight: number): string {
+        // 寻找枚举中对应的 Key
+        return (
+            Object.keys(PriorityWeight).find(key => (PriorityWeight as any)[key] === weight) ||
+            `Custom(${weight})`
+        );
+    }
     /**
      * 辅助方法：格式化作用域，一眼看出是全局还是专用
      */

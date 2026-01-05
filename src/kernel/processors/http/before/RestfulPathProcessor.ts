@@ -1,5 +1,5 @@
-import { Registry } from "@/kernel/registry";
-import { FlowContext, ProcessorPriority } from "../../../types";
+import { Registry } from "../../../registry";
+import { FlowContext, PriorityWeight, ProcessorType } from "../../../types";
 import { string } from '@orbitjs/utils'
 
 const RestfulPathProcessor = (ctx: FlowContext) => {
@@ -17,8 +17,8 @@ const RestfulPathProcessor = (ctx: FlowContext) => {
 
 Registry.registerProcessor({
     id: 'RestfulPathProcessor',
-    priority: ProcessorPriority.CORE_EXECUTE + 1,
+    weight: PriorityWeight.CORE,
+    offset: 1,
     handler: RestfulPathProcessor,
-    isBefore: true,
-    isHttp:true,
+    type: ProcessorType.HTTP_BEFORE_COMMON,
 })

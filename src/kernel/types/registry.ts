@@ -35,15 +35,14 @@ export type PipelineTrigger =
     | ProcessorType.ENTITY_BEFORE
     | ProcessorType.ENTITY_AFTER;
 
-export enum ProcessorPriority {
-    CRITICAL = 0,
-    SECURITY = 100,
-    VALIDATION = 200,
-    BUSINESS = 300,
-    CORE_EXECUTE = 500, // http 请求通常在这里
-    DATA_ALIGN = 600, // Schema 转换
-    UI_FEEDBACK = 900,
+export enum PriorityWeight {
+    SYSTEM = 9000,    // 系统级 (Restful 路径处理、核心拦截)
+    SECURITY = 7000,  // 安全级 (鉴权、加密)
+    CORE = 5000,      // 核心级 (数据转换、基础格式化)
+    BUSINESS = 3000,  // 业务级 (默认)
+    LOG = 1000        // 日志与监控级
 }
+
 
 export interface EntityEntry {
     name: string; // 实体唯一标识 (如 'User')
@@ -65,14 +64,14 @@ export interface EntityEntry {
  */
 export interface ProcessorEntry<T = any> {
     id?: string; // 可选，手动指定可覆盖
+    type: ProcessorType; // 处理器类型
+    weight: PriorityWeight; // 优先级权重
+    offset: number; // 优先级偏移，用于调整优先级
     handler: T; // 具体的逻辑函数
-    priority: number; // 排序依据
 
     // --- 归属判定 ---
     domain?: string; // 所属业务域（如 order, user）
     action?: ENTITY_ACTION; // 动作类型
-
-    type: ProcessorType; // 处理器类型
 }
 
 export interface DomainConfig {
