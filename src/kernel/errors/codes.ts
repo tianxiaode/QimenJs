@@ -1,0 +1,15 @@
+export enum KernelErrorCode {
+    // 1. 注册与配置错误 (Registry 阶段)
+    REGISTRY_CONFLICT     = 'KERNEL_REGISTRY_CONFLICT',
+    REGISTRY_MISSING      = 'KERNEL_REGISTRY_TEMPLATE_NOT_FOUND',
+    
+    // 权限与校验
+    ACCESS_DENIED         = 'KERNEL_AUTH_ACCESS_DENIED',
+    
+    // 流程引擎相关
+    FLOW_ABORTED          = 'KERNEL_FLOW_MANUAL_ABORT',
+    FLOW_EXECUTOR_CRASH   = 'KERNEL_FLOW_EXECUTOR_ERROR',
+    
+    // 数据对齐相关
+    MAPPING_FAILED        = 'KERNEL_DATA_MAPPING_FAILED'
+}

@@ -24,11 +24,6 @@
       "require": "./dist/async/index.js",
       "types": "./dist/async/index.d.ts"
     },
-    "./base": {
-      "import": "./dist/base/index.esm.js",
-      "require": "./dist/base/index.js",
-      "types": "./dist/base/index.d.ts"
-    },
     "./core": {
       "import": "./dist/core/index.esm.js",
       "require": "./dist/core/index.js",
@@ -38,11 +33,6 @@
       "import": "./dist/error/index.esm.js",
       "require": "./dist/error/index.js",
       "types": "./dist/error/index.d.ts"
-    },
-    "./event": {
-      "import": "./dist/event/index.esm.js",
-      "require": "./dist/event/index.js",
-      "types": "./dist/event/index.d.ts"
     },
     "./logger": {
       "import": "./dist/logger/index.esm.js",
@@ -74,15 +64,10 @@
       "require": "./dist/crypto/index.js",
       "types": "./dist/crypto/index.d.ts"
     },
-    "./repository": {
-      "import": "./dist/repository/index.esm.js",
-      "require": "./dist/repository/index.js",
-      "types": "./dist/repository/index.d.ts"
-    },
-    "./http": {
-      "import": "./dist/http/index.esm.js",
-      "require": "./dist/http/index.js",
-      "types": "./dist/http/index.d.ts"
+    "./kernel": {
+      "import": "./dist/kernel/index.esm.js",
+      "require": "./dist/kernel/index.js",
+      "types": "./dist/kernel/index.d.ts"
     }
   },
   "files": [
