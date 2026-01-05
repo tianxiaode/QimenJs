@@ -65,6 +65,7 @@ export interface FlowContext<T = any> {
         headers: Record<string, string>;
         query?: Record<string, any>;
         body?: any;
+        segments: (string | number)[],
 
         // 核心配置 (来自 HttpOptions)
         timeout: number;

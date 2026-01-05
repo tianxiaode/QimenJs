@@ -1,5 +1,40 @@
 import { ENTITY_ACTION, FieldMapping } from './base';
 
+
+export enum ProcessorType {
+    // --- HTTP 流水线 (IO 层) ---
+    HTTP_BEFORE = 'HTTP_BEFORE', // 特定业务的请求前置
+    HTTP_AFTER = 'HTTP_AFTER', // 特定业务的请求后置
+    HTTP_BEFORE_COMMON = 'HTTP_BEFORE_COMMON', // 全局请求前置 (如：添加 Token、Restful 路径处理)
+    HTTP_AFTER_COMMON = 'HTTP_AFTER_COMMON', // 全局请求后置 (如：错误统一上报、格式预处理)
+
+    // --- Entity 流水线 (逻辑层) ---
+    ENTITY_BEFORE = 'ENTITY_BEFORE', // 特定实体的逻辑前置 (如：计算属性补充)
+    ENTITY_AFTER = 'ENTITY_AFTER', // 特定实体的逻辑后置 (如：基因映射后的加工)
+    ENTITY_BEFORE_COMMON = 'ENTITY_BEFORE_COMMON', // 全局逻辑前置 (如：通用的权限校验)
+    ENTITY_AFTER_COMMON = 'ENTITY_AFTER_COMMON', // 全局逻辑后置 (如：自动日志打印)
+}
+
+/**
+ * 定义执行流与抽屉的组合关系
+ * 外部只需指定 Key，Registry 自动提取对应的多个抽屉
+ */
+export const PIPELINE_MAP: Record<string, ProcessorType[]> = {
+    [ProcessorType.HTTP_BEFORE]: [ProcessorType.HTTP_BEFORE, ProcessorType.HTTP_BEFORE_COMMON],
+    [ProcessorType.HTTP_AFTER]: [ProcessorType.HTTP_AFTER, ProcessorType.HTTP_AFTER_COMMON],
+    [ProcessorType.ENTITY_BEFORE]: [
+        ProcessorType.ENTITY_BEFORE,
+        ProcessorType.ENTITY_BEFORE_COMMON,
+    ],
+    [ProcessorType.ENTITY_AFTER]: [ProcessorType.ENTITY_AFTER, ProcessorType.ENTITY_AFTER_COMMON],
+};
+
+export type PipelineTrigger =
+    | ProcessorType.HTTP_BEFORE
+    | ProcessorType.HTTP_AFTER
+    | ProcessorType.ENTITY_BEFORE
+    | ProcessorType.ENTITY_AFTER;
+
 export enum ProcessorPriority {
     CRITICAL = 0,
     SECURITY = 100,
@@ -37,12 +72,7 @@ export interface ProcessorEntry<T = any> {
     domain?: string; // 所属业务域（如 order, user）
     action?: ENTITY_ACTION; // 动作类型
 
-    // --- 流程位标识 (Flags) ---
-    isHttp?: boolean;  //是否属于http处理器
-    isEntity?: boolean; //是否属于实体管理的处理器
-    isBefore?: boolean; //是否前置处理器
-    isAfter?: boolean; //是否后置处理器
-    isCommon?: boolean; // 为 true 时，匹配该流程下的所有 action 和 domain
+    type: ProcessorType; // 处理器类型
 }
 
 export interface DomainConfig {

@@ -11,5 +11,8 @@ export enum KernelErrorCode {
     FLOW_EXECUTOR_CRASH   = 'KERNEL_FLOW_EXECUTOR_ERROR',
     
     // 数据对齐相关
-    MAPPING_FAILED        = 'KERNEL_DATA_MAPPING_FAILED'
+    MAPPING_FAILED        = 'KERNEL_DATA_MAPPING_FAILED',
+
+/** 尝试触发了一个未定义或非法的流水线入口 */
+    REGISTRY_INVALID_TRIGGER = 'KERNEL_REGISTRY_INVALID_TRIGGER',    
 }
