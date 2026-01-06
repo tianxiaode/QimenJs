@@ -1,9 +1,6 @@
 import {
-    AnyValidationResult,
-    RuleBaseOptions,
-    ValidationErrorContext,
-    ValidationResult,
     ValidationRuleError,
+    ValidationErrorContext,
 } from '../types';
 import { ValidationErrorCode } from './codes';
 import { ValidationError } from './ValidationError';
@@ -21,7 +18,7 @@ export const ValidationErrorBuilder = {
      * @param options - 错误选项，包括参数和上下文
      * @returns 标准化的验证错误对象
      */
-    createError(code: ValidationErrorCode, options?: RuleBaseOptions): ValidationRuleError {
+    createError(code: ValidationErrorCode, options?: any): ValidationRuleError {
         return {
             code,
             params: options?.params || {},
@@ -353,18 +350,6 @@ export const ValidationErrorBuilder = {
             params: {},
             context,
         });
-    },
-
-    /**
-     * 规范化验证结果
-     * 将不同类型的验证结果统一为标准格式
-     *
-     * @param result - 原始验证结果（可能是单个错误或错误数组）
-     * @returns 标准化后的验证结果（错误数组或null）
-     */
-    normalizeResult(result: AnyValidationResult): ValidationResult {
-        if (!result) return null;
-        return Array.isArray(result) ? (result.length > 0 ? result : null) : [result];
     },
 
     /**

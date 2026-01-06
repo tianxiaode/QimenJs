@@ -1,6 +1,6 @@
 import {
     ValidationTypeNotDefinedError,
-} from '../../validation/core/errors';
+} from '../../validation/errors';
 import { ValidationErrorContext, ValidationResult } from '../../validation/core/types';
 import { Validator } from '../../validation/core/Validator';
 

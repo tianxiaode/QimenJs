@@ -2,7 +2,7 @@ import {
     DuplicateValidatorError,
     ValidationTypeNotDefinedError,
     ValidatorNotFoundError,
-} from './errors';
+} from '../errors';
 import { ValidationErrorContext, ValidationResult, ValidatorFunction } from './types';
 
 export class Validator {

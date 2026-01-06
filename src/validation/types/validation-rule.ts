@@ -1,7 +1,6 @@
-export type CustomValidationFunction = (
-    value: any,
-    rule: ValidationRule
-) => boolean | Promise<boolean>;
+import { ValidationProcessorHandler } from "./processor";
+
+type CustomValidationFunction = (value: any, rule: ValidationRule) => boolean | Promise<boolean>;
 
 /**
  * 验证模式类型枚举
@@ -36,7 +35,7 @@ export type PatternSwitches = {
 
 // 基础识别字段
 interface BasicIdentificationConstraints {
-    type?: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'password' | 'compare';
+    type?: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object' | 'password';
     message?: string;
     default?: any; // 当输入为空时的兜底值
     transform?: (val: any, rule: ValidationRule) => any; // 物理转换逻辑
@@ -52,44 +51,16 @@ interface ExistenceAndSanitizationConstraints {
 
 // 语义化快捷预设字段
 interface SemanticConstraints {
-    format?: ValidationPatternType | string;
-    is?: // 1. 物理形态 (Object/Buffer/File)
-        | 'file'
-        | 'image'
-        | 'blob'
-        | 'buffer'
-        // 2. 数值特质 (Number)
-        | 'integer'
-        | 'float'
-        | 'even'
-        | 'odd'
-        | 'infinite'
-        | 'nan'
-        // 3. 时间特质 (Date/String)
-        | 'future'
-        | 'past'
-        | 'today'
-        | 'tomorrow'
-        | 'yesterday'
-        // 4. 字符串特质 (String)
-        | 'json'
-        | 'base64'
-        | 'hex';
-
+    format?: ValidationPatternType | string; 
+    period?: 'future' | 'past' | 'today' | 'tomorrow' | 'yesterday';
+    is?: 'file' | 'image' | 'blob' | 'buffer';
+    
     // 文本模式约束
     pattern?: RegExp;
     uppercase?: boolean;
     lowercase?: boolean;
     digit?: boolean;
     specialChar?: boolean;
-}
-
-// --- 逻辑与关联模块 ---
-interface RelationConstraints {
-    includes?: any[] | ((rule: ValidationRule) => any[]); // 必须包含/属于
-    excludes?: any[] | ((rule: ValidationRule) => any[]); // 不能包含/属于
-
-    // 针对数字的特殊语义也可以放在这里，或者保持在 Semantic 里的 is
 }
 
 // 范围与关系约束字段
@@ -100,24 +71,25 @@ interface RangeRelationConstraints {
     exact?: number;
 
     // 逻辑关联
-    operator?: '=' | '!=' | '>' | '>=' | '<' | '<=';
+    enum?: any[] | ((rule: ValidationRule) => any[]);
+    operator?: '===' | '!==' | '>' | '>=' | '<' | '<=';
     target?: any | ((rule: ValidationRule) => any);
 }
 
 // 集合约束字段
 interface CollectionConstraints {
     // 拆分控制
-    separator?: string | RegExp;
+    separator?: string | RegExp; 
     allowEmptyItem?: boolean;
-
+    
     // 子项规则与报错控制
     itemRule?: CustomValidationFunction | ValidationRule; // 统一子项规则
-    allItemsError?: boolean;
-
+    allItemsError?: boolean; 
+    
     // 集合数量约束 (物理隔离，不与 min/max 混淆)
     minItems?: number;
     maxItems?: number;
-
+    
     // 数组特有
     unique?: boolean;
     uniqueBy?: string | ((item: any, rule: ValidationRule) => any);
@@ -131,7 +103,7 @@ interface ObjectConstraints {
     allowKeys?: string[];
     denyKeys?: string[];
     additionalProperties?: boolean;
-
+    
     // 对象子属性递归
     mapping?: Record<string, ValidationRule[]>;
 }
@@ -152,16 +124,14 @@ interface ValidationBehaviorConstraints {
 }
 
 // 整合所有约束接口
-export interface ValidationRule
-    extends
-        BasicIdentificationConstraints,
-        ExistenceAndSanitizationConstraints,
-        SemanticConstraints,
-        RangeRelationConstraints,
-        CollectionConstraints,
-        ObjectConstraints,
-        ValidationBehaviorConstraints,
-        RelationConstraints,
-        PatternSwitches {
+export interface ValidationRule 
+    extends BasicIdentificationConstraints,
+            ExistenceAndSanitizationConstraints,
+            SemanticConstraints,
+            RangeRelationConstraints,
+            CollectionConstraints,
+            ObjectConstraints,
+            ValidationBehaviorConstraints,
+            PatternSwitches {
     [key: string]: any;
 }

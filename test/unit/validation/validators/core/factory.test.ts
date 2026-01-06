@@ -1,6 +1,6 @@
 import { createCoreValidator, preprocessRequiredRule } from '@/validation/validators/core/factory';
 import { ValidationErrorContext, CheckFunction } from '@/validation';
-import { ValidationErrorCode } from '@/validation/core/errors/codes';
+import { ValidationErrorCode } from '@/validation/errors/codes';
 
 // 模拟验证函数
 const mockValidator1: CheckFunction = (value, rule, context) => {
