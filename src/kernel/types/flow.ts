@@ -1,6 +1,3 @@
-/**
- * kernel/types/kernel.ts
- */
 import { ENTITY_ACTION } from './base'; // 或根据你实际路径
 import { HttpResponseType } from './http';
 import { DomainConfig, EntityEntry } from './registry';

@@ -1,48 +1,4 @@
-import { ENTITY_ACTION, FieldMapping } from './base';
-
-
-export enum ProcessorType {
-    // --- HTTP 流水线 (IO 层) ---
-    HTTP_BEFORE = 'HTTP_BEFORE', // 特定业务的请求前置
-    HTTP_AFTER = 'HTTP_AFTER', // 特定业务的请求后置
-    HTTP_BEFORE_COMMON = 'HTTP_BEFORE_COMMON', // 全局请求前置 (如：添加 Token、Restful 路径处理)
-    HTTP_AFTER_COMMON = 'HTTP_AFTER_COMMON', // 全局请求后置 (如：错误统一上报、格式预处理)
-
-    // --- Entity 流水线 (逻辑层) ---
-    ENTITY_BEFORE = 'ENTITY_BEFORE', // 特定实体的逻辑前置 (如：计算属性补充)
-    ENTITY_AFTER = 'ENTITY_AFTER', // 特定实体的逻辑后置 (如：基因映射后的加工)
-    ENTITY_BEFORE_COMMON = 'ENTITY_BEFORE_COMMON', // 全局逻辑前置 (如：通用的权限校验)
-    ENTITY_AFTER_COMMON = 'ENTITY_AFTER_COMMON', // 全局逻辑后置 (如：自动日志打印)
-}
-
-/**
- * 定义执行流与抽屉的组合关系
- * 外部只需指定 Key，Registry 自动提取对应的多个抽屉
- */
-export const PIPELINE_MAP: Record<string, ProcessorType[]> = {
-    [ProcessorType.HTTP_BEFORE]: [ProcessorType.HTTP_BEFORE, ProcessorType.HTTP_BEFORE_COMMON],
-    [ProcessorType.HTTP_AFTER]: [ProcessorType.HTTP_AFTER, ProcessorType.HTTP_AFTER_COMMON],
-    [ProcessorType.ENTITY_BEFORE]: [
-        ProcessorType.ENTITY_BEFORE,
-        ProcessorType.ENTITY_BEFORE_COMMON,
-    ],
-    [ProcessorType.ENTITY_AFTER]: [ProcessorType.ENTITY_AFTER, ProcessorType.ENTITY_AFTER_COMMON],
-};
-
-export type PipelineTrigger =
-    | ProcessorType.HTTP_BEFORE
-    | ProcessorType.HTTP_AFTER
-    | ProcessorType.ENTITY_BEFORE
-    | ProcessorType.ENTITY_AFTER;
-
-export enum PriorityWeight {
-    SYSTEM = 9000,    // 系统级 (Restful 路径处理、核心拦截)
-    SECURITY = 7000,  // 安全级 (鉴权、加密)
-    CORE = 5000,      // 核心级 (数据转换、基础格式化)
-    BUSINESS = 3000,  // 业务级 (默认)
-    LOG = 1000        // 日志与监控级
-}
-
+import { FieldMapping } from './base';
 
 export interface EntityEntry {
     name: string; // 实体唯一标识 (如 'User')
@@ -59,24 +15,18 @@ export interface EntityEntry {
     };
     filterKeys?: string[]; // 用于本地模糊搜索的字段清单
 }
-/**
- * 处理器条目：包含逻辑和优先级
- */
-export interface ProcessorEntry<T = any> {
-    id?: string; // 可选，手动指定可覆盖
-    type: ProcessorType; // 处理器类型
-    weight: PriorityWeight; // 优先级权重
-    offset: number; // 优先级偏移，用于调整优先级
-    handler: T; // 具体的逻辑函数
-
-    // --- 归属判定 ---
-    domain?: string; // 所属业务域（如 order, user）
-    action?: ENTITY_ACTION; // 动作类型
-}
 
 export interface DomainConfig {
     baseUrl: string; // 必须有，因为这是域的身份
     timeout?: number; // 可选：某些域（如上传域）可能需要更长的超时
     headers?: Record<string, string>; // 可选：一些固定的、非动态的 Header（如 AppID）
     custom?: Record<string, any>; // 预留：给插件或特殊业务存自定义数据
+    passwordRule?: {
+        minLength: number;
+        maxLength: number;
+        uperrcase: boolean;
+        lowerrcase: boolean;
+        number: boolean;
+        specialChar: boolean;
+    };
 }
