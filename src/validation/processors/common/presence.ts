@@ -1,4 +1,3 @@
-import { isEmptyValue } from '../../utils';
 import { ValidationErrorBuilder } from '../../errors';
 import {
     ALL_TAGS,
@@ -7,38 +6,41 @@ import {
     ValidationWeight,
 } from '../../types';
 import { ValidationRegistry } from '../../core';
+import { refreshContextStatus } from './util';
 
-export const PresenceProcessor: ValidationProcessorHandler = (context: ValidationContext) => {
-    const { value, rule } = context;
+export const PresenceProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+    refreshContextStatus(context);
 
-    // 1. 必填检查 (Required)
-    // 如果是 undefined 且必填，直接报错
-    if (rule.required && value === undefined) {
+    const { rule, status, value } = context;
+
+    // --- 守卫 1：必填检查 ---
+    if (rule.required && status.isUndefined) {
         context.errors.push(ValidationErrorBuilder.required(context));
+        context.terminate = true; // 既然没传，后面什么 type、format 都没法验，直接熔断
+        return;
     }
 
-    // 2. 空值放行逻辑 (The Magic of Nullable)
-    // 如果值是 null 且 rule.nullable 为 true，直接标记中断并返回
-    if (value === null && rule.nullable === true) {
-        context.isTerminated = true; // 告诉调度器：后面那些 min/max/pattern 不用跑了
-        return Promise.resolve();
+    // --- 守卫 2：Null 容忍逻辑 ---
+    if (status.isNull) {
+        if (rule.nullable) {
+            context.terminate = true; // 允许为 null，则视为合法终点，跳过后续所有校验
+            return;
+        } else {
+            context.errors.push(
+                ValidationErrorBuilder.invalid_value(value, { ...context, expected: 'non-null' })
+            );
+            context.terminate = true; // 不允许为 null 却传了 null，中断
+            return;
+        }
     }
 
-    // 3. 严格 Null 检查 (Nullable: false)
-    if (value === null && rule.nullable === false) {
-        context.errors.push(
-            ValidationErrorBuilder.invalid_value(value, { ...context, expected: 'non-null' })
-        );
-    }
-
-    // 4. 空性检查 (Empty)
-    if (rule.empty === false && isEmptyValue(value)) {
+    // --- 守卫 3：空内容检查 ---
+    // 注意：只有在值存在且非 null 时，才检查是否为空（如空字符串）
+    if (rule.empty === false && status.isEmpty) {
         context.errors.push(
             ValidationErrorBuilder.invalid_value(value, { ...context, expected: 'non-empty' })
         );
     }
-
-    return Promise.resolve();
 };
 
 ValidationRegistry.register({

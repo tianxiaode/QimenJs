@@ -1,8 +1,26 @@
 import { ValidationContext } from './context';
 
-/** * 基础类型定义
+// 从ValidationRule联合类型中提取所有可能的type值作为ValidationTag
+export type ValidationTag = 
+  | 'string' 
+  | 'number' 
+  | 'boolean' 
+  | 'date' 
+  | 'array' 
+  | 'object' 
+  | 'password' 
+  | 'compare' 
+  | 'file' 
+  | 'image' 
+  | 'blob' 
+  | 'buffer'
+  | 'split'
+  | 'format';
+
+/** * 预定义的全类型数组
+ * 专门给 required, default, nullable 等"通吃型"处理器使用
  */
-export const VALID_TYPES = [
+export const ALL_TAGS: ValidationTag[] = [
     'string',
     'number',
     'boolean',
@@ -10,16 +28,12 @@ export const VALID_TYPES = [
     'array',
     'object',
     'password',
-] as const;
-
-/** * 导出类型，方便其他地方做类型约束
- */
-export type ValidationTag = (typeof VALID_TYPES)[number];
-
-/** * 预定义的全类型数组
- * 专门给 required, default, nullable 等“通吃型”处理器使用
- */
-export const ALL_TAGS: ValidationTag[] = [...VALID_TYPES];
+    'compare',
+    'file',
+    'image',
+    'blob',
+    'buffer',
+];
 
 export type ValidationProcessorHandler = (ctx: ValidationContext) => Promise<void>;
 

@@ -1,4 +1,4 @@
-import { ValidationRule } from "./rule";
+import { ValidationRule } from './rule';
 
 /**
  * 验证错误信息接口
@@ -23,14 +23,12 @@ export interface ValidationRuleError {
     context?: ValidationContext;
 }
 
-
-
 export interface ValidationContext {
     // --- 数据双轨制 ---
     /** 当前值：在管道中流转，可能被 transform 修改 */
-    value: any;            
+    value: any;
     /** 初始值：从进入验证器那一刻起就锁死，不可变，用于对比 */
-    readonly rawValue: any; 
+    readonly rawValue: any;
 
     // --- 规则引用 ---
     /** 当前正在跑的规则，开发者带的“私货”都在这上面 */
@@ -42,7 +40,15 @@ export interface ValidationContext {
     isTerminated: boolean;
     path?: string;
     terminate?: boolean; // 逻辑熔断信号：真则停止当前字段的所有后续 Processor
-    
+    status: {
+        isUndefined: boolean;
+        isNull: boolean;
+        isNaN: boolean;
+        /** 辅助：是否为空（undefined | null | "" | [] | {}） */
+        isEmpty: boolean;
+        /** 辅助：值是否被 transform 改动过 */
+        isModified: boolean;
+    };
 }
 
 /**
