@@ -7,20 +7,20 @@ export const StringTypeProcessor: ValidationProcessorHandler = async (
 ) => {
     const { value } = context;
 
-    // 如果值为 null 或 undefined，直接通过类型验证
-    // 这些值的存在性应该由专门的 presence 验证器处理
-    if (value === null || value === undefined) return;
+    //不需要做任何防御，相信上一处理器已经把null值处理了，避免流水线隐性错误
 
     // 验证字符串类型
     if (typeof value !== 'string') {
         context.errors.push(ValidationErrorBuilder.type_mismatch('string', typeof value, context));
+        // 【关键】一旦类型不对，后续针对字符串的语义校验（长度、正则等）全无意义，直接中断
+        context.terminate = true;
     }
 };
 
 ValidationRegistry.register({
-    name: 'string.type',
+    name: 'string-type',
     tags: ['string'],
-    weight: ValidationWeight.SEMANTIC,
+    weight: ValidationWeight.IDENTITY,
     offset: 10,
     execute: StringTypeProcessor,
 });

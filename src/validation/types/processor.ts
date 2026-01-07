@@ -1,21 +1,21 @@
 import { ValidationContext } from './context';
 
 // 从ValidationRule联合类型中提取所有可能的type值作为ValidationTag
-export type ValidationTag = 
-  | 'string' 
-  | 'number' 
-  | 'boolean' 
-  | 'date' 
-  | 'array' 
-  | 'object' 
-  | 'password' 
-  | 'compare' 
-  | 'file' 
-  | 'image' 
-  | 'blob' 
-  | 'buffer'
-  | 'split'
-  | 'format';
+export type ValidationTag =
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'date'
+    | 'array'
+    | 'object'
+    | 'password'
+    | 'compare'
+    | 'file'
+    | 'image'
+    | 'blob'
+    | 'buffer'
+    | 'split'
+    | 'format';
 
 /** * 预定义的全类型数组
  * 专门给 required, default, nullable 等"通吃型"处理器使用
@@ -47,6 +47,10 @@ export enum ValidationWeight {
 
     /** 存在性检查：拦截必填或放行空值 (required, nullable) */
     PRESENCE = 1000,
+
+    /** 身份确认：物理类型校验 (typeof value)。
+     * 这是所有业务逻辑的基石，不通过则必须 Terminate。 */
+    IDENTITY = 1500,
 
     /** 类型与格式：基础身份校验 (type, format, pattern) */
     SEMANTIC = 2000,

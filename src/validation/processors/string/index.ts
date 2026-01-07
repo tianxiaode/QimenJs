@@ -1,6 +1,6 @@
 export * from './excludes';
 export * from './includes';
-export * from './is';
+export * from '../format/is';
 export * from './length';
 export * from './pattern';
 export * from './split';

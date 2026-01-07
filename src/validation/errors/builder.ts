@@ -1,5 +1,5 @@
 import {
-    ValidationRuleError,
+    IValidationError,
     ValidationErrorContext,
 } from '../types';
 import { ValidationErrorCode } from './codes';
@@ -18,7 +18,7 @@ export const ValidationErrorBuilder = {
      * @param options - 错误选项，包括参数和上下文
      * @returns 标准化的验证错误对象
      */
-    createError(code: ValidationErrorCode, options?: any): ValidationRuleError {
+    createError(code: ValidationErrorCode, options?: any): IValidationError {
         return {
             code,
             params: options?.params || {},
@@ -33,7 +33,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 必填错误对象
      */
-    required(context?: ValidationErrorContext): ValidationRuleError {
+    required(context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.REQUIRED, {
             context,
         });
@@ -52,7 +52,7 @@ export const ValidationErrorBuilder = {
         expectedType: string,
         actualType: string,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.TYPE_MISMATCH, {
             params: { expectedType, actualType },
             context,
@@ -67,7 +67,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 无效值错误对象
      */
-    invalid_value(value: any, context?: ValidationErrorContext): ValidationRuleError {
+    invalid_value(value: any, context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.INVALID_VALUE, {
             params: { value },
             context,
@@ -89,7 +89,7 @@ export const ValidationErrorBuilder = {
         value: any,
         exclusive: boolean = false,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.TOO_SMALL, {
             params: { min, value, exclusive },
             context,
@@ -111,7 +111,7 @@ export const ValidationErrorBuilder = {
         value: any,
         exclusive: boolean = false,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.TOO_LARGE, {
             params: { max, value, exclusive },
             context,
@@ -133,7 +133,7 @@ export const ValidationErrorBuilder = {
         max: number,
         value: any,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.OUT_OF_RANGE, {
             params: { min, max, value },
             context,
@@ -155,7 +155,7 @@ export const ValidationErrorBuilder = {
         value: any,
         format: string,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.INVALID_FORMAT, {
             params: { field, value, format },
             context,
@@ -175,7 +175,7 @@ export const ValidationErrorBuilder = {
         pattern: string | RegExp,
         value: any,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         const patternStr = typeof pattern === 'string' ? pattern : pattern.toString();
         return this.createError(ValidationErrorCode.PATTERN_MISMATCH, {
             params: { pattern: patternStr, value },
@@ -196,7 +196,7 @@ export const ValidationErrorBuilder = {
         value: any,
         allowedValues: any[],
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.NOT_ALLOWED, {
             params: { value, allowedValues },
             context,
@@ -211,7 +211,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 缺少字段错误对象
      */
-    missing_field(field: string, context?: ValidationErrorContext): ValidationRuleError {
+    missing_field(field: string, context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.MISSING_FIELD, {
             params: { field },
             context,
@@ -227,7 +227,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 重复值错误对象
      */
-    duplicate(field: string, value: any, context?: ValidationErrorContext): ValidationRuleError {
+    duplicate(field: string, value: any, context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.DUPLICATE, {
             params: { field, value },
             context,
@@ -249,7 +249,7 @@ export const ValidationErrorBuilder = {
         condition: string,
         value: any,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.CONDITION_FAILED, {
             params: { field, condition, value },
             context,
@@ -269,7 +269,7 @@ export const ValidationErrorBuilder = {
         customCode: string,
         message: string,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.CUSTOM, {
             params: { customCode, message },
             context,
@@ -289,7 +289,7 @@ export const ValidationErrorBuilder = {
         minLength: number,
         actualLength: number,
         context?: ValidationErrorContext
-    ): ValidationRuleError {
+    ): IValidationError {
         return this.createError(ValidationErrorCode.PASSWORD_TOO_SHORT, {
             params: { minLength, actualLength },
             context,
@@ -303,7 +303,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 缺少大写字母错误对象
      */
-    password_missing_uppercase(context?: ValidationErrorContext): ValidationRuleError {
+    password_missing_uppercase(context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.PASSWORD_MISSING_UPPERCASE, {
             params: {},
             context,
@@ -317,7 +317,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 缺少小写字母错误对象
      */
-    password_missing_lowercase(context?: ValidationErrorContext): ValidationRuleError {
+    password_missing_lowercase(context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.PASSWORD_MISSING_LOWERCASE, {
             params: {},
             context,
@@ -331,7 +331,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 缺少数字错误对象
      */
-    password_missing_digit(context?: ValidationErrorContext): ValidationRuleError {
+    password_missing_digit(context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.PASSWORD_MISSING_DIGIT, {
             params: {},
             context,
@@ -345,7 +345,7 @@ export const ValidationErrorBuilder = {
      * @param context - 错误上下文信息
      * @returns 缺少特殊字符错误对象
      */
-    password_missing_special(context?: ValidationErrorContext): ValidationRuleError {
+    password_missing_special(context?: ValidationErrorContext): IValidationError {
         return this.createError(ValidationErrorCode.PASSWORD_MISSING_SPECIAL, {
             params: {},
             context,
@@ -365,7 +365,7 @@ export const ValidationErrorBuilder = {
     throwIfAny(
         value: any,
         rule: any,
-        errors: ValidationRuleError[],
+        errors: IValidationError[],
         context: ValidationErrorContext = {}
     ): void {
         if (errors.length > 0) {

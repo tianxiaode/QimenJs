@@ -22,16 +22,15 @@ export const PresenceProcessor: ValidationProcessorHandler = async (context: Val
 
     // --- 守卫 2：Null 容忍逻辑 ---
     if (status.isNull) {
-        if (rule.nullable) {
-            context.terminate = true; // 允许为 null，则视为合法终点，跳过后续所有校验
-            return;
-        } else {
+        //如果是null值，无论是否允许null，都直接返回
+        if (!rule.nullable) {
+            //如果不允许null，则视为错误
             context.errors.push(
                 ValidationErrorBuilder.invalid_value(value, { ...context, expected: 'non-null' })
             );
-            context.terminate = true; // 不允许为 null 却传了 null，中断
-            return;
         }
+        context.terminate = true; // 允许为 null，则视为合法终点，跳过后续所有校验
+        return;
     }
 
     // --- 守卫 3：空内容检查 ---

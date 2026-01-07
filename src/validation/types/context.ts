@@ -1,10 +1,18 @@
 import { ValidationRule } from './rule';
 
+export interface ExecutionStep {
+    processor: string; // 处理器名称
+    weight: number; // 权重
+    action: 'executed' | 'skipped' | 'terminated'; // 执行动作
+    reason?: string; // 跳过或中断的原因（如：Guard Clause 拦截、值为空、规则不匹配）
+    duration?: number; // 执行耗时（可选，用于性能分析）
+}
+
 /**
  * 验证错误信息接口
  * 用于描述单个验证错误的结构
  */
-export interface ValidationRuleError {
+export interface IValidationError {
     /**
      * 错误代码，用于标识错误类型
      * 例如: 'required', 'minLength', 'patternMismatch' 等
@@ -36,8 +44,7 @@ export interface ValidationContext {
 
     // --- 状态收集 ---
     /** 错误信息收集桶 */
-    errors: ValidationRuleError[];
-    isTerminated: boolean;
+    errors: IValidationError[];
     path?: string;
     terminate?: boolean; // 逻辑熔断信号：真则停止当前字段的所有后续 Processor
     status: {
@@ -49,6 +56,8 @@ export interface ValidationContext {
         /** 辅助：值是否被 transform 改动过 */
         isModified: boolean;
     };
+    steps: ExecutionStep[];
+    metadata: Record<string, any>;
 }
 
 /**

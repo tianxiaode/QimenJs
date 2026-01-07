@@ -1,4 +1,4 @@
-import { validate, ValidationRegistry } from '../../core';
+import { doValidate, ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationRule, ValidationWeight } from '../../types';
 
@@ -40,7 +40,7 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
     // 让专门的 Array 处理器去跑后续的：
     // - 数量校验 (LengthProcessor: 3000)
     // - 子项循环验证 (ArrayProcessor: 5000)
-    const result = await validate(items, virtualArrayRule, { path });
+    const result = await doValidate(items, virtualArrayRule, { path });
 
     context.errors.push(...result.errors);
 

@@ -1,19 +1,14 @@
 import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight,VALID_TYPES } from '../../types';
+import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
-export const LengthProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+export const StringLengthProcessor: ValidationProcessorHandler = async (
+    context: ValidationContext
+) => {
     const { value, rule } = context;
 
-    // 获取长度：字符串、数组看 length，集合看 size
-    let len: number | undefined;
-    if (typeof value === 'string' || Array.isArray(value)) {
-        len = value.length;
-    } else if (value instanceof Set || value instanceof Map) {
-        len = value.size;
-    }
-
-    if (len === undefined) return;
+    //不要做任何防御，要相信上一处理器已经确认值为字符串，且不是null，否则会隐藏流水线逻辑错误
+    let len = value.length;
 
     if (rule.min !== undefined && len < rule.min) {
         context.errors.push(ValidationErrorBuilder.too_small(rule.min, value, false, context));
@@ -23,13 +18,16 @@ export const LengthProcessor: ValidationProcessorHandler = async (context: Valid
     if (rule.max !== undefined && len > rule.max) {
         context.errors.push(ValidationErrorBuilder.too_large(rule.max, value, false, context));
     }
+
+    if(rule.length !== undefined && len !== rule.length){
+        context.errors.push(ValidationErrorBuilder.invalid_value(value, context));
+    }
 };
 
-
 ValidationRegistry.register({
-    name: 'range',
-    tags:['string'],
-    execute: LengthProcessor,
-    weight: ValidationWeight.QUANTITY,
+    name: 'string-length',
+    tags: ['string'],
+    execute: StringLengthProcessor,
+    weight: ValidationWeight.SEMANTIC,
     offset: 50,
 });

@@ -1,4 +1,4 @@
-import { validate, ValidationRegistry } from '../../core';
+import { doValidate, ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationWeight } from '../../types';
 
@@ -58,8 +58,8 @@ export const StringIsProcessor: ValidationProcessorHandler = async (context) => 
 };
 
 ValidationRegistry.register({
-    name: 'string.is',
-    tags: ['string'],
+    name: 'format.is',
+    tags: ['format'],
     weight: ValidationWeight.SEMANTIC,
     offset: 100,
     execute: StringIsProcessor,
