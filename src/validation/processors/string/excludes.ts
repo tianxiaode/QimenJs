@@ -28,6 +28,6 @@ ValidationRegistry.register({
     name: 'string-excludes',
     tags: ['string'],
     weight: ValidationWeight.SEMANTIC,
-    offset: 101,
+    offset: 105,
     execute: StringExcludesProcessor,
 });

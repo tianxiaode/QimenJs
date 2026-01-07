@@ -58,6 +58,7 @@ export interface ValidationContext {
     };
     steps: ExecutionStep[];
     metadata: Record<string, any>;
+    isChild?: boolean;
 }
 
 /**

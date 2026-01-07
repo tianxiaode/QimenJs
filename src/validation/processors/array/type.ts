@@ -5,21 +5,21 @@ import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from 
 export const ArrayTypeProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {
-    const { value, rule } = context;
+    const { value } = context;
 
-    // 如果值为null或undefined，则跳过类型检查（认为是有效的）
-    if (value === null || value === undefined) return;
+    //不需要做任何防御，相信上一处理器已经把null值处理了，避免流水线隐性错误
 
     // 检查值是否为数组类型，如果不是则返回类型不匹配错误
     if (!Array.isArray(value)) {
         context.errors.push(ValidationErrorBuilder.type_mismatch('array', typeof value, context));
+        context.terminate = true;
     }
 };
 
 ValidationRegistry.register({
-    name: 'array.type',
+    name: 'array-type',
     tags: ['array'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 50,
+    weight: ValidationWeight.IDENTITY,
+    offset: 10,
     execute: ArrayTypeProcessor,
 });

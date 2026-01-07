@@ -2,7 +2,9 @@ import { ValidationTag } from './processor';
 
 export type CustomValidationFunction = (
     value: any,
-    rule: ValidationRule
+    index: number,    
+    rule: ValidationRule,
+    context: any
 ) => boolean | Promise<boolean>;
 
 /**
@@ -134,13 +136,13 @@ export interface ArrayRule extends BaseValidationRule {
     allowEmptyItem?: boolean;
 
     // 集合数量约束
-    minItems?: number;
-    maxItems?: number;
+    minLength?: number;
+    maxLength?: number;
+    length?: number;
 
     // 数组特有
     unique?: boolean;
     uniqueBy?: string | ((item: any, rule: ValidationRule) => any);
-    children?: ValidationRule[]; // 对应你定义的数组项统一递归
 
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);

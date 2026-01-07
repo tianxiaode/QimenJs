@@ -34,6 +34,6 @@ ValidationRegistry.register({
     name: 'date.weekend',
     tags: ['date'],
     weight: ValidationWeight.SEMANTIC,
-    offset: 101,
+    offset: 105,
     execute: DateWeenendProcessor,
 });

@@ -29,6 +29,6 @@ ValidationRegistry.register({
     name: 'number-excludes',
     tags: ['number'],
     weight: ValidationWeight.SEMANTIC,
-    offset: 111,
+    offset: 115,
     execute: NumberExcludesProcessor,
 });

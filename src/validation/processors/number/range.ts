@@ -5,8 +5,7 @@ import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from 
 export const NumberRangeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
 
-    // 只有数字类型才进这个处理器
-    if (typeof value !== 'number') return;
+    //不需要做任何防御，相信上一处理器
 
     if (rule.min !== undefined && value < rule.min) {
         context.errors.push(ValidationErrorBuilder.too_small(rule.min, value, false, context));
