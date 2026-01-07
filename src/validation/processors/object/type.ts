@@ -7,9 +7,7 @@ export const ObjectTypeProcessor: ValidationProcessorHandler = async (
 ) => {
     const { value } = context;
 
-    // 如果值为 null 或 undefined，直接通过类型验证
-    // 这些值的存在性应该由专门的 presence 验证器处理
-    if (value === null || value === undefined) return;
+    //不需要做任何防御，相信上一处理器已经把null值处理了，避免流水线隐性错误
 
     // 检查值是否为对象类型，并且不是数组
     // typeof value !== 'object' - 确保值是对象类型（排除基本类型）
@@ -18,13 +16,14 @@ export const ObjectTypeProcessor: ValidationProcessorHandler = async (
         // 值不是纯对象类型，返回类型不匹配错误
         // 错误信息包含期望的类型('object')和实际的类型
         context.errors.push(ValidationErrorBuilder.type_mismatch('object', typeof value, context));
+        context.terminate = true;
     }
 };
 
 ValidationRegistry.register({
-    name: 'object.type',
+    name: 'object-type',
     tags: ['object'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
+    weight: ValidationWeight.IDENTITY,
+    offset: 10,
     execute: ObjectTypeProcessor,
 });

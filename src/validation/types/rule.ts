@@ -2,7 +2,7 @@ import { ValidationTag } from './processor';
 
 export type CustomValidationFunction = (
     value: any,
-    index: number,    
+    index: number,
     rule: ValidationRule,
     context: any
 ) => boolean | Promise<boolean>;
@@ -120,7 +120,7 @@ export interface DateRule extends BaseValidationRule {
     tomorrow?: boolean;
     yesterday?: boolean;
     weekend?: number | number[];
-    
+
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);
@@ -153,15 +153,23 @@ export interface ArrayRule extends BaseValidationRule {
 export interface ObjectRule extends BaseValidationRule {
     type: 'object';
 
-    // 对象约束字段
-    properties?: Record<string, ValidationRule | ValidationRule[]>;
+    /** * 名验证（全集名单）：
+     * 只有在这里列出的字段才允许存在，且必须存在。
+     */
     requiredFields?: readonly string[];
-    allowKeys?: string[];
-    denyKeys?: string[];
-    additionalProperties?: boolean;
 
-    // 对象子属性递归
-    mapping?: Record<string, ValidationRule[]>;
+    /** * 值验证（逻辑钩子）：
+     * 仅用来定义字段的值怎么验。
+     * 即使这里定义了 'age'，如果 requiredFields 里没写 'age'，
+     * 传入的 age 也会被视为非法（因为它不在名单里）。
+     */
+    properties?: Record<string, ValidationRule | CustomValidationFunction>;
+
+    /** * 此时这个布尔值的含义变得极度简单：
+     * true: 允许 requiredFields 之外的字段（不管它们）。
+     * false: 严格匹配 requiredFields，多一个都不行。
+     */
+    additionalProperties?: boolean;
 }
 
 // 密码验证规则 - 独立密码验证，不与字符串规则混合
