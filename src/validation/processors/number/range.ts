@@ -2,7 +2,7 @@ import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
-export const RangeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+export const NumberRangeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
 
     // 只有数字类型才进这个处理器
@@ -20,9 +20,9 @@ export const RangeProcessor: ValidationProcessorHandler = async (context: Valida
 
 
 ValidationRegistry.register({
-    name: 'range',
+    name: 'numner-range',
     tags:['number'],
-    execute: RangeProcessor,
+    execute: NumberRangeProcessor,
     weight: ValidationWeight.QUANTITY,
     offset: 50,
 });

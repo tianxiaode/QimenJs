@@ -2,70 +2,36 @@ import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationWeight } from '../../types';
 
-// 定义数字is验证的谓词函数类型
-type NumberIsPredicate = (value: number) => { isValid: boolean; expectedType: string };
-
-// 数字is验证谓词映射对象 - 只定义需要验证的类型
-const numberIsPredicates: Record<string, NumberIsPredicate> = {
-    // 验证是否为整数
-    integer: (value: number) => ({
-        isValid: Number.isInteger(value),
-        expectedType: 'integer'
-    }),
-    
-    // 验证是否为浮点数（非整数的有限数）
-    float: (value: number) => ({
-        isValid: !Number.isInteger(value) && !Number.isNaN(value) && Number.isFinite(value),
-        expectedType: 'float (non-integer number)'
-    }),
-    
-    // 验证是否为偶数
-    even: (value: number) => ({
-        isValid: Number.isInteger(value) && value % 2 === 0,
-        expectedType: 'even number'
-    }),
-    
-    // 验证是否为奇数
-    odd: (value: number) => ({
-        isValid: Number.isInteger(value) && value % 2 !== 0,
-        expectedType: 'odd number'
-    }),
-    
-    // 验证是否为无限数
-    infinite: (value: number) => ({
-        isValid: !Number.isFinite(value),
-        expectedType: 'infinite number'
-    }),
-    
-    // 验证是否为NaN
-    nan: (value: number) => ({
-        isValid: Number.isNaN(value),
-        expectedType: 'NaN value'
-    }),
+const numberIsPredicates: Record<string, (v: number) => boolean> = {
+    integer:  (v) => Number.isInteger(v),
+    positive: (v) => v > 0,
+    negative: (v) => v < 0,
+    even:     (v) => Number.isInteger(v) && v % 2 === 0,
+    odd:      (v) => Number.isInteger(v) && v % 2 !== 0,
 };
 
 export const NumberIsProcessor: ValidationProcessorHandler = async (context) => {
-    const { value, rule, path } = context;
+    const { value, rule } = context;
 
-    // 如果值不是数字或没有is规则，跳过处理
-    if (typeof value !== 'number' || !rule.is) return;
+    // 2. 直接遍历需要检查的关键字段名
+    // 这样做的好处：代码量骤减，且不需要在循环体外手动解构 rule
+    const checkKeys = ['integer', 'positive', 'negative', 'even', 'odd'] as const;
 
-    // 获取对应的验证函数
-    const validator = numberIsPredicates[rule.is];
-    
-    if (!validator) {
-        // 如果没有找到对应的验证器，跳过处理
-        return;
-    }
-
-    // 执行验证
-    const { isValid, expectedType } = validator(value);
-
-    if (!isValid) {
-        context.errors.push(ValidationErrorBuilder.invalid_value(value, {
-            ...context,
-            expected: expectedType
-        }));
+    for (const key of checkKeys) {
+        // 只有当规则中明确设为 true 时才校验
+        if (rule[key] === true) {
+            const isValid = numberIsPredicates[key](value);
+            
+            if (!isValid) {
+                context.errors.push(ValidationErrorBuilder.invalid_value(value, {
+                    ...context,
+                    expected: key // 错误信息直接使用 key 名，非常直观
+                }));
+                
+                // 思考：这里要不要 terminate? 
+                // 既然已经确定是数字，语义错误通常可以并行收集，除非你希望只要有一个不对就停下
+            }
+        }
     }
 };
 

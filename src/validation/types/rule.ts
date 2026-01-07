@@ -1,6 +1,4 @@
-import { ValidationTag } from "./processor";
-
-
+import { ValidationTag } from './processor';
 
 export type CustomValidationFunction = (
     value: any,
@@ -24,7 +22,7 @@ export enum ValidationPatternType {
     RGB_COLOR = 'rgbColor', // RGB颜色值验证
     RGBA_COLOR = 'rgbaColor', // RGBA颜色值验证
     CREDIT_CARD = 'creditCard', // 信用卡号验证
-    CHINESE_ID = 'chinseId', // 中国身份证号验证
+    CHINESE_ID = 'chineseId', // 中国身份证号验证
     CHINESE_POSTCODE = 'chinesePostcode', // 中国邮政编码验证
     USERNAME = 'username', // 用户名格式验证
     UPPERCASE = 'uppercase', // 大写字母验证
@@ -41,57 +39,60 @@ export type PatternSwitches = {
 export interface BaseValidationRule {
     // 验证类型，必须是预定义的类型之一
     type: ValidationTag;
-    
+
     // 基础标识字段
     message?: string;
     default?: any; // 当输入为空时的兜底值
     transform?: (val: any, rule: ValidationRule) => any; // 物理转换逻辑
-    
+
     // 存在性字段
     required?: boolean;
     nullable?: boolean;
     empty?: boolean;
-    
+
     // 错误收集模式：true表示收集所有错误，false表示遇到第一个错误就停止
     allErrors?: boolean;
-    
+
     [key: string]: any;
 }
 
 // 字符串验证规则
 export interface StringRule extends BaseValidationRule {
     type: 'string';
-    
+
     // 清洗字段 - 只在字符串类型中存在
     trim?: boolean | 'all' | 'inner';
-    
+
     // 长度验证
     minLength?: number;
     maxLength?: number;
-    length?: number;    
-    
+    length?: number;
+
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);
-};
+}
 
 // 数字验证规则
 export interface NumberRule extends BaseValidationRule {
     type: 'number';
-    
+
     // 范围验证
     min?: number;
     max?: number;
     exact?: number;
-    
+
     // 数字特有验证
     integer?: boolean;
     positive?: boolean;
     negative?: boolean;
     even?: boolean;
     odd?: boolean;
-    finite?: boolean;
-    
+    /** * 是否允许无限值 (Infinity/-Infinity)。
+     * 默认为 false。如果为 true，遇到无限值时不报错但依然会 terminate 流程。
+     */
+    infinite?: boolean;
+
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);
@@ -100,23 +101,19 @@ export interface NumberRule extends BaseValidationRule {
 // 布尔验证规则
 export interface BooleanRule extends BaseValidationRule {
     type: 'boolean';
-    
-    // 包含/排除验证
-    includes?: any[] | ((rule: ValidationRule) => any[]);
-    excludes?: any[] | ((rule: ValidationRule) => any[]);
 }
 
 // 日期验证规则
 export interface DateRule extends BaseValidationRule {
     type: 'date';
-    
+
     // 范围验证
     min?: Date;
     max?: Date;
-    
+
     // 日期特殊属性
     is?: 'future' | 'past' | 'today' | 'tomorrow' | 'yesterday';
-    
+
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);
@@ -125,21 +122,21 @@ export interface DateRule extends BaseValidationRule {
 // 数组验证规则
 export interface ArrayRule extends BaseValidationRule {
     type: 'array';
-    
+
     // 子项规则与报错控制
     itemRule?: CustomValidationFunction | ValidationRule; // 统一子项规则
     allItemsError?: boolean;
-    allowEmptyItem?: boolean;    
+    allowEmptyItem?: boolean;
 
     // 集合数量约束
     minItems?: number;
     maxItems?: number;
-    
+
     // 数组特有
     unique?: boolean;
     uniqueBy?: string | ((item: any, rule: ValidationRule) => any);
     children?: ValidationRule[]; // 对应你定义的数组项统一递归
-    
+
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);
@@ -148,14 +145,14 @@ export interface ArrayRule extends BaseValidationRule {
 // 对象验证规则
 export interface ObjectRule extends BaseValidationRule {
     type: 'object';
-    
+
     // 对象约束字段
     properties?: Record<string, ValidationRule | ValidationRule[]>;
     requiredFields?: readonly string[];
     allowKeys?: string[];
     denyKeys?: string[];
     additionalProperties?: boolean;
-    
+
     // 对象子属性递归
     mapping?: Record<string, ValidationRule[]>;
 }
@@ -163,26 +160,26 @@ export interface ObjectRule extends BaseValidationRule {
 // 密码验证规则 - 独立密码验证，不与字符串规则混合
 export interface PasswordRule extends BaseValidationRule {
     type: 'password';
-    
+
     // 长度验证
     minLength?: number;
     maxLength?: number;
     trim?: boolean | 'all' | 'inner';
-    
-    uppercase?: boolean;  
-    lowercase?: boolean;  
-    digit?: boolean;      
-    specialChar?: boolean; 
+
+    uppercase?: boolean;
+    lowercase?: boolean;
+    digit?: boolean;
+    specialChar?: boolean;
 }
 
 // 比较验证规则
 export interface CompareRule extends BaseValidationRule {
     type: 'compare';
-    
+
     // 比较特有属性
     operator?: '=' | '!=' | '>' | '>=' | '<' | '<=';
     target?: any | ((rule: ValidationRule) => any);
-    
+
     // 严格模式：强制类型匹配，禁止自动转换
     strict?: boolean;
 }
@@ -190,7 +187,7 @@ export interface CompareRule extends BaseValidationRule {
 // 文件验证规则
 export interface FileRule extends BaseValidationRule {
     type: 'file';
-    
+
     // 文件特有属性
     maxSize?: number;
     allowedTypes?: string[]; // MIME类型
@@ -202,7 +199,7 @@ export interface FileRule extends BaseValidationRule {
 // 图像验证规则
 export interface ImageRule extends BaseValidationRule {
     type: 'image';
-    
+
     // 图像特有属性
     maxSize?: number;
     allowedTypes?: string[]; // MIME类型
@@ -217,7 +214,7 @@ export interface ImageRule extends BaseValidationRule {
 // Blob验证规则
 export interface BlobRule extends BaseValidationRule {
     type: 'blob';
-    
+
     // Blob特有属性
     maxSize?: number;
     allowedTypes?: string[]; // MIME类型
@@ -226,21 +223,23 @@ export interface BlobRule extends BaseValidationRule {
 // Buffer验证规则
 export interface BufferRule extends BaseValidationRule {
     type: 'buffer';
-    
+
     // Buffer特有属性
     maxSize?: number;
     encoding?: string;
 }
 
-export interface SplitRule extends BaseValidationRule, 
-    Omit<ArrayRule, 'type'>, // 继承数组的 minItems, maxItems, unique, itemRule 等
-    Omit<StringRule, 'type' | 'is' | 'format' | 'pattern' | 'includes' | 'excludes'> // 继承字符串的 trim, minLength (原串长度) 等
-{
+export interface SplitRule
+    extends
+        BaseValidationRule,
+        Omit<ArrayRule, 'type'>, // 继承数组的 minItems, maxItems, unique, itemRule 等
+        Omit<StringRule, 'type' | 'is' | 'format' | 'pattern' | 'includes' | 'excludes'> {
+    // 继承字符串的 trim, minLength (原串长度) 等
     type: 'split';
-    
+
     // 核心特殊属性
     separator: string | RegExp;
-    
+
     // 明确语义：这里的 min/max 到底指什么？
     // 我们可以约定：minLength/maxLength 指原始字符串长度
     // minItems/maxItems 指拆分后的项数（由 ArrayRule 提供）
