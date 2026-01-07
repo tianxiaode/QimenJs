@@ -3,11 +3,9 @@ import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
 export const DateTypeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
-    const { value, rule, path } = context;
+    const { value } = context;
 
-    // 如果值为 null 或 undefined，跳过类型验证
-    // 这些值的存在性应该由专门的 presence 验证器处理
-    if (value === null || value === undefined) return;
+    //不需要做任何防御，相信上一处理器已经把null值处理了，避免流水线隐性错误
 
     // 检查值是否为 Date 实例并且是有效日期
     // 1. value instanceof Date - 确保是 Date 对象实例
@@ -15,13 +13,14 @@ export const DateTypeProcessor: ValidationProcessorHandler = async (context: Val
     if (!(value instanceof Date) || isNaN(value.getTime())) {
         // 值不是有效的 Date 对象，返回类型不匹配错误
         context.errors.push(ValidationErrorBuilder.type_mismatch('Date', typeof value, context));
+        context.terminate = true;
     }
 };
 
 ValidationRegistry.register({
     name: 'date.type',
     tags: ['date'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 50,
+    weight: ValidationWeight.IDENTITY,
+    offset: 10,
     execute: DateTypeProcessor,
 });

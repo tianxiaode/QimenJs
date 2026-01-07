@@ -112,8 +112,13 @@ export interface DateRule extends BaseValidationRule {
     max?: Date;
 
     // 日期特殊属性
-    is?: 'future' | 'past' | 'today' | 'tomorrow' | 'yesterday';
-
+    future?: boolean;
+    past?: boolean;
+    today?: boolean;
+    tomorrow?: boolean;
+    yesterday?: boolean;
+    weekend?: number | number[];
+    
     // 包含/排除验证
     includes?: any[] | ((rule: ValidationRule) => any[]);
     excludes?: any[] | ((rule: ValidationRule) => any[]);

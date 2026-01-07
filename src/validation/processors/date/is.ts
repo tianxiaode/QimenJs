@@ -3,7 +3,7 @@ import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationWeight } from '../../types';
 
 // 定义日期is验证的谓词函数类型
-type DateIsPredicate = (value: Date) => { isValid: boolean; expectedType: string };
+type DateIsPredicate = (value: Date) =>boolean;
 
 // 日期is验证谓词映射对象 - 只定义需要验证的类型
 const dateIsPredicates: Record<string, DateIsPredicate> = {
@@ -11,20 +11,14 @@ const dateIsPredicates: Record<string, DateIsPredicate> = {
     future: (value: Date) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return {
-            isValid: value.getTime() > today.getTime(),
-            expectedType: 'future date'
-        };
+        return value.getTime() > today.getTime();
     },
     
     // 验证是否为过去日期
     past: (value: Date) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return {
-            isValid: value.getTime() < today.getTime(),
-            expectedType: 'past date'
-        };
+        return value.getTime() < today.getTime();
     },
     
     // 验证是否为今天
@@ -34,11 +28,9 @@ const dateIsPredicates: Record<string, DateIsPredicate> = {
         
         const valueDate = new Date(value);
         valueDate.setHours(0, 0, 0, 0);
+
+        return valueDate.getTime() === today.getTime();
         
-        return {
-            isValid: valueDate.getTime() === today.getTime(),
-            expectedType: 'today\'s date'
-        };
     },
     
     // 验证是否为昨天
@@ -49,11 +41,8 @@ const dateIsPredicates: Record<string, DateIsPredicate> = {
         
         const valueYesterday = new Date(value);
         valueYesterday.setHours(0, 0, 0, 0);
+        return valueYesterday.getTime() === yesterday.getTime();
         
-        return {
-            isValid: valueYesterday.getTime() === yesterday.getTime(),
-            expectedType: 'yesterday\'s date'
-        };
     },
     
     // 验证是否为明天
@@ -64,50 +53,42 @@ const dateIsPredicates: Record<string, DateIsPredicate> = {
         
         const valueTomorrow = new Date(value);
         valueTomorrow.setHours(0, 0, 0, 0);
+
+        return valueTomorrow.getTime() === tomorrow.getTime();
         
-        return {
-            isValid: valueTomorrow.getTime() === tomorrow.getTime(),
-            expectedType: 'tomorrow\'s date'
-        };
     },
 };
 
+
 export const DateIsProcessor: ValidationProcessorHandler = async (context) => {
-    const { value, rule, path } = context;
+    const { value, rule } = context;
+    //不要做任何防御，要相信上一处理器
 
-    // 如果值不是日期或没有is规则，跳过处理
-    if (!(value instanceof Date) || !rule.is) return;
+    // 2. 直接遍历需要检查的关键字段名
+    // 这样做的好处：代码量骤减，且不需要在循环体外手动解构 rule
+    const checkKeys = ['future', 'past', 'today', 'tomorrow', 'yesterday'] as const;
 
-    // 首先验证日期是否有效
-    if (isNaN(value.getTime())) {
-        context.errors.push(ValidationErrorBuilder.invalid_value(value, {
-            ...context,
-            expected: 'valid Date object'
-        }));
-        return;
-    }
-
-    // 如果没有对应的验证器，说明不需要验证此类型，直接跳过
-    const validator = dateIsPredicates[rule.is];
-    if (!validator) {
-        return;
-    }
-
-    // 执行验证
-    const { isValid, expectedType } = validator(value);
-
-    if (!isValid) {
-        context.errors.push(ValidationErrorBuilder.invalid_value(value, {
-            ...context,
-            expected: expectedType
-        }));
+    for (const key of checkKeys) {
+        // 只有当规则中明确设为 true 时才校验
+        if (rule[key] === true) {
+            const isValid = dateIsPredicates[key](value);
+            
+            if (!isValid) {
+                context.errors.push(ValidationErrorBuilder.invalid_value(value, {
+                    ...context,
+                    expected: key // 错误信息直接使用 key 名，非常直观
+                }));
+                
+                // 思考：这里要不要 terminate? 
+            }
+        }
     }
 };
 
 ValidationRegistry.register({
-    name: 'date.is',
+    name: 'date-is',
     tags: ['date'],
     weight: ValidationWeight.SEMANTIC,
-    offset: 10,
+    offset: 100,
     execute: DateIsProcessor,
 });

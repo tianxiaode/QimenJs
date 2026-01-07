@@ -30,6 +30,6 @@ ValidationRegistry.register({
     name: 'number-type',
     tags: ['number'],
     weight: ValidationWeight.IDENTITY,
-    offset: 0,
+    offset: 10,
     execute: NumberTypeProcessor,
 });

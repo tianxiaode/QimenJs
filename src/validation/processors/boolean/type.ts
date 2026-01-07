@@ -13,6 +13,7 @@ export const BooleanypeProcessor: ValidationProcessorHandler = async (
     if (typeof value !== 'boolean') {
         // 值不是布尔类型，返回类型不匹配错误
         context.errors.push(ValidationErrorBuilder.type_mismatch('boolean', typeof value, context));
+        context.terminate = true;
     }
 
 };
@@ -21,6 +22,6 @@ ValidationRegistry.register({
     name: 'boolean-type',
     tags: ['boolean'],
     weight: ValidationWeight.IDENTITY,
-    offset: 0,
+    offset: 10,
     execute: BooleanypeProcessor,
 });
