@@ -14,12 +14,14 @@ export const RuleAlignmentProcessor: ValidationProcessorHandler = async (
 ) => {
     const { rule } = context;
 
-    // 1. 针对特定类型的“硬性对齐”
-    // 比如：文件类型或格式化类型，通常默认就是必填且非空的
-    if (['password', 'file', 'image', 'blob', 'buffer', 'split', 'format'].includes(rule.type)) {
-        rule.required = true;
-        rule.nullable = false;
-        rule.allowEmpty = false;
+    if (rule.type === 'file') {
+        // 强制对齐规则，确保后续 Processor 不用判断 undefined
+        // 这消灭了“必填但允许上传 0 个文件”的逻辑悖论
+        if (!rule.minFiles || rule.minFiles < 1) {
+            rule.minFiles = 1;
+        }
+        rule.allowedTypes = rule.allowedTypes || [];
+        rule.allowedExtensions = rule.allowedExtensions || [];
     }
 };
 
