@@ -6,10 +6,8 @@ import {
     ValidationWeight,
 } from '../../types';
 import { ValidationRegistry } from '../../core';
-import { refreshContextStatus } from './util';
 
 export const PresenceProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
-    refreshContextStatus(context);
 
     const { rule, status, value } = context;
 
@@ -43,7 +41,7 @@ export const PresenceProcessor: ValidationProcessorHandler = async (context: Val
 };
 
 ValidationRegistry.register({
-    name: 'Presence',
+    name: 'common-presence',
     tags: ALL_TAGS,
     weight: ValidationWeight.PRESENCE,
     offset: 100,

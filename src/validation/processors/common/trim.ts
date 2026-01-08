@@ -6,7 +6,7 @@ import {
     ValidationWeight,
 } from '../../types';
 
-export const TrimeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+export const TrimProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     let { value, rule } = context;
 
     // 1. 空值保护：只处理有值的字符串
@@ -32,7 +32,7 @@ export const TrimeProcessor: ValidationProcessorHandler = async (context: Valida
 ValidationRegistry.register({
     name: 'Trim',
     tags: ALL_TAGS,
-    weight: ValidationWeight.PRESENCE,
-    offset: 0,
-    execute: TrimeProcessor,
+    weight: ValidationWeight.PREPARATION,
+    offset: 20,
+    execute: TrimProcessor,
 });

@@ -19,7 +19,7 @@ export const DefaultProcessor: ValidationProcessorHandler = async (context: Vali
 };
 
 ValidationRegistry.register({
-    name: 'Default',
+    name: 'common-default',
     tags: ALL_TAGS,
     weight: ValidationWeight.RELATION, // 放在 400 阶段，所有单项校验之后
     offset: 100,

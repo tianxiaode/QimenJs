@@ -33,9 +33,9 @@ export const TransformProcessor: ValidationProcessorHandler = async (
 };
 
 ValidationRegistry.register({
-    name: 'Presence',
+    name: 'common-transform',
     tags: ALL_TAGS,
-    weight: ValidationWeight.PRESENCE,
-    offset: 50,
+    weight: ValidationWeight.PREPARATION,
+    offset: 10,
     execute: TransformProcessor,
 });

@@ -1,4 +1,4 @@
-import { ValidationRegistry } from '@/validation/core/ValidationRegistry';
+import { ValidationRegistry } from '../../core';
 import {
     ALL_TAGS,
     ValidationContext,

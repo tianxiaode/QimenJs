@@ -5,9 +5,6 @@ import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from 
 export const PatternProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
 
-    // 依然是字符串保护
-    if (typeof value !== 'string' || value === '') return;
-
     // --- 核心逻辑：排他性自定义正则 ---
     // 如果定义了单数 pattern，它具有最高优先级，且不再执行任何其他正则校验
     if (rule.pattern instanceof RegExp) {
