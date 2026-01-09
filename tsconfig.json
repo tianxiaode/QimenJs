@@ -30,6 +30,8 @@
       "@orbitjs/kernel": ["src/kernel"],
       "@orbitjs/tasks": ["src/tasks"],
       "@orbitjs/crypto": ["src/crypto"],
+      "@orbitjs/registry": ["src/registry"],
+      "@orbitjs/presets": ["src/presets"],
     }
   },
   "include": [

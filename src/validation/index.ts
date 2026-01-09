@@ -2,85 +2,17 @@
 export * from './core'
 //导出全部验证规则
 export * from './rules'
-export { 
-    //common validators
-    validateCompare,
-    validateFormDate,
-    validateURLSearchParams,
-    validateBlob,
-    validateFile,
-    validateContains,
-    validateUnique,
-    validatePresence,
-    validatePattern,
 
-    //core validators
-    validateString,
-    validateNumber,
-    validateArray,
-    validateObject,
-    validateBoolean,
-    validateDate,
 
-    //extensions/string
-    validateRequiredString,
-    validateHexColor,
-    validateRGBColor,
-    validateRGBAColor,
-    validateBase64,
-    validateStringExtension,
-    validateEmail,
-    validatePhone,
-    validateUsername,
-    validateUUID,
-    validateCreditCard,
-    validateChineseID,
-    validateChinesePostcode,
-    validateIPv4,
-    validateIPv6,
-    validateMacAddress,
-    validatePassword,
-    validateUrl,
+import * as AllEntries from './processors'; 
+import { ValidatorRegistrar } from '../core';
 
-    //extensions/array
-    validateEmptyArray,
-    validateSorted,
-    validateUniqueBy,
-    validateRequiredArray,
-
-    //extensions/object
-    validateRequiredObject,
-    validateEmptyObject,
-    validateHasKeys,
-
-    //extensions/number
-    validateRequiredNumber,
-    validateNumberExtension,
-    validateInteger,
-    validatePositive,
-    validateNegative,
-    validateOdd,
-    validateEven,
-    validateFinite,
-    validateInfinite,
-
-    //extensions/date
-    validateRequiredDate,
-    validateDateToday,
-    validateDateTomorrow,
-    validateDatePast,
-    validateDateFuture,
-    validateDateYesterday,
-    validateDateWeekend,
-
-    //extensions/common
-    validateEq,
-    validateGt,
-    validateGte,
-    validateLt,
-    validateLte,
-    validateNeq,
-    validateContainsExtension,
-
-}from './validators'
-export * from './engine'
+export const bootstrapValidators = () => {
+    // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象
+    Object.values(AllEntries).forEach((entry: any) => {
+        // 简单的健壮性检查：确保它是一个有效的 Entry 对象
+        if (entry && entry.name && entry.execute) {
+            ValidatorRegistrar.add(entry);
+        }
+    });
+};

@@ -1,6 +1,9 @@
 import { IValidationError, ValidationContext } from "./context";
 import { ValidationRule } from "./rule";
 
+
+export const ValidatorRegistrarName= 'validator' as const;
+
 export interface ValidationResult {
     isValid: boolean;
     errors: IValidationError[];

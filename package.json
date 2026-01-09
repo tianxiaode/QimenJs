@@ -64,6 +64,16 @@
       "require": "./dist/crypto/index.js",
       "types": "./dist/crypto/index.d.ts"
     },
+    "./registry": {
+      "import": "./dist/registry/index.esm.js",
+      "require": "./dist/registry/index.js",
+      "types": "./dist/registry/index.d.ts"
+    },
+    "./presets": {
+      "import": "./dist/presets/index.esm.js",
+      "require": "./dist/presets/index.js",
+      "types": "./dist/presets/index.d.ts"
+    },
     "./kernel": {
       "import": "./dist/kernel/index.esm.js",
       "require": "./dist/kernel/index.js",

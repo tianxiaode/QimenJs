@@ -1,8 +1,8 @@
 import { ValidationErrorBuilder } from '../../errors';
-import { doValidate, ValidationRegistry } from '../../core';
+import { doValidate } from '../../core';
 import { ValidationProcessorHandler, ValidationWeight } from '../../types';
 
-export const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
+const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
     if (!rule.itemRule || !Array.isArray(value)) return;
 
@@ -44,10 +44,10 @@ export const ArrayChildrenProcessor: ValidationProcessorHandler = async context 
 };
 
 
-ValidationRegistry.register({
+export const arrayChildrenProcessorEntry = {
     name: 'array-children',
     tags: ['array'],
     weight: ValidationWeight.SEMANTIC,
     offset: 110,
     execute: ArrayChildrenProcessor,
-});
+};

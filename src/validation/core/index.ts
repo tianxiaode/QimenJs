@@ -1,3 +1,2 @@
-export * from './patterns';
-export * from './ValidationRegistry';
-export * from './vvalidate';
+export * from './ValidatorRegistrar';
+export * from './validate';

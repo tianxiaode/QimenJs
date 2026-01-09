@@ -1,8 +1,9 @@
 // 对外入口函数：用户只传 value 和 rule
 
 import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
-import { ValidateFunction } from '../types/validate';
-import { ValidationRegistry } from './ValidationRegistry';
+import { ValidateFunction, ValidatorRegistrarName } from '../types/validate';
+import { Registry, RegistryHub } from '@orbitjs/registry';
+import { ValidatorRegistrar } from './ValidatorRegistrar';
 
 /**
  * 上下文构造工厂
@@ -45,7 +46,11 @@ export const doValidate: ValidateFunction = async (value, rule, partialContext =
     // 构造完整的“运行上下文”
     const context = createContext(value, rule, partialContext);
 
-    const processors = ValidationRegistry.getSortedProcessors(rule);
+    // 1. 获取 validator。如果还没 use 挂载，Proxy 会抛出我们之前定义的错误
+    const validator = RegistryHub.get<ValidatorRegistrar>(ValidatorRegistrarName); 
+    
+    // 2. 根据 rule.type 获取流水线
+    const processors = validator.get(rule.type);
 
     for (const item of processors) {
         const step: ExecutionStep = {
