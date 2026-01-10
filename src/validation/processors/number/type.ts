@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const NumberTypeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
@@ -26,10 +25,3 @@ export const NumberTypeProcessor: ValidationProcessorHandler = async (context: V
 
 };
 
-ValidationRegistry.register({
-    name: 'number-type',
-    tags: ['number'],
-    weight: ValidationWeight.IDENTITY,
-    offset: 10,
-    execute: NumberTypeProcessor,
-});

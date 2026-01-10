@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationProcessorHandler } from '../../types';
 
 const numberIsPredicates: Record<string, (v: number) => boolean> = {
     integer:  (v) => Number.isInteger(v),
@@ -35,10 +34,3 @@ export const NumberIsProcessor: ValidationProcessorHandler = async (context) => 
     }
 };
 
-ValidationRegistry.register({
-    name: 'number.is',
-    tags: ['number'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: NumberIsProcessor,
-});
