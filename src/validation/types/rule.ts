@@ -177,14 +177,7 @@ export interface PasswordRule extends BaseValidationRule {
     type: 'password';
 
     // 长度验证
-    minLength?: number;
-    maxLength?: number;
     trim?: boolean | 'all' | 'inner';
-
-    uppercase?: boolean;
-    lowercase?: boolean;
-    digit?: boolean;
-    specialChar?: boolean;
 }
 
 // 比较验证规则
