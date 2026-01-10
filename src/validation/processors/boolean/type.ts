@@ -1,7 +1,7 @@
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
-const BooleanypeProcessor: ValidationProcessorHandler = async (
+export const BooleanypeProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {
     const { value, rule } = context;
@@ -17,10 +17,3 @@ const BooleanypeProcessor: ValidationProcessorHandler = async (
 
 };
 
-export const booleanTypeProcessorEntry = {
-    name: 'boolean-type',
-    tags: ['boolean'],
-    weight: ValidationWeight.IDENTITY,
-    offset: 10,
-    execute: BooleanypeProcessor,
-};

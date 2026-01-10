@@ -1,5 +1,5 @@
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 /**
  * 比较两个数组是否完全相同

@@ -15,7 +15,7 @@ export type ValidationTag =
 /** * 预定义的全类型数组
  * 专门给 required, default, nullable 等"通吃型"处理器使用
  */
-export const ALL_TAGS: ValidationTag[] = [
+export const allValidateTypes: ValidationTag[] = [
     'string',
     'number',
     'boolean',

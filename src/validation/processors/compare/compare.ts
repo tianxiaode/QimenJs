@@ -1,5 +1,5 @@
 import { smartCompare } from '../../utils';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 import { ValidationErrorBuilder } from '../../errors';
 
 const operators: Record<string, (res: number) => boolean> = {

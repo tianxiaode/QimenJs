@@ -1,6 +1,5 @@
-import { Registry } from '@orbitjs/registry';
+import { RegistryHub, SystemRegistrarName } from '@orbitjs/registry';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
-import { config } from 'process';
 
 /** * 规则对齐预处理器 (RuleAlignmentProcessor)
  * 职责：根据 Rule 的类型和特定字段，补充缺失的默认行为。
@@ -23,7 +22,7 @@ export const RuleAlignmentProcessor: ValidationProcessorHandler = async (
     if (rule.type === 'password') {
         // 全部用全局定义对齐规则，确保后续 Processor 不用判断 undefined
         const { minLength, maxLength, uppercase, lowercase, digit, specialChar } =
-            Registry.system.get('password');
+            RegistryHub.get(SystemRegistrarName).get('password');
         rule.minLength = minLength;
         rule.maxLength = maxLength;
         rule.uppercase = uppercase;

@@ -1,6 +1,6 @@
 import { doValidate } from '../core';
 import { ValidationErrorBuilder } from '../errors';
-import { ValidationRule, ValidateResult, ALL_TAGS, formatTypes } from '../types';
+import { ValidationRule, ValidateResult, allValidateTypes, formatTypes } from '../types';
 
 const doValidateWithThrow = async (
     value: any,
@@ -40,7 +40,7 @@ const specialTypes = {
 
 const SCHEMA_MAP: any = { ...specialTypes };
 
-ALL_TAGS.forEach(tag => {
+allValidateTypes.forEach(tag => {
     SCHEMA_MAP[tag] = (r: any) => ({ ...r, type: tag });
 });
 

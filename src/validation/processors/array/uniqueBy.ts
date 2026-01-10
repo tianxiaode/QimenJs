@@ -1,5 +1,5 @@
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const ArrayUniqueByProcessor: ValidationProcessorHandler = async (
     context: ValidationContext

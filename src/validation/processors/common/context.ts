@@ -1,8 +1,6 @@
 import {
-    ALL_TAGS,
     ValidationContext,
     ValidationProcessorHandler,
-    ValidationWeight,
 } from '../../types';
 /**
  * 基础状态提取处理器

@@ -1,6 +1,6 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { doValidate } from '../../core';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationProcessorHandler } from '../../types';
 
 export const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
