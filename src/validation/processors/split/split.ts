@@ -25,7 +25,7 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
     }
 
     // --- 核心转变：构建虚拟数组规则并委托 ---
-    
+   
     const virtualArrayRule: ValidationRule = {
         type: 'array',
         // 映射数量校验：你的 minItems/maxItems 直接映射给数组的 min/max

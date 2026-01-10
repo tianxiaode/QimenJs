@@ -1,2 +1,1 @@
-export * from './is';
-export * from './pattern';
+export * from './entries';

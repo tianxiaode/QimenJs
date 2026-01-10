@@ -222,34 +222,11 @@ export interface SplitRule
 }
 
 // 1. 基础公共属性
-interface BaseFormatPart extends Omit<BaseValidationRule, 'type' | 'required'> {
+interface FormatRule extends Omit<BaseValidationRule, 'type'> {
     type: 'format';
-    required: true;
+    format?: Omit<ValidationPatternType, 'uppercase' | 'lowercase' | 'digit' | 'specialChar'> | string;
+    pattern?: RegExp
 }
-
-// 2. 日期专用部分
-interface DateFormatPart extends BaseFormatPart {
-    format: 'date';
-    dateFormat?: string;
-}
-
-// 3. 数字专用部分
-interface NumberFormatPart extends BaseFormatPart {
-    format: 'number';
-    precision?: number;
-    min?: number;
-    max?: number;
-}
-
-// 4. 通用模式部分（正则/枚举）
-interface PatternFormatPart extends BaseFormatPart {
-    format: string; // 其他普通字符串模板
-    pattern?: Omit<ValidationPatternType, 'uppercase' | 'lowercase' | 'digit' | 'specialChar'>;
-    regexp?: string | RegExp;
-}
-
-// --- 最终组合：这就是你要的 FormatRule ---
-export type FormatRule = DateFormatPart | NumberFormatPart | PatternFormatPart;
 
 // 整合所有约束接口 - 作为联合类型
 export type ValidationRule =

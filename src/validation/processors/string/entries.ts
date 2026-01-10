@@ -7,7 +7,7 @@ import { StringExcludesProcessor } from './excludes';
 // 注册字符串类型验证处理器
 export const StringTypeEntry = {
     name: 'string-type',
-    tags: ['string', 'password', 'split'],
+    tags: ['string', 'password', 'split', 'format'],
     weight: ValidationWeight.IDENTITY,
     offset: 10,
     execute: StringTypeProcessor,
@@ -16,7 +16,7 @@ export const StringTypeEntry = {
 // 注册字符串长度验证处理器
 export const StringLengthEntry = {
     name: 'string-length',
-    tags: ['string', 'password', 'split'],
+    tags: ['string', 'password', 'split', 'format'],
     weight: ValidationWeight.SEMANTIC,
     offset: 50,
     execute: StringLengthProcessor,
@@ -25,7 +25,7 @@ export const StringLengthEntry = {
 // 注册字符串包含验证处理器
 export const StringIncludesEntry = {
     name: 'string-includes',
-    tags: ['string', 'password'],
+    tags: ['string', 'password', 'format'],
     weight: ValidationWeight.SEMANTIC,
     offset: 100,
     execute: StringIncludesProcessor,
@@ -34,7 +34,7 @@ export const StringIncludesEntry = {
 // 注册字符串排除验证处理器
 export const StringExcludesEntry = {
     name: 'string-excludes',
-    tags: ['string', 'password'],
+    tags: ['string', 'password', 'format'],
     weight: ValidationWeight.SEMANTIC,
     offset: 105,
     execute: StringExcludesProcessor,
