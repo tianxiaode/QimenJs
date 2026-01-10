@@ -1,11 +1,10 @@
-import { ValidationRegistry } from '../../core';
+import { MimeTypeRegistrar, MimeTypeRegistrarName, RegistryHub } from '@orbitjs/registry';
 import { ValidationErrorBuilder } from '../../errors';
 import {
     IValidationError,
     ValidationContext,
     ValidationProcessorHandler,
     ValidationRule,
-    ValidationWeight,
 } from '../../types';
 
 /** 校验项的基础契约 */
@@ -20,30 +19,6 @@ type FileListValidator = ValidatorItem<File[]>;
 
 /** 针对单个文件的校验类型 */
 type FileItemValidator = ValidatorItem<File>;
-
-// 文件验证谓词映射对象
-const filePredicates = {
-    // 验证文件类型（MIME类型）
-    allowedTypes: (file: File, rule: ValidationRule) => {
-        return rule.allowedTypes.some((allowedType: string) => {
-            // 支持通配符，例如 'image/*' 匹配所有图片类型
-            if (allowedType.endsWith('/*')) {
-                const mainType = allowedType.slice(0, -1); // 获取 'image/'
-                return file.type.startsWith(mainType);
-            }
-            return file.type === allowedType;
-        });
-    },
-
-    // 验证文件扩展名
-    allowedExtensions: (file: File, rule: ValidationRule) => {
-        const fileName = file.name.toLowerCase();
-        return rule.allowedExtensions.some((ext: string) => {
-            const normalizedExt = ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`;
-            return fileName.endsWith(normalizedExt);
-        });
-    },
-};
 
 // 1. 集合级校验（针对文件列表数量）
 const LIST_CHECKS: FileListValidator[] = [
@@ -71,19 +46,14 @@ const FILE_CHECKS: FileItemValidator[] = [
     },
     {
         key: 'allowedTypes',
-        predicate: (f, r) => r.allowedTypes.length === 0 || filePredicates.allowedTypes(f, r),
+        predicate: (f, r) => {
+            const allowedSet = RegistryHub.get<MimeTypeRegistrar>(MimeTypeRegistrarName).get(
+                r.allowedTypes as string[]
+            );
+            return allowedSet.has(f.type);
+        },
         error: (f, r, ctx) =>
             ValidationErrorBuilder.invalid_value(f, { ...ctx, expected: r.allowedTypes.join(',') }),
-    },
-    {
-        key: 'allowedExtensions',
-        predicate: (f, r) =>
-            r.allowedExtensions.length === 0 || filePredicates.allowedExtensions(f, r),
-        error: (f, r, ctx) =>
-            ValidationErrorBuilder.invalid_value(f, {
-                ...ctx,
-                expected: r.allowedExtensions.join(','),
-            }),
     },
 ];
 export const FileProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
@@ -124,11 +94,3 @@ export const FileProcessor: ValidationProcessorHandler = async (context: Validat
         }
     }
 };
-
-ValidationRegistry.register({
-    name: 'file',
-    tags: ['file'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 10,
-    execute: FileProcessor,
-});
