@@ -1,5 +1,5 @@
 import { IValidationError, ValidationContext } from "./context";
-import { ValidationRule } from "./rule";
+import { ArrayRule, BooleanRule, CompareRule, DateRule, FileRule, FormatRule, NumberRule, ObjectRule, PasswordRule, SplitRule, StringRule, ValidationRule } from "./rule";
 
 
 export const ValidatorRegistrarName= 'validator' as const;
@@ -17,4 +17,6 @@ export type ValidateFunction = (
     rule: ValidationRule, 
     context?: Partial<ValidationContext>
 ) => Promise<ValidationResult>;
+
+export type ValidateResult = IValidationError[] | null;
 

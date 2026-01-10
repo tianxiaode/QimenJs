@@ -1,7 +1,7 @@
 //导出核心函数和错误
-export * from './core'
+export * from './core';
 //导出全部验证规则
-export * from './rules'
+export * from './types';
 
 
 import * as AllEntries from './processors'; 
@@ -16,3 +16,6 @@ export const bootstrapValidators = () => {
         }
     });
 };
+
+export * from './errors';
+export * from './engine';

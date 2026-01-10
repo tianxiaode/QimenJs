@@ -1,4 +1,4 @@
-import { ValidationTag } from './processor';
+import { ValidationTag } from './base';
 
 export type CustomValidationFunction = (
     value: any,
@@ -44,7 +44,6 @@ export interface BaseValidationRule {
 
     // 基础标识字段
     message?: string;
-    default?: any; // 当输入为空时的兜底值
     transform?: (val: any, rule: ValidationRule) => any; // 物理转换逻辑
 
     // 存在性字段
@@ -209,7 +208,7 @@ export interface SplitRule
     extends
         BaseValidationRule,
         Omit<ArrayRule, 'type'>, // 继承数组的 minItems, maxItems, unique, itemRule 等
-        Omit<StringRule, 'type' | 'is' | 'format' | 'pattern' | 'includes' | 'excludes'> {
+        Omit<StringRule, 'type' | 'includes' | 'excludes'> {
     // 继承字符串的 trim, minLength (原串长度) 等
     type: 'split';
 
@@ -222,7 +221,7 @@ export interface SplitRule
 }
 
 // 1. 基础公共属性
-interface FormatRule extends Omit<BaseValidationRule, 'type'> {
+export interface FormatRule extends Omit<BaseValidationRule, 'type'> {
     type: 'format';
     format?: Omit<ValidationPatternType, 'uppercase' | 'lowercase' | 'digit' | 'specialChar'> | string;
     pattern?: RegExp
