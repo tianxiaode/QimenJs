@@ -1,6 +1,6 @@
-import { doValidate, ValidationRegistry } from '../../core';
+import { doValidate } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const ObjectPropertiesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -49,11 +49,3 @@ export const ObjectPropertiesProcessor: ValidationProcessorHandler = async (
 
     await Promise.all(tasks);
 };
-
-ValidationRegistry.register({
-    name: 'object-properties',
-    tags: ['object'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 110,
-    execute: ObjectPropertiesProcessor,
-});

@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const ObjectRequiredFieldsProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -36,11 +35,3 @@ export const ObjectRequiredFieldsProcessor: ValidationProcessorHandler = async (
         }
     }
 };
-
-ValidationRegistry.register({
-    name: 'object-required-fields',
-    tags: ['object'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: ObjectRequiredFieldsProcessor,
-});

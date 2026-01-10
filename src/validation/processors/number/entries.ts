@@ -16,7 +16,7 @@ export const NumberTypeEntry = {
 
 // 注册数字范围验证处理器
 export const NumberRangeEntry = {
-  name: 'numner-range',
+  name: 'number-range',
   tags: ['number'],
   weight: ValidationWeight.QUANTITY,
   offset: 50,
@@ -49,4 +49,3 @@ export const NumberExcludesEntry = {
   offset: 115,
   execute: NumberExcludesProcessor,
 };
-
