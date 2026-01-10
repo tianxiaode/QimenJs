@@ -204,38 +204,6 @@ export interface FileRule extends BaseValidationRule {
     maxFiles?: number;
 }
 
-// 图像验证规则
-export interface ImageRule extends BaseValidationRule {
-    type: 'image';
-
-    // 图像特有属性
-    maxSize?: number;
-    allowedTypes?: string[]; // MIME类型
-    allowedExtensions?: string[];
-    minWidth?: number;
-    maxWidth?: number;
-    minHeight?: number;
-    maxHeight?: number;
-    aspectRatio?: number;
-}
-
-// Blob验证规则
-export interface BlobRule extends BaseValidationRule {
-    type: 'blob';
-
-    // Blob特有属性
-    maxSize?: number;
-    allowedTypes?: string[]; // MIME类型
-}
-
-// Buffer验证规则
-export interface BufferRule extends BaseValidationRule {
-    type: 'buffer';
-
-    // Buffer特有属性
-    maxSize?: number;
-    encoding?: string;
-}
 
 export interface SplitRule
     extends
@@ -294,8 +262,5 @@ export type ValidationRule =
     | PasswordRule
     | CompareRule
     | FileRule
-    | ImageRule
-    | BlobRule
-    | BufferRule
     | SplitRule
     | FormatRule;

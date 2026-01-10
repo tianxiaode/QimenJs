@@ -11,9 +11,6 @@ export type ValidationTag =
     | 'password'
     | 'compare'
     | 'file'
-    | 'image'
-    | 'blob'
-    | 'buffer'
     | 'split'
     | 'format';
 
@@ -30,9 +27,8 @@ export const ALL_TAGS: ValidationTag[] = [
     'password',
     'compare',
     'file',
-    'image',
-    'blob',
-    'buffer',
+    'split',
+    'format'
 ];
 
 export type ValidationProcessorHandler = (ctx: ValidationContext) => Promise<void>;

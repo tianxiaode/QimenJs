@@ -1,6 +1,6 @@
-import { doValidate, ValidationRegistry } from '../../core';
+import { doValidate } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationProcessorHandler, ValidationRule, ValidationWeight } from '../../types';
+import { ValidationProcessorHandler, ValidationRule } from '../../types';
 
 export const SplitProcessor: ValidationProcessorHandler = async (context) => {
     const { value, rule, path } = context;
@@ -45,12 +45,3 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
     context.errors.push(...result.errors);
 
 };
-
-ValidationRegistry.register({
-    name: 'string.split',
-    tags: ['string'],
-    weight: ValidationWeight.STRUCTURAL,
-    offset: 50,
-    execute: SplitProcessor,
-});
-    
