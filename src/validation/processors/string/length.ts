@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const StringLengthProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -19,15 +18,7 @@ export const StringLengthProcessor: ValidationProcessorHandler = async (
         context.errors.push(ValidationErrorBuilder.too_large(rule.max, value, false, context));
     }
 
-    if(rule.length !== undefined && len !== rule.length){
+    if (rule.length !== undefined && len !== rule.length) {
         context.errors.push(ValidationErrorBuilder.invalid_value(value, context));
     }
 };
-
-ValidationRegistry.register({
-    name: 'string-length',
-    tags: ['string'],
-    execute: StringLengthProcessor,
-    weight: ValidationWeight.SEMANTIC,
-    offset: 50,
-});

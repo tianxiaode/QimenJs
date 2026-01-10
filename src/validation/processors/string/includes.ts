@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const StringIncludesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -24,10 +23,3 @@ export const StringIncludesProcessor: ValidationProcessorHandler = async (
     }
 };
 
-ValidationRegistry.register({
-    name: 'string-includes',
-    tags: ['string'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: StringIncludesProcessor,
-});

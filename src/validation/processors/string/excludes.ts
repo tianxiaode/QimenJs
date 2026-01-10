@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const StringExcludesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -23,11 +22,3 @@ export const StringExcludesProcessor: ValidationProcessorHandler = async (
         }
     }
 };
-
-ValidationRegistry.register({
-    name: 'string-excludes',
-    tags: ['string'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 105,
-    execute: StringExcludesProcessor,
-});
