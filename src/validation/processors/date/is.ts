@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationProcessorHandler } from '../../types';
 
 // 定义日期is验证的谓词函数类型
 type DateIsPredicate = (value: Date) =>boolean;
@@ -85,10 +84,3 @@ export const DateIsProcessor: ValidationProcessorHandler = async (context) => {
     }
 };
 
-ValidationRegistry.register({
-    name: 'date-is',
-    tags: ['date'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: DateIsProcessor,
-});

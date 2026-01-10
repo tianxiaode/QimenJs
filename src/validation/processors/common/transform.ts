@@ -1,9 +1,6 @@
-import { ValidationRegistry } from '../../core';
 import {
-    ALL_TAGS,
     ValidationContext,
     ValidationProcessorHandler,
-    ValidationWeight,
 } from '../../types';
 
 export const TransformProcessor: ValidationProcessorHandler = async (
@@ -31,11 +28,3 @@ export const TransformProcessor: ValidationProcessorHandler = async (
     // 重要：将转换后的值回填到 context，供后续处理器使用
     context.value = value;
 };
-
-ValidationRegistry.register({
-    name: 'common-transform',
-    tags: ALL_TAGS,
-    weight: ValidationWeight.PREPARATION,
-    offset: 10,
-    execute: TransformProcessor,
-});

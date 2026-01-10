@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const DateWeenendProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
@@ -30,10 +29,3 @@ export const DateWeenendProcessor: ValidationProcessorHandler = async (context: 
     );
 };
 
-ValidationRegistry.register({
-    name: 'date.weekend',
-    tags: ['date'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 105,
-    execute: DateWeenendProcessor,
-});

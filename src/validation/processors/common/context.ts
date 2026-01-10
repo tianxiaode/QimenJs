@@ -1,4 +1,3 @@
-import { ValidationRegistry } from '../../core';
 import {
     ALL_TAGS,
     ValidationContext,
@@ -32,10 +31,3 @@ export const RefreshContextStatusProcessor: ValidationProcessorHandler = async (
     status.isModified = value !== rawValue;
 };
 
-ValidationRegistry.register({
-    name: 'common-refrence-context-status',
-    tags: ALL_TAGS,
-    weight: ValidationWeight.PREPARATION,
-    offset: 30,
-    execute: RefreshContextStatusProcessor,
-});

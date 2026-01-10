@@ -1,9 +1,6 @@
-import { ValidationRegistry } from '@/validation/core/ValidatorRegistrar';
 import {
-    ALL_TAGS,
     ValidationContext,
     ValidationProcessorHandler,
-    ValidationWeight,
 } from '../../types';
 
 export const TrimProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
@@ -28,11 +25,3 @@ export const TrimProcessor: ValidationProcessorHandler = async (context: Validat
     // 3. 将处理后的值写回上下文，供后续所有处理器（如 Email, MinLength）使用
     context.value = value;
 };
-
-ValidationRegistry.register({
-    name: 'Trim',
-    tags: ALL_TAGS,
-    weight: ValidationWeight.PREPARATION,
-    offset: 20,
-    execute: TrimProcessor,
-});

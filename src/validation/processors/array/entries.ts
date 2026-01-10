@@ -1,13 +1,11 @@
 import { ValidationWeight } from '../../types';
-import { 
-    ArrayChildrenProcessor,
-    ArrayExcludesProcessor,
-    ArrayIncludesProcessor,
-    ArrayLengthProcessor,
-    ArrayTypeProcessor,
-    ArrayUniqueProcessor,
-    ArrayUniqueByProcessor
-} from '.';
+import { ArrayChildrenProcessor } from './children';
+import { ArrayExcludesProcessor } from './excludes';
+import { ArrayIncludesProcessor } from './includes';
+import { ArrayLengthProcessor } from './length';
+import { ArrayTypeProcessor } from './type';
+import { ArrayUniqueProcessor } from './unique';
+import { ArrayUniqueByProcessor } from './uniqueBy';
 
 export const arrayTypeProcessorEntry = {
     name: 'array-type',

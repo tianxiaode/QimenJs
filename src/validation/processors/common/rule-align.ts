@@ -1,9 +1,6 @@
-import { ValidationRegistry } from '../../core';
 import {
-    ALL_TAGS,
     ValidationContext,
     ValidationProcessorHandler,
-    ValidationWeight,
 } from '../../types';
 
 /** * 规则对齐预处理器 (RuleAlignmentProcessor)
@@ -16,7 +13,7 @@ export const RuleAlignmentProcessor: ValidationProcessorHandler = async (
 
     if (rule.type === 'file') {
         // 强制对齐规则，确保后续 Processor 不用判断 undefined
-        // 这消灭了“必填但允许上传 0 个文件”的逻辑悖论
+        // 这消灭了"必填但允许上传 0 个文件"的逻辑悖论
         if (!rule.minFiles || rule.minFiles < 1) {
             rule.minFiles = 1;
         }
@@ -25,10 +22,3 @@ export const RuleAlignmentProcessor: ValidationProcessorHandler = async (
     }
 };
 
-ValidationRegistry.register({
-    name: 'common-rule-align',
-    tags: ALL_TAGS,
-    weight: ValidationWeight.PREPARATION,
-    offset: 0,
-    execute: RuleAlignmentProcessor,
-});

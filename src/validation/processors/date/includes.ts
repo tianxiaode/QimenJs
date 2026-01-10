@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const DateIncludesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -30,10 +29,3 @@ export const DateIncludesProcessor: ValidationProcessorHandler = async (
 
 };
 
-ValidationRegistry.register({
-    name: 'date-includes',
-    tags: ['date'],
-    weight: ValidationWeight.RELATION,
-    offset: 110,
-    execute: DateIncludesProcessor,
-});

@@ -1,11 +1,8 @@
 import { ValidationErrorBuilder } from '../../errors';
 import {
-    ALL_TAGS,
     ValidationContext,
     ValidationProcessorHandler,
-    ValidationWeight,
 } from '../../types';
-import { ValidationRegistry } from '../../core';
 
 export const PresenceProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
 
@@ -39,11 +36,3 @@ export const PresenceProcessor: ValidationProcessorHandler = async (context: Val
         );
     }
 };
-
-ValidationRegistry.register({
-    name: 'common-presence',
-    tags: ALL_TAGS,
-    weight: ValidationWeight.PRESENCE,
-    offset: 100,
-    execute: PresenceProcessor,
-});

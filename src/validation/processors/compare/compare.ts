@@ -1,5 +1,4 @@
 import { smartCompare } from '../../utils';
-import { ValidationRegistry } from '../../core';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 import { ValidationErrorBuilder } from '../../errors';
 
@@ -44,10 +43,3 @@ export const CompareProcessor: ValidationProcessorHandler = async (context: Vali
     }
 };
 
-ValidationRegistry.register({
-    name: 'compare',
-    tags: ['compare'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: CompareProcessor,
-});

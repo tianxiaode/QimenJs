@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const DateTypeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value } = context;
@@ -17,10 +16,3 @@ export const DateTypeProcessor: ValidationProcessorHandler = async (context: Val
     }
 };
 
-ValidationRegistry.register({
-    name: 'date.type',
-    tags: ['date'],
-    weight: ValidationWeight.IDENTITY,
-    offset: 10,
-    execute: DateTypeProcessor,
-});
