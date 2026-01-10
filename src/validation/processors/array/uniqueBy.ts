@@ -1,4 +1,3 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
@@ -50,11 +49,3 @@ export const ArrayUniqueByProcessor: ValidationProcessorHandler = async (
         }
     }
 };
-
-ValidationRegistry.register({
-    name: 'array-unique-by',
-    tags: ['array'],
-    execute: ArrayUniqueByProcessor,
-    weight: ValidationWeight.SEMANTIC,
-    offset: 155,
-});

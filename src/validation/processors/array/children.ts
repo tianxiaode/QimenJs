@@ -1,8 +1,8 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { doValidate } from '../../core';
-import { ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
-const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
+export const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
     if (!rule.itemRule || !Array.isArray(value)) return;
 
@@ -41,13 +41,4 @@ const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
     });
 
     await Promise.all(tasks);
-};
-
-
-export const arrayChildrenProcessorEntry = {
-    name: 'array-children',
-    tags: ['array'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 110,
-    execute: ArrayChildrenProcessor,
 };

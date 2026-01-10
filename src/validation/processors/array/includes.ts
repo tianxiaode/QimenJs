@@ -1,4 +1,3 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
@@ -44,11 +43,3 @@ export const ArrayIncludesProcessor: ValidationProcessorHandler = async (
     // 这样确保 includes 规则的独立性
     return;
 };
-
-ValidationRegistry.register({
-    name: 'array-includes',
-    tags: ['array'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 100,
-    execute: ArrayIncludesProcessor,
-});

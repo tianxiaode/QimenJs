@@ -1,4 +1,3 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
@@ -15,11 +14,3 @@ export const ArrayTypeProcessor: ValidationProcessorHandler = async (
         context.terminate = true;
     }
 };
-
-ValidationRegistry.register({
-    name: 'array-type',
-    tags: ['array'],
-    weight: ValidationWeight.IDENTITY,
-    offset: 10,
-    execute: ArrayTypeProcessor,
-});

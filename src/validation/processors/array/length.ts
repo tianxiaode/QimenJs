@@ -1,6 +1,5 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
-import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const ArrayLengthProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
@@ -28,11 +27,3 @@ export const ArrayLengthProcessor: ValidationProcessorHandler = async (
         context.errors.push(ValidationErrorBuilder.invalid_value(value, context));
     }
 };
-
-ValidationRegistry.register({
-    name: 'array-length',
-    tags: ['array'],
-    execute: ArrayLengthProcessor,
-    weight: ValidationWeight.SEMANTIC,
-    offset: 50,
-});

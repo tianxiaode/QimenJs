@@ -1,4 +1,3 @@
-import { ValidationRegistry } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler, ValidationWeight } from '../../types';
 
@@ -46,10 +45,3 @@ export const ArrayExcludesProcessor: ValidationProcessorHandler = async (
     return;
 };
 
-ValidationRegistry.register({
-    name: 'array-excludes',
-    tags: ['array'],
-    weight: ValidationWeight.SEMANTIC,
-    offset: 105,
-    execute: ArrayExcludesProcessor,
-});
