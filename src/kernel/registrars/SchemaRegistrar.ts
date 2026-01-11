@@ -77,8 +77,3 @@ export class SchemaRegistrar extends RegistrarBase<any> {
     }
 }
 
-declare module '@orbitjs/registry' {
-    interface Registrars {
-        [SchemaRegistrarName]: typeof SchemaRegistrar;
-    }
-}

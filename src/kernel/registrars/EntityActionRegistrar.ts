@@ -194,8 +194,3 @@ export class EntityActionRegistrar extends RegistrarBase<Map<string, EntityActio
     }
 }
 
-declare module '@orbitjs/registry' {
-    interface Registrars {
-        [EntityActionRegistrarName]: typeof EntityActionRegistrar;
-    }
-}

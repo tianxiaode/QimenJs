@@ -1,7 +1,7 @@
 // 对外入口函数：用户只传 value 和 rule
 
 import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
-import { ValidateFunction, ValidatorRegistrarName } from '../types/validate';
+import { ValidateFunction } from '../types/validate';
 import { Registry } from '@orbitjs/registry';
 
 /**

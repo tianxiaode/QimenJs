@@ -15,10 +15,10 @@ import {
 
 declare module '@orbitjs/registry' {
     interface Registrars {
-        [MimeTypeRegistrarName]: typeof MimeTypeRegistrar;
-        [SystemRegistrarName]: typeof SystemRegistrar;
-        [PatternRegistrarName]: typeof PatternRegistrar;
-        [DomainRegistrarName]: typeof DomainRegistrar;
-        [HtmlTemplateRegistrarName]: typeof HtmlTemplateRegistrar;
+        [MimeTypeRegistrarName]: MimeTypeRegistrar;
+        [SystemRegistrarName]: SystemRegistrar;
+        [PatternRegistrarName]: PatternRegistrar;
+        [DomainRegistrarName]: DomainRegistrar;
+        [HtmlTemplateRegistrarName]: HtmlTemplateRegistrar;
     }
 }

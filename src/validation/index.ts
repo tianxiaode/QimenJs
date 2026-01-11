@@ -6,6 +6,7 @@ export * from './types';
 
 import * as AllEntries from './processors'; 
 import { ValidatorRegistrar }  from './core';
+import { RegistryHub } from '@orbitjs/registry';
 
 export const bootstrapValidators = () => {
     // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象
@@ -21,3 +22,4 @@ export * from './errors';
 export * from './engine';
 
 
+RegistryHub.use(ValidatorRegistrar.getInstance());
