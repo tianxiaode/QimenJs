@@ -5,7 +5,7 @@ import { EntityActionRegistrar } from './registrars/EntityActionRegistrar';
 export * from './events';
 export * from './flow';
 export * from './http';
-export * from './processors';
+export * from './actions';
 export * from './types';
 
 RegistryHub.use(SchemaRegistrar.getInstance());

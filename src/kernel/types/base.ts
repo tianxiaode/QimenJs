@@ -32,3 +32,4 @@ export enum ActionCategory {
     // === 副作用阶段 (1000-) ===
     EFFECT = 1000     // 日志, 通知
 }
+

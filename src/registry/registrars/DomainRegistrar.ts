@@ -1,6 +1,6 @@
 import { DomainConfig, DomainRegistrarName } from '../types';
 import { RegistrarBase } from './RegistrarBase';
-import { RegistrarConflictError, RegistrarNotFoundError } from './errors';
+import { RegistrarConflictError } from './errors';
 
 export class DomainRegistrar extends RegistrarBase<Map<string, DomainConfig>> {
     public readonly name = DomainRegistrarName;
