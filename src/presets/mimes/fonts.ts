@@ -1,24 +1,28 @@
 // @presets/fonts.ts
-import { MimeTypeRegistrar } from '@orbitjs/registry';
+import { MimeTypeRegistrar } from '../../registry/registrars/MimeTypeRegistrar';
 
 export function useFontPresets() {
+    const registrar = MimeTypeRegistrar.getInstance();
+    
     // Font formats
-    MimeTypeRegistrar.register('woff', 'font/woff');
-    MimeTypeRegistrar.register('woff2', 'font/woff2');
-    MimeTypeRegistrar.register('ttf', 'font/ttf');
-    MimeTypeRegistrar.register('otf', 'font/otf');
-    MimeTypeRegistrar.register('eot', 'application/vnd.ms-fontobject');
-    MimeTypeRegistrar.register('sfnt', 'application/font-sfnt');
-    MimeTypeRegistrar.register('ttc', 'font/collection');
-    MimeTypeRegistrar.register('pfa', 'application/x-font-type1');
-    MimeTypeRegistrar.register('pfb', 'application/x-font-type1');
-    MimeTypeRegistrar.register('gsf', 'application/x-font-ghostscript');
-    MimeTypeRegistrar.register('pcf', 'application/x-font-pcf');
-    MimeTypeRegistrar.register('pcf.Z', 'application/x-font-pcf');
-    MimeTypeRegistrar.register('pfr', 'application/font-tdpfr');
-    MimeTypeRegistrar.register('fnt', 'application/octet-stream');
-    MimeTypeRegistrar.register('fon', 'application/octet-stream');
-    MimeTypeRegistrar.register('ansi', 'text/plain');
-    MimeTypeRegistrar.register('ans', 'text/plain');
-    MimeTypeRegistrar.register('dfont', 'application/octet-stream');
+    registrar.register({
+        'woff': 'font/woff',
+        'woff2': 'font/woff2',
+        'ttf': 'font/ttf',
+        'otf': 'font/otf',
+        'eot': 'application/vnd.ms-fontobject',
+        'sfnt': 'application/font-sfnt',
+        'ttc': 'font/collection',
+        'pfa': 'application/x-font-type1',
+        'pfb': 'application/x-font-type1',
+        'gsf': 'application/x-font-ghostscript',
+        'pcf': 'application/x-font-pcf',
+        'pcf.Z': 'application/x-font-pcf',
+        'pfr': 'application/font-tdpfr',
+        'fnt': 'application/octet-stream',
+        'fon': 'application/octet-stream',
+        'ansi': 'text/plain',
+        'ans': 'text/plain',
+        'dfont': 'application/octet-stream'
+    });
 }

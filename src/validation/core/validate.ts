@@ -3,7 +3,6 @@
 import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
 import { ValidateFunction, ValidatorRegistrarName } from '../types/validate';
 import { Registry } from '@orbitjs/registry';
-import { ValidatorRegistrar } from './ValidatorRegistrar';
 
 /**
  * 上下文构造工厂

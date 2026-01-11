@@ -1,48 +1,52 @@
 // @presets/image.ts
-import { MimeTypeRegistrar } from '@orbitjs/registry';
+import { MimeTypeRegistrar } from '../../registry/registrars/MimeTypeRegistrar';
 
 export function useImagePresets() {
-    MimeTypeRegistrar.register('jpg', ['image/jpeg', 'image/pjpeg']);
-    MimeTypeRegistrar.register('jpeg', ['image/jpeg', 'image/pjpeg']);
-    MimeTypeRegistrar.register('png', 'image/png');
-    MimeTypeRegistrar.register('webp', 'image/webp');
-    MimeTypeRegistrar.register('gif', 'image/gif');
-    MimeTypeRegistrar.register('bmp', 'image/bmp');
-    MimeTypeRegistrar.register('ico', ['image/x-icon', 'image/vnd.microsoft.icon']);
-    MimeTypeRegistrar.register('svg', 'image/svg+xml');
-    MimeTypeRegistrar.register('tiff', ['image/tiff', 'image/tif']);
-    MimeTypeRegistrar.register('tif', ['image/tiff', 'image/tif']);
-    MimeTypeRegistrar.register('avif', 'image/avif');
-    MimeTypeRegistrar.register('apng', 'image/apng');
-    MimeTypeRegistrar.register('jfif', 'image/jfif');
-    MimeTypeRegistrar.register('pjpeg', 'image/pjpeg');
-    MimeTypeRegistrar.register('pjp', 'image/pjpeg');
-    MimeTypeRegistrar.register('xbm', 'image/x-xbitmap');
-    MimeTypeRegistrar.register('dib', 'image/bmp');
-    MimeTypeRegistrar.register('svgz', 'image/svg+xml');
-    MimeTypeRegistrar.register('dds', 'image/vnd.ms-dds');
+    const registrar = MimeTypeRegistrar.getInstance();
     
-    // registeritional image formats
-    MimeTypeRegistrar.register('cur', 'image/x-icon');
-    MimeTypeRegistrar.register('eps', 'image/eps');
-    MimeTypeRegistrar.register('exr', 'image/x-exr');
-    MimeTypeRegistrar.register('hdr', 'image/vnd.radiance');
-    MimeTypeRegistrar.register('heic', 'image/heic');
-    MimeTypeRegistrar.register('heif', 'image/heif');
-    MimeTypeRegistrar.register('j2k', 'image/jp2');
-    MimeTypeRegistrar.register('jfi', 'image/jpeg');
-    MimeTypeRegistrar.register('jif', 'image/jpeg');
-    MimeTypeRegistrar.register('jpe', 'image/jpeg');
-    MimeTypeRegistrar.register('jxr', 'image/jxr');
-    MimeTypeRegistrar.register('pbm', 'image/x-portable-bitmap');
-    MimeTypeRegistrar.register('pgm', 'image/x-portable-graymap');
-    MimeTypeRegistrar.register('pic', 'image/x-pict');
-    MimeTypeRegistrar.register('pnm', 'image/x-portable-anymap');
-    MimeTypeRegistrar.register('ppm', 'image/x-portable-pixmap');
-    MimeTypeRegistrar.register('psd', 'image/vnd.adobe.photoshop');
-    MimeTypeRegistrar.register('sgi', 'image/sgi');
-    MimeTypeRegistrar.register('sun', 'image/x-sun-raster');
-    MimeTypeRegistrar.register('wbmp', 'image/vnd.wap.wbmp');
-    MimeTypeRegistrar.register('xcf', 'image/x-xcf');
-    MimeTypeRegistrar.register('xpm', 'image/x-xpixmap');
+    registrar.register({
+        'jpg': ['image/jpeg', 'image/pjpeg'],
+        'jpeg': ['image/jpeg', 'image/pjpeg'],
+        'png': 'image/png',
+        'webp': 'image/webp',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp',
+        'ico': ['image/x-icon', 'image/vnd.microsoft.icon'],
+        'svg': 'image/svg+xml',
+        'tiff': ['image/tiff', 'image/tif'],
+        'tif': ['image/tiff', 'image/tif'],
+        'avif': 'image/avif',
+        'apng': 'image/apng',
+        'jfif': 'image/jfif',
+        'pjpeg': 'image/pjpeg',
+        'pjp': 'image/pjpeg',
+        'xbm': 'image/x-xbitmap',
+        'dib': 'image/bmp',
+        'svgz': 'image/svg+xml',
+        'dds': 'image/vnd.ms-dds',
+        
+        // registeritional image formats
+        'cur': 'image/x-icon',
+        'eps': 'image/eps',
+        'exr': 'image/x-exr',
+        'hdr': 'image/vnd.radiance',
+        'heic': 'image/heic',
+        'heif': 'image/heif',
+        'j2k': 'image/jp2',
+        'jfi': 'image/jpeg',
+        'jif': 'image/jpeg',
+        'jpe': 'image/jpeg',
+        'jxr': 'image/jxr',
+        'pbm': 'image/x-portable-bitmap',
+        'pgm': 'image/x-portable-graymap',
+        'pic': 'image/x-pict',
+        'pnm': 'image/x-portable-anymap',
+        'ppm': 'image/x-portable-pixmap',
+        'psd': 'image/vnd.adobe.photoshop',
+        'sgi': 'image/sgi',
+        'sun': 'image/x-sun-raster',
+        'wbmp': 'image/vnd.wap.wbmp',
+        'xcf': 'image/x-xcf',
+        'xpm': 'image/x-xpixmap'
+    });
 }

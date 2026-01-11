@@ -12,7 +12,7 @@ export const bootstrapValidators = () => {
     Object.values(AllEntries).forEach((entry: any) => {
         // 简单的健壮性检查：确保它是一个有效的 Entry 对象
         if (entry && entry.name && entry.execute) {
-            ValidatorRegistrar.register(entry);
+            ValidatorRegistrar.getInstance().register(entry);
         }
     });
 };

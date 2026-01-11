@@ -1,2 +1,2 @@
 export * from './mimes';
-export * from './system';
+export * from './patterns';

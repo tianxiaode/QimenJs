@@ -1,23 +1,28 @@
-import { RegistryHub } from '@orbitjs/registry';
+import { RegistryHub,RegistrarBase } from '@orbitjs/registry';
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 
-export class ValidatorRegistrar {
-    static readonly registrarName = ValidatorRegistrarName;
-
+export class ValidatorRegistrar extends RegistrarBase<ValidationProcessorEntry[]> {
     // 静态存储，确保 Presets 可以在加载时直接注入
-    private static processors: ValidationProcessorEntry[] = [];
     private static chainCache = new Map<string, ValidationProcessorEntry[]>();
 
+    // 实现基类要求的 name 属性
+    public readonly name = ValidatorRegistrarName;
+
+    // 存储验证处理器
+    protected storage: ValidationProcessorEntry[] = [];
+
     /** 编码期注入：Presets 使用此方法 */
-    static register(entry: ValidationProcessorEntry): void {
-        this.processors.push(entry);
+    register(entry: ValidationProcessorEntry): void {
+        this.checkLock();
+        this.storage.push(entry);
         // 数据变更，必须清空缓存
-        this.chainCache.clear();
+        ValidatorRegistrar.chainCache.clear();
     }
 
-    static unregister(processorName: string): void {
-        ValidatorRegistrar.processors = ValidatorRegistrar.processors.filter(
+    unregister(processorName: string): void {
+        this.checkLock();
+        this.storage = this.storage.filter(
             p => p.name !== processorName
         );
         ValidatorRegistrar.chainCache.clear();
@@ -26,14 +31,14 @@ export class ValidatorRegistrar {
     /** * 获取排序后的流水线
      * 对应你原来的 getSortedProcessors
      */
-    static get(type: string): ValidationProcessorEntry[] {
+    get(type: string): ValidationProcessorEntry[] {
         const ruleType = type || 'any';
 
         if (ValidatorRegistrar.chainCache.has(ruleType)) {
             return ValidatorRegistrar.chainCache.get(ruleType)!;
         }
 
-        const sorted = ValidatorRegistrar.processors
+        const sorted = this.storage
             .filter(p => p.tags.includes(ruleType as any) || p.tags.includes('any' as any))
             .sort((a, b) => a.weight + a.offset - (b.weight + b.offset));
 
@@ -41,14 +46,15 @@ export class ValidatorRegistrar {
         return sorted;
     }
 
-    static lock(): void {
-        Object.freeze(ValidatorRegistrar.processors);
+    lock(): void {
+        this.checkLock();
+        this.isLocked = true;
         console.log('🔒 [ValidatorRegistrar] Pipeline is now immutable.');
     }
 
     /** * 完美的自省：按阶段展示所有流水线
      */
-    static inspect(): void {
+    protected doInspect(): void {
         console.log(
             '%c === Validation Engine Blueprint === ',
             'color: white; background: #222; font-weight: bold;'
@@ -56,7 +62,7 @@ export class ValidatorRegistrar {
 
         // 获取所有涉及到的 Tags
         const allTags = new Set<string>();
-        ValidatorRegistrar.processors.forEach(p => p.tags.forEach(t => allTags.add(t)));
+        this.storage.forEach(p => p.tags.forEach(t => allTags.add(t)));
 
         allTags.forEach(tag => {
             const pipeline = this.get(tag);
@@ -77,7 +83,7 @@ export class ValidatorRegistrar {
         });
     }
 
-    private static getStageName(weight: number): string {
+    private getStageName(weight: number): string {
         if (weight < 100) return 'PREPARATION';
         if (weight < 200) return 'PRESENCE';
         if (weight < 300) return 'SEMANTIC';
@@ -87,10 +93,10 @@ export class ValidatorRegistrar {
     }
 }
 
-RegistryHub.use(ValidatorRegistrar);
+RegistryHub.use(ValidatorRegistrar.getInstance());
 
 declare module '@orbitjs/registry' {
     interface Registrars {
-        [ValidatorRegistrarName]: typeof ValidatorRegistrar;
+        [ValidatorRegistrarName]: ValidatorRegistrar;
     }
 }

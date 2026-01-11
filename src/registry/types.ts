@@ -36,6 +36,24 @@ export interface SystemConfig {
 
 export type PatternEntry = RegExp | { regex: string; flags?: string; };
 
+export type HeadersProvider = (config: DomainConfig) => Promise<Record<string, string>>;
+
+export interface DomainConfig {
+    readonly baseUrl: string;
+    timeout?: number;
+    
+    /** 
+     * 获取域名的请求头，可以是静态的，也可以是异步的函数，
+     * 即使是静态 Header，也请包裹在 async 中或返回 Promise.resolve
+     */
+    getHeaders: HeadersProvider;
+
+    custom?: Record<string, any>;
+}
 export const SystemRegistrarName = 'system' as const;
 export const PatternRegistrarName = 'pattern' as const;
 export const MimeTypeRegistrarName = 'mimeType' as const;
+export const DomainRegistrarName = 'domain' as const;
+export const HtmlTemplateRegistrarName = 'html' as const;
+
+
