@@ -97,6 +97,6 @@ RegistryHub.use(ValidatorRegistrar.getInstance());
 
 declare module '@orbitjs/registry' {
     interface Registrars {
-        [ValidatorRegistrarName]: ValidatorRegistrar;
+        [ValidatorRegistrarName]: typeof ValidatorRegistrar;
     }
 }

@@ -1,5 +1,3 @@
-import { CompareOperator, ValidationErrorContext } from "@orbitjs/validation";
-
 export type CRUD_ACTION =
     | 'list' // GET_LIST
     | 'all' // GET_ALL
@@ -13,27 +11,24 @@ export type CRUD_ACTION =
 export type ENTITY_ACTION = CRUD_ACTION | string;
 
 /**
- * 基础实体接口，所有业务 Model 的基石
+ * 处理器类别：定义处理器的核心职责
  */
-export interface IEntity {
-    id?: string | number;
-    [key: string]: any;
+export enum ActionCategory {
+    // === 前置阶段 (9000+) ===
+    PREPARE = 9000,   // BaseUrl, UUID
+    ENRICH = 8000,    // Headers, Token
+
+    // === 拦截阶段 (7000+) ===
+    GUARD = 7000,     // 权限, 防抖
+    VALIDATE = 6000,  // Schema 校验
+
+    // === 执行阶段 (5000) ===
+    IO = 5000,        // 网络请求
+
+    // === 后置阶段 (3000+) ===
+    TRANSFORM = 3000, // 数据脱敏, 格式化
+    FALLBACK = 2000,  // 错误兜底
+
+    // === 副作用阶段 (1000-) ===
+    EFFECT = 1000     // 日志, 通知
 }
-
-/**
- * 基础验证规则契约
- */
-
-export interface FieldMapping {
-    name: string; // 前端使用的字段名
-    source?: string; // 后端原始字段名（如果不填，默认同 name）
-    type: 'string' | 'number' | 'boolean' | 'date' | 'currency' | 'enum' | 'nested';
-    format?: string; // 格式化参数
-    defaultValue?: any;
-    mapping?: Record<any, any>;
-    // 甚至可以加上权限或者 UI 描述
-    label?: string;
-    readonly?: boolean;
-}
-
-export type EntitySchema = FieldMapping[];

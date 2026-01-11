@@ -1,6 +1,26 @@
-import { ENTITY_ACTION } from './base'; // 或根据你实际路径
+import { DomainConfig } from '@orbitjs/registry';
+import { ActionCategory, ENTITY_ACTION } from './base'; // 或根据你实际路径
 import { HttpResponseType } from './http';
-import { DomainConfig, EntityEntry } from './registry';
+
+export type ActionHandler = (ctx: FlowContext) => Promise<void>;
+
+/**
+ * 处理器条目：包含逻辑和优先级
+ */
+export interface EntityAction {
+    name: string;
+    category: ActionCategory; // 明确它的功能属性
+    description: string; // 给人类看的：说明具体业务意图
+
+    isHttp?: boolean; // 场景开关
+
+    offset: number; // 同层内的细微排序
+
+    domain?: string; // 业务域
+    action?: string; // 动作
+
+    handler: ActionHandler;
+}
 
 export interface FlowContext<T = any> {
     // --- 1. 标识 (Identity) ---
@@ -10,7 +30,7 @@ export interface FlowContext<T = any> {
 
     // --- 2. 配置 (Config) ---
     readonly config: DomainConfig;
-    readonly entity: EntityEntry;
+    readonly entity: EntityAction;
 
     // --- 3. 数据载体 (Payload) ---
     params: any;
@@ -62,7 +82,7 @@ export interface FlowContext<T = any> {
         headers: Record<string, string>;
         query?: Record<string, any>;
         body?: any;
-        segments: (string | number)[],
+        segments: (string | number)[];
 
         // 核心配置 (来自 HttpOptions)
         timeout: number;

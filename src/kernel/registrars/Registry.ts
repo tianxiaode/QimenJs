@@ -2,18 +2,18 @@
 import { ILogger, Logger } from '@orbitjs/logger';
 import { KernelError, KernelErrorCode } from '../errors';
 import {
-    ProcessorEntry,
+    EntityAction,
     DomainConfig,
     EntityEntry,
     ProcessorType,
     PipelineTrigger,
     PIPELINE_MAP,
-    PriorityWeight,
+    ActionStage,
 } from '../types';
 import { object } from '@orbitjs/utils';
 
 export class Registry {
-    private static processorMap = new Map<ProcessorType, ProcessorEntry[]>();
+    private static processorMap = new Map<ProcessorType, EntityAction[]>();
     private static processorIdIndexMap = new Map<string, ProcessorType>();
     private static domainConfigs = new Map<string, DomainConfig>();
     private static systemConfig: Record<string, any> = {};
@@ -92,8 +92,8 @@ export class Registry {
 
     // --- 2. 逻辑层：只管公共/可插拔的处理器 ---
 
-    static registerProcessor(entry: ProcessorEntry) {
-        const { id, type, weight, offset = 0 } = entry;
+    static registerProcessor(entry: EntityAction) {
+        const { id, type, stage: weight, offset = 0 } = entry;
 
         // 1. 安全限制：Offset 不得超过 999
         // 1. 严格正向约束：不允许“向下潜”
@@ -125,7 +125,7 @@ export class Registry {
         this.processorMap.get(type)!.push(entry);
 
         // 3. 抽屉内排序（按 Weight + Offset）
-        this.processorMap.get(type)!.sort((a, b) => b.weight - a.weight || b.offset - a.offset);
+        this.processorMap.get(type)!.sort((a, b) => b.stage - a.stage || b.offset - a.offset);
     }
     /**
      * 注销处理器
@@ -185,7 +185,7 @@ export class Registry {
     private static fetchFromPool(
         type: ProcessorType,
         context: { domain?: string; action?: string }
-    ): ProcessorEntry[] {
+    ): EntityAction[] {
         const pool = this.processorMap.get(type) || [];
 
         return pool.filter(p => {
@@ -211,7 +211,7 @@ export class Registry {
     /**
      * 获取当前生效的所有处理器清单（调试用）
      */
-    static getProcessorInspector(filter?: Partial<ProcessorEntry>) {
+    static getProcessorInspector(filter?: Partial<EntityAction>) {
         // 1. 展平 Map 结构
         let allEntries = Array.from(this.processorMap.entries()).flatMap(([type, pool]) => {
             return pool.map(p => ({ ...p, type }));
@@ -233,7 +233,7 @@ export class Registry {
                 if (aIsBefore !== bIsBefore) return aIsBefore ? -1 : 1;
 
                 // 维度 2: 权重排序 (SYSTEM > SECURITY > CORE > ...)
-                if (b.weight !== a.weight) return b.weight - a.weight;
+                if (b.stage !== a.stage) return b.stage - a.stage;
 
                 // 维度 3: 偏移量排序 (同权重下比数字大小)
                 return b.offset - a.offset;
@@ -242,7 +242,7 @@ export class Registry {
                 ID: p.id || '--',
                 Type: p.type,
                 // 将 Weight 数值还原为语义标签，调试更直观
-                Weight: this.formatWeightLabel(p.weight),
+                Weight: this.formatWeightLabel(p.stage),
                 Offset: p.offset,
                 Scope: this.formatScope(p),
                 Domain: p.domain || '*',
@@ -256,14 +256,14 @@ export class Registry {
     private static formatWeightLabel(weight: number): string {
         // 寻找枚举中对应的 Key
         return (
-            Object.keys(PriorityWeight).find(key => (PriorityWeight as any)[key] === weight) ||
+            Object.keys(ActionStage).find(key => (ActionStage as any)[key] === weight) ||
             `Custom(${weight})`
         );
     }
     /**
      * 辅助方法：格式化作用域，一眼看出是全局还是专用
      */
-    private static formatScope(p: ProcessorEntry): string {
+    private static formatScope(p: EntityAction): string {
         if (!p.domain && !p.action) return 'Global (All)';
         if (p.domain && !p.action) return `Domain Only (${p.domain})`;
         if (!p.domain && p.action) return `Action Only (${p.action})`;

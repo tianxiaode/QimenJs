@@ -1,4 +1,4 @@
-import { Registry } from "../registry";
+import { Registry } from "../registrars";
 import { EntityEntry, FieldMapping, IEntity } from "../types";
 
 // kernel/entities/EntityManager.ts
