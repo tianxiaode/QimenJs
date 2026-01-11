@@ -3,22 +3,22 @@ import { MimeTypeRegistrar } from '@orbitjs/registry';
 
 export function useFontPresets() {
     // Font formats
-    MimeTypeRegistrar.add('woff', 'font/woff');
-    MimeTypeRegistrar.add('woff2', 'font/woff2');
-    MimeTypeRegistrar.add('ttf', 'font/ttf');
-    MimeTypeRegistrar.add('otf', 'font/otf');
-    MimeTypeRegistrar.add('eot', 'application/vnd.ms-fontobject');
-    MimeTypeRegistrar.add('sfnt', 'application/font-sfnt');
-    MimeTypeRegistrar.add('ttc', 'font/collection');
-    MimeTypeRegistrar.add('pfa', 'application/x-font-type1');
-    MimeTypeRegistrar.add('pfb', 'application/x-font-type1');
-    MimeTypeRegistrar.add('gsf', 'application/x-font-ghostscript');
-    MimeTypeRegistrar.add('pcf', 'application/x-font-pcf');
-    MimeTypeRegistrar.add('pcf.Z', 'application/x-font-pcf');
-    MimeTypeRegistrar.add('pfr', 'application/font-tdpfr');
-    MimeTypeRegistrar.add('fnt', 'application/octet-stream');
-    MimeTypeRegistrar.add('fon', 'application/octet-stream');
-    MimeTypeRegistrar.add('ansi', 'text/plain');
-    MimeTypeRegistrar.add('ans', 'text/plain');
-    MimeTypeRegistrar.add('dfont', 'application/octet-stream');
+    MimeTypeRegistrar.register('woff', 'font/woff');
+    MimeTypeRegistrar.register('woff2', 'font/woff2');
+    MimeTypeRegistrar.register('ttf', 'font/ttf');
+    MimeTypeRegistrar.register('otf', 'font/otf');
+    MimeTypeRegistrar.register('eot', 'application/vnd.ms-fontobject');
+    MimeTypeRegistrar.register('sfnt', 'application/font-sfnt');
+    MimeTypeRegistrar.register('ttc', 'font/collection');
+    MimeTypeRegistrar.register('pfa', 'application/x-font-type1');
+    MimeTypeRegistrar.register('pfb', 'application/x-font-type1');
+    MimeTypeRegistrar.register('gsf', 'application/x-font-ghostscript');
+    MimeTypeRegistrar.register('pcf', 'application/x-font-pcf');
+    MimeTypeRegistrar.register('pcf.Z', 'application/x-font-pcf');
+    MimeTypeRegistrar.register('pfr', 'application/font-tdpfr');
+    MimeTypeRegistrar.register('fnt', 'application/octet-stream');
+    MimeTypeRegistrar.register('fon', 'application/octet-stream');
+    MimeTypeRegistrar.register('ansi', 'text/plain');
+    MimeTypeRegistrar.register('ans', 'text/plain');
+    MimeTypeRegistrar.register('dfont', 'application/octet-stream');
 }

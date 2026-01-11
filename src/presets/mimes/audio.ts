@@ -3,41 +3,41 @@ import { MimeTypeRegistrar } from '@orbitjs/registry';
 
 export function useAudioPresets() {
     // 常见音频格式
-    MimeTypeRegistrar.add('mp3', 'audio/mpeg');
-    MimeTypeRegistrar.add('mp2', 'audio/mpeg');
-    MimeTypeRegistrar.add('mpga', 'audio/mpeg');
-    MimeTypeRegistrar.add('mp4a', 'audio/mp4');
-    MimeTypeRegistrar.add('m4a', 'audio/mp4');
-    MimeTypeRegistrar.add('m4b', 'audio/mp4');
-    MimeTypeRegistrar.add('m4p', 'audio/mp4');
+    MimeTypeRegistrar.register('mp3', 'audio/mpeg');
+    MimeTypeRegistrar.register('mp2', 'audio/mpeg');
+    MimeTypeRegistrar.register('mpga', 'audio/mpeg');
+    MimeTypeRegistrar.register('mp4a', 'audio/mp4');
+    MimeTypeRegistrar.register('m4a', 'audio/mp4');
+    MimeTypeRegistrar.register('m4b', 'audio/mp4');
+    MimeTypeRegistrar.register('m4p', 'audio/mp4');
     
-    MimeTypeRegistrar.add('aac', 'audio/aac');
-    MimeTypeRegistrar.add('adts', 'audio/aac');
+    MimeTypeRegistrar.register('aac', 'audio/aac');
+    MimeTypeRegistrar.register('adts', 'audio/aac');
     
-    MimeTypeRegistrar.add('flac', 'audio/flac');
-    MimeTypeRegistrar.add('aiff', 'audio/x-aiff');
-    MimeTypeRegistrar.add('aif', 'audio/x-aiff');
-    MimeTypeRegistrar.add('aifc', 'audio/x-aiff');
+    MimeTypeRegistrar.register('flac', 'audio/flac');
+    MimeTypeRegistrar.register('aiff', 'audio/x-aiff');
+    MimeTypeRegistrar.register('aif', 'audio/x-aiff');
+    MimeTypeRegistrar.register('aifc', 'audio/x-aiff');
     
-    MimeTypeRegistrar.add('wav', 'audio/vnd.wav');
-    MimeTypeRegistrar.add('wave', 'audio/vnd.wav');
-    MimeTypeRegistrar.add('wma', 'audio/x-ms-wma');
-    MimeTypeRegistrar.add('wax', 'audio/x-ms-wax');
+    MimeTypeRegistrar.register('wav', 'audio/vnd.wav');
+    MimeTypeRegistrar.register('wave', 'audio/vnd.wav');
+    MimeTypeRegistrar.register('wma', 'audio/x-ms-wma');
+    MimeTypeRegistrar.register('wax', 'audio/x-ms-wax');
     
-    MimeTypeRegistrar.add('ogg', 'audio/ogg');
-    MimeTypeRegistrar.add('oga', 'audio/ogg');
-    MimeTypeRegistrar.add('opus', 'audio/opus');
-    MimeTypeRegistrar.add('weba', 'audio/webm');
-    MimeTypeRegistrar.add('webm', 'audio/webm');
+    MimeTypeRegistrar.register('ogg', 'audio/ogg');
+    MimeTypeRegistrar.register('oga', 'audio/ogg');
+    MimeTypeRegistrar.register('opus', 'audio/opus');
+    MimeTypeRegistrar.register('weba', 'audio/webm');
+    MimeTypeRegistrar.register('webm', 'audio/webm');
     
-    MimeTypeRegistrar.add('ra', 'audio/x-pn-realaudio');
-    MimeTypeRegistrar.add('ram', 'audio/x-pn-realaudio');
-    MimeTypeRegistrar.add('rmp', 'audio/x-pn-realaudio');
+    MimeTypeRegistrar.register('ra', 'audio/x-pn-realaudio');
+    MimeTypeRegistrar.register('ram', 'audio/x-pn-realaudio');
+    MimeTypeRegistrar.register('rmp', 'audio/x-pn-realaudio');
     
-    MimeTypeRegistrar.add('m3u', 'audio/x-mpegurl');
-    MimeTypeRegistrar.add('m3u8', 'application/x-mpegURL');
-    MimeTypeRegistrar.add('pls', 'audio/x-scpls');
-    MimeTypeRegistrar.add('snd', 'audio/basic');
-    MimeTypeRegistrar.add('tsi', 'audio/TSP-audio');
-    MimeTypeRegistrar.add('tsp', 'application/dsptype');
+    MimeTypeRegistrar.register('m3u', 'audio/x-mpegurl');
+    MimeTypeRegistrar.register('m3u8', 'application/x-mpegURL');
+    MimeTypeRegistrar.register('pls', 'audio/x-scpls');
+    MimeTypeRegistrar.register('snd', 'audio/basic');
+    MimeTypeRegistrar.register('tsi', 'audio/TSP-audio');
+    MimeTypeRegistrar.register('tsp', 'application/dsptype');
 }

@@ -1,13 +1,13 @@
-import { PatternEntry, PatternRegistrarName, Registrar } from "../types";
+import { PatternEntry, PatternRegistrarName } from '../types';
 
-export class PatternRegistrar implements Registrar<PatternEntry> {
-    readonly name = PatternRegistrarName;
-    
+export class PatternRegistrar {
+    static readonly registrarName = PatternRegistrarName;
+
     // 静态存储，确保编码期和运行期共享
     private static storage = new Map<string, RegExp>();
 
     /** 编码期注入：支持传入正则或字符串 */
-    static add(name: string, entry: PatternEntry): void {
+    static register(name: string, entry: PatternEntry): void {
         if (entry instanceof RegExp) {
             this.storage.set(name, entry);
         } else {
@@ -15,39 +15,31 @@ export class PatternRegistrar implements Registrar<PatternEntry> {
         }
     }
 
-    // --- 实现 Registrar 接口 ---
-
-    add(name: string, entry: PatternEntry): void {
-        PatternRegistrar.add(name, entry);
-    }
-
-    register(name: string, entry: PatternEntry): void {
-        this.add(name, entry);
-    }
-
-    unregister(name: string): void {
+    static unregister(name: string): void {
         PatternRegistrar.storage.delete(name);
     }
 
     /** 获取编译好的正则 */
-    get(name: string): RegExp | undefined {
+    static get(name: string): RegExp | undefined {
         return PatternRegistrar.storage.get(name);
     }
 
-    lock(): void {
+    static lock(): void {
         Object.freeze(PatternRegistrar.storage);
     }
 
-    inspect(): void {
+    static inspect(): void {
         console.group('🔍 Registered Patterns');
         const info: any = {};
         PatternRegistrar.storage.forEach((reg, name) => {
-            info[name] = { 
-                source: reg.source, 
-                flags: reg.flags, 
+            info[name] = {
+                source: reg.source,
+                flags: reg.flags,
             };
         });
         console.table(info);
         console.groupEnd();
     }
 }
+
+

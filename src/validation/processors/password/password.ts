@@ -1,15 +1,10 @@
 import { validatePattern } from '../../utils';
-import { doValidate} from '../../core';
-import {
-    ValidationContext,
-    ValidationPatternType,
-    ValidationProcessorHandler,
-} from '../../types';
-import { RegistryHub, PatternRegistrarName } from '@orbitjs/registry';
+import { ValidationContext, ValidationPatternType, ValidationProcessorHandler } from '../../types';
+import { Registry } from '@orbitjs/registry';
 
 export const PasswordProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
-    
+
     //不要做任何防御，要相信上一处理器
 
     const patterns = [
@@ -21,9 +16,8 @@ export const PasswordProcessor: ValidationProcessorHandler = async (context: Val
 
     for (const name of patterns) {
         if ((rule as any)[name] === true) {
-            const regex = RegistryHub.get(PatternRegistrarName).get(name);
+            const regex = Registry.pattern.get(name);
             validatePattern(value, regex!, context, name);
         }
     }
 };
-

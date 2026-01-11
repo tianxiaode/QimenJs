@@ -2,7 +2,7 @@
 
 import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
 import { ValidateFunction, ValidatorRegistrarName } from '../types/validate';
-import { Registry, RegistryHub } from '@orbitjs/registry';
+import { Registry } from '@orbitjs/registry';
 import { ValidatorRegistrar } from './ValidatorRegistrar';
 
 /**
@@ -47,7 +47,7 @@ export const doValidate: ValidateFunction = async (value, rule, partialContext =
     const context = createContext(value, rule, partialContext);
 
     // 1. 获取 validator。如果还没 use 挂载，Proxy 会抛出我们之前定义的错误
-    const validator = RegistryHub.get<ValidatorRegistrar>(ValidatorRegistrarName); 
+    const validator = Registry.validator; 
     
     // 2. 根据 rule.type 获取流水线
     const processors = validator.get(rule.type);

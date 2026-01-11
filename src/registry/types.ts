@@ -1,12 +1,9 @@
 /** 子注册器必须遵循的接口 */
-export interface Registrar<T = any> {
-    readonly name: string;
-    
-    /** 原子操作：注册/设置单个条目 */
-    add(name: string, entry: any): void; 
+export interface IRegistrar {
+    readonly registrarName: string;
     
     /** 容器操作：注册/更新 整个实体或配置包 */
-    register(name: string, entry: T): void;
+    register(...args: any[]): void;
     
     unregister(name: string): void;
     get(...args: any[]): any;
@@ -14,13 +11,9 @@ export interface Registrar<T = any> {
     inspect(): void; 
 }
 
-export interface ISystemRegistrar extends Registrar<SystemConfig> {}
-
-/** 定义 RegistryHub 管理的接口类型（声明合并预留） */
 export interface Registrars {
-    system: ISystemRegistrar;
+    // 初始为空，或者只放核心注册器
 }
-
 
 export interface SystemConfig {
     locale: string;

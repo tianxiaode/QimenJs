@@ -12,10 +12,12 @@ export const bootstrapValidators = () => {
     Object.values(AllEntries).forEach((entry: any) => {
         // 简单的健壮性检查：确保它是一个有效的 Entry 对象
         if (entry && entry.name && entry.execute) {
-            ValidatorRegistrar.add(entry);
+            ValidatorRegistrar.register(entry);
         }
     });
 };
 
 export * from './errors';
 export * from './engine';
+
+

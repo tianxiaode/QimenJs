@@ -1,38 +1,22 @@
-import { Registrar, RegistryHub } from '@orbitjs/registry';
+import { RegistryHub } from '@orbitjs/registry';
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 
-export class ValidatorRegistrar implements Registrar<ValidationProcessorEntry> {
-    readonly name = ValidatorRegistrarName;
+export class ValidatorRegistrar {
+    static readonly registrarName = ValidatorRegistrarName;
 
     // 静态存储，确保 Presets 可以在加载时直接注入
     private static processors: ValidationProcessorEntry[] = [];
     private static chainCache = new Map<string, ValidationProcessorEntry[]>();
 
     /** 编码期注入：Presets 使用此方法 */
-    static add(entry: ValidationProcessorEntry): void {
+    static register(entry: ValidationProcessorEntry): void {
         this.processors.push(entry);
         // 数据变更，必须清空缓存
         this.chainCache.clear();
     }
 
-    // --- 实现 Registrar 接口 ---
-
-    /** 实例方法：单个添加 */
-    add(_name: string, entry: ValidationProcessorEntry): void {
-        ValidatorRegistrar.add(entry);
-    }
-
-    /** 实例方法：批量添加 */
-    register(_name: string, entries: ValidationProcessorEntry | ValidationProcessorEntry[]): void {
-        if (Array.isArray(entries)) {
-            entries.forEach(e => ValidatorRegistrar.add(e));
-        } else {
-            ValidatorRegistrar.add(entries);
-        }
-    }
-
-    unregister(processorName: string): void {
+    static unregister(processorName: string): void {
         ValidatorRegistrar.processors = ValidatorRegistrar.processors.filter(
             p => p.name !== processorName
         );
@@ -42,7 +26,7 @@ export class ValidatorRegistrar implements Registrar<ValidationProcessorEntry> {
     /** * 获取排序后的流水线
      * 对应你原来的 getSortedProcessors
      */
-    get(type: string): ValidationProcessorEntry[] {
+    static get(type: string): ValidationProcessorEntry[] {
         const ruleType = type || 'any';
 
         if (ValidatorRegistrar.chainCache.has(ruleType)) {
@@ -57,14 +41,14 @@ export class ValidatorRegistrar implements Registrar<ValidationProcessorEntry> {
         return sorted;
     }
 
-    lock(): void {
+    static lock(): void {
         Object.freeze(ValidatorRegistrar.processors);
         console.log('🔒 [ValidatorRegistrar] Pipeline is now immutable.');
     }
 
     /** * 完美的自省：按阶段展示所有流水线
      */
-    inspect(): void {
+    static inspect(): void {
         console.log(
             '%c === Validation Engine Blueprint === ',
             'color: white; background: #222; font-weight: bold;'
@@ -93,7 +77,7 @@ export class ValidatorRegistrar implements Registrar<ValidationProcessorEntry> {
         });
     }
 
-    private getStageName(weight: number): string {
+    private static getStageName(weight: number): string {
         if (weight < 100) return 'PREPARATION';
         if (weight < 200) return 'PRESENCE';
         if (weight < 300) return 'SEMANTIC';
@@ -103,5 +87,10 @@ export class ValidatorRegistrar implements Registrar<ValidationProcessorEntry> {
     }
 }
 
+RegistryHub.use(ValidatorRegistrar);
 
-RegistryHub.use(new ValidatorRegistrar());
+declare module '@orbitjs/registry' {
+    interface Registrars {
+        [ValidatorRegistrarName]: typeof ValidatorRegistrar;
+    }
+}
