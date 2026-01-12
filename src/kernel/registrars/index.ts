@@ -1,3 +1,2 @@
-
-export * from './Registry';
-
+export * from './EntityActionRegistrar';
+export * from './SchemaRegistrar';

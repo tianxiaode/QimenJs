@@ -1,10 +1,8 @@
 import {
-    ArrayRule,
     BooleanRule,
     DateRule,
     FormatRule,
     NumberRule,
-    ObjectRule,
     SplitRule,
     StringRule,
 } from '@orbitjs/validation';

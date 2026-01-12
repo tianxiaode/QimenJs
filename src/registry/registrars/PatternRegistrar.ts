@@ -1,4 +1,4 @@
-import { PatternEntry, PatternRegistrarName } from '../types';
+import { PatternRegistrarName } from '../types';
 import { RegistrarBase } from './RegistrarBase';
 import { RegistrarInvalidArgumentError, RegistrarNotFoundError } from './errors';
 
@@ -13,7 +13,7 @@ export class PatternRegistrar extends RegistrarBase<Map<string, RegExp>> {
      * 1. 单个: register('email', /^[...]$/)
      * 2. 对象: register({ 'uuid': /[...]/, 'zip': { regex: '^[0-9]{6}$', flags: 'g' } })
      */
-    register(nameOrObj: string | Record<string, PatternEntry>, entry?: PatternEntry): void {
+    register(nameOrObj: string | Record<string, RegExp>, entry?: RegExp): void {
         this.checkLock();
 
         if (typeof nameOrObj === 'object' && !(nameOrObj instanceof RegExp)) {
@@ -35,12 +35,12 @@ export class PatternRegistrar extends RegistrarBase<Map<string, RegExp>> {
     }
 
     /** 核心逻辑提取：负责将多种输入统一转化为 RegExp 并存入 Map */
-    private doRegister(name: string, entry: PatternEntry): void {
+    private doRegister(name: string, entry: RegExp): void {
         if (entry instanceof RegExp) {
             this.storage.set(name, entry);
         } else {
             // 处理字符串形式的正则
-            this.storage.set(name, new RegExp(entry.regex, entry.flags || ''));
+            this.storage.set(name, entry);
         }
     }
 

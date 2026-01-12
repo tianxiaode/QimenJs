@@ -1,13 +1,19 @@
-import { BaseExchange, DomainConfig } from '@orbitjs/registry';
+import { DomainConfig } from '@orbitjs/registry';
 import { ActionCategory, ENTITY_ACTION } from './base'; // 或根据你实际路径
-import { HttpResponseType } from './http';
+import { HttpMethod, HttpResponseType } from './http';
+
 
 export type ActionHandler = (ctx: FlowContext) => Promise<void>;
+
+export interface ExecutionStep {
+    processor: string; // 处理器名称
+    duration: number;  // 执行耗时 (ms)
+}
 
 /**
  * 处理器条目：包含逻辑和优先级
  */
-export interface EntityAction {
+export interface ActionEntry {
     name: string;
     category: ActionCategory; // 明确它的功能属性
     description: string; // 给人类看的：说明具体业务意图
@@ -15,22 +21,17 @@ export interface EntityAction {
     isHttp?: boolean; // 场景开关
 
     offset: number; // 同层内的细微排序
-
-    domain?: string; // 业务域
-    action?: string; // 动作
-
     handler: ActionHandler;
 }
 
-export interface FlowContext extends BaseExchange {
+export interface FlowContext {
     // --- 1. 标识 (Identity) ---
     readonly domain: string;
     readonly entityName: string;
     readonly action: ENTITY_ACTION;
 
     // --- 2. 配置 (Config) ---
-    readonly config: DomainConfig;
-    readonly entity: EntityAction;
+    config: DomainConfig;
 
     // --- 3. 数据载体 (Payload) ---
     params: any;
@@ -40,13 +41,16 @@ export interface FlowContext extends BaseExchange {
     isAborted: boolean;
     // --- 5. 增强元数据 (Metadata) ---
     metadata: {
-
+        isTransportFailure: boolean;
+        hasError: boolean;
         // 内容类型判定
         contentType: string;
         isJson: boolean;
         isText: boolean;
         isBlob: boolean;
         action: string;
+        isUpload: boolean;
+        preset: string;
 
         isErrorHandled: boolean;
         // 处理状态
@@ -58,6 +62,9 @@ export interface FlowContext extends BaseExchange {
         source: any;
         parsed: any;
         raw: any | null; // 后端生数据 (原始结构)
+        list: any[];       // 对齐后的列表
+        item: any;         // 对齐后的单体
+        total: number;
 
         // 分页信息（可选，针对 list）
         pagination?: {
@@ -76,7 +83,7 @@ export interface FlowContext extends BaseExchange {
         status: number; // 状态码
         isSuccess: boolean; // 是否 2xx
         headers: Record<string, string>;
-        method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'PATCH';
+        method: HttpMethod;
         rawResponse?: any; // 留给需要读取特殊 Header 的情况
         query?: Record<string, any>;
         body?: any;
@@ -88,6 +95,10 @@ export interface FlowContext extends BaseExchange {
         withCredentials?: boolean;
         signal?: AbortSignal;
         onProgress?: (ev: ProgressEvent) => void;
+        controller: AbortController;
+        responseHeaders: Record<string, string>;
 
     };
+
+     steps: ExecutionStep[]; 
 }

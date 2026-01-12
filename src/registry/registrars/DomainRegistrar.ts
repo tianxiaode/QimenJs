@@ -31,14 +31,6 @@ export class DomainRegistrar extends RegistrarBase<Map<string, DomainConfig>> {
         return this.storage.get(name)!;
     }
 
-    /** * 核心业务接口：获取该域的所有有效 Headers
-     * 无论内部是静态还是动态，外部统一 await
-     */
-    async getHeaders(name: string): Promise<Record<string, string>> {
-        const config = this.storage.get(name);
-        return (await config!.getHeaders(config!)) as any;
-    }
-
     getBaseUrl(name: string): string {
         const config = this.storage.get(name);
         return config!.baseUrl;

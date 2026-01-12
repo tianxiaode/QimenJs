@@ -1,4 +1,4 @@
-import { RegistryHub,RegistrarBase } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbitjs/registry';
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 
@@ -93,10 +93,5 @@ export class ValidatorRegistrar extends RegistrarBase<ValidationProcessorEntry[]
     }
 }
 
-RegistryHub.use(ValidatorRegistrar.getInstance());
 
-declare module '@orbitjs/registry' {
-    interface Registrars {
-        [ValidatorRegistrarName]: ValidatorRegistrar;
-    }
-}
+

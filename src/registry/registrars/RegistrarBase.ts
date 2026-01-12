@@ -1,9 +1,9 @@
 export abstract class RegistrarBase<M = any> {
     private static instances = new Map<any, any>();
-    
+
     // 简化为 name，子类必须定义，如 'system', 'html'
     public abstract readonly name: string;
-    
+
     protected isLocked = false;
     protected abstract storage: M;
 

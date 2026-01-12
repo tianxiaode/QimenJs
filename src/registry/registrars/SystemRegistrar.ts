@@ -1,6 +1,5 @@
 import { SystemConfig, SystemRegistrarName } from '../types';
 import { RegistrarBase } from './RegistrarBase';
-import { RegistrarNotFoundError } from './errors';
 
 export class SystemRegistrar extends RegistrarBase<Partial<SystemConfig>> {
     public readonly name = SystemRegistrarName;

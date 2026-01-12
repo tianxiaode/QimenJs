@@ -14,22 +14,16 @@ export type ENTITY_ACTION = CRUD_ACTION | string;
  * 处理器类别：定义处理器的核心职责
  */
 export enum ActionCategory {
-    // === 前置阶段 (9000+) ===
-    PREPARE = 9000,   // BaseUrl, UUID
-    ENRICH = 8000,    // Headers, Token
+    /** 01-PREPARE: 请求构建阶段 (参数对齐、URL拼接、Header注入) */
+    PREPARE = 4000, 
 
-    // === 拦截阶段 (7000+) ===
-    GUARD = 7000,     // 权限, 防抖
-    VALIDATE = 6000,  // Schema 校验
+    /** 02-EXCHANGE: 物理交换阶段 (Fetch/XHR 发送、Failure Guard) */
+    EXCHANGE = 3000, 
 
-    // === 执行阶段 (5000) ===
-    IO = 5000,        // 网络请求
+    /** 03-PROCESS: 内容识别阶段 (状态码分析、数据反序列化/Parse) */
+    PROCESS = 2000, 
 
-    // === 后置阶段 (3000+) ===
-    TRANSFORM = 3000, // 数据脱敏, 格式化
-    FALLBACK = 2000,  // 错误兜底
-
-    // === 副作用阶段 (1000-) ===
-    EFFECT = 1000     // 日志, 通知
+    /** 04-ALIGN: 业务对齐阶段 (数据提取、错误拦截、全局结算) */
+    ALIGN = 1000 
 }
 

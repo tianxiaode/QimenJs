@@ -2,7 +2,7 @@
 
 import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
 import { ValidateFunction } from '../types/validate';
-import { Registry } from '@orbitjs/registry';
+import { ValidatorRegistrar } from './ValidatorRegistrar';
 
 /**
  * 上下文构造工厂
@@ -26,11 +26,12 @@ export function createContext(
         errors: [],
         steps: [], // 刚才讨论的执行日志记录在这里
         status: {
-            isUndefined:false,
-            isNull:false,
-            isNaN:false,
-            isEmpty:false,
-            isModified:false,        },
+            isUndefined: false,
+            isNull: false,
+            isNaN: false,
+            isEmpty: false,
+            isModified: false,
+        },
 
         // 运行时元数据（可以存放临时计算结果，供下游处理器使用）
         metadata: {},
@@ -46,8 +47,8 @@ export const doValidate: ValidateFunction = async (value, rule, partialContext =
     const context = createContext(value, rule, partialContext);
 
     // 1. 获取 validator。如果还没 use 挂载，Proxy 会抛出我们之前定义的错误
-    const validator = Registry.validator; 
-    
+    const validator = ValidatorRegistrar.getInstance();
+
     // 2. 根据 rule.type 获取流水线
     const processors = validator.get(rule.type);
 

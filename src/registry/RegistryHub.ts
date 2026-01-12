@@ -1,6 +1,6 @@
-import { Registrars } from './types';
 import { RegistryHubLockedError, RegistryHubConflictError } from './errors';
-import { RegistrarBase } from './registrars/RegistrarBase';
+import { RegistrarBase } from './registrars';
+import { Registrars } from './types';
 
 export class RegistryHub {
     private static readonly registars = new Map<string, RegistrarBase<any>>();;
@@ -78,6 +78,7 @@ export class RegistryHub {
             },
         }
     ) as Registrars;
+
 }
 
 export const Registry = RegistryHub.root;

@@ -7,9 +7,18 @@ export * from './RegistryHub';
 // 类型定义
 export * from './types';
 export * from './registrars';
-import { HtmlTemplateRegistrar, MimeTypeRegistrar, SystemRegistrar } from './registrars';
+
+import {
+    DomainRegistrar,
+    HtmlTemplateRegistrar,
+    MimeTypeRegistrar,
+    PatternRegistrar,
+    SystemRegistrar,
+} from './registrars';
 import { RegistryHub } from './RegistryHub';
 
 RegistryHub.use(MimeTypeRegistrar.getInstance());
 RegistryHub.use(SystemRegistrar.getInstance());
 RegistryHub.use(HtmlTemplateRegistrar.getInstance());
+RegistryHub.use(DomainRegistrar.getInstance());
+RegistryHub.use(PatternRegistrar.getInstance());

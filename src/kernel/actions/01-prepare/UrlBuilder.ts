@@ -1,0 +1,28 @@
+import { FlowContext, ActionHandler } from '../../types';
+
+export const UrlBuildHandler: ActionHandler = async (context: FlowContext) => {
+    const { segments = [], query = {} } = context.http;
+    const { baseUrl } = context.config;
+
+    // 1. 基础路径处理 (防止双斜杠)
+    const normalizedBase = baseUrl.replace(/\/+$/, '');
+    const path = segments.filter(Boolean).join('/');
+    let url = path ? `${normalizedBase}/${path}` : normalizedBase;
+
+    // 2. 使用 URLSearchParams 自动处理特殊字符转义和空值
+    const searchParams = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            searchParams.append(key, String(value));
+        }
+    });
+
+    const queryString = searchParams.toString();
+
+    // 3. 组装最终 URL
+    if (queryString) {
+        url += (url.includes('?') ? '&' : '?') + queryString;
+    }
+
+    context.http.url = url;
+};
