@@ -1,6 +1,4 @@
 import { GlobalTaskQueue, globalTaskQueue } from '@/tasks/task/TaskQueue';
-import { TaskPriority } from '@/tasks/task/types';
-import { after } from '@/utils/time/after';
 
 // 模拟 after 函数
 jest.mock('@/utils/time/after', () => ({
@@ -56,9 +54,9 @@ describe('GlobalTaskQueue', () => {
 
   describe('getSortedQueue', () => {
     it('should sort tasks by priority', () => {
-      const highPriorityTask = { id: '1', priority: 'HIGH', fn: jest.fn(), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
-      const lowPriorityTask = { id: '2', priority: 'LOW', fn: jest.fn(), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
-      const normalPriorityTask = { id: '3', priority: 'NORMAL', fn: jest.fn(), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
+      const highPriorityTask = { id: '1', priority: 'HIGH', fn: jest.fn(async () => {}), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
+      const lowPriorityTask = { id: '2', priority: 'LOW', fn: jest.fn(async () => {}), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
+      const normalPriorityTask = { id: '3', priority: 'NORMAL', fn: jest.fn(async () => {}), retries: 0, maxRetries: 3, delay: 1000, isPolling: false, interval: 5000 };
 
       (taskQueue as any).taskQueue = [lowPriorityTask, normalPriorityTask, highPriorityTask];
 

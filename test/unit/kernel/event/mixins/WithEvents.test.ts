@@ -1,7 +1,7 @@
 import { Constructor, DisposableBase } from '@orbitjs/utils';
-import { WithDomEvents } from '../../../../src/event/mixins/WithDomEvents';
-import { globalEventBus } from '../../../../src/event/core/GlobalEventBus';
-import { EventBus } from '../../../../src/event/core/EventBus';
+import { WithDomEvents } from '@/kernel/events/mixins/WithDomEvents';
+import { globalEventBus } from '@/kernel/events/core/GlobalEventBus';
+import { EventBus } from '@/kernel/events/core/EventBus';
 import { Logger } from '@orbitjs/logger';
 
 // Mock Logger.for 方法

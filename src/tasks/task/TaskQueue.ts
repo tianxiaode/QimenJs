@@ -85,7 +85,7 @@ export class GlobalTaskQueue {
      * @param interval - 轮询间隔时间（毫秒），默认为5000
      */
     public addTask(
-        fn: () => Promise<void>,
+        fn: () => Promise<unknown>,
         priority: TaskPriority = 'NORMAL',
         maxRetries: number = 3,
         delay: number = 1000,

@@ -26,7 +26,7 @@ export interface Task {
   /** 任务唯一标识符 */
   id: string;
   /** 任务执行函数，返回Promise */
-  fn: () => Promise<void>;
+  fn: () => Promise<unknown>;
   /** 当前重试次数 */
   retries: number;
   /** 最大重试次数 */

@@ -1,5 +1,5 @@
-import { createEventAdapter } from '../../../../src/event/adapters/createEventAdapter';
-import { DomEventAdapter } from '../../../../src/event/adapters/dom';
+import { createEventAdapter } from '@/kernel/events/adapters/createEventAdapter';
+import { DomEventAdapter } from '@/kernel/events/adapters/dom';
 
 describe('createEventAdapter', () => {
     it('should return an instance of DomEventAdapter', () => {
