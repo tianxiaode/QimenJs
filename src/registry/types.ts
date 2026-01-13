@@ -1,6 +1,9 @@
 export interface Registrars {}
 
+export type EnvType = 'development' | 'production' | 'test';
+
 export interface SystemConfig {
+    env: EnvType;
     locale: string;
     dateFormat: string;
     datetimeFormat: string;
@@ -26,6 +29,8 @@ export interface DomainConfig {
     preset: PresetType;
     timeout?: number;
     custom?: Record<string, any>;
+    pageSize: number;
+    pageSizeOptions: number[];
     // 注入到所有请求 URL Query 中的参数
     commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>); 
     // 注入到所有 POST/PUT 请求 Body 中的参数
