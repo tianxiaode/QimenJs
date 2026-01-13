@@ -30,7 +30,7 @@ export interface DomainConfig {
     timeout?: number;
     custom?: Record<string, any>;
     pageSize: number;
-    pageSizeOptions: number[];
+    pagesizes: number[];
     // 注入到所有请求 URL Query 中的参数
     commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>); 
     // 注入到所有 POST/PUT 请求 Body 中的参数

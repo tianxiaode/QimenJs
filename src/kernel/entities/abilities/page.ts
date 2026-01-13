@@ -2,10 +2,6 @@ import { AbilityBase } from "./base";
 
 export class PaginationAbility<T,TC> extends AbilityBase<T, TC> {
 
-    total(): number {
-        return this.state.total;
-    }
-
     page(): number {
         return this.state.pageIndex;
     }
@@ -46,9 +42,9 @@ export class PaginationAbility<T,TC> extends AbilityBase<T, TC> {
 
     async changeSize(size: number): Promise<T[]> {
         // 1. 校验 size 是否在 pageSizeOptions 中（之前讨论过的安全校验）
-        if (!this.state.pageSizeOptions.includes(size)) {
+        if (!this.state.pageSizes.includes(size)) {
             this.logger.error(
-                `Invalid pageSize: ${size}. Options are: ${this.state.pageSizeOptions}`
+                `Invalid pageSize: ${size}. Options are: ${this.state.pageSizes}`
             );
             if (this.env === 'development') throw new Error('Invalid pageSize');
             return [];

@@ -1,43 +1,27 @@
 import { CoreEntityManager } from './CoreEntityManager';
-import { CollectionState } from './abilities/state';
+import { CollectionState, AbilityFactory } from './abilities';
 import { ENTITY_ACTION, FlowContext, RequestOptions } from '../types';
-import { DomainRegistrar } from '@orbitjs/registry';
-import { IReadonlyEntityManager } from '../types/manager';
 
-export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEntityManager implements IReadonlyEntityManager<T, TCriteria> {
+export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEntityManager {
     // 实例化工具类
-    public readonly state: CollectionState<T, TCriteria>;
-    protected pageSize: number | null = null;
-    protected pageSizeOptions: number[] | null = null;
+    public state!: CollectionState<T, TCriteria>;
     protected useLocalSearch: boolean = false;
-    private localFullData: T[] = [];
+    protected localFilter?: (text: string, record: T) => T[];
+    protected localSearch?: (criteria: Partial<TCriteria>, records: T[]) => T[];
+    protected localSort?: (
+        criteria: Partial<TCriteria>,
+        sort: string | null,
+        order: 'asc' | 'desc' | null,
+        records: T[]
+    ) => T[];
+    protected _pageSize?: number;
+    protected _pageSizes?: number[];
 
-    constructor() {
+    constructor(pageSize?: number, pageSizes?: number[]) {
         super();
-        this.state = new CollectionState<T, TCriteria>();
-        const domainConfig = DomainRegistrar.getInstance().get(this.domain);
-
-        // 1. 提取值
-        const finalOptions = this.pageSizeOptions ?? domainConfig?.pageSizeOptions ?? [10, 20, 50];
-        const finalSize = this.pageSize ?? domainConfig?.pageSize ?? finalOptions[0];
-
-        // 2. 核心调试逻辑：如果出错了，直接在控制台报错或抛出异常
-        if (!finalOptions.includes(finalSize)) {
-            const errorMsg =
-                `[Entity Error]: Domain "${this.domain}" configuration mismatch. ` +
-                `Current pageSize (${finalSize}) is not present in options [${finalOptions.join(', ')}].`;
-
-            // 开发环境直接抛错，生产环境可以降级处理
-            if (this.env === 'development') {
-                throw new Error(errorMsg);
-            } else {
-                this.logger.error(errorMsg);
-            }
-        }
-
-        // 3. 赋值
-        this.state.pageSizeOptions = finalOptions;
-        this.state.pageSize = finalSize;
+        this._pageSize = pageSize;
+        this._pageSizes = pageSizes;
+        AbilityFactory.attach(this as any);
     }
 
     /**
@@ -86,10 +70,10 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
     /**
      * 获取详情：独立逻辑，不干扰列表状态
      */
-    public async get(id: string | number): Promise<void> {
-        await this.fetch('get', { params: { id } }, data => {
-            this.emit('detail-loaded', data);
-        });
+    public async get(id: string | number): Promise<T | undefined> {
+        const task = this.request('get', { params: { id } });
+        const result = await task.context;
+        return result.data.item;
     }
 
     /**
@@ -106,21 +90,15 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
      * 列表查询的语义化别名
      */
     public async list(forceRefresh: boolean = false): Promise<T[]> {
-        // --- 1. 本地查询模式 (Local Search Mode) ---
+        // 1. 本地模式：确保有源数据
         if (this.useLocalSearch) {
-            // 如果没有全量数据，或者用户强制刷新，则去后端拿一次全量数据
-            if (this.localFullData.length === 0 || forceRefresh) {
-                // 注意：这里传 getall 动作，确保拿到不分页的全量数据
+            if (this.state.getSource().length === 0 || forceRefresh) {
                 await this.fetch('getall', {}, data => {
-                    // 将全量原始数据存入 localFullData
-                    this.localFullData = data.list || data.items || data || [];
-                    this.state.clearCache(); // 清理旧缓存
+                    this.state.setSource(data.list || data);
                 });
             }
-
-            // 核心逻辑：无论是否发了请求，最后都执行一次本地处理
-            this.applyLocalProcess();
-            return [];
+            // 直接调用由 Ability 注入的方法，它不改状态，只重新计算一次结果
+            return await (this as any).applyLocalProcess();
         }
 
         // --- 2. 传统服务端模式 (Server Side Mode) ---
@@ -135,7 +113,7 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
         }
 
         // 正常发起 list 分页请求
-        const result =  await this.fetch('list', {});
+        const result = await this.fetch('list', {});
         const data = result.data.list || [];
         this.state.updateList(data, result.data.total);
         this.state.setCache(data, result.data.total);
@@ -148,7 +126,21 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
      */
     public async refresh(force: boolean = true): Promise<T[]> {
         this.logger.debug(`Refreshing entity: ${this.entityName}`);
-        return await this.list(force);
+
+        // 1. 发出“开始刷新”信号
+        this.emit('refreshing', { force });
+
+        try {
+            const data = await this.list(force);
+
+            // 2. 发出“刷新成功”信号
+            this.emit('refreshed', data);
+            return data;
+        } catch (error) {
+            // 3. 发出“刷新失败”信号
+            this.emit('refresh-error', error);
+            throw error;
+        }
     }
 
     /**
@@ -158,7 +150,6 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
         this.state.reset();
         return await this.list(); // 重新加载数据
     }
-
 
     /**
      * 根据操作类型，自动对齐/组装请求参数
@@ -194,5 +185,4 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
 
         return baseOptions;
     }
-
 }

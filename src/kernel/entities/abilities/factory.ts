@@ -1,54 +1,61 @@
-import { FilterAbility, LocalFilterAbility } from './filter';
+import { IReadonlyEntityManager } from '../../types';
 import { PaginationAbility } from './page';
-import { LocalSortAbility, SortAbility } from './sort';
 import { CollectionState } from './state';
+import { LocalCollectionAbility } from './sort-order';
 
 export class AbilityFactory {
     /**
      * 将分页、过滤、排序等能力一键挂载到 EM 实例上
      */
-    static attach(em: any) {
+    static attach<T, TC>(em: IReadonlyEntityManager<T, TC>) {
         // 1. 创建原子能力实例
-        const state = new CollectionState();
+        const state = new CollectionState<T, TC>(
+            em.domain,
+            em.logger,
+            em.env,
+            em._pageSize,
+            em._pageSizes,
+            em.useLocalSearch
+        );
         em.state = state;
         const refreshFn = (force: boolean) => em.refresh(force);
-        const paginator = new PaginationAbility(state, refreshFn, em.logger, em.env);
-        let filterer, sorter;
-
-        if (em.useLocalSearch) {
-            // 注入“本地算法版”能力，它们不需要 reload() 触发网络，而是触发本地 applyLocalProcess
-            filterer = new LocalFilterAbility(state,refreshFn, em.logger, em.env,);
-            sorter = new LocalSortAbility(state, refreshFn, em.logger, em.env);
-        } else {
-            // 注入“远程对接版”能力
-            filterer = new FilterAbility(state, refreshFn, em.logger, em.env);
-            sorter = new SortAbility(state, refreshFn, em.logger, em.env);
-        }
+        const localAbility = new LocalCollectionAbility(state, em);
+        Object.assign(em, localAbility.getActions());
+        const abilities: any = { $localAbility: localAbility, $state: state } as any;
         // 2. 将能力方法直接对接到 EM 实例上（即你想要的“映射”）
         // 这样 UI 依然可以 em.search()
-        Object.assign(em, {
-            // 分页
-            total: paginator.total.bind(paginator),
-            page: paginator.page.bind(paginator),
-            pageSize: paginator.pageSize.bind(paginator),
-            pageCount: paginator.pageCount.bind(paginator),
-            jump: paginator.jump.bind(paginator),
-            next: paginator.next.bind(paginator),
-            prev: paginator.prev.bind(paginator),
-            changeSize: paginator.changeSize.bind(paginator),
+        if (!em.localSearch) {
+            const paginator = new PaginationAbility(state, refreshFn, em.logger, em.env);
+            Object.assign(em, {
+                // 分页
+                page: paginator.page.bind(paginator),
+                pageSize: paginator.pageSize.bind(paginator),
+                pageCount: paginator.pageCount.bind(paginator),
+                jump: paginator.jump.bind(paginator),
+                next: paginator.next.bind(paginator),
+                prev: paginator.prev.bind(paginator),
+                changeSize: paginator.changeSize.bind(paginator),
+            });
+            abilities['$page'] = paginator;
+        }
+        Object.assign(em, abilities);
 
-            // 过滤与搜索
-            search: filterer.search.bind(filterer),
-            filter: filterer.filter.bind(filterer),
+        // 统一映射视图状态（只读）
+        const viewProps = {
+            loading: () => state.loading,
+            isEmpty: () => state.items.length === 0,
+            // 只有在非本地搜索且有分页时 hasMore 才有意义
+            hasMore: () => state.pageIndex < state.pageCount,
+            total: () => state.total,
+            items: () => state.items,
+        };
 
-            // 排序
-            sort: sorter.sort.bind(sorter),
-
-            // 方便 UI 访问底层能力对象（可选）
-            $state: state,
-            $paginator: paginator,
-            $filterer: filterer,
-            $sorter: sorter,
+        Object.keys(viewProps).forEach(key => {
+            Object.defineProperty(em, key, {
+                get: viewProps[key as keyof typeof viewProps],
+                enumerable: true,
+                configurable: true,
+            });
         });
     }
 }
