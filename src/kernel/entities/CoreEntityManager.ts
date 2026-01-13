@@ -21,8 +21,8 @@ export abstract class CoreEntityManager extends (BaseWithEvents as any) {
     abstract preset: string;
     abstract schema: any;
     abstract url: string;
-    protected logger: ILogger;
-    protected env: EnvType;
+    public logger: ILogger;
+    public env: EnvType;
 
     // 存储当前正在进行的任务：Action -> AbortController
     protected activeTasks = new Map<ENTITY_ACTION, AbortController>();

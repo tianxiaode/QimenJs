@@ -1,10 +1,10 @@
 import { CoreEntityManager } from './CoreEntityManager';
-import { CollectionState } from './CollectionState';
+import { CollectionState } from './abilities/state';
 import { ENTITY_ACTION, FlowContext, RequestOptions } from '../types';
 import { DomainRegistrar } from '@orbitjs/registry';
-import { QueryHelper } from './QueryHelper';
+import { IReadonlyEntityManager } from '../types/manager';
 
-export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEntityManager {
+export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEntityManager implements IReadonlyEntityManager<T, TCriteria> {
     // 实例化工具类
     public readonly state: CollectionState<T, TCriteria>;
     protected pageSize: number | null = null;
@@ -95,16 +95,17 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
     /**
      * 获取全量：通常用于下拉菜单，不分页
      */
-    public async getAll(params?: any): Promise<FlowContext> {
+    public async getAll(params?: any): Promise<T[]> {
         const task = this.request('getall', {
             params: { ...params, __pagination: false },
         });
-        return await task.context;
+        const result = await task.context;
+        return result.data.list || [];
     }
     /**
      * 列表查询的语义化别名
      */
-    public async list(forceRefresh: boolean = false): Promise<void> {
+    public async list(forceRefresh: boolean = false): Promise<T[]> {
         // --- 1. 本地查询模式 (Local Search Mode) ---
         if (this.useLocalSearch) {
             // 如果没有全量数据，或者用户强制刷新，则去后端拿一次全量数据
@@ -119,7 +120,7 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
 
             // 核心逻辑：无论是否发了请求，最后都执行一次本地处理
             this.applyLocalProcess();
-            return;
+            return [];
         }
 
         // --- 2. 传统服务端模式 (Server Side Mode) ---
@@ -129,129 +130,35 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
             if (cached) {
                 this.state.updateList(cached.items, cached.total);
                 this.emit('data-updated', { action: 'list', ...cached });
-                return;
+                return [];
             }
         }
 
         // 正常发起 list 分页请求
-        await this.fetch('list', {}, data => {
-            this.state.updateList(data.items, data.total);
-            this.state.setCache(data.items, data.total);
-        });
-    }
-
-    /**
-     * 下一页
-     */
-    public async next(): Promise<void> {
-        if (this.state.pageIndex < this.state.maxPage) {
-            await this.jump(this.state.pageIndex + 1);
-        } else {
-            this.logger.warn('Already on the last page, cannot go next.');
-        }
-    }
-
-    /**
-     * 上一页
-     */
-    public async prev(): Promise<void> {
-        if (this.state.pageIndex > 1) {
-            await this.jump(this.state.pageIndex - 1);
-        } else {
-            this.logger.warn('Already on the first page, cannot go prev.');
-        }
-    }
-
-    /**
-     * 跳转并返回最终生效的页码
-     */
-    public async jump(page: number): Promise<number> {
-        const validPage = this.state.getValidPage(page);
-
-        // 如果页码没变且已经有数据，直接返回
-        if (validPage === this.state.pageIndex && this.state.items.length > 0) {
-            return validPage;
-        }
-
-        this.state.pageIndex = validPage;
-        await this.list();
-
-        return this.state.pageIndex; // 返回纠正后的值，供 UI 恢复显示
-    }
-
-    /**
-     * 执行排序操作
-     * @param key 排序字段
-     * @param order 排序方向
-     */
-    public async sort(key: string, order: 'asc' | 'desc' | null, force: boolean = false): Promise<void> {
-        this.logger.debug(`Sorting by ${key} ${order}`);
-
-        // 1. 更新状态
-        this.state.setSort(key, order);
-
-        await this.list(force); // 正常
+        const result =  await this.fetch('list', {});
+        const data = result.data.list || [];
+        this.state.updateList(data, result.data.total);
+        this.state.setCache(data, result.data.total);
+        return data;
     }
 
     /**
      * 刷新当前页
      * @param force 是否强制跳过缓存，默认为 true
      */
-    public async refresh(force: boolean = true): Promise<void> {
+    public async refresh(force: boolean = true): Promise<T[]> {
         this.logger.debug(`Refreshing entity: ${this.entityName}`);
-        await this.list(force);
+        return await this.list(force);
     }
 
     /**
      * 将状态恢复到初始默认值
      */
-    public reset(): void {
+    public async reset(): Promise<T[]> {
         this.state.reset();
-        this.list(); // 重新加载数据
+        return await this.list(); // 重新加载数据
     }
 
-    /**
-     * 修改每页显示数量
-     */
-    public async changeSize(size: number): Promise<void> {
-        // 1. 校验 size 是否在 pageSizeOptions 中（之前讨论过的安全校验）
-        if (!this.state.pageSizeOptions.includes(size)) {
-            this.logger.error(
-                `Invalid pageSize: ${size}. Options are: ${this.state.pageSizeOptions}`
-            );
-            if (this.env === 'development') throw new Error('Invalid pageSize');
-            return;
-        }
-
-        // 2. 只有当值真的改变时才处理
-        if (this.state.pageSize !== size) {
-            this.state.pageSize = size;
-            this.state.pageIndex = 1; // 关键：重置回第一页
-
-            this.logger.debug(`PageSize changed to ${size}, resetting to page 1`);
-
-            // 3. 改变 size 后通常需要立即重新加载数据
-            await this.list(true);
-        }
-    }
-
-    /**
-     * 语义化操作：简单过滤
-     */
-    public async filter(keyword: string, force: boolean = false): Promise<void> {
-        this.state.filter = keyword;
-        this.state.pageIndex = 1;
-        await this.list(force); // 正常
-    }
-
-    /**
-     * 语义化操作：多条件搜索
-     */
-    public async search(filter: string, force: boolean = false): Promise<void> {
-        this.state.filter = filter;
-        this.state.pageIndex = 1;
-        await this.list(force); // 正常
-    }
 
     /**
      * 根据操作类型，自动对齐/组装请求参数
@@ -288,15 +195,4 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
         return baseOptions;
     }
 
-    /**
-     * 核心逻辑：应用本地过滤、排序和分页
-     */
-    private applyLocalProcess(): void {
-        // 1. 调用 QueryHelper 进行一体化处理
-        const { items, total } = QueryHelper.process(this.localFullData, this.state);
-
-        // 2. 直接更新状态并触发事件，不走网络请求
-        this.state.updateList(items, total);
-        this.emit('data-updated', { action: 'local-process', items, total });
-    }
 }

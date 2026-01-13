@@ -7,6 +7,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> {
     public pageIndex: number = 1;
     public pageSize: number = 20;
     public pageSizeOptions: number[] = [10, 20, 50, 100];
+    public pageCount: number = 1;
 
     // 3. 搜索状态
     public filter: string = ''; // 简单搜索：通常是全局模糊匹配
@@ -33,6 +34,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> {
 
         // 2. 自动校准逻辑：如果当前页码超过了最大页码（例如在最后一页删除了数据）
         const maxPage = Math.ceil(this.total / this.pageSize);
+        this.pageCount = maxPage;
         if (this.pageIndex > maxPage && maxPage > 0) {
             this.pageIndex = maxPage;
         }
@@ -41,15 +43,23 @@ export class CollectionState<T, TCriteria = Record<string, any>> {
     /**
      * 重置搜索状态
      */
-    public reset(): void {
+    /**
+     * @param includePageSettings 是否连同 pageSize 和 pageSizeOptions 一起重置
+     */
+    public reset(includePageSettings: boolean = false) {
+        // 1. 业务状态必须重置
         this.pageIndex = 1;
         this.filter = '';
-        this.criteria = {} as Partial<TCriteria>;
-        this.items = [];
-        this.total = 0;
         this.sortBy = null;
         this.sortOrder = null;
-        this.clearCache(); // 重置时通常也要清理缓存
+        this.criteria = {};
+
+        // 2. 环境/配置状态按需重置
+        if (includePageSettings) {
+            // 这里回归到系统最原始的默认值，或者从 DomainConfig 重新拿
+            this.pageSize = 20;
+            this.total = 0;
+        }
     }
 
     /**
@@ -144,7 +154,6 @@ export class CollectionState<T, TCriteria = Record<string, any>> {
         this.sortOrder = order;
         this.pageIndex = 1; // 切换排序通常需要回到第一页
     }
-
 
     /**
      * 清空缓存（当用户点击刷新或强制同步时使用）
