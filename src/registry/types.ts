@@ -19,8 +19,11 @@ export interface SystemConfig {
     [key: string]: any;
 }
 
+export type PresetType = 'abp' | 'spring' | string;
+
 export interface DomainConfig {
     readonly baseUrl: string;
+    preset: PresetType;
     timeout?: number;
     custom?: Record<string, any>;
     // 注入到所有请求 URL Query 中的参数

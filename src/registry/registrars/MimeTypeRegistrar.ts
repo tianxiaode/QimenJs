@@ -98,9 +98,10 @@ export class MimeTypeRegistrar extends RegistrarBase<Map<string, Set<string>>> {
      * @param mime MIME类型字符串
      * @returns 匹配的扩展名数组
      */
-    getByMime(mime: string): string[] {
+    getByMime(mime: string): string {
         const extSet = this.reverseStorage.get(mime);
-        return Array.from(extSet || []);
+        const extArray  = Array.from(extSet || [])
+        return extArray.length > 0 ? extArray[0] : '';
     }
 
     protected doInspect(): void {

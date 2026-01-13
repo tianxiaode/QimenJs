@@ -50,37 +50,16 @@ export class EntityActionRegistrar extends RegistrarBase<Map<string, ActionEntry
         return this.httpPipelineCache;
     }
 
+    getPreparePipeline(): ActionEntry[] {
+        return this.getPipelineByFilter(item => item.category === ActionCategory.PREPARE);
+    }
+
     /**
      * 获取基于域和动作的处理器流水线
      * 所有项都参与 domain 和 action 比对
      */
-    getDomainActionPipeline(domain: string, action?: string): ActionEntry[] {
-        // 创建缓存键
-        const cacheKey = `${domain}_${action || '*'}`;
-        
-        // 检查缓存是否存在
-        if (this.domainActionPipelineCache.has(cacheKey)) {
-            return this.domainActionPipelineCache.get(cacheKey)!;
-        }
-        
-        // 缓存不存在，重新计算并存储
-        const pipeline = this.getPipelineByFilter(item => {
-            // 域匹配逻辑：
-            // - 如果零件没写 domain，说明是全局通用的
-            // - 如果写了 domain，必须和传入的匹配
-            const domainMatch = !item.domain || item.domain === domain;
-
-            // 动作匹配逻辑：
-            // - 如果零件没写 actionName，说明是该 domain 下所有动作通用的
-            // - 如果写了，必须匹配
-            const actionMatch = !item.action || item.action === action;
-
-            return domainMatch && actionMatch;
-        });
-        
-        this.domainActionPipelineCache.set(cacheKey, pipeline);
-        
-        return pipeline;
+    getPipeline(): ActionEntry[] {
+        return Array.from(this.storage.values());
     }
 
 
@@ -89,10 +68,7 @@ export class EntityActionRegistrar extends RegistrarBase<Map<string, ActionEntry
      */
     private getPipelineByFilter(filterFn: (item: ActionEntry) => boolean): ActionEntry[] {
         const allActions = Array.from(this.storage.values());
-        const filteredActions = allActions.filter(filterFn);
-        
-        return filteredActions
-            .sort((a, b) => b.category + b.offset - (a.category + a.offset))
+        return allActions.filter(filterFn);        
     }
 
     /**
@@ -142,23 +118,11 @@ export class EntityActionRegistrar extends RegistrarBase<Map<string, ActionEntry
 
         // 2. 按照 ActionCategory 枚举定义的顺序迭代
         const orderedCategories = [
-            // === 前置阶段 ===
             ActionCategory.PREPARE,
-            ActionCategory.ENRICH,
+            ActionCategory.EXCHANGE,            
+            ActionCategory.PROCESS,
+            ActionCategory.ALIGN,
             
-            // === 拦截阶段 ===
-            ActionCategory.GUARD,
-            ActionCategory.VALIDATE,
-            
-            // === 执行阶段 ===
-            ActionCategory.IO,
-            
-            // === 后置阶段 ===
-            ActionCategory.TRANSFORM,
-            ActionCategory.FALLBACK,
-            
-            // === 副作用阶段 ===
-            ActionCategory.EFFECT
         ];
 
         orderedCategories.forEach(cat => {
@@ -184,7 +148,6 @@ export class EntityActionRegistrar extends RegistrarBase<Map<string, ActionEntry
             const tableData = sortedList.map((item: ActionEntry) => ({
                 'Priority(Stage+Offset)': item.category + item.offset,
                 Action: item.name || '*',
-                Domain: item.domain || '*',
                 Description: item.description,
                 'HTTP?': item.isHttp ? '✅' : '❌',
             }));

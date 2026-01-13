@@ -6,8 +6,9 @@ import { HttpMethod, HttpResponseType } from './http';
 export type ActionHandler = (ctx: FlowContext) => Promise<void>;
 
 export interface ExecutionStep {
-    processor: string; // 处理器名称
+    name: string; // 处理器名称
     duration: number;  // 执行耗时 (ms)
+    status: string; // 状态：success | error | skipped | pending
 }
 
 /**
@@ -50,11 +51,15 @@ export interface FlowContext {
         isBlob: boolean;
         action: string;
         isUpload: boolean;
-        preset: string;
+        isDownload:boolean;
 
         isErrorHandled: boolean;
         // 处理状态
         isProcessed?: boolean; // 是否被某个拦截器深度改写过
+
+        fileName?: string; // 文件名
+        isDownloadHandled?: boolean; // 是否被某个拦截器深度改写过
+        
 
         [key: string]: any; // 允许自定义 (retryCount, cacheHit 等)
     };
@@ -85,9 +90,9 @@ export interface FlowContext {
         headers: Record<string, string>;
         method: HttpMethod;
         rawResponse?: any; // 留给需要读取特殊 Header 的情况
-        query?: Record<string, any>;
+        queryParams?: Record<string, any>;
         body?: any;
-        segments: (string | number)[];
+        pathParams: (string | number)[];
 
         // 核心配置 (来自 HttpOptions)
         timeout: number;
@@ -101,4 +106,46 @@ export interface FlowContext {
     };
 
      steps: ExecutionStep[]; 
+}
+
+
+export interface RequestTask {
+    /** 原始的管线执行结果 */
+    context: Promise<FlowContext>;
+    /** 取消请求的方法 */
+    cancel: (reason?: string) => void;
+}
+
+export interface EntityRequestTask {
+    /** 真正的执行过程 */
+    context: Promise<FlowContext>;
+    /** 手动取消当前这一个任务 */
+    cancel: (reason?: string) => void;
+}
+
+export interface StreamTask<T> {
+    /** 异步迭代器，用于 for await */
+    stream: AsyncIterableIterator<T>;
+    /** 取消流传输 */
+    cancel: (reason?: string) => void;
+    /** 获取当前的上下文（查看 header 等） */
+    context: FlowContext;
+}
+
+export interface RetryOptions {
+    /**
+     * 最大重试次数
+     */
+    maxRetries: number;       
+    /**
+     * 重试延迟时间（毫秒），默认情况下使用固定延迟
+     */
+    delay?: number;           
+    /**
+     * 判断函数：由外部决定什么样的响应上下文需要重试
+     * 例如：context.status === -1 (网络丢包) 或 context.status === 429 (限流)
+     * @param context - HTTP 响应上下文
+     * @returns 是否需要重试
+     */
+    shouldRetry: (context: FlowContext) => boolean;
 }

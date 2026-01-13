@@ -1,7 +1,7 @@
 import { FlowContext, ActionHandler } from '../../types';
 
 export const UrlBuildHandler: ActionHandler = async (context: FlowContext) => {
-    const { segments = [], query = {} } = context.http;
+    const { pathParams: segments = [], queryParams: query = {} } = context.http;
     const { baseUrl } = context.config;
 
     // 1. 基础路径处理 (防止双斜杠)
