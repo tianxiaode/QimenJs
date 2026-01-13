@@ -1,4 +1,4 @@
-import { ErrorBase } from '../../error/ErrorBase';
+import { ErrorBase } from '../../../error';
 
 /**
  * 🖱️ 手势事件处理错误类

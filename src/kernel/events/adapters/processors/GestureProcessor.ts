@@ -3,16 +3,14 @@
  * @description
  * GestureProcessor 是所有手势处理器的基类，提供了手势处理的基础功能。
  * 它定义了手势处理的基本流程，包括记录手势开始位置、移动轨迹、计算距离和时间等。
- * 
+ *
  * 该基类还提供了日志记录功能，方便调试和监控手势处理过程。
  */
 
 import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
 import { GestureEmit, GestureInput } from './types';
-import { geometry } from '@orbitjs/utils';
-import { assert } from '@orbitjs/validation';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
-import { string } from '@orbitjs/utils';
+import { string, geometry } from '@orbitjs/utils';
 
 /**
  * GestureProcessor抽象类
@@ -34,7 +32,7 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     protected startY = 0;
     protected lastX = 0;
     protected lastY = 0;
-    
+
     // 处理器实例ID和日志记录器
     private readonly processorId = string.getId('gesture-processor');
     private readonly logger: ILogger;
@@ -76,9 +74,9 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
             signal: input.signal,
             x: input.x,
             y: input.y,
-            time: input.time
+            time: input.time,
         });
-        
+
         this.lastTime = input.time;
         this.handlers[input.signal]?.(input);
     }
@@ -88,19 +86,27 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
      * @param input - 手势输入信息
      */
     protected start(input: GestureInput) {
-        const x = assert.finite(input.x);
-        const y = assert.finite(input.y);
+        // 使用 Number.isFinite 替代不存在的 assert.finite
+        if (input.x == null || !Number.isFinite(input.x)) {
+            throw new Error('x must be a finite number');
+        }
+        if (input.y == null || !Number.isFinite(input.y)) {
+            throw new Error('y must be a finite number');
+        }
+
+        const x = input.x;
+        const y = input.y;
 
         this.active = true;
         this.startTime = input.time;
 
         this.startX = this.lastX = x;
         this.startY = this.lastY = y;
-        
+
         this.logProcessor('debug', 'gesture_started', {
             x,
             y,
-            time: input.time
+            time: input.time,
         });
     }
 
@@ -109,16 +115,16 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
      * @param input - 手势输入信息
      */
     protected move(input: GestureInput) {
-        if (input.x != null) {
-            this.lastX = assert.finite(input.x);
+        if (input.x != null && Number.isFinite(input.x)) {
+            this.lastX = input.x;
         }
-        if (input.y != null) {
-            this.lastY = assert.finite(input.y);
+        if (input.y != null && Number.isFinite(input.y)) {
+            this.lastY = input.y;
         }
-        
+
         this.logProcessor('debug', 'gesture_moved', {
             lastX: this.lastX,
-            lastY: this.lastY
+            lastY: this.lastY,
         });
     }
 
@@ -128,9 +134,9 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     protected end() {
         this.logProcessor('debug', 'gesture_ended', {
             duration: this.duration(),
-            distance: this.distance()
+            distance: this.distance(),
         });
-        
+
         this.reset();
     }
 
@@ -140,7 +146,7 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     protected reset() {
         this.active = false;
         this.startTime = 0;
-        
+
         this.logProcessor('debug', 'gesture_reset');
     }
 
