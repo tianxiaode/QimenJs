@@ -54,6 +54,10 @@ export function WithEvents(Base: any) {
             return this.eventScope.on(event, handler);
         }
 
+        once(event: string, handler: EventHandler) {
+            return this.eventScope.once(event, handler);
+        }
+
         emit(event: string, payload?: any) {
             this.eventScope.emit(event, payload);
         }

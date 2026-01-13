@@ -1,4 +1,7 @@
-import { composeMixins, DisposableBase, Constructor } from '@orbitjs/utils';
+import { composeMixins, DisposableBase, DisposableConstructor } from '@/utils/composeMixins';
+
+// 定义一个用于测试的类型别名
+type Constructor = new (...args: any[]) => {};
 
 // 定义一些测试用的 Mixin
 function TimestampMixin<T extends Constructor>(Base: T) {

@@ -1,5 +1,9 @@
-import { Constructor, DisposableBase } from '@orbitjs/utils';
+// 定义 Constructor 类型，用于混入模式
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+import { DisposableBase } from '@orbitjs/utils';
 import { WithDomEvents } from '@/kernel/events/mixins/WithDomEvents';
+import { WithEvents } from '@/kernel/events/mixins/WithEvents'; // 导入 WithEvents
 import { globalEventBus } from '@/kernel/events/core/GlobalEventBus';
 import { EventBus } from '@/kernel/events/core/EventBus';
 import { Logger } from '@orbitjs/logger';
@@ -8,7 +12,7 @@ import { Logger } from '@orbitjs/logger';
 jest.mock('@orbitjs/logger', () => {
   const actualLogger = jest.requireActual('@orbitjs/logger');
   return {
-    ...actualLogger,
+    ...actualLogger.Logger,
     Logger: {
       ...actualLogger.Logger,
       for: jest.fn(() => ({
@@ -36,8 +40,8 @@ class TestClass extends DisposableBase {
   }
 }
 
-// 应用WithEvents混入
-const TestClassWithEvents = WithDomEvents(TestClass as Constructor<TestClass>);
+// 同时应用 WithEvents 和 WithDomEvents 混入
+const TestClassWithEvents = WithDomEvents(WithEvents(TestClass as Constructor<TestClass>));
 
 // 定义一个类型，表示TestClass和WithEvents的合并类型
 type TestClassWithEventsType = InstanceType<typeof TestClassWithEvents> & { value: number; increment: () => void; };
@@ -63,7 +67,7 @@ describe('WithEvents Mixin', () => {
 
   test('should add event methods to the base class', () => {
     expect(instance.on).toBeDefined();
-    expect(instance.once).toBeDefined();
+    expect(instance.once).toBeDefined();  // 添加 once 方法的检查
     expect(instance.emit).toBeDefined();
     expect(instance.bind).toBeDefined();
   });
@@ -173,7 +177,7 @@ describe('WithEvents Mixin', () => {
       }
     }
     
-    const TestClassWithEventsAndDispose = WithDomEvents(TestClassWithDispose as Constructor<TestClassWithDispose>);
+    const TestClassWithEventsAndDispose = WithDomEvents(WithEvents(TestClassWithDispose as Constructor<TestClassWithDispose>));
     
     const ConcreteDisposeClass = class extends TestClassWithEventsAndDispose {
       constructor() {
@@ -222,7 +226,7 @@ describe('WithEvents Mixin', () => {
       }
     }
     
-    const ExtendedWithEvents = WithDomEvents(ParentWithDispose as Constructor<ParentWithDispose>);
+    const ExtendedWithEvents = WithDomEvents(WithEvents(ParentWithDispose as Constructor<ParentWithDispose>));
     
     const ConcreteExtendedClass = class extends ExtendedWithEvents {
       constructor() {
