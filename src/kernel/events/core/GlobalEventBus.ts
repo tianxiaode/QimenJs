@@ -1,6 +1,7 @@
 import { Logger } from '@orbitjs/logger';
 import { EventBus } from './EventBus';
 import { EventScope } from './EventScope';
+import { EventHandler, IEventContext } from './types';
 
 /**
  * 全局事件总线 - 提供应用级别的单例事件总线
@@ -25,7 +26,14 @@ import { EventScope } from './EventScope';
  * ```
  */
 export class GlobalEventBus {
-    private bus = new EventBus(Logger.for('global-bus'));
+    private readonly bus: EventBus;
+    private readonly rootScope: EventScope;
+
+    constructor() {
+        this.bus = new EventBus(Logger.for('global-bus'));
+        // 创建一个永不主动销毁的根作用域
+        this.rootScope = this.bus.createScope();
+    }    
 
     /**
      * 订阅事件
@@ -34,7 +42,9 @@ export class GlobalEventBus {
      * @param handler 事件处理器
      * @returns 取消订阅的函数
      */
-    on = this.bus.on.bind(this.bus);
+    on(event: string, handler: EventHandler){
+        return this.rootScope.on(event, handler);
+    }
     
     /**
      * 一次性订阅事件
@@ -42,7 +52,9 @@ export class GlobalEventBus {
      * @param event 事件名称
      * @param handler 事件处理器
      */
-    once = this.bus.once.bind(this.bus);
+    once(event: string, handler: EventHandler){
+        this.rootScope.once(event, handler);
+    }
     
     /**
      * 触发事件
@@ -50,14 +62,11 @@ export class GlobalEventBus {
      * @param event 事件名称
      * @param payload 事件载荷
      */
-    emit = this.bus.emit.bind(this.bus);
+    emit(event: string, data?: any){
+        return this.rootScope.emit(event, data, 'GLOBAL');
+    }
     
-    /**
-     * 清理事件订阅
-     * 
-     * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
-     */
-    clear = this.bus.clear.bind(this.bus);
+
 
     /**
      * 创建事件作用域

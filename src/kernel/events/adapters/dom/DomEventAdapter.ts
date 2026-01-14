@@ -64,7 +64,8 @@ export class DomEventAdapter {
         target: EventTarget,
         semantic: GestureSemantic,
         scope: EventScope,
-        options?: BindOptions
+        options?: BindOptions,
+        source?: any
     ): () => void {
         const descriptor = this.gestureMap[semantic];
         if (!descriptor) {
@@ -77,7 +78,7 @@ export class DomEventAdapter {
         // 1️⃣ 创建 gesture processor
         const processor = createGestureProcessor(descriptor, gesture => {
             this.logAdapter('debug', 'emit_gesture', { semantic });
-            scope.emit(semantic, gesture);
+            scope.emit(semantic, gesture, source);
         });
 
         const unbindFunctions: (() => void)[] = [];

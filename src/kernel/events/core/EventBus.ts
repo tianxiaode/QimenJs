@@ -1,4 +1,4 @@
-import { BusAction, EventHandler, EventLogAction } from './types';
+import { BusAction, EventHandler, EventLogAction, IEventContext } from './types';
 import { EventScope } from './EventScope';
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -30,7 +30,7 @@ import { string } from '@orbitjs/utils';
  * unsubscribe();
  * ```
  */
-export class EventBus{
+export class EventBus {
     private readonly busId = string.getId();
     private readonly listeners = new Map<string, Set<EventHandler>>();
 
@@ -69,7 +69,7 @@ export class EventBus{
         });
     }
 
-    emit(event: string, payload?: any): void {
+    emit(event: string, context: IEventContext): void {
         const handlers = this.listeners.get(event);
 
         if (!handlers || handlers.size === 0) {
@@ -77,11 +77,14 @@ export class EventBus{
             return;
         }
 
-        this.logEvent('debug', 'emit', String(event), { handlerCount: handlers.size });
+        this.logEvent('debug', 'emit', String(event), {
+            handlerCount: handlers.size,
+            source: context.source?.constructor.name,
+        });
 
         handlers.forEach(handler => {
             try {
-                handler(payload);
+                handler(context);
             } catch (err) {
                 this.logEvent('error', 'handler_error', String(event), { error: err });
             }
@@ -90,7 +93,7 @@ export class EventBus{
 
     /**
      * 清理事件订阅
-     * 
+     *
      * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
      */
     clear(event?: string): void {
@@ -102,9 +105,9 @@ export class EventBus{
 
     /**
      * 创建事件作用域
-     * 
+     *
      * 用于管理一组相关事件的生命周期
-     * 
+     *
      * @returns 返回一个EventScope实例
      */
     createScope(): EventScope {
@@ -113,7 +116,7 @@ export class EventBus{
 
     /**
      * 获取事件总线的唯一标识符
-     * 
+     *
      * @returns 返回事件总线的ID
      */
     getBusId(): string {

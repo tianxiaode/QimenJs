@@ -16,6 +16,7 @@ export abstract class ReadonlyEntityManager<T, TCriteria = any> extends CoreEnti
     ) => T[];
     protected _pageSize?: number;
     protected _pageSizes?: number[];
+    protected primaryAction: string = 'list';
 
     constructor(pageSize?: number, pageSizes?: number[]) {
         super();

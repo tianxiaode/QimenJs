@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { EventHandler, ScopeLogAction } from './types';
+import { EventHandler, IEventContext, ScopeLogAction } from './types';
 
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -53,12 +53,20 @@ export class EventScope {
         });
     }
 
-    emit(event: string, payload?: any): void {
+    emit(event: string, data?: any, source?: any): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
-        this.bus.emit(event, payload);
+        const context: IEventContext<any> = {
+            event,
+            data,
+            source: source || 'UNKNOWN', // 如果没传 source，至少标注为未知
+            scopeId: this.scopeId, // 带上当前 Scope 的唯一标识
+            busId: this.bus.getBusId(),
+            timestamp: Date.now(),
+        };
+        this.bus.emit(event, context);
     }
 
     on(event: string, handler: EventHandler): () => void {
