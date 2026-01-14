@@ -1,36 +1,33 @@
-import { composeMixins } from '@orbitjs/utils';
 import { runPipeline, createFlowContext } from '../core';
 import { EntityActionRegistrar } from '../registrars';
 import {
     ActionEntry,
     ENTITY_ACTION,
     EntityRequestTask,
+    EventAbilityName,
     FlowContext,
     RequestOptions,
+    ICoreEntityManager,
 } from '../types';
-import { WithEvents, WithEventsPublic } from '../events';
-import { ILogger, Logger } from '@orbitjs/logger';
 import { EnvType, SystemRegistrar } from '@orbitjs/registry';
+import { Ability, ComposableBase } from '../composable';
 
-const BaseWithEvents = composeMixins(Object as any, [WithEvents]);
-
-export abstract class CoreEntityManager extends (BaseWithEvents as any) {
+@Ability(EventAbilityName)
+export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
     domain: string = 'default';
     abstract entityName: string;
     abstract customActions: ActionEntry[];
     abstract preset: string;
     abstract schema: any;
     abstract url: string;
-    public logger: ILogger;
-    public env: EnvType;
+    env: EnvType;
 
     // 存储当前正在进行的任务：Action -> AbortController
     protected activeTasks = new Map<ENTITY_ACTION, AbortController>();
 
     constructor() {
         super();
-        this.logger = Logger.for(this.constructor.name);
-        this.env= SystemRegistrar.getInstance().get('env') || 'production';
+        this.env = SystemRegistrar.getInstance().get('env') || 'production';
     }
 
     request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask {
@@ -92,6 +89,20 @@ export abstract class CoreEntityManager extends (BaseWithEvents as any) {
         this.activeTasks.forEach(c => c.abort('manager_cancel_all'));
         this.activeTasks.clear();
     }
-}
 
-export interface CoreEntityManager extends WithEventsPublic {}
+    public dispose(): void {
+        // 1. 立即中断所有正在进行的请求任务
+        this.cancelAll();
+
+        // 2. 清理 Ability 容器 (由于继承自 ComposableBase，这里可能需要调用父类的清理)
+        if (typeof super.dispose === 'function') {
+            super.dispose();
+        }
+
+        // 3. 释放大对象引用，协助 GC
+        this.activeTasks.clear();
+        (this as any).customActions = [];
+
+        this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
+    }
+}

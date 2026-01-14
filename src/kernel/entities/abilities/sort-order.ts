@@ -1,6 +1,6 @@
 import { debounce } from '@orbitjs/async';
 import { array } from '@orbitjs/utils';
-import { CollectionState } from './state';
+import { CollectionState } from './CollectionState';
 
 export class LocalCollectionAbility<T, TC> {
     private debouncedRun = debounce((force: boolean) => this.actualRun(force), 300);

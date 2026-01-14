@@ -1,6 +1,6 @@
 import { IReadonlyEntityManager } from '../../types';
 import { PaginationAbility } from './page';
-import { CollectionState } from './state';
+import { CollectionState } from './CollectionState';
 import { LocalCollectionAbility } from './sort-order';
 
 export class AbilityFactory {

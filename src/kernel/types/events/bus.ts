@@ -14,7 +14,7 @@ export interface IEventBus<Events = any> {
    * @param handler 事件处理器
    * @returns 返回取消订阅函数
    */
-  on<E extends keyof Events>(event: E, handler: EventHandler<Events[E]>): () => void;
+  on(event: string, handler: EventHandler): () => void;
 
   /**
    * 订阅单次事件
@@ -22,7 +22,7 @@ export interface IEventBus<Events = any> {
    * @param event 事件名称
    * @param handler 事件处理器
    */
-  once<E extends keyof Events>(event: E, handler: EventHandler<Events[E]>): void;
+  once(event: string, handler: EventHandler): void;
 
   /**
    * 触发事件
@@ -30,14 +30,14 @@ export interface IEventBus<Events = any> {
    * @param event 事件名称
    * @param context 事件上下文
    */
-  emit<E extends keyof Events>(event: E, context: IEventContext<Events[E]>): void;
+  emit(event: string, context: IEventContext): void;
 
   /**
    * 清理事件订阅
    * 
    * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
    */
-  clear(event?: keyof Events): void;
+  clear(event?: string): void;
 
   /**
    * 创建事件作用域

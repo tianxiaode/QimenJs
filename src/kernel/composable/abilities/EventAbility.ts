@@ -12,8 +12,8 @@ export class EventAbility extends AbilityBase {
         // 只暴露必要的 API
         this.host.on = (event: string, handler: EventHandler) => scope.on(event, handler);
         this.host.once = (event: string, handler: EventHandler) => scope.once(event, handler);
-        this.host.emit = (event: string, payload?: any) => {
-            scope.emit(event, payload, this.host);
+        this.host.emit = (event: string, data?: any) => {
+            scope.emit(event, data, this.host);
         };
     }
 

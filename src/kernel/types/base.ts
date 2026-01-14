@@ -1,7 +1,7 @@
 export type CRUD_ACTION =
     | 'list' // GET_LIST
-    | 'all' // GET_ALL
-    | 'detail' // GET_DETAIL
+    | 'get-all' // GET_ALL
+    | 'get' // GET_DETAIL
     | 'create' // CREATE
     | 'update' // UPDATE
     | 'delete' // DELETE

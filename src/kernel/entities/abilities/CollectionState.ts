@@ -2,7 +2,7 @@ import { ICollectionState } from "../../types";
 import { ILogger } from "@orbitjs/logger";
 import { DomainRegistrar, EnvType } from '@orbitjs/registry';
 
-export class CollectionState<T, TCriteria = Record<string, any>> implements ICollectionState<T, TCriteria> {
+export class CollectionState<T, TCriteria = Record<string, any>> implements ICollectionState {
     // 1. 数据状态
     private _sourceItems: T[] | null = null;
     public items: T[] = [];
@@ -16,7 +16,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
 
     // 3. 搜索状态
     public filter: string = ''; // 简单搜索：通常是全局模糊匹配
-    public criteria: Partial<TCriteria> = {}; // 多字段搜索：结构化条件
+    public criteria: Partial<TCriteria> = {} as TCriteria; // 多字段搜索：结构化条件
 
     // 4. 辅助状态
     public loading: boolean = false;

@@ -19,5 +19,6 @@ export interface ActionEntry {
 export interface ComposableEntry {
     name: string;
     description?: string;
+    deps?:string[],
     ctor: new (...args: any[]) => IComposable;
 }

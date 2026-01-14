@@ -1,2 +1,3 @@
 export * from './factory';
-export * from './state';
+export * from './CollectionState';
+export * from './entries';
