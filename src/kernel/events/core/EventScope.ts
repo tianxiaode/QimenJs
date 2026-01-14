@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { EventHandler, IEventContext, ScopeLogAction } from './types';
+import { EventHandler, IEventContext, IEventScope, ScopeLogAction } from '../../types';
 
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -31,7 +31,7 @@ import { string } from '@orbitjs/utils';
  * scope.dispose();
  * ```
  */
-export class EventScope {
+export class EventScope implements IEventScope {
     private readonly scopeId = string.getId('event-scope');
     private readonly disposers: Array<() => void> = [];
     private disposed = false;

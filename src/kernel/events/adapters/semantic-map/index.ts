@@ -1,4 +1,3 @@
-export * from './types';
 export * from './base';
 export * from './keyboard';
 export * from './mouse';

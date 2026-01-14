@@ -1,6 +1,5 @@
-import { globalEventBus } from '../core/GlobalEventBus';
-import { EventHandler } from '../core/types';
-import { EventScope } from '../core';
+import { globalEventBus } from '../core';
+import { EventHandler, IEventScope } from '../../types';
 
 /**
  * WithEventsPublic 接口定义了混入事件功能后类的公共API
@@ -41,7 +40,7 @@ export interface WithEventsPublic {
  */
 export function WithEvents(Base: any) {
     return class extends Base {
-        protected _eventScope: EventScope | undefined;
+        protected _eventScope: IEventScope | undefined;
 
         protected get eventScope() {
             if (this._eventScope === undefined) {

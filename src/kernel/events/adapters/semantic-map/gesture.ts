@@ -1,4 +1,4 @@
-import { GestureEventMap, GestureSemantic } from './types';
+import { GestureEventMap, GestureSemantic } from '../../../types';
 
 /**
  * 手势事件映射配置

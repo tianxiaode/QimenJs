@@ -1,4 +1,4 @@
-import { AtomicSignal, InputEventMap, InputSignal } from './types';
+import { InputEventMap } from '../../../types';
 
 /**
  * 基础事件映射，包含与输入设备形态无关的事件

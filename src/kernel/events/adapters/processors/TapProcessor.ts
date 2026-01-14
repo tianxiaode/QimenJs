@@ -3,13 +3,12 @@
  * @description
  * TapProcessor 是处理点击手势的处理器类。它继承自GestureProcessor，
  * 用于检测简单的点击操作，通过验证点击持续时间和移动距离来判断是否构成有效点击。
- * 
+ *
  * 该处理器记录按下和释放事件，验证持续时间和移动距离是否在约束范围内。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit } from './types';
 import { validateTap } from '../utils/validation';
 
 /**
@@ -46,14 +45,14 @@ export class TapProcessor extends GestureProcessor<'tap'> {
                 // 计算持续时间和移动距离
                 const duration = this.duration();
                 const distance = this.distance();
-                
+
                 // 获取约束参数或使用默认值
-                const maxDistance = this.constraints?.maxDistance ?? 10;   // 默认最大移动距离10px
-                const maxDuration = this.constraints?.maxDuration ?? 250;  // 默认最大持续时间250ms
-                
+                const maxDistance = this.constraints?.maxDistance ?? 10; // 默认最大移动距离10px
+                const maxDuration = this.constraints?.maxDuration ?? 250; // 默认最大持续时间250ms
+
                 // 验证点击是否有效
                 const isValid = validateTap(duration, distance, maxDuration, maxDistance);
-                
+
                 if (this.active && isValid) {
                     // 有效点击，触发手势事件
                     this.emitGesture(input.originalEvent);
@@ -62,7 +61,7 @@ export class TapProcessor extends GestureProcessor<'tap'> {
                 // 结束手势处理
                 this.end();
             },
-            cancel: () => this.reset(),  // 取消时重置状态
+            cancel: () => this.reset(), // 取消时重置状态
         };
     }
 }

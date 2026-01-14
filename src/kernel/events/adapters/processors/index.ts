@@ -10,9 +10,6 @@
 // 导出工厂函数
 export * from './factory';
 
-// 导出类型定义
-export * from './types';
-
 // 导出手势处理器基类
 export * from './GestureProcessor';
 

@@ -1,5 +1,3 @@
-import { BindOptions } from '../base';
-import { EventScope } from '../../core';
 import { detectInputCapabilities } from '@orbitjs/runtime-env';
 import {
     AtomicSignal,
@@ -8,8 +6,11 @@ import {
     InputEventBinding,
     InputEventMap,
     InputSignal,
-} from '../semantic-map';
-import { createGestureProcessor, GestureInput } from '../processors';
+    GestureInput,
+    BindOptions,
+    IEventScope,
+} from '../../../types';
+import { createGestureProcessor } from '../processors';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
 
@@ -63,7 +64,7 @@ export class DomEventAdapter {
     bind(
         target: EventTarget,
         semantic: GestureSemantic,
-        scope: EventScope,
+        scope: IEventScope,
         options?: BindOptions,
         source?: any
     ): () => void {
@@ -132,7 +133,7 @@ export class DomEventAdapter {
         target: EventTarget,
         signals: readonly InputSignal[],
         onInput: (input: GestureInput) => void,
-        scope: EventScope,
+        scope: IEventScope,
         options?: BindOptions,
         unbindFunctions?: (() => void)[] // 新增参数
     ) {

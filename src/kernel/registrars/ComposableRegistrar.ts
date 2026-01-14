@@ -1,5 +1,5 @@
 import { RegistrarBase } from '@orbitjs/registry';
-import { ComposableEntry, IComposable } from '../types';
+import { ComposableEntry } from '../types';
 
 export const ComposableRegistrarName = 'composable' as const;
 

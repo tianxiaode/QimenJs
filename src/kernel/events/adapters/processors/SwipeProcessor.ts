@@ -3,13 +3,12 @@
  * @description
  * SwipeProcessor 是处理滑动手势的处理器类。它继承自GestureProcessor，
  * 用于检测快速滑动手势，通过计算移动距离、时间和速度来判断是否构成有效滑动。
- * 
+ *
  * 该处理器记录按下和移动事件，在释放时验证滑动是否满足最小距离、最大持续时间和最小速度的约束。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit } from './types';
 import { validateSwipe } from '../utils/validation';
 
 /**
@@ -46,22 +45,16 @@ export class SwipeProcessor extends GestureProcessor<'swipe'> {
                 if (!this.active) return;
 
                 // 获取约束参数或使用默认值
-                const minDistance = this.constraints?.minDistance ?? 30;    // 默认最小距离30px
-                const maxDuration = this.constraints?.maxDuration ?? 1000;  // 默认最大持续时间1000ms
-                const minVelocity = this.constraints?.minVelocity ?? 0.5;   // 默认最小速度0.5px/ms
+                const minDistance = this.constraints?.minDistance ?? 30; // 默认最小距离30px
+                const maxDuration = this.constraints?.maxDuration ?? 1000; // 默认最大持续时间1000ms
+                const minVelocity = this.constraints?.minVelocity ?? 0.5; // 默认最小速度0.5px/ms
 
                 // 计算实际持续时间和移动距离
                 const duration = this.duration();
                 const distance = this.distance();
 
                 // 验证滑动是否满足条件
-                if (validateSwipe(
-                    distance,
-                    duration,
-                    minDistance,
-                    maxDuration,
-                    minVelocity
-                )) {
+                if (validateSwipe(distance, duration, minDistance, maxDuration, minVelocity)) {
                     // 满足条件，触发滑动手势事件
                     this.emitGesture(input.originalEvent);
                 }
@@ -71,9 +64,9 @@ export class SwipeProcessor extends GestureProcessor<'swipe'> {
                     distance,
                     minDistance,
                     maxDuration,
-                    minVelocity
+                    minVelocity,
                 });
-                    
+
                 // 重置手势状态
                 this.reset();
             },

@@ -1,4 +1,5 @@
-import { BindOptions, createEventAdapter, GestureSemantic } from '../adapters';
+import { BindOptions, GestureSemantic } from '../../types';
+import { createEventAdapter } from '../adapters';
 
 /**
  * WithEventsPublic 接口定义了混入事件功能后类的公共API
@@ -36,7 +37,7 @@ export interface WithDomEventsPublic {
  * 这样 WithDomEvents 才能安全地访问 this.eventScope
  */
 
-export function WithDomEvents(Base: any){
+export function WithDomEvents(Base: any) {
     return class extends Base {
         private _adapter: any | undefined;
 

@@ -3,14 +3,13 @@
  * @description
  * LongPressProcessor 是处理长按手势的处理器类。它继承自GestureProcessor，
  * 通过计时器检测按下持续时间是否超过最小阈值，并验证在此期间移动距离是否在允许范围内。
- * 
+ *
  * 该处理器在按下时启动计时器，在移动过程中检查移动距离，若超过范围则取消长按，
  * 在释放或取消时清理计时器。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit, GestureInput } from './types';
 import { validateLongPress } from '../utils/validation';
 import { time } from '@orbitjs/utils';
 
@@ -37,10 +36,10 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
 
         // 定义长按事件处理器
         this.handlers = {
-            press: this.onPress,      // 按下时启动计时器
-            move: this.onMove,        // 移动时检查是否超出距离限制
-            release: this.cancel,     // 释放时取消计时器
-            cancel: this.cancel,      // 取消时清理状态
+            press: this.onPress, // 按下时启动计时器
+            move: this.onMove, // 移动时检查是否超出距离限制
+            release: this.cancel, // 释放时取消计时器
+            cancel: this.cancel, // 取消时清理状态
         };
     }
 
@@ -53,7 +52,7 @@ export class LongPressProcessor extends GestureProcessor<'longpress'> {
 
         // 获取最小持续时间和最大移动距离（约束或默认值）
         const minDuration = this.constraints?.minDuration ?? 500; // 默认500ms
-        const maxDistance = this.constraints?.maxDistance ?? 10;  // 默认10px
+        const maxDistance = this.constraints?.maxDistance ?? 10; // 默认10px
 
         // 设置计时器，在指定时间后检查是否满足长按条件
         this.timer = time.after(minDuration, () => {

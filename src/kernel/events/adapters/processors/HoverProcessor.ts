@@ -3,13 +3,12 @@
  * @description
  * HoverProcessor 是处理悬停手势的处理器类。它继承自GestureProcessor，
  * 用于处理鼠标进入和离开元素的事件。
- * 
+ *
  * 该处理器通过监听enter和leave事件来触发悬停语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit } from './types';
 
 /**
  * HoverProcessor类

@@ -1,4 +1,4 @@
-import { ILogger } from "@/logger";
+import { ILogger } from "@orbitjs/logger";
 import { GestureSemantic } from "../events";
 
 export interface ILoggerAbility {

@@ -3,13 +3,12 @@
  * @description
  * SubmitProcessor 是处理提交事件的处理器类。它继承自GestureProcessor，
  * 用于处理表单提交或其他提交操作的事件。
- * 
+ *
  * 该处理器监听submit信号并触发相应的语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit } from './types';
 
 /**
  * SubmitProcessor类

@@ -3,13 +3,12 @@
  * @description
  * ContextMenuProcessor 是处理上下文菜单事件的处理器类。它继承自GestureProcessor，
  * 主要用于处理右键点击或键盘上下文菜单键触发的事件。支持鼠标右键和键盘事件（如上下文菜单键或Shift+F10）。
- * 
+ *
  * 该处理器检查鼠标按钮状态或特定键盘按键，以触发上下文菜单语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit } from './types';
 
 /**
  * ContextMenuProcessor类

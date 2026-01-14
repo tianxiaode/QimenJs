@@ -1,4 +1,4 @@
-import { BusAction, EventHandler, EventLogAction, IEventContext } from './types';
+import { BusAction, EventHandler, EventLogAction, IEventContext, IEventScope } from '../../types';
 import { EventScope } from './EventScope';
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
@@ -110,7 +110,7 @@ export class EventBus {
      *
      * @returns 返回一个EventScope实例
      */
-    createScope(): EventScope {
+    createScope(): IEventScope {
         return new EventScope(this, this.logger);
     }
 

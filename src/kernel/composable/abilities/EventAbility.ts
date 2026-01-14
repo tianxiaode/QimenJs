@@ -1,8 +1,9 @@
-import { EventHandler, EventScope, globalEventBus } from '../../events';
+import { EventHandler, IEventScope } from '@/kernel/types';
+import {  globalEventBus } from '../../events';
 import { AbilityBase } from './AbilityBase';
 
 export class EventAbility extends AbilityBase {
-    private _eventScope?: EventScope;
+    private _eventScope?: IEventScope;
 
     protected onAttach(): void {
         const scope = globalEventBus.createEventScope();

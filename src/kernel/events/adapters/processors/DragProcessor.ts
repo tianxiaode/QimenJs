@@ -3,14 +3,13 @@
  * @description
  * DragProcessor 是处理拖拽手势的处理器类。它继承自GestureProcessor，
  * 用于处理拖拽开始、移动、结束和取消等阶段事件。
- * 
+ *
  * 该处理器跟踪鼠标/触摸的按下、移动和释放事件，当移动距离超过最小阈值时，
  * 触发拖拽开始事件，并在移动过程中持续发送拖拽移动事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit, GestureInput } from './types';
 
 /**
  * DragProcessor类
@@ -49,7 +48,7 @@ export class DragProcessor extends GestureProcessor {
     private onPress = (input: GestureInput) => {
         this.start(input);
         this.dragging = false;
-        
+
         this.logProcessor('debug', 'drag_start', {
             startX: this.startX,
             startY: this.startY,
@@ -77,7 +76,7 @@ export class DragProcessor extends GestureProcessor {
                     phase: 'start',
                     originalEvent: input.originalEvent,
                 });
-                
+
                 this.logProcessor('debug', 'drag_begin', {
                     distance: this.distance(),
                     minDistance,
@@ -94,7 +93,7 @@ export class DragProcessor extends GestureProcessor {
             dy: this.lastY - this.startY,
             originalEvent: input.originalEvent,
         });
-        
+
         this.logProcessor('debug', 'drag_move', {
             dx: this.lastX - this.startX,
             dy: this.lastY - this.startY,
@@ -114,7 +113,7 @@ export class DragProcessor extends GestureProcessor {
                 phase: 'end',
                 originalEvent: input.originalEvent,
             });
-            
+
             this.logProcessor('debug', 'drag_end', {
                 totalDistance: this.distance(),
             });
@@ -133,7 +132,7 @@ export class DragProcessor extends GestureProcessor {
                 semantic: this.semantic,
                 phase: 'cancel',
             });
-            
+
             this.logProcessor('debug', 'drag_cancel', {
                 totalDistance: this.distance(),
             });

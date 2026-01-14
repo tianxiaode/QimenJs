@@ -7,8 +7,13 @@
  * 该基类还提供了日志记录功能，方便调试和监控手势处理过程。
  */
 
-import { GestureEventDescriptor, GestureSemantic, InputSignal } from '../semantic-map';
-import { GestureEmit, GestureInput } from './types';
+import {
+    GestureEventDescriptor,
+    GestureSemantic,
+    InputSignal,
+    GestureEmit,
+    GestureInput,
+} from '../../../types';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string, geometry } from '@orbitjs/utils';
 

@@ -3,14 +3,13 @@
  * @description
  * DoubleTapProcessor 是处理双击手势的处理器类。它继承自GestureProcessor，
  * 通过记录两次点击的时间和位置来判断是否构成双击事件。
- * 
+ *
  * 该处理器验证两次点击之间的时间间隔和位置距离是否在约束范围内，
  * 以确定是否触发双击语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic } from '../semantic-map';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../types';
 import { GestureProcessor } from './GestureProcessor';
-import { GestureEmit, GestureInput } from './types';
 import { validateDoubleTap } from '../utils/validation';
 
 /**
