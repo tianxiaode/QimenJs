@@ -1,5 +1,6 @@
 import {
     ENTITY_ACTION,
+    FieldDefinition,
     FlowContext,
     ICollectionState,
     IEntityManagerBase,
@@ -76,6 +77,9 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
             domain: this.domain,
         };
 
+        const schema = this.getScheme();
+        const idKey = schema.idKey as string;
+
         // 2. 自动化策略：根据 Action 拼装数据
         switch (action) {
             case 'list':
@@ -85,12 +89,19 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
             case 'get':
             case 'delete':
                 // 约定：对于 get/delete，payload 通常就是 id 本身
-                options.params = typeof payload === 'object' ? { id: payload.id } : payload;
+                if (typeof payload === 'object') {
+                    options.params = { [idKey]: payload[idKey] || payload.id };
+                } else {
+                    options.params = { [idKey]: payload };
+                }
                 break;
 
             case 'create':
             case 'update':
             case 'toggle':
+                if(payload && typeof payload === 'object'){
+                    payload = this.applyMappingToBackend(payload, schema.fields);
+                }
                 // 约定：这些 action 的 payload 就是 body
                 options.body = payload;
                 break;
@@ -114,6 +125,22 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         return await this.onBeforeFetch(action, options);
     }
 
+    private applyMappingToBackend(data: any, fields: FieldDefinition[] = []) {
+        const result: any = { ...data };
+
+        fields.forEach(field => {
+            // 如果定义了 mapping，且 mapping 不等于 name
+            if (field.mapping && field.mapping !== field.name) {
+                if (field.name in data) {
+                    result[field.mapping] = data[field.name];
+                    delete result[field.name]; // 移除前端命名的字段，对齐后端
+                }
+            }
+        });
+
+        return result;
+    }
+
     protected async onBeforeFetch(action: string, options: RequestOptions) {
         return options;
     }
@@ -132,4 +159,3 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         super.dispose();
     }
 }
-

@@ -27,6 +27,7 @@ export interface BaseField {
     source?: string;
     defaultValue?: any;
     readonly?: boolean;
+    mapping?: string;
     rules?: ValidationRule | ValidationRule[];
 }
 

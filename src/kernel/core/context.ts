@@ -11,12 +11,11 @@ export const createFlowContext = (
     action?: ENTITY_ACTION,
     schema?: Schema
 ): FlowContext => {
-
     return {
         domain,
         entityName,
         action: action,
-        config:domainConfig,
+        config: domainConfig,
         isAborted: false,
         error: null,
         params: requestOptions.params,
@@ -70,5 +69,31 @@ export const createFlowContext = (
 
         // 埋点记录
         steps: [],
+
+        alignToFrontend: (target: any) => {
+            if (!schema || !target) return target;
+            return applySchemaMapping(target, schema);
+        },
     };
 };
+
+function applySchemaMapping(data: any, schema: Schema): any {
+    if (Array.isArray(data)) {
+        return data.map(item => applySchemaMapping(item, schema));
+    }
+
+    const fields = schema.fields || [];
+    const result = { ...data };
+
+    fields.forEach(field => {
+        const frontKey = field.name;
+        const backKey = field.mapping || field.name;
+
+        if (backKey in data && backKey !== frontKey) {
+            result[frontKey] = data[backKey];
+            delete result[backKey];
+        }
+    });
+
+    return result;
+}

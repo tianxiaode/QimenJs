@@ -95,6 +95,7 @@ export interface FlowContext {
     };
 
      steps: ExecutionStep[]; 
+     alignToFrontend(target: any): any; // 对齐到前端数据结构
 }
 
 
