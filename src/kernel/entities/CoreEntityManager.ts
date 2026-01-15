@@ -126,7 +126,8 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
 
         // 3. 释放大对象引用，协助 GC
         this.activeTasks.clear();
-        (this as any).customActions = [];
+        this.schema = undefined;
+        this.customActions = [];
 
         this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
     }

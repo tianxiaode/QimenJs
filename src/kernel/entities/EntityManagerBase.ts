@@ -1,6 +1,5 @@
 import {
     ENTITY_ACTION,
-    EventHandler,
     FlowContext,
     ICollectionState,
     IEntityManagerBase,
@@ -128,7 +127,6 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         // 2. 如果你有 Ability 系统，应该在这里释放它们
         // 因为 Abilities 是挂载在当前 host 上的
         this.disposeAbilities?.();
-        this.schema = null as any;
         // 3. 最后调用父类的销毁
         // CoreEntityManager 可能负责切断网络连接、销毁全局事件监听等
         super.dispose();
