@@ -60,6 +60,9 @@ export class LocalListAbility extends AbilityBase<IEntityManagerBase> {
         const state = host.state;
         let result = [...state.getSource()];
 
+        const behavior = (host as any).getBehavior?.() || {};
+        const keys = (host as any).getKeys?.() || { id: 'id' };
+
         // 1. 搜索 (优先检查是否有自定义 localSearch)
         if (Object.keys(state.criteria).length > 0) {
             result = host.localSearch
@@ -69,16 +72,19 @@ export class LocalListAbility extends AbilityBase<IEntityManagerBase> {
 
         // 2. 过滤
         if (state.filter) {
+            const filterKeys = behavior.filters || [];
             result = host.localFilter
                 ? host.localFilter(state.filter, result)
-                : this.defaultFilter(state.filter, result);
+                : this.defaultFilter(state.filter, result, filterKeys);
         }
 
         // 3. 排序 (利用你之前的 array.sortBy 或内置逻辑)
         if (state.sortBy && state.sortOrder) {
+            const sortBy = state.sortBy || behavior.sort?.prop || keys.id;
+            const sortOrder = state.sortOrder || behavior.sort?.order || 'desc';
             result = host.localSort
-                ? host.localSort(state.sortBy, state.sortOrder, result)
-                : this.defaultSort(result, state.sortBy, state.sortOrder);
+                ? host.localSort(sortBy, sortOrder, result)
+                : this.defaultSort(result, sortBy, sortOrder);
         }
 
         // 4. 更新视图 (不分页，直接全量)
@@ -96,24 +102,52 @@ export class LocalListAbility extends AbilityBase<IEntityManagerBase> {
 
     // ... 保留你的 defaultFilter, defaultSearch ...
     private defaultSort(records: any[], key: string, order: string) {
+        // 提前获取语言环境（可以从 SystemAbility 获取，或者默认 'zh-CN'）
+        const locale = (this.host as any).getSystemValue?.('locale') || 'zh-CN';
+
         return [...records].sort((a, b) => {
             const v1 = a[key];
             const v2 = b[key];
-            return order === 'desc' ? (v2 > v1 ? 1 : -1) : v1 > v2 ? 1 : -1;
+
+            // 1. 处理相等或空值情况
+            if (v1 === v2) return 0;
+            if (v1 === null || v1 === undefined) return 1;
+            if (v2 === null || v2 === undefined) return -1;
+
+            let res = 0;
+
+            // 2. 根据类型选择比较方式
+            if (typeof v1 === 'string' && typeof v2 === 'string') {
+                // 使用 localeCompare 处理多语言字符串（支持拼音排序）
+                // numeric: true 确保 "2" < "10"
+                res = v1.localeCompare(v2, locale, { numeric: true, sensitivity: 'accent' });
+            } else {
+                // 数值或其他类型保持原始比较
+                res = v1 > v2 ? 1 : -1;
+            }
+
+            return order === 'desc' ? -res : res;
         });
     }
 
     /**
      * 默认模糊过滤：在所有字符串字段中查找
      */
-    private defaultFilter<T>(text: string, records: T[]): T[] {
+    private defaultFilter<T>(text: string, records: T[], limitKeys: string[]): T[] {
         const query = text.toLowerCase().trim();
         if (!query) return records;
 
         return records.filter(item => {
-            // 简单的深度遍历或转 JSON 匹配，适合小规模本地数据
-            return Object.values(item as any).some(val =>
-                String(val).toLowerCase().includes(query)
+            // 如果有 limitKeys，只遍历指定键；否则全量遍历
+            const targetValues =
+                limitKeys.length > 0
+                    ? limitKeys.map(k => (item as any)[k])
+                    : Object.values(item as any);
+
+            return targetValues.some(val =>
+                String(val ?? '')
+                    .toLowerCase()
+                    .includes(query)
             );
         });
     }

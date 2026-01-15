@@ -1,24 +1,26 @@
-import { Registry } from '@orbitjs/registry';
-import { ENTITY_ACTION, FlowContext, HttpMethod, RequestOptions } from '../types';
+import { DomainConfig } from '@orbitjs/registry';
+import { ENTITY_ACTION, FlowContext, HttpMethod, RequestOptions, Schema } from '../types';
 
 export const createFlowContext = (
     method: HttpMethod,
     url: string,
     domain: string,
-    entityName: string,
-    action: ENTITY_ACTION,
+    domainConfig: DomainConfig,
     requestOptions: RequestOptions,
+    entityName?: string,
+    action?: ENTITY_ACTION,
+    schema?: Schema
 ): FlowContext => {
-    const config = Registry.domain.get(domain);
 
     return {
         domain,
         entityName,
         action: action,
-        config,
+        config:domainConfig,
         isAborted: false,
         error: null,
         params: requestOptions.params,
+        schema,
         // 信号灯与元数据
         metadata: {
             isTransportFailure: false,

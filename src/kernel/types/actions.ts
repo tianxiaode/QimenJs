@@ -1,6 +1,7 @@
 import { DomainConfig } from '@orbitjs/registry';
-import { ActionCategory, ENTITY_ACTION } from './base'; // 或根据你实际路径
+import { ENTITY_ACTION } from './base'; // 或根据你实际路径
 import { HttpMethod, HttpResponseType } from './http';
+import { Schema } from './entities';
 
 
 export type ActionHandler = (ctx: FlowContext) => Promise<void>;
@@ -15,8 +16,8 @@ export interface ExecutionStep {
 export interface FlowContext {
     // --- 1. 标识 (Identity) ---
     readonly domain: string;
-    readonly entityName: string;
-    readonly action: ENTITY_ACTION;
+    readonly entityName?: string;
+    readonly action?: ENTITY_ACTION;
 
     // --- 2. 配置 (Config) ---
     config: DomainConfig;
@@ -24,6 +25,7 @@ export interface FlowContext {
     // --- 3. 数据载体 (Payload) ---
     params: any;
     error: any | null;
+    schema?: Schema
 
     // --- 4. 状态与控制 (Flow Control) ---
     isAborted: boolean;

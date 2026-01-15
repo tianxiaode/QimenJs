@@ -6,14 +6,16 @@ import { RequestOptions } from '../http';
 import { IComposableBase } from '../composable';
 
 export interface ICoreEntityManager extends IComposableBase {
-    env: EnvType;
     domain: string;
     request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask;
     cancelAll(): void;
+    emit(event: string, data: any): void;
+    [key: string]: any;
 }
 
 export interface ICollectionState<T = any, TC = Record<string, any>> {
     items: T[];
+    item: T  | null;
     total: number;
     pageIndex: number;
     pageSize: number;
@@ -44,6 +46,4 @@ export interface IEntityManagerBase<T = any, TC = Record<string, any>> extends I
         options: RequestOptions,
         updater?: (data: any) => void
     ): Promise<FlowContext>;
-    emit(event: string, data: any): void;
-    [key: string]: any;
 }

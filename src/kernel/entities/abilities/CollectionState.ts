@@ -1,11 +1,12 @@
 import { ICollectionState } from "../../types";
 import { ILogger } from "@orbitjs/logger";
-import { DomainRegistrar, EnvType } from '@orbitjs/registry';
+import { DomainConfig, DomainRegistrar, EnvType } from '@orbitjs/registry';
 
 export class CollectionState<T, TCriteria = Record<string, any>> implements ICollectionState {
     // 1. 数据状态
     private _sourceItems: T[] | null = null;
     public items: T[] = [];
+    public item: T | null = null;
     public total: number = 0;
 
     // 2. 分页状态
@@ -28,34 +29,16 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
     public sortOrder: 'asc' | 'desc' | null = null; // 排序方向
 
     constructor(
-        private domain: string,
-        private logger: ILogger,
-        private env: EnvType,
+        domain: DomainConfig,
         pageSize?: number,
-        pageSizes?: number[],
         private useLocalSearch: boolean = false
     ) {
         if (this.useLocalSearch) {
             this._sourceItems = []; // 初始化本地仓库
         }
 
-        const domainConfig = DomainRegistrar.getInstance().get(this.domain);
-        const finalSizes = pageSizes ?? domainConfig?.pagesizes ?? [10, 20, 50];
-        const finalSize = pageSize ?? domainConfig.pageSize ?? finalSizes[0];
-
-        // 2. 核心调试逻辑：如果出错了，直接在控制台报错或抛出异常
-        if (!finalSizes.includes(finalSize)) {
-            const errorMsg =
-                `[Entity Error]: Domain "${this.domain}" configuration mismatch. ` +
-                `Current pageSize (${finalSize}) is not present in options [${finalSizes.join(', ')}].`;
-
-            // 开发环境直接抛错，生产环境可以降级处理
-            if (this.env === 'development') {
-                throw new Error(errorMsg);
-            } else {
-                this.logger.error(errorMsg);
-            }
-        }
+        const finalSizes = domain?.pagesizes ?? [10, 20, 50];
+        const finalSize = pageSize ?? domain.pageSize ?? finalSizes[0];
 
         // 3. 赋值
         this.pageSizes = finalSizes;

@@ -7,7 +7,6 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
     public readonly name = ComposableRegistrarName;
     protected storage = new Map<string, ComposableEntry>();
     private _mroCache = new Map<string, string[]>();
-    private _classResolvedCache = new Map<Function, ComposableEntry[]>();
 
     register(entry: ComposableEntry): void {
         this.checkLock();
@@ -16,7 +15,6 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         }
         this.storage.set(entry.name, entry);
         this._mroCache.clear();
-        this._classResolvedCache.clear();
     }
 
     unregister(name: string): void {
@@ -40,11 +38,7 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         return entry;
     }
 
-    public getRecursive(names: string[], ctor?: Function): ComposableEntry[] {
-        // 1. 如果有 ctor 且命中了类级缓存，直接秒回
-        if (ctor && this._classResolvedCache.has(ctor)) {
-            return this._classResolvedCache.get(ctor)!;
-        }
+    public getRecursive(names: string[]): ComposableEntry[] {
 
         // 2. 否则进行正常的合并计算
         const finalSet = new Set<string>();
@@ -55,13 +49,9 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
 
         const entries = Array.from(finalSet).map(k => this.storage.get(k)!);
 
-        // 3. 如果传入了 ctor，存入类级缓存
-        if (ctor) {
-            this._classResolvedCache.set(ctor, entries);
-        }
-
         return entries;
     }
+    
     private getOrComputeMRO(name: string, stack = new Set<string>()): string[] {
         // 缓存命中
         if (this._mroCache.has(name)) return this._mroCache.get(name)!;
@@ -96,13 +86,6 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         return sequence;
     }
 
-    hasClassCache(ctor: Function){
-        return this._classResolvedCache.has(ctor);
-    }
-
-    getClassCache(ctor: Function){
-        return this._classResolvedCache.get(ctor) || [];
-    }
 
     protected doInspect(): void {
         console.group(`[Registrar Inspection] : ${this.name}`);

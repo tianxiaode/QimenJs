@@ -1,9 +1,9 @@
-import { IComposable } from "../../types";
+import { IComposable, IComposableBase } from "../../types";
 
 /**
  * Ability 抽象基类：封装通用的宿主管理逻辑
  */
-export abstract class AbilityBase<T = any> implements IComposable {
+export abstract class AbilityBase<T extends IComposableBase> implements IComposable {
     protected host: T = null as any;
 
     public attach(host: T): void {

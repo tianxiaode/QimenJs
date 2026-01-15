@@ -64,7 +64,7 @@ export interface RequestOptions extends Partial<HttpOptions> {
      * 请求域，需要在域注册器注册
      */
     domain?: 'default' | string;
-
+   
     /**
      * 请求体数据
      */

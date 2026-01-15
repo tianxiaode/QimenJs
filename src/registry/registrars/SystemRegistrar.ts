@@ -36,7 +36,7 @@ export class SystemRegistrar extends RegistrarBase<Partial<SystemConfig>> {
             (this.storage as any)[keyOrObj] = value;
         }
     }
-    
+
     /**
      * 批量合并注册配置
      * 场景：SystemRegistrar.registerAll({ locale: 'en-US', theme: 'light' })
@@ -56,6 +56,10 @@ export class SystemRegistrar extends RegistrarBase<Partial<SystemConfig>> {
 
     get(key: keyof SystemConfig): any {
         return this.storage[key];
+    }
+
+    public getAll(): Partial<SystemConfig> {
+        return this.storage;
     }
 
     protected doInspect(): void {

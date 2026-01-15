@@ -8,26 +8,29 @@ import {
     FlowContext,
     RequestOptions,
     ICoreEntityManager,
+    Schema,
+    DomainAbilityName,
+    SystemConfigAbilityName,
+    EventHandler,
+    SechmaAbilityName,
 } from '../types';
-import { EnvType, SystemRegistrar } from '@orbitjs/registry';
+import { DomainConfig, SystemConfig } from '@orbitjs/registry';
 import { Ability, ComposableBase } from '../composable';
+import { ValidationRule } from '@orbitjs/validation';
 
-@Ability(EventAbilityName)
+@Ability(EventAbilityName, DomainAbilityName, SystemConfigAbilityName, SechmaAbilityName)
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
     domain: string = 'default';
-    abstract entityName: string;
     abstract customActions: ActionEntry[];
-    abstract preset: string;
-    abstract schema: any;
+    abstract entityName: string;
     abstract url: string;
-    env: EnvType;
+    abstract schema?: Schema;
 
     // 存储当前正在进行的任务：Action -> AbortController
     protected activeTasks = new Map<ENTITY_ACTION, AbortController>();
 
     constructor() {
         super();
-        this.env = SystemRegistrar.getInstance().get('env') || 'production';
     }
 
     request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask {
@@ -43,19 +46,43 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
         this.activeTasks.set(action, controller);
 
         // 2. 构建上下文
-        const context = createFlowContext('GET', this.url, this.domain, this.entityName, action, {
-            ...options,
-            signal: controller.signal,
-        });
+        const context = createFlowContext(
+            'GET',
+            this.url,
+            this.domain,
+            this.getDomainConfig(),
+            {
+                ...options,
+                signal: controller.signal,
+            },
+            this.entityName,
+            action,
+            this.getScheme()
+        );
 
         // 3. 定义异步执行体
         const execute = async (): Promise<FlowContext> => {
             const startTime = Date.now();
             try {
                 this.logger.debug(`Executing Action [${action}] for Entity [${this.entityName}]`);
-                const BaseActions = EntityActionRegistrar.getInstance().getPipeline();
-                const allActions = [...BaseActions, ...this.customActions];
+
+                // 1. 尝试从类级缓存获取已合并的管道
+                const CACHE_KEY = '__ACTION_PIPELINE__';
+                let allActions = this.getStatic<any[]>(CACHE_KEY);
+
+                // 2. 如果没有缓存（第一次执行），则进行合并并存入缓存
+                if (!allActions) {
+                    const baseActions = EntityActionRegistrar.getInstance().getPipeline();
+                    // 假设 customActions 是定义在类上的静态属性或通过构造传入的固定列表
+                    allActions = [...baseActions, ...(this.customActions || [])];
+
+                    this.setStatic(CACHE_KEY, allActions);
+                    this.logger.debug(`Pipeline cached for Entity [${this.entityName}]`);
+                }
+
+                // 3. 直接使用缓存的管道执行
                 await runPipeline(context, allActions);
+
                 if (context.metadata.hasError) {
                     this.logger.error(`Action [${action}] failed:`, context.metadata.error);
                 } else {
@@ -64,11 +91,9 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
                 }
                 return context;
             } catch (e) {
-                // 这里的 catch 捕获的是管道崩溃（代码 Bug）
                 this.logger.error(`Pipeline Crash in Action [${action}]!`, e);
                 throw e;
             } finally {
-                // 清理任务引用
                 if (this.activeTasks.get(action) === controller) {
                     this.activeTasks.delete(action);
                 }
@@ -105,4 +130,17 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
 
         this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
     }
+}
+
+export interface CoreEntityManager<T = any, TC = Record<string, any>> {
+    emit(event: string, data: any):void;
+    on(event: string, handler: EventHandler): () => void;
+    once(event: string, handler: EventHandler) :void;
+    getDomainConfig(): DomainConfig;
+    getSystemConfig(): Partial<SystemConfig>;
+    getSystemValue(): any;
+    getScheme(): Schema;
+    getRules():Record<string, ValidationRule[] | ValidationRule>;
+    getKeys(): Record<string, string>;
+    getBehavior(): Record<string, any>;
 }

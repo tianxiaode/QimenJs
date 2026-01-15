@@ -3,8 +3,10 @@ import {
     DateRule,
     FormatRule,
     NumberRule,
+    PasswordRule,
     SplitRule,
     StringRule,
+    ValidationRule,
 } from '@orbitjs/validation';
 
 /**
@@ -25,10 +27,12 @@ export interface BaseField {
     source?: string;
     defaultValue?: any;
     readonly?: boolean;
+    rules?: ValidationRule | ValidationRule[];
 }
 
 export type FieldDefinition =
     | (BaseField & (StringRule | FormatRule | SplitRule)) // 字符串及变体
+    | (BaseField & PasswordRule) // 字符串及变体
     | (BaseField & NumberRule) // 数字
     | (BaseField & DateRule) // 日期
     | (BaseField & BooleanRule) // 布尔
@@ -63,6 +67,12 @@ export interface Schema {
         sort?: { prop: string; order: 'asc' | 'desc' }; 
         filters?: string[];
     };
+    rules?: Record<string, ValidationRule[] | ValidationRule>;
 }
 
-export type RegistrSchema = Omit<Schema, 'extends' |'mixins' | 'override' | 'fileds'>;
+export type RegistrSchema = Omit<Schema, 'extends' |'mixins' | 'override' | 'fileds' | 'rules'>;
+
+export interface SchemaCache {
+    schema: Schema;
+    rules: Record<string, ValidationRule[]>;
+}

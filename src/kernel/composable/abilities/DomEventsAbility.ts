@@ -1,8 +1,8 @@
-import { BindOptions, GestureSemantic, IEventAdapter } from '../../types';
+import { BindOptions, GestureSemantic, IComposableBase, IEventAdapter } from '../../types';
 import { createEventAdapter } from '../../events';
 import { AbilityBase } from './AbilityBase';
 
-export class DomEventsAbility extends AbilityBase {
+export class DomEventsAbility<T extends IComposableBase> extends AbilityBase<T> {
     // 1. 定义为可选 (使用 ?)
     private _adapter?: IEventAdapter<any>;
 
@@ -14,20 +14,18 @@ export class DomEventsAbility extends AbilityBase {
     }
 
     protected onAttach(): void {
-        this.host.bind = (
-            target: EventTarget,
-            semantic: GestureSemantic,
-            options?: BindOptions
-        ) => {
-            const scope = this.host.eventScope;
+        Object.assign(this.host, {
+            bind: (target: EventTarget, semantic: GestureSemantic, options?: BindOptions) => {
+                const scope = this.host.eventScope;
 
-            // 2. 使用可选链调用，确保安全
-            return this.getAdapter().bind(target, semantic, scope, options, this.host);
-        };
+                // 2. 使用可选链调用，确保安全
+                return this.getAdapter().bind(target, semantic, scope, options, this.host);
+            },
+        });
     }
 
     protected onDispose(): void {
-        this.host.bind = null;
+        (this.host as any).bind = null;
         this._adapter = undefined;
     }
 }

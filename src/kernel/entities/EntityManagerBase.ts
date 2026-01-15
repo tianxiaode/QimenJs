@@ -1,5 +1,6 @@
 import {
     ENTITY_ACTION,
+    EventHandler,
     FlowContext,
     ICollectionState,
     IEntityManagerBase,
@@ -23,16 +24,15 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         records: T[]
     ) => T[];
     protected primaryAction: string = 'list';
+    protected _pageSize?: number;
     [key: string]: any;
 
-    constructor(pageSize?: number, pageSizes?: number[]) {
+    constructor(pageSize?: number) {
         super();
+        this._pageSize = pageSize ?? this.pageSize;
         this.state = new CollectionState(
-            this.domain,
-            this.logger,
-            this.env,
+            this.getDomainConfig(),
             pageSize,
-            pageSizes,
             this.useLocalSearch
         ) as unknown as ICollectionState<T, TC>;
     }
@@ -43,7 +43,7 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         updater?: (data: any) => void
     ): Promise<FlowContext> {
         // 1. 参数自动对齐
-        const alignedOptions = this.alignRequestOptions(action, options);
+        const alignedOptions = await this.alignRequestOptions(action, options);
 
         // 2. 生命周期开始
         this.state.loading = true;
@@ -71,36 +71,52 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
     /**
      * 根据操作类型，自动对齐/组装请求参数
      */
-    protected alignRequestOptions(
-        action: ENTITY_ACTION | string,
-        extraOptions?: RequestOptions
-    ): RequestOptions {
-        const baseOptions: RequestOptions = { ...extraOptions };
-        const params: Record<string, any> = { ...(extraOptions?.params || {}) };
+    protected async alignRequestOptions(action: string, payload: any): Promise<RequestOptions> {
+        // 1. 初始化标准结构
+        const options: RequestOptions = {
+            domain: this.domain,
+        };
 
+        // 2. 自动化策略：根据 Action 拼装数据
         switch (action) {
             case 'list':
-                // 列表操作：强制注入分页、搜索、排序状态
-                baseOptions.params = {
-                    ...this.state.toParams(),
-                    ...params,
-                };
-                break;
-
-            case 'getall':
-                // 全量操作：注入不分页标记
-                baseOptions.params = {
-                    __pagination: false,
-                    ...params,
-                };
+                options.params = { ...this.state.toParams(), ...payload };
                 break;
 
             case 'get':
-                // 详情操作：通常参数已经在 extraOptions.params 里了，这里做兜底检查
+            case 'delete':
+                // 约定：对于 get/delete，payload 通常就是 id 本身
+                options.params = typeof payload === 'object' ? { id: payload.id } : payload;
                 break;
+
+            case 'create':
+            case 'update':
+            case 'toggle':
+                // 约定：这些 action 的 payload 就是 body
+                options.body = payload;
+                break;
+
+            case 'batchDelete':
+                // 约定：批量删除传 ids 数组
+                options.body = { ids: Array.isArray(payload) ? payload : [payload] };
+                break;
+
+            case 'getall':
+                options.params = { __pagination: false, ...payload };
+                break;
+
+            default:
+                // 自定义 action，直接透传给 params 或 body
+                options.params = payload;
         }
 
-        return baseOptions;
+        // 3. 唯一的出口：钩子覆写
+        // 所有的特殊逻辑（比如加 Header、改 URL 格式）全部在钩子里处理
+        return await this.onBeforeFetch(action, options);
+    }
+
+    protected async onBeforeFetch(action: string, options: RequestOptions) {
+        return options;
     }
 
     public dispose(): void {
@@ -112,13 +128,10 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         // 2. 如果你有 Ability 系统，应该在这里释放它们
         // 因为 Abilities 是挂载在当前 host 上的
         this.disposeAbilities?.();
-
+        this.schema = null as any;
         // 3. 最后调用父类的销毁
         // CoreEntityManager 可能负责切断网络连接、销毁全局事件监听等
         super.dispose();
     }
 }
 
-export interface EntityManagerBase<T = any, TC = Record<string, any>> {
-    emit: (event: string, data: any) => void;
-}

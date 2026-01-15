@@ -35,6 +35,7 @@ export interface DomainConfig {
     commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>); 
     // 注入到所有 POST/PUT 请求 Body 中的参数
     commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);    
+    [key: string]: any;
 }
 export const SystemRegistrarName = 'system' as const;
 export const PatternRegistrarName = 'pattern' as const;

@@ -9,6 +9,7 @@ import {
 import { createFlowContext, runPipeline } from '../core';
 import { FlowContext } from '../types';
 import { EntityActionRegistrar } from '../registrars';
+import { DomainRegistrar } from '@orbitjs/registry';
 
 export class HttpClient {
     protected domain: string;
@@ -31,8 +32,7 @@ export class HttpClient {
             method,
             url,
             this.domain ?? 'default',
-            'no-entity',
-            'no-action',
+            DomainRegistrar.getInstance().get(this.domain ?? 'default'),
             {
                 ...options,
                 signal: controller.signal, // 将中止信号传入上下文
