@@ -22,6 +22,8 @@ export abstract class ComposableBase implements IComposableBase {
     constructor() {
         // 1. 内置日志，初始化即可用
         this.logger = Logger.for(this.constructor.name);
+        this.setupAbilities();
+        this.applyOverrides();
     }
 
     /**
@@ -103,6 +105,10 @@ export abstract class ComposableBase implements IComposableBase {
             proto = Object.getPrototypeOf(proto);
         }
         return Array.from(keys);
+    }
+
+    protected applyOverrides(){
+        this.logger.debug(`Applying overrides for ${this.constructor.name}`);
     }
 
     /**
