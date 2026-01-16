@@ -9,11 +9,17 @@ export class RemoteGetAbility extends AbilityBase<IEntityManagerBase> {
         this.host.get = (id: any) => {
             const key = `get:${id}`;
             if (!this.debouncers.has(key)) {
-                this.debouncers.set(key, debounce((res, rej) => {
-                    this.host.fetch('get', id , (data) => {
-                        this.host.state.item = data.item;
-                    }).then(res).catch(rej);
-                }, 300));
+                this.debouncers.set(
+                    key,
+                    debounce((res, rej) => {
+                        this.host
+                            .fetch('get', id, data => {
+                                this.host.state.item = data.item;
+                            })
+                            .then(res)
+                            .catch(rej);
+                    }, 300)
+                );
             }
             return new Promise((res, rej) => this.debouncers.get(key)(res, rej));
         };
