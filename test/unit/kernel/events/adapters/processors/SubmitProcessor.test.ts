@@ -16,9 +16,8 @@ jest.mock('@orbitjs/logger', () => {
     };
 });
 
-import { SubmitProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { SubmitProcessor, GestureEmit, InputSignal } from '@/kernel';
+
 
 describe('SubmitProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;

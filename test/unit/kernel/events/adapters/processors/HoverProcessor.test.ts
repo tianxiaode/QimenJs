@@ -7,18 +7,16 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
-import { HoverProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { HoverProcessor, GestureEmit, InputSignal } from '@/kernel';
 
 describe('HoverProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -26,10 +24,7 @@ describe('HoverProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new HoverProcessor(
-            'hover',
-            mockEmit
-        );
+        processor = new HoverProcessor('hover', mockEmit);
     });
 
     it('should be defined', () => {
@@ -43,14 +38,14 @@ describe('HoverProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'hover',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -61,14 +56,14 @@ describe('HoverProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'hover',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 });

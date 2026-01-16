@@ -7,12 +7,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -21,15 +21,15 @@ jest.mock('@orbitjs/validation', () => {
     return {
         ...jest.requireActual('@orbitjs/validation'),
         assert: {
-            finite: jest.fn((value) => {
+            finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
                 return value;
-            })
-        }
+            }),
+        },
     };
 });
 
-import { 
+import {
     createGestureProcessor,
     TapProcessor,
     DoubleTapProcessor,
@@ -38,9 +38,9 @@ import {
     SwipeProcessor,
     HoverProcessor,
     ContextMenuProcessor,
-    SubmitProcessor
-} from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
+    SubmitProcessor,
+    GestureEmit,
+} from '@/kernel';
 
 describe('GestureProcessor Factory', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -53,7 +53,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'tap' as const,
             processor: 'tapProcessor' as const,
-            requires: ['press', 'release'] as const
+            requires: ['press', 'release'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -65,7 +65,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'dblclick' as const,
             processor: 'doubleTapProcessor' as const,
-            requires: ['press'] as const
+            requires: ['press'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -77,7 +77,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'longpress' as const,
             processor: 'longPressProcessor' as const,
-            requires: ['press', 'move', 'cancel'] as const
+            requires: ['press', 'move', 'cancel'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -89,7 +89,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'drag' as const,
             processor: 'panProcessor' as const,
-            requires: ['press', 'move', 'release', 'cancel'] as const
+            requires: ['press', 'move', 'release', 'cancel'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -101,7 +101,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'swipe' as const,
             processor: 'swipeProcessor' as const,
-            requires: ['press', 'release', 'cancel'] as const
+            requires: ['press', 'release', 'cancel'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -113,7 +113,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'hover' as const,
             processor: 'hoverProcessor' as const,
-            requires: ['enter', 'leave'] as const
+            requires: ['enter', 'leave'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -125,7 +125,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'contextmenu' as const,
             processor: 'contextMenuProcessor' as const,
-            requires: ['press', 'keydown'] as const
+            requires: ['press', 'keydown'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -137,7 +137,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'submit' as const,
             processor: 'enterKeyProcessor' as const,
-            requires: ['submit'] as const
+            requires: ['submit'] as const,
         };
 
         const processor = createGestureProcessor(descriptor, mockEmit);
@@ -149,7 +149,7 @@ describe('GestureProcessor Factory', () => {
         const descriptor = {
             semantic: 'tap' as const, // Use an existing semantic value
             processor: 'unknownProcessor' as any, // But use an unknown processor
-            requires: ['press', 'release'] as const
+            requires: ['press', 'release'] as const,
         };
 
         expect(() => {

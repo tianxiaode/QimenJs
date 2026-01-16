@@ -7,12 +7,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -21,17 +21,14 @@ jest.mock('@orbitjs/validation', () => {
     return {
         ...jest.requireActual('@orbitjs/validation'),
         assert: {
-            finite: jest.fn((value) => {
+            finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
                 return value;
-            })
-        }
+            }),
+        },
     };
 });
-
-import { TapProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { TapProcessor, GestureEmit, InputSignal } from '@/kernel';
 
 describe('TapProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -39,10 +36,7 @@ describe('TapProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new TapProcessor(
-            'tap',
-            mockEmit
-        );
+        processor = new TapProcessor('tap', mockEmit);
     });
 
     it('should be defined', () => {
@@ -56,30 +50,30 @@ describe('TapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125,
-            x: 105,    // Small movement
+            x: 105, // Small movement
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 150, // 50ms between press and release - within 250ms default interval
-            x: 105,    // Same as move position
+            x: 105, // Same as move position
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
-        processor.handle(moveInput);  // Add move event to update lastX and lastY
+        processor.handle(moveInput); // Add move event to update lastX and lastY
         processor.handle(releaseInput);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'tap',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -90,21 +84,21 @@ describe('TapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 150,
             x: 105,
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 500, // 400ms between press and release - beyond 250ms default interval
             x: 105,
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
@@ -121,25 +115,25 @@ describe('TapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125,
-            x: 150,    // Large movement beyond 10px limit
+            x: 150, // Large movement beyond 10px limit
             y: 150,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 150, // 50ms between press and release - within 250ms default interval
-            x: 150,    // Same as move position
+            x: 150, // Same as move position
             y: 150,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
-        processor.handle(moveInput);  // Add move event to update lastX and lastY
+        processor.handle(moveInput); // Add move event to update lastX and lastY
         processor.handle(releaseInput);
 
         expect(mockEmit).not.toHaveBeenCalled();
@@ -152,21 +146,21 @@ describe('TapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125,
             x: 150,
             y: 150,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const cancelInput = {
             signal: 'cancel' as InputSignal,
             time: 150,
             x: 150,
             y: 150,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
@@ -179,7 +173,7 @@ describe('TapProcessor', () => {
             time: 200,
             x: 150,
             y: 150,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         processor.handle(releaseInput);
 

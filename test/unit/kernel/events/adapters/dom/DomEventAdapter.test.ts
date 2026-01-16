@@ -8,8 +8,7 @@ import {
   GestureEventMap,
   GestureEventDescriptor,
   GestureProcessorId 
-} from '@/kernel/events/adapters/semantic-map';
-import { GestureProcessor } from '@/kernel/events/adapters/processors';
+} from '@/kernel';
 
 // Mock 依赖
 jest.mock('@orbitjs/runtime-env', () => ({

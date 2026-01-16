@@ -1,6 +1,4 @@
-import { ContextMenuProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { ContextMenuProcessor, GestureEmit, InputSignal } from '@/kernel';
 
 // Mock the logger to prevent errors during testing
 jest.mock('@orbitjs/logger', () => {
@@ -11,12 +9,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -27,10 +25,7 @@ describe('ContextMenuProcessor', () => {
     beforeEach(() => {
         mockEmit = jest.fn();
         // 创建ContextMenuProcessor实例，使用正确的构造函数参数
-        processor = new ContextMenuProcessor(
-            'contextmenu',
-            mockEmit
-        );
+        processor = new ContextMenuProcessor('contextmenu', mockEmit);
     });
 
     it('should be defined', () => {
@@ -45,14 +40,14 @@ describe('ContextMenuProcessor', () => {
             x: 100,
             y: 100,
             buttons: 2, // Right mouse button
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'contextmenu',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -63,14 +58,14 @@ describe('ContextMenuProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'contextmenu',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -81,14 +76,14 @@ describe('ContextMenuProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'contextmenu',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -99,7 +94,7 @@ describe('ContextMenuProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);

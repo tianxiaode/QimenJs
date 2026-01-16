@@ -7,12 +7,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -21,17 +21,15 @@ jest.mock('@orbitjs/validation', () => {
     return {
         ...jest.requireActual('@orbitjs/validation'),
         assert: {
-            finite: jest.fn((value) => {
+            finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
                 return value;
-            })
-        }
+            }),
+        },
     };
 });
 
-import { SwipeProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { SwipeProcessor, GestureEmit, InputSignal } from '@/kernel';
 
 describe('SwipeProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -39,10 +37,7 @@ describe('SwipeProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new SwipeProcessor(
-            'swipe',
-            mockEmit
-        );
+        processor = new SwipeProcessor('swipe', mockEmit);
     });
 
     it('should be defined', () => {
@@ -56,30 +51,30 @@ describe('SwipeProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125, // halfway through
-            x: 150,    // halfway to destination
+            x: 150, // halfway to destination
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 150, // 50ms between press and release
-            x: 200,    // 100px distance (enough, since default minDistance is 30px)
+            x: 200, // 100px distance (enough, since default minDistance is 30px)
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
-        processor.handle(moveInput);  // Add move event to update lastX and lastY
+        processor.handle(moveInput); // Add move event to update lastX and lastY
         processor.handle(releaseInput);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'swipe',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -90,21 +85,21 @@ describe('SwipeProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 300,
             x: 150,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 500, // 400ms between press and release - too slow for the velocity requirement
-            x: 150,    // 50px distance
+            x: 150, // 50px distance
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
@@ -121,21 +116,21 @@ describe('SwipeProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125,
             x: 105,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 150, // 50ms between press and release
-            x: 110,    // Only 10px distance - less than 30px minimum
+            x: 110, // Only 10px distance - less than 30px minimum
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
@@ -152,21 +147,21 @@ describe('SwipeProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 125,
             x: 150,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const cancelInput = {
             signal: 'cancel' as InputSignal,
             time: 150,
             x: 200,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(pressInput);
@@ -179,7 +174,7 @@ describe('SwipeProcessor', () => {
             time: 200,
             x: 200,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         processor.handle(releaseInput);
 

@@ -3,7 +3,6 @@ import { keyboardMap } from '@/kernel/events/adapters/semantic-map/keyboard';
 import { mouseMap } from '@/kernel/events/adapters/semantic-map/mouse';
 import { pointerMap } from '@/kernel/events/adapters/semantic-map/pointer';
 import { touchMap } from '@/kernel/events/adapters/semantic-map/touch';
-import { InputEventMap } from '@/kernel/events/adapters/semantic-map/types';
 
 describe('Semantic Maps', () => {
   describe('baseMap', () => {

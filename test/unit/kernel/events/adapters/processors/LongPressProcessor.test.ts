@@ -7,12 +7,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -21,17 +21,14 @@ jest.mock('@orbitjs/validation', () => {
     return {
         ...jest.requireActual('@orbitjs/validation'),
         assert: {
-            finite: jest.fn((value) => {
+            finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
                 return value;
-            })
-        }
+            }),
+        },
     };
 });
-
-import { LongPressProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
+import { LongPressProcessor, GestureEmit, InputSignal } from '@/kernel';
 
 describe('LongPressProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -39,10 +36,7 @@ describe('LongPressProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new LongPressProcessor(
-            'longpress',
-            mockEmit
-        );
+        processor = new LongPressProcessor('longpress', mockEmit);
     });
 
     afterEach(() => {
@@ -61,7 +55,7 @@ describe('LongPressProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
@@ -70,7 +64,7 @@ describe('LongPressProcessor', () => {
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'longpress',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -82,14 +76,14 @@ describe('LongPressProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const cancelInput = {
             signal: 'cancel' as InputSignal,
             time: 200,
             x: 100,
             y: 100,
-            originalEvent: new MouseEvent('mouseup')
+            originalEvent: new MouseEvent('mouseup'),
         };
 
         processor.handle(pressInput);
@@ -109,14 +103,14 @@ describe('LongPressProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 150,
             x: 200, // Exceeds default 10px max distance
             y: 200,
-            originalEvent: new MouseEvent('mousemove')
+            originalEvent: new MouseEvent('mousemove'),
         };
 
         processor.handle(pressInput);

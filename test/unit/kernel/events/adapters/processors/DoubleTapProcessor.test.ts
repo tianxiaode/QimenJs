@@ -7,12 +7,12 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
@@ -21,29 +21,28 @@ jest.mock('@orbitjs/validation', () => {
     return {
         ...jest.requireActual('@orbitjs/validation'),
         assert: {
-            finite: jest.fn((value) => {
+            finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
                 return value;
-            })
-        }
+            }),
+        },
     };
 });
 
 // Mock the validation function used in DoubleTapProcessor
 jest.mock('@/kernel/events/adapters/utils/validation', () => {
     return {
-        validateDoubleTap: jest.fn((now, lastTapTime, x, y, lastX, lastY, maxInterval, maxDistance) => {
-            const timeDiff = now - lastTapTime;
-            const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
-            return timeDiff < maxInterval && distance < maxDistance;
-        })
+        validateDoubleTap: jest.fn(
+            (now, lastTapTime, x, y, lastX, lastY, maxInterval, maxDistance) => {
+                const timeDiff = now - lastTapTime;
+                const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
+                return timeDiff < maxInterval && distance < maxDistance;
+            }
+        ),
     };
 });
 
-import { DoubleTapProcessor } from '@/kernel/events/adapters/processors';
-import { GestureEmit } from '@/kernel/events/adapters/processors/types';
-import { InputSignal } from '@/kernel/events/adapters/semantic-map';
-import { validateDoubleTap } from '@/kernel/events/adapters/utils/validation';
+import { DoubleTapProcessor, GestureEmit, InputSignal, validateDoubleTap } from '@/kernel';
 import { Logger } from '@orbitjs/logger';
 
 describe('DoubleTapProcessor', () => {
@@ -53,11 +52,8 @@ describe('DoubleTapProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new DoubleTapProcessor(
-            'dblclick',
-            mockEmit
-        );
-        
+        processor = new DoubleTapProcessor('dblclick', mockEmit);
+
         // Get the mock logger instance
         mockLogger = (Logger.for as jest.Mock).mock.results[0].value;
         mockLogger.debug.mockClear();
@@ -74,14 +70,14 @@ describe('DoubleTapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const input2 = {
             signal: 'press' as InputSignal,
             time: 200, // Within 300ms default interval
-            x: 105,    // Within 10px default distance
+            x: 105, // Within 10px default distance
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         // First tap
@@ -91,7 +87,7 @@ describe('DoubleTapProcessor', () => {
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'dblclick',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -102,14 +98,14 @@ describe('DoubleTapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const input2 = {
             signal: 'press' as InputSignal,
             time: 200,
             x: 200, // Too far from first tap
             y: 200,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         // First tap
@@ -127,14 +123,14 @@ describe('DoubleTapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const input2 = {
             signal: 'press' as InputSignal,
             time: 500, // More than 300ms after first tap
-            x: 105,    // Within 10px distance
+            x: 105, // Within 10px distance
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         // First tap
@@ -148,7 +144,7 @@ describe('DoubleTapProcessor', () => {
     it('should work with custom constraints', () => {
         // Clear the mock to start fresh
         (validateDoubleTap as jest.Mock).mockClear();
-        
+
         const mockEmit2 = jest.fn();
         const customProcessor = new DoubleTapProcessor(
             'dblclick',
@@ -162,19 +158,19 @@ describe('DoubleTapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const input2 = {
             signal: 'press' as InputSignal,
             time: 400, // Within custom 500ms interval
-            x: 115,    // Within custom 20px distance
+            x: 115, // Within custom 20px distance
             y: 115,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         // Mock the validateDoubleTap function to return true for our test case
         (validateDoubleTap as jest.Mock).mockReturnValueOnce(true);
-        
+
         // First tap
         customProcessor.handle(input1);
         // Second tap
@@ -182,20 +178,20 @@ describe('DoubleTapProcessor', () => {
 
         // Verify that validateDoubleTap was called with custom constraints
         expect(validateDoubleTap).toHaveBeenCalledWith(
-            400,      // now
-            100,      // lastTapTime
-            115,      // x
-            115,      // y
-            100,      // lastTapX
-            100,      // lastTapY
-            500,      // maxInterval (custom)
-            20,       // maxDistance (custom)
+            400, // now
+            100, // lastTapTime
+            115, // x
+            115, // y
+            100, // lastTapX
+            100, // lastTapY
+            500, // maxInterval (custom)
+            20 // maxDistance (custom)
         );
-        
+
         // Verify the emit was called
         expect(mockEmit2).toHaveBeenCalledWith({
             semantic: 'dblclick',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 
@@ -206,14 +202,14 @@ describe('DoubleTapProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
         const input2 = {
             signal: 'press' as InputSignal,
             time: 200,
             x: 105,
             y: 105,
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         };
 
         processor.handle(input1);
@@ -221,14 +217,14 @@ describe('DoubleTapProcessor', () => {
 
         // Verify that validateDoubleTap was called with the right parameters
         expect(validateDoubleTap).toHaveBeenCalledWith(
-            200,      // now
-            100,      // lastTapTime
-            105,      // x
-            105,      // y
-            100,      // lastTapX
-            100,      // lastTapY
-            300,      // maxInterval (default)
-            10,       // maxDistance (default)
+            200, // now
+            100, // lastTapTime
+            105, // x
+            105, // y
+            100, // lastTapX
+            100, // lastTapY
+            300, // maxInterval (default)
+            10 // maxDistance (default)
         );
     });
 });

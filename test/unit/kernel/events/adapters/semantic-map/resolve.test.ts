@@ -1,5 +1,5 @@
 import { resolveInputEventMap } from '@/kernel/events/adapters/semantic-map/resolve';
-import { InputEventMap } from '@/kernel/events/adapters/semantic-map/types';
+import { InputEventMap } from '@/kernel';
 
 // 模拟输入能力检测结果
 const mockCapabilities = {
