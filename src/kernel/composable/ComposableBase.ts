@@ -1,4 +1,4 @@
-import { ILogger, Logger } from '@/logger';
+import { ILogger, Logger } from '@orbitjs/logger';
 import { ComposableRegistrar } from '../registrars';
 import { ComposableEntry, IComposable, IComposableBase } from '../types';
 

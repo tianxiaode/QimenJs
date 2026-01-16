@@ -6,7 +6,7 @@ import {
     IEntityManagerBase,
     RequestOptions,
 } from '../types';
-import { CollectionState } from './abilities';
+import { CollectionState } from './CollectionState';
 import { CoreEntityManager } from './CoreEntityManager';
 
 export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
@@ -99,7 +99,7 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
             case 'create':
             case 'update':
             case 'toggle':
-                if(payload && typeof payload === 'object'){
+                if (payload && typeof payload === 'object') {
                     payload = this.applyMappingToBackend(payload, schema.fields);
                 }
                 // 约定：这些 action 的 payload 就是 body

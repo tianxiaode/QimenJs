@@ -1,2 +1,2 @@
 export * from './ComposableBase';
-export * from './abilities';
+export * from './AbilityBase';

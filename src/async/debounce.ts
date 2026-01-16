@@ -24,10 +24,11 @@ export function debounce<T extends (...args: any[]) => any>(
     fn: T,
     wait = 0,
     immediate = false
-): (...args: Parameters<T>) => ReturnType<T> | undefined {
+) {
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
-    return function (this: any, ...args: Parameters<T>) {
+    // 1. 定义要返回的函数
+    const debounced = function (this: any, ...args: Parameters<T>) {
         const callNow = immediate && !timeout;
 
         if (timeout) clearTimeout(timeout);
@@ -37,8 +38,17 @@ export function debounce<T extends (...args: any[]) => any>(
             if (!immediate) fn.apply(this, args);
         }, wait);
 
-        if (callNow) {
-            return fn.apply(this, args);
+        if (callNow) return fn.apply(this, args);
+    };
+
+    // 2. 在函数对象上挂载 cancel 方法
+    debounced.cancel = () => {
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
         }
     };
+
+    // 3. 强制转换类型，让 TS 知道它带 cancel
+    return debounced as typeof debounced & { cancel(): void };
 }

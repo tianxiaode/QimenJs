@@ -11,10 +11,11 @@ import {
     Schema,
     DomainAbilityName,
     SystemConfigAbilityName,
-    EventHandler,
     SechmaAbilityName,
+    IEventAbilitiy,
+    IDomainAbility,
+    ISystemAbility,
 } from '../types';
-import { DomainConfig, SystemConfig } from '@orbitjs/registry';
 import { Ability, ComposableBase } from '../composable';
 import { ValidationRule } from '@orbitjs/validation';
 
@@ -133,15 +134,14 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     }
 }
 
-export interface CoreEntityManager<T = any, TC = Record<string, any>> {
-    emit(event: string, data: any):void;
-    on(event: string, handler: EventHandler): () => void;
-    once(event: string, handler: EventHandler) :void;
-    getDomainConfig(): DomainConfig;
-    getSystemConfig(): Partial<SystemConfig>;
-    getSystemValue(): any;
+export interface CoreEntityManager extends 
+    IEventAbilitiy, 
+    IDomainAbility, 
+    ISystemAbility     
+{
+    // 这里只写 EntityManager 自身特有的方法
     getScheme(): Schema;
-    getRules():Record<string, ValidationRule[] | ValidationRule>;
+    getRules(): Record<string, ValidationRule[] | ValidationRule>;
     getKeys(): Record<string, string>;
     getBehavior(): Record<string, any>;
 }
