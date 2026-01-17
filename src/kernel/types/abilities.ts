@@ -77,5 +77,8 @@ export interface IRemoteDeleteAbility {
 
 export interface ILocalDeleteAbility {
     delete(id: any): void;
+    getDeletedIds(): any[];
+    clearDeletedStatus(): void;
 }
+
 

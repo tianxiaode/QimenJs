@@ -29,7 +29,7 @@ export class LocalCreateAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
                 host.state.items = [newRecord, ...(host.state.items || [])];
                 host.state.item = newRecord;
 
-                host.emit('local-created', newRecord);
+                host.emit('created', newRecord);
                 return newRecord;
             }
         };

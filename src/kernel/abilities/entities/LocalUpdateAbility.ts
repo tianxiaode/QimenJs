@@ -37,7 +37,7 @@ export class LocalUpdateAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
                     host.state.item = newItems[index];
                 }
 
-                host.emit('local-updated', newItem);
+                host.emit('updated', newItem);
             },
 
             /**
