@@ -11,17 +11,29 @@ import { FlowContext } from '../types';
 import { EntityActionRegistrar } from '../registrars';
 import { DomainRegistrar } from '@orbitjs/registry';
 
+/**
+ * HttpClient 类
+ * 
+ * 提供统一的 HTTP 请求接口，支持多种 HTTP 方法和进度监控
+ * 通过管道机制处理请求，支持取消操作和进度回调
+ */
 export class HttpClient {
     protected domain: string;
+    
+    /**
+     * 构造函数
+     * @param domain 域名，默认为 'default'
+     */
     constructor(domain: string = 'default') {
         this.domain = domain;
     }
 
     /**
      * 发送统一请求
-     * @param domain 域配置
+     * @param method HTTP 方法 (GET, POST, PUT, etc.)
+     * @param url 请求 URL
      * @param options 请求参数 (method, segments, params, data, headers, etc.)
-     * @param preset 系统预设 (abp | spring | ...)
+     * @returns RequestTask 对象，包含上下文和取消方法
      */
     public request(method: HttpMethod, url: string, options: RequestOptions = {}): RequestTask {
         // 1. 在管线启动前，先拿到控制权
@@ -128,6 +140,13 @@ export class HttpClient {
         return this.request('POST', url, { ...options, body, onProgress, isUpload: true });
     }
 
+    /**
+     * 下载文件方法
+     * @param url 请求 URL
+     * @param onProgress 进度回调
+     * @param options 请求选项
+     * @returns RequestTask 对象
+     */
     public download(
         url: string,
         onProgress: (ev: ProgressEvent) => void,
