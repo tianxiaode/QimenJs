@@ -22,3 +22,4 @@ export const RemoteDeleteAbilityName = 'em-remote-delete' as const;
 export const LocalDeleteAbilityName = 'em-local-delete' as const;
 export const RemoteToggleAbilityName = 'em-remote-toggle' as const;
 export const LocalToggleAbilityName = 'em-local-toggle' as const;
+export const RemoteQueryAbilityName = 'em-remote-query' as const;

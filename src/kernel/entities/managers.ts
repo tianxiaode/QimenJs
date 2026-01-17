@@ -10,6 +10,7 @@ import {
     IRemoteGetAbility,
     IRemoteGetAllAbility,
     IRemoteListAbility,
+    IRemoteQueryAbility,
     IRemoteToggleAbility,
     IRemoteUpdateAbility,
     LocalCreateAbilityName,
@@ -22,12 +23,18 @@ import {
     RemoteGetAbilityName,
     RemoteGetAllAbilityName,
     RemoteListAbilityName,
+    RemoteQueryAbilityName,
     RemoteToggleAbilityName,
     RemoteUpdateAbilityName,
 } from '../types';
 import { EntityManagerBase } from './EntityManagerBase';
 
-@Ability(RemoteListAbilityName, RemoteGetAbilityName, RemoteGetAllAbilityName)
+@Ability(
+    RemoteListAbilityName,
+    RemoteGetAbilityName,
+    RemoteGetAllAbilityName,
+    RemoteQueryAbilityName
+)
 export abstract class RemoteReadonlyEntityManager<T, TC> extends EntityManagerBase<T, TC> {}
 
 export interface RemoteReadonlyEntityManager<T, TC>
@@ -35,7 +42,8 @@ export interface RemoteReadonlyEntityManager<T, TC>
         IRemoteListAbility<T>,
         IRemoteGetAbility<T>,
         IRemoteGetAbility<T>,
-        IRemoteGetAllAbility<T> {}
+        IRemoteGetAllAbility<T>,
+        IRemoteQueryAbility<T, TC> {}
 
 @Ability(LocalListAbilityName)
 export abstract class LocalReadonlyEntityManager<T, TC> extends EntityManagerBase<T, TC> {}

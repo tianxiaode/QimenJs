@@ -14,6 +14,8 @@ import {
     LocalDeleteAbilityName,
     RemoteToggleAbilityName,
     LocalToggleAbilityName,
+    RemoteQueryAbilityName,
+    SystemAbilityName,
 } from '../../types';
 import { CollectionAbility } from './CollectionAbility';
 import { LocalCreateAbility } from './LocalCreateAbility';
@@ -123,4 +125,11 @@ export const LocalToggleAbilityEntry: ComposableEntry = {
     description: '为实体管理者提供本地切换实体状态接口',
     deps: [CollectionAbilityName, SechmaAbilityName],
     ctor: LocalToggleAbility,
+};
+
+export const RemoteQueryAbilityEntry: ComposableEntry = {
+    name: RemoteQueryAbilityName,
+    description: '为实体管理者提供远程查询接口',
+    deps: [CollectionAbilityName, SechmaAbilityName, SystemAbilityName, RemoteListAbilityName],
+    ctor: RemoteListAbility,
 };

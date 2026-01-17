@@ -99,3 +99,15 @@ export interface IRemoteToggleAbility<T> {
 export interface ILocalToggleAbility<T> { 
     toggle(id: any, field: keyof T): void;
 }
+
+export interface IRemoteQueryAbility<T, TC> {
+    prev(): Promise<T[]> | any[];
+    next(): Promise<T[]> | any[];
+    jump(page: number): Promise<T[]> | void;
+    changeSize(size: number): Promise<T[]> | void;
+    filter(text: string): Promise<T[]>;
+    search(criteria: Partial<TC>): Promise<T[]>;
+    sort(prop: string, order: 'asc' | 'desc' | null): Promise<T[]>;
+    refresh(): Promise<T[]>;
+    reset(): Promise<T[]>;
+}
