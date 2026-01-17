@@ -648,6 +648,560 @@ describe('HttpFactory', () => {
             expect(context).toEqual(mockContextWithError);
         });
 
+        it('should handle retry with delay value of 0', async () => {
+            const mockContextWithError: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: true,
+                    hasError: true,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 500,
+                    isSuccess: false,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockContextSuccess: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: false,
+                    hasError: false,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 200,
+                    isSuccess: true,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            // 模拟第一次失败，第二次成功
+            const mockTaskError = {
+                context: Promise.resolve(mockContextWithError),
+                cancel: jest.fn(),
+            };
+            
+            const mockTaskSuccess = {
+                context: Promise.resolve(mockContextSuccess),
+                cancel: jest.fn(),
+            };
+            
+            mockRequest
+                .mockReturnValueOnce(mockTaskError)  // 第一次调用返回错误
+                .mockReturnValueOnce(mockTaskSuccess) // 第二次调用返回成功
+                .mockReturnValue({ // 为可能的额外调用提供默认返回值
+                    context: Promise.resolve(mockContextSuccess),
+                    cancel: jest.fn(),
+                });
+
+            const retryOptions = {
+                maxRetries: 3,
+                delay: 0, // 测试delay为0的情况
+                shouldRetry: (context: FlowContext) => true,
+            };
+
+            const task = HttpFactory.createRetryTask(
+                'GET', 
+                '/test', 
+                { retry: retryOptions }, 
+                'test-domain'
+            );
+
+            const context = await task.context;
+            
+            // 验证request被调用了两次（原始+1次重试）
+            expect(mockRequest).toHaveBeenCalledTimes(2);
+            expect(context).toEqual(mockContextSuccess);
+            
+            // 验证HttpClient被使用正确的域实例化
+            expect(mockHttpClientClass).toHaveBeenCalledWith('test-domain');
+        });
+
+        it('should handle retry when delay property is not present in options', async () => {
+            const mockContextWithError: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: true,
+                    hasError: true,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 500,
+                    isSuccess: false,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockContextSuccess: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: false,
+                    hasError: false,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 200,
+                    isSuccess: true,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockTaskError = {
+                context: Promise.resolve(mockContextWithError),
+                cancel: jest.fn(),
+            };
+            
+            const mockTaskSuccess = {
+                context: Promise.resolve(mockContextSuccess),
+                cancel: jest.fn(),
+            };
+            
+            mockRequest
+                .mockReturnValueOnce(mockTaskError)  // 第一次调用返回错误
+                .mockReturnValueOnce(mockTaskSuccess) // 第二次调用返回成功
+                .mockReturnValue({ 
+                    context: Promise.resolve(mockContextSuccess),
+                    cancel: jest.fn(),
+                });
+
+            // 不包含 delay 属性，但包含其他重试选项
+            const retryOptions = {
+                maxRetries: 3,
+                shouldRetry: (context: FlowContext) => true,
+                // 注意这里没有 delay 属性
+            };
+
+            const task = HttpFactory.createRetryTask(
+                'GET', 
+                '/test', 
+                { retry: retryOptions }, 
+                'test-domain'
+            );
+
+            const context = await task.context;
+            
+            // 验证request被调用了两次（原始+1次重试）
+            expect(mockRequest).toHaveBeenCalledTimes(2);
+            expect(context).toEqual(mockContextSuccess);
+            
+            // 验证HttpClient被使用正确的域实例化
+            expect(mockHttpClientClass).toHaveBeenCalledWith('test-domain');
+        });
+
+        it('should skip delay when retry.delay is undefined', async () => {
+            const mockContextWithError: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: true,
+                    hasError: true,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 500,
+                    isSuccess: false,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockContextSuccess: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: false,
+                    hasError: false,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 200,
+                    isSuccess: true,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockTaskError = {
+                context: Promise.resolve(mockContextWithError),
+                cancel: jest.fn(),
+            };
+            
+            const mockTaskSuccess = {
+                context: Promise.resolve(mockContextSuccess),
+                cancel: jest.fn(),
+            };
+            
+            mockRequest
+                .mockReturnValueOnce(mockTaskError)  // 第一次调用返回错误
+                .mockReturnValueOnce(mockTaskSuccess) // 第二次调用返回成功
+                .mockReturnValue({ 
+                    context: Promise.resolve(mockContextSuccess),
+                    cancel: jest.fn(),
+                });
+
+            // 明确设置 delay 为 undefined
+            const retryOptions = {
+                maxRetries: 3,
+                delay: undefined, // 明确设置为 undefined
+                shouldRetry: (context: FlowContext) => true,
+            };
+
+            const startTime = Date.now();
+            const task = HttpFactory.createRetryTask(
+                'GET', 
+                '/test', 
+                { retry: retryOptions }, 
+                'test-domain'
+            );
+
+            const context = await task.context;
+            const endTime = Date.now();
+            
+            // 验证request被调用了两次（原始+1次重试）
+            expect(mockRequest).toHaveBeenCalledTimes(2);
+            expect(context).toEqual(mockContextSuccess);
+            // 如果没有延迟，执行时间应该很短
+            expect(endTime - startTime).toBeLessThan(100); // 应该远小于100ms
+            
+            // 验证HttpClient被使用正确的域实例化
+            expect(mockHttpClientClass).toHaveBeenCalledWith('test-domain');
+        });
+
+        it('should properly handle cancellation when currentTask is initially null', async () => {
+            // 模拟一个立即成功的请求，这样currentTask在取消时可能仍然是null
+            const mockContextSuccess: FlowContext = {
+                domain: 'test-domain',
+                config: {
+                    name: 'test-domain',
+                    baseUrl: 'https://api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50]
+                },
+                params: {},
+                error: null,
+                isAborted: false,
+                metadata: {
+                    isTransportFailure: false,
+                    hasError: false,
+                    contentType: '',
+                    isJson: false,
+                    isText: false,
+                    isBlob: false,
+                    action: '',
+                    isUpload: false,
+                    isDownload: false,
+                    isErrorHandled: false,
+                    fileName: '',
+                    isDownloadHandled: false,
+                    isProcessed: false,
+                    silent: false,
+                    onProgress: undefined,
+                },
+                data: {
+                    source: null,
+                    parsed: null,
+                    raw: null,
+                    list: [],
+                    item: null,
+                    total: 0,
+                },
+                http: {
+                    url: '/test',
+                    status: 200,
+                    isSuccess: true,
+                    headers: {},
+                    method: 'GET',
+                    pathParams: [],
+                    timeout: 10000,
+                    responseType: 'json',
+                    signal: new AbortController().signal,
+                    controller: new AbortController(),
+                    responseHeaders: {},
+                    withCredentials: false,
+                },
+                steps: [],
+                alignToFrontend: (target: any) => target,
+                schema: undefined,
+                action: undefined,
+            };
+            
+            const mockTask = {
+                context: Promise.resolve(mockContextSuccess),
+                cancel: jest.fn(),
+            };
+            
+            // 让请求立即返回结果
+            mockRequest.mockReturnValue(mockTask);
+
+            const task = HttpFactory.createRetryTask('GET', '/test', {}, 'test-domain');
+            
+            // 立即取消任务，此时内部的currentTask可能还没被赋值
+            task.cancel('immediate cancel');
+            
+            const context = await task.context;
+            expect(context).toEqual(mockContextSuccess);
+            
+            // 验证取消函数被调用了
+            expect(mockTask.cancel).toHaveBeenCalled();
+        });
+
         it('should cancel both the controller and the current task', async () => {
             const mockContext: FlowContext = {
                 domain: 'test-domain',
@@ -1022,6 +1576,29 @@ describe('HttpFactory', () => {
             // 验证当上下文成功时，任务函数会正常执行并不返回任何内容
             const result = await taskFn();
             expect(result).toBeUndefined();
+        });
+
+        it('should execute schedule polling with all default options when none are provided', () => {
+            const addTaskSpy = jest.spyOn(globalTaskQueue, 'addTask');
+            
+            // 调用 schedulePolling 时不提供任何轮询特定选项
+            HttpFactory.schedulePolling('GET', '/poll-defaults', {}, 'test-domain');
+
+            expect(addTaskSpy).toHaveBeenCalledTimes(1);
+            
+            const args = addTaskSpy.mock.calls[0];
+            const priority = args[1];
+            const maxRetries = args[2];
+            const retryDelay = args[3];
+            const isPolling = args[4];
+            const interval = args[5];
+            
+            // 验证默认值
+            expect(priority).toBe('NORMAL'); // 默认优先级
+            expect(maxRetries).toBe(3);     // 默认最大重试次数
+            expect(retryDelay).toBe(1000);  // 默认重试延迟
+            expect(isPolling).toBe(true);   // 标识这是一个轮询任务
+            expect(interval).toBe(5000);    // 默认间隔
         });
     });
 });
