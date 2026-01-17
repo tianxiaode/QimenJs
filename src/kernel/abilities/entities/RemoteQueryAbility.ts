@@ -1,5 +1,7 @@
 import { AbilityBase } from '../../composable';
 import { IEntityManagerBase, IExposeResult } from '../../types';
+import { EntityError } from '../../errors/EntityError';
+import { KernelErrorCode } from '../../errors/codes';
 
 export class RemoteQueryAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
     protected expose(): IExposeResult {
@@ -43,7 +45,7 @@ export class RemoteQueryAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
                     host.logger.error(`Invalid pageSize: ${size}. Options are: ${state.pageSizes}`);
                 }
                 if (host.systemConfig('env') === 'development')
-                    throw new Error(`Invalid pageSize: ${size}. Options are: ${state.pageSizes}`);
+                    throw new EntityError(`Invalid pageSize: ${size}. Options are: ${state.pageSizes}`, KernelErrorCode.INVALID_PAGE_SIZE);
                 host.state.pageSize = size;
                 host.state.pageIndex = 1; // 切换分页大小重置页码
                 return runList(false);

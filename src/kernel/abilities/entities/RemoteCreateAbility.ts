@@ -1,5 +1,7 @@
 import { AbilityBase } from '../../composable';
 import { FlowContext, IEntityManagerBase, IExposeResult } from '../../types';
+import { EntityError } from '../../errors/EntityError';
+import { KernelErrorCode } from '../../errors/codes';
 
 export class RemoteCreateAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
     protected expose(): IExposeResult {
@@ -12,7 +14,7 @@ export class RemoteCreateAbility<T, TC> extends AbilityBase<IEntityManagerBase> 
             create: async (data: Partial<T>): Promise<T> => {
                 // 1. 状态锁保护：防止请求飞行中再次触发
                 if (host.state.loading) {
-                    return Promise.reject(new Error('Operation in progress, please wait.'));
+                    throw new EntityError('Operation in progress, please wait.', KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS);
                 }
 
                 try {

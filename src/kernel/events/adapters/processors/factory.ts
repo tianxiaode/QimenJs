@@ -18,7 +18,8 @@ import { SwipeProcessor } from './SwipeProcessor';
 import { HoverProcessor } from './HoverProcessor';
 import { ContextMenuProcessor } from './ContextMenuProcessor';
 import { SubmitProcessor } from './SubmitProcessor';
-import { GestureError } from '../../errors/GestureError'; // 导入新错误类
+import { GestureError } from '../../../errors'; // 导入新错误类
+import { KernelErrorCode } from '../../../errors/codes'; // 导入错误代码
 
 /**
  * 手势处理器工厂函数类型定义
@@ -64,10 +65,14 @@ export function createGestureProcessor<S extends GestureSemantic>(
 
     // 如果没有找到对应的处理器构造函数，抛出错误
     if (!ProcessorCtor) {
-        throw new GestureError(`Unknown gesture processor: ${descriptor.processor}`, {
-            processor: descriptor.processor,
-            semantic: descriptor.semantic,
-        });
+        throw new GestureError(
+            `Unknown gesture processor: ${descriptor.processor}`,
+            KernelErrorCode.UNKNOWN_GESTURE_PROCESSOR,
+            {
+                processor: descriptor.processor,
+                semantic: descriptor.semantic,
+            }
+        );
     }
 
     // 创建并返回处理器实例

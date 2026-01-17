@@ -1,5 +1,6 @@
 import { RegistrarBase } from '@orbitjs/registry';
 import { ComposableEntry } from '../types';
+import { ComposableRegistrarError, KernelErrorCode } from '../errors';
 
 export const ComposableRegistrarName = 'composable' as const;
 
@@ -28,18 +29,25 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         if (Array.isArray(nameOrNames)) {
             return nameOrNames.map(name => {
                 const entry = this.storage.get(name);
-                if (!entry) throw new Error(`[ComposableRegistrar] ${name} not found.`);
+                if (!entry)
+                    throw new ComposableRegistrarError(
+                        `[ComposableRegistrar] ${name} not found.`,
+                        KernelErrorCode.COMPOSABLE_NOT_FOUND
+                    );
                 return entry;
             });
         }
 
         const entry = this.storage.get(nameOrNames);
-        if (!entry) throw new Error(`[ComposableRegistrar] ${nameOrNames} not found.`);
+        if (!entry)
+            throw new ComposableRegistrarError(
+                `[ComposableRegistrar] ${nameOrNames} not found.`,
+                KernelErrorCode.COMPOSABLE_NOT_FOUND
+            );
         return entry;
     }
 
     public getRecursive(names: string[]): ComposableEntry[] {
-
         // 2. 否则进行正常的合并计算
         const finalSet = new Set<string>();
         names.forEach(name => {
@@ -51,19 +59,24 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
 
         return entries;
     }
-    
+
     private getOrComputeMRO(name: string, stack = new Set<string>()): string[] {
         // 缓存命中
         if (this._mroCache.has(name)) return this._mroCache.get(name)!;
 
         // 循环检测
         if (stack.has(name))
-            throw new Error(
-                `[Registrar] Circular dependency: ${Array.from(stack).join(' -> ')} -> ${name}`
+            throw new ComposableRegistrarError(
+                `[Registrar] Circular dependency: ${Array.from(stack).join(' -> ')} -> ${name}`,
+                KernelErrorCode.CIRCULAR_DEPENDENCY
             );
 
         const entry = this.storage.get(name);
-        if (!entry) throw new Error(`[Registrar] Ability "${name}" is not registered yet.`);
+        if (!entry)
+            throw new ComposableRegistrarError(
+                `[Registrar] Ability "${name}" is not registered yet.`,
+                KernelErrorCode.COMPOSABLE_NOT_FOUND
+            );
 
         stack.add(name);
         const sequence: string[] = [];
@@ -85,7 +98,6 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         this._mroCache.set(name, sequence); // 存入缓存
         return sequence;
     }
-
 
     protected doInspect(): void {
         console.group(`[Registrar Inspection] : ${this.name}`);

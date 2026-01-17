@@ -16,6 +16,7 @@ import {
 } from '../../../types';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string, geometry } from '@orbitjs/utils';
+import { GestureError, KernelErrorCode } from '../../../errors';
 
 /**
  * GestureProcessor抽象类
@@ -93,10 +94,26 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
     protected start(input: GestureInput) {
         // 使用 Number.isFinite 替代不存在的 assert.finite
         if (input.x == null || !Number.isFinite(input.x)) {
-            throw new Error('x must be a finite number');
+            throw new GestureError(
+                'x must be a finite number',
+                KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+                {
+                    processor: this.constructor.name,
+                    semantic: this.semantic,
+                    inputValue: input.x,
+                }
+            );
         }
         if (input.y == null || !Number.isFinite(input.y)) {
-            throw new Error('y must be a finite number');
+            throw new GestureError(
+                'y must be a finite number',
+                KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+                {
+                    processor: this.constructor.name,
+                    semantic: this.semantic,
+                    inputValue: input.y,
+                }
+            );
         }
 
         const x = input.x;

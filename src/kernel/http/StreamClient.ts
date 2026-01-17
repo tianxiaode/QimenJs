@@ -1,8 +1,8 @@
-import { NoProgressOptions, RequestOptions, StreamTask } from '../types';
+import { NoProgressOptions, StreamTask } from '../types';
 import { createFlowContext, runPipeline } from '../core';
 import { EntityActionRegistrar } from '../registrars';
-
-
+import { StreamError, KernelErrorCode } from '../errors';
+import { DomainConfig, DomainRegistrar } from '@orbitjs/registry';
 
 /**
  * StreamClient 类
@@ -10,7 +10,6 @@ import { EntityActionRegistrar } from '../registrars';
  * 使用 Async Generator 模式，支持 for await 消费
  */
 export class StreamClient {
-
     protected domain: string;
     constructor(domain: string = 'default') {
         this.domain = domain;
@@ -22,16 +21,17 @@ export class StreamClient {
     public chatStream<T>(url: string, body: any, options: NoProgressOptions): StreamTask<T> {
         // 1. 创建控制器
         const controller = new AbortController();
+        const domainName = this.domain ?? 'default';
+
+        const domainConfig: DomainConfig = DomainRegistrar.getInstance().get(domainName);
 
         // 2. 创建上下文，并将 signal 注入
-        const context = createFlowContext(
-            'POST',
-            url,
-            this.domain ?? 'default',
-            'no-entity',
-            'no-action',
-            { ...options, body, stream: true, signal: controller.signal }
-        );
+        const context = createFlowContext('POST', url, domainName, domainConfig, {
+            ...options,
+            body,
+            stream: true,
+            signal: controller.signal,
+        });
 
         // 3. 定义内部生成器函数
         const generate = async function* (): AsyncIterableIterator<T> {
@@ -54,7 +54,10 @@ export class StreamClient {
             context.http.responseHeaders = headers;
 
             if (!response.ok || !response.body) {
-                throw new Error('Stream request failed');
+                throw new StreamError(
+                    'Stream request failed',
+                    KernelErrorCode.STREAM_REQUEST_FAILED
+                );
             }
 
             const reader = response.body.getReader();
