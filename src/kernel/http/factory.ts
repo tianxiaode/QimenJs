@@ -101,6 +101,10 @@ export class HttpFactory {
                 currentTask = client.request(method, url, { ...requestOptions, signal });
                 const context = await currentTask.context;
 
+                // 手动取消请求
+                if (context.isAborted) {
+                    return context;
+                }
                 // 2. 核心逻辑：判断是否需要重试
                 // 如果 metadata.hasError 为 false，说明请求完全成功，直接返回
                 if (!context.metadata.hasError) {
