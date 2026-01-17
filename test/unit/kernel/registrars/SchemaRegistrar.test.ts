@@ -179,4 +179,27 @@ describe('SchemaRegistrar', () => {
       expect(fieldGroup).toEqual(mockFields);
     });
   });
+
+  describe('inspect method', () => {
+    it('should output registrar info to console', () => {
+      const spyConsoleLog = jest.spyOn(console, 'log').mockImplementation();
+      const spyConsoleTable = jest.spyOn(console, 'table').mockImplementation();
+      const spyConsoleGroup = jest.spyOn(console, 'group').mockImplementation();
+      const spyConsoleGroupEnd = jest.spyOn(console, 'groupEnd').mockImplementation();
+      
+      registrar.register(mockEntitySchema);
+      registrar.register('testGroup', mockFields);
+      registrar.inspect();
+      
+      expect(spyConsoleGroup).toHaveBeenCalled();
+      expect(spyConsoleLog).toHaveBeenCalled();
+      expect(spyConsoleTable).toHaveBeenCalled();
+      expect(spyConsoleGroupEnd).toHaveBeenCalled();
+      
+      spyConsoleLog.mockRestore();
+      spyConsoleTable.mockRestore();
+      spyConsoleGroup.mockRestore();
+      spyConsoleGroupEnd.mockRestore();
+    });
+  });
 });

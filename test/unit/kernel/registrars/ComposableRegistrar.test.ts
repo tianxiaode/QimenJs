@@ -117,6 +117,11 @@ describe('ComposableRegistrar', () => {
         .toThrow(ComposableRegistrarError);
     });
 
+    it('should throw an error with correct message when ability is not found', () => {
+      expect(() => registrar.get('nonExistentAbility'))
+        .toThrow('[ComposableRegistrar] nonExistentAbility not found.');
+    });
+
     it('should throw an error when multiple abilities include non-existent ones', () => {
       const entry1 = {
         name: 'testAbility1',
@@ -127,6 +132,16 @@ describe('ComposableRegistrar', () => {
       registrar.register(entry1);
       expect(() => registrar.get(['testAbility1', 'nonExistent']))
         .toThrow(ComposableRegistrarError);
+    });
+
+    it('should throw an error when using getRecursive with non-existent ability', () => {
+      expect(() => registrar.getRecursive(['nonExistentAbility']))
+        .toThrow(ComposableRegistrarError);
+    });
+
+    it('should throw an error with correct message when using getRecursive with non-existent ability', () => {
+      expect(() => registrar.getRecursive(['nonExistentAbility']))
+        .toThrow('[Registrar] Ability "nonExistentAbility" is not registered yet.');
     });
   });
 
@@ -213,6 +228,43 @@ describe('ComposableRegistrar', () => {
     });
   });
 
+  describe('locking mechanism', () => {
+    it('should prevent modifications when locked', () => {
+      const entry = {
+        name: 'testAbility',
+        description: 'Test ability description',
+        ctor: MockComposable,
+      };
+
+      registrar.register(entry);
+      registrar.lock();
+
+      expect(() => registrar.register({ name: 'newAbility', description: 'New ability', ctor: MockComposable }))
+        .toThrow('[Registrar: composable] modification denied: Locked.');
+
+      expect(() => registrar.unregister('testAbility'))
+        .toThrow('[Registrar: composable] modification denied: Locked.');
+
+      expect(() => registrar.clear())
+        .toThrow('[Registrar: composable] modification denied: Locked.');
+    });
+
+    it('should allow operations when not locked', () => {
+      const entry = {
+        name: 'testAbility',
+        description: 'Test ability description',
+        ctor: MockComposable,
+      };
+
+      expect(() => registrar.register(entry)).not.toThrow();
+      expect(() => registrar.unregister('testAbility')).not.toThrow();
+
+      registrar.register(entry);
+      expect(() => registrar.clear()).not.toThrow();
+      expect(registrar['storage'].size).toBe(0);
+    });
+  });
+
   describe('dependency resolution', () => {
     it('should properly resolve deep dependencies', () => {
       // Create a chain: A -> B -> C (A depends on B, B depends on C)
@@ -246,6 +298,51 @@ describe('ComposableRegistrar', () => {
       expect(result[0].name).toBe('abilityC');
       expect(result[1].name).toBe('abilityB');
       expect(result[2].name).toBe('abilityA');
+    });
+  });
+
+  describe('inspect method', () => {
+    it('should output registrar info to console', () => {
+      const spyConsoleLog = jest.spyOn(console, 'log').mockImplementation();
+      const spyConsoleGroup = jest.spyOn(console, 'group').mockImplementation();
+      const spyConsoleGroupEnd = jest.spyOn(console, 'groupEnd').mockImplementation();
+      const spyConsoleTable = jest.spyOn(console, 'table').mockImplementation();
+      
+      const entry = {
+        name: 'testAbility',
+        description: 'Test ability description',
+        ctor: MockComposable,
+      };
+
+      registrar.register(entry);
+      registrar.inspect();
+      
+      expect(spyConsoleGroup).toHaveBeenCalled();
+      expect(spyConsoleTable).toHaveBeenCalled();
+      expect(spyConsoleGroupEnd).toHaveBeenCalled();
+      
+      spyConsoleLog.mockRestore();
+      spyConsoleGroup.mockRestore();
+      spyConsoleGroupEnd.mockRestore();
+      spyConsoleTable.mockRestore();
+    });
+
+    it('should handle empty registrar inspection', () => {
+      const spyConsoleLog = jest.spyOn(console, 'log').mockImplementation();
+      const spyConsoleGroup = jest.spyOn(console, 'group').mockImplementation();
+      const spyConsoleGroupEnd = jest.spyOn(console, 'groupEnd').mockImplementation();
+      const spyConsoleWarn = jest.spyOn(console, 'warn').mockImplementation();
+      
+      registrar.inspect();
+      
+      expect(spyConsoleGroup).toHaveBeenCalled();
+      expect(spyConsoleWarn).toHaveBeenCalledWith('The registrar is currently empty.');
+      expect(spyConsoleGroupEnd).toHaveBeenCalled();
+      
+      spyConsoleLog.mockRestore();
+      spyConsoleGroup.mockRestore();
+      spyConsoleGroupEnd.mockRestore();
+      spyConsoleWarn.mockRestore();
     });
   });
 });

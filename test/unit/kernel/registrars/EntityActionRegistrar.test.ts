@@ -267,4 +267,133 @@ describe('EntityActionRegistrar', () => {
       expect(registrar.name).toBe('action');
     });
   });
+
+  describe('locking mechanism', () => {
+    it('should prevent modifications when locked', () => {
+      const action: ActionEntry = {
+        name: 'testAction',
+        category: ActionCategory.PREPARE,
+        description: 'Test action description',
+        offset: 0,
+        handler: mockHandler,
+      };
+
+      registrar.register(action);
+      registrar.lock();
+
+      expect(() => registrar.register(action))
+        .toThrow('[Registrar: action] modification denied: Locked.');
+
+      expect(() => registrar.unregister('testAction'))
+        .toThrow('[Registrar: action] modification denied: Locked.');
+
+      expect(() => registrar.clear())
+        .toThrow('[Registrar: action] modification denied: Locked.');
+    });
+
+    it('should allow operations when not locked', () => {
+      const action: ActionEntry = {
+        name: 'testAction',
+        category: ActionCategory.PREPARE,
+        description: 'Test action description',
+        offset: 0,
+        handler: mockHandler,
+      };
+
+      expect(() => registrar.register(action)).not.toThrow();
+      expect(() => registrar.unregister('testAction')).not.toThrow();
+
+      registrar.register(action);
+      expect(() => registrar.clear()).not.toThrow();
+      expect(registrar['storage'].size).toBe(0);
+    });
+  });
+
+  describe('inspect method', () => {
+    it('should output registrar info to console', () => {
+      const spyConsoleLog = jest.spyOn(console, 'log').mockImplementation();
+      const spyConsoleGroup = jest.spyOn(console, 'group').mockImplementation();
+      const spyConsoleGroupEnd = jest.spyOn(console, 'groupEnd').mockImplementation();
+      
+      const action: ActionEntry = {
+        name: 'testAction',
+        category: ActionCategory.PREPARE,
+        description: 'Test action description',
+        offset: 0,
+        handler: mockHandler,
+      };
+
+      registrar.register(action);
+      registrar.inspect();
+      
+      expect(spyConsoleGroup).toHaveBeenCalled();
+      expect(spyConsoleLog).toHaveBeenCalled();
+      expect(spyConsoleGroupEnd).toHaveBeenCalled();
+      
+      spyConsoleLog.mockRestore();
+      spyConsoleGroup.mockRestore();
+      spyConsoleGroupEnd.mockRestore();
+    });
+
+    it('should sort actions by combined weight (category + offset) in descending order', () => {
+      const spyConsoleTable = jest.spyOn(console, 'table').mockImplementation();
+      
+      // Register actions with different categories and offsets
+      // ActionCategory.PREPARE = 100, ActionCategory.EXCHANGE = 200, etc.
+      const action1: ActionEntry = {
+        name: 'highPriorityAction',
+        category: ActionCategory.PREPARE, // 100
+        description: 'High priority action',
+        offset: 10, // Total weight: 100 + 10 = 110
+        handler: mockHandler,
+      };
+      
+      const action2: ActionEntry = {
+        name: 'lowPriorityAction',
+        category: ActionCategory.PREPARE, // 100
+        description: 'Low priority action',
+        offset: 5, // Total weight: 100 + 5 = 105
+        handler: mockHandler,
+      };
+      
+      const action3: ActionEntry = {
+        name: 'mediumPriorityAction',
+        category: ActionCategory.EXCHANGE, // 200
+        description: 'Medium priority action',
+        offset: 2, // Total weight: 200 + 2 = 202
+        handler: mockHandler,
+        isHttp: true, // Mark as HTTP action to test the HTTP indicator
+      };
+
+      registrar.register(action1);
+      registrar.register(action2);
+      registrar.register(action3);
+      registrar.inspect();
+
+      // Check that console.table was called with the sorted data
+      expect(spyConsoleTable).toHaveBeenCalled();
+      
+      spyConsoleTable.mockRestore();
+    });
+
+    it('should handle actions with undefined names correctly', () => {
+      const spyConsoleTable = jest.spyOn(console, 'table').mockImplementation();
+      
+      // Create an action without a name to test the fallback ('*' display)
+      const actionWithoutName: ActionEntry = {
+        name: '', // Empty name to test the fallback
+        category: ActionCategory.PREPARE,
+        description: 'Action without explicit name',
+        offset: 0,
+        handler: mockHandler,
+      };
+
+      registrar.register(actionWithoutName);
+      registrar.inspect();
+
+      expect(spyConsoleTable).toHaveBeenCalled();
+      
+      spyConsoleTable.mockRestore();
+    });
+  });
 });
