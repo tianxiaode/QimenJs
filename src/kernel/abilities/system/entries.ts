@@ -3,7 +3,7 @@ import {
     DomainAbilityName,
     DomEventsAbilityName,
     EventAbilityName,
-    SystemConfigAbilityName,
+    SystemAbilityName,
 } from '../../types';
 import { EventAbility } from './EventAbility';
 import { DomEventsAbility } from './DomEventsAbility';
@@ -30,7 +30,7 @@ export const DomainConfigAbilityEntry: ComposableEntry = {
 };
 
 export const SystemConfigAbilityEntry: ComposableEntry = {
-    name: SystemConfigAbilityName,
+    name: SystemAbilityName,
     description: '为类添加系统配置能力',
     ctor: SystemAbility,
 };

@@ -1,7 +1,10 @@
+import { Ability } from '../composable';
 import {
+    CollectionAbilityName,
     ENTITY_ACTION,
     FieldDefinition,
     FlowContext,
+    ICollectionAbility,
     ICollectionState,
     IEntityManagerBase,
     RequestOptions,
@@ -9,6 +12,7 @@ import {
 import { CollectionState } from './CollectionState';
 import { CoreEntityManager } from './CoreEntityManager';
 
+@Ability(CollectionAbilityName)
 export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
     extends CoreEntityManager
     implements IEntityManagerBase<T, TC>
@@ -159,3 +163,5 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         super.dispose();
     }
 }
+
+export interface EntityManagerBase<T, TC> extends ICollectionAbility<T, TC> {}

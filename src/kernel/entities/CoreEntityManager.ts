@@ -10,16 +10,17 @@ import {
     ICoreEntityManager,
     Schema,
     DomainAbilityName,
-    SystemConfigAbilityName,
+    SystemAbilityName,
     SechmaAbilityName,
     IEventAbilitiy,
     IDomainAbility,
     ISystemAbility,
+    ISchemaAbility,
 } from '../types';
 import { Ability, ComposableBase } from '../composable';
 import { ValidationRule } from '@orbitjs/validation';
 
-@Ability(EventAbilityName, DomainAbilityName, SystemConfigAbilityName, SechmaAbilityName)
+@Ability(EventAbilityName, DomainAbilityName, SystemAbilityName, SechmaAbilityName)
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
     domain: string = 'default';
     abstract customActions: ActionEntry[];
@@ -134,14 +135,5 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     }
 }
 
-export interface CoreEntityManager extends 
-    IEventAbilitiy, 
-    IDomainAbility, 
-    ISystemAbility     
-{
-    // 这里只写 EntityManager 自身特有的方法
-    getScheme(): Schema;
-    getRules(): Record<string, ValidationRule[] | ValidationRule>;
-    getKeys(): Record<string, string>;
-    getBehavior(): Record<string, any>;
-}
+export interface CoreEntityManager
+    extends IEventAbilitiy, IDomainAbility, ISystemAbility, ISchemaAbility {}

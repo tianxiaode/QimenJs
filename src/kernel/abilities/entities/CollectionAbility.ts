@@ -15,6 +15,7 @@ export class CollectionAbility extends AbilityBase<IEntityManagerBase> {
             items:     { get: () => state.items },
             pageIndex: { get: () => state.pageIndex },
             pageSize:  { get: () => state.pageSize },
+            pageCount: { get: () => state.pageCount },            
         };
 
     }

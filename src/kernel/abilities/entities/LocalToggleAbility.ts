@@ -9,7 +9,7 @@ export class LocalToggleAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
             /**
              * 本地切换状态，记录到 dirtyMap
              */
-            localToggle: (id: any, field: keyof T): void => {
+            toggle: (id: any, field: keyof T): void => {
                 const idKey = host.schemaKeys.id;
                 const items = host.state.items || [];
                 const item = items.find((i: any) => i[idKey] === id);

@@ -21,6 +21,17 @@ export interface ISystemAbility {
     systemConfig<K extends keyof SystemConfig>(key?: K): Partial<SystemConfig> | any;
 }
 
+export interface ICollectionAbility<T, TC> {
+    loading: boolean;
+    isEmpty: boolean;
+    hasMore: boolean;
+    total: number;
+    items: T[];
+    pageIndex: number;
+    pageSize: number;
+    pageCount: number;
+}
+
 export interface ILocalListAbility<T,TC> {
     list(forceRefresh: boolean): Promise<T[]>;
     filter(text:string):Promise<T[]>;
@@ -40,8 +51,8 @@ export interface ISchemaAbility {
     readonly schemaIdType: 'number' |'string';
 }
 
-export interface IRemoteListAbility{
-    list(forceRefresh: boolean): Promise<any[]>;
+export interface IRemoteListAbility<T>{
+    list(forceRefresh: boolean): Promise<T[]>;
 }
 
 export interface IRemoteGetAbility<T> {
@@ -81,4 +92,10 @@ export interface ILocalDeleteAbility {
     clearDeletedStatus(): void;
 }
 
+export interface IRemoteToggleAbility<T> { 
+    toggle(id: any, field: keyof T): void;
+}
 
+export interface ILocalToggleAbility<T> { 
+    toggle(id: any, field: keyof T): void;
+}

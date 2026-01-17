@@ -12,7 +12,7 @@ export class RemoteToggleAbility<T, TC> extends AbilityBase<IEntityManagerBase> 
         const { host } = this;
 
         return {
-            remoteToggle: async (id: any, field: keyof T): Promise<void> => {
+            toggle: async (id: any, field: keyof T): Promise<void> => {
                 const idKey = host.schemaKeys.id;
                 const items = host.state.items || [];
                 const item = items.find((i: any) => i[idKey] === id);
