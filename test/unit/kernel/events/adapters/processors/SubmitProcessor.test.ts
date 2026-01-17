@@ -7,17 +7,17 @@ jest.mock('@orbitjs/logger', () => {
         error: jest.fn(),
         log: jest.fn(),
     };
-    
+
     return {
         ...jest.requireActual('@orbitjs/logger'),
         Logger: {
-            for: jest.fn(() => mockLogger)
-        }
+            for: jest.fn(() => mockLogger),
+        },
     };
 });
 
-import { SubmitProcessor, GestureEmit, InputSignal } from '@/kernel';
-
+import { SubmitProcessor } from '@/kernel/events/adapters/processors/SubmitProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('SubmitProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -25,31 +25,29 @@ describe('SubmitProcessor', () => {
 
     beforeEach(() => {
         mockEmit = jest.fn();
-        processor = new SubmitProcessor(
-            'submit',
-            mockEmit
-        );
+        processor = new SubmitProcessor('submit', mockEmit);
     });
 
     it('should be defined', () => {
         expect(processor).toBeDefined();
     });
 
-    it('should emit submit event on submit signal', () => {
+    it('should detect submit when triggered', () => {
         const mockEvent = new Event('submit');
         const input = {
             signal: 'submit' as InputSignal,
             time: 100,
-            x: 100,
-            y: 100,
-            originalEvent: mockEvent
+            x: 0,
+            y: 0,
+            buttons: 0,
+            originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'submit',
-            originalEvent: mockEvent
+            originalEvent: mockEvent,
         });
     });
 });

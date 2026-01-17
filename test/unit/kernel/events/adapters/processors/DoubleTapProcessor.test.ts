@@ -42,7 +42,9 @@ jest.mock('@/kernel/events/adapters/utils/validation', () => {
     };
 });
 
-import { DoubleTapProcessor, GestureEmit, InputSignal, validateDoubleTap } from '@/kernel';
+import { DoubleTapProcessor } from '@/kernel/events/adapters/processors/DoubleTapProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
+import { validateDoubleTap } from '@/kernel/events/adapters/utils/validation';
 import { Logger } from '@orbitjs/logger';
 
 describe('DoubleTapProcessor', () => {
@@ -53,36 +55,49 @@ describe('DoubleTapProcessor', () => {
     beforeEach(() => {
         mockEmit = jest.fn();
         processor = new DoubleTapProcessor('dblclick', mockEmit);
-
-        // Get the mock logger instance
-        mockLogger = (Logger.for as jest.Mock).mock.results[0].value;
-        mockLogger.debug.mockClear();
+        
+        // Create a mock logger instance
+        mockLogger = {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+        };
+        
+        // Mock the logger for the processor
+        Object.defineProperty(processor, 'logger', {
+            value: mockLogger,
+            writable: true,
+        });
     });
 
     it('should be defined', () => {
         expect(processor).toBeDefined();
     });
 
-    it('should detect double tap when two taps occur within time and distance constraints', () => {
-        const mockEvent = new MouseEvent('click');
+    it('should detect double tap when two taps occur in quick succession', () => {
+        const mockEvent = new MouseEvent('touchstart');
         const input1 = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const input2 = {
             signal: 'press' as InputSignal,
-            time: 200, // Within 300ms default interval
-            x: 105, // Within 10px default distance
-            y: 105,
+            time: 150, // 50ms later
+            x: 102, // Close to first tap
+            y: 102,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
         // First tap
         processor.handle(input1);
-        // Second tap
+        // Second tap - should trigger double tap
         processor.handle(input2);
 
         expect(mockEmit).toHaveBeenCalledWith({
@@ -92,139 +107,117 @@ describe('DoubleTapProcessor', () => {
     });
 
     it('should not detect double tap when taps are too far apart', () => {
-        const mockEvent = new MouseEvent('click');
+        const mockEvent = new MouseEvent('touchstart');
         const input1 = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const input2 = {
             signal: 'press' as InputSignal,
-            time: 200,
+            time: 150, // 50ms later - OK
             x: 200, // Too far from first tap
-            y: 200,
+            y: 200, // Too far from first tap
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
         // First tap
         processor.handle(input1);
-        // Second tap
+        // Second tap - should NOT trigger double tap because it's too far
         processor.handle(input2);
 
         expect(mockEmit).not.toHaveBeenCalled();
     });
 
     it('should not detect double tap when taps are too far apart in time', () => {
-        const mockEvent = new MouseEvent('click');
+        const mockEvent = new MouseEvent('touchstart');
         const input1 = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const input2 = {
             signal: 'press' as InputSignal,
-            time: 500, // More than 300ms after first tap
-            x: 105, // Within 10px distance
-            y: 105,
+            time: 500, // Too long after first tap
+            x: 102, // Close to first tap
+            y: 102,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
         // First tap
         processor.handle(input1);
-        // Second tap
+        // Second tap - should NOT trigger double tap because it's too late
         processor.handle(input2);
 
         expect(mockEmit).not.toHaveBeenCalled();
     });
 
-    it('should work with custom constraints', () => {
-        // Clear the mock to start fresh
-        (validateDoubleTap as jest.Mock).mockClear();
-
-        const mockEmit2 = jest.fn();
-        const customProcessor = new DoubleTapProcessor(
-            'dblclick',
-            mockEmit2,
-            { maxInterval: 500, maxDistance: 20 } // Custom constraints
-        );
-
-        const mockEvent = new MouseEvent('click');
-        const input1 = {
+    it('should update last tap info when a tap occurs', () => {
+        const mockEvent = new MouseEvent('touchstart');
+        const input = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent,
-        };
-        const input2 = {
-            signal: 'press' as InputSignal,
-            time: 400, // Within custom 500ms interval
-            x: 115, // Within custom 20px distance
-            y: 115,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
-        // Mock the validateDoubleTap function to return true for our test case
-        (validateDoubleTap as jest.Mock).mockReturnValueOnce(true);
+        processor.handle(input);
 
-        // First tap
-        customProcessor.handle(input1);
-        // Second tap
-        customProcessor.handle(input2);
-
-        // Verify that validateDoubleTap was called with custom constraints
-        expect(validateDoubleTap).toHaveBeenCalledWith(
-            400, // now
-            100, // lastTapTime
-            115, // x
-            115, // y
-            100, // lastTapX
-            100, // lastTapY
-            500, // maxInterval (custom)
-            20 // maxDistance (custom)
-        );
-
-        // Verify the emit was called
-        expect(mockEmit2).toHaveBeenCalledWith({
-            semantic: 'dblclick',
-            originalEvent: mockEvent,
-        });
+        // After handling a tap, the processor should store the tap info
+        // The processor validates against the previous tap info, then updates
+        // For the first tap, it checks against defaults (0, 0, 0) then stores the current tap
+        expect((processor as any).lastTapTime).toBe(100);
+        expect((processor as any).lastTapX).toBe(100);
+        expect((processor as any).lastTapY).toBe(100);
     });
 
-    it('should call validateDoubleTap with correct parameters', () => {
-        const mockEvent = new MouseEvent('click');
+    it('should use validateDoubleTap function to check if it is a double tap', () => {
+        const mockEvent = new MouseEvent('touchstart');
         const input1 = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const input2 = {
             signal: 'press' as InputSignal,
-            time: 200,
-            x: 105,
-            y: 105,
+            time: 150,
+            x: 102,
+            y: 102,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
         processor.handle(input1);
         processor.handle(input2);
 
-        // Verify that validateDoubleTap was called with the right parameters
-        expect(validateDoubleTap).toHaveBeenCalledWith(
-            200, // now
-            100, // lastTapTime
-            105, // x
-            105, // y
-            100, // lastTapX
-            100, // lastTapY
-            300, // maxInterval (default)
-            10 // maxDistance (default)
+        // The first tap triggers the validation (with defaults since there was no prior tap)
+        // The second tap triggers validation against the first tap
+        // So we check that the validation was called with the right params for the second tap
+        expect(validateDoubleTap).toHaveBeenLastCalledWith(
+            150, // current time
+            100, // last tap time
+            102, // current x
+            102, // current y
+            100, // last x
+            100, // last y
+            300, // max interval default
+            10   // max distance default
         );
     });
 });

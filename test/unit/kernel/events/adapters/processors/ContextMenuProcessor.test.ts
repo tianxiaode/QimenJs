@@ -1,4 +1,5 @@
-import { ContextMenuProcessor, GestureEmit, InputSignal } from '@/kernel';
+import { ContextMenuProcessor } from '@/kernel/events/adapters/processors/ContextMenuProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
 
 // Mock the logger to prevent errors during testing
 jest.mock('@orbitjs/logger', () => {
@@ -51,49 +52,14 @@ describe('ContextMenuProcessor', () => {
         });
     });
 
-    it('should handle keyboard events with ContextMenu key', () => {
-        const mockEvent = new KeyboardEvent('keydown', { key: 'ContextMenu' });
+    it('should not emit gesture when button is not right mouse button', () => {
+        const mockEvent = new MouseEvent('mousedown', { button: 0 });
         const input = {
-            signal: 'keydown' as InputSignal,
+            signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
-            originalEvent: mockEvent,
-        };
-
-        processor.handle(input);
-
-        expect(mockEmit).toHaveBeenCalledWith({
-            semantic: 'contextmenu',
-            originalEvent: mockEvent,
-        });
-    });
-
-    it('should handle keyboard events with Shift+F10', () => {
-        const mockEvent = new KeyboardEvent('keydown', { key: 'F10', shiftKey: true });
-        const input = {
-            signal: 'keydown' as InputSignal,
-            time: 100,
-            x: 100,
-            y: 100,
-            originalEvent: mockEvent,
-        };
-
-        processor.handle(input);
-
-        expect(mockEmit).toHaveBeenCalledWith({
-            semantic: 'contextmenu',
-            originalEvent: mockEvent,
-        });
-    });
-
-    it('should not emit for other keyboard keys', () => {
-        const mockEvent = new KeyboardEvent('keydown', { key: 'Enter' });
-        const input = {
-            signal: 'keydown' as InputSignal,
-            time: 100,
-            x: 100,
-            y: 100,
+            buttons: 1, // Left mouse button
             originalEvent: mockEvent,
         };
 

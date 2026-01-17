@@ -28,7 +28,9 @@ jest.mock('@orbitjs/validation', () => {
         },
     };
 });
-import { LongPressProcessor, GestureEmit, InputSignal } from '@/kernel';
+
+import { LongPressProcessor } from '@/kernel/events/adapters/processors/LongPressProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('LongPressProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -39,86 +41,114 @@ describe('LongPressProcessor', () => {
         processor = new LongPressProcessor('longpress', mockEmit);
     });
 
-    afterEach(() => {
-        jest.useRealTimers();
-    });
-
     it('should be defined', () => {
         expect(processor).toBeDefined();
     });
 
-    it('should detect long press when held for minimum duration', () => {
-        jest.useFakeTimers();
-        const mockEvent = new MouseEvent('mousedown');
+    it('should detect long press when press duration exceeds threshold', () => {
+        const mockEvent = new MouseEvent('touchstart');
         const input = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
-        processor.handle(input);
-        // Fast-forward time to exceed default 500ms
-        jest.advanceTimersByTime(500);
+        // Enable fake timers
+        jest.useFakeTimers();
 
+        // Simulate a press that exceeds the long press duration
+        processor.handle(input);
+
+        // Check that the processor is tracking the press
+        expect((processor as any).isPressed).toBe(true);
+        expect((processor as any).startTime).toBe(100);
+        
+        // Fast-forward time to exceed default threshold
+        jest.advanceTimersByTime((processor as any).durationThreshold + 1);
+        
+        // Check that the long press was emitted
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'longpress',
             originalEvent: mockEvent,
         });
+        
+        // Restore real timers
+        jest.useRealTimers();
     });
 
-    it('should not detect long press if cancelled before timeout', () => {
-        jest.useFakeTimers();
-        const mockEvent = new MouseEvent('mousedown');
+    it('should not emit long press if released before threshold', () => {
+        const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
-        const cancelInput = {
-            signal: 'cancel' as InputSignal,
-            time: 200,
+
+        const releaseInput = {
+            signal: 'release' as InputSignal,
+            time: 150, // Before threshold
             x: 100,
             y: 100,
-            originalEvent: new MouseEvent('mouseup'),
+            buttons: 0,
+            originalEvent: mockEvent,
         };
+        
+        // Enable fake timers
+        jest.useFakeTimers();
 
+        // Press and release before threshold
         processor.handle(pressInput);
-        processor.handle(cancelInput);
+        processor.handle(releaseInput);
 
-        // Fast-forward time
-        jest.advanceTimersByTime(500);
+        // Fast-forward time to exceed default threshold
+        jest.advanceTimersByTime((processor as any).durationThreshold + 1);
 
         expect(mockEmit).not.toHaveBeenCalled();
+        
+        // Restore real timers
+        jest.useRealTimers();
     });
-
+    
     it('should cancel long press if movement exceeds max distance', () => {
-        jest.useFakeTimers();
-        const mockEvent = new MouseEvent('mousedown');
+        const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 150,
-            x: 200, // Exceeds default 10px max distance
+            x: 200, // Movement exceeds max distance
             y: 200,
-            originalEvent: new MouseEvent('mousemove'),
+            buttons: 1,
+            originalEvent: mockEvent,
         };
+        
+        // Enable fake timers
+        jest.useFakeTimers();
 
+        // Press and move beyond threshold
         processor.handle(pressInput);
         processor.handle(moveInput);
 
-        // Fast-forward time
-        jest.advanceTimersByTime(500);
+        // Fast-forward time to exceed default threshold
+        jest.advanceTimersByTime((processor as any).durationThreshold + 1);
 
+        // Should not emit since movement was too large
         expect(mockEmit).not.toHaveBeenCalled();
+        
+        // Restore real timers
+        jest.useRealTimers();
     });
 });

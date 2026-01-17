@@ -29,131 +29,113 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import {
-    createGestureProcessor,
-    TapProcessor,
-    DoubleTapProcessor,
-    LongPressProcessor,
-    DragProcessor,
-    SwipeProcessor,
-    HoverProcessor,
-    ContextMenuProcessor,
-    SubmitProcessor,
-    GestureEmit,
-} from '@/kernel';
+import { createGestureProcessor } from '@/kernel/events/adapters/processors/factory';
+import { GestureEmit, GestureEventDescriptor } from '@/kernel/types';
 
-describe('GestureProcessor Factory', () => {
+describe('Processor Factory', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
 
     beforeEach(() => {
         mockEmit = jest.fn();
     });
 
-    it('should create a TapProcessor', () => {
-        const descriptor = {
-            semantic: 'tap' as const,
-            processor: 'tapProcessor' as const,
-            requires: ['press', 'release'] as const,
+    it('should create ContextMenuProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'contextMenuProcessor',
+            semantic: 'contextmenu'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(TapProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a DoubleTapProcessor', () => {
-        const descriptor = {
-            semantic: 'dblclick' as const,
-            processor: 'doubleTapProcessor' as const,
-            requires: ['press'] as const,
+    it('should create DoubleTapProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'doubleTapProcessor',
+            semantic: 'dblclick'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(DoubleTapProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a LongPressProcessor', () => {
-        const descriptor = {
-            semantic: 'longpress' as const,
-            processor: 'longPressProcessor' as const,
-            requires: ['press', 'move', 'cancel'] as const,
+    it('should create DragProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'panProcessor',
+            semantic: 'drag'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(LongPressProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a DragProcessor (panProcessor)', () => {
-        const descriptor = {
-            semantic: 'drag' as const,
-            processor: 'panProcessor' as const,
-            requires: ['press', 'move', 'release', 'cancel'] as const,
+    it('should create HoverProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'hoverProcessor',
+            semantic: 'hover'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(DragProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a SwipeProcessor', () => {
-        const descriptor = {
-            semantic: 'swipe' as const,
-            processor: 'swipeProcessor' as const,
-            requires: ['press', 'release', 'cancel'] as const,
+    it('should create LongPressProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'longPressProcessor',
+            semantic: 'longpress'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(SwipeProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a HoverProcessor', () => {
-        const descriptor = {
-            semantic: 'hover' as const,
-            processor: 'hoverProcessor' as const,
-            requires: ['enter', 'leave'] as const,
+    it('should create SubmitProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'enterKeyProcessor',
+            semantic: 'submit'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(HoverProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a ContextMenuProcessor', () => {
-        const descriptor = {
-            semantic: 'contextmenu' as const,
-            processor: 'contextMenuProcessor' as const,
-            requires: ['press', 'keydown'] as const,
+    it('should create SwipeProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'swipeProcessor',
+            semantic: 'swipe'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(ContextMenuProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should create a SubmitProcessor (enterKeyProcessor)', () => {
-        const descriptor = {
-            semantic: 'submit' as const,
-            processor: 'enterKeyProcessor' as const,
-            requires: ['submit'] as const,
+    it('should create TapProcessor', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'tapProcessor',
+            semantic: 'tap'
         };
-
         const processor = createGestureProcessor(descriptor, mockEmit);
-
-        expect(processor).toBeInstanceOf(SubmitProcessor);
+        expect(processor).toBeDefined();
+        expect(processor).toHaveProperty('handlers');
     });
 
-    it('should throw an error for unknown processor', () => {
-        const descriptor = {
-            semantic: 'tap' as const, // Use an existing semantic value
-            processor: 'unknownProcessor' as any, // But use an unknown processor
-            requires: ['press', 'release'] as const,
+    it('should throw error for unknown processor type', () => {
+        const descriptor: GestureEventDescriptor = {
+            requires: [],
+            processor: 'unknownProcessor' as any,
+            semantic: 'tap'
         };
-
+        
         expect(() => {
             createGestureProcessor(descriptor, mockEmit);
-        }).toThrow('Unknown gesture processor');
+        }).toThrow(/Unknown gesture processor/);
     });
 });

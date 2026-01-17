@@ -16,7 +16,8 @@ jest.mock('@orbitjs/logger', () => {
     };
 });
 
-import { HoverProcessor, GestureEmit, InputSignal } from '@/kernel';
+import { HoverProcessor } from '@/kernel/events/adapters/processors/HoverProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('HoverProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -31,13 +32,14 @@ describe('HoverProcessor', () => {
         expect(processor).toBeDefined();
     });
 
-    it('should emit hover event on enter', () => {
-        const mockEvent = new MouseEvent('mouseenter');
+    it('should detect hover when mouse moves over an element', () => {
+        const mockEvent = new MouseEvent('mousemove');
         const input = {
-            signal: 'enter' as InputSignal,
+            signal: 'move' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 0,
             originalEvent: mockEvent,
         };
 
@@ -46,24 +48,24 @@ describe('HoverProcessor', () => {
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'hover',
             originalEvent: mockEvent,
+            x: 100,
+            y: 100,
         });
     });
 
-    it('should emit hover event on leave', () => {
-        const mockEvent = new MouseEvent('mouseleave');
+    it('should not detect hover when mouse moves while button is pressed', () => {
+        const mockEvent = new MouseEvent('mousemove');
         const input = {
-            signal: 'leave' as InputSignal,
+            signal: 'move' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1, // Button is pressed (dragging)
             originalEvent: mockEvent,
         };
 
         processor.handle(input);
 
-        expect(mockEmit).toHaveBeenCalledWith({
-            semantic: 'hover',
-            originalEvent: mockEvent,
-        });
+        expect(mockEmit).not.toHaveBeenCalled();
     });
 });

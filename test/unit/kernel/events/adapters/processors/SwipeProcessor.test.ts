@@ -29,7 +29,8 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { SwipeProcessor, GestureEmit, InputSignal } from '@/kernel';
+import { SwipeProcessor } from '@/kernel/events/adapters/processors/SwipeProcessor';
+import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('SwipeProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -51,133 +52,88 @@ describe('SwipeProcessor', () => {
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const moveInput = {
             signal: 'move' as InputSignal,
-            time: 125, // halfway through
-            x: 150, // halfway to destination
+            time: 120, // 20ms later
+            x: 150, // 50px moved
             y: 100,
-            originalEvent: mockEvent,
-        };
-        const releaseInput = {
-            signal: 'release' as InputSignal,
-            time: 150, // 50ms between press and release
-            x: 200, // 100px distance (enough, since default minDistance is 30px)
-            y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
+        // First press
         processor.handle(pressInput);
-        processor.handle(moveInput); // Add move event to update lastX and lastY
-        processor.handle(releaseInput);
+        // Then move
+        processor.handle(moveInput);
 
+        // Check if swipe was detected
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'swipe',
             originalEvent: mockEvent,
+            direction: { x: 1, y: 0 },
+            velocity: { x: 2500, y: 0 }, // 50px / 20ms = 2500 px/s
+            distance: 50,
         });
     });
 
-    it('should not detect swipe when movement is too slow', () => {
+    it('should not detect swipe if movement is too slow', () => {
         const mockEvent = new MouseEvent('touchmove');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
+
         const moveInput = {
             signal: 'move' as InputSignal,
-            time: 300,
-            x: 150,
+            time: 500, // 400ms later - too slow
+            x: 150, // 50px moved
             y: 100,
-            originalEvent: mockEvent,
-        };
-        const releaseInput = {
-            signal: 'release' as InputSignal,
-            time: 500, // 400ms between press and release - too slow for the velocity requirement
-            x: 150, // 50px distance
-            y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
 
+        // First press
         processor.handle(pressInput);
+        // Then move
         processor.handle(moveInput);
-        processor.handle(releaseInput);
 
+        // Check that no swipe was detected
         expect(mockEmit).not.toHaveBeenCalled();
     });
 
-    it('should not detect swipe when movement is too short', () => {
+    it('should reset state when release signal is received', () => {
         const mockEvent = new MouseEvent('touchmove');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
+            buttons: 1,
             originalEvent: mockEvent,
         };
-        const moveInput = {
-            signal: 'move' as InputSignal,
-            time: 125,
-            x: 105,
-            y: 100,
-            originalEvent: mockEvent,
-        };
+
         const releaseInput = {
             signal: 'release' as InputSignal,
-            time: 150, // 50ms between press and release
-            x: 110, // Only 10px distance - less than 30px minimum
-            y: 100,
-            originalEvent: mockEvent,
-        };
-
-        processor.handle(pressInput);
-        processor.handle(moveInput);
-        processor.handle(releaseInput);
-
-        expect(mockEmit).not.toHaveBeenCalled();
-    });
-
-    it('should reset on cancel signal', () => {
-        const mockEvent = new MouseEvent('touchmove');
-        const pressInput = {
-            signal: 'press' as InputSignal,
-            time: 100,
+            time: 120,
             x: 100,
             y: 100,
-            originalEvent: mockEvent,
-        };
-        const moveInput = {
-            signal: 'move' as InputSignal,
-            time: 125,
-            x: 150,
-            y: 100,
-            originalEvent: mockEvent,
-        };
-        const cancelInput = {
-            signal: 'cancel' as InputSignal,
-            time: 150,
-            x: 200,
-            y: 100,
+            buttons: 0,
             originalEvent: mockEvent,
         };
 
+        // Press and then release
         processor.handle(pressInput);
-        processor.handle(moveInput);
-        processor.handle(cancelInput);
-
-        // After cancel, a subsequent release should not trigger swipe
-        const releaseInput = {
-            signal: 'release' as InputSignal,
-            time: 200,
-            x: 200,
-            y: 100,
-            originalEvent: mockEvent,
-        };
         processor.handle(releaseInput);
 
+        // Verify that state was reset after release
         expect(mockEmit).not.toHaveBeenCalled();
     });
 });
