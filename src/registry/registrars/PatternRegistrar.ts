@@ -58,12 +58,7 @@ export class PatternRegistrar extends RegistrarBase<Map<string, RegExp>> {
      * @param entry - 正则表达式对象
      */
     private doRegister(name: string, entry: RegExp): void {
-        if (entry instanceof RegExp) {
-            this.storage.set(name, entry);
-        } else {
-            // 处理字符串形式的正则
-            this.storage.set(name, entry);
-        }
+        this.storage.set(name, entry);
     }
 
     /**

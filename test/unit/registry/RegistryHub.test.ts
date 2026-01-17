@@ -67,6 +67,31 @@ describe('RegistryHub', () => {
         RegistryHub.use(registrar);
       }).toThrow(RegistryHubLockedError);
     });
+
+    it('应该调用所有已注册注册器的lock方法', () => {
+      const registrar1 = MimeTypeRegistrar.getInstance();
+      const registrar2 = { 
+        name: 'test-registrar', 
+        lock: jest.fn(),
+        register: jest.fn(),
+        unregister: jest.fn(),
+        get: jest.fn(),
+        clear: jest.fn(),
+        inspect: jest.fn(),
+        doInspect: jest.fn(),
+        checkLock: jest.fn()
+      };
+      
+      RegistryHub.use(registrar1);
+      (RegistryHub as any).registars.set('test-registrar', registrar2);
+      
+      RegistryHub.lock();
+      
+      // 验证MimeTypeRegistrar的lock方法被调用
+      expect((registrar1 as any).isLocked).toBe(true);
+      // 验证模拟注册器的lock方法被调用
+      expect(registrar2.lock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('get', () => {

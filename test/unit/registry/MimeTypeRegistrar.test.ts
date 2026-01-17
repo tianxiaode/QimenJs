@@ -129,6 +129,35 @@ describe('MimeTypeRegistrar', () => {
     });
 
     /**
+     * 测试获取多个扩展名（包含带点号扩展名）对应的MIME类型
+     */
+    it('应该能够处理包含带点号扩展名的数组查询', () => {
+      mimeTypeRegistrar.register('.jpg', 'image/jpeg');
+      mimeTypeRegistrar.register('png', 'image/png');
+
+      const result = mimeTypeRegistrar.get(['.jpg', 'png']);
+      expect(result).toEqual(new Set(['image/jpeg', 'image/png']));
+    });
+
+    /**
+     * 测试获取多个扩展名（其中某些扩展名不存在）对应的MIME类型
+     */
+    it('应该能够处理包含不存在扩展名的数组查询', () => {
+      mimeTypeRegistrar.register('jpg', 'image/jpeg');
+
+      const result = mimeTypeRegistrar.get(['jpg', 'nonexistent']);
+      expect(result).toEqual(new Set(['image/jpeg'])); // 只返回存在的mime类型
+    });
+
+    /**
+     * 测试获取空数组对应的MIME类型
+     */
+    it('应该能够处理空数组查询', () => {
+      const result = mimeTypeRegistrar.get([]);
+      expect(result).toEqual(new Set([])); // 返回空set
+    });
+
+    /**
      * 测试处理带点号的扩展名的获取
      */
     it('应该能够处理带点号的扩展名', () => {
