@@ -1,7 +1,24 @@
+/**
+ * 注册中心类型定义
+ * 定义了系统配置、域配置等类型以及注册器名称常量
+ */
+
+/**
+ * 注册器集合接口
+ * 用于类型化访问注册器
+ */
 export interface Registrars {}
 
+/**
+ * 环境类型定义
+ * 定义了可能的应用环境值
+ */
 export type EnvType = 'development' | 'production' | 'test';
 
+/**
+ * 系统配置接口
+ * 定义了系统级别的配置项
+ */
 export interface SystemConfig {
     env: EnvType;
     locale: string;
@@ -22,8 +39,16 @@ export interface SystemConfig {
     [key: string]: any;
 }
 
+/**
+ * 预设类型定义
+ * 定义了可用的预设类型
+ */
 export type PresetType = 'abp' | 'spring' | string;
 
+/**
+ * 域配置接口
+ * 定义了域相关的配置项
+ */
 export interface DomainConfig {
     readonly baseUrl: string;
     preset: PresetType;
@@ -37,6 +62,11 @@ export interface DomainConfig {
     commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);    
     [key: string]: any;
 }
+
+/**
+ * 注册器名称常量定义
+ * 用于标识不同类型的注册器
+ */
 export const SystemRegistrarName = 'system' as const;
 export const PatternRegistrarName = 'pattern' as const;
 export const MimeTypeRegistrarName = 'mimeType' as const;
