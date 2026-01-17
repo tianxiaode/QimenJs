@@ -11,3 +11,5 @@ export * from './GestureError';
 export * from './ComposableRegistrarError';
 export * from './StreamError';
 export * from './codes';
+export * from './EntityActionRegistrarError';
+export * from './SchemaRegistrarError';

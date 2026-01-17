@@ -47,4 +47,24 @@ export enum KernelErrorCode {
    * 未知的手势处理器类型
    */
   UNKNOWN_GESTURE_PROCESSOR = 'UNKNOWN_GESTURE_PROCESSOR',
+  
+  /**
+   * 未找到指定的动作
+   */
+  ACTION_NOT_FOUND = 'ACTION_NOT_FOUND',
+  
+  /**
+   * 未找到指定的模式
+   */
+  SCHEMA_NOT_FOUND = 'SCHEMA_NOT_FOUND',
+  
+  /**
+   * 模式注册失败
+   */
+  SCHEMA_REGISTRATION_FAILED = 'SCHEMA_REGISTRATION_FAILED',
+  
+  /**
+   * 动作注册失败
+   */
+  ACTION_REGISTRATION_FAILED = 'ACTION_REGISTRATION_FAILED',
 }

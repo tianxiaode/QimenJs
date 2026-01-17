@@ -17,7 +17,7 @@ export * from './registrars';
 export * from './types';
 
 
-export const bootstrapValidators = () => {
+export const bootstrapAblities = () => {
     // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象
     Object.values(AllEntries).forEach((entry: ComposableEntry) => {
         // 简单的健壮性检查：确保它是一个有效的 Entry 对象
