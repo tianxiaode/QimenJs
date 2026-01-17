@@ -307,6 +307,86 @@ describe('ComposableBase', () => {
     });
   });
 
+  describe('Ability decorator and prototype chain collection', () => {
+    it('should collect abilities from prototype chain correctly', () => {
+      const ABILITIES_KEY = Symbol('__abilities__');
+      
+      @Ability('ParentAbility')
+      class ParentClass extends ComposableBase {
+        constructor() {
+          super();
+        }
+      }
+      
+      @Ability('ChildAbility')
+      class ChildClass extends ParentClass {
+        constructor() {
+          super();
+        }
+      }
+      
+      const childInstance = new ChildClass();
+      // 使用类型转换访问私有方法
+      const collectedAbilities = (childInstance as any).collectFromPrototypeChain();
+      
+      // Both parent and child abilities should be collected
+      expect(collectedAbilities).toContain('ParentAbility');
+      expect(collectedAbilities).toContain('ChildAbility');
+      expect(collectedAbilities.length).toBe(2);
+    });
+
+    it('should handle duplicate abilities in prototype chain', () => {
+      const ABILITIES_KEY = Symbol('__abilities__');
+      
+      @Ability('SharedAbility')
+      class ParentClass extends ComposableBase {
+        constructor() {
+          super();
+        }
+      }
+      
+      @Ability('SharedAbility', 'ChildAbility')  // Duplicate with parent
+      class ChildClass extends ParentClass {
+        constructor() {
+          super();
+        }
+      }
+      
+      const childInstance = new ChildClass();
+      const collectedAbilities = (childInstance as any).collectFromPrototypeChain();
+      
+      // Duplicates should be removed, so we should have 2 unique abilities
+      expect(collectedAbilities).toContain('SharedAbility');
+      expect(collectedAbilities).toContain('ChildAbility');
+      expect(collectedAbilities.length).toBe(2);
+    });
+
+    it('should handle abilities with no duplicates', () => {
+      const ABILITIES_KEY = Symbol('__abilities__');
+      
+      @Ability('FirstAbility')
+      class FirstClass extends ComposableBase {
+        constructor() {
+          super();
+        }
+      }
+      
+      @Ability('SecondAbility')
+      class SecondClass extends FirstClass {
+        constructor() {
+          super();
+        }
+      }
+      
+      const instance = new SecondClass();
+      const collectedAbilities = (instance as any).collectFromPrototypeChain();
+      
+      expect(collectedAbilities).toContain('FirstAbility');
+      expect(collectedAbilities).toContain('SecondAbility');
+      expect(collectedAbilities.length).toBe(2);
+    });
+  });
+
   describe('Ability decorator', () => {
     it('should properly decorate a class with ability keys', () => {
       // Use a different approach to verify decorator functionality

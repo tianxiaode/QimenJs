@@ -152,6 +152,37 @@ class TestAbilityWithConflictingProp extends AbilityBase<TestHost> {
   }
 }
 
+// Test ability that creates a getter/setter property
+class TestAbilityWithGetterSetter extends AbilityBase<TestHost> {
+  _internalValue = 'default';
+  
+  get getterSetterProp() {
+    return this._internalValue;
+  }
+  
+  set getterSetterProp(value: string) {
+    this._internalValue = value;
+  }
+  
+  protected expose(): IExposeResult {
+    // Create a separate variable to hold the value for the setter
+    let internalValue = 'getter setter value';
+    
+    return {
+      // Explicitly return a getter/setter object
+      explicitGetterSetter: {
+        get: () => internalValue,
+        set: (val: string) => { internalValue = val; },
+        enumerable: true
+      }
+    };
+  }
+  
+  protected onDispose(): void {
+    super.onDispose();
+  }
+}
+
 describe('AbilityBase', () => {
   describe('attach', () => {
     it('should attach to host and inject properties', () => {
@@ -173,6 +204,20 @@ describe('AbilityBase', () => {
       
       // Verify that the host now has the injected properties
       expect((host as any).injectedProp).toBe('injected value');
+    });
+    
+    it('should handle getter/setter properties', () => {
+      const host = new TestHost();
+      const ability = new TestAbilityWithGetterSetter();
+      
+      ability.attach(host);
+      
+      // Verify that the host now has the injected getter/setter
+      expect((host as any).explicitGetterSetter).toBe('getter setter value');
+      
+      // Test setting the value
+      (host as any).explicitGetterSetter = 'new value';
+      expect((host as any).explicitGetterSetter).toBe('new value');
     });
   });
 
