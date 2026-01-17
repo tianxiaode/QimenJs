@@ -36,6 +36,12 @@ export class EventScope implements IEventScope {
     private readonly disposers: Array<() => void> = [];
     private disposed = false;
 
+    /**
+     * 构造函数
+     * 
+     * @param bus - 关联的事件总线实例
+     * @param logger - 可选的日志记录器，用于记录事件作用域的操作日志
+     */
     constructor(
         private readonly bus: EventBus,
         private readonly logger?: ILogger
@@ -44,6 +50,14 @@ export class EventScope implements IEventScope {
     }
 
     // --- 内置日志方法 ---
+    
+    /**
+     * 记录作用域相关的日志
+     * 
+     * @param level - 日志级别
+     * @param action - 作用域操作动作
+     * @param data - 附加数据
+     */
     logScope(level: LogLevel, action: ScopeLogAction, data?: Record<string, any>) {
         if (!this.logger) return;
         this.logger[level](`[event.scope] ${action}`, {
@@ -53,22 +67,33 @@ export class EventScope implements IEventScope {
         });
     }
 
+    /**
+     * 触发事件
+     * 
+     * 在当前作用域上下文中触发一个事件，如果作用域已被销毁，则记录警告日志。
+     * 
+     * @param event - 事件名称
+     * @param data - 事件数据
+     * @param source - 事件源，默认为'UNKNOWN'
+     */
     emit(event: string, data?: any, source?: any): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
-        const context: IEventContext<any> = {
-            event,
-            data,
-            source: source || 'UNKNOWN', // 如果没传 source，至少标注为未知
-            scopeId: this.scopeId, // 带上当前 Scope 的唯一标识
-            busId: this.bus.getBusId(),
-            timestamp: Date.now(),
-        };
-        this.bus.emit(event, context);
+        this.bus.emit(event, data, source || this, this.scopeId);
     }
 
+    /**
+     * 订阅事件
+     * 
+     * 将事件处理器添加到事件总线并将其取消函数注册到当前作用域中，
+     * 当作用域被销毁时，这些事件处理器也会被自动取消订阅。
+     * 
+     * @param event - 事件名称
+     * @param handler - 事件处理器函数
+     * @returns 返回一个取消订阅的函数
+     */
     on(event: string, handler: EventHandler): () => void {
         if (this.disposed) {
             this.logScope('warn', 'subscribe_after_dispose', { event: String(event) });
@@ -80,6 +105,14 @@ export class EventScope implements IEventScope {
         return off;
     }
 
+    /**
+     * 一次性订阅事件
+     * 
+     * 与 on 方法类似，但处理器只会在事件第一次被触发时调用，之后自动取消订阅。
+     * 
+     * @param event - 事件名称
+     * @param handler - 事件处理器函数
+     */
     once(event: string, handler: EventHandler): void {
         const off = this.on(event, payload => {
             off();
@@ -87,10 +120,23 @@ export class EventScope implements IEventScope {
         });
     }
 
+    /**
+     * 添加清理函数
+     * 
+     * 将一个清理函数添加到作用域中，当作用域被销毁时，该函数会被调用。
+     * 
+     * @param cleanup - 清理函数
+     */
     addCleanup(cleanup: () => void): void {
         if (!this.disposed) this.disposers.push(cleanup);
     }
 
+    /**
+     * 销毁作用域
+     * 
+     * 执行所有注册的清理函数，释放资源并标记作用域为已销毁状态。
+     * 如果作用域已经被销毁，则记录调试日志。
+     */
     dispose(): void {
         if (this.disposed) {
             this.logScope('debug', 'dispose_twice');
@@ -111,6 +157,11 @@ export class EventScope implements IEventScope {
         this.logScope('info', 'disposed');
     }
 
+    /**
+     * 获取事件作用域的唯一标识符
+     * 
+     * @returns 返回事件作用域的ID
+     */
     getScopeId(): string {
         return this.scopeId;
     }

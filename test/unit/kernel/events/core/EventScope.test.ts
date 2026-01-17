@@ -41,7 +41,12 @@ describe('EventScope', () => {
         bus.emit('test-event', { data: 'test' });
 
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'test' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                event: 'test-event'
+            })
+        );
 
         unsubscribe();
         bus.emit('test-event', { data: 'test2' });
@@ -68,7 +73,12 @@ describe('EventScope', () => {
         scope.emit('test-event', { data: 'second' });
 
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'first' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'first' },
+                event: 'test-event'
+            })
+        );
     });
 
     test('should emit events through scope', () => {
@@ -78,7 +88,12 @@ describe('EventScope', () => {
         scope.emit('through-scope', { data: 'test' });
 
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'test' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                event: 'through-scope'
+            })
+        );
     });
 
     test('should not emit events after disposal', () => {
@@ -153,5 +168,46 @@ describe('EventScope', () => {
 
         // Cleanup function should not be stored or executed
         expect(cleanupFn).toHaveBeenCalledTimes(0);
+    });
+
+    test('should emit events with proper context including scopeId and busId', () => {
+        const handler = jest.fn();
+        bus.on('context-test', handler);
+        
+        scope.emit('context-test', { data: 'test' });
+        
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                scopeId: scope.getScopeId(),
+                busId: bus.getBusId(),
+                event: 'context-test'
+            })
+        );
+    });
+
+    test('should log scope creation', () => {
+        // Need to create a new scope to test the creation log
+        const newScope = new EventScope(bus, mockLogger);
+        
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+            '[event.scope] created',
+            expect.objectContaining({
+                busId: bus.getBusId(),
+                scopeId: newScope.getScopeId()
+            })
+        );
+    });
+
+    test('should log successful disposal', () => {
+        scope.dispose();
+        
+        expect(mockLogger.info).toHaveBeenCalledWith(
+            '[event.scope] disposed',
+            expect.objectContaining({
+                busId: bus.getBusId(),
+                scopeId: scope.getScopeId()
+            })
+        );
     });
 });

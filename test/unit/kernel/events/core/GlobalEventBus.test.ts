@@ -50,7 +50,13 @@ describe('GlobalEventBus', () => {
         
         testBus.emit('test-event', { data: 'test' });
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'test' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                source: 'GLOBAL',
+                event: 'test-event'
+            })
+        );
 
         unsubscribe();
         testBus.emit('test-event', { data: 'test2' });
@@ -65,7 +71,13 @@ describe('GlobalEventBus', () => {
         testBus.emit('test-event', { data: 'second' });
 
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'first' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'first' },
+                source: 'GLOBAL',
+                event: 'test-event'
+            })
+        );
     });
 
     test('should emit events', () => {
@@ -75,7 +87,13 @@ describe('GlobalEventBus', () => {
         testBus.emit('emit-test', { data: 'test' });
 
         expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith({ data: 'test' });
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                source: 'GLOBAL',
+                event: 'emit-test'
+            })
+        );
     });
 
     test('should clear specific event listeners', () => {
@@ -127,13 +145,74 @@ describe('GlobalEventBus', () => {
         testBus.emit('user:logout');
 
         expect(userLoginHandler).toHaveBeenCalledTimes(1);
-        expect(userLoginHandler).toHaveBeenCalledWith({ userId: '123' });
+        expect(userLoginHandler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { userId: '123' },
+                source: 'GLOBAL',
+                event: 'user:login'
+            })
+        );
         expect(userLogoutHandler).toHaveBeenCalledTimes(1);
-        expect(userLogoutHandler).toHaveBeenCalledWith(undefined);
+        expect(userLogoutHandler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: undefined,
+                source: 'GLOBAL',
+                event: 'user:logout'
+            })
+        );
     });
     
     test('globalEventBus singleton should be available', () => {
         expect(globalEventBus).toBeDefined();
         expect(globalEventBus).toBeInstanceOf(GlobalEventBus);
+    });
+
+    test('should maintain separate event subscriptions between instances', () => {
+        const anotherBus = new GlobalEventBus();
+        const handler1 = jest.fn();
+        const handler2 = jest.fn();
+        
+        testBus.on('separate-test', handler1);
+        anotherBus.on('separate-test', handler2);
+        
+        testBus.emit('separate-test', { data: 'test' });
+        
+        // Each bus should trigger only its own handlers
+        expect(handler1).toHaveBeenCalledTimes(1);
+        expect(handler2).not.toHaveBeenCalled();
+    });
+
+    test('should create event scopes with associated bus', () => {
+        const scope = testBus.createEventScope();
+        
+        // Emit an event through the scope and verify it works
+        const handler = jest.fn();
+        testBus.on('scope-test', handler);
+        scope.emit('scope-test', { data: 'from-scope' }, 'TestSource');
+        
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'from-scope' },
+                source: 'TestSource',
+                event: 'scope-test',
+                busId: testBus.getBusId()
+            })
+        );
+    });
+
+    test('should emit events with GLOBAL source identifier', () => {
+        const handler = jest.fn();
+        testBus.on('global-source-test', handler);
+        
+        testBus.emit('global-source-test', { data: 'test' });
+        
+        expect(handler).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { data: 'test' },
+                source: 'GLOBAL',
+                event: 'global-source-test'
+            })
+        );
     });
 });
