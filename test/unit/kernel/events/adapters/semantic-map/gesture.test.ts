@@ -1,3 +1,8 @@
+import { Logger } from '@/logger';
+
+// 在导入kernel模块之前，先初始化Logger.root以防止LoggerChild出错
+Logger.root = new Logger({ level: 'error' }); // 设置为error级别以减少测试输出
+
 import {
     gestureMap,
     keyboardGestureMap,
@@ -67,6 +72,18 @@ describe('gesture semantic maps', () => {
             expect(dragConfig!.semantic).toBe('drag');
         });
 
+        test('swipe 手势应该有正确的配置', () => {
+            const swipeConfig = gestureMap.swipe;
+            expect(swipeConfig).toBeDefined();
+            expect(swipeConfig!.requires).toEqual(['press', 'move', 'release']);
+            expect(swipeConfig!.processor).toBe('swipeProcessor');
+            expect(swipeConfig!.constraints).toEqual({
+                minDistance: 30,
+                maxDuration: 300,
+            });
+            expect(swipeConfig!.semantic).toBe('swipe');
+        });
+
         test('contextmenu 手势应该有正确的配置', () => {
             const contextmenuConfig = gestureMap.contextmenu;
             expect(contextmenuConfig).toBeDefined();
@@ -97,6 +114,7 @@ describe('gesture semantic maps', () => {
             expect(gestureEventMap).toHaveProperty('click');
             expect(gestureEventMap).toHaveProperty('longpress');
             expect(gestureEventMap).toHaveProperty('drag');
+            expect(gestureEventMap).toHaveProperty('swipe');
             expect(gestureEventMap).toHaveProperty('contextmenu');
 
             // 检查是否包含 keyboardGestureMap 的内容
@@ -104,6 +122,7 @@ describe('gesture semantic maps', () => {
 
             // 验证具体配置是否正确合并
             expect(gestureEventMap.tap).toEqual(gestureMap.tap);
+            expect(gestureEventMap.swipe).toEqual(gestureMap.swipe);
             expect(gestureEventMap.submit).toEqual(keyboardGestureMap.submit);
         });
 

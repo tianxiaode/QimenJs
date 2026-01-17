@@ -6,7 +6,7 @@ export * from './events';
 export * from './core';
 export * from './actions';
 export * from './types';
-export * from './events';
+export * from './errors';
 
 import * as AllEntries from './abilities';
 import { ComposableRegistrar } from './registrars';

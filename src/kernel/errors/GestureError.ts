@@ -26,7 +26,7 @@ export class GestureError extends KernelError {
    * 构造函数
    * 
    * @param message - 错误消息，描述具体的错误原因
-   * @param code - 错误代码
+   * @param code - 错误代码，来自KernelErrorCode枚举
    * @param context - 可选参数，提供与错误相关的上下文信息
    * 
    * @example

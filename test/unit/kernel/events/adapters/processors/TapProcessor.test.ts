@@ -28,7 +28,7 @@ jest.mock('@orbitjs/validation', () => {
         },
     };
 });
-import { TapProcessor, GestureEmit, InputSignal } from '@/kernel';
+import { TapProcessor, GestureEmit, InputSignal, GestureError, KernelErrorCode } from '@/kernel';
 
 describe('TapProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;
@@ -178,5 +178,130 @@ describe('TapProcessor', () => {
         processor.handle(releaseInput);
 
         expect(mockEmit).not.toHaveBeenCalled();
+    });
+
+    it('should throw GestureError when x coordinate is null', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: null as any, // Invalid x value
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+        
+        const gestureError = expect.any(GestureError);
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(gestureError);
+    });
+
+    it('should throw GestureError when x coordinate is undefined', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: undefined as any, // Invalid x value
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when x coordinate is NaN', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: NaN, // Invalid x value
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when x coordinate is Infinity', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: Infinity, // Invalid x value
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when y coordinate is null', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: 100,
+            y: null as any, // Invalid y value
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when y coordinate is undefined', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: 100,
+            y: undefined as any, // Invalid y value
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when y coordinate is NaN', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: 100,
+            y: NaN, // Invalid y value
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
+    });
+
+    it('should throw GestureError when y coordinate is Infinity', () => {
+        const mockEvent = new MouseEvent('click');
+        const pressInput = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: 100,
+            y: Infinity, // Invalid y value
+            originalEvent: mockEvent,
+        };
+
+        expect(() => {
+            processor.handle(pressInput);
+        }).toThrow(GestureError);
     });
 });

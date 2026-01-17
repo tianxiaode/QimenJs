@@ -35,6 +35,14 @@ jest.mock('@/kernel/events/adapters/processors', () => ({
   })
 }));
 
+// 为performance.now()添加模拟
+Object.defineProperty(window, 'performance', {
+  writable: true,
+  value: {
+    now: jest.fn(() => Date.now())
+  }
+});
+
 // 导入 mock 函数
 const { detectInputCapabilities } = require('@orbitjs/runtime-env');
 const { createGestureProcessor } = require('@/kernel/events/adapters/processors');
@@ -85,6 +93,13 @@ Object.assign(global, {
       this.clientY = touchInit.clientY || 0;
     }
   }
+});
+
+// Mock performance.now to return a consistent value
+const mockPerformanceNow = jest.fn(() => 123456.789);
+Object.defineProperty(global.performance, 'now', {
+  writable: true,
+  value: mockPerformanceNow
 });
 
 describe('DomEventAdapter', () => {
@@ -233,7 +248,7 @@ describe('DomEventAdapter', () => {
       // 由于使用了setTimeout，需要等待异步操作完成
       return new Promise(resolve => {
         setTimeout(() => {
-          expect(emitSpy).toHaveBeenCalledWith('tap', { semantic: 'tap', x: 100, y: 100 });
+          expect(emitSpy).toHaveBeenCalledWith('tap', { semantic: 'tap', x: 100, y: 100 }, undefined);
           resolve(undefined);
         }, 10);
       });
@@ -440,6 +455,25 @@ describe('DomEventAdapter', () => {
       expect(result.originalEvent).toBe(mouseEvent);
     });
     
+    it('should normalize MouseEvent correctly and include time', () => {
+      const mouseEvent = new MouseEvent('mousedown', {
+        clientX: 300,
+        clientY: 400,
+        buttons: 1
+      });
+      
+      const normalizeInput = (domEventAdapter as any).normalizeInput as Function;
+      const result = normalizeInput('press', mouseEvent);
+      
+      expect(result.signal).toBe('press');
+      expect(result.x).toBe(300);
+      expect(result.y).toBe(400);
+      expect(result.pointerType).toBe('mouse');
+      expect(result.buttons).toBe(1);
+      expect(result.originalEvent).toBe(mouseEvent);
+      expect(result.time).toBe(123456.789); // 检查时间戳
+    });
+    
     it('should handle keyboard and other events correctly', () => {
       const keyboardEvent = new KeyboardEvent('keydown', {
         key: 'Enter',
@@ -455,13 +489,13 @@ describe('DomEventAdapter', () => {
       expect(result.pointerType).toBeUndefined();
       expect(result.buttons).toBeUndefined();
       expect(result.originalEvent).toBe(keyboardEvent);
+      expect(result.time).toBe(123456.789); // 检查时间戳
     });
 
-    it('should normalize TouchEvent correctly with touches', () => {
+    it('should normalize TouchEvent correctly with time property', () => {
       const touch = new (global as any).Touch({ identifier: 0, target: document.body, clientX: 150, clientY: 250 });
       const touchEvent = new (global as any).TouchEvent('touchstart', {
-        touches: [touch],
-        changedTouches: []
+        touches: [touch]
       } as TouchEventInit);
       
       const normalizeInput = (domEventAdapter as any).normalizeInput as Function;
@@ -472,6 +506,7 @@ describe('DomEventAdapter', () => {
       expect(result.y).toBe(250);
       expect(result.pointerType).toBe('touch');
       expect(result.originalEvent).toBe(touchEvent);
+      expect(result.time).toBe(123456.789); // 检查时间戳
     });
 
     it('should normalize TouchEvent correctly with changedTouches when touches is empty', () => {
@@ -489,13 +524,35 @@ describe('DomEventAdapter', () => {
       expect(result.y).toBe(400);
       expect(result.pointerType).toBe('touch');
       expect(result.originalEvent).toBe(touchEvent);
+      expect(result.time).toBe(123456.789); // 检查时间戳
+    });
+    
+    it('should normalize PointerEvent correctly with time property', () => {
+      const pointerEvent = new (global as any).PointerEvent('pointerdown', {
+        clientX: 100,
+        clientY: 200,
+        pointerType: 'mouse',
+        buttons: 1
+      });
+      
+      // 由于 normalizeInput 是私有方法，我们需要通过类型转换来访问
+      const normalizeInput = (domEventAdapter as any).normalizeInput as Function;
+      const result = normalizeInput('press', pointerEvent);
+      
+      expect(result.signal).toBe('press');
+      expect(result.x).toBe(100);
+      expect(result.y).toBe(200);
+      expect(result.pointerType).toBe('mouse');
+      expect(result.buttons).toBe(1);
+      expect(result.originalEvent).toBe(pointerEvent);
+      expect(result.time).toBe(123456.789); // 检查时间戳
     });
   });
 
   describe('selectDomEvents method', () => {
     // 由于selectDomEvents是私有方法，我们通过测试bindInputSignals的行为来间接测试它
     it('should select pointer events when pointer capability is available', () => {
-      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: true });
+      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: true, touch: false, mouse: false });
       
       const mockProcessor = { handle: jest.fn() };
       (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
@@ -555,6 +612,24 @@ describe('DomEventAdapter', () => {
       
       // 验证没有添加任何事件监听器
       expect(mockTarget.addEventListener).not.toHaveBeenCalled();
+    });
+    
+    it('should prioritize pointer over touch and mouse when multiple capabilities are available', () => {
+      (detectInputCapabilities as jest.MockedFunction<any>).mockReturnValue({ pointer: true, touch: true, mouse: true });
+      
+      const mockProcessor = { handle: jest.fn() };
+      (createGestureProcessor as jest.MockedFunction<any>).mockReturnValue(mockProcessor);
+      
+      const adapter = new DomEventAdapter(inputEventMap, gestureMap);
+      adapter.bind(mockTarget, 'tap', mockEventScope);
+      
+      // 验证使用 pointer 事件（优先级最高）
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), undefined);
+      expect(mockTarget.addEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function), undefined);
+      
+      // 验证没有使用 touch 和 mouse 事件
+      expect(mockTarget.addEventListener).not.toHaveBeenCalledWith('touchstart', expect.any(Function), undefined);
+      expect(mockTarget.addEventListener).not.toHaveBeenCalledWith('mousedown', expect.any(Function), undefined);
     });
   });
   
