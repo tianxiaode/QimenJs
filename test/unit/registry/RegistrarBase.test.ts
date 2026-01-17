@@ -1,9 +1,57 @@
 import { RegistrarBase } from '@/registry/registrars';
 
-// 创建一个测试用的具体实现类
-class ConcreteRegistrar extends RegistrarBase<Record<string, any>> {
-  public readonly name = 'test-registrar';
-  protected storage: Record<string, any> = {};
+// 创建一个测试用的具体实现类 - 使用对象存储
+class ObjectStorageRegistrar extends RegistrarBase<Record<string, any>> {
+  public readonly name = 'test-object-storage';
+  protected storage: Record<string, any> = { key1: 'value1', key2: 'value2' };
+
+  register(...args: any[]): void {
+    // 实现注册逻辑
+  }
+
+  unregister(id: string): void {
+    // 实现注销逻辑
+  }
+
+  get(...args: any[]): any {
+    // 实现获取逻辑
+    return this.storage;
+  }
+
+  protected doInspect(): void {
+    // 实现输出逻辑
+    console.log('Test inspect output');
+  }
+}
+
+// 创建一个测试用的具体实现类 - 使用数组存储
+class ArrayStorageRegistrar extends RegistrarBase<any[]> {
+  public readonly name = 'test-array-storage';
+  protected storage: any[] = ['item1', 'item2', 'item3'];
+
+  register(...args: any[]): void {
+    // 实现注册逻辑
+  }
+
+  unregister(id: string): void {
+    // 实现注销逻辑
+  }
+
+  get(...args: any[]): any {
+    // 实现获取逻辑
+    return this.storage;
+  }
+
+  protected doInspect(): void {
+    // 实现输出逻辑
+    console.log('Test inspect output');
+  }
+}
+
+// 创建一个测试用的具体实现类 - 使用Map存储
+class MapStorageRegistrar extends RegistrarBase<Map<string, any>> {
+  public readonly name = 'test-map-storage';
+  protected storage: Map<string, any> = new Map([['key', 'value']]);
 
   register(...args: any[]): void {
     // 实现注册逻辑
@@ -25,16 +73,16 @@ class ConcreteRegistrar extends RegistrarBase<Record<string, any>> {
 }
 
 describe('RegistrarBase', () => {
-  let registrar: ConcreteRegistrar;
+  let registrar: ObjectStorageRegistrar;
 
   beforeEach(() => {
-    registrar = new ConcreteRegistrar();
+    registrar = new ObjectStorageRegistrar();
   });
 
   describe('getInstance', () => {
     it('应该为同一注册器类返回同一个实例', () => {
-      const instance1 = ConcreteRegistrar.getInstance();
-      const instance2 = ConcreteRegistrar.getInstance();
+      const instance1 = ObjectStorageRegistrar.getInstance();
+      const instance2 = ObjectStorageRegistrar.getInstance();
 
       expect(instance1).toBe(instance2);
     });
@@ -53,7 +101,7 @@ describe('RegistrarBase', () => {
       
       expect(() => {
         registrar['checkLock']();
-      }).toThrow('[Registrar: test-registrar] modification denied: Locked.');
+      }).toThrow('[Registrar: test-object-storage] modification denied: Locked.');
     });
 
     it('当注册器未锁定时不应当抛出错误', () => {
@@ -65,16 +113,8 @@ describe('RegistrarBase', () => {
 
   describe('clear', () => {
     it('应该清空对象类型的存储', () => {
-      const testRegistrar = new (class extends RegistrarBase<Record<string, any>> {
-        public readonly name = 'test-clear-object';
-        protected storage: Record<string, any> = { key1: 'value1', key2: 'value2' };
-
-        register(...args: any[]): void {}
-        unregister(id: string): void {}
-        get(...args: any[]): any { return this.storage; }
-        protected doInspect(): void {}
-      })();
-
+      const testRegistrar = new ObjectStorageRegistrar();
+      
       expect(testRegistrar.get()).toEqual({ key1: 'value1', key2: 'value2' });
       
       testRegistrar.clear();
@@ -82,33 +122,16 @@ describe('RegistrarBase', () => {
     });
 
     it('应该清空数组类型的存储', () => {
-      const testRegistrar = new (class extends RegistrarBase<any[]> {
-        public readonly name = 'test-clear-array';
-        protected storage: any[] = ['item1', 'item2'];
-
-        register(...args: any[]): void {}
-        unregister(id: string): void {}
-        get(...args: any[]): any { return this.storage; }
-        protected doInspect(): void {}
-      })();
+      const testRegistrar = new ArrayStorageRegistrar();
 
       testRegistrar.clear();
       expect(testRegistrar['storage'].length).toBe(0);
     });
 
     it('应该调用Map的clear方法', () => {
-      const map = new Map([['key', 'value']]);
+      const testRegistrar = new MapStorageRegistrar();
+      const map = testRegistrar['storage'];
       const clearSpy = jest.spyOn(map, 'clear');
-
-      const testRegistrar = new (class extends RegistrarBase<Map<string, any>> {
-        public readonly name = 'test-clear-map';
-        protected storage: Map<string, any> = map;
-
-        register(...args: any[]): void {}
-        unregister(id: string): void {}
-        get(...args: any[]): any { return this.storage; }
-        protected doInspect(): void {}
-      })();
 
       testRegistrar.clear();
       expect(clearSpy).toHaveBeenCalled();
@@ -131,6 +154,22 @@ describe('RegistrarBase', () => {
         testRegistrar.clear();
       }).toThrow('[Registrar: test-clear-locked] modification denied: Locked.');
     });
+    
+    it('应该处理storage为null的情况', () => {
+      const testRegistrar = new (class extends RegistrarBase<any> {
+        public readonly name = 'test-null-storage';
+        protected storage: any = null;
+
+        register(...args: any[]): void {}
+        unregister(id: string): void {}
+        get(...args: any[]): any { return this.storage; }
+        protected doInspect(): void {}
+      })();
+      
+      expect(() => {
+        testRegistrar.clear();
+      }).not.toThrow();
+    });
   });
 
   describe('inspect', () => {
@@ -143,7 +182,7 @@ describe('RegistrarBase', () => {
       registrar.inspect();
 
       expect(doInspectSpy).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith('🔍 Registrar: test-registrar [🔓]');
+      expect(consoleSpy).toHaveBeenCalledWith('🔍 Registrar: test-object-storage [🔓]');
       expect(consoleGroupEndSpy).toHaveBeenCalled();
 
       consoleSpy.mockRestore();
