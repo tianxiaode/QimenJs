@@ -32,10 +32,10 @@ describe('HoverProcessor', () => {
         expect(processor).toBeDefined();
     });
 
-    it('should detect hover when mouse moves over an element', () => {
-        const mockEvent = new MouseEvent('mousemove');
+    it('should detect hover when mouse enters an element', () => {
+        const mockEvent = new MouseEvent('mouseenter');
         const input = {
-            signal: 'move' as InputSignal,
+            signal: 'enter' as InputSignal,
             time: 100,
             x: 100,
             y: 100,
@@ -48,8 +48,25 @@ describe('HoverProcessor', () => {
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'hover',
             originalEvent: mockEvent,
+        });
+    });
+
+    it('should detect hover when mouse leaves an element', () => {
+        const mockEvent = new MouseEvent('mouseleave');
+        const input = {
+            signal: 'leave' as InputSignal,
+            time: 100,
             x: 100,
             y: 100,
+            buttons: 0,
+            originalEvent: mockEvent,
+        };
+
+        processor.handle(input);
+
+        expect(mockEmit).toHaveBeenCalledWith({
+            semantic: 'hover',
+            originalEvent: mockEvent,
         });
     });
 

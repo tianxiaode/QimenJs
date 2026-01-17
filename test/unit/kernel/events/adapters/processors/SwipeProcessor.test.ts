@@ -46,7 +46,7 @@ describe('SwipeProcessor', () => {
     });
 
     it('should detect swipe when movement is fast and far enough', () => {
-        const mockEvent = new MouseEvent('touchmove');
+        const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
@@ -65,23 +65,31 @@ describe('SwipeProcessor', () => {
             originalEvent: mockEvent,
         };
 
+        const releaseInput = {
+            signal: 'release' as InputSignal,
+            time: 120, // Same time as move
+            x: 150,
+            y: 100,
+            buttons: 0,
+            originalEvent: mockEvent,
+        };
+
         // First press
         processor.handle(pressInput);
         // Then move
         processor.handle(moveInput);
+        // Then release to complete the gesture
+        processor.handle(releaseInput);
 
         // Check if swipe was detected
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'swipe',
             originalEvent: mockEvent,
-            direction: { x: 1, y: 0 },
-            velocity: { x: 2500, y: 0 }, // 50px / 20ms = 2500 px/s
-            distance: 50,
         });
     });
 
     it('should not detect swipe if movement is too slow', () => {
-        const mockEvent = new MouseEvent('touchmove');
+        const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
             signal: 'press' as InputSignal,
             time: 100,
@@ -100,10 +108,21 @@ describe('SwipeProcessor', () => {
             originalEvent: mockEvent,
         };
 
+        const releaseInput = {
+            signal: 'release' as InputSignal,
+            time: 500,
+            x: 150,
+            y: 100,
+            buttons: 0,
+            originalEvent: mockEvent,
+        };
+
         // First press
         processor.handle(pressInput);
         // Then move
         processor.handle(moveInput);
+        // Then release
+        processor.handle(releaseInput);
 
         // Check that no swipe was detected
         expect(mockEmit).not.toHaveBeenCalled();

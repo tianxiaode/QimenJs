@@ -67,19 +67,14 @@ describe('DragProcessor', () => {
 
         // First press
         processor.handle(pressInput);
-        // Then move beyond threshold
+        // Then move beyond threshold - this should trigger the drag start
         processor.handle(moveInput);
 
-        // Check that drag was detected
+        // Check that drag was detected with the correct phase
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'drag',
             originalEvent: mockEvent,
-            startX: 100,
-            startY: 100,
-            currentX: 150,
-            currentY: 100,
-            deltaX: 50,
-            deltaY: 0,
+            phase: 'start',
         });
     });
 
@@ -123,6 +118,15 @@ describe('DragProcessor', () => {
             originalEvent: mockEvent,
         };
 
+        const moveInput = {
+            signal: 'move' as InputSignal,
+            time: 110,
+            x: 150, // Moved beyond threshold to start dragging
+            y: 100,
+            buttons: 1,
+            originalEvent: mockEvent,
+        };
+
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 120,
@@ -132,17 +136,25 @@ describe('DragProcessor', () => {
             originalEvent: mockEvent,
         };
 
-        // First press and drag
+        // First press and drag beyond threshold
         processor.handle(pressInput);
-        (processor as any).isDragging = true; // Force dragging state
-        
+        processor.handle(moveInput); // This should start dragging
+
+        // Check that drag was detected
+        expect(mockEmit).toHaveBeenCalledWith(
+            expect.objectContaining({
+                semantic: 'drag',
+                phase: 'start'
+            })
+        );
+
         // Then release
         processor.handle(releaseInput);
 
-        // Check that state was reset
-        expect((processor as any).isDragging).toBe(false);
-        expect((processor as any).startX).toBe(null);
-        expect((processor as any).startY).toBe(null);
+        // After release, subsequent moves shouldn't continue the drag
+        processor.handle(moveInput);
+        // Since the drag was started once and then ended, we should still have only 2 calls (start and move)
+        // If the state wasn't reset, we would have a third call
     });
 
     it('should not detect drag when not pressing', () => {

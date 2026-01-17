@@ -154,24 +154,24 @@ describe('TapProcessor', () => {
         };
 
         // Initially not waiting for release
-        expect((processor as any).waitingForRelease).toBe(false);
+        // We can't directly access private properties, so we'll test by observing behavior
 
-        // After press, should be waiting for release
+        // After press, processor should be waiting for release
         processor.handle(pressInput);
-        expect((processor as any).waitingForRelease).toBe(true);
-
-        // After successful release, should reset
+        
+        // After successful release, should emit tap event
         processor.handle(releaseInput);
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'tap',
             originalEvent: mockEvent,
         });
         
-        // State should be reset after successful tap
-        expect((processor as any).waitingForRelease).toBe(false);
+        // Verify that another release doesn't trigger another tap
+        processor.handle(releaseInput);
+        expect(mockEmit).toHaveBeenCalledTimes(1); // Should still be 1, meaning state was reset
     });
 
-    it('should reset state after timeout', () => {
+    it('should reset state after successful tap detection', () => {
         const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
             signal: 'press' as InputSignal,
@@ -182,15 +182,32 @@ describe('TapProcessor', () => {
             originalEvent: mockEvent,
         };
 
+        const releaseInput = {
+            signal: 'release' as InputSignal,
+            time: 110,
+            x: 102,
+            y: 102,
+            buttons: 0,
+            originalEvent: mockEvent,
+        };
+
         // Initially not waiting for release
-        expect((processor as any).waitingForRelease).toBe(false);
+        // We can't directly access private properties, so we'll test by observing behavior
 
-        // After press, should be waiting for release
+        // After press, processor should be waiting for release
         processor.handle(pressInput);
-        expect((processor as any).waitingForRelease).toBe(true);
-
-        // Simulate timeout by manually resetting
-        (processor as any).reset();
-        expect((processor as any).waitingForRelease).toBe(false);
+        
+        // After successful release, should emit tap event
+        processor.handle(releaseInput);
+        expect(mockEmit).toHaveBeenCalledWith({
+            semantic: 'tap',
+            originalEvent: mockEvent,
+        });
+        
+        // Verify that after processing the tap, the internal state was reset
+        // by attempting another press and release and expecting a second tap
+        processor.handle(pressInput);
+        processor.handle(releaseInput);
+        expect(mockEmit).toHaveBeenCalledTimes(2); // Should now have two taps
     });
 });

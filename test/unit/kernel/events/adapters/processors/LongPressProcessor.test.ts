@@ -63,11 +63,10 @@ describe('LongPressProcessor', () => {
         processor.handle(input);
 
         // Check that the processor is tracking the press
-        expect((processor as any).isPressed).toBe(true);
-        expect((processor as any).startTime).toBe(100);
+        expect(mockEmit).not.toHaveBeenCalled(); // At this point, no event should be emitted yet
         
         // Fast-forward time to exceed default threshold
-        jest.advanceTimersByTime((processor as any).durationThreshold + 1);
+        jest.advanceTimersByTime(501); // Default threshold is 500ms
         
         // Check that the long press was emitted
         expect(mockEmit).toHaveBeenCalledWith({

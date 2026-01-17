@@ -67,4 +67,90 @@ describe('ContextMenuProcessor', () => {
 
         expect(mockEmit).not.toHaveBeenCalled();
     });
+
+    it('should handle custom buttons constraint', () => {
+        const customProcessor = new ContextMenuProcessor('contextmenu', mockEmit, { buttons: [1] }); // Middle mouse button
+        const mockEvent = new MouseEvent('mousedown', { button: 1 });
+        const input = {
+            signal: 'press' as InputSignal,
+            time: 100,
+            x: 100,
+            y: 100,
+            buttons: 1, // Middle mouse button
+            originalEvent: mockEvent,
+        };
+
+        customProcessor.handle(input);
+
+        expect(mockEmit).toHaveBeenCalledWith({
+            semantic: 'contextmenu',
+            originalEvent: mockEvent,
+        });
+    });
+
+    it('should handle keyboard context menu key', () => {
+        const mockEvent = new KeyboardEvent('keydown', { key: 'ContextMenu' });
+        const input = {
+            signal: 'keydown' as InputSignal,
+            time: 100,
+            x: 100,
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        processor.handle(input);
+
+        expect(mockEmit).toHaveBeenCalledWith({
+            semantic: 'contextmenu',
+            originalEvent: mockEvent,
+        });
+    });
+
+    it('should handle Shift+F10 keyboard combination', () => {
+        const mockEvent = new KeyboardEvent('keydown', { key: 'F10', shiftKey: true });
+        const input = {
+            signal: 'keydown' as InputSignal,
+            time: 100,
+            x: 100,
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        processor.handle(input);
+
+        expect(mockEmit).toHaveBeenCalledWith({
+            semantic: 'contextmenu',
+            originalEvent: mockEvent,
+        });
+    });
+
+    it('should not emit for regular F10 key without shift', () => {
+        const mockEvent = new KeyboardEvent('keydown', { key: 'F10', shiftKey: false });
+        const input = {
+            signal: 'keydown' as InputSignal,
+            time: 100,
+            x: 100,
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        processor.handle(input);
+
+        expect(mockEmit).not.toHaveBeenCalled();
+    });
+
+    it('should not emit for other keys', () => {
+        const mockEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+        const input = {
+            signal: 'keydown' as InputSignal,
+            time: 100,
+            x: 100,
+            y: 100,
+            originalEvent: mockEvent,
+        };
+
+        processor.handle(input);
+
+        expect(mockEmit).not.toHaveBeenCalled();
+    });
 });
