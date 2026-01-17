@@ -2,13 +2,33 @@ import { IComposable, IComposableBase, IExposeResult } from '../types';
 
 /**
  * Ability 抽象基类：封装通用的宿主管理逻辑
+ * 
+ * @template T - 宿主类型，必须实现 IComposableBase 接口
  */
 export abstract class AbilityBase<T extends IComposableBase> implements IComposable {
+    /**
+     * 宿主对象的引用
+     * @private
+     */
     protected host: T = null as any;
-    // 记录当前 Ability 注入到 host 上的所有属性/方法名
+
+    /**
+     * 记录当前 Ability 注入到 host 上的所有属性/方法名
+     * @private
+     */
     private _injectedKeys: (string | symbol)[] = [];
+
+    /**
+     * 存储每个宿主对象上各个键对应的 Ability 名称的弱映射
+     * @private
+     */
     private static ownerMap = new WeakMap<object, Map<string | symbol, string>>();
 
+    /**
+     * 将能力附加到宿主对象
+     * 
+     * @param host - 要附加到的宿主对象
+     */
     public attach(host: T): void {
         this.host = host;
         // 自动注入声明的属性
@@ -18,6 +38,12 @@ export abstract class AbilityBase<T extends IComposableBase> implements IComposa
         }
     }
 
+    /**
+     * 挂载属性到宿主对象
+     * 
+     * @param props - 要挂载到宿主对象的属性集合
+     * @private
+     */
     private mountProperties(props: Record<string | symbol, any>) {
         const keys = [...Object.keys(props), ...Object.getOwnPropertySymbols(props)];
 
@@ -37,6 +63,12 @@ export abstract class AbilityBase<T extends IComposableBase> implements IComposa
         });
     }
 
+    /**
+     * 跟踪属性冲突并记录警告或错误日志
+     * 
+     * @param key - 要检查冲突的属性键
+     * @private
+     */
     private trackConflict(key: string | symbol) {
         const keyName = String(key);
         const hostOwners = AbilityBase.ownerMap.get(this.host);
@@ -69,8 +101,22 @@ export abstract class AbilityBase<T extends IComposableBase> implements IComposa
                 );
             }
         }
+        
+        // 更新宿主的拥有者映射
+        if (!hostOwners) {
+            AbilityBase.ownerMap.set(this.host, new Map());
+        }
+        const currentHostOwners = AbilityBase.ownerMap.get(this.host)!;
+        currentHostOwners.set(key, this.constructor.name);
     }
 
+    /**
+     * 创建属性描述符
+     * 
+     * @param value - 属性值
+     * @returns 属性描述符对象
+     * @private
+     */
     private makeDescriptor(value: any): PropertyDescriptor {
         let descriptor: PropertyDescriptor;
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
@@ -91,6 +137,9 @@ export abstract class AbilityBase<T extends IComposableBase> implements IComposa
         return descriptor;
     }
 
+    /**
+     * 销毁能力实例，清理注入到宿主对象的属性
+     */
     public dispose(): void {
         if (this.host) {
             this.onDispose();
@@ -108,7 +157,17 @@ export abstract class AbilityBase<T extends IComposableBase> implements IComposa
         }
     }
 
+    /**
+     * 抽象方法，子类需要实现此方法返回要暴露给宿主对象的属性
+     * 
+     * @returns 要暴露给宿主对象的属性对象
+     */
     protected abstract expose(): IExposeResult;
 
+    /**
+     * 可选的清理方法，子类可以重写此方法执行自定义清理操作
+     * 
+     * @protected
+     */
     protected onDispose(): void {} // 变成可选
 }

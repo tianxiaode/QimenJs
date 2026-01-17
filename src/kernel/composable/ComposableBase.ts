@@ -2,10 +2,17 @@ import { ILogger, Logger } from '@orbitjs/logger';
 import { ComposableRegistrar } from '../registrars';
 import { ComposableEntry, IComposable, IComposableBase } from '../types';
 
+/**
+ * Symbol 用于存储能力列表
+ * @internal
+ */
 const ABILITIES_KEY = Symbol('__abilities__');
 
 /**
  * 装饰器：声明该类需要的能力
+ * 
+ * @param keys - 能力键的列表
+ * @returns 类装饰器函数
  */
 export function Ability(...keys: string[]) {
     return (ctor: any) => {
@@ -13,12 +20,35 @@ export function Ability(...keys: string[]) {
     };
 }
 
+/**
+ * 可组合基类，提供了能力注入和管理的基础功能
+ * 
+ * 该类实现了自动装配能力的功能，通过装饰器声明所需能力，
+ * 并从注册中心获取能力实例并将其附加到宿主对象上。
+ */
 export abstract class ComposableBase implements IComposableBase {
+    /**
+     * 已加载的能力名称集合
+     * @private
+     */
     private _loadedAbilities = new Set<string>();
+
+    /**
+     * 已实例化的可组合组件实例数组
+     * @private
+     */
     private _instances: IComposable[] = [];
+
+    /**
+     * 日志记录器实例
+     */
     logger: ILogger;
+
     [key: string]: any;
 
+    /**
+     * 构造函数，初始化日志记录器和设置能力
+     */
     constructor() {
         // 1. 内置日志，初始化即可用
         this.logger = Logger.for(this.constructor.name);
@@ -28,6 +58,10 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 提供给子类或 Ability 使用：获取类级缓存
+     * 
+     * @template T - 返回值类型
+     * @param key - 缓存键
+     * @returns 缓存的值，如果不存在则返回 undefined
      */
     public getStatic<T>(key: string | symbol): T | undefined {
         const ctor = this.constructor as any;
@@ -36,6 +70,10 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 提供给子类或 Ability 使用：设置类级缓存
+     * 
+     * @template T - 值的类型
+     * @param key - 缓存键
+     * @param value - 要存储的值
      */
     public setStatic<T>(key: string | symbol, value: T): void {
         const ctor = this.constructor as any;
@@ -50,13 +88,15 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 自动装配方法：建议在各级构造函数的 super() 后调用
+     * 
+     * @protected
      */
     protected setupAbilities() {
         // 1. 缓存 KEY 改为描述最终的装配清单
         const CACHE_KEY = '__resolved_ability_entries__';
         let entries = this.getStatic<ComposableEntry[]>(CACHE_KEY);
 
-        // 2. 只有第一次实例化时，执行完整的“搜刮 + 递归查找”逻辑
+        // 2. 只有第一次实例化时，执行完整的"搜刮 + 递归查找"逻辑
         if (!entries) {
             // 爬取原型链拿到所有 Key (如 ['Schema', 'Event'])
             const abilityKeys = this.collectFromPrototypeChain();
@@ -91,6 +131,9 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 沿着原型链搜刮所有层级声明的 Ability Keys
+     * 
+     * @returns 原型链上收集到的能力键数组
+     * @private
      */
     private collectFromPrototypeChain(): string[] {
         const keys = new Set<string>();
@@ -107,6 +150,11 @@ export abstract class ComposableBase implements IComposableBase {
         return Array.from(keys);
     }
 
+    /**
+     * 应用重写功能，允许派生类自定义一些功能
+     * 
+     * @protected
+     */
     protected applyOverrides(){
         this.logger.debug(`Applying overrides for ${this.constructor.name}`);
     }
