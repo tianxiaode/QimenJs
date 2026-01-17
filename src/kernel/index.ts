@@ -24,3 +24,4 @@ export const bootstrapValidators = () => {
 
 RegistryHub.use(SchemaRegistrar.getInstance());
 RegistryHub.use(EntityActionRegistrar.getInstance());
+RegistryHub.use(ComposableRegistrar.getInstance());

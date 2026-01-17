@@ -6,7 +6,7 @@ export class RemoteGetAllAbility<T, TC> extends AbilityBase<IEntityManagerBase> 
     // 1. 固定防抖器，不再在 expose 里动态创建
     private debouncedFetch = debounce((resolve: (val: any) => void, reject: (err: any) => void) => {
         const { host } = this;
-        host.fetch('getall', {}, (data: any) => {
+        host.fetch('get-all', {}, (data: any) => {
             const items = data.list || [];
             // getAll 通常直接更新 state.items，作为全量源
             host.state.items = items;

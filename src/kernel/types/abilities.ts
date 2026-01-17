@@ -37,6 +37,7 @@ export interface ISchemaAbility {
     readonly schemaKeys: { id: string; label: string; createdAt: string; updatedAt: string };
     readonly schemaSort: { prop: string; order: string };
     readonly schemaFilters: string[];
+    readonly schemaIdType: 'number' |'string';
 }
 
 export interface IRemoteListAbility{
@@ -50,3 +51,31 @@ export interface IRemoteGetAbility<T> {
 export interface IRemoteGetAllAbility<T> {
     getAll(): Promise<T[]>;
 }
+
+export interface IRemoteCreateAbility<T> {
+    create(data: T): Promise<T>;
+}
+
+export interface ILocalCreateAbility<T> {
+    create(data: T): T;
+}
+
+export interface IRemoteUpdateAbility<T> {
+    update(data: Partial<T>): Promise<T>;
+}
+
+export interface ILocalUpdateAbility<T> {
+    update(data: Partial<T>): T;
+    getDirty(): Array<{ id: any; changes: Partial<T>; original: T }>;
+    undoLocalUpdate(id: any): void;
+    clearDirtyStatus(): void;
+}
+
+export interface IRemoteDeleteAbility {
+    delete(id: any): Promise<void>;
+}
+
+export interface ILocalDeleteAbility {
+    delete(id: any): void;
+}
+

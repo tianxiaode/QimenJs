@@ -45,6 +45,7 @@ export interface Schema {
 
     /** 继承：只能继承自一个父 Schema，获取其 keys、behavior 和 schema */
     extends?: string;
+    idType?: 'number' | 'string';
 
     /** 组合：引用多个公共字段集 (Schema Templates) */
     mixins?: string[];
@@ -72,6 +73,7 @@ export interface Schema {
 export type RegistrSchema = Omit<Schema, 'extends' | 'mixins' | 'override' | 'fileds' | 'rules'>;
 
 export interface SchemaCache {
+    idType?: 'number' |'string';
     schema: Schema;
     rules: Record<string, ValidationRule[]>;
 }

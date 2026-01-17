@@ -1,5 +1,3 @@
-import { ILogger } from '@orbitjs/logger';
-import { EnvType } from '@orbitjs/registry';
 import { ENTITY_ACTION } from '../base';
 import { EntityRequestTask, FlowContext } from '../actions';
 import { RequestOptions } from '../http';

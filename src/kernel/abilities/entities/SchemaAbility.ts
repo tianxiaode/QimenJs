@@ -59,6 +59,10 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
                 get: () => schema.filters || [],
                 enumerable: true,
             },
+            schemaIdType: {
+                get: () => cached.idType,
+                enumerable: true,
+            },
         };
     }
 
@@ -113,6 +117,14 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
             fields: finalFields,
         } as Schema;
 
+        let idType = finalSchema.idType;
+        if (!idType) {
+            const idKey = finalSchema.idKey || 'id';
+            const idField = finalFields.find(f => f.name === idKey);
+            // 自动探测作为兜底逻辑，保证开发者不写 idType 也能跑
+            idType =
+                idField?.type === 'number' || idField?.type === 'integer' ? 'number' : 'string';
+        }
         // 6. 提取校验规则
         const resolvedRules = RuleExtractor.extractFromFields(finalFields);
 
@@ -132,7 +144,7 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
             });
         }
 
-        return { schema: finalSchema, rules: resolvedRules };
+        return { schema: finalSchema, rules: resolvedRules, idType: idType as 'number' | 'string' };
     }
 
     private mergeFields(...fieldArrays: any[][]) {

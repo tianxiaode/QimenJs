@@ -39,11 +39,11 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
 
     public async fetch(
         action: ENTITY_ACTION | string,
-        options: RequestOptions = {},
+        payload: any,
         updater?: (data: any) => void
     ): Promise<FlowContext> {
         // 1. 参数自动对齐
-        const alignedOptions = await this.alignRequestOptions(action, options);
+        const alignedOptions = await this.alignRequestOptions(action, payload);
 
         // 2. 生命周期开始
         this.state.loading = true;
