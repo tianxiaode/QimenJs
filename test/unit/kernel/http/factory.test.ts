@@ -245,7 +245,7 @@ describe('HttpFactory', () => {
                 action: undefined,
             };
             
-            // 设置mock的返回值，第一次失败，第二次成功
+            // 设置mock的返回值
             const mockTaskError = {
                 context: Promise.resolve(mockContextWithError),
                 cancel: jest.fn(),
@@ -258,7 +258,11 @@ describe('HttpFactory', () => {
             
             mockRequest
                 .mockReturnValueOnce(mockTaskError)  // 第一次调用返回错误
-                .mockReturnValueOnce(mockTaskSuccess); // 第二次调用返回成功
+                .mockReturnValueOnce(mockTaskSuccess) // 第二次调用返回成功
+                .mockReturnValue({ // 为可能的额外调用提供默认返回值
+                    context: Promise.resolve(mockContextSuccess),
+                    cancel: jest.fn(),
+                });
 
             const retryOptions = {
                 maxRetries: 3,
@@ -347,11 +351,14 @@ describe('HttpFactory', () => {
                 cancel: jest.fn(),
             };
             
-            // 模拟三次请求都失败，对应初始请求+2次重试
             mockRequest
                 .mockReturnValueOnce(mockTaskError)  // 第1次 - 初始请求
                 .mockReturnValueOnce(mockTaskError)  // 第2次 - 第1次重试
-                .mockReturnValueOnce(mockTaskError); // 第3次 - 第2次重试，然后停止
+                .mockReturnValueOnce(mockTaskError)  // 第3次 - 第2次重试，然后停止
+                .mockReturnValue({ // 为可能的额外调用提供默认返回值
+                    context: Promise.resolve(mockContextWithError),
+                    cancel: jest.fn(),
+                });
 
             const retryOptions = {
                 maxRetries: 2,
@@ -435,17 +442,13 @@ describe('HttpFactory', () => {
                 action: undefined,
             };
             
-            // 当请求被中止时，重试逻辑检查会失败，但仍会再次尝试获取请求，
-            // 因此我们需要适当地模拟
             const mockTaskAborted = {
                 context: Promise.resolve(mockContextAborted),
                 cancel: jest.fn(),
             };
             
-            // 模拟请求返回中止的上下文
-            // 由于在检查重试条件后，如果不满足条件则返回上下文，不会再发起新的请求
-            mockRequest
-                .mockReturnValueOnce(mockTaskAborted);
+            // 只让 mockRequest 返回一次，后续调用不会发生，因为第一次就会返回
+            mockRequest.mockReturnValue(mockTaskAborted);
 
             const retryOptions = {
                 maxRetries: 5, // 设置很高的重试次数
@@ -531,9 +534,12 @@ describe('HttpFactory', () => {
                 cancel: jest.fn(),
             };
             
-            // 模拟一次请求后就不会重试，因为shouldRetry返回false
             mockRequest
-                .mockReturnValueOnce(mockTaskError);
+                .mockReturnValueOnce(mockTaskError) // 一次请求后就不会重试
+                .mockReturnValue({ // 为可能的额外调用提供默认返回值
+                    context: Promise.resolve(mockContextNonRetryable),
+                    cancel: jest.fn(),
+                });
 
             const retryOptions = {
                 maxRetries: 5, // 设置很高的重试次数
@@ -620,7 +626,11 @@ describe('HttpFactory', () => {
             };
             
             mockRequest
-                .mockReturnValueOnce(mockTaskError);
+                .mockReturnValueOnce(mockTaskError) // 一次请求
+                .mockReturnValue({ // 为可能的额外调用提供默认返回值
+                    context: Promise.resolve(mockContextWithError),
+                    cancel: jest.fn(),
+                });
 
             // 不提供重试选项
             const task = HttpFactory.createRetryTask(
