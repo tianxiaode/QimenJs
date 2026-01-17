@@ -1,5 +1,11 @@
-import { EntityActionRegistrar, EntityActionRegistrarName, SchemaRegistrar, SchemaRegistrarName } from "./registrars";
-import { IEventContext } from "./types";
+import {
+    ComposableRegistrarName,
+    EntityActionRegistrar,
+    EntityActionRegistrarName,
+    SchemaRegistrar,
+    SchemaRegistrarName,
+} from './registrars';
+import { IEventContext } from './types';
 
 declare module '@orbitjs/registry' {
     interface Registrars {

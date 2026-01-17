@@ -1,16 +1,21 @@
 import { RegistryHub } from '@orbitjs/registry';
 import { SchemaRegistrar } from './registrars/SchemaRegistrar';
 import { EntityActionRegistrar } from './registrars/EntityActionRegistrar';
-
-export * from './events';
-export * from './core';
-export * from './actions';
-export * from './types';
-export * from './errors';
-
 import * as AllEntries from './abilities';
 import { ComposableRegistrar } from './registrars';
 import { ComposableEntry } from './types';
+
+export * from './abilities';
+export * from './actions';
+export * from './composable';
+export * from './core';
+export * from './entities';
+export * from './errors';
+export * from './events';
+export * from './http';
+export * from './registrars';
+export * from './types';
+
 
 export const bootstrapValidators = () => {
     // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象
