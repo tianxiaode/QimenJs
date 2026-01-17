@@ -41,7 +41,7 @@ export interface IEntityManagerBase<T = any, TC = Record<string, any>> extends I
     state: ICollectionState<T, TC>;
     fetch(
         action: ENTITY_ACTION | string,
-        options: RequestOptions,
+        payload: any,
         updater?: (data: any) => void
     ): Promise<FlowContext>;
 }
