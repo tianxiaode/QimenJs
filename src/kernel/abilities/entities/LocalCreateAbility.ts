@@ -1,13 +1,32 @@
 import { AbilityBase } from '../../composable';
 import { IEntityManagerBase, IExposeResult } from '../../types';
 
-export class LocalCreateAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
+/**
+ * LocalCreateAbility - 本地创建能力
+ * 
+ * 提供在本地创建实体的能力，包括生成临时ID和更新UI状态
+ * 
+ * @template T 实体类型
+ * @template TCriteria 搜索条件类型
+ */
+export class LocalCreateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
     private static _tempIdCounter = -1;
 
+    /**
+     * 暴露创建实体的方法
+     * 
+     * @returns 包含create方法的对象，用于创建新的实体记录
+     */
     protected expose(): IExposeResult {
         const { host } = this;
 
         return {
+            /**
+             * 创建一个新的实体记录
+             * 
+             * @param initialData 初始数据，可以是实体的部分属性
+             * @returns 创建的新实体记录
+             */
             create: (initialData: Partial<T> = {}): T => {
                 // 1. 获取配置好的 idKey 和 idType
                 const idKey = host.schemaKeys.id;

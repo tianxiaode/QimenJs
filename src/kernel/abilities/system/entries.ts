@@ -10,12 +10,20 @@ import { DomEventsAbility } from './DomEventsAbility';
 import { DomainAbility } from './DomainAbility';
 import { SystemAbility } from './SystemAbility';
 
+/**
+ * 事件能力入口定义
+ * 为类添加事件发射和监听能力
+ */
 export const EventAbilityEntry: ComposableEntry = {
     name: EventAbilityName,
     description: '为类添加事件能力',
     ctor: EventAbility,
 };
 
+/**
+ * DOM事件能力入口定义
+ * 为类添加DOM事件绑定和处理能力
+ */
 export const DomEventsAbilityEntry: ComposableEntry = {
     name: DomEventsAbilityName,
     description: '为类添加DOM事件能力',
@@ -23,12 +31,20 @@ export const DomEventsAbilityEntry: ComposableEntry = {
     ctor: DomEventsAbility,
 };
 
+/**
+ * 域配置能力入口定义
+ * 为类添加域相关的配置和管理能力
+ */
 export const DomainConfigAbilityEntry: ComposableEntry = {
     name: DomainAbilityName,
     description: '为类添加域配置能力',
     ctor: DomainAbility,
 };
 
+/**
+ * 系统配置能力入口定义
+ * 为类添加系统级配置和管理能力
+ */
 export const SystemConfigAbilityEntry: ComposableEntry = {
     name: SystemAbilityName,
     description: '为类添加系统配置能力',

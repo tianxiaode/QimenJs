@@ -1,16 +1,36 @@
 import { AbilityBase } from '../../composable';
 import { IEntityManagerBase, IExposeResult } from '../../types';
 
-export class LocalDeleteAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
+/**
+ * LocalDeleteAbility - 本地删除能力
+ * 
+ * 提供在客户端本地删除实体的能力，支持临时删除操作。
+ * 主要功能包括：
+ * - 从状态中物理移除指定ID的实体
+ * - 记录被删除的正式ID（用于后续同步）
+ * - 提供清除删除状态的方法
+ * 
+ * @template T - 实体类型
+ * @template TCriteria - 搜索字段类型
+ */
+export class LocalDeleteAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
     // 影子状态：记录被删除的正式 ID
     private deletedIds = new Set<any>();
 
+    /**
+     * 暴露本地删除相关的方法
+     * 
+     * @returns 返回包含 delete、getDeletedIds 和 clearDeletedStatus 方法的对象
+     */
     protected expose(): IExposeResult {
         const { host } = this;
 
         return {
             /**
              * 本地删除：标记删除并从列表移除
+             * 
+             * @param target - 要删除的一个或多个实体ID
+             * @returns void
              */
             delete: (target: any | any[]): void => {
                 const ids = Array.isArray(target) ? target : [target];
@@ -28,14 +48,28 @@ export class LocalDeleteAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
                 host.emit('local-deleted', ids);
             },
 
-            /** 获取所有被标记删除的正式 ID */
+            /** 
+             * 获取所有被标记删除的正式 ID 列表
+             * 
+             * @returns 被删除的正式ID数组
+             */
             getDeletedIds: () => Array.from(this.deletedIds),
 
-            /** 重置删除状态 */
+            /** 
+             * 重置删除状态，清空已记录的删除ID集合
+             * 
+             * 通常在提交删除或取消操作时调用
+             */
             clearDeletedStatus: () => this.deletedIds.clear(),
         };
     }
 
+    /**
+     * 物理上从状态中移除指定ID的实体
+     * 
+     * @param id - 要移除的实体ID
+     * @private
+     */
     private physicallyRemove(id: any) {
         const { host } = this;
         const idKey = host.schemaKeys.id;
@@ -45,6 +79,10 @@ export class LocalDeleteAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
         }
     }
 
+    /**
+     * 组件销毁时的清理工作
+     * 清空删除记录，避免内存泄漏
+     */
     protected onDispose(): void {
         this.deletedIds.clear();
     }

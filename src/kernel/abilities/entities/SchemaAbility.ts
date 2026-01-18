@@ -10,7 +10,26 @@ import {
 } from '../../types';
 import { RuleExtractor } from './RuleExtractor';
 
+/**
+ * SchemaAbility - 模式能力类
+ * 
+ * 提供实体结构定义和验证能力，处理模式的继承、混入、字段合并等功能。
+ * 主要负责：
+ * 1. 编译和缓存实体模式（Schema）
+ * 2. 处理模式继承（extends）和混入（mixins）
+ * 3. 字段定义的合并与覆盖（override）
+ * 4. 校验规则的提取和管理
+ * 5. 提供标准化的模式访问接口
+ */
 export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> {
+    /**
+     * 暴露模式相关的属性和方法
+     * 
+     * 提供对编译后模式的访问接口，包括模式定义、校验规则、键名映射等。
+     * 使用缓存机制避免重复编译，提高性能。
+     * 
+     * @returns 包含模式定义相关属性和方法的对象
+     */
     protected expose(): IExposeResult {
         // 1. 尝试从静态缓存获取已编译的 Schema 结果
         // 结果包含：finalSchema (完整对象) 和 resolvedRules (拆解后的规则)
@@ -147,11 +166,21 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
         return { schema: finalSchema, rules: resolvedRules, idType: idType as 'number' | 'string' };
     }
 
+    /**
+     * 合并多个字段数组
+     * 
+     * 将多个字段数组合并为一个数组，相同名称的字段会被后面的覆盖。
+     * 合并策略遵循"后者优先"原则：Local > Mixin > Base。
+     * 
+     * @param fieldArrays - 要合并的字段数组列表
+     * @returns 合并后的字段数组，按名称去重，保留最后出现的字段定义
+     */
     private mergeFields(...fieldArrays: any[][]) {
         const map = new Map<string, any>();
         fieldArrays.flat().forEach(f => {
             if (f?.name) {
                 // 后来的覆盖先来的（Local > Mixin > Base）
+                // 使用展开运算符合并对象，确保新字段的属性覆盖旧字段的同名属性
                 map.set(f.name, { ...map.get(f.name), ...f });
             }
         });

@@ -1,36 +1,50 @@
 import { AbilityBase } from '../../composable';
 import { IEntityManagerBase, IExposeResult } from '../../types';
 
-export class LocalToggleAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
+/**
+ * LocalToggleAbility - 本地切换能力
+ * 
+ * 提供在本地切换实体状态的能力，例如切换选中/未选中状态
+ * 
+ * @template T 实体类型
+ * @template TCriteria 搜索条件类型
+ */
+export class LocalToggleAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+
+    /**
+     * 暴露切换实体状态的方法
+     * 
+     * @returns 包含toggle方法的对象，用于切换指定实体的状态
+     */
     protected expose(): IExposeResult {
         const { host } = this;
 
         return {
             /**
-             * 本地切换状态，记录到 dirtyMap
+             * 切换指定实体的状态
+             * 
+             * @param record 要切换状态的实体记录
+             * @returns 切换状态后的实体记录
              */
-            toggle: (id: any, field: keyof T): void => {
+            toggle: (record: T): T => {
                 const idKey = host.schemaKeys.id;
-                const items = host.state.items || [];
-                const item = items.find((i: any) => i[idKey] === id);
-                if (!item) return;
+                const id = (record as any)[idKey];
 
-                const currentValue = (item as any)[field];
-                const newValue = typeof currentValue === 'boolean' ? !currentValue : (currentValue ? 0 : 1);
+                // 查找并切换状态
+                const targetItem = host.state.items.find((item: T) => {
+                    const itemId = (item as any)[idKey];
+                    return itemId === id;
+                });
 
-                // 调用同一宿主上的 localUpdate 逻辑
-                // 这体现了 Ability 之间通过 host 协同的优势
-                if ((host as any).localUpdate) {
-                    (host as any).localUpdate(id, { [field]: newValue });
-                } else {
-                    // 如果没挂载 LocalUpdateAbility，则简单地修改内存
-                    const index = items.indexOf(item);
-                    const newItems = [...items];
-                    newItems[index] = { ...item, [field]: newValue, _isDirty: true };
-                    host.state.items = newItems;
+                if (targetItem) {
+                    // 切换状态，例如添加或移除_selected标记
+                    (targetItem as any)._selected = !(targetItem as any)._selected;
+                    
+                    // 发出切换事件
+                    host.emit('toggled', targetItem);
                 }
 
-                host.emit('toggled', { id, field, value: newValue });
+                return record;
             }
         };
     }
