@@ -8,7 +8,7 @@ import { FlowContext, IEntityManagerBase, IExposeResult } from '../../types';
  * 该能力为实体管理器（Entity Manager）提供通过网络请求更新远程数据的功能。
  * 它封装了发送更新请求、处理响应、同步本地状态以及事件发射的完整流程。
  */
-export class RemoteUpdateAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
+export class RemoteUpdateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
     /**
      * 暴露远程更新操作的方法
      *
@@ -33,7 +33,7 @@ export class RemoteUpdateAbility<T, TC> extends AbilityBase<IEntityManagerBase> 
             update: async (payload: Partial<T>): Promise<T> => {
                 // 1. 状态锁保护
                 if (host.state.loading) {
-                    new EntityError(
+                    throw new EntityError(
                         'Operation in progress, please wait.',
                         KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS
                     );
