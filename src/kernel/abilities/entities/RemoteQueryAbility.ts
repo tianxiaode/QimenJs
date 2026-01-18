@@ -60,7 +60,7 @@ export class RemoteQueryAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
 
             search: (criteria: Partial<TC>) => {
                 state.reset(false); // 过滤时重置分页、排序
-                state.criteria = criteria;
+                state.search = criteria;
                 return runList(false);
             },
 

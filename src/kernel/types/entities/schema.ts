@@ -46,6 +46,7 @@ export interface Schema {
     /** 继承：只能继承自一个父 Schema，获取其 keys、behavior 和 schema */
     extends?: string;
     idType?: 'number' | 'string';
+    
 
     /** 组合：引用多个公共字段集 (Schema Templates) */
     mixins?: string[];
@@ -62,6 +63,15 @@ export interface Schema {
     createdAtKey?: string; // 默认 'createdAt'
     updatedAtKey?: string; // 默认 'updatedAt'
 
+    //树相关
+    isTree: boolean;
+    isLazy: boolean;
+    parentIdKey?: string; // 默认 'parentId'
+    childrenKey?: string; // 默认 'children'，用于处理后端直接返回嵌套结构的情况
+    rootIdValue: any;        // 必须定义：根节点的值是 0, '', 还是 null
+    pathKey?: string;        // 可选：后端若支持路径字段（如 '1,3,5'）
+    leafKey?: string;        // 可选：后端若支持标识是否为叶子节点（优化 UI）
+
     // --- 列表行为 (Behavior) ---
     filters?: string[]; // 或者叫 filterList，建议用 filters，更简洁且符合复数习惯
     defaultSort?: string; // 默认排序字段，如 'createdAt'
@@ -77,3 +87,4 @@ export interface SchemaCache {
     schema: Schema;
     rules: Record<string, ValidationRule[]>;
 }
+

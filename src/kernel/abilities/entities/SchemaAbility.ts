@@ -12,7 +12,7 @@ import { RuleExtractor } from './RuleExtractor';
 
 /**
  * SchemaAbility - 模式能力类
- * 
+ *
  * 提供实体结构定义和验证能力，处理模式的继承、混入、字段合并等功能。
  * 主要负责：
  * 1. 编译和缓存实体模式（Schema）
@@ -24,10 +24,10 @@ import { RuleExtractor } from './RuleExtractor';
 export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> {
     /**
      * 暴露模式相关的属性和方法
-     * 
+     *
      * 提供对编译后模式的访问接口，包括模式定义、校验规则、键名映射等。
      * 使用缓存机制避免重复编译，提高性能。
-     * 
+     *
      * @returns 包含模式定义相关属性和方法的对象
      */
     protected expose(): IExposeResult {
@@ -60,6 +60,21 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
                     label: schema.labelKey || 'name',
                     createdAt: schema.createdAtKey || 'createdAt',
                     updatedAt: schema.updatedAtKey || 'updatedAt',
+                    // --- 新增树相关键名 ---
+                    parentId: schema.parentIdKey || 'parentId',
+                    children: schema.childrenKey || 'children',
+                    path: schema.pathKey || 'path',
+                    leaf: schema.leafKey || 'leaf',
+                }),
+                enumerable: true,
+            },
+
+            /** 属性化：树行为配置 */
+            schemaTree: {
+                get: () => ({
+                    isTree: !!schema.isTree,
+                    isLazy: !!schema.isLazy,
+                    rootIdValue: schema.rootIdValue, // 注意：这个值可能是 0, null, '', 需原样保留
                 }),
                 enumerable: true,
             },
@@ -163,15 +178,33 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
             });
         }
 
+        if (finalSchema.isTree) {
+            finalSchema.parentIdKey = finalSchema.parentIdKey || 'parentId';
+            finalSchema.childrenKey = finalSchema.childrenKey || 'children';
+
+            // 如果是树但没定义 rootIdValue，给一个合理的警告或默认值
+            if (finalSchema.rootIdValue === undefined) {
+                this.host.logger.warn(
+                    `[SchemaAbility] Schema "${finalSchema.name}" is a tree but rootIdValue is undefined.`
+                );
+                finalSchema.rootIdValue = null;
+            }
+        }
+
+        if (finalSchema.isLazy && !finalSchema.isTree) {
+            // 逻辑上：只有树才需要 Lazy 加载（分页是另一种逻辑）
+            finalSchema.isTree = true;
+        }
+
         return { schema: finalSchema, rules: resolvedRules, idType: idType as 'number' | 'string' };
     }
 
     /**
      * 合并多个字段数组
-     * 
+     *
      * 将多个字段数组合并为一个数组，相同名称的字段会被后面的覆盖。
      * 合并策略遵循"后者优先"原则：Local > Mixin > Base。
-     * 
+     *
      * @param fieldArrays - 要合并的字段数组列表
      * @returns 合并后的字段数组，按名称去重，保留最后出现的字段定义
      */

@@ -16,7 +16,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
 
     // 3. 搜索状态
     public filter: string = ''; // 简单搜索：通常是全局模糊匹配
-    public criteria: Partial<TCriteria> = {} as TCriteria; // 多字段搜索：结构化条件
+    public search: Partial<TCriteria> = {} as TCriteria; // 多字段搜索：结构化条件
 
     // 4. 辅助状态
     public loading: boolean = false;
@@ -73,7 +73,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
         this.filter = '';
         this.sortBy = null;
         this.sortOrder = null;
-        this.criteria = {};
+        this.search = {};
 
         // 2. 环境/配置状态按需重置
         if (includePageSettings) {
@@ -94,7 +94,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
             search: this.filter,
             sortBy: this.sortBy,
             sortOrder: this.sortOrder,
-            ...this.criteria,
+            ...this.search,
         };
     }
 
@@ -106,7 +106,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
             p: this.pageIndex,
             s: this.pageSize,
             f: this.filter,
-            c: this.criteria,
+            c: this.search,
         });
     }
 
@@ -220,7 +220,7 @@ export class CollectionState<T, TCriteria = Record<string, any>> implements ICol
         this.items = [];
         this._sourceItems = null; // 释放本地模式的全量数据
         this.cache.clear(); // 释放缓存
-        this.criteria = {};
+        this.search = {};
         // 停止所有待处理的逻辑
     }
 }

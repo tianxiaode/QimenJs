@@ -66,7 +66,7 @@ export class LocalListAbility<T, TCriteria> extends AbilityBase<IEntityManagerBa
              */
             search: async (criteria: Partial<TCriteria>) => {
                 state.reset(false);
-                state.criteria = criteria;
+                state.search = criteria;
                 return this.actualRun(true);
             },
 
@@ -105,10 +105,10 @@ export class LocalListAbility<T, TCriteria> extends AbilityBase<IEntityManagerBa
         const keys = (host as any).getKeys?.() || { id: 'id' };
 
         // 1. 搜索 (优先检查是否有自定义 localSearch)
-        if (Object.keys(state.criteria).length > 0) {
+        if (Object.keys(state.search).length > 0) {
             result = host.localSearch
-                ? host.localSearch(state.criteria, result)
-                : this.defaultSearch(state.criteria, result);
+                ? host.localSearch(state.search, result)
+                : this.defaultSearch(state.search, result);
         }
 
         // 2. 过滤
