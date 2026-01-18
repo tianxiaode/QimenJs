@@ -1,4 +1,3 @@
-export * from './base';
 export * from './actions';
 export * from './http';
 export * from './registrars';
@@ -7,3 +6,4 @@ export * from './entities';
 export * from './constants';
 export * from './composable';
 export * from './abilities';
+export * from './cache';

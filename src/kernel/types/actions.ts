@@ -1,5 +1,5 @@
 import { DomainConfig } from '@orbitjs/registry';
-import { ENTITY_ACTION } from './base'; // 或根据你实际路径
+import { ENTITY_ACTION } from './entities'; // 或根据你实际路径
 import { HttpMethod, HttpResponseType } from './http';
 import { Schema } from './entities';
 

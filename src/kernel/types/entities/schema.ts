@@ -18,16 +18,52 @@ export interface IEntity {
 }
 
 /**
+ * 本地搜索参数：专注于内存中的筛选
+ */
+export interface ILocalSearchParams {
+    keyword?: string;    // 全文检索（通常匹配 name/label 等）
+    sortBy?: string;     // 本地排序字段
+    sortOrder?: 'asc' | 'desc';
+    // 理论上这里不需要 [key: string]: any; 
+    // 因为本地过滤逻辑通常是硬编码在 State 里的某个 filter 函数中
+}
+
+export interface IBaseSearchParams extends ILocalSearchParams {
+    [key: string]: any; // 业务自定义过滤条件 (filters)
+}
+
+export interface IFlatSearchParams extends IBaseSearchParams {
+    page?: number;
+    pageSize?: number;
+}
+
+/**
+ * 树形搜索参数（极简扩展）
+ */
+export interface ITreeSearchParams extends IBaseSearchParams {
+    parentId?: string | number | null; // 加载特定父节点下的子项
+    depth?: number; // 展开深度
+    // 注意：这里通常不需要 page/pageSize，除非你做“节点内分页”
+}
+
+export type SearchParams = ILocalSearchParams | IFlatSearchParams | ITreeSearchParams;
+
+/**
  * 基础验证规则契约
  */
-
 export interface BaseField {
     name: string;
     label?: string;
-    source?: string;
+    filterable?: boolean;
+    seachable?: boolean;
     defaultValue?: any;
     readonly?: boolean;
-    mapping?: string;
+    /**
+     * 数据映射逻辑：
+     * - string: 代表后端原始字段路径（例如 "user_name" 映射到前端的 "name"）
+     * - function: 传入整行原始数据，由开发者完全控制返回逻辑（计算、格式化、字典转换）
+     */
+    mapping?: string | ((data: IEntity) => any);
     rules?: ValidationRule | ValidationRule[];
 }
 
@@ -40,51 +76,61 @@ export type FieldDefinition =
     | (BaseField & { type: 'enum'; mapping: Record<string, any> }) // 枚举特有
     | (BaseField & { type: 'object' | 'array' }); // 复杂类型只留标识
 
-export interface Schema {
+/**
+ * 基础 Schema（所有实体共用）
+ */
+export interface BaseSchema {
     name: string;
-
-    /** 继承：只能继承自一个父 Schema，获取其 keys、behavior 和 schema */
     extends?: string;
     idType?: 'number' | 'string';
-    
-
-    /** 组合：引用多个公共字段集 (Schema Templates) */
     mixins?: string[];
-
-    /** 扩展：当前实体特有的字段 */
     fields?: FieldDefinition[];
-
-    /** 覆盖：对 extends 或 mixins 中同名字段的精准修正 */
     override?: Record<string, Partial<FieldDefinition>>;
 
-    // --- 身份标识 (Keys) ---
-    idKey?: string; // 默认 'id'
-    labelKey?: string; // 默认 'name'
-    createdAtKey?: string; // 默认 'createdAt'
-    updatedAtKey?: string; // 默认 'updatedAt'
+    // 核心标识字段映射
+    idField?: string;
+    nameField?: string;
+    createField?: string;
+    updateField?: string;
 
-    //树相关
-    isTree: boolean;
-    isLazy: boolean;
-    parentIdKey?: string; // 默认 'parentId'
-    childrenKey?: string; // 默认 'children'，用于处理后端直接返回嵌套结构的情况
-    rootIdValue: any;        // 必须定义：根节点的值是 0, '', 还是 null
-    pathKey?: string;        // 可选：后端若支持路径字段（如 '1,3,5'）
-    leafKey?: string;        // 可选：后端若支持标识是否为叶子节点（优化 UI）
-
-    // --- 列表行为 (Behavior) ---
-    filters?: string[]; // 或者叫 filterList，建议用 filters，更简洁且符合复数习惯
-    defaultSort?: string; // 默认排序字段，如 'createdAt'
-    defaultOrder?: 'asc' | 'desc'; // 默认排序方向
-
+    defaultSort?: string;
+    defaultOrder?: 'asc' | 'desc';
     rules?: Record<string, ValidationRule[] | ValidationRule>;
+
+    //是否持久化
+    persistent?: boolean;
 }
 
-export type RegistrSchema = Omit<Schema, 'extends' | 'mixins' | 'override' | 'fileds' | 'rules'>;
+/**
+ * 普通平铺实体的 Schema
+ */
+export interface FlatSchema extends BaseSchema {
+    isTree: false; // 字面量类型，用于类型辨识
+}
+
+/**
+ * 树形实体的 Schema
+ */
+export interface TreeSchema extends BaseSchema {
+    isTree: true;
+    isLazy: boolean;
+    root: any; // 树模型下，root 是必填的
+    parentIdField?: string;
+    childrenField?: string;
+    pathField?: string;
+    leafField?: string;
+}
+
+// 最终暴露的统一 Schema 类型
+export type Schema = FlatSchema | TreeSchema;
+
+export type RegistrSchema = Omit<
+    BaseSchema,
+    'extends' | 'idtype' | 'mixins' | 'override' | 'fields' | 'rules'
+>;
 
 export interface SchemaCache {
-    idType?: 'number' |'string';
+    idType?: 'number' | 'string';
     schema: Schema;
     rules: Record<string, ValidationRule[]>;
 }
-
