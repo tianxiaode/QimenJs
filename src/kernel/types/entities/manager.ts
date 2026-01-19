@@ -10,15 +10,14 @@ import {
     SearchParams,
 } from './schema';
 
-export interface ICoreEntityManager extends IComposableBase {
-    domain: string;
-    request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask;
-    cancelAll(): void;
-    emit(event: string, data: any): void;
-    [key: string]: any;
+
+export interface ILocalChangeSet<T> {
+    added: T[];
+    updated: Map<string | number, T>;
+    deletedIds: Set<string | number>;
 }
 
-export interface IBaseState<T = IEntity, TSearch = SearchParams> {
+export interface IBaseEntityState<T = IEntity, TSearch = SearchParams> {
     loading: boolean;
     item: T | null;
     search: TSearch; // 统一搜索对象
@@ -40,34 +39,52 @@ export interface IBaseState<T = IEntity, TSearch = SearchParams> {
     clearCache(): void;
 
     // 基础操作
+    updateData(...args: any[]): void;
     toParams(): Record<string, any>;
     reset(): void;
     dispose(): void;
 }
 
-export interface IFlatRemoteState<T = IEntity, TSearch = IFlatSearchParams> extends IBaseState<
+export interface IRemoteEntityState<T = IEntity, TSearch = SearchParams> extends IBaseEntityState<T, TSearch> {
+    isDirty: boolean;
+    snapshot: T | null; // 原始数据备份，用于还原
+    rollback(): void; // 撤销当前未保存的修改
+}
+
+export interface ILocalEntityState<T = IEntity, TSearch = SearchParams> extends IBaseEntityState<T, TSearch> {
+    changes: ILocalChangeSet<T>;
+    readonly hasChanges: boolean;
+    commit(): void; // 本地确认变更
+}
+
+export interface IFlatRemoteEntityState<T = IEntity, TSearch = IFlatSearchParams> extends IRemoteEntityState<
     T,
     TSearch
 > {
     items: T[];
     total: number;
+    page: number;
+    pageSize: number;
     pages: number;
     pageSizes: number[];
 
     //修改IFlatSearchParams的page参数，需要防止超出范围
     updateData(items: T[], total: number): void;
+    //先调用该方法判断是否有效页，不是就发page-error事件
+    isValidPage(page: number): boolean;
+    //先调用该方法判断是否有效页大小，不是就发pageSize-error事件
+    isValidPageSize(pageSize: number): boolean;
 }
 
-export interface IFlatLocalState<T = IEntity, TSearch = ILocalSearchParams> extends IBaseState<
+export interface IFlatLocalEntityState<T = IEntity, TSearch = ILocalSearchParams> extends ILocalEntityState<
     T,
     TSearch
 > {
-    rawItems: T[]; // 完整的数据源
     filteredItems: T[]; // 经过 keyword 过滤后的数据
-    applyFilter():Promise<T[]>;
+    applyFilter(): Promise<T[]>;
 }
 
-export interface ITreeRemoteState<T = IEntity, TSearch = ITreeSearchParams> extends IBaseState<
+export interface ITreeRemoteEntityState<T = IEntity, TSearch = ITreeSearchParams> extends IRemoteEntityState<
     T,
     TSearch
 > {
@@ -77,20 +94,27 @@ export interface ITreeRemoteState<T = IEntity, TSearch = ITreeSearchParams> exte
     updateNodes(parentId: string | number | null, children: T[]): void;
 }
 
-export interface ITreeLocalState<T = IEntity, TSearch = ILocalSearchParams> extends IBaseState<
+export interface ITreeLocalEntityState<T = IEntity, TSearch = ILocalSearchParams> extends ILocalEntityState<
     T,
     TSearch
 > {
-    rawNodes: Map<string | number, T>;
     matchKeys: Set<string | number>; // 命中的节点，用于 UI 高亮或过滤展示
     searchLocal(): Promise<T[]>;
 }
 
 export type EntityState<T = IEntity, TSearch = SearchParams> =
-    | IFlatRemoteState<T, TSearch>
-    | IFlatLocalState<T, TSearch>
-    | ITreeRemoteState<T, TSearch>
-    | ITreeLocalState<T, TSearch>;
+    | IFlatRemoteEntityState<T, TSearch>
+    | IFlatLocalEntityState<T, TSearch>
+    | ITreeRemoteEntityState<T, TSearch>
+    | ITreeLocalEntityState<T, TSearch>;
+
+export interface ICoreEntityManager extends IComposableBase {
+    domain: string;
+    request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask;
+    cancelAll(): void;
+    emit(event: string, data: any): void;
+    [key: string]: any;
+}
 
 export interface IBaseEntityManager extends ICoreEntityManager {
     fetch(
