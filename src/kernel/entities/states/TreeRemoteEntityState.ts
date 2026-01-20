@@ -1,0 +1,231 @@
+import { IEntity, ITreeRemoteEntityState, ITreeSearchParams, TreeSchema } from '../../types';
+import { RemoteEntityState } from './RemoteEntityState';
+
+export class TreeRemoteEntityState<T = IEntity>
+    extends RemoteEntityState<T>
+    implements ITreeRemoteEntityState<T>
+{
+    search: ITreeSearchParams = {} as ITreeSearchParams;
+    nodes: Map<string | number, T> = new Map();
+    hierarchy: Map<string | number | null, (string | number)[]> = new Map();
+    lastSearchResultIds: (string | number)[] = [];
+
+    toParams() {
+        const base = super.toParams();
+        // 如果 parentId 为空，后端可能需要传 0 或者特殊的 ID
+        if (!base.parentId) {
+            base.parentId = (this.schema as TreeSchema).root || 'ROOT';
+        }
+        return base;
+    }
+
+    updateData(data: T | T[], manualParentId?: string | number | null): void {
+        // 1. 直接塞入，利用 ingest 的递归和去重能力
+        this.ingest(data, manualParentId);
+
+        // 2. 如果是搜索，我们不需要清除 Map，
+        // 但我们可以记录一下“最后一次搜索结果的 ID 列表”，
+        // 方便 UI 快速定位哪些节点是命中的。
+        if (this.search.keyword) {
+            this.lastSearchResultIds = Array.isArray(data)
+                ? data.map(n => (n as any).id)
+                : [(data as any).id];
+        }
+    }
+
+    get items(): T[] {
+        if (this.search.keyword) {
+            // 搜索模式下，递归返回整棵过滤后的树结构
+            return this.treeData;
+        }
+
+        // 正常模式下，只返回当前层级
+        const targetId = this.search.parentId || (this.schema as TreeSchema).root || null;
+        const childIds = this.hierarchy.get(targetId) || [];
+        return childIds.map(id => this.nodes.get(id)!).filter(Boolean);
+    }
+
+    get treeData(): T[] {
+        const build = (pid: string | number | null = null): any[] => {
+            const ids = this.hierarchy.get(pid) || [];
+            return ids.map(id => {
+                const node = this.nodes.get(id);
+                return {
+                    ...node,
+                    children: build(id),
+                };
+            });
+        };
+        return build(null);
+    }
+
+    updateNodes(parentId: string | number | null, children: T[]): void {
+        this.ingest(children, parentId);
+    }
+
+    removeNode(id: string | number): void {
+        const node = this.nodes.get(id);
+        if (!node) return;
+
+        // 1. 从父节点的 hierarchy 索引中移除
+        const pid = (node as any).parentId ?? (this.schema as TreeSchema).root ?? null;
+        const siblings = this.hierarchy.get(pid);
+        if (siblings) {
+            this.hierarchy.set(
+                pid,
+                siblings.filter(childId => childId !== id)
+            );
+        }
+
+        // 2. 递归删除所有子节点（防止内存泄漏）
+        const childrenIds = this.hierarchy.get(id) || [];
+        childrenIds.forEach(childId => this.removeNode(childId));
+
+        // 3. 从 nodes 仓库和索引表中彻底移除
+        this.nodes.delete(id);
+        this.hierarchy.delete(id);
+    }
+
+    moveNode(id: string | number, newParentId: string | number | null): void {
+        const node = this.nodes.get(id);
+        if (!node) return;
+
+        const oldPid = (node as any).parentId ?? (this.schema as TreeSchema).root ?? null;
+        const targetPid = newParentId ?? (this.schema as TreeSchema).root ?? null;
+
+        if (oldPid === targetPid) return; // 位置没变
+
+        // 1. 从旧父节点的索引中移除
+        const oldSiblings = this.hierarchy.get(oldPid);
+        if (oldSiblings) {
+            this.hierarchy.set(
+                oldPid,
+                oldSiblings.filter(sid => sid !== id)
+            );
+        }
+
+        // 2. 更新节点自身的 parentId
+        (node as any).parentId = newParentId;
+
+        // 3. 加入新父节点的索引
+        const newSiblings = this.hierarchy.get(targetPid) || [];
+        if (!newSiblings.includes(id)) {
+            newSiblings.push(id);
+            this.hierarchy.set(targetPid, newSiblings);
+        }
+    }
+
+    updateNode(id: string | number, patch: Partial<T>): void {
+        const node = this.nodes.get(id);
+        if (node) {
+            // 合并数据
+            const updatedNode = { ...node, ...patch };
+            this.nodes.set(id, updatedNode);
+        }
+    }
+
+    getCacheKey(): string {
+        const params: any = this.toParams();
+        // 将所有参数按 key 排序后序列化，确保缓存键的唯一性和稳定性
+        const queryStr = Object.keys(params)
+            .sort()
+            .map(key => `${key}=${params[key]}`)
+            .join('&');
+        return `${this.schema.name}:${queryStr}`;
+    }
+
+    reset(): void {
+        this.lastSearchResultIds = [];
+        this.item = null;
+        this.loading = false;
+        this.snapshot = null;
+        this.nodes.clear();
+        this.hierarchy.clear();
+        this.search = this.getDefaultSearch();
+    }
+
+    private ingest(data: T | T[], manualParentId?: string | number | null): void {
+        const list = Array.isArray(data) ? data : [data];
+
+        list.forEach(node => {
+            const id = (node as any).id;
+            // 自动判定父 ID：优先取节点自带的，其次取手动传入的，最后取根节点
+            const pid =
+                (node as any).parentId ??
+                manualParentId ??
+                (this.schema as TreeSchema).root ??
+                null;
+
+            // 1. 节点进入仓库（Map 自动处理了“去重”和“更新”）
+            this.nodes.set(id, node);
+
+            // 2. 更新索引表：将 ID 关联到父节点的子列表中
+            const siblings = this.hierarchy.get(pid) || [];
+            if (!siblings.includes(id)) {
+                siblings.push(id);
+                this.hierarchy.set(pid, siblings);
+            }
+
+            // 3. 递归：如果后端在搜索时直接返回了嵌套的 children
+            const children = (node as any).children;
+            if (children && Array.isArray(children)) {
+                this.ingest(children, id);
+            }
+        });
+    }
+
+    get expandedKeys(): (string | number)[] {
+        if (!this.search.keyword) return [];
+
+        // 逻辑：所有搜索命中的节点的父 ID 路径都应该被展开
+        const keys = new Set<string | number>();
+        this.nodes.forEach(node => {
+            if (this.matchKeyword(node, this.search.keyword!)) {
+                // 往上找所有祖先并加入 keys (需要节点自带 parentId)
+                this.fillAncestorKeys(node, keys);
+            }
+        });
+        return Array.from(keys);
+    }
+
+    protected getDefaultSearch(): ITreeSearchParams {
+        return {
+            parentId: null,
+            depth: 1,
+            keyword: '',
+            sortBy: this.schema.defaultSort || '',
+            order: this.schema.defaultOrder || 'asc',
+        };
+    }
+
+    private matchKeyword(node: T, keyword: string): boolean {
+        if (!keyword) return false;
+        // 假设实体上有 name 或 label 字段，你可以根据 schema 配置灵活调整
+        const label = (node as any).name || (node as any).label || (node as any).title || '';
+        return label.toLowerCase().includes(keyword.toLowerCase());
+    }
+
+    private fillAncestorKeys(node: T, keys: Set<string | number>): void {
+        let currentPid = (node as any).parentId;
+        const rootId = (this.schema as TreeSchema).root || null;
+
+        // 只要没到根节点，就一直向上追溯
+        while (currentPid && currentPid !== rootId) {
+            if (keys.has(currentPid)) break; // 防止死循环或重复计算
+            keys.add(currentPid);
+
+            const parentNode = this.nodes.get(currentPid);
+            if (parentNode) {
+                currentPid = (parentNode as any).parentId;
+            } else {
+                break; // 如果父节点没在缓存里，终止
+            }
+        }
+    }
+
+    dispose(): void {
+        this.reset();
+        this.lastSearchResultIds = [];
+        super.dispose();
+    }
+}
