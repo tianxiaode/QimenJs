@@ -1,9 +1,9 @@
 import { BaseEntityState } from './BaseEntityState';
-import { IEntity, IRemoteEntityState } from '../../types';
+import { IEntity, IRemoteEntityState, SearchParams } from '../../types';
 
-export abstract class RemoteEntityState<T = IEntity>
-    extends BaseEntityState<T>
-    implements IRemoteEntityState<T>
+export abstract class RemoteEntityState<T extends IEntity, TSearch extends SearchParams>
+    extends BaseEntityState<T, TSearch>
+    implements IRemoteEntityState<T, TSearch>
 {
     snapshot: T | null = null;
 

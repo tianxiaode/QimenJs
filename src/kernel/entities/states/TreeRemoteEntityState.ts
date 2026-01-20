@@ -1,11 +1,10 @@
 import { IEntity, ITreeRemoteEntityState, ITreeSearchParams, TreeSchema } from '../../types';
 import { RemoteEntityState } from './RemoteEntityState';
 
-export class TreeRemoteEntityState<T = IEntity>
-    extends RemoteEntityState<T>
-    implements ITreeRemoteEntityState<T>
+export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
+    extends RemoteEntityState<T, TSearch>
+    implements ITreeRemoteEntityState<T, TSearch>
 {
-    search: ITreeSearchParams = {} as ITreeSearchParams;
     nodes: Map<string | number, T> = new Map();
     hierarchy: Map<string | number | null, (string | number)[]> = new Map();
     lastSearchResultIds: (string | number)[] = [];
@@ -188,14 +187,14 @@ export class TreeRemoteEntityState<T = IEntity>
         return Array.from(keys);
     }
 
-    protected getDefaultSearch(): ITreeSearchParams {
+    protected getDefaultSearch(): TSearch {
         return {
             parentId: null,
             depth: 1,
             keyword: '',
             sortBy: this.schema.defaultSort || '',
             order: this.schema.defaultOrder || 'asc',
-        };
+        } as ITreeSearchParams as TSearch;
     }
 
     private matchKeyword(node: T, keyword: string): boolean {

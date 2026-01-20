@@ -12,7 +12,8 @@ export interface ILocalChangeSet<T> {
     deletedIds: Set<string | number>;
 }
 
-export interface IBaseEntityState<T = IEntity> {
+export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParams> {
+    search: TSearch;
     loading: boolean;
     item: T | null;
     cacheTTL: number;
@@ -39,29 +40,39 @@ export interface IBaseEntityState<T = IEntity> {
     dispose(): void;
 }
 
-export interface IRemoteEntityState<T = IEntity> extends IBaseEntityState<T> {
+export interface IRemoteEntityState<
+    T extends IEntity,
+    TSearch extends SearchParams,
+> extends IBaseEntityState<T, TSearch> {
     snapshot: T | null; // 原始数据备份，用于还原
     isDirty(currentItem: T): boolean;
-    edit(item: T): void ; // 进入编辑状态
+    edit(item: T): void; // 进入编辑状态
     rollback(): T | null; // 撤销当前未保存的修改
 }
 
-export interface ILocalEntityState<T = IEntity> extends IBaseEntityState<T> {
+export interface ILocalEntityState<
+    T extends IEntity,
+    TSearch extends SearchParams,
+> extends IBaseEntityState<T, TSearch> {
     changes: ILocalChangeSet<T>;
     readonly hasChanges: boolean;
     commit(): void; // 本地确认变更
 }
 
-export interface IFlatRemoteEntityState<T = IEntity> extends IRemoteEntityState<T> {
+export interface IFlatRemoteEntityState<
+    T extends IEntity,
+    TSearch extends IFlatSearchParams,
+> extends IRemoteEntityState<T, TSearch> {
     items: T[];
-    search: IFlatSearchParams;
     total: number;
     pages: number;
     pageSizes: number[];
     page: number;
     pageSize: number;
-    sortBy: string;;
+    sortBy: string;
     order: 'asc' | 'desc';
+    filterBy: string;
+    searchBy: Partial<TSearch>;
 
     //修改IFlatSearchParams的page参数，需要防止超出范围
     updateData(items: T[], total: number): void;
@@ -71,28 +82,42 @@ export interface IFlatRemoteEntityState<T = IEntity> extends IRemoteEntityState<
     isValidPageSize(pageSize: number): boolean;
 }
 
-export interface IFlatLocalEntityState<T = IEntity> extends ILocalEntityState<T> {
-    search: ILocalSearchParams;
+export interface IFlatLocalEntityState<
+    T extends IEntity,
+    TSearch extends ILocalSearchParams,
+> extends ILocalEntityState<T, TSearch> {
     filteredItems: T[]; // 经过 keyword 过滤后的数据
     applyFilter(): Promise<T[]>;
 }
 
-export interface ITreeRemoteEntityState<T = IEntity> extends IRemoteEntityState<T> {
-    search: ITreeSearchParams;
+export interface ITreeRemoteEntityState<
+    T extends IEntity,
+    TSearch extends ITreeSearchParams,
+> extends IRemoteEntityState<T, TSearch> {
     nodes: Map<string | number, T>;
     hierarchy: Map<string | number | null, (string | number)[]>;
+    lastSearchResultIds: (string | number)[];
+    items: T[]; // 当前层级的子节点列表
+    treeData: T[]; // 递归返回整棵树形结构
     // 核心：把后端返回的一段子项挂载到 parentId 下
+    updateData(data: T | T[], manualParentId?: string | number | null): void;
     updateNodes(parentId: string | number | null, children: T[]): void;
+    removeNode(id: string | number): void;
+    moveNode(id: string | number, newParentId: string | number | null): void;
+    updateNode(id: string | number, patch: Partial<T>): void;
+    
 }
 
-export interface ITreeLocalEntityState<T = IEntity> extends ILocalEntityState<T> {
-    search: ITreeSearchParams;
+export interface ITreeLocalEntityState<
+    T extends IEntity,
+    TSearch extends ITreeSearchParams,
+> extends ILocalEntityState<T, TSearch> {
     matchKeys: Set<string | number>; // 命中的节点，用于 UI 高亮或过滤展示
     searchLocal(): Promise<T[]>;
 }
 
-export type EntityState<T = IEntity> =
-    | IFlatRemoteEntityState<T>
-    | IFlatLocalEntityState<T>
-    | ITreeRemoteEntityState<T>
-    | ITreeLocalEntityState<T>;
+export type EntityState<T extends IEntity, TSearch extends SearchParams> =
+    | IFlatRemoteEntityState<T, TSearch>
+    | IFlatLocalEntityState<T, TSearch>
+    | ITreeRemoteEntityState<T, TSearch>
+    | ITreeLocalEntityState<T, TSearch>;

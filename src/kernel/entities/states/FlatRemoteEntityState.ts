@@ -7,11 +7,10 @@ import {
 } from '../../types';
 import { RemoteEntityState } from './RemoteEntityState';
 
-export class FlatRemoteEntityState<T = IEntity>
-    extends RemoteEntityState<T>
-    implements IFlatRemoteEntityState<T>
+export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearchParams>
+    extends RemoteEntityState<T, TSearch>
+    implements IFlatRemoteEntityState<T, TSearch>
 {
-    search: IFlatSearchParams = {} as IFlatSearchParams;
     items: T[] = [];
     total: number = 0;
     pages: number = 0;
@@ -50,10 +49,34 @@ export class FlatRemoteEntityState<T = IEntity>
         this.search.sortBy = sortBy;
     }
     get order() {
-        return this.search.order!;
+        return this.search.sortOrder!;
     }
     set order(order: 'asc' | 'desc') {
-        this.search.order = order;
+        this.search.sortOrder = order;
+    }
+
+    get filterBy() {
+        return this.search.keyword!;
+    }
+    set filterBy(filterBy: string) {
+        this.search.keyword = filterBy;
+    }
+
+    get searchBy() {
+        const result = { ...this.search };
+        delete result.page;
+        delete result.pageSize;
+        delete result.sortBy;
+        delete result.sortOrder;
+        delete result.keyword;
+        return result;
+    }
+
+    set searchBy(searchBy: Partial<TSearch>) {
+        this.search = {
+            ...this.search,
+            ...searchBy,
+        };
     }
 
     isValidPage(page: number): boolean {
@@ -97,14 +120,14 @@ export class FlatRemoteEntityState<T = IEntity>
         this.search = this.getDefaultSearch(this.pageSize);
     }
 
-    protected getDefaultSearch(customPageSize: number): IFlatSearchParams {
+    protected getDefaultSearch(customPageSize: number): TSearch {
         return {
             page: 1,
             pageSize: customPageSize || this.pageSizes[0],
             keyword: '',
             sortBy: this.schema.defaultSort || '',
             order: this.schema.defaultOrder || 'asc',
-        };
+        } as IFlatSearchParams as TSearch;
     }
 
     dispose(): void {

@@ -1,9 +1,9 @@
 import { IBaseEntityState, ICacheProvider, IEntity, Schema, SearchParams } from '../../types';
 
-export abstract class BaseEntityState<T = IEntity> implements IBaseEntityState<T> {
+export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchParams> implements IBaseEntityState<T, TSearch> {
     loading: boolean = false;
     item: T | null = null;
-    abstract search: Record<string, any>; // 统一搜索对象
+    search: TSearch = {} as TSearch;
     cacheTTL: number = 300000; // 默认缓存5分钟
 
     constructor(
