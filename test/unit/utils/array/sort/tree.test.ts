@@ -257,4 +257,68 @@ describe('toTree', () => {
         expect(result[0]).toHaveProperty('children');
         expect(result[0].children).toHaveLength(1);
     });
+    
+    it('should keep empty children arrays by default', () => {
+        const data: TestItem[] = [
+            { id: 1, name: 'Parent', parentId: null },
+            { id: 2, name: 'Child without children', parentId: 1 },
+        ];
+
+        const result = toTree(data) as TreeNode<TestItem>[];
+
+        // Without removeEmptyChildren option, empty arrays should be preserved
+        expect(result).toHaveLength(1);
+        expect(result[0]).toHaveProperty('children');
+        expect(result[0].children).toHaveLength(1);
+        expect(result[0].children[0]).toHaveProperty('children'); // Should have children property as an empty array
+        expect(result[0].children[0].children).toHaveLength(0);
+    });
+
+    it('should remove empty children arrays when removeEmptyChildren is true', () => {
+        const data: TestItem[] = [
+            { id: 1, name: 'Parent', parentId: null },
+            { id: 2, name: 'Child without children', parentId: 1 },
+            { id: 3, name: 'Child with children', parentId: 1 },
+            { id: 4, name: 'Grandchild', parentId: 3 },
+        ];
+
+        const options: TreeOptions<TestItem> = {
+            removeEmptyChildren: true,
+        };
+
+        const result = toTree(data, options) as TreeNode<TestItem>[];
+
+        // The child without any children (id=2) should not have a children property
+        const childWithoutChildren = result[0].children.find((child: any) => child.id === 2);
+        expect(childWithoutChildren).toBeDefined();
+        expect(childWithoutChildren).not.toHaveProperty('children'); // Should not have the children property at all
+
+        // The child with children (id=3) should still have a children property
+        const childWithChildren = result[0].children.find((child: any) => child.id === 3);
+        expect(childWithChildren).toBeDefined();
+        expect(childWithChildren).toHaveProperty('children');
+        expect(childWithChildren!.children).toHaveLength(1);
+    });
+
+    it('should preserve children arrays when they have content and removeEmptyChildren is true', () => {
+        const data: TestItem[] = [
+            { id: 1, name: 'Parent', parentId: null },
+            { id: 2, name: 'Child with children', parentId: 1 },
+            { id: 3, name: 'Grandchild', parentId: 2 },
+        ];
+
+        const options: TreeOptions<TestItem> = {
+            removeEmptyChildren: true,
+        };
+
+        const result = toTree(data, options) as TreeNode<TestItem>[];
+
+        // Root parent should have children
+        expect(result[0]).toHaveProperty('children');
+        expect(result[0].children).toHaveLength(1);
+
+        // Child with actual children should still have the children property
+        expect(result[0].children[0]).toHaveProperty('children');
+        expect(result[0].children[0].children).toHaveLength(1);
+    });
 });

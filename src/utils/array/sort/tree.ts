@@ -6,6 +6,8 @@ export interface TreeOptions<T> {
     childrenField?: string;
     /** 分层排序条件 */
     orderBy?: OrderCondition<T>[];
+    /** 是否移除空子节点数组 (默认 false，即保留 []) */
+    removeEmptyChildren?: boolean;
 }
 
 /**
@@ -18,6 +20,7 @@ export interface TreeOptions<T> {
  * @param {keyof T} [options.parentField='parentId'] - 指向父级节点的字段名
  * @param {string} [options.childrenField='children'] - 存储子节点的字段名
  * @param {OrderCondition<T>[]} [options.orderBy] - 可选的排序条件，用于对每层节点进行排序
+ * @param {boolean} [options.removeEmptyChildren=false] - 是否移除空子节点数组，默认为false，即保留[]
  * @returns {T[]} 转换后的树形结构数组
  * 
  * @example
@@ -35,18 +38,19 @@ export function toTree<T>(data: T[], options: TreeOptions<T> = {}): T[] {
         parentField = 'parentId' as keyof T,
         childrenField = 'children',
         orderBy: sortConditions,
+        removeEmptyChildren = false
     } = options;
 
-    // 1. 建立节点映射 (先克隆数据，防止污染原对象)
     const nodeMap = new Map<any, any>();
     const roots: any[] = [];
-
-    // 2. 预处理：创建带 children 的浅拷贝对象
+    
+    // 1. 建立节点映射
     data.forEach(item => {
+        // 每个节点预设一个空的 children 数组
         nodeMap.set(item[idField], { ...item, [childrenField]: [] });
     });
 
-    // 3. 组织父子关系
+    // 2. 组织父子关系
     nodeMap.forEach(node => {
         const parentId = node[parentField];
         if (parentId != null && nodeMap.has(parentId)) {
@@ -56,23 +60,30 @@ export function toTree<T>(data: T[], options: TreeOptions<T> = {}): T[] {
         }
     });
 
-    // 4. 如果有排序需求，执行递归分层排序
-    if (sortConditions && sortConditions.length > 0) {
-        const sortRecursive = (list: any[]) => {
-            // 对当前层级排序
+    // 3. 递归处理：排序 + 清理空 children
+    const processRecursive = (list: any[]) => {
+        // A. 如果有排序需求，先排序当前层级
+        if (sortConditions && sortConditions.length > 0) {
             const sorted = orderBy(list, sortConditions);
-            // 替换原列表内容 (in-place 修改以保持引用)
             list.length = 0;
             list.push(...sorted);
-            // 递归子级
-            list.forEach(node => {
-                if (node[childrenField]?.length > 0) {
-                    sortRecursive(node[childrenField]);
-                }
-            });
-        };
-        sortRecursive(roots);
-    }
+        }
+
+        // B. 遍历处理子节点
+        for (let i = list.length - 1; i >= 0; i--) {
+            const node = list[i];
+            const children = node[childrenField];
+
+            if (children && children.length > 0) {
+                processRecursive(children);
+            } else if (removeEmptyChildren) {
+                // 如果没有子节点且开启了清理开关，则删除该属性
+                delete node[childrenField];
+            }
+        }
+    };
+
+    processRecursive(roots);
 
     return roots;
 }
