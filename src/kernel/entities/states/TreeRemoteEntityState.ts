@@ -41,30 +41,20 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
 
         // 使用你的 orderBy 工具函数
         // 这里的排序条件可以从 search 对象中动态获取
-        return array.orderBy(list, [
-            {
-                by: this.search.sortBy as keyof T,
-                order: this.search.order as 'asc' | 'desc',
-            },
-        ]);
+        return this.applySort(list);
     }
 
     get treeData(): T[] {
-        const build = (pid: string | number | null = null): any[] => {
+        const build = (pid: string | number | null = null): T[] => {
             const ids = this.hierarchy.get(pid) || [];
-            const unsortedNodes = ids.map(id => this.nodes.get(id)!).filter(Boolean);
+            const unsorted = ids.map(id => this.nodes.get(id)!).filter(Boolean);
 
-            // 1. 先对当前层级进行排序
-            const sortedNodes = array.orderBy(unsortedNodes, [
-                {
-                    by: this.search.sortBy as keyof T,
-                    order: this.search.order as 'asc' | 'desc',
-                },
-            ]);
+            // 每一层级内部排序
+            const sorted = this.applySort(unsorted);
 
-            // 2. 递归构建子节点
-            return sortedNodes.map(node => ({
+            return sorted.map(node => ({
                 ...node,
+                // 递归挂载子节点
                 children: build((node as any).id),
             }));
         };
@@ -233,6 +223,17 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
                 break; // 如果父节点没在缓存里，终止
             }
         }
+    }
+
+    private applySort(list: T[]): T[] {
+        if (!this.search.sortBy || list.length <= 1) return list;
+
+        return array.orderBy(list, [
+            {
+                by: this.search.sortBy as keyof T,
+                order: this.search.order as 'asc' | 'desc',
+            },
+        ]);
     }
 
     dispose(): void {

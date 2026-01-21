@@ -1,0 +1,134 @@
+import { BaseEntityState } from './BaseEntityState';
+import {
+    IDeletionPlan,
+    IEntity,
+    ILocalChangeSet,
+    ILocalEntityState,
+    SearchParams,
+} from '../../types';
+
+export abstract class LocalEntityState<T extends IEntity, TSearch extends SearchParams>
+    extends BaseEntityState<T, TSearch>
+    implements ILocalEntityState<T, TSearch>
+{
+    sourceData: T[] = [];
+    changes: ILocalChangeSet<T> = this.createEmptyChanges();
+    abstract get items(): T[];
+
+    getCacheKey(): string {
+        // 本地模式的 Key 通常只跟 Schema 名称有关，因为它是全量缓存
+        return `local_cache:${this.schema.name}`;
+    }
+
+    get hasChanges(): boolean {
+        return this.changes.added.length > 0 || this.changes.updated.size > 0;
+    }
+
+    add(item: T): void {
+        this.changes.added.push(item);
+    }
+
+    get addedItems(): T[] {
+        return this.changes.added;
+    }
+
+    get updatedItems(): T[] {
+        // 将 Map 的 Value 转为数组，方便 Spring / EF Core 接收
+        return Array.from(this.changes.updated.values());
+    }
+
+    get pendingItems(): T[] {
+        return [...this.addedItems, ...this.updatedItems];
+    }
+
+    getDeletionPlan(ids: (string | number)[]): IDeletionPlan {
+        const plan: IDeletionPlan = { localOnly: [], persistent: [] };
+
+        // 获取当前新增缓冲区的 ID 集合
+        const addedIds = new Set(
+            this.changes.added.map(item => (item as any)[this.schema.idField!])
+        );
+
+        ids.forEach(id => {
+            if (addedIds.has(id)) {
+                plan.localOnly.push(id);
+            } else {
+                plan.persistent.push(id);
+            }
+        });
+
+        return plan;
+    }
+
+    update(item: T): void {
+        const idField = this.schema.idField!;
+        const id = item[idField as keyof T];
+
+        // 1. 优先检查并更新“新增项”缓冲区
+        const addedIndex = this.changes.added.findIndex(i => (i as any)[idField] === id);
+        if (addedIndex > -1) {
+            // 直接替换新增数组里的对象
+            this.changes.added[addedIndex] = { ...this.changes.added[addedIndex], ...item };
+            return;
+        }
+
+        // 2. 检查并更新“持久化项”补丁
+        const oldItem = this.sourceData.find(i => i[idField as keyof T] === id);
+        if (oldItem) {
+            const newItem = { ...oldItem, ...item };
+            this.changes.updated.set(id, newItem);
+        }
+    }
+    
+    abstract delete(id: (string | number)[]): void;
+
+    confimDelete(plan: IDeletionPlan): void {
+        const idField = this.schema.idField!;
+        // 1. 批量移除新增草稿
+        if (plan.localOnly.length > 0) {
+            const localSet = new Set(plan.localOnly);
+            this.changes.added = this.changes.added.filter(
+                item => !localSet.has((item as any)[idField])
+            );
+        }
+        if (plan.persistent.length > 0) {
+            plan.persistent.forEach(id => this.changes.updated.delete(id));
+            this.delete(plan.persistent);
+        }
+    }
+
+    reset(): void {
+        this.changes = this.createEmptyChanges();
+    }
+
+    matchKeyword(item: T, keyword: string): boolean {
+        if (!keyword) return true;
+        const lowerKeyword = keyword.toLowerCase();
+
+        // 优先使用你在 Schema 处理阶段提取好的 searchableFields
+        const fields = this.schema.searchFields || ['name', 'title', 'code'];
+
+        return fields.some(field => {
+            const value = (item as any)[field];
+            // 增加对数字等非字符串类型的兼容
+            return (
+                value !== null &&
+                value !== undefined &&
+                String(value).toLowerCase().includes(lowerKeyword)
+            );
+        });
+    }
+
+    protected createEmptyChanges(): ILocalChangeSet<T> {
+        return {
+            added: [],
+            updated: new Map(),
+        };
+    }
+
+    dispose(): void {
+        this.sourceData = [];
+        this.changes = this.createEmptyChanges();
+        super.dispose();
+    }
+}

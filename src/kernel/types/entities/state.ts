@@ -9,7 +9,11 @@ import {
 export interface ILocalChangeSet<T> {
     added: T[];
     updated: Map<string | number, T>;
-    deletedIds: Set<string | number>;
+}
+
+export interface IDeletionPlan {
+    localOnly: (string | number)[];  // 仅在新增缓冲区（added）的 ID，直接删了就行
+    persistent: (string | number)[]; // 已经在数据库里的 ID，需要调用远程接口
 }
 
 export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParams> {
@@ -50,13 +54,24 @@ export interface IRemoteEntityState<
     rollback(): T | null; // 撤销当前未保存的修改
 }
 
+
 export interface ILocalEntityState<
     T extends IEntity,
     TSearch extends SearchParams,
 > extends IBaseEntityState<T, TSearch> {
+    sourceData: T[]; // 基础数据源
     changes: ILocalChangeSet<T>;
     readonly hasChanges: boolean;
-    commit(): void; // 本地确认变更
+    items: T[]; // 合并了 changes 后的当前数据列表
+    add(item: T): void;
+    update(item: T): void;
+    delete(ids: (string | number)[]): void;
+    addedItems: T[];
+    updatedItems: T[];
+    pendingItems: T[];
+    getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
+    confimDelete(plan: IDeletionPlan): void;
+    matchKeyword(item: T, keyword: string): boolean
 }
 
 export interface IFlatRemoteEntityState<
@@ -86,8 +101,6 @@ export interface IFlatLocalEntityState<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
 > extends ILocalEntityState<T, TSearch> {
-    filteredItems: T[]; // 经过 keyword 过滤后的数据
-    applyFilter(): Promise<T[]>;
 }
 
 export interface ITreeRemoteEntityState<
@@ -112,8 +125,6 @@ export interface ITreeLocalEntityState<
     T extends IEntity,
     TSearch extends ITreeSearchParams,
 > extends ILocalEntityState<T, TSearch> {
-    matchKeys: Set<string | number>; // 命中的节点，用于 UI 高亮或过滤展示
-    searchLocal(): Promise<T[]>;
 }
 
 export type EntityState<T extends IEntity, TSearch extends SearchParams> =

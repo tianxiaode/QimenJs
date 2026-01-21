@@ -99,6 +99,7 @@ export interface BaseSchema {
 
     //是否持久化
     persistent?: boolean;
+    readonly searchFields?: string[];
 }
 
 /**
