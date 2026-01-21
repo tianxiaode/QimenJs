@@ -1,93 +1,68 @@
 /**
+ * 定义排序的选择器，可以是对象的键名或者一个返回排序值的函数
+ * @template T 被排序的数组元素类型
+ */
+type OrderSelector<T> = keyof T | ((item: T) => any);
+
+/**
+ * 定义单个排序条件的接口
+ * @template T 被排序的数组元素类型
+ */
+interface OrderCondition<T> {
+    /** 排序依据，可以是对象的键名或返回排序值的函数 */
+    by: OrderSelector<T>;
+    /** 排序方向，默认为升序 */
+    order?: 'asc' | 'desc';
+}
+
+/** 
+ * 比较函数映射表，根据不同数据类型使用不同的比较函数 
+ */
+const Comparators: Record<string, (a: any, b: any) => number> = {
+    number: (a, b) => a - b,
+    date: (a, b) => a.getTime() - b.getTime(),
+    string: (a, b) => a.localeCompare(b),
+    default: (a, b) => String(a).localeCompare(String(b)),
+};
+
+/**
  * 根据多个排序条件对数组进行排序
  * @template T 数组元素类型
  * @param {T[]} arr 要排序的数组
- * @param {Array<{ key?: keyof T; keySelector?: (item: T) => any; order?: 'asc' | 'desc' }>} orders 排序条件数组
+ * @param {OrderCondition<T>[]} conditions 排序条件数组，每个条件包含by字段和order顺序
  * @returns {T[]} 返回排序后的新数组，不修改原数组
  */
-export function orderBy<T>(
-    arr: T[],
-    orders: Array<{
-        // 字段名或键提取函数，二选一
-        key?: keyof T;
-        keySelector?: (item: T) => any;
-        order?: 'asc' | 'desc';
-    }>
-): T[] {
-    if (orders.length === 0) {
-        return [...arr]; // 没有排序条件，返回副本
-    }
+export function orderBy<T>(arr: T[], conditions: OrderCondition<T>[]): T[] {
+    if (conditions.length === 0) return [...arr];
 
-    // 验证每个排序条件
-    orders.forEach((order, index) => {
-        if (!order.key && !order.keySelector) {
-            throw new Error(
-                `Order condition at index ${index} must have either 'key' or 'keySelector'`
-            );
-        }
-
-        if (order.key && order.keySelector) {
-            throw new Error(
-                `Order condition at index ${index} cannot have both 'key' and 'keySelector'`
-            );
-        }
-    });
-
-    // 创建组合比较函数
-    const compareFn = (a: T, b: T): number => {
-        for (const condition of orders) {
-            let keyA: any;
-            let keyB: any;
-
-            if (condition.keySelector) {
-                keyA = condition.keySelector(a);
-                keyB = condition.keySelector(b);
-            } else if (condition.key) {
-                keyA = a[condition.key];
-                keyB = b[condition.key];
-            }
-
-            const order = condition.order || 'asc';
-
-            // 处理 null/undefined
-            if (keyA == null && keyB == null) continue;
-            if (keyA == null) return order === 'asc' ? -1 : 1;
-            if (keyB == null) return order === 'asc' ? 1 : -1;
-
-            // 数字比较
-            if (typeof keyA === 'number' && typeof keyB === 'number') {
-                const diff = keyA - keyB;
-                if (diff !== 0) {
-                    return order === 'asc' ? diff : -diff;
-                }
-                continue; // 相等则继续下一个条件
-            }
-
-            // 日期比较
-            if (keyA instanceof Date && keyB instanceof Date) {
-                const diff = keyA.getTime() - keyB.getTime();
-                if (diff !== 0) {
-                    return order === 'asc' ? diff : -diff;
-                }
-                continue;
-            }
-
-            // 字符串比较
-            const strA = String(keyA);
-            const strB = String(keyB);
-            const diff = strA.localeCompare(strB);
-            if (diff !== 0) {
-                return order === 'asc' ? diff : -diff;
-            }
-            // 相等则继续下一个条件
-        }
-
-        return 0; // 所有条件都相等
+    const getValue = (item: T, by: OrderSelector<T>) => {
+        return typeof by === 'function' ? by(item) : item[by];
     };
 
-    // 使用 sortWith 函数进行排序
-    return sortWith(arr, compareFn);
-}
+    const compareFn = (a: T, b: T): number => {
+        for (const { by, order = 'asc' } of conditions) {
+            const valA = getValue(a, by);
+            const valB = getValue(b, by);
 
-// 导入 sortWith 函数，因为它在 orderBy 中被使用
-import { sortWith } from './sortWith';
+            // 1. 处理空值
+            if (valA == null || valB == null) {
+                if (valA === valB) continue;
+                const res = valA == null ? -1 : 1;
+                return order === 'desc' ? -res : res;
+            }
+
+            // 2. 识别类型并获取比较器
+            const type = valA instanceof Date ? 'date' : typeof valA;
+            const comparator = Comparators[type] || Comparators.default;
+
+            // 3. 执行比较
+            const result = comparator(valA, valB);
+            if (result !== 0) {
+                return order === 'desc' ? -result : result;
+            }
+        }
+        return 0;
+    };
+
+    return [...arr].sort(compareFn);
+}
