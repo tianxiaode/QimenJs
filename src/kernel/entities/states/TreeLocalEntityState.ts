@@ -1,28 +1,23 @@
 import { IEntity, ITreeLocalEntityState, ITreeSearchParams, TreeSchema } from '../../types';
 import { LocalEntityState } from './LocalEntityState';
+import { array } from '@orbitjs/utils';
 
 export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
     extends LocalEntityState<T, TSearch>
     implements ITreeLocalEntityState<T, TSearch>
 {
 
-    // 视图索引：方便通过 ID 瞬时找到节点及其子节点，不用递归搜索
-    protected _nodeMap = new Map<string | number, T>();
-
     async updateData(data: T[]): Promise<void> {
         this.sourceData = data;
-        this.rebuildNodeMap(); // 建立索引
         await this.setCache(data);
     }
 
     get items(): T[] {
-        const idField = this.schema.idField!;
-        const parentField = (this.schema as any).parentField || 'parentId';
-
+        const { idField, parentIdField, childrenField } = this.schema as TreeSchema;
         // 1. 合并补丁和新增
         const fullList = [
             ...this.sourceData.map(item => {
-                const patch = this.changes.updated.get((item as any)[idField]);
+                const patch = this.changes.updated.get((item as any)[idField!]);
                 return patch ? { ...item, ...patch } : item;
             }),
             ...this.changes.added,
@@ -33,7 +28,13 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
 
         // 3. 实时转树
         // 既然节点不多，ArrayToTree 的开销在毫秒级，完全可以接受
-        return array.toTree(filtered, { id: idField, parentId: parentField });
+        return array.toTree(filtered, {
+            idField: idField,
+            parentField: parentIdField,
+            childrenField: childrenField!,
+            orderBy: this.search.orderBy,
+            removeEmptyChildren: true,
+        });
     }
 
     move(id: string | number, newParentId: string | number | null): void {
@@ -75,9 +76,7 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
         collectIds(ids);
 
         // 2. 从镜像源抹除
-        this.sourceData = this.sourceData.filter(
-            item => !allToDelete.has((item as any)[idField])
-        );
+        this.sourceData = this.sourceData.filter(item => !allToDelete.has((item as any)[idField]));
 
         // 3. 同步缓存
         this.setCache(this.sourceData);
@@ -110,16 +109,5 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
         return data.filter(item => matchedIds.has((item as any)[idField]));
     }
 
-    private rebuildNodeMap() {
-        this._nodeMap.clear();
-        this.sourceData.forEach(item => {
-            const id = (item as any)[this.schema.idField!];
-            this._nodeMap.set(id, item);
-        });
-    }
 
-    dispose(): void {
-        this._nodeMap.clear();
-        super.dispose();
-    }
 }
