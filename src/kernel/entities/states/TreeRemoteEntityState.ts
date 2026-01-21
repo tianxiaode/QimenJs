@@ -1,5 +1,6 @@
 import { IEntity, ITreeRemoteEntityState, ITreeSearchParams, TreeSchema } from '../../types';
 import { RemoteEntityState } from './RemoteEntityState';
+import { array } from '@orbitjs/utils';
 
 export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
     extends RemoteEntityState<T, TSearch>
@@ -33,27 +34,39 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
     }
 
     get items(): T[] {
-        if (this.search.keyword) {
-            // 搜索模式下，递归返回整棵过滤后的树结构
-            return this.treeData;
-        }
-
-        // 正常模式下，只返回当前层级
         const targetId = this.search.parentId || (this.schema as TreeSchema).root || null;
         const childIds = this.hierarchy.get(targetId) || [];
-        return childIds.map(id => this.nodes.get(id)!).filter(Boolean);
+
+        const list = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
+
+        // 使用你的 orderBy 工具函数
+        // 这里的排序条件可以从 search 对象中动态获取
+        return array.orderBy(list, [
+            {
+                by: this.search.sortBy as keyof T,
+                order: this.search.order as 'asc' | 'desc',
+            },
+        ]);
     }
 
     get treeData(): T[] {
         const build = (pid: string | number | null = null): any[] => {
             const ids = this.hierarchy.get(pid) || [];
-            return ids.map(id => {
-                const node = this.nodes.get(id);
-                return {
-                    ...node,
-                    children: build(id),
-                };
-            });
+            const unsortedNodes = ids.map(id => this.nodes.get(id)!).filter(Boolean);
+
+            // 1. 先对当前层级进行排序
+            const sortedNodes = array.orderBy(unsortedNodes, [
+                {
+                    by: this.search.sortBy as keyof T,
+                    order: this.search.order as 'asc' | 'desc',
+                },
+            ]);
+
+            // 2. 递归构建子节点
+            return sortedNodes.map(node => ({
+                ...node,
+                children: build((node as any).id),
+            }));
         };
         return build(null);
     }
