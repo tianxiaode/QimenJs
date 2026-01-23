@@ -1,46 +1,13 @@
-import { Ability } from '../composable';
 import {
-    CollectionAbilityName,
     ENTITY_ACTION,
     FieldDefinition,
     FlowContext,
-    ICollectionAbility,
-    ICollectionState,
-    IEntityManagerBase,
     RequestOptions,
+    IEntityManagerBase,
 } from '../types';
-import { CollectionState } from './CollectionState';
 import { CoreEntityManager } from './CoreEntityManager';
 
-@Ability(CollectionAbilityName)
-export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
-    extends CoreEntityManager
-    implements IEntityManagerBase<T, TC>
-{
-    state: ICollectionState<T, TC>;
-    useLocalSearch: boolean = false;
-    protected localFilter?: (text: string, record: T) => T[];
-    protected localSearch?: (criteria: Partial<TC>, records: T[]) => T[];
-    protected localSort?: (
-        criteria: Partial<TC>,
-        sort: string | null,
-        order: 'asc' | 'desc' | null,
-        records: T[]
-    ) => T[];
-    protected primaryAction: string = 'list';
-    protected _pageSize?: number;
-    [key: string]: any;
-
-    constructor(pageSize?: number) {
-        super();
-        this._pageSize = pageSize ?? this.pageSize;
-        this.state = new CollectionState(
-            this.getDomainConfig(),
-            pageSize,
-            this.useLocalSearch
-        ) as unknown as ICollectionState<T, TC>;
-    }
-
+export abstract class BaseEntityManager extends CoreEntityManager implements IEntityManagerBase {
     public async fetch(
         action: ENTITY_ACTION | string,
         payload: any,
@@ -135,8 +102,9 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         fields.forEach(field => {
             // 如果定义了 mapping，且 mapping 不等于 name
             if (field.mapping && field.mapping !== field.name) {
+                if (typeof field.mapping === 'function') return;
                 if (field.name in data) {
-                    result[field.mapping] = data[field.name];
+                    result[field.mapping as string] = data[field.name];
                     delete result[field.name]; // 移除前端命名的字段，对齐后端
                 }
             }
@@ -163,5 +131,3 @@ export abstract class EntityManagerBase<T = any, TC = Record<string, any>>
         super.dispose();
     }
 }
-
-export interface EntityManagerBase<T, TC> extends ICollectionAbility<T, TC> {}

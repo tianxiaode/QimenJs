@@ -27,7 +27,7 @@ import {
     RemoteToggleAbilityName,
     RemoteUpdateAbilityName,
 } from '../types';
-import { EntityManagerBase } from './EntityManagerBase';
+import { EntityManagerBase } from './BaseEntityManager';
 
 @Ability(
     RemoteListAbilityName,

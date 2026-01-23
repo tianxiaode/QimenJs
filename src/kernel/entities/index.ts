@@ -1,4 +1,4 @@
 export * from './CollectionState';
 export * from './CoreEntityManager';
-export * from './EntityManagerBase';
+export * from './BaseEntityManager';
 export * from './managers';

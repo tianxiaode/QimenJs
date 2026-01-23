@@ -11,7 +11,7 @@ export interface ICoreEntityManager extends IComposableBase {
     [key: string]: any;
 }
 
-export interface IBaseEntityManager extends ICoreEntityManager {
+export interface IEntityManagerBase extends ICoreEntityManager {
     fetch(
         action: ENTITY_ACTION | string,
         payload: any,
