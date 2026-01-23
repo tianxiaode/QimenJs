@@ -2,13 +2,13 @@ import { SchemaRegistrar } from '../../registrars';
 import { AbilityBase } from '../../composable';
 import {
     FieldDefinition,
-    IEntityManagerBase,
+    ICoreEntityManager,
     IExposeResult,
     Schema,
     SCHEMA_CACHE_SYMBOL,
     SchemaCache,
+    TreeSchema,
 } from '../../types';
-import { RuleExtractor } from './RuleExtractor';
 
 /**
  * SchemaAbility - 模式能力类
@@ -21,7 +21,7 @@ import { RuleExtractor } from './RuleExtractor';
  * 4. 校验规则的提取和管理
  * 5. 提供标准化的模式访问接口
  */
-export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> {
+export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> {
     /**
      * 暴露模式相关的属性和方法
      *
@@ -56,15 +56,15 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
             /** 属性化：字段映射键名 */
             schemaKeys: {
                 get: () => ({
-                    id: schema.idKey || 'id',
-                    label: schema.labelKey || 'name',
-                    createdAt: schema.createdAtKey || 'createdAt',
-                    updatedAt: schema.updatedAtKey || 'updatedAt',
+                    id: schema.idField || 'id',
+                    label: schema.nameField || 'name',
+                    createdAt: schema.createField || 'createdAt',
+                    updatedAt: schema.updateField || 'updatedAt',
                     // --- 新增树相关键名 ---
-                    parentId: schema.parentIdKey || 'parentId',
-                    children: schema.childrenKey || 'children',
-                    path: schema.pathKey || 'path',
-                    leaf: schema.leafKey || 'leaf',
+                    parentId: (schema as TreeSchema).parentIdField || 'parentId',
+                    children: (schema as TreeSchema).childrenField || 'children',
+                    path: (schema as TreeSchema).pathField || 'path',
+                    leaf: (schema as TreeSchema).leafField || 'leaf',
                 }),
                 enumerable: true,
             },
@@ -73,8 +73,8 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
             schemaTree: {
                 get: () => ({
                     isTree: !!schema.isTree,
-                    isLazy: !!schema.isLazy,
-                    rootIdValue: schema.rootIdValue, // 注意：这个值可能是 0, null, '', 需原样保留
+                    isLazy: !!(schema as TreeSchema).isLazy,
+                    rootIdValue: (schema as TreeSchema).root, // 注意：这个值可能是 0, null, '', 需原样保留
                 }),
                 enumerable: true,
             },
@@ -90,7 +90,7 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
 
             /** 属性化：预设过滤字段 */
             schemaFilters: {
-                get: () => schema.filters || [],
+                get: () => schema.searchFields || [],
                 enumerable: true,
             },
             schemaIdType: {
@@ -100,123 +100,156 @@ export class SchemaAbility<T extends IEntityManagerBase> extends AbilityBase<T> 
         };
     }
 
-    /**
-     * Schema 编译器：处理继承、混入、拆解
-     */
     private compileSchema(localSchema: Schema): SchemaCache {
         const registrar = SchemaRegistrar.getInstance();
 
-        // 1. 获取纯净的公共配置 (只有 idKey, defaultSort, filters 等)
-        // base 此时是一个 RegistrSchema 类型，不含 fields
-        const base = localSchema.extends ? registrar.get(localSchema.extends) : {};
+        // 1. 初始化中间容器
+        const fieldMap = new Map<string, any>();
+        const searchFields = new Set<string>();
+        const resolvedRules: Record<string, any[]> = {};
+        const overrides = localSchema.override || {};
 
-        // 2. 收集来自 Mixins 的字段
-        // 即使 Registrar 的类型定义 Omit 了 fields，
-        // 但在“模板”类型的 Schema 中，我们依然约定它可以携带 fields 供人混入
-        const mixinFields: FieldDefinition[] = [];
-        if (localSchema.mixins) {
-            localSchema.mixins.forEach((mKey: string) => {
-                const mSchema = registrar.get(mKey);
-                // 提取混入模板中的字段定义
-                if (mSchema?.fields) {
-                    mixinFields.push(...mSchema.fields);
-                }
-            });
-        }
-        // 3. 执行字段合并 (逻辑：Mixins + Local)
-        // 注意：既然 Base 没字段，合并就变简单了
-        let finalFields = this.mergeFields(mixinFields, localSchema.fields || []);
-
-        // 4. 执行 Override 修正
-        // 这一步非常重要，因为虽然 base 没有 fields，
-        // 但如果 localSchema 定义了 fields，override 可以对其进行二次修饰
-        if (localSchema.override) {
-            finalFields = finalFields.map(field => {
-                const patch = localSchema.override![field.name];
-                return patch ? { ...field, ...patch } : field;
-            });
-        }
-        // 5. 合并扁平属性 (idKey, filters, defaultSort 等)
-        // 优先级：Local > Mixins(最后一个优先) > Base
-        const mergedMetadata = { ...base };
+        // 2. 编排处理顺序 (由底向上，Local 拥有最高覆盖权)
+        // 处理 Mixins
         if (localSchema.mixins) {
             localSchema.mixins.forEach(mKey => {
-                Object.assign(mergedMetadata, registrar.get(mKey));
+                this.processFieldBatch(
+                    registrar.get(mKey, 'field') as any[],
+                    fieldMap,
+                    searchFields,
+                    resolvedRules,
+                    overrides
+                );
             });
         }
-        Object.assign(mergedMetadata, localSchema);
-        // 5. 组装产物
+
+        // 处理 Local Fields
+        this.processFieldBatch(
+            localSchema.fields || [],
+            fieldMap,
+            searchFields,
+            resolvedRules,
+            overrides
+        );
+
+        // 3. 组装结果
+        const finalFields = Array.from(fieldMap.values());
+        const baseMetadata = localSchema.extends ? registrar.get(localSchema.extends) : {};
+
         const finalSchema = {
-            ...mergedMetadata,
+            ...baseMetadata,
+            ...localSchema,
             fields: finalFields,
         } as Schema;
 
-        let idType = finalSchema.idType;
-        if (!idType) {
-            const idKey = finalSchema.idKey || 'id';
-            const idField = finalFields.find(f => f.name === idKey);
-            // 自动探测作为兜底逻辑，保证开发者不写 idType 也能跑
-            idType =
-                idField?.type === 'number' || idField?.type === 'integer' ? 'number' : 'string';
-        }
-        // 6. 提取校验规则
-        const resolvedRules = RuleExtractor.extractFromFields(finalFields);
+        finalSchema.searchFields = Array.from(searchFields);
 
-        // 补充：合并本地直接定义的 rules
-        if (localSchema.rules) {
-            Object.entries(localSchema.rules).forEach(([fieldKey, localRules]) => {
-                // 统一转为数组格式，方便处理
-                const newRules = Array.isArray(localRules) ? localRules : [localRules];
+        // 4. 补充树形默认值与 ID 类型探测
+        this.ensureTreeDefaults(finalSchema);
 
-                if (resolvedRules[fieldKey]) {
-                    // 如果该字段已有规则（如来自 fields 的 required），则追加
-                    resolvedRules[fieldKey] = [...resolvedRules[fieldKey], ...newRules];
-                } else {
-                    // 如果没有，直接赋值
-                    resolvedRules[fieldKey] = newRules;
-                }
-            });
-        }
-
-        if (finalSchema.isTree) {
-            finalSchema.parentIdKey = finalSchema.parentIdKey || 'parentId';
-            finalSchema.childrenKey = finalSchema.childrenKey || 'children';
-
-            // 如果是树但没定义 rootIdValue，给一个合理的警告或默认值
-            if (finalSchema.rootIdValue === undefined) {
-                this.host.logger.warn(
-                    `[SchemaAbility] Schema "${finalSchema.name}" is a tree but rootIdValue is undefined.`
-                );
-                finalSchema.rootIdValue = null;
-            }
-        }
-
-        if (finalSchema.isLazy && !finalSchema.isTree) {
-            // 逻辑上：只有树才需要 Lazy 加载（分页是另一种逻辑）
-            finalSchema.isTree = true;
-        }
-
-        return { schema: finalSchema, rules: resolvedRules, idType: idType as 'number' | 'string' };
+        return {
+            schema: finalSchema,
+            rules: resolvedRules,
+            idType: finalSchema.idType,
+        };
     }
 
     /**
-     * 合并多个字段数组
-     *
-     * 将多个字段数组合并为一个数组，相同名称的字段会被后面的覆盖。
-     * 合并策略遵循"后者优先"原则：Local > Mixin > Base。
-     *
-     * @param fieldArrays - 要合并的字段数组列表
-     * @returns 合并后的字段数组，按名称去重，保留最后出现的字段定义
+     * 核心：批量字段处理器
      */
-    private mergeFields(...fieldArrays: any[][]) {
-        const map = new Map<string, any>();
-        fieldArrays.flat().forEach(f => {
-            if (f?.name) {
-                // 后来的覆盖先来的（Local > Mixin > Base）
-                // 使用展开运算符合并对象，确保新字段的属性覆盖旧字段的同名属性
-                map.set(f.name, { ...map.get(f.name), ...f });
+    private processFieldBatch(
+        fields: any[],
+        fieldMap: Map<string, any>,
+        searchSet: Set<string>,
+        ruleMap: Record<string, any[]>,
+        overrides: Record<string, any>
+    ): void {
+        for (const f of fields) {
+            if (!f?.name) continue;
+            const name = f.name;
+
+            // 获取现有定义（用于 Mixin 叠加）
+            const existing = fieldMap.get(name);
+            const patch = overrides[name];
+
+            // 核心合并：现有值 < 当前字段值 < Override 补丁
+            const merged = { ...existing, ...f, ...patch };
+            fieldMap.set(name, merged);
+
+            // 实时维护搜索集合
+            if (merged.searchable) {
+                searchSet.add(name);
+            } else {
+                searchSet.delete(name); // 确保 override 关闭时能实时剔除
             }
-        });
-        return Array.from(map.values());
+
+            // 实时维护校验规则
+            const rules = this.extractRule(merged);
+            if (rules.length > 0) {
+                ruleMap[name] = rules;
+            } else {
+                delete ruleMap[name];
+            }
+        }
+    }
+
+    private extractRule(field: FieldDefinition): any[] {
+        const {
+            name,
+            label,
+            seachable,
+            defaultValue,
+            readonly,
+            mapping,
+            rules: customRules,
+            ...ruleContent
+        } = field as any;
+
+        let ruleType: string | undefined;
+        const type = ruleContent.type;
+
+        // 1. 严格按照定义的 Rule 类型进行分流
+        if (field.type === 'string') {
+            ruleType = 'string';
+            if (field.hasOwnProperty('separator')) {
+                ruleType = 'split';
+            } else if (field.hasOwnProperty('pattern') || field.hasOwnProperty('format')) {
+                ruleType = 'format';
+            }
+        } else if (['password', 'number', 'date', 'boolean'].includes(type)) {
+            // 对应 NumberRule, DateRule, BooleanRule
+            ruleType = type;
+        }
+
+        const extraRules = Array.isArray(customRules)
+            ? customRules
+            : customRules
+              ? [customRules]
+              : [];
+
+        if (!ruleType) return extraRules;
+
+        // 2. 组装内置规则 (仅限上述识别出的类型)
+        const builtInRule = {
+            ...ruleContent,
+            type: ruleType,
+            field: name,
+        };
+
+        // 3. 收集自定义规则
+
+        // 4. 返回：没有内置则只返回自定义，都没有则返回空
+        return [builtInRule, ...extraRules];
+    }
+
+    /**
+     * 补充：树形结构默认值处理
+     */
+    private ensureTreeDefaults(schema: any): void {
+        if (schema.isTree) {
+            schema.parentIdField = schema.parentIdField || 'parentId';
+            schema.childrenField = schema.childrenField || 'children';
+            if (schema.root === undefined) schema.root = null;
+        }
     }
 }

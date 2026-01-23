@@ -8,7 +8,6 @@ export interface ICoreEntityManager extends IComposableBase {
     domain: string;
     request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask;
     cancelAll(): void;
-    emit(event: string, data: any): void;
     [key: string]: any;
 }
 

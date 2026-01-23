@@ -54,7 +54,6 @@ export type SearchParams = ILocalSearchParams | IFlatSearchParams | ITreeSearchP
 export interface BaseField {
     name: string;
     label?: string;
-    filterable?: boolean;
     seachable?: boolean;
     defaultValue?: any;
     readonly?: boolean;
@@ -99,7 +98,7 @@ export interface BaseSchema {
 
     //是否持久化
     persistent?: boolean;
-    readonly searchFields?: string[];
+    searchFields?: string[];
 }
 
 /**
