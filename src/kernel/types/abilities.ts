@@ -47,6 +47,7 @@ export interface ISchemaAbility {
     // 属性部分
     readonly schemaKeys: { id: string; label: string; createdAt: string; updatedAt: string };
     readonly schemaSort: { prop: string; order: string };
+    readonly schemaTree: { isTree: boolean; isLazy: boolean; root: any };
     readonly schemaFilters: string[];
     readonly schemaIdType: 'number' |'string';
 }

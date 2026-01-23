@@ -74,7 +74,7 @@ export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> 
                 get: () => ({
                     isTree: !!schema.isTree,
                     isLazy: !!(schema as TreeSchema).isLazy,
-                    rootIdValue: (schema as TreeSchema).root, // 注意：这个值可能是 0, null, '', 需原样保留
+                    root: (schema as TreeSchema).root, // 注意：这个值可能是 0, null, '', 需原样保留
                 }),
                 enumerable: true,
             },
