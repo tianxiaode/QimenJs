@@ -36,7 +36,7 @@ export abstract class BaseEntityManager<
 
             if (!ctx.metadata.hasError) {
                 this.populateResponseData(ctx);
-                this.onAfterFetch(action as any, ctx);
+                await this.onAfterFetch(action as any, ctx);
                 if (updater) updater(ctx.data);
                 this.emit(`${action}:success`, ctx.data);
             } else {
@@ -101,7 +101,10 @@ export abstract class BaseEntityManager<
         return value;
     }
 
-    protected async onBeforeFetch(action: string, options: RequestOptions) {
+    protected async onBeforeFetch(
+        action: string,
+        options: RequestOptions
+    ): Promise<RequestOptions> {
         return options;
     }
 
@@ -117,11 +120,11 @@ export abstract class BaseEntityManager<
         }
     }
 
-    protected processEntity = (
+    protected processEntity(
         context: FlowContext,
         entity: any,
         fields: FieldDefinition[] = []
-    ) => {
+    ): any {
         if (!entity) return entity;
 
         fields.forEach(field => {
@@ -142,15 +145,13 @@ export abstract class BaseEntityManager<
 
         // 依然保留手动增强钩子
         return this.onPopulateEntity(context, entity);
-    };
+    }
 
-    protected onPopulateEntity(context: FlowContext, entity: T) {
+    protected onPopulateEntity(context: FlowContext, entity: T): any {
         return entity;
     }
 
-    protected onAfterFetch(action: string, context: FlowContext) {
-        return context;
-    }
+    protected async onAfterFetch(action: string, context: FlowContext): Promise<void> {}
 
     public dispose(): void {
         // 1. 先处理当前类的资源
