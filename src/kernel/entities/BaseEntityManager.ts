@@ -4,28 +4,39 @@ import {
     FlowContext,
     RequestOptions,
     IEntityManagerBase,
+    IEntity,
+    SearchParams,
+    EntityState,
 } from '../types';
 import { CoreEntityManager } from './CoreEntityManager';
 
-export abstract class BaseEntityManager extends CoreEntityManager implements IEntityManagerBase {
+export abstract class BaseEntityManager<
+    T extends IEntity,
+    TSearch extends SearchParams,
+    TState extends EntityState<T, TSearch>,
+>
+    extends CoreEntityManager
+    implements IEntityManagerBase<T, TSearch, TState>
+{
+    abstract state: TState;
+
     public async fetch(
         action: ENTITY_ACTION | string,
-        payload: any,
+        options: RequestOptions,
         updater?: (data: any) => void
     ): Promise<FlowContext> {
-        // 1. 参数自动对齐
-        const alignedOptions = await this.alignRequestOptions(action, payload);
-
         // 2. 生命周期开始
         this.state.loading = true;
         this.emit('loading', true);
         this.emit(`${action}:loading`, true);
 
         try {
-            const task = this.request(action as any, alignedOptions);
+            const task = this.request(action as any, options);
             const ctx = await task.context;
 
             if (!ctx.metadata.hasError) {
+                this.populateResponseData(ctx);
+                this.onAfterFetch(action as any, ctx);
                 if (updater) updater(ctx.data);
                 this.emit(`${action}:success`, ctx.data);
             } else {
@@ -34,87 +45,111 @@ export abstract class BaseEntityManager extends CoreEntityManager implements IEn
             return ctx;
         } finally {
             this.state.loading = false;
-            this.emit('loading', false);
             this.emit(`${action}:loading`, false);
         }
     }
 
-    /**
-     * 根据操作类型，自动对齐/组装请求参数
-     */
-    protected async alignRequestOptions(action: string, payload: any): Promise<RequestOptions> {
-        // 1. 初始化标准结构
-        const options: RequestOptions = {
+    public async buildOptions(
+        action: string,
+        params: any = {},
+        body: any = null,
+        extra: Partial<RequestOptions> = {}
+    ): Promise<RequestOptions> {
+        const schema = this.getSchema();
+        const fields = schema.fields || [];
+        // 1. 基础结构
+        let options: RequestOptions = {
             domain: this.domain,
+            params: { ...params }, // 浅拷贝一份原始参数
+            body: body,
+            ...extra,
         };
 
-        const schema = this.getScheme();
-        const idKey = schema.idKey as string;
-
-        // 2. 自动化策略：根据 Action 拼装数据
-        switch (action) {
-            case 'list':
-                options.params = { ...this.state.toParams(), ...payload };
-                break;
-
-            case 'get':
-            case 'delete':
-                // 约定：对于 get/delete，payload 通常就是 id 本身
-                if (typeof payload === 'object') {
-                    options.params = { [idKey]: payload[idKey] || payload.id };
-                } else {
-                    options.params = { [idKey]: payload };
-                }
-                break;
-
-            case 'create':
-            case 'update':
-            case 'toggle':
-                if (payload && typeof payload === 'object') {
-                    payload = this.applyMappingToBackend(payload, schema.fields);
-                }
-                // 约定：这些 action 的 payload 就是 body
-                options.body = payload;
-                break;
-
-            case 'batchDelete':
-                // 约定：批量删除传 ids 数组
-                options.body = { ids: Array.isArray(payload) ? payload : [payload] };
-                break;
-
-            case 'getall':
-                options.params = { __pagination: false, ...payload };
-                break;
-
-            default:
-                // 自定义 action，直接透传给 params 或 body
-                options.params = payload;
+        // 2. 字段映射加工 (仅针对 Body)
+        if (options.body) {
+            options.body = Array.isArray(options.body)
+                ? options.body.map(item => this.processItem(options, item, fields))
+                : this.processItem(options, options.body, fields);
         }
 
-        // 3. 唯一的出口：钩子覆写
-        // 所有的特殊逻辑（比如加 Header、改 URL 格式）全部在钩子里处理
         return await this.onBeforeFetch(action, options);
     }
 
-    private applyMappingToBackend(data: any, fields: FieldDefinition[] = []) {
-        const result: any = { ...data };
-
+    protected processItem(options: RequestOptions, data: any, fields: FieldDefinition[]): any {
+        const result: any = {};
         fields.forEach(field => {
-            // 如果定义了 mapping，且 mapping 不等于 name
-            if (field.mapping && field.mapping !== field.name) {
-                if (typeof field.mapping === 'function') return;
-                if (field.name in data) {
-                    result[field.mapping as string] = data[field.name];
-                    delete result[field.name]; // 移除前端命名的字段，对齐后端
-                }
+            if (typeof field.mapping === 'function') return;
+
+            const value = data[field.name];
+            const processedValue = this.onPrepareField(field, value, data, options);
+            const targetKey = typeof field.mapping === 'string' ? field.mapping : field.name;
+
+            if (processedValue !== undefined) {
+                result[targetKey] = processedValue;
             }
         });
+        // 保留原数据中不在 schema 里的部分（如隐藏 ID），同时覆盖 schema 定义的转换结果
+        return { ...data, ...result };
+    }
 
-        return result;
+    protected onPrepareField(
+        field: FieldDefinition,
+        value: any,
+        rawData: any,
+        options: RequestOptions
+    ) {
+        return value;
     }
 
     protected async onBeforeFetch(action: string, options: RequestOptions) {
         return options;
+    }
+
+    private populateResponseData(context: FlowContext) {
+        const fields = this.getSchema().fields || [];
+        if (context.data.list) {
+            context.data.list = context.data.list.map(item =>
+                this.processEntity(context, item, fields)
+            );
+        }
+        if (context.data.item) {
+            context.data.item = this.processEntity(context, context.data.item, fields);
+        }
+    }
+
+    protected processEntity = (
+        context: FlowContext,
+        entity: any,
+        fields: FieldDefinition[] = []
+    ) => {
+        if (!entity) return entity;
+
+        fields.forEach(field => {
+            if (!field.mapping) return;
+
+            // 情况 A：字符串映射 -> 别名对齐
+            if (typeof field.mapping === 'string') {
+                if (field.mapping in entity && field.mapping !== field.name) {
+                    entity[field.name] = entity[field.mapping];
+                }
+            }
+            // 情况 B：函数映射 -> 计算属性注入
+            else if (typeof field.mapping === 'function') {
+                // 传入整个实体，由函数计算出该字段的值
+                entity[field.name] = field.mapping(entity);
+            }
+        });
+
+        // 依然保留手动增强钩子
+        return this.onPopulateEntity(context, entity);
+    };
+
+    protected onPopulateEntity(context: FlowContext, entity: T) {
+        return entity;
+    }
+
+    protected onAfterFetch(action: string, context: FlowContext) {
+        return context;
     }
 
     public dispose(): void {
