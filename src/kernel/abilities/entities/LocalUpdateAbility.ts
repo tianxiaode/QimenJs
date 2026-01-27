@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * LocalUpdateAbility - 本地更新能力
@@ -9,7 +9,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T 实体类型
  * @template TCriteria 搜索条件类型
  */
-export class LocalUpdateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class LocalUpdateAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     /**
      * 影子存储：用于存放已修改但未提交的实体数据片段。
      * 键是实体的唯一ID，值是该实体发生变更的字段集合 (Partial<T>)。

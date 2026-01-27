@@ -1,6 +1,6 @@
 import { EntityError, KernelErrorCode } from '../../errors';
 import { AbilityBase } from '../../composable';
-import { FlowContext, IEntityManagerBase, IExposeResult } from '../../types';
+import { FlowContext, IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * RemoteUpdateAbility - 远程更新能力
@@ -8,7 +8,7 @@ import { FlowContext, IEntityManagerBase, IExposeResult } from '../../types';
  * 该能力为实体管理器（Entity Manager）提供通过网络请求更新远程数据的功能。
  * 它封装了发送更新请求、处理响应、同步本地状态以及事件发射的完整流程。
  */
-export class RemoteUpdateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class RemoteUpdateAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     /**
      * 暴露远程更新操作的方法
      *

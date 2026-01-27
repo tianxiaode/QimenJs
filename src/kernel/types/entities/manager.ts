@@ -10,13 +10,13 @@ import {
     ITreeRemoteEntityState,
 } from './state';
 import {
-    FieldDefinition,
     IEntity,
     IFlatSearchParams,
     ILocalSearchParams,
     ITreeSearchParams,
     SearchParams,
 } from './schema';
+
 
 export interface ICoreEntityManager extends IComposableBase {
     domain: string;
@@ -25,7 +25,7 @@ export interface ICoreEntityManager extends IComposableBase {
     [key: string]: any;
 }
 
-export interface IEntityManagerBase<
+export interface IBaseEntityManager<
     T extends IEntity,
     TSearch extends SearchParams,
     TState extends EntityState<T, TSearch>,
@@ -48,22 +48,22 @@ export interface IFlatRemoteEntityManager<
     T extends IEntity,
     TSearch extends IFlatSearchParams,
     TState extends IFlatRemoteEntityState<T, TSearch>,
-> extends IEntityManagerBase<T, TSearch, TState> {}
+> extends IBaseEntityManager<T, TSearch, TState> {}
 
 export interface IFlatLocalEntityManager<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
     TState extends IFlatLocalEntityState<T, TSearch>,
-> extends IEntityManagerBase<T, TSearch, TState> {}
+> extends IBaseEntityManager<T, TSearch, TState> {}
 
 export interface ITreeRemoteEntityManager<
     T extends IEntity,
     TSearch extends ITreeSearchParams,
     TState extends ITreeRemoteEntityState<T, TSearch>,
-> extends IEntityManagerBase<T, TSearch, TState> {}
+> extends IBaseEntityManager<T, TSearch, TState> {}
 
 export interface ITreeLocalEntityManager<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
     TState extends ITreeLocalEntityState<T, TSearch>,
-> extends IEntityManagerBase<T, TSearch, TState> {}
+> extends IBaseEntityManager<T, TSearch, TState> {}

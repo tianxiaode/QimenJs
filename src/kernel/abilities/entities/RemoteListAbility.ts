@@ -1,59 +1,31 @@
-import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { DebounceAbilityBase } from '../../composable';
+import { EntityState, IBaseEntityManager, IEntity, IExposeResult, SearchParams } from '../../types';
 import { debounce } from '@orbitjs/async';
 
-/**
- * RemoteListAbility - 远程列表能力
- * 
- * 提供从远程服务器获取实体列表的能力，支持缓存、防抖和请求取消功能。
- * 该能力通过封装 fetch 请求，实现了缓存优先策略，并在组件销毁时自动清理资源。
- * 
- * @template T - 实体类型，表示列表中包含的项目类型
- * @template TCriteria - 搜索字段类型，表示用于过滤和分页的请求参数结构
- */
-export class RemoteListAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
-    /**
-     * 防抖处理的列表加载函数
-     * 
-     * 使用 debounce 包装实际的运行逻辑，避免频繁请求
-     * 防抖时间为 300ms，适用于连续触发的列表刷新场景
-     */
-    private debouncedList = debounce(
-        (forceRefresh: boolean, resolve: (val: any[]) => void, reject: (err: any) => void) => {
-            this.actualRun(forceRefresh).then(resolve).catch(reject);
-        },
-        300
-    );
-
-    /**
-     * 暴露外部可调用的方法
-     * 
-     * 通过此方法向宿主对象暴露远程列表获取能力
-     * 
-     * @returns 包含 list 方法的对象，供外部调用获取数据
-     */
+export class RemoteListAbility<
+    T extends IEntity,
+    TSearch extends SearchParams,
+    TState extends EntityState<T, TSearch>,
+> extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     protected expose(): IExposeResult {
         const { host } = this;
 
+        const debouncedFetch = this.createDebounced(
+            'list',
+            async options => {
+                const response = await host.fetch('list', options); //
+                host.state.items = response.data?.list || [];
+                return response;
+            },
+            300
+        );
+
         return {
-            /**
-             * 获取实体列表
-             * 
-             * 请求远程数据或返回缓存数据（除非强制刷新）
-             * 支持防抖机制，避免短时间内多次重复请求
-             * 
-             * @param forceRefresh - 是否强制刷新，忽略缓存直接请求远程数据
-             * @returns Promise<T[]> 返回实体数组的 Promise
-             * 
-             * @example
-             * ```ts
-             * const items = await entity.list();
-             * const freshItems = await entity.list(true); // 强制刷新
-             * ```
-             */
+
             list: (forceRefresh: boolean = false): Promise<T[]> => {
+                const options = await host.buildOptions('list', host.state.toParams());
                 return new Promise((resolve, reject) => {
-                    this.debouncedList(forceRefresh, resolve, reject);
+                    this.debouncedFetch(forceRefresh, resolve, reject);
                 });
             },
         };
@@ -61,12 +33,12 @@ export class RemoteListAbility<T, TCriteria> extends AbilityBase<IEntityManagerB
 
     /**
      * 实际执行列表获取逻辑
-     * 
+     *
      * 包含缓存策略和远程请求的核心实现
-     * 
+     *
      * @param forceRefresh - 是否强制刷新，跳过缓存检查
      * @returns Promise<T[]> 返回获取到的实体数组
-     * 
+     *
      * 执行流程：
      * 1. 检查是否需要强制刷新
      * 2. 尝试从缓存读取数据（如存在且非强制刷新）
@@ -74,7 +46,7 @@ export class RemoteListAbility<T, TCriteria> extends AbilityBase<IEntityManagerB
      * 4. 更新状态和缓存
      * 5. 返回结果
      */
-    private async actualRun(forceRefresh: boolean): Promise<T[]> {
+    private async debouncedFetch(forceRefresh: boolean): Promise<T[]> {
         // 注：TC 已重命名为 TCriteria，但当前逻辑未直接使用该类型参数
         // 后续如需传递查询参数，可在 host.fetch 中扩展 params 支持
         const { host } = this;
@@ -107,7 +79,7 @@ export class RemoteListAbility<T, TCriteria> extends AbilityBase<IEntityManagerB
 
     /**
      * 资源清理与销毁逻辑
-     * 
+     *
      * 在能力被销毁时调用，用于清理定时器、取消请求等操作
      * 防止内存泄漏和不必要的网络请求
      */

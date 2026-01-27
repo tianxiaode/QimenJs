@@ -91,8 +91,8 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
         const base = super.toParams();
         return {
             ...base,
-            _page: this.page || 1,
-            _limit: this.pageSize || 20,
+            page: this.page || 1,
+            limit: this.pageSize || 20,
         };
     }
 

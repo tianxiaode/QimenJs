@@ -3,11 +3,10 @@ import {
     FieldDefinition,
     FlowContext,
     RequestOptions,
-    IEntityManagerBase,
+    IBaseEntityManager,
     IEntity,
     SearchParams,
     EntityState,
-    CRUD_ACTION,
 } from '../types';
 import { CoreEntityManager } from './CoreEntityManager';
 
@@ -17,18 +16,16 @@ export abstract class BaseEntityManager<
     TState extends EntityState<T, TSearch>,
 >
     extends CoreEntityManager
-    implements IEntityManagerBase<T, TSearch, TState>
+    implements IBaseEntityManager<T, TSearch, TState>
 {
     abstract state: TState;
 
     public async fetch(
-        action: ENTITY_ACTION | string,
+        action: ENTITY_ACTION,
         options: RequestOptions,
         updater?: (data: any) => void
     ): Promise<FlowContext> {
-        // 2. 生命周期开始
         this.state.loading = true;
-        this.emit('loading', true);
         this.emit(`${action}:loading`, true);
 
         try {
@@ -51,7 +48,7 @@ export abstract class BaseEntityManager<
     }
 
     public async buildOptions(
-        action: CRUD_ACTION,
+        action: ENTITY_ACTION,
         params: any = {},
         body: any = null,
         extra: Partial<RequestOptions> = {}
@@ -76,7 +73,12 @@ export abstract class BaseEntityManager<
         return await this.onBeforeFetch(action, options);
     }
 
-    protected processItem(action: CRUD_ACTION, options: RequestOptions, data: any, fields: FieldDefinition[]): any {
+    protected processItem(
+        action: ENTITY_ACTION,
+        options: RequestOptions,
+        data: any,
+        fields: FieldDefinition[]
+    ): any {
         const result: any = {};
         fields.forEach(field => {
             if (typeof field.mapping === 'function') return;
@@ -97,14 +99,14 @@ export abstract class BaseEntityManager<
         field: FieldDefinition,
         value: any,
         rawData: any,
-        action: CRUD_ACTION,
+        action: ENTITY_ACTION,
         options: RequestOptions
     ) {
         return value;
     }
 
     protected async onBeforeFetch(
-        action: CRUD_ACTION,
+        action: ENTITY_ACTION,
         options: RequestOptions
     ): Promise<RequestOptions> {
         return options;

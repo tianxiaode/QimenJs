@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * RemoteDeleteAbility - 远程删除能力
@@ -10,7 +10,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T - 实体的数据类型
  * @template TCriteria - 搜索字段类型
  */
-export class RemoteDeleteAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class RemoteDeleteAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
 
     /**
      * 暴露远程删除实体的方法

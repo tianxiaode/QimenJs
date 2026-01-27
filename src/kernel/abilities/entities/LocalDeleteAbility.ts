@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * LocalDeleteAbility - 本地删除能力
@@ -13,7 +13,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T - 实体类型
  * @template TCriteria - 搜索字段类型
  */
-export class LocalDeleteAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class LocalDeleteAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     // 影子状态：记录被删除的正式 ID
     private deletedIds = new Set<any>();
 

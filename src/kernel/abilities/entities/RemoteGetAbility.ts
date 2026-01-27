@@ -1,16 +1,11 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { EntityState, IEntity, IBaseEntityManager, IExposeResult, SearchParams } from '../../types';
 
-/**
- * RemoteGetAbility - 远程获取能力
- *
- * 提供获取远程单个实体的能力，通过HTTP请求与服务器交互
- *
- * @template T 实体的数据类型
- * @template TCriteria 搜索条件类型
- */
-export class RemoteGetAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
-
+export class RemoteGetAbility<
+    T extends IEntity,
+    TSearch extends SearchParams,
+    TState extends EntityState<T, TSearch>,
+> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     /**
      * 暴露远程获取实体的方法
      *
@@ -26,33 +21,20 @@ export class RemoteGetAbility<T, TCriteria> extends AbilityBase<IEntityManagerBa
              * @param id 要获取的实体ID
              * @returns Promise<T> 获取的实体的Promise
              */
-            remoteGet: async (id: string | number): Promise<T> => {
-                // 设置加载状态
-                host.state.loading = true;
+            get: async (id: string | number): Promise<T> => {
+                const { idFiled } = host.schemaKeys;
 
-                try {
-                    // 使用fetch方法发送GET请求
-                    const response = await host.fetch('get', id);
+                const options = host.buildOptions('get', { [idFiled]: id }, null, {});
+                // 使用fetch方法发送GET请求
+                const response = await host.fetch('get', options);
 
-                    // 解析响应数据
-                    const result = response.data?.item || response.data || response;
+                // 解析响应数据
+                const result = response.data?.item;
 
-                    // 更新UI状态
-                    host.state.item = result;
-
-                    // 发出获取事件
-                    host.emit('got', result);
-
-                    return result;
-                } catch (error) {
-                    // 发出错误事件
-                    host.emit('error', error);
-                    throw error;
-                } finally {
-                    // 重置加载状态
-                    host.state.loading = false;
-                }
-            }
+                // 更新UI状态
+                host.state.item = result;
+                return result;
+            },
         };
     }
 }

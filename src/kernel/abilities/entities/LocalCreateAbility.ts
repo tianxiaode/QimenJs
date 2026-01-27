@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * LocalCreateAbility - 本地创建能力
@@ -9,7 +9,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T 实体类型
  * @template TCriteria 搜索条件类型
  */
-export class LocalCreateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class LocalCreateAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     private static _tempIdCounter = -1;
 
     /**

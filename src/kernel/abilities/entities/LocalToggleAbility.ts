@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * LocalToggleAbility - 本地切换能力
@@ -9,7 +9,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T 实体类型
  * @template TCriteria 搜索条件类型
  */
-export class LocalToggleAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class LocalToggleAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
 
     /**
      * 暴露切换实体状态的方法

@@ -1,12 +1,12 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * CollectionAbility - 集合能力
  * 
  * 提供对实体集合的基本访问接口，包括加载状态、项目数量、分页信息等
  */
-export class CollectionAbility extends AbilityBase<IEntityManagerBase> {
+export class CollectionAbility extends AbilityBase<IBaseEntityManager> {
     /**
      * 暴露集合相关的状态属性
      * 

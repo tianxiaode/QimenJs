@@ -5,11 +5,11 @@
  * 它封装了发送创建请求、处理响应、同步本地状态以及事件发射的完整流程。
  */
 import { AbilityBase } from '../../composable';
-import { FlowContext, IEntityManagerBase, IExposeResult } from '../../types';
+import { FlowContext, IBaseEntityManager, IExposeResult } from '../../types';
 import { EntityError } from '../../errors/EntityError';
 import { KernelErrorCode } from '../../errors/codes';
 
-export class RemoteCreateAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class RemoteCreateAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     /**
      * 暴露远程创建操作的方法
      *

@@ -1,5 +1,5 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 import { debounce } from '@orbitjs/async';
 
 /**
@@ -14,7 +14,7 @@ import { debounce } from '@orbitjs/async';
  * @template T 实体数据类型
  * @template TCriteria 搜索字段类型（用于条件筛选等场景，当前主要用于扩展性预留）
  */
-export class RemoteToggleAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class RemoteToggleAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     /**
      * 存储每个字段切换任务的防抖函数实例
      * 使用 Map 以 taskKey (id-field) 为键，确保不同字段独立防抖

@@ -1,9 +1,9 @@
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 import { EntityError } from '../../errors/EntityError';
 import { KernelErrorCode } from '../../errors/codes';
 
-export class RemoteQueryAbility<T, TC> extends AbilityBase<IEntityManagerBase> {
+export class RemoteQueryAbility<T, TC> extends AbilityBase<IBaseEntityManager> {
     protected expose(): IExposeResult {
         const { host } = this;
         const { state } = host;

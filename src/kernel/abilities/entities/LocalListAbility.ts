@@ -1,6 +1,6 @@
 import { debounce } from '@orbitjs/async';
 import { AbilityBase } from '../../composable';
-import { IEntityManagerBase, IExposeResult } from '../../types';
+import { IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
  * LocalListAbility - 本地列表能力
@@ -10,7 +10,7 @@ import { IEntityManagerBase, IExposeResult } from '../../types';
  * @template T 实体类型
  * @template TCriteria 搜索条件类型
  */
-export class LocalListAbility<T, TCriteria> extends AbilityBase<IEntityManagerBase> {
+export class LocalListAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
     // 保留你的防抖逻辑
     private debouncedRun = debounce((force: boolean) => this.actualRun(force), 300);
 
