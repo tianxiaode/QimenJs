@@ -18,7 +18,6 @@ import {
     ISchemaAbility,
 } from '../types';
 import { Ability, ComposableBase } from '../composable';
-import { ValidationRule } from '@orbitjs/validation';
 
 @Ability(EventAbilityName, DomainAbilityName, SystemAbilityName, SechmaAbilityName)
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
