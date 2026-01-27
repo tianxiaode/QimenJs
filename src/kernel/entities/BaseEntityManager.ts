@@ -7,6 +7,7 @@ import {
     IEntity,
     SearchParams,
     EntityState,
+    CRUD_ACTION,
 } from '../types';
 import { CoreEntityManager } from './CoreEntityManager';
 
@@ -50,7 +51,7 @@ export abstract class BaseEntityManager<
     }
 
     public async buildOptions(
-        action: string,
+        action: CRUD_ACTION,
         params: any = {},
         body: any = null,
         extra: Partial<RequestOptions> = {}
@@ -68,20 +69,20 @@ export abstract class BaseEntityManager<
         // 2. 字段映射加工 (仅针对 Body)
         if (options.body) {
             options.body = Array.isArray(options.body)
-                ? options.body.map(item => this.processItem(options, item, fields))
-                : this.processItem(options, options.body, fields);
+                ? options.body.map(item => this.processItem(action, options, item, fields))
+                : this.processItem(action, options, options.body, fields);
         }
 
         return await this.onBeforeFetch(action, options);
     }
 
-    protected processItem(options: RequestOptions, data: any, fields: FieldDefinition[]): any {
+    protected processItem(action: CRUD_ACTION, options: RequestOptions, data: any, fields: FieldDefinition[]): any {
         const result: any = {};
         fields.forEach(field => {
             if (typeof field.mapping === 'function') return;
 
             const value = data[field.name];
-            const processedValue = this.onPrepareField(field, value, data, options);
+            const processedValue = this.onPrepareField(field, value, data, action, options);
             const targetKey = typeof field.mapping === 'string' ? field.mapping : field.name;
 
             if (processedValue !== undefined) {
@@ -96,19 +97,20 @@ export abstract class BaseEntityManager<
         field: FieldDefinition,
         value: any,
         rawData: any,
+        action: CRUD_ACTION,
         options: RequestOptions
     ) {
         return value;
     }
 
     protected async onBeforeFetch(
-        action: string,
+        action: CRUD_ACTION,
         options: RequestOptions
     ): Promise<RequestOptions> {
         return options;
     }
 
-    private populateResponseData(context: FlowContext) {
+    protected populateResponseData(context: FlowContext) {
         const fields = this.getSchema().fields || [];
         if (context.data.list) {
             context.data.list = context.data.list.map(item =>
