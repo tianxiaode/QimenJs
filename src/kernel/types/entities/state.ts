@@ -116,11 +116,11 @@ export interface ITreeRemoteEntityState<
     treeData: T[]; // 递归返回整棵树形结构
     // 核心：把后端返回的一段子项挂载到 parentId 下
     updateData(data: T | T[], manualParentId?: string | number | null): Promise<void>;
-    updateNodes(parentId: string | number | null, children: T[]): void;
     removeNode(id: string | number): void;
     moveNode(id: string | number, newParentId: string | number | null): void;
-    updateNode(id: string | number, patch: Partial<T>): void;
-    toggleExpand(id: string | number, expanded?: boolean): void    
+    isLoaded(id: string | number): boolean;
+    setLoaded(id: string | number, loaded: boolean): void;
+    toggleExpand(id: string | number, expanded?: boolean): void;
 }
 
 export interface ITreeLocalEntityState<

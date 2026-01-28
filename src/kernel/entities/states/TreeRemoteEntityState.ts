@@ -19,68 +19,81 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         return base;
     }
 
-    async updateData(data: T | T[], manualParentId?: string | number | null): Promise<void> {
-        // 1. 直接塞入，利用 ingest 的递归和去重能力
-        this.ingest(data, manualParentId);
+    async updateData(data: T | T[]): Promise<void> {
+        this.syncDataAndState(data);
 
-        // 2. 如果是搜索，我们不需要清除 Map，
-        // 但我们可以记录一下“最后一次搜索结果的 ID 列表”，
-        // 方便 UI 快速定位哪些节点是命中的。
-        if (this.search.keyword) {
-            this.lastSearchResultIds = Array.isArray(data)
-                ? data.map(n => (n as any).id)
-                : [(data as any).id];
-        }
+        // 树模型下，items 已经是实时 walk 出来的，所以缓存 items 即可
         //await this.setCache(this.items);
     }
 
-    get items(): T[] {
-        const targetId = this.search.parentId || (this.schema as TreeSchema).root || null;
-        const childIds = this.hierarchy.get(targetId) || [];
-
-        const list = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
-
-        // 使用你的 orderBy 工具函数
-        // 这里的排序条件可以从 search 对象中动态获取
-        return this.applySort(list);
-    }
-
-    get treeData(): T[] {
-        const build = (pid: string | number | null = null): T[] => {
-            const ids = this.hierarchy.get(pid) || [];
-            const unsorted = ids.map(id => this.nodes.get(id)!).filter(Boolean);
-
-            // 每一层级内部排序
-            const sorted = this.applySort(unsorted);
-
-            return sorted.map(node => ({
-                ...node,
-                // 递归挂载子节点
-                children: build((node as any).id),
-            }));
-        };
-        return build(null);
-    }
-
-    updateNodes(parentId: string | number | null, children: T[]): void {
-        this.ingest(children, parentId);
-    }
-
     async updateItem(item: T): Promise<void> {
-        const idField = this.idField;
-        const id = (item as any)[idField];
-        if (id) {
-            this.ingest(item);
-        }
+        this.syncDataAndState(item);
         await super.updateItem(item);
     }
 
-    removeNode(id: string | number): void {
-        const node = this.nodes.get(id);
-        if (!node) return;
+    get items(): T[] {
+        const result: T[] = [];
+        const schema = this.schema as TreeSchema;
+        const expandedField = schema.expandedField || 'expanded';
+        const idField = this.idField;
 
-        // 1. 从父节点的 hierarchy 索引中移除
-        const pid = (node as any).parentId ?? (this.schema as TreeSchema).root ?? null;
+        /**
+         * @param pid 当前处理的父 ID
+         * @param depth 当前深度，用于 UI 缩进控制
+         */
+        const walk = (pid: string | number | null, depth: number) => {
+            // 1. 从索引表中取出当前层级的所有子 ID
+            const childIds = this.hierarchy.get(pid) || [];
+
+            // 2. 获取实体并进行排序（利用你已有的 applySort）
+            const children = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
+            const sortedChildren = this.applySort(children);
+
+            // 3. 遍历并递归
+            sortedChildren.forEach(node => {
+                // 注入深度信息，方便组件渲染缩进
+                // 💡 这里我们不需要修改原始 node，而是解构出一个新对象
+                result.push({ ...node, _depth: depth });
+
+                // 4. 只有当父节点被展开时，才继续往下走
+                if ((node as any)[expandedField]) {
+                    walk(node[idField], depth + 1);
+                }
+            });
+        };
+
+        // 从 Schema 定义的根节点开始走
+        walk(schema.root || null, 0);
+        return result;
+    }
+
+    get treeData(): T[] {
+        const schema = this.schema as TreeSchema;
+        const childrenField = schema.childrenField || 'children';
+        const idField = this.idField;
+
+        const build = (pid: string | number | null): T[] => {
+            const childIds = this.hierarchy.get(pid) || [];
+            const children = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
+            const sorted = this.applySort(children);
+
+            return sorted.map(node => ({
+                ...node,
+                [childrenField]: build(node[idField]), // 递归构建嵌套结构
+            }));
+        };
+
+        return build(schema.root || null);
+    }
+
+    removeNode(id: string | number): void {
+        const targetNode = this.nodes.get(id) as any;
+        if (!targetNode) return;
+
+        const pathPrefix = targetNode._path; // 例如 "1.2"
+        const pid = targetNode.parentId;
+
+        // 1. 从父级的索引中移除自己 (只影响直接父级)
         const siblings = this.hierarchy.get(pid);
         if (siblings) {
             this.hierarchy.set(
@@ -89,25 +102,31 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
             );
         }
 
-        // 2. 递归删除所有子节点（防止内存泄漏）
-        const childrenIds = this.hierarchy.get(id) || [];
-        childrenIds.forEach(childId => this.removeNode(childId));
-
-        // 3. 从 nodes 仓库和索引表中彻底移除
-        this.nodes.delete(id);
-        this.hierarchy.delete(id);
+        // 2. 批量删除自己和所有子孙 (线性扫描)
+        // 凡是路径为 "1.2" 或以 "1.2." 开头的节点全部删除
+        this.nodes.forEach((node: any, nodeId) => {
+            if (nodeId === id || node._path.startsWith(`${pathPrefix}.`)) {
+                this.nodes.delete(nodeId);
+                this.hierarchy.delete(nodeId); // 同时清理这些节点的子索引
+            }
+        });
     }
 
-    moveNode(id: string | number, newParentId: string | number | null): void {
-        const node = this.nodes.get(id);
+    moveNode(id: string | number, targetPid: string | number | null): void {
+        const node = this.nodes.get(id) as any;
         if (!node) return;
 
-        const oldPid = (node as any).parentId ?? (this.schema as TreeSchema).root ?? null;
-        const targetPid = newParentId ?? (this.schema as TreeSchema).root ?? null;
+        const oldPid = node.parentId;
+        if (oldPid === targetPid) return;
 
-        if (oldPid === targetPid) return; // 位置没变
+        // 1. 获取旧路径和新父节点的路径
+        const oldPathPrefix = node._path; // 例如 "1.2"
+        const targetParent = this.nodes.get(targetPid as any) as any;
+        const newParentPath = targetParent?._path || '';
+        const newPathPrefix = newParentPath ? `${newParentPath}.${id}` : `${id}`;
 
-        // 1. 从旧父节点的索引中移除
+        // 2. 修正 hierarchy 索引 (维护兄弟关系)
+        // 从旧父级移除
         const oldSiblings = this.hierarchy.get(oldPid);
         if (oldSiblings) {
             this.hierarchy.set(
@@ -115,40 +134,60 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
                 oldSiblings.filter(sid => sid !== id)
             );
         }
-
-        // 2. 更新节点自身的 parentId
-        (node as any).parentId = newParentId;
-
-        // 3. 加入新父节点的索引
+        // 加入新父级
         const newSiblings = this.hierarchy.get(targetPid) || [];
         if (!newSiblings.includes(id)) {
             newSiblings.push(id);
             this.hierarchy.set(targetPid, newSiblings);
         }
-    }
 
-    updateNode(id: string | number, patch: Partial<T>): void {
-        const node = this.nodes.get(id);
-        if (node) {
-            // 合并数据
-            const updatedNode = { ...node, ...patch };
-            this.nodes.set(id, updatedNode);
+        // 3. 批量更新自己及所有子孙节点的路径和深度 (关键：利用 path 进行前缀替换)
+        this.nodes.forEach((item: any) => {
+            // 如果是该节点本身，或者是该节点的子孙
+            if (item.id === id || item._path.startsWith(`${oldPathPrefix}.`)) {
+                // 字符串替换：把旧前缀换成新前缀
+                // 例如把 "1.2.3" 换成 "4.5.2.3"
+                item._path = item._path.replace(oldPathPrefix, newPathPrefix);
+
+                // 重新计算深度
+                item._depth = item._path.split('.').length - 1;
+
+                // 如果是移动节点本人，还要更新 parentId
+                if (item.id === id) {
+                    item.parentId = targetPid;
+                }
+            }
+        });
+
+        // 4. (可选) 如果移动到了一个未展开的节点下，可能需要自动展开目标父节点
+        if (targetParent) {
+            const expandedField = (this.schema as any).expandedField || 'expanded';
+            targetParent[expandedField] = true;
         }
     }
 
     toggleExpand(id: string | number, expanded?: boolean): void {
-        const node = this.nodes.get(id);
+        const node = this.nodes.get(id) as any;
+        const expandedField = (this.schema as TreeSchema).expandedField || 'expanded';
+
         if (node) {
-            const field = (this.schema as TreeSchema).expandedField || 'expanded';
-            const nextState = expanded ?? !(node as any)[field];
+            // 如果传了值就设为传的值，没传就取反
+            node[expandedField] = expanded ?? !node[expandedField];
+        }
+    }
 
-            // 更新节点状态
-            this.updateNode(id, { [field]: nextState } as any);
+    isLoaded(id: string | number): boolean {
+        const node = this.nodes.get(id) as any;
+        if (!node) return false;
+        // 如果不是懒加载模式，默认就是已加载
+        if (!(this.schema as TreeSchema).isLazy) return true;
+        return !!node._loaded;
+    }
 
-            // 如果是懒加载且展开，可能需要触发加载子节点
-            if (nextState && (this.schema as TreeSchema).isLazy) {
-                // 这里可以由 Ability 监听或显式调用 loadDetail
-            }
+    setLoaded(id: string | number, loaded: boolean = true): void {
+        const node = this.nodes.get(id) as any;
+        if (node) {
+            node._loaded = loaded;
         }
     }
 
@@ -176,63 +215,34 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         const list = Array.isArray(data) ? data : [data];
         const schema = this.schema as TreeSchema;
         const expandedField = schema.expandedField || 'expanded';
-        const leafField = schema.leafField || 'leaf';
-        const parentIdField = schema.parentIdField || 'parentId';
-        const childrenField = schema.childrenField || 'children';
+        const pidField = schema.parentIdField || 'parentId';
 
         list.forEach((node: any) => {
             const id = node.id;
-            // 自动判定父 ID：优先取节点自带的，其次取手动传入的，最后取根节点
-            const pid = node[parentIdField] ?? manualParentId ?? schema.root ?? null;
-            node[parentIdField] = pid;
+            const pid = node[pidField] ?? manualParentId ?? schema.root ?? null;
 
-            if (node[expandedField] === undefined) {
-                node[expandedField] = false;
-            }
+            // 1. 自动构造虚拟路径 (_path)
+            // 尝试从内存中找父节点获取它的路径
+            const parentNode = this.nodes.get(pid) as any;
+            const parentPath = parentNode?._path || '';
+            node._path = parentPath ? `${parentPath}.${id}` : `${id}`;
 
-            if (node[leafField] === undefined) {
-                const children = node[childrenField];
-                if (children && Array.isArray(children) && children.length > 0) {
-                    node[leafField] = false; // 有子节点，显然不是叶子
-                } else if (!schema.isLazy) {
-                    // 如果不是懒加载模式，且没有子节点，则判定为叶子
-                    node[leafField] = true;
-                } else {
-                    // 如果是懒加载模式，默认先设为 false，允许用户点击触发加载
-                    node[leafField] = false;
-                }
-            }
+            // 2. 自动计算深度 (_depth)
+            node._depth = node._path.split('.').length - 1;
 
-            // 1. 节点进入仓库（Map 自动处理了“去重”和“更新”）
+            // 3. 基础状态补全
+            node[pidField] = pid;
+            if (node[expandedField] === undefined) node[expandedField] = false;
+
             this.nodes.set(id, node);
 
-            // 2. 更新索引表：将 ID 关联到父节点的子列表中
+            // 4. 维护父子索引
             const siblings = this.hierarchy.get(pid) || [];
             if (!siblings.includes(id)) {
                 siblings.push(id);
                 this.hierarchy.set(pid, siblings);
             }
-
-            // 3. 递归：如果后端在搜索时直接返回了嵌套的 children
-            const children = node[childrenField];
-            if (children && Array.isArray(children)) {
-                this.ingest(children, id);
-            }
         });
-    }
-
-    get expandedKeys(): (string | number)[] {
-        if (!this.search.keyword) return [];
-
-        // 逻辑：所有搜索命中的节点的父 ID 路径都应该被展开
-        const keys = new Set<string | number>();
-        this.nodes.forEach(node => {
-            if (this.matchKeyword(node, this.search.keyword!)) {
-                // 往上找所有祖先并加入 keys (需要节点自带 parentId)
-                this.fillAncestorKeys(node, keys);
-            }
-        });
-        return Array.from(keys);
     }
 
     protected getDefaultSearch(): TSearch {
@@ -252,22 +262,40 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         return label.toLowerCase().includes(keyword.toLowerCase());
     }
 
-    private fillAncestorKeys(node: T, keys: Set<string | number>): void {
-        let currentPid = (node as any).parentId;
-        const rootId = (this.schema as TreeSchema).root || null;
-
-        // 只要没到根节点，就一直向上追溯
-        while (currentPid && currentPid !== rootId) {
-            if (keys.has(currentPid)) break; // 防止死循环或重复计算
-            keys.add(currentPid);
-
-            const parentNode = this.nodes.get(currentPid);
-            if (parentNode) {
-                currentPid = (parentNode as any).parentId;
-            } else {
-                break; // 如果父节点没在缓存里，终止
-            }
+    private syncDataAndState(data: T | T[]): void {
+        this.ingest(data);
+        if (this.search.keyword) {
+            this.applySearchExpansion();
         }
+    }
+
+    private applySearchExpansion(): void {
+        const schema = this.schema as TreeSchema;
+        const expandedField = schema.expandedField || 'expanded';
+        const pidField = schema.parentIdField || 'parentId';
+        const keyword = this.search.keyword!.toLowerCase();
+
+        // 关键：必须按深度降序（从深到浅）
+        const sortedNodes = Array.from(this.nodes.values()).sort(
+            (a: any, b: any) => (b._depth || 0) - (a._depth || 0)
+        );
+
+        const parentIdsToExpand = new Set<string | number>();
+
+        sortedNodes.forEach((node: any) => {
+            const id = node.id;
+            const pid = node[pidField];
+
+            // 如果我命中了，或者我的孩子命中了（即我在 Set 里）
+            if (this.matchKeyword(node, keyword) || parentIdsToExpand.has(id)) {
+                node[expandedField] = true;
+
+                // 向上层传导：把父 ID 加入 Set
+                if (pid && pid !== schema.root) {
+                    parentIdsToExpand.add(pid);
+                }
+            }
+        });
     }
 
     private applySort(list: T[]): T[] {
