@@ -120,6 +120,7 @@ export interface TreeSchema extends BaseSchema {
     childrenField?: string;
     pathField?: string;
     leafField?: string;
+    expandedField?: string;
 }
 
 // 最终暴露的统一 Schema 类型
@@ -128,7 +129,7 @@ export type Schema = FlatSchema | TreeSchema;
 export type RegistrSchema = Omit<
     BaseSchema,
     'extends' | 'idtype' | 'mixins' | 'override' | 'fields' | 'rules'
->;
+> & TreeSchema;
 
 export interface SchemaCache {
     idType?: 'number' | 'string';

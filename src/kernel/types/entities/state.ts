@@ -120,7 +120,7 @@ export interface ITreeRemoteEntityState<
     removeNode(id: string | number): void;
     moveNode(id: string | number, newParentId: string | number | null): void;
     updateNode(id: string | number, patch: Partial<T>): void;
-    
+    toggleExpand(id: string | number, expanded?: boolean): void    
 }
 
 export interface ITreeLocalEntityState<

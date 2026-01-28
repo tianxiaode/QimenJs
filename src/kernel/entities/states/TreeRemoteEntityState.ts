@@ -31,6 +31,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
                 ? data.map(n => (n as any).id)
                 : [(data as any).id];
         }
+        //await this.setCache(this.items);
     }
 
     get items(): T[] {
@@ -135,6 +136,22 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         }
     }
 
+    toggleExpand(id: string | number, expanded?: boolean): void {
+        const node = this.nodes.get(id);
+        if (node) {
+            const field = (this.schema as TreeSchema).expandedField || 'expanded';
+            const nextState = expanded ?? !(node as any)[field];
+
+            // 更新节点状态
+            this.updateNode(id, { [field]: nextState } as any);
+
+            // 如果是懒加载且展开，可能需要触发加载子节点
+            if (nextState && (this.schema as TreeSchema).isLazy) {
+                // 这里可以由 Ability 监听或显式调用 loadDetail
+            }
+        }
+    }
+
     getCacheKey(): string {
         const params: any = this.toParams();
         // 将所有参数按 key 排序后序列化，确保缓存键的唯一性和稳定性
@@ -157,15 +174,34 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
 
     private ingest(data: T | T[], manualParentId?: string | number | null): void {
         const list = Array.isArray(data) ? data : [data];
+        const schema = this.schema as TreeSchema;
+        const expandedField = schema.expandedField || 'expanded';
+        const leafField = schema.leafField || 'leaf';
+        const parentIdField = schema.parentIdField || 'parentId';
+        const childrenField = schema.childrenField || 'children';
 
-        list.forEach(node => {
-            const id = (node as any).id;
+        list.forEach((node: any) => {
+            const id = node.id;
             // 自动判定父 ID：优先取节点自带的，其次取手动传入的，最后取根节点
-            const pid =
-                (node as any).parentId ??
-                manualParentId ??
-                (this.schema as TreeSchema).root ??
-                null;
+            const pid = node[parentIdField] ?? manualParentId ?? schema.root ?? null;
+            node[parentIdField] = pid;
+
+            if (node[expandedField] === undefined) {
+                node[expandedField] = false;
+            }
+
+            if (node[leafField] === undefined) {
+                const children = node[childrenField];
+                if (children && Array.isArray(children) && children.length > 0) {
+                    node[leafField] = false; // 有子节点，显然不是叶子
+                } else if (!schema.isLazy) {
+                    // 如果不是懒加载模式，且没有子节点，则判定为叶子
+                    node[leafField] = true;
+                } else {
+                    // 如果是懒加载模式，默认先设为 false，允许用户点击触发加载
+                    node[leafField] = false;
+                }
+            }
 
             // 1. 节点进入仓库（Map 自动处理了“去重”和“更新”）
             this.nodes.set(id, node);
@@ -178,7 +214,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
             }
 
             // 3. 递归：如果后端在搜索时直接返回了嵌套的 children
-            const children = (node as any).children;
+            const children = node[childrenField];
             if (children && Array.isArray(children)) {
                 this.ingest(children, id);
             }
