@@ -2,15 +2,15 @@ import {
     IBaseEntityManager,
     IEntity,
     IExposeResult,
-    IFlatLocalEntityState,
+    ILocalEntityState,
     ILocalSearchParams,
 } from '../../../types';
 import { AbilityBase } from '../../../composable';
 
-export class FlatLocalListAbility<
+export class LocalListAbility<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
-    TState extends IFlatLocalEntityState<T, TSearch>,
+    TState extends ILocalEntityState<T, TSearch>,
 > extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
  
     protected expose(): IExposeResult {
