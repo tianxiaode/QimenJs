@@ -65,6 +65,15 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         this.ingest(children, parentId);
     }
 
+    updateItem(item: T): void {
+        const idField = this.idField;
+        const id = (item as any)[idField];
+        if (id) {
+            this.ingest(item);
+        }
+        super.updateItem(item);
+    }
+
     removeNode(id: string | number): void {
         const node = this.nodes.get(id);
         if (!node) return;

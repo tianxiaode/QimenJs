@@ -112,6 +112,18 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
         this.pages = Math.ceil(total / this.pageSize);
     }
 
+    updateItem(item: T): void {
+        const idField = this.idField;
+        const index = this.items.findIndex(i => i[idField] === item[idField]);
+        if (index >= 0) {
+            // 使用解构赋值确保响应式触发
+            const newItems = [...this.items];
+            newItems[index] = item;
+            this.items = newItems;
+        }
+        super.updateItem(item);
+    }
+
     reset(): void {
         this.item = null;
         this.snapshot = null;

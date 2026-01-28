@@ -1,5 +1,5 @@
-import { AbilityBase } from '../../composable';
-import { EntityState, IEntity, IBaseEntityManager, IExposeResult, SearchParams } from '../../types';
+import { AbilityBase } from '../../../composable';
+import { EntityState, IEntity, IBaseEntityManager, IExposeResult, SearchParams } from '../../../types';
 
 export class RemoteGetAbility<
     T extends IEntity,
@@ -26,13 +26,13 @@ export class RemoteGetAbility<
 
                 const options = host.buildOptions('get', { [idFiled]: id }, null, {});
                 // 使用fetch方法发送GET请求
-                const response = await host.fetch('get', options);
+                const context = await host.fetch('get', options);
 
                 // 解析响应数据
-                const result = response.data?.item;
+                const result = context.data?.item;
 
                 // 更新UI状态
-                host.state.item = result;
+                host.state.updateItem(result);
                 return result;
             },
         };

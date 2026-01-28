@@ -13,7 +13,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
     }
 
     get items(): T[] {
-        const { idField } = this.schema;
+        const idField = this.idField;
 
         // 1. 应用“修改补丁”到原始数据
         const patchedData = this.sourceData.map(item => {
@@ -32,7 +32,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
 
     delete(ids: (string | number)[]): void {
         const idSet = new Set(ids);
-        const idField = this.schema.idField!;
+        const idField = this.idField;
 
         // 抹除内存镜像
         this.sourceData = this.sourceData.filter(item => !idSet.has((item as any)[idField]));

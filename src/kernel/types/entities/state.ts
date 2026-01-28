@@ -21,6 +21,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     loading: boolean;
     item: T | null;
     cacheTTL: number;
+    idField: string;
 
     /** * 获取当前搜索条件对应的缓存 Key
      * Flat 模式下可能是 page+pageSize+keyword
@@ -39,6 +40,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
 
     // 基础操作
     updateData(...args: any[]): void;
+    updateItem(item: T): void;
     toParams(): Record<string, any>;
     reset(): void;
     dispose(): void;

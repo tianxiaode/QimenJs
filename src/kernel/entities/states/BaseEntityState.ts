@@ -5,6 +5,7 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
     item: T | null = null;
     search: TSearch = {} as TSearch;
     cacheTTL: number = 300000; // 默认缓存5分钟
+    idField: string = 'id';
 
     constructor(
         protected schema: Schema,
@@ -12,13 +13,16 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
         cacheTTL: number = 300000
     ) {
         this.cacheTTL = cacheTTL;
+        this.idField = this.schema.idField || 'id';
     }
+
 
     /** * 获取当前搜索条件对应的缓存 Key
      * Flat 模式下可能是 page+pageSize+keyword
      * Tree 模式下可能是 parentId+keyword
      */
     abstract getCacheKey(): string;
+
 
     async tryGetCache() {
         if (!this.cacheProvider) return null;
@@ -35,6 +39,10 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
 
     abstract updateData(...args: any[]): void;
     abstract reset(): void;
+
+    updateItem(item: T): void {
+        this.item = item;
+    }
 
     /**
      * 将搜索对象转换为 API 请求参数

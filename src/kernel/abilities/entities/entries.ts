@@ -24,7 +24,7 @@ import { LocalToggleAbility } from './LocalToggleAbility';
 import { LocalUpdateAbility } from './LocalUpdateAbility';
 import { RemoteCreateAbility } from './RemoteCreateAbility';
 import { RemoteDeleteAbility } from './RemoteDeleteAbility';
-import { RemoteGetAbility } from './RemoteGetAbility';
+import { RemoteGetAbility } from './remote/RemoteGetAbility';
 import { RemoteGetAllAbility } from './RemoteGetAllAbility';
 import { RemoteListAbility } from './RemoteListAbility';
 import { RemoteToggleAbility } from './RemoteToggleAbility';

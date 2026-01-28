@@ -85,7 +85,7 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
     protected applyTreeSearch(data: T[]): T[] {
         if (!this.search.keyword) return data;
 
-        const idField = this.schema.idField!;
+        const idField = this.idField;
         const parentField = (this.schema as any).parentField || 'parentId';
         const keyword = this.search.keyword.toLowerCase();
 

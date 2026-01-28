@@ -60,7 +60,7 @@ export class FlatRemoteListAbility<
         const { list, total } = context.data;
         // 3. 同步状态
         host.state.updateData(list, total);
-        host.emit('listed', list);
+        host.emit('listed', state.items);
         return state.items;
     }
 }

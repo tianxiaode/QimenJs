@@ -25,7 +25,23 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
     }
 
     add(item: T): void {
-        this.changes.added.push(item);
+        const idType = this.schema.idType || 'string';
+        let tempId: string | number;
+
+        if (idType === 'number') {
+            // 使用负数作为临时 ID，避免与后端自增正数冲突
+            // 可以取当前已有的最小负数再减 1，或者使用 Date.now() 的负值
+            tempId = -Math.abs(Date.now());
+        } else {
+            // 使用标准的 UUID 字符串
+            tempId = crypto.randomUUID();
+        }
+
+        const payload = {
+            ...item,
+            clientId: tempId,
+            isNew: true,
+        };
     }
 
     get addedItems(): T[] {
@@ -45,9 +61,7 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
         const plan: IDeletionPlan = { localOnly: [], persistent: [] };
 
         // 获取当前新增缓冲区的 ID 集合
-        const addedIds = new Set(
-            this.changes.added.map(item => (item as any)[this.schema.idField!])
-        );
+        const addedIds = new Set(this.changes.added.map(item => (item as any)[this.idField]));
 
         ids.forEach(id => {
             if (addedIds.has(id)) {
@@ -61,7 +75,7 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
     }
 
     update(item: T): void {
-        const idField = this.schema.idField!;
+        const idField = this.idField;
         const id = item[idField as keyof T];
 
         // 1. 优先检查并更新“新增项”缓冲区
@@ -79,11 +93,11 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
             this.changes.updated.set(id, newItem);
         }
     }
-    
+
     abstract delete(id: (string | number)[]): void;
 
     confimDelete(plan: IDeletionPlan): void {
-        const idField = this.schema.idField!;
+        const idField = this.idField;
         // 1. 批量移除新增草稿
         if (plan.localOnly.length > 0) {
             const localSet = new Set(plan.localOnly);
@@ -124,6 +138,41 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
             added: [],
             updated: new Map(),
         };
+    }
+
+    updateItem(item: T): void {
+        const idField = this.idField;
+        const cid = (item as any).clientId;
+        const serverId = (item as any)[idField];
+
+        // 1. 同步权威源数据
+        const index = this.sourceData.findIndex(i => {
+            // 优先匹配 clientId，其次匹配 serverId
+            if (cid) return (i as any).clientId === cid;
+            return (i as any)[idField] === serverId;
+        });
+
+        if (index > -1) {
+            this.sourceData[index] = { ...this.sourceData[index], ...item };
+        } else {
+            this.sourceData.push(item);
+        }
+
+        // 2. 【核心修复】精准清理缓冲区
+        if (cid) {
+            // 如果有 clientId，说明是新增回执，从 added 中移除
+            this.changes.added = this.changes.added.filter(i => (i as any).clientId !== cid);
+        }
+        if (serverId) {
+            // 既然服务器已经返回了最新状态，本地的“待提交”标记就没意义了，直接删除
+            this.changes.updated.delete(serverId);
+        }
+
+        // 3. 更新详情
+        super.updateItem(item);
+
+        // 4. 同步持久化缓存
+        this.setCache(this.sourceData);
     }
 
     dispose(): void {
