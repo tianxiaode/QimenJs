@@ -30,7 +30,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
 
 
 
-    delete(ids: (string | number)[]): void {
+    async delete(ids: (string | number)[]): Promise<void> {
         const idSet = new Set(ids);
         const idField = this.idField;
 
@@ -38,7 +38,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
         this.sourceData = this.sourceData.filter(item => !idSet.has((item as any)[idField]));
 
         // 同步到 IndexDB/LocalStorage 缓存
-        this.setCache(this.sourceData);
+        await this.setCache(this.sourceData);
     }
 
     protected applyLocalSearch(data: T[]): T[] {

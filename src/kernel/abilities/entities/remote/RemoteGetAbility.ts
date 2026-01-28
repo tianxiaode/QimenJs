@@ -32,7 +32,7 @@ export class RemoteGetAbility<
                 const result = context.data?.item;
 
                 // 更新UI状态
-                host.state.updateItem(result);
+                await host.state.updateItem(result);
                 return result;
             },
         };

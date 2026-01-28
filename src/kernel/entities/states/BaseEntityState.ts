@@ -37,10 +37,10 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
         await this.cacheProvider?.clear();
     }
 
-    abstract updateData(...args: any[]): void;
+    abstract updateData(...args: any[]): Promise<void>;
     abstract reset(): void;
 
-    updateItem(item: T): void {
+    async updateItem(item: T): Promise<void> {
         this.item = item;
     }
 

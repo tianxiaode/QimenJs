@@ -37,7 +37,7 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
         });
     }
 
-    move(id: string | number, newParentId: string | number | null): void {
+    async move(id: string | number, newParentId: string | number | null): Promise<void> {
         const idField = this.schema.idField!;
         const parentField = (this.schema as any).parentField || 'parentId';
 
@@ -50,11 +50,11 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
             (item as any)[parentField] = newParentId;
 
             // 3. 如果有缓存，同步缓存
-            this.setCache(this.sourceData);
+            await this.setCache(this.sourceData);
         }
     }
 
-    delete(ids: (string | number)[]): void {
+    async delete(ids: (string | number)[]): Promise<void> {
         const idField = this.schema.idField!;
         const parentField = (this.schema as any).parentField || 'parentId';
 
@@ -79,7 +79,7 @@ export class TreeLocalEntityState<T extends IEntity, TSearch extends ITreeSearch
         this.sourceData = this.sourceData.filter(item => !allToDelete.has((item as any)[idField]));
 
         // 3. 同步缓存
-        this.setCache(this.sourceData);
+        await this.setCache(this.sourceData);
     }
 
     protected applyTreeSearch(data: T[]): T[] {

@@ -19,7 +19,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         return base;
     }
 
-    updateData(data: T | T[], manualParentId?: string | number | null): void {
+    async updateData(data: T | T[], manualParentId?: string | number | null): Promise<void> {
         // 1. 直接塞入，利用 ingest 的递归和去重能力
         this.ingest(data, manualParentId);
 
@@ -65,13 +65,13 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         this.ingest(children, parentId);
     }
 
-    updateItem(item: T): void {
+    async updateItem(item: T): Promise<void> {
         const idField = this.idField;
         const id = (item as any)[idField];
         if (id) {
             this.ingest(item);
         }
-        super.updateItem(item);
+        await super.updateItem(item);
     }
 
     removeNode(id: string | number): void {

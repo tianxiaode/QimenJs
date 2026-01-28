@@ -106,13 +106,14 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
         return `${this.schema.name}:${queryStr}`;
     }
 
-    updateData(items: T[], total: number): void {
+    async updateData(items: T[], total: number): Promise<void> {
         this.items = items;
         this.total = total;
         this.pages = Math.ceil(total / this.pageSize);
+        await this.setCache(items);
     }
 
-    updateItem(item: T): void {
+    async updateItem(item: T): Promise<void> {
         const idField = this.idField;
         const index = this.items.findIndex(i => i[idField] === item[idField]);
         if (index >= 0) {
@@ -121,7 +122,7 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
             newItems[index] = item;
             this.items = newItems;
         }
-        super.updateItem(item);
+        await super.updateItem(item);
     }
 
     reset(): void {

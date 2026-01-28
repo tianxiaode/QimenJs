@@ -39,8 +39,8 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     clearCache(): Promise<void>;
 
     // 基础操作
-    updateData(...args: any[]): void;
-    updateItem(item: T): void;
+    updateData(...args: any[]): Promise<void>;
+    updateItem(item: T): Promise<void>;
     toParams(): Record<string, any>;
     reset(): void;
     dispose(): void;
@@ -92,7 +92,7 @@ export interface IFlatRemoteEntityState<
     searchBy: Partial<TSearch>;
 
     //修改IFlatSearchParams的page参数，需要防止超出范围
-    updateData(items: T[], total: number): void;
+    updateData(items: T[], total: number): Promise<void>;
     //先调用该方法判断是否有效页，不是就发page-error事件
     isValidPage(page: number): boolean;
     //先调用该方法判断是否有效页大小，不是就发pageSize-error事件
@@ -115,7 +115,7 @@ export interface ITreeRemoteEntityState<
     items: T[]; // 当前层级的子节点列表
     treeData: T[]; // 递归返回整棵树形结构
     // 核心：把后端返回的一段子项挂载到 parentId 下
-    updateData(data: T | T[], manualParentId?: string | number | null): void;
+    updateData(data: T | T[], manualParentId?: string | number | null): Promise<void>;
     updateNodes(parentId: string | number | null, children: T[]): void;
     removeNode(id: string | number): void;
     moveNode(id: string | number, newParentId: string | number | null): void;

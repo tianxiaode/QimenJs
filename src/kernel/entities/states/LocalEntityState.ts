@@ -140,7 +140,7 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
         };
     }
 
-    updateItem(item: T): void {
+    async updateItem(item: T): Promise<void> {
         const idField = this.idField;
         const cid = (item as any).clientId;
         const serverId = (item as any)[idField];
@@ -169,10 +169,10 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
         }
 
         // 3. 更新详情
-        super.updateItem(item);
+        await super.updateItem(item);
 
         // 4. 同步持久化缓存
-        this.setCache(this.sourceData);
+        await this.setCache(this.sourceData);
     }
 
     dispose(): void {

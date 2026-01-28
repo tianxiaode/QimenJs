@@ -85,7 +85,7 @@ export class TreeRemoteListAbility<
          * 使用 TreeRemoteEntityState 的 updateData 方法。
          * 它内部调用了 ingest，会自动建立 nodes 映射和 hierarchy 父子关联索引。
          */
-        state.updateData(context.data.list || context.data); 
+        await state.updateData(context.data.list); 
         
         const currentItems = state.items;
         host.emit('listed', currentItems);
