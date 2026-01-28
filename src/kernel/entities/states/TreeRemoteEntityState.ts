@@ -228,7 +228,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
             node._path = parentPath ? `${parentPath}.${id}` : `${id}`;
 
             // 2. 自动计算深度 (_depth)
-            node._depth = node._path.split('.').length - 1;
+            node._depth = parentNode._depth ? parentNode._depth + 1 : 0;
 
             // 3. 基础状态补全
             node[pidField] = pid;
