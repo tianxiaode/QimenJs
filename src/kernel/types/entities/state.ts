@@ -113,7 +113,6 @@ export interface ITreeRemoteEntityState<
 > extends IRemoteEntityState<T, TSearch> {
     nodes: Map<string | number, T>;
     hierarchy: Map<string | number | null, (string | number)[]>;
-    lastSearchResultIds: (string | number)[];
     logger: ILogger;
     idField: string;
     parentIdField: string;

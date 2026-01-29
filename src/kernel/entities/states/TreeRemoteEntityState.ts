@@ -1,4 +1,4 @@
-import { ILogger, Logger } from '@/logger';
+import { ILogger, Logger } from '@orbitjs/logger';
 import {
     ICacheProvider,
     IEntity,
@@ -9,8 +9,7 @@ import {
     ITreeSearchParams,
     TreeSchema,
 } from '../../types';
-import { TreeLifecycleAbility, TreeSearchAbility } from './abilities';
-import { TreePathAbility } from './abilities/TreePathAbility';
+import { TreeLifecycleAbility, TreeSearchAbility, TreePathAbility } from './abilities';
 import { RemoteEntityState } from './RemoteEntityState';
 
 export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
@@ -19,14 +18,9 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
 {
     nodes: Map<string | number, T> = new Map();
     hierarchy: Map<string | number | null, (string | number)[]> = new Map();
-    lastSearchResultIds: (string | number)[] = [];
     logger: ILogger = null as any;
 
-    constructor(
-        schema: TreeSchema,
-        cacheProvider?: ICacheProvider,
-        cacheTTL: number = 300000
-    ) {
+    constructor(schema: TreeSchema, cacheProvider?: ICacheProvider, cacheTTL: number = 300000) {
         super(schema, cacheProvider, cacheTTL);
         this.logger = Logger.for(`${this.schema.name}.TreeRemoteEntityState`);
         new TreePathAbility<T, TSearch>().attach(this);
@@ -136,7 +130,6 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
     }
 
     reset(): void {
-        this.lastSearchResultIds = [];
         this.item = null;
         this.loading = false;
         this.snapshot = null;
@@ -164,7 +157,6 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
 
     dispose(): void {
         this.reset();
-        this.lastSearchResultIds = [];
         super.dispose();
     }
 }
