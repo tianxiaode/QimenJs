@@ -6,6 +6,13 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
     search: TSearch = {} as TSearch;
     cacheTTL: number = 300000; // 默认缓存5分钟
     idField: string = 'id';
+    nameField: string = 'name';    
+    parentIdField: string = 'parentId';
+    root: string | number = 'root';
+    leafField: string = 'leaf';
+    expandedField: string = 'expanded';
+    isLazy: boolean = false;
+    searchFields: string[] = [];
 
     constructor(
         protected schema: Schema,
@@ -14,6 +21,15 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
     ) {
         this.cacheTTL = cacheTTL;
         this.idField = this.schema.idField || 'id';
+        this.nameField = this.schema.nameField || 'name';
+        this.searchFields = this.schema.searchFields || [];
+        if(this.schema.isTree){
+            this.parentIdField = this.schema.parentIdField || 'parentId';
+            this.root = this.schema.root || 'root';
+            this.leafField = this.schema.leafField || 'leaf';
+            this.expandedField = this.schema.expandedField || 'expanded';
+            this.isLazy = this.schema.isLazy || false;
+        }
     }
 
 

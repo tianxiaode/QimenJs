@@ -6,7 +6,6 @@ import {
     EntityState,
     IFlatLocalEntityState,
     IFlatRemoteEntityState,
-    ITreeLocalEntityState,
     ITreeRemoteEntityState,
 } from './state';
 import {
@@ -65,5 +64,5 @@ export interface ITreeRemoteEntityManager<
 export interface ITreeLocalEntityManager<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
-    TState extends ITreeLocalEntityState<T, TSearch>,
+    TState extends ITreeRemoteEntityState<T, TSearch>,
 > extends IBaseEntityManager<T, TSearch, TState> {}

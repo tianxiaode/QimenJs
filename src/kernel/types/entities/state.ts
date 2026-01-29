@@ -1,3 +1,4 @@
+import { ILogger } from '@/logger';
 import {
     IEntity,
     IFlatSearchParams,
@@ -22,6 +23,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     item: T | null;
     cacheTTL: number;
     idField: string;
+    searchFields: string[];
 
     /** * 获取当前搜索条件对应的缓存 Key
      * Flat 模式下可能是 page+pageSize+keyword
@@ -112,15 +114,14 @@ export interface ITreeRemoteEntityState<
     nodes: Map<string | number, T>;
     hierarchy: Map<string | number | null, (string | number)[]>;
     lastSearchResultIds: (string | number)[];
+    logger: ILogger;
+    idField: string;
+    parentIdField: string;
+    root: string | number | null;
+    expandedField: string;
+    leafField: string;
     items: T[]; // 当前层级的子节点列表
     treeData: T[]; // 递归返回整棵树形结构
-    // 核心：把后端返回的一段子项挂载到 parentId 下
-    updateData(data: T | T[], manualParentId?: string | number | null): Promise<void>;
-    removeNode(id: string | number): void;
-    moveNode(id: string | number, newParentId: string | number | null): void;
-    isLoaded(id: string | number): boolean;
-    setLoaded(id: string | number, loaded: boolean): void;
-    toggleExpand(id: string | number, expanded?: boolean): void;
 }
 
 
@@ -128,3 +129,24 @@ export type EntityState<T extends IEntity, TSearch extends SearchParams> =
     | IFlatRemoteEntityState<T, TSearch>
     | IFlatLocalEntityState<T, TSearch>
     | ITreeRemoteEntityState<T, TSearch>;
+
+
+export interface ITreePathAbility<T extends IEntity>{
+    ingest(data: T | T[], manualParentId?: string | number | null):void;
+    rebuildDescendantsPaths(pid: any, parentPath: string, nextDepth: number): void;
+    toggleExpand(id: string | number | T, expanded?: boolean): void;
+    toggleLeaf(id: string | number | T, leaf?: boolean):void;
+}
+
+export interface ITreeLifecycleAbility<T extends IEntity>{
+    moveNode(id: string | number, targetPid: string | number | null): void;
+    removeNode(id: string | number): void;
+    syncChildren(pid: string | number | null, newData: T[]): void;
+    getChildren(pid?: any, predicate?: any): T[];
+}
+
+export interface ITreeSearchAbility<T extends IEntity>{
+    applySearchExpansion():void;
+    applySort(list: T[]): T[];
+    matchKeyword(node: T, keyword: string): boolean;
+}

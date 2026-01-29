@@ -13,6 +13,11 @@ export interface IComposableBase {
     [key: string]: any
 }
 
+export type AbilityHostBase = Omit<
+  IComposableBase,
+  'getStatic' | 'setStatic'
+>;
+
 /**
  * Ability 暴露给 Host 的属性描述符扩展
  * 允许直接返回属性值，或者返回标准的 PropertyDescriptor (getter/setter)

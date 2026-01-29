@@ -1,11 +1,11 @@
-import { IComposable, IComposableBase, IExposeResult } from '../types';
+import { IComposable, AbilityHostBase, IExposeResult } from '../types';
 
 /**
  * Ability 抽象基类：封装通用的宿主管理逻辑
  * 
  * @template T - 宿主类型，必须实现 IComposableBase 接口
  */
-export abstract class AbilityBase<T extends IComposableBase> implements IComposable {
+export abstract class AbilityBase<T extends AbilityHostBase> implements IComposable {
     /**
      * 宿主对象的引用
      * @private
