@@ -1,10 +1,15 @@
 import { AbilityBase } from '../../../composable';
-import { IEntity, IExposeResult, ITreeSearchParams, ITreeRemoteEntityState } from '../../../types';
+import {
+    IEntity,
+    IExposeResult,
+    ITreeSearchParams,
+    ITreeRemoteEntityStateExtenstion,
+} from '../../../types';
 
 export class TreePathAbility<
     T extends IEntity,
-    TSearch extends ITreeSearchParams
-> extends AbilityBase<ITreeRemoteEntityState<T, TSearch>> {
+    TSearch extends ITreeSearchParams,
+> extends AbilityBase<ITreeRemoteEntityStateExtenstion<T, TSearch>> {
     /**
      * 暴露远程获取实体的方法
      *

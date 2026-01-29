@@ -121,6 +121,7 @@ export interface TreeSchema extends BaseSchema {
     pathField?: string;
     leafField?: string;
     expandedField?: string;
+    useFlat?: boolean; // true: 返回扁平数组(默认), false: 返回嵌套树结构
 }
 
 // 最终暴露的统一 Schema 类型

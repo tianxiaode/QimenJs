@@ -1,10 +1,15 @@
 import { AbilityBase } from '../../../composable';
-import { IEntity, IExposeResult, ITreeSearchParams, ITreeRemoteEntityState } from '../../../types';
+import {
+    IEntity,
+    IExposeResult,
+    ITreeSearchParams,
+    ITreeRemoteEntityStateExtenstion,
+} from '../../../types';
 
 export class TreeLifecycleAbility<
     T extends IEntity,
     TSearch extends ITreeSearchParams,
-> extends AbilityBase<ITreeRemoteEntityState<T, TSearch>> {
+> extends AbilityBase<ITreeRemoteEntityStateExtenstion<T, TSearch>> {
     protected expose(): IExposeResult {
         const { host } = this;
 

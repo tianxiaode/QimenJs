@@ -13,13 +13,15 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
     expandedField: string = 'expanded';
     isLazy: boolean = false;
     searchFields: string[] = [];
+    schema: Schema;
 
     constructor(
-        protected schema: Schema,
+        schema: Schema,
         private cacheProvider?: ICacheProvider,
         cacheTTL: number = 300000
     ) {
         this.cacheTTL = cacheTTL;
+        this.schema = schema;
         this.idField = this.schema.idField || 'id';
         this.nameField = this.schema.nameField || 'name';
         this.searchFields = this.schema.searchFields || [];

@@ -7,10 +7,12 @@ import {
     ITreeRemoteEntityState,
     ITreeSearchAbility,
     ITreeSearchParams,
+    ITreeViewAbility,
     TreeSchema,
 } from '../../types';
 import { TreeLifecycleAbility, TreeSearchAbility, TreePathAbility } from './abilities';
 import { RemoteEntityState } from './RemoteEntityState';
+import { TreeViewAbility } from './abilities/TreeViewAbility';
 
 export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
     extends RemoteEntityState<T, TSearch>
@@ -19,6 +21,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
     nodes: Map<string | number, T> = new Map();
     hierarchy: Map<string | number | null, (string | number)[]> = new Map();
     logger: ILogger = null as any;
+    items: T[] = [];
 
     constructor(schema: TreeSchema, cacheProvider?: ICacheProvider, cacheTTL: number = 300000) {
         super(schema, cacheProvider, cacheTTL);
@@ -26,6 +29,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         new TreePathAbility<T, TSearch>().attach(this);
         new TreeLifecycleAbility<T, TSearch>().attach(this);
         new TreeSearchAbility<T, TSearch>().attach(this);
+        new TreeViewAbility<T, TSearch>().attach(this);
     }
 
     toParams() {
@@ -47,61 +51,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
     async updateItem(item: T): Promise<void> {
         this.syncDataAndState(item);
         await super.updateItem(item);
-    }
-
-    get items(): T[] {
-        const result: T[] = [];
-        const schema = this.schema as TreeSchema;
-        const expandedField = schema.expandedField || 'expanded';
-        const idField = this.idField;
-
-        /**
-         * @param pid 当前处理的父 ID
-         * @param depth 当前深度，用于 UI 缩进控制
-         */
-        const walk = (pid: string | number | null, depth: number) => {
-            // 1. 从索引表中取出当前层级的所有子 ID
-            const childIds = this.hierarchy.get(pid) || [];
-
-            // 2. 获取实体并进行排序（利用你已有的 applySort）
-            const children = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
-            const sortedChildren = this.applySort(children);
-
-            // 3. 遍历并递归
-            sortedChildren.forEach(node => {
-                // 注入深度信息，方便组件渲染缩进
-                // 💡 这里我们不需要修改原始 node，而是解构出一个新对象
-                result.push({ ...node, _depth: depth });
-
-                // 4. 只有当父节点被展开时，才继续往下走
-                if ((node as any)[expandedField]) {
-                    walk(node[idField], depth + 1);
-                }
-            });
-        };
-
-        // 从 Schema 定义的根节点开始走
-        walk(schema.root || null, 0);
-        return result;
-    }
-
-    get treeData(): T[] {
-        const schema = this.schema as TreeSchema;
-        const childrenField = schema.childrenField || 'children';
-        const idField = this.idField;
-
-        const build = (pid: string | number | null): T[] => {
-            const childIds = this.hierarchy.get(pid) || [];
-            const children = childIds.map(id => this.nodes.get(id)!).filter(Boolean);
-            const sorted = this.applySort(children);
-
-            return sorted.map(node => ({
-                ...node,
-                [childrenField]: build(node[idField]), // 递归构建嵌套结构
-            }));
-        };
-
-        return build(schema.root || null);
+        this.refreshView();
     }
 
     isLoaded(id: string | number): boolean {
@@ -162,4 +112,8 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
 }
 
 export interface TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearchParams>
-    extends ITreePathAbility<T>, ITreeLifecycleAbility<T>, ITreeSearchAbility<T> {}
+    extends
+        ITreePathAbility<T>,
+        ITreeLifecycleAbility<T>,
+        ITreeSearchAbility<T>,
+        ITreeViewAbility<T> {}

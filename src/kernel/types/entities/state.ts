@@ -5,6 +5,7 @@ import {
     ILocalSearchParams,
     ITreeSearchParams,
     SearchParams,
+    Schema
 } from './schema';
 
 export interface ILocalChangeSet<T> {
@@ -13,7 +14,7 @@ export interface ILocalChangeSet<T> {
 }
 
 export interface IDeletionPlan {
-    localOnly: (string | number)[];  // 仅在新增缓冲区（added）的 ID，直接删了就行
+    localOnly: (string | number)[]; // 仅在新增缓冲区（added）的 ID，直接删了就行
     persistent: (string | number)[]; // 已经在数据库里的 ID，需要调用远程接口
 }
 
@@ -24,6 +25,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     cacheTTL: number;
     idField: string;
     searchFields: string[];
+    schema: Schema;
 
     /** * 获取当前搜索条件对应的缓存 Key
      * Flat 模式下可能是 page+pageSize+keyword
@@ -58,7 +60,6 @@ export interface IRemoteEntityState<
     rollback(): T | null; // 撤销当前未保存的修改
 }
 
-
 export interface ILocalEntityState<
     T extends IEntity,
     TSearch extends SearchParams,
@@ -75,7 +76,7 @@ export interface ILocalEntityState<
     pendingItems: T[];
     getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
     confimDelete(plan: IDeletionPlan): void;
-    matchKeyword(item: T, keyword: string): boolean
+    matchKeyword(item: T, keyword: string): boolean;
 }
 
 export interface IFlatRemoteEntityState<
@@ -104,8 +105,7 @@ export interface IFlatRemoteEntityState<
 export interface IFlatLocalEntityState<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
-> extends ILocalEntityState<T, TSearch> {
-}
+> extends ILocalEntityState<T, TSearch> {}
 
 export interface ITreeRemoteEntityState<
     T extends IEntity,
@@ -120,32 +120,44 @@ export interface ITreeRemoteEntityState<
     expandedField: string;
     leafField: string;
     items: T[]; // 当前层级的子节点列表
-    treeData: T[]; // 递归返回整棵树形结构
+    isLoaded(id: string | number): boolean;
+    setLoaded(id: string | number, loaded: boolean): void
 }
-
 
 export type EntityState<T extends IEntity, TSearch extends SearchParams> =
     | IFlatRemoteEntityState<T, TSearch>
     | IFlatLocalEntityState<T, TSearch>
     | ITreeRemoteEntityState<T, TSearch>;
 
-
-export interface ITreePathAbility<T extends IEntity>{
-    ingest(data: T | T[], manualParentId?: string | number | null):void;
+export interface ITreePathAbility<T extends IEntity> {
+    ingest(data: T | T[], manualParentId?: string | number | null): void;
     rebuildDescendantsPaths(pid: any, parentPath: string, nextDepth: number): void;
     toggleExpand(id: string | number | T, expanded?: boolean): void;
-    toggleLeaf(id: string | number | T, leaf?: boolean):void;
+    toggleLeaf(id: string | number | T, leaf?: boolean): void;
 }
 
-export interface ITreeLifecycleAbility<T extends IEntity>{
+export interface ITreeLifecycleAbility<T extends IEntity> {
     moveNode(id: string | number, targetPid: string | number | null): void;
     removeNode(id: string | number): void;
     syncChildren(pid: string | number | null, newData: T[]): void;
     getChildren(pid?: any, predicate?: any): T[];
 }
 
-export interface ITreeSearchAbility<T extends IEntity>{
-    applySearchExpansion():void;
+export interface ITreeSearchAbility<T extends IEntity> {
+    applySearchExpansion(): void;
     applySort(list: T[]): T[];
     matchKeyword(node: T, keyword: string): boolean;
 }
+
+export interface ITreeViewAbility<T extends IEntity> {
+    refreshView(): void;
+}
+
+export type ITreeRemoteEntityStateExtenstion<
+    T extends IEntity,
+    TSearch extends ITreeSearchParams,
+> = ITreeRemoteEntityState<T, TSearch> &
+    ITreePathAbility<T> &
+    ITreeLifecycleAbility<T> &
+    ITreeSearchAbility<T> &
+    ITreeViewAbility<T>;
