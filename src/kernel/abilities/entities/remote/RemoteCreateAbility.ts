@@ -52,8 +52,8 @@ export class RemoteCreateAbility<
                 }
 
                 // 2. 发起请求 (fetch 内部会自动处理 loading 状态的切换)
-                const options = host.buildOptions('create', {}, data, {});
-                const context = await host.fetch('create', data);
+                const options = await host.buildOptions('create', {}, data, {});
+                const context = await host.fetch('create', options);
                 const item = context.data.item;
                 await state.updateItem(item);
                 host.emit('created', item);

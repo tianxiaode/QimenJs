@@ -32,7 +32,7 @@ export interface IBaseEntityManager<
     state: TState;
     fetch(
         action: ENTITY_ACTION | string,
-        payload: any
+        options: RequestOptions
     ): Promise<FlowContext>;
     buildOptions(
         action: string,

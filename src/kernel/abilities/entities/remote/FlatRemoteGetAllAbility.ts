@@ -28,7 +28,7 @@ export class FlatRemoteGetAllAbility<
     protected async internalGetAll(): Promise<T[]> {
         const { host } = this;
         const state = host.state;
-        const options = host.buildOptions('get-all', {}, {}, {});
+        const options = await host.buildOptions('get-all', {}, {}, {});
         const context = await host.fetch('get-all', options);
         const items = context.data.list;
         await state.updateData(items, items.length);

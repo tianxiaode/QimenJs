@@ -24,7 +24,7 @@ export class RemoteGetAbility<
             get: async (id: string | number): Promise<T> => {
                 const { idFiled } = host.schemaKeys;
 
-                const options = host.buildOptions('get', { [idFiled]: id }, null, {});
+                const options = await host.buildOptions('get', { [idFiled]: id }, null, {});
                 // 使用fetch方法发送GET请求
                 const context = await host.fetch('get', options);
 
