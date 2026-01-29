@@ -123,14 +123,8 @@ export interface ITreeRemoteEntityState<
     toggleExpand(id: string | number, expanded?: boolean): void;
 }
 
-export interface ITreeLocalEntityState<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-> extends ILocalEntityState<T, TSearch> {
-}
 
 export type EntityState<T extends IEntity, TSearch extends SearchParams> =
     | IFlatRemoteEntityState<T, TSearch>
     | IFlatLocalEntityState<T, TSearch>
-    | ITreeRemoteEntityState<T, TSearch>
-    | ITreeLocalEntityState<T, TSearch>;
+    | ITreeRemoteEntityState<T, TSearch>;
