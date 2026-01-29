@@ -21,7 +21,7 @@ export class TreeManagerAbility<
             // 结构操作
             move: (id: string | number, targetPid: string | number | null) =>
                 this.host.moveNode(id, targetPid),
-
+            delete: (id: string | number | (string | number)[]) => this.deleteNode(id),
             // 数据获取与同步
             refresh: (pid: string | number | null) => this.refreshChildren(pid),
             getSubTree: (pid: string | number) => this.host.state.getChildren(pid),
@@ -91,6 +91,23 @@ export class TreeManagerAbility<
         );
         const context = await host.fetch('update', options);
         state.moveNode(id, targetPid);
+        state.refreshView();
+    }
+
+    protected async deleteNode(id: string | number | (string | number)[]): Promise<void> {
+        const host = this.host;
+        const state = host.state;
+        const isBatch = Array.isArray(id);
+        const action = isBatch ? 'batch-delete' : 'delete';
+        const options = isBatch
+            ? await host.buildOptions(action, {}, { ids: id }, {})
+            : await host.buildOptions(action, { [state.idField]: id }, null, {});
+        const context = await host.fetch(action, options);
+        if (isBatch) {
+            id.forEach(id => state.removeNode(id));
+        } else {
+            state.removeNode(id);
+        }
         state.refreshView();
     }
 }
