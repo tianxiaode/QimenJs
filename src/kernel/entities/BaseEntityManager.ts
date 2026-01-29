@@ -22,8 +22,7 @@ export abstract class BaseEntityManager<
 
     public async fetch(
         action: ENTITY_ACTION,
-        options: RequestOptions,
-        updater?: (data: any) => void
+        options: RequestOptions
     ): Promise<FlowContext> {
         this.state.loading = true;
         this.emit(`${action}:loading`, true);
@@ -35,7 +34,6 @@ export abstract class BaseEntityManager<
             if (!ctx.metadata.hasError) {
                 this.populateResponseData(ctx);
                 await this.onAfterFetch(action as any, ctx);
-                if (updater) updater(ctx.data);
                 this.emit(`${action}:success`, ctx.data);
             } else {
                 this.emit(`${action}:error`, ctx.metadata.error);

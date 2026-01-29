@@ -32,8 +32,7 @@ export interface IBaseEntityManager<
     state: TState;
     fetch(
         action: ENTITY_ACTION | string,
-        payload: any,
-        updater?: (data: any) => void
+        payload: any
     ): Promise<FlowContext>;
     buildOptions(
         action: string,
