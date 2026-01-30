@@ -13,8 +13,6 @@ export class FlatRemoteListAbility<
     TState extends IFlatRemoteEntityState<T, TSearch>,
 > extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     protected expose(): IExposeResult {
-        const { host } = this;
-        const state = host.state;
         // 内部防抖执行器
         const debouncedFetch = this.getDebouncedAction('list', this.internalList,300, false);
 
