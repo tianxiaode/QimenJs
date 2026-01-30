@@ -45,6 +45,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     // 基础操作
     updateData(...args: any[]): Promise<void>;
     updateItem(item: T): Promise<void>;
+    delete(id: string | number | (string | number)[]): Promise<void>;
     toParams(): Record<string, any>;
     reset(): void;
     dispose(): void;
@@ -69,8 +70,7 @@ export interface ILocalEntityState<
     readonly hasChanges: boolean;
     items: T[]; // 合并了 changes 后的当前数据列表
     add(item: T): void;
-    update(item: T): void;
-    delete(ids: (string | number)[]): void;
+    update(item: T): void;    
     addedItems: T[];
     updatedItems: T[];
     pendingItems: T[];
@@ -137,8 +137,8 @@ export interface ITreePathAbility<T extends IEntity> {
 }
 
 export interface ITreeLifecycleAbility<T extends IEntity> {
+    removeNode(id: string | number):void;
     moveNode(id: string | number, targetPid: string | number | null): void;
-    removeNode(id: string | number): void;
     syncChildren(pid: string | number | null, newData: T[]): void;
     getChildren(pid?: any, predicate?: any): T[];
 }

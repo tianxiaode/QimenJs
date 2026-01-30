@@ -41,6 +41,7 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
      */
     abstract getCacheKey(): string;
 
+    async delete(id: string | number | (string | number)[]): Promise<void>{};
 
     async tryGetCache() {
         if (!this.cacheProvider) return null;

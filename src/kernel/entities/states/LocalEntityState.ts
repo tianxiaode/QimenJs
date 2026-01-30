@@ -39,7 +39,7 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
 
         const payload = {
             ...item,
-            clientId: tempId,
+            tempId,
             isNew: true,
         };
     }
@@ -94,7 +94,7 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
         }
     }
 
-    abstract delete(id: (string | number)[]): void;
+    abstract delete(id: string | number | (string | number)[]): Promise<void>;
 
     confimDelete(plan: IDeletionPlan): void {
         const idField = this.idField;
@@ -142,13 +142,13 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
 
     async updateItem(item: T): Promise<void> {
         const idField = this.idField;
-        const cid = (item as any).clientId;
+        const cid = (item as any).tempId;
         const serverId = (item as any)[idField];
 
         // 1. 同步权威源数据
         const index = this.sourceData.findIndex(i => {
-            // 优先匹配 clientId，其次匹配 serverId
-            if (cid) return (i as any).clientId === cid;
+            // 优先匹配 tempId，其次匹配 serverId
+            if (cid) return (i as any).tempId === cid;
             return (i as any)[idField] === serverId;
         });
 
@@ -160,8 +160,8 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
 
         // 2. 【核心修复】精准清理缓冲区
         if (cid) {
-            // 如果有 clientId，说明是新增回执，从 added 中移除
-            this.changes.added = this.changes.added.filter(i => (i as any).clientId !== cid);
+            // 如果有 tempId，说明是新增回执，从 added 中移除
+            this.changes.added = this.changes.added.filter(i => (i as any).tempId !== cid);
         }
         if (serverId) {
             // 既然服务器已经返回了最新状态，本地的“待提交”标记就没意义了，直接删除

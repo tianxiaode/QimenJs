@@ -23,11 +23,11 @@ import { LocalDeleteAbility } from './LocalDeleteAbility';
 import { LocalToggleAbility } from './LocalToggleAbility';
 import { LocalUpdateAbility } from './LocalUpdateAbility';
 import { RemoteCreateAbility } from './RemoteCreateAbility';
-import { RemoteDeleteAbility } from './RemoteDeleteAbility';
+import { RemoteDeleteAbility } from './remote/RemoteDeleteAbility';
 import { RemoteGetAbility } from './remote/RemoteGetAbility';
 import { RemoteGetAllAbility } from './RemoteGetAllAbility';
 import { RemoteListAbility } from './RemoteListAbility';
-import { RemoteToggleAbility } from './RemoteToggleAbility';
+import { RemoteToggleAbility } from './remote/RemoteToggleAbility';
 import { RemoteUpdateAbility } from './RemoteUpdateAbility';
 import { SchemaAbility } from './SchemaAbility';
 

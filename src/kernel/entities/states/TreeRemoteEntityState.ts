@@ -30,7 +30,7 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         new TreeLifecycleAbility<T, TSearch>().attach(this);
         new TreeSearchAbility<T, TSearch>().attach(this);
         new TreeViewAbility<T, TSearch>().attach(this);
-    }
+    }    
 
     toParams() {
         const base = super.toParams();
@@ -53,6 +53,13 @@ export class TreeRemoteEntityState<T extends IEntity, TSearch extends ITreeSearc
         await super.updateItem(item);
         this.refreshView();
     }
+
+    async delete(id: string | number | (string | number)[]):Promise<void> {
+        const ids = Array.isArray(id)? id : [id];
+        ids.forEach(id => {
+            this.removeNode(id);
+        });
+    }    
 
     isLoaded(id: string | number): boolean {
         const node = this.nodes.get(id) as any;

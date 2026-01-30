@@ -7,13 +7,11 @@ import {
 } from '../../../types';
 import { AbilityBase } from '../../../composable';
 
-
 export class FlatLocalDeleteAbility<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
     TState extends IFlatLocalEntityState<T, TSearch>,
 > extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
-
     protected expose(): IExposeResult {
         const { host } = this;
         const { state } = host;
@@ -30,27 +28,32 @@ export class FlatLocalDeleteAbility<
 
                 // 2. 处理本地新增数据：直接抹除，无需网络请求
                 if (plan.localOnly.length > 0) {
-                    state.delete(plan.localOnly); //
+                    await state.delete(plan.localOnly); //
                 }
 
                 // 3. 处理已持久化数据
                 if (plan.persistent.length > 0) {
                     if (immediate) {
                         // 立即执行物理删除
-                        const options = await host.buildOptions('delete', plan.persistent, null, {});
+                        const options = await host.buildOptions(
+                            'delete',
+                            plan.persistent,
+                            null,
+                            {}
+                        );
                         await host.fetch('delete', options);
                         // 成功后才从内存移除 sourceData
-                        state.delete(plan.persistent); 
+                        await state.delete(plan.persistent);
                     } else {
                         // 延迟处理：仅仅从当前视图 items 中移除，不立即发请求
                         // 这需要 state 支持标记删除或放入待删缓冲区
-                        state.delete(plan.persistent); 
+                        await state.delete(plan.persistent);
                     }
                 }
 
                 host.emit('deleted', ids);
                 return plan;
-            }
+            },
         };
     }
 }

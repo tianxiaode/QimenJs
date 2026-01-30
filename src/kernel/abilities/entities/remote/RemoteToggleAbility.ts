@@ -1,6 +1,5 @@
-import { AbilityBase } from '../../composable';
-import { IBaseEntityManager, IExposeResult } from '../../types';
-import { debounce } from '@orbitjs/async';
+import { DebounceAbilityBase } from '../../../composable';
+import { EntityState, IBaseEntityManager, IEntity, IExposeResult, SearchParams } from '../../../types';
 
 /**
  * RemoteToggleAbility - 远程状态切换能力
@@ -14,7 +13,11 @@ import { debounce } from '@orbitjs/async';
  * @template T 实体数据类型
  * @template TCriteria 搜索字段类型（用于条件筛选等场景，当前主要用于扩展性预留）
  */
-export class RemoteToggleAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
+export class RemoteToggleAbility<
+    T extends IEntity,
+    TSearch extends SearchParams,
+    TState extends EntityState<T, TSearch>,
+> extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     /**
      * 存储每个字段切换任务的防抖函数实例
      * 使用 Map 以 taskKey (id-field) 为键，确保不同字段独立防抖
@@ -51,9 +54,9 @@ export class RemoteToggleAbility<T, TCriteria> extends AbilityBase<IBaseEntityMa
              * entity.toggle('123', 'enabled');
              */
             toggle: async (id: any, field: keyof T): Promise<void> => {
-                const idKey = host.schemaKeys.id;
+                const idField = host.state.idField;
                 const items = host.state.items || [];
-                const item = items.find((i: any) => i[idKey] === id);
+                const item = items.find((i: any) => i[idField] === id);
                 if (!item) return;
 
                 // 1. 生成唯一的 Task Key，实现同一 ID 不同字段的切换隔离

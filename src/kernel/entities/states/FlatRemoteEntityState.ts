@@ -125,6 +125,14 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
         await super.updateItem(item);
     }
 
+    async delete(id: string | number | (string | number)[]){
+        const idField = this.idField;
+        const ids = Array.isArray(id)? id : [id];
+        const newItems = this.items.filter(item => !ids.includes(item[idField]));
+        this.items = newItems;
+        this.total = this.total - ids.length;
+    }
+
     reset(): void {
         this.item = null;
         this.snapshot = null;
