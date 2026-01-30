@@ -1,4 +1,4 @@
-import { EntityFetchError } from '../errors';
+import { EntityError, KernelErrorCode } from '../errors';
 import {
     ENTITY_ACTION,
     FieldDefinition,
@@ -21,10 +21,7 @@ export abstract class BaseEntityManager<
 {
     abstract state: TState;
 
-    public async fetch(
-        action: ENTITY_ACTION,
-        options: RequestOptions
-    ): Promise<FlowContext> {
+    public async fetch(action: ENTITY_ACTION, options: RequestOptions): Promise<FlowContext> {
         this.state.loading = true;
         this.emit(`${action}:loading`, true);
 
@@ -33,11 +30,11 @@ export abstract class BaseEntityManager<
             const ctx = await task.context;
 
             if (ctx.metadata.hasError) {
-                const error= ctx.metadata.error;
+                const error = ctx.metadata.error;
                 this.emit(`${action}:error`, ctx);
                 this.logger.error('Fetch failed: ', error);
-                throw new EntityFetchError(error.message, ctx);
-            } 
+                throw new EntityError(error.message, KernelErrorCode.ENTITY_FETCH_FAILED, ctx);
+            }
 
             this.populateResponseData(ctx);
             await this.onAfterFetch(action as any, ctx);

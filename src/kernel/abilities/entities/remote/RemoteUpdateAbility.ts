@@ -1,6 +1,12 @@
 import { EntityError, KernelErrorCode } from '../../../errors';
 import { AbilityBase } from '../../../composable';
-import { FlowContext, IBaseEntityManager, IExposeResult } from '../../types';
+import {
+    EntityState,
+    IBaseEntityManager,
+    IEntity,
+    IExposeResult,
+    SearchParams,
+} from '../../../types';
 
 /**
  * RemoteUpdateAbility - 远程更新能力
@@ -8,7 +14,11 @@ import { FlowContext, IBaseEntityManager, IExposeResult } from '../../types';
  * 该能力为实体管理器（Entity Manager）提供通过网络请求更新远程数据的功能。
  * 它封装了发送更新请求、处理响应、同步本地状态以及事件发射的完整流程。
  */
-export class RemoteUpdateAbility<T, TCriteria> extends AbilityBase<IBaseEntityManager> {
+export class RemoteUpdateAbility<
+    T extends IEntity,
+    TSearch extends SearchParams,
+    TState extends EntityState<T, TSearch>,
+> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     /**
      * 暴露远程更新操作的方法
      *
@@ -30,60 +40,26 @@ export class RemoteUpdateAbility<T, TCriteria> extends AbilityBase<IBaseEntityMa
              * @returns {Promise<T>} 一个 Promise，解析为服务器返回的、已更新后的完整记录。
              * @throws {EntityError} 当操作进行中或请求失败时抛出错误。
              */
-            update: async (payload: Partial<T>): Promise<T> => {
+            update: async (data: Partial<T>): Promise<T> => {
+                const host = this.host;
+                const state = host.state;
                 // 1. 状态锁保护
-                if (host.state.loading) {
+                if (state.loading) {
                     throw new EntityError(
                         'Operation in progress, please wait.',
                         KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS
                     );
                 }
 
-                try {
-                    // 2. 发起请求
-                    // 'update' 动作通常会被 alignRequestOptions 自动转换为 PATCH 或 PUT
-                    const result = await host.fetch('update', payload, (context: FlowContext) => {
-                        const updatedRecord = context.data.item;
-
-                        // 3. 【核心】状态同步：局部更新本地列表中的对应项
-                        this.syncStateItems(updatedRecord);
-
-                        // 4. 更新当前活跃项
-                        host.state.item = updatedRecord;
-
-                        host.emit('updated', updatedRecord);
-                    });
-
-                    return result.data.item;
-                } catch (error) {
-                    host.emit('update-error', error);
-                    throw error;
-                }
+                // 2. 发起请求
+                // 'update' 动作通常会被 alignRequestOptions 自动转换为 PATCH 或 PUT
+                const options = await host.buildOptions('update', {}, data, {});
+                const context = await host.fetch('update', options);
+                const item = context.data.item;
+                await state.updateItem(item);
+                host.emit('updated', item);
+                return state.item!;
             },
         };
-    }
-
-    /**
-     * 同步更新本地状态中的列表项
-     *
-     * 在成功更新单条记录后，此方法负责查找并更新 `host.state.items` 数组中对应的旧数据，
-     * 以确保UI与最新的数据保持一致。它会创建一个新的数组实例，以保证响应式框架能检测到变化。
-     *
-     * @param {T} newData - 从服务器返回的、已更新的记录数据。
-     */
-    private syncStateItems(newData: T) {
-        const { host } = this;
-        const idKey = host.schemaKeys.id;
-        const id = (newData as any)[idKey];
-
-        if (Array.isArray(host.state.items)) {
-            const index = host.state.items.findIndex((item: any) => item[idKey] === id);
-            if (index !== -1) {
-                // 采用解构赋值，确保引用的响应式更新（对于 Vue 等框架很重要）
-                const newItems = [...host.state.items];
-                newItems[index] = { ...newItems[index], ...newData };
-                host.state.items = newItems;
-            }
-        }
     }
 }
