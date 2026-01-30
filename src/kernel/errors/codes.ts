@@ -14,6 +14,26 @@ export enum KernelErrorCode {
   ENTITY_OPERATION_IN_PROGRESS = 'ENTITY_OPERATION_IN_PROGRESS',
 
   /**
+   * 实体获取失败
+   */
+  ENTITY_FETCH_FAILED = 'ENTITY_FETCH_FAILED',
+
+  /**
+   * 未找到指定的实体
+   */
+  ENTITY_NOT_FOUND = 'ENTITY_NOT_FOUND',
+
+  /**
+   * 实体获取超时
+   */
+  ENTITY_FETCH_TIMEOUT = 'ENTITY_FETCH_TIMEOUT',
+
+  /**
+   * 实体获取被取消
+   */
+  ENTITY_FETCH_CANCELLED = 'ENTITY_FETCH_CANCELLED',
+
+  /**
    * 分页大小超出有效范围
    */
   INVALID_PAGE_SIZE = 'INVALID_PAGE_SIZE',

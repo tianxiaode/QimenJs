@@ -1,5 +1,5 @@
-import { EntityError, KernelErrorCode } from '../../errors';
-import { AbilityBase } from '../../composable';
+import { EntityError, KernelErrorCode } from '../../../errors';
+import { AbilityBase } from '../../../composable';
 import { FlowContext, IBaseEntityManager, IExposeResult } from '../../types';
 
 /**
