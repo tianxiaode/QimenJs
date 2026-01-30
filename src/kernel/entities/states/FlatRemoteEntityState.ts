@@ -73,8 +73,14 @@ export class FlatRemoteEntityState<T extends IEntity, TSearch extends IFlatSearc
     }
 
     set searchBy(searchBy: Partial<TSearch>) {
+        const oldOrderBy = this.sortBy;
+        const oldOrder = this.order;
+        const keyword = this.filterBy;
         this.search = {
-            ...this.search,
+            ...this.getDefaultSearch(this.pageSize),
+            order: oldOrder,
+            sortBy: oldOrderBy,
+            keyword,
             ...searchBy,
         };
     }
