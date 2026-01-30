@@ -17,7 +17,7 @@ import {
     RemoteQueryAbilityName,
     SystemAbilityName,
 } from '../../types';
-import { CollectionAbility } from './CollectionAbility';
+import { CollectionAbility } from './remote/FlatRemoteStateAbility';
 import { LocalCreateAbility } from './LocalCreateAbility';
 import { LocalDeleteAbility } from './LocalDeleteAbility';
 import { LocalToggleAbility } from './LocalToggleAbility';
