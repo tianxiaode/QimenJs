@@ -27,7 +27,7 @@ import {
     RemoteToggleAbilityName,
     RemoteUpdateAbilityName,
 } from '../types';
-import { EntityManagerBase } from './BaseEntityManager';
+import { BaseEntityManager } from './BaseEntityManager';
 
 @Ability(
     RemoteListAbilityName,
@@ -35,7 +35,7 @@ import { EntityManagerBase } from './BaseEntityManager';
     RemoteGetAllAbilityName,
     RemoteQueryAbilityName
 )
-export abstract class RemoteReadonlyEntityManager<T, TC> extends EntityManagerBase<T, TC> {}
+export abstract class RemoteReadonlyEntityManager<T, TC> extends BaseEntityManager<T, TC> {}
 
 export interface RemoteReadonlyEntityManager<T, TC>
     extends
@@ -46,7 +46,7 @@ export interface RemoteReadonlyEntityManager<T, TC>
         IRemoteQueryAbility<T, TC> {}
 
 @Ability(LocalListAbilityName)
-export abstract class LocalReadonlyEntityManager<T, TC> extends EntityManagerBase<T, TC> {}
+export abstract class LocalReadonlyEntityManager<T, TC> extends EntitBaseEntityManageryManagerBase<T, TC> {}
 
 export interface LocalReadonlyEntityManager<T, TC> extends ILocalListAbility<T, TC> {}
 
@@ -56,7 +56,7 @@ export interface LocalReadonlyEntityManager<T, TC> extends ILocalListAbility<T, 
     RemoteDeleteAbilityName,
     RemoteToggleAbilityName
 )
-export abstract class RemoteCurdEntityManager<T, TC> extends EntityManagerBase<T, TC> {}
+export abstract class RemoteCurdEntityManager<T, TC> extends BaseEntityManager<T, TC> {}
 
 export interface RemoteCurdEntityManager<T, TC>
     extends

@@ -15,7 +15,8 @@ export class EntityFetchError extends EntityError {
    * @param code - 错误代码
    * @param context - 可选的上下文信息
    */
-  constructor(message: string, code: KernelErrorCode, context?: Record<string, any>) {
+  constructor(message: string,  context?: Record<string, any>) {
+    const code = KernelErrorCode.ENTITY_FETCH_FAILED;
     super(message, code, context);
     
     // 保持正确的原型链

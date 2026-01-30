@@ -1,3 +1,4 @@
+import { EntityFetchError } from '../errors';
 import {
     ENTITY_ACTION,
     FieldDefinition,
@@ -31,13 +32,17 @@ export abstract class BaseEntityManager<
             const task = this.request(action as any, options);
             const ctx = await task.context;
 
-            if (!ctx.metadata.hasError) {
-                this.populateResponseData(ctx);
-                await this.onAfterFetch(action as any, ctx);
-                this.emit(`${action}:success`, ctx.data);
-            } else {
-                this.emit(`${action}:error`, ctx.metadata.error);
-            }
+            if (ctx.metadata.hasError) {
+                const error= ctx.metadata.error;
+                this.emit(`${action}:error`, ctx);
+                this.logger.error('Fetch failed: ', error);
+                throw new EntityFetchError(error.message, ctx);
+            } 
+
+            this.populateResponseData(ctx);
+            await this.onAfterFetch(action as any, ctx);
+            this.emit(`${action}:success`, ctx.data);
+            this.logger.debug('Fetch success: ', ctx.data);
             return ctx;
         } finally {
             this.state.loading = false;
@@ -107,6 +112,7 @@ export abstract class BaseEntityManager<
         action: ENTITY_ACTION,
         options: RequestOptions
     ): Promise<RequestOptions> {
+        this.logger.debug('onBeforeFetch', action, options);
         return options;
     }
 
@@ -153,7 +159,9 @@ export abstract class BaseEntityManager<
         return entity;
     }
 
-    protected async onAfterFetch(action: string, context: FlowContext): Promise<void> {}
+    protected async onAfterFetch(action: string, context: FlowContext): Promise<void> {
+        this.logger.debug('onAfterFetch', action, context);
+    }
 
     public dispose(): void {
         // 1. 先处理当前类的资源
