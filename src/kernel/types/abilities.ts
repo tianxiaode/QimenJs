@@ -1,6 +1,6 @@
 import { DomainConfig, SystemConfig } from "@orbitjs/registry";
 import { GestureSemantic } from "./events";
-import { Schema } from "./entities";
+import { IDeletionPlan, IEntity, IFlatLocalEntityState, ILocalSearchParams, Schema } from "./entities";
 
 
 export interface IEventAbilitiy {
@@ -19,6 +19,33 @@ export interface IDomainAbility {
 
 export interface ISystemAbility {
     systemConfig<K extends keyof SystemConfig>(key?: K): Partial<SystemConfig> | any;
+}
+
+export interface FlatLocalStateAbility<
+    T extends IEntity,
+    TSearch extends ILocalSearchParams,
+    TState extends IFlatLocalEntityState<T, TSearch>,
+>{
+    loading: boolean;
+    isEmpty: boolean;
+    total: number;
+    items: T[];
+    hasChanges: boolean;
+    getDeletionPlan(ids: (string | number)[]):IDeletionPlan;
+    adds(items: T[]): void;
+    updates(items: Partial<T>[]): void;
+}
+
+export interface IlatLocalMutationAbility<
+    T extends IEntity,
+    TSearch extends ILocalSearchParams,
+    TState extends IFlatLocalEntityState<T, TSearch>,
+>{
+    create(item: T): T;
+    update(item: Partial<T>):T;
+    toggle(item: T, field: keyof T): void;
+    save(isBatch: boolean): Promise<void>;
+
 }
 
 export interface ICollectionAbility<T, TC> {

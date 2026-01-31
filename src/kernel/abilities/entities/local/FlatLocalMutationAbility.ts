@@ -37,11 +37,11 @@ export class FlatLocalMutationAbility<
                 return item;
             },
 
-            toggle: (item: T, filed: keyof T, value: any) => {
+            toggle: (item: T, filed: keyof T) => {
                 const oldValue = item[filed];
-                item[filed] = value;
+                (item as any)[filed] = !oldValue;
                 state.update(item); // 调用 state.ts 中的 update 方法
-                host.emit('toggled', item, filed, oldValue, value);
+                host.emit('toggled', item, filed, oldValue);
             },
 
             /**

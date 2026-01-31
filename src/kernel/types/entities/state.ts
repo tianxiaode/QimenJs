@@ -70,7 +70,7 @@ export interface ILocalEntityState<
     readonly hasChanges: boolean;
     items: T[]; // 合并了 changes 后的当前数据列表
     add(item: T): void;
-    update(item: T): void;    
+    update(item: Partial<T>): void;    
     addedItems: T[];
     updatedItems: T[];
     pendingItems: T[];
