@@ -13,6 +13,7 @@ export class TreeManagerAbility<
     TState extends ITreeRemoteEntityStateExtenstion<T, TSearch>,
 > extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
     protected expose(): IExposeResult {
+        const state = this.host.state;
         return {
             // 基础操作
             expand: (id: string | number) => this.expand(id),
@@ -24,6 +25,9 @@ export class TreeManagerAbility<
             // 数据获取与同步
             refresh: (pid: string | number | null) => this.refreshChildren(pid),
             getSubTree: (pid: string | number) => this.host.state.getChildren(pid),
+            isDirty: (currentItem: T)=>state.isDirty(currentItem),
+            edit:(item: T)=> state.edit(item),
+            roolback: () => state.rollback(),
         };
     }
 

@@ -2,6 +2,7 @@ import { IBaseEntityState, ICacheProvider, IEntity, Schema, SearchParams } from 
 
 export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchParams> implements IBaseEntityState<T, TSearch> {
     loading: boolean = false;
+    items: T[] = [];
     item: T | null = null;
     search: TSearch = {} as TSearch;
     cacheTTL: number = 300000; // 默认缓存5分钟

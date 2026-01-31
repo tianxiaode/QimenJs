@@ -13,7 +13,6 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
 {
     sourceData: T[] = [];
     changes: ILocalChangeSet<T> = this.createEmptyChanges();
-    abstract get items(): T[];
 
     getCacheKey(): string {
         // 本地模式的 Key 通常只跟 Schema 名称有关，因为它是全量缓存
@@ -96,17 +95,23 @@ export abstract class LocalEntityState<T extends IEntity, TSearch extends Search
 
     abstract delete(id: string | number | (string | number)[]): Promise<void>;
 
-    confimDelete(plan: IDeletionPlan): void {
+    confirmDelete(plan: IDeletionPlan): void {
         const idField = this.idField;
-        // 1. 批量移除新增草稿
+
+        // 1. 清理“新增”缓冲区 (Added)
         if (plan.localOnly.length > 0) {
             const localSet = new Set(plan.localOnly);
             this.changes.added = this.changes.added.filter(
                 item => !localSet.has((item as any)[idField])
             );
         }
+
+        // 2. 清理“待更新”缓冲区 (Updated) 并从源数据中删除
         if (plan.persistent.length > 0) {
+            // 移除该 ID 对应的所有待提交更新补丁
             plan.persistent.forEach(id => this.changes.updated.delete(id));
+
+            // 执行物理移除（从 sourceData 中滤除）
             this.delete(plan.persistent);
         }
     }

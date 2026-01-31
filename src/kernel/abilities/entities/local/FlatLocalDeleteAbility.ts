@@ -23,35 +23,37 @@ export class FlatLocalDeleteAbility<
              * @param immediate 是否立即同步到后端（针对已持久化的数据）
              */
             delete: async (ids: (string | number)[], immediate: boolean = true) => {
-                // 1. 调用 state 的分流逻辑
+                // 1. 获取分流计划
                 const plan = state.getDeletionPlan(ids);
 
-                // 2. 处理本地新增数据：直接抹除，无需网络请求
+                // 2. 处理“纯本地”数据：直接确认销毁（无需请求，无视 immediate）
                 if (plan.localOnly.length > 0) {
-                    await state.delete(plan.localOnly); //
+                    state.confirmDelete({ localOnly: plan.localOnly, persistent: [] });
                 }
 
-                // 3. 处理已持久化数据
+                // 3. 处理“持久化”数据
                 if (plan.persistent.length > 0) {
                     if (immediate) {
-                        // 立即执行物理删除
-                        const options = await host.buildOptions(
-                            'delete',
-                            plan.persistent,
-                            null,
-                            {}
-                        );
+                        // A. 立即模式：先调接口，成功后物理移除
+                        const options = await host.buildOptions('delete', {},{ids: plan.persistent}, {});
                         await host.fetch('delete', options);
-                        // 成功后才从内存移除 sourceData
-                        await state.delete(plan.persistent);
+
+                        state.confirmDelete({ localOnly: [], persistent: plan.persistent });
                     } else {
-                        // 延迟处理：仅仅从当前视图 items 中移除，不立即发请求
-                        // 这需要 state 支持标记删除或放入待删缓冲区
-                        await state.delete(plan.persistent);
+                        // B. 延迟模式：这里通常有两种做法
+                        // 做法 1：仅记录到 changes.deleted 缓冲区（需要你在 ILocalChangeSet 增加 deleted 数组）
+                        // 做法 2：直接物理移除，但保存计划等待 save() 时批量请求
+                        state.confirmDelete({ localOnly: [], persistent: plan.persistent });
+
+                        // 记录下这笔“欠账”，方便后续调用 save()
+                        // state.changes.deleted.push(...plan.persistent);
                     }
                 }
 
                 host.emit('deleted', ids);
+                // 如果是树形结构，最后别忘了刷新视图
+                if ((state as any).refreshView) (state as any).refreshView();
+
                 return plan;
             },
         };

@@ -33,10 +33,13 @@ export class FlatRemoteStateAbility<
             hasMore: { get: () => state.page < state.pages },
             total: { get: () => state.total },
             items: { get: () => state.items },
-            pageIndex: { get: () => state.page },
+            page: { get: () => state.page },
             pageSize: { get: () => state.pageSize },
             pages: { get: () => state.pages },
             pageSizes: { get: () => state.pageSizes },
+            isDirty: (currentItem: T)=>state.isDirty(currentItem),
+            edit:(item: T)=> state.edit(item),
+            roolback: () => state.rollback(),
         };
     }
 }

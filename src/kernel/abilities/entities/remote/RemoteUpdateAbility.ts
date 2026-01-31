@@ -28,6 +28,7 @@ export class RemoteUpdateAbility<
      */
     protected expose(): IExposeResult {
         const { host } = this;
+        const state = host.state;
 
         return {
             /**

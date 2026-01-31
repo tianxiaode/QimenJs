@@ -5,13 +5,17 @@ import { array } from '@orbitjs/utils';
 export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearchParams>
     extends LocalEntityState<T, TSearch>
     implements IFlatLocalEntityState<T, TSearch>
+
 {
+    items:T[] = [];
+
     async updateData(data: T[]): Promise<void> {
         this.sourceData = data;
         await this.setCache(data); // 异步保存到本地，不怕丢
+        this.refreshView();
     }
 
-    get items(): T[] {
+    refreshView(): void {
         const idField = this.idField;
 
         // 1. 应用“修改补丁”到原始数据
@@ -24,7 +28,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
         const allData = [...patchedData, ...this.changes.added];
 
         // 3. 执行过滤排序
-        return this.applyLocalSearch(allData);
+        this.items = this.applyLocalSearch(allData);
     }
 
     async delete(id: string | number | string[] | number[]): Promise<void> {
@@ -42,6 +46,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
         
         // 同步到 IndexDB/LocalStorage 缓存
         await this.setCache(this.sourceData);
+        this.refreshView();
     }
 
     protected applyLocalSearch(data: T[]): T[] {

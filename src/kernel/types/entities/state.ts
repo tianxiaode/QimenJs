@@ -75,7 +75,7 @@ export interface ILocalEntityState<
     updatedItems: T[];
     pendingItems: T[];
     getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
-    confimDelete(plan: IDeletionPlan): void;
+    confirmDelete(plan: IDeletionPlan): void;
     matchKeyword(item: T, keyword: string): boolean;
 }
 
