@@ -1,13 +1,20 @@
-import { ICacheEntry, ICacheProvider } from '../types';
+import { string } from '@orbitjs/utils';
+import { CacheType, ICacheEntry, ICacheProvider } from '../types';
 
-export abstract class BaseCacheProvider<TKey = string, TData = any> {
-    constructor(protected readonly namespace: string) {}
+export abstract class BaseCacheProvider<TKey = string, TData = any> implements ICacheProvider<TKey, TData> {
+    id: string = '';
+    type: CacheType = '';
 
     // 抽象方法：交给具体介质实现
     protected abstract rawGet(key: string): Promise<ICacheEntry<TData> | null>;
     protected abstract rawSet(key: string, entry: ICacheEntry<TData>): Promise<void>;
     abstract remove(key: TKey): Promise<void>;
     abstract clear(): Promise<void>;
+    abstract has(key: TKey): Promise<boolean>;
+
+    constructor(){
+        this.id = string.getId(this.type + '-cache');
+    }
 
     /**
      * 统一的获取逻辑（含过期检查）
@@ -41,6 +48,6 @@ export abstract class BaseCacheProvider<TKey = string, TData = any> {
     }
 
     protected resolveKey(key: TKey): string {
-        return `${this.namespace}:${String(key)}`;
+        return `${this.type}-cache:${String(key)}`;
     }
 }

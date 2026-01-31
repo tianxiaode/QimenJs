@@ -19,42 +19,49 @@ export interface IDeletionPlan {
 }
 
 export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParams> {
+    logger: ILogger;
     search: TSearch;
     loading: boolean;
+    items: T[];
     item: T | null;
-    cacheTTL: number;
-    idField: string;
-    searchFields: string[];
     schema: Schema;
+    cacheTTL: number;
+    isRemote: boolean;
 
-    /** * 获取当前搜索条件对应的缓存 Key
-     * Flat 模式下可能是 page+pageSize+keyword
-     * Tree 模式下可能是 parentId+keyword
-     */
-    getCacheKey(): string;
+    // cacheTTL: number;
+    // idField: string;
+    // searchFields: string[];
+    // schema: Schema;
 
-    /** 尝试从 Provider 中获取当前 search 对应的缓存 */
-    tryGetCache(): Promise<any | null>;
+    // /** * 获取当前搜索条件对应的缓存 Key
+    //  * Flat 模式下可能是 page+pageSize+keyword
+    //  * Tree 模式下可能是 parentId+keyword
+    //  */
+    // getCacheKey(): string;
 
-    /** 将数据存入 Provider */
-    setCache(data: any): Promise<void>;
+    // /** 尝试从 Provider 中获取当前 search 对应的缓存 */
+    // tryGetCache(): Promise<any | null>;
 
-    /** 清除所有缓存 */
-    clearCache(): Promise<void>;
+    // /** 将数据存入 Provider */
+    // setCache(data: any): Promise<void>;
 
-    // 基础操作
-    updateData(...args: any[]): Promise<void>;
-    updateItem(item: T): Promise<void>;
-    delete(id: string | number | (string | number)[]): Promise<void>;
-    toParams(): Record<string, any>;
-    reset(): void;
-    dispose(): void;
+    // /** 清除所有缓存 */
+    // clearCache(): Promise<void>;
+
+    // // 基础操作
+    // updateData(...args: any[]): Promise<void>;
+    // updateItem(item: T): Promise<void>;
+    // delete(id: string | number | (string | number)[]): Promise<void>;
+    // toParams(): Record<string, any>;
+    // reset(): void;
+    // dispose(): void;
 }
 
 export interface IRemoteEntityState<
     T extends IEntity,
     TSearch extends SearchParams,
 > extends IBaseEntityState<T, TSearch> {
+    isRemote: true;
     snapshot: T | null; // 原始数据备份，用于还原
     isDirty(currentItem: T): boolean;
     edit(item: T): void; // 进入编辑状态
@@ -65,6 +72,7 @@ export interface ILocalEntityState<
     T extends IEntity,
     TSearch extends SearchParams,
 > extends IBaseEntityState<T, TSearch> {
+    isRemote: false;
     sourceData: T[]; // 基础数据源
     changes: ILocalChangeSet<T>;
     readonly hasChanges: boolean;

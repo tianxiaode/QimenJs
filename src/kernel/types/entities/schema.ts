@@ -8,6 +8,7 @@ import {
     StringRule,
     ValidationRule,
 } from '@orbitjs/validation';
+import { CacheType } from '../cache';
 
 /**
  * 基础实体接口，所有业务 Model 的基石
@@ -22,10 +23,10 @@ export interface IEntity {
  * 本地搜索参数：专注于内存中的筛选
  */
 export interface ILocalSearchParams {
-    keyword?: string;    // 全文检索（通常匹配 name/label 等）
-    sortBy?: string;     // 本地排序字段
+    keyword?: string; // 全文检索（通常匹配 name/label 等）
+    sortBy?: string; // 本地排序字段
     sortOrder?: 'asc' | 'desc';
-    // 理论上这里不需要 [key: string]: any; 
+    // 理论上这里不需要 [key: string]: any;
     // 因为本地过滤逻辑通常是硬编码在 State 里的某个 filter 函数中
 }
 
@@ -100,6 +101,12 @@ export interface BaseSchema {
     //是否持久化
     persistent?: boolean;
     searchFields?: string[];
+    cache?: {
+        type?: CacheType;
+        prefix?: string; // 之前讨论过的域前缀
+        storage?: any; // 自定义存储实例（可选）
+    };
+    [key: string]: any;
 }
 
 /**
@@ -130,7 +137,8 @@ export type Schema = FlatSchema | TreeSchema;
 export type RegistrSchema = Omit<
     BaseSchema,
     'extends' | 'idtype' | 'mixins' | 'override' | 'fields' | 'rules'
-> & TreeSchema;
+> &
+    TreeSchema;
 
 export interface SchemaCache {
     idType?: 'number' | 'string';

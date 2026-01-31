@@ -140,6 +140,7 @@ export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> 
             ...baseMetadata,
             ...localSchema,
             fields: finalFields,
+            domain: this.host.domain,
         } as Schema;
 
         finalSchema.searchFields = Array.from(searchFields);
