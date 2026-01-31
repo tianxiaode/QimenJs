@@ -1,5 +1,5 @@
 export * from './system';
-export * from './entities';
+export * from './entity-manager';
 
 
 
