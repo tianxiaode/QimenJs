@@ -2,7 +2,6 @@ import { Ability } from '../../composable';
 import {
     IEntity,
     IFlatLocalEntityState,
-    ILocalChangeSet,
     ILocalSearchParams,
     IStateLocalMutationAbility,
     StateLocalMutationAbilityName,
@@ -16,7 +15,6 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
 {
     isRemote: false = false;
     protected sourceData = new Map<string | number, T>();
-    changes: ILocalChangeSet<T> = this.createEmptyChanges();
 
     async refreshView(): Promise<void> {
         this.loading = true;
