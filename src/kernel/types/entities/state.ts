@@ -28,33 +28,6 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     cacheTTL: number;
     isRemote: boolean;
 
-    // cacheTTL: number;
-    // idField: string;
-    // searchFields: string[];
-    // schema: Schema;
-
-    // /** * 获取当前搜索条件对应的缓存 Key
-    //  * Flat 模式下可能是 page+pageSize+keyword
-    //  * Tree 模式下可能是 parentId+keyword
-    //  */
-    // getCacheKey(): string;
-
-    // /** 尝试从 Provider 中获取当前 search 对应的缓存 */
-    // tryGetCache(): Promise<any | null>;
-
-    // /** 将数据存入 Provider */
-    // setCache(data: any): Promise<void>;
-
-    // /** 清除所有缓存 */
-    // clearCache(): Promise<void>;
-
-    // // 基础操作
-    // updateData(...args: any[]): Promise<void>;
-    // updateItem(item: T): Promise<void>;
-    // delete(id: string | number | (string | number)[]): Promise<void>;
-    // toParams(): Record<string, any>;
-    // reset(): void;
-    // dispose(): void;
 }
 
 export interface IRemoteEntityState<
@@ -68,24 +41,24 @@ export interface IRemoteEntityState<
     rollback(): T | null; // 撤销当前未保存的修改
 }
 
-export interface ILocalEntityState<
-    T extends IEntity,
-    TSearch extends SearchParams,
-> extends IBaseEntityState<T, TSearch> {
-    isRemote: false;
-    sourceData: T[]; // 基础数据源
-    changes: ILocalChangeSet<T>;
-    readonly hasChanges: boolean;
-    items: T[]; // 合并了 changes 后的当前数据列表
-    add(item: T): void;
-    update(item: Partial<T>): void;    
-    addedItems: T[];
-    updatedItems: T[];
-    pendingItems: T[];
-    getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
-    confirmDelete(plan: IDeletionPlan): void;
-    matchKeyword(item: T, keyword: string): boolean;
-}
+// export interface ILocalEntityState<
+//     T extends IEntity,
+//     TSearch extends SearchParams,
+// > extends IBaseEntityState<T, TSearch> {
+//     isRemote: false;
+//     sourceData: T[]; // 基础数据源
+//     changes: ILocalChangeSet<T>;
+//     readonly hasChanges: boolean;
+//     items: T[]; // 合并了 changes 后的当前数据列表
+//     add(item: T): void;
+//     update(item: Partial<T>): void;    
+//     addedItems: T[];
+//     updatedItems: T[];
+//     pendingItems: T[];
+//     getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
+//     confirmDelete(plan: IDeletionPlan): void;
+//     matchKeyword(item: T, keyword: string): boolean;
+// }
 
 export interface IFlatRemoteEntityState<
     T extends IEntity,
@@ -113,7 +86,9 @@ export interface IFlatRemoteEntityState<
 export interface IFlatLocalEntityState<
     T extends IEntity,
     TSearch extends ILocalSearchParams,
-> extends ILocalEntityState<T, TSearch> {}
+> extends IBaseEntityState<T, TSearch> {
+    isRemote: false;
+}
 
 export interface ITreeRemoteEntityState<
     T extends IEntity,

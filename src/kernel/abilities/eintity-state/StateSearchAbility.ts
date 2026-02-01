@@ -16,10 +16,10 @@ export class StateSearchAbility<
 
             filter: (text: string) => (host.search.keyword = text),
 
-            search: (search: Partial<TSearch>) => (host.search = { ...host.search, ...search }),
+            searchBy: (search: Partial<TSearch>) => (host.search = { ...host.search, ...search }),
             matchKeyword: (item: T) => this.matchKeyword(item),
             applySort: (list: T[] | any[]) => this.applySort(list),
-            sort: (field: string, order: 'asc' | 'desc') => (
+            sort: (field: string, order: 'asc' | 'desc'= 'asc') => (
                 (host.search.sortBy = field),
                 (host.search.sortOrder = order)
             ),
