@@ -1,0 +1,17 @@
+{
+  "name": "@orbitjs/runtime",
+  "version": "1.0.0",
+  "description": "Runtime environment detection for OrbitJS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["runtime", "environment", "platform", "orbitjs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

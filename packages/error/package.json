@@ -1,0 +1,17 @@
+{
+  "name": "@orbitjs/error",
+  "version": "1.0.0",
+  "description": "Error handling utilities for OrbitJS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["error", "error-handling", "orbitjs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

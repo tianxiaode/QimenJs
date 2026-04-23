@@ -1,102 +1,102 @@
 {
-    "modules": {
-        "runtime-env": {
-            "entry": "src/runtime-env/index.ts",
-            "outDir": "dist/runtime-env",
-            "rootDir": "src/runtime-env",
-            "dependencies": [],
-            "packageName": "@orbitjs/runtime-env"
-        },
-
-        "utils": {
-            "entry": "src/utils/index.ts",
-            "outDir": "dist/utils",
-            "rootDir": "src/utils",
-            "dependencies": ["runtime-env"],
-            "packageName": "@orbitjs/utils"
-        },
-
-        "validation": {
-            "entry": "src/validation/index.ts",
-            "outDir": "dist/validation",
-            "rootDir": "src/validation",
-            "dependencies": ["error"],
-            "packageName": "@orbitjs/validation"
-        },
-
-        "error": {
-            "entry": "src/error/index.ts",
-            "outDir": "dist/error",
-            "rootDir": "src/error",
-            "dependencies": [],
-            "packageName": "@orbitjs/error"
-        },
-
-        "logger": {
-            "entry": "src/logger/index.ts",
-            "outDir": "dist/logger",
-            "rootDir": "src/logger",
-            "dependencies": ["runtime-env", "error"],
-            "packageName": "@orbitjs/logger"
-        },
-
-        "event-core": {
-            "entry": "src/event/index.ts",
-            "outDir": "dist/event",
-            "rootDir": "src/event",
-            "dependencies": [],
-            "packageName": "@orbitjs/event"
-        },
-        "async": {
-            "entry": "src/async/index.ts",
-            "outDir": "dist/async",
-            "rootDir": "src/async",
-            "dependencies": [],
-            "packageName": "@orbitjs/async"
-        },
-
-        "core": {
-            "entry": "src/core/index.ts",
-            "outDir": "dist/core",
-            "rootDir": "src/core",
-            "dependencies": ["utils", "validation", "error", "logger", "event"],
-            "packageName": "@orbitjs/core"
-        },
-        "tasks": {
-            "entry": "src/tasks/index.ts",
-            "outDir": "dist/tasks",
-            "rootDir": "src/tasks",
-            "dependencies": ["utils", "crypto", "error", "logger"],
-            "packageName": "@orbitjs/tasks"
-        },
-        "crypto": {
-            "entry": "src/crypto/index.ts",
-            "outDir": "dist/crypto",
-            "rootDir": "src/crypto",
-            "dependencies": [],
-            "packageName": "@orbitjs/crypto"
-        },
-        "http": {
-            "entry": "src/http/index.ts",
-            "outDir": "dist/http",
-            "rootDir": "src/http",
-            "dependencies": ["utils", "error"],
-            "packageName": "@orbitjs/http"
-        },
-        "repository": {
-            "entry": "src/repository/index.ts",
-            "outDir": "dist/repository",
-            "rootDir": "src/repository",
-            "dependencies": ["utils", "validation", "error", "logger", "http"],
-            "packageName": "@orbitjs/repository"
-        }
+  "modules": {
+    "error": {
+      "entry": "src/error/index.ts",
+      "outDir": "dist/error",
+      "rootDir": "src/error",
+      "dependencies": [],
+      "packageName": "@orbitjs/error"
     },
-
-    "build": {
-        "tsconfig": "tsconfig.build.json",
-        "formats": ["cjs", "esm"],
-        "sourceMap": true,
-        "declaration": true,
-        "declarationMap": true
+    "logger": {
+      "entry": "src/logger/index.ts",
+      "outDir": "dist/logger",
+      "rootDir": "src/logger",
+      "dependencies": [],
+      "packageName": "@orbitjs/logger"
+    },
+    "utils": {
+      "entry": "src/utils/index.ts",
+      "outDir": "dist/utils",
+      "rootDir": "src/utils",
+      "dependencies": [],
+      "packageName": "@orbitjs/utils"
+    },
+    "async": {
+      "entry": "src/async/index.ts",
+      "outDir": "dist/async",
+      "rootDir": "src/async",
+      "dependencies": [],
+      "packageName": "@orbitjs/async"
+    },
+    "runtime": {
+      "entry": "src/runtime/index.ts",
+      "outDir": "dist/runtime",
+      "rootDir": "src/runtime",
+      "dependencies": [],
+      "packageName": "@orbitjs/runtime"
+    },
+    "crypto": {
+      "entry": "src/crypto/index.ts",
+      "outDir": "dist/crypto",
+      "rootDir": "src/crypto",
+      "dependencies": [],
+      "packageName": "@orbitjs/crypto"
+    },
+    "registry": {
+      "entry": "src/registry/index.ts",
+      "outDir": "dist/registry",
+      "rootDir": "src/registry",
+      "dependencies": ["error"],
+      "packageName": "@orbitjs/registry"
+    },
+    "cache": {
+      "entry": "src/cache/index.ts",
+      "outDir": "dist/cache",
+      "rootDir": "src/cache",
+      "dependencies": ["logger", "utils"],
+      "packageName": "@orbitjs/cache"
+    },
+    "events": {
+      "entry": "src/events/index.ts",
+      "outDir": "dist/events",
+      "rootDir": "src/events",
+      "dependencies": ["logger", "utils"],
+      "packageName": "@orbitjs/events"
+    },
+    "validation": {
+      "entry": "src/validation/index.ts",
+      "outDir": "dist/validation",
+      "rootDir": "src/validation",
+      "dependencies": ["registry"],
+      "packageName": "@orbitjs/validation"
+    },
+    "task": {
+      "entry": "src/task/index.ts",
+      "outDir": "dist/task",
+      "rootDir": "src/task",
+      "dependencies": ["logger", "utils", "error", "runtime"],
+      "packageName": "@orbitjs/task"
+    },
+    "kernel": {
+      "entry": "src/kernel/index.ts",
+      "outDir": "dist/kernel",
+      "rootDir": "src/kernel",
+      "dependencies": ["registry", "logger", "utils", "async", "events", "cache"],
+      "packageName": "@orbitjs/kernel"
+    },
+    "entity": {
+      "entry": "src/entity/index.ts",
+      "outDir": "dist/entity",
+      "rootDir": "src/entity",
+      "dependencies": ["kernel", "validation"],
+      "packageName": "@orbitjs/entity"
     }
+  },
+  "build": {
+    "tsconfig": "tsconfig.build.json",
+    "formats": ["cjs", "esm"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  }
 }

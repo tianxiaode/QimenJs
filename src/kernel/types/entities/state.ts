@@ -27,6 +27,7 @@ export interface IBaseEntityState<T extends IEntity, TSearch extends SearchParam
     schema: Schema;
     cacheTTL: number;
     isRemote: boolean;
+    hasChange: boolean;
 
 }
 

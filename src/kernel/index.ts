@@ -1,32 +1,11 @@
-import { RegistryHub } from '@orbitjs/registry';
-import { SchemaRegistrar } from './registrars/SchemaRegistrar';
-import { EntityActionRegistrar } from './registrars/EntityActionRegistrar';
-import * as AllEntries from './abilities';
-import { ComposableRegistrar } from './registrars';
-import { ComposableEntry } from './types';
-
-export * from './abilities';
-export * from './actions';
+// Composable system
 export * from './composable';
-export * from './core';
-export * from './entities';
-export * from './errors';
-export * from './events';
+
+// HTTP client
 export * from './http';
-export * from './registrars';
-export * from './types';
 
+// Pipeline system
+export * from './pipeline';
 
-export const bootstrapAblities = () => {
-    // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象
-    Object.values(AllEntries).forEach((entry: ComposableEntry) => {
-        // 简单的健壮性检查：确保它是一个有效的 Entry 对象
-        if (entry && entry.name && entry.ctor) {
-            ComposableRegistrar.getInstance().register(entry);
-        }
-    });
-};
-
-RegistryHub.use(SchemaRegistrar.getInstance());
-RegistryHub.use(EntityActionRegistrar.getInstance());
-RegistryHub.use(ComposableRegistrar.getInstance());
+// Abilities
+export * from './abilities';

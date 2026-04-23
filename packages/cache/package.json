@@ -1,0 +1,21 @@
+{
+  "name": "@orbitjs/cache",
+  "version": "1.0.0",
+  "description": "Cache system for OrbitJS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["cache", "caching", "storage", "orbitjs"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@orbitjs/logger": "^1.0.0",
+    "@orbitjs/utils": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

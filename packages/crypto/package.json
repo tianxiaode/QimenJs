@@ -1,0 +1,17 @@
+{
+  "name": "@orbitjs/crypto",
+  "version": "1.0.0",
+  "description": "Cryptographic utilities for OrbitJS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["crypto", "hash", "encryption", "orbitjs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

@@ -19,16 +19,6 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./async": {
-      "import": "./dist/async/index.esm.js",
-      "require": "./dist/async/index.js",
-      "types": "./dist/async/index.d.ts"
-    },
-    "./core": {
-      "import": "./dist/core/index.esm.js",
-      "require": "./dist/core/index.js",
-      "types": "./dist/core/index.d.ts"
-    },
     "./error": {
       "import": "./dist/error/index.esm.js",
       "require": "./dist/error/index.js",
@@ -39,25 +29,20 @@
       "require": "./dist/logger/index.js",
       "types": "./dist/logger/index.d.ts"
     },
-    "./runtime-env": {
-      "import": "./dist/runtime-env/index.esm.js",
-      "require": "./dist/runtime-env/index.js",
-      "types": "./dist/runtime-env/index.d.ts"
-    },
     "./utils": {
       "import": "./dist/utils/index.esm.js",
       "require": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
     },
-    "./validation": {
-      "import": "./dist/validation/index.esm.js",
-      "require": "./dist/validation/index.js",
-      "types": "./dist/validation/index.d.ts"
+    "./async": {
+      "import": "./dist/async/index.esm.js",
+      "require": "./dist/async/index.js",
+      "types": "./dist/async/index.d.ts"
     },
-    "./tasks": {
-      "import": "./dist/tasks/index.esm.js",
-      "require": "./dist/tasks/index.js",
-      "types": "./dist/tasks/index.d.ts"
+    "./runtime": {
+      "import": "./dist/runtime/index.esm.js",
+      "require": "./dist/runtime/index.js",
+      "types": "./dist/runtime/index.d.ts"
     },
     "./crypto": {
       "import": "./dist/crypto/index.esm.js",
@@ -69,15 +54,35 @@
       "require": "./dist/registry/index.js",
       "types": "./dist/registry/index.d.ts"
     },
-    "./presets": {
-      "import": "./dist/presets/index.esm.js",
-      "require": "./dist/presets/index.js",
-      "types": "./dist/presets/index.d.ts"
+    "./cache": {
+      "import": "./dist/cache/index.esm.js",
+      "require": "./dist/cache/index.js",
+      "types": "./dist/cache/index.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events/index.esm.js",
+      "require": "./dist/events/index.js",
+      "types": "./dist/events/index.d.ts"
+    },
+    "./validation": {
+      "import": "./dist/validation/index.esm.js",
+      "require": "./dist/validation/index.js",
+      "types": "./dist/validation/index.d.ts"
+    },
+    "./task": {
+      "import": "./dist/task/index.esm.js",
+      "require": "./dist/task/index.js",
+      "types": "./dist/task/index.d.ts"
     },
     "./kernel": {
       "import": "./dist/kernel/index.esm.js",
       "require": "./dist/kernel/index.js",
       "types": "./dist/kernel/index.d.ts"
+    },
+    "./entity": {
+      "import": "./dist/entity/index.esm.js",
+      "require": "./dist/entity/index.js",
+      "types": "./dist/entity/index.d.ts"
     }
   },
   "files": [
