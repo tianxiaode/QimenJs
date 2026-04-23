@@ -4,7 +4,7 @@ describe("getTimezone", () => {
   });
 
   it("应该返回有效的时区字符串", () => {
-    const { getTimezone } = require("@/runtime-env/timezone");
+    const { getTimezone } = require("@/runtime/timezone");
     const timezone = getTimezone();
     
     // 验证返回的是字符串类型
@@ -15,7 +15,7 @@ describe("getTimezone", () => {
   });
 
   it("应该返回与 Intl.DateTimeFormat 一致的时区", () => {
-    const { getTimezone } = require("@/runtime-env/timezone");
+    const { getTimezone } = require("@/runtime/timezone");
     const expectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const actualTimezone = getTimezone();
     

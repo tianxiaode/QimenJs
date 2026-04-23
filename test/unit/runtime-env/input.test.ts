@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { isTouchDevice, detectInputCapabilities } from '../../../src/runtime-env/input';
+import { isTouchDevice, detectInputCapabilities } from '../../../src/runtime/input';
 
 describe('runtime-env/input in Node environment', () => {
   describe('isTouchDevice', () => {

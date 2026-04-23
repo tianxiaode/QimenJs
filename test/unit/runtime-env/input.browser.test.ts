@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { isTouchDevice, detectInputCapabilities } from '../../../src/runtime-env/input';
+import { isTouchDevice, detectInputCapabilities } from '../../../src/runtime/input';
 
 describe('runtime-env/input in Browser environment', () => {
   let originalOntouchstart: any;

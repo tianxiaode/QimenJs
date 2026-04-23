@@ -1,4 +1,4 @@
-import { MemoryManager, MemoryTicket, IMemoryTicket } from '@orbitjs/runtime-env';
+import { MemoryManager, MemoryTicket, IMemoryTicket } from '@/runtime';
 
 describe('MemoryManager', () => {
   const maxBytes = 100;
