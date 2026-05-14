@@ -1,5 +1,5 @@
 // keyboard-map.ts
-import { InputEventMap } from '../../../kernel/types/events';
+import { InputEventMap } from '@orbitjs/event';
 
 /**
  * 键盘事件映射

@@ -13,7 +13,7 @@ import {
     InputSignal,
     GestureEmit,
     GestureInput,
-} from '../../../kernel/types/events';
+} from '@orbitjs/event';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string, geometry } from '@orbitjs/utils';
 import { GestureError, KernelErrorCode } from '../../../kernel/errors';

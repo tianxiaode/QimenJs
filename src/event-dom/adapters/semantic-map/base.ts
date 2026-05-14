@@ -1,4 +1,4 @@
-import { InputEventMap } from '../../../kernel/types/events';
+import { InputEventMap } from '@orbitjs/event';
 
 /**
  * 基础事件映射，包含与输入设备形态无关的事件

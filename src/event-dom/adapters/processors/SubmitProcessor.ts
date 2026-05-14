@@ -7,7 +7,7 @@
  * 该处理器监听submit信号并触发相应的语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../../kernel/types/events';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '@orbitjs/event';
 import { GestureProcessor } from './GestureProcessor';
 
 /**

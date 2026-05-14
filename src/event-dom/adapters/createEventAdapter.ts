@@ -7,7 +7,7 @@ import {
     resolveInputEventMap,
     gestureEventMap,
 } from './semantic-map';
-import { IEventAdapter } from '../../kernel/types/events';
+import { IEventAdapter } from '@orbitjs/event';
 import { DomEventAdapter } from './dom';
 
 /**

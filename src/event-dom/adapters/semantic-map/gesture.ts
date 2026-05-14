@@ -1,4 +1,4 @@
-import { GestureEventMap, GestureSemantic } from '../../../kernel/types/events';
+import { GestureEventMap, GestureSemantic } from '@orbitjs/event';
 
 /**
  * 手势事件映射配置
