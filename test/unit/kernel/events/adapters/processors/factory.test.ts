@@ -29,7 +29,7 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { createGestureProcessor } from '@/kernel/events/adapters/processors/factory';
+import { createGestureProcessor } from '@/events/adapters/processors/factory';
 import { GestureEmit, GestureEventDescriptor } from '@/kernel/types';
 
 describe('Processor Factory', () => {

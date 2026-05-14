@@ -1,4 +1,4 @@
-import { validateDoubleTap, validateLongPress, validateSwipe, validateTap } from '@/kernel/events/adapters/utils/validation';
+import { validateDoubleTap, validateLongPress, validateSwipe, validateTap } from '@/events/adapters/utils/validation';
 
 describe('validation functions', () => {
   describe('validateDoubleTap', () => {

@@ -1,4 +1,4 @@
-import { gestureEventMap, gestureMap, keyboardGestureMap } from '@/kernel/events/adapters';
+import { gestureEventMap, gestureMap, keyboardGestureMap } from '@/events/adapters';
 import { GestureSemantic } from '@/kernel/types'
 import { Logger } from '@/logger';
 

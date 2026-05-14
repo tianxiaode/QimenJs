@@ -29,7 +29,7 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { TapProcessor } from '@/kernel/events/adapters/processors/TapProcessor';
+import { TapProcessor } from '@/events/adapters/processors/TapProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('TapProcessor', () => {

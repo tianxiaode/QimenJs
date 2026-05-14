@@ -16,7 +16,7 @@ jest.mock('@orbitjs/logger', () => {
     };
 });
 
-import { HoverProcessor } from '@/kernel/events/adapters/processors/HoverProcessor';
+import { HoverProcessor } from '@/events/adapters/processors/HoverProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('HoverProcessor', () => {

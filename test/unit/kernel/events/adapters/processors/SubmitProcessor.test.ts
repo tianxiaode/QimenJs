@@ -16,7 +16,7 @@ jest.mock('@orbitjs/logger', () => {
     };
 });
 
-import { SubmitProcessor } from '@/kernel/events/adapters/processors/SubmitProcessor';
+import { SubmitProcessor } from '@/events/adapters/processors/SubmitProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('SubmitProcessor', () => {

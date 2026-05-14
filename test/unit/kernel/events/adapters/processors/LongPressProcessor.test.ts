@@ -29,7 +29,7 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { LongPressProcessor } from '@/kernel/events/adapters/processors/LongPressProcessor';
+import { LongPressProcessor } from '@/events/adapters/processors/LongPressProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('LongPressProcessor', () => {

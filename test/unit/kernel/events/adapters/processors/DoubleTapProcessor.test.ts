@@ -30,7 +30,7 @@ jest.mock('@orbitjs/validation', () => {
 });
 
 // Mock the validation function used in DoubleTapProcessor
-jest.mock('@/kernel/events/adapters/utils/validation', () => {
+jest.mock('@/events/adapters/utils/validation', () => {
     return {
         validateDoubleTap: jest.fn(
             (now, lastTapTime, x, y, lastX, lastY, maxInterval, maxDistance) => {
@@ -42,9 +42,9 @@ jest.mock('@/kernel/events/adapters/utils/validation', () => {
     };
 });
 
-import { DoubleTapProcessor } from '@/kernel/events/adapters/processors/DoubleTapProcessor';
+import { DoubleTapProcessor } from '@/events/adapters/processors/DoubleTapProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
-import { validateDoubleTap } from '@/kernel/events/adapters/utils/validation';
+import { validateDoubleTap } from '@/events/adapters/utils/validation';
 import { Logger } from '@orbitjs/logger';
 
 describe('DoubleTapProcessor', () => {

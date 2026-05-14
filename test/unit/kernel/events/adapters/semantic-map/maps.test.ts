@@ -1,8 +1,8 @@
-import { baseMap } from '@/kernel/events/adapters/semantic-map/base';
-import { keyboardMap } from '@/kernel/events/adapters/semantic-map/keyboard';
-import { mouseMap } from '@/kernel/events/adapters/semantic-map/mouse';
-import { pointerMap } from '@/kernel/events/adapters/semantic-map/pointer';
-import { touchMap } from '@/kernel/events/adapters/semantic-map/touch';
+import { baseMap } from '@/events/adapters/semantic-map/base';
+import { keyboardMap } from '@/events/adapters/semantic-map/keyboard';
+import { mouseMap } from '@/events/adapters/semantic-map/mouse';
+import { pointerMap } from '@/events/adapters/semantic-map/pointer';
+import { touchMap } from '@/events/adapters/semantic-map/touch';
 
 describe('Semantic Maps', () => {
   describe('baseMap', () => {

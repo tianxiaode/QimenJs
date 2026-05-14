@@ -1,6 +1,6 @@
-import { DomEventAdapter } from '@/kernel/events/adapters/dom/DomEventAdapter';
-import { EventScope } from '@/kernel/events/core/EventScope';
-import { EventBus } from '@/kernel/events/core/EventBus';
+import { DomEventAdapter } from '@/events/adapters/dom/DomEventAdapter';
+import { EventScope } from '@/events/EventScope';
+import { EventBus } from '@/events/EventBus';
 import { 
   InputSignal, 
   InputEventMap, 
@@ -8,7 +8,7 @@ import {
   GestureEventMap,
   GestureEventDescriptor,
   GestureProcessorId 
-} from '@/kernel';
+} from '@/kernel/types/events';
 
 // Mock 依赖
 jest.mock('@orbitjs/runtime-env', () => ({
@@ -26,7 +26,7 @@ jest.mock('@orbitjs/logger', () => ({
   }
 }));
 
-jest.mock('@/kernel/events/adapters/processors', () => ({
+jest.mock('@/events/adapters/processors', () => ({
   createGestureProcessor: jest.fn((descriptor, callback) => {
     return {
       handle: jest.fn(),
@@ -45,7 +45,7 @@ Object.defineProperty(window, 'performance', {
 
 // 导入 mock 函数
 const { detectInputCapabilities } = require('@orbitjs/runtime-env');
-const { createGestureProcessor } = require('@/kernel/events/adapters/processors');
+const { createGestureProcessor } = require('@/events/adapters/processors');
 
 // 为浏览器API添加模拟
 Object.assign(global, {

@@ -1,4 +1,4 @@
-import { ContextMenuProcessor } from '@/kernel/events/adapters/processors/ContextMenuProcessor';
+import { ContextMenuProcessor } from '@/events/adapters/processors/ContextMenuProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 // Mock the logger to prevent errors during testing

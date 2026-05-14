@@ -1,4 +1,4 @@
-import { resolveInputEventMap } from '@/kernel/events/adapters/semantic-map/resolve';
+import { resolveInputEventMap } from '@/events/adapters/semantic-map/resolve';
 import { InputEventMap } from '@/kernel';
 
 // 模拟输入能力检测结果

@@ -16,7 +16,7 @@ jest.mock('@orbitjs/logger', () => {
     };
 });
 
-import { GestureProcessor } from '@/kernel/events/adapters/processors/GestureProcessor';
+import { GestureProcessor } from '@/events/adapters/processors/GestureProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 import { GestureError, KernelErrorCode } from '@/kernel/errors';
 

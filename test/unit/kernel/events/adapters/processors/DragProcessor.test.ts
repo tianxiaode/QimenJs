@@ -29,7 +29,7 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { DragProcessor } from '@/kernel/events/adapters/processors/DragProcessor';
+import { DragProcessor } from '@/events/adapters/processors/DragProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('DragProcessor', () => {

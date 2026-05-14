@@ -29,7 +29,7 @@ jest.mock('@orbitjs/validation', () => {
     };
 });
 
-import { SwipeProcessor } from '@/kernel/events/adapters/processors/SwipeProcessor';
+import { SwipeProcessor } from '@/events/adapters/processors/SwipeProcessor';
 import { GestureEmit, InputSignal } from '@/kernel/types';
 
 describe('SwipeProcessor', () => {
