@@ -1,4 +1,4 @@
-import { ICacheEntry } from '../types';
+import { ICacheEntry } from './types';
 import { BaseCacheProvider } from './BaseCacheProvider';
 
 export class MemoryProvider<TKey = string, TData = any> extends BaseCacheProvider<TKey, TData> {

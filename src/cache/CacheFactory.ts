@@ -1,5 +1,5 @@
 import { Logger } from '@orbitjs/logger';
-import { CacheType, ICacheProvider } from '../types';
+import { CacheType, ICacheProvider } from './types';
 import { MemoryProvider } from './MemoryProvider';
 
 export class CacheFactory {
