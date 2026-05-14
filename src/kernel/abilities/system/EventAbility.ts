@@ -1,6 +1,6 @@
-import { EventHandler, IComposableBase, IEventScope, IExposeResult } from '@/kernel/types';
-import { globalEventBus } from '../../events';
-import { AbilityBase } from '../../composable';
+import { AbilityBase } from '@/kernel/composable/AbilityBase';
+import type { IExposeResult } from '@/kernel/types/composable';
+import { globalEventBus, EventHandler } from '@orbitjs/events';
 
 /**
  * EventAbility - 事件能力类
@@ -9,55 +9,52 @@ import { AbilityBase } from '../../composable';
  * 通过创建独立的事件作用域（event scope）来管理事件，避免全局污染。
  * 每个实例拥有独立的事件生命周期。
  */
-export class EventAbility<T extends IComposableBase> extends AbilityBase<T> {
-
+export class EventAbility extends AbilityBase {
+    readonly name = 'Event';
+    
+    /**
+     * 事件作用域引用
+     * @private
+     */
+    private scope: any;
+    
     /**
      * 暴露事件相关的操作接口
-     * 
-     * 创建一个独立的事件作用域，并返回可操作该作用域的API方法
-     * 
-     * @returns 包含事件操作方法的对象
      */
     protected expose(): IExposeResult {
-        const scope = globalEventBus.createEventScope();
-
-        // 只暴露必要的 API
+        // 创建事件作用域
+        this.scope = globalEventBus.createEventScope();
+        
         return {
             /**
              * 获取当前事件作用域
-             * 
-             * @returns 当前实例的事件作用域对象
              */
-            eventScope: { get: () => scope },
+            eventScope: { get: () => this.scope },
             
             /**
              * 监听事件
-             * 
-             * @param event 事件名称
-             * @param handler 事件处理器函数
-             * @returns void
              */
-            on: (event: string, handler: EventHandler) => scope.on(event, handler),
+            on: (event: string, handler: EventHandler) => this.scope.on(event, handler),
             
             /**
-             * 监听一次性事件（触发一次后自动移除）
-             * 
-             * @param event 事件名称
-             * @param handler 事件处理器函数
-             * @returns void
+             * 监听一次性事件
              */
-            once: (event: string, handler: EventHandler) => scope.once(event, handler),
+            once: (event: string, handler: EventHandler) => this.scope.once(event, handler),
             
             /**
              * 发射事件
-             * 
-             * @param event 事件名称
-             * @param data 传递的数据（可选）
-             * @returns void
              */
             emit: (event: string, data?: any) => {
-                scope.emit(event, data, this.host);
+                this.scope.emit(event, data, this.host);
             },
         };
+    }
+    
+    /**
+     * 销毁事件作用域
+     */
+    protected onDispose(): void {
+        this.scope?.dispose();
+        this.scope = null;
     }
 }

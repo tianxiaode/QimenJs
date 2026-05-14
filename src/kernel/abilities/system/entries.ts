@@ -17,7 +17,7 @@ import { SystemAbility } from './SystemAbility';
 export const EventAbilityEntry: ComposableEntry = {
     name: EventAbilityName,
     description: '为类添加事件能力',
-    ctor: EventAbility,
+    abilityClass: EventAbility,  // ← 构造函数，不是实例
 };
 
 /**
@@ -28,7 +28,7 @@ export const DomEventsAbilityEntry: ComposableEntry = {
     name: DomEventsAbilityName,
     description: '为类添加DOM事件能力',
     deps: [EventAbilityName],
-    ctor: DomEventsAbility,
+    abilityClass: DomEventsAbility,  // ← 构造函数，不是实例
 };
 
 /**
@@ -38,7 +38,7 @@ export const DomEventsAbilityEntry: ComposableEntry = {
 export const DomainConfigAbilityEntry: ComposableEntry = {
     name: DomainAbilityName,
     description: '为类添加域配置能力',
-    ctor: DomainAbility,
+    abilityClass: DomainAbility,  // ← 构造函数，不是实例
 };
 
 /**
@@ -48,5 +48,5 @@ export const DomainConfigAbilityEntry: ComposableEntry = {
 export const SystemConfigAbilityEntry: ComposableEntry = {
     name: SystemAbilityName,
     description: '为类添加系统配置能力',
-    ctor: SystemAbility,
+    abilityClass: SystemAbility,  // ← 构造函数，不是实例
 };

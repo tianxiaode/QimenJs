@@ -1,11 +1,10 @@
-import {
+import type { 
+    IEventAdapter,
     BindOptions,
     GestureSemantic,
-    IComposableBase,
-    IEventAdapter,
-    IExposeResult,
 } from '../../types';
-import { createEventAdapter } from '../../events';
+import type { IExposeResult } from '../../types/composable';
+import { createEventAdapter } from '@orbitjs/event-dom';
 import { AbilityBase } from '../../composable';
 
 /**
@@ -13,14 +12,20 @@ import { AbilityBase } from '../../composable';
  * 
  * 为类提供绑定DOM事件的能力，创建事件适配器来处理各种手势事件
  */
-export class DomEventsAbility<T extends IComposableBase> extends AbilityBase<T> {
-    // 1. 定义为可选 (使用 ?)
+export class DomEventsAbility extends AbilityBase {
+    readonly name = 'DomEvents';
+    
+    /**
+     * 事件适配器（延迟创建）
+     * @private
+     */
     private _adapter?: IEventAdapter<any>;
 
     /**
      * 获取或创建事件适配器
      * 
      * @returns 事件适配器实例
+     * @private
      */
     private getAdapter(): IEventAdapter<any> {
         if (!this._adapter) {
@@ -46,8 +51,6 @@ export class DomEventsAbility<T extends IComposableBase> extends AbilityBase<T> 
              */
             bind: (target: EventTarget, semantic: GestureSemantic, options?: BindOptions) => {
                 const scope = this.host.eventScope;
-
-                // 2. 使用可选链调用，确保安全
                 return this.getAdapter().bind(target, semantic, scope, options, this.host);
             },
         };

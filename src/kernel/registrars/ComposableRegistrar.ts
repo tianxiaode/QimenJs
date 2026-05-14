@@ -1,6 +1,11 @@
-import { RegistrarBase } from '@/registry'; // 更新导入语句为 '@/registry'
+import { RegistrarBase } from '@/registry';
 import { ComposableEntry } from '../types';
 import { ComposableRegistrarError, KernelErrorCode } from '../errors';
+import type { 
+    IPrecompiledAbility, 
+    IPrecompilableAbility,
+    IAbilityRegistrationOptions 
+} from '../types/composable';
 
 /**
  * ComposableRegistrar 名称常量
@@ -31,17 +36,57 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
      * 用于缓存能力名称与其依赖关系数组的映射，优化性能
      */
     private _mroCache = new Map<string, string[]>();
+    
+    /**
+     * 预编译能力缓存
+     * key: 能力名称
+     * value: 预编译的能力
+     */
+    private _precompiledCache = new Map<string, IPrecompiledAbility>();
+    
+    /**
+     * 可预编译的能力类存储
+     * key: 能力名称
+     * value: 可预编译的能力类
+     */
+    private _abilityClasses = new Map<string, IPrecompilableAbility>();
 
     /**
      * 注册一个新的可组合能力
      * @param entry 要注册的能力条目，包含名称、描述、依赖和构造函数
      */
-    register(entry: ComposableEntry): void {
+    register(entry: ComposableEntry): void;
+    
+    /**
+     * 注册并预编译一个可组合能力
+     * @param entry 要注册的能力条目
+     * @param abilityClass 可预编译的能力类
+     * @param options 注册选项
+     */
+    register(
+        entry: ComposableEntry,
+        abilityClass: IPrecompilableAbility,
+        options?: IAbilityRegistrationOptions
+    ): void;
+    
+    register(
+        entry: ComposableEntry,
+        abilityClass?: IPrecompilableAbility | (new () => IPrecompilableAbility),
+        options?: IAbilityRegistrationOptions
+    ): void {
         this.checkLock();
         if (this.storage.has(entry.name)) {
             console.warn(`[ComposableRegistrar] Overwriting existing ability: ${entry.name}`);
         }
         this.storage.set(entry.name, entry);
+        
+        // 存储能力类（构造函数或实例）
+        if (abilityClass) {
+            this._abilityClasses.set(entry.name, abilityClass as any);
+        } else if (entry.abilityClass) {
+            this._abilityClasses.set(entry.name, entry.abilityClass as any);
+        }
+        
         // 注册新能力后清除MRO缓存，确保后续依赖计算的准确性
         this._mroCache.clear();
     }
@@ -90,6 +135,56 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
                 KernelErrorCode.COMPOSABLE_NOT_FOUND
             );
         return entry;
+    }
+    
+    /**
+     * 获取预编译能力（懒加载）
+     * 如果能力未预编译，则自动预编译并缓存
+     * 
+     * @param name 能力名称
+     * @returns 预编译的能力，如果不存在则返回 undefined
+     */
+    getPrecompiled(name: string): IPrecompiledAbility | undefined {
+        // 检查缓存
+        if (this._precompiledCache.has(name)) {
+            return this._precompiledCache.get(name);
+        }
+        
+        // 懒加载预编译
+        const abilityClass = this._abilityClasses.get(name);
+        if (abilityClass) {
+            // 判断是实例还是构造函数
+            let ability: IPrecompilableAbility;
+            
+            if (typeof abilityClass === 'function') {
+                // 构造函数：实例化
+                ability = new (abilityClass as new () => IPrecompilableAbility)();
+                // 缓存实例，下次不需要再实例化
+                this._abilityClasses.set(name, ability);
+            } else {
+                // 已经是实例
+                ability = abilityClass as IPrecompilableAbility;
+            }
+            
+            // 预编译并缓存
+            const precompiled = ability.precompile();
+            this._precompiledCache.set(name, precompiled);
+            return precompiled;
+        }
+        
+        return undefined;
+    }
+    
+    /**
+     * 批量获取预编译能力
+     * 
+     * @param names 能力名称数组
+     * @returns 预编译的能力数组
+     */
+    getPrecompiledMultiple(names: string[]): IPrecompiledAbility[] {
+        return names
+            .map(name => this.getPrecompiled(name))
+            .filter((ability): ability is IPrecompiledAbility => ability !== undefined);
     }
 
     /**
@@ -176,7 +271,7 @@ export class ComposableRegistrar extends RegistrarBase<Map<string, ComposableEnt
         // 转换成表格友好的格式
         const tableData = Array.from(this.storage.entries()).map(([name, entry]) => ({
             'Ability Name': name,
-            Implementation: entry.ctor.name,
+            Implementation: entry.abilityClass?.name,
             Description: entry.description || 'No description provided',
         }));
 

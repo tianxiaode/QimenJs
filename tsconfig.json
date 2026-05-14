@@ -25,6 +25,8 @@
       "@orbitjs/error": ["src/error"],
       "@orbitjs/logger": ["src/logger"],
       "@orbitjs/runtime-env": ["src/runtime-env"],
+      "@orbitjs/events": ["src/events"],
+      "@orbitjs/event-dom": ["src/event-dom"],
       "@orbitjs/utils": ["src/utils"],
       "@orbitjs/validation": ["src/validation"],
       "@orbitjs/kernel": ["src/kernel"],
