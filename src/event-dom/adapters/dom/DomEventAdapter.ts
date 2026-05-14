@@ -1,3 +1,33 @@
+/**
+ * @file DomEventAdapter.ts
+ * @description DOM事件适配器 - 将原生DOM事件转换为语义化手势事件
+ * 
+ * DomEventAdapter是@orbitjs/event-dom包的核心类，负责：
+ * 1. 将底层DOM事件（mouse/touch/pointer）转换为高级手势事件（tap/swipe/drag等）
+ * 2. 管理事件绑定和解绑的生命周期
+ * 3. 根据设备能力自动选择最优事件类型
+ * 4. 提供统一的事件处理接口
+ * 
+ * @example
+ * ```typescript
+ * import { createEventAdapter } from '@orbitjs/event-dom';
+ * 
+ * const adapter = createEventAdapter();
+ * const element = document.getElementById('my-button');
+ * 
+ * // 绑定点击事件
+ * const unbind = adapter.bind(element, 'tap', scope, {
+ *     threshold: 10,
+ *     timeout: 300
+ * });
+ * 
+ * // 解绑事件
+ * unbind();
+ * ```
+ * 
+ * @module @orbitjs/event-dom
+ */
+
 import { detectInputCapabilities } from '@orbitjs/runtime-env';
 import {
     AtomicSignal,
@@ -21,6 +51,15 @@ import { string } from '@orbitjs/utils';
 /**
  * DOM 事件适配器，用于将原生 DOM 事件转换为手势事件
  * 将底层的 DOM 事件（如 mouse、touch、pointer）映射到高级手势语义（如 swipe、tap 等）
+ * 
+ * @class DomEventAdapter
+ * @implements {IEventAdapter}
+ * 
+ * @example
+ * ```typescript
+ * const adapter = new DomEventAdapter(inputEventMap, gestureEventMap);
+ * adapter.bind(element, 'swipe', scope, options);
+ * ```
  */
 export class DomEventAdapter {
     private readonly capabilities = detectInputCapabilities();
