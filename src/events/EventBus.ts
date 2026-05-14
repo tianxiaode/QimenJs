@@ -1,4 +1,4 @@
-import { BusAction, EventHandler, EventLogAction, IEventContext, IEventScope } from '../kernel/types/events';
+import { BusAction, EventHandler, EventLogAction, IEventContext, IEventScope } from './types';
 import { EventScope } from './EventScope';
 import { ILogger, LogLevel } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';

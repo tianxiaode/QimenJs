@@ -10,6 +10,7 @@
  */
 import { createEventAdapter } from '@/event-dom/adapters/createEventAdapter';
 import { DomEventAdapter } from '@/event-dom/adapters/dom';
+import { EventBus } from '@/events/EventBus';
 
 describe('createEventAdapter', () => {
     // --- 基础功能测试 ---
@@ -35,20 +36,6 @@ describe('createEventAdapter', () => {
             expect(adapter.bind).toBeDefined();
             expect(typeof adapter.bind).toBe('function');
         });
-
-        test('实例应该有unbind方法', () => {
-            const adapter = createEventAdapter();
-            
-            expect(adapter.unbind).toBeDefined();
-            expect(typeof adapter.unbind).toBe('function');
-        });
-
-        test('实例应该有destroy方法', () => {
-            const adapter = createEventAdapter();
-            
-            expect(adapter.destroy).toBeDefined();
-            expect(typeof adapter.destroy).toBe('function');
-        });
     });
 
     // --- 接口完整性测试 ---
@@ -59,18 +46,19 @@ describe('createEventAdapter', () => {
             
             // 验证所有必需的方法存在
             expect(typeof adapter.bind).toBe('function');
-            expect(typeof adapter.unbind).toBe('function');
-            expect(typeof adapter.destroy).toBe('function');
         });
 
-        test('bind方法应该返回解绑函数', () => {
+        test('bind方法应该可以调用', () => {
             const adapter = createEventAdapter();
             const mockElement = document.createElement('div');
+            const bus = new EventBus();
+            const scope = bus.createScope();
             const mockHandler = jest.fn();
             
-            const unbind = adapter.bind(mockElement, 'tap', mockHandler);
-            
-            expect(typeof unbind).toBe('function');
+            // 调用bind方法（不验证返回值，因为接口定义返回void）
+            expect(() => {
+                adapter.bind(mockElement, 'tap', scope);
+            }).not.toThrow();
         });
     });
 
@@ -111,14 +99,11 @@ describe('createEventAdapter', () => {
     // --- 边界情况测试 ---
 
     describe('边界情况', () => {
-        test('应该能够处理连续创建和销毁', () => {
+        test('应该能够处理连续创建', () => {
             for (let i = 0; i < 10; i++) {
                 const adapter = createEventAdapter();
-                adapter.destroy();
+                expect(adapter).toBeDefined();
             }
-            
-            // 不应该抛出错误
-            expect(true).toBe(true);
         });
     });
 });

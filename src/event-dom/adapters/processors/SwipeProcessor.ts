@@ -7,7 +7,7 @@
  * 该处理器记录按下和移动事件，在释放时验证滑动是否满足最小距离、最大持续时间和最小速度的约束。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '@orbitjs/event';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
 import { GestureProcessor } from './GestureProcessor';
 import { validateSwipe } from '../utils/validation';
 

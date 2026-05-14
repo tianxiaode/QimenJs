@@ -8,7 +8,7 @@
  * 与具体的处理器类关联起来。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '@orbitjs/event';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
 import { GestureProcessor } from './GestureProcessor';
 import { TapProcessor } from './TapProcessor';
 import { DragProcessor } from './DragProcessor';

@@ -7,7 +7,7 @@
  * 该处理器通过监听enter和leave事件来触发悬停语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '@orbitjs/event';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
 import { GestureProcessor } from './GestureProcessor';
 
 /**

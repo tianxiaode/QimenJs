@@ -1,6 +1,6 @@
 // input/maps/resolve.ts
 import { detectInputCapabilities } from '@orbitjs/runtime-env';
-import { InputEventMap } from '@orbitjs/event';
+import { InputEventMap } from '../../types';
 
 /**
  * 根据设备能力解析输入事件映射

@@ -8,7 +8,7 @@ import {
   GestureEventMap,
   GestureEventDescriptor,
   GestureProcessorId 
-} from '@/event-dom';
+} from '@/event-dom/types';
 
 // Mock 依赖
 jest.mock('@orbitjs/runtime-env', () => ({

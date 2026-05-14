@@ -8,7 +8,7 @@
  * 在释放或取消时清理计时器。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '@orbitjs/event';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '../types';
 import { GestureProcessor } from './GestureProcessor';
 import { validateLongPress } from '../utils/validation';
 import { time } from '@orbitjs/utils';

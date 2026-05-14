@@ -7,7 +7,7 @@
  * 该处理器检查鼠标按钮状态或特定键盘按键，以触发上下文菜单语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '@orbitjs/event';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
 import { GestureProcessor } from './GestureProcessor';
 
 /**

@@ -39,7 +39,7 @@ import {
     GestureInput,
     BindOptions,
     IEventScope,
-} from '@orbitjs/event';
+} from '../types';
 import { createGestureProcessor } from '../processors';
 import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
 import { string } from '@orbitjs/utils';
