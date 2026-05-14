@@ -1,6 +1,6 @@
 import { Logger } from '@orbitjs/logger';
 import { EventBus } from './EventBus';
-import { EventHandler, IEventScope } from '../../types';
+import { EventHandler, IEventScope } from '../kernel/types/events';
 
 /**
  * 全局事件总线 - 提供应用级别的单例事件总线
