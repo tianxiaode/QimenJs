@@ -24,6 +24,7 @@ import {
     SystemRegistrar,
 } from './registrars';
 import { RegistryHub } from './RegistryHub';
+import { DataProcessorRegistrar } from '../data-processor';
 
 // 初始化默认注册器
 // 在模块加载时自动注册常用的注册器实例，确保它们随时可用
@@ -32,3 +33,4 @@ RegistryHub.use(SystemRegistrar.getInstance());
 RegistryHub.use(HtmlTemplateRegistrar.getInstance());
 RegistryHub.use(DomainRegistrar.getInstance());
 RegistryHub.use(PatternRegistrar.getInstance());
+RegistryHub.use(DataProcessorRegistrar.getInstance());
