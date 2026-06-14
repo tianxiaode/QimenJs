@@ -29,14 +29,17 @@
   - tags - 标签过滤
 - `@orbitjs/composable` - 可组合系统（依赖 utils）
   - ComposableBase - 可组合基类
-  - 能力组合和管理
+  - AbilityBase - 能力基类
+  - DescriptorFactory - 描述符工厂
 - `@orbitjs/http` - HTTP 客户端（依赖 logger、utils、pipeline）
   - HttpClient - HTTP 客户端
   - 请求/响应处理
   - 中间件支持
-- `@orbitjs/abilities` - 基础能力定义（独立）
-  - 能力接口定义
-  - 能力类型系统
+- `@orbitjs/system-abilities` - 系统能力实现（依赖 composable、registry、events、event-dom）
+  - DomainAbility - 领域能力
+  - EventAbility - 事件能力
+  - SystemAbility - 系统能力
+  - DomEventsAbility - DOM 事件能力
 
 ### 4. 业务包（1个）
 - `@orbitjs/entity` - 实体管理
@@ -74,13 +77,19 @@ src/
 │   └── index.ts        # 入口
 ├── composable/         # 可组合系统（从 kernel 拆分）
 │   ├── ComposableBase.ts
+│   ├── AbilityBase.ts
+│   ├── DescriptorFactory.ts
 │   └── index.ts
 ├── http/               # HTTP 客户端（从 kernel 拆分）
 │   ├── HttpClient.ts
 │   ├── middleware/
 │   └── index.ts
-├── abilities/          # 基础能力定义（从 kernel 拆分）
-│   ├── types.ts
+├── system-abilities/   # 系统能力实现（从 kernel 拆分）
+│   ├── system/
+│   │   ├── DomainAbility.ts
+│   │   ├── EventAbility.ts
+│   │   ├── SystemAbility.ts
+│   │   └── DomEventsAbility.ts
 │   └── index.ts
 └── entity/             # 实体管理
     ├── manager/
