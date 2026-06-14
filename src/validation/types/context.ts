@@ -2,10 +2,12 @@ import { ValidationRule } from './rule';
 
 export interface ExecutionStep {
     processor: string; // 处理器名称
-    weight: number; // 权重
+    weight?: number; // 权重
+    offset?: number; // 偏移量
     action: 'executed' | 'skipped' | 'terminated'; // 执行动作
     reason?: string; // 跳过或中断的原因（如：Guard Clause 拦截、值为空、规则不匹配）
     duration?: number; // 执行耗时（可选，用于性能分析）
+    error?: any; // 错误信息
 }
 
 /**
@@ -57,7 +59,9 @@ export interface ValidationContext {
         isModified: boolean;
     };
     steps: ExecutionStep[];
-    metadata: Record<string, any>;
+    metadata: Record<string, any> & {
+        hasError?: boolean; // 是否有错误（符合 IExecutableContext）
+    };
     isChild?: boolean;
 }
 

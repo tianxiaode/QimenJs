@@ -1,0 +1,1 @@
+{"version":3,"file":"WorkerScriptBuilder.d.ts","sourceRoot":"","sources":["WorkerScriptBuilder.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;GAUG;AACH,qBAAa,mBAAmB;IAE5B,OAAO,CAAC,QAAQ,CAAC,QAAQ,CAoBvB;IAEF;;;;;OAKG;IACH,KAAK,CAAC,SAAS,EAAE,CAAC,CAAC,IAAI,EAAE,WAAW,KAAK,GAAG,CAAC,GAAG,MAAM,GAAG,MAAM;IAc/D;;;;;;OAMG;IACH,OAAO,CAAC,mBAAmB;CAO9B"}

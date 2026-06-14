@@ -33,6 +33,9 @@
 // 导出类型
 export * from './types';
 
+// 导出权重
+export * from './weights';
+
 // 导出错误类
 export * from './errors';
 
@@ -42,6 +45,12 @@ export {
     DataProcessor,
     DataProcessorRegistrarName 
 } from './DataProcessorRegistrar';
+
+// 导出执行器
+export { 
+    DataProcessorExecutor,
+    dataProcessorExecutor 
+} from './executor';
 
 // 导出模块增强（必须在最后）
 export * from './register';

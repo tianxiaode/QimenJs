@@ -1,8 +1,9 @@
 // 对外入口函数：用户只传 value 和 rule
 
-import { ExecutionStep, ValidationContext, ValidationRule } from '../types';
+import { ValidationContext, ValidationRule } from '../types';
 import { ValidateFunction } from '../types/validate';
 import { ValidatorRegistrar } from './ValidatorRegistrar';
+import { validationExecutor } from './executor';
 
 /**
  * 上下文构造工厂
@@ -24,7 +25,7 @@ export function createContext(
 
         // 收集桶
         errors: [],
-        steps: [], // 刚才讨论的执行日志记录在这里
+        steps: [], // 执行日志记录
         status: {
             isUndefined: false,
             isNull: false,
@@ -41,55 +42,34 @@ export function createContext(
     };
 }
 
-// 第三个参数可选，用于内部递归时透传 path 或其他状态
+/**
+ * 验证函数
+ * 
+ * @description 使用统一的 pipeline 执行器
+ * 
+ * @param value 要验证的值
+ * @param rule 验证规则
+ * @param partialContext 部分上下文（可选）
+ * @returns 验证结果
+ */
 export const doValidate: ValidateFunction = async (value, rule, partialContext = {}) => {
-    // 构造完整的“运行上下文”
+    // 1. 构造验证上下文
     const context = createContext(value, rule, partialContext);
 
-    // 1. 获取 validator。如果还没 use 挂载，Proxy 会抛出我们之前定义的错误
+    // 2. 获取验证器注册表
     const validator = ValidatorRegistrar.getInstance();
 
-    // 2. 根据 rule.type 获取流水线
+    // 3. 根据 rule.type 获取处理器列表
     const processors = validator.get(rule.type);
 
-    for (const item of processors) {
-        const step: ExecutionStep = {
-            processor: item.name,
-            weight: item.weight,
-            action: 'executed',
-        };
+    // 4. 使用统一的执行器执行验证管道
+    const result = await validationExecutor.execute(context, processors, rule.type);
 
-        // 1. 检查是否已经被前置处理器中断
-        if (context.terminate) {
-            step.action = 'skipped';
-            step.reason = 'Pipeline already terminated';
-            context.steps.push(step);
-            continue;
-        }
-
-        // 2. 执行并计时
-        const start = performance.now();
-        await item.execute(context);
-        const end = performance.now();
-
-        // 3. 记录执行结果
-        // 这里的关键是：处理器如果因为 if(rule.format !== 'date') 退出，
-        // 我们可以在执行前后对比 context 的变化来判定它是否“真正”处理了逻辑
-        step.duration = end - start;
-
-        // 如果处理器内部设置了中断
-        if (context.terminate) {
-            step.action = 'terminated';
-            step.reason = 'Processor raised fatal error';
-        }
-
-        context.steps.push(step);
-    }
-
+    // 5. 返回验证结果
     return {
-        isValid: context.errors.length === 0,
+        isValid: result.isSuccess && context.errors.length === 0,
         errors: context.errors,
         value: context.value,
-        context: context,
+        context: result.context,
     };
 };

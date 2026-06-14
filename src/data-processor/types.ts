@@ -4,12 +4,34 @@
  * @module data-processor/types
  */
 
-import { FlowContext } from '../types';
+import { RequestContext } from '../types';
+
+/**
+ * 数据处理标签
+ * 
+ * @description 用于标记处理器的适用范围，支持复用
+ * 
+ * 使用方式：
+ * - 单一标签：['abp'] - 仅适用于 ABP
+ * - 多标签：['abp', 'spring'] - 适用于 ABP 和 Spring
+ * - 通配符：['any'] - 适用于所有场景
+ */
+export type DataProcessorTag = 
+    | 'abp'           // ABP 后端
+    | 'spring'        // Spring 后端
+    | 'nestjs'        // NestJS 后端
+    | 'custom'        // 自定义
+    | 'pre'           // 前道管道
+    | 'post'          // 后道管道
+    | 'any'           // 通配符（所有场景）
+    | string;         // 自定义标签
 
 /**
  * 数据处理器
  * 
  * @description 数据处理管道的基本处理单元
+ * 
+ * 参照 validation 的处理器设计
  */
 export interface DataProcessorHandler {
     /**
@@ -20,24 +42,43 @@ export interface DataProcessorHandler {
     /**
      * 处理函数
      */
-    handle: (context: FlowContext) => Promise<void>;
+    handle: (context: RequestContext) => Promise<void>;
     
     /**
-     * 权重（数字越大优先级越高）
+     * 权重（阶段权重）
+     * @see DataProcessorWeight
      * @default 100
      */
     weight?: number;
     
     /**
+     * 偏移量（同阶段内的微调）
+     * @default 0
+     */
+    offset?: number;
+    
+    /**
+     * 标签（用于过滤和复用）
+     * @description 处理器可通过标签匹配不同的管道
+     * @default ['any']
+     */
+    tags?: DataProcessorTag[];
+    
+    /**
      * 条件执行函数
      * @description 返回 true 时执行，返回 false 时跳过
      */
-    shouldExecute?: (context: FlowContext) => boolean;
+    shouldExecute?: (context: RequestContext) => boolean;
     
     /**
      * 描述信息
      */
     description?: string;
+    
+    /**
+     * 类别（用于分组）
+     */
+    category?: string;
 }
 
 /**
@@ -89,6 +130,21 @@ export interface ProcessorExecutionStep {
      * 错误信息（如果有）
      */
     error?: any;
+    
+    /**
+     * 权重
+     */
+    weight?: number;
+    
+    /**
+     * 偏移量
+     */
+    offset?: number;
+    
+    /**
+     * 跳过原因
+     */
+    reason?: string;
 }
 
 /**
