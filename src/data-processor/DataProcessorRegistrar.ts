@@ -9,7 +9,7 @@
  * @module data-processor/DataProcessorRegistrar
  */
 
-import { RegistrarBase } from '../registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { RequestContext } from '../types';
 import { 
     DataProcessorHandler, 
@@ -299,15 +299,5 @@ export class DataProcessorRegistrar extends RegistrarBase<Map<string, DataProces
         console.groupEnd();
     }
     
-    /**
-     * 获取单例实例
-     */
-    static getInstance(): DataProcessorRegistrar {
-        return super.getInstance();
-    }
 }
 
-/**
- * 数据处理注册器实例（便捷访问）
- */
-export const DataProcessor = DataProcessorRegistrar.getInstance();

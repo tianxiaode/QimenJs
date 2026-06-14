@@ -7,7 +7,7 @@
  * @module validation/executor
  */
 
-import { Pipeline } from '../../pipeline';
+import { Pipeline } from '@/pipeline';
 import { ValidationContext } from '../types';
 
 /**

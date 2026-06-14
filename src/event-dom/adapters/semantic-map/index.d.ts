@@ -1,8 +1,0 @@
-export * from './base';
-export * from './keyboard';
-export * from './mouse';
-export * from './pointer';
-export * from './touch';
-export * from './gesture';
-export * from './resolve';
-//# sourceMappingURL=index.d.ts.map

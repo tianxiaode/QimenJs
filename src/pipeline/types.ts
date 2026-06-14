@@ -4,7 +4,7 @@
  * @module pipeline/types
  */
 
-import { ILogger } from '../../logger';
+import { ILogger } from '@/logger';
 
 /**
  * 处理器接口

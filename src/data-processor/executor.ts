@@ -7,7 +7,7 @@
  * @module data-processor/executor
  */
 
-import { Pipeline } from '../../pipeline';
+import { Pipeline } from '@/pipeline';
 import { RequestContext } from '../types';
 import { DataProcessorHandler } from './types';
 
