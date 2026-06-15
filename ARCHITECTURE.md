@@ -2,13 +2,17 @@
 
 ## 一、新的包结构（按依赖层级划分）
 
-### 第 0 层：核心基础包（6个，零依赖）
+### 第 0 层：核心基础包（7个，零依赖）
 - `@orbitjs/error` - 错误处理
 - `@orbitjs/logger` - 日志系统
 - `@orbitjs/utils` - 工具函数
 - `@orbitjs/async` - 异步工具
 - `@orbitjs/runtime` - 运行时环境
 - `@orbitjs/crypto` - 加密工具
+- `@orbitjs/context` - 请求上下文（新增）
+  - RequestContext - 请求上下文定义
+  - RequestContextBuilder - 上下文构建器
+  - 贯穿整个请求生命周期的上下文对象
 
 ### 第 1 层：基础设施工具包（6个，只依赖第0层）
 - `@orbitjs/registry` - 注册器系统（依赖 error）
@@ -62,6 +66,12 @@ src/
 ├── async/              # 异步工具
 ├── runtime/            # 运行时环境
 ├── crypto/             # 加密工具
+├── context/            # 请求上下文（新增）
+│   ├── types/
+│   │   ├── request-context.ts  # RequestContext 定义
+│   │   └── index.ts
+│   ├── RequestContextBuilder.ts  # 构建器
+│   └── index.ts
 ├── registry/           # 注册器系统
 ├── cache/              # 缓存系统
 ├── events/             # 事件系统
@@ -106,12 +116,14 @@ src/
 
 ```
 @orbitjs/entity
+    ├─ @orbitjs/context          # 使用 RequestContextBuilder
     ├─ @orbitjs/composable
     │   └─ @orbitjs/utils
     ├─ @orbitjs/http
     │   ├─ @orbitjs/logger
     │   ├─ @orbitjs/utils
-    │   └─ @orbitjs/pipeline
+    │   ├─ @orbitjs/pipeline
+    │   └─ @orbitjs/context      # 使用 RequestContext
     ├─ @orbitjs/abilities
     ├─ @orbitjs/events
     │   ├─ @orbitjs/logger
@@ -124,6 +136,7 @@ src/
     └─ @orbitjs/async
 
 @orbitjs/data-processor
+    ├─ @orbitjs/context          # 使用 RequestContext
     ├─ @orbitjs/registry
     │   └─ @orbitjs/error
     ├─ @orbitjs/pipeline
@@ -137,6 +150,7 @@ src/
         └─ @orbitjs/logger
 
 @orbitjs/http
+    ├─ @orbitjs/context          # 使用 RequestContext
     ├─ @orbitjs/logger
     ├─ @orbitjs/utils
     └─ @orbitjs/pipeline
@@ -1418,3 +1432,79 @@ const result = await doValidate(value, rule);
 const stats = validationExecutor.getStats();
 validationExecutor.printReport(result);
 ```
+
+
+### 7. 请求上下文系统（@orbitjs/context）
+
+**设计理念**：独立包，避免循环依赖
+
+**核心组件**：
+- `RequestContext` - 请求上下文定义
+  - 标识信息（identity）
+  - 请求信息（request）
+  - 响应信息（response）
+  - 数据载体（data）
+  - 状态与控制（isAborted、error、steps）
+  - 元数据（metadata）
+  - Schema
+- `RequestContextBuilder` - 上下文构建器
+  - 链式调用
+  - 完整的构建方法
+  - 克隆功能
+
+**使用流程**：
+```
+实体管理（Entity Manager）
+    ↓ 提交动作（数据）
+    ↓ 转换为 RequestContext
+    ↓
+数据前导处理管道
+    ↓ 处理参数、验证、转换
+    ↓
+HTTP 管道
+    ↓ 发送请求、接收响应
+    ↓
+数据后导处理管道
+    ↓ 解析、对齐、转换
+    ↓
+实体管理
+    ↓ 更新状态、返回结果
+```
+
+**使用示例**：
+```typescript
+import { RequestContextBuilder } from '@orbitjs/context';
+
+// 实体管理中创建上下文
+const context = RequestContextBuilder
+    .create()
+    .withIdentity({ domain: 'user', entityName: 'User', action: 'list' })
+    .withParams({ page: 1, size: 10 })
+    .withRequest({
+        url: '/api/users',
+        method: 'GET'
+    })
+    .build();
+
+// 数据前导处理
+const preProcessor = DataProcessor.getPipeline('user', 'pre');
+await dataProcessorExecutor.execute(context, preProcessor);
+
+// HTTP 请求
+const httpPipeline = HttpPipeline.getPipeline('user');
+await httpExecutor.execute(context, httpPipeline);
+
+// 数据后导处理
+const postProcessor = DataProcessor.getPipeline('user', 'post');
+await dataProcessorExecutor.execute(context, postProcessor);
+
+// 返回结果
+return context.data.list;
+```
+
+**架构优势**：
+- 避免循环依赖：context 包独立，其他包依赖它
+- 职责清晰：RequestContext 是整个流程的上下文，不是 HTTP 专属
+- 便于扩展：可以根据需要添加新的字段和方法
+- 构建器模式：方便构建和测试
+- 统一流程：实体管理、数据处理、HTTP 请求都使用同一个上下文

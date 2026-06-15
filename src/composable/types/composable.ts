@@ -155,6 +155,21 @@ export interface IPrecompilableAbility<T = any> {
 // ============================================
 
 /**
+ * 可组合条目
+ */
+export interface ComposableEntry {
+    /**
+     * 能力名称
+     */
+    name: string;
+    
+    /**
+     * 能力构造函数
+     */
+    ctor: any;
+}
+
+/**
  * 能力注册条目
  */
 export interface IAbilityRegistrationEntry {

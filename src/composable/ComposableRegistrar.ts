@@ -5,10 +5,10 @@
  */
 
 import type { 
+    ComposableEntry,
     IPrecompiledAbility,
     IAbilityRegistrationEntry
 } from './types/composable';
-import type { ComposableEntry } from '../types/registrars/entries';
 
 /**
  * 可组合能力注册器

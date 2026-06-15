@@ -124,3 +124,20 @@
   - 将 cache.ts 移到 cache/types/ 中
   - 删除不必要的类型目录（abilities、constants、entities、events、registrars）
   - types 包现在只保留真正共享的类型（flow-context.ts）
+- 2026-06-15：重构 RequestContext
+  - 简化 flow-context.ts，只保留核心类型（ExecutionStep、IExecutableContext、IPipelineResult）
+  - 创建 http 包类型定义（HttpContext、HttpRequestOptions、HttpMethod 等）
+  - 实现 HttpContextBuilder（构建器模式）
+  - 采用分布式架构：HTTP 相关类型在 http 包，实体相关类型将在 entity 包
+- 2026-06-15：重新设计 RequestContext 架构
+  - 创建独立的 context 包（第 0 层）
+  - RequestContext 不是 HTTP 专属，而是整个流程的上下文
+  - 包含完整的请求、响应、数据载体、元数据等信息
+  - 实现 RequestContextBuilder（在实体管理中使用）
+  - 使用流程：实体管理 → 数据前导处理 → HTTP 管道 → 数据后导处理 → 实体管理
+  - 避免循环依赖：context 包独立，其他包依赖它
+  - 更新 ARCHITECTURE.md：
+    - 第 0 层增加 context 包（7个零依赖包）
+    - 目录结构增加 context/ 目录
+    - 依赖关系增加 context 包依赖
+    - 新增"请求上下文系统"章节
