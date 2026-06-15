@@ -1,18 +1,3 @@
-// Mock the Logger module before importing anything that uses it
-jest.mock('@orbitjs/logger', () => {
-  return {
-    Logger: {
-      for: jest.fn().mockImplementation(() => new MockLogger()),
-    },
-    ILogger: jest.fn(),
-    LoggerChild: jest.fn().mockImplementation(() => new MockLogger()),
-  };
-});
-
-import { ComposableBase, AbilityBase, Ability } from '@/composable';
-import { IComposableBase, IExposeResult } from '@/composable/types/composable';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
-
 // 定义MockLogger类
 class MockLogger {
   logs: { level: string; message: string }[] = [];
@@ -50,6 +35,21 @@ class MockLogger {
   }
 }
 
+// Mock the Logger module before importing anything that uses it
+jest.mock('@orbitjs/logger', () => {
+  return {
+    Logger: {
+      for: jest.fn().mockImplementation(() => new MockLogger()),
+    },
+    ILogger: jest.fn(),
+    LoggerChild: jest.fn().mockImplementation(() => new MockLogger()),
+  };
+});
+
+import { ComposableBase, AbilityBase, Ability } from '@/composable';
+import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
+import type { IComposableBase, IExposeResult } from '@/composable/types/composable';
+
 class TestHost implements IComposableBase {
   logger = new MockLogger();
   
@@ -63,6 +63,8 @@ class TestHost implements IComposableBase {
 }
 
 class TestAbility extends AbilityBase {
+  readonly name = 'TestAbility';
+  
   testProperty = 'test value';
   
   testMethod() {
@@ -133,6 +135,64 @@ describe('Composable Module Integration', () => {
     it('should export AbilityBase', () => {
       expect(AbilityBase).toBeDefined();
       expect(typeof AbilityBase).toBe('function');
+    });
+
+    it('should export ComposableRegistrar', () => {
+      expect(ComposableRegistrar).toBeDefined();
+      expect(typeof ComposableRegistrar).toBe('function');
+    });
+  });
+
+  describe('ComposableRegistrar', () => {
+    it('should be a singleton', () => {
+      const instance1 = ComposableRegistrar.getInstance();
+      const instance2 = ComposableRegistrar.getInstance();
+      
+      expect(instance1).toBe(instance2);
+    });
+
+    it('should register and retrieve abilities', () => {
+      const registrar = ComposableRegistrar.getInstance();
+      
+      registrar.register(
+        { name: 'TestAbility', ctor: TestAbility },
+        TestAbility
+      );
+      
+      const entry = registrar.get('TestAbility');
+      expect(entry).toBeDefined();
+      expect(entry?.name).toBe('TestAbility');
+    });
+
+    it('should precompile abilities on demand', () => {
+      const registrar = ComposableRegistrar.getInstance();
+      
+      registrar.register(
+        { name: 'TestAbility', ctor: TestAbility },
+        TestAbility
+      );
+      
+      const precompiled = registrar.getPrecompiled('TestAbility');
+      expect(precompiled).toBeDefined();
+      expect(precompiled?.name).toBe('TestAbility');
+    });
+
+    it('should cache ability instances', () => {
+      const registrar = ComposableRegistrar.getInstance();
+      
+      registrar.register(
+        { name: 'TestAbility', ctor: TestAbility },
+        TestAbility
+      );
+      
+      // First call - should create instance
+      const precompiled1 = registrar.getPrecompiled('TestAbility');
+      
+      // Second call - should use cached instance
+      const precompiled2 = registrar.getPrecompiled('TestAbility');
+      
+      // Both should be the same (cached)
+      expect(precompiled1).toBe(precompiled2);
     });
   });
 });

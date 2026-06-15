@@ -5,7 +5,7 @@
  * 支持完整的类型推断和类型安全
  */
 
-import type { DescriptorFactoryFn } from '../types/composable';
+import type { DescriptorFactoryFn } from './types/composable';
 
 /**
  * 描述符工厂辅助类

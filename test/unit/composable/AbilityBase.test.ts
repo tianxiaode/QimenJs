@@ -47,7 +47,7 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 import { AbilityBase } from '@/composable/AbilityBase';
-import { IComposableBase, IExposeResult } from '@/composable/types/composable';
+import type { IComposableBase, IExposeResult, IPrecompiledAbility } from '@/composable/types/composable';
 
 class TestHost implements IComposableBase {
   logger = new MockLogger();
@@ -68,27 +68,15 @@ class TestHost implements IComposableBase {
 
 // Define a simple ability that exposes some properties
 class TestAbility extends AbilityBase {
-  // Define some test properties and methods to inject
-  injectedProp = 'injected value';
-  
-  injectedMethod() {
-    return 'injected method';
-  }
-  
-  // Properties that would conflict with host
-  testProperty = 'conflicting value';
-  
-  testMethod() {
-    return 'conflicting method';
-  }
+  readonly name = 'TestAbility';
   
   // Implement the abstract expose method
   protected expose(): IExposeResult {
     return {
-      injectedProp: this.injectedProp,
-      injectedMethod: this.injectedMethod,
-      testProperty: this.testProperty,
-      testMethod: this.testMethod
+      injectedProp: 'injected value',
+      injectedMethod: () => 'injected method',
+      testProperty: 'conflicting value',
+      testMethod: () => 'conflicting method'
     };
   }
   
@@ -100,50 +88,13 @@ class TestAbility extends AbilityBase {
 
 // Special test ability for symbol properties
 class TestAbilityWithSymbol extends AbilityBase {
-  injectedProp = 'injected value';
-  symbolProp = 'symbol value';
-  
-  injectedMethod() {
-    return 'injected method';
-  }
+  readonly name = 'TestAbilityWithSymbol';
   
   protected expose(): IExposeResult {
     return {
-      injectedProp: this.injectedProp,
-      injectedMethod: this.injectedMethod,
-      [Symbol('test')]: this.symbolProp
-    };
-  }
-  
-  protected onDispose(): void {
-    super.onDispose();
-  }
-}
-
-// Special test ability for conflict testing
-class TestAbilityWithToString extends AbilityBase {
-  toStringMethod() {
-    return 'ability toString';
-  }
-  
-  protected expose(): IExposeResult {
-    return {
-      toString: this.toStringMethod
-    };
-  }
-  
-  protected onDispose(): void {
-    super.onDispose();
-  }
-}
-
-// Test ability that creates a conflict with a dynamically added property
-class TestAbilityWithConflictingProp extends AbilityBase {
-  conflictingProp = 'new value';
-  
-  protected expose(): IExposeResult {
-    return {
-      conflictingProp: this.conflictingProp
+      injectedProp: 'injected value',
+      injectedMethod: () => 'injected method',
+      [Symbol('test')]: 'symbol value'
     };
   }
   
@@ -154,15 +105,7 @@ class TestAbilityWithConflictingProp extends AbilityBase {
 
 // Test ability that creates a getter/setter property
 class TestAbilityWithGetterSetter extends AbilityBase {
-  _internalValue = 'default';
-  
-  get getterSetterProp() {
-    return this._internalValue;
-  }
-  
-  set getterSetterProp(value: string) {
-    this._internalValue = value;
-  }
+  readonly name = 'TestAbilityWithGetterSetter';
   
   protected expose(): IExposeResult {
     // Create a separate variable to hold the value for the setter
@@ -184,121 +127,98 @@ class TestAbilityWithGetterSetter extends AbilityBase {
 }
 
 describe('AbilityBase', () => {
-  describe('attach', () => {
-    it('should attach to host and inject properties', () => {
-      const host = new TestHost();
+  describe('precompile', () => {
+    it('should create precompiled ability with name', () => {
       const ability = new TestAbility();
+      const precompiled = ability.precompile();
       
-      ability.attach(host);
+      expect(precompiled.name).toBe('TestAbility');
+      expect(precompiled.descriptorFactories).toBeDefined();
+      expect(precompiled.createDisposer).toBeDefined();
+    });
+
+    it('should create descriptor factories for all exposed properties', () => {
+      const ability = new TestAbility();
+      const precompiled = ability.precompile();
       
-      // Verify that the host now has the injected properties
-      expect((host as any).injectedProp).toBe('injected value');
-      expect((host as any).injectedMethod()).toBe('injected method');
+      expect(precompiled.descriptorFactories.has('injectedProp')).toBe(true);
+      expect(precompiled.descriptorFactories.has('injectedMethod')).toBe(true);
+      expect(precompiled.descriptorFactories.has('testProperty')).toBe(true);
+      expect(precompiled.descriptorFactories.has('testMethod')).toBe(true);
     });
 
     it('should handle symbol properties', () => {
-      const host = new TestHost();
       const ability = new TestAbilityWithSymbol();
+      const precompiled = ability.precompile();
       
-      ability.attach(host);
-      
-      // Verify that the host now has the injected properties
-      expect((host as any).injectedProp).toBe('injected value');
+      expect(precompiled.descriptorFactories.has('injectedProp')).toBe(true);
+      expect(precompiled.descriptorFactories.has('injectedMethod')).toBe(true);
     });
     
     it('should handle getter/setter properties', () => {
-      const host = new TestHost();
       const ability = new TestAbilityWithGetterSetter();
+      const precompiled = ability.precompile();
       
-      ability.attach(host);
-      
-      // Verify that the host now has the injected getter/setter
-      expect((host as any).explicitGetterSetter).toBe('getter setter value');
-      
-      // Test setting the value
-      (host as any).explicitGetterSetter = 'new value';
-      expect((host as any).explicitGetterSetter).toBe('new value');
+      expect(precompiled.descriptorFactories.has('explicitGetterSetter')).toBe(true);
     });
   });
 
-  describe('conflict tracking', () => {
-    it('should log warning when property already exists on host', () => {
-      const host = new TestHost();
-      
-      // 先添加能力，再向宿主添加同名属性，模拟属性冲突场景
-      const ability = new TestAbilityWithConflictingProp();
-      ability.attach(host);
-      
-      // 验证初始状态 - 属性应已被注入
-      expect((host as any).conflictingProp).toBe('new value');
-      
-      // 在宿主上创建同名属性（这在实际使用中可能由其他能力或代码引起）
-      (host as any).conflictingProp = 'host value';
-      
-      // 重新创建并附加同一个能力类型，应该检测到冲突
-      const ability2 = new TestAbilityWithConflictingProp();
-      ability2.attach(host);
-      
-      // 检查是否记录了警告
-      const warnings = host.logger.logs.filter((log: { level: string; message: string }) => log.level === 'warn');
-      expect(warnings.some((log: { message: string }) => 
-        log.message.includes('[Ability Conflict]') && 
-        log.message.includes('conflictingProp')
-      )).toBeTruthy();
-    });
-
-    it('should log error when shadowing prototype member', () => {
-      // Create a host that has a property that looks like it's from the prototype
-      class TestHostWithProtoMember implements IComposableBase {
-        logger = new MockLogger();
-        testProperty = 'original value';
-        testMethod = () => 'original method';
-        toString = 'not the real toString';
-        
-        getStatic<T>(key: string | symbol): T | undefined {
-          return undefined;
-        }
-        
-        setStatic<T>(key: string | symbol, value: T): void {
-          // Implementation not needed for test
-        }
-      }
-      
-      const host = new TestHostWithProtoMember();
-      const ability = new TestAbilityWithToString();
-      
-      ability.attach(host);
-      
-      // Check that an error was logged
-      const errors = host.logger.logs.filter((log: { level: string; message: string }) => log.level === 'error');
-      expect(errors.some((log: { message: string }) => log.message.includes('[Security Violation]'))).toBeTruthy();
-    });
-  });
-
-  describe('dispose', () => {
-    it('should dispose ability and remove injected properties', () => {
-      const host = new TestHost();
+  describe('descriptor factories', () => {
+    it('should create working descriptors for simple values', () => {
       const ability = new TestAbility();
+      const precompiled = ability.precompile();
+      const host = new TestHost();
       
-      ability.attach(host);
+      const factory = precompiled.descriptorFactories.get('injectedProp');
+      const descriptor = factory!(host);
       
-      // Verify that the host has the injected properties
-      expect((host as any).injectedProp).toBe('injected value');
-      
-      ability.dispose();
-      
-      // The injected properties should no longer exist on the host
-      expect((host as any).injectedProp).toBeUndefined();
-      
-      // Original properties should remain
-      // Note: The original test was wrong, since the ability overwrites the host property,
-      // the original value is replaced. After dispose, it won't be restored.
-      // We'll just check that the injected property is gone.
+      expect(descriptor.value).toBe('injected value');
     });
 
-    it('should call onDispose when disposing', () => {
+    it('should create working descriptors for methods', () => {
+      const ability = new TestAbility();
+      const precompiled = ability.precompile();
+      const host = new TestHost();
+      
+      const factory = precompiled.descriptorFactories.get('injectedMethod');
+      const descriptor = factory!(host);
+      
+      expect(typeof descriptor.value).toBe('function');
+      expect(descriptor.value()).toBe('injected method');
+    });
+
+    it('should create working descriptors for getter/setter', () => {
+      const ability = new TestAbilityWithGetterSetter();
+      const precompiled = ability.precompile();
+      const host = new TestHost();
+      
+      const factory = precompiled.descriptorFactories.get('explicitGetterSetter');
+      const descriptor = factory!(host);
+      
+      expect(descriptor.get).toBeDefined();
+      expect(descriptor.set).toBeDefined();
+      expect(descriptor.get!()).toBe('getter setter value');
+      
+      // Test setter
+      descriptor.set!('new value');
+      expect(descriptor.get!()).toBe('new value');
+    });
+  });
+
+  describe('disposer', () => {
+    it('should create disposer function', () => {
+      const ability = new TestAbility();
+      const precompiled = ability.precompile();
+      const host = new TestHost();
+      
+      const disposer = precompiled.createDisposer!(host);
+      expect(typeof disposer).toBe('function');
+    });
+
+    it('should call onDispose when disposer is called', () => {
       // Create a test ability that tracks if onDispose was called
       class TestDisposeTrackingAbility extends AbilityBase {
+        readonly name = 'TestDisposeTrackingAbility';
         disposed = false;
         
         protected expose(): IExposeResult {
@@ -311,11 +231,12 @@ describe('AbilityBase', () => {
         }
       }
       
-      const host = new TestHost();
       const ability = new TestDisposeTrackingAbility();
+      const precompiled = ability.precompile();
+      const host = new TestHost();
       
-      ability.attach(host);
-      ability.dispose();
+      const disposer = precompiled.createDisposer!(host);
+      disposer();
       
       expect(ability.disposed).toBe(true);
     });

@@ -10,7 +10,7 @@
  */
 
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
-import { RequestContext } from '../types';
+import { RequestContext } from '@/context';
 import { 
     DataProcessorHandler, 
     DataProcessorKey, 

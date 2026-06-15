@@ -8,7 +8,7 @@
  */
 
 import { Pipeline } from '@/pipeline';
-import { RequestContext } from '../types';
+import { RequestContext } from '@/context';
 import { DataProcessorHandler } from './types';
 
 /**

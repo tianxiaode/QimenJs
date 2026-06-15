@@ -9,7 +9,10 @@ import type {
     IPrecompilableAbility, 
     DescriptorFactoryFn,
     IExposeResult 
-} from '../types/composable';
+} from './types/composable';
+
+// Re-export IExposeResult for convenience
+export type { IExposeResult };
 
 /**
  * 属性定义类型

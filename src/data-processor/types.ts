@@ -4,7 +4,7 @@
  * @module data-processor/types
  */
 
-import { RequestContext } from '../types';
+import type { RequestContext } from '../context';
 
 /**
  * 数据处理标签
