@@ -1,8 +1,8 @@
 # OrbitJS 包结构重构方案
 
-## 一、新的包结构
+## 一、新的包结构（按依赖层级划分）
 
-### 1. 零依赖包（6个）
+### 第 0 层：核心基础包（6个，零依赖）
 - `@orbitjs/error` - 错误处理
 - `@orbitjs/logger` - 日志系统
 - `@orbitjs/utils` - 工具函数
@@ -10,38 +10,41 @@
 - `@orbitjs/runtime` - 运行时环境
 - `@orbitjs/crypto` - 加密工具
 
-### 2. 轻依赖包（5个）
+### 第 1 层：基础设施工具包（6个，只依赖第0层）
 - `@orbitjs/registry` - 注册器系统（依赖 error）
 - `@orbitjs/cache` - 缓存系统（依赖 logger、utils）
 - `@orbitjs/events` - 事件系统（依赖 logger、utils）
-- `@orbitjs/validation` - 验证系统（依赖 registry、pipeline）
 - `@orbitjs/task` - 任务系统（依赖 logger、utils、error、runtime）
-
-### 3. 通用基础设施包（5个）
 - `@orbitjs/pipeline` - 统一管道执行器（依赖 logger）
   - executor - 管道执行器
   - types - 类型定义
   - 内置监控、日志、统计功能
-- `@orbitjs/data-processor` - 数据处理系统（依赖 registry、pipeline、types）
+- `@orbitjs/composable` - 可组合系统（依赖 logger、async）
+  - ComposableBase - 可组合基类
+  - AbilityBase - 能力基类
+  - DescriptorFactory - 描述符工厂
+  - ComposableRegistrar - 能力注册器（包内自包含）
+
+### 第 2 层：功能工具包（2个，依赖第0-1层）
+- `@orbitjs/validation` - 验证系统（依赖 error、pipeline）
+- `@orbitjs/data-processor` - 数据处理系统（依赖 registry、pipeline）
   - registrar - 处理器注册表
   - executor - 处理器执行器
   - weights - 权重定义
   - tags - 标签过滤
-- `@orbitjs/composable` - 可组合系统（依赖 utils）
-  - ComposableBase - 可组合基类
-  - AbilityBase - 能力基类
-  - DescriptorFactory - 描述符工厂
+
+### 第 3 层：高级功能包（2个，依赖第0-2层）
 - `@orbitjs/http` - HTTP 客户端（依赖 logger、utils、pipeline）
   - HttpClient - HTTP 客户端
   - 请求/响应处理
   - 中间件支持
-- `@orbitjs/system-abilities` - 系统能力实现（依赖 composable、registry、events、event-dom）
+- `@orbitjs/system-abilities` - 系统能力实现（依赖 composable、registry、events）
   - DomainAbility - 领域能力
   - EventAbility - 事件能力
   - SystemAbility - 系统能力
   - DomEventsAbility - DOM 事件能力
 
-### 4. 业务包（1个）
+### 第 4 层：业务包（1个）
 - `@orbitjs/entity` - 实体管理
   - manager - 实体管理器
   - state - 实体状态

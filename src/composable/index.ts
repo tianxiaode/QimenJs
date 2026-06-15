@@ -22,7 +22,7 @@ export type {
     AbilityDecorator,
     ExtractHostType,
     AbilityProperties,
-} from '../types/composable';
+} from './types/composable';
 
 // ============================================
 // 核心类导出
@@ -32,6 +32,7 @@ export { DescriptorFactory } from './DescriptorFactory';
 export { ComposableBase, Ability } from './ComposableBase';
 export { AbilityBase } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
+export { ComposableRegistrar } from './ComposableRegistrar';
 
 // ============================================
 // 使用示例

@@ -40,11 +40,15 @@ export * from './weights';
 export * from './errors';
 
 // 导出注册器
+import { DataProcessorRegistrar, DataProcessorRegistrarName } from './DataProcessorRegistrar';
+
 export { 
-    DataProcessorRegistrar, 
-    DataProcessor,
+    DataProcessorRegistrar,
     DataProcessorRegistrarName 
-} from './DataProcessorRegistrar';
+};
+
+// 导出便捷访问对象
+export const DataProcessor = new DataProcessorRegistrar();
 
 // 导出执行器
 export { 

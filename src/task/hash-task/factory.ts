@@ -1,4 +1,4 @@
-import { MemoryManager } from '@/runtime-env';
+import { MemoryManager } from '@/runtime';
 import { BrowserWorkerPool } from './worker';
 import { BrowserFileChunkProvider, StreamChunkProvider,FileChunkProvider } from './chunk';
 import { ChunkProvider } from './types';

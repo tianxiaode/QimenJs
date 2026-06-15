@@ -1,7 +1,7 @@
 import { ILogger, Logger } from '@orbitjs/logger';
-import { ComposableRegistrar } from '../registrars';
+import { ComposableRegistrar } from './ComposableRegistrar';
 import { ComposableEntry } from '../types';
-import type { IComposableBase } from '../types';
+import type { IComposableBase } from './types/composable';
 
 /**
  * Symbol 用于存储能力列表

@@ -1,4 +1,4 @@
-import { IMemoryTicket, MemoryManager } from '@orbitjs/runtime-env';
+import { IMemoryTicket, MemoryManager } from '@orbitjs/runtime';
 import { WorkerHandle, WorkerPool } from '../worker';
 import { ResourceUnavailableError } from '../errors';
 import { ResourceNotAcquiredError } from '../errors/ResourceNotAcquiredError';

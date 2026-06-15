@@ -1,4 +1,4 @@
-import { MemoryManager } from '@/runtime-env';
+import { MemoryManager } from '@/runtime';
 import { ChunkProvider, IHashTask } from '../types';
 import { HashTaskProgress, TaskProgressSnapshot } from './HashTaskProgress';
 import { HashTaskRunner } from './HashTaskRunner';
