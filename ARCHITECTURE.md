@@ -29,8 +29,16 @@
   - DescriptorFactory - 描述符工厂
   - ComposableRegistrar - 能力注册器（包内自包含）
 
-### 第 2 层：功能工具包（2个，依赖第0-1层）
-- `@orbitjs/validation` - 验证系统（依赖 error、pipeline）
+### 第 2 层：功能工具包（3个，依赖第0-1层）
+- `@orbitjs/schema` - Schema 定义系统（依赖 registry）
+  - 验证规则类型定义
+  - Schema 类型定义
+  - SchemaRegistrar - Schema 注册器
+  - 数据结构定义 + 数据约束
+- `@orbitjs/validation` - 验证系统（依赖 error、pipeline、schema）
+  - 验证引擎
+  - 验证处理器
+  - 错误收集和报告
 - `@orbitjs/data-processor` - 数据处理系统（依赖 registry、pipeline）
   - registrar - 处理器注册表
   - executor - 处理器执行器
@@ -75,6 +83,13 @@ src/
 ├── registry/           # 注册器系统
 ├── cache/              # 缓存系统
 ├── events/             # 事件系统
+├── schema/             # Schema 定义系统（新增）
+│   ├── types/
+│   │   ├── rule.ts     # 验证规则类型
+│   │   ├── schema.ts   # Schema 类型
+│   │   └── index.ts
+│   ├── SchemaRegistrar.ts  # Schema 注册器
+│   └── index.ts
 ├── validation/         # 验证系统
 ├── task/               # 任务系统
 ├── pipeline/           # 统一管道执行器（新增）

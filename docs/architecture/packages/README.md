@@ -25,13 +25,14 @@
 | [@orbitjs/events](./events.md) | ✅ 完成 | ✅ 通过 | ~80% | 事件系统 |
 | [@orbitjs/task](./task.md) | ✅ 完成 | ✅ 通过 | ~85% | 任务系统 |
 | [@orbitjs/pipeline](./pipeline.md) | ✅ 完成 | ✅ 通过 | ~90% | 统一管道执行器 |
-| [@orbitjs/composable](./composable.md) | ⚠️ 重构中 | ⚠️ 部分通过 | ~60% | 可组合系统 |
+| [@orbitjs/composable](./composable.md) | ✅ 完成 | ✅ 通过 | ~90% | 可组合系统 |
 
-### 第 2 层：功能工具包（2个）
+### 第 2 层：功能工具包（3个）
 
 | 包名 | 状态 | 测试 | 覆盖率 | 说明 |
 |------|------|------|--------|------|
-| [@orbitjs/validation](./validation.md) | ✅ 完成 | ✅ 通过 | ~85% | 验证系统 |
+| [@orbitjs/schema](./schema.md) | ✅ 完成 | ✅ 通过 | 92% | Schema 定义系统 |
+| [@orbitjs/validation](./validation.md) | ⚠️ 待重构 | ⚠️ 待更新 | - | 验证系统 |
 | [@orbitjs/data-processor](./data-processor.md) | ✅ 完成 | ✅ 通过 | ~80% | 数据处理系统 |
 
 ### 第 3 层：高级功能包（2个）
@@ -67,19 +68,19 @@
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 18 |
-| 已完成 | 13 |
-| 重构中 | 1 |
-| 待更新 | 4 |
-| 平均测试覆盖率 | ~85% |
+| 总包数 | 19 |
+| 已完成 | 14 |
+| 重构中 | 0 |
+| 待更新 | 5 |
+| 平均测试覆盖率 | ~88% |
 
 ### 层级统计
 
 | 层级 | 包数 | 已完成 | 测试覆盖率 |
 |------|------|--------|------------|
 | 第 0 层 | 7 | 6 | ~90% |
-| 第 1 层 | 6 | 5 | ~80% |
-| 第 2 层 | 2 | 2 | ~82% |
+| 第 1 层 | 6 | 6 | ~85% |
+| 第 2 层 | 3 | 2 | ~86% |
 | 第 3 层 | 2 | 0 | - |
 | 第 4 层 | 1 | 0 | - |
 
@@ -114,7 +115,11 @@ data-processor (L2)
 
 validation (L2)
   ├─ error (L0)
-  └─ pipeline (L1)
+  ├─ pipeline (L1)
+  └─ schema (L2)
+
+schema (L2)
+  └─ registry (L1)
 
 composable (L1)
   ├─ logger (L0)
@@ -158,6 +163,7 @@ registry (L1)
 - **任务**: [task](./task.md)
 - **管道**: [pipeline](./pipeline.md)
 - **可组合**: [composable](./composable.md)
+- **Schema**: [schema](./schema.md)
 - **验证**: [validation](./validation.md)
 - **数据处理**: [data-processor](./data-processor.md)
 - **HTTP**: [http](./http.md)
@@ -168,28 +174,29 @@ registry (L1)
 
 #### 已完成
 - error, logger, utils, async, runtime, crypto
-- registry, cache, events, task, pipeline
-- validation, data-processor
+- registry, cache, events, task, pipeline, composable
+- schema, data-processor
 
-#### 重构中
-- composable
+#### 待重构
+- validation
 
 #### 待更新
 - context, http, system-abilities, entity
 
 ## 下一步工作
 
-### 优先级 1：完成重构
-- [ ] 完成 composable 包重构
-- [ ] 重写 composable 测试
+### 优先级 1：重构 validation 包
+- [ ] 移除验证规则类型定义到 schema 包
+- [ ] 添加对 @orbitjs/schema 的依赖
+- [ ] 重构验证引擎使用 Schema 类型
 
 ### 优先级 2：更新待更新包
+- [ ] 更新 context 包测试
 - [ ] 更新 http 包
 - [ ] 更新 system-abilities 包
 - [ ] 更新 entity 包
 
 ### 优先级 3：编写测试
-- [ ] 编写 context 包测试
 - [ ] 编写 http 包测试
 - [ ] 编写 system-abilities 包测试
 - [ ] 编写 entity 包测试

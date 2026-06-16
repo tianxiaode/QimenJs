@@ -23,6 +23,7 @@ docs/build-progress/
 │   ├── pipeline.md
 │   └── composable.md
 ├── layer-2/                     # 第 2 层包
+│   ├── schema.md
 │   ├── validation.md
 │   └── data-processor.md
 ├── layer-3/                     # 第 3 层包
@@ -37,11 +38,11 @@ docs/build-progress/
 | 层级 | 总包数 | 已完成 | 测试通过 | 平均覆盖率 |
 |------|--------|--------|----------|------------|
 | 第 0 层 | 7 | 6 | 6 | ~90% |
-| 第 1 层 | 6 | 5 | 5 | ~80% |
-| 第 2 层 | 2 | 2 | 2 | ~82% |
+| 第 1 层 | 6 | 6 | 6 | ~85% |
+| 第 2 层 | 3 | 2 | 2 | ~86% |
 | 第 3 层 | 2 | 0 | 0 | - |
 | 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **18** | **13** | **13** | **~85%** |
+| **总计** | **19** | **14** | **14** | **~88%** |
 
 ## 快速导航
 
@@ -49,7 +50,7 @@ docs/build-progress/
 
 - [第 0 层：核心基础包](./layer-0/) - 7 个零依赖包
 - [第 1 层：基础设施工具包](./layer-1/) - 6 个包
-- [第 2 层：功能工具包](./layer-2/) - 2 个包
+- [第 2 层：功能工具包](./layer-2/) - 3 个包
 - [第 3 层：高级功能包](./layer-3/) - 2 个包
 - [第 4 层：业务包](./layer-4/) - 1 个包
 
@@ -67,11 +68,12 @@ docs/build-progress/
 - [events](./layer-1/events.md) - 事件系统
 - [task](./layer-1/task.md) - 任务系统
 - [pipeline](./layer-1/pipeline.md) - 统一管道执行器
-- [validation](./layer-2/validation.md) - 验证系统
+- [composable](./layer-1/composable.md) - 可组合系统
+- [schema](./layer-2/schema.md) - Schema 定义系统
 - [data-processor](./layer-2/data-processor.md) - 数据处理系统
 
-#### ⚠️ 重构中
-- [composable](./layer-1/composable.md) - 可组合系统
+#### ⚠️ 待重构
+- [validation](./layer-2/validation.md) - 验证系统
 
 #### ⚠️ 待更新
 - [context](./layer-0/context.md) - 请求上下文

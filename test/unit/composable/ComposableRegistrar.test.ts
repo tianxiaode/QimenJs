@@ -31,7 +31,7 @@ class MockLogger {
   }
   
   withTag(tag: string) {
-    return this;
+    return this;b
   }
 }
 
