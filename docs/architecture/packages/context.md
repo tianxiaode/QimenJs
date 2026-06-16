@@ -7,13 +7,19 @@
 
 ## 概述
 
-请求上下文包，提供贯穿整个请求生命周期的上下文对象。
+上下文包，提供基础上下文、请求上下文等类型定义和构建器。
+支持管道执行、验证、HTTP 请求、数据处理等场景。
 
 ## 功能
 
+### 基础上下文
+- **BaseContext** - 基础执行上下文接口
+- **ExecutionStep** - 统一的执行步骤类型
+- **工具函数** - createBaseContext, addStep, setError, setTerminate 等
+
+### 请求上下文
 - **RequestContext** - 请求上下文定义
 - **RequestContextBuilder** - 上下文构建器
-- **ExecutionStep** - 执行步骤记录
 
 ## 依赖
 
@@ -25,16 +31,62 @@ dependencies: {}  // 零依赖
 
 ```
 src/context/
-├── types/
-│   ├── request-context.ts   # RequestContext 定义
+├── base/
+│   ├── ExecutionStep.ts      # 执行步骤类型
+│   ├── BaseContext.ts        # 基础上下文接口
 │   └── index.ts
-├── RequestContextBuilder.ts # 构建器
-└── index.ts                 # 入口
+├── types/
+│   ├── request-context.ts    # RequestContext 定义
+│   └── index.ts
+├── RequestContextBuilder.ts  # 构建器
+└── index.ts                  # 入口
+```
+
+## 架构设计
+
+### 上下文派生层次
+
+```
+BaseContext (基础执行上下文)
+├── steps: ExecutionStep[]      // 执行步骤
+├── error?: any                 // 错误信息
+└── metadata: BaseMetadata      // 元数据
+
+ValidationContext extends BaseContext
+├── value, rawValue             // 数据双轨制
+├── rule                        // 验证规则
+├── errors                      // 错误列表
+└── status                      // 状态信息
+
+RequestContext extends BaseContext
+├── identity                    // 标识信息
+├── request                     // 请求信息
+├── response                    // 响应信息
+├── data                        // 数据载体
+└── isAborted                   // 中止标志
 ```
 
 ## 使用示例
 
-### 创建上下文
+### 创建基础上下文
+
+```typescript
+import { createBaseContext, addStep, setError } from '@orbitjs/context';
+
+const context = createBaseContext({
+    metadata: { custom: 'value' },
+});
+
+addStep(context, {
+    processor: 'MyProcessor',
+    action: 'executed',
+    duration: 0.5,
+});
+
+setError(context, new Error('Something went wrong'));
+```
+
+### 创建请求上下文
 
 ```typescript
 import { RequestContextBuilder } from '@orbitjs/context';
@@ -71,89 +123,47 @@ return context.data.list;
 
 ## API
 
-### RequestContext
+### BaseContext
 
 ```typescript
-interface RequestContext {
-    // 标识信息
-    identity: {
-        domain: string;
-        entityName?: string;
-        action?: string;
-    };
-    
-    // 请求信息
-    request: { /* ... */ };
-    
-    // 响应信息
-    response: { /* ... */ };
-    
-    // 数据载体
-    data: {
-        params: any;
-        source: any;
-        parsed: any;
-        raw: any | null;
-        list: any[];
-        item: any;
-        total: number;
-        pagination?: PaginationInfo;
-    };
-    
-    // 状态与控制
-    isAborted: boolean;
-    error: any | null;
+interface BaseContext {
     steps: ExecutionStep[];
-    
-    // 元数据
-    metadata: Record<string, any>;
-    
-    // Schema
-    schema?: any;
-    
-    // 方法
-    alignToFrontend(target: any): any;
+    error?: any;
+    metadata: BaseMetadata;
 }
 ```
 
-### RequestContextBuilder
+### ExecutionStep
 
 ```typescript
-class RequestContextBuilder {
-    static create(): RequestContextBuilder;
-    
-    withIdentity(identity: Partial<RequestContext['identity']>): this;
-    withDomain(domain: string): this;
-    withEntityName(entityName: string): this;
-    withAction(action: string): this;
-    
-    withRequest(request: Partial<RequestContext['request']>): this;
-    withUrl(url: string): this;
-    withMethod(method: HttpMethod): this;
-    withHeaders(headers: Record<string, string>): this;
-    withBody(body: any): this;
-    withQueryParams(queryParams: Record<string, any>): this;
-    
-    withResponse(response: Partial<RequestContext['response']>): this;
-    withData(data: Partial<RequestContext['data']>): this;
-    withParams(params: any): this;
-    
-    withError(error: any): this;
-    withMetadata(key: string, value: any): this;
-    withSchema(schema: any): this;
-    
-    abort(): this;
-    addStep(step: ExecutionStep): this;
-    withAlignToFrontend(alignToFrontend: (target: any) => any): this;
-    
-    build(): RequestContext;
-    clone(): RequestContextBuilder;
+interface ExecutionStep {
+    processor: string;
+    weight?: number;
+    offset?: number;
+    action: 'executed' | 'skipped' | 'terminated';
+    duration?: number;
+    reason?: string;
+    error?: any;
+}
+```
+
+### RequestContext
+
+```typescript
+interface RequestContext extends BaseContext {
+    identity: { /* ... */ };
+    request: { /* ... */ };
+    response: { /* ... */ };
+    data: { /* ... */ };
+    isAborted: boolean;
 }
 ```
 
 ## 测试状态
 
 ### 待写的测试
+- [ ] BaseContext 基本功能
+- [ ] ExecutionStep 类型检查
 - [ ] RequestContextBuilder 基本功能
 - [ ] RequestContextBuilder 链式调用
 - [ ] RequestContextBuilder 克隆功能
@@ -173,8 +183,16 @@ class RequestContextBuilder {
 ## 设计决策
 
 - [2026-06-15-context-package](../../design-decisions/2026-06-15-context-package.md) - Context 包设计
+- [2026-06-17-context-refactoring](../../design-decisions/2026-06-17-context-refactoring.md) - 上下文派生架构重构
 
 ## 变更历史
+
+### 2026-06-17
+- 创建基础上下文 (BaseContext)
+- 统一 ExecutionStep 类型定义
+- ValidationContext 继承 BaseContext
+- Pipeline 使用 BaseContext
+- 更新架构文档
 
 ### 2026-06-15
 - 创建独立的 context 包

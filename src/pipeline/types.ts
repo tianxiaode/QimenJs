@@ -5,6 +5,10 @@
  */
 
 import { ILogger } from '@/logger';
+import { ExecutionStep, BaseContext, BaseMetadata } from '@/context';
+
+// 重新导出 ExecutionStep 以保持向后兼容
+export { ExecutionStep };
 
 /**
  * 处理器接口
@@ -34,46 +38,6 @@ export interface Processor<T = any> {
      * 描述
      */
     description?: string;
-}
-
-/**
- * 执行步骤
- */
-export interface ExecutionStep {
-    /**
-     * 处理器名称
-     */
-    processor: string;
-    
-    /**
-     * 权重
-     */
-    weight?: number;
-    
-    /**
-     * 偏移量
-     */
-    offset?: number;
-    
-    /**
-     * 执行动作
-     */
-    action: 'executed' | 'skipped' | 'terminated';
-    
-    /**
-     * 执行耗时（毫秒）
-     */
-    duration?: number;
-    
-    /**
-     * 原因
-     */
-    reason?: string;
-    
-    /**
-     * 错误信息
-     */
-    error?: any;
 }
 
 /**
@@ -211,24 +175,7 @@ export interface PipelineStats {
  * 
  * @description 上下文对象应该实现此接口
  * 以支持管道执行和监控
+ * 
+ * @deprecated 使用 BaseContext 代替
  */
-export interface IExecutableContext {
-    /**
-     * 执行步骤记录
-     */
-    steps: ExecutionStep[];
-    
-    /**
-     * 错误信息
-     */
-    error?: any;
-    
-    /**
-     * 元数据
-     */
-    metadata: {
-        hasError?: boolean;
-        terminate?: boolean;
-        [key: string]: any;
-    };
-}
+export type IExecutableContext = BaseContext;

@@ -1,14 +1,8 @@
 import type { ValidationRule } from '@orbitjs/schema';
+import type { BaseContext, ExecutionStep } from '@orbitjs/context';
 
-export interface ExecutionStep {
-    processor: string; // 处理器名称
-    weight?: number; // 权重
-    offset?: number; // 偏移量
-    action: 'executed' | 'skipped' | 'terminated'; // 执行动作
-    reason?: string; // 跳过或中断的原因（如：Guard Clause 拦截、值为空、规则不匹配）
-    duration?: number; // 执行耗时（可选，用于性能分析）
-    error?: any; // 错误信息
-}
+// 重新导出 ExecutionStep 以保持向后兼容
+export { ExecutionStep };
 
 /**
  * 验证错误信息接口
@@ -33,7 +27,12 @@ export interface IValidationError {
     context?: ValidationContext;
 }
 
-export interface ValidationContext {
+/**
+ * 验证上下文
+ * 
+ * 从 BaseContext 派生，添加验证特定的字段
+ */
+export interface ValidationContext extends BaseContext {
     // --- 数据双轨制 ---
     /** 当前值：在管道中流转，可能被 transform 修改 */
     value: any;
@@ -41,7 +40,7 @@ export interface ValidationContext {
     readonly rawValue: any;
 
     // --- 规则引用 ---
-    /** 当前正在跑的规则，开发者带的“私货”都在这上面 */
+    /** 当前正在跑的规则，开发者带的"私货"都在这上面 */
     readonly rule: ValidationRule;
 
     // --- 状态收集 ---
@@ -57,10 +56,6 @@ export interface ValidationContext {
         isEmpty: boolean;
         /** 辅助：值是否被 transform 改动过 */
         isModified: boolean;
-    };
-    steps: ExecutionStep[];
-    metadata: Record<string, any> & {
-        hasError?: boolean; // 是否有错误（符合 IExecutableContext）
     };
     isChild?: boolean;
 }

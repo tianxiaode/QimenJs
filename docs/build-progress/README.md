@@ -37,12 +37,12 @@ docs/build-progress/
 
 | 层级 | 总包数 | 已完成 | 测试通过 | 平均覆盖率 |
 |------|--------|--------|----------|------------|
-| 第 0 层 | 7 | 6 | 6 | ~90% |
+| 第 0 层 | 7 | 7 | 7 | ~90% |
 | 第 1 层 | 6 | 6 | 6 | ~85% |
-| 第 2 层 | 3 | 2 | 2 | ~86% |
+| 第 2 层 | 3 | 3 | 3 | ~74% |
 | 第 3 层 | 2 | 0 | 0 | - |
 | 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **19** | **14** | **14** | **~88%** |
+| **总计** | **19** | **16** | **16** | **~83%** |
 
 ## 快速导航
 
@@ -63,6 +63,7 @@ docs/build-progress/
 - [async](./layer-0/async.md) - 异步工具
 - [runtime](./layer-0/runtime.md) - 运行时环境
 - [crypto](./layer-0/crypto.md) - 加密工具
+- [context](./layer-0/context.md) - 上下文系统
 - [registry](./layer-1/registry.md) - 注册器系统
 - [cache](./layer-1/cache.md) - 缓存系统
 - [events](./layer-1/events.md) - 事件系统
@@ -70,13 +71,10 @@ docs/build-progress/
 - [pipeline](./layer-1/pipeline.md) - 统一管道执行器
 - [composable](./layer-1/composable.md) - 可组合系统
 - [schema](./layer-2/schema.md) - Schema 定义系统
+- [validation](./layer-2/validation.md) - 验证系统
 - [data-processor](./layer-2/data-processor.md) - 数据处理系统
 
-#### ⚠️ 待重构
-- [validation](./layer-2/validation.md) - 验证系统
-
 #### ⚠️ 待更新
-- [context](./layer-0/context.md) - 请求上下文
 - [http](./layer-3/http.md) - HTTP 客户端
 - [system-abilities](./layer-3/system-abilities.md) - 系统能力实现
 - [entity](./layer-4/entity.md) - 实体管理
