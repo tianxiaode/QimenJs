@@ -36,6 +36,12 @@
       "@orbitjs/crypto": ["src/crypto"],
       "@orbitjs/registry": ["src/registry"],
       "@orbitjs/presets": ["src/presets"],
+      "@orbitjs/schema": ["src/schema"],
+      "@orbitjs/context": ["src/context"],
+      "@orbitjs/cache": ["src/cache"],
+      "@orbitjs/pipeline": ["src/pipeline"],
+      "@orbitjs/composable": ["src/composable"],
+      "@orbitjs/data-processor": ["src/data-processor"],
     }
   },
   "include": [

@@ -1,4 +1,4 @@
-import {  Registry } from '@orbitjs/registry';
+import { PatternRegistrar } from '@orbitjs/registry';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler } from '../../types';
 import { validatePattern } from '../../utils';
@@ -9,7 +9,8 @@ export const FormatProcessor: ValidationProcessorHandler = async context => {
     const { format, pattern } = rule;
 
     if (format) {
-        const formatPattern = Registry.pattern.get(format);
+        const patternRegistrar = PatternRegistrar.getInstance();
+        const formatPattern = patternRegistrar.get(format);
 
         if (!formatPattern) {
             // 在 context 上留下“犯罪现场”记录

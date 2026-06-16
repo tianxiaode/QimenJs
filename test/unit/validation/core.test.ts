@@ -2,7 +2,38 @@
  * 验证核心功能测试
  */
 
+// Mock Logger before importing validation
+jest.mock('@orbitjs/logger', () => {
+    const mockLogger = {
+        debug: jest.fn(),
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        trace: jest.fn(),
+        fatal: jest.fn(),
+        withFields: jest.fn().mockReturnThis(),
+        withTag: jest.fn().mockReturnThis(),
+    };
+    
+    return {
+        Logger: {
+            for: jest.fn().mockReturnValue(mockLogger),
+            root: {
+                emit: jest.fn(),
+            },
+        },
+        ILogger: jest.fn(),
+        LoggerChild: jest.fn().mockImplementation(() => mockLogger),
+    };
+});
+
 import { doValidate, validationExecutor, ValidatorRegistrar, bootstrapValidators } from '@/validation';
+import { PatternRegistrar } from '@/registry';
+
+// 注册测试所需的 patterns
+const patternRegistrar = PatternRegistrar.getInstance();
+patternRegistrar.register('email', /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
+patternRegistrar.register('url', /^https?:\/\/[^\s]+$/);
 
 // 启动验证器
 bootstrapValidators();
@@ -24,7 +55,8 @@ describe('Validation Core', () => {
             it('should validate required string', async () => {
                 const result = await doValidate('', { 
                     type: 'string',
-                    required: true 
+                    required: true,
+                    empty: false 
                 });
                 expect(result.isValid).toBe(false);
                 expect(result.errors.length).toBeGreaterThan(0);
@@ -33,8 +65,8 @@ describe('Validation Core', () => {
             it('should validate string length', async () => {
                 const result = await doValidate('hello', { 
                     type: 'string',
-                    minLength: 3,
-                    maxLength: 10 
+                    min: 3,
+                    max: 10 
                 });
                 expect(result.isValid).toBe(true);
             });
@@ -42,7 +74,7 @@ describe('Validation Core', () => {
             it('should invalidate string too short', async () => {
                 const result = await doValidate('hi', { 
                     type: 'string',
-                    minLength: 3 
+                    min: 3 
                 });
                 expect(result.isValid).toBe(false);
             });
@@ -50,14 +82,14 @@ describe('Validation Core', () => {
             it('should invalidate string too long', async () => {
                 const result = await doValidate('hello world', { 
                     type: 'string',
-                    maxLength: 5 
+                    max: 5 
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should validate email format', async () => {
                 const result = await doValidate('test@example.com', { 
-                    type: 'string',
+                    type: 'format',
                     format: 'email' 
                 });
                 expect(result.isValid).toBe(true);
@@ -65,7 +97,7 @@ describe('Validation Core', () => {
 
             it('should invalidate wrong email format', async () => {
                 const result = await doValidate('not-an-email', { 
-                    type: 'string',
+                    type: 'format',
                     format: 'email' 
                 });
                 expect(result.isValid).toBe(false);
@@ -73,7 +105,7 @@ describe('Validation Core', () => {
 
             it('should validate URL format', async () => {
                 const result = await doValidate('https://example.com', { 
-                    type: 'string',
+                    type: 'format',
                     format: 'url' 
                 });
                 expect(result.isValid).toBe(true);
@@ -257,9 +289,18 @@ describe('Validation Core', () => {
         it('should print report', async () => {
             const result = await doValidate('test', { type: 'string' });
             
+            // 构造 PipelineResult 格式的结果
+            const pipelineResult = {
+                context: result.context,
+                steps: result.context.steps,
+                isSuccess: result.isValid,
+                totalDuration: 0,
+                error: undefined,
+            };
+            
             // 不应该抛出错误
             expect(() => {
-                validationExecutor.printReport(result);
+                validationExecutor.printReport(pipelineResult);
             }).not.toThrow();
         });
     });

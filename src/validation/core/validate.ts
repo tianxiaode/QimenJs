@@ -65,7 +65,10 @@ export const doValidate: ValidateFunction = async (value, rule, partialContext =
     // 4. 使用统一的执行器执行验证管道
     const result = await validationExecutor.execute(context, processors, rule.type);
 
-    // 5. 返回验证结果
+    // 5. 合并执行步骤到 context
+    context.steps = result.steps;
+
+    // 6. 返回验证结果
     return {
         isValid: result.isSuccess && context.errors.length === 0,
         errors: context.errors,

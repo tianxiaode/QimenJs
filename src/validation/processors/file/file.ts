@@ -1,4 +1,4 @@
-import { Registry } from '@orbitjs/registry';
+import { MimeTypeRegistrar } from '@orbitjs/registry';
 import { ValidationErrorBuilder } from '../../errors';
 import {
     IValidationError,
@@ -47,7 +47,8 @@ const FILE_CHECKS: FileItemValidator[] = [
     {
         key: 'allowedTypes',
         predicate: (f, r) => {
-            const allowedSet = Registry.mimeType.get(r.allowedTypes as string[]);
+            const mimeTypeRegistrar = MimeTypeRegistrar.getInstance();
+            const allowedSet = mimeTypeRegistrar.get(r.allowedTypes as string[]);
             return allowedSet.has(f.type);
         },
         error: (f, r, ctx) =>

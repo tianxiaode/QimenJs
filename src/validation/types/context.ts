@@ -1,4 +1,4 @@
-import { ValidationRule } from './rule';
+import type { ValidationRule } from '@orbitjs/schema';
 
 export interface ExecutionStep {
     processor: string; // 处理器名称

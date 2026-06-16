@@ -1,5 +1,18 @@
 import { IValidationError, ValidationContext } from "./context";
-import { ArrayRule, BooleanRule, CompareRule, DateRule, FileRule, FormatRule, NumberRule, ObjectRule, PasswordRule, SplitRule, StringRule, ValidationRule } from "./rule";
+import type { 
+    ArrayRule, 
+    BooleanRule, 
+    CompareRule, 
+    DateRule, 
+    FileRule, 
+    FormatRule, 
+    NumberRule, 
+    ObjectRule, 
+    PasswordRule, 
+    SplitRule, 
+    StringRule, 
+    ValidationRule 
+} from "@orbitjs/schema";
 
 
 export const ValidatorRegistrarName= 'validator' as const;

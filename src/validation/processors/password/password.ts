@@ -1,6 +1,6 @@
 import { validatePattern } from '../../utils';
 import { ValidationContext, ValidationPatternType, ValidationProcessorHandler } from '../../types';
-import { Registry } from '@orbitjs/registry';
+import { PatternRegistrar } from '@orbitjs/registry';
 
 export const PasswordProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
@@ -14,9 +14,11 @@ export const PasswordProcessor: ValidationProcessorHandler = async (context: Val
         ValidationPatternType.SPECIAL_CHAR,
     ];
 
+    const patternRegistrar = PatternRegistrar.getInstance();
+    
     for (const name of patterns) {
         if ((rule as any)[name] === true) {
-            const regex = Registry.pattern.get(name);
+            const regex = patternRegistrar.get(name);
             validatePattern(value, regex!, context, name);
         }
     }
