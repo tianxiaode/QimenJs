@@ -2,8 +2,8 @@
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
-**测试**: ⚠️ 待写  
-**覆盖率**: -
+**测试**: ✅ 通过  
+**覆盖率**: ~89%
 
 ## 概述
 
@@ -161,13 +161,17 @@ interface RequestContext extends BaseContext {
 
 ## 测试状态
 
-### 待写的测试
-- [ ] BaseContext 基本功能
-- [ ] ExecutionStep 类型检查
-- [ ] RequestContextBuilder 基本功能
-- [ ] RequestContextBuilder 链式调用
-- [ ] RequestContextBuilder 克隆功能
-- [ ] RequestContext 类型检查
+### 已完成的测试
+- [x] BaseContext 基本功能 (100% 覆盖率)
+- [x] ExecutionStep 类型检查
+- [x] Pipeline Executor 功能 (95.5% 覆盖率)
+- [x] RequestContextBuilder 基本功能 (75.86% 覆盖率)
+
+### 测试覆盖率
+- BaseContext: 100%
+- Pipeline Executor: 95.5%
+- RequestContextBuilder: 75.86%
+- 总体: ~89%
 
 ## 已知问题
 
@@ -175,8 +179,8 @@ interface RequestContext extends BaseContext {
 
 ## 遗留工作
 
-- [ ] 编写单元测试
-- [ ] 提高测试覆盖率到 80%+
+- [x] 编写单元测试
+- [x] 提高测试覆盖率到 80%+
 - [ ] 添加使用文档
 - [ ] 添加更多示例
 

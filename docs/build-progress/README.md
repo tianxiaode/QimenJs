@@ -38,11 +38,11 @@ docs/build-progress/
 | 层级 | 总包数 | 已完成 | 测试通过 | 平均覆盖率 |
 |------|--------|--------|----------|------------|
 | 第 0 层 | 7 | 7 | 7 | ~90% |
-| 第 1 层 | 6 | 6 | 6 | ~85% |
+| 第 1 层 | 6 | 6 | 6 | ~90% |
 | 第 2 层 | 3 | 3 | 3 | ~74% |
 | 第 3 层 | 2 | 0 | 0 | - |
 | 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **19** | **16** | **16** | **~83%** |
+| **总计** | **19** | **16** | **16** | **~85%** |
 
 ## 快速导航
 
@@ -82,17 +82,18 @@ docs/build-progress/
 ## 当前工作
 
 ### 优先级 1：完成重构
-- [ ] 完成 [composable](./layer-1/composable.md) 包重构
-- [ ] 重写 composable 测试
+- [x] 完成 [validation](./layer-2/validation.md) 包重构
+- [x] 完成 [context](./layer-0/context.md) 包架构升级
+- [x] 完成 [pipeline](./layer-1/pipeline.md) 包测试补充
 
 ### 优先级 2：更新待更新包
-- [ ] 更新 [context](./layer-0/context.md) 包测试
 - [ ] 更新 [http](./layer-3/http.md) 包
 - [ ] 更新 [system-abilities](./layer-3/system-abilities.md) 包
 - [ ] 更新 [entity](./layer-4/entity.md) 包
 
 ### 优先级 3：编写测试
-- [ ] 编写 context 包测试
+- [x] 编写 context 包测试 (覆盖率 ~89%)
+- [x] 编写 pipeline 包测试 (覆盖率 ~95%)
 - [ ] 编写 http 包测试
 - [ ] 编写 system-abilities 包测试
 - [ ] 编写 entity 包测试

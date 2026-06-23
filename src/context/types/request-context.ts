@@ -7,30 +7,10 @@
  * @module context/types/request-context
  */
 
-/**
- * 执行步骤记录
- */
-export interface ExecutionStep {
-    /**
-     * 处理器名称
-     */
-    name: string;
-    
-    /**
-     * 执行耗时（毫秒）
-     */
-    duration: number;
-    
-    /**
-     * 执行状态
-     */
-    status: 'success' | 'error' | 'skipped' | 'pending';
-    
-    /**
-     * 错误信息（如果有）
-     */
-    error?: any;
-}
+import { ExecutionStep } from '../base';
+
+// 重新导出 ExecutionStep
+export { ExecutionStep };
 
 /**
  * HTTP 方法类型
