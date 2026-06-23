@@ -40,9 +40,9 @@ docs/build-progress/
 | 第 0 层 | 7 | 7 | 7 | ~90% |
 | 第 1 层 | 6 | 6 | 6 | ~90% |
 | 第 2 层 | 3 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 0 | 0 | - |
+| 第 3 层 | 2 | 1 | 1 | ~60% |
 | 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **19** | **16** | **16** | **~85%** |
+| **总计** | **19** | **17** | **17** | **~85%** |
 
 ## 快速导航
 
@@ -73,9 +73,9 @@ docs/build-progress/
 - [schema](./layer-2/schema.md) - Schema 定义系统
 - [validation](./layer-2/validation.md) - 验证系统
 - [data-processor](./layer-2/data-processor.md) - 数据处理系统
+- [http](./layer-3/http.md) - HTTP 客户端
 
 #### ⚠️ 待更新
-- [http](./layer-3/http.md) - HTTP 客户端
 - [system-abilities](./layer-3/system-abilities.md) - 系统能力实现
 - [entity](./layer-4/entity.md) - 实体管理
 
@@ -85,16 +85,21 @@ docs/build-progress/
 - [x] 完成 [validation](./layer-2/validation.md) 包重构
 - [x] 完成 [context](./layer-0/context.md) 包架构升级
 - [x] 完成 [pipeline](./layer-1/pipeline.md) 包测试补充
+- [x] 完成 [http](./layer-3/http.md) 包完整重构
+  - 创建 HttpActionRegistrar（纯粹的 HTTP 处理器注册表）
+  - 创建 HttpExecutor（核心执行器）
+  - 迁移所有 HTTP actions（prepare, exchange, process, align）
+  - 实现自动注册机制
+  - 简化 API，移除不必要的复杂性
 
 ### 优先级 2：更新待更新包
-- [ ] 更新 [http](./layer-3/http.md) 包
 - [ ] 更新 [system-abilities](./layer-3/system-abilities.md) 包
 - [ ] 更新 [entity](./layer-4/entity.md) 包
 
 ### 优先级 3：编写测试
 - [x] 编写 context 包测试 (覆盖率 ~89%)
 - [x] 编写 pipeline 包测试 (覆盖率 ~95%)
-- [ ] 编写 http 包测试
+- [x] 编写 http 包测试 (覆盖率 ~70%)
 - [ ] 编写 system-abilities 包测试
 - [ ] 编写 entity 包测试
 

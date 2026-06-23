@@ -4,7 +4,7 @@
  * @module http/types/http-context
  */
 
-import type { IExecutableContext, ExecutionStep } from '../../types/flow-context';
+import type { BaseContext } from '@orbitjs/context';
 
 /**
  * HTTP 方法类型
@@ -79,9 +79,9 @@ export interface HttpRequestOptions {
 /**
  * HTTP 上下文
  * 
- * 继承自 IExecutableContext，添加 HTTP 特定字段
+ * 继承自 BaseContext，添加 HTTP 特定字段
  */
-export interface HttpContext extends IExecutableContext {
+export interface HttpContext extends BaseContext {
     /**
      * 请求信息
      */

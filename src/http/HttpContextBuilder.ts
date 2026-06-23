@@ -6,7 +6,7 @@
  * @module http/HttpContextBuilder
  */
 
-import type { ExecutionStep } from '../../types/flow-context';
+import type { ExecutionStep } from '@orbitjs/context';
 import type { 
     HttpContext, 
     HttpRequestOptions 

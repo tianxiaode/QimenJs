@@ -39,7 +39,7 @@
 
 | 包名 | 状态 | 测试 | 覆盖率 | 说明 |
 |------|------|------|--------|------|
-| [@orbitjs/http](./http.md) | ⚠️ 待更新 | ⚠️ 待写 | - | HTTP 客户端 |
+| [@orbitjs/http](./http.md) | ✅ 完成 | ✅ 通过 | ~70% | HTTP 客户端（已重构） |
 | [@orbitjs/system-abilities](./system-abilities.md) | ⚠️ 待更新 | ⚠️ 待写 | - | 系统能力实现 |
 
 ### 第 4 层：业务包（1个）
@@ -69,19 +69,19 @@
 | 指标 | 数值 |
 |------|------|
 | 总包数 | 19 |
-| 已完成 | 15 |
+| 已完成 | 17 |
 | 重构中 | 0 |
-| 待更新 | 4 |
-| 平均测试覆盖率 | ~88% |
+| 待更新 | 2 |
+| 平均测试覆盖率 | ~85% |
 
 ### 层级统计
 
 | 层级 | 包数 | 已完成 | 测试覆盖率 |
 |------|------|--------|------------|
 | 第 0 层 | 7 | 7 | ~90% |
-| 第 1 层 | 6 | 6 | ~85% |
+| 第 1 层 | 6 | 6 | ~90% |
 | 第 2 层 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 0 | - |
+| 第 3 层 | 2 | 1 | ~60% |
 | 第 4 层 | 1 | 0 | - |
 
 ## 依赖关系图
@@ -175,29 +175,20 @@ registry (L1)
 #### 已完成
 - error, logger, utils, async, runtime, crypto
 - registry, cache, events, task, pipeline, composable
-- schema, data-processor
-
-#### 待重构
-- validation
+- schema, validation, data-processor, context, http
 
 #### 待更新
-- context, http, system-abilities, entity
+- system-abilities, entity
 
 ## 下一步工作
 
-### 优先级 1：重构 validation 包
-- [ ] 移除验证规则类型定义到 schema 包
-- [ ] 添加对 @orbitjs/schema 的依赖
-- [ ] 重构验证引擎使用 Schema 类型
-
-### 优先级 2：更新待更新包
-- [ ] 更新 context 包测试
-- [ ] 更新 http 包
+### 优先级 1：更新待更新包
 - [ ] 更新 system-abilities 包
 - [ ] 更新 entity 包
 
-### 优先级 3：编写测试
-- [ ] 编写 http 包测试
+### 优先级 2：完善测试
+- [ ] 提高 http 包测试覆盖率
+- [ ] 提高 context 包测试覆盖率
 - [ ] 编写 system-abilities 包测试
 - [ ] 编写 entity 包测试
 
