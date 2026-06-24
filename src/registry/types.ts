@@ -66,7 +66,16 @@ export interface DomainConfig {
     // 注入到所有请求 URL Query 中的参数
     commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>); 
     // 注入到所有 POST/PUT 请求 Body 中的参数
-    commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);    
+    commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);
+    
+    // Token 存储
+    token?: string;
+    
+    // 认证注入器
+    // - 字符串：使用预定义方式（'bearer' | 'basic'）
+    // - 函数：自定义注入，传入 RequestContext
+    authInjector?: 'bearer' | 'basic' | ((context: any) => void | Promise<void>);
+    
     [key: string]: any;
 }
 

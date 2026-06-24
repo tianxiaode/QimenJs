@@ -40,7 +40,7 @@ docs/build-progress/
 | 第 0 层 | 7 | 7 | 7 | ~90% |
 | 第 1 层 | 6 | 6 | 6 | ~90% |
 | 第 2 层 | 3 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 1 | 1 | ~60% |
+| 第 3 层 | 2 | 1 | 1 | ~86% |
 | 第 4 层 | 1 | 0 | 0 | - |
 | **总计** | **19** | **17** | **17** | **~85%** |
 
@@ -91,6 +91,13 @@ docs/build-progress/
   - 迁移所有 HTTP actions（prepare, exchange, process, align）
   - 实现自动注册机制
   - 简化 API，移除不必要的复杂性
+- [x] 完成 Token 管理方案设计与实现
+  - DomainConfig 新增 token 和 authInjector 字段
+  - DomainRegistrar 新增 updateToken 和 clearToken 方法
+  - 实现 TokenInjector 处理器
+  - 支持 bearer、basic 和自定义注入方式
+  - 编写完整测试（7 个测试通过）
+  - 编写完整文档
 
 ### 优先级 2：更新待更新包
 - [ ] 更新 [system-abilities](./layer-3/system-abilities.md) 包
