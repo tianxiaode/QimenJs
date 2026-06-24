@@ -8,7 +8,7 @@
  */
 
 import { RequestContextBuilder, type RequestContext } from '@orbitjs/context';
-import { HttpExecutor, type HttpProcessor } from './HttpExecutor';
+import { HttpExecutor } from './HttpExecutor';
 import type { HttpMethod } from './types/http-context';
 
 /**
@@ -62,26 +62,15 @@ export interface SimpleRequestTask {
 export class HttpClient {
     private domain: string;
     private executor: HttpExecutor;
-    private processors?: HttpProcessor[];
     
     /**
      * 构造函数
      * 
      * @param domain - 域名
-     * @param processors - 可选的处理器列表
      */
-    constructor(domain: string = 'default', processors?: HttpProcessor[]) {
+    constructor(domain: string = 'default') {
         this.domain = domain;
         this.executor = new HttpExecutor();
-        this.processors = processors;
-    }
-    
-    /**
-     * 设置处理器列表
-     */
-    setProcessors(processors: HttpProcessor[]): this {
-        this.processors = processors;
-        return this;
     }
     
     /**
@@ -127,7 +116,7 @@ export class HttpClient {
     /**
      * 发送请求
      */
-    private request(
+    request(
         method: HttpMethod,
         url: string,
         options: SimpleRequestOptions = {}
@@ -136,7 +125,7 @@ export class HttpClient {
         const context = this.buildContext(method, url, options);
         
         // 创建可取消的任务
-        const task = this.executor.createTask(context, this.processors);
+        const task = this.executor.createTask(context);
         
         return {
             context: task.promise.then(result => result.context),

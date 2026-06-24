@@ -31,5 +31,5 @@ export const UrlBuilderHandler = async (context: RequestContext) => {
         url += (url.includes('?') ? '&' : '?') + queryString;
     }
 
-    context.http.url = url;
+    context.request.url = url;
 };

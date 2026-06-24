@@ -2,7 +2,6 @@ export * from './HttpClient';
 export * from './HttpExecutor';
 export * from './HttpActionRegistrar';
 export * from './factory';
-export * from './StreamClient';
 export * from './types';
 
 // 导出 actions

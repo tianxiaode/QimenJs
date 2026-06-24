@@ -48,10 +48,16 @@ export class HttpExecutor {
         
         // 如果 domain 是字符串，从注册表获取配置
         if (typeof domain === 'string') {
-            const domainConfig = Registry.domain.get(domain);
-            if (domainConfig) {
-                // 将 domain 配置存储到 context.metadata
-                context.metadata.domainConfig = domainConfig;
+            // 尝试从 Registry 获取 domain 配置
+            // 如果 Registry 没有 domain 注册表，则跳过
+            try {
+                const domainConfig = (Registry as any).domain?.get(domain);
+                if (domainConfig) {
+                    // 将 domain 配置存储到 context.metadata
+                    context.metadata.domainConfig = domainConfig;
+                }
+            } catch {
+                // Registry 没有 domain 注册表，跳过
             }
         }
     }

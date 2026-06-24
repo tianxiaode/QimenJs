@@ -23,11 +23,11 @@ export const CommonParamsEnricherHandler = async (context: RequestContext) => {
         const bodyValue = typeof commonBody === 'function' ? commonBody() : commonBody;
 
         // 安全合并：确保当前有 body 且它是对象类型才进行扩展
-        if (context.http.body && typeof context.http.body === 'object') {
-            context.http.body = { ...bodyValue, ...context.http.body };
-        } else if (!context.http.body) {
+        if (context.request.body && typeof context.request.body === 'object') {
+            context.request.body = { ...bodyValue, ...context.request.body };
+        } else if (!context.request.body) {
             // 如果原本没 Body，直接把公共 Body 塞进去
-            context.http.body = bodyValue;
+            context.request.body = bodyValue;
         }
     }
 };

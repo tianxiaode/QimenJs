@@ -1,0 +1,89 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DomainRegistrar = void 0;
+const types_1 = require("../types");
+const RegistrarBase_1 = require("./RegistrarBase");
+const errors_1 = require("./errors");
+/**
+ * 域配置注册器
+ * 管理不同域名的配置信息
+ *
+ * 用于存储和管理多个API端点或服务域的配置信息，
+ * 支持不同的超时时长、分页配置、公共参数等
+ */
+class DomainRegistrar extends RegistrarBase_1.RegistrarBase {
+    constructor() {
+        super(...arguments);
+        this.name = types_1.DomainRegistrarName;
+        /**
+         * 存储域名称到域配置的映射
+         * 使用Map结构提供高效的键值对存储和检索
+         * @protected
+         */
+        this.storage = new Map();
+    }
+    /**
+     * 注册一个域配置
+     *
+     * @param name - 域名称，作为唯一标识符
+     * @param config - 域配置对象，包含API端点的相关设置
+     * @param force - 是否强制注册（覆盖已有配置），默认为 false
+     * @throws RegistrarConflictError - 当配置名称冲突且未使用 force 时
+     */
+    register(name, config, force = false) {
+        this.checkLock();
+        // 1. 如果不强制且已存在，直接炸掉，不给任何模糊空间
+        if (!force && this.storage.has(name)) {
+            throw new errors_1.RegistrarConflictError(this.name, name);
+        }
+        // 2. 只有两种情况会走到这：要么是新的，要么你明确说了要覆盖
+        this.storage.set(name, config);
+    }
+    /**
+     * 删除一个域配置
+     * 从存储中移除指定名称的配置
+     *
+     * @param name - 要删除的域名称
+     */
+    unregister(name) {
+        this.checkLock();
+        this.storage.delete(name);
+    }
+    /**
+     * 获取域配置
+     *
+     * @param name - 域名称
+     * @returns 域配置对象
+     */
+    get(name) {
+        return this.storage.get(name);
+    }
+    /**
+     * 获取域的基地址
+     * 便捷方法，直接返回指定域的baseUrl
+     *
+     * @param name - 域名称
+     * @returns 域的基地址
+     */
+    getBaseUrl(name) {
+        const config = this.storage.get(name);
+        return config.baseUrl;
+    }
+    /**
+     * 输出域注册器的状态信息
+     * 显示当前存储的所有域名称和对应的基地址
+     *
+     * @protected
+     */
+    doInspect() {
+        console.group('🌐 Domain Registry Status');
+        const summary = {};
+        this.storage.forEach((config, name) => {
+            summary[name] = config.baseUrl;
+        });
+        console.table(summary);
+        console.groupEnd();
+    }
+}
+exports.DomainRegistrar = DomainRegistrar;
+//# sourceMappingURL=DomainRegistrar.js.map

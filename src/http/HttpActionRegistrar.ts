@@ -67,26 +67,17 @@ export interface HttpActionEntry {
  * 管理 HTTP 处理器的注册和检索
  */
 export class HttpActionRegistrar extends RegistrarBase<Map<string, HttpActionEntry>> {
-    private static instance: HttpActionRegistrar;
+    public readonly name = 'http-action';
+    
+    /**
+     * 存储数据
+     */
+    protected storage = new Map<string, HttpActionEntry>();
     
     /**
      * 管道缓存
      */
     private pipelineCache: HttpActionEntry[] | null = null;
-    
-    private constructor() {
-        super('http-action');
-    }
-    
-    /**
-     * 获取单例实例
-     */
-    static getInstance(): HttpActionRegistrar {
-        if (!HttpActionRegistrar.instance) {
-            HttpActionRegistrar.instance = new HttpActionRegistrar();
-        }
-        return HttpActionRegistrar.instance;
-    }
     
     /**
      * 注册 HTTP Action
@@ -172,5 +163,20 @@ export class HttpActionRegistrar extends RegistrarBase<Map<string, HttpActionEnt
      */
     getNames(): string[] {
         return Array.from(this.storage.keys());
+    }
+    
+    /**
+     * 实现抽象方法：输出注册器状态
+     */
+    protected doInspect(): void {
+        const entries = Array.from(this.storage.entries());
+        if (entries.length === 0) {
+            console.log('  (empty)');
+            return;
+        }
+        
+        entries.forEach(([name, entry]) => {
+            console.log(`  ${name}: ${entry.description || 'no description'}`);
+        });
     }
 }

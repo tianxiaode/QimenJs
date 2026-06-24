@@ -8,7 +8,7 @@ describe('HttpClient', () => {
     let client: HttpClient;
     
     beforeEach(() => {
-        client = new HttpClient('user');
+        client = new HttpClient('test');
     });
     
     describe('constructor', () => {
@@ -27,7 +27,7 @@ describe('HttpClient', () => {
             const task = client.get('/api/users');
             const result = await task.context;
             
-            expect(result.identity.domain).toBe('user');
+            expect(result.identity.domain).toBe('test');
             expect(result.request.url).toBe('/api/users');
             expect(result.request.method).toBe('GET');
         });
@@ -81,6 +81,40 @@ describe('HttpClient', () => {
             const result = await task.context;
             
             expect(result.request.queryParams).toEqual({ page: 1, size: 10 });
+        });
+        
+        it('should support timeout', async () => {
+            const task = client.get('/api/users', {
+                timeout: 5000,
+            });
+            const result = await task.context;
+            
+            // timeout 存储在 metadata 中
+            expect(result.metadata.timeout).toBe(5000);
+        });
+    });
+    
+    describe('upload and download', () => {
+        it('should create upload request', async () => {
+            const file = new Blob(['test']);
+            const onProgress = jest.fn();
+            
+            const task = client.upload('/api/upload', file, onProgress);
+            const result = await task.context;
+            
+            expect(result.request.method).toBe('POST');
+            expect(result.request.body).toBe(file);
+            expect(result.metadata.onProgress).toBe(onProgress);
+        });
+        
+        it('should create download request', async () => {
+            const onProgress = jest.fn();
+            
+            const task = client.download('/api/download', onProgress);
+            const result = await task.context;
+            
+            expect(result.request.method).toBe('GET');
+            expect(result.metadata.onProgress).toBe(onProgress);
         });
     });
     
