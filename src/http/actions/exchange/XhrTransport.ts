@@ -13,13 +13,13 @@ export const XhrTransportHandler = async (context: RequestContext) => {
 
     // 2. 初始化中断上下文
     const internalController = new AbortController();
-    context.http.controller = internalController;
-    const timeout = context.config.timeout || 30000; // 上传通常超时给长一点
+    context.request.controller = internalController;
+    const timeout = context.request.timeout || 30000; // 上传通常超时给长一点
     const timeoutId = setTimeout(() => internalController.abort('timeout'), timeout);
 
     return new Promise<void>(resolve => {
         const xhr = new XMLHttpRequest();
-        const { url, method, headers, body } = context.http;
+        const { url, method, headers, body } = context.request;
 
         xhr.open(method, url, true);
         xhr.responseType = 'text'; // 响应通常为 JSON 字符串，留给 03 阶段解析
@@ -38,10 +38,11 @@ export const XhrTransportHandler = async (context: RequestContext) => {
 
         // 6. 响应完成处理
         xhr.onload = () => {
-            context.http.status = xhr.status;
-            context.http.rawResponse = xhr.response; // 存入字符串
+            context.response.status = xhr.status;
+            context.response.rawResponse = xhr.response; // 存入字符串
+            context.response.isSuccess = xhr.status >= 200 && xhr.status < 300;
             // 提取响应头
-            context.http.responseHeaders = parseXhrHeaders(xhr.getAllResponseHeaders());
+            context.response.headers = parseXhrHeaders(xhr.getAllResponseHeaders());
             context.metadata.isTransportFailure = false;
             finalize();
         };
@@ -49,8 +50,7 @@ export const XhrTransportHandler = async (context: RequestContext) => {
         // 7. 错误归因
         const handleError = (reason: string) => {
             context.metadata.isTransportFailure = true;
-            context.metadata.hasError = true;
-            context.metadata.errorReason = reason;
+            context.error = new Error(reason);
             finalize();
         };
 

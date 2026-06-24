@@ -8,10 +8,10 @@
 import type { RequestContext } from '@orbitjs/context';
 
 export const DataParserHandler = async (context: RequestContext) => {
-    if (context.metadata.isTransportFailure || !context.http.rawResponse) return;
+    if (context.metadata.isTransportFailure || !context.response.rawResponse) return;
 
     try {
-        const rawResponse = context.http.rawResponse;
+        const rawResponse = context.response.rawResponse;
 
         // 统一处理 Fetch (Response对象) 和 XHR (String/Blob)
         if (context.metadata.isJson) {
@@ -28,11 +28,14 @@ export const DataParserHandler = async (context: RequestContext) => {
                 typeof rawResponse.text === 'function' ? await rawResponse.text() : rawResponse;
         }
 
+        // 将解析后的数据存入 response.data
+        context.response.data = context.data.raw;
+        
         // 备份一份到 source
         context.data.source = context.data.raw;
     } catch (e) {
         // 解析失败也是一种逻辑错误
-        context.metadata.hasError = true;
+        context.error = new Error('parse_error');
         context.metadata.errorReason = 'parse_error';
     }
 };

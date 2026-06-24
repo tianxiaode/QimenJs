@@ -10,20 +10,20 @@ import type { RequestContext } from '@orbitjs/context';
 
 export const ResponseAnalyzerHandler = async (context: RequestContext) => {
     // 卫语句：物理层彻底失败则跳过
-    if (context.metadata.isTransportFailure || !context.http.rawResponse) return;
+    if (context.metadata.isTransportFailure || !context.response.rawResponse) return;
 
-    const status = context.http.status || 0;
-    const headers = context.http.responseHeaders || {};
+    const status = context.response.status || 0;
+    const headers = context.response.headers || {};
     const contentDisposition = headers['content-disposition'] || '';
     const contentType = (headers['content-type'] || '').toLowerCase();
 
     // 1. 状态判定：初步翻红 hasError
     // 即使是 4xx/5xx，我们也只是标记 hasError，不中断流转，因为 04 阶段还要提取报错信息
     if (status >= 400) {
-        context.metadata.hasError = true;
+        context.error = new Error(`HTTP ${status}`);
     }
 
-    // 1. 识别是否是下载场景
+    // 2. 识别是否是下载场景
     // 逻辑：Header 里明确要求下载，或者是常见的二进制流
     context.metadata.isDownload =
         contentDisposition.includes('attachment') ||
@@ -35,12 +35,13 @@ export const ResponseAnalyzerHandler = async (context: RequestContext) => {
             context.metadata.fileName = decodeURIComponent(match[1]);
         }
     }
-    // 2. 类型识别：为 DataParser 铺路
+    
+    // 3. 类型识别：为 DataParser 铺路
     context.metadata.isJson = contentType.includes('application/json');
     context.metadata.isBlob =
         contentType.includes('application/octet-stream') || contentType.includes('image/');
     context.metadata.isText = contentType.includes('text/') || contentType.includes('xml');
 
-    // 3. 记录解析建议 (供下一个 Action 使用)
+    // 4. 记录解析建议 (供下一个 Action 使用)
     context.metadata.contentType = contentType;
 };

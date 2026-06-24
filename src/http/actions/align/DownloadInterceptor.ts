@@ -6,22 +6,28 @@
  */
 
 import type { RequestContext } from '@orbitjs/context';
-import { triggerDownload } from '@orbitjs/utils';
 
 export const DownloadInterceptorHandler = async (context: RequestContext) => {
-
-    if(!context.metadata.isDownload) return;
+    if (!context.metadata.isDownload) return;
 
     // 只有在成功解析出 Blob 且被判定为下载时执行
     const canDownload =
         context.metadata.isDownload &&
-        !context.metadata.hasError &&
+        !context.error &&
         context.data.raw instanceof Blob;
 
     if (!canDownload) return;
 
-    // 执行下载（通过 Utils）
-    triggerDownload(context.data.raw as Blob, context.metadata.fileName || 'download');
+    // 执行下载（创建下载链接）
+    const blob = context.data.raw as Blob;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = context.metadata.fileName || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
     // 记录审计日志或标记
     context.metadata.isDownloadHandled = true;

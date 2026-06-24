@@ -8,26 +8,25 @@
 
 import type { RequestContext } from '@orbitjs/context';
 
-
 export const FetchTransportHandler = async (context: RequestContext) => {
     // 1. 自治判定：非上传任务才走 Fetch
     if (context.metadata.isUpload || context.metadata.isDownload) return;
 
     // 2. 初始化 Abort 控制器并存入上下文，供外部或后续逻辑控制
     const internalController = new AbortController();
-    context.http.controller = internalController; // 重点：控制权外露
+    context.request.controller = internalController; // 重点：控制权外露
     
-    // 3. 处理超时逻辑 (合并你之前的 createAbortContext 逻辑)
-    const timeout = context.config.timeout || 10000;
+    // 3. 处理超时逻辑
+    const timeout = context.request.timeout || 10000;
     const timeoutId = setTimeout(() => internalController.abort('timeout'), timeout);
 
     try {
-        const { url, method, headers, body } = context.http;
+        const { url, method, headers, body } = context.request;
 
         const response = await fetch(url, {
             method,
             headers,
-            // 使用你提供的 serializeBody 逻辑
+            // 序列化 body
             body: !['GET', 'HEAD'].includes(method.toUpperCase()) 
                   ? JSON.stringify(body) 
                   : undefined,
@@ -35,18 +34,19 @@ export const FetchTransportHandler = async (context: RequestContext) => {
         });
 
         // 4. 填充物理响应信息
-        context.http.status = response.status;
-        context.http.rawResponse = response;
+        context.response.status = response.status;
+        context.response.isSuccess = response.ok;
+        context.response.rawResponse = response;
         
-        // 5. 提取响应头 (使用你提供的 extractHeaders)
-        context.http.responseHeaders = {};
-        response.headers.forEach((v, k) => { context.http.responseHeaders![k] = v; });
+        // 5. 提取响应头
+        context.response.headers = {};
+        response.headers.forEach((v, k) => { context.response.headers[k] = v; });
 
         context.metadata.isTransportFailure = false;
         
     } catch (error: any) {
         context.metadata.isTransportFailure = true;
-        context.metadata.hasError = true;
+        context.error = error;
         
         // 识别是否是超时导致
         if (error.name === 'AbortError' || internalController.signal.aborted) {
@@ -54,7 +54,6 @@ export const FetchTransportHandler = async (context: RequestContext) => {
         } else {
             context.metadata.errorReason = 'network_error';
         }
-        context.data.source = error; 
     } finally {
         clearTimeout(timeoutId);
     }
