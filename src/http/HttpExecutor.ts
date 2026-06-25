@@ -42,24 +42,11 @@ export class HttpExecutor {
      * 处理 domain 配置
      * 
      * @param context - 请求上下文
+     * @deprecated Domain 配置已在 RequestContextBuilder.build() 中获取并缓存
      */
     private processDomainConfig(context: RequestContext): void {
-        const domain = context.identity.domain;
-        
-        // 如果 domain 是字符串，从注册表获取配置
-        if (typeof domain === 'string') {
-            // 尝试从 Registry 获取 domain 配置
-            // 如果 Registry 没有 domain 注册表，则跳过
-            try {
-                const domainConfig = (Registry as any).domain?.get(domain);
-                if (domainConfig) {
-                    // 将 domain 配置存储到 context.metadata
-                    context.metadata.domainConfig = domainConfig;
-                }
-            } catch {
-                // Registry 没有 domain 注册表，跳过
-            }
-        }
+        // Domain 配置已在 RequestContextBuilder.build() 中获取并缓存到 context.metadata.domainConfig
+        // 这里不需要再做任何处理
     }
     
     /**

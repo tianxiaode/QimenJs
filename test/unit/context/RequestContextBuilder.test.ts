@@ -38,6 +38,19 @@ describe('RequestContextBuilder', () => {
             expect(context.identity.domain).toBe('test');
             expect(context.request.url).toBe('/api/test');
         });
+
+        it('should not fail when domain is not registered', () => {
+            // 使用未注册的 domain
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('unregistered-domain')
+                .withUrl('/api/test')
+                .build();
+            
+            // 应该不会报错，只是 domainConfig 为 undefined
+            expect(context.identity.domain).toBe('unregistered-domain');
+            // domainConfig 可能为 undefined（如果 Registry.domain 不存在）
+        });
     });
 
     describe('chaining', () => {

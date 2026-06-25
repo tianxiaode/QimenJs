@@ -13,6 +13,7 @@ import type {
     HttpMethod,
     HttpResponseType 
 } from './types/request-context';
+import { Registry } from '@orbitjs/registry';
 
 /**
  * 请求上下文构建器
@@ -272,6 +273,20 @@ export class RequestContextBuilder {
         
         if (!this.context.request?.url) {
             throw new Error('RequestContext is missing URL');
+        }
+        
+        // 获取并缓存 domain 配置
+        const domain = this.context.identity.domain;
+        if (typeof domain === 'string') {
+            try {
+                const domainConfig = (Registry as any).domain?.get(domain);
+                if (domainConfig) {
+                    // 将 domain 配置存储到 metadata，避免后续重复获取
+                    this.context.metadata!.domainConfig = domainConfig;
+                }
+            } catch {
+                // Registry 没有 domain 注册表，跳过
+            }
         }
         
         return this.context as RequestContext;
