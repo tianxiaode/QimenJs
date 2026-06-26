@@ -27,20 +27,21 @@
 | [@orbitjs/pipeline](./pipeline.md) | ✅ 完成 | ✅ 通过 | ~90% | 统一管道执行器 |
 | [@orbitjs/composable](./composable.md) | ✅ 完成 | ✅ 通过 | ~90% | 可组合系统 |
 
-### 第 2 层：功能工具包（3个）
+### 第 2 层：功能工具包（4个）
 
 | 包名 | 状态 | 测试 | 覆盖率 | 说明 |
 |------|------|------|--------|------|
 | [@orbitjs/schema](./schema.md) | ✅ 完成 | ✅ 通过 | 92% | Schema 定义系统 |
 | [@orbitjs/validation](./validation.md) | ✅ 完成 | ✅ 通过 | ~50% | 验证系统 |
 | [@orbitjs/data-processor](./data-processor.md) | ✅ 完成 | ✅ 通过 | ~80% | 数据处理系统 |
+| [@orbitjs/event-dom](./event-dom.md) | ✅ 完成 | ✅ 通过 | 100% | DOM 事件处理 |
 
 ### 第 3 层：高级功能包（2个）
 
 | 包名 | 状态 | 测试 | 覆盖率 | 说明 |
 |------|------|------|--------|------|
 | [@orbitjs/http](./http.md) | ✅ 完成 | ✅ 通过 | 86.23% | HTTP 客户端（已重构，含 Token 管理） |
-| [@orbitjs/system-abilities](./system-abilities.md) | ⚠️ 待更新 | ⚠️ 待写 | - | 系统能力实现 |
+| [@orbitjs/system-abilities](./system-abilities.md) | ✅ 完成 | ✅ 通过 | 28.25% | 系统能力实现 |
 
 ### 第 4 层：业务包（1个）
 
@@ -68,10 +69,10 @@
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 19 |
-| 已完成 | 17 |
+| 总包数 | 20 |
+| 已完成 | 19 |
 | 重构中 | 0 |
-| 待更新 | 2 |
+| 待更新 | 1 |
 | 平均测试覆盖率 | ~85% |
 
 ### 层级统计
@@ -80,8 +81,8 @@
 |------|------|--------|------------|
 | 第 0 层 | 7 | 7 | ~90% |
 | 第 1 层 | 6 | 6 | ~90% |
-| 第 2 层 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 1 | ~86% |
+| 第 2 层 | 4 | 4 | ~80% |
+| 第 3 层 | 2 | 2 | ~57% |
 | 第 4 层 | 1 | 0 | - |
 
 ## 依赖关系图
@@ -106,7 +107,15 @@ http (L3)
 system-abilities (L3)
   ├─ composable (L1)
   ├─ registry (L1)
-  └─ events (L1)
+  ├─ events (L1)
+  └─ event-dom (L2)
+
+event-dom (L2)
+  ├─ events (L1)
+  ├─ logger (L0)
+  ├─ utils (L0)
+  ├─ runtime (L0)
+  └─ error (L0)
 
 data-processor (L2)
   ├─ registry (L1)
@@ -166,6 +175,7 @@ registry (L1)
 - **Schema**: [schema](./schema.md)
 - **验证**: [validation](./validation.md)
 - **数据处理**: [data-processor](./data-processor.md)
+- **DOM事件**: [event-dom](./event-dom.md)
 - **HTTP**: [http](./http.md)
 - **系统能力**: [system-abilities](./system-abilities.md)
 - **实体**: [entity](./entity.md)
@@ -175,21 +185,20 @@ registry (L1)
 #### 已完成
 - error, logger, utils, async, runtime, crypto
 - registry, cache, events, task, pipeline, composable
-- schema, validation, data-processor, context, http
+- schema, validation, data-processor, context, http, event-dom, system-abilities
 
 #### 待更新
-- system-abilities, entity
+- entity
 
 ## 下一步工作
 
 ### 优先级 1：更新待更新包
-- [ ] 更新 system-abilities 包
 - [ ] 更新 entity 包
 
 ### 优先级 2：完善测试
 - [ ] 提高 http 包测试覆盖率
 - [ ] 提高 context 包测试覆盖率
-- [ ] 编写 system-abilities 包测试
+- [ ] 提高 system-abilities 包测试覆盖率
 - [ ] 编写 entity 包测试
 
 ## 参考资料
