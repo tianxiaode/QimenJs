@@ -1,0 +1,1 @@
+{"version":3,"file":"StreamError.d.ts","sourceRoot":"","sources":["StreamError.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,eAAe,EAAE,MAAM,SAAS,CAAC;AAC1C,OAAO,EAAE,WAAW,EAAE,MAAM,eAAe,CAAC;AAE5C;;;;;;;;;;;;;;;;;;GAkBG;AACH,qBAAa,WAAY,SAAQ,WAAW;IAC1C;;;;;;OAMG;gBACS,OAAO,EAAE,MAAM,EAAE,IAAI,EAAE,eAAe,EAAE,OAAO,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC;CAMlF"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"KernelError.d.ts","sourceRoot":"","sources":["KernelError.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAC3C,OAAO,EAAE,eAAe,EAAE,MAAM,SAAS,CAAC;AAE1C;;;;;;;;;;;;;;;;;;GAkBG;AACH,qBAAa,WAAY,SAAQ,SAAS;IACxC;;;;;;OAMG;gBACS,OAAO,EAAE,MAAM,EAAE,IAAI,EAAE,eAAe,EAAE,OAAO,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC;CAMlF"}
