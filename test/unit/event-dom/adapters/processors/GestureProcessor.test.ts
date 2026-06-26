@@ -17,8 +17,8 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 import { GestureProcessor } from '@/event-dom/adapters/processors/GestureProcessor';
-import { GestureEmit, InputSignal } from '@/kernel/types';
-import { GestureError, KernelErrorCode } from '@/kernel/errors';
+import { GestureEmit, InputSignal } from '@/event-dom/types';
+import { GestureError, KernelErrorCode } from '@/error';
 
 // 创建一个具体的子类来测试抽象基类
 class TestGestureProcessor extends GestureProcessor {

@@ -11,7 +11,7 @@ import {
 } from '@/event-dom/types';
 
 // Mock 依赖
-jest.mock('@orbitjs/runtime-env', () => ({
+jest.mock('@/runtime', () => ({
   detectInputCapabilities: jest.fn(() => ({ pointer: true, touch: true, mouse: true }))
 }));
 
@@ -44,7 +44,7 @@ Object.defineProperty(window, 'performance', {
 });
 
 // 导入 mock 函数
-const { detectInputCapabilities } = require('@orbitjs/runtime-env');
+const { detectInputCapabilities } = require('@/runtime');
 const { createGestureProcessor } = require('@/event-dom/adapters/processors');
 
 // 为浏览器API添加模拟

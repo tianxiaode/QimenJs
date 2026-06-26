@@ -43,7 +43,7 @@ jest.mock('@/event-dom/adapters/utils/validation', () => {
 });
 
 import { DoubleTapProcessor } from '@/event-dom/adapters/processors/DoubleTapProcessor';
-import { GestureEmit, InputSignal } from '@/kernel/types';
+import { GestureEmit, InputSignal } from '@/event-dom/types';
 import { validateDoubleTap } from '@/event-dom/adapters/utils/validation';
 import { Logger } from '@orbitjs/logger';
 

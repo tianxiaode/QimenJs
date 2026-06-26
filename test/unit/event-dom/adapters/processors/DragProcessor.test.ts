@@ -30,7 +30,7 @@ jest.mock('@orbitjs/validation', () => {
 });
 
 import { DragProcessor } from '@/event-dom/adapters/processors/DragProcessor';
-import { GestureEmit, InputSignal } from '@/kernel/types';
+import { GestureEmit, InputSignal } from '@/event-dom/types';
 
 describe('DragProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;

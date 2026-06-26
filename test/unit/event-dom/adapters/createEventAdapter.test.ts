@@ -8,6 +8,31 @@
  * 4. 配置选项
  * 5. 错误处理
  */
+
+// Mock Logger to avoid initialization issues
+jest.mock('@/logger', () => {
+    const actualLogger = jest.requireActual('@/logger');
+    return {
+        ...actualLogger,
+        Logger: {
+            ...actualLogger.Logger,
+            for: jest.fn(() => ({
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
+                child: jest.fn().mockReturnValue({
+                    debug: jest.fn(),
+                    info: jest.fn(),
+                    warn: jest.fn(),
+                    error: jest.fn(),
+                    child: jest.fn(),
+                }),
+            }))
+        }
+    };
+});
+
 import { createEventAdapter } from '@/event-dom/adapters/createEventAdapter';
 import { DomEventAdapter } from '@/event-dom/adapters/dom';
 import { EventBus } from '@/events/EventBus';

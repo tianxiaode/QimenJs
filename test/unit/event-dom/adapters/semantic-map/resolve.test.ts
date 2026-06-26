@@ -1,5 +1,5 @@
 import { resolveInputEventMap } from '@/event-dom/adapters/semantic-map/resolve';
-import { InputEventMap } from '@/kernel';
+import { InputEventMap } from '@/event-dom/types';
 
 // 模拟输入能力检测结果
 const mockCapabilities = {
@@ -9,7 +9,7 @@ const mockCapabilities = {
 };
 
 // 模拟 detectInputCapabilities 函数
-jest.mock('@orbitjs/runtime-env', () => ({
+jest.mock('@/runtime', () => ({
   detectInputCapabilities: jest.fn(() => mockCapabilities),
 }));
 

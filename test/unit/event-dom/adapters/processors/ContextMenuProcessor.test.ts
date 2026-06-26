@@ -1,5 +1,5 @@
 import { ContextMenuProcessor } from '@/event-dom/adapters/processors/ContextMenuProcessor';
-import { GestureEmit, InputSignal } from '@/kernel/types';
+import { GestureEmit, InputSignal } from '@/event-dom/types';
 
 // Mock the logger to prevent errors during testing
 jest.mock('@orbitjs/logger', () => {
