@@ -1,6 +1,6 @@
-import { AbilityBase } from '@/composable/AbilityBase';
-import type { IExposeResult } from '@/types/composable';
-import { globalEventBus, EventHandler } from '@orbitjs/events';
+import { AbilityBase } from '@/composable';
+import type { IExposeResult } from '@/composable';
+import { globalEventBus, EventHandler } from '@/events';
 
 /**
  * EventAbility - 事件能力类

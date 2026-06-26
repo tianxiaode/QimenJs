@@ -2,10 +2,10 @@ import type {
     IEventAdapter,
     BindOptions,
     GestureSemantic,
-} from '../../types';
-import type { IExposeResult } from '../../types/composable';
-import { createEventAdapter } from '@orbitjs/event-dom';
-import { AbilityBase } from '../../composable';
+} from '../types/abilities';
+import type { IExposeResult } from '@/composable';
+import { createEventAdapter } from '@/event-dom';
+import { AbilityBase } from '@/composable';
 
 /**
  * DomEventsAbility - DOM事件能力
@@ -19,7 +19,7 @@ export class DomEventsAbility extends AbilityBase {
      * 事件适配器（延迟创建）
      * @private
      */
-    private _adapter?: IEventAdapter<any>;
+    private _adapter?: any;
 
     /**
      * 获取或创建事件适配器
@@ -27,7 +27,7 @@ export class DomEventsAbility extends AbilityBase {
      * @returns 事件适配器实例
      * @private
      */
-    private getAdapter(): IEventAdapter<any> {
+    private getAdapter(): any {
         if (!this._adapter) {
             this._adapter = createEventAdapter();
         }

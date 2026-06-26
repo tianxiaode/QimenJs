@@ -9,6 +9,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestContextBuilder = void 0;
+const registry_1 = require("@orbitjs/registry");
 /**
  * 请求上下文构建器
  *
@@ -237,12 +238,26 @@ class RequestContextBuilder {
      * @returns 完整的 RequestContext 对象
      */
     build() {
-        var _a, _b;
+        var _a, _b, _c;
         if (!((_a = this.context.identity) === null || _a === void 0 ? void 0 : _a.domain)) {
             throw new Error('RequestContext is missing domain');
         }
         if (!((_b = this.context.request) === null || _b === void 0 ? void 0 : _b.url)) {
             throw new Error('RequestContext is missing URL');
+        }
+        // 获取并缓存 domain 配置
+        const domain = this.context.identity.domain;
+        if (typeof domain === 'string') {
+            try {
+                const domainConfig = (_c = registry_1.Registry.domain) === null || _c === void 0 ? void 0 : _c.get(domain);
+                if (domainConfig) {
+                    // 将 domain 配置存储到 metadata，避免后续重复获取
+                    this.context.metadata.domainConfig = domainConfig;
+                }
+            }
+            catch (_d) {
+                // Registry 没有 domain 注册表，跳过
+            }
         }
         return this.context;
     }

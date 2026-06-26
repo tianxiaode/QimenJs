@@ -1,4 +1,4 @@
-import { geometry } from '@orbitjs/utils';
+import { geometry } from '@/utils';
 
 /**
  * 验证双击（double tap）手势

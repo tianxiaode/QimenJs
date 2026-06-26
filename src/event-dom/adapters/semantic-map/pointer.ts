@@ -1,4 +1,4 @@
-import { InputEventMap } from "../../../types";
+import { InputEventMap } from "../../types";
 
 /**
  * 指针事件映射

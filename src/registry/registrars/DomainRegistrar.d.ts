@@ -47,6 +47,23 @@ export declare class DomainRegistrar extends RegistrarBase<Map<string, DomainCon
      */
     getBaseUrl(name: string): string;
     /**
+     * 更新 token
+     *
+     * 批量更新多个域的 token
+     *
+     * @param token - Token 字符串
+     * @param domains - 域名列表（可变参数）
+     */
+    updateToken(token: string, ...domains: string[]): void;
+    /**
+     * 清除 token
+     *
+     * 批量清除多个域的 token
+     *
+     * @param domains - 域名列表（可变参数）
+     */
+    clearToken(...domains: string[]): void;
+    /**
      * 输出域注册器的状态信息
      * 显示当前存储的所有域名称和对应的基地址
      *

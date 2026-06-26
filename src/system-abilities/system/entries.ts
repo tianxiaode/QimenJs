@@ -4,7 +4,7 @@ import {
     DomEventsAbilityName,
     EventAbilityName,
     SystemAbilityName,
-} from '../../types';
+} from '../types/abilities';
 import { EventAbility } from './EventAbility';
 import { DomEventsAbility } from './DomEventsAbility';
 import { DomainAbility } from './DomainAbility';

@@ -7,6 +7,7 @@
  * - 保持简单的 API
  */
 import { type RequestContext } from '@orbitjs/context';
+import type { HttpMethod } from './types/http-context';
 /**
  * HTTP 请求选项（简化版，用于 HttpClient）
  */
@@ -64,7 +65,7 @@ export declare class HttpClient {
     /**
      * 发送请求
      */
-    private request;
+    request(method: HttpMethod, url: string, options?: SimpleRequestOptions): SimpleRequestTask;
     /**
      * GET 请求
      */

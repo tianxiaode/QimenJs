@@ -28,7 +28,7 @@
  * @module @orbitjs/event-dom
  */
 
-import { detectInputCapabilities } from '@orbitjs/runtime-env';
+import { detectInputCapabilities } from '@/runtime';
 import {
     AtomicSignal,
     GestureEventMap,
@@ -39,10 +39,10 @@ import {
     GestureInput,
     BindOptions,
     IEventScope,
-} from '../types';
+} from '../../types';
 import { createGestureProcessor } from '../processors';
-import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
-import { string } from '@orbitjs/utils';
+import { ILogger, LogLevel, Logger } from '@/logger';
+import { string } from '@/utils';
 
 /* ============================================
  * DomEventAdapter

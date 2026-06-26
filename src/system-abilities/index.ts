@@ -1,5 +1,2 @@
 export * from './system';
-export * from './entity-manager';
-
-
-
+export * from './types';

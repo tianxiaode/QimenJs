@@ -17,6 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./HttpClient"), exports);
 __exportStar(require("./HttpExecutor"), exports);
 __exportStar(require("./HttpActionRegistrar"), exports);
+__exportStar(require("./factory"), exports);
 __exportStar(require("./types"), exports);
 // 导出 actions
 __exportStar(require("./actions/register"), exports);

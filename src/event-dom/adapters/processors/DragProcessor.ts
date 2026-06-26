@@ -8,7 +8,7 @@
  * 触发拖拽开始事件，并在移动过程中持续发送拖拽移动事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '../types';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit, GestureInput } from '../../types';
 import { GestureProcessor } from './GestureProcessor';
 
 /**

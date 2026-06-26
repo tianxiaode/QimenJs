@@ -1,5 +1,5 @@
 // input/maps/resolve.ts
-import { detectInputCapabilities } from '@orbitjs/runtime-env';
+import { detectInputCapabilities } from '@/runtime';
 import { InputEventMap } from '../../types';
 
 /**

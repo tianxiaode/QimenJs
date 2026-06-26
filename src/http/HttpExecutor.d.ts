@@ -34,6 +34,7 @@ export declare class HttpExecutor {
      * 处理 domain 配置
      *
      * @param context - 请求上下文
+     * @deprecated Domain 配置已在 RequestContextBuilder.build() 中获取并缓存
      */
     private processDomainConfig;
     /**

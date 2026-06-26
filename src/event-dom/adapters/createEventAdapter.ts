@@ -7,7 +7,7 @@ import {
     resolveInputEventMap,
     gestureEventMap,
 } from './semantic-map';
-import { IEventAdapter } from '../types';
+import { IEventAdapter } from '../../types';
 import { DomEventAdapter } from './dom';
 
 /**

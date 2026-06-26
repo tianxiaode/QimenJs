@@ -12,7 +12,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HttpExecutor = void 0;
 const pipeline_1 = require("@orbitjs/pipeline");
-const registry_1 = require("@orbitjs/registry");
 const HttpActionRegistrar_1 = require("./HttpActionRegistrar");
 /**
  * HttpExecutor 核心类
@@ -22,25 +21,11 @@ class HttpExecutor {
      * 处理 domain 配置
      *
      * @param context - 请求上下文
+     * @deprecated Domain 配置已在 RequestContextBuilder.build() 中获取并缓存
      */
     processDomainConfig(context) {
-        var _a;
-        const domain = context.identity.domain;
-        // 如果 domain 是字符串，从注册表获取配置
-        if (typeof domain === 'string') {
-            // 尝试从 Registry 获取 domain 配置
-            // 如果 Registry 没有 domain 注册表，则跳过
-            try {
-                const domainConfig = (_a = registry_1.Registry.domain) === null || _a === void 0 ? void 0 : _a.get(domain);
-                if (domainConfig) {
-                    // 将 domain 配置存储到 context.metadata
-                    context.metadata.domainConfig = domainConfig;
-                }
-            }
-            catch (_b) {
-                // Registry 没有 domain 注册表，跳过
-            }
-        }
+        // Domain 配置已在 RequestContextBuilder.build() 中获取并缓存到 context.metadata.domainConfig
+        // 这里不需要再做任何处理
     }
     /**
      * 获取 actions 列表

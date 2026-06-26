@@ -16,4 +16,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./CommonParamsEnricher"), exports);
 __exportStar(require("./UrlBuilder"), exports);
+__exportStar(require("./TokenInjector"), exports);
 //# sourceMappingURL=index.js.map

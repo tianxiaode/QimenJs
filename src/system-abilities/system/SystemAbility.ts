@@ -1,7 +1,7 @@
-import { AbilityBase } from '@/composable/AbilityBase';
-import type { IExposeResult } from '@/types/composable';
-import type { SystemConfig } from '@orbitjs/registry';
-import { SystemRegistrar } from '@orbitjs/registry';
+import { AbilityBase } from '@/composable';
+import type { IExposeResult } from '@/composable';
+import type { SystemConfig } from '@/registry';
+import { SystemRegistrar } from '@/registry';
 
 /**
  * SystemAbility - 系统能力类

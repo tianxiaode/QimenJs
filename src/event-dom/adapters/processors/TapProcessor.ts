@@ -7,7 +7,7 @@
  * 该处理器记录按下和释放事件，验证持续时间和移动距离是否在约束范围内。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../types';
 import { GestureProcessor } from './GestureProcessor';
 import { validateTap } from '../utils/validation';
 

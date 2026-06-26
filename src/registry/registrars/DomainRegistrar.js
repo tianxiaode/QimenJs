@@ -70,6 +70,37 @@ class DomainRegistrar extends RegistrarBase_1.RegistrarBase {
         return config.baseUrl;
     }
     /**
+     * 更新 token
+     *
+     * 批量更新多个域的 token
+     *
+     * @param token - Token 字符串
+     * @param domains - 域名列表（可变参数）
+     */
+    updateToken(token, ...domains) {
+        domains.forEach(domain => {
+            const config = this.storage.get(domain);
+            if (config) {
+                config.token = token;
+            }
+        });
+    }
+    /**
+     * 清除 token
+     *
+     * 批量清除多个域的 token
+     *
+     * @param domains - 域名列表（可变参数）
+     */
+    clearToken(...domains) {
+        domains.forEach(domain => {
+            const config = this.storage.get(domain);
+            if (config) {
+                config.token = undefined;
+            }
+        });
+    }
+    /**
      * 输出域注册器的状态信息
      * 显示当前存储的所有域名称和对应的基地址
      *

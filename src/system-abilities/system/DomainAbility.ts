@@ -1,8 +1,8 @@
-import { AbilityBase } from '@/composable/AbilityBase';
-import type { IExposeResult } from '@/types/composable';
-import type { DomainConfig } from '@orbitjs/registry';
-import { DomainRegistrar } from '@orbitjs/registry';
-import { DOMAIN_CACHE_SYMBOL } from '../../types';
+import { AbilityBase } from '@/composable';
+import type { IExposeResult } from '@/composable';
+import type { DomainConfig } from '@/registry';
+import { DomainRegistrar } from '@/registry';
+import { DOMAIN_CACHE_SYMBOL } from '../types/abilities';
 
 /**
  * DomainAbility - 域能力类

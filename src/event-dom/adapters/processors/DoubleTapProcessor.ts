@@ -8,7 +8,7 @@
  * 以确定是否触发双击语义事件。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../types';
 import { GestureProcessor } from './GestureProcessor';
 import { validateDoubleTap } from '../utils/validation';
 

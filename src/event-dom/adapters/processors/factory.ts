@@ -8,7 +8,7 @@
  * 与具体的处理器类关联起来。
  */
 
-import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../types';
+import { GestureEventDescriptor, GestureSemantic, GestureEmit } from '../../types';
 import { GestureProcessor } from './GestureProcessor';
 import { TapProcessor } from './TapProcessor';
 import { DragProcessor } from './DragProcessor';
@@ -18,8 +18,8 @@ import { SwipeProcessor } from './SwipeProcessor';
 import { HoverProcessor } from './HoverProcessor';
 import { ContextMenuProcessor } from './ContextMenuProcessor';
 import { SubmitProcessor } from './SubmitProcessor';
-import { GestureError } from '../../../kernel/errors'; // 导入新错误类
-import { KernelErrorCode } from '../../../errors/codes'; // 导入错误代码
+import { GestureError } from '@/error/GestureError'; // 导入新错误类
+import { KernelErrorCode } from '@/error/codes'; // 导入错误代码
 
 /**
  * 手势处理器工厂函数类型定义

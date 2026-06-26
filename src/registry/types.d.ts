@@ -64,6 +64,8 @@ export interface DomainConfig {
     pagesizes: number[];
     commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>);
     commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);
+    token?: string;
+    authInjector?: 'bearer' | 'basic' | ((context: any) => void | Promise<void>);
     [key: string]: any;
 }
 /**

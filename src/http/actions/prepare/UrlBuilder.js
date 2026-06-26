@@ -11,9 +11,10 @@ const UrlBuilderHandler = async (context) => {
     const { pathParams: segments = [], queryParams: query = {} } = context.request;
     const { baseUrl } = context.metadata.domainConfig || {};
     // 1. 基础路径处理 (防止双斜杠)
-    const normalizedBase = baseUrl.replace(/\/+$/, '');
+    // 如果没有 baseUrl，使用空字符串
+    const normalizedBase = baseUrl ? baseUrl.replace(/\/+$/, '') : '';
     const path = segments.filter(Boolean).join('/');
-    let url = path ? `${normalizedBase}/${path}` : normalizedBase;
+    let url = path ? (normalizedBase ? `${normalizedBase}/${path}` : path) : normalizedBase;
     // 2. 使用 URLSearchParams 自动处理特殊字符转义和空值
     const searchParams = new URLSearchParams();
     Object.entries(query).forEach(([key, value]) => {

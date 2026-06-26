@@ -1,6 +1,7 @@
 export * from './HttpClient';
 export * from './HttpExecutor';
 export * from './HttpActionRegistrar';
+export * from './factory';
 export * from './types';
 export * from './actions/register';
 export * from './actions/prepare';

@@ -13,10 +13,11 @@ import {
     InputSignal,
     GestureEmit,
     GestureInput,
-} from '../types';
-import { ILogger, LogLevel, Logger } from '@orbitjs/logger';
-import { string, geometry } from '@orbitjs/utils';
-import { GestureError, KernelErrorCode } from '../../../kernel/errors';
+} from '../../types';
+import { ILogger, LogLevel, Logger } from '@/logger';
+import { string, geometry } from '@/utils';
+import { GestureError } from '@/error/GestureError';
+import { KernelErrorCode } from '@/error/codes';
 
 /**
  * GestureProcessor抽象类
