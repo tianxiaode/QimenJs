@@ -25,16 +25,6 @@ export type SystemAbilityNameType =
     | typeof SystemAbilityName;
 
 /**
- * 可组合入口
- */
-export interface ComposableEntry {
-    name: string;
-    description: string;
-    deps?: string[];
-    abilityClass: any;
-}
-
-/**
  * 事件适配器接口
  */
 export interface IEventAdapter {
