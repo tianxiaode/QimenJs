@@ -9,8 +9,6 @@ import { debounce } from '@orbitjs/async';
  * @example
  * ```typescript
  * class SearchAbility extends DebounceAbilityBase {
- *     readonly name = 'Search';
- *     
  *     protected expose(): IExposeResult {
  *         return {
  *             search: this.getDebouncedAction('search', (keyword) => {

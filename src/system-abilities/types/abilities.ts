@@ -3,26 +3,9 @@
  */
 
 /**
- * 能力名称常量
- */
-export const EventAbilityName = 'EventAbility';
-export const DomEventsAbilityName = 'DomEventsAbility';
-export const DomainAbilityName = 'DomainAbility';
-export const SystemAbilityName = 'SystemAbility';
-
-/**
  * Domain 缓存 Symbol
  */
 export const DOMAIN_CACHE_SYMBOL = Symbol('domain-config-cache');
-
-/**
- * 系统能力名称类型
- */
-export type SystemAbilityNameType = 
-    | typeof EventAbilityName
-    | typeof DomEventsAbilityName
-    | typeof DomainAbilityName
-    | typeof SystemAbilityName;
 
 /**
  * 事件适配器接口

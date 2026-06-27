@@ -24,7 +24,6 @@ import type { IExposeResult, AbilityConstructor } from '@/composable/types/compo
 
 // 测试能力类
 class TestAbility extends AbilityBase {
-    readonly name = 'TestAbility';
     protected expose(): IExposeResult {
         return {
             testMethod: () => 'test-result',
@@ -34,7 +33,6 @@ class TestAbility extends AbilityBase {
 }
 
 class AnotherAbility extends AbilityBase {
-    readonly name = 'AnotherAbility';
     protected expose(): IExposeResult {
         return {
             anotherMethod: () => 'another-result',

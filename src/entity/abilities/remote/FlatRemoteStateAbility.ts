@@ -1,29 +1,18 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IBaseEntityManager,
-    IEntity,
-    IExposeResult,
-    IFlatRemoteEntityState,
-    IFlatSearchParams,
-} from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
 
 /**
- * CollectionAbility - 集合能力
+ * FlatRemoteStateAbility - 扁平远程状态能力
  *
  * 提供对实体集合的基本访问接口，包括加载状态、项目数量、分页信息等
  */
-export class FlatRemoteStateAbility<
-    T extends IEntity,
-    TSearch extends IFlatSearchParams,
-    TState extends IFlatRemoteEntityState<T, TSearch>,
-> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class FlatRemoteStateAbility extends AbilityBase {
     /**
      * 暴露集合相关的状态属性
      *
      * @returns 包含集合状态属性的对象，如加载状态、项目列表、分页信息等
      */
     protected expose(): IExposeResult {
-        const { state, logger } = this.host;
+        const state = this.host.state;
 
         // 使用基类提供的批量注入方法
         return {
@@ -37,9 +26,9 @@ export class FlatRemoteStateAbility<
             pageSize: { get: () => state.pageSize },
             pages: { get: () => state.pages },
             pageSizes: { get: () => state.pageSizes },
-            isDirty: (currentItem: T)=>state.isDirty(currentItem),
-            edit:(item: T)=> state.edit(item),
-            roolback: () => state.rollback(),
+            isDirty: (currentItem: any) => state.isDirty(currentItem),
+            edit: (item: any) => state.edit(item),
+            rollback: () => state.rollback(),
         };
     }
 }

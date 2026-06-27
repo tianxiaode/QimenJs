@@ -1,22 +1,10 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IBaseEntityManager,
-    IEntity,
-    IExposeResult,
-    IFlatRemoteEntityState,
-    IFlatSearchParams,
-} from '../../../types';
-import { EntityError } from '../../../errors/EntityError';
-import { KernelErrorCode } from '../../../errors/codes';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import { KernelError, KernelErrorCode } from '@/error';
 
-export class FlatRemoteQueryAbility<
-    T extends IEntity,
-    TSearch extends IFlatSearchParams,
-    TState extends IFlatRemoteEntityState<T, TSearch>,
-> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class FlatRemoteQueryAbility extends AbilityBase {
     protected expose(): IExposeResult {
-        const { host } = this;
-        const { state } = host;
+        const host = this.host;
+        const state = host.state;
 
         return {
             prev: async () => {
@@ -51,7 +39,7 @@ export class FlatRemoteQueryAbility<
             changeSize: async (size: number) => {
                 if (!state.pageSizes.includes(size)) {
                     if (host.systemConfig('env') === 'development')
-                        throw new EntityError(
+                        throw new KernelError(
                             `Invalid pageSize: ${size}. Options are: ${state.pageSizes}`,
                             KernelErrorCode.INVALID_PAGE_SIZE
                         );
@@ -70,7 +58,7 @@ export class FlatRemoteQueryAbility<
                 return await host.list(true);
             },
 
-            search: async (search: Partial<TSearch>) => {
+            search: async (search: any) => {
                 state.searchBy = search;
                 return await host.list(true);
             },

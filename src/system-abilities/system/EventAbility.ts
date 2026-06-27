@@ -1,5 +1,4 @@
-import { AbilityBase } from '@/composable';
-import type { IExposeResult } from '@/composable';
+import { AbilityBase, type IExposeResult } from '@/composable';
 import { globalEventBus, EventHandler } from '@/events';
 
 /**
@@ -10,21 +9,6 @@ import { globalEventBus, EventHandler } from '@/events';
  * 每个实例拥有独立的事件生命周期。
  */
 export class EventAbility extends AbilityBase {
-    /**
-     * 能力名称（使用类名）
-     */
-    readonly name = 'EventAbility';
-    
-    /**
-     * 能力描述
-     */
-    static readonly description = '事件能力：提供事件监听、发射和管理能力';
-    
-    /**
-     * 能力依赖
-     */
-    static readonly deps: string[] = [];
-    
     /**
      * 事件作用域引用
      * @private

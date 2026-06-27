@@ -1,58 +1,47 @@
-import {
-    IBaseEntityManager,
-    IEntity,
-    IExposeResult,
-    IFlatLocalEntityState,
-    ILocalSearchParams,
-} from '../../../types';
-import { DebounceAbilityBase } from '../../../composable';
+import { DebounceAbilityBase, type IExposeResult } from '@/composable';
 
-export class FlatLocalMutationAbility<
-    T extends IEntity,
-    TSearch extends ILocalSearchParams,
-    TState extends IFlatLocalEntityState<T, TSearch>,
-> extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+/**
+ * FlatLocalMutationAbility - 平铺本地变更能力
+ * 
+ * 提供本地新增、更新、切换和批量保存的能力。
+ * 数据先进入本地缓冲区，save 时同步到远程。
+ */
+export class FlatLocalMutationAbility extends DebounceAbilityBase {
     protected expose(): IExposeResult {
-        const { host } = this;
-        const { state } = host;
-
-        const debouncedSave = this.getDebouncedAction('save', this.internalSave, 500, false);
+        const debouncedSave = this.getDebouncedAction('save', (isBatch: boolean) => this.internalSave(isBatch), 500, false);
 
         return {
-            /**
-             * 本地创建：数据仅进入 added 缓冲区
-             */
-            create: (item: T) => {
-                state.add(item); // 调用 state.ts 中的 add 方法
+            create: (item: any) => {
+                const host = this.host;
+                const { state } = host;
+                state.addItem(item);
                 host.emit('created', item);
                 return item;
             },
 
-            /**
-             * 本地更新：数据进入 updated 映射表
-             */
-            update: (item: T) => {
-                state.update(item); // 调用 state.ts 中的 update 方法
+            update: (item: any) => {
+                const host = this.host;
+                const { state } = host;
+                state.updateItem(item);
                 host.emit('updated', item);
                 return item;
             },
 
-            toggle: (item: T, filed: keyof T) => {
-                const oldValue = item[filed];
-                (item as any)[filed] = !oldValue;
-                state.update(item); // 调用 state.ts 中的 update 方法
-                host.emit('toggled', item, filed, oldValue);
+            toggle: (item: any, field: string) => {
+                const host = this.host;
+                const { state } = host;
+                const oldValue = item[field];
+                item[field] = !oldValue;
+                state.updateItem(item);
+                host.emit('toggled', item, field, oldValue);
             },
 
-            /**
-             * 保存：将本地所有变更同步到远程
-             */
             save: (isBatch: boolean = false) => debouncedSave(isBatch),
         };
     }
 
-    protected async internalSave(isBatch: boolean = false) {
-        const { host } = this;
+    private async internalSave(isBatch: boolean = false) {
+        const host = this.host;
         const { state } = host;
         if (!state.hasChanges) return;
 
@@ -60,12 +49,10 @@ export class FlatLocalMutationAbility<
         const updatedList = Array.from(updated.values());
 
         if (isBatch) {
-            // --- 场景 A: 全量合并提交 ---
             const allChanges = [...added, ...updatedList];
             const options = await host.buildOptions('batch-save', {}, allChanges, {});
             await host.fetch('batch-save', options);
         } else {
-            // --- 场景 B: 分步提交 (带延迟感) ---
             if (added.length > 0) {
                 const options = await host.buildOptions('create', {}, added, {});
                 await host.fetch('create', options);
@@ -76,8 +63,6 @@ export class FlatLocalMutationAbility<
             }
         }
 
-        // 提交成功后的清理工作
-        // 注意：这里需要根据你的实现决定是 reset 还是 refresh
         host.emit('saved');
     }
 }

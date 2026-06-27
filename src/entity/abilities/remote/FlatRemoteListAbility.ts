@@ -1,20 +1,9 @@
-import {
-    IBaseEntityManager,
-    IEntity,
-    IExposeResult,
-    IFlatRemoteEntityState,
-    IFlatSearchParams,
-} from '../../../types';
-import { DebounceAbilityBase } from '../../../composable';
+import { DebounceAbilityBase, type IExposeResult } from '@/composable';
 
-export class FlatRemoteListAbility<
-    T extends IEntity,
-    TSearch extends IFlatSearchParams,
-    TState extends IFlatRemoteEntityState<T, TSearch>,
-> extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class FlatRemoteListAbility extends DebounceAbilityBase {
     protected expose(): IExposeResult {
         // 内部防抖执行器
-        const debouncedFetch = this.getDebouncedAction('list', this.internalList,300, false);
+        const debouncedFetch = this.getDebouncedAction('list', this.internalList, 300, false);
 
         return {
             /**
@@ -34,11 +23,11 @@ export class FlatRemoteListAbility<
         };
     }
 
-    protected async internalList(force: boolean = false): Promise<T[]> {
-        const { host } = this;
+    protected async internalList(force: boolean = false): Promise<any[]> {
+        const host = this.host;
         const state = host.state;
         if (!force) {
-            const cached = await state.tryGetCache(); //
+            const cached = await state.tryGetCache();
             if (cached) {
                 // 假设状态机有 updateData 逻辑处理 items 和 total
                 state.updateData(cached.items, cached.total);

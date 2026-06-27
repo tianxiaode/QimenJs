@@ -1,30 +1,24 @@
-import { AbilityBase } from '../../../composable';
-import { EntityState, IEntity, IBaseEntityManager, IExposeResult, SearchParams } from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
 
-export class RemoteGetAbility<
-    T extends IEntity,
-    TSearch extends SearchParams,
-    TState extends EntityState<T, TSearch>,
-> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class RemoteGetAbility extends AbilityBase {
     /**
      * 暴露远程获取实体的方法
      *
      * @returns 包含 remoteGet 方法的对象，用于远程获取单个实体
      */
     protected expose(): IExposeResult {
-        const { host } = this;
-
         return {
             /**
              * 远程获取实体
              *
              * @param id 要获取的实体ID
-             * @returns Promise<T> 获取的实体的Promise
+             * @returns Promise<any> 获取的实体的Promise
              */
-            get: async (id: string | number): Promise<T> => {
-                const { idFiled } = host.schemaKeys;
+            get: async (id: string | number): Promise<any> => {
+                const host = this.host;
+                const { idField } = host.schemaKeys;
 
-                const options = await host.buildOptions('get', { [idFiled]: id }, null, {});
+                const options = await host.buildOptions('get', { [idField]: id }, null, {});
                 // 使用fetch方法发送GET请求
                 const context = await host.fetch('get', options);
 

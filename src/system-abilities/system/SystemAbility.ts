@@ -1,5 +1,4 @@
-import { AbilityBase } from '@/composable';
-import type { IExposeResult } from '@/composable';
+import { AbilityBase, type IExposeResult } from '@/composable';
 import type { SystemConfig } from '@/registry';
 import { SystemRegistrar } from '@/registry';
 
@@ -10,21 +9,6 @@ import { SystemRegistrar } from '@/registry';
  * 支持获取单项配置或全量配置，适用于需要读取系统信息的组件。
  */
 export class SystemAbility extends AbilityBase {
-    /**
-     * 能力名称（使用类名）
-     */
-    readonly name = 'SystemAbility';
-    
-    /**
-     * 能力描述
-     */
-    static readonly description = '系统能力：提供系统配置访问和管理能力';
-    
-    /**
-     * 能力依赖
-     */
-    static readonly deps: string[] = [];
-    
     /**
      * 暴露系统配置访问接口
      */

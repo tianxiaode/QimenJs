@@ -109,11 +109,6 @@ export type DisposerFactoryFn<T = any> = (host: T) => () => void;
  */
 export interface IPrecompiledAbility<T = any> {
     /**
-     * 能力名称（唯一标识）
-     */
-    readonly name: string;
-    
-    /**
      * 属性描述符工厂映射
      * 
      * key: 属性名（string 或 symbol）
@@ -135,11 +130,6 @@ export interface IPrecompiledAbility<T = any> {
  * @template T - 宿主类型
  */
 export interface IPrecompilableAbility<T = any> {
-    /**
-     * 能力名称（唯一标识）
-     */
-    readonly name: string;
-    
     /**
      * 预编译方法
      * 

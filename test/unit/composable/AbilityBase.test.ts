@@ -68,8 +68,6 @@ class TestHost implements IComposableBase {
 
 // Define a simple ability that exposes some properties
 class TestAbility extends AbilityBase {
-  readonly name = 'TestAbility';
-  
   // Implement the abstract expose method
   protected expose(): IExposeResult {
     return {
@@ -88,8 +86,6 @@ class TestAbility extends AbilityBase {
 
 // Special test ability for symbol properties
 class TestAbilityWithSymbol extends AbilityBase {
-  readonly name = 'TestAbilityWithSymbol';
-  
   protected expose(): IExposeResult {
     return {
       injectedProp: 'injected value',
@@ -105,8 +101,6 @@ class TestAbilityWithSymbol extends AbilityBase {
 
 // Test ability that creates a getter/setter property
 class TestAbilityWithGetterSetter extends AbilityBase {
-  readonly name = 'TestAbilityWithGetterSetter';
-  
   protected expose(): IExposeResult {
     // Create a separate variable to hold the value for the setter
     let internalValue = 'getter setter value';
@@ -128,11 +122,10 @@ class TestAbilityWithGetterSetter extends AbilityBase {
 
 describe('AbilityBase', () => {
   describe('precompile', () => {
-    it('should create precompiled ability with name', () => {
+    it('should create precompiled ability with descriptorFactories', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
       
-      expect(precompiled.name).toBe('TestAbility');
       expect(precompiled.descriptorFactories).toBeDefined();
       expect(precompiled.createDisposer).toBeDefined();
     });
@@ -218,7 +211,6 @@ describe('AbilityBase', () => {
     it('should call onDispose when disposer is called', () => {
       // Create a test ability that tracks if onDispose was called
       class TestDisposeTrackingAbility extends AbilityBase {
-        readonly name = 'TestDisposeTrackingAbility';
         disposed = false;
         
         protected expose(): IExposeResult {

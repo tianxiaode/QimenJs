@@ -14,21 +14,6 @@ import { AbilityBase } from '@/composable';
  */
 export class DomEventsAbility extends AbilityBase {
     /**
-     * 能力名称（使用类名）
-     */
-    readonly name = 'DomEventsAbility';
-    
-    /**
-     * 能力描述
-     */
-    static readonly description = 'DOM事件能力：提供DOM事件绑定和处理能力';
-    
-    /**
-     * 能力依赖
-     */
-    static readonly deps = ['EventAbility'];
-    
-    /**
      * 事件适配器（延迟创建）
      * @private
      */

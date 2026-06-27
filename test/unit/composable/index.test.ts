@@ -35,7 +35,6 @@ describe('composable package exports', () => {
     
     it('should allow creating custom ability', () => {
         class CustomAbility extends AbilityBase {
-            readonly name = 'CustomAbility';
             protected expose(): IExposeResult {
                 return {
                     customMethod: () => 'custom-result',
@@ -44,12 +43,11 @@ describe('composable package exports', () => {
         }
         
         const instance = new CustomAbility();
-        expect(instance.name).toBe('CustomAbility');
+        expect(CustomAbility.name).toBe('CustomAbility');
     });
     
     it('should allow creating composable with abilities', () => {
         class CustomAbility extends AbilityBase {
-            readonly name = 'CustomAbility';
             protected expose(): IExposeResult {
                 return {
                     customMethod: () => 'custom-result',

@@ -32,8 +32,6 @@ type PropertyDefinition =
  * @example
  * ```typescript
  * class EventAbility extends AbilityBase {
- *     readonly name = 'Event';
- *     
  *     protected expose(): IExposeResult {
  *         const scope = globalEventBus.createEventScope();
  *         
@@ -51,11 +49,6 @@ type PropertyDefinition =
  * ```
  */
 export abstract class AbilityBase implements IPrecompilableAbility {
-    /**
-     * 能力名称
-     */
-    abstract readonly name: string;
-    
     /**
      * 宿主引用（在运行时通过闭包捕获）
      * @protected
@@ -141,7 +134,6 @@ export abstract class AbilityBase implements IPrecompilableAbility {
         };
         
         return {
-            name: this.name,
             descriptorFactories,
             createDisposer
         };

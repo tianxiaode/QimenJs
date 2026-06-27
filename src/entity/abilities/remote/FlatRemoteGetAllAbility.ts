@@ -1,18 +1,6 @@
-import { DebounceAbilityBase } from '../../../composable';
-import {
-    IEntity,
-    IBaseEntityManager,
-    IExposeResult,
-    SearchParams,
-    IFlatRemoteEntityState,
-} from '../../../types';
+import { DebounceAbilityBase, type IExposeResult } from '@/composable';
 
-
-export class FlatRemoteGetAllAbility<
-    T extends IEntity,
-    TSearch extends SearchParams,
-    TState extends IFlatRemoteEntityState<T, TSearch>,
-> extends DebounceAbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class FlatRemoteGetAllAbility extends DebounceAbilityBase {
     /**
      * 暴露外部可调用的方法
      *
@@ -21,12 +9,12 @@ export class FlatRemoteGetAllAbility<
     protected expose(): IExposeResult {
         const debouncedFetch = this.getDebouncedAction('get-all', this.internalGetAll, 300, true);
         return {
-            getAll: (): Promise<T[]> => debouncedFetch(),
+            getAll: (): Promise<any[]> => debouncedFetch(),
         };
     }
 
-    protected async internalGetAll(): Promise<T[]> {
-        const { host } = this;
+    protected async internalGetAll(): Promise<any[]> {
+        const host = this.host;
         const state = host.state;
         const options = await host.buildOptions('get-all', {}, {}, {});
         const context = await host.fetch('get-all', options);

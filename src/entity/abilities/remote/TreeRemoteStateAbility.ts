@@ -1,29 +1,18 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IBaseEntityManager,
-    IEntity,
-    IExposeResult,
-    ITreeRemoteEntityState,
-    ITreeSearchParams,
-} from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
 
 /**
- * CollectionAbility - 集合能力
+ * TreeRemoteStateAbility - 树形远程状态能力
  *
- * 提供对实体集合的基本访问接口，包括加载状态、项目数量、分页信息等
+ * 提供对实体集合的基本访问接口，包括加载状态、项目数量等
  */
-export class TreeRemoteStateAbility<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-    TState extends ITreeRemoteEntityState<T, TSearch>,
-> extends AbilityBase<IBaseEntityManager<T, TSearch, TState>> {
+export class TreeRemoteStateAbility extends AbilityBase {
     /**
      * 暴露集合相关的状态属性
      *
-     * @returns 包含集合状态属性的对象，如加载状态、项目列表、分页信息等
+     * @returns 包含集合状态属性的对象，如加载状态、项目列表等
      */
     protected expose(): IExposeResult {
-        const { state, logger } = this.host;
+        const state = this.host.state;
 
         // 使用基类提供的批量注入方法
         return {
