@@ -13,7 +13,20 @@ import { AbilityBase } from '@/composable';
  * 为类提供绑定DOM事件的能力，创建事件适配器来处理各种手势事件
  */
 export class DomEventsAbility extends AbilityBase {
-    readonly name = 'DomEvents';
+    /**
+     * 能力名称（使用类名）
+     */
+    readonly name = 'DomEventsAbility';
+    
+    /**
+     * 能力描述
+     */
+    static readonly description = 'DOM事件能力：提供DOM事件绑定和处理能力';
+    
+    /**
+     * 能力依赖
+     */
+    static readonly deps = ['EventAbility'];
     
     /**
      * 事件适配器（延迟创建）

@@ -5,7 +5,7 @@
  * 这是新框架的核心模块，提供完整的能力管理系统
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ComposableRegistrar = exports.DebounceAbilityBase = exports.AbilityBase = exports.Ability = exports.ComposableBase = exports.DescriptorFactory = void 0;
+exports.WithAbilities = exports.ComposableRegistrar = exports.DebounceAbilityBase = exports.AbilityBase = exports.Ability = exports.ComposableBase = exports.DescriptorFactory = void 0;
 // ============================================
 // 核心类导出
 // ============================================
@@ -20,6 +20,8 @@ var DebounceAbilityBase_1 = require("./DebounceAbilityBase");
 Object.defineProperty(exports, "DebounceAbilityBase", { enumerable: true, get: function () { return DebounceAbilityBase_1.DebounceAbilityBase; } });
 var ComposableRegistrar_1 = require("./ComposableRegistrar");
 Object.defineProperty(exports, "ComposableRegistrar", { enumerable: true, get: function () { return ComposableRegistrar_1.ComposableRegistrar; } });
+var decorators_1 = require("./decorators");
+Object.defineProperty(exports, "WithAbilities", { enumerable: true, get: function () { return decorators_1.WithAbilities; } });
 // ============================================
 // 使用示例
 // ============================================

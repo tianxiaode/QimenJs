@@ -1,1 +1,1 @@
-{"version":3,"file":"touch.d.ts","sourceRoot":"","sources":["touch.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,gBAAgB,CAAC;AAE/C;;;;;;;;;;GAUG;AACH,eAAO,MAAM,QAAQ,EAAE,aAatB,CAAC"}
+{"version":3,"file":"touch.d.ts","sourceRoot":"","sources":["touch.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,aAAa,CAAC;AAE5C;;;;;;;;;;GAUG;AACH,eAAO,MAAM,QAAQ,EAAE,aAatB,CAAC"}

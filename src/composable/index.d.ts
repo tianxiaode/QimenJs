@@ -9,6 +9,8 @@ export { ComposableBase, Ability } from './ComposableBase';
 export { AbilityBase } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
 export { ComposableRegistrar } from './ComposableRegistrar';
+export { WithAbilities } from './decorators';
+export type { IAbilityHost } from './decorators';
 /**
  * @example 定义能力
  * ```typescript

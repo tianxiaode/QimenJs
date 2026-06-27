@@ -1,57 +1,47 @@
 /**
  * 可组合能力注册器
  * 
- * 管理所有能力的注册和获取
- * 继承自 RegistrarBase，保持架构一致性
- * 
- * 关键优化：
- * - 实例缓存：避免重复实例化能力类
- * - 懒加载：第一次获取时才实例化
- * - 预编译缓存：缓存预编译结果
+ * 简化版：只做预编译缓存
+ * - 能力类通过 ComposableBase 的 static abilities 声明
+ * - 实例化时自动从原型链收集能力
+ * - get() 方法自动预编译并缓存
  */
 
-import { RegistrarBase } from '@orbitjs/registry';
-import type { 
-    ComposableEntry,
-    IAbilityRegistrationEntry, 
-    IPrecompiledAbility,
-    IPrecompilableAbility
-} from './types/composable';
+import { RegistrarBase } from '@/registry';
+import type { IPrecompiledAbility, IPrecompilableAbility } from './types/composable';
+import type { AbilityBase } from './AbilityBase';
 
 /**
  * 能力注册存储结构
  */
 interface AbilityStorage {
     /**
-     * 能力注册表
-     */
-    registry: Map<string, IAbilityRegistrationEntry>;
-    
-    /**
      * 预编译缓存
+     * key: 能力名称
+     * value: 预编译结果
      */
     precompiledCache: Map<string, IPrecompiledAbility>;
+    
+    /**
+     * 能力实例缓存
+     * key: 能力名称
+     * value: 能力实例
+     */
+    abilityInstances: Map<string, IPrecompilableAbility>;
 }
 
 /**
  * 可组合能力注册器
  * 
- * 继承自 RegistrarBase，管理所有能力的注册和获取
+ * 简化版：只负责预编译缓存
  * 
  * @example
  * ```typescript
- * // 获取注册器实例
- * const registrar = ComposableRegistrar.getInstance();
+ * // 获取预编译能力（自动预编译+缓存）
+ * const precompiled = ComposableRegistrar.getInstance().get(EventAbility);
  * 
- * // 注册能力
- * registrar.register(
- *     { name: 'Event', ctor: EventAbility },
- *     EventAbility,
- *     { immediate: true }
- * );
- * 
- * // 获取预编译能力
- * const precompiled = registrar.getPrecompiled('Event');
+ * // 检查是否已缓存
+ * ComposableRegistrar.getInstance().has('EventAbility');
  * ```
  */
 export class ComposableRegistrar extends RegistrarBase<AbilityStorage> {
@@ -64,122 +54,38 @@ export class ComposableRegistrar extends RegistrarBase<AbilityStorage> {
      * 存储结构
      */
     protected storage: AbilityStorage = {
-        registry: new Map(),
         precompiledCache: new Map(),
+        abilityInstances: new Map(),
     };
     
     /**
-     * 能力实例缓存
+     * 获取预编译能力（自动预编译 + 缓存）
      * 
-     * 用于缓存能力类的实例，避免重复实例化
-     * key: 能力名称
-     * value: 能力实例
+     * @param AbilityClass - 能力类
+     * @returns 预编译能力，失败返回 undefined
      */
-    private _abilityInstances = new Map<string, IPrecompilableAbility>();
-    
-    /**
-     * 注册能力
-     * 
-     * @param entry - 能力条目
-     * @param abilityClass - 能力类（构造函数或实例）
-     * @param options - 注册选项
-     */
-    register(
-        entry: { name: string; ctor: any },
-        abilityClass: any,
-        options?: { immediate?: boolean }
-    ): void {
-        this.checkLock();
+    get(AbilityClass: typeof AbilityBase): IPrecompiledAbility | undefined {
+        const name = AbilityClass.name;
         
-        // 存储注册条目
-        this.storage.registry.set(entry.name, {
-            name: entry.name,
-            abilityClass: abilityClass,
-            description: options?.immediate ? 'Immediate' : undefined,
-        });
-        
-        // 如果是立即预编译，则立即预编译
-        if (options?.immediate) {
-            const precompiled = this.getPrecompiled(entry.name);
-            if (!precompiled) {
-                console.warn(`[ComposableRegistrar] Failed to precompile ability: ${entry.name}`);
-            }
-        }
-    }
-    
-    /**
-     * 注销能力
-     * 
-     * @param name - 能力名称
-     */
-    unregister(name: string): void {
-        this.checkLock();
-        this.storage.registry.delete(name);
-        this.storage.precompiledCache.delete(name);
-        this._abilityInstances.delete(name);
-    }
-    
-    /**
-     * 获取能力注册条目
-     * 
-     * @param name - 能力名称
-     * @returns 能力注册条目
-     */
-    get(name: string): IAbilityRegistrationEntry | undefined {
-        return this.storage.registry.get(name);
-    }
-    
-    /**
-     * 获取预编译能力（懒加载 + 实例缓存）
-     * 
-     * 关键优化：
-     * 1. 检查预编译缓存
-     * 2. 获取或创建能力实例（缓存实例）
-     * 3. 预编译并缓存结果
-     * 
-     * @param name - 能力名称
-     * @returns 预编译能力
-     */
-    getPrecompiled(name: string): IPrecompiledAbility | undefined {
         // 1. 检查预编译缓存
         if (this.storage.precompiledCache.has(name)) {
             return this.storage.precompiledCache.get(name);
         }
         
-        // 2. 获取注册条目
-        const entry = this.storage.registry.get(name);
-        if (!entry) {
-            return undefined;
-        }
-        
-        // 3. 获取或创建能力实例（关键优化：实例缓存）
+        // 2. 获取或创建能力实例
         let ability: IPrecompilableAbility;
         
-        if (this._abilityInstances.has(name)) {
-            // 使用缓存的实例
-            ability = this._abilityInstances.get(name)!;
+        if (this.storage.abilityInstances.has(name)) {
+            ability = this.storage.abilityInstances.get(name)!;
         } else {
-            // 创建新实例并缓存
-            const abilityClass = entry.abilityClass;
-            
-            if (typeof abilityClass === 'function') {
-                // 构造函数：实例化
-                ability = new (abilityClass as new () => IPrecompilableAbility)();
-            } else if (abilityClass && typeof abilityClass.precompile === 'function') {
-                // 已经是实例
-                ability = abilityClass as IPrecompilableAbility;
-            } else {
-                // 无法预编译
-                return undefined;
-            }
-            
-            // 缓存实例，下次不需要再实例化
-            this._abilityInstances.set(name, ability);
+            // 直接实例化能力类
+            ability = new AbilityClass() as IPrecompilableAbility;
+            this.storage.abilityInstances.set(name, ability);
         }
         
-        // 4. 预编译并缓存
-        if (typeof ability.precompile === 'function') {
-            const precompiled = ability.precompile();
+        // 3. 预编译并缓存
+        const precompiled = ability.precompile();
+        if (precompiled) {
             this.storage.precompiledCache.set(name, precompiled);
             return precompiled;
         }
@@ -188,79 +94,55 @@ export class ComposableRegistrar extends RegistrarBase<AbilityStorage> {
     }
     
     /**
-     * 递归获取能力条目
-     * 
-     * 注意：由于装饰器已经在编译阶段处理了父类能力合并，
-     * 这里只需要简单映射能力名称到条目即可，不需要 MRO 解析。
-     * 
-     * @param names - 能力名称列表
-     * @returns 能力条目列表
-     */
-    getRecursive(names: string[]): ComposableEntry[] {
-        return names
-            .map(name => this.storage.registry.get(name))
-            .filter((entry): entry is IAbilityRegistrationEntry => entry !== undefined)
-            .map(entry => ({
-                name: entry.name,
-                ctor: entry.abilityClass,
-            }));
-    }
-    
-    /**
-     * 检查能力是否已注册
+     * 检查能力是否已缓存
      * 
      * @param name - 能力名称
-     * @returns 是否已注册
+     * @returns 是否已缓存
      */
     has(name: string): boolean {
-        return this.storage.registry.has(name);
+        return this.storage.precompiledCache.has(name) 
+            || this.storage.abilityInstances.has(name);
     }
     
     /**
-     * 获取所有已注册的能力名称
-     * 
-     * @returns 能力名称列表
+     * 获取所有已缓存的能力名称
      */
     getAllNames(): string[] {
-        return Array.from(this.storage.registry.keys());
+        const names = new Set<string>();
+        this.storage.precompiledCache.forEach((_, name) => names.add(name));
+        this.storage.abilityInstances.forEach((_, name) => names.add(name));
+        return Array.from(names);
     }
     
     /**
-     * 清除所有缓存
-     * 
-     * 用于测试或特殊场景
+     * 清除预编译缓存
      */
     clearCaches(): void {
         this.storage.precompiledCache.clear();
-        this._abilityInstances.clear();
+        this.storage.abilityInstances.clear();
     }
     
     /**
      * 清空注册器
-     * 
-     * 重写父类方法，正确清空所有存储
      */
     clear(): void {
         this.checkLock();
-        this.storage.registry.clear();
         this.storage.precompiledCache.clear();
-        this._abilityInstances.clear();
+        this.storage.abilityInstances.clear();
     }
     
     /**
      * 输出注册器状态信息
      */
     protected doInspect(): void {
-        console.log('📊 Registered Abilities:', this.storage.registry.size);
         console.log('⚡ Precompiled Cache:', this.storage.precompiledCache.size);
-        console.log('📦 Instance Cache:', this._abilityInstances.size);
+        console.log('📦 Instance Cache:', this.storage.abilityInstances.size);
         
-        if (this.storage.registry.size > 0) {
-            console.log('\n📋 Registered:');
-            this.storage.registry.forEach((entry, name) => {
+        if (this.storage.abilityInstances.size > 0) {
+            console.log('\n📋 Cached Abilities:');
+            this.storage.abilityInstances.forEach((_, name) => {
                 const precompiled = this.storage.precompiledCache.has(name);
-                const instanced = this._abilityInstances.has(name);
-                console.log(`  - ${name} ${precompiled ? '⚡' : '💤'} ${instanced ? '📦' : '📭'}`);
+                console.log(`  - ${name} ${precompiled ? '⚡' : '💤'}`);
             });
         }
     }

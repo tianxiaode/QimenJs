@@ -11,7 +11,20 @@ import { DOMAIN_CACHE_SYMBOL } from '../types/abilities';
  * 它通过 DomainRegistrar 单例获取域配置，并利用静态缓存机制提升性能。
  */
 export class DomainAbility extends AbilityBase {
-    readonly name = 'Domain';
+    /**
+     * 能力名称（使用类名）
+     */
+    readonly name = 'DomainAbility';
+    
+    /**
+     * 能力描述
+     */
+    static readonly description = '域能力：提供域配置访问和管理能力';
+    
+    /**
+     * 能力依赖
+     */
+    static readonly deps: string[] = [];
     
     /**
      * 暴露域配置供宿主对象使用

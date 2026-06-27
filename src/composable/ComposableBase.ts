@@ -1,12 +1,7 @@
-import { ILogger, Logger } from '@orbitjs/logger';
+import { ILogger, Logger } from '@/logger';
 import { ComposableRegistrar } from './ComposableRegistrar';
-import type { ComposableEntry, IComposableBase } from './types/composable';
-
-/**
- * Symbol 用于存储能力列表
- * @internal
- */
-const ABILITIES_KEY = Symbol('__abilities__');
+import type { IComposableBase } from './types/composable';
+import type { AbilityBase } from './AbilityBase';
 
 /**
  * Symbol 用于存储销毁函数数组
@@ -15,40 +10,29 @@ const ABILITIES_KEY = Symbol('__abilities__');
 const DISPOSERS_KEY = Symbol('__disposers__');
 
 /**
- * 装饰器：声明该类需要的能力
- * 
- * 改进方案：在装饰器阶段完成能力收集，无需运行时原型链爬取
- * 
- * 工作原理：
- * 1. 装饰器按代码定义顺序执行（父类先于子类）
- * 2. 装饰子类时，父类已完成装饰
- * 3. 直接从父类获取已收集的能力，合并自己的能力
- * 4. 性能从 O(n) 提升到 O(1)
- * 
- * @param keys - 能力键的列表
- * @returns 类装饰器函数
- */
-export function Ability(...keys: string[]) {
-    return (ctor: any) => {
-        // 直接从父类获取已收集的能力（父类已完成装饰）
-        const parentAbilities = Object.getPrototypeOf(ctor)?.[ABILITIES_KEY] || [];
-        // 合并父类和自己的能力（去重）
-        ctor[ABILITIES_KEY] = [...new Set([...parentAbilities, ...keys])];
-    };
-}
-
-/**
  * 可组合基类，提供了能力注入和管理的基础功能
  * 
- * 该类实现了自动装配能力的功能，通过装饰器声明所需能力，
- * 并从注册中心获取能力实例并将其附加到宿主对象上。
+ * 子类通过静态属性 `abilities` 声明所需能力，
+ * ComposableBase 在实例化时自动从原型链收集能力并注入。
  * 
- * 优化方案：
- * - 使用预编译能力，性能提升 70-90%
- * - 懒加载预编译，启动快
- * - 闭包捕获 host，无需 Ability 实例
+ * @example
+ * ```typescript
+ * class EntityManager extends ComposableBase {
+ *     static readonly abilities = [EventAbility, DomainAbility];
+ * }
+ * ```
  */
 export abstract class ComposableBase implements IComposableBase {
+    /**
+     * 子类应该重写此属性声明所需能力
+     * 
+     * @example
+     * ```typescript
+     * static readonly abilities = [EventAbility, DomainAbility];
+     * ```
+     */
+    static readonly abilities: Array<typeof AbilityBase> = [];
+    
     /**
      * 日志记录器实例
      */
@@ -79,10 +63,6 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 提供给子类或 Ability 使用：获取类级缓存
-     * 
-     * @template T - 返回值类型
-     * @param key - 缓存键
-     * @returns 缓存的值，如果不存在则返回 undefined
      */
     public getStatic<T>(key: string | symbol): T | undefined {
         const ctor = this.constructor as any;
@@ -91,10 +71,6 @@ export abstract class ComposableBase implements IComposableBase {
 
     /**
      * 提供给子类或 Ability 使用：设置类级缓存
-     * 
-     * @template T - 值的类型
-     * @param key - 缓存键
-     * @param value - 要存储的值
      */
     public setStatic<T>(key: string | symbol, value: T): void {
         const ctor = this.constructor as any;
@@ -108,42 +84,60 @@ export abstract class ComposableBase implements IComposableBase {
     }
 
     /**
-     * 自动装配方法：使用预编译能力
+     * 从原型链收集能力类
+     * 
+     * 使用 Object.getOwnPropertyDescriptor 只取自身定义的 abilities，
+     * 不取继承的，避免子类覆盖父类。
+     * 
+     * @returns 合并后的能力类列表（去重）
+     */
+    protected collectAbilities(): Array<typeof AbilityBase> {
+        const CACHE_KEY = '__collected_abilities__';
+        
+        // 检查类级缓存
+        let cached = this.getStatic<Array<typeof AbilityBase>>(CACHE_KEY);
+        if (cached) {
+            return cached;
+        }
+        
+        // 遍历原型链收集
+        const allAbilities: Array<typeof AbilityBase> = [];
+        let current = this.constructor as any;
+        
+        while (current && current !== ComposableBase) {
+            // 只取自身定义的 abilities，不取继承的
+            const desc = Object.getOwnPropertyDescriptor(current, 'abilities');
+            if (desc && Array.isArray(desc.value)) {
+                allAbilities.unshift(...desc.value);
+            }
+            current = Object.getPrototypeOf(current);
+        }
+        
+        // 去重
+        const unique = [...new Set(allAbilities)];
+        
+        // 缓存
+        this.setStatic(CACHE_KEY, unique);
+        
+        return unique;
+    }
+
+    /**
+     * 自动装配方法：收集能力并注入
      * 
      * @protected
      */
     protected setupAbilities() {
-        const CACHE_KEY = '__resolved_ability_entries__';
-        let entries = this.getStatic<ComposableEntry[]>(CACHE_KEY);
-
-        // 只有第一次实例化时，执行完整的解析逻辑
-        if (!entries) {
-            // 直接从类获取能力列表（装饰器阶段已收集完成）
-            const abilityKeys = (this.constructor as any)[ABILITIES_KEY] || [];
-
-            // 去注册中心一次性换取所有的 Entry
-            const registrar = ComposableRegistrar.getInstance();
-            entries = registrar.getRecursive(abilityKeys);
-
-            // 将最终的 Entry 数组存入类级静态缓存
-            this.setStatic(CACHE_KEY, entries);
-
-            this.logger.debug(
-                `Ability entries parsed and cached for class: ${this.constructor.name}`,
-                { abilities: abilityKeys }
-            );
-        }
-
-        // 使用预编译能力
+        const abilities = this.collectAbilities();
         const registrar = ComposableRegistrar.getInstance();
         const disposers = (this as any)[DISPOSERS_KEY] as (() => void)[];
         
-        entries.forEach(entry => {
-            // 获取预编译能力（懒加载）
-            const precompiled = registrar.getPrecompiled(entry.name);
+        abilities.forEach(AbilityClass => {
+            // 获取预编译能力（自动预编译+缓存）
+            const precompiled = registrar.get(AbilityClass);
             
             if (!precompiled) {
-                this.logger.error(`Ability ${entry.name} is not precompilable`);
+                this.logger.error(`Ability ${AbilityClass.name} is not precompilable`);
                 return;
             }
             
@@ -158,6 +152,11 @@ export abstract class ComposableBase implements IComposableBase {
                 disposers.push(precompiled.createDisposer(this));
             }
         });
+        
+        this.logger.debug(
+            `Abilities setup for ${this.constructor.name}`,
+            { abilities: abilities.map(a => a.name) }
+        );
     }
 
     /**
@@ -165,7 +164,7 @@ export abstract class ComposableBase implements IComposableBase {
      * 
      * @protected
      */
-    protected applyOverrides(){
+    protected applyOverrides() {
         this.logger.debug(`Applying overrides for ${this.constructor.name}`);
     }
 
