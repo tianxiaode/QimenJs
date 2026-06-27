@@ -13,6 +13,7 @@ export type {
     IPrecompiledAbility,
     IPrecompilableAbility,
     AbilityProperties,
+    AbilityConstructor,
 } from './types/composable';
 
 // 核心类导出

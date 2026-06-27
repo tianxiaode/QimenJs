@@ -20,7 +20,7 @@ jest.mock('@/logger', () => {
 
 import { ComposableBase } from '@/composable/ComposableBase';
 import { AbilityBase } from '@/composable/AbilityBase';
-import type { IExposeResult } from '@/composable/types/composable';
+import type { IExposeResult, AbilityConstructor } from '@/composable/types/composable';
 
 // 测试能力类
 class TestAbility extends AbilityBase {
@@ -77,17 +77,40 @@ describe('ComposableBase', () => {
     describe('inheritance', () => {
         it('should collect abilities from prototype chain', () => {
             class Parent extends ComposableBase {
-                static readonly abilities = [TestAbility];
+                static readonly abilities: readonly AbilityConstructor[] = [TestAbility];
             }
             
             class Child extends Parent {
-                static readonly abilities = [AnotherAbility];
+                static readonly abilities: readonly AbilityConstructor[] = [AnotherAbility];
             }
             
             const instance = new Child() as any;
             // 应该同时拥有父类和子类的能力
             expect(instance.testMethod()).toBe('test-result');
             expect(instance.anotherMethod()).toBe('another-result');
+        });
+        
+        it('should handle middle class without abilities definition', () => {
+            class GrandParent extends ComposableBase {
+                static readonly abilities: readonly AbilityConstructor[] = [TestAbility];
+            }
+            
+            // 中间类没有定义 abilities
+            class Middle extends GrandParent {}
+            
+            class Leaf extends Middle {
+                static readonly abilities: readonly AbilityConstructor[] = [AnotherAbility];
+            }
+            
+            const leafInstance = new Leaf() as any;
+            // Leaf 应该同时拥有 GrandParent 和 Leaf 的能力
+            expect(leafInstance.testMethod()).toBe('test-result');
+            expect(leafInstance.anotherMethod()).toBe('another-result');
+            
+            // Middle 实例应该只有 GrandParent 的能力
+            const middleInstance = new Middle() as any;
+            expect(middleInstance.testMethod()).toBe('test-result');
+            expect(middleInstance.anotherMethod).toBeUndefined();
         });
         
         it('should handle class with no abilities', () => {

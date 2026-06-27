@@ -1,7 +1,6 @@
 import { ILogger, Logger } from '@/logger';
 import { ComposableRegistrar } from './ComposableRegistrar';
-import type { IComposableBase } from './types/composable';
-import type { AbilityBase } from './AbilityBase';
+import type { IComposableBase, AbilityConstructor } from './types/composable';
 
 /**
  * Symbol 用于存储销毁函数数组
@@ -31,7 +30,7 @@ export abstract class ComposableBase implements IComposableBase {
      * static readonly abilities = [EventAbility, DomainAbility];
      * ```
      */
-    static readonly abilities: Array<typeof AbilityBase> = [];
+    static readonly abilities: readonly AbilityConstructor[] = [];
     
     /**
      * 日志记录器实例
@@ -91,17 +90,17 @@ export abstract class ComposableBase implements IComposableBase {
      * 
      * @returns 合并后的能力类列表（去重）
      */
-    protected collectAbilities(): Array<typeof AbilityBase> {
+    protected collectAbilities(): AbilityConstructor[] {
         const CACHE_KEY = '__collected_abilities__';
         
         // 检查类级缓存
-        let cached = this.getStatic<Array<typeof AbilityBase>>(CACHE_KEY);
+        let cached = this.getStatic<AbilityConstructor[]>(CACHE_KEY);
         if (cached) {
             return cached;
         }
         
         // 遍历原型链收集
-        const allAbilities: Array<typeof AbilityBase> = [];
+        const allAbilities: AbilityConstructor[] = [];
         let current = this.constructor as any;
         
         while (current && current !== ComposableBase) {

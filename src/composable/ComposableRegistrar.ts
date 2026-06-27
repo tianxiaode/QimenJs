@@ -8,8 +8,7 @@
  */
 
 import { RegistrarBase } from '@/registry';
-import type { IPrecompiledAbility, IPrecompilableAbility } from './types/composable';
-import type { AbilityBase } from './AbilityBase';
+import type { IPrecompiledAbility, IPrecompilableAbility, AbilityConstructor } from './types/composable';
 
 /**
  * 能力注册存储结构
@@ -59,12 +58,50 @@ export class ComposableRegistrar extends RegistrarBase<AbilityStorage> {
     };
     
     /**
+     * 注册能力类
+     * 
+     * @param AbilityClass - 能力类构造函数
+     * @param options - 注册选项
+     */
+    register(AbilityClass: AbilityConstructor, options?: { immediate?: boolean }): void {
+        this.checkLock();
+        
+        const name = AbilityClass.name;
+        
+        // 创建能力实例并缓存
+        if (!this.storage.abilityInstances.has(name)) {
+            const ability = new AbilityClass() as IPrecompilableAbility;
+            this.storage.abilityInstances.set(name, ability);
+        }
+        
+        // 如果指定立即预编译
+        if (options?.immediate && !this.storage.precompiledCache.has(name)) {
+            const ability = this.storage.abilityInstances.get(name)!;
+            const precompiled = ability.precompile();
+            if (precompiled) {
+                this.storage.precompiledCache.set(name, precompiled);
+            }
+        }
+    }
+    
+    /**
+     * 注销能力
+     * 
+     * @param name - 能力名称
+     */
+    unregister(name: string): void {
+        this.checkLock();
+        this.storage.precompiledCache.delete(name);
+        this.storage.abilityInstances.delete(name);
+    }
+    
+    /**
      * 获取预编译能力（自动预编译 + 缓存）
      * 
      * @param AbilityClass - 能力类
      * @returns 预编译能力，失败返回 undefined
      */
-    get(AbilityClass: typeof AbilityBase): IPrecompiledAbility | undefined {
+    get(AbilityClass: AbilityConstructor): IPrecompiledAbility | undefined {
         const name = AbilityClass.name;
         
         // 1. 检查预编译缓存

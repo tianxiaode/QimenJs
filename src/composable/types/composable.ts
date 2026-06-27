@@ -155,6 +155,14 @@ export interface IPrecompilableAbility<T = any> {
 // ============================================
 
 /**
+ * 能力类构造函数类型
+ * 
+ * 用于表示可以 new 的具体 AbilityBase 子类构造函数
+ * 使用 IPrecompilableAbility 接口作为实例类型约束
+ */
+export type AbilityConstructor = new () => IPrecompilableAbility;
+
+/**
  * 可组合条目
  */
 export interface ComposableEntry {

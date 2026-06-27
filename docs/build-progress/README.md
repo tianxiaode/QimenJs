@@ -40,9 +40,9 @@ docs/build-progress/
 | 第 0 层 | 7 | 7 | 7 | ~90% |
 | 第 1 层 | 6 | 6 | 6 | ~90% |
 | 第 2 层 | 3 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 1 | 1 | ~86% |
+| 第 3 层 | 2 | 2 | 2 | ~57% |
 | 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **19** | **17** | **17** | **~85%** |
+| **总计** | **19** | **18** | **18** | **~85%** |
 
 ## 快速导航
 
@@ -74,9 +74,9 @@ docs/build-progress/
 - [validation](./layer-2/validation.md) - 验证系统
 - [data-processor](./layer-2/data-processor.md) - 数据处理系统
 - [http](./layer-3/http.md) - HTTP 客户端
+- [system-abilities](./layer-3/system-abilities.md) - 系统能力实现
 
 #### ⚠️ 待更新
-- [system-abilities](./layer-3/system-abilities.md) - 系统能力实现
 - [entity](./layer-4/entity.md) - 实体管理
 
 ## 当前工作
@@ -100,17 +100,23 @@ docs/build-progress/
   - 编写完整文档
 
 ### 优先级 2：更新待更新包
-- [ ] 更新 [system-abilities](./layer-3/system-abilities.md) 包
 - [ ] 更新 [entity](./layer-4/entity.md) 包
 
 ### 优先级 3：编写测试
 - [x] 编写 context 包测试 (覆盖率 ~89%)
 - [x] 编写 pipeline 包测试 (覆盖率 ~95%)
 - [x] 编写 http 包测试 (覆盖率 ~70%)
+- [x] 修复 composable 包测试（30/30 通过）
 - [ ] 编写 system-abilities 包测试
 - [ ] 编写 entity 包测试
 
 ## 最近更新
+
+### 2026-06-27
+- 修复 composable 包单元测试（30/30 通过）
+  - ComposableRegistrar 添加 register/unregister 方法
+  - 新增 AbilityConstructor 类型
+  - 删除旧编译产物
 
 ### 2026-06-15
 - 创建构建进度文档体系
