@@ -1,32 +1,71 @@
-import { IBaseEntityState, IEntity, IExposeResult, SearchParams } from '../../types';
-import { AbilityBase } from '../../composable';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IBaseEntityState } from '@/entity/types';
 
-export class StateSchemaAbility<
-    T extends IEntity,
-    TSearch extends SearchParams,
-    TState extends IBaseEntityState<T, TSearch>,
-> extends AbilityBase<TState> {
+export class StateSchemaAbility extends AbilityBase {
     protected expose(): IExposeResult {
-        const { schema } = this.host;
-
         return {
             // 使用 Getter 描述符
-            idField: { get: () => schema.idField || 'id' },
-            idType: { get: () => schema.idType || 'number' },
-            nameField: { get: () => schema.nameField || 'name' },
-            defaultSort: { get: () => schema.defaultSort || '' },
-            defaultOrder: { get: () => schema.defaultOrder || 'asc' },
-            searchFields: { get: () => schema.searchFields || [] },
+            idField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.idField || 'id';
+            }},
+            idType: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.idType || 'number';
+            }},
+            nameField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.nameField || 'name';
+            }},
+            defaultSort: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.defaultSort || '';
+            }},
+            defaultOrder: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.defaultOrder || 'asc';
+            }},
+            searchFields: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.searchFields || [];
+            }},
 
-            isTree: { get: () => !!schema.isTree },
-            isLazy: { get: () => (schema.isTree ? !!schema.isLazy : false) },
-            root: { get: () => (schema.isTree ? schema.root : '') },
-            parentIdField: { get: () => (schema.isTree ? schema.parentIdField : '') },
-            childrenField: { get: () => (schema.isTree ? schema.childrenField : '') },
-            pathField: { get: () => (schema.isTree ? schema.pathField : '') },
-            leafField: { get: () => (schema.isTree ? schema.leafField : '') },
-            expandedField: { get: () => (schema.isTree ? schema.expandedField : '') },
-            useFlat: { get: () => (schema.isTree ? !!schema.useFlat : false) },
+            isTree: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return !!host.schema.isTree;
+            }},
+            isLazy: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? !!(host.schema as any).isLazy : false;
+            }},
+            root: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).root : '';
+            }},
+            parentIdField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).parentIdField : '';
+            }},
+            childrenField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).childrenField : '';
+            }},
+            pathField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).pathField : '';
+            }},
+            leafField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).leafField : '';
+            }},
+            expandedField: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? (host.schema as any).expandedField : '';
+            }},
+            useFlat: { get: () => {
+                const host = this.host as IBaseEntityState;
+                return host.schema.isTree ? !!(host.schema as any).useFlat : false;
+            }},
         };
     }
 }

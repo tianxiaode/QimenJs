@@ -1,20 +1,12 @@
-import {
-    IBaseEntityState,
-    ICacheProvider,
-    IEntity,
-    IExposeResult,
-    SearchParams,
-} from '../../types';
-import { AbilityBase } from '../../composable';
-import { CacheFactory } from '../../cache';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import { CacheFactory } from '@/cache';
+import type { IBaseEntityState } from '@/entity/types';
+import type { ICacheProvider } from '@/cache';
 
-export class StateCacheAbility<T extends IEntity, TSearch extends SearchParams> extends AbilityBase<
-    IBaseEntityState<T, TSearch>
-> {
+export class StateCacheAbility extends AbilityBase {
     private _provider: ICacheProvider | null = null;
 
     protected expose(): IExposeResult {
-
         return {
             /**
              * 缓存键：Getter 模式
@@ -35,7 +27,8 @@ export class StateCacheAbility<T extends IEntity, TSearch extends SearchParams> 
              */
             setCache: async (data: any) => {
                 const provider = await this.getProvider();
-                await provider.set(this.getCacheKey(), data, this.host.cacheTTL);
+                const host = this.host as IBaseEntityState;
+                await provider.set(this.getCacheKey(), data, host.cacheTTL);
             },
 
             /**
@@ -44,6 +37,17 @@ export class StateCacheAbility<T extends IEntity, TSearch extends SearchParams> 
             clearCache: async () => {
                 const provider = await this.getProvider();
                 await provider.remove(this.getCacheKey());
+            },
+
+            /**
+             * 更新数据
+             */
+            updateData: (result: any[]) => {
+                const host = this.host as any;
+                host.sourceData.clear();
+                result.forEach((item: any) => {
+                    host.sourceData.set(item.id, item);
+                });
             },
         };
     }
@@ -58,7 +62,7 @@ export class StateCacheAbility<T extends IEntity, TSearch extends SearchParams> 
 
         // 1. 本地模式：直接返回名称，不需要任何参数后缀
         // 这样下次进入页面，tryGetCache('User') 就能直接拿到全量数据
-        if (host.isRemote) {
+        if (!host.isRemote) {
             return base;
         }
 
@@ -89,16 +93,18 @@ export class StateCacheAbility<T extends IEntity, TSearch extends SearchParams> 
     }
 
     private async getProvider(): Promise<ICacheProvider> {
-        const { schema } = this.host;
+        const host = this.host as IBaseEntityState;
+        const { schema } = host;
         if (this._provider) return this._provider;
-        this._provider = await CacheFactory.create(schema.cache?.type || 'memory');
+        this._provider = await CacheFactory.create((schema as any).cache?.type || 'memory');
         return this._provider!;
     }
 
     protected onDispose(): void {
         if(this._provider){
             CacheFactory.release(this._provider?.id, true);
-        }        
+        }
+        
         this._provider = null;
     }
 }

@@ -1,16 +1,7 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IEntity,
-    IExposeResult,
-    ITreeSearchParams,
-    ITreeRemoteEntityStateExtenstion,
-    TreeSchema,
-} from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IEntity, ITreeSearchParams, TreeSchema } from '@/schema';
 
-export class TreeViewAbility<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-> extends AbilityBase<ITreeRemoteEntityStateExtenstion<T, TSearch>> {
+export class TreeViewAbility extends AbilityBase {
     protected expose(): IExposeResult {
         return {
             refreshView: () => this.refreshView(),
@@ -18,8 +9,8 @@ export class TreeViewAbility<
     }
 
     protected refreshView() {
-        const { host } = this;
-        const schema = host.schema as any;
+        const host = this.host as any;
+        const schema = host.schema as TreeSchema;
 
         // 根据配置决定生成何种格式
         const newItems =
@@ -29,9 +20,9 @@ export class TreeViewAbility<
         host.items = newItems;
     }
 
-    protected generateFlatItems(): T[] {
-        const { host } = this;
-        const result: T[] = [];
+    protected generateFlatItems(): any[] {
+        const host = this.host as any;
+        const result: any[] = [];
         const schema = host.schema as TreeSchema;
         const expandedField = schema.expandedField || 'expanded';
         const idField = host.idField;
@@ -45,11 +36,11 @@ export class TreeViewAbility<
             const childIds = host.hierarchy.get(pid) || [];
 
             // 2. 获取实体并进行排序（利用你已有的 applySort）
-            const children = childIds.map(id => host.nodes.get(id)!).filter(Boolean);
+            const children = childIds.map((id: any) => host.nodes.get(id)!).filter(Boolean);
             const sortedChildren = host.applySort(children);
 
             // 3. 遍历并递归
-            sortedChildren.forEach(node => {
+            sortedChildren.forEach((node: any) => {
                 // 注入深度信息，方便组件渲染缩进
                 // 💡 这里我们不需要修改原始 node，而是解构出一个新对象
                 result.push({ ...node, _depth: depth });
@@ -66,18 +57,18 @@ export class TreeViewAbility<
         return result;
     }
 
-    protected generateTreeData(): T[] {
-        const host = this.host;
+    protected generateTreeData(): any[] {
+        const host = this.host as any;
         const schema = host.schema as TreeSchema;
         const childrenField = schema.childrenField || 'children';
         const idField = host.idField;
 
-        const build = (pid: string | number | null): T[] => {
+        const build = (pid: string | number | null): any[] => {
             const childIds = host.hierarchy.get(pid) || [];
-            const children = childIds.map(id => host.nodes.get(id)!).filter(Boolean);
+            const children = childIds.map((id: any) => host.nodes.get(id)!).filter(Boolean);
             const sorted = host.applySort(children);
 
-            return sorted.map(node => ({
+            return sorted.map((node: any) => ({
                 ...node,
                 [childrenField]: build(node[idField]), // 递归构建嵌套结构
             }));

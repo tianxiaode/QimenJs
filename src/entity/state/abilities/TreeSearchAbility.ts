@@ -1,21 +1,18 @@
-import { AbilityBase } from '../../../composable';
-import { IEntity, IExposeResult, ITreeSearchParams, ITreeRemoteEntityState } from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IEntity, ITreeSearchParams } from '@/schema';
 import { array } from '@orbitjs/utils';
 
-export class TreeSearchAbility<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-> extends AbilityBase<ITreeRemoteEntityState<T, TSearch>> {
+export class TreeSearchAbility extends AbilityBase {
     protected expose(): IExposeResult {
         return {
             applySearchExpansion: () => this.applySearchExpansion(),
-            applySort: (list: T[]) => this.applySort(list),
-            matchKeyword: (node: T, keyword: string) => this.matchKeyword(node, keyword),
+            applySort: (list: IEntity[]) => this.applySort(list),
+            matchKeyword: (node: IEntity, keyword: string) => this.matchKeyword(node, keyword),
         };
     }
 
     protected applySearchExpansion(): void {
-        const host = this.host;
+        const host = this.host as any;
         const expandedField = host.expandedField;
         const pidField = host.parentIdField;
         const keyword = host.search.keyword!.toLowerCase();
@@ -43,25 +40,25 @@ export class TreeSearchAbility<
         });
     }
 
-    protected applySort(list: T[]): T[] {
-        const host = this.host;
+    protected applySort(list: IEntity[]): IEntity[] {
+        const host = this.host as any;
         if (!host.search.sortBy || list.length <= 1) return list;
 
         return array.orderBy(list, [
             {
-                by: host.search.sortBy as keyof T,
+                by: host.search.sortBy as keyof IEntity,
                 order: host.search.order as 'asc' | 'desc',
             },
         ]);
     }
 
-    protected matchKeyword(node: T, keyword: string): boolean {
-        const host = this.host;
+    protected matchKeyword(node: IEntity, keyword: string): boolean {
+        const host = this.host as any;
         if (!keyword) return false;
 
         const k = keyword.toLowerCase();
         // 使用 some：只要有一个字段匹配就返回 true
-        return host.searchFields.some(field => {
+        return host.searchFields.some((field: string) => {
             const value = (node as any)[field];
             return typeof value === 'string' && value.toLowerCase().includes(k);
         });

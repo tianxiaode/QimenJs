@@ -1,29 +1,23 @@
-import { Ability, ComposableBase } from '../../composable';
-import {
-    IEntity,
-    Schema,
-    SearchParams,
-    IBaseEntityState,
-    StateCacheAbilityName,
-    StateSchemaAbilityName,
-    StateSearchAbilityName,
-    StateDirtyAbilityName,
-    IStateCacheAbility,
-    IStateSchemaAbility,
-    IStateSearchAbility,
-    IStateDirtyAbility,
-} from '../../types';
+import { ComposableBase } from '@/composable';
+import type { AbilityConstructor } from '@/composable';
+import type { IEntity, Schema, SearchParams } from '@/schema';
+import type { IBaseEntityState } from '@/entity/types';
+import { StateSchemaAbility } from '@/entity/abilities/state/StateSchemaAbility';
+import { StateCacheAbility } from '@/entity/abilities/state/StateCacheAbility';
+import { StateDirtyAbility } from '@/entity/abilities/state/StateDirtyAbility';
+import { StateSearchAbility } from '@/entity/abilities/state/StateSearchAbility';
 
-@Ability(
-    StateCacheAbilityName,
-    StateSchemaAbilityName,
-    StateSearchAbilityName,
-    StateDirtyAbilityName
-)
 export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchParams>
     extends ComposableBase
     implements IBaseEntityState<T, TSearch>
 {
+    static readonly abilities: readonly AbilityConstructor[] = [
+        StateSchemaAbility,
+        StateCacheAbility,
+        StateDirtyAbility,
+        StateSearchAbility,
+    ];
+
     loading: boolean = false;
     items: T[] = [];
     item: T | null = null;
@@ -49,10 +43,3 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
         super.dispose();
     }
 }
-
-export interface BaseEntityState<T extends IEntity, TSearch extends SearchParams>
-    extends
-        IStateCacheAbility,
-        IStateSchemaAbility,
-        IStateSearchAbility<T, TSearch>,
-        IStateDirtyAbility<T> {}

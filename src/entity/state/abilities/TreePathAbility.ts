@@ -1,47 +1,26 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IEntity,
-    IExposeResult,
-    ITreeSearchParams,
-    ITreeRemoteEntityStateExtenstion,
-} from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IEntity, ITreeSearchParams } from '@/schema';
 
-export class TreePathAbility<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-> extends AbilityBase<ITreeRemoteEntityStateExtenstion<T, TSearch>> {
-    /**
-     * 暴露远程获取实体的方法
-     *
-     * @returns 包含 remoteGet 方法的对象，用于远程获取单个实体
-     */
+export class TreePathAbility extends AbilityBase {
     protected expose(): IExposeResult {
-        const { host } = this;
-
         return {
-            /**
-             * 远程获取实体
-             *
-             * @param id 要获取的实体ID
-             * @returns Promise<T> 获取的实体的Promise
-             */
-            ingest: (data: T | T[], manualParentId?: string | number | null) =>
+            ingest: (data: IEntity | IEntity[], manualParentId?: string | number | null) =>
                 this.ingest(data, manualParentId),
             rebuildDescendantsPaths: (pid: any, parentPath: string, nextDepth: number) =>
                 this.rebuildDescendantsPaths(pid, parentPath, nextDepth),
-            toggleExpand: (id: string | number | T, expanded?: boolean) =>
+            toggleExpand: (id: string | number | IEntity, expanded?: boolean) =>
                 this.toggleExpand(id, expanded),
-            toggleLeaf: (id: string | number | T, leaf?: boolean) => this.toggleLeaf(id, leaf),
+            toggleLeaf: (id: string | number | IEntity, leaf?: boolean) => this.toggleLeaf(id, leaf),
         };
     }
 
-    protected ingest(data: T | T[], manualParentId?: string | number | null): void {
-        const { host } = this;
+    protected ingest(data: IEntity | IEntity[], manualParentId?: string | number | null): void {
+        const host = this.host as any;
         const list = Array.isArray(data) ? data : [data];
         const parentIdField = host.parentIdField;
         const root = host.root;
 
-        // 本次变动的“顶层”节点，即路径计算的起点
+        // 本次变动的"顶层"节点，即路径计算的起点
         const seeds = new Set<any>();
 
         // 1. 第一遍：入库、建立索引、初步识别种子
@@ -100,9 +79,9 @@ export class TreePathAbility<
     }
 
     protected rebuildDescendantsPaths(pid: any, parentPath: string, nextDepth: number): void {
-        const { host } = this;
+        const host = this.host as any;
         const childIds = host.hierarchy.get(pid) || [];
-        childIds.forEach(id => {
+        childIds.forEach((id: string | number) => {
             const node = host.nodes.get(id) as any;
             if (node) {
                 node._path = parentPath ? `${parentPath}.${id}` : `${id}`;
@@ -113,8 +92,8 @@ export class TreePathAbility<
         });
     }
 
-    protected toggleExpand(id: string | number | T, expanded?: boolean): void {
-        const host = this.host;
+    protected toggleExpand(id: string | number | IEntity, expanded?: boolean): void {
+        const host = this.host as any;
         const node = typeof id === 'object' ? id : (host.nodes.get(id) as any);
         const expandedField = host.expandedField;
 
@@ -124,8 +103,8 @@ export class TreePathAbility<
         }
     }
 
-    protected toggleLeaf(id: string | number | T, leaf?: boolean): void {
-        const host = this.host;
+    protected toggleLeaf(id: string | number | IEntity, leaf?: boolean): void {
+        const host = this.host as any;
         const node = typeof id === 'object' ? id : (host.nodes.get(id) as any);
         if (node) {
             node[host.leafField] = leaf;

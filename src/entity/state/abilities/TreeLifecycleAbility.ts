@@ -1,30 +1,20 @@
-import { AbilityBase } from '../../../composable';
-import {
-    IEntity,
-    IExposeResult,
-    ITreeSearchParams,
-    ITreeRemoteEntityStateExtenstion,
-} from '../../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IEntity } from '@/schema';
 
-export class TreeLifecycleAbility<
-    T extends IEntity,
-    TSearch extends ITreeSearchParams,
-> extends AbilityBase<ITreeRemoteEntityStateExtenstion<T, TSearch>> {
+export class TreeLifecycleAbility extends AbilityBase {
     protected expose(): IExposeResult {
-        const { host } = this;
-
         return {
             removeNode: (id: string | number) => this.removeNode(id),
             moveNode: (id: string | number, targetPid: string | number | null) =>
                 this.moveNode(id, targetPid),
-            syncChildren: (pid: string | number | null, newData: T[]) =>
+            syncChildren: (pid: string | number | null, newData: IEntity[]) =>
                 this.syncChildren(pid, newData),
             getChildren: (pid?: any, predicate?: any) => this.getChildren(pid, predicate),
         };
     }
 
     protected removeNode(id: string | number): void {
-        const host = this.host;
+        const host = this.host as any;
         const targetNode = host.nodes.get(id) as any;
         if (!targetNode) return;
 
@@ -36,13 +26,13 @@ export class TreeLifecycleAbility<
         if (siblings) {
             host.hierarchy.set(
                 pid,
-                siblings.filter(childId => childId !== id)
+                siblings.filter((childId: any) => childId !== id)
             );
         }
 
         // 2. 批量删除自己和所有子孙 (线性扫描)
         // 凡是路径为 "1.2" 或以 "1.2." 开头的节点全部删除
-        host.nodes.forEach((node: any, nodeId) => {
+        host.nodes.forEach((node: any, nodeId: any) => {
             if (nodeId === id || node._path.startsWith(`${pathPrefix}.`)) {
                 host.nodes.delete(nodeId);
                 host.hierarchy.delete(nodeId); // 同时清理这些节点的子索引
@@ -109,30 +99,30 @@ export class TreeLifecycleAbility<
         }
     }
 
-    protected syncChildren(pid: string | number | null, newData: T[]): void {
-        const host = this.host;
-        const newIds = newData.map(item => item[host.idField]);
+    protected syncChildren(pid: string | number | null, newData: IEntity[]): void {
+        const host = this.host as any;
+        const newIds = newData.map((item: any) => item[host.idField]);
         const oldIds = host.hierarchy.get(pid) || [];
 
         // 1. 找出差集：在旧索引里有，但在新数据里没了的 ID
-        const toRemoveIds = oldIds.filter(id => !newIds.includes(id));
+        const toRemoveIds = oldIds.filter((id: any) => !newIds.includes(id));
 
         // 2. 执行彻底清理（级联删除子孙）
-        toRemoveIds.forEach(id => {
+        toRemoveIds.forEach((id: any) => {
             this.removeNode(id); // 利用现有的 removeNode 方法，它已经支持路径前缀批量删除
         });
     }
 
     protected getChildren(
         pid: string | number | null = this.host.root,
-        predicate?: (node: T) => boolean
-    ): T[] {
-        const host = this.host;
+        predicate?: (node: IEntity) => boolean
+    ): IEntity[] {
+        const host = this.host as any;
         // 从索引中获取 ID 列表
         const childIds = host.hierarchy.get(pid) || [];
 
         // 转换为实体对象列表，并过滤掉可能不存在的引用
-        let children = childIds.map(id => host.nodes.get(id)!).filter(Boolean);
+        let children = childIds.map((id: any) => host.nodes.get(id)!).filter(Boolean);
 
         // 如果传入了自定义处理/过滤逻辑
         if (predicate) {

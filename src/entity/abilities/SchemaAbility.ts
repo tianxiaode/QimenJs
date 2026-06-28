@@ -1,14 +1,7 @@
-import { SchemaRegistrar } from '../../registrars';
-import { AbilityBase } from '../../composable';
-import {
-    FieldDefinition,
-    ICoreEntityManager,
-    IExposeResult,
-    Schema,
-    SCHEMA_CACHE_SYMBOL,
-    SchemaCache,
-    TreeSchema,
-} from '../../types';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import { SchemaRegistrar } from '@/schema';
+import type { FieldDefinition, Schema, SchemaCache, TreeSchema } from '@/schema';
+import { SCHEMA_CACHE_SYMBOL, ICoreEntityManager } from '@/entity/types';
 
 /**
  * SchemaAbility - 模式能力类
@@ -21,7 +14,7 @@ import {
  * 4. 校验规则的提取和管理
  * 5. 提供标准化的模式访问接口
  */
-export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> {
+export class SchemaAbility extends AbilityBase {
     /**
      * 暴露模式相关的属性和方法
      *
@@ -31,76 +24,101 @@ export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> 
      * @returns 包含模式定义相关属性和方法的对象
      */
     protected expose(): IExposeResult {
-        // 1. 尝试从静态缓存获取已编译的 Schema 结果
-        // 结果包含：finalSchema (完整对象) 和 resolvedRules (拆解后的规则)
-        let cached = this.host.getStatic(SCHEMA_CACHE_SYMBOL) as SchemaCache;
-
-        if (!cached) {
-            const rawSchema = (this.host as any).schema;
-            // 如果有定义则编译，否则给一个默认的空 Schema 结构
-            cached = rawSchema ? this.compileSchema(rawSchema) : { schema: {} as any, rules: {} };
-            this.host.setStatic(SCHEMA_CACHE_SYMBOL, cached);
-        }
-
-        const { schema, rules } = cached;
-        // 3. 动态注入方法到 host
         return {
             /** 返回原始 Schema 对象 */
-            getSchema: () => schema,
+            getSchema: () => {
+                const host = this.host as ICoreEntityManager;
+                return this.getSchemaCached(host).schema;
+            },
 
             /** 返回校验规则 */
             getSchemaRules: (fieldName?: string) => {
+                const host = this.host as ICoreEntityManager;
+                const rules = this.getSchemaCached(host).rules;
                 return fieldName ? rules[fieldName] : rules;
             },
 
             /** 属性化：字段映射键名 */
             schemaKeys: {
-                get: () => ({
-                    id: schema.idField || 'id',
-                    label: schema.nameField || 'name',
-                    createdAt: schema.createField || 'createdAt',
-                    updatedAt: schema.updateField || 'updatedAt',
-                    // --- 新增树相关键名 ---
-                    parentId: (schema as TreeSchema).parentIdField || 'parentId',
-                    children: (schema as TreeSchema).childrenField || 'children',
-                    path: (schema as TreeSchema).pathField || 'path',
-                    leaf: (schema as TreeSchema).leafField || 'leaf',
-                }),
+                get: () => {
+                    const host = this.host as ICoreEntityManager;
+                    const schema = this.getSchemaCached(host).schema;
+                    return {
+                        id: schema.idField || 'id',
+                        label: schema.nameField || 'name',
+                        createdAt: schema.createField || 'createdAt',
+                        updatedAt: schema.updateField || 'updatedAt',
+                        // --- 新增树相关键名 ---
+                        parentId: (schema as TreeSchema).parentIdField || 'parentId',
+                        children: (schema as TreeSchema).childrenField || 'children',
+                        path: (schema as TreeSchema).pathField || 'path',
+                        leaf: (schema as TreeSchema).leafField || 'leaf',
+                    };
+                },
                 enumerable: true,
             },
 
             /** 属性化：树行为配置 */
             schemaTree: {
-                get: () => ({
-                    isTree: !!schema.isTree,
-                    isLazy: !!(schema as TreeSchema).isLazy,
-                    root: (schema as TreeSchema).root, // 注意：这个值可能是 0, null, '', 需原样保留
-                }),
+                get: () => {
+                    const host = this.host as ICoreEntityManager;
+                    const schema = this.getSchemaCached(host).schema;
+                    return {
+                        isTree: !!schema.isTree,
+                        isLazy: !!(schema as TreeSchema).isLazy,
+                        root: (schema as TreeSchema).root, // 注意：这个值可能是 0, null, '', 需原样保留
+                    };
+                },
                 enumerable: true,
             },
 
             /** 属性化：排序行为 */
             schemaSort: {
-                get: () => ({
-                    prop: schema.defaultSort || 'id',
-                    order: schema.defaultOrder || 'desc',
-                }),
+                get: () => {
+                    const host = this.host as ICoreEntityManager;
+                    const schema = this.getSchemaCached(host).schema;
+                    return {
+                        prop: schema.defaultSort || 'id',
+                        order: schema.defaultOrder || 'desc',
+                    };
+                },
                 enumerable: true,
             },
 
             /** 属性化：预设过滤字段 */
             schemaFilters: {
-                get: () => schema.searchFields || [],
+                get: () => {
+                    const host = this.host as ICoreEntityManager;
+                    return this.getSchemaCached(host).schema.searchFields || [];
+                },
                 enumerable: true,
             },
             schemaIdType: {
-                get: () => cached.idType,
+                get: () => {
+                    const host = this.host as ICoreEntityManager;
+                    return this.getSchemaCached(host).idType;
+                },
                 enumerable: true,
             },
         };
     }
 
-    private compileSchema(localSchema: Schema): SchemaCache {
+    private getSchemaCached(host: ICoreEntityManager): SchemaCache {
+        // 1. 尝试从静态缓存获取已编译的 Schema 结果
+        // 结果包含：finalSchema (完整对象) 和 resolvedRules (拆解后的规则)
+        let cached = host.getStatic(SCHEMA_CACHE_SYMBOL) as SchemaCache;
+
+        if (!cached) {
+            const rawSchema = (host as any).schema;
+            // 如果有定义则编译，否则给一个默认的空 Schema 结构
+            cached = rawSchema ? this.compileSchema(rawSchema, host) : { schema: {} as any, rules: {}, idType: 'string' };
+            host.setStatic(SCHEMA_CACHE_SYMBOL, cached);
+        }
+
+        return cached;
+    }
+
+    private compileSchema(localSchema: Schema, host: ICoreEntityManager): SchemaCache {
         const registrar = SchemaRegistrar.getInstance();
 
         // 1. 初始化中间容器
@@ -140,7 +158,7 @@ export class SchemaAbility<T extends ICoreEntityManager> extends AbilityBase<T> 
             ...baseMetadata,
             ...localSchema,
             fields: finalFields,
-            domain: this.host.domain,
+            domain: host.domain,
         } as Schema;
 
         finalSchema.searchFields = Array.from(searchFields);

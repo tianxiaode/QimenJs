@@ -1,27 +1,24 @@
-import { IBaseEntityState, IEntity, IExposeResult, SearchParams } from '../../types';
-import { AbilityBase } from '../../composable';
+import { AbilityBase, type IExposeResult } from '@/composable';
+import type { IBaseEntityState } from '@/entity/types';
 
-export class StateDirtyAbility<T extends IEntity, TSearch extends SearchParams> extends AbilityBase<
-    IBaseEntityState<T, TSearch>
-> {
+export class StateDirtyAbility extends AbilityBase {
     // 存储原始数据的快照，Key 为实体 ID
     private _snapshots = new Map<string, any>(); // 存 JSON 字符串最保险
 
     protected expose(): IExposeResult {
-        const { host } = this;
-        const idField = host.schema.idField || 'id';
-
         return {
             /**
              * 检查某个对象或整个 State 是否有未保存的修改
              */
-            isDirty: (item?: T) => {
+            isDirty: (item?: any) => {
+                const host = this.host as IBaseEntityState;
+                const idField = host.schema.idField || 'id';
                 if (!item) return this._snapshots.size > 0;
-                const id = (item as any)[idField];
+                const id = item[idField];
                 const snapshot: any = this._snapshots.get(id);
                 // 如果没有快照，说明没进入编辑状态，不认为是脏的
                 if (snapshot === undefined) return false;
-                return (Object.keys(snapshot) as Array<keyof T>).some(key => {
+                return (Object.keys(snapshot) as Array<keyof any>).some(key => {
                     // 排除掉干扰项
                     if (key === 'updatedAt' || key === 'version') return false;
 
@@ -41,8 +38,10 @@ export class StateDirtyAbility<T extends IEntity, TSearch extends SearchParams> 
             /**
              * 开始编辑：记录原始快照
              */
-            startEdit: (item: T) => {
-                const id = (item as any)[idField];
+            startEdit: (item: any) => {
+                const host = this.host as IBaseEntityState;
+                const idField = host.schema.idField || 'id';
+                const id = item[idField];
                 if (!this._snapshots.has(id)) {
                     this._snapshots.set(id, { ...item });
                 }
@@ -51,16 +50,20 @@ export class StateDirtyAbility<T extends IEntity, TSearch extends SearchParams> 
             /**
              * 结束编辑（确认）：丢弃快照
              */
-            submitEdit: (item: T) => {
-                const id = (item as any)[idField];
+            submitEdit: (item: any) => {
+                const host = this.host as IBaseEntityState;
+                const idField = host.schema.idField || 'id';
+                const id = item[idField];
                 this._snapshots.delete(id);
             },
 
             /**
              * 结束编辑（撤销/回滚）：恢复原始值
              */
-            cancelEdit: (item: T) => {
-                const id = (item as any)[idField];
+            cancelEdit: (item: any) => {
+                const host = this.host as IBaseEntityState;
+                const idField = host.schema.idField || 'id';
+                const id = item[idField];
                 const snapshot = this._snapshots.get(id);
                 if (snapshot) {
                     Object.assign(item, snapshot);

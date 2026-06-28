@@ -1,20 +1,27 @@
-import { Ability } from '../../composable';
-import {
-    IEntity,
-    IFlatLocalEntityState,
-    ILocalSearchParams,
-    IStateLocalMutationAbility,
-    StateLocalMutationAbilityName,
-} from '../../types';
+import { ComposableBase } from '@/composable';
+import type { AbilityConstructor } from '@/composable';
+import type { IEntity, ILocalSearchParams } from '@/schema';
+import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
+import { StateLocalMutationAbility } from '@/entity/abilities/state/StateLocalMutationAbility';
 
-@Ability(StateLocalMutationAbilityName)
 export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearchParams>
     extends BaseEntityState<T, TSearch>
     implements IFlatLocalEntityState<T, TSearch>
 {
+    static readonly abilities: readonly AbilityConstructor[] = [
+        StateLocalMutationAbility,
+    ];
+
     isRemote: false = false;
-    protected sourceData = new Map<string | number, T>();
+    sourceData = new Map<string | number, T>();
+
+    hasChanges: boolean = false;
+    changes: ILocalChangeSet<T> = { added: [], updated: new Map<string | number, T>(), deleted: [] };
+
+    updateData(result: any[]): void {
+        (this as any).updateData(result);
+    }
 
     async refreshView(): Promise<void> {
         this.loading = true;
@@ -25,7 +32,7 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
 
             // 2. 第一道工序：关键词过滤 (利用 SearchAbility 提供的 matchKeyword)
             // 注意：matchKeyword(i) 内部已经处理了关键词为空返回 true 的逻辑
-            let filtered = allData.filter(item => (this as any).matchKeyword(item));
+            let filtered = allData.filter((item: any) => (this as any).matchKeyword(item));
 
             // 3. 第二道工序：排序处理 (利用 SearchAbility 提供的 applySort)
             this.items = (this as any).applySort(filtered);
@@ -34,13 +41,38 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
         }
     }
 
+    async addItem(item: T): Promise<void> {
+        await (this as any).addItem(item);
+    }
+
+    async updateItem(item: T): Promise<void> {
+        await (this as any).updateItem(item);
+    }
+
+    async softDelete(plan: IDeletionPlan<T>): Promise<void> {
+        await (this as any).softDelete(plan);
+    }
+
+    getDeletionPlan(ids: (string | number)[]): IDeletionPlan<T> {
+        return (this as any).getDeletionPlan(ids);
+    }
+
+    async confirmDelete(): Promise<void> {
+        await (this as any).confirmDelete();
+    }
+
+    async rollbackDelete(): Promise<void> {
+        await (this as any).rollbackDelete();
+    }
+
+    async clearChanges(): Promise<void> {
+        (this as any).clearChanges();
+    }
+
     dispose(): void {
         this.sourceData.clear();
         super.dispose();
     }
 }
 
-export interface FlatLocalEntityState<
-    T extends IEntity,
-    TSearch extends ILocalSearchParams,
-> extends IStateLocalMutationAbility<T> {}
+

@@ -1,138 +1,139 @@
-import { runPipeline, createFlowContext } from '../core';
-import { EntityActionRegistrar } from '../registrars';
-import {
-    ActionEntry,
+import { ComposableBase } from '@/composable';
+import { EventAbility } from '@/system-abilities';
+import { DomainAbility } from '@/system-abilities';
+import { SystemAbility } from '@/system-abilities';
+import { SchemaAbility } from '@/entity/abilities';
+import type {
     ENTITY_ACTION,
-    EntityRequestTask,
-    EventAbilityName,
-    FlowContext,
-    RequestOptions,
     ICoreEntityManager,
-    Schema,
-    DomainAbilityName,
-    SystemAbilityName,
-    SechmaAbilityName,
-    IEventAbilitiy,
-    IDomainAbility,
-    ISystemAbility,
-    ISchemaAbility,
-} from '../types';
-import { Ability, ComposableBase } from '../composable';
+} from '@/entity/types';
+import type { Schema } from '@/schema';
+import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
+import type { RequestContext } from '@/context';
+import { RequestContextBuilder } from '@/context';
+import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-processor';
+import { dataProcessorExecutor } from '@/data-processor';
+import { RegistryHub } from '@/registry';
+import { HttpExecutor } from '@/http';
 
-@Ability(EventAbilityName, DomainAbilityName, SystemAbilityName, SechmaAbilityName)
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
+    static readonly abilities = [EventAbility, DomainAbility, SystemAbility, SchemaAbility];
+
     domain: string = 'default';
-    abstract customActions: ActionEntry[];
     abstract entityName: string;
     abstract url: string;
     abstract schema?: Schema;
 
-    // 存储当前正在进行的任务：Action -> AbortController
-    protected activeTasks = new Map<ENTITY_ACTION, AbortController>();
-
-    constructor() {
-        super();
+    getSchema(): any {
+        return (this as any).getSchema();
     }
 
-    request(action: ENTITY_ACTION, options: RequestOptions): EntityRequestTask {
-        // 1. 自动取消逻辑（逻辑同前）
-        if (this.activeTasks.has(action)) {
-            this.logger.warn(
-                `Action [${action}] is already running. Auto-cancelling previous task.`
-            );
-            this.activeTasks.get(action)?.abort('auto_cancelled');
-        }
+    getSchemaRules(fieldName?: string): any {
+        return (this as any).getSchemaRules(fieldName);
+    }
 
-        const controller = new AbortController();
-        this.activeTasks.set(action, controller);
+    /**
+     * 获取域配置
+     */
+    protected getDomainConfig(): any {
+        return (RegistryHub.get('domain') as any)?.get(this.domain);
+    }
 
-        // 2. 构建上下文
-        const context = createFlowContext(
-            'GET',
-            this.url,
-            this.domain,
-            this.getDomainConfig(),
-            {
-                ...options,
-                signal: controller.signal,
-            },
-            this.entityName,
-            action,
-            this.getScheme()
-        );
+    /**
+     * 获取数据处理预设
+     */
+    protected getDataProcessorPreset(): string {
+        const domainConfig = this.getDomainConfig();
+        return domainConfig?.preset || 'default';
+    }
 
-        // 3. 定义异步执行体
-        const execute = async (): Promise<FlowContext> => {
-            const startTime = Date.now();
+    /**
+     * 创建请求任务
+     */
+    request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask {
+        // 1. 构建请求上下文
+        const context = this.buildRequestContext(action, options);
+
+        // 2. 定义异步执行体
+        const execute = async (): Promise<RequestContext> => {
             try {
                 this.logger.debug(`Executing Action [${action}] for Entity [${this.entityName}]`);
 
-                // 1. 尝试从类级缓存获取已合并的管道
-                const CACHE_KEY = '__ACTION_PIPELINE__';
-                let allActions = this.getStatic<any[]>(CACHE_KEY);
+                // 3. 前导数据处理
+                await this.executeDataProcessor('pre', context);
 
-                // 2. 如果没有缓存（第一次执行），则进行合并并存入缓存
-                if (!allActions) {
-                    const baseActions = EntityActionRegistrar.getInstance().getPipeline();
-                    // 假设 customActions 是定义在类上的静态属性或通过构造传入的固定列表
-                    allActions = [...baseActions, ...(this.customActions || [])];
+                // 4. 执行 HTTP 请求
+                const executor = new HttpExecutor();
+                await executor.execute(context);
 
-                    this.setStatic(CACHE_KEY, allActions);
-                    this.logger.debug(`Pipeline cached for Entity [${this.entityName}]`);
-                }
+                // 5. 后导数据处理
+                await this.executeDataProcessor('post', context);
 
-                // 3. 直接使用缓存的管道执行
-                await runPipeline(context, allActions);
-
-                if (context.metadata.hasError) {
-                    this.logger.error(`Action [${action}] failed:`, context.metadata.error);
-                } else {
-                    const duration = Date.now() - startTime;
-                    this.logger.debug(`Action [${action}] completed in ${duration}ms`);
-                }
                 return context;
             } catch (e) {
-                this.logger.error(`Pipeline Crash in Action [${action}]!`, e);
+                this.logger.error(`Request failed in Action [${action}]!`, e);
                 throw e;
-            } finally {
-                if (this.activeTasks.get(action) === controller) {
-                    this.activeTasks.delete(action);
-                }
             }
         };
 
-        // 4. 立即返回任务对象，而不是等待请求完成
+        // 6. 返回任务对象
         return {
             context: execute(),
-            cancel: (reason?: string) => controller.abort(reason || 'manual_cancelled'),
+            cancel: (reason?: string) => context.request?.controller?.abort(reason || 'manual_cancelled'),
         };
     }
 
     /**
-     * 强力工具：取消该实体下所有的在研请求
+     * 构建请求上下文
      */
-    cancelAll() {
-        this.activeTasks.forEach(c => c.abort('manager_cancel_all'));
-        this.activeTasks.clear();
+    protected buildRequestContext(action: ENTITY_ACTION, options: HttpRequestOptions): RequestContext {
+        const schema = this.getSchema();
+
+        return RequestContextBuilder
+            .create()
+            .withIdentity({
+                domain: this.domain,
+                entityName: this.entityName,
+                action: action as string,
+            })
+            .withRequest({
+                url: this.url, // 实体管理器的基础 URL，如 /api/users
+                method: 'GET',
+                body: options.body,
+                headers: options.headers,
+                queryParams: options.queryParams,
+                pathParams: options.pathParams || [], // 路径参数数组，如 ['a', 'b', 1] 生成 /api/users/a/b/1
+                timeout: options.timeout || 30000,
+                responseType: options.responseType || 'json',
+            })
+            .withParams(options.queryParams)
+            .withSchema(schema)
+            .build();
+    }
+
+    /**
+     * 执行数据处理管道
+     */
+    protected async executeDataProcessor(stage: 'pre' | 'post', context: RequestContext): Promise<void> {
+        const preset = this.getDataProcessorPreset();
+        const registrar = RegistryHub.get<DataProcessorRegistrar>(DataProcessorRegistrarName);
+
+        if (registrar) {
+            const handlers = registrar.getPipeline(preset, stage);
+            this.logger.debug(`Executing DataProcessor pipeline [${preset}-${stage}]`);
+            await dataProcessorExecutor.execute(context, handlers, stage);
+        }
+    }
+
+    /**
+     * 取消所有请求
+     */
+    cancelAll(): void {
+        this.logger.warn(`Cancelling all requests for Entity [${this.entityName}]`);
     }
 
     public dispose(): void {
-        // 1. 立即中断所有正在进行的请求任务
-        this.cancelAll();
-
-        // 2. 清理 Ability 容器 (由于继承自 ComposableBase，这里可能需要调用父类的清理)
-        if (typeof super.dispose === 'function') {
-            super.dispose();
-        }
-
-        // 3. 释放大对象引用，协助 GC
-        this.activeTasks.clear();
         this.schema = undefined;
-        this.customActions = [];
-
         this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
     }
 }
-
-export interface CoreEntityManager
-    extends IEventAbilitiy, IDomainAbility, ISystemAbility, ISchemaAbility {}

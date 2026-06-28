@@ -5,7 +5,7 @@
  */
 
 import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache } from '@/schema';
-import type { IExposeResult, AbilityConstructor } from '@/composable';
+import type { IExposeResult, AbilityConstructor, IComposableBase } from '@/composable';
 import type { RequestContext, RequestTask, PaginationInfo } from '@/context';
 import type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
 import type { ICacheProvider } from '@/cache';
@@ -26,7 +26,7 @@ export type {
     BaseSchema,
 } from '@/schema';
 
-export type { IExposeResult, AbilityConstructor } from '@/composable';
+export type { IExposeResult, AbilityConstructor, IComposableBase } from '@/composable';
 export { AbilityBase } from '@/composable';
 export { ComposableBase } from '@/composable';
 
@@ -75,7 +75,7 @@ export interface ILocalChangeSet<T = any> {
     /** 新增项 */
     added: T[];
     /** 更新项 */
-    updated: T[];
+    updated: Map<string | number, T>;
     /** 删除项 ID */
     deleted: (string | number)[];
 }
@@ -108,7 +108,7 @@ export interface IBaseEntityState<T extends IEntity = IEntity, TSearch extends S
 /** 本地实体状态接口 */
 export interface ILocalEntityState<T extends IEntity = IEntity, TSearch extends ILocalSearchParams = ILocalSearchParams>
     extends IBaseEntityState<T, TSearch> {
-    sourceData: T[];
+    sourceData: Map<string | number, T>;
     updateData(result: any[]): void;
 }
 
@@ -117,13 +117,13 @@ export interface IFlatLocalEntityState<T extends IEntity = IEntity, TSearch exte
     extends ILocalEntityState<T, TSearch> {
     hasChanges: boolean;
     changes: ILocalChangeSet<T>;
-    addItem(item: T): void;
-    updateItem(item: T): void;
-    softDelete(plan: IDeletionPlan<T>): void;
+    addItem(item: T): Promise<void>;
+    updateItem(item: T): Promise<void>;
+    softDelete(plan: IDeletionPlan<T>): Promise<void>;
     getDeletionPlan(ids: (string | number)[]): IDeletionPlan<T>;
-    confirmDelete(): void;
-    rollbackDelete(): void;
-    clearChanges(): void;
+    confirmDelete(): Promise<void>;
+    rollbackDelete(): Promise<void>;
+    clearChanges(): Promise<void>;
 }
 
 /** 远程实体状态接口 */
@@ -160,7 +160,7 @@ export type EntityState<T extends IEntity = IEntity, TSearch extends SearchParam
 // ============================================
 
 /** 核心实体管理器接口 */
-export interface ICoreEntityManager {
+export interface ICoreEntityManager extends IComposableBase {
     domain: string;
     entityName: string;
     url: string;
@@ -381,4 +381,36 @@ export interface IStateSearchAbility<T = any, TSearch extends SearchParams = Sea
     matchKeyword(item: T): boolean;
     applySort(list: T[]): T[];
     sort(field: string, order: string): void;
+}
+
+// ============================================
+// 树状态能力接口
+// ============================================
+
+/** 树路径能力接口 */
+export interface ITreePathAbility<T = any> {
+    ingest(data: T | T[], manualParentId?: string | number | null): void;
+    rebuildDescendantsPaths(pid: any, parentPath: string, nextDepth: number): void;
+    toggleExpand(id: string | number | T, expanded?: boolean): void;
+    toggleLeaf(id: string | number | T, leaf?: boolean): void;
+}
+
+/** 树生命周期能力接口 */
+export interface ITreeLifecycleAbility<T = any> {
+    removeNode(id: string | number): void;
+    moveNode(id: string | number, targetPid: string | number | null): void;
+    syncChildren(pid: string | number | null, newData: T[]): void;
+    getChildren(pid?: any, predicate?: (node: T) => boolean): T[];
+}
+
+/** 树搜索能力接口 */
+export interface ITreeSearchAbility<T = any> {
+    applySearchExpansion(): void;
+    applySort(list: T[]): T[];
+    matchKeyword(node: T, keyword: string): boolean;
+}
+
+/** 树视图能力接口 */
+export interface ITreeViewAbility {
+    refreshView(): void;
 }
