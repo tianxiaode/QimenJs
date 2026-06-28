@@ -3,56 +3,60 @@ import type { IBaseEntityState, IDeletionPlan, ILocalChangeSet } from '@/entity/
 
 export class StateLocalMutationAbility extends AbilityBase {
     // 内部维护变更集
-    private _changes: ILocalChangeSet = this.createEmptyChanges();
+    private _changes?: ILocalChangeSet;
     private _deleteSnapshots = new Map<string | number, any>();
 
     protected expose(): IExposeResult {
+        const self = this; // 捕获 this，以便在方法中使用
+
         return {
-            hasChanges: { get: () => this._changes.added.length > 0 || this._changes.updated.size > 0 },
-            // 暴露变更集只读引用
-            changes: { get: () => this._changes },
+            hasChanges: { get: () => self._changes !== undefined && (self._changes.added.length > 0 || self._changes.updated.size > 0) },
+            // changes 从 this._changes 动态派生
+            changes: { get: () => (self._changes ?? self.createEmptyChanges()) },
 
             /**
              * 新增项
              */
             addItem: async (item: any) => {
-                const host = this.host as IBaseEntityState;
+                const host = self.host as IBaseEntityState;
                 const idField = host.schema.idField || 'id';
                 const idType = host.schema.idType || 'string';
                 const tempId = idType === 'number' ? -Math.abs(Date.now()) : crypto.randomUUID();
                 item.tempId = tempId; // 标记临时id，用于后续删除
                 item.isNew = true; // 标记为新增
-                this._changes.added.push(item);
-                (host as any).sourceData.set(this.getMapKey(item), item);
-                await this.commitChange();
+                self._changes ??= self.createEmptyChanges();
+                self._changes.added.push(item);
+                (host as any).sourceData.set(self.getMapKey(item), item);
+                await self.commitChange();
             },
 
             /**
              * 更新项
              */
             updateItem: async (item: any) => {
-                const host = this.host as IBaseEntityState;
+                const host = self.host as IBaseEntityState;
                 const idField = host.schema.idField || 'id';
-                const key = this.getMapKey(item);
+                const key = self.getMapKey(item);
                 // 1. 更新 sourceData (Map 直接覆盖)
                 (host as any).sourceData.set(key, { ...item });
 
                 // 2. 记录到变更集
                 const id = item[idField];
-                const isNew = this._changes.added.some(
+                self._changes ??= self.createEmptyChanges();
+                const isNew = self._changes.added.some(
                     (i: any) => i[idField] === id || i.tempId === item.tempId
                 );
 
                 if (!isNew && id) {
-                    this._changes.updated.set(id, { ...item });
+                    self._changes.updated.set(id, { ...item });
                 }
-                await this.commitChange();
+                await self.commitChange();
             },
 
             updateData: async (result: any[]) => {
-                const host = this.host as IBaseEntityState;
+                const host = self.host as IBaseEntityState;
                 const idField = host.schema.idField || 'id';
-                this._changes = this.createEmptyChanges();
+                self._changes = self.createEmptyChanges();
                 result.forEach((item: any) => {
                     const id = item[idField];
                     const tempId = item.tempId;
@@ -64,21 +68,22 @@ export class StateLocalMutationAbility extends AbilityBase {
                     }
                     (host as any).sourceData.set(id, item);
                 });
-                await this.commitChange();
+                await self.commitChange();
             },
 
             /**
              * 软删除：先从视觉和源数据中移除，存入快照
              */
             softDelete: async (plan: IDeletionPlan) => {
-                const host = this.host as IBaseEntityState;
+                const host = self.host as IBaseEntityState;
                 const idField = host.schema.idField || 'id';
                 const { localOnly, persistent } = plan;
 
                 // 1. 处理新增项：直接彻底删除（因为没有远程开销，失败概率极低）
                 if (localOnly.length > 0) {
+                    self._changes ??= self.createEmptyChanges();
                     const localSet = new Set(localOnly);
-                    this._changes.added = this._changes.added.filter(
+                    self._changes.added = self._changes.added.filter(
                         item => !localSet.has(item[idField])
                     );
                 }
@@ -88,25 +93,25 @@ export class StateLocalMutationAbility extends AbilityBase {
                     const sourceData = (host as any).sourceData;
                     const item = Array.from(sourceData.values()).find((i: any) => i[idField] === id);
                     if (item) {
-                        this._deleteSnapshots.set(id, { ...item }); // 存入回收站
+                        self._deleteSnapshots.set(id, { ...item }); // 存入回收站
                         // 如果有待更新的补丁，也顺便存一份
-                        if (this._changes.updated.has(id)) {
+                        if (self._changes && self._changes.updated.has(id)) {
                             // 可选：记录 updated 状态
                         }
                     }
                 });
 
                 // 3. 从内存和视图中移除
-                await this.delete([...localOnly, ...persistent]);
+                await self.delete([...localOnly, ...persistent]);
             },
 
             getDeletionPlan: (ids: (string | number)[]) => {
-                const host = this.host as IBaseEntityState;
+                const host = self.host as IBaseEntityState;
                 const idField = host.schema.idField || 'id';
                 const plan: IDeletionPlan = { localOnly: [], persistent: [] };
 
                 // 获取当前新增缓冲区的 ID 集合
-                const addedIds = new Set(this._changes.added.map(item => item[idField]));
+                const addedIds = self._changes ? new Set(self._changes.added.map(item => item[idField])) : new Set();
 
                 ids.forEach(id => {
                     if (addedIds.has(id)) {
@@ -120,28 +125,28 @@ export class StateLocalMutationAbility extends AbilityBase {
             },
 
             confirmDelete: async () => {
-                this._deleteSnapshots.clear();
-                await this.commitChange();
+                self._deleteSnapshots.clear();
+                await self.commitChange();
             },
 
             rollbackDelete: async () => {
-                if (this._deleteSnapshots.size === 0) return;
+                if (self._deleteSnapshots.size === 0) return;
 
-                this._deleteSnapshots.forEach((item, id) => {
-                    const host = this.host as IBaseEntityState;
+                self._deleteSnapshots.forEach((item, id) => {
+                    const host = self.host as IBaseEntityState;
                     (host as any).sourceData.set(id, item);
                     // 如果原本就在 updated 列表里，这里还可以根据需求恢复状态
                 });
 
-                this._deleteSnapshots.clear();
-                await this.commitChange();
+                self._deleteSnapshots.clear();
+                await self.commitChange();
             },
 
             /**
              * 重置所有变更
              */
             clearChanges: () => {
-                this._changes = this.createEmptyChanges();
+                self._changes = self.createEmptyChanges();
             },
         };
     }
@@ -180,9 +185,11 @@ export class StateLocalMutationAbility extends AbilityBase {
     }
 
     protected onDispose() {
-        this._changes.added = null as any;
-        this._changes.updated.clear();
-        this._changes = null as any;
+        if (this._changes) {
+            this._changes.added = null as any;
+            this._changes.updated.clear();
+            this._changes = undefined;
+        }
         this._deleteSnapshots.clear();
         this._deleteSnapshots = null as any;
     }

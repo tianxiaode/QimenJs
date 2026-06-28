@@ -59,12 +59,14 @@ schema (L2)
 
 ### 3. SchemaRegistrar
 
-Schema 注册器，管理 Schema 和字段组的注册与检索。
+Schema 注册器，管理 Schema 和字段组的注册与检索，支持延迟编译。
 
 **特性**：
 - 继承自 `RegistrarBase`
-- 双存储设计：Schema 存储 + 字段组存储
+- 三存储设计：Schema 存储 + 字段组存储 + 编译缓存
 - 支持两种注册模式
+- 延迟编译：第一次调用 `getCompiled()` 时编译并缓存
+- 支持 Schema 继承（extends）和字段组混入（mixins）
 
 ## 使用示例
 
@@ -123,11 +125,17 @@ registrar.register('addressFields', [
 ### 获取 Schema
 
 ```typescript
-// 获取 Schema
+// 获取原始 Schema
 const userSchema = registrar.get('User');
 
 // 获取字段组
 const addressFields = registrar.getField('addressFields');
+
+// 获取编译后的 Schema（延迟编译 + 缓存）
+const compiled = registrar.getCompiled('User');
+console.log(compiled.schema);  // 编译后的完整 Schema
+console.log(compiled.rules);   // 提取的验证规则
+console.log(compiled.idType);  // ID 类型
 ```
 
 ## API
@@ -138,11 +146,12 @@ const addressFields = registrar.getField('addressFields');
 
 | 方法 | 说明 |
 |------|------|
-| `register(schema)` | 注册 Schema |
+| `register(schema)` | 注册 Schema（使用 schema.name 作为 key） |
 | `register(name, fields)` | 注册字段组 |
 | `unregister(name)` | 注销 Schema 或字段组 |
-| `get(name, type?)` | 获取 Schema 或字段组 |
+| `get(name, type?)` | 获取原始 Schema 或字段组 |
 | `getField(name)` | 获取字段组 |
+| `getCompiled(key)` | 获取编译后的 Schema（延迟编译 + 缓存） |
 | `has(name, type?)` | 检查是否存在 |
 | `getAllSchemaNames()` | 获取所有 Schema 名称 |
 | `getAllFieldNames()` | 获取所有字段组名称 |
@@ -191,15 +200,16 @@ npm test -- test/unit/schema
 
 ## 后续工作
 
-### Phase 1: SchemaCompiler（可选）
-- 实现 Schema 编译功能
-- 处理继承、混入、覆盖
-- 字段合并
+### Phase 1: SchemaCompiler ✅ 已完成
+- ~~实现 Schema 编译功能~~ → 已移到 SchemaRegistrar.getCompiled()
+- ~~处理继承、混入、覆盖~~ → 已在 compileSchema() 中实现
+- ~~字段合并~~ → 已在 processFieldBatch() 中实现
+- ~~缓存编译结果~~ → 已在 getCompiled() 中实现
 
-### Phase 2: SchemaAbility（可选）
-- 作为能力组合到其他类
-- 提供编译后的 Schema 访问接口
-- 缓存编译结果
+### Phase 2: SchemaAbility 简化（待做）
+- 编译逻辑已移到 SchemaRegistrar
+- SchemaAbility 需要简化为代理模式
+- 或者删除 SchemaAbility，Manager 直接使用 SchemaRegistrar.getCompiled()
 
 ## 参考资料
 

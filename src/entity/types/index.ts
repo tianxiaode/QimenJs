@@ -93,10 +93,10 @@ export interface IDeletionPlan<T = any> {
 // ============================================
 
 /** 基础实体状态接口 */
-export interface IBaseEntityState<T extends IEntity = IEntity, TSearch extends SearchParams = SearchParams> {
+export interface IBaseEntityState<TSearch extends SearchParams = SearchParams> {
     loading: boolean;
-    items: T[];
-    item: T | null;
+    items: IEntity[];
+    item: IEntity | null;
     search: TSearch;
     schema: Schema;
     cacheTTL: number;
@@ -106,54 +106,54 @@ export interface IBaseEntityState<T extends IEntity = IEntity, TSearch extends S
 }
 
 /** 本地实体状态接口 */
-export interface ILocalEntityState<T extends IEntity = IEntity, TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends IBaseEntityState<T, TSearch> {
-    sourceData: Map<string | number, T>;
+export interface ILocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
+    extends IBaseEntityState<TSearch> {
+    sourceData: Map<string | number, IEntity>;
     updateData(result: any[]): void;
 }
 
 /** 平铺本地实体状态接口 */
-export interface IFlatLocalEntityState<T extends IEntity = IEntity, TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends ILocalEntityState<T, TSearch> {
+export interface IFlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
+    extends ILocalEntityState<TSearch> {
     hasChanges: boolean;
-    changes: ILocalChangeSet<T>;
-    addItem(item: T): Promise<void>;
-    updateItem(item: T): Promise<void>;
-    softDelete(plan: IDeletionPlan<T>): Promise<void>;
-    getDeletionPlan(ids: (string | number)[]): IDeletionPlan<T>;
+    changes: ILocalChangeSet;
+    addItem(item: IEntity): Promise<void>;
+    updateItem(item: IEntity): Promise<void>;
+    softDelete(plan: IDeletionPlan): Promise<void>;
+    getDeletionPlan(ids: (string | number)[]): IDeletionPlan;
     confirmDelete(): Promise<void>;
     rollbackDelete(): Promise<void>;
     clearChanges(): Promise<void>;
 }
 
 /** 远程实体状态接口 */
-export interface IRemoteEntityState<T extends IEntity = IEntity, TSearch extends SearchParams = SearchParams>
-    extends IBaseEntityState<T, TSearch> {
+export interface IRemoteEntityState<TSearch extends SearchParams = SearchParams>
+    extends IBaseEntityState<TSearch> {
     total: number;
 }
 
 /** 平铺远程实体状态接口 */
-export interface IFlatRemoteEntityState<T extends IEntity = IEntity, TSearch extends IFlatSearchParams = IFlatSearchParams>
-    extends IRemoteEntityState<T, TSearch> {
+export interface IFlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSearchParams>
+    extends IRemoteEntityState<TSearch> {
     page: number;
     pageSize: number;
     pages: number;
     hasMore: boolean;
-    isDirty(currentItem?: T): boolean;
-    edit(item: T): void;
+    isDirty(currentItem?: IEntity): boolean;
+    edit(item: IEntity): void;
     rollback(): void;
 }
 
 /** 树形远程实体状态接口 */
-export interface ITreeRemoteEntityState<T extends IEntity = IEntity, TSearch extends ITreeSearchParams = ITreeSearchParams>
-    extends IRemoteEntityState<T, TSearch> {
+export interface ITreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSearchParams>
+    extends IRemoteEntityState<TSearch> {
     expandedIds: Set<string | number>;
 }
 
 /** 实体状态联合类型 */
-export type EntityState<T extends IEntity = IEntity, TSearch extends SearchParams = SearchParams> =
-    | ILocalEntityState<T, TSearch>
-    | IRemoteEntityState<T, TSearch>;
+export type EntityState<TSearch extends SearchParams = SearchParams> =
+    | ILocalEntityState<TSearch>
+    | IRemoteEntityState<TSearch>;
 
 // ============================================
 // 实体管理器接口
@@ -174,9 +174,8 @@ export interface ICoreEntityManager extends IComposableBase {
 
 /** 基础实体管理器接口 */
 export interface IBaseEntityManager<
-    T extends IEntity = IEntity,
     TSearch extends SearchParams = SearchParams,
-    TState extends IBaseEntityState<T, TSearch> = IBaseEntityState<T, TSearch>,
+    TState extends IBaseEntityState<TSearch> = IBaseEntityState<TSearch>,
 > extends ICoreEntityManager {
     state: TState;
     fetch(action: ENTITY_ACTION, options: HttpRequestOptions): Promise<RequestContext>;

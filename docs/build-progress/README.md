@@ -112,6 +112,14 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-06-28
+- 攻坚 entity 包（进行中）
+  - 修复 StateLocalMutationAbility 的 this.host 访问问题
+  - SchemaRegistrar 支持延迟编译（getCompiled 方法）
+  - 移除 IEntity 泛型参数，简化类型系统
+  - RegistrSchema 类型修复，支持 isTree: false
+  - 更新测试文件
+
 ### 2026-06-27
 - 修复 composable 包单元测试（30/30 通过）
   - ComposableRegistrar 添加 register/unregister 方法

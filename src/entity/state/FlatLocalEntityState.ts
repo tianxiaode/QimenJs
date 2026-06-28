@@ -1,26 +1,27 @@
 import { ComposableBase } from '@/composable';
 import type { AbilityConstructor } from '@/composable';
 import type { IEntity, ILocalSearchParams } from '@/schema';
-import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan } from '@/entity/types';
+import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan, IStateLocalMutationAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
 import { StateLocalMutationAbility } from '@/entity/abilities/state/StateLocalMutationAbility';
 
-export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearchParams>
-    extends BaseEntityState<T, TSearch>
-    implements IFlatLocalEntityState<T, TSearch>
+export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
+    extends BaseEntityState<TSearch>
+    implements IFlatLocalEntityState<TSearch>
 {
     static readonly abilities: readonly AbilityConstructor[] = [
         StateLocalMutationAbility,
     ];
 
     isRemote: false = false;
-    sourceData = new Map<string | number, T>();
+    sourceData = new Map<string | number, IEntity>();
 
-    hasChanges: boolean = false;
-    changes: ILocalChangeSet<T> = { added: [], updated: new Map<string | number, T>(), deleted: [] };
+    // hasChanges 和 changes 由 StateLocalMutationAbility 提供
+    hasChanges!: boolean;
+    changes!: ILocalChangeSet;
 
-    updateData(result: any[]): void {
-        (this as any).updateData(result);
+    async updateData(result: any[]): Promise<void> {
+        await (this as any).updateData(result);
     }
 
     async refreshView(): Promise<void> {
@@ -41,19 +42,19 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
         }
     }
 
-    async addItem(item: T): Promise<void> {
+    async addItem(item: IEntity): Promise<void> {
         await (this as any).addItem(item);
     }
 
-    async updateItem(item: T): Promise<void> {
+    async updateItem(item: IEntity): Promise<void> {
         await (this as any).updateItem(item);
     }
 
-    async softDelete(plan: IDeletionPlan<T>): Promise<void> {
+    async softDelete(plan: IDeletionPlan): Promise<void> {
         await (this as any).softDelete(plan);
     }
 
-    getDeletionPlan(ids: (string | number)[]): IDeletionPlan<T> {
+    getDeletionPlan(ids: (string | number)[]): IDeletionPlan {
         return (this as any).getDeletionPlan(ids);
     }
 
@@ -75,4 +76,4 @@ export class FlatLocalEntityState<T extends IEntity, TSearch extends ILocalSearc
     }
 }
 
-
+export type FlatLocalEntityStateAbilities = IStateLocalMutationAbility;

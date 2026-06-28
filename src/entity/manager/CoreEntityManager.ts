@@ -17,7 +17,7 @@ import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
-    static readonly abilities = [EventAbility, DomainAbility, SystemAbility, SchemaAbility];
+    static readonly abilities: readonly any[] = [EventAbility, DomainAbility, SystemAbility, SchemaAbility];
 
     domain: string = 'default';
     abstract entityName: string;

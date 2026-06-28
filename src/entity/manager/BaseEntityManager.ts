@@ -11,13 +11,13 @@ import type { RequestContext } from '@/context';
 import { CoreEntityManager } from './CoreEntityManager';
 
 export abstract class BaseEntityManager<
-    T extends IEntity,
-    TSearch extends SearchParams,
-    TState extends EntityState<T, TSearch>,
+    TSearch extends SearchParams = SearchParams,
+    TState extends EntityState<TSearch> = EntityState<TSearch>,
 >
     extends CoreEntityManager
-    implements IBaseEntityManager<T, TSearch, TState>
+    implements IBaseEntityManager<TSearch, TState>
 {
+    static readonly abilities: readonly any[] = [];
     abstract state: TState;
 
     /**
@@ -149,7 +149,7 @@ export abstract class BaseEntityManager<
     /**
      * 处理实体数据（钩子）
      */
-    protected processEntity(context: RequestContext, entity: T): any {
+    protected processEntity(context: RequestContext, entity: IEntity): any {
         if (!entity) return entity;
         return this.onPopulateEntity(context, entity);
     }
@@ -157,7 +157,7 @@ export abstract class BaseEntityManager<
     /**
      * 填充实体钩子
      */
-    protected onPopulateEntity(context: RequestContext, entity: T): any {
+    protected onPopulateEntity(context: RequestContext, entity: IEntity): any {
         return entity;
     }
 

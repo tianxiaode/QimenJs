@@ -27,7 +27,7 @@ describe('SchemaRegistrar', () => {
     });
 
     describe('register schema', () => {
-        it('should register a schema', () => {
+        it('should register a schema using schema.name as key', () => {
             const schema: RegistrSchema = {
                 name: 'User',
                 isTree: true,
@@ -61,6 +61,36 @@ describe('SchemaRegistrar', () => {
             expect(retrieved.name).toBe('User');
             expect(retrieved.fields).toHaveLength(1);
         });
+
+        it('should warn when registering duplicate schema name', () => {
+            const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+            
+            registrar.register({
+                name: 'User',
+                isTree: true,
+                isLazy: false,
+                root: null,
+                fields: []
+            });
+            registrar.register({
+                name: 'User',
+                isTree: true,
+                isLazy: false,
+                root: null,
+                fields: [{ name: 'email', type: 'string' }]
+            });
+            
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('[SchemaRegistrar] Schema "User" is already registered')
+            );
+            warnSpy.mockRestore();
+        });
+
+        it('should throw error when schema has no name', () => {
+            expect(() => registrar.register({ name: '', fields: [] } as any)).toThrow(
+                '[SchemaRegistrar] Schema must have a name property'
+            );
+        });
     });
 
     describe('register field group', () => {
@@ -91,15 +121,13 @@ describe('SchemaRegistrar', () => {
 
     describe('unregister', () => {
         it('should unregister a schema', () => {
-            const schema: RegistrSchema = {
+            registrar.register({
                 name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
                 fields: []
-            };
-            
-            registrar.register(schema);
+            });
             expect(registrar.has('User')).toBe(true);
             
             registrar.unregister('User');
@@ -219,6 +247,100 @@ describe('SchemaRegistrar', () => {
             });
             
             expect(() => registrar.inspect()).not.toThrow();
+        });
+    });
+
+    describe('getCompiled', () => {
+        it('should compile schema on first access', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string' },
+                    { name: 'name', type: 'string' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            expect(compiled.schema).toBeDefined();
+            expect(compiled.schema.fields).toHaveLength(2);
+            expect(compiled.rules).toBeDefined();
+        });
+
+        it('should cache compiled result', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string' },
+                ]
+            });
+
+            const first = registrar.getCompiled('User');
+            const second = registrar.getCompiled('User');
+            expect(first).toBe(second); // 同一个引用
+        });
+
+        it('should merge extends fields', () => {
+            registrar.register({
+                name: 'base',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string' },
+                    { name: 'createdAt', type: 'date' },
+                ]
+            });
+
+            registrar.register({
+                name: 'User',
+                extends: 'base',
+                isTree: false as const,
+                fields: [
+                    { name: 'username', type: 'string' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            expect(compiled.schema.fields).toHaveLength(3);
+        });
+
+        it('should merge mixin fields', () => {
+            registrar.register('auditFields', [
+                { name: 'createdAt', type: 'date' },
+                { name: 'updatedAt', type: 'date' },
+            ]);
+
+            registrar.register({
+                name: 'User',
+                mixins: ['auditFields'],
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            expect(compiled.schema.fields).toHaveLength(3);
+        });
+
+        it('should throw error for non-existent schema', () => {
+            expect(() => registrar.getCompiled('NonExistent')).toThrow(
+                '[SchemaRegistrar] Schema "NonExistent" not found'
+            );
+        });
+
+        it('should apply tree defaults', () => {
+            registrar.register({
+                name: 'Tree',
+                isTree: true,
+                isLazy: false,
+                root: null,
+                fields: []
+            });
+
+            const compiled = registrar.getCompiled('Tree');
+            expect(compiled.schema.parentIdField).toBe('parentId');
+            expect(compiled.schema.childrenField).toBe('children');
         });
     });
 });

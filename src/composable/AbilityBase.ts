@@ -105,8 +105,9 @@ export abstract class AbilityBase implements IPrecompilableAbility {
      * @returns 预编译能力
      */
     precompile(): IPrecompiledAbility {
+        console.log(`[AbilityBase.precompile] Precompiling ${this.constructor.name}`);
         const descriptorFactories = new Map<string | symbol, DescriptorFactoryFn>();
-        
+
         // 创建临时实例来调用 expose()
         const tempInstance = Object.create(this.constructor.prototype);
         tempInstance.host = null;  // 设置临时 host
@@ -124,10 +125,12 @@ export abstract class AbilityBase implements IPrecompilableAbility {
         // 创建销毁函数工厂
         const createDisposer = (host: any) => {
             // 设置 host 引用
+            console.log(`[AbilityBase.precompile] createDisposer setting this.host for ${this.constructor.name}:`, host);
             this.host = host;
-            
+
             // 返回销毁函数
             return () => {
+                console.log(`[AbilityBase.createDisposer] Disposer called for ${this.constructor.name}, setting this.host = null`);
                 this.onDispose();
                 this.host = null as any;
             };
@@ -151,8 +154,9 @@ export abstract class AbilityBase implements IPrecompilableAbility {
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
             return (host) => {
                 // 设置 host 引用，以便 getter/setter 中可以访问 this.host
+                console.log(`[AbilityBase.createDescriptorFactory] Setting this.host for ${this.constructor.name}:`, host);
                 this.host = host;
-                
+
                 return {
                     ...value,
                     configurable: true,

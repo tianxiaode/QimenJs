@@ -131,6 +131,8 @@ export abstract class ComposableBase implements IComposableBase {
         const registrar = ComposableRegistrar.getInstance();
         const disposers = (this as any)[DISPOSERS_KEY] as (() => void)[];
         
+        console.log(`[ComposableBase.setupAbilities] Setting up abilities for ${this.constructor.name}:`, abilities.map(a => a.name));
+
         abilities.forEach(AbilityClass => {
             // 获取预编译能力（自动预编译+缓存）
             const precompiled = registrar.get(AbilityClass);
@@ -142,6 +144,7 @@ export abstract class ComposableBase implements IComposableBase {
             
             // 挂载能力属性
             precompiled.descriptorFactories.forEach((factory, key) => {
+                console.log(`[ComposableBase.setupAbilities] Calling factory for ${AbilityClass.name}.${String(key)}`);
                 const descriptor = factory(this);
                 Object.defineProperty(this, key, descriptor);
             });

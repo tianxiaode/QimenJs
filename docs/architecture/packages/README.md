@@ -47,7 +47,7 @@
 
 | 包名 | 状态 | 测试 | 覆盖率 | 说明 |
 |------|------|------|--------|------|
-| [@orbitjs/entity](./entity.md) | ⚠️ 待更新 | ⚠️ 待写 | - | 实体管理 |
+| [@orbitjs/entity](./entity.md) | ⚠️ 重构中 | ⚠️ 待写 | - | 实体管理 |
 
 ## 状态说明
 
@@ -71,8 +71,8 @@
 |------|------|
 | 总包数 | 21 |
 | 已完成 | 20 |
-| 重构中 | 0 |
-| 待更新 | 1 |
+| 重构中 | 1 |
+| 待更新 | 0 |
 | 平均测试覆盖率 | ~85% |
 
 ### 层级统计
@@ -187,13 +187,18 @@ registry (L1)
 - registry, cache, events, task, pipeline, composable
 - schema, validation, data-processor, context, http, event-dom, system-abilities
 
-#### 待更新
+#### 重构中
 - entity
 
 ## 下一步工作
 
-### 优先级 1：更新待更新包
-- [ ] 更新 entity 包
+### 优先级 1：完成 entity 包重构
+- [ ] 重组 entity 包目录结构（Manager 能力 vs State 能力分离）
+- [ ] 从 BaseEntityState 移除 StateSearchAbility
+- [ ] 简化/删除 SchemaAbility（编译逻辑已移到 SchemaRegistrar）
+- [ ] 简化 StateSchemaAbility（代理模式）
+- [ ] Manager 的 schema 改为 getter
+- [ ] State 通过 this.host.schema 访问
 
 ### 优先级 2：完善测试
 - [ ] 提高 http 包测试覆盖率

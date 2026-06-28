@@ -1,15 +1,15 @@
 import { ComposableBase } from '@/composable';
 import type { AbilityConstructor } from '@/composable';
 import type { IEntity, Schema, SearchParams } from '@/schema';
-import type { IBaseEntityState } from '@/entity/types';
+import type { IBaseEntityState, IStateSchemaAbility, IStateCacheAbility, IStateDirtyAbility, IStateSearchAbility } from '@/entity/types';
 import { StateSchemaAbility } from '@/entity/abilities/state/StateSchemaAbility';
 import { StateCacheAbility } from '@/entity/abilities/state/StateCacheAbility';
 import { StateDirtyAbility } from '@/entity/abilities/state/StateDirtyAbility';
 import { StateSearchAbility } from '@/entity/abilities/state/StateSearchAbility';
 
-export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchParams>
+export abstract class BaseEntityState<TSearch extends SearchParams>
     extends ComposableBase
-    implements IBaseEntityState<T, TSearch>
+    implements IBaseEntityState<TSearch>
 {
     static readonly abilities: readonly AbilityConstructor[] = [
         StateSchemaAbility,
@@ -19,8 +19,8 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
     ];
 
     loading: boolean = false;
-    items: T[] = [];
-    item: T | null = null;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
     search: TSearch = {} as TSearch;
     schema: Schema;
     cacheTTL: number;
@@ -43,3 +43,9 @@ export abstract class BaseEntityState<T extends IEntity, TSearch extends SearchP
         super.dispose();
     }
 }
+
+export type BaseEntityStateAbilities<TSearch extends SearchParams = SearchParams> =
+    IStateSchemaAbility &
+    IStateCacheAbility &
+    IStateDirtyAbility &
+    IStateSearchAbility<IEntity, TSearch>;
