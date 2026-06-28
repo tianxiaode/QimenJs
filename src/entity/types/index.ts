@@ -4,6 +4,13 @@
  * 包含实体管理器、状态、能力相关的类型和常量
  */
 
+import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache } from '@/schema';
+import type { IExposeResult, AbilityConstructor } from '@/composable';
+import type { RequestContext, RequestTask, PaginationInfo } from '@/context';
+import type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
+import type { ICacheProvider } from '@/cache';
+import type { KernelError } from '@/error';
+
 // ============================================
 // 从其他包重新导出
 // ============================================
@@ -14,12 +21,9 @@ export type {
     ILocalSearchParams,
     IFlatSearchParams,
     ITreeSearchParams,
-    Schema,
     FlatSchema,
     TreeSchema,
     BaseSchema,
-    FieldDefinition,
-    SchemaCache,
 } from '@/schema';
 
 export type { IExposeResult, AbilityConstructor } from '@/composable';
@@ -87,16 +91,6 @@ export interface IDeletionPlan<T = any> {
 // ============================================
 // 实体状态接口
 // ============================================
-
-import type {
-    IEntity,
-    SearchParams,
-    ILocalSearchParams,
-    IFlatSearchParams,
-    ITreeSearchParams,
-    Schema,
-    SchemaCache,
-} from '@/schema';
 
 /** 基础实体状态接口 */
 export interface IBaseEntityState<T extends IEntity = IEntity, TSearch extends SearchParams = SearchParams> {

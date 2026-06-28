@@ -2,4 +2,5 @@
  * Cache 包类型定义
  */
 
-export * from './cache';
+export type { CacheType, ICacheEntry } from './cache';
+export type { ICacheProvider } from './cache';
