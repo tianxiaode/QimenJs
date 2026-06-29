@@ -28,7 +28,10 @@ export class TreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSear
     expandedIds: Set<string | number> = new Set();
 
     refreshView(): void {
-        // TODO: 实现视图刷新逻辑
+        // 默认实现：替换数组引用以触发响应式更新
+        // 实际运行时会被 TreeViewAbility 暴露的 refreshView 覆盖，
+        // 后者会根据 hierarchy/nodes 重建 items
+        this.items = [...this.items];
     }
 }
 

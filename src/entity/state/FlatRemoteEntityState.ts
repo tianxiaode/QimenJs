@@ -22,20 +22,24 @@ export class FlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSear
     pages: number = 0;
     hasMore: boolean = false;
 
-    isDirty(currentItem?: IEntity): boolean {
-        return (this as any).isDirty(currentItem);
-    }
+    // 由 StateDirtyAbility 注入
+    isDirty!: (currentItem?: IEntity) => boolean;
+    startEdit!: (item: IEntity) => void;
+    rollbackAll!: () => void;
 
     edit(item: IEntity): void {
-        (this as any).startEdit(item);
+        this.startEdit(item);
     }
 
     rollback(): void {
-        (this as any).rollbackAll();
+        this.rollbackAll();
     }
 
     refreshView(): void {
-        // TODO: 实现视图刷新逻辑
+        // 替换数组引用以触发响应式更新
+        // Remote 场景下 items 由服务端数据直接设置，
+        // refreshView 主要用于脏数据回滚后确保视图感知变更
+        this.items = [...this.items];
     }
 }
 
