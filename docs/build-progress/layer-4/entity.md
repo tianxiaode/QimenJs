@@ -105,6 +105,12 @@ dependencies: {
 - ✅ **StateLocalMutationAbility 多项 bug 修复**：softDelete/hasChanges/confirmDelete/rollbackDelete
 - ✅ **StateSearchAbility 修复**：matchKeyword 关键词为空时返回 true
 - ✅ **全部 Ability 子类迁移到 expose(proxy) API**
+- ✅ **StateSchemaAbility 简化**：提取 `getSchema(proxy)` 辅助方法，消除 15 处重复代码
+- ✅ **refreshView 实现**：FlatRemote 替换数组引用；TreeRemote 默认实现（被 TreeViewAbility 覆盖）
+- ✅ **FlatRemoteEntityState (this as any) 修复**：Ability 注入方法用 `!` 声明
+- ✅ **防抖架构三层调整**：DOM 事件层 + Manager 层 + State 层
+- ✅ **RemoteDeleteAbility 加 loading 锁**：防止并发删除
+- ✅ **TreeManagerAbility 实际使用防抖**：expand 200ms leading, refresh 300ms leading
 
 ### 2026-06-28
 - ✅ SchemaRegistrar 延迟编译
@@ -129,20 +135,24 @@ dependencies: {
 
 ## 已知问题
 
-### 1. StateSchemaAbility 未简化
-- **原因**: 仍为 15 个逐字段 getter，每个重复 `proxy.host as IBaseEntityState`
-- **方案**: 直接暴露 `schema` getter 或聚合为 `schemaKeys`/`schemaTree` 分组
-- **优先级**: 中
-
-### 2. Ability 实例共享问题
+### 1. Ability 实例共享问题
 - **原因**: ComposableRegistrar 缓存 Ability 实例，多宿主共享私有属性
 - **影响**: `_changes`/`_deleteSnapshots` 等在多实例间共享
 - **当前缓解**: hostRef 闭包隔离 getter/setter，onDispose 不设 null
 - **优先级**: 低（当前单实例场景无影响）
 
+## 防抖策略
+
+| 操作类型 | 策略 | 说明 |
+|----------|------|------|
+| 读操作（list/getAll/expand/refresh） | 防抖 | 合并短时间内的多次调用 |
+| 写操作（create/update/delete） | loading 锁 | 拒绝并发，不合并 |
+| toggle | leading 防抖 | 首次立即执行 + 乐观更新 |
+| save（本地批量提交） | trailing 防抖 | 延迟执行，合并多次变更 |
+| 视图刷新（refreshView） | 50ms 防抖 | 高频数据变更时合并渲染 |
+
 ## 遗留工作
 
-- [ ] 简化 StateSchemaAbility
 - [ ] 编写 FlatRemoteEntityState 测试
 - [ ] 编写 TreeRemoteEntityState 测试
 - [ ] 编写 Manager 能力测试

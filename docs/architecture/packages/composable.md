@@ -275,6 +275,8 @@ interface IExposeResult {
 - ComposableBase 新增 `host` getter：`get host() { return this; }`
 - 全部 29 个 Ability 子类迁移到 `expose(proxy)` API
 - 清理调试代码
+- 防抖架构三层调整：DOM 事件层 + Manager 层 + State 层
+- TreeManagerAbility 实际使用 `getDebouncedAction`（expand/refresh）
 
 ### 2026-06-27
 - 修复 ComposableRegistrar 缺少 `register()`/`unregister()` 抽象方法实现
