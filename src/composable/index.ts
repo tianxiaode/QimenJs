@@ -19,6 +19,6 @@ export type {
 // 核心类导出
 export { DescriptorFactory } from './DescriptorFactory';
 export { ComposableBase } from './ComposableBase';
-export { AbilityBase } from './AbilityBase';
+export { AbilityBase, type AbilityProxy } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
 export { ComposableRegistrar } from './ComposableRegistrar';

@@ -39,6 +39,7 @@ const mockSchema: FlatSchema = {
     domain: 'default',
     idField: 'id',
     isTree: false,
+    searchFields: ['name', 'email'],
     fields: [
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
@@ -289,7 +290,7 @@ describe('FlatLocalEntityState', () => {
         it('应该支持排序', async () => {
             state.search = {
                 sortBy: 'name',
-                order: 'desc',
+                sortOrder: 'desc',
             } as ILocalSearchParams;
             await state.refreshView();
 
@@ -301,7 +302,7 @@ describe('FlatLocalEntityState', () => {
             state.search = {
                 keyword: 'Doe',
                 sortBy: 'name',
-                order: 'asc',
+                sortOrder: 'asc',
             } as ILocalSearchParams;
             await state.refreshView();
 

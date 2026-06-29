@@ -2,12 +2,13 @@ import { ComposableBase } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
-import { SchemaAbility } from '@/entity/abilities';
+import { SchemaAbility } from '@/entity/abilities/manager/SchemaAbility';
 import type {
     ENTITY_ACTION,
     ICoreEntityManager,
 } from '@/entity/types';
-import type { Schema } from '@/schema';
+import type { Schema, SchemaCache, RegistrSchema } from '@/schema';
+import { SchemaRegistrar } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
 import { RequestContextBuilder } from '@/context';
@@ -22,9 +23,42 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;
-    abstract schema?: Schema;
 
-    getSchema(): any {
+    /**
+     * Schema 定义（原始，未编译）
+     * 
+     * 子类直接引用 Schema 对象，如：
+     * ```typescript
+     * class UserManager extends RemoteCrudEntityManager {
+     *     schema = UserSchema;
+     * }
+     * ```
+     * 
+     * 构造时自动注册到 SchemaRegistrar，用 schema.name 作为 key。
+     * 运行时通过 getter 获取编译后的 Schema。
+     */
+    abstract schema: RegistrSchema;
+
+    /**
+     * 获取编译后的 Schema
+     * 
+     * 通过 SchemaRegistrar 延迟编译并缓存。
+     * 如果 Schema 尚未注册，自动注册后再编译。
+     * 返回的是编译后的 Schema（处理了 extends/mixins/override）。
+     */
+    get compiledSchema(): Schema {
+        const registrar = SchemaRegistrar.getInstance();
+        const key = this.schema.name;
+        
+        // 自动注册：如果尚未注册，先注册
+        if (!registrar.has(key)) {
+            registrar.register(this.schema);
+        }
+        
+        return registrar.getCompiled(key).schema;
+    }
+
+    getSchema(): Schema {
         return (this as any).getSchema();
     }
 
@@ -133,7 +167,6 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     }
 
     public dispose(): void {
-        this.schema = undefined;
         this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
     }
 }

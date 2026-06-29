@@ -1,7 +1,13 @@
 /**
- * 能力基类 - 新版本
+ * 能力基类
  * 
- * 结合了熟悉的 expose() API 和预编译性能优势
+ * 提供熟悉的 expose() API，内部自动转换为预编译能力。
+ * 
+ * 核心机制：
+ * - expose(proxy) 接收 proxy 对象，proxy.self = Ability 实例
+ * - getter/setter 中通过 proxy.host 访问宿主（通过 hostRef 闭包隔离多实例）
+ * - 方法 bind 到宿主，this 就是宿主，this.host 返回宿主自身（ComposableBase getter）
+ * - Ability 私有属性通过 proxy.self._xxx 访问
  */
 
 import type { 
@@ -11,168 +17,197 @@ import type {
     IExposeResult 
 } from './types/composable';
 
-// Re-export IExposeResult for convenience
 export type { IExposeResult };
+
+/**
+ * Ability 代理对象，在 expose() 中使用
+ * 
+ * - host: 宿主对象（ComposableBase 实例），通过 hostRef 闭包隔离多实例
+ * - self: Ability 实例自身，用于访问私有属性
+ */
+export interface AbilityProxy<THost = any, TSelf = any> {
+    host: THost;
+    self: TSelf;
+}
 
 /**
  * 属性定义类型
  */
 type PropertyDefinition = 
-    | { get: () => any; enumerable?: boolean }  // getter
-    | { set: (value: any) => void; enumerable?: boolean }  // setter
-    | { get: () => any; set: (value: any) => void; enumerable?: boolean }  // getter/setter
-    | Function  // 方法
-    | any;  // 值
+    | { get: () => any; enumerable?: boolean }
+    | { set: (value: any) => void; enumerable?: boolean }
+    | { get: () => any; set: (value: any) => void; enumerable?: boolean }
+    | Function
+    | any;
 
 /**
- * 能力基类
+ * 宿主引用容器
  * 
- * 提供熟悉的 expose() API，内部自动转换为预编译能力
- * 
- * @example
- * ```typescript
- * class EventAbility extends AbilityBase {
- *     protected expose(): IExposeResult {
- *         const scope = globalEventBus.createEventScope();
- *         
- *         return {
- *             eventScope: { get: () => scope },
- *             on: (event, handler) => scope.on(event, handler),
- *             emit: (event, data) => scope.emit(event, data),
- *         };
- *     }
- *     
- *     protected onDispose(): void {
- *         this.eventScope?.dispose();
- *     }
- * }
- * ```
+ * 每个宿主实例有自己的 hostRef，确保多实例隔离。
+ * getter/setter 闭包通过 hostRef.value 访问当前宿主。
  */
+interface HostRef {
+    value: any;
+}
+
 export abstract class AbilityBase implements IPrecompilableAbility {
     /**
-     * 宿主引用（在运行时通过闭包捕获）
-     * @protected
+     * 宿主引用
+     * 
+     * 仅供 Ability 自身的私有方法使用。
+     * 注意：多宿主实例共享同一个 Ability 实例时，此值可能不稳定，
+     * 私有方法应通过参数接收 host。
+     * 
+     * @internal
      */
     protected host: any;
     
     /**
      * 暴露属性和方法
      * 
-     * 子类实现此方法，返回要暴露给宿主的属性和方法
+     * 子类实现此方法，返回要暴露给宿主的属性和方法。
      * 
-     * **重要：** 在 expose() 中不能使用 this.host，因为此时 host 还未设置！
-     * 如果需要访问 host，请在返回的 getter/setter/方法中访问。
+     * 访问规则：
+     * - getter/setter 中：proxy.host 访问宿主，proxy.self 访问 Ability 实例
+     * - 方法中：this.host 访问宿主（bind 到宿主，ComposableBase.host getter 返回 this），
+     *          proxy.self._xxx 访问 Ability 私有属性
      * 
-     * @returns 属性和方法定义
+     * **重要：** 只能在返回的 getter/setter/方法（闭包）中使用 proxy，
+     * 不能在 expose() 函数体中直接使用（此时 proxy.host 尚未设置）。
+     * 
+     * @param proxy - 代理对象，proxy.host 为宿主，proxy.self 为 Ability 实例
      * @protected
      * 
      * @example
      * ```typescript
-     * // ❌ 错误：在 expose() 中使用 this.host
-     * protected expose() {
-     *     const domain = this.host.domain;  // this.host 是 undefined！
-     *     return { domain: { get: () => domain } };
-     * }
-     * 
-     * // ✅ 正确：在 getter 中使用 this.host
-     * protected expose() {
+     * protected expose(proxy: AbilityProxy): IExposeResult {
      *     return {
-     *         domain: { 
-     *             get: () => this.host.domain  // 在 getter 中访问
-     *         }
+     *         domain: { get: () => proxy.host.domain },
+     *         count: { get: () => proxy.self._count },
+     *         doWork: function() { const host = this.host; ... },
+     *         increment: function() { proxy.self._count++; },
      *     };
      * }
      * ```
      */
-    protected abstract expose(): IExposeResult;
+    protected abstract expose(proxy: AbilityProxy): IExposeResult;
     
     /**
-     * 销毁方法
-     * 
-     * 子类可重写此方法执行清理逻辑
-     * 
+     * 销毁方法，子类可重写
      * @protected
      */
-    protected onDispose(): void {
-        // 默认空实现，子类可重写
-    }
+    protected onDispose(): void {}
     
     /**
      * 预编译方法
      * 
-     * 将 expose() 返回的定义转换为预编译能力
-     * 
-     * @returns 预编译能力
+     * 关键设计：proxy.host 是一个 getter，从 hostRef 读取值。
+     * 每个宿主实例有独立的 hostRef，通过闭包绑定确保多实例隔离。
      */
     precompile(): IPrecompiledAbility {
-        console.log(`[AbilityBase.precompile] Precompiling ${this.constructor.name}`);
         const descriptorFactories = new Map<string | symbol, DescriptorFactoryFn>();
+        const ability = this;
 
-        // 创建临时实例来调用 expose()
-        const tempInstance = Object.create(this.constructor.prototype);
-        tempInstance.host = null;  // 设置临时 host
-        const props = tempInstance.expose();
+        // 共享的 hostRef，初始为 null
+        // 每次 factory(host) 调用时，为当前宿主创建独立的 hostRef
+        const sharedHostRef: HostRef = { value: null };
+
+        // proxy.host 是一个 getter，从 hostRef 读取值
+        // 闭包中的 proxy.host 会读取当前活跃的 hostRef
+        const proxy: AbilityProxy = {
+            get host() { return sharedHostRef.value; },
+            self: ability,
+        };
+
+        // 在 Ability 实例上调用 expose()，传入 proxy
+        const props = ability.expose(proxy);
         
-        // 转换每个属性定义
         const keys = [...Object.keys(props), ...Object.getOwnPropertySymbols(props)];
         
         for (const key of keys) {
             const value = props[key];
-            const descriptor = this.createDescriptorFactory(value);
-            descriptorFactories.set(key, descriptor);
+            const factory = this.createDescriptorFactory(value, ability, sharedHostRef);
+            descriptorFactories.set(key, factory);
         }
         
         // 创建销毁函数工厂
         const createDisposer = (host: any) => {
-            // 设置 host 引用
-            console.log(`[AbilityBase.precompile] createDisposer setting this.host for ${this.constructor.name}:`, host);
-            this.host = host;
+            ability.host = host;
 
-            // 返回销毁函数
             return () => {
-                console.log(`[AbilityBase.createDisposer] Disposer called for ${this.constructor.name}, setting this.host = null`);
-                this.onDispose();
-                this.host = null as any;
+                ability.onDispose();
+                ability.host = null as any;
             };
         };
         
-        return {
-            descriptorFactories,
-            createDisposer
-        };
+        return { descriptorFactories, createDisposer };
     }
     
     /**
      * 创建属性描述符工厂
      * 
-     * @param value - 属性定义
-     * @returns 描述符工厂
-     * @private
+     * 关键：每个宿主实例有独立的 hostRef，getter/setter 通过 hostRef 访问宿主。
+     * 方法 bind 到宿主，this 就是宿主。
      */
-    private createDescriptorFactory(value: PropertyDefinition): DescriptorFactoryFn {
-        // getter/setter 对象
+    private createDescriptorFactory(
+        value: PropertyDefinition,
+        ability: AbilityBase,
+        sharedHostRef: HostRef
+    ): DescriptorFactoryFn {
+        // getter/setter 对象：为每个宿主创建独立的 hostRef
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
             return (host) => {
-                // 设置 host 引用，以便 getter/setter 中可以访问 this.host
-                console.log(`[AbilityBase.createDescriptorFactory] Setting this.host for ${this.constructor.name}:`, host);
-                this.host = host;
+                ability.host = host;
+                // 为当前宿主创建独立的 hostRef
+                const hostRef: HostRef = { value: host };
+                
+                const rebound: any = {};
+                if ('get' in value) {
+                    const originalGet = value.get;
+                    rebound.get = () => {
+                        // 临时切换 sharedHostRef 指向当前宿主的 hostRef
+                        const prev = sharedHostRef.value;
+                        sharedHostRef.value = hostRef.value;
+                        try {
+                            return originalGet.call(ability);
+                        } finally {
+                            sharedHostRef.value = prev;
+                        }
+                    };
+                }
+                if ('set' in value) {
+                    const originalSet = value.set;
+                    rebound.set = (v: any) => {
+                        const prev = sharedHostRef.value;
+                        sharedHostRef.value = hostRef.value;
+                        try {
+                            originalSet.call(ability, v);
+                        } finally {
+                            sharedHostRef.value = prev;
+                        }
+                    };
+                }
 
                 return {
-                    ...value,
+                    ...rebound,
                     configurable: true,
                     enumerable: value.enumerable ?? true
                 };
             };
         }
         
-        // 方法
+        // 方法：bind 到宿主
         if (typeof value === 'function') {
-            return (host) => ({
-                value: value.bind(host),
-                writable: true,
-                configurable: true,
-                enumerable: true
-            });
+            return (host) => {
+                ability.host = host;
+                sharedHostRef.value = host;
+                return {
+                    value: value.bind(host),
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                };
+            };
         }
         
         // 普通值

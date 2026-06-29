@@ -40,6 +40,13 @@ export interface IComposableBase {
     logger: ILogger;
     
     /**
+     * 获取宿主对象自身
+     * 
+     * 在 Ability 方法中，this 被 bind 到宿主，this.host 返回宿主自身。
+     */
+    readonly host: any;
+    
+    /**
      * 获取类级缓存
      */
     getStatic<T>(key: string | symbol): T | undefined;

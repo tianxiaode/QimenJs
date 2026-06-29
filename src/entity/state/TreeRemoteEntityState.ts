@@ -3,12 +3,12 @@ import type { AbilityConstructor } from '@/composable';
 import type { IEntity, ITreeSearchParams } from '@/schema';
 import type { ITreeRemoteEntityState, ITreeRemoteStateAbility, ITreePathAbility, ITreeLifecycleAbility, ITreeSearchAbility, ITreeViewAbility, IStateDirtyAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
-import { TreeRemoteStateAbility } from '@/entity/abilities/remote/TreeRemoteStateAbility';
-import { TreePathAbility } from '@/entity/state/abilities/TreePathAbility';
-import { TreeLifecycleAbility } from '@/entity/state/abilities/TreeLifecycleAbility';
-import { TreeSearchAbility } from '@/entity/state/abilities/TreeSearchAbility';
-import { TreeViewAbility } from '@/entity/state/abilities/TreeViewAbility';
-import { StateDirtyAbility } from '@/entity/abilities/state/StateDirtyAbility';
+import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRemoteStateAbility';
+import { TreePathAbility } from '@/entity/abilities/state/tree/TreePathAbility';
+import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
+import { TreeSearchAbility } from '@/entity/abilities/state/tree/TreeSearchAbility';
+import { TreeViewAbility } from '@/entity/abilities/state/tree/TreeViewAbility';
+import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
 
 export class TreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSearchParams>
     extends BaseEntityState<TSearch>

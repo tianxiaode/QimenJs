@@ -1,4 +1,4 @@
-import { AbilityBase, type IExposeResult } from '@/composable';
+import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
 import { globalEventBus, EventHandler } from '@/events';
 
 /**
@@ -18,7 +18,7 @@ export class EventAbility extends AbilityBase {
     /**
      * 暴露事件相关的操作接口
      */
-    protected expose(): IExposeResult {
+    protected expose(proxy: AbilityProxy): IExposeResult {
         // 创建事件作用域
         this.scope = globalEventBus.createEventScope();
         
@@ -26,23 +26,23 @@ export class EventAbility extends AbilityBase {
             /**
              * 获取当前事件作用域
              */
-            eventScope: { get: () => this.scope },
+            eventScope: { get: () => proxy.self.scope },
             
             /**
              * 监听事件
              */
-            on: (event: string, handler: EventHandler) => this.scope.on(event, handler),
+            on: (event: string, handler: EventHandler) => proxy.self.scope.on(event, handler),
             
             /**
              * 监听一次性事件
              */
-            once: (event: string, handler: EventHandler) => this.scope.once(event, handler),
+            once: (event: string, handler: EventHandler) => proxy.self.scope.once(event, handler),
             
             /**
              * 发射事件
              */
             emit: (event: string, data?: any) => {
-                this.scope.emit(event, data, this.host);
+                proxy.self.scope.emit(event, data, proxy.host);
             },
         };
     }

@@ -1,4 +1,4 @@
-import { AbilityBase, type IExposeResult } from './AbilityBase';
+import { AbilityBase, type IExposeResult, type AbilityProxy } from './AbilityBase';
 import { debounce } from '@orbitjs/async';
 
 /**
@@ -9,7 +9,7 @@ import { debounce } from '@orbitjs/async';
  * @example
  * ```typescript
  * class SearchAbility extends DebounceAbilityBase {
- *     protected expose(): IExposeResult {
+ *     protected expose(proxy: AbilityProxy): IExposeResult {
  *         return {
  *             search: this.getDebouncedAction('search', (keyword) => {
  *                 // 执行搜索

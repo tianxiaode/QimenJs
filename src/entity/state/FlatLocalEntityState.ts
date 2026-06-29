@@ -1,9 +1,10 @@
 import { ComposableBase } from '@/composable';
 import type { AbilityConstructor } from '@/composable';
 import type { IEntity, ILocalSearchParams } from '@/schema';
-import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan, IStateLocalMutationAbility } from '@/entity/types';
+import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan, IStateLocalMutationAbility, IStateSearchAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
-import { StateLocalMutationAbility } from '@/entity/abilities/state/StateLocalMutationAbility';
+import { StateLocalMutationAbility } from '@/entity/abilities/state/mutation/StateLocalMutationAbility';
+import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchAbility';
 
 export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
     extends BaseEntityState<TSearch>
@@ -11,6 +12,7 @@ export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSea
 {
     static readonly abilities: readonly AbilityConstructor[] = [
         StateLocalMutationAbility,
+        StateSearchAbility,
     ];
 
     isRemote: false = false;
@@ -76,4 +78,4 @@ export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSea
     }
 }
 
-export type FlatLocalEntityStateAbilities = IStateLocalMutationAbility;
+export type FlatLocalEntityStateAbilities = IStateLocalMutationAbility & IStateSearchAbility;

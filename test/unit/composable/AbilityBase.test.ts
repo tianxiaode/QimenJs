@@ -53,6 +53,10 @@ class TestHost implements IComposableBase {
   logger = new MockLogger();
   testProperty = 'original value';
   
+  get host(): this {
+    return this;
+  }
+  
   testMethod() {
     return 'original method';
   }

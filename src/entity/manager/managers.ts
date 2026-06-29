@@ -3,18 +3,18 @@ import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@
 import { FlatLocalEntityState } from '@/entity/state/FlatLocalEntityState';
 import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
 import { TreeRemoteEntityState } from '@/entity/state/TreeRemoteEntityState';
-import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
-import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
-import { FlatLocalMutationAbility } from '@/entity/abilities/local/FlatLocalMutationAbility';
-import { FlatLocalDeleteAbility } from '@/entity/abilities/local/FlatLocalDeleteAbility';
-import { FlatRemoteListAbility } from '@/entity/abilities/remote/FlatRemoteListAbility';
-import { FlatRemoteGetAllAbility } from '@/entity/abilities/remote/FlatRemoteGetAllAbility';
-import { RemoteGetAbility } from '@/entity/abilities/remote/RemoteGetAbility';
-import { FlatRemoteQueryAbility } from '@/entity/abilities/remote/FlatRemoteQueryAbility';
-import { RemoteCreateAbility } from '@/entity/abilities/remote/RemoteCreateAbility';
-import { RemoteUpdateAbility } from '@/entity/abilities/remote/RemoteUpdateAbility';
-import { RemoteDeleteAbility } from '@/entity/abilities/remote/RemoteDeleteAbility';
-import { RemoteToggleAbility } from '@/entity/abilities/remote/RemoteToggleAbility';
+import { LocalListAbility } from '@/entity/abilities/manager/local/LocalListAbility';
+import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
+import { FlatLocalMutationAbility } from '@/entity/abilities/manager/local/FlatLocalMutationAbility';
+import { FlatLocalDeleteAbility } from '@/entity/abilities/manager/local/FlatLocalDeleteAbility';
+import { FlatRemoteListAbility } from '@/entity/abilities/manager/remote/FlatRemoteListAbility';
+import { FlatRemoteGetAllAbility } from '@/entity/abilities/manager/remote/FlatRemoteGetAllAbility';
+import { RemoteGetAbility } from '@/entity/abilities/manager/remote/RemoteGetAbility';
+import { FlatRemoteQueryAbility } from '@/entity/abilities/manager/remote/FlatRemoteQueryAbility';
+import { RemoteCreateAbility } from '@/entity/abilities/manager/remote/RemoteCreateAbility';
+import { RemoteUpdateAbility } from '@/entity/abilities/manager/remote/RemoteUpdateAbility';
+import { RemoteDeleteAbility } from '@/entity/abilities/manager/remote/RemoteDeleteAbility';
+import { RemoteToggleAbility } from '@/entity/abilities/manager/remote/RemoteToggleAbility';
 
 /**
  * 本地只读实体管理器

@@ -4,7 +4,7 @@
  * 包含实体管理器、状态、能力相关的类型和常量
  */
 
-import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache } from '@/schema';
+import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache, RegistrSchema } from '@/schema';
 import type { IExposeResult, AbilityConstructor, IComposableBase } from '@/composable';
 import type { RequestContext, RequestTask, PaginationInfo } from '@/context';
 import type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
@@ -164,8 +164,9 @@ export interface ICoreEntityManager extends IComposableBase {
     domain: string;
     entityName: string;
     url: string;
-    schema?: Schema;
-    getSchema(): SchemaCache;
+    schema: RegistrSchema;
+    readonly compiledSchema: Schema;
+    getSchema(): Schema;
     getSchemaRules(fieldName?: string): any;
     request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask;
     cancelAll(): void;
@@ -193,7 +194,7 @@ export interface IBaseEntityManager<
 
 /** Schema 能力接口 */
 export interface ISchemaAbility {
-    getSchema(): SchemaCache;
+    getSchema(): Schema;
     getSchemaRules(fieldName?: string): any;
     readonly schemaKeys: Record<string, string>;
     readonly schemaTree: { isTree: boolean; isLazy: boolean; root: any };

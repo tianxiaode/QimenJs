@@ -40,6 +40,18 @@ export abstract class ComposableBase implements IComposableBase {
     [key: string]: any;
 
     /**
+     * 获取宿主对象自身
+     * 
+     * 在 Ability 方法中，this 被 bind 到宿主，this.host 返回宿主自身。
+     * 语义上等价于 return this，但更清晰地表达意图。
+     * 
+     * 使用 getter 而非方法，使得 getter/setter 和方法中都可以统一使用 this.host。
+     */
+    public get host(): this {
+        return this;
+    }
+
+    /**
      * 构造函数，初始化日志记录器和设置能力
      */
     constructor() {
@@ -130,8 +142,6 @@ export abstract class ComposableBase implements IComposableBase {
         const abilities = this.collectAbilities();
         const registrar = ComposableRegistrar.getInstance();
         const disposers = (this as any)[DISPOSERS_KEY] as (() => void)[];
-        
-        console.log(`[ComposableBase.setupAbilities] Setting up abilities for ${this.constructor.name}:`, abilities.map(a => a.name));
 
         abilities.forEach(AbilityClass => {
             // 获取预编译能力（自动预编译+缓存）
@@ -144,7 +154,6 @@ export abstract class ComposableBase implements IComposableBase {
             
             // 挂载能力属性
             precompiled.descriptorFactories.forEach((factory, key) => {
-                console.log(`[ComposableBase.setupAbilities] Calling factory for ${AbilityClass.name}.${String(key)}`);
                 const descriptor = factory(this);
                 Object.defineProperty(this, key, descriptor);
             });

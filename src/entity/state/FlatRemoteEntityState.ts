@@ -3,8 +3,8 @@ import type { AbilityConstructor } from '@/composable';
 import type { IEntity, IFlatSearchParams } from '@/schema';
 import type { IFlatRemoteEntityState, IFlatRemoteStateAbility, IStateDirtyAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
-import { FlatRemoteStateAbility } from '@/entity/abilities/remote/FlatRemoteStateAbility';
-import { StateDirtyAbility } from '@/entity/abilities/state/StateDirtyAbility';
+import { FlatRemoteStateAbility } from '@/entity/abilities/manager/remote/FlatRemoteStateAbility';
+import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
 
 export class FlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSearchParams>
     extends BaseEntityState<TSearch>
