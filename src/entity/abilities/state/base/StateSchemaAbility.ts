@@ -2,69 +2,29 @@ import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable
 import type { IBaseEntityState } from '@/entity/types';
 
 export class StateSchemaAbility extends AbilityBase {
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            idField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.idField || 'id';
-            }},
-            idType: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.idType || 'number';
-            }},
-            nameField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.nameField || 'name';
-            }},
-            defaultSort: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.defaultSort || '';
-            }},
-            defaultOrder: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.defaultOrder || 'asc';
-            }},
-            searchFields: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.searchFields || [];
-            }},
+    private getSchema(proxy: AbilityProxy) {
+        return (proxy.host as IBaseEntityState).schema;
+    }
 
-            isTree: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return !!host.schema.isTree;
-            }},
-            isLazy: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? !!(host.schema as any).isLazy : false;
-            }},
-            root: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).root : '';
-            }},
-            parentIdField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).parentIdField : '';
-            }},
-            childrenField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).childrenField : '';
-            }},
-            pathField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).pathField : '';
-            }},
-            leafField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).leafField : '';
-            }},
-            expandedField: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? (host.schema as any).expandedField : '';
-            }},
-            useFlat: { get: () => {
-                const host = proxy.host as IBaseEntityState;
-                return host.schema.isTree ? !!(host.schema as any).useFlat : false;
-            }},
+    protected expose(proxy: AbilityProxy): IExposeResult {
+        const schema = () => this.getSchema(proxy);
+
+        return {
+            idField: { get: () => schema().idField || 'id' },
+            idType: { get: () => schema().idType || 'number' },
+            nameField: { get: () => schema().nameField || 'name' },
+            defaultSort: { get: () => schema().defaultSort || '' },
+            defaultOrder: { get: () => schema().defaultOrder || 'asc' },
+            searchFields: { get: () => schema().searchFields || [] },
+            isTree: { get: () => !!schema().isTree },
+            isLazy: { get: () => schema().isTree ? !!(schema() as any).isLazy : false },
+            root: { get: () => schema().isTree ? (schema() as any).root : '' },
+            parentIdField: { get: () => schema().isTree ? (schema() as any).parentIdField : '' },
+            childrenField: { get: () => schema().isTree ? (schema() as any).childrenField : '' },
+            pathField: { get: () => schema().isTree ? (schema() as any).pathField : '' },
+            leafField: { get: () => schema().isTree ? (schema() as any).leafField : '' },
+            expandedField: { get: () => schema().isTree ? (schema() as any).expandedField : '' },
+            useFlat: { get: () => schema().isTree ? !!(schema() as any).useFlat : false },
         };
     }
 }

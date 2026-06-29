@@ -1,4 +1,4 @@
-import { TaskPriority } from "@orbitjs/tasks";
+import { TaskPriority } from "@orbitjs/task";
 
 /**
  * HTTP 方法类型定义

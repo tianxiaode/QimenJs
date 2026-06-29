@@ -91,15 +91,17 @@ schema → registry
 - [ ] 添加对 @orbitjs/schema 的依赖
 - [ ] 重构验证引擎使用 Schema 类型
 
-### Phase 2: SchemaCompiler（可选）
-- [ ] 实现 Schema 编译功能
-- [ ] 处理继承、混入、覆盖
-- [ ] 字段合并
+### Phase 2: SchemaCompiler（✅ 已完成）
+- ✅ 实现 Schema 编译功能（在 SchemaRegistrar.compileSchema 中）
+- ✅ 处理继承、混入、覆盖
+- ✅ 字段合并
+- ✅ 延迟编译 + 缓存（getCompiled 首次调用时编译）
 
-### Phase 3: SchemaAbility（可选）
-- [ ] 决定放在哪个包
-- [ ] 实现编译后的 Schema 访问接口
-- [ ] 缓存编译结果
+### Phase 3: SchemaAbility（✅ 已完成）
+- ✅ 放在 entity 包（manager/abilities/）
+- ✅ 实现编译后的 Schema 访问接口（代理模式）
+- ✅ 缓存编译结果（通过 SchemaRegistrar）
+- ✅ Manager 直接引用 Schema 对象，自动注册（2026-06-29）
 
 ## 参考资料
 

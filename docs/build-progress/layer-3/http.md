@@ -21,9 +21,9 @@ HttpActionRegistrar (处理器注册表)
     ↓
 HttpExecutor (核心执行器)
     ↓
-HttpClient (简单 API)
-    ↓
-HttpFactory (高级功能)
+HttpClient (简单 API)    StreamClient (流式 API)
+    ↓                        ↓
+HttpFactory (高级功能)   StreamTask (异步生成器)
 ```
 
 ### 核心组件
@@ -49,7 +49,15 @@ HttpFactory (高级功能)
 - 支持所有 HTTP 方法（GET、POST、PUT、PATCH、DELETE）
 - 支持上传和下载
 
-#### 4. Token 管理
+#### 4. StreamClient
+- 流式 HTTP API（SSE、AI 流式接口）
+- 基于 RequestContextBuilder 构建上下文
+- 通过 HttpExecutor 执行 prepare 管道后，直接消费 ReadableStream
+- 使用 Async Generator 模式，支持 `for await` 消费
+- 独立 AbortController 用于流式取消
+- 便捷方法：`post<T>()`、`get<T>()`
+
+#### 5. Token 管理
 - TokenInjector 处理器：自动注入 token
 - DomainConfig.token：存储 token
 - DomainConfig.authInjector：配置注入方式
@@ -166,6 +174,28 @@ const stop = HttpFactory.createPolling(
 
 // 停止轮询
 stop();
+```
+
+### 使用 StreamClient
+
+```typescript
+import { StreamClient } from '@orbitjs/http';
+
+const client = new StreamClient('api');
+
+// AI 流式对话
+const task = client.post<ChatMessage>('/chat/completions', {
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Hello' }],
+});
+
+// for await 消费流
+for await (const chunk of task.stream) {
+    console.log('收到:', chunk);
+}
+
+// 取消流式请求
+task.cancel('user stopped');
 ```
 
 ## 测试状态
@@ -285,6 +315,15 @@ Registry.domain.register('api', {
     },
 });
 ```
+
+## 变更历史
+
+### 2026-06-29
+- ✅ 删除废弃的 `HttpContextBuilder.ts`（已被 `RequestContextBuilder` 替代）
+- ✅ 重写 `StreamClient.ts`：基于当前架构（RequestContextBuilder + HttpExecutor + ReadableStream）
+- ✅ 修复 `types/http.ts` 导入：`@orbitjs/tasks` → `@orbitjs/task`
+- ✅ 清理 46 个旧编译产物（.js/.d.ts/.map）
+- ✅ 编译错误从 10 个降到 0 个
 
 ## 下一步计划
 

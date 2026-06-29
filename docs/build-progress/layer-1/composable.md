@@ -2,10 +2,22 @@
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
-**测试**: ✅ 通过（30/30）  
+**测试**: ✅ 通过（31/31）  
 **覆盖率**: ~65%（核心类 90%+）
 
 ## 构建历史
+
+### 2026-06-29
+- ✅ **修复 AbilityBase `this` 绑定系统性 bug**
+  - 引入 `AbilityProxy` 代理对象：`{ host, self }`
+  - `expose()` 签名改为 `expose(proxy: AbilityProxy)`
+  - getter/setter 通过 `proxy.host`/`proxy.self` 访问，不依赖 `this`
+  - 方法 `bind(host)` 绑定，`this` 就是宿主
+  - `proxy.host` 是 getter，从 `sharedHostRef` 读取，支持多实例隔离
+- ✅ **ComposableBase 新增 `host` getter**
+  - `get host() { return this; }`，统一 getter/setter 和方法中的宿主访问
+- ✅ **全部 29 个 Ability 子类迁移到 `expose(proxy)` API**
+- ✅ **清理调试代码**（移除 `console.log`）
 
 ### 2026-06-27
 - ✅ **修复 ComposableRegistrar 抽象方法缺失**

@@ -47,23 +47,28 @@ src/composable/
 ### 定义能力
 
 ```typescript
-import { AbilityBase, type IExposeResult } from '@orbitjs/composable';
+import { AbilityBase, type IExposeResult, type AbilityProxy } from '@orbitjs/composable';
 
 class EventAbility extends AbilityBase {
-    readonly name = 'Event';
+    private scope = globalEventBus.createEventScope();
     
-    protected expose(): IExposeResult {
-        const scope = globalEventBus.createEventScope();
-        
+    protected expose(proxy: AbilityProxy): IExposeResult {
         return {
-            eventScope: { get: () => scope },
-            on: (event, handler) => scope.on(event, handler),
-            emit: (event, data) => scope.emit(event, data),
+            // getter 中通过 proxy.host 访问宿主
+            eventScope: { get: () => proxy.host.eventScope },
+            // 方法中 this 是宿主（bind），this.host 返回宿主自身
+            on: function(event: string, handler: Function) {
+                proxy.self.scope.on(event, handler);
+            },
+            // 箭头函数中通过 proxy.self 访问 Ability 私有属性
+            emit: (event: string, data: any) => {
+                proxy.self.scope.emit(event, data);
+            },
         };
     }
     
     protected onDispose() {
-        this.eventScope?.dispose();
+        this.scope?.dispose();
     }
 }
 ```
@@ -141,16 +146,28 @@ abstract class ComposableBase implements IComposableBase {
 ### AbilityBase
 
 ```typescript
+interface AbilityProxy<THost = any, TSelf = any> {
+    host: THost;   // 宿主对象（getter，从 hostRef 读取，多实例隔离）
+    self: TSelf;   // Ability 实例自身
+}
+
 abstract class AbilityBase implements IPrecompilableAbility {
-    abstract readonly name: string;
-    protected host: any;
+    protected host: any;  // 仅供私有方法使用，多实例时不稳定
     
-    protected abstract expose(): IExposeResult;
+    protected abstract expose(proxy: AbilityProxy): IExposeResult;
     protected onDispose(): void;
     
     precompile(): IPrecompiledAbility;
 }
 ```
+
+**访问规则**：
+
+| 场景 | 宿主访问 | Ability 私有属性 |
+|------|----------|-----------------|
+| getter/setter | `proxy.host` | `proxy.self._xxx` |
+| 方法（普通函数） | `this.host`（ComposableBase getter） | `proxy.self._xxx` |
+| 方法（箭头函数） | `proxy.host` | `proxy.self._xxx` |
 
 ### ComposableRegistrar
 
@@ -251,6 +268,13 @@ interface IExposeResult {
 - [2026-06-15-registrar-architecture](../../design-decisions/2026-06-15-registrar-architecture.md) - 注册器架构统一
 
 ## 变更历史
+
+### 2026-06-29
+- 修复 AbilityBase `this` 绑定系统性 bug：引入 `AbilityProxy` 代理对象
+- `expose()` 签名改为 `expose(proxy: AbilityProxy)`
+- ComposableBase 新增 `host` getter：`get host() { return this; }`
+- 全部 29 个 Ability 子类迁移到 `expose(proxy)` API
+- 清理调试代码
 
 ### 2026-06-27
 - 修复 ComposableRegistrar 缺少 `register()`/`unregister()` 抽象方法实现
