@@ -43,6 +43,7 @@ import {
 import { createGestureProcessor } from '../processors';
 import { ILogger, LogLevel, Logger } from '@/logger';
 import { string } from '@/utils';
+import { debounce, throttle } from '@orbitjs/async';
 
 /* ============================================
  * DomEventAdapter
@@ -115,11 +116,21 @@ export class DomEventAdapter {
 
         this.logAdapter('debug', 'bind_start', { semantic, target: target.constructor.name });
 
-        // 1️⃣ 创建 gesture processor
-        const processor = createGestureProcessor(descriptor, gesture => {
+        // 1️⃣ 创建 gesture callback（可能带防抖/节流）
+        let gestureCallback = (gesture: any) => {
             this.logAdapter('debug', 'emit_gesture', { semantic });
             scope.emit(semantic, gesture, source);
-        });
+        };
+
+        // 应用防抖或节流
+        if (options?.debounce && options.debounce > 0) {
+            gestureCallback = debounce(gestureCallback, options.debounce);
+        } else if (options?.throttle && options.throttle > 0) {
+            gestureCallback = throttle(gestureCallback, options.throttle);
+        }
+
+        // 2️⃣ 创建 gesture processor
+        const processor = createGestureProcessor(descriptor, gestureCallback);
 
         const unbindFunctions: (() => void)[] = [];
 

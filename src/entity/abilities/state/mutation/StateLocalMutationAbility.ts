@@ -1,10 +1,14 @@
 import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
 import type { IBaseEntityState, IDeletionPlan, ILocalChangeSet } from '@/entity/types';
+import { debounce } from '@orbitjs/async';
 
 export class StateLocalMutationAbility extends AbilityBase {
     // 内部维护变更集
     private _changes?: ILocalChangeSet;
     private _deleteSnapshots = new Map<string | number, any>();
+
+    // 防抖的 refreshView：高频数据变更时合并视图刷新
+    private _debouncedRefreshView: ((host: any) => void) & { cancel?(): void } | null = null;
 
     protected expose(proxy: AbilityProxy): IExposeResult {
         return {
@@ -149,8 +153,13 @@ export class StateLocalMutationAbility extends AbilityBase {
     }
 
     private async commitChange(host: IBaseEntityState) {
-        (host as any).refreshView?.();
+        // 缓存立即更新（保证数据一致性）
         await (host as any).setCache?.((host as any).sourceData);
+        // 视图刷新防抖（高频操作时合并渲染）
+        if (!this._debouncedRefreshView) {
+            this._debouncedRefreshView = debounce((h: any) => h.refreshView?.(), 50);
+        }
+        this._debouncedRefreshView(host);
     }
 
     protected createEmptyChanges(): ILocalChangeSet {
@@ -174,5 +183,7 @@ export class StateLocalMutationAbility extends AbilityBase {
             this._changes = undefined;
         }
         this._deleteSnapshots.clear();
+        this._debouncedRefreshView?.cancel?.();
+        this._debouncedRefreshView = null;
     }
 }

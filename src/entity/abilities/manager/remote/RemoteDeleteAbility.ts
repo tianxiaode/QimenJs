@@ -1,10 +1,12 @@
 import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import { KernelError, KernelErrorCode } from '@/error';
 
 /**
  * RemoteDeleteAbility - 远程删除能力
  *
  * 提供删除远程实体的能力，通过HTTP请求与服务器交互。
  * 支持单个或批量删除操作，并自动更新本地状态。
+ * 使用 loading 锁防止并发删除请求。
  */
 export class RemoteDeleteAbility extends AbilityBase {
     /**
@@ -22,11 +24,20 @@ export class RemoteDeleteAbility extends AbilityBase {
              *
              * @param target - 要删除的实体ID或ID数组
              * @returns Promise<void> 删除操作完成的Promise
-             * @throws {Error} 当删除请求失败时抛出错误
+             * @throws {KernelError} 当操作进行中或删除请求失败时抛出错误
              */
             delete: async (id: string | number | (string | number)[]): Promise<void> => {
                 const host = proxy.host;
                 const state = host.state;
+
+                // loading 锁保护：防止并发删除请求
+                if (state.loading) {
+                    throw new KernelError(
+                        'Operation in progress, please wait.',
+                        KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS
+                    );
+                }
+
                 const isBatch = Array.isArray(id);
                 const action = isBatch ? 'batch-delete' : 'delete';
                 const options = isBatch

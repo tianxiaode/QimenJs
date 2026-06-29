@@ -19,6 +19,12 @@ export interface BindOptions {
 
     /** 是否禁用 mouse / touch fallback */
     disableFallback?: boolean;
+
+    /** 防抖时间（毫秒）：在指定时间内多次触发只执行最后一次 */
+    debounce?: number;
+
+    /** 节流时间（毫秒）：在指定时间内最多执行一次 */
+    throttle?: number;
 }
 
 export interface IEventAdapter<TTarget = any> {
