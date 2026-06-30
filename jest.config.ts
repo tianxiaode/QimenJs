@@ -15,7 +15,7 @@ const config = {
     '!src/**/index.ts'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'html', 'lcov'],
+  coverageReporters: ['text', 'html', 'lcov', 'json'],
   coverageThreshold: {
     global: {
       branches: 80,
