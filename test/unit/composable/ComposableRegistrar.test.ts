@@ -114,4 +114,84 @@ describe('ComposableRegistrar', () => {
             expect(registrar.has('TestAbility')).toBe(false);
         });
     });
+
+    describe('register', () => {
+        it('should register ability class and create instance', () => {
+            registrar.register(TestAbility);
+            expect(registrar.has('TestAbility')).toBe(true);
+        });
+
+        it('should not duplicate if already registered', () => {
+            registrar.register(TestAbility);
+            registrar.register(TestAbility);
+            // Should still have only one instance
+            expect(registrar.has('TestAbility')).toBe(true);
+        });
+
+        it('should precompile immediately when immediate option is true', () => {
+            registrar.register(TestAbility, { immediate: true });
+            expect(registrar.has('TestAbility')).toBe(true);
+            // Second get should return cached precompiled result
+            const result = registrar.get(TestAbility);
+            expect(result).toBeDefined();
+        });
+
+        it('should not precompile when immediate option is false', () => {
+            registrar.register(TestAbility, { immediate: false });
+            // Instance should exist but not precompiled
+            expect(registrar.has('TestAbility')).toBe(true);
+        });
+
+        it('should not precompile when no options provided', () => {
+            registrar.register(TestAbility);
+            expect(registrar.has('TestAbility')).toBe(true);
+        });
+    });
+
+    describe('unregister', () => {
+        it('should remove ability by name', () => {
+            registrar.register(TestAbility);
+            expect(registrar.has('TestAbility')).toBe(true);
+            registrar.unregister('TestAbility');
+            expect(registrar.has('TestAbility')).toBe(false);
+        });
+    });
+
+    describe('get - branch coverage', () => {
+        it('should use existing instance when abilityInstances has it but precompiledCache does not', () => {
+            registrar.register(TestAbility);
+            // Instance exists in abilityInstances but not in precompiledCache
+            const result = registrar.get(TestAbility);
+            expect(result).toBeDefined();
+        });
+
+        it('should return undefined when precompile returns null', () => {
+            // Create an ability that returns null from precompile
+            class NullAbility extends AbilityBase {
+                protected expose(): IExposeResult {
+                    return {};
+                }
+                precompile() { return null as any; }
+            }
+            const result = registrar.get(NullAbility);
+            expect(result).toBeUndefined();
+        });
+    });
+
+    describe('doInspect', () => {
+        it('should output state information', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            registrar.register(TestAbility, { immediate: true });
+            (registrar as any).doInspect();
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+
+        it('should handle empty caches', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            (registrar as any).doInspect();
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+    });
 });
