@@ -72,4 +72,50 @@ describe('Base64编码解码功能测试', () => {
     // 解码无效字符串应返回空字符串
     expect(base64.decode('invalid_base64')).toBe('');
   });
+
+  describe('Node.js Buffer 分支', () => {
+    let originalBtoa: any;
+    let originalAtob: any;
+
+    beforeEach(() => {
+      // 保存并移除 btoa/atob 以触发 Buffer 分支
+      originalBtoa = globalThis.btoa;
+      originalAtob = globalThis.atob;
+      delete (globalThis as any).btoa;
+      delete (globalThis as any).atob;
+    });
+
+    afterEach(() => {
+      // 恢复
+      (globalThis as any).btoa = originalBtoa;
+      (globalThis as any).atob = originalAtob;
+    });
+
+    it('should use Buffer for encoding when btoa is not available', () => {
+      expect(base64.encode('hello')).toBe('aGVsbG8=');
+      expect(base64.encode('你好')).toBeDefined();
+    });
+
+    it('should use Buffer for decoding when atob is not available', () => {
+      expect(base64.decode('aGVsbG8=')).toBe('hello');
+    });
+
+    it('should handle decode error with Buffer path', () => {
+      // Buffer.from with invalid base64 may not throw, just return garbled data
+      expect(() => base64.decode('!!!invalid!!!')).not.toThrow();
+    });
+  describe('浏览器 btoa/atob 错误处理', () => {
+    it('should return empty string when atob throws', () => {
+      // Save original
+      const originalAtob = globalThis.atob;
+      // Replace with a function that throws
+      (globalThis as any).atob = () => { throw new Error('Invalid character'); };
+      try {
+        const result = base64.decode('!!!invalid!!!');
+        expect(result).toBe('');
+      } finally {
+        (globalThis as any).atob = originalAtob;
+      }
+    });
+  });
 });
