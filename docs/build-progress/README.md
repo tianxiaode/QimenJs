@@ -108,9 +108,18 @@ docs/build-progress/
 - [x] 编写 http 包测试 (覆盖率 ~70%)
 - [x] 修复 composable 包测试（30/30 通过）
 - [ ] 编写 system-abilities 包测试
-- [ ] 编写 entity 包测试
+- [x] 编写 entity 包测试（部分完成：5 个测试文件，83 个用例）
 
 ## 最近更新
+
+### 2026-06-30
+- 攻坚 entity 包（继续）
+  - 修复 FlatRemoteStateAbility/FlatRemoteQueryAbility/TreeRemoteStateAbility expose() 中 proxy.host 访问违规
+  - 修复 StateDirtyAbility.isDirty() dispose 后不可调用
+  - FlatRemoteStateAbility/TreeRemoteStateAbility 从 State 迁移到 Manager（修正能力归属）
+  - 新增 TreeRemoteEntityState 单元测试（29 个用例）
+  - 新增 Manager 能力测试（15 个用例）
+  - 评估 Ability 实例共享问题，推荐 WeakMap Per-Host State 方案
 
 ### 2026-06-28
 - 攻坚 entity 包（进行中）

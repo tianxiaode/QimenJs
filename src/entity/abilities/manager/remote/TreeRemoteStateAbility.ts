@@ -12,14 +12,13 @@ export class TreeRemoteStateAbility extends AbilityBase {
      * @returns 包含集合状态属性的对象，如加载状态、项目列表等
      */
     protected expose(proxy: AbilityProxy): IExposeResult {
-        const state = proxy.host.state;
-
-        // 使用基类提供的批量注入方法
+        // 注意：不能在 expose() 函数体中直接访问 proxy.host（此时 proxy.host 尚未设置）
+        // 必须在返回的 getter/方法闭包内部访问 proxy.host
         return {
             // 每一个属性都通过 get 访问器代理到 state 上
-            loading: { get: () => state.loading },
-            isEmpty: { get: () => state.items.length === 0 },
-            items: { get: () => state.items },
+            loading: { get: () => proxy.host.state.loading },
+            isEmpty: { get: () => proxy.host.state.items.length === 0 },
+            items: { get: () => proxy.host.state.items },
         };
     }
 }

@@ -2,7 +2,7 @@
 
 **层级**: 第 4 层  
 **状态**: ⚠️ 开发中  
-**测试**: ⚠️ 部分覆盖（2 个测试文件，1711 全量通过）  
+**测试**: ⚠️ 部分覆盖（5 个测试文件，1771 全量通过）  
 **覆盖率**: -
 
 ## 概述
@@ -24,8 +24,9 @@ Manager（管理器）                    State（状态）
 │ EventAbility        │            │ StateCacheAbility   │
 │ DomainAbility       │            │ StateDirtyAbility   │
 │ SystemAbility       │            │ StateSearchAbility  │
-│ + CRUD abilities    │            │ StateMutationAbility│
-│                     │            │ + Tree abilities    │
+│ FlatRemoteStateAbil │──proxy──→  │ StateMutationAbility│
+│ TreeRemoteStateAbil │──proxy──→  │ + Tree abilities    │
+│ + CRUD abilities    │            │                     │
 └─────────────────────┘            └─────────────────────┘
 ```
 
@@ -97,6 +98,14 @@ dependencies: {
 
 ## 构建历史
 
+### 2026-06-30
+- ✅ **FlatRemoteStateAbility/FlatRemoteQueryAbility/TreeRemoteStateAbility expose() 修复**：将 `proxy.host` 访问从 expose() 函数体移入闭包内部，修复 precompile 阶段 proxy.host 为 null 的问题
+- ✅ **StateDirtyAbility.isDirty() 修复**：将 `idField` 提取移到 `if (!item)` 检查之后，dispose 后无参调用不再抛 TypeError
+- ✅ **TreeRemoteEntityState 单元测试**：新增 29 个测试用例，覆盖初始化/refreshView/ingest/树操作/isDirty/资源清理
+- ✅ **Manager 能力测试**：新增 15 个测试用例，覆盖 SchemaAbility/LocalGetAbility/RemoteCreateAbility
+- ✅ **Ability 实例共享问题评估**：推荐方案 C（WeakMap Per-Host State），详见已知问题
+- ✅ **FlatRemoteStateAbility/TreeRemoteStateAbility 从 State 迁移到 Manager**：这两个能力按命名规范属于 Manager 层，将 state 属性代理到 Manager 实例上，不应注入到 State 自身。从 FlatRemoteEntityState/TreeRemoteEntityState 的 abilities 中移除，添加到 RemoteReadonlyEntityManager/RemoteCrudEntityManager/RemoteTreeEntityManager
+
 ### 2026-06-29
 - ✅ **目录结构重组**：abilities/ 按 manager/state 分离，state 下再分 base/search/mutation/tree
 - ✅ **BaseEntityState 移除 StateSearchAbility**：搜索能力下放到具体 State 类
@@ -124,21 +133,24 @@ dependencies: {
 | 测试文件 | 状态 | 说明 |
 |----------|------|------|
 | FlatLocalEntityState.test.ts | ✅ 23/23 | 本地平面状态完整测试 |
+| FlatRemoteEntityState.test.ts | ✅ 16/16 | 远程平面状态测试 |
+| TreeRemoteEntityState.test.ts | ✅ 29/29 | 树形远程状态测试 |
+| ManagerAbilities.test.ts | ✅ 15/15 | Manager 能力测试（SchemaAbility/LocalGet/RemoteCreate） |
 | SchemaGetter.test.ts | ✅ | Schema getter 测试 |
 
 ### 缺少的测试
 
-- [ ] FlatRemoteEntityState 测试
-- [ ] TreeRemoteEntityState 测试
-- [ ] Manager 各能力测试（LocalList, LocalGet, RemoteCreate 等）
 - [ ] ComposableBase + AbilityBase 集成测试
+- [ ] 更多 Manager 能力测试（FlatRemoteListAbility, RemoteUpdateAbility, RemoteDeleteAbility 等）
+- [ ] StateLocalMutationAbility 独立测试
 
 ## 已知问题
 
 ### 1. Ability 实例共享问题
 - **原因**: ComposableRegistrar 缓存 Ability 实例，多宿主共享私有属性
-- **影响**: `_changes`/`_deleteSnapshots` 等在多实例间共享
+- **影响**: `_changes`/`_deleteSnapshots` 等在多实例间共享；`ability.host` 在多实例下不稳定
 - **当前缓解**: hostRef 闭包隔离 getter/setter，onDispose 不设 null
+- **推荐方案**: 方案 C（WeakMap Per-Host State）—— 在 AbilityBase 中增加 `WeakMap<object, Map<string, any>>`，以宿主为 key 存储独立状态
 - **优先级**: 低（当前单实例场景无影响）
 
 ## 防抖策略
@@ -153,7 +165,6 @@ dependencies: {
 
 ## 遗留工作
 
-- [ ] 编写 FlatRemoteEntityState 测试
-- [ ] 编写 TreeRemoteEntityState 测试
-- [ ] 编写 Manager 能力测试
-- [ ] 评估 Ability 实例共享问题的解决方案
+- [ ] 更多 Manager 能力测试（FlatRemoteListAbility, RemoteUpdateAbility, RemoteDeleteAbility 等）
+- [ ] ComposableBase + AbilityBase 集成测试
+- [ ] 实现 Ability 实例共享问题的 WeakMap 方案

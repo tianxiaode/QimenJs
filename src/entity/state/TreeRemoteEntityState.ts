@@ -1,9 +1,8 @@
 import { ComposableBase } from '@/composable';
 import type { AbilityConstructor } from '@/composable';
 import type { IEntity, ITreeSearchParams } from '@/schema';
-import type { ITreeRemoteEntityState, ITreeRemoteStateAbility, ITreePathAbility, ITreeLifecycleAbility, ITreeSearchAbility, ITreeViewAbility, IStateDirtyAbility } from '@/entity/types';
+import type { ITreeRemoteEntityState, ITreePathAbility, ITreeLifecycleAbility, ITreeSearchAbility, ITreeViewAbility, IStateDirtyAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
-import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRemoteStateAbility';
 import { TreePathAbility } from '@/entity/abilities/state/tree/TreePathAbility';
 import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
 import { TreeSearchAbility } from '@/entity/abilities/state/tree/TreeSearchAbility';
@@ -15,7 +14,6 @@ export class TreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSear
     implements ITreeRemoteEntityState<TSearch>
 {
     static readonly abilities: readonly AbilityConstructor[] = [
-        TreeRemoteStateAbility,
         TreePathAbility,
         TreeLifecycleAbility,
         TreeSearchAbility,
@@ -36,7 +34,6 @@ export class TreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSear
 }
 
 export type TreeRemoteEntityStateAbilities =
-    ITreeRemoteStateAbility &
     ITreePathAbility &
     ITreeLifecycleAbility &
     ITreeSearchAbility &

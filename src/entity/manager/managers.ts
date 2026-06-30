@@ -7,6 +7,7 @@ import { LocalListAbility } from '@/entity/abilities/manager/local/LocalListAbil
 import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
 import { FlatLocalMutationAbility } from '@/entity/abilities/manager/local/FlatLocalMutationAbility';
 import { FlatLocalDeleteAbility } from '@/entity/abilities/manager/local/FlatLocalDeleteAbility';
+import { FlatRemoteStateAbility } from '@/entity/abilities/manager/remote/FlatRemoteStateAbility';
 import { FlatRemoteListAbility } from '@/entity/abilities/manager/remote/FlatRemoteListAbility';
 import { FlatRemoteGetAllAbility } from '@/entity/abilities/manager/remote/FlatRemoteGetAllAbility';
 import { RemoteGetAbility } from '@/entity/abilities/manager/remote/RemoteGetAbility';
@@ -15,6 +16,7 @@ import { RemoteCreateAbility } from '@/entity/abilities/manager/remote/RemoteCre
 import { RemoteUpdateAbility } from '@/entity/abilities/manager/remote/RemoteUpdateAbility';
 import { RemoteDeleteAbility } from '@/entity/abilities/manager/remote/RemoteDeleteAbility';
 import { RemoteToggleAbility } from '@/entity/abilities/manager/remote/RemoteToggleAbility';
+import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRemoteStateAbility';
 
 /**
  * 本地只读实体管理器
@@ -63,6 +65,7 @@ export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch, FlatRemoteEntityState<TSearch>> {
     static readonly abilities = [
+        FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
         RemoteGetAbility,
@@ -87,6 +90,7 @@ export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch, FlatRemoteEntityState<TSearch>> {
     static readonly abilities = [
+        FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
         RemoteGetAbility,
@@ -116,6 +120,7 @@ export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams
 > extends BaseEntityManager<TSearch, TreeRemoteEntityState<TSearch>> {
     static readonly abilities = [
+        TreeRemoteStateAbility,
         FlatRemoteListAbility,
         RemoteGetAbility,
         FlatRemoteQueryAbility,

@@ -24,25 +24,6 @@ jest.mock('@/logger', () => {
     };
 });
 
-// Mock FlatRemoteStateAbility: 原始实现在 expose() 函数体中直接访问 proxy.host.state，
-// 但 precompile() 阶段 proxy.host 为 null，导致 TypeError。
-// 修复方式：将 proxy.host.state 的访问延迟到 getter/方法闭包中。
-// 注意：只代理 FlatRemoteEntityState 自身没有的属性（如 isEmpty、hasMore、pageSizes），
-// 不代理 loading/items/page/pageSize/pages/total 等已在 state 上的可写数据属性，
-// 否则会覆盖 state 上的数据属性为只读 getter，导致构造函数赋值失败。
-jest.mock('@/entity/abilities/manager/remote/FlatRemoteStateAbility', () => {
-    const { AbilityBase } = require('@/composable');
-    class FlatRemoteStateAbility extends AbilityBase {
-        protected expose(proxy: any) {
-            return {
-                isEmpty: { get: () => proxy.host.items.length === 0 },
-                pageSizes: { get: () => proxy.host.pageSizes },
-            };
-        }
-    }
-    return { FlatRemoteStateAbility };
-});
-
 import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
 import type { IEntity, IFlatSearchParams } from '@/entity/types';
 import type { FlatSchema } from '@/schema';
@@ -229,10 +210,8 @@ describe('FlatRemoteEntityState', () => {
             state.dispose();
 
             // dispose 后 StateDirtyAbility.onDispose() 清除了 _snapshots，
-            // 但 BaseEntityState.dispose() 也将 schema 设为 null，
-            // 导致 isDirty() 访问 this.schema.idField 时抛出 TypeError。
-            // 这是已知的源码限制：isDirty 在 dispose 后不应再被调用。
-            // 此处验证 dispose 不会抛出异常即可。
+            // isDirty() 无参调用直接返回 _snapshots.size > 0，不需要访问 schema
+            expect(state.isDirty()).toBe(false);
         });
     });
 });

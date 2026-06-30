@@ -7,8 +7,8 @@ export class StateDirtyAbility extends AbilityBase {
     protected expose(proxy: AbilityProxy): IExposeResult {
         return {
             isDirty: function(this: IBaseEntityState, item?: any): boolean {
-                const idField = this.schema.idField || 'id';
                 if (!item) return proxy.self._snapshots.size > 0;
+                const idField = this.schema.idField || 'id';
                 const id = item[idField];
                 const snapshot: any = proxy.self._snapshots.get(id);
                 if (snapshot === undefined) return false;
