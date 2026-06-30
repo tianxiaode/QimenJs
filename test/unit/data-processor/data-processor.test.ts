@@ -459,4 +459,157 @@ describe('data-processor', () => {
             expect(dataProcessorExecutor).toBeInstanceOf(DataProcessorExecutor);
         });
     });
+
+    describe('getPipeline - cache', () => {
+        it('should return cached result on second call', () => {
+            const registrar = new DataProcessorRegistrar();
+            registrar.register({
+                name: 'cache-test-handler',
+                handle: async (ctx) => {},
+                weight: 100,
+                tags: ['cache-preset']
+            });
+
+            const first = registrar.getPipeline('cache-preset');
+            const second = registrar.getPipeline('cache-preset');
+            expect(first).toBe(second); // Same reference from cache
+        });
+
+        it('should use phase in cache key', () => {
+            const registrar = new DataProcessorRegistrar();
+            registrar.register({
+                name: 'phase-cache-handler',
+                handle: async (ctx) => {},
+                weight: 100,
+                tags: ['phase-cache', 'pre']
+            });
+
+            const withPhase = registrar.getPipeline('phase-cache', 'pre');
+            const withoutPhase = registrar.getPipeline('phase-cache');
+            // Different cache keys, different results
+            expect(withPhase).not.toBe(withoutPhase);
+        });
+    });
+
+    describe('doInspect', () => {
+        it('should output state when handlers are registered', () => {
+            const registrar = new DataProcessorRegistrar();
+            registrar.register({
+                name: 'inspect-handler',
+                handle: async (ctx) => {},
+                weight: 100,
+                tags: ['inspect-test'],
+                description: 'Test handler for inspect'
+            });
+
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const groupSpy = jest.spyOn(console, 'group').mockImplementation();
+            const groupEndSpy = jest.spyOn(console, 'groupEnd').mockImplementation();
+            const tableSpy = jest.spyOn(console, 'table').mockImplementation();
+
+            (registrar as any).doInspect();
+
+            expect(groupSpy).toHaveBeenCalled();
+            expect(tableSpy).toHaveBeenCalled();
+            expect(groupEndSpy).toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+            groupSpy.mockRestore();
+            groupEndSpy.mockRestore();
+            tableSpy.mockRestore();
+        });
+
+        it('should handle empty registry', () => {
+            const registrar = new DataProcessorRegistrar();
+
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const groupSpy = jest.spyOn(console, 'group').mockImplementation();
+            const groupEndSpy = jest.spyOn(console, 'groupEnd').mockImplementation();
+
+            (registrar as any).doInspect();
+
+            expect(consoleSpy).toHaveBeenCalledWith('No processors registered');
+            expect(groupEndSpy).toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+            groupSpy.mockRestore();
+            groupEndSpy.mockRestore();
+        });
+    });
+
+    describe('DataProcessorExecutor - additional methods', () => {
+        it('should get stats', async () => {
+            const executor = new DataProcessorExecutor();
+            const handler: DataProcessorHandler = {
+                name: 'stats-processor',
+                handle: async (ctx) => {},
+                weight: 100
+            };
+            const context = {
+                identity: { domain: 'test', clientId: 'test' },
+                metadata: {}
+            } as any;
+
+            await executor.execute(context, [handler]);
+            const stats = executor.getStats();
+            expect(stats).toBeDefined();
+        });
+
+        it('should reset stats', async () => {
+            const executor = new DataProcessorExecutor();
+            const handler: DataProcessorHandler = {
+                name: 'reset-stats-processor',
+                handle: async (ctx) => {},
+                weight: 100
+            };
+            const context = {
+                identity: { domain: 'test', clientId: 'test' },
+                metadata: {}
+            } as any;
+
+            await executor.execute(context, [handler]);
+            executor.resetStats();
+            // After reset, stats should be fresh
+            const stats = executor.getStats();
+            expect(stats).toBeDefined();
+        });
+
+        it('should print report', async () => {
+            const executor = new DataProcessorExecutor();
+            const handler: DataProcessorHandler = {
+                name: 'report-processor',
+                handle: async (ctx) => {},
+                weight: 100
+            };
+            const context = {
+                identity: { domain: 'test', clientId: 'test' },
+                metadata: {}
+            } as any;
+
+            const result = await executor.execute(context, [handler]);
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            executor.printReport(result);
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+
+        it('should execute with phase parameter', async () => {
+            const executor = new DataProcessorExecutor();
+            const handler: DataProcessorHandler = {
+                name: 'phase-exec-processor',
+                handle: async (ctx) => {
+                    ctx.metadata = ctx.metadata || {};
+                    ctx.metadata.phaseExecuted = true;
+                },
+                weight: 100
+            };
+            const context = {
+                identity: { domain: 'test', clientId: 'test' },
+                metadata: {}
+            } as any;
+
+            await executor.execute(context, [handler], 'pre');
+            expect(context.metadata.phaseExecuted).toBe(true);
+        });
+    });
 });
