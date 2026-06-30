@@ -99,6 +99,48 @@ export abstract class AbilityBase implements IPrecompilableAbility {
     protected onDispose(): void {}
     
     /**
+     * 获取或创建当前 Ability 在当前宿主上的 Per-Host 私有状态
+     * 
+     * 每个 Ability 实例在每个宿主上有独立的状态，通过 key 区分。
+     * 状态存储在宿主（ComposableBase）上，dispose 时自动清理。
+     * 
+     * **注意**：只能在方法闭包或 getter/setter 闭包中调用，
+     * 此时 this.host 已正确指向当前宿主。
+     * 
+     * @param key - 状态键名，默认为 'default'
+     * @param factory - 首次访问时创建默认状态的工厂函数
+     * @returns 该 Ability 在当前宿主上的状态对象
+     * 
+     * @example
+     * ```typescript
+     * class CounterAbility extends AbilityBase {
+     *     private getCountState() {
+     *         return this.getOrCreateState(() => ({ count: 0 }));
+     *     }
+     *     protected expose(proxy: AbilityProxy): IExposeResult {
+     *         return {
+     *             count: { get: () => proxy.self.getCountState().count },
+     *             increment: function() { proxy.self.getCountState().count++; },
+     *         };
+     *     }
+     * }
+     * ```
+     */
+    protected getOrCreateState<T>(factory: () => T, key: string | symbol = 'default'): T {
+        return (this.host as any).getOrCreateAbilityState(this, key, factory) as T;
+    }
+    
+    /**
+     * 获取当前 Ability 在当前宿主上的 Per-Host 私有状态（不创建）
+     * 
+     * @param key - 状态键名，默认为 'default'
+     * @returns 状态对象，如果不存在返回 undefined
+     */
+    protected getState<T>(key: string | symbol = 'default'): T | undefined {
+        return (this.host as any).getAbilityState(this, key) as T | undefined;
+    }
+    
+    /**
      * 预编译方法
      * 
      * 关键设计：proxy.host 是一个 getter，从 hostRef 读取值。
@@ -132,11 +174,13 @@ export abstract class AbilityBase implements IPrecompilableAbility {
         
         // 创建销毁函数工厂
         const createDisposer = (host: any) => {
-            ability.host = host;
-
             return () => {
+                // 确保 onDispose 中 this.host 指向当前正在 dispose 的宿主
+                const prevHost = ability.host;
+                ability.host = host;
                 ability.onDispose();
-                ability.host = null as any;
+                // 恢复之前的 host 引用（多宿主共享时不应设为 null）
+                ability.host = prevHost;
             };
         };
         
@@ -165,25 +209,31 @@ export abstract class AbilityBase implements IPrecompilableAbility {
                 if ('get' in value) {
                     const originalGet = value.get;
                     rebound.get = () => {
-                        // 临时切换 sharedHostRef 指向当前宿主的 hostRef
-                        const prev = sharedHostRef.value;
+                        // 临时切换 sharedHostRef 和 ability.host 指向当前宿主
+                        const prevRef = sharedHostRef.value;
+                        const prevHost = ability.host;
                         sharedHostRef.value = hostRef.value;
+                        ability.host = host;
                         try {
                             return originalGet.call(ability);
                         } finally {
-                            sharedHostRef.value = prev;
+                            sharedHostRef.value = prevRef;
+                            ability.host = prevHost;
                         }
                     };
                 }
                 if ('set' in value) {
                     const originalSet = value.set;
                     rebound.set = (v: any) => {
-                        const prev = sharedHostRef.value;
+                        const prevRef = sharedHostRef.value;
+                        const prevHost = ability.host;
                         sharedHostRef.value = hostRef.value;
+                        ability.host = host;
                         try {
                             originalSet.call(ability, v);
                         } finally {
-                            sharedHostRef.value = prev;
+                            sharedHostRef.value = prevRef;
+                            ability.host = prevHost;
                         }
                     };
                 }
@@ -196,13 +246,29 @@ export abstract class AbilityBase implements IPrecompilableAbility {
             };
         }
         
-        // 方法：bind 到宿主
+        // 方法：bind 到宿主，调用时临时切换 sharedHostRef 确保 proxy.host 正确
         if (typeof value === 'function') {
             return (host) => {
                 ability.host = host;
+                // 为当前宿主创建独立的 hostRef
+                const hostRef: HostRef = { value: host };
+                // 同时更新 sharedHostRef，确保箭头函数闭包中的 proxy.host 也能正确工作
                 sharedHostRef.value = host;
+                // 包装方法：调用时临时切换 sharedHostRef 和 ability.host
+                const wrappedFn = function(this: any, ...args: any[]) {
+                    const prevRef = sharedHostRef.value;
+                    const prevHost = ability.host;
+                    sharedHostRef.value = hostRef.value;
+                    ability.host = host;
+                    try {
+                        return (value as Function).apply(this, args);
+                    } finally {
+                        sharedHostRef.value = prevRef;
+                        ability.host = prevHost;
+                    }
+                };
                 return {
-                    value: value.bind(host),
+                    value: wrappedFn.bind(host),
                     writable: true,
                     configurable: true,
                     enumerable: true

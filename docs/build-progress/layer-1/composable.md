@@ -2,10 +2,27 @@
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
-**测试**: ✅ 通过（31/31）  
+**测试**: ✅ 通过（95/95，含 39 个集成测试）  
 **覆盖率**: 90.38%（分支）
 
 ## 构建历史
+
+### 2026-07-01
+- ✅ **实现 Per-Host Ability 私有状态（abilityStates）**
+  - ComposableBase 新增 `_abilityStates` Map，存储每个 Ability 在每个宿主上的独立状态
+  - 新增 `getOrCreateAbilityState(ability, key, factory)` 方法
+  - 新增 `getAbilityState(ability, key)` 方法
+  - 新增 `clearAbilityStates(ability)` 方法
+  - `dispose()` 中自动清理所有能力的 Per-Host 状态
+- ✅ **AbilityBase 新增 `getOrCreateState` / `getState` 便捷方法**
+  - `getOrCreateState(factory, key?)` — 获取或创建当前 Ability 在当前宿主上的私有状态
+  - `getState(key?)` — 获取（不创建）当前 Ability 在当前宿主上的私有状态
+- ✅ **修复多宿主共享 Ability 实例时的隔离问题**
+  - getter/setter 调用时临时切换 `sharedHostRef` 和 `ability.host`，确保 `proxy.host` 和 `this.host` 都指向当前宿主
+  - 方法调用时通过 `wrappedFn` 临时切换 `sharedHostRef` 和 `ability.host`
+  - `createDisposer` 中 `onDispose` 前临时设置 `ability.host`，执行后恢复原值
+- ✅ **ComposableIntegration 集成测试全部通过（39/39）**
+  - 覆盖：proxy.host 多实例隔离、getter/setter 隔离、方法 bind、dispose 逆序、onDispose、DebounceAbilityBase、能力冲突、缓存共享、继承链、abilityStates、dispose 安全性、完整生命周期
 
 ### 2026-06-29
 - ✅ **修复 AbilityBase `this` 绑定系统性 bug**
@@ -140,15 +157,10 @@
 ## 遗留工作
 
 ### 高优先级
-- [ ] 提高 ComposableRegistrar 测试覆盖率（当前 54%，目标 80%+）
-  - 添加 `register()` 方法测试
-  - 添加 `unregister()` 方法测试
-  - 添加锁定状态测试
-  - 添加 `inspect()` 测试
+- [ ] 将 entity 包中的 Ability 私有变量迁移到 `getOrCreateState`（StateCacheAbility._provider、StateDirtyAbility._snapshots、StateLocalMutationAbility._deleteSnapshots 等）
 
 ### 中优先级
-- [ ] 编写 DebounceAbilityBase 测试（当前 30%）
-- [ ] 编写 DescriptorFactory 测试（当前 3%）
+- [ ] 编写 DescriptorFactory 测试
 
 ### 低优先级
 - [ ] 优化预编译性能

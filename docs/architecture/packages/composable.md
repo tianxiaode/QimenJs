@@ -2,8 +2,8 @@
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
-**测试**: ✅ 通过（30/30）  
-**覆盖率**: ~65%（核心类 90%+）
+**测试**: ✅ 通过（95/95，含 39 个集成测试）  
+**覆盖率**: 90.38%（分支）
 
 ## 概述
 
@@ -135,7 +135,12 @@ abstract class ComposableBase implements IComposableBase {
     
     getStatic<T>(key: string | symbol): T | undefined;
     setStatic<T>(key: string | symbol, value: T): void;
-    dispose(): void;  // 按装配逆序执行销毁函数
+    dispose(): void;  // 按装配逆序执行销毁函数，并清理所有 abilityStates
+    
+    // Per-Host Ability 私有状态
+    getOrCreateAbilityState<T>(ability: AbilityBase, key: string | symbol, factory: () => T): T;
+    getAbilityState<T>(ability: AbilityBase, key: string | symbol): T | undefined;
+    clearAbilityStates(ability: AbilityBase): void;
     
     protected collectAbilities(): AbilityConstructor[];  // 从原型链收集能力（去重+缓存）
     protected setupAbilities(): void;  // 自动装配能力
@@ -157,17 +162,42 @@ abstract class AbilityBase implements IPrecompilableAbility {
     protected abstract expose(proxy: AbilityProxy): IExposeResult;
     protected onDispose(): void;
     
+    // Per-Host 私有状态（多实例安全）
+    protected getOrCreateState<T>(factory: () => T, key?: string | symbol): T;
+    protected getState<T>(key?: string | symbol): T | undefined;
+    
     precompile(): IPrecompiledAbility;
 }
 ```
 
 **访问规则**：
 
-| 场景 | 宿主访问 | Ability 私有属性 |
-|------|----------|-----------------|
-| getter/setter | `proxy.host` | `proxy.self._xxx` |
-| 方法（普通函数） | `this.host`（ComposableBase getter） | `proxy.self._xxx` |
-| 方法（箭头函数） | `proxy.host` | `proxy.self._xxx` |
+| 场景 | 宿主访问 | Ability 私有属性 | Per-Host 状态 |
+|------|----------|-----------------|--------------|
+| getter/setter | `proxy.host` | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
+| 方法（普通函数） | `this.host`（ComposableBase getter） | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
+| 方法（箭头函数） | `proxy.host` | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
+
+**Per-Host State 机制**：
+
+Ability 实例在多个宿主间共享（ComposableRegistrar 缓存），但每个宿主需要独立的状态。
+`getOrCreateState()` 将状态存储在宿主（ComposableBase）上，通过 `Ability实例 + key` 双重索引隔离。
+
+```typescript
+class CounterAbility extends AbilityBase {
+    private getCountState() {
+        return this.getOrCreateState(() => ({ count: 0 }));
+    }
+    protected expose(proxy: AbilityProxy): IExposeResult {
+        return {
+            count: { get: () => proxy.self.getCountState().count },
+            increment: function() { proxy.self.getCountState().count++; },
+        };
+    }
+}
+// host1.count === 0, host2.count === 0（各自独立）
+// host1.dispose() 后 host2.count 仍可用
+```
 
 ### ComposableRegistrar
 
@@ -257,10 +287,8 @@ interface IExposeResult {
 
 ## 遗留工作
 
-- [ ] 提高 ComposableRegistrar 测试覆盖率（当前 54%）
-- [ ] 编写 DebounceAbilityBase 测试（当前 30%）
-- [ ] 编写 DescriptorFactory 测试（当前 3%）
-- [ ] 提高整体覆盖率到 80%+
+- [ ] 将 entity 包中的 Ability 私有变量迁移到 `getOrCreateState`（StateCacheAbility._provider、StateDirtyAbility._snapshots、StateLocalMutationAbility._deleteSnapshots 等）
+- [ ] 编写 DescriptorFactory 测试
 
 ## 设计决策
 
@@ -268,6 +296,13 @@ interface IExposeResult {
 - [2026-06-15-registrar-architecture](../../design-decisions/2026-06-15-registrar-architecture.md) - 注册器架构统一
 
 ## 变更历史
+
+### 2026-07-01
+- 实现 Per-Host Ability 私有状态（abilityStates）：ComposableBase 新增 `_abilityStates` Map 及相关方法
+- AbilityBase 新增 `getOrCreateState()` / `getState()` 便捷方法
+- 修复多宿主共享 Ability 实例时的隔离问题：getter/setter/方法调用时临时切换 `sharedHostRef` 和 `ability.host`
+- 修复 `createDisposer` 中 `ability.host` 恢复逻辑（多宿主共享时不应设为 null）
+- ComposableIntegration 集成测试全部通过（39/39）
 
 ### 2026-06-29
 - 修复 AbilityBase `this` 绑定系统性 bug：引入 `AbilityProxy` 代理对象

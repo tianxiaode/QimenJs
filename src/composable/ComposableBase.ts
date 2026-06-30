@@ -1,5 +1,6 @@
 import { ILogger, Logger } from '@/logger';
 import { ComposableRegistrar } from './ComposableRegistrar';
+import { AbilityBase } from './AbilityBase';
 import type { IComposableBase, AbilityConstructor } from './types/composable';
 
 /**
@@ -7,6 +8,12 @@ import type { IComposableBase, AbilityConstructor } from './types/composable';
  * @internal
  */
 const DISPOSERS_KEY = Symbol('__disposers__');
+
+/**
+ * Symbol 用于存储能力的 Per-Host 私有状态
+ * @internal
+ */
+const ABILITY_STATES_KEY = Symbol('__ability_states__');
 
 /**
  * 可组合基类，提供了能力注入和管理的基础功能
@@ -65,10 +72,17 @@ export abstract class ComposableBase implements IComposableBase {
             configurable: true
         });
         
-        // 3. 设置能力
+        // 3. 初始化能力的 Per-Host 私有状态
+        Object.defineProperty(this, ABILITY_STATES_KEY, {
+            value: new Map<AbilityBase, Map<string | symbol, any>>(),
+            enumerable: false,
+            configurable: true
+        });
+        
+        // 4. 设置能力
         this.setupAbilities();
         
-        // 4. 应用重写
+        // 5. 应用重写
         this.applyOverrides();
     }
 
@@ -180,6 +194,65 @@ export abstract class ComposableBase implements IComposableBase {
     }
 
     /**
+     * 获取或创建能力的 Per-Host 私有状态
+     * 
+     * 每个 Ability 实例在每个宿主上有独立的状态命名空间，
+     * 通过 key 区分不同的状态条目。
+     * 
+     * @param ability - Ability 实例
+     * @param key - 状态键名
+     * @param factory - 首次访问时创建默认状态的工厂函数
+     * @returns 该 Ability 在当前宿主上的状态对象
+     * 
+     * @example
+     * ```typescript
+     * // 在 Ability 中使用
+     * const state = this.host.getOrCreateAbilityState(this, 'counter', () => ({ count: 0 }));
+     * state.count++;
+     * ```
+     */
+    public getOrCreateAbilityState<T>(ability: AbilityBase, key: string | symbol, factory: () => T): T {
+        const states = (this as any)[ABILITY_STATES_KEY] as Map<AbilityBase, Map<string | symbol, any>>;
+        let abilityMap = states.get(ability);
+        if (!abilityMap) {
+            abilityMap = new Map<string | symbol, any>();
+            states.set(ability, abilityMap);
+        }
+        let state = abilityMap.get(key);
+        if (state === undefined) {
+            state = factory();
+            abilityMap.set(key, state);
+        }
+        return state as T;
+    }
+
+    /**
+     * 获取能力的 Per-Host 私有状态（不创建）
+     * 
+     * @param ability - Ability 实例
+     * @param key - 状态键名
+     * @returns 状态对象，如果不存在返回 undefined
+     */
+    public getAbilityState<T>(ability: AbilityBase, key: string | symbol): T | undefined {
+        const states = (this as any)[ABILITY_STATES_KEY] as Map<AbilityBase, Map<string | symbol, any>>;
+        return states.get(ability)?.get(key) as T | undefined;
+    }
+
+    /**
+     * 清理指定能力在当前宿主上的所有私有状态
+     * 
+     * @param ability - Ability 实例
+     */
+    public clearAbilityStates(ability: AbilityBase): void {
+        const states = (this as any)[ABILITY_STATES_KEY] as Map<AbilityBase, Map<string | symbol, any>>;
+        const abilityMap = states.get(ability);
+        if (abilityMap) {
+            abilityMap.clear();
+            states.delete(ability);
+        }
+    }
+
+    /**
      * 统一销毁：按装配顺序的逆序执行
      */
     public dispose() {
@@ -196,5 +269,10 @@ export abstract class ComposableBase implements IComposableBase {
         
         // 清空销毁函数数组
         disposers.length = 0;
+        
+        // 清理所有能力的 Per-Host 私有状态
+        const states = (this as any)[ABILITY_STATES_KEY] as Map<AbilityBase, Map<string | symbol, any>>;
+        states.forEach(abilityMap => abilityMap.clear());
+        states.clear();
     }
 }
