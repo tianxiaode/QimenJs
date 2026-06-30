@@ -1,4 +1,4 @@
-16import json
+import json
 
 with open('coverage/coverage-final.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
