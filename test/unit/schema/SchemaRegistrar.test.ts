@@ -117,6 +117,12 @@ describe('SchemaRegistrar', () => {
             expect(retrieved).toHaveLength(2);
             expect(retrieved[0].name).toBe('street');
         });
+
+        it('should throw error when field group has no fields array', () => {
+            expect(() => registrar.register('emptyGroup' as any, undefined as any)).toThrow(
+                '[SchemaRegistrar] Field group requires a name and fields array'
+            );
+        });
     });
 
     describe('unregister', () => {
@@ -341,6 +347,183 @@ describe('SchemaRegistrar', () => {
             const compiled = registrar.getCompiled('Tree');
             expect(compiled.schema.parentIdField).toBe('parentId');
             expect(compiled.schema.childrenField).toBe('children');
+        });
+
+        it('should extract searchable fields', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string', searchable: true },
+                    { name: 'name', type: 'string', searchable: false },
+                    { name: 'email', type: 'string' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            expect(compiled.schema.searchFields).toContain('id');
+            expect(compiled.schema.searchFields).not.toContain('name');
+        });
+
+        it('should update searchSet when field searchable changes', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string', searchable: true },
+                ]
+            });
+
+            const compiled1 = registrar.getCompiled('User');
+            expect(compiled1.schema.searchFields).toContain('id');
+
+            // Re-register with searchable=false
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'id', type: 'string', searchable: false },
+                ]
+            });
+
+            // Clear compiled cache to force recompile
+            (registrar as any).storage.compiled.delete('User');
+            const compiled2 = registrar.getCompiled('User');
+            expect(compiled2.schema.searchFields).not.toContain('id');
+        });
+
+        it('should extract split rule for string field with separator', () => {
+            registrar.register({
+                name: 'Tags',
+                isTree: false as const,
+                fields: [
+                    { name: 'tags', type: 'string', separator: ',' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('Tags');
+            const tagRule = compiled.rules['tags'];
+            expect(tagRule).toBeDefined();
+            expect(tagRule[0].type).toBe('split');
+        });
+
+        it('should extract format rule for string field with pattern', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'email', type: 'string', pattern: 'email' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            const emailRule = compiled.rules['email'];
+            expect(emailRule).toBeDefined();
+            expect(emailRule[0].type).toBe('format');
+        });
+
+        it('should extract format rule for string field with format', () => {
+            registrar.register({
+                name: 'User',
+                isTree: false as const,
+                fields: [
+                    { name: 'phone', type: 'string', format: 'phone' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('User');
+            const phoneRule = compiled.rules['phone'];
+            expect(phoneRule).toBeDefined();
+            expect(phoneRule[0].type).toBe('format');
+        });
+
+        it('should extract validation rules for various types', () => {
+            registrar.register({
+                name: 'AllTypes',
+                isTree: false as const,
+                fields: [
+                    { name: 'pwd', type: 'password', minLength: 6 },
+                    { name: 'age', type: 'number', min: 0 },
+                    { name: 'birthday', type: 'date' },
+                    { name: 'active', type: 'boolean' },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('AllTypes');
+            expect(compiled.rules['pwd'][0].type).toBe('password');
+            expect(compiled.rules['age'][0].type).toBe('number');
+            expect(compiled.rules['birthday'][0].type).toBe('date');
+            expect(compiled.rules['active'][0].type).toBe('boolean');
+        });
+
+        it('should handle custom rules', () => {
+            const customRule = { type: 'custom', validator: () => true } as any;
+            registrar.register({
+                name: 'Custom',
+                isTree: false as const,
+                fields: [
+                    { name: 'field1', type: 'string', rules: customRule },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('Custom');
+            expect(compiled.rules['field1']).toBeDefined();
+            expect(compiled.rules['field1'].length).toBe(2); // built-in string + custom
+        });
+
+        it('should handle custom rules as array', () => {
+            const customRules = [
+                { type: 'custom', validator: () => true },
+                { type: 'custom2', validator: () => false },
+            ] as any;
+            registrar.register({
+                name: 'CustomArray',
+                isTree: false as const,
+                fields: [
+                    { name: 'field1', type: 'string', rules: customRules },
+                ]
+            });
+
+            const compiled = registrar.getCompiled('CustomArray');
+            expect(compiled.rules['field1'].length).toBe(3); // built-in string + 2 custom
+        });
+
+        it('should delete ruleMap entry when field has no rules', () => {
+            registrar.register({
+                name: 'NoRules',
+                isTree: false as const,
+                fields: [
+                    { name: 'simple', type: 'object' }, // object type has no built-in rule
+                ]
+            });
+
+            const compiled = registrar.getCompiled('NoRules');
+            expect(compiled.rules['simple']).toBeUndefined();
+        });
+    });
+
+    describe('inspect', () => {
+        it('should output registrar state', () => {
+            registrar.register({ 
+                name: 'User', 
+                isTree: true,
+                isLazy: false,
+                root: null,
+                fields: [] 
+            });
+            
+            expect(() => registrar.inspect()).not.toThrow();
+        });
+
+        it('should output field groups in inspect', () => {
+            registrar.register('testFields', [
+                { name: 'field1', type: 'string' },
+            ]);
+
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            registrar.inspect();
+            expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Field Groups'));
+            consoleSpy.mockRestore();
         });
     });
 });

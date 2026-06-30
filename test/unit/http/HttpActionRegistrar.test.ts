@@ -219,4 +219,42 @@ describe('HttpActionRegistrar', () => {
             expect(registrar.getPipeline()).toEqual([]);
         });
     });
+
+    describe('doInspect', () => {
+        it('should output empty when no actions', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            (registrar as any).doInspect();
+            expect(consoleSpy).toHaveBeenCalledWith('  (empty)');
+            consoleSpy.mockRestore();
+        });
+
+        it('should output action names and descriptions', () => {
+            registrar.register({
+                name: 'InspectAction',
+                category: HttpActionCategory.PREPARE,
+                offset: 10,
+                handler: async () => {},
+                description: 'Test description',
+            });
+
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            (registrar as any).doInspect();
+            expect(consoleSpy).toHaveBeenCalledWith('  InspectAction: Test description');
+            consoleSpy.mockRestore();
+        });
+
+        it('should handle action without description', () => {
+            registrar.register({
+                name: 'NoDescAction',
+                category: HttpActionCategory.PREPARE,
+                offset: 10,
+                handler: async () => {},
+            });
+
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            (registrar as any).doInspect();
+            expect(consoleSpy).toHaveBeenCalledWith('  NoDescAction: no description');
+            consoleSpy.mockRestore();
+        });
+    });
 });

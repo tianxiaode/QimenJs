@@ -5,26 +5,60 @@
 import { HttpFactory } from '@/http/factory';
 import { RequestContextBuilder } from '@orbitjs/context';
 
-// Mock HttpClient
+// Helper to create a context with error
+function createErrorContext(domain: string, errorMsg: string) {
+    const ctx = RequestContextBuilder
+        .create()
+        .withDomain(domain)
+        .withUrl('/api/test')
+        .withMethod('GET')
+        .build();
+    ctx.error = new Error(errorMsg);
+    return ctx;
+}
+
+// Helper to create a successful context
+function createSuccessContext(domain: string) {
+    return RequestContextBuilder
+        .create()
+        .withDomain(domain)
+        .withUrl('/api/test')
+        .withMethod('GET')
+        .build();
+}
+
+// Helper to create an aborted context
+function createAbortedContext(domain: string) {
+    const ctx = RequestContextBuilder
+        .create()
+        .withDomain(domain)
+        .withUrl('/api/test')
+        .withMethod('GET')
+        .build();
+    ctx.metadata.isAborted = true;
+    return ctx;
+}
+
+// Mock HttpClient with controllable behavior
+const mockRequest = jest.fn();
 jest.mock('@/http/HttpClient', () => {
     return {
         HttpClient: jest.fn().mockImplementation((domain: string) => ({
-            request: jest.fn().mockReturnValue({
-                context: Promise.resolve(
-                    RequestContextBuilder
-                        .create()
-                        .withDomain(domain)
-                        .withUrl('/api/test')
-                        .withMethod('GET')
-                        .build()
-                ),
-                cancel: jest.fn(),
-            }),
+            request: mockRequest,
         })),
     };
 });
 
 describe('HttpFactory', () => {
+    beforeEach(() => {
+        mockRequest.mockReset();
+        // Default: return successful context
+        mockRequest.mockReturnValue({
+            context: Promise.resolve(createSuccessContext('test')),
+            cancel: jest.fn(),
+        });
+    });
+
     describe('createRetryTask', () => {
         it('should create retry task with context and cancel', () => {
             const task = HttpFactory.createRetryTask('GET', '/api/test', {}, 'test');
@@ -44,25 +78,138 @@ describe('HttpFactory', () => {
             expect(() => task.cancel('user_cancelled')).not.toThrow();
         });
 
-        it('should create retry task with retry options', () => {
+        it('should return immediately when context has no error', async () => {
             const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: {
-                    maxRetries: 3,
-                    delay: 100,
-                },
+                retry: { maxRetries: 3 },
             }, 'test');
-            expect(task.context).toBeDefined();
+            const context = await task.context;
+            expect(context.error).toBeFalsy();
+            expect(mockRequest).toHaveBeenCalledTimes(1);
         });
 
-        it('should create retry task with custom shouldRetry', () => {
+        it('should return immediately when context is aborted', async () => {
+            mockRequest.mockReturnValue({
+                context: Promise.resolve(createAbortedContext('test')),
+                cancel: jest.fn(),
+            });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {
+                retry: { maxRetries: 3 },
+            }, 'test');
+            const context = await task.context;
+            expect(context.metadata.isAborted).toBe(true);
+            expect(mockRequest).toHaveBeenCalledTimes(1);
+        });
+
+        it('should retry on error when retry is configured', async () => {
+            // First call: error, second call: success
+            mockRequest
+                .mockReturnValueOnce({
+                    context: Promise.resolve(createErrorContext('test', 'network_error')),
+                    cancel: jest.fn(),
+                })
+                .mockReturnValue({
+                    context: Promise.resolve(createSuccessContext('test')),
+                    cancel: jest.fn(),
+                });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {
+                retry: { maxRetries: 3 },
+            }, 'test');
+            const context = await task.context;
+            expect(context.error).toBeFalsy();
+            expect(mockRequest).toHaveBeenCalledTimes(2);
+        });
+
+        it('should retry with delay', async () => {
+            jest.useFakeTimers();
+            let resolveFirst: Function;
+            mockRequest
+                .mockReturnValueOnce({
+                    context: new Promise(r => { resolveFirst = r; }),
+                    cancel: jest.fn(),
+                });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {
+                retry: { maxRetries: 3, delay: 100 },
+            }, 'test');
+
+            // Resolve first request with error
+            resolveFirst!(createErrorContext('test', 'timeout'));
+
+            // Advance past delay
+            await jest.advanceTimersByTimeAsync(150);
+
+            const context = await task.context;
+            expect(mockRequest).toHaveBeenCalledTimes(2);
+            jest.useRealTimers();
+        });
+
+        it('should stop retrying when shouldRetry returns false', async () => {
+            mockRequest.mockReturnValue({
+                context: Promise.resolve(createErrorContext('test', 'server_error')),
+                cancel: jest.fn(),
+            });
+
             const shouldRetry = jest.fn().mockReturnValue(false);
             const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: {
-                    maxRetries: 3,
-                    shouldRetry,
-                },
+                retry: { maxRetries: 3, shouldRetry },
             }, 'test');
-            expect(task.context).toBeDefined();
+            const context = await task.context;
+            expect(context.error).toBeDefined();
+            expect(shouldRetry).toHaveBeenCalled();
+            expect(mockRequest).toHaveBeenCalledTimes(1);
+        });
+
+        it('should stop retrying after maxRetries', async () => {
+            mockRequest.mockReturnValue({
+                context: Promise.resolve(createErrorContext('test', 'network_error')),
+                cancel: jest.fn(),
+            });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {
+                retry: { maxRetries: 2 },
+            }, 'test');
+            const context = await task.context;
+            expect(context.error).toBeDefined();
+            // 1 initial + 2 retries = 3 total
+            expect(mockRequest).toHaveBeenCalledTimes(3);
+        });
+
+        it('should not retry when no retry config', async () => {
+            mockRequest.mockReturnValue({
+                context: Promise.resolve(createErrorContext('test', 'network_error')),
+                cancel: jest.fn(),
+            });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {}, 'test');
+            const context = await task.context;
+            expect(context.error).toBeDefined();
+            expect(mockRequest).toHaveBeenCalledTimes(1);
+        });
+
+        it('should cancel current task on cancel', () => {
+            const mockCancel = jest.fn();
+            mockRequest.mockReturnValue({
+                context: new Promise(() => {}), // never resolves
+                cancel: mockCancel,
+            });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {}, 'test');
+            task.cancel('user_cancelled');
+            expect(mockCancel).toHaveBeenCalledWith('user_cancelled');
+        });
+
+        it('should cancel with default reason', () => {
+            const mockCancel = jest.fn();
+            mockRequest.mockReturnValue({
+                context: new Promise(() => {}), // never resolves
+                cancel: mockCancel,
+            });
+
+            const task = HttpFactory.createRetryTask('GET', '/api/test', {}, 'test');
+            task.cancel();
+            expect(mockCancel).toHaveBeenCalledWith(undefined);
         });
     });
 
