@@ -35,14 +35,14 @@ docs/build-progress/
 
 ## 总体进度
 
-| 层级 | 总包数 | 已完成 | 测试通过 | 平均覆盖率 |
+| 层级 | 总包数 | 已完成 | 测试通过 | 分支覆盖率 |
 |------|--------|--------|----------|------------|
-| 第 0 层 | 7 | 7 | 7 | ~90% |
-| 第 1 层 | 6 | 6 | 6 | ~90% |
-| 第 2 层 | 3 | 3 | 3 | ~74% |
-| 第 3 层 | 2 | 2 | 2 | ~57% |
-| 第 4 层 | 1 | 0 | 0 | - |
-| **总计** | **19** | **18** | **18** | **~85%** |
+| 第 0 层 | 7 | 7 | 7 | ~85% |
+| 第 1 层 | 6 | 6 | 6 | ~89% |
+| 第 2 层 | 3 | 3 | 3 | ~86% |
+| 第 3 层 | 2 | 2 | 2 | ~87% |
+| 第 4 层 | 1 | 1 | 1 | ~83% |
+| **总计** | **19** | **19** | **19** | **~87%** |
 
 ## 快速导航
 
@@ -75,8 +75,6 @@ docs/build-progress/
 - [data-processor](./layer-2/data-processor.md) - 数据处理系统
 - [http](./layer-3/http.md) - HTTP 客户端
 - [system-abilities](./layer-3/system-abilities.md) - 系统能力实现
-
-#### ⚠️ 待更新
 - [entity](./layer-4/entity.md) - 实体管理
 
 ## 当前工作
@@ -100,19 +98,35 @@ docs/build-progress/
   - 编写完整文档
 
 ### 优先级 2：更新待更新包
-- [ ] 更新 [entity](./layer-4/entity.md) 包
+- [x] 更新 [entity](./layer-4/entity.md) 包
 
 ### 优先级 3：编写测试
-- [x] 编写 context 包测试 (覆盖率 ~89%)
-- [x] 编写 pipeline 包测试 (覆盖率 ~95%)
-- [x] 编写 http 包测试 (覆盖率 ~70%)
-- [x] 修复 composable 包测试（30/30 通过）
-- [ ] 编写 system-abilities 包测试
-- [x] 编写 entity 包测试（部分完成：5 个测试文件，83 个用例）
+- [x] 编写 context 包测试 (分支覆盖率 ~76%)
+- [x] 编写 pipeline 包测试 (分支覆盖率 ~95%)
+- [x] 编写 http 包测试 (分支覆盖率 ~87%)
+- [x] 修复 composable 包测试（分支覆盖率 ~90%）
+- [x] 编写 system-abilities 包测试（分支覆盖率 ~88%）
+- [x] 编写 entity 包测试（分支覆盖率 ~83%）
+- [x] 编写 schema 包测试（分支覆盖率 ~89%）
+- [x] 编写 validation 包测试（分支覆盖率 ~82%）
+- [x] 编写 data-processor 包测试（分支覆盖率 ~88%）
+- [x] 编写 crypto 包测试（分支覆盖率 ~81%）
 
 ## 最近更新
 
-### 2026-06-30
+### 2026-06-30（晚间）
+- 全局分支覆盖率从 74.2% 提升到 87.33%
+- 补充 system-abilities 包测试（0% → 88.23%）
+- 补充 composable 包测试（55.76% → 90.38%）
+- 补充 data-processor 包测试（59.4% → 88.23%）
+- 补充 crypto 包测试（66.7% → 81.25%）
+- 补充 http 包测试（67.3% → 86.54%）
+- 补充 entity 包测试（69.2% → 83.38%）
+- 补充 schema 包测试（76.9% → 88.88%）
+- 补充 validation 包测试（78.9% → 81.84%）
+- entity 包状态从"开发中"更新为"已完成"
+
+### 2026-06-30（下午）
 - 攻坚 entity 包（继续）
   - 修复 FlatRemoteStateAbility/FlatRemoteQueryAbility/TreeRemoteStateAbility expose() 中 proxy.host 访问违规
   - 修复 StateDirtyAbility.isDirty() dispose 后不可调用

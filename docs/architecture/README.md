@@ -75,9 +75,11 @@ docs/architecture/
 ├── @orbitjs/pipeline
 └── @orbitjs/composable
 
-第 2 层：功能工具包（2个，依赖第0-1层）
+第 2 层：功能工具包（4个，依赖第0-1层）
+├── @orbitjs/schema
 ├── @orbitjs/validation
-└── @orbitjs/data-processor
+├── @orbitjs/data-processor
+└── @orbitjs/event-dom
 
 第 3 层：高级功能包（2个，依赖第0-2层）
 ├── @orbitjs/http

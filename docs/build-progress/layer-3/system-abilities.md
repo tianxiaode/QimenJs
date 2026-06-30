@@ -3,7 +3,7 @@
 **层级**: 第 3 层  
 **状态**: ✅ 完成  
 **测试**: ✅ 通过  
-**覆盖率**: 28.25%
+**覆盖率**: 88.23%（分支）
 
 ## 概述
 
@@ -50,8 +50,8 @@ dependencies: {
 
 4. **测试**
    - ✅ 1 个测试套件
-   - ✅ 11 个测试用例
-   - ✅ 核心功能覆盖
+   - ✅ 20 个测试用例
+   - ✅ 核心功能覆盖（EventAbility、DomEventsAbility、DomainAbility、SystemAbility）
 
 ### 📊 测试结果
 
@@ -79,6 +79,11 @@ Time:        1.847 s
 - 导出所有必要的接口和类型
 
 ### 📝 变更历史
+
+#### 2026-06-30
+- 补充单元测试，分支覆盖率从 0% 提升到 88.23%
+- 新增 EventAbility、DomEventsAbility、DomainAbility、SystemAbility 完整测试
+- 发现需在 afterEach 中调用 ComposableRegistrar.getInstance().clearCaches() 避免 Ability 实例共享问题
 
 #### 2026-06-26
 - 修正所有模块引用，使用 `@/` 代替 `@orbitjs/`

@@ -29,7 +29,7 @@
   - DescriptorFactory - 描述符工厂
   - ComposableRegistrar - 能力注册器（包内自包含）
 
-### 第 2 层：功能工具包（3个，依赖第0-1层）
+### 第 2 层：功能工具包（4个，依赖第0-1层）
 - `@orbitjs/schema` - Schema 定义系统（依赖 registry）
   - 验证规则类型定义
   - Schema 类型定义
@@ -44,6 +44,7 @@
   - executor - 处理器执行器
   - weights - 权重定义
   - tags - 标签过滤
+- `@orbitjs/event-dom` - DOM 事件处理（依赖 events、logger、utils、runtime、error）
 
 ### 第 3 层：高级功能包（2个，依赖第0-2层）
 - `@orbitjs/http` - HTTP 客户端（依赖 logger、utils、pipeline）

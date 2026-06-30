@@ -6,48 +6,48 @@
 
 ### 第 0 层：核心基础包（7个，零依赖）
 
-| 包名 | 状态 | 测试 | 覆盖率 | 说明 |
-|------|------|------|--------|------|
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
 | [@orbitjs/error](./error.md) | ✅ 完成 | ✅ 通过 | 100% | 错误处理 |
 | [@orbitjs/logger](./logger.md) | ✅ 完成 | ✅ 通过 | 100% | 日志系统 |
 | [@orbitjs/utils](./utils.md) | ✅ 完成 | ✅ 通过 | ~95% | 工具函数 |
 | [@orbitjs/async](./async.md) | ✅ 完成 | ✅ 通过 | ~90% | 异步工具 |
 | [@orbitjs/runtime](./runtime.md) | ✅ 完成 | ✅ 通过 | ~85% | 运行时环境 |
-| [@orbitjs/crypto](./crypto.md) | ✅ 完成 | ✅ 通过 | ~90% | 加密工具 |
-| [@orbitjs/context](./context.md) | ✅ 完成 | ⚠️ 待写 | - | 请求上下文 |
+| [@orbitjs/crypto](./crypto.md) | ✅ 完成 | ✅ 通过 | 81.25% | 加密工具 |
+| [@orbitjs/context](./context.md) | ✅ 完成 | ✅ 通过 | ~76% | 请求上下文 |
 
 ### 第 1 层：基础设施工具包（6个）
 
-| 包名 | 状态 | 测试 | 覆盖率 | 说明 |
-|------|------|------|--------|------|
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
 | [@orbitjs/registry](./registry.md) | ✅ 完成 | ✅ 通过 | ~80% | 注册器系统 |
 | [@orbitjs/cache](./cache.md) | ✅ 完成 | ✅ 通过 | ~85% | 缓存系统 |
 | [@orbitjs/events](./events.md) | ✅ 完成 | ✅ 通过 | ~80% | 事件系统 |
 | [@orbitjs/task](./task.md) | ✅ 完成 | ✅ 通过 | ~85% | 任务系统 |
-| [@orbitjs/pipeline](./pipeline.md) | ✅ 完成 | ✅ 通过 | ~90% | 统一管道执行器 |
-| [@orbitjs/composable](./composable.md) | ✅ 完成 | ✅ 通过 | ~90% | 可组合系统 |
+| [@orbitjs/pipeline](./pipeline.md) | ✅ 完成 | ✅ 通过 | ~95% | 统一管道执行器 |
+| [@orbitjs/composable](./composable.md) | ✅ 完成 | ✅ 通过 | 90.38% | 可组合系统 |
 
-### 第 2 层：功能工具包（5个）
+### 第 2 层：功能工具包（4个）
 
-| 包名 | 状态 | 测试 | 覆盖率 | 说明 |
-|------|------|------|--------|------|
-| [@orbitjs/schema](./schema.md) | ✅ 完成 | ✅ 通过 | 92% | Schema 定义系统 |
-| [@orbitjs/validation](./validation.md) | ✅ 完成 | ✅ 通过 | ~50% | 验证系统 |
-| [@orbitjs/data-processor](./data-processor.md) | ✅ 完成 | ✅ 通过 | 100% | 数据处理系统 |
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
+| [@orbitjs/schema](./schema.md) | ✅ 完成 | ✅ 通过 | 88.88% | Schema 定义系统 |
+| [@orbitjs/validation](./validation.md) | ✅ 完成 | ✅ 通过 | 81.84% | 验证系统 |
+| [@orbitjs/data-processor](./data-processor.md) | ✅ 完成 | ✅ 通过 | 88.23% | 数据处理系统 |
 | [@orbitjs/event-dom](./event-dom.md) | ✅ 完成 | ✅ 通过 | 100% | DOM 事件处理 |
 
 ### 第 3 层：高级功能包（2个）
 
-| 包名 | 状态 | 测试 | 覆盖率 | 说明 |
-|------|------|------|--------|------|
-| [@orbitjs/http](./http.md) | ✅ 完成 | ✅ 通过 | 86.23% | HTTP 客户端（已重构，含 Token 管理） |
-| [@orbitjs/system-abilities](./system-abilities.md) | ✅ 完成 | ✅ 通过 | 28.25% | 系统能力实现 |
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
+| [@orbitjs/http](./http.md) | ✅ 完成 | ✅ 通过 | 86.54% | HTTP 客户端（含 Token 管理） |
+| [@orbitjs/system-abilities](./system-abilities.md) | ✅ 完成 | ✅ 通过 | 88.23% | 系统能力实现 |
 
 ### 第 4 层：业务包（1个）
 
-| 包名 | 状态 | 测试 | 覆盖率 | 说明 |
-|------|------|------|--------|------|
-| [@orbitjs/entity](./entity.md) | ⚠️ 重构中 | ⚠️ 待写 | - | 实体管理 |
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
+| [@orbitjs/entity](./entity.md) | ✅ 完成 | ✅ 通过 | 83.38% | 实体管理 |
 
 ## 状态说明
 
@@ -69,21 +69,20 @@
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 21 |
+| 总包数 | 20 |
 | 已完成 | 20 |
-| 重构中 | 1 |
-| 待更新 | 0 |
-| 平均测试覆盖率 | ~85% |
+| 重构中 | 0 |
+| 全局分支覆盖率 | 87.33% |
 
 ### 层级统计
 
-| 层级 | 包数 | 已完成 | 测试覆盖率 |
+| 层级 | 包数 | 已完成 | 分支覆盖率 |
 |------|------|--------|------------|
-| 第 0 层 | 7 | 7 | ~90% |
-| 第 1 层 | 6 | 6 | ~90% |
-| 第 2 层 | 5 | 5 | ~85% |
-| 第 3 层 | 2 | 2 | ~57% |
-| 第 4 层 | 1 | 0 | - |
+| 第 0 层 | 7 | 7 | ~85% |
+| 第 1 层 | 6 | 6 | ~89% |
+| 第 2 层 | 4 | 4 | ~86% |
+| 第 3 层 | 2 | 2 | ~87% |
+| 第 4 层 | 1 | 1 | ~83% |
 
 ## 依赖关系图
 
@@ -183,28 +182,20 @@ registry (L1)
 ### 按状态查找
 
 #### 已完成
-- error, logger, utils, async, runtime, crypto
+- error, logger, utils, async, runtime, crypto, context
 - registry, cache, events, task, pipeline, composable
-- schema, validation, data-processor, context, http, event-dom, system-abilities
-
-#### 重构中
-- entity
+- schema, validation, data-processor, event-dom
+- http, system-abilities, entity
 
 ## 下一步工作
 
-### 优先级 1：完成 entity 包重构
-- [ ] 重组 entity 包目录结构（Manager 能力 vs State 能力分离）
-- [ ] 从 BaseEntityState 移除 StateSearchAbility
-- [ ] 简化/删除 SchemaAbility（编译逻辑已移到 SchemaRegistrar）
-- [ ] 简化 StateSchemaAbility（代理模式）
-- [ ] Manager 的 schema 改为 getter
-- [ ] State 通过 this.host.schema 访问
+### 优先级 1：修复遗留测试问题
+- [ ] 修复 4 个失败的测试套件（StateLocalMutationAbility、StateCacheAbility、StateDirtyAbility、ComposableIntegration）
+- [ ] crypto base64 Buffer 分支覆盖率提升（jsdom 环境限制）
 
 ### 优先级 2：完善测试
-- [ ] 提高 http 包测试覆盖率
-- [ ] 提高 context 包测试覆盖率
-- [ ] 提高 system-abilities 包测试覆盖率
-- [ ] 编写 entity 包测试
+- [ ] 提高 context 包分支覆盖率
+- [ ] 提高 entity 包分支覆盖率
 
 ## 参考资料
 
