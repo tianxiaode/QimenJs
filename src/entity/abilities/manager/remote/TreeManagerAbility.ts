@@ -1,99 +1,97 @@
-import { DebounceAbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
-export class TreeManagerAbility extends DebounceAbilityBase {
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        const state = proxy.host.state;
+/**
+ * TreeManagerAbility - 树形管理器能力
+ * 
+ * 提供树形结构的展开/折叠/刷新/移动等操作。
+ * this 指向宿主（Manager），this.state 可直接访问。
+ * 防抖通过 this.debounce() 管理，宿主统一管理。
+ */
+export const TreeManagerAbility: AbilityDefinition = {
+    // 基础操作
+    expand(id: string | number) {
+        return this.debounce('expand', (i: string | number) => this._expand(i), 200, true)(id);
+    },
 
-        // expand 使用防抖：快速展开多个节点时合并请求
-        const debouncedExpand = proxy.self.getDebouncedAction(
-            'expand',
-            (id: string | number) => proxy.self.expand(id),
-            200,
-            true  // leading: 首次立即执行，快速响应
-        );
+    collapse(id: string | number) {
+        this._setExpandState(id, false);
+    },
 
-        // refresh 使用防抖：快速刷新多个父节点时合并请求
-        const debouncedRefresh = proxy.self.getDebouncedAction(
-            'refresh',
-            (pid: string | number | null) => proxy.self.refreshChildren(pid),
-            300,
-            true  // leading: 首次立即执行
-        );
+    // 结构操作
+    move(id: string | number, targetPid: string | number | null) {
+        return this._moveNode(id, targetPid);
+    },
 
-        return {
-            // 基础操作
-            expand: (id: string | number) => debouncedExpand(id),
-            collapse: (id: string | number) => proxy.self.setExpandState(id, false),
+    // 数据获取与同步
+    refresh(pid: string | number | null) {
+        return this.debounce('refresh', (p: string | number | null) => this._refreshChildren(p), 300, true)(pid);
+    },
 
-            // 结构操作
-            move: (id: string | number, targetPid: string | number | null) =>
-                proxy.self.moveNode(id, targetPid),
-            // 数据获取与同步
-            refresh: (pid: string | number | null) => debouncedRefresh(pid),
-            getSubTree: (pid: string | number) => proxy.host.state.getChildren(pid),
-            isDirty: (currentItem: any) => state.isDirty(currentItem),
-            edit: (item: any) => state.edit(item),
-            rollback: () => state.rollback(),
-        };
-    }
+    getSubTree(pid: string | number) {
+        return this.state.getChildren(pid);
+    },
 
-    /**
-     * 设置展开/折叠状态
-     */
-    protected setExpandState(id: string | number, expanded: boolean): void {
-        const host = this.host;
-        const state = host.state;
+    isDirty(currentItem: any) {
+        return this.state.isDirty(currentItem);
+    },
+
+    edit(item: any) {
+        return this.state.edit(item);
+    },
+
+    rollback() {
+        return this.state.rollback();
+    },
+
+    // ---- 内部方法 ----
+
+    _setExpandState(id: string | number, expanded: boolean): void {
+        const state = this.state;
         state.toggleExpand(id, expanded);
         state.refreshView();
-    }
+    },
 
-    protected async expand(id: string | number): Promise<void> {
-        const host = this.host;
-        const state = host.state;
+    async _expand(id: string | number): Promise<void> {
+        const state = this.state;
 
         if (!state.isLoaded(id)) {
-            await this.refreshChildren(id);
+            await this._refreshChildren(id);
             state.toggleExpand(id, true);
         } else {
             state.toggleExpand(id, true);
             state.refreshView();
         }
-    }
+    },
 
-    /**
-     * 核心方法：刷新子节点
-     */
-    protected async refreshChildren(pid: string | number | null): Promise<void> {
-        const host = this.host;
-        const state = host.state;
+    async _refreshChildren(pid: string | number | null): Promise<void> {
+        const state = this.state;
 
-        const options = await host.buildOptions('list', { [host.parentIdField]: pid }, null, {});
-        const context = await host.fetch('list', options);
+        const options = await this.buildOptions('list', { [this.parentIdField]: pid }, null, {});
+        const context = await this.fetch('list', options);
 
         state.syncChildren(pid, context.data.list);
 
         state.updateData(context.data.list);
         if (pid !== null) {
-            host.setLoaded(pid, true);
+            this.setLoaded(pid, true);
         }
         state.refreshView();
-    }
+    },
 
-    protected async moveNode(
+    async _moveNode(
         id: string | number,
         targetPid: string | number | null
     ): Promise<void> {
-        const host = this.host;
-        const state = host.state;
-        const parentIdField = host.parentIdField;
-        const options = await host.buildOptions(
+        const state = this.state;
+        const parentIdField = this.parentIdField;
+        const options = await this.buildOptions(
             'update',
             { [state.idField]: id },
             { [parentIdField]: targetPid },
             {}
         );
-        const context = await host.fetch('update', options);
+        await this.fetch('update', options);
         state.moveNode(id, targetPid);
         state.refreshView();
-    }
-}
+    },
+};
