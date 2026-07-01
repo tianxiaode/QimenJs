@@ -17,7 +17,7 @@ export type {
 } from './types/composable';
 
 // 核心类导出
-export { ComposableBase } from './ComposableBase';
+export { ComposableBase, type AbilityDefinition, type AbilityType } from './ComposableBase';
 export { AbilityBase } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
 export { ComposableRegistrar } from './ComposableRegistrar';
