@@ -1,25 +1,23 @@
-import { DebounceAbilityBase, type IExposeResult } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
-export class FlatRemoteGetAllAbility extends DebounceAbilityBase {
-    /**
-     * 暴露外部可调用的方法
-     *
-     * @returns 返回包含 getAll 方法的对象，供外部使用
-     */
-    protected expose(): IExposeResult {
-        const debouncedFetch = this.getDebouncedAction('get-all', this.internalGetAll, 300, true);
-        return {
-            getAll: (): Promise<any[]> => debouncedFetch(),
-        };
-    }
+/**
+ * FlatRemoteGetAllAbility - 远程获取全部数据能力
+ * 
+ * 提供获取全部数据的能力，支持 300ms leading 防抖。
+ * this 指向宿主（Manager），this.state 可直接访问。
+ * 防抖通过 this.debounce() 管理，宿主统一管理。
+ */
+export const FlatRemoteGetAllAbility: AbilityDefinition = {
+    getAll(): Promise<any[]> {
+        return this.debounce('get-all', () => this._internalGetAll(), 300, true)();
+    },
 
-    protected async internalGetAll(): Promise<any[]> {
-        const host = this.host;
-        const state = host.state;
-        const options = await host.buildOptions('get-all', {}, {}, {});
-        const context = await host.fetch('get-all', options);
+    async _internalGetAll(): Promise<any[]> {
+        const state = this.state;
+        const options = await this.buildOptions('get-all', {}, {}, {});
+        const context = await this.fetch('get-all', options);
         const items = context.data.list;
         await state.updateData(items, items.length);
         return state.items;
-    }
-}
+    },
+};

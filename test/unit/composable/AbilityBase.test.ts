@@ -47,33 +47,21 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 import { AbilityBase } from '@/composable/AbilityBase';
-import type { IComposableBase, IExposeResult, IPrecompiledAbility } from '@/composable/types/composable';
+import type { IExposeResult, IPrecompiledAbility } from '@/composable/types/composable';
 
-class TestHost implements IComposableBase {
-  logger = new MockLogger();
-  testProperty = 'original value';
-  
-  get host(): this {
-    return this;
-  }
-  
-  testMethod() {
-    return 'original method';
-  }
-  
-  getStatic<T>(key: string | symbol): T | undefined {
-    return undefined;
-  }
-  
-  setStatic<T>(key: string | symbol, value: T): void {
-    // Implementation not needed for test
-  }
+// Simple host object for testing
+function createTestHost() {
+  return {
+    testProperty: 'original value',
+    testMethod() {
+      return 'original method';
+    },
+  };
 }
 
 // Define a simple ability that exposes some properties
 class TestAbility extends AbilityBase {
-  // Implement the abstract expose method
-  protected expose(): IExposeResult {
+  protected expose(host: any): IExposeResult {
     return {
       injectedProp: 'injected value',
       injectedMethod: () => 'injected method',
@@ -82,15 +70,14 @@ class TestAbility extends AbilityBase {
     };
   }
   
-  // Override onDispose to track when it's called
-  protected onDispose(): void {
-    super.onDispose();
+  protected onDispose(host: any): void {
+    super.onDispose(host);
   }
 }
 
 // Special test ability for symbol properties
 class TestAbilityWithSymbol extends AbilityBase {
-  protected expose(): IExposeResult {
+  protected expose(host: any): IExposeResult {
     return {
       injectedProp: 'injected value',
       injectedMethod: () => 'injected method',
@@ -98,19 +85,17 @@ class TestAbilityWithSymbol extends AbilityBase {
     };
   }
   
-  protected onDispose(): void {
-    super.onDispose();
+  protected onDispose(host: any): void {
+    super.onDispose(host);
   }
 }
 
 // Test ability that creates a getter/setter property
 class TestAbilityWithGetterSetter extends AbilityBase {
-  protected expose(): IExposeResult {
-    // Create a separate variable to hold the value for the setter
+  protected expose(host: any): IExposeResult {
     let internalValue = 'getter setter value';
     
     return {
-      // Explicitly return a getter/setter object
       explicitGetterSetter: {
         get: () => internalValue,
         set: (val: string) => { internalValue = val; },
@@ -119,55 +104,64 @@ class TestAbilityWithGetterSetter extends AbilityBase {
     };
   }
   
-  protected onDispose(): void {
-    super.onDispose();
+  protected onDispose(host: any): void {
+    super.onDispose(host);
   }
 }
 
 describe('AbilityBase', () => {
   describe('precompile', () => {
-    it('should create precompiled ability with descriptorFactories', () => {
+    it('should create precompiled ability with createDescriptors and createDisposer', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
       
-      expect(precompiled.descriptorFactories).toBeDefined();
+      expect(precompiled.createDescriptors).toBeDefined();
       expect(precompiled.createDisposer).toBeDefined();
     });
 
-    it('should create descriptor factories for all exposed properties', () => {
+    it('should create descriptors for all exposed properties', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
+      const host = createTestHost();
       
-      expect(precompiled.descriptorFactories.has('injectedProp')).toBe(true);
-      expect(precompiled.descriptorFactories.has('injectedMethod')).toBe(true);
-      expect(precompiled.descriptorFactories.has('testProperty')).toBe(true);
-      expect(precompiled.descriptorFactories.has('testMethod')).toBe(true);
+      const descriptors = precompiled.createDescriptors(host);
+      
+      expect(descriptors.has('injectedProp')).toBe(true);
+      expect(descriptors.has('injectedMethod')).toBe(true);
+      expect(descriptors.has('testProperty')).toBe(true);
+      expect(descriptors.has('testMethod')).toBe(true);
     });
 
     it('should handle symbol properties', () => {
       const ability = new TestAbilityWithSymbol();
       const precompiled = ability.precompile();
+      const host = createTestHost();
       
-      expect(precompiled.descriptorFactories.has('injectedProp')).toBe(true);
-      expect(precompiled.descriptorFactories.has('injectedMethod')).toBe(true);
+      const descriptors = precompiled.createDescriptors(host);
+      
+      expect(descriptors.has('injectedProp')).toBe(true);
+      expect(descriptors.has('injectedMethod')).toBe(true);
     });
     
     it('should handle getter/setter properties', () => {
       const ability = new TestAbilityWithGetterSetter();
       const precompiled = ability.precompile();
+      const host = createTestHost();
       
-      expect(precompiled.descriptorFactories.has('explicitGetterSetter')).toBe(true);
+      const descriptors = precompiled.createDescriptors(host);
+      
+      expect(descriptors.has('explicitGetterSetter')).toBe(true);
     });
   });
 
-  describe('descriptor factories', () => {
+  describe('descriptors', () => {
     it('should create working descriptors for simple values', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
-      const host = new TestHost();
+      const host = createTestHost();
       
-      const factory = precompiled.descriptorFactories.get('injectedProp');
-      const descriptor = factory!(host);
+      const descriptors = precompiled.createDescriptors(host);
+      const descriptor = descriptors.get('injectedProp')!;
       
       expect(descriptor.value).toBe('injected value');
     });
@@ -175,10 +169,10 @@ describe('AbilityBase', () => {
     it('should create working descriptors for methods', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
-      const host = new TestHost();
+      const host = createTestHost();
       
-      const factory = precompiled.descriptorFactories.get('injectedMethod');
-      const descriptor = factory!(host);
+      const descriptors = precompiled.createDescriptors(host);
+      const descriptor = descriptors.get('injectedMethod')!;
       
       expect(typeof descriptor.value).toBe('function');
       expect(descriptor.value()).toBe('injected method');
@@ -187,10 +181,10 @@ describe('AbilityBase', () => {
     it('should create working descriptors for getter/setter', () => {
       const ability = new TestAbilityWithGetterSetter();
       const precompiled = ability.precompile();
-      const host = new TestHost();
+      const host = createTestHost();
       
-      const factory = precompiled.descriptorFactories.get('explicitGetterSetter');
-      const descriptor = factory!(host);
+      const descriptors = precompiled.createDescriptors(host);
+      const descriptor = descriptors.get('explicitGetterSetter')!;
       
       expect(descriptor.get).toBeDefined();
       expect(descriptor.set).toBeDefined();
@@ -206,35 +200,37 @@ describe('AbilityBase', () => {
     it('should create disposer function', () => {
       const ability = new TestAbility();
       const precompiled = ability.precompile();
-      const host = new TestHost();
+      const host = createTestHost();
       
       const disposer = precompiled.createDisposer!(host);
       expect(typeof disposer).toBe('function');
     });
 
     it('should call onDispose when disposer is called', () => {
-      // Create a test ability that tracks if onDispose was called
       class TestDisposeTrackingAbility extends AbilityBase {
         disposed = false;
+        disposedHost: any = null;
         
-        protected expose(): IExposeResult {
+        protected expose(host: any): IExposeResult {
           return {};
         }
         
-        protected onDispose(): void {
-          super.onDispose();
+        protected onDispose(host: any): void {
+          super.onDispose(host);
           this.disposed = true;
+          this.disposedHost = host;
         }
       }
       
       const ability = new TestDisposeTrackingAbility();
       const precompiled = ability.precompile();
-      const host = new TestHost();
+      const host = createTestHost();
       
       const disposer = precompiled.createDisposer!(host);
       disposer();
       
       expect(ability.disposed).toBe(true);
+      expect(ability.disposedHost).toBe(host);
     });
   });
 });

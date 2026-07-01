@@ -19,6 +19,15 @@ import type {
 export type { IExposeResult };
 
 /**
+ * AbilityProxy 类型（已废弃）
+ * 
+ * 新架构下 expose(host) 直接接收 host 参数，不再需要 proxy。
+ * 保留此类型仅为兼容旧代码，迁移完成后移除。
+ * @deprecated 使用 host 参数替代
+ */
+export type AbilityProxy = any;
+
+/**
  * 属性定义类型
  */
 type PropertyDefinition = 

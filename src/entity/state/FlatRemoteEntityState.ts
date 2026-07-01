@@ -1,5 +1,5 @@
 import { ComposableBase } from '@/composable';
-import type { AbilityConstructor } from '@/composable';
+import type { AbilityType } from '@/composable';
 import type { IEntity, IFlatSearchParams } from '@/schema';
 import type { IFlatRemoteEntityState, IStateDirtyAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
@@ -9,7 +9,7 @@ export class FlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSear
     extends BaseEntityState<TSearch>
     implements IFlatRemoteEntityState<TSearch>
 {
-    static readonly abilities: readonly AbilityConstructor[] = [
+    static readonly abilities: readonly AbilityType[] = [
         StateDirtyAbility,
     ];
 

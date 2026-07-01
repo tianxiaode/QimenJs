@@ -24,7 +24,7 @@ import type { IExposeResult } from '@/composable/types/composable';
 
 // 测试能力类
 class TestAbility extends AbilityBase {
-    protected expose(): IExposeResult {
+    protected expose(host: any): IExposeResult {
         return {
             testMethod: () => 'test-result',
         };
@@ -32,7 +32,7 @@ class TestAbility extends AbilityBase {
 }
 
 class AnotherAbility extends AbilityBase {
-    protected expose(): IExposeResult {
+    protected expose(host: any): IExposeResult {
         return {
             anotherMethod: () => 'another-result',
         };
@@ -51,8 +51,8 @@ describe('ComposableRegistrar', () => {
             const precompiled = registrar.get(TestAbility);
             
             expect(precompiled).toBeDefined();
-            expect(precompiled?.descriptorFactories).toBeDefined();
-            expect(precompiled?.descriptorFactories.has('testMethod')).toBe(true);
+            expect(precompiled?.createDescriptors).toBeDefined();
+            expect(precompiled?.createDisposer).toBeDefined();
         });
         
         it('should return cached result on second call', () => {
@@ -66,8 +66,8 @@ describe('ComposableRegistrar', () => {
             const precompiled1 = registrar.get(TestAbility);
             const precompiled2 = registrar.get(AnotherAbility);
             
-            expect(precompiled1?.descriptorFactories.has('testMethod')).toBe(true);
-            expect(precompiled2?.descriptorFactories.has('anotherMethod')).toBe(true);
+            expect(precompiled1?.createDescriptors).toBeDefined();
+            expect(precompiled2?.createDescriptors).toBeDefined();
         });
     });
     

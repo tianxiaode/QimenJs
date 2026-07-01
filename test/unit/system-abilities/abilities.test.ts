@@ -91,11 +91,13 @@ describe('EventAbility', () => {
     });
 
     it('should dispose scope on host dispose', () => {
-        const handler = jest.fn();
-        host.on('before-dispose', handler);
+        const scope = (host as any).eventScope;
+        expect(scope).toBeDefined();
         host.dispose();
-        // After dispose, scope is nulled - accessing methods should throw
-        expect(() => host.on('after-dispose', jest.fn())).toThrow();
+        // After dispose, abilityStates is cleared and cleanups are executed
+        // The event scope is disposed via onCleanup
+        // Verify that the scope's dispose was called
+        expect(scope.disposed).toBe(true);
     });
 
     it('should handle dispose when scope is already null', () => {

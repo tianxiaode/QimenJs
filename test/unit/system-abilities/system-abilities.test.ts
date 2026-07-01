@@ -1,5 +1,8 @@
 /**
  * System Abilities 单元测试
+ * 
+ * 新架构下，System Abilities 是 AbilityDefinition（普通对象），
+ * 不再是 class，不能 new。
  */
 
 jest.mock('@/logger', () => {
@@ -24,25 +27,27 @@ import { DomainAbility } from '@/system-abilities/system/DomainAbility';
 import { SystemAbility } from '@/system-abilities/system/SystemAbility';
 
 describe('System Abilities', () => {
-    describe('Ability Classes', () => {
-        it('should create EventAbility instance', () => {
-            const ability = new EventAbility();
-            expect(ability).toBeDefined();
+    describe('Ability Definitions', () => {
+        it('EventAbility should be a valid AbilityDefinition', () => {
+            expect(EventAbility).toBeDefined();
+            expect(typeof EventAbility).toBe('object');
+            expect(typeof EventAbility.on).toBe('function');
+            expect(typeof EventAbility.emit).toBe('function');
         });
         
-        it('should create DomainAbility instance', () => {
-            const ability = new DomainAbility();
-            expect(ability).toBeDefined();
+        it('DomainAbility should be a valid AbilityDefinition', () => {
+            expect(DomainAbility).toBeDefined();
+            expect(typeof DomainAbility).toBe('object');
         });
         
-        it('should create SystemAbility instance', () => {
-            const ability = new SystemAbility();
-            expect(ability).toBeDefined();
+        it('SystemAbility should be a valid AbilityDefinition', () => {
+            expect(SystemAbility).toBeDefined();
+            expect(typeof SystemAbility).toBe('object');
         });
         
-        it('should create DomEventsAbility instance', () => {
-            const ability = new DomEventsAbility();
-            expect(ability).toBeDefined();
+        it('DomEventsAbility should be a valid AbilityDefinition', () => {
+            expect(DomEventsAbility).toBeDefined();
+            expect(typeof DomEventsAbility).toBe('object');
         });
     });
 });

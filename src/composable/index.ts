@@ -18,6 +18,6 @@ export type {
 
 // 核心类导出
 export { ComposableBase, type AbilityDefinition, type AbilityType } from './ComposableBase';
-export { AbilityBase } from './AbilityBase';
+export { AbilityBase, type AbilityProxy } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
 export { ComposableRegistrar } from './ComposableRegistrar';

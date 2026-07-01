@@ -1,22 +1,20 @@
 /**
  * ComposableBase + AbilityBase 集成测试
  *
- * 严格验证能力系统的核心机制：
- * 1. proxy.host / proxy.self 多实例隔离
+ * 验证能力系统的核心机制（新架构）：
+ * 1. host 参数直接可用，闭包自然隔离
  * 2. getter/setter 在多宿主间的正确代理
  * 3. 方法 bind 到宿主后 this 指向
- * 4. dispose 逆序销毁 + 销毁后行为
- * 5. onDispose 中 this.host 的正确性
- * 6. DebounceAbilityBase 多宿主防抖隔离
+ * 4. dispose 清理 + 销毁后行为
+ * 5. onDispose 中 host 参数的正确性
+ * 6. debounce 多宿主防抖隔离
  * 7. 能力冲突（同名属性覆盖）
  * 8. ComposableRegistrar 缓存与多宿主共享
  * 9. 能力继承链收集
- * 10. abilityStates Per-Host State
+ * 10. abilityState Per-Host State
  * 11. dispose 后 getter 访问安全性
- * 12. 方法中 proxy.host 多实例隔离（已修复）
- * 13. 箭头函数方法中 proxy.host 多实例隔离
- * 14. proxy.self 调用 Ability 方法（getOrCreateState）多实例隔离
- * 15. 完整生命周期测试
+ * 12. 方法中 host 多实例隔离
+ * 13. 完整生命周期测试
  */
 
 jest.mock('@/logger', () => {
@@ -35,8 +33,8 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { ComposableBase } from '@/composable/ComposableBase';
-import { AbilityBase, type AbilityProxy } from '@/composable/AbilityBase';
+import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
+import { AbilityBase } from '@/composable/AbilityBase';
 import { DebounceAbilityBase } from '@/composable/DebounceAbilityBase';
 import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import type { IExposeResult } from '@/composable/types/composable';
@@ -51,16 +49,15 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     });
 
     // ============================================
-    // 1. proxy.host 多实例隔离
+    // 1. host 参数直接可用，闭包自然隔离
     // ============================================
 
-    describe('proxy.host 多实例隔离', () => {
-        /** 带状态的能力：通过 proxy.host 访问宿主属性 */
+    describe('host 参数直接可用', () => {
         class StatefulAbility extends AbilityBase {
-            protected expose(proxy: AbilityProxy): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
-                    getStateName: () => proxy.host.name,
-                    stateValue: { get: () => proxy.host.value },
+                    getStateName: () => host.name,
+                    stateValue: { get: () => host.value },
                 };
             }
         }
@@ -72,11 +69,10 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             }
         }
 
-        it('getter 在多实例下应该各自返回自己的值（hostRef 闭包隔离）', () => {
+        it('getter 在多实例下应该各自返回自己的值（闭包自然隔离）', () => {
             const host1 = new StatefulHost('Host1', 100) as any;
             const host2 = new StatefulHost('Host2', 200) as any;
 
-            // getter 通过独立 hostRef 闭包隔离，多实例安全
             expect(host1.stateValue).toBe(100);
             expect(host2.stateValue).toBe(200);
 
@@ -84,9 +80,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host2.dispose();
         });
 
-        it('方法中的 proxy.host 在多实例下应该正确隔离', () => {
-            // 修复：wrappedFn 中临时切换 sharedHostRef.value，
-            // 确保方法闭包中的 proxy.host 指向正确的宿主
+        it('方法中的 host 在多实例下应该正确隔离', () => {
             const host1 = new StatefulHost('Host1', 100) as any;
             const host2 = new StatefulHost('Host2', 200) as any;
 
@@ -97,7 +91,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host2.dispose();
         });
 
-        it('单实例下 proxy.host 应该正确工作', () => {
+        it('单实例下 host 应该正确工作', () => {
             const host = new StatefulHost('Solo', 42) as any;
 
             expect(host.getStateName()).toBe('Solo');
@@ -119,11 +113,11 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
     describe('getter/setter 多实例隔离', () => {
         class GetterSetterAbility extends AbilityBase {
-            protected expose(proxy: AbilityProxy): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
                     computedLabel: {
-                        get: () => `[${proxy.host.label}]`,
-                        set: (v: string) => { proxy.host.label = v; },
+                        get: () => `[${host.label}]`,
+                        set: (v: string) => { host.label = v; },
                     },
                 };
             }
@@ -154,7 +148,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host1.computedLabel = 'X';
 
             expect(host1.label).toBe('X');
-            expect(host2.label).toBe('B'); // 不受影响
+            expect(host2.label).toBe('B');
 
             host1.dispose();
             host2.dispose();
@@ -178,7 +172,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
     describe('方法 bind 到宿主', () => {
         class MethodAbility extends AbilityBase {
-            protected expose(proxy: AbilityProxy): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
                     greet: function (this: any) {
                         return `Hello from ${this.name}`;
@@ -210,7 +204,6 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const host1 = new MethodHost('Host1') as any;
             const host2 = new MethodHost('Host2') as any;
 
-            // 方法 bind 到各自宿主，this 指向正确
             expect(host1.greet()).toBe('Hello from Host1');
             expect(host2.greet()).toBe('Hello from Host2');
 
@@ -220,7 +213,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
         it('方法中 this.host 应该返回宿主自身', () => {
             class ThisHostAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return {
                         getHostViaThis: function (this: any) {
                             return this.host;
@@ -235,7 +228,6 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
             const host = new ThisHost() as any;
 
-            // this.host 通过 ComposableBase 的 getter 返回 this
             expect(host.getHostViaThis()).toBe(host);
 
             host.dispose();
@@ -243,28 +235,24 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     });
 
     // ============================================
-    // 4. dispose 逆序销毁 + 销毁后行为
+    // 4. dispose 清理 + 销毁后行为
     // ============================================
 
-    describe('dispose 逆序销毁', () => {
-        it('应该按装配逆序执行销毁函数', () => {
-            const disposeOrder: number[] = [];
+    describe('dispose 清理', () => {
+        it('应该执行 onCleanup 注册的回调', () => {
+            const cleanupOrder: number[] = [];
 
             class OrderAbility1 extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
+                    host.onCleanup(() => cleanupOrder.push(1));
                     return { prop1: 'value1' };
-                }
-                protected onDispose(): void {
-                    disposeOrder.push(1);
                 }
             }
 
             class OrderAbility2 extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
+                    host.onCleanup(() => cleanupOrder.push(2));
                     return { prop2: 'value2' };
-                }
-                protected onDispose(): void {
-                    disposeOrder.push(2);
                 }
             }
 
@@ -275,49 +263,47 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const host = new OrderHost();
             host.dispose();
 
-            // 逆序：先销毁 Ability2，再销毁 Ability1
-            expect(disposeOrder).toEqual([2, 1]);
+            // 清理回调按逆序执行
+            expect(cleanupOrder).toEqual([2, 1]);
         });
 
-        it('多次 dispose 不应该重复执行销毁函数', () => {
-            let disposeCount = 0;
+        it('多次 dispose 不应该重复执行清理回调', () => {
+            let cleanupCount = 0;
 
-            class CountDisposeAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+            class CountCleanupAbility extends AbilityBase {
+                protected expose(host: any): IExposeResult {
+                    host.onCleanup(() => cleanupCount++);
                     return { countedProp: 'value' };
-                }
-                protected onDispose(): void {
-                    disposeCount++;
                 }
             }
 
             class CountHost extends ComposableBase {
-                static readonly abilities = [CountDisposeAbility];
+                static readonly abilities = [CountCleanupAbility];
             }
 
             const host = new CountHost();
             host.dispose();
-            expect(disposeCount).toBe(1);
+            expect(cleanupCount).toBe(1);
 
-            host.dispose(); // 第二次 dispose
-            expect(disposeCount).toBe(1); // 不应该再增加
+            host.dispose();
+            expect(cleanupCount).toBe(1);
         });
     });
 
     // ============================================
-    // 5. onDispose 中 this.host 的正确性
+    // 5. onDispose 中 host 参数的正确性
     // ============================================
 
-    describe('onDispose 中 this.host 的正确性', () => {
-        it('单实例下 onDispose 中 this.host 应该指向当前宿主', () => {
+    describe('onDispose 中 host 参数的正确性', () => {
+        it('单实例下 onDispose 中 host 参数应该指向当前宿主', () => {
             let disposedHost: any = null;
 
             class TrackDisposeAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return { trackProp: 'value' };
                 }
-                protected onDispose(): void {
-                    disposedHost = this.host;
+                protected onDispose(host: any): void {
+                    disposedHost = host;
                 }
             }
 
@@ -328,19 +314,18 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const host = new TrackHost();
             host.dispose();
 
-            // onDispose 中 this.host 应该指向被销毁的宿主
             expect(disposedHost).toBe(host);
         });
 
-        it('多实例下 onDispose 中 this.host 应该指向各自宿主', () => {
+        it('多实例下 onDispose 中 host 参数应该指向各自宿主', () => {
             const disposedHosts: any[] = [];
 
             class MultiDisposeAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return { multiProp: 'value' };
                 }
-                protected onDispose(): void {
-                    disposedHosts.push(this.host);
+                protected onDispose(host: any): void {
+                    disposedHosts.push(host);
                 }
             }
 
@@ -357,32 +342,24 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host1.dispose();
             host2.dispose();
 
-            // 修复后：onDispose 中 this.host 应该指向各自宿主
             expect(disposedHosts[0]).toBe(host1);
             expect(disposedHosts[1]).toBe(host2);
         });
     });
 
     // ============================================
-    // 6. DebounceAbilityBase 多宿主防抖隔离
+    // 6. debounce 多宿主防抖隔离
     // ============================================
 
-    describe('DebounceAbilityBase 多宿主防抖隔离', () => {
-        class TestDebounceAbility extends DebounceAbilityBase {
-            protected expose(proxy: AbilityProxy): IExposeResult {
-                const debouncedFn = this.getDebouncedAction('test', this.internalAction, 100, true);
-                return {
-                    debouncedAction: (value: string) => debouncedFn(value),
-                };
-            }
-
-            private async internalAction(value: string): Promise<string> {
-                return `processed:${value}`;
-            }
-        }
+    describe('debounce 多宿主防抖隔离', () => {
+        const TestDebounceDef: AbilityDefinition = {
+            debouncedAction(value: string) {
+                return this.debounce('test', () => `processed:${value}`, 100, true)();
+            },
+        };
 
         class DebounceHost extends ComposableBase {
-            static readonly abilities = [TestDebounceAbility];
+            static readonly abilities = [TestDebounceDef];
         }
 
         it('应该正确注入防抖方法', () => {
@@ -398,14 +375,11 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
         });
 
         it('多宿主共享时一个宿主 dispose 不应影响其他宿主的防抖', () => {
-            // 修复：abilityStates 机制确保每个宿主有独立的 debouncedMap，
-            // 一个宿主 dispose 只清理自己的防抖定时器
             const host1 = new DebounceHost() as any;
             const host2 = new DebounceHost() as any;
 
             host1.dispose();
 
-            // host2 仍然可以正常使用防抖方法
             expect(() => host2.debouncedAction('test')).not.toThrow();
 
             host2.dispose();
@@ -418,7 +392,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
     describe('能力冲突（同名属性覆盖）', () => {
         class ConflictAbilityA extends AbilityBase {
-            protected expose(): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
                     sharedProp: 'from-A',
                     sharedMethod: () => 'method-A',
@@ -427,7 +401,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
         }
 
         class ConflictAbilityB extends AbilityBase {
-            protected expose(): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
                     sharedProp: 'from-B',
                     sharedMethod: () => 'method-B',
@@ -442,7 +416,6 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
             const host = new ConflictHost() as any;
 
-            // ConflictAbilityB 后声明，其 sharedProp 应该覆盖 A 的
             expect(host.sharedProp).toBe('from-B');
             expect(host.sharedMethod()).toBe('method-B');
 
@@ -469,7 +442,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     describe('ComposableRegistrar 缓存与多宿主共享', () => {
         it('同一 Ability 类在多个宿主间共享预编译缓存', () => {
             class SharedAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return { sharedMethod: () => 'shared' };
                 }
             }
@@ -497,7 +470,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
         it('clearCaches 后新宿主应该重新预编译', () => {
             class CacheAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return { cacheMethod: () => 'cached' };
                 }
             }
@@ -526,13 +499,13 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
     describe('能力继承链收集', () => {
         class ParentAbility extends AbilityBase {
-            protected expose(): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return { parentMethod: () => 'parent' };
             }
         }
 
         class ChildAbility extends AbilityBase {
-            protected expose(): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return { childMethod: () => 'child' };
             }
         }
@@ -578,7 +551,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
                     super();
                     UniqueAbility.instanceCount++;
                 }
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return { uniqueMethod: () => 'unique' };
                 }
             }
@@ -602,31 +575,25 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     });
 
     // ============================================
-    // 10. WeakMap Per-Host State
+    // 10. abilityState Per-Host State
     // ============================================
 
-    describe('abilityStates Per-Host State', () => {
-        interface CounterState {
-            count: number;
-        }
-
-        class CounterAbility extends AbilityBase {
-            private getCounterState(): CounterState {
-                return this.getOrCreateState<CounterState>(() => ({ count: 0 }));
-            }
-
-            protected expose(proxy: AbilityProxy): IExposeResult {
-                return {
-                    count: { get: () => proxy.self.getCounterState().count },
-                    increment: function (this: any) {
-                        proxy.self.getCounterState().count++;
-                    },
-                };
-            }
-        }
+    describe('abilityState Per-Host State', () => {
+        const CounterDef: AbilityDefinition = {
+            count: {
+                get() {
+                    const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+                    return state.count;
+                },
+            },
+            increment() {
+                const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+                state.count++;
+            },
+        };
 
         class CounterHost extends ComposableBase {
-            static readonly abilities = [CounterAbility];
+            static readonly abilities = [CounterDef];
         }
 
         it('每个宿主应该有独立的状态', () => {
@@ -662,13 +629,13 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host2.dispose();
         });
 
-        it('getOrCreateState 对首次访问应该创建默认状态', () => {
+        it('abilityState 对首次访问应该创建默认状态', () => {
             const host = new CounterHost() as any;
             expect(host.count).toBe(0);
             host.dispose();
         });
 
-        it('getOrCreateState 应该覆盖已有值', () => {
+        it('setAbilityState 应该覆盖已有值', () => {
             const host = new CounterHost() as any;
 
             host.increment();
@@ -680,47 +647,37 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host.dispose();
         });
 
-        it('onDispose 中仍可访问 abilityStates（在 ComposableBase.dispose 清理之前）', () => {
-            // 验证调用顺序：
-            // onDispose() 先执行，ComposableBase.dispose() 中 _abilityStates.clear() 后执行
-            // 所以 onDispose 中仍可访问 abilityStates
+        it('onCleanup 在 dispose 时应该能访问 abilityState', () => {
             let stateInDispose: any = null;
 
-            interface StateCheckData {
-                test: number;
-            }
-
-            class StateCheckAbility extends AbilityBase {
-                private getCheckState(): StateCheckData {
-                    return this.getOrCreateState<StateCheckData>(() => ({ test: 0 }));
-                }
-
-                protected expose(proxy: AbilityProxy): IExposeResult {
-                    return {
-                        setVal: function (this: any) {
-                            proxy.self.getCheckState().test = 42;
-                        },
-                        getVal: { get: () => proxy.self.getCheckState().test },
-                    };
-                }
-                protected onDispose(): void {
-                    // onDispose 在 _abilityStates.clear() 之前调用
-                    // 此时 this.host 仍指向当前宿主（单实例场景）
-                    stateInDispose = this.getState<StateCheckData>()?.test;
-                }
-            }
+            const StateCheckDef: AbilityDefinition = {
+                setVal() {
+                    this.setAbilityState('StateCheck:val', 42);
+                },
+                val: {
+                    get() {
+                        return this.abilityState('StateCheck:val');
+                    },
+                },
+                _init() {
+                    this.onCleanup(() => {
+                        stateInDispose = this.abilityState('StateCheck:val');
+                    });
+                },
+            };
 
             class StateCheckHost extends ComposableBase {
-                static readonly abilities = [StateCheckAbility];
+                static readonly abilities = [StateCheckDef];
             }
 
             const host = new StateCheckHost() as any;
+            host._init();
             host.setVal();
-            expect(host.getVal).toBe(42);
+            expect(host.val).toBe(42);
 
             host.dispose();
 
-            // onDispose 中应该能读取到 abilityStates
+            // onCleanup 在 abilityStates.clear() 之前执行
             expect(stateInDispose).toBe(42);
         });
     });
@@ -730,14 +687,11 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     // ============================================
 
     describe('dispose 后 getter 访问安全性', () => {
-        it('dispose 后 getter 仍通过 hostRef 闭包访问宿主（hostRef 未被清空）', () => {
-            // getter 的 hostRef 是在 createDescriptorFactory 中独立创建的 { value: host }
-            // dispose 时只清空 ability.host = null，但 hostRef.value 仍指向宿主对象
-            // 所以 getter 仍然能正常工作——这是设计上的正确行为
+        it('dispose 后 getter 仍通过闭包访问宿主', () => {
             class NullHostAbility extends AbilityBase {
-                protected expose(proxy: AbilityProxy): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return {
-                        nullProp: { get: () => proxy.host?.name },
+                        nullProp: { get: () => host?.name },
                     };
                 }
             }
@@ -752,16 +706,15 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
             host.dispose();
 
-            // getter 通过独立 hostRef 闭包访问，hostRef.value 仍指向宿主
+            // getter 通过闭包访问 host，闭包中的 host 引用仍有效
             expect(host.nullProp).toBe('Alive');
         });
 
         it('dispose 后方法调用不应该崩溃（方法 bind 到宿主，this 仍可用）', () => {
             class SafeMethodAbility extends AbilityBase {
-                protected expose(): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return {
                         safeMethod: function (this: any) {
-                            // 方法 bind 到宿主，this 仍指向宿主对象
                             return this.name || 'disposed';
                         },
                     };
@@ -779,7 +732,6 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host.dispose();
 
             // 方法 bind 到宿主，this 仍指向宿主对象
-            // 宿主对象本身没有被销毁，只是 Ability 的 host 引用被清空
             expect(host.safeMethod()).toBe('Alive');
         });
     });
@@ -793,17 +745,17 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const events: string[] = [];
 
             class LifecycleAbility extends AbilityBase {
-                protected expose(proxy: AbilityProxy): IExposeResult {
+                protected expose(host: any): IExposeResult {
                     return {
                         lifecycleAction: function (this: any) {
                             events.push('action');
                             return this.name;
                         },
-                        lifecycleState: { get: () => proxy.host.state },
+                        lifecycleState: { get: () => host.state },
                     };
                 }
 
-                protected onDispose(): void {
+                protected onDispose(host: any): void {
                     events.push('dispose');
                 }
             }
@@ -831,54 +783,19 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     });
 
     // ============================================
-    // 13. proxy.self 访问 Ability 实例
+    // 13. 方法中 host 多实例隔离
     // ============================================
 
-    describe('proxy.self 访问 Ability 实例', () => {
-        it('通过 proxy.self 可以访问 Ability 的私有属性', () => {
-            let capturedSelf: any = null;
-
-            class SelfAccessAbility extends AbilityBase {
-                private secret = 'hidden';
-
-                protected expose(proxy: AbilityProxy): IExposeResult {
-                    capturedSelf = proxy.self;
-                    return {
-                        getSecret: () => proxy.self.secret,
-                    };
-                }
-            }
-
-            class SelfHost extends ComposableBase {
-                static readonly abilities = [SelfAccessAbility];
-            }
-
-            const host = new SelfHost() as any;
-
-            expect(host.getSecret()).toBe('hidden');
-            expect(capturedSelf).toBeInstanceOf(SelfAccessAbility);
-
-            host.dispose();
-        });
-    });
-
-    // ============================================
-    // 12. 方法中 proxy.host 多实例隔离（已修复）
-    // ============================================
-
-    describe('方法中 proxy.host 多实例隔离', () => {
+    describe('方法中 host 多实例隔离', () => {
         class ProxyHostAbility extends AbilityBase {
-            protected expose(proxy: AbilityProxy): IExposeResult {
+            protected expose(host: any): IExposeResult {
                 return {
-                    // 普通函数方法：通过 proxy.host 访问宿主
-                    getNameViaProxy: function() {
-                        return proxy.host.name;
+                    getNameViaHost: function() {
+                        return host.name;
                     },
-                    // 箭头函数方法：通过 proxy.host 访问宿主
-                    getNameViaArrow: () => proxy.host.name,
-                    // 混合：this.host + proxy.host
+                    getNameViaArrow: () => host.name,
                     getBoth: function(this: any) {
-                        return { viaThis: this.host.name, viaProxy: proxy.host.name };
+                        return { viaThis: this.host.name, viaHost: host.name };
                     },
                 };
             }
@@ -891,18 +808,18 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             }
         }
 
-        it('普通函数方法中 proxy.host 应该正确隔离', () => {
+        it('普通函数方法中 host 应该正确隔离', () => {
             const host1 = new ProxyHostHost('H1') as any;
             const host2 = new ProxyHostHost('H2') as any;
 
-            expect(host1.getNameViaProxy()).toBe('H1');
-            expect(host2.getNameViaProxy()).toBe('H2');
+            expect(host1.getNameViaHost()).toBe('H1');
+            expect(host2.getNameViaHost()).toBe('H2');
 
             host1.dispose();
             host2.dispose();
         });
 
-        it('箭头函数方法中 proxy.host 应该正确隔离', () => {
+        it('箭头函数方法中 host 应该正确隔离', () => {
             const host1 = new ProxyHostHost('H1') as any;
             const host2 = new ProxyHostHost('H2') as any;
 
@@ -913,7 +830,7 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             host2.dispose();
         });
 
-        it('this.host 和 proxy.host 应该返回相同的宿主', () => {
+        it('this.host 和 host 参数应该返回相同的宿主', () => {
             const host1 = new ProxyHostHost('H1') as any;
             const host2 = new ProxyHostHost('H2') as any;
 
@@ -921,9 +838,9 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const result2 = host2.getBoth();
 
             expect(result1.viaThis).toBe('H1');
-            expect(result1.viaProxy).toBe('H1');
+            expect(result1.viaHost).toBe('H1');
             expect(result2.viaThis).toBe('H2');
-            expect(result2.viaProxy).toBe('H2');
+            expect(result2.viaHost).toBe('H2');
 
             host1.dispose();
             host2.dispose();
@@ -933,12 +850,11 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
             const host1 = new ProxyHostHost('H1') as any;
             const host2 = new ProxyHostHost('H2') as any;
 
-            // 交替调用
-            expect(host1.getNameViaProxy()).toBe('H1');
-            expect(host2.getNameViaProxy()).toBe('H2');
+            expect(host1.getNameViaHost()).toBe('H1');
+            expect(host2.getNameViaHost()).toBe('H2');
             expect(host1.getNameViaArrow()).toBe('H1');
             expect(host2.getNameViaArrow()).toBe('H2');
-            expect(host1.getNameViaProxy()).toBe('H1');
+            expect(host1.getNameViaHost()).toBe('H1');
 
             host1.dispose();
             host2.dispose();
@@ -946,32 +862,24 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
     });
 
     // ============================================
-    // 13. proxy.self 调用 Ability 方法（getOrCreateState）多实例隔离
+    // 14. AbilityDefinition 闭包变量多实例隔离
     // ============================================
 
-    describe('proxy.self 调用 Ability 方法多实例隔离', () => {
-        interface ItemState {
-            items: string[];
-        }
-
-        class ItemAbility extends AbilityBase {
-            private getItemState(): ItemState {
-                return this.getOrCreateState<ItemState>(() => ({ items: [] }));
-            }
-
-            protected expose(proxy: AbilityProxy): IExposeResult {
-                return {
-                    items: { get: () => proxy.self.getItemState().items },
-                    addItem: function(this: any, item: string) {
-                        proxy.self.getItemState().items.push(item);
-                    },
-                    getItemsViaProxy: () => proxy.self.getItemState().items,
-                };
-            }
-        }
+    describe('AbilityDefinition 闭包变量多实例隔离', () => {
+        const ItemDef: AbilityDefinition = {
+            items: {
+                get() {
+                    return this.abilityState('Item:state', () => ({ items: [] as string[] }))!.items;
+                },
+            },
+            addItem(item: string) {
+                const state = this.abilityState('Item:state', () => ({ items: [] as string[] }))!;
+                state.items.push(item);
+            },
+        };
 
         class ItemHost extends ComposableBase {
-            static readonly abilities = [ItemAbility];
+            static readonly abilities = [ItemDef];
         }
 
         it('每个宿主应该有独立的 items 状态', () => {
@@ -987,16 +895,6 @@ describe('ComposableBase + AbilityBase 集成测试', () => {
 
             host1.dispose();
             host2.dispose();
-        });
-
-        it('getter 和箭头函数方法应该返回相同的状态', () => {
-            const host = new ItemHost() as any;
-
-            host.addItem('x');
-            expect(host.items).toEqual(['x']);
-            expect(host.getItemsViaProxy()).toEqual(['x']);
-
-            host.dispose();
         });
 
         it('dispose 一个宿主不应影响另一个的状态', () => {
