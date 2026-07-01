@@ -1,332 +1,122 @@
 # @orbitjs/composable
 
-**层级**: 第 1 层  
-**状态**: ✅ 完成  
-**测试**: ✅ 通过（95/95，含 39 个集成测试）  
-**覆盖率**: 90.38%（分支）
+**层级**: 第 2 层  
+**状态**: 完成  
+**测试**: 通过  
+**依赖**: logger, async
 
 ## 概述
 
-可组合能力系统，提供能力注入和管理的基础功能。通过预编译机制实现高性能的能力注入，避免运行时原型链爬取。
+composable 包提供了可组合能力系统，是 OrbitJS 的核心机制之一。通过 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制，实现能力的声明、注入和生命周期管理。
 
-## 功能
+## 核心概念
 
-- **ComposableBase** - 可组合基类，提供能力注入功能
-- **AbilityBase** - 能力基类，提供 `expose()` API 定义能力
-- **ComposableRegistrar** - 能力注册器（继承 RegistrarBase），管理预编译缓存
-- **DescriptorFactory** - 描述符工厂，提供便捷的属性描述符创建方法
-- **DebounceAbilityBase** - 防抖能力基类
-- **预编译能力** - 性能优化，避免运行时原型链爬取
+### AbilityDefinition
 
-## 依赖
+能力定义为普通对象（`Record<string | symbol, any>`），属性/方法通过 `Object.defineProperty` 直接复制到宿主实例：
+
+| 属性类型 | 形式 | 复制行为 |
+|----------|------|----------|
+| 方法 | `fn()` | `bind(this)` 后作为宿主方法 |
+| getter/setter | `{ get() {...}, set(v) {...} }` | 直接作为 descriptor 的 get/set |
+| 普通值 | `42` / `'hello'` | 直接作为 value |
+
+方法中的 `this` 自动指向宿主实例，无需手动绑定。
+
+### ComposableBase
+
+抽象基类，提供能力注入和生命周期管理：
 
 ```typescript
-dependencies: {
-  '@orbitjs/logger': 'L0',  // 日志
-  '@orbitjs/async': 'L0',   // 异步工具（DebounceAbilityBase 使用）
-  '@orbitjs/registry': 'L1', // 注册器基类（ComposableRegistrar 继承 RegistrarBase）
+import { ComposableBase, type AbilityDefinition } from '@orbitjs/composable';
+
+// 1. 定义能力
+const CounterAbility: AbilityDefinition = {
+    count: {
+        get() {
+            return this.abilityState('Counter:count', () => 0);
+        },
+    },
+    increment() {
+        const current = this.abilityState('Counter:count', () => 0)!;
+        this.setAbilityState('Counter:count', current + 1);
+    },
+};
+
+// 2. 声明宿主
+class MyHost extends ComposableBase {
+    static readonly abilities = [CounterAbility];
 }
+
+// 3. 使用
+const host = new MyHost() as any;
+host.increment();  // count: 1
+host.increment();  // count: 2
+host.dispose();    // 清理所有状态
+```
+
+## API 参考
+
+### ComposableBase 方法
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `abilityState` | `abilityState<T>(key: string, creator?: () => T): T \| undefined` | 获取/创建能力私有状态，per-host 隔离 |
+| `setAbilityState` | `setAbilityState<T>(key: string, value: T): void` | 设置能力私有状态 |
+| `debounce` | `debounce<A>(key: string, fn: A, wait?: number, immediate?: boolean): A & { cancel() }` | 获取/创建防抖函数，per-host 隔离 |
+| `onCleanup` | `onCleanup(callback: () => void): void` | 注册清理回调，dispose 时逆序执行 |
+| `getStatic` | `getStatic<T>(key: string \| symbol): T \| undefined` | 获取类级缓存（跨实例共享） |
+| `setStatic` | `setStatic<T>(key: string \| symbol, value: T): void` | 设置类级缓存 |
+| `dispose` | `dispose(): void` | 销毁：清理回调 → 取消防抖 → 清空状态 |
+| `host` | `get host(): this` | 返回宿主自身（语义属性） |
+
+### 静态属性
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `abilities` | `readonly AbilityDefinition[]` | 声明所需能力列表 |
+
+### 类型导出
+
+| 类型 | 说明 |
+|------|------|
+| `AbilityDefinition` | 能力定义类型，`Record<string \| symbol, any>` |
+| `IComposableBase` | ComposableBase 接口 |
+| `IExposeResult` | 暴露清单接口 |
+| `IComposable` | 旧版兼容接口（@deprecated） |
+
+## 能力继承
+
+子类通过 `static readonly abilities` 声明能力，ComposableBase 自动从原型链收集：
+
+```typescript
+class Parent extends ComposableBase {
+    static readonly abilities: readonly AbilityDefinition[] = [AbilityA];
+}
+
+class Child extends Parent {
+    static readonly abilities: readonly AbilityDefinition[] = [AbilityB];
+}
+
+// Child 实例同时拥有 AbilityA 和 AbilityB
+const child = new Child() as any;
+child.methodA();  // 来自 AbilityA
+child.methodB();  // 来自 AbilityB
 ```
 
 ## 目录结构
 
 ```
 src/composable/
-├── types/
-│   └── composable.ts       # 类型定义（含 AbilityConstructor）
-├── ComposableBase.ts       # 可组合基类
-├── AbilityBase.ts          # 能力基类
-├── ComposableRegistrar.ts  # 能力注册器
-├── DescriptorFactory.ts    # 描述符工厂
-├── DebounceAbilityBase.ts  # 防抖能力基类
-└── index.ts                # 入口
+├── ComposableBase.ts      # 核心基类
+├── index.ts               # 统一导出
+└── types/
+    └── composable.ts      # 类型定义
 ```
-
-## 使用示例
-
-### 定义能力
-
-```typescript
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@orbitjs/composable';
-
-class EventAbility extends AbilityBase {
-    private scope = globalEventBus.createEventScope();
-    
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            // getter 中通过 proxy.host 访问宿主
-            eventScope: { get: () => proxy.host.eventScope },
-            // 方法中 this 是宿主（bind），this.host 返回宿主自身
-            on: function(event: string, handler: Function) {
-                proxy.self.scope.on(event, handler);
-            },
-            // 箭头函数中通过 proxy.self 访问 Ability 私有属性
-            emit: (event: string, data: any) => {
-                proxy.self.scope.emit(event, data);
-            },
-        };
-    }
-    
-    protected onDispose() {
-        this.scope?.dispose();
-    }
-}
-```
-
-### 使用能力
-
-```typescript
-import { ComposableBase, type AbilityConstructor } from '@orbitjs/composable';
-
-class MyComponent extends ComposableBase {
-    static readonly abilities: readonly AbilityConstructor[] = [EventAbility, CacheAbility];
-    
-    constructor() {
-        super();
-        // 现在可以使用 this.on, this.emit, this.cache 等
-    }
-}
-```
-
-### 继承能力
-
-```typescript
-import { ComposableBase, type AbilityConstructor } from '@orbitjs/composable';
-
-class Parent extends ComposableBase {
-    static readonly abilities: readonly AbilityConstructor[] = [EventAbility];
-}
-
-class Child extends Parent {
-    static readonly abilities: readonly AbilityConstructor[] = [CacheAbility];
-}
-
-// Child 实例同时拥有 EventAbility 和 CacheAbility 的能力
-```
-
-### 注册能力
-
-```typescript
-import { ComposableRegistrar } from '@orbitjs/composable';
-
-const registrar = ComposableRegistrar.getInstance();
-
-// 注册能力类（可选立即预编译）
-registrar.register(EventAbility, { immediate: true });
-
-// 获取预编译能力（自动预编译 + 缓存）
-const precompiled = registrar.get(EventAbility);
-
-// 注销能力
-registrar.unregister('Event');
-```
-
-## API
-
-### ComposableBase
-
-```typescript
-abstract class ComposableBase implements IComposableBase {
-    static readonly abilities: readonly AbilityConstructor[];
-    logger: ILogger;
-    [key: string]: any;
-    
-    constructor();  // 自动收集能力并注入
-    
-    getStatic<T>(key: string | symbol): T | undefined;
-    setStatic<T>(key: string | symbol, value: T): void;
-    dispose(): void;  // 按装配逆序执行销毁函数，并清理所有 abilityStates
-    
-    // Per-Host Ability 私有状态
-    getOrCreateAbilityState<T>(ability: AbilityBase, key: string | symbol, factory: () => T): T;
-    getAbilityState<T>(ability: AbilityBase, key: string | symbol): T | undefined;
-    clearAbilityStates(ability: AbilityBase): void;
-    
-    protected collectAbilities(): AbilityConstructor[];  // 从原型链收集能力（去重+缓存）
-    protected setupAbilities(): void;  // 自动装配能力
-    protected applyOverrides(): void;  // 子类可重写以自定义功能
-}
-```
-
-### AbilityBase
-
-```typescript
-interface AbilityProxy<THost = any, TSelf = any> {
-    host: THost;   // 宿主对象（getter，从 hostRef 读取，多实例隔离）
-    self: TSelf;   // Ability 实例自身
-}
-
-abstract class AbilityBase implements IPrecompilableAbility {
-    protected host: any;  // 仅供私有方法使用，多实例时不稳定
-    
-    protected abstract expose(proxy: AbilityProxy): IExposeResult;
-    protected onDispose(): void;
-    
-    // Per-Host 私有状态（多实例安全）
-    protected getOrCreateState<T>(factory: () => T, key?: string | symbol): T;
-    protected getState<T>(key?: string | symbol): T | undefined;
-    
-    precompile(): IPrecompiledAbility;
-}
-```
-
-**访问规则**：
-
-| 场景 | 宿主访问 | Ability 私有属性 | Per-Host 状态 |
-|------|----------|-----------------|--------------|
-| getter/setter | `proxy.host` | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
-| 方法（普通函数） | `this.host`（ComposableBase getter） | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
-| 方法（箭头函数） | `proxy.host` | `proxy.self._xxx` | `proxy.self.getOrCreateState()` |
-
-**Per-Host State 机制**：
-
-Ability 实例在多个宿主间共享（ComposableRegistrar 缓存），但每个宿主需要独立的状态。
-`getOrCreateState()` 将状态存储在宿主（ComposableBase）上，通过 `Ability实例 + key` 双重索引隔离。
-
-```typescript
-class CounterAbility extends AbilityBase {
-    private getCountState() {
-        return this.getOrCreateState(() => ({ count: 0 }));
-    }
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            count: { get: () => proxy.self.getCountState().count },
-            increment: function() { proxy.self.getCountState().count++; },
-        };
-    }
-}
-// host1.count === 0, host2.count === 0（各自独立）
-// host1.dispose() 后 host2.count 仍可用
-```
-
-### ComposableRegistrar
-
-```typescript
-class ComposableRegistrar extends RegistrarBase<AbilityStorage> {
-    readonly name = 'ComposableRegistrar';
-    
-    register(AbilityClass: AbilityConstructor, options?: { immediate?: boolean }): void;
-    unregister(name: string): void;
-    get(AbilityClass: AbilityConstructor): IPrecompiledAbility | undefined;
-    has(name: string): boolean;
-    getAllNames(): string[];
-    clearCaches(): void;
-    clear(): void;
-}
-```
-
-### 核心类型
-
-```typescript
-// 能力类构造函数类型
-type AbilityConstructor = new () => IPrecompilableAbility;
-
-// 预编译能力接口
-interface IPrecompiledAbility {
-    readonly name: string;
-    readonly descriptorFactories: Map<string | symbol, DescriptorFactoryFn>;
-    readonly createDisposer?: DisposerFactoryFn;
-}
-
-// 暴露清单接口
-interface IExposeResult {
-    [key: string | symbol]: ExposeValue;
-}
-```
-
-## 测试状态
-
-### 测试覆盖
-
-| 文件 | 语句覆盖 | 分支覆盖 | 函数覆盖 |
-|------|----------|----------|----------|
-| AbilityBase.ts | 100% | 90% | 100% |
-| ComposableBase.ts | 92% | 85% | 100% |
-| ComposableRegistrar.ts | 54% | 28% | 67% |
-| DebounceAbilityBase.ts | 30% | 0% | 0% |
-| DescriptorFactory.ts | 3% | 0% | 0% |
-
-### 通过的测试（30个）
-
-**AbilityBase（16个）**
-- ✅ precompile - should create precompiled ability with name
-- ✅ precompile - should create descriptor factories for all exposed properties
-- ✅ precompile - should handle symbol properties
-- ✅ precompile - should handle getter/setter properties
-- ✅ descriptor factories - should create working descriptors for simple values
-- ✅ descriptor factories - should create working descriptors for methods
-- ✅ descriptor factories - should create working descriptors for getter/setter
-- ✅ disposer - should create disposer function
-- ✅ disposer - should call onDispose when disposer is called
-
-**ComposableBase（6个）**
-- ✅ constructor - should initialize with a logger
-- ✅ static abilities - should inject abilities from static property
-- ✅ static abilities - should inject multiple abilities
-- ✅ inheritance - should collect abilities from prototype chain
-- ✅ inheritance - should handle class with no abilities
-- ✅ getStatic and setStatic - should store and retrieve static values
-- ✅ getStatic and setStatic - should return undefined for non-existent keys
-- ✅ dispose - should dispose without errors
-
-**ComposableRegistrar（9个）**
-- ✅ get - should return precompiled ability and cache it
-- ✅ get - should return cached result on second call
-- ✅ get - should handle multiple ability classes
-- ✅ has - should return false before get is called
-- ✅ has - should return true after get is called
-- ✅ getAllNames - should return empty array initially
-- ✅ getAllNames - should return all cached ability names
-- ✅ clearCaches - should clear all caches
-- ✅ clear - should clear all data
-
-**index（3个）**
-- ✅ should export ComposableBase
-- ✅ should export AbilityBase
-- ✅ should allow creating composable with abilities
-
-## 遗留工作
-
-- [ ] 将 entity 包中的 Ability 私有变量迁移到 `getOrCreateState`（StateCacheAbility._provider、StateDirtyAbility._snapshots、StateLocalMutationAbility._deleteSnapshots 等）
-- [ ] 编写 DescriptorFactory 测试
 
 ## 设计决策
 
-- [2026-06-15-composable-refactoring](../../design-decisions/2026-06-15-composable-refactoring.md) - Composable 系统重构
-- [2026-06-15-registrar-architecture](../../design-decisions/2026-06-15-registrar-architecture.md) - 注册器架构统一
-
-## 变更历史
-
-### 2026-07-01
-- 实现 Per-Host Ability 私有状态（abilityStates）：ComposableBase 新增 `_abilityStates` Map 及相关方法
-- AbilityBase 新增 `getOrCreateState()` / `getState()` 便捷方法
-- 修复多宿主共享 Ability 实例时的隔离问题：getter/setter/方法调用时临时切换 `sharedHostRef` 和 `ability.host`
-- 修复 `createDisposer` 中 `ability.host` 恢复逻辑（多宿主共享时不应设为 null）
-- ComposableIntegration 集成测试全部通过（39/39）
-
-### 2026-06-29
-- 修复 AbilityBase `this` 绑定系统性 bug：引入 `AbilityProxy` 代理对象
-- `expose()` 签名改为 `expose(proxy: AbilityProxy)`
-- ComposableBase 新增 `host` getter：`get host() { return this; }`
-- 全部 29 个 Ability 子类迁移到 `expose(proxy)` API
-- 清理调试代码
-- 防抖架构三层调整：DOM 事件层 + Manager 层 + State 层
-- TreeManagerAbility 实际使用 `getDebouncedAction`（expand/refresh）
-
-### 2026-06-27
-- 修复 ComposableRegistrar 缺少 `register()`/`unregister()` 抽象方法实现
-- 新增 `AbilityConstructor` 类型，替代 `typeof AbilityBase`（解决抽象类不能 new 和静态属性协变问题）
-- ComposableBase.abilities 类型改为 `readonly AbilityConstructor[]`
-- 删除 src/composable/ 下旧编译产物（.js/.d.ts），解决 Jest 加载旧代码问题
-- 所有测试通过（30/30）
-
-### 2026-06-15
-- 重构 ComposableRegistrar 从 RegistrarBase 派生
-- 添加 ComposableEntry 类型
-- 更新导入路径
-- 测试部分失败，需要重写
-
-### 之前
-- 实现 AbilityBase 和 ComposableBase
-- 实现预编译能力
-- 实现 expose() API
+- **纯对象而非类**：Ability 是普通对象，不需要实例化，不需要 `new`，不需要 `expose()` 方法
+- **原型链复制而非代理**：属性直接复制到宿主实例，访问无中间层开销
+- **宿主统一管理状态**：`abilityState()` / `debounce()` / `onCleanup()` 由宿主统一管理，能力无需关心生命周期
+- **key 命名约定**：`abilityState` 的 key 建议使用 `AbilityName:stateName` 格式避免冲突
