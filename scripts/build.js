@@ -7,8 +7,8 @@ const { execSync } = require('child_process');
 
 // 解析命令行参数
 const args = process.argv.slice(2);
-const targetModule = args[0]; // 可选的模块名称
 const cleanFirst = args.includes('--clean') || args.includes('-c');
+const targetModule = args.find(a => !a.startsWith('-')); // 第一个非选项参数为模块名
 
 console.log('🚀 OrbitJS Builder');
 console.log('=================\n');
@@ -123,37 +123,100 @@ function buildModule(moduleName, moduleConfig) {
   console.log(`📦 Building ${moduleName} (${moduleConfig.packageName})`);
   
   const { outDir, rootDir } = moduleConfig;
-  const { tsconfig, formats } = config.build;
+  const { formats } = config.build;
   
   // 准备输出目录
   utils.clean(outDir);
   
+  // 为该模块生成临时 tsconfig
+  const tmpTsconfigPath = path.join(__dirname, `tsconfig.${moduleName}.tmp.json`);
+  const baseTsconfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tsconfig.json'), 'utf8'));
+  const projectRoot = path.resolve(__dirname, '..').replace(/\\/g, '/');
+  
+  // rootDir 设为 src，允许跨包引用（相对路径如 ../crypto）
+  // 但 include 只包含当前包的文件，避免编译其他包
+  // 输出会到 dist/{moduleName}/{moduleName}/... 需要后处理
+  const tmpOutDir = `${projectRoot}/dist/.tmp-${moduleName}`;
+  const moduleTsconfig = {
+    compilerOptions: {
+      ...baseTsconfig.compilerOptions,
+      outDir: tmpOutDir,
+      rootDir: `${projectRoot}/src`,
+      declaration: config.build.declaration ?? true,
+      declarationMap: config.build.declarationMap ?? true,
+      sourceMap: config.build.sourceMap ?? true,
+      baseUrl: projectRoot,
+      paths: baseTsconfig.compilerOptions.paths || {}
+    },
+    include: [`${projectRoot}/${rootDir}/**/*`],
+    exclude: ['node_modules', 'dist', 'test/**/*', '**/*.test.ts', '**/*.spec.ts']
+  };
+  
+  fs.writeFileSync(tmpTsconfigPath, JSON.stringify(moduleTsconfig, null, 2));
+  
   // 按格式构建
-  formats.forEach(format => {
-    console.log(`  ${format.toUpperCase()}...`);
+  try {
+    // 准备最终输出目录
+    const finalOutDir = path.resolve(projectRoot, outDir);
+    utils.clean(finalOutDir);
     
-    const isEsm = format === 'esm';
-    const moduleType = isEsm ? 'esnext' : 'commonjs';
-    
-    // 构建命令
-    let cmd = `npx tsc --project ${tsconfig} ` +
-              `--module ${moduleType} ` +
-              `--outDir ${outDir} ` +
-              `--rootDir ${rootDir}`;
-    
-    if (config.build.declaration) cmd += ' --declaration';
-    if (config.build.declarationMap) cmd += ' --declarationMap';
-    if (config.build.sourceMap) cmd += ' --sourceMap';
-    
+    // CJS 构建
+    console.log('  CJS...');
+    let cmd = `npx tsc --project ${tmpTsconfigPath} --module commonjs`;
     if (!utils.exec(cmd)) {
-      throw new Error(`Failed to build ${format} for ${moduleName}`);
+      throw new Error(`Failed to build cjs for ${moduleName}`);
+    }
+    // 从临时目录移动到最终目录
+    const cjsTmpDir = path.resolve(projectRoot, `dist/.tmp-${moduleName}`, moduleName);
+    if (fs.existsSync(cjsTmpDir)) {
+      // 确保目标目录不存在（Windows rename 要求目标不存在）
+      if (fs.existsSync(finalOutDir)) {
+        fs.rmSync(finalOutDir, { recursive: true, force: true });
+      }
+      fs.renameSync(cjsTmpDir, finalOutDir);
+    }
+    // 清理临时根目录
+    const tmpRoot = path.resolve(projectRoot, `dist/.tmp-${moduleName}`);
+    if (fs.existsSync(tmpRoot)) {
+      fs.rmSync(tmpRoot, { recursive: true, force: true });
     }
     
-    // 重命名ESM文件
-    if (isEsm) {
-      utils.renameEsmFiles(outDir);
+    // ESM 构建
+    console.log('  ESM...');
+    const esmTmpOutDir = `${projectRoot}/dist/.tmp-${moduleName}-esm`;
+    // 更新临时 tsconfig 的 outDir
+    moduleTsconfig.compilerOptions.outDir = esmTmpOutDir;
+    fs.writeFileSync(tmpTsconfigPath, JSON.stringify(moduleTsconfig, null, 2));
+    
+    cmd = `npx tsc --project ${tmpTsconfigPath} --module esnext`;
+    if (!utils.exec(cmd)) {
+      throw new Error(`Failed to build esm for ${moduleName}`);
     }
-  });
+    // 从临时目录移动 .esm.js 文件到最终目录
+    const esmTmpDir = path.resolve(projectRoot, `dist/.tmp-${moduleName}-esm`, moduleName);
+    if (fs.existsSync(esmTmpDir)) {
+      utils.renameEsmFiles(esmTmpDir);
+      // 将 ESM 文件复制到最终目录
+      const files = fs.readdirSync(esmTmpDir);
+      for (const file of files) {
+        if (file.endsWith('.esm.js') || file.endsWith('.esm.js.map')) {
+          const src = path.join(esmTmpDir, file);
+          const dest = path.join(finalOutDir, file);
+          fs.copyFileSync(src, dest);
+        }
+      }
+    }
+    // 清理 ESM 临时目录
+    const esmTmpRoot = path.resolve(projectRoot, `dist/.tmp-${moduleName}-esm`);
+    if (fs.existsSync(esmTmpRoot)) {
+      fs.rmSync(esmTmpRoot, { recursive: true, force: true });
+    }
+  } finally {
+    // 清理临时 tsconfig
+    if (fs.existsSync(tmpTsconfigPath)) {
+      fs.unlinkSync(tmpTsconfigPath);
+    }
+  }
   
   // 生成package.json
   utils.generatePackageJson(moduleName, moduleConfig);

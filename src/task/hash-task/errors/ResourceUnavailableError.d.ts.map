@@ -1,1 +1,0 @@
-{"version":3,"file":"ResourceUnavailableError.d.ts","sourceRoot":"","sources":["ResourceUnavailableError.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AACH,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAE3C;;;GAGG;AACH,qBAAa,wBAAyB,SAAQ,SAAS;IACrD;;;;OAIG;gBAED,QAAQ,EAAE,QAAQ,GAAG,QAAQ,GAAG,KAAK,EACrC,OAAO,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC;CAQhC"}

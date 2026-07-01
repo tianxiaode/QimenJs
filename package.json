@@ -74,10 +74,50 @@
       "require": "./dist/task/index.js",
       "types": "./dist/task/index.d.ts"
     },
-    "./kernel": {
-      "import": "./dist/kernel/index.esm.js",
-      "require": "./dist/kernel/index.js",
-      "types": "./dist/kernel/index.d.ts"
+    "./types": {
+      "import": "./dist/types/index.esm.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./context": {
+      "import": "./dist/context/index.esm.js",
+      "require": "./dist/context/index.js",
+      "types": "./dist/context/index.d.ts"
+    },
+    "./schema": {
+      "import": "./dist/schema/index.esm.js",
+      "require": "./dist/schema/index.js",
+      "types": "./dist/schema/index.d.ts"
+    },
+    "./pipeline": {
+      "import": "./dist/pipeline/index.esm.js",
+      "require": "./dist/pipeline/index.js",
+      "types": "./dist/pipeline/index.d.ts"
+    },
+    "./composable": {
+      "import": "./dist/composable/index.esm.js",
+      "require": "./dist/composable/index.js",
+      "types": "./dist/composable/index.d.ts"
+    },
+    "./event-dom": {
+      "import": "./dist/event-dom/index.esm.js",
+      "require": "./dist/event-dom/index.js",
+      "types": "./dist/event-dom/index.d.ts"
+    },
+    "./data-processor": {
+      "import": "./dist/data-processor/index.esm.js",
+      "require": "./dist/data-processor/index.js",
+      "types": "./dist/data-processor/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http/index.esm.js",
+      "require": "./dist/http/index.js",
+      "types": "./dist/http/index.d.ts"
+    },
+    "./system-abilities": {
+      "import": "./dist/system-abilities/index.esm.js",
+      "require": "./dist/system-abilities/index.js",
+      "types": "./dist/system-abilities/index.d.ts"
     },
     "./entity": {
       "import": "./dist/entity/index.esm.js",

@@ -1,1 +1,0 @@
-{"version":3,"file":"WorkerInitializationError.d.ts","sourceRoot":"","sources":["WorkerInitializationError.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAE3C;;;;;GAKG;AACH,qBAAa,yBAA0B,SAAQ,SAAS;aAShC,aAAa,CAAC,EAAE,KAAK;IARzC;;;;;OAKG;gBAEC,OAAO,EAAE,MAAM,EACC,aAAa,CAAC,EAAE,KAAK,YAAA;IAQzC;;OAEG;IACI,MAAM,IAAI,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC;CAOvC"}

@@ -9,6 +9,13 @@ dist/
 coverage/
 *.tgz
 
+# Source-adjacent build artifacts
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
+!src/**/*.test.ts
+
 # Environment
 .env
 .env.local

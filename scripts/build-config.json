@@ -77,18 +77,74 @@
       "dependencies": ["logger", "utils", "error", "runtime"],
       "packageName": "@orbitjs/task"
     },
-    "kernel": {
-      "entry": "src/kernel/index.ts",
-      "outDir": "dist/kernel",
-      "rootDir": "src/kernel",
-      "dependencies": ["registry", "logger", "utils", "async", "events", "cache"],
-      "packageName": "@orbitjs/kernel"
+    "types": {
+      "entry": "src/types/index.ts",
+      "outDir": "dist/types",
+      "rootDir": "src/types",
+      "dependencies": [],
+      "packageName": "@orbitjs/types"
+    },
+    "context": {
+      "entry": "src/context/index.ts",
+      "outDir": "dist/context",
+      "rootDir": "src/context",
+      "dependencies": ["registry"],
+      "packageName": "@orbitjs/context"
+    },
+    "schema": {
+      "entry": "src/schema/index.ts",
+      "outDir": "dist/schema",
+      "rootDir": "src/schema",
+      "dependencies": ["registry"],
+      "packageName": "@orbitjs/schema"
+    },
+    "pipeline": {
+      "entry": "src/pipeline/index.ts",
+      "outDir": "dist/pipeline",
+      "rootDir": "src/pipeline",
+      "dependencies": ["logger", "context"],
+      "packageName": "@orbitjs/pipeline"
+    },
+    "composable": {
+      "entry": "src/composable/index.ts",
+      "outDir": "dist/composable",
+      "rootDir": "src/composable",
+      "dependencies": ["logger", "async"],
+      "packageName": "@orbitjs/composable"
+    },
+    "event-dom": {
+      "entry": "src/event-dom/index.ts",
+      "outDir": "dist/event-dom",
+      "rootDir": "src/event-dom",
+      "dependencies": ["events", "utils", "runtime", "logger", "error", "async"],
+      "packageName": "@orbitjs/event-dom"
+    },
+    "data-processor": {
+      "entry": "src/data-processor/index.ts",
+      "outDir": "dist/data-processor",
+      "rootDir": "src/data-processor",
+      "dependencies": ["registry", "context", "pipeline"],
+      "packageName": "@orbitjs/data-processor"
+    },
+    "http": {
+      "entry": "src/http/index.ts",
+      "outDir": "dist/http",
+      "rootDir": "src/http",
+      "dependencies": ["context", "pipeline", "registry", "task"],
+      "packageName": "@orbitjs/http"
+    },
+    "system-abilities": {
+      "entry": "src/system-abilities/index.ts",
+      "outDir": "dist/system-abilities",
+      "rootDir": "src/system-abilities",
+      "dependencies": ["events", "composable", "registry", "event-dom"],
+      "packageName": "@orbitjs/system-abilities"
     },
     "entity": {
       "entry": "src/entity/index.ts",
       "outDir": "dist/entity",
       "rootDir": "src/entity",
-      "dependencies": ["kernel", "validation"],
+      "dependencies": ["composable", "schema", "context", "http", "cache", "error", "system-abilities", "data-processor", "registry", "utils"],
       "packageName": "@orbitjs/entity"
     }
   },
