@@ -24,7 +24,7 @@ import { EventAbility } from '@/system-abilities/system/EventAbility';
 import { DomEventsAbility } from '@/system-abilities/system/DomEventsAbility';
 import { DomainAbility } from '@/system-abilities/system/DomainAbility';
 import { SystemAbility } from '@/system-abilities/system/SystemAbility';
-import { ComposableBase, ComposableRegistrar } from '@/composable';
+import { ComposableBase } from '@/composable';
 import { DomainRegistrar, SystemRegistrar } from '@/registry';
 import { DOMAIN_CACHE_SYMBOL } from '@/system-abilities/types/abilities';
 
@@ -55,7 +55,6 @@ describe('EventAbility', () => {
 
     afterEach(() => {
         host.dispose();
-        ComposableRegistrar.getInstance().clearCaches();
     });
 
     it('should expose eventScope getter', () => {
@@ -126,7 +125,6 @@ describe('DomEventsAbility', () => {
 
     afterEach(() => {
         host.dispose();
-        ComposableRegistrar.getInstance().clearCaches();
     });
 
     it('should expose bind method', () => {

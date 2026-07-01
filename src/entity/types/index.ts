@@ -5,7 +5,7 @@
  */
 
 import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache, RegistrSchema } from '@/schema';
-import type { IExposeResult, AbilityConstructor, IComposableBase } from '@/composable';
+import type { IComposableBase } from '@/composable';
 import type { RequestContext, RequestTask, PaginationInfo } from '@/context';
 import type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
 import type { ICacheProvider } from '@/cache';
@@ -26,8 +26,7 @@ export type {
     BaseSchema,
 } from '@/schema';
 
-export type { IExposeResult, AbilityConstructor, IComposableBase } from '@/composable';
-export { AbilityBase } from '@/composable';
+export type { IComposableBase } from '@/composable';
 export { ComposableBase } from '@/composable';
 
 export type { RequestContext, RequestTask, PaginationInfo } from '@/context';

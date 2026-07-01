@@ -24,7 +24,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { TreeViewAbility } from '@/entity/abilities/state/tree/TreeViewAbility';
 
 // ============================================
@@ -74,9 +73,6 @@ function buildTestTree(host: any) {
 // ============================================
 
 describe('TreeViewAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('refreshView with flat mode', () => {
         it('should generate flat items with depth info', () => {

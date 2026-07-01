@@ -25,7 +25,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
 
 // ============================================
@@ -71,9 +70,6 @@ function buildTestTree(host: any) {
 // ============================================
 
 describe('TreeLifecycleAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('removeNode', () => {
         it('应移除节点及其子孙', () => {

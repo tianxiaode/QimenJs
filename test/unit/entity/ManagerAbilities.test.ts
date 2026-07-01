@@ -27,7 +27,6 @@ import { SchemaAbility } from '@/entity/abilities/manager/SchemaAbility';
 import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
 import { RemoteCreateAbility } from '@/entity/abilities/manager/remote/RemoteCreateAbility';
 import { ComposableBase } from '@/composable';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { SchemaRegistrar } from '@/schema';
 import type { FlatSchema, TreeSchema } from '@/schema';
 import { KernelError, KernelErrorCode } from '@/error';

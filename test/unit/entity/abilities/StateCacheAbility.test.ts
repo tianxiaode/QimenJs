@@ -40,7 +40,6 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { StateCacheAbility } from '@/entity/abilities/state/base/StateCacheAbility';
 import { CacheFactory } from '@/cache';
 
@@ -73,7 +72,6 @@ function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: ()
 describe('StateCacheAbility', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        ComposableRegistrar.getInstance().clearCaches();
     });
 
     describe('cacheKey', () => {

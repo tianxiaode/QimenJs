@@ -18,9 +18,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { ComposableBase, AbilityBase } from '@/composable';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
-import type { IExposeResult } from '@/composable/types/composable';
+import { ComposableBase, type AbilityDefinition } from '@/composable';
 
 describe('composable package exports', () => {
     it('should export ComposableBase', () => {
@@ -28,32 +26,10 @@ describe('composable package exports', () => {
         expect(typeof ComposableBase).toBe('function');
     });
     
-    it('should export AbilityBase', () => {
-        expect(AbilityBase).toBeDefined();
-        expect(typeof AbilityBase).toBe('function');
-    });
-    
-    it('should allow creating custom ability', () => {
-        class CustomAbility extends AbilityBase {
-            protected expose(): IExposeResult {
-                return {
-                    customMethod: () => 'custom-result',
-                };
-            }
-        }
-        
-        const instance = new CustomAbility();
-        expect(CustomAbility.name).toBe('CustomAbility');
-    });
-    
-    it('should allow creating composable with abilities', () => {
-        class CustomAbility extends AbilityBase {
-            protected expose(): IExposeResult {
-                return {
-                    customMethod: () => 'custom-result',
-                };
-            }
-        }
+    it('should allow creating composable with AbilityDefinition', () => {
+        const CustomAbility: AbilityDefinition = {
+            customMethod: () => 'custom-result',
+        };
         
         class TestComposable extends ComposableBase {
             static readonly abilities = [CustomAbility];

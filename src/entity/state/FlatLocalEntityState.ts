@@ -1,5 +1,5 @@
 import { ComposableBase } from '@/composable';
-import type { AbilityType } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 import type { IEntity, ILocalSearchParams } from '@/schema';
 import type { IFlatLocalEntityState, ILocalChangeSet, IDeletionPlan, IStateLocalMutationAbility, IStateSearchAbility } from '@/entity/types';
 import { BaseEntityState } from './BaseEntityState';
@@ -10,7 +10,7 @@ export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSea
     extends BaseEntityState<TSearch>
     implements IFlatLocalEntityState<TSearch>
 {
-    static readonly abilities: readonly AbilityType[] = [
+    static readonly abilities: readonly AbilityDefinition[] = [
         StateLocalMutationAbility,
         StateSearchAbility,
     ];

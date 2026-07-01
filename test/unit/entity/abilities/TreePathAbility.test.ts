@@ -25,7 +25,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { TreePathAbility } from '@/entity/abilities/state/tree/TreePathAbility';
 
 // ============================================
@@ -51,9 +50,6 @@ function createPathHost() {
 // ============================================
 
 describe('TreePathAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('ingest', () => {
         it('should ingest single node and set path', () => {

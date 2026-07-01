@@ -26,7 +26,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
 
 // ============================================
@@ -47,9 +46,6 @@ function createDirtyHost() {
 // ============================================
 
 describe('StateDirtyAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('isDirty', () => {
         it('无参调用，初始状态应返回 false', () => {

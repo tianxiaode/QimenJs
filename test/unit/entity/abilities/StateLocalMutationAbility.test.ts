@@ -39,7 +39,6 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { StateLocalMutationAbility } from '@/entity/abilities/state/mutation/StateLocalMutationAbility';
 
 // ============================================
@@ -64,7 +63,6 @@ function createMutationHost() {
 describe('StateLocalMutationAbility', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        ComposableRegistrar.getInstance().clearCaches();
     });
 
     describe('hasChanges / changes', () => {

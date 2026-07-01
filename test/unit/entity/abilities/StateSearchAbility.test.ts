@@ -27,7 +27,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchAbility';
 
 // ============================================
@@ -54,9 +53,6 @@ function createSearchHost(isTree = false) {
 // ============================================
 
 describe('StateSearchAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('toParams', () => {
         it('扁平模式应包含 page 和 pageSize', () => {

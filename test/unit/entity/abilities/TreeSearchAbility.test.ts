@@ -24,7 +24,6 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import { TreeSearchAbility } from '@/entity/abilities/state/tree/TreeSearchAbility';
 
 // ============================================
@@ -49,9 +48,6 @@ function createTreeSearchHost() {
 // ============================================
 
 describe('TreeSearchAbility', () => {
-    beforeEach(() => {
-        ComposableRegistrar.getInstance().clearCaches();
-    });
 
     describe('matchKeyword', () => {
         it('匹配搜索字段应返回 true', () => {

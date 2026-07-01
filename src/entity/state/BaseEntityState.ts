@@ -1,5 +1,5 @@
 import { ComposableBase } from '@/composable';
-import type { AbilityType } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 import type { IEntity, Schema, SearchParams } from '@/schema';
 import type { IBaseEntityState, IStateSchemaAbility, IStateCacheAbility, IStateDirtyAbility } from '@/entity/types';
 import { StateSchemaAbility } from '@/entity/abilities/state/base/StateSchemaAbility';
@@ -10,7 +10,7 @@ export abstract class BaseEntityState<TSearch extends SearchParams>
     extends ComposableBase
     implements IBaseEntityState<TSearch>
 {
-    static readonly abilities: readonly AbilityType[] = [
+    static readonly abilities: readonly AbilityDefinition[] = [
         StateSchemaAbility,
         StateCacheAbility,
         StateDirtyAbility,
