@@ -47,6 +47,7 @@ const config = {
     '^@orbitjs/pipeline$': '<rootDir>/src/pipeline',
     '^@orbitjs/composable$': '<rootDir>/src/composable',
     '^@orbitjs/data-processor$': '<rootDir>/src/data-processor',
+    '^@orbitjs/mime$': '<rootDir>/src/mime',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

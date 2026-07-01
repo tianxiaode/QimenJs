@@ -1,5 +1,5 @@
 import { RegistryHub, RegistryHubLockedError, RegistryHubConflictError } from '@/registry';
-import { MimeTypeRegistrar } from '@/registry/registrars';
+import { PatternRegistrar } from '@/registry/registrars';
 
 describe('RegistryHub', () => {
   beforeEach(() => {
@@ -10,18 +10,18 @@ describe('RegistryHub', () => {
 
   describe('use', () => {
     it('应该能够注册一个新的注册器', () => {
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       
       expect(() => {
         RegistryHub.use(registrar);
       }).not.toThrow();
       
-      expect(RegistryHub.get<MimeTypeRegistrar>('mimeType')).toBe(registrar);
+      expect(RegistryHub.get<PatternRegistrar>('pattern')).toBe(registrar);
     });
 
     it('不应该允许重复注册相同的注册器', () => {
-      const registrar1 = MimeTypeRegistrar.getInstance();
-      const registrar2 = MimeTypeRegistrar.getInstance();
+      const registrar1 = PatternRegistrar.getInstance();
+      const registrar2 = PatternRegistrar.getInstance();
       
       RegistryHub.use(registrar1);
       
@@ -31,19 +31,19 @@ describe('RegistryHub', () => {
     });
 
     it('应该允许使用force参数覆盖已注册的注册器', () => {
-      const registrar1 = MimeTypeRegistrar.getInstance();
-      const registrar2 = MimeTypeRegistrar.getInstance();
+      const registrar1 = PatternRegistrar.getInstance();
+      const registrar2 = PatternRegistrar.getInstance();
       
       RegistryHub.use(registrar1);
       RegistryHub.use(registrar2, true);
       
-      expect(RegistryHub.get<MimeTypeRegistrar>('mimeType')).toBe(registrar2);
+      expect(RegistryHub.get<PatternRegistrar>('pattern')).toBe(registrar2);
     });
 
     it('不应该允许在锁定状态下注册新注册器', () => {
       RegistryHub.lock();
       
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       
       expect(() => {
         RegistryHub.use(registrar);
@@ -61,7 +61,7 @@ describe('RegistryHub', () => {
     it('锁定后不应允许注册新注册器', () => {
       RegistryHub.lock();
       
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       
       expect(() => {
         RegistryHub.use(registrar);
@@ -69,7 +69,7 @@ describe('RegistryHub', () => {
     });
 
     it('应该调用所有已注册注册器的lock方法', () => {
-      const registrar1 = MimeTypeRegistrar.getInstance();
+      const registrar1 = PatternRegistrar.getInstance();
       const registrar2 = { 
         name: 'test-registrar', 
         lock: jest.fn(),
@@ -87,7 +87,7 @@ describe('RegistryHub', () => {
       
       RegistryHub.lock();
       
-      // 验证MimeTypeRegistrar的lock方法被调用
+      // 验证PatternRegistrar的lock方法被调用
       expect((registrar1 as any).isLocked).toBe(true);
       // 验证模拟注册器的lock方法被调用
       expect(registrar2.lock).toHaveBeenCalledTimes(1);
@@ -96,10 +96,10 @@ describe('RegistryHub', () => {
 
   describe('get', () => {
     it('应该能够获取已注册的注册器', () => {
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       RegistryHub.use(registrar);
       
-      const retrieved = RegistryHub.get<MimeTypeRegistrar>('mimeType');
+      const retrieved = RegistryHub.get<PatternRegistrar>('pattern');
       expect(retrieved).toBe(registrar);
     });
 
@@ -111,7 +111,7 @@ describe('RegistryHub', () => {
 
   describe('debug', () => {
     it('应该能够输出所有注册器的信息', () => {
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       RegistryHub.use(registrar);
       
       // Mock console.group 和 console.groupEnd
@@ -128,12 +128,12 @@ describe('RegistryHub', () => {
     });
 
     it('应该能够输出指定注册器的信息', () => {
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       RegistryHub.use(registrar);
       
       const inspectSpy = jest.spyOn(registrar, 'inspect').mockImplementation(() => {});
       
-      RegistryHub.debug('mimeType');
+      RegistryHub.debug('pattern');
       
       expect(inspectSpy).toHaveBeenCalled();
       
@@ -143,10 +143,10 @@ describe('RegistryHub', () => {
 
   describe('root proxy', () => {
     it('应该能够通过代理访问注册器', () => {
-      const registrar = MimeTypeRegistrar.getInstance();
+      const registrar = PatternRegistrar.getInstance();
       RegistryHub.use(registrar);
       
-      const proxyResult = (RegistryHub.root as any).mimeType;
+      const proxyResult = (RegistryHub.root as any).pattern;
       expect(proxyResult).toBe(registrar);
     });
   });

@@ -19,7 +19,6 @@ export * from './registrars';
 import {
     DomainRegistrar,
     HtmlTemplateRegistrar,
-    MimeTypeRegistrar,
     PatternRegistrar,
     SystemRegistrar,
 } from './registrars';
@@ -28,7 +27,6 @@ import { DataProcessorRegistrar } from '../data-processor';
 
 // 初始化默认注册器
 // 在模块加载时自动注册常用的注册器实例，确保它们随时可用
-RegistryHub.use(MimeTypeRegistrar.getInstance());
 RegistryHub.use(SystemRegistrar.getInstance());
 RegistryHub.use(HtmlTemplateRegistrar.getInstance());
 RegistryHub.use(DomainRegistrar.getInstance());

@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单一 package.json + 多入口模式。所有 24 个包通过 `exports` 字段暴露，每个入口提供 ESM、CJS 和类型声明三种格式。
+OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单一 package.json + 多入口模式。所有 25 个包通过 `exports` 字段暴露，每个入口提供 ESM、CJS 和类型声明三种格式。
 
 **核心原则**：
 - 严格分层，低层不依赖高层
@@ -35,13 +35,14 @@ OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单�
 | `@orbitjs/composable` | logger, async | 可组合能力系统（ComposableBase + AbilityDefinition） |
 | `@orbitjs/context` | registry | 请求上下文（RequestContextBuilder） |
 
-### 第 2 层：功能工具包（5 个）
+### 第 2 层：功能工具包（6 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
 | `@orbitjs/schema` | registry | Schema 定义与注册 |
-| `@orbitjs/validation` | registry | 验证系统（ValidatorRegistrar + 引擎） |
+| `@orbitjs/validation` | registry, mime | 验证系统（ValidatorRegistrar + 引擎） |
 | `@orbitjs/pipeline` | logger, context | 管道执行器 |
+| `@orbitjs/mime` | registry | MIME 类型管理（扩展名 ↔ MIME 映射，自动注册常用类型） |
 | `@orbitjs/event-dom` | events, utils, runtime, logger, error, async | DOM 事件适配器（手势：Tap, Swipe, Drag, LongPress） |
 | `@orbitjs/i18n` | 无 | 国际化（归入第 0 层，此处不重复） |
 
@@ -114,6 +115,10 @@ pipeline (L2)
   └─ context (L1)
 
 validation (L2)
+  ├─ registry (L1)
+  └─ mime (L2)
+
+mime (L2)
   └─ registry (L1)
 
 schema (L2)
@@ -232,7 +237,7 @@ node scripts/build.js --package i18n
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 24 |
+| 总包数 | 25 |
 | 零依赖包 | 8 |
 | 测试套件 | 204 |
 | 测试用例 | 2263 |

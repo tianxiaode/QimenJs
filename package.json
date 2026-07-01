@@ -129,6 +129,11 @@
       "require": "./dist/i18n/index.js",
       "types": "./dist/i18n/index.d.ts"
     },
+    "./mime": {
+      "import": "./dist/mime/index.esm.js",
+      "require": "./dist/mime/index.js",
+      "types": "./dist/mime/index.d.ts"
+    },
     "./data-processor-abp": {
       "import": "./dist/data-processor-abp/index.esm.js",
       "require": "./dist/data-processor-abp/index.js",

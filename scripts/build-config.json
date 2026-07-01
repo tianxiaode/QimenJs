@@ -67,7 +67,7 @@
       "entry": "src/validation/index.ts",
       "outDir": "dist/validation",
       "rootDir": "src/validation",
-      "dependencies": ["registry"],
+      "dependencies": ["registry", "mime"],
       "packageName": "@orbitjs/validation"
     },
     "task": {
@@ -153,6 +153,13 @@
       "rootDir": "src/i18n",
       "dependencies": [],
       "packageName": "@orbitjs/i18n"
+    },
+    "mime": {
+      "entry": "src/mime/index.ts",
+      "outDir": "dist/mime",
+      "rootDir": "src/mime",
+      "dependencies": ["registry"],
+      "packageName": "@orbitjs/mime"
     },
     "data-processor-abp": {
       "entry": "src/data-processor-abp/index.ts",
