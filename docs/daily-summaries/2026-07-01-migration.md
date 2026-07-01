@@ -2,25 +2,38 @@
 
 ## 主要完成
 
-### 1. 旧版 Ability 迁移为 AbilityDefinition（第一批：2 个）
+### 1. 全部旧版 Ability 迁移为 AbilityDefinition（15 个）
 
-将 manager 目录下使用 `DebounceAbilityBase` + 废弃 `getDebouncedAction()` 的旧版 Ability 迁移为新版 `AbilityDefinition` 普通对象，使用 `this.debounce()` 替代。
+将 manager 目录下所有使用 `AbilityBase`/`DebounceAbilityBase` + `expose(proxy)` 的旧版 Ability 迁移为新版 `AbilityDefinition` 普通对象。
 
-| 文件 | 迁移前 | 迁移后 |
-|------|--------|--------|
-| `FlatLocalMutationAbility.ts` | `class extends DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
-| `FlatRemoteGetAllAbility.ts` | `class extends DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
+**迁移模式**：
+- `proxy.host` → `this`（方法 bind 到宿主，this 直接指向宿主）
+- `proxy.self.xxx()` → `this._xxx()`（内部方法直接调用）
+- `getDebouncedAction()` → `this.debounce()`
+- `getOrCreateState()` → `this.abilityState()` / 闭包变量
+
+| 批次 | 文件 | 迁移前 | 迁移后 |
+|------|------|--------|--------|
+| 1 | `FlatLocalMutationAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
+| 1 | `FlatRemoteGetAllAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
+| 2 | `FlatRemoteListAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
+| 2 | `RemoteToggleAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` |
+| 3 | `TreeManagerAbility.ts` | `DebounceAbilityBase` + `proxy.self.getDebouncedAction()` | `AbilityDefinition` + `this.debounce()` + `this._xxx()` |
+| 4 | `FlatLocalDeleteAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 4 | `FlatLocalStateAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 5 | `LocalGetAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 5 | `LocalListAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 6 | `RemoteCreateAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 6 | `RemoteDeleteAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 7 | `RemoteGetAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 7 | `RemoteUpdateAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 8 | `FlatRemoteQueryAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 8 | `FlatRemoteStateAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
+| 8 | `TreeRemoteStateAbility.ts` | `AbilityBase` + `proxy.host` | `AbilityDefinition` + `this` |
 
 ### 2. State 类 abilities 类型声明修正
 
 将 4 个 State 类的 `abilities` 类型从 `AbilityConstructor[]` 改为 `AbilityType[]`，以支持混合使用 `AbilityDefinition` 和 `AbilityConstructor`。
-
-| 文件 | 修改 |
-|------|------|
-| `BaseEntityState.ts` | `AbilityConstructor[]` → `AbilityType[]` |
-| `FlatLocalEntityState.ts` | `AbilityConstructor[]` → `AbilityType[]` |
-| `FlatRemoteEntityState.ts` | `AbilityConstructor[]` → `AbilityType[]` |
-| `TreeRemoteEntityState.ts` | `AbilityConstructor[]` → `AbilityType[]` |
 
 ### 3. 测试文件更新
 
@@ -33,37 +46,25 @@
 | `system-abilities.test.ts` | 更新为验证 `AbilityDefinition` 对象而非 class 实例 |
 | `abilities.test.ts` | 修复 EventAbility dispose 测试匹配新架构 |
 
-### 4. AbilityProxy 兼容类型
+### 4. 清理工作
 
-在 `AbilityBase.ts` 中添加 `AbilityProxy` 类型别名（`type AbilityProxy = any`），让尚未迁移的旧版 Ability 代码能编译通过。迁移完成后移除。
+- 移除 `AbilityProxy` 兼容类型（所有源码已不再引用）
+- 移除测试中未使用的 `DebounceAbilityBase` 导入
 
 ## 测试结果
 
 - **全量测试**: 206/206 套件通过，2294/2294 测试通过
 
-## 待迁移的旧版 Ability（13 个）
+## 迁移完成状态
 
-manager 目录下仍有 13 个旧版 Ability 使用 `AbilityProxy` + `expose(proxy)` 模式：
+所有 entity 包的 Ability（state 目录 9 个 + manager 目录 15 个 + SchemaAbility 1 个 = 25 个）已全部迁移为 `AbilityDefinition` 普通对象。
 
-| 文件 | 使用方式 |
-|------|----------|
-| `FlatRemoteListAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` |
-| `RemoteToggleAbility.ts` | `DebounceAbilityBase` + `getDebouncedAction()` |
-| `TreeManagerAbility.ts` | `DebounceAbilityBase` + `proxy.self.getDebouncedAction()` |
-| `FlatRemoteQueryAbility.ts` | `AbilityBase` + `proxy.host` |
-| `FlatRemoteStateAbility.ts` | `AbilityBase` + `proxy.host` |
-| `TreeRemoteStateAbility.ts` | `AbilityBase` + `proxy.host` |
-| `RemoteCreateAbility.ts` | `AbilityBase` + `proxy.host` |
-| `RemoteDeleteAbility.ts` | `AbilityBase` + `proxy.host` |
-| `RemoteGetAbility.ts` | `AbilityBase` + `proxy.host` |
-| `RemoteUpdateAbility.ts` | `AbilityBase` + `proxy.host` |
-| `FlatLocalDeleteAbility.ts` | `AbilityBase` + `proxy.host` |
-| `FlatLocalStateAbility.ts` | `AbilityBase` + `proxy.host` |
-| `LocalGetAbility.ts` | `AbilityBase` + `proxy.host` |
-| `LocalListAbility.ts` | `AbilityBase` + `proxy.host` |
+**仍可清理的旧代码**：
+- `DebounceAbilityBase.ts` — 不再有源码引用，可考虑移除
+- `AbilityBase.ts` — 仍有 `SchemaAbility` 使用（class 形式），但 SchemaAbility 已迁移为 AbilityDefinition，可考虑移除 AbilityBase
 
 ## 下一步计划
 
-- [ ] 继续迁移下一批 2 个旧版 Ability 为 AbilityDefinition
-- [ ] 迁移完成后移除 `AbilityProxy` 兼容类型
-- [ ] 迁移完成后移除 `DebounceAbilityBase` 类
+- [ ] 评估是否移除 `DebounceAbilityBase` 类（无源码引用）
+- [ ] 评估是否移除 `AbilityBase` 类（仅 SchemaAbility 使用，但 SchemaAbility 已是 AbilityDefinition）
+- [ ] 评估是否移除 `ComposableRegistrar` 的旧版 Ability 预编译路径

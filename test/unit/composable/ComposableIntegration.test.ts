@@ -35,7 +35,6 @@ jest.mock('@/logger', () => {
 
 import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
 import { AbilityBase } from '@/composable/AbilityBase';
-import { DebounceAbilityBase } from '@/composable/DebounceAbilityBase';
 import { ComposableRegistrar } from '@/composable/ComposableRegistrar';
 import type { IExposeResult } from '@/composable/types/composable';
 
