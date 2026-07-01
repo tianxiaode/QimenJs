@@ -1,21 +1,18 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
 /**
  * FlatLocalStateAbility - 平铺本地状态能力
  * 
- * 暴露集合相关的状态属性，代理到 state 上
+ * 暴露集合相关的状态属性，代理到 state 上。
+ * this 指向宿主（Manager），this.state 可直接访问。
  */
-export class FlatLocalStateAbility extends AbilityBase {
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            loading: { get: () => proxy.host.state.loading },
-            isEmpty: { get: () => proxy.host.state.items.length === 0 },
-            total: { get: () => proxy.host.state.items.length },
-            items: { get: () => proxy.host.state.items },
-            hasChanges: { get: () => proxy.host.state.hasChanges },
-            getDeletionPlan: (ids: (string | number)[]) => proxy.host.state.getDeletionPlan(ids),
-            adds: { get: () => proxy.host.state.changes.added },
-            updates: { get: () => proxy.host.state.changes.updated },
-        };
-    }
-}
+export const FlatLocalStateAbility: AbilityDefinition = {
+    loading: { get() { return this.state.loading; } },
+    isEmpty: { get() { return this.state.items.length === 0; } },
+    total: { get() { return this.state.items.length; } },
+    items: { get() { return this.state.items; } },
+    hasChanges: { get() { return this.state.hasChanges; } },
+    getDeletionPlan(ids: (string | number)[]) { return this.state.getDeletionPlan(ids); },
+    adds: { get() { return this.state.changes.added; } },
+    updates: { get() { return this.state.changes.updated; } },
+};
