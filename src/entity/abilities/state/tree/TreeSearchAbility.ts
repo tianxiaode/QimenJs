@@ -1,24 +1,20 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
-import type { IEntity, ITreeSearchParams } from '@/schema';
+import type { AbilityDefinition } from '@/composable';
+import type { IEntity } from '@/schema';
 import { array } from '@orbitjs/utils';
 
-export class TreeSearchAbility extends AbilityBase {
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            applySearchExpansion: () => proxy.self.applySearchExpansion(),
-            applySort: (list: IEntity[]) => proxy.self.applySort(list),
-            matchKeyword: (node: IEntity, keyword: string) => proxy.self.matchKeyword(node, keyword),
-        };
-    }
+/**
+ * TreeSearchAbility - 树搜索能力
+ * 
+ * 为宿主提供树形结构的搜索和排序功能。
+ * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/searchFields/search 可直接访问。
+ */
+export const TreeSearchAbility: AbilityDefinition = {
+    applySearchExpansion() {
+        const expandedField = this.expandedField;
+        const pidField = this.parentIdField;
+        const keyword = this.search.keyword!.toLowerCase();
 
-    protected applySearchExpansion(): void {
-        const host = this.host as any;
-        const expandedField = host.expandedField;
-        const pidField = host.parentIdField;
-        const keyword = host.search.keyword!.toLowerCase();
-
-        // 关键：必须按深度降序（从深到浅）
-        const sortedNodes = Array.from(host.nodes.values()).sort(
+        const sortedNodes = Array.from(this.nodes.values()).sort(
             (a: any, b: any) => (b._depth || 0) - (a._depth || 0)
         );
 
@@ -28,39 +24,34 @@ export class TreeSearchAbility extends AbilityBase {
             const id = node.id;
             const pid = node[pidField];
 
-            // 如果我命中了，或者我的孩子命中了（即我在 Set 里）
             if (this.matchKeyword(node, keyword) || parentIdsToExpand.has(id)) {
                 node[expandedField] = true;
 
-                // 向上层传导：把父 ID 加入 Set
-                if (pid && pid !== host.root) {
+                if (pid && pid !== this.root) {
                     parentIdsToExpand.add(pid);
                 }
             }
         });
-    }
+    },
 
-    protected applySort(list: IEntity[]): IEntity[] {
-        const host = this.host as any;
-        if (!host.search.sortBy || list.length <= 1) return list;
+    applySort(list: IEntity[]): IEntity[] {
+        if (!this.search.sortBy || list.length <= 1) return list;
 
         return array.orderBy(list, [
             {
-                by: host.search.sortBy as keyof IEntity,
-                order: host.search.order as 'asc' | 'desc',
+                by: this.search.sortBy as keyof IEntity,
+                order: this.search.order as 'asc' | 'desc',
             },
         ]);
-    }
+    },
 
-    protected matchKeyword(node: IEntity, keyword: string): boolean {
-        const host = this.host as any;
+    matchKeyword(node: IEntity, keyword: string): boolean {
         if (!keyword) return false;
 
         const k = keyword.toLowerCase();
-        // 使用 some：只要有一个字段匹配就返回 true
-        return host.searchFields.some((field: string) => {
+        return this.searchFields.some((field: string) => {
             const value = (node as any)[field];
             return typeof value === 'string' && value.toLowerCase().includes(k);
         });
-    }
-}
+    },
+};
