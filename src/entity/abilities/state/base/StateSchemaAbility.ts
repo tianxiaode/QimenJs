@@ -1,30 +1,25 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
-import type { IBaseEntityState } from '@/entity/types';
+import type { AbilityDefinition } from '@/composable';
 
-export class StateSchemaAbility extends AbilityBase {
-    private getSchema(proxy: AbilityProxy) {
-        return (proxy.host as IBaseEntityState).schema;
-    }
-
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        const schema = () => this.getSchema(proxy);
-
-        return {
-            idField: { get: () => schema().idField || 'id' },
-            idType: { get: () => schema().idType || 'number' },
-            nameField: { get: () => schema().nameField || 'name' },
-            defaultSort: { get: () => schema().defaultSort || '' },
-            defaultOrder: { get: () => schema().defaultOrder || 'asc' },
-            searchFields: { get: () => schema().searchFields || [] },
-            isTree: { get: () => !!schema().isTree },
-            isLazy: { get: () => schema().isTree ? !!(schema() as any).isLazy : false },
-            root: { get: () => schema().isTree ? (schema() as any).root : '' },
-            parentIdField: { get: () => schema().isTree ? (schema() as any).parentIdField : '' },
-            childrenField: { get: () => schema().isTree ? (schema() as any).childrenField : '' },
-            pathField: { get: () => schema().isTree ? (schema() as any).pathField : '' },
-            leafField: { get: () => schema().isTree ? (schema() as any).leafField : '' },
-            expandedField: { get: () => schema().isTree ? (schema() as any).expandedField : '' },
-            useFlat: { get: () => schema().isTree ? !!(schema() as any).useFlat : false },
-        };
-    }
-}
+/**
+ * StateSchemaAbility - Schema 属性代理能力
+ * 
+ * 为宿主提供 schema 相关属性的便捷访问。
+ * this 指向宿主（BaseEntityState），this.schema 可直接访问。
+ */
+export const StateSchemaAbility: AbilityDefinition = {
+    idField: { get() { return this.schema?.idField || 'id'; } },
+    idType: { get() { return this.schema?.idType || 'number'; } },
+    nameField: { get() { return this.schema?.nameField || 'name'; } },
+    defaultSort: { get() { return this.schema?.defaultSort || ''; } },
+    defaultOrder: { get() { return this.schema?.defaultOrder || 'asc'; } },
+    searchFields: { get() { return this.schema?.searchFields || []; } },
+    isTree: { get() { return !!this.schema?.isTree; } },
+    isLazy: { get() { return this.schema?.isTree ? !!(this.schema as any).isLazy : false; } },
+    root: { get() { return this.schema?.isTree ? (this.schema as any).root : ''; } },
+    parentIdField: { get() { return this.schema?.isTree ? (this.schema as any).parentIdField : ''; } },
+    childrenField: { get() { return this.schema?.isTree ? (this.schema as any).childrenField : ''; } },
+    pathField: { get() { return this.schema?.isTree ? (this.schema as any).pathField : ''; } },
+    leafField: { get() { return this.schema?.isTree ? (this.schema as any).leafField : ''; } },
+    expandedField: { get() { return this.schema?.isTree ? (this.schema as any).expandedField : ''; } },
+    useFlat: { get() { return this.schema?.isTree ? !!(this.schema as any).useFlat : false; } },
+};
