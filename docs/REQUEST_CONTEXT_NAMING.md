@@ -31,7 +31,7 @@ export type FlowContext = RequestContext;
 import { RequestContext } from '@/types';
 
 // 或
-import { RequestContext } from '@/kernel/types';
+import { RequestContext } from '@/context';
 
 function handler(ctx: RequestContext) {
     // ...
@@ -44,7 +44,7 @@ function handler(ctx: RequestContext) {
 import { FlowContext } from '@/types';
 
 // 或
-import { FlowContext } from '@/kernel/types';
+import { FlowContext } from '@/context';
 
 function handler(ctx: FlowContext) {
     // ...

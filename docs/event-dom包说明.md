@@ -264,11 +264,11 @@ import { createEventAdapter } from '@/events/adapters';
 import { createEventAdapter } from '@orbitjs/event-dom';
 ```
 
-### 从 kernel/events 迁移
+### 从 events 包独立
 
 ```typescript
 // 旧版本
-import { DomEventAdapter } from '@/kernel/events/adapters/dom';
+import { DomEventAdapter } from '@/event-dom';
 
 // 新版本
 import { DomEventAdapter } from '@orbitjs/event-dom';
@@ -276,7 +276,7 @@ import { DomEventAdapter } from '@orbitjs/event-dom';
 
 ## 测试
 
-测试文件位于 `test/unit/kernel/events/adapters/` 目录，包含：
+测试文件位于 `test/unit/event-dom/` 目录，包含：
 
 - DomEventAdapter 测试
 - 各手势处理器测试

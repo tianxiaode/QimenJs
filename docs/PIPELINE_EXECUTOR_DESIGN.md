@@ -5,13 +5,13 @@
 ### 1.1 问题分析
 
 **当前情况**：
-- `kernel/pipeline/runner` - HTTP 管道执行器（简单）
+- `pipeline/executor` - HTTP 管道执行器（简单）
 - `validation/core/validate` - Validation 执行器（完整）
 - `data-processor` - 数据处理注册表（无执行器）
 
 **问题**：
 1. 数据处理注册表只负责注册和获取管道，没有执行能力
-2. 需要依赖外部的执行器（如 kernel/pipeline/runner）
+2. 需要依赖外部的执行器（如 pipeline/executor）
 3. 缺少统一的监控和调试能力
 
 ### 1.2 解决方案
@@ -330,7 +330,7 @@ const result = await executor.execute(context, processors, {
 ### 使用场景
 
 - ✅ 数据处理管道执行
-- ✅ HTTP 管道执行（可替代 kernel/pipeline/runner）
+- ✅ HTTP 管道执行（可替代 pipeline/executor）
 - ✅ Validation 管道执行（可替代 validation/core/validate）
 - ✅ 任何需要管道处理的场景
 

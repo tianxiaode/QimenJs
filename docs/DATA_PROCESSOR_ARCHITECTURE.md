@@ -1390,9 +1390,9 @@ export enum DataProcessorErrorCode {
 ### C. 参考资源
 
 - [注册表设计文档](../src/registry/README.md)
-- [管道执行器源码](../src/kernel/pipeline/runner.ts)
+- [管道执行器源码](../src/pipeline/executor.ts)
 - [实体管理器源码](../src/entity/manager/CoreEntityManager.ts)
-- [HTTP 客户端源码](../src/kernel/http/HttpClient.ts)
+- [HTTP 客户端源码](../src/http/HttpClient.ts)
 
 ---
 

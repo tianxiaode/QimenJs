@@ -1,173 +1,79 @@
 # @orbitjs/composable
 
-**层级**: 第 1 层  
-**状态**: ✅ 完成  
-**测试**: ✅ 通过（95/95，含 39 个集成测试）  
-**覆盖率**: 90.38%（分支）
+**层级**: 第 2 层  
+**状态**: 完成  
+**测试**: 通过  
+**覆盖率**: ~90%（分支）
 
 ## 构建历史
 
 ### 2026-07-01
-- ✅ **实现 Per-Host Ability 私有状态（abilityStates）**
-  - ComposableBase 新增 `_abilityStates` Map，存储每个 Ability 在每个宿主上的独立状态
-  - 新增 `getOrCreateAbilityState(ability, key, factory)` 方法
-  - 新增 `getAbilityState(ability, key)` 方法
-  - 新增 `clearAbilityStates(ability)` 方法
-  - `dispose()` 中自动清理所有能力的 Per-Host 状态
-- ✅ **AbilityBase 新增 `getOrCreateState` / `getState` 便捷方法**
-  - `getOrCreateState(factory, key?)` — 获取或创建当前 Ability 在当前宿主上的私有状态
-  - `getState(key?)` — 获取（不创建）当前 Ability 在当前宿主上的私有状态
-- ✅ **修复多宿主共享 Ability 实例时的隔离问题**
-  - getter/setter 调用时临时切换 `sharedHostRef` 和 `ability.host`，确保 `proxy.host` 和 `this.host` 都指向当前宿主
-  - 方法调用时通过 `wrappedFn` 临时切换 `sharedHostRef` 和 `ability.host`
-  - `createDisposer` 中 `onDispose` 前临时设置 `ability.host`，执行后恢复原值
-- ✅ **ComposableIntegration 集成测试全部通过（39/39）**
-  - 覆盖：proxy.host 多实例隔离、getter/setter 隔离、方法 bind、dispose 逆序、onDispose、DebounceAbilityBase、能力冲突、缓存共享、继承链、abilityStates、dispose 安全性、完整生命周期
+- 完成 AbilityDefinition 迁移：15 个 Manager Ability 从 class 迁移为纯对象
+- 移除 AbilityBase、DebounceAbilityBase、ComposableRegistrar 旧版代码
+- 简化 ComposableBase 为纯 AbilityDefinition 架构
+- 移除 setupLegacyAbility、isAbilityDefinition、DISPOSERS_KEY、AbilityType 等旧版分支
+- 清理 10 个测试文件中的旧版引用
+- 删除 3 个旧版测试文件（AbilityBase.test.ts、ComposableRegistrar.test.ts、DebounceAbilityBase.test.ts）
+
+### 2026-07-01（早期）
+- 实现 Per-Host Ability 私有状态（abilityStates）
+- 修复多宿主共享 Ability 实例时的隔离问题
+- ComposableIntegration 集成测试全部通过
 
 ### 2026-06-29
-- ✅ **修复 AbilityBase `this` 绑定系统性 bug**
-  - 引入 `AbilityProxy` 代理对象：`{ host, self }`
-  - `expose()` 签名改为 `expose(proxy: AbilityProxy)`
-  - getter/setter 通过 `proxy.host`/`proxy.self` 访问，不依赖 `this`
-  - 方法 `bind(host)` 绑定，`this` 就是宿主
-  - `proxy.host` 是 getter，从 `sharedHostRef` 读取，支持多实例隔离
-- ✅ **ComposableBase 新增 `host` getter**
-  - `get host() { return this; }`，统一 getter/setter 和方法中的宿主访问
-- ✅ **全部 29 个 Ability 子类迁移到 `expose(proxy)` API**
-- ✅ **清理调试代码**（移除 `console.log`）
+- 修复 AbilityBase `this` 绑定系统性 bug
+- 引入 AbilityProxy 代理对象
+- 全部 29 个 Ability 子类迁移到 expose(proxy) API
 
 ### 2026-06-27
-- ✅ **修复 ComposableRegistrar 抽象方法缺失**
-  - 添加 `register(AbilityClass, options?)` 方法实现
-  - 添加 `unregister(name)` 方法实现
-  - 解决 RegistrarBase 要求子类实现 `register`/`unregister` 抽象方法的问题
-- ✅ **新增 AbilityConstructor 类型**
-  - 定义 `type AbilityConstructor = new () => IPrecompilableAbility`
-  - 替代 `typeof AbilityBase`，解决抽象类不能 `new` 的问题
-  - 解决子类 `static abilities` 属性协变类型不兼容问题
-- ✅ **更新 ComposableBase 类型**
-  - `abilities` 类型从 `Array<typeof AbilityBase>` 改为 `readonly AbilityConstructor[]`
-  - `collectAbilities()` 返回类型同步更新
-- ✅ **删除旧编译产物**
-  - 删除 `src/composable/` 下所有 `.js` 和 `.d.ts` 文件
-  - 解决 Jest/ts-jest 优先加载旧版代码导致测试失败的问题
-- ✅ **所有测试通过（30/30）**
+- 修复 ComposableRegistrar 抽象方法缺失
+- 新增 AbilityConstructor 类型
+- 删除旧编译产物
 
 ### 2026-06-15
-- ✅ 重构 ComposableRegistrar 从 RegistrarBase 派生
-- ✅ 添加 ComposableEntry 类型到 types/composable.ts
-- ✅ 更新 ComposableBase.ts 和 ComposableRegistrar.ts 导入路径
-- ✅ 更新测试文件导入路径
-- ✅ **修复实例缓存问题**
-  - 添加 `abilityInstances` Map 缓存能力实例
-  - 修改 `get()` 实现懒加载 + 实例缓存
-  - 避免重复实例化能力类
-  - 保持"第一次获取时实例化并缓存"的设计原则
-- ✅ **重写单元测试**
-  - 重写 AbilityBase.test.ts 匹配新 API
-  - 重写 ComposableBase.test.ts 匹配新 API
-  - 重写 ComposableRegistrar.test.ts 匹配新 API
-  - 重写 index.test.ts 匹配新 API
-- ✅ **修复导入问题**
-  - 修复 DescriptorFactory.ts 导入路径
-  - 修复 data-processor RequestContext 导入
-  - 导出 IExposeResult 类型
+- 重构 ComposableRegistrar 从 RegistrarBase 派生
+- 重写单元测试
 
-### 之前
-- ✅ 实现 AbilityBase 和 ComposableBase
-- ✅ 实现预编译能力
-- ✅ 实现 expose() API
-- ✅ 实现 DescriptorFactory
-- ✅ 实现 DebounceAbilityBase
+## 当前架构
 
-## 测试状态
+### 核心类型
 
-### 测试覆盖
+| 类型 | 说明 |
+|------|------|
+| `AbilityDefinition` | 能力定义类型，`Record<string \| symbol, any>` |
+| `ComposableBase` | 可组合基类，提供能力注入和生命周期管理 |
+| `IComposableBase` | ComposableBase 接口 |
 
-| 文件 | 语句覆盖 | 分支覆盖 | 函数覆盖 |
-|------|----------|----------|----------|
-| AbilityBase.ts | 100% | 90% | 100% |
-| ComposableBase.ts | 92% | 85% | 100% |
-| ComposableRegistrar.ts | 54% | 28% | 67% |
-| DebounceAbilityBase.ts | 30% | 0% | 0% |
-| DescriptorFactory.ts | 3% | 0% | 0% |
+### ComposableBase API
 
-### 通过的测试（30个）
+| 方法 | 说明 |
+|------|------|
+| `abilityState(key, creator?)` | 获取/创建能力私有状态（per-host 隔离） |
+| `setAbilityState(key, value)` | 设置能力私有状态 |
+| `debounce(key, fn, wait?, immediate?)` | 获取/创建防抖函数（per-host 隔离） |
+| `onCleanup(callback)` | 注册清理回调（dispose 时逆序执行） |
+| `getStatic(key)` / `setStatic(key, value)` | 类级缓存（跨实例共享） |
+| `dispose()` | 销毁：清理回调 → 取消防抖 → 清空状态 |
 
-**AbilityBase（9个）**
-- ✅ precompile - should create precompiled ability with name
-- ✅ precompile - should create descriptor factories for all exposed properties
-- ✅ precompile - should handle symbol properties
-- ✅ precompile - should handle getter/setter properties
-- ✅ descriptor factories - should create working descriptors for simple values
-- ✅ descriptor factories - should create working descriptors for methods
-- ✅ descriptor factories - should create working descriptors for getter/setter
-- ✅ disposer - should create disposer function
-- ✅ disposer - should call onDispose when disposer is called
+### 目录结构
 
-**ComposableBase（8个）**
-- ✅ constructor - should initialize with a logger
-- ✅ static abilities - should inject abilities from static property
-- ✅ static abilities - should inject multiple abilities
-- ✅ inheritance - should collect abilities from prototype chain
-- ✅ inheritance - should handle class with no abilities
-- ✅ getStatic and setStatic - should store and retrieve static values
-- ✅ getStatic and setStatic - should return undefined for non-existent keys
-- ✅ dispose - should dispose without errors
-
-**ComposableRegistrar（9个）**
-- ✅ get - should return precompiled ability and cache it
-- ✅ get - should return cached result on second call
-- ✅ get - should handle multiple ability classes
-- ✅ has - should return false before get is called
-- ✅ has - should return true after get is called
-- ✅ getAllNames - should return empty array initially
-- ✅ getAllNames - should return all cached ability names
-- ✅ clearCaches - should clear all caches
-- ✅ clear - should clear all data
-
-**index（4个）**
-- ✅ should export ComposableBase
-- ✅ should export AbilityBase
-- ✅ should allow creating custom ability
-- ✅ should allow creating composable with abilities
+```
+src/composable/
+├── ComposableBase.ts      # 核心基类
+├── index.ts               # 统一导出
+└── types/
+    └── composable.ts      # 类型定义
+```
 
 ## 已解决问题
 
-### 问题 1：ComposableRegistrar 缺少抽象方法（已解决 ✅）
-- **原因**: `RegistrarBase` 要求子类实现 `register()` 和 `unregister()` 抽象方法
-- **解决方案**: 实现 `register(AbilityClass, options?)` 和 `unregister(name)` 方法
-- **解决日期**: 2026-06-27
-
-### 问题 2：旧编译产物导致测试失败（已解决 ✅）
-- **原因**: `src/composable/` 下存在旧版 `.js`/`.d.ts` 文件，Jest 优先加载旧代码
-- **解决方案**: 删除所有旧编译产物
-- **解决日期**: 2026-06-27
-
-### 问题 3：静态 abilities 类型协变不兼容（已解决 ✅）
-- **原因**: `typeof AbilityBase` 是抽象类构造函数类型，子类用不同 Ability 类覆盖时 TypeScript 报类型不兼容
-- **解决方案**: 新增 `AbilityConstructor` 类型（`new () => IPrecompilableAbility`），`abilities` 类型改为 `readonly AbilityConstructor[]`
-- **解决日期**: 2026-06-27
-
-### 问题 4：collectFromPrototypeChain 方法不存在（已解决 ✅）
-- **原因**: 旧测试引用了不存在的方法
-- **解决方案**: 重写测试，使用 `collectAbilities()` 方法（通过原型链收集 + 去重 + 缓存）
-- **解决日期**: 2026-06-15（重写测试时解决）
-
-## 遗留工作
-
-### 高优先级
-- [ ] 将 entity 包中的 Ability 私有变量迁移到 `getOrCreateState`（StateCacheAbility._provider、StateDirtyAbility._snapshots、StateLocalMutationAbility._deleteSnapshots 等）
-
-### 中优先级
-- [ ] 编写 DescriptorFactory 测试
-
-### 低优先级
-- [ ] 优化预编译性能
-- [ ] 添加更多能力类型示例
+- AbilityBase/DebounceAbilityBase 类模式 → AbilityDefinition 纯对象模式
+- ComposableRegistrar 预编译缓存 → 不再需要
+- 多宿主隔离问题 → abilityState per-host Map
+- proxy.host/proxy.self → this 直接指向宿主
 
 ## 参考资料
 
-- [设计决策：Composable 系统重构](../../design-decisions/2026-06-15-composable-refactoring.md)
-- [设计决策：注册器架构统一](../../design-decisions/2026-06-15-registrar-architecture.md)
 - [包文档：composable](../../architecture/packages/composable.md)
+- [ComposableBase 最佳实践](../../best-practices/composable-best-practices.md)
+- [能力系统使用指南](../../guides/with-abilities-guide.md)
