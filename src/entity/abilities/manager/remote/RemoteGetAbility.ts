@@ -1,34 +1,26 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
-export class RemoteGetAbility extends AbilityBase {
+/**
+ * RemoteGetAbility - 远程获取能力
+ * 
+ * this 指向宿主（Manager），this.state 可直接访问。
+ */
+export const RemoteGetAbility: AbilityDefinition = {
     /**
-     * 暴露远程获取实体的方法
+     * 远程获取实体
      *
-     * @returns 包含 remoteGet 方法的对象，用于远程获取单个实体
+     * @param id 要获取的实体ID
+     * @returns Promise<any> 获取的实体的Promise
      */
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            /**
-             * 远程获取实体
-             *
-             * @param id 要获取的实体ID
-             * @returns Promise<any> 获取的实体的Promise
-             */
-            get: async (id: string | number): Promise<any> => {
-                const host = proxy.host;
-                const { idField } = host.schemaKeys;
+    async get(id: string | number): Promise<any> {
+        const { idField } = this.schemaKeys;
 
-                const options = await host.buildOptions('get', { [idField]: id }, null, {});
-                // 使用fetch方法发送GET请求
-                const context = await host.fetch('get', options);
+        const options = await this.buildOptions('get', { [idField]: id }, null, {});
+        const context = await this.fetch('get', options);
 
-                // 解析响应数据
-                const result = context.data?.item;
+        const result = context.data?.item;
 
-                // 更新UI状态
-                await host.state.updateItem(result);
-                return result;
-            },
-        };
-    }
-}
+        await this.state.updateItem(result);
+        return result;
+    },
+};
