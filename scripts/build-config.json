@@ -153,6 +153,20 @@
       "rootDir": "src/i18n",
       "dependencies": [],
       "packageName": "@orbitjs/i18n"
+    },
+    "data-processor-abp": {
+      "entry": "src/data-processor-abp/index.ts",
+      "outDir": "dist/data-processor-abp",
+      "rootDir": "src/data-processor-abp",
+      "dependencies": ["data-processor", "context"],
+      "packageName": "@orbitjs/data-processor-abp"
+    },
+    "data-processor-spring": {
+      "entry": "src/data-processor-spring/index.ts",
+      "outDir": "dist/data-processor-spring",
+      "rootDir": "src/data-processor-spring",
+      "dependencies": ["data-processor", "context"],
+      "packageName": "@orbitjs/data-processor-spring"
     }
   },
   "build": {

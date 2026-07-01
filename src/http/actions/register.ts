@@ -4,6 +4,7 @@
 
 import { HttpActionRegistrar, HttpActionCategory } from '../HttpActionRegistrar';
 import { CommonParamsEnricherHandler } from './prepare/CommonParamsEnricher';
+import { TokenInjectorHandler } from './prepare/TokenInjector';
 import { UrlBuilderHandler } from './prepare/UrlBuilder';
 import { FetchTransportHandler } from './exchange/FetchTransport';
 import { XhrTransportHandler } from './exchange/XhrTransport';
@@ -25,6 +26,13 @@ export function registerDefaultHttpActions(): void {
             offset: 10,
             handler: CommonParamsEnricherHandler,
             description: '合并公共参数',
+        },
+        {
+            name: 'TokenInjector',
+            category: HttpActionCategory.PREPARE,
+            offset: 15,
+            handler: TokenInjectorHandler,
+            description: 'Token 注入',
         },
         {
             name: 'UrlBuilder',

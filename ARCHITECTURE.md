@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单一 package.json + 多入口模式。所有 22 个包通过 `exports` 字段暴露，每个入口提供 ESM、CJS 和类型声明三种格式。
+OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单一 package.json + 多入口模式。所有 24 个包通过 `exports` 字段暴露，每个入口提供 ESM、CJS 和类型声明三种格式。
 
 **核心原则**：
 - 严格分层，低层不依赖高层
@@ -45,11 +45,13 @@ OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单�
 | `@orbitjs/event-dom` | events, utils, runtime, logger, error, async | DOM 事件适配器（手势：Tap, Swipe, Drag, LongPress） |
 | `@orbitjs/i18n` | 无 | 国际化（归入第 0 层，此处不重复） |
 
-### 第 3 层：高级功能包（3 个）
+### 第 3 层：高级功能包（5 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
 | `@orbitjs/data-processor` | registry, context, pipeline | 数据处理器（注册 + 管道执行） |
+| `@orbitjs/data-processor-abp` | data-processor, context | ABP 数据处理管道（分页转换、PagedResultDto 提取、审计清理） |
+| `@orbitjs/data-processor-spring` | data-processor, context | Spring 数据处理管道（分页转换、Page\<T\> 提取） |
 | `@orbitjs/http` | context, pipeline, registry, task | HTTP 客户端（HttpClient + StreamClient） |
 | `@orbitjs/system-abilities` | events, composable, registry, event-dom | 系统能力集（Domain, Event, System, DomEvents） |
 
@@ -90,6 +92,14 @@ data-processor (L3)
   ├─ registry (L1)
   ├─ context (L1)
   └─ pipeline (L2)
+
+data-processor-abp (L3)
+  ├─ data-processor (L3)
+  └─ context (L1)
+
+data-processor-spring (L3)
+  ├─ data-processor (L3)
+  └─ context (L1)
 
 event-dom (L2)
   ├─ events (L1)
@@ -222,7 +232,7 @@ node scripts/build.js --package i18n
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 22 |
+| 总包数 | 24 |
 | 零依赖包 | 8 |
 | 测试套件 | 204 |
 | 测试用例 | 2263 |
