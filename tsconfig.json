@@ -40,6 +40,7 @@
       "@orbitjs/http": ["src/http"],
       "@orbitjs/system-abilities": ["src/system-abilities"],
       "@orbitjs/entity": ["src/entity"],
+      "@orbitjs/i18n": ["src/i18n"],
       "@orbitjs/types": ["src/types"]
     }
   },

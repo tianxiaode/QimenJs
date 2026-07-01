@@ -123,6 +123,11 @@
       "import": "./dist/entity/index.esm.js",
       "require": "./dist/entity/index.js",
       "types": "./dist/entity/index.d.ts"
+    },
+    "./i18n": {
+      "import": "./dist/i18n/index.esm.js",
+      "require": "./dist/i18n/index.js",
+      "types": "./dist/i18n/index.d.ts"
     }
   },
   "files": [

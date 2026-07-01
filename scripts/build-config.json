@@ -146,6 +146,13 @@
       "rootDir": "src/entity",
       "dependencies": ["composable", "schema", "context", "http", "cache", "error", "system-abilities", "data-processor", "registry", "utils"],
       "packageName": "@orbitjs/entity"
+    },
+    "i18n": {
+      "entry": "src/i18n/index.ts",
+      "outDir": "dist/i18n",
+      "rootDir": "src/i18n",
+      "dependencies": [],
+      "packageName": "@orbitjs/i18n"
     }
   },
   "build": {
