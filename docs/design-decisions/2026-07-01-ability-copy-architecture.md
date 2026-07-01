@@ -76,21 +76,30 @@ abilityState(key: string, creator?: () => any) {
 }
 ```
 
-### 3. DebounceAbilityBase 可以放弃
+### 3. DebounceAbilityBase 可以放弃，防抖直接放 ComposableBase
 
-防抖 map 也挂在宿主上，不再需要单独的基类：
+防抖本质上是"per-host 的延迟执行函数"，和 `abilityState` 同一模式。直接在 ComposableBase 上提供 `debounce()` 方法：
 
+```typescript
+// ComposableBase
+debounce(key: string, fn: (...args: any[]) => any, wait?: number, immediate?: boolean) {
+    return this.abilityState(`__debounce_${key}`, () => debounce(fn, wait, immediate));
+}
+```
+
+Ability 里直接用：
 ```typescript
 const FlatLocalMutationAbility = {
     save() {
-        const debouncedSave = this.abilityState('debouncedSave', 
-            () => debounce(() => this._doSave(), 500));
-        debouncedSave();
+        this.debounce('save', () => this._doSave(), 500)();
     },
 };
 ```
 
-也可以保留一个工具函数 `getOrCreateDebounced(this, key, fn, wait)` 来复用防抖逻辑，避免散落各处。
+**优势**：
+- `DebounceAbilityBase` 整个类不再需要
+- 5 个继承它的子类（TreeManagerAbility、RemoteToggleAbility、FlatRemoteListAbility、FlatRemoteGetAllAbility、FlatLocalMutationAbility）直接改用 `this.debounce()`
+- 防抖函数的 `cancel()` 可在 dispose 时统一处理——遍历 abilityStates，对有 `cancel` 方法的值自动调用，不需要每个 Ability 自己注册 onCleanup
 
 ### 4. 大部分 Ability 不再需要 onDispose
 
@@ -126,6 +135,7 @@ const StateCacheAbility = {
 
 ### 需要新增的机制
 - `ComposableBase.abilityState(key, creator?)` — 私有状态管理
+- `ComposableBase.debounce(key, fn, wait?, immediate?)` — 防抖函数管理（基于 abilityState）
 - `ComposableBase.onCleanup(callback)` — 副作用清理注册
 - Ability 从类变为普通对象的定义方式
 - `setupAbilities()` 改为直接复制属性/方法到宿主
@@ -170,6 +180,6 @@ class StateDirtyAbility {
 ## 后续工作
 
 - [ ] 确定私有状态管理方案（abilityState vs Symbol）
-- [ ] 确定防抖工具函数是否保留
+- [x] 防抖方案：直接放 ComposableBase，`this.debounce(key, fn, wait, immediate)`
 - [ ] 确定普通对象的 Ability 定义格式（plain object vs 仍用 class 但不继承 AbilityBase）
 - [ ] 实施改造
