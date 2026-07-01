@@ -1,4 +1,4 @@
-import { PatternRegistrar } from '@orbitjs/registry';
+import { PatternRegistrar } from '@orbitjs/pattern';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler } from '../../types';
 import { validatePattern } from '../../utils';

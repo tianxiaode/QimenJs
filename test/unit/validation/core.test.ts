@@ -28,12 +28,7 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 import { doValidate, validationExecutor, ValidatorRegistrar, bootstrapValidators } from '@/validation';
-import { PatternRegistrar } from '@/registry';
-
-// 注册测试所需的 patterns
-const patternRegistrar = PatternRegistrar.getInstance();
-patternRegistrar.register('email', /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
-patternRegistrar.register('url', /^https?:\/\/[^\s]+$/);
+import '@orbitjs/pattern';
 
 // 启动验证器
 bootstrapValidators();

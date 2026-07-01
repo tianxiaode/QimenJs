@@ -3,7 +3,7 @@
  */
 
 import { FormatProcessor } from '@/validation/processors/format/format';
-import { PatternRegistrar } from '@orbitjs/registry';
+import '@orbitjs/pattern';
 
 function createContext(value: any, rule: any = {}) {
     return {
@@ -17,13 +17,6 @@ function createContext(value: any, rule: any = {}) {
 }
 
 describe('FormatProcessor', () => {
-    beforeEach(() => {
-        // Register test patterns
-        const patternRegistrar = PatternRegistrar.getInstance();
-        patternRegistrar.register('email', /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
-        patternRegistrar.register('url', /^https?:\/\/[^\s]+$/);
-    });
-
     it('should pass when format matches', async () => {
         const context = createContext('test@example.com', { type: 'format', format: 'email' });
         await FormatProcessor(context);

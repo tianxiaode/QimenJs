@@ -27,16 +27,9 @@ jest.mock('@orbitjs/logger', () => {
 
 import { validate, normalize, assert } from '@/validation/engine/validate';
 import { bootstrapValidators } from '@/validation';
-import { PatternRegistrar } from '@/registry';
+import '@orbitjs/pattern';
 
-// Register patterns and bootstrap
-const patternRegistrar = PatternRegistrar.getInstance();
-patternRegistrar.register('email', /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
-patternRegistrar.register('url', /^https?:\/\/[^\s]+$/);
-patternRegistrar.register('uppercase', /[A-Z]/);
-patternRegistrar.register('lowercase', /[a-z]/);
-patternRegistrar.register('digit', /[0-9]/);
-patternRegistrar.register('specialChar', /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/);
+// Bootstrap validators (patterns auto-registered by @orbitjs/pattern)
 bootstrapValidators();
 
 describe('validate sugar functions', () => {

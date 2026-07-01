@@ -19,7 +19,6 @@ export * from './registrars';
 import {
     DomainRegistrar,
     HtmlTemplateRegistrar,
-    PatternRegistrar,
     SystemRegistrar,
 } from './registrars';
 import { RegistryHub } from './RegistryHub';
@@ -30,5 +29,4 @@ import { DataProcessorRegistrar } from '../data-processor';
 RegistryHub.use(SystemRegistrar.getInstance());
 RegistryHub.use(HtmlTemplateRegistrar.getInstance());
 RegistryHub.use(DomainRegistrar.getInstance());
-RegistryHub.use(PatternRegistrar.getInstance());
 RegistryHub.use(DataProcessorRegistrar.getInstance());

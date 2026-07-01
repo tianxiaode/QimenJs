@@ -85,7 +85,6 @@ export interface DomainConfig {
  * 使用const断言确保类型安全，防止意外修改
  */
 export const SystemRegistrarName = 'system' as const;
-export const PatternRegistrarName = 'pattern' as const;
 export const DomainRegistrarName = 'domain' as const;
 export const HtmlTemplateRegistrarName = 'html' as const;
 export const DataProcessorRegistrarName = 'data-processor' as const;

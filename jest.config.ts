@@ -48,6 +48,7 @@ const config = {
     '^@orbitjs/composable$': '<rootDir>/src/composable',
     '^@orbitjs/data-processor$': '<rootDir>/src/data-processor',
     '^@orbitjs/mime$': '<rootDir>/src/mime',
+    '^@orbitjs/pattern$': '<rootDir>/src/pattern',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

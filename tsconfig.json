@@ -42,6 +42,7 @@
       "@orbitjs/entity": ["src/entity"],
       "@orbitjs/i18n": ["src/i18n"],
       "@orbitjs/mime": ["src/mime"],
+      "@orbitjs/pattern": ["src/pattern"],
       "@orbitjs/data-processor-abp": ["src/data-processor-abp"],
       "@orbitjs/data-processor-spring": ["src/data-processor-spring"],
       "@orbitjs/types": ["src/types"]
