@@ -1,27 +1,23 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
 /**
  * LocalGetAbility - 本地获取能力
  * 
- * 从本地内存中根据 ID 获取实体
+ * 从本地内存中根据 ID 获取实体。
+ * this 指向宿主（Manager），this.state 可直接访问。
  */
-export class LocalGetAbility extends AbilityBase {
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            get: (id: string | number) => {
-                const host = proxy.host;
-                const { state } = host;
-                const { idField } = host.compiledSchema;
+export const LocalGetAbility: AbilityDefinition = {
+    get(id: string | number) {
+        const { state } = this;
+        const { idField } = this.compiledSchema;
 
-                const result = state.sourceData.find(
-                    (item: any) => item[idField] === id
-                ) || null;
+        const result = state.sourceData.find(
+            (item: any) => item[idField] === id
+        ) || null;
 
-                state.item = result;
-                host.emit('got', result);
+        state.item = result;
+        this.emit('got', result);
 
-                return result;
-            },
-        };
-    }
-}
+        return result;
+    },
+};
