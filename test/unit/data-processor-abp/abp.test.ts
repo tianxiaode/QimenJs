@@ -4,6 +4,7 @@ import {
     createAbpAuditCleanHandler,
     createAbpSoftDeleteFilterHandler,
     createAbpErrorHandler,
+    convertToFieldErrors,
     getAbpPostHandlers,
 } from '@/data-processor-abp/post';
 import { registerAbpHandlers } from '@/data-processor-abp/register';
@@ -300,6 +301,93 @@ describe('ABP 后道处理器', () => {
             expect(ctx.error.validationErrors[0].message).toBe('Name is required');
         });
 
+        test('应该将验证错误转换为字段级映射', async () => {
+            const handler = createAbpErrorHandler();
+            const ctx = createContext();
+            ctx.response.isSuccess = false;
+            ctx.response.data = {
+                error: {
+                    code: 'Volo.Abp:Validation',
+                    message: 'Validation failed',
+                    details: null,
+                    validationErrors: [
+                        { message: 'Name is required', members: ['name'] },
+                        { message: 'Email is invalid', members: ['email'] },
+                    ],
+                },
+            };
+
+            await handler.handle(ctx);
+
+            expect(ctx.error.fieldErrors).toEqual({
+                name: ['Name is required'],
+                email: ['Email is invalid'],
+            });
+        });
+
+        test('一个错误关联多个字段时，每个字段都应包含该错误', async () => {
+            const handler = createAbpErrorHandler();
+            const ctx = createContext();
+            ctx.response.isSuccess = false;
+            ctx.response.data = {
+                error: {
+                    code: 'Volo.Abp:Validation',
+                    message: 'Validation failed',
+                    details: null,
+                    validationErrors: [
+                        { message: 'Passwords do not match', members: ['password', 'confirmPassword'] },
+                    ],
+                },
+            };
+
+            await handler.handle(ctx);
+
+            expect(ctx.error.fieldErrors).toEqual({
+                password: ['Passwords do not match'],
+                confirmPassword: ['Passwords do not match'],
+            });
+        });
+
+        test('同一字段多个错误应合并', async () => {
+            const handler = createAbpErrorHandler();
+            const ctx = createContext();
+            ctx.response.isSuccess = false;
+            ctx.response.data = {
+                error: {
+                    code: 'Volo.Abp:Validation',
+                    message: 'Validation failed',
+                    details: null,
+                    validationErrors: [
+                        { message: 'Name is required', members: ['name'] },
+                        { message: 'Name must be at least 2 characters', members: ['name'] },
+                    ],
+                },
+            };
+
+            await handler.handle(ctx);
+
+            expect(ctx.error.fieldErrors).toEqual({
+                name: ['Name is required', 'Name must be at least 2 characters'],
+            });
+        });
+
+        test('没有验证错误时 fieldErrors 应为 undefined', async () => {
+            const handler = createAbpErrorHandler();
+            const ctx = createContext();
+            ctx.response.isSuccess = false;
+            ctx.response.data = {
+                error: {
+                    code: 'Volo.Abp:01001',
+                    message: 'Entity not found',
+                    details: null,
+                },
+            };
+
+            await handler.handle(ctx);
+
+            expect(ctx.error.fieldErrors).toBeUndefined();
+        });
+
         test('成功响应时 shouldExecute 返回 false', () => {
             const handler = createAbpErrorHandler();
             const ctx = createContext();
@@ -317,6 +405,47 @@ describe('ABP 后道处理器', () => {
                 'abp-extract', 'abp-audit-clean', 'abp-soft-delete-filter', 'abp-error',
             ]);
         });
+    });
+});
+
+describe('convertToFieldErrors', () => {
+    test('应该将验证错误转换为字段级映射', () => {
+        const result = convertToFieldErrors([
+            { message: 'Name is required', members: ['name'] },
+            { message: 'Email is invalid', members: ['email'] },
+        ]);
+        expect(result).toEqual({
+            name: ['Name is required'],
+            email: ['Email is invalid'],
+        });
+    });
+
+    test('一个错误关联多个字段时，每个字段都应包含该错误', () => {
+        const result = convertToFieldErrors([
+            { message: 'Passwords do not match', members: ['password', 'confirmPassword'] },
+        ]);
+        expect(result).toEqual({
+            password: ['Passwords do not match'],
+            confirmPassword: ['Passwords do not match'],
+        });
+    });
+
+    test('同一字段多个错误应合并', () => {
+        const result = convertToFieldErrors([
+            { message: 'Name is required', members: ['name'] },
+            { message: 'Name must be at least 2 characters', members: ['name'] },
+        ]);
+        expect(result).toEqual({
+            name: ['Name is required', 'Name must be at least 2 characters'],
+        });
+    });
+
+    test('空数组应返回 undefined', () => {
+        expect(convertToFieldErrors([])).toBeUndefined();
+    });
+
+    test('undefined 应返回 undefined', () => {
+        expect(convertToFieldErrors(undefined)).toBeUndefined();
     });
 });
 

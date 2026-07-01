@@ -77,11 +77,31 @@ export interface AbpErrorResponse {
         validationErrors?: Array<{
             /** 错误消息 */
             message: string;
-            /** 关联成员 */
+            /** 关联成员（字段名列表） */
             members: string[];
         }>;
     };
 }
+
+/**
+ * 字段级验证错误映射
+ *
+ * 以字段名为 key，错误消息列表为值，方便前端表单校验展示
+ *
+ * @example
+ * ```typescript
+ * // ABP 原始格式：
+ * // validationErrors: [
+ * //   { message: 'Name is required', members: ['name'] },
+ * //   { message: 'Email is invalid', members: ['email'] },
+ * //   { message: 'Password too short', members: ['password', 'confirmPassword'] },
+ * // ]
+ * //
+ * // 转换后：
+ * // { name: ['Name is required'], email: ['Email is invalid'], password: ['Password too short'], confirmPassword: ['Password too short'] }
+ * ```
+ */
+export type AbpFieldErrors = Record<string, string[]>;
 
 /**
  * ABP 管道配置

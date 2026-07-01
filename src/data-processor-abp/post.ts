@@ -9,7 +9,7 @@
 import type { RequestContext } from '@/context';
 import type { DataProcessorHandler } from '@/data-processor/types';
 import { DataProcessorWeight } from '@/data-processor/weights';
-import type { AbpAuditFields, AbpErrorResponse, AbpPagedResult, AbpPipelineOptions } from './types';
+import type { AbpAuditFields, AbpErrorResponse, AbpFieldErrors, AbpPagedResult, AbpPipelineOptions } from './types';
 
 /**
  * ABP 数据提取
@@ -136,7 +136,8 @@ export function createAbpSoftDeleteFilterHandler(options?: AbpPipelineOptions): 
 /**
  * ABP 错误处理
  *
- * 将 ABP 标准错误格式转换为统一错误对象
+ * 将 ABP 标准错误格式转换为统一错误对象，
+ * 并将 validationErrors 转换为以字段名为 key 的 fieldErrors 映射
  */
 export function createAbpErrorHandler(): DataProcessorHandler {
     return {
@@ -144,7 +145,7 @@ export function createAbpErrorHandler(): DataProcessorHandler {
         weight: DataProcessorWeight.ERROR,
         tags: ['abp', 'post'],
         category: 'error',
-        description: 'ABP 错误处理：RemoteServiceErrorResponse 转换',
+        description: 'ABP 错误处理：RemoteServiceErrorResponse 转换 + 字段级错误映射',
 
         shouldExecute(context: RequestContext): boolean {
             return !context.response.isSuccess && !!context.response.data?.error;
@@ -155,16 +156,45 @@ export function createAbpErrorHandler(): DataProcessorHandler {
             if (!errorResponse?.error) return;
 
             const error = errorResponse.error;
+            const fieldErrors = convertToFieldErrors(error.validationErrors);
+
             context.error = {
                 code: error.code ?? 'ABP_ERROR',
                 message: error.message ?? 'Unknown error',
                 details: error.details,
                 validationErrors: error.validationErrors,
+                fieldErrors,
             };
 
             context.metadata.isErrorHandled = true;
         },
     };
+}
+
+/**
+ * 将 ABP validationErrors 转换为字段级错误映射
+ *
+ * ABP 原始格式：[{ message: 'Name is required', members: ['name'] }]
+ * 转换后：{ name: ['Name is required'] }
+ *
+ * 当一个错误关联多个字段时（如 password 和 confirmPassword），
+ * 每个字段都会包含该错误消息
+ */
+export function convertToFieldErrors(
+    validationErrors?: Array<{ message: string; members: string[] }>
+): AbpFieldErrors | undefined {
+    if (!validationErrors?.length) return undefined;
+
+    const result: AbpFieldErrors = {};
+    for (const ve of validationErrors) {
+        for (const member of ve.members) {
+            if (!result[member]) {
+                result[member] = [];
+            }
+            result[member].push(ve.message);
+        }
+    }
+    return result;
 }
 
 // ---- 辅助函数 ----
