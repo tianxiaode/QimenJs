@@ -1,4 +1,4 @@
-import { DebounceAbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 
 /**
  * RemoteToggleAbility - 远程状态切换能力
@@ -8,27 +8,17 @@ import { DebounceAbilityBase, type IExposeResult, type AbilityProxy } from '@/co
  * - 防抖提交（避免频繁请求）
  * - 操作失败自动回滚
  * - 支持同一资源不同字段独立控制
+ *
+ * this 指向宿主（Manager），this.state 可直接访问。
+ * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
-export class RemoteToggleAbility extends DebounceAbilityBase {
-    /**
-     * 暴露可被外部调用的方法集合
-     *
-     * @protected
-     * @returns {IExposeResult} 包含 toggle 方法的对象
-     */
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        const debouncedFetch = this.getDebouncedAction('toggle', this.internalToggle, 400, true);
+export const RemoteToggleAbility: AbilityDefinition = {
+    async toggle(item: any, field: string): Promise<any> {
+        return this.debounce('toggle', (i: any, f: string) => this._internalToggle(i, f), 400, true)(item, field);
+    },
 
-        return {
-            toggle: async (item: any, field: string): Promise<any> => {
-                return await debouncedFetch(item, field);
-            },
-        };
-    }
-
-    protected async internalToggle(item: any, field: string): Promise<any> {
-        const host = this.host;
-        const state = host.state;
+    async _internalToggle(item: any, field: string): Promise<any> {
+        const state = this.state;
         const idField = state.idField;
         const id = item[idField];
 
@@ -37,11 +27,11 @@ export class RemoteToggleAbility extends DebounceAbilityBase {
         item[field] = !oldValue;
         try {
             // 2. 触发提交请求
-            const options = await host.buildOptions('toggle', { id }, { item, field }, {});
-            const context = await host.fetch('toggle', options);
+            const options = await this.buildOptions('toggle', { id }, { item, field }, {});
+            const context = await this.fetch('toggle', options);
             const finalData = context.data.item || item;
             await state.updateItem(finalData);
-            host.emit('toggled', { id, item: finalData, field });
+            this.emit('toggled', { id, item: finalData, field });
             return state.item!;
         } catch (error) {
             // 3. 操作失败：回滚到旧值
@@ -49,5 +39,5 @@ export class RemoteToggleAbility extends DebounceAbilityBase {
             await state.updateItem(item);
             return state.item!;
         }
-    }
-}
+    },
+};
