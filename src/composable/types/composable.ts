@@ -92,13 +92,15 @@ export interface IExposeResult {
 // ============================================
 
 /**
- * 属性描述符工厂函数类型
+ * 描述符创建函数类型
+ * 
+ * 在 factory(host) 阶段调用，返回所有属性的 PropertyDescriptor Map
  * 
  * @template T - 宿主类型
  * @param host - 宿主对象
- * @returns 完整的属性描述符
+ * @returns 属性名到 PropertyDescriptor 的映射
  */
-export type DescriptorFactoryFn<T = any> = (host: T) => PropertyDescriptor;
+export type CreateDescriptorsFn<T = any> = (host: T) => Map<string | symbol, PropertyDescriptor>;
 
 /**
  * 销毁函数工厂类型
@@ -116,12 +118,15 @@ export type DisposerFactoryFn<T = any> = (host: T) => () => void;
  */
 export interface IPrecompiledAbility<T = any> {
     /**
-     * 属性描述符工厂映射
+     * 创建属性描述符
      * 
-     * key: 属性名（string 或 symbol）
-     * value: 工厂函数，返回完整的属性描述符
+     * 在 factory(host) 阶段调用，执行 expose(host) 并返回所有属性的 PropertyDescriptor。
+     * 闭包自然捕获 host，无需 hostRef 切换 hack。
+     * 
+     * @param host - 宿主对象
+     * @returns 属性名到 PropertyDescriptor 的映射
      */
-    readonly descriptorFactories: Map<string | symbol, DescriptorFactoryFn<T>>;
+    readonly createDescriptors: CreateDescriptorsFn<T>;
     
     /**
      * 销毁函数工厂（可选）
@@ -242,4 +247,4 @@ export type ExtractHostType<T extends IPrecompilableAbility> =
  * 
  * @template T - 宿主类型
  */
-export type AbilityProperties<T = any> = Record<string | symbol, DescriptorFactoryFn<T>>;
+export type AbilityProperties<T = any> = Record<string | symbol, PropertyDescriptor>;

@@ -3,7 +3,7 @@ import type {
     BindOptions,
     GestureSemantic,
 } from '../types/abilities';
-import type { IExposeResult, AbilityProxy } from '@/composable';
+import type { IExposeResult } from '@/composable';
 import { createEventAdapter } from '@/event-dom';
 import { AbilityBase } from '@/composable';
 
@@ -34,22 +34,15 @@ export class DomEventsAbility extends AbilityBase {
 
     /**
      * 暴露绑定事件的方法
-     * 
-     * @returns 包含bind方法的对象，用于绑定DOM事件
      */
-    protected expose(proxy: AbilityProxy): IExposeResult {
+    protected expose(host: any): IExposeResult {
         return {
             /**
              * 绑定DOM事件到目标元素
-             * 
-             * @param target 事件目标元素
-             * @param semantic 手势语义类型
-             * @param options 绑定选项
-             * @returns 绑定结果
              */
             bind: (target: EventTarget, semantic: GestureSemantic, options?: BindOptions) => {
-                const scope = proxy.host.eventScope;
-                return proxy.self.getAdapter().bind(target, semantic, scope, options, proxy.host);
+                const scope = host.eventScope;
+                return this.getAdapter().bind(target, semantic, scope, options, host);
             },
         };
     }
@@ -57,7 +50,7 @@ export class DomEventsAbility extends AbilityBase {
     /**
      * 在能力被释放时清理资源
      */
-    protected onDispose(): void {
+    protected onDispose(host: any): void {
         if (this._adapter) {
             this._adapter = undefined;
         }

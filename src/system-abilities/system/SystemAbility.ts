@@ -1,4 +1,4 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import { AbilityBase, type IExposeResult } from '@/composable';
 import type { SystemConfig } from '@/registry';
 import { SystemRegistrar } from '@/registry';
 
@@ -12,7 +12,7 @@ export class SystemAbility extends AbilityBase {
     /**
      * 暴露系统配置访问接口
      */
-    protected expose(proxy: AbilityProxy): IExposeResult {
+    protected expose(host: any): IExposeResult {
         const registrar = SystemRegistrar.getInstance();
         
         /**

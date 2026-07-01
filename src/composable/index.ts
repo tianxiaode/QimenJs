@@ -8,7 +8,7 @@ export type {
     IComposableBase,
     AbilityHostBase,
     IExposeResult,
-    DescriptorFactoryFn,
+    CreateDescriptorsFn,
     DisposerFactoryFn,
     IPrecompiledAbility,
     IPrecompilableAbility,
@@ -17,8 +17,7 @@ export type {
 } from './types/composable';
 
 // 核心类导出
-export { DescriptorFactory } from './DescriptorFactory';
 export { ComposableBase } from './ComposableBase';
-export { AbilityBase, type AbilityProxy } from './AbilityBase';
+export { AbilityBase } from './AbilityBase';
 export { DebounceAbilityBase } from './DebounceAbilityBase';
 export { ComposableRegistrar } from './ComposableRegistrar';
