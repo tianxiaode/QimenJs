@@ -1,52 +1,56 @@
-import { AbilityBase, type IExposeResult, type AbilityProxy } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 import { CacheFactory } from '@/cache';
-import type { IBaseEntityState } from '@/entity/types';
 import type { ICacheProvider } from '@/cache';
 
-export class StateCacheAbility extends AbilityBase {
-    private _provider: ICacheProvider | null = null;
+/**
+ * StateCacheAbility - 缓存能力
+ * 
+ * 为宿主提供缓存管理功能，通过 CacheFactory 创建缓存提供者。
+ * this 指向宿主（BaseEntityState），this.schema 可直接访问。
+ * 私有状态 _provider 通过 abilityState 管理，onCleanup 注册释放回调。
+ */
+export const StateCacheAbility: AbilityDefinition = {
+    cacheKey: {
+        get() {
+            return this._getCacheKey();
+        },
+    },
 
-    protected expose(proxy: AbilityProxy): IExposeResult {
-        return {
-            cacheKey: { get: () => proxy.self.getCacheKey() },
+    async tryGetCache() {
+        const provider = await this._getCacheProvider();
+        return await provider.get(this._getCacheKey());
+    },
 
-            tryGetCache: async () => {
-                const provider = await proxy.self.getProvider();
-                return await provider.get(proxy.self.getCacheKey());
-            },
+    async setCache(data: any) {
+        const provider = await this._getCacheProvider();
+        await provider.set(this._getCacheKey(), data, this.cacheTTL);
+    },
 
-            setCache: async (data: any) => {
-                const provider = await proxy.self.getProvider();
-                const host = proxy.host as IBaseEntityState;
-                await provider.set(proxy.self.getCacheKey(), data, host.cacheTTL);
-            },
+    async clearCache() {
+        const provider = await this._getCacheProvider();
+        await provider.remove(this._getCacheKey());
+    },
 
-            clearCache: async () => {
-                const provider = await proxy.self.getProvider();
-                await provider.remove(proxy.self.getCacheKey());
-            },
+    updateData(result: any[]) {
+        this.sourceData.clear();
+        result.forEach((item: any) => {
+            this.sourceData.set(item.id, item);
+        });
+    },
 
-            updateData: function(this: IBaseEntityState, result: any[]) {
-                (this as any).sourceData.clear();
-                result.forEach((item: any) => {
-                    (this as any).sourceData.set(item.id, item);
-                });
-            },
-        };
-    }
-
-    protected getCacheKey(): string {
-        const host: any = this.host;
-        const { schema } = host;
+    /**
+     * 获取缓存键
+     */
+    _getCacheKey(): string {
+        const { schema } = this;
         const domain = schema.domain || 'default';
-
         const base = `${domain}:${schema.name}`;
 
-        if (!host.isRemote) {
+        if (!this.isRemote) {
             return base;
         }
 
-        const params = host.toParams ? host.toParams() : {};
+        const params = this.toParams ? this.toParams() : {};
 
         if (Object.keys(params).length === 0) {
             return `${base}:root`;
@@ -57,31 +61,36 @@ export class StateCacheAbility extends AbilityBase {
             .map(key => `${key}=${params[key]}`)
             .join('&');
 
-        return `${base}:q:${this.simpleHash(queryStr)}`;
-    }
+        return `${base}:q:${StateCacheAbility._simpleHash(queryStr)}`;
+    },
 
-    private simpleHash(str: string): string {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (hash << 5) - hash + str.charCodeAt(i);
-            hash |= 0;
+    /**
+     * 获取或创建缓存提供者
+     * 
+     * 注意：CacheFactory.create 是异步的，这里用 abilityState 存储 Promise，
+     * 后续调用直接 await 同一个 Promise，避免重复创建。
+     */
+    async _getCacheProvider(): Promise<ICacheProvider> {
+        let providerPromise = this.abilityState('StateCache:provider') as Promise<ICacheProvider> | undefined;
+        if (!providerPromise) {
+            providerPromise = CacheFactory.create((this.schema as any).cache?.type || 'memory').then(provider => {
+                this.onCleanup(() => CacheFactory.release(provider.id, true));
+                return provider;
+            });
+            this.setAbilityState('StateCache:provider', providerPromise);
         }
-        return Math.abs(hash).toString(36);
-    }
+        return providerPromise;
+    },
+};
 
-    private async getProvider(): Promise<ICacheProvider> {
-        const host = this.host as IBaseEntityState;
-        const { schema } = host;
-        if (this._provider) return this._provider;
-        this._provider = await CacheFactory.create((schema as any).cache?.type || 'memory');
-        return this._provider!;
+/**
+ * 简单哈希函数（静态工具）
+ */
+StateCacheAbility._simpleHash = function(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
     }
-
-    protected onDispose(): void {
-        if(this._provider){
-            CacheFactory.release(this._provider?.id, true);
-        }
-        
-        this._provider = null;
-    }
-}
+    return Math.abs(hash).toString(36);
+};
