@@ -1,5 +1,7 @@
 # Composable 系统重构
 
+> **已过时**：本文档基于旧版 AbilityBase + expose() 架构。当前已迁移为 AbilityDefinition 纯对象模式，AbilityBase、ComposableRegistrar 已移除。保留本文档仅作历史参考。
+
 **日期**: 2026-06-15  
 **状态**: 已完成  
 **影响范围**: composable 包、测试

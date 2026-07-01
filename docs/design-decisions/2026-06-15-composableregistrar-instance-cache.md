@@ -1,5 +1,7 @@
 # ComposableRegistrar 实例缓存修复
 
+> **已过时**：ComposableRegistrar 已从代码中移除。保留本文档仅作历史参考。
+
 **日期**: 2026-06-15  
 **状态**: ✅ 已完成  
 **影响范围**: composable 包

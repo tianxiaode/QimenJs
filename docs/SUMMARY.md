@@ -4,7 +4,7 @@
 
 ## 项目概览
 
-OrbitJS 是一个 TypeScript 基础设施框架，采用单仓库（monorepo）多包架构，共 21 个包分 5 层。
+OrbitJS 是一个 TypeScript 基础设施框架，采用单仓库（monorepo）多包架构，共 22 个包分 5 层。
 
 ## 包列表
 
@@ -17,6 +17,7 @@ OrbitJS 是一个 TypeScript 基础设施框架，采用单仓库（monorepo）�
 | L0 | `runtime` | 运行时环境检测 | - |
 | L0 | `crypto` | 加密工具（md5/sha/base64） | - |
 | L0 | `types` | 全局共享类型定义 | - |
+| L0 | `i18n` | 国际化（语言检测/翻译/动态加载） | - |
 | L1 | `registry` | 注册器体系 | error |
 | L1 | `cache` | 缓存抽象 | logger, utils |
 | L1 | `events` | 事件总线 | logger, utils |

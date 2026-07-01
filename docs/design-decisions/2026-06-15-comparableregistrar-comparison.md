@@ -1,5 +1,7 @@
 # ComposableRegistrar 版本对比分析
 
+> **已过时**：ComposableRegistrar 已从代码中移除，能力注册不再需要。保留本文档仅作历史参考。
+
 ## 关键差异
 
 ### 旧版本（kernel 中的实现）

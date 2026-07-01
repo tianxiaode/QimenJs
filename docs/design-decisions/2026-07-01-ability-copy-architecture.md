@@ -1,5 +1,7 @@
 # Ability 纯复制架构讨论
 
+> **已过时**：本文档讨论的 `expose(host)` 方案已被 AbilityDefinition 纯对象模式取代。AbilityBase、DebounceAbilityBase、ComposableRegistrar 已从代码中移除。保留本文档仅作历史参考。
+
 ## 背景
 
 当前 Ability 系统采用 `AbilityBase` → `expose(host)` → `precompile()` → `createDescriptors(host)` 的机制：

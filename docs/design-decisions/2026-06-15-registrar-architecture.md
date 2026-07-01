@@ -1,5 +1,7 @@
 # 注册器架构统一
 
+> **部分过时**：ComposableRegistrar 相关内容已过时（已移除），RegistryHub 和其他 Registrar 仍有效。
+
 **日期**: 2026-06-15  
 **状态**: 已完成  
 **影响范围**: registry 包、composable 包

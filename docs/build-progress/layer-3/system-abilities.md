@@ -40,7 +40,7 @@ dependencies: {
 
 2. **能力注册**
    - ✅ 创建 registerSystemAbilities() 函数
-   - ✅ 注册所有能力到 ComposableRegistrar
+   - ✅ 注册所有能力（已迁移为 AbilityDefinition 纯对象）
 
 3. **类型定义**
    - ✅ ComposableEntry 接口
@@ -70,9 +70,8 @@ Time:        1.847 s
 - 统一引用方式
 
 **能力注册**:
-- 提供 registerSystemAbilities() 函数
-- 支持自定义 ComposableRegistrar
-- 自动注册所有系统能力
+- 提供系统能力定义（AbilityDefinition 纯对象）
+- 通过 ComposableBase.abilities 声明使用
 
 **类型定义**:
 - 完整的类型定义
@@ -83,7 +82,7 @@ Time:        1.847 s
 #### 2026-06-30
 - 补充单元测试，分支覆盖率从 0% 提升到 88.23%
 - 新增 EventAbility、DomEventsAbility、DomainAbility、SystemAbility 完整测试
-- 发现需在 afterEach 中调用 ComposableRegistrar.getInstance().clearCaches() 避免 Ability 实例共享问题
+- 发现需在 afterEach 中清理 ComposableBase 实例避免 Ability 状态共享问题（已通过 abilityState per-host 隔离解决）
 
 #### 2026-06-26
 - 修正所有模块引用，使用 `@/` 代替 `@orbitjs/`
