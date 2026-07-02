@@ -19,14 +19,14 @@ function startService(name, cwd, command, args = []) {
 
     proc.stdout.on('data', (data) => {
         const lines = data.toString().trim().split('\n');
-        lines.forEach((line: string) => {
+        lines.forEach((line) => {
             if (line) console.log(`[${name}] ${line}`);
         });
     });
 
     proc.stderr.on('data', (data) => {
         const lines = data.toString().trim().split('\n');
-        lines.forEach((line: string) => {
+        lines.forEach((line) => {
             if (line) console.error(`[${name}] ${line}`);
         });
     });
