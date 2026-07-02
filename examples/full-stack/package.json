@@ -1,0 +1,24 @@
+{
+  "name": "orbitjs-full-stack-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OrbitJS 全栈示例：OAuth2 认证 + ABP API + Spring API + 前端多域数据获取",
+  "scripts": {
+    "start": "node scripts/start-all.js",
+    "stop": "node scripts/stop-all.js",
+    "auth": "node servers/auth-server/index.js",
+    "abp": "node servers/abp-api/index.js",
+    "spring": "node servers/spring-api/index.js",
+    "client": "cd client && npx vite --open",
+    "build:orbitjs": "cd ../.. && npm run build"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}
