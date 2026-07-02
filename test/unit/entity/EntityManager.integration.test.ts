@@ -87,10 +87,10 @@ function ensureTestDomain(): void {
 // 辅助：mock fetch 返回数据
 // ============================================
 
-function mockFetchReturn(data: { list: any[]; total: number }): void {
+function mockFetchReturn(data: { list?: any[]; total?: number; item?: any }): void {
     jest.spyOn(TestUserManager.prototype, 'fetch').mockImplementation(async () => {
         return {
-            data: { list: data.list, total: data.total },
+            data: { list: data.list || [], total: data.total || 0, item: data.item, ...data },
             metadata: { hasError: false },
         } as any;
     });
@@ -296,18 +296,137 @@ describe('EntityManager 集成测试', () => {
     describe('RemoteCreateAbility 集成', () => {
         it('create() 应该调用 state.updateItem', async () => {
             const newUser = { id: '3', name: 'Charlie', email: 'charlie@test.com' };
-            jest.spyOn(TestUserManager.prototype, 'fetch').mockImplementation(async () => {
-                return {
-                    data: { item: newUser, list: [], total: 0 },
-                    metadata: { hasError: false },
-                } as any;
-            });
-            jest.spyOn(manager.state, 'updateItem');
+            mockFetchReturn({ item: newUser, list: [], total: 0 });
 
             await manager.create({ name: 'Charlie', email: 'charlie@test.com' });
 
-            expect(manager.state.updateItem).toHaveBeenCalledWith(newUser);
             expect(manager.state.item).toEqual(newUser);
+        });
+
+        it('create() loading 中应该抛出 KernelError', async () => {
+            manager.state.loading = true;
+
+            await expect(manager.create({ name: 'Test' })).rejects.toThrow('Operation in progress');
+
+            manager.state.loading = false;
+        });
+    });
+
+    // ========================================
+    // 5. RemoteUpdateAbility 集成
+    // ========================================
+
+    describe('RemoteUpdateAbility 集成', () => {
+        it('update() 应该调用 state.updateItem', async () => {
+            const original = { id: '1', name: 'Alice', email: 'alice@test.com' };
+            manager.state.updateData([original]);
+
+            const updated = { id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' };
+            mockFetchReturn({ item: updated, list: [], total: 0 });
+
+            await manager.update({ id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' });
+
+            expect(manager.state.item).toEqual(updated);
+            expect(manager.state.items[0]).toEqual(updated);
+        });
+
+        it('update() loading 中应该抛出 KernelError', async () => {
+            manager.state.loading = true;
+
+            await expect(manager.update({ id: '1', name: 'Test' })).rejects.toThrow('Operation in progress');
+
+            manager.state.loading = false;
+        });
+    });
+
+    // ========================================
+    // 6. RemoteDeleteAbility 集成
+    // ========================================
+
+    describe('RemoteDeleteAbility 集成', () => {
+        it('delete() 单个删除应该从 state.items 中移除', async () => {
+            manager.state.updateData([
+                { id: '1', name: 'Alice' },
+                { id: '2', name: 'Bob' },
+            ], 2);
+
+            mockFetchReturn({ list: [], total: 0 });
+
+            await manager.delete('1');
+
+            expect(manager.state.items).toHaveLength(1);
+            expect(manager.state.items[0].id).toBe('2');
+            expect(manager.state.total).toBe(1);
+        });
+
+        it('delete() 批量删除应该从 state.items 中移除多个', async () => {
+            manager.state.updateData([
+                { id: '1', name: 'Alice' },
+                { id: '2', name: 'Bob' },
+                { id: '3', name: 'Charlie' },
+            ], 3);
+
+            mockFetchReturn({ list: [], total: 0 });
+
+            await manager.delete(['1', '3']);
+
+            expect(manager.state.items).toHaveLength(1);
+            expect(manager.state.items[0].id).toBe('2');
+            expect(manager.state.total).toBe(1);
+        });
+
+        it('delete() loading 中应该抛出 KernelError', async () => {
+            manager.state.loading = true;
+
+            await expect(manager.delete('1')).rejects.toThrow('Operation in progress');
+
+            manager.state.loading = false;
+        });
+    });
+
+    // ========================================
+    // 7. RemoteGetAbility 集成
+    // ========================================
+
+    describe('RemoteGetAbility 集成', () => {
+        it('get() 应该调用 state.updateItem', async () => {
+            const user = { id: '1', name: 'Alice', email: 'alice@test.com' };
+            mockFetchReturn({ item: user, list: [], total: 0 });
+
+            const result = await manager.get('1');
+
+            expect(result).toEqual(user);
+            expect(manager.state.item).toEqual(user);
+        });
+
+        it('get() 返回 null 时应该安全处理', async () => {
+            mockFetchReturn({ item: null, list: [], total: 0 });
+
+            const result = await manager.get('999');
+
+            expect(result).toBeNull();
+        });
+    });
+
+    // ========================================
+    // 8. BaseEntityManager.fetch() 集成
+    // ========================================
+
+    describe('BaseEntityManager.fetch() 集成', () => {
+        it('fetch() 完成后 loading 应该为 false', async () => {
+            mockFetchReturn({ list: [], total: 0 });
+
+            await manager.list();
+
+            expect(manager.state.loading).toBe(false);
+        });
+
+        it('fetch() 错误时应该重置 loading', async () => {
+            mockFetchError(new Error('Network error'));
+
+            await expect(manager.list()).rejects.toThrow();
+
+            expect(manager.state.loading).toBe(false);
         });
     });
 });

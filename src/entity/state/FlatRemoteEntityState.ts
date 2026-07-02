@@ -69,6 +69,17 @@ export class FlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSear
         return page >= 1 && page <= this.pages;
     }
 
+    /**
+     * 删除实体
+     */
+    delete(id: string | number | (string | number)[]): void {
+        const ids = Array.isArray(id) ? id : [id];
+        this.items = this.items.filter((i: any) => !ids.includes(i.id));
+        this.total = Math.max(0, this.total - ids.length);
+        this.pages = Math.ceil(this.total / this.pageSize) || 0;
+        this.hasMore = this.page < this.pages;
+    }
+
     refreshView(): void {
         // 替换数组引用以触发响应式更新
         // Remote 场景下 items 由服务端数据直接设置，
