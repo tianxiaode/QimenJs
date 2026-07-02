@@ -1,39 +1,43 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 
+// OrbitJS 源码根目录
+const SRC = path.resolve(__dirname, '../../../src');
+
 export default defineConfig({
     root: '.',
     resolve: {
         alias: {
-            // 映射到 OrbitJS 源码目录
-            '@orbitjs/registry': path.resolve(__dirname, '../../src/registry'),
-            '@orbitjs/http': path.resolve(__dirname, '../../src/http'),
-            '@orbitjs/context': path.resolve(__dirname, '../../src/context'),
-            '@orbitjs/pipeline': path.resolve(__dirname, '../../src/pipeline'),
-            '@orbitjs/task': path.resolve(__dirname, '../../src/task'),
-            '@orbitjs/error': path.resolve(__dirname, '../../src/error'),
-            '@orbitjs/logger': path.resolve(__dirname, '../../src/logger'),
-            '@orbitjs/utils': path.resolve(__dirname, '../../src/utils'),
-            '@orbitjs/events': path.resolve(__dirname, '../../src/events'),
-            '@orbitjs/cache': path.resolve(__dirname, '../../src/cache'),
-            '@orbitjs/data-processor': path.resolve(__dirname, '../../src/data-processor'),
-            '@orbitjs/data-processor-abp': path.resolve(__dirname, '../../src/data-processor-abp'),
-            '@orbitjs/data-processor-spring': path.resolve(__dirname, '../../src/data-processor-spring'),
-            '@orbitjs/oauth2': path.resolve(__dirname, '../../src/oauth2'),
-            '@orbitjs/i18n': path.resolve(__dirname, '../../src/i18n'),
-            '@orbitjs/mime': path.resolve(__dirname, '../../src/mime'),
-            '@orbitjs/pattern': path.resolve(__dirname, '../../src/pattern'),
-            '@orbitjs/schema': path.resolve(__dirname, '../../src/schema'),
-            '@orbitjs/composable': path.resolve(__dirname, '../../src/composable'),
-            '@orbitjs/system-abilities': path.resolve(__dirname, '../../src/system-abilities'),
-            '@orbitjs/async': path.resolve(__dirname, '../../src/async'),
-            '@orbitjs/runtime': path.resolve(__dirname, '../../src/runtime'),
-            '@orbitjs/crypto': path.resolve(__dirname, '../../src/crypto'),
-            '@orbitjs/types': path.resolve(__dirname, '../../src/types'),
-            '@orbitjs/validation': path.resolve(__dirname, '../../src/validation'),
-            '@orbitjs/entity': path.resolve(__dirname, '../../src/entity'),
-            '@orbitjs/event-dom': path.resolve(__dirname, '../../src/event-dom'),
-            '@': path.resolve(__dirname, '../../src'),
+            // 映射到 OrbitJS 源码入口文件
+            '@orbitjs/registry': path.resolve(SRC, 'registry/index.ts'),
+            '@orbitjs/http': path.resolve(SRC, 'http/index.ts'),
+            '@orbitjs/context': path.resolve(SRC, 'context/index.ts'),
+            '@orbitjs/pipeline': path.resolve(SRC, 'pipeline/index.ts'),
+            '@orbitjs/task': path.resolve(SRC, 'task/index.ts'),
+            '@orbitjs/error': path.resolve(SRC, 'error/index.ts'),
+            '@orbitjs/logger': path.resolve(SRC, 'logger/index.ts'),
+            '@orbitjs/utils': path.resolve(SRC, 'utils/index.ts'),
+            '@orbitjs/events': path.resolve(SRC, 'events/index.ts'),
+            '@orbitjs/cache': path.resolve(SRC, 'cache/index.ts'),
+            '@orbitjs/data-processor': path.resolve(SRC, 'data-processor/index.ts'),
+            '@orbitjs/data-processor-abp': path.resolve(SRC, 'data-processor-abp/index.ts'),
+            '@orbitjs/data-processor-spring': path.resolve(SRC, 'data-processor-spring/index.ts'),
+            '@orbitjs/oauth2': path.resolve(SRC, 'oauth2/index.ts'),
+            '@orbitjs/i18n': path.resolve(SRC, 'i18n/index.ts'),
+            '@orbitjs/mime': path.resolve(SRC, 'mime/index.ts'),
+            '@orbitjs/pattern': path.resolve(SRC, 'pattern/index.ts'),
+            '@orbitjs/schema': path.resolve(SRC, 'schema/index.ts'),
+            '@orbitjs/composable': path.resolve(SRC, 'composable/index.ts'),
+            '@orbitjs/system-abilities': path.resolve(SRC, 'system-abilities/index.ts'),
+            '@orbitjs/async': path.resolve(SRC, 'async/index.ts'),
+            '@orbitjs/runtime': path.resolve(SRC, 'runtime/index.ts'),
+            '@orbitjs/crypto': path.resolve(SRC, 'crypto/index.ts'),
+            '@orbitjs/types': path.resolve(SRC, 'types/index.ts'),
+            '@orbitjs/validation': path.resolve(SRC, 'validation/index.ts'),
+            '@orbitjs/entity': path.resolve(SRC, 'entity/index.ts'),
+            '@orbitjs/event-dom': path.resolve(SRC, 'event-dom/index.ts'),
+            // 源码内部 @/ 路径引用
+            '@': SRC,
         },
     },
     server: {
