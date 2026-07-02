@@ -4,5 +4,5 @@
  * @module context/base
  */
 
-export * from './ExecutionStep';
+export { ExecutionStep, ExecutionAction } from './ExecutionStep';
 export * from './BaseContext';
