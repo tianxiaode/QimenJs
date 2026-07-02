@@ -45,6 +45,7 @@
       "@orbitjs/pattern": ["src/pattern"],
       "@orbitjs/data-processor-abp": ["src/data-processor-abp"],
       "@orbitjs/data-processor-spring": ["src/data-processor-spring"],
+      "@orbitjs/oauth2": ["src/oauth2"],
       "@orbitjs/types": ["src/types"]
     }
   },

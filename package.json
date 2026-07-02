@@ -148,6 +148,11 @@
       "import": "./dist/data-processor-spring/index.esm.js",
       "require": "./dist/data-processor-spring/index.js",
       "types": "./dist/data-processor-spring/index.d.ts"
+    },
+    "./oauth2": {
+      "import": "./dist/oauth2/index.esm.js",
+      "require": "./dist/oauth2/index.js",
+      "types": "./dist/oauth2/index.d.ts"
     }
   },
   "files": [

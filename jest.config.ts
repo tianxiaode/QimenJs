@@ -49,6 +49,7 @@ const config = {
     '^@orbitjs/data-processor$': '<rootDir>/src/data-processor',
     '^@orbitjs/mime$': '<rootDir>/src/mime',
     '^@orbitjs/pattern$': '<rootDir>/src/pattern',
+    '^@orbitjs/oauth2$': '<rootDir>/src/oauth2',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

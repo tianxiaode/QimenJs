@@ -181,6 +181,13 @@
       "rootDir": "src/data-processor-spring",
       "dependencies": ["data-processor", "context"],
       "packageName": "@orbitjs/data-processor-spring"
+    },
+    "oauth2": {
+      "entry": "src/oauth2/index.ts",
+      "outDir": "dist/oauth2",
+      "rootDir": "src/oauth2",
+      "dependencies": ["http", "registry", "events", "cache"],
+      "packageName": "@orbitjs/oauth2"
     }
   },
   "build": {
