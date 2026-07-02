@@ -7,30 +7,37 @@
 ```
 docs/build-progress/
 ├── README.md                    # 本文件（索引）
-├── layer-0/                     # 第 0 层包（7 个零依赖包）
+├── layer-0/                     # 第 0 层包（8 个零依赖包）
 │   ├── error.md
 │   ├── logger.md
 │   ├── utils.md
 │   ├── async.md
 │   ├── runtime.md
 │   ├── crypto.md
-│   └── types.md
-├── layer-1/                     # 第 1 层包（5 个轻依赖包）
+│   ├── types.md
+│   └── i18n.md
+├── layer-1/                     # 第 1 层包（6 个轻依赖包）
 │   ├── registry.md
 │   ├── cache.md
 │   ├── events.md
-│   ├── validation.md
 │   ├── task.md
+│   ├── composable.md
 │   └── context.md
-├── layer-2/                     # 第 2 层包（4 个功能包）
+├── layer-2/                     # 第 2 层包（7 个功能包）
 │   ├── schema.md
+│   ├── validation.md
 │   ├── pipeline.md
+│   ├── mime.md
+│   ├── pattern.md
 │   ├── composable.md
 │   └── event-dom.md
-├── layer-3/                     # 第 3 层包（3 个高级功能包）
+├── layer-3/                     # 第 3 层包（6 个高级功能包）
 │   ├── data-processor.md
+│   ├── data-processor-abp.md
+│   ├── data-processor-spring.md
 │   ├── http.md
-│   └── system-abilities.md
+│   ├── system-abilities.md
+│   └── oauth2.md
 └── layer-4/                     # 第 4 层包（1 个业务包）
     └── entity.md
 ```
@@ -39,24 +46,24 @@ docs/build-progress/
 
 | 层级 | 总包数 | 已完成 | 测试通过 | 分支覆盖率 |
 |------|--------|--------|----------|------------|
-| 第 0 层 | 7 | 7 | 7 | ~85% |
+| 第 0 层 | 8 | 8 | 8 | ~85% |
 | 第 1 层 | 6 | 6 | 6 | ~89% |
-| 第 2 层 | 4 | 4 | 4 | ~86% |
-| 第 3 层 | 3 | 3 | 3 | ~87% |
+| 第 2 层 | 7 | 7 | 7 | ~86% |
+| 第 3 层 | 6 | 6 | 6 | ~87% |
 | 第 4 层 | 1 | 1 | 1 | ~83% |
-| **总计** | **21** | **21** | **21** | **~87%** |
+| **总计** | **28** | **28** | **28** | **~87%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%  
-**测试**：203 套件 / 2235 用例全部通过
+**测试**：207 套件 / 2354 用例全部通过
 
 ## 快速导航
 
 ### 按层级查看
 
-- [第 0 层：核心基础包](./layer-0/) - 7 个零依赖包
+- [第 0 层：核心基础包](./layer-0/) - 8 个零依赖包
 - [第 1 层：基础设施工具包](./layer-1/) - 6 个包
-- [第 2 层：功能工具包](./layer-2/) - 4 个包
-- [第 3 层：高级功能包](./layer-3/) - 3 个包
+- [第 2 层：功能工具包](./layer-2/) - 7 个包
+- [第 3 层：高级功能包](./layer-3/) - 6 个包
 - [第 4 层：业务包](./layer-4/) - 1 个包
 
 ### 按状态查看
@@ -70,32 +77,42 @@ docs/build-progress/
 - [runtime](./layer-0/runtime.md) - 运行时环境
 - [crypto](./layer-0/crypto.md) - 加密工具
 - [types](./layer-0/types.md) - 全局共享类型
+- [i18n](./layer-0/i18n.md) - 国际化
 - [registry](./layer-1/registry.md) - 注册器系统
 - [cache](./layer-1/cache.md) - 缓存系统
 - [events](./layer-1/events.md) - 事件系统
-- [validation](./layer-1/validation.md) - 验证系统
 - [task](./layer-1/task.md) - 任务系统
+- [composable](./layer-1/composable.md) - 可组合能力系统
 - [context](./layer-1/context.md) - 请求上下文
 - [schema](./layer-2/schema.md) - Schema 定义系统
+- [validation](./layer-2/validation.md) - 验证系统
 - [pipeline](./layer-2/pipeline.md) - 管道执行器
-- [composable](./layer-2/composable.md) - 可组合能力系统
+- [mime](./layer-2/mime.md) - MIME 类型管理
+- [pattern](./layer-2/pattern.md) - 模式注册器
 - [event-dom](./layer-2/event-dom.md) - DOM 事件适配器
 - [data-processor](./layer-3/data-processor.md) - 数据处理器
+- [data-processor-abp](./layer-3/data-processor-abp.md) - ABP 数据处理管道
+- [data-processor-spring](./layer-3/data-processor-spring.md) - Spring 数据处理管道
 - [http](./layer-3/http.md) - HTTP 客户端
 - [system-abilities](./layer-3/system-abilities.md) - 系统能力集
+- [oauth2](./layer-3/oauth2.md) - OAuth2 认证流程
 - [entity](./layer-4/entity.md) - 实体管理框架
 
 ## 最近更新
 
+### 2026-07-02
+- 新增 @orbitjs/oauth2 认证流程包（密码/授权码/客户端凭证模式 + 401 自动刷新）
+- 22 个 OAuth2 测试用例通过
+
 ### 2026-07-01
+- 新增 @orbitjs/i18n 国际化模块
+- MimeTypeRegistrar 拆分为 @orbitjs/mime 独立包（7 类预定义 MIME 类型）
+- PatternRegistrar 拆分为 @orbitjs/pattern 独立包（19 个验证模式自动注册）
+- 新增 @orbitjs/data-processor-abp（ABP 数据处理管道 + 字段级验证错误映射）
+- 新增 @orbitjs/data-processor-spring（Spring 数据处理管道）
 - 完成 AbilityDefinition 迁移：15 个 Manager Ability 从 class 迁移为纯对象
 - 移除 AbilityBase、DebounceAbilityBase、ComposableRegistrar 旧版代码
-- 简化 ComposableBase 为纯 AbilityDefinition 架构
 - 同步构建配置：build-config.json、package.json exports、tsconfig.json paths
-- 修复构建脚本支持跨包引用
-- 清理 src 下 764 个旧编译产物
-- 全量构建验证通过（21 个包）
-- 文档更新：重写 composable.md、system-abilities.md、with-abilities-guide.md
 
 ### 2026-06-30
 - 全局分支覆盖率从 74.2% 提升到 87.33%
