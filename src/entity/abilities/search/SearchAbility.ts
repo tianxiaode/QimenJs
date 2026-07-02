@@ -2,12 +2,12 @@ import type { AbilityDefinition } from '@/composable';
 import { array } from '@orbitjs/utils';
 
 /**
- * StateSearchAbility - 搜索过滤能力
+ * SearchAbility - 搜索过滤能力
  * 
  * 为宿主提供搜索、过滤、排序功能。
- * this 指向宿主（BaseEntityState），this.schema/search 可直接访问。
+ * this 指向宿主（Manager），this.schema/search 可直接访问。
  */
-export const StateSearchAbility: AbilityDefinition = {
+export const SearchAbility: AbilityDefinition = {
     toParams(): Record<string, any> {
         const { schema } = this;
         const params: Record<string, any> = {};

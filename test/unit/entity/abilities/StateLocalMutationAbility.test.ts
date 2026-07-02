@@ -1,5 +1,5 @@
 /**
- * StateLocalMutationAbility 独立单元测试
+ * LocalMutationAbility 独立单元测试
  *
  * 验证本地变更能力的核心行为：
  * 1. hasChanges / changes 状态
@@ -39,7 +39,7 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { StateLocalMutationAbility } from '@/entity/abilities/state/mutation/StateLocalMutationAbility';
+import { LocalMutationAbility } from '@/entity/abilities/mutation/LocalMutationAbility';
 
 // ============================================
 // 辅助
@@ -47,7 +47,7 @@ import { StateLocalMutationAbility } from '@/entity/abilities/state/mutation/Sta
 
 function createMutationHost() {
     class MutationHost extends ComposableBase {
-        static readonly abilities = [StateLocalMutationAbility];
+        static readonly abilities = [LocalMutationAbility];
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
         setCache = jest.fn().mockResolvedValue(undefined);
@@ -60,7 +60,7 @@ function createMutationHost() {
 // 测试
 // ============================================
 
-describe('StateLocalMutationAbility', () => {
+describe('LocalMutationAbility', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });

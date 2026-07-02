@@ -1,5 +1,5 @@
 /**
- * StateDirtyAbility 独立单元测试
+ * DirtyAbility 独立单元测试
  *
  * 验证脏检查能力的核心行为：
  * 1. isDirty 无参/有参调用
@@ -26,7 +26,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
+import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 // ============================================
 // 辅助
@@ -34,7 +34,7 @@ import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbili
 
 function createDirtyHost() {
     class DirtyHost extends ComposableBase {
-        static readonly abilities = [StateDirtyAbility];
+        static readonly abilities = [DirtyAbility];
         schema = { idField: 'id' };
         sourceData = new Map<string, any>();
     }
@@ -45,7 +45,7 @@ function createDirtyHost() {
 // 测试
 // ============================================
 
-describe('StateDirtyAbility', () => {
+describe('DirtyAbility', () => {
 
     describe('isDirty', () => {
         it('无参调用，初始状态应返回 false', () => {

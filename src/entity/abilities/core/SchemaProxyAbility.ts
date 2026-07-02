@@ -1,12 +1,12 @@
 import type { AbilityDefinition } from '@/composable';
 
 /**
- * StateSchemaAbility - Schema 属性代理能力
+ * SchemaProxyAbility - Schema 属性代理能力
  * 
  * 为宿主提供 schema 相关属性的便捷访问。
- * this 指向宿主（BaseEntityState），this.schema 可直接访问。
+ * this 指向宿主（Manager），this.schema 可直接访问。
  */
-export const StateSchemaAbility: AbilityDefinition = {
+export const SchemaProxyAbility: AbilityDefinition = {
     idField: { get() { return this.schema?.idField || 'id'; } },
     idType: { get() { return this.schema?.idType || 'number'; } },
     nameField: { get() { return this.schema?.nameField || 'name'; } },

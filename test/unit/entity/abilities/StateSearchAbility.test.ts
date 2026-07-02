@@ -1,5 +1,5 @@
 /**
- * StateSearchAbility 独立单元测试
+ * SearchAbility 独立单元测试
  *
  * 验证搜索能力的核心行为：
  * 1. toParams 参数转换（扁平/树形）
@@ -27,7 +27,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchAbility';
+import { SearchAbility } from '@/entity/abilities/search/SearchAbility';
 
 // ============================================
 // 辅助
@@ -35,7 +35,7 @@ import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchA
 
 function createSearchHost(isTree = false) {
     class SearchHost extends ComposableBase {
-        static readonly abilities = [StateSearchAbility];
+        static readonly abilities = [SearchAbility];
         schema = {
             isTree,
             searchFields: ['name', 'email'],
@@ -52,7 +52,7 @@ function createSearchHost(isTree = false) {
 // 测试
 // ============================================
 
-describe('StateSearchAbility', () => {
+describe('SearchAbility', () => {
 
     describe('toParams', () => {
         it('扁平模式应包含 page 和 pageSize', () => {

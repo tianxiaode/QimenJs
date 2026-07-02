@@ -1,13 +1,13 @@
 import type { AbilityDefinition } from '@/composable';
 
 /**
- * StateDirtyAbility - 脏检查能力
+ * DirtyAbility - 脏检查能力
  * 
  * 为宿主提供脏检查（dirty check）功能，通过快照对比检测数据变更。
- * this 指向宿主（BaseEntityState），this.schema 可直接访问。
+ * this 指向宿主（Manager），this.schema 可直接访问。
  * 私有状态 _snapshots 通过 abilityState 管理，宿主 dispose 时自动清空。
  */
-export const StateDirtyAbility: AbilityDefinition = {
+export const DirtyAbility: AbilityDefinition = {
     isDirty(item?: any): boolean {
         const snapshots = this.abilityState('StateDirty:snapshots', () => new Map<string, any>())!;
         if (!item) return snapshots.size > 0;

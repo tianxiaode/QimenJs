@@ -2,7 +2,7 @@ import { ComposableBase } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
-import { SchemaAbility } from '@/entity/abilities/manager/SchemaAbility';
+import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import type {
     ENTITY_ACTION,
     ICoreEntityManager,

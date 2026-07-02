@@ -23,9 +23,9 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { SchemaAbility } from '@/entity/abilities/manager/SchemaAbility';
-import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
-import { RemoteCreateAbility } from '@/entity/abilities/manager/remote/RemoteCreateAbility';
+import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
+import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
+import { RemoteCreateAbility } from '@/entity/abilities/remote/RemoteCreateAbility';
 import { ComposableBase } from '@/composable';
 import { SchemaRegistrar } from '@/schema';
 import type { FlatSchema, TreeSchema } from '@/schema';

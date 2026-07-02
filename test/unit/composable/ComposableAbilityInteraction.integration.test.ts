@@ -28,7 +28,7 @@ jest.mock('@/logger', () => {
 import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
-import { SchemaAbility } from '@/entity/abilities/manager/SchemaAbility';
+import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import { SchemaRegistrar } from '@/schema';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';

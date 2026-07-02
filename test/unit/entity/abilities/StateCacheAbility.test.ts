@@ -1,5 +1,5 @@
 /**
- * StateCacheAbility 独立单元测试
+ * CacheAbility 独立单元测试
  *
  * 验证缓存能力的核心行为：
  * 1. cacheKey 生成（本地/远程/带参数）
@@ -40,7 +40,7 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { StateCacheAbility } from '@/entity/abilities/state/base/StateCacheAbility';
+import { CacheAbility } from '@/entity/abilities/core/CacheAbility';
 import { CacheFactory } from '@/cache';
 
 // ============================================
@@ -55,7 +55,7 @@ interface TestHostSchema {
 
 function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: () => any) {
     class CacheHost extends ComposableBase {
-        static readonly abilities = [StateCacheAbility];
+        static readonly abilities = [CacheAbility];
         schema = schema;
         isRemote = isRemote;
         cacheTTL = 300000;
@@ -69,7 +69,7 @@ function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: ()
 // 测试
 // ============================================
 
-describe('StateCacheAbility', () => {
+describe('CacheAbility', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });

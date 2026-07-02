@@ -2,14 +2,14 @@ import type { AbilityDefinition } from '@/composable';
 import type { IDeletionPlan, ILocalChangeSet } from '@/entity/types';
 
 /**
- * StateLocalMutationAbility - 本地变更集能力
+ * LocalMutationAbility - 本地变更集能力
  * 
  * 为宿主提供本地数据变更管理功能（新增/更新/删除/回滚）。
- * this 指向宿主（BaseEntityState），this.schema/sourceData 可直接访问。
+ * this 指向宿主（Manager），this.schema/sourceData 可直接访问。
  * 私有状态 _changes/_deleteSnapshots 通过 abilityState 管理。
  * 防抖 refreshView 通过 this.debounce() 管理。
  */
-export const StateLocalMutationAbility: AbilityDefinition = {
+export const LocalMutationAbility: AbilityDefinition = {
     hasChanges: {
         get() {
             const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;

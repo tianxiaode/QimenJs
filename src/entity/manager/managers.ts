@@ -1,29 +1,29 @@
 import { BaseEntityManager } from './BaseEntityManager';
 import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@/entity/types';
 import type { IEntity } from '@/schema';
-import { FlatLocalStateAbility } from '@/entity/abilities/manager/local/FlatLocalStateAbility';
-import { LocalListAbility } from '@/entity/abilities/manager/local/LocalListAbility';
-import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
-import { FlatLocalMutationAbility } from '@/entity/abilities/manager/local/FlatLocalMutationAbility';
-import { FlatLocalDeleteAbility } from '@/entity/abilities/manager/local/FlatLocalDeleteAbility';
-import { FlatRemoteStateAbility } from '@/entity/abilities/manager/remote/FlatRemoteStateAbility';
-import { FlatRemoteListAbility } from '@/entity/abilities/manager/remote/FlatRemoteListAbility';
-import { FlatRemoteGetAllAbility } from '@/entity/abilities/manager/remote/FlatRemoteGetAllAbility';
-import { RemoteGetAbility } from '@/entity/abilities/manager/remote/RemoteGetAbility';
-import { FlatRemoteQueryAbility } from '@/entity/abilities/manager/remote/FlatRemoteQueryAbility';
-import { RemoteCreateAbility } from '@/entity/abilities/manager/remote/RemoteCreateAbility';
-import { RemoteUpdateAbility } from '@/entity/abilities/manager/remote/RemoteUpdateAbility';
-import { RemoteDeleteAbility } from '@/entity/abilities/manager/remote/RemoteDeleteAbility';
-import { RemoteToggleAbility } from '@/entity/abilities/manager/remote/RemoteToggleAbility';
-import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRemoteStateAbility';
-import { StateSchemaAbility } from '@/entity/abilities/state/base/StateSchemaAbility';
-import { StateCacheAbility } from '@/entity/abilities/state/base/StateCacheAbility';
-import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
-import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchAbility';
-import { TreePathAbility } from '@/entity/abilities/state/tree/TreePathAbility';
-import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
-import { TreeSearchAbility } from '@/entity/abilities/state/tree/TreeSearchAbility';
-import { TreeViewAbility } from '@/entity/abilities/state/tree/TreeViewAbility';
+import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
+import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
+import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
+import { FlatLocalMutationAbility } from '@/entity/abilities/local/FlatLocalMutationAbility';
+import { FlatLocalDeleteAbility } from '@/entity/abilities/local/FlatLocalDeleteAbility';
+import { FlatRemoteStateAbility } from '@/entity/abilities/remote/FlatRemoteStateAbility';
+import { FlatRemoteListAbility } from '@/entity/abilities/remote/FlatRemoteListAbility';
+import { FlatRemoteGetAllAbility } from '@/entity/abilities/remote/FlatRemoteGetAllAbility';
+import { RemoteGetAbility } from '@/entity/abilities/remote/RemoteGetAbility';
+import { FlatRemoteQueryAbility } from '@/entity/abilities/remote/FlatRemoteQueryAbility';
+import { RemoteCreateAbility } from '@/entity/abilities/remote/RemoteCreateAbility';
+import { RemoteUpdateAbility } from '@/entity/abilities/remote/RemoteUpdateAbility';
+import { RemoteDeleteAbility } from '@/entity/abilities/remote/RemoteDeleteAbility';
+import { RemoteToggleAbility } from '@/entity/abilities/remote/RemoteToggleAbility';
+import { TreeRemoteStateAbility } from '@/entity/abilities/remote/TreeRemoteStateAbility';
+import { SchemaProxyAbility } from '@/entity/abilities/core/SchemaProxyAbility';
+import { CacheAbility } from '@/entity/abilities/core/CacheAbility';
+import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
+import { SearchAbility } from '@/entity/abilities/search/SearchAbility';
+import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
+import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbility';
+import { TreeSearchAbility } from '@/entity/abilities/tree/TreeSearchAbility';
+import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 
 /**
  * 本地只读实体管理器
@@ -89,10 +89,10 @@ export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
-        StateSchemaAbility,
-        StateCacheAbility,
-        StateDirtyAbility,
-        StateSearchAbility,
+        SchemaProxyAbility,
+        CacheAbility,
+        DirtyAbility,
+        SearchAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -131,10 +131,10 @@ export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
-        StateSchemaAbility,
-        StateCacheAbility,
-        StateDirtyAbility,
-        StateSearchAbility,
+        SchemaProxyAbility,
+        CacheAbility,
+        DirtyAbility,
+        SearchAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -178,9 +178,9 @@ export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
-        StateSchemaAbility,
-        StateCacheAbility,
-        StateDirtyAbility,
+        SchemaProxyAbility,
+        CacheAbility,
+        DirtyAbility,
         TreePathAbility,
         TreeLifecycleAbility,
         TreeSearchAbility,

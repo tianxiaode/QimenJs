@@ -25,7 +25,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
-import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
+import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbility';
 
 // ============================================
 // 辅助
