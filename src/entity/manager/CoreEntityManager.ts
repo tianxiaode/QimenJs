@@ -25,6 +25,18 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     abstract url: string;
 
     /**
+     * 缓存过期时间（毫秒），默认 5 分钟
+     * 
+     * 子类可覆盖此值，如：
+     * ```typescript
+     * class UserManager extends RemoteCrudEntityManager {
+     *     cacheTTL = 60000; // 1 分钟
+     * }
+     * ```
+     */
+    cacheTTL: number = 300000;
+
+    /**
      * Schema 定义（原始，未编译）
      * 
      * 子类直接引用 Schema 对象，如：

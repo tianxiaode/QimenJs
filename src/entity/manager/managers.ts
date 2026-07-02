@@ -29,6 +29,19 @@ export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams
 > extends BaseEntityManager<TSearch, FlatLocalEntityState<TSearch>> {
     static readonly abilities = [LocalListAbility, LocalGetAbility];
+
+    private _state!: FlatLocalEntityState<TSearch>;
+
+    get state(): FlatLocalEntityState<TSearch> {
+        if (!this._state) {
+            this._state = new FlatLocalEntityState(this.compiledSchema, this.cacheTTL);
+        }
+        return this._state;
+    }
+
+    set state(value: FlatLocalEntityState<TSearch>) {
+        this._state = value;
+    }
 }
 
 /**
@@ -50,6 +63,19 @@ export abstract class LocalCrudEntityManager<
         FlatLocalMutationAbility,
         FlatLocalDeleteAbility,
     ];
+
+    private _state!: FlatLocalEntityState<TSearch>;
+
+    get state(): FlatLocalEntityState<TSearch> {
+        if (!this._state) {
+            this._state = new FlatLocalEntityState(this.compiledSchema, this.cacheTTL);
+        }
+        return this._state;
+    }
+
+    set state(value: FlatLocalEntityState<TSearch>) {
+        this._state = value;
+    }
 }
 
 /**
@@ -71,6 +97,19 @@ export abstract class RemoteReadonlyEntityManager<
         RemoteGetAbility,
         FlatRemoteQueryAbility,
     ];
+
+    private _state!: FlatRemoteEntityState<TSearch>;
+
+    get state(): FlatRemoteEntityState<TSearch> {
+        if (!this._state) {
+            this._state = new FlatRemoteEntityState(this.compiledSchema, this.cacheTTL);
+        }
+        return this._state;
+    }
+
+    set state(value: FlatRemoteEntityState<TSearch>) {
+        this._state = value;
+    }
 }
 
 /**
@@ -100,6 +139,19 @@ export abstract class RemoteCrudEntityManager<
         RemoteDeleteAbility,
         RemoteToggleAbility,
     ];
+
+    private _state!: FlatRemoteEntityState<TSearch>;
+
+    get state(): FlatRemoteEntityState<TSearch> {
+        if (!this._state) {
+            this._state = new FlatRemoteEntityState(this.compiledSchema, this.cacheTTL);
+        }
+        return this._state;
+    }
+
+    set state(value: FlatRemoteEntityState<TSearch>) {
+        this._state = value;
+    }
 }
 
 /**
@@ -128,4 +180,17 @@ export abstract class RemoteTreeEntityManager<
         RemoteUpdateAbility,
         RemoteDeleteAbility,
     ];
+
+    private _state!: TreeRemoteEntityState<TSearch>;
+
+    get state(): TreeRemoteEntityState<TSearch> {
+        if (!this._state) {
+            this._state = new TreeRemoteEntityState(this.compiledSchema, this.cacheTTL);
+        }
+        return this._state;
+    }
+
+    set state(value: TreeRemoteEntityState<TSearch>) {
+        this._state = value;
+    }
 }

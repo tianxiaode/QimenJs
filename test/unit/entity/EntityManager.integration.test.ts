@@ -59,12 +59,6 @@ class TestUserManager extends RemoteCrudEntityManager {
     entityName = 'TestUser';
     url = '/api/test-users';
     schema: RegistrSchema = testSchema;
-    state!: FlatRemoteEntityState;
-
-    constructor() {
-        super();
-        this.state = new FlatRemoteEntityState(this.compiledSchema, 300000);
-    }
 }
 
 // ============================================

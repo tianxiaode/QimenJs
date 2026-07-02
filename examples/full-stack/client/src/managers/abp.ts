@@ -4,7 +4,6 @@
  * 基于 RemoteCrudEntityManager，连接 ABP 后端
  */
 import { RemoteCrudEntityManager } from '@orbitjs/entity';
-import { FlatRemoteEntityState } from '@orbitjs/entity';
 import { UserSchema, ProductSchema } from '../domains';
 
 /**
@@ -18,12 +17,6 @@ export class AbpUserManager extends RemoteCrudEntityManager {
     entityName = 'User';
     url = '/api/app/user';
     schema = UserSchema;
-    state!: FlatRemoteEntityState;
-
-    constructor() {
-        super();
-        this.state = new FlatRemoteEntityState(this.compiledSchema, 300000);
-    }
 }
 
 /**
@@ -37,10 +30,4 @@ export class AbpProductManager extends RemoteCrudEntityManager {
     entityName = 'Product';
     url = '/api/app/product';
     schema = ProductSchema;
-    state!: FlatRemoteEntityState;
-
-    constructor() {
-        super();
-        this.state = new FlatRemoteEntityState(this.compiledSchema, 300000);
-    }
 }

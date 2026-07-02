@@ -4,7 +4,6 @@
  * 基于 RemoteCrudEntityManager，连接 Spring 后端
  */
 import { RemoteCrudEntityManager } from '@orbitjs/entity';
-import { FlatRemoteEntityState } from '@orbitjs/entity';
 import { OrderSchema, ItemSchema } from '../domains';
 
 /**
@@ -18,12 +17,6 @@ export class SpringOrderManager extends RemoteCrudEntityManager {
     entityName = 'Order';
     url = '/api/orders';
     schema = OrderSchema;
-    state!: FlatRemoteEntityState;
-
-    constructor() {
-        super();
-        this.state = new FlatRemoteEntityState(this.compiledSchema, 300000);
-    }
 }
 
 /**
@@ -37,10 +30,4 @@ export class SpringItemManager extends RemoteCrudEntityManager {
     entityName = 'Item';
     url = '/api/items';
     schema = ItemSchema;
-    state!: FlatRemoteEntityState;
-
-    constructor() {
-        super();
-        this.state = new FlatRemoteEntityState(this.compiledSchema, 300000);
-    }
 }
