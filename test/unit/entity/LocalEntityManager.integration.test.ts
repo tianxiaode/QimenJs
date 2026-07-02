@@ -1,5 +1,5 @@
 /**
- * LocalCrudEntityManager + FlatLocalEntityState 真实集成测试
+ * LocalCrudEntityManager 集成测试
  *
  * 验证本地 CRUD 完整生命周期：
  * 1. list() 从远程获取数据填充 sourceData
@@ -97,7 +97,7 @@ function mockFetchReturn(data: any): void {
 // 测试
 // ============================================
 
-describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
+describe('LocalCrudEntityManager 集成测试', () => {
     let manager: TestLocalTaskManager;
 
     beforeAll(() => {

@@ -1,12 +1,12 @@
 /**
- * CacheFactory → MemoryProvider → StateCacheAbility 集成测试
+ * CacheFactory → MemoryProvider → CacheAbility 集成测试
  *
  * 验证缓存系统的完整链路：
  * 1. CacheFactory.create() 创建 MemoryProvider
  * 2. MemoryProvider 的 get/set/remove/clear/has 操作
  * 3. TTL 过期检查
- * 4. StateCacheAbility 通过 CacheFactory 懒初始化 provider
- * 5. StateCacheAbility.tryGetCache/setCache/clearCache 与真实 provider 交互
+ * 4. CacheAbility 通过 CacheFactory 懒初始化 provider
+ * 5. CacheAbility.tryGetCache/setCache/clearCache 与真实 provider 交互
  * 6. CacheFactory.release() 释放 provider
  * 7. dispose 时自动释放 provider
  */
@@ -80,7 +80,7 @@ function ensureCacheTestDomain(): void {
 // 测试
 // ============================================
 
-describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', () => {
+describe('CacheFactory → MemoryProvider → CacheAbility 集成测试', () => {
     beforeAll(() => {
         ensureCacheTestDomain();
     });
@@ -189,7 +189,7 @@ describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', (
         });
     });
 
-    describe('StateCacheAbility 与真实 CacheProvider 交互', () => {
+    describe('CacheAbility 与真实 CacheProvider 交互', () => {
         it('tryGetCache 在无缓存时应该返回 null', async () => {
             const manager = new CacheTestManager();
 
@@ -266,7 +266,7 @@ describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', (
         });
     });
 
-    describe('StateCacheAbility provider 复用', () => {
+    describe('CacheAbility provider 复用', () => {
         it('同一 Manager 多次操作应该复用同一个 provider', async () => {
             const manager = new CacheTestManager();
 

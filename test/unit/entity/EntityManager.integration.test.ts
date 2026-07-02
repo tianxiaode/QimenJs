@@ -3,7 +3,7 @@
  *
  * 用真实组件实例验证完整调用链路，而非 mock 隔离。
  * 覆盖之前单元测试遗漏的跨组件集成问题：
- * 1. FlatRemoteEntityState 缺少 updateData/toParams/updateItem/isValidPage
+ * 1. Manager 数据字段方法集成（updateData/toParams/updateItem/isValidPage）
  * 2. FlatRemoteListAbility 防抖不返回异步结果
  * 3. RequestContextBuilder.withRequest 传 undefined 覆盖默认值
  */
@@ -118,7 +118,7 @@ describe('EntityManager 集成测试', () => {
     });
 
     // ========================================
-    // 1. FlatRemoteEntityState 方法集成
+    // 1. Manager 数据字段方法集成
     // ========================================
 
     describe('Manager 方法可用性', () => {
