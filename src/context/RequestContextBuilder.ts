@@ -126,7 +126,14 @@ export class RequestContextBuilder {
      * 设置请求信息
      */
     withRequest(request: Partial<RequestContext['request']>): this {
-        Object.assign(this.context.request!, request);
+        // 过滤 undefined 值，避免覆盖构造函数中的默认值
+        const filtered = Object.entries(request).reduce((acc, [key, value]) => {
+            if (value !== undefined) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as Record<string, any>);
+        Object.assign(this.context.request!, filtered);
         return this;
     }
     
@@ -174,7 +181,13 @@ export class RequestContextBuilder {
      * 设置响应信息
      */
     withResponse(response: Partial<RequestContext['response']>): this {
-        Object.assign(this.context.response!, response);
+        const filtered = Object.entries(response).reduce((acc, [key, value]) => {
+            if (value !== undefined) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as Record<string, any>);
+        Object.assign(this.context.response!, filtered);
         return this;
     }
     
@@ -182,7 +195,13 @@ export class RequestContextBuilder {
      * 设置数据载体
      */
     withData(data: Partial<RequestContext['data']>): this {
-        Object.assign(this.context.data!, data);
+        const filtered = Object.entries(data).reduce((acc, [key, value]) => {
+            if (value !== undefined) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as Record<string, any>);
+        Object.assign(this.context.data!, filtered);
         return this;
     }
     

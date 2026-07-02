@@ -191,12 +191,82 @@ describe('RequestContextBuilder', () => {
             expect(context.request.method).toBe('GET');
             expect(context.request.timeout).toBe(30000);
             expect(context.request.responseType).toBe('json');
+            expect(context.request.headers).toEqual({});
             expect(context.response.status).toBe(0);
             expect(context.response.isSuccess).toBe(false);
             expect(context.data.list).toEqual([]);
             expect(context.data.total).toBe(0);
             expect(context.isAborted).toBe(false);
             expect(context.steps).toEqual([]);
+        });
+    });
+
+    describe('withRequest undefined handling', () => {
+        it('should not overwrite headers with undefined', () => {
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withHeaders({ 'Authorization': 'Bearer token' })
+                .withRequest({ headers: undefined } as any)
+                .build();
+            
+            expect(context.request.headers).toEqual({ 'Authorization': 'Bearer token' });
+        });
+
+        it('should not overwrite queryParams with undefined', () => {
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withQueryParams({ page: 1 })
+                .withRequest({ queryParams: undefined } as any)
+                .build();
+            
+            expect(context.request.queryParams).toEqual({ page: 1 });
+        });
+
+        it('should merge valid fields while ignoring undefined', () => {
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withRequest({ method: 'POST', headers: undefined, timeout: undefined } as any)
+                .build();
+            
+            expect(context.request.method).toBe('POST');
+            expect(context.request.headers).toEqual({});
+            expect(context.request.timeout).toBe(30000);
+        });
+    });
+
+    describe('withResponse undefined handling', () => {
+        it('should not overwrite status with undefined', () => {
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withResponse({ status: 200, isSuccess: true })
+                .withResponse({ data: undefined } as any)
+                .build();
+            
+            expect(context.response.status).toBe(200);
+            expect(context.response.isSuccess).toBe(true);
+        });
+    });
+
+    describe('withData undefined handling', () => {
+        it('should not overwrite list with undefined', () => {
+            const context = RequestContextBuilder
+                .create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withData({ list: [{ id: 1 }], total: 1 })
+                .withData({ list: undefined, total: undefined } as any)
+                .build();
+            
+            expect(context.data.list).toEqual([{ id: 1 }]);
+            expect(context.data.total).toBe(1);
         });
     });
 });

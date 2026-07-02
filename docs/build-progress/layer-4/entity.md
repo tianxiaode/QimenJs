@@ -89,6 +89,11 @@ src/entity/
   - 新增 domains/ 目录统一定义各域 Schema
   - 新增 managers/ 目录定义各域 EntityManager（继承 RemoteCrudEntityManager）
   - dashboard.ts 从 HttpClient 直接调用改为 EntityManager.list()/create()
+- StateCacheAbility.updateData 重命名为 updateSourceData：
+  - 解决 Ability 注入覆盖冲突（StateCacheAbility.updateData 覆盖 FlatRemoteEntityState.updateData）
+  - FlatLocalEntityState.updateData 委托调用 updateSourceData
+- TreeRemoteEntityState 新增 updateData(list, total) 方法
+- 新增 EntityManager 集成测试（18 个用例，真实组件实例验证完整调用链路）
 
 ### 2026-07-01
 - 完成 15 个 Manager Ability 从 class 迁移为 AbilityDefinition 纯对象
@@ -122,6 +127,8 @@ src/entity/
 ## 遗留工作
 
 - 更多 Manager 能力测试（FlatRemoteListAbility, RemoteUpdateAbility, RemoteDeleteAbility 等）
+- **集成测试**：EntityManager 完整 CRUD 链路、HttpClient → DataProcessor → State 数据流
+- **Ability 注入覆盖规则测试**：验证同名方法在不同 Ability 间的覆盖行为
 
 ## 参考资料
 

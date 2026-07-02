@@ -23,7 +23,7 @@ export class FlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSea
     changes!: ILocalChangeSet;
 
     async updateData(result: any[]): Promise<void> {
-        await (this as any).updateData(result);
+        (this as any).updateSourceData(result);
     }
 
     async refreshView(): Promise<void> {

@@ -31,7 +31,13 @@ export const StateCacheAbility: AbilityDefinition = {
         await provider.remove(this._getCacheKey());
     },
 
-    updateData(result: any[]) {
+    /**
+     * 更新 sourceData（本地状态专用）
+     * 
+     * 远程状态没有 sourceData，不应调用此方法。
+     * 本地状态的 updateData 方法会委托到此方法。
+     */
+    updateSourceData(result: any[]) {
         this.sourceData.clear();
         result.forEach((item: any) => {
             this.sourceData.set(item.id, item);

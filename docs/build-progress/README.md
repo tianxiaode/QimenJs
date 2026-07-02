@@ -54,7 +54,8 @@ docs/build-progress/
 | **总计** | **28** | **28** | **28** | **~87%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%  
-**测试**：207 套件 / 2354 用例全部通过
+**测试**：208 套件 / 2377 用例（1 个预存在失败）  
+**当前重点**：补充集成测试，解决单元测试覆盖率虚高问题
 
 ## 快速导航
 
@@ -106,6 +107,11 @@ docs/build-progress/
 - 全栈示例（examples/full-stack）搭建完成，集成 EntityManager
 - FlatRemoteEntityState 运行时缺陷修复（缺少 updateData/toParams/updateItem/isValidPage）
 - FlatRemoteListAbility 防抖返回值修复（debounce 不返回异步结果）
+- RequestContextBuilder.withRequest undefined 覆盖修复
+- StateCacheAbility.updateData 重命名为 updateSourceData，解决 Ability 注入覆盖冲突
+- TreeRemoteEntityState 新增 updateData 方法
+- 新增 EntityManager 集成测试（18 个用例）+ RequestContextBuilder 边界测试（5 个用例）
+- **工作重点调整**：从"集成示例搭建"转向"补充集成测试"，解决单元测试覆盖率虚高问题
 
 ### 2026-07-01
 - 新增 @orbitjs/i18n 国际化模块

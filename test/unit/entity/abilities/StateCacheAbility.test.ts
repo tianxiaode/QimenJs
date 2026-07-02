@@ -151,11 +151,11 @@ describe('StateCacheAbility', () => {
         });
     });
 
-    describe('updateData', () => {
+    describe('updateSourceData', () => {
         it('应替换 sourceData 内容', () => {
             const host = createCacheHost({ name: 'User', domain: 'default' });
             host.sourceData.set('old', { id: 'old' });
-            host.updateData([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
+            host.updateSourceData([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
             expect(host.sourceData.size).toBe(2);
             expect(host.sourceData.get('1')).toEqual({ id: '1', name: 'a' });
             expect(host.sourceData.get('2')).toEqual({ id: '2', name: 'b' });

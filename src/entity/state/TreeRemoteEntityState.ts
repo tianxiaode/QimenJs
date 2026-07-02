@@ -25,6 +25,11 @@ export class TreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSear
     total: number = 0;
     expandedIds: Set<string | number> = new Set();
 
+    updateData(list: any[], total?: number): void {
+        this.items = list || [];
+        this.total = typeof total === 'number' ? total : this.items.length;
+    }
+
     refreshView(): void {
         // 默认实现：替换数组引用以触发响应式更新
         // 实际运行时会被 TreeViewAbility 暴露的 refreshView 覆盖，
