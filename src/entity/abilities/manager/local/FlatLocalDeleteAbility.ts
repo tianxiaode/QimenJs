@@ -14,21 +14,17 @@ export const FlatLocalDeleteAbility: AbilityDefinition = {
         // 1. 获取分流计划
         const plan = state.getDeletionPlan(ids);
 
-        // 2. 处理"纯本地"数据：直接确认销毁
-        if (plan.localOnly.length > 0) {
-            state.confirmDelete({ localOnly: plan.localOnly, persistent: [] });
+        // 2. 执行软删除（保存快照、从 sourceData 移除、记入 changes.deleted）
+        await state.softDelete(plan);
+
+        // 3. 处理"持久化"数据的远程同步
+        if (plan.persistent.length > 0 && immediate) {
+            const options = await this.buildOptions('delete', {}, { ids: plan.persistent }, {});
+            await this.fetch('delete', options);
         }
 
-        // 3. 处理"持久化"数据
-        if (plan.persistent.length > 0) {
-            if (immediate) {
-                const options = await this.buildOptions('delete', {}, { ids: plan.persistent }, {});
-                await this.fetch('delete', options);
-                state.confirmDelete({ localOnly: [], persistent: plan.persistent });
-            } else {
-                state.confirmDelete({ localOnly: [], persistent: plan.persistent });
-            }
-        }
+        // 4. 确认删除（清空快照和 changes.deleted）
+        await state.confirmDelete();
 
         this.emit('deleted', ids);
         if ((state as any).refreshView) (state as any).refreshView();

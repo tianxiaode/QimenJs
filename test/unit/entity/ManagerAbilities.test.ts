@@ -187,7 +187,7 @@ describe('LocalGetAbility', () => {
         static readonly abilities = [LocalGetAbility];
         compiledSchema = { idField: 'id' };
         state = {
-            sourceData: [] as any[],
+            sourceData: new Map<string | number, any>(),
             item: null as any,
         };
         emit = jest.fn();
@@ -206,7 +206,7 @@ describe('LocalGetAbility', () => {
     describe('get', () => {
         it('应该根据 ID 查找实体', () => {
             const user = { id: '1', name: 'John' };
-            host.state.sourceData = [user, { id: '2', name: 'Jane' }];
+            host.state.sourceData = new Map([['1', user], ['2', { id: '2', name: 'Jane' }]]);
 
             const result = (host as any).get('1');
 
@@ -215,7 +215,7 @@ describe('LocalGetAbility', () => {
         });
 
         it('找不到实体时应该返回 null', () => {
-            host.state.sourceData = [{ id: '1', name: 'John' }];
+            host.state.sourceData = new Map([['1', { id: '1', name: 'John' }]]);
 
             const result = (host as any).get('999');
 
@@ -225,7 +225,7 @@ describe('LocalGetAbility', () => {
 
         it('应该发射 got 事件', () => {
             const user = { id: '1', name: 'John' };
-            host.state.sourceData = [user];
+            host.state.sourceData = new Map([['1', user]]);
 
             (host as any).get('1');
 
@@ -233,7 +233,7 @@ describe('LocalGetAbility', () => {
         });
 
         it('找不到时也应该发射 got 事件（值为 null）', () => {
-            host.state.sourceData = [];
+            host.state.sourceData = new Map();
 
             (host as any).get('999');
 

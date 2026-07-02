@@ -11,9 +11,15 @@ export const LocalGetAbility: AbilityDefinition = {
         const { state } = this;
         const { idField } = this.compiledSchema;
 
-        const result = state.sourceData.find(
-            (item: any) => item[idField] === id
-        ) || null;
+        // sourceData 是 Map，优先用 id 直接查找
+        let result: any = state.sourceData.get(id) ?? null;
+
+        // 如果 idField 不是默认的 'id'，需要遍历查找
+        if (result === null && idField !== 'id') {
+            result = Array.from(state.sourceData.values()).find(
+                (item: any) => item[idField] === id
+            ) ?? null;
+        }
 
         state.item = result;
         this.emit('got', result);
