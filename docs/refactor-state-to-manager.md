@@ -1,5 +1,12 @@
 # State 消除改造计划：将 State 数据字段迁移到 Manager
 
+## 改造进度
+
+- [x] 阶段一：Local 系列改造（FlatLocal）
+- [x] 阶段二：Remote Flat 系列改造（FlatRemote）
+- [x] 阶段三：Tree Remote 系列改造
+- [ ] 阶段四：清理 State 层（删除 State 类文件和旧 State Ability 文件）
+
 ## 1. 改造目标
 
 **消除 State 层**，将 State 上的数据字段（`sourceData`, `items`, `loading`, `search` 等）和业务方法直接迁移到 Manager 上。Ability 中通过 `this` 直接访问这些字段，天然是实例级别的，不存在共享问题。
