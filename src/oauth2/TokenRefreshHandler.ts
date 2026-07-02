@@ -9,6 +9,7 @@
 
 import type { RequestContext } from '@/context';
 import { oauth2 } from './OAuth2Manager';
+import { HttpExecutor } from '@/http/HttpExecutor';
 
 /**
  * Token 刷新处理器
@@ -48,7 +49,6 @@ export const TokenRefreshHandler = async (context: RequestContext): Promise<void
     }
 
     // 刷新成功，重新执行原始请求管道
-    const { HttpExecutor } = require('@/http/HttpExecutor');
     const executor = new HttpExecutor();
 
     // 重建请求上下文（使用新的 token）

@@ -19,6 +19,7 @@ import type {
     OAuth2TokenResponse,
 } from './types';
 import { createTokenStorage, type ITokenStorage } from './TokenStorage';
+import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 
 /**
  * OAuth2 核心管理器
@@ -318,14 +319,12 @@ export class OAuth2Manager {
 
     private applyToken(accessToken: string): void {
         if (!this.config) return;
-        const { DomainRegistrar } = require('@/registry/registrars/DomainRegistrar');
         const domains = Array.isArray(this.config.domain) ? this.config.domain : [this.config.domain];
         DomainRegistrar.getInstance().updateToken(accessToken, ...domains);
     }
 
     private clearAppliedToken(): void {
         if (!this.config) return;
-        const { DomainRegistrar } = require('@/registry/registrars/DomainRegistrar');
         const domains = Array.isArray(this.config.domain) ? this.config.domain : [this.config.domain];
         DomainRegistrar.getInstance().clearToken(...domains);
     }
