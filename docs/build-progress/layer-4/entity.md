@@ -75,6 +75,21 @@ src/entity/
 
 ## 构建历史
 
+### 2026-07-02
+- FlatRemoteEntityState 运行时缺陷修复：
+  - 添加 StateSearchAbility 到 abilities 声明（提供 toParams 等方法）
+  - 实现 updateData(list, total)：更新 items、total、pages、hasMore
+  - 实现 updateItem(item)：更新单个实体并同步到 items 列表
+  - 实现 isValidPage(page)：验证页码有效性
+  - 添加 pageSizes 属性
+- FlatRemoteListAbility 防抖返回值修复：
+  - list()/refresh() 直接调用 _internalList()，不再通过防抖函数获取返回值
+  - 原因：debounce 在 immediate=false 时不返回 fn 的异步结果
+- 全栈示例（examples/full-stack）EntityManager 集成：
+  - 新增 domains/ 目录统一定义各域 Schema
+  - 新增 managers/ 目录定义各域 EntityManager（继承 RemoteCrudEntityManager）
+  - dashboard.ts 从 HttpClient 直接调用改为 EntityManager.list()/create()
+
 ### 2026-07-01
 - 完成 15 个 Manager Ability 从 class 迁移为 AbilityDefinition 纯对象
 - 移除 AbilityBase、DebounceAbilityBase、ComposableRegistrar 旧版代码

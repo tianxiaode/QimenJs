@@ -1,16 +1,28 @@
 /**
- * 域名配置
- * 
- * 注册三个域：auth / abp / spring
- * 配置 OAuth2 认证
+ * 应用配置
+ *
+ * 1. 注册域（DomainRegistrar）：auth / abp / spring
+ * 2. 注册 Schema（SchemaRegistrar）：各域的实体 Schema
+ * 3. 配置 OAuth2 认证
  */
-import { Registry } from '@orbitjs/registry';
+import { Registry, DomainRegistrar } from '@orbitjs/registry';
+import { SchemaRegistrar } from '@orbitjs/schema';
 import { oauth2 } from '@orbitjs/oauth2';
 import '@orbitjs/data-processor-abp';
 import '@orbitjs/data-processor-spring';
 
+// 导入域 Schema 定义
+import { UserSchema, ProductSchema, OrderSchema, ItemSchema } from './domains';
+
+// 获取域注册器（Registry 通过 Proxy 动态访问，需要类型断言）
+const domainRegistrar = (Registry as any).domain as DomainRegistrar;
+
+// ============================================
+// 1. 注册域配置
+// ============================================
+
 // 注册认证域
-Registry.domain.register('auth', {
+domainRegistrar.register('auth', {
     baseUrl: 'http://localhost:3000',
     preset: 'default',
     pageSize: 10,
@@ -18,7 +30,7 @@ Registry.domain.register('auth', {
 });
 
 // 注册 ABP 域
-Registry.domain.register('abp', {
+domainRegistrar.register('abp', {
     baseUrl: 'http://localhost:3001',
     preset: 'abp',
     pageSize: 10,
@@ -27,7 +39,7 @@ Registry.domain.register('abp', {
 });
 
 // 注册 Spring 域
-Registry.domain.register('spring', {
+domainRegistrar.register('spring', {
     baseUrl: 'http://localhost:3002',
     preset: 'spring',
     pageSize: 10,
@@ -35,7 +47,24 @@ Registry.domain.register('spring', {
     authInjector: 'bearer',
 });
 
-// 配置 OAuth2
+// ============================================
+// 2. 注册 Schema
+// ============================================
+
+const schemaRegistrar = SchemaRegistrar.getInstance();
+
+// ABP 域 Schema
+schemaRegistrar.register(UserSchema);
+schemaRegistrar.register(ProductSchema);
+
+// Spring 域 Schema
+schemaRegistrar.register(OrderSchema);
+schemaRegistrar.register(ItemSchema);
+
+// ============================================
+// 3. 配置 OAuth2
+// ============================================
+
 oauth2.configure({
     tokenEndpoint: 'http://localhost:3000/oauth2/token',
     revokeEndpoint: 'http://localhost:3000/oauth2/revoke',

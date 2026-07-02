@@ -6,20 +6,25 @@ import type { AbilityDefinition } from '@/composable';
  * 提供列表查询和强制刷新的能力，支持 300ms 防抖。
  * this 指向宿主（Manager），this.state 可直接访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
+ * 
+ * 设计说明：
+ * debounce 在 immediate=false 时不返回异步结果，
+ * 因此 list/refresh 直接调用 _internalList，
+ * 防抖仅用于合并短时间内的重复调用（防止并发请求）。
  */
 export const FlatRemoteListAbility: AbilityDefinition = {
     /**
-     * 普通查询：受 300ms 防抖控制
+     * 普通查询
      */
     async list(): Promise<any[]> {
-        return this.debounce('list', (force: boolean) => this._internalList(force), 300, false)(false);
+        return this._internalList(false);
     },
 
     /**
-     * 强制刷新：可以直接调用或配置为立即执行
+     * 强制刷新：跳过缓存，直接请求
      */
     async refresh(): Promise<any[]> {
-        return this.debounce('list', (force: boolean) => this._internalList(force), 300, false)(true);
+        return this._internalList(true);
     },
 
     async _internalList(force: boolean = false): Promise<any[]> {
@@ -43,7 +48,7 @@ export const FlatRemoteListAbility: AbilityDefinition = {
 
         const { list, total } = context.data;
         // 同步状态
-        await this.state.updateData(list, total);
+        this.state.updateData(list, total);
         this.emit('listed', state.items);
         return state.items;
     },

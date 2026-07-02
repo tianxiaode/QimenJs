@@ -103,6 +103,9 @@ docs/build-progress/
 ### 2026-07-02
 - 新增 @orbitjs/oauth2 认证流程包（密码/授权码/客户端凭证模式 + 401 自动刷新）
 - 22 个 OAuth2 测试用例通过
+- 全栈示例（examples/full-stack）搭建完成，集成 EntityManager
+- FlatRemoteEntityState 运行时缺陷修复（缺少 updateData/toParams/updateItem/isValidPage）
+- FlatRemoteListAbility 防抖返回值修复（debounce 不返回异步结果）
 
 ### 2026-07-01
 - 新增 @orbitjs/i18n 国际化模块

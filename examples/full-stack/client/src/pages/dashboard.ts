@@ -1,15 +1,18 @@
 /**
  * 仪表盘页
- * 
+ *
  * 展示三个域的数据：ABP 用户/产品、Spring 订单/商品
+ * 通过 EntityManager 获取数据，展示 OrbitJS 的实体管理能力
  */
-import { HttpClient } from '@orbitjs/http';
 import { oauth2 } from '../config';
+import { AbpUserManager, AbpProductManager, SpringOrderManager, SpringItemManager } from '../managers';
 import { render, card, table, button, badge, loading, error } from '../utils/render';
 
-// 创建 HTTP 客户端
-const abpClient = new HttpClient('abp');
-const springClient = new HttpClient('spring');
+// 创建 EntityManager 实例
+const abpUserManager = new AbpUserManager();
+const abpProductManager = new AbpProductManager();
+const springOrderManager = new SpringOrderManager();
+const springItemManager = new SpringItemManager();
 
 export function showDashboard(): void {
     render('app', `
@@ -66,30 +69,20 @@ async function fetchAbpUsers(): Promise<void> {
     if (!container) return;
 
     try {
-        const ctx = await abpClient.get('/api/app/user', {
-            queryParams: { skipCount: 0, maxResultCount: 5 },
-        }).context;
+        // 通过 EntityManager 的 list 能力获取数据
+        const items = await abpUserManager.list();
+        const state = abpUserManager.state;
 
-        if (ctx.error) {
-            container.innerHTML = error(ctx.error.message || '请求失败');
-            return;
-        }
-
-        const data = ctx.data;
-        if (data?.items) {
-            container.innerHTML = table(
-                ['ID', '用户名', '姓名', '邮箱', '状态'],
-                data.items.map((u: any) => [
-                    u.id,
-                    u.userName,
-                    u.name,
-                    u.email,
-                    u.isActive ? badge('活跃', '#4CAF50') : badge('禁用', '#999'),
-                ])
-            ) + `<p style="color: #666; font-size: 12px;">共 ${data.totalCount} 条</p>`;
-        } else {
-            container.innerHTML = error('数据格式异常');
-        }
+        container.innerHTML = table(
+            ['ID', '用户名', '姓名', '邮箱', '状态'],
+            items.map((u: any) => [
+                u.id,
+                u.userName,
+                u.name,
+                u.email,
+                u.isActive ? badge('活跃', '#4CAF50') : badge('禁用', '#999'),
+            ])
+        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -100,30 +93,19 @@ async function fetchAbpProducts(): Promise<void> {
     if (!container) return;
 
     try {
-        const ctx = await abpClient.get('/api/app/product', {
-            queryParams: { skipCount: 0, maxResultCount: 5 },
-        }).context;
+        const items = await abpProductManager.list();
+        const state = abpProductManager.state;
 
-        if (ctx.error) {
-            container.innerHTML = error(ctx.error.message || '请求失败');
-            return;
-        }
-
-        const data = ctx.data;
-        if (data?.items) {
-            container.innerHTML = table(
-                ['ID', '名称', '价格', '库存', '分类'],
-                data.items.map((p: any) => [
-                    p.id,
-                    p.name,
-                    '¥' + p.price,
-                    p.stock,
-                    p.category,
-                ])
-            ) + `<p style="color: #666; font-size: 12px;">共 ${data.totalCount} 条</p>`;
-        } else {
-            container.innerHTML = error('数据格式异常');
-        }
+        container.innerHTML = table(
+            ['ID', '名称', '价格', '库存', '分类'],
+            items.map((p: any) => [
+                p.id,
+                p.name,
+                '¥' + p.price,
+                p.stock,
+                p.category,
+            ])
+        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -136,30 +118,19 @@ async function fetchSpringOrders(): Promise<void> {
     if (!container) return;
 
     try {
-        const ctx = await springClient.get('/api/orders', {
-            queryParams: { page: 0, size: 5 },
-        }).context;
+        const items = await springOrderManager.list();
+        const state = springOrderManager.state;
 
-        if (ctx.error) {
-            container.innerHTML = error(ctx.error.message || '请求失败');
-            return;
-        }
-
-        const data = ctx.data;
-        if (data?.content) {
-            container.innerHTML = table(
-                ['ID', '订单号', '客户', '金额', '状态'],
-                data.content.map((o: any) => [
-                    o.id,
-                    o.orderNo,
-                    o.customer,
-                    '¥' + o.amount,
-                    badge(o.status, statusColor(o.status)),
-                ])
-            ) + `<p style="color: #666; font-size: 12px;">共 ${data.totalElements} 条，第 ${data.number + 1}/${data.totalPages} 页</p>`;
-        } else {
-            container.innerHTML = error('数据格式异常');
-        }
+        container.innerHTML = table(
+            ['ID', '订单号', '客户', '金额', '状态'],
+            items.map((o: any) => [
+                o.id,
+                o.orderNo,
+                o.customer,
+                '¥' + o.amount,
+                badge(o.status, statusColor(o.status)),
+            ])
+        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条，第 ${state.page}/${state.pages} 页</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -170,30 +141,19 @@ async function fetchSpringItems(): Promise<void> {
     if (!container) return;
 
     try {
-        const ctx = await springClient.get('/api/items', {
-            queryParams: { page: 0, size: 5 },
-        }).context;
+        const items = await springItemManager.list();
+        const state = springItemManager.state;
 
-        if (ctx.error) {
-            container.innerHTML = error(ctx.error.message || '请求失败');
-            return;
-        }
-
-        const data = ctx.data;
-        if (data?.content) {
-            container.innerHTML = table(
-                ['ID', '名称', '价格', '库存', '分类'],
-                data.content.map((i: any) => [
-                    i.id,
-                    i.name,
-                    '¥' + i.price,
-                    i.stock,
-                    i.category,
-                ])
-            ) + `<p style="color: #666; font-size: 12px;">共 ${data.totalElements} 条</p>`;
-        } else {
-            container.innerHTML = error('数据格式异常');
-        }
+        container.innerHTML = table(
+            ['ID', '名称', '价格', '库存', '分类'],
+            items.map((i: any) => [
+                i.id,
+                i.name,
+                '¥' + i.price,
+                i.stock,
+                i.category,
+            ])
+        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -221,25 +181,15 @@ function statusColor(status: string): string {
     if (!result) return;
 
     try {
+        // 通过 EntityManager 的 create 能力创建用户
         // 故意发送空数据触发验证错误
-        const ctx = await abpClient.post('/api/app/user', {}).context;
+        const item = await abpUserManager.create({});
 
-        if (ctx.error) {
-            // 展示 ABP 验证错误（fieldErrors）
-            let msg = `错误: ${ctx.error.message}`;
-            if (ctx.error.fieldErrors) {
-                msg += '<br>字段错误：<br>';
-                for (const [field, errors] of Object.entries(ctx.error.fieldErrors)) {
-                    msg += `  ${field}: ${(errors as string[]).join(', ')}<br>`;
-                }
-            }
-            result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">${msg}</div>`;
-        } else {
-            result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">创建成功: ${ctx.data?.userName}</div>`;
-            fetchAbpUsers();
-        }
+        result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">创建成功: ${item.userName}</div>`;
+        fetchAbpUsers();
     } catch (e: any) {
-        result.innerHTML = error(e.message);
+        let msg = `错误: ${e.message || '创建失败'}`;
+        result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">${msg}</div>`;
     }
 };
 
