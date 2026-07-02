@@ -8,7 +8,7 @@
  */
 
 import { Logger } from '@/logger';
-import {
+import type {
     Processor,
     ExecutionStep,
     PipelineOptions,

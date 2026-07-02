@@ -7,10 +7,10 @@
  * @module context/types/request-context
  */
 
-import { ExecutionStep } from '../base';
+import type { ExecutionStep } from '../base';
 
 // 重新导出 ExecutionStep
-export { ExecutionStep };
+export type { ExecutionStep };
 
 /**
  * HTTP 方法类型

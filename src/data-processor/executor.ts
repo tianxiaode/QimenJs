@@ -8,8 +8,8 @@
  */
 
 import { Pipeline } from '@/pipeline';
-import { RequestContext } from '@/context';
-import { DataProcessorHandler } from './types';
+import type { RequestContext } from '@/context';
+import type { DataProcessorHandler } from './types';
 
 /**
  * 数据处理执行器

@@ -4,11 +4,11 @@
  * @module pipeline/types
  */
 
-import { ILogger } from '@/logger';
-import { ExecutionStep, BaseContext, BaseMetadata } from '@/context';
+import type { ILogger } from '@/logger';
+import type { ExecutionStep, BaseContext, BaseMetadata } from '@/context';
 
 // 重新导出 ExecutionStep 以保持向后兼容
-export { ExecutionStep };
+export type { ExecutionStep };
 
 /**
  * 处理器接口

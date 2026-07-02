@@ -6,7 +6,7 @@
  * @module context/base/BaseContext
  */
 
-import { ExecutionStep } from './ExecutionStep';
+import type { ExecutionStep } from './ExecutionStep';
 
 /**
  * 基础元数据接口
