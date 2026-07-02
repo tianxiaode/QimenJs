@@ -1,8 +1,7 @@
 import { BaseEntityManager } from './BaseEntityManager';
 import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@/entity/types';
-import { FlatLocalEntityState } from '@/entity/state/FlatLocalEntityState';
-import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
-import { TreeRemoteEntityState } from '@/entity/state/TreeRemoteEntityState';
+import type { IEntity } from '@/schema';
+import { FlatLocalStateAbility } from '@/entity/abilities/manager/local/FlatLocalStateAbility';
 import { LocalListAbility } from '@/entity/abilities/manager/local/LocalListAbility';
 import { LocalGetAbility } from '@/entity/abilities/manager/local/LocalGetAbility';
 import { FlatLocalMutationAbility } from '@/entity/abilities/manager/local/FlatLocalMutationAbility';
@@ -17,6 +16,14 @@ import { RemoteUpdateAbility } from '@/entity/abilities/manager/remote/RemoteUpd
 import { RemoteDeleteAbility } from '@/entity/abilities/manager/remote/RemoteDeleteAbility';
 import { RemoteToggleAbility } from '@/entity/abilities/manager/remote/RemoteToggleAbility';
 import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRemoteStateAbility';
+import { StateSchemaAbility } from '@/entity/abilities/state/base/StateSchemaAbility';
+import { StateCacheAbility } from '@/entity/abilities/state/base/StateCacheAbility';
+import { StateDirtyAbility } from '@/entity/abilities/state/base/StateDirtyAbility';
+import { StateSearchAbility } from '@/entity/abilities/state/search/StateSearchAbility';
+import { TreePathAbility } from '@/entity/abilities/state/tree/TreePathAbility';
+import { TreeLifecycleAbility } from '@/entity/abilities/state/tree/TreeLifecycleAbility';
+import { TreeSearchAbility } from '@/entity/abilities/state/tree/TreeSearchAbility';
+import { TreeViewAbility } from '@/entity/abilities/state/tree/TreeViewAbility';
 
 /**
  * 本地只读实体管理器
@@ -27,21 +34,16 @@ import { TreeRemoteStateAbility } from '@/entity/abilities/manager/remote/TreeRe
  */
 export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams
-> extends BaseEntityManager<TSearch, FlatLocalEntityState<TSearch>> {
-    static readonly abilities = [LocalListAbility, LocalGetAbility];
+> extends BaseEntityManager<TSearch> {
+    static readonly abilities = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility];
 
-    private _state!: FlatLocalEntityState<TSearch>;
-
-    get state(): FlatLocalEntityState<TSearch> {
-        if (!this._state) {
-            this._state = new FlatLocalEntityState(this.compiledSchema, this.cacheTTL);
-        }
-        return this._state;
-    }
-
-    set state(value: FlatLocalEntityState<TSearch>) {
-        this._state = value;
-    }
+    // 数据字段（原 FlatLocalEntityState 的属性，直接在 Manager 上定义）
+    isRemote: false = false;
+    sourceData = new Map<string | number, IEntity>();
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
 }
 
 /**
@@ -56,26 +58,22 @@ export abstract class LocalReadonlyEntityManager<
  */
 export abstract class LocalCrudEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams
-> extends BaseEntityManager<TSearch, FlatLocalEntityState<TSearch>> {
+> extends BaseEntityManager<TSearch> {
     static readonly abilities = [
+        FlatLocalStateAbility,
         LocalListAbility,
         LocalGetAbility,
         FlatLocalMutationAbility,
         FlatLocalDeleteAbility,
     ];
 
-    private _state!: FlatLocalEntityState<TSearch>;
-
-    get state(): FlatLocalEntityState<TSearch> {
-        if (!this._state) {
-            this._state = new FlatLocalEntityState(this.compiledSchema, this.cacheTTL);
-        }
-        return this._state;
-    }
-
-    set state(value: FlatLocalEntityState<TSearch>) {
-        this._state = value;
-    }
+    // 数据字段（原 FlatLocalEntityState 的属性，直接在 Manager 上定义）
+    isRemote: false = false;
+    sourceData = new Map<string | number, IEntity>();
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
 }
 
 /**
@@ -89,8 +87,12 @@ export abstract class LocalCrudEntityManager<
  */
 export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
-> extends BaseEntityManager<TSearch, FlatRemoteEntityState<TSearch>> {
+> extends BaseEntityManager<TSearch> {
     static readonly abilities = [
+        StateSchemaAbility,
+        StateCacheAbility,
+        StateDirtyAbility,
+        StateSearchAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -98,18 +100,18 @@ export abstract class RemoteReadonlyEntityManager<
         FlatRemoteQueryAbility,
     ];
 
-    private _state!: FlatRemoteEntityState<TSearch>;
-
-    get state(): FlatRemoteEntityState<TSearch> {
-        if (!this._state) {
-            this._state = new FlatRemoteEntityState(this.compiledSchema, this.cacheTTL);
-        }
-        return this._state;
-    }
-
-    set state(value: FlatRemoteEntityState<TSearch>) {
-        this._state = value;
-    }
+    // 数据字段（原 FlatRemoteEntityState 的属性，直接在 Manager 上定义）
+    isRemote: true = true;
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
+    total: number = 0;
+    page: number = 1;
+    pageSize: number = 20;
+    pages: number = 0;
+    hasMore: boolean = false;
+    pageSizes: number[] = [10, 20, 50];
 }
 
 /**
@@ -127,8 +129,12 @@ export abstract class RemoteReadonlyEntityManager<
  */
 export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
-> extends BaseEntityManager<TSearch, FlatRemoteEntityState<TSearch>> {
+> extends BaseEntityManager<TSearch> {
     static readonly abilities = [
+        StateSchemaAbility,
+        StateCacheAbility,
+        StateDirtyAbility,
+        StateSearchAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -140,18 +146,18 @@ export abstract class RemoteCrudEntityManager<
         RemoteToggleAbility,
     ];
 
-    private _state!: FlatRemoteEntityState<TSearch>;
-
-    get state(): FlatRemoteEntityState<TSearch> {
-        if (!this._state) {
-            this._state = new FlatRemoteEntityState(this.compiledSchema, this.cacheTTL);
-        }
-        return this._state;
-    }
-
-    set state(value: FlatRemoteEntityState<TSearch>) {
-        this._state = value;
-    }
+    // 数据字段（原 FlatRemoteEntityState 的属性，直接在 Manager 上定义）
+    isRemote: true = true;
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
+    total: number = 0;
+    page: number = 1;
+    pageSize: number = 20;
+    pages: number = 0;
+    hasMore: boolean = false;
+    pageSizes: number[] = [10, 20, 50];
 }
 
 /**
@@ -170,8 +176,15 @@ export abstract class RemoteCrudEntityManager<
  */
 export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams
-> extends BaseEntityManager<TSearch, TreeRemoteEntityState<TSearch>> {
+> extends BaseEntityManager<TSearch> {
     static readonly abilities = [
+        StateSchemaAbility,
+        StateCacheAbility,
+        StateDirtyAbility,
+        TreePathAbility,
+        TreeLifecycleAbility,
+        TreeSearchAbility,
+        TreeViewAbility,
         TreeRemoteStateAbility,
         FlatRemoteListAbility,
         RemoteGetAbility,
@@ -181,16 +194,12 @@ export abstract class RemoteTreeEntityManager<
         RemoteDeleteAbility,
     ];
 
-    private _state!: TreeRemoteEntityState<TSearch>;
-
-    get state(): TreeRemoteEntityState<TSearch> {
-        if (!this._state) {
-            this._state = new TreeRemoteEntityState(this.compiledSchema, this.cacheTTL);
-        }
-        return this._state;
-    }
-
-    set state(value: TreeRemoteEntityState<TSearch>) {
-        this._state = value;
-    }
+    // 数据字段（原 TreeRemoteEntityState 的属性，直接在 Manager 上定义）
+    isRemote: true = true;
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
+    total: number = 0;
+    expandedIds: Set<string | number> = new Set();
 }

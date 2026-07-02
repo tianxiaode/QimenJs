@@ -351,7 +351,7 @@ export class OAuth2Manager {
         }
     }
 
-    private emit(event: string, data: any): void {
+    emit(event: string, data: any): void {
         const handlers = this.listeners.get(event);
         if (!handlers) return;
         for (const handler of handlers) {

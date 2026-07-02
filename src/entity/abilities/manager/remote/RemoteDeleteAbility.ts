@@ -7,7 +7,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  * 提供删除远程实体的能力，通过HTTP请求与服务器交互。
  * 支持单个或批量删除操作，并自动更新本地状态。
  * 使用 loading 锁防止并发删除请求。
- * this 指向宿主（Manager），this.state 可直接访问。
+ * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
 export const RemoteDeleteAbility: AbilityDefinition = {
     /**
@@ -20,10 +20,8 @@ export const RemoteDeleteAbility: AbilityDefinition = {
      * @throws {KernelError} 当操作进行中或删除请求失败时抛出错误
      */
     async delete(id: string | number | (string | number)[]): Promise<void> {
-        const state = this.state;
-
         // loading 锁保护：防止并发删除请求
-        if (state.loading) {
+        if (this.loading) {
             throw new KernelError(
                 'Operation in progress, please wait.',
                 KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS
@@ -34,8 +32,8 @@ export const RemoteDeleteAbility: AbilityDefinition = {
         const action = isBatch ? 'batch-delete' : 'delete';
         const options = isBatch
             ? await this.buildOptions(action, {}, { ids: id }, {})
-            : await this.buildOptions(action, { [state.idField]: id }, null, {});
+            : await this.buildOptions(action, { [this.idField]: id }, null, {});
         await this.fetch(action, options);
-        await state.delete(id);
+        this.deleteFromItems(id);
     },
 };

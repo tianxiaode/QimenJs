@@ -175,9 +175,12 @@ export interface ICoreEntityManager extends IComposableBase {
 /** 基础实体管理器接口 */
 export interface IBaseEntityManager<
     TSearch extends SearchParams = SearchParams,
-    TState extends IBaseEntityState<TSearch> = IBaseEntityState<TSearch>,
 > extends ICoreEntityManager {
-    state: TState;
+    loading: boolean;
+    items: IEntity[];
+    item: IEntity | null;
+    search: TSearch;
+    sourceData: Map<string | number, IEntity>;
     fetch(action: ENTITY_ACTION, options: HttpRequestOptions): Promise<RequestContext>;
     buildOptions(
         action: ENTITY_ACTION,

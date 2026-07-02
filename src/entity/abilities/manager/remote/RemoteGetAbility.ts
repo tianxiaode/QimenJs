@@ -20,7 +20,7 @@ export const RemoteGetAbility: AbilityDefinition = {
 
         const result = context.data?.item;
 
-        await this.state.updateItem(result);
+        this.updateItem(result);
         return result;
     },
 };

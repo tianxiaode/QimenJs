@@ -6,7 +6,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  *
  * 该能力为实体管理器（Entity Manager）提供通过网络请求更新远程数据的功能。
  * 它封装了发送更新请求、处理响应、同步本地状态以及事件发射的完整流程。
- * this 指向宿主（Manager），this.state 可直接访问。
+ * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
 export const RemoteUpdateAbility: AbilityDefinition = {
     /**
@@ -20,9 +20,8 @@ export const RemoteUpdateAbility: AbilityDefinition = {
      * @throws {KernelError} 当操作进行中或请求失败时抛出错误。
      */
     async update(data: any): Promise<any> {
-        const state = this.state;
         // 1. 状态锁保护
-        if (state.loading) {
+        if (this.loading) {
             throw new KernelError(
                 'Operation in progress, please wait.',
                 KernelErrorCode.ENTITY_OPERATION_IN_PROGRESS
@@ -33,8 +32,8 @@ export const RemoteUpdateAbility: AbilityDefinition = {
         const options = await this.buildOptions('update', {}, data, {});
         const context = await this.fetch('update', options);
         const item = context.data.item;
-        await state.updateItem(item);
+        this.updateItem(item);
         this.emit('updated', item);
-        return state.item!;
+        return this.item!;
     },
 };

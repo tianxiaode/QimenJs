@@ -4,7 +4,7 @@ import type { AbilityDefinition } from '@/composable';
  * TreeManagerAbility - 树形管理器能力
  * 
  * 提供树形结构的展开/折叠/刷新/移动等操作。
- * this 指向宿主（Manager），this.state 可直接访问。
+ * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
 export const TreeManagerAbility: AbilityDefinition = {
@@ -28,70 +28,64 @@ export const TreeManagerAbility: AbilityDefinition = {
     },
 
     getSubTree(pid: string | number) {
-        return this.state.getChildren(pid);
+        return this.getChildren(pid);
     },
 
     isDirty(currentItem: any) {
-        return this.state.isDirty(currentItem);
+        return this.isDirty(currentItem);
     },
 
     edit(item: any) {
-        return this.state.edit(item);
+        return this.startEdit(item);
     },
 
     rollback() {
-        return this.state.rollback();
+        return this.rollbackAll();
     },
 
     // ---- 内部方法 ----
 
     _setExpandState(id: string | number, expanded: boolean): void {
-        const state = this.state;
-        state.toggleExpand(id, expanded);
-        state.refreshView();
+        this.toggleExpand(id, expanded);
+        this.refreshView();
     },
 
     async _expand(id: string | number): Promise<void> {
-        const state = this.state;
-
-        if (!state.isLoaded(id)) {
+        if (!this.isLoaded(id)) {
             await this._refreshChildren(id);
-            state.toggleExpand(id, true);
+            this.toggleExpand(id, true);
         } else {
-            state.toggleExpand(id, true);
-            state.refreshView();
+            this.toggleExpand(id, true);
+            this.refreshView();
         }
     },
 
     async _refreshChildren(pid: string | number | null): Promise<void> {
-        const state = this.state;
-
         const options = await this.buildOptions('list', { [this.parentIdField]: pid }, null, {});
         const context = await this.fetch('list', options);
 
-        state.syncChildren(pid, context.data.list);
+        this.syncChildren(pid, context.data.list);
 
-        state.updateData(context.data.list);
+        this.updateData(context.data.list);
         if (pid !== null) {
             this.setLoaded(pid, true);
         }
-        state.refreshView();
+        this.refreshView();
     },
 
     async _moveNode(
         id: string | number,
         targetPid: string | number | null
     ): Promise<void> {
-        const state = this.state;
         const parentIdField = this.parentIdField;
         const options = await this.buildOptions(
             'update',
-            { [state.idField]: id },
+            { [this.idField]: id },
             { [parentIdField]: targetPid },
             {}
         );
         await this.fetch('update', options);
-        state.moveNode(id, targetPid);
-        state.refreshView();
+        this.moveNode(id, targetPid);
+        this.refreshView();
     },
 };

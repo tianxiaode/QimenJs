@@ -3,7 +3,6 @@ import type {
     IBaseEntityManager,
     IEntity,
     SearchParams,
-    EntityState,
 } from '@/entity/types';
 import type { FieldDefinition } from '@/schema/types/schema';
 import type { HttpRequestOptions } from '@/http/types/http-context';
@@ -12,19 +11,24 @@ import { CoreEntityManager } from './CoreEntityManager';
 
 export abstract class BaseEntityManager<
     TSearch extends SearchParams = SearchParams,
-    TState extends EntityState<TSearch> = EntityState<TSearch>,
 >
     extends CoreEntityManager
-    implements IBaseEntityManager<TSearch, TState>
+    implements IBaseEntityManager<TSearch>
 {
     static readonly abilities: readonly any[] = [];
-    abstract state: TState;
+
+    // 数据字段（由子类或 Ability 初始化）
+    loading: boolean = false;
+    items: IEntity[] = [];
+    item: IEntity | null = null;
+    search: TSearch = {} as TSearch;
+    sourceData: Map<string | number, IEntity> = new Map();
 
     /**
      * 执行实体请求
      */
     public async fetch(action: ENTITY_ACTION, options: HttpRequestOptions): Promise<RequestContext> {
-        this.state.loading = true;
+        this.loading = true;
         this.emit(`${action}:loading`, true);
 
         try {
@@ -44,7 +48,7 @@ export abstract class BaseEntityManager<
             this.logger.debug('Fetch success');
             return ctx;
         } finally {
-            this.state.loading = false;
+            this.loading = false;
             this.emit(`${action}:loading`, false);
         }
     }
@@ -169,8 +173,12 @@ export abstract class BaseEntityManager<
     }
 
     public dispose(): void {
-        this.state.dispose();
-        this.state = null as any;
+        // 清理数据字段
+        this.sourceData?.clear();
+        this.items = [];
+        this.item = null;
+        this.search = null as any;
+        this.loading = false;
         this.disposeAbilities?.();
         super.dispose();
     }

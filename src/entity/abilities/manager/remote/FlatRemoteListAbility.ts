@@ -4,7 +4,7 @@ import type { AbilityDefinition } from '@/composable';
  * FlatRemoteListAbility - 远程列表查询能力
  * 
  * 提供列表查询和强制刷新的能力，支持 300ms 防抖。
- * this 指向宿主（Manager），this.state 可直接访问。
+ * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  * 
  * 设计说明：
@@ -28,18 +28,17 @@ export const FlatRemoteListAbility: AbilityDefinition = {
     },
 
     async _internalList(force: boolean = false): Promise<any[]> {
-        const state = this.state;
         if (!force) {
-            const cached = await state.tryGetCache();
+            const cached = await this.tryGetCache();
             if (cached) {
-                state.updateData(cached.items, cached.total);
-                this.emit('listed', cached.items);
-                return cached.items;
+                this.updateData(cached.items, cached.total);
+                this.emit('listed', this.items);
+                return this.items;
             }
         }
 
         // 穿透缓存或强制刷新，获取最新参数
-        const params = this.state.toParams();
+        const params = this.toParams();
 
         // 构建 options
         const options = await this.buildOptions('list', params, null, {});
@@ -48,8 +47,8 @@ export const FlatRemoteListAbility: AbilityDefinition = {
 
         const { list, total } = context.data;
         // 同步状态
-        this.state.updateData(list, total);
-        this.emit('listed', state.items);
-        return state.items;
+        this.updateData(list, total);
+        this.emit('listed', this.items);
+        return this.items;
     },
 };
