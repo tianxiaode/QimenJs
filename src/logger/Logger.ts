@@ -73,10 +73,10 @@ export class Logger {
     }
 
     /** 
-     * 根日志记录器实例（由 index.ts 初始化）
+     * 根日志记录器实例
      * 所有子记录器都基于此根实例工作
      */
-    static root: Logger;
+    static root: Logger = new Logger();
 
     /**
      * 发出日志条目
