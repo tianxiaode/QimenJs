@@ -186,10 +186,8 @@ describe('LocalGetAbility', () => {
     class TestLocalGetHost extends ComposableBase {
         static readonly abilities = [LocalGetAbility];
         compiledSchema = { idField: 'id' };
-        state = {
-            sourceData: new Map<string | number, any>(),
-            item: null as any,
-        };
+        sourceData = new Map<string | number, any>();
+        item = null as any;
         emit = jest.fn();
     }
 
@@ -206,26 +204,26 @@ describe('LocalGetAbility', () => {
     describe('get', () => {
         it('应该根据 ID 查找实体', () => {
             const user = { id: '1', name: 'John' };
-            host.state.sourceData = new Map([['1', user], ['2', { id: '2', name: 'Jane' }]]);
+            host.sourceData = new Map([['1', user], ['2', { id: '2', name: 'Jane' }]]);
 
             const result = (host as any).get('1');
 
             expect(result).toEqual(user);
-            expect(host.state.item).toEqual(user);
+            expect(host.item).toEqual(user);
         });
 
         it('找不到实体时应该返回 null', () => {
-            host.state.sourceData = new Map([['1', { id: '1', name: 'John' }]]);
+            host.sourceData = new Map([['1', { id: '1', name: 'John' }]]);
 
             const result = (host as any).get('999');
 
             expect(result).toBeNull();
-            expect(host.state.item).toBeNull();
+            expect(host.item).toBeNull();
         });
 
         it('应该发射 got 事件', () => {
             const user = { id: '1', name: 'John' };
-            host.state.sourceData = new Map([['1', user]]);
+            host.sourceData = new Map([['1', user]]);
 
             (host as any).get('1');
 
@@ -233,7 +231,7 @@ describe('LocalGetAbility', () => {
         });
 
         it('找不到时也应该发射 got 事件（值为 null）', () => {
-            host.state.sourceData = new Map();
+            host.sourceData = new Map();
 
             (host as any).get('999');
 
@@ -249,11 +247,9 @@ describe('LocalGetAbility', () => {
 describe('RemoteCreateAbility', () => {
     class TestRemoteCreateHost extends ComposableBase {
         static readonly abilities = [RemoteCreateAbility];
-        state = {
-            loading: false,
-            item: null as any,
-            updateItem: jest.fn(),
-        };
+        loading = false;
+        item = null as any;
+        updateItem = jest.fn();
         buildOptions = jest.fn().mockResolvedValue({});
         fetch = jest.fn();
         emit = jest.fn();
@@ -275,21 +271,21 @@ describe('RemoteCreateAbility', () => {
             host.fetch.mockResolvedValue({
                 data: { item: createdItem },
             });
-            host.state.updateItem.mockImplementation(async (item: any) => {
-                host.state.item = item;
+            host.updateItem.mockImplementation(async (item: any) => {
+                host.item = item;
             });
 
             const result = await (host as any).create({ name: 'New User' });
 
             expect(host.buildOptions).toHaveBeenCalledWith('create', {}, { name: 'New User' }, {});
             expect(host.fetch).toHaveBeenCalledWith('create', expect.anything());
-            expect(host.state.updateItem).toHaveBeenCalledWith(createdItem);
+            expect(host.updateItem).toHaveBeenCalledWith(createdItem);
             expect(host.emit).toHaveBeenCalledWith('created', createdItem);
             expect(result).toEqual(createdItem);
         });
 
         it('loading 中应该抛出 KernelError', async () => {
-            host.state.loading = true;
+            host.loading = true;
 
             await expect((host as any).create({ name: 'Test' })).rejects.toThrow(KernelError);
             await expect((host as any).create({ name: 'Test' })).rejects.toMatchObject({
@@ -298,7 +294,7 @@ describe('RemoteCreateAbility', () => {
         });
 
         it('loading 中不应该发起请求', async () => {
-            host.state.loading = true;
+            host.loading = true;
 
             try {
                 await (host as any).create({ name: 'Test' });

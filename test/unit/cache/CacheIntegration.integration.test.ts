@@ -30,7 +30,6 @@ jest.mock('@/logger', () => {
 import { CacheFactory } from '@/cache/CacheFactory';
 import { MemoryProvider } from '@/cache/MemoryProvider';
 import { RemoteCrudEntityManager } from '@/entity/manager/managers';
-import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import type { FlatSchema, RegistrSchema } from '@/schema';
@@ -193,67 +192,61 @@ describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', (
     describe('StateCacheAbility 与真实 CacheProvider 交互', () => {
         it('tryGetCache 在无缓存时应该返回 null', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
-            const result = await state.tryGetCache();
+            const result = await manager.tryGetCache();
             expect(result).toBeNull();
         });
 
         it('setCache + tryGetCache 应该正确存取数据', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
             const testData = { items: [{ id: 1, name: 'test' }], total: 1 };
-            await state.setCache(testData);
+            await manager.setCache(testData);
 
-            const result = await state.tryGetCache();
+            const result = await manager.tryGetCache();
             expect(result).toEqual(testData);
         });
 
         it('clearCache 应该清除缓存数据', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
-            await state.setCache({ items: [] });
-            await state.clearCache();
+            await manager.setCache({ items: [] });
+            await manager.clearCache();
 
-            const result = await state.tryGetCache();
+            const result = await manager.tryGetCache();
             expect(result).toBeNull();
         });
 
         it('cacheKey 应该包含 domain 和 schema name', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
-            const key = state.cacheKey;
+            const key = manager.cacheKey;
             expect(key).toContain('cache-test');
             expect(key).toContain('CacheTestEntity');
         });
 
-        it('远程 state 的 cacheKey 应该包含分页参数', async () => {
+        it('远程 Manager 的 cacheKey 应该包含分页参数', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
             // 设置分页参数
-            state.page = 2;
-            state.pageSize = 20;
+            manager.page = 2;
+            manager.pageSize = 20;
 
-            const key = state.cacheKey;
+            const key = manager.cacheKey;
             expect(key).toContain('cache-test');
             expect(key).toContain('CacheTestEntity');
-            // 远程 state 的 key 应该包含查询参数的哈希
+            // 远程 Manager 的 key 应该包含查询参数的哈希
             expect(key).not.toBe('cache-test:CacheTestEntity');
         });
 
         it('多次 tryGetCache 应该返回相同数据', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
             const testData = { items: [{ id: 1 }], total: 1 };
-            await state.setCache(testData);
+            await manager.setCache(testData);
 
-            const result1 = await state.tryGetCache();
-            const result2 = await state.tryGetCache();
+            const result1 = await manager.tryGetCache();
+            const result2 = await manager.tryGetCache();
             expect(result1).toEqual(result2);
         });
 
@@ -261,14 +254,11 @@ describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', (
             const manager1 = new CacheTestManager();
             const manager2 = new CacheTestManager();
 
-            const state1 = manager1.state as FlatRemoteEntityState;
-            const state2 = manager2.state as FlatRemoteEntityState;
+            await manager1.setCache({ items: [{ id: 1 }], total: 1 });
+            await manager2.setCache({ items: [{ id: 2 }], total: 1 });
 
-            await state1.setCache({ items: [{ id: 1 }], total: 1 });
-            await state2.setCache({ items: [{ id: 2 }], total: 1 });
-
-            const result1 = await state1.tryGetCache();
-            const result2 = await state2.tryGetCache();
+            const result1 = await manager1.tryGetCache();
+            const result2 = await manager2.tryGetCache();
 
             expect(result1.total).toBe(1);
             expect(result2.total).toBe(1);
@@ -277,14 +267,13 @@ describe('CacheFactory → MemoryProvider → StateCacheAbility 集成测试', (
     });
 
     describe('StateCacheAbility provider 复用', () => {
-        it('同一 state 多次操作应该复用同一个 provider', async () => {
+        it('同一 Manager 多次操作应该复用同一个 provider', async () => {
             const manager = new CacheTestManager();
-            const state = manager.state as FlatRemoteEntityState;
 
             // 多次操作
-            await state.setCache({ data: 'first' });
-            await state.setCache({ data: 'second' });
-            const result = await state.tryGetCache();
+            await manager.setCache({ data: 'first' });
+            await manager.setCache({ data: 'second' });
+            const result = await manager.tryGetCache();
 
             // 第二次 setCache 应该覆盖第一次
             expect(result).toEqual({ data: 'second' });

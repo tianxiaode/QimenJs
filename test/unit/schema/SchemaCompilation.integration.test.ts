@@ -22,7 +22,6 @@ jest.mock('@/logger', () => {
 
 import { SchemaRegistrar } from '@/schema';
 import { RemoteCrudEntityManager } from '@/entity/manager/managers';
-import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { ENTITY_ACTION } from '@/entity/types';
@@ -381,21 +380,19 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
         });
     });
 
-    describe('EntityManager state 与 compiledSchema 集成', () => {
-        it('state 应该使用编译后的 Schema', () => {
+    describe('EntityManager 与 compiledSchema 集成', () => {
+        it('Manager 应该使用编译后的 Schema', () => {
             const manager = new TestSchemaUserManager();
-            const state = manager.state as FlatRemoteEntityState;
 
-            expect(state.schema).toBeDefined();
-            expect(state.schema.name).toBe('SchemaUser');
-            expect(state.schema.fields!.length).toBeGreaterThanOrEqual(6);
+            expect(manager.compiledSchema).toBeDefined();
+            expect(manager.compiledSchema.name).toBe('SchemaUser');
+            expect(manager.compiledSchema.fields!.length).toBeGreaterThanOrEqual(6);
         });
 
-        it('state.cacheTTL 应该使用 Manager 的 cacheTTL', () => {
+        it('cacheTTL 应该使用 Manager 的 cacheTTL', () => {
             const manager = new TestSchemaUserManager();
-            const state = manager.state as FlatRemoteEntityState;
 
-            expect(state.cacheTTL).toBe(300000);
+            expect(manager.cacheTTL).toBe(300000);
         });
     });
 });

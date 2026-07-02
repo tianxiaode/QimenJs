@@ -29,7 +29,6 @@ jest.mock('@/logger', () => {
 });
 
 import { LocalCrudEntityManager } from '@/entity/manager/managers';
-import { FlatLocalEntityState } from '@/entity/state/FlatLocalEntityState';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { ENTITY_ACTION } from '@/entity/types';
@@ -114,20 +113,17 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
         jest.restoreAllMocks();
     });
 
-    describe('FlatLocalEntityState 基本属性', () => {
+    describe('Manager 基本属性', () => {
         it('isRemote 应该为 false', () => {
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.isRemote).toBe(false);
+            expect(manager.isRemote).toBe(false);
         });
 
         it('sourceData 应该是 Map', () => {
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData).toBeInstanceOf(Map);
+            expect(manager.sourceData).toBeInstanceOf(Map);
         });
 
         it('items 应该是数组', () => {
-            const state = manager.state as FlatLocalEntityState;
-            expect(Array.isArray(state.items)).toBe(true);
+            expect(Array.isArray(manager.items)).toBe(true);
         });
     });
 
@@ -140,11 +136,10 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             await manager.list();
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData.size).toBe(2);
+            expect(manager.sourceData.size).toBe(2);
             // list() 内部 updateData 使用防抖 refreshView，手动触发
-            state.refreshView();
-            expect(state.items.length).toBe(2);
+            manager.refreshView();
+            expect(manager.items.length).toBe(2);
         });
 
         it('list() 后 get() 应该能查到数据', async () => {
@@ -164,9 +159,8 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             await manager.list();
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData.size).toBe(0);
-            expect(state.items.length).toBe(0);
+            expect(manager.sourceData.size).toBe(0);
+            expect(manager.items.length).toBe(0);
         });
     });
 
@@ -176,7 +170,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             expect(result == null).toBe(true);
         });
 
-        it('get() 应该设置 state.item', async () => {
+        it('get() 应该设置 item', async () => {
             mockFetchList([
                 { id: 1, title: 'Task 1', completed: false },
             ]);
@@ -184,9 +178,8 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             await manager.list();
             manager.get(1);
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.item).toBeDefined();
-            expect(state.item!.title).toBe('Task 1');
+            expect(manager.item).toBeDefined();
+            expect(manager.item!.title).toBe('Task 1');
         });
     });
 
@@ -194,32 +187,28 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
         it('create() 应该添加到 sourceData', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData.size).toBe(1);
+            expect(manager.sourceData.size).toBe(1);
         });
 
         it('create() 后 items 应该包含新项', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
 
-            const state = manager.state as FlatLocalEntityState;
             // create 使用防抖 refreshView，手动触发确保 items 更新
-            state.refreshView();
-            expect(state.items.length).toBe(1);
-            expect(state.items[0].title).toBe('New Task');
+            manager.refreshView();
+            expect(manager.items.length).toBe(1);
+            expect(manager.items[0].title).toBe('New Task');
         });
 
         it('create() 应该标记 hasChanges=true', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.hasChanges).toBe(true);
+            expect(manager.hasChanges).toBe(true);
         });
 
         it('create() 应该将新项记入 changes.added', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.changes.added.length).toBe(1);
+            expect(manager.changes.added.length).toBe(1);
         });
     });
 
@@ -232,8 +221,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             manager.update({ id: 1, title: 'Updated Task', completed: true });
 
-            const state = manager.state as FlatLocalEntityState;
-            const item = state.sourceData.get(1)!;
+            const item = manager.sourceData.get(1)!;
             expect(item.title).toBe('Updated Task');
             expect(item.completed).toBe(true);
         });
@@ -246,8 +234,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             manager.update({ id: 1, title: 'Updated', completed: true });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.hasChanges).toBe(true);
+            expect(manager.hasChanges).toBe(true);
         });
 
         it('update() 应该将更新记入 changes.updated', async () => {
@@ -258,18 +245,16 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             manager.update({ id: 1, title: 'Updated', completed: true });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.changes.updated.size).toBe(1);
+            expect(manager.changes.updated.size).toBe(1);
         });
 
         it('新增项的 update 不应该记入 changes.updated', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
             manager.update({ id: 1, title: 'Updated New Task', completed: true });
 
-            const state = manager.state as FlatLocalEntityState;
             // 新增项的更新仍然在 added 中，不应出现在 updated 中
-            expect(state.changes.updated.size).toBe(0);
-            expect(state.changes.added.length).toBe(1);
+            expect(manager.changes.updated.size).toBe(0);
+            expect(manager.changes.added.length).toBe(1);
         });
     });
 
@@ -283,8 +268,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             const item = manager.get(1)!;
             manager.toggle(item, 'completed');
 
-            const state = manager.state as FlatLocalEntityState;
-            const updated = state.sourceData.get(1)!;
+            const updated = manager.sourceData.get(1)!;
             expect(updated.completed).toBe(true);
         });
     });
@@ -295,8 +279,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             await manager.delete([1]);
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData.has(1)).toBe(false);
+            expect(manager.sourceData.has(1)).toBe(false);
         });
 
         it('delete() 已持久化项应该从 sourceData 移除', async () => {
@@ -307,8 +290,7 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
             await manager.delete([1], true);
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.sourceData.has(1)).toBe(false);
+            expect(manager.sourceData.has(1)).toBe(false);
         });
 
         it('softDelete + rollbackDelete 应该恢复软删除的数据', async () => {
@@ -318,14 +300,14 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             await manager.list();
 
             // 手动调用 softDelete（不 confirmDelete），这样 rollbackDelete 才能恢复
-            const plan = manager.state.getDeletionPlan([1]);
-            await manager.state.softDelete(plan);
+            const plan = manager.getDeletionPlan([1]);
+            await manager.softDelete(plan);
 
-            expect(manager.state.sourceData.has(1)).toBe(false);
+            expect(manager.sourceData.has(1)).toBe(false);
 
-            await manager.state.rollbackDelete();
+            await manager.rollbackDelete();
 
-            expect(manager.state.sourceData.has(1)).toBe(true);
+            expect(manager.sourceData.has(1)).toBe(true);
         });
     });
 
@@ -340,29 +322,26 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
         });
 
         it('filter() + refreshView 应该按关键词过滤 items', () => {
-            const state = manager.state as FlatLocalEntityState;
             manager.filter('Alpha');
-            state.refreshView();
+            manager.refreshView();
 
-            expect(state.items.length).toBe(1);
-            expect(state.items[0].title).toBe('Alpha Task');
+            expect(manager.items.length).toBe(1);
+            expect(manager.items[0].title).toBe('Alpha Task');
         });
 
         it('filter() 空关键词 + refreshView 应该返回全部', () => {
-            const state = manager.state as FlatLocalEntityState;
             manager.filter('');
-            state.refreshView();
+            manager.refreshView();
 
-            expect(state.items.length).toBe(3);
+            expect(manager.items.length).toBe(3);
         });
 
         it('sort() + refreshView 应该按字段排序', () => {
-            const state = manager.state as FlatLocalEntityState;
             manager.sort('title', 'desc');
-            state.refreshView();
+            manager.refreshView();
 
-            expect(state.items[0].title).toBe('Gamma Task');
-            expect(state.items[2].title).toBe('Alpha Task');
+            expect(manager.items[0].title).toBe('Gamma Task');
+            expect(manager.items[2].title).toBe('Alpha Task');
         });
     });
 
@@ -374,12 +353,12 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             await manager.list();
 
             const item = manager.get(1)!;
-            manager.state.startEdit(item);
+            manager.startEdit(item);
 
             // 修改
             item.title = 'Modified Task';
 
-            expect(manager.state.isDirty(item)).toBe(true);
+            expect(manager.isDirty(item)).toBe(true);
         });
 
         it('cancelEdit 应该恢复原始数据', async () => {
@@ -389,13 +368,13 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             await manager.list();
 
             const item = manager.get(1)!;
-            manager.state.startEdit(item);
+            manager.startEdit(item);
             item.title = 'Modified Task';
 
-            manager.state.cancelEdit(item);
+            manager.cancelEdit(item);
 
             expect(item.title).toBe('Task 1');
-            expect(manager.state.isDirty(item)).toBe(false);
+            expect(manager.isDirty(item)).toBe(false);
         });
 
         it('submitEdit 应该清除脏状态', async () => {
@@ -405,12 +384,12 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
             await manager.list();
 
             const item = manager.get(1)!;
-            manager.state.startEdit(item);
+            manager.startEdit(item);
             item.title = 'Modified Task';
 
-            manager.state.submitEdit(item);
+            manager.submitEdit(item);
 
-            expect(manager.state.isDirty(item)).toBe(false);
+            expect(manager.isDirty(item)).toBe(false);
             // 但数据不会恢复
             expect(item.title).toBe('Modified Task');
         });
@@ -418,14 +397,12 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
 
     describe('refreshView() 视图刷新', () => {
         it('直接操作 sourceData 后 refreshView 应该更新 items', () => {
-            const state = manager.state as FlatLocalEntityState;
+            manager.sourceData.set(1, { id: 1, title: 'Task 1', completed: false });
+            manager.sourceData.set(2, { id: 2, title: 'Task 2', completed: true });
 
-            state.sourceData.set(1, { id: 1, title: 'Task 1', completed: false });
-            state.sourceData.set(2, { id: 2, title: 'Task 2', completed: true });
+            manager.refreshView();
 
-            state.refreshView();
-
-            expect(state.items.length).toBe(2);
+            expect(manager.items.length).toBe(2);
         });
     });
 
@@ -433,12 +410,11 @@ describe('LocalCrudEntityManager + FlatLocalEntityState 集成测试', () => {
         it('clearChanges 后 hasChanges 应该为 false', () => {
             manager.create({ id: 1, title: 'New Task', completed: false });
 
-            const state = manager.state as FlatLocalEntityState;
-            expect(state.hasChanges).toBe(true);
+            expect(manager.hasChanges).toBe(true);
 
-            state.clearChanges();
+            manager.clearChanges();
 
-            expect(state.hasChanges).toBe(false);
+            expect(manager.hasChanges).toBe(false);
         });
     });
 });

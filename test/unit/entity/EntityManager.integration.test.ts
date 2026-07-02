@@ -25,7 +25,6 @@ jest.mock('@/logger', () => {
 });
 
 import { RemoteCrudEntityManager } from '@/entity/manager/managers';
-import { FlatRemoteEntityState } from '@/entity/state/FlatRemoteEntityState';
 import { SchemaRegistrar } from '@/schema';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
@@ -122,21 +121,21 @@ describe('EntityManager 集成测试', () => {
     // 1. FlatRemoteEntityState 方法集成
     // ========================================
 
-    describe('FlatRemoteEntityState 方法可用性', () => {
-        it('state 应该有 updateData 方法', () => {
-            expect(typeof manager.state.updateData).toBe('function');
+    describe('Manager 方法可用性', () => {
+        it('manager 应该有 updateData 方法', () => {
+            expect(typeof manager.updateData).toBe('function');
         });
 
-        it('state 应该有 toParams 方法', () => {
-            expect(typeof manager.state.toParams).toBe('function');
+        it('manager 应该有 toParams 方法', () => {
+            expect(typeof manager.toParams).toBe('function');
         });
 
-        it('state 应该有 updateItem 方法', () => {
-            expect(typeof manager.state.updateItem).toBe('function');
+        it('manager 应该有 updateItem 方法', () => {
+            expect(typeof manager.updateItem).toBe('function');
         });
 
-        it('state 应该有 isValidPage 方法', () => {
-            expect(typeof manager.state.isValidPage).toBe('function');
+        it('manager 应该有 isValidPage 方法', () => {
+            expect(typeof manager.isValidPage).toBe('function');
         });
 
         it('updateData 应该正确更新 items 和分页信息', () => {
@@ -145,12 +144,12 @@ describe('EntityManager 集成测试', () => {
                 { id: '2', name: 'Bob', email: 'bob@test.com' },
             ];
 
-            manager.state.updateData(users, 100);
+            manager.updateData(users, 100);
 
-            expect(manager.state.items).toEqual(users);
-            expect(manager.state.total).toBe(100);
-            expect(manager.state.pages).toBe(5); // 100 / 20
-            expect(manager.state.hasMore).toBe(true); // page 1 < pages 5
+            expect(manager.items).toEqual(users);
+            expect(manager.total).toBe(100);
+            expect(manager.pages).toBe(5); // 100 / 20
+            expect(manager.hasMore).toBe(true); // page 1 < pages 5
         });
 
         it('updateData 不传 total 时应该用 items 长度', () => {
@@ -158,47 +157,47 @@ describe('EntityManager 集成测试', () => {
                 { id: '1', name: 'Alice', email: 'alice@test.com' },
             ];
 
-            manager.state.updateData(users);
+            manager.updateData(users);
 
-            expect(manager.state.total).toBe(1);
+            expect(manager.total).toBe(1);
         });
 
         it('updateData 传空 list 时应该安全处理', () => {
-            manager.state.updateData(null as any, 0);
+            manager.updateData(null as any, 0);
 
-            expect(manager.state.items).toEqual([]);
-            expect(manager.state.total).toBe(0);
+            expect(manager.items).toEqual([]);
+            expect(manager.total).toBe(0);
         });
 
         it('updateItem 应该更新当前 item 并同步到 items', () => {
             const users = [
                 { id: '1', name: 'Alice', email: 'alice@test.com' },
             ];
-            manager.state.updateData(users);
+            manager.updateData(users);
 
             const updated = { id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' };
-            manager.state.updateItem(updated);
+            manager.updateItem(updated);
 
-            expect(manager.state.item).toEqual(updated);
-            expect(manager.state.items[0]).toEqual(updated);
+            expect(manager.item).toEqual(updated);
+            expect(manager.items[0]).toEqual(updated);
         });
 
         it('updateItem 传 null 时应该安全处理', () => {
-            manager.state.updateItem(null);
-            expect(manager.state.item).toBeNull();
+            manager.updateItem(null);
+            expect(manager.item).toBeNull();
         });
 
         it('isValidPage 应该正确验证页码', () => {
-            manager.state.updateData([], 100); // 5 pages
+            manager.updateData([], 100); // 5 pages
 
-            expect(manager.state.isValidPage(1)).toBe(true);
-            expect(manager.state.isValidPage(5)).toBe(true);
-            expect(manager.state.isValidPage(0)).toBe(false);
-            expect(manager.state.isValidPage(6)).toBe(false);
+            expect(manager.isValidPage(1)).toBe(true);
+            expect(manager.isValidPage(5)).toBe(true);
+            expect(manager.isValidPage(0)).toBe(false);
+            expect(manager.isValidPage(6)).toBe(false);
         });
 
         it('toParams 应该返回包含 page 和 pageSize 的参数', () => {
-            const params = manager.state.toParams();
+            const params = manager.toParams();
 
             expect(params.page).toBe(1);
             expect(params.pageSize).toBe(20);
@@ -223,7 +222,7 @@ describe('EntityManager 集成测试', () => {
             expect(result).toHaveLength(2);
         });
 
-        it('list() 返回的数据应该同步到 state.items', async () => {
+        it('list() 返回的数据应该同步到 items', async () => {
             const users = [
                 { id: '1', name: 'Alice', email: 'alice@test.com' },
             ];
@@ -231,8 +230,8 @@ describe('EntityManager 集成测试', () => {
 
             await manager.list();
 
-            expect(manager.state.items).toEqual(users);
-            expect(manager.state.total).toBe(1);
+            expect(manager.items).toEqual(users);
+            expect(manager.total).toBe(1);
         });
 
         it('list() 返回空数据时应该安全处理', async () => {
@@ -241,8 +240,8 @@ describe('EntityManager 集成测试', () => {
             const result = await manager.list();
 
             expect(result).toEqual([]);
-            expect(manager.state.items).toEqual([]);
-            expect(manager.state.total).toBe(0);
+            expect(manager.items).toEqual([]);
+            expect(manager.total).toBe(0);
         });
 
         it('refresh() 应该返回数组而非 undefined', async () => {
@@ -288,21 +287,21 @@ describe('EntityManager 集成测试', () => {
     // ========================================
 
     describe('RemoteCreateAbility 集成', () => {
-        it('create() 应该调用 state.updateItem', async () => {
+        it('create() 应该调用 updateItem', async () => {
             const newUser = { id: '3', name: 'Charlie', email: 'charlie@test.com' };
             mockFetchReturn({ item: newUser, list: [], total: 0 });
 
             await manager.create({ name: 'Charlie', email: 'charlie@test.com' });
 
-            expect(manager.state.item).toEqual(newUser);
+            expect(manager.item).toEqual(newUser);
         });
 
         it('create() loading 中应该抛出 KernelError', async () => {
-            manager.state.loading = true;
+            manager.loading = true;
 
             await expect(manager.create({ name: 'Test' })).rejects.toThrow('Operation in progress');
 
-            manager.state.loading = false;
+            manager.loading = false;
         });
     });
 
@@ -311,25 +310,25 @@ describe('EntityManager 集成测试', () => {
     // ========================================
 
     describe('RemoteUpdateAbility 集成', () => {
-        it('update() 应该调用 state.updateItem', async () => {
+        it('update() 应该调用 updateItem', async () => {
             const original = { id: '1', name: 'Alice', email: 'alice@test.com' };
-            manager.state.updateData([original]);
+            manager.updateData([original]);
 
             const updated = { id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' };
             mockFetchReturn({ item: updated, list: [], total: 0 });
 
             await manager.update({ id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' });
 
-            expect(manager.state.item).toEqual(updated);
-            expect(manager.state.items[0]).toEqual(updated);
+            expect(manager.item).toEqual(updated);
+            expect(manager.items[0]).toEqual(updated);
         });
 
         it('update() loading 中应该抛出 KernelError', async () => {
-            manager.state.loading = true;
+            manager.loading = true;
 
             await expect(manager.update({ id: '1', name: 'Test' })).rejects.toThrow('Operation in progress');
 
-            manager.state.loading = false;
+            manager.loading = false;
         });
     });
 
@@ -338,8 +337,8 @@ describe('EntityManager 集成测试', () => {
     // ========================================
 
     describe('RemoteDeleteAbility 集成', () => {
-        it('delete() 单个删除应该从 state.items 中移除', async () => {
-            manager.state.updateData([
+        it('delete() 单个删除应该从 items 中移除', async () => {
+            manager.updateData([
                 { id: '1', name: 'Alice' },
                 { id: '2', name: 'Bob' },
             ], 2);
@@ -348,13 +347,13 @@ describe('EntityManager 集成测试', () => {
 
             await manager.delete('1');
 
-            expect(manager.state.items).toHaveLength(1);
-            expect(manager.state.items[0].id).toBe('2');
-            expect(manager.state.total).toBe(1);
+            expect(manager.items).toHaveLength(1);
+            expect(manager.items[0].id).toBe('2');
+            expect(manager.total).toBe(1);
         });
 
-        it('delete() 批量删除应该从 state.items 中移除多个', async () => {
-            manager.state.updateData([
+        it('delete() 批量删除应该从 items 中移除多个', async () => {
+            manager.updateData([
                 { id: '1', name: 'Alice' },
                 { id: '2', name: 'Bob' },
                 { id: '3', name: 'Charlie' },
@@ -364,17 +363,17 @@ describe('EntityManager 集成测试', () => {
 
             await manager.delete(['1', '3']);
 
-            expect(manager.state.items).toHaveLength(1);
-            expect(manager.state.items[0].id).toBe('2');
-            expect(manager.state.total).toBe(1);
+            expect(manager.items).toHaveLength(1);
+            expect(manager.items[0].id).toBe('2');
+            expect(manager.total).toBe(1);
         });
 
         it('delete() loading 中应该抛出 KernelError', async () => {
-            manager.state.loading = true;
+            manager.loading = true;
 
             await expect(manager.delete('1')).rejects.toThrow('Operation in progress');
 
-            manager.state.loading = false;
+            manager.loading = false;
         });
     });
 
@@ -383,14 +382,14 @@ describe('EntityManager 集成测试', () => {
     // ========================================
 
     describe('RemoteGetAbility 集成', () => {
-        it('get() 应该调用 state.updateItem', async () => {
+        it('get() 应该调用 updateItem', async () => {
             const user = { id: '1', name: 'Alice', email: 'alice@test.com' };
             mockFetchReturn({ item: user, list: [], total: 0 });
 
             const result = await manager.get('1');
 
             expect(result).toEqual(user);
-            expect(manager.state.item).toEqual(user);
+            expect(manager.item).toEqual(user);
         });
 
         it('get() 返回 null 时应该安全处理', async () => {
@@ -412,7 +411,7 @@ describe('EntityManager 集成测试', () => {
 
             await manager.list();
 
-            expect(manager.state.loading).toBe(false);
+            expect(manager.loading).toBe(false);
         });
 
         it('fetch() 错误时应该重置 loading', async () => {
@@ -420,7 +419,7 @@ describe('EntityManager 集成测试', () => {
 
             await expect(manager.list()).rejects.toThrow();
 
-            expect(manager.state.loading).toBe(false);
+            expect(manager.loading).toBe(false);
         });
     });
 });
