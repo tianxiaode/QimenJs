@@ -52,18 +52,39 @@ if (typeof (globalThis as any).ReadableStream === 'undefined') {
 }
 
 // Helper to create a mock ReadableStream from SSE data
+// 兼容浏览器 getReader() API，不依赖 Node.js ReadableStream 的迭代器
 function createMockReadableStream(chunks: string[]): any {
     const encoder = new TextEncoder();
+    const encodedChunks = chunks.map(c => encoder.encode(c));
     let index = 0;
-    return new (globalThis as any).ReadableStream({
+
+    // 使用 Node.js ReadableStream 作为基础（满足 instanceof 检查）
+    const nodeStream = new (globalThis as any).ReadableStream({
         pull(controller: any) {
-            if (index < chunks.length) {
-                controller.enqueue(encoder.encode(chunks[index++]));
+            if (index < encodedChunks.length) {
+                controller.enqueue(encodedChunks[index++]);
             } else {
                 controller.close();
             }
         },
     });
+
+    // 为 Node.js ReadableStream 添加浏览器兼容的 getReader() 方法
+    if (!nodeStream.getReader) {
+        let readIndex = 0;
+        nodeStream.getReader = () => ({
+            read: async () => {
+                if (readIndex < encodedChunks.length) {
+                    return { done: false, value: encodedChunks[readIndex++] };
+                }
+                return { done: true, value: undefined };
+            },
+            cancel: async () => {},
+            releaseLock: () => {},
+        });
+    }
+
+    return nodeStream;
 }
 
 // Helper to create a mock Response
