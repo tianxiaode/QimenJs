@@ -452,6 +452,15 @@ describe('data-processor', () => {
         it('should have register method', () => {
             expect(typeof DataProcessor.register).toBe('function');
         });
+
+        it('should be the same instance as RegistryHub registered one', () => {
+            // 确保 DataProcessor 导出实例与 RegistryHub 注册的实例一致
+            // 否则通过 DataProcessor.register 注册的处理器无法被 EntityManager 的
+            // executeDataProcessor() 方法获取到（它通过 RegistryHub.get 获取实例）
+            const { RegistryHub } = require('@/registry');
+            const hubInstance = (RegistryHub as any).get('data-processor');
+            expect(DataProcessor).toBe(hubInstance);
+        });
     });
 
     describe('dataProcessorExecutor singleton', () => {

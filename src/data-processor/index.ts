@@ -47,8 +47,8 @@ export {
     DataProcessorRegistrarName 
 };
 
-// 导出便捷访问对象
-export const DataProcessor = new DataProcessorRegistrar();
+// 导出便捷访问对象（使用单例，确保与 RegistryHub 注册的实例一致）
+export const DataProcessor = DataProcessorRegistrar.getInstance();
 
 // 导出执行器
 export { 
