@@ -24,6 +24,68 @@ import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
 import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbility';
 import { TreeSearchAbility } from '@/entity/abilities/tree/TreeSearchAbility';
 import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
+import type { AbilityDefinition } from '@/composable';
+
+/**
+ * DomainPagingAbility - 域分页配置能力
+ *
+ * 从 DomainConfig 中读取 pageSize 和 pagesizes 配置，
+ * 覆盖 Manager 上的默认值。
+ *
+ * 使用 getter/setter + 惰性初始化模式：
+ * - 首次读取时从 domainConfig 获取值并缓存到实例属性
+ * - 后续读写直接操作实例属性
+ * - 避免在构造函数中访问尚未初始化的子类属性（如 domain）
+ */
+export const DomainPagingAbility: AbilityDefinition = {
+    pageSize: {
+        get(): number {
+            const config = this.domainConfig;
+            const value = config?.pageSize ?? 20;
+            // 替换 getter 为普通数据属性，后续读写直接操作
+            Object.defineProperty(this, 'pageSize', {
+                value,
+                writable: true,
+                configurable: true,
+                enumerable: true,
+            });
+            return value;
+        },
+        set(v: number) {
+            Object.defineProperty(this, 'pageSize', {
+                value: v,
+                writable: true,
+                configurable: true,
+                enumerable: true,
+            });
+        },
+        configurable: true,
+        enumerable: true,
+    },
+    pageSizes: {
+        get(): number[] {
+            const config = this.domainConfig;
+            const value = config?.pagesizes ?? [10, 20, 50];
+            Object.defineProperty(this, 'pageSizes', {
+                value,
+                writable: true,
+                configurable: true,
+                enumerable: true,
+            });
+            return value;
+        },
+        set(v: number[]) {
+            Object.defineProperty(this, 'pageSizes', {
+                value: v,
+                writable: true,
+                configurable: true,
+                enumerable: true,
+            });
+        },
+        configurable: true,
+        enumerable: true,
+    },
+};
 
 /**
  * 本地只读实体管理器
@@ -93,6 +155,7 @@ export abstract class RemoteReadonlyEntityManager<
         CacheAbility,
         DirtyAbility,
         SearchAbility,
+        DomainPagingAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -108,10 +171,9 @@ export abstract class RemoteReadonlyEntityManager<
     search: TSearch = {} as TSearch;
     total: number = 0;
     page: number = 1;
-    pageSize: number = 20;
+    // pageSize 和 pageSizes 由 DomainPagingAbility 提供（从 domainConfig 初始化）
     pages: number = 0;
     hasMore: boolean = false;
-    pageSizes: number[] = [10, 20, 50];
 }
 
 /**
@@ -135,6 +197,7 @@ export abstract class RemoteCrudEntityManager<
         CacheAbility,
         DirtyAbility,
         SearchAbility,
+        DomainPagingAbility,
         FlatRemoteStateAbility,
         FlatRemoteListAbility,
         FlatRemoteGetAllAbility,
@@ -154,10 +217,9 @@ export abstract class RemoteCrudEntityManager<
     search: TSearch = {} as TSearch;
     total: number = 0;
     page: number = 1;
-    pageSize: number = 20;
+    // pageSize 和 pageSizes 由 DomainPagingAbility 提供（从 domainConfig 初始化）
     pages: number = 0;
     hasMore: boolean = false;
-    pageSizes: number[] = [10, 20, 50];
 }
 
 /**

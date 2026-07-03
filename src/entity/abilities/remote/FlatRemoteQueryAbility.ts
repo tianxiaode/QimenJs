@@ -12,7 +12,7 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         const page = this.page - 1;
         if (this.isValidPage(page)) {
             this.page = page;
-            return await this.list(false);
+            return await this._internalList(false);
         }
         this.logger.warn('Already on the first page, cannot go prev.');
         return [];
@@ -22,7 +22,7 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         const page = this.page + 1;
         if (this.isValidPage(page)) {
             this.page = page;
-            return await this.list(false);
+            return await this._internalList(false);
         }
         this.logger.warn('Already on the last page, cannot go next.');
         return [];
@@ -31,7 +31,7 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
     async jump(page: number) {
         if (this.isValidPage(page)) {
             this.page = page;
-            return await this.list(false);
+            return await this._internalList(false);
         }
         this.logger.warn(`Invalid page: ${page}. Options are: ${this.pageSizes}`);
         return [];
@@ -49,19 +49,19 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         }
         this.pageSize = size;
         this.page = 1;
-        return await this.list(true);
+        return await this._internalList(true);
     },
 
     /** 过滤查询 */
     async filter(text: string) {
         this.page = 1;
         this.filterBy = text;
-        return await this.list(true);
+        return await this._internalList(true);
     },
 
     async search(search: any) {
         this.searchBy = search;
-        return await this.list(true);
+        return await this._internalList(true);
     },
 
     /** 排序 */
@@ -69,13 +69,13 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         this.sortBy = order ? prop : '';
         this.order = order || 'asc';
         this.page = 1;
-        return await this.list(false);
+        return await this._internalList(false);
     },
 
     /** 重置 */
     async reset() {
         this.page = 1;
         this.search = {} as any;
-        return await this.list(true);
+        return await this._internalList(true);
     },
 };

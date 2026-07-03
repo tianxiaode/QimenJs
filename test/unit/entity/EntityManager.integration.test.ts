@@ -148,8 +148,8 @@ describe('EntityManager 集成测试', () => {
 
             expect(manager.items).toEqual(users);
             expect(manager.total).toBe(100);
-            expect(manager.pages).toBe(5); // 100 / 20
-            expect(manager.hasMore).toBe(true); // page 1 < pages 5
+            expect(manager.pages).toBe(10); // 100 / 10 (domainConfig.pageSize)
+            expect(manager.hasMore).toBe(true); // page 1 < pages 10
         });
 
         it('updateData 不传 total 时应该用 items 长度', () => {
@@ -188,19 +188,19 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('isValidPage 应该正确验证页码', () => {
-            manager.updateData([], 100); // 5 pages
+            manager.updateData([], 100); // 10 pages (100 / 10)
 
             expect(manager.isValidPage(1)).toBe(true);
-            expect(manager.isValidPage(5)).toBe(true);
+            expect(manager.isValidPage(10)).toBe(true);
             expect(manager.isValidPage(0)).toBe(false);
-            expect(manager.isValidPage(6)).toBe(false);
+            expect(manager.isValidPage(11)).toBe(false);
         });
 
         it('toParams 应该返回包含 page 和 pageSize 的参数', () => {
             const params = manager.toParams();
 
             expect(params.page).toBe(1);
-            expect(params.pageSize).toBe(20);
+            expect(params.pageSize).toBe(10); // domainConfig.pageSize
         });
     });
 

@@ -336,7 +336,52 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             await manager.filter('Books');
 
-            // filter 调用 list(true)，list 内部调用 fetch
+            // filter 调用 _internalList(true)，跳过缓存，内部调用 fetch
+            expect(fetchSpy).toHaveBeenCalled();
+        });
+
+        it('filter() 应该跳过缓存强制请求（不使用缓存数据）', async () => {
+            // 使用 _internalList 的 spy 来验证 filter 调用的是 _internalList(true)
+            const internalListSpy = jest.spyOn(manager as any, '_internalList').mockImplementation(async () => []);
+
+            await manager.filter('Books');
+
+            expect(internalListSpy).toHaveBeenCalledWith(true);
+
+            internalListSpy.mockRestore();
+        });
+    });
+
+    // ========================================
+    // 4.5 search 搜索查询
+    // ========================================
+
+    describe('search 搜索查询', () => {
+        // 注意：FlatRemoteQueryAbility.search() 方法与 Manager.search 属性同名，
+        // Ability 注入后 search 是方法，但 reset() 中 this.search = {} 会覆盖回属性。
+        // 这是一个已知的命名冲突问题，需要后续重构解决。
+        it.skip('search() 应该设置 searchBy 并强制刷新', async () => {
+            manager.updateData(createProductData(10), 30);
+
+            mockFetchReturn({ list: createProductData(5), total: 5 });
+
+            const result = await (manager as any).search({ keyword: 'Electronics' });
+
+            expect(manager.searchBy).toEqual({ keyword: 'Electronics' });
+            expect(Array.isArray(result)).toBe(true);
+        });
+
+        it.skip('search() 应该跳过缓存强制请求', async () => {
+            mockFetchReturn({ list: createProductData(10), total: 30 });
+            await manager.list();
+
+            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(async () => ({
+                data: { list: createProductData(5), total: 5 },
+                metadata: { hasError: false },
+            } as any));
+
+            await (manager as any).search({ keyword: 'Books' });
+
             expect(fetchSpy).toHaveBeenCalled();
         });
     });

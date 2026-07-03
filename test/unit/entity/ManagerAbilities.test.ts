@@ -179,6 +179,207 @@ describe('SchemaAbility', () => {
 });
 
 // ============================================
+// SchemaProxyAbility 测试
+// ============================================
+
+describe('SchemaProxyAbility', () => {
+    const { RemoteCrudEntityManager } = require('@/entity/manager/managers');
+    const { SchemaRegistrar } = require('@/schema');
+    const { RegistryHub } = require('@/registry/RegistryHub');
+    const { DomainRegistrar } = require('@/registry/registrars/DomainRegistrar');
+
+    // 非树形 Schema
+    const flatSchema = {
+        name: 'SchemaProxyFlat',
+        domain: 'schema-proxy-test',
+        idField: 'code',
+        idType: 'string' as const,
+        nameField: 'title',
+        defaultSort: 'createdAt',
+        defaultOrder: 'desc' as const,
+        searchFields: ['title', 'description'],
+        isTree: false,
+        fields: [
+            { name: 'code', type: 'string' },
+            { name: 'title', type: 'string' },
+        ],
+    };
+
+    // 树形 Schema
+    const treeSchema = {
+        name: 'SchemaProxyTree',
+        domain: 'schema-proxy-test',
+        idField: 'id',
+        isTree: true,
+        isLazy: true,
+        root: 'root-0',
+        parentIdField: 'pid',
+        childrenField: 'kids',
+        pathField: 'nodePath',
+        leafField: 'isLeaf',
+        expandedField: 'isOpen',
+        useFlat: true,
+        fields: [
+            { name: 'id', type: 'string' },
+            { name: 'pid', type: 'string' },
+        ],
+    };
+
+    class FlatManager extends RemoteCrudEntityManager {
+        domain = 'schema-proxy-test';
+        entityName = 'SchemaProxyFlat';
+        url = '/api/flat';
+        schema = flatSchema;
+    }
+
+    class TreeManager extends RemoteCrudEntityManager {
+        domain = 'schema-proxy-test';
+        entityName = 'SchemaProxyTree';
+        url = '/api/tree';
+        schema = treeSchema;
+    }
+
+    beforeAll(() => {
+        const domainRegistrar = RegistryHub.get('domain') as any;
+        if (domainRegistrar && !domainRegistrar.get('schema-proxy-test')) {
+            domainRegistrar.register('schema-proxy-test', {
+                baseUrl: 'http://localhost:9999',
+                preset: 'default',
+                pageSize: 10,
+                pagesizes: [10, 20, 50],
+            });
+        }
+        const schemaRegistrar = SchemaRegistrar.getInstance();
+        if (!schemaRegistrar.has('SchemaProxyFlat')) schemaRegistrar.register(flatSchema);
+        if (!schemaRegistrar.has('SchemaProxyTree')) schemaRegistrar.register(treeSchema);
+    });
+
+    describe('非树形 Schema', () => {
+        let manager: FlatManager;
+
+        beforeEach(() => { manager = new FlatManager(); });
+        afterEach(() => { manager.dispose(); });
+
+        it('idField 应该从 schema 获取', () => {
+            expect(manager.idField).toBe('code');
+        });
+
+        it('idType 应该从 schema 获取', () => {
+            expect(manager.idType).toBe('string');
+        });
+
+        it('nameField 应该从 schema 获取', () => {
+            expect(manager.nameField).toBe('title');
+        });
+
+        it('defaultSort 应该从 schema 获取', () => {
+            expect(manager.defaultSort).toBe('createdAt');
+        });
+
+        it('defaultOrder 应该从 schema 获取', () => {
+            expect(manager.defaultOrder).toBe('desc');
+        });
+
+        it('searchFields 应该从 schema 获取', () => {
+            expect(manager.searchFields).toEqual(['title', 'description']);
+        });
+
+        it('isTree 应该返回 false', () => {
+            expect(manager.isTree).toBe(false);
+        });
+
+        it('isLazy 应该返回 false（非树形）', () => {
+            expect(manager.isLazy).toBe(false);
+        });
+
+        it('root 应该返回空字符串（非树形）', () => {
+            expect(manager.root).toBe('');
+        });
+
+        it('parentIdField 应该返回空字符串（非树形）', () => {
+            expect(manager.parentIdField).toBe('');
+        });
+
+        it('childrenField 应该返回空字符串（非树形）', () => {
+            expect(manager.childrenField).toBe('');
+        });
+    });
+
+    describe('树形 Schema', () => {
+        let manager: TreeManager;
+
+        beforeEach(() => { manager = new TreeManager(); });
+        afterEach(() => { manager.dispose(); });
+
+        it('isTree 应该返回 true', () => {
+            expect(manager.isTree).toBe(true);
+        });
+
+        it('isLazy 应该从 schema 获取', () => {
+            expect(manager.isLazy).toBe(true);
+        });
+
+        it('root 应该从 schema 获取', () => {
+            expect(manager.root).toBe('root-0');
+        });
+
+        it('parentIdField 应该从 schema 获取', () => {
+            expect(manager.parentIdField).toBe('pid');
+        });
+
+        it('childrenField 应该从 schema 获取', () => {
+            expect(manager.childrenField).toBe('kids');
+        });
+
+        it('pathField 应该从 schema 获取', () => {
+            expect(manager.pathField).toBe('nodePath');
+        });
+
+        it('leafField 应该从 schema 获取', () => {
+            expect(manager.leafField).toBe('isLeaf');
+        });
+
+        it('expandedField 应该从 schema 获取', () => {
+            expect(manager.expandedField).toBe('isOpen');
+        });
+
+        it('useFlat 应该从 schema 获取', () => {
+            expect(manager.useFlat).toBe(true);
+        });
+    });
+
+    describe('默认值', () => {
+        it('schema 缺少 idField 时应该返回默认值 id', () => {
+            const minimalSchema = {
+                name: 'SchemaProxyMinimal',
+                domain: 'schema-proxy-test',
+                isTree: false,
+                fields: [{ name: 'id', type: 'string' }],
+            };
+
+            class MinimalManager extends RemoteCrudEntityManager {
+                domain = 'schema-proxy-test';
+                entityName = 'SchemaProxyMinimal';
+                url = '/api/minimal';
+                schema = minimalSchema;
+            }
+
+            const schemaRegistrar = SchemaRegistrar.getInstance();
+            if (!schemaRegistrar.has('SchemaProxyMinimal')) schemaRegistrar.register(minimalSchema);
+
+            const manager = new MinimalManager();
+            expect(manager.idField).toBe('id'); // 默认值
+            expect(manager.idType).toBe('number'); // 默认值
+            expect(manager.nameField).toBe('name'); // 默认值
+            expect(manager.defaultSort).toBe(''); // 默认值
+            expect(manager.defaultOrder).toBe('asc'); // 默认值
+            expect(manager.searchFields).toEqual([]); // 默认值
+            manager.dispose();
+        });
+    });
+});
+
+// ============================================
 // LocalGetAbility 测试
 // ============================================
 

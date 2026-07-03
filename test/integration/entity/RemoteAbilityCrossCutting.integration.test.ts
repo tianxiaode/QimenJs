@@ -351,19 +351,19 @@ describe('RemoteAbility 跨切面集成测试', () => {
         });
 
         it('deleteFromItems() 应该正确更新 pages 和 hasMore', async () => {
-            // 30 条数据，pageSize=20，共 2 页
-            const products = createProducts(20);
+            // 30 条数据，pageSize=10（domainConfig），共 3 页
+            const products = createProducts(10);
             manager.updateData(products, 30);
-            expect(manager.pages).toBe(2);
+            expect(manager.pages).toBe(3);
             expect(manager.hasMore).toBe(true);
 
             // 删除 15 条
             manager.deleteFromItems(Array.from({ length: 15 }, (_, i) => i + 1));
 
-            expect(manager.items).toHaveLength(5);
+            expect(manager.items).toHaveLength(0); // 10 - 15 = 0 (clamped)
             expect(manager.total).toBe(15); // 30 - 15
-            expect(manager.pages).toBe(1); // 15 / 20 = 1
-            expect(manager.hasMore).toBe(false); // page 1 >= pages 1
+            expect(manager.pages).toBe(2); // 15 / 10 = 2
+            expect(manager.hasMore).toBe(true); // page 1 < pages 2
         });
     });
 

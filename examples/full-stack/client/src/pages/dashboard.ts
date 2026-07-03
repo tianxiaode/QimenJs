@@ -68,6 +68,18 @@ export function showDashboard(): void {
                 </div>
                 <div>
                     ${card('RemoteCrudEntityManager - Spring 订单', '<div id="spring-orders">' + loading() + '</div>', '#2196F3')}
+                    ${card('分页导航', `
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            ${button('上一页', 'window.__prevPage()', '#2196F3')}
+                            <span id="page-info" style="padding: 0 8px; font-size: 14px;">-</span>
+                            ${button('下一页', 'window.__nextPage()', '#2196F3')}
+                            ${button('跳转第1页', 'window.__jumpPage(1)', '#2196F3')}
+                            ${button('每页5条', 'window.__changePageSize(5)', '#2196F3')}
+                            ${button('每页10条', 'window.__changePageSize(10)', '#2196F3')}
+                            ${button('每页20条', 'window.__changePageSize(20)', '#2196F3')}
+                            ${button('每页50条', 'window.__changePageSize(50)', '#2196F3')}
+                        </div>
+                    `, '#2196F3')}
                     ${card('RemoteReadonlyEntityManager - Spring 商品（只读）', '<div id="spring-items">' + loading() + '</div>', '#2196F3')}
                 </div>
             </div>
@@ -92,22 +104,12 @@ export function showDashboard(): void {
             <!-- 操作测试区域 -->
             <h2 style="color: #333; border-bottom: 2px solid #607D8B; padding-bottom: 4px;">操作测试</h2>
             <div style="margin-bottom: 24px;">
-                ${card('分页导航（Spring 订单）', `
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                        ${button('上一页', 'window.__prevPage()', '#2196F3')}
-                        <span id="page-info" style="padding: 0 8px; font-size: 14px;">-</span>
-                        ${button('下一页', 'window.__nextPage()', '#2196F3')}
-                        ${button('跳转第1页', 'window.__jumpPage(1)', '#2196F3')}
-                        ${button('每页5条', 'window.__changePageSize(5)', '#2196F3')}
-                        ${button('每页20条', 'window.__changePageSize(20)', '#2196F3')}
-                    </div>
-                `, '#2196F3')}
                 ${card('筛选/排序（ABP 用户）', `
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                        ${button('筛选: admin', 'window.__filterUsers("admin")', '#4CAF50')}
-                        ${button('筛选: 空', 'window.__filterUsers("")', '#4CAF50')}
-                        ${button('排序: ID升序', 'window.__sortUsers("id", "asc")', '#4CAF50')}
-                        ${button('排序: ID降序', 'window.__sortUsers("id", "desc")', '#4CAF50')}
+                        ${button('筛选: admin', "window.__filterUsers('admin')", '#4CAF50')}
+                        ${button('筛选: 空', "window.__filterUsers('')", '#4CAF50')}
+                        ${button('排序: ID升序', "window.__sortUsers('id', 'asc')", '#4CAF50')}
+                        ${button('排序: ID降序', "window.__sortUsers('id', 'desc')", '#4CAF50')}
                         ${button('重置', 'window.__resetUsers()', '#4CAF50')}
                     </div>
                 `, '#4CAF50')}

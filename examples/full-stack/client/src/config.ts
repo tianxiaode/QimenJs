@@ -43,7 +43,7 @@ domainRegistrar.register('spring', {
     baseUrl: 'http://localhost:3002',
     preset: 'spring',
     pageSize: 10,
-    pagesizes: [10, 20, 50],
+    pagesizes: [5, 10, 20, 50],
     authInjector: 'bearer',
 });
 
