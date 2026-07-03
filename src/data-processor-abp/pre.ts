@@ -14,11 +14,11 @@ import type { AbpPipelineOptions } from './types';
 /**
  * ABP 分页参数转换
  *
- * 将前端分页参数（pageIndex/pageSize）转换为 ABP 格式（skipCount/takeCount）
+ * 将前端分页参数（page/pageSize）转换为 ABP 格式（skipCount/maxResultCount）
  * 注入到 context.request.queryParams，由 UrlBuilder 拼接到 URL
  *
- * 前端格式：{ pageIndex: 1, pageSize: 10 }
- * ABP 格式：queryParams 中 { skipCount: 0, takeCount: 10 }
+ * 前端格式：{ page: 1, pageSize: 10 }（1-based）
+ * ABP 格式：queryParams 中 { skipCount: 0, maxResultCount: 10 }
  */
 export function createAbpPaginationHandler(options?: AbpPipelineOptions): DataProcessorHandler {
     const defaultPageSize = options?.defaultPageSize ?? 10;
@@ -28,22 +28,23 @@ export function createAbpPaginationHandler(options?: AbpPipelineOptions): DataPr
         weight: DataProcessorWeight.TRANSFORM,
         tags: ['abp', 'pre'],
         category: 'param',
-        description: 'ABP 分页参数转换：pageIndex/pageSize → skipCount/takeCount',
+        description: 'ABP 分页参数转换：page/pageSize → skipCount/maxResultCount',
 
         async handle(context: RequestContext): Promise<void> {
             const params = context.data.params;
             if (!params || typeof params !== 'object') return;
 
-            // 前端分页参数
-            const pageIndex = params.pageIndex ?? params.page ?? 0;
+            // 前端分页参数（toParams() 返回 1-based 的 page）
+            const pageIndex = params.pageIndex ?? params.page ?? 1;
             const pageSize = params.pageSize ?? params.size ?? defaultPageSize;
 
             // 转换为 ABP 格式，注入到 queryParams
+            // ABP 的 skipCount 是 0-based：page=1 → skipCount=0, page=2 → skipCount=pageSize
             if (!context.request.queryParams) {
                 context.request.queryParams = {};
             }
-            context.request.queryParams.skipCount = pageIndex * pageSize;
-            context.request.queryParams.takeCount = pageSize;
+            context.request.queryParams.skipCount = (pageIndex - 1) * pageSize;
+            context.request.queryParams.maxResultCount = pageSize;
 
             // 移除前端参数，避免发送到后端
             delete params.pageIndex;

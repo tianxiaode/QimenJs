@@ -37,12 +37,14 @@ export function createAbpExtractHandler(options?: AbpPipelineOptions): DataProce
             if (isPagedResult(raw)) {
                 context.data.list = raw.items || [];
                 context.data.total = raw.totalCount ?? 0;
+                const pageSize = context.request.queryParams?.maxResultCount ?? context.data.params?.takeCount ?? 10;
+                const skipCount = context.request.queryParams?.skipCount ?? context.data.params?.skipCount ?? 0;
                 context.data.pagination = {
                     isRequestAligned: true,
                     isResponseAligned: true,
                     total: raw.totalCount ?? 0,
-                    pageSize: context.data.params?.takeCount ?? 10,
-                    pageIndex: Math.floor((context.data.params?.skipCount ?? 0) / (context.data.params?.takeCount ?? 10)),
+                    pageSize,
+                    pageIndex: Math.floor(skipCount / pageSize),
                 };
                 return;
             }

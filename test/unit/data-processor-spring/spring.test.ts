@@ -52,23 +52,23 @@ function createContext(overrides: Partial<RequestContext> = {}): RequestContext 
 
 describe('Spring 前道处理器', () => {
     describe('spring-pagination', () => {
-        test('应该将 pageIndex/pageSize 转换为 page/size 并注入 queryParams', async () => {
+        test('应该将 page/pageSize 转换为 Spring 的 page/size（1-based → 0-based）', async () => {
             const handler = createSpringPaginationHandler();
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 0, pageSize: 20 };
+            ctx.data.params = { page: 1, pageSize: 20 };
 
             await handler.handle(ctx);
 
             expect(ctx.request.queryParams!.page).toBe(0);
             expect(ctx.request.queryParams!.size).toBe(20);
-            expect(ctx.data.params.pageIndex).toBeUndefined();
+            expect(ctx.data.params.page).toBeUndefined();
             expect(ctx.data.params.pageSize).toBeUndefined();
         });
 
         test('应该使用默认 pageSize', async () => {
             const handler = createSpringPaginationHandler({ defaultPageSize: 50 });
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 0 };
+            ctx.data.params = { page: 1 };
 
             await handler.handle(ctx);
 
@@ -78,17 +78,17 @@ describe('Spring 前道处理器', () => {
         test('应该保留 sort 参数', async () => {
             const handler = createSpringPaginationHandler();
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 0, pageSize: 10, sort: 'name,asc' };
+            ctx.data.params = { page: 1, pageSize: 10, sort: 'name,asc' };
 
             await handler.handle(ctx);
 
             expect(ctx.request.queryParams!.sort).toBe('name,asc');
         });
 
-        test('1-based 页码模式应该减 1', async () => {
-            const handler = createSpringPaginationHandler({ zeroBasedPageIndex: false });
+        test('zeroBasedPageIndex=true 时直接使用 page 值', async () => {
+            const handler = createSpringPaginationHandler({ zeroBasedPageIndex: true });
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 1, pageSize: 10 };
+            ctx.data.params = { page: 0, pageSize: 10 };
 
             await handler.handle(ctx);
 
@@ -99,7 +99,7 @@ describe('Spring 前道处理器', () => {
             const handler = createSpringPaginationHandler();
             const ctx = createContext();
             ctx.request.queryParams = undefined;
-            ctx.data.params = { pageIndex: 0, pageSize: 10 };
+            ctx.data.params = { page: 1, pageSize: 10 };
 
             await handler.handle(ctx);
 

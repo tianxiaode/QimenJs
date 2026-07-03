@@ -59,16 +59,16 @@ function createContext(overrides: Partial<RequestContext> = {}): RequestContext 
 
 describe('ABP 前道处理器', () => {
     describe('abp-pagination', () => {
-        test('应该将 pageIndex/pageSize 转换为 skipCount/takeCount 并注入 queryParams', async () => {
+        test('应该将 page/pageSize 转换为 skipCount/maxResultCount（1-based → 0-based skip）', async () => {
             const handler = createAbpPaginationHandler();
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 2, pageSize: 20 };
+            ctx.data.params = { page: 2, pageSize: 20 };
 
             await handler.handle(ctx);
 
-            expect(ctx.request.queryParams!.skipCount).toBe(40);
-            expect(ctx.request.queryParams!.takeCount).toBe(20);
-            expect(ctx.data.params.pageIndex).toBeUndefined();
+            expect(ctx.request.queryParams!.skipCount).toBe(20);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(20);
+            expect(ctx.data.params.page).toBeUndefined();
             expect(ctx.data.params.pageSize).toBeUndefined();
         });
 
@@ -79,19 +79,19 @@ describe('ABP 前道处理器', () => {
 
             await handler.handle(ctx);
 
-            expect(ctx.request.queryParams!.skipCount).toBe(15);
-            expect(ctx.request.queryParams!.takeCount).toBe(15);
+            expect(ctx.request.queryParams!.skipCount).toBe(0);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(15);
         });
 
         test('应该使用默认 pageSize', async () => {
             const handler = createAbpPaginationHandler({ defaultPageSize: 25 });
             const ctx = createContext();
-            ctx.data.params = { pageIndex: 0 };
+            ctx.data.params = { page: 1 };
 
             await handler.handle(ctx);
 
             expect(ctx.request.queryParams!.skipCount).toBe(0);
-            expect(ctx.request.queryParams!.takeCount).toBe(25);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(25);
         });
 
         test('没有 params 时应该跳过', async () => {
@@ -108,13 +108,13 @@ describe('ABP 前道处理器', () => {
             const handler = createAbpPaginationHandler();
             const ctx = createContext();
             ctx.request.queryParams = undefined;
-            ctx.data.params = { pageIndex: 0, pageSize: 10 };
+            ctx.data.params = { page: 1, pageSize: 10 };
 
             await handler.handle(ctx);
 
             expect(ctx.request.queryParams).toBeDefined();
             expect(ctx.request.queryParams!.skipCount).toBe(0);
-            expect(ctx.request.queryParams!.takeCount).toBe(10);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(10);
         });
     });
 
@@ -151,7 +151,7 @@ describe('ABP 后道处理器', () => {
         test('应该提取 PagedResultDto', async () => {
             const handler = createAbpExtractHandler();
             const ctx = createContext();
-            ctx.request.queryParams = { skipCount: 0, takeCount: 10 };
+            ctx.request.queryParams = { skipCount: 0, maxResultCount: 10 };
             ctx.response.data = {
                 items: [{ id: 1 }, { id: 2 }],
                 totalCount: 50,
