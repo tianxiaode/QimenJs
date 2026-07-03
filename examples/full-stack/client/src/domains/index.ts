@@ -5,3 +5,5 @@
  */
 export { UserSchema, ProductSchema } from './abp';
 export { OrderSchema, ItemSchema } from './spring';
+export { NotificationSchema, TagSchema } from './local';
+export { DepartmentSchema } from './tree';

@@ -1,11 +1,15 @@
 /**
  * 仪表盘页
  *
- * 展示三个域的数据：ABP 用户/产品、Spring 订单/商品
- * 通过 EntityManager 获取数据，展示 OrbitJS 的实体管理能力
+ * 展示 OrbitJS 全部 5 种 EntityManager 类型：
+ * 1. RemoteCrudEntityManager      - ABP 用户（远程 CRUD）
+ * 2. RemoteReadonlyEntityManager  - Spring 商品（远程只读）
+ * 3. RemoteTreeEntityManager      - ABP 部门（远程树形）
+ * 4. LocalReadonlyEntityManager   - 本地通知（本地只读）
+ * 5. LocalCrudEntityManager       - 本地标签（本地 CRUD）
  */
 import { oauth2 } from '../config';
-import { AbpUserManager, AbpProductManager, SpringOrderManager, SpringItemManager } from '../managers';
+import { AbpUserManager, AbpProductManager, SpringOrderManager, SpringItemManager, LocalNotificationManager, LocalTagManager, DepartmentManager } from '../managers';
 import { render, card, table, button, badge, loading, error } from '../utils/render';
 
 // 创建 EntityManager 实例
@@ -13,10 +17,40 @@ const abpUserManager = new AbpUserManager();
 const abpProductManager = new AbpProductManager();
 const springOrderManager = new SpringOrderManager();
 const springItemManager = new SpringItemManager();
+const departmentManager = new DepartmentManager();
+const notificationManager = new LocalNotificationManager();
+const tagManager = new LocalTagManager();
+
+// 初始化本地数据
+function initLocalData(): void {
+    // 通知数据（只读）
+    const notifications = [
+        { id: 1, title: '系统维护通知', message: '系统将于今晚 22:00 进行维护', type: 'system', read: false, createdAt: '2026-07-03 09:00' },
+        { id: 2, title: '新功能上线', message: '树形管理器已上线，支持懒加载', type: 'feature', read: false, createdAt: '2026-07-02 14:30' },
+        { id: 3, title: '安全提醒', message: '请定期修改密码', type: 'security', read: true, createdAt: '2026-07-01 10:00' },
+        { id: 4, title: '版本更新', message: 'v2.0 已发布，新增 5 种 Manager 类型', type: 'feature', read: true, createdAt: '2026-06-30 16:00' },
+    ];
+    notificationManager.sourceData.clear();
+    notifications.forEach(n => notificationManager.sourceData.set(n.id, n));
+    notificationManager.items = [...notifications];
+
+    // 标签数据（CRUD）
+    const tags = [
+        { id: 1, name: '重要', color: '#f44336', count: 5 },
+        { id: 2, name: '待办', color: '#FF9800', count: 12 },
+        { id: 3, name: '已完成', color: '#4CAF50', count: 28 },
+        { id: 4, name: '进行中', color: '#2196F3', count: 8 },
+    ];
+    tagManager.sourceData.clear();
+    tags.forEach(t => tagManager.sourceData.set(t.id, t));
+    tagManager.items = [...tags];
+}
 
 export function showDashboard(): void {
+    initLocalData();
+
     render('app', `
-        <div style="max-width: 1200px; margin: 20px auto; font-family: sans-serif;">
+        <div style="max-width: 1400px; margin: 20px auto; font-family: sans-serif;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1>OrbitJS 全栈示例</h1>
                 <div>
@@ -24,25 +58,90 @@ export function showDashboard(): void {
                     ${button('登出', 'window.__logout()', '#f44336')}
                 </div>
             </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+            <!-- 远程 Manager 区域 -->
+            <h2 style="color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 4px;">远程 EntityManager</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
                 <div>
-                    ${card('ABP 域 - 用户列表', '<div id="abp-users">' + loading() + '</div>', '#4CAF50')}
-                    ${card('ABP 域 - 产品列表', '<div id="abp-products">' + loading() + '</div>', '#4CAF50')}
+                    ${card('RemoteCrudEntityManager - ABP 用户', '<div id="abp-users">' + loading() + '</div>', '#4CAF50')}
+                    ${card('RemoteCrudEntityManager - ABP 产品', '<div id="abp-products">' + loading() + '</div>', '#4CAF50')}
                 </div>
                 <div>
-                    ${card('Spring 域 - 订单列表', '<div id="spring-orders">' + loading() + '</div>', '#2196F3')}
-                    ${card('Spring 域 - 商品列表', '<div id="spring-items">' + loading() + '</div>', '#2196F3')}
+                    ${card('RemoteCrudEntityManager - Spring 订单', '<div id="spring-orders">' + loading() + '</div>', '#2196F3')}
+                    ${card('RemoteReadonlyEntityManager - Spring 商品（只读）', '<div id="spring-items">' + loading() + '</div>', '#2196F3')}
                 </div>
             </div>
-            
-            <div style="margin-top: 20px;">
-                ${card('操作测试', `
-                    ${button('刷新 ABP 用户', 'window.__fetchAbpUsers()', '#4CAF50')}
-                    ${button('刷新 Spring 订单', 'window.__fetchSpringOrders()', '#2196F3')}
-                    ${button('创建 ABP 用户（验证错误测试）', 'window.__createAbpUser()', '#FF9800')}
+
+            <!-- 树形 Manager 区域 -->
+            <h2 style="color: #333; border-bottom: 2px solid #9C27B0; padding-bottom: 4px;">RemoteTreeEntityManager - 部门树</h2>
+            <div style="margin-bottom: 24px;">
+                ${card('部门树形结构（懒加载 + 展开/折叠）', '<div id="department-tree">' + loading() + '</div>', '#9C27B0')}
+            </div>
+
+            <!-- 本地 Manager 区域 -->
+            <h2 style="color: #333; border-bottom: 2px solid #FF9800; padding-bottom: 4px;">本地 EntityManager</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div>
+                    ${card('LocalReadonlyEntityManager - 通知（只读）', '<div id="local-notifications"></div>', '#FF9800')}
+                </div>
+                <div>
+                    ${card('LocalCrudEntityManager - 标签（CRUD）', '<div id="local-tags"></div>', '#FF9800')}
+                </div>
+            </div>
+
+            <!-- 操作测试区域 -->
+            <h2 style="color: #333; border-bottom: 2px solid #607D8B; padding-bottom: 4px;">操作测试</h2>
+            <div style="margin-bottom: 24px;">
+                ${card('交互测试', `
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        ${button('刷新 ABP 用户', 'window.__fetchAbpUsers()', '#4CAF50')}
+                        ${button('刷新 Spring 订单', 'window.__fetchSpringOrders()', '#2196F3')}
+                        ${button('创建 ABP 用户（验证错误）', 'window.__createAbpUser()', '#FF9800')}
+                        ${button('添加本地标签', 'window.__addLocalTag()', '#FF9800')}
+                        ${button('删除本地标签', 'window.__removeLocalTag()', '#f44336')}
+                        ${button('加载部门树', 'window.__loadDepartments()', '#9C27B0')}
+                    </div>
                     <div id="action-result" style="margin-top: 8px;"></div>
-                `, '#9C27B0')}
+                `, '#607D8B')}
+            </div>
+
+            <!-- Manager 类型说明 -->
+            <h2 style="color: #333; border-bottom: 2px solid #795548; padding-bottom: 4px;">Manager 类型对照</h2>
+            <div style="margin-bottom: 24px;">
+                ${card('5 种 EntityManager 类型', `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">类型</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">能力</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">示例</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><code>LocalReadonlyEntityManager</code></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">list / get</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">本地通知</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><code>LocalCrudEntityManager</code></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">list / get / create / update / delete</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">本地标签</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><code>RemoteReadonlyEntityManager</code></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">list / getAll / get / query / filter / sort</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Spring 商品</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><code>RemoteCrudEntityManager</code></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">上述 + create / update / delete / toggle</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">ABP 用户/产品、Spring 订单</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><code>RemoteTreeEntityManager</code></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">上述 + expand / collapse / move / refresh</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">部门树</td>
+                        </tr>
+                    </table>
+                `, '#795548')}
             </div>
         </div>
     `);
@@ -55,24 +154,26 @@ export function showDashboard(): void {
         authStatus.innerHTML = badge('未认证', '#f44336');
     }
 
-    // 加载数据
+    // 加载远程数据
     fetchAbpUsers();
     fetchAbpProducts();
     fetchSpringOrders();
     fetchSpringItems();
+    loadDepartments();
+
+    // 渲染本地数据
+    renderNotifications();
+    renderTags();
 }
 
-// ===== ABP 域数据 =====
+// ===== ABP 域数据（RemoteCrudEntityManager）=====
 
 async function fetchAbpUsers(): Promise<void> {
     const container = document.getElementById('abp-users');
     if (!container) return;
 
     try {
-        // 通过 EntityManager 的 list 能力获取数据
         const items = await abpUserManager.list();
-        const state = abpUserManager.state;
-
         container.innerHTML = table(
             ['ID', '用户名', '姓名', '邮箱', '状态'],
             items.map((u: any) => [
@@ -82,7 +183,7 @@ async function fetchAbpUsers(): Promise<void> {
                 u.email,
                 u.isActive ? badge('活跃', '#4CAF50') : badge('禁用', '#999'),
             ])
-        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
+        ) + `<p style="color: #666; font-size: 12px;">共 ${abpUserManager.total} 条 | 类型: RemoteCrudEntityManager</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -94,8 +195,6 @@ async function fetchAbpProducts(): Promise<void> {
 
     try {
         const items = await abpProductManager.list();
-        const state = abpProductManager.state;
-
         container.innerHTML = table(
             ['ID', '名称', '价格', '库存', '分类'],
             items.map((p: any) => [
@@ -105,7 +204,7 @@ async function fetchAbpProducts(): Promise<void> {
                 p.stock,
                 p.category,
             ])
-        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
+        ) + `<p style="color: #666; font-size: 12px;">共 ${abpProductManager.total} 条 | 类型: RemoteCrudEntityManager</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -119,8 +218,6 @@ async function fetchSpringOrders(): Promise<void> {
 
     try {
         const items = await springOrderManager.list();
-        const state = springOrderManager.state;
-
         container.innerHTML = table(
             ['ID', '订单号', '客户', '金额', '状态'],
             items.map((o: any) => [
@@ -130,7 +227,7 @@ async function fetchSpringOrders(): Promise<void> {
                 '¥' + o.amount,
                 badge(o.status, statusColor(o.status)),
             ])
-        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条，第 ${state.page}/${state.pages} 页</p>`;
+        ) + `<p style="color: #666; font-size: 12px;">共 ${springOrderManager.total} 条，第 ${springOrderManager.page}/${springOrderManager.pages} 页 | 类型: RemoteCrudEntityManager</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
@@ -142,8 +239,6 @@ async function fetchSpringItems(): Promise<void> {
 
     try {
         const items = await springItemManager.list();
-        const state = springItemManager.state;
-
         container.innerHTML = table(
             ['ID', '名称', '价格', '库存', '分类'],
             items.map((i: any) => [
@@ -153,10 +248,86 @@ async function fetchSpringItems(): Promise<void> {
                 i.stock,
                 i.category,
             ])
-        ) + `<p style="color: #666; font-size: 12px;">共 ${state.total} 条</p>`;
+        ) + `<p style="color: #666; font-size: 12px;">共 ${springItemManager.total} 条 | 类型: RemoteReadonlyEntityManager（无 create/update/delete）</p>`;
     } catch (e: any) {
         container.innerHTML = error(e.message);
     }
+}
+
+// ===== 部门树（RemoteTreeEntityManager）=====
+
+async function loadDepartments(): Promise<void> {
+    const container = document.getElementById('department-tree');
+    if (!container) return;
+
+    try {
+        const items = await departmentManager.list();
+        departmentManager.ingest(items);
+
+        renderDepartmentTree(container);
+    } catch (e: any) {
+        container.innerHTML = error(e.message);
+    }
+}
+
+function renderDepartmentTree(container: HTMLElement): void {
+    const flatItems = departmentManager._generateFlatItems();
+    if (flatItems.length === 0) {
+        container.innerHTML = '<p style="color: #999;">暂无数据</p>';
+        return;
+    }
+
+    let html = '<div style="font-size: 13px;">';
+    flatItems.forEach((item: any) => {
+        const indent = (item._depth || 0) * 20;
+        const expandIcon = item.leaf ? '  ' : (item.expanded ? '▼' : '▶');
+        const clickHandler = item.leaf ? '' : `window.__toggleDepartment(${item.id})`;
+        html += `<div style="padding: 4px 8px; padding-left: ${indent + 8}px; cursor: ${item.leaf ? 'default' : 'pointer'}; border-bottom: 1px solid #f0f0f0;" ${clickHandler ? `onclick="${clickHandler}"` : ''}>
+            <span style="margin-right: 6px;">${expandIcon}</span>
+            <strong>${item.name}</strong>
+            <span style="color: #999; margin-left: 8px;">${item.employeeCount || 0} 人</span>
+            ${item.leaf ? badge('叶', '#ccc') : badge('支', '#9C27B0')}
+        </div>`;
+    });
+    html += '</div>';
+    html += `<p style="color: #666; font-size: 12px; margin-top: 8px;">共 ${flatItems.length} 个可见节点 | 类型: RemoteTreeEntityManager（懒加载 + 展开/折叠）</p>`;
+
+    container.innerHTML = html;
+}
+
+// ===== 本地数据 =====
+
+function renderNotifications(): void {
+    const container = document.getElementById('local-notifications');
+    if (!container) return;
+
+    const items = notificationManager.items;
+    container.innerHTML = table(
+        ['ID', '标题', '类型', '已读', '时间'],
+        items.map((n: any) => [
+            n.id,
+            n.title,
+            badge(n.type, n.type === 'system' ? '#f44336' : n.type === 'feature' ? '#4CAF50' : '#FF9800'),
+            n.read ? badge('已读', '#999') : badge('未读', '#2196F3'),
+            n.createdAt,
+        ])
+    ) + `<p style="color: #666; font-size: 12px;">共 ${items.length} 条 | 类型: LocalReadonlyEntityManager（只读，无 create/update/delete）</p>`;
+}
+
+function renderTags(): void {
+    const container = document.getElementById('local-tags');
+    if (!container) return;
+
+    const items = tagManager.items;
+    container.innerHTML = table(
+        ['ID', '名称', '颜色', '使用次数'],
+        items.map((t: any) => [
+            t.id,
+            `<span style="display: inline-block; width: 12px; height: 12px; background: ${t.color}; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>${t.name}`,
+            t.color,
+            t.count,
+        ])
+    ) + `<p style="color: #666; font-size: 12px;">共 ${items.length} 条 | 类型: LocalCrudEntityManager（支持 create/update/delete）</p>`;
 }
 
 // ===== 辅助函数 =====
@@ -181,16 +352,68 @@ function statusColor(status: string): string {
     if (!result) return;
 
     try {
-        // 通过 EntityManager 的 create 能力创建用户
-        // 故意发送空数据触发验证错误
         const item = await abpUserManager.create({});
-
         result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">创建成功: ${item.userName}</div>`;
         fetchAbpUsers();
     } catch (e: any) {
         let msg = `错误: ${e.message || '创建失败'}`;
         result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">${msg}</div>`;
     }
+};
+
+(window as any).__addLocalTag = () => {
+    const result = document.getElementById('action-result');
+    if (!result) return;
+
+    const colors = ['#f44336', '#FF9800', '#4CAF50', '#2196F3', '#9C27B0', '#795548'];
+    const names = ['紧急', '优化', '文档', '测试', '设计', '部署'];
+    const idx = tagManager.items.length % names.length;
+
+    const newTag = {
+        id: tagManager.items.length + 1,
+        name: names[idx],
+        color: colors[idx],
+        count: 0,
+    };
+
+    tagManager.sourceData.set(newTag.id, newTag);
+    tagManager.items = [...tagManager.items, newTag];
+
+    renderTags();
+    result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">添加标签: ${newTag.name}</div>`;
+};
+
+(window as any).__removeLocalTag = () => {
+    const result = document.getElementById('action-result');
+    if (!result) return;
+
+    if (tagManager.items.length === 0) {
+        result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">没有可删除的标签</div>`;
+        return;
+    }
+
+    const removed = tagManager.items[tagManager.items.length - 1] as any;
+    tagManager.sourceData.delete(removed.id!);
+    tagManager.items = tagManager.items.slice(0, -1);
+
+    renderTags();
+    result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">删除标签: ${removed.name}</div>`;
+};
+
+(window as any).__loadDepartments = () => loadDepartments();
+
+(window as any).__toggleDepartment = async (id: number) => {
+    const node = departmentManager.nodes.get(id);
+    if (!node || node.leaf) return;
+
+    if (node.expanded) {
+        departmentManager.collapse(id);
+    } else {
+        await departmentManager.expand(id);
+    }
+
+    const container = document.getElementById('department-tree');
+    if (container) renderDepartmentTree(container);
 };
 
 (window as any).__logout = async () => {

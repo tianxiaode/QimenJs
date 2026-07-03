@@ -12,7 +12,7 @@ import '@orbitjs/data-processor-abp';
 import '@orbitjs/data-processor-spring';
 
 // 导入域 Schema 定义
-import { UserSchema, ProductSchema, OrderSchema, ItemSchema } from './domains';
+import { UserSchema, ProductSchema, OrderSchema, ItemSchema, NotificationSchema, TagSchema, DepartmentSchema } from './domains';
 
 // 获取域注册器（Registry 通过 Proxy 动态访问，需要类型断言）
 const domainRegistrar = (Registry as any).domain as DomainRegistrar;
@@ -47,6 +47,14 @@ domainRegistrar.register('spring', {
     authInjector: 'bearer',
 });
 
+// 注册本地域（纯前端，不需要后端）
+domainRegistrar.register('local', {
+    baseUrl: '',
+    preset: 'default',
+    pageSize: 100,
+    pagesizes: [10, 20, 50],
+});
+
 // ============================================
 // 2. 注册 Schema
 // ============================================
@@ -60,6 +68,13 @@ schemaRegistrar.register(ProductSchema);
 // Spring 域 Schema
 schemaRegistrar.register(OrderSchema);
 schemaRegistrar.register(ItemSchema);
+
+// 本地域 Schema
+schemaRegistrar.register(NotificationSchema);
+schemaRegistrar.register(TagSchema);
+
+// 树形域 Schema
+schemaRegistrar.register(DepartmentSchema);
 
 // ============================================
 // 3. 配置 OAuth2

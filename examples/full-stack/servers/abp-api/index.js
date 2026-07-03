@@ -9,6 +9,11 @@
  * - POST /api/app/user         - 创建用户（含验证错误）
  * - GET /api/app/product       - 产品列表（PagedResultDto）
  * - GET /api/app/product/:id   - 产品详情
+ * - GET /api/departments       - 部门树列表（支持懒加载）
+ * - GET /api/departments/:id   - 部门详情
+ * - POST /api/departments      - 创建部门
+ * - PUT /api/departments/:id   - 更新部门
+ * - DELETE /api/departments/:id - 删除部门
  */
 const express = require('express');
 const cors = require('cors');
@@ -29,6 +34,7 @@ app.get('/health', (req, res) => {
 // API 路由（需要认证）
 app.use('/api/app/user', authMiddleware, require('./routes/users'));
 app.use('/api/app/product', authMiddleware, require('./routes/products'));
+app.use('/api/departments', authMiddleware, require('./routes/departments'));
 
 app.listen(PORT, () => {
     console.log(`[abp-api] ABP 模拟后端运行在 http://localhost:${PORT}`);
@@ -38,4 +44,9 @@ app.listen(PORT, () => {
     console.log(`  POST /api/app/user`);
     console.log(`  GET  /api/app/product`);
     console.log(`  GET  /api/app/product/:id`);
+    console.log(`  GET  /api/departments (支持 ?parentId= 懒加载)`);
+    console.log(`  GET  /api/departments/:id`);
+    console.log(`  POST /api/departments`);
+    console.log(`  PUT  /api/departments/:id`);
+    console.log(`  DELETE /api/departments/:id`);
 });
