@@ -92,10 +92,27 @@ export function showDashboard(): void {
             <!-- 操作测试区域 -->
             <h2 style="color: #333; border-bottom: 2px solid #607D8B; padding-bottom: 4px;">操作测试</h2>
             <div style="margin-bottom: 24px;">
-                ${card('交互测试', `
+                ${card('分页导航（Spring 订单）', `
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        ${button('上一页', 'window.__prevPage()', '#2196F3')}
+                        <span id="page-info" style="padding: 0 8px; font-size: 14px;">-</span>
+                        ${button('下一页', 'window.__nextPage()', '#2196F3')}
+                        ${button('跳转第1页', 'window.__jumpPage(1)', '#2196F3')}
+                        ${button('每页5条', 'window.__changePageSize(5)', '#2196F3')}
+                        ${button('每页20条', 'window.__changePageSize(20)', '#2196F3')}
+                    </div>
+                `, '#2196F3')}
+                ${card('筛选/排序（ABP 用户）', `
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                        ${button('筛选: admin', 'window.__filterUsers("admin")', '#4CAF50')}
+                        ${button('筛选: 空', 'window.__filterUsers("")', '#4CAF50')}
+                        ${button('排序: ID升序', 'window.__sortUsers("id", "asc")', '#4CAF50')}
+                        ${button('排序: ID降序', 'window.__sortUsers("id", "desc")', '#4CAF50')}
+                        ${button('重置', 'window.__resetUsers()', '#4CAF50')}
+                    </div>
+                `, '#4CAF50')}
+                ${card('其他操作', `
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        ${button('刷新 ABP 用户', 'window.__fetchAbpUsers()', '#4CAF50')}
-                        ${button('刷新 Spring 订单', 'window.__fetchSpringOrders()', '#2196F3')}
                         ${button('创建 ABP 用户（验证错误）', 'window.__createAbpUser()', '#FF9800')}
                         ${button('添加本地标签', 'window.__addLocalTag()', '#FF9800')}
                         ${button('删除本地标签', 'window.__removeLocalTag()', '#f44336')}
@@ -228,8 +245,18 @@ async function fetchSpringOrders(): Promise<void> {
                 badge(o.status, statusColor(o.status)),
             ])
         ) + `<p style="color: #666; font-size: 12px;">共 ${springOrderManager.total} 条，第 ${springOrderManager.page}/${springOrderManager.pages} 页 | 类型: RemoteCrudEntityManager</p>`;
+
+        // 更新分页信息
+        updatePageInfo();
     } catch (e: any) {
         container.innerHTML = error(e.message);
+    }
+}
+
+function updatePageInfo(): void {
+    const pageInfo = document.getElementById('page-info');
+    if (pageInfo) {
+        pageInfo.textContent = `第 ${springOrderManager.page} / ${springOrderManager.pages} 页（每页 ${springOrderManager.pageSize} 条，共 ${springOrderManager.total} 条）`;
     }
 }
 
@@ -342,29 +369,101 @@ function statusColor(status: string): string {
     return colors[status] || '#999';
 }
 
+function showActionResult(message: string, isError: boolean = false): void {
+    const result = document.getElementById('action-result');
+    if (!result) return;
+    const bg = isError ? '#fff3e0' : '#e8f5e9';
+    result.innerHTML = `<div style="padding: 8px; background: ${bg}; border-radius: 4px; margin-top: 8px;">${message}</div>`;
+}
+
 // ===== 暴露到 window =====
 
 (window as any).__fetchAbpUsers = () => fetchAbpUsers();
 (window as any).__fetchSpringOrders = () => fetchSpringOrders();
 
-(window as any).__createAbpUser = async () => {
-    const result = document.getElementById('action-result');
-    if (!result) return;
+// ===== 分页导航（Spring 订单）=====
 
+(window as any).__prevPage = async () => {
+    try {
+        await springOrderManager.prev();
+        fetchSpringOrders();
+    } catch (e: any) {
+        showActionResult(`上一页失败: ${e.message}`, true);
+    }
+};
+
+(window as any).__nextPage = async () => {
+    try {
+        await springOrderManager.next();
+        fetchSpringOrders();
+    } catch (e: any) {
+        showActionResult(`下一页失败: ${e.message}`, true);
+    }
+};
+
+(window as any).__jumpPage = async (page: number) => {
+    try {
+        await springOrderManager.jump(page);
+        fetchSpringOrders();
+    } catch (e: any) {
+        showActionResult(`跳转失败: ${e.message}`, true);
+    }
+};
+
+(window as any).__changePageSize = async (size: number) => {
+    try {
+        await springOrderManager.changeSize(size);
+        fetchSpringOrders();
+    } catch (e: any) {
+        showActionResult(`修改每页条数失败: ${e.message}`, true);
+    }
+};
+
+// ===== 筛选/排序（ABP 用户）=====
+
+(window as any).__filterUsers = async (text: string) => {
+    try {
+        await abpUserManager.filter(text);
+        fetchAbpUsers();
+        showActionResult(`筛选: "${text || '(空)'}"`);
+    } catch (e: any) {
+        showActionResult(`筛选失败: ${e.message}`, true);
+    }
+};
+
+(window as any).__sortUsers = async (prop: string, order: 'asc' | 'desc') => {
+    try {
+        await abpUserManager.sort(prop, order);
+        fetchAbpUsers();
+        showActionResult(`排序: ${prop} ${order}`);
+    } catch (e: any) {
+        showActionResult(`排序失败: ${e.message}`, true);
+    }
+};
+
+(window as any).__resetUsers = async () => {
+    try {
+        await abpUserManager.reset();
+        fetchAbpUsers();
+        showActionResult('已重置查询');
+    } catch (e: any) {
+        showActionResult(`重置失败: ${e.message}`, true);
+    }
+};
+
+// ===== 其他操作 =====
+
+(window as any).__createAbpUser = async () => {
     try {
         const item = await abpUserManager.create({});
-        result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">创建成功: ${item.userName}</div>`;
+        showActionResult(`创建成功: ${item.userName}`);
         fetchAbpUsers();
     } catch (e: any) {
-        let msg = `错误: ${e.message || '创建失败'}`;
-        result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">${msg}</div>`;
+        showActionResult(`错误: ${e.message || '创建失败'}`, true);
     }
 };
 
 (window as any).__addLocalTag = () => {
-    const result = document.getElementById('action-result');
-    if (!result) return;
-
     const colors = ['#f44336', '#FF9800', '#4CAF50', '#2196F3', '#9C27B0', '#795548'];
     const names = ['紧急', '优化', '文档', '测试', '设计', '部署'];
     const idx = tagManager.items.length % names.length;
@@ -380,15 +479,12 @@ function statusColor(status: string): string {
     tagManager.items = [...tagManager.items, newTag];
 
     renderTags();
-    result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">添加标签: ${newTag.name}</div>`;
+    showActionResult(`添加标签: ${newTag.name}`);
 };
 
 (window as any).__removeLocalTag = () => {
-    const result = document.getElementById('action-result');
-    if (!result) return;
-
     if (tagManager.items.length === 0) {
-        result.innerHTML = `<div style="padding: 8px; background: #fff3e0; border-radius: 4px; margin-top: 8px;">没有可删除的标签</div>`;
+        showActionResult('没有可删除的标签', true);
         return;
     }
 
@@ -397,7 +493,7 @@ function statusColor(status: string): string {
     tagManager.items = tagManager.items.slice(0, -1);
 
     renderTags();
-    result.innerHTML = `<div style="padding: 8px; background: #e8f5e9; border-radius: 4px; margin-top: 8px;">删除标签: ${removed.name}</div>`;
+    showActionResult(`删除标签: ${removed.name}`);
 };
 
 (window as any).__loadDepartments = () => loadDepartments();

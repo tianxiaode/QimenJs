@@ -181,6 +181,7 @@ export abstract class RemoteTreeEntityManager<
         SchemaProxyAbility,
         CacheAbility,
         DirtyAbility,
+        SearchAbility,
         TreePathAbility,
         TreeLifecycleAbility,
         TreeSearchAbility,
