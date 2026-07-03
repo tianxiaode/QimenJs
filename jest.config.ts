@@ -25,6 +25,7 @@ const config = {
     }
   },
   moduleNameMapper: {
+    '^@test/(.*)$': '<rootDir>/test/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@orbitjs/async$': '<rootDir>/src/async',
     '^@orbitjs/base$': '<rootDir>/src/base',

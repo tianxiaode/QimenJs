@@ -19,6 +19,7 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
+      "@test/*": ["test/*"],
       "@/*": ["src/*"],
       "@orbitjs/async": ["src/async"],
       "@orbitjs/error": ["src/error"],
