@@ -1,9 +1,9 @@
-/**
+﻿/**
  * HttpExecutor 单元测试
  */
 
 import { HttpExecutor } from '@/http';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 describe('HttpExecutor', () => {
     let executor: HttpExecutor;

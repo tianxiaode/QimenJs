@@ -1,4 +1,4 @@
-# OrbitJS 全栈示例
+﻿# OrbitJS 全栈示例
 
 OAuth2 认证 + ABP API + Spring API + 前端多域数据获取的完整示例。
 
@@ -16,7 +16,7 @@ OAuth2 认证 + ABP API + Spring API + 前端多域数据获取的完整示例�
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │             │             │              │
 │  ┌────┴─────────────┴─────────────┴─────┐       │
-│  │         @orbit-js/http                 │       │
+│  │         @qimenjs/http                 │       │
 │  │   HttpClient + TokenInjector          │       │
 │  └────────────────┬──────────────────────┘       │
 └───────────────────┼──────────────────────────────┘
@@ -109,11 +109,11 @@ npm run client    # 前端
 
 | 包 | 用途 |
 |-----|------|
-| `@orbit-js/registry` | 域名注册（auth/abp/spring 三个域） |
-| `@orbit-js/http` | HTTP 客户端 + TokenInjector |
-| `@orbit-js/oauth2` | OAuth2 认证 + 401 自动刷新 |
-| `@orbit-js/data-processor-abp` | ABP 数据处理管道 |
-| `@orbit-js/data-processor-spring` | Spring 数据处理管道 |
+| `@qimenjs/registry` | 域名注册（auth/abp/spring 三个域） |
+| `@qimenjs/http` | HTTP 客户端 + TokenInjector |
+| `@qimenjs/oauth2` | OAuth2 认证 + 401 自动刷新 |
+| `@qimenjs/data-processor-abp` | ABP 数据处理管道 |
+| `@qimenjs/data-processor-spring` | Spring 数据处理管道 |
 
 ## 停止服务
 

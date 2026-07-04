@@ -1,4 +1,4 @@
-# Validation 包设计修订
+﻿# Validation 包设计修订
 
 **日期**: 2026-06-15  
 **状态**: 设计修订  
@@ -31,8 +31,8 @@
 
 **示例**：
 ```typescript
-import { Validator } from '@orbit-js/validation';
-import type { Schema } from '@orbit-js/schema';
+import { Validator } from '@qimenjs/validation';
+import type { Schema } from '@qimenjs/schema';
 
 const userSchema: Schema = {
     name: 'User',
@@ -60,7 +60,7 @@ if (!result.valid) {
 
 **示例**：
 ```typescript
-import { assert, validate } from '@orbit-js/validation';
+import { assert, validate } from '@qimenjs/validation';
 
 // 方式 1：使用规则对象
 const emailResult = validate(email, { type: 'string', format: 'email' });
@@ -110,7 +110,7 @@ src/validation/
 
 ```typescript
 // validation/core/Validator.ts
-import type { ValidationRule } from '@orbit-js/schema';
+import type { ValidationRule } from '@qimenjs/schema';
 
 export class Validator {
     /**
@@ -136,7 +136,7 @@ validation/core → schema/types (仅类型导入)
 
 ```typescript
 // validation/engine/SchemaValidator.ts
-import type { Schema } from '@orbit-js/schema';
+import type { Schema } from '@qimenjs/schema';
 import { Validator } from '../core/Validator';
 
 export class SchemaValidator extends Validator {
@@ -174,14 +174,14 @@ export type { ValidationResult, ValidationContext } from './types';
 ```json
 {
   "dependencies": {
-    "@orbit-js/error": "^1.0.0",
-    "@orbit-js/pipeline": "^1.0.0"
+    "@qimenjs/error": "^1.0.0",
+    "@qimenjs/pipeline": "^1.0.0"
   },
   "peerDependencies": {
-    "@orbit-js/schema": "^1.0.0"  // 可选依赖
+    "@qimenjs/schema": "^1.0.0"  // 可选依赖
   },
   "peerDependenciesMeta": {
-    "@orbit-js/schema": {
+    "@qimenjs/schema": {
       "optional": true
     }
   }
@@ -193,7 +193,7 @@ export type { ValidationResult, ValidationContext } from './types';
 ### 1. 断言式验证（无 Schema）
 
 ```typescript
-import { assert, validate } from '@orbit-js/validation';
+import { assert, validate } from '@qimenjs/validation';
 
 // 快速验证
 const result = validate(email, { type: 'string', format: 'email' });
@@ -213,8 +213,8 @@ validate(name)
 ### 2. Schema 驱动的验证
 
 ```typescript
-import { SchemaValidator } from '@orbit-js/validation';
-import type { Schema } from '@orbit-js/schema';
+import { SchemaValidator } from '@qimenjs/validation';
+import type { Schema } from '@qimenjs/schema';
 
 const validator = new SchemaValidator();
 const result = validator.validateSchema(userData, userSchema);
@@ -223,7 +223,7 @@ const result = validator.validateSchema(userData, userSchema);
 ### 3. 混合使用
 
 ```typescript
-import { validate, SchemaValidator } from '@orbit-js/validation';
+import { validate, SchemaValidator } from '@qimenjs/validation';
 
 // 单个字段验证
 const emailValid = validate(email, { type: 'string', format: 'email' });
@@ -273,7 +273,7 @@ const objectValid = validator.validateSchema(userData, userSchema);
 
 1. 创建 `engine/SchemaValidator.ts`
 2. 实现 Schema 驱动的验证
-3. 添加对 `@orbit-js/schema` 的可选依赖
+3. 添加对 `@qimenjs/schema` 的可选依赖
 4. 编写测试
 
 ### Phase 3: 更新文档

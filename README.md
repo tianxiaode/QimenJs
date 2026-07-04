@@ -1,8 +1,10 @@
-# OrbitJS
+﻿# QimenJS
 
-> 现代化 TypeScript 基础设施库 — 让前端开发像轨道运行一样可预测和有序
+> 现代化 TypeScript 基础设施库 — 奇门遁甲，排兵布阵
 
-OrbitJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 27 个独立子包，覆盖前端应用的基础层到服务层。
+QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 27 个独立子包，覆盖前端应用的基础层到服务层。
+
+名字取自"奇门遁甲"——古代排兵布阵的术数体系。正如奇门以八门九星组合千变万化的格局，QimenJS 通过能力组合（Ability）和数据管道（Pipeline）构建灵活的前端架构。
 
 ## 状态
 
@@ -30,53 +32,53 @@ npm start
 
 | 包 | 说明 |
 |---|------|
-| `@orbit-js/error` | 统一错误体系，错误码 + 错误链 |
-| `@orbit-js/logger` | 日志系统，多级别 + 多输出 |
-| `@orbit-js/utils` | 通用工具函数 |
-| `@orbit-js/async` | 异步工具（重试、并发控制、超时） |
-| `@orbit-js/runtime` | 运行时环境检测 |
-| `@orbit-js/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
-| `@orbit-js/i18n` | 国际化，loadScript 动态加载语言包 |
-| `@orbit-js/context` | 请求上下文，贯穿数据处理管道 |
+| `@qimenjs/error` | 统一错误体系，错误码 + 错误链 |
+| `@qimenjs/logger` | 日志系统，多级别 + 多输出 |
+| `@qimenjs/utils` | 通用工具函数 |
+| `@qimenjs/async` | 异步工具（重试、并发控制、超时） |
+| `@qimenjs/runtime` | 运行时环境检测 |
+| `@qimenjs/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
+| `@qimenjs/i18n` | 国际化，loadScript 动态加载语言包 |
+| `@qimenjs/context` | 请求上下文，贯穿数据处理管道 |
 
 ### 核心层 (Layer 1)
 
 | 包 | 说明 |
 |---|------|
-| `@orbit-js/registry` | 注册表，领域隔离的注册中心 |
-| `@orbit-js/events` | 事件总线，发布/订阅 |
-| `@orbit-js/cache` | 缓存管理，LRU + TTL |
-| `@orbit-js/pipeline` | 数据管道，可组合的处理链 |
-| `@orbit-js/composable` | 能力组合，定义可复用的能力描述符 |
-| `@orbit-js/task` | 任务调度，队列 + 优先级 |
-| `@orbit-js/schema` | Schema 定义，字段 + 验证规则 |
+| `@qimenjs/registry` | 注册表，领域隔离的注册中心 |
+| `@qimenjs/events` | 事件总线，发布/订阅 |
+| `@qimenjs/cache` | 缓存管理，LRU + TTL |
+| `@qimenjs/pipeline` | 数据管道，可组合的处理链 |
+| `@qimenjs/composable` | 能力组合，定义可复用的能力描述符 |
+| `@qimenjs/task` | 任务调度，队列 + 优先级 |
+| `@qimenjs/schema` | Schema 定义，字段 + 验证规则 |
 
 ### 数据层 (Layer 2)
 
 | 包 | 说明 |
 |---|------|
-| `@orbit-js/data-processor` | 数据处理器框架，管道式请求/响应处理 |
-| `@orbit-js/validation` | 验证引擎，规则 + 链式验证 |
-| `@orbit-js/event-dom` | DOM 事件适配，手势识别 |
-| `@orbit-js/mime` | MIME 类型解析 |
-| `@orbit-js/pattern` | 设计模式工具（观察者、策略、工厂等） |
+| `@qimenjs/data-processor` | 数据处理器框架，管道式请求/响应处理 |
+| `@qimenjs/validation` | 验证引擎，规则 + 链式验证 |
+| `@qimenjs/event-dom` | DOM 事件适配，手势识别 |
+| `@qimenjs/mime` | MIME 类型解析 |
+| `@qimenjs/pattern` | 设计模式工具（观察者、策略、工厂等） |
 
 ### 服务层 (Layer 3)
 
 | 包 | 说明 |
 |---|------|
-| `@orbit-js/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
-| `@orbit-js/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
-| `@orbit-js/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
-| `@orbit-js/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
-| `@orbit-js/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
+| `@qimenjs/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
+| `@qimenjs/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
+| `@qimenjs/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
+| `@qimenjs/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
+| `@qimenjs/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
 
 ### 应用层 (Layer 4)
 
 | 包 | 说明 |
 |---|------|
-| `@orbit-js/entity` | 实体管理框架，Manager + Ability 架构 |
-| `@orbit-js/types` | 公共类型定义 |
+| `@qimenjs/entity` | 实体管理框架，Manager + Ability 架构 |
+| `@qimenjs/types` | 公共类型定义 |
 
 ## 架构特点
 
@@ -93,7 +95,7 @@ npm start
 - OAuth2 认证（密码模式 + 授权码模式 + 客户端凭证）
 - ABP API 用户管理（分页、搜索、排序）
 - Spring Data 订单管理（Page\<T\> 分页）
-- 27 个 OrbitJS 子包的功能演示页面
+- 27 个 QimenJS 子包的功能演示页面
 - 国际化（i18n 预编译 + 动态语言切换）
 
 ## 文档

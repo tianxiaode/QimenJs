@@ -1,4 +1,4 @@
-/**
+﻿/**
  * StreamClient 类
  * 
  * 专门用于处理流式数据请求（如 SSE、AI 流式 API）
@@ -9,7 +9,7 @@
  * @module http/StreamClient
  */
 
-import { RequestContextBuilder, type RequestContext } from '@orbit-js/context';
+import { RequestContextBuilder, type RequestContext } from '@qimenjs/context';
 import { HttpExecutor } from './HttpExecutor';
 import type { HttpMethod } from './types/http-context';
 

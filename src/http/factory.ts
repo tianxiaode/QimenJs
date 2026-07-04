@@ -1,11 +1,11 @@
-/**
+﻿/**
  * HttpFactory 类
  * 
  * HTTP 工厂类，提供创建 HTTP 客户端和相关工具的静态方法
  * 作为 HTTP 功能的统一入口，封装了高级功能如重试、轮询等
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 import type { HttpMethod } from './types/http-context';
 import { HttpClient, type SimpleRequestTask, type SimpleRequestOptions } from './HttpClient';
 

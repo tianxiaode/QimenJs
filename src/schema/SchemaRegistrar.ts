@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Schema 注册器
  * 
  * 管理实体 Schema 和字段组的注册与检索
  * 继承自 RegistrarBase，保持架构一致性
  */
 
-import { RegistrarBase } from '@orbit-js/registry';
+import { RegistrarBase } from '@qimenjs/registry';
 import type { RegistrSchema, FieldDefinition, Schema, SchemaCache, ValidationRule } from './types';
 
 /**

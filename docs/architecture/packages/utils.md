@@ -1,4 +1,4 @@
-# @orbit-js/utils
+﻿# @qimenjs/utils
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
@@ -30,7 +30,7 @@
 ## 使用示例
 
 ```typescript
-import { string, array } from '@orbit-js/utils';
+import { string, array } from '@qimenjs/utils';
 
 const trimmed = string.trim('  hello  ');
 const cloned = array.clone([1, 2, 3]);

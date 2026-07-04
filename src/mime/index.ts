@@ -1,15 +1,15 @@
-/**
- * @orbit-js/mime - MIME 类型管理
+﻿/**
+ * @qimenjs/mime - MIME 类型管理
  *
  * 提供 MIME 类型注册器，管理文件扩展名与 MIME 类型的映射关系。
  * 引入即自动注册常用 MIME 类型。
  *
  * @example
  * ```typescript
- * import '@orbit-js/mime';
+ * import '@qimenjs/mime';
  *
  * // 使用 MimeTypeRegistrar
- * import { MimeTypeRegistrar } from '@orbit-js/mime';
+ * import { MimeTypeRegistrar } from '@qimenjs/mime';
  * const mimes = MimeTypeRegistrar.getInstance().get('jpg'); // ['image/jpeg']
  * const ext = MimeTypeRegistrar.getInstance().getByMime('image/jpeg'); // 'jpg'
  * ```

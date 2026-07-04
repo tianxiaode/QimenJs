@@ -1,9 +1,9 @@
-/**
+﻿/**
  * UrlBuilder 处理器单元测试
  */
 
 import { UrlBuilderHandler } from '@/http/actions/prepare/UrlBuilder';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(options: {
     url?: string;

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * HttpFactory 单元测试
  */
 
 import { HttpFactory } from '@/http/factory';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 // Helper to create a context with error
 function createErrorContext(domain: string, errorMsg: string) {

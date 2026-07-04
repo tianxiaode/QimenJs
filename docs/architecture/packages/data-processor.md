@@ -1,4 +1,4 @@
-# @orbit-js/data-processor
+﻿# @qimenjs/data-processor
 
 **层级**: 第 2 层  
 **状态**: ✅ 完成  
@@ -31,14 +31,14 @@
 
 ## 依赖
 
-- `@orbit-js/registry` - 注册器基类
-- `@orbit-js/pipeline` - 管道执行器
-- `@orbit-js/context` - 请求上下文
+- `@qimenjs/registry` - 注册器基类
+- `@qimenjs/pipeline` - 管道执行器
+- `@qimenjs/context` - 请求上下文
 
 ## 使用示例
 
 ```typescript
-import { DataProcessor, DataProcessorWeight } from '@orbit-js/data-processor';
+import { DataProcessor, DataProcessorWeight } from '@qimenjs/data-processor';
 
 // 注册处理器
 DataProcessor.register({

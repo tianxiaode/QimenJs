@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RuleAlignmentProcessor 单元测试
  *
  * 覆盖：
@@ -23,14 +23,14 @@ jest.mock('@/logger', () => {
     };
 });
 
-jest.mock('@orbit-js/registry', () => ({
+jest.mock('@qimenjs/registry', () => ({
     SystemRegistrar: {
         getInstance: jest.fn(),
     },
 }));
 
 import { RuleAlignmentProcessor } from '@/validation/processors/common/rule-align';
-import { SystemRegistrar } from '@orbit-js/registry';
+import { SystemRegistrar } from '@qimenjs/registry';
 
 describe('RuleAlignmentProcessor', () => {
     beforeEach(() => {

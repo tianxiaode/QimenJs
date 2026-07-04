@@ -1,7 +1,7 @@
-/**
- * 错误处理页 - @orbit-js/error
+﻿/**
+ * 错误处理页 - @qimenjs/error
  */
-import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@orbit-js/error';
+import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@qimenjs/error';
 import { renderPageContent } from '../layout';
 
 export function renderError(): void {
@@ -10,7 +10,7 @@ export function renderError(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>错误处理</h2>
-            <p>@orbit-js/error — ErrorBase / KernelError / GestureError + 错误码体系</p>
+            <p>@qimenjs/error — ErrorBase / KernelError / GestureError + 错误码体系</p>
         </div>
 
         <div class="section">

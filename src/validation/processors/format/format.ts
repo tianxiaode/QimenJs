@@ -1,4 +1,4 @@
-import { PatternRegistrar } from '@orbit-js/pattern';
+﻿import { PatternRegistrar } from '@qimenjs/pattern';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler } from '../../types';
 import { validatePattern } from '../../utils';

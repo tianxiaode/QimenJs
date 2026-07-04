@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file FetchTransport.ts
  * @description 
  * 该文件实现了基于Fetch API的数据传输处理器，用于发送HTTP请求和接收响应。
@@ -6,7 +6,7 @@
  * 注意：仅适用于非上传和下载任务。
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 
 export const FetchTransportHandler = async (context: RequestContext) => {
     // 1. 自治判定：非上传任务才走 Fetch

@@ -1,4 +1,4 @@
-# Registry 设计方案对比分析
+﻿# Registry 设计方案对比分析
 
 ## 一、方案对比
 
@@ -379,7 +379,7 @@ class CacheRegistrar extends RegistrarBase<Map<string, CacheConfig>> {
 }
 
 // ✅ 添加类型定义
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         cache: CacheRegistrar;
     }

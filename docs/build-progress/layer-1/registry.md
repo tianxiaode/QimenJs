@@ -1,4 +1,4 @@
-# @orbit-js/registry
+﻿# @qimenjs/registry
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
@@ -33,7 +33,7 @@
 
 ```typescript
 dependencies: {
-  '@orbit-js/error': 'L0'
+  '@qimenjs/error': 'L0'
 }
 ```
 

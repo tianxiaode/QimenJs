@@ -1,4 +1,4 @@
-# Token 管理方案
+﻿# Token 管理方案
 
 ## 设计理念
 
@@ -54,8 +54,8 @@ class DomainRegistrar {
 ### 1. Bearer Token（默认）
 
 ```typescript
-import { Registry } from '@orbit-js/registry';
-import { HttpClient } from '@orbit-js/http';
+import { Registry } from '@qimenjs/registry';
+import { HttpClient } from '@qimenjs/http';
 
 // 配置 domain
 Registry.domain.register('api', {
@@ -115,7 +115,7 @@ Registry.domain.register('api', {
 #### 签名方式
 
 ```typescript
-import { md5 } from '@orbit-js/utils';
+import { md5 } from '@qimenjs/utils';
 
 Registry.domain.register('api', {
     baseUrl: '...',
@@ -168,8 +168,8 @@ Registry.domain.register('api', {
 ### 5. OAuth2 完整流程
 
 ```typescript
-import { Registry } from '@orbit-js/registry';
-import { HttpClient } from '@orbit-js/http';
+import { Registry } from '@qimenjs/registry';
+import { HttpClient } from '@qimenjs/http';
 
 // 配置 domain
 Registry.domain.register('api', {
@@ -274,8 +274,8 @@ export const TokenInjectorHandler = async (context: RequestContext): Promise<voi
 ## 注册 TokenInjector
 
 ```typescript
-import { HttpActionRegistrar, HttpActionCategory } from '@orbit-js/http';
-import { TokenInjectorHandler } from '@orbit-js/http/actions/prepare';
+import { HttpActionRegistrar, HttpActionCategory } from '@qimenjs/http';
+import { TokenInjectorHandler } from '@qimenjs/http/actions/prepare';
 
 const registrar = HttpActionRegistrar.getInstance();
 

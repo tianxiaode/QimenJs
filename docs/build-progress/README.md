@@ -1,4 +1,4 @@
-# OrbitJS 构建进度
+﻿# OrbitJS 构建进度
 
 本目录记录所有包的构建进度、测试状态、问题和遗留工作。
 
@@ -102,7 +102,7 @@ docs/build-progress/
 ## 最近更新
 
 ### 2026-07-02
-- 新增 @orbit-js/oauth2 认证流程包（密码/授权码/客户端凭证模式 + 401 自动刷新）
+- 新增 @qimenjs/oauth2 认证流程包（密码/授权码/客户端凭证模式 + 401 自动刷新）
 - 22 个 OAuth2 测试用例通过
 - 全栈示例（examples/full-stack）搭建完成，集成 EntityManager
 - FlatRemoteEntityState 运行时缺陷修复（缺少 updateData/toParams/updateItem/isValidPage）
@@ -114,11 +114,11 @@ docs/build-progress/
 - **工作重点调整**：从"集成示例搭建"转向"补充集成测试"，解决单元测试覆盖率虚高问题
 
 ### 2026-07-01
-- 新增 @orbit-js/i18n 国际化模块
-- MimeTypeRegistrar 拆分为 @orbit-js/mime 独立包（7 类预定义 MIME 类型）
-- PatternRegistrar 拆分为 @orbit-js/pattern 独立包（19 个验证模式自动注册）
-- 新增 @orbit-js/data-processor-abp（ABP 数据处理管道 + 字段级验证错误映射）
-- 新增 @orbit-js/data-processor-spring（Spring 数据处理管道）
+- 新增 @qimenjs/i18n 国际化模块
+- MimeTypeRegistrar 拆分为 @qimenjs/mime 独立包（7 类预定义 MIME 类型）
+- PatternRegistrar 拆分为 @qimenjs/pattern 独立包（19 个验证模式自动注册）
+- 新增 @qimenjs/data-processor-abp（ABP 数据处理管道 + 字段级验证错误映射）
+- 新增 @qimenjs/data-processor-spring（Spring 数据处理管道）
 - 完成 AbilityDefinition 迁移：15 个 Manager Ability 从 class 迁移为纯对象
 - 移除 AbilityBase、DebounceAbilityBase、ComposableRegistrar 旧版代码
 - 同步构建配置：build-config.json、package.json exports、tsconfig.json paths

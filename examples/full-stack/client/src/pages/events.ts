@@ -1,7 +1,7 @@
-/**
- * 事件总线页 - @orbit-js/events
+﻿/**
+ * 事件总线页 - @qimenjs/events
  */
-import { EventBus, EventScope, globalEventBus } from '@orbit-js/events';
+import { EventBus, EventScope, globalEventBus } from '@qimenjs/events';
 import { renderPageContent } from '../layout';
 
 const eventLog: Array<{ time: string; type: string; event: string; data: string }> = [];
@@ -16,7 +16,7 @@ export function renderEvents(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>事件总线</h2>
-            <p>@orbit-js/events — EventBus / EventScope / globalEventBus</p>
+            <p>@qimenjs/events — EventBus / EventScope / globalEventBus</p>
         </div>
 
         <div class="section">

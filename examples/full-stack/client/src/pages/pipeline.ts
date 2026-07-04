@@ -1,8 +1,8 @@
-/**
- * 管道处理页 - @orbit-js/pipeline
+﻿/**
+ * 管道处理页 - @qimenjs/pipeline
  */
-import { Pipeline } from '@orbit-js/pipeline';
-import type { Processor } from '@orbit-js/pipeline';
+import { Pipeline } from '@qimenjs/pipeline';
+import type { Processor } from '@qimenjs/pipeline';
 import { renderPageContent } from '../layout';
 
 const processors: Array<{ name: string; weight: number; enabled: boolean }> = [
@@ -15,7 +15,7 @@ export function renderPipeline(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>管道处理</h2>
-            <p>@orbit-js/pipeline — Processor 权重排序 + 管道执行 + 熔断机制</p>
+            <p>@qimenjs/pipeline — Processor 权重排序 + 管道执行 + 熔断机制</p>
         </div>
 
         <div class="section">

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TokenInjector - Token 注入处理器
  * 
  * 职责：
@@ -6,7 +6,7 @@
  * - 根据 authInjector 配置注入到请求中
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 
 /**
  * TokenInjector 处理器

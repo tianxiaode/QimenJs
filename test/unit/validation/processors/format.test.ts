@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Format 处理器单元测试
  */
 
 import { FormatProcessor } from '@/validation/processors/format/format';
-import '@orbit-js/pattern';
+import '@qimenjs/pattern';
 
 function createContext(value: any, rule: any = {}) {
     return {

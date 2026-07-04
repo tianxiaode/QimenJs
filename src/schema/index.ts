@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Schema 包
  * 
  * 提供数据结构定义和验证规则定义
  * 
- * @module @orbit-js/schema
+ * @module @qimenjs/schema
  */
 
 // 类型导出

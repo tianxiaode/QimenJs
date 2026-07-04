@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SplitProcessor 测试
  *
  * 覆盖：
@@ -9,7 +9,7 @@
  * 5. 边界条件（非字符串、无 separator）
  */
 
-jest.mock('@orbit-js/logger', () => {
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

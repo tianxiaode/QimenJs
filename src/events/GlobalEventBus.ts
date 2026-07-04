@@ -1,4 +1,4 @@
-import { Logger } from '@orbit-js/logger';
+﻿import { Logger } from '@qimenjs/logger';
 import { EventBus } from './EventBus';
 import { EventHandler, IEventScope } from './types';
 
@@ -119,7 +119,7 @@ export class GlobalEventBus {
  *
  * @example
  * ```ts
- * import { globalEventBus } from '@orbit-js/event';
+ * import { globalEventBus } from '@qimenjs/event';
  *
  * globalEventBus.on('my-event', handler);
  * globalEventBus.emit('my-event', payload);

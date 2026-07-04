@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Pipeline Executor 单元测试
  */
 
 // Mock Logger
-jest.mock('@orbit-js/logger', () => {
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

@@ -1,4 +1,4 @@
-import { IValidationError, ValidationContext } from "./context";
+﻿import { IValidationError, ValidationContext } from "./context";
 import type { 
     ArrayRule, 
     BooleanRule, 
@@ -12,7 +12,7 @@ import type {
     SplitRule, 
     StringRule, 
     ValidationRule 
-} from "@orbit-js/schema";
+} from "@qimenjs/schema";
 
 
 export const ValidatorRegistrarName= 'validator' as const;

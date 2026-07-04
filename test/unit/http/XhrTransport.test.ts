@@ -1,4 +1,4 @@
-/**
+﻿/**
  * XhrTransport 单元测试
  * 
  * 测试 XhrTransportHandler 的跳过逻辑和 parseXhrHeaders 辅助函数
@@ -6,7 +6,7 @@
  */
 
 import { XhrTransportHandler } from '@/http/actions/exchange/XhrTransport';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 describe('XhrTransportHandler', () => {
     it('should skip non-upload/download requests', async () => {

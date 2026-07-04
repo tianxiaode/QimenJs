@@ -1,4 +1,4 @@
-# @orbit-js/mime
+﻿# @qimenjs/mime
 
 **层级**: 第 2 层  
 **状态**: ✅  
@@ -11,7 +11,7 @@
 - ✅ 从 registry 包拆出 MimeTypeRegistrar 为独立包
 - ✅ 预定义 7 类 MIME 类型：图片(12)、文档(10)、音频(7)、视频(8)、压缩包(6)、Web/代码(11)、字体(5)
 - ✅ 引入即自动注册常用类型，支持 registerCommonMimeTypes(extra) 扩展
-- ✅ validation 包改为从 @orbit-js/mime 导入
+- ✅ validation 包改为从 @qimenjs/mime 导入
 
 ## 测试状态
 
@@ -32,10 +32,10 @@
 ## 使用统计
 
 ### 依赖的包
-- @orbit-js/registry (L1)
+- @qimenjs/registry (L1)
 
 ### 被以下包使用
-- @orbit-js/validation (L2)
+- @qimenjs/validation (L2)
 
 ### 使用场景
 - 文件上传类型校验

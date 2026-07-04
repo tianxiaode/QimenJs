@@ -1,4 +1,4 @@
-//导出核心函数和错误
+﻿//导出核心函数和错误
 export * from './core';
 //导出全部验证规则
 export * from './types';
@@ -6,7 +6,7 @@ export * from './types';
 
 import * as AllEntries from './processors'; 
 import { ValidatorRegistrar }  from './core';
-import { RegistryHub } from '@orbit-js/registry';
+import { RegistryHub } from '@qimenjs/registry';
 
 export const bootstrapValidators = () => {
     // AllEntries 现在是一个对象，Key 是变量名，Value 是 Entry 对象

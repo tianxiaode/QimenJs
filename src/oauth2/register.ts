@@ -1,7 +1,7 @@
-/**
+﻿/**
  * 自动注册 TokenRefreshHandler 到 HTTP 管道
  *
- * 引入 @orbit-js/oauth2 时自动执行
+ * 引入 @qimenjs/oauth2 时自动执行
  */
 
 import { HttpActionRegistrar, HttpActionCategory } from '@/http';

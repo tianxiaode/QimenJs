@@ -1,14 +1,14 @@
-/**
- * 缓存系统页 - @orbit-js/cache
+﻿/**
+ * 缓存系统页 - @qimenjs/cache
  */
-import { CacheFactory, MemoryProvider } from '@orbit-js/cache';
+import { CacheFactory, MemoryProvider } from '@qimenjs/cache';
 import { renderPageContent } from '../layout';
 
 export function renderCache(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>缓存系统</h2>
-            <p>@orbit-js/cache — MemoryProvider + CacheFactory + TTL 过期机制</p>
+            <p>@qimenjs/cache — MemoryProvider + CacheFactory + TTL 过期机制</p>
         </div>
 
         <div class="section">

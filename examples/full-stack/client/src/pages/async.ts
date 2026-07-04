@@ -1,7 +1,7 @@
-/**
- * 异步工具页 - @orbit-js/async
+﻿/**
+ * 异步工具页 - @qimenjs/async
  */
-import { debounce, throttle } from '@orbit-js/async';
+import { debounce, throttle } from '@qimenjs/async';
 import { renderPageContent } from '../layout';
 
 let debounceCallCount = 0;
@@ -19,7 +19,7 @@ export function renderAsync(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>异步工具</h2>
-            <p>@orbit-js/async — debounce 防抖 + throttle 节流</p>
+            <p>@qimenjs/async — debounce 防抖 + throttle 节流</p>
         </div>
 
         <div class="section">

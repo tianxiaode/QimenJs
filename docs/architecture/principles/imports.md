@@ -1,4 +1,4 @@
-# 引用规范
+﻿# 引用规范
 
 ## 基本原则
 
@@ -67,27 +67,27 @@ import { Entity } from '@/entity';           // L4 - 更高层
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@orbit-js/async": ["src/async"],
-      "@orbit-js/cache": ["src/cache"],
-      "@orbit-js/composable": ["src/composable"],
-      "@orbit-js/context": ["src/context"],
-      "@orbit-js/crypto": ["src/crypto"],
-      "@orbit-js/data-processor": ["src/data-processor"],
-      "@orbit-js/entity": ["src/entity"],
-      "@orbit-js/error": ["src/error"],
-      "@orbit-js/event-dom": ["src/event-dom"],
-      "@orbit-js/events": ["src/events"],
-      "@orbit-js/http": ["src/http"],
-      "@orbit-js/logger": ["src/logger"],
-      "@orbit-js/pipeline": ["src/pipeline"],
-      "@orbit-js/registry": ["src/registry"],
-      "@orbit-js/runtime": ["src/runtime"],
-      "@orbit-js/schema": ["src/schema"],
-      "@orbit-js/system-abilities": ["src/system-abilities"],
-      "@orbit-js/task": ["src/task"],
-      "@orbit-js/types": ["src/types"],
-      "@orbit-js/utils": ["src/utils"],
-      "@orbit-js/validation": ["src/validation"]
+      "@qimenjs/async": ["src/async"],
+      "@qimenjs/cache": ["src/cache"],
+      "@qimenjs/composable": ["src/composable"],
+      "@qimenjs/context": ["src/context"],
+      "@qimenjs/crypto": ["src/crypto"],
+      "@qimenjs/data-processor": ["src/data-processor"],
+      "@qimenjs/entity": ["src/entity"],
+      "@qimenjs/error": ["src/error"],
+      "@qimenjs/event-dom": ["src/event-dom"],
+      "@qimenjs/events": ["src/events"],
+      "@qimenjs/http": ["src/http"],
+      "@qimenjs/logger": ["src/logger"],
+      "@qimenjs/pipeline": ["src/pipeline"],
+      "@qimenjs/registry": ["src/registry"],
+      "@qimenjs/runtime": ["src/runtime"],
+      "@qimenjs/schema": ["src/schema"],
+      "@qimenjs/system-abilities": ["src/system-abilities"],
+      "@qimenjs/task": ["src/task"],
+      "@qimenjs/types": ["src/types"],
+      "@qimenjs/utils": ["src/utils"],
+      "@qimenjs/validation": ["src/validation"]
     }
   }
 }

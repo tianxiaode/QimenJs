@@ -1,14 +1,14 @@
-/**
- * 工具函数页 - @orbit-js/utils
+﻿/**
+ * 工具函数页 - @qimenjs/utils
  */
-import * as utils from '@orbit-js/utils';
+import * as utils from '@qimenjs/utils';
 import { renderPageContent } from '../layout';
 
 export function renderUtils(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>工具函数</h2>
-            <p>@orbit-js/utils — 10 个子模块：string / array / object / date / number / color / geometry / units / time / cookie</p>
+            <p>@qimenjs/utils — 10 个子模块：string / array / object / date / number / color / geometry / units / time / cookie</p>
         </div>
 
         <div class="section">

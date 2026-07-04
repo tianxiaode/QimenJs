@@ -1,4 +1,4 @@
-# @orbit-js/validation
+﻿# @qimenjs/validation
 
 **层级**: 第 2 层  
 **状态**: ✅ 完成  
@@ -20,8 +20,8 @@
 
 ```typescript
 dependencies: {
-  '@orbit-js/error': 'L0',
-  '@orbit-js/pipeline': 'L1'
+  '@qimenjs/error': 'L0',
+  '@qimenjs/pipeline': 'L1'
 }
 ```
 

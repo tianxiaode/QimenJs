@@ -1,4 +1,4 @@
-# Registry 类型定义问题分析
+﻿# Registry 类型定义问题分析
 
 ## 一、当前类型定义的问题
 
@@ -10,7 +10,7 @@
 export interface Registrars {}
 
 // register.d.ts
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         [MimeTypeRegistrarName]: MimeTypeRegistrar;
         [SystemRegistrarName]: SystemRegistrar;

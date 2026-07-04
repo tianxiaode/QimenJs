@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ABP 域 EntityManager 定义
  *
  * 基于 RemoteCrudEntityManager，连接 ABP 后端
  */
-import { RemoteCrudEntityManager } from '@orbit-js/entity';
+import { RemoteCrudEntityManager } from '@qimenjs/entity';
 import { UserSchema, ProductSchema } from '../domains';
 
 /**

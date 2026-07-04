@@ -1,4 +1,4 @@
-# Context 包设计
+﻿# Context 包设计
 
 **日期**: 2026-06-15  
 **状态**: 已完成  
@@ -154,11 +154,11 @@ const context = RequestContextBuilder
 ### 依赖关系
 
 ```
-@orbit-js/context (第 0 层)
+@qimenjs/context (第 0 层)
     ↓
-@orbit-js/http (第 3 层) - 使用 RequestContext
-@orbit-js/data-processor (第 2 层) - 使用 RequestContext
-@orbit-js/entity (第 4 层) - 使用 RequestContextBuilder
+@qimenjs/http (第 3 层) - 使用 RequestContext
+@qimenjs/data-processor (第 2 层) - 使用 RequestContext
+@qimenjs/entity (第 4 层) - 使用 RequestContextBuilder
 ```
 
 ## 后续工作

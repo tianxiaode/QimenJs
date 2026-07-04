@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ABP 域 Schema 定义
  *
  * 定义 ABP 后端（PagedResultDto 格式）的实体 Schema
  */
-import type { RegistrSchema } from '@orbit-js/schema';
+import type { RegistrSchema } from '@qimenjs/schema';
 
 /**
  * ABP 用户 Schema

@@ -1,4 +1,4 @@
-# @orbit-js/<package-name>
+﻿# @qimenjs/<package-name>
 
 **层级**: 第 X 层  
 **状态**: ✅/⚠️/❌  
@@ -68,10 +68,10 @@
 ## 使用统计
 
 ### 依赖的包
-- @orbit-js/xxx (LX)
+- @qimenjs/xxx (LX)
 
 ### 被以下包使用
-- @orbit-js/xxx (LX)
+- @qimenjs/xxx (LX)
 
 ### 使用场景
 - 场景描述

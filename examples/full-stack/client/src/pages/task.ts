@@ -1,7 +1,7 @@
-/**
- * 任务调度页 - @orbit-js/task
+﻿/**
+ * 任务调度页 - @qimenjs/task
  */
-import { globalTaskQueue } from '@orbit-js/task/task';
+import { globalTaskQueue } from '@qimenjs/task/task';
 import { renderPageContent } from '../layout';
 
 const taskLog: Array<{ time: string; msg: string; type: string }> = [];
@@ -12,7 +12,7 @@ export function renderTask(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>任务调度</h2>
-            <p>@orbit-js/task — GlobalTaskQueue 优先级调度</p>
+            <p>@qimenjs/task — GlobalTaskQueue 优先级调度</p>
         </div>
 
         <div class="section">

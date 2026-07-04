@@ -1,4 +1,4 @@
-# @orbit-js/context
+﻿# @qimenjs/context
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
@@ -71,7 +71,7 @@ RequestContext extends BaseContext
 ### 创建基础上下文
 
 ```typescript
-import { createBaseContext, addStep, setError } from '@orbit-js/context';
+import { createBaseContext, addStep, setError } from '@qimenjs/context';
 
 const context = createBaseContext({
     metadata: { custom: 'value' },
@@ -89,7 +89,7 @@ setError(context, new Error('Something went wrong'));
 ### 创建请求上下文
 
 ```typescript
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 const context = RequestContextBuilder
     .create()

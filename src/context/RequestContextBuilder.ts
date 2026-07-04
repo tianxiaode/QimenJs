@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 请求上下文构建器
  * 
  * 用于构建 RequestContext 对象
@@ -13,7 +13,7 @@ import type {
     HttpMethod,
     HttpResponseType 
 } from './types/request-context';
-import { Registry } from '@orbit-js/registry';
+import { Registry } from '@qimenjs/registry';
 
 /**
  * 请求上下文构建器

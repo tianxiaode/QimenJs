@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 仪表盘页 - 统计概览 + 快捷入口
  */
 import { AbpUserManager, AbpProductManager, SpringOrderManager, SpringItemManager, LocalNotificationManager, LocalTagManager, DepartmentManager } from '../managers';
@@ -177,23 +177,23 @@ export function renderDashboard(): void {
             <div class="grid-3">
                 <div class="card"><div class="card-title"><span class="dot" style="background:#6366F1;"></span>核心层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbit-js/error · @orbit-js/logger · @orbit-js/utils<br>
-                        @orbit-js/async · @orbit-js/runtime · @orbit-js/crypto<br>
-                        @orbit-js/types · @orbit-js/i18n
+                        @qimenjs/error · @qimenjs/logger · @qimenjs/utils<br>
+                        @qimenjs/async · @qimenjs/runtime · @qimenjs/crypto<br>
+                        @qimenjs/types · @qimenjs/i18n
                     </div>
                 </div>
                 <div class="card"><div class="card-title"><span class="dot" style="background:#A855F7;"></span>基础设施层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbit-js/registry · @orbit-js/cache · @orbit-js/events<br>
-                        @orbit-js/task · @orbit-js/composable · @orbit-js/context<br>
-                        @orbit-js/schema · @orbit-js/validation · @orbit-js/pipeline
+                        @qimenjs/registry · @qimenjs/cache · @qimenjs/events<br>
+                        @qimenjs/task · @qimenjs/composable · @qimenjs/context<br>
+                        @qimenjs/schema · @qimenjs/validation · @qimenjs/pipeline
                     </div>
                 </div>
                 <div class="card"><div class="card-title"><span class="dot" style="background:#4CAF50;"></span>高级功能层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbit-js/http · @orbit-js/oauth2 · @orbit-js/entity<br>
-                        @orbit-js/data-processor · @orbit-js/data-processor-abp<br>
-                        @orbit-js/data-processor-spring · @orbit-js/system-abilities
+                        @qimenjs/http · @qimenjs/oauth2 · @qimenjs/entity<br>
+                        @qimenjs/data-processor · @qimenjs/data-processor-abp<br>
+                        @qimenjs/data-processor-spring · @qimenjs/system-abilities
                     </div>
                 </div>
             </div>

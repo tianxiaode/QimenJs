@@ -1,7 +1,7 @@
-/**
- * 日志系统页 - @orbit-js/logger
+﻿/**
+ * 日志系统页 - @qimenjs/logger
  */
-import { Logger } from '@orbit-js/logger';
+import { Logger } from '@qimenjs/logger';
 import { renderPageContent } from '../layout';
 
 const logEntries: Array<{ level: string; category: string; message: string; time: string }> = [];
@@ -12,7 +12,7 @@ export function renderLogger(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>日志系统</h2>
-            <p>@orbit-js/logger — Logger.for() 子记录器 + 四级日志 + 格式化输出</p>
+            <p>@qimenjs/logger — Logger.for() 子记录器 + 四级日志 + 格式化输出</p>
         </div>
 
         <div class="section">

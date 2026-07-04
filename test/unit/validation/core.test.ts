@@ -1,9 +1,9 @@
-/**
+﻿/**
  * 验证核心功能测试
  */
 
 // Mock Logger before importing validation
-jest.mock('@orbit-js/logger', () => {
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -28,7 +28,7 @@ jest.mock('@orbit-js/logger', () => {
 });
 
 import { doValidate, validationExecutor, ValidatorRegistrar, bootstrapValidators } from '@/validation';
-import '@orbit-js/pattern';
+import '@qimenjs/pattern';
 
 // 启动验证器
 bootstrapValidators();

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MimeTypeRegistrar - MIME 类型注册器
  *
  * 职责：
@@ -7,8 +7,8 @@
  * - 适用于文件上传下载、内容类型识别等场景
  */
 
-import { RegistrarBase } from '@orbit-js/registry';
-import { RegistrarInvalidArgumentError } from '@orbit-js/registry';
+import { RegistrarBase } from '@qimenjs/registry';
+import { RegistrarInvalidArgumentError } from '@qimenjs/registry';
 
 /**
  * MIME 类型注册器名称

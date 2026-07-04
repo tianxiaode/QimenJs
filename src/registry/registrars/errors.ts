@@ -1,4 +1,4 @@
-import { ErrorBase } from '@orbit-js/error';
+﻿import { ErrorBase } from '@qimenjs/error';
 
 /**
  * 注册器错误代码枚举

@@ -1,5 +1,5 @@
-/**
- * @orbit-js/i18n
+﻿/**
+ * @qimenjs/i18n
  *
  * 极简国际化模块 - 零依赖
  *
@@ -14,7 +14,7 @@
  *
  * ```ts
  * // JS 中使用
- * import { i18n } from '@orbit-js/i18n';
+ * import { i18n } from '@qimenjs/i18n';
  *
  * i18n.t('common.save');                    // '保存'
  * i18n.t('greeting', { name: 'World' });    // '你好, World'

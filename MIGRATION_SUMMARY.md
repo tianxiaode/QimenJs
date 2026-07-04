@@ -1,4 +1,4 @@
-# OrbitJS 文件迁移完成总结
+﻿# OrbitJS 文件迁移完成总结
 
 ## 一、迁移完成情况
 
@@ -100,8 +100,8 @@ src/
 
 ### 1. 更新导入路径
 需要更新所有文件中的导入路径，将：
-- `@orbit-js/runtime-env` → `@orbit-js/runtime`
-- `@orbit-js/tasks` → `@orbit-js/task`
+- `@qimenjs/runtime-env` → `@qimenjs/runtime`
+- `@qimenjs/tasks` → `@qimenjs/task`
 - 内部模块使用相对路径
 
 ### 2. 创建 schema 目录
@@ -125,17 +125,17 @@ npm test
 ## 六、包的依赖关系
 
 ```
-@orbit-js/entity
-    └─ @orbit-js/kernel
-        ├─ @orbit-js/events
-        │   ├─ @orbit-js/logger
-        │   └─ @orbit-js/utils
-        ├─ @orbit-js/cache
-        │   ├─ @orbit-js/logger
-        │   └─ @orbit-js/utils
-        ├─ @orbit-js/registry
-        │   └─ @orbit-js/error
-        └─ @orbit-js/async
+@qimenjs/entity
+    └─ @qimenjs/kernel
+        ├─ @qimenjs/events
+        │   ├─ @qimenjs/logger
+        │   └─ @qimenjs/utils
+        ├─ @qimenjs/cache
+        │   ├─ @qimenjs/logger
+        │   └─ @qimenjs/utils
+        ├─ @qimenjs/registry
+        │   └─ @qimenjs/error
+        └─ @qimenjs/async
 ```
 
 ## 七、注意事项
@@ -168,8 +168,8 @@ npm publish
 
 用户可以通过以下方式安装：
 ```bash
-npm install @orbit-js/utils
-npm install @orbit-js/cache
-npm install @orbit-js/kernel
-npm install @orbit-js/entity
+npm install @qimenjs/utils
+npm install @qimenjs/cache
+npm install @qimenjs/kernel
+npm install @qimenjs/entity
 ```

@@ -1,4 +1,4 @@
-# OrbitJS 架构说明
+﻿# OrbitJS 架构说明
 
 ## 项目概述
 
@@ -15,54 +15,54 @@ OrbitJS 是一个纯 TypeScript 基础设施库，采用 monorepo 架构，单�
 
 | 包名 | 说明 |
 |------|------|
-| `@orbit-js/error` | 错误处理基类与错误码 |
-| `@orbit-js/logger` | 日志系统 |
-| `@orbit-js/utils` | 工具函数（array, string, object, date, cookie 等） |
-| `@orbit-js/async` | 异步工具（debounce, throttle） |
-| `@orbit-js/runtime` | 运行时环境检测（locale, platform, features 等） |
-| `@orbit-js/crypto` | 加密工具（md5, sha, xxhash, base64） |
-| `@orbit-js/types` | 跨包共享基础类型（RequestContext, ExecutionStep） |
-| `@orbit-js/i18n` | 国际化（语言检测、翻译、动态加载语言包） |
+| `@qimenjs/error` | 错误处理基类与错误码 |
+| `@qimenjs/logger` | 日志系统 |
+| `@qimenjs/utils` | 工具函数（array, string, object, date, cookie 等） |
+| `@qimenjs/async` | 异步工具（debounce, throttle） |
+| `@qimenjs/runtime` | 运行时环境检测（locale, platform, features 等） |
+| `@qimenjs/crypto` | 加密工具（md5, sha, xxhash, base64） |
+| `@qimenjs/types` | 跨包共享基础类型（RequestContext, ExecutionStep） |
+| `@qimenjs/i18n` | 国际化（语言检测、翻译、动态加载语言包） |
 
 ### 第 1 层：基础设施工具包（6 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
-| `@orbit-js/registry` | error | 注册器系统（RegistryHub + 多种 Registrar） |
-| `@orbit-js/cache` | logger, utils | 缓存系统（CacheFactory + MemoryProvider） |
-| `@orbit-js/events` | logger, utils | 事件系统（EventBus + EventScope） |
-| `@orbit-js/task` | logger, utils, error, runtime | 任务系统 |
-| `@orbit-js/composable` | logger, async | 可组合能力系统（ComposableBase + AbilityDefinition） |
-| `@orbit-js/context` | registry | 请求上下文（RequestContextBuilder） |
+| `@qimenjs/registry` | error | 注册器系统（RegistryHub + 多种 Registrar） |
+| `@qimenjs/cache` | logger, utils | 缓存系统（CacheFactory + MemoryProvider） |
+| `@qimenjs/events` | logger, utils | 事件系统（EventBus + EventScope） |
+| `@qimenjs/task` | logger, utils, error, runtime | 任务系统 |
+| `@qimenjs/composable` | logger, async | 可组合能力系统（ComposableBase + AbilityDefinition） |
+| `@qimenjs/context` | registry | 请求上下文（RequestContextBuilder） |
 
 ### 第 2 层：功能工具包（7 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
-| `@orbit-js/schema` | registry | Schema 定义与注册 |
-| `@orbit-js/validation` | registry, mime, pattern | 验证系统（ValidatorRegistrar + 引擎） |
-| `@orbit-js/pipeline` | logger, context | 管道执行器 |
-| `@orbit-js/mime` | registry | MIME 类型管理（扩展名 ↔ MIME 映射，自动注册常用类型） |
-| `@orbit-js/pattern` | registry | 模式注册器（命名正则表达式，自动注册验证所需 19 个模式） |
-| `@orbit-js/event-dom` | events, utils, runtime, logger, error, async | DOM 事件适配器（手势：Tap, Swipe, Drag, LongPress） |
-| `@orbit-js/i18n` | 无 | 国际化（归入第 0 层，此处不重复） |
+| `@qimenjs/schema` | registry | Schema 定义与注册 |
+| `@qimenjs/validation` | registry, mime, pattern | 验证系统（ValidatorRegistrar + 引擎） |
+| `@qimenjs/pipeline` | logger, context | 管道执行器 |
+| `@qimenjs/mime` | registry | MIME 类型管理（扩展名 ↔ MIME 映射，自动注册常用类型） |
+| `@qimenjs/pattern` | registry | 模式注册器（命名正则表达式，自动注册验证所需 19 个模式） |
+| `@qimenjs/event-dom` | events, utils, runtime, logger, error, async | DOM 事件适配器（手势：Tap, Swipe, Drag, LongPress） |
+| `@qimenjs/i18n` | 无 | 国际化（归入第 0 层，此处不重复） |
 
 ### 第 3 层：高级功能包（6 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
-| `@orbit-js/data-processor` | registry, context, pipeline | 数据处理器（注册 + 管道执行） |
-| `@orbit-js/data-processor-abp` | data-processor, context | ABP 数据处理管道（分页转换、PagedResultDto 提取、审计清理） |
-| `@orbit-js/data-processor-spring` | data-processor, context | Spring 数据处理管道（分页转换、Page\<T\> 提取） |
-| `@orbit-js/http` | context, pipeline, registry, task | HTTP 客户端（HttpClient + StreamClient） |
-| `@orbit-js/system-abilities` | events, composable, registry, event-dom | 系统能力集（Domain, Event, System, DomEvents） |
-| `@orbit-js/oauth2` | http, registry, events, cache | OAuth2 认证流程（Token 生命周期管理 + 401 自动刷新） |
+| `@qimenjs/data-processor` | registry, context, pipeline | 数据处理器（注册 + 管道执行） |
+| `@qimenjs/data-processor-abp` | data-processor, context | ABP 数据处理管道（分页转换、PagedResultDto 提取、审计清理） |
+| `@qimenjs/data-processor-spring` | data-processor, context | Spring 数据处理管道（分页转换、Page\<T\> 提取） |
+| `@qimenjs/http` | context, pipeline, registry, task | HTTP 客户端（HttpClient + StreamClient） |
+| `@qimenjs/system-abilities` | events, composable, registry, event-dom | 系统能力集（Domain, Event, System, DomEvents） |
+| `@qimenjs/oauth2` | http, registry, events, cache | OAuth2 认证流程（Token 生命周期管理 + 401 自动刷新） |
 
 ### 第 4 层：业务包（1 个）
 
 | 包名 | 依赖 | 说明 |
 |------|------|------|
-| `@orbit-js/entity` | composable, schema, context, http, cache, error, system-abilities, data-processor, registry, utils | 实体管理框架（Manager + State + 25 个 Ability） |
+| `@qimenjs/entity` | composable, schema, context, http, cache, error, system-abilities, data-processor, registry, utils | 实体管理框架（Manager + State + 25 个 Ability） |
 
 ## 依赖关系图
 

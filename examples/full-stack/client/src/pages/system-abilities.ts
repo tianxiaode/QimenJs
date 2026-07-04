@@ -1,8 +1,8 @@
-/**
- * 系统能力页 - @orbit-js/system-abilities
+﻿/**
+ * 系统能力页 - @qimenjs/system-abilities
  */
-import { ComposableBase } from '@orbit-js/composable';
-import { EventAbility, DomEventsAbility, DomainAbility, SystemAbility } from '@orbit-js/system-abilities';
+import { ComposableBase } from '@qimenjs/composable';
+import { EventAbility, DomEventsAbility, DomainAbility, SystemAbility } from '@qimenjs/system-abilities';
 import { renderPageContent } from '../layout';
 
 // 创建包含 EventAbility 的组件
@@ -25,7 +25,7 @@ export function renderSystemAbilities(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>系统能力</h2>
-            <p>@orbit-js/system-abilities — EventAbility / DomEventsAbility / DomainAbility / SystemAbility</p>
+            <p>@qimenjs/system-abilities — EventAbility / DomEventsAbility / DomainAbility / SystemAbility</p>
         </div>
 
         <div class="section">

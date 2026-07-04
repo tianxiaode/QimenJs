@@ -1,4 +1,4 @@
-/**
+﻿/**
  * String Includes/Excludes Processor 测试
  *
  * 覆盖：
@@ -8,7 +8,7 @@
  * 4. 非数组值跳过
  */
 
-jest.mock('@orbit-js/logger', () => {
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

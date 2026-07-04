@@ -1,4 +1,4 @@
-# @orbit-js/composable
+﻿# @qimenjs/composable
 
 **层级**: 第 2 层  
 **状态**: 完成  
@@ -28,7 +28,7 @@ composable 包提供了可组合能力系统，是 OrbitJS 的核心机制之一
 抽象基类，提供能力注入和生命周期管理：
 
 ```typescript
-import { ComposableBase, type AbilityDefinition } from '@orbit-js/composable';
+import { ComposableBase, type AbilityDefinition } from '@qimenjs/composable';
 
 // 1. 定义能力
 const CounterAbility: AbilityDefinition = {

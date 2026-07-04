@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Spring 域 Schema 定义
  *
  * 定义 Spring 后端（Page<T> 格式）的实体 Schema
  */
-import type { RegistrSchema } from '@orbit-js/schema';
+import type { RegistrSchema } from '@qimenjs/schema';
 
 /**
  * Spring 订单 Schema

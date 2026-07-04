@@ -1,4 +1,4 @@
-# Schema 包设计分析
+﻿# Schema 包设计分析
 
 **日期**: 2026-06-15  
 **状态**: 设计分析  
@@ -32,7 +32,7 @@ import {
     SplitRule,
     StringRule,
     ValidationRule,
-} from '@orbit-js/validation';
+} from '@qimenjs/validation';
 ```
 
 **核心设计**：
@@ -264,11 +264,11 @@ import type {
     StringRule,
     NumberRule,
     // ...
-} from '@orbit-js/validation';
+} from '@qimenjs/validation';
 
 // schema/SchemaCompiler.ts
 import type { Schema, FieldDefinition } from './types';
-import type { ValidationRule } from '@orbit-js/validation';
+import type { ValidationRule } from '@qimenjs/validation';
 ```
 
 ### Layer 分层

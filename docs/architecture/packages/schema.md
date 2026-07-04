@@ -1,4 +1,4 @@
-# @orbit-js/schema
+﻿# @qimenjs/schema
 
 Schema 定义系统 - 定义数据结构和数据约束
 
@@ -19,7 +19,7 @@ Schema 包负责定义数据结构（字段定义）和数据约束（验证规�
 ## 依赖
 
 ### 直接依赖
-- `@orbit-js/registry` - 注册器基类
+- `@qimenjs/registry` - 注册器基类
 
 ### 依赖图
 ```
@@ -73,7 +73,7 @@ Schema 注册器，管理 Schema 和字段组的注册与检索，支持延迟�
 ### 注册 Schema
 
 ```typescript
-import { SchemaRegistrar } from '@orbit-js/schema';
+import { SchemaRegistrar } from '@qimenjs/schema';
 
 const registrar = SchemaRegistrar.getInstance();
 

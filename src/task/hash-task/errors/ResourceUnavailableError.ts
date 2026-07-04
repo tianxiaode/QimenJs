@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ResourceUnavailableError 是一个自定义错误类，
  * 用于在系统资源不可用时抛出错误。
  * 该错误通常在任务执行过程中检测到关键资源（如内存或工作线程）不足时触发。
  */
-import { ErrorBase } from "@orbit-js/error";
+import { ErrorBase } from "@qimenjs/error";
 
 /**
  * 资源不可用错误类

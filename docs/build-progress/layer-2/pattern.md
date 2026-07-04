@@ -1,4 +1,4 @@
-# @orbit-js/pattern
+﻿# @qimenjs/pattern
 
 **层级**: 第 2 层  
 **状态**: ✅  
@@ -13,7 +13,7 @@
   - 格式验证 15 个：email, url, ipv4, ipv6, mac, phone, uuid, base64, hexColor, rgbColor, rgbaColor, creditCard, chineseId, chinesePostcode, username
   - 密码验证 4 个：uppercase, lowercase, digit, specialChar
 - ✅ 引入即自动注册，确保验证不出错
-- ✅ validation 包改为从 @orbit-js/pattern 导入
+- ✅ validation 包改为从 @qimenjs/pattern 导入
 - ✅ 验证测试不再需要手动注册模式
 
 ## 测试状态
@@ -35,10 +35,10 @@
 ## 使用统计
 
 ### 依赖的包
-- @orbit-js/registry (L1)
+- @qimenjs/registry (L1)
 
 ### 被以下包使用
-- @orbit-js/validation (L2)
+- @qimenjs/validation (L2)
 
 ### 使用场景
 - 格式验证（邮箱、URL、IP 等）

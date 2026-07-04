@@ -1,9 +1,9 @@
-/**
+﻿/**
  * TokenInjector 处理器测试
  */
 
 import { TokenInjectorHandler } from '@/http/actions/prepare/TokenInjector';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 describe('TokenInjector', () => {
     describe('bearer token', () => {

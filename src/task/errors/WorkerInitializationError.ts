@@ -1,4 +1,4 @@
-import { ErrorBase } from '@orbit-js/error';
+﻿import { ErrorBase } from '@qimenjs/error';
 
 /**
  * Worker初始化错误类

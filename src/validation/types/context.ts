@@ -1,5 +1,5 @@
-import type { ValidationRule } from '@orbit-js/schema';
-import type { BaseContext, ExecutionStep } from '@orbit-js/context';
+﻿import type { ValidationRule } from '@qimenjs/schema';
+import type { BaseContext, ExecutionStep } from '@qimenjs/context';
 
 // 重新导出 ExecutionStep 以保持向后兼容
 export { ExecutionStep };

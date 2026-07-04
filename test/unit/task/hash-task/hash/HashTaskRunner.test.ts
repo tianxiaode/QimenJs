@@ -1,4 +1,4 @@
-import { HashTaskRunner } from '@/task/hash-task/hash/HashTaskRunner';
+﻿import { HashTaskRunner } from '@/task/hash-task/hash/HashTaskRunner';
 import { HashTaskState } from '@/task/hash-task/hash/HashTaskState';
 import { HashTaskProgress } from '@/task/hash-task/hash/HashTaskProgress';
 import { HashTaskOptions } from '@/task/hash-task/hash/HashTask'; // 从HashTask导入类型
@@ -17,7 +17,7 @@ jest.mock('@/task/hash-task/worker', () => ({
 }));
 jest.mock('@/task/hash-task/hash/HashTaskHealthMonitor');
 // Mock logger to prevent errors
-jest.mock('@orbit-js/logger', () => ({
+jest.mock('@qimenjs/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

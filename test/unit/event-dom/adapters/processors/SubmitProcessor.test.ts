@@ -1,5 +1,5 @@
-// Mock the logger to prevent errors during testing
-jest.mock('@orbit-js/logger', () => {
+﻿// Mock the logger to prevent errors during testing
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -9,7 +9,7 @@ jest.mock('@orbit-js/logger', () => {
     };
 
     return {
-        ...jest.requireActual('@orbit-js/logger'),
+        ...jest.requireActual('@qimenjs/logger'),
         Logger: {
             for: jest.fn(() => mockLogger),
         },

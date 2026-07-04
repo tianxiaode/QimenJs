@@ -1,11 +1,11 @@
-/**
+﻿/**
  * 树形域 EntityManager 定义
  *
  * 演示 RemoteTreeEntityManager 的树形数据管理
  * 连接 ABP 后端的部门树 API
  */
-import { RemoteTreeEntityManager } from '@orbit-js/entity';
-import { TreeManagerAbility } from '@orbit-js/entity';
+import { RemoteTreeEntityManager } from '@qimenjs/entity';
+import { TreeManagerAbility } from '@qimenjs/entity';
 import { DepartmentSchema } from '../domains';
 
 /**

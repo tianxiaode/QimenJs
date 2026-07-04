@@ -1,4 +1,4 @@
-# HTTP 管道最佳实践
+﻿# HTTP 管道最佳实践
 
 ## 理解 HTTP 管道流程
 
@@ -36,7 +36,7 @@
 
 ```typescript
 // 正确 - 通过 domain 配置公共参数
-const { Registry } = require('@orbit-js/registry');
+const { Registry } = require('@qimenjs/registry');
 Registry.domain.register('api', {
   baseUrl: 'https://api.example.com',
   token: 'xxx',

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FormatProcessor 单元测试
  *
  * 覆盖：
@@ -24,7 +24,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-jest.mock('@orbit-js/pattern', () => ({
+jest.mock('@qimenjs/pattern', () => ({
     PatternRegistrar: {
         getInstance: jest.fn(),
     },
@@ -35,7 +35,7 @@ jest.mock('@/validation/utils', () => ({
 }));
 
 import { FormatProcessor } from '@/validation/processors/format/format';
-import { PatternRegistrar } from '@orbit-js/pattern';
+import { PatternRegistrar } from '@qimenjs/pattern';
 import { validatePattern } from '@/validation/utils';
 
 describe('FormatProcessor', () => {

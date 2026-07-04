@@ -1,10 +1,10 @@
-/**
+﻿/**
  * HTTP 上下文类型定义
  * 
  * @module http/types/http-context
  */
 
-import type { BaseContext } from '@orbit-js/context';
+import type { BaseContext } from '@qimenjs/context';
 
 /**
  * HTTP 方法类型

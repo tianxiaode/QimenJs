@@ -1,4 +1,4 @@
-# @orbit-js/system-abilities
+﻿# @qimenjs/system-abilities
 
 **层级**: 第 3 层  
 **状态**: ✅ 完成  
@@ -21,10 +21,10 @@
 
 ```typescript
 dependencies: {
-  '@orbit-js/composable': 'L1',
-  '@orbit-js/registry': 'L1',
-  '@orbit-js/events': 'L1',
-  '@orbit-js/event-dom': 'L2'
+  '@qimenjs/composable': 'L1',
+  '@qimenjs/registry': 'L1',
+  '@qimenjs/events': 'L1',
+  '@qimenjs/event-dom': 'L2'
 }
 ```
 
@@ -65,7 +65,7 @@ Time:        1.847 s
 ### 🔧 技术细节
 
 **模块引用优化**:
-- 所有 `@orbit-js/` 引用改为 `@/`
+- 所有 `@qimenjs/` 引用改为 `@/`
 - 简化 Jest 配置
 - 统一引用方式
 
@@ -85,7 +85,7 @@ Time:        1.847 s
 - 发现需在 afterEach 中清理 ComposableBase 实例避免 Ability 状态共享问题（已通过 abilityState per-host 隔离解决）
 
 #### 2026-06-26
-- 修正所有模块引用，使用 `@/` 代替 `@orbit-js/`
+- 修正所有模块引用，使用 `@/` 代替 `@qimenjs/`
 - 创建能力注册函数 `registerSystemAbilities()`
 - 创建完整的类型定义
 - 编写单元测试

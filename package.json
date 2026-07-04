@@ -1,13 +1,13 @@
-{
-  "name": "@orbit-js/core",
+﻿{
+  "name": "@qimenjs/core",
   "version": "0.1.0",
-  "description": "Modern JavaScript ecosystem with cross-platform capabilities",
+  "description": "QimenJS - Modern TypeScript infrastructure library inspired by Qimen Dunjia",
   "keywords": [
-    "orbitjs",
-    "events",
-    "logging",
-    "utils",
-    "cross-platform",
+    "qimenjs",
+    "qimen",
+    "entity",
+    "pipeline",
+    "composable",
     "typescript"
   ],
   "main": "dist/core/index.js",

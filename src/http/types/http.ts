@@ -1,4 +1,4 @@
-import { TaskPriority } from "@orbit-js/task";
+﻿import { TaskPriority } from "@qimenjs/task";
 
 /**
  * HTTP 方法类型定义

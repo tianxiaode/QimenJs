@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PasswordProcessor 独立单元测试
  *
  * 验证密码模式校验处理器的核心行为：
@@ -7,7 +7,7 @@
  * 3. 所有规则满足时无错误
  */
 
-jest.mock('@orbit-js/pattern', () => ({
+jest.mock('@qimenjs/pattern', () => ({
     PatternRegistrar: {
         getInstance: jest.fn(() => ({
             get: jest.fn((name: string) => {

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * DownloadInterceptor 处理器单元测试
  */
 
 import { DownloadInterceptorHandler } from '@/http/actions/align/DownloadInterceptor';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(options: {
     isDownload?: boolean;

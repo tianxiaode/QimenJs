@@ -1,14 +1,14 @@
-/**
- * 表单验证页 - @orbit-js/validation
+﻿/**
+ * 表单验证页 - @qimenjs/validation
  */
-import { validate, doValidate } from '@orbit-js/validation';
+import { validate, doValidate } from '@qimenjs/validation';
 import { renderPageContent } from '../layout';
 
 export function renderValidation(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>表单验证</h2>
-            <p>@orbit-js/validation — 11 类处理器 + 自定义规则 + 错误收集</p>
+            <p>@qimenjs/validation — 11 类处理器 + 自定义规则 + 错误收集</p>
         </div>
 
         <div class="section">

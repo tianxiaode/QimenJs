@@ -1,8 +1,8 @@
-import type { AbilityDefinition } from '@/composable';
+﻿import type { AbilityDefinition } from '@/composable';
 import type { ILocalChangeSet, IDeletionPlan } from '@/entity/types';
 import { CacheFactory } from '@/cache';
 import type { ICacheProvider } from '@/cache';
-import { array } from '@orbit-js/utils';
+import { array } from '@qimenjs/utils';
 
 /**
  * 简单哈希函数

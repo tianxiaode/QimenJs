@@ -1,4 +1,4 @@
-import { DomEventAdapter } from '@/event-dom/adapters/dom/DomEventAdapter';
+﻿import { DomEventAdapter } from '@/event-dom/adapters/dom/DomEventAdapter';
 import { EventScope } from '@/events/EventScope';
 import { EventBus } from '@/events/EventBus';
 import { 
@@ -15,7 +15,7 @@ jest.mock('@/runtime', () => ({
   detectInputCapabilities: jest.fn(() => ({ pointer: true, touch: true, mouse: true }))
 }));
 
-jest.mock('@orbit-js/logger', () => ({
+jest.mock('@qimenjs/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

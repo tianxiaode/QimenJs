@@ -1,4 +1,4 @@
-# Schema 最佳实践
+﻿# Schema 最佳实践
 
 ## 理解 Schema 的角色
 
@@ -71,7 +71,7 @@ registrar.register({ name: 'StatusBase', extends: 'AuditedBase', fields: [...] }
 
 ```typescript
 // 正确 - 使用 F 常量
-import { F } from '@orbit-js/schema';
+import { F } from '@qimenjs/schema';
 
 registrar.register({
     name: 'Department',

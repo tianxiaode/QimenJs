@@ -1,6 +1,6 @@
-import { GlobalEventBus, globalEventBus } from '@/events/GlobalEventBus';
+﻿import { GlobalEventBus, globalEventBus } from '@/events/GlobalEventBus';
 import { EventScope } from '@/events/EventScope';
-import { Logger } from '@orbit-js/logger';
+import { Logger } from '@qimenjs/logger';
 
 /**
  * GlobalEventBus 单元测试
@@ -19,8 +19,8 @@ import { Logger } from '@orbit-js/logger';
  */
 
 // Mock Logger to avoid issues in test environment
-jest.mock('@orbit-js/logger', () => {
-    const actualLogger = jest.requireActual('@orbit-js/logger');
+jest.mock('@qimenjs/logger', () => {
+    const actualLogger = jest.requireActual('@qimenjs/logger');
     return {
         ...actualLogger,
         Logger: {

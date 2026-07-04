@@ -1,9 +1,9 @@
-/**
+﻿/**
  * XhrTransport 处理器单元测试
  */
 
 import { XhrTransportHandler } from '@/http/actions/exchange/XhrTransport';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(options: {
     method?: string;

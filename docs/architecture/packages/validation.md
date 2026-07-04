@@ -1,4 +1,4 @@
-# @orbit-js/validation
+﻿# @qimenjs/validation
 
 **层级**: 第 2 层  
 **状态**: ✅ 完成  
@@ -19,8 +19,8 @@
 
 ```typescript
 dependencies: {
-  '@orbit-js/error': 'L0',
-  '@orbit-js/pipeline': 'L1'
+  '@qimenjs/error': 'L0',
+  '@qimenjs/pipeline': 'L1'
 }
 ```
 
@@ -34,7 +34,7 @@ dependencies: {
 ## 使用示例
 
 ```typescript
-import { doValidate } from '@orbit-js/validation';
+import { doValidate } from '@qimenjs/validation';
 
 const result = await doValidate(value, rule);
 if (!result.success) {

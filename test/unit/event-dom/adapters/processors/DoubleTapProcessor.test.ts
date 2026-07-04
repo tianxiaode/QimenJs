@@ -1,5 +1,5 @@
-// Mock the logger to prevent errors during testing
-jest.mock('@orbit-js/logger', () => {
+﻿// Mock the logger to prevent errors during testing
+jest.mock('@qimenjs/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -9,7 +9,7 @@ jest.mock('@orbit-js/logger', () => {
     };
 
     return {
-        ...jest.requireActual('@orbit-js/logger'),
+        ...jest.requireActual('@qimenjs/logger'),
         Logger: {
             for: jest.fn(() => mockLogger),
         },
@@ -17,9 +17,9 @@ jest.mock('@orbit-js/logger', () => {
 });
 
 // Mock the validation module to prevent errors during testing
-jest.mock('@orbit-js/validation', () => {
+jest.mock('@qimenjs/validation', () => {
     return {
-        ...jest.requireActual('@orbit-js/validation'),
+        ...jest.requireActual('@qimenjs/validation'),
         assert: {
             finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes
@@ -45,7 +45,7 @@ jest.mock('@/event-dom/adapters/utils/validation', () => {
 import { DoubleTapProcessor } from '@/event-dom/adapters/processors/DoubleTapProcessor';
 import { GestureEmit, InputSignal } from '@/event-dom/types';
 import { validateDoubleTap } from '@/event-dom/adapters/utils/validation';
-import { Logger } from '@orbit-js/logger';
+import { Logger } from '@qimenjs/logger';
 
 describe('DoubleTapProcessor', () => {
     let mockEmit: jest.Mock<void, [GestureEmit]>;

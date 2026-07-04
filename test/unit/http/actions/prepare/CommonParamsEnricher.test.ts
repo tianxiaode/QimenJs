@@ -1,9 +1,9 @@
-/**
+﻿/**
  * CommonParamsEnricher 处理器单元测试
  */
 
 import { CommonParamsEnricherHandler } from '@/http/actions/prepare/CommonParamsEnricher';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(domainConfig: any = {}, requestOverrides: any = {}) {
     const context = RequestContextBuilder

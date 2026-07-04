@@ -1,4 +1,4 @@
-import { ILogger, Logger } from "@orbit-js/logger";
+﻿import { ILogger, Logger } from "@qimenjs/logger";
 import { HashTaskResources } from './HashTaskResources';
 import { HashTaskState } from './HashTaskState';
 import { Chunk } from '../types';

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * 自动注册常用 MIME 类型
  *
- * 引入 @orbit-js/mime 时自动执行，将常用 MIME 类型注册到 MimeTypeRegistrar
+ * 引入 @qimenjs/mime 时自动执行，将常用 MIME 类型注册到 MimeTypeRegistrar
  */
 
 import { MimeTypeRegistrar } from './MimeTypeRegistrar';

@@ -1,12 +1,12 @@
-/**
- * @orbit-js/oauth2 - OAuth2 认证流程
+﻿/**
+ * @qimenjs/oauth2 - OAuth2 认证流程
  *
  * 提供完整的 Token 生命周期管理：获取/刷新/撤销/401 自动重试。
  * 引入即自动注册 TokenRefreshHandler 到 HTTP 管道。
  *
  * @example
  * ```typescript
- * import { oauth2 } from '@orbit-js/oauth2';
+ * import { oauth2 } from '@qimenjs/oauth2';
  *
  * // 配置
  * oauth2.configure({

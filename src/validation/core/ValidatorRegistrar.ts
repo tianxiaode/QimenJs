@@ -1,4 +1,4 @@
-import { RegistrarBase } from '@orbit-js/registry';
+﻿import { RegistrarBase } from '@qimenjs/registry';
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 

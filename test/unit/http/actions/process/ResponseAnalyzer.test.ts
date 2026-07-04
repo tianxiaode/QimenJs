@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ResponseAnalyzer 处理器单元测试
  */
 
 import { ResponseAnalyzerHandler } from '@/http/actions/process/ResponseAnalyzer';
-import { RequestContextBuilder } from '@orbit-js/context';
+import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(options: {
     status?: number;

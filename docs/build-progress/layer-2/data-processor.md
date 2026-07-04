@@ -1,4 +1,4 @@
-# Layer 2 - data-processor 包
+﻿# Layer 2 - data-processor 包
 
 **状态**: ✅ 完成  
 **测试**: ✅ 通过  
@@ -64,7 +64,7 @@ Tests:       40 passed, 40 total
 ### 🔧 技术细节
 
 **模块引用优化**:
-- 所有 `@orbit-js/` 引用改为 `@/`
+- 所有 `@qimenjs/` 引用改为 `@/`
 - 简化 Jest 配置
 - 统一引用方式
 

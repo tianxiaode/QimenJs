@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file ResponseAnalyzer.ts
  * @description 
  * 该文件实现了响应分析处理器，负责分析HTTP响应的状态和头部信息。
@@ -6,7 +6,7 @@
  * 并设置相应的元数据标志供后续处理步骤使用。
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 
 export const ResponseAnalyzerHandler = async (context: RequestContext) => {
     // 卫语句：物理层彻底失败则跳过

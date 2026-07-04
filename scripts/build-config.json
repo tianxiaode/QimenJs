@@ -1,193 +1,193 @@
-{
+﻿{
   "modules": {
     "error": {
       "entry": "src/error/index.ts",
       "outDir": "dist/error",
       "rootDir": "src/error",
       "dependencies": [],
-      "packageName": "@orbit-js/error"
+      "packageName": "@qimenjs/error"
     },
     "logger": {
       "entry": "src/logger/index.ts",
       "outDir": "dist/logger",
       "rootDir": "src/logger",
       "dependencies": [],
-      "packageName": "@orbit-js/logger"
+      "packageName": "@qimenjs/logger"
     },
     "utils": {
       "entry": "src/utils/index.ts",
       "outDir": "dist/utils",
       "rootDir": "src/utils",
       "dependencies": [],
-      "packageName": "@orbit-js/utils"
+      "packageName": "@qimenjs/utils"
     },
     "async": {
       "entry": "src/async/index.ts",
       "outDir": "dist/async",
       "rootDir": "src/async",
       "dependencies": [],
-      "packageName": "@orbit-js/async"
+      "packageName": "@qimenjs/async"
     },
     "runtime": {
       "entry": "src/runtime/index.ts",
       "outDir": "dist/runtime",
       "rootDir": "src/runtime",
       "dependencies": [],
-      "packageName": "@orbit-js/runtime"
+      "packageName": "@qimenjs/runtime"
     },
     "crypto": {
       "entry": "src/crypto/index.ts",
       "outDir": "dist/crypto",
       "rootDir": "src/crypto",
       "dependencies": [],
-      "packageName": "@orbit-js/crypto"
+      "packageName": "@qimenjs/crypto"
     },
     "registry": {
       "entry": "src/registry/index.ts",
       "outDir": "dist/registry",
       "rootDir": "src/registry",
       "dependencies": ["error"],
-      "packageName": "@orbit-js/registry"
+      "packageName": "@qimenjs/registry"
     },
     "cache": {
       "entry": "src/cache/index.ts",
       "outDir": "dist/cache",
       "rootDir": "src/cache",
       "dependencies": ["logger", "utils"],
-      "packageName": "@orbit-js/cache"
+      "packageName": "@qimenjs/cache"
     },
     "events": {
       "entry": "src/events/index.ts",
       "outDir": "dist/events",
       "rootDir": "src/events",
       "dependencies": ["logger", "utils"],
-      "packageName": "@orbit-js/events"
+      "packageName": "@qimenjs/events"
     },
     "validation": {
       "entry": "src/validation/index.ts",
       "outDir": "dist/validation",
       "rootDir": "src/validation",
       "dependencies": ["registry", "mime", "pattern"],
-      "packageName": "@orbit-js/validation"
+      "packageName": "@qimenjs/validation"
     },
     "task": {
       "entry": "src/task/index.ts",
       "outDir": "dist/task",
       "rootDir": "src/task",
       "dependencies": ["logger", "utils", "error", "runtime"],
-      "packageName": "@orbit-js/task"
+      "packageName": "@qimenjs/task"
     },
     "types": {
       "entry": "src/types/index.ts",
       "outDir": "dist/types",
       "rootDir": "src/types",
       "dependencies": [],
-      "packageName": "@orbit-js/types"
+      "packageName": "@qimenjs/types"
     },
     "context": {
       "entry": "src/context/index.ts",
       "outDir": "dist/context",
       "rootDir": "src/context",
       "dependencies": ["registry"],
-      "packageName": "@orbit-js/context"
+      "packageName": "@qimenjs/context"
     },
     "schema": {
       "entry": "src/schema/index.ts",
       "outDir": "dist/schema",
       "rootDir": "src/schema",
       "dependencies": ["registry"],
-      "packageName": "@orbit-js/schema"
+      "packageName": "@qimenjs/schema"
     },
     "pipeline": {
       "entry": "src/pipeline/index.ts",
       "outDir": "dist/pipeline",
       "rootDir": "src/pipeline",
       "dependencies": ["logger", "context"],
-      "packageName": "@orbit-js/pipeline"
+      "packageName": "@qimenjs/pipeline"
     },
     "composable": {
       "entry": "src/composable/index.ts",
       "outDir": "dist/composable",
       "rootDir": "src/composable",
       "dependencies": ["logger", "async"],
-      "packageName": "@orbit-js/composable"
+      "packageName": "@qimenjs/composable"
     },
     "event-dom": {
       "entry": "src/event-dom/index.ts",
       "outDir": "dist/event-dom",
       "rootDir": "src/event-dom",
       "dependencies": ["events", "utils", "runtime", "logger", "error", "async"],
-      "packageName": "@orbit-js/event-dom"
+      "packageName": "@qimenjs/event-dom"
     },
     "data-processor": {
       "entry": "src/data-processor/index.ts",
       "outDir": "dist/data-processor",
       "rootDir": "src/data-processor",
       "dependencies": ["registry", "context", "pipeline"],
-      "packageName": "@orbit-js/data-processor"
+      "packageName": "@qimenjs/data-processor"
     },
     "http": {
       "entry": "src/http/index.ts",
       "outDir": "dist/http",
       "rootDir": "src/http",
       "dependencies": ["context", "pipeline", "registry", "task"],
-      "packageName": "@orbit-js/http"
+      "packageName": "@qimenjs/http"
     },
     "system-abilities": {
       "entry": "src/system-abilities/index.ts",
       "outDir": "dist/system-abilities",
       "rootDir": "src/system-abilities",
       "dependencies": ["events", "composable", "registry", "event-dom"],
-      "packageName": "@orbit-js/system-abilities"
+      "packageName": "@qimenjs/system-abilities"
     },
     "entity": {
       "entry": "src/entity/index.ts",
       "outDir": "dist/entity",
       "rootDir": "src/entity",
       "dependencies": ["composable", "schema", "context", "http", "cache", "error", "system-abilities", "data-processor", "registry", "utils"],
-      "packageName": "@orbit-js/entity"
+      "packageName": "@qimenjs/entity"
     },
     "i18n": {
       "entry": "src/i18n/index.ts",
       "outDir": "dist/i18n",
       "rootDir": "src/i18n",
       "dependencies": [],
-      "packageName": "@orbit-js/i18n"
+      "packageName": "@qimenjs/i18n"
     },
     "mime": {
       "entry": "src/mime/index.ts",
       "outDir": "dist/mime",
       "rootDir": "src/mime",
       "dependencies": ["registry"],
-      "packageName": "@orbit-js/mime"
+      "packageName": "@qimenjs/mime"
     },
     "pattern": {
       "entry": "src/pattern/index.ts",
       "outDir": "dist/pattern",
       "rootDir": "src/pattern",
       "dependencies": ["registry"],
-      "packageName": "@orbit-js/pattern"
+      "packageName": "@qimenjs/pattern"
     },
     "data-processor-abp": {
       "entry": "src/data-processor-abp/index.ts",
       "outDir": "dist/data-processor-abp",
       "rootDir": "src/data-processor-abp",
       "dependencies": ["data-processor", "context"],
-      "packageName": "@orbit-js/data-processor-abp"
+      "packageName": "@qimenjs/data-processor-abp"
     },
     "data-processor-spring": {
       "entry": "src/data-processor-spring/index.ts",
       "outDir": "dist/data-processor-spring",
       "rootDir": "src/data-processor-spring",
       "dependencies": ["data-processor", "context"],
-      "packageName": "@orbit-js/data-processor-spring"
+      "packageName": "@qimenjs/data-processor-spring"
     },
     "oauth2": {
       "entry": "src/oauth2/index.ts",
       "outDir": "dist/oauth2",
       "rootDir": "src/oauth2",
       "dependencies": ["http", "registry", "events", "cache"],
-      "packageName": "@orbit-js/oauth2"
+      "packageName": "@qimenjs/oauth2"
     }
   },
   "build": {

@@ -1,4 +1,4 @@
-# Validation 包重构进度
+﻿# Validation 包重构进度
 
 **日期**: 2026-06-15  
 **状态**: ✅ 完成  
@@ -19,7 +19,7 @@
 import { ValidationRule } from './rule';
 
 // After
-import type { ValidationRule } from '@orbit-js/schema';
+import type { ValidationRule } from '@qimenjs/schema';
 ```
 
 ### 2. 删除重复的类型定义
@@ -38,12 +38,12 @@ import type { ValidationRule } from '@orbit-js/schema';
 **新增路径映射**：
 ```json
 {
-  "@orbit-js/schema": ["src/schema"],
-  "@orbit-js/context": ["src/context"],
-  "@orbit-js/cache": ["src/cache"],
-  "@orbit-js/pipeline": ["src/pipeline"],
-  "@orbit-js/composable": ["src/composable"],
-  "@orbit-js/data-processor": ["src/data-processor"]
+  "@qimenjs/schema": ["src/schema"],
+  "@qimenjs/context": ["src/context"],
+  "@qimenjs/cache": ["src/cache"],
+  "@qimenjs/pipeline": ["src/pipeline"],
+  "@qimenjs/composable": ["src/composable"],
+  "@qimenjs/data-processor": ["src/data-processor"]
 }
 ```
 
@@ -140,7 +140,7 @@ validation (L2)
 ### 断言式验证（无 Schema）
 
 ```typescript
-import { validate } from '@orbit-js/validation';
+import { validate } from '@qimenjs/validation';
 
 // 直接验证单个值
 const result = validate(email, { 
@@ -152,8 +152,8 @@ const result = validate(email, {
 ### Schema 驱动的验证（未来）
 
 ```typescript
-import { validate } from '@orbit-js/validation';
-import type { Schema } from '@orbit-js/schema';
+import { validate } from '@qimenjs/validation';
+import type { Schema } from '@qimenjs/schema';
 
 // 根据 Schema 验证（需要实现）
 const result = validate(userData, userSchema);

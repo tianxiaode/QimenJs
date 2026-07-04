@@ -1,4 +1,4 @@
-# 数据处理管道最佳实践
+﻿# 数据处理管道最佳实践
 
 ## 理解数据处理管道
 
@@ -35,14 +35,14 @@ HTTP 管道（8 个内置处理器）
 
 ```typescript
 // ABP 后端
-import '@orbit-js/data-processor-abp';
+import '@qimenjs/data-processor-abp';
 
 // Spring 后端
-import '@orbit-js/data-processor-spring';
+import '@qimenjs/data-processor-spring';
 
 // 两者都用（不同 domain 对接不同后端）
-import '@orbit-js/data-processor-abp';
-import '@orbit-js/data-processor-spring';
+import '@qimenjs/data-processor-abp';
+import '@qimenjs/data-processor-spring';
 ```
 
 **原因**：引入即自动注册，不需要手动调用注册函数。ABP 和 Spring 的处理器通过标签（`abp` / `spring`）区分，不会冲突。
@@ -85,10 +85,10 @@ ctx.data.item;          // 单项数据
 
 ```typescript
 // 默认配置（引入即生效）
-import '@orbit-js/data-processor-abp';
+import '@qimenjs/data-processor-abp';
 
 // 自定义配置
-import { registerAbpHandlers } from '@orbit-js/data-processor-abp';
+import { registerAbpHandlers } from '@qimenjs/data-processor-abp';
 registerAbpHandlers({
   tenantId: 'my-tenant',       // 注入 __tenant Header
   defaultPageSize: 20,          // 默认每页 20 条
@@ -96,7 +96,7 @@ registerAbpHandlers({
   filterSoftDeleted: true,      // 过滤软删除记录
 });
 
-import { registerSpringHandlers } from '@orbit-js/data-processor-spring';
+import { registerSpringHandlers } from '@qimenjs/data-processor-spring';
 registerSpringHandlers({
   defaultPageSize: 20,          // 默认每页 20 条
   zeroBasedPageIndex: true,     // Spring 标准 0-based 页码
@@ -122,9 +122,9 @@ ctx.data.list;  // 已移除审计字段，已过滤软删除记录
 ## 6. 按需注册单个处理器
 
 ```typescript
-import { DataProcessor } from '@orbit-js/data-processor';
-import { createAbpPaginationHandler } from '@orbit-js/data-processor-abp';
-import { createSpringExtractHandler } from '@orbit-js/data-processor-spring';
+import { DataProcessor } from '@qimenjs/data-processor';
+import { createAbpPaginationHandler } from '@qimenjs/data-processor-abp';
+import { createSpringExtractHandler } from '@qimenjs/data-processor-spring';
 
 // 只注册需要的处理器
 DataProcessor.register(createAbpPaginationHandler({ defaultPageSize: 50 }));

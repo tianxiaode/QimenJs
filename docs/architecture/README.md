@@ -1,6 +1,6 @@
-# OrbitJS 架构文档
+﻿# QimenJS 架构文档
 
-本目录包含 OrbitJS 的完整架构文档，包括架构原则、包说明等。
+本目录包含 QimenJS 的完整架构文档，包括架构原则、包说明等。
 
 ## 文档结构
 
@@ -44,35 +44,35 @@ docs/architecture/
 
 ```
 第 0 层：核心基础包（7 个，零依赖）
-├── @orbit-js/error
-├── @orbit-js/logger
-├── @orbit-js/utils
-├── @orbit-js/async
-├── @orbit-js/runtime
-├── @orbit-js/crypto
-└── @orbit-js/types
+├── @qimenjs/error
+├── @qimenjs/logger
+├── @qimenjs/utils
+├── @qimenjs/async
+├── @qimenjs/runtime
+├── @qimenjs/crypto
+└── @qimenjs/types
 
 第 1 层：基础设施工具包（6 个，只依赖第 0 层）
-├── @orbit-js/registry
-├── @orbit-js/cache
-├── @orbit-js/events
-├── @orbit-js/validation
-├── @orbit-js/task
-└── @orbit-js/context
+├── @qimenjs/registry
+├── @qimenjs/cache
+├── @qimenjs/events
+├── @qimenjs/validation
+├── @qimenjs/task
+└── @qimenjs/context
 
 第 2 层：功能工具包（4 个，依赖第 0-1 层）
-├── @orbit-js/schema
-├── @orbit-js/pipeline
-├── @orbit-js/composable
-└── @orbit-js/event-dom
+├── @qimenjs/schema
+├── @qimenjs/pipeline
+├── @qimenjs/composable
+└── @qimenjs/event-dom
 
 第 3 层：高级功能包（3 个，依赖第 0-2 层）
-├── @orbit-js/data-processor
-├── @orbit-js/http
-└── @orbit-js/system-abilities
+├── @qimenjs/data-processor
+├── @qimenjs/http
+└── @qimenjs/system-abilities
 
 第 4 层：业务包（1 个）
-└── @orbit-js/entity
+└── @qimenjs/entity
 ```
 
 ### 核心原则

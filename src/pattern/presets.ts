@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 预定义验证模式
  *
  * 覆盖 ValidationPatternType 枚举中全部 19 个模式：
@@ -6,7 +6,7 @@
  *   hexColor, rgbColor, rgbaColor, creditCard, chineseId, chinesePostcode, username
  * - 密码验证（4 个）：uppercase, lowercase, digit, specialChar
  *
- * 引入 @orbit-js/pattern 时自动注册到 PatternRegistrar
+ * 引入 @qimenjs/pattern 时自动注册到 PatternRegistrar
  */
 
 /**

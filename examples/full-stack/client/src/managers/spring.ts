@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Spring 域 EntityManager 定义
  *
  * 基于 RemoteCrudEntityManager 和 RemoteReadonlyEntityManager，连接 Spring 后端
  */
-import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@orbit-js/entity';
+import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@qimenjs/entity';
 import { OrderSchema, ItemSchema } from '../domains';
 
 /**

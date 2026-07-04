@@ -1,5 +1,5 @@
-/**
- * HTTP 客户端页 - @orbit-js/http
+﻿/**
+ * HTTP 客户端页 - @qimenjs/http
  */
 import { renderPageContent } from '../layout';
 
@@ -7,7 +7,7 @@ export function renderHttp(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>HTTP 客户端</h2>
-            <p>@orbit-js/http — HttpClient + Pipeline + Context 请求模式</p>
+            <p>@qimenjs/http — HttpClient + Pipeline + Context 请求模式</p>
         </div>
 
         <div class="section">

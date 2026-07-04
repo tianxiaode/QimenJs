@@ -1,4 +1,4 @@
-import { DefaultWorkerHandle } from '@/task/hash-task/worker/DefaultWorkerHandle';
+﻿import { DefaultWorkerHandle } from '@/task/hash-task/worker/DefaultWorkerHandle';
 
 // Mock the Worker API
 class MockWorker {
@@ -39,7 +39,7 @@ class MockWorker {
 }
 
 // Mock the logger module
-jest.mock('@orbit-js/logger', () => ({
+jest.mock('@qimenjs/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

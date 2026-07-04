@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HttpClient 类
  * 
  * 提供简单的 HTTP 请求接口
@@ -7,7 +7,7 @@
  * - 保持简单的 API
  */
 
-import { RequestContextBuilder, type RequestContext } from '@orbit-js/context';
+import { RequestContextBuilder, type RequestContext } from '@qimenjs/context';
 import { HttpExecutor } from './HttpExecutor';
 import type { HttpMethod } from './types/http-context';
 

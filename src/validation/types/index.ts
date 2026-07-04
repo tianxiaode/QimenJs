@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Validation 包类型导出
  * 
  * 验证规则类型从 schema 包导入
@@ -22,10 +22,10 @@ export type {
     ValidationTag,
     CustomValidationFunction,
     PatternSwitches,
-} from '@orbit-js/schema';
+} from '@qimenjs/schema';
 
 // 从 schema 包导入枚举（需要作为值使用）
-export { ValidationPatternType } from '@orbit-js/schema';
+export { ValidationPatternType } from '@qimenjs/schema';
 
 // 本地类型
 export * from './context';

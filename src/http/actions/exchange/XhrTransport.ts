@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @file XhrTransport.ts
  * @description 
  * 该文件实现了基于XMLHttpRequest的数据传输处理器，主要用于处理上传和下载任务。
  * 它提供了对进度监控、超时控制、错误处理和响应解析的支持。
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 
 export const XhrTransportHandler = async (context: RequestContext) => {
     // 1. 自治判定：只有上传任务才由 XHR 处理

@@ -1,4 +1,4 @@
-# Domain 注册最佳实践
+﻿# Domain 注册最佳实践
 
 ## 为什么需要注册 Domain？
 
@@ -46,7 +46,7 @@ await client.get('/orders');
 ### 1. 基本注册
 
 ```typescript
-import { Registry } from '@orbit-js/registry';
+import { Registry } from '@qimenjs/registry';
 
 Registry.domain.register('api', {
     baseUrl: 'https://api.example.com',
@@ -125,7 +125,7 @@ Registry.domain.register('auth', {
 ### 1. 创建 Client
 
 ```typescript
-import { HttpClient } from '@orbit-js/http';
+import { HttpClient } from '@qimenjs/http';
 
 // 使用已注册的 domain
 const client = new HttpClient('api');
@@ -196,7 +196,7 @@ Registry.domain.register('api', {
 
 ```typescript
 // config/domains.ts
-import { Registry } from '@orbit-js/registry';
+import { Registry } from '@qimenjs/registry';
 
 const domains = {
     api: {

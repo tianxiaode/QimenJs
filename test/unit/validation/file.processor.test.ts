@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FileProcessor 独立单元测试
  *
  * 验证文件校验处理器的核心行为：
@@ -9,7 +9,7 @@
  * 5. 单个文件（非数组）输入
  */
 
-jest.mock('@orbit-js/mime', () => ({
+jest.mock('@qimenjs/mime', () => ({
     MimeTypeRegistrar: {
         getInstance: jest.fn(() => ({
             get: jest.fn((types: string[]) => new Set(types)),

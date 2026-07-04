@@ -1,8 +1,8 @@
-/**
+﻿/**
  * TokenRefreshHandler - 401 拦截 + Token 自动刷新 + 重试
  *
  * 注册到 HTTP 管道 ALIGN 阶段，检测 401 响应后自动刷新 token 并重试原始请求。
- * 仅在引入 @orbit-js/oauth2 时注册，不影响不使用 OAuth2 的项目。
+ * 仅在引入 @qimenjs/oauth2 时注册，不影响不使用 OAuth2 的项目。
  *
  * @module oauth2/TokenRefreshHandler
  */

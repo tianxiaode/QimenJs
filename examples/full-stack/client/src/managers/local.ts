@@ -1,10 +1,10 @@
-/**
+﻿/**
  * 本地域 EntityManager 定义
  *
  * 演示 LocalReadonlyEntityManager 和 LocalCrudEntityManager
  * 纯前端数据管理，不需要后端 API
  */
-import { LocalReadonlyEntityManager, LocalCrudEntityManager } from '@orbit-js/entity';
+import { LocalReadonlyEntityManager, LocalCrudEntityManager } from '@qimenjs/entity';
 import { NotificationSchema, TagSchema } from '../domains';
 
 /**

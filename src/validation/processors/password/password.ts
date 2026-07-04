@@ -1,6 +1,6 @@
-import { validatePattern } from '../../utils';
+﻿import { validatePattern } from '../../utils';
 import { ValidationContext, ValidationPatternType, ValidationProcessorHandler } from '../../types';
-import { PatternRegistrar } from '@orbit-js/pattern';
+import { PatternRegistrar } from '@qimenjs/pattern';
 
 export const PasswordProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;

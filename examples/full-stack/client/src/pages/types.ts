@@ -1,5 +1,5 @@
-/**
- * 类型系统页 - @orbit-js/types
+﻿/**
+ * 类型系统页 - @qimenjs/types
  */
 import { renderPageContent } from '../layout';
 
@@ -7,15 +7,15 @@ export function renderTypes(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>类型系统</h2>
-            <p>@orbit-js/types — 跨包共享基础类型定义</p>
+            <p>@qimenjs/types — 跨包共享基础类型定义</p>
         </div>
 
         <div class="section">
             <div class="section-title">模块定位</div>
             <div class="card">
                 <p class="text-sm" style="line-height:1.8;">
-                    <code>@orbit-js/types</code> 是 OrbitJS 的零依赖类型定义模块，只包含真正需要跨包共享的基础类型。
-                    它被 <code>@orbit-js/context</code>、<code>@orbit-js/pipeline</code>、<code>@orbit-js/data-processor</code> 等多个模块引用，
+                    <code>@qimenjs/types</code> 是 OrbitJS 的零依赖类型定义模块，只包含真正需要跨包共享的基础类型。
+                    它被 <code>@qimenjs/context</code>、<code>@qimenjs/pipeline</code>、<code>@qimenjs/data-processor</code> 等多个模块引用，
                     确保类型定义的一致性，避免循环依赖。
                 </p>
             </div>
@@ -72,15 +72,15 @@ export function renderTypes(): void {
             <div class="section-title">依赖关系</div>
             <div class="card">
                 <div class="text-sm" style="line-height:2;">
-                    <code style="color:#6366F1;">@orbit-js/types</code>
+                    <code style="color:#6366F1;">@qimenjs/types</code>
                     <span style="color:#666;"> ← </span>
-                    <code>@orbit-js/context</code>
+                    <code>@qimenjs/context</code>
                     <span style="color:#666;"> ← </span>
-                    <code>@orbit-js/pipeline</code>
+                    <code>@qimenjs/pipeline</code>
                     <span style="color:#666;">, </span>
-                    <code>@orbit-js/http</code>
+                    <code>@qimenjs/http</code>
                     <span style="color:#666;">, </span>
-                    <code>@orbit-js/data-processor</code>
+                    <code>@qimenjs/data-processor</code>
                 </div>
             </div>
         </div>

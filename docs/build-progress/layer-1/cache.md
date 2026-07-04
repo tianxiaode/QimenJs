@@ -1,4 +1,4 @@
-# @orbit-js/cache
+﻿# @qimenjs/cache
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
@@ -20,8 +20,8 @@
 
 ```typescript
 dependencies: {
-  '@orbit-js/logger': 'L0',
-  '@orbit-js/utils': 'L0'
+  '@qimenjs/logger': 'L0',
+  '@qimenjs/utils': 'L0'
 }
 ```
 

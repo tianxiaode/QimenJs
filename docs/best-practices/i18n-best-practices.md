@@ -1,4 +1,4 @@
-# i18n 最佳实践
+﻿# i18n 最佳实践
 
 ## 1. 语言包用 .js 文件，不要用 .json 文件
 
@@ -40,12 +40,12 @@ i18n.t('common.save');
 
 ```typescript
 // 错误 - 在应用层 import 编译 i18n 模块
-import { i18n } from '@orbit-js/i18n';
+import { i18n } from '@qimenjs/i18n';
 // 问题：i18n 模块会被打包进应用代码，增加包体积
 // 问题：__orbit_i18n_register__ 在应用代码执行后才可用，语言包 JS 无法提前加载
 ```
 
-**原因**：将 `@orbit-js/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 2.5KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
+**原因**：将 `@qimenjs/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 2.5KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
 - `window.__orbit_i18n_register__` 在页面加载时就可用，语言包 JS 文件可以同步注册消息
 - `window.orbitI18n.i18n` 在应用代码执行前就已就绪，无需等待模块编译
 - 应用层不需要 import 和编译 i18n 模块，减少打包体积
@@ -99,11 +99,11 @@ await i18n.loadScript('/locales/en-US.js');
 
 **原因**：`i18n.locale = 'en-US'` 只是切换语言标识，不会自动加载语言包。如果 en-US 的消息还没注入，`t()` 会返回 key 本身。先 `loadScript` 确保消息就绪，再切换语言，避免中间状态。
 
-## 4. 远程资源用 @orbit-js/http 加载，不要在 i18n 中内置网络请求
+## 4. 远程资源用 @qimenjs/http 加载，不要在 i18n 中内置网络请求
 
 ```typescript
-// 正确 - 用 @orbit-js/http 加载远程资源
-import { HttpClient } from '@orbit-js/http';
+// 正确 - 用 @qimenjs/http 加载远程资源
+import { HttpClient } from '@qimenjs/http';
 const client = new HttpClient('i18n');
 const ctx = await client.get('/api/locales/business-terms').context;
 i18n.inject(ctx.response.data, 'en-US');
@@ -114,7 +114,7 @@ i18n.inject(ctx.response.data, 'en-US');
 i18n.loadRemote('/api/locales/business-terms');  // i18n 不应该管网络请求
 ```
 
-**原因**：i18n 的职责是存消息和查消息，不是发网络请求。项目已有 `@orbit-js/http` 处理所有 HTTP 通信（含拦截器、缓存、重试等），在 i18n 中再实现一套 fetch 是重复且不一致的。`inject()` 是唯一的消息入口，任何来源的消息都通过它注入。
+**原因**：i18n 的职责是存消息和查消息，不是发网络请求。项目已有 `@qimenjs/http` 处理所有 HTTP 通信（含拦截器、缓存、重试等），在 i18n 中再实现一套 fetch 是重复且不一致的。`inject()` 是唯一的消息入口，任何来源的消息都通过它注入。
 
 ## 5. 用 inject() 注入消息，不要直接操作内部数据
 
@@ -197,7 +197,7 @@ public/
 | 用 .json 语言包 | 用 .js 文件 + `__orbit_i18n_register__` |
 | 在应用层 import 编译 i18n 模块 | 编译为独立 i18n.js 预加载，从 `window.orbitI18n` 获取 |
 | 先切换语言再加载语言包 | 先 `loadScript` 再切换 `locale` |
-| 在 i18n 中内置 fetch | 用 `@orbit-js/http` + `inject()` |
+| 在 i18n 中内置 fetch | 用 `@qimenjs/http` + `inject()` |
 | 整体替换语言包 | `inject()` 深度合并 |
 | 所有翻译放一个文件 | 基础翻译放 public，业务翻译按需加载 |
 | 轮询检查语言变化 | `onLocaleChange` 事件监听 |

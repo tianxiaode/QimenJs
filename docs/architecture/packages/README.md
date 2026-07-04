@@ -1,4 +1,4 @@
-# OrbitJS 包汇总
+﻿# QimenJS 包汇总
 
 本文档提供所有包的概览，包括状态、依赖、测试覆盖率等信息。
 
@@ -8,53 +8,53 @@
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| @orbit-js/error | 完成 | 通过 | 100% | 错误处理 |
-| @orbit-js/logger | 完成 | 通过 | 100% | 日志系统 |
-| @orbit-js/utils | 完成 | 通过 | ~95% | 工具函数 |
-| @orbit-js/async | 完成 | 通过 | ~90% | 异步工具 |
-| @orbit-js/runtime | 完成 | 通过 | ~85% | 运行时环境 |
-| @orbit-js/crypto | 完成 | 通过 | 81% | 加密工具 |
-| @orbit-js/types | 完成 | 通过 | - | 全局共享类型 |
-| @orbit-js/i18n | 完成 | 通过 | ~90% | 国际化 |
+| @qimenjs/error | 完成 | 通过 | 100% | 错误处理 |
+| @qimenjs/logger | 完成 | 通过 | 100% | 日志系统 |
+| @qimenjs/utils | 完成 | 通过 | ~95% | 工具函数 |
+| @qimenjs/async | 完成 | 通过 | ~90% | 异步工具 |
+| @qimenjs/runtime | 完成 | 通过 | ~85% | 运行时环境 |
+| @qimenjs/crypto | 完成 | 通过 | 81% | 加密工具 |
+| @qimenjs/types | 完成 | 通过 | - | 全局共享类型 |
+| @qimenjs/i18n | 完成 | 通过 | ~90% | 国际化 |
 
 ### 第 1 层：基础设施工具包（6 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| @orbit-js/registry | 完成 | 通过 | ~80% | 注册器系统 |
-| @orbit-js/cache | 完成 | 通过 | ~85% | 缓存系统 |
-| @orbit-js/events | 完成 | 通过 | ~80% | 事件系统 |
-| @orbit-js/validation | 完成 | 通过 | 82% | 验证系统 |
-| @orbit-js/task | 完成 | 通过 | ~85% | 任务系统 |
-| @orbit-js/context | 完成 | 通过 | ~76% | 请求上下文 |
+| @qimenjs/registry | 完成 | 通过 | ~80% | 注册器系统 |
+| @qimenjs/cache | 完成 | 通过 | ~85% | 缓存系统 |
+| @qimenjs/events | 完成 | 通过 | ~80% | 事件系统 |
+| @qimenjs/validation | 完成 | 通过 | 82% | 验证系统 |
+| @qimenjs/task | 完成 | 通过 | ~85% | 任务系统 |
+| @qimenjs/context | 完成 | 通过 | ~76% | 请求上下文 |
 
 ### 第 2 层：功能工具包（6 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| @orbit-js/schema | 完成 | 通过 | 89% | Schema 定义系统 |
-| @orbit-js/pipeline | 完成 | 通过 | ~95% | 管道执行器 |
-| @orbit-js/composable | 完成 | 通过 | 90% | 可组合能力系统 |
-| @orbit-js/event-dom | 完成 | 通过 | 100% | DOM 事件适配器 |
-| @orbit-js/mime | 完成 | 通过 | ~90% | MIME 类型解析 |
-| @orbit-js/pattern | 完成 | 通过 | ~85% | 设计模式工具 |
+| @qimenjs/schema | 完成 | 通过 | 89% | Schema 定义系统 |
+| @qimenjs/pipeline | 完成 | 通过 | ~95% | 管道执行器 |
+| @qimenjs/composable | 完成 | 通过 | 90% | 可组合能力系统 |
+| @qimenjs/event-dom | 完成 | 通过 | 100% | DOM 事件适配器 |
+| @qimenjs/mime | 完成 | 通过 | ~90% | MIME 类型解析 |
+| @qimenjs/pattern | 完成 | 通过 | ~85% | 设计模式工具 |
 
 ### 第 3 层：高级功能包（6 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| @orbit-js/data-processor | 完成 | 通过 | 88% | 数据处理器 |
-| @orbit-js/http | 完成 | 通过 | 87% | HTTP 客户端 |
-| @orbit-js/system-abilities | 完成 | 通过 | 88% | 系统能力集 |
-| @orbit-js/oauth2 | 完成 | 通过 | ~85% | OAuth2 认证 |
-| @orbit-js/data-processor-abp | 完成 | 通过 | ~85% | ABP 数据处理器 |
-| @orbit-js/data-processor-spring | 完成 | 通过 | ~85% | Spring 数据处理器 |
+| @qimenjs/data-processor | 完成 | 通过 | 88% | 数据处理器 |
+| @qimenjs/http | 完成 | 通过 | 87% | HTTP 客户端 |
+| @qimenjs/system-abilities | 完成 | 通过 | 88% | 系统能力集 |
+| @qimenjs/oauth2 | 完成 | 通过 | ~85% | OAuth2 认证 |
+| @qimenjs/data-processor-abp | 完成 | 通过 | ~85% | ABP 数据处理器 |
+| @qimenjs/data-processor-spring | 完成 | 通过 | ~85% | Spring 数据处理器 |
 
 ### 第 4 层：业务包（1 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| @orbit-js/entity | 完成 | 通过 | 83% | 实体管理框架 |
+| @qimenjs/entity | 完成 | 通过 | 83% | 实体管理框架 |
 
 ## 统计信息
 

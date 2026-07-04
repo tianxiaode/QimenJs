@@ -1,4 +1,4 @@
-# Registry 模块增强设计分析
+﻿# Registry 模块增强设计分析
 
 ## 一、模块增强的正确理解
 
@@ -9,7 +9,7 @@ TypeScript 的模块增强允许扩展其他模块的类型定义，而不修改
 
 **语法**：
 ```typescript
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         // 添加新的注册器类型
         [ValidatorRegistrarName]: ValidatorRegistrar;
@@ -79,14 +79,14 @@ export interface Registrars {
 }
 
 // ✅ validation/validation.d.ts - 扩展定义
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         validator: ValidatorRegistrar;
     }
 }
 
 // ✅ entity/entity.d.ts - 扩展定义
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         schema: SchemaRegistrar;
         action: ActionRegistrar;
@@ -94,7 +94,7 @@ declare module '@orbit-js/registry' {
 }
 
 // ✅ http/http.d.ts - 扩展定义
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         interceptor: InterceptorRegistrar;
     }
@@ -122,7 +122,7 @@ import {
     HtmlTemplateRegistrar
 } from './registrars';
 
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         [MimeTypeRegistrarName]: MimeTypeRegistrar;
         [SystemRegistrarName]: SystemRegistrar;
@@ -145,7 +145,7 @@ declare module '@orbit-js/registry' {
 import { ValidatorRegistrar } from "./core";
 import { ValidatorRegistrarName } from "./types";
 
-declare module '@orbit-js/registry' {
+declare module '@qimenjs/registry' {
     interface Registrars {
         [ValidatorRegistrarName]: ValidatorRegistrar;
     }
@@ -242,10 +242,10 @@ Registry.unknown.register();  // Error: Property 'unknown' does not exist
 
 **包结构**：
 ```
-@orbit-js/registry       # 基础包，无依赖
-@orbit-js/validation     # 独立包，依赖 registry
-@orbit-js/entity         # 独立包，依赖 registry
-@orbit-js/http           # 独立包，依赖 registry
+@qimenjs/registry       # 基础包，无依赖
+@qimenjs/validation     # 独立包，依赖 registry
+@qimenjs/entity         # 独立包，依赖 registry
+@qimenjs/http           # 独立包，依赖 registry
 ```
 
 **优点**：
@@ -273,7 +273,7 @@ Registry.unknown.register();  // Error: Property 'unknown' does not exist
    // entity/entity.d.ts
    import { SchemaRegistrar } from './schema';
    
-   declare module '@orbit-js/registry' {
+   declare module '@qimenjs/registry' {
        interface Registrars {
            schema: SchemaRegistrar;
        }
@@ -293,8 +293,8 @@ Registry.unknown.register();  // Error: Property 'unknown' does not exist
 **测试**：
 ```typescript
 // 验证类型合并是否正确
-import { Registry } from '@orbit-js/registry';
-import '@orbit-js/validation';  // 导入以触发类型合并
+import { Registry } from '@qimenjs/registry';
+import '@qimenjs/validation';  // 导入以触发类型合并
 
 // TypeScript 知道所有注册器
 const system = Registry.system;      // SystemRegistrar
@@ -315,9 +315,9 @@ const validator = Registry.validator; // ValidatorRegistrar
 
 **A**: 确保导入了相关的包：
 ```typescript
-import '@orbit-js/registry';
-import '@orbit-js/validation';  // 必须导入才能获得类型
-import '@orbit-js/entity';
+import '@qimenjs/registry';
+import '@qimenjs/validation';  // 必须导入才能获得类型
+import '@qimenjs/entity';
 ```
 
 ### Q4: 运行时如何访问注册器？
@@ -398,9 +398,9 @@ Registry.validator  // 通过 Proxy 访问
 
 ```typescript
 // 必须导入包以触发类型合并
-import '@orbit-js/registry';
-import '@orbit-js/validation';
-import '@orbit-js/entity';
+import '@qimenjs/registry';
+import '@qimenjs/validation';
+import '@qimenjs/entity';
 
 // 然后才能获得完整的类型提示
 Registry.system    // ✅ 有类型提示

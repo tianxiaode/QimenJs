@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @file UrlBuilder.ts
  * @description 
  * 该文件负责构建完整的请求URL，包括基础URL、路径参数和查询参数。
  * 它会规范化基础URL路径、拼接路径参数并处理查询参数的编码和组装。
  */
 
-import type { RequestContext } from '@orbit-js/context';
+import type { RequestContext } from '@qimenjs/context';
 
 export const UrlBuilderHandler = async (context: RequestContext) => {
     const { pathParams: segments = [], queryParams: query = {} } = context.request;

@@ -1,15 +1,15 @@
-/**
+﻿/**
  * 应用配置
  *
  * 1. 注册域（DomainRegistrar）：auth / abp / spring
  * 2. 注册 Schema（SchemaRegistrar）：各域的实体 Schema
  * 3. 配置 OAuth2 认证
  */
-import { Registry, DomainRegistrar } from '@orbit-js/registry';
-import { SchemaRegistrar } from '@orbit-js/schema';
-import { oauth2 } from '@orbit-js/oauth2';
-import '@orbit-js/data-processor-abp';
-import '@orbit-js/data-processor-spring';
+import { Registry, DomainRegistrar } from '@qimenjs/registry';
+import { SchemaRegistrar } from '@qimenjs/schema';
+import { oauth2 } from '@qimenjs/oauth2';
+import '@qimenjs/data-processor-abp';
+import '@qimenjs/data-processor-spring';
 
 // 导入域 Schema 定义
 import { UserSchema, ProductSchema, OrderSchema, ItemSchema, NotificationSchema, TagSchema, DepartmentSchema } from './domains';

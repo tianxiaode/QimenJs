@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 数据处理管道模块入口
  * 
  * @module data-processor
@@ -15,7 +15,7 @@
  * 2. 执行管道
  * 
  * @example
- * import { DataProcessor } from '@orbit-js/data-processor';
+ * import { DataProcessor } from '@qimenjs/data-processor';
  * 
  * // 注册处理器
  * DataProcessor.register('abp-post', {

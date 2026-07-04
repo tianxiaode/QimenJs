@@ -1,4 +1,4 @@
-import { Logger } from '@orbit-js/logger';
+﻿import { Logger } from '@qimenjs/logger';
 import { CacheType, ICacheProvider } from './types';
 import { MemoryProvider } from './MemoryProvider';
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HttpExecutor 核心类
  * 
  * 负责执行 HTTP 请求的核心逻辑
@@ -9,9 +9,9 @@
  * - 返回处理后的上下文
  */
 
-import type { RequestContext } from '@orbit-js/context';
-import { pipeline } from '@orbit-js/pipeline';
-import { Registry } from '@orbit-js/registry';
+import type { RequestContext } from '@qimenjs/context';
+import { pipeline } from '@qimenjs/pipeline';
+import { Registry } from '@qimenjs/registry';
 import { HttpActionRegistrar, type HttpActionEntry } from './HttpActionRegistrar';
 
 /**

@@ -1,4 +1,4 @@
-import { IMemoryTicket, MemoryManager } from '@orbit-js/runtime';
+﻿import { IMemoryTicket, MemoryManager } from '@qimenjs/runtime';
 import { WorkerHandle, WorkerPool } from '../worker';
 import { ResourceUnavailableError } from '../errors';
 import { ResourceNotAcquiredError } from '../errors/ResourceNotAcquiredError';

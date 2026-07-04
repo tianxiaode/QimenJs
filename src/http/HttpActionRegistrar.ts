@@ -1,10 +1,10 @@
-/**
+﻿/**
  * HTTP Action 注册表
  * 
  * 纯粹的 HTTP 处理器注册表
  */
 
-import { RegistrarBase } from '@orbit-js/registry';
+import { RegistrarBase } from '@qimenjs/registry';
 
 /**
  * HTTP Action 类别
