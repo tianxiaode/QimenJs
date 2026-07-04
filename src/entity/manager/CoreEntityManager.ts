@@ -6,7 +6,10 @@ import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import type {
     ENTITY_ACTION,
     ICoreEntityManager,
+    ISchemaAbility,
 } from '@/entity/types';
+import type { IEventScope, EventHandler } from '@/events';
+import type { DomainConfig, SystemConfig } from '@/registry';
 import type { Schema, SchemaCache, RegistrSchema } from '@/schema';
 import { SchemaRegistrar } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
@@ -16,6 +19,31 @@ import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-proce
 import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
+
+/**
+ * CoreEntityManager 能力接口
+ *
+ * 通过声明合并为 CoreEntityManager 类添加 Ability 注入方法的类型信息。
+ * 组合能力：EventAbility + DomainAbility + SystemAbility + SchemaAbility
+ *
+ * 注意：不 extends ICoreEntityManager，因为 ICoreEntityManager extends IComposableBase，
+ * 而 IComposableBase 的 host 属性类型与 ComposableBase 类的 host getter 类型冲突。
+ * Ability 注入的方法在此直接声明即可。
+ */
+export interface CoreEntityManager extends ISchemaAbility {
+    // ===== EventAbility =====
+    readonly eventScope: IEventScope;
+    on(event: string, handler: EventHandler): () => void;
+    once(event: string, handler: EventHandler): void;
+    emit(event: string, data?: any): void;
+
+    // ===== DomainAbility =====
+    readonly domainConfig: DomainConfig;
+
+    // ===== SystemAbility =====
+    systemConfig(): Partial<SystemConfig>;
+    systemConfig<K extends keyof SystemConfig>(key: K): any;
+}
 
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
     static readonly abilities: readonly any[] = [EventAbility, DomainAbility, SystemAbility, SchemaAbility];

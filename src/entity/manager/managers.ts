@@ -1,5 +1,33 @@
 import { BaseEntityManager } from './BaseEntityManager';
-import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@/entity/types';
+import type {
+    ILocalSearchParams,
+    IFlatSearchParams,
+    ITreeSearchParams,
+    IStateSchemaAbility,
+    IStateCacheAbility,
+    IStateDirtyAbility,
+    IStateLocalMutationAbility,
+    IStateSearchAbility,
+    IFlatLocalStateAbility,
+    ILocalListAbility,
+    ILocalGetAbility,
+    IFlatLocalMutationAbility,
+    IFlatLocalDeleteAbility,
+    IFlatRemoteListAbility,
+    IFlatRemoteGetAllAbility,
+    IRemoteGetAbility,
+    IRemoteCreateAbility,
+    IRemoteUpdateAbility,
+    IRemoteDeleteAbility,
+    IRemoteToggleAbility,
+    IFlatRemoteQueryAbility,
+    IFlatRemoteStateAbility,
+    ITreeRemoteStateAbility,
+    ITreePathAbility,
+    ITreeLifecycleAbility,
+    ITreeSearchAbility,
+    ITreeViewAbility,
+} from '@/entity/types';
 import type { IEntity } from '@/schema';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
 import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
@@ -94,6 +122,35 @@ export const DomainPagingAbility: AbilityDefinition = {
  * - list: 从远程获取数据填充本地 sourceData
  * - get: 本地查询单个实体
  */
+/**
+ * LocalReadonlyEntityManager 能力接口
+ *
+ * 组合能力：FlatLocalStateAbility + LocalListAbility + LocalGetAbility
+ *
+ * 注意：LocalListAbility 的 filter/sort 覆盖了 IStateSearchAbility 的同名方法，
+ * 返回值从 void 变为 any[]，因此不能同时 extends 两者，需手动声明覆盖后的签名。
+ */
+export interface LocalReadonlyEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
+    extends BaseEntityManager<TSearch>,
+        IStateSchemaAbility,
+        IStateCacheAbility,
+        IStateDirtyAbility,
+        IStateLocalMutationAbility,
+        IFlatLocalStateAbility,
+        ILocalGetAbility {
+    isRemote: false;
+    // LocalListAbility 覆盖 IStateSearchAbility 的方法
+    list(): Promise<any[]>;
+    refresh(): Promise<any[]>;
+    filter(keyword: string): any[];
+    sort(sortBy: string, sortOrder: 'asc' | 'desc'): any[];
+    // IStateSearchAbility 中未被覆盖的方法
+    toParams(): any;
+    searchBy(search: any): void;
+    matchKeyword(item: any): boolean;
+    applySort(list: any[]): any[];
+}
+
 export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams
 > extends BaseEntityManager<TSearch> {
@@ -118,6 +175,18 @@ export abstract class LocalReadonlyEntityManager<
  * - update: 本地更新（可选批量提交）
  * - delete: 本地软删除
  */
+/**
+ * LocalCrudEntityManager 能力接口
+ *
+ * 在 LocalReadonlyEntityManager 基础上增加：
+ * FlatLocalMutationAbility + FlatLocalDeleteAbility
+ */
+export interface LocalCrudEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
+    extends LocalReadonlyEntityManager<TSearch>,
+        IFlatLocalMutationAbility,
+        IFlatLocalDeleteAbility {
+}
+
 export abstract class LocalCrudEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams
 > extends BaseEntityManager<TSearch> {
@@ -147,6 +216,43 @@ export abstract class LocalCrudEntityManager<
  * - get: 远程查询单个实体
  * - query: 远程条件查询
  */
+/**
+ * RemoteReadonlyEntityManager 能力接口
+ *
+ * 组合能力：SchemaProxyAbility + CacheAbility + DirtyAbility + SearchAbility +
+ *          DomainPagingAbility + FlatRemoteStateAbility + FlatRemoteListAbility +
+ *          FlatRemoteGetAllAbility + RemoteGetAbility + FlatRemoteQueryAbility
+ *
+ * 注意：FlatRemoteQueryAbility 的 filter/searchBy/sort 覆盖了 IStateSearchAbility 的同名方法，
+ * 返回值从 void 变为 Promise<any[]>，因此不能同时 extends 两者，需手动声明覆盖后的签名。
+ */
+export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
+    extends BaseEntityManager<TSearch>,
+        IStateSchemaAbility,
+        IStateCacheAbility,
+        IStateDirtyAbility,
+        IFlatRemoteStateAbility,
+        IFlatRemoteListAbility,
+        IFlatRemoteGetAllAbility,
+        IRemoteGetAbility {
+    isRemote: true;
+    pageSize: number;
+    pageSizes: number[];
+    // FlatRemoteQueryAbility 覆盖 IStateSearchAbility 的方法
+    prev(): Promise<any[]>;
+    next(): Promise<any[]>;
+    jump(page: number): Promise<any[]>;
+    changeSize(size: number): Promise<any[]>;
+    filter(text: string): Promise<any[]>;
+    searchBy(search: any): Promise<any[]>;
+    sort(prop: string, order: 'asc' | 'desc' | null): Promise<any[]>;
+    reset(): Promise<any[]>;
+    // IStateSearchAbility 中未被覆盖的方法
+    toParams(): any;
+    matchKeyword(item: any): boolean;
+    applySort(list: any[]): any[];
+}
+
 export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch> {
@@ -189,6 +295,20 @@ export abstract class RemoteReadonlyEntityManager<
  * - delete: 远程删除
  * - toggle: 远程切换状态
  */
+/**
+ * RemoteCrudEntityManager 能力接口
+ *
+ * 在 RemoteReadonlyEntityManager 基础上增加：
+ * RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility + RemoteToggleAbility
+ */
+export interface RemoteCrudEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
+    extends RemoteReadonlyEntityManager<TSearch>,
+        IRemoteCreateAbility,
+        IRemoteUpdateAbility,
+        IRemoteDeleteAbility,
+        IRemoteToggleAbility {
+}
+
 export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams
 > extends BaseEntityManager<TSearch> {
@@ -236,6 +356,51 @@ export abstract class RemoteCrudEntityManager<
  * - toggleExpand: 切换展开状态
  * - toggleLeaf: 切换叶子节点状态
  */
+/**
+ * RemoteTreeEntityManager 能力接口
+ *
+ * 组合能力：SchemaProxyAbility + CacheAbility + DirtyAbility + SearchAbility +
+ *          TreePathAbility + TreeLifecycleAbility + TreeSearchAbility + TreeViewAbility +
+ *          TreeRemoteStateAbility + FlatRemoteListAbility + RemoteGetAbility +
+ *          FlatRemoteQueryAbility + RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility
+ *
+ * 注意：
+ * - FlatRemoteQueryAbility 的 filter/searchBy/sort 覆盖了 IStateSearchAbility 的同名方法
+ * - ITreeSearchAbility 的 matchKeyword 签名与 IStateSearchAbility 不同（多一个 keyword 参数）
+ * - 因此不能同时 extends 冲突的接口，需手动声明覆盖后的签名
+ */
+export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITreeSearchParams>
+    extends BaseEntityManager<TSearch>,
+        IStateSchemaAbility,
+        IStateCacheAbility,
+        IStateDirtyAbility,
+        ITreePathAbility,
+        ITreeLifecycleAbility,
+        ITreeViewAbility,
+        ITreeRemoteStateAbility,
+        IFlatRemoteListAbility,
+        IRemoteGetAbility,
+        IRemoteCreateAbility,
+        IRemoteUpdateAbility,
+        IRemoteDeleteAbility {
+    isRemote: true;
+    // TreeSearchAbility 覆盖 IStateSearchAbility 的方法
+    applySearchExpansion(): void;
+    applySort(list: any[]): any[];
+    matchKeyword(node: any, keyword: string): boolean;
+    // FlatRemoteQueryAbility 覆盖 IStateSearchAbility 的方法
+    prev(): Promise<any[]>;
+    next(): Promise<any[]>;
+    jump(page: number): Promise<any[]>;
+    changeSize(size: number): Promise<any[]>;
+    filter(text: string): Promise<any[]>;
+    searchBy(search: any): Promise<any[]>;
+    sort(prop: string, order: 'asc' | 'desc' | null): Promise<any[]>;
+    reset(): Promise<any[]>;
+    // IStateSearchAbility 中未被覆盖的方法
+    toParams(): any;
+}
+
 export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams
 > extends BaseEntityManager<TSearch> {

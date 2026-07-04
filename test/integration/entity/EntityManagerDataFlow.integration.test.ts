@@ -142,7 +142,7 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
                 } as any;
             });
 
-            await manager.list({ page: 1, size: 10 });
+            await (manager as any).list({ page: 1, size: 10 });
 
             // 验证 State 更新
             expect(manager.items).toHaveLength(3);
@@ -168,7 +168,7 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
                 } as any;
             });
 
-            await manager.list({ page: 1, size: 10 });
+            await (manager as any).list({ page: 1, size: 10 });
 
             // 验证 State 更新
             expect(manager.items).toHaveLength(5);

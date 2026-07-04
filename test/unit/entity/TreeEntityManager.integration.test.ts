@@ -519,7 +519,7 @@ describe('RemoteTreeEntityManager 集成测试', () => {
 
             jest.spyOn(manager, 'setLoaded').mockImplementation(() => {});
 
-            await manager.refresh(2);
+            await (manager as any).refresh(2);
 
             // 验证 fetch 被调用
             expect(manager.fetch).toHaveBeenCalled();
@@ -533,7 +533,7 @@ describe('RemoteTreeEntityManager 集成测试', () => {
 
             const setLoadedSpy = jest.spyOn(manager, 'setLoaded');
 
-            await manager.refresh(2);
+            await (manager as any).refresh(2);
 
             expect(setLoadedSpy).toHaveBeenCalledWith(2, true);
         });

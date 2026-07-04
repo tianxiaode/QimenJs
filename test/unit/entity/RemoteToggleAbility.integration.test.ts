@@ -145,7 +145,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             mockFetchSuccess(toggledItem);
 
             // toggle 使用 debounce(leading=true)，第一次调用立即执行
-            const result = await manager.toggle(item, 'enabled');
+            const result = await manager.toggle(item, 'enabled') as any;
 
             // 乐观更新：item.enabled 应该被立即翻转
             expect(item.enabled).toBe(true);
@@ -190,7 +190,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             const finalItem = { ...item, enabled: true };
             mockFetchSuccess(finalItem);
 
-            const result = await manager.toggle(item, 'enabled');
+            const result = await manager.toggle(item, 'enabled') as any;
 
             expect(result).toEqual(finalItem);
         });
@@ -258,7 +258,7 @@ describe('RemoteToggleAbility 集成测试', () => {
 
             mockFetchError(new Error('Network error'));
 
-            const result = await manager.toggle(item, 'enabled');
+            const result = await manager.toggle(item, 'enabled') as any;
 
             // 返回回滚后的 item
             expect(result.enabled).toBe(false);
@@ -289,7 +289,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             mockFetchSuccess(finalItem);
 
             // leading=true，第一次调用立即执行
-            const result = await manager.toggle(item, 'enabled');
+            const result = await manager.toggle(item, 'enabled') as any;
 
             expect(item.enabled).toBe(true);
         });

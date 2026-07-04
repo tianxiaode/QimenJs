@@ -9,6 +9,15 @@ import type { HttpRequestOptions } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
 import { CoreEntityManager } from './CoreEntityManager';
 
+/**
+ * BaseEntityManager 能力接口
+ *
+ * BaseEntityManager 自身无额外 Ability 注入（abilities = []），
+ * 仅继承 CoreEntityManager 的能力接口。
+ */
+export interface BaseEntityManager<TSearch extends SearchParams = SearchParams> extends CoreEntityManager {
+}
+
 export abstract class BaseEntityManager<
     TSearch extends SearchParams = SearchParams,
 >
