@@ -1,14 +1,14 @@
 /**
  * 注册器页 - @orbitjs/registry
  */
-import { RegistryHub, DomainRegistrar, SchemaRegistrar, SystemRegistrar } from '@orbitjs/registry';
+import { RegistryHub, DomainRegistrar, SystemRegistrar, Registry } from '@orbitjs/registry';
 import { renderPageContent } from '../layout';
 
 export function renderRegistry(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>注册器</h2>
-            <p>@orbitjs/registry — RegistryHub + DomainRegistrar / SchemaRegistrar / SystemRegistrar</p>
+            <p>@orbitjs/registry — RegistryHub + DomainRegistrar / SystemRegistrar / HtmlTemplateRegistrar</p>
         </div>
 
         <div class="section">
@@ -17,10 +17,10 @@ export function renderRegistry(): void {
                 <table class="data-table">
                     <thead><tr><th>注册器</th><th>职责</th><th>注册内容</th></tr></thead>
                     <tbody>
-                        <tr><td><span class="badge badge-info">RegistryHub</span></td><td>统一管理所有注册器</td><td>注册器实例</td></tr>
+                        <tr><td><span class="badge badge-info">RegistryHub</span></td><td>统一管理所有注册器（纯静态类）</td><td>注册器实例</td></tr>
                         <tr><td><span class="badge badge-purple">DomainRegistrar</span></td><td>域配置注册</td><td>后端域（abp/spring/local）</td></tr>
-                        <tr><td><span class="badge badge-success">SchemaRegistrar</span></td><td>实体 Schema 注册</td><td>实体结构定义</td></tr>
                         <tr><td><span class="badge badge-warning">SystemRegistrar</span></td><td>系统配置注册</td><td>全局系统参数</td></tr>
+                        <tr><td><span class="badge badge-success">HtmlTemplateRegistrar</span></td><td>HTML 模板注册</td><td>模板字符串</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -55,12 +55,26 @@ export function renderRegistry(): void {
             <div class="section-title">RegistryHub 锁定机制</div>
             <div class="card">
                 <p class="text-sm" style="line-height:1.8;">
-                    RegistryHub 提供 <code>lock()</code> 方法，锁定后不可再注册新的注册器。
+                    RegistryHub 提供 <code>lock()</code> 静态方法，锁定后不可再注册新的注册器。
                     这确保了系统初始化完成后配置的不可变性，防止运行时意外修改。
                 </p>
                 <div class="mt-2">
                     <span class="badge badge-success">当前状态: 已锁定</span>
                 </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">访问方式</div>
+            <div class="card">
+                <table class="data-table">
+                    <thead><tr><th>方式</th><th>代码</th></tr></thead>
+                    <tbody>
+                        <tr><td>Registry 代理</td><td><code>Registry.domain</code></td></tr>
+                        <tr><td>RegistryHub.get()</td><td><code>RegistryHub.get&lt;DomainRegistrar&gt;('domain')</code></td></tr>
+                        <tr><td>单例</td><td><code>DomainRegistrar.getInstance()</code></td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     `);
@@ -70,9 +84,7 @@ export function renderRegistry(): void {
     const el = document.getElementById('reg-domains-result');
     if (!el) return;
     try {
-        const hub = RegistryHub.getInstance();
-        const domainRegistrar = hub.getRegistrar<DomainRegistrar>('domain');
-        const schemaRegistrar = hub.getRegistrar<SchemaRegistrar>('schema');
+        const domainRegistrar = Registry.domain as DomainRegistrar;
 
         const domains = ['abp', 'spring', 'local'];
         let html = '<div class="grid-3">';
@@ -102,8 +114,7 @@ export function renderRegistry(): void {
     const el = document.getElementById('reg-domain-detail');
     if (!el) return;
     try {
-        const hub = RegistryHub.getInstance();
-        const domainRegistrar = hub.getRegistrar<DomainRegistrar>('domain');
+        const domainRegistrar = Registry.domain as DomainRegistrar;
         const config = domainRegistrar.get(name);
         el.innerHTML = `<pre style="background:#0A0A0B;padding:12px;border-radius:6px;overflow:auto;font-size:12px;color:#A855F7;">${JSON.stringify(config, null, 2)}</pre>`;
     } catch (err) {

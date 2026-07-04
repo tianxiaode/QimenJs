@@ -21,10 +21,8 @@ export async function handleCallback(): Promise<void> {
     try {
         const result = await oauth2.handleCallback();
         if (result.success) {
-            const { renderLayout } = await import('../layout');
-            const { renderDashboard } = await import('./dashboard');
-            renderLayout(true);
-            renderDashboard();
+            const { showApp } = await import('../main');
+            showApp();
         } else {
             app.innerHTML = `
                 <div class="login-page">

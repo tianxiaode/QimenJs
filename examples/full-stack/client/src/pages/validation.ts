@@ -1,7 +1,7 @@
 /**
  * 表单验证页 - @orbitjs/validation
  */
-import { validate } from '@orbitjs/validation';
+import { validate, doValidate } from '@orbitjs/validation';
 import { renderPageContent } from '../layout';
 
 export function renderValidation(): void {
@@ -64,10 +64,28 @@ export function renderValidation(): void {
                 <div id="v-all-result" class="mt-3"></div>
             </div>
         </div>
+
+        <div class="section">
+            <div class="section-title">API 一览</div>
+            <div class="card">
+                <table class="data-table">
+                    <thead><tr><th>方法</th><th>说明</th><th>返回值</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>doValidate(value, rule)</code></td><td>核心验证函数</td><td>ValidationResult { isValid, errors, ... }</td></tr>
+                        <tr><td><code>validate.validate(value, rule)</code></td><td>通用语法糖</td><td>IValidationError[] | null</td></tr>
+                        <tr><td><code>validate.string(value, rule)</code></td><td>字符串验证</td><td>IValidationError[] | null</td></tr>
+                        <tr><td><code>validate.number(value, rule)</code></td><td>数字验证</td><td>IValidationError[] | null</td></tr>
+                        <tr><td><code>validate.email(value, rule)</code></td><td>邮箱验证</td><td>IValidationError[] | null</td></tr>
+                        <tr><td><code>validate.password(value, rule)</code></td><td>密码验证</td><td>IValidationError[] | null</td></tr>
+                        <tr><td><code>assert.string(value, rule)</code></td><td>断言式验证（失败抛异常）</td><td>void</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     `);
 }
 
-function showResult(elementId: string, result: any): void {
+function showResult(elementId: string, result: { isValid: boolean; errors: any[] }): void {
     const el = document.getElementById(elementId);
     if (!el) return;
     if (result.isValid) {
@@ -79,25 +97,25 @@ function showResult(elementId: string, result: any): void {
 
 (window as any).__validateString = async () => {
     const value = (document.getElementById('v-username') as HTMLInputElement).value;
-    const result = await validate(value, { type: 'string', required: true, minLength: 3, maxLength: 20 });
+    const result = await doValidate(value, { type: 'string', required: true, minLength: 3, maxLength: 20 });
     showResult('v-username-result', result);
 };
 
 (window as any).__validateEmail = async () => {
     const value = (document.getElementById('v-email') as HTMLInputElement).value;
-    const result = await validate(value, { type: 'string', required: true, format: 'email' });
+    const result = await doValidate(value, { type: 'string', required: true, format: 'email' });
     showResult('v-email-result', result);
 };
 
 (window as any).__validateNumber = async () => {
     const value = Number((document.getElementById('v-age') as HTMLInputElement).value);
-    const result = await validate(value, { type: 'number', required: true, min: 18, max: 120 });
+    const result = await doValidate(value, { type: 'number', required: true, min: 18, max: 120 });
     showResult('v-age-result', result);
 };
 
 (window as any).__validatePassword = async () => {
     const value = (document.getElementById('v-password') as HTMLInputElement).value;
-    const result = await validate(value, { type: 'password' });
+    const result = await doValidate(value, { type: 'password' });
     showResult('v-password-result', result);
 };
 
@@ -116,7 +134,7 @@ function showResult(elementId: string, result: any): void {
 
     let html = '';
     for (const test of tests) {
-        const result = await validate(test.value, test.rule);
+        const result = await doValidate(test.value, test.rule);
         html += `<div class="flex items-center gap-2 mb-2">
             <span class="badge ${result.isValid ? 'badge-success' : 'badge-danger'}">${result.isValid ? '✓' : '✗'}</span>
             <span class="text-sm">${test.label}</span>

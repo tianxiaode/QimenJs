@@ -1,16 +1,14 @@
 /**
  * 加密工具页 - @orbitjs/crypto
  */
-import { CryptoManager, base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@orbitjs/crypto';
+import { base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@orbitjs/crypto';
 import { renderPageContent } from '../layout';
-
-const crypto = CryptoManager.getInstance();
 
 export function renderCrypto(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>加密工具</h2>
-            <p>@orbitjs/crypto — AES/RSA/Hash 加解密 + 编码转换</p>
+            <p>@orbitjs/crypto — Hash 计算 + Base64 编解码</p>
         </div>
 
         <div class="section">
@@ -60,34 +58,36 @@ export function renderCrypto(): void {
         </div>
 
         <div class="section">
-            <div class="section-title">AES 加解密</div>
+            <div class="section-title">API 一览</div>
             <div class="card">
-                <div class="form-group">
-                    <label>明文</label>
-                    <input id="crypto-aes-input" class="input" value="Sensitive Data 123" placeholder="输入明文">
-                </div>
-                <div class="form-group">
-                    <label>密钥</label>
-                    <input id="crypto-aes-key" class="input" value="my-secret-key-123" placeholder="输入密钥">
-                </div>
-                <div class="flex gap-2 mb-3">
-                    <button class="btn btn-primary btn-sm" onclick="window.__aesEncrypt()">加密</button>
-                    <button class="btn btn-ghost btn-sm" onclick="window.__aesDecrypt()">解密</button>
-                </div>
-                <div id="crypto-aes-result" class="text-sm"></div>
+                <table class="data-table">
+                    <thead><tr><th>函数</th><th>说明</th><th>输出长度</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>md5(input)</code></td><td>MD5 哈希</td><td>32 chars</td></tr>
+                        <tr><td><code>sha1(input)</code></td><td>SHA-1 哈希</td><td>40 chars</td></tr>
+                        <tr><td><code>sha256(input)</code></td><td>SHA-256 哈希</td><td>64 chars</td></tr>
+                        <tr><td><code>sha512(input)</code></td><td>SHA-512 哈希</td><td>128 chars</td></tr>
+                        <tr><td><code>xxhash64(input, seed?)</code></td><td>XXH64 非加密哈希</td><td>16 chars</td></tr>
+                        <tr><td><code>base64Encode(input)</code></td><td>Base64 编码</td><td>可变</td></tr>
+                        <tr><td><code>base64Decode(input)</code></td><td>Base64 解码</td><td>可变</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     `);
 }
 
-(window as any).__hash = async (algorithm: string) => {
+(window as any).__hash = (algorithm: string) => {
     const input = (document.getElementById('crypto-input') as HTMLInputElement).value;
     try {
         let result: string;
-        if (algorithm === 'xxhash64') {
-            result = xxhash64(input);
-        } else {
-            result = await crypto.hash(input, algorithm);
+        switch (algorithm) {
+            case 'md5': result = md5(input); break;
+            case 'sha1': result = sha1(input); break;
+            case 'sha256': result = sha256(input); break;
+            case 'sha512': result = sha512(input); break;
+            case 'xxhash64': result = xxhash64(input); break;
+            default: result = '未知算法';
         }
         document.getElementById('crypto-hash-result')!.innerHTML = `
             <div class="mb-1"><span class="badge badge-info">${algorithm}</span></div>
@@ -144,33 +144,5 @@ export function renderCrypto(): void {
         `;
     } catch (e: any) {
         document.getElementById('crypto-b64-result')!.innerHTML = `<span class="badge badge-danger">${e.message}</span>`;
-    }
-};
-
-(window as any).__aesEncrypt = async () => {
-    const input = (document.getElementById('crypto-aes-input') as HTMLInputElement).value;
-    const key = (document.getElementById('crypto-aes-key') as HTMLInputElement).value;
-    try {
-        const encrypted = await crypto.encrypt(input, key);
-        document.getElementById('crypto-aes-result')!.innerHTML = `
-            <div class="mb-1"><span class="badge badge-success">加密成功</span></div>
-            <code style="word-break:break-all;color:#A1A1AA;">${encrypted}</code>
-        `;
-    } catch (e: any) {
-        document.getElementById('crypto-aes-result')!.innerHTML = `<span class="badge badge-danger">${e.message}</span>`;
-    }
-};
-
-(window as any).__aesDecrypt = async () => {
-    const input = (document.getElementById('crypto-aes-input') as HTMLInputElement).value;
-    const key = (document.getElementById('crypto-aes-key') as HTMLInputElement).value;
-    try {
-        const decrypted = await crypto.decrypt(input, key);
-        document.getElementById('crypto-aes-result')!.innerHTML = `
-            <div class="mb-1"><span class="badge badge-success">解密成功</span></div>
-            <code style="word-break:break-all;color:#A1A1AA;">${decrypted}</code>
-        `;
-    } catch (e: any) {
-        document.getElementById('crypto-aes-result')!.innerHTML = `<span class="badge badge-danger">${e.message}</span>`;
     }
 };

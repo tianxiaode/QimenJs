@@ -45,13 +45,8 @@ export function showLoginPage(): void {
 
     const result = await oauth2.loginWithPassword({ username, password });
     if (result.success) {
-        const { renderLayout, setActivePage, onPageChange } = await import('../layout');
-        const { renderDashboard } = await import('./dashboard');
-        renderLayout(true);
-        onPageChange(async (pageId) => {
-            // 简化：登录后直接加载 dashboard
-        });
-        renderDashboard();
+        const { showApp } = await import('../main');
+        showApp();
     } else {
         document.getElementById('login-error')!.innerHTML = `<div class="error-msg">${result.error?.message || '登录失败'}</div>`;
     }
@@ -64,10 +59,8 @@ export function showLoginPage(): void {
 (window as any).__clientCredentials = async () => {
     const result = await oauth2.loginWithClientCredentials();
     if (result.success) {
-        const { renderLayout } = await import('../layout');
-        const { renderDashboard } = await import('./dashboard');
-        renderLayout(true);
-        renderDashboard();
+        const { showApp } = await import('../main');
+        showApp();
     } else {
         document.getElementById('login-error')!.innerHTML = `<div class="error-msg">${result.error?.message || '登录失败'}</div>`;
     }

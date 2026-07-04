@@ -1,13 +1,11 @@
 /**
  * 国际化页 - @orbitjs/i18n
  */
-import { I18nManager } from '@orbitjs/i18n';
+import { i18n, registerMessages } from '@orbitjs/i18n';
 import { renderPageContent } from '../layout';
 
-const i18n = I18nManager.getInstance();
-
 // 注册语言包
-i18n.register('zh-CN', {
+registerMessages('zh-CN', {
     'app.title': 'OrbitJS 管理模板',
     'app.greeting': '你好，{name}！',
     'app.items': '{count} 个项目',
@@ -21,7 +19,7 @@ i18n.register('zh-CN', {
     'status.offline': '离线',
 });
 
-i18n.register('en-US', {
+registerMessages('en-US', {
     'app.title': 'OrbitJS Admin Template',
     'app.greeting': 'Hello, {name}!',
     'app.items': '{count} items',
@@ -35,7 +33,7 @@ i18n.register('en-US', {
     'status.offline': 'Offline',
 });
 
-i18n.register('ja-JP', {
+registerMessages('ja-JP', {
     'app.title': 'OrbitJS 管理テンプレート',
     'app.greeting': 'こんにちは、{name}！',
     'app.items': '{count} 件',
@@ -49,8 +47,7 @@ i18n.register('ja-JP', {
     'status.offline': 'オフライン',
 });
 
-let currentLocale = 'zh-CN';
-i18n.setLocale(currentLocale);
+let currentLocale = i18n.locale || 'zh-CN';
 
 export function renderI18n(): void {
     renderPageContent(`
@@ -70,6 +67,25 @@ export function renderI18n(): void {
                 <div id="i18n-demo"></div>
             </div>
         </div>
+
+        <div class="section">
+            <div class="section-title">API 一览</div>
+            <div class="card">
+                <table class="data-table">
+                    <thead><tr><th>方法</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>i18n.t(key, params?, default?)</code></td><td>翻译文本，支持 {key} 插值</td></tr>
+                        <tr><td><code>i18n.locale</code></td><td>获取/设置当前语言（setter 触发 locale:change 事件）</td></tr>
+                        <tr><td><code>i18n.inject(messages, locale?)</code></td><td>注入/合并消息到指定语言</td></tr>
+                        <tr><td><code>registerMessages(locale, messages)</code></td><td>注册语言包（自动切换 locale）</td></tr>
+                        <tr><td><code>i18n.loadScript(url)</code></td><td>动态加载 .js 语言包文件</td></tr>
+                        <tr><td><code>i18n.onLocaleChange(handler)</code></td><td>监听语言变更，返回取消函数</td></tr>
+                        <tr><td><code>i18n.getMessage(path)</code></td><td>获取原始翻译值（不做插值）</td></tr>
+                        <tr><td><code>i18n.getMessages()</code></td><td>获取当前语言全部消息</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     `);
 
     renderDemo();
@@ -82,7 +98,7 @@ function renderDemo(): void {
     const keys = ['app.title', 'app.greeting', 'app.items', 'app.today', 'nav.dashboard', 'nav.users', 'btn.save', 'btn.cancel', 'btn.delete', 'status.online', 'status.offline'];
 
     el.innerHTML = `
-        <div class="text-sm mb-2" style="color:#8A8F98;">当前语言：<span class="badge badge-info">${currentLocale}</span></div>
+        <div class="text-sm mb-2" style="color:#8A8F98;">当前语言：<span class="badge badge-info">${i18n.locale}</span></div>
         <table class="data-table">
             <thead><tr><th>Key</th><th>翻译结果</th></tr></thead>
             <tbody>${keys.map(key => {
@@ -94,7 +110,7 @@ function renderDemo(): void {
 }
 
 (window as any).__switchLocale = (locale: string) => {
+    i18n.locale = locale;
     currentLocale = locale;
-    i18n.setLocale(locale);
     renderDemo();
 };
