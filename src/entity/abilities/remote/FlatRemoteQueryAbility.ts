@@ -59,8 +59,8 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         return await this._internalList(true);
     },
 
-    async search(search: any) {
-        this.searchBy = search;
+    async searchBy(search: any) {
+        this.search = { ...this.search, ...search };
         return await this._internalList(true);
     },
 

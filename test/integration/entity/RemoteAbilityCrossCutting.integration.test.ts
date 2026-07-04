@@ -82,7 +82,7 @@ function ensureDomain(): void {
             baseUrl: 'http://localhost:9999',
             preset: 'default',
             pageSize: 10,
-            pagesizes: [10, 20, 50],
+            pagesizes: [5, 10, 20, 50],
         });
     }
 }

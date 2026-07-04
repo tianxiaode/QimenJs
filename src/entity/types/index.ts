@@ -286,7 +286,7 @@ export interface IFlatRemoteQueryAbility {
     jump(page: number): Promise<void>;
     changeSize(size: number): Promise<void>;
     filter(text: string): Promise<void>;
-    search(search: any): Promise<void>;
+    searchBy(search: any): Promise<void>;
     sort(prop: string, order: string): Promise<void>;
     reset(): Promise<void>;
 }

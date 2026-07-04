@@ -289,4 +289,71 @@ describe('Manager 域配置传播', () => {
             manager.dispose();
         });
     });
+
+    // ========================================
+    // 6. DomainPagingAbility 边界条件
+    // ========================================
+
+    describe('DomainPagingAbility 边界条件', () => {
+        it('domainConfig 为 null 时 pageSize 应回退到默认值 20', () => {
+            // 不注册域，domainConfig 为 null
+            const manager = new TestCrudManager();
+            expect(manager.pageSize).toBe(20);
+            manager.dispose();
+        });
+
+        it('domainConfig 为 null 时 pageSizes 应回退到默认值 [10, 20, 50]', () => {
+            // 不注册域，domainConfig 为 null
+            const manager = new TestCrudManager();
+            expect(manager.pageSizes).toEqual([10, 20, 50]);
+            manager.dispose();
+        });
+
+        it('domainConfig 中 pageSize 为 0 时应使用 0', () => {
+            const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
+            domainRegistrar.register('domain-config-test', {
+                baseUrl: 'http://localhost:9999',
+                preset: 'default',
+                pageSize: 0,
+                pagesizes: [0, 10, 20],
+            } as any, true);
+
+            const manager = new TestCrudManager();
+            expect(manager.pageSize).toBe(0);
+            manager.dispose();
+        });
+
+        it('domainConfig 中 pagesizes 为空数组时应使用空数组', () => {
+            const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
+            domainRegistrar.register('domain-config-test', {
+                baseUrl: 'http://localhost:9999',
+                preset: 'default',
+                pagesizes: [],
+            } as any, true);
+
+            const manager = new TestCrudManager();
+            expect(manager.pageSizes).toEqual([]);
+            manager.dispose();
+        });
+
+        it('pageSize setter 后 getter 应返回新值', () => {
+            registerDomain({ pageSize: 10 });
+
+            const manager = new TestCrudManager();
+            manager.pageSize = 30;
+            expect(manager.pageSize).toBe(30);
+
+            manager.dispose();
+        });
+
+        it('pageSizes setter 后 getter 应返回新值', () => {
+            registerDomain({ pagesizes: [10, 20, 50] });
+
+            const manager = new TestCrudManager();
+            manager.pageSizes = [5, 10];
+            expect(manager.pageSizes).toEqual([5, 10]);
+
+            manager.dispose();
+        });
+    });
 });

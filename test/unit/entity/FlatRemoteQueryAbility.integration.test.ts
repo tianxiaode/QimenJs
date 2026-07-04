@@ -74,7 +74,7 @@ function ensureQueryTestDomain(): void {
             baseUrl: 'http://localhost:9999',
             preset: 'default',
             pageSize: 10,
-            pagesizes: [10, 20, 50],
+            pagesizes: [5, 10, 20, 50],
         });
     }
 }
@@ -353,25 +353,22 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
     });
 
     // ========================================
-    // 4.5 search 搜索查询
+    // 4.5 searchBy 搜索查询
     // ========================================
 
-    describe('search 搜索查询', () => {
-        // 注意：FlatRemoteQueryAbility.search() 方法与 Manager.search 属性同名，
-        // Ability 注入后 search 是方法，但 reset() 中 this.search = {} 会覆盖回属性。
-        // 这是一个已知的命名冲突问题，需要后续重构解决。
-        it.skip('search() 应该设置 searchBy 并强制刷新', async () => {
+    describe('searchBy 搜索查询', () => {
+        it('searchBy() 应该设置搜索条件并强制刷新', async () => {
             manager.updateData(createProductData(10), 30);
 
             mockFetchReturn({ list: createProductData(5), total: 5 });
 
-            const result = await (manager as any).search({ keyword: 'Electronics' });
+            const result = await manager.searchBy({ keyword: 'Electronics' });
 
-            expect(manager.searchBy).toEqual({ keyword: 'Electronics' });
+            expect(manager.search).toEqual(expect.objectContaining({ keyword: 'Electronics' }));
             expect(Array.isArray(result)).toBe(true);
         });
 
-        it.skip('search() 应该跳过缓存强制请求', async () => {
+        it('searchBy() 应该跳过缓存强制请求', async () => {
             mockFetchReturn({ list: createProductData(10), total: 30 });
             await manager.list();
 
@@ -380,7 +377,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
                 metadata: { hasError: false },
             } as any));
 
-            await (manager as any).search({ keyword: 'Books' });
+            await manager.searchBy({ keyword: 'Books' });
 
             expect(fetchSpy).toHaveBeenCalled();
         });

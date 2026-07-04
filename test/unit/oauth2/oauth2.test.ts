@@ -86,6 +86,28 @@ describe('OAuth2Manager', () => {
             expect(manager.isAuthenticated()).toBe(true);
         });
 
+        test('带 scope 参数时请求应包含 scope', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({
+                username: 'admin',
+                password: '123456',
+                scope: 'openid profile',
+            });
+
+            const callBody = mockFetch.mock.calls[0][1].body;
+            expect(callBody).toContain('scope=openid+profile');
+        });
+
         test('应该处理登录失败', async () => {
             mockFetch.mockResolvedValueOnce({
                 ok: false,
@@ -334,6 +356,52 @@ describe('OAuth2Manager', () => {
             expect(url).toContain('scope=openid+profile');
             expect(url).toContain('state=random-state');
         });
+
+        test('缺少 authorizationEndpoint 时应抛出错误', () => {
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                redirectUri: 'https://app.example.com/callback',
+                domain: 'api',
+            });
+
+            expect(() => manager.getAuthorizationUrl()).toThrow('authorizationEndpoint is required');
+        });
+
+        test('缺少 clientId 时应抛出错误', () => {
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                authorizationEndpoint: 'https://auth.example.com/authorize',
+                redirectUri: 'https://app.example.com/callback',
+                domain: 'api',
+            } as any);
+
+            expect(() => manager.getAuthorizationUrl()).toThrow('clientId is required');
+        });
+
+        test('缺少 redirectUri 时应抛出错误', () => {
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                authorizationEndpoint: 'https://auth.example.com/authorize',
+                clientId: 'test-client',
+                domain: 'api',
+            } as any);
+
+            expect(() => manager.getAuthorizationUrl()).toThrow('redirectUri is required');
+        });
+
+        test('不传 state 参数时 URL 不包含 state', () => {
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                authorizationEndpoint: 'https://auth.example.com/authorize',
+                clientId: 'test-client',
+                redirectUri: 'https://app.example.com/callback',
+                domain: 'api',
+            });
+
+            const url = manager.getAuthorizationUrl();
+            expect(url).not.toContain('state=');
+        });
     });
 
     describe('events', () => {
@@ -409,6 +477,237 @@ describe('OAuth2Manager', () => {
             expect(handler).not.toHaveBeenCalled();
         });
     });
+
+    describe('revokeToken', () => {
+        test('无 accessToken 时不应发送请求', async () => {
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                revokeEndpoint: 'https://auth.example.com/revoke',
+                domain: 'api',
+            });
+
+            await manager.revokeToken();
+            expect(mockFetch).not.toHaveBeenCalled();
+        });
+
+        test('无 revokeEndpoint 时不应发送请求', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+            mockFetch.mockReset();
+
+            await manager.revokeToken();
+            expect(mockFetch).not.toHaveBeenCalled();
+        });
+
+        test('有 tokenType 时应传 token_type_hint', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                revokeEndpoint: 'https://auth.example.com/revoke',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+            mockFetch.mockReset();
+            mockFetch.mockResolvedValueOnce({ ok: true });
+
+            await manager.revokeToken();
+
+            const callBody = mockFetch.mock.calls[0][1].body;
+            expect(callBody).toContain('token_type_hint=Bearer');
+        });
+    });
+
+    describe('isTokenExpired', () => {
+        test('无 expiresIn 时应返回 false（永不过期）', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse({ expires_in: undefined })),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+            expect(manager.getToken()).toBe('test-access-token');
+        });
+    });
+
+    describe('requestToken', () => {
+        test('网络异常应返回错误', async () => {
+            mockFetch.mockRejectedValueOnce(new Error('Network failure'));
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+            });
+
+            const result = await manager.loginWithPassword({ username: 'admin', password: '123' });
+            expect(result.success).toBe(false);
+            expect(result.error?.message).toContain('Network failure');
+        });
+
+        test('带 clientId 和 clientSecret 时应包含在请求中', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                clientSecret: 'test-secret',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+
+            const callBody = mockFetch.mock.calls[0][1].body;
+            expect(callBody).toContain('client_id=test-client');
+            expect(callBody).toContain('client_secret=test-secret');
+        });
+
+        test('带 scopes 且 params 无 scope 时应自动填充', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                scopes: ['openid', 'profile'],
+                domain: 'api',
+            });
+
+            await manager.loginWithClientCredentials();
+
+            const callBody = mockFetch.mock.calls[0][1].body;
+            expect(callBody).toContain('scope=openid+profile');
+        });
+    });
+
+    describe('configure', () => {
+        test('从存储恢复 token 时应设置 isAuthenticated', async () => {
+            // 先登录保存 token
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+                storage: 'localStorage',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+            expect(manager.isAuthenticated()).toBe(true);
+
+            // 创建新 manager 实例，从 localStorage 恢复
+            const newManager = new OAuth2Manager();
+            newManager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+                storage: 'localStorage',
+            });
+
+            expect(newManager.isAuthenticated()).toBe(true);
+        });
+
+        test('domain 为数组时应更新多个域', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: ['api1', 'api2'],
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+
+            const { DomainRegistrar } = jest.requireMock('@/registry/registrars/DomainRegistrar');
+            const instance = DomainRegistrar.getInstance();
+            expect(instance.updateToken).toHaveBeenCalledWith('test-access-token', 'api1', 'api2');
+        });
+    });
+
+    describe('emit', () => {
+        test('事件处理器异常不应阻塞主流程', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                domain: 'api',
+            });
+
+            const badHandler = jest.fn(() => { throw new Error('handler error'); });
+            const goodHandler = jest.fn();
+            manager.on('oauth2:token-acquired', badHandler);
+            manager.on('oauth2:token-acquired', goodHandler);
+
+            const result = await manager.loginWithPassword({ username: 'admin', password: '123' });
+
+            // 主流程不应被阻塞
+            expect(result.success).toBe(true);
+            // 好的处理器仍应被调用
+            expect(goodHandler).toHaveBeenCalled();
+        });
+    });
+
+    describe('logout', () => {
+        test('撤销失败不应阻塞登出', async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve(tokenResponse()),
+            });
+
+            manager.configure({
+                tokenEndpoint: 'https://auth.example.com/token',
+                clientId: 'test-client',
+                revokeEndpoint: 'https://auth.example.com/revoke',
+                domain: 'api',
+            });
+
+            await manager.loginWithPassword({ username: 'admin', password: '123' });
+            expect(manager.isAuthenticated()).toBe(true);
+
+            // 撤销请求失败
+            mockFetch.mockRejectedValueOnce(new Error('revoke failed'));
+
+            await manager.logout();
+            expect(manager.isAuthenticated()).toBe(false);
+        });
+    });
 });
 
 describe('TokenStorage', () => {
@@ -451,6 +750,75 @@ describe('TokenStorage', () => {
         test('sessionStorage 类型创建 SessionStorageTokenStorage', () => {
             const storage = createTokenStorage('sessionStorage');
             expect(storage).toBeInstanceOf(SessionStorageTokenStorage);
+        });
+    });
+
+    describe('LocalStorageTokenStorage', () => {
+        test('应该存取 token', () => {
+            const storage = new LocalStorageTokenStorage();
+            const entry: OAuth2TokenEntry = {
+                accessToken: 'local-test-token',
+                acquiredAt: Date.now(),
+            };
+
+            storage.set(entry);
+            const result = storage.get();
+            expect(result?.accessToken).toBe('local-test-token');
+        });
+
+        test('应该清除 token', () => {
+            const storage = new LocalStorageTokenStorage();
+            storage.set({ accessToken: 'test', acquiredAt: Date.now() });
+            storage.clear();
+            expect(storage.get()).toBeNull();
+        });
+
+        test('JSON 解析失败时返回 null', () => {
+            localStorage.setItem('oauth2_token', 'invalid-json{{{');
+            const storage = new LocalStorageTokenStorage();
+            expect(storage.get()).toBeNull();
+        });
+    });
+
+    describe('SessionStorageTokenStorage', () => {
+        test('应该存取 token', () => {
+            const storage = new SessionStorageTokenStorage();
+            const entry: OAuth2TokenEntry = {
+                accessToken: 'session-test-token',
+                acquiredAt: Date.now(),
+            };
+
+            storage.set(entry);
+            const result = storage.get();
+            expect(result?.accessToken).toBe('session-test-token');
+        });
+
+        test('应该清除 token', () => {
+            const storage = new SessionStorageTokenStorage();
+            storage.set({ accessToken: 'test', acquiredAt: Date.now() });
+            storage.clear();
+            expect(storage.get()).toBeNull();
+        });
+
+        test('JSON 解析失败时返回 null', () => {
+            sessionStorage.setItem('oauth2_token', 'invalid-json{{{');
+            const storage = new SessionStorageTokenStorage();
+            expect(storage.get()).toBeNull();
+        });
+    });
+
+    describe('MemoryTokenStorage.set() 深拷贝', () => {
+        test('set 后修改原 entry 对象不应影响存储值', () => {
+            const storage = new MemoryTokenStorage();
+            const entry: OAuth2TokenEntry = {
+                accessToken: 'original',
+                acquiredAt: Date.now(),
+            };
+
+            storage.set(entry);
+            entry.accessToken = 'modified';
+
+            expect(storage.get()?.accessToken).toBe('original');
         });
     });
 });

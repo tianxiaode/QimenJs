@@ -191,6 +191,68 @@ describe('LocalMutationAbility', () => {
             // 不抛异常即可
             host.dispose();
         });
+
+        it('softDelete 传入纯 ID 列表（非对象）时应正确处理', async () => {
+            const host = createMutationHost();
+            host.sourceData.set('1', { id: '1', name: 'local item' });
+            await host.addItem({ id: '2', name: 'new item' });
+            host.sourceData.set('3', { id: '3', name: 'persist item' });
+
+            // 传入纯 ID（字符串），非对象
+            await host.softDelete({ localOnly: ['2'], persistent: ['3'] });
+            expect(host.changes.deleted).toContain('2');
+            expect(host.changes.deleted).toContain('3');
+            expect(host.sourceData.has('2')).toBe(false);
+            expect(host.sourceData.has('3')).toBe(false);
+            host.dispose();
+        });
+
+        it('softDelete 同时有 localOnly 和 persistent 项时', async () => {
+            const host = createMutationHost();
+            await host.addItem({ id: 'local1', name: 'local item' });
+            host.sourceData.set('persist1', { id: 'persist1', name: 'persist item' });
+
+            await host.softDelete({
+                localOnly: [{ id: 'local1', name: 'local item' }],
+                persistent: [{ id: 'persist1', name: 'persist item' }],
+            });
+
+            // localOnly 项应从 changes.added 中移除并加入 changes.deleted
+            expect(host.changes.added.length).toBe(0);
+            expect(host.changes.deleted).toContain('local1');
+            // persistent 项直接加入 changes.deleted
+            expect(host.changes.deleted).toContain('persist1');
+            host.dispose();
+        });
+
+        it('rollbackDelete 无快照但有 changes.deleted 时应清空 deleted', async () => {
+            const host = createMutationHost();
+            // 手动设置 changes.deleted（不通过 softDelete，因此无快照）
+            const changes = host._getOrCreateChanges();
+            changes.deleted.push('manual1');
+            expect(host.changes.deleted).toContain('manual1');
+
+            await host.rollbackDelete();
+            expect(host.changes.deleted).toEqual([]);
+            host.dispose();
+        });
+    });
+
+    describe('_commitChange', () => {
+        it('addItem 后应调用 setCache 更新缓存', async () => {
+            const host = createMutationHost();
+            await host.addItem({ id: '1', name: 'test' });
+            expect(host.setCache).toHaveBeenCalled();
+            host.dispose();
+        });
+
+        it('addItem 后应触发 debounce 刷新视图', async () => {
+            const host = createMutationHost();
+            const debounceSpy = jest.spyOn(host, 'debounce');
+            await host.addItem({ id: '1', name: 'test' });
+            expect(debounceSpy).toHaveBeenCalledWith('refreshView', expect.any(Function), 50);
+            host.dispose();
+        });
     });
 
     describe('clearChanges', () => {

@@ -102,6 +102,34 @@ describe('DirtyAbility', () => {
             expect(host.isDirty(item)).toBe(true);
             host.dispose();
         });
+
+        it('对象字段值未变更时（深比较 JSON.stringify 分支）应返回 false', () => {
+            const host = createDirtyHost();
+            const item = { id: '1', name: 'test', meta: { key: 'val' } };
+            host.startEdit(item);
+            // 替换为内容相同的新对象引用，JSON.stringify 深比较应判定为相等
+            item.meta = { key: 'val' };
+            expect(host.isDirty(item)).toBe(false);
+            host.dispose();
+        });
+
+        it('对象字段值为 null 时应走原始值比较分支', () => {
+            const host = createDirtyHost();
+            const item: any = { id: '1', name: 'test', meta: null };
+            host.startEdit(item);
+            item.meta = { key: 'newVal' };
+            expect(host.isDirty(item)).toBe(true);
+            host.dispose();
+        });
+
+        it('多个字段中部分变更时应返回 true', () => {
+            const host = createDirtyHost();
+            const item = { id: '1', name: 'test', age: 20, active: true };
+            host.startEdit(item);
+            item.age = 25; // 只修改 age
+            expect(host.isDirty(item)).toBe(true);
+            host.dispose();
+        });
     });
 
     describe('startEdit / submitEdit / cancelEdit', () => {
@@ -184,6 +212,47 @@ describe('DirtyAbility', () => {
             expect(host2.isDirty()).toBe(true);
 
             host2.dispose();
+        });
+    });
+
+    describe('schema 无 idField 时使用默认值', () => {
+        function createDirtyHostNoIdField() {
+            class DirtyHost extends ComposableBase {
+                static readonly abilities = [DirtyAbility];
+                schema = {}; // 无 idField
+                sourceData = new Map<string, any>();
+            }
+            return new DirtyHost() as any;
+        }
+
+        it('isDirty 应使用默认 idField "id"', () => {
+            const host = createDirtyHostNoIdField();
+            const item = { id: '1', name: 'test' };
+            host.startEdit(item);
+            item.name = 'changed';
+            expect(host.isDirty(item)).toBe(true);
+            host.dispose();
+        });
+
+        it('submitEdit 应使用默认 idField "id"', () => {
+            const host = createDirtyHostNoIdField();
+            const item = { id: '1', name: 'test' };
+            host.startEdit(item);
+            item.name = 'changed';
+            host.submitEdit(item);
+            expect(host.isDirty()).toBe(false);
+            host.dispose();
+        });
+
+        it('cancelEdit 应使用默认 idField "id"', () => {
+            const host = createDirtyHostNoIdField();
+            const item = { id: '1', name: 'test' };
+            host.startEdit(item);
+            item.name = 'changed';
+            host.cancelEdit(item);
+            expect(item.name).toBe('test');
+            expect(host.isDirty()).toBe(false);
+            host.dispose();
         });
     });
 
