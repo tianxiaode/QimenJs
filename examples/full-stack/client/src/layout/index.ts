@@ -199,4 +199,6 @@ export function renderPageContent(html: string): void {
 (window as any).__changeLang = async (locale: string) => {
     await i18n.loadScript(`/locales/${locale}.js`);
     i18n.locale = locale;
+    // 重新渲染当前页面，使翻译生效
+    setActivePage(activePage);
 };
