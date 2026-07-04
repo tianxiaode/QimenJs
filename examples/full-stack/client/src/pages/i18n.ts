@@ -9,6 +9,9 @@ const i18n = (window as any).orbitI18n?.i18n;
 // 已加载的语言包
 const loadedLocales = new Set<string>();
 
+// onLocaleChange 取消监听函数
+let offLocaleChange: (() => void) | null = null;
+
 async function ensureLocale(locale: string): Promise<void> {
     if (loadedLocales.has(locale)) return;
     await i18n.loadScript(`/locales/${locale}.js`);
@@ -19,6 +22,9 @@ export async function renderI18n(): Promise<void> {
     // 确保当前语言包已加载
     await ensureLocale(i18n.locale || 'zh-CN');
 
+    // 取消之前的监听
+    offLocaleChange?.();
+
     renderPageContent(`
         <div class="page-header">
             <h2>国际化</h2>
@@ -26,15 +32,77 @@ export async function renderI18n(): Promise<void> {
         </div>
 
         <div class="section">
-            <div class="section-title">语言切换（loadScript 动态加载）</div>
+            <div class="section-title">响应式语言切换（模拟 Vue/React）</div>
             <div class="card">
-                <p class="text-sm text-muted mb-3">语言包为 public/locales/ 下的 .js 文件，通过 i18n.loadScript() 按需加载</p>
+                <p class="text-sm text-muted mb-3">通过 i18n.onLocaleChange 监听语言变更，自动重渲染 UI，无需刷新页面</p>
                 <div class="flex gap-2 mb-3">
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('zh-CN')">中文简体</button>
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('en-US')">English</button>
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('ja-JP')">日本語</button>
                 </div>
-                <div id="i18n-demo"></div>
+                <div id="i18n-reactive" style="border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:16px;background:rgba(99,102,241,0.05);">
+                    <div style="margin-bottom:8px;color:#6366F1;font-size:12px;font-weight:600;">▼ 响应式区域（语言切换时自动更新）</div>
+                    <div id="i18n-reactive-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Vue/React 集成代码示例</div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><span class="dot" style="background:#4CAF50;"></span>Vue 3 Composition API</div>
+                    <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { ref, onMounted, onUnmounted } from 'vue'
+import { i18n } from '@orbitjs/i18n'
+
+export function useI18n() {
+  const locale = ref(i18n.locale)
+
+  const t = (key: string, params?: any) => {
+    return i18n.t(key, params)
+  }
+
+  const setLocale = async (newLocale: string) => {
+    await i18n.loadScript(\`/locales/\${newLocale}.js\`)
+    i18n.locale = newLocale
+  }
+
+  onMounted(() => {
+    const off = i18n.onLocaleChange((e) => {
+      locale.value = e.current
+    })
+    onUnmounted(off)
+  })
+
+  return { locale, t, setLocale }
+}</code></pre>
+                </div>
+                <div class="card">
+                    <div class="card-title"><span class="dot" style="background:#6366F1;"></span>React Hook</div>
+                    <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { useState, useEffect } from 'react'
+import { i18n } from '@orbitjs/i18n'
+
+export function useI18n() {
+  const [locale, setLocaleState] = useState(i18n.locale)
+
+  const t = (key: string, params?: any) => {
+    return i18n.t(key, params)
+  }
+
+  const setLocale = async (newLocale: string) => {
+    await i18n.loadScript(\`/locales/\${newLocale}.js\`)
+    i18n.locale = newLocale
+  }
+
+  useEffect(() => {
+    return i18n.onLocaleChange((e) => {
+      setLocaleState(e.current)
+    })
+  }, [])
+
+  return { locale, t, setLocale }
+}</code></pre>
+                </div>
             </div>
         </div>
 
@@ -67,7 +135,30 @@ export async function renderI18n(): Promise<void> {
         </div>
     `);
 
-    renderDemo();
+    // 注册 onLocaleChange 监听，自动更新响应式区域
+    offLocaleChange = i18n.onLocaleChange(() => {
+        renderReactiveContent();
+    });
+
+    renderReactiveContent();
+}
+
+function renderReactiveContent(): void {
+    const el = document.getElementById('i18n-reactive-content');
+    if (!el) return;
+
+    const keys = ['app.title', 'app.greeting', 'app.items', 'app.today', 'nav.dashboard', 'nav.users', 'btn.save', 'btn.cancel', 'btn.delete', 'status.online', 'status.offline'];
+
+    el.innerHTML = `
+        <div class="text-sm mb-2" style="color:#8A8F98;">当前语言：<span class="badge badge-info">${i18n.locale}</span></div>
+        <table class="data-table">
+            <thead><tr><th>Key</th><th>t() 翻译结果</th></tr></thead>
+            <tbody>${keys.map(key => {
+                const value = i18n.t(key, { name: 'OrbitJS', count: 42, date: new Date().toLocaleDateString() });
+                return `<tr><td class="text-muted">${key}</td><td>${value}</td></tr>`;
+            }).join('')}</tbody>
+        </table>
+    `;
 }
 
 function addLoadLog(msg: string): void {
@@ -78,28 +169,10 @@ function addLoadLog(msg: string): void {
     el.scrollTop = el.scrollHeight;
 }
 
-function renderDemo(): void {
-    const el = document.getElementById('i18n-demo');
-    if (!el) return;
-
-    const keys = ['app.title', 'app.greeting', 'app.items', 'app.today', 'nav.dashboard', 'nav.users', 'btn.save', 'btn.cancel', 'btn.delete', 'status.online', 'status.offline'];
-
-    el.innerHTML = `
-        <div class="text-sm mb-2" style="color:#8A8F98;">当前语言：<span class="badge badge-info">${i18n.locale}</span></div>
-        <table class="data-table">
-            <thead><tr><th>Key</th><th>翻译结果</th></tr></thead>
-            <tbody>${keys.map(key => {
-                let value = i18n.t(key, { name: 'OrbitJS', count: 42, date: new Date().toLocaleDateString() });
-                return `<tr><td class="text-muted">${key}</td><td>${value}</td></tr>`;
-            }).join('')}</tbody>
-        </table>
-    `;
-}
-
 (window as any).__switchLocale = async (locale: string) => {
     addLoadLog(`切换语言 → ${locale}`);
     await ensureLocale(locale);
     i18n.locale = locale;
     addLoadLog(`已切换到 ${locale}，消息数: ${Object.keys(i18n.getMessages() || {}).length}`);
-    renderDemo();
+    // 不需要手动 renderReactiveContent()，onLocaleChange 会自动触发
 };
