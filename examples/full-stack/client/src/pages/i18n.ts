@@ -1,8 +1,10 @@
 /**
  * 国际化页 - @orbitjs/i18n
  */
-import { i18n } from '@orbitjs/i18n';
 import { renderPageContent } from '../layout';
+
+// i18n 已通过 public/i18n.js 预加载
+const i18n = (window as any).orbitI18n?.i18n;
 
 // 已加载的语言包
 const loadedLocales = new Set<string>();

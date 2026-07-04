@@ -5,7 +5,9 @@
  */
 
 import { CSS } from '../styles/theme';
-import { i18n } from '@orbitjs/i18n';
+
+// i18n 已通过 public/i18n.js 预加载，从全局获取
+const i18n = (window as any).orbitI18n?.i18n;
 
 // 注入全局样式
 let styleInjected = false;
