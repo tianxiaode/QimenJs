@@ -6,7 +6,7 @@ import { ILogger, LogLevel } from './types';
  * 子日志记录器类
  * 
  * 提供针对特定类别（category）的日志记录功能。
- * 这些实例通常通过 [Logger.for()](file://d:\Workspace\projects\orbitjs\src\utils\logger\Logger.ts#L60-L72) 方法创建，与主日志记录器关联。
+ * 这些实例通常通过 [Logger.for()](file://d:\Workspace\projects\QimenJs\src\utils\logger\Logger.ts#L60-L72) 方法创建，与主日志记录器关联。
  * 
  * @example
  * ```typescript

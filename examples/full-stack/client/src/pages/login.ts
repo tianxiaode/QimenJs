@@ -5,7 +5,7 @@ import { oauth2 } from '../config';
 import { injectStyles } from '../layout';
 
 // i18n 已通过 public/i18n.js 预加载
-const i18n = (window as any).orbitI18n?.i18n;
+const i18n = (window as any).qimenI18n?.i18n;
 
 export function showLoginPage(): void {
     injectStyles();
@@ -22,7 +22,7 @@ export function showLoginPage(): void {
                         <option value="ja-JP" ${currentLang === 'ja-JP' ? 'selected' : ''}>日本語</option>
                     </select>
                 </div>
-                <h2>OrbitJS</h2>
+                <h2>QimenJS</h2>
                 <p class="subtitle">Enterprise Entity Framework</p>
 
                 <div class="form-group">

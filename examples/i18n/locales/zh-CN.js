@@ -3,10 +3,10 @@
  *
  * 使用方式：将此文件复制到项目的 public/locales/zh-CN.js
  * 在 HTML 中同步加载：
- *   <script src="/orbit-i18n.js"></script>
+ *   <script src="/qimen-i18n.js"></script>
  *   <script src="/locales/zh-CN.js"></script>
  */
-__orbit_i18n_register__('zh-CN', {
+__qimen_i18n_register__('zh-CN', {
   common: {
     save: '保存',
     cancel: '取消',

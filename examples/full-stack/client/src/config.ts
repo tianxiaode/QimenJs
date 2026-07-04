@@ -84,7 +84,7 @@ oauth2.configure({
     tokenEndpoint: 'http://localhost:3000/oauth2/token',
     revokeEndpoint: 'http://localhost:3000/oauth2/revoke',
     authorizationEndpoint: 'http://localhost:3000/oauth2/authorize',
-    clientId: 'orbitjs-demo',
+    clientId: 'qimenjs-demo',
     redirectUri: 'http://localhost:5173/callback',
     domain: ['abp', 'spring'],  // token 同时应用到两个 API 域
     storage: 'localStorage',

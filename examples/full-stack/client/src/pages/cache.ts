@@ -26,7 +26,7 @@ export function renderCache(): void {
                     </div>
                     <div class="form-group">
                         <label>缓存 Value (JSON)</label>
-                        <input id="cache-value" class="input" value='{"name":"OrbitJS","version":"2.0"}' placeholder="缓存值">
+                        <input id="cache-value" class="input" value='{"name":"QimenJS","version":"2.0"}' placeholder="缓存值">
                     </div>
                 </div>
                 <div id="cache-result" class="mt-2 text-sm"></div>

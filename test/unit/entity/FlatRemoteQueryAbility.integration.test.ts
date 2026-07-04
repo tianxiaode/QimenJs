@@ -301,7 +301,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
     // ========================================
 
     describe('filter 过滤查询', () => {
-        it('filter() 应该设置 filterBy 并重置 page 为 1', async () => {
+        it('filter() 应该设置 search.keyword 并重置 page 为 1', async () => {
             manager.updateData(createProductData(10), 30);
             manager.page = 2;
 
@@ -309,20 +309,20 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             const result = await manager.filter('Electronics');
 
-            expect(manager.filterBy).toBe('Electronics');
+            expect((manager.search as any).keyword).toBe('Electronics');
             expect(manager.page).toBe(1);
             expect(Array.isArray(result)).toBe(true);
         });
 
         it('filter() 空字符串应该清空过滤条件', async () => {
             manager.updateData(createProductData(10), 30);
-            manager.filterBy = 'Electronics';
+            (manager.search as any).keyword = 'Electronics';
 
             mockFetchReturn({ list: createProductData(10), total: 30 });
 
             await manager.filter('');
 
-            expect(manager.filterBy).toBe('');
+            expect((manager.search as any).keyword).toBe('');
             expect(manager.page).toBe(1);
         });
 
@@ -388,7 +388,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
     // ========================================
 
     describe('sort 排序查询', () => {
-        it('sort() 应该设置 sortBy 和 order 并重置 page 为 1', async () => {
+        it('sort() 应该设置 search.sortBy 和 search.sortOrder 并重置 page 为 1', async () => {
             manager.updateData(createProductData(10), 30);
             manager.page = 2;
 
@@ -396,23 +396,23 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             const result = await manager.sort('price', 'desc');
 
-            expect(manager.sortBy).toBe('price');
-            expect(manager.order).toBe('desc');
+            expect((manager.search as any).sortBy).toBe('price');
+            expect((manager.search as any).sortOrder).toBe('desc');
             expect(manager.page).toBe(1);
             expect(Array.isArray(result)).toBe(true);
         });
 
-        it('sort() order 为 null 时应该清空 sortBy', async () => {
+        it('sort() order 为 null 时应该清空 search.sortBy', async () => {
             manager.updateData(createProductData(10), 30);
-            manager.sortBy = 'price';
-            manager.order = 'desc';
+            (manager.search as any).sortBy = 'price';
+            (manager.search as any).sortOrder = 'desc';
 
             mockFetchReturn({ list: createProductData(10), total: 30 });
 
             await manager.sort('price', null);
 
-            expect(manager.sortBy).toBe('');
-            expect(manager.order).toBe('asc'); // null 时默认 'asc'
+            expect((manager.search as any).sortBy).toBe('');
+            expect((manager.search as any).sortOrder).toBe('asc'); // null 时默认 'asc'
         });
 
         it('sort() 不传 order 时应该默认 asc', async () => {
@@ -420,10 +420,10 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             mockFetchReturn({ list: createProductData(10), total: 30 });
 
-            // sort(prop, null) → order = 'asc'
+            // sort(prop, null) → sortOrder = 'asc'
             await manager.sort('name', null);
 
-            expect(manager.order).toBe('asc');
+            expect((manager.search as any).sortOrder).toBe('asc');
         });
 
         it('sort() 应该调用 list(false) 不强制刷新', async () => {
@@ -472,20 +472,18 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
             expect(fetchSpy).toHaveBeenCalled();
         });
 
-        it('reset() 后 filterBy/sortBy/order 应该保留（reset 只清空 search）', async () => {
+        it('reset() 后 search 应该被清空', async () => {
             manager.updateData(createProductData(10), 30);
-            manager.filterBy = 'Electronics';
-            manager.sortBy = 'price';
-            manager.order = 'desc';
+            (manager.search as any).keyword = 'Electronics';
+            (manager.search as any).sortBy = 'price';
+            (manager.search as any).sortOrder = 'desc';
 
             mockFetchReturn({ list: createProductData(10), total: 30 });
 
             await manager.reset();
 
-            // reset() 只重置 page 和 search，不影响 filterBy/sortBy/order
-            expect(manager.filterBy).toBe('Electronics');
-            expect(manager.sortBy).toBe('price');
-            expect(manager.order).toBe('desc');
+            // reset() 重置 page 和 search
+            expect(manager.search).toEqual({});
         });
     });
 });

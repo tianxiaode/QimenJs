@@ -10,7 +10,7 @@ const args = process.argv.slice(2);
 const cleanFirst = args.includes('--clean') || args.includes('-c');
 const targetModule = args.find(a => !a.startsWith('-')); // 第一个非选项参数为模块名
 
-console.log('🚀 OrbitJS Builder');
+console.log('🚀 QimenJS Builder');
 console.log('=================\n');
 
 // 加载配置

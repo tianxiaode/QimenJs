@@ -7,7 +7,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: path.resolve(SRC, 'i18n/index.ts'),
-            name: 'orbitI18n',
+            name: 'qimenI18n',
             formats: ['iife'],
             fileName: () => 'i18n.js',
         },

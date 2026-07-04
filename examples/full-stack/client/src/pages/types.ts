@@ -14,7 +14,7 @@ export function renderTypes(): void {
             <div class="section-title">模块定位</div>
             <div class="card">
                 <p class="text-sm" style="line-height:1.8;">
-                    <code>@qimenjs/types</code> 是 OrbitJS 的零依赖类型定义模块，只包含真正需要跨包共享的基础类型。
+                    <code>@qimenjs/types</code> 是 QimenJS 的零依赖类型定义模块，只包含真正需要跨包共享的基础类型。
                     它被 <code>@qimenjs/context</code>、<code>@qimenjs/pipeline</code>、<code>@qimenjs/data-processor</code> 等多个模块引用，
                     确保类型定义的一致性，避免循环依赖。
                 </p>

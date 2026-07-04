@@ -16,7 +16,7 @@ export function renderCrypto(): void {
             <div class="card">
                 <div class="form-group">
                     <label>输入文本</label>
-                    <input id="crypto-input" class="input" value="Hello OrbitJS" placeholder="输入文本">
+                    <input id="crypto-input" class="input" value="Hello QimenJS" placeholder="输入文本">
                 </div>
                 <div class="flex gap-2 mb-3">
                     <button class="btn btn-ghost btn-sm" onclick="window.__hash('md5')">MD5</button>
@@ -35,7 +35,7 @@ export function renderCrypto(): void {
                 <div class="card-title"><span class="dot" style="background:#4CAF50;"></span>同一输入，多种哈希对比</div>
                 <div class="form-group">
                     <label>输入文本</label>
-                    <input id="crypto-compare-input" class="input" value="Hello OrbitJS" placeholder="输入文本">
+                    <input id="crypto-compare-input" class="input" value="Hello QimenJS" placeholder="输入文本">
                 </div>
                 <button class="btn btn-primary btn-sm" onclick="window.__compareHashes()">对比所有算法</button>
                 <div id="crypto-compare-result" class="mt-3 text-sm"></div>
@@ -47,7 +47,7 @@ export function renderCrypto(): void {
             <div class="card">
                 <div class="form-group">
                     <label>文本</label>
-                    <input id="crypto-b64-input" class="input" value="OrbitJS Enterprise Framework" placeholder="输入文本">
+                    <input id="crypto-b64-input" class="input" value="QimenJS Enterprise Framework" placeholder="输入文本">
                 </div>
                 <div class="flex gap-2 mb-3">
                     <button class="btn btn-ghost btn-sm" onclick="window.__b64Encode()">编码</button>

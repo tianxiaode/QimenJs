@@ -5,7 +5,7 @@
 ```js
 // 正确 - .js 文件，通过 script 标签同步加载
 // public/locales/zh-CN.js
-__orbit_i18n_register__('zh-CN', {
+__qimen_i18n_register__('zh-CN', {
   common: { save: '保存' },
 });
 ```
@@ -18,7 +18,7 @@ __orbit_i18n_register__('zh-CN', {
 }
 ```
 
-**原因**：JSON 文件无法通过 `<script>` 标签加载。如果用 `fetch` 异步加载 JSON，页面启动时会有语言闪烁（先显示 key，再显示翻译）。`.js` 文件通过 `__orbit_i18n_register__` 全局函数同步注入消息，页面渲染时语言就已就绪。
+**原因**：JSON 文件无法通过 `<script>` 标签加载。如果用 `fetch` 异步加载 JSON，页面启动时会有语言闪烁（先显示 key，再显示翻译）。`.js` 文件通过 `__qimen_i18n_register__` 全局函数同步注入消息，页面渲染时语言就已就绪。
 
 ## 2. 将 i18n 编译为独立 JS 预加载，不要在应用层 import 编译
 
@@ -27,14 +27,14 @@ __orbit_i18n_register__('zh-CN', {
 <script src="/i18n.js"></script>
 <script>
   // i18n 核心已就绪，自动加载检测到的语言包
-  orbitI18n.i18n.loadScript('/locales/' + orbitI18n.i18n.locale + '.js');
+  qimenI18n.i18n.loadScript('/locales/' + qimenI18n.i18n.locale + '.js');
 </script>
 <script type="module" src="/src/main.ts"></script>
 ```
 
 ```typescript
 // 正确 - 应用层从全局获取 i18n 实例
-const i18n = (window as any).orbitI18n?.i18n;
+const i18n = (window as any).qimenI18n?.i18n;
 i18n.t('common.save');
 ```
 
@@ -42,12 +42,12 @@ i18n.t('common.save');
 // 错误 - 在应用层 import 编译 i18n 模块
 import { i18n } from '@qimenjs/i18n';
 // 问题：i18n 模块会被打包进应用代码，增加包体积
-// 问题：__orbit_i18n_register__ 在应用代码执行后才可用，语言包 JS 无法提前加载
+// 问题：__qimen_i18n_register__ 在应用代码执行后才可用，语言包 JS 无法提前加载
 ```
 
 **原因**：将 `@qimenjs/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 2.5KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
-- `window.__orbit_i18n_register__` 在页面加载时就可用，语言包 JS 文件可以同步注册消息
-- `window.orbitI18n.i18n` 在应用代码执行前就已就绪，无需等待模块编译
+- `window.__qimen_i18n_register__` 在页面加载时就可用，语言包 JS 文件可以同步注册消息
+- `window.qimenI18n.i18n` 在应用代码执行前就已就绪，无需等待模块编译
 - 应用层不需要 import 和编译 i18n 模块，减少打包体积
 - 语言包可以在 i18n.js 之后立即加载，确保首屏渲染时翻译已就绪
 
@@ -64,7 +64,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: path.resolve(SRC, 'i18n/index.ts'),
-            name: 'orbitI18n',
+            name: 'qimenI18n',
             formats: ['iife'],
             fileName: () => 'i18n.js',
         },
@@ -138,7 +138,7 @@ i18n.setMessages('zh-CN', { common: { cancel: '取消' } });
 
 ```js
 // public/locales/zh-CN.js - 基础翻译（启动时加载）
-__orbit_i18n_register__('zh-CN', {
+__qimen_i18n_register__('zh-CN', {
   common: { save: '保存', cancel: '取消' },
   validation: { required: '{field}不能为空' },
 });
@@ -194,8 +194,8 @@ public/
 
 | 反模式 | 正确做法 |
 |--------|----------|
-| 用 .json 语言包 | 用 .js 文件 + `__orbit_i18n_register__` |
-| 在应用层 import 编译 i18n 模块 | 编译为独立 i18n.js 预加载，从 `window.orbitI18n` 获取 |
+| 用 .json 语言包 | 用 .js 文件 + `__qimen_i18n_register__` |
+| 在应用层 import 编译 i18n 模块 | 编译为独立 i18n.js 预加载，从 `window.qimenI18n` 获取 |
 | 先切换语言再加载语言包 | 先 `loadScript` 再切换 `locale` |
 | 在 i18n 中内置 fetch | 用 `@qimenjs/http` + `inject()` |
 | 整体替换语言包 | `inject()` 深度合并 |

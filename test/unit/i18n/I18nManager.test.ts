@@ -276,13 +276,13 @@ describe('I18nManager', () => {
 
     // --- 全局挂载 ---
 
-    describe('全局挂载 __orbit_i18n_register__', () => {
-        test('window 上应该存在 __orbit_i18n_register__', () => {
-            expect(typeof (window as any).__orbit_i18n_register__).toBe('function');
+    describe('全局挂载 __qimen_i18n_register__', () => {
+        test('window 上应该存在 __qimen_i18n_register__', () => {
+            expect(typeof (window as any).__qimen_i18n_register__).toBe('function');
         });
 
         test('通过全局函数注册消息', () => {
-            (window as any).__orbit_i18n_register__('en-US', { common: { save: 'Save' } });
+            (window as any).__qimen_i18n_register__('en-US', { common: { save: 'Save' } });
             i18n.locale = 'en-US';
             expect(i18n.t('common.save')).toBe('Save');
             i18n.dispose();

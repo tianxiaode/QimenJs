@@ -2,7 +2,7 @@
 
 ## 概述
 
-OrbitJS 的能力系统基于 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制机制。能力（Ability）是普通对象，通过 `static readonly abilities` 声明，ComposableBase 在实例化时自动注入。
+QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制机制。能力（Ability）是普通对象，通过 `static readonly abilities` 声明，ComposableBase 在实例化时自动注入。
 
 ## 基本用法
 

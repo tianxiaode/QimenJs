@@ -11,9 +11,9 @@ describe('String Format Utility Functions', () => {
         it('should replace placeholders in a string with provided options', () => {
             const result = replace('Hello {name}, welcome to {place}!', {
                 name: 'John',
-                place: 'OrbitJS'
+                place: 'QimenJS'
             });
-            expect(result).toBe('Hello John, welcome to OrbitJS!');
+            expect(result).toBe('Hello John, welcome to QimenJS!');
         });
 
         it('should handle a string with no placeholders', () => {

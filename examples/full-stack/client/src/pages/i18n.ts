@@ -4,7 +4,7 @@
 import { renderPageContent } from '../layout';
 
 // i18n 已通过 public/i18n.js 预加载
-const i18n = (window as any).orbitI18n?.i18n;
+const i18n = (window as any).qimenI18n?.i18n;
 
 // 已加载的语言包
 const loadedLocales = new Set<string>();
@@ -154,7 +154,7 @@ function renderReactiveContent(): void {
         <table class="data-table">
             <thead><tr><th>Key</th><th>t() 翻译结果</th></tr></thead>
             <tbody>${keys.map(key => {
-                const value = i18n.t(key, { name: 'OrbitJS', count: 42, date: new Date().toLocaleDateString() });
+                const value = i18n.t(key, { name: 'QimenJS', count: 42, date: new Date().toLocaleDateString() });
                 return `<tr><td class="text-muted">${key}</td><td>${value}</td></tr>`;
             }).join('')}</tbody>
         </table>

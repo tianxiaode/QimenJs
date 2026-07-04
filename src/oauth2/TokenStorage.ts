@@ -8,7 +8,7 @@
 
 import type { OAuth2TokenEntry } from './types';
 
-const STORAGE_KEY = 'orbitjs_oauth2_token';
+const STORAGE_KEY = 'qimenjs_oauth2_token';
 
 /**
  * Token 存储接口

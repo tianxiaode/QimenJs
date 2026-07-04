@@ -8,7 +8,7 @@
 
 ## 背景
 
-OrbitJS 中有多个注册器（Registrar），用于管理不同类型的注册项。之前存在以下问题：
+QimenJS 中有多个注册器（Registrar），用于管理不同类型的注册项。之前存在以下问题：
 
 1. **架构不一致** - ComposableRegistrar 没有从 RegistrarBase 派生
 2. **重复代码** - 每个注册器都自己实现单例模式、锁定机制

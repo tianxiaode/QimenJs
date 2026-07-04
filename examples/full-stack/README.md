@@ -1,4 +1,4 @@
-﻿# OrbitJS 全栈示例
+﻿# QimenJS 全栈示例
 
 OAuth2 认证 + ABP API + Spring API + 前端多域数据获取的完整示例。
 
@@ -8,7 +8,7 @@ OAuth2 认证 + ABP API + Spring API + 前端多域数据获取的完整示例�
 ┌─────────────────────────────────────────────────┐
 │                   前端 (:5173)                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │ @orbitjs │  │ @orbitjs │  │ @orbitjs │       │
+│  │ @qimenjs │  │ @qimenjs │  │ @qimenjs │       │
 │  │  /oauth2 │  │ /data-   │  │ /data-   │       │
 │  │          │  │processor │  │processor │       │
 │  │ Token    │  │   -abp   │  │ -spring  │       │
@@ -105,7 +105,7 @@ npm run client    # 前端
 
 当 token 过期时，HTTP 管道会自动拦截 401 响应，刷新 token 后重试原始请求。
 
-## OrbitJS 包使用
+## QimenJS 包使用
 
 | 包 | 用途 |
 |-----|------|

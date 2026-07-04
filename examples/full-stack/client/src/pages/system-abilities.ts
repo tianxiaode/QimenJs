@@ -90,7 +90,7 @@ export function renderSystemAbilities(): void {
                 <p class="text-sm" style="line-height:1.8;">
                     系统能力可以自由组合。例如一个完整的组件可以同时拥有 EventAbility + DomEventsAbility + DomainAbility + SystemAbility，
                     通过 <code>static readonly abilities = [EventAbility, DomEventsAbility, DomainAbility, SystemAbility]</code> 声明。
-                    这就是 OrbitJS 的能力组合模式。
+                    这就是 QimenJS 的能力组合模式。
                 </p>
             </div>
         </div>

@@ -1,4 +1,4 @@
-﻿# OrbitJS 示例改造实施计划
+﻿# QimenJS 示例改造实施计划
 
 ## 目标
 
@@ -205,13 +205,13 @@ export class AbpUserManager extends RemoteCrudEntityManager {
 
 **流程**：
 1. 触发条件：push to main / 手动触发
-2. 安装依赖 + 构建 OrbitJS 源码
+2. 安装依赖 + 构建 QimenJS 源码
 3. 构建示例（vite build）
 4. 部署到 GitHub Pages
 
 ### 4.2 配置 Vite 构建输出
 
-- `base` 路径设置为 `/orbitjs/`（或仓库名）
+- `base` 路径设置为 `/qimenjs/`（或仓库名）
 - 输出目录 `dist`
 - mock 数据内联到构建产物中
 

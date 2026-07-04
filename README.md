@@ -8,7 +8,7 @@ QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、
 
 ## 状态
 
-**0.1.0-alpha** — 初始开发阶段，核心 API 已可用，UI 组件层尚未实现。API 可能在后续版本中发生变化。
+**0.1.1** — 初始开发阶段，核心 API 已可用，UI 组件层尚未实现。API 可能在后续版本中发生变化。
 
 ## 快速开始
 
@@ -126,7 +126,7 @@ npm run docs
 
 ## 版本
 
-当前版本：**0.1.0** — 详见 [VERSION](./VERSION) 文件和 [CHANGELOG](./CHANGELOG.md)。
+当前版本：**0.1.1** — 详见 [VERSION](./VERSION) 文件和 [CHANGELOG](./CHANGELOG.md)。
 
 版本号遵循 [SemVer](https://semver.org/lang/zh-CN/) 规范。`0.x.x` 表示初始开发阶段，API 不保证稳定。
 

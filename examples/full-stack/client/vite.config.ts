@@ -1,14 +1,14 @@
 ﻿import { defineConfig } from 'vite';
 import path from 'path';
 
-// OrbitJS 源码根目录
+// QimenJS 源码根目录
 const SRC = path.resolve(__dirname, '../../../src');
 
 export default defineConfig({
     root: '.',
     resolve: {
         alias: {
-            // 映射到 OrbitJS 源码入口文件
+            // 映射到 QimenJS 源码入口文件
             '@qimenjs/registry': path.resolve(SRC, 'registry/index.ts'),
             '@qimenjs/http': path.resolve(SRC, 'http/index.ts'),
             '@qimenjs/context': path.resolve(SRC, 'context/index.ts'),

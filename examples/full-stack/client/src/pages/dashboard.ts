@@ -19,7 +19,7 @@ export function renderDashboard(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>仪表盘</h2>
-            <p>OrbitJS 全栈示例 — 5 种 EntityManager + OAuth2 + 多域数据</p>
+            <p>QimenJS 全栈示例 — 5 种 EntityManager + OAuth2 + 多域数据</p>
         </div>
 
         <div class="stat-grid">
@@ -173,7 +173,7 @@ export function renderDashboard(): void {
         </div>
 
         <div class="section">
-            <div class="section-title">OrbitJS 模块一览</div>
+            <div class="section-title">QimenJS 模块一览</div>
             <div class="grid-3">
                 <div class="card"><div class="card-title"><span class="dot" style="background:#6366F1;"></span>核心层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">

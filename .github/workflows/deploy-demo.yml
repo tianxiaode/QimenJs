@@ -43,14 +43,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build OrbitJS library
+      - name: Build QimenJS library
         run: npm run build
 
       - name: Build i18n.js
         run: cd examples/full-stack/client && npx vite build --config vite.config.i18n.ts
 
       - name: Build demo application
-        run: cd examples/full-stack/client && npx vite build --outDir ../../../demo-dist --base /orbitjs/
+        run: cd examples/full-stack/client && npx vite build --outDir ../../../demo-dist --base /qimenjs/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

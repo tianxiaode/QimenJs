@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-07-05
+
+### Changed
+
+- 项目从 OrbitJS 重命名为 QimenJS，所有源码、测试、文档、示例、配置中的旧名称已全部替换
+- 运行时 API 重命名：`__orbit_i18n_register__` → `__qimen_i18n_register__`，`orbitI18n` → `qimenI18n`
+- localStorage key 重命名：`orbitjs_oauth2_token` → `qimenjs_oauth2_token`
+
+### Fixed
+
+- 修复 `package.json`、`tsconfig.json`、`jest.config.ts` 的 UTF-8 BOM 字符导致 Jest 无法解析配置
+- 修复 `FlatRemoteQueryAbility.integration.test.ts` 中 5 个测试用例断言与源码接口不匹配（`filterBy`/`sortBy`/`order` → `search.keyword`/`search.sortBy`/`search.sortOrder`）
+
+### Removed
+
+- 清理根目录 8 个过时的 MD 文件（ARCHITECTURE、BUILD_PROGRESS、MIGRATION_SUMMARY、REGISTRY_*）
+- 清理根目录 18 个临时分析/验证 TS 文件
+- 清理 `test/validation-refactoring.ts` 和 `docs/原型链爬取必要性说明.ts`
+- 清理根目录 `nul` 文件（Python 在 Windows 上生成的空文件）
+
 ## [0.1.0] - 2026-07-04
 
 ### Added

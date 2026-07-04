@@ -7,7 +7,7 @@
 
 ## 概述
 
-composable 包提供了可组合能力系统，是 OrbitJS 的核心机制之一。通过 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制，实现能力的声明、注入和生命周期管理。
+composable 包提供了可组合能力系统，是 QimenJS 的核心机制之一。通过 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制，实现能力的声明、注入和生命周期管理。
 
 ## 核心概念
 

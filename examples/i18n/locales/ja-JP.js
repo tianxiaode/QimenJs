@@ -3,10 +3,10 @@
  *
  * 使用方法: このファイルを public/locales/ja-JP.js にコピー
  * HTMLで同期的に読み込み:
- *   <script src="/orbit-i18n.js"></script>
+ *   <script src="/qimen-i18n.js"></script>
  *   <script src="/locales/ja-JP.js"></script>
  */
-__orbit_i18n_register__('ja-JP', {
+__qimen_i18n_register__('ja-JP', {
   common: {
     save: '保存',
     cancel: 'キャンセル',

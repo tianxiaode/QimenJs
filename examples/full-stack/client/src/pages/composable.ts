@@ -50,7 +50,7 @@ export function renderComposable(): void {
             <div class="section-title">能力组合架构</div>
             <div class="card">
                 <p class="text-sm" style="line-height:1.8;">
-                    OrbitJS 的能力组合系统采用纯对象模式。Ability 是普通对象（不是类），
+                    QimenJS 的能力组合系统采用纯对象模式。Ability 是普通对象（不是类），
                     通过 <code>Object.defineProperty</code> 复制到宿主。宿主类继承 <code>ComposableBase</code>，
                     在 <code>static abilities</code> 数组中声明所需能力，构造时自动装配。
                 </p>
@@ -77,7 +77,7 @@ export function renderComposable(): void {
             <div class="card">
                 <div class="card-title"><span class="dot" style="background:#A855F7;"></span>标签能力</div>
                 <div class="form-group">
-                    <input id="comp-tag-input" class="input" value="OrbitJS" placeholder="输入标签名">
+                    <input id="comp-tag-input" class="input" value="QimenJS" placeholder="输入标签名">
                 </div>
                 <div class="flex gap-2">
                     <button class="btn btn-primary btn-sm" onclick="window.__compAddTag()">addTag()</button>

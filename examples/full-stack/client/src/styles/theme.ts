@@ -1,5 +1,5 @@
 /**
- * OrbitJS 管理模板 - 全局样式
+ * QimenJS 管理模板 - 全局样式
  *
  * Linear Aesthetic 风格：暗色主题、超细边框、玻璃拟态、微光效果
  */

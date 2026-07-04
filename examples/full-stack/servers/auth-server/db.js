@@ -11,7 +11,7 @@ const users = [
  * 模拟客户端注册表
  */
 const clients = [
-    { clientId: 'orbitjs-demo', clientSecret: 'demo-secret', redirectUris: ['http://localhost:5173/callback'] },
+    { clientId: 'qimenjs-demo', clientSecret: 'demo-secret', redirectUris: ['http://localhost:5173/callback'] },
 ];
 
 /**

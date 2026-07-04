@@ -1,5 +1,5 @@
 {
-  "name": "OrbitJS Demo",
+  "name": "QimenJS Demo",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {

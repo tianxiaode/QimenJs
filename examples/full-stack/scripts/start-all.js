@@ -68,7 +68,7 @@ async function sleep(ms) {
 }
 
 async function main() {
-    console.log('=== OrbitJS 全栈示例启动 ===\n');
+    console.log('=== QimenJS 全栈示例启动 ===\n');
 
     // 检查端口占用
     const ports = [3000, 3001, 3002, 5173];

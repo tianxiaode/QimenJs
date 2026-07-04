@@ -1,11 +1,11 @@
 /**
- * OrbitJS Demo - 中文简体语言包
+ * QimenJS Demo - 中文简体语言包
  * 通过 i18n.loadScript() 动态加载
  */
-if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
-    window.__orbit_i18n_register__('zh-CN', {
+if (typeof window !== 'undefined' && window.__qimen_i18n_register__) {
+    window.__qimen_i18n_register__('zh-CN', {
         app: {
-            title: 'OrbitJS 管理模板',
+            title: 'QimenJS 管理模板',
             greeting: '你好，{name}！',
             items: '{count} 个项目',
             today: '今天是 {date}',
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             unauthenticated: '未认证',
         },
         login: {
-            title: 'OrbitJS',
+            title: 'QimenJS',
             subtitle: 'Enterprise Entity Framework',
             username: '用户名',
             password: '密码',
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             hint: '测试账号：admin / 123456',
         },
         topbar: {
-            breadcrumb: 'OrbitJS',
+            breadcrumb: 'QimenJS',
         },
         lang: {
             'zh-CN': '中文简体',

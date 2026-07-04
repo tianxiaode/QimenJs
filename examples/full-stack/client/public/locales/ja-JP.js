@@ -1,11 +1,11 @@
 /**
- * OrbitJS Demo - 日本語言語パック
+ * QimenJS Demo - 日本語言語パック
  * i18n.loadScript() で動的にロード
  */
-if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
-    window.__orbit_i18n_register__('ja-JP', {
+if (typeof window !== 'undefined' && window.__qimen_i18n_register__) {
+    window.__qimen_i18n_register__('ja-JP', {
         app: {
-            title: 'OrbitJS 管理テンプレート',
+            title: 'QimenJS 管理テンプレート',
             greeting: 'こんにちは、{name}！',
             items: '{count} 件',
             today: '今日は {date} です',
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             unauthenticated: '未認証',
         },
         login: {
-            title: 'OrbitJS',
+            title: 'QimenJS',
             subtitle: 'Enterprise Entity Framework',
             username: 'ユーザー名',
             password: 'パスワード',
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             hint: 'テストアカウント：admin / 123456',
         },
         topbar: {
-            breadcrumb: 'OrbitJS',
+            breadcrumb: 'QimenJS',
         },
         lang: {
             'zh-CN': '中文简体',

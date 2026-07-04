@@ -1,11 +1,11 @@
 /**
- * OrbitJS Demo - English language pack
+ * QimenJS Demo - English language pack
  * Loaded dynamically via i18n.loadScript()
  */
-if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
-    window.__orbit_i18n_register__('en-US', {
+if (typeof window !== 'undefined' && window.__qimen_i18n_register__) {
+    window.__qimen_i18n_register__('en-US', {
         app: {
-            title: 'OrbitJS Admin Template',
+            title: 'QimenJS Admin Template',
             greeting: 'Hello, {name}!',
             items: '{count} items',
             today: 'Today is {date}',
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             unauthenticated: 'Unauthenticated',
         },
         login: {
-            title: 'OrbitJS',
+            title: 'QimenJS',
             subtitle: 'Enterprise Entity Framework',
             username: 'Username',
             password: 'Password',
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined' && window.__orbit_i18n_register__) {
             hint: 'Test account: admin / 123456',
         },
         topbar: {
-            breadcrumb: 'OrbitJS',
+            breadcrumb: 'QimenJS',
         },
         lang: {
             'zh-CN': '中文简体',

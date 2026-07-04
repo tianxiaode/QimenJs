@@ -1,5 +1,5 @@
 /**
- * OrbitJS 管理模板 - 应用入口
+ * QimenJS 管理模板 - 应用入口
  */
 import './config';
 import { oauth2 } from './config';

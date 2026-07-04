@@ -12,10 +12,10 @@
  * @example
  * ```html
  * <!-- HTML: 只需加载 i18n 核心，语言包由 JS 动态加载 -->
- * <script src="/orbit-i18n.js"></script>
+ * <script src="/qimen-i18n.js"></script>
  * <script>
  *   // 启动时根据检测到的语言加载对应语言包
- *   orbitI18n.loadScript('/locales/' + orbitI18n.i18n.locale + '.js');
+ *   qimenI18n.loadScript('/locales/' + qimenI18n.i18n.locale + '.js');
  * </script>
  * ```
  *
@@ -109,7 +109,7 @@ export class I18nManager {
      * 动态加载 .js 语言包文件
      *
      * 通过创建 <script> 标签加载 public 目录下的 .js 语言包。
-     * .js 文件内部调用 __orbit_i18n_register__() 注入消息。
+     * .js 文件内部调用 __qimen_i18n_register__() 注入消息。
      *
      * 同一 URL 只加载一次（去重）。
      *
@@ -269,7 +269,7 @@ export const i18n = new I18nManager();
  *
  * 供 public 目录的 .js 语言包文件调用。
  * .js 文件内容格式：
- *   __orbit_i18n_register__('zh-CN', { common: { save: '保存' } })
+ *   __qimen_i18n_register__('zh-CN', { common: { save: '保存' } })
  *
  * 注册后自动将 i18n.locale 同步为该语言（如果当前没有消息的话），
  * 解决"检测到的语言"与"加载的语言包"不匹配的问题。
@@ -284,5 +284,5 @@ export function registerMessages(locale: Locale, messages: Messages): void {
 
 // 挂载到全局，供 script 标签加载的 .js 文件调用
 if (typeof window !== 'undefined') {
-    (window as any).__orbit_i18n_register__ = registerMessages;
+    (window as any).__qimen_i18n_register__ = registerMessages;
 }

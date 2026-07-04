@@ -6,9 +6,9 @@
  * @example
  * ```html
  * <!-- HTML: 加载 i18n 核心，然后动态加载当前语言包 -->
- * <script src="/orbit-i18n.js"></script>
+ * <script src="/qimen-i18n.js"></script>
  * <script>
- *   orbitI18n.loadScript('/locales/' + orbitI18n.i18n.locale + '.js');
+ *   qimenI18n.loadScript('/locales/' + qimenI18n.i18n.locale + '.js');
  * </script>
  * ```
  *

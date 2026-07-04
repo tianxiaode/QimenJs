@@ -7,7 +7,7 @@
 import { CSS } from '../styles/theme';
 
 // i18n 已通过 public/i18n.js 预加载，从全局获取
-const i18n = (window as any).orbitI18n?.i18n;
+const i18n = (window as any).qimenI18n?.i18n;
 
 // 注入全局样式
 let styleInjected = false;
@@ -143,7 +143,7 @@ export function renderLayout(authenticated: boolean): void {
         <div class="app-layout">
             <aside class="sidebar">
                 <div class="sidebar-brand">
-                    <h1>OrbitJS</h1>
+                    <h1>QimenJS</h1>
                     <span>Enterprise Entity Framework</span>
                 </div>
                 <nav class="sidebar-nav">
@@ -154,7 +154,7 @@ export function renderLayout(authenticated: boolean): void {
                 <header class="topbar">
                     <div class="topbar-left">
                         <div class="topbar-breadcrumb">
-                            OrbitJS / <span id="breadcrumb-current">仪表盘</span>
+                            QimenJS / <span id="breadcrumb-current">仪表盘</span>
                         </div>
                     </div>
                     <div class="topbar-right">

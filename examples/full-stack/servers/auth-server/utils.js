@@ -5,7 +5,7 @@
  */
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = 'orbitjs-demo-secret';
+const JWT_SECRET = 'qimenjs-demo-secret';
 const ACCESS_TOKEN_EXPIRES = 3600;       // 1 小时
 const REFRESH_TOKEN_EXPIRES = 86400 * 7; // 7 天
 

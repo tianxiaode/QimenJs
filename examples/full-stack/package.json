@@ -10,7 +10,7 @@
     "abp": "node servers/abp-api/index.js",
     "spring": "node servers/spring-api/index.js",
     "client": "cd client && npx vite --open",
-    "build:orbitjs": "cd ../.. && npm run build"
+    "build:qimenjs": "cd ../.. && npm run build"
   },
   "dependencies": {
     "express": "^4.18.0",

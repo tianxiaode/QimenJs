@@ -8,7 +8,7 @@
 
 ## 背景
 
-Composable 系统是 OrbitJS 的核心能力注入系统，用于实现模块化、可组合的功能。之前的实现存在以下问题：
+Composable 系统是 QimenJS 的核心能力注入系统，用于实现模块化、可组合的功能。之前的实现存在以下问题：
 
 1. **性能问题** - 运行时原型链爬取，性能开销大
 2. **架构不一致** - ComposableRegistrar 没有从 RegistrarBase 派生

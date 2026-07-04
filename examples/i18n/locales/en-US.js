@@ -3,10 +3,10 @@
  *
  * Usage: Copy this file to public/locales/en-US.js
  * Load synchronously in HTML:
- *   <script src="/orbit-i18n.js"></script>
+ *   <script src="/qimen-i18n.js"></script>
  *   <script src="/locales/en-US.js"></script>
  */
-__orbit_i18n_register__('en-US', {
+__qimen_i18n_register__('en-US', {
   common: {
     save: 'Save',
     cancel: 'Cancel',
