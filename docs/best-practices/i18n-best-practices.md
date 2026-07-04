@@ -20,23 +20,67 @@ __orbit_i18n_register__('zh-CN', {
 
 **原因**：JSON 文件无法通过 `<script>` 标签加载。如果用 `fetch` 异步加载 JSON，页面启动时会有语言闪烁（先显示 key，再显示翻译）。`.js` 文件通过 `__orbit_i18n_register__` 全局函数同步注入消息，页面渲染时语言就已就绪。
 
-## 2. 启动时用 loadScript 动态加载，不要在 HTML 写死语言包
+## 2. 将 i18n 编译为独立 JS 预加载，不要在应用层 import 编译
 
 ```html
-<!-- 正确 - 根据检测到的语言动态加载 -->
-<script src="/orbit-i18n.js"></script>
+<!-- 正确 - i18n 核心编译为独立 JS，通过 script 标签预加载 -->
+<script src="/i18n.js"></script>
 <script>
-  orbitI18n.loadScript('/locales/' + orbitI18n.i18n.locale + '.js');
+  // i18n 核心已就绪，自动加载检测到的语言包
+  orbitI18n.i18n.loadScript('/locales/' + orbitI18n.i18n.locale + '.js');
 </script>
+<script type="module" src="/src/main.ts"></script>
 ```
 
-```html
-<!-- 错误 - 写死加载 zh-CN.js -->
-<script src="/orbit-i18n.js"></script>
-<script src="/locales/zh-CN.js"></script>
+```typescript
+// 正确 - 应用层从全局获取 i18n 实例
+const i18n = (window as any).orbitI18n?.i18n;
+i18n.t('common.save');
 ```
 
-**原因**：`detectLocale()` 检测到的语言可能是 `en-US`，但 HTML 写死加载了 `zh-CN.js`，导致 `i18n.locale` 是 `en-US` 而消息只有 `zh-CN` 的。用 `loadScript` 动态加载可以确保加载的语言包与检测到的语言一致。
+```typescript
+// 错误 - 在应用层 import 编译 i18n 模块
+import { i18n } from '@orbitjs/i18n';
+// 问题：i18n 模块会被打包进应用代码，增加包体积
+// 问题：__orbit_i18n_register__ 在应用代码执行后才可用，语言包 JS 无法提前加载
+```
+
+**原因**：将 `@orbitjs/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 2.5KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
+- `window.__orbit_i18n_register__` 在页面加载时就可用，语言包 JS 文件可以同步注册消息
+- `window.orbitI18n.i18n` 在应用代码执行前就已就绪，无需等待模块编译
+- 应用层不需要 import 和编译 i18n 模块，减少打包体积
+- 语言包可以在 i18n.js 之后立即加载，确保首屏渲染时翻译已就绪
+
+**编译方法**：使用 Vite 的 lib 模式编译 i18n 包：
+
+```typescript
+// vite.config.i18n.ts
+import { defineConfig } from 'vite';
+import path from 'path';
+
+const SRC = path.resolve(__dirname, '../../../src');
+
+export default defineConfig({
+    build: {
+        lib: {
+            entry: path.resolve(SRC, 'i18n/index.ts'),
+            name: 'orbitI18n',
+            formats: ['iife'],
+            fileName: () => 'i18n.js',
+        },
+        outDir: path.resolve(__dirname, 'public'),
+        emptyOutDir: false,
+    },
+    resolve: {
+        alias: { '@': SRC },
+    },
+});
+```
+
+```bash
+# 编译 i18n.js
+npx vite build --config vite.config.i18n.ts
+```
 
 ## 3. 切换语言时先加载再切换
 
@@ -151,7 +195,7 @@ public/
 | 反模式 | 正确做法 |
 |--------|----------|
 | 用 .json 语言包 | 用 .js 文件 + `__orbit_i18n_register__` |
-| HTML 写死加载某个语言包 | `loadScript` 动态加载检测到的语言 |
+| 在应用层 import 编译 i18n 模块 | 编译为独立 i18n.js 预加载，从 `window.orbitI18n` 获取 |
 | 先切换语言再加载语言包 | 先 `loadScript` 再切换 `locale` |
 | 在 i18n 中内置 fetch | 用 `@orbitjs/http` + `inject()` |
 | 整体替换语言包 | `inject()` 深度合并 |
