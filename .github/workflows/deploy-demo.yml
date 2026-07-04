@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'src/**'
-      - 'examples/**'
+      - 'examples/full-stack/**'
       - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
