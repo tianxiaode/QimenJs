@@ -180,7 +180,7 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
                 timeout: options.timeout || 30000,
                 responseType: options.responseType || 'json',
             })
-            .withParams(options.queryParams)
+            .withParams({ ...options.queryParams })
             .withSchema(schema)
             .build();
     }
