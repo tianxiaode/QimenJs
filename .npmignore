@@ -1,0 +1,14 @@
+src/
+test/
+docs/
+examples/
+scripts/
+.github/
+.devcontainer/
+*.spec.ts
+*.test.ts
+coverage/
+demo-dist/
+.vscode/
+.idea/
+*.log

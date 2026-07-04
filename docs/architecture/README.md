@@ -85,6 +85,5 @@ docs/architecture/
 
 ## 相关文档
 
-- [文档导航](../SUMMARY.md) - 文档总览
 - [构建进度](../build-progress/README.md) - 构建进度
 - [ComposableBase 最佳实践](../best-practices/composable-best-practices.md) - 能力系统最佳实践

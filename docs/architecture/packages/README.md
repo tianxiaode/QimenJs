@@ -8,58 +8,61 @@
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| [@orbitjs/error](./error.md) | 完成 | 通过 | 100% | 错误处理 |
-| [@orbitjs/logger](./logger.md) | 完成 | 通过 | 100% | 日志系统 |
-| [@orbitjs/utils](./utils.md) | 完成 | 通过 | ~95% | 工具函数 |
-| [@orbitjs/async](./async.md) | 完成 | 通过 | ~90% | 异步工具 |
-| [@orbitjs/runtime](./runtime.md) | 完成 | 通过 | ~85% | 运行时环境 |
-| [@orbitjs/crypto](./crypto.md) | 完成 | 通过 | 81% | 加密工具 |
-| [@orbitjs/types](./types.md) | 完成 | 通过 | - | 全局共享类型 |
-| [@orbitjs/i18n](./i18n.md) | 完成 | 通过 | ~90% | 国际化 |
+| @orbitjs/error | 完成 | 通过 | 100% | 错误处理 |
+| @orbitjs/logger | 完成 | 通过 | 100% | 日志系统 |
+| @orbitjs/utils | 完成 | 通过 | ~95% | 工具函数 |
+| @orbitjs/async | 完成 | 通过 | ~90% | 异步工具 |
+| @orbitjs/runtime | 完成 | 通过 | ~85% | 运行时环境 |
+| @orbitjs/crypto | 完成 | 通过 | 81% | 加密工具 |
+| @orbitjs/types | 完成 | 通过 | - | 全局共享类型 |
+| @orbitjs/i18n | 完成 | 通过 | ~90% | 国际化 |
 
 ### 第 1 层：基础设施工具包（6 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| [@orbitjs/registry](./registry.md) | 完成 | 通过 | ~80% | 注册器系统 |
-| [@orbitjs/cache](./cache.md) | 完成 | 通过 | ~85% | 缓存系统 |
-| [@orbitjs/events](./events.md) | 完成 | 通过 | ~80% | 事件系统 |
-| [@orbitjs/validation](./validation.md) | 完成 | 通过 | 82% | 验证系统 |
-| [@orbitjs/task](./task.md) | 完成 | 通过 | ~85% | 任务系统 |
-| [@orbitjs/context](./context.md) | 完成 | 通过 | ~76% | 请求上下文 |
+| @orbitjs/registry | 完成 | 通过 | ~80% | 注册器系统 |
+| @orbitjs/cache | 完成 | 通过 | ~85% | 缓存系统 |
+| @orbitjs/events | 完成 | 通过 | ~80% | 事件系统 |
+| @orbitjs/validation | 完成 | 通过 | 82% | 验证系统 |
+| @orbitjs/task | 完成 | 通过 | ~85% | 任务系统 |
+| @orbitjs/context | 完成 | 通过 | ~76% | 请求上下文 |
 
-### 第 2 层：功能工具包（4 个）
-
-| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
-|------|------|------|------------|------|
-| [@orbitjs/schema](./schema.md) | 完成 | 通过 | 89% | Schema 定义系统 |
-| [@orbitjs/pipeline](./pipeline.md) | 完成 | 通过 | ~95% | 管道执行器 |
-| [@orbitjs/composable](./composable.md) | 完成 | 通过 | 90% | 可组合能力系统 |
-| [@orbitjs/event-dom](./event-dom.md) | 完成 | 通过 | 100% | DOM 事件适配器 |
-
-### 第 3 层：高级功能包（3 个）
+### 第 2 层：功能工具包（6 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| [@orbitjs/data-processor](./data-processor.md) | 完成 | 通过 | 88% | 数据处理器 |
-| [@orbitjs/http](./http.md) | 完成 | 通过 | 87% | HTTP 客户端 |
-| [@orbitjs/system-abilities](./system-abilities.md) | 完成 | 通过 | 88% | 系统能力集 |
+| @orbitjs/schema | 完成 | 通过 | 89% | Schema 定义系统 |
+| @orbitjs/pipeline | 完成 | 通过 | ~95% | 管道执行器 |
+| @orbitjs/composable | 完成 | 通过 | 90% | 可组合能力系统 |
+| @orbitjs/event-dom | 完成 | 通过 | 100% | DOM 事件适配器 |
+| @orbitjs/mime | 完成 | 通过 | ~90% | MIME 类型解析 |
+| @orbitjs/pattern | 完成 | 通过 | ~85% | 设计模式工具 |
+
+### 第 3 层：高级功能包（6 个）
+
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
+| @orbitjs/data-processor | 完成 | 通过 | 88% | 数据处理器 |
+| @orbitjs/http | 完成 | 通过 | 87% | HTTP 客户端 |
+| @orbitjs/system-abilities | 完成 | 通过 | 88% | 系统能力集 |
+| @orbitjs/oauth2 | 完成 | 通过 | ~85% | OAuth2 认证 |
+| @orbitjs/data-processor-abp | 完成 | 通过 | ~85% | ABP 数据处理器 |
+| @orbitjs/data-processor-spring | 完成 | 通过 | ~85% | Spring 数据处理器 |
 
 ### 第 4 层：业务包（1 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
-| [@orbitjs/entity](./entity.md) | 完成 | 通过 | 83% | 实体管理框架 |
+| @orbitjs/entity | 完成 | 通过 | 83% | 实体管理框架 |
 
 ## 统计信息
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 22 |
-| 已完成 | 22 |
-| 全局分支覆盖率 | 87% |
-| 测试套件 | 203 |
-| 测试用例 | 2235 |
+| 总包数 | 27 |
+| 已完成 | 27 |
+| 全局分支覆盖率 | ~87% |
 
 ## 依赖关系图
 
@@ -81,6 +84,19 @@ http (L3)
   ├─ pipeline (L2)
   ├─ registry (L1)
   └─ task (L1)
+
+oauth2 (L3)
+  ├─ http (L3)
+  ├─ context (L1)
+  └─ logger (L0)
+
+data-processor-abp (L3)
+  ├─ data-processor (L3)
+  └─ context (L1)
+
+data-processor-spring (L3)
+  ├─ data-processor (L3)
+  └─ context (L1)
 
 system-abilities (L3)
   ├─ events (L1)
@@ -112,6 +128,12 @@ pipeline (L2)
 schema (L2)
   └─ registry (L1)
 
+mime (L2)
+  └─ utils (L0)
+
+pattern (L2)
+  └─ utils (L0)
+
 context (L1)
   └─ registry (L1)
 
@@ -138,6 +160,6 @@ registry (L1)
 
 ## 参考资料
 
-- [文档导航](../../SUMMARY.md) - 文档总览
-- [构建进度](../../build-progress/README.md) - 构建进度
+- [架构概览](../README.md) - 架构原则和层级
+- [构建进度](../../build-progress/README.md) - 各包构建进度
 - [依赖管理原则](../principles/dependencies.md) - 依赖关系
