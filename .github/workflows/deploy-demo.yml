@@ -19,7 +19,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  # Job 1: 部署静态前端到 GitHub Pages（无后端，仅展示 UI）
+  deploy-pages:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -45,6 +46,9 @@ jobs:
       - name: Build OrbitJS library
         run: npm run build
 
+      - name: Build i18n.js
+        run: cd examples/full-stack/client && npx vite build --config vite.config.i18n.ts
+
       - name: Build demo application
         run: cd examples/full-stack/client && npx vite build --outDir ../../../demo-dist --base /orbitjs/
 
@@ -59,3 +63,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Job 2: 在 Codespaces 环境中验证完整 demo（前端 + 后端）
+  # 用户在 GitHub 上点击 Code → Codespaces 即可创建完整演示环境
+  # devcontainer.json 会自动：
+  #   1. 安装依赖 (postCreateCommand)
+  #   2. 构建库 (postCreateCommand)
+  #   3. 启动所有服务 (postStartCommand)
+  # 端口映射：
+  #   5173 - 前端 (Vite)
+  #   3000 - Auth Server
+  #   3001 - ABP API
+  #   3002 - Spring API

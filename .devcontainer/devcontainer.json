@@ -7,7 +7,23 @@
     }
   },
   "postCreateCommand": "npm install -g pnpm@8 && pnpm install && npm run build",
+  "postStartCommand": "cd examples/full-stack && node scripts/start-all.js &",
   "forwardPorts": [3000, 3001, 3002, 5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "openPreview"
+    },
+    "3000": {
+      "label": "Auth Server"
+    },
+    "3001": {
+      "label": "ABP API"
+    },
+    "3002": {
+      "label": "Spring API"
+    }
+  },
   "customizations": {
     "vscode": {
       "extensions": [
