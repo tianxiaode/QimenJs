@@ -2,7 +2,7 @@ name: Deploy Demo
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'src/**'
       - 'examples/full-stack/**'
@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Job 1: 部署静态前端到 GitHub Pages（无后端，仅展示 UI）
+  # Job 1: 部署静态前端到 GitHub Pages
   deploy-pages:
     runs-on: ubuntu-latest
     environment:
@@ -64,14 +64,27 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Job 2: 在 Codespaces 环境中验证完整 demo（前端 + 后端）
-  # 用户在 GitHub 上点击 Code → Codespaces 即可创建完整演示环境
-  # devcontainer.json 会自动：
-  #   1. 安装依赖 (postCreateCommand)
-  #   2. 构建库 (postCreateCommand)
-  #   3. 启动所有服务 (postStartCommand)
-  # 端口映射：
-  #   5173 - 前端 (Vite)
-  #   3000 - Auth Server
-  #   3001 - ABP API
-  #   3002 - Spring API
+  # Job 2: 自动创建/重启 Codespace 用于完整演示
+  start-codespace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or restart Codespace
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+
+          # 查找该分支上是否已有 Codespace
+          EXISTING=$(gh api "user/codespaces" --jq ".codespaces[] | select(.repository.full_name==\"$REPO\") | .name" 2>/dev/null | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            echo "Found existing Codespace: $EXISTING, restarting..."
+            gh api "user/codespaces/$EXISTING/start" --method POST || true
+          else
+            echo "Creating new Codespace on branch: $BRANCH"
+            gh api "user/codespaces" --method POST \
+              -f repository_id="$(gh api "repos/$REPO" --jq '.id')" \
+              -f ref="$BRANCH" \
+              -f machine="basicLinux32gb" || echo "Codespace creation may need manual approval"
+          fi
