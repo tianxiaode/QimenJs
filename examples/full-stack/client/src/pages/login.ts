@@ -3,13 +3,23 @@
  */
 import { oauth2 } from '../config';
 import { injectStyles } from '../layout';
+import { i18n } from '@orbitjs/i18n';
 
 export function showLoginPage(): void {
     injectStyles();
 
+    const currentLang = i18n.locale || 'zh-CN';
+
     document.getElementById('app')!.innerHTML = `
         <div class="login-page">
             <div class="login-card">
+                <div style="position:absolute;top:16px;right:16px;">
+                    <select id="login-lang" class="input" style="width:auto;padding:4px 8px;font-size:12px;" onchange="window.__changeLoginLang(this.value)">
+                        <option value="zh-CN" ${currentLang === 'zh-CN' ? 'selected' : ''}>中文简体</option>
+                        <option value="en-US" ${currentLang === 'en-US' ? 'selected' : ''}>English</option>
+                        <option value="ja-JP" ${currentLang === 'ja-JP' ? 'selected' : ''}>日本語</option>
+                    </select>
+                </div>
                 <h2>OrbitJS</h2>
                 <p class="subtitle">Enterprise Entity Framework</p>
 
@@ -38,6 +48,12 @@ export function showLoginPage(): void {
         </div>
     `;
 }
+
+(window as any).__changeLoginLang = async (locale: string) => {
+    await i18n.loadScript(`/locales/${locale}.js`);
+    i18n.locale = locale;
+    showLoginPage();
+};
 
 (window as any).__login = async () => {
     const username = (document.getElementById('username') as HTMLInputElement).value;

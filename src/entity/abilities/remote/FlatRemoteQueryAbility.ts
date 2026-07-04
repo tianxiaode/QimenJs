@@ -55,7 +55,7 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
     /** 过滤查询 */
     async filter(text: string) {
         this.page = 1;
-        this.filterBy = text;
+        (this.search as any).keyword = text;
         return await this._internalList(true);
     },
 
@@ -66,8 +66,8 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
 
     /** 排序 */
     async sort(prop: string, order: 'asc' | 'desc' | null) {
-        this.sortBy = order ? prop : '';
-        this.order = order || 'asc';
+        (this.search as any).sortBy = order ? prop : '';
+        (this.search as any).sortOrder = order || 'asc';
         this.page = 1;
         return await this._internalList(false);
     },

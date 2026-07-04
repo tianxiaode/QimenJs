@@ -1,70 +1,47 @@
 /**
  * 国际化页 - @orbitjs/i18n
  */
-import { i18n, registerMessages } from '@orbitjs/i18n';
+import { i18n } from '@orbitjs/i18n';
 import { renderPageContent } from '../layout';
 
-// 注册语言包
-registerMessages('zh-CN', {
-    'app.title': 'OrbitJS 管理模板',
-    'app.greeting': '你好，{name}！',
-    'app.items': '{count} 个项目',
-    'app.today': '今天是 {date}',
-    'nav.dashboard': '仪表盘',
-    'nav.users': '用户管理',
-    'btn.save': '保存',
-    'btn.cancel': '取消',
-    'btn.delete': '删除',
-    'status.online': '在线',
-    'status.offline': '离线',
-});
+// 已加载的语言包
+const loadedLocales = new Set<string>();
 
-registerMessages('en-US', {
-    'app.title': 'OrbitJS Admin Template',
-    'app.greeting': 'Hello, {name}!',
-    'app.items': '{count} items',
-    'app.today': 'Today is {date}',
-    'nav.dashboard': 'Dashboard',
-    'nav.users': 'User Management',
-    'btn.save': 'Save',
-    'btn.cancel': 'Cancel',
-    'btn.delete': 'Delete',
-    'status.online': 'Online',
-    'status.offline': 'Offline',
-});
+async function ensureLocale(locale: string): Promise<void> {
+    if (loadedLocales.has(locale)) return;
+    await i18n.loadScript(`/locales/${locale}.js`);
+    loadedLocales.add(locale);
+}
 
-registerMessages('ja-JP', {
-    'app.title': 'OrbitJS 管理テンプレート',
-    'app.greeting': 'こんにちは、{name}！',
-    'app.items': '{count} 件',
-    'app.today': '今日は {date} です',
-    'nav.dashboard': 'ダッシュボード',
-    'nav.users': 'ユーザー管理',
-    'btn.save': '保存',
-    'btn.cancel': 'キャンセル',
-    'btn.delete': '削除',
-    'status.online': 'オンライン',
-    'status.offline': 'オフライン',
-});
+export async function renderI18n(): Promise<void> {
+    // 确保当前语言包已加载
+    await ensureLocale(i18n.locale || 'zh-CN');
 
-let currentLocale = i18n.locale || 'zh-CN';
-
-export function renderI18n(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>国际化</h2>
-            <p>@orbitjs/i18n — 多语言切换 + 插值变量 + 动态加载</p>
+            <p>@orbitjs/i18n — 多语言切换 + 插值变量 + loadScript 动态加载</p>
         </div>
 
         <div class="section">
-            <div class="section-title">语言切换</div>
+            <div class="section-title">语言切换（loadScript 动态加载）</div>
             <div class="card">
+                <p class="text-sm text-muted mb-3">语言包为 public/locales/ 下的 .js 文件，通过 i18n.loadScript() 按需加载</p>
                 <div class="flex gap-2 mb-3">
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('zh-CN')">中文简体</button>
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('en-US')">English</button>
                     <button class="btn btn-ghost btn-sm" onclick="window.__switchLocale('ja-JP')">日本語</button>
                 </div>
                 <div id="i18n-demo"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">loadScript 加载日志</div>
+            <div class="card">
+                <div id="i18n-load-log" style="font-family:monospace;font-size:12px;background:#050506;padding:12px;border-radius:6px;max-height:150px;overflow-y:auto;">
+                    <div style="color:#888;">等待操作...</div>
+                </div>
             </div>
         </div>
 
@@ -91,6 +68,14 @@ export function renderI18n(): void {
     renderDemo();
 }
 
+function addLoadLog(msg: string): void {
+    const el = document.getElementById('i18n-load-log');
+    if (!el) return;
+    const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    el.innerHTML += `<div style="padding:2px 0;"><span style="color:#666;">${time}</span> <span style="color:#4CAF50;">${msg}</span></div>`;
+    el.scrollTop = el.scrollHeight;
+}
+
 function renderDemo(): void {
     const el = document.getElementById('i18n-demo');
     if (!el) return;
@@ -109,8 +94,10 @@ function renderDemo(): void {
     `;
 }
 
-(window as any).__switchLocale = (locale: string) => {
+(window as any).__switchLocale = async (locale: string) => {
+    addLoadLog(`切换语言 → ${locale}`);
+    await ensureLocale(locale);
     i18n.locale = locale;
-    currentLocale = locale;
+    addLoadLog(`已切换到 ${locale}，消息数: ${Object.keys(i18n.getMessages() || {}).length}`);
     renderDemo();
 };

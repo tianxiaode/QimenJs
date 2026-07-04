@@ -1,7 +1,7 @@
 /**
  * 任务调度页 - @orbitjs/task
  */
-import { globalTaskQueue } from '@orbitjs/task';
+import { globalTaskQueue } from '@orbitjs/task/task';
 import { renderPageContent } from '../layout';
 
 const taskLog: Array<{ time: string; msg: string; type: string }> = [];
@@ -12,7 +12,7 @@ export function renderTask(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>任务调度</h2>
-            <p>@orbitjs/task — GlobalTaskQueue 优先级调度 + 哈希任务</p>
+            <p>@orbitjs/task — GlobalTaskQueue 优先级调度</p>
         </div>
 
         <div class="section">
@@ -63,15 +63,17 @@ export function renderTask(): void {
         </div>
 
         <div class="section">
-            <div class="section-title">哈希任务</div>
+            <div class="section-title">哈希任务（Node.js 专属）</div>
             <div class="card">
-                <div class="card-title"><span class="dot" style="background:#4CAF50;"></span>文件哈希计算</div>
-                <p class="text-sm text-muted mb-3">选择文件计算哈希值，支持进度回调</p>
-                <div class="form-group">
-                    <input id="task-hash-file" class="input" type="file">
-                </div>
-                <div id="task-hash-progress" class="text-sm"></div>
-                <div id="task-hash-result" class="mt-2 text-sm"></div>
+                <p class="text-sm text-muted">HashTask 子模块依赖 Node.js worker_threads，仅在后端环境可用。浏览器端可使用 GlobalTaskQueue 进行任务调度。</p>
+                <table class="data-table">
+                    <thead><tr><th>子模块</th><th>环境</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>task/</td><td>浏览器 + Node.js</td><td>GlobalTaskQueue 优先级调度</td></tr>
+                        <tr><td>worker/</td><td>浏览器 + Node.js</td><td>Web Worker 管理器</td></tr>
+                        <tr><td>hash-task/</td><td>Node.js 专属</td><td>文件哈希计算（依赖 worker_threads）</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 

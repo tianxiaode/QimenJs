@@ -14,6 +14,7 @@ export default defineConfig({
             '@orbitjs/context': path.resolve(SRC, 'context/index.ts'),
             '@orbitjs/pipeline': path.resolve(SRC, 'pipeline/index.ts'),
             '@orbitjs/task': path.resolve(SRC, 'task/index.ts'),
+            '@orbitjs/task/task': path.resolve(SRC, 'task/task/index.ts'),
             '@orbitjs/error': path.resolve(SRC, 'error/index.ts'),
             '@orbitjs/logger': path.resolve(SRC, 'logger/index.ts'),
             '@orbitjs/utils': path.resolve(SRC, 'utils/index.ts'),

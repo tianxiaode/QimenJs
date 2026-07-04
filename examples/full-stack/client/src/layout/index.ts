@@ -5,6 +5,7 @@
  */
 
 import { CSS } from '../styles/theme';
+import { i18n } from '@orbitjs/i18n';
 
 // 注入全局样式
 let styleInjected = false;
@@ -77,7 +78,6 @@ export const navGroups: NavGroup[] = [
             { id: 'data-processor', label: '数据处理器', icon: '🔄' },
             { id: 'http', label: 'HTTP客户端', icon: '🌍' },
             { id: 'system-abilities', label: '系统能力', icon: '⚡' },
-            { id: 'oauth2', label: 'OAuth2认证', icon: '🔑' },
         ],
     },
     {
@@ -156,6 +156,11 @@ export function renderLayout(authenticated: boolean): void {
                         </div>
                     </div>
                     <div class="topbar-right">
+                        <select id="topbar-lang" class="input" style="width:auto;padding:4px 8px;font-size:12px;margin-right:8px;" onchange="window.__changeLang(this.value)">
+                            <option value="zh-CN" ${(i18n.locale || 'zh-CN') === 'zh-CN' ? 'selected' : ''}>中文简体</option>
+                            <option value="en-US" ${i18n.locale === 'en-US' ? 'selected' : ''}>English</option>
+                            <option value="ja-JP" ${i18n.locale === 'ja-JP' ? 'selected' : ''}>日本語</option>
+                        </select>
                         <div class="topbar-status">
                             <span class="status-dot ${authenticated ? '' : 'offline'}"></span>
                             <span>${authenticated ? '已认证' : '未认证'}</span>
@@ -186,4 +191,10 @@ export function renderPageContent(html: string): void {
 // 暴露导航到 window
 (window as any).__navigate = (pageId: string) => {
     setActivePage(pageId);
+};
+
+// 暴露语言切换到 window
+(window as any).__changeLang = async (locale: string) => {
+    await i18n.loadScript(`/locales/${locale}.js`);
+    i18n.locale = locale;
 };
