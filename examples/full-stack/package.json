@@ -1,8 +1,8 @@
 {
-  "name": "orbitjs-full-stack-example",
+  "name": "qimenjs-full-stack-example",
   "version": "1.0.0",
   "private": true,
-  "description": "OrbitJS 全栈示例：OAuth2 认证 + ABP API + Spring API + 前端多域数据获取",
+  "description": "QimenJS 全栈示例：OAuth2 认证 + ABP API + Spring API + 前端多域数据获取",
   "scripts": {
     "start": "node scripts/start-all.js",
     "stop": "node scripts/stop-all.js",

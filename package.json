@@ -190,12 +190,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tianxiaode/orbitjs"
+    "url": "git+https://github.com/tianxiaode/QimenJs"
   },
   "bugs": {
-    "url": "https://github.com/tianxiaode/orbitjs/issues"
+    "url": "https://github.com/tianxiaode/QimenJs/issues"
   },
-  "homepage": "https://github.com/tianxiaode/orbitjs#readme",
+  "homepage": "https://github.com/tianxiaode/QimenJs#readme",
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
