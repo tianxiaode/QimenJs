@@ -5,7 +5,7 @@
  * 它提供了对进度监控、超时控制、错误处理和响应解析的支持。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const XhrTransportHandler = async (context: RequestContext) => {
     // 1. 自治判定：只有上传任务才由 XHR 处理

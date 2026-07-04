@@ -24,7 +24,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-jest.mock('@orbitjs/pattern', () => ({
+jest.mock('@orbit-js/pattern', () => ({
     PatternRegistrar: {
         getInstance: jest.fn(),
     },
@@ -35,7 +35,7 @@ jest.mock('@/validation/utils', () => ({
 }));
 
 import { FormatProcessor } from '@/validation/processors/format/format';
-import { PatternRegistrar } from '@orbitjs/pattern';
+import { PatternRegistrar } from '@orbit-js/pattern';
 import { validatePattern } from '@/validation/utils';
 
 describe('FormatProcessor', () => {

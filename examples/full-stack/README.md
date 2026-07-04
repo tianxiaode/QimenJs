@@ -16,7 +16,7 @@ OAuth2 认证 + ABP API + Spring API + 前端多域数据获取的完整示例�
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
 │       │             │             │              │
 │  ┌────┴─────────────┴─────────────┴─────┐       │
-│  │         @orbitjs/http                 │       │
+│  │         @orbit-js/http                 │       │
 │  │   HttpClient + TokenInjector          │       │
 │  └────────────────┬──────────────────────┘       │
 └───────────────────┼──────────────────────────────┘
@@ -109,11 +109,11 @@ npm run client    # 前端
 
 | 包 | 用途 |
 |-----|------|
-| `@orbitjs/registry` | 域名注册（auth/abp/spring 三个域） |
-| `@orbitjs/http` | HTTP 客户端 + TokenInjector |
-| `@orbitjs/oauth2` | OAuth2 认证 + 401 自动刷新 |
-| `@orbitjs/data-processor-abp` | ABP 数据处理管道 |
-| `@orbitjs/data-processor-spring` | Spring 数据处理管道 |
+| `@orbit-js/registry` | 域名注册（auth/abp/spring 三个域） |
+| `@orbit-js/http` | HTTP 客户端 + TokenInjector |
+| `@orbit-js/oauth2` | OAuth2 认证 + 401 自动刷新 |
+| `@orbit-js/data-processor-abp` | ABP 数据处理管道 |
+| `@orbit-js/data-processor-spring` | Spring 数据处理管道 |
 
 ## 停止服务
 

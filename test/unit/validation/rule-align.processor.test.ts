@@ -23,14 +23,14 @@ jest.mock('@/logger', () => {
     };
 });
 
-jest.mock('@orbitjs/registry', () => ({
+jest.mock('@orbit-js/registry', () => ({
     SystemRegistrar: {
         getInstance: jest.fn(),
     },
 }));
 
 import { RuleAlignmentProcessor } from '@/validation/processors/common/rule-align';
-import { SystemRegistrar } from '@orbitjs/registry';
+import { SystemRegistrar } from '@orbit-js/registry';
 
 describe('RuleAlignmentProcessor', () => {
     beforeEach(() => {

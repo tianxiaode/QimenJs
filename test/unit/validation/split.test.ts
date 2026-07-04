@@ -9,7 +9,7 @@
  * 5. 边界条件（非字符串、无 separator）
  */
 
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

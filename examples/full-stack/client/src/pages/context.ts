@@ -1,14 +1,14 @@
 /**
- * 上下文管理页 - @orbitjs/context
+ * 上下文管理页 - @orbit-js/context
  */
-import { RequestContextBuilder, createBaseContext, addStep, setError, setTerminate, isTerminated } from '@orbitjs/context';
+import { RequestContextBuilder, createBaseContext, addStep, setError, setTerminate, isTerminated } from '@orbit-js/context';
 import { renderPageContent } from '../layout';
 
 export function renderContext(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>上下文管理</h2>
-            <p>@orbitjs/context — RequestContextBuilder + BaseContext 操作</p>
+            <p>@orbit-js/context — RequestContextBuilder + BaseContext 操作</p>
         </div>
 
         <div class="section">

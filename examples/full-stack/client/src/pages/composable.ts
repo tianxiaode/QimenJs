@@ -1,8 +1,8 @@
 /**
- * 组合能力页 - @orbitjs/composable
+ * 组合能力页 - @orbit-js/composable
  */
-import { ComposableBase } from '@orbitjs/composable';
-import type { AbilityDefinition } from '@orbitjs/composable';
+import { ComposableBase } from '@orbit-js/composable';
+import type { AbilityDefinition } from '@orbit-js/composable';
 import { renderPageContent } from '../layout';
 
 // 定义一个计数器能力
@@ -43,7 +43,7 @@ export function renderComposable(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>组合能力</h2>
-            <p>@orbitjs/composable — ComposableBase + AbilityDefinition</p>
+            <p>@orbit-js/composable — ComposableBase + AbilityDefinition</p>
         </div>
 
         <div class="section">

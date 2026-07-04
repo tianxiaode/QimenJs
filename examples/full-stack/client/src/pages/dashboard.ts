@@ -177,23 +177,23 @@ export function renderDashboard(): void {
             <div class="grid-3">
                 <div class="card"><div class="card-title"><span class="dot" style="background:#6366F1;"></span>核心层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbitjs/error · @orbitjs/logger · @orbitjs/utils<br>
-                        @orbitjs/async · @orbitjs/runtime · @orbitjs/crypto<br>
-                        @orbitjs/types · @orbitjs/i18n
+                        @orbit-js/error · @orbit-js/logger · @orbit-js/utils<br>
+                        @orbit-js/async · @orbit-js/runtime · @orbit-js/crypto<br>
+                        @orbit-js/types · @orbit-js/i18n
                     </div>
                 </div>
                 <div class="card"><div class="card-title"><span class="dot" style="background:#A855F7;"></span>基础设施层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbitjs/registry · @orbitjs/cache · @orbitjs/events<br>
-                        @orbitjs/task · @orbitjs/composable · @orbitjs/context<br>
-                        @orbitjs/schema · @orbitjs/validation · @orbitjs/pipeline
+                        @orbit-js/registry · @orbit-js/cache · @orbit-js/events<br>
+                        @orbit-js/task · @orbit-js/composable · @orbit-js/context<br>
+                        @orbit-js/schema · @orbit-js/validation · @orbit-js/pipeline
                     </div>
                 </div>
                 <div class="card"><div class="card-title"><span class="dot" style="background:#4CAF50;"></span>高级功能层</div>
                     <div class="text-sm text-muted" style="line-height:1.8;">
-                        @orbitjs/http · @orbitjs/oauth2 · @orbitjs/entity<br>
-                        @orbitjs/data-processor · @orbitjs/data-processor-abp<br>
-                        @orbitjs/data-processor-spring · @orbitjs/system-abilities
+                        @orbit-js/http · @orbit-js/oauth2 · @orbit-js/entity<br>
+                        @orbit-js/data-processor · @orbit-js/data-processor-abp<br>
+                        @orbit-js/data-processor-spring · @orbit-js/system-abilities
                     </div>
                 </div>
             </div>

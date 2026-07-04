@@ -1,4 +1,4 @@
-import { RegistrarBase } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbit-js/registry';
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 

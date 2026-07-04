@@ -1,5 +1,5 @@
 /**
- * 运行时检测页 - @orbitjs/runtime
+ * 运行时检测页 - @orbit-js/runtime
  */
 import {
     getRuntimeEnv,
@@ -11,7 +11,7 @@ import {
     isTouchDevice,
     detectInputCapabilities,
     MemoryManager,
-} from '@orbitjs/runtime';
+} from '@orbit-js/runtime';
 import { renderPageContent } from '../layout';
 
 export function renderRuntime(): void {
@@ -34,7 +34,7 @@ export function renderRuntime(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>运行时检测</h2>
-            <p>@orbitjs/runtime — 浏览器/Node.js 环境检测 + 特性探测</p>
+            <p>@orbit-js/runtime — 浏览器/Node.js 环境检测 + 特性探测</p>
         </div>
 
         <div class="section">
@@ -119,7 +119,7 @@ export function renderRuntime(): void {
         <div class="section">
             <div class="section-title">MemoryManager</div>
             <div class="card">
-                <p class="text-sm text-muted" style="margin-bottom:12px;">@orbitjs/runtime 提供的内存管理器，支持内存快照、阈值监控和票据机制。</p>
+                <p class="text-sm text-muted" style="margin-bottom:12px;">@orbit-js/runtime 提供的内存管理器，支持内存快照、阈值监控和票据机制。</p>
                 <table class="data-table">
                     <tbody>
                         <tr><td class="text-muted">MemoryManager</td><td>内存管理器类，提供 snapshot() / watch() / ticket() 等方法</td></tr>

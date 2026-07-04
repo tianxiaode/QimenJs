@@ -5,7 +5,7 @@
  * 当响应被标记为下载且包含有效的Blob数据时，它会触发浏览器的文件下载功能。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const DownloadInterceptorHandler = async (context: RequestContext) => {
     if (!context.metadata.isDownload) return;

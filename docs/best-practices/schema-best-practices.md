@@ -71,7 +71,7 @@ registrar.register({ name: 'StatusBase', extends: 'AuditedBase', fields: [...] }
 
 ```typescript
 // 正确 - 使用 F 常量
-import { F } from '@orbitjs/schema';
+import { F } from '@orbit-js/schema';
 
 registrar.register({
     name: 'Department',

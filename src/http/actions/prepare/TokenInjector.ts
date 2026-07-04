@@ -6,7 +6,7 @@
  * - 根据 authInjector 配置注入到请求中
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 /**
  * TokenInjector 处理器

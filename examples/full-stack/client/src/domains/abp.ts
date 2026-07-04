@@ -3,7 +3,7 @@
  *
  * 定义 ABP 后端（PagedResultDto 格式）的实体 Schema
  */
-import type { RegistrSchema } from '@orbitjs/schema';
+import type { RegistrSchema } from '@orbit-js/schema';
 
 /**
  * ABP 用户 Schema

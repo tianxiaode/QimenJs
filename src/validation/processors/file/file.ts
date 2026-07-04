@@ -1,4 +1,4 @@
-import { MimeTypeRegistrar } from '@orbitjs/mime';
+import { MimeTypeRegistrar } from '@orbit-js/mime';
 import { ValidationErrorBuilder } from '../../errors';
 import {
     IValidationError,

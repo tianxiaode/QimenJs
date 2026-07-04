@@ -1,5 +1,5 @@
 import { ILogger, Logger } from '@/logger';
-import { debounce as debounceFn } from '@orbitjs/async';
+import { debounce as debounceFn } from '@orbit-js/async';
 import type { IComposableBase } from './types/composable';
 
 /**

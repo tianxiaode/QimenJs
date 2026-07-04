@@ -5,7 +5,7 @@
  * 它会规范化基础URL路径、拼接路径参数并处理查询参数的编码和组装。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const UrlBuilderHandler = async (context: RequestContext) => {
     const { pathParams: segments = [], queryParams: query = {} } = context.request;

@@ -9,9 +9,9 @@
  * - 返回处理后的上下文
  */
 
-import type { RequestContext } from '@orbitjs/context';
-import { pipeline } from '@orbitjs/pipeline';
-import { Registry } from '@orbitjs/registry';
+import type { RequestContext } from '@orbit-js/context';
+import { pipeline } from '@orbit-js/pipeline';
+import { Registry } from '@orbit-js/registry';
 import { HttpActionRegistrar, type HttpActionEntry } from './HttpActionRegistrar';
 
 /**

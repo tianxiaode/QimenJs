@@ -3,7 +3,7 @@
  */
 
 import { CommonParamsEnricherHandler } from '@/http/actions/prepare/CommonParamsEnricher';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(domainConfig: any = {}, requestOverrides: any = {}) {
     const context = RequestContextBuilder

@@ -7,7 +7,7 @@
  * 3. 所有规则满足时无错误
  */
 
-jest.mock('@orbitjs/pattern', () => ({
+jest.mock('@orbit-js/pattern', () => ({
     PatternRegistrar: {
         getInstance: jest.fn(() => ({
             get: jest.fn((name: string) => {

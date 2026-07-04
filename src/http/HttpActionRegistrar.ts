@@ -4,7 +4,7 @@
  * 纯粹的 HTTP 处理器注册表
  */
 
-import { RegistrarBase } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbit-js/registry';
 
 /**
  * HTTP Action 类别

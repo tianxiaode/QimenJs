@@ -4,8 +4,8 @@
  * 演示 RemoteTreeEntityManager 的树形数据管理
  * 连接 ABP 后端的部门树 API
  */
-import { RemoteTreeEntityManager } from '@orbitjs/entity';
-import { TreeManagerAbility } from '@orbitjs/entity';
+import { RemoteTreeEntityManager } from '@orbit-js/entity';
+import { TreeManagerAbility } from '@orbit-js/entity';
 import { DepartmentSchema } from '../domains';
 
 /**

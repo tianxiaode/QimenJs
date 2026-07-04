@@ -1,4 +1,4 @@
-# @orbitjs/<package-name>
+# @orbit-js/<package-name>
 
 **层级**: 第 X 层  
 **状态**: ✅/⚠️/❌  
@@ -68,10 +68,10 @@
 ## 使用统计
 
 ### 依赖的包
-- @orbitjs/xxx (LX)
+- @orbit-js/xxx (LX)
 
 ### 被以下包使用
-- @orbitjs/xxx (LX)
+- @orbit-js/xxx (LX)
 
 ### 使用场景
 - 场景描述

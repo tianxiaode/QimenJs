@@ -3,7 +3,7 @@
  */
 
 import { ResponseAnalyzerHandler } from '@/http/actions/process/ResponseAnalyzer';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     status?: number;

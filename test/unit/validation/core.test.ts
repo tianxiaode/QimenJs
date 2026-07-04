@@ -3,7 +3,7 @@
  */
 
 // Mock Logger before importing validation
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -28,7 +28,7 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 import { doValidate, validationExecutor, ValidatorRegistrar, bootstrapValidators } from '@/validation';
-import '@orbitjs/pattern';
+import '@orbit-js/pattern';
 
 // 启动验证器
 bootstrapValidators();

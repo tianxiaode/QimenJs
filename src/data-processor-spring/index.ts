@@ -1,5 +1,5 @@
 /**
- * @orbitjs/data-processor-spring
+ * @orbit-js/data-processor-spring
  *
  * Spring (Spring Boot / Spring Data) 数据处理管道处理器
  *
@@ -13,10 +13,10 @@
  * @example
  * ```ts
  * // 默认配置（引入即生效）
- * import '@orbitjs/data-processor-spring';
+ * import '@orbit-js/data-processor-spring';
  *
  * // 自定义配置
- * import { registerSpringHandlers } from '@orbitjs/data-processor-spring';
+ * import { registerSpringHandlers } from '@orbit-js/data-processor-spring';
  * registerSpringHandlers({ defaultPageSize: 20 });
  * ```
  */

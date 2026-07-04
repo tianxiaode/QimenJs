@@ -4,7 +4,7 @@
  * 纯前端数据管理，不需要后端 API
  * 演示 LocalReadonlyEntityManager 和 LocalCrudEntityManager
  */
-import type { RegistrSchema } from '@orbitjs/schema';
+import type { RegistrSchema } from '@orbit-js/schema';
 
 /**
  * 本地通知 Schema（只读）

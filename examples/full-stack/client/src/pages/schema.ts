@@ -1,5 +1,5 @@
 /**
- * Schema 页 - @orbitjs/schema
+ * Schema 页 - @orbit-js/schema
  */
 import { renderPageContent } from '../layout';
 import { UserSchema, ProductSchema, OrderSchema, ItemSchema, NotificationSchema, TagSchema, DepartmentSchema } from '../domains';
@@ -11,7 +11,7 @@ export function renderSchema(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>Schema</h2>
-            <p>@orbitjs/schema — SchemaRegistrar 实体结构定义与注册</p>
+            <p>@orbit-js/schema — SchemaRegistrar 实体结构定义与注册</p>
         </div>
 
         <div class="section">

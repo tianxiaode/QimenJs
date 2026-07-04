@@ -5,189 +5,189 @@
       "outDir": "dist/error",
       "rootDir": "src/error",
       "dependencies": [],
-      "packageName": "@orbitjs/error"
+      "packageName": "@orbit-js/error"
     },
     "logger": {
       "entry": "src/logger/index.ts",
       "outDir": "dist/logger",
       "rootDir": "src/logger",
       "dependencies": [],
-      "packageName": "@orbitjs/logger"
+      "packageName": "@orbit-js/logger"
     },
     "utils": {
       "entry": "src/utils/index.ts",
       "outDir": "dist/utils",
       "rootDir": "src/utils",
       "dependencies": [],
-      "packageName": "@orbitjs/utils"
+      "packageName": "@orbit-js/utils"
     },
     "async": {
       "entry": "src/async/index.ts",
       "outDir": "dist/async",
       "rootDir": "src/async",
       "dependencies": [],
-      "packageName": "@orbitjs/async"
+      "packageName": "@orbit-js/async"
     },
     "runtime": {
       "entry": "src/runtime/index.ts",
       "outDir": "dist/runtime",
       "rootDir": "src/runtime",
       "dependencies": [],
-      "packageName": "@orbitjs/runtime"
+      "packageName": "@orbit-js/runtime"
     },
     "crypto": {
       "entry": "src/crypto/index.ts",
       "outDir": "dist/crypto",
       "rootDir": "src/crypto",
       "dependencies": [],
-      "packageName": "@orbitjs/crypto"
+      "packageName": "@orbit-js/crypto"
     },
     "registry": {
       "entry": "src/registry/index.ts",
       "outDir": "dist/registry",
       "rootDir": "src/registry",
       "dependencies": ["error"],
-      "packageName": "@orbitjs/registry"
+      "packageName": "@orbit-js/registry"
     },
     "cache": {
       "entry": "src/cache/index.ts",
       "outDir": "dist/cache",
       "rootDir": "src/cache",
       "dependencies": ["logger", "utils"],
-      "packageName": "@orbitjs/cache"
+      "packageName": "@orbit-js/cache"
     },
     "events": {
       "entry": "src/events/index.ts",
       "outDir": "dist/events",
       "rootDir": "src/events",
       "dependencies": ["logger", "utils"],
-      "packageName": "@orbitjs/events"
+      "packageName": "@orbit-js/events"
     },
     "validation": {
       "entry": "src/validation/index.ts",
       "outDir": "dist/validation",
       "rootDir": "src/validation",
       "dependencies": ["registry", "mime", "pattern"],
-      "packageName": "@orbitjs/validation"
+      "packageName": "@orbit-js/validation"
     },
     "task": {
       "entry": "src/task/index.ts",
       "outDir": "dist/task",
       "rootDir": "src/task",
       "dependencies": ["logger", "utils", "error", "runtime"],
-      "packageName": "@orbitjs/task"
+      "packageName": "@orbit-js/task"
     },
     "types": {
       "entry": "src/types/index.ts",
       "outDir": "dist/types",
       "rootDir": "src/types",
       "dependencies": [],
-      "packageName": "@orbitjs/types"
+      "packageName": "@orbit-js/types"
     },
     "context": {
       "entry": "src/context/index.ts",
       "outDir": "dist/context",
       "rootDir": "src/context",
       "dependencies": ["registry"],
-      "packageName": "@orbitjs/context"
+      "packageName": "@orbit-js/context"
     },
     "schema": {
       "entry": "src/schema/index.ts",
       "outDir": "dist/schema",
       "rootDir": "src/schema",
       "dependencies": ["registry"],
-      "packageName": "@orbitjs/schema"
+      "packageName": "@orbit-js/schema"
     },
     "pipeline": {
       "entry": "src/pipeline/index.ts",
       "outDir": "dist/pipeline",
       "rootDir": "src/pipeline",
       "dependencies": ["logger", "context"],
-      "packageName": "@orbitjs/pipeline"
+      "packageName": "@orbit-js/pipeline"
     },
     "composable": {
       "entry": "src/composable/index.ts",
       "outDir": "dist/composable",
       "rootDir": "src/composable",
       "dependencies": ["logger", "async"],
-      "packageName": "@orbitjs/composable"
+      "packageName": "@orbit-js/composable"
     },
     "event-dom": {
       "entry": "src/event-dom/index.ts",
       "outDir": "dist/event-dom",
       "rootDir": "src/event-dom",
       "dependencies": ["events", "utils", "runtime", "logger", "error", "async"],
-      "packageName": "@orbitjs/event-dom"
+      "packageName": "@orbit-js/event-dom"
     },
     "data-processor": {
       "entry": "src/data-processor/index.ts",
       "outDir": "dist/data-processor",
       "rootDir": "src/data-processor",
       "dependencies": ["registry", "context", "pipeline"],
-      "packageName": "@orbitjs/data-processor"
+      "packageName": "@orbit-js/data-processor"
     },
     "http": {
       "entry": "src/http/index.ts",
       "outDir": "dist/http",
       "rootDir": "src/http",
       "dependencies": ["context", "pipeline", "registry", "task"],
-      "packageName": "@orbitjs/http"
+      "packageName": "@orbit-js/http"
     },
     "system-abilities": {
       "entry": "src/system-abilities/index.ts",
       "outDir": "dist/system-abilities",
       "rootDir": "src/system-abilities",
       "dependencies": ["events", "composable", "registry", "event-dom"],
-      "packageName": "@orbitjs/system-abilities"
+      "packageName": "@orbit-js/system-abilities"
     },
     "entity": {
       "entry": "src/entity/index.ts",
       "outDir": "dist/entity",
       "rootDir": "src/entity",
       "dependencies": ["composable", "schema", "context", "http", "cache", "error", "system-abilities", "data-processor", "registry", "utils"],
-      "packageName": "@orbitjs/entity"
+      "packageName": "@orbit-js/entity"
     },
     "i18n": {
       "entry": "src/i18n/index.ts",
       "outDir": "dist/i18n",
       "rootDir": "src/i18n",
       "dependencies": [],
-      "packageName": "@orbitjs/i18n"
+      "packageName": "@orbit-js/i18n"
     },
     "mime": {
       "entry": "src/mime/index.ts",
       "outDir": "dist/mime",
       "rootDir": "src/mime",
       "dependencies": ["registry"],
-      "packageName": "@orbitjs/mime"
+      "packageName": "@orbit-js/mime"
     },
     "pattern": {
       "entry": "src/pattern/index.ts",
       "outDir": "dist/pattern",
       "rootDir": "src/pattern",
       "dependencies": ["registry"],
-      "packageName": "@orbitjs/pattern"
+      "packageName": "@orbit-js/pattern"
     },
     "data-processor-abp": {
       "entry": "src/data-processor-abp/index.ts",
       "outDir": "dist/data-processor-abp",
       "rootDir": "src/data-processor-abp",
       "dependencies": ["data-processor", "context"],
-      "packageName": "@orbitjs/data-processor-abp"
+      "packageName": "@orbit-js/data-processor-abp"
     },
     "data-processor-spring": {
       "entry": "src/data-processor-spring/index.ts",
       "outDir": "dist/data-processor-spring",
       "rootDir": "src/data-processor-spring",
       "dependencies": ["data-processor", "context"],
-      "packageName": "@orbitjs/data-processor-spring"
+      "packageName": "@orbit-js/data-processor-spring"
     },
     "oauth2": {
       "entry": "src/oauth2/index.ts",
       "outDir": "dist/oauth2",
       "rootDir": "src/oauth2",
       "dependencies": ["http", "registry", "events", "cache"],
-      "packageName": "@orbitjs/oauth2"
+      "packageName": "@orbit-js/oauth2"
     }
   },
   "build": {

@@ -3,7 +3,7 @@
  */
 
 import { HttpFactory } from '@/http/factory';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 // Helper to create a context with error
 function createErrorContext(domain: string, errorMsg: string) {

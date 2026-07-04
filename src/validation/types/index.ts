@@ -22,10 +22,10 @@ export type {
     ValidationTag,
     CustomValidationFunction,
     PatternSwitches,
-} from '@orbitjs/schema';
+} from '@orbit-js/schema';
 
 // 从 schema 包导入枚举（需要作为值使用）
-export { ValidationPatternType } from '@orbitjs/schema';
+export { ValidationPatternType } from '@orbit-js/schema';
 
 // 本地类型
 export * from './context';

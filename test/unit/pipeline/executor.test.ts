@@ -3,7 +3,7 @@
  */
 
 // Mock Logger
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

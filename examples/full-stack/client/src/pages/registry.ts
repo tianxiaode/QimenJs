@@ -1,14 +1,14 @@
 /**
- * 注册器页 - @orbitjs/registry
+ * 注册器页 - @orbit-js/registry
  */
-import { RegistryHub, DomainRegistrar, SystemRegistrar, Registry } from '@orbitjs/registry';
+import { RegistryHub, DomainRegistrar, SystemRegistrar, Registry } from '@orbit-js/registry';
 import { renderPageContent } from '../layout';
 
 export function renderRegistry(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>注册器</h2>
-            <p>@orbitjs/registry — RegistryHub + DomainRegistrar / SystemRegistrar / HtmlTemplateRegistrar</p>
+            <p>@orbit-js/registry — RegistryHub + DomainRegistrar / SystemRegistrar / HtmlTemplateRegistrar</p>
         </div>
 
         <div class="section">

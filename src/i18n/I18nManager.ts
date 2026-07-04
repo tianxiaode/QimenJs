@@ -21,7 +21,7 @@ import type {
  *
  * ```ts
  * // JS 中使用
- * import { i18n } from '@orbitjs/i18n';
+ * import { i18n } from '@orbit-js/i18n';
  *
  * i18n.t('common.save');                    // '保存'
  * i18n.t('greeting', { name: 'World' });    // '你好, World'

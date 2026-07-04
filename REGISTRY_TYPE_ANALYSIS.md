@@ -10,7 +10,7 @@
 export interface Registrars {}
 
 // register.d.ts
-declare module '@orbitjs/registry' {
+declare module '@orbit-js/registry' {
     interface Registrars {
         [MimeTypeRegistrarName]: MimeTypeRegistrar;
         [SystemRegistrarName]: SystemRegistrar;

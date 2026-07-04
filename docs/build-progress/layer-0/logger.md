@@ -1,4 +1,4 @@
-# @orbitjs/logger
+# @orbit-js/logger
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
@@ -34,7 +34,7 @@ src/logger/
 ## 使用示例
 
 ```typescript
-import { Logger } from '@orbitjs/logger';
+import { Logger } from '@orbit-js/logger';
 
 const logger = Logger.for('MyComponent');
 logger.info('Hello, World!');

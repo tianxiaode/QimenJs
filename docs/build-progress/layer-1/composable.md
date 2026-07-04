@@ -1,4 +1,4 @@
-# @orbitjs/composable
+# @orbit-js/composable
 
 **层级**: 第 2 层  
 **状态**: 完成  

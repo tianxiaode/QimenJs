@@ -15,7 +15,7 @@
  * 2. 执行管道
  * 
  * @example
- * import { DataProcessor } from '@orbitjs/data-processor';
+ * import { DataProcessor } from '@orbit-js/data-processor';
  * 
  * // 注册处理器
  * DataProcessor.register('abp-post', {

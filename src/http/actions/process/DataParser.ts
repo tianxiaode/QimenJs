@@ -5,7 +5,7 @@
  * 支持JSON、Blob和文本等多种数据类型的解析，并处理可能出现的解析错误。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const DataParserHandler = async (context: RequestContext) => {
     if (context.metadata.isTransportFailure || !context.response.rawResponse) return;

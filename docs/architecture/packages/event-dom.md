@@ -1,4 +1,4 @@
-# @orbitjs/event-dom
+# @orbit-js/event-dom
 
 **层级**: 第 2 层  
 **状态**: ✅ 完成  
@@ -29,16 +29,16 @@ DOM 事件处理包，提供高级手势事件识别和处理功能。
 
 ## 依赖
 
-- `@orbitjs/events` - 事件总线
-- `@orbitjs/logger` - 日志记录
-- `@orbitjs/utils` - 工具函数
-- `@orbitjs/runtime` - 运行时环境检测
-- `@orbitjs/error` - 错误处理
+- `@orbit-js/events` - 事件总线
+- `@orbit-js/logger` - 日志记录
+- `@orbit-js/utils` - 工具函数
+- `@orbit-js/runtime` - 运行时环境检测
+- `@orbit-js/error` - 错误处理
 
 ## 使用示例
 
 ```typescript
-import { createEventAdapter } from '@orbitjs/event-dom';
+import { createEventAdapter } from '@orbit-js/event-dom';
 
 const adapter = createEventAdapter();
 const element = document.getElementById('my-button');
@@ -90,7 +90,7 @@ interface BindOptions {
 ## 变更历史
 
 ### 2026-06-26
-- 修正所有模块引用，使用 `@/` 代替 `@orbitjs/`
+- 修正所有模块引用，使用 `@/` 代替 `@orbit-js/`
 - 修正类型导出路径
 - 更新错误类引用，使用 error 包中的 GestureError
 - 所有测试通过

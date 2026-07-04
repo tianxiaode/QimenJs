@@ -1,6 +1,6 @@
 import { SimpleWorkerManager } from '@/task/worker/SimpleWorkerManager';
 import { WorkerManagerBase } from '@/task/worker/WorkerManagerBase';
-import { Logger } from '@orbitjs/logger';
+import { Logger } from '@orbit-js/logger';
 
 // 创建一个测试用的SimpleWorkerManager子类来访问受保护的方法
 class TestSimpleWorkerManager extends SimpleWorkerManager {

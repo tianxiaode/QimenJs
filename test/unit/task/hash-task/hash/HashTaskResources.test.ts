@@ -1,5 +1,5 @@
 import { HashTaskResources } from '@/task/hash-task/hash/HashTaskResources';
-import { MemoryManager, IMemoryTicket } from '@orbitjs/runtime';
+import { MemoryManager, IMemoryTicket } from '@orbit-js/runtime';
 import { WorkerPool, WorkerHandle } from '@/task/hash-task/worker';
 import { ResourceUnavailableError } from '@/task/hash-task/errors';
 import { ResourceNotAcquiredError } from '@/task/hash-task/errors/ResourceNotAcquiredError';

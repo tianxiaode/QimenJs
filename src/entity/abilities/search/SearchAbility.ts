@@ -1,5 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
-import { array } from '@orbitjs/utils';
+import { array } from '@orbit-js/utils';
 
 /**
  * SearchAbility - 搜索过滤能力

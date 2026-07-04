@@ -1,6 +1,6 @@
 import type { AbilityDefinition } from '@/composable';
 import type { IEntity } from '@/schema';
-import { array } from '@orbitjs/utils';
+import { array } from '@orbit-js/utils';
 
 /**
  * TreeSearchAbility - 树搜索能力

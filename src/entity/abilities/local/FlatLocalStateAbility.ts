@@ -2,7 +2,7 @@ import type { AbilityDefinition } from '@/composable';
 import type { ILocalChangeSet, IDeletionPlan } from '@/entity/types';
 import { CacheFactory } from '@/cache';
 import type { ICacheProvider } from '@/cache';
-import { array } from '@orbitjs/utils';
+import { array } from '@orbit-js/utils';
 
 /**
  * 简单哈希函数

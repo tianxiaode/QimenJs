@@ -7,13 +7,13 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 第 0 层：核心基础包（7 个，零依赖）
 
 ```
-@orbitjs/error
-@orbitjs/logger
-@orbitjs/utils
-@orbitjs/async
-@orbitjs/runtime
-@orbitjs/crypto
-@orbitjs/types
+@orbit-js/error
+@orbit-js/logger
+@orbit-js/utils
+@orbit-js/async
+@orbit-js/runtime
+@orbit-js/crypto
+@orbit-js/types
 ```
 
 **规则**：
@@ -23,12 +23,12 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 第 1 层：基础设施工具包（6 个）
 
 ```
-@orbitjs/registry    → error
-@orbitjs/cache       → logger, utils
-@orbitjs/events      → logger, utils
-@orbitjs/validation  → registry
-@orbitjs/task        → logger, utils, error, runtime
-@orbitjs/context     → registry
+@orbit-js/registry    → error
+@orbit-js/cache       → logger, utils
+@orbit-js/events      → logger, utils
+@orbit-js/validation  → registry
+@orbit-js/task        → logger, utils, error, runtime
+@orbit-js/context     → registry
 ```
 
 **规则**：
@@ -38,10 +38,10 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 第 2 层：功能工具包（4 个）
 
 ```
-@orbitjs/schema        → registry
-@orbitjs/pipeline      → logger, context
-@orbitjs/composable    → logger, async
-@orbitjs/event-dom     → events, utils, runtime, logger, error, async
+@orbit-js/schema        → registry
+@orbit-js/pipeline      → logger, context
+@orbit-js/composable    → logger, async
+@orbit-js/event-dom     → events, utils, runtime, logger, error, async
 ```
 
 **规则**：
@@ -51,9 +51,9 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 第 3 层：高级功能包（3 个）
 
 ```
-@orbitjs/data-processor   → registry, context, pipeline
-@orbitjs/http             → context, pipeline, registry, task
-@orbitjs/system-abilities → events, composable, registry, event-dom
+@orbit-js/data-processor   → registry, context, pipeline
+@orbit-js/http             → context, pipeline, registry, task
+@orbit-js/system-abilities → events, composable, registry, event-dom
 ```
 
 **规则**：
@@ -63,7 +63,7 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 第 4 层：业务包（1 个）
 
 ```
-@orbitjs/entity → composable, schema, context, http, cache, error, system-abilities, data-processor, registry, utils
+@orbit-js/entity → composable, schema, context, http, cache, error, system-abilities, data-processor, registry, utils
 ```
 
 **规则**：
@@ -81,13 +81,13 @@ OrbitJS 采用严格的层级依赖结构，共分为 5 层：
 ### 2. 禁止反向依赖
 
 ```
-错误：@orbitjs/logger → @orbitjs/entity  // logger 是第 0 层，不能依赖第 4 层
+错误：@orbit-js/logger → @orbit-js/entity  // logger 是第 0 层，不能依赖第 4 层
 ```
 
 ### 3. 禁止跨层依赖
 
 ```
-错误：@orbitjs/utils → @orbitjs/entity  // 跨了 4 层
+错误：@orbit-js/utils → @orbit-js/entity  // 跨了 4 层
 ```
 
 ## 依赖可视化

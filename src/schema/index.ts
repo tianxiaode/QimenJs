@@ -3,7 +3,7 @@
  * 
  * 提供数据结构定义和验证规则定义
  * 
- * @module @orbitjs/schema
+ * @module @orbit-js/schema
  */
 
 // 类型导出

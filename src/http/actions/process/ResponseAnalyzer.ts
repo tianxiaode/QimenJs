@@ -6,7 +6,7 @@
  * 并设置相应的元数据标志供后续处理步骤使用。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const ResponseAnalyzerHandler = async (context: RequestContext) => {
     // 卫语句：物理层彻底失败则跳过

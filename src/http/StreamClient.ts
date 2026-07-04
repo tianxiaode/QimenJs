@@ -9,7 +9,7 @@
  * @module http/StreamClient
  */
 
-import { RequestContextBuilder, type RequestContext } from '@orbitjs/context';
+import { RequestContextBuilder, type RequestContext } from '@orbit-js/context';
 import { HttpExecutor } from './HttpExecutor';
 import type { HttpMethod } from './types/http-context';
 

@@ -3,7 +3,7 @@
  */
 
 import { HttpExecutor } from '@/http';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 describe('HttpExecutor', () => {
     let executor: HttpExecutor;

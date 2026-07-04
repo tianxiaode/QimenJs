@@ -1,14 +1,14 @@
 /**
- * 加密工具页 - @orbitjs/crypto
+ * 加密工具页 - @orbit-js/crypto
  */
-import { base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@orbitjs/crypto';
+import { base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@orbit-js/crypto';
 import { renderPageContent } from '../layout';
 
 export function renderCrypto(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>加密工具</h2>
-            <p>@orbitjs/crypto — Hash 计算 + Base64 编解码</p>
+            <p>@orbit-js/crypto — Hash 计算 + Base64 编解码</p>
         </div>
 
         <div class="section">

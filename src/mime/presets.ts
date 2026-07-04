@@ -2,7 +2,7 @@
  * 常用 MIME 类型映射
  *
  * 按类别组织，覆盖常见的文件类型
- * 引入 @orbitjs/mime 时自动注册到 MimeTypeRegistrar
+ * 引入 @orbit-js/mime 时自动注册到 MimeTypeRegistrar
  */
 
 /**

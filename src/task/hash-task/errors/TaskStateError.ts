@@ -4,7 +4,7 @@
  * 这种错误通常发生在任务执行过程中，当尝试对任务执行不适当的操作时触发，
  * 例如尝试取消已完成的任务，或在任务未初始化时开始执行。
  */
-import { ErrorBase } from "@orbitjs/error";
+import { ErrorBase } from "@orbit-js/error";
 
 /**
  * 任务状态错误类

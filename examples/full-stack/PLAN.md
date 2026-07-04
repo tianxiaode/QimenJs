@@ -88,7 +88,7 @@ export class AbpUserManager extends RemoteCrudEntityManager {
 | `managers/local.ts` | `LocalNotificationManager` 接口（Local Readonly）、`LocalTagManager` 接口（Local CRUD） |
 | `managers/tree.ts` | `DepartmentManager` 接口（Tree 全能力） |
 
-**需要导入的能力接口**（来自 `@orbitjs/entity` 的 types 导出）：
+**需要导入的能力接口**（来自 `@orbit-js/entity` 的 types 导出）：
 
 - `IFlatRemoteListAbility`, `IFlatRemoteGetAllAbility`, `IRemoteGetAbility`
 - `IFlatRemoteQueryAbility`, `IFlatRemoteStateAbility`
@@ -171,21 +171,21 @@ export class AbpUserManager extends RemoteCrudEntityManager {
 
 | 页面 | 模块 | 展示内容 |
 |------|------|---------|
-| validation.ts | @orbitjs/validation | 字符串/数字/密码验证 + 批量验证 |
-| i18n.ts | @orbitjs/i18n | 中/英/日三语切换 + 插值变量 |
-| cache.ts | @orbitjs/cache | Memory/LocalStorage/SessionStorage 缓存操作 |
-| crypto.ts | @orbitjs/crypto | Hash/Base64/AES 加解密 |
-| runtime.ts | @orbitjs/runtime | 浏览器环境检测 + 特性支持 + 性能指标 |
+| validation.ts | @orbit-js/validation | 字符串/数字/密码验证 + 批量验证 |
+| i18n.ts | @orbit-js/i18n | 中/英/日三语切换 + 插值变量 |
+| cache.ts | @orbit-js/cache | Memory/LocalStorage/SessionStorage 缓存操作 |
+| crypto.ts | @orbit-js/crypto | Hash/Base64/AES 加解密 |
+| runtime.ts | @orbit-js/runtime | 浏览器环境检测 + 特性支持 + 性能指标 |
 
 ### 3.2 需要新增的展示页面
 
 | 页面 | 模块 | 展示内容 |
 |------|------|---------|
-| schema.ts | @orbitjs/schema | Schema 注册/查询/字段定义展示 |
-| events.ts | @orbitjs/events | 事件总线 on/once/emit/off 演示 |
-| pipeline.ts | @orbitjs/pipeline | 管道处理链（中间件模式）演示 |
-| task.ts | @orbitjs/task | 任务调度/取消/超时演示 |
-| logger.ts | @orbitjs/logger | 日志级别/格式化输出演示 |
+| schema.ts | @orbit-js/schema | Schema 注册/查询/字段定义展示 |
+| events.ts | @orbit-js/events | 事件总线 on/once/emit/off 演示 |
+| pipeline.ts | @orbit-js/pipeline | 管道处理链（中间件模式）演示 |
+| task.ts | @orbit-js/task | 任务调度/取消/超时演示 |
+| logger.ts | @orbit-js/logger | 日志级别/格式化输出演示 |
 
 ### 3.3 更新 layout/index.ts 导航
 

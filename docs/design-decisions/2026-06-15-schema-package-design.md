@@ -32,7 +32,7 @@ import {
     SplitRule,
     StringRule,
     ValidationRule,
-} from '@orbitjs/validation';
+} from '@orbit-js/validation';
 ```
 
 **核心设计**：
@@ -264,11 +264,11 @@ import type {
     StringRule,
     NumberRule,
     // ...
-} from '@orbitjs/validation';
+} from '@orbit-js/validation';
 
 // schema/SchemaCompiler.ts
 import type { Schema, FieldDefinition } from './types';
-import type { ValidationRule } from '@orbitjs/validation';
+import type { ValidationRule } from '@orbit-js/validation';
 ```
 
 ### Layer 分层

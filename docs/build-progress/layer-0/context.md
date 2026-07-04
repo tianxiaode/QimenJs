@@ -1,4 +1,4 @@
-# @orbitjs/context
+# @orbit-js/context
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
@@ -97,9 +97,9 @@
 ## 使用统计
 
 ### 被以下包使用
-- @orbitjs/data-processor (L2)
-- @orbitjs/http (L3)
-- @orbitjs/entity (L4)
+- @orbit-js/data-processor (L2)
+- @orbit-js/http (L3)
+- @orbit-js/entity (L4)
 
 ### 使用场景
 - 实体管理：创建请求上下文

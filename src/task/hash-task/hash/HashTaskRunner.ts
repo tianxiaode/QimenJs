@@ -1,4 +1,4 @@
-import { ILogger, Logger } from "@orbitjs/logger";
+import { ILogger, Logger } from "@orbit-js/logger";
 import { HashTaskResources } from './HashTaskResources';
 import { HashTaskState } from './HashTaskState';
 import { Chunk } from '../types';

@@ -1,7 +1,7 @@
 /**
  * 自动注册验证所需模式
  *
- * 引入 @orbitjs/pattern 时自动执行，将 ValidationPatternType 枚举中
+ * 引入 @orbit-js/pattern 时自动执行，将 ValidationPatternType 枚举中
  * 全部 19 个模式注册到 PatternRegistrar，确保验证不出错
  */
 

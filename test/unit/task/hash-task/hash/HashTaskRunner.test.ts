@@ -17,7 +17,7 @@ jest.mock('@/task/hash-task/worker', () => ({
 }));
 jest.mock('@/task/hash-task/hash/HashTaskHealthMonitor');
 // Mock logger to prevent errors
-jest.mock('@orbitjs/logger', () => ({
+jest.mock('@orbit-js/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

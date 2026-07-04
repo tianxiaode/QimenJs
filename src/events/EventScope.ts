@@ -1,8 +1,8 @@
 import { EventBus } from './EventBus';
 import { EventHandler, IEventContext, IEventScope, ScopeLogAction } from './types';
 
-import { ILogger, LogLevel } from '@orbitjs/logger';
-import { string } from '@orbitjs/utils';
+import { ILogger, LogLevel } from '@orbit-js/logger';
+import { string } from '@orbit-js/utils';
 
 /**
  * 事件作用域 - 用于管理一组相关事件的生命周期

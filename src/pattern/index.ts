@@ -1,15 +1,15 @@
 /**
- * @orbitjs/pattern - 模式注册器
+ * @orbit-js/pattern - 模式注册器
  *
  * 提供命名正则表达式注册器，管理验证所需的模式。
  * 引入即自动注册 ValidationPatternType 枚举中全部 19 个模式。
  *
  * @example
  * ```typescript
- * import '@orbitjs/pattern';
+ * import '@orbit-js/pattern';
  *
  * // 使用 PatternRegistrar
- * import { PatternRegistrar } from '@orbitjs/pattern';
+ * import { PatternRegistrar } from '@orbit-js/pattern';
  * const emailRegex = PatternRegistrar.getInstance().get('email');
  * emailRegex.test('user@example.com'); // true
  * ```

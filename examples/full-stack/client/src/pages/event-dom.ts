@@ -1,8 +1,8 @@
 /**
- * DOM 事件页 - @orbitjs/event-dom
+ * DOM 事件页 - @orbit-js/event-dom
  */
-import { createEventAdapter } from '@orbitjs/event-dom';
-import { EventBus } from '@orbitjs/events';
+import { createEventAdapter } from '@orbit-js/event-dom';
+import { EventBus } from '@orbit-js/events';
 import { renderPageContent } from '../layout';
 
 const gestureLog: Array<{ time: string; gesture: string; detail: string }> = [];
@@ -13,7 +13,7 @@ export function renderEventDom(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>DOM 事件</h2>
-            <p>@orbitjs/event-dom — DomEventAdapter 手势识别 + 事件绑定</p>
+            <p>@orbit-js/event-dom — DomEventAdapter 手势识别 + 事件绑定</p>
         </div>
 
         <div class="section">

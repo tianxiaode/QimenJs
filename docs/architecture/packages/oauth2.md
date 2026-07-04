@@ -1,4 +1,4 @@
-# @orbitjs/oauth2
+# @orbit-js/oauth2
 
 OAuth2 认证流程包，提供完整的 Token 生命周期管理。
 
@@ -21,17 +21,17 @@ HTTP 默认管道的 8 个 Action 是通用的，适用于所有项目。401 自
 - 401 刷新需要知道 refresh_token、tokenEndpoint 等 OAuth2 配置
 - 刷新请求自身不能触发 401 拦截（需要标记跳过）
 
-因此采用**方案 A**：TokenRefreshHandler 由 `@orbitjs/oauth2` 自行注册到 HttpActionRegistrar，引入包即生效，不引入则零影响。
+因此采用**方案 A**：TokenRefreshHandler 由 `@orbit-js/oauth2` 自行注册到 HttpActionRegistrar，引入包即生效，不引入则零影响。
 
-这与 `@orbitjs/pattern` 引入即自动注册验证模式、`@orbitjs/data-processor-abp` 引入即自动注册 ABP 处理器的模式完全一致。
+这与 `@orbit-js/pattern` 引入即自动注册验证模式、`@orbit-js/data-processor-abp` 引入即自动注册 ABP 处理器的模式完全一致。
 
 ## 快速开始
 
 ### 1. 配置 OAuth2
 
 ```typescript
-import { oauth2 } from '@orbitjs/oauth2';
-import { Registry } from '@orbitjs/registry';
+import { oauth2 } from '@orbit-js/oauth2';
+import { Registry } from '@orbit-js/registry';
 
 // 配置 API 域名
 Registry.domain.register('api', {
@@ -56,7 +56,7 @@ oauth2.configure({
 ### 2. 密码模式登录
 
 ```typescript
-import { oauth2 } from '@orbitjs/oauth2';
+import { oauth2 } from '@orbit-js/oauth2';
 
 const result = await oauth2.loginWithPassword({
     username: 'admin',
@@ -73,7 +73,7 @@ if (result.success) {
 ### 3. 授权码模式
 
 ```typescript
-import { oauth2 } from '@orbitjs/oauth2';
+import { oauth2 } from '@orbit-js/oauth2';
 
 // 跳转到授权页面
 oauth2.authorize();  // window.location.href = authorizationUrl
@@ -86,14 +86,14 @@ const result = await oauth2.loginWithCode(code);
 ### 4. 客户端凭证模式
 
 ```typescript
-import { oauth2 } from '@orbitjs/oauth2';
+import { oauth2 } from '@orbit-js/oauth2';
 
 const result = await oauth2.loginWithClientCredentials();
 ```
 
 ### 5. 401 自动刷新
 
-引入 `@orbitjs/oauth2` 后自动生效，无需额外配置：
+引入 `@orbit-js/oauth2` 后自动生效，无需额外配置：
 
 ```typescript
 // 请求发出 → 401 → 自动刷新 token → 重试原始请求
@@ -200,11 +200,11 @@ src/oauth2/
 ## 依赖关系
 
 ```
-@orbitjs/oauth2 (L3)
-  ├── @orbitjs/http        HTTP 管道扩展（TokenRefreshHandler）
-  ├── @orbitjs/registry    DomainRegistrar.updateToken()
-  ├── @orbitjs/events      事件通知（token 过期/刷新）
-  └── @orbitjs/cache       Token 存储（TTL 过期检查）
+@orbit-js/oauth2 (L3)
+  ├── @orbit-js/http        HTTP 管道扩展（TokenRefreshHandler）
+  ├── @orbit-js/registry    DomainRegistrar.updateToken()
+  ├── @orbit-js/events      事件通知（token 过期/刷新）
+  └── @orbit-js/cache       Token 存储（TTL 过期检查）
 ```
 
 ## 并发刷新去重
@@ -250,7 +250,7 @@ OAuth2 包是对现有极简 Token 管理方案的**上层封装**，不是替�
 
 | 层级 | 职责 | 包 |
 |------|------|-----|
-| 底层 | Token 存储 + 注入 | `@orbitjs/registry` (DomainConfig.token) + `@orbitjs/http` (TokenInjector) |
-| 上层 | Token 获取 + 刷新 + 401 重试 | `@orbitjs/oauth2` (OAuth2Manager + TokenRefreshHandler) |
+| 底层 | Token 存储 + 注入 | `@orbit-js/registry` (DomainConfig.token) + `@orbit-js/http` (TokenInjector) |
+| 上层 | Token 获取 + 刷新 + 401 重试 | `@orbit-js/oauth2` (OAuth2Manager + TokenRefreshHandler) |
 
 不用 OAuth2 的项目仍然可以直接用 `DomainRegistrar.updateToken()` + `TokenInjector`，完全不受影响。

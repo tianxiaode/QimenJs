@@ -3,7 +3,7 @@
  */
 
 import { XhrTransportHandler } from '@/http/actions/exchange/XhrTransport';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     method?: string;

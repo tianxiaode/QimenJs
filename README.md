@@ -30,53 +30,53 @@ npm start
 
 | 包 | 说明 |
 |---|------|
-| `@orbitjs/error` | 统一错误体系，错误码 + 错误链 |
-| `@orbitjs/logger` | 日志系统，多级别 + 多输出 |
-| `@orbitjs/utils` | 通用工具函数 |
-| `@orbitjs/async` | 异步工具（重试、并发控制、超时） |
-| `@orbitjs/runtime` | 运行时环境检测 |
-| `@orbitjs/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
-| `@orbitjs/i18n` | 国际化，loadScript 动态加载语言包 |
-| `@orbitjs/context` | 请求上下文，贯穿数据处理管道 |
+| `@orbit-js/error` | 统一错误体系，错误码 + 错误链 |
+| `@orbit-js/logger` | 日志系统，多级别 + 多输出 |
+| `@orbit-js/utils` | 通用工具函数 |
+| `@orbit-js/async` | 异步工具（重试、并发控制、超时） |
+| `@orbit-js/runtime` | 运行时环境检测 |
+| `@orbit-js/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
+| `@orbit-js/i18n` | 国际化，loadScript 动态加载语言包 |
+| `@orbit-js/context` | 请求上下文，贯穿数据处理管道 |
 
 ### 核心层 (Layer 1)
 
 | 包 | 说明 |
 |---|------|
-| `@orbitjs/registry` | 注册表，领域隔离的注册中心 |
-| `@orbitjs/events` | 事件总线，发布/订阅 |
-| `@orbitjs/cache` | 缓存管理，LRU + TTL |
-| `@orbitjs/pipeline` | 数据管道，可组合的处理链 |
-| `@orbitjs/composable` | 能力组合，定义可复用的能力描述符 |
-| `@orbitjs/task` | 任务调度，队列 + 优先级 |
-| `@orbitjs/schema` | Schema 定义，字段 + 验证规则 |
+| `@orbit-js/registry` | 注册表，领域隔离的注册中心 |
+| `@orbit-js/events` | 事件总线，发布/订阅 |
+| `@orbit-js/cache` | 缓存管理，LRU + TTL |
+| `@orbit-js/pipeline` | 数据管道，可组合的处理链 |
+| `@orbit-js/composable` | 能力组合，定义可复用的能力描述符 |
+| `@orbit-js/task` | 任务调度，队列 + 优先级 |
+| `@orbit-js/schema` | Schema 定义，字段 + 验证规则 |
 
 ### 数据层 (Layer 2)
 
 | 包 | 说明 |
 |---|------|
-| `@orbitjs/data-processor` | 数据处理器框架，管道式请求/响应处理 |
-| `@orbitjs/validation` | 验证引擎，规则 + 链式验证 |
-| `@orbitjs/event-dom` | DOM 事件适配，手势识别 |
-| `@orbitjs/mime` | MIME 类型解析 |
-| `@orbitjs/pattern` | 设计模式工具（观察者、策略、工厂等） |
+| `@orbit-js/data-processor` | 数据处理器框架，管道式请求/响应处理 |
+| `@orbit-js/validation` | 验证引擎，规则 + 链式验证 |
+| `@orbit-js/event-dom` | DOM 事件适配，手势识别 |
+| `@orbit-js/mime` | MIME 类型解析 |
+| `@orbit-js/pattern` | 设计模式工具（观察者、策略、工厂等） |
 
 ### 服务层 (Layer 3)
 
 | 包 | 说明 |
 |---|------|
-| `@orbitjs/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
-| `@orbitjs/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
-| `@orbitjs/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
-| `@orbitjs/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
-| `@orbitjs/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
+| `@orbit-js/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
+| `@orbit-js/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
+| `@orbit-js/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
+| `@orbit-js/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
+| `@orbit-js/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
 
 ### 应用层 (Layer 4)
 
 | 包 | 说明 |
 |---|------|
-| `@orbitjs/entity` | 实体管理框架，Manager + Ability 架构 |
-| `@orbitjs/types` | 公共类型定义 |
+| `@orbit-js/entity` | 实体管理框架，Manager + Ability 架构 |
+| `@orbit-js/types` | 公共类型定义 |
 
 ## 架构特点
 

@@ -1,4 +1,4 @@
-# @orbitjs/validation
+# @orbit-js/validation
 
 **层级**: 第 2 层  
 **状态**: ✅ 完成  
@@ -20,8 +20,8 @@
 
 ```typescript
 dependencies: {
-  '@orbitjs/error': 'L0',
-  '@orbitjs/pipeline': 'L1'
+  '@orbit-js/error': 'L0',
+  '@orbit-js/pipeline': 'L1'
 }
 ```
 

@@ -5,7 +5,7 @@
  * 继承自 RegistrarBase，保持架构一致性
  */
 
-import { RegistrarBase } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbit-js/registry';
 import type { RegistrSchema, FieldDefinition, Schema, SchemaCache, ValidationRule } from './types';
 
 /**

@@ -39,7 +39,7 @@ class MockWorker {
 }
 
 // Mock the logger module
-jest.mock('@orbitjs/logger', () => ({
+jest.mock('@orbit-js/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

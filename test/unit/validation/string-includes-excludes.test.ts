@@ -8,7 +8,7 @@
  * 4. 非数组值跳过
  */
 
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),

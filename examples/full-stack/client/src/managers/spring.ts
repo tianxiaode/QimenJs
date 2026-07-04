@@ -3,7 +3,7 @@
  *
  * 基于 RemoteCrudEntityManager 和 RemoteReadonlyEntityManager，连接 Spring 后端
  */
-import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@orbitjs/entity';
+import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@orbit-js/entity';
 import { OrderSchema, ItemSchema } from '../domains';
 
 /**

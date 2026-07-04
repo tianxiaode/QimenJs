@@ -30,7 +30,7 @@
 ## 最近更新
 
 ### 2026-07-01
-- 新增 @orbitjs/i18n 国际化模块（零依赖，ESM ~8KB）
+- 新增 @orbit-js/i18n 国际化模块（零依赖，ESM ~8KB）
 - 重写 ARCHITECTURE.md 架构说明
 - 清理旧架构文档（AbilityBase、DebounceAbilityBase、ComposableRegistrar 等）
 

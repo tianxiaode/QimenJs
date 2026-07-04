@@ -100,8 +100,8 @@ src/
 
 ### 1. 更新导入路径
 需要更新所有文件中的导入路径，将：
-- `@orbitjs/runtime-env` → `@orbitjs/runtime`
-- `@orbitjs/tasks` → `@orbitjs/task`
+- `@orbit-js/runtime-env` → `@orbit-js/runtime`
+- `@orbit-js/tasks` → `@orbit-js/task`
 - 内部模块使用相对路径
 
 ### 2. 创建 schema 目录
@@ -125,17 +125,17 @@ npm test
 ## 六、包的依赖关系
 
 ```
-@orbitjs/entity
-    └─ @orbitjs/kernel
-        ├─ @orbitjs/events
-        │   ├─ @orbitjs/logger
-        │   └─ @orbitjs/utils
-        ├─ @orbitjs/cache
-        │   ├─ @orbitjs/logger
-        │   └─ @orbitjs/utils
-        ├─ @orbitjs/registry
-        │   └─ @orbitjs/error
-        └─ @orbitjs/async
+@orbit-js/entity
+    └─ @orbit-js/kernel
+        ├─ @orbit-js/events
+        │   ├─ @orbit-js/logger
+        │   └─ @orbit-js/utils
+        ├─ @orbit-js/cache
+        │   ├─ @orbit-js/logger
+        │   └─ @orbit-js/utils
+        ├─ @orbit-js/registry
+        │   └─ @orbit-js/error
+        └─ @orbit-js/async
 ```
 
 ## 七、注意事项
@@ -168,8 +168,8 @@ npm publish
 
 用户可以通过以下方式安装：
 ```bash
-npm install @orbitjs/utils
-npm install @orbitjs/cache
-npm install @orbitjs/kernel
-npm install @orbitjs/entity
+npm install @orbit-js/utils
+npm install @orbit-js/cache
+npm install @orbit-js/kernel
+npm install @orbit-js/entity
 ```

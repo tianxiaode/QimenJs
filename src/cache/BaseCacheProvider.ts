@@ -1,4 +1,4 @@
-import { string } from '@orbitjs/utils';
+import { string } from '@orbit-js/utils';
 import { CacheType, ICacheEntry, ICacheProvider } from './types';
 
 export abstract class BaseCacheProvider<TKey = string, TData = any> implements ICacheProvider<TKey, TData> {

@@ -7,8 +7,8 @@
  * - 适用于文件上传下载、内容类型识别等场景
  */
 
-import { RegistrarBase } from '@orbitjs/registry';
-import { RegistrarInvalidArgumentError } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbit-js/registry';
+import { RegistrarInvalidArgumentError } from '@orbit-js/registry';
 
 /**
  * MIME 类型注册器名称

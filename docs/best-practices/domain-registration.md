@@ -46,7 +46,7 @@ await client.get('/orders');
 ### 1. 基本注册
 
 ```typescript
-import { Registry } from '@orbitjs/registry';
+import { Registry } from '@orbit-js/registry';
 
 Registry.domain.register('api', {
     baseUrl: 'https://api.example.com',
@@ -125,7 +125,7 @@ Registry.domain.register('auth', {
 ### 1. 创建 Client
 
 ```typescript
-import { HttpClient } from '@orbitjs/http';
+import { HttpClient } from '@orbit-js/http';
 
 // 使用已注册的 domain
 const client = new HttpClient('api');
@@ -196,7 +196,7 @@ Registry.domain.register('api', {
 
 ```typescript
 // config/domains.ts
-import { Registry } from '@orbitjs/registry';
+import { Registry } from '@orbit-js/registry';
 
 const domains = {
     api: {

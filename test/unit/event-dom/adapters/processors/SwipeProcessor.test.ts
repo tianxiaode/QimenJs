@@ -1,5 +1,5 @@
 // Mock the logger to prevent errors during testing
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -9,7 +9,7 @@ jest.mock('@orbitjs/logger', () => {
     };
 
     return {
-        ...jest.requireActual('@orbitjs/logger'),
+        ...jest.requireActual('@orbit-js/logger'),
         Logger: {
             for: jest.fn(() => mockLogger),
         },
@@ -17,9 +17,9 @@ jest.mock('@orbitjs/logger', () => {
 });
 
 // Mock the validation module to prevent errors during testing
-jest.mock('@orbitjs/validation', () => {
+jest.mock('@orbit-js/validation', () => {
     return {
-        ...jest.requireActual('@orbitjs/validation'),
+        ...jest.requireActual('@orbit-js/validation'),
         assert: {
             finite: jest.fn(value => {
                 // Simply return the value without validation for testing purposes

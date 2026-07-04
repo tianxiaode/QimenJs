@@ -1,4 +1,4 @@
-import { ErrorBase } from '@orbitjs/error';
+import { ErrorBase } from '@orbit-js/error';
 
 /**
  * RegistryHub错误的错误代码枚举

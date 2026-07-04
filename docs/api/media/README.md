@@ -44,35 +44,35 @@ docs/architecture/
 
 ```
 第 0 层：核心基础包（7 个，零依赖）
-├── @orbitjs/error
-├── @orbitjs/logger
-├── @orbitjs/utils
-├── @orbitjs/async
-├── @orbitjs/runtime
-├── @orbitjs/crypto
-└── @orbitjs/types
+├── @orbit-js/error
+├── @orbit-js/logger
+├── @orbit-js/utils
+├── @orbit-js/async
+├── @orbit-js/runtime
+├── @orbit-js/crypto
+└── @orbit-js/types
 
 第 1 层：基础设施工具包（6 个，只依赖第 0 层）
-├── @orbitjs/registry
-├── @orbitjs/cache
-├── @orbitjs/events
-├── @orbitjs/validation
-├── @orbitjs/task
-└── @orbitjs/context
+├── @orbit-js/registry
+├── @orbit-js/cache
+├── @orbit-js/events
+├── @orbit-js/validation
+├── @orbit-js/task
+└── @orbit-js/context
 
 第 2 层：功能工具包（4 个，依赖第 0-1 层）
-├── @orbitjs/schema
-├── @orbitjs/pipeline
-├── @orbitjs/composable
-└── @orbitjs/event-dom
+├── @orbit-js/schema
+├── @orbit-js/pipeline
+├── @orbit-js/composable
+└── @orbit-js/event-dom
 
 第 3 层：高级功能包（3 个，依赖第 0-2 层）
-├── @orbitjs/data-processor
-├── @orbitjs/http
-└── @orbitjs/system-abilities
+├── @orbit-js/data-processor
+├── @orbit-js/http
+└── @orbit-js/system-abilities
 
 第 4 层：业务包（1 个）
-└── @orbitjs/entity
+└── @orbit-js/entity
 ```
 
 ### 核心原则

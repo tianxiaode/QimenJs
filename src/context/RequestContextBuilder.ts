@@ -13,7 +13,7 @@ import type {
     HttpMethod,
     HttpResponseType 
 } from './types/request-context';
-import { Registry } from '@orbitjs/registry';
+import { Registry } from '@orbit-js/registry';
 
 /**
  * 请求上下文构建器

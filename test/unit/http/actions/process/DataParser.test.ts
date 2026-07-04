@@ -3,7 +3,7 @@
  */
 
 import { DataParserHandler } from '@/http/actions/process/DataParser';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     isTransportFailure?: boolean;

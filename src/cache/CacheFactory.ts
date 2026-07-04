@@ -1,4 +1,4 @@
-import { Logger } from '@orbitjs/logger';
+import { Logger } from '@orbit-js/logger';
 import { CacheType, ICacheProvider } from './types';
 import { MemoryProvider } from './MemoryProvider';
 

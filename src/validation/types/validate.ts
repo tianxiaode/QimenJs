@@ -12,7 +12,7 @@ import type {
     SplitRule, 
     StringRule, 
     ValidationRule 
-} from "@orbitjs/schema";
+} from "@orbit-js/schema";
 
 
 export const ValidatorRegistrarName= 'validator' as const;

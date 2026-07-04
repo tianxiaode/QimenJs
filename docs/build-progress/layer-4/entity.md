@@ -1,4 +1,4 @@
-# @orbitjs/entity
+# @orbit-js/entity
 
 **层级**: 第 4 层  
 **状态**: 完成  
@@ -61,16 +61,16 @@ src/entity/
 ## 依赖
 
 ```
-@orbitjs/composable (L2)
-@orbitjs/schema (L2)
-@orbitjs/context (L1)
-@orbitjs/http (L3)
-@orbitjs/cache (L1)
-@orbitjs/error (L0)
-@orbitjs/system-abilities (L3)
-@orbitjs/data-processor (L3)
-@orbitjs/registry (L1)
-@orbitjs/utils (L0)
+@orbit-js/composable (L2)
+@orbit-js/schema (L2)
+@orbit-js/context (L1)
+@orbit-js/http (L3)
+@orbit-js/cache (L1)
+@orbit-js/error (L0)
+@orbit-js/system-abilities (L3)
+@orbit-js/data-processor (L3)
+@orbit-js/registry (L1)
+@orbit-js/utils (L0)
 ```
 
 ## 构建历史

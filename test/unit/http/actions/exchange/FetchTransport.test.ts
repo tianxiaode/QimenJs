@@ -3,7 +3,7 @@
  */
 
 import { FetchTransportHandler } from '@/http/actions/exchange/FetchTransport';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     method?: string;

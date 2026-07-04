@@ -1,4 +1,4 @@
-import { RegistryHub, SystemRegistrar } from '@orbitjs/registry';
+import { RegistryHub, SystemRegistrar } from '@orbit-js/registry';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 /** * 规则对齐预处理器 (RuleAlignmentProcessor)

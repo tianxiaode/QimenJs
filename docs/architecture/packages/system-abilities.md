@@ -1,4 +1,4 @@
-# @orbitjs/system-abilities
+# @orbit-js/system-abilities
 
 **层级**: 第 3 层  
 **状态**: 完成  
@@ -16,7 +16,7 @@ system-abilities 包提供系统级能力集合，所有能力均为 `AbilityDef
 提供事件监听、一次性监听和事件发射能力。每个宿主拥有独立的事件作用域（event scope）。
 
 ```typescript
-import { EventAbility } from '@orbitjs/system-abilities';
+import { EventAbility } from '@orbit-js/system-abilities';
 
 class MyHost extends ComposableBase {
     static readonly abilities = [EventAbility];
@@ -40,7 +40,7 @@ host.dispose();  // 自动清理事件作用域
 提供域（Domain）配置信息访问能力。通过 `DomainRegistrar` 单例获取配置，并利用静态缓存提升性能。
 
 ```typescript
-import { DomainAbility } from '@orbitjs/system-abilities';
+import { DomainAbility } from '@orbit-js/system-abilities';
 
 class MyHost extends ComposableBase {
     static readonly abilities = [DomainAbility];
@@ -60,7 +60,7 @@ const config = host.domainConfig;  // 自动从 DomainRegistrar 获取并缓存
 提供系统级配置访问能力。通过 `SystemRegistrar` 单例获取配置。
 
 ```typescript
-import { SystemAbility } from '@orbitjs/system-abilities';
+import { SystemAbility } from '@orbit-js/system-abilities';
 
 class MyHost extends ComposableBase {
     static readonly abilities = [SystemAbility];
@@ -80,7 +80,7 @@ const apiBase = host.systemConfig('apiBase');  // 指定键
 提供 DOM 事件绑定能力，创建事件适配器处理手势事件。依赖 `EventAbility` 提供的 `eventScope`。
 
 ```typescript
-import { EventAbility, DomEventsAbility } from '@orbitjs/system-abilities';
+import { EventAbility, DomEventsAbility } from '@orbit-js/system-abilities';
 
 class MyHost extends ComposableBase {
     static readonly abilities = [EventAbility, DomEventsAbility];

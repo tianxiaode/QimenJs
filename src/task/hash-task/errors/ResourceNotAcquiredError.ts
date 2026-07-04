@@ -4,7 +4,7 @@
  * 这种情况通常发生在资源管理或任务处理过程中，
  * 当尝试使用尚未正确初始化或获取的资源时会触发此错误。
  */
-import { ErrorBase } from '@orbitjs/error';
+import { ErrorBase } from '@orbit-js/error';
 
 /**
  * 资源未获取错误类

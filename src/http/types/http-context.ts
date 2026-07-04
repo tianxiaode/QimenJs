@@ -4,7 +4,7 @@
  * @module http/types/http-context
  */
 
-import type { BaseContext } from '@orbitjs/context';
+import type { BaseContext } from '@orbit-js/context';
 
 /**
  * HTTP 方法类型

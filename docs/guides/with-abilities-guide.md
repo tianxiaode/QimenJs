@@ -11,7 +11,7 @@ OrbitJS 的能力系统基于 `AbilityDefinition` 纯对象 + `ComposableBase` �
 能力是普通对象，包含方法、getter/setter 或普通值：
 
 ```typescript
-import type { AbilityDefinition } from '@orbitjs/composable';
+import type { AbilityDefinition } from '@orbit-js/composable';
 
 // 方法
 const GreetAbility: AbilityDefinition = {
@@ -37,7 +37,7 @@ const VersionAbility: AbilityDefinition = {
 ### 使用能力
 
 ```typescript
-import { ComposableBase } from '@orbitjs/composable';
+import { ComposableBase } from '@orbit-js/composable';
 
 class MyHost extends ComposableBase {
     static readonly abilities = [GreetAbility, LabelAbility];

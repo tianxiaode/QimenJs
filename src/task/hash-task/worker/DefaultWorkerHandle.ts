@@ -1,4 +1,4 @@
-import { ILogger, Logger } from '@orbitjs/logger';
+import { ILogger, Logger } from '@orbit-js/logger';
 import { WorkerHandle } from './WorkerHandle';
 
 /**

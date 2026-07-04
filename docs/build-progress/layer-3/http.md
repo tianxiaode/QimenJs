@@ -1,4 +1,4 @@
-# @orbitjs/http
+# @orbit-js/http
 
 **层级**: 第 3 层  
 **状态**: ✅ 已完成  
@@ -92,11 +92,11 @@ HttpFactory (高级功能)   StreamTask (异步生成器)
 
 ```typescript
 dependencies: {
-  '@orbitjs/context': 'L0',
-  '@orbitjs/pipeline': 'L1',
-  '@orbitjs/registry': 'L1',
-  '@orbitjs/logger': 'L0',
-  '@orbitjs/utils': 'L0'
+  '@orbit-js/context': 'L0',
+  '@orbit-js/pipeline': 'L1',
+  '@orbit-js/registry': 'L1',
+  '@orbit-js/logger': 'L0',
+  '@orbit-js/utils': 'L0'
 }
 ```
 
@@ -105,7 +105,7 @@ dependencies: {
 ### 基本使用
 
 ```typescript
-import { HttpClient } from '@orbitjs/http';
+import { HttpClient } from '@orbit-js/http';
 
 const client = new HttpClient('api');
 
@@ -126,8 +126,8 @@ const result = await client.get('/users', {
 ### 使用 HttpExecutor
 
 ```typescript
-import { HttpExecutor } from '@orbitjs/http';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { HttpExecutor } from '@orbit-js/http';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 const executor = new HttpExecutor();
 
@@ -144,7 +144,7 @@ const result = await executor.execute(context);
 ### 使用 HttpFactory
 
 ```typescript
-import { HttpFactory } from '@orbitjs/http';
+import { HttpFactory } from '@orbit-js/http';
 
 // 带重试的请求
 const task = HttpFactory.createRetryTask(
@@ -179,7 +179,7 @@ stop();
 ### 使用 StreamClient
 
 ```typescript
-import { StreamClient } from '@orbitjs/http';
+import { StreamClient } from '@orbit-js/http';
 
 const client = new StreamClient('api');
 
@@ -255,7 +255,7 @@ task.cancel('user stopped');
 ### 添加自定义处理器
 
 ```typescript
-import { HttpActionRegistrar, HttpActionCategory } from '@orbitjs/http';
+import { HttpActionRegistrar, HttpActionCategory } from '@orbit-js/http';
 
 const registrar = HttpActionRegistrar.getInstance();
 
@@ -274,7 +274,7 @@ registrar.register({
 ### 自定义 domain 配置
 
 ```typescript
-import { Registry } from '@orbitjs/registry';
+import { Registry } from '@orbit-js/registry';
 
 Registry.domain.register('api', {
     baseUrl: 'https://api.example.com',
@@ -291,7 +291,7 @@ Registry.domain.register('api', {
 ### Token 管理
 
 ```typescript
-import { Registry } from '@orbitjs/http';
+import { Registry } from '@orbit-js/http';
 
 // 配置 domain（使用默认 bearer token）
 Registry.domain.register('api', {
@@ -321,7 +321,7 @@ Registry.domain.register('api', {
 ### 2026-06-29
 - ✅ 删除废弃的 `HttpContextBuilder.ts`（已被 `RequestContextBuilder` 替代）
 - ✅ 重写 `StreamClient.ts`：基于当前架构（RequestContextBuilder + HttpExecutor + ReadableStream）
-- ✅ 修复 `types/http.ts` 导入：`@orbitjs/tasks` → `@orbitjs/task`
+- ✅ 修复 `types/http.ts` 导入：`@orbit-js/tasks` → `@orbit-js/task`
 - ✅ 清理 46 个旧编译产物（.js/.d.ts/.map）
 - ✅ 编译错误从 10 个降到 0 个
 

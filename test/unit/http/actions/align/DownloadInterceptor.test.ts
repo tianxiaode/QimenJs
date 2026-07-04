@@ -3,7 +3,7 @@
  */
 
 import { DownloadInterceptorHandler } from '@/http/actions/align/DownloadInterceptor';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     isDownload?: boolean;

@@ -6,8 +6,8 @@
  * - 用于集中管理应用程序中使用的各种正则表达式模式
  */
 
-import { RegistrarBase } from '@orbitjs/registry';
-import { RegistrarInvalidArgumentError, RegistrarNotFoundError } from '@orbitjs/registry';
+import { RegistrarBase } from '@orbit-js/registry';
+import { RegistrarInvalidArgumentError, RegistrarNotFoundError } from '@orbit-js/registry';
 
 /**
  * 模式注册器名称

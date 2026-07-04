@@ -19,7 +19,7 @@
 import { ValidationRule } from './rule';
 
 // After
-import type { ValidationRule } from '@orbitjs/schema';
+import type { ValidationRule } from '@orbit-js/schema';
 ```
 
 ### 2. 删除重复的类型定义
@@ -38,12 +38,12 @@ import type { ValidationRule } from '@orbitjs/schema';
 **新增路径映射**：
 ```json
 {
-  "@orbitjs/schema": ["src/schema"],
-  "@orbitjs/context": ["src/context"],
-  "@orbitjs/cache": ["src/cache"],
-  "@orbitjs/pipeline": ["src/pipeline"],
-  "@orbitjs/composable": ["src/composable"],
-  "@orbitjs/data-processor": ["src/data-processor"]
+  "@orbit-js/schema": ["src/schema"],
+  "@orbit-js/context": ["src/context"],
+  "@orbit-js/cache": ["src/cache"],
+  "@orbit-js/pipeline": ["src/pipeline"],
+  "@orbit-js/composable": ["src/composable"],
+  "@orbit-js/data-processor": ["src/data-processor"]
 }
 ```
 
@@ -140,7 +140,7 @@ validation (L2)
 ### 断言式验证（无 Schema）
 
 ```typescript
-import { validate } from '@orbitjs/validation';
+import { validate } from '@orbit-js/validation';
 
 // 直接验证单个值
 const result = validate(email, { 
@@ -152,8 +152,8 @@ const result = validate(email, {
 ### Schema 驱动的验证（未来）
 
 ```typescript
-import { validate } from '@orbitjs/validation';
-import type { Schema } from '@orbitjs/schema';
+import { validate } from '@orbit-js/validation';
+import type { Schema } from '@orbit-js/schema';
 
 // 根据 Schema 验证（需要实现）
 const result = validate(userData, userSchema);

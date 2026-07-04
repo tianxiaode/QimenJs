@@ -3,7 +3,7 @@
  */
 
 import { FormatProcessor } from '@/validation/processors/format/format';
-import '@orbitjs/pattern';
+import '@orbit-js/pattern';
 
 function createContext(value: any, rule: any = {}) {
     return {

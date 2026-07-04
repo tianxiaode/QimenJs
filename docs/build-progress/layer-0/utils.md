@@ -1,4 +1,4 @@
-# @orbitjs/utils
+# @orbit-js/utils
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  

@@ -1,6 +1,6 @@
 import { EventBus } from '@/events/EventBus';
 import { EventScope } from '@/events/EventScope';
-import { ILogger } from '@orbitjs/logger';
+import { ILogger } from '@orbit-js/logger';
 
 /**
  * EventScope 单元测试

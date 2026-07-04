@@ -1,5 +1,5 @@
 /**
- * @orbitjs/data-processor-abp
+ * @orbit-js/data-processor-abp
  *
  * ABP (ASP.NET Boilerplate) 数据处理管道处理器
  *
@@ -13,10 +13,10 @@
  * @example
  * ```ts
  * // 默认配置（引入即生效）
- * import '@orbitjs/data-processor-abp';
+ * import '@orbit-js/data-processor-abp';
  *
  * // 自定义配置
- * import { registerAbpHandlers } from '@orbitjs/data-processor-abp';
+ * import { registerAbpHandlers } from '@orbit-js/data-processor-abp';
  * registerAbpHandlers({ tenantId: 'my-tenant', defaultPageSize: 20 });
  * ```
  */

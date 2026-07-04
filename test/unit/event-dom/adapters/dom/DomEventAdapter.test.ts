@@ -15,7 +15,7 @@ jest.mock('@/runtime', () => ({
   detectInputCapabilities: jest.fn(() => ({ pointer: true, touch: true, mouse: true }))
 }));
 
-jest.mock('@orbitjs/logger', () => ({
+jest.mock('@orbit-js/logger', () => ({
   Logger: {
     for: jest.fn(() => ({
       debug: jest.fn(),

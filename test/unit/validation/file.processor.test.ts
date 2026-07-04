@@ -9,7 +9,7 @@
  * 5. 单个文件（非数组）输入
  */
 
-jest.mock('@orbitjs/mime', () => ({
+jest.mock('@orbit-js/mime', () => ({
     MimeTypeRegistrar: {
         getInstance: jest.fn(() => ({
             get: jest.fn((types: string[]) => new Set(types)),

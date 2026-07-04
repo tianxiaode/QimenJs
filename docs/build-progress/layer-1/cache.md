@@ -1,4 +1,4 @@
-# @orbitjs/cache
+# @orbit-js/cache
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
@@ -20,8 +20,8 @@
 
 ```typescript
 dependencies: {
-  '@orbitjs/logger': 'L0',
-  '@orbitjs/utils': 'L0'
+  '@orbit-js/logger': 'L0',
+  '@orbit-js/utils': 'L0'
 }
 ```
 

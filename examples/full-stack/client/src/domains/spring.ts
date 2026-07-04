@@ -3,7 +3,7 @@
  *
  * 定义 Spring 后端（Page<T> 格式）的实体 Schema
  */
-import type { RegistrSchema } from '@orbitjs/schema';
+import type { RegistrSchema } from '@orbit-js/schema';
 
 /**
  * Spring 订单 Schema

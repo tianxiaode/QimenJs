@@ -3,7 +3,7 @@
  */
 
 import { TokenInjectorHandler } from '@/http/actions/prepare/TokenInjector';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 describe('TokenInjector', () => {
     describe('bearer token', () => {

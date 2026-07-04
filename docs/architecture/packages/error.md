@@ -1,4 +1,4 @@
-# @orbitjs/error
+# @orbit-js/error
 
 **层级**: 第 0 层  
 **状态**: ✅ 完成  
@@ -24,7 +24,7 @@
 ## 使用示例
 
 ```typescript
-import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@orbitjs/error';
+import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@orbit-js/error';
 
 // 基础错误
 throw new ErrorBase('Something went wrong', 'CUSTOM_ERROR');

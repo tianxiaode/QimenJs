@@ -379,7 +379,7 @@ class CacheRegistrar extends RegistrarBase<Map<string, CacheConfig>> {
 }
 
 // ✅ 添加类型定义
-declare module '@orbitjs/registry' {
+declare module '@orbit-js/registry' {
     interface Registrars {
         cache: CacheRegistrar;
     }

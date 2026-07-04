@@ -1,4 +1,4 @@
-# @orbitjs/data-processor-abp
+# @orbit-js/data-processor-abp
 
 **层级**: 第 3 层  
 **状态**: ✅  
@@ -36,8 +36,8 @@
 ## 使用统计
 
 ### 依赖的包
-- @orbitjs/data-processor (L3)
-- @orbitjs/context (L1)
+- @orbit-js/data-processor (L3)
+- @orbit-js/context (L1)
 
 ### 被以下包使用
 - 应用层直接使用

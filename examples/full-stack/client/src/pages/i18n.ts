@@ -1,5 +1,5 @@
 /**
- * 国际化页 - @orbitjs/i18n
+ * 国际化页 - @orbit-js/i18n
  */
 import { renderPageContent } from '../layout';
 
@@ -28,7 +28,7 @@ export async function renderI18n(): Promise<void> {
     renderPageContent(`
         <div class="page-header">
             <h2>国际化</h2>
-            <p>@orbitjs/i18n — 多语言切换 + 插值变量 + loadScript 动态加载</p>
+            <p>@orbit-js/i18n — 多语言切换 + 插值变量 + loadScript 动态加载</p>
         </div>
 
         <div class="section">
@@ -53,7 +53,7 @@ export async function renderI18n(): Promise<void> {
                 <div class="card">
                     <div class="card-title"><span class="dot" style="background:#4CAF50;"></span>Vue 3 Composition API</div>
                     <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { ref, onMounted, onUnmounted } from 'vue'
-import { i18n } from '@orbitjs/i18n'
+import { i18n } from '@orbit-js/i18n'
 
 export function useI18n() {
   const locale = ref(i18n.locale)
@@ -80,7 +80,7 @@ export function useI18n() {
                 <div class="card">
                     <div class="card-title"><span class="dot" style="background:#6366F1;"></span>React Hook</div>
                     <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { useState, useEffect } from 'react'
-import { i18n } from '@orbitjs/i18n'
+import { i18n } from '@orbit-js/i18n'
 
 export function useI18n() {
   const [locale, setLocaleState] = useState(i18n.locale)

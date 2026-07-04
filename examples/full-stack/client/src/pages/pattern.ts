@@ -1,7 +1,7 @@
 /**
- * 模式匹配页 - @orbitjs/pattern
+ * 模式匹配页 - @orbit-js/pattern
  */
-import { PatternRegistrar, FORMAT_PATTERNS, PASSWORD_PATTERNS } from '@orbitjs/pattern';
+import { PatternRegistrar, FORMAT_PATTERNS, PASSWORD_PATTERNS } from '@orbit-js/pattern';
 import { renderPageContent } from '../layout';
 
 export function renderPattern(): void {
@@ -11,7 +11,7 @@ export function renderPattern(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>模式匹配</h2>
-            <p>@orbitjs/pattern — PatternRegistrar 命名正则注册与验证</p>
+            <p>@orbit-js/pattern — PatternRegistrar 命名正则注册与验证</p>
         </div>
 
         <div class="section">

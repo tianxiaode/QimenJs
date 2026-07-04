@@ -169,7 +169,7 @@ import type {
     ValidationRule, 
     Schema,
     FieldDefinition 
-} from '@orbitjs/schema';
+} from '@orbit-js/schema';
 
 export class Validator {
     /**
@@ -335,7 +335,7 @@ class BatchValidator {
 ### Phase 2: 重构 Validation 包
 
 1. 移除验证规则类型定义
-2. 添加对 `@orbitjs/schema` 的依赖
+2. 添加对 `@orbit-js/schema` 的依赖
 3. 重构验证引擎使用 Schema 类型
 4. 更新验证处理器
 5. 更新单元测试
@@ -392,7 +392,7 @@ export interface BaseSchema {
 }
 
 // validation/Validator.ts
-import type { Schema, ValidationRule } from '@orbitjs/schema';
+import type { Schema, ValidationRule } from '@orbit-js/schema';
 
 export class Validator {
     validate(data: any, schema: Schema): ValidationResult {

@@ -3,7 +3,7 @@
  *
  * 基于 RemoteCrudEntityManager，连接 ABP 后端
  */
-import { RemoteCrudEntityManager } from '@orbitjs/entity';
+import { RemoteCrudEntityManager } from '@orbit-js/entity';
 import { UserSchema, ProductSchema } from '../domains';
 
 /**

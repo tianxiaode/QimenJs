@@ -5,7 +5,7 @@
  * 支持静态参数和动态函数返回参数两种形式。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const CommonParamsEnricherHandler = async (context: RequestContext) => {
     const { commonParams, commonBody } = context.metadata.domainConfig || {};

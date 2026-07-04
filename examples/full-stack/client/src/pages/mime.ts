@@ -1,7 +1,7 @@
 /**
- * MIME 类型页 - @orbitjs/mime
+ * MIME 类型页 - @orbit-js/mime
  */
-import { MimeTypeRegistrar, IMAGE_MIMES, DOCUMENT_MIMES, AUDIO_MIMES, VIDEO_MIMES, ARCHIVE_MIMES, WEB_MIMES, FONT_MIMES } from '@orbitjs/mime';
+import { MimeTypeRegistrar, IMAGE_MIMES, DOCUMENT_MIMES, AUDIO_MIMES, VIDEO_MIMES, ARCHIVE_MIMES, WEB_MIMES, FONT_MIMES } from '@orbit-js/mime';
 import { renderPageContent } from '../layout';
 
 export function renderMime(): void {
@@ -18,7 +18,7 @@ export function renderMime(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>MIME 类型</h2>
-            <p>@orbitjs/mime — MimeTypeRegistrar 扩展名/MIME 映射查询</p>
+            <p>@orbit-js/mime — MimeTypeRegistrar 扩展名/MIME 映射查询</p>
         </div>
 
         <div class="section">

@@ -6,7 +6,7 @@
  * 注意：仅适用于非上传和下载任务。
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 
 export const FetchTransportHandler = async (context: RequestContext) => {
     // 1. 自治判定：非上传任务才走 Fetch

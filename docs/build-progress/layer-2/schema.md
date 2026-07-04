@@ -1,6 +1,6 @@
 # Schema 包构建进度
 
-**包名**: @orbitjs/schema  
+**包名**: @orbit-js/schema  
 **层级**: Layer 2  
 **状态**: ✅ 完成  
 **测试覆盖率**: 88.88%（分支）
@@ -88,7 +88,7 @@ schema → registry
 
 ### Phase 1: 重构 validation 包
 - [ ] 移除验证规则类型定义
-- [ ] 添加对 @orbitjs/schema 的依赖
+- [ ] 添加对 @orbit-js/schema 的依赖
 - [ ] 重构验证引擎使用 Schema 类型
 
 ### Phase 2: SchemaCompiler（✅ 已完成）

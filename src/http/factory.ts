@@ -5,7 +5,7 @@
  * 作为 HTTP 功能的统一入口，封装了高级功能如重试、轮询等
  */
 
-import type { RequestContext } from '@orbitjs/context';
+import type { RequestContext } from '@orbit-js/context';
 import type { HttpMethod } from './types/http-context';
 import { HttpClient, type SimpleRequestTask, type SimpleRequestOptions } from './HttpClient';
 

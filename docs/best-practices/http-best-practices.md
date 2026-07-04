@@ -36,7 +36,7 @@
 
 ```typescript
 // 正确 - 通过 domain 配置公共参数
-const { Registry } = require('@orbitjs/registry');
+const { Registry } = require('@orbit-js/registry');
 Registry.domain.register('api', {
   baseUrl: 'https://api.example.com',
   token: 'xxx',

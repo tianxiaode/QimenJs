@@ -2,7 +2,7 @@
  * 可组合能力系统类型定义
  */
 
-import type { ILogger } from "@orbitjs/logger";
+import type { ILogger } from "@orbit-js/logger";
 
 // ============================================
 // 基础接口

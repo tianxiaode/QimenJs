@@ -6,7 +6,7 @@
  */
 
 import { XhrTransportHandler } from '@/http/actions/exchange/XhrTransport';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 describe('XhrTransportHandler', () => {
     it('should skip non-upload/download requests', async () => {

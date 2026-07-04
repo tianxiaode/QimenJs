@@ -154,11 +154,11 @@ const context = RequestContextBuilder
 ### 依赖关系
 
 ```
-@orbitjs/context (第 0 层)
+@orbit-js/context (第 0 层)
     ↓
-@orbitjs/http (第 3 层) - 使用 RequestContext
-@orbitjs/data-processor (第 2 层) - 使用 RequestContext
-@orbitjs/entity (第 4 层) - 使用 RequestContextBuilder
+@orbit-js/http (第 3 层) - 使用 RequestContext
+@orbit-js/data-processor (第 2 层) - 使用 RequestContext
+@orbit-js/entity (第 4 层) - 使用 RequestContextBuilder
 ```
 
 ## 后续工作

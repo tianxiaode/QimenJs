@@ -1,5 +1,5 @@
 /**
- * 数据处理器页 - @orbitjs/data-processor + data-processor-abp + data-processor-spring
+ * 数据处理器页 - @orbit-js/data-processor + data-processor-abp + data-processor-spring
  */
 import { renderPageContent } from '../layout';
 
@@ -7,7 +7,7 @@ export function renderDataProcessor(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>数据处理器</h2>
-            <p>@orbitjs/data-processor + data-processor-abp + data-processor-spring</p>
+            <p>@orbit-js/data-processor + data-processor-abp + data-processor-spring</p>
         </div>
 
         <div class="section">

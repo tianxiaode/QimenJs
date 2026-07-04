@@ -4,7 +4,7 @@
  * 验证 validate/normalize/assert 糖函数
  */
 
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -27,9 +27,9 @@ jest.mock('@orbitjs/logger', () => {
 
 import { validate, normalize, assert } from '@/validation/engine/validate';
 import { bootstrapValidators } from '@/validation';
-import '@orbitjs/pattern';
+import '@orbit-js/pattern';
 
-// Bootstrap validators (patterns auto-registered by @orbitjs/pattern)
+// Bootstrap validators (patterns auto-registered by @orbit-js/pattern)
 bootstrapValidators();
 
 describe('validate sugar functions', () => {

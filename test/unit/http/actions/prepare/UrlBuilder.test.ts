@@ -3,7 +3,7 @@
  */
 
 import { UrlBuilderHandler } from '@/http/actions/prepare/UrlBuilder';
-import { RequestContextBuilder } from '@orbitjs/context';
+import { RequestContextBuilder } from '@orbit-js/context';
 
 function createContext(options: {
     url?: string;

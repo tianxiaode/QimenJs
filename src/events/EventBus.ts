@@ -1,7 +1,7 @@
 import { BusAction, EventHandler, EventLogAction, IEventContext, IEventScope } from './types';
 import { EventScope } from './EventScope';
-import { ILogger, LogLevel } from '@orbitjs/logger';
-import { string } from '@orbitjs/utils';
+import { ILogger, LogLevel } from '@orbit-js/logger';
+import { string } from '@orbit-js/utils';
 
 /**
  * 事件总线 - 用于管理事件订阅、发布和取消订阅的核心类

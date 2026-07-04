@@ -2,7 +2,7 @@ import { ContextMenuProcessor } from '@/event-dom/adapters/processors/ContextMen
 import { GestureEmit, InputSignal } from '@/event-dom/types';
 
 // Mock the logger to prevent errors during testing
-jest.mock('@orbitjs/logger', () => {
+jest.mock('@orbit-js/logger', () => {
     const mockLogger = {
         debug: jest.fn(),
         info: jest.fn(),
@@ -12,7 +12,7 @@ jest.mock('@orbitjs/logger', () => {
     };
 
     return {
-        ...jest.requireActual('@orbitjs/logger'),
+        ...jest.requireActual('@orbit-js/logger'),
         Logger: {
             for: jest.fn(() => mockLogger),
         },
