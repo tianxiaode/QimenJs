@@ -46,7 +46,21 @@ export function createAbpPaginationHandler(options?: AbpPipelineOptions): DataPr
             context.request.queryParams.skipCount = (pageIndex - 1) * pageSize;
             context.request.queryParams.maxResultCount = pageSize;
 
-            // 移除前端参数，避免发送到后端
+            // 搜索参数映射：keyword → filter（ABP 标准参数名）
+            if (params.keyword !== undefined && params.keyword !== '') {
+                context.request.queryParams.filter = params.keyword;
+                delete params.keyword;
+            }
+
+            // 排序参数映射：sortBy/sortOrder → sorting（ABP 标准参数名）
+            if (params.sortBy) {
+                const direction = params.sortOrder === 'desc' ? ' DESC' : '';
+                context.request.queryParams.sorting = params.sortBy + direction;
+                delete params.sortBy;
+                delete params.sortOrder;
+            }
+
+            // 移除前端分页参数，避免发送到后端
             delete params.pageIndex;
             delete params.page;
             delete params.pageSize;

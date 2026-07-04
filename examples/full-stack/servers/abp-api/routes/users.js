@@ -26,8 +26,32 @@ const users = [
 router.get('/', (req, res) => {
     const skipCount = parseInt(req.query.skipCount) || 0;
     const maxResultCount = parseInt(req.query.maxResultCount) || 10;
+    const filter = req.query.filter || '';
+    const sorting = req.query.sorting || '';
 
-    const result = pagedResult(users, skipCount, maxResultCount);
+    // 搜索过滤
+    let filtered = users;
+    if (filter) {
+        const k = filter.toLowerCase();
+        filtered = filtered.filter(u =>
+            u.userName.toLowerCase().includes(k) ||
+            u.name.toLowerCase().includes(k) ||
+            u.email.toLowerCase().includes(k)
+        );
+    }
+
+    // 排序
+    if (sorting) {
+        const [field, dir] = sorting.split(' ');
+        filtered = [...filtered].sort((a, b) => {
+            const va = (a[field] || '').toString().toLowerCase();
+            const vb = (b[field] || '').toString().toLowerCase();
+            const cmp = va.localeCompare(vb);
+            return dir === 'DESC' ? -cmp : cmp;
+        });
+    }
+
+    const result = pagedResult(filtered, skipCount, maxResultCount);
     res.json(result);
 });
 
