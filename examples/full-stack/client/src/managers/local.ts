@@ -4,7 +4,7 @@
  * 演示 LocalReadonlyEntityManager 和 LocalCrudEntityManager
  * 纯前端数据管理，不需要后端 API
  */
-import { LocalReadonlyEntityManager, LocalCrudEntityManager } from '@qimenjs/entity';
+import { LocalReadonlyEntityManager, LocalCrudEntityManager } from '@qimen-lab/core/entity';
 import { NotificationSchema, TagSchema } from '../domains';
 
 /**

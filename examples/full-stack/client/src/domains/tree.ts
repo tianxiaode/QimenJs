@@ -4,7 +4,7 @@
  * 演示 RemoteTreeEntityManager 的树形数据管理
  * 对应后端接口：GET /api/departments
  */
-import type { RegistrSchema } from '@qimenjs/schema';
+import type { RegistrSchema } from '@qimen-lab/core/schema';
 
 /**
  * 部门 Schema（树形）

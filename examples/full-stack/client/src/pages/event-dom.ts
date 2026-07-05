@@ -1,8 +1,8 @@
 ﻿/**
  * DOM 事件页 - @qimenjs/event-dom
  */
-import { createEventAdapter } from '@qimenjs/event-dom';
-import { EventBus } from '@qimenjs/events';
+import { createEventAdapter } from '@qimen-lab/core/event-dom';
+import { EventBus } from '@qimen-lab/core/events';
 import { renderPageContent } from '../layout';
 
 const gestureLog: Array<{ time: string; gesture: string; detail: string }> = [];

@@ -1,8 +1,8 @@
 ﻿/**
  * 管道处理页 - @qimenjs/pipeline
  */
-import { Pipeline } from '@qimenjs/pipeline';
-import type { Processor } from '@qimenjs/pipeline';
+import { Pipeline } from '@qimen-lab/core/pipeline';
+import type { Processor } from '@qimen-lab/core/pipeline';
 import { renderPageContent } from '../layout';
 
 const processors: Array<{ name: string; weight: number; enabled: boolean }> = [

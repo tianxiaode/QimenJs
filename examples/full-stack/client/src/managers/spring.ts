@@ -3,7 +3,7 @@
  *
  * 基于 RemoteCrudEntityManager 和 RemoteReadonlyEntityManager，连接 Spring 后端
  */
-import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@qimenjs/entity';
+import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@qimen-lab/core/entity';
 import { OrderSchema, ItemSchema } from '../domains';
 
 /**

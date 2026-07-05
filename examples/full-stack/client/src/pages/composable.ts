@@ -1,8 +1,8 @@
 ﻿/**
  * 组合能力页 - @qimenjs/composable
  */
-import { ComposableBase } from '@qimenjs/composable';
-import type { AbilityDefinition } from '@qimenjs/composable';
+import { ComposableBase } from '@qimen-lab/core/composable';
+import type { AbilityDefinition } from '@qimen-lab/core/composable';
 import { renderPageContent } from '../layout';
 
 // 定义一个计数器能力

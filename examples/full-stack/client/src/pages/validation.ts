@@ -1,7 +1,7 @@
 ﻿/**
  * 表单验证页 - @qimenjs/validation
  */
-import { validate, doValidate } from '@qimenjs/validation';
+import { validate, doValidate } from '@qimen-lab/core/validation';
 import { renderPageContent } from '../layout';
 
 export function renderValidation(): void {

@@ -93,7 +93,48 @@ const utils = {
         console.log(`  Generated ${path.basename(pkgPath)}`);
     },
 
-    // 拓扑排序（依赖关系）
+    // 修复 ESM 产物中的 @qimenjs/xxx 引用
+  fixEsmImports(dir, currentModule) {
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        this.fixEsmImports(filePath, currentModule);
+        continue;
+      }
+      if (!file.endsWith('.esm.js') && !file.endsWith('.d.ts')) continue;
+
+      let content = fs.readFileSync(filePath, 'utf8');
+      let modified = false;
+
+      // 替换 @qimenjs/xxx 为相对路径
+      for (const [modName, modConfig] of Object.entries(config.modules)) {
+        if (modName === currentModule) continue;
+        const pattern = new RegExp(`@qimenjs/${modName}`, 'g');
+        if (pattern.test(content)) {
+          // 计算从当前文件到目标模块的相对路径
+          const targetDir = path.resolve(process.cwd(), modConfig.outDir);
+          const currentDir = path.dirname(filePath);
+          let relPath = path.relative(currentDir, targetDir).replace(/\\/g, '/');
+          if (!relPath.startsWith('.')) relPath = './' + relPath;
+
+          if (file.endsWith('.esm.js')) {
+            content = content.replace(pattern, `${relPath}/index.esm.js`);
+          } else {
+            content = content.replace(pattern, `${relPath}/index.d.ts`);
+          }
+          modified = true;
+        }
+      }
+
+      if (modified) {
+        fs.writeFileSync(filePath, content);
+      }
+    }
+  },
+
+  // 拓扑排序（依赖关系）
     topologicalSort(modules) {
         const visited = new Set();
         const result = [];
@@ -219,6 +260,9 @@ function buildModule(moduleName, moduleConfig) {
 
     // 生成package.json
     utils.generatePackageJson(moduleName, moduleConfig);
+
+    // 修复 ESM 产物中的 @qimenjs/xxx 引用，替换为相对路径
+    utils.fixEsmImports(outDir, moduleName);
 
     console.log(`✅ ${moduleName} built\n`);
     return true;

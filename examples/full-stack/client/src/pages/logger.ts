@@ -1,7 +1,7 @@
 ﻿/**
  * 日志系统页 - @qimenjs/logger
  */
-import { Logger } from '@qimenjs/logger';
+import { Logger } from '@qimen-lab/core/logger';
 import { renderPageContent } from '../layout';
 
 const logEntries: Array<{ level: string; category: string; message: string; time: string }> = [];

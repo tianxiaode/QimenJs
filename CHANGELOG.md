@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-07-05
+
+### Fixed
+
+- 修复 ESM 产物中子包间引用使用 `@qimenjs/xxx` 而非相对路径的问题，改为相对路径引用
+- 修复 ESLint 配置中 `endOfLine` 规则格式错误
+
+### Changed
+
+- 包名从 `@qimenjs/core` 改为 `@qimen-lab/core`（npm 组织名）
+- 移除根入口 `exports["."]`，每个子模块作为独立包通过子路径导出
+- 添加 `sideEffects: false` 支持 tree-shaking
+- `prepublishOnly` 脚本改用 pnpm
+- full-stack 示例改为从 npm 包引用而非源码
+
 ## [0.1.1] - 2026-07-05
 
 ### Changed

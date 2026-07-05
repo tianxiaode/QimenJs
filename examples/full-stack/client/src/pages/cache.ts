@@ -1,7 +1,7 @@
 ﻿/**
  * 缓存系统页 - @qimenjs/cache
  */
-import { CacheFactory, MemoryProvider } from '@qimenjs/cache';
+import { CacheFactory, MemoryProvider } from '@qimen-lab/core/cache';
 import { renderPageContent } from '../layout';
 
 export function renderCache(): void {

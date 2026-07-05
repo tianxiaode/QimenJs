@@ -1,7 +1,7 @@
 ﻿/**
  * 上下文管理页 - @qimenjs/context
  */
-import { RequestContextBuilder, createBaseContext, addStep, setError, setTerminate, isTerminated } from '@qimenjs/context';
+import { RequestContextBuilder, createBaseContext, addStep, setError, setTerminate, isTerminated } from '@qimen-lab/core/context';
 import { renderPageContent } from '../layout';
 
 export function renderContext(): void {

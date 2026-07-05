@@ -3,7 +3,7 @@
  *
  * 基于 RemoteCrudEntityManager，连接 ABP 后端
  */
-import { RemoteCrudEntityManager } from '@qimenjs/entity';
+import { RemoteCrudEntityManager } from '@qimen-lab/core/entity';
 import { UserSchema, ProductSchema } from '../domains';
 
 /**

@@ -53,7 +53,7 @@ export async function renderI18n(): Promise<void> {
                 <div class="card">
                     <div class="card-title"><span class="dot" style="background:#4CAF50;"></span>Vue 3 Composition API</div>
                     <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { ref, onMounted, onUnmounted } from 'vue'
-import { i18n } from '@qimenjs/i18n'
+import { i18n } from '@qimen-lab/core/i18n'
 
 export function useI18n() {
   const locale = ref(i18n.locale)
@@ -80,7 +80,7 @@ export function useI18n() {
                 <div class="card">
                     <div class="card-title"><span class="dot" style="background:#6366F1;"></span>React Hook</div>
                     <pre style="background:#050506;padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;color:#A1A1AA;"><code>import { useState, useEffect } from 'react'
-import { i18n } from '@qimenjs/i18n'
+import { i18n } from '@qimen-lab/core/i18n'
 
 export function useI18n() {
   const [locale, setLocaleState] = useState(i18n.locale)

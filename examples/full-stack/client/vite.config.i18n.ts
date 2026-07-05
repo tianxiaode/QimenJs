@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 
-const SRC = path.resolve(__dirname, '../../../src');
+const NODE_MODULES = path.resolve(__dirname, '../node_modules/@qimen-lab/core/dist/i18n');
 
 export default defineConfig({
     build: {
         lib: {
-            entry: path.resolve(SRC, 'i18n/index.ts'),
+            entry: path.resolve(NODE_MODULES, 'index.esm.js'),
             name: 'qimenI18n',
             formats: ['iife'],
             fileName: () => 'i18n.js',
@@ -17,11 +17,6 @@ export default defineConfig({
             output: {
                 extend: true,
             },
-        },
-    },
-    resolve: {
-        alias: {
-            '@': SRC,
         },
     },
 });

@@ -1,7 +1,7 @@
 ﻿/**
  * 任务调度页 - @qimenjs/task
  */
-import { globalTaskQueue } from '@qimenjs/task/task';
+import { globalTaskQueue } from '@qimen-lab/core/task';
 import { renderPageContent } from '../layout';
 
 const taskLog: Array<{ time: string; msg: string; type: string }> = [];

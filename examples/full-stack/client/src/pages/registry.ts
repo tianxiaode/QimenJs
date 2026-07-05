@@ -1,7 +1,7 @@
 ﻿/**
  * 注册器页 - @qimenjs/registry
  */
-import { RegistryHub, DomainRegistrar, SystemRegistrar, Registry } from '@qimenjs/registry';
+import { RegistryHub, DomainRegistrar, SystemRegistrar, Registry } from '@qimen-lab/core/registry';
 import { renderPageContent } from '../layout';
 
 export function renderRegistry(): void {

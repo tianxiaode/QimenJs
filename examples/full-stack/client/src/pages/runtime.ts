@@ -11,7 +11,7 @@ import {
     isTouchDevice,
     detectInputCapabilities,
     MemoryManager,
-} from '@qimenjs/runtime';
+} from '@qimen-lab/core/runtime';
 import { renderPageContent } from '../layout';
 
 export function renderRuntime(): void {
