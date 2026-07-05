@@ -3,11 +3,9 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
+      "version": "22"
     }
   },
-  "postCreateCommand": "npm install -g pnpm@8 && pnpm install && npm run build",
-  "postStartCommand": "cd examples/full-stack && node scripts/start-all.js &",
   "forwardPorts": [3000, 3001, 3002, 5173],
   "portsAttributes": {
     "5173": {
@@ -24,6 +22,7 @@
       "label": "Spring API"
     }
   },
+  "postCreateCommand": "bash .devcontainer/infra_setup.sh",
   "customizations": {
     "vscode": {
       "extensions": [
