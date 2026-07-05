@@ -23,7 +23,7 @@ const domainRegistrar = (Registry as any).domain as DomainRegistrar;
 
 // 注册认证域
 domainRegistrar.register('auth', {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: '/auth',
     preset: 'default',
     pageSize: 10,
     pagesizes: [10, 20, 50],
@@ -31,7 +31,7 @@ domainRegistrar.register('auth', {
 
 // 注册 ABP 域
 domainRegistrar.register('abp', {
-    baseUrl: 'http://localhost:3001',
+    baseUrl: '/abp',
     preset: 'abp',
     pageSize: 10,
     pagesizes: [10, 20, 50],
@@ -40,7 +40,7 @@ domainRegistrar.register('abp', {
 
 // 注册 Spring 域
 domainRegistrar.register('spring', {
-    baseUrl: 'http://localhost:3002',
+    baseUrl: '/spring',
     preset: 'spring',
     pageSize: 10,
     pagesizes: [5, 10, 20, 50],
@@ -81,11 +81,11 @@ schemaRegistrar.register(DepartmentSchema);
 // ============================================
 
 oauth2.configure({
-    tokenEndpoint: 'http://localhost:3000/oauth2/token',
-    revokeEndpoint: 'http://localhost:3000/oauth2/revoke',
-    authorizationEndpoint: 'http://localhost:3000/oauth2/authorize',
+    tokenEndpoint: '/auth/oauth2/token',
+    revokeEndpoint: '/auth/oauth2/revoke',
+    authorizationEndpoint: '/auth/oauth2/authorize',
     clientId: 'qimenjs-demo',
-    redirectUri: 'http://localhost:5173/callback',
+    redirectUri: '/callback',
     domain: ['abp', 'spring'],  // token 同时应用到两个 API 域
     storage: 'localStorage',
 });

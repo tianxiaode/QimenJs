@@ -6,23 +6,11 @@
       "version": "22"
     }
   },
-  "forwardPorts": [3000, 3001, 3002, 5173],
+  "forwardPorts": [80],
   "portsAttributes": {
-    "5173": {
-      "label": "Frontend (Vite)",
+    "80": {
+      "label": "QimenJS Demo",
       "onAutoForward": "openPreview",
-      "visibility": "public"
-    },
-    "3000": {
-      "label": "Auth Server",
-      "visibility": "public"
-    },
-    "3001": {
-      "label": "ABP API",
-      "visibility": "public"
-    },
-    "3002": {
-      "label": "Spring API",
       "visibility": "public"
     }
   },
