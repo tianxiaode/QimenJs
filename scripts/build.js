@@ -190,6 +190,40 @@ const utils = {
         modified = true;
       }
 
+      // ESM 文件：给模块内部的相对路径引用加上 .esm.js 扩展名
+      // 例如 export * from './registrars' → export * from './registrars/index.esm.js'
+      // 避免 Vite 解析到 CJS 文件导致循环依赖
+      if (isEsm) {
+        const relImportPattern = /from\s+['"](\.\.?\/[^'"]+)['"]/g;
+        let relMatch;
+        const relReplacements = [];
+        while ((relMatch = relImportPattern.exec(content)) !== null) {
+          const importPath = relMatch[1];
+          // 跳过已有扩展名的
+          if (importPath.endsWith('.esm.js') || importPath.endsWith('.js') || importPath.endsWith('.d.ts')) continue;
+          // 跳过注释
+          const lineStart2 = content.lastIndexOf('\n', relMatch.index) + 1;
+          const line2 = content.substring(lineStart2, relMatch.index);
+          if (line2.trimStart().startsWith('*') || line2.trimStart().startsWith('//')) continue;
+
+          const currentDir2 = path.dirname(filePath);
+          const targetPath = path.resolve(currentDir2, importPath);
+          // 判断目标是文件还是目录
+          if (fs.existsSync(targetPath + '.esm.js')) {
+            // 目标是文件：./xxx → ./xxx.esm.js
+            relReplacements.push({ old: importPath, new: importPath + '.esm.js' });
+          } else if (fs.existsSync(path.join(targetPath, 'index.esm.js'))) {
+            // 目标是目录：./xxx → ./xxx/index.esm.js
+            relReplacements.push({ old: importPath, new: importPath + '/index.esm.js' });
+          }
+        }
+        for (const { old, new: newPath } of relReplacements) {
+          content = content.split(`'${old}'`).join(`'${newPath}'`);
+          content = content.split(`"${old}"`).join(`"${newPath}"`);
+          modified = true;
+        }
+      }
+
       if (modified) {
         fs.writeFileSync(filePath, content);
       }

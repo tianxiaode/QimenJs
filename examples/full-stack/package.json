@@ -13,7 +13,7 @@
     "build:qimenjs": "cd ../.. && npm run build"
   },
   "dependencies": {
-    "@qimen-lab/core": "^0.1.5",
+    "@qimen-lab/core": "^0.1.6",
     "cors": "^2.8.5",
     "express": "^4.18.0",
     "jsonwebtoken": "^9.0.0"

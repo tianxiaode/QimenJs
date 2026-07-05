@@ -1,6 +1,6 @@
 {
   "name": "@qimen-lab/core",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "QimenJS - Modern TypeScript infrastructure library inspired by Qimen Dunjia",
   "keywords": [
     "qimenjs",
