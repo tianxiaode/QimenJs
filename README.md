@@ -32,53 +32,53 @@ npm start
 
 | 包 | 说明 |
 |---|------|
-| `@qimenjs/error` | 统一错误体系，错误码 + 错误链 |
-| `@qimenjs/logger` | 日志系统，多级别 + 多输出 |
-| `@qimenjs/utils` | 通用工具函数 |
-| `@qimenjs/async` | 异步工具（重试、并发控制、超时） |
-| `@qimenjs/runtime` | 运行时环境检测 |
-| `@qimenjs/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
-| `@qimenjs/i18n` | 国际化，loadScript 动态加载语言包 |
-| `@qimenjs/context` | 请求上下文，贯穿数据处理管道 |
+| `@qimen-lab/error` | 统一错误体系，错误码 + 错误链 |
+| `@qimen-lab/logger` | 日志系统，多级别 + 多输出 |
+| `@qimen-lab/utils` | 通用工具函数 |
+| `@qimen-lab/async` | 异步工具（重试、并发控制、超时） |
+| `@qimen-lab/runtime` | 运行时环境检测 |
+| `@qimen-lab/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
+| `@qimen-lab/i18n` | 国际化，loadScript 动态加载语言包 |
+| `@qimen-lab/context` | 请求上下文，贯穿数据处理管道 |
 
 ### 核心层 (Layer 1)
 
 | 包 | 说明 |
 |---|------|
-| `@qimenjs/registry` | 注册表，领域隔离的注册中心 |
-| `@qimenjs/events` | 事件总线，发布/订阅 |
-| `@qimenjs/cache` | 缓存管理，LRU + TTL |
-| `@qimenjs/pipeline` | 数据管道，可组合的处理链 |
-| `@qimenjs/composable` | 能力组合，定义可复用的能力描述符 |
-| `@qimenjs/task` | 任务调度，队列 + 优先级 |
-| `@qimenjs/schema` | Schema 定义，字段 + 验证规则 |
+| `@qimen-lab/registry` | 注册表，领域隔离的注册中心 |
+| `@qimen-lab/events` | 事件总线，发布/订阅 |
+| `@qimen-lab/cache` | 缓存管理，LRU + TTL |
+| `@qimen-lab/pipeline` | 数据管道，可组合的处理链 |
+| `@qimen-lab/composable` | 能力组合，定义可复用的能力描述符 |
+| `@qimen-lab/task` | 任务调度，队列 + 优先级 |
+| `@qimen-lab/schema` | Schema 定义，字段 + 验证规则 |
 
 ### 数据层 (Layer 2)
 
 | 包 | 说明 |
 |---|------|
-| `@qimenjs/data-processor` | 数据处理器框架，管道式请求/响应处理 |
-| `@qimenjs/validation` | 验证引擎，规则 + 链式验证 |
-| `@qimenjs/event-dom` | DOM 事件适配，手势识别 |
-| `@qimenjs/mime` | MIME 类型解析 |
-| `@qimenjs/pattern` | 设计模式工具（观察者、策略、工厂等） |
+| `@qimen-lab/data-processor` | 数据处理器框架，管道式请求/响应处理 |
+| `@qimen-lab/validation` | 验证引擎，规则 + 链式验证 |
+| `@qimen-lab/event-dom` | DOM 事件适配，手势识别 |
+| `@qimen-lab/mime` | MIME 类型解析 |
+| `@qimen-lab/pattern` | 设计模式工具（观察者、策略、工厂等） |
 
 ### 服务层 (Layer 3)
 
 | 包 | 说明 |
 |---|------|
-| `@qimenjs/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
-| `@qimenjs/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
-| `@qimenjs/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
-| `@qimenjs/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
-| `@qimenjs/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
+| `@qimen-lab/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
+| `@qimen-lab/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
+| `@qimen-lab/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
+| `@qimen-lab/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
+| `@qimen-lab/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
 
 ### 应用层 (Layer 4)
 
 | 包 | 说明 |
 |---|------|
-| `@qimenjs/entity` | 实体管理框架，Manager + Ability 架构 |
-| `@qimenjs/types` | 公共类型定义 |
+| `@qimen-lab/entity` | 实体管理框架，Manager + Ability 架构 |
+| `@qimen-lab/types` | 公共类型定义 |
 
 ## 架构特点
 
