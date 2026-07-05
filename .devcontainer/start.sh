@@ -17,7 +17,8 @@ echo "Spring API 启动 (PID: $!)"
 # 等待后端启动
 sleep 2
 
-# 启动前端开发服务器
+# 启动前端开发服务器（需要在 client 目录下执行）
+cd client
 nohup npx vite --host 0.0.0.0 --port 5173 > /tmp/vite.log 2>&1 &
 echo "Frontend 启动 (PID: $!)"
 
