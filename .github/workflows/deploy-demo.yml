@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/**'
       - 'examples/full-stack/**'
+      - '.devcontainer/**'
       - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
