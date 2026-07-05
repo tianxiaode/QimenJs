@@ -37,21 +37,4 @@ echo "-- 构建前端 --"
 npx vite build --outDir dist
 echo "-- 前端构建完成 --"
 
-# 7. 启动后端服务
-echo "-- 启动后端服务 --"
-cd /workspaces/QimenJs/examples/full-stack
-nohup node servers/auth-server/index.js > /tmp/auth-server.log 2>&1 &
-echo "Auth Server (PID: $!)"
-nohup node servers/abp-api/index.js > /tmp/abp-api.log 2>&1 &
-echo "ABP API (PID: $!)"
-nohup node servers/spring-api/index.js > /tmp/spring-api.log 2>&1 &
-echo "Spring API (PID: $!)"
-sleep 2
-
-# 8. 启动 Nginx（直接指定配置文件，不依赖 sites-available 结构）
-echo "-- 启动 Nginx --"
-sudo nginx -c /workspaces/QimenJs/.devcontainer/nginx.conf
-echo "-- Nginx 启动完成 --"
-
 echo "=== 初始化完成 ==="
-echo "访问地址: http://localhost:80"

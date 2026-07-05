@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "=== 重新启动 QimenJS Demo ==="
+echo "=== 启动 QimenJS Demo ==="
 
 # 停止旧服务
 sudo nginx -s stop 2>/dev/null || true
@@ -17,5 +17,6 @@ sleep 2
 
 # 启动 Nginx
 sudo nginx -c /workspaces/QimenJs/.devcontainer/nginx.conf
+
 echo "=== 启动完成 ==="
 echo "访问地址: http://localhost:80"
