@@ -28,7 +28,7 @@ node scripts/link-packages.js
 # 5. 复制 i18n IIFE 到 public 目录
 echo "-- 复制 i18n IIFE --"
 cd /workspaces/QimenJs/examples/full-stack/client
-npx qimen-i18n-copy
+node ../node_modules/@qimen-lab/i18n/copy.js
 
 # 6. 构建前端
 echo "-- 构建前端 --"

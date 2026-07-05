@@ -50,7 +50,7 @@ jobs:
         run: node scripts/link-packages.js
 
       - name: Copy i18n IIFE
-        run: cd examples/full-stack/client && npx qimen-i18n-copy
+        run: cd examples/full-stack/client && node ../node_modules/@qimen-lab/i18n/copy.js
 
       - name: Build demo application
         run: cd examples/full-stack/client && npx vite build --outDir ../../../demo-dist --base /QimenJs/
