@@ -93,8 +93,10 @@ const utils = {
         console.log(`  Generated ${path.basename(pkgPath)}`);
     },
 
-    // 修复产物中的 @qimenjs/xxx 引用，替换为相对路径
+    // 修复产物中的 @qimenjs/xxx 和 @/ 引用，替换为相对路径
   fixModuleImports(dir, currentModule) {
+    const projectRoot = process.cwd();
+    const srcRoot = path.resolve(projectRoot, 'src');
     const files = fs.readdirSync(dir);
     for (const file of files) {
       const filePath = path.join(dir, file);
@@ -116,8 +118,7 @@ const utils = {
         if (modName === currentModule) continue;
         const pattern = new RegExp(`@qimenjs/${modName}`, 'g');
         if (pattern.test(content)) {
-          // 计算从当前文件到目标模块的相对路径
-          const targetDir = path.resolve(process.cwd(), modConfig.outDir);
+          const targetDir = path.resolve(projectRoot, modConfig.outDir);
           const currentDir = path.dirname(filePath);
           let relPath = path.relative(currentDir, targetDir).replace(/\\/g, '/');
           if (!relPath.startsWith('.')) relPath = './' + relPath;
@@ -131,6 +132,44 @@ const utils = {
           }
           modified = true;
         }
+      }
+
+      // 替换 @/xxx 为相对路径（@/ 映射到 src/，但 dist 中模块直接在 dist/ 下）
+      const atSlashPattern = /@\/([a-zA-Z0-9_/.-]+)/g;
+      let match;
+      const replacements = [];
+      while ((match = atSlashPattern.exec(content)) !== null) {
+        const fullMatch = match[0]; // e.g. @/logger or @/registry/registrars/RegistrarBase
+        const srcPath = match[1];   // e.g. logger or registry/registrars/RegistrarBase
+        // 跳过注释中的引用
+        const lineStart = content.lastIndexOf('\n', match.index) + 1;
+        const line = content.substring(lineStart, match.index);
+        if (line.trimStart().startsWith('*') || line.trimStart().startsWith('//')) continue;
+
+        const currentDir = path.dirname(filePath);
+        // @/ 映射到 src/，但 dist 中模块直接在 dist/ 下（无 src/ 层）
+        const distRoot = path.resolve(projectRoot, 'dist');
+        const targetAbsPath = path.resolve(distRoot, srcPath);
+        let relPath = path.relative(currentDir, targetAbsPath).replace(/\\/g, '/');
+        if (!relPath.startsWith('.')) relPath = './' + relPath;
+
+        // 判断目标是否是模块根目录（有 index.xxx）还是深层文件
+        const isModuleRoot = config.modules[srcPath.split('/')[0]] && srcPath.split('/').length === 1;
+        if (isModuleRoot) {
+          if (isEsm) relPath += '/index.esm.js';
+          else if (isCjs) relPath += '/index.js';
+          else relPath += '/index.d.ts';
+        } else {
+          // 深层路径，添加文件扩展名
+          if (isEsm) relPath += '.esm.js';
+          else if (isCjs) relPath += '.js';
+          else relPath += '.d.ts';
+        }
+        replacements.push({ fullMatch, relPath });
+      }
+      for (const { fullMatch, relPath } of replacements) {
+        content = content.split(fullMatch).join(relPath);
+        modified = true;
       }
 
       if (modified) {
