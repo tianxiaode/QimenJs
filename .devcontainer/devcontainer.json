@@ -10,16 +10,20 @@
   "portsAttributes": {
     "5173": {
       "label": "Frontend (Vite)",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openPreview",
+      "visibility": "public"
     },
     "3000": {
-      "label": "Auth Server"
+      "label": "Auth Server",
+      "visibility": "public"
     },
     "3001": {
-      "label": "ABP API"
+      "label": "ABP API",
+      "visibility": "public"
     },
     "3002": {
-      "label": "Spring API"
+      "label": "Spring API",
+      "visibility": "public"
     }
   },
   "postCreateCommand": "bash .devcontainer/infra_setup.sh",
