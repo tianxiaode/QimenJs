@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install example dependencies
+        run: cd examples/full-stack && pnpm install
+
       - name: Build QimenJS library
         run: npm run build
 
