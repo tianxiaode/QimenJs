@@ -27,6 +27,7 @@
     }
   },
   "postCreateCommand": "bash .devcontainer/infra_setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
   "customizations": {
     "vscode": {
       "extensions": [
