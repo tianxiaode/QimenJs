@@ -2,6 +2,11 @@
 
 echo "=== 初始化 QimenJS Demo ==="
 
+# 0. 安装 Nginx
+echo "-- 安装 Nginx --"
+sudo apt-get update -qq
+sudo apt-get install -y -qq nginx
+
 # 1. 安装 pnpm
 echo "-- 安装 pnpm --"
 npm install -g pnpm@9
