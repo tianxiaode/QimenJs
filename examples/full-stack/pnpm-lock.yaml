@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@qimen-lab/core':
-    specifier: ^0.1.1
-    version: 0.1.1(typescript@5.9.3)
+    specifier: ^0.1.2
+    version: 0.1.2(typescript@5.9.3)
   cors:
     specifier: ^2.8.5
     version: 2.8.6
@@ -235,8 +235,8 @@ packages:
     dev: true
     optional: true
 
-  /@qimen-lab/core@0.1.1(typescript@5.9.3):
-    resolution: {integrity: sha512-HcmvJ4YZurZJzdUaYaJltuQiBLps0I3jsKbT9IOlVBdrpgD9xbxmpkVB4sIj2r3MLT/YDqNtve606pE6ou2OLw==}
+  /@qimen-lab/core@0.1.2(typescript@5.9.3):
+    resolution: {integrity: sha512-fJ6fIyBx+5io9wCvBbDREXeLClIHFu2NZpzP+/y2jFCRFuYgeGNVDMELD6QaOp0RcBkX+ERPN90f3xF1J83UJg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       typescript: '>=4.0.0'
