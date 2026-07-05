@@ -45,18 +45,39 @@ const utils = {
     renameEsmFiles(dir) {
         const files = fs.readdirSync(dir);
         files.forEach(file => {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+                this.renameEsmFiles(filePath);
+                return;
+            }
             // .js -> .esm.js
             if (file.endsWith('.js') && !file.endsWith('.esm.js')) {
-                fs.renameSync(path.join(dir, file), path.join(dir, file.replace('.js', '.esm.js')));
+                fs.renameSync(filePath, filePath.replace('.js', '.esm.js'));
             }
             // .js.map -> .esm.js.map
             if (file.endsWith('.js.map') && !file.endsWith('.esm.js.map')) {
-                fs.renameSync(
-                    path.join(dir, file),
-                    path.join(dir, file.replace('.js.map', '.esm.js.map'))
-                );
+                fs.renameSync(filePath, filePath.replace('.js.map', '.esm.js.map'));
             }
         });
+    },
+
+    // 递归复制 ESM 文件到最终目录
+    copyEsmFiles(srcDir, destDir) {
+        if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+        }
+        const files = fs.readdirSync(srcDir);
+        for (const file of files) {
+            const srcPath = path.join(srcDir, file);
+            const destPath = path.join(destDir, file);
+            const stat = fs.statSync(srcPath);
+            if (stat.isDirectory()) {
+                this.copyEsmFiles(srcPath, destPath);
+            } else if (file.endsWith('.esm.js') || file.endsWith('.esm.js.map')) {
+                fs.copyFileSync(srcPath, destPath);
+            }
+        }
     },
 
     // 生成package.json
@@ -135,37 +156,34 @@ const utils = {
       }
 
       // 替换 @/xxx 为相对路径（@/ 映射到 src/，但 dist 中模块直接在 dist/ 下）
+      // 注意：深层路径（如 @/registry/registrars/RegistrarBase）没有 ESM 版本，
+      // 统一替换为模块根入口（如 ../registry/index.esm.js），因为 index.esm.js re-export 了所有内容
       const atSlashPattern = /@\/([a-zA-Z0-9_/.-]+)/g;
       let match;
       const replacements = [];
       while ((match = atSlashPattern.exec(content)) !== null) {
-        const fullMatch = match[0]; // e.g. @/logger or @/registry/registrars/RegistrarBase
-        const srcPath = match[1];   // e.g. logger or registry/registrars/RegistrarBase
+        const fullMatch = match[0];
+        const srcPath = match[1];
         // 跳过注释中的引用
         const lineStart = content.lastIndexOf('\n', match.index) + 1;
         const line = content.substring(lineStart, match.index);
         if (line.trimStart().startsWith('*') || line.trimStart().startsWith('//')) continue;
 
         const currentDir = path.dirname(filePath);
-        // @/ 映射到 src/，但 dist 中模块直接在 dist/ 下（无 src/ 层）
         const distRoot = path.resolve(projectRoot, 'dist');
-        const targetAbsPath = path.resolve(distRoot, srcPath);
-        let relPath = path.relative(currentDir, targetAbsPath).replace(/\\/g, '/');
-        if (!relPath.startsWith('.')) relPath = './' + relPath;
+        // 取模块名（路径第一段）
+        const moduleName = srcPath.split('/')[0];
+        const moduleOutDir = config.modules[moduleName] ? path.resolve(projectRoot, config.modules[moduleName].outDir) : null;
 
-        // 判断目标是否是模块根目录（有 index.xxx）还是深层文件
-        const isModuleRoot = config.modules[srcPath.split('/')[0]] && srcPath.split('/').length === 1;
-        if (isModuleRoot) {
+        if (moduleOutDir) {
+          // 统一替换为模块根入口
+          let relPath = path.relative(currentDir, moduleOutDir).replace(/\\/g, '/');
+          if (!relPath.startsWith('.')) relPath = './' + relPath;
           if (isEsm) relPath += '/index.esm.js';
           else if (isCjs) relPath += '/index.js';
           else relPath += '/index.d.ts';
-        } else {
-          // 深层路径，添加文件扩展名
-          if (isEsm) relPath += '.esm.js';
-          else if (isCjs) relPath += '.js';
-          else relPath += '.d.ts';
+          replacements.push({ fullMatch, relPath });
         }
-        replacements.push({ fullMatch, relPath });
       }
       for (const { fullMatch, relPath } of replacements) {
         content = content.split(fullMatch).join(relPath);
@@ -280,15 +298,8 @@ function buildModule(moduleName, moduleConfig) {
         const esmTmpDir = path.resolve(projectRoot, `dist/.tmp-${moduleName}-esm`, moduleName);
         if (fs.existsSync(esmTmpDir)) {
             utils.renameEsmFiles(esmTmpDir);
-            // 将 ESM 文件复制到最终目录
-            const files = fs.readdirSync(esmTmpDir);
-            for (const file of files) {
-                if (file.endsWith('.esm.js') || file.endsWith('.esm.js.map')) {
-                    const src = path.join(esmTmpDir, file);
-                    const dest = path.join(finalOutDir, file);
-                    fs.copyFileSync(src, dest);
-                }
-            }
+            // 递归将 ESM 文件复制到最终目录
+            utils.copyEsmFiles(esmTmpDir, finalOutDir);
         }
         // 清理 ESM 临时目录
         const esmTmpRoot = path.resolve(projectRoot, `dist/.tmp-${moduleName}-esm`);
