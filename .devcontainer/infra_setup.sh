@@ -48,12 +48,9 @@ nohup node servers/spring-api/index.js > /tmp/spring-api.log 2>&1 &
 echo "Spring API (PID: $!)"
 sleep 2
 
-# 8. 配置并启动 Nginx
+# 8. 启动 Nginx（直接指定配置文件，不依赖 sites-available 结构）
 echo "-- 启动 Nginx --"
-sudo cp /workspaces/QimenJs/.devcontainer/nginx.conf /etc/nginx/sites-available/default
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-sudo nginx -t && sudo nginx
+sudo nginx -c /workspaces/QimenJs/.devcontainer/nginx.conf
 echo "-- Nginx 启动完成 --"
 
 echo "=== 初始化完成 ==="

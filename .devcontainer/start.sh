@@ -16,6 +16,6 @@ nohup node servers/spring-api/index.js > /tmp/spring-api.log 2>&1 &
 sleep 2
 
 # 启动 Nginx
-sudo nginx
+sudo nginx -c /workspaces/QimenJs/.devcontainer/nginx.conf
 echo "=== 启动完成 ==="
 echo "访问地址: http://localhost:80"
