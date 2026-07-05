@@ -1,7 +1,8 @@
 {
-  "name": "@qimen-lab/core",
-  "version": "0.1.6",
+  "name": "qimenjs",
+  "version": "0.2.0",
   "description": "QimenJS - Modern TypeScript infrastructure library inspired by Qimen Dunjia",
+  "private": true,
   "keywords": [
     "qimenjs",
     "qimen",
@@ -9,149 +10,6 @@
     "pipeline",
     "composable",
     "typescript"
-  ],
-  "sideEffects": false,
-  "exports": {
-    "./error": {
-      "import": "./dist/error/index.esm.js",
-      "require": "./dist/error/index.js",
-      "types": "./dist/error/index.d.ts"
-    },
-    "./logger": {
-      "import": "./dist/logger/index.esm.js",
-      "require": "./dist/logger/index.js",
-      "types": "./dist/logger/index.d.ts"
-    },
-    "./utils": {
-      "import": "./dist/utils/index.esm.js",
-      "require": "./dist/utils/index.js",
-      "types": "./dist/utils/index.d.ts"
-    },
-    "./async": {
-      "import": "./dist/async/index.esm.js",
-      "require": "./dist/async/index.js",
-      "types": "./dist/async/index.d.ts"
-    },
-    "./runtime": {
-      "import": "./dist/runtime/index.esm.js",
-      "require": "./dist/runtime/index.js",
-      "types": "./dist/runtime/index.d.ts"
-    },
-    "./crypto": {
-      "import": "./dist/crypto/index.esm.js",
-      "require": "./dist/crypto/index.js",
-      "types": "./dist/crypto/index.d.ts"
-    },
-    "./registry": {
-      "import": "./dist/registry/index.esm.js",
-      "require": "./dist/registry/index.js",
-      "types": "./dist/registry/index.d.ts"
-    },
-    "./cache": {
-      "import": "./dist/cache/index.esm.js",
-      "require": "./dist/cache/index.js",
-      "types": "./dist/cache/index.d.ts"
-    },
-    "./events": {
-      "import": "./dist/events/index.esm.js",
-      "require": "./dist/events/index.js",
-      "types": "./dist/events/index.d.ts"
-    },
-    "./validation": {
-      "import": "./dist/validation/index.esm.js",
-      "require": "./dist/validation/index.js",
-      "types": "./dist/validation/index.d.ts"
-    },
-    "./task": {
-      "import": "./dist/task/index.esm.js",
-      "require": "./dist/task/index.js",
-      "types": "./dist/task/index.d.ts"
-    },
-    "./types": {
-      "import": "./dist/types/index.esm.js",
-      "require": "./dist/types/index.js",
-      "types": "./dist/types/index.d.ts"
-    },
-    "./context": {
-      "import": "./dist/context/index.esm.js",
-      "require": "./dist/context/index.js",
-      "types": "./dist/context/index.d.ts"
-    },
-    "./schema": {
-      "import": "./dist/schema/index.esm.js",
-      "require": "./dist/schema/index.js",
-      "types": "./dist/schema/index.d.ts"
-    },
-    "./pipeline": {
-      "import": "./dist/pipeline/index.esm.js",
-      "require": "./dist/pipeline/index.js",
-      "types": "./dist/pipeline/index.d.ts"
-    },
-    "./composable": {
-      "import": "./dist/composable/index.esm.js",
-      "require": "./dist/composable/index.js",
-      "types": "./dist/composable/index.d.ts"
-    },
-    "./event-dom": {
-      "import": "./dist/event-dom/index.esm.js",
-      "require": "./dist/event-dom/index.js",
-      "types": "./dist/event-dom/index.d.ts"
-    },
-    "./data-processor": {
-      "import": "./dist/data-processor/index.esm.js",
-      "require": "./dist/data-processor/index.js",
-      "types": "./dist/data-processor/index.d.ts"
-    },
-    "./http": {
-      "import": "./dist/http/index.esm.js",
-      "require": "./dist/http/index.js",
-      "types": "./dist/http/index.d.ts"
-    },
-    "./system-abilities": {
-      "import": "./dist/system-abilities/index.esm.js",
-      "require": "./dist/system-abilities/index.js",
-      "types": "./dist/system-abilities/index.d.ts"
-    },
-    "./entity": {
-      "import": "./dist/entity/index.esm.js",
-      "require": "./dist/entity/index.js",
-      "types": "./dist/entity/index.d.ts"
-    },
-    "./i18n": {
-      "import": "./dist/i18n/index.esm.js",
-      "require": "./dist/i18n/index.js",
-      "types": "./dist/i18n/index.d.ts"
-    },
-    "./mime": {
-      "import": "./dist/mime/index.esm.js",
-      "require": "./dist/mime/index.js",
-      "types": "./dist/mime/index.d.ts"
-    },
-    "./pattern": {
-      "import": "./dist/pattern/index.esm.js",
-      "require": "./dist/pattern/index.js",
-      "types": "./dist/pattern/index.d.ts"
-    },
-    "./data-processor-abp": {
-      "import": "./dist/data-processor-abp/index.esm.js",
-      "require": "./dist/data-processor-abp/index.js",
-      "types": "./dist/data-processor-abp/index.d.ts"
-    },
-    "./data-processor-spring": {
-      "import": "./dist/data-processor-spring/index.esm.js",
-      "require": "./dist/data-processor-spring/index.js",
-      "types": "./dist/data-processor-spring/index.d.ts"
-    },
-    "./oauth2": {
-      "import": "./dist/oauth2/index.esm.js",
-      "require": "./dist/oauth2/index.js",
-      "types": "./dist/oauth2/index.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
   ],
   "scripts": {
     "clean": "rimraf dist coverage",
@@ -161,6 +19,7 @@
     "build:utils": "node scripts/build.js utils",
     "build:validation": "node scripts/build.js validation",
     "build:core-clean": "node scripts/build.js core --clean",
+    "publish:all": "node scripts/publish.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:core": "jest --testPathPattern=test/unit/core",
@@ -170,17 +29,12 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.js\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.js\"",
     "dev": "tsc --watch",
-    "prepublishOnly": "pnpm run build && pnpm run test",
     "generate:test": "node scripts/generate-tests.js",
     "generate:test:custom": "node scripts/generate-tests.js --src src --test test/unit",
     "docs": "typedoc"
   },
   "author": "Huang Dengqiao",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tianxiaode/QimenJs"

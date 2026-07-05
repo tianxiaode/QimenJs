@@ -1,7 +1,7 @@
 ﻿/**
  * 工具函数页 - @qimenjs/utils
  */
-import * as utils from '@qimen-lab/core/utils';
+import * as utils from '@qimen-lab/utils';
 import { renderPageContent } from '../layout';
 
 export function renderUtils(): void {

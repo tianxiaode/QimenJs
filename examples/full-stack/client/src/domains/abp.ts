@@ -3,7 +3,7 @@
  *
  * 定义 ABP 后端（PagedResultDto 格式）的实体 Schema
  */
-import type { RegistrSchema } from '@qimen-lab/core/schema';
+import type { RegistrSchema } from '@qimen-lab/schema';
 
 /**
  * ABP 用户 Schema

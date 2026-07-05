@@ -1,51 +1,66 @@
 /**
- * QimenJS Demo - English language pack
- * Loaded dynamically via i18n.loadScript()
+ * English (US) language pack
+ *
+ * Includes: translations + locale format config (date, time, currency, number)
  */
-if (typeof window !== 'undefined' && window.__qimen_i18n_register__) {
-    window.__qimen_i18n_register__('en-US', {
-        app: {
-            title: 'QimenJS Admin Template',
-            greeting: 'Hello, {name}!',
-            items: '{count} items',
-            today: 'Today is {date}',
+__qimen_i18n_register__('en-US', {
+    // ---- Locale format config ----
+    _locale: {
+        // Date formats
+        date: {
+            short: 'M/d/yyyy',          // 1/5/2024
+            medium: 'MMM d, yyyy',      // Jan 5, 2024
+            long: 'MMMM d, yyyy',       // January 5, 2024
+            full: 'EEEE, MMMM d, yyyy', // Friday, January 5, 2024
         },
-        nav: {
-            dashboard: 'Dashboard',
-            users: 'User Management',
+        // Time formats
+        time: {
+            short: 'h:mm a',            // 9:30 AM
+            medium: 'h:mm:ss a',        // 9:30:00 AM
+            long: 'h:mm:ss a z',        // 9:30:00 AM CST
         },
-        btn: {
-            save: 'Save',
-            cancel: 'Cancel',
-            delete: 'Delete',
-            search: 'Search',
-            reset: 'Reset',
-            login: 'Password Login',
-            logout: 'Logout',
+        // Currency formats
+        currency: {
+            code: 'USD',
+            symbol: '$',
+            position: 'prefix',         // $1,234.56
+            decimalDigits: 2,
         },
-        status: {
-            online: 'Online',
-            offline: 'Offline',
-            authenticated: 'Authenticated',
-            unauthenticated: 'Unauthenticated',
+        // Number formats
+        number: {
+            decimalSeparator: '.',
+            groupSeparator: ',',
+            groupSize: 3,
         },
-        login: {
-            title: 'QimenJS',
-            subtitle: 'Enterprise Entity Framework',
-            username: 'Username',
-            password: 'Password',
-            other: 'Other Methods',
-            authorize: 'Authorization Code',
-            client: 'Client Credentials',
-            hint: 'Test account: admin / 123456',
+        // Unit conventions
+        units: {
+            length: 'imperial',         // imperial (miles, feet, etc.)
+            weight: 'imperial',         // imperial (pounds, ounces)
+            temperature: 'fahrenheit',
+            area: 'imperial',
+            volume: 'imperial',
         },
-        topbar: {
-            breadcrumb: 'QimenJS',
-        },
-        lang: {
-            'zh-CN': '中文简体',
-            'en-US': 'English',
-            'ja-JP': '日本語',
-        },
-    });
-}
+        // Week start day
+        weekStart: 0, // Sunday
+        // 12/24 hour cycle
+        hourCycle: 'h12',
+    },
+
+    // ---- Common translations ----
+    common: {
+        save: 'Save',
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        delete: 'Delete',
+        edit: 'Edit',
+        add: 'Add',
+        search: 'Search',
+        loading: 'Loading...',
+        noData: 'No data',
+        success: 'Success',
+        error: 'Error',
+        yes: 'Yes',
+        no: 'No',
+        ok: 'OK',
+    },
+});

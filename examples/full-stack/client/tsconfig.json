@@ -9,11 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@qimen-lab/core/*": ["../../../node_modules/@qimen-lab/core/dist/*/index.d.ts"]
-    }
+    "noEmit": true
   },
   "include": ["src/**/*"]
 }

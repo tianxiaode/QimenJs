@@ -5,11 +5,11 @@
  * 2. 注册 Schema（SchemaRegistrar）：各域的实体 Schema
  * 3. 配置 OAuth2 认证
  */
-import { Registry, DomainRegistrar } from '@qimen-lab/core/registry';
-import { SchemaRegistrar } from '@qimen-lab/core/schema';
-import { oauth2 } from '@qimen-lab/core/oauth2';
-import '@qimen-lab/core/data-processor-abp';
-import '@qimen-lab/core/data-processor-spring';
+import { Registry, DomainRegistrar } from '@qimen-lab/registry';
+import { SchemaRegistrar } from '@qimen-lab/schema';
+import { oauth2 } from '@qimen-lab/oauth2';
+import '@qimen-lab/data-processor-abp';
+import '@qimen-lab/data-processor-spring';
 
 // 导入域 Schema 定义
 import { UserSchema, ProductSchema, OrderSchema, ItemSchema, NotificationSchema, TagSchema, DepartmentSchema } from './domains';

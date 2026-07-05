@@ -1,7 +1,7 @@
 ﻿/**
  * 异步工具页 - @qimenjs/async
  */
-import { debounce, throttle } from '@qimen-lab/core/async';
+import { debounce, throttle } from '@qimen-lab/async';
 import { renderPageContent } from '../layout';
 
 let debounceCallCount = 0;

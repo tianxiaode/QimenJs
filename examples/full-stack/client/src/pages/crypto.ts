@@ -1,7 +1,7 @@
 ﻿/**
  * 加密工具页 - @qimenjs/crypto
  */
-import { base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@qimen-lab/core/crypto';
+import { base64Encode, base64Decode, md5, sha1, sha256, sha512, xxhash64 } from '@qimen-lab/crypto';
 import { renderPageContent } from '../layout';
 
 export function renderCrypto(): void {

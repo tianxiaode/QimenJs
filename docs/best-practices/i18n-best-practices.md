@@ -1,4 +1,4 @@
-﻿# i18n 最佳实践
+# i18n 最佳实践
 
 ## 1. 语言包用 .js 文件，不要用 .json 文件
 
@@ -40,49 +40,130 @@ i18n.t('common.save');
 
 ```typescript
 // 错误 - 在应用层 import 编译 i18n 模块
-import { i18n } from '@qimenjs/i18n';
+import { i18n } from '@qimen-lab/i18n';
 // 问题：i18n 模块会被打包进应用代码，增加包体积
 // 问题：__qimen_i18n_register__ 在应用代码执行后才可用，语言包 JS 无法提前加载
 ```
 
-**原因**：将 `@qimenjs/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 2.5KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
+**原因**：将 `@qimen-lab/i18n` 编译为独立的 `i18n.js`（IIFE 格式，约 12KB）放到 public 目录，通过 `<script>` 标签在应用代码之前加载。这样：
 - `window.__qimen_i18n_register__` 在页面加载时就可用，语言包 JS 文件可以同步注册消息
 - `window.qimenI18n.i18n` 在应用代码执行前就已就绪，无需等待模块编译
 - 应用层不需要 import 和编译 i18n 模块，减少打包体积
 - 语言包可以在 i18n.js 之后立即加载，确保首屏渲染时翻译已就绪
 
-**编译方法**：使用 Vite 的 lib 模式编译 i18n 包：
+**安装方式**：
 
-```typescript
-// vite.config.i18n.ts
-import { defineConfig } from 'vite';
-import path from 'path';
+```bash
+npm install @qimen-lab/i18n
 
-const SRC = path.resolve(__dirname, '../../../src');
+# 一键复制 i18n.js 和语言模板到 public 目录
+npx qimen-i18n-copy
+```
 
-export default defineConfig({
-    build: {
-        lib: {
-            entry: path.resolve(SRC, 'i18n/index.ts'),
-            name: 'qimenI18n',
-            formats: ['iife'],
-            fileName: () => 'i18n.js',
-        },
-        outDir: path.resolve(__dirname, 'public'),
-        emptyOutDir: false,
+`npx qimen-i18n-copy` 会将 `i18n.js` 和 `locales/` 目录（含中英法三种语言模板）复制到项目的 `public/` 目录。版本变化时自动更新，版本不变时跳过。
+
+## 3. 语言模板包含区域格式配置
+
+语言包不仅包含翻译文本，还应包含区域格式配置（日期、时间、货币、数字、单位习惯等）：
+
+```js
+// public/locales/zh-CN.js
+__qimen_i18n_register__('zh-CN', {
+  // 区域格式配置（_locale 是保留键名）
+  _locale: {
+    date: {
+      short: 'yyyy/M/d',       // 2024/1/5
+      medium: 'yyyy年M月d日',   // 2024年1月5日
+      full: 'yyyy年M月d日EEEE', // 2024年1月5日星期五
     },
-    resolve: {
-        alias: { '@': SRC },
+    time: {
+      short: 'H:mm',           // 9:30
+      medium: 'H:mm:ss',       // 9:30:00
     },
+    currency: {
+      code: 'CNY',
+      symbol: '¥',
+      position: 'prefix',      // ¥1,234.56
+      decimalDigits: 2,
+    },
+    number: {
+      decimalSeparator: '.',
+      groupSeparator: ',',
+      groupSize: 3,
+    },
+    units: {
+      length: 'metric',        // 公制
+      temperature: 'celsius',
+    },
+    weekStart: 1,              // 周一
+    hourCycle: 'h23',          // 24小时制
+  },
+
+  // 翻译文本
+  common: { save: '保存', cancel: '取消' },
 });
 ```
 
-```bash
-# 编译 i18n.js
-npx vite build --config vite.config.i18n.ts
+`@qimen-lab/i18n` 内置了三种语言模板，`npx qimen-i18n-copy` 会自动复制到 `public/locales/`：
+
+| 文件 | 语言 | 货币 | 数字千分位 | 时间制 | 单位 |
+|------|------|------|-----------|--------|------|
+| `zh-CN.js` | 中文简体 | ¥ 前置 | 1,234.56 | 24h | 公制 |
+| `en-US.js` | English | $ 前置 | 1,234.56 | 12h | 英制 |
+| `fr-FR.js` | Français | € 后置 | 1 234,56 | 24h | 公制 |
+
+## 4. 使用格式化函数
+
+i18n 内置了日期、时间、数字、货币格式化函数，基于语言包中的 `_locale` 配置自动适配：
+
+```js
+// 日期格式化
+qimenI18n.i18n.formatDate(new Date(), 'short');   // zh-CN: '2024/1/5'  en-US: '1/5/2024'  fr-FR: '05/01/2024'
+qimenI18n.i18n.formatDate(new Date(), 'medium');  // zh-CN: '2024年1月5日'  en-US: 'Jan 5, 2024'
+qimenI18n.i18n.formatDate(new Date(), 'full');    // zh-CN: '2024年1月5日星期五'  en-US: 'Friday, January 5, 2024'
+
+// 时间格式化
+qimenI18n.i18n.formatTime(new Date(), 'short');   // zh-CN: '9:30'  en-US: '9:30 AM'  fr-FR: '09:30'
+
+// 数字格式化
+qimenI18n.i18n.formatNumber(1234567.89, { decimalDigits: 2 });
+// zh-CN: '1,234,567.89'  fr-FR: '1 234 567,89'
+
+// 货币格式化
+qimenI18n.i18n.formatCurrency(1234.5);
+// zh-CN: '¥1,234.50'  en-US: '$1,234.50'  fr-FR: '1 234,50 €'
 ```
 
-## 3. 切换语言时先加载再切换
+格式化函数会根据当前 `i18n.locale` 自动选择对应的 `_locale` 配置。切换语言后，同样的代码输出不同格式。
+
+### 格式化 API
+
+| 方法 | 说明 |
+|------|------|
+| `formatDate(date, style, locale?)` | 日期格式化，style: short/medium/long/full |
+| `formatTime(date, style, locale?)` | 时间格式化，style: short/medium/long |
+| `formatNumber(num, options?, locale?)` | 数字格式化，options: { decimalDigits, groupSeparator, decimalSeparator } |
+| `formatCurrency(num, options?, locale?)` | 货币格式化，options: { symbol, position, decimalDigits } |
+| `getLocaleConfig(locale?)` | 获取当前语言的区域格式配置 |
+
+### 日期格式占位符
+
+| 占位符 | 说明 | 示例 |
+|--------|------|------|
+| `yyyy` | 四位年份 | 2024 |
+| `M` / `MM` | 月份 | 1 / 01 |
+| `d` / `dd` | 日期 | 5 / 05 |
+| `MMM` | 月份缩写 | Jan / 1月 / janv. |
+| `MMMM` | 月份全称 | January / 1月 / janvier |
+| `EEE` | 星期缩写 | Fri / 周五 / ven. |
+| `EEEE` | 星期全称 | Friday / 星期五 / vendredi |
+| `H` / `HH` | 24小时 | 9 / 09 |
+| `h` / `hh` | 12小时 | 9 / 09 |
+| `m` / `mm` | 分钟 | 5 / 05 |
+| `s` / `ss` | 秒 | 0 / 00 |
+| `a` | AM/PM | AM / 上午 |
+
+## 5. 切换语言时先加载再切换
 
 ```typescript
 // 正确 - 先加载语言包，再切换语言
@@ -99,11 +180,11 @@ await i18n.loadScript('/locales/en-US.js');
 
 **原因**：`i18n.locale = 'en-US'` 只是切换语言标识，不会自动加载语言包。如果 en-US 的消息还没注入，`t()` 会返回 key 本身。先 `loadScript` 确保消息就绪，再切换语言，避免中间状态。
 
-## 4. 远程资源用 @qimenjs/http 加载，不要在 i18n 中内置网络请求
+## 6. 远程资源用 @qimen-lab/http 加载，不要在 i18n 中内置网络请求
 
 ```typescript
-// 正确 - 用 @qimenjs/http 加载远程资源
-import { HttpClient } from '@qimenjs/http';
+// 正确 - 用 @qimen-lab/http 加载远程资源
+import { HttpClient } from '@qimen-lab/http';
 const client = new HttpClient('i18n');
 const ctx = await client.get('/api/locales/business-terms').context;
 i18n.inject(ctx.response.data, 'en-US');
@@ -114,9 +195,9 @@ i18n.inject(ctx.response.data, 'en-US');
 i18n.loadRemote('/api/locales/business-terms');  // i18n 不应该管网络请求
 ```
 
-**原因**：i18n 的职责是存消息和查消息，不是发网络请求。项目已有 `@qimenjs/http` 处理所有 HTTP 通信（含拦截器、缓存、重试等），在 i18n 中再实现一套 fetch 是重复且不一致的。`inject()` 是唯一的消息入口，任何来源的消息都通过它注入。
+**原因**：i18n 的职责是存消息和查消息，不是发网络请求。项目已有 `@qimen-lab/http` 处理所有 HTTP 通信（含拦截器、缓存、重试等），在 i18n 中再实现一套 fetch 是重复且不一致的。`inject()` 是唯一的消息入口，任何来源的消息都通过它注入。
 
-## 5. 用 inject() 注入消息，不要直接操作内部数据
+## 7. 用 inject() 注入消息，不要直接操作内部数据
 
 ```typescript
 // 正确 - 通过 inject 注入，支持深度合并
@@ -134,7 +215,7 @@ i18n.setMessages('zh-CN', { common: { cancel: '取消' } });
 
 **原因**：`inject()` 内部使用 `mergeDeep` 深度合并，新消息合并到已有消息中，不会覆盖整个语言包。这保证了不同模块注入的消息可以共存，不会互相覆盖。
 
-## 6. 语言包按模块拆分，不要把所有翻译放在一个文件
+## 8. 语言包按模块拆分，不要把所有翻译放在一个文件
 
 ```js
 // public/locales/zh-CN.js - 基础翻译（启动时加载）
@@ -153,7 +234,7 @@ i18n.inject(ctx.response.data, 'zh-CN');
 
 **原因**：基础翻译（按钮、验证、分页）随页面启动加载，保证首屏无闪烁。业务模块翻译按需从后端加载，减少首屏体积。`inject()` 的深度合并保证两者共存。
 
-## 7. 监听事件刷新 UI，不要轮询
+## 9. 监听事件刷新 UI，不要轮询
 
 ```typescript
 // 正确 - 事件驱动
@@ -174,14 +255,15 @@ setInterval(() => {
 
 **原因**：`onLocaleChange` 和 `onMessagesUpdate` 返回取消函数，用完即销毁，无性能开销。轮询浪费 CPU，且响应有延迟。
 
-## 8. 语言包文件放在 public 目录，不要打包进应用代码
+## 10. 语言包文件放在 public 目录，不要打包进应用代码
 
 ```
 public/
+  i18n.js         ← i18n 核心（IIFE，约 12KB）
   locales/
-    zh-CN.js    ← 随页面加载
-    en-US.js    ← 切换时加载
-    ja-JP.js    ← 切换时加载
+    zh-CN.js      ← 中文（启动时加载）
+    en-US.js      ← 英文（切换时加载）
+    fr-FR.js      ← 法文（切换时加载）
 ```
 
 **原因**：语言包放在 public 目录，通过 `loadScript` 动态加载，好处是：
@@ -196,8 +278,10 @@ public/
 |--------|----------|
 | 用 .json 语言包 | 用 .js 文件 + `__qimen_i18n_register__` |
 | 在应用层 import 编译 i18n 模块 | 编译为独立 i18n.js 预加载，从 `window.qimenI18n` 获取 |
+| 语言包不含区域格式配置 | 在 `_locale` 中定义日期/时间/货币/数字/单位格式 |
+| 手动拼接日期/货币格式 | 用 `formatDate`/`formatTime`/`formatNumber`/`formatCurrency` |
 | 先切换语言再加载语言包 | 先 `loadScript` 再切换 `locale` |
-| 在 i18n 中内置 fetch | 用 `@qimenjs/http` + `inject()` |
+| 在 i18n 中内置 fetch | 用 `@qimen-lab/http` + `inject()` |
 | 整体替换语言包 | `inject()` 深度合并 |
 | 所有翻译放一个文件 | 基础翻译放 public，业务翻译按需加载 |
 | 轮询检查语言变化 | `onLocaleChange` 事件监听 |

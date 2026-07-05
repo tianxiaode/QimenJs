@@ -1,22 +1,6 @@
 import { defineConfig } from 'vite';
-import path from 'path';
 
-const NODE_MODULES = path.resolve(__dirname, '../node_modules/@qimen-lab/core/dist/i18n');
-
-export default defineConfig({
-    build: {
-        lib: {
-            entry: path.resolve(NODE_MODULES, 'index.esm.js'),
-            name: 'qimenI18n',
-            formats: ['iife'],
-            fileName: () => 'i18n.js',
-        },
-        outDir: path.resolve(__dirname, 'public'),
-        emptyOutDir: false,
-        rollupOptions: {
-            output: {
-                extend: true,
-            },
-        },
-    },
-});
+// i18n IIFE 已由主构建脚本生成到 dist/i18n/i18n.iife.js
+// 示例项目构建时，infra_setup.sh 会将其复制到 public/i18n.js
+// 此配置文件保留但不再用于 i18n 构建
+export default defineConfig({});

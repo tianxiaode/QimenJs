@@ -4,8 +4,8 @@
  * 演示 RemoteTreeEntityManager 的树形数据管理
  * 连接 ABP 后端的部门树 API
  */
-import { RemoteTreeEntityManager } from '@qimen-lab/core/entity';
-import { TreeManagerAbility } from '@qimen-lab/core/entity';
+import { RemoteTreeEntityManager } from '@qimen-lab/entity';
+import { TreeManagerAbility } from '@qimen-lab/entity';
 import { DepartmentSchema } from '../domains';
 
 /**

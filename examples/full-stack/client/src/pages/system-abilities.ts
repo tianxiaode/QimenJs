@@ -1,8 +1,8 @@
 ﻿/**
  * 系统能力页 - @qimenjs/system-abilities
  */
-import { ComposableBase } from '@qimen-lab/core/composable';
-import { EventAbility, DomEventsAbility, DomainAbility, SystemAbility } from '@qimen-lab/core/system-abilities';
+import { ComposableBase } from '@qimen-lab/composable';
+import { EventAbility, DomEventsAbility, DomainAbility, SystemAbility } from '@qimen-lab/system-abilities';
 import { renderPageContent } from '../layout';
 
 // 创建包含 EventAbility 的组件

@@ -1,7 +1,7 @@
 ﻿/**
  * 模式匹配页 - @qimenjs/pattern
  */
-import { PatternRegistrar, FORMAT_PATTERNS, PASSWORD_PATTERNS } from '@qimen-lab/core/pattern';
+import { PatternRegistrar, FORMAT_PATTERNS, PASSWORD_PATTERNS } from '@qimen-lab/pattern';
 import { renderPageContent } from '../layout';
 
 export function renderPattern(): void {

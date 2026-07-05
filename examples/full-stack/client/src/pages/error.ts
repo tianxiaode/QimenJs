@@ -1,7 +1,7 @@
 ﻿/**
  * 错误处理页 - @qimenjs/error
  */
-import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@qimen-lab/core/error';
+import { ErrorBase, KernelError, GestureError, KernelErrorCode } from '@qimen-lab/error';
 import { renderPageContent } from '../layout';
 
 export function renderError(): void {

@@ -40,17 +40,17 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: pnpm install
-
-      - name: Install example dependencies
-        run: cd examples/full-stack && pnpm install
 
       - name: Build QimenJS library
         run: npm run build
 
-      - name: Build i18n.js
-        run: cd examples/full-stack/client && npx vite build --config vite.config.i18n.ts
+      - name: Link local packages to example
+        run: node scripts/link-packages.js
+
+      - name: Copy i18n IIFE
+        run: cd examples/full-stack/client && npx qimen-i18n-copy
 
       - name: Build demo application
         run: cd examples/full-stack/client && npx vite build --outDir ../../../demo-dist --base /QimenJs/

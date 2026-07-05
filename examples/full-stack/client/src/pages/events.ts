@@ -1,7 +1,7 @@
 ﻿/**
  * 事件总线页 - @qimenjs/events
  */
-import { EventBus, EventScope, globalEventBus } from '@qimen-lab/core/events';
+import { EventBus, EventScope, globalEventBus } from '@qimen-lab/events';
 import { renderPageContent } from '../layout';
 
 const eventLog: Array<{ time: string; type: string; event: string; data: string }> = [];

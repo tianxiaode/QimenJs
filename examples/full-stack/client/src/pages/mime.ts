@@ -1,7 +1,7 @@
 ﻿/**
  * MIME 类型页 - @qimenjs/mime
  */
-import { MimeTypeRegistrar, IMAGE_MIMES, DOCUMENT_MIMES, AUDIO_MIMES, VIDEO_MIMES, ARCHIVE_MIMES, WEB_MIMES, FONT_MIMES } from '@qimen-lab/core/mime';
+import { MimeTypeRegistrar, IMAGE_MIMES, DOCUMENT_MIMES, AUDIO_MIMES, VIDEO_MIMES, ARCHIVE_MIMES, WEB_MIMES, FONT_MIMES } from '@qimen-lab/mime';
 import { renderPageContent } from '../layout';
 
 export function renderMime(): void {

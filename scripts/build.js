@@ -95,8 +95,22 @@ const utils = {
                     require: './index.js',
                     types: './index.d.ts',
                 },
+                // 通配符子路径导出，支持 @qimen-lab/xxx/yyy 深层引用
+                './*': {
+                    import: './*.esm.js',
+                    require: './*.js',
+                    types: './*.d.ts',
+                },
             },
         };
+
+        // i18n 包特殊处理：添加 IIFE 文件和复制脚本
+        if (moduleName === 'i18n') {
+            pkg.bin = {
+                'qimen-i18n-copy': './copy.js',
+            };
+            pkg.files = ['*.js', '*.esm.js', '*.d.ts', '*.map', 'types/', 'i18n.iife.js', 'copy.js', 'locales/'];
+        }
 
         // 添加依赖
         if (moduleConfig.dependencies?.length) {
@@ -114,50 +128,34 @@ const utils = {
         console.log(`  Generated ${path.basename(pkgPath)}`);
     },
 
-    // 修复产物中的 @qimenjs/xxx 和 @/ 引用，替换为相对路径
-  fixModuleImports(dir, currentModule) {
-    const projectRoot = process.cwd();
-    const srcRoot = path.resolve(projectRoot, 'src');
+    // 修复产物中的 @qimenjs/xxx 和 @/xxx 引用，替换为 @qimen-lab/xxx npm 包名
+  fixPackageImports(dir, currentModule) {
     const files = fs.readdirSync(dir);
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
-        this.fixModuleImports(filePath, currentModule);
+        this.fixPackageImports(filePath, currentModule);
         continue;
       }
-      const isEsm = file.endsWith('.esm.js');
-      const isCjs = file.endsWith('.js') && !file.endsWith('.esm.js');
-      const isDts = file.endsWith('.d.ts');
-      if (!isEsm && !isCjs && !isDts) continue;
+      const isJs = file.endsWith('.js') || file.endsWith('.esm.js') || file.endsWith('.d.ts');
+      if (!isJs) continue;
 
       let content = fs.readFileSync(filePath, 'utf8');
       let modified = false;
 
-      // 替换 @qimenjs/xxx 为相对路径
+      // 替换 @qimenjs/xxx 为 @qimen-lab/xxx
       for (const [modName, modConfig] of Object.entries(config.modules)) {
         if (modName === currentModule) continue;
         const pattern = new RegExp(`@qimenjs/${modName}`, 'g');
         if (pattern.test(content)) {
-          const targetDir = path.resolve(projectRoot, modConfig.outDir);
-          const currentDir = path.dirname(filePath);
-          let relPath = path.relative(currentDir, targetDir).replace(/\\/g, '/');
-          if (!relPath.startsWith('.')) relPath = './' + relPath;
-
-          if (isEsm) {
-            content = content.replace(pattern, `${relPath}/index.esm.js`);
-          } else if (isCjs) {
-            content = content.replace(pattern, `${relPath}/index.js`);
-          } else {
-            content = content.replace(pattern, `${relPath}/index.d.ts`);
-          }
+          content = content.replace(pattern, modConfig.packageName);
           modified = true;
         }
       }
 
-      // 替换 @/xxx 为相对路径（@/ 映射到 src/，但 dist 中模块直接在 dist/ 下）
-      // 注意：深层路径（如 @/registry/registrars/RegistrarBase）没有 ESM 版本，
-      // 统一替换为模块根入口（如 ../registry/index.esm.js），因为 index.esm.js re-export 了所有内容
+      // 替换 @/xxx/yyy 为 @qimen-lab/xxx/yyy（保留子路径，由包的 exports 解析）
+      // 替换 @/xxx 为 @qimen-lab/xxx（无子路径）
       const atSlashPattern = /@\/([a-zA-Z0-9_/.-]+)/g;
       let match;
       const replacements = [];
@@ -169,59 +167,19 @@ const utils = {
         const line = content.substring(lineStart, match.index);
         if (line.trimStart().startsWith('*') || line.trimStart().startsWith('//')) continue;
 
-        const currentDir = path.dirname(filePath);
-        const distRoot = path.resolve(projectRoot, 'dist');
-        // 取模块名（路径第一段）
         const moduleName = srcPath.split('/')[0];
-        const moduleOutDir = config.modules[moduleName] ? path.resolve(projectRoot, config.modules[moduleName].outDir) : null;
-
-        if (moduleOutDir) {
-          // 统一替换为模块根入口
-          let relPath = path.relative(currentDir, moduleOutDir).replace(/\\/g, '/');
-          if (!relPath.startsWith('.')) relPath = './' + relPath;
-          if (isEsm) relPath += '/index.esm.js';
-          else if (isCjs) relPath += '/index.js';
-          else relPath += '/index.d.ts';
-          replacements.push({ fullMatch, relPath });
+        const modConfig = config.modules[moduleName];
+        if (modConfig) {
+          // @/xxx/yyy → @qimen-lab/xxx/yyy（保留子路径）
+          // @/xxx → @qimen-lab/xxx
+          const subPath = srcPath.substring(moduleName.length);
+          const newPkg = modConfig.packageName + subPath;
+          replacements.push({ fullMatch, newPkg });
         }
       }
-      for (const { fullMatch, relPath } of replacements) {
-        content = content.split(fullMatch).join(relPath);
+      for (const { fullMatch, newPkg } of replacements) {
+        content = content.split(fullMatch).join(newPkg);
         modified = true;
-      }
-
-      // ESM 文件：给模块内部的相对路径引用加上 .esm.js 扩展名
-      // 例如 export * from './registrars' → export * from './registrars/index.esm.js'
-      // 避免 Vite 解析到 CJS 文件导致循环依赖
-      if (isEsm) {
-        const relImportPattern = /from\s+['"](\.\.?\/[^'"]+)['"]/g;
-        let relMatch;
-        const relReplacements = [];
-        while ((relMatch = relImportPattern.exec(content)) !== null) {
-          const importPath = relMatch[1];
-          // 跳过已有扩展名的
-          if (importPath.endsWith('.esm.js') || importPath.endsWith('.js') || importPath.endsWith('.d.ts')) continue;
-          // 跳过注释
-          const lineStart2 = content.lastIndexOf('\n', relMatch.index) + 1;
-          const line2 = content.substring(lineStart2, relMatch.index);
-          if (line2.trimStart().startsWith('*') || line2.trimStart().startsWith('//')) continue;
-
-          const currentDir2 = path.dirname(filePath);
-          const targetPath = path.resolve(currentDir2, importPath);
-          // 判断目标是文件还是目录
-          if (fs.existsSync(targetPath + '.esm.js')) {
-            // 目标是文件：./xxx → ./xxx.esm.js
-            relReplacements.push({ old: importPath, new: importPath + '.esm.js' });
-          } else if (fs.existsSync(path.join(targetPath, 'index.esm.js'))) {
-            // 目标是目录：./xxx → ./xxx/index.esm.js
-            relReplacements.push({ old: importPath, new: importPath + '/index.esm.js' });
-          }
-        }
-        for (const { old, new: newPath } of relReplacements) {
-          content = content.split(`'${old}'`).join(`'${newPath}'`);
-          content = content.split(`"${old}"`).join(`"${newPath}"`);
-          modified = true;
-        }
       }
 
       if (modified) {
@@ -350,11 +308,48 @@ function buildModule(moduleName, moduleConfig) {
     // 生成package.json
     utils.generatePackageJson(moduleName, moduleConfig);
 
-    // 修复 ESM 产物中的 @qimenjs/xxx 引用，替换为相对路径
-    utils.fixModuleImports(outDir, moduleName);
+    // 修复产物中的 @qimenjs/xxx 和 @/xxx 引用，替换为 @qimen-lab/xxx npm 包名
+    utils.fixPackageImports(outDir, moduleName);
 
     console.log(`✅ ${moduleName} built\n`);
     return true;
+}
+
+// 构建 i18n IIFE（浏览器端 <script> 标签加载）
+function buildI18nIIFE() {
+    console.log('\n🌐 Building i18n IIFE...');
+    const projectRoot = path.resolve(__dirname, '..');
+    const iifeSrc = path.join(projectRoot, 'src', 'i18n', 'i18n.iife.js');
+    const copySrc = path.join(projectRoot, 'src', 'i18n', 'copy.js');
+    const localesSrc = path.join(projectRoot, 'src', 'i18n', 'locales');
+    const outDir = path.join(projectRoot, 'dist', 'i18n');
+
+    if (!fs.existsSync(iifeSrc)) {
+        console.log('  ⏭️  跳过（src/i18n/i18n.iife.js 不存在）');
+        return;
+    }
+
+    // 读取 JS 源码，包装为 IIFE
+    const src = fs.readFileSync(iifeSrc, 'utf8');
+    const iife = `(function(qimenI18n){"use strict";\n${src}\nqimenI18n.I18nManager=I18nManager;qimenI18n.i18n=i18n;qimenI18n.registerMessages=registerMessages;\n})(this.qimenI18n=this.qimenI18n||{});`;
+    fs.writeFileSync(path.join(outDir, 'i18n.iife.js'), iife);
+
+    // 复制 copy.js 脚本
+    if (fs.existsSync(copySrc)) {
+        fs.copyFileSync(copySrc, path.join(outDir, 'copy.js'));
+    }
+
+    // 复制 locales 目录
+    const localesDest = path.join(outDir, 'locales');
+    if (fs.existsSync(localesSrc)) {
+        if (fs.existsSync(localesDest)) {
+            fs.rmSync(localesDest, { recursive: true, force: true });
+        }
+        fs.cpSync(localesSrc, localesDest, { recursive: true });
+        console.log('  📁 locales/ 已复制');
+    }
+
+    console.log('✅ i18n IIFE built');
 }
 
 // 主函数
@@ -409,45 +404,14 @@ async function main() {
             await buildModule(module.name, module);
         }
 
-        // 更新主package.json的exports
-        if (!targetModule || targetModule === 'all') {
-            updateMainExports();
-        }
-
         console.log('🎉 Build completed successfully!');
+
+        // 构建 i18n IIFE
+        buildI18nIIFE();
     } catch (error) {
         console.error(`❌ Build failed: ${error.message}`);
         process.exit(1);
     }
-}
-
-// 更新主package.json的exports字段
-function updateMainExports() {
-    console.log('\n📄 Updating main package exports...');
-
-    // 不生成根入口 "."，每个子模块作为独立包通过子路径导出
-    const mainExports = {};
-
-    // 添加所有模块
-    Object.keys(config.modules).forEach(moduleName => {
-        const exportKey = `./${moduleName}`;
-        mainExports[exportKey] = {
-            import: `./dist/${moduleName}/index.esm.js`,
-            require: `./dist/${moduleName}/index.js`,
-            types: `./dist/${moduleName}/index.d.ts`,
-        };
-    });
-
-    // 读取主package.json
-    const mainPkgPath = path.join(__dirname, '..', 'package.json');
-    const mainPkg = JSON.parse(fs.readFileSync(mainPkgPath, 'utf8'));
-
-    // 更新exports
-    mainPkg.exports = mainExports;
-
-    // 写回文件
-    fs.writeFileSync(mainPkgPath, JSON.stringify(mainPkg, null, 2));
-    console.log('✅ Main package.json updated');
 }
 
 // 显示帮助
