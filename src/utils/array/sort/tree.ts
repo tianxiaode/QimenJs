@@ -12,7 +12,7 @@ export interface TreeOptions<T> {
 
 /**
  * 将扁平数据转换为树形结构 (支持分层排序)
- * 
+ *
  * @template T - 数据项的类型
  * @param {T[]} data - 需要转换的扁平数据数组
  * @param {TreeOptions<T>} options - 转换选项
@@ -22,7 +22,7 @@ export interface TreeOptions<T> {
  * @param {OrderCondition<T>[]} [options.orderBy] - 可选的排序条件，用于对每层节点进行排序
  * @param {boolean} [options.removeEmptyChildren=false] - 是否移除空子节点数组，默认为false，即保留[]
  * @returns {T[]} 转换后的树形结构数组
- * 
+ *
  * @example
  * const flatData = [
  *   { id: 1, name: 'Parent', parentId: null },
@@ -38,12 +38,12 @@ export function toTree<T>(data: T[], options: TreeOptions<T> = {}): T[] {
         parentField = 'parentId' as keyof T,
         childrenField = 'children',
         orderBy: sortConditions,
-        removeEmptyChildren = false
+        removeEmptyChildren = false,
     } = options;
 
     const nodeMap = new Map<any, any>();
     const roots: any[] = [];
-    
+
     // 1. 建立节点映射
     data.forEach(item => {
         // 每个节点预设一个空的 children 数组

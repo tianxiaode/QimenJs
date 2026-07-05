@@ -10,16 +10,16 @@
  * @returns {boolean} - 如果设置成功返回 true，否则返回 false
  */
 export function setJson(
-  name: string,
-  value: any,
-  expires?: number | Date,
-  path: string = '/',
-  domain?: string,
-  secure: boolean = false,
-  sameSite: 'Strict' | 'Lax' | 'None' = 'Lax'
+    name: string,
+    value: any,
+    expires?: number | Date,
+    path: string = '/',
+    domain?: string,
+    secure: boolean = false,
+    sameSite: 'Strict' | 'Lax' | 'None' = 'Lax'
 ): boolean {
-  const jsonValue = JSON.stringify(value);
-  return set(name, jsonValue, expires, path, domain, secure, sameSite);
+    const jsonValue = JSON.stringify(value);
+    return set(name, jsonValue, expires, path, domain, secure, sameSite);
 }
 
 import { set } from './set';

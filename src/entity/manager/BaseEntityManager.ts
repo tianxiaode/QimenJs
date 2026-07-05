@@ -1,9 +1,4 @@
-import type {
-    ENTITY_ACTION,
-    IBaseEntityManager,
-    IEntity,
-    SearchParams,
-} from '@/entity/types';
+import type { ENTITY_ACTION, IBaseEntityManager, IEntity, SearchParams } from '@/entity/types';
 import type { FieldDefinition } from '@/schema/types/schema';
 import type { HttpRequestOptions } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
@@ -15,12 +10,11 @@ import { CoreEntityManager } from './CoreEntityManager';
  * BaseEntityManager 自身无额外 Ability 注入（abilities = []），
  * 仅继承 CoreEntityManager 的能力接口。
  */
-export interface BaseEntityManager<TSearch extends SearchParams = SearchParams> extends CoreEntityManager {
-}
-
-export abstract class BaseEntityManager<
+export interface BaseEntityManager<
     TSearch extends SearchParams = SearchParams,
->
+> extends CoreEntityManager {}
+
+export abstract class BaseEntityManager<TSearch extends SearchParams = SearchParams>
     extends CoreEntityManager
     implements IBaseEntityManager<TSearch>
 {
@@ -36,13 +30,16 @@ export abstract class BaseEntityManager<
     /**
      * 执行实体请求
      */
-    public async fetch(action: ENTITY_ACTION, options: HttpRequestOptions): Promise<RequestContext> {
+    public async fetch(
+        action: ENTITY_ACTION,
+        options: HttpRequestOptions
+    ): Promise<RequestContext> {
         this.loading = true;
         this.emit(`${action}:loading`, true);
 
         try {
             const task = this.request(action as any, options);
-            const ctx = await task.context as any as RequestContext;
+            const ctx = (await task.context) as any as RequestContext;
 
             if (ctx.metadata.hasError) {
                 const error = ctx.error || ctx.metadata.error;
@@ -74,7 +71,7 @@ export abstract class BaseEntityManager<
         const schema = this.getSchema();
         const fields = schema.fields || [];
 
-        let options: Partial<HttpRequestOptions> = {
+        const options: Partial<HttpRequestOptions> = {
             method: extra.method || 'GET',
             queryParams: { ...params },
             body: body,
@@ -89,7 +86,9 @@ export abstract class BaseEntityManager<
 
         if (options.body) {
             options.body = Array.isArray(options.body)
-                ? options.body.map(item => this.processItem(action, options as HttpRequestOptions, item, fields))
+                ? options.body.map(item =>
+                      this.processItem(action, options as HttpRequestOptions, item, fields)
+                  )
                 : this.processItem(action, options as HttpRequestOptions, options.body, fields);
         }
 

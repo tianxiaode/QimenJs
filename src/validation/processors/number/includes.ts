@@ -21,6 +21,4 @@ export const NumberIncludesProcessor: ValidationProcessorHandler = async (
             context.errors.push(ValidationErrorBuilder.not_allowed(value, includesValues, context));
         }
     }
-
 };
-

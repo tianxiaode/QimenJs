@@ -58,7 +58,7 @@ export interface HealthMonitorOptions {
  * - 不做日志聚合
  *
  * 它只发出"健康事件"。
- * 
+ *
  * 设计原则：
  * - 只负责监控和判断
  * - 不直接干预任务执行
@@ -96,7 +96,7 @@ export class HashTaskHealthMonitor {
      * 开始健康监控
      *
      * 启动定时器，定期检查任务健康状态
-     * 
+     *
      * 检查包括：
      * - 任务进度是否卡死
      * - Worker是否无响应
@@ -145,11 +145,11 @@ export class HashTaskHealthMonitor {
      * 执行健康检查
      *
      * 检查任务进度是否卡死、资源是否泄漏等情况
-     * 
+     *
      * 检查内容包括：
      * 1. 进度卡死检测：检查任务是否在stallThresholdMs时间内无进展
      * 2. 资源泄漏检测：检查任务结束后资源是否被正确释放
-     * 
+     *
      * @private
      */
     private check(): void {

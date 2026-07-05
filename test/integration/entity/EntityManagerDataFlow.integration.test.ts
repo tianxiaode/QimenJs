@@ -18,8 +18,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -82,12 +82,16 @@ function createTestItems(count: number) {
 
 function registerDomain(preset: string): void {
     const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-    domainRegistrar.register('test-dataflow', {
-        baseUrl: 'https://test-api.example.com',
-        preset,
-        pageSize: 10,
-        pagesizes: [10, 20, 50],
-    }, true);
+    domainRegistrar.register(
+        'test-dataflow',
+        {
+            baseUrl: 'https://test-api.example.com',
+            preset,
+            pageSize: 10,
+            pagesizes: [10, 20, 50],
+        },
+        true
+    );
 }
 
 function registerSchema(): void {
@@ -97,12 +101,16 @@ function registerSchema(): void {
 
 function unregisterDomain(): void {
     const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-    try { domainRegistrar.unregister('test-dataflow'); } catch {}
+    try {
+        domainRegistrar.unregister('test-dataflow');
+    } catch {}
 }
 
 function unregisterSchema(): void {
     const schemaRegistrar = SchemaRegistrar.getInstance();
-    try { schemaRegistrar.unregister('TestDataFlowUser'); } catch {}
+    try {
+        schemaRegistrar.unregister('TestDataFlowUser');
+    } catch {}
 }
 
 // ============================================
@@ -132,7 +140,9 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
             const items = createTestItems(3);
             const abpResponse = createAbpPagedResponse(items, 100) as any;
 
-            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (this: any) {
+            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (
+                this: any
+            ) {
                 const context = this._lastContext as RequestContext;
                 // 验证 pre-processor 已将分页参数转换为 ABP 格式
                 // ABP pre-processor 会将 page/size 转换为 skipCount/takeCount
@@ -161,9 +171,15 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
             const items = createTestItems(5);
             const springResponse = createSpringPagedResponse(items, 50) as any;
 
-            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (this: any) {
+            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (
+                this: any
+            ) {
                 return {
-                    data: { list: springResponse.content, total: springResponse.totalElements, item: null },
+                    data: {
+                        list: springResponse.content,
+                        total: springResponse.totalElements,
+                        item: null,
+                    },
                     metadata: { hasError: false },
                 } as any;
             });
@@ -186,7 +202,9 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
         it('default preset 下数据原样传递', async () => {
             const items = createTestItems(2);
 
-            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (this: any) {
+            jest.spyOn(TestDataFlowManager.prototype, 'fetch').mockImplementation(async function (
+                this: any
+            ) {
                 return {
                     data: { list: items, total: 2, item: null },
                     metadata: { hasError: false },
@@ -285,8 +303,7 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
         it('build() 从 DomainRegistrar 获取 domainConfig', () => {
             registerDomain('abp');
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('test-dataflow')
                 .withUrl('/api/users')
                 .withMethod('GET')
@@ -298,8 +315,7 @@ describe('EntityManager + DataProcessor 完整数据流集成测试', () => {
         });
 
         it('未注册的域 domainConfig 为 undefined', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('nonexistent-domain')
                 .withUrl('/api/users')
                 .withMethod('GET')

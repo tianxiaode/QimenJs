@@ -26,7 +26,18 @@ export const allValidateTypes: ValidationTag[] = [
     'compare',
     'file',
     'split',
-    'format'
+    'format',
 ] as const;
 
-export const formatTypes = ['email', 'url', 'phone', 'uuid', 'ipv4', 'ipv6', 'macAddress', 'hexColor', 'rgbColor', 'rgbaColor'] as const;
+export const formatTypes = [
+    'email',
+    'url',
+    'phone',
+    'uuid',
+    'ipv4',
+    'ipv6',
+    'macAddress',
+    'hexColor',
+    'rgbColor',
+    'rgbaColor',
+] as const;

@@ -48,7 +48,7 @@ describe('CacheFactory', () => {
             const localProvider = await CacheFactory.create('local');
             const indexdbProvider = await CacheFactory.create('indexdb');
             const sessionProvider = await CacheFactory.create('session');
-            
+
             expect(localProvider).toBeInstanceOf(MemoryProvider);
             expect(indexdbProvider).toBeInstanceOf(MemoryProvider);
             expect(sessionProvider).toBeInstanceOf(MemoryProvider);
@@ -59,9 +59,9 @@ describe('CacheFactory', () => {
         it('should release a provider instance', async () => {
             const provider = await CacheFactory.create('memory');
             const providerId = provider.id;
-            
+
             CacheFactory.release(providerId);
-            
+
             expect(CacheFactory._instances.has(providerId)).toBe(false);
         });
 
@@ -72,33 +72,33 @@ describe('CacheFactory', () => {
         it('should clear cache when autoClear is true', async () => {
             const provider = await CacheFactory.create('memory');
             await provider.set('test', 'value');
-            
+
             const clearSpy = jest.spyOn(provider, 'clear');
-            
+
             CacheFactory.release(provider.id, true);
-            
+
             expect(clearSpy).toHaveBeenCalled();
         });
 
         it('should not clear cache when autoClear is false', async () => {
             const provider = await CacheFactory.create('memory');
             await provider.set('test', 'value');
-            
+
             const clearSpy = jest.spyOn(provider, 'clear');
-            
+
             CacheFactory.release(provider.id, false);
-            
+
             expect(clearSpy).not.toHaveBeenCalled();
         });
 
         it('should not clear cache by default', async () => {
             const provider = await CacheFactory.create('memory');
             await provider.set('test', 'value');
-            
+
             const clearSpy = jest.spyOn(provider, 'clear');
-            
+
             CacheFactory.release(provider.id);
-            
+
             expect(clearSpy).not.toHaveBeenCalled();
         });
     });
@@ -108,7 +108,7 @@ describe('CacheFactory', () => {
             const provider1 = await CacheFactory.create('memory');
             const provider2 = await CacheFactory.create('memory');
             const provider3 = await CacheFactory.create('memory');
-            
+
             expect(CacheFactory._instances.size).toBe(3);
             expect(CacheFactory._instances.has(provider1.id)).toBe(true);
             expect(CacheFactory._instances.has(provider2.id)).toBe(true);
@@ -118,9 +118,9 @@ describe('CacheFactory', () => {
         it('should release specific instance without affecting others', async () => {
             const provider1 = await CacheFactory.create('memory');
             const provider2 = await CacheFactory.create('memory');
-            
+
             CacheFactory.release(provider1.id);
-            
+
             expect(CacheFactory._instances.has(provider1.id)).toBe(false);
             expect(CacheFactory._instances.has(provider2.id)).toBe(true);
             expect(CacheFactory._instances.size).toBe(1);

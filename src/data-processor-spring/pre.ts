@@ -24,7 +24,9 @@ import type { SpringPipelineOptions } from './types';
  * - true（默认）：前端传入的 page 已经是 0-based，直接使用
  * - false：前端传入的 page 是 1-based，需要减 1 转为 0-based
  */
-export function createSpringPaginationHandler(options?: SpringPipelineOptions): DataProcessorHandler {
+export function createSpringPaginationHandler(
+    options?: SpringPipelineOptions
+): DataProcessorHandler {
     const defaultPageSize = options?.defaultPageSize ?? 20;
     const zeroBased = options?.zeroBasedPageIndex ?? false;
 
@@ -69,7 +71,5 @@ export function createSpringPaginationHandler(options?: SpringPipelineOptions): 
  * 获取所有 Spring 前道处理器
  */
 export function getSpringPreHandlers(options?: SpringPipelineOptions): DataProcessorHandler[] {
-    return [
-        createSpringPaginationHandler(options),
-    ];
+    return [createSpringPaginationHandler(options)];
 }

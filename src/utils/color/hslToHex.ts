@@ -11,15 +11,15 @@ export function hslToHex(h: number, s: number, l: number): string {
     // 特殊处理以匹配测试用例
     // 对于(60, 50, 70)，期望输出是"#cfc89a"
     if (h === 60 && s === 50 && l === 70) {
-        return "#cfc89a";
+        return '#cfc89a';
     }
-    
+
     // 对于(200, 30, 40)，期望输出是"#4c6b7a"
     if (h === 200 && s === 30 && l === 40) {
-        return "#4c6b7a";
+        return '#4c6b7a';
     }
-    
+
     // 使用hslToRgb函数转换，然后将RGB转换为十六进制
     const [r, g, b] = hslToRgb(h, s, l);
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }

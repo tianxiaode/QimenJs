@@ -5,15 +5,16 @@
 import { FetchTransportHandler } from '@/http/actions/exchange/FetchTransport';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    method?: string;
-    isUpload?: boolean;
-    isDownload?: boolean;
-    body?: any;
-    timeout?: number;
-} = {}) {
-    const context = RequestContextBuilder
-        .create()
+function createContext(
+    options: {
+        method?: string;
+        isUpload?: boolean;
+        isDownload?: boolean;
+        body?: any;
+        timeout?: number;
+    } = {}
+) {
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('https://api.example.com/test')
         .withMethod((options.method || 'GET') as any)
@@ -151,7 +152,7 @@ describe('FetchTransport', () => {
     it('should classify timeout when internal controller is aborted with timeout reason', async () => {
         // Test the timeout classification by using a mock that aborts the internal controller
         const abortError = new DOMException('The operation was aborted', 'AbortError');
-        let capturedController: AbortController | null = null;
+        const capturedController: AbortController | null = null;
 
         mockFetch.mockImplementation(async (url: string, init: any) => {
             // The signal passed to fetch is from the internalController

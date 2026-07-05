@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -90,7 +90,6 @@ class TestHostDisposeManager extends ComposableBase {
 // ============================================
 
 describe('ComposableBase Ability 注入与覆盖规则集成测试', () => {
-
     describe('同名方法覆盖', () => {
         it('后注入的 Ability 的同名方法覆盖先注入的', () => {
             const manager = new TestOverrideManager();
@@ -124,12 +123,16 @@ describe('ComposableBase Ability 注入与覆盖规则集成测试', () => {
         it('RemoteCrudEntityManager 中 updateSourceData 和 updateData 均存在', () => {
             // 注册测试域和 Schema
             const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-            domainRegistrar.register('test-ability-rename', {
-                baseUrl: 'https://test-api.example.com',
-                preset: 'default',
-                pageSize: 10,
-                pagesizes: [10, 20, 50],
-            }, true);
+            domainRegistrar.register(
+                'test-ability-rename',
+                {
+                    baseUrl: 'https://test-api.example.com',
+                    preset: 'default',
+                    pageSize: 10,
+                    pagesizes: [10, 20, 50],
+                },
+                true
+            );
 
             const testSchema: FlatSchema = {
                 name: 'TestRenameUser',

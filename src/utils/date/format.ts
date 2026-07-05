@@ -56,21 +56,21 @@ export function formatDate(date: Date | string, format: string): string {
  * 解析上下文接口，用于存储解析过程中的日期时间组件
  */
 interface ParseContext {
-    year: number;      // 年份
-    month: number;     // 月份 (0-based)
-    day: number;       // 日期
-    hours: number;     // 小时
-    minutes: number;   // 分钟
-    seconds: number;   // 秒
-    isPm: boolean;     // 是否为下午 (用于12小时制)
+    year: number; // 年份
+    month: number; // 月份 (0-based)
+    day: number; // 日期
+    hours: number; // 小时
+    minutes: number; // 分钟
+    seconds: number; // 秒
+    isPm: boolean; // 是否为下午 (用于12小时制)
 }
 
 /**
  * 标记配置接口，定义每个日期时间标记的正则表达式和处理函数
  */
 interface TokenConfig {
-    regex: string;                                // 用于匹配该标记的正则表达式
-    apply: (value: string, ctx: ParseContext) => void;  // 解析匹配值并更新解析上下文的函数
+    regex: string; // 用于匹配该标记的正则表达式
+    apply: (value: string, ctx: ParseContext) => void; // 解析匹配值并更新解析上下文的函数
 }
 
 /**
@@ -79,11 +79,11 @@ interface TokenConfig {
  */
 const TOKEN_CONFIG: Record<string, TokenConfig> = {
     yyyy: {
-        regex: '(\\d{4})',  // 4位数字年份
-        apply: (v, ctx) => (ctx.year = +v),  // 将字符串转换为数字并赋值给年份
+        regex: '(\\d{4})', // 4位数字年份
+        apply: (v, ctx) => (ctx.year = +v), // 将字符串转换为数字并赋值给年份
     },
     yy: {
-        regex: '(\\d{2})',  // 2位数字年份
+        regex: '(\\d{2})', // 2位数字年份
         apply: (v, ctx) => {
             const n = +v;
             // 2位年份转换规则：小于50的年份视为20xx，否则视为19xx
@@ -92,62 +92,62 @@ const TOKEN_CONFIG: Record<string, TokenConfig> = {
     },
 
     MM: {
-        regex: '(\\d{2})',  // 2位数字月份
-        apply: (v, ctx) => (ctx.month = +v - 1),  // 转换为数字并减1（因为月份是0索引）
+        regex: '(\\d{2})', // 2位数字月份
+        apply: (v, ctx) => (ctx.month = +v - 1), // 转换为数字并减1（因为月份是0索引）
     },
     M: {
-        regex: '(\\d{1,2})',  // 1-2位数字月份
-        apply: (v, ctx) => (ctx.month = +v - 1),  // 转换为数字并减1（因为月份是0索引）
+        regex: '(\\d{1,2})', // 1-2位数字月份
+        apply: (v, ctx) => (ctx.month = +v - 1), // 转换为数字并减1（因为月份是0索引）
     },
 
     dd: {
-        regex: '(\\d{2})',  // 2位数字日期
-        apply: (v, ctx) => (ctx.day = +v),  // 转换为数字并赋值给日期
+        regex: '(\\d{2})', // 2位数字日期
+        apply: (v, ctx) => (ctx.day = +v), // 转换为数字并赋值给日期
     },
     d: {
-        regex: '(\\d{1,2})',  // 1-2位数字日期
-        apply: (v, ctx) => (ctx.day = +v),  // 转换为数字并赋值给日期
+        regex: '(\\d{1,2})', // 1-2位数字日期
+        apply: (v, ctx) => (ctx.day = +v), // 转换为数字并赋值给日期
     },
 
     HH: {
-        regex: '(\\d{2})',  // 2位数字小时（24小时制）
-        apply: (v, ctx) => (ctx.hours = +v),  // 转换为数字并赋值给小时
+        regex: '(\\d{2})', // 2位数字小时（24小时制）
+        apply: (v, ctx) => (ctx.hours = +v), // 转换为数字并赋值给小时
     },
     H: {
-        regex: '(\\d{1,2})',  // 1-2位数字小时（24小时制）
-        apply: (v, ctx) => (ctx.hours = +v),  // 转换为数字并赋值给小时
+        regex: '(\\d{1,2})', // 1-2位数字小时（24小时制）
+        apply: (v, ctx) => (ctx.hours = +v), // 转换为数字并赋值给小时
     },
 
     hh: {
-        regex: '(\\d{2})',  // 2位数字小时（12小时制）
-        apply: (v, ctx) => (ctx.hours = +v),  // 转换为数字并赋值给小时
+        regex: '(\\d{2})', // 2位数字小时（12小时制）
+        apply: (v, ctx) => (ctx.hours = +v), // 转换为数字并赋值给小时
     },
     h: {
-        regex: '(\\d{1,2})',  // 1-2位数字小时（12小时制）
-        apply: (v, ctx) => (ctx.hours = +v),  // 转换为数字并赋值给小时
+        regex: '(\\d{1,2})', // 1-2位数字小时（12小时制）
+        apply: (v, ctx) => (ctx.hours = +v), // 转换为数字并赋值给小时
     },
 
     mm: {
-        regex: '(\\d{2})',  // 2位数字分钟
-        apply: (v, ctx) => (ctx.minutes = +v),  // 转换为数字并赋值给分钟
+        regex: '(\\d{2})', // 2位数字分钟
+        apply: (v, ctx) => (ctx.minutes = +v), // 转换为数字并赋值给分钟
     },
     m: {
-        regex: '(\\d{1,2})',  // 1-2位数字分钟
-        apply: (v, ctx) => (ctx.minutes = +v),  // 转换为数字并赋值给分钟
+        regex: '(\\d{1,2})', // 1-2位数字分钟
+        apply: (v, ctx) => (ctx.minutes = +v), // 转换为数字并赋值给分钟
     },
 
     ss: {
-        regex: '(\\d{2})',  // 2位数字秒
-        apply: (v, ctx) => (ctx.seconds = +v),  // 转换为数字并赋值给秒
+        regex: '(\\d{2})', // 2位数字秒
+        apply: (v, ctx) => (ctx.seconds = +v), // 转换为数字并赋值给秒
     },
     s: {
-        regex: '(\\d{1,2})',  // 1-2位数字秒
-        apply: (v, ctx) => (ctx.seconds = +v),  // 转换为数字并赋值给秒
+        regex: '(\\d{1,2})', // 1-2位数字秒
+        apply: (v, ctx) => (ctx.seconds = +v), // 转换为数字并赋值给秒
     },
 
     a: {
-        regex: '(AM|PM|am|pm)',  // AM/PM指示符
-        apply: (v, ctx) => (ctx.isPm = v.toLowerCase() === 'pm'),  // 判断是否为PM并更新上下文
+        regex: '(AM|PM|am|pm)', // AM/PM指示符
+        apply: (v, ctx) => (ctx.isPm = v.toLowerCase() === 'pm'), // 判断是否为PM并更新上下文
     },
 };
 

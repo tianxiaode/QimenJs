@@ -14,6 +14,4 @@ export const BooleanypeProcessor: ValidationProcessorHandler = async (
         context.errors.push(ValidationErrorBuilder.type_mismatch('boolean', typeof value, context));
         context.terminate = true;
     }
-
 };
-

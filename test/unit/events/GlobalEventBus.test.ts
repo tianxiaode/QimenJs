@@ -4,7 +4,7 @@ import { Logger } from '@qimenjs/logger';
 
 /**
  * GlobalEventBus 单元测试
- * 
+ *
  * 测试覆盖范围：
  * 1. 实例创建和单例模式
  * 2. 事件订阅和取消订阅
@@ -37,8 +37,8 @@ jest.mock('@qimenjs/logger', () => {
                     error: jest.fn(),
                     child: jest.fn(),
                 }),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -92,14 +92,14 @@ describe('GlobalEventBus', () => {
         test('应该能够订阅事件', () => {
             const handler = jest.fn();
             const unsubscribe = testBus.on('test-event', handler);
-            
+
             testBus.emit('test-event', { data: 'test' });
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
                     source: 'GLOBAL',
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
 
@@ -159,7 +159,7 @@ describe('GlobalEventBus', () => {
                 expect.objectContaining({
                     data: { data: 'first' },
                     source: 'GLOBAL',
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
         });
@@ -195,7 +195,7 @@ describe('GlobalEventBus', () => {
                 expect.objectContaining({
                     data: { data: 'test' },
                     source: 'GLOBAL',
-                    event: 'emit-test'
+                    event: 'emit-test',
                 })
             );
         });
@@ -203,14 +203,14 @@ describe('GlobalEventBus', () => {
         test('应该使用GLOBAL作为事件源标识', () => {
             const handler = jest.fn();
             testBus.on('global-source-test', handler);
-            
+
             testBus.emit('global-source-test', { data: 'test' });
-            
+
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
                     source: 'GLOBAL',
-                    event: 'global-source-test'
+                    event: 'global-source-test',
                 })
             );
         });
@@ -230,7 +230,7 @@ describe('GlobalEventBus', () => {
                 expect.objectContaining({
                     data: { userId: '123' },
                     source: 'GLOBAL',
-                    event: 'user:login'
+                    event: 'user:login',
                 })
             );
             expect(userLogoutHandler).toHaveBeenCalledTimes(1);
@@ -238,7 +238,7 @@ describe('GlobalEventBus', () => {
                 expect.objectContaining({
                     data: undefined,
                     source: 'GLOBAL',
-                    event: 'user:logout'
+                    event: 'user:logout',
                 })
             );
         });
@@ -256,7 +256,7 @@ describe('GlobalEventBus', () => {
         test('应该能够清理特定事件的监听器', () => {
             const handler = jest.fn();
             testBus.on('clear-test', handler);
-            
+
             testBus.emit('clear-test', { data: 'before-clear' });
             expect(handler).toHaveBeenCalledTimes(1);
 
@@ -268,7 +268,7 @@ describe('GlobalEventBus', () => {
         test('应该能够清理所有事件监听器', () => {
             const handler1 = jest.fn();
             const handler2 = jest.fn();
-            
+
             testBus.on('clear-all-1', handler1);
             testBus.on('clear-all-2', handler2);
 
@@ -278,7 +278,7 @@ describe('GlobalEventBus', () => {
             expect(handler2).toHaveBeenCalledTimes(1);
 
             testBus.clear();
-            
+
             testBus.emit('clear-all-1', { data: 'after' });
             testBus.emit('clear-all-2', { data: 'after' });
             expect(handler1).toHaveBeenCalledTimes(1); // 应该仍然是1
@@ -309,18 +309,18 @@ describe('GlobalEventBus', () => {
 
         test('应该能够通过作用域管理事件', () => {
             const scope = testBus.createEventScope();
-            
+
             const handler = jest.fn();
             testBus.on('scope-test', handler);
             scope.emit('scope-test', { data: 'from-scope' }, 'TestSource');
-            
+
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'from-scope' },
                     source: 'TestSource',
                     event: 'scope-test',
-                    busId: testBus.getBusId()
+                    busId: testBus.getBusId(),
                 })
             );
         });
@@ -348,12 +348,12 @@ describe('GlobalEventBus', () => {
             const anotherBus = new GlobalEventBus();
             const handler1 = jest.fn();
             const handler2 = jest.fn();
-            
+
             testBus.on('separate-test', handler1);
             anotherBus.on('separate-test', handler2);
-            
+
             testBus.emit('separate-test', { data: 'test' });
-            
+
             // 每个bus应该只触发自己的处理器
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).not.toHaveBeenCalled();
@@ -388,7 +388,7 @@ describe('GlobalEventBus', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined
+                    data: undefined,
                 })
             );
         });
@@ -401,7 +401,7 @@ describe('GlobalEventBus', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: null
+                    data: null,
                 })
             );
         });
@@ -413,24 +413,24 @@ describe('GlobalEventBus', () => {
             const complexData = {
                 nested: {
                     array: [1, 2, 3],
-                    object: { a: 'b' }
+                    object: { a: 'b' },
                 },
                 func: () => 'test',
-                date: new Date()
+                date: new Date(),
             };
 
             testBus.emit('complex-data', complexData);
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: complexData
+                    data: complexData,
                 })
             );
         });
 
         test('应该能够处理大量监听器', () => {
             const handlers = Array.from({ length: 100 }, () => jest.fn());
-            
+
             handlers.forEach(handler => {
                 testBus.on('many-listeners', handler);
             });
@@ -444,7 +444,7 @@ describe('GlobalEventBus', () => {
 
         test('应该能够处理大量不同事件', () => {
             const handler = jest.fn();
-            
+
             for (let i = 0; i < 100; i++) {
                 testBus.on(`event-${i}`, handler);
             }
@@ -547,7 +547,7 @@ describe('GlobalEventBus', () => {
             const scopeHandler = jest.fn();
 
             testBus.on('bubble-test', rootHandler);
-            
+
             const scope = testBus.createEventScope();
             scope.on('bubble-test', scopeHandler);
 

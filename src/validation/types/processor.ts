@@ -1,7 +1,6 @@
 import { ValidationContext } from './context';
 import { ValidationTag } from './base';
 
-
 export type ValidationProcessorHandler = (ctx: ValidationContext) => Promise<void>;
 
 /**

@@ -39,7 +39,7 @@ function calculateSHA1(str: string): string {
 
         const n = ((msg.length + 8) >> 6) + 1;
         const expanded = new Uint32Array(n * 16); // 16个32位字（即64个字节）
-        
+
         for (let i = 0; i < msg.length; i++) {
             expanded[i >> 2] |= msg[i] << (24 - (i % 4) * 8);
         }
@@ -71,15 +71,15 @@ function calculateSHA1(str: string): string {
 
     // 初始化哈希值
     let h0 = 0x67452301;
-    let h1 = 0xEFCDAB89;
-    let h2 = 0x98BADCFE;
+    let h1 = 0xefcdab89;
+    let h2 = 0x98badcfe;
     let h3 = 0x10325476;
-    let h4 = 0xC3D2E1F0;
+    let h4 = 0xc3d2e1f0;
 
     // 主循环
     for (let i = 0; i < expanded.length; i += 16) {
         const w = new Uint32Array(80);
-        
+
         // 复制前16个字
         for (let j = 0; j < 16; j++) {
             w[j] = expanded[i + j];
@@ -101,16 +101,16 @@ function calculateSHA1(str: string): string {
             let f, k;
             if (j < 20) {
                 f = (b & c) | (~b & d);
-                k = 0x5A827999;
+                k = 0x5a827999;
             } else if (j < 40) {
                 f = b ^ c ^ d;
-                k = 0x6ED9EBA1;
+                k = 0x6ed9eba1;
             } else if (j < 60) {
                 f = (b & c) | (b & d) | (c & d);
-                k = 0x8F1BBCDC;
+                k = 0x8f1bbcdc;
             } else {
                 f = b ^ c ^ d;
-                k = 0xCA62C1D6;
+                k = 0xca62c1d6;
             }
 
             const temp = (rotr(a, 5) + f + e + k + w[j]) | 0;

@@ -4,14 +4,12 @@
  * @returns {boolean} - 如果 Cookie 存在返回 true，否则返回 false
  */
 export function has(name: string): boolean {
-  if (!name) {
-    return false;
-  }
+    if (!name) {
+        return false;
+    }
 
-  // 使用正则表达式检查 Cookie 是否存在
-  return new RegExp(
-    "(?:^|;\\s*)" +
-    encodeURIComponent(name).replace(/[-.+*]/g, "\\$&") +
-    "\\s*\\="
-  ).test(document.cookie);
+    // 使用正则表达式检查 Cookie 是否存在
+    return new RegExp(
+        '(?:^|;\\s*)' + encodeURIComponent(name).replace(/[-.+*]/g, '\\$&') + '\\s*\\='
+    ).test(document.cookie);
 }

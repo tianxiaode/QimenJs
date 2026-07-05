@@ -9,5 +9,5 @@ export type {
     HttpRequestOptions,
     HttpContext,
     HttpRequestTask,
-    HttpRetryOptions
+    HttpRetryOptions,
 } from './http-context';

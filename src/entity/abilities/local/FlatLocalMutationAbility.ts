@@ -2,10 +2,10 @@ import type { AbilityDefinition } from '@/composable';
 
 /**
  * FlatLocalMutationAbility - 平铺本地变更能力
- * 
+ *
  * 提供本地新增、更新、切换和批量保存的能力。
  * 数据先进入本地缓冲区，save 时同步到远程。
- * 
+ *
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */

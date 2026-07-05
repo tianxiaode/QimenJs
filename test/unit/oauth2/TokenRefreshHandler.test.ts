@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -78,7 +78,9 @@ describe('TokenRefreshHandler', () => {
     });
 
     it('刷新请求自身（isTokenRefresh）不应触发', async () => {
-        const context = createContext({ metadata: { isTokenRefresh: true, domainConfig: { token: 'test' } } });
+        const context = createContext({
+            metadata: { isTokenRefresh: true, domainConfig: { token: 'test' } },
+        });
         await TokenRefreshHandler(context);
         expect(oauth2.emit).not.toHaveBeenCalled();
     });
@@ -90,7 +92,9 @@ describe('TokenRefreshHandler', () => {
     });
 
     it('已尝试刷新（_refreshAttempted）不应递归', async () => {
-        const context = createContext({ metadata: { _refreshAttempted: true, domainConfig: { token: 'test' } } });
+        const context = createContext({
+            metadata: { _refreshAttempted: true, domainConfig: { token: 'test' } },
+        });
         await TokenRefreshHandler(context);
         expect(oauth2.emit).not.toHaveBeenCalled();
     });

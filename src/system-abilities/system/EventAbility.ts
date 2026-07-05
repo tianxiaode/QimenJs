@@ -3,7 +3,7 @@ import { globalEventBus, EventHandler } from '@/events';
 
 /**
  * EventAbility - 事件能力
- * 
+ *
  * 提供事件监听、一次性监听和事件发射的能力。
  * 通过创建独立的事件作用域（event scope）来管理事件，避免全局污染。
  * 每个宿主拥有独立的事件生命周期。

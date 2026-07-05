@@ -45,7 +45,7 @@ export function isWithinSquare(
  * @returns 计算出的速度值
  */
 export function calculateVelocity(distance: number, duration: number): number {
-  return duration > 0 ? distance / duration : 0;
+    return duration > 0 ? distance / duration : 0;
 }
 
 /**
@@ -54,6 +54,9 @@ export function calculateVelocity(distance: number, duration: number): number {
  * @param defaultValue 默认值
  * @returns 值或默认值
  */
-export function getCoordinateValue(value: number | null | undefined, defaultValue: number = 0): number {
-  return value ?? defaultValue;
+export function getCoordinateValue(
+    value: number | null | undefined,
+    defaultValue: number = 0
+): number {
+    return value ?? defaultValue;
 }

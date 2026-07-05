@@ -1,14 +1,10 @@
-import type { 
-    IEventAdapter,
-    BindOptions,
-    GestureSemantic,
-} from '../types/abilities';
+import type { IEventAdapter, BindOptions, GestureSemantic } from '../types/abilities';
 import type { AbilityDefinition } from '@/composable';
 import { createEventAdapter } from '@/event-dom';
 
 /**
  * DomEventsAbility - DOM事件能力
- * 
+ *
  * 为宿主提供绑定DOM事件的能力，创建事件适配器来处理各种手势事件。
  * this 指向宿主（ComposableBase），this.eventScope 可直接访问。
  */

@@ -1,5 +1,10 @@
 import { OAuth2Manager } from '@/oauth2/OAuth2Manager';
-import { MemoryTokenStorage, LocalStorageTokenStorage, SessionStorageTokenStorage, createTokenStorage } from '@/oauth2/TokenStorage';
+import {
+    MemoryTokenStorage,
+    LocalStorageTokenStorage,
+    SessionStorageTokenStorage,
+    createTokenStorage,
+} from '@/oauth2/TokenStorage';
 import type { OAuth2TokenEntry } from '@/oauth2/types';
 
 // Mock fetch
@@ -112,10 +117,11 @@ describe('OAuth2Manager', () => {
             mockFetch.mockResolvedValueOnce({
                 ok: false,
                 status: 401,
-                json: () => Promise.resolve({
-                    error: 'invalid_grant',
-                    error_description: 'Invalid username or password',
-                }),
+                json: () =>
+                    Promise.resolve({
+                        error: 'invalid_grant',
+                        error_description: 'Invalid username or password',
+                    }),
             });
 
             manager.configure({
@@ -225,10 +231,13 @@ describe('OAuth2Manager', () => {
             // 刷新
             mockFetch.mockResolvedValueOnce({
                 ok: true,
-                json: () => Promise.resolve(tokenResponse({
-                    access_token: 'new-access-token',
-                    refresh_token: 'new-refresh-token',
-                })),
+                json: () =>
+                    Promise.resolve(
+                        tokenResponse({
+                            access_token: 'new-access-token',
+                            refresh_token: 'new-refresh-token',
+                        })
+                    ),
             });
 
             const result = await manager.refreshToken();
@@ -268,7 +277,9 @@ describe('OAuth2Manager', () => {
 
             // 模拟慢速刷新
             let resolveRefresh: (value: any) => void;
-            const slowPromise = new Promise(resolve => { resolveRefresh = resolve; });
+            const slowPromise = new Promise(resolve => {
+                resolveRefresh = resolve;
+            });
 
             mockFetch.mockImplementationOnce(() => slowPromise);
 
@@ -365,7 +376,9 @@ describe('OAuth2Manager', () => {
                 domain: 'api',
             });
 
-            expect(() => manager.getAuthorizationUrl()).toThrow('authorizationEndpoint is required');
+            expect(() => manager.getAuthorizationUrl()).toThrow(
+                'authorizationEndpoint is required'
+            );
         });
 
         test('缺少 clientId 时应抛出错误', () => {
@@ -423,7 +436,7 @@ describe('OAuth2Manager', () => {
             await manager.loginWithPassword({ username: 'admin', password: '123' });
 
             expect(handler).toHaveBeenCalledWith(
-                expect.objectContaining({ accessToken: 'test-access-token' }),
+                expect.objectContaining({ accessToken: 'test-access-token' })
             );
         });
 
@@ -670,7 +683,9 @@ describe('OAuth2Manager', () => {
                 domain: 'api',
             });
 
-            const badHandler = jest.fn(() => { throw new Error('handler error'); });
+            const badHandler = jest.fn(() => {
+                throw new Error('handler error');
+            });
             const goodHandler = jest.fn();
             manager.on('oauth2:token-acquired', badHandler);
             manager.on('oauth2:token-acquired', goodHandler);

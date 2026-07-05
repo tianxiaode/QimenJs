@@ -1,9 +1,9 @@
-import { 
-    replace, 
-    replaceAll, 
-    highlightText, 
-    textToHtml, 
-    splitWithEscaping 
+import {
+    replace,
+    replaceAll,
+    highlightText,
+    textToHtml,
+    splitWithEscaping,
 } from '../../../../src/utils/string/format';
 
 describe('String Format Utility Functions', () => {
@@ -11,14 +11,14 @@ describe('String Format Utility Functions', () => {
         it('should replace placeholders in a string with provided options', () => {
             const result = replace('Hello {name}, welcome to {place}!', {
                 name: 'John',
-                place: 'QimenJS'
+                place: 'QimenJS',
             });
             expect(result).toBe('Hello John, welcome to QimenJS!');
         });
 
         it('should handle a string with no placeholders', () => {
             const result = replace('Hello world!', {
-                name: 'John'
+                name: 'John',
             });
             expect(result).toBe('Hello world!');
         });
@@ -30,7 +30,7 @@ describe('String Format Utility Functions', () => {
 
         it('should handle empty string', () => {
             const result = replace('', {
-                name: 'John'
+                name: 'John',
             });
             expect(result).toBe('');
         });
@@ -71,31 +71,41 @@ describe('String Format Utility Functions', () => {
 
         it('should highlight multiple occurrences', () => {
             const result = highlightText('test one test two test', 'test');
-            expect(result).toBe('<span class="text-danger font-bold">test</span> one <span class="text-danger font-bold">test</span> two <span class="text-danger font-bold">test</span>');
+            expect(result).toBe(
+                '<span class="text-danger font-bold">test</span> one <span class="text-danger font-bold">test</span> two <span class="text-danger font-bold">test</span>'
+            );
         });
 
         it('should highlight with additional CSS classes', () => {
             const result = highlightText('This is a test string', 'test', 'bg-yellow highlight');
-            expect(result).toBe('This is a <span class="text-danger font-bold bg-yellow highlight">test</span> string');
+            expect(result).toBe(
+                'This is a <span class="text-danger font-bold bg-yellow highlight">test</span> string'
+            );
         });
 
         it('should work with additional CSS class when search term has special regex characters', () => {
             const result = highlightText('This is a (test) string', '(test)', 'custom-class');
-            expect(result).toBe('This is a <span class="text-danger font-bold custom-class">(test)</span> string');
+            expect(result).toBe(
+                'This is a <span class="text-danger font-bold custom-class">(test)</span> string'
+            );
         });
-        
+
         it('should handle empty search term by highlighting all characters', () => {
             // 空搜索词会在每个字符之间匹配，这符合正则表达式的行为
             const result = highlightText('test', '');
             // 空正则表达式会匹配字符串中每个位置，包括字符之间和首尾
-            expect(result).toContain('t<span class="text-danger font-bold"></span>e<span class="text-danger font-bold"></span>s<span class="text-danger font-bold"></span>t<span class="text-danger font-bold"></span>');
+            expect(result).toContain(
+                't<span class="text-danger font-bold"></span>e<span class="text-danger font-bold"></span>s<span class="text-danger font-bold"></span>t<span class="text-danger font-bold"></span>'
+            );
         });
     });
 
     describe('textToHtml', () => {
         it('should convert a string with newlines to HTML paragraphs', () => {
             const result = textToHtml('Line 1\nLine 2\nLine 3');
-            expect(result).toBe('<p class="">Line 1</p><p class="">Line 2</p><p class="">Line 3</p>');
+            expect(result).toBe(
+                '<p class="">Line 1</p><p class="">Line 2</p><p class="">Line 3</p>'
+            );
         });
 
         it('should work with custom class name', () => {

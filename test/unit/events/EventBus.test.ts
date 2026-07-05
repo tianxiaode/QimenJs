@@ -4,7 +4,7 @@ import { ILogger } from '@qimenjs/logger';
 
 /**
  * EventBus 单元测试
- * 
+ *
  * 测试覆盖范围：
  * 1. 实例创建和唯一ID生成
  * 2. 事件订阅和取消订阅
@@ -74,7 +74,7 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
 
@@ -95,14 +95,14 @@ describe('EventBus', () => {
             expect(handler1).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
             expect(handler2).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
         });
@@ -144,7 +144,7 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'first' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
         });
@@ -189,7 +189,7 @@ describe('EventBus', () => {
                     data: testData,
                     source: testSource,
                     busId: bus.getBusId(),
-                    timestamp: expect.any(Number)
+                    timestamp: expect.any(Number),
                 })
             );
         });
@@ -202,7 +202,7 @@ describe('EventBus', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    source: 'UNKNOWN'
+                    source: 'UNKNOWN',
                 })
             );
         });
@@ -236,7 +236,7 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'before-clear' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
         });
@@ -293,7 +293,11 @@ describe('EventBus', () => {
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 '[event] emit',
-                expect.objectContaining({ event: 'test-event', handlerCount: 1, busId: bus.getBusId() })
+                expect.objectContaining({
+                    event: 'test-event',
+                    handlerCount: 1,
+                    busId: bus.getBusId(),
+                })
             );
         });
 
@@ -309,7 +313,7 @@ describe('EventBus', () => {
         test('应该记录事件源信息', () => {
             const handler = jest.fn();
             const mockSource = { constructor: { name: 'MockSource' } };
-            
+
             bus.on('source-test', handler);
             bus.emit('source-test', { data: 'test' }, mockSource);
 
@@ -324,7 +328,7 @@ describe('EventBus', () => {
             const busWithoutLogger = new EventBus();
             busWithoutLogger.logBus('debug', 'emit', { test: 'data' });
             busWithoutLogger.logEvent('debug', 'emit', 'test_event', { test: 'data' });
-            
+
             // 这些不应该导致任何logger调用，因为没有提供logger
             expect(mockLogger.debug).not.toHaveBeenCalled();
         });
@@ -351,7 +355,7 @@ describe('EventBus', () => {
             expect(workingHandler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'error-event'
+                    event: 'error-event',
                 })
             );
             expect(mockLogger.error).toHaveBeenCalledWith(
@@ -361,9 +365,13 @@ describe('EventBus', () => {
         });
 
         test('一个处理器出错不应该影响其他处理器', () => {
-            const handler1 = jest.fn(() => { throw new Error('Error 1'); });
+            const handler1 = jest.fn(() => {
+                throw new Error('Error 1');
+            });
             const handler2 = jest.fn();
-            const handler3 = jest.fn(() => { throw new Error('Error 3'); });
+            const handler3 = jest.fn(() => {
+                throw new Error('Error 3');
+            });
             const handler4 = jest.fn();
 
             bus.on('multi-error', handler1);
@@ -394,7 +402,7 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: undefined,
-                    event: 'undefined-data'
+                    event: 'undefined-data',
                 })
             );
         });
@@ -408,7 +416,7 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: null,
-                    event: 'null-data'
+                    event: 'null-data',
                 })
             );
         });
@@ -420,10 +428,10 @@ describe('EventBus', () => {
             const complexData = {
                 nested: {
                     array: [1, 2, 3],
-                    object: { a: 'b' }
+                    object: { a: 'b' },
                 },
                 func: () => 'test',
-                date: new Date()
+                date: new Date(),
             };
 
             bus.emit('complex-data', complexData);
@@ -431,14 +439,14 @@ describe('EventBus', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: complexData,
-                    event: 'complex-data'
+                    event: 'complex-data',
                 })
             );
         });
 
         test('应该能够处理大量监听器', () => {
             const handlers = Array.from({ length: 100 }, () => jest.fn());
-            
+
             handlers.forEach(handler => {
                 bus.on('many-listeners', handler);
             });
@@ -452,7 +460,7 @@ describe('EventBus', () => {
 
         test('应该能够处理大量不同事件', () => {
             const handler = jest.fn();
-            
+
             for (let i = 0; i < 100; i++) {
                 bus.on(`event-${i}`, handler);
             }

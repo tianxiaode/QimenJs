@@ -22,8 +22,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -104,7 +104,7 @@ describe('CacheFactory → MemoryProvider → CacheAbility 集成测试', () => 
         let provider: MemoryProvider;
 
         beforeEach(async () => {
-            provider = await CacheFactory.create('memory') as MemoryProvider;
+            provider = (await CacheFactory.create('memory')) as MemoryProvider;
         });
 
         it('set + get 应该正确存取数据', async () => {
@@ -144,11 +144,11 @@ describe('CacheFactory → MemoryProvider → CacheAbility 集成测试', () => 
         let provider: MemoryProvider;
 
         beforeEach(async () => {
-            provider = await CacheFactory.create('memory') as MemoryProvider;
+            provider = (await CacheFactory.create('memory')) as MemoryProvider;
         });
 
         it('未过期的数据应该正常返回', async () => {
-            await provider.set('test-key', { data: 'fresh' }, 60000);  // 60s TTL
+            await provider.set('test-key', { data: 'fresh' }, 60000); // 60s TTL
             const data = await provider.get('test-key');
             expect(data).toEqual({ data: 'fresh' });
         });
@@ -160,7 +160,7 @@ describe('CacheFactory → MemoryProvider → CacheAbility 集成测试', () => 
         });
 
         it('已过期的数据应该返回 null 并自动删除', async () => {
-            await provider.set('test-key', { data: 'expired' }, 1);  // 1ms TTL
+            await provider.set('test-key', { data: 'expired' }, 1); // 1ms TTL
             // 等待过期
             await new Promise(resolve => setTimeout(resolve, 10));
             const data = await provider.get('test-key');

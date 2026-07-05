@@ -144,7 +144,7 @@ describe('DragProcessor', () => {
         expect(mockEmit).toHaveBeenCalledWith(
             expect.objectContaining({
                 semantic: 'drag',
-                phase: 'start'
+                phase: 'start',
             })
         );
 
@@ -194,7 +194,7 @@ describe('DragProcessor', () => {
         expect(mockEmit).toHaveBeenCalledWith(
             expect.objectContaining({
                 semantic: 'drag',
-                phase: 'start'
+                phase: 'start',
             })
         );
 
@@ -243,7 +243,7 @@ describe('DragProcessor', () => {
         expect(mockEmit).toHaveBeenCalledWith(
             expect.objectContaining({
                 semantic: 'drag',
-                phase: 'start'
+                phase: 'start',
             })
         );
 
@@ -251,13 +251,19 @@ describe('DragProcessor', () => {
         mockEmit.mockClear();
 
         // Trigger cancel
-        processor.handle({ signal: 'cancel' as InputSignal, time: 120, x: 150, y: 100, originalEvent: mockEvent });
+        processor.handle({
+            signal: 'cancel' as InputSignal,
+            time: 120,
+            x: 150,
+            y: 100,
+            originalEvent: mockEvent,
+        });
 
         // Check that cancel event was emitted
         expect(mockEmit).toHaveBeenCalledWith(
             expect.objectContaining({
                 semantic: 'drag',
-                phase: 'cancel'
+                phase: 'cancel',
             })
         );
     });
@@ -266,15 +272,21 @@ describe('DragProcessor', () => {
         const mockEvent = new MouseEvent('mousemove');
 
         // Trigger cancel when not dragging
-        processor.handle({ signal: 'cancel' as InputSignal, time: 120, x: 150, y: 100, originalEvent: mockEvent });
+        processor.handle({
+            signal: 'cancel' as InputSignal,
+            time: 120,
+            x: 150,
+            y: 100,
+            originalEvent: mockEvent,
+        });
 
         // Check that no event was emitted since we weren't dragging
         expect(mockEmit).not.toHaveBeenCalled();
     });
-    
+
     it('should not process move events when not active', () => {
         const mockEvent = new MouseEvent('mousemove');
-        
+
         // Directly trigger a move event without pressing first
         // This should not emit anything because active is false initially
         processor.handle({
@@ -285,7 +297,7 @@ describe('DragProcessor', () => {
             buttons: 1,
             originalEvent: mockEvent,
         });
-        
+
         // There should be no emissions since we never activated the processor
         expect(mockEmit).not.toHaveBeenCalled();
     });

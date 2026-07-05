@@ -5,14 +5,15 @@
 import { DataParserHandler } from '@/http/actions/process/DataParser';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    isTransportFailure?: boolean;
-    rawResponse?: any;
-    isJson?: boolean;
-    isBlob?: boolean;
-} = {}) {
-    const context = RequestContextBuilder
-        .create()
+function createContext(
+    options: {
+        isTransportFailure?: boolean;
+        rawResponse?: any;
+        isJson?: boolean;
+        isBlob?: boolean;
+    } = {}
+) {
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('/api/test')
         .withMethod('GET')

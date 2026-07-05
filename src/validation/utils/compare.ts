@@ -156,7 +156,7 @@ function applyRules(rules: CompareRule[], a: unknown, b: unknown): CompareResult
  * @param b 第二个比较值
  * @param strict 是否启用严格模式(默认true)
  * @returns 比较结果
- * 
+ *
  * 在严格模式下，只允许相同类型的值进行比较
  * 在宽松模式下，允许不同类型但可转换的值进行比较
  */

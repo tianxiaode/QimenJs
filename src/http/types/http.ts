@@ -1,4 +1,4 @@
-﻿import { TaskPriority } from "@qimenjs/task";
+﻿import { TaskPriority } from '@qimenjs/task';
 
 /**
  * HTTP 方法类型定义
@@ -59,12 +59,11 @@ export interface ChunkInfo {
  * 扩展了 HttpOptions，增加了更详细的请求配置选项
  */
 export interface RequestOptions extends Partial<HttpOptions> {
-
     /**
      * 请求域，需要在域注册器注册
      */
     domain?: 'default' | string;
-   
+
     /**
      * 请求体数据
      */
@@ -120,17 +119,17 @@ export interface PollingOptions extends RequestOptions {
     /**
      * 轮询间隔时间，单位毫秒
      */
-    interval?: number;       
+    interval?: number;
     /**
      * 任务优先级，用于控制轮询任务的执行优先级
      */
-    priority?: TaskPriority; 
+    priority?: TaskPriority;
     /**
      * 单次请求失败后的最大重试次数
      */
-    maxRetries?: number;     
+    maxRetries?: number;
     /**
      * 重试延迟时间，单位毫秒
      */
-    retryDelay?: number;     
+    retryDelay?: number;
 }

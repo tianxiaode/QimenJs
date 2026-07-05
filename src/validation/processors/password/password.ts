@@ -15,7 +15,7 @@ export const PasswordProcessor: ValidationProcessorHandler = async (context: Val
     ];
 
     const patternRegistrar = PatternRegistrar.getInstance();
-    
+
     for (const name of patterns) {
         if ((rule as any)[name] === true) {
             const regex = patternRegistrar.get(name);

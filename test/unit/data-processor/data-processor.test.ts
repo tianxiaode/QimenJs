@@ -21,12 +21,17 @@ jest.mock('@/logger', () => {
                     error: jest.fn(),
                     child: jest.fn(),
                 }),
-            }))
-        }
+            })),
+        },
     };
 });
 
-import { DataProcessor, DataProcessorRegistrar, DataProcessorExecutor, dataProcessorExecutor } from '@/data-processor';
+import {
+    DataProcessor,
+    DataProcessorRegistrar,
+    DataProcessorExecutor,
+    dataProcessorExecutor,
+} from '@/data-processor';
 import type { DataProcessorHandler } from '@/data-processor';
 
 describe('data-processor', () => {
@@ -35,11 +40,11 @@ describe('data-processor', () => {
             it('should register a processor', () => {
                 const handler: DataProcessorHandler = {
                     name: 'test-processor',
-                    handle: async (ctx) => {
+                    handle: async ctx => {
                         ctx.metadata = ctx.metadata || {};
                         ctx.metadata.processed = true;
                     },
-                    weight: 100
+                    weight: 100,
                 };
 
                 DataProcessor.register(handler);
@@ -51,9 +56,9 @@ describe('data-processor', () => {
             it('should register processor with tags', () => {
                 const handler: DataProcessorHandler = {
                     name: 'tagged-processor',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    tags: ['abp', 'post']
+                    tags: ['abp', 'post'],
                 };
 
                 DataProcessor.register(handler);
@@ -64,9 +69,9 @@ describe('data-processor', () => {
             it('should register processor with shouldExecute', () => {
                 const handler: DataProcessorHandler = {
                     name: 'conditional-processor',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    shouldExecute: (ctx) => ctx.metadata?.shouldRun === true
+                    shouldExecute: ctx => ctx.metadata?.shouldRun === true,
                 };
 
                 DataProcessor.register(handler);
@@ -77,9 +82,9 @@ describe('data-processor', () => {
             it('should register processor with offset', () => {
                 const handler: DataProcessorHandler = {
                     name: 'offset-processor',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    offset: 10
+                    offset: 10,
                 };
 
                 DataProcessor.register(handler);
@@ -89,18 +94,22 @@ describe('data-processor', () => {
 
             it('should throw error if handler has no name', () => {
                 const handler: any = {
-                    handle: async (ctx: any) => {}
+                    handle: async (ctx: any) => {},
                 };
 
-                expect(() => DataProcessor.register(handler)).toThrow('Handler must have a valid name');
+                expect(() => DataProcessor.register(handler)).toThrow(
+                    'Handler must have a valid name'
+                );
             });
 
             it('should throw error if handler has no handle function', () => {
                 const handler: any = {
-                    name: 'invalid-handler'
+                    name: 'invalid-handler',
                 };
 
-                expect(() => DataProcessor.register(handler)).toThrow('Handler must have a valid handle function');
+                expect(() => DataProcessor.register(handler)).toThrow(
+                    'Handler must have a valid handle function'
+                );
             });
         });
 
@@ -109,14 +118,14 @@ describe('data-processor', () => {
                 const handlers: DataProcessorHandler[] = [
                     {
                         name: 'batch-handler-1',
-                        handle: async (ctx) => {},
-                        weight: 100
+                        handle: async ctx => {},
+                        weight: 100,
                     },
                     {
                         name: 'batch-handler-2',
-                        handle: async (ctx) => {},
-                        weight: 200
-                    }
+                        handle: async ctx => {},
+                        weight: 200,
+                    },
                 ];
 
                 DataProcessor.registerAll(handlers);
@@ -136,9 +145,9 @@ describe('data-processor', () => {
             it('should return handlers matching preset', () => {
                 const handler: DataProcessorHandler = {
                     name: 'preset-handler',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    tags: ['test-preset']
+                    tags: ['test-preset'],
                 };
 
                 DataProcessor.register(handler);
@@ -151,9 +160,9 @@ describe('data-processor', () => {
             it('should return handlers matching phase', () => {
                 const handler: DataProcessorHandler = {
                     name: 'phase-handler',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    tags: ['test-preset-2', 'pre']
+                    tags: ['test-preset-2', 'pre'],
                 };
 
                 DataProcessor.register(handler);
@@ -165,9 +174,9 @@ describe('data-processor', () => {
             it('should return handlers with any tag', () => {
                 const handler: DataProcessorHandler = {
                     name: 'any-handler',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    tags: ['any']
+                    tags: ['any'],
                 };
 
                 DataProcessor.register(handler);
@@ -181,16 +190,16 @@ describe('data-processor', () => {
 
                 registrar.register({
                     name: 'weight-200',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 200,
-                    tags: ['sort-test']
+                    tags: ['sort-test'],
                 });
 
                 registrar.register({
                     name: 'weight-100',
-                    handle: async (ctx) => {},
+                    handle: async ctx => {},
                     weight: 100,
-                    tags: ['sort-test']
+                    tags: ['sort-test'],
                 });
 
                 const pipeline = registrar.getPipeline('sort-test');
@@ -203,8 +212,8 @@ describe('data-processor', () => {
             it('should remove a handler', () => {
                 const handler: DataProcessorHandler = {
                     name: 'removable-handler',
-                    handle: async (ctx) => {},
-                    weight: 100
+                    handle: async ctx => {},
+                    weight: 100,
                 };
 
                 DataProcessor.register(handler);
@@ -219,8 +228,8 @@ describe('data-processor', () => {
             it('should return handler by name', () => {
                 const handler: DataProcessorHandler = {
                     name: 'gettable-handler',
-                    handle: async (ctx) => {},
-                    weight: 100
+                    handle: async ctx => {},
+                    weight: 100,
                 };
 
                 DataProcessor.register(handler);
@@ -240,8 +249,8 @@ describe('data-processor', () => {
             it('should return true for existing handler', () => {
                 const handler: DataProcessorHandler = {
                     name: 'existing-handler',
-                    handle: async (ctx) => {},
-                    weight: 100
+                    handle: async ctx => {},
+                    weight: 100,
                 };
 
                 DataProcessor.register(handler);
@@ -259,14 +268,14 @@ describe('data-processor', () => {
 
                 registrar.register({
                     name: 'clear-test-1',
-                    handle: async (ctx) => {},
-                    weight: 100
+                    handle: async ctx => {},
+                    weight: 100,
                 });
 
                 registrar.register({
                     name: 'clear-test-2',
-                    handle: async (ctx) => {},
-                    weight: 200
+                    handle: async ctx => {},
+                    weight: 200,
                 });
 
                 expect(registrar.has('clear-test-1')).toBe(true);
@@ -287,16 +296,16 @@ describe('data-processor', () => {
 
                 const handler: DataProcessorHandler = {
                     name: 'simple-processor',
-                    handle: async (ctx) => {
+                    handle: async ctx => {
                         ctx.metadata = ctx.metadata || {};
                         ctx.metadata.executed = true;
                     },
-                    weight: 100
+                    weight: 100,
                 };
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: {}
+                    metadata: {},
                 } as any;
 
                 await executor.execute(context, [handler]);
@@ -311,24 +320,30 @@ describe('data-processor', () => {
                 const handlers: DataProcessorHandler[] = [
                     {
                         name: 'weight-200',
-                        handle: async (ctx) => { executionOrder.push('weight-200'); },
-                        weight: 200
+                        handle: async ctx => {
+                            executionOrder.push('weight-200');
+                        },
+                        weight: 200,
                     },
                     {
                         name: 'weight-100',
-                        handle: async (ctx) => { executionOrder.push('weight-100'); },
-                        weight: 100
+                        handle: async ctx => {
+                            executionOrder.push('weight-100');
+                        },
+                        weight: 100,
                     },
                     {
                         name: 'weight-150',
-                        handle: async (ctx) => { executionOrder.push('weight-150'); },
-                        weight: 150
-                    }
+                        handle: async ctx => {
+                            executionOrder.push('weight-150');
+                        },
+                        weight: 150,
+                    },
                 ];
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: {}
+                    metadata: {},
                 } as any;
 
                 await executor.execute(context, handlers);
@@ -341,17 +356,17 @@ describe('data-processor', () => {
 
                 const handler: DataProcessorHandler = {
                     name: 'skip-processor',
-                    handle: async (ctx) => {
+                    handle: async ctx => {
                         ctx.metadata = ctx.metadata || {};
                         ctx.metadata.shouldNotExecute = true;
                     },
                     weight: 100,
-                    shouldExecute: (ctx) => false
+                    shouldExecute: ctx => false,
                 };
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: {}
+                    metadata: {},
                 } as any;
 
                 await executor.execute(context, [handler]);
@@ -364,17 +379,17 @@ describe('data-processor', () => {
 
                 const handler: DataProcessorHandler = {
                     name: 'conditional-exec-processor',
-                    handle: async (ctx) => {
+                    handle: async ctx => {
                         ctx.metadata = ctx.metadata || {};
                         ctx.metadata.conditionalExecuted = true;
                     },
                     weight: 100,
-                    shouldExecute: (ctx) => ctx.metadata?.shouldRun === true
+                    shouldExecute: ctx => ctx.metadata?.shouldRun === true,
                 };
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: { shouldRun: true }
+                    metadata: { shouldRun: true },
                 } as any;
 
                 await executor.execute(context, [handler]);
@@ -389,27 +404,33 @@ describe('data-processor', () => {
                 const handlers: DataProcessorHandler[] = [
                     {
                         name: 'offset-10',
-                        handle: async (ctx) => { executionOrder.push('offset-10'); },
+                        handle: async ctx => {
+                            executionOrder.push('offset-10');
+                        },
                         weight: 100,
-                        offset: 10
+                        offset: 10,
                     },
                     {
                         name: 'offset-0',
-                        handle: async (ctx) => { executionOrder.push('offset-0'); },
+                        handle: async ctx => {
+                            executionOrder.push('offset-0');
+                        },
                         weight: 100,
-                        offset: 0
+                        offset: 0,
                     },
                     {
                         name: 'offset-5',
-                        handle: async (ctx) => { executionOrder.push('offset-5'); },
+                        handle: async ctx => {
+                            executionOrder.push('offset-5');
+                        },
                         weight: 100,
-                        offset: 5
-                    }
+                        offset: 5,
+                    },
                 ];
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: {}
+                    metadata: {},
                 } as any;
 
                 await executor.execute(context, handlers);
@@ -424,15 +445,15 @@ describe('data-processor', () => {
 
                 const handler: DataProcessorHandler = {
                     name: 'error-processor',
-                    handle: async (ctx) => {
+                    handle: async ctx => {
                         throw new Error('Processor error');
                     },
-                    weight: 100
+                    weight: 100,
                 };
 
                 const context = {
                     identity: { domain: 'test', clientId: 'test' },
-                    metadata: {}
+                    metadata: {},
                 } as any;
 
                 const result = await executor.execute(context, [handler]);
@@ -474,9 +495,9 @@ describe('data-processor', () => {
             const registrar = new DataProcessorRegistrar();
             registrar.register({
                 name: 'cache-test-handler',
-                handle: async (ctx) => {},
+                handle: async ctx => {},
                 weight: 100,
-                tags: ['cache-preset']
+                tags: ['cache-preset'],
             });
 
             const first = registrar.getPipeline('cache-preset');
@@ -488,9 +509,9 @@ describe('data-processor', () => {
             const registrar = new DataProcessorRegistrar();
             registrar.register({
                 name: 'phase-cache-handler',
-                handle: async (ctx) => {},
+                handle: async ctx => {},
                 weight: 100,
-                tags: ['phase-cache', 'pre']
+                tags: ['phase-cache', 'pre'],
             });
 
             const withPhase = registrar.getPipeline('phase-cache', 'pre');
@@ -505,10 +526,10 @@ describe('data-processor', () => {
             const registrar = new DataProcessorRegistrar();
             registrar.register({
                 name: 'inspect-handler',
-                handle: async (ctx) => {},
+                handle: async ctx => {},
                 weight: 100,
                 tags: ['inspect-test'],
-                description: 'Test handler for inspect'
+                description: 'Test handler for inspect',
             });
 
             const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -551,12 +572,12 @@ describe('data-processor', () => {
             const executor = new DataProcessorExecutor();
             const handler: DataProcessorHandler = {
                 name: 'stats-processor',
-                handle: async (ctx) => {},
-                weight: 100
+                handle: async ctx => {},
+                weight: 100,
             };
             const context = {
                 identity: { domain: 'test', clientId: 'test' },
-                metadata: {}
+                metadata: {},
             } as any;
 
             await executor.execute(context, [handler]);
@@ -568,12 +589,12 @@ describe('data-processor', () => {
             const executor = new DataProcessorExecutor();
             const handler: DataProcessorHandler = {
                 name: 'reset-stats-processor',
-                handle: async (ctx) => {},
-                weight: 100
+                handle: async ctx => {},
+                weight: 100,
             };
             const context = {
                 identity: { domain: 'test', clientId: 'test' },
-                metadata: {}
+                metadata: {},
             } as any;
 
             await executor.execute(context, [handler]);
@@ -587,12 +608,12 @@ describe('data-processor', () => {
             const executor = new DataProcessorExecutor();
             const handler: DataProcessorHandler = {
                 name: 'report-processor',
-                handle: async (ctx) => {},
-                weight: 100
+                handle: async ctx => {},
+                weight: 100,
             };
             const context = {
                 identity: { domain: 'test', clientId: 'test' },
-                metadata: {}
+                metadata: {},
             } as any;
 
             const result = await executor.execute(context, [handler]);
@@ -606,15 +627,15 @@ describe('data-processor', () => {
             const executor = new DataProcessorExecutor();
             const handler: DataProcessorHandler = {
                 name: 'phase-exec-processor',
-                handle: async (ctx) => {
+                handle: async ctx => {
                     ctx.metadata = ctx.metadata || {};
                     ctx.metadata.phaseExecuted = true;
                 },
-                weight: 100
+                weight: 100,
             };
             const context = {
                 identity: { domain: 'test', clientId: 'test' },
-                metadata: {}
+                metadata: {},
             } as any;
 
             await executor.execute(context, [handler], 'pre');

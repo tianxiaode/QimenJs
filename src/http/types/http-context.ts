@@ -1,6 +1,6 @@
 ﻿/**
  * HTTP 上下文类型定义
- * 
+ *
  * @module http/types/http-context
  */
 
@@ -24,52 +24,52 @@ export interface HttpRequestOptions {
      * 请求 URL
      */
     url: string;
-    
+
     /**
      * HTTP 方法
      */
     method: HttpMethod;
-    
+
     /**
      * 请求头
      */
     headers?: Record<string, string>;
-    
+
     /**
      * 请求体
      */
     body?: any;
-    
+
     /**
      * 查询参数
      */
     queryParams?: Record<string, any>;
-    
+
     /**
      * 路径参数
      */
     pathParams?: (string | number)[];
-    
+
     /**
      * 超时时间（毫秒）
      */
     timeout?: number;
-    
+
     /**
      * 响应类型
      */
     responseType?: HttpResponseType;
-    
+
     /**
      * 是否携带凭证
      */
     withCredentials?: boolean;
-    
+
     /**
      * 中止信号
      */
     signal?: AbortSignal;
-    
+
     /**
      * 进度回调
      */
@@ -78,7 +78,7 @@ export interface HttpRequestOptions {
 
 /**
  * HTTP 上下文
- * 
+ *
  * 继承自 BaseContext，添加 HTTP 特定字段
  */
 export interface HttpContext extends BaseContext {
@@ -99,7 +99,7 @@ export interface HttpContext extends BaseContext {
         onProgress?: (ev: ProgressEvent) => void;
         controller: AbortController;
     };
-    
+
     /**
      * 响应信息
      */
@@ -110,7 +110,7 @@ export interface HttpContext extends BaseContext {
         rawResponse?: any;
         data: any;
     };
-    
+
     /**
      * 错误信息
      */
@@ -125,7 +125,7 @@ export interface HttpRequestTask {
      * 管线执行结果
      */
     context: Promise<HttpContext>;
-    
+
     /**
      * 取消请求的方法
      */
@@ -140,12 +140,12 @@ export interface HttpRetryOptions {
      * 最大重试次数
      */
     maxRetries: number;
-    
+
     /**
      * 重试延迟时间（毫秒）
      */
     delay?: number;
-    
+
     /**
      * 判断是否需要重试
      */

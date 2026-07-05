@@ -4,7 +4,7 @@ import type { TreeSchema } from '@/schema';
 
 /**
  * SchemaAbility - 模式能力
- * 
+ *
  * 通过 SchemaRegistrar 获取编译后的 Schema，提供便捷的属性访问接口。
  * this 指向宿主（ICoreEntityManager），this.schema 可直接访问。
  */
@@ -86,11 +86,11 @@ export const SchemaAbility: AbilityDefinition = {
     _getCompiledSchema() {
         const registrar = SchemaRegistrar.getInstance();
         const key = this.schema.name;
-        
+
         if (!registrar.has(key)) {
             registrar.register(this.schema);
         }
-        
+
         return registrar.getCompiled(key);
     },
 };

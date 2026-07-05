@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -94,23 +94,36 @@ describe('CacheAbility', () => {
         });
 
         it('远程状态带参数应生成 domain:name:q:hash', () => {
-            const host = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({ keyword: 'test', page: 1 }));
+            const host = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({
+                keyword: 'test',
+                page: 1,
+            }));
             const key = host.cacheKey;
             expect(key).toMatch(/^api:User:q:[a-z0-9]+$/);
             host.dispose();
         });
 
         it('相同参数应生成相同的 cacheKey', () => {
-            const host1 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({ keyword: 'test' }));
-            const host2 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({ keyword: 'test' }));
+            const host1 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({
+                keyword: 'test',
+            }));
+            const host2 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({
+                keyword: 'test',
+            }));
             expect(host1.cacheKey).toBe(host2.cacheKey);
             host1.dispose();
             host2.dispose();
         });
 
         it('不同参数顺序应生成相同的 cacheKey（参数排序）', () => {
-            const host1 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({ a: '1', b: '2' }));
-            const host2 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({ b: '2', a: '1' }));
+            const host1 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({
+                a: '1',
+                b: '2',
+            }));
+            const host2 = createCacheHost({ name: 'User', domain: 'api' }, true, () => ({
+                b: '2',
+                a: '1',
+            }));
             expect(host1.cacheKey).toBe(host2.cacheKey);
             host1.dispose();
             host2.dispose();
@@ -155,7 +168,10 @@ describe('CacheAbility', () => {
         it('应替换 sourceData 内容', () => {
             const host = createCacheHost({ name: 'User', domain: 'default' });
             host.sourceData.set('old', { id: 'old' });
-            host.updateSourceData([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
+            host.updateSourceData([
+                { id: '1', name: 'a' },
+                { id: '2', name: 'b' },
+            ]);
             expect(host.sourceData.size).toBe(2);
             expect(host.sourceData.get('1')).toEqual({ id: '1', name: 'a' });
             expect(host.sourceData.get('2')).toEqual({ id: '2', name: 'b' });

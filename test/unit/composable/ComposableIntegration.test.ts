@@ -23,8 +23,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -35,7 +35,6 @@ import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableB
 // ============================================
 
 describe('ComposableBase 集成测试', () => {
-
     // ============================================
     // 1. getter/setter 多实例隔离
     // ============================================
@@ -43,8 +42,12 @@ describe('ComposableBase 集成测试', () => {
     describe('getter/setter 多实例隔离', () => {
         const GetterSetterDef: AbilityDefinition = {
             computedLabel: {
-                get() { return `[${this.label}]`; },
-                set(v: string) { this.label = v; },
+                get() {
+                    return `[${this.label}]`;
+                },
+                set(v: string) {
+                    this.label = v;
+                },
             },
         };
 

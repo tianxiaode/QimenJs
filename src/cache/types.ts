@@ -50,10 +50,10 @@ export interface ICacheProvider<TKey = string, TData = any> {
  * @template T - 缓存数据类型
  */
 export interface ICacheEntry<T> {
-  /** 缓存数据 */
-  data: T;
-  /** 存储时的时间戳（毫秒） */
-  timestamp: number;
-  /** 有效期（毫秒），0 表示永久有效 */
-  ttl: number;
+    /** 缓存数据 */
+    data: T;
+    /** 存储时的时间戳（毫秒） */
+    timestamp: number;
+    /** 有效期（毫秒），0 表示永久有效 */
+    ttl: number;
 }

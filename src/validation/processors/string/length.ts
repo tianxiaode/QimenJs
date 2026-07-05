@@ -7,7 +7,7 @@ export const StringLengthProcessor: ValidationProcessorHandler = async (
     const { value, rule } = context;
 
     //不要做任何防御，要相信上一处理器
-    let len = value.length;
+    const len = value.length;
 
     if (rule.min !== undefined && len < rule.min) {
         context.errors.push(ValidationErrorBuilder.too_small(rule.min, value, false, context));

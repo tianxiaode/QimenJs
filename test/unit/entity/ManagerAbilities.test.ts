@@ -18,8 +18,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -257,8 +257,12 @@ describe('SchemaProxyAbility', () => {
     describe('非树形 Schema', () => {
         let manager: FlatManager;
 
-        beforeEach(() => { manager = new FlatManager(); });
-        afterEach(() => { manager.dispose(); });
+        beforeEach(() => {
+            manager = new FlatManager();
+        });
+        afterEach(() => {
+            manager.dispose();
+        });
 
         it('idField 应该从 schema 获取', () => {
             expect(manager.idField).toBe('code');
@@ -308,8 +312,12 @@ describe('SchemaProxyAbility', () => {
     describe('树形 Schema', () => {
         let manager: TreeManager;
 
-        beforeEach(() => { manager = new TreeManager(); });
-        afterEach(() => { manager.dispose(); });
+        beforeEach(() => {
+            manager = new TreeManager();
+        });
+        afterEach(() => {
+            manager.dispose();
+        });
 
         it('isTree 应该返回 true', () => {
             expect(manager.isTree).toBe(true);
@@ -405,7 +413,10 @@ describe('LocalGetAbility', () => {
     describe('get', () => {
         it('应该根据 ID 查找实体', () => {
             const user = { id: '1', name: 'John' };
-            host.sourceData = new Map([['1', user], ['2', { id: '2', name: 'Jane' }]]);
+            host.sourceData = new Map([
+                ['1', user],
+                ['2', { id: '2', name: 'Jane' }],
+            ]);
 
             const result = (host as any).get('1');
 

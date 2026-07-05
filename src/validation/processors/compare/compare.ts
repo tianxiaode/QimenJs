@@ -42,4 +42,3 @@ export const CompareProcessor: ValidationProcessorHandler = async (context: Vali
         );
     }
 };
-

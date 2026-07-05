@@ -9,4 +9,3 @@ export const SplitProcessorEntry = {
     offset: 10,
     execute: SplitProcessor,
 };
-

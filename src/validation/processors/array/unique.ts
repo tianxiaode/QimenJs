@@ -7,8 +7,7 @@ export const ArrayUniqueProcessor: ValidationProcessorHandler = async (
     const { value, rule } = context;
 
     // 如果不是数组或未设置unique参数，跳过验证
-   if (rule.unique !== true) return;
-
+    if (rule.unique !== true) return;
 
     // 检查数组元素是否唯一
     const seen = new Set();
@@ -24,4 +23,3 @@ export const ArrayUniqueProcessor: ValidationProcessorHandler = async (
         }
     }
 };
-

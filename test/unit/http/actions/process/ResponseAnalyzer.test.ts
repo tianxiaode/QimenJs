@@ -5,14 +5,15 @@
 import { ResponseAnalyzerHandler } from '@/http/actions/process/ResponseAnalyzer';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    status?: number;
-    headers?: Record<string, string>;
-    isTransportFailure?: boolean;
-    rawResponse?: any;
-} = {}) {
-    const context = RequestContextBuilder
-        .create()
+function createContext(
+    options: {
+        status?: number;
+        headers?: Record<string, string>;
+        isTransportFailure?: boolean;
+        rawResponse?: any;
+    } = {}
+) {
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('/api/test')
         .withMethod('GET')
@@ -102,7 +103,9 @@ describe('ResponseAnalyzer', () => {
         const context = createContext({
             status: 200,
             rawResponse: {},
-            headers: { 'content-disposition': "attachment; filename*=UTF-8''%E6%8A%A5%E5%91%8A.pdf" },
+            headers: {
+                'content-disposition': "attachment; filename*=UTF-8''%E6%8A%A5%E5%91%8A.pdf",
+            },
         });
         await ResponseAnalyzerHandler(context);
         expect(context.metadata.fileName).toBe('报告.pdf');

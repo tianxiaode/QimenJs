@@ -10,7 +10,7 @@ export function sample<T>(arr: T[], count: number = 1): T | T[] {
         // 如果count小于等于0，返回空数组
         return [] as T[];
     }
-    
+
     if (count === 1) {
         // 如果只采样一个元素，直接返回随机索引位置的元素
         if (arr.length === 0) {

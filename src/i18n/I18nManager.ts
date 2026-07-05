@@ -192,7 +192,11 @@ export class I18nManager {
         const handlers = this._listeners.get(event);
         if (!handlers) return;
         handlers.forEach(h => {
-            try { h(data); } catch { /* 不中断其他处理器 */ }
+            try {
+                h(data);
+            } catch {
+                /* 不中断其他处理器 */
+            }
         });
     }
 }
@@ -215,8 +219,12 @@ function getByPath(obj: Record<string, any>, path: string): any {
 function mergeDeep(target: Messages, source: Messages): void {
     for (const key of Object.keys(source)) {
         if (
-            typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key]) &&
-            typeof target[key] === 'object' && target[key] !== null && !Array.isArray(target[key])
+            typeof source[key] === 'object' &&
+            source[key] !== null &&
+            !Array.isArray(source[key]) &&
+            typeof target[key] === 'object' &&
+            target[key] !== null &&
+            !Array.isArray(target[key])
         ) {
             mergeDeep(target[key], source[key]);
         } else {

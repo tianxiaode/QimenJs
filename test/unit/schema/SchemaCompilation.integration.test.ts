@@ -15,8 +15,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -56,7 +56,14 @@ const userSchema: FlatSchema = {
     extends: 'BaseEntity',
     mixins: ['auditFields'],
     fields: [
-        { name: 'username', type: 'string', searchable: true, required: true, minLength: 3, maxLength: 20 },
+        {
+            name: 'username',
+            type: 'string',
+            searchable: true,
+            required: true,
+            minLength: 3,
+            maxLength: 20,
+        },
         { name: 'email', type: 'string', searchable: true, required: true, pattern: 'email' },
         { name: 'age', type: 'number', min: 0, max: 150 },
     ],
@@ -72,9 +79,7 @@ const overrideSchema: FlatSchema = {
         createdAt: { readonly: false },
         updatedAt: { type: 'string' },
     },
-    fields: [
-        { name: 'username', type: 'string', searchable: true },
-    ],
+    fields: [{ name: 'username', type: 'string', searchable: true }],
 };
 
 const mappingSchema: FlatSchema = {
@@ -85,7 +90,11 @@ const mappingSchema: FlatSchema = {
     fields: [
         { name: 'id', type: 'string' },
         { name: 'userName', type: 'string', mapping: 'user_name' },
-        { name: 'displayName', type: 'string', mapping: (data: any) => `${data.firstName} ${data.lastName}` },
+        {
+            name: 'displayName',
+            type: 'string',
+            mapping: (data: any) => `${data.firstName} ${data.lastName}`,
+        },
         { name: 'firstName', type: 'string' },
         { name: 'lastName', type: 'string' },
     ],
@@ -195,7 +204,9 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
         it('继承的字段应该保留原始属性', () => {
             const registrar = SchemaRegistrar.getInstance();
             const compiled = registrar.getCompiled('SchemaUser');
-            const createdAtField = compiled.schema.fields!.find((f: any) => f.name === 'createdAt')!;
+            const createdAtField = compiled.schema.fields!.find(
+                (f: any) => f.name === 'createdAt'
+            )!;
 
             expect(createdAtField.readonly).toBe(true);
             expect(createdAtField.type).toBe('date');
@@ -215,7 +226,9 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
         it('Mixin 字段应该保留原始属性', () => {
             const registrar = SchemaRegistrar.getInstance();
             const compiled = registrar.getCompiled('SchemaUser');
-            const createdByField = compiled.schema.fields!.find((f: any) => f.name === 'createdBy')!;
+            const createdByField = compiled.schema.fields!.find(
+                (f: any) => f.name === 'createdBy'
+            )!;
 
             expect(createdByField.readonly).toBe(true);
         });
@@ -225,7 +238,9 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
         it('应该覆盖继承字段的属性', () => {
             const registrar = SchemaRegistrar.getInstance();
             const compiled = registrar.getCompiled('OverrideUser');
-            const createdAtField = compiled.schema.fields!.find((f: any) => f.name === 'createdAt')!;
+            const createdAtField = compiled.schema.fields!.find(
+                (f: any) => f.name === 'createdAt'
+            )!;
 
             expect(createdAtField.readonly).toBe(false);
         });
@@ -233,7 +248,9 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
         it('应该覆盖继承字段的类型', () => {
             const registrar = SchemaRegistrar.getInstance();
             const compiled = registrar.getCompiled('OverrideUser');
-            const updatedAtField = compiled.schema.fields!.find((f: any) => f.name === 'updatedAt')!;
+            const updatedAtField = compiled.schema.fields!.find(
+                (f: any) => f.name === 'updatedAt'
+            )!;
 
             expect(updatedAtField.type).toBe('string');
         });
@@ -342,12 +359,16 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
     describe('EntityManager processItem 字段映射', () => {
         it('字符串 mapping 应该将字段重命名到目标 key', async () => {
             const manager = new TestMappingUserManager();
-            const options = await manager.buildOptions(ENTITY_ACTION.CREATE, {}, {
-                id: '1',
-                userName: 'test',
-                firstName: 'John',
-                lastName: 'Doe',
-            });
+            const options = await manager.buildOptions(
+                ENTITY_ACTION.CREATE,
+                {},
+                {
+                    id: '1',
+                    userName: 'test',
+                    firstName: 'John',
+                    lastName: 'Doe',
+                }
+            );
 
             expect(options.body.user_name).toBe('test');
             expect(options.body.userName).toBe('test');
@@ -355,24 +376,32 @@ describe('SchemaRegistrar → EntityManager 字段映射集成测试', () => {
 
         it('函数 mapping 应该被跳过（不发送到后端）', async () => {
             const manager = new TestMappingUserManager();
-            const options = await manager.buildOptions(ENTITY_ACTION.CREATE, {}, {
-                id: '1',
-                userName: 'test',
-                firstName: 'John',
-                lastName: 'Doe',
-            });
+            const options = await manager.buildOptions(
+                ENTITY_ACTION.CREATE,
+                {},
+                {
+                    id: '1',
+                    userName: 'test',
+                    firstName: 'John',
+                    lastName: 'Doe',
+                }
+            );
 
             expect(options.body.displayName).toBeUndefined();
         });
 
         it('无 mapping 的字段应该使用原始字段名', async () => {
             const manager = new TestMappingUserManager();
-            const options = await manager.buildOptions(ENTITY_ACTION.CREATE, {}, {
-                id: '1',
-                userName: 'test',
-                firstName: 'John',
-                lastName: 'Doe',
-            });
+            const options = await manager.buildOptions(
+                ENTITY_ACTION.CREATE,
+                {},
+                {
+                    id: '1',
+                    userName: 'test',
+                    firstName: 'John',
+                    lastName: 'Doe',
+                }
+            );
 
             expect(options.body.id).toBe('1');
             expect(options.body.firstName).toBe('John');

@@ -46,7 +46,10 @@ describe('TransformProcessor', () => {
     });
 
     it('should apply transform function', async () => {
-        const context = createContext('123', { type: 'string', transform: (v: string) => Number(v) });
+        const context = createContext('123', {
+            type: 'string',
+            transform: (v: string) => Number(v),
+        });
         await TransformProcessor(context);
         expect(context.value).toBe(123);
     });

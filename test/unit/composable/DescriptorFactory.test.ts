@@ -20,7 +20,9 @@ describe('DescriptorFactory', () => {
     describe('setter', () => {
         it('should create setter descriptor', () => {
             const host = { value: 0 };
-            const factory = DescriptorFactory.setter((h: any, v: number) => { h.value = v; });
+            const factory = DescriptorFactory.setter((h: any, v: number) => {
+                h.value = v;
+            });
             const descriptor = factory(host);
             expect(descriptor.set).toBeDefined();
             (descriptor as any).set(100);
@@ -33,7 +35,9 @@ describe('DescriptorFactory', () => {
             const host = { value: 42 };
             const factory = DescriptorFactory.accessor(
                 (h: any) => h.value,
-                (h: any, v: number) => { h.value = v; }
+                (h: any, v: number) => {
+                    h.value = v;
+                }
             );
             const descriptor = factory(host);
             expect((descriptor as any).get()).toBe(42);
@@ -53,7 +57,9 @@ describe('DescriptorFactory', () => {
     describe('method', () => {
         it('should create method descriptor', () => {
             const host = { calls: 0 };
-            const factory = DescriptorFactory.method((h: any, x: number) => { h.calls += x; });
+            const factory = DescriptorFactory.method((h: any, x: number) => {
+                h.calls += x;
+            });
             const descriptor = factory(host);
             expect(descriptor.value).toBeDefined();
             (descriptor as any).value(5);

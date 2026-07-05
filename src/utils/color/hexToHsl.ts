@@ -5,12 +5,12 @@
  */
 export function hexToHsl(hex: string) {
     // 去掉 `#` 符号
-    hex = hex.replace(/^#/, "");
+    hex = hex.replace(/^#/, '');
 
     // 解析 hex 值为 RGB
-    let r = parseInt(hex.substring(0, 2), 16) / 255;
-    let g = parseInt(hex.substring(2, 4), 16) / 255;
-    let b = parseInt(hex.substring(4, 6), 16) / 255;
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
 
     // 找出最大和最小 RGB 值
     const max = Math.max(r, g, b);

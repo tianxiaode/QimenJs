@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -199,8 +199,7 @@ describe('DomainRegistrar → DataProcessor preset 集成测试', () => {
                 totalCount: 2,
             };
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(ABP_DOMAIN)
                 .withUrl('/api/app/user')
                 .build();
@@ -235,8 +234,7 @@ describe('DomainRegistrar → DataProcessor preset 集成测试', () => {
                 size: 10,
             };
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(SPRING_DOMAIN)
                 .withUrl('/api/orders')
                 .build();
@@ -260,8 +258,7 @@ describe('DomainRegistrar → DataProcessor preset 集成测试', () => {
 
     describe('RequestContextBuilder.build() 与 domainConfig 集成', () => {
         it('ABP domain 的 context 应该包含 preset=abp 的 domainConfig', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(ABP_DOMAIN)
                 .withUrl('/api/app/user')
                 .build();
@@ -271,8 +268,7 @@ describe('DomainRegistrar → DataProcessor preset 集成测试', () => {
         });
 
         it('Spring domain 的 context 应该包含 preset=spring 的 domainConfig', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(SPRING_DOMAIN)
                 .withUrl('/api/orders')
                 .build();

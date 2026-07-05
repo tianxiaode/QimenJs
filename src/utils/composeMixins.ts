@@ -27,10 +27,7 @@ export type Mixin = (Base: DisposableConstructor) => DisposableConstructor;
  * const instance = new MixedClass();
  * ```
  */
-export function composeMixins(
-    Base: DisposableConstructor,
-    mixins: Mixin[] 
-): DisposableConstructor {
+export function composeMixins(Base: DisposableConstructor, mixins: Mixin[]): DisposableConstructor {
     // 内部实现依然可以用 any 保证运行
     return mixins.reduce((cls, mixin) => mixin(cls), Base) as any;
 }

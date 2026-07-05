@@ -15,4 +15,3 @@ export const DateTypeProcessor: ValidationProcessorHandler = async (context: Val
         context.terminate = true;
     }
 };
-

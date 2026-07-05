@@ -44,9 +44,9 @@ export function createContext(
 
 /**
  * 验证函数
- * 
+ *
  * @description 使用统一的 pipeline 执行器
- * 
+ *
  * @param value 要验证的值
  * @param rule 验证规则
  * @param partialContext 部分上下文（可选）

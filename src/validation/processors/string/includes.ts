@@ -22,4 +22,3 @@ export const StringIncludesProcessor: ValidationProcessorHandler = async (
         }
     }
 };
-

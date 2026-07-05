@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -88,7 +88,9 @@ describe('LocalMutationAbility', () => {
             const item = { id: '1', name: 'test' };
             await host.addItem(item);
             expect(host.hasChanges).toBe(true);
-            expect(host.changes.added).toContainEqual(expect.objectContaining({ id: '1', name: 'test', isNew: true }));
+            expect(host.changes.added).toContainEqual(
+                expect.objectContaining({ id: '1', name: 'test', isNew: true })
+            );
             host.dispose();
         });
 

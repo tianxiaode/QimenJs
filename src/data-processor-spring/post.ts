@@ -101,18 +101,12 @@ export function createSpringErrorHandler(): DataProcessorHandler {
 // ---- 辅助函数 ----
 
 function isSpringPage(data: any): data is SpringPage {
-    return data
-        && typeof data === 'object'
-        && 'content' in data
-        && 'totalElements' in data;
+    return data && typeof data === 'object' && 'content' in data && 'totalElements' in data;
 }
 
 /**
  * 获取所有 Spring 后道处理器
  */
 export function getSpringPostHandlers(): DataProcessorHandler[] {
-    return [
-        createSpringExtractHandler(),
-        createSpringErrorHandler(),
-    ];
+    return [createSpringExtractHandler(), createSpringErrorHandler()];
 }

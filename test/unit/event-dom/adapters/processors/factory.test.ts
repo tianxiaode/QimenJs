@@ -43,7 +43,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'contextMenuProcessor',
-            semantic: 'contextmenu'
+            semantic: 'contextmenu',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -54,7 +54,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'doubleTapProcessor',
-            semantic: 'dblclick'
+            semantic: 'dblclick',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -65,7 +65,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'panProcessor',
-            semantic: 'drag'
+            semantic: 'drag',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -76,7 +76,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'hoverProcessor',
-            semantic: 'hover'
+            semantic: 'hover',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -87,7 +87,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'longPressProcessor',
-            semantic: 'longpress'
+            semantic: 'longpress',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -98,7 +98,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'enterKeyProcessor',
-            semantic: 'submit'
+            semantic: 'submit',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -109,7 +109,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'swipeProcessor',
-            semantic: 'swipe'
+            semantic: 'swipe',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -120,7 +120,7 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'tapProcessor',
-            semantic: 'tap'
+            semantic: 'tap',
         };
         const processor = createGestureProcessor(descriptor, mockEmit);
         expect(processor).toBeDefined();
@@ -131,9 +131,9 @@ describe('Processor Factory', () => {
         const descriptor: GestureEventDescriptor = {
             requires: [],
             processor: 'unknownProcessor' as any,
-            semantic: 'tap'
+            semantic: 'tap',
         };
-        
+
         expect(() => {
             createGestureProcessor(descriptor, mockEmit);
         }).toThrow(/Unknown gesture processor/);

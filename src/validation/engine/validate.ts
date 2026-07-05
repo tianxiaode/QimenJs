@@ -109,15 +109,15 @@ Object.keys(SCHEMA_MAP).forEach(tag => {
 
 export const validate = validateRaw as {
     readonly [K in keyof RuleRegistry]: ValidatorSugar<RuleRegistry[K]>;
-} & { 
+} & {
     // 补上那个通用的 validate 方法
-    validate: (value: any, rule: ValidationRule) => Promise<ValidateResult> 
+    validate: (value: any, rule: ValidationRule) => Promise<ValidateResult>;
 };
 
 export const assert = assertRaw as {
     readonly [K in keyof RuleRegistry]: ValidatorSugar<RuleRegistry[K]>;
-} & { 
-    validate: (value: any, rule: ValidationRule) => Promise<void> 
+} & {
+    validate: (value: any, rule: ValidationRule) => Promise<void>;
 };
 
 export const normalize = normalizeRaw as {

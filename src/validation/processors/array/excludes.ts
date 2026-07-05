@@ -27,7 +27,6 @@ export const ArrayExcludesProcessor: ValidationProcessorHandler = async (
     // 检查是否存在 excludes 规则
     if (rule.excludes === undefined) return;
 
-
     // 获取排除的值列表，支持函数形式
     const excludesValues =
         typeof rule.excludes === 'function' ? rule.excludes(rule) : (rule.excludes as any[][]);
@@ -44,4 +43,3 @@ export const ArrayExcludesProcessor: ValidationProcessorHandler = async (
     // 这样确保 excludes 规则的独立性
     return;
 };
-

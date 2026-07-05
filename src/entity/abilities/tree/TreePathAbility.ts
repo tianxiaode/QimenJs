@@ -3,7 +3,7 @@ import type { IEntity } from '@/schema';
 
 /**
  * TreePathAbility - 树路径能力
- * 
+ *
  * 为宿主提供树形结构的路径管理功能（ingest/rebuild/toggle）。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/parentIdField/root 可直接访问。
  */

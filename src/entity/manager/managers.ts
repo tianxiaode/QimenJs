@@ -117,7 +117,7 @@ export const DomainPagingAbility: AbilityDefinition = {
 
 /**
  * 本地只读实体管理器
- * 
+ *
  * 功能：
  * - list: 从远程获取数据填充本地 sourceData
  * - get: 本地查询单个实体
@@ -131,7 +131,8 @@ export const DomainPagingAbility: AbilityDefinition = {
  * 返回值从 void 变为 any[]，因此不能同时 extends 两者，需手动声明覆盖后的签名。
  */
 export interface LocalReadonlyEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends BaseEntityManager<TSearch>,
+    extends
+        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -152,7 +153,7 @@ export interface LocalReadonlyEntityManager<TSearch extends ILocalSearchParams =
 }
 
 export abstract class LocalReadonlyEntityManager<
-    TSearch extends ILocalSearchParams = ILocalSearchParams
+    TSearch extends ILocalSearchParams = ILocalSearchParams,
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility];
 
@@ -167,7 +168,7 @@ export abstract class LocalReadonlyEntityManager<
 
 /**
  * 本地 CRUD 实体管理器
- * 
+ *
  * 功能：
  * - list: 从远程获取数据填充本地 sourceData
  * - get: 本地查询单个实体
@@ -182,13 +183,13 @@ export abstract class LocalReadonlyEntityManager<
  * FlatLocalMutationAbility + FlatLocalDeleteAbility
  */
 export interface LocalCrudEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends LocalReadonlyEntityManager<TSearch>,
+    extends
+        LocalReadonlyEntityManager<TSearch>,
         IFlatLocalMutationAbility,
-        IFlatLocalDeleteAbility {
-}
+        IFlatLocalDeleteAbility {}
 
 export abstract class LocalCrudEntityManager<
-    TSearch extends ILocalSearchParams = ILocalSearchParams
+    TSearch extends ILocalSearchParams = ILocalSearchParams,
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
         FlatLocalStateAbility,
@@ -209,7 +210,7 @@ export abstract class LocalCrudEntityManager<
 
 /**
  * 远程只读实体管理器
- * 
+ *
  * 功能：
  * - list: 远程分页查询
  * - getAll: 远程获取所有数据
@@ -227,7 +228,8 @@ export abstract class LocalCrudEntityManager<
  * 返回值从 void 变为 Promise<any[]>，因此不能同时 extends 两者，需手动声明覆盖后的签名。
  */
 export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
-    extends BaseEntityManager<TSearch>,
+    extends
+        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -254,7 +256,7 @@ export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams =
 }
 
 export abstract class RemoteReadonlyEntityManager<
-    TSearch extends IFlatSearchParams = IFlatSearchParams
+    TSearch extends IFlatSearchParams = IFlatSearchParams,
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
         SchemaProxyAbility,
@@ -284,7 +286,7 @@ export abstract class RemoteReadonlyEntityManager<
 
 /**
  * 远程 CRUD 实体管理器
- * 
+ *
  * 功能：
  * - list: 远程分页查询
  * - getAll: 远程获取所有数据
@@ -302,15 +304,15 @@ export abstract class RemoteReadonlyEntityManager<
  * RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility + RemoteToggleAbility
  */
 export interface RemoteCrudEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
-    extends RemoteReadonlyEntityManager<TSearch>,
+    extends
+        RemoteReadonlyEntityManager<TSearch>,
         IRemoteCreateAbility,
         IRemoteUpdateAbility,
         IRemoteDeleteAbility,
-        IRemoteToggleAbility {
-}
+        IRemoteToggleAbility {}
 
 export abstract class RemoteCrudEntityManager<
-    TSearch extends IFlatSearchParams = IFlatSearchParams
+    TSearch extends IFlatSearchParams = IFlatSearchParams,
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
         SchemaProxyAbility,
@@ -344,7 +346,7 @@ export abstract class RemoteCrudEntityManager<
 
 /**
  * 远程树实体管理器
- * 
+ *
  * 功能：
  * - list: 远程树查询
  * - get: 远程查询单个节点
@@ -370,7 +372,8 @@ export abstract class RemoteCrudEntityManager<
  * - 因此不能同时 extends 冲突的接口，需手动声明覆盖后的签名
  */
 export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITreeSearchParams>
-    extends BaseEntityManager<TSearch>,
+    extends
+        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -402,7 +405,7 @@ export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITr
 }
 
 export abstract class RemoteTreeEntityManager<
-    TSearch extends ITreeSearchParams = ITreeSearchParams
+    TSearch extends ITreeSearchParams = ITreeSearchParams,
 > extends BaseEntityManager<TSearch> {
     static readonly abilities = [
         SchemaProxyAbility,

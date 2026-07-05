@@ -33,7 +33,8 @@ export function getISOWeek(date: Date | string): number {
     const firstDayOfYear = getFirstDayOfYear(date);
     const dayOfWeek = firstDayOfYear.getDay();
     const diff = d.getTime() - firstDayOfYear.getTime();
-    const daysSinceFirstMonday = Math.floor(diff / (24 * 60 * 60 * 1000)) + (dayOfWeek === 0 ? -6 : dayOfWeek - 1);
+    const daysSinceFirstMonday =
+        Math.floor(diff / (24 * 60 * 60 * 1000)) + (dayOfWeek === 0 ? -6 : dayOfWeek - 1);
     return Math.floor(daysSinceFirstMonday / 7) + 1;
 }
 
@@ -48,7 +49,8 @@ export function getISOWeeksInYear(date: Date | string): number {
     const firstDayOfYear = getFirstDayOfYear(date);
     const dayOfWeek = firstDayOfYear.getDay();
     const diff = new Date(year + 1, 0, 1).getTime() - firstDayOfYear.getTime();
-    const daysSinceFirstMonday = Math.floor(diff / (24 * 60 * 60 * 1000)) + (dayOfWeek === 0 ? -6 : dayOfWeek - 1);
+    const daysSinceFirstMonday =
+        Math.floor(diff / (24 * 60 * 60 * 1000)) + (dayOfWeek === 0 ? -6 : dayOfWeek - 1);
     return Math.ceil(daysSinceFirstMonday / 7);
 }
 

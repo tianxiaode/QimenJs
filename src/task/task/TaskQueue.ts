@@ -38,7 +38,7 @@ export class GlobalTaskQueue {
 
     /**
      * 构造函数 - 创建任务队列实例
-     * 
+     *
      * @param maxConcurrentTasks - 最大并发任务数，默认为5
      */
     constructor(maxConcurrentTasks: number = 5) {
@@ -48,7 +48,7 @@ export class GlobalTaskQueue {
 
     /**
      * 获取任务队列的单例实例
-     * 
+     *
      * @param maxConcurrentTasks - 可选参数，指定最大并发任务数
      * @returns 返回任务队列的单例实例
      */
@@ -61,7 +61,7 @@ export class GlobalTaskQueue {
 
     /**
      * 根据优先级对任务队列进行排序
-     * 
+     *
      * @returns 排序后的任务数组
      * @private
      */
@@ -76,7 +76,7 @@ export class GlobalTaskQueue {
 
     /**
      * 添加任务到队列
-     * 
+     *
      * @param fn - 要执行的任务函数，返回Promise
      * @param priority - 任务优先级，默认为NORMAL
      * @param maxRetries - 最大重试次数，默认为3
@@ -109,7 +109,7 @@ export class GlobalTaskQueue {
 
     /**
      * 处理任务的重试逻辑
-     * 
+     *
      * @param task - 需要重试的任务
      * @returns 如果任务将被重试则返回true，否则返回false
      * @private
@@ -136,7 +136,7 @@ export class GlobalTaskQueue {
 
     /**
      * 处理轮询任务的重试逻辑
-     * 
+     *
      * @param task - 需要轮询的任务
      * @returns 如果任务将被重试则返回true，否则返回false
      * @private
@@ -163,7 +163,7 @@ export class GlobalTaskQueue {
 
     /**
      * 执行任务
-     * 
+     *
      * @param task - 要执行的任务
      * @private
      */
@@ -187,7 +187,7 @@ export class GlobalTaskQueue {
 
     /**
      * 执行队列中的任务
-     * 
+     *
      * @private
      */
     private async run(): Promise<void> {

@@ -16,7 +16,7 @@ describe('HTTP Types', () => {
                 'HEAD',
                 'OPTIONS',
             ];
-            
+
             methods.forEach(method => {
                 expect(method).toBeDefined();
             });
@@ -25,14 +25,8 @@ describe('HTTP Types', () => {
 
     describe('HttpResponseType', () => {
         it('should support all response types', () => {
-            const types: HttpResponseType[] = [
-                'json',
-                'text',
-                'blob',
-                'arraybuffer',
-                'stream',
-            ];
-            
+            const types: HttpResponseType[] = ['json', 'text', 'blob', 'arraybuffer', 'stream'];
+
             types.forEach(type => {
                 expect(type).toBeDefined();
             });
@@ -45,7 +39,7 @@ describe('HTTP Types', () => {
                 url: '/api/test',
                 method: 'GET',
             };
-            
+
             expect(options.url).toBe('/api/test');
             expect(options.method).toBe('GET');
         });
@@ -56,7 +50,7 @@ describe('HTTP Types', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer token',
+                    Authorization: 'Bearer token',
                 },
                 body: { name: 'test' },
                 queryParams: { page: 1 },
@@ -65,7 +59,7 @@ describe('HTTP Types', () => {
                 responseType: 'json',
                 withCredentials: true,
             };
-            
+
             expect(options.url).toBe('/api/users');
             expect(options.method).toBe('POST');
             expect(options.headers).toBeDefined();
@@ -98,7 +92,7 @@ describe('HTTP Types', () => {
                 },
                 error: null,
             };
-            
+
             expect(context.steps).toEqual([]);
             expect(context.metadata).toEqual({});
             expect(context.request.url).toBe('/api/test');
@@ -106,7 +100,7 @@ describe('HTTP Types', () => {
 
         it('should support all HTTP methods', () => {
             const methods: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
-            
+
             methods.forEach(method => {
                 const context: HttpContext = {
                     steps: [],
@@ -128,7 +122,7 @@ describe('HTTP Types', () => {
                     },
                     error: null,
                 };
-                
+
                 expect(context.request.method).toBe(method);
             });
         });
@@ -154,7 +148,7 @@ describe('HTTP Types', () => {
                 },
                 error: null,
             };
-            
+
             expect(context.response.status).toBe(200);
             expect(context.response.isSuccess).toBe(true);
             expect(context.response.data).toEqual({ users: [] });
@@ -181,7 +175,7 @@ describe('HTTP Types', () => {
                     data: null,
                 },
             };
-            
+
             expect(context.error).toBeInstanceOf(Error);
             expect(context.response.status).toBe(500);
             expect(context.response.isSuccess).toBe(false);
@@ -210,7 +204,7 @@ describe('HTTP Types', () => {
                 },
                 error: null,
             };
-            
+
             expect(context.request.controller).toBe(controller);
             expect(context.request.signal).toBe(controller.signal);
         });

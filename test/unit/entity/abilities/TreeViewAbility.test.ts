@@ -18,8 +18,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -73,7 +73,6 @@ function buildTestTree(host: any) {
 // ============================================
 
 describe('TreeViewAbility', () => {
-
     describe('refreshView with flat mode', () => {
         it('should generate flat items with depth info', () => {
             const host = createTreeViewHost({ useFlat: true });

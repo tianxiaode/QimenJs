@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -105,17 +105,23 @@ function createProducts(count: number) {
 }
 
 function mockFetchReturn(data: { list?: any[]; total?: number; item?: any }): void {
-    jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(async () => ({
-        data: { list: data.list || [], total: data.total || 0, item: data.item, ...data },
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data: { list: data.list || [], total: data.total || 0, item: data.item, ...data },
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 function mockReadonlyFetchReturn(data: { list?: any[]; total?: number; item?: any }): void {
-    jest.spyOn(TestReadonlyManager.prototype, 'fetch').mockImplementation(async () => ({
-        data: { list: data.list || [], total: data.total || 0, item: data.item, ...data },
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestReadonlyManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data: { list: data.list || [], total: data.total || 0, item: data.item, ...data },
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 // ============================================
@@ -149,10 +155,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
     describe('缓存交互', () => {
         it('list() 首次调用应该走 fetch，第二次应该命中缓存', async () => {
             const products = createProducts(5);
-            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: products, total: 5, item: null },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: products, total: 5, item: null },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             // 首次调用
             const result1 = await manager.list();
@@ -171,10 +180,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
 
         it('refresh() 应该跳过缓存强制 fetch', async () => {
             const products = createProducts(3);
-            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: products, total: 3, item: null },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: products, total: 3, item: null },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             // 首次 list
             await manager.list();
@@ -190,10 +202,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
 
         it('clearCache() 后 list() 应该重新 fetch', async () => {
             const products = createProducts(2);
-            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: products, total: 2, item: null },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: products, total: 2, item: null },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             await manager.list();
             await manager.setCache({ items: products, total: 2 });
@@ -225,10 +240,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
 
         it('getAll() 应该使用 debounce(300ms, leading=true)', async () => {
             const products = createProducts(5);
-            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: products, total: 5, item: null },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestCrossCutManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: products, total: 5, item: null },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             // 第一次调用应该立即执行（leading=true）
             const result = await manager.getAll();
@@ -269,7 +287,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
         });
 
         it('create() 成功后应该发射 created 事件', async () => {
-            const newItem = { id: 99, productName: 'New Product', category: 'Books', price: 100, active: true };
+            const newItem = {
+                id: 99,
+                productName: 'New Product',
+                category: 'Books',
+                price: 100,
+                active: true,
+            };
             mockFetchReturn({ item: newItem, list: [], total: 0 });
 
             const createdHandler = jest.fn();
@@ -283,7 +307,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
         });
 
         it('update() 成功后应该发射 updated 事件', async () => {
-            const original = { id: 1, productName: 'Product 1', category: 'Electronics', price: 10, active: true };
+            const original = {
+                id: 1,
+                productName: 'Product 1',
+                category: 'Electronics',
+                price: 10,
+                active: true,
+            };
             manager.updateData([original]);
 
             const updated = { ...original, price: 20 };
@@ -300,7 +330,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
         });
 
         it('toggle() 成功后应该发射 toggled 事件', async () => {
-            const item = { id: 1, productName: 'Product 1', category: 'Electronics', price: 10, active: false };
+            const item = {
+                id: 1,
+                productName: 'Product 1',
+                category: 'Electronics',
+                price: 10,
+                active: false,
+            };
             manager.updateData([item]);
 
             const toggledItem = { ...item, active: true };
@@ -426,11 +462,16 @@ describe('RemoteAbility 跨切面集成测试', () => {
         });
 
         it('buildOptions 应该处理字段映射（name → productName）', async () => {
-            const options = await manager.buildOptions(ENTITY_ACTION.CREATE, {}, {
-                name: 'Test Product',
-                category: 'Electronics',
-                price: 100,
-            }, {});
+            const options = await manager.buildOptions(
+                ENTITY_ACTION.CREATE,
+                {},
+                {
+                    name: 'Test Product',
+                    category: 'Electronics',
+                    price: 100,
+                },
+                {}
+            );
 
             // processItem 应该将 name 映射为 productName
             expect(options.body).toBeDefined();

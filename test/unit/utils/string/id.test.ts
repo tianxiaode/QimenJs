@@ -9,15 +9,15 @@ describe('String ID Utility Functions', () => {
         it('should generate a unique ID with default prefix', () => {
             const id1 = idModule.getId();
             const id2 = idModule.getId();
-            
+
             // 验证格式
             expect(id1).toMatch(/^id-\d+-\d+$/);
             expect(id2).toMatch(/^id-\d+-\d+$/);
-            
+
             // 验证前缀
             expect(id1.startsWith('id-')).toBe(true);
             expect(id2.startsWith('id-')).toBe(true);
-            
+
             // 验证各部分结构
             const parts1 = id1.split('-');
             const parts2 = id2.split('-');
@@ -31,7 +31,7 @@ describe('String ID Utility Functions', () => {
         it('should generate a unique ID with custom prefix', () => {
             const id = idModule.getId('test');
             expect(id).toMatch(/^test-\d+-\d+$/);
-            
+
             const parts = id.split('-');
             expect(parts).toHaveLength(3); // prefix-timestamp-seed
             expect(parts[0]).toBe('test');
@@ -43,7 +43,7 @@ describe('String ID Utility Functions', () => {
             const id = idModule.getId('user-123');
             // The prefix containing hyphens will be preserved as the first part
             expect(id).toMatch(/^user-123-\d+-\d+$/);
-            
+
             const parts = id.split('-');
             expect(parts).toHaveLength(4); // user-123-timestamp-seed
             expect(parts[0]).toBe('user');

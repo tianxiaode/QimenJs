@@ -7,7 +7,7 @@ import {
     ProcessorNotFoundError,
     ProcessorExecutionError,
     InvalidProcessorError,
-    CommonPipelineNotFoundError
+    CommonPipelineNotFoundError,
 } from '@/data-processor/errors';
 
 describe('data-processor/errors', () => {
@@ -45,7 +45,9 @@ describe('data-processor/errors', () => {
         it('should create error for missing handler', () => {
             const error = new ProcessorNotFoundError('test-pipeline', 'test-handler');
 
-            expect(error.message).toBe('Handler "test-handler" not found in pipeline "test-pipeline"');
+            expect(error.message).toBe(
+                'Handler "test-handler" not found in pipeline "test-pipeline"'
+            );
             expect(error.context).toEqual({ key: 'test-pipeline', handlerName: 'test-handler' });
         });
     });

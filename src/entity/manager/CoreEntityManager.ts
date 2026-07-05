@@ -3,11 +3,7 @@ import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
-import type {
-    ENTITY_ACTION,
-    ICoreEntityManager,
-    ISchemaAbility,
-} from '@/entity/types';
+import type { ENTITY_ACTION, ICoreEntityManager, ISchemaAbility } from '@/entity/types';
 import type { IEventScope, EventHandler } from '@/events';
 import type { DomainConfig, SystemConfig } from '@/registry';
 import type { Schema, SchemaCache, RegistrSchema } from '@/schema';
@@ -46,7 +42,12 @@ export interface CoreEntityManager extends ISchemaAbility {
 }
 
 export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
-    static readonly abilities: readonly any[] = [EventAbility, DomainAbility, SystemAbility, SchemaAbility];
+    static readonly abilities: readonly any[] = [
+        EventAbility,
+        DomainAbility,
+        SystemAbility,
+        SchemaAbility,
+    ];
 
     domain: string = 'default';
     abstract entityName: string;
@@ -54,7 +55,7 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
 
     /**
      * 缓存过期时间（毫秒），默认 5 分钟
-     * 
+     *
      * 子类可覆盖此值，如：
      * ```typescript
      * class UserManager extends RemoteCrudEntityManager {
@@ -66,14 +67,14 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
 
     /**
      * Schema 定义（原始，未编译）
-     * 
+     *
      * 子类直接引用 Schema 对象，如：
      * ```typescript
      * class UserManager extends RemoteCrudEntityManager {
      *     schema = UserSchema;
      * }
      * ```
-     * 
+     *
      * 构造时自动注册到 SchemaRegistrar，用 schema.name 作为 key。
      * 运行时通过 getter 获取编译后的 Schema。
      */
@@ -81,7 +82,7 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
 
     /**
      * 获取编译后的 Schema
-     * 
+     *
      * 通过 SchemaRegistrar 延迟编译并缓存。
      * 如果 Schema 尚未注册，自动注册后再编译。
      * 返回的是编译后的 Schema（处理了 extends/mixins/override）。
@@ -89,12 +90,12 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     get compiledSchema(): Schema {
         const registrar = SchemaRegistrar.getInstance();
         const key = this.schema.name;
-        
+
         // 自动注册：如果尚未注册，先注册
         if (!registrar.has(key)) {
             registrar.register(this.schema);
         }
-        
+
         return registrar.getCompiled(key).schema;
     }
 
@@ -153,18 +154,21 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
         // 6. 返回任务对象
         return {
             context: execute(),
-            cancel: (reason?: string) => context.request?.controller?.abort(reason || 'manual_cancelled'),
+            cancel: (reason?: string) =>
+                context.request?.controller?.abort(reason || 'manual_cancelled'),
         };
     }
 
     /**
      * 构建请求上下文
      */
-    protected buildRequestContext(action: ENTITY_ACTION, options: HttpRequestOptions): RequestContext {
+    protected buildRequestContext(
+        action: ENTITY_ACTION,
+        options: HttpRequestOptions
+    ): RequestContext {
         const schema = this.getSchema();
 
-        return RequestContextBuilder
-            .create()
+        return RequestContextBuilder.create()
             .withIdentity({
                 domain: this.domain,
                 entityName: this.entityName,
@@ -188,7 +192,10 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
     /**
      * 执行数据处理管道
      */
-    protected async executeDataProcessor(stage: 'pre' | 'post', context: RequestContext): Promise<void> {
+    protected async executeDataProcessor(
+        stage: 'pre' | 'post',
+        context: RequestContext
+    ): Promise<void> {
         const preset = this.getDataProcessorPreset();
         const registrar = RegistryHub.get<DataProcessorRegistrar>(DataProcessorRegistrarName);
 

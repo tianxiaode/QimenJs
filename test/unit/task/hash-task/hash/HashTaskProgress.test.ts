@@ -10,7 +10,7 @@ describe('HashTaskProgress', () => {
     describe('init', () => {
         it('should initialize with default values when no totalBytes provided', () => {
             progress.init();
-            
+
             const snapshot = progress.snapshot();
             expect(snapshot.processedBytes).toBe(0);
             expect(snapshot.processedChunks).toBe(0);
@@ -20,7 +20,7 @@ describe('HashTaskProgress', () => {
 
         it('should initialize with provided totalBytes', () => {
             progress.init(1000);
-            
+
             const snapshot = progress.snapshot();
             expect(snapshot.processedBytes).toBe(0);
             expect(snapshot.processedChunks).toBe(0);
@@ -78,17 +78,17 @@ describe('HashTaskProgress', () => {
     describe('snapshot', () => {
         it('should return correct snapshot values', () => {
             progress.init(200);
-            
+
             const chunk = { data: { byteLength: 50 } };
             progress.onChunk(chunk);
 
             const snapshot: TaskProgressSnapshot = progress.snapshot();
-            
+
             expect(snapshot).toEqual({
                 progress: 0.25,
                 processedBytes: 50,
                 totalBytes: 200,
-                processedChunks: 1
+                processedChunks: 1,
             });
         });
 
@@ -97,7 +97,7 @@ describe('HashTaskProgress', () => {
             progress.onChunk(chunk);
 
             const snapshot = progress.snapshot();
-            
+
             expect(snapshot.progress).toBeUndefined();
             expect(snapshot.processedBytes).toBe(50);
             expect(snapshot.processedChunks).toBe(1);

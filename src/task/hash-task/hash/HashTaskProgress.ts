@@ -6,7 +6,7 @@ import { Chunk } from '../types';
  * - 累计已处理量
  * - 计算进度百分比
  * - 生成稳定 snapshot
- * 
+ *
  * 明确不负责：
  * - 不关心 chunk 怎么来
  * - 不关心 hash 算法
@@ -16,7 +16,7 @@ import { Chunk } from '../types';
 
 /**
  * 任务进度快照接口
- * 
+ *
  * 定义了任务进度的快照信息
  */
 export interface TaskProgressSnapshot {
@@ -35,9 +35,9 @@ export interface TaskProgressSnapshot {
 
 /**
  * 哈希任务进度管理类
- * 
+ *
  * 负责跟踪和管理哈希任务的执行进度
- * 
+ *
  * 设计原则：
  * - 仅负责进度跟踪和快照生成
  * - 不关心数据块的来源
@@ -51,7 +51,7 @@ export class HashTaskProgress {
 
     /**
      * 初始化进度（可选总量）
-     * 
+     *
      * @param totalBytes 总字节数，可选参数
      */
     init(totalBytes?: number): void {
@@ -62,9 +62,9 @@ export class HashTaskProgress {
 
     /**
      * 处理数据块，更新进度
-     * 
+     *
      * 该方法会更新已处理的块数和字节数
-     * 
+     *
      * @param chunk 要处理的数据块，包含字节数信息
      */
     onChunk(chunk: { data: { byteLength: number } }): void {
@@ -74,9 +74,9 @@ export class HashTaskProgress {
 
     /**
      * 生成只读快照
-     * 
+     *
      * 计算当前进度百分比并返回进度快照
-     * 
+     *
      * @returns 任务进度快照
      */
     snapshot(): TaskProgressSnapshot {

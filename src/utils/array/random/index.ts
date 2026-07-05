@@ -1,2 +1,2 @@
-export * from './sample'
-export * from './shuffle'
+export * from './sample';
+export * from './shuffle';

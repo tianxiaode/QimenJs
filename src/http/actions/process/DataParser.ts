@@ -1,6 +1,6 @@
 ﻿/**
  * @file DataParser.ts
- * @description 
+ * @description
  * 该文件实现了数据解析处理器，负责将原始响应数据解析为适当的数据格式。
  * 支持JSON、Blob和文本等多种数据类型的解析，并处理可能出现的解析错误。
  */
@@ -30,7 +30,7 @@ export const DataParserHandler = async (context: RequestContext) => {
 
         // 将解析后的数据存入 response.data
         context.response.data = context.data.raw;
-        
+
         // 备份一份到 source
         context.data.source = context.data.raw;
     } catch (e) {

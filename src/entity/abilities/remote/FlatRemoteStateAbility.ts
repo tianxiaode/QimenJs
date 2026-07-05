@@ -6,15 +6,19 @@ import type { AbilityDefinition } from '@/composable';
  * 提供对实体集合的计算属性和状态管理方法。
  * 数据字段（loading, items, page 等）已在 Manager 上定义，
  * 此 Ability 补充计算属性和状态操作方法。
- * 
+ *
  * 注意：不定义与 Manager 数据字段同名的 getter（如 loading, items, page 等），
  * 避免覆盖实例属性导致无法赋值。
- * 
+ *
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
 export const FlatRemoteStateAbility: AbilityDefinition = {
     // 计算属性（不与 Manager 数据字段同名）
-    isEmpty: { get() { return this.items.length === 0; } },
+    isEmpty: {
+        get() {
+            return this.items.length === 0;
+        },
+    },
 
     // 状态操作方法（原 FlatRemoteEntityState 的方法）
 

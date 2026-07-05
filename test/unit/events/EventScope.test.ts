@@ -4,7 +4,7 @@ import { ILogger } from '@qimenjs/logger';
 
 /**
  * EventScope 单元测试
- * 
+ *
  * 测试覆盖范围：
  * 1. 实例创建和唯一ID生成
  * 2. 事件订阅和自动清理
@@ -60,12 +60,12 @@ describe('EventScope', () => {
 
         test('应该记录作用域创建日志', () => {
             const newScope = new EventScope(bus, mockLogger);
-            
+
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 '[event.scope] created',
                 expect.objectContaining({
                     busId: bus.getBusId(),
-                    scopeId: newScope.getScopeId()
+                    scopeId: newScope.getScopeId(),
                 })
             );
         });
@@ -83,7 +83,7 @@ describe('EventScope', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
 
@@ -95,10 +95,10 @@ describe('EventScope', () => {
         test('应该在作用域销毁时自动取消事件订阅', () => {
             const handler = jest.fn();
             scope.on('test-event', handler);
-            
+
             bus.emit('test-event', { data: 'before-dispose' });
             expect(handler).toHaveBeenCalledTimes(1);
-            
+
             scope.dispose();
             bus.emit('test-event', { data: 'after-dispose' });
             expect(handler).toHaveBeenCalledTimes(1); // 销毁后应该仍然是1
@@ -141,7 +141,7 @@ describe('EventScope', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'first' },
-                    event: 'test-event'
+                    event: 'test-event',
                 })
             );
         });
@@ -170,7 +170,7 @@ describe('EventScope', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
-                    event: 'through-scope'
+                    event: 'through-scope',
                 })
             );
         });
@@ -178,15 +178,15 @@ describe('EventScope', () => {
         test('应该在事件上下文中包含scopeId和busId', () => {
             const handler = jest.fn();
             bus.on('context-test', handler);
-            
+
             scope.emit('context-test', { data: 'test' });
-            
+
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: { data: 'test' },
                     scopeId: scope.getScopeId(),
                     busId: bus.getBusId(),
-                    event: 'context-test'
+                    event: 'context-test',
                 })
             );
         });
@@ -200,7 +200,7 @@ describe('EventScope', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    source: customSource
+                    source: customSource,
                 })
             );
         });
@@ -213,7 +213,7 @@ describe('EventScope', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    source: scope
+                    source: scope,
                 })
             );
         });
@@ -234,12 +234,12 @@ describe('EventScope', () => {
 
         test('应该记录成功销毁日志', () => {
             scope.dispose();
-            
+
             expect(mockLogger.info).toHaveBeenCalledWith(
                 '[event.scope] disposed',
                 expect.objectContaining({
                     busId: bus.getBusId(),
-                    scopeId: scope.getScopeId()
+                    scopeId: scope.getScopeId(),
                 })
             );
         });
@@ -250,9 +250,9 @@ describe('EventScope', () => {
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 '[event.scope] dispose_twice',
-                expect.objectContaining({ 
+                expect.objectContaining({
                     busId: bus.getBusId(),
-                    scopeId: scope.getScopeId()
+                    scopeId: scope.getScopeId(),
                 })
             );
         });
@@ -328,7 +328,7 @@ describe('EventScope', () => {
             const failingCleanup = () => {
                 throw error;
             };
-            
+
             scope.addCleanup(failingCleanup);
             scope.dispose();
 
@@ -340,7 +340,9 @@ describe('EventScope', () => {
 
         test('一个清理函数出错不应该影响其他清理函数', () => {
             const cleanup1 = jest.fn();
-            const cleanup2 = jest.fn(() => { throw new Error('Error'); });
+            const cleanup2 = jest.fn(() => {
+                throw new Error('Error');
+            });
             const cleanup3 = jest.fn();
 
             scope.addCleanup(cleanup1);
@@ -360,24 +362,24 @@ describe('EventScope', () => {
     describe('日志记录', () => {
         test('应该记录作用域创建', () => {
             const newScope = new EventScope(bus, mockLogger);
-            
+
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 '[event.scope] created',
                 expect.objectContaining({
                     busId: bus.getBusId(),
-                    scopeId: newScope.getScopeId()
+                    scopeId: newScope.getScopeId(),
                 })
             );
         });
 
         test('应该记录成功销毁', () => {
             scope.dispose();
-            
+
             expect(mockLogger.info).toHaveBeenCalledWith(
                 '[event.scope] disposed',
                 expect.objectContaining({
                     busId: bus.getBusId(),
-                    scopeId: scope.getScopeId()
+                    scopeId: scope.getScopeId(),
                 })
             );
         });
@@ -396,7 +398,9 @@ describe('EventScope', () => {
     describe('错误处理', () => {
         test('应该处理事件处理器中的错误', () => {
             const error = new Error('Handler error');
-            const failingHandler = () => { throw error; };
+            const failingHandler = () => {
+                throw error;
+            };
             const workingHandler = jest.fn();
 
             scope.on('error-event', failingHandler);
@@ -421,7 +425,7 @@ describe('EventScope', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined
+                    data: undefined,
                 })
             );
         });
@@ -434,14 +438,14 @@ describe('EventScope', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: null
+                    data: null,
                 })
             );
         });
 
         test('应该能够处理大量订阅', () => {
             const handlers = Array.from({ length: 100 }, () => jest.fn());
-            
+
             handlers.forEach(handler => {
                 scope.on('many-subscriptions', handler);
             });
@@ -462,7 +466,7 @@ describe('EventScope', () => {
 
         test('应该能够处理大量清理函数', () => {
             const cleanups = Array.from({ length: 100 }, () => jest.fn());
-            
+
             cleanups.forEach(cleanup => {
                 scope.addCleanup(cleanup);
             });

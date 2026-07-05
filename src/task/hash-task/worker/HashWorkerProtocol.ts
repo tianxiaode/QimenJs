@@ -18,10 +18,10 @@ import { Chunk } from '../types/chunk';
  * 用于向Worker传递哈希算法类型
  */
 export type HashWorkerInitMessage = {
-  /** 消息类型：初始化 */
-  type: 'init';
-  /** 算法标识，例如 'sha-256' */
-  algorithm: string;
+    /** 消息类型：初始化 */
+    type: 'init';
+    /** 算法标识，例如 'sha-256' */
+    algorithm: string;
 };
 
 /**
@@ -29,12 +29,12 @@ export type HashWorkerInitMessage = {
  * 用于向Worker传递数据块进行哈希计算
  */
 export type HashWorkerUpdateMessage = {
-  /** 消息类型：更新 */
-  type: 'update';
-  /** chunk 唯一标识（用于调试 / 并发） */
-  chunkId: string;
-  /** chunk 数据 */
-  data: ArrayBuffer;
+    /** 消息类型：更新 */
+    type: 'update';
+    /** chunk 唯一标识（用于调试 / 并发） */
+    chunkId: string;
+    /** chunk 数据 */
+    data: ArrayBuffer;
 };
 
 /**
@@ -42,8 +42,8 @@ export type HashWorkerUpdateMessage = {
  * 用于通知Worker完成哈希计算并返回最终结果
  */
 export type HashWorkerFinalMessage = {
-  /** 消息类型：完成 */
-  type: 'final';
+    /** 消息类型：完成 */
+    type: 'final';
 };
 
 /**
@@ -51,18 +51,18 @@ export type HashWorkerFinalMessage = {
  * 用于重置Worker内部的哈希计算状态
  */
 export type HashWorkerResetMessage = {
-  /** 消息类型：重置 */
-  type: 'reset';
+    /** 消息类型：重置 */
+    type: 'reset';
 };
 
 /**
  * 主线程向Worker发送的消息联合类型
  */
 export type HashWorkerMessage =
-  | HashWorkerInitMessage
-  | HashWorkerUpdateMessage
-  | HashWorkerFinalMessage
-  | HashWorkerResetMessage;
+    | HashWorkerInitMessage
+    | HashWorkerUpdateMessage
+    | HashWorkerFinalMessage
+    | HashWorkerResetMessage;
 
 /**
  * =========================
@@ -75,20 +75,20 @@ export type HashWorkerMessage =
  * 用于向主线程确认已处理某条消息
  */
 export type HashWorkerAck = {
-  /** 消息类型：确认 */
-  type: 'ack';
-  /** 可选：回应哪个 chunk */
-  chunkId?: string;
+    /** 消息类型：确认 */
+    type: 'ack';
+    /** 可选：回应哪个 chunk */
+    chunkId?: string;
 };
 
 /**
  * Worker返回最终哈希结果的消息类型
  */
 export type HashWorkerDigest = {
-  /** 消息类型：摘要 */
-  type: 'digest';
-  /** 最终 hash 结果 */
-  result: ArrayBuffer;
+    /** 消息类型：摘要 */
+    type: 'digest';
+    /** 最终 hash 结果 */
+    result: ArrayBuffer;
 };
 
 /**
@@ -96,18 +96,15 @@ export type HashWorkerDigest = {
  * 用于向主线程报告错误
  */
 export type HashWorkerError = {
-  /** 消息类型：错误 */
-  type: 'error';
-  /** 错误代码 */
-  code: number | string;
-  /** 错误消息 */
-  message: string;
+    /** 消息类型：错误 */
+    type: 'error';
+    /** 错误代码 */
+    code: number | string;
+    /** 错误消息 */
+    message: string;
 };
 
 /**
  * Worker向主线程发送的响应消息联合类型
  */
-export type HashWorkerResponse =
-  | HashWorkerAck
-  | HashWorkerDigest
-  | HashWorkerError;
+export type HashWorkerResponse = HashWorkerAck | HashWorkerDigest | HashWorkerError;

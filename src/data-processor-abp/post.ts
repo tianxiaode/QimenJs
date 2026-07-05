@@ -9,7 +9,13 @@
 import type { RequestContext } from '@/context';
 import type { DataProcessorHandler } from '@/data-processor/types';
 import { DataProcessorWeight } from '@/data-processor/weights';
-import type { AbpAuditFields, AbpErrorResponse, AbpFieldErrors, AbpPagedResult, AbpPipelineOptions } from './types';
+import type {
+    AbpAuditFields,
+    AbpErrorResponse,
+    AbpFieldErrors,
+    AbpPagedResult,
+    AbpPipelineOptions,
+} from './types';
 
 /**
  * ABP 数据提取
@@ -37,8 +43,12 @@ export function createAbpExtractHandler(options?: AbpPipelineOptions): DataProce
             if (isPagedResult(raw)) {
                 context.data.list = raw.items || [];
                 context.data.total = raw.totalCount ?? 0;
-                const pageSize = context.request.queryParams?.maxResultCount ?? context.data.params?.takeCount ?? 10;
-                const skipCount = context.request.queryParams?.skipCount ?? context.data.params?.skipCount ?? 0;
+                const pageSize =
+                    context.request.queryParams?.maxResultCount ??
+                    context.data.params?.takeCount ??
+                    10;
+                const skipCount =
+                    context.request.queryParams?.skipCount ?? context.data.params?.skipCount ?? 0;
                 context.data.pagination = {
                     isRequestAligned: true,
                     isResponseAligned: true,
@@ -84,9 +94,12 @@ export function createAbpAuditCleanHandler(options?: AbpPipelineOptions): DataPr
 
         async handle(context: RequestContext): Promise<void> {
             const auditKeys: (keyof AbpAuditFields)[] = [
-                'creationTime', 'creatorId',
-                'lastModificationTime', 'lastModifierId',
-                'deletionTime', 'deleterId',
+                'creationTime',
+                'creatorId',
+                'lastModificationTime',
+                'lastModifierId',
+                'deletionTime',
+                'deleterId',
             ];
 
             // 清理列表数据
@@ -109,7 +122,9 @@ export function createAbpAuditCleanHandler(options?: AbpPipelineOptions): DataPr
  *
  * 过滤掉 isDeleted=true 的记录
  */
-export function createAbpSoftDeleteFilterHandler(options?: AbpPipelineOptions): DataProcessorHandler {
+export function createAbpSoftDeleteFilterHandler(
+    options?: AbpPipelineOptions
+): DataProcessorHandler {
     const shouldFilter = options?.filterSoftDeleted ?? true;
 
     return {
@@ -126,9 +141,7 @@ export function createAbpSoftDeleteFilterHandler(options?: AbpPipelineOptions): 
 
         async handle(context: RequestContext): Promise<void> {
             if (context.data.list?.length) {
-                context.data.list = context.data.list.filter(
-                    (item: any) => !item.isDeleted
-                );
+                context.data.list = context.data.list.filter((item: any) => !item.isDeleted);
                 context.data.total = context.data.list.length;
             }
         },
@@ -202,10 +215,7 @@ export function convertToFieldErrors(
 // ---- 辅助函数 ----
 
 function isPagedResult(data: any): data is AbpPagedResult {
-    return data
-        && typeof data === 'object'
-        && 'items' in data
-        && 'totalCount' in data;
+    return data && typeof data === 'object' && 'items' in data && 'totalCount' in data;
 }
 
 function removeAuditFields(item: any, keys: (keyof AbpAuditFields)[]): void {

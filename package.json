@@ -1,5 +1,5 @@
 {
-  "name": "@qimenjs/core",
+  "name": "@qimen-lab/core",
   "version": "0.1.1",
   "description": "QimenJS - Modern TypeScript infrastructure library inspired by Qimen Dunjia",
   "keywords": [
@@ -10,15 +10,8 @@
     "composable",
     "typescript"
   ],
-  "main": "dist/core/index.js",
-  "module": "dist/core/index.esm.js",
-  "types": "dist/core/index.d.ts",
+  "sideEffects": false,
   "exports": {
-    ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
     "./error": {
       "import": "./dist/error/index.esm.js",
       "require": "./dist/error/index.js",
@@ -177,7 +170,7 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.js\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.js\"",
     "dev": "tsc --watch",
-    "prepublishOnly": "npm run build && npm run test",
+    "prepublishOnly": "pnpm run build && pnpm run test",
     "generate:test": "node scripts/generate-tests.js",
     "generate:test:custom": "node scripts/generate-tests.js --src src --test test/unit",
     "docs": "typedoc"

@@ -18,8 +18,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -48,7 +48,6 @@ function createTreeSearchHost() {
 // ============================================
 
 describe('TreeSearchAbility', () => {
-
     describe('matchKeyword', () => {
         it('匹配搜索字段应返回 true', () => {
             const host = createTreeSearchHost();
@@ -103,9 +102,27 @@ describe('TreeSearchAbility', () => {
             host.search.keyword = 'child';
 
             // 构建树：root -> parent -> child
-            const rootNode = { id: 'root', name: 'Root', parentId: null, _depth: 0, expanded: false };
-            const parentNode = { id: 'parent', name: 'Parent', parentId: 'root', _depth: 1, expanded: false };
-            const childNode = { id: 'child', name: 'Child Match', parentId: 'parent', _depth: 2, expanded: false };
+            const rootNode = {
+                id: 'root',
+                name: 'Root',
+                parentId: null,
+                _depth: 0,
+                expanded: false,
+            };
+            const parentNode = {
+                id: 'parent',
+                name: 'Parent',
+                parentId: 'root',
+                _depth: 1,
+                expanded: false,
+            };
+            const childNode = {
+                id: 'child',
+                name: 'Child Match',
+                parentId: 'parent',
+                _depth: 2,
+                expanded: false,
+            };
             host.nodes.set('root', rootNode);
             host.nodes.set('parent', parentNode);
             host.nodes.set('child', childNode);

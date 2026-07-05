@@ -29,12 +29,12 @@ const Comparators: Record<string, (a: any, b: any, natural?: boolean) => number>
 
 /**
  * 按照指定条件对数组进行排序
- * 
+ *
  * @template T - 数组元素类型
  * @param {T[]} arr - 需要排序的数组
  * @param {OrderCondition<T>[]} conditions - 排序条件数组，按条件顺序依次排序
  * @returns {T[]} 排序后的新数组（不影响原数组）
- * 
+ *
  * @example
  * const data = [{ name: 'John', age: 30 }, { name: 'Jane', age: 25 }];
  * const sorted = orderBy(data, [{ by: 'age', order: 'desc' }]);
@@ -71,13 +71,13 @@ export function orderBy<T>(arr: T[], conditions: OrderCondition<T>[]): T[] {
 
 /**
  * 按指定字段对数组进行排序的便捷函数
- * 
+ *
  * @template T - 数组元素类型
  * @param {T[]} arr - 需要排序的数组
  * @param {keyof T} field - 用于排序的字段
  * @param {'asc' | 'desc'} [order='asc'] - 排序方向，默认为升序
  * @returns {T[]} 排序后的新数组
- * 
+ *
  * @example
  * const data = [{ name: 'John', age: 30 }, { name: 'Jane', age: 25 }];
  * const sorted = sortBy(data, 'age');
@@ -88,13 +88,13 @@ export const sortBy = <T>(arr: T[], field: keyof T, order: 'asc' | 'desc' = 'asc
 
 /**
  * 使用自然排序算法对数组进行排序
- * 
+ *
  * @template T - 数组元素类型
  * @param {T[]} arr - 需要排序的数组
  * @param {(item: T) => string} [keySelector] - 提取字符串键的函数，如果未提供则直接使用数组元素
  * @param {'asc' | 'desc'} [order='asc'] - 排序方向，默认为升序
  * @returns {T[]} 排序后的新数组
- * 
+ *
  * @example
  * const data = ['item10', 'item1', 'item2'];
  * const sorted = naturalSort(data);

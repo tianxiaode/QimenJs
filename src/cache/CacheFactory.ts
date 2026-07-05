@@ -3,13 +3,12 @@ import { CacheType, ICacheProvider } from './types';
 import { MemoryProvider } from './MemoryProvider';
 
 export class CacheFactory {
-
     static _instances = new Map<string, ICacheProvider>();
 
     static async create(type: CacheType, _offline: boolean = false): Promise<ICacheProvider> {
         const logger = Logger.for('CacheFactory');
         logger.debug('Creating cache provider', type);
-        let provider = new MemoryProvider();
+        const provider = new MemoryProvider();
         this._instances.set(provider.id, provider);
         return provider;
     }

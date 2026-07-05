@@ -13,8 +13,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -23,7 +23,7 @@ import { StreamClient } from '@/http/StreamClient';
 // Mock HttpExecutor
 jest.mock('@/http/HttpExecutor', () => ({
     HttpExecutor: jest.fn().mockImplementation(() => ({
-        execute: jest.fn().mockImplementation((ctx) => {
+        execute: jest.fn().mockImplementation(ctx => {
             if (!ctx.request.url) {
                 ctx.request.url = 'http://example.com/stream';
             }
@@ -129,7 +129,7 @@ describe('StreamClient', () => {
 
         it('should build context with headers', () => {
             const task = client.request('GET', 'http://example.com/stream', undefined, {
-                headers: { 'Authorization': 'Bearer token' },
+                headers: { Authorization: 'Bearer token' },
             });
             expect(task.context).toBeDefined();
         });
@@ -187,9 +187,7 @@ describe('StreamClient', () => {
         });
 
         it('should yield raw string when JSON parse fails', async () => {
-            const stream = createMockReadableStream([
-                'data: not-json\n\n',
-            ]);
+            const stream = createMockReadableStream(['data: not-json\n\n']);
             (globalThis.fetch as jest.Mock).mockResolvedValue(createMockResponse(stream));
 
             const task = client.request('GET', 'http://example.com/stream');
@@ -208,7 +206,9 @@ describe('StreamClient', () => {
 
             const task = client.request('GET', 'http://example.com/stream');
             await expect(async () => {
-                for await (const _ of task.stream) { /* consume */ }
+                for await (const _ of task.stream) {
+                    /* consume */
+                }
             }).rejects.toThrow('Stream request failed');
         });
 
@@ -223,18 +223,20 @@ describe('StreamClient', () => {
 
             const task = client.request('GET', 'http://example.com/stream');
             await expect(async () => {
-                for await (const _ of task.stream) { /* consume */ }
+                for await (const _ of task.stream) {
+                    /* consume */
+                }
             }).rejects.toThrow('Stream response has no body');
         });
 
         it('should sync response headers to context', async () => {
-            const stream = createMockReadableStream([
-                'data: {"text":"hello"}\n\n',
-            ]);
+            const stream = createMockReadableStream(['data: {"text":"hello"}\n\n']);
             (globalThis.fetch as jest.Mock).mockResolvedValue(createMockResponse(stream));
 
             const task = client.request('GET', 'http://example.com/stream');
-            for await (const _ of task.stream) { /* consume */ }
+            for await (const _ of task.stream) {
+                /* consume */
+            }
             expect(task.context.response.status).toBe(200);
             expect(task.context.response.isSuccess).toBe(true);
         });
@@ -245,8 +247,12 @@ describe('StreamClient', () => {
 
             const task = client.request('POST', 'http://example.com/stream', 'raw-string-body');
             try {
-                for await (const _ of task.stream) { /* consume */ }
-            } catch { /* stream may end immediately */ }
+                for await (const _ of task.stream) {
+                    /* consume */
+                }
+            } catch {
+                /* stream may end immediately */
+            }
 
             const fetchCall = (globalThis.fetch as jest.Mock).mock.calls[0];
             expect(fetchCall[1].body).toBe('raw-string-body');
@@ -258,8 +264,12 @@ describe('StreamClient', () => {
 
             const task = client.request('POST', 'http://example.com/stream', { key: 'value' });
             try {
-                for await (const _ of task.stream) { /* consume */ }
-            } catch { /* stream may end immediately */ }
+                for await (const _ of task.stream) {
+                    /* consume */
+                }
+            } catch {
+                /* stream may end immediately */
+            }
 
             const fetchCall = (globalThis.fetch as jest.Mock).mock.calls[0];
             expect(fetchCall[1].body).toBe('{"key":"value"}');
@@ -283,7 +293,7 @@ describe('StreamClient', () => {
 
         it('should create GET stream request with options', () => {
             const task = client.get('http://example.com/stream', {
-                headers: { 'Accept': 'text/event-stream' },
+                headers: { Accept: 'text/event-stream' },
             });
             expect(task.stream).toBeDefined();
         });

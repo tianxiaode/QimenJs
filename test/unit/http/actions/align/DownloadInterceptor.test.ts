@@ -5,14 +5,15 @@
 import { DownloadInterceptorHandler } from '@/http/actions/align/DownloadInterceptor';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    isDownload?: boolean;
-    error?: any;
-    raw?: any;
-    fileName?: string;
-} = {}) {
-    const context = RequestContextBuilder
-        .create()
+function createContext(
+    options: {
+        isDownload?: boolean;
+        error?: any;
+        raw?: any;
+        fileName?: string;
+    } = {}
+) {
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('/api/download')
         .withMethod('GET')
@@ -42,8 +43,8 @@ describe('DownloadInterceptor', () => {
     let removeChildSpy: jest.SpyInstance;
 
     beforeEach(() => {
-        appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-        removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+        appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(node => node);
+        removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(node => node);
     });
 
     afterEach(() => {

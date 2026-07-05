@@ -14,7 +14,7 @@ jest.mock('@qimenjs/logger', () => {
         withFields: jest.fn().mockReturnThis(),
         withTag: jest.fn().mockReturnThis(),
     };
-    
+
     return {
         Logger: {
             for: jest.fn().mockReturnValue(mockLogger),
@@ -27,7 +27,12 @@ jest.mock('@qimenjs/logger', () => {
     };
 });
 
-import { doValidate, validationExecutor, ValidatorRegistrar, bootstrapValidators } from '@/validation';
+import {
+    doValidate,
+    validationExecutor,
+    ValidatorRegistrar,
+    bootstrapValidators,
+} from '@/validation';
 import '@qimenjs/pattern';
 
 // 启动验证器
@@ -48,68 +53,68 @@ describe('Validation Core', () => {
             });
 
             it('should validate required string', async () => {
-                const result = await doValidate('', { 
+                const result = await doValidate('', {
                     type: 'string',
                     required: true,
-                    empty: false 
+                    empty: false,
                 });
                 expect(result.isValid).toBe(false);
                 expect(result.errors.length).toBeGreaterThan(0);
             });
 
             it('should validate string length', async () => {
-                const result = await doValidate('hello', { 
+                const result = await doValidate('hello', {
                     type: 'string',
                     min: 3,
-                    max: 10 
+                    max: 10,
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should invalidate string too short', async () => {
-                const result = await doValidate('hi', { 
+                const result = await doValidate('hi', {
                     type: 'string',
-                    min: 3 
+                    min: 3,
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should invalidate string too long', async () => {
-                const result = await doValidate('hello world', { 
+                const result = await doValidate('hello world', {
                     type: 'string',
-                    max: 5 
+                    max: 5,
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should validate email format', async () => {
-                const result = await doValidate('test@example.com', { 
+                const result = await doValidate('test@example.com', {
                     type: 'format',
-                    format: 'email' 
+                    format: 'email',
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should invalidate wrong email format', async () => {
-                const result = await doValidate('not-an-email', { 
+                const result = await doValidate('not-an-email', {
                     type: 'format',
-                    format: 'email' 
+                    format: 'email',
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should validate URL format', async () => {
-                const result = await doValidate('https://example.com', { 
+                const result = await doValidate('https://example.com', {
                     type: 'format',
-                    format: 'url' 
+                    format: 'url',
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should validate pattern', async () => {
-                const result = await doValidate('abc123', { 
+                const result = await doValidate('abc123', {
                     type: 'string',
-                    pattern: /^[a-z0-9]+$/
+                    pattern: /^[a-z0-9]+$/,
                 });
                 expect(result.isValid).toBe(true);
             });
@@ -127,42 +132,42 @@ describe('Validation Core', () => {
             });
 
             it('should validate min/max', async () => {
-                const result = await doValidate(5, { 
+                const result = await doValidate(5, {
                     type: 'number',
                     min: 1,
-                    max: 10 
+                    max: 10,
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should invalidate number too small', async () => {
-                const result = await doValidate(0, { 
+                const result = await doValidate(0, {
                     type: 'number',
-                    min: 1 
+                    min: 1,
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should invalidate number too large', async () => {
-                const result = await doValidate(15, { 
+                const result = await doValidate(15, {
                     type: 'number',
-                    max: 10 
+                    max: 10,
                 });
                 expect(result.isValid).toBe(false);
             });
 
             it('should validate integer', async () => {
-                const result = await doValidate(5, { 
+                const result = await doValidate(5, {
                     type: 'number',
-                    integer: true 
+                    integer: true,
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should invalidate non-integer', async () => {
-                const result = await doValidate(5.5, { 
+                const result = await doValidate(5.5, {
                     type: 'number',
-                    integer: true 
+                    integer: true,
                 });
                 expect(result.isValid).toBe(false);
             });
@@ -192,18 +197,18 @@ describe('Validation Core', () => {
             });
 
             it('should validate array length', async () => {
-                const result = await doValidate([1, 2, 3], { 
+                const result = await doValidate([1, 2, 3], {
                     type: 'array',
                     minLength: 2,
-                    maxLength: 5 
+                    maxLength: 5,
                 });
                 expect(result.isValid).toBe(true);
             });
 
             it('should invalidate array too short', async () => {
-                const result = await doValidate([1], { 
+                const result = await doValidate([1], {
                     type: 'array',
-                    minLength: 2 
+                    minLength: 2,
                 });
                 expect(result.isValid).toBe(false);
             });
@@ -240,11 +245,11 @@ describe('Validation Core', () => {
             });
 
             it('should record step timing', async () => {
-                const result = await doValidate('test@example.com', { 
+                const result = await doValidate('test@example.com', {
                     type: 'string',
-                    format: 'email' 
+                    format: 'email',
                 });
-                
+
                 const step = result.context.steps[0];
                 expect(step.duration).toBeDefined();
                 expect(step.duration).toBeGreaterThanOrEqual(0);
@@ -264,11 +269,11 @@ describe('Validation Core', () => {
 
         it('should track multiple validations', async () => {
             validationExecutor.resetStats();
-            
+
             await doValidate('test1', { type: 'string' });
             await doValidate('test2', { type: 'string' });
             await doValidate('', { type: 'string', required: true });
-            
+
             const stats = validationExecutor.getStats();
             expect(stats.totalExecutions).toBe(3);
         });
@@ -283,7 +288,7 @@ describe('Validation Core', () => {
 
         it('should print report', async () => {
             const result = await doValidate('test', { type: 'string' });
-            
+
             // 构造 PipelineResult 格式的结果
             const pipelineResult = {
                 context: result.context,
@@ -292,7 +297,7 @@ describe('Validation Core', () => {
                 totalDuration: 0,
                 error: undefined,
             };
-            
+
             // 不应该抛出错误
             expect(() => {
                 validationExecutor.printReport(pipelineResult);

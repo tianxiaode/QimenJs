@@ -17,7 +17,7 @@ describe('SchemaRegistrar', () => {
         it('should return the same instance', () => {
             const instance1 = SchemaRegistrar.getInstance();
             const instance2 = SchemaRegistrar.getInstance();
-            
+
             expect(instance1).toBe(instance2);
         });
 
@@ -35,12 +35,12 @@ describe('SchemaRegistrar', () => {
                 root: null,
                 fields: [
                     { name: 'id', type: 'string', required: true },
-                    { name: 'name', type: 'string', minLength: 2 }
-                ]
+                    { name: 'name', type: 'string', minLength: 2 },
+                ],
             };
-            
+
             registrar.register(schema);
-            
+
             expect(registrar.has('User')).toBe(true);
         });
 
@@ -50,13 +50,11 @@ describe('SchemaRegistrar', () => {
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [
-                    { name: 'id', type: 'string', required: true }
-                ]
+                fields: [{ name: 'id', type: 'string', required: true }],
             };
-            
+
             registrar.register(schema);
-            
+
             const retrieved = registrar.get('User');
             expect(retrieved.name).toBe('User');
             expect(retrieved.fields).toHaveLength(1);
@@ -64,22 +62,22 @@ describe('SchemaRegistrar', () => {
 
         it('should warn when registering duplicate schema name', () => {
             const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-            
+
             registrar.register({
                 name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: []
+                fields: [],
             });
             registrar.register({
                 name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [{ name: 'email', type: 'string' }]
+                fields: [{ name: 'email', type: 'string' }],
             });
-            
+
             expect(warnSpy).toHaveBeenCalledWith(
                 expect.stringContaining('[SchemaRegistrar] Schema "User" is already registered')
             );
@@ -97,22 +95,22 @@ describe('SchemaRegistrar', () => {
         it('should register a field group', () => {
             const fields: FieldDefinition[] = [
                 { name: 'street', type: 'string' },
-                { name: 'city', type: 'string' }
+                { name: 'city', type: 'string' },
             ];
-            
+
             registrar.register('addressFields', fields);
-            
+
             expect(registrar.has('addressFields', 'field')).toBe(true);
         });
 
         it('should store field group correctly', () => {
             const fields: FieldDefinition[] = [
                 { name: 'street', type: 'string' },
-                { name: 'city', type: 'string' }
+                { name: 'city', type: 'string' },
             ];
-            
+
             registrar.register('addressFields', fields);
-            
+
             const retrieved = registrar.getField('addressFields');
             expect(retrieved).toHaveLength(2);
             expect(retrieved[0].name).toBe('street');
@@ -132,10 +130,10 @@ describe('SchemaRegistrar', () => {
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: []
+                fields: [],
             });
             expect(registrar.has('User')).toBe(true);
-            
+
             registrar.unregister('User');
             expect(registrar.has('User')).toBe(false);
         });
@@ -143,7 +141,7 @@ describe('SchemaRegistrar', () => {
         it('should unregister a field group', () => {
             registrar.register('testFields', []);
             expect(registrar.has('testFields', 'field')).toBe(true);
-            
+
             registrar.unregister('testFields');
             expect(registrar.has('testFields', 'field')).toBe(false);
         });
@@ -169,12 +167,12 @@ describe('SchemaRegistrar', () => {
         });
 
         it('should return true for registered schema', () => {
-            registrar.register({ 
-                name: 'User', 
+            registrar.register({
+                name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
             expect(registrar.has('User')).toBe(true);
         });
@@ -186,21 +184,21 @@ describe('SchemaRegistrar', () => {
         });
 
         it('should return all schema names', () => {
-            registrar.register({ 
-                name: 'User', 
+            registrar.register({
+                name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
-            registrar.register({ 
-                name: 'Product', 
+            registrar.register({
+                name: 'Product',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
-            
+
             const names = registrar.getAllSchemaNames();
             expect(names).toHaveLength(2);
             expect(names).toContain('User');
@@ -216,7 +214,7 @@ describe('SchemaRegistrar', () => {
         it('should return all field group names', () => {
             registrar.register('fields1', []);
             registrar.register('fields2', []);
-            
+
             const names = registrar.getAllFieldNames();
             expect(names).toHaveLength(2);
             expect(names).toContain('fields1');
@@ -226,17 +224,17 @@ describe('SchemaRegistrar', () => {
 
     describe('clear', () => {
         it('should clear all schemas and field groups', () => {
-            registrar.register({ 
-                name: 'User', 
+            registrar.register({
+                name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
             registrar.register('fields', []);
-            
+
             registrar.clear();
-            
+
             expect(registrar.getAllSchemaNames()).toEqual([]);
             expect(registrar.getAllFieldNames()).toEqual([]);
         });
@@ -244,14 +242,14 @@ describe('SchemaRegistrar', () => {
 
     describe('inspect', () => {
         it('should output registrar state', () => {
-            registrar.register({ 
-                name: 'User', 
+            registrar.register({
+                name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
-            
+
             expect(() => registrar.inspect()).not.toThrow();
         });
     });
@@ -264,7 +262,7 @@ describe('SchemaRegistrar', () => {
                 fields: [
                     { name: 'id', type: 'string' },
                     { name: 'name', type: 'string' },
-                ]
+                ],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -277,9 +275,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'User',
                 isTree: false as const,
-                fields: [
-                    { name: 'id', type: 'string' },
-                ]
+                fields: [{ name: 'id', type: 'string' }],
             });
 
             const first = registrar.getCompiled('User');
@@ -294,16 +290,14 @@ describe('SchemaRegistrar', () => {
                 fields: [
                     { name: 'id', type: 'string' },
                     { name: 'createdAt', type: 'date' },
-                ]
+                ],
             });
 
             registrar.register({
                 name: 'User',
                 extends: 'base',
                 isTree: false as const,
-                fields: [
-                    { name: 'username', type: 'string' },
-                ]
+                fields: [{ name: 'username', type: 'string' }],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -320,9 +314,7 @@ describe('SchemaRegistrar', () => {
                 name: 'User',
                 mixins: ['auditFields'],
                 isTree: false as const,
-                fields: [
-                    { name: 'id', type: 'string' },
-                ]
+                fields: [{ name: 'id', type: 'string' }],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -341,7 +333,7 @@ describe('SchemaRegistrar', () => {
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: []
+                fields: [],
             });
 
             const compiled = registrar.getCompiled('Tree');
@@ -357,7 +349,7 @@ describe('SchemaRegistrar', () => {
                     { name: 'id', type: 'string', searchable: true },
                     { name: 'name', type: 'string', searchable: false },
                     { name: 'email', type: 'string' },
-                ]
+                ],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -369,9 +361,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'User',
                 isTree: false as const,
-                fields: [
-                    { name: 'id', type: 'string', searchable: true },
-                ]
+                fields: [{ name: 'id', type: 'string', searchable: true }],
             });
 
             const compiled1 = registrar.getCompiled('User');
@@ -381,9 +371,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'User',
                 isTree: false as const,
-                fields: [
-                    { name: 'id', type: 'string', searchable: false },
-                ]
+                fields: [{ name: 'id', type: 'string', searchable: false }],
             });
 
             // Clear compiled cache to force recompile
@@ -396,9 +384,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'Tags',
                 isTree: false as const,
-                fields: [
-                    { name: 'tags', type: 'string', separator: ',' },
-                ]
+                fields: [{ name: 'tags', type: 'string', separator: ',' }],
             });
 
             const compiled = registrar.getCompiled('Tags');
@@ -411,9 +397,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'User',
                 isTree: false as const,
-                fields: [
-                    { name: 'email', type: 'string', pattern: 'email' },
-                ]
+                fields: [{ name: 'email', type: 'string', pattern: 'email' }],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -426,9 +410,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'User',
                 isTree: false as const,
-                fields: [
-                    { name: 'phone', type: 'string', format: 'phone' },
-                ]
+                fields: [{ name: 'phone', type: 'string', format: 'phone' }],
             });
 
             const compiled = registrar.getCompiled('User');
@@ -446,7 +428,7 @@ describe('SchemaRegistrar', () => {
                     { name: 'age', type: 'number', min: 0 },
                     { name: 'birthday', type: 'date' },
                     { name: 'active', type: 'boolean' },
-                ]
+                ],
             });
 
             const compiled = registrar.getCompiled('AllTypes');
@@ -461,9 +443,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'Custom',
                 isTree: false as const,
-                fields: [
-                    { name: 'field1', type: 'string', rules: customRule },
-                ]
+                fields: [{ name: 'field1', type: 'string', rules: customRule }],
             });
 
             const compiled = registrar.getCompiled('Custom');
@@ -479,9 +459,7 @@ describe('SchemaRegistrar', () => {
             registrar.register({
                 name: 'CustomArray',
                 isTree: false as const,
-                fields: [
-                    { name: 'field1', type: 'string', rules: customRules },
-                ]
+                fields: [{ name: 'field1', type: 'string', rules: customRules }],
             });
 
             const compiled = registrar.getCompiled('CustomArray');
@@ -494,7 +472,7 @@ describe('SchemaRegistrar', () => {
                 isTree: false as const,
                 fields: [
                     { name: 'simple', type: 'object' }, // object type has no built-in rule
-                ]
+                ],
             });
 
             const compiled = registrar.getCompiled('NoRules');
@@ -504,21 +482,19 @@ describe('SchemaRegistrar', () => {
 
     describe('inspect', () => {
         it('should output registrar state', () => {
-            registrar.register({ 
-                name: 'User', 
+            registrar.register({
+                name: 'User',
                 isTree: true,
                 isLazy: false,
                 root: null,
-                fields: [] 
+                fields: [],
             });
-            
+
             expect(() => registrar.inspect()).not.toThrow();
         });
 
         it('should output field groups in inspect', () => {
-            registrar.register('testFields', [
-                { name: 'field1', type: 'string' },
-            ]);
+            registrar.register('testFields', [{ name: 'field1', type: 'string' }]);
 
             const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
             registrar.inspect();

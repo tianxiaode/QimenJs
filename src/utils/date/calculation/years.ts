@@ -10,11 +10,11 @@ export function addYears(date: Date | string, years: number): Date {
     const month = d.getMonth();
     const originalYear = d.getFullYear();
     const targetYear = originalYear + years;
-    
+
     // 创建目标年份的新日期，但要检查是否是2月29日的情况
     const result = new Date(d);
     result.setFullYear(targetYear);
-    
+
     // 检查是否是闰年的2月29日，且目标年份不是闰年
     // 这种情况下，JavaScript会自动将日期调整到3月1日
     if (month === 1 && day === 29 && isLeapYear(originalYear) && !isLeapYear(targetYear)) {
@@ -23,7 +23,7 @@ export function addYears(date: Date | string, years: number): Date {
         result.setMonth(1); // 2月
         result.setDate(28); // 28日
     }
-    
+
     return result;
 }
 
@@ -33,7 +33,7 @@ export function addYears(date: Date | string, years: number): Date {
  * @returns 是否为闰年
  */
 function isLeapYear(year: number): boolean {
-    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 /**

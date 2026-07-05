@@ -3,7 +3,7 @@ import type { IDeletionPlan, ILocalChangeSet } from '@/entity/types';
 
 /**
  * LocalMutationAbility - 本地变更集能力
- * 
+ *
  * 为宿主提供本地数据变更管理功能（新增/更新/删除/回滚）。
  * this 指向宿主（Manager），this.schema/sourceData 可直接访问。
  * 私有状态 _changes/_deleteSnapshots 通过 abilityState 管理。
@@ -12,8 +12,13 @@ import type { IDeletionPlan, ILocalChangeSet } from '@/entity/types';
 export const LocalMutationAbility: AbilityDefinition = {
     hasChanges: {
         get() {
-            const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
-            return changes !== undefined && (changes.added.length > 0 || changes.updated.size > 0 || changes.deleted.length > 0);
+            const changes = this.abilityState('StateLocalMutation:changes') as
+                | ILocalChangeSet
+                | undefined;
+            return (
+                changes !== undefined &&
+                (changes.added.length > 0 || changes.updated.size > 0 || changes.deleted.length > 0)
+            );
         },
     },
 
@@ -42,9 +47,7 @@ export const LocalMutationAbility: AbilityDefinition = {
 
         const id = item[idField];
         const changes = this._getOrCreateChanges();
-        const isNew = changes.added.some(
-            (i: any) => i[idField] === id || i.tempId === item.tempId
-        );
+        const isNew = changes.added.some((i: any) => i[idField] === id || i.tempId === item.tempId);
 
         if (!isNew && id) {
             changes.updated.set(id, { ...item });
@@ -70,8 +73,12 @@ export const LocalMutationAbility: AbilityDefinition = {
         const idField = this.schema.idField || 'id';
         const { localOnly, persistent } = plan;
 
-        const localIds = localOnly.map((item: any) => typeof item === 'object' ? item[idField] : item);
-        const persistentIds = persistent.map((item: any) => typeof item === 'object' ? item[idField] : item);
+        const localIds = localOnly.map((item: any) =>
+            typeof item === 'object' ? item[idField] : item
+        );
+        const persistentIds = persistent.map((item: any) =>
+            typeof item === 'object' ? item[idField] : item
+        );
         const allIds = [...localIds, ...persistentIds];
 
         // 保存所有待删除项的快照（用于回滚）
@@ -86,9 +93,7 @@ export const LocalMutationAbility: AbilityDefinition = {
         if (localIds.length > 0) {
             const changes = this._getOrCreateChanges();
             const localSet = new Set(localIds);
-            changes.added = changes.added.filter(
-                (item: any) => !localSet.has(item[idField])
-            );
+            changes.added = changes.added.filter((item: any) => !localSet.has(item[idField]));
             changes.deleted.push(...localIds);
         }
 
@@ -104,8 +109,12 @@ export const LocalMutationAbility: AbilityDefinition = {
         const idField = this.schema.idField || 'id';
         const plan: IDeletionPlan = { localOnly: [], persistent: [] };
 
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
-        const addedIds = changes ? new Set(changes.added.map((item: any) => item[idField])) : new Set();
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
+        const addedIds = changes
+            ? new Set(changes.added.map((item: any) => item[idField]))
+            : new Set();
 
         ids.forEach(id => {
             if (addedIds.has(id)) {
@@ -121,7 +130,9 @@ export const LocalMutationAbility: AbilityDefinition = {
     async confirmDelete() {
         const deleteSnapshots = this._getOrCreateDeleteSnapshots();
         deleteSnapshots.clear();
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (changes) {
             changes.deleted.length = 0;
         }
@@ -130,7 +141,9 @@ export const LocalMutationAbility: AbilityDefinition = {
 
     async rollbackDelete() {
         const deleteSnapshots = this._getOrCreateDeleteSnapshots();
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (deleteSnapshots.size === 0 && (!changes || changes.deleted.length === 0)) return;
 
         deleteSnapshots.forEach((item: any, id: any) => {
@@ -151,7 +164,9 @@ export const LocalMutationAbility: AbilityDefinition = {
     // ---- 内部辅助方法 ----
 
     _getOrCreateChanges(): ILocalChangeSet {
-        let changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        let changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (!changes) {
             changes = this._createEmptyChanges();
             this.setAbilityState('StateLocalMutation:changes', changes);
@@ -160,7 +175,9 @@ export const LocalMutationAbility: AbilityDefinition = {
     },
 
     _getOrCreateDeleteSnapshots(): Map<string | number, any> {
-        let snapshots = this.abilityState('StateLocalMutation:deleteSnapshots') as Map<string | number, any> | undefined;
+        let snapshots = this.abilityState('StateLocalMutation:deleteSnapshots') as
+            | Map<string | number, any>
+            | undefined;
         if (!snapshots) {
             snapshots = new Map<string | number, any>();
             this.setAbilityState('StateLocalMutation:deleteSnapshots', snapshots);

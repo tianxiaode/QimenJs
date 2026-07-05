@@ -2,7 +2,7 @@ import type { AbilityDefinition } from '@/composable';
 
 /**
  * FlatRemoteGetAllAbility - 远程获取全部数据能力
- * 
+ *
  * 提供获取全部数据的能力，支持 300ms leading 防抖。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。

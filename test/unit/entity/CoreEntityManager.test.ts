@@ -17,8 +17,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -120,7 +120,9 @@ describe('CoreEntityManager', () => {
         });
 
         it('执行体应依次调用 executeDataProcessor(pre)、HttpExecutor.execute()、executeDataProcessor(post)', async () => {
-            const preSpy = jest.spyOn(manager as any, 'executeDataProcessor').mockResolvedValue(undefined);
+            const preSpy = jest
+                .spyOn(manager as any, 'executeDataProcessor')
+                .mockResolvedValue(undefined);
 
             const task = manager.request('list' as any, defaultOptions);
             await task.context;
@@ -208,7 +210,9 @@ describe('CoreEntityManager', () => {
             jest.spyOn(manager as any, 'getDataProcessorPreset').mockReturnValue('default');
 
             const context = (manager as any).buildRequestContext('list', defaultOptions);
-            await expect((manager as any).executeDataProcessor('pre', context)).resolves.not.toThrow();
+            await expect(
+                (manager as any).executeDataProcessor('pre', context)
+            ).resolves.not.toThrow();
             expect(dataProcessorExecutor.execute).not.toHaveBeenCalled();
         });
     });
@@ -286,7 +290,9 @@ describe('CoreEntityManager', () => {
         });
 
         it('域配置无 preset 时返回 default', () => {
-            jest.spyOn(manager as any, 'getDomainConfig').mockReturnValue({ baseUrl: 'http://localhost' });
+            jest.spyOn(manager as any, 'getDomainConfig').mockReturnValue({
+                baseUrl: 'http://localhost',
+            });
             expect((manager as any).getDataProcessorPreset()).toBe('default');
         });
     });

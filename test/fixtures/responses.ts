@@ -76,15 +76,18 @@ export function createSSEStream(
     options?: { done?: boolean }
 ): ReadableStream<Uint8Array> {
     // 兼容 jsdom 环境（可能没有 TextEncoder）
-    const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : {
-        encode: (str: string) => {
-            const arr = new Uint8Array(str.length);
-            for (let i = 0; i < str.length; i++) {
-                arr[i] = str.charCodeAt(i);
-            }
-            return arr;
-        }
-    };
+    const encoder =
+        typeof TextEncoder !== 'undefined'
+            ? new TextEncoder()
+            : {
+                  encode: (str: string) => {
+                      const arr = new Uint8Array(str.length);
+                      for (let i = 0; i < str.length; i++) {
+                          arr[i] = str.charCodeAt(i);
+                      }
+                      return arr;
+                  },
+              };
 
     const chunks: Uint8Array[] = [];
 
@@ -121,7 +124,9 @@ export function mockFetchSuccess(data: any, status: number = 200): Response {
         headers: new Headers({ 'Content-Type': 'application/json' }),
         json: () => Promise.resolve(data),
         text: () => Promise.resolve(JSON.stringify(data)),
-        clone: function () { return this; },
+        clone: function () {
+            return this;
+        },
     } as unknown as Response;
 }
 
@@ -133,10 +138,17 @@ export function mockFetchError(status: number, message: string): Response {
     return {
         ok: false,
         status,
-        statusText: status === 401 ? 'Unauthorized' : status === 404 ? 'Not Found' : 'Internal Server Error',
+        statusText:
+            status === 401
+                ? 'Unauthorized'
+                : status === 404
+                  ? 'Not Found'
+                  : 'Internal Server Error',
         headers: new Headers({ 'Content-Type': 'application/json' }),
         json: () => Promise.resolve(errorData),
         text: () => Promise.resolve(JSON.stringify(errorData)),
-        clone: function () { return this; },
+        clone: function () {
+            return this;
+        },
     } as unknown as Response;
 }

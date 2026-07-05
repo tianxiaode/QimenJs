@@ -29,7 +29,7 @@ class MockFile {
     constructor(
         public name: string,
         public size: number,
-        public type: string,
+        public type: string
     ) {}
 }
 
@@ -61,7 +61,9 @@ function createContext(value: any, rule: any): ValidationContext {
 
 describe('FileProcessor', () => {
     it('文件数量少于 minFiles 时应报错', async () => {
-        const ctx = createContext([createRealFile('a.pdf', 100, 'application/pdf')], { minFiles: 2 });
+        const ctx = createContext([createRealFile('a.pdf', 100, 'application/pdf')], {
+            minFiles: 2,
+        });
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThan(0);
         expect(ctx.errors[0].code).toBe('VALIDATION_TOO_SMALL');
@@ -69,8 +71,12 @@ describe('FileProcessor', () => {
 
     it('文件数量超过 maxFiles 时应报错', async () => {
         const ctx = createContext(
-            [createRealFile('a.pdf', 100, 'application/pdf'), createRealFile('b.pdf', 100, 'application/pdf'), createRealFile('c.pdf', 100, 'application/pdf')],
-            { maxFiles: 2 },
+            [
+                createRealFile('a.pdf', 100, 'application/pdf'),
+                createRealFile('b.pdf', 100, 'application/pdf'),
+                createRealFile('c.pdf', 100, 'application/pdf'),
+            ],
+            { maxFiles: 2 }
         );
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThan(0);
@@ -78,21 +84,27 @@ describe('FileProcessor', () => {
     });
 
     it('文件大小超过 maxSize 时应报错', async () => {
-        const ctx = createContext([createRealFile('a.pdf', 200, 'application/pdf')], { maxSize: 100 });
+        const ctx = createContext([createRealFile('a.pdf', 200, 'application/pdf')], {
+            maxSize: 100,
+        });
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThan(0);
         expect(ctx.errors[0].code).toBe('VALIDATION_TOO_LARGE');
     });
 
     it('文件类型不在 allowedTypes 中时应报错', async () => {
-        const ctx = createContext([createRealFile('a.png', 100, 'image/png')], { allowedTypes: ['application/pdf'] });
+        const ctx = createContext([createRealFile('a.png', 100, 'image/png')], {
+            allowedTypes: ['application/pdf'],
+        });
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThan(0);
         expect(ctx.errors[0].code).toBe('VALIDATION_INVALID_VALUE');
     });
 
     it('非 File 实例应报 VALIDATION_TYPE_MISMATCH 错误', async () => {
-        const ctx = createContext([new MockFile('not-a-file', 100, 'text/plain')], { maxSize: 200 });
+        const ctx = createContext([new MockFile('not-a-file', 100, 'text/plain')], {
+            maxSize: 200,
+        });
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThan(0);
         expect(ctx.errors[0].code).toBe('VALIDATION_TYPE_MISMATCH');
@@ -101,7 +113,7 @@ describe('FileProcessor', () => {
     it('allErrors=true 时应收集所有错误', async () => {
         const ctx = createContext(
             [createRealFile('a.png', 200, 'image/png'), createRealFile('b.png', 300, 'image/png')],
-            { maxSize: 100, allErrors: true },
+            { maxSize: 100, allErrors: true }
         );
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBeGreaterThanOrEqual(2);
@@ -110,7 +122,7 @@ describe('FileProcessor', () => {
     it('allErrors=false 时应在首个错误处中断', async () => {
         const ctx = createContext(
             [createRealFile('a.png', 200, 'image/png'), createRealFile('b.png', 300, 'image/png')],
-            { maxSize: 100, allErrors: false },
+            { maxSize: 100, allErrors: false }
         );
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBe(1);
@@ -125,8 +137,11 @@ describe('FileProcessor', () => {
 
     it('所有校验通过时不应有错误', async () => {
         const ctx = createContext(
-            [createRealFile('a.pdf', 100, 'application/pdf'), createRealFile('b.pdf', 50, 'application/pdf')],
-            { minFiles: 1, maxFiles: 5, maxSize: 200, allowedTypes: ['application/pdf'] },
+            [
+                createRealFile('a.pdf', 100, 'application/pdf'),
+                createRealFile('b.pdf', 50, 'application/pdf'),
+            ],
+            { minFiles: 1, maxFiles: 5, maxSize: 200, allowedTypes: ['application/pdf'] }
         );
         await FileProcessor(ctx);
         expect(ctx.errors.length).toBe(0);

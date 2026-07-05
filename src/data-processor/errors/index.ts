@@ -1,6 +1,6 @@
 /**
  * 数据处理管道错误类
- * 
+ *
  * @module data-processor/errors
  */
 
@@ -24,7 +24,7 @@ export class DataProcessorError extends Error {
 export class ProcessorNotFoundError extends DataProcessorError {
     constructor(key: string, handlerName?: string) {
         super(
-            handlerName 
+            handlerName
                 ? `Handler "${handlerName}" not found in pipeline "${key}"`
                 : `Pipeline "${key}" not found`,
             'PROCESSOR_NOT_FOUND',
@@ -56,11 +56,7 @@ export class ProcessorExecutionError extends DataProcessorError {
  */
 export class InvalidProcessorError extends DataProcessorError {
     constructor(reason: string, processor?: any) {
-        super(
-            `Invalid processor: ${reason}`,
-            'INVALID_PROCESSOR',
-            { reason, processor }
-        );
+        super(`Invalid processor: ${reason}`, 'INVALID_PROCESSOR', { reason, processor });
         this.name = 'InvalidProcessorError';
     }
 }
@@ -70,11 +66,7 @@ export class InvalidProcessorError extends DataProcessorError {
  */
 export class CommonPipelineNotFoundError extends DataProcessorError {
     constructor(name: string) {
-        super(
-            `Common pipeline "${name}" not found`,
-            'COMMON_PIPELINE_NOT_FOUND',
-            { name }
-        );
+        super(`Common pipeline "${name}" not found`, 'COMMON_PIPELINE_NOT_FOUND', { name });
         this.name = 'CommonPipelineNotFoundError';
     }
 }

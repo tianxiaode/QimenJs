@@ -19,9 +19,9 @@ describe('HashTaskHealthMonitor', () => {
         resources = new HashTaskResources({} as any, {} as any); // Mock as needed
         monitor = new HashTaskHealthMonitor(state, progress, resources, {
             stallThresholdMs: 1000,
-            intervalMs: 100
+            intervalMs: 100,
         });
-        
+
         mockOnEvent = jest.fn();
         monitor.onEvent(mockOnEvent);
     });
@@ -34,7 +34,7 @@ describe('HashTaskHealthMonitor', () => {
     describe('constructor', () => {
         it('should initialize with default options', () => {
             const defaultMonitor = new HashTaskHealthMonitor(state, progress, resources);
-            const internalProps = (defaultMonitor as any);
+            const internalProps = defaultMonitor as any;
             expect(internalProps.stallThresholdMs).toBe(10000);
             expect(internalProps.intervalMs).toBe(1000);
         });
@@ -42,9 +42,9 @@ describe('HashTaskHealthMonitor', () => {
         it('should initialize with provided options', () => {
             const customMonitor = new HashTaskHealthMonitor(state, progress, resources, {
                 stallThresholdMs: 5000,
-                intervalMs: 500
+                intervalMs: 500,
             });
-            const internalProps = (customMonitor as any);
+            const internalProps = customMonitor as any;
             expect(internalProps.stallThresholdMs).toBe(5000);
             expect(internalProps.intervalMs).toBe(500);
         });
@@ -54,7 +54,7 @@ describe('HashTaskHealthMonitor', () => {
         it('should start the health check interval', () => {
             const setIntervalSpy = jest.spyOn(global, 'setInterval');
             monitor.start();
-            
+
             expect(setIntervalSpy).toHaveBeenCalled();
             setIntervalSpy.mockRestore();
         });
@@ -63,7 +63,7 @@ describe('HashTaskHealthMonitor', () => {
             const setIntervalSpy = jest.spyOn(global, 'setInterval');
             monitor.start();
             monitor.start(); // Second call should be ignored
-            
+
             expect(setIntervalSpy).toHaveBeenCalledTimes(1);
             setIntervalSpy.mockRestore();
         });
@@ -74,7 +74,7 @@ describe('HashTaskHealthMonitor', () => {
             const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
             monitor.start();
             monitor.stop();
-            
+
             expect(clearIntervalSpy).toHaveBeenCalled();
             clearIntervalSpy.mockRestore();
         });
@@ -84,19 +84,22 @@ describe('HashTaskHealthMonitor', () => {
         it('should detect stalled progress when running for too long without progress', () => {
             state['status'] = 'running' as any;
             monitor.start();
-            
+
             // Advance time by more than the threshold
             jest.advanceTimersByTime(1500);
-            
-            expect(mockOnEvent).toHaveBeenCalledWith({ type: 'stalled', durationMs: expect.any(Number) });
+
+            expect(mockOnEvent).toHaveBeenCalledWith({
+                type: 'stalled',
+                durationMs: expect.any(Number),
+            });
         });
 
         it('should not detect stalled progress when not running', () => {
             state['status'] = 'idle' as any;
             monitor.start();
-            
+
             jest.advanceTimersByTime(1500);
-            
+
             expect(mockOnEvent).not.toHaveBeenCalled();
         });
 
@@ -104,18 +107,21 @@ describe('HashTaskHealthMonitor', () => {
             state['status'] = 'running' as any;
             // Simulate that resources has a worker
             const resourcesWithWorker = {
-                snapshot: () => ({ hasWorker: true })
+                snapshot: () => ({ hasWorker: true }),
             };
             monitor = new HashTaskHealthMonitor(state, progress, resourcesWithWorker as any, {
                 stallThresholdMs: 1000,
-                intervalMs: 100
+                intervalMs: 100,
             });
             monitor.onEvent(mockOnEvent);
-            
+
             monitor.start();
             jest.advanceTimersByTime(1500);
-            
-            expect(mockOnEvent).toHaveBeenCalledWith({ type: 'stalled', durationMs: expect.any(Number) });
+
+            expect(mockOnEvent).toHaveBeenCalledWith({
+                type: 'stalled',
+                durationMs: expect.any(Number),
+            });
             expect(mockOnEvent).toHaveBeenCalledWith({ type: 'worker_unresponsive' });
         });
 
@@ -123,17 +129,17 @@ describe('HashTaskHealthMonitor', () => {
             state['status'] = 'completed' as any;
             // Simulate that resources still has a worker
             const resourcesWithWorker = {
-                snapshot: () => ({ hasWorker: true })
+                snapshot: () => ({ hasWorker: true }),
             };
             monitor = new HashTaskHealthMonitor(state, progress, resourcesWithWorker as any, {
                 stallThresholdMs: 1000,
-                intervalMs: 100
+                intervalMs: 100,
             });
             monitor.onEvent(mockOnEvent);
-            
+
             monitor.start();
             jest.advanceTimersByTime(100);
-            
+
             expect(mockOnEvent).toHaveBeenCalledWith({ type: 'resource_leak' });
         });
 
@@ -141,17 +147,17 @@ describe('HashTaskHealthMonitor', () => {
             state['status'] = 'completed' as any;
             // Simulate that resources has no worker
             const resourcesWithoutWorker = {
-                snapshot: () => ({ hasWorker: false })
+                snapshot: () => ({ hasWorker: false }),
             };
             monitor = new HashTaskHealthMonitor(state, progress, resourcesWithoutWorker as any, {
                 stallThresholdMs: 1000,
-                intervalMs: 100
+                intervalMs: 100,
             });
             monitor.onEvent(mockOnEvent);
-            
+
             monitor.start();
             jest.advanceTimersByTime(100);
-            
+
             expect(mockOnEvent).not.toHaveBeenCalled();
         });
     });
@@ -160,13 +166,13 @@ describe('HashTaskHealthMonitor', () => {
         it('should add event listener and return remove function', () => {
             const listener = jest.fn();
             const removeFn = monitor.onEvent(listener);
-            
+
             state['status'] = 'running' as any;
             monitor.start();
             jest.advanceTimersByTime(1500);
-            
+
             expect(listener).toHaveBeenCalled();
-            
+
             // Remove the listener and verify it's not called anymore
             removeFn();
             jest.advanceTimersByTime(1500);

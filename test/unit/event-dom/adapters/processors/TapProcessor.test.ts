@@ -225,10 +225,10 @@ describe('TapProcessor', () => {
         // Press, cancel, then release
         processor.handle(pressInput); // Activates the processor
         processor.handle(cancelInput); // Cancels and resets
-        
+
         // After cancel, release should not trigger tap
         processor.handle(releaseInput);
-        
+
         expect(mockEmit).not.toHaveBeenCalled();
     });
 
@@ -257,14 +257,14 @@ describe('TapProcessor', () => {
 
         // After press, processor should be waiting for release
         processor.handle(pressInput);
-        
+
         // After successful release, should emit tap event
         processor.handle(releaseInput);
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'tap',
             originalEvent: mockEvent,
         });
-        
+
         // Verify that after processing the tap, the internal state was reset
         // by attempting another press and release and expecting a second tap
         processor.handle(pressInput);

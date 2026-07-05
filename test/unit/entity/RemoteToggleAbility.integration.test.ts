@@ -18,8 +18,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -55,9 +55,7 @@ const toggleTestSchema: FlatSchema = {
 class TestToggleManager extends RemoteCrudEntityManager {
     // 按照任务要求，显式声明包含 RemoteToggleAbility
     // 虽然 RemoteCrudEntityManager 已包含，但此处显式列出以明确测试意图
-    static readonly abilities = [
-        ...RemoteCrudEntityManager.abilities,
-    ];
+    static readonly abilities = [...RemoteCrudEntityManager.abilities];
 
     domain = 'toggle-test';
     entityName = 'ToggleFeature';
@@ -82,10 +80,13 @@ function ensureToggleTestDomain(): void {
 }
 
 function mockFetchSuccess(item: any): void {
-    jest.spyOn(TestToggleManager.prototype, 'fetch').mockImplementation(async () => ({
-        data: { item, list: [], total: 0 },
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestToggleManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data: { item, list: [], total: 0 },
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 function mockFetchError(error: any): void {
@@ -145,7 +146,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             mockFetchSuccess(toggledItem);
 
             // toggle 使用 debounce(leading=true)，第一次调用立即执行
-            const result = await manager.toggle(item, 'enabled') as any;
+            const result = (await manager.toggle(item, 'enabled')) as any;
 
             // 乐观更新：item.enabled 应该被立即翻转
             expect(item.enabled).toBe(true);
@@ -190,7 +191,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             const finalItem = { ...item, enabled: true };
             mockFetchSuccess(finalItem);
 
-            const result = await manager.toggle(item, 'enabled') as any;
+            const result = (await manager.toggle(item, 'enabled')) as any;
 
             expect(result).toEqual(finalItem);
         });
@@ -258,7 +259,7 @@ describe('RemoteToggleAbility 集成测试', () => {
 
             mockFetchError(new Error('Network error'));
 
-            const result = await manager.toggle(item, 'enabled') as any;
+            const result = (await manager.toggle(item, 'enabled')) as any;
 
             // 返回回滚后的 item
             expect(result.enabled).toBe(false);
@@ -289,7 +290,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             mockFetchSuccess(finalItem);
 
             // leading=true，第一次调用立即执行
-            const result = await manager.toggle(item, 'enabled') as any;
+            const result = (await manager.toggle(item, 'enabled')) as any;
 
             expect(item.enabled).toBe(true);
         });

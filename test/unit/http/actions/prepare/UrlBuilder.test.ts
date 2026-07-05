@@ -5,15 +5,16 @@
 import { UrlBuilderHandler } from '@/http/actions/prepare/UrlBuilder';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    url?: string;
-    pathParams?: any[];
-    queryParams?: Record<string, any>;
-    baseUrl?: string;
-} = {}) {
+function createContext(
+    options: {
+        url?: string;
+        pathParams?: any[];
+        queryParams?: Record<string, any>;
+        baseUrl?: string;
+    } = {}
+) {
     // RequestContextBuilder.build() requires a non-empty URL, so use a placeholder
-    const context = RequestContextBuilder
-        .create()
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl(options.url || '/placeholder')
         .withMethod('GET')

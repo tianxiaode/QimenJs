@@ -24,7 +24,12 @@
 export * from './types';
 
 // Token 存储
-export { createTokenStorage, MemoryTokenStorage, LocalStorageTokenStorage, SessionStorageTokenStorage } from './TokenStorage';
+export {
+    createTokenStorage,
+    MemoryTokenStorage,
+    LocalStorageTokenStorage,
+    SessionStorageTokenStorage,
+} from './TokenStorage';
 export type { ITokenStorage } from './TokenStorage';
 
 // 核心管理器

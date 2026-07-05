@@ -39,7 +39,7 @@ describe('format utility functions', () => {
             const date = new Date(2023, 0, 15, 14, 30, 45); // 2:30 PM
             const result = formatDate(date, 'hh:mm:ss a');
             expect(result).toContain('PM');
-            
+
             const date2 = new Date(2023, 0, 15, 6, 30, 45); // 6:30 AM
             const result2 = formatDate(date2, 'hh:mm:ss a');
             expect(result2).toContain('AM');
@@ -96,7 +96,7 @@ describe('format utility functions', () => {
                 expect(result.getDate()).toBe(15);
             }
         });
-        
+
         it('should parse format with single digit components', () => {
             const result = parse('1/5/23 8:5:3', 'M/d/yy H:m:s');
             expect(result).not.toBeNull();
@@ -110,7 +110,7 @@ describe('format utility functions', () => {
                 expect(result.getSeconds()).toBe(3);
             }
         });
-        
+
         it('should parse 12-hour format', () => {
             const result = parse('02:30:45 PM', 'hh:mm:ss a');
             expect(result).not.toBeNull();
@@ -120,7 +120,7 @@ describe('format utility functions', () => {
                 expect(result.getSeconds()).toBe(45);
             }
         });
-        
+
         it('should parse 12 AM correctly as 0 hour', () => {
             const result = parse('12:00:00 AM', 'hh:mm:ss a');
             expect(result).not.toBeNull();
@@ -130,7 +130,7 @@ describe('format utility functions', () => {
                 expect(result.getSeconds()).toBe(0);
             }
         });
-        
+
         it('should parse 12 PM correctly', () => {
             const result = parse('12:00:00 PM', 'hh:mm:ss a');
             expect(result).not.toBeNull();
@@ -140,7 +140,7 @@ describe('format utility functions', () => {
                 expect(result.getSeconds()).toBe(0);
             }
         });
-        
+
         it('should parse single digit hour in 12-hour format', () => {
             const result = parse('2:30:45 PM', 'h:mm:ss a');
             expect(result).not.toBeNull();
@@ -150,7 +150,7 @@ describe('format utility functions', () => {
                 expect(result.getSeconds()).toBe(45);
             }
         });
-        
+
         it('should handle format string with mixed valid and invalid tokens', () => {
             const result = parse('2023-01-15X', 'yyyy-MM-ddX');
             expect(result).not.toBeNull();
@@ -160,7 +160,7 @@ describe('format utility functions', () => {
                 expect(result.getDate()).toBe(15);
             }
         });
-        
+
         it('should handle multiple unknown tokens in format string', () => {
             const result = parse('2023-01-15T10:30:45Z', 'yyyy-MM-ddThh:mm:ssZ');
             expect(result).not.toBeNull();

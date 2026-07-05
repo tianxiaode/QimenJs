@@ -180,13 +180,13 @@ describe('format', () => {
 
     it('should format different log levels correctly', () => {
         const levels: string[] = ['debug', 'info', 'warn', 'error'];
-        
+
         levels.forEach(level => {
             const entryWithLevel: LogEntry = {
                 ...mockEntry,
                 level: level as any,
             };
-            
+
             const result = format(entryWithLevel, mockOptions);
             expect(result).toContain(level.toUpperCase());
         });

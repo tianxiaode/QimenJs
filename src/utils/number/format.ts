@@ -9,7 +9,6 @@ function round(num: number, precision: number): number {
     return Math.round(num * factor) / factor;
 }
 
-
 /**
  * 根据指定格式格式化数字
  * 0 - 用对应的数字（如果存在）替换零；否则，将在结果字符串中显示零。
@@ -22,32 +21,30 @@ function round(num: number, precision: number): number {
  * @returns 格式化后的字符串
  */
 export function formatNumber(value: number, format: string): string {
-    if (!isFinite(value)) return "";
+    if (!isFinite(value)) return '';
 
-    const isPercent = format.includes("%");
-    const hasComma = format.includes(",");
-    const [intFmt, decFmt = ""] = format.replace(/%/g, "").split(".");
+    const isPercent = format.includes('%');
+    const hasComma = format.includes(',');
+    const [intFmt, decFmt = ''] = format.replace(/%/g, '').split('.');
 
     let num = isPercent ? value * 100 : value;
 
     // 计算小数位
-    const decimalPlaces = decFmt.replace(/[^0#]/g, "").length;
+    const decimalPlaces = decFmt.replace(/[^0#]/g, '').length;
     num = round(num, decimalPlaces);
 
-    const [intPart, decPart = ""] = Math.abs(num)
-        .toFixed(decimalPlaces)
-        .split(".");
+    const [intPart, decPart = ''] = Math.abs(num).toFixed(decimalPlaces).split('.');
 
     const formattedInt = formatInteger(intPart, intFmt, hasComma);
     const formattedDec = formatDecimal(decPart, decFmt);
 
-    const sign = num < 0 ? "-" : "";
+    const sign = num < 0 ? '-' : '';
     const result =
         formattedDec.length > 0
             ? `${sign}${formattedInt}.${formattedDec}`
             : `${sign}${formattedInt}`;
 
-    return isPercent ? result + "%" : result;
+    return isPercent ? result + '%' : result;
 }
 
 /**
@@ -57,15 +54,11 @@ export function formatNumber(value: number, format: string): string {
  * @param useComma 是否使用千分位分隔符
  * @returns 格式化后的整数部分
  */
-function formatInteger(
-    digits: string,
-    format: string,
-    useComma: boolean
-): string {
-    const cleanFormat = format.replace(/,/g, "");
-    const minDigits = cleanFormat.replace(/#/g, "").length;
+function formatInteger(digits: string, format: string, useComma: boolean): string {
+    const cleanFormat = format.replace(/,/g, '');
+    const minDigits = cleanFormat.replace(/#/g, '').length;
 
-    let result = digits.padStart(minDigits, "0");
+    let result = digits.padStart(minDigits, '0');
 
     if (useComma) {
         result = addThousandsSeparator(result);
@@ -82,10 +75,10 @@ function formatInteger(
  */
 function formatDecimal(digits: string, format: string): string {
     const max = format.length;
-    const min = format.replace(/#/g, "").length;
+    const min = format.replace(/#/g, '').length;
 
     const trimmed = digits.slice(0, max);
-    return trimmed.padEnd(min, "0");
+    return trimmed.padEnd(min, '0');
 }
 
 /**
@@ -94,7 +87,7 @@ function formatDecimal(digits: string, format: string): string {
  * @returns 添加千分位分隔符后的数字字符串
  */
 function addThousandsSeparator(value: string): string {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**

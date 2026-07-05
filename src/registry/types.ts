@@ -1,7 +1,7 @@
 /**
  * 注册中心类型定义
  * 定义了系统配置、域配置等类型以及注册器名称常量
- * 
+ *
  * 此文件包含了注册系统所需的所有类型定义，为TypeScript提供类型安全
  */
 
@@ -64,18 +64,18 @@ export interface DomainConfig {
     pageSize: number;
     pagesizes: number[];
     // 注入到所有请求 URL Query 中的参数
-    commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>); 
+    commonParams?: Record<string, any> | ((...args: any[]) => Record<string, any>);
     // 注入到所有 POST/PUT 请求 Body 中的参数
     commonBody?: Record<string, any> | ((...args: any[]) => Record<string, any>);
-    
+
     // Token 存储
     token?: string;
-    
+
     // 认证注入器
     // - 字符串：使用预定义方式（'bearer' | 'basic'）
     // - 函数：自定义注入，传入 RequestContext
     authInjector?: 'bearer' | 'basic' | ((context: any) => void | Promise<void>);
-    
+
     [key: string]: any;
 }
 

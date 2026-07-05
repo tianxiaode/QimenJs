@@ -7,8 +7,7 @@ import { RequestContextBuilder } from '@qimenjs/context';
 
 // Helper to create a context with error
 function createErrorContext(domain: string, errorMsg: string) {
-    const ctx = RequestContextBuilder
-        .create()
+    const ctx = RequestContextBuilder.create()
         .withDomain(domain)
         .withUrl('/api/test')
         .withMethod('GET')
@@ -19,8 +18,7 @@ function createErrorContext(domain: string, errorMsg: string) {
 
 // Helper to create a successful context
 function createSuccessContext(domain: string) {
-    return RequestContextBuilder
-        .create()
+    return RequestContextBuilder.create()
         .withDomain(domain)
         .withUrl('/api/test')
         .withMethod('GET')
@@ -29,8 +27,7 @@ function createSuccessContext(domain: string) {
 
 // Helper to create an aborted context
 function createAbortedContext(domain: string) {
-    const ctx = RequestContextBuilder
-        .create()
+    const ctx = RequestContextBuilder.create()
         .withDomain(domain)
         .withUrl('/api/test')
         .withMethod('GET')
@@ -79,9 +76,14 @@ describe('HttpFactory', () => {
         });
 
         it('should return immediately when context has no error', async () => {
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 3 },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 3 },
+                },
+                'test'
+            );
             const context = await task.context;
             expect(context.error).toBeFalsy();
             expect(mockRequest).toHaveBeenCalledTimes(1);
@@ -93,9 +95,14 @@ describe('HttpFactory', () => {
                 cancel: jest.fn(),
             });
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 3 },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 3 },
+                },
+                'test'
+            );
             const context = await task.context;
             expect(context.metadata.isAborted).toBe(true);
             expect(mockRequest).toHaveBeenCalledTimes(1);
@@ -113,9 +120,14 @@ describe('HttpFactory', () => {
                     cancel: jest.fn(),
                 });
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 3 },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 3 },
+                },
+                'test'
+            );
             const context = await task.context;
             expect(context.error).toBeFalsy();
             expect(mockRequest).toHaveBeenCalledTimes(2);
@@ -124,15 +136,21 @@ describe('HttpFactory', () => {
         it('should retry with delay', async () => {
             jest.useFakeTimers();
             let resolveFirst: Function;
-            mockRequest
-                .mockReturnValueOnce({
-                    context: new Promise(r => { resolveFirst = r; }),
-                    cancel: jest.fn(),
-                });
+            mockRequest.mockReturnValueOnce({
+                context: new Promise(r => {
+                    resolveFirst = r;
+                }),
+                cancel: jest.fn(),
+            });
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 3, delay: 100 },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 3, delay: 100 },
+                },
+                'test'
+            );
 
             // Resolve first request with error
             resolveFirst!(createErrorContext('test', 'timeout'));
@@ -152,9 +170,14 @@ describe('HttpFactory', () => {
             });
 
             const shouldRetry = jest.fn().mockReturnValue(false);
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 3, shouldRetry },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 3, shouldRetry },
+                },
+                'test'
+            );
             const context = await task.context;
             expect(context.error).toBeDefined();
             expect(shouldRetry).toHaveBeenCalled();
@@ -167,9 +190,14 @@ describe('HttpFactory', () => {
                 cancel: jest.fn(),
             });
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: { maxRetries: 2 },
-            }, 'test');
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: { maxRetries: 2 },
+                },
+                'test'
+            );
             const context = await task.context;
             expect(context.error).toBeDefined();
             // 1 initial + 2 retries = 3 total
@@ -231,9 +259,15 @@ describe('HttpFactory', () => {
 
         it('should call callback with context', async () => {
             const callback = jest.fn();
-            stopFn = HttpFactory.createPolling('GET', '/api/test', {
-                interval: 100,
-            }, 'test', callback);
+            stopFn = HttpFactory.createPolling(
+                'GET',
+                '/api/test',
+                {
+                    interval: 100,
+                },
+                'test',
+                callback
+            );
 
             // Wait for first poll
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -242,9 +276,15 @@ describe('HttpFactory', () => {
 
         it('should stop polling when stop function is called', async () => {
             const callback = jest.fn();
-            stopFn = HttpFactory.createPolling('GET', '/api/test', {
-                interval: 50,
-            }, 'test', callback);
+            stopFn = HttpFactory.createPolling(
+                'GET',
+                '/api/test',
+                {
+                    interval: 50,
+                },
+                'test',
+                callback
+            );
 
             // Wait for first poll
             await new Promise(resolve => setTimeout(resolve, 30));
@@ -274,9 +314,14 @@ describe('HttpFactory', () => {
             }));
 
             const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-            stopFn = HttpFactory.createPolling('GET', '/api/test', {
-                interval: 50,
-            }, 'test');
+            stopFn = HttpFactory.createPolling(
+                'GET',
+                '/api/test',
+                {
+                    interval: 50,
+                },
+                'test'
+            );
 
             await new Promise(resolve => setTimeout(resolve, 30));
             // Should not throw, just log error

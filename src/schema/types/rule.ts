@@ -1,6 +1,6 @@
 /**
  * 验证规则类型定义
- * 
+ *
  * 这些类型定义了数据约束，是 Schema 的一部分
  */
 
@@ -203,7 +203,9 @@ export interface SplitRule
  */
 export interface FormatRule extends Omit<BaseValidationRule, 'type'> {
     type: 'format';
-    format?: Omit<ValidationPatternType, 'uppercase' | 'lowercase' | 'digit' | 'specialChar'> | string;
+    format?:
+        | Omit<ValidationPatternType, 'uppercase' | 'lowercase' | 'digit' | 'specialChar'>
+        | string;
     pattern?: RegExp;
 }
 

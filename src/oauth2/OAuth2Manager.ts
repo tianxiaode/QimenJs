@@ -66,7 +66,10 @@ export class OAuth2Manager {
      */
     async loginWithCode(code: string): Promise<OAuth2LoginResult> {
         if (!this.config?.redirectUri) {
-            return { success: false, error: { message: 'redirectUri is required for authorization_code grant' } };
+            return {
+                success: false,
+                error: { message: 'redirectUri is required for authorization_code grant' },
+            };
         }
 
         const params: Record<string, string> = {
@@ -234,7 +237,9 @@ export class OAuth2Manager {
                     success: false,
                     error: {
                         code: errorData.error,
-                        message: errorData.error_description || `Token request failed: ${response.status}`,
+                        message:
+                            errorData.error_description ||
+                            `Token request failed: ${response.status}`,
                     },
                 };
             }
@@ -284,7 +289,9 @@ export class OAuth2Manager {
             const response = await this.sendRequest(this.config.tokenEndpoint, params);
 
             if (!response.ok) {
-                this.emit('oauth2:refresh-failed', { error: new Error(`Refresh failed: ${response.status}`) });
+                this.emit('oauth2:refresh-failed', {
+                    error: new Error(`Refresh failed: ${response.status}`),
+                });
                 return false;
             }
 
@@ -319,13 +326,17 @@ export class OAuth2Manager {
 
     private applyToken(accessToken: string): void {
         if (!this.config) return;
-        const domains = Array.isArray(this.config.domain) ? this.config.domain : [this.config.domain];
+        const domains = Array.isArray(this.config.domain)
+            ? this.config.domain
+            : [this.config.domain];
         DomainRegistrar.getInstance().updateToken(accessToken, ...domains);
     }
 
     private clearAppliedToken(): void {
         if (!this.config) return;
-        const domains = Array.isArray(this.config.domain) ? this.config.domain : [this.config.domain];
+        const domains = Array.isArray(this.config.domain)
+            ? this.config.domain
+            : [this.config.domain];
         DomainRegistrar.getInstance().clearToken(...domains);
     }
 
@@ -343,7 +354,9 @@ export class OAuth2Manager {
         });
     }
 
-    private async parseErrorResponse(response: Response): Promise<{ error?: string; error_description?: string }> {
+    private async parseErrorResponse(
+        response: Response
+    ): Promise<{ error?: string; error_description?: string }> {
         try {
             return await response.json();
         } catch {

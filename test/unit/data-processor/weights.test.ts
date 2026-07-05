@@ -28,7 +28,7 @@ describe('data-processor/weights', () => {
                 DataProcessorWeight.EXTRACT,
                 DataProcessorWeight.ALIGN,
                 DataProcessorWeight.ERROR,
-                DataProcessorWeight.FINALIZE
+                DataProcessorWeight.FINALIZE,
             ];
 
             for (let i = 1; i < weights.length; i++) {

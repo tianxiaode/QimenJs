@@ -16,7 +16,7 @@ function _simpleHash(str: string): string {
 
 /**
  * CacheAbility - 缓存能力
- * 
+ *
  * 为宿主提供缓存管理功能，通过 CacheFactory 创建缓存提供者。
  * this 指向宿主（Manager），this.schema 可直接访问。
  * 私有状态 _provider 通过 abilityState 管理，onCleanup 注册释放回调。
@@ -77,9 +77,13 @@ export const CacheAbility: AbilityDefinition = {
     },
 
     async _getCacheProvider(): Promise<ICacheProvider> {
-        let providerPromise = this.abilityState('Cache:provider') as Promise<ICacheProvider> | undefined;
+        let providerPromise = this.abilityState('Cache:provider') as
+            | Promise<ICacheProvider>
+            | undefined;
         if (!providerPromise) {
-            providerPromise = CacheFactory.create((this.schema as any).cache?.type || 'memory').then(provider => {
+            providerPromise = CacheFactory.create(
+                (this.schema as any).cache?.type || 'memory'
+            ).then(provider => {
                 this.onCleanup(() => CacheFactory.release(provider.id, true));
                 return provider;
             });

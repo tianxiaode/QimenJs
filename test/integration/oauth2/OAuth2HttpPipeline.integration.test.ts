@@ -22,8 +22,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -35,7 +35,11 @@ import { HttpActionRegistrar, HttpActionCategory } from '@/http/HttpActionRegist
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { RequestContextBuilder } from '@/context';
-import { createOAuth2TokenResponse, mockFetchSuccess, mockFetchError } from '@test/fixtures/responses';
+import {
+    createOAuth2TokenResponse,
+    mockFetchSuccess,
+    mockFetchError,
+} from '@test/fixtures/responses';
 
 // 确保默认 HTTP Actions 和 OAuth2 TokenRefreshHandler 已注册
 import '@/http/actions/register';
@@ -64,12 +68,16 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
         actionRegistrar = HttpActionRegistrar.getInstance();
 
         // 注册测试域
-        domainRegistrar.register(TEST_DOMAIN, {
-            baseUrl: 'https://test-api.example.com',
-            preset: 'default',
-            pageSize: 10,
-            pagesizes: [10, 20, 50],
-        }, true);
+        domainRegistrar.register(
+            TEST_DOMAIN,
+            {
+                baseUrl: 'https://test-api.example.com',
+                preset: 'default',
+                pageSize: 10,
+                pagesizes: [10, 20, 50],
+            },
+            true
+        );
 
         // 创建独立的 OAuth2Manager 实例
         manager = new OAuth2Manager();
@@ -85,7 +93,9 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
 
     afterEach(() => {
         // 清理
-        try { domainRegistrar.unregister(TEST_DOMAIN); } catch {}
+        try {
+            domainRegistrar.unregister(TEST_DOMAIN);
+        } catch {}
         jest.restoreAllMocks();
     });
 
@@ -149,8 +159,7 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
 
             // 更直接的验证：通过 RequestContext 检查
             const client2 = new HttpClient(TEST_DOMAIN);
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -179,9 +188,9 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
                 fetchCallCount++;
                 if (url === TOKEN_ENDPOINT) {
                     // 登录或刷新请求
-                    return Promise.resolve(mockFetchSuccess(
-                        fetchCallCount === 1 ? loginResponse : refreshResponse
-                    ));
+                    return Promise.resolve(
+                        mockFetchSuccess(fetchCallCount === 1 ? loginResponse : refreshResponse)
+                    );
                 }
                 // 业务请求：第一次返回 401，第二次返回成功
                 if (fetchCallCount === 2) {
@@ -391,9 +400,9 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
             (global as any).fetch = jest.fn().mockImplementation((url: string) => {
                 callCount++;
                 if (url === TOKEN_ENDPOINT) {
-                    return Promise.resolve(mockFetchSuccess(
-                        callCount === 1 ? loginResponse : refreshResponse
-                    ));
+                    return Promise.resolve(
+                        mockFetchSuccess(callCount === 1 ? loginResponse : refreshResponse)
+                    );
                 }
                 return Promise.resolve(mockFetchSuccess({}));
             });
@@ -438,7 +447,9 @@ describe('OAuth2 + HTTP 管道集成测试', () => {
             });
 
             // 重置 fetch mock 使刷新请求返回 401
-            (global as any).fetch = jest.fn().mockResolvedValue(mockFetchError(401, 'Unauthorized'));
+            (global as any).fetch = jest
+                .fn()
+                .mockResolvedValue(mockFetchError(401, 'Unauthorized'));
 
             const handler = jest.fn();
             manager.on('oauth2:refresh-failed', handler);

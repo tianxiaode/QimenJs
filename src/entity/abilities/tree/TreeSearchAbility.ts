@@ -4,7 +4,7 @@ import { array } from '@qimenjs/utils';
 
 /**
  * TreeSearchAbility - 树搜索能力
- * 
+ *
  * 为宿主提供树形结构的搜索和排序功能。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/searchFields/search 可直接访问。
  */

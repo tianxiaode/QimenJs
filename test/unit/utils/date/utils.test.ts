@@ -1,14 +1,14 @@
-import { 
-    now, 
-    today, 
-    yesterday, 
-    tomorrow, 
-    thisWeek, 
-    thisMonth, 
-    thisYear, 
-    calculateAge, 
-    parseTimeSpanToSeconds, 
-    convertSecondsToTimeSpan 
+import {
+    now,
+    today,
+    yesterday,
+    tomorrow,
+    thisWeek,
+    thisMonth,
+    thisYear,
+    calculateAge,
+    parseTimeSpanToSeconds,
+    convertSecondsToTimeSpan,
 } from '../../../../src/utils/date/utils';
 
 describe('utils functions', () => {
@@ -17,7 +17,7 @@ describe('utils functions', () => {
             const before = new Date();
             const result = now();
             const after = new Date();
-            
+
             expect(result).toBeInstanceOf(Date);
             expect(result.getTime()).toBeGreaterThanOrEqual(before.getTime());
             expect(result.getTime()).toBeLessThanOrEqual(after.getTime());
@@ -25,7 +25,7 @@ describe('utils functions', () => {
     });
 
     describe('today', () => {
-        it('should return today\'s date with time set to 00:00:00.000', () => {
+        it("should return today's date with time set to 00:00:00.000", () => {
             const result = today();
             expect(result.getHours()).toBe(0);
             expect(result.getMinutes()).toBe(0);
@@ -35,7 +35,7 @@ describe('utils functions', () => {
     });
 
     describe('yesterday', () => {
-        it('should return yesterday\'s date with time set to 00:00:00.000', () => {
+        it("should return yesterday's date with time set to 00:00:00.000", () => {
             const result = yesterday();
             expect(result.getHours()).toBe(0);
             expect(result.getMinutes()).toBe(0);
@@ -45,7 +45,7 @@ describe('utils functions', () => {
     });
 
     describe('tomorrow', () => {
-        it('should return tomorrow\'s date with time set to 00:00:00.000', () => {
+        it("should return tomorrow's date with time set to 00:00:00.000", () => {
             const result = tomorrow();
             expect(result.getHours()).toBe(0);
             expect(result.getMinutes()).toBe(0);
@@ -101,7 +101,7 @@ describe('utils functions', () => {
             const currentDate = new Date();
             const expectedAge = currentDate.getFullYear() - 1990;
             const age = calculateAge(birthDateStr);
-            
+
             // The age might be expectedAge or expectedAge - 1 depending on the current date
             expect(age).toBeGreaterThanOrEqual(expectedAge - 1);
             expect(age).toBeLessThanOrEqual(expectedAge);

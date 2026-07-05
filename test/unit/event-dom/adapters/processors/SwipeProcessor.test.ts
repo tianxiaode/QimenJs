@@ -258,7 +258,7 @@ describe('SwipeProcessor', () => {
 
     it('should not process release event when not active', () => {
         const mockEvent = new MouseEvent('touchend');
-        
+
         const releaseInput = {
             signal: 'release' as InputSignal,
             time: 120,
@@ -277,7 +277,7 @@ describe('SwipeProcessor', () => {
 
     it('should not process move event when not active', () => {
         const mockEvent = new MouseEvent('touchmove');
-        
+
         const moveInput = {
             signal: 'move' as InputSignal,
             time: 120,

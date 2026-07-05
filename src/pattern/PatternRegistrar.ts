@@ -46,8 +46,7 @@ export class PatternRegistrar extends RegistrarBase<Map<string, RegExp>> {
             }
         } else if (typeof nameOrObj === 'string') {
             // 模式 1：单个注册
-            if (!entry)
-                throw new RegistrarInvalidArgumentError(this.name, nameOrObj);
+            if (!entry) throw new RegistrarInvalidArgumentError(this.name, nameOrObj);
             this.doRegister(nameOrObj, entry);
         }
     }

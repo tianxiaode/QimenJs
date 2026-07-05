@@ -64,16 +64,16 @@ describe('LongPressProcessor', () => {
 
         // Check that the processor is tracking the press
         expect(mockEmit).not.toHaveBeenCalled(); // At this point, no event should be emitted yet
-        
+
         // Fast-forward time to exceed default threshold
         jest.advanceTimersByTime(501); // Default threshold is 500ms
-        
+
         // Check that the long press was emitted
         expect(mockEmit).toHaveBeenCalledWith({
             semantic: 'longpress',
             originalEvent: mockEvent,
         });
-        
+
         // Restore real timers
         jest.useRealTimers();
     });
@@ -97,7 +97,7 @@ describe('LongPressProcessor', () => {
             buttons: 0,
             originalEvent: mockEvent,
         };
-        
+
         // Enable fake timers
         jest.useFakeTimers();
 
@@ -109,11 +109,11 @@ describe('LongPressProcessor', () => {
         jest.advanceTimersByTime((processor as any).durationThreshold + 1);
 
         expect(mockEmit).not.toHaveBeenCalled();
-        
+
         // Restore real timers
         jest.useRealTimers();
     });
-    
+
     it('should cancel long press if movement exceeds max distance', () => {
         const mockEvent = new MouseEvent('touchstart');
         const pressInput = {
@@ -133,7 +133,7 @@ describe('LongPressProcessor', () => {
             buttons: 1,
             originalEvent: mockEvent,
         };
-        
+
         // Enable fake timers
         jest.useFakeTimers();
 
@@ -146,7 +146,7 @@ describe('LongPressProcessor', () => {
 
         // Should not emit since movement was too large
         expect(mockEmit).not.toHaveBeenCalled();
-        
+
         // Restore real timers
         jest.useRealTimers();
     });

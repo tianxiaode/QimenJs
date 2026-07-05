@@ -1,7 +1,9 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
-export const DateWeenendProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+export const DateWeenendProcessor: ValidationProcessorHandler = async (
+    context: ValidationContext
+) => {
     const { value, rule } = context;
 
     if (rule.weekend === undefined && !rule.weekend) return;
@@ -28,4 +30,3 @@ export const DateWeenendProcessor: ValidationProcessorHandler = async (context: 
         })
     );
 };
-

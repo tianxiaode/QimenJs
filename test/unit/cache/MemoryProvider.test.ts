@@ -36,8 +36,8 @@ describe('MemoryProvider', () => {
                 name: 'test',
                 nested: {
                     value: 123,
-                    array: [1, 2, 3]
-                }
+                    array: [1, 2, 3],
+                },
             };
             await provider.set('complex', complexObject);
             const value = await provider.get('complex');
@@ -61,10 +61,10 @@ describe('MemoryProvider', () => {
 
         it('should return null after TTL expires', async () => {
             await provider.set('expired-key', 'expired-value', 100);
-            
+
             // 等待过期
             await new Promise(resolve => setTimeout(resolve, 150));
-            
+
             const value = await provider.get('expired-key');
             expect(value).toBeNull();
         });

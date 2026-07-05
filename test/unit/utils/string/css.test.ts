@@ -1,7 +1,4 @@
-import { 
-    normalizeCssUnit, 
-    cssUnitTypeToNumber 
-} from '../../../../src/utils/string/css';
+import { normalizeCssUnit, cssUnitTypeToNumber } from '../../../../src/utils/string/css';
 
 describe('String CSS Utility Functions', () => {
     describe('normalizeCssUnit', () => {

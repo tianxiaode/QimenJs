@@ -1,9 +1,9 @@
-import { 
-    trim, 
-    capitalize, 
-    uncapitalize, 
-    camelCase, 
-    camelCaseToDash 
+import {
+    trim,
+    capitalize,
+    uncapitalize,
+    camelCase,
+    camelCaseToDash,
 } from '../../../../src/utils/string/base';
 
 describe('String Base Utility Functions', () => {

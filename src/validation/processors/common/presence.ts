@@ -1,11 +1,7 @@
 import { ValidationErrorBuilder } from '../../errors';
-import {
-    ValidationContext,
-    ValidationProcessorHandler,
-} from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const PresenceProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
-
     const { rule, status, value } = context;
 
     // --- 守卫 1：必填检查 ---

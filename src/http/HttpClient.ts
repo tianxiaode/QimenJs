@@ -1,6 +1,6 @@
 ﻿/**
  * HttpClient 类
- * 
+ *
  * 提供简单的 HTTP 请求接口
  * - 内部构建 RequestContext
  * - 调用 HttpExecutor 执行请求
@@ -19,22 +19,22 @@ export interface SimpleRequestOptions {
      * 请求头
      */
     headers?: Record<string, string>;
-    
+
     /**
      * 请求体
      */
     body?: any;
-    
+
     /**
      * 查询参数
      */
     queryParams?: Record<string, any>;
-    
+
     /**
      * 超时时间（毫秒）
      */
     timeout?: number;
-    
+
     /**
      * 进度回调
      */
@@ -49,7 +49,7 @@ export interface SimpleRequestTask {
      * 请求上下文（Promise）
      */
     context: Promise<RequestContext>;
-    
+
     /**
      * 取消请求的方法
      */
@@ -62,17 +62,17 @@ export interface SimpleRequestTask {
 export class HttpClient {
     private domain: string;
     private executor: HttpExecutor;
-    
+
     /**
      * 构造函数
-     * 
+     *
      * @param domain - 域名
      */
     constructor(domain: string = 'default') {
         this.domain = domain;
         this.executor = new HttpExecutor();
     }
-    
+
     /**
      * 构建 RequestContext
      */
@@ -81,38 +81,37 @@ export class HttpClient {
         url: string,
         options: SimpleRequestOptions = {}
     ): RequestContext {
-        let builder = RequestContextBuilder
-            .create()
+        let builder = RequestContextBuilder.create()
             .withDomain(this.domain)
             .withUrl(url)
             .withMethod(method);
-        
+
         if (options.headers) {
             builder = builder.withHeaders(options.headers);
         }
-        
+
         if (options.body !== undefined) {
             builder = builder.withBody(options.body);
         }
-        
+
         if (options.queryParams) {
             builder = builder.withQueryParams(options.queryParams);
         }
-        
+
         const context = builder.build();
-        
+
         // 存储额外的选项到 metadata
         if (options.timeout) {
             context.metadata.timeout = options.timeout;
         }
-        
+
         if (options.onProgress) {
             context.metadata.onProgress = options.onProgress;
         }
-        
+
         return context;
     }
-    
+
     /**
      * 发送请求
      */
@@ -123,54 +122,54 @@ export class HttpClient {
     ): SimpleRequestTask {
         // 构建 RequestContext
         const context = this.buildContext(method, url, options);
-        
+
         // 创建可取消的任务
         const task = this.executor.createTask(context);
-        
+
         return {
             context: task.promise.then(result => result.context),
             cancel: task.cancel,
         };
     }
-    
+
     /**
      * GET 请求
      */
     get(url: string, options?: SimpleRequestOptions): SimpleRequestTask {
         return this.request('GET', url, options);
     }
-    
+
     /**
      * POST 请求
      */
     post(url: string, body?: any, options?: SimpleRequestOptions): SimpleRequestTask {
         return this.request('POST', url, { ...options, body });
     }
-    
+
     /**
      * PUT 请求
      */
     put(url: string, body?: any, options?: SimpleRequestOptions): SimpleRequestTask {
         return this.request('PUT', url, { ...options, body });
     }
-    
+
     /**
      * PATCH 请求
      */
     patch(url: string, body?: any, options?: SimpleRequestOptions): SimpleRequestTask {
         return this.request('PATCH', url, { ...options, body });
     }
-    
+
     /**
      * DELETE 请求
      */
     delete(url: string, options?: SimpleRequestOptions): SimpleRequestTask {
         return this.request('DELETE', url, options);
     }
-    
+
     /**
      * 上传文件
-     * 
+     *
      * @param url - 请求 URL
      * @param body - 请求体（通常是 FormData）
      * @param onProgress - 进度回调
@@ -188,10 +187,10 @@ export class HttpClient {
             onProgress,
         });
     }
-    
+
     /**
      * 下载文件
-     * 
+     *
      * @param url - 请求 URL
      * @param onProgress - 进度回调
      * @param options - 其他选项

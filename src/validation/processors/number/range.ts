@@ -1,7 +1,9 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
-export const NumberRangeProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
+export const NumberRangeProcessor: ValidationProcessorHandler = async (
+    context: ValidationContext
+) => {
     const { value, rule } = context;
 
     //不需要做任何防御，相信上一处理器
@@ -15,5 +17,3 @@ export const NumberRangeProcessor: ValidationProcessorHandler = async (context: 
         context.errors.push(ValidationErrorBuilder.too_large(rule.max, value, false, context));
     }
 };
-
-

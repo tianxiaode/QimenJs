@@ -14,7 +14,12 @@ import type { AbilityDefinition } from '@/composable';
  */
 export const RemoteToggleAbility: AbilityDefinition = {
     async toggle(item: any, field: string): Promise<any> {
-        return this.debounce('toggle', (i: any, f: string) => this._internalToggle(i, f), 400, true)(item, field);
+        return this.debounce(
+            'toggle',
+            (i: any, f: string) => this._internalToggle(i, f),
+            400,
+            true
+        )(item, field);
     },
 
     async _internalToggle(item: any, field: string): Promise<any> {

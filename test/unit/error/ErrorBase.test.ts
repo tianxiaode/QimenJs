@@ -145,9 +145,9 @@ describe('BaseError (抽象类测试)', () => {
         });
 
         test('toString() 应该包含上下文信息', () => {
-            const error = new TestError('带上下文的错误', 'CONTEXT_ERR', { 
-                userId: 123, 
-                reason: 'invalid' 
+            const error = new TestError('带上下文的错误', 'CONTEXT_ERR', {
+                userId: 123,
+                reason: 'invalid',
             });
 
             const str = error.toString();
@@ -188,9 +188,9 @@ describe('BaseError (抽象类测试)', () => {
                 }
 
                 public customProperty = 'custom value';
-                
+
                 constructor(
-                    message: string, 
+                    message: string,
                     code: string | number = 'EXTENDED_ERROR',
                     context?: Record<string, any>
                 ) {
@@ -224,14 +224,14 @@ describe('BaseError (抽象类测试)', () => {
 
     describe('集成测试', () => {
         test('应该能正确序列化和反序列化', () => {
-            const testError = new TestError('包装错误', 'WRAP_001', { 
-                timestamp: Date.now() 
+            const testError = new TestError('包装错误', 'WRAP_001', {
+                timestamp: Date.now(),
             });
 
             const json = testError.toJSON();
             expect(json).toHaveProperty('name', 'TestError');
             expect(json).toHaveProperty('code', 'WRAP_001');
-            
+
             const str = testError.toString();
             expect(str).toContain('[TestError]');
             expect(str).toContain('(WRAP_001)');
@@ -253,15 +253,11 @@ describe('BaseError (抽象类测试)', () => {
         }
 
         test('实际场景：数据库错误', () => {
-            const dbError = new DatabaseError(
-                '连接数据库失败', 
-                'DB_CONNECTION_ERROR',
-                { 
-                    query: 'SELECT * FROM users WHERE id = ?',
-                    params: [123],
-                    timestamp: new Date().toISOString(),
-                }
-            );
+            const dbError = new DatabaseError('连接数据库失败', 'DB_CONNECTION_ERROR', {
+                query: 'SELECT * FROM users WHERE id = ?',
+                params: [123],
+                timestamp: new Date().toISOString(),
+            });
 
             expect(dbError).toBeInstanceOf(DatabaseError);
             expect(dbError.name).toBe('DatabaseError');

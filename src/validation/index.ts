@@ -3,9 +3,8 @@ export * from './core';
 //导出全部验证规则
 export * from './types';
 
-
-import * as AllEntries from './processors'; 
-import { ValidatorRegistrar }  from './core';
+import * as AllEntries from './processors';
+import { ValidatorRegistrar } from './core';
 import { RegistryHub } from '@qimenjs/registry';
 
 export const bootstrapValidators = () => {
@@ -20,6 +19,5 @@ export const bootstrapValidators = () => {
 
 export * from './errors';
 export * from './engine';
-
 
 RegistryHub.use(ValidatorRegistrar.getInstance());

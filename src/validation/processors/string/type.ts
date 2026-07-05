@@ -15,4 +15,3 @@ export const StringTypeProcessor: ValidationProcessorHandler = async (
         context.terminate = true;
     }
 };
-

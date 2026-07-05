@@ -1,11 +1,9 @@
 import { gestureEventMap, gestureMap, keyboardGestureMap } from '@/event-dom/adapters';
-import { GestureSemantic } from '@/event-dom/types'
+import { GestureSemantic } from '@/event-dom/types';
 import { Logger } from '@/logger';
 
 // 在导入kernel模块之前，先初始化Logger.root以防止LoggerChild出错
 Logger.root = new Logger({ level: 'error' }); // 设置为error级别以减少测试输出
-
-
 
 describe('gesture semantic maps', () => {
     describe('gestureMap', () => {

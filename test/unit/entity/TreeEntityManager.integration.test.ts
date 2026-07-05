@@ -24,8 +24,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -66,10 +66,7 @@ const treeTestSchema: TreeSchema = {
 
 class TestTreeManager extends RemoteTreeEntityManager {
     // 添加 TreeManagerAbility 以支持 expand/collapse/refresh
-    static readonly abilities = [
-        ...RemoteTreeEntityManager.abilities,
-        TreeManagerAbility,
-    ];
+    static readonly abilities = [...RemoteTreeEntityManager.abilities, TreeManagerAbility];
 
     domain = 'tree-test';
     entityName = 'TestDepartment';
@@ -115,10 +112,13 @@ function ensureTreeTestDomain(): void {
 }
 
 function mockFetchList(data: any[]): void {
-    jest.spyOn(TestTreeManager.prototype, 'fetch').mockImplementation(async () => ({
-        data: { list: data, total: data.length },
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestTreeManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data: { list: data, total: data.length },
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 // ============================================
@@ -274,7 +274,13 @@ describe('RemoteTreeEntityManager 集成测试', () => {
             manager.ingest({ id: 1, name: '总公司', parentId: null, expanded: true, leaf: false });
 
             // 再用 manualParentId 挂载子节点
-            manager.ingest([{ id: 2, name: '研发部', leaf: false }, { id: 3, name: '市场部', leaf: true }], 1);
+            manager.ingest(
+                [
+                    { id: 2, name: '研发部', leaf: false },
+                    { id: 3, name: '市场部', leaf: true },
+                ],
+                1
+            );
 
             expect(manager.nodes.get(2).parentId).toBe(1);
             expect(manager.nodes.get(3).parentId).toBe(1);

@@ -1,4 +1,4 @@
-import type { Point, Rect,Matrix } from '../types';
+import type { Point, Rect, Matrix } from '../types';
 
 /**
  * 将变换矩阵应用到点上

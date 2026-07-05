@@ -1,5 +1,5 @@
-import { ValidationErrorBuilder } from "../errors";
-import { ValidationContext } from "../types";
+import { ValidationErrorBuilder } from '../errors';
+import { ValidationContext } from '../types';
 
 /**
  * 核心正则匹配助手

@@ -5,15 +5,15 @@
  * @returns {number} - Cookie 的数字值，如果转换失败则返回默认值或 NaN
  */
 export function getNumber(name: string, defaultValue?: number): number {
-  const value = get(name);
-  
-  if (value === null) {
-    return defaultValue !== undefined ? defaultValue : NaN;
-  }
-  
-  const num = Number(value);
-  
-  return isNaN(num) ? (defaultValue !== undefined ? defaultValue : NaN) : num;
+    const value = get(name);
+
+    if (value === null) {
+        return defaultValue !== undefined ? defaultValue : NaN;
+    }
+
+    const num = Number(value);
+
+    return isNaN(num) ? (defaultValue !== undefined ? defaultValue : NaN) : num;
 }
 
 // 导入 get 函数，用于获取 Cookie 值

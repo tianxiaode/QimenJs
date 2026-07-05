@@ -2,7 +2,7 @@ import type { AbilityDefinition } from '@/composable';
 
 /**
  * TreeManagerAbility - 树形管理器能力
- * 
+ *
  * 提供树形结构的展开/折叠/刷新/移动等操作。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
@@ -24,7 +24,12 @@ export const TreeManagerAbility: AbilityDefinition = {
 
     // 数据获取与同步
     refresh(pid: string | number | null) {
-        return this.debounce('refresh', (p: string | number | null) => this._refreshChildren(p), 300, true)(pid);
+        return this.debounce(
+            'refresh',
+            (p: string | number | null) => this._refreshChildren(p),
+            300,
+            true
+        )(pid);
     },
 
     getSubTree(pid: string | number) {
@@ -73,10 +78,7 @@ export const TreeManagerAbility: AbilityDefinition = {
         this.refreshView();
     },
 
-    async _moveNode(
-        id: string | number,
-        targetPid: string | number | null
-    ): Promise<void> {
+    async _moveNode(id: string | number, targetPid: string | number | null): Promise<void> {
         const parentIdField = this.parentIdField;
         const options = await this.buildOptions(
             'update',

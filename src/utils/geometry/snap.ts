@@ -1,4 +1,4 @@
-import { Rect } from "./types";
+import { Rect } from './types';
 
 /**
  * 将矩形的边缘吸附到目标矩形的边缘，如果距离在阈值范围内

@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -207,9 +207,11 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
             expect(listener).toHaveBeenCalled();
             const callArg = listener.mock.calls[0][0];
-            expect(callArg.data).toEqual(expect.objectContaining({
-                baseUrl: 'http://localhost:8888',
-            }));
+            expect(callArg.data).toEqual(
+                expect.objectContaining({
+                    baseUrl: 'http://localhost:8888',
+                })
+            );
         });
 
         it('SchemaAbility + DomainAbility 应该可以同时使用', () => {
@@ -242,10 +244,14 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     describe('同名方法覆盖', () => {
         it('后注入的 Ability 同名方法应该覆盖先注入的', () => {
             const AbilityA: AbilityDefinition = {
-                sharedAction() { return 'A'; },
+                sharedAction() {
+                    return 'A';
+                },
             };
             const AbilityB: AbilityDefinition = {
-                sharedAction() { return 'B'; },
+                sharedAction() {
+                    return 'B';
+                },
             };
 
             class OverrideHost extends ComposableBase {
@@ -263,12 +269,16 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             // 这是当前架构的行为，需要测试确认
 
             const OverrideAbility: AbilityDefinition = {
-                selfMethod() { return 'from-ability'; },
+                selfMethod() {
+                    return 'from-ability';
+                },
             };
 
             class SelfMethodHost extends ComposableBase {
                 static readonly abilities = [OverrideAbility];
-                selfMethod() { return 'from-host'; }
+                selfMethod() {
+                    return 'from-host';
+                }
             }
 
             const host = new SelfMethodHost() as any;
@@ -285,12 +295,20 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     describe('Ability 注入顺序', () => {
         it('基类 Ability 先注入，子类 Ability 后注入', () => {
             const BaseAbility: AbilityDefinition = {
-                baseMethod() { return 'base'; },
-                sharedMethod() { return 'base-shared'; },
+                baseMethod() {
+                    return 'base';
+                },
+                sharedMethod() {
+                    return 'base-shared';
+                },
             };
             const ChildAbility: AbilityDefinition = {
-                childMethod() { return 'child'; },
-                sharedMethod() { return 'child-shared'; },
+                childMethod() {
+                    return 'child';
+                },
+                sharedMethod() {
+                    return 'child-shared';
+                },
             };
 
             class BaseHost extends ComposableBase {
@@ -310,7 +328,9 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
         it('去重后同名 Ability 不会重复注入', () => {
             const SharedAbility: AbilityDefinition = {
-                sharedMethod() { return 'shared'; },
+                sharedMethod() {
+                    return 'shared';
+                },
             };
 
             class ParentHost extends ComposableBase {

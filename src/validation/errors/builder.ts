@@ -1,7 +1,4 @@
-import {
-    IValidationError,
-    ValidationErrorContext,
-} from '../types';
+import { IValidationError, ValidationErrorContext } from '../types';
 import { ValidationErrorCode } from './codes';
 import { ValidationError } from './ValidationError';
 

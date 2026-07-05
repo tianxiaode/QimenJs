@@ -228,7 +228,7 @@ describe('HashTaskState', () => {
                 status: 'running',
                 startedAt: 1000,
                 finishedAt: 2000,
-                pausedAt: 1500
+                pausedAt: 1500,
             });
         });
     });

@@ -2,7 +2,7 @@ import { doValidate } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationRule } from '../../types';
 
-export const SplitProcessor: ValidationProcessorHandler = async (context) => {
+export const SplitProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
 
     // 1. 拆分逻辑
@@ -17,15 +17,17 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
 
     // 3. 空项校验 (你的特色逻辑，很有必要)
     if (!rule.allowEmptyItem && items.some(v => v === '')) {
-        context.errors.push(ValidationErrorBuilder.invalid_value(value, {
-            ...context,
-            expected: 'non-empty items'
-        }));
-        if (!rule.allErrors) return; 
+        context.errors.push(
+            ValidationErrorBuilder.invalid_value(value, {
+                ...context,
+                expected: 'non-empty items',
+            })
+        );
+        if (!rule.allErrors) return;
     }
 
     // --- 核心转变：构建虚拟数组规则并委托 ---
-   
+
     const virtualArrayRule: ValidationRule = {
         type: 'array',
         // 映射数量校验：你的 minItems/maxItems 直接映射给数组的 min/max
@@ -34,7 +36,7 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
         // 映射子项规则：你的 itemRule 对应数组的 items
         itemRule: rule.itemRule,
         // 映射错误控制
-        allErrors: rule.allItemsError ?? rule.allErrors
+        allErrors: rule.allItemsError ?? rule.allErrors,
     };
 
     // 让专门的 Array 处理器去跑后续的：
@@ -43,5 +45,4 @@ export const SplitProcessor: ValidationProcessorHandler = async (context) => {
     const result = await doValidate(items, virtualArrayRule, { path });
 
     context.errors.push(...result.errors);
-
 };

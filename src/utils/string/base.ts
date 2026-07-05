@@ -36,13 +36,12 @@ export function uncapitalize(str: string): string {
  */
 export function camelCase(str: string): string {
     // 将字符串转换为小写并按空格、连字符、下划线分割
-    if (!str.includes("-") && !str.includes("_") && !str.includes(" "))
-        return uncapitalize(str);
+    if (!str.includes('-') && !str.includes('_') && !str.includes(' ')) return uncapitalize(str);
     const words = str.toLowerCase().split(/[-_\s]+/);
-    let result = "";
+    let result = '';
 
     for (let i = 0; i < words.length; i++) {
-        let word = words[i].toLocaleLowerCase();
+        const word = words[i].toLocaleLowerCase();
         if (i === 0) {
             result += word; // 第一个单词保持小写
         } else {
@@ -59,7 +58,7 @@ export function camelCase(str: string): string {
  * @returns 用连接符分隔的全小写字符串
  */
 export function camelCaseToDash(str: string): string {
-    let result = str.replace(/([A-Z])/g, "-$1").toLowerCase();
-    if (result.startsWith("-")) result = result.slice(1);
+    let result = str.replace(/([A-Z])/g, '-$1').toLowerCase();
+    if (result.startsWith('-')) result = result.slice(1);
     return result;
 }

@@ -2,18 +2,20 @@
  * 验证错误类测试
  */
 
-import { 
+import {
     ValidationError,
     DuplicateValidatorError,
     ValidatorNotFoundError,
     ValidationTypeNotDefinedError,
-    ValidationErrorCode
+    ValidationErrorCode,
 } from '@/validation/errors';
 
 describe('Validation Errors', () => {
     describe('ValidationError', () => {
         it('should create validation error', () => {
-            const error = new ValidationError('Validation failed', 'required', [{ field: 'name', message: 'required' }]);
+            const error = new ValidationError('Validation failed', 'required', [
+                { field: 'name', message: 'required' },
+            ]);
             expect(error).toBeInstanceOf(Error);
             expect(error.name).toBe('ValidationError');
             expect(error.errors).toHaveLength(1);
@@ -41,7 +43,7 @@ describe('Validation Errors', () => {
             error.addError('name', 'required');
             error.addError('name', 'minLength');
             error.addError('email', 'format');
-            
+
             const obj = error.toSimpleObject();
             expect(obj.name).toHaveLength(2);
             expect(obj.email).toHaveLength(1);

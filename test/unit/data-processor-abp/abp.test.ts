@@ -1,4 +1,8 @@
-import { createAbpPaginationHandler, createAbpTenantHeaderHandler, getAbpPreHandlers } from '@/data-processor-abp/pre';
+import {
+    createAbpPaginationHandler,
+    createAbpTenantHeaderHandler,
+    getAbpPreHandlers,
+} from '@/data-processor-abp/pre';
 import {
     createAbpExtractHandler,
     createAbpAuditCleanHandler,
@@ -203,14 +207,16 @@ describe('ABP 后道处理器', () => {
         test('应该移除审计字段', async () => {
             const handler = createAbpAuditCleanHandler();
             const ctx = createContext();
-            ctx.data.list = [{
-                id: 1,
-                name: 'test',
-                creationTime: '2024-01-01',
-                creatorId: 'user1',
-                lastModificationTime: null,
-                lastModifierId: null,
-            }];
+            ctx.data.list = [
+                {
+                    id: 1,
+                    name: 'test',
+                    creationTime: '2024-01-01',
+                    creatorId: 'user1',
+                    lastModificationTime: null,
+                    lastModifierId: null,
+                },
+            ];
 
             await handler.handle(ctx);
 
@@ -289,9 +295,7 @@ describe('ABP 后道处理器', () => {
                     code: 'Volo.Abp:Validation',
                     message: 'Validation failed',
                     details: null,
-                    validationErrors: [
-                        { message: 'Name is required', members: ['name'] },
-                    ],
+                    validationErrors: [{ message: 'Name is required', members: ['name'] }],
                 },
             };
 
@@ -335,7 +339,10 @@ describe('ABP 后道处理器', () => {
                     message: 'Validation failed',
                     details: null,
                     validationErrors: [
-                        { message: 'Passwords do not match', members: ['password', 'confirmPassword'] },
+                        {
+                            message: 'Passwords do not match',
+                            members: ['password', 'confirmPassword'],
+                        },
                     ],
                 },
             };
@@ -402,7 +409,10 @@ describe('ABP 后道处理器', () => {
             const handlers = getAbpPostHandlers();
             expect(handlers.length).toBe(4);
             expect(handlers.map(h => h.name)).toEqual([
-                'abp-extract', 'abp-audit-clean', 'abp-soft-delete-filter', 'abp-error',
+                'abp-extract',
+                'abp-audit-clean',
+                'abp-soft-delete-filter',
+                'abp-error',
             ]);
         });
     });

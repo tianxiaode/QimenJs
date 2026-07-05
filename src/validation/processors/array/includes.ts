@@ -26,7 +26,7 @@ export const ArrayIncludesProcessor: ValidationProcessorHandler = async (
     // --- 核心逻辑：枚举值验证 ---
     // 检查是否存在 includes 规则
     if (rule.includes === undefined) return;
-    
+
     // 获取允许的值列表，支持函数形式
     const includesValues =
         typeof rule.includes === 'function' ? rule.includes(rule) : (rule.includes as any[][]);

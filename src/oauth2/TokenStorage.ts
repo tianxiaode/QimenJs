@@ -87,7 +87,9 @@ export class SessionStorageTokenStorage implements ITokenStorage {
 /**
  * 创建 Token 存储
  */
-export function createTokenStorage(type?: 'memory' | 'localStorage' | 'sessionStorage'): ITokenStorage {
+export function createTokenStorage(
+    type?: 'memory' | 'localStorage' | 'sessionStorage'
+): ITokenStorage {
     switch (type) {
         case 'localStorage':
             return new LocalStorageTokenStorage();

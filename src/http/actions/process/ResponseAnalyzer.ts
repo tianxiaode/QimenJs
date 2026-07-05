@@ -1,6 +1,6 @@
 ﻿/**
  * @file ResponseAnalyzer.ts
- * @description 
+ * @description
  * 该文件实现了响应分析处理器，负责分析HTTP响应的状态和头部信息。
  * 它会识别响应类型（JSON、Blob、文本）、判断是否为下载内容、解析文件名等，
  * 并设置相应的元数据标志供后续处理步骤使用。
@@ -35,7 +35,7 @@ export const ResponseAnalyzerHandler = async (context: RequestContext) => {
             context.metadata.fileName = decodeURIComponent(match[1]);
         }
     }
-    
+
     // 3. 类型识别：为 DataParser 铺路
     context.metadata.isJson = contentType.includes('application/json');
     context.metadata.isBlob =

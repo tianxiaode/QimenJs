@@ -1,7 +1,10 @@
 ﻿import { string } from '@qimenjs/utils';
 import { CacheType, ICacheEntry, ICacheProvider } from './types';
 
-export abstract class BaseCacheProvider<TKey = string, TData = any> implements ICacheProvider<TKey, TData> {
+export abstract class BaseCacheProvider<TKey = string, TData = any> implements ICacheProvider<
+    TKey,
+    TData
+> {
     id: string = '';
     type: CacheType = '';
 
@@ -12,7 +15,7 @@ export abstract class BaseCacheProvider<TKey = string, TData = any> implements I
     abstract clear(): Promise<void>;
     abstract has(key: TKey): Promise<boolean>;
 
-    constructor(){
+    constructor() {
         this.id = string.getId(this.type + '-cache');
     }
 

@@ -3,7 +3,7 @@ import { KernelError, KernelErrorCode } from '@/error';
 
 /**
  * FlatRemoteQueryAbility - 远程查询能力
- * 
+ *
  * 提供分页导航、过滤、排序等查询操作。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */

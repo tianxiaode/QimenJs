@@ -10,10 +10,10 @@ export type CssUnitType = string | number | null | undefined;
  * @returns 标准化后的CSS单位字符串
  */
 export function normalizeCssUnit(value: CssUnitType): string {
-    if(value === 0) return "0";
-    if (typeof value === "number") return value + "px";
-    if (value === null) return "null";
-    if (value === undefined) return "undefined";
+    if (value === 0) return '0';
+    if (typeof value === 'number') return value + 'px';
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
     return value as string;
 }
 
@@ -23,10 +23,8 @@ export function normalizeCssUnit(value: CssUnitType): string {
  * @returns 解析出的数值
  */
 export function cssUnitTypeToNumber(value: CssUnitType): number {
-    if (typeof value === "number") return value;
-    const match = value!.match(
-        /^(\d+(\.\d+)?)(px|em|rem|%|pt|pc|ex|ch|vw|vh|vmin|vmax)?$/
-    );
+    if (typeof value === 'number') return value;
+    const match = value!.match(/^(\d+(\.\d+)?)(px|em|rem|%|pt|pc|ex|ch|vw|vh|vmin|vmax)?$/);
     if (match) {
         const num = parseFloat(match[1]);
         return num;

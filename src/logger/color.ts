@@ -3,9 +3,9 @@ const RESET = '\x1b[0m';
 
 // 定义不同日志级别的颜色映射
 const COLORS: Record<string, string> = {
-    DEBUG: '\x1b[90m',  // 灰色
-    WARN: '\x1b[33m',   // 黄色
-    ERROR: '\x1b[31m',  // 红色
+    DEBUG: '\x1b[90m', // 灰色
+    WARN: '\x1b[33m', // 黄色
+    ERROR: '\x1b[31m', // 红色
 };
 
 /**

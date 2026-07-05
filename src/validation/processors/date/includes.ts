@@ -18,14 +18,12 @@ export const DateIncludesProcessor: ValidationProcessorHandler = async (
     if (Array.isArray(includesValues)) {
         // 检查当前值是否在允许数组中
         // 对于日期，我们需要比较时间戳来判断是否相等
-        const isInclude = includesValues.some(includeDate => 
-            value.getTime() === includeDate.getTime()
+        const isInclude = includesValues.some(
+            includeDate => value.getTime() === includeDate.getTime()
         );
 
         if (!isInclude) {
             context.errors.push(ValidationErrorBuilder.not_allowed(value, includesValues, context));
         }
     }
-
 };
-

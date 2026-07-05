@@ -18,14 +18,12 @@ export const DateExcludesProcessor: ValidationProcessorHandler = async (
     if (Array.isArray(excludesValues)) {
         // 检查当前值是否在排除数组中
         // 对于日期，我们需要比较时间戳来判断是否相等
-        const isExclude = excludesValues.some(excludeDate => 
-            value.getTime() === excludeDate.getTime()
+        const isExclude = excludesValues.some(
+            excludeDate => value.getTime() === excludeDate.getTime()
         );
 
         if (isExclude) {
             context.errors.push(ValidationErrorBuilder.not_allowed(value, excludesValues, context));
         }
     }
-
 };
-

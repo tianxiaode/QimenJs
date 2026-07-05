@@ -24,9 +24,9 @@ export class DuplicateValidatorError extends ErrorBase {
 
         // 调用父类 BaseError 的构造函数，传递错误消息、错误代码和错误上下文
         super(message, 'DUPLICATE_VALIDATOR', {
-            validatorKey,              // 包含验证器键名
-            existingValidatorInfo,     // 包含已存在验证器的信息（如果有的话）
-            ...context,                // 展开传入的额外上下文信息
+            validatorKey, // 包含验证器键名
+            existingValidatorInfo, // 包含已存在验证器的信息（如果有的话）
+            ...context, // 展开传入的额外上下文信息
         });
     }
 }

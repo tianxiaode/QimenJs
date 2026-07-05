@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -132,7 +132,15 @@ describe('ArrayChildrenProcessor', () => {
         await ArrayChildrenProcessor(context);
 
         expect(mockDoValidate).toHaveBeenCalledTimes(2);
-        expect(mockDoValidate).toHaveBeenCalledWith('a', { type: 'string' }, expect.objectContaining({ path: 'root[0]' }));
-        expect(mockDoValidate).toHaveBeenCalledWith('b', { type: 'string' }, expect.objectContaining({ path: 'root[1]' }));
+        expect(mockDoValidate).toHaveBeenCalledWith(
+            'a',
+            { type: 'string' },
+            expect.objectContaining({ path: 'root[0]' })
+        );
+        expect(mockDoValidate).toHaveBeenCalledWith(
+            'b',
+            { type: 'string' },
+            expect.objectContaining({ path: 'root[1]' })
+        );
     });
 });

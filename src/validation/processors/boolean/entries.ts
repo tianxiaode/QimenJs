@@ -8,4 +8,3 @@ export const booleanTypeProcessorEntry = {
     offset: 10,
     execute: BooleanypeProcessor,
 };
-

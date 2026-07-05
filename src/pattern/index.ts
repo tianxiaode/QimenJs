@@ -19,11 +19,7 @@
 export { PatternRegistrar, PatternRegistrarName } from './PatternRegistrar';
 
 // 预定义模式常量
-export {
-    FORMAT_PATTERNS,
-    PASSWORD_PATTERNS,
-    VALIDATION_PATTERNS,
-} from './presets';
+export { FORMAT_PATTERNS, PASSWORD_PATTERNS, VALIDATION_PATTERNS } from './presets';
 
 // 自动注册（必须在最后，触发 registerValidationPatterns）
 export { registerValidationPatterns } from './register';

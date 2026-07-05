@@ -10,8 +10,8 @@ export interface MemoryOptions {
  * 内存快照接口
  */
 export interface MemorySnapshot {
-    used: number;      // 已使用内存大小
-    max: number;       // 最大内存大小
+    used: number; // 已使用内存大小
+    max: number; // 最大内存大小
     highWatermark: number; // 高水位线（触发警告的阈值）
 }
 
@@ -19,8 +19,8 @@ export interface MemorySnapshot {
  * 内存票据接口
  */
 export interface IMemoryTicket {
-    readonly bytes: number;  // 票据对应的内存大小
-    release(): void;        // 释放内存的方法
+    readonly bytes: number; // 票据对应的内存大小
+    release(): void; // 释放内存的方法
 }
 
 /**
@@ -31,7 +31,7 @@ export class MemoryTicket implements IMemoryTicket {
 
     constructor(
         private readonly manager: MemoryManager, // 内存管理器实例
-        public readonly bytes: number           // 票据对应的内存大小
+        public readonly bytes: number // 票据对应的内存大小
     ) {}
 
     /**
@@ -49,9 +49,9 @@ export class MemoryTicket implements IMemoryTicket {
  * 实现了内存资源的争用和等待机制
  */
 export class MemoryManager {
-    private used = 0;                    // 当前已使用的内存大小
-    private readonly max: number;        // 最大内存大小
-    private readonly high: number;       // 高水位线（触发警告的阈值）
+    private used = 0; // 当前已使用的内存大小
+    private readonly max: number; // 最大内存大小
+    private readonly high: number; // 高水位线（触发警告的阈值）
     private waiters: Array<() => void> = []; // 等待内存资源的队列
 
     /**

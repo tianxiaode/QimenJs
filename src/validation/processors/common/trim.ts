@@ -1,7 +1,4 @@
-import {
-    ValidationContext,
-    ValidationProcessorHandler,
-} from '../../types';
+import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
 export const TrimProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     let { value, rule } = context;

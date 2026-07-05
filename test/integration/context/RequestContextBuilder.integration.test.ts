@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -34,23 +34,28 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
 
     beforeEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        domainRegistrar.register(TEST_DOMAIN, {
-            baseUrl: 'https://test-api.example.com',
-            preset: 'default',
-            pageSize: 10,
-            pagesizes: [10, 20, 50],
-        }, true);
+        domainRegistrar.register(
+            TEST_DOMAIN,
+            {
+                baseUrl: 'https://test-api.example.com',
+                preset: 'default',
+                pageSize: 10,
+                pagesizes: [10, 20, 50],
+            },
+            true
+        );
     });
 
     afterEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        try { domainRegistrar.unregister(TEST_DOMAIN); } catch {}
+        try {
+            domainRegistrar.unregister(TEST_DOMAIN);
+        } catch {}
     });
 
     describe('undefined 值过滤', () => {
         it('withData 设置后 data 可正确获取', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -61,8 +66,7 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
         });
 
         it('withRequest 设置 headers 后可正确获取', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -75,8 +79,7 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
 
     describe('空值安全处理', () => {
         it('build() 后 headers 为空对象（非 undefined）', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -87,8 +90,7 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
         });
 
         it('build() 后 queryParams 可安全访问', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -101,8 +103,7 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
 
     describe('链式调用', () => {
         it('所有 with* 方法支持链式调用并返回完整 RequestContext', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/items')
                 .withMethod('POST')
@@ -128,18 +129,14 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
 
         it('缺少 url 时 build() 抛出错误', () => {
             expect(() => {
-                RequestContextBuilder
-                    .create()
-                    .withDomain(TEST_DOMAIN)
-                    .build();
+                RequestContextBuilder.create().withDomain(TEST_DOMAIN).build();
             }).toThrow();
         });
     });
 
     describe('domainConfig 集成', () => {
         it('build() 从 DomainRegistrar 获取 domainConfig', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withMethod('GET')
@@ -151,8 +148,7 @@ describe('RequestContextBuilder 边界场景集成测试', () => {
         });
 
         it('未注册的域 domainConfig 为 undefined', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('nonexistent-domain')
                 .withUrl('/api/test')
                 .withMethod('GET')

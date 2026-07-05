@@ -3,7 +3,7 @@ import type { IEntity } from '@/schema';
 
 /**
  * TreeLifecycleAbility - 树生命周期能力
- * 
+ *
  * 为宿主提供树形结构的节点管理功能（删除/移动/同步/获取子节点）。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/parentIdField/root 可直接访问。
  */

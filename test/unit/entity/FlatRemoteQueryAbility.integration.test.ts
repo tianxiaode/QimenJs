@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -329,10 +329,13 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
         it('filter() 应该调用 list(true) 强制刷新', async () => {
             manager.updateData(createProductData(10), 30);
 
-            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: createProductData(5), total: 5 },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: createProductData(5), total: 5 },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             await manager.filter('Books');
 
@@ -342,7 +345,9 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
         it('filter() 应该跳过缓存强制请求（不使用缓存数据）', async () => {
             // 使用 _internalList 的 spy 来验证 filter 调用的是 _internalList(true)
-            const internalListSpy = jest.spyOn(manager as any, '_internalList').mockImplementation(async () => []);
+            const internalListSpy = jest
+                .spyOn(manager as any, '_internalList')
+                .mockImplementation(async () => []);
 
             await manager.filter('Books');
 
@@ -372,10 +377,13 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
             mockFetchReturn({ list: createProductData(10), total: 30 });
             await manager.list();
 
-            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: createProductData(5), total: 5 },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: createProductData(5), total: 5 },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             await manager.searchBy({ keyword: 'Books' });
 
@@ -429,10 +437,13 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
         it('sort() 应该调用 list(false) 不强制刷新', async () => {
             manager.updateData(createProductData(10), 30);
 
-            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: createProductData(10), total: 30 },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: createProductData(10), total: 30 },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             await manager.sort('name', 'asc');
 
@@ -462,10 +473,13 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
         it('reset() 应该调用 list(true) 强制刷新', async () => {
             manager.updateData(createProductData(10), 30);
 
-            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(async () => ({
-                data: { list: createProductData(10), total: 30 },
-                metadata: { hasError: false },
-            } as any));
+            const fetchSpy = jest.spyOn(TestQueryManager.prototype, 'fetch').mockImplementation(
+                async () =>
+                    ({
+                        data: { list: createProductData(10), total: 30 },
+                        metadata: { hasError: false },
+                    }) as any
+            );
 
             await manager.reset();
 

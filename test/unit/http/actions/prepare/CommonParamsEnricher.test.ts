@@ -6,8 +6,7 @@ import { CommonParamsEnricherHandler } from '@/http/actions/prepare/CommonParams
 import { RequestContextBuilder } from '@qimenjs/context';
 
 function createContext(domainConfig: any = {}, requestOverrides: any = {}) {
-    const context = RequestContextBuilder
-        .create()
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('/api/test')
         .withMethod('GET')
@@ -94,8 +93,7 @@ describe('CommonParamsEnricher', () => {
 
     describe('no domainConfig', () => {
         it('should handle missing domainConfig gracefully', async () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('test')
                 .withUrl('/api/test')
                 .withMethod('GET')

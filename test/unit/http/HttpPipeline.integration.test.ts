@@ -25,8 +25,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -71,13 +71,18 @@ function removeTestDomain(): void {
 // 辅助：mock global fetch
 // ============================================
 
-function mockFetchSuccess(responseData: any, status = 200, headers: Record<string, string> = {}): void {
+function mockFetchSuccess(
+    responseData: any,
+    status = 200,
+    headers: Record<string, string> = {}
+): void {
     const mockHeaders = new Map(Object.entries(headers));
     (global as any).fetch = jest.fn().mockResolvedValue({
         ok: status >= 200 && status < 300,
         status,
         headers: {
-            forEach: (cb: (v: string, k: string) => void) => mockHeaders.forEach((v, k) => cb(v, k)),
+            forEach: (cb: (v: string, k: string) => void) =>
+                mockHeaders.forEach((v, k) => cb(v, k)),
         },
         json: async () => responseData,
         text: async () => JSON.stringify(responseData),
@@ -177,8 +182,7 @@ describe('HTTP 管道集成测试', () => {
 
     describe('RequestContextBuilder + DomainRegistrar', () => {
         it('build() 应该从 DomainRegistrar 获取 domainConfig 并存入 metadata', () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .build();
@@ -190,8 +194,7 @@ describe('HTTP 管道集成测试', () => {
         it('build() domain 未注册时 domainConfig 应该为 undefined', () => {
             removeTestDomain();
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('nonexistent-domain')
                 .withUrl('/api/test')
                 .build();
@@ -203,8 +206,7 @@ describe('HTTP 管道集成测试', () => {
             removeTestDomain();
             ensureTestDomain({ token: 'test-jwt-token', authInjector: 'bearer' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .build();
@@ -217,13 +219,15 @@ describe('HTTP 管道集成测试', () => {
             removeTestDomain();
             ensureTestDomain({ commonParams: { appId: 'my-app', version: '1.0' } });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .build();
 
-            expect(context.metadata.domainConfig.commonParams).toEqual({ appId: 'my-app', version: '1.0' });
+            expect(context.metadata.domainConfig.commonParams).toEqual({
+                appId: 'my-app',
+                version: '1.0',
+            });
         });
     });
 
@@ -236,15 +240,16 @@ describe('HTTP 管道集成测试', () => {
             removeTestDomain();
             ensureTestDomain({ commonParams: { appId: 'my-app' } });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .withQueryParams({ page: 1 })
                 .build();
 
             // 执行 CommonParamsEnricher
-            const { CommonParamsEnricherHandler } = require('@/http/actions/prepare/CommonParamsEnricher');
+            const {
+                CommonParamsEnricherHandler,
+            } = require('@/http/actions/prepare/CommonParamsEnricher');
             await CommonParamsEnricherHandler(context);
 
             expect(context.request.queryParams!.appId).toBe('my-app');
@@ -255,8 +260,7 @@ describe('HTTP 管道集成测试', () => {
             removeTestDomain();
             ensureTestDomain({ token: 'my-jwt', authInjector: 'bearer' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .build();
@@ -271,8 +275,7 @@ describe('HTTP 管道集成测试', () => {
             removeTestDomain();
             ensureTestDomain({ token: 'base64creds', authInjector: 'basic' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/test')
                 .build();
@@ -284,10 +287,9 @@ describe('HTTP 管道集成测试', () => {
         });
 
         it('UrlBuilder 应该从 domainConfig.baseUrl 构建完整 URL', async () => {
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
-                .withUrl('/api/users')  // UrlBuilder 会用 baseUrl + pathParams 覆盖
+                .withUrl('/api/users') // UrlBuilder 会用 baseUrl + pathParams 覆盖
                 .withRequest({ pathParams: ['api', 'users'] } as any)
                 .withQueryParams({ page: 1, size: 10 })
                 .build();
@@ -304,8 +306,7 @@ describe('HTTP 管道集成测试', () => {
         it('UrlBuilder 没有 domainConfig 时应该使用相对路径', async () => {
             removeTestDomain();
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('no-config-domain')
                 .withUrl('/api/users')
                 .withRequest({ pathParams: ['api', 'users'] } as any)
@@ -329,8 +330,7 @@ describe('HTTP 管道集成测试', () => {
                 commonParams: { appId: 'test-app' },
             });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/users')
                 .withRequest({ pathParams: ['api', 'users'] } as any)
@@ -338,7 +338,9 @@ describe('HTTP 管道集成测试', () => {
                 .build();
 
             // 按顺序执行 PREPARE handlers
-            const { CommonParamsEnricherHandler } = require('@/http/actions/prepare/CommonParamsEnricher');
+            const {
+                CommonParamsEnricherHandler,
+            } = require('@/http/actions/prepare/CommonParamsEnricher');
             const { TokenInjectorHandler } = require('@/http/actions/prepare/TokenInjector');
             const { UrlBuilderHandler } = require('@/http/actions/prepare/UrlBuilder');
 
@@ -370,8 +372,7 @@ describe('HTTP 管道集成测试', () => {
             const responseData = { items: [{ id: 1, name: 'Test' }], totalCount: 1 };
             mockFetchSuccess(responseData, 200, { 'content-type': 'application/json' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('http://localhost:9999/api/users')
                 .withMethod('GET')
@@ -406,8 +407,7 @@ describe('HTTP 管道集成测试', () => {
         it('ResponseAnalyzer 应该标记 4xx 为错误但不中断', async () => {
             mockFetchSuccess({ error: 'Not Found' }, 404, { 'content-type': 'application/json' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('http://localhost:9999/api/users/999')
                 .withMethod('GET')
@@ -427,8 +427,7 @@ describe('HTTP 管道集成测试', () => {
         it('FetchTransport 网络错误应该设置 isTransportFailure', async () => {
             mockFetchError(new TypeError('Failed to fetch'));
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('http://localhost:9999/api/users')
                 .withMethod('GET')
@@ -444,8 +443,7 @@ describe('HTTP 管道集成测试', () => {
         it('DataParser 在 isTransportFailure 时应该跳过解析', async () => {
             mockFetchError(new TypeError('Failed to fetch'));
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('http://localhost:9999/api/users')
                 .withMethod('GET')
@@ -473,8 +471,7 @@ describe('HTTP 管道集成测试', () => {
             const responseData = { result: { items: [{ id: 1 }], totalCount: 1 } };
             mockFetchSuccess(responseData, 200, { 'content-type': 'application/json' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/users')
                 .withQueryParams({ page: 1 })
@@ -494,8 +491,7 @@ describe('HTTP 管道集成测试', () => {
             const responseData = { items: [] };
             mockFetchSuccess(responseData, 200, { 'content-type': 'application/json' });
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain('no-config')
                 .withUrl('/api/users')
                 .build();
@@ -509,8 +505,7 @@ describe('HTTP 管道集成测试', () => {
         it('execute() 网络错误应该返回 success=false', async () => {
             mockFetchError(new TypeError('Failed to fetch'));
 
-            const context = RequestContextBuilder
-                .create()
+            const context = RequestContextBuilder.create()
                 .withDomain(TEST_DOMAIN)
                 .withUrl('/api/users')
                 .build();

@@ -23,8 +23,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -80,17 +80,23 @@ function ensureLocalTestDomain(): void {
 }
 
 function mockFetchList(data: any[]): void {
-    jest.spyOn(TestLocalTaskManager.prototype, 'fetch').mockImplementation(async () => ({
-        data: { list: data, total: data.length },
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestLocalTaskManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data: { list: data, total: data.length },
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 function mockFetchReturn(data: any): void {
-    jest.spyOn(TestLocalTaskManager.prototype, 'fetch').mockImplementation(async () => ({
-        data,
-        metadata: { hasError: false },
-    } as any));
+    jest.spyOn(TestLocalTaskManager.prototype, 'fetch').mockImplementation(
+        async () =>
+            ({
+                data,
+                metadata: { hasError: false },
+            }) as any
+    );
 }
 
 // ============================================
@@ -143,9 +149,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('list() 后 get() 应该能查到数据', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
 
             await manager.list();
 
@@ -171,9 +175,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('get() 应该设置 item', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
 
             await manager.list();
             manager.get(1);
@@ -214,9 +216,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
 
     describe('FlatLocalMutationAbility: update() 本地更新', () => {
         it('update() 应该更新 sourceData 中的数据', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             manager.update({ id: 1, title: 'Updated Task', completed: true });
@@ -227,9 +227,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('update() 应该标记 hasChanges=true', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             manager.update({ id: 1, title: 'Updated', completed: true });
@@ -238,9 +236,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('update() 应该将更新记入 changes.updated', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             manager.update({ id: 1, title: 'Updated', completed: true });
@@ -260,9 +256,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
 
     describe('FlatLocalMutationAbility: toggle() 切换布尔字段', () => {
         it('toggle() 应该切换布尔字段值', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             const item = manager.get(1)!;
@@ -283,9 +277,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('delete() 已持久化项应该从 sourceData 移除', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             await manager.delete([1], true);
@@ -294,9 +286,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('softDelete + rollbackDelete 应该恢复软删除的数据', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             // 手动调用 softDelete（不 confirmDelete），这样 rollbackDelete 才能恢复
@@ -347,9 +337,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
 
     describe('StateDirtyAbility: 脏检查', () => {
         it('startEdit + isDirty 应该检测到变更', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             const item = manager.get(1)!;
@@ -362,9 +350,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('cancelEdit 应该恢复原始数据', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             const item = manager.get(1)!;
@@ -378,9 +364,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('submitEdit 应该清除脏状态', async () => {
-            mockFetchList([
-                { id: 1, title: 'Task 1', completed: false },
-            ]);
+            mockFetchList([{ id: 1, title: 'Task 1', completed: false }]);
             await manager.list();
 
             const item = manager.get(1)!;

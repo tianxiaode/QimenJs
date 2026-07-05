@@ -1,5 +1,5 @@
-import { ValidationWeight } from "../../types";
-import { FileProcessor } from "./file";
+import { ValidationWeight } from '../../types';
+import { FileProcessor } from './file';
 
 export const FileProcessorEntry = {
     name: 'file',

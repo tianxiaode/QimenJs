@@ -22,9 +22,7 @@ export class ValidatorRegistrar extends RegistrarBase<ValidationProcessorEntry[]
 
     unregister(processorName: string): void {
         this.checkLock();
-        this.storage = this.storage.filter(
-            p => p.name !== processorName
-        );
+        this.storage = this.storage.filter(p => p.name !== processorName);
         ValidatorRegistrar.chainCache.clear();
     }
 
@@ -92,6 +90,3 @@ export class ValidatorRegistrar extends RegistrarBase<ValidationProcessorEntry[]
         return 'STRUCTURAL';
     }
 }
-
-
-

@@ -1,4 +1,4 @@
-import { Chunk, ChunkProvider } from "../types";
+import { Chunk, ChunkProvider } from '../types';
 
 /**
  * BrowserFileChunkProvider 是一个用于将文件或 Blob 分块处理的提供者
@@ -55,7 +55,7 @@ export class BrowserFileChunkProvider implements ChunkProvider {
 
         const chunk: Chunk = {
             id: `chunk-${this.chunkIndex++}`,
-            data: buffer
+            data: buffer,
         };
 
         this.offset = end;

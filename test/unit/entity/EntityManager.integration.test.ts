@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -153,9 +153,7 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('updateData 不传 total 时应该用 items 长度', () => {
-            const users = [
-                { id: '1', name: 'Alice', email: 'alice@test.com' },
-            ];
+            const users = [{ id: '1', name: 'Alice', email: 'alice@test.com' }];
 
             manager.updateData(users);
 
@@ -170,9 +168,7 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('updateItem 应该更新当前 item 并同步到 items', () => {
-            const users = [
-                { id: '1', name: 'Alice', email: 'alice@test.com' },
-            ];
+            const users = [{ id: '1', name: 'Alice', email: 'alice@test.com' }];
             manager.updateData(users);
 
             const updated = { id: '1', name: 'Alice Smith', email: 'alice.smith@test.com' };
@@ -223,9 +219,7 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('list() 返回的数据应该同步到 items', async () => {
-            const users = [
-                { id: '1', name: 'Alice', email: 'alice@test.com' },
-            ];
+            const users = [{ id: '1', name: 'Alice', email: 'alice@test.com' }];
             mockFetchReturn({ list: users, total: 1 });
 
             await manager.list();
@@ -245,9 +239,7 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('refresh() 应该返回数组而非 undefined', async () => {
-            const users = [
-                { id: '1', name: 'Alice', email: 'alice@test.com' },
-            ];
+            const users = [{ id: '1', name: 'Alice', email: 'alice@test.com' }];
             mockFetchReturn({ list: users, total: 1 });
 
             const result = await manager.refresh();
@@ -264,7 +256,12 @@ describe('EntityManager 集成测试', () => {
     describe('buildRequestContext 集成', () => {
         it('buildOptions 传 undefined headers 时 context.request.headers 应该是对象', async () => {
             // buildOptions 中 extra.headers 是 undefined
-            const options = await manager.buildOptions(ENTITY_ACTION.LIST, { page: 1, pageSize: 20 }, null, {});
+            const options = await manager.buildOptions(
+                ENTITY_ACTION.LIST,
+                { page: 1, pageSize: 20 },
+                null,
+                {}
+            );
 
             // options.headers 可能是 undefined，但 buildRequestContext 应该处理
             const context = manager['buildRequestContext'](ENTITY_ACTION.LIST, options);
@@ -326,7 +323,9 @@ describe('EntityManager 集成测试', () => {
         it('update() loading 中应该抛出 KernelError', async () => {
             manager.loading = true;
 
-            await expect(manager.update({ id: '1', name: 'Test' })).rejects.toThrow('Operation in progress');
+            await expect(manager.update({ id: '1', name: 'Test' })).rejects.toThrow(
+                'Operation in progress'
+            );
 
             manager.loading = false;
         });
@@ -338,10 +337,13 @@ describe('EntityManager 集成测试', () => {
 
     describe('RemoteDeleteAbility 集成', () => {
         it('delete() 单个删除应该从 items 中移除', async () => {
-            manager.updateData([
-                { id: '1', name: 'Alice' },
-                { id: '2', name: 'Bob' },
-            ], 2);
+            manager.updateData(
+                [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' },
+                ],
+                2
+            );
 
             mockFetchReturn({ list: [], total: 0 });
 
@@ -353,11 +355,14 @@ describe('EntityManager 集成测试', () => {
         });
 
         it('delete() 批量删除应该从 items 中移除多个', async () => {
-            manager.updateData([
-                { id: '1', name: 'Alice' },
-                { id: '2', name: 'Bob' },
-                { id: '3', name: 'Charlie' },
-            ], 3);
+            manager.updateData(
+                [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' },
+                    { id: '3', name: 'Charlie' },
+                ],
+                3
+            );
 
             mockFetchReturn({ list: [], total: 0 });
 

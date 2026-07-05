@@ -29,21 +29,81 @@ function _simpleHash(str: string): string {
 // ---- Schema 属性代理 ----
 
 const schemaGetters: AbilityDefinition = {
-    idField: { get() { return this.schema?.idField || 'id'; } },
-    idType: { get() { return this.schema?.idType || 'number'; } },
-    nameField: { get() { return this.schema?.nameField || 'name'; } },
-    defaultSort: { get() { return this.schema?.defaultSort || ''; } },
-    defaultOrder: { get() { return this.schema?.defaultOrder || 'asc'; } },
-    searchFields: { get() { return this.schema?.searchFields || []; } },
-    isTree: { get() { return !!this.schema?.isTree; } },
-    isLazy: { get() { return this.schema?.isTree ? !!(this.schema as any).isLazy : false; } },
-    root: { get() { return this.schema?.isTree ? (this.schema as any).root : ''; } },
-    parentIdField: { get() { return this.schema?.isTree ? (this.schema as any).parentIdField : ''; } },
-    childrenField: { get() { return this.schema?.isTree ? (this.schema as any).childrenField : ''; } },
-    pathField: { get() { return this.schema?.isTree ? (this.schema as any).pathField : ''; } },
-    leafField: { get() { return this.schema?.isTree ? (this.schema as any).leafField : ''; } },
-    expandedField: { get() { return this.schema?.isTree ? (this.schema as any).expandedField : ''; } },
-    useFlat: { get() { return this.schema?.isTree ? !!(this.schema as any).useFlat : false; } },
+    idField: {
+        get() {
+            return this.schema?.idField || 'id';
+        },
+    },
+    idType: {
+        get() {
+            return this.schema?.idType || 'number';
+        },
+    },
+    nameField: {
+        get() {
+            return this.schema?.nameField || 'name';
+        },
+    },
+    defaultSort: {
+        get() {
+            return this.schema?.defaultSort || '';
+        },
+    },
+    defaultOrder: {
+        get() {
+            return this.schema?.defaultOrder || 'asc';
+        },
+    },
+    searchFields: {
+        get() {
+            return this.schema?.searchFields || [];
+        },
+    },
+    isTree: {
+        get() {
+            return !!this.schema?.isTree;
+        },
+    },
+    isLazy: {
+        get() {
+            return this.schema?.isTree ? !!(this.schema as any).isLazy : false;
+        },
+    },
+    root: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).root : '';
+        },
+    },
+    parentIdField: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).parentIdField : '';
+        },
+    },
+    childrenField: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).childrenField : '';
+        },
+    },
+    pathField: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).pathField : '';
+        },
+    },
+    leafField: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).leafField : '';
+        },
+    },
+    expandedField: {
+        get() {
+            return this.schema?.isTree ? (this.schema as any).expandedField : '';
+        },
+    },
+    useFlat: {
+        get() {
+            return this.schema?.isTree ? !!(this.schema as any).useFlat : false;
+        },
+    },
 };
 
 // ---- 缓存能力 ----
@@ -101,9 +161,13 @@ const cacheMethods: AbilityDefinition = {
     },
 
     async _getCacheProvider(): Promise<ICacheProvider> {
-        let providerPromise = this.abilityState('StateCache:provider') as Promise<ICacheProvider> | undefined;
+        let providerPromise = this.abilityState('StateCache:provider') as
+            | Promise<ICacheProvider>
+            | undefined;
         if (!providerPromise) {
-            providerPromise = CacheFactory.create((this.schema as any).cache?.type || 'memory').then(provider => {
+            providerPromise = CacheFactory.create(
+                (this.schema as any).cache?.type || 'memory'
+            ).then(provider => {
                 this.onCleanup(() => CacheFactory.release(provider.id, true));
                 return provider;
             });
@@ -175,8 +239,13 @@ const dirtyMethods: AbilityDefinition = {
 const mutationMethods: AbilityDefinition = {
     hasChanges: {
         get() {
-            const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
-            return changes !== undefined && (changes.added.length > 0 || changes.updated.size > 0 || changes.deleted.length > 0);
+            const changes = this.abilityState('StateLocalMutation:changes') as
+                | ILocalChangeSet
+                | undefined;
+            return (
+                changes !== undefined &&
+                (changes.added.length > 0 || changes.updated.size > 0 || changes.deleted.length > 0)
+            );
         },
     },
 
@@ -205,9 +274,7 @@ const mutationMethods: AbilityDefinition = {
 
         const id = item[idField];
         const changes = this._getOrCreateChanges();
-        const isNew = changes.added.some(
-            (i: any) => i[idField] === id || i.tempId === item.tempId
-        );
+        const isNew = changes.added.some((i: any) => i[idField] === id || i.tempId === item.tempId);
 
         if (!isNew && id) {
             changes.updated.set(id, { ...item });
@@ -233,8 +300,12 @@ const mutationMethods: AbilityDefinition = {
         const idField = this.schema.idField || 'id';
         const { localOnly, persistent } = plan;
 
-        const localIds = localOnly.map((item: any) => typeof item === 'object' ? item[idField] : item);
-        const persistentIds = persistent.map((item: any) => typeof item === 'object' ? item[idField] : item);
+        const localIds = localOnly.map((item: any) =>
+            typeof item === 'object' ? item[idField] : item
+        );
+        const persistentIds = persistent.map((item: any) =>
+            typeof item === 'object' ? item[idField] : item
+        );
         const allIds = [...localIds, ...persistentIds];
 
         // 保存所有待删除项的快照（用于回滚）
@@ -249,9 +320,7 @@ const mutationMethods: AbilityDefinition = {
         if (localIds.length > 0) {
             const changes = this._getOrCreateChanges();
             const localSet = new Set(localIds);
-            changes.added = changes.added.filter(
-                (item: any) => !localSet.has(item[idField])
-            );
+            changes.added = changes.added.filter((item: any) => !localSet.has(item[idField]));
             changes.deleted.push(...localIds);
         }
 
@@ -267,8 +336,12 @@ const mutationMethods: AbilityDefinition = {
         const idField = this.schema.idField || 'id';
         const plan: IDeletionPlan = { localOnly: [], persistent: [] };
 
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
-        const addedIds = changes ? new Set(changes.added.map((item: any) => item[idField])) : new Set();
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
+        const addedIds = changes
+            ? new Set(changes.added.map((item: any) => item[idField]))
+            : new Set();
 
         ids.forEach(id => {
             if (addedIds.has(id)) {
@@ -284,7 +357,9 @@ const mutationMethods: AbilityDefinition = {
     async confirmDelete() {
         const deleteSnapshots = this._getOrCreateDeleteSnapshots();
         deleteSnapshots.clear();
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (changes) {
             changes.deleted.length = 0;
         }
@@ -293,7 +368,9 @@ const mutationMethods: AbilityDefinition = {
 
     async rollbackDelete() {
         const deleteSnapshots = this._getOrCreateDeleteSnapshots();
-        const changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        const changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (deleteSnapshots.size === 0 && (!changes || changes.deleted.length === 0)) return;
 
         deleteSnapshots.forEach((item: any, id: any) => {
@@ -314,7 +391,9 @@ const mutationMethods: AbilityDefinition = {
     // ---- 内部辅助方法 ----
 
     _getOrCreateChanges(): ILocalChangeSet {
-        let changes = this.abilityState('StateLocalMutation:changes') as ILocalChangeSet | undefined;
+        let changes = this.abilityState('StateLocalMutation:changes') as
+            | ILocalChangeSet
+            | undefined;
         if (!changes) {
             changes = this._createEmptyChanges();
             this.setAbilityState('StateLocalMutation:changes', changes);
@@ -323,7 +402,9 @@ const mutationMethods: AbilityDefinition = {
     },
 
     _getOrCreateDeleteSnapshots(): Map<string | number, any> {
-        let snapshots = this.abilityState('StateLocalMutation:deleteSnapshots') as Map<string | number, any> | undefined;
+        let snapshots = this.abilityState('StateLocalMutation:deleteSnapshots') as
+            | Map<string | number, any>
+            | undefined;
         if (!snapshots) {
             snapshots = new Map<string | number, any>();
             this.setAbilityState('StateLocalMutation:deleteSnapshots', snapshots);
@@ -406,7 +487,7 @@ const searchMethods: AbilityDefinition = {
     },
 
     applySort(list: any[]): any[] {
-        const { sortBy, sortOrder } = this.search as any || {};
+        const { sortBy, sortOrder } = (this.search as any) || {};
 
         if (!sortBy || !list || list.length <= 1) {
             return list;
@@ -433,10 +514,26 @@ export const FlatLocalStateAbility: AbilityDefinition = {
     // （isRemote, sourceData, loading, items, item, search 均在 Manager 上定义）
 
     // 计算属性
-    isEmpty: { get() { return this.items.length === 0; } },
-    total: { get() { return this.items.length; } },
-    adds: { get() { return this.changes.added; } },
-    updates: { get() { return this.changes.updated; } },
+    isEmpty: {
+        get() {
+            return this.items.length === 0;
+        },
+    },
+    total: {
+        get() {
+            return this.items.length;
+        },
+    },
+    adds: {
+        get() {
+            return this.changes.added;
+        },
+    },
+    updates: {
+        get() {
+            return this.changes.updated;
+        },
+    },
 
     // refreshView
     async refreshView(): Promise<void> {
@@ -444,7 +541,7 @@ export const FlatLocalStateAbility: AbilityDefinition = {
 
         try {
             const allData = Array.from(this.sourceData.values());
-            let filtered = allData.filter((item: any) => this.matchKeyword(item));
+            const filtered = allData.filter((item: any) => this.matchKeyword(item));
             this.items = this.applySort(filtered);
         } finally {
             this.loading = false;

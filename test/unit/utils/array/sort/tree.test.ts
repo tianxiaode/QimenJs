@@ -171,7 +171,7 @@ describe('toTree', () => {
         });
 
         // Define a type for our tree nodes to help with typing
-        type TreeNode = typeof multiLevelItems[number] & { children?: TreeNode[] };
+        type TreeNode = (typeof multiLevelItems)[number] & { children?: TreeNode[] };
 
         // Verify structure
         expect(result).toHaveLength(2);
@@ -208,7 +208,7 @@ describe('toTree', () => {
         });
 
         // Define a type for our tree nodes to help with typing
-        type TreeNode = typeof itemsWithMixedChildren[number] & { children?: TreeNode[] };
+        type TreeNode = (typeof itemsWithMixedChildren)[number] & { children?: TreeNode[] };
 
         // Root level parents
         expect(result).toHaveLength(2);
@@ -224,13 +224,13 @@ describe('toTree', () => {
         expect(parentWithChildren).toBeDefined();
         expect((parentWithChildren as TreeNode).children).toBeDefined();
         expect((parentWithChildren as TreeNode).children).toHaveLength(2);
-            
+
         // Find the child that itself has children
         if ((parentWithChildren as TreeNode).children) {
             const childWithSubChildren = (parentWithChildren as TreeNode).children!.find(
                 (child: any) => child.name === 'Child with sub-children'
             );
-                
+
             if (childWithSubChildren) {
                 // This child should have its own sub-child
                 expect(childWithSubChildren.children).toBeDefined();
@@ -245,19 +245,19 @@ describe('toTree', () => {
             { id: 1, name: 'Parent', parentId: null },
             { id: 2, name: 'Child', parentId: 1 },
         ];
-        
+
         const options: TreeOptions<TestItem> = {
             orderBy: [], // Empty sort conditions
         };
 
         const result = toTree(data, options) as TreeNode<TestItem>[];
-        
+
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe(1);
         expect(result[0]).toHaveProperty('children');
         expect(result[0].children).toHaveLength(1);
     });
-    
+
     it('should keep empty children arrays by default', () => {
         const data: TestItem[] = [
             { id: 1, name: 'Parent', parentId: null },

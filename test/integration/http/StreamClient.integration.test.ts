@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -40,15 +40,18 @@ const TEST_DOMAIN = 'test-stream';
  * 使用 getReader() 模式，兼容 StreamClient 的消费方式
  */
 function createMockSSEBody(events: object[], options?: { done?: boolean }) {
-    const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : {
-        encode: (str: string) => {
-            const arr = new Uint8Array(str.length);
-            for (let i = 0; i < str.length; i++) {
-                arr[i] = str.charCodeAt(i);
-            }
-            return arr;
-        }
-    };
+    const encoder =
+        typeof TextEncoder !== 'undefined'
+            ? new TextEncoder()
+            : {
+                  encode: (str: string) => {
+                      const arr = new Uint8Array(str.length);
+                      for (let i = 0; i < str.length; i++) {
+                          arr[i] = str.charCodeAt(i);
+                      }
+                      return arr;
+                  },
+              };
 
     const chunks: Uint8Array[] = [];
     for (const event of events) {
@@ -87,27 +90,29 @@ describe('StreamClient 流式请求集成测试', () => {
 
     beforeEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        domainRegistrar.register(TEST_DOMAIN, {
-            baseUrl: 'https://test-api.example.com',
-            preset: 'default',
-            pageSize: 10,
-            pagesizes: [10, 20, 50],
-        }, true);
+        domainRegistrar.register(
+            TEST_DOMAIN,
+            {
+                baseUrl: 'https://test-api.example.com',
+                preset: 'default',
+                pageSize: 10,
+                pagesizes: [10, 20, 50],
+            },
+            true
+        );
     });
 
     afterEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        try { domainRegistrar.unregister(TEST_DOMAIN); } catch {}
+        try {
+            domainRegistrar.unregister(TEST_DOMAIN);
+        } catch {}
         jest.restoreAllMocks();
     });
 
     describe('SSE 流式数据接收', () => {
         it('streamClient.get() 通过 AsyncGenerator 逐条接收 SSE 事件', async () => {
-            const events = [
-                { content: 'hello' },
-                { content: 'world' },
-                { content: 'done' },
-            ];
+            const events = [{ content: 'hello' }, { content: 'world' }, { content: 'done' }];
 
             const body = createMockSSEBody(events);
 
@@ -132,10 +137,7 @@ describe('StreamClient 流式请求集成测试', () => {
 
     describe('流中断处理', () => {
         it('有限长度的流迭代正常结束', async () => {
-            const events = [
-                { content: 'chunk1' },
-                { content: 'chunk2' },
-            ];
+            const events = [{ content: 'chunk1' }, { content: 'chunk2' }];
 
             const body = createMockSSEBody(events);
 
@@ -183,11 +185,7 @@ describe('StreamClient 流式请求集成测试', () => {
 
     describe('取消流请求', () => {
         it('cancel() 后流迭代停止', async () => {
-            const events = [
-                { content: 'chunk1' },
-                { content: 'chunk2' },
-                { content: 'chunk3' },
-            ];
+            const events = [{ content: 'chunk1' }, { content: 'chunk2' }, { content: 'chunk3' }];
 
             const body = createMockSSEBody(events, { done: false });
 

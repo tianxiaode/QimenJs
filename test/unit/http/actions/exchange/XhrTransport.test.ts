@@ -5,16 +5,17 @@
 import { XhrTransportHandler } from '@/http/actions/exchange/XhrTransport';
 import { RequestContextBuilder } from '@qimenjs/context';
 
-function createContext(options: {
-    method?: string;
-    isUpload?: boolean;
-    isDownload?: boolean;
-    body?: any;
-    headers?: Record<string, string>;
-    onProgress?: any;
-} = {}) {
-    const context = RequestContextBuilder
-        .create()
+function createContext(
+    options: {
+        method?: string;
+        isUpload?: boolean;
+        isDownload?: boolean;
+        body?: any;
+        headers?: Record<string, string>;
+        onProgress?: any;
+    } = {}
+) {
+    const context = RequestContextBuilder.create()
         .withDomain('test')
         .withUrl('https://api.example.com/test')
         .withMethod((options.method || 'POST') as any)
@@ -45,20 +46,39 @@ function createMockXhr() {
         setRequestHeader: jest.fn(),
         status: 200,
         response: '{"success":true}',
-        getAllResponseHeaders: jest.fn().mockReturnValue('content-type: application/json\r\nx-request-id: abc123'),
+        getAllResponseHeaders: jest
+            .fn()
+            .mockReturnValue('content-type: application/json\r\nx-request-id: abc123'),
         upload: {
             onprogress: null as any,
         },
-        get onload() { return onload; },
-        set onload(fn: (() => void) | null) { onload = fn; },
-        get onerror() { return onerror; },
-        set onerror(fn: (() => void) | null) { onerror = fn; },
-        get onabort() { return onabort; },
-        set onabort(fn: (() => void) | null) { onabort = fn; },
+        get onload() {
+            return onload;
+        },
+        set onload(fn: (() => void) | null) {
+            onload = fn;
+        },
+        get onerror() {
+            return onerror;
+        },
+        set onerror(fn: (() => void) | null) {
+            onerror = fn;
+        },
+        get onabort() {
+            return onabort;
+        },
+        set onabort(fn: (() => void) | null) {
+            onabort = fn;
+        },
         responseType: '',
     };
 
-    return { xhr, onload: () => onload?.(), onerror: () => onerror?.(), onabort: () => onabort?.() };
+    return {
+        xhr,
+        onload: () => onload?.(),
+        onerror: () => onerror?.(),
+        onabort: () => onabort?.(),
+    };
 }
 
 describe('XhrTransport', () => {
@@ -126,7 +146,9 @@ describe('XhrTransport with mocked XHR', () => {
     it('成功响应应设置 response.status、rawResponse、isSuccess、headers', async () => {
         mockXhr.xhr.status = 200;
         mockXhr.xhr.response = '{"success":true}';
-        mockXhr.xhr.getAllResponseHeaders = jest.fn().mockReturnValue('content-type: application/json\r\nx-request-id: abc123');
+        mockXhr.xhr.getAllResponseHeaders = jest
+            .fn()
+            .mockReturnValue('content-type: application/json\r\nx-request-id: abc123');
 
         const context = createContext({ isUpload: true, headers: {} });
         const promise = XhrTransportHandler(context);

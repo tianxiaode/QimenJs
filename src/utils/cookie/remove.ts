@@ -9,16 +9,16 @@ import { has } from './has';
  * @returns {boolean} - 如果成功删除返回 true，否则返回 false
  */
 export function remove(name: string, path?: string, domain?: string, secure?: boolean): boolean {
-  if (!name || !has(name)) {
-    return false;
-  }
+    if (!name || !has(name)) {
+        return false;
+    }
 
-  // 设置过期时间为过去，以删除 Cookie
-  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT` +
-    (path ? `; path=${path}` : '') +
-    (domain ? `; domain=${domain}` : '') +
-    (secure ? '; secure' : '');
+    // 设置过期时间为过去，以删除 Cookie
+    document.cookie =
+        `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT` +
+        (path ? `; path=${path}` : '') +
+        (domain ? `; domain=${domain}` : '') +
+        (secure ? '; secure' : '');
 
-  return !has(name);
+    return !has(name);
 }
-

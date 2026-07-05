@@ -10,7 +10,7 @@ import { string } from '@qimenjs/utils';
  * 它支持多种事件处理模式，包括一次性订阅、取消订阅等功能。
  *
  * @template Events 事件映射类型，定义了事件名称和载荷类型的对应关系
- * 
+ *
  * @example
  * ```ts
  * // 定义事件类型
@@ -40,16 +40,16 @@ export class EventBus {
 
     /**
      * 构造函数
-     * 
+     *
      * @param logger - 可选的日志记录器，用于记录事件总线的操作日志
      */
     constructor(private readonly logger?: ILogger) {}
 
     // --- 内置日志方法 ---
-    
+
     /**
      * 记录事件总线相关的日志
-     * 
+     *
      * @param level - 日志级别
      * @param action - 操作动作
      * @param data - 附加数据
@@ -61,7 +61,7 @@ export class EventBus {
 
     /**
      * 记录事件相关的日志
-     * 
+     *
      * @param level - 日志级别
      * @param action - 事件操作动作
      * @param event - 事件名称
@@ -73,12 +73,12 @@ export class EventBus {
     }
 
     // --- 事件订阅/触发 ---
-    
+
     /**
      * 订阅事件
-     * 
+     *
      * 添加一个事件处理器，该处理器会在每次事件被触发时被调用。
-     * 
+     *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
      * @returns 返回一个取消订阅的函数
@@ -99,9 +99,9 @@ export class EventBus {
 
     /**
      * 一次性订阅事件
-     * 
+     *
      * 添加一个事件处理器，该处理器只会在事件第一次被触发时调用，之后自动取消订阅。
-     * 
+     *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
      */
@@ -114,9 +114,9 @@ export class EventBus {
 
     /**
      * 触发事件
-     * 
+     *
      * 将事件数据传递给所有订阅了该事件的处理器。
-     * 
+     *
      * @param event - 事件名称
      * @param data - 事件数据载荷
      * @param source - 事件源（可选）

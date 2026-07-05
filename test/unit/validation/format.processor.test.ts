@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -110,6 +110,11 @@ describe('FormatProcessor', () => {
 
         await FormatProcessor(context);
 
-        expect(validatePattern).toHaveBeenCalledWith('123', mockPattern, context, mockPattern.toString());
+        expect(validatePattern).toHaveBeenCalledWith(
+            '123',
+            mockPattern,
+            context,
+            mockPattern.toString()
+        );
     });
 });

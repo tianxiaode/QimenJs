@@ -98,8 +98,5 @@ export function createAbpTenantHeaderHandler(options?: AbpPipelineOptions): Data
  * 获取所有 ABP 前道处理器
  */
 export function getAbpPreHandlers(options?: AbpPipelineOptions): DataProcessorHandler[] {
-    return [
-        createAbpPaginationHandler(options),
-        createAbpTenantHeaderHandler(options),
-    ];
+    return [createAbpPaginationHandler(options), createAbpTenantHeaderHandler(options)];
 }

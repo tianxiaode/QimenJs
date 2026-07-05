@@ -12,13 +12,17 @@ export const ArrayLengthProcessor: ValidationProcessorHandler = async (
 
     // 检查最小长度
     if (rule.minLength !== undefined && length < rule.minLength) {
-        context.errors.push(ValidationErrorBuilder.too_small(rule.minLength, value, false, context));
+        context.errors.push(
+            ValidationErrorBuilder.too_small(rule.minLength, value, false, context)
+        );
         if (!rule.allErrors) return;
     }
 
     // 检查最大长度
     if (rule.maxLength !== undefined && length > rule.maxLength) {
-        context.errors.push(ValidationErrorBuilder.too_large(rule.maxLength, value, false, context));
+        context.errors.push(
+            ValidationErrorBuilder.too_large(rule.maxLength, value, false, context)
+        );
         if (!rule.allErrors) return;
     }
 

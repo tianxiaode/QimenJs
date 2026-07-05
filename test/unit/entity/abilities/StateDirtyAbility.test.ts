@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -46,7 +46,6 @@ function createDirtyHost() {
 // ============================================
 
 describe('DirtyAbility', () => {
-
     describe('isDirty', () => {
         it('无参调用，初始状态应返回 false', () => {
             const host = createDirtyHost();

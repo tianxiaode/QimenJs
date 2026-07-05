@@ -55,7 +55,7 @@ describe('DoubleTapProcessor', () => {
     beforeEach(() => {
         mockEmit = jest.fn();
         processor = new DoubleTapProcessor('dblclick', mockEmit);
-        
+
         // Create a mock logger instance
         mockLogger = {
             debug: jest.fn(),
@@ -63,7 +63,7 @@ describe('DoubleTapProcessor', () => {
             warn: jest.fn(),
             error: jest.fn(),
         };
-        
+
         // Mock the logger for the processor
         Object.defineProperty(processor, 'logger', {
             value: mockLogger,
@@ -217,7 +217,7 @@ describe('DoubleTapProcessor', () => {
             100, // last x
             100, // last y
             300, // max interval default
-            10   // max distance default
+            10 // max distance default
         );
     });
 });

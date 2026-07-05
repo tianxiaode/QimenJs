@@ -63,7 +63,7 @@ export const TokenRefreshHandler = async (context: RequestContext): Promise<void
     retryContext.metadata = {
         ...context.metadata,
         isErrorHandled: false,
-        _refreshAttempted: true,  // 防止重试后再次 401 又触发刷新
+        _refreshAttempted: true, // 防止重试后再次 401 又触发刷新
     };
 
     const result = await executor.execute(retryContext);

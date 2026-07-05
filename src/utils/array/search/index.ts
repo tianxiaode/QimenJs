@@ -1,2 +1,2 @@
-export * from './find'
-export * from './includes'
+export * from './find';
+export * from './includes';

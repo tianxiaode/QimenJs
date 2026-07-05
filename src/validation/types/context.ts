@@ -29,7 +29,7 @@ export interface IValidationError {
 
 /**
  * 验证上下文
- * 
+ *
  * 从 BaseContext 派生，添加验证特定的字段
  */
 export interface ValidationContext extends BaseContext {

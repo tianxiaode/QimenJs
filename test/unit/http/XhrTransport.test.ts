@@ -1,6 +1,6 @@
 ﻿/**
  * XhrTransport 单元测试
- * 
+ *
  * 测试 XhrTransportHandler 的跳过逻辑和 parseXhrHeaders 辅助函数
  * XHR 的完整流程测试留给集成测试
  */
@@ -10,8 +10,7 @@ import { RequestContextBuilder } from '@qimenjs/context';
 
 describe('XhrTransportHandler', () => {
     it('should skip non-upload/download requests', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/test')
             .withMethod('POST')
@@ -23,8 +22,7 @@ describe('XhrTransportHandler', () => {
     });
 
     it('should process upload request', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/upload')
             .withMethod('POST')
@@ -41,8 +39,7 @@ describe('XhrTransportHandler', () => {
     });
 
     it('should process download request', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/download')
             .withMethod('GET')
@@ -54,8 +51,7 @@ describe('XhrTransportHandler', () => {
     });
 
     it('should set onProgress callback for upload', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/upload')
             .withMethod('POST')
@@ -69,8 +65,7 @@ describe('XhrTransportHandler', () => {
     });
 
     it('should handle abort signal', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/upload')
             .withMethod('POST')
@@ -88,8 +83,7 @@ describe('XhrTransportHandler', () => {
     });
 
     it('should handle timeout', async () => {
-        const context = RequestContextBuilder
-            .create()
+        const context = RequestContextBuilder.create()
             .withDomain('test')
             .withUrl('/api/upload')
             .withMethod('POST')

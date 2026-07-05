@@ -1,200 +1,211 @@
-﻿{
-  "modules": {
-    "error": {
-      "entry": "src/error/index.ts",
-      "outDir": "dist/error",
-      "rootDir": "src/error",
-      "dependencies": [],
-      "packageName": "@qimenjs/error"
+{
+    "modules": {
+        "error": {
+            "entry": "src/error/index.ts",
+            "outDir": "dist/error",
+            "rootDir": "src/error",
+            "dependencies": [],
+            "packageName": "@qimen-lab/error"
+        },
+        "logger": {
+            "entry": "src/logger/index.ts",
+            "outDir": "dist/logger",
+            "rootDir": "src/logger",
+            "dependencies": [],
+            "packageName": "@qimen-lab/logger"
+        },
+        "utils": {
+            "entry": "src/utils/index.ts",
+            "outDir": "dist/utils",
+            "rootDir": "src/utils",
+            "dependencies": [],
+            "packageName": "@qimen-lab/utils"
+        },
+        "async": {
+            "entry": "src/async/index.ts",
+            "outDir": "dist/async",
+            "rootDir": "src/async",
+            "dependencies": [],
+            "packageName": "@qimen-lab/async"
+        },
+        "runtime": {
+            "entry": "src/runtime/index.ts",
+            "outDir": "dist/runtime",
+            "rootDir": "src/runtime",
+            "dependencies": [],
+            "packageName": "@qimen-lab/runtime"
+        },
+        "crypto": {
+            "entry": "src/crypto/index.ts",
+            "outDir": "dist/crypto",
+            "rootDir": "src/crypto",
+            "dependencies": [],
+            "packageName": "@qimen-lab/crypto"
+        },
+        "registry": {
+            "entry": "src/registry/index.ts",
+            "outDir": "dist/registry",
+            "rootDir": "src/registry",
+            "dependencies": ["error"],
+            "packageName": "@qimen-lab/registry"
+        },
+        "cache": {
+            "entry": "src/cache/index.ts",
+            "outDir": "dist/cache",
+            "rootDir": "src/cache",
+            "dependencies": ["logger", "utils"],
+            "packageName": "@qimen-lab/cache"
+        },
+        "events": {
+            "entry": "src/events/index.ts",
+            "outDir": "dist/events",
+            "rootDir": "src/events",
+            "dependencies": ["logger", "utils"],
+            "packageName": "@qimen-lab/events"
+        },
+        "validation": {
+            "entry": "src/validation/index.ts",
+            "outDir": "dist/validation",
+            "rootDir": "src/validation",
+            "dependencies": ["registry", "mime", "pattern"],
+            "packageName": "@qimen-lab/validation"
+        },
+        "task": {
+            "entry": "src/task/index.ts",
+            "outDir": "dist/task",
+            "rootDir": "src/task",
+            "dependencies": ["logger", "utils", "error", "runtime"],
+            "packageName": "@qimen-lab/task"
+        },
+        "types": {
+            "entry": "src/types/index.ts",
+            "outDir": "dist/types",
+            "rootDir": "src/types",
+            "dependencies": [],
+            "packageName": "@qimen-lab/types"
+        },
+        "context": {
+            "entry": "src/context/index.ts",
+            "outDir": "dist/context",
+            "rootDir": "src/context",
+            "dependencies": ["registry"],
+            "packageName": "@qimen-lab/context"
+        },
+        "schema": {
+            "entry": "src/schema/index.ts",
+            "outDir": "dist/schema",
+            "rootDir": "src/schema",
+            "dependencies": ["registry"],
+            "packageName": "@qimen-lab/schema"
+        },
+        "pipeline": {
+            "entry": "src/pipeline/index.ts",
+            "outDir": "dist/pipeline",
+            "rootDir": "src/pipeline",
+            "dependencies": ["logger", "context"],
+            "packageName": "@qimen-lab/pipeline"
+        },
+        "composable": {
+            "entry": "src/composable/index.ts",
+            "outDir": "dist/composable",
+            "rootDir": "src/composable",
+            "dependencies": ["logger", "async"],
+            "packageName": "@qimen-lab/composable"
+        },
+        "event-dom": {
+            "entry": "src/event-dom/index.ts",
+            "outDir": "dist/event-dom",
+            "rootDir": "src/event-dom",
+            "dependencies": ["events", "utils", "runtime", "logger", "error", "async"],
+            "packageName": "@qimen-lab/event-dom"
+        },
+        "data-processor": {
+            "entry": "src/data-processor/index.ts",
+            "outDir": "dist/data-processor",
+            "rootDir": "src/data-processor",
+            "dependencies": ["registry", "context", "pipeline"],
+            "packageName": "@qimen-lab/data-processor"
+        },
+        "http": {
+            "entry": "src/http/index.ts",
+            "outDir": "dist/http",
+            "rootDir": "src/http",
+            "dependencies": ["context", "pipeline", "registry", "task"],
+            "packageName": "@qimen-lab/http"
+        },
+        "system-abilities": {
+            "entry": "src/system-abilities/index.ts",
+            "outDir": "dist/system-abilities",
+            "rootDir": "src/system-abilities",
+            "dependencies": ["events", "composable", "registry", "event-dom"],
+            "packageName": "@qimen-lab/system-abilities"
+        },
+        "entity": {
+            "entry": "src/entity/index.ts",
+            "outDir": "dist/entity",
+            "rootDir": "src/entity",
+            "dependencies": [
+                "composable",
+                "schema",
+                "context",
+                "http",
+                "cache",
+                "error",
+                "system-abilities",
+                "data-processor",
+                "registry",
+                "utils"
+            ],
+            "packageName": "@qimen-lab/entity"
+        },
+        "i18n": {
+            "entry": "src/i18n/index.ts",
+            "outDir": "dist/i18n",
+            "rootDir": "src/i18n",
+            "dependencies": [],
+            "packageName": "@qimen-lab/i18n"
+        },
+        "mime": {
+            "entry": "src/mime/index.ts",
+            "outDir": "dist/mime",
+            "rootDir": "src/mime",
+            "dependencies": ["registry"],
+            "packageName": "@qimen-lab/mime"
+        },
+        "pattern": {
+            "entry": "src/pattern/index.ts",
+            "outDir": "dist/pattern",
+            "rootDir": "src/pattern",
+            "dependencies": ["registry"],
+            "packageName": "@qimen-lab/pattern"
+        },
+        "data-processor-abp": {
+            "entry": "src/data-processor-abp/index.ts",
+            "outDir": "dist/data-processor-abp",
+            "rootDir": "src/data-processor-abp",
+            "dependencies": ["data-processor", "context"],
+            "packageName": "@qimen-lab/data-processor-abp"
+        },
+        "data-processor-spring": {
+            "entry": "src/data-processor-spring/index.ts",
+            "outDir": "dist/data-processor-spring",
+            "rootDir": "src/data-processor-spring",
+            "dependencies": ["data-processor", "context"],
+            "packageName": "@qimen-lab/data-processor-spring"
+        },
+        "oauth2": {
+            "entry": "src/oauth2/index.ts",
+            "outDir": "dist/oauth2",
+            "rootDir": "src/oauth2",
+            "dependencies": ["http", "registry", "events", "cache"],
+            "packageName": "@qimen-lab/oauth2"
+        }
     },
-    "logger": {
-      "entry": "src/logger/index.ts",
-      "outDir": "dist/logger",
-      "rootDir": "src/logger",
-      "dependencies": [],
-      "packageName": "@qimenjs/logger"
-    },
-    "utils": {
-      "entry": "src/utils/index.ts",
-      "outDir": "dist/utils",
-      "rootDir": "src/utils",
-      "dependencies": [],
-      "packageName": "@qimenjs/utils"
-    },
-    "async": {
-      "entry": "src/async/index.ts",
-      "outDir": "dist/async",
-      "rootDir": "src/async",
-      "dependencies": [],
-      "packageName": "@qimenjs/async"
-    },
-    "runtime": {
-      "entry": "src/runtime/index.ts",
-      "outDir": "dist/runtime",
-      "rootDir": "src/runtime",
-      "dependencies": [],
-      "packageName": "@qimenjs/runtime"
-    },
-    "crypto": {
-      "entry": "src/crypto/index.ts",
-      "outDir": "dist/crypto",
-      "rootDir": "src/crypto",
-      "dependencies": [],
-      "packageName": "@qimenjs/crypto"
-    },
-    "registry": {
-      "entry": "src/registry/index.ts",
-      "outDir": "dist/registry",
-      "rootDir": "src/registry",
-      "dependencies": ["error"],
-      "packageName": "@qimenjs/registry"
-    },
-    "cache": {
-      "entry": "src/cache/index.ts",
-      "outDir": "dist/cache",
-      "rootDir": "src/cache",
-      "dependencies": ["logger", "utils"],
-      "packageName": "@qimenjs/cache"
-    },
-    "events": {
-      "entry": "src/events/index.ts",
-      "outDir": "dist/events",
-      "rootDir": "src/events",
-      "dependencies": ["logger", "utils"],
-      "packageName": "@qimenjs/events"
-    },
-    "validation": {
-      "entry": "src/validation/index.ts",
-      "outDir": "dist/validation",
-      "rootDir": "src/validation",
-      "dependencies": ["registry", "mime", "pattern"],
-      "packageName": "@qimenjs/validation"
-    },
-    "task": {
-      "entry": "src/task/index.ts",
-      "outDir": "dist/task",
-      "rootDir": "src/task",
-      "dependencies": ["logger", "utils", "error", "runtime"],
-      "packageName": "@qimenjs/task"
-    },
-    "types": {
-      "entry": "src/types/index.ts",
-      "outDir": "dist/types",
-      "rootDir": "src/types",
-      "dependencies": [],
-      "packageName": "@qimenjs/types"
-    },
-    "context": {
-      "entry": "src/context/index.ts",
-      "outDir": "dist/context",
-      "rootDir": "src/context",
-      "dependencies": ["registry"],
-      "packageName": "@qimenjs/context"
-    },
-    "schema": {
-      "entry": "src/schema/index.ts",
-      "outDir": "dist/schema",
-      "rootDir": "src/schema",
-      "dependencies": ["registry"],
-      "packageName": "@qimenjs/schema"
-    },
-    "pipeline": {
-      "entry": "src/pipeline/index.ts",
-      "outDir": "dist/pipeline",
-      "rootDir": "src/pipeline",
-      "dependencies": ["logger", "context"],
-      "packageName": "@qimenjs/pipeline"
-    },
-    "composable": {
-      "entry": "src/composable/index.ts",
-      "outDir": "dist/composable",
-      "rootDir": "src/composable",
-      "dependencies": ["logger", "async"],
-      "packageName": "@qimenjs/composable"
-    },
-    "event-dom": {
-      "entry": "src/event-dom/index.ts",
-      "outDir": "dist/event-dom",
-      "rootDir": "src/event-dom",
-      "dependencies": ["events", "utils", "runtime", "logger", "error", "async"],
-      "packageName": "@qimenjs/event-dom"
-    },
-    "data-processor": {
-      "entry": "src/data-processor/index.ts",
-      "outDir": "dist/data-processor",
-      "rootDir": "src/data-processor",
-      "dependencies": ["registry", "context", "pipeline"],
-      "packageName": "@qimenjs/data-processor"
-    },
-    "http": {
-      "entry": "src/http/index.ts",
-      "outDir": "dist/http",
-      "rootDir": "src/http",
-      "dependencies": ["context", "pipeline", "registry", "task"],
-      "packageName": "@qimenjs/http"
-    },
-    "system-abilities": {
-      "entry": "src/system-abilities/index.ts",
-      "outDir": "dist/system-abilities",
-      "rootDir": "src/system-abilities",
-      "dependencies": ["events", "composable", "registry", "event-dom"],
-      "packageName": "@qimenjs/system-abilities"
-    },
-    "entity": {
-      "entry": "src/entity/index.ts",
-      "outDir": "dist/entity",
-      "rootDir": "src/entity",
-      "dependencies": ["composable", "schema", "context", "http", "cache", "error", "system-abilities", "data-processor", "registry", "utils"],
-      "packageName": "@qimenjs/entity"
-    },
-    "i18n": {
-      "entry": "src/i18n/index.ts",
-      "outDir": "dist/i18n",
-      "rootDir": "src/i18n",
-      "dependencies": [],
-      "packageName": "@qimenjs/i18n"
-    },
-    "mime": {
-      "entry": "src/mime/index.ts",
-      "outDir": "dist/mime",
-      "rootDir": "src/mime",
-      "dependencies": ["registry"],
-      "packageName": "@qimenjs/mime"
-    },
-    "pattern": {
-      "entry": "src/pattern/index.ts",
-      "outDir": "dist/pattern",
-      "rootDir": "src/pattern",
-      "dependencies": ["registry"],
-      "packageName": "@qimenjs/pattern"
-    },
-    "data-processor-abp": {
-      "entry": "src/data-processor-abp/index.ts",
-      "outDir": "dist/data-processor-abp",
-      "rootDir": "src/data-processor-abp",
-      "dependencies": ["data-processor", "context"],
-      "packageName": "@qimenjs/data-processor-abp"
-    },
-    "data-processor-spring": {
-      "entry": "src/data-processor-spring/index.ts",
-      "outDir": "dist/data-processor-spring",
-      "rootDir": "src/data-processor-spring",
-      "dependencies": ["data-processor", "context"],
-      "packageName": "@qimenjs/data-processor-spring"
-    },
-    "oauth2": {
-      "entry": "src/oauth2/index.ts",
-      "outDir": "dist/oauth2",
-      "rootDir": "src/oauth2",
-      "dependencies": ["http", "registry", "events", "cache"],
-      "packageName": "@qimenjs/oauth2"
+    "build": {
+        "tsconfig": "tsconfig.build.json",
+        "formats": ["cjs", "esm"],
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true
     }
-  },
-  "build": {
-    "tsconfig": "tsconfig.build.json",
-    "formats": ["cjs", "esm"],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true
-  }
 }

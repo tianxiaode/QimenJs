@@ -1,16 +1,16 @@
 /**
  * 数据处理权重阶段定义
- * 
+ *
  * 参照 validation 的权重设计，定义数据处理的不同阶段
- * 
+ *
  * @module data-processor/weights
  */
 
 /**
  * 数据处理权重阶段
- * 
+ *
  * @description 定义数据处理管道的执行阶段
- * 
+ *
  * 执行顺序（按权重升序）：
  * 1. PREPARATION (0) - 准备阶段：参数初始化、默认值设置
  * 2. TRANSFORM (1000) - 转换阶段：参数转换、格式化
@@ -30,7 +30,7 @@ export enum DataProcessorWeight {
      * - 上下文准备
      */
     PREPARATION = 0,
-    
+
     /**
      * 转换阶段
      * - 参数转换（如分页参数）
@@ -38,14 +38,14 @@ export enum DataProcessorWeight {
      * - 单位转换
      */
     TRANSFORM = 1000,
-    
+
     /**
      * 验证阶段
      * - 参数校验
      * - 权限检查
      */
     VALIDATION = 2000,
-    
+
     /**
      * 增强阶段
      * - 注入 Header
@@ -53,14 +53,14 @@ export enum DataProcessorWeight {
      * - 注入租户信息
      */
     ENRICHMENT = 3000,
-    
+
     /**
      * 交换阶段（仅前道）
      * - HTTP 请求发送
      * - 响应接收
      */
     EXCHANGE = 4000,
-    
+
     /**
      * 提取阶段（仅后道）
      * - 数据提取
@@ -68,7 +68,7 @@ export enum DataProcessorWeight {
      * - 格式识别
      */
     EXTRACT = 5000,
-    
+
     /**
      * 对齐阶段
      * - 数据对齐
@@ -76,7 +76,7 @@ export enum DataProcessorWeight {
      * - 格式转换
      */
     ALIGN = 6000,
-    
+
     /**
      * 错误阶段
      * - 错误识别
@@ -84,7 +84,7 @@ export enum DataProcessorWeight {
      * - 错误处理
      */
     ERROR = 7000,
-    
+
     /**
      * 结算阶段
      * - 最终处理

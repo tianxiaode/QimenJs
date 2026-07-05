@@ -2,7 +2,7 @@ import type { AbilityDefinition } from '@/composable';
 
 /**
  * FlatLocalDeleteAbility - 平铺本地删除能力
- * 
+ *
  * 提供本地删除能力，自动分流 localOnly 和 persistent 数据。
  * localOnly 数据直接删除，persistent 数据可选立即或延迟同步到远程。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。

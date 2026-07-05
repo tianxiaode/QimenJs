@@ -16,12 +16,16 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
-import { RemoteCrudEntityManager, RemoteReadonlyEntityManager, LocalReadonlyEntityManager } from '@/entity/manager/managers';
+import {
+    RemoteCrudEntityManager,
+    RemoteReadonlyEntityManager,
+    LocalReadonlyEntityManager,
+} from '@/entity/manager/managers';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { SchemaRegistrar } from '@/schema';
@@ -68,12 +72,16 @@ class TestReadonlyManager extends RemoteReadonlyEntityManager {
 
 function registerDomain(config: { pageSize?: number; pagesizes?: number[] }): () => void {
     const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
-    domainRegistrar.register('domain-config-test', {
-        baseUrl: 'http://localhost:9999',
-        preset: 'default',
-        pageSize: config.pageSize ?? 10,
-        pagesizes: config.pagesizes ?? [10, 20, 50],
-    }, true);
+    domainRegistrar.register(
+        'domain-config-test',
+        {
+            baseUrl: 'http://localhost:9999',
+            preset: 'default',
+            pageSize: config.pageSize ?? 10,
+            pagesizes: config.pagesizes ?? [10, 20, 50],
+        },
+        true
+    );
     return () => domainRegistrar.unregister('domain-config-test');
 }
 
@@ -147,11 +155,15 @@ describe('Manager 域配置传播', () => {
 
         it('DomainConfig 中缺少 pagesizes 时应该保留默认值', () => {
             const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
-            domainRegistrar.register('domain-config-test', {
-                baseUrl: 'http://localhost:9999',
-                preset: 'default',
-                pageSize: 15,
-            } as any, true);
+            domainRegistrar.register(
+                'domain-config-test',
+                {
+                    baseUrl: 'http://localhost:9999',
+                    preset: 'default',
+                    pageSize: 15,
+                } as any,
+                true
+            );
 
             const manager = new TestCrudManager();
 
@@ -311,12 +323,16 @@ describe('Manager 域配置传播', () => {
 
         it('domainConfig 中 pageSize 为 0 时应使用 0', () => {
             const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
-            domainRegistrar.register('domain-config-test', {
-                baseUrl: 'http://localhost:9999',
-                preset: 'default',
-                pageSize: 0,
-                pagesizes: [0, 10, 20],
-            } as any, true);
+            domainRegistrar.register(
+                'domain-config-test',
+                {
+                    baseUrl: 'http://localhost:9999',
+                    preset: 'default',
+                    pageSize: 0,
+                    pagesizes: [0, 10, 20],
+                } as any,
+                true
+            );
 
             const manager = new TestCrudManager();
             expect(manager.pageSize).toBe(0);
@@ -325,11 +341,15 @@ describe('Manager 域配置传播', () => {
 
         it('domainConfig 中 pagesizes 为空数组时应使用空数组', () => {
             const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain')!;
-            domainRegistrar.register('domain-config-test', {
-                baseUrl: 'http://localhost:9999',
-                preset: 'default',
-                pagesizes: [],
-            } as any, true);
+            domainRegistrar.register(
+                'domain-config-test',
+                {
+                    baseUrl: 'http://localhost:9999',
+                    preset: 'default',
+                    pagesizes: [],
+                } as any,
+                true
+            );
 
             const manager = new TestCrudManager();
             expect(manager.pageSizes).toEqual([]);

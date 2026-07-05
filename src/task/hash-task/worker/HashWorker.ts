@@ -4,9 +4,9 @@ import { HashWorkerMessage, HashWorkerResponse } from './HashWorkerProtocol';
 
 /**
  * Node.js环境下的哈希计算Worker
- * 
+ *
  * 该Worker只负责一件事：按固定协议，增量计算哈希
- * 
+ *
  * 必须满足：
  * ❌ 不 eval
  * ❌ 不接受函数
@@ -36,7 +36,7 @@ const ALLOWED_ALGORITHMS = new Set([
 
 /**
  * 向主线程发送消息的辅助函数
- * 
+ *
  * @param message 要发送的响应消息
  */
 function post(message: HashWorkerResponse) {

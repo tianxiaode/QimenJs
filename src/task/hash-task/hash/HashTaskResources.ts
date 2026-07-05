@@ -45,9 +45,9 @@ export interface HashTaskResourceSnapshot {
  * - 提供资源状态快照
  */
 export class HashTaskResources {
-    private memoryTicket?: IMemoryTicket;  // 存储内存资源票据，用于后续释放
-    private worker?: WorkerHandle;         // 存储Worker句柄，用于执行哈希计算
-    private acquired = false;              // 标记资源是否已成功获取
+    private memoryTicket?: IMemoryTicket; // 存储内存资源票据，用于后续释放
+    private worker?: WorkerHandle; // 存储Worker句柄，用于执行哈希计算
+    private acquired = false; // 标记资源是否已成功获取
 
     /**
      * 构造函数
@@ -72,17 +72,17 @@ export class HashTaskResources {
      * @throws 当资源申请失败时，会抛出相应的错误，并确保已申请的资源被释放
      */
     async acquire(scriptSource: string, memoryBytes: number): Promise<void> {
-        if (this.acquired) return;  // 防止重复获取资源
+        if (this.acquired) return; // 防止重复获取资源
 
         try {
             // 按顺序获取内存和Worker资源
             await this.acquireMemory(memoryBytes);
             await this.acquireWorker(scriptSource);
-            this.acquired = true;  // 标记资源已获取
+            this.acquired = true; // 标记资源已获取
         } catch (err) {
             // 如果获取过程中出现错误，释放已获取的资源
             await this.release();
-            throw err;  // 重新抛出原始错误
+            throw err; // 重新抛出原始错误
         }
     }
 
@@ -122,7 +122,7 @@ export class HashTaskResources {
             });
         }
     }
-    
+
     /**
      * 释放所有资源（幂等）
      *
@@ -187,7 +187,7 @@ export class HashTaskResources {
         return {
             // ✅ 修正：如果有内存票据，返回具体的字节数
             memoryBytes: this.memoryTicket?.bytes,
-            hasWorker: !!this.worker,  // 确保返回布尔值
+            hasWorker: !!this.worker, // 确保返回布尔值
         };
     }
 }

@@ -31,7 +31,7 @@ export interface BindOptions {
 /**
  * 手势语义
  */
-export type GestureSemantic = 
+export type GestureSemantic =
     | 'tap'
     | 'doubletap'
     | 'longpress'

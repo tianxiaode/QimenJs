@@ -31,9 +31,9 @@ describe('number format utilities', () => {
             const result = formatNumber(123.0, '#.00');
             expect(result).toBe('123.00'); // Now adds decimal with padded zeros
         });
-        
+
         it('should format number with decimal places when input has decimals', () => {
-            const result = formatNumber(123.00, '#.00');
+            const result = formatNumber(123.0, '#.00');
             expect(result).toBe('123.00'); // Now adds decimal with padded zeros
         });
 
@@ -61,17 +61,17 @@ describe('number format utilities', () => {
             const result = formatNumber(0.00001, '0.#####');
             expect(result).toBe('0.00001');
         });
-        
+
         it('should handle zero padding in integer part when number has fewer digits', () => {
-            const result = formatNumber(12345, '000000');  // number is shorter than format
-            expect(result).toBe('012345');  // Now correctly pads with zeros
+            const result = formatNumber(12345, '000000'); // number is shorter than format
+            expect(result).toBe('012345'); // Now correctly pads with zeros
         });
-        
+
         it('should handle extra digits when number is longer than format', () => {
             const result = formatNumber(12345, '###'); // format is shorter than number
             expect(result).toBe('12345'); // Should include all digits
         });
-        
+
         it('should return empty string for non-finite numbers', () => {
             expect(formatNumber(Infinity, '0.00')).toBe('');
             expect(formatNumber(-Infinity, '0.00')).toBe('');

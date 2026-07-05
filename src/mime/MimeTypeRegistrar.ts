@@ -65,8 +65,7 @@ export class MimeTypeRegistrar extends RegistrarBase<Map<string, Set<string>>> {
             }
         } else if (typeof extOrObj === 'string') {
             // 模式 1：单个注册
-            if (mimes === undefined)
-                throw new RegistrarInvalidArgumentError(this.name, extOrObj);
+            if (mimes === undefined) throw new RegistrarInvalidArgumentError(this.name, extOrObj);
             this.doRegister(extOrObj, mimes);
         }
     }

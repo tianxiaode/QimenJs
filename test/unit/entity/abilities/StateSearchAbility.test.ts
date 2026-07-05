@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -53,7 +53,6 @@ function createSearchHost(isTree = false) {
 // ============================================
 
 describe('SearchAbility', () => {
-
     describe('toParams', () => {
         it('扁平模式应包含 page 和 pageSize', () => {
             const host = createSearchHost(false);

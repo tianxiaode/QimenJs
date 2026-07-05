@@ -20,8 +20,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -174,23 +174,13 @@ describe('BaseEntityManager', () => {
             const schema = { name: 'TestEntity', idField: 'id', fields: [{ name: 'name' }] };
             manager.schema = schema;
 
-            const options = await manager.buildOptions(
-                'create' as any,
-                {},
-                { name: 'item1' },
-                {}
-            );
+            const options = await manager.buildOptions('create' as any, {}, { name: 'item1' }, {});
 
             expect(options.body).toEqual(expect.objectContaining({ name: 'item1' }));
         });
 
         it('body 为 null 时不应处理', async () => {
-            const options = await manager.buildOptions(
-                'list' as any,
-                {},
-                null,
-                {}
-            );
+            const options = await manager.buildOptions('list' as any, {}, null, {});
 
             expect(options.body).toBeNull();
         });
@@ -226,9 +216,7 @@ describe('BaseEntityManager', () => {
         });
 
         it('字段 mapping 为字符串时应使用 mapping 作为 key', () => {
-            const fields = [
-                { name: 'userName', mapping: 'user_name' },
-            ];
+            const fields = [{ name: 'userName', mapping: 'user_name' }];
             const data = { userName: 'test' };
 
             const result = (manager as any).processItem('create', {}, data, fields);
@@ -237,10 +225,7 @@ describe('BaseEntityManager', () => {
         });
 
         it('processedValue 为 undefined 时不应设置该字段', () => {
-            const fields = [
-                { name: 'name' },
-                { name: 'missing' },
-            ];
+            const fields = [{ name: 'name' }, { name: 'missing' }];
             const data = { name: 'test' };
 
             const result = (manager as any).processItem('create', {}, data, fields);
@@ -280,7 +265,10 @@ describe('BaseEntityManager', () => {
         it('data.list 有数据时应处理每个实体', () => {
             const context: any = {
                 data: {
-                    list: [{ id: '1', name: 'a' }, { id: '2', name: 'b' }],
+                    list: [
+                        { id: '1', name: 'a' },
+                        { id: '2', name: 'b' },
+                    ],
                 },
                 metadata: { hasError: false },
             };

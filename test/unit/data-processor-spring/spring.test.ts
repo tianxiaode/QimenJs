@@ -1,5 +1,9 @@
 import { createSpringPaginationHandler, getSpringPreHandlers } from '@/data-processor-spring/pre';
-import { createSpringExtractHandler, createSpringErrorHandler, getSpringPostHandlers } from '@/data-processor-spring/post';
+import {
+    createSpringExtractHandler,
+    createSpringErrorHandler,
+    getSpringPostHandlers,
+} from '@/data-processor-spring/post';
 import { registerSpringHandlers } from '@/data-processor-spring/register';
 import type { RequestContext } from '@/context';
 
@@ -209,9 +213,7 @@ describe('Spring 后道处理器', () => {
                 error: 'Bad Request',
                 message: 'Validation failed',
                 path: '/api/users',
-                errors: [
-                    { field: 'name', message: 'Name is required', rejectedValue: null },
-                ],
+                errors: [{ field: 'name', message: 'Name is required', rejectedValue: null }],
             };
 
             await handler.handle(ctx);

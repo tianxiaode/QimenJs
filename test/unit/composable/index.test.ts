@@ -13,8 +13,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -25,16 +25,16 @@ describe('composable package exports', () => {
         expect(ComposableBase).toBeDefined();
         expect(typeof ComposableBase).toBe('function');
     });
-    
+
     it('should allow creating composable with AbilityDefinition', () => {
         const CustomAbility: AbilityDefinition = {
             customMethod: () => 'custom-result',
         };
-        
+
         class TestComposable extends ComposableBase {
             static readonly abilities = [CustomAbility];
         }
-        
+
         const instance = new TestComposable() as any;
         expect(instance.customMethod()).toBe('custom-result');
     });

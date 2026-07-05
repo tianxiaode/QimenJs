@@ -2,7 +2,7 @@
  * 可组合能力系统类型定义
  */
 
-import type { ILogger } from "@qimenjs/logger";
+import type { ILogger } from '@qimenjs/logger';
 
 // ============================================
 // 基础接口
@@ -16,27 +16,27 @@ export interface IComposableBase {
      * 域名称（可选）
      */
     domain?: string;
-    
+
     /**
      * 日志记录器
      */
     logger: ILogger;
-    
+
     /**
      * 获取宿主对象自身
      */
     readonly host: any;
-    
+
     /**
      * 获取类级缓存
      */
     getStatic<T>(key: string | symbol): T | undefined;
-    
+
     /**
      * 设置类级缓存
      */
     setStatic<T>(key: string | symbol, value: T): void;
-    
+
     /**
      * 动态属性
      */

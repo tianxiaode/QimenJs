@@ -22,7 +22,19 @@ import { GestureError, KernelErrorCode } from '@/error';
 
 // 创建一个具体的子类来测试抽象基类
 class TestGestureProcessor extends GestureProcessor {
-    constructor(semantic: 'tap' | 'click' | 'dblclick' | 'longpress' | 'drag' | 'swipe' | 'hover' | 'contextmenu' | 'submit' = 'tap', emit: (event: GestureEmit) => void) {
+    constructor(
+        semantic:
+            | 'tap'
+            | 'click'
+            | 'dblclick'
+            | 'longpress'
+            | 'drag'
+            | 'swipe'
+            | 'hover'
+            | 'contextmenu'
+            | 'submit' = 'tap',
+        emit: (event: GestureEmit) => void
+    ) {
         super(semantic, emit);
 
         // 设置处理器句柄，以便可以测试底层的start方法
@@ -75,10 +87,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'x must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'x must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when x is undefined', () => {
@@ -97,10 +111,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'x must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'x must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when x is NaN', () => {
@@ -119,10 +135,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'x must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'x must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when x is Infinity', () => {
@@ -141,10 +159,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'x must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'x must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when x is -Infinity', () => {
@@ -163,10 +183,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'x must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'x must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when y is null', () => {
@@ -185,10 +207,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'y must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'y must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when y is undefined', () => {
@@ -207,10 +231,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'y must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'y must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when y is NaN', () => {
@@ -229,10 +255,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'y must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'y must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when y is Infinity', () => {
@@ -251,10 +279,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'y must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'y must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should throw error when y is -Infinity', () => {
@@ -273,10 +303,12 @@ describe('GestureProcessor', () => {
 
         expect(() => {
             processor.handleInput(invalidInput);
-        }).toThrow(expect.objectContaining({
-            message: 'y must be a finite number',
-            code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
-        }));
+        }).toThrow(
+            expect.objectContaining({
+                message: 'y must be a finite number',
+                code: KernelErrorCode.GESTURE_RECOGNITION_ERROR,
+            })
+        );
     });
 
     it('should successfully start gesture when x and y are valid numbers', () => {

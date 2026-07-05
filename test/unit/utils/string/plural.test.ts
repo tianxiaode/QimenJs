@@ -1,8 +1,4 @@
-import { 
-    pluralize, 
-    plural, 
-    pluralWithCount 
-} from '../../../../src/utils/string/plural';
+import { pluralize, plural, pluralWithCount } from '../../../../src/utils/string/plural';
 
 describe('String Plural Utility Functions', () => {
     describe('pluralize', () => {
@@ -46,16 +42,18 @@ describe('String Plural Utility Functions', () => {
         });
 
         it('should support custom irregular rules', () => {
-            const customIrregular = { 'goose': 'geese', 'mouse': 'mice' };
+            const customIrregular = { goose: 'geese', mouse: 'mice' };
             expect(pluralize('goose', { irregular: customIrregular })).toBe('geese');
             expect(pluralize('mouse', { irregular: customIrregular })).toBe('mice');
         });
 
         it('should support custom rules', () => {
-            const customRules = [{
-                test: (word: string) => word.endsWith('o'),
-                apply: (word: string) => word + 'es'
-            }];
+            const customRules = [
+                {
+                    test: (word: string) => word.endsWith('o'),
+                    apply: (word: string) => word + 'es',
+                },
+            ];
             expect(pluralize('tomato', { rules: customRules })).toBe('tomatoes');
         });
     });

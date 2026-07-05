@@ -3,7 +3,7 @@ import { array } from '@qimenjs/utils';
 
 /**
  * SearchAbility - 搜索过滤能力
- * 
+ *
  * 为宿主提供搜索、过滤、排序功能。
  * this 指向宿主（Manager），this.schema/search 可直接访问。
  */
@@ -59,7 +59,7 @@ export const SearchAbility: AbilityDefinition = {
     },
 
     applySort(list: any[]): any[] {
-        const { sortBy, sortOrder } = this.search as any || {};
+        const { sortBy, sortOrder } = (this.search as any) || {};
 
         if (!sortBy || !list || list.length <= 1) {
             return list;

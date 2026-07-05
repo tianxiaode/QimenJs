@@ -3,11 +3,7 @@
  */
 
 // 核心类型导出
-export type {
-    IComposable,
-    IComposableBase,
-    IExposeResult,
-} from './types/composable';
+export type { IComposable, IComposableBase, IExposeResult } from './types/composable';
 
 // 核心类导出
 export { ComposableBase, type AbilityDefinition } from './ComposableBase';

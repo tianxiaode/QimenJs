@@ -4,13 +4,13 @@ import { InputEventMap } from '../../types';
 
 /**
  * 根据设备能力解析输入事件映射
- * 
+ *
  * @description 根据当前设备的输入能力，动态选择合适的事件映射配置。
  *              优先级顺序：Pointer -> Touch -> Mouse -> Keyboard
- * 
+ *
  * @param maps - 包含各种输入设备映射的对象
  * @returns 合并后的输入事件映射，只包含当前设备支持的事件类型
- * 
+ *
  * @example
  * ```ts
  * const resolvedMap = resolveInputEventMap({
@@ -23,10 +23,10 @@ import { InputEventMap } from '../../types';
  * ```
  */
 export function resolveInputEventMap(maps: {
-    base: InputEventMap;      // 基础事件映射，所有设备都支持
-    pointer?: InputEventMap;  // 指针事件映射，支持指针事件的设备
-    touch?: InputEventMap;    // 触摸事件映射，支持触摸事件的设备
-    mouse?: InputEventMap;    // 鼠标事件映射，支持鼠标事件的设备
+    base: InputEventMap; // 基础事件映射，所有设备都支持
+    pointer?: InputEventMap; // 指针事件映射，支持指针事件的设备
+    touch?: InputEventMap; // 触摸事件映射，支持触摸事件的设备
+    mouse?: InputEventMap; // 鼠标事件映射，支持鼠标事件的设备
     keyboard?: InputEventMap; // 键盘事件映射，支持键盘事件的设备
 }): InputEventMap {
     // 检测当前设备的输入能力

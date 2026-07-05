@@ -23,7 +23,11 @@
 
 export * from './types';
 export { getSpringPreHandlers, createSpringPaginationHandler } from './pre';
-export { getSpringPostHandlers, createSpringExtractHandler, createSpringErrorHandler } from './post';
+export {
+    getSpringPostHandlers,
+    createSpringExtractHandler,
+    createSpringErrorHandler,
+} from './post';
 
 // 自动注册（必须在最后）
 export * from './register';

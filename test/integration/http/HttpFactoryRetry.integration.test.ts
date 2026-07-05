@@ -21,8 +21,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -49,17 +49,23 @@ describe('HttpFactory 重试/轮询机制集成测试', () => {
 
     beforeEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        domainRegistrar.register(TEST_DOMAIN, {
-            baseUrl: 'https://test-api.example.com',
-            preset: 'default',
-            pageSize: 10,
-            pagesizes: [10, 20, 50],
-        }, true);
+        domainRegistrar.register(
+            TEST_DOMAIN,
+            {
+                baseUrl: 'https://test-api.example.com',
+                preset: 'default',
+                pageSize: 10,
+                pagesizes: [10, 20, 50],
+            },
+            true
+        );
     });
 
     afterEach(() => {
         const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
-        try { domainRegistrar.unregister(TEST_DOMAIN); } catch {}
+        try {
+            domainRegistrar.unregister(TEST_DOMAIN);
+        } catch {}
         jest.restoreAllMocks();
     });
 
@@ -74,12 +80,17 @@ describe('HttpFactory 重试/轮询机制集成测试', () => {
                 return Promise.resolve(mockFetchSuccess({ data: 'retry-ok' }));
             });
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: {
-                    maxRetries: 2,
-                    delay: 10,
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: {
+                        maxRetries: 2,
+                        delay: 10,
+                    },
                 },
-            }, TEST_DOMAIN);
+                TEST_DOMAIN
+            );
 
             const context = await task.context;
 
@@ -89,16 +100,21 @@ describe('HttpFactory 重试/轮询机制集成测试', () => {
         });
 
         it('重试耗尽后返回最后一次错误', async () => {
-            (global as any).fetch = jest.fn().mockResolvedValue(
-                mockFetchError(500, 'Internal Server Error')
-            );
+            (global as any).fetch = jest
+                .fn()
+                .mockResolvedValue(mockFetchError(500, 'Internal Server Error'));
 
-            const task = HttpFactory.createRetryTask('GET', '/api/test', {
-                retry: {
-                    maxRetries: 2,
-                    delay: 10,
+            const task = HttpFactory.createRetryTask(
+                'GET',
+                '/api/test',
+                {
+                    retry: {
+                        maxRetries: 2,
+                        delay: 10,
+                    },
                 },
-            }, TEST_DOMAIN);
+                TEST_DOMAIN
+            );
 
             const context = await task.context;
 
@@ -118,9 +134,14 @@ describe('HttpFactory 重试/轮询机制集成测试', () => {
                 return Promise.resolve(mockFetchSuccess({ status: 'completed' }));
             });
 
-            const stop = HttpFactory.createPolling('GET', '/api/status', {
-                interval: 10,
-            }, TEST_DOMAIN);
+            const stop = HttpFactory.createPolling(
+                'GET',
+                '/api/status',
+                {
+                    interval: 10,
+                },
+                TEST_DOMAIN
+            );
 
             // 等待轮询完成
             await new Promise(resolve => setTimeout(resolve, 200));
@@ -139,9 +160,14 @@ describe('HttpFactory 重试/轮询机制集成测试', () => {
                 return Promise.resolve(mockFetchSuccess({ status: 'pending' }));
             });
 
-            const stop = HttpFactory.createPolling('GET', '/api/status', {
-                interval: 50,
-            }, TEST_DOMAIN);
+            const stop = HttpFactory.createPolling(
+                'GET',
+                '/api/status',
+                {
+                    interval: 50,
+                },
+                TEST_DOMAIN
+            );
 
             // 等待第一次请求
             await new Promise(resolve => setTimeout(resolve, 100));

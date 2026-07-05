@@ -1,10 +1,20 @@
 /**
  * Entity 包类型定义
- * 
+ *
  * 包含实体管理器、状态、能力相关的类型和常量
  */
 
-import type { IEntity, SearchParams, ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, FieldDefinition, Schema, SchemaCache, RegistrSchema } from '@/schema';
+import type {
+    IEntity,
+    SearchParams,
+    ILocalSearchParams,
+    IFlatSearchParams,
+    ITreeSearchParams,
+    FieldDefinition,
+    Schema,
+    SchemaCache,
+    RegistrSchema,
+} from '@/schema';
 import type { IComposableBase } from '@/composable';
 import type { RequestContext, RequestTask, PaginationInfo } from '@/context';
 import type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
@@ -31,11 +41,7 @@ export { ComposableBase } from '@/composable';
 
 export type { RequestContext, RequestTask, PaginationInfo } from '@/context';
 
-export type {
-    HttpRequestOptions,
-    HttpRequestTask,
-    HttpContext,
-} from '@/http';
+export type { HttpRequestOptions, HttpRequestTask, HttpContext } from '@/http';
 
 export type { ICacheProvider } from '@/cache';
 
@@ -105,15 +111,17 @@ export interface IBaseEntityState<TSearch extends SearchParams = SearchParams> {
 }
 
 /** 本地实体状态接口 */
-export interface ILocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends IBaseEntityState<TSearch> {
+export interface ILocalEntityState<
+    TSearch extends ILocalSearchParams = ILocalSearchParams,
+> extends IBaseEntityState<TSearch> {
     sourceData: Map<string | number, IEntity>;
     updateData(result: any[]): void;
 }
 
 /** 平铺本地实体状态接口 */
-export interface IFlatLocalEntityState<TSearch extends ILocalSearchParams = ILocalSearchParams>
-    extends ILocalEntityState<TSearch> {
+export interface IFlatLocalEntityState<
+    TSearch extends ILocalSearchParams = ILocalSearchParams,
+> extends ILocalEntityState<TSearch> {
     hasChanges: boolean;
     changes: ILocalChangeSet;
     addItem(item: IEntity): Promise<void>;
@@ -126,14 +134,16 @@ export interface IFlatLocalEntityState<TSearch extends ILocalSearchParams = ILoc
 }
 
 /** 远程实体状态接口 */
-export interface IRemoteEntityState<TSearch extends SearchParams = SearchParams>
-    extends IBaseEntityState<TSearch> {
+export interface IRemoteEntityState<
+    TSearch extends SearchParams = SearchParams,
+> extends IBaseEntityState<TSearch> {
     total: number;
 }
 
 /** 平铺远程实体状态接口 */
-export interface IFlatRemoteEntityState<TSearch extends IFlatSearchParams = IFlatSearchParams>
-    extends IRemoteEntityState<TSearch> {
+export interface IFlatRemoteEntityState<
+    TSearch extends IFlatSearchParams = IFlatSearchParams,
+> extends IRemoteEntityState<TSearch> {
     page: number;
     pageSize: number;
     pages: number;
@@ -144,8 +154,9 @@ export interface IFlatRemoteEntityState<TSearch extends IFlatSearchParams = IFla
 }
 
 /** 树形远程实体状态接口 */
-export interface ITreeRemoteEntityState<TSearch extends ITreeSearchParams = ITreeSearchParams>
-    extends IRemoteEntityState<TSearch> {
+export interface ITreeRemoteEntityState<
+    TSearch extends ITreeSearchParams = ITreeSearchParams,
+> extends IRemoteEntityState<TSearch> {
     expandedIds: Set<string | number>;
 }
 

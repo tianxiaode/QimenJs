@@ -17,7 +17,7 @@ import { DownloadInterceptorHandler } from './align/DownloadInterceptor';
  */
 export function registerDefaultHttpActions(): void {
     const registrar = HttpActionRegistrar.getInstance();
-    
+
     // 准备阶段
     registrar.registerAll([
         {
@@ -42,7 +42,7 @@ export function registerDefaultHttpActions(): void {
             description: '构建 URL',
         },
     ]);
-    
+
     // 交换阶段
     registrar.registerAll([
         {
@@ -60,7 +60,7 @@ export function registerDefaultHttpActions(): void {
             description: 'XHR 传输',
         },
     ]);
-    
+
     // 处理阶段
     registrar.registerAll([
         {
@@ -78,7 +78,7 @@ export function registerDefaultHttpActions(): void {
             description: '数据解析',
         },
     ]);
-    
+
     // 对齐阶段
     registrar.registerAll([
         {

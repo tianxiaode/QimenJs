@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -70,7 +70,6 @@ function buildTestTree(host: any) {
 // ============================================
 
 describe('TreeLifecycleAbility', () => {
-
     describe('removeNode', () => {
         it('应移除节点及其子孙', () => {
             const host = createTreeHost();
@@ -142,8 +141,14 @@ describe('TreeLifecycleAbility', () => {
 
             host.moveNode('a1', 'b');
 
-            expect(host.toggleExpand).toHaveBeenCalledWith(expect.objectContaining({ id: 'b' }), true);
-            expect(host.toggleLeaf).toHaveBeenCalledWith(expect.objectContaining({ id: 'b' }), false);
+            expect(host.toggleExpand).toHaveBeenCalledWith(
+                expect.objectContaining({ id: 'b' }),
+                true
+            );
+            expect(host.toggleLeaf).toHaveBeenCalledWith(
+                expect.objectContaining({ id: 'b' }),
+                false
+            );
             host.dispose();
         });
     });

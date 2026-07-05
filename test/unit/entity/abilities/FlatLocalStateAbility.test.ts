@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -54,16 +54,18 @@ function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) 
             name: 'TestEntity',
             isTree: options.isTree ?? false,
             searchFields: ['name', 'category'],
-            ...(options.isTree ? {
-                isLazy: true,
-                root: 'root-id',
-                parentIdField: 'parentId',
-                childrenField: 'children',
-                pathField: 'path',
-                leafField: 'isLeaf',
-                expandedField: 'expanded',
-                useFlat: true,
-            } : {}),
+            ...(options.isTree
+                ? {
+                      isLazy: true,
+                      root: 'root-id',
+                      parentIdField: 'parentId',
+                      childrenField: 'children',
+                      pathField: 'path',
+                      leafField: 'isLeaf',
+                      expandedField: 'expanded',
+                      useFlat: true,
+                  }
+                : {}),
         };
         sourceData = new Map<string, any>();
         isRemote = options.isRemote ?? false;
@@ -273,7 +275,10 @@ describe('FlatLocalStateAbility', () => {
         it('updateSourceData 应清空并重新填充 sourceData', () => {
             const host = createFlatHost();
             host.sourceData.set('old', { id: 'old' });
-            host.updateSourceData([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
+            host.updateSourceData([
+                { id: '1', name: 'a' },
+                { id: '2', name: 'b' },
+            ]);
             expect(host.sourceData.has('old')).toBe(false);
             expect(host.sourceData.get('1')).toEqual({ id: '1', name: 'a' });
             expect(host.sourceData.get('2')).toEqual({ id: '2', name: 'b' });

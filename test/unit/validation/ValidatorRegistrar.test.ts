@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -32,7 +32,12 @@ import { ValidationWeight } from '@/validation/types/processor';
 // 辅助
 // ============================================
 
-function createEntry(name: string, tags: string[], weight: ValidationWeight, offset = 0): ValidationProcessorEntry {
+function createEntry(
+    name: string,
+    tags: string[],
+    weight: ValidationWeight,
+    offset = 0
+): ValidationProcessorEntry {
     return {
         name,
         tags: tags as any,
@@ -120,7 +125,9 @@ describe('ValidatorRegistrar', () => {
 
         it('应同时匹配特定 tag 和 "any" tag', () => {
             registrar.register(createEntry('any-processor', ['any'], ValidationWeight.SEMANTIC));
-            registrar.register(createEntry('string-processor', ['string'], ValidationWeight.QUANTITY));
+            registrar.register(
+                createEntry('string-processor', ['string'], ValidationWeight.QUANTITY)
+            );
 
             const pipeline = registrar.get('string');
             expect(pipeline).toHaveLength(2);
@@ -144,7 +151,9 @@ describe('ValidatorRegistrar', () => {
     describe('lock', () => {
         it('锁定后注册应抛出异常', () => {
             registrar.lock();
-            expect(() => registrar.register(createEntry('p1', ['string'], ValidationWeight.SEMANTIC))).toThrow();
+            expect(() =>
+                registrar.register(createEntry('p1', ['string'], ValidationWeight.SEMANTIC))
+            ).toThrow();
         });
 
         it('锁定后注销应抛出异常', () => {

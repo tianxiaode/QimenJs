@@ -19,8 +19,8 @@ jest.mock('@/logger', () => {
                 info: jest.fn(),
                 warn: jest.fn(),
                 error: jest.fn(),
-            }))
-        }
+            })),
+        },
     };
 });
 
@@ -50,7 +50,6 @@ function createPathHost() {
 // ============================================
 
 describe('TreePathAbility', () => {
-
     describe('ingest', () => {
         it('should ingest single node and set path', () => {
             const host = createPathHost();

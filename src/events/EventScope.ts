@@ -38,7 +38,7 @@ export class EventScope implements IEventScope {
 
     /**
      * 构造函数
-     * 
+     *
      * @param bus - 关联的事件总线实例
      * @param logger - 可选的日志记录器，用于记录事件作用域的操作日志
      */
@@ -50,10 +50,10 @@ export class EventScope implements IEventScope {
     }
 
     // --- 内置日志方法 ---
-    
+
     /**
      * 记录作用域相关的日志
-     * 
+     *
      * @param level - 日志级别
      * @param action - 作用域操作动作
      * @param data - 附加数据
@@ -69,9 +69,9 @@ export class EventScope implements IEventScope {
 
     /**
      * 触发事件
-     * 
+     *
      * 在当前作用域上下文中触发一个事件，如果作用域已被销毁，则记录警告日志。
-     * 
+     *
      * @param event - 事件名称
      * @param data - 事件数据
      * @param source - 事件源，默认为'UNKNOWN'
@@ -86,10 +86,10 @@ export class EventScope implements IEventScope {
 
     /**
      * 订阅事件
-     * 
+     *
      * 将事件处理器添加到事件总线并将其取消函数注册到当前作用域中，
      * 当作用域被销毁时，这些事件处理器也会被自动取消订阅。
-     * 
+     *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
      * @returns 返回一个取消订阅的函数
@@ -107,9 +107,9 @@ export class EventScope implements IEventScope {
 
     /**
      * 一次性订阅事件
-     * 
+     *
      * 与 on 方法类似，但处理器只会在事件第一次被触发时调用，之后自动取消订阅。
-     * 
+     *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
      */
@@ -122,9 +122,9 @@ export class EventScope implements IEventScope {
 
     /**
      * 添加清理函数
-     * 
+     *
      * 将一个清理函数添加到作用域中，当作用域被销毁时，该函数会被调用。
-     * 
+     *
      * @param cleanup - 清理函数
      */
     addCleanup(cleanup: () => void): void {
@@ -133,7 +133,7 @@ export class EventScope implements IEventScope {
 
     /**
      * 销毁作用域
-     * 
+     *
      * 执行所有注册的清理函数，释放资源并标记作用域为已销毁状态。
      * 如果作用域已经被销毁，则记录调试日志。
      */
@@ -159,7 +159,7 @@ export class EventScope implements IEventScope {
 
     /**
      * 获取事件作用域的唯一标识符
-     * 
+     *
      * @returns 返回事件作用域的ID
      */
     getScopeId(): string {
