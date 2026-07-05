@@ -6,11 +6,23 @@
       "version": "22"
     }
   },
-  "forwardPorts": [80],
+  "forwardPorts": [80, 3000, 3001, 3002],
   "portsAttributes": {
     "80": {
-      "label": "QimenJS Demo",
+      "label": "QimenJS Demo (Nginx)",
       "onAutoForward": "openPreview",
+      "visibility": "public"
+    },
+    "3000": {
+      "label": "Auth Server",
+      "visibility": "public"
+    },
+    "3001": {
+      "label": "ABP API",
+      "visibility": "public"
+    },
+    "3002": {
+      "label": "Spring API",
       "visibility": "public"
     }
   },
