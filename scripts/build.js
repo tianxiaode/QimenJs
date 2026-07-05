@@ -93,17 +93,20 @@ const utils = {
         console.log(`  Generated ${path.basename(pkgPath)}`);
     },
 
-    // 修复 ESM 产物中的 @qimenjs/xxx 引用
-  fixEsmImports(dir, currentModule) {
+    // 修复产物中的 @qimenjs/xxx 引用，替换为相对路径
+  fixModuleImports(dir, currentModule) {
     const files = fs.readdirSync(dir);
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
-        this.fixEsmImports(filePath, currentModule);
+        this.fixModuleImports(filePath, currentModule);
         continue;
       }
-      if (!file.endsWith('.esm.js') && !file.endsWith('.d.ts')) continue;
+      const isEsm = file.endsWith('.esm.js');
+      const isCjs = file.endsWith('.js') && !file.endsWith('.esm.js');
+      const isDts = file.endsWith('.d.ts');
+      if (!isEsm && !isCjs && !isDts) continue;
 
       let content = fs.readFileSync(filePath, 'utf8');
       let modified = false;
@@ -119,8 +122,10 @@ const utils = {
           let relPath = path.relative(currentDir, targetDir).replace(/\\/g, '/');
           if (!relPath.startsWith('.')) relPath = './' + relPath;
 
-          if (file.endsWith('.esm.js')) {
+          if (isEsm) {
             content = content.replace(pattern, `${relPath}/index.esm.js`);
+          } else if (isCjs) {
+            content = content.replace(pattern, `${relPath}/index.js`);
           } else {
             content = content.replace(pattern, `${relPath}/index.d.ts`);
           }
@@ -262,7 +267,7 @@ function buildModule(moduleName, moduleConfig) {
     utils.generatePackageJson(moduleName, moduleConfig);
 
     // 修复 ESM 产物中的 @qimenjs/xxx 引用，替换为相对路径
-    utils.fixEsmImports(outDir, moduleName);
+    utils.fixModuleImports(outDir, moduleName);
 
     console.log(`✅ ${moduleName} built\n`);
     return true;
