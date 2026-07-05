@@ -6,8 +6,10 @@ export default defineConfig({
         port: 5173,
         open: true,
     },
-    resolve: {
-        // 优先解析 ESM 文件，避免 Vite 走 CJS 路径导致循环依赖
-        conditions: ['import'],
+    build: {
+        // 将 Node.js 内置模块标记为外部依赖，避免浏览器构建报错
+        rollupOptions: {
+            external: ['fs', 'crypto', 'worker_threads', 'path', 'os', 'stream', 'util', 'buffer'],
+        },
     },
 });

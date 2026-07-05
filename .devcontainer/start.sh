@@ -3,7 +3,8 @@
 echo "=== 启动 QimenJS Demo ==="
 
 # 停止旧服务
-sudo nginx -s stop 2>/dev/null || true
+sudo kill $(cat /tmp/nginx.pid 2>/dev/null) 2>/dev/null || true
+sudo pkill -f "nginx" 2>/dev/null || true
 pkill -f "node servers/" 2>/dev/null || true
 sleep 1
 
