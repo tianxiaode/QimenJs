@@ -1,10 +1,10 @@
 /**
- * UI 事件上下文构建器
+ * 事件上下文构建器
  *
  * 使用构建器模式创建 EventContext 对象，提供流畅的链式 API。
  * 遵循与 RequestContextBuilder 相同的设计模式。
  *
- * @module events/EventContextBuilder
+ * @module context/EventContextBuilder
  */
 
 import type { EventContext, EventChainLink } from './EventContext';
@@ -21,6 +21,7 @@ import type { EventContext, EventChainLink } from './EventContext';
  *     .withSource('userTable')
  *     .withSourceType('UserTable')
  *     .withData({ rows: [], selectedCount: 0 })
+ *     .withBusId(bus.getBusId())
  *     .withChain(previousChain)
  *     .build();
  * ```
@@ -32,12 +33,6 @@ export class EventContextBuilder {
         this.context = {
             steps: [],
             metadata: {},
-            event: '',
-            type: '',
-            source: '',
-            sourceType: '',
-            data: undefined,
-            chain: undefined,
         };
     }
 
@@ -49,7 +44,7 @@ export class EventContextBuilder {
     }
 
     /**
-     * 设置完整事件名（eventKey:type 格式）
+     * 设置事件名（完整名，如 userTable:selectionChange）
      */
     withEvent(event: string): this {
         this.context.event = event;
@@ -65,9 +60,9 @@ export class EventContextBuilder {
     }
 
     /**
-     * 设置事件源标识（组件 eventKey）
+     * 设置事件源
      */
-    withSource(source: string): this {
+    withSource(source: any): this {
         this.context.source = source;
         return this;
     }
@@ -85,6 +80,30 @@ export class EventContextBuilder {
      */
     withData(data: any): this {
         this.context.data = data;
+        return this;
+    }
+
+    /**
+     * 设置时间戳
+     */
+    withTimestamp(timestamp: number): this {
+        this.context.timestamp = timestamp;
+        return this;
+    }
+
+    /**
+     * 设置总线 ID
+     */
+    withBusId(busId: string): this {
+        this.context.busId = busId;
+        return this;
+    }
+
+    /**
+     * 设置作用域 ID
+     */
+    withScopeId(scopeId: string): this {
+        this.context.scopeId = scopeId;
         return this;
     }
 
@@ -116,7 +135,8 @@ export class EventContextBuilder {
      * 设置元数据
      */
     withMetadata(key: string, value: any): this {
-        this.context.metadata![key] = value;
+        if (!this.context.metadata) this.context.metadata = {};
+        this.context.metadata[key] = value;
         return this;
     }
 
@@ -130,8 +150,17 @@ export class EventContextBuilder {
         if (!this.context.event) {
             throw new Error('EventContext is missing event name');
         }
-        if (!this.context.type) {
-            throw new Error('EventContext is missing event type');
+        if (this.context.timestamp === undefined) {
+            this.context.timestamp = Date.now();
+        }
+        if (this.context.busId === undefined) {
+            this.context.busId = '';
+        }
+        if (this.context.scopeId === undefined) {
+            this.context.scopeId = 'NO_SCOPE';
+        }
+        if (this.context.source === undefined) {
+            this.context.source = 'UNKNOWN';
         }
         return this.context as EventContext;
     }

@@ -1,13 +1,39 @@
-﻿import { BusAction, EventHandler, EventLogAction, IEventContext, IEventScope } from './types';
+import { BusAction, EventHandler, EventLogAction, IEventScope } from './types';
 import { EventScope } from './EventScope';
+import type { EventContext } from '@/context';
 import { ILogger, LogLevel } from '@qimenjs/logger';
 import { string } from '@qimenjs/utils';
+
+/**
+ * 一级深度清理：将对象属性中的引用类型替换为空值
+ *
+ * - 对象属性 → {}
+ * - 数组属性 → []
+ * - 原始值保持不变
+ *
+ * 用于 EventContext.data 的自动清理，防止事件处理后数据被意外引用。
+ *
+ * @param obj - 要清理的对象
+ */
+export function deepNullify(obj: any): void {
+    if (obj === null || obj === undefined || typeof obj !== 'object') return;
+    if (Array.isArray(obj)) {
+        obj.length = 0;
+    } else {
+        for (const key of Object.keys(obj)) {
+            const val = obj[key];
+            if (val !== null && typeof val === 'object') {
+                obj[key] = Array.isArray(val) ? [] : {};
+            }
+        }
+    }
+}
 
 /**
  * 事件总线 - 用于管理事件订阅、发布和取消订阅的核心类
  *
  * EventBus 提供了一个基于事件驱动的通信机制，允许不同组件之间解耦合地进行通信。
- * 它支持多种事件处理模式，包括一次性订阅、取消订阅等功能。
+ * 它支持多种事件处理模式，包括一次性订阅、取消订阅、引用计数、异步 handler 等功能。
  *
  * @template Events 事件映射类型，定义了事件名称和载荷类型的对应关系
  *
@@ -24,7 +50,7 @@ import { string } from '@qimenjs/utils';
  *
  * // 订阅事件
  * const unsubscribe = bus.on('user:login', (payload) => {
- *   console.log('用户登录:', payload.userId);
+ *   console.log('用户登录:', payload.data.userId);
  * });
  *
  * // 发布事件
@@ -116,6 +142,11 @@ export class EventBus {
      * 触发事件
      *
      * 将事件数据传递给所有订阅了该事件的处理器。
+     * 支持引用计数和异步 handler 检测。
+     *
+     * 当 handler 返回 Promise 时，引用计数会在 Promise 完成后递减。
+     * _refCount 归零时标记事件处理完成，但不自动清理 data。
+     * 如需清理，请使用 cleanupContext() 方法。
      *
      * @param event - 事件名称
      * @param data - 事件数据载荷
@@ -123,7 +154,7 @@ export class EventBus {
      * @param scopeId - 作用域ID（可选，默认为'NO_SCOPE'）
      */
     emit(event: string, data?: any, source?: any, scopeId: string = 'NO_SCOPE'): void {
-        const context: IEventContext<any> = {
+        const context: EventContext = {
             event,
             data,
             source: source || 'UNKNOWN',
@@ -141,16 +172,47 @@ export class EventBus {
 
         this.logEvent('debug', 'emit', String(event), {
             handlerCount: handlers.size,
-            source: context.source?.constructor.name,
+            source: context.source?.constructor?.name || context.source,
         });
+
+        // 设置引用计数
+        context._refCount = handlers.size;
+
+        const done = () => {
+            context._refCount!--;
+            // _refCount 归零时不自动清理，由调用方决定是否清理
+        };
 
         handlers.forEach(handler => {
             try {
-                handler(context);
+                const result = handler(context);
+                if (result instanceof Promise) {
+                    result.then(done, (err) => {
+                        this.logEvent('error', 'handler_error', String(event), { error: err });
+                        done();
+                    });
+                } else {
+                    done();
+                }
             } catch (err) {
                 this.logEvent('error', 'handler_error', String(event), { error: err });
+                done();
             }
         });
+    }
+
+    /**
+     * 清理 EventContext 的 data
+     *
+     * 对 ctx.data 执行一级深度清理，将引用类型替换为空值。
+     * 通常在 emitUI 中，当 _refCount 归零后显式调用。
+     *
+     * @param ctx - 要清理的 EventContext
+     */
+    cleanupContext(ctx: EventContext): void {
+        if (ctx.data !== null && ctx.data !== undefined && typeof ctx.data === 'object') {
+            deepNullify(ctx.data);
+        }
     }
 
     /**
