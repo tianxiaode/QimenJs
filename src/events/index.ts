@@ -11,3 +11,5 @@ export * from './types';
 export * from './EventBus';
 export * from './EventScope';
 export * from './GlobalEventBus';
+export * from './EventContext';
+export * from './EventContextBuilder';
