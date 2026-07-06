@@ -1,5 +1,6 @@
 import type { EventContext } from '@/context';
 import { globalEventBus, EventSourceRegistrar } from '@/events';
+import { EventFlowRegistrar } from './EventFlowRegistrar';
 
 /**
  * StateTrigger 定义
@@ -107,6 +108,12 @@ export function bindStateTriggers(
                 });
             }
         }
+    }
+
+    // 注册到 EventFlowRegistrar（订阅层）
+    const flowRegistrar = EventFlowRegistrar.getInstance();
+    for (const sub of subscriptions) {
+        flowRegistrar.registerSubscription(sub);
     }
 
     return {
