@@ -139,7 +139,28 @@ export class EventBus {
     }
 
     /**
-     * 触发事件
+     * 触发事件（传统方式）
+     *
+     * @param event - 事件名称
+     * @param data - 事件数据载荷
+     * @param source - 事件源（可选）
+     * @param scopeId - 作用域ID（可选，默认为'NO_SCOPE'）
+     */
+    emit(event: string, data?: any, source?: any, scopeId?: string): void;
+
+    /**
+     * 触发事件（使用预构建的 EventContext）
+     *
+     * 当调用方已经构建了完整的 EventContext（如 emitUI）时使用此重载。
+     * 直接使用传入的 context，不再内部构建。
+     *
+     * @param event - 事件名称
+     * @param context - 预构建的 EventContext
+     */
+    emit(event: string, context: EventContext): void;
+
+    /**
+     * 触发事件（实现）
      *
      * 将事件数据传递给所有订阅了该事件的处理器。
      * 支持引用计数和异步 handler 检测。
@@ -147,21 +168,26 @@ export class EventBus {
      * 当 handler 返回 Promise 时，引用计数会在 Promise 完成后递减。
      * _refCount 归零时标记事件处理完成，但不自动清理 data。
      * 如需清理，请使用 cleanupContext() 方法。
-     *
-     * @param event - 事件名称
-     * @param data - 事件数据载荷
-     * @param source - 事件源（可选）
-     * @param scopeId - 作用域ID（可选，默认为'NO_SCOPE'）
      */
-    emit(event: string, data?: any, source?: any, scopeId: string = 'NO_SCOPE'): void {
-        const context: EventContext = {
-            event,
-            data,
-            source: source || 'UNKNOWN',
-            busId: this.busId,
-            scopeId,
-            timestamp: Date.now(),
-        };
+    emit(event: string, dataOrContext?: any, source?: any, scopeId: string = 'NO_SCOPE'): void {
+        // 判断第二个参数是否为预构建的 EventContext
+        const isPrebuiltContext = dataOrContext !== null
+            && dataOrContext !== undefined
+            && typeof dataOrContext === 'object'
+            && 'event' in dataOrContext
+            && 'timestamp' in dataOrContext
+            && 'busId' in dataOrContext;
+
+        const context: EventContext = isPrebuiltContext
+            ? dataOrContext
+            : {
+                event,
+                data: dataOrContext,
+                source: source || 'UNKNOWN',
+                busId: this.busId,
+                scopeId,
+                timestamp: Date.now(),
+            };
 
         const handlers = this.listeners.get(event);
 

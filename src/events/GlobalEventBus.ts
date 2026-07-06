@@ -1,6 +1,7 @@
 ﻿import { Logger } from '@qimenjs/logger';
 import { EventBus } from './EventBus';
 import { EventHandler, IEventScope } from './types';
+import type { EventContext } from '@/context';
 
 /**
  * 全局事件总线 - 提供应用级别的单例事件总线
@@ -76,8 +77,21 @@ export class GlobalEventBus {
      * @param event 事件名称
      * @param data 事件数据载荷
      */
-    emit(event: string, data?: any) {
-        this.bus.emit(event, data, 'GLOBAL', 'ROOT_SCOPE');
+    emit(event: string, data?: any): void;
+
+    /**
+     * 触发事件（使用预构建的 EventContext）
+     *
+     * @param event 事件名称
+     * @param context 预构建的 EventContext
+     */
+    emit(event: string, context: EventContext): void;
+
+    /**
+     * 触发事件（实现）
+     */
+    emit(event: string, dataOrContext?: any): void {
+        this.bus.emit(event, dataOrContext, 'GLOBAL', 'ROOT_SCOPE');
     }
 
     /**
