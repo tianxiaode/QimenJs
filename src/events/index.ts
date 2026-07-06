@@ -11,6 +11,7 @@ export * from './types';
 export * from './EventBus';
 export * from './EventScope';
 export * from './GlobalEventBus';
+export * from './EventSourceRegistrar';
 
 // 重新导出 EventContext 和 EventContextBuilder（来自 context 包）
 export type { EventContext, EventChainLink, EventMetadata } from '@/context';
