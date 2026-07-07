@@ -8,3 +8,6 @@
 export { ComponentBase } from './ComponentBase';
 export { ComponentManager, getCmp } from './ComponentManager';
 export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistrar';
+
+// 能力定义导出
+export * from './abilities';
