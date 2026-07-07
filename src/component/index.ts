@@ -11,3 +11,25 @@ export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistr
 
 // 能力定义导出
 export * from './abilities';
+
+// 浮层与模板
+export { OverlayRoot } from './OverlayRoot';
+export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
+export { TemplateRegistry } from './TemplateRegistry';
+
+// i18n 桥接
+export { I18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
+
+// 基础组件
+export { ButtonComponent } from './components/ButtonComponent';
+export { InputComponent } from './components/InputComponent';
+export { SelectComponent } from './components/SelectComponent';
+
+// 布局组件
+export { HBoxComponent } from './components/HBoxComponent';
+export { VBoxComponent } from './components/VBoxComponent';
+export { GridComponent } from './components/GridComponent';
+export { SpaceComponent } from './components/SpaceComponent';
+
+// 动画
+export { animationsCSS } from './styles/animations';
