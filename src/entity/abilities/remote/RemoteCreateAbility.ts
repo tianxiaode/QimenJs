@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 import { KernelError, KernelErrorCode } from '@/error';
 
 /**
@@ -32,7 +33,7 @@ export const RemoteCreateAbility: AbilityDefinition = {
         const context = await this.fetch('create', options);
         const item = context.data.item;
         this.updateItem(item);
-        this.emit('created', item);
+        this.emit(ENTITY_CRUD_EVENTS.CREATED, item);
         return this.item!;
     },
 };

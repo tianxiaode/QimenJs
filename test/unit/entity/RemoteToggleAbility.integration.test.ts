@@ -25,6 +25,7 @@ jest.mock('@/logger', () => {
 
 import { RemoteCrudEntityManager } from '@/entity/manager/managers';
 import { RemoteToggleAbility } from '@/entity/abilities/remote/RemoteToggleAbility';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { SchemaRegistrar } from '@/schema';
@@ -177,7 +178,7 @@ describe('RemoteToggleAbility 集成测试', () => {
 
             await manager.toggle(item, 'enabled');
 
-            expect(emitSpy).toHaveBeenCalledWith('toggled', {
+            expect(emitSpy).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
                 id: item.id,
                 item: finalItem,
                 field: 'enabled',
@@ -250,7 +251,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             await manager.toggle(item, 'enabled');
 
             // 不应该发射 toggled 事件
-            expect(emitSpy).not.toHaveBeenCalledWith('toggled', expect.anything());
+            expect(emitSpy).not.toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, expect.anything());
         });
 
         it('toggle() 失败后应该返回 this.item（回滚后的值）', async () => {

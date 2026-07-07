@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 /**
  * LocalGetAbility - 本地获取能力
@@ -21,7 +22,7 @@ export const LocalGetAbility: AbilityDefinition = {
         }
 
         this.item = result;
-        this.emit('got', result);
+        this.emit(ENTITY_LIST_EVENTS.GOT, result);
 
         return result;
     },

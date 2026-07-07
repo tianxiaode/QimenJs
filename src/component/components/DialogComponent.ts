@@ -6,10 +6,10 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { OpenableAbility } from '../abilities/OpenableAbility';
-import { OverlayAbility } from '../abilities/OverlayAbility';
-import { AnimationAbility } from '../abilities/AnimationAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { OpenableAbility } from '@qimenjs/component-abilities';
+import { OverlayAbility } from '@qimenjs/component-abilities';
+import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
 
 export class DialogComponent extends ComponentBase {

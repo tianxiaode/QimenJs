@@ -56,6 +56,7 @@ const config = {
     '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
     '^@qimenjs/theme$': '<rootDir>/src/theme',
     '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
+    '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
     '^@qimenjs/component$': '<rootDir>/src/component',
     '^@qimenjs/layout$': '<rootDir>/src/layout',
     '^@qimenjs/renderer$': '<rootDir>/src/renderer'

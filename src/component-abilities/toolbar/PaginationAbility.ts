@@ -21,7 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { PAGINATION_EVENTS } from '../events';
+import { PAGINATION_EVENTS } from '@qimenjs/events';
 
 /** 分页按钮位置常量 */
 export const PAGINATION_POSITIONS = {

@@ -38,6 +38,7 @@ jest.mock('@/cache', () => ({
 import { ComposableBase } from '@/composable/ComposableBase';
 import { FlatLocalMutationAbility } from '@/entity/abilities/local/FlatLocalMutationAbility';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 
 // ============================================
 // 辅助
@@ -73,7 +74,7 @@ describe('FlatLocalMutationAbility', () => {
             const result = host.create(item);
             expect(result).toBe(item);
             expect(host.changes.added.length).toBe(1);
-            expect(host.emit).toHaveBeenCalledWith('created', item);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, item);
             host.dispose();
         });
     });
@@ -85,7 +86,7 @@ describe('FlatLocalMutationAbility', () => {
             const item = { id: '1', name: 'new' };
             const result = host.update(item);
             expect(result).toBe(item);
-            expect(host.emit).toHaveBeenCalledWith('updated', item);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.UPDATED, item);
             host.dispose();
         });
     });
@@ -97,7 +98,7 @@ describe('FlatLocalMutationAbility', () => {
             const item = { id: '1', name: 'test', active: true };
             host.toggle(item, 'active');
             expect(item.active).toBe(false);
-            expect(host.emit).toHaveBeenCalledWith('toggled', item, 'active', true);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, { id: '1', item, field: 'active', oldValue: true });
             host.dispose();
         });
 
@@ -121,7 +122,7 @@ describe('FlatLocalMutationAbility', () => {
             await host._internalSave(true);
 
             expect(host.fetch).toHaveBeenCalledWith('batch-save', expect.anything());
-            expect(host.emit).toHaveBeenCalledWith('saved');
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.SAVED);
             host.dispose();
         });
 

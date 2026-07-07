@@ -6,7 +6,7 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { LayoutAbility } from '../abilities/LayoutAbility';
+import { LayoutAbility } from '@qimenjs/component-abilities';
 
 export class SpaceComponent extends ComponentBase {
     static override readonly abilities = [LayoutAbility];

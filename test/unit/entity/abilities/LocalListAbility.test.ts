@@ -24,6 +24,7 @@ jest.mock('@/logger', () => {
 
 import { ComposableBase } from '@/composable/ComposableBase';
 import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createListHost() {
     class ListHost extends ComposableBase {
@@ -49,7 +50,7 @@ describe('LocalListAbility', () => {
         expect(host.buildOptions).toHaveBeenCalledWith('list', {}, null, {});
         expect(host.fetch).toHaveBeenCalledWith('list', {});
         expect(host.updateData).toHaveBeenCalledWith([{ id: '1', name: 'test' }]);
-        expect(host.emit).toHaveBeenCalledWith('listed', host.items);
+        expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
         expect(result).toBe(host.items);
         host.dispose();
     });

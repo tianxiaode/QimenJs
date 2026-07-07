@@ -49,6 +49,7 @@
       "@qimenjs/oauth2": ["src/oauth2"],
       "@qimenjs/types": ["src/types"],
       "@qimenjs/theme": ["src/theme"],
+      "@qimenjs/component-abilities": ["src/component-abilities"],
       "@qimenjs/component": ["src/component"],
       "@qimenjs/layout": ["src/layout"],
       "@qimenjs/renderer": ["src/renderer"]

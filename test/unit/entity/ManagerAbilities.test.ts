@@ -26,6 +26,7 @@ jest.mock('@/logger', () => {
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
 import { RemoteCreateAbility } from '@/entity/abilities/remote/RemoteCreateAbility';
+import { ENTITY_CRUD_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { ComposableBase } from '@/composable';
 import { SchemaRegistrar } from '@/schema';
 import type { FlatSchema, TreeSchema } from '@/schema';
@@ -439,7 +440,7 @@ describe('LocalGetAbility', () => {
 
             (host as any).get('1');
 
-            expect(host.emit).toHaveBeenCalledWith('got', user);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, user);
         });
 
         it('找不到时也应该发射 got 事件（值为 null）', () => {
@@ -447,7 +448,7 @@ describe('LocalGetAbility', () => {
 
             (host as any).get('999');
 
-            expect(host.emit).toHaveBeenCalledWith('got', null);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, null);
         });
     });
 });
@@ -492,7 +493,7 @@ describe('RemoteCreateAbility', () => {
             expect(host.buildOptions).toHaveBeenCalledWith('create', {}, { name: 'New User' }, {});
             expect(host.fetch).toHaveBeenCalledWith('create', expect.anything());
             expect(host.updateItem).toHaveBeenCalledWith(createdItem);
-            expect(host.emit).toHaveBeenCalledWith('created', createdItem);
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, createdItem);
             expect(result).toEqual(createdItem);
         });
 

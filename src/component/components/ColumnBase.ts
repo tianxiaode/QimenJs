@@ -20,11 +20,11 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { VisibleAbility } from '../abilities/VisibleAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
-import { SortAbility } from '../abilities/SortAbility';
-import type { ColumnDefinition } from '../abilities/ColumnAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { VisibleAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import { SortAbility } from '@qimenjs/component-abilities';
+import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class ColumnBase extends ComponentBase {
     static override readonly abilities = [TextAbility, VisibleAbility, DisableAbility, SortAbility];

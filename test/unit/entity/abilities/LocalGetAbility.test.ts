@@ -24,6 +24,7 @@ jest.mock('@/logger', () => {
 
 import { ComposableBase } from '@/composable/ComposableBase';
 import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createGetHost(idField: string = 'id') {
     class GetHost extends ComposableBase {
@@ -45,7 +46,7 @@ describe('LocalGetAbility', () => {
 
         expect(result).toEqual({ id: '1', name: 'test' });
         expect(host.item).toEqual({ id: '1', name: 'test' });
-        expect(host.emit).toHaveBeenCalledWith('got', result);
+        expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, result);
         host.dispose();
     });
 

@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 /**
  * FlatRemoteListAbility - 远程列表查询能力
@@ -32,7 +33,7 @@ export const FlatRemoteListAbility: AbilityDefinition = {
             const cached = await this.tryGetCache();
             if (cached) {
                 this.updateData(cached.items, cached.total);
-                this.emit('listed', this.items);
+                this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
                 return this.items;
             }
         }
@@ -48,7 +49,7 @@ export const FlatRemoteListAbility: AbilityDefinition = {
         const { list, total } = context.data;
         // 同步状态
         this.updateData(list, total);
-        this.emit('listed', this.items);
+        this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
         return this.items;
     },
 };

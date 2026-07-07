@@ -23,10 +23,7 @@
 import { ComposableBase, type AbilityDefinition } from '@qimenjs/composable';
 import { string } from '@qimenjs/utils';
 import { EventAbility, DomEventsAbility } from '@qimenjs/system-abilities';
-import { ThemeAbility } from './abilities/ThemeAbility';
-import { StyleAbility } from './abilities/StyleAbility';
-import { EventBridgeAbility } from './abilities/EventBridgeAbility';
-import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
+import { ThemeAbility, StyleAbility, EventBridgeAbility, mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qimenjs/component-abilities';
 
 /** 组件 DOM 元素上挂载组件引用的属性名 */
 const Q_COMPONENT_REF = '__qComponent';

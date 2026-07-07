@@ -11,8 +11,8 @@
  */
 
 import { ColumnBase } from './ColumnBase';
-import { SelectableAbility } from '../abilities/SelectableAbility';
-import type { ColumnDefinition } from '../abilities/ColumnAbility';
+import { SelectableAbility } from '@qimenjs/component-abilities';
+import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class CheckboxColumn extends ColumnBase {
     static override readonly abilities = [...ColumnBase.abilities, SelectableAbility];

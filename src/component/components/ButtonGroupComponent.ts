@@ -20,9 +20,9 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { ChildrenAbility } from '../abilities/ChildrenAbility';
-import { SizeAbility } from '../abilities/SizeAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
+import { SizeAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
 
 export class ButtonGroupComponent extends ComponentBase {
     static override readonly abilities = [ChildrenAbility, SizeAbility, DisableAbility];

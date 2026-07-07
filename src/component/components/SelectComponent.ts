@@ -6,12 +6,12 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { ValueAbility } from '../abilities/ValueAbility';
-import { OptionsAbility } from '../abilities/OptionsAbility';
-import { SearchAbility } from '../abilities/SearchAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
-import { SizeAbility } from '../abilities/SizeAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { ValueAbility } from '@qimenjs/component-abilities';
+import { OptionsAbility } from '@qimenjs/component-abilities';
+import { SearchAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class SelectComponent extends ComponentBase {
     static override readonly abilities = [

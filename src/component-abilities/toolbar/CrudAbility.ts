@@ -21,7 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { CRUD_EVENTS } from '../events';
+import { CRUD_EVENTS } from '@qimenjs/events';
 
 /** CRUD 按钮位置常量 */
 export const CRUD_POSITIONS = {

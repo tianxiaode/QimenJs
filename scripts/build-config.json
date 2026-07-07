@@ -151,6 +151,7 @@
                 "http",
                 "cache",
                 "error",
+                "events",
                 "system-abilities",
                 "data-processor",
                 "registry",
@@ -221,11 +222,18 @@
             "dependencies": ["pipeline", "registry", "context", "events", "composable", "theme", "layout"],
             "packageName": "@qimen-lab/renderer"
         },
+        "component-abilities": {
+            "entry": "src/component-abilities/index.ts",
+            "outDir": "dist/component-abilities",
+            "rootDir": "src/component-abilities",
+            "dependencies": ["composable", "events"],
+            "packageName": "@qimen-lab/component-abilities"
+        },
         "component": {
             "entry": "src/component/index.ts",
             "outDir": "dist/component",
             "rootDir": "src/component",
-            "dependencies": ["composable", "events", "registry", "context", "pipeline", "theme", "layout", "renderer"],
+            "dependencies": ["composable", "events", "registry", "context", "pipeline", "theme", "layout", "renderer", "component-abilities"],
             "packageName": "@qimen-lab/component"
         }
     },

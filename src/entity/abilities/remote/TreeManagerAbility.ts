@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_TREE_EVENTS } from '@/events';
 
 /**
  * TreeManagerAbility - 树形管理器能力
@@ -6,6 +7,12 @@ import type { AbilityDefinition } from '@/composable';
  * 提供树形结构的展开/折叠/刷新/移动等操作。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
+ *
+ * 事件触发：
+ * - expanded: 节点展开后触发
+ * - collapsed: 节点折叠后触发
+ * - moved: 节点移动后触发
+ * - childrenRefreshed: 子节点刷新后触发
  */
 export const TreeManagerAbility: AbilityDefinition = {
     // 基础操作
@@ -53,6 +60,7 @@ export const TreeManagerAbility: AbilityDefinition = {
     _setExpandState(id: string | number, expanded: boolean): void {
         this.toggleExpand(id, expanded);
         this.refreshView();
+        this.emit(ENTITY_TREE_EVENTS.COLLAPSED, { id });
     },
 
     async _expand(id: string | number): Promise<void> {
@@ -63,6 +71,7 @@ export const TreeManagerAbility: AbilityDefinition = {
             this.toggleExpand(id, true);
             this.refreshView();
         }
+        this.emit(ENTITY_TREE_EVENTS.EXPANDED, { id });
     },
 
     async _refreshChildren(pid: string | number | null): Promise<void> {
@@ -76,6 +85,7 @@ export const TreeManagerAbility: AbilityDefinition = {
             this.setLoaded(pid, true);
         }
         this.refreshView();
+        this.emit(ENTITY_TREE_EVENTS.CHILDREN_REFRESHED, { pid, items: context.data.list });
     },
 
     async _moveNode(id: string | number, targetPid: string | number | null): Promise<void> {
@@ -89,5 +99,6 @@ export const TreeManagerAbility: AbilityDefinition = {
         await this.fetch('update', options);
         this.moveNode(id, targetPid);
         this.refreshView();
+        this.emit(ENTITY_TREE_EVENTS.MOVED, { id, targetPid });
     },
 };

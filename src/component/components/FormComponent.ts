@@ -6,10 +6,10 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { EntityAbility } from '../abilities/EntityAbility';
-import { ValidateAbility } from '../abilities/ValidateAbility';
-import { SubmitAbility } from '../abilities/SubmitAbility';
-import { FieldSetAbility } from '../abilities/FieldSetAbility';
+import { EntityAbility } from '@qimenjs/component-abilities';
+import { ValidateAbility } from '@qimenjs/component-abilities';
+import { SubmitAbility } from '@qimenjs/component-abilities';
+import { FieldSetAbility } from '@qimenjs/component-abilities';
 
 export class FormComponent extends ComponentBase {
     static override readonly abilities = [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility];

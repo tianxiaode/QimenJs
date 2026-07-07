@@ -48,6 +48,7 @@ function createTreeHost() {
         getChildren = jest.fn().mockReturnValue([]);
         buildOptions = jest.fn().mockResolvedValue({});
         fetch = jest.fn().mockResolvedValue({ data: { list: [] } });
+        emit = jest.fn();
 
         parentIdField = 'parentId';
         idField = 'id';
@@ -67,6 +68,7 @@ describe('TreeManagerAbility', () => {
 
             expect(mockDebounce).toHaveBeenCalledWith('expand', expect.any(Function), 200, true);
             expect(host.toggleExpand).toHaveBeenCalledWith('node-1', true);
+            expect(host.emit).toHaveBeenCalledWith('expanded', { id: 'node-1' });
             host.dispose();
         });
 
@@ -79,6 +81,7 @@ describe('TreeManagerAbility', () => {
 
             expect(host.fetch).toHaveBeenCalled();
             expect(host.toggleExpand).toHaveBeenCalledWith('node-1', true);
+            expect(host.emit).toHaveBeenCalledWith('expanded', { id: 'node-1' });
             host.dispose();
         });
     });
@@ -89,6 +92,7 @@ describe('TreeManagerAbility', () => {
             host.collapse('node-1');
             expect(host.toggleExpand).toHaveBeenCalledWith('node-1', false);
             expect(host.refreshView).toHaveBeenCalled();
+            expect(host.emit).toHaveBeenCalledWith('collapsed', { id: 'node-1' });
             host.dispose();
         });
     });
@@ -100,6 +104,7 @@ describe('TreeManagerAbility', () => {
             expect(host.fetch).toHaveBeenCalledWith('update', expect.anything());
             expect(host.moveNode).toHaveBeenCalledWith('node-1', 'new-parent');
             expect(host.refreshView).toHaveBeenCalled();
+            expect(host.emit).toHaveBeenCalledWith('moved', { id: 'node-1', targetPid: 'new-parent' });
             host.dispose();
         });
 
@@ -107,6 +112,7 @@ describe('TreeManagerAbility', () => {
             const { host } = createTreeHost();
             await host.move('node-1', null);
             expect(host.moveNode).toHaveBeenCalledWith('node-1', null);
+            expect(host.emit).toHaveBeenCalledWith('moved', { id: 'node-1', targetPid: null });
             host.dispose();
         });
     });
@@ -167,6 +173,7 @@ describe('TreeManagerAbility', () => {
             expect(host.setLoaded).toHaveBeenCalledWith('parent-1', true);
             expect(host.syncChildren).toHaveBeenCalled();
             expect(host.updateData).toHaveBeenCalled();
+            expect(host.emit).toHaveBeenCalledWith('childrenRefreshed', { pid: 'parent-1', items: [{ id: 'c1' }] });
             host.dispose();
         });
 
@@ -177,6 +184,7 @@ describe('TreeManagerAbility', () => {
             await host._refreshChildren(null);
 
             expect(host.setLoaded).not.toHaveBeenCalled();
+            expect(host.emit).toHaveBeenCalledWith('childrenRefreshed', { pid: null, items: [] });
             host.dispose();
         });
     });

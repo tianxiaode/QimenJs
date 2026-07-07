@@ -6,12 +6,12 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { EntityAbility } from '../abilities/EntityAbility';
-import { VirtualListAbility } from '../abilities/VirtualListAbility';
-import { SortAbility } from '../abilities/SortAbility';
-import { ColumnAbility, type ColumnDefinition } from '../abilities/ColumnAbility';
-import { ColumnManageAbility } from '../abilities/ColumnManageAbility';
-import { ChildrenAbility } from '../abilities/ChildrenAbility';
+import { EntityAbility } from '@qimenjs/component-abilities';
+import { VirtualListAbility } from '@qimenjs/component-abilities';
+import { SortAbility } from '@qimenjs/component-abilities';
+import { ColumnAbility, type ColumnDefinition } from '@qimenjs/component-abilities';
+import { ColumnManageAbility } from '@qimenjs/component-abilities';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
 
 export class TableComponent extends ComponentBase {

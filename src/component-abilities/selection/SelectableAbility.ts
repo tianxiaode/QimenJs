@@ -21,7 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { SELECTION_EVENTS } from '../events';
+import { SELECTION_EVENTS } from '@qimenjs/events';
 
 export const SelectableAbility: AbilityDefinition = {
     /**

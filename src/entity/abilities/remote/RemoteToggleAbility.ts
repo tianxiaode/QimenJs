@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 
 /**
  * RemoteToggleAbility - 远程状态切换能力
@@ -35,7 +36,7 @@ export const RemoteToggleAbility: AbilityDefinition = {
             const context = await this.fetch('toggle', options);
             const finalData = context.data.item || item;
             this.updateItem(finalData);
-            this.emit('toggled', { id, item: finalData, field });
+            this.emit(ENTITY_CRUD_EVENTS.TOGGLED, { id, item: finalData, field });
             return this.item!;
         } catch (error) {
             // 3. 操作失败：回滚到旧值

@@ -15,6 +15,12 @@ export * from './EventSourceRegistrar';
 export * from './EventFlowRegistrar';
 export * from './StateTrigger';
 
+// 导出实体事件常量
+export * from './entity-events';
+
+// 导出组件能力事件常量
+export * from './component-events';
+
 // 重新导出 EventContext 和 EventContextBuilder（来自 context 包）
 export type { EventContext, EventChainLink, EventMetadata } from '@/context';
 export { EventContextBuilder } from '@/context';

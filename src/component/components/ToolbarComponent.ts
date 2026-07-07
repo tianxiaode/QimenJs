@@ -27,12 +27,12 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { LayoutAbility } from '../abilities/LayoutAbility';
-import { ChildrenAbility } from '../abilities/ChildrenAbility';
-import { AnimationAbility } from '../abilities/AnimationAbility';
-import { ToolbarAbility } from '../abilities/ToolbarAbility';
-import { PaginationAbility } from '../abilities/PaginationAbility';
-import { CrudAbility } from '../abilities/CrudAbility';
+import { LayoutAbility } from '@qimenjs/component-abilities';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
+import { AnimationAbility } from '@qimenjs/component-abilities';
+import { ToolbarAbility } from '@qimenjs/component-abilities';
+import { PaginationAbility } from '@qimenjs/component-abilities';
+import { CrudAbility } from '@qimenjs/component-abilities';
 
 export class ToolbarComponent extends ComponentBase {
     static override readonly abilities = [

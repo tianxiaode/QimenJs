@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 
 /**
  * FlatLocalDeleteAbility - 平铺本地删除能力
@@ -24,7 +25,7 @@ export const FlatLocalDeleteAbility: AbilityDefinition = {
         // 4. 确认删除（清空快照和 changes.deleted）
         await this.confirmDelete();
 
-        this.emit('deleted', ids);
+        this.emit(ENTITY_CRUD_EVENTS.DELETED, ids);
         if (this.refreshView) this.refreshView();
 
         return plan;

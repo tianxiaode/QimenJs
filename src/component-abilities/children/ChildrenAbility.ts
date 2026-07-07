@@ -6,15 +6,22 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import type { ComponentBase } from '../ComponentBase';
-import { CHILDREN_EVENTS } from '../events';
+import { CHILDREN_EVENTS } from '@qimenjs/events';
+
+/**
+ * 子组件类型
+ *
+ * 使用 any 而非 ComponentLike 避免对 component 包的循环依赖。
+ * 实际运行时 this 指向 ComponentLike 实例。
+ */
+type ComponentLike = any;
 
 export const ChildrenAbility: AbilityDefinition = {
     /**
      * 子组件列表
      */
     children: {
-        get(): ComponentBase[] {
+        get(): ComponentLike[] {
             return this.abilityState('ChildrenAbility:list', () => []);
         },
     },
@@ -39,7 +46,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param index - 可选的插入位置
      * @returns 组件自身，支持链式调用
      */
-    addChild(child: ComponentBase, index?: number): any {
+    addChild(child: ComponentLike, index?: number): any {
         const list = this.children;
         if (index !== undefined && index >= 0 && index <= list.length) {
             list.splice(index, 0, child);
@@ -71,7 +78,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param startIndex - 可选的起始插入位置
      * @returns 组件自身，支持链式调用
      */
-    addChildren(children: ComponentBase[], startIndex?: number): any {
+    addChildren(children: ComponentLike[], startIndex?: number): any {
         let idx = startIndex ?? this.children.length;
         for (const child of children) {
             this.addChild(child, idx);
@@ -87,7 +94,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param refChild - 参考子组件
      * @returns 组件自身，支持链式调用
      */
-    insertBefore(child: ComponentBase, refChild: ComponentBase): any {
+    insertBefore(child: ComponentLike, refChild: ComponentLike): any {
         const list = this.children;
         const refIdx = list.indexOf(refChild);
         if (refIdx !== -1) {
@@ -112,7 +119,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param child - 要移除的子组件
      * @returns 组件自身，支持链式调用
      */
-    removeChild(child: ComponentBase): any {
+    removeChild(child: ComponentLike): any {
         const list = this.children;
         const idx = list.indexOf(child);
         if (idx !== -1) {
@@ -133,7 +140,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param index - 子组件索引
      * @returns 被移除的子组件，或 undefined
      */
-    removeChildAt(index: number): ComponentBase | undefined {
+    removeChildAt(index: number): ComponentLike | undefined {
         const list = this.children;
         if (index < 0 || index >= list.length) return undefined;
 
@@ -177,7 +184,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param newChild - 新的子组件
      * @returns 组件自身，支持链式调用
      */
-    replaceChild(oldChild: ComponentBase, newChild: ComponentBase): any {
+    replaceChild(oldChild: ComponentLike, newChild: ComponentLike): any {
         const list = this.children;
         const idx = list.indexOf(oldChild);
         if (idx === -1) return this;
@@ -210,7 +217,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param newIndex - 新的索引位置
      * @returns 组件自身，支持链式调用
      */
-    moveChild(child: ComponentBase, newIndex: number): any {
+    moveChild(child: ComponentLike, newIndex: number): any {
         const list = this.children;
         const oldIndex = list.indexOf(child);
         if (oldIndex === -1 || oldIndex === newIndex) return this;
@@ -247,7 +254,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param index - 索引
      * @returns 子组件，或 undefined
      */
-    getChildAt(index: number): ComponentBase | undefined {
+    getChildAt(index: number): ComponentLike | undefined {
         return this.children[index];
     },
 
@@ -257,7 +264,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param id - 组件 id
      * @returns 子组件，或 undefined
      */
-    getChild(id: string): ComponentBase | undefined {
+    getChild(id: string): ComponentLike | undefined {
         return this.children.find((c: any) => c.id === id);
     },
 
@@ -267,7 +274,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param type - 组件类型
      * @returns 子组件，或 undefined
      */
-    queryChild(type: string): ComponentBase | undefined {
+    queryChild(type: string): ComponentLike | undefined {
         return this.children.find((c: any) => c.type === type);
     },
 
@@ -277,7 +284,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param type - 组件类型
      * @returns 子组件数组
      */
-    queryChildren(type: string): ComponentBase[] {
+    queryChildren(type: string): ComponentLike[] {
         return this.children.filter((c: any) => c.type === type);
     },
 
@@ -287,7 +294,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param type - 组件类型
      * @returns 子组件，或 undefined
      */
-    find(type: string): ComponentBase | undefined {
+    find(type: string): ComponentLike | undefined {
         for (const child of this.children) {
             if ((child as any).type === type) return child;
             if (typeof (child as any).find === 'function') {
@@ -304,8 +311,8 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param type - 组件类型
      * @returns 子组件数组
      */
-    findAll(type: string): ComponentBase[] {
-        const result: ComponentBase[] = [];
+    findAll(type: string): ComponentLike[] {
+        const result: ComponentLike[] = [];
         for (const child of this.children) {
             if ((child as any).type === type) result.push(child);
             if (typeof (child as any).findAll === 'function') {
@@ -321,7 +328,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param child - 子组件
      * @returns 索引，未找到返回 -1
      */
-    indexOf(child: ComponentBase): number {
+    indexOf(child: ComponentLike): number {
         return this.children.indexOf(child);
     },
 
@@ -331,7 +338,7 @@ export const ChildrenAbility: AbilityDefinition = {
      * @param child - 子组件
      * @returns 是否包含
      */
-    contains(child: ComponentBase): boolean {
+    contains(child: ComponentLike): boolean {
         return this.children.indexOf(child) !== -1;
     },
 
@@ -340,7 +347,7 @@ export const ChildrenAbility: AbilityDefinition = {
      *
      * @param fn - 遍历回调，返回 false 可中断
      */
-    eachChild(fn: (child: ComponentBase, index: number) => void | boolean): void {
+    eachChild(fn: (child: ComponentLike, index: number) => void | boolean): void {
         const list = this.children;
         for (let i = 0; i < list.length; i++) {
             if (fn(list[i], i) === false) break;

@@ -6,11 +6,11 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { ClickAbility } from '../abilities/ClickAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
-import { LoadingAbility } from '../abilities/LoadingAbility';
-import { SizeAbility } from '../abilities/SizeAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { ClickAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import { LoadingAbility } from '@qimenjs/component-abilities';
+import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class ButtonComponent extends ComponentBase {
     static override readonly abilities = [TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];

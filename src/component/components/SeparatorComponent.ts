@@ -13,7 +13,7 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { VisibleAbility } from '../abilities/VisibleAbility';
+import { VisibleAbility } from '@qimenjs/component-abilities';
 
 export class SeparatorComponent extends ComponentBase {
     static override readonly abilities = [VisibleAbility];

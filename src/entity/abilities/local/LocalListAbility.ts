@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 /**
  * LocalListAbility - 本地列表能力
@@ -13,7 +14,7 @@ export const LocalListAbility: AbilityDefinition = {
         const context = await this.fetch('list', options);
 
         await this.updateData(context.data.list || []);
-        this.emit('listed', this.items);
+        this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
         return this.items;
     },
 

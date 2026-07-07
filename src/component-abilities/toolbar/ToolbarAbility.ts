@@ -19,7 +19,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { TOOLBAR_EVENTS } from '../events';
+import { TOOLBAR_EVENTS } from '@qimenjs/events';
 
 /** 位置属性名 */
 const POSITION_PROP = 'position';

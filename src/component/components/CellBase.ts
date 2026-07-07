@@ -20,9 +20,9 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
-import type { ColumnDefinition } from '../abilities/ColumnAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class CellBase extends ComponentBase {
     static override readonly abilities = [TextAbility, DisableAbility];

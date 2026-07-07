@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_CRUD_EVENTS } from '@/events';
 
 /**
  * FlatLocalMutationAbility - 平铺本地变更能力
@@ -12,21 +13,23 @@ import type { AbilityDefinition } from '@/composable';
 export const FlatLocalMutationAbility: AbilityDefinition = {
     create(item: any) {
         this.addItem(item);
-        this.emit('created', item);
+        this.emit(ENTITY_CRUD_EVENTS.CREATED, item);
         return item;
     },
 
     update(item: any) {
         this.updateItem(item);
-        this.emit('updated', item);
+        this.emit(ENTITY_CRUD_EVENTS.UPDATED, item);
         return item;
     },
 
     toggle(item: any, field: string) {
+        const idField = this.idField;
+        const id = item[idField];
         const oldValue = item[field];
         item[field] = !oldValue;
         this.updateItem(item);
-        this.emit('toggled', item, field, oldValue);
+        this.emit(ENTITY_CRUD_EVENTS.TOGGLED, { id, item, field, oldValue });
     },
 
     save(isBatch: boolean = false) {
@@ -54,6 +57,6 @@ export const FlatLocalMutationAbility: AbilityDefinition = {
             }
         }
 
-        this.emit('saved');
+        this.emit(ENTITY_CRUD_EVENTS.SAVED);
     },
 };

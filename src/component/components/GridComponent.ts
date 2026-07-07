@@ -6,9 +6,9 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { LayoutAbility } from '../abilities/LayoutAbility';
-import { ChildrenAbility } from '../abilities/ChildrenAbility';
-import { AnimationAbility } from '../abilities/AnimationAbility';
+import { LayoutAbility } from '@qimenjs/component-abilities';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
+import { AnimationAbility } from '@qimenjs/component-abilities';
 
 export class GridComponent extends ComponentBase {
     static override readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];

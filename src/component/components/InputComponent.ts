@@ -6,12 +6,12 @@
  */
 
 import { ComponentBase } from '../ComponentBase';
-import { TextAbility } from '../abilities/TextAbility';
-import { ValueAbility } from '../abilities/ValueAbility';
-import { ValidateAbility } from '../abilities/ValidateAbility';
-import { PlaceholderAbility } from '../abilities/PlaceholderAbility';
-import { DisableAbility } from '../abilities/DisableAbility';
-import { SizeAbility } from '../abilities/SizeAbility';
+import { TextAbility } from '@qimenjs/component-abilities';
+import { ValueAbility } from '@qimenjs/component-abilities';
+import { ValidateAbility } from '@qimenjs/component-abilities';
+import { PlaceholderAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class InputComponent extends ComponentBase {
     static override readonly abilities = [

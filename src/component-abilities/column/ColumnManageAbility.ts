@@ -16,7 +16,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { ColumnDefinition } from './ColumnAbility';
-import { COLUMN_EVENTS } from '../events';
+import { COLUMN_EVENTS } from '@qimenjs/events';
 
 export const ColumnManageAbility: AbilityDefinition = {
     /**
