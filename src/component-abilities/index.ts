@@ -29,7 +29,6 @@ export { FieldSetAbility } from './data';
 export { EntityCoreAbility } from './entity';
 export { EntityEmitAbility } from './entity';
 export { EntityListenAbility } from './entity';
-export { EntityEventAbility } from './entity';
 export { EntityAbility } from './entity';
 
 // 按 manager 类型分类的实体能力

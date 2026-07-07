@@ -7,7 +7,7 @@
  * - entityConfig 配置
  * - 方法代理（将 mgr 的公共方法代理到组件实例，支持 before/after 钩子）
  *
- * 配合 EntityEventAbility（事件监听与转发）和 SelectionAbility（选择状态管理）使用。
+ * 配合 EntityEmitAbility（事件转发）、EntityListenAbility（事件监听）和 SelectionAbility（选择状态管理）使用。
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';

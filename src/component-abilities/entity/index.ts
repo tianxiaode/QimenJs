@@ -12,6 +12,3 @@ export { EntityRemoteTreeAbility } from './EntityRemoteTreeAbility';
 
 // 向后兼容的组合导出
 export { EntityAbility } from './EntityAbility';
-
-// 旧版导出（已废弃，由 EntityEmitAbility 替代）
-export { EntityEventAbility } from './EntityEventAbility';

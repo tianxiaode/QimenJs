@@ -11,7 +11,7 @@
  * - 子组件事件：ChildrenAbility 发射
  * - 列管理事件：ColumnManageAbility 发射
  * - 工具栏事件：ToolbarAbility 发射
- * - 实体转发事件：EntityEventAbility 转发 EntityManager 事件
+ * - 实体转发事件：EntityEmitAbility 转发 EntityManager 事件
  */
 
 // ============================================
@@ -84,7 +84,7 @@ export const TOOLBAR_EVENTS = {
 } as const;
 
 // ============================================
-// 实体转发事件（EntityEventAbility 转发 EntityManager 事件）
+// 实体转发事件（EntityEmitAbility 转发 EntityManager 事件）
 //
 // 对应 events 包中的分类定义：
 // - ENTITY_DATA_EVENTS → 数据变更
