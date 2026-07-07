@@ -27,6 +27,9 @@ export { ChildrenAbility } from './ChildrenAbility';
 // 渲染能力
 export { RenderAbility } from './RenderAbility';
 
+// 虚拟列表能力
+export { VirtualListAbility } from './VirtualListAbility';
+
 // 浮层能力
 export { OverlayAbility } from './OverlayAbility';
 

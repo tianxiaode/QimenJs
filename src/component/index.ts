@@ -20,6 +20,9 @@ export { TemplateRegistry } from './TemplateRegistry';
 // i18n 桥接
 export { I18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
 
+// 事件注册
+export { ComponentEventRegistry } from './ComponentEventRegistry';
+
 // 基础组件
 export { ButtonComponent } from './components/ButtonComponent';
 export { InputComponent } from './components/InputComponent';
