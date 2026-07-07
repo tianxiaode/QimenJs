@@ -2,14 +2,14 @@
  * TableComponent 表格组件
  *
  * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ChildrenAbility]
- * 支持虚拟列表、排序、列定义
+ * 支持虚拟列表、排序、列定义（含格式化、条件显隐、条件禁用）
  */
 
 import { ComponentBase } from '../ComponentBase';
 import { EntityAbility } from '../abilities/EntityAbility';
 import { VirtualListAbility } from '../abilities/VirtualListAbility';
 import { SortAbility } from '../abilities/SortAbility';
-import { ColumnAbility } from '../abilities/ColumnAbility';
+import { ColumnAbility, type ColumnDefinition } from '../abilities/ColumnAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
 
 export class TableComponent extends ComponentBase {
@@ -98,20 +98,27 @@ export class TableComponent extends ComponentBase {
         this.renderRows();
     }
 
-    /** 渲染表头（使用 textContent 避免 XSS） */
+    /** 渲染表头（使用 textContent 避免 XSS，支持列配置） */
     private renderHeader(): void {
         if (!this.headerEl) return;
 
-        const cols = this.columns || [];
+        const cols = this.getVisibleColumns?.() || this.columns || [];
         this.headerEl.innerHTML = '';
 
         const rowEl = document.createElement('div');
         rowEl.className = 'q-table__header-row q-flex';
 
-        for (const col of cols) {
+        for (const col of cols as ColumnDefinition[]) {
             const cellEl = document.createElement('div');
             cellEl.className = 'q-table__header-cell';
+            if (col.headerClass) cellEl.classList.add(...col.headerClass.split(/\s+/));
             cellEl.style.flex = '1';
+            if (col.width) {
+                cellEl.style.width = typeof col.width === 'number' ? `${col.width}px` : col.width;
+                cellEl.style.flex = 'none';
+            }
+            if (col.align) cellEl.style.textAlign = col.align;
+            if (col.headerStyle) Object.assign(cellEl.style, col.headerStyle);
             cellEl.textContent = col.label || col.field || '';
             rowEl.appendChild(cellEl);
         }
@@ -119,7 +126,7 @@ export class TableComponent extends ComponentBase {
         this.headerEl.appendChild(rowEl);
     }
 
-    /** 渲染行 */
+    /** 渲染行（使用 ColumnAbility 的格式化/条件显隐/条件禁用） */
     private renderRows(): void {
         if (!this.bodyEl) return;
 
@@ -148,11 +155,36 @@ export class TableComponent extends ComponentBase {
             rowEl.style.height = `${this._rowHeight}px`;
             rowEl.style.width = '100%';
 
-            for (const col of cols) {
+            for (const col of cols as ColumnDefinition[]) {
+                // 条件显隐
+                if (col.hidden) continue;
+                if (typeof col.hiddenWhen === 'function' && col.hiddenWhen(row, col)) continue;
+
                 const cellEl = document.createElement('div');
                 cellEl.className = 'q-table__cell';
+
+                // 条件 class
+                const cellClass = this.getCellClass?.(col, row);
+                if (cellClass) cellEl.classList.add(...cellClass.split(/\s+/));
+
                 cellEl.style.flex = '1';
-                cellEl.textContent = row[col.field] ?? '';
+                if (col.width) {
+                    cellEl.style.width = typeof col.width === 'number' ? `${col.width}px` : col.width;
+                    cellEl.style.flex = 'none';
+                }
+                if (col.align) cellEl.style.textAlign = col.align;
+                if (col.cellStyle) Object.assign(cellEl.style, col.cellStyle);
+
+                // 条件禁用
+                if (this.isCellDisabled?.(col, row)) {
+                    cellEl.classList.add('q-cell--disabled');
+                    cellEl.setAttribute('aria-disabled', 'true');
+                }
+
+                // 格式化值（使用 textContent 避免 XSS）
+                const displayValue = this.formatCellValue?.(col, row) ?? row[col.field] ?? '';
+                cellEl.textContent = displayValue;
+
                 rowEl.appendChild(cellEl);
             }
 

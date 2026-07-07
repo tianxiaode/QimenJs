@@ -77,7 +77,7 @@
 | **OptionsAbility** | options (getter/setter), selectedOption (getter) | — | options → this.options |
 | **SearchAbility** | keyword (getter/setter), onSearch 回调 | — | — |
 | **SortAbility** | sortField/sortOrder (getter/setter), onSortChange 回调 | — | — |
-| **ColumnAbility** | columns (getter/setter) | — | columns → this.columns |
+| **ColumnAbility** | columns (getter/setter), getVisibleColumns(row?), formatCellValue(col, row), isCellDisabled(col, row), getCellClass(col, row), ColumnDefinition 接口 | — | columns → this.columns |
 | **OpenableAbility** | isOpen (getter), open()/close() 方法 | — | — |
 | **LayoutAbility** | gap/align/justify (getter/setter), 映射到 AtomicCSS class | — | — |
 
