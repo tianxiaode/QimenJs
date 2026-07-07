@@ -2,27 +2,44 @@
  * UI 组件基类
  *
  * 从 ComposableBase 派生，所有 UI 组件的根类。
- * 通过 Ability 组合获得各种 UI 能力（主题感知、样式管理、DOM 事件等）。
+ * 通过 Ability 组合获得各种 UI 能力。
  *
- * 每个组件实例有 cid（自动生成的唯一 ID）和可选的 id（开发者指定的业务标识），
- * 创建时自动注册到 ComponentManager，销毁时自动移除。
+ * ComponentBase 默认提供以下通用能力：
+ * - ThemeAbility：主题感知，自动响应主题切换
+ * - StyleAbility：样式管理，className/style/addClass/removeClass
+ * - EventAbility（来自 system-abilities）：事件监听/发射，on/once/emit/emitUI
+ * - DomEventsAbility（来自 system-abilities）：DOM 手势事件绑定，bind(target, semantic)
+ *
+ * 子类通过 static abilities 声明额外能力，派生组件根据特有属性添加对应能力。
  *
  * @example
  * ```typescript
  * class ButtonComponent extends ComponentBase {
- *     static readonly abilities = [ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
+ *     static readonly abilities = [TextAbility, ClickAbility, DisableAbility, SizeAbility];
  * }
  * ```
  */
 
 import { ComposableBase, type AbilityDefinition } from '@qimenjs/composable';
 import { string } from '@qimenjs/utils';
+import { EventAbility, DomEventsAbility } from '@qimenjs/system-abilities';
+import { ThemeAbility } from './abilities/ThemeAbility';
+import { StyleAbility } from './abilities/StyleAbility';
+import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 
 /** 组件 DOM 元素上挂载组件引用的属性名 */
 const Q_COMPONENT_REF = '__qComponent';
 
 /** 组件 DOM 元素上设置 id 标识的属性名 */
 const Q_DATA_ID = 'data-q-id';
+
+/** 所有 UI 组件共享的基础能力 */
+const BASE_ABILITIES: readonly AbilityDefinition[] = [
+    EventAbility,
+    DomEventsAbility,
+    ThemeAbility,
+    StyleAbility,
+];
 
 /**
  * UI 组件基类
@@ -60,19 +77,58 @@ export class ComponentBase extends ComposableBase {
     /** 是否已销毁 */
     destroyed: boolean = false;
 
+    /** 原始 props 引用（供能力初始化使用） */
+    readonly props: Record<string, any>;
+
     constructor(props?: Record<string, any>) {
         super();
         this.cid = string.getId('q-comp');
+        this.props = props || {};
 
         // 如果 props 中有 id，设置到实例
-        if (props?.id) {
-            this.id = props.id;
+        if (this.props.id) {
+            this.id = this.props.id;
         }
 
         // 如果 props 中有 type，设置到实例
-        if (props?.type) {
-            this.type = props.type;
+        if (this.props.type) {
+            this.type = this.props.type;
         }
+    }
+
+    /**
+     * 收集能力：合并基础能力 + 子类声明的能力
+     */
+    protected override collectAbilities(): AbilityDefinition[] {
+        const subAbilities = super.collectAbilities();
+        // 基础能力在前，子类能力在后（子类可覆盖基础能力的同名属性）
+        const all = [...BASE_ABILITIES, ...subAbilities];
+
+        // 去重
+        const seen = new Set<any>();
+        return all.filter(a => {
+            if (seen.has(a)) return false;
+            seen.add(a);
+            return true;
+        });
+    }
+
+    /**
+     * 应用属性别名和能力初始化
+     *
+     * 在 setupAbilities 之后调用，将 props 中的值通过别名映射设置到组件属性
+     * 注意：__initProps 延迟到 mount() 时调用，因为此时 el 才可用
+     */
+    protected override applyOverrides(): void {
+        super.applyOverrides();
+
+        const allAbilities = this.collectAbilities();
+
+        // 1. 应用属性别名（不依赖 el 的属性）
+        const aliasMap = mergePropAliases(allAbilities);
+        applyPropAliases(this, this.props, aliasMap);
+
+        // 2. __initProps 延迟到 mount() 中调用，因为能力初始化可能依赖 el
     }
 
     /**
@@ -100,6 +156,10 @@ export class ComponentBase extends ComposableBase {
             // 注册到 ComponentManager
             const { ComponentManager } = require('./ComponentManager');
             ComponentManager.getInstance().register(this);
+
+            // 初始化能力 props（此时 el 已可用）
+            const allAbilities = this.collectAbilities();
+            initAbilitiesFromProps(this, allAbilities, this.props);
         }
     }
 
@@ -183,31 +243,5 @@ export class ComponentBase extends ComposableBase {
 
         // 调用 ComposableBase.dispose() 清理 abilities 和事件
         super.dispose();
-    }
-
-    /**
-     * emitUI 事件
-     *
-     * 使用 id 构建事件名（id:type），通过 EventBus 广播
-     *
-     * @param eventType - 事件类型
-     * @param data - 事件数据
-     */
-    emitUI(eventType: string, data?: any): void {
-        if (!this.id) return;
-
-        const { globalEventBus } = require('@qimenjs/events');
-        const { EventContextBuilder } = require('@qimenjs/context');
-
-        const eventName = `${this.id}:${eventType}`;
-        const ctx = EventContextBuilder.create()
-            .withEvent(eventName)
-            .withType(eventType)
-            .withSource(this.id)
-            .withSourceType(this.type)
-            .withData(data)
-            .build();
-
-        globalEventBus.emit(eventName, ctx);
     }
 }

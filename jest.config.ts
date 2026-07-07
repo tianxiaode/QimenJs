@@ -52,6 +52,8 @@ const config = {
     '^@qimenjs/pattern$': '<rootDir>/src/pattern',
     '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
     '^@qimenjs/events$': '<rootDir>/src/events',
+    '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
+    '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
     '^@qimenjs/theme$': '<rootDir>/src/theme',
     '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
     '^@qimenjs/component$': '<rootDir>/src/component',

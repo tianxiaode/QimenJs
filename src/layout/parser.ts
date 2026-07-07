@@ -3,12 +3,41 @@
  *
  * 解析 Layout 定义，返回标准化的 LayoutNode。
  * 支持嵌套 children 递归解析，处理 handlers 中的字符串和 HandlerAction 混合形式。
+ * 支持扁平化 props：非保留字的顶层属性自动归入 props，显式 props 优先。
  */
 
 import type { LayoutNode, HandlerAction } from './LayoutNode';
 
 /**
+ * 框架保留字集合
+ *
+ * 这些顶层字段有特殊语义，不会自动归入 props。
+ * 用户定义布局时，非保留字的顶层属性会自动合并到 props 中。
+ */
+const RESERVED_KEYS = new Set([
+    'type', 'id', 'field', 'props', 'children', 'handlers',
+    'slots', 'visible', 'repeat', 'responsive', 'stateTriggers',
+]);
+
+/**
  * 解析 Layout 定义，返回标准化的 LayoutNode
+ *
+ * 支持扁平化写法：
+ * - 保留字字段（type/id/field/handlers/...）保持在顶层
+ * - 非保留字的顶层属性自动归入 props
+ * - 显式 props 中的属性优先级高于扁平化属性
+ *
+ * @example
+ * ```js
+ * // 扁平化写法（推荐）
+ * parseLayout({ type: 'Button', text: '提交', variant: 'primary' })
+ * // 等价于
+ * parseLayout({ type: 'Button', props: { text: '提交', variant: 'primary' } })
+ *
+ * // 混合写法：显式 props 优先
+ * parseLayout({ type: 'Button', text: '默认', props: { text: '覆盖' } })
+ * // → props.text === '覆盖'
+ * ```
  *
  * @param layout - 原始 Layout 定义
  * @returns 标准化的 LayoutNode
@@ -26,10 +55,9 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
         type: layout.type,
     };
 
-    // 可选字段
+    // 可选保留字字段
     if (layout.id !== undefined) node.id = String(layout.id);
     if (layout.field !== undefined) node.field = String(layout.field);
-    if (layout.props !== undefined) node.props = layout.props;
     if (layout.visible !== undefined) node.visible = layout.visible;
     if (layout.repeat !== undefined) node.repeat = layout.repeat;
     if (layout.responsive !== undefined) node.responsive = layout.responsive;
@@ -48,6 +76,22 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
     // 递归解析 children
     if (layout.children && Array.isArray(layout.children)) {
         node.children = layout.children.map((child: any) => parseLayout(child));
+    }
+
+    // 扁平化 props：非保留字的顶层属性自动归入 props
+    // 显式 props 优先级高于扁平化属性
+    const props: Record<string, any> = {};
+    for (const [key, value] of Object.entries(layout)) {
+        if (!RESERVED_KEYS.has(key) && value !== undefined) {
+            props[key] = value;
+        }
+    }
+    // 显式 props 覆盖扁平化属性
+    if (layout.props && typeof layout.props === 'object') {
+        Object.assign(props, layout.props);
+    }
+    if (Object.keys(props).length > 0) {
+        node.props = props;
     }
 
     return node;

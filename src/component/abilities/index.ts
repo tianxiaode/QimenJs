@@ -2,10 +2,14 @@
  * UI 能力定义导出
  */
 
+// 属性别名与初始化协议
+export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './PropAlias';
+export type { PropAliasMap } from './PropAlias';
+
 // 通用 UI 能力
 export { ThemeAbility } from './ThemeAbility';
 export { StyleAbility } from './StyleAbility';
-export { EventBindingAbility } from './EventBindingAbility';
+export { TextAbility } from './TextAbility';
 export { VisibleAbility } from './VisibleAbility';
 export { DisableAbility } from './DisableAbility';
 export { LoadingAbility } from './LoadingAbility';
@@ -44,3 +48,7 @@ export { SortAbility } from './SortAbility';
 export { ColumnAbility } from './ColumnAbility';
 export { OpenableAbility } from './OpenableAbility';
 export { LayoutAbility } from './LayoutAbility';
+
+// 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
+// 保留文件以避免破坏性变更，但不再推荐使用
+export { EventBindingAbility } from './EventBindingAbility';
