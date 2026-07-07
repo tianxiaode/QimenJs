@@ -1,7 +1,8 @@
 /**
  * ChildrenAbility 子组件管理能力
  *
- * 提供子组件的增删查改操作，参考 ExtJS 的 Container API
+ * 提供子组件的增删查改操作，参考 ExtJS 的 Container API。
+ * 支持事件通知：childadd / childremove / childmove / childrenchange
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
@@ -18,12 +19,26 @@ export const ChildrenAbility: AbilityDefinition = {
     },
 
     /**
+     * 子组件数量
+     */
+    childCount: {
+        get(): number {
+            return this.children.length;
+        },
+    },
+
+    // ============================================
+    // 添加
+    // ============================================
+
+    /**
      * 添加子组件
      *
      * @param child - 子组件实例
      * @param index - 可选的插入位置
+     * @returns 组件自身，支持链式调用
      */
-    addChild(child: ComponentBase, index?: number): void {
+    addChild(child: ComponentBase, index?: number): any {
         const list = this.children;
         if (index !== undefined && index >= 0 && index <= list.length) {
             list.splice(index, 0, child);
@@ -42,26 +57,36 @@ export const ChildrenAbility: AbilityDefinition = {
                 this.el.appendChild(child.el);
             }
         }
+
+        this.emit?.('childadd', { child, index });
+        this.emit?.('childrenchange', { action: 'add', child, index });
+        return this;
     },
 
     /**
-     * 移除并销毁子组件
+     * 批量添加子组件
+     *
+     * @param children - 子组件数组
+     * @param startIndex - 可选的起始插入位置
+     * @returns 组件自身，支持链式调用
      */
-    removeChild(child: ComponentBase): void {
-        const list = this.children;
-        const idx = list.indexOf(child);
-        if (idx !== -1) {
-            list.splice(idx, 1);
-            child.parent = null;
-            child.dispose();
-            child.unmount();
+    addChildren(children: ComponentBase[], startIndex?: number): any {
+        let idx = startIndex ?? this.children.length;
+        for (const child of children) {
+            this.addChild(child, idx);
+            idx++;
         }
+        return this;
     },
 
     /**
      * 在指定子组件前插入
+     *
+     * @param child - 要插入的子组件
+     * @param refChild - 参考子组件
+     * @returns 组件自身，支持链式调用
      */
-    insertBefore(child: ComponentBase, refChild: ComponentBase): void {
+    insertBefore(child: ComponentBase, refChild: ComponentBase): any {
         const list = this.children;
         const refIdx = list.indexOf(refChild);
         if (refIdx !== -1) {
@@ -70,63 +95,254 @@ export const ChildrenAbility: AbilityDefinition = {
             if (child.el && refChild.el && this.el) {
                 this.el.insertBefore(child.el, refChild.el);
             }
+            this.emit?.('childadd', { child, index: refIdx });
+            this.emit?.('childrenchange', { action: 'add', child, index: refIdx });
         }
+        return this;
+    },
+
+    // ============================================
+    // 移除
+    // ============================================
+
+    /**
+     * 移除并销毁子组件
+     *
+     * @param child - 要移除的子组件
+     * @returns 组件自身，支持链式调用
+     */
+    removeChild(child: ComponentBase): any {
+        const list = this.children;
+        const idx = list.indexOf(child);
+        if (idx !== -1) {
+            list.splice(idx, 1);
+            child.parent = null;
+            child.unmount();
+            child.dispose();
+
+            this.emit?.('childremove', { child, index: idx });
+            this.emit?.('childrenchange', { action: 'remove', child, index: idx });
+        }
+        return this;
+    },
+
+    /**
+     * 按索引移除子组件
+     *
+     * @param index - 子组件索引
+     * @returns 被移除的子组件，或 undefined
+     */
+    removeChildAt(index: number): ComponentBase | undefined {
+        const list = this.children;
+        if (index < 0 || index >= list.length) return undefined;
+
+        const child = list[index];
+        list.splice(index, 1);
+        child.parent = null;
+        child.unmount();
+        child.dispose();
+
+        this.emit?.('childremove', { child, index });
+        this.emit?.('childrenchange', { action: 'remove', child, index });
+        return child;
+    },
+
+    /**
+     * 移除所有子组件
+     *
+     * @returns 组件自身，支持链式调用
+     */
+    removeAll(): any {
+        const list = [...this.children];
+        for (const child of list) {
+            child.parent = null;
+            child.unmount();
+            child.dispose();
+        }
+        this.children.length = 0;
+
+        this.emit?.('childrenchange', { action: 'removeall' });
+        return this;
+    },
+
+    // ============================================
+    // 替换与移动
+    // ============================================
+
+    /**
+     * 替换子组件
+     *
+     * @param oldChild - 被替换的子组件
+     * @param newChild - 新的子组件
+     * @returns 组件自身，支持链式调用
+     */
+    replaceChild(oldChild: ComponentBase, newChild: ComponentBase): any {
+        const list = this.children;
+        const idx = list.indexOf(oldChild);
+        if (idx === -1) return this;
+
+        // 移除旧组件
+        list.splice(idx, 1);
+        oldChild.parent = null;
+        oldChild.unmount();
+        oldChild.dispose();
+
+        // 插入新组件
+        list.splice(idx, 0, newChild);
+        newChild.parent = this as any;
+        if (newChild.el && this.el) {
+            if (idx < this.el.children.length) {
+                this.el.insertBefore(newChild.el, this.el.children[idx]);
+            } else {
+                this.el.appendChild(newChild.el);
+            }
+        }
+
+        this.emit?.('childrenchange', { action: 'replace', oldChild, newChild, index: idx });
+        return this;
+    },
+
+    /**
+     * 移动子组件到新位置
+     *
+     * @param child - 要移动的子组件
+     * @param newIndex - 新的索引位置
+     * @returns 组件自身，支持链式调用
+     */
+    moveChild(child: ComponentBase, newIndex: number): any {
+        const list = this.children;
+        const oldIndex = list.indexOf(child);
+        if (oldIndex === -1 || oldIndex === newIndex) return this;
+
+        // 从旧位置移除
+        list.splice(oldIndex, 1);
+
+        // 插入新位置
+        const targetIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+        list.splice(targetIndex, 0, child);
+
+        // 同步 DOM 顺序
+        if (child.el && this.el) {
+            this.el.removeChild(child.el);
+            if (targetIndex < this.el.children.length) {
+                this.el.insertBefore(child.el, this.el.children[targetIndex]);
+            } else {
+                this.el.appendChild(child.el);
+            }
+        }
+
+        this.emit?.('childmove', { child, oldIndex, newIndex: targetIndex });
+        this.emit?.('childrenchange', { action: 'move', child, oldIndex, newIndex: targetIndex });
+        return this;
+    },
+
+    // ============================================
+    // 查询
+    // ============================================
+
+    /**
+     * 按索引获取子组件
+     *
+     * @param index - 索引
+     * @returns 子组件，或 undefined
+     */
+    getChildAt(index: number): ComponentBase | undefined {
+        return this.children[index];
     },
 
     /**
      * 按 id 获取子组件
+     *
+     * @param id - 组件 id
+     * @returns 子组件，或 undefined
      */
     getChild(id: string): ComponentBase | undefined {
         return this.children.find((c: any) => c.id === id);
     },
 
     /**
-     * 按 type 查找第一个匹配的子组件
+     * 按 type 查找第一个匹配的直接子组件
+     *
+     * @param type - 组件类型
+     * @returns 子组件，或 undefined
      */
     queryChild(type: string): ComponentBase | undefined {
         return this.children.find((c: any) => c.type === type);
     },
 
     /**
-     * 按 type 查找所有匹配的子组件
+     * 按 type 查找所有匹配的直接子组件
+     *
+     * @param type - 组件类型
+     * @returns 子组件数组
      */
     queryChildren(type: string): ComponentBase[] {
         return this.children.filter((c: any) => c.type === type);
     },
 
     /**
+     * 递归深度查找第一个匹配的子组件
+     *
+     * @param type - 组件类型
+     * @returns 子组件，或 undefined
+     */
+    find(type: string): ComponentBase | undefined {
+        for (const child of this.children) {
+            if ((child as any).type === type) return child;
+            if (typeof (child as any).find === 'function') {
+                const found = (child as any).find(type);
+                if (found) return found;
+            }
+        }
+        return undefined;
+    },
+
+    /**
+     * 递归深度查找所有匹配的子组件
+     *
+     * @param type - 组件类型
+     * @returns 子组件数组
+     */
+    findAll(type: string): ComponentBase[] {
+        const result: ComponentBase[] = [];
+        for (const child of this.children) {
+            if ((child as any).type === type) result.push(child);
+            if (typeof (child as any).findAll === 'function') {
+                result.push(...(child as any).findAll(type));
+            }
+        }
+        return result;
+    },
+
+    /**
      * 获取子组件索引
+     *
+     * @param child - 子组件
+     * @returns 索引，未找到返回 -1
      */
     indexOf(child: ComponentBase): number {
         return this.children.indexOf(child);
     },
 
     /**
-     * 子组件数量
+     * 判断是否包含指定子组件（仅直接子组件）
+     *
+     * @param child - 子组件
+     * @returns 是否包含
      */
-    childCount: {
-        get(): number {
-            return this.children.length;
-        },
-    },
-
-    /**
-     * 移除所有子组件
-     */
-    removeAll(): void {
-        const list = [...this.children];
-        for (const child of list) {
-            child.parent = null;
-            child.dispose();
-            child.unmount();
-        }
-        this.children.length = 0;
+    contains(child: ComponentBase): boolean {
+        return this.children.indexOf(child) !== -1;
     },
 
     /**
      * 遍历子组件
+     *
+     * @param fn - 遍历回调，返回 false 可中断
      */
-    eachChild(fn: (child: ComponentBase, index: number) => void): void {
-        this.children.forEach(fn);
+    eachChild(fn: (child: ComponentBase, index: number) => void | boolean): void {
+        const list = this.children;
+        for (let i = 0; i < list.length; i++) {
+            if (fn(list[i], i) === false) break;
+        }
     },
 };

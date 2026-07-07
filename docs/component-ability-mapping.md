@@ -54,7 +54,7 @@
 | 能力 | 提供的属性/方法 | __propAliases | __initProps |
 |---|---|---|---|
 | **EntityAbility** | mgr/entityConfig, 代理 EntityManager 公共方法 | — | — |
-| **ChildrenAbility** | children/childCount (getter), addChild/removeChild/insertBefore/getChild/queryChild/queryChildren/indexOf/removeAll/eachChild | — | — |
+| **ChildrenAbility** | children/childCount (getter), addChild/addChildren/removeChild/removeChildAt/removeAll/insertBefore/replaceChild/moveChild/getChild/getChildAt/queryChild/queryChildren/find/findAll/indexOf/contains/eachChild, 事件: childadd/childremove/childmove/childrenchange | — | — |
 
 ### 渲染与列表能力
 
