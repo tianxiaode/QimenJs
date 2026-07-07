@@ -21,7 +21,10 @@
 | **Table** | 表格 | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility | 实体+虚拟滚动+排序+列定义+列管理+子组件 |
 | **Form** | 表单 | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility, ChildrenAbility | 实体+验证+提交+字段集+子组件 |
 | **Dialog** | 弹窗 | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility | 文本(标题)+开关+浮层+动画 |
-| **Toolbar** | 工具栏 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
+| **Toolbar** | 工具栏 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画+位置排序 |
+| **PaginationToolbar** | 分页工具栏 | (继承 Toolbar) | 首页/上一页/页码/下一页/末页+页码信息 |
+| **CrudToolbar** | CRUD工具栏 | (继承 Toolbar) | 新建/编辑/删除/刷新/导入/导出/保存 |
+| **FunctionToolbar** | 功能工具栏 | (继承 Toolbar) | CRUD+分页组合，左侧CRUD右侧分页 |
 | **ButtonGroup** | 按钮组 | ChildrenAbility, SizeAbility, DisableAbility | 子组件+尺寸(子按钮继承)+禁用(子按钮继承) |
 | **Separator** | 分隔符 | VisibleAbility | 显隐 |
 | **HBox** | 水平布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
@@ -281,3 +284,103 @@ class LinkCell extends CellBase {
     }
 }
 ```
+
+## 工具栏体系
+
+### ToolbarComponent 位置排序
+
+工具栏支持 `position` 值排序，子组件按 position 从小到大排列：
+
+```js
+// 插入到指定位置
+toolbar.insertAt(15, myButton);   // 在 10 和 20 之间
+toolbar.insertBefore(refBtn, newBtn);  // 在某组件前
+toolbar.insertAfter(refBtn, newBtn);   // 在某组件后
+
+// 按 position 操作
+toolbar.hideAtPosition(20);       // 隐藏 position=20 的组件
+toolbar.showAtPosition(20);       // 显示
+toolbar.removeAtPosition(20);     // 移除
+toolbar.getAtPosition(20);        // 获取
+
+// 重新排序
+toolbar.reorder();                // 按 position 重排 DOM
+```
+
+### PaginationToolbar 分页工具栏
+
+```js
+{
+  type: 'PaginationToolbar',
+  currentPage: 1,
+  totalPages: 10,
+  totalRecords: 95,
+  pageSize: 10,
+  showFirstLast: true,   // 首页/末页按钮
+  showInfo: true,        // 页码信息
+}
+```
+
+| 位置常量 | 值 | 说明 |
+|---|---|---|
+| PAGINATION_POSITIONS.FIRST | 10 | 首页 |
+| PAGINATION_POSITIONS.PREV | 20 | 上一页 |
+| PAGINATION_POSITIONS.PAGES | 30 | 页码区 |
+| PAGINATION_POSITIONS.NEXT | 40 | 下一页 |
+| PAGINATION_POSITIONS.LAST | 50 | 末页 |
+| PAGINATION_POSITIONS.INFO | 60 | 页码信息 |
+
+事件：`pagechange`
+
+### CrudToolbar CRUD 工具栏
+
+```js
+{
+  type: 'CrudToolbar',
+  showCreate: true,    // 新建
+  showEdit: true,      // 编辑
+  showDelete: true,    // 删除
+  showRefresh: true,   // 刷新
+  showImport: false,   // 导入
+  showExport: true,    // 导出
+  showSave: false,     // 保存
+}
+```
+
+| 位置常量 | 值 | 说明 |
+|---|---|---|
+| CRUD_POSITIONS.CREATE | 10 | 新建 |
+| CRUD_POSITIONS.EDIT | 20 | 编辑 |
+| CRUD_POSITIONS.DELETE | 30 | 删除 |
+| CRUD_POSITIONS.REFRESH | 40 | 刷新 |
+| CRUD_POSITIONS.IMPORT | 50 | 导入 |
+| CRUD_POSITIONS.EXPORT | 60 | 导出 |
+| CRUD_POSITIONS.SAVE | 70 | 保存 |
+
+运行时显隐：`showButton(name)` / `hideButton(name)` / `toggleButton(name)`
+
+事件：`crudaction`（{ action: 'create' | 'edit' | 'delete' | ... }）
+
+### FunctionToolbar 功能工具栏
+
+CRUD + 分页组合，左侧 CRUD 按钮，右侧分页控件：
+
+```js
+{
+  type: 'FunctionToolbar',
+  showCreate: true,
+  showDelete: true,
+  showExport: true,
+  currentPage: 1,
+  totalPages: 10,
+  totalRecords: 95,
+}
+```
+
+| 位置常量 | 值 | 说明 |
+|---|---|---|
+| FUNCTION_POSITIONS.CRUD_* | 10-70 | CRUD 区域 |
+| FUNCTION_POSITIONS.MIDDLE_SEPARATOR | 500 | 中间弹性空间 |
+| FUNCTION_POSITIONS.PAGINATION_* | 610-660 | 分页区域 |
+
+事件：`crudaction` + `pagechange`
