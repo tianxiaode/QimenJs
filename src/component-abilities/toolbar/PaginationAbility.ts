@@ -1,12 +1,24 @@
 /**
- * PaginationAbility 分页能力
+ * PaginationAbility 分页能力（兼容聚合层）
  *
- * 为工具栏注入分页按钮组：首页/上一页/页码/下一页/末页 + 页码信息。
+ * 为工具栏注入分页按钮组：首页/上一页/页码/下一页/末页 + 页码输入框 + 每页条数选择器 + 页码信息。
  * 所有按钮通过 position 排序，可通过配置显隐。
+ *
+ * 本文件是兼容聚合层，通过 Object.assign 合并所有子能力的属性和方法，
+ * 保持与原有 PaginationAbility 完全兼容的对外接口。
+ *
+ * 子能力拆分：
+ * - PaginationStateAbility: 分页状态管理
+ * - PaginationEventsAbility: 分页事件分发
+ * - PaginationNavAbility: 导航按钮渲染
+ * - PaginationPagesAbility: 页码按钮渲染
+ * - PaginationJumperAbility: 页码输入框渲染（新增）
+ * - PaginationSizerAbility: 每页条数选择器渲染（新增）
+ * - PaginationInfoAbility: 分页信息渲染
  *
  * @example
  * ```js
- * // 给任意 Toolbar 加分页
+ * // 给任意 Toolbar 加分页（完整功能）
  * class MyToolbar extends ComponentBase {
  *     static abilities = [LayoutAbility, ChildrenAbility, ToolbarAbility, PaginationAbility];
  * }
@@ -14,251 +26,67 @@
  * // 布局定义
  * { type: ComponentTypes.TOOLBAR, currentPage: 1, totalPages: 10, totalRecords: 95 }
  *
+ * // 带页码输入框和每页条数选择器
+ * { type: ComponentTypes.TOOLBAR, currentPage: 1, totalPages: 10, totalRecords: 95,
+ *   showJumper: true, showSizer: true, pageSizes: [10, 20, 50, 100] }
+ *
  * // 运行时
  * toolbar.gotoPage(3);
  * toolbar.nextPage();
+ * toolbar.changeSize(50);
  * ```
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { PAGINATION_EVENTS } from '@qimenjs/events';
+import { PaginationStateAbility } from './PaginationStateAbility';
+import { PaginationEventsAbility } from './PaginationEventsAbility';
+import { PaginationNavAbility } from './PaginationNavAbility';
+import { PaginationPagesAbility } from './PaginationPagesAbility';
+import { PaginationJumperAbility } from './PaginationJumperAbility';
+import { PaginationSizerAbility } from './PaginationSizerAbility';
+import { PaginationInfoAbility } from './PaginationInfoAbility';
+import { PAGINATION_POSITIONS } from './pagination-positions';
 
-/** 分页按钮位置常量 */
-export const PAGINATION_POSITIONS = {
-    FIRST: 610,
-    PREV: 620,
-    PAGES: 630,
-    NEXT: 640,
-    LAST: 650,
-    INFO: 660,
-} as const;
+// 重新导出位置常量，保持向后兼容
+export { PAGINATION_POSITIONS };
 
-export const PaginationAbility: AbilityDefinition = {
-    /**
-     * currentPage getter/setter
-     */
-    currentPage: {
-        get(): number {
-            return this.abilityState('PaginationAbility:currentPage', () => 1);
-        },
-        set(value: number): void {
-            this.setAbilityState('PaginationAbility:currentPage', value);
-            this.renderPagination?.();
-        },
-    },
+/**
+ * PaginationAbility 分页能力
+ *
+ * 通过 Object.assign 合并所有子能力，保持单个 AbilityDefinition 的形式，
+ * ToolbarComponent 的 static abilities 数组无需修改。
+ */
+export const PaginationAbility: AbilityDefinition = Object.assign({},
+    PaginationStateAbility,
+    PaginationEventsAbility,
+    PaginationNavAbility,
+    PaginationPagesAbility,
+    PaginationJumperAbility,
+    PaginationSizerAbility,
+    PaginationInfoAbility,
+    {
+        /**
+         * 统一渲染协调
+         *
+         * 移除旧分页元素，按位置顺序调用各子能力的渲染方法。
+         */
+        renderPagination(): void {
+            if (!this.el) return;
 
-    /**
-     * totalPages getter/setter
-     */
-    totalPages: {
-        get(): number {
-            return this.abilityState('PaginationAbility:totalPages', () => 1);
-        },
-        set(value: number): void {
-            this.setAbilityState('PaginationAbility:totalPages', value);
-            this.renderPagination?.();
-        },
-    },
+            // 移除旧分页元素
+            const oldItems = this.el.querySelectorAll('[data-pagination]');
+            oldItems.forEach((el: Element) => el.remove());
 
-    /**
-     * totalRecords getter/setter
-     */
-    totalRecords: {
-        get(): number {
-            return this.abilityState('PaginationAbility:totalRecords', () => 0);
-        },
-        set(value: number): void {
-            this.setAbilityState('PaginationAbility:totalRecords', value);
-            this.renderPagination?.();
-        },
-    },
+            const frag = document.createDocumentFragment();
 
-    /**
-     * pageSize getter/setter
-     */
-    pageSize: {
-        get(): number {
-            return this.abilityState('PaginationAbility:pageSize', () => 10);
-        },
-        set(value: number): void {
-            this.setAbilityState('PaginationAbility:pageSize', value);
-            this.renderPagination?.();
+            // 按位置顺序渲染各子能力
+            this.renderPaginationNav?.(frag);
+            this.renderPaginationPages?.(frag);
+            this.renderPaginationJumper?.(frag);
+            this.renderPaginationSizer?.(frag);
+            this.renderPaginationInfo?.(frag);
+
+            this.el.appendChild(frag);
         },
     },
-
-    /**
-     * showFirstLast getter/setter
-     */
-    showFirstLast: {
-        get(): boolean {
-            return this.abilityState('PaginationAbility:showFirstLast', () => true);
-        },
-        set(value: boolean): void {
-            this.setAbilityState('PaginationAbility:showFirstLast', value);
-            this.renderPagination?.();
-        },
-    },
-
-    /**
-     * showPageInfo getter/setter
-     */
-    showPageInfo: {
-        get(): boolean {
-            return this.abilityState('PaginationAbility:showPageInfo', () => true);
-        },
-        set(value: boolean): void {
-            this.setAbilityState('PaginationAbility:showPageInfo', value);
-            this.renderPagination?.();
-        },
-    },
-
-    // ============================================
-    // 分页操作
-    // ============================================
-
-    gotoPage(page: number): void {
-        if (page < 1 || page > this.totalPages) return;
-        this.currentPage = page;
-        this.emit?.(PAGINATION_EVENTS.CHANGE, { page, pageSize: this.pageSize });
-    },
-
-    prevPage(): void {
-        this.gotoPage(this.currentPage - 1);
-    },
-
-    nextPage(): void {
-        this.gotoPage(this.currentPage + 1);
-    },
-
-    firstPage(): void {
-        this.gotoPage(1);
-    },
-
-    lastPage(): void {
-        this.gotoPage(this.totalPages);
-    },
-
-    // ============================================
-    // 渲染分页按钮
-    // ============================================
-
-    renderPagination(): void {
-        if (!this.el) return;
-
-        // 移除旧分页元素
-        const oldItems = this.el.querySelectorAll('[data-pagination]');
-        oldItems.forEach((el: Element) => el.remove());
-
-        const frag = document.createDocumentFragment();
-
-        // 首页
-        if (this.showFirstLast) {
-            const firstBtn = this.createPageBtn('«', PAGINATION_POSITIONS.FIRST, () => this.firstPage());
-            if (this.currentPage <= 1) firstBtn.classList.add('q-pagination__btn--disabled');
-            frag.appendChild(firstBtn);
-        }
-
-        // 上一页
-        const prevBtn = this.createPageBtn('‹', PAGINATION_POSITIONS.PREV, () => this.prevPage());
-        if (this.currentPage <= 1) prevBtn.classList.add('q-pagination__btn--disabled');
-        frag.appendChild(prevBtn);
-
-        // 页码
-        const pagesEl = document.createElement('span');
-        pagesEl.className = 'q-pagination__pages';
-        pagesEl.setAttribute('data-pagination', 'pages');
-        pagesEl.setAttribute('data-position', String(PAGINATION_POSITIONS.PAGES));
-        const pageButtons = this.generatePageNumbers();
-        for (const btn of pageButtons) pagesEl.appendChild(btn);
-        frag.appendChild(pagesEl);
-
-        // 下一页
-        const nextBtn = this.createPageBtn('›', PAGINATION_POSITIONS.NEXT, () => this.nextPage());
-        if (this.currentPage >= this.totalPages) nextBtn.classList.add('q-pagination__btn--disabled');
-        frag.appendChild(nextBtn);
-
-        // 末页
-        if (this.showFirstLast) {
-            const lastBtn = this.createPageBtn('»', PAGINATION_POSITIONS.LAST, () => this.lastPage());
-            if (this.currentPage >= this.totalPages) lastBtn.classList.add('q-pagination__btn--disabled');
-            frag.appendChild(lastBtn);
-        }
-
-        // 页码信息
-        if (this.showPageInfo) {
-            const infoEl = document.createElement('span');
-            infoEl.className = 'q-pagination__info';
-            infoEl.setAttribute('data-pagination', 'info');
-            infoEl.setAttribute('data-position', String(PAGINATION_POSITIONS.INFO));
-            const start = (this.currentPage - 1) * this.pageSize + 1;
-            const end = Math.min(this.currentPage * this.pageSize, this.totalRecords);
-            infoEl.textContent = `${start}-${end} / ${this.totalRecords}`;
-            frag.appendChild(infoEl);
-        }
-
-        this.el.appendChild(frag);
-    },
-
-    createPageBtn(text: string, position: number, onClick: () => void): HTMLElement {
-        const btn = document.createElement('button');
-        btn.className = 'q-pagination__btn';
-        btn.setAttribute('data-pagination', 'btn');
-        btn.setAttribute('data-position', String(position));
-        btn.textContent = text;
-        btn.addEventListener('click', onClick);
-        return btn;
-    },
-
-    generatePageNumbers(): HTMLElement[] {
-        const buttons: HTMLElement[] = [];
-        const current = this.currentPage;
-        const total = this.totalPages;
-        const range = 2;
-        let start = Math.max(1, current - range);
-        let end = Math.min(total, current + range);
-
-        if (start > 1) {
-            buttons.push(this.createPageNumBtn(1));
-            if (start > 2) buttons.push(this.createEllipsis());
-        }
-
-        for (let i = start; i <= end; i++) {
-            buttons.push(this.createPageNumBtn(i));
-        }
-
-        if (end < total) {
-            if (end < total - 1) buttons.push(this.createEllipsis());
-            buttons.push(this.createPageNumBtn(total));
-        }
-
-        return buttons;
-    },
-
-    createPageNumBtn(page: number): HTMLElement {
-        const btn = document.createElement('button');
-        btn.className = 'q-pagination__btn';
-        if (page === this.currentPage) btn.classList.add('q-pagination__btn--active');
-        btn.textContent = String(page);
-        btn.addEventListener('click', () => this.gotoPage(page));
-        return btn;
-    },
-
-    createEllipsis(): HTMLElement {
-        const span = document.createElement('span');
-        span.className = 'q-pagination__ellipsis';
-        span.textContent = '...';
-        return span;
-    },
-
-    /**
-     * 从 props 初始化
-     */
-    __initProps(props: Record<string, any>): void {
-        if (props.currentPage) this.currentPage = props.currentPage;
-        if (props.totalPages) this.totalPages = props.totalPages;
-        if (props.totalRecords) this.totalRecords = props.totalRecords;
-        if (props.pageSize) this.pageSize = props.pageSize;
-        if (props.showFirstLast !== undefined) this.showFirstLast = props.showFirstLast;
-        if (props.showPageInfo !== undefined) this.showPageInfo = props.showPageInfo;
-    },
-};
+);

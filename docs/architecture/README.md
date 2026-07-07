@@ -7,6 +7,9 @@
 ```
 docs/architecture/
 ├── README.md                    # 本文件
+├── component-ability-index.md  # 组件能力索引（组件-能力映射、事件体系、分页设计等）
+├── ui-component-design.md      # UI 组件层设计方案
+├── token-management.md         # Token 管理设计
 ├── principles/                  # 架构原则
 │   ├── dependencies.md         # 依赖管理原则
 │   ├── imports.md              # 引用规范
@@ -30,6 +33,10 @@ docs/architecture/
 - [依赖管理原则](./principles/dependencies.md) - 包的依赖关系和层级
 - [引用规范](./principles/imports.md) - 如何正确引用其他包
 - [边界与防御原则](./principles/boundary-defense.md) - 输入校验和防御代码的职责划分
+
+### 组件层
+- [组件能力索引](./component-ability-index.md) - 组件-能力映射、事件体系、分页设计等（增量更新）
+- [UI 组件层设计方案](./ui-component-design.md) - 组件层整体设计
 
 ### 包文档
 - [包汇总](./packages/README.md) - 所有包的概览
