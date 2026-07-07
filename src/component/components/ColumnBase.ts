@@ -14,8 +14,8 @@
  * @example
  * ```js
  * // 布局定义中使用
- * { type: 'Column', field: 'name', label: '姓名', width: 120, sortable: true }
- * { type: 'Column', field: 'amount', label: '金额', hidden: true }
+ * { type: ComponentTypes.COLUMN, field: 'name', label: '姓名', width: 120, sortable: true }
+ * { type: ComponentTypes.COLUMN, field: 'amount', label: '金额', hidden: true }
  * ```
  */
 

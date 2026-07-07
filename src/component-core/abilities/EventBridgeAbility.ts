@@ -16,21 +16,21 @@
  * @example
  * ```js
  * // 字符串简写
- * { type: 'Table', eventBridge: {
+ * { type: ComponentTypes.TABLE, eventBridge: {
  *     pagination: 'myToolbar',
  *     crud: 'myToolbar',
  *     selection: 'myGrid'
  * }}
  *
  * // 完整配置
- * { type: 'Table', eventBridge: {
+ * { type: ComponentTypes.TABLE, eventBridge: {
  *     pagination: { source: 'myToolbar' },
  *     crud: { source: 'myToolbar', actions: ['create', 'delete'] },
  *     selection: { source: 'myGrid' }
  * }}
  *
  * // 自定义事件
- * { type: 'Table', eventBridge: {
+ * { type: ComponentTypes.TABLE, eventBridge: {
  *     filter: { source: 'filterBar', event: 'filterchange', handler: 'onFilterChange' }
  * }}
  * ```

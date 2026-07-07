@@ -9,18 +9,18 @@
  * @example
  * ```js
  * // 基本工具栏
- * { type: 'Toolbar', gap: 'sm' }
+ * { type: ComponentTypes.TOOLBAR, gap: 'sm' }
  *
  * // 带分页的工具栏
- * { type: 'Toolbar', gap: 'sm',
+ * { type: ComponentTypes.TOOLBAR, gap: 'sm',
  *   currentPage: 1, totalPages: 10, totalRecords: 95 }
  *
  * // 带 CRUD 的工具栏
- * { type: 'Toolbar', gap: 'sm',
+ * { type: ComponentTypes.TOOLBAR, gap: 'sm',
  *   showCreate: true, showDelete: true, showExport: true }
  *
  * // 完整功能工具栏
- * { type: 'Toolbar', gap: 'sm',
+ * { type: ComponentTypes.TOOLBAR, gap: 'sm',
  *   showCreate: true, showDelete: true,
  *   currentPage: 1, totalPages: 10, totalRecords: 95 }
  * ```

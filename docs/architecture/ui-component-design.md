@@ -104,7 +104,7 @@ class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefinition>>
 
 // 使用
 Registry.component.register({
-    type: 'Button',
+    type: ComponentTypes.BUTTON,
     component: ButtonComponent,
     defaultProps: { size: 'md', variant: 'primary' },
 });

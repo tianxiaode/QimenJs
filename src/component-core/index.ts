@@ -12,6 +12,9 @@ export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistr
 export { ComponentManager, getCmp } from './ComponentManager';
 export { ComponentEventRegistry } from './ComponentEventRegistry';
 
+// 组件类型常量
+export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
+
 // 基础能力
 export { ThemeAbility } from './abilities/ThemeAbility';
 export { StyleAbility } from './abilities/StyleAbility';

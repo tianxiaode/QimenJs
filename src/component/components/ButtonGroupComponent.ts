@@ -9,11 +9,11 @@
  * @example
  * ```js
  * {
- *   type: 'ButtonGroup', size: 'sm',
+ *   type: ComponentTypes.BUTTON_GROUP, size: 'sm',
  *   children: [
- *     { type: 'Button', text: '左对齐', selectable: true, selectGroup: 'align' },
- *     { type: 'Button', text: '居中', selectable: true, selectGroup: 'align' },
- *     { type: 'Button', text: '右对齐', selectable: true, selectGroup: 'align' },
+ *     { type: ComponentTypes.BUTTON, text: '左对齐', selectable: true, selectGroup: 'align' },
+ *     { type: ComponentTypes.BUTTON, text: '居中', selectable: true, selectGroup: 'align' },
+ *     { type: ComponentTypes.BUTTON, text: '右对齐', selectable: true, selectGroup: 'align' },
  *   ]
  * }
  * ```

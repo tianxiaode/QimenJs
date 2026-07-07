@@ -5,8 +5,8 @@
  *
  * @example
  * ```js
- * { type: 'IdColumn', field: 'id', label: 'ID' }
- * { type: 'IdColumn', field: 'id', label: 'ID', hidden: false }  // 强制显示
+ * { type: ComponentTypes.ID_COLUMN, field: 'id', label: 'ID' }
+ * { type: ComponentTypes.ID_COLUMN, field: 'id', label: 'ID', hidden: false }  // 强制显示
  * ```
  */
 

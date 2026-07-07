@@ -30,12 +30,12 @@ const RESERVED_KEYS = new Set([
  * @example
  * ```js
  * // 扁平化写法（推荐）
- * parseLayout({ type: 'Button', text: '提交', variant: 'primary' })
+ * parseLayout({ type: ComponentTypes.BUTTON, text: '提交', variant: 'primary' })
  * // 等价于
- * parseLayout({ type: 'Button', props: { text: '提交', variant: 'primary' } })
+ * parseLayout({ type: ComponentTypes.BUTTON, props: { text: '提交', variant: 'primary' } })
  *
  * // 混合写法：显式 props 优先
- * parseLayout({ type: 'Button', text: '默认', props: { text: '覆盖' } })
+ * parseLayout({ type: ComponentTypes.BUTTON, text: '默认', props: { text: '覆盖' } })
  * // → props.text === '覆盖'
  * ```
  *

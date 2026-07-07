@@ -12,7 +12,7 @@
  * }
  *
  * // 布局定义
- * { type: 'MyToolbar', showCreate: true, showDelete: true, showExport: true }
+ * { type: ComponentTypes.TOOLBAR, showCreate: true, showDelete: true, showExport: true }
  *
  * // 运行时
  * toolbar.showButton('import');

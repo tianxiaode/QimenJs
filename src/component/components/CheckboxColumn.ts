@@ -6,7 +6,7 @@
  *
  * @example
  * ```js
- * { type: 'CheckboxColumn', field: '_selected', label: '' }
+ * { type: ComponentTypes.CHECKBOX_COLUMN, field: '_selected', label: '' }
  * ```
  */
 

@@ -7,7 +7,7 @@
  * @example
  * ```js
  * // 布局定义
- * { type: 'Button', text: '提交' }
+ * { type: ComponentTypes.BUTTON, text: '提交' }
  * { type: 'Label', html: '<b>重要</b>' }
  *
  * // 运行时动态修改

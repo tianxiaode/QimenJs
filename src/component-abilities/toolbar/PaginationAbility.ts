@@ -12,7 +12,7 @@
  * }
  *
  * // 布局定义
- * { type: 'MyToolbar', currentPage: 1, totalPages: 10, totalRecords: 95 }
+ * { type: ComponentTypes.TOOLBAR, currentPage: 1, totalPages: 10, totalRecords: 95 }
  *
  * // 运行时
  * toolbar.gotoPage(3);

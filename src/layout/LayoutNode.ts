@@ -84,7 +84,7 @@ export interface ResponsiveConfig {
  * @example
  * ```js
  * {
- *     type: 'Toolbar',
+ *     type: ComponentTypes.TOOLBAR,
  *     meta: {
  *         abilities: [CrudAbility, PaginationAbility],
  *         onEntityCreated(data) { this.mgr.reload(); },

@@ -8,7 +8,7 @@
  * @example
  * ```js
  * // 布局定义
- * { type: 'Button', className: 'q-btn-primary', style: { fontSize: '16px' } }
+ * { type: ComponentTypes.BUTTON, className: 'q-btn-primary', style: { fontSize: '16px' } }
  *
  * // 运行时动态修改
  * button.addClass('active');

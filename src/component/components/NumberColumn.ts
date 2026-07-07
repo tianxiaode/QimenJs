@@ -6,9 +6,9 @@
  *
  * @example
  * ```js
- * { type: 'NumberColumn', field: 'amount', label: '金额', format: 'currency' }
- * { type: 'NumberColumn', field: 'rate', label: '比率', format: 'percent' }
- * { type: 'NumberColumn', field: 'count', label: '数量', format: 'number' }
+ * { type: ComponentTypes.NUMBER_COLUMN, field: 'amount', label: '金额', format: 'currency' }
+ * { type: ComponentTypes.NUMBER_COLUMN, field: 'rate', label: '比率', format: 'percent' }
+ * { type: ComponentTypes.NUMBER_COLUMN, field: 'count', label: '数量', format: 'number' }
  * ```
  */
 

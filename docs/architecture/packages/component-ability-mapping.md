@@ -230,21 +230,21 @@ const el = overlayRoot.getRoot();
 #### NumberColumn
 
 ```js
-{ type: 'NumberColumn', field: 'amount', label: '金额', format: 'currency' }
-{ type: 'NumberColumn', field: 'rate', label: '比率', format: 'percent' }
+{ type: ComponentTypes.NUMBER_COLUMN, field: 'amount', label: '金额', format: 'currency' }
+{ type: ComponentTypes.NUMBER_COLUMN, field: 'rate', label: '比率', format: 'percent' }
 ```
 
 #### IdColumn
 
 ```js
-{ type: 'IdColumn', field: 'id', label: 'ID' }              // 默认隐藏
-{ type: 'IdColumn', field: 'id', label: 'ID', hidden: false } // 强制显示
+{ type: ComponentTypes.ID_COLUMN, field: 'id', label: 'ID' }              // 默认隐藏
+{ type: ComponentTypes.ID_COLUMN, field: 'id', label: 'ID', hidden: false } // 强制显示
 ```
 
 #### CheckboxColumn
 
 ```js
-{ type: 'CheckboxColumn', field: '_selected', label: '' }
+{ type: ComponentTypes.CHECKBOX_COLUMN, field: '_selected', label: '' }
 ```
 
 | 方法 | 说明 |
@@ -323,7 +323,7 @@ toolbar.reorder();                // 按 position 重排 DOM
 
 ```js
 // 布局定义
-{ type: 'Toolbar', currentPage: 1, totalPages: 10, totalRecords: 95, pageSize: 10 }
+{ type: ComponentTypes.TOOLBAR, currentPage: 1, totalPages: 10, totalRecords: 95, pageSize: 10 }
 
 // 运行时
 toolbar.gotoPage(3);
@@ -346,7 +346,7 @@ toolbar.prevPage();
 
 ```js
 // 布局定义
-{ type: 'Toolbar', showCreate: true, showDelete: true, showExport: true }
+{ type: ComponentTypes.TOOLBAR, showCreate: true, showDelete: true, showExport: true }
 
 // 运行时
 toolbar.showButton('import');
@@ -404,12 +404,12 @@ Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBrid
 
 ```js
 // 工具栏
-{ type: 'Toolbar', id: 'myToolbar',
+{ type: ComponentTypes.TOOLBAR, id: 'myToolbar',
   showCreate: true, showDelete: true, showRefresh: true,
   currentPage: 1, totalPages: 10, totalRecords: 95 }
 
 // 表格 - 完整配置
-{ type: 'Table', id: 'myTable',
+{ type: ComponentTypes.TABLE, id: 'myTable',
   eventBridge: {
     pagination: { source: 'myToolbar' },
     crud: { source: 'myToolbar', actions: ['create', 'delete', 'refresh'] }
@@ -417,7 +417,7 @@ Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBrid
 }
 
 // 字符串简写
-{ type: 'Table', eventBridge: { pagination: 'myToolbar', crud: 'myToolbar' } }
+{ type: ComponentTypes.TABLE, eventBridge: { pagination: 'myToolbar', crud: 'myToolbar' } }
 ```
 
 ### CRUD action 过滤

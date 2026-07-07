@@ -20,11 +20,11 @@ QimenJs 的事件系统分为三层，每层解决不同的问题：
 
 ```typescript
 const layout = {
-    type: 'Toolbar',
+    type: ComponentTypes.TOOLBAR,
     id: 'myToolbar',
     items: [
-        { type: 'Button', text: '新建', name: 'create' },
-        { type: 'Button', text: '自定义导出', name: 'customExport' },
+        { type: ComponentTypes.BUTTON, text: '新建', name: 'create' },
+        { type: ComponentTypes.BUTTON, text: '自定义导出', name: 'customExport' },
     ],
     handlers: {
         // 直接写函数，this 指向触发事件的组件实例
@@ -40,11 +40,11 @@ const layout = {
 
 ```typescript
 const layout = {
-    type: 'Toolbar',
+    type: ComponentTypes.TOOLBAR,
     id: 'myToolbar',
     items: [
-        { type: 'Button', text: '新建', name: 'create' },
-        { type: 'Button', text: '自定义导出', name: 'customExport' },
+        { type: ComponentTypes.BUTTON, text: '新建', name: 'create' },
+        { type: ComponentTypes.BUTTON, text: '自定义导出', name: 'customExport' },
     ],
     handlers: {
         // 字符串映射：从 render 时传入的 handlers 表中查找
@@ -81,10 +81,10 @@ const result = await Renderer.getInstance().render(layout, { handlers });
 
 ```typescript
 const layout = {
-    type: 'VBox',
+    type: ComponentTypes.VBOX,
     children: [
         {
-            type: 'Toolbar',
+            type: ComponentTypes.TOOLBAR,
             id: 'userToolbar',
             // 通过 meta 注入 CrudAbility，无需定义 MyToolbar 派生类
             meta: {
@@ -93,7 +93,7 @@ const layout = {
             // CrudAbility 的按钮会自动发射 crudaction 事件
         },
         {
-            type: 'Table',
+            type: ComponentTypes.TABLE,
             id: 'userTable',
             eventBridge: {
                 crud: 'userToolbar',           // 监听工具栏的 CRUD 事件
@@ -108,10 +108,10 @@ const layout = {
 
 ```typescript
 const layout = {
-    type: 'VBox',
+    type: ComponentTypes.VBOX,
     children: [
         {
-            type: 'Toolbar',
+            type: ComponentTypes.TOOLBAR,
             id: 'exportBar',
             meta: {
                 abilities: [ClickAbility, TextAbility],
@@ -125,7 +125,7 @@ const layout = {
             },
         },
         {
-            type: 'Table',
+            type: ComponentTypes.TABLE,
             id: 'userTable',
             eventBridge: {
                 pagination: 'exportBar',
@@ -263,10 +263,10 @@ export const EntityBridgeAbility: AbilityDefinition = {
 
 ```typescript
 const layout = {
-    type: 'VBox',
+    type: ComponentTypes.VBOX,
     children: [
         {
-            type: 'Table',
+            type: ComponentTypes.TABLE,
             id: 'userTable',
             // Table 拥有 EntityManager，通过 EntityEmitAbility 发射 entity:* 事件
         },
@@ -329,10 +329,10 @@ const layout = {
 
 ```typescript
 const userPageLayout = {
-    type: 'VBox',
+    type: ComponentTypes.VBOX,
     children: [
         {
-            type: 'Toolbar',
+            type: ComponentTypes.TOOLBAR,
             id: 'userToolbar',
             // 通过 meta 注入 CrudAbility 和 PaginationAbility
             meta: {
@@ -352,7 +352,7 @@ const userPageLayout = {
             totalPages: 10,
         },
         {
-            type: 'Table',
+            type: ComponentTypes.TABLE,
             id: 'userTable',
             entityConfig: {
                 domain: 'user',
@@ -430,7 +430,7 @@ Toolbar.Pagination gotoPage(2)
 
 ```typescript
 const layout = {
-    type: 'Toolbar',
+    type: ComponentTypes.TOOLBAR,
     id: 'userToolbar',
     meta: {
         // 注入能力
@@ -474,7 +474,7 @@ class UserToolbar extends ComponentBase {
 
 // 新方式：直接在 Layout 中声明，无需派生类
 const layout = {
-    type: 'Toolbar',
+    type: ComponentTypes.TOOLBAR,
     meta: {
         abilities: [CrudAbility, PaginationAbility],
         onEntityCreated(data) { this.mgr.reload(); },

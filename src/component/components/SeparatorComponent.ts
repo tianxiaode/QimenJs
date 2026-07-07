@@ -7,8 +7,8 @@
  *
  * @example
  * ```js
- * { type: 'Separator' }           // 水平分隔（工具栏中）
- * { type: 'Separator', vertical: true }  // 垂直分隔（菜单中）
+ * { type: ComponentTypes.SEPARATOR }           // 水平分隔（工具栏中）
+ * { type: ComponentTypes.SEPARATOR, vertical: true }  // 垂直分隔（菜单中）
  * ```
  */
 

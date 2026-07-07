@@ -7,8 +7,8 @@
  * @example
  * ```typescript
  * const registrar = ComponentRegistrar.getInstance();
- * registrar.register({ type: 'Button', component: ButtonComponent });
- * const ButtonClass = registrar.get('Button');
+ * registrar.register({ type: ComponentTypes.BUTTON, component: ButtonComponent });
+ * const ButtonClass = registrar.get(ComponentTypes.BUTTON);
  * ```
  */
 

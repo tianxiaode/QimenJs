@@ -9,6 +9,7 @@ export { ComponentBase } from '@qimenjs/component-core';
 export { ComponentManager, getCmp } from '@qimenjs/component-core';
 export { ComponentRegistrar, type ComponentDefinition } from '@qimenjs/component-core';
 export { ComponentEventRegistry } from '@qimenjs/component-core';
+export { ComponentTypes, type ComponentTypeValue } from '@qimenjs/component-core';
 
 // 基础能力导出（从 component-core 重导出，保持向后兼容）
 export { ThemeAbility, StyleAbility, EventBridgeAbility } from '@qimenjs/component-core';
