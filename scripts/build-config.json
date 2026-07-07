@@ -199,6 +199,34 @@
             "rootDir": "src/oauth2",
             "dependencies": ["http", "registry", "events", "cache"],
             "packageName": "@qimen-lab/oauth2"
+        },
+        "theme": {
+            "entry": "src/theme/index.ts",
+            "outDir": "dist/theme",
+            "rootDir": "src/theme",
+            "dependencies": [],
+            "packageName": "@qimen-lab/theme"
+        },
+        "layout": {
+            "entry": "src/layout/index.ts",
+            "outDir": "dist/layout",
+            "rootDir": "src/layout",
+            "dependencies": [],
+            "packageName": "@qimen-lab/layout"
+        },
+        "renderer": {
+            "entry": "src/renderer/index.ts",
+            "outDir": "dist/renderer",
+            "rootDir": "src/renderer",
+            "dependencies": ["pipeline", "registry", "context", "events", "composable", "theme", "layout"],
+            "packageName": "@qimen-lab/renderer"
+        },
+        "component": {
+            "entry": "src/component/index.ts",
+            "outDir": "dist/component",
+            "rootDir": "src/component",
+            "dependencies": ["composable", "events", "registry", "context", "pipeline", "theme", "layout", "renderer"],
+            "packageName": "@qimen-lab/component"
         }
     },
     "build": {
