@@ -1,8 +1,8 @@
 /**
  * TableComponent 表格组件
  *
- * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ChildrenAbility]
- * 支持虚拟列表、排序、列定义（含格式化、条件显隐、条件禁用）
+ * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
+ * 支持虚拟列表、排序、列定义（含格式化、条件显隐、条件禁用）、列管理（增删移隐）
  */
 
 import { ComponentBase } from '../ComponentBase';
@@ -10,10 +10,11 @@ import { EntityAbility } from '../abilities/EntityAbility';
 import { VirtualListAbility } from '../abilities/VirtualListAbility';
 import { SortAbility } from '../abilities/SortAbility';
 import { ColumnAbility, type ColumnDefinition } from '../abilities/ColumnAbility';
+import { ColumnManageAbility } from '../abilities/ColumnManageAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
 
 export class TableComponent extends ComponentBase {
-    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ChildrenAbility];
+    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
 
     /** 行高（虚拟列表用） */
     private _rowHeight: number = 40;

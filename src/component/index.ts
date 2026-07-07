@@ -40,5 +40,9 @@ export { TableComponent } from './components/TableComponent';
 export { FormComponent } from './components/FormComponent';
 export { DialogComponent } from './components/DialogComponent';
 
+// 列与单元格基类
+export { ColumnBase } from './components/ColumnBase';
+export { CellBase } from './components/CellBase';
+
 // 动画
 export { animationsCSS } from './styles/animations';

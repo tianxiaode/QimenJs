@@ -47,6 +47,7 @@ export { SearchAbility } from './SearchAbility';
 export { SortAbility } from './SortAbility';
 export { ColumnAbility } from './ColumnAbility';
 export type { ColumnDefinition } from './ColumnAbility';
+export { ColumnManageAbility } from './ColumnManageAbility';
 export { OpenableAbility } from './OpenableAbility';
 export { LayoutAbility } from './LayoutAbility';
 

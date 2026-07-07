@@ -18,7 +18,7 @@
 | **Button** | 按钮 | TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility | 文本+点击+禁用+加载+尺寸 |
 | **Input** | 输入框 | TextAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility | 文本(标签)+值+验证+占位+禁用+尺寸 |
 | **Select** | 下拉选择 | TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility | 文本(标签)+值+选项+搜索+禁用+尺寸 |
-| **Table** | 表格 | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ChildrenAbility | 实体+虚拟滚动+排序+列定义+子组件 |
+| **Table** | 表格 | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility | 实体+虚拟滚动+排序+列定义+列管理+子组件 |
 | **Form** | 表单 | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility, ChildrenAbility | 实体+验证+提交+字段集+子组件 |
 | **Dialog** | 弹窗 | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility | 文本(标题)+开关+浮层+动画 |
 | **HBox** | 水平布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
@@ -78,6 +78,7 @@
 | **SearchAbility** | keyword (getter/setter), onSearch 回调 | — | — |
 | **SortAbility** | sortField/sortOrder (getter/setter), onSortChange 回调 | — | — |
 | **ColumnAbility** | columns (getter/setter), getVisibleColumns(row?), formatCellValue(col, row), isCellDisabled(col, row), getCellClass(col, row), ColumnDefinition 接口 | — | columns → this.columns |
+| **ColumnManageAbility** | addColumn/addColumns/removeColumn/removeColumnAt/hideColumn/showColumn/moveColumn/replaceColumn/getColumn/getColumnAt/columnCount, 事件: columnadd/columnremove/columnmove/columnreplace/columnhide/columnshow | — | — |
 | **OpenableAbility** | isOpen (getter), open()/close() 方法 | — | — |
 | **LayoutAbility** | gap/align/justify (getter/setter), 映射到 AtomicCSS class | — | — |
 
@@ -188,3 +189,57 @@ const el = overlayRoot.getRoot();
 | modal | 1060 | 弹窗 |
 | notification | 1070 | 通知 |
 | tooltip | 1080 | 提示 |
+
+## 列基类与单元格基类
+
+### ColumnBase 列基类
+
+列组件基类，派生类可直接继承，避免重复配置。
+
+| 属性 | 类型 | 说明 |
+|---|---|---|
+| field | string | 字段名 |
+| width | number \| string | 列宽 |
+| align | 'left' \| 'center' \| 'right' | 对齐方式 |
+| format | string | 预设格式化器 |
+| renderer | function | 自定义渲染函数 |
+| disabledWhen | function | 条件禁用函数 |
+| cellClassWhen | function | 条件样式函数 |
+
+**注入能力**：TextAbility(列头文本), VisibleAbility(显隐), DisableAbility(禁用), SortAbility(排序)
+
+**核心方法**：`toDefinition()` — 导出为 ColumnDefinition 对象
+
+```typescript
+// 派生示例
+class NumberColumn extends ColumnBase {
+    static override readonly abilities = [...ColumnBase.abilities, FormatAbility];
+}
+```
+
+### CellBase 单元格基类
+
+单元格组件基类，派生类可重写 `renderCell()` 实现自定义渲染。
+
+| 属性 | 类型 | 说明 |
+|---|---|---|
+| rowData | Record<string, any> | 所属行数据 |
+| columnDef | ColumnDefinition | 所属列定义 |
+| field | string | 字段名 |
+| rawValue | any | 原始值（getter） |
+
+**注入能力**：TextAbility(内容), DisableAbility(禁用)
+
+**核心方法**：
+- `renderCell()` — 渲染单元格内容（可重写）
+- `update(props)` — 更新行数据/列定义
+
+```typescript
+// 派生示例
+class LinkCell extends CellBase {
+    static override readonly abilities = [...CellBase.abilities, ClickAbility];
+    override renderCell(): void {
+        this.el.innerHTML = `<a href="#">${this.rawValue}</a>`;
+    }
+}
+```
