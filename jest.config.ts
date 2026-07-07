@@ -51,6 +51,12 @@ const config = {
     '^@qimenjs/mime$': '<rootDir>/src/mime',
     '^@qimenjs/pattern$': '<rootDir>/src/pattern',
     '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
+    '^@qimenjs/events$': '<rootDir>/src/events',
+    '^@qimenjs/theme$': '<rootDir>/src/theme',
+    '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
+    '^@qimenjs/component$': '<rootDir>/src/component',
+    '^@qimenjs/layout$': '<rootDir>/src/layout',
+    '^@qimenjs/renderer$': '<rootDir>/src/renderer'
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

@@ -17,6 +17,11 @@ export const ValueAbility: AbilityDefinition = {
         set(val: any): void {
             this.setAbilityState('ValueAbility:value', val);
             this.markDirty();
+            // 调用 onChange 回调
+            const onChange = this.abilityState('ValueAbility:onChange', () => undefined) as ((value: any) => void) | undefined;
+            if (typeof onChange === 'function') {
+                onChange(val);
+            }
         },
     },
 

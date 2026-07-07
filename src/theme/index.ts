@@ -10,3 +10,6 @@ export * from './types';
 // 核心实现导出
 export { ThemeManager, flattenTokens } from './ThemeManager';
 export { AtomicCSS } from './AtomicCSS';
+
+// 预设主题导出
+export { lightTheme, darkTheme } from './presets';

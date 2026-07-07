@@ -75,7 +75,7 @@ function parseHandlers(handlers: Record<string, any>): Record<string, string | H
  */
 function normalizeHandler(handler: any): string | HandlerAction {
     if (typeof handler === 'string') {
-        return handler;
+        return { action: handler } as HandlerAction;
     }
     if (handler && typeof handler === 'object' && 'action' in handler) {
         return handler as HandlerAction;

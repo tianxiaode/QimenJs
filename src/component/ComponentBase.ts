@@ -96,6 +96,10 @@ export class ComponentBase extends ComposableBase {
             if (this.id) {
                 this.el.setAttribute(Q_DATA_ID, this.id);
             }
+
+            // 注册到 ComponentManager
+            const { ComponentManager } = require('./ComponentManager');
+            ComponentManager.getInstance().register(this);
         }
     }
 
