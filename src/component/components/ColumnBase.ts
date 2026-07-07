@@ -30,25 +30,25 @@ export class ColumnBase extends ComponentBase {
     static override readonly abilities = [TextAbility, VisibleAbility, DisableAbility, SortAbility];
 
     /** 列字段名 */
-    private _field: string = '';
+    protected _field: string = '';
 
     /** 列宽 */
-    private _width: number | string = '';
+    protected _width: number | string = '';
 
     /** 对齐方式 */
-    private _align: 'left' | 'center' | 'right' = 'left';
+    protected _align: 'left' | 'center' | 'right' = 'left';
 
     /** 格式化类型 */
-    private _format: string = '';
+    protected _format: string = '';
 
     /** 自定义渲染函数 */
-    private _renderer: ((value: any, row: Record<string, any>, col: ColumnDefinition) => string) | null = null;
+    protected _renderer: ((value: any, row: Record<string, any>, col: ColumnDefinition) => string) | null = null;
 
     /** 条件禁用函数 */
-    private _disabledWhen: ((value: any, row: Record<string, any>, col: ColumnDefinition) => boolean) | null = null;
+    protected _disabledWhen: ((value: any, row: Record<string, any>, col: ColumnDefinition) => boolean) | null = null;
 
     /** 条件样式函数 */
-    private _cellClassWhen: ((value: any, row: Record<string, any>, col: ColumnDefinition) => string) | null = null;
+    protected _cellClassWhen: ((value: any, row: Record<string, any>, col: ColumnDefinition) => string) | null = null;
 
     constructor(props?: Record<string, any>) {
         super(props);

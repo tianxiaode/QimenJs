@@ -49,5 +49,10 @@ export { DialogComponent } from './components/DialogComponent';
 export { ColumnBase } from './components/ColumnBase';
 export { CellBase } from './components/CellBase';
 
+// 派生列
+export { NumberColumn } from './components/NumberColumn';
+export { IdColumn } from './components/IdColumn';
+export { CheckboxColumn } from './components/CheckboxColumn';
+
 // 动画
 export { animationsCSS } from './styles/animations';

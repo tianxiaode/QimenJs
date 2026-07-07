@@ -214,12 +214,46 @@ const el = overlayRoot.getRoot();
 
 **核心方法**：`toDefinition()` — 导出为 ColumnDefinition 对象
 
-```typescript
-// 派生示例
-class NumberColumn extends ColumnBase {
-    static override readonly abilities = [...ColumnBase.abilities, FormatAbility];
-}
+### 派生列
+
+| 列组件 | 预设配置 | 额外能力 | 用途 |
+|---|---|---|---|
+| **NumberColumn** | align='right', format 支持 | — | 数字列，预设右对齐+格式化 |
+| **IdColumn** | width=60, align='center', sortable=false, 默认隐藏 | — | ID列，窄宽居中不可排序 |
+| **CheckboxColumn** | width=40, align='center', sortable=false | SelectableAbility | 复选框列，行选择管理 |
+
+#### NumberColumn
+
+```js
+{ type: 'NumberColumn', field: 'amount', label: '金额', format: 'currency' }
+{ type: 'NumberColumn', field: 'rate', label: '比率', format: 'percent' }
 ```
+
+#### IdColumn
+
+```js
+{ type: 'IdColumn', field: 'id', label: 'ID' }              // 默认隐藏
+{ type: 'IdColumn', field: 'id', label: 'ID', hidden: false } // 强制显示
+```
+
+#### CheckboxColumn
+
+```js
+{ type: 'CheckboxColumn', field: '_selected', label: '' }
+```
+
+| 方法 | 说明 |
+|---|---|
+| selectRow(rowId) | 选中行 |
+| deselectRow(rowId) | 取消选中行 |
+| toggleRow(rowId) | 切换行选中 |
+| selectAll(rowIds) | 全选 |
+| clearSelection() | 清空选中 |
+| isRowSelected(rowId) | 判断行是否选中 |
+| selectedRows | 已选中的行 ID 集合 |
+| selectedCount | 选中行数 |
+
+事件：`rowselect` / `selectionchange`
 
 ### CellBase 单元格基类
 
