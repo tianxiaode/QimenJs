@@ -35,6 +35,11 @@ export { VBoxComponent } from './components/VBoxComponent';
 export { GridComponent } from './components/GridComponent';
 export { SpaceComponent } from './components/SpaceComponent';
 
+// 工具栏组件
+export { ToolbarComponent } from './components/ToolbarComponent';
+export { ButtonGroupComponent } from './components/ButtonGroupComponent';
+export { SeparatorComponent } from './components/SeparatorComponent';
+
 // 高级组件
 export { TableComponent } from './components/TableComponent';
 export { FormComponent } from './components/FormComponent';

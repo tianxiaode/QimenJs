@@ -21,6 +21,9 @@
 | **Table** | 表格 | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility | 实体+虚拟滚动+排序+列定义+列管理+子组件 |
 | **Form** | 表单 | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility, ChildrenAbility | 实体+验证+提交+字段集+子组件 |
 | **Dialog** | 弹窗 | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility | 文本(标题)+开关+浮层+动画 |
+| **Toolbar** | 工具栏 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
+| **ButtonGroup** | 按钮组 | ChildrenAbility, SizeAbility, DisableAbility | 子组件+尺寸(子按钮继承)+禁用(子按钮继承) |
+| **Separator** | 分隔符 | VisibleAbility | 显隐 |
 | **HBox** | 水平布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
 | **VBox** | 垂直布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
 | **Grid** | 网格布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
@@ -38,6 +41,7 @@
 | **LoadingAbility** | loading (getter/setter), 自动添加 BEM class + aria-busy | — | loading → this.loading |
 | **SizeAbility** | size (getter/setter: sm/md/lg), 自动切换 BEM class | — | size → this.size |
 | **ClickAbility** | onClick (getter/setter), click() 触发方法 | — | onClick → this.onClick |
+| **SelectableAbility** | selectable/selected/selectGroup (getter/setter), select()/deselect()/toggle(), onSelectChange 回调, 互斥组自动取消同组选中, 事件: selectchange | — | selectable/selected/selectGroup → 对应属性 |
 
 ### 数据能力
 
@@ -95,6 +99,7 @@
 | ValidateAbility | 2 | Input, Form |
 | EntityAbility | 2 | Table, Form |
 | ClickAbility | 1 | Button |
+| SelectableAbility | 0 (按需) | 工具栏按钮等可选中组件 |
 | LoadingAbility | 1 | Button |
 | PlaceholderAbility | 1 | Input |
 | OptionsAbility | 1 | Select |
@@ -112,7 +117,6 @@
 
 | 能力 | 用途 | 适用组件 | 优先级 |
 |---|---|---|---|
-| **CheckedAbility** | 选中状态（checked, toggle, onChange） | Checkbox, Radio, Switch | 高 |
 | **TabAbility** | 标签页切换（activeTab, tabs, onTabChange） | Tabs | 高 |
 | **LabelAbility** | 表单控件标签（label + for 关联） | Input, Select, Checkbox, Radio | 中 |
 | **IconAbility** | 图标管理（icon getter/setter, setIcon 链式） | Button, IconButton | 低 |

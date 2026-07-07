@@ -42,6 +42,7 @@ export { AnimationAbility } from './AnimationAbility';
 
 // 交互能力
 export { ClickAbility } from './ClickAbility';
+export { SelectableAbility } from './SelectableAbility';
 export { OptionsAbility } from './OptionsAbility';
 export { SearchAbility } from './SearchAbility';
 export { SortAbility } from './SortAbility';
