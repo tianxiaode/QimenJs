@@ -21,10 +21,7 @@
 | **Table** | 表格 | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility | 实体+虚拟滚动+排序+列定义+列管理+子组件 |
 | **Form** | 表单 | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility, ChildrenAbility | 实体+验证+提交+字段集+子组件 |
 | **Dialog** | 弹窗 | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility | 文本(标题)+开关+浮层+动画 |
-| **Toolbar** | 工具栏 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画+位置排序 |
-| **PaginationToolbar** | 分页工具栏 | (继承 Toolbar) | 首页/上一页/页码/下一页/末页+页码信息 |
-| **CrudToolbar** | CRUD工具栏 | (继承 Toolbar) | 新建/编辑/删除/刷新/导入/导出/保存 |
-| **FunctionToolbar** | 功能工具栏 | (继承 Toolbar) | CRUD+分页组合，左侧CRUD右侧分页 |
+| **Toolbar** | 工具栏 | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility, PaginationAbility, CrudAbility | 布局+子组件+动画+位置排序+分页+CRUD |
 | **ButtonGroup** | 按钮组 | ChildrenAbility, SizeAbility, DisableAbility | 子组件+尺寸(子按钮继承)+禁用(子按钮继承) |
 | **Separator** | 分隔符 | VisibleAbility | 显隐 |
 | **HBox** | 水平布局容器 | LayoutAbility, ChildrenAbility, AnimationAbility | 布局参数+子组件+动画 |
@@ -88,6 +85,9 @@
 | **ColumnManageAbility** | addColumn/addColumns/removeColumn/removeColumnAt/hideColumn/showColumn/moveColumn/replaceColumn/getColumn/getColumnAt/columnCount, 事件: columnadd/columnremove/columnmove/columnreplace/columnhide/columnshow | — | — |
 | **OpenableAbility** | isOpen (getter), open()/close() 方法 | — | — |
 | **LayoutAbility** | gap/align/justify (getter/setter), 映射到 AtomicCSS class | — | — |
+| **ToolbarAbility** | sortedChildren (getter), insertAt/insertBeforeItem/insertAfterItem/removeAtPosition/hideAtPosition/showAtPosition/getAtPosition/reorder | — | — |
+| **PaginationAbility** | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo (getter/setter), gotoPage/prevPage/nextPage/firstPage/lastPage/renderPagination, PAGINATION_POSITIONS 常量 | — | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo |
+| **CrudAbility** | crudButtons (getter), showButton/hideButton/toggleButton/isButtonVisible/renderCrud, CRUD_POSITIONS 常量 | — | show*/按钮配置 |
 
 ## 能力使用频次
 
@@ -287,15 +287,25 @@ class LinkCell extends CellBase {
 
 ## 工具栏体系
 
-### ToolbarComponent 位置排序
+工具栏功能全部通过能力注入，任何组件都可以复用。要添加新功能，写新能力即可。
 
-工具栏支持 `position` 值排序，子组件按 position 从小到大排列：
+### 能力组合
+
+| 组合 | 效果 |
+|---|---|
+| ToolbarAbility | 基础工具栏：位置排序、按位置插入/移除/显隐 |
+| ToolbarAbility + PaginationAbility | 分页工具栏 |
+| ToolbarAbility + CrudAbility | CRUD 工具栏 |
+| ToolbarAbility + PaginationAbility + CrudAbility | 完整功能工具栏 |
+| ToolbarAbility + 自定义 Ability | 任意扩展 |
+
+### ToolbarAbility 位置排序
 
 ```js
 // 插入到指定位置
 toolbar.insertAt(15, myButton);   // 在 10 和 20 之间
-toolbar.insertBefore(refBtn, newBtn);  // 在某组件前
-toolbar.insertAfter(refBtn, newBtn);   // 在某组件后
+toolbar.insertBeforeItem(refBtn, newBtn);  // 在某组件前
+toolbar.insertAfterItem(refBtn, newBtn);   // 在某组件后
 
 // 按 position 操作
 toolbar.hideAtPosition(20);       // 隐藏 position=20 的组件
@@ -307,44 +317,39 @@ toolbar.getAtPosition(20);        // 获取
 toolbar.reorder();                // 按 position 重排 DOM
 ```
 
-### PaginationToolbar 分页工具栏
+### PaginationAbility 分页
 
 ```js
-{
-  type: 'PaginationToolbar',
-  currentPage: 1,
-  totalPages: 10,
-  totalRecords: 95,
-  pageSize: 10,
-  showFirstLast: true,   // 首页/末页按钮
-  showInfo: true,        // 页码信息
-}
+// 布局定义
+{ type: 'Toolbar', currentPage: 1, totalPages: 10, totalRecords: 95, pageSize: 10 }
+
+// 运行时
+toolbar.gotoPage(3);
+toolbar.nextPage();
+toolbar.prevPage();
 ```
 
 | 位置常量 | 值 | 说明 |
 |---|---|---|
-| PAGINATION_POSITIONS.FIRST | 10 | 首页 |
-| PAGINATION_POSITIONS.PREV | 20 | 上一页 |
-| PAGINATION_POSITIONS.PAGES | 30 | 页码区 |
-| PAGINATION_POSITIONS.NEXT | 40 | 下一页 |
-| PAGINATION_POSITIONS.LAST | 50 | 末页 |
-| PAGINATION_POSITIONS.INFO | 60 | 页码信息 |
+| PAGINATION_POSITIONS.FIRST | 610 | 首页 |
+| PAGINATION_POSITIONS.PREV | 620 | 上一页 |
+| PAGINATION_POSITIONS.PAGES | 630 | 页码区 |
+| PAGINATION_POSITIONS.NEXT | 640 | 下一页 |
+| PAGINATION_POSITIONS.LAST | 650 | 末页 |
+| PAGINATION_POSITIONS.INFO | 660 | 页码信息 |
 
 事件：`pagechange`
 
-### CrudToolbar CRUD 工具栏
+### CrudAbility CRUD 操作
 
 ```js
-{
-  type: 'CrudToolbar',
-  showCreate: true,    // 新建
-  showEdit: true,      // 编辑
-  showDelete: true,    // 删除
-  showRefresh: true,   // 刷新
-  showImport: false,   // 导入
-  showExport: true,    // 导出
-  showSave: false,     // 保存
-}
+// 布局定义
+{ type: 'Toolbar', showCreate: true, showDelete: true, showExport: true }
+
+// 运行时
+toolbar.showButton('import');
+toolbar.hideButton('delete');
+toolbar.toggleButton('save');
 ```
 
 | 位置常量 | 值 | 说明 |
@@ -357,30 +362,23 @@ toolbar.reorder();                // 按 position 重排 DOM
 | CRUD_POSITIONS.EXPORT | 60 | 导出 |
 | CRUD_POSITIONS.SAVE | 70 | 保存 |
 
-运行时显隐：`showButton(name)` / `hideButton(name)` / `toggleButton(name)`
-
 事件：`crudaction`（{ action: 'create' | 'edit' | 'delete' | ... }）
 
-### FunctionToolbar 功能工具栏
+### 自定义工具栏示例
 
-CRUD + 分页组合，左侧 CRUD 按钮，右侧分页控件：
+```typescript
+// 只需写新能力，不用改组件代码
+const FilterAbility: AbilityDefinition = {
+    filterText: { get() { ... }, set(v) { ... } },
+    renderFilter() { ... },
+    __initProps(props) { ... },
+};
 
-```js
-{
-  type: 'FunctionToolbar',
-  showCreate: true,
-  showDelete: true,
-  showExport: true,
-  currentPage: 1,
-  totalPages: 10,
-  totalRecords: 95,
+// 组合使用
+class MyToolbar extends ComponentBase {
+    static abilities = [
+        LayoutAbility, ChildrenAbility, ToolbarAbility,
+        CrudAbility, PaginationAbility, FilterAbility,
+    ];
 }
 ```
-
-| 位置常量 | 值 | 说明 |
-|---|---|---|
-| FUNCTION_POSITIONS.CRUD_* | 10-70 | CRUD 区域 |
-| FUNCTION_POSITIONS.MIDDLE_SEPARATOR | 500 | 中间弹性空间 |
-| FUNCTION_POSITIONS.PAGINATION_* | 610-660 | 分页区域 |
-
-事件：`crudaction` + `pagechange`

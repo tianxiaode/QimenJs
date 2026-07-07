@@ -52,6 +52,11 @@ export { ColumnManageAbility } from './ColumnManageAbility';
 export { OpenableAbility } from './OpenableAbility';
 export { LayoutAbility } from './LayoutAbility';
 
+// 工具栏能力
+export { ToolbarAbility } from './ToolbarAbility';
+export { PaginationAbility, PAGINATION_POSITIONS } from './PaginationAbility';
+export { CrudAbility, CRUD_POSITIONS } from './CrudAbility';
+
 // 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
 // 保留文件以避免破坏性变更，但不再推荐使用
 export { EventBindingAbility } from './EventBindingAbility';

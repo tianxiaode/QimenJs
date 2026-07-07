@@ -37,9 +37,6 @@ export { SpaceComponent } from './components/SpaceComponent';
 
 // 工具栏组件
 export { ToolbarComponent } from './components/ToolbarComponent';
-export { PaginationToolbar, PAGINATION_POSITIONS } from './components/PaginationToolbar';
-export { CrudToolbar, CRUD_POSITIONS, type CrudButtonConfig } from './components/CrudToolbar';
-export { FunctionToolbar, FUNCTION_POSITIONS } from './components/FunctionToolbar';
 export { ButtonGroupComponent } from './components/ButtonGroupComponent';
 export { SeparatorComponent } from './components/SeparatorComponent';
 
