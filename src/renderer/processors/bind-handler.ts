@@ -103,6 +103,14 @@ export const bindHandlerProcessor: RenderProcessor = {
                             fn(ctx.component, domEvent);
                         });
                     }
+                } else if (typeof h === 'function') {
+                    // 函数引用：JS 对象字面量 Layout 直接写函数
+                    if (ctx.component.el && typeof ctx.component.onDom === 'function') {
+                        const boundFn = h.bind(ctx.component);
+                        ctx.component.onDom(event, (domEvent: Event) => {
+                            boundFn(ctx.component, domEvent);
+                        });
+                    }
                 } else if (typeof h === 'object' && 'action' in h) {
                     // HandlerAction：结构化动作
                     if (ctx.component.el && typeof ctx.component.onDom === 'function') {

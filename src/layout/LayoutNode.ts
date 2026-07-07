@@ -71,6 +71,37 @@ export interface ResponsiveConfig {
 }
 
 /**
+ * Layout 元数据定义
+ *
+ * meta 是一个扁平对象，在 JS 对象字面量 Layout 中声明额外的能力、方法和自定义数据。
+ * 渲染时，框架用与 ComposableBase.setupAbilityDefinition 相同的逻辑将 meta 中的属性
+ * 复制到组件实例上：
+ * - abilities 数组：展开后逐个注入（getter/setter/方法/值）
+ * - 函数：bind 到组件实例后注入
+ * - getter/setter 对象：直接作为 PropertyDescriptor 注入
+ * - 普通值：直接注入
+ *
+ * @example
+ * ```js
+ * {
+ *     type: 'Toolbar',
+ *     meta: {
+ *         abilities: [CrudAbility, PaginationAbility],
+ *         onEntityCreated(data) { this.mgr.reload(); },
+ *         beforeList() { console.log('loading...'); },
+ *         customTitle: '我的工具栏',
+ *     }
+ * }
+ * ```
+ */
+export interface LayoutMeta {
+    /** 额外能力数组，展开后逐个注入组件实例 */
+    abilities?: any[];
+    /** 其他自定义属性（方法、getter/setter、数据） */
+    [key: string]: any;
+}
+
+/**
  * Layout 节点定义
  *
  * 描述组件类型、属性、子节点、事件处理器等，是渲染的核心数据结构。
@@ -92,8 +123,19 @@ export interface LayoutNode {
     /** 子节点 */
     children?: LayoutNode[];
 
-    /** 事件处理器映射：字符串映射 / HandlerAction / 混合数组 */
-    handlers?: Record<string, string | HandlerAction | (string | HandlerAction)[]>;
+    /**
+     * 元数据：额外能力、自定义方法和数据
+     *
+     * 渲染时自动注入到组件实例，无需定义派生类。
+     * - abilities 数组展开后逐个注入
+     * - 函数 bind 到组件实例后注入
+     * - getter/setter 对象直接作为 PropertyDescriptor 注入
+     * - 普通值直接注入
+     */
+    meta?: LayoutMeta;
+
+    /** 事件处理器映射：字符串映射 / HandlerAction / 函数 / 混合数组 */
+    handlers?: Record<string, string | HandlerAction | ((...args: any[]) => any) | (string | HandlerAction | ((...args: any[]) => any))[]>;
 
     /** 条件渲染：boolean 或表达式字符串 */
     visible?: boolean | string;

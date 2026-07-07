@@ -15,7 +15,7 @@ import type { LayoutNode, HandlerAction } from './LayoutNode';
  * 用户定义布局时，非保留字的顶层属性会自动合并到 props 中。
  */
 const RESERVED_KEYS = new Set([
-    'type', 'id', 'field', 'props', 'children', 'handlers',
+    'type', 'id', 'field', 'props', 'children', 'handlers', 'meta',
     'slots', 'visible', 'repeat', 'responsive', 'stateTriggers',
 ]);
 
@@ -68,6 +68,11 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
         node.handlers = parseHandlers(layout.handlers);
     }
 
+    // 解析 meta
+    if (layout.meta && typeof layout.meta === 'object') {
+        node.meta = layout.meta;
+    }
+
     // 解析 slots
     if (layout.slots) {
         node.slots = parseSlots(layout.slots);
@@ -100,8 +105,8 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
 /**
  * 解析 handlers 映射
  */
-function parseHandlers(handlers: Record<string, any>): Record<string, string | HandlerAction | (string | HandlerAction)[]> {
-    const result: Record<string, string | HandlerAction | (string | HandlerAction)[]> = {};
+function parseHandlers(handlers: Record<string, any>): Record<string, string | HandlerAction | ((...args: any[]) => any) | (string | HandlerAction | ((...args: any[]) => any))[]> {
+    const result: Record<string, string | HandlerAction | ((...args: any[]) => any) | (string | HandlerAction | ((...args: any[]) => any))[]> = {};
 
     for (const [event, handler] of Object.entries(handlers)) {
         if (Array.isArray(handler)) {
@@ -117,9 +122,12 @@ function parseHandlers(handlers: Record<string, any>): Record<string, string | H
 /**
  * 标准化单个 handler
  */
-function normalizeHandler(handler: any): string | HandlerAction {
+function normalizeHandler(handler: any): string | HandlerAction | ((...args: any[]) => any) {
     if (typeof handler === 'string') {
         return { action: handler } as HandlerAction;
+    }
+    if (typeof handler === 'function') {
+        return handler;
     }
     if (handler && typeof handler === 'object' && 'action' in handler) {
         return handler as HandlerAction;

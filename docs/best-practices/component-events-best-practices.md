@@ -16,7 +16,7 @@ QimenJs 的事件系统分为三层，每层解决不同的问题：
 
 当自定义按钮只在一个页面使用，不需要跨组件通信时，直接使用 `handlers`。
 
-### 布局定义
+### 方式 A：handlers 中直接写函数（推荐）
 
 ```typescript
 const layout = {
@@ -27,25 +27,40 @@ const layout = {
         { type: 'Button', text: '自定义导出', name: 'customExport' },
     ],
     handlers: {
-        // DOM click 事件 → 从 handlers 表中查找处理函数
-        click: 'handleCustomExport',
+        // 直接写函数，this 指向触发事件的组件实例
+        click(component, domEvent) {
+            const data = table.getData();
+            downloadExcel(data);
+        },
     },
 };
 ```
 
-### 渲染时传入 handlers
+### 方式 B：handlers 中使用字符串映射
 
 ```typescript
+const layout = {
+    type: 'Toolbar',
+    id: 'myToolbar',
+    items: [
+        { type: 'Button', text: '新建', name: 'create' },
+        { type: 'Button', text: '自定义导出', name: 'customExport' },
+    ],
+    handlers: {
+        // 字符串映射：从 render 时传入的 handlers 表中查找
+        click: 'handleCustomExport',
+    },
+};
+
+// 渲染时传入 handlers
 const handlers = {
     handleCustomExport(component, domEvent) {
-        // component 是触发事件的组件实例
-        // 直接执行业务逻辑
         const data = table.getData();
         downloadExcel(data);
     },
 };
 
-renderer.render(layout, { handlers });
+const result = await Renderer.getInstance().render(layout, { handlers });
 ```
 
 ### 适用场景
@@ -60,35 +75,26 @@ renderer.render(layout, { handlers });
 
 当自定义按钮需要触发其他组件（如表格）的响应时，使用 `eventBridge`。
 
-### 方式 A：使用内置 CRUD 桥接
+### 方式 A：使用内置 CRUD 桥接 + meta 注入能力
 
-如果自定义按钮属于 CRUD 操作范畴，直接复用 `CrudAbility`：
-
-```typescript
-// 自定义工具栏组件
-class MyToolbar extends ComponentBase {
-    static readonly abilities = [CrudAbility];
-
-    // CrudAbility 会自动渲染 CRUD 按钮并发射 crudaction 事件
-    // 也可以手动触发：
-    customCreate() {
-        this.emit(CRUD_EVENTS.ACTION, { action: CRUD_ACTIONS.CREATE });
-    }
-}
-```
+不再需要定义派生类，直接在 Layout 中通过 `meta` 注入能力：
 
 ```typescript
-// 布局定义：工具栏的 CRUD 事件桥接到表格
 const layout = {
     type: 'VBox',
     children: [
         {
-            type: 'MyToolbar',
+            type: 'Toolbar',
             id: 'userToolbar',
+            // 通过 meta 注入 CrudAbility，无需定义 MyToolbar 派生类
+            meta: {
+                abilities: [CrudAbility],
+            },
             // CrudAbility 的按钮会自动发射 crudaction 事件
         },
         {
             type: 'Table',
+            id: 'userTable',
             eventBridge: {
                 crud: 'userToolbar',           // 监听工具栏的 CRUD 事件
                 pagination: 'userToolbar',     // 监听工具栏的分页事件
@@ -98,37 +104,29 @@ const layout = {
 };
 ```
 
-### 方式 B：使用自定义事件桥接
-
-如果自定义按钮不属于 CRUD 范畴（如"导出"、"审批"、"同步"等），使用 `eventBridge` 的自定义 key：
+### 方式 B：使用自定义事件桥接 + meta 注入方法和能力
 
 ```typescript
-// 自定义工具栏组件
-class ExportToolbar extends ComponentBase {
-    static readonly abilities = [ClickAbility, TextAbility];
-
-    // 手动发射自定义事件
-    doExport() {
-        this.emit('export', { format: 'excel', scope: 'all' });
-    }
-
-    doApprove() {
-        this.emit('approve', { ids: this.getSelectedIds() });
-    }
-}
-```
-
-```typescript
-// 布局定义：自定义事件桥接
 const layout = {
     type: 'VBox',
     children: [
         {
-            type: 'ExportToolbar',
+            type: 'Toolbar',
             id: 'exportBar',
+            meta: {
+                abilities: [ClickAbility, TextAbility],
+                // 通过 meta 注入方法，this 指向组件实例
+                doExport() {
+                    this.emit('export', { format: 'excel', scope: 'all' });
+                },
+                doApprove() {
+                    this.emit('approve', { ids: this.getSelectedIds() });
+                },
+            },
         },
         {
             type: 'Table',
+            id: 'userTable',
             eventBridge: {
                 pagination: 'exportBar',
                 crud: { source: 'exportBar', actions: ['create', 'delete'] },
@@ -140,22 +138,6 @@ const layout = {
         },
     ],
 };
-```
-
-```typescript
-// Table 组件中定义处理方法
-class TableComponent extends ComponentBase {
-    // eventBridge 桥接后自动调用
-    onExport(e) {
-        const { format, scope } = e;
-        // 执行导出逻辑
-    }
-
-    onApprove(e) {
-        const { ids } = e;
-        // 执行审批逻辑
-    }
-}
 ```
 
 ### 自定义桥接的默认值规则
@@ -352,16 +334,22 @@ const userPageLayout = {
         {
             type: 'Toolbar',
             id: 'userToolbar',
-            items: [
-                { type: 'Button', text: '新建', name: 'create' },
-                { type: 'Button', text: '删除', name: 'delete' },
-                { type: 'Button', text: '导出', name: 'export' },
-            ],
-            // CrudAbility 自动为 create/delete 按钮发射 crudaction 事件
-            // 导出按钮使用 handlers 处理
-            handlers: {
-                click: 'handleExport',
+            // 通过 meta 注入 CrudAbility 和 PaginationAbility
+            meta: {
+                abilities: [CrudAbility, PaginationAbility],
+                // 导出按钮的处理方法
+                onExport(e) {
+                    const table = ComponentManager.getInstance().get('userTable');
+                    if (table) {
+                        const data = table.mgr?.rawData;
+                        downloadExcel(data, 'users.xlsx');
+                    }
+                },
             },
+            showCreate: true,
+            showDelete: true,
+            currentPage: 1,
+            totalPages: 10,
         },
         {
             type: 'Table',
@@ -385,23 +373,6 @@ const userPageLayout = {
         },
     ],
 };
-```
-
-### 渲染与 handlers
-
-```typescript
-const handlers = {
-    handleExport(component, domEvent) {
-        // 找到 Table 组件，获取数据并导出
-        const table = ComponentManager.getInstance().get('userTable');
-        if (table) {
-            const data = table.mgr?.rawData;
-            downloadExcel(data, 'users.xlsx');
-        }
-    },
-};
-
-renderer.render(userPageLayout, { handlers });
 ```
 
 ### 事件流详解
@@ -442,6 +413,77 @@ Toolbar.Pagination gotoPage(2)
 
 ---
 
+## meta 字段详解
+
+`meta` 是 Layout 中的元数据字段，用于在 JS 对象字面量 Layout 中声明额外的能力、方法和自定义数据，渲染时自动注入到组件实例，无需定义派生类。
+
+### 注入规则
+
+| meta 中的值类型 | 注入方式 | 示例 |
+|---------------|---------|------|
+| `abilities` 数组 | 展开后逐个注入 | `abilities: [CrudAbility, PaginationAbility]` |
+| 函数 | bind 到组件实例后注入 | `onExport(e) { ... }` |
+| getter/setter 对象 | 直接作为 PropertyDescriptor 注入 | `count: { get() { ... }, set(v) { ... } }` |
+| 普通值 | 直接注入 | `customTitle: '我的工具栏'` |
+
+### 完整示例
+
+```typescript
+const layout = {
+    type: 'Toolbar',
+    id: 'userToolbar',
+    meta: {
+        // 注入能力
+        abilities: [CrudAbility, PaginationAbility],
+
+        // 注入方法（this 指向组件实例）
+        onEntityCreated(data) {
+            this.mgr.reload();
+        },
+        beforeList() {
+            console.log('loading...');
+        },
+
+        // 注入 getter/setter
+        filterKeyword: {
+            get() { return this.abilityState('filterKeyword', () => ''); },
+            set(v) { this.setAbilityState('filterKeyword', v); this.mgr?.filter(v); },
+        },
+
+        // 注入自定义数据
+        customTitle: '用户管理工具栏',
+        exportFormat: 'excel',
+    },
+    showCreate: true,
+    currentPage: 1,
+    totalPages: 10,
+};
+```
+
+### 与定义派生类的对比
+
+```typescript
+// 旧方式：需要定义派生类
+class UserToolbar extends ComponentBase {
+    static readonly abilities = [CrudAbility, PaginationAbility];
+
+    onEntityCreated(data) {
+        this.mgr.reload();
+    }
+}
+
+// 新方式：直接在 Layout 中声明，无需派生类
+const layout = {
+    type: 'Toolbar',
+    meta: {
+        abilities: [CrudAbility, PaginationAbility],
+        onEntityCreated(data) { this.mgr.reload(); },
+    },
+};
+```
+
+---
+
 ## 决策指南：选择哪种事件机制
 
 ```
@@ -449,7 +491,7 @@ Toolbar.Pagination gotoPage(2)
 │
 ├── 仅执行一次性逻辑（导出、跳转、弹窗）
 │   └── 使用 handlers
-│       handlers: { click: 'handleXxx' }
+│       handlers: { click: (component, event) => { ... } }
 │
 ├── 需要其他组件响应（Toolbar → Table）
 │   ├── 属于 CRUD/分页/选择

@@ -69,8 +69,9 @@ export function validateLayout(node: LayoutNode): ValidationResult {
 /**
  * 判断 handler 是否合法
  */
-function isValidHandler(handler: any): handler is string | HandlerAction {
+function isValidHandler(handler: any): handler is string | HandlerAction | ((...args: any[]) => any) {
     if (typeof handler === 'string') return true;
+    if (typeof handler === 'function') return true;
     if (handler && typeof handler === 'object' && 'action' in handler) return true;
     return false;
 }
