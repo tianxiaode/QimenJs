@@ -7,7 +7,7 @@
  * 监听的事件（使用 component-events.ts 常量）：
  * - CRUD_EVENTS.ACTION → mgr.create() / mgr.update() / mgr.delete() / mgr.toggle()
  * - PAGINATION_EVENTS.CHANGE → mgr.loadPage() / mgr.changeSize()
- * - 'searchchange' → mgr.filter() / mgr.searchBy()
+ * - 'searchchange' → SEARCH_EVENTS.CHANGE → mgr.filter() / mgr.searchBy()
  * - 'refresh' → mgr.reload()
  *
  * 钩子函数约定：
@@ -23,7 +23,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { CRUD_EVENTS, CRUD_ACTIONS, PAGINATION_EVENTS } from '@qimenjs/events';
+import { CRUD_EVENTS, CRUD_ACTIONS, PAGINATION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
 import { string } from '@qimenjs/utils';
 
 /**
@@ -160,7 +160,7 @@ export const EntityListenAbility: AbilityDefinition = {
      */
     _bindSearchListener(): void {
         if (typeof this.on === 'function') {
-            const off = this.on('searchchange', (e: any) => {
+            const off = this.on(SEARCH_EVENTS.CHANGE, (e: any) => {
                 this._handleSearchChange(e);
             });
             if (typeof off === 'function') this.onCleanup(off);
@@ -180,7 +180,8 @@ export const EntityListenAbility: AbilityDefinition = {
 
         if (eventData?.keyword !== undefined && typeof this.mgr.filter === 'function') {
             this.mgr.filter(eventData.keyword);
-        } else if (eventData?.search && typeof this.mgr.searchBy === 'function') {
+        }
+        if (eventData?.search && typeof this.mgr.searchBy === 'function') {
             this.mgr.searchBy(eventData.search);
         }
 

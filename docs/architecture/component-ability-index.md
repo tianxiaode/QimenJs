@@ -37,7 +37,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | GridComponent | `src/component/components/GridComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | SpaceComponent | `src/component/components/SpaceComponent.ts` | LayoutAbility |
-| ToolbarComponent | `src/component/components/ToolbarComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility, PaginationAbility, CrudAbility |
+| ToolbarComponent | `src/component/components/ToolbarComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility, PaginationAbility, CrudAbility, SearchAbility |
 | ButtonGroupComponent | `src/component/components/ButtonGroupComponent.ts` | ChildrenAbility, SizeAbility, DisableAbility |
 | SeparatorComponent | `src/component/components/SeparatorComponent.ts` | VisibleAbility |
 | TableComponent | `src/component/components/TableComponent.ts` | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility |
@@ -143,15 +143,19 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 | 能力 | 文件 | 说明 |
 |------|------|------|
 | ToolbarAbility | `ToolbarAbility.ts` | 位置排序、插入/移除/显隐 |
-| **PaginationAbility** | `PaginationAbility.ts` | **分页聚合层**（合并以下子能力） |
-| PaginationStateAbility | `PaginationStateAbility.ts` | 分页状态管理 |
-| PaginationEventsAbility | `PaginationEventsAbility.ts` | 分页事件分发 |
-| PaginationNavAbility | `PaginationNavAbility.ts` | 导航按钮渲染 |
-| PaginationPagesAbility | `PaginationPagesAbility.ts` | 页码按钮渲染 |
-| PaginationJumperAbility | `PaginationJumperAbility.ts` | 页码输入框（新增） |
-| PaginationSizerAbility | `PaginationSizerAbility.ts` | 每页条数选择器（新增） |
-| PaginationInfoAbility | `PaginationInfoAbility.ts` | 分页信息展示 |
 | CrudAbility | `CrudAbility.ts` | CRUD 操作按钮组 |
+| **PaginationAbility** | `pagination/PaginationAbility.ts` | **分页聚合层**（合并以下子能力） |
+| PaginationStateAbility | `pagination/PaginationStateAbility.ts` | 分页状态管理 |
+| PaginationEventsAbility | `pagination/PaginationEventsAbility.ts` | 分页事件分发 |
+| PaginationNavAbility | `pagination/PaginationNavAbility.ts` | 导航按钮渲染 |
+| PaginationPagesAbility | `pagination/PaginationPagesAbility.ts` | 页码按钮渲染 |
+| PaginationJumperAbility | `pagination/PaginationJumperAbility.ts` | 页码输入框 |
+| PaginationSizerAbility | `pagination/PaginationSizerAbility.ts` | 每页条数选择器 |
+| PaginationInfoAbility | `pagination/PaginationInfoAbility.ts` | 分页信息展示 |
+| **SearchAbility** | `search/SearchAbility.ts` | **搜索聚合层**（合并以下子能力，支持组合查询） |
+| SearchInputAbility | `search/SearchInputAbility.ts` | 搜索输入框 + 防抖 change 触发 |
+| SearchButtonAbility | `search/SearchButtonAbility.ts` | 搜索按钮 + 组合数据组装 |
+| SearchEventsAbility | `search/SearchEventsAbility.ts` | 搜索事件分发（组合类型 `{ keyword?, search? }`） |
 
 ### 2.10 事件能力 (`src/component-abilities/event/`)
 
@@ -192,6 +196,8 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 | COLUMN_EVENTS.REPLACE | `columnreplace` | ColumnManageAbility |
 | TOOLBAR_EVENTS.REORDER | `toolbarreorder` | ToolbarAbility |
 | TOOLBAR_EVENTS.INSERT | `toolbarinsert` | ToolbarAbility |
+| SEARCH_EVENTS.CHANGE | `searchchange` | SearchEventsAbility |
+| SEARCH_EVENTS.SUBMIT | `searchsubmit` | SearchEventsAbility |
 | ENTITY_EVENTS.* | `entity:*` | EntityEmitAbility 转发 |
 
 ### 3.2 实体事件 (`src/events/entity-events.ts`)
@@ -222,6 +228,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 | pagination | PAGINATION_EVENTS.CHANGE | onPageChange |
 | crud | CRUD_EVENTS.ACTION | on{Action}（如 onCreate, onEdit） |
 | selection | SELECTION_EVENTS.CHANGE | onSelectionChange |
+| search | SEARCH_EVENTS.CHANGE | onSearchChange |
 | 自定义 | 自定义 event | 自定义 handler |
 
 ---
@@ -265,7 +272,7 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
   └── PaginationInfoAbility     — 分页信息
 ```
 
-### 5.2 位置常量 (`src/component-abilities/toolbar/pagination-positions.ts`)
+### 5.2 位置常量 (`src/component-abilities/toolbar/pagination/pagination-positions.ts`)
 
 | 常量 | 值 | 说明 |
 |------|-----|------|
@@ -336,7 +343,7 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 关键导出路径（从底层到上层）：
 
 ```
-子能力文件 → toolbar/index.ts → component-abilities/index.ts → component/index.ts
+子能力文件 → toolbar/pagination/index.ts 或 toolbar/search/index.ts → toolbar/index.ts → component-abilities/index.ts → component/index.ts
 ```
 
 | 导出项 | toolbar/index.ts | component-abilities/index.ts | component/index.ts |
@@ -350,6 +357,11 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | PaginationJumperAbility | ✓ | ✓ | - |
 | PaginationSizerAbility | ✓ | ✓ | - |
 | PaginationInfoAbility | ✓ | ✓ | - |
+| SearchAbility | ✓ | ✓ | ✓ |
+| SEARCH_POSITIONS | ✓ | ✓ | ✓ |
+| SearchInputAbility | ✓ | ✓ | - |
+| SearchButtonAbility | ✓ | ✓ | - |
+| SearchEventsAbility | ✓ | ✓ | - |
 | ToolbarAbility | ✓ | ✓ | ✓ |
 | CrudAbility | ✓ | ✓ | ✓ |
 
@@ -360,3 +372,6 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 日期 | 变更内容 |
 |------|----------|
 | 2026-07-07 | 初始创建；记录分页能力拆分（PaginationAbility → 7 个子能力） |
+| 2026-07-08 | 搜索能力重构：新增 toolbar/SearchAbility（聚合层，含 SearchInputAbility/SearchButtonAbility/SearchEventsAbility）；新增 SEARCH_EVENTS/ENTITY_SEARCH_EVENTS 事件常量；EventBridgeAbility 新增 search 桥接；EntityListenAbility 替换硬编码 'searchchange'；EntityEmitAbility 新增搜索事件转发；interaction/SearchAbility 标记 @deprecated |
+| 2026-07-08 | 搜索组合查询增强：SearchEventsAbility 事件数据类型从联合类型改为组合类型 `{ keyword?, search? }`；SearchButtonAbility 始终组装完整数据；SearchInputAbility 防抖事件携带 searchParams；EntityListenAbility if-else if 互斥分支改为两个独立 if；searchMode 语义调整为 UI 渲染模式 |
+| 2026-07-08 | toolbar 目录重组：9 个分页文件移入 pagination/ 子目录，5 个搜索文件移入 search/ 子目录，新建 pagination/index.ts 和 search/index.ts，更新 toolbar/index.ts 导出路径 |

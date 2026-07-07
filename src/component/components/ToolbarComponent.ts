@@ -5,6 +5,7 @@
  * - ToolbarAbility: 位置排序、按位置插入/移除/显隐
  * - PaginationAbility: 分页按钮组
  * - CrudAbility: CRUD 操作按钮组
+ * - SearchAbility: 搜索能力（简单搜索/复杂搜索）
  *
  * @example
  * ```js
@@ -33,11 +34,12 @@ import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ToolbarAbility } from '@qimenjs/component-abilities';
 import { PaginationAbility } from '@qimenjs/component-abilities';
 import { CrudAbility } from '@qimenjs/component-abilities';
+import { SearchAbility } from '@qimenjs/component-abilities';
 
 export class ToolbarComponent extends ComponentBase {
     static override readonly abilities = [
         LayoutAbility, ChildrenAbility, AnimationAbility,
-        ToolbarAbility, PaginationAbility, CrudAbility,
+        ToolbarAbility, PaginationAbility, CrudAbility, SearchAbility,
     ];
 
     constructor(props?: Record<string, any>) {

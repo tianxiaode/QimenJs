@@ -6,7 +6,7 @@
  *
  * 代理的方法：list, getAll, get, refresh, prev, next, jump, changeSize, filter, searchBy, sort, reset,
  *            create, update, delete, toggle
- * 监听的组件事件：crudaction, pagechange, searchchange, refresh
+ * 监听的组件事件：crudaction, pagechange, SEARCH_EVENTS.CHANGE, refresh
  * 转发的 mgr 事件：listed, got, created, updated, deleted, saved, toggled, dataChange, loading/success/error（含分页信息）
  */
 

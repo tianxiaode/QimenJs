@@ -10,6 +10,7 @@
  * - 列表加载：listed → entity:listed（含 total/page/pageSize/pages/hasMore）
  * - 单项获取：got → entity:got
  * - 树操作：expanded/collapsed/moved/childrenRefreshed → entity:expanded 等
+ * - 搜索变更：searchChange → entity:searchchange（含搜索参数和分页信息）
  * - 请求状态：{action}:loading/success/error → entity:loading/loaded/error
  *
  * 钩子函数约定：
@@ -27,6 +28,7 @@ import {
     ENTITY_CRUD_EVENTS,
     ENTITY_LIST_EVENTS,
     ENTITY_TREE_EVENTS,
+    ENTITY_SEARCH_EVENTS,
     ENTITY_REQUEST_STATUS,
     buildRequestEvent,
     ENTITY_EVENTS,
@@ -132,6 +134,12 @@ export const EntityEmitAbility: AbilityDefinition = {
             ...data,
             ...collectPaginationContext(mgr),
         }), 'onEntityChildrenRefreshed');
+
+        // ---- 搜索变更事件 ----
+        this._forwardEvent(mgr, ENTITY_SEARCH_EVENTS.CHANGE, ENTITY_EVENTS.SEARCH_CHANGE, (searchData: any) => ({
+            search: searchData,
+            ...collectPaginationContext(mgr),
+        }), 'onEntitySearchChange');
 
         // ---- 请求状态事件 ----
         const requestActions = ['list', 'create', 'update', 'delete', 'toggle', 'batch-delete', 'batch-save'];

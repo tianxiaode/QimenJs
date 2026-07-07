@@ -60,6 +60,14 @@ export const ENTITY_TREE_EVENTS = {
 } as const;
 
 // ============================================
+// 搜索事件（SearchAbility 触发）
+// ============================================
+export const ENTITY_SEARCH_EVENTS = {
+    /** 搜索条件变更 */
+    CHANGE: 'searchChange',
+} as const;
+
+// ============================================
 // 请求状态事件（BaseEntityManager.fetch 触发）
 //
 // 格式为 {action}:{status}，action 来自 ENTITY_ACTION 枚举，

@@ -5,7 +5,7 @@
  * 组合：EntityCoreAbility + EntityEmitAbility + EntityListenAbility + SelectionAbility
  *
  * 代理的方法：list, get, refresh, filter, sort
- * 监听的组件事件：pagechange, searchchange, refresh
+ * 监听的组件事件：pagechange, SEARCH_EVENTS.CHANGE, refresh
  * 转发的 mgr 事件：listed, got, dataChange, loading/success/error
  */
 

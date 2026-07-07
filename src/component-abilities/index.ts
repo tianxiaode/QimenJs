@@ -13,7 +13,7 @@ export type { PropAliasMap } from '@qimenjs/component-core';
 export { ThemeAbility } from '@qimenjs/component-core';
 export { StyleAbility } from '@qimenjs/component-core';
 export { EventBridgeAbility } from '@qimenjs/component-core';
-export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
+export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SearchBridgeConfig } from '@qimenjs/component-core';
 
 // 通用 UI 能力
 export { TextAbility } from './ui';
@@ -58,6 +58,7 @@ export { AnimationAbility } from './render';
 // 交互能力
 export { ClickAbility } from './interaction';
 export { OptionsAbility } from './interaction';
+/** @deprecated 请使用 toolbar/SearchAbility */
 export { SearchAbility } from './interaction';
 export { SortAbility } from './interaction';
 export { OpenableAbility } from './interaction';
@@ -72,6 +73,7 @@ export { ColumnManageAbility } from './column';
 export { ToolbarAbility } from './toolbar';
 export { PaginationAbility, PAGINATION_POSITIONS } from './toolbar';
 export { CrudAbility, CRUD_POSITIONS } from './toolbar';
+export { SearchAbility as ToolbarSearchAbility, SEARCH_POSITIONS } from './toolbar';
 
 // 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
 export { EventBindingAbility } from './event';

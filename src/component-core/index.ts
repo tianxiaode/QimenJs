@@ -19,7 +19,7 @@ export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 export { ThemeAbility } from './abilities/ThemeAbility';
 export { StyleAbility } from './abilities/StyleAbility';
 export { EventBridgeAbility } from './abilities/EventBridgeAbility';
-export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SelectionBridgeConfig, CustomBridgeConfig } from './abilities/EventBridgeAbility';
+export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SelectionBridgeConfig, SearchBridgeConfig, CustomBridgeConfig } from './abilities/EventBridgeAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';

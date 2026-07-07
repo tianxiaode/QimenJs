@@ -10,6 +10,7 @@
  * - 选择事件：SelectableAbility / SelectionAbility 发射
  * - 子组件事件：ChildrenAbility 发射
  * - 列管理事件：ColumnManageAbility 发射
+ * - 搜索事件：SearchAbility 发射
  * - 工具栏事件：ToolbarAbility 发射
  * - 实体转发事件：EntityEmitAbility 转发 EntityManager 事件
  */
@@ -76,6 +77,16 @@ export const COLUMN_EVENTS = {
 } as const;
 
 // ============================================
+// 搜索事件（SearchAbility 发射）
+// ============================================
+export const SEARCH_EVENTS = {
+    /** 搜索变更（关键词输入防抖后 / 搜索按钮点击 / 手动触发） */
+    CHANGE: 'searchchange',
+    /** 搜索提交（搜索按钮点击） */
+    SUBMIT: 'searchsubmit',
+} as const;
+
+// ============================================
 // 工具栏事件（ToolbarAbility 发射）
 // ============================================
 export const TOOLBAR_EVENTS = {
@@ -132,6 +143,10 @@ export const ENTITY_EVENTS = {
     MOVED: 'entity:moved',
     /** 子节点刷新完成（对应 ENTITY_TREE_EVENTS.CHILDREN_REFRESHED） */
     CHILDREN_REFRESHED: 'entity:childrenrefreshed',
+
+    // ---- 搜索变更 ----
+    /** 搜索变更（对应 ENTITY_SEARCH_EVENTS.CHANGE） */
+    SEARCH_CHANGE: 'entity:searchchange',
 
     // ---- UI 选择 ----
     /** 选择变更（SelectionAbility 自身触发，非 EntityManager 事件） */

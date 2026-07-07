@@ -11,6 +11,7 @@
  * - pagination: 监听 pagechange → onPageChange
  * - crud: 监听 crudaction → onCreate/onEdit/onDelete/...
  * - selection: 监听 selectionchange → onSelectionChange
+ * - search: 监听 searchchange → onSearchChange
  * - 自定义: 任意 key → 监听指定 event → 调用指定 handler
  *
  * @example
@@ -37,7 +38,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS } from '@qimenjs/events';
+import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
 import { ComponentManager } from '../ComponentManager';
 
 /**
@@ -73,6 +74,16 @@ export interface SelectionBridgeConfig {
 }
 
 /**
+ * 搜索桥接配置
+ */
+export interface SearchBridgeConfig {
+    /** 事件源组件 id */
+    source: string;
+    /** 是否启用，默认 true */
+    enabled?: boolean;
+}
+
+/**
  * 自定义桥接配置
  */
 export interface CustomBridgeConfig {
@@ -98,12 +109,14 @@ export interface EventBridgeConfig {
     crud?: CrudBridgeConfig | string;
     /** 选择桥接 */
     selection?: SelectionBridgeConfig | string;
+    /** 搜索桥接 */
+    search?: SearchBridgeConfig | string;
     /** 自定义桥接 */
     [key: string]: any;
 }
 
 /** 内置桥接 key 集合 */
-const BUILTIN_BRIDGE_KEYS = new Set(['pagination', 'crud', 'selection']);
+const BUILTIN_BRIDGE_KEYS = new Set(['pagination', 'crud', 'selection', 'search']);
 
 /**
  * 标准化桥接配置（将字符串简写转为对象）
@@ -171,6 +184,16 @@ export const EventBridgeAbility: AbilityDefinition = {
             this._bridgeOn(selectionCfg.source, SELECTION_EVENTS.CHANGE, (e: any) => {
                 if (typeof this.onSelectionChange === 'function') {
                     this.onSelectionChange(e);
+                }
+            }, mgr);
+        }
+
+        // 搜索桥接
+        const searchCfg = normalizeBridgeConfig(config.search);
+        if (searchCfg && searchCfg.enabled !== false) {
+            this._bridgeOn(searchCfg.source, SEARCH_EVENTS.CHANGE, (e: any) => {
+                if (typeof this.onSearchChange === 'function') {
+                    this.onSearchChange(e);
                 }
             }, mgr);
         }
