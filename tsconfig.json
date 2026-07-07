@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2021",
     "module": "ESNext",
-    "lib": ["ES2018", "DOM"],
+    "lib": ["ES2021", "DOM"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -47,7 +47,11 @@
       "@qimenjs/data-processor-abp": ["src/data-processor-abp"],
       "@qimenjs/data-processor-spring": ["src/data-processor-spring"],
       "@qimenjs/oauth2": ["src/oauth2"],
-      "@qimenjs/types": ["src/types"]
+      "@qimenjs/types": ["src/types"],
+      "@qimenjs/theme": ["src/theme"],
+      "@qimenjs/component": ["src/component"],
+      "@qimenjs/layout": ["src/layout"],
+      "@qimenjs/renderer": ["src/renderer"]
     }
   },
   "include": [
