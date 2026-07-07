@@ -1,7 +1,9 @@
 /**
  * OverlayRoot 全局浮层根容器
  *
- * 在 <body> 下创建全局隐藏根容器，所有浮层组件渲染到该容器中
+ * 在 <body> 下创建全局浮层容器，所有浮层组件渲染到该容器中。
+ * 浮层容器本身可见（用于 z-index 层叠），但 pointer-events: none
+ * 避免遮挡下层交互。
  */
 
 export class OverlayRoot {
@@ -47,5 +49,16 @@ export class OverlayRoot {
         }
 
         return this.root;
+    }
+
+    /**
+     * 销毁浮层根容器
+     */
+    destroy(): void {
+        if (this.root && this.root.parentNode) {
+            this.root.parentNode.removeChild(this.root);
+        }
+        this.root = null;
+        OverlayRoot.instance = undefined as any;
     }
 }

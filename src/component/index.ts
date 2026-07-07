@@ -14,6 +14,7 @@ export * from './abilities';
 
 // 浮层与模板
 export { OverlayRoot } from './OverlayRoot';
+export { HiddenRoot } from './HiddenRoot';
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 export { TemplateRegistry } from './TemplateRegistry';
 

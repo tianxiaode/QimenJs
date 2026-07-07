@@ -146,3 +146,45 @@ export const StyleAbility: AbilityDefinition = {
 | 能力 | 替代方案 | 说明 |
 |---|---|---|
 | **EventBindingAbility** | EventAbility + DomEventsAbility (system-abilities) | 保留文件和导出以兼容，不再推荐使用 |
+
+## 全局容器
+
+框架提供两个全局单例容器，用于挂载特殊组件：
+
+| 容器 | DOM ID | 可见性 | 用途 |
+|---|---|---|---|
+| **HiddenRoot** | `#q-hidden-root` | `display: none` | 挂载不需要可见的组件（隐藏表单、临时计算组件等） |
+| **OverlayRoot** | `#q-overlay-root` | 可见，`pointer-events: none` | 挂载浮层组件（Dialog、Tooltip、Notification 等） |
+
+### HiddenRoot
+
+```js
+const hiddenRoot = HiddenRoot.getInstance();
+
+// 挂载隐藏组件
+hiddenRoot.mountHidden(someComponent);
+
+// 卸载
+hiddenRoot.unmountHidden(someComponent);
+
+// 获取 DOM 容器
+const el = hiddenRoot.getRoot();
+```
+
+### OverlayRoot
+
+```js
+const overlayRoot = OverlayRoot.getInstance();
+
+// 获取浮层容器（Dialog 的 OverlayAbility 内部使用）
+const el = overlayRoot.getRoot();
+```
+
+### z-index 层级
+
+| 层级 | z-index 值 | 用途 |
+|---|---|---|
+| dropdown | 1050 | 下拉菜单 |
+| modal | 1060 | 弹窗 |
+| notification | 1070 | 通知 |
+| tooltip | 1080 | 提示 |
