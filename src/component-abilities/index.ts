@@ -17,10 +17,15 @@ export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, Searc
 
 // 通用 UI 能力
 export { TextAbility } from './ui';
+export { IconAbility } from './ui';
 export { VisibleAbility } from './ui';
 export { DisableAbility } from './ui';
 export { LoadingAbility } from './ui';
 export { SizeAbility } from './ui';
+
+// 内容管理
+export { createContentManager } from './content';
+export type { ContentManagerConfig } from './content';
 
 // 数据能力
 export { ValueAbility } from './data';

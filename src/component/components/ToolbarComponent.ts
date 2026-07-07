@@ -34,7 +34,7 @@ import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ToolbarAbility } from '@qimenjs/component-abilities';
 import { PaginationAbility } from '@qimenjs/component-abilities';
 import { CrudAbility } from '@qimenjs/component-abilities';
-import { SearchAbility } from '@qimenjs/component-abilities';
+import { ToolbarSearchAbility as SearchAbility } from '@qimenjs/component-abilities';
 
 export class ToolbarComponent extends ComponentBase {
     static override readonly abilities = [

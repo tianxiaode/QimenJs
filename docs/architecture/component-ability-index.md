@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-07
+> 最后更新：2026-07-08
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -30,7 +30,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 
 | 组件 | 文件 | 能力列表 |
 |------|------|----------|
-| ButtonComponent | `src/component/components/ButtonComponent.ts` | TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility |
+| ButtonComponent | `src/component/components/ButtonComponent.ts` | IconAbility, TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility |
 | InputComponent | `src/component/components/InputComponent.ts` | TextAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility |
 | SelectComponent | `src/component/components/SelectComponent.ts` | TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility |
 | HBoxComponent | `src/component/components/HBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
@@ -68,11 +68,28 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 
 | 能力 | 说明 |
 |------|------|
-| TextAbility | 文本内容 |
+| TextAbility | 文本内容（支持 ContentManager 多文本模式） |
+| IconAbility | 图标内容（支持 ContentManager 多图标模式） |
 | VisibleAbility | 显隐控制 |
 | DisableAbility | 禁用控制 |
 | LoadingAbility | 加载状态 |
 | SizeAbility | 尺寸控制 |
+
+### 2.1.1 内容管理 (`src/component-abilities/content/`)
+
+| 工具 | 文件 | 说明 |
+|------|------|------|
+| createContentManager | `createContentManager.ts` | 工厂方法，根据 names 数组管理内容项 |
+
+**ContentManager 模式**：
+
+- 组件通过 `static icons = ['default']` / `static texts = ['default']` 声明内容项
+- 能力（IconAbility/TextAbility）在 `__initProps` 中调用 `createContentManager`
+- ContentManager 从容器中查找 `data-content` 标记的元素，或自动创建
+- 分配唯一 id（`string.getId`），存入 `abilityState` 自动销毁
+- 自动生成闭包方法绑定到 host（`set[Name][Prefix]` / `get` / `show` / `hide` / `setClass` 等）
+- 单项 `default` 时生成简化方法（`setIcon` / `setText` + 属性）
+- 运行时通过 `getElementById` 查找元素，不固化引用，销毁无泄漏
 
 ### 2.2 数据能力 (`src/component-abilities/data/`)
 
@@ -126,7 +143,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 |------|------|
 | ClickAbility | 点击事件 |
 | OptionsAbility | 选项列表 |
-| SearchAbility | 搜索 |
+| SearchAbility | 搜索（已废弃，请使用 toolbar/SearchAbility） |
 | SortAbility | 排序 |
 | OpenableAbility | 打开/关闭 |
 | LayoutAbility | 布局 |
@@ -208,6 +225,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 | ENTITY_CRUD_EVENTS.CREATED/UPDATED/DELETED/SAVED/TOGGLED | CRUD 结果 |
 | ENTITY_LIST_EVENTS.LISTED/GOT | 列表加载 |
 | ENTITY_TREE_EVENTS.EXPANDED/COLLAPSED/MOVED/CHILDREN_REFRESHED | 树操作 |
+| ENTITY_SEARCH_EVENTS.CHANGE | 搜索条件变更 |
 | ENTITY_REQUEST_STATUS.LOADING/SUCCESS/ERROR | 请求状态 |
 
 ### 3.3 组件事件 (`src/component/events.ts`)
@@ -357,7 +375,7 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | PaginationJumperAbility | ✓ | ✓ | - |
 | PaginationSizerAbility | ✓ | ✓ | - |
 | PaginationInfoAbility | ✓ | ✓ | - |
-| SearchAbility | ✓ | ✓ | ✓ |
+| SearchAbility | ✓（别名 ToolbarSearchAbility） | ✓ | ✓ |
 | SEARCH_POSITIONS | ✓ | ✓ | ✓ |
 | SearchInputAbility | ✓ | ✓ | - |
 | SearchButtonAbility | ✓ | ✓ | - |
@@ -375,3 +393,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | 搜索能力重构：新增 toolbar/SearchAbility（聚合层，含 SearchInputAbility/SearchButtonAbility/SearchEventsAbility）；新增 SEARCH_EVENTS/ENTITY_SEARCH_EVENTS 事件常量；EventBridgeAbility 新增 search 桥接；EntityListenAbility 替换硬编码 'searchchange'；EntityEmitAbility 新增搜索事件转发；interaction/SearchAbility 标记 @deprecated |
 | 2026-07-08 | 搜索组合查询增强：SearchEventsAbility 事件数据类型从联合类型改为组合类型 `{ keyword?, search? }`；SearchButtonAbility 始终组装完整数据；SearchInputAbility 防抖事件携带 searchParams；EntityListenAbility if-else if 互斥分支改为两个独立 if；searchMode 语义调整为 UI 渲染模式 |
 | 2026-07-08 | toolbar 目录重组：9 个分页文件移入 pagination/ 子目录，5 个搜索文件移入 search/ 子目录，新建 pagination/index.ts 和 search/index.ts，更新 toolbar/index.ts 导出路径 |
+| 2026-07-08 | 新增 IconAbility + createContentManager：图标能力使用 ContentManager 模式管理多图标；TextAbility 重写支持 ContentManager 模式（兼容旧 data-ref 模式）；ButtonComponent 重写使用 IconAbility + TextAbility；删除 TemplateRegistry（统一使用 HtmlTemplateRegistrar）；新增 content/ 目录 |

@@ -1,11 +1,12 @@
 /**
  * ButtonComponent 按钮组件
  *
- * abilities: [TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility]
- * 使用 TextAbility 管理文本，支持 setText() 链式调用
+ * abilities: [IconAbility, TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility]
+ * 使用 IconAbility + TextAbility 管理图标和文本，支持 iconPosition 切换布局方向
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
+import { IconAbility } from '@qimenjs/component-abilities';
 import { TextAbility } from '@qimenjs/component-abilities';
 import { ClickAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
@@ -13,10 +14,14 @@ import { LoadingAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class ButtonComponent extends ComponentBase {
-    static override readonly abilities = [TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
+    static override readonly abilities = [IconAbility, TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
+    static override readonly icons = ['default'];
+    static override readonly texts = ['default'];
+    static override readonly iconItemClass = 'q-button__icon';
+    static override readonly textItemClass = 'q-button__text';
 
-    /** 按钮图标 */
-    private _icon: string = '';
+    /** 图标位置 */
+    private _iconPosition: string = 'left';
 
     constructor(props?: Record<string, any>) {
         super(props);
@@ -26,34 +31,35 @@ export class ButtonComponent extends ComponentBase {
         this.el.className = 'q-button';
         (this.el as HTMLButtonElement).type = 'button';
 
-        // 设置初始属性
-        if (props?.icon) this._icon = props.icon;
-
-        this.renderContent();
+        // 图标位置
+        if (props?.iconPosition) this._iconPosition = props.iconPosition;
+        this.applyIconPosition();
     }
 
-    /** icon getter/setter */
-    get icon(): string {
-        return this._icon;
+    /** iconPosition getter/setter */
+    get iconPosition(): string {
+        return this._iconPosition;
     }
-    set icon(value: string) {
-        this._icon = value;
-        this.renderContent();
+    set iconPosition(value: string) {
+        this._iconPosition = value;
+        this.applyIconPosition();
+    }
+
+    /** 应用图标位置 CSS */
+    private applyIconPosition(): void {
+        this.el.classList.remove(
+            'q-button--icon-left',
+            'q-button--icon-right',
+            'q-button--icon-top',
+            'q-button--icon-bottom',
+        );
+        this.el.classList.add(`q-button--icon-${this._iconPosition}`);
     }
 
     override update(props?: Record<string, any>): void {
-        if (props?.icon !== undefined) this._icon = props.icon;
-        this.renderContent();
-    }
-
-    private renderContent(): void {
-        if (!this.el) return;
-        let html = '';
-        if (this._icon) {
-            html += `<span class="q-button__icon">${this._icon}</span>`;
+        if (props?.iconPosition !== undefined) {
+            this._iconPosition = props.iconPosition;
+            this.applyIconPosition();
         }
-        // TextAbility 管理的文本通过 data-ref="text" 容器渲染
-        html += `<span class="q-button__text" data-ref="text">${this.text || ''}</span>`;
-        this.el.innerHTML = html;
     }
 }

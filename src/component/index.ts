@@ -17,7 +17,9 @@ export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qim
 export type { PropAliasMap, EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
 
 // 能力定义导出（从 component-abilities 重导出，保持向后兼容）
-export { TextAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
+export { TextAbility, IconAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
+export { createContentManager } from '@qimenjs/component-abilities';
+export type { ContentManagerConfig } from '@qimenjs/component-abilities';
 export { ValueAbility, ValidateAbility, PlaceholderAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
 export { EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility } from '@qimenjs/component-abilities';
 export { EntityLocalReadonlyAbility, EntityLocalCrudAbility, EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility } from '@qimenjs/component-abilities';
@@ -34,7 +36,9 @@ export { EventBindingAbility } from '@qimenjs/component-abilities';
 export { OverlayRoot } from './OverlayRoot';
 export { HiddenRoot } from './HiddenRoot';
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
-export { TemplateRegistry } from './TemplateRegistry';
+
+// 组件模板预注册（引入即自动注册到 HtmlTemplateRegistrar）
+export { registerComponentTemplates, COMPONENT_TEMPLATES } from './templates';
 
 // i18n 桥接
 export { I18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
