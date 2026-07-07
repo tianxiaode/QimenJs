@@ -31,5 +31,10 @@ export { VBoxComponent } from './components/VBoxComponent';
 export { GridComponent } from './components/GridComponent';
 export { SpaceComponent } from './components/SpaceComponent';
 
+// 高级组件
+export { TableComponent } from './components/TableComponent';
+export { FormComponent } from './components/FormComponent';
+export { DialogComponent } from './components/DialogComponent';
+
 // 动画
 export { animationsCSS } from './styles/animations';
