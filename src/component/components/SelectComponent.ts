@@ -1,16 +1,23 @@
 /**
  * SelectComponent 下拉选择组件
  *
- * abilities: [ValueAbility, OptionsAbility, SearchAbility]
+ * abilities: [TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility]
+ * TextAbility 管理标签文本，ValueAbility 管理选中值
  */
 
 import { ComponentBase } from '../ComponentBase';
+import { TextAbility } from '../abilities/TextAbility';
 import { ValueAbility } from '../abilities/ValueAbility';
 import { OptionsAbility } from '../abilities/OptionsAbility';
 import { SearchAbility } from '../abilities/SearchAbility';
+import { DisableAbility } from '../abilities/DisableAbility';
+import { SizeAbility } from '../abilities/SizeAbility';
 
 export class SelectComponent extends ComponentBase {
-    static override readonly abilities = [ValueAbility, OptionsAbility, SearchAbility];
+    static override readonly abilities = [
+        TextAbility, ValueAbility, OptionsAbility,
+        SearchAbility, DisableAbility, SizeAbility,
+    ];
 
     private selectEl: HTMLSelectElement | null = null;
 
@@ -21,7 +28,10 @@ export class SelectComponent extends ComponentBase {
         this.el = document.createElement('div');
         this.el.className = 'q-select';
 
-        this.el.innerHTML = `<select class="q-select__field" data-ref="select"></select>`;
+        this.el.innerHTML = `
+            <label class="q-select__label" data-ref="text"></label>
+            <select class="q-select__field" data-ref="select"></select>
+        `;
 
         this.selectEl = this.el.querySelector('[data-ref="select"]') as HTMLSelectElement;
 
@@ -30,7 +40,7 @@ export class SelectComponent extends ComponentBase {
             this.renderOptions(props.options);
         }
 
-        // 绑定 change 事件
+        // 绑定 change 事件 → 同步到 ValueAbility
         if (this.selectEl) {
             this.selectEl.addEventListener('change', () => {
                 this.value = this.selectEl!.value;

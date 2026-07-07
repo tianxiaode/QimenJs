@@ -7,12 +7,13 @@
 
 import { ComponentBase } from '../ComponentBase';
 import { EntityAbility } from '../abilities/EntityAbility';
+import { VirtualListAbility } from '../abilities/VirtualListAbility';
 import { SortAbility } from '../abilities/SortAbility';
 import { ColumnAbility } from '../abilities/ColumnAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
 
 export class TableComponent extends ComponentBase {
-    static override readonly abilities = [EntityAbility, SortAbility, ColumnAbility, ChildrenAbility];
+    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ChildrenAbility];
 
     /** 行高（虚拟列表用） */
     private _rowHeight: number = 40;
@@ -97,17 +98,25 @@ export class TableComponent extends ComponentBase {
         this.renderRows();
     }
 
-    /** 渲染表头 */
+    /** 渲染表头（使用 textContent 避免 XSS） */
     private renderHeader(): void {
         if (!this.headerEl) return;
 
         const cols = this.columns || [];
-        let html = '<div class="q-table__header-row q-flex">';
+        this.headerEl.innerHTML = '';
+
+        const rowEl = document.createElement('div');
+        rowEl.className = 'q-table__header-row q-flex';
+
         for (const col of cols) {
-            html += `<div class="q-table__header-cell" style="flex: 1;">${col.label || col.field || ''}</div>`;
+            const cellEl = document.createElement('div');
+            cellEl.className = 'q-table__header-cell';
+            cellEl.style.flex = '1';
+            cellEl.textContent = col.label || col.field || '';
+            rowEl.appendChild(cellEl);
         }
-        html += '</div>';
-        this.headerEl.innerHTML = html;
+
+        this.headerEl.appendChild(rowEl);
     }
 
     /** 渲染行 */

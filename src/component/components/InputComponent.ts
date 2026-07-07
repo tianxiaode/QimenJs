@@ -1,16 +1,23 @@
 /**
  * InputComponent 输入框组件
  *
- * abilities: [ValueAbility, ValidateAbility, PlaceholderAbility]
+ * abilities: [TextAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility]
+ * TextAbility 管理标签文本，ValueAbility 管理输入值
  */
 
 import { ComponentBase } from '../ComponentBase';
+import { TextAbility } from '../abilities/TextAbility';
 import { ValueAbility } from '../abilities/ValueAbility';
 import { ValidateAbility } from '../abilities/ValidateAbility';
 import { PlaceholderAbility } from '../abilities/PlaceholderAbility';
+import { DisableAbility } from '../abilities/DisableAbility';
+import { SizeAbility } from '../abilities/SizeAbility';
 
 export class InputComponent extends ComponentBase {
-    static override readonly abilities = [ValueAbility, ValidateAbility, PlaceholderAbility];
+    static override readonly abilities = [
+        TextAbility, ValueAbility, ValidateAbility,
+        PlaceholderAbility, DisableAbility, SizeAbility,
+    ];
 
     private inputEl: HTMLInputElement | null = null;
     private errorEl: HTMLElement | null = null;
@@ -23,6 +30,7 @@ export class InputComponent extends ComponentBase {
         this.el.className = 'q-input';
 
         this.el.innerHTML = `
+            <label class="q-input__label" data-ref="text"></label>
             <input class="q-input__field" data-ref="input" />
             <span class="q-input__error" data-ref="error"></span>
         `;
@@ -30,15 +38,7 @@ export class InputComponent extends ComponentBase {
         this.inputEl = this.el.querySelector('[data-ref="input"]') as HTMLInputElement;
         this.errorEl = this.el.querySelector('[data-ref="error"]') as HTMLElement;
 
-        // 设置初始属性
-        if (props?.value && this.inputEl) {
-            this.inputEl.value = props.value;
-        }
-        if (props?.placeholder && this.inputEl) {
-            this.inputEl.placeholder = props.placeholder;
-        }
-
-        // 绑定 input 事件
+        // 绑定 input 事件 → 同步到 ValueAbility
         if (this.inputEl) {
             this.inputEl.addEventListener('input', () => {
                 this.value = this.inputEl!.value;
