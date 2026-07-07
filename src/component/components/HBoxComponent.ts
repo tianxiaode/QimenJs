@@ -1,16 +1,17 @@
 /**
- * HBoxComponent 水平布局组件
+ * HBoxComponent 水平布局容器
  *
  * display: flex; flex-direction: row
- * abilities: [LayoutAbility, ChildrenAbility]
+ * abilities: [LayoutAbility, ChildrenAbility, AnimationAbility]
  */
 
 import { ComponentBase } from '../ComponentBase';
 import { LayoutAbility } from '../abilities/LayoutAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
+import { AnimationAbility } from '../abilities/AnimationAbility';
 
 export class HBoxComponent extends ComponentBase {
-    static override readonly abilities = [LayoutAbility, ChildrenAbility];
+    static override readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];
 
     constructor(props?: Record<string, any>) {
         super(props);

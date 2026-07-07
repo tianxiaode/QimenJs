@@ -1,16 +1,17 @@
 /**
- * VBoxComponent 垂直布局组件
+ * VBoxComponent 垂直布局容器
  *
  * display: flex; flex-direction: column
- * abilities: [LayoutAbility, ChildrenAbility]
+ * abilities: [LayoutAbility, ChildrenAbility, AnimationAbility]
  */
 
 import { ComponentBase } from '../ComponentBase';
 import { LayoutAbility } from '../abilities/LayoutAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
+import { AnimationAbility } from '../abilities/AnimationAbility';
 
 export class VBoxComponent extends ComponentBase {
-    static override readonly abilities = [LayoutAbility, ChildrenAbility];
+    static override readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];
 
     constructor(props?: Record<string, any>) {
         super(props);
