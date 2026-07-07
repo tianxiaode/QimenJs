@@ -7,6 +7,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { ComponentBase } from '../ComponentBase';
+import { CHILDREN_EVENTS } from '../events';
 
 export const ChildrenAbility: AbilityDefinition = {
     /**
@@ -58,8 +59,8 @@ export const ChildrenAbility: AbilityDefinition = {
             }
         }
 
-        this.emit?.('childadd', { child, index });
-        this.emit?.('childrenchange', { action: 'add', child, index });
+        this.emit?.(CHILDREN_EVENTS.ADD, { child, index });
+        this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'add', child, index });
         return this;
     },
 
@@ -95,8 +96,8 @@ export const ChildrenAbility: AbilityDefinition = {
             if (child.el && refChild.el && this.el) {
                 this.el.insertBefore(child.el, refChild.el);
             }
-            this.emit?.('childadd', { child, index: refIdx });
-            this.emit?.('childrenchange', { action: 'add', child, index: refIdx });
+            this.emit?.(CHILDREN_EVENTS.ADD, { child, index: refIdx });
+            this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'add', child, index: refIdx });
         }
         return this;
     },
@@ -120,8 +121,8 @@ export const ChildrenAbility: AbilityDefinition = {
             child.unmount();
             child.dispose();
 
-            this.emit?.('childremove', { child, index: idx });
-            this.emit?.('childrenchange', { action: 'remove', child, index: idx });
+            this.emit?.(CHILDREN_EVENTS.REMOVE, { child, index: idx });
+            this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'remove', child, index: idx });
         }
         return this;
     },
@@ -142,8 +143,8 @@ export const ChildrenAbility: AbilityDefinition = {
         child.unmount();
         child.dispose();
 
-        this.emit?.('childremove', { child, index });
-        this.emit?.('childrenchange', { action: 'remove', child, index });
+        this.emit?.(CHILDREN_EVENTS.REMOVE, { child, index });
+        this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'remove', child, index });
         return child;
     },
 
@@ -161,7 +162,7 @@ export const ChildrenAbility: AbilityDefinition = {
         }
         this.children.length = 0;
 
-        this.emit?.('childrenchange', { action: 'removeall' });
+        this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'removeall' });
         return this;
     },
 
@@ -198,7 +199,7 @@ export const ChildrenAbility: AbilityDefinition = {
             }
         }
 
-        this.emit?.('childrenchange', { action: 'replace', oldChild, newChild, index: idx });
+        this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'replace', oldChild, newChild, index: idx });
         return this;
     },
 
@@ -231,8 +232,8 @@ export const ChildrenAbility: AbilityDefinition = {
             }
         }
 
-        this.emit?.('childmove', { child, oldIndex, newIndex: targetIndex });
-        this.emit?.('childrenchange', { action: 'move', child, oldIndex, newIndex: targetIndex });
+        this.emit?.(CHILDREN_EVENTS.MOVE, { child, oldIndex, newIndex: targetIndex });
+        this.emit?.(CHILDREN_EVENTS.CHANGE, { action: 'move', child, oldIndex, newIndex: targetIndex });
         return this;
     },
 

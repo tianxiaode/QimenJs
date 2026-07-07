@@ -2,7 +2,7 @@
  * TableComponent 表格组件
  *
  * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
- * 支持虚拟列表、排序、列定义、列管理、事件桥接（基类已包含 EventBridgeAbility）
+ * 支持虚拟列表、排序、列定义、列管理、选择、事件桥接（基类已包含 EventBridgeAbility）
  */
 
 import { ComponentBase } from '../ComponentBase';
@@ -12,6 +12,7 @@ import { SortAbility } from '../abilities/SortAbility';
 import { ColumnAbility, type ColumnDefinition } from '../abilities/ColumnAbility';
 import { ColumnManageAbility } from '../abilities/ColumnManageAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
+import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
 
 export class TableComponent extends ComponentBase {
     static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
@@ -200,38 +201,49 @@ export class TableComponent extends ComponentBase {
 
     /**
      * 分页变更处理
-     *
-     * 由 EventBridgeAbility 在监听到 pagechange 事件时自动调用
      */
     onPageChange(e: any): void {
         if (e?.page) {
-            // 通知 EntityManager 加载对应页数据
             if (this.mgr && typeof this.mgr.loadPage === 'function') {
                 this.mgr.loadPage(e.page, e.pageSize);
             }
-            this.emit?.('table:pagechange', e);
+            this.emit?.(TABLE_EVENTS.PAGE_CHANGE, e);
         }
+    }
+
+    /**
+     * 选择变更处理
+     *
+     * 由 EventBridgeAbility 在监听到 selectionchange 事件时自动调用
+     * 同步源组件的选择状态到当前组件
+     */
+    onSelectionChange(e: any): void {
+        if (e?.selectedIds) {
+            // 同步选择状态
+            this.selectedIds = new Set(e.selectedIds);
+        }
+        this.emit?.(TABLE_EVENTS.SELECTION_CHANGE, e);
     }
 
     /**
      * 新建处理
      */
     onCreate(e: any): void {
-        this.emit?.('table:create', e);
+        this.emit?.(TABLE_EVENTS.CREATE, e);
     }
 
     /**
      * 编辑处理
      */
     onEdit(e: any): void {
-        this.emit?.('table:edit', e);
+        this.emit?.(TABLE_EVENTS.EDIT, e);
     }
 
     /**
      * 删除处理
      */
     onDelete(e: any): void {
-        this.emit?.('table:delete', e);
+        this.emit?.(TABLE_EVENTS.DELETE, e);
     }
 
     /**
@@ -243,27 +255,27 @@ export class TableComponent extends ComponentBase {
         }
         this.renderHeader();
         this.renderRows();
-        this.emit?.('table:refresh', e);
+        this.emit?.(TABLE_EVENTS.REFRESH, e);
     }
 
     /**
      * 导入处理
      */
     onImport(e: any): void {
-        this.emit?.('table:import', e);
+        this.emit?.(TABLE_EVENTS.IMPORT, e);
     }
 
     /**
      * 导出处理
      */
     onExport(e: any): void {
-        this.emit?.('table:export', e);
+        this.emit?.(TABLE_EVENTS.EXPORT, e);
     }
 
     /**
      * 保存处理
      */
     onSave(e: any): void {
-        this.emit?.('table:save', e);
+        this.emit?.(TABLE_EVENTS.SAVE, e);
     }
 }

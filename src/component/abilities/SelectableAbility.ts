@@ -21,6 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { SELECTION_EVENTS } from '../events';
 
 export const SelectableAbility: AbilityDefinition = {
     /**
@@ -68,7 +69,7 @@ export const SelectableAbility: AbilityDefinition = {
                 this.onSelectChange(value);
             }
 
-            this.emit?.('selectchange', { selected: value });
+            this.emit?.(SELECTION_EVENTS.CHANGE, { selected: value });
         },
     },
 
@@ -145,7 +146,7 @@ export const SelectableAbility: AbilityDefinition = {
                     if (typeof child.onSelectChange === 'function') {
                         child.onSelectChange(false);
                     }
-                    child.emit?.('selectchange', { selected: false });
+                    child.emit?.(SELECTION_EVENTS.CHANGE, { selected: false });
                 }
             });
         }

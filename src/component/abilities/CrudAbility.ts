@@ -21,6 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { CRUD_EVENTS } from '../events';
 
 /** CRUD 按钮位置常量 */
 export const CRUD_POSITIONS = {
@@ -145,7 +146,7 @@ export const CrudAbility: AbilityDefinition = {
             btn.setAttribute('data-action', name);
             btn.textContent = `${config.icon || ''} ${config.text || name}`.trim();
             btn.addEventListener('click', () => {
-                this.emit?.('crudaction', { action: name });
+                this.emit?.(CRUD_EVENTS.ACTION, { action: name });
             });
             frag.appendChild(btn);
 

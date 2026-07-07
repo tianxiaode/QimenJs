@@ -21,6 +21,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { PAGINATION_EVENTS } from '../events';
 
 /** 分页按钮位置常量 */
 export const PAGINATION_POSITIONS = {
@@ -118,7 +119,7 @@ export const PaginationAbility: AbilityDefinition = {
     gotoPage(page: number): void {
         if (page < 1 || page > this.totalPages) return;
         this.currentPage = page;
-        this.emit?.('pagechange', { page, pageSize: this.pageSize });
+        this.emit?.(PAGINATION_EVENTS.CHANGE, { page, pageSize: this.pageSize });
     },
 
     prevPage(): void {

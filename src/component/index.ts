@@ -54,5 +54,8 @@ export { NumberColumn } from './components/NumberColumn';
 export { IdColumn } from './components/IdColumn';
 export { CheckboxColumn } from './components/CheckboxColumn';
 
+// 事件枚举
+export * from './events';
+
 // 动画
 export { animationsCSS } from './styles/animations';

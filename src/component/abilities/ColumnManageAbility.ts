@@ -16,6 +16,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { ColumnDefinition } from './ColumnAbility';
+import { COLUMN_EVENTS } from '../events';
 
 export const ColumnManageAbility: AbilityDefinition = {
     /**
@@ -33,7 +34,7 @@ export const ColumnManageAbility: AbilityDefinition = {
             cols.push(colDef);
         }
         this.columns = [...cols]; // 触发 setter → markDirty
-        this.emit?.('columnadd', { column: colDef, index });
+        this.emit?.(COLUMN_EVENTS.ADD, { column: colDef, index });
         return this;
     },
 
@@ -65,7 +66,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         if (idx !== -1) {
             const removed = cols.splice(idx, 1)[0];
             this.columns = [...cols]; // 触发 setter → markDirty
-            this.emit?.('columnremove', { column: removed, index: idx });
+            this.emit?.(COLUMN_EVENTS.REMOVE, { column: removed, index: idx });
         }
         return this;
     },
@@ -81,7 +82,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         if (index < 0 || index >= cols.length) return undefined;
         const removed = cols.splice(index, 1)[0];
         this.columns = [...cols];
-        this.emit?.('columnremove', { column: removed, index });
+        this.emit?.(COLUMN_EVENTS.REMOVE, { column: removed, index });
         return removed;
     },
 
@@ -96,7 +97,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         if (col) {
             col.hidden = true;
             this.columns = [...this.columns]; // 触发重新渲染
-            this.emit?.('columnhide', { column: col });
+            this.emit?.(COLUMN_EVENTS.HIDE, { column: col });
         }
         return this;
     },
@@ -112,7 +113,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         if (col) {
             col.hidden = false;
             this.columns = [...this.columns]; // 触发重新渲染
-            this.emit?.('columnshow', { column: col });
+            this.emit?.(COLUMN_EVENTS.SHOW, { column: col });
         }
         return this;
     },
@@ -133,7 +134,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         const targetIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
         cols.splice(targetIndex, 0, col);
         this.columns = [...cols];
-        this.emit?.('columnmove', { column: col, oldIndex, newIndex: targetIndex });
+        this.emit?.(COLUMN_EVENTS.MOVE, { column: col, oldIndex, newIndex: targetIndex });
         return this;
     },
 
@@ -151,7 +152,7 @@ export const ColumnManageAbility: AbilityDefinition = {
         const oldCol = cols[idx];
         cols[idx] = newColDef;
         this.columns = [...cols];
-        this.emit?.('columnreplace', { oldColumn: oldCol, newColumn: newColDef, index: idx });
+        this.emit?.(COLUMN_EVENTS.REPLACE, { oldColumn: oldCol, newColumn: newColDef, index: idx });
         return this;
     },
 

@@ -2,37 +2,42 @@
  * EventBridgeAbility 事件桥接能力
  *
  * 声明式配置事件源，自动创建监听。
- * 利用 EventScope 自动销毁，组件 dispose 时无需手动清理。
+ * 利用 onCleanup 自动销毁，组件 dispose 时无需手动清理。
  *
  * 作为 BASE_ABILITIES 的一部分，所有组件都拥有此能力。
  * 只需在布局定义中配置 eventBridge，即可自动绑定事件。
  *
- * 事件名约定：
- * - 源组件 emit 的事件名 = 事件类型（如 pagechange、crudaction）
- * - EventBridge 监听时自动加 sourceId 前缀，避免多源冲突
- * - 源组件需通过 emitUI 或 emit 发射事件
+ * 内置桥接类型：
+ * - pagination: 监听 pagechange → onPageChange
+ * - crud: 监听 crudaction → onCreate/onEdit/onDelete/...
+ * - selection: 监听 selectionchange → onSelectionChange
+ * - 自定义: 任意 key → 监听指定 event → 调用指定 handler
  *
  * @example
  * ```js
- * // 完整配置
- * { type: 'Table', id: 'myTable',
- *   eventBridge: {
- *     pagination: { source: 'myToolbar' },
- *     crud: { source: 'myToolbar', actions: ['create', 'delete'] }
- *   }
- * }
- *
  * // 字符串简写
- * { type: 'Table', eventBridge: { pagination: 'myToolbar' } }
- *
- * // 自定义事件（Grid 选择等）
  * { type: 'Table', eventBridge: {
- *     selection: { source: 'myGrid', event: 'selectionchange', handler: 'onSelectionChange' }
+ *     pagination: 'myToolbar',
+ *     crud: 'myToolbar',
+ *     selection: 'myGrid'
+ * }}
+ *
+ * // 完整配置
+ * { type: 'Table', eventBridge: {
+ *     pagination: { source: 'myToolbar' },
+ *     crud: { source: 'myToolbar', actions: ['create', 'delete'] },
+ *     selection: { source: 'myGrid' }
+ * }}
+ *
+ * // 自定义事件
+ * { type: 'Table', eventBridge: {
+ *     filter: { source: 'filterBar', event: 'filterchange', handler: 'onFilterChange' }
  * }}
  * ```
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS } from '../events';
 
 /**
  * 分页桥接配置
@@ -52,6 +57,16 @@ export interface CrudBridgeConfig {
     source: string;
     /** 需要监听的 action 列表，不传则监听所有 */
     actions?: string[];
+    /** 是否启用，默认 true */
+    enabled?: boolean;
+}
+
+/**
+ * 选择桥接配置
+ */
+export interface SelectionBridgeConfig {
+    /** 事件源组件 id */
+    source: string;
     /** 是否启用，默认 true */
     enabled?: boolean;
 }
@@ -80,9 +95,14 @@ export interface EventBridgeConfig {
     pagination?: PaginationBridgeConfig | string;
     /** CRUD 桥接 */
     crud?: CrudBridgeConfig | string;
+    /** 选择桥接 */
+    selection?: SelectionBridgeConfig | string;
     /** 自定义桥接 */
     [key: string]: any;
 }
+
+/** 内置桥接 key 集合 */
+const BUILTIN_BRIDGE_KEYS = new Set(['pagination', 'crud', 'selection']);
 
 /**
  * 标准化桥接配置（将字符串简写转为对象）
@@ -110,8 +130,8 @@ export const EventBridgeAbility: AbilityDefinition = {
     /**
      * 初始化事件桥接
      *
-     * 根据 eventBridge 配置，通过 eventScope 自动创建事件监听。
-     * 组件 dispose 时 eventScope 自动销毁，所有监听自动解绑。
+     * 根据 eventBridge 配置，自动创建事件监听。
+     * 组件 dispose 时通过 onCleanup 自动解绑。
      */
     initEventBridge(): void {
         const config = this.eventBridge;
@@ -123,7 +143,7 @@ export const EventBridgeAbility: AbilityDefinition = {
         // 分页桥接
         const paginationCfg = normalizeBridgeConfig(config.pagination);
         if (paginationCfg && paginationCfg.enabled !== false) {
-            this._bridgeOn(paginationCfg.source, 'pagechange', (e: any) => {
+            this._bridgeOn(paginationCfg.source, PAGINATION_EVENTS.CHANGE, (e: any) => {
                 if (typeof this.onPageChange === 'function') {
                     this.onPageChange(e);
                 }
@@ -134,7 +154,7 @@ export const EventBridgeAbility: AbilityDefinition = {
         const crudCfg = normalizeBridgeConfig(config.crud);
         if (crudCfg && crudCfg.enabled !== false) {
             const allowedActions = crudCfg.actions ? new Set(crudCfg.actions) : null;
-            this._bridgeOn(crudCfg.source, 'crudaction', (e: any) => {
+            this._bridgeOn(crudCfg.source, CRUD_EVENTS.ACTION, (e: any) => {
                 const action = e?.action;
                 if (!action) return;
                 if (allowedActions && !allowedActions.has(action)) return;
@@ -145,9 +165,19 @@ export const EventBridgeAbility: AbilityDefinition = {
             }, mgr);
         }
 
+        // 选择桥接
+        const selectionCfg = normalizeBridgeConfig(config.selection);
+        if (selectionCfg && selectionCfg.enabled !== false) {
+            this._bridgeOn(selectionCfg.source, SELECTION_EVENTS.CHANGE, (e: any) => {
+                if (typeof this.onSelectionChange === 'function') {
+                    this.onSelectionChange(e);
+                }
+            }, mgr);
+        }
+
         // 自定义桥接
         for (const [key, rawCfg] of Object.entries(config)) {
-            if (key === 'pagination' || key === 'crud') continue;
+            if (BUILTIN_BRIDGE_KEYS.has(key)) continue;
             const cfg = normalizeBridgeConfig(rawCfg);
             if (!cfg || cfg.enabled === false) continue;
 
@@ -163,21 +193,14 @@ export const EventBridgeAbility: AbilityDefinition = {
     },
 
     /**
-     * 桥接监听：在源组件上注册事件，通过 eventScope 管理生命周期
-     *
-     * 核心机制：
-     * - 源组件的 on() 返回 off 函数
-     * - 将 off 函数注册到 onCleanup，组件 dispose 时自动调用
-     * - 无需手动维护 off 列表
+     * 桥接监听：在源组件上注册事件，通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
         const source = mgr.get(sourceId);
         if (!source) return;
 
-        // 在源组件上监听事件
         const off = source.on?.(eventName, handler);
 
-        // 通过 onCleanup 注册清理，组件 dispose 时自动调用 off
         if (typeof off === 'function') {
             this.onCleanup(off);
         }

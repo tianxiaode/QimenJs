@@ -19,6 +19,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { TOOLBAR_EVENTS } from '../events';
 
 /** 位置属性名 */
 const POSITION_PROP = 'position';
@@ -50,7 +51,7 @@ export const ToolbarAbility: AbilityDefinition = {
                 this.el.appendChild(child.el);
             }
         }
-        this.emit?.('toolbarreorder', { children: sorted });
+        this.emit?.(TOOLBAR_EVENTS.REORDER, { children: sorted });
         return this;
     },
 
@@ -77,7 +78,7 @@ export const ToolbarAbility: AbilityDefinition = {
             }
         }
 
-        this.emit?.('toolbarinsert', { child, position });
+        this.emit?.(TOOLBAR_EVENTS.INSERT, { child, position });
         return this;
     },
 
