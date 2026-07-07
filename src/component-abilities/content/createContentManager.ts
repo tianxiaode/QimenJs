@@ -40,6 +40,8 @@ export interface ContentManagerConfig {
     container: HTMLElement;
     /** 可选：自动创建元素时添加的基础类名 */
     itemClass?: string;
+    /** 可选：位置权重映射，name → position。与 ToolbarAbility 的 data-position 一致 */
+    positions?: Record<string, number>;
 }
 
 /**
@@ -78,6 +80,11 @@ export function createContentManager(host: any, config: ContentManagerConfig): v
             }
             container.appendChild(el);
             idMap[name] = id;
+        }
+
+        // 设置 data-position（如果提供了 positions 映射）
+        if (config.positions && config.positions[name] !== undefined) {
+            el.setAttribute('data-position', String(config.positions[name]));
         }
     }
 

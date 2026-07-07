@@ -5,6 +5,7 @@ export { StyleAbility } from '@qimenjs/component-core';
 
 export { TextAbility } from './TextAbility';
 export { IconAbility } from './IconAbility';
+export { PlaceholderAbility } from './PlaceholderAbility';
 export { VisibleAbility } from './VisibleAbility';
 export { DisableAbility } from './DisableAbility';
 export { LoadingAbility } from './LoadingAbility';

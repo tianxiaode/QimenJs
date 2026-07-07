@@ -70,6 +70,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 |------|------|
 | TextAbility | 文本内容（支持 ContentManager 多文本模式） |
 | IconAbility | 图标内容（支持 ContentManager 多图标模式） |
+| PlaceholderAbility | 占位符（flex 布局中占据剩余空间，只有 show/hide） |
 | VisibleAbility | 显隐控制 |
 | DisableAbility | 禁用控制 |
 | LoadingAbility | 加载状态 |

@@ -17,7 +17,7 @@ export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qim
 export type { PropAliasMap, EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
 
 // 能力定义导出（从 component-abilities 重导出，保持向后兼容）
-export { TextAbility, IconAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
+export { TextAbility, IconAbility, PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
 export { createContentManager } from '@qimenjs/component-abilities';
 export type { ContentManagerConfig } from '@qimenjs/component-abilities';
 export { ValueAbility, ValidateAbility, PlaceholderAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
