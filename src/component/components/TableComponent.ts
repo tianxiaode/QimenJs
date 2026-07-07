@@ -1,8 +1,8 @@
 /**
  * TableComponent 表格组件
  *
- * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
- * 支持虚拟列表、排序、列定义（含格式化、条件显隐、条件禁用）、列管理（增删移隐）
+ * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility, EventBridgeAbility]
+ * 支持虚拟列表、排序、列定义、列管理、事件桥接（自动绑定工具栏事件）
  */
 
 import { ComponentBase } from '../ComponentBase';
@@ -12,9 +12,10 @@ import { SortAbility } from '../abilities/SortAbility';
 import { ColumnAbility, type ColumnDefinition } from '../abilities/ColumnAbility';
 import { ColumnManageAbility } from '../abilities/ColumnManageAbility';
 import { ChildrenAbility } from '../abilities/ChildrenAbility';
+import { EventBridgeAbility } from '../abilities/EventBridgeAbility';
 
 export class TableComponent extends ComponentBase {
-    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
+    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility, EventBridgeAbility];
 
     /** 行高（虚拟列表用） */
     private _rowHeight: number = 40;
@@ -191,5 +192,79 @@ export class TableComponent extends ComponentBase {
 
             spacer.appendChild(rowEl);
         }
+    }
+
+    // ============================================
+    // 事件桥接默认处理方法
+    // 由 EventBridgeAbility 自动调用
+    // ============================================
+
+    /**
+     * 分页变更处理
+     *
+     * 由 EventBridgeAbility 在监听到 pagechange 事件时自动调用
+     */
+    onPageChange(e: any): void {
+        if (e?.page) {
+            // 通知 EntityManager 加载对应页数据
+            if (this.mgr && typeof this.mgr.loadPage === 'function') {
+                this.mgr.loadPage(e.page, e.pageSize);
+            }
+            this.emit?.('table:pagechange', e);
+        }
+    }
+
+    /**
+     * 新建处理
+     */
+    onCreate(e: any): void {
+        this.emit?.('table:create', e);
+    }
+
+    /**
+     * 编辑处理
+     */
+    onEdit(e: any): void {
+        this.emit?.('table:edit', e);
+    }
+
+    /**
+     * 删除处理
+     */
+    onDelete(e: any): void {
+        this.emit?.('table:delete', e);
+    }
+
+    /**
+     * 刷新处理
+     */
+    onRefresh(e: any): void {
+        if (this.mgr && typeof this.mgr.reload === 'function') {
+            this.mgr.reload();
+        }
+        this.renderHeader();
+        this.renderRows();
+        this.emit?.('table:refresh', e);
+    }
+
+    /**
+     * 导入处理
+     */
+    onImport(e: any): void {
+        this.emit?.('table:import', e);
+    }
+
+    /**
+     * 导出处理
+     */
+    onExport(e: any): void {
+        this.emit?.('table:export', e);
+    }
+
+    /**
+     * 保存处理
+     */
+    onSave(e: any): void {
+        this.emit?.('table:save', e);
     }
 }

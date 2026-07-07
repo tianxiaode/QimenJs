@@ -57,6 +57,10 @@ export { ToolbarAbility } from './ToolbarAbility';
 export { PaginationAbility, PAGINATION_POSITIONS } from './PaginationAbility';
 export { CrudAbility, CRUD_POSITIONS } from './CrudAbility';
 
+// 事件桥接能力
+export { EventBridgeAbility } from './EventBridgeAbility';
+export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from './EventBridgeAbility';
+
 // 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
 // 保留文件以避免破坏性变更，但不再推荐使用
 export { EventBindingAbility } from './EventBindingAbility';

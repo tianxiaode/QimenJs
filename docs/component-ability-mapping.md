@@ -88,6 +88,7 @@
 | **ToolbarAbility** | sortedChildren (getter), insertAt/insertBeforeItem/insertAfterItem/removeAtPosition/hideAtPosition/showAtPosition/getAtPosition/reorder | — | — |
 | **PaginationAbility** | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo (getter/setter), gotoPage/prevPage/nextPage/firstPage/lastPage/renderPagination, PAGINATION_POSITIONS 常量 | — | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo |
 | **CrudAbility** | crudButtons (getter), showButton/hideButton/toggleButton/isButtonVisible/renderCrud, CRUD_POSITIONS 常量 | — | show*/按钮配置 |
+| **EventBridgeAbility** | eventBridge (getter/setter), initEventBridge/destroyEventBridge, __initProps 自动延迟绑定 | — | eventBridge |
 
 ## 能力使用频次
 
@@ -382,3 +383,75 @@ class MyToolbar extends ComponentBase {
     ];
 }
 ```
+
+## 事件桥接（EventBridgeAbility）
+
+工具栏与数据组件之间的事件绑定方案。工具栏只管发事件，数据组件声明"我要监听谁的事件"，EventBridge 自动创建监听。
+
+### 核心思路
+
+```
+Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBridge)
+```
+
+- 工具栏：PaginationAbility 发 `pagechange`，CrudAbility 发 `crudaction`
+- 数据组件：声明 `eventBridge: { pagination: { source: 'toolbarId' }, crud: { source: 'toolbarId' } }`
+- EventBridgeAbility：自动查找源组件，创建事件监听，调用目标组件的 `onPageChange`/`onCreate`/`onDelete` 等方法
+
+### 布局定义
+
+```js
+// 工具栏
+{ type: 'Toolbar', id: 'myToolbar',
+  showCreate: true, showDelete: true, showRefresh: true,
+  currentPage: 1, totalPages: 10, totalRecords: 95 }
+
+// 表格 - 声明监听
+{ type: 'Table', id: 'myTable',
+  eventBridge: {
+    pagination: { source: 'myToolbar' },
+    crud: { source: 'myToolbar', actions: ['create', 'delete', 'refresh'] }
+  }
+}
+```
+
+### CRUD action 过滤
+
+```js
+// 只监听指定的 action
+crud: { source: 'toolbar1', actions: ['create', 'delete'] }
+
+// 不指定 actions 则监听所有
+crud: { source: 'toolbar1' }
+```
+
+### 自定义桥接
+
+```js
+eventBridge: {
+  // 内置桥接
+  pagination: { source: 'toolbar1' },
+  crud: { source: 'toolbar2', actions: ['save'] },
+  // 自定义桥接
+  filter: { source: 'filterBar', event: 'filterchange', handler: 'onFilterChange' }
+}
+```
+
+### 默认处理方法
+
+TableComponent 和 FormComponent 已内置默认处理方法：
+
+| 方法 | 触发条件 | TableComponent | FormComponent |
+|---|---|---|---|
+| onPageChange | pagechange 事件 | mgr.loadPage() + emit | — |
+| onCreate | crudaction(create) | emit('table:create') | emit('form:create') |
+| onEdit | crudaction(edit) | emit('table:edit') | emit('form:edit') |
+| onDelete | crudaction(delete) | emit('table:delete') | emit('form:delete') |
+| onRefresh | crudaction(refresh) | mgr.reload() + 重新渲染 | mgr.reload() |
+| onImport | crudaction(import) | emit('table:import') | — |
+| onExport | crudaction(export) | emit('table:export') | — |
+| onSave | crudaction(save) | emit('table:save') | submit() + emit |
+
+### 时序保证
+
+EventBridgeAbility 使用 `queueMicrotask` 延迟绑定，确保同一轮 mount 的所有组件都注册到 ComponentManager 后再查找源组件。dispose() 时自动清理所有监听。
