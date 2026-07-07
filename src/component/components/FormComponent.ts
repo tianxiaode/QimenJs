@@ -5,7 +5,7 @@
  * 支持验证、提交、字段收集、事件桥接（基类已包含 EventBridgeAbility）
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { EntityAbility } from '@qimenjs/component-abilities';
 import { ValidateAbility } from '@qimenjs/component-abilities';
 import { SubmitAbility } from '@qimenjs/component-abilities';

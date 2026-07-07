@@ -5,7 +5,7 @@
  * abilities: [LayoutAbility, ChildrenAbility, AnimationAbility]
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { LayoutAbility } from '@qimenjs/component-abilities';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';

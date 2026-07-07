@@ -21,7 +21,7 @@
  * ```
  */
 
-import type { ComponentBase } from './ComponentBase';
+import type { ComponentBase } from '@qimenjs/component-core';
 
 /** 隐藏根容器的 DOM ID */
 const HIDDEN_ROOT_ID = 'q-hidden-root';

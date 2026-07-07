@@ -12,7 +12,7 @@ import type { HandlerAction } from '@qimenjs/layout';
  * 执行 HandlerAction
  */
 function executeHandlerAction(action: HandlerAction, ctx: RenderContext): void {
-    const { ComponentManager } = require('../../component/ComponentManager');
+    const { ComponentManager } = require('@qimenjs/component-core');
 
     switch (action.action) {
         case 'close': {

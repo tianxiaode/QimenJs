@@ -5,7 +5,7 @@
  * abilities: [LayoutAbility]
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { LayoutAbility } from '@qimenjs/component-abilities';
 
 export class SpaceComponent extends ComponentBase {

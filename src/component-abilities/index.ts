@@ -5,13 +5,17 @@
  * 与 @qimenjs/composable 的 AbilityDefinition 配合使用。
  */
 
-// 属性别名与初始化协议
-export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './core';
-export type { PropAliasMap } from './core';
+// 属性别名与初始化协议（从 component-core 重导出，保持向后兼容）
+export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qimenjs/component-core';
+export type { PropAliasMap } from '@qimenjs/component-core';
+
+// 基础能力（从 component-core 重导出，保持向后兼容）
+export { ThemeAbility } from '@qimenjs/component-core';
+export { StyleAbility } from '@qimenjs/component-core';
+export { EventBridgeAbility } from '@qimenjs/component-core';
+export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
 
 // 通用 UI 能力
-export { ThemeAbility } from './ui';
-export { StyleAbility } from './ui';
 export { TextAbility } from './ui';
 export { VisibleAbility } from './ui';
 export { DisableAbility } from './ui';
@@ -68,10 +72,6 @@ export { ColumnManageAbility } from './column';
 export { ToolbarAbility } from './toolbar';
 export { PaginationAbility, PAGINATION_POSITIONS } from './toolbar';
 export { CrudAbility, CRUD_POSITIONS } from './toolbar';
-
-// 事件桥接能力
-export { EventBridgeAbility } from './event';
-export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from './event';
 
 // 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
 export { EventBindingAbility } from './event';

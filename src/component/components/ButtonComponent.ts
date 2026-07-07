@@ -5,7 +5,7 @@
  * 使用 TextAbility 管理文本，支持 setText() 链式调用
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { TextAbility } from '@qimenjs/component-abilities';
 import { ClickAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';

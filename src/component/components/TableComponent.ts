@@ -5,7 +5,7 @@
  * 支持虚拟列表、排序、列定义、列管理、选择、事件桥接（基类已包含 EventBridgeAbility）
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { EntityAbility } from '@qimenjs/component-abilities';
 import { VirtualListAbility } from '@qimenjs/component-abilities';
 import { SortAbility } from '@qimenjs/component-abilities';

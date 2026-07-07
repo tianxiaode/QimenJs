@@ -19,7 +19,7 @@
  * ```
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';

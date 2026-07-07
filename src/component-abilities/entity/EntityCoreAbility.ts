@@ -11,13 +11,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-
-/**
- * 首字母大写
- */
-function capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+import { string } from '@qimenjs/utils';
 
 export const EntityCoreAbility: AbilityDefinition = {
     /**
@@ -100,8 +94,8 @@ export const EntityCoreAbility: AbilityDefinition = {
      */
     _createProxyMethod(methodName: string): (...args: any[]) => any {
         return function(this: any, ...args: any[]): any {
-            const beforeHook = this[`before${capitalize(methodName)}`];
-            const afterHook = this[`after${capitalize(methodName)}`];
+            const beforeHook = this[`before${string.capitalize(methodName)}`];
+            const afterHook = this[`after${string.capitalize(methodName)}`];
 
             if (typeof beforeHook === 'function') {
                 const result = beforeHook.apply(this, args);

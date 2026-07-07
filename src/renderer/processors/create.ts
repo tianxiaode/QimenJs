@@ -6,7 +6,7 @@
 
 import type { RenderProcessor, RenderContext } from '../RenderContext';
 import { RenderWeight, RenderPhase } from '../RenderContext';
-import { ComponentRegistrar } from '../../component/ComponentRegistrar';
+import { ComponentRegistrar } from '@qimenjs/component-core';
 
 export const createProcessor: RenderProcessor = {
     name: 'render-create',

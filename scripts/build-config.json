@@ -219,21 +219,28 @@
             "entry": "src/renderer/index.ts",
             "outDir": "dist/renderer",
             "rootDir": "src/renderer",
-            "dependencies": ["pipeline", "registry", "context", "events", "composable", "theme", "layout"],
+            "dependencies": ["pipeline", "registry", "context", "events", "composable", "theme", "layout", "component-core"],
             "packageName": "@qimen-lab/renderer"
+        },
+        "component-core": {
+            "entry": "src/component-core/index.ts",
+            "outDir": "dist/component-core",
+            "rootDir": "src/component-core",
+            "dependencies": ["composable", "utils", "system-abilities", "registry", "events", "theme"],
+            "packageName": "@qimen-lab/component-core"
         },
         "component-abilities": {
             "entry": "src/component-abilities/index.ts",
             "outDir": "dist/component-abilities",
             "rootDir": "src/component-abilities",
-            "dependencies": ["composable", "events"],
+            "dependencies": ["composable", "events", "component-core", "utils"],
             "packageName": "@qimen-lab/component-abilities"
         },
         "component": {
             "entry": "src/component/index.ts",
             "outDir": "dist/component",
             "rootDir": "src/component",
-            "dependencies": ["composable", "events", "registry", "context", "pipeline", "theme", "layout", "renderer", "component-abilities"],
+            "dependencies": ["component-core", "component-abilities", "events", "context", "pipeline", "theme", "layout", "renderer"],
             "packageName": "@qimen-lab/component"
         }
     },

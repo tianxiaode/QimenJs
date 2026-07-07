@@ -6,7 +6,7 @@
 
 import type { RenderProcessor, RenderContext } from '../RenderContext';
 import { RenderWeight, RenderPhase } from '../RenderContext';
-import { ComponentManager } from '../../component/ComponentManager';
+import { ComponentManager } from '@qimenjs/component-core';
 
 export const mountProcessor: RenderProcessor = {
     name: 'render-mount',

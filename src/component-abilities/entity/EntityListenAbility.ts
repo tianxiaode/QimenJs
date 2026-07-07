@@ -24,13 +24,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { CRUD_EVENTS, CRUD_ACTIONS, PAGINATION_EVENTS } from '@qimenjs/events';
-
-/**
- * 首字母大写
- */
-function capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+import { string } from '@qimenjs/utils';
 
 /**
  * CRUD action 到 mgr 方法名的映射
@@ -88,7 +82,7 @@ export const EntityListenAbility: AbilityDefinition = {
         if (!mgrMethod || typeof this.mgr?.[mgrMethod] !== 'function') return;
 
         // 调用 onEntity{Action} 钩子
-        const hookName = `onEntity${capitalize(action)}`;
+        const hookName = `onEntity${string.capitalize(action)}`;
         const hookResult = this._callEntityHook(hookName, e);
         if (hookResult === false) return;
 
@@ -112,7 +106,7 @@ export const EntityListenAbility: AbilityDefinition = {
         }
 
         // 调用 afterEntity{Action} 钩子
-        const afterHookName = `afterEntity${capitalize(action)}`;
+        const afterHookName = `afterEntity${string.capitalize(action)}`;
         this._callEntityHook(afterHookName, mgrResult);
     },
 

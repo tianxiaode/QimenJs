@@ -23,7 +23,11 @@
 import { ComposableBase, type AbilityDefinition } from '@qimenjs/composable';
 import { string } from '@qimenjs/utils';
 import { EventAbility, DomEventsAbility } from '@qimenjs/system-abilities';
-import { ThemeAbility, StyleAbility, EventBridgeAbility, mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qimenjs/component-abilities';
+import { ThemeAbility } from './abilities/ThemeAbility';
+import { StyleAbility } from './abilities/StyleAbility';
+import { EventBridgeAbility } from './abilities/EventBridgeAbility';
+import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
+import { ComponentManager } from './ComponentManager';
 
 /** 组件 DOM 元素上挂载组件引用的属性名 */
 const Q_COMPONENT_REF = '__qComponent';
@@ -153,7 +157,6 @@ export class ComponentBase extends ComposableBase {
             }
 
             // 注册到 ComponentManager
-            const { ComponentManager } = require('./ComponentManager');
             ComponentManager.getInstance().register(this);
 
             // 初始化能力 props（此时 el 已可用）
@@ -223,8 +226,7 @@ export class ComponentBase extends ComposableBase {
     override dispose(): void {
         if (this.destroyed) return;
 
-        // 从 ComponentManager 注销（延迟导入避免循环依赖）
-        const { ComponentManager } = require('./ComponentManager');
+        // 从 ComponentManager 注销
         ComponentManager.getInstance().unregister(this);
 
         // 从 DOM 元素移除引用

@@ -5,7 +5,7 @@
  * TextAbility 管理标题文本，支持 setText() 动态更新
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { TextAbility } from '@qimenjs/component-abilities';
 import { OpenableAbility } from '@qimenjs/component-abilities';
 import { OverlayAbility } from '@qimenjs/component-abilities';

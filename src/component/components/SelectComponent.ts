@@ -5,7 +5,7 @@
  * TextAbility 管理标签文本，ValueAbility 管理选中值
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { TextAbility } from '@qimenjs/component-abilities';
 import { ValueAbility } from '@qimenjs/component-abilities';
 import { OptionsAbility } from '@qimenjs/component-abilities';

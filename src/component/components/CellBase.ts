@@ -19,7 +19,7 @@
  * ```
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { TextAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';

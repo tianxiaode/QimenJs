@@ -12,7 +12,7 @@
  * ```
  */
 
-import { ComponentBase } from '../ComponentBase';
+import { ComponentBase } from '@qimenjs/component-core';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 
 export class SeparatorComponent extends ComponentBase {

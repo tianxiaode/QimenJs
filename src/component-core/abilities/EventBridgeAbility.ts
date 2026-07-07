@@ -38,6 +38,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS } from '@qimenjs/events';
+import { ComponentManager } from '../ComponentManager';
 
 /**
  * 分页桥接配置
@@ -137,7 +138,6 @@ export const EventBridgeAbility: AbilityDefinition = {
         const config = this.eventBridge;
         if (!config) return;
 
-        const { ComponentManager } = require('@qimenjs/component');
         const mgr = ComponentManager.getInstance();
 
         // 分页桥接

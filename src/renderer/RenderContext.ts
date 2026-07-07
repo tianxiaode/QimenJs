@@ -5,7 +5,7 @@
  */
 
 import type { LayoutNode } from '@qimenjs/layout';
-import type { ComponentBase } from '../component/ComponentBase';
+import type { ComponentBase } from '@qimenjs/component-core';
 import type { Schema } from '@qimenjs/schema';
 
 /**

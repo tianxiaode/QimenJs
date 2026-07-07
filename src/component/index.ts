@@ -4,13 +4,30 @@
  * UI 组件层 - ComponentBase + ComponentManager + ComponentRegistrar + 能力定义 + 组件
  */
 
-// 核心类导出
-export { ComponentBase } from './ComponentBase';
-export { ComponentManager, getCmp } from './ComponentManager';
-export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistrar';
+// 核心类导出（从 component-core 重导出，保持向后兼容）
+export { ComponentBase } from '@qimenjs/component-core';
+export { ComponentManager, getCmp } from '@qimenjs/component-core';
+export { ComponentRegistrar, type ComponentDefinition } from '@qimenjs/component-core';
+export { ComponentEventRegistry } from '@qimenjs/component-core';
 
-// 能力定义导出
-export * from './abilities';
+// 基础能力导出（从 component-core 重导出，保持向后兼容）
+export { ThemeAbility, StyleAbility, EventBridgeAbility } from '@qimenjs/component-core';
+export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qimenjs/component-core';
+export type { PropAliasMap, EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
+
+// 能力定义导出（从 component-abilities 重导出，保持向后兼容）
+export { TextAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
+export { ValueAbility, ValidateAbility, PlaceholderAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
+export { EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility } from '@qimenjs/component-abilities';
+export { EntityLocalReadonlyAbility, EntityLocalCrudAbility, EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility } from '@qimenjs/component-abilities';
+export { SelectionAbility, SelectableAbility } from '@qimenjs/component-abilities';
+export { ChildrenAbility } from '@qimenjs/component-abilities';
+export { RenderAbility, VirtualListAbility, OverlayAbility, AnimationAbility } from '@qimenjs/component-abilities';
+export { ClickAbility, OptionsAbility, SearchAbility, SortAbility, OpenableAbility, LayoutAbility } from '@qimenjs/component-abilities';
+export { ColumnAbility, ColumnManageAbility } from '@qimenjs/component-abilities';
+export type { ColumnDefinition } from '@qimenjs/component-abilities';
+export { ToolbarAbility, PaginationAbility, PAGINATION_POSITIONS, CrudAbility, CRUD_POSITIONS } from '@qimenjs/component-abilities';
+export { EventBindingAbility } from '@qimenjs/component-abilities';
 
 // 浮层与模板
 export { OverlayRoot } from './OverlayRoot';
@@ -20,9 +37,6 @@ export { TemplateRegistry } from './TemplateRegistry';
 
 // i18n 桥接
 export { I18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
-
-// 事件注册
-export { ComponentEventRegistry } from './ComponentEventRegistry';
 
 // 基础组件
 export { ButtonComponent } from './components/ButtonComponent';
