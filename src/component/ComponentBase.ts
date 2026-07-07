@@ -25,6 +25,7 @@ import { string } from '@qimenjs/utils';
 import { EventAbility, DomEventsAbility } from '@qimenjs/system-abilities';
 import { ThemeAbility } from './abilities/ThemeAbility';
 import { StyleAbility } from './abilities/StyleAbility';
+import { EventBridgeAbility } from './abilities/EventBridgeAbility';
 import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 
 /** 组件 DOM 元素上挂载组件引用的属性名 */
@@ -39,6 +40,7 @@ const BASE_ABILITIES: readonly AbilityDefinition[] = [
     DomEventsAbility,
     ThemeAbility,
     StyleAbility,
+    EventBridgeAbility,
 ];
 
 /**
@@ -223,11 +225,6 @@ export class ComponentBase extends ComposableBase {
      */
     override dispose(): void {
         if (this.destroyed) return;
-
-        // 清理事件桥接（如果有的话）
-        if (typeof this.destroyEventBridge === 'function') {
-            this.destroyEventBridge();
-        }
 
         // 从 ComponentManager 注销（延迟导入避免循环依赖）
         const { ComponentManager } = require('./ComponentManager');

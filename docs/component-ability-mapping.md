@@ -10,6 +10,7 @@
 | **DomEventsAbility** | `@qimenjs/system-abilities` | bind() 手势事件（tap/drag/swipe/...） |
 | **ThemeAbility** | `component/abilities` | 主题感知，onThemeChange() |
 | **StyleAbility** | `component/abilities` | className/style、addClass/removeClass/toggleClass/hasClass/replaceClass、setStyle/getStyle/removeStyle、setAttribute/getAttribute/removeAttribute |
+| **EventBridgeAbility** | `component/abilities` | eventBridge 声明式事件桥接，自动绑定/自动销毁 |
 
 ## 组件能力映射
 
@@ -386,7 +387,7 @@ class MyToolbar extends ComponentBase {
 
 ## 事件桥接（EventBridgeAbility）
 
-工具栏与数据组件之间的事件绑定方案。工具栏只管发事件，数据组件声明"我要监听谁的事件"，EventBridge 自动创建监听。
+所有组件自动拥有此能力（BASE_ABILITIES）。声明式配置事件源，自动创建监听，组件 dispose 时通过 onCleanup 自动销毁。
 
 ### 核心思路
 
@@ -397,6 +398,7 @@ Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBrid
 - 工具栏：PaginationAbility 发 `pagechange`，CrudAbility 发 `crudaction`
 - 数据组件：声明 `eventBridge: { pagination: { source: 'toolbarId' }, crud: { source: 'toolbarId' } }`
 - EventBridgeAbility：自动查找源组件，创建事件监听，调用目标组件的 `onPageChange`/`onCreate`/`onDelete` 等方法
+- 自动销毁：通过 `onCleanup` 注册 off 函数，组件 dispose 时自动解绑
 
 ### 布局定义
 
@@ -406,13 +408,16 @@ Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBrid
   showCreate: true, showDelete: true, showRefresh: true,
   currentPage: 1, totalPages: 10, totalRecords: 95 }
 
-// 表格 - 声明监听
+// 表格 - 完整配置
 { type: 'Table', id: 'myTable',
   eventBridge: {
     pagination: { source: 'myToolbar' },
     crud: { source: 'myToolbar', actions: ['create', 'delete', 'refresh'] }
   }
 }
+
+// 字符串简写
+{ type: 'Table', eventBridge: { pagination: 'myToolbar', crud: 'myToolbar' } }
 ```
 
 ### CRUD action 过滤
@@ -430,10 +435,12 @@ crud: { source: 'toolbar1' }
 ```js
 eventBridge: {
   // 内置桥接
-  pagination: { source: 'toolbar1' },
+  pagination: 'toolbar1',
   crud: { source: 'toolbar2', actions: ['save'] },
-  // 自定义桥接
-  filter: { source: 'filterBar', event: 'filterchange', handler: 'onFilterChange' }
+  // 自定义桥接：Grid 选择
+  selection: { source: 'myGrid', event: 'selectionchange', handler: 'onSelectionChange' },
+  // 自定义桥接：过滤
+  filter: { source: 'filterBar', event: 'filterchange' }
 }
 ```
 
@@ -452,6 +459,21 @@ TableComponent 和 FormComponent 已内置默认处理方法：
 | onExport | crudaction(export) | emit('table:export') | — |
 | onSave | crudaction(save) | emit('table:save') | submit() + emit |
 
+### 自动销毁机制
+
+```
+组件 dispose()
+  └── ComposableBase.dispose()
+       ├── 1. cleanups 逆序执行
+       │    ├── scope.dispose() → EventScope 自动解绑所有事件
+       │    ├── onCleanup(off) → EventBridge 注册的 off 函数自动调用
+       │    └── ... 其他清理
+       ├── 2. debounce cancel
+       └── 3. abilityStates.clear()
+```
+
+EventBridgeAbility 通过 `onCleanup(off)` 注册源组件的 off 函数，组件 dispose 时自动解绑，无需手动清理。
+
 ### 时序保证
 
-EventBridgeAbility 使用 `queueMicrotask` 延迟绑定，确保同一轮 mount 的所有组件都注册到 ComponentManager 后再查找源组件。dispose() 时自动清理所有监听。
+EventBridgeAbility 使用 `queueMicrotask` 延迟绑定，确保同一轮 mount 的所有组件都注册到 ComponentManager 后再查找源组件。
