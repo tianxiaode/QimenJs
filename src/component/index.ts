@@ -20,12 +20,12 @@ export type { PropAliasMap, EventBridgeConfig, PaginationBridgeConfig, CrudBridg
 export { ContentAbility, type ContentSlotsDecl, PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
 export { createContentManager, I18N_PREFIX } from '@qimenjs/component-abilities';
 export type { ContentManagerConfig } from '@qimenjs/component-abilities';
-export { ValueAbility, ValidateAbility, PlaceholderAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
+export { ValueAbility, ValidateAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
 export { EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility } from '@qimenjs/component-abilities';
 export { EntityLocalReadonlyAbility, EntityLocalCrudAbility, EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility } from '@qimenjs/component-abilities';
 export { SelectionAbility, SelectableAbility } from '@qimenjs/component-abilities';
 export { ChildrenAbility } from '@qimenjs/component-abilities';
-export { RenderAbility, VirtualListAbility, OverlayAbility, AnimationAbility } from '@qimenjs/component-abilities';
+export { VirtualListAbility, OverlayAbility, AnimationAbility } from '@qimenjs/component-abilities';
 export { ClickAbility, OptionsAbility, SearchAbility, SortAbility, OpenableAbility, LayoutAbility } from '@qimenjs/component-abilities';
 export { ColumnAbility, ColumnManageAbility } from '@qimenjs/component-abilities';
 export type { ColumnDefinition } from '@qimenjs/component-abilities';

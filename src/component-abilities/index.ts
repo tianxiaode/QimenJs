@@ -34,7 +34,6 @@ export { positionOverlay, type Placement } from './content';
 // 数据能力
 export { ValueAbility } from './data';
 export { ValidateAbility } from './data';
-export { PlaceholderAbility } from './data';
 export { SubmitAbility } from './data';
 export { FieldSetAbility } from './data';
 
@@ -59,7 +58,6 @@ export { SelectableAbility } from './selection';
 export { ChildrenAbility } from './children';
 
 // 渲染能力
-export { RenderAbility } from './render';
 export { VirtualListAbility } from './render';
 export { OverlayAbility } from './render';
 export { AnimationAbility } from './render';

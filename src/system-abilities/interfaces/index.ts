@@ -60,10 +60,27 @@ export interface IEventAbility {
  */
 export interface IDomEventsAbility {
     /**
-     * 绑定DOM事件
+     * 绑定原生 DOM 事件到组件根元素
+     *
+     * 简单的 el.addEventListener 封装，自动在组件 dispose 时解绑。
+     * 适用于 click/input/focus/submit 等标准 DOM 事件。
+     * renderer 的 bind-handler 处理器使用此方法绑定 handlers。
+     *
+     * @param event - DOM 事件名（如 'click'、'input'、'submit'）
+     * @param handler - 事件处理器
+     * @returns 取消绑定函数
+     */
+    onDom(event: string, handler: (e: Event) => void): () => void;
+
+    /**
+     * 绑定事件到目标元素
+     *
+     * 支持两种语义：
+     * - GestureSemantic（click/tap/swipe/longpress 等）：走 Processor 流程
+     * - InputSignal（input/change/focus/blur/submit 等）：直接绑定，不走 Processor
      *
      * @param target - 目标元素
-     * @param semantic - 事件语义
+     * @param semantic - 事件语义（GestureSemantic 或 InputSignal）
      * @param handler - 事件处理器
      * @param options - 绑定选项
      */
@@ -81,7 +98,7 @@ export interface IDomEventsAbility {
     ): void;
 
     /**
-     * 解绑DOM事件
+     * 解绑手势语义事件
      *
      * @param target - 目标元素
      * @param semantic - 事件语义

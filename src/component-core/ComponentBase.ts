@@ -4,18 +4,19 @@
  * 从 ComposableBase 派生，所有 UI 组件的根类。
  * 通过 Ability 组合获得各种 UI 能力。
  *
- * ComponentBase 默认提供以下通用能力：
+ * ComponentBase 通过 static abilities 声明基础能力：
+ * - EventAbility：事件监听/发射，on/once/emit/emitUI
+ * - DomEventsAbility：DOM 手势事件绑定，bind(target, semantic)
  * - ThemeAbility：主题感知，自动响应主题切换
  * - StyleAbility：样式管理，className/style/addClass/removeClass
- * - EventAbility（来自 system-abilities）：事件监听/发射，on/once/emit/emitUI
- * - DomEventsAbility（来自 system-abilities）：DOM 手势事件绑定，bind(target, semantic)
+ * - EventBridgeAbility：声明式事件桥接
  *
- * 子类通过 static abilities 声明额外能力，派生组件根据特有属性添加对应能力。
+ * 子类通过 static abilities 声明额外能力，ComposableBase 会自动沿原型链合并。
  *
  * @example
  * ```typescript
  * class ButtonComponent extends ComponentBase {
- *     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, SizeAbility];
+ *     static override readonly abilities = [ContentAbility, ClickAbility, DisableAbility, SizeAbility];
  * }
  * ```
  */
@@ -28,21 +29,13 @@ import { StyleAbility } from './abilities/StyleAbility';
 import { EventBridgeAbility } from './abilities/EventBridgeAbility';
 import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 import { ComponentManager } from './ComponentManager';
+import { RegistryHub } from '@qimenjs/registry';
 
 /** 组件 DOM 元素上挂载组件引用的属性名 */
 const Q_COMPONENT_REF = '__qComponent';
 
 /** 组件 DOM 元素上设置 id 标识的属性名 */
 const Q_DATA_ID = 'data-q-id';
-
-/** 所有 UI 组件共享的基础能力 */
-const BASE_ABILITIES: readonly AbilityDefinition[] = [
-    EventAbility,
-    DomEventsAbility,
-    ThemeAbility,
-    StyleAbility,
-    EventBridgeAbility,
-];
 
 /**
  * UI 组件基类
@@ -52,12 +45,18 @@ const BASE_ABILITIES: readonly AbilityDefinition[] = [
  */
 export class ComponentBase extends ComposableBase {
     /**
-     * 子类应该重写此属性声明所需能力
+     * 基础能力声明
      *
-     * ComponentBase 默认提供 ThemeAbility、StyleAbility、EventBindingAbility
-     * 子类可以覆盖此属性添加更多能力
+     * ComposableBase.collectAbilities() 会沿原型链收集每层的 static abilities 并合并。
+     * 子类只需声明自己的 abilities，无需重写 collectAbilities。
      */
-    static override readonly abilities: readonly AbilityDefinition[] = [];
+    static override readonly abilities: readonly AbilityDefinition[] = [
+        EventAbility,
+        DomEventsAbility,
+        ThemeAbility,
+        StyleAbility,
+        EventBridgeAbility,
+    ];
 
     /** 组件根 DOM 元素 */
     el!: HTMLElement;
@@ -120,17 +119,12 @@ export class ComponentBase extends ComposableBase {
         // 2. 从 HtmlTemplateRegistrar 获取模板并注入
         const templateId = (this.constructor as any).templateId || this.type;
         if (templateId) {
-            try {
-                const { RegistryHub } = require('@qimenjs/registry');
-                const registrar = RegistryHub.get('html');
-                if (registrar && typeof registrar.get === 'function') {
-                    const templateHtml = registrar.get(templateId);
-                    if (templateHtml) {
-                        this.el.innerHTML = templateHtml;
-                    }
+            const registrar = RegistryHub.get('html');
+            if (registrar && typeof registrar.get === 'function') {
+                const templateHtml = registrar.get(templateId);
+                if (templateHtml) {
+                    this.el.innerHTML = templateHtml;
                 }
-            } catch (e) {
-                // Registrar 不可用，跳过
             }
         }
     }
@@ -147,36 +141,14 @@ export class ComponentBase extends ComposableBase {
         }
         const id = templateId || (this.constructor as any).templateId || this.type;
         if (id) {
-            try {
-                const { RegistryHub } = require('@qimenjs/registry');
-                const registrar = RegistryHub.get('html');
-                if (registrar && typeof registrar.get === 'function') {
-                    const templateHtml = registrar.get(id);
-                    if (templateHtml) {
-                        this.el.innerHTML = templateHtml;
-                    }
+            const registrar = RegistryHub.get('html');
+            if (registrar && typeof registrar.get === 'function') {
+                const templateHtml = registrar.get(id);
+                if (templateHtml) {
+                    this.el.innerHTML = templateHtml;
                 }
-            } catch (e) {
-                // Registrar 不可用，跳过
             }
         }
-    }
-
-    /**
-     * 收集能力：合并基础能力 + 子类声明的能力
-     */
-    protected override collectAbilities(): AbilityDefinition[] {
-        const subAbilities = super.collectAbilities();
-        // 基础能力在前，子类能力在后（子类可覆盖基础能力的同名属性）
-        const all = [...BASE_ABILITIES, ...subAbilities];
-
-        // 去重
-        const seen = new Set<any>();
-        return all.filter(a => {
-            if (seen.has(a)) return false;
-            seen.add(a);
-            return true;
-        });
     }
 
     /**

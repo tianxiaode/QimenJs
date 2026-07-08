@@ -55,13 +55,342 @@ ComposableBase (src/composable/ComposableBase.ts)
 
 ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都拥有）：
 
-| 能力 | 文件 | 说明 |
+| 能力 | 接口 | 文件 | 说明 |
+|------|------|------|------|
+| EventAbility | IEventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
+| DomEventsAbility | IDomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配（含 onDom） |
+| ThemeAbility | IThemeAbility | `src/component-core/abilities/ThemeAbility.ts` | 主题感知 |
+| StyleAbility | IStyleAbility | `src/component-core/abilities/StyleAbility.ts` | 样式管理 |
+| EventBridgeAbility | IEventBridgeAbility | `src/component-core/abilities/EventBridgeAbility.ts` | 声明式事件桥接（含 navigate） |
+| RenderAbility | IRenderAbility | `src/component-core/abilities/RenderAbility.ts` | 模板注入与切换 |
+| LifecycleAbility | ILifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 挂载/卸载/销毁/组件树 |
+| PositionAbility | IPositionAbility | `src/component-core/abilities/PositionAbility.ts` | 位置/尺寸/约束/视觉（x/y/top/left/width/height/margin/padding/max*/min*/scrollable/center/hideMode/alwaysOnTop/fullscreen/shadow/tabIndex/zIndex） |
+| ChildrenAbility | IChildrenAbility | `src/component-abilities/children/ChildrenAbility.ts` | 子组件管理/渲染（add/remove/removeAll，按需声明） |
+
+### 1.4 按需能力（组件通过 static abilities 声明）
+
+| 能力 | 接口 | 文件 | 说明 |
+|------|------|------|------|
+| StateAbility | IStateAbility | `src/component-core/abilities/StateAbility.ts` | 响应式更新（markDirty + update） |
+| ContentAbility | IContentAbility | `src/component-abilities/content/ContentAbility.ts` | 内容位管理（图标/文本/浮层） |
+
+### 1.5 能力接口定义
+
+> 2026-07-08 重构：从 ComponentBase 抽出 RenderAbility、LifecycleAbility、StateAbility，
+> ComponentBase 只保留身份属性（cid/id/type/props）和能力收集/初始化骨架。
+
+#### IRenderAbility — 渲染能力
+
+```typescript
+interface IRenderAbility {
+    /** 组件根 DOM 元素 */
+    readonly el: HTMLElement;
+
+    /** 重新初始化元素内容（切换模板） */
+    reinitElement(templateId?: string): void;
+}
+```
+
+- `el` 创建在 constructor 中（`document.createElement`），不经过 `__initProps`
+- 模板注入在 `__initProps` 中（从 HtmlTemplateRegistrar 获取 → `el.innerHTML`）
+- `reinitElement` 切换模板时使用，修复了旧版修改 static templateId 的 bug
+
+#### ILifecycleAbility — 生命周期能力
+
+```typescript
+interface ILifecycleAbility {
+    /** 是否已挂载 */
+    readonly mounted: boolean;
+
+    /** 是否已销毁 */
+    readonly destroyed: boolean;
+
+    /** 父组件引用 */
+    parent: ComponentBase | null;
+
+    /** 挂载到目标容器 */
+    mount(container: HTMLElement | string): void;
+
+    /** 从 DOM 卸载 */
+    unmount(): void;
+
+    /** 销毁组件 */
+    dispose(): void;
+
+    /** 沿父链查找祖先组件 */
+    up(type: string): ComponentBase | null;
+}
+```
+
+- `mount` 负责：DOM 挂载 + ComponentManager 注册 + Q_COMPONENT_REF/Q_DATA_ID + initAbilitiesFromProps
+- `dispose` 负责：ComponentManager 注销 + DOM 引用清理 + parent 清除 + super.dispose()
+- `up` 从 ComponentBase 移入，语义上与组件树导航配套
+
+#### IStateAbility — 状态能力
+
+```typescript
+interface IStateAbility {
+    /** 更新组件（由子类实现具体逻辑） */
+    update(props?: Record<string, any>): void;
+
+    /** 标记需要更新，同一微任务内只执行一次 update */
+    markDirty(): void;
+}
+```
+
+- 不是所有组件都需要：Separator、Space 等静态组件不需要
+- 需要 markDirty 的能力：ValueAbility、ContentAbility、VirtualListAbility、ColumnAbility、OptionsAbility
+
+#### IStyleAbility — 样式能力
+
+```typescript
+interface IStyleAbility {
+    className: string;
+    style: Record<string, string> | undefined;
+
+    addClass(name: string): void;
+    removeClass(name: string): void;
+    toggleClass(name: string, force?: boolean): void;
+    hasClass(name: string): boolean;
+    replaceClass(oldName: string, newName: string): void;
+
+    setStyle(propOrProps: string | Record<string, string>, value?: string): any;
+    getStyle(prop: string): string;
+    removeStyle(prop: string): void;
+
+    setAttribute(attr: string, value: string): void;
+    getAttribute(attr: string): string | null;
+    removeAttribute(attr: string): void;
+}
+```
+
+#### IThemeAbility — 主题能力
+
+```typescript
+interface IThemeAbility {
+    /** 主题变更回调 */
+    onThemeChange?(event: any): void;
+}
+```
+
+#### IContentAbility — 内容能力
+
+```typescript
+interface IContentAbility {
+    /** 更新所有内容位的 i18n 翻译 */
+    updateAllI18n(): void;
+
+    /** 获取所有 i18n 原始 key */
+    getI18nKeys(): Record<string, Record<string, string>>;
+}
+```
+
+#### IEventBridgeAbility — 事件桥接能力
+
+```typescript
+interface IEventBridgeAbility {
+    /** 事件桥接配置 */
+    eventBridge: Record<string, any>;
+
+    /** 初始化事件桥接 */
+    initEventBridge(): void;
+}
+```
+
+### 1.6 重构后 ComponentBase 骨架
+
+重构后 ComponentBase 只保留身份属性和能力收集/初始化骨架：
+
+```typescript
+export class ComponentBase extends ComposableBase {
+    static override readonly abilities: readonly AbilityDefinition[] = [];
+
+    readonly cid: string;
+    id: string | undefined;
+    type: string = '';
+    readonly props: Record<string, any>;
+
+    constructor(props?: Record<string, any>) {
+        super();
+        this.cid = string.getId('q-comp');
+        this.props = props || {};
+        if (this.props.id) this.id = this.props.id;
+        if (this.props.type) this.type = this.props.type;
+    }
+
+    protected override collectAbilities(): AbilityDefinition[] { /* 合并 BASE_ABILITIES */ }
+    protected override applyOverrides(): void { /* PropAlias */ }
+}
+```
+
+其余功能全部由 BASE_ABILITIES 中的能力提供：
+- `el` / `reinitElement` → RenderAbility
+- `mount` / `unmount` / `dispose` / `mounted` / `destroyed` / `parent` / `up` → LifecycleAbility
+- `update` / `markDirty` → StateAbility（按需，非 BASE）
+
+### 1.7 事件绑定链路
+
+组件有三种事件绑定机制，分别在不同层级处理：
+
+#### 机制一：handlers（发送方声明，renderer 绑定）
+
+Layout JSON 中通过 `handlers` 字段声明 DOM 事件映射，renderer 的 bind-handler 处理器负责解析和绑定。
+
+```
+LayoutNode.handlers
+  → renderer/bind-handler.ts 解析
+  → component.onDom(event, handler) 绑定到 el
+  → EventBindingAbility.onDom() 封装 addEventListener + 自动清理
+```
+
+handlers 支持三种形式：
+
+| 形式 | 示例 | 绑定方式 |
+|------|------|----------|
+| 字符串 | `{ click: "onDelete" }` | 从 RenderContext.handlers 查找函数，onDom 绑定 |
+| HandlerAction | `{ click: { action: "close", target: "dialog1" } }` | onDom 绑定，触发时执行内置动作分发 |
+| 函数 | `{ click: (cmp, e) => {} }` | bind 到组件后 onDom 绑定 |
+
+**关键依赖**：renderer 调用 `component.onDom()`，这是 EventBindingAbility 提供的方法。
+EventBindingAbility 当前标记为 @deprecated，但 renderer 仍在使用，重构时需要决定：
+- 保留 onDom 并归入 IDomEventsAbility
+- 或将 renderer 迁移到 DomEventsAbility.bind()
+
+#### 机制二：stateTriggers（接收方声明，renderer 绑定）
+
+Layout JSON 中通过 `stateTriggers` 字段声明监听哪些事件源的哪些事件，renderer 的 mount 处理器负责绑定到 globalEventBus。
+
+```
+LayoutNode.stateTriggers
+  → renderer/mount.ts bindStateTriggers() 解析
+  → globalEventBus.on(source:type, handler) 绑定
+  → handler 中调用 component[methodName](eventContext)
+  → 组件销毁时 onCleanup 自动解绑
+```
+
+示例：
+
+```json
+{
+    "type": "Table",
+    "id": "userTable",
+    "stateTriggers": [
+        { "source": "toolbar", "events": { "pageChange": "onPageChange", "crudAction": "onCrudAction" } }
+    ]
+}
+```
+
+#### 机制三：eventBridge（接收方声明，能力自动绑定）
+
+组件通过 props.eventBridge 配置声明监听哪个组件的什么事件，EventBridgeAbility 在 `__initProps` 中自动绑定。
+
+```
+props.eventBridge
+  → EventBridgeAbility.__initProps() 解析
+  → queueMicrotask → initEventBridge()
+  → ComponentManager.get(sourceId) 查找源组件
+  → source.on(event, handler) 在源组件上注册监听
+  → onCleanup 自动解绑
+```
+
+内置桥接类型：
+
+| key | 监听事件 | 调用方法 |
+|-----|----------|----------|
+| pagination | PAGINATION_EVENTS.CHANGE | onPageChange |
+| crud | CRUD_EVENTS.ACTION | onCreate/onEdit/onDelete/... |
+| selection | SELECTION_EVENTS.CHANGE | onSelectionChange |
+| search | SEARCH_EVENTS.CHANGE | onSearchChange |
+| navigate | NAVIGATE_EVENTS.CHANGE | onNavigate |
+| 自定义 | 自定义 event | 自定义 handler |
+
+#### 三种机制对比
+
+| 机制 | 视角 | 绑定位置 | 事件源 | 适用场景 |
+|------|------|----------|--------|----------|
+| handlers | 发送方 | renderer bind-handler | DOM 事件 | 简单 UI 交互（click/input/submit） |
+| stateTriggers | 接收方 | renderer mount | globalEventBus | 组件联动 + 数据联动 + 全局状态 |
+| eventBridge | 接收方 | EventBridgeAbility | 源组件的 on() | 声明式组件间事件桥接 |
+
+**底层统一**：handlers 最终走 onDom（addEventListener），stateTriggers 和 eventBridge 最终走 globalEventBus.on（EventBus）。
+
+### 1.8 内部渲染模型
+
+> 2026-07-08 设计：组件内部递归渲染，不依赖外部 renderer。
+
+#### 核心思路
+
+组件自己负责渲染子组件，从根组件开始逐层递归。不再由外部 renderer 驱动。
+
+```
+app.start()
+    ↓
+new RootComponent()              // 根组件，创建 div 挂载到 body
+    ↓
+root.add(MainLayout)             // 接收 LayoutNode JSON
+    ↓
+RootComponent.render()           // 递归渲染
+    ├── 解析 LayoutNode JSON
+    ├── type → ComponentRegistrar 查找组件类
+    ├── new XxxComponent(props)  // 创建子组件
+    ├── child.mount(this.el)     // 挂载到父 el
+    ├── 解析 children → 递归 render
+    ├── 解析 handlers → onDom 绑定
+    ├── 解析 stateTriggers → globalEventBus 绑定
+    └── 解析 eventBridge → EventBridgeAbility 处理
+```
+
+#### 与旧模型的对比
+
+| | 旧模型（外部 renderer） | 新模型（内部渲染） |
+|---|---|---|
+| 驱动方 | renderer.render(layoutJSON) | component.add(layout).render() |
+| 子组件创建 | renderer BIND_CHILDREN 步骤 | 父组件 ChildrenAbility |
+| 事件绑定 | renderer bind-handler 步骤 | 组件能力自行处理 |
+| 数据绑定 | renderer bind-schema 步骤 | 组件能力自行处理 |
+| 渲染管线 | 12 个处理器按权重执行 | 组件 render() 递归调用 |
+
+#### 职责划分
+
+| 职责 | 归属 | 说明 |
 |------|------|------|
-| EventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
-| DomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配 |
-| ThemeAbility | `src/component-core/abilities/ThemeAbility.ts` | 主题样式 |
-| StyleAbility | `src/component-core/abilities/StyleAbility.ts` | 自定义样式 |
-| EventBridgeAbility | `src/component-core/abilities/EventBridgeAbility.ts` | 声明式事件桥接 |
+| 解析 LayoutNode JSON | ChildrenAbility | 拆解 JSON，创建子组件，挂载到父 el |
+| handlers 绑定 | DomEventsAbility（onDom） | 组件创建后自行绑定 DOM 事件 |
+| stateTriggers 绑定 | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
+| eventBridge 绑定 | EventBridgeAbility | __initProps 中自动处理 |
+| props 初始化 | 各能力的 __initProps | mount 时统一调用 |
+
+#### RootComponent
+
+最简单的起步：一个 div 挂载到 body，添加样式，然后递归渲染子组件。
+
+```typescript
+class RootComponent extends ComponentBase {
+    static override readonly abilities = [LifecycleAbility, ChildrenAbility];
+
+    constructor() {
+        super();
+        this.el.classList.add('q-app');
+    }
+
+    /** 启动应用 */
+    start(container?: HTMLElement): void {
+        const target = container ?? document.body;
+        this.mount(target);
+    }
+
+    /** 添加布局定义 */
+    add(layout: LayoutNode): this {
+        this.renderLayout(layout);
+        return this;
+    }
+
+    /** 渲染布局 */
+    renderLayout(layout: LayoutNode): void {
+        // ChildrenAbility 负责：解析 JSON → 创建子组件 → 挂载
+    }
+}
+```
 
 ---
 
@@ -401,3 +730,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | 新增 IconAbility + createContentManager：图标能力使用 ContentManager 模式管理多图标；TextAbility 重写支持 ContentManager 模式（兼容旧 data-ref 模式）；ButtonComponent 重写使用 IconAbility + TextAbility；删除 TemplateRegistry（统一使用 HtmlTemplateRegistrar）；新增 content/ 目录 |
 | 2026-07-08 | 工具栏重构：ToolbarAbility 新增外观声明（q-toolbar 类名 + role="toolbar" + 默认 gap=sm）和折叠切换（collapsed 属性 + toggleCollapsed 方法 + toolbarcollapsechange 事件）；ToolbarComponent 移除硬编码 PaginationAbility/CrudAbility/SearchAbility（改为 meta.abilities 按需注入），新增 direction 属性支持横/竖布局；新增 IconComponent（IconAbility + SizeAbility）和 TextComponent（TextAbility + SizeAbility）预置组件；新增 ComponentTypes.ICON/TEXT；新增 toolbarCSS 折叠样式 |
 | 2026-07-08 | 浮层能力：新增 ContentPrefix 常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合；新增 createOverlayManager 工厂方法（模板获取、DOM 创建、定位计算、生命周期管理）；新增 positionOverlay 定位工具函数（4方向定位、自动翻转、视口约束）；createContentManager 检测浮层前缀时自动调用 createOverlayManager；新增 Tips/Dropdown/Popover 模板；现有组件 contentSlots 迁移为 ContentPrefix 常量引用 |
+| 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IEventBridgeAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |

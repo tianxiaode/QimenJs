@@ -289,6 +289,98 @@ describe('DomEventAdapter', () => {
             // 验证移除监听器被调用
             expect(mockTarget.removeEventListener).toHaveBeenCalledTimes(2);
         });
+
+        it('should bind InputSignal directly without Processor', () => {
+            // 添加 input 信号到 inputEventMap
+            inputEventMap.input = {
+                keyboard: ['input'],  // input 事件用 other/keyboard 类型
+            };
+
+            const emitSpy = jest.spyOn(mockEventScope, 'emit');
+
+            const unbind = domEventAdapter.bind(mockTarget, 'input' as InputSignal, mockEventScope);
+
+            // 验证直接绑定了 DOM 事件（不走 Processor）
+            expect(mockTarget.addEventListener).toHaveBeenCalledWith(
+                'input',
+                expect.any(Function),
+                undefined
+            );
+            // 不应该创建 gesture processor
+            expect(createGestureProcessor).not.toHaveBeenCalled();
+
+            // 验证返回的解绑函数可用
+            expect(unbind).toBeDefined();
+            expect(typeof unbind).toBe('function');
+        });
+
+        it('should emit InputSignal events through scope when triggered', () => {
+            // 添加 focus 信号到 inputEventMap
+            inputEventMap.focus = {
+                keyboard: ['focus'],
+            };
+
+            const emitSpy = jest.spyOn(mockEventScope, 'emit');
+
+            domEventAdapter.bind(mockTarget, 'focus' as InputSignal, mockEventScope);
+
+            // 获取绑定的 handler
+            const addEventListenerCalls = (mockTarget.addEventListener as jest.Mock).mock.calls;
+            const eventHandler = addEventListenerCalls[0][1];
+
+            // 模拟触发 focus 事件
+            const mockEvent = new FocusEvent('focus');
+            eventHandler(mockEvent);
+
+            // 验证通过 scope.emit 发射了 InputSignal 事件
+            expect(emitSpy).toHaveBeenCalledWith(
+                'focus',
+                expect.objectContaining({
+                    signal: 'focus',
+                    originalEvent: mockEvent,
+                }),
+                undefined
+            );
+        });
+
+        it('should unbind InputSignal events when returned function is called', () => {
+            // 添加 change 信号到 inputEventMap
+            inputEventMap.change = {
+                keyboard: ['change'],
+            };
+
+            const unbind = domEventAdapter.bind(mockTarget, 'change' as InputSignal, mockEventScope);
+
+            // 验证绑定了事件
+            expect(mockTarget.addEventListener).toHaveBeenCalledWith(
+                'change',
+                expect.any(Function),
+                undefined
+            );
+
+            // 执行解绑
+            unbind();
+
+            // 验证移除了监听器
+            expect(mockTarget.removeEventListener).toHaveBeenCalledWith(
+                'change',
+                expect.any(Function),
+                undefined
+            );
+        });
+
+        it('should return empty function when semantic is neither GestureSemantic nor InputSignal', () => {
+            const unbind = domEventAdapter.bind(
+                mockTarget,
+                'unknown' as any,
+                mockEventScope
+            );
+
+            expect(unbind).toBeDefined();
+            expect(typeof unbind).toBe('function');
+            // 不应该绑定任何事件
+            expect(mockTarget.addEventListener).not.toHaveBeenCalled();
+        });
     });
 
     describe('bindInputSignals method', () => {
