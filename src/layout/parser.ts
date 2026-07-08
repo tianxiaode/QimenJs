@@ -3,52 +3,59 @@
  *
  * 解析 Layout 定义，返回标准化的 LayoutNode。
  * 支持嵌套 children 递归解析，处理 handlers 中的字符串和 HandlerAction 混合形式。
- * 支持扁平化 props：非保留字的顶层属性自动归入 props，显式 props 优先。
+ * PositionProps 属性（x/y/width 等）直接保留在顶层，不归入 props。
  */
 
-import type { LayoutNode, HandlerAction } from './LayoutNode';
+import type { LayoutNode, HandlerAction, PositionProps } from './LayoutNode';
+import { KernelError } from '../error/KernelError';
+import { KernelErrorCode } from '../error/codes';
 
 /**
  * 框架保留字集合
  *
  * 这些顶层字段有特殊语义，不会自动归入 props。
- * 用户定义布局时，非保留字的顶层属性会自动合并到 props 中。
  */
 const RESERVED_KEYS = new Set([
-    'type', 'id', 'field', 'props', 'children', 'handlers', 'meta',
-    'slots', 'visible', 'repeat', 'responsive', 'stateTriggers',
+    'type', 'id', 'field', 'children', 'handlers', 'extraFns', 'abilities', 'meta',
+    'visible', 'repeat', 'responsive', 'stateTriggers',
+]);
+
+/**
+ * PositionProps 的所有 key 集合
+ *
+ * 这些属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+const POSITION_KEYS = new Set<string>([
+    'x', 'y', 'top', 'left', 'bottom', 'right',
+    'width', 'height',
+    'minWidth', 'maxWidth', 'minHeight', 'maxHeight',
+    'margin', 'padding',
+    'scrollable', 'center',
+    'hideMode',
+    'alwaysOnTop', 'fullscreen',
+    'shadow',
+    'focused',
+    'tabIndex', 'zIndex',
 ]);
 
 /**
  * 解析 Layout 定义，返回标准化的 LayoutNode
  *
- * 支持扁平化写法：
+ * 解析规则：
  * - 保留字字段（type/id/field/handlers/...）保持在顶层
- * - 非保留字的顶层属性自动归入 props
- * - 显式 props 中的属性优先级高于扁平化属性
- *
- * @example
- * ```js
- * // 扁平化写法（推荐）
- * parseLayout({ type: ComponentTypes.BUTTON, text: '提交', variant: 'primary' })
- * // 等价于
- * parseLayout({ type: ComponentTypes.BUTTON, props: { text: '提交', variant: 'primary' } })
- *
- * // 混合写法：显式 props 优先
- * parseLayout({ type: ComponentTypes.BUTTON, text: '默认', props: { text: '覆盖' } })
- * // → props.text === '覆盖'
- * ```
+ * - PositionProps 属性（x/y/width/...）直接提取到顶层
+ * - 非保留字、非 PositionProps 的顶层属性归入 props
  *
  * @param layout - 原始 Layout 定义
  * @returns 标准化的 LayoutNode
  */
 export function parseLayout(layout: Record<string, any>): LayoutNode {
     if (!layout || typeof layout !== 'object') {
-        throw new Error('Layout definition must be a non-null object');
+        throw new KernelError('Layout definition must be a non-null object', KernelErrorCode.LAYOUT_INVALID_DEFINITION);
     }
 
     if (!layout.type || typeof layout.type !== 'string') {
-        throw new Error('Layout definition must have a non-empty "type" field');
+        throw new KernelError('Layout definition must have a non-empty "type" field', KernelErrorCode.LAYOUT_MISSING_TYPE);
     }
 
     const node: LayoutNode = {
@@ -63,9 +70,26 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
     if (layout.responsive !== undefined) node.responsive = layout.responsive;
     if (layout.stateTriggers !== undefined) node.stateTriggers = layout.stateTriggers;
 
+    // PositionProps 属性直接提取到顶层
+    for (const key of POSITION_KEYS) {
+        if (layout[key] !== undefined) {
+            (node as any)[key] = layout[key];
+        }
+    }
+
     // 解析 handlers
     if (layout.handlers) {
         node.handlers = parseHandlers(layout.handlers);
+    }
+
+    // 解析 extraFns
+    if (layout.extraFns && typeof layout.extraFns === 'object') {
+        node.extraFns = layout.extraFns;
+    }
+
+    // 解析 abilities
+    if (layout.abilities && Array.isArray(layout.abilities)) {
+        node.abilities = layout.abilities;
     }
 
     // 解析 meta
@@ -73,30 +97,20 @@ export function parseLayout(layout: Record<string, any>): LayoutNode {
         node.meta = layout.meta;
     }
 
-    // 解析 slots
-    if (layout.slots) {
-        node.slots = parseSlots(layout.slots);
-    }
-
     // 递归解析 children
     if (layout.children && Array.isArray(layout.children)) {
         node.children = layout.children.map((child: any) => parseLayout(child));
     }
 
-    // 扁平化 props：非保留字的顶层属性自动归入 props
-    // 显式 props 优先级高于扁平化属性
+    // 剩余非保留字、非 PositionProps 的顶层属性归入 props
     const props: Record<string, any> = {};
     for (const [key, value] of Object.entries(layout)) {
-        if (!RESERVED_KEYS.has(key) && value !== undefined) {
+        if (!RESERVED_KEYS.has(key) && !POSITION_KEYS.has(key) && value !== undefined) {
             props[key] = value;
         }
     }
-    // 显式 props 覆盖扁平化属性
-    if (layout.props && typeof layout.props === 'object') {
-        Object.assign(props, layout.props);
-    }
     if (Object.keys(props).length > 0) {
-        node.props = props;
+        (node as any).props = props;
     }
 
     return node;
@@ -134,21 +148,4 @@ function normalizeHandler(handler: any): string | HandlerAction | ((...args: any
     }
     // 不合法的 handler 格式，转为字符串
     return String(handler);
-}
-
-/**
- * 解析 slots
- */
-function parseSlots(slots: Record<string, any>): Record<string, LayoutNode | LayoutNode[]> {
-    const result: Record<string, LayoutNode | LayoutNode[]> = {};
-
-    for (const [name, content] of Object.entries(slots)) {
-        if (Array.isArray(content)) {
-            result[name] = content.map((item: any) => parseLayout(item));
-        } else if (content && typeof content === 'object') {
-            result[name] = parseLayout(content);
-        }
-    }
-
-    return result;
 }

@@ -87,4 +87,14 @@ export enum KernelErrorCode {
      * 动作注册失败
      */
     ACTION_REGISTRATION_FAILED = 'ACTION_REGISTRATION_FAILED',
+
+    /**
+     * Layout 定义无效，必须是非空对象
+     */
+    LAYOUT_INVALID_DEFINITION = 'LAYOUT_INVALID_DEFINITION',
+
+    /**
+     * Layout 定义缺少有效的 type 字段
+     */
+    LAYOUT_MISSING_TYPE = 'LAYOUT_MISSING_TYPE',
 }

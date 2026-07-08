@@ -3,18 +3,35 @@
  */
 
 import { parseLayout, validateLayout } from '@qimenjs/layout';
+import { KernelError } from '@qimenjs/error';
+import { KernelErrorCode } from '@qimenjs/error';
 
 describe('parseLayout', () => {
-    it('should throw if layout is null', () => {
-        expect(() => parseLayout(null as any)).toThrow('non-null object');
+    it('should throw KernelError with LAYOUT_INVALID_DEFINITION if layout is null', () => {
+        expect(() => parseLayout(null as any)).toThrow(KernelError);
+        try {
+            parseLayout(null as any);
+        } catch (e) {
+            expect((e as KernelError).code).toBe(KernelErrorCode.LAYOUT_INVALID_DEFINITION);
+        }
     });
 
-    it('should throw if layout has no type', () => {
-        expect(() => parseLayout({ id: 'test' } as any)).toThrow('type');
+    it('should throw KernelError with LAYOUT_MISSING_TYPE if layout has no type', () => {
+        expect(() => parseLayout({ id: 'test' } as any)).toThrow(KernelError);
+        try {
+            parseLayout({ id: 'test' } as any);
+        } catch (e) {
+            expect((e as KernelError).code).toBe(KernelErrorCode.LAYOUT_MISSING_TYPE);
+        }
     });
 
-    it('should throw if type is empty string', () => {
-        expect(() => parseLayout({ type: '' })).toThrow('type');
+    it('should throw KernelError with LAYOUT_MISSING_TYPE if type is empty string', () => {
+        expect(() => parseLayout({ type: '' })).toThrow(KernelError);
+        try {
+            parseLayout({ type: '' });
+        } catch (e) {
+            expect((e as KernelError).code).toBe(KernelErrorCode.LAYOUT_MISSING_TYPE);
+        }
     });
 
     it('should parse minimal layout', () => {
@@ -29,12 +46,10 @@ describe('parseLayout', () => {
             type: 'input',
             id: 'name',
             field: 'username',
-            props: { placeholder: 'Enter name' },
             visible: false,
         });
         expect(result.id).toBe('name');
         expect(result.field).toBe('username');
-        expect(result.props).toEqual({ placeholder: 'Enter name' });
         expect(result.visible).toBe(false);
     });
 
@@ -82,17 +97,57 @@ describe('parseLayout', () => {
         expect(result.children![1].id).toBe('inp1');
     });
 
-    it('should parse slots', () => {
+    it('should parse extraFns', () => {
+        const fn = function() { return 42; };
         const result = parseLayout({
-            type: 'panel',
-            slots: {
-                header: { type: 'label' },
-                footer: [{ type: 'button' }, { type: 'link' }],
-            },
+            type: 'button',
+            extraFns: { onSubmit: fn },
         });
-        expect((result.slots!.header as any).type).toBe('label');
-        expect(Array.isArray(result.slots!.footer)).toBe(true);
-        expect(result.slots!.footer).toHaveLength(2);
+        expect(result.extraFns).toBeDefined();
+        expect(result.extraFns!.onSubmit).toBe(fn);
+    });
+
+    it('should parse meta', () => {
+        const result = parseLayout({
+            type: 'toolbar',
+            meta: { abilities: [], customTitle: '我的工具栏' },
+        });
+        expect(result.meta).toBeDefined();
+        expect(result.meta!.customTitle).toBe('我的工具栏');
+    });
+
+    it('should extract PositionProps to top level', () => {
+        const result = parseLayout({
+            type: 'button',
+            x: 100,
+            y: 50,
+            width: 200,
+            height: 40,
+            margin: '10px',
+            hideMode: 'visibility',
+            zIndex: 10,
+        });
+        expect(result.x).toBe(100);
+        expect(result.y).toBe(50);
+        expect(result.width).toBe(200);
+        expect(result.height).toBe(40);
+        expect(result.margin).toBe('10px');
+        expect(result.hideMode).toBe('visibility');
+        expect(result.zIndex).toBe(10);
+    });
+
+    it('should not put PositionProps into props', () => {
+        const result = parseLayout({
+            type: 'button',
+            x: 100,
+            width: 200,
+            placeholder: 'Enter name',
+        });
+        // PositionProps 在顶层
+        expect(result.x).toBe(100);
+        expect(result.width).toBe(200);
+        // 非 PositionProps、非保留字归入 props
+        expect((result as any).props).toEqual({ placeholder: 'Enter name' });
     });
 
     it('should parse repeat config', () => {
