@@ -12,6 +12,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { string } from '@qimenjs/utils';
+import { createEntityManager } from '@qimenjs/entity';
 
 export const EntityCoreAbility: AbilityDefinition = {
     /**
@@ -53,13 +54,8 @@ export const EntityCoreAbility: AbilityDefinition = {
 
         // 1. 根据 entityConfig 创建 EntityManager
         if (config.domain && config.schema && config.type) {
-            try {
-                const { createEntityManager } = require('@qimenjs/entity');
-                if (typeof createEntityManager === 'function') {
-                    this.mgr = createEntityManager(config);
-                }
-            } catch (e) {
-                console.error('EntityCoreAbility: failed to create EntityManager', e);
+            if (typeof createEntityManager === 'function') {
+                this.mgr = createEntityManager(config);
             }
         }
 

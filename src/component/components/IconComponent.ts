@@ -19,10 +19,10 @@ import { ComponentBase } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class IconComponent extends ComponentBase {
-    static override readonly abilities = [SizeAbility];
+    static readonly abilities = [SizeAbility];
 
     /** 根元素标签：span 而非默认的 div */
-    static override readonly elTag = 'span';
+    static readonly elTag = 'span';
 
     private _iconEl: HTMLElement;
 
@@ -42,7 +42,7 @@ export class IconComponent extends ComponentBase {
     get icon(): string { return this._iconEl.innerHTML; }
     set icon(value: string) { this._iconEl.innerHTML = value; }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.icon !== undefined) this.icon = props.icon;
     }
 }

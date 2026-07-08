@@ -7,7 +7,7 @@
  * 派生示例：
  * ```typescript
  * class LinkCell extends CellBase {
- *     static override readonly abilities = [...CellBase.abilities, ClickAbility];
+ *     static readonly abilities = [...CellBase.abilities, ClickAbility];
  *     // 渲染为 <a> 链接
  * }
  * ```
@@ -25,9 +25,9 @@ import { DisableAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class CellBase extends ComponentBase {
-    static override readonly abilities = [ContentAbility, DisableAbility];
+    static readonly abilities = [ContentAbility, DisableAbility];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['default'],
     };
 
@@ -125,7 +125,7 @@ export class CellBase extends ComponentBase {
         this.el.textContent = value ?? '';
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.rowData) this._rowData = props.rowData;
         if (props?.columnDef) this._columnDef = props.columnDef;
         this.renderCell();

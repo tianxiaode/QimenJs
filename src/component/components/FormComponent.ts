@@ -12,10 +12,10 @@ import { SubmitAbility } from '@qimenjs/component-abilities';
 import { FieldSetAbility } from '@qimenjs/component-abilities';
 
 export class FormComponent extends ComponentBase {
-    static override readonly abilities = [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility];
+    static readonly abilities = [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility];
 
     /** 根元素标签：form 而非默认的 div */
-    static override readonly elTag = 'form';
+    static readonly elTag = 'form';
 
     constructor(props?: Record<string, any>) {
         super(props);

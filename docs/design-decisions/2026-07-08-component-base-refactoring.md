@@ -56,35 +56,39 @@ renderTo 不接收 layout，避免挂载和渲染耦合，防止跳过正常渲�
 
 每层父组件只负责自己的直接子节点，子的子由子自己负责。
 
-### 决策三：LayoutNode 结构重组，拆解 meta
-
-旧 LayoutNode 的 `meta` 字段混合了 abilities/methods/data，职责不清。新结构拆解为独立字段：
+### 决策三：LayoutNode 结构重组
 
 ```typescript
-interface LayoutNode {
+interface LayoutNode extends PositionProps {
     type: string;                          // 组件类型 → ComponentRegistrar.get(type)
     id?: string;                           // 组件标识（查找/事件桥接）
-    props?: Record<string, any>;           // 构造函数配置（className/value/label 等）
-    handlers?: Record<string, ...>;        // DOM 事件绑定
+    field?: string;                        // Schema 字段名
+    abilities?: AbilityDefinition[];       // 附加能力（展开后逐个注入实例）
+    handlers?: Record<string, ...>;        // DOM 事件绑定（GestureSemantic | InputSignal）
+    extraFns?: Record<string, Function>;   // 附加函数（bind this 后挂到实例）
+    meta?: LayoutMeta;                     // 纯数据（this.meta.xxx 访问）
     stateTriggers?: StateTrigger[];        // EventBus 事件绑定
-    abilities?: AbilityDefinition[];       // 附加能力（原型复制）
-    methods?: Record<string, Function>;    // 附加方法（bind 到实例）
-    data?: Record<string, any>;            // 附加数据（直接挂到实例）
     children?: LayoutNode[];               // 子布局
+    visible?: boolean | string;            // 条件渲染
+    repeat?: RepeatConfig;                 // 循环渲染
+    responsive?: ResponsiveConfig;         // 响应式配置
+}
+
+// PositionProps 直接在顶层，不嵌套
+interface PositionProps {
+    x?: number; y?: number; top?: number; left?: number; ...
+    width?: number; height?: number;
+    margin?: string; padding?: string;
+    hideMode?: 'display' | 'visibility' | 'opacity';
+    // ... 其他位置/尺寸属性
 }
 ```
 
-对比旧结构：
-- `meta.abilities` → `abilities`（独立字段）
-- `meta` 中的函数 → `methods`（独立字段，bind 到实例）
-- `meta` 中的普通值 → `data`（独立字段，直接挂到实例）
-- 删除 `meta` 字段
+add(layout) 处理顺序：PositionProps → abilities → extraFns → meta → handlers → stateTriggers → children
 
-每个字段职责单一，add(layout) 中按顺序处理：abilities → methods → data → handlers → stateTriggers → children
-
-**handlers 与 methods 的关系**：handlers 只声明"绑定什么事件"，事件处理逻辑写在 methods 里。
-例如 `{ handlers: { click: "onDelete" }, methods: { onDelete(e) { ... } } }`。
-不需要为每个事件处理写新能力，methods 就是事件处理的载体。
+**handlers 与 extraFns 的关系**：handlers 只声明"绑定什么事件"，事件处理逻辑写在 extraFns 里。
+例如 `{ handlers: { click: "onDelete" }, extraFns: { onDelete(e) { ... } } }`。
+不需要为每个事件处理写新能力，extraFns 就是事件处理的载体。
 
 **handlers 绑定方式**：通过 DomEventsAbility 的 `bind(target, semantic)` 绑定。
 handlers 的 key 支持 GestureSemantic 和 InputSignal：
@@ -217,8 +221,8 @@ add(layout: LayoutNode): ComponentLike {
         return null;
     }
 
-    // 2. 合并 props
-    const props = { ...layout.props, id: layout.id, type: layout.type };
+    // 2. 合并 props（非 PositionProps、非保留字的顶层属性 + id/type）
+    const props = { ...(layout as any).props, id: layout.id, type: layout.type };
 
     // 3. 创建组件实例
     const child = new ComponentClass(props);
@@ -227,7 +231,14 @@ add(layout: LayoutNode): ComponentLike {
     child.renderTo(this.el);
     this.addChild(child);
 
-    // 5. 注入额外能力（和 ComposableBase 相同的复制逻辑）
+    // 5. 注入 PositionProps（直接赋给 setter，触发 el.style 操作）
+    for (const key of POSITION_KEYS) {
+        if ((layout as any)[key] !== undefined) {
+            (child as any)[key] = (layout as any)[key];
+        }
+    }
+
+    // 6. 注入 abilities（展开后逐个注入组件实例）
     if (layout.abilities) {
         for (const ability of layout.abilities) {
             for (const key of Object.keys(ability)) {
@@ -247,21 +258,19 @@ add(layout: LayoutNode): ComponentLike {
         }
     }
 
-    // 6. 注入方法
-    if (layout.methods) {
-        for (const [name, fn] of Object.entries(layout.methods)) {
+    // 7. 注入 extraFns（bind this 后挂到实例）
+    if (layout.extraFns) {
+        for (const [name, fn] of Object.entries(layout.extraFns)) {
             Object.defineProperty(child, name, { value: fn.bind(child), configurable: true });
         }
     }
 
-    // 7. 注入数据
-    if (layout.data) {
-        for (const [key, value] of Object.entries(layout.data)) {
-            Object.defineProperty(child, key, { value, configurable: true, writable: true });
-        }
+    // 8. 注入 meta（纯数据，this.meta.xxx 访问）
+    if (layout.meta) {
+        Object.defineProperty(child, 'meta', { value: layout.meta, configurable: true, writable: true });
     }
 
-    // 8. 绑定 handlers
+    // 9. 绑定 handlers
     if (layout.handlers) {
         this.bindHandlers(child, layout.handlers);
     }
@@ -352,14 +361,14 @@ bindStateTriggers(child: ComponentLike, triggers: StateTrigger[]): void {
 - 符合"组件自治"理念——handler 就是组件自己的方法
 - 不需要额外的上下文传递，简化 API
 - 与 stateTriggers 的模式一致（`{ events: { pageChange: "onPageChange" } }` 也是映射到组件方法）
-- meta 中可以注入自定义方法，所以组件方法不限于能力提供的方法
+- extraFns 中可以注入自定义方法，所以组件方法不限于能力提供的方法
 
 ```typescript
-// { click: "onDelete" } → child.onDom('click', child.onDelete.bind(child))
+// { click: "onDelete" } → child.bind(child.el, 'click', child.onDelete.bind(child))
 if (typeof h === 'string') {
     const method = (child as any)[h];
     if (typeof method === 'function') {
-        child.onDom?.(event, method.bind(child));
+        child.bind?.(child.el, semantic, method.bind(child));
     } else {
         this.logger?.warn(`Handler method "${h}" not found on component`);
     }
@@ -410,11 +419,11 @@ app.start('#app');  // 挂载到 #app
 
 app.add({
     type: 'VBox',
-    props: { gap: 'md' },
+    gap: 'md',
     children: [
-        { type: 'Header', props: { title: '用户管理' } },
-        { type: 'Table', id: 'userTable', props: { ... } },
-        { type: 'Toolbar', id: 'toolbar', props: { ... } },
+        { type: 'Header', title: '用户管理' },
+        { type: 'Table', id: 'userTable', ... },
+        { type: 'Toolbar', id: 'toolbar', ... },
     ]
 });
 ```
@@ -469,7 +478,7 @@ const router = {
 
 const UserList = {
     type: 'VBox',
-    props: { gap: 'md' },
+    gap: 'md',
     children: [
         { type: 'Toolbar', id: 'userToolbar', ... },
         { type: 'Table', id: 'userTable', ... },
@@ -479,17 +488,17 @@ const UserList = {
 const UserForm = {
     type: 'Form',
     id: 'userForm',
-    props: { layout: 'vertical' },
+    layout: 'vertical',
     children: [
-        { type: 'Input', props: { field: 'username', label: '用户名' } },
-        { type: 'Input', props: { field: 'email', label: '邮箱' } },
-        { type: 'Select', props: { field: 'role', label: '角色' } },
+        { type: 'Input', field: 'username', label: '用户名' },
+        { type: 'Input', field: 'email', label: '邮箱' },
+        { type: 'Select', field: 'role', label: '角色' },
     ]
 };
 
 const RoleList = {
     type: 'VBox',
-    props: { gap: 'md' },
+    gap: 'md',
     children: [
         { type: 'Toolbar', id: 'roleToolbar', ... },
         { type: 'Table', id: 'roleTable', ... },
@@ -508,9 +517,9 @@ const router = {
 
 const MainLayout: LayoutNode = {
     type: 'VBox',
-    props: { gap: 'md' },
+    gap: 'md',
     children: [
-        { type: 'Header', id: 'appHeader', props: { title: '管理系统' } },
+        { type: 'Header', id: 'appHeader', title: '管理系统' },
         { type: 'Container', id: 'mainContent' },  // 占位容器，子布局渲染到这里
         { type: 'Footer', id: 'appFooter' },
     ]

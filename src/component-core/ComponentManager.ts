@@ -13,6 +13,7 @@
  */
 
 import type { ComponentBase } from './ComponentBase';
+import { EventSourceRegistrar } from '@qimenjs/events';
 
 /**
  * 组件实例管理器
@@ -65,12 +66,7 @@ export class ComponentManager {
             this.byId.set(component.id, component);
 
             // 同步注册到 EventSourceRegistrar
-            try {
-                const { EventSourceRegistrar } = require('@qimenjs/events');
-                EventSourceRegistrar.getInstance().register(component.id, component);
-            } catch (e) {
-                // EventSourceRegistrar 可能不可用，静默处理
-            }
+            EventSourceRegistrar.getInstance().register(component.id, component);
         }
     }
 
@@ -86,12 +82,7 @@ export class ComponentManager {
             this.byId.delete(component.id);
 
             // 同步从 EventSourceRegistrar 注销
-            try {
-                const { EventSourceRegistrar } = require('@qimenjs/events');
-                EventSourceRegistrar.getInstance().unregister(component.id);
-            } catch (e) {
-                // EventSourceRegistrar 可能不可用，静默处理
-            }
+            EventSourceRegistrar.getInstance().unregister(component.id);
         }
     }
 

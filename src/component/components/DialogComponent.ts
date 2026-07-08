@@ -13,9 +13,9 @@ import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
 
 export class DialogComponent extends ComponentBase {
-    static override readonly abilities = [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
+    static readonly abilities = [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['title'],
     };
 

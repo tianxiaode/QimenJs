@@ -149,6 +149,60 @@ export const POPOVER_TEMPLATE = `
 `;
 
 /**
+ * Toast 轻量模板（无标题）
+ *
+ * ref 元素：
+ * - icon — 类型图标
+ * - message — 消息文本
+ */
+export const TOAST_TEMPLATE = `
+    <div class="q-toast__icon" data-ref="icon"></div>
+    <span class="q-toast__message" data-ref="message"></span>
+`;
+
+/**
+ * ToastNotification 增强模板（有标题，覆盖 notification 场景）
+ *
+ * ref 元素：
+ * - title — 标题文本
+ * - closeBtn — 关闭按钮
+ * - icon — 类型图标
+ * - message — 消息文本
+ */
+export const TOAST_NOTIFICATION_TEMPLATE = `
+    <div class="q-toast__header">
+        <span class="q-toast__title" data-ref="title"></span>
+        <button class="q-toast__close" data-ref="closeBtn">&times;</button>
+    </div>
+    <div class="q-toast__icon" data-ref="icon"></div>
+    <span class="q-toast__message" data-ref="message"></span>
+`;
+
+/**
+ * Msgbox 模态消息框模板
+ *
+ * ref 元素：
+ * - title — 标题文本
+ * - content — 内容文本
+ * - input — prompt 输入框
+ * - cancelBtn — 取消按钮
+ * - confirmBtn — 确认按钮
+ */
+export const MSGBOX_TEMPLATE = `
+    <div class="q-msgbox__header">
+        <span class="q-msgbox__title" data-ref="title"></span>
+    </div>
+    <div class="q-msgbox__body">
+        <span class="q-msgbox__content" data-ref="content"></span>
+        <input class="q-msgbox__input" data-ref="input" style="display:none;" />
+    </div>
+    <div class="q-msgbox__footer">
+        <button class="q-msgbox__btn q-msgbox__btn--cancel" data-ref="cancelBtn">取消</button>
+        <button class="q-msgbox__btn q-msgbox__btn--confirm" data-ref="confirmBtn">确定</button>
+    </div>
+`;
+
+/**
  * 所有组件模板预设
  *
  * key 为组件类型或模板 ID（对应 ComponentTypes / templateId），value 为 HTML 模板字符串
@@ -166,4 +220,7 @@ export const COMPONENT_TEMPLATES: Record<string, string> = {
     Tips: TIPS_TEMPLATE,
     Dropdown: DROPDOWN_TEMPLATE,
     Popover: POPOVER_TEMPLATE,
+    Toast: TOAST_TEMPLATE,
+    ToastNotification: TOAST_NOTIFICATION_TEMPLATE,
+    Msgbox: MSGBOX_TEMPLATE,
 };

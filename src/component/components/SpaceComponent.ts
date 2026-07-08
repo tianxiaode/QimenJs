@@ -9,7 +9,7 @@ import { ComponentBase } from '@qimenjs/component-core';
 import { LayoutAbility } from '@qimenjs/component-abilities';
 
 export class SpaceComponent extends ComponentBase {
-    static override readonly abilities = [LayoutAbility];
+    static readonly abilities = [LayoutAbility];
 
     constructor(props?: Record<string, any>) {
         super(props);

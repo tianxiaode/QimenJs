@@ -5,6 +5,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { ThemeManager } from '@qimenjs/theme';
 
 export const ThemeAbility: AbilityDefinition = {
     /**
@@ -15,20 +16,15 @@ export const ThemeAbility: AbilityDefinition = {
     __init__: '_initTheme',
 
     _initTheme(): void {
-        try {
-            const { ThemeManager } = require('@qimenjs/theme');
-            const tm = ThemeManager.getInstance();
+        const tm = ThemeManager.getInstance();
 
-            const off = tm.onThemeChange((event: any) => {
-                if (typeof this.onThemeChange === 'function') {
-                    this.onThemeChange(event);
-                }
-            });
+        const off = tm.onThemeChange((event: any) => {
+            if (typeof this.onThemeChange === 'function') {
+                this.onThemeChange(event);
+            }
+        });
 
-            // 组件销毁时自动解绑
-            this.onCleanup(off);
-        } catch (e) {
-            // ThemeManager 不可用，静默处理
-        }
+        // 组件销毁时自动解绑
+        this.onCleanup(off);
     },
 };

@@ -19,6 +19,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { AtomicCSS } from '@qimenjs/theme';
 
 export const StyleAbility: AbilityDefinition = {
     /**
@@ -35,15 +36,9 @@ export const StyleAbility: AbilityDefinition = {
 
             // 调用 AtomicCSS 按需生成 CSS
             if (value && this.el) {
-                try {
-                    const { AtomicCSS } = require('@qimenjs/theme');
-                    const acss = AtomicCSS.getInstance();
-                    const resolved = acss.resolve(value);
-                    this.el.className = resolved;
-                } catch (e) {
-                    // AtomicCSS 不可用，直接设置
-                    this.el.className = value;
-                }
+                const acss = AtomicCSS.getInstance();
+                const resolved = acss.resolve(value);
+                this.el.className = resolved;
             }
         },
     },

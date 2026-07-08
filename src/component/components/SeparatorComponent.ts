@@ -16,7 +16,7 @@ import { ComponentBase } from '@qimenjs/component-core';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 
 export class SeparatorComponent extends ComponentBase {
-    static override readonly abilities = [VisibleAbility];
+    static readonly abilities = [VisibleAbility];
 
     /** 是否垂直方向 */
     private _vertical: boolean = false;

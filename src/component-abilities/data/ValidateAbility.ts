@@ -5,6 +5,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import { validate } from '@qimenjs/validation';
 
 export const ValidateAbility: AbilityDefinition = {
     /**
@@ -40,21 +41,15 @@ export const ValidateAbility: AbilityDefinition = {
             return true;
         }
 
-        try {
-            const { validate } = require('@qimenjs/validation');
-            const result = await validate(this.value, rules);
+        const result = await validate(this.value, rules);
 
-            if (result === true) {
-                this.setAbilityState('ValidateAbility:errors', []);
-                return true;
-            }
-
-            const errors = Array.isArray(result) ? result : [String(result)];
-            this.setAbilityState('ValidateAbility:errors', errors);
-            return false;
-        } catch (e) {
-            // validation 不可用，跳过验证
+        if (result === true) {
+            this.setAbilityState('ValidateAbility:errors', []);
             return true;
         }
+
+        const errors = Array.isArray(result) ? result : [String(result)];
+        this.setAbilityState('ValidateAbility:errors', errors);
+        return false;
     },
 };

@@ -21,12 +21,12 @@ import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class InputComponent extends ComponentBase {
-    static override readonly abilities = [
+    static readonly abilities = [
         ContentAbility, ValueAbility, ValidateAbility,
         PlaceholderAbility, DisableAbility, SizeAbility,
     ];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['label', 'prefix', 'suffix', 'error', 'hint'],
     };
 
@@ -48,7 +48,7 @@ export class InputComponent extends ComponentBase {
         }
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.value !== undefined && this.inputEl) {
             this.inputEl.value = props.value;
         }

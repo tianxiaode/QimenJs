@@ -7,7 +7,7 @@
  * 派生示例：
  * ```typescript
  * class NumberColumn extends ColumnBase {
- *     static override readonly abilities = [...ColumnBase.abilities, FormatAbility];
+ *     static readonly abilities = [...ColumnBase.abilities, FormatAbility];
  * }
  * ```
  *
@@ -27,9 +27,9 @@ import { SortAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class ColumnBase extends ComponentBase {
-    static override readonly abilities = [ContentAbility, VisibleAbility, DisableAbility, SortAbility];
+    static readonly abilities = [ContentAbility, VisibleAbility, DisableAbility, SortAbility];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['default'],
     };
 

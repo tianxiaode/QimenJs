@@ -14,12 +14,12 @@ import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class SelectComponent extends ComponentBase {
-    static override readonly abilities = [
+    static readonly abilities = [
         ContentAbility, ValueAbility, OptionsAbility,
         SearchAbility, DisableAbility, SizeAbility,
     ];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['label'],
     };
 
@@ -45,7 +45,7 @@ export class SelectComponent extends ComponentBase {
         }
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.options && this.selectEl) {
             this.renderOptions(props.options);
         }

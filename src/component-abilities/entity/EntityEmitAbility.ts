@@ -32,6 +32,7 @@ import {
     ENTITY_REQUEST_STATUS,
     buildRequestEvent,
     ENTITY_EVENTS,
+    EventSourceRegistrar,
 } from '@qimenjs/events';
 
 /**
@@ -65,12 +66,7 @@ export const EntityEmitAbility: AbilityDefinition = {
      * 注册事件源到 EventSourceRegistrar
      */
     _registerEventSource(): void {
-        try {
-            const { EventSourceRegistrar } = require('@qimenjs/events');
-            EventSourceRegistrar.getInstance().register(this.id, this);
-        } catch (e) {
-            // EventSourceRegistrar 不可用
-        }
+        EventSourceRegistrar.getInstance().register(this.id, this);
     },
 
     // ============================================

@@ -233,7 +233,7 @@
             "entry": "src/component-abilities/index.ts",
             "outDir": "dist/component-abilities",
             "rootDir": "src/component-abilities",
-            "dependencies": ["composable", "events", "component-core", "utils"],
+            "dependencies": ["composable", "events", "component-core", "utils", "i18n"],
             "packageName": "@qimen-lab/component-abilities"
         },
         "component": {
@@ -242,6 +242,13 @@
             "rootDir": "src/component",
             "dependencies": ["component-core", "component-abilities", "events", "context", "pipeline", "theme", "layout", "renderer"],
             "packageName": "@qimen-lab/component"
+        },
+        "imperative": {
+            "entry": "src/imperative/index.ts",
+            "outDir": "dist/imperative",
+            "rootDir": "src/imperative",
+            "dependencies": ["i18n", "registry", "component"],
+            "packageName": "@qimen-lab/imperative"
         }
     },
     "build": {

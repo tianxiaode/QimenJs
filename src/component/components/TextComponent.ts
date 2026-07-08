@@ -19,10 +19,10 @@ import { ComponentBase } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class TextComponent extends ComponentBase {
-    static override readonly abilities = [SizeAbility];
+    static readonly abilities = [SizeAbility];
 
     /** 根元素标签：span 而非默认的 div */
-    static override readonly elTag = 'span';
+    static readonly elTag = 'span';
 
     private _textEl: HTMLElement;
 
@@ -42,7 +42,7 @@ export class TextComponent extends ComponentBase {
     get text(): string { return this._textEl.textContent || ''; }
     set text(value: string) { this._textEl.textContent = value; }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.text !== undefined) this.text = props.text;
     }
 }

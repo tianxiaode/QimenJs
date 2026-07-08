@@ -1,4 +1,4 @@
-，不/**
+/**
  * I18nEventBridge i18n 事件桥接器
  *
  * 将 I18nManager 自身的 locale:change 和 messages:update 事件
@@ -19,6 +19,7 @@
  */
 
 import { globalEventBus } from './GlobalEventBus';
+import { EventContextBuilder } from '@qimenjs/context';
 
 export interface I18nEventBridgeConfig {
     /** I18nManager 实例 */
@@ -94,46 +95,30 @@ export class I18nEventBridge {
      * 发射 localeChange 事件
      */
     private emitLocaleChange(event: any): void {
-        try {
-            const { EventContextBuilder } = require('@qimenjs/context');
-            const ctx = EventContextBuilder.create()
-                .withEvent(this.localeChangeEventName)
-                .withType('localeChange')
-                .withSource('i18n')
-                .withSourceType('I18nManager')
-                .withData({ previous: event.previous, current: event.current })
-                .build();
+        const ctx = EventContextBuilder.create()
+            .withEvent(this.localeChangeEventName)
+            .withType('localeChange')
+            .withSource('i18n')
+            .withSourceType('I18nManager')
+            .withData({ previous: event.previous, current: event.current })
+            .build();
 
-            this.eventBus.emit(this.localeChangeEventName, ctx);
-        } catch (e) {
-            // EventContextBuilder 不可用，使用简单格式
-            this.eventBus.emit(this.localeChangeEventName, {
-                previous: event.previous,
-                current: event.current,
-            });
-        }
+        this.eventBus.emit(this.localeChangeEventName, ctx);
     }
 
     /**
      * 发射 messagesUpdate 事件
      */
     private emitMessagesUpdate(event: any): void {
-        try {
-            const { EventContextBuilder } = require('@qimenjs/context');
-            const ctx = EventContextBuilder.create()
-                .withEvent(this.messagesUpdateEventName)
-                .withType('messagesUpdate')
-                .withSource('i18n')
-                .withSourceType('I18nManager')
-                .withData({ locale: event.locale })
-                .build();
+        const ctx = EventContextBuilder.create()
+            .withEvent(this.messagesUpdateEventName)
+            .withType('messagesUpdate')
+            .withSource('i18n')
+            .withSourceType('I18nManager')
+            .withData({ locale: event.locale })
+            .build();
 
-            this.eventBus.emit(this.messagesUpdateEventName, ctx);
-        } catch (e) {
-            this.eventBus.emit(this.messagesUpdateEventName, {
-                locale: event.locale,
-            });
-        }
+        this.eventBus.emit(this.messagesUpdateEventName, ctx);
     }
 }
 

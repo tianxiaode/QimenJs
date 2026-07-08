@@ -53,7 +53,8 @@
       "@qimenjs/component-core": ["src/component-core"],
       "@qimenjs/component": ["src/component"],
       "@qimenjs/layout": ["src/layout"],
-      "@qimenjs/renderer": ["src/renderer"]
+      "@qimenjs/renderer": ["src/renderer"],
+      "@qimenjs/imperative": ["src/imperative"]
     }
   },
   "include": [

@@ -17,7 +17,7 @@ import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
 
 export class TableComponent extends ComponentBase {
-    static override readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
+    static readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
 
     /** 行高（虚拟列表用） */
     private _rowHeight: number = 40;
@@ -91,7 +91,7 @@ export class TableComponent extends ComponentBase {
         return data.length * this._rowHeight;
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.columns) this.columns = props.columns;
         this.renderHeader();
         this.renderRows();

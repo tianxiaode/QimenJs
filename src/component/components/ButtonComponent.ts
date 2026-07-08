@@ -13,15 +13,15 @@ import { LoadingAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class ButtonComponent extends ComponentBase {
-    static override readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
+    static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
 
-    static override readonly contentSlots = {
+    static readonly contentSlots = {
         [ContentPrefix.ICON]: ['default'],
         [ContentPrefix.TEXT]: ['default'],
     };
 
     /** 根元素标签：button 而非默认的 div */
-    static override readonly elTag = 'button';
+    static readonly elTag = 'button';
 
     /** 图标位置 */
     private _iconPosition: string = 'left';
@@ -58,7 +58,7 @@ export class ButtonComponent extends ComponentBase {
         this.el.classList.add(`q-button--icon-${this._iconPosition}`);
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.iconPosition !== undefined) {
             this._iconPosition = props.iconPosition;
             this.applyIconPosition();

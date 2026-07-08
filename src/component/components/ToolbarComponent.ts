@@ -35,7 +35,7 @@ import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ToolbarAbility } from '@qimenjs/component-abilities';
 
 export class ToolbarComponent extends ComponentBase {
-    static override readonly abilities = [
+    static readonly abilities = [
         LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility,
     ];
 
@@ -62,7 +62,7 @@ export class ToolbarComponent extends ComponentBase {
         this.el.classList.add(this._direction === 'vertical' ? 'q-flex-col' : 'q-flex-row');
     }
 
-    override update(props?: Record<string, any>): void {
+    update(props?: Record<string, any>): void {
         if (props?.direction !== undefined) {
             this._direction = props.direction;
             this.applyDirection();

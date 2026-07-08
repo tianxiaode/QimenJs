@@ -15,7 +15,7 @@ import { SelectableAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class CheckboxColumn extends ColumnBase {
-    static override readonly abilities = [...ColumnBase.abilities, SelectableAbility];
+    static readonly abilities = [...ColumnBase.abilities, SelectableAbility];
 
     /** 已选中的行 ID 集合 */
     private _selectedRows: Set<string | number> = new Set();

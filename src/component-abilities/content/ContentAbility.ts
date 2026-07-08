@@ -94,10 +94,11 @@ function resolveContentSlots(slots: ContentSlotsDecl): ContentSlotConfig[] {
 function buildContentMap(container: HTMLElement): Map<string, HTMLElement> {
     const map = new Map<string, HTMLElement>();
     const elements = container.querySelectorAll('[data-content]');
-    for (const el of elements) {
-        const key = (el as HTMLElement).dataset.content!;
+    for (let i = 0; i < elements.length; i++) {
+        const el = elements[i] as HTMLElement;
+        const key = el.dataset.content!;
         if (key) {
-            map.set(key, el as HTMLElement);
+            map.set(key, el);
         }
     }
     return map;
@@ -167,8 +168,6 @@ export const ContentAbility: AbilityDefinition = {
             this.onCleanup(() => {
                 if (typeof off === 'function') {
                     off();
-                } else if (typeof globalEventBus.off === 'function') {
-                    globalEventBus.off('localeChange', handler);
                 }
             });
         }

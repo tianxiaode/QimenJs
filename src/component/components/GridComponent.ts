@@ -11,7 +11,7 @@ import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 
 export class GridComponent extends ComponentBase {
-    static override readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];
+    static readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];
 
     constructor(props?: Record<string, any>) {
         super(props);

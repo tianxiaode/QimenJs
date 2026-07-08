@@ -37,32 +37,22 @@
  * ```
  */
 
-/**
- * i18n 前缀标记
- *
- * 值以 'i18n:' 开头时表示需要本地化翻译，如 'i18n:btn.save'
- * setter 时自动识别并保留原始 key，getter 时返回翻译后的值
- */
-export const I18N_PREFIX = 'i18n:';
+import { I18N_PREFIX, getI18nManager } from '@qimenjs/i18n';
+import { OVERLAY_PREFIXES } from './ContentPrefix';
+import { createOverlayManager } from './createOverlayManager';
+
+// 重导出，保持向后兼容
+export { I18N_PREFIX } from '@qimenjs/i18n';
 
 /**
- * 浮层前缀集合（从 ContentPrefix 导入，使用 require 避免循环依赖）
- */
-const { OVERLAY_PREFIXES } = require('./ContentPrefix');
-
-/**
- * 从 window 获取 i18n 单例
+ * 翻译 i18n key
  *
- * i18n 由应用启动时通过 <script> 加载 i18n.iife.js 初始化，
- * 挂载到 window.__qimen_i18n__ 上。
- * 不使用 import 避免包依赖耦合。
- * 类型声明见 @qimenjs/i18n/global.d.ts
+ * 从 window.__qimen_i18n__ 获取 i18n 单例翻译，不可用时返回原始 key
  */
-function getI18n() {
-    if (typeof window !== 'undefined' && window.__qimen_i18n__) {
-        return window.__qimen_i18n__;
-    }
-    return null;
+function translateI18nKey(i18nKey: string): string {
+    const i18n = getI18nManager();
+    if (!i18n) return i18nKey;
+    return i18n.t(i18nKey) || i18nKey;
 }
 
 /**
@@ -83,17 +73,6 @@ export interface ContentManagerConfig {
 }
 
 /**
- * 翻译 i18n key
- *
- * 从 window.__qimen_i18n__ 获取 i18n 单例翻译，不可用时返回原始 key
- */
-function translateI18nKey(i18nKey: string): string {
-    const i18n = getI18n();
-    if (!i18n) return i18nKey;
-    return i18n.t(i18nKey) || i18nKey;
-}
-
-/**
  * 创建内容管理器
  *
  * @param host - 宿主组件实例
@@ -107,7 +86,6 @@ export function createContentManager(host: any, config: ContentManagerConfig): v
     // ─── 浮层前缀检测：若为浮层类型，调用 createOverlayManager 创建浮层 DOM ───
 
     if (OVERLAY_PREFIXES.has(prefix)) {
-        const { createOverlayManager } = require('./createOverlayManager');
         const result = createOverlayManager(host, { prefix });
         if (result) {
             // 合并浮层 contentMap 到宿主 contentMap
