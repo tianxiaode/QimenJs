@@ -23,7 +23,7 @@ export class CheckboxColumn extends ColumnBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el.className = 'q-column q-column--checkbox';
+        this.el.classList.add('q-column--checkbox');
 
         // 复选框列默认配置
         this._width = 40;

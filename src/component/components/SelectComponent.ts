@@ -1,12 +1,12 @@
 /**
  * SelectComponent 下拉选择组件
  *
- * abilities: [TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility]
- * TextAbility 管理标签文本，ValueAbility 管理选中值
+ * abilities: [ContentAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility]
+ * ContentAbility 管理标签文本，ValueAbility 管理选中值
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { TextAbility } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { ValueAbility } from '@qimenjs/component-abilities';
 import { OptionsAbility } from '@qimenjs/component-abilities';
 import { SearchAbility } from '@qimenjs/component-abilities';
@@ -15,23 +15,20 @@ import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class SelectComponent extends ComponentBase {
     static override readonly abilities = [
-        TextAbility, ValueAbility, OptionsAbility,
+        ContentAbility, ValueAbility, OptionsAbility,
         SearchAbility, DisableAbility, SizeAbility,
     ];
+
+    static override readonly contentSlots = {
+        [ContentPrefix.TEXT]: ['label'],
+    };
 
     private selectEl: HTMLSelectElement | null = null;
 
     constructor(props?: Record<string, any>) {
         super(props);
 
-        // 创建 DOM 元素
-        this.el = document.createElement('div');
-        this.el.className = 'q-select';
-
-        this.el.innerHTML = `
-            <label class="q-select__label" data-ref="text"></label>
-            <select class="q-select__field" data-ref="select"></select>
-        `;
+        this.el.classList.add('q-select');
 
         this.selectEl = this.el.querySelector('[data-ref="select"]') as HTMLSelectElement;
 

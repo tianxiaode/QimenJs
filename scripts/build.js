@@ -110,6 +110,10 @@ const utils = {
                 'qimen-i18n-copy': './copy.js',
             };
             pkg.files = ['*.js', '*.esm.js', '*.d.ts', '*.map', 'types/', 'i18n.iife.js', 'copy.js', 'locales/'];
+            // 添加 global 子路径导出，供其他包获取 Window 类型扩展
+            pkg.exports['./global'] = {
+                types: './global.d.ts',
+            };
         }
 
         // 添加依赖
@@ -347,6 +351,13 @@ function buildI18nIIFE() {
         }
         fs.cpSync(localesSrc, localesDest, { recursive: true });
         console.log('  📁 locales/ 已复制');
+    }
+
+    // 复制 global.d.ts（tsc 不会自动复制 .d.ts 源文件）
+    const globalDtsSrc = path.join(projectRoot, 'src', 'i18n', 'global.d.ts');
+    if (fs.existsSync(globalDtsSrc)) {
+        fs.copyFileSync(globalDtsSrc, path.join(outDir, 'global.d.ts'));
+        console.log('  📄 global.d.ts 已复制');
     }
 
     console.log('✅ i18n IIFE built');

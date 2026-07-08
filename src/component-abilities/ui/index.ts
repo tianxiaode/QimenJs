@@ -3,8 +3,7 @@
 export { ThemeAbility } from '@qimenjs/component-core';
 export { StyleAbility } from '@qimenjs/component-core';
 
-export { TextAbility } from './TextAbility';
-export { IconAbility } from './IconAbility';
+// TextAbility/IconAbility 已合并为 ContentAbility（@qimenjs/component-abilities/content）
 export { PlaceholderAbility } from './PlaceholderAbility';
 export { VisibleAbility } from './VisibleAbility';
 export { DisableAbility } from './DisableAbility';

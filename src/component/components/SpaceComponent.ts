@@ -14,8 +14,7 @@ export class SpaceComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-space';
+        this.el.classList.add('q-space');
 
         // 设置间距大小
         const size = props?.size || 'md';

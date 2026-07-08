@@ -18,7 +18,7 @@ export class NumberColumn extends ColumnBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el.className = 'q-column q-column--number';
+        this.el.classList.add('q-column--number');
 
         // 数字列默认右对齐
         this._align = 'right';

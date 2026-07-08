@@ -2,7 +2,7 @@
  * ColumnBase 列基类组件
  *
  * 表格列的基类，派生类可直接使用，避免重复配置。
- * 注入基础能力：TextAbility(列头文本), VisibleAbility(显隐), DisableAbility(禁用), SortAbility(排序)
+ * 注入基础能力：ContentAbility(列头文本), VisibleAbility(显隐), DisableAbility(禁用), SortAbility(排序)
  *
  * 派生示例：
  * ```typescript
@@ -20,14 +20,18 @@
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { TextAbility } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SortAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class ColumnBase extends ComponentBase {
-    static override readonly abilities = [TextAbility, VisibleAbility, DisableAbility, SortAbility];
+    static override readonly abilities = [ContentAbility, VisibleAbility, DisableAbility, SortAbility];
+
+    static override readonly contentSlots = {
+        [ContentPrefix.TEXT]: ['default'],
+    };
 
     /** 列字段名 */
     protected _field: string = '';
@@ -53,8 +57,7 @@ export class ColumnBase extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-column';
+        this.el.classList.add('q-column');
 
         // 从 props 初始化
         if (props?.field) this._field = props.field;

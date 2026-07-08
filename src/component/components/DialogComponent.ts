@@ -1,19 +1,23 @@
 /**
  * DialogComponent 弹窗组件
  *
- * abilities: [TextAbility, OpenableAbility, OverlayAbility, AnimationAbility]
- * TextAbility 管理标题文本，支持 setText() 动态更新
+ * abilities: [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
+ * ContentAbility 管理标题文本
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { TextAbility } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { OpenableAbility } from '@qimenjs/component-abilities';
 import { OverlayAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
 
 export class DialogComponent extends ComponentBase {
-    static override readonly abilities = [TextAbility, OpenableAbility, OverlayAbility, AnimationAbility];
+    static override readonly abilities = [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
+
+    static override readonly contentSlots = {
+        [ContentPrefix.TEXT]: ['title'],
+    };
 
     private _zIndex: number = 0;
     private headerEl: HTMLElement | null = null;
@@ -23,18 +27,8 @@ export class DialogComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-dialog';
+        this.el.classList.add('q-dialog');
         this.el.style.display = 'none';
-
-        this.el.innerHTML = `
-            <div class="q-dialog__header" data-ref="header">
-                <span class="q-dialog__title" data-ref="text"></span>
-                <button class="q-dialog__close" data-ref="closeBtn">&times;</button>
-            </div>
-            <div class="q-dialog__body" data-ref="body"></div>
-            <div class="q-dialog__footer" data-ref="footer"></div>
-        `;
 
         this.headerEl = this.el.querySelector('[data-ref="header"]') as HTMLElement;
         this.bodyEl = this.el.querySelector('[data-ref="body"]') as HTMLElement;

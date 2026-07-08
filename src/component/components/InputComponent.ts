@@ -1,12 +1,19 @@
 /**
  * InputComponent 输入框组件
  *
- * abilities: [TextAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility]
- * TextAbility 管理标签文本，ValueAbility 管理输入值
+ * abilities: [ContentAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility]
+ * ContentAbility 管理标签/前后缀/错误/提示文本，ValueAbility 管理输入值
+ *
+ * 文本内容位（由 ContentAbility 通过 data-content 查找并管理）：
+ * - label — 标签文本
+ * - prefix — 前缀文本（货币符号等）
+ * - suffix — 后缀文本（单位等）
+ * - error — 错误提示
+ * - hint — 提示文本
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { TextAbility } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { ValueAbility } from '@qimenjs/component-abilities';
 import { ValidateAbility } from '@qimenjs/component-abilities';
 import { PlaceholderAbility } from '@qimenjs/component-abilities';
@@ -15,28 +22,23 @@ import { SizeAbility } from '@qimenjs/component-abilities';
 
 export class InputComponent extends ComponentBase {
     static override readonly abilities = [
-        TextAbility, ValueAbility, ValidateAbility,
+        ContentAbility, ValueAbility, ValidateAbility,
         PlaceholderAbility, DisableAbility, SizeAbility,
     ];
 
+    static override readonly contentSlots = {
+        [ContentPrefix.TEXT]: ['label', 'prefix', 'suffix', 'error', 'hint'],
+    };
+
     private inputEl: HTMLInputElement | null = null;
-    private errorEl: HTMLElement | null = null;
 
     constructor(props?: Record<string, any>) {
         super(props);
 
-        // 创建 DOM 元素
-        this.el = document.createElement('div');
-        this.el.className = 'q-input';
+        this.el.classList.add('q-input');
 
-        this.el.innerHTML = `
-            <label class="q-input__label" data-ref="text"></label>
-            <input class="q-input__field" data-ref="input" />
-            <span class="q-input__error" data-ref="error"></span>
-        `;
-
+        // 查找 input 元素（由模板注入）
         this.inputEl = this.el.querySelector('[data-ref="input"]') as HTMLInputElement;
-        this.errorEl = this.el.querySelector('[data-ref="error"]') as HTMLElement;
 
         // 绑定 input 事件 → 同步到 ValueAbility
         if (this.inputEl) {

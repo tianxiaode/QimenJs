@@ -17,6 +17,7 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── ButtonComponent
         ├── InputComponent
         ├── SelectComponent
+        ├── IconComponent / TextComponent
         ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
         ├── ToolbarComponent
         ├── ButtonGroupComponent / SeparatorComponent
@@ -37,7 +38,9 @@ ComposableBase (src/composable/ComposableBase.ts)
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | GridComponent | `src/component/components/GridComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | SpaceComponent | `src/component/components/SpaceComponent.ts` | LayoutAbility |
-| ToolbarComponent | `src/component/components/ToolbarComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility, PaginationAbility, CrudAbility, SearchAbility |
+| ToolbarComponent | `src/component/components/ToolbarComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility |
+| IconComponent | `src/component/components/IconComponent.ts` | SizeAbility（图标内容由组件直接管理，无需 IconAbility） |
+| TextComponent | `src/component/components/TextComponent.ts` | SizeAbility（文本内容由组件直接管理，无需 TextAbility） |
 | ButtonGroupComponent | `src/component/components/ButtonGroupComponent.ts` | ChildrenAbility, SizeAbility, DisableAbility |
 | SeparatorComponent | `src/component/components/SeparatorComponent.ts` | VisibleAbility |
 | TableComponent | `src/component/components/TableComponent.ts` | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility |
@@ -160,7 +163,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 
 | 能力 | 文件 | 说明 |
 |------|------|------|
-| ToolbarAbility | `ToolbarAbility.ts` | 位置排序、插入/移除/显隐 |
+| ToolbarAbility | `ToolbarAbility.ts` | 位置排序、插入/移除/显隐、外观声明、折叠切换 |
 | CrudAbility | `CrudAbility.ts` | CRUD 操作按钮组 |
 | **PaginationAbility** | `pagination/PaginationAbility.ts` | **分页聚合层**（合并以下子能力） |
 | PaginationStateAbility | `pagination/PaginationStateAbility.ts` | 分页状态管理 |
@@ -214,6 +217,7 @@ ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都�
 | COLUMN_EVENTS.REPLACE | `columnreplace` | ColumnManageAbility |
 | TOOLBAR_EVENTS.REORDER | `toolbarreorder` | ToolbarAbility |
 | TOOLBAR_EVENTS.INSERT | `toolbarinsert` | ToolbarAbility |
+| TOOLBAR_EVENTS.COLLAPSE_CHANGE | `toolbarcollapsechange` | ToolbarAbility |
 | SEARCH_EVENTS.CHANGE | `searchchange` | SearchEventsAbility |
 | SEARCH_EVENTS.SUBMIT | `searchsubmit` | SearchEventsAbility |
 | ENTITY_EVENTS.* | `entity:*` | EntityEmitAbility 转发 |
@@ -395,3 +399,5 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | 搜索组合查询增强：SearchEventsAbility 事件数据类型从联合类型改为组合类型 `{ keyword?, search? }`；SearchButtonAbility 始终组装完整数据；SearchInputAbility 防抖事件携带 searchParams；EntityListenAbility if-else if 互斥分支改为两个独立 if；searchMode 语义调整为 UI 渲染模式 |
 | 2026-07-08 | toolbar 目录重组：9 个分页文件移入 pagination/ 子目录，5 个搜索文件移入 search/ 子目录，新建 pagination/index.ts 和 search/index.ts，更新 toolbar/index.ts 导出路径 |
 | 2026-07-08 | 新增 IconAbility + createContentManager：图标能力使用 ContentManager 模式管理多图标；TextAbility 重写支持 ContentManager 模式（兼容旧 data-ref 模式）；ButtonComponent 重写使用 IconAbility + TextAbility；删除 TemplateRegistry（统一使用 HtmlTemplateRegistrar）；新增 content/ 目录 |
+| 2026-07-08 | 工具栏重构：ToolbarAbility 新增外观声明（q-toolbar 类名 + role="toolbar" + 默认 gap=sm）和折叠切换（collapsed 属性 + toggleCollapsed 方法 + toolbarcollapsechange 事件）；ToolbarComponent 移除硬编码 PaginationAbility/CrudAbility/SearchAbility（改为 meta.abilities 按需注入），新增 direction 属性支持横/竖布局；新增 IconComponent（IconAbility + SizeAbility）和 TextComponent（TextAbility + SizeAbility）预置组件；新增 ComponentTypes.ICON/TEXT；新增 toolbarCSS 折叠样式 |
+| 2026-07-08 | 浮层能力：新增 ContentPrefix 常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合；新增 createOverlayManager 工厂方法（模板获取、DOM 创建、定位计算、生命周期管理）；新增 positionOverlay 定位工具函数（4方向定位、自动翻转、视口约束）；createContentManager 检测浮层前缀时自动调用 createOverlayManager；新增 Tips/Dropdown/Popover 模板；现有组件 contentSlots 迁移为 ContentPrefix 常量引用 |

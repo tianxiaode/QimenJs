@@ -92,6 +92,8 @@ export const SEARCH_EVENTS = {
 export const TOOLBAR_EVENTS = {
     REORDER: 'toolbarreorder',
     INSERT: 'toolbarinsert',
+    /** 折叠状态变更 */
+    COLLAPSE_CHANGE: 'toolbarcollapsechange',
 } as const;
 
 // ============================================

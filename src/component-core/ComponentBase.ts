@@ -15,7 +15,7 @@
  * @example
  * ```typescript
  * class ButtonComponent extends ComponentBase {
- *     static readonly abilities = [TextAbility, ClickAbility, DisableAbility, SizeAbility];
+ *     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, SizeAbility];
  * }
  * ```
  */
@@ -96,6 +96,69 @@ export class ComponentBase extends ComposableBase {
         // 如果 props 中有 type，设置到实例
         if (this.props.type) {
             this.type = this.props.type;
+        }
+
+        // 统一初始化 el + 注入模板
+        this.initElement();
+    }
+
+    /**
+     * 初始化组件根元素并注入模板内容
+     *
+     * 根据 static elTag 创建根元素（默认 div），从 HtmlTemplateRegistrar 获取模板注入。
+     * 子类通过 static elTag = 'button' 声明根元素标签，无需重写此方法。
+     *
+     * 模板查找优先级：
+     * 1. 组件 static templateId（如 'Input:top'）
+     * 2. 组件 type（如 'Input'）
+     */
+    protected initElement(): void {
+        // 1. 根据 static elTag 创建根元素（默认 div）
+        const tag = (this.constructor as any).elTag || 'div';
+        this.el = document.createElement(tag);
+
+        // 2. 从 HtmlTemplateRegistrar 获取模板并注入
+        const templateId = (this.constructor as any).templateId || this.type;
+        if (templateId) {
+            try {
+                const { RegistryHub } = require('@qimenjs/registry');
+                const registrar = RegistryHub.get('html');
+                if (registrar && typeof registrar.get === 'function') {
+                    const templateHtml = registrar.get(templateId);
+                    if (templateHtml) {
+                        this.el.innerHTML = templateHtml;
+                    }
+                }
+            } catch (e) {
+                // Registrar 不可用，跳过
+            }
+        }
+    }
+
+    /**
+     * 重新初始化元素（切换模板时使用）
+     *
+     * 清空当前 el 内容，从新模板注入，重新初始化 ContentManager。
+     * 需要在 __initProps 中重新调用 createContentManager。
+     */
+    reinitElement(templateId?: string): void {
+        if (templateId) {
+            (this.constructor as any).templateId = templateId;
+        }
+        const id = templateId || (this.constructor as any).templateId || this.type;
+        if (id) {
+            try {
+                const { RegistryHub } = require('@qimenjs/registry');
+                const registrar = RegistryHub.get('html');
+                if (registrar && typeof registrar.get === 'function') {
+                    const templateHtml = registrar.get(id);
+                    if (templateHtml) {
+                        this.el.innerHTML = templateHtml;
+                    }
+                }
+            } catch (e) {
+                // Registrar 不可用，跳过
+            }
         }
     }
 

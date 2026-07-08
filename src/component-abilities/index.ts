@@ -16,8 +16,6 @@ export { EventBridgeAbility } from '@qimenjs/component-core';
 export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SearchBridgeConfig } from '@qimenjs/component-core';
 
 // 通用 UI 能力
-export { TextAbility } from './ui';
-export { IconAbility } from './ui';
 export { PlaceholderAbility } from './ui';
 export { VisibleAbility } from './ui';
 export { DisableAbility } from './ui';
@@ -25,8 +23,13 @@ export { LoadingAbility } from './ui';
 export { SizeAbility } from './ui';
 
 // 内容管理
-export { createContentManager } from './content';
+export { ContentAbility, type ContentSlotsDecl } from './content';
+export { createContentManager, I18N_PREFIX } from './content';
 export type { ContentManagerConfig } from './content';
+export { ContentPrefix, OVERLAY_PREFIXES, type ContentPrefixType } from './content';
+export { createOverlayManager } from './content';
+export type { OverlayManagerConfig, OverlayManagerResult } from './content';
+export { positionOverlay, type Placement } from './content';
 
 // 数据能力
 export { ValueAbility } from './data';

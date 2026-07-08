@@ -2,7 +2,7 @@
  * CellBase 单元格基类组件
  *
  * 表格单元格的基类，派生类可直接使用。
- * 注入基础能力：TextAbility(内容), DisableAbility(禁用), StyleAbility(样式, 已在 BASE_ABILITIES)
+ * 注入基础能力：ContentAbility(内容), DisableAbility(禁用), StyleAbility(样式, 已在 BASE_ABILITIES)
  *
  * 派生示例：
  * ```typescript
@@ -20,12 +20,16 @@
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { TextAbility } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
 export class CellBase extends ComponentBase {
-    static override readonly abilities = [TextAbility, DisableAbility];
+    static override readonly abilities = [ContentAbility, DisableAbility];
+
+    static override readonly contentSlots = {
+        [ContentPrefix.TEXT]: ['default'],
+    };
 
     /** 所属行数据 */
     private _rowData: Record<string, any> = {};
@@ -39,8 +43,7 @@ export class CellBase extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-cell';
+        this.el.classList.add('q-cell');
 
         if (props?.field) this._field = props.field;
         if (props?.rowData) this._rowData = props.rowData;

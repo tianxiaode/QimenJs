@@ -1,7 +1,7 @@
 /**
  * ToolbarAbility 工具栏能力
  *
- * 提供位置排序、按位置插入/移除/显隐等操作。
+ * 提供位置排序、按位置插入/移除/显隐、外观声明、折叠切换等操作。
  * 任何组件注入此能力即可获得工具栏行为。
  *
  * @example
@@ -15,6 +15,8 @@
  * toolbar.insertAt(15, myButton);
  * toolbar.hideAtPosition(20);
  * toolbar.reorder();
+ * toolbar.collapsed = true;       // 折叠
+ * toolbar.toggleCollapsed();      // 切换折叠状态
  * ```
  */
 
@@ -148,5 +150,59 @@ export const ToolbarAbility: AbilityDefinition = {
      */
     getAtPosition(position: number): any {
         return this.children.find((c: any) => c[POSITION_PROP] === position);
+    },
+
+    /**
+     * 折叠状态
+     *
+     * 折叠时隐藏子项的文本标签，仅显示图标。
+     * 通过 CSS 类 q-collapsed 驱动视觉变化，不涉及 DOM 重建。
+     */
+    collapsed: {
+        get(): boolean {
+            return this.abilityState('ToolbarAbility:collapsed', () => false);
+        },
+        set(value: boolean): void {
+            this.setAbilityState('ToolbarAbility:collapsed', value);
+            if (this.el) {
+                if (value) {
+                    this.el.classList.add('q-collapsed');
+                } else {
+                    this.el.classList.remove('q-collapsed');
+                }
+            }
+            this.emit?.(TOOLBAR_EVENTS.COLLAPSE_CHANGE, { collapsed: value });
+        },
+    },
+
+    /**
+     * 切换折叠状态
+     *
+     * @returns 组件自身，支持链式调用
+     */
+    toggleCollapsed(): any {
+        this.collapsed = !this.collapsed;
+        return this;
+    },
+
+    /**
+     * 初始化工具栏外观和状态
+     *
+     * - 添加 q-toolbar CSS 类名
+     * - 设置 role="toolbar" ARIA 属性
+     * - 未设置 gap 时默认为 'sm'
+     * - 根据 props.collapsed 初始化折叠状态
+     */
+    __initProps(props: Record<string, any>): void {
+        this.el.classList.add('q-toolbar');
+        this.el.setAttribute('role', 'toolbar');
+
+        if (!this.gap) {
+            this.gap = 'sm';
+        }
+
+        if (props?.collapsed) {
+            this.collapsed = true;
+        }
     },
 };

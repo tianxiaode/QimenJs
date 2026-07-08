@@ -16,8 +16,7 @@ export class HBoxComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-hbox q-flex q-flex-row';
+        this.el.classList.add('q-hbox', 'q-flex', 'q-flex-row');
 
         // 应用布局属性
         if (props?.gap) this.el.classList.add(`q-gap-${props.gap}`);

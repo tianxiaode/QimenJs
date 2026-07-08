@@ -16,8 +16,7 @@ export class VBoxComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-vbox q-flex q-flex-col';
+        this.el.classList.add('q-vbox', 'q-flex', 'q-flex-col');
 
         // 应用布局属性
         if (props?.gap) this.el.classList.add(`q-gap-${props.gap}`);

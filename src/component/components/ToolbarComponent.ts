@@ -1,28 +1,29 @@
 /**
  * ToolbarComponent 工具栏组件
  *
- * 支持位置排序的工具栏容器。通过能力注入获得各种功能：
- * - ToolbarAbility: 位置排序、按位置插入/移除/显隐
- * - PaginationAbility: 分页按钮组
- * - CrudAbility: CRUD 操作按钮组
- * - SearchAbility: 搜索能力（简单搜索/复杂搜索）
+ * 支持位置排序、方向切换、折叠的工具栏容器。
+ * 通过能力注入获得各种功能：
+ * - ToolbarAbility: 位置排序、外观声明、折叠切换
+ * - LayoutAbility: 间距、对齐
+ * - ChildrenAbility: 子组件管理
+ *
+ * 业务能力（PaginationAbility、CrudAbility、SearchAbility）
+ * 需通过 meta.abilities 按需注入。
  *
  * @example
  * ```js
- * // 基本工具栏
- * { type: ComponentTypes.TOOLBAR, gap: 'sm' }
+ * // 横向工具栏（默认）
+ * { type: ComponentTypes.TOOLBAR }
  *
- * // 带分页的工具栏
- * { type: ComponentTypes.TOOLBAR, gap: 'sm',
- *   currentPage: 1, totalPages: 10, totalRecords: 95 }
+ * // 竖向工具栏
+ * { type: ComponentTypes.TOOLBAR, direction: 'vertical' }
  *
- * // 带 CRUD 的工具栏
- * { type: ComponentTypes.TOOLBAR, gap: 'sm',
- *   showCreate: true, showDelete: true, showExport: true }
+ * // 竖向工具栏（折叠模式）
+ * { type: ComponentTypes.TOOLBAR, direction: 'vertical', collapsed: true }
  *
- * // 完整功能工具栏
- * { type: ComponentTypes.TOOLBAR, gap: 'sm',
- *   showCreate: true, showDelete: true,
+ * // 带分页的工具栏（通过 meta 注入）
+ * { type: ComponentTypes.TOOLBAR,
+ *   meta: { abilities: [PaginationAbility] },
  *   currentPage: 1, totalPages: 10, totalRecords: 95 }
  * ```
  */
@@ -32,26 +33,39 @@ import { LayoutAbility } from '@qimenjs/component-abilities';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ToolbarAbility } from '@qimenjs/component-abilities';
-import { PaginationAbility } from '@qimenjs/component-abilities';
-import { CrudAbility } from '@qimenjs/component-abilities';
-import { ToolbarSearchAbility as SearchAbility } from '@qimenjs/component-abilities';
 
 export class ToolbarComponent extends ComponentBase {
     static override readonly abilities = [
-        LayoutAbility, ChildrenAbility, AnimationAbility,
-        ToolbarAbility, PaginationAbility, CrudAbility, SearchAbility,
+        LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility,
     ];
+
+    private _direction: string = 'horizontal';
 
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-toolbar q-flex q-flex-row';
-        this.el.setAttribute('role', 'toolbar');
+        this.el.classList.add('q-flex');
 
-        // 应用布局属性
-        if (props?.gap) this.el.classList.add(`q-gap-${props.gap}`);
-        if (props?.align) this.el.classList.add(`q-items-${props.align}`);
-        if (props?.justify) this.el.classList.add(`q-justify-${props.justify}`);
+        if (props?.direction) this._direction = props.direction;
+        this.applyDirection();
+    }
+
+    /** 布局方向：horizontal（横向）或 vertical（竖向） */
+    get direction(): string { return this._direction; }
+    set direction(value: string) {
+        this._direction = value;
+        this.applyDirection();
+    }
+
+    private applyDirection(): void {
+        this.el.classList.remove('q-flex-row', 'q-flex-col');
+        this.el.classList.add(this._direction === 'vertical' ? 'q-flex-col' : 'q-flex-row');
+    }
+
+    override update(props?: Record<string, any>): void {
+        if (props?.direction !== undefined) {
+            this._direction = props.direction;
+            this.applyDirection();
+        }
     }
 }

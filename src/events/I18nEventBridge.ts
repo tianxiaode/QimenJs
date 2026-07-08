@@ -1,11 +1,24 @@
-/**
+，不/**
  * I18nEventBridge i18n 事件桥接器
  *
  * 将 I18nManager 自身的 locale:change 和 messages:update 事件
- * 转换为框架标准的 EventContext，通过 globalEventBus 广播
+ * 转换为框架标准的 EventContext，通过 globalEventBus 广播。
+ *
+ * 设计为单例模式，应用启动时调用 i18nEventBridge.connect(i18nManager) 即可。
+ * 在 Vue/React 项目中同样适用——不依赖组件框架。
+ *
+ * @example
+ * ```typescript
+ * // 应用启动时
+ * import { i18nEventBridge } from '@qimenjs/events';
+ * import { i18n } from '@qimenjs/i18n';
+ *
+ * i18nEventBridge.connect(i18n);
+ * // 之后所有监听 globalEventBus 'localeChange' 事件的组件自动响应语言切换
+ * ```
  */
 
-import type { EventContextBuilder } from '@qimenjs/context';
+import { globalEventBus } from './GlobalEventBus';
 
 export interface I18nEventBridgeConfig {
     /** I18nManager 实例 */
@@ -31,22 +44,13 @@ export class I18nEventBridge {
         this.i18n = config.i18n;
         this.localeChangeEventName = config.localeChangeEventName ?? 'localeChange';
         this.messagesUpdateEventName = config.messagesUpdateEventName ?? 'messagesUpdate';
-
-        // 延迟导入避免循环依赖
-        if (config.eventBus) {
-            this.eventBus = config.eventBus;
-        } else {
-            try {
-                const { globalEventBus } = require('@qimenjs/events');
-                this.eventBus = globalEventBus;
-            } catch (e) {
-                this.eventBus = null;
-            }
-        }
+        this.eventBus = config.eventBus || globalEventBus;
     }
 
     /**
      * 连接桥接器
+     *
+     * 开始监听 I18nManager 事件并转发到 globalEventBus
      */
     connect(): void {
         if (this.connected || !this.i18n || !this.eventBus) return;
@@ -77,6 +81,13 @@ export class I18nEventBridge {
         this.offLocaleChange?.();
         this.offMessagesUpdate?.();
         this.connected = false;
+    }
+
+    /**
+     * 是否已连接
+     */
+    get isConnected(): boolean {
+        return this.connected;
     }
 
     /**
@@ -125,3 +136,19 @@ export class I18nEventBridge {
         }
     }
 }
+
+/**
+ * I18nEventBridge 全局单例
+ *
+ * 应用启动时调用 i18nEventBridge.connect(i18nManager) 即可开始桥接。
+ * 不使用组件时也需要（如 Vue/React 项目中直接使用 i18n）。
+ *
+ * @example
+ * ```typescript
+ * import { i18nEventBridge } from '@qimenjs/events';
+ * import { i18n } from '@qimenjs/i18n';
+ *
+ * i18nEventBridge.connect(i18n);
+ * ```
+ */
+export const i18nEventBridge = new I18nEventBridge({ i18n: null });

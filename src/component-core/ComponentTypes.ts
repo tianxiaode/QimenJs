@@ -23,6 +23,10 @@ export const ComponentTypes = {
     INPUT: 'Input',
     /** 下拉选择 */
     SELECT: 'Select',
+    /** 图标 */
+    ICON: 'Icon',
+    /** 文本 */
+    TEXT: 'Text',
 
     // ---- 布局组件 ----
     /** 水平布局 */

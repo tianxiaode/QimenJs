@@ -24,15 +24,13 @@ export class SeparatorComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-
         if (props?.vertical) {
             this._vertical = true;
-            this.el.className = 'q-separator q-separator--vertical';
+            this.el.classList.add('q-separator', 'q-separator--vertical');
             this.el.setAttribute('role', 'separator');
             this.el.setAttribute('aria-orientation', 'vertical');
         } else {
-            this.el.className = 'q-separator q-separator--horizontal';
+            this.el.classList.add('q-separator', 'q-separator--horizontal');
             this.el.setAttribute('role', 'separator');
             this.el.setAttribute('aria-orientation', 'horizontal');
         }

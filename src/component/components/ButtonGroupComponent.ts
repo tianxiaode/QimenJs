@@ -30,8 +30,7 @@ export class ButtonGroupComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-button-group q-flex q-flex-row';
+        this.el.classList.add('q-button-group', 'q-flex', 'q-flex-row');
         this.el.setAttribute('role', 'group');
     }
 

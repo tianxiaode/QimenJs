@@ -14,6 +14,7 @@ export * from './GlobalEventBus';
 export * from './EventSourceRegistrar';
 export * from './EventFlowRegistrar';
 export * from './StateTrigger';
+export { I18nEventBridge, i18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
 
 // 导出实体事件常量
 export * from './entity-events';

@@ -16,7 +16,7 @@ export class IdColumn extends ColumnBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el.className = 'q-column q-column--id';
+        this.el.classList.add('q-column--id');
 
         // ID列默认配置
         this._width = 60;

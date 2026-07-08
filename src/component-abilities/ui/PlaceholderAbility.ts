@@ -15,9 +15,8 @@
  * ```typescript
  * // 标题栏：图标 + 标题 + 占位符 + 关闭按钮
  * class HeaderComponent extends ComponentBase {
- *     static abilities = [IconAbility, TextAbility, PlaceholderAbility, ...];
- *     static icons = [['default', 10], ['close', 90]];
- *     static texts = [['default', 20]];
+ *     static abilities = [ContentAbility, PlaceholderAbility, ...];
+ *     static contentSlots = { icon: [['default', 10], ['close', 90]], text: [['default', 20]] };
  *     static placeholders = [['spacer', 50]];
  * }
  *

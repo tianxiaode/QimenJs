@@ -16,8 +16,7 @@ export class GridComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-grid';
+        this.el.classList.add('q-grid');
 
         // 应用网格属性
         if (props?.columns) {

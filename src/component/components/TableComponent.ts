@@ -3,6 +3,8 @@
  *
  * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
  * 支持虚拟列表、排序、列定义、列管理、选择、事件桥接（基类已包含 EventBridgeAbility）
+ *
+ * 模板由 initElement 从 HtmlTemplateRegistrar 注入，包含 header 和 body 容器。
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
@@ -38,14 +40,9 @@ export class TableComponent extends ComponentBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('div');
-        this.el.className = 'q-table';
+        this.el.classList.add('q-table');
 
-        this.el.innerHTML = `
-            <div class="q-table__header" data-ref="header"></div>
-            <div class="q-table__body" data-ref="body" style="overflow-y: auto;"></div>
-        `;
-
+        // 查找模板注入的元素
         this.headerEl = this.el.querySelector('[data-ref="header"]') as HTMLElement;
         this.bodyEl = this.el.querySelector('[data-ref="body"]') as HTMLElement;
 

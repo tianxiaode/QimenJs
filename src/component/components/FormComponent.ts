@@ -14,11 +14,13 @@ import { FieldSetAbility } from '@qimenjs/component-abilities';
 export class FormComponent extends ComponentBase {
     static override readonly abilities = [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility];
 
+    /** 根元素标签：form 而非默认的 div */
+    static override readonly elTag = 'form';
+
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.el = document.createElement('form');
-        this.el.className = 'q-form';
+        this.el.classList.add('q-form');
 
         // 阻止默认表单提交
         this.el.addEventListener('submit', (e) => {

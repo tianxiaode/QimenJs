@@ -17,8 +17,8 @@ export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qim
 export type { PropAliasMap, EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig } from '@qimenjs/component-core';
 
 // 能力定义导出（从 component-abilities 重导出，保持向后兼容）
-export { TextAbility, IconAbility, PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
-export { createContentManager } from '@qimenjs/component-abilities';
+export { ContentAbility, type ContentSlotsDecl, PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility } from '@qimenjs/component-abilities';
+export { createContentManager, I18N_PREFIX } from '@qimenjs/component-abilities';
 export type { ContentManagerConfig } from '@qimenjs/component-abilities';
 export { ValueAbility, ValidateAbility, PlaceholderAbility, SubmitAbility, FieldSetAbility } from '@qimenjs/component-abilities';
 export { EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility } from '@qimenjs/component-abilities';
@@ -40,13 +40,18 @@ export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 // 组件模板预注册（引入即自动注册到 HtmlTemplateRegistrar）
 export { registerComponentTemplates, COMPONENT_TEMPLATES } from './templates';
 
-// i18n 桥接
-export { I18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
+// i18n 桥接（从 @qimenjs/events 重导出，保持向后兼容）
+export { I18nEventBridge, i18nEventBridge, type I18nEventBridgeConfig } from '@qimenjs/events';
+
+// 组件 type 注册
+export { registerAllComponents } from './register';
 
 // 基础组件
 export { ButtonComponent } from './components/ButtonComponent';
 export { InputComponent } from './components/InputComponent';
 export { SelectComponent } from './components/SelectComponent';
+export { IconComponent } from './components/IconComponent';
+export { TextComponent } from './components/TextComponent';
 
 // 布局组件
 export { HBoxComponent } from './components/HBoxComponent';
@@ -78,3 +83,6 @@ export * from './events';
 
 // 动画
 export { animationsCSS } from './styles/animations';
+
+// 组件样式
+export { toolbarCSS } from './styles/toolbar';
