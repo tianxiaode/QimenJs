@@ -24,17 +24,22 @@ render(layout: LayoutNode, parentEl?: HTMLElement)
   ├─ 阶段 1：创建实例（不依赖 el）
   │   ├─ 从 ComponentRegistrar 查找组件类
   │   ├─ new ComponentClass() → constructor 内自动 setupAbilities（静态能力）
+  │   ├─ 设置 component.type = layout.type
   │   ├─ 注入 LayoutNode.abilities（setupAbilityDefinition，与 meta/extraFns 同级操作）
   │   ├─ 注入 extraFns（bind this → defineProperty）
   │   └─ 设置 meta
   │
-  ├─ 阶段 2：创建 el + 注入模板
-  │   ├─ component.el = createElement(layout)
-  │   └─ component.el.appendChild(templateRegistrar.getFragment(type))
-  │       └─ DocumentFragment 克隆，含 data-content / data-ref 标记
+  ├─ 阶段 2：创建 el + 注入模板 + 构建 contentMap
+  │   ├─ if (layout.tag) component.tag = layout.tag
+  │   ├─ component.initElement()
+  │   │   ├─ document.createElement(this.tag)
+  │   │   ├─ 从 RegistryHub 获取 HtmlTemplateRegistrar，用 this.type 查模板
+  │   │   ├─ el.appendChild(fragment)
+  │   │   └─ buildContentMap() — 查询 data-content 元素，按语义前缀分层缓存
+  │   └─ contentMap 结构：data-content="header:text" → contentMap.header.text = el
   │
   ├─ 阶段 3：初始化能力（依赖 el）
-  │   ├─ 调用所有 Ability 的 __initProps(props)  ← el 已存在，ContentAbility 可查询 DOM
+  │   ├─ 调用所有 Ability 的 __initProps(props)  ← el 已存在，contentMap 已建好
   │   └─ 调用所有 Ability 的 __init__ 标记方法   ← props 已初始化，EntityCore 可创建 Manager
   │
   ├─ 阶段 4：赋值属性（依赖 el）
@@ -77,6 +82,9 @@ render(layout: LayoutNode, parentEl?: HTMLElement)
 const ComponentClass = componentRegistrar.get(layout.type);
 const component = new ComponentClass();
 
+// 设置 type（initElement 需要用 type 获取模板）
+component.type = layout.type;
+
 // 以下三者都是"从 LayoutNode 取数据 → 复制到实例"，无本质区别
 
 // 1. 注入 LayoutNode.abilities
@@ -106,22 +114,34 @@ if (layout.meta) {
 
 **注意**：`setupAbilityDefinition` 需从 `private` 改为 `public`，不加防护性检查，错了就报错。
 
-### 3.2 阶段 2：创建 el + 注入模板
+### 3.2 阶段 2：创建 el + 注入模板 + 构建 contentMap
 
 ```typescript
-// 创建根元素
-component.el = document.createElement('div');
-
-// 从模板注册表获取 DocumentFragment 并注入
-const fragment = templateRegistrar.getFragment(layout.type);
-component.el.appendChild(fragment);
+// 阶段 1 已设置 component.type，阶段 2 覆盖 tag 后调用 initElement
+if (layout.tag) component.tag = layout.tag;
+component.initElement();
 ```
 
-模板注册表（`HtmlTemplateRegistrar`）的 `getFragment()` 通过 `<template>` 缓存 + `cloneNode(true)` 返回 DocumentFragment，跳过重复 HTML 解析。
+`initElement` 内部流程（无参数，自行从 RegistryHub 获取模板）：
+1. `document.createElement(this.tag)` 创建根元素
+2. 从 `RegistryHub` 获取 `HtmlTemplateRegistrar`，用 `this.type` 查模板
+3. 如有模板，`el.appendChild(fragment)` 注入
+4. `buildContentMap()` 查询所有 `data-content` 元素，按语义前缀分层缓存到 `this.contentMap`
 
-模板中的标记：
-- `data-content="prefix:name"` — 内容插槽，由 ContentAbility 在 `__initProps` 中查询和填充
-- `data-ref="name"` — 元素引用，供组件操作
+#### contentMap 结构
+
+`data-content` 统一声明式标记，值用冒号分隔语义：`group:key`
+
+| 模板声明 | contentMap 结构 | 用途 |
+|---------|----------------|------|
+| `data-content="header:text"` | `contentMap.header.text = el` | header 区域的文本节点 |
+| `data-content="header:icon"` | `contentMap.header.icon = el` | header 区域的图标节点 |
+| `data-content="body:child"` | `contentMap.body.child = el` | body 区域的子组件挂载点 |
+| `data-content="label"` | `contentMap.label._ = el` | 无冒号时用 `_` 作为默认 key |
+
+ContentAbility 在 `__initProps` 中扫描 `contentMap`，按 group + key 自动生成方法：
+- `header:text` → `setHeaderText(v)` 操作 `contentMap.header.text.textContent = v`
+- `body:child` → `setBodyChild(el)` 操作 `contentMap.body.child.appendChild(el)`
 
 ### 3.3 阶段 3：初始化能力
 
@@ -247,19 +267,20 @@ if (layout.lifecycle?.onMounted) {
 
 | LayoutNode 字段 | 所属 Props 接口 | 对应 Ability | setter 操作 |
 |-----------------|----------------|-------------|-------------|
-| x, y, top, left, bottom, right | PositionProps | PositionAbility | el.style 定位 |
-| width, height | PositionProps | PositionAbility | el.style 尺寸 |
-| minWidth, maxWidth, minHeight, maxHeight | PositionProps | PositionAbility | el.style 约束 |
-| margin, padding | PositionProps | PositionAbility | el.style 间距 |
-| scrollable | PositionProps | PositionAbility | el.style overflow |
-| center | PositionProps | PositionAbility | el.style 居中 |
-| hideMode | PositionProps | PositionAbility | 显隐模式切换 |
-| alwaysOnTop | PositionProps | PositionAbility | zIndex 管理 |
-| fullscreen | PositionProps | PositionAbility | 全屏切换 |
-| shadow | PositionProps | PositionAbility | el.style boxShadow |
-| focused | PositionProps | PositionAbility | el.focus() |
-| tabIndex | PositionProps | PositionAbility | el.tabIndex |
-| zIndex | PositionProps | PositionAbility | el.style.zIndex |
+| x, y, top, left, bottom, right | PositionProps | PositionPxAbility | el.style 定位（px） |
+| width, height | PositionProps | PositionPxAbility | el.style 尺寸（px） |
+| minWidth, maxWidth, minHeight, maxHeight | PositionProps | PositionPxAbility | el.style 约束（px） |
+| margin, padding | PositionProps | PositionRawAbility | el.style 间距（原始值） |
+| shadow | PositionProps | PositionRawAbility | el.style boxShadow |
+| zIndex | PositionProps | PositionRawAbility | el.style.zIndex |
+| scrollable | PositionProps | PositionBoolAbility | el.style overflow |
+| center | PositionProps | PositionBoolAbility | el.style 居中 |
+| alwaysOnTop | PositionProps | PositionBoolAbility | zIndex 管理 |
+| fullscreen | PositionProps | PositionBoolAbility | 全屏切换 |
+| hideMode | PositionProps | PositionDirectAbility | 显隐模式（直接操作 DOM） |
+| visible | PositionProps | PositionDirectAbility | 显隐控制（直接操作 DOM） |
+| focused | PositionProps | PositionDirectAbility | el.focus() |
+| tabIndex | PositionProps | PositionDirectAbility | el.tabIndex |
 | className | StyleProps | StyleAbility | el.className |
 | style | StyleProps | StyleAbility | el.style 内联样式 |
 | role | AccessibilityProps | — (直接设 el) | el.setAttribute('role', v) |
@@ -277,6 +298,7 @@ if (layout.lifecycle?.onMounted) {
 | abilities | `setupAbilityDefinition()` | 阶段 1（不依赖 el） |
 | meta | 直接赋值 `component.meta` | 阶段 1 |
 | extraFns | `bind(component)` + `defineProperty` | 阶段 1 |
+| tag | 覆盖 `component.tag` | 阶段 2（initElement 前） |
 | handlers | `component.onDom()` | 阶段 5（依赖 el + extraFns） |
 | stateTriggers | `globalEventBus.on()` | 阶段 5（依赖 extraFns） |
 | lifecycle | `bind(component)` 后在对应时机调用 | 阶段 9 |
@@ -290,8 +312,11 @@ if (layout.lifecycle?.onMounted) {
 
 | 能力类 | 对应 LayoutNode 字段 | 说明 |
 |--------|---------------------|------|
-| PositionAbility | PositionProps | 位置/尺寸/约束/视觉，已有设计 |
-| StyleAbility | StyleProps | 样式管理，已有 |
+| PositionPxAbility | PositionProps（px 数值） | 定位/尺寸/约束，flush 遍历 PX_MAP |
+| PositionRawAbility | PositionProps（原始值） | margin/padding/shadow/zIndex，flush 遍历 RAW_MAP |
+| PositionBoolAbility | PositionProps（布尔） | scrollable/center/alwaysOnTop/fullscreen，flush 遍历 BOOL_HANDLERS |
+| PositionDirectAbility | PositionProps（直接操作） | visible/focused/tabIndex/hideMode，setter 直接操作 DOM |
+| StyleAbility | StyleProps | className/style，flush 遍历自己的 key |
 | AccessibilityAbility | AccessibilityProps | ARIA 无障碍属性，**需新建** |
 | PermissionAbility | PermissionProps | 权限控制，**需新建** |
 | AnimationAbility | AnimationProps | 动画控制，已有设计 |
@@ -300,7 +325,7 @@ if (layout.lifecycle?.onMounted) {
 
 ---
 
-## 5. 模板与数据插槽
+## 5. 模板与内容插槽
 
 ### 5.1 模板机制
 
@@ -308,18 +333,27 @@ if (layout.lifecycle?.onMounted) {
 
 模板不含外层根元素（外层由组件创建），只包含内部结构。
 
-### 5.2 数据插槽
+### 5.2 内容插槽（data-content）
 
-模板中的 `data-content` 标记由 ContentAbility 在 `__initProps` 中处理：
+模板中统一使用 `data-content` 声明式标记，值用冒号分隔语义 `group:key`：
 
-1. 一次性 `querySelectorAll('[data-content]')` 建 contentMap
-2. contentMap 存入 `abilityState('ContentAbility:contentMap')`
-3. `createContentManager` 从 contentMap 取元素，生成 getter/setter
-4. 从 props 初始化值
+- `group` — 逻辑分组（如 header、body、label）
+- `key` — 操作类型（如 text、icon、child）
 
-### 5.3 元素引用
+```html
+<!-- Dialog 模板示例 -->
+<div data-content="header:text">标题</div>
+<div data-content="body:child"></div>
+<div data-content="footer:child"></div>
 
-模板中的 `data-ref` 标记供组件直接操作 DOM 元素（如 input、header 等）。
+<!-- Input 模板示例 -->
+<span data-content="label">姓名</span>
+<input data-content="input" />
+<span data-content="hint">请输入真实姓名</span>
+<span data-content="error"></span>
+```
+
+`initElement` 中 `buildContentMap()` 一次性查询并缓存到 `this.contentMap`，ContentAbility 在 `__initProps` 中消费，按 group + key 自动生成 setter 方法。
 
 ---
 
@@ -350,6 +384,6 @@ ComposableBase 的核心机制（abilityState、debounce、onCleanup、collectAb
 | 1 | `visible` 字符串表达式的求值上下文和触发机制 | 阶段 6 实现 |
 | 2 | `repeat` 数据源变化时的更新策略（全量重建 vs diff） | 阶段 6 实现 |
 | 3 | `responsive` 断点切换时是否需要动画过渡 | 阶段 6 实现 |
-| 4 | `data-ref` 是否需要统一的 RefAbility，还是组件自行 querySelector | 模板机制 |
+| 4 | ContentAbility 如何根据 contentMap 自动生成 setter 方法 | 阶段 3 实现 |
 | 5 | `__initProps` 的调用是渲染器遍历 Ability 还是组件基类提供统一入口 | 阶段 3 实现 |
 | 6 | `lifecycle` 钩子与 Ability 生命周期（onCleanup）的执行顺序 | 阶段 9 实现 |

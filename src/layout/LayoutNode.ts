@@ -441,6 +441,9 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 
+    /** 根元素标签名，覆盖组件类默认的 static tag */
+    tag?: string;
+
     /** 开发者指定的业务标识（多重职责：查找/事件前缀/source/target） */
     id?: string;
 

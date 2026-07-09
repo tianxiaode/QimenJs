@@ -1,283 +1,163 @@
 /**
- * UI 组件基类
+ * ComponentBase — 组件基类
  *
- * 从 ComposableBase 派生，所有 UI 组件的根类。
- * 通过 Ability 组合获得各种 UI 能力。
+ * 继承 ComposableBase，在组合能力的基础上增加组件特有职责：
+ * - el：根 DOM 元素
+ * - meta：组件元数据
+ * - onDom：DOM 事件绑定（自动清理）
+ * - setProp：通用属性设置
  *
- * ComponentBase 通过 static abilities 声明基础能力：
- * - EventAbility：事件监听/发射，on/once/emit/emitUI
- * - DomEventsAbility：DOM 手势事件绑定，bind(target, semantic)
- * - ThemeAbility：主题感知，自动响应主题切换
- * - StyleAbility：样式管理，className/style/addClass/removeClass
- * - EventBridgeAbility：声明式事件桥接
- *
- * 子类通过 static abilities 声明额外能力，ComposableBase 会自动沿原型链合并。
- *
- * @example
- * ```typescript
- * class ButtonComponent extends ComponentBase {
- *     static override readonly abilities = [ContentAbility, ClickAbility, DisableAbility, SizeAbility];
- * }
- * ```
+ * 子类通过 static abilities 声明所需能力，
+ * ComposableBase 在 constructor 中自动装配。
+ * 渲染器通过 setupAbilityDefinition 注入 LayoutNode.abilities。
  */
 
-import { ComposableBase, type AbilityDefinition } from '@qimenjs/composable';
-import { string } from '@qimenjs/utils';
-import { EventAbility, DomEventsAbility } from '@qimenjs/system-abilities';
-import { ThemeAbility } from './abilities/ThemeAbility';
-import { StyleAbility } from './abilities/StyleAbility';
-import { EventBridgeAbility } from './abilities/EventBridgeAbility';
-import { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
-import { ComponentManager } from './ComponentManager';
-import { RegistryHub } from '@qimenjs/registry';
+import { ComposableBase, type AbilityDefinition } from '@/composable';
+import { EventAbility, DomEventsAbility } from '@/system-abilities';
+import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
+import { RegistryHub } from '@/registry/RegistryHub';
+import { HtmlTemplateRegistrar } from '@/registry/registrars/HtmlTemplateRegistrar';
 
-/** 组件 DOM 元素上挂载组件引用的属性名 */
-const Q_COMPONENT_REF = '__qComponent';
-
-/** 组件 DOM 元素上设置 id 标识的属性名 */
-const Q_DATA_ID = 'data-q-id';
-
-/**
- * UI 组件基类
- *
- * 提供 el/cid/id/type/parent/mounted/destroyed 属性和
- * mount/unmount/update/dispose/markDirty/up 方法
- */
 export class ComponentBase extends ComposableBase {
     /**
-     * 基础能力声明
-     *
-     * ComposableBase.collectAbilities() 会沿原型链收集每层的 static abilities 并合并。
-     * 子类只需声明自己的 abilities，无需重写 collectAbilities。
+     * 标准能力声明
+     * 子类可 override 追加，ComposableBase 会沿原型链收集
      */
-    static override readonly abilities: readonly AbilityDefinition[] = [
-        EventAbility,
-        DomEventsAbility,
-        ThemeAbility,
-        StyleAbility,
-        EventBridgeAbility,
-    ];
+    static readonly abilities: readonly AbilityDefinition[] = [EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility];
 
-    /** 组件根 DOM 元素 */
+    /** 根元素标签名，子类可 override */
+    tag: string = 'div';
+
+    /** 组件类型，由渲染器在阶段 1 设置 */
+    type!: string;
+
+    /** 根 DOM 元素 */
     el!: HTMLElement;
 
-    /** 自动生成的唯一 ID */
-    readonly cid: string;
+    /** 组件元数据 */
+    meta: Record<string, any> = {};
 
-    /** 开发者指定的业务标识（多重职责：查找/事件前缀/source/target） */
-    id: string | undefined;
+    /** 组件属性存储 */
+    props: Record<string, any> = {};
 
-    /** 组件类型标识（来自 ComponentRegistrar 注册时的 type） */
-    type: string = '';
+    /** 脏属性集合 */
+    dirtySet: Set<string> = new Set();
 
-    /** 父组件引用（渲染 Pipeline BIND_CHILDREN 步骤自动设置） */
-    parent: ComponentBase | null = null;
+    /**
+     * data-content 查询结果缓存，按冒号前缀分层
+     *
+     * data-content="header:text" → contentMap.header.text = el
+     * data-content="header:icon" → contentMap.header.icon = el
+     * data-content="body:child"  → contentMap.body.child = el
+     * data-content="label"       → contentMap.label._ = el（无冒号时用 '_' 作为默认 key）
+     */
+    contentMap: Record<string, Record<string, HTMLElement>> = {};
 
-    /** 是否已挂载 */
-    mounted: boolean = false;
-
-    /** 是否已销毁 */
-    destroyed: boolean = false;
-
-    /** 原始 props 引用（供能力初始化使用） */
-    readonly props: Record<string, any>;
-
-    constructor(props?: Record<string, any>) {
+    constructor() {
         super();
-        this.cid = string.getId('q-comp');
-        this.props = props || {};
-
-        // 如果 props 中有 id，设置到实例
-        if (this.props.id) {
-            this.id = this.props.id;
-        }
-
-        // 如果 props 中有 type，设置到实例
-        if (this.props.type) {
-            this.type = this.props.type;
-        }
-
-        // 统一初始化 el + 注入模板
-        this.initElement();
     }
 
-    /**
-     * 初始化组件根元素并注入模板内容
-     *
-     * 根据 static elTag 创建根元素（默认 div），从 HtmlTemplateRegistrar 获取模板注入。
-     * 子类通过 static elTag = 'button' 声明根元素标签，无需重写此方法。
-     *
-     * 模板查找优先级：
-     * 1. 组件 static templateId（如 'Input:top'）
-     * 2. 组件 type（如 'Input'）
-     */
-    protected initElement(): void {
-        // 1. 根据 static elTag 创建根元素（默认 div）
-        const tag = (this.constructor as any).elTag || 'div';
-        this.el = document.createElement(tag);
+    // ─── 元素初始化 ──
 
-        // 2. 从 HtmlTemplateRegistrar 获取模板并注入
-        const templateId = (this.constructor as any).templateId || this.type;
-        if (templateId) {
-            const registrar = RegistryHub.get('html');
-            if (registrar && typeof registrar.get === 'function') {
-                const templateHtml = registrar.get(templateId);
-                if (templateHtml) {
-                    this.el.innerHTML = templateHtml;
-                }
+    /**
+     * 创建根 DOM 元素 + 注入模板 + 查询 data-content 缓存
+     * 渲染器阶段 2 调用，从 RegistryHub 获取模板片段
+     */
+    initElement(): void {
+        this.el = document.createElement(this.tag);
+
+        // 从模板注册表获取片段并注入
+        const templateRegistrar = RegistryHub.get<HtmlTemplateRegistrar>('html');
+        if (templateRegistrar) {
+            try {
+                const fragment = templateRegistrar.getFragment(this.type);
+                this.el.appendChild(fragment);
+                this.buildContentMap();
+            } catch {
+                // 没有注册模板，跳过
             }
         }
     }
 
     /**
-     * 重新初始化元素（切换模板时使用）
+     * 查询所有 data-content 元素，按冒号前缀分层缓存
      *
-     * 清空当前 el 内容，从新模板注入，重新初始化 ContentManager。
-     * 需要在 __initProps 中重新调用 createContentManager。
+     * "header:text" → contentMap.header.text = el
+     * "label"       → contentMap.label._ = el
      */
-    reinitElement(templateId?: string): void {
-        if (templateId) {
-            (this.constructor as any).templateId = templateId;
-        }
-        const id = templateId || (this.constructor as any).templateId || this.type;
-        if (id) {
-            const registrar = RegistryHub.get('html');
-            if (registrar && typeof registrar.get === 'function') {
-                const templateHtml = registrar.get(id);
-                if (templateHtml) {
-                    this.el.innerHTML = templateHtml;
-                }
+    private buildContentMap(): void {
+        const els = this.el.querySelectorAll('[data-content]');
+        if (els.length === 0) return;
+
+        for (const el of els) {
+            const htmlEl = el as HTMLElement;
+            const value = htmlEl.getAttribute('data-content')!;
+
+            const colonIndex = value.indexOf(':');
+            if (colonIndex === -1) {
+                // 无冒号：contentMap.label._
+                if (!this.contentMap[value]) this.contentMap[value] = {};
+                this.contentMap[value]['_'] = htmlEl;
+            } else {
+                // 有冒号：contentMap.header.text
+                const group = value.slice(0, colonIndex);
+                const key = value.slice(colonIndex + 1);
+                if (!this.contentMap[group]) this.contentMap[group] = {};
+                this.contentMap[group][key] = htmlEl;
             }
         }
     }
 
+    // ─── dirty 追踪 + 延时刷新 ──
+
     /**
-     * 应用属性别名和能力初始化
-     *
-     * 在 setupAbilities 之后调用，将 props 中的值通过别名映射设置到组件属性
-     * 注意：__initProps 延迟到 mount() 时调用，因为此时 el 才可用
+     * 标记某个 key 为脏，触发延时刷新
+     * 任何 Ability 的 setter 都可调用
      */
-    protected override applyOverrides(): void {
-        super.applyOverrides();
-
-        const allAbilities = this.collectAbilities();
-
-        // 1. 应用属性别名（不依赖 el 的属性）
-        const aliasMap = mergePropAliases(allAbilities);
-        applyPropAliases(this, this.props, aliasMap);
-
-        // 2. __initProps 延迟到 mount() 中调用，因为能力初始化可能依赖 el
+    markDirty(key: string): void {
+        this.dirtySet.add(key);
+        this.debounce('ComponentBase:flush', () => this.flush(), 0);
     }
 
     /**
-     * 挂载到目标容器
-     *
-     * @param container - 目标容器，可以是 HTMLElement 或 CSS 选择器
+     * 统一刷新所有脏属性到 DOM
+     * 各 Ability 的 flush 方法只处理自己负责的脏 key
+     * flush 完清空 dirty set
      */
-    mount(container: HTMLElement | string): void {
-        const target = typeof container === 'string'
-            ? document.querySelector(container) as HTMLElement
-            : container;
+    flush(): void {
+        if (this.dirtySet.size === 0) return;
 
-        if (target && this.el) {
-            target.appendChild(this.el);
-            this.mounted = true;
+        // 依次分发给各 Ability 的 flush 方法
+        this.flushStyle();
+        this.flushPositionPx();
+        this.flushPositionRaw();
+        this.flushPositionBool();
+        this.flushAccessibility();
 
-            // 在 el 上挂载组件引用
-            (this.el as any)[Q_COMPONENT_REF] = this;
-
-            // 设置 data-q-id 属性（如果有 id）
-            if (this.id) {
-                this.el.setAttribute(Q_DATA_ID, this.id);
-            }
-
-            // 注册到 ComponentManager
-            ComponentManager.getInstance().register(this);
-
-            // 初始化能力 props（此时 el 已可用）
-            const allAbilities = this.collectAbilities();
-            initAbilitiesFromProps(this, allAbilities, this.props);
-        }
+        this.dirtySet.clear();
     }
 
-    /**
-     * 从 DOM 卸载
-     */
-    unmount(): void {
-        if (this.el && this.el.parentNode) {
-            this.el.parentNode.removeChild(this.el);
-        }
-        this.mounted = false;
-    }
+    // ─── 通用属性 ─────────────────────────────────────
 
     /**
-     * 更新组件（由子类实现具体逻辑）
-     *
-     * @param _props - 可选的更新属性
+     * 设置自定义属性（阶段 4 剩余 props）
      */
-    update(_props?: Record<string, any>): void {
-        // 子类覆盖
+    setProp(key: string, value: any): void {
+        (this as any)[key] = value;
     }
 
-    /**
-     * 沿父链向上查找指定类型的祖先组件
-     *
-     * 从 this.parent 开始，逐级向上检查 type，返回第一个匹配的祖先组件或 null。
-     *
-     * @param type - 要查找的组件类型
-     * @returns 匹配的祖先组件，未找到返回 null
-     */
-    up(type: string): ComponentBase | null {
-        let current = this.parent;
-        while (current) {
-            if (current.type === type) return current;
-            current = current.parent;
-        }
-        return null;
-    }
+    // ─── 销毁 ─────────────────────────────────────────
 
-    /**
-     * 标记需要更新，同一微任务内只执行一次 update
-     */
-    private _dirty = false;
-    markDirty(): void {
-        if (this._dirty) return;
-        this._dirty = true;
-        queueMicrotask(() => {
-            this._dirty = false;
-            this.update();
-        });
-    }
-
-    /**
-     * 销毁组件
-     *
-     * 执行顺序：
-     * 1. 从 ComponentManager 注销
-     * 2. 从 DOM 元素移除引用
-     * 3. 清除父引用
-     * 4. 调用 ComposableBase.dispose() 清理 abilities 和事件
-     */
     override dispose(): void {
-        if (this.destroyed) return;
+        // 移除 DOM 元素
+        this.el?.remove();
 
-        // 从 ComponentManager 注销
-        ComponentManager.getInstance().unregister(this);
+        // 释放引用
+        this.meta = {};
+        this.props = {};
+        this.dirtySet.clear();
+        this.contentMap = {};
 
-        // 从 DOM 元素移除引用
-        if (this.el) {
-            (this.el as any)[Q_COMPONENT_REF] = undefined;
-            if (this.el.hasAttribute(Q_DATA_ID)) {
-                this.el.removeAttribute(Q_DATA_ID);
-            }
-        }
-
-        // 清除父引用
-        this.parent = null;
-
-        this.destroyed = true;
-
-        // 调用 ComposableBase.dispose() 清理 abilities 和事件
         super.dispose();
     }
 }
