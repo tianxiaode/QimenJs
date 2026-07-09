@@ -1,5 +1,6 @@
 import { HtmlTemplateRegistrarName } from '../types';
 import { RegistrarBase } from './RegistrarBase';
+import { Logger } from '@qimenjs/logger';
 
 /**
  * HTML模板注册器
@@ -15,6 +16,7 @@ import { RegistrarBase } from './RegistrarBase';
 export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     public readonly name = HtmlTemplateRegistrarName;
     protected storage = new Map<string, string>();
+    private logger = Logger.for(HtmlTemplateRegistrar);
 
     /**
      * 模板元素缓存
@@ -71,7 +73,7 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
         if (!tpl) {
             const html = this.storage.get(id);
             if (!html) {
-                console.warn(`[HtmlTemplateRegistrar] template "${id}" not found`);
+                this.logger.warn(`template "${id}" not found`);
                 return document.createDocumentFragment();
             }
             tpl = document.createElement('template');
