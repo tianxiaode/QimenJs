@@ -8,8 +8,8 @@ import { RegistrarBase } from './RegistrarBase';
  * 用于存储和管理预定义的HTML模板，
  * 支持按ID快速检索和复用HTML模板内容。
  *
- * 优化：register 时预创建 <template> 元素缓存，
- * getFragment() 通过 cloneNode(true) 返回 DocumentFragment，
+ * 优化：首次 getFragment() 时懒创建 <template> 元素缓存，
+ * 后续调用通过 cloneNode(true) 返回 DocumentFragment，
  * 跳过 innerHTML 的 HTML 解析开销。
  */
 export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
@@ -18,14 +18,12 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
 
     /**
      * 模板元素缓存
-     * register 时同步创建，避免 getFragment 时重复解析 HTML
+     * 首次 getFragment 时按需创建，避免启动时解析所有模板
      */
     private templateCache = new Map<string, HTMLTemplateElement>();
 
     /**
      * 注册HTML模板
-     *
-     * 同时预创建 <template> 元素缓存，供 getFragment 使用。
      *
      * @param id - 模板唯一标识符
      * @param template - HTML模板字符串
@@ -33,10 +31,8 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     register(id: string, template: string): void {
         this.checkLock();
         this.storage.set(id, template);
-
-        const tpl = document.createElement('template');
-        tpl.innerHTML = template;
-        this.templateCache.set(id, tpl);
+        // 缓存失效，下次 getFragment 时重新创建
+        this.templateCache.delete(id);
     }
 
     /**
@@ -64,17 +60,23 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     /**
      * 获取克隆的 DocumentFragment
      *
-     * 通过 cloneNode(true) 复制缓存的 <template>.content，
-     * 跳过 innerHTML 的 HTML 解析，性能优于 get() + innerHTML。
+     * 首次调用时从 storage 中的 HTML 字符串创建 <template> 缓存，
+     * 后续调用通过 cloneNode(true) 复制缓存，跳过 HTML 解析。
      *
      * @param id - 模板ID
      * @returns 克隆的 DocumentFragment
      * @throws 模板不存在时抛出错误
      */
     getFragment(id: string): DocumentFragment {
-        const tpl = this.templateCache.get(id);
+        let tpl = this.templateCache.get(id);
         if (!tpl) {
-            throw new Error(`[HtmlTemplateRegistrar] template "${id}" not found`);
+            const html = this.storage.get(id);
+            if (!html) {
+                throw new Error(`[HtmlTemplateRegistrar] template "${id}" not found`);
+            }
+            tpl = document.createElement('template');
+            tpl.innerHTML = html;
+            this.templateCache.set(id, tpl);
         }
         return tpl.content.cloneNode(true) as DocumentFragment;
     }

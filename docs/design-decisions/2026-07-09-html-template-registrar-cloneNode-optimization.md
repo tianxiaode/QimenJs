@@ -59,16 +59,14 @@
 ```typescript
 export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     protected storage = new Map<string, string>();
-    // 新增：模板元素缓存
+    // 新增：模板元素缓存（懒创建）
     private templateCache = new Map<string, HTMLTemplateElement>();
 
     register(id: string, template: string): void {
         this.checkLock();
         this.storage.set(id, template);
-        // 预创建 <template> 缓存
-        const tpl = document.createElement('template');
-        tpl.innerHTML = template;
-        this.templateCache.set(id, tpl);
+        // 缓存失效，下次 getFragment 时重新创建
+        this.templateCache.delete(id);
     }
 
     unregister(id: string): void {
@@ -84,8 +82,14 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
 
     /** 新增：返回克隆的 DocumentFragment，性能更优 */
     getFragment(id: string): DocumentFragment {
-        const tpl = this.templateCache.get(id);
-        if (!tpl) throw new Error(`Template "${id}" not found`);
+        let tpl = this.templateCache.get(id);
+        if (!tpl) {
+            const html = this.storage.get(id);
+            if (!html) throw new Error(`Template "${id}" not found`);
+            tpl = document.createElement('template');
+            tpl.innerHTML = html;
+            this.templateCache.set(id, tpl);
+        }
         return tpl.content.cloneNode(true) as DocumentFragment;
     }
 }
