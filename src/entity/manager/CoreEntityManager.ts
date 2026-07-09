@@ -1,4 +1,4 @@
-import { ComposableBase } from '@/composable';
+import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
@@ -6,7 +6,7 @@ import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import type { ENTITY_ACTION, ICoreEntityManager, ISchemaAbility } from '@/entity/types';
 import type { IEventScope, EventHandler } from '@/events';
 import type { DomainConfig, SystemConfig } from '@/registry';
-import type { Schema, SchemaCache, RegistrSchema } from '@/schema';
+import type { Schema, RegistrSchema } from '@/schema';
 import { SchemaRegistrar } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
@@ -17,16 +17,27 @@ import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 
 /**
- * CoreEntityManager 能力接口
- *
- * 通过声明合并为 CoreEntityManager 类添加 Ability 注入方法的类型信息。
- * 组合能力：EventAbility + DomainAbility + SystemAbility + SchemaAbility
- *
- * 注意：不 extends ICoreEntityManager，因为 ICoreEntityManager extends IComposableBase，
- * 而 IComposableBase 的 host 属性类型与 ComposableBase 类的 host getter 类型冲突。
- * Ability 注入的方法在此直接声明即可。
+ * CoreEntityManager 能力声明
  */
-export interface CoreEntityManager extends ISchemaAbility {
+export const CORE_ENTITY_ABILITIES: readonly AbilityDefinition[] = [
+    EventAbility,
+    DomainAbility,
+    SystemAbility,
+    SchemaAbility,
+];
+
+/**
+ * 第一步：合并能力到原型上，得到中间类
+ */
+const ForgedCoreEntityManager = ComposableBase.forge(CORE_ENTITY_ABILITIES);
+
+/**
+ * 在中间类上声明能力接口
+ *
+ * 派生类 CoreEntityManager extends ForgedCoreEntityManager 后，
+ * 自动拥有这些类型，无需再 export interface。
+ */
+export interface ForgedCoreEntityManager extends ISchemaAbility {
     // ===== EventAbility =====
     readonly eventScope: IEventScope;
     on(event: string, handler: EventHandler): () => void;
@@ -41,57 +52,28 @@ export interface CoreEntityManager extends ISchemaAbility {
     systemConfig<K extends keyof SystemConfig>(key: K): any;
 }
 
-export abstract class CoreEntityManager extends ComposableBase implements ICoreEntityManager {
-    static readonly abilities: readonly any[] = [
-        EventAbility,
-        DomainAbility,
-        SystemAbility,
-        SchemaAbility,
-    ];
-
+/**
+ * 第二步：从中间类 extends 出 CoreEntityManager
+ *
+ * 自动继承 ForgedCoreEntityManager 的接口声明，
+ * 不需要再 export interface CoreEntityManager。
+ */
+export abstract class CoreEntityManager extends ForgedCoreEntityManager implements ICoreEntityManager {
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;
 
-    /**
-     * 缓存过期时间（毫秒），默认 5 分钟
-     *
-     * 子类可覆盖此值，如：
-     * ```typescript
-     * class UserManager extends RemoteCrudEntityManager {
-     *     cacheTTL = 60000; // 1 分钟
-     * }
-     * ```
-     */
+    /** 缓存过期时间（毫秒），默认 5 分钟 */
     cacheTTL: number = 300000;
 
-    /**
-     * Schema 定义（原始，未编译）
-     *
-     * 子类直接引用 Schema 对象，如：
-     * ```typescript
-     * class UserManager extends RemoteCrudEntityManager {
-     *     schema = UserSchema;
-     * }
-     * ```
-     *
-     * 构造时自动注册到 SchemaRegistrar，用 schema.name 作为 key。
-     * 运行时通过 getter 获取编译后的 Schema。
-     */
+    /** Schema 定义（原始，未编译） */
     abstract schema: RegistrSchema;
 
-    /**
-     * 获取编译后的 Schema
-     *
-     * 通过 SchemaRegistrar 延迟编译并缓存。
-     * 如果 Schema 尚未注册，自动注册后再编译。
-     * 返回的是编译后的 Schema（处理了 extends/mixins/override）。
-     */
+    /** 获取编译后的 Schema */
     get compiledSchema(): Schema {
         const registrar = SchemaRegistrar.getInstance();
         const key = this.schema.name;
 
-        // 自动注册：如果尚未注册，先注册
         if (!registrar.has(key)) {
             registrar.register(this.schema);
         }
@@ -107,43 +89,28 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
         return (this as any).getSchemaRules(fieldName);
     }
 
-    /**
-     * 获取域配置
-     */
+    /** 获取域配置 */
     protected getDomainConfig(): any {
         return (RegistryHub.get('domain') as any)?.get(this.domain);
     }
 
-    /**
-     * 获取数据处理预设
-     */
+    /** 获取数据处理预设 */
     protected getDataProcessorPreset(): string {
         const domainConfig = this.getDomainConfig();
         return domainConfig?.preset || 'default';
     }
 
-    /**
-     * 创建请求任务
-     */
+    /** 创建请求任务 */
     request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask {
-        // 1. 构建请求上下文
         const context = this.buildRequestContext(action, options);
 
-        // 2. 定义异步执行体
         const execute = async (): Promise<RequestContext> => {
             try {
                 this.logger.debug(`Executing Action [${action}] for Entity [${this.entityName}]`);
-
-                // 3. 前导数据处理
                 await this.executeDataProcessor('pre', context);
-
-                // 4. 执行 HTTP 请求
                 const executor = new HttpExecutor();
                 await executor.execute(context);
-
-                // 5. 后导数据处理
                 await this.executeDataProcessor('post', context);
-
                 return context;
             } catch (e) {
                 this.logger.error(`Request failed in Action [${action}]!`, e);
@@ -151,7 +118,6 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
             }
         };
 
-        // 6. 返回任务对象
         return {
             context: execute(),
             cancel: (reason?: string) =>
@@ -159,9 +125,7 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
         };
     }
 
-    /**
-     * 构建请求上下文
-     */
+    /** 构建请求上下文 */
     protected buildRequestContext(
         action: ENTITY_ACTION,
         options: HttpRequestOptions
@@ -175,12 +139,12 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
                 action: action as string,
             })
             .withRequest({
-                url: this.url, // 实体管理器的基础 URL，如 /api/users
+                url: this.url,
                 method: 'GET',
                 body: options.body,
                 headers: options.headers,
                 queryParams: options.queryParams,
-                pathParams: options.pathParams || [], // 路径参数数组，如 ['a', 'b', 1] 生成 /api/users/a/b/1
+                pathParams: options.pathParams || [],
                 timeout: options.timeout || 30000,
                 responseType: options.responseType || 'json',
             })
@@ -189,9 +153,7 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
             .build();
     }
 
-    /**
-     * 执行数据处理管道
-     */
+    /** 执行数据处理管道 */
     protected async executeDataProcessor(
         stage: 'pre' | 'post',
         context: RequestContext
@@ -206,14 +168,13 @@ export abstract class CoreEntityManager extends ComposableBase implements ICoreE
         }
     }
 
-    /**
-     * 取消所有请求
-     */
+    /** 取消所有请求 */
     cancelAll(): void {
         this.logger.warn(`Cancelling all requests for Entity [${this.entityName}]`);
     }
 
-    public dispose(): void {
+    override dispose(): void {
         this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
+        super.dispose();
     }
 }

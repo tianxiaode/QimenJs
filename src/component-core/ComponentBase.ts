@@ -1,15 +1,13 @@
 /**
  * ComponentBase — 组件基类
  *
- * 继承 ComposableBase，在组合能力的基础上增加组件特有职责：
+ * 通过 ComposableBase.forge() 合并标准能力到原型上，
+ * 再从中间类 extends 出 ComponentBase，添加组件特有职责：
  * - el：根 DOM 元素
  * - meta：组件元数据
- * - onDom：DOM 事件绑定（自动清理）
  * - setProp：通用属性设置
  *
- * 子类通过 static abilities 声明所需能力，
- * ComposableBase 在 constructor 中自动装配。
- * 渲染器通过 setupAbilityDefinition 注入 LayoutNode.abilities。
+ * 渲染器仍可通过 setupAbilityDefinition 注入 LayoutNode.abilities。
  */
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
@@ -18,13 +16,53 @@ import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDir
 import { RegistryHub } from '@/registry/RegistryHub';
 import { HtmlTemplateRegistrar } from '@/registry/registrars/HtmlTemplateRegistrar';
 
-export class ComponentBase extends ComposableBase {
-    /**
-     * 标准能力声明
-     * 子类可 override 追加，ComposableBase 会沿原型链收集
-     */
-    static readonly abilities: readonly AbilityDefinition[] = [EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility];
+/**
+ * 标准能力声明
+ * 子类可在此基础上追加能力
+ */
+export const COMPONENT_BASE_ABILITIES: readonly AbilityDefinition[] = [
+    EventAbility, DomEventsAbility,
+    PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
+];
 
+/**
+ * 第一步：合并标准能力到原型上，得到中间类
+ */
+const ForgedComponentBase = ComposableBase.forge(COMPONENT_BASE_ABILITIES);
+
+/**
+ * 在中间类上声明能力接口
+ *
+ * 派生类 ComponentBase extends ForgedComponentBase 后，
+ * 自动拥有这些类型，无需再 export interface。
+ */
+export interface ForgedComponentBase extends ComposableBase {
+    // ===== PositionPxAbility =====
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    flushPositionPx(): void;
+
+    // ===== StyleAbility =====
+    style: Record<string, string>;
+    flushStyle(): void;
+    flushAccessibility(): void;
+
+    // ===== EventAbility =====
+    readonly eventScope: any;
+    on(event: string, handler: any): () => void;
+    once(event: string, handler: any): void;
+    emit(event: string, data?: any): void;
+
+    // ===== DomEventsAbility =====
+    bind(target: EventTarget, semantic: any, options?: any): any;
+}
+
+/**
+ * 第二步：从中间类 extends 出 ComponentBase，添加组件特有属性和方法
+ */
+export class ComponentBase extends ForgedComponentBase {
     /** 根元素标签名，子类可 override */
     tag: string = 'div';
 
@@ -45,17 +83,8 @@ export class ComponentBase extends ComposableBase {
 
     /**
      * data-content 查询结果缓存，按冒号前缀分层
-     *
-     * data-content="header:text" → contentMap.header.text = el
-     * data-content="header:icon" → contentMap.header.icon = el
-     * data-content="body:child"  → contentMap.body.child = el
-     * data-content="label"       → contentMap.label._ = el（无冒号时用 '_' 作为默认 key）
      */
     contentMap: Record<string, Record<string, HTMLElement>> = {};
-
-    constructor() {
-        super();
-    }
 
     // ─── 元素初始化 ──
 
@@ -66,7 +95,6 @@ export class ComponentBase extends ComposableBase {
     initElement(): void {
         this.el = document.createElement(this.tag);
 
-        // 从模板注册表获取片段并注入
         const templateRegistrar = RegistryHub.get<HtmlTemplateRegistrar>('html');
         if (templateRegistrar) {
             try {
@@ -81,12 +109,9 @@ export class ComponentBase extends ComposableBase {
 
     /**
      * 查询所有 data-content 元素，按冒号前缀分层缓存
-     *
-     * "header:text" → contentMap.header.text = el
-     * "label"       → contentMap.label._ = el
      */
-    private buildContentMap(): void {
-        const els = this.el.querySelectorAll('[data-content]');
+    buildContentMap(): void {
+        const els = Array.from(this.el.querySelectorAll('[data-content]'));
         if (els.length === 0) return;
 
         for (const el of els) {
@@ -95,11 +120,9 @@ export class ComponentBase extends ComposableBase {
 
             const colonIndex = value.indexOf(':');
             if (colonIndex === -1) {
-                // 无冒号：contentMap.label._
                 if (!this.contentMap[value]) this.contentMap[value] = {};
                 this.contentMap[value]['_'] = htmlEl;
             } else {
-                // 有冒号：contentMap.header.text
                 const group = value.slice(0, colonIndex);
                 const key = value.slice(colonIndex + 1);
                 if (!this.contentMap[group]) this.contentMap[group] = {};
@@ -112,7 +135,6 @@ export class ComponentBase extends ComposableBase {
 
     /**
      * 标记某个 key 为脏，触发延时刷新
-     * 任何 Ability 的 setter 都可调用
      */
     markDirty(key: string): void {
         this.dirtySet.add(key);
@@ -121,13 +143,10 @@ export class ComponentBase extends ComposableBase {
 
     /**
      * 统一刷新所有脏属性到 DOM
-     * 各 Ability 的 flush 方法只处理自己负责的脏 key
-     * flush 完清空 dirty set
      */
     flush(): void {
         if (this.dirtySet.size === 0) return;
 
-        // 依次分发给各 Ability 的 flush 方法
         this.flushStyle();
         this.flushPositionPx();
         this.flushPositionRaw();
@@ -137,24 +156,21 @@ export class ComponentBase extends ComposableBase {
         this.dirtySet.clear();
     }
 
-    // ─── 通用属性 ─────────────────────────────────────
+    // ─── 通用属性 ──
 
     /**
      * 统一属性设置入口
-     * 写入 props + 标记脏，Ability setter 应调用此方法而非手动写 this.props + this.markDirty
      */
     setProp(key: string, value: any): void {
         this.props[key] = value;
         this.markDirty(key);
     }
 
-    // ─── 销毁 ─────────────────────────────────────────
+    // ─── 销毁 ──
 
     override dispose(): void {
-        // 移除 DOM 元素
         this.el?.remove();
 
-        // 释放引用
         this.meta = {};
         this.props = {};
         this.dirtySet.clear();

@@ -15,13 +15,18 @@ export interface BaseEntityManager<
     TSearch extends SearchParams = SearchParams,
 > extends CoreEntityManager {}
 
+/**
+ * BaseEntityManager — 基础实体管理器
+ *
+ * 无额外能力，在 CoreEntityManager 基础上增加 fetch/buildOptions 等通用方法。
+ */
 export abstract class BaseEntityManager<TSearch extends SearchParams = SearchParams>
     extends CoreEntityManager
     implements IBaseEntityManager<TSearch>
 {
-    static readonly abilities: readonly any[] = [];
+    static override readonly abilities: readonly any[] = [];
 
-    // 数据字段（由子类或 Ability 初始化）
+    // 数据字段
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
@@ -181,8 +186,7 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
         this.logger.debug('onAfterFetch', action, context);
     }
 
-    public dispose(): void {
-        // 清理数据字段
+    public override dispose(): void {
         this.sourceData?.clear();
         this.items = [];
         this.item = null;

@@ -15,6 +15,123 @@ const ABILITY_STATES_KEY = Symbol('__abilityStates__');
 const CLEANUPS_KEY = Symbol('__cleanups__');
 
 /**
+ * Symbol 用于标记是否跳过 setupAbilities
+ * forge 生成的强类在原型上已有能力，无需在构造时动态注入
+ * @internal
+ */
+export const SKIP_SETUP_ABILITIES = Symbol('__skipSetupAbilities__');
+
+/**
+ * 强类构造函数类型
+ * 包含 abilities 静态属性和 forge 静态方法
+ */
+export interface ForgedConstructor<T> {
+    new (...args: any[]): T;
+    readonly abilities: readonly AbilityDefinition[];
+    readonly [SKIP_SETUP_ABILITIES]: boolean;
+    /**
+     * 继续合并能力，返回新的强类
+     * 可链式调用：BaseClass.forge(abilities).forge(moreAbilities)
+     */
+    forge(additionalAbilities: readonly AbilityDefinition[], options?: ForgeOptions): ForgedConstructor<T>;
+}
+
+/**
+ * forge 配置选项
+ */
+export interface ForgeOptions {
+    /** 类名，用于调试和日志 */
+    name?: string;
+}
+
+/**
+ * 将能力定义合并到类的原型上
+ *
+ * - getter/setter → 原型访问器（所有实例共享，this 指向调用实例）
+ * - 方法 → 原型方法（不 bind，调用时 this 自然指向实例）
+ * - 普通值 → 跳过（由子类定义或构造函数初始化）
+ * - 以 __ 开头的协议属性 → 跳过
+ */
+function applyAbilitiesToPrototype(
+    proto: any,
+    abilities: readonly AbilityDefinition[]
+): void {
+    for (const ability of abilities) {
+        const keys = Object.keys(ability);
+
+        for (const key of keys) {
+            if (key.startsWith('__')) continue;
+            if (key in proto) continue;
+
+            const value = ability[key];
+
+            if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
+                const descriptor: PropertyDescriptor = {
+                    configurable: true,
+                    enumerable: value.enumerable ?? true,
+                };
+                if ('get' in value) descriptor.get = value.get;
+                if ('set' in value) descriptor.set = value.set;
+                Object.defineProperty(proto, key, descriptor);
+                continue;
+            }
+
+            if (typeof value === 'function') {
+                proto[key] = value;
+                continue;
+            }
+            // 普通值跳过
+        }
+
+        // 处理 Symbol 键
+        for (const key of Object.getOwnPropertySymbols(ability)) {
+            if ((key as symbol) in proto) continue;
+            const value = ability[key as any];
+            if (typeof value === 'function') {
+                proto[key as any] = value;
+            }
+        }
+    }
+}
+
+/**
+ * 创建强类的内部实现
+ */
+function createForgedClass<T>(
+    BaseClass: new (...args: any[]) => T,
+    abilities: readonly AbilityDefinition[],
+    options?: ForgeOptions,
+): ForgedConstructor<T> {
+
+    const className = options?.name ?? BaseClass.name;
+
+    const ForgedClass = {
+        [className]: class extends (BaseClass as new (...args: any[]) => any) {
+            static readonly abilities: readonly AbilityDefinition[] = abilities;
+            static readonly [SKIP_SETUP_ABILITIES] = true;
+
+            constructor(...args: any[]) {
+                super(...args);
+            }
+        },
+    }[className];
+
+    // 将能力合并到新类的原型上
+    applyAbilitiesToPrototype(ForgedClass.prototype, abilities);
+
+    // 添加 forge 静态方法，支持链式调用
+    (ForgedClass as any).forge = function(
+        additionalAbilities: readonly AbilityDefinition[],
+        forgeOptions?: ForgeOptions,
+    ): ForgedConstructor<T> {
+        const merged = [...abilities, ...additionalAbilities];
+        return createForgedClass(ForgedClass, merged, forgeOptions) as any;
+    };
+
+    return ForgedClass as ForgedConstructor<T>;
+}
+
+/**
  * 能力定义类型
  *
  * Ability 是普通对象，属性/方法直接复制到宿主。
@@ -43,7 +160,7 @@ export type AbilityDefinition = Record<string | symbol, any>;
  * }
  * ```
  */
-export abstract class ComposableBase implements IComposableBase {
+export class ComposableBase implements IComposableBase {
     /**
      * 子类应该重写此属性声明所需能力
      *
@@ -53,6 +170,39 @@ export abstract class ComposableBase implements IComposableBase {
      * ```
      */
     static readonly abilities: readonly AbilityDefinition[] = [];
+
+    /**
+     * 强类工厂方法 — 将能力合并到原型上，返回新的强类
+     *
+     * 生成的强类：
+     * - 继承 ComposableBase 的所有功能
+     * - 原型上包含所有 abilities 的方法/getter/setter
+     * - 构造函数中不再调用 setupAbilities()（能力已在原型上）
+     * - 仍保留 setupAbilityDefinition() 供运行时动态注入能力
+     * - 返回的强类自身也有 forge 方法，可继续链式合并能力
+     *
+     * @param abilities - 能力定义数组
+     * @param options - 配置选项（类名等）
+     * @returns 合并后的强类构造函数
+     *
+     * @example
+     * ```typescript
+     * // 一步合并
+     * const CoreEntityManager = ComposableBase.forge([EventAbility, DomainAbility]);
+     *
+     * // 链式合并
+     * const WithSchema = CoreEntityManager.forge([SchemaAbility]);
+     *
+     * // 再从强类 extends 出子类
+     * class BaseEntityManager extends WithSchema {
+     *     loading = false;
+     *     fetch() { ... }
+     * }
+     * ```
+     */
+    static forge(abilities: readonly AbilityDefinition[], options?: ForgeOptions): ForgedConstructor<ComposableBase> {
+        return createForgedClass(this, abilities, options);
+    }
 
     /**
      * 日志记录器实例
@@ -92,8 +242,10 @@ export abstract class ComposableBase implements IComposableBase {
             configurable: true,
         });
 
-        // 4. 设置能力
-        this.setupAbilities();
+        // 4. 设置能力（强类跳过，能力已在原型上）
+        if (!(this.constructor as any)[SKIP_SETUP_ABILITIES]) {
+            this.setupAbilities();
+        }
 
         // 5. 应用重写
         this.applyOverrides();

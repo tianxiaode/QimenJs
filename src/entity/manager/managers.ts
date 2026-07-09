@@ -54,6 +54,10 @@ import { TreeSearchAbility } from '@/entity/abilities/tree/TreeSearchAbility';
 import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 import type { AbilityDefinition } from '@/composable';
 
+// ============================================
+// DomainPagingAbility — 域分页配置能力
+// ============================================
+
 /**
  * DomainPagingAbility - 域分页配置能力
  *
@@ -70,7 +74,6 @@ export const DomainPagingAbility: AbilityDefinition = {
         get(): number {
             const config = this.domainConfig;
             const value = config?.pageSize ?? 20;
-            // 替换 getter 为普通数据属性，后续读写直接操作
             Object.defineProperty(this, 'pageSize', {
                 value,
                 writable: true,
@@ -115,24 +118,25 @@ export const DomainPagingAbility: AbilityDefinition = {
     },
 };
 
+// ============================================
+// LocalReadonlyEntityManager
+// ============================================
+
 /**
- * 本地只读实体管理器
- *
- * 功能：
- * - list: 从远程获取数据填充本地 sourceData
- * - get: 本地查询单个实体
+ * 第一步：合并能力
  */
+const ForgedLocalReadonly = BaseEntityManager.forge(
+    [FlatLocalStateAbility, LocalListAbility, LocalGetAbility],
+);
+
 /**
- * LocalReadonlyEntityManager 能力接口
+ * 在中间类上声明能力接口
  *
- * 组合能力：FlatLocalStateAbility + LocalListAbility + LocalGetAbility
- *
- * 注意：LocalListAbility 的 filter/sort 覆盖了 IStateSearchAbility 的同名方法，
- * 返回值从 void 变为 any[]，因此不能同时 extends 两者，需手动声明覆盖后的签名。
+ * 不需要 extends BaseEntityManager，因为派生类通过 class extends 已获得其类型。
+ * 只需声明 forge 注入的能力接口即可。
  */
-export interface LocalReadonlyEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
+export interface ForgedLocalReadonly<TSearch extends ILocalSearchParams = ILocalSearchParams>
     extends
-        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -140,24 +144,24 @@ export interface LocalReadonlyEntityManager<TSearch extends ILocalSearchParams =
         IFlatLocalStateAbility,
         ILocalGetAbility {
     isRemote: false;
-    // LocalListAbility 覆盖 IStateSearchAbility 的方法
     list(): Promise<any[]>;
     refresh(): Promise<any[]>;
     filter(keyword: string): any[];
     sort(sortBy: string, sortOrder: 'asc' | 'desc'): any[];
-    // IStateSearchAbility 中未被覆盖的方法
     toParams(): any;
     searchBy(search: any): void;
     matchKeyword(item: any): boolean;
     applySort(list: any[]): any[];
 }
 
+/**
+ * 第二步：从中间类 extends
+ */
 export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager<TSearch> {
-    static readonly abilities = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility];
+> extends ForgedLocalReadonly {
+    static override readonly abilities = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility];
 
-    // 数据字段（原 FlatLocalEntityState 的属性，直接在 Manager 上定义）
     isRemote: false = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -166,40 +170,37 @@ export abstract class LocalReadonlyEntityManager<
     search: TSearch = {} as TSearch;
 }
 
+// ============================================
+// LocalCrudEntityManager
+// ============================================
+
 /**
- * 本地 CRUD 实体管理器
- *
- * 功能：
- * - list: 从远程获取数据填充本地 sourceData
- * - get: 本地查询单个实体
- * - create: 本地添加（可选批量提交）
- * - update: 本地更新（可选批量提交）
- * - delete: 本地软删除
+ * 第一步：合并能力
  */
+const ForgedLocalCrud = BaseEntityManager.forge(
+    [FlatLocalStateAbility, LocalListAbility, LocalGetAbility, FlatLocalMutationAbility, FlatLocalDeleteAbility],
+);
+
 /**
- * LocalCrudEntityManager 能力接口
- *
- * 在 LocalReadonlyEntityManager 基础上增加：
- * FlatLocalMutationAbility + FlatLocalDeleteAbility
+ * 在中间类上声明能力接口
  */
-export interface LocalCrudEntityManager<TSearch extends ILocalSearchParams = ILocalSearchParams>
+export interface ForgedLocalCrud<TSearch extends ILocalSearchParams = ILocalSearchParams>
     extends
-        LocalReadonlyEntityManager<TSearch>,
+        ForgedLocalReadonly<TSearch>,
         IFlatLocalMutationAbility,
         IFlatLocalDeleteAbility {}
 
+/**
+ * 第二步：从中间类 extends
+ */
 export abstract class LocalCrudEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager<TSearch> {
-    static readonly abilities = [
-        FlatLocalStateAbility,
-        LocalListAbility,
-        LocalGetAbility,
-        FlatLocalMutationAbility,
-        FlatLocalDeleteAbility,
+> extends ForgedLocalCrud {
+    static override readonly abilities = [
+        FlatLocalStateAbility, LocalListAbility, LocalGetAbility,
+        FlatLocalMutationAbility, FlatLocalDeleteAbility,
     ];
 
-    // 数据字段（原 FlatLocalEntityState 的属性，直接在 Manager 上定义）
     isRemote: false = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -208,28 +209,27 @@ export abstract class LocalCrudEntityManager<
     search: TSearch = {} as TSearch;
 }
 
+// ============================================
+// RemoteReadonlyEntityManager
+// ============================================
+
 /**
- * 远程只读实体管理器
- *
- * 功能：
- * - list: 远程分页查询
- * - getAll: 远程获取所有数据
- * - get: 远程查询单个实体
- * - query: 远程条件查询
+ * 第一步：合并能力
  */
+const ForgedRemoteReadonly = BaseEntityManager.forge([
+    SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+    DomainPagingAbility, FlatRemoteStateAbility, FlatRemoteListAbility,
+    FlatRemoteGetAllAbility, RemoteGetAbility, FlatRemoteQueryAbility,
+]);
+
 /**
- * RemoteReadonlyEntityManager 能力接口
+ * 在中间类上声明能力接口
  *
- * 组合能力：SchemaProxyAbility + CacheAbility + DirtyAbility + SearchAbility +
- *          DomainPagingAbility + FlatRemoteStateAbility + FlatRemoteListAbility +
- *          FlatRemoteGetAllAbility + RemoteGetAbility + FlatRemoteQueryAbility
- *
- * 注意：FlatRemoteQueryAbility 的 filter/searchBy/sort 覆盖了 IStateSearchAbility 的同名方法，
- * 返回值从 void 变为 Promise<any[]>，因此不能同时 extends 两者，需手动声明覆盖后的签名。
+ * 不需要 extends BaseEntityManager，因为派生类通过 class extends 已获得其类型。
+ * 只需声明 forge 注入的能力接口即可。
  */
-export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
+export interface ForgedRemoteReadonly<TSearch extends IFlatSearchParams = IFlatSearchParams>
     extends
-        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -240,7 +240,6 @@ export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams =
     isRemote: true;
     pageSize: number;
     pageSizes: number[];
-    // FlatRemoteQueryAbility 覆盖 IStateSearchAbility 的方法
     prev(): Promise<any[]>;
     next(): Promise<any[]>;
     jump(page: number): Promise<any[]>;
@@ -249,131 +248,105 @@ export interface RemoteReadonlyEntityManager<TSearch extends IFlatSearchParams =
     searchBy(search: any): Promise<any[]>;
     sort(prop: string, order: 'asc' | 'desc' | null): Promise<any[]>;
     reset(): Promise<any[]>;
-    // IStateSearchAbility 中未被覆盖的方法
     toParams(): any;
     matchKeyword(item: any): boolean;
     applySort(list: any[]): any[];
 }
 
+/**
+ * 第二步：从中间类 extends
+ */
 export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager<TSearch> {
-    static readonly abilities = [
-        SchemaProxyAbility,
-        CacheAbility,
-        DirtyAbility,
-        SearchAbility,
-        DomainPagingAbility,
-        FlatRemoteStateAbility,
-        FlatRemoteListAbility,
-        FlatRemoteGetAllAbility,
-        RemoteGetAbility,
-        FlatRemoteQueryAbility,
+> extends ForgedRemoteReadonly {
+    static override readonly abilities = [
+        SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+        DomainPagingAbility, FlatRemoteStateAbility, FlatRemoteListAbility,
+        FlatRemoteGetAllAbility, RemoteGetAbility, FlatRemoteQueryAbility,
     ];
 
-    // 数据字段（原 FlatRemoteEntityState 的属性，直接在 Manager 上定义）
     isRemote: true = true;
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
-    search: TSearch = {} as TSearch;
+    search: TSearch = {} as IFlatSearchParams as TSearch;
     total: number = 0;
     page: number = 1;
-    // pageSize 和 pageSizes 由 DomainPagingAbility 提供（从 domainConfig 初始化）
     pages: number = 0;
     hasMore: boolean = false;
 }
 
+// ============================================
+// RemoteCrudEntityManager
+// ============================================
+
 /**
- * 远程 CRUD 实体管理器
- *
- * 功能：
- * - list: 远程分页查询
- * - getAll: 远程获取所有数据
- * - get: 远程查询单个实体
- * - query: 远程条件查询
- * - create: 远程创建
- * - update: 远程更新
- * - delete: 远程删除
- * - toggle: 远程切换状态
+ * 第一步：合并能力
  */
+const ForgedRemoteCrud = BaseEntityManager.forge([
+    SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+    DomainPagingAbility, FlatRemoteStateAbility, FlatRemoteListAbility,
+    FlatRemoteGetAllAbility, RemoteGetAbility, FlatRemoteQueryAbility,
+    RemoteCreateAbility, RemoteUpdateAbility, RemoteDeleteAbility, RemoteToggleAbility,
+]);
+
 /**
- * RemoteCrudEntityManager 能力接口
- *
- * 在 RemoteReadonlyEntityManager 基础上增加：
- * RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility + RemoteToggleAbility
+ * 在中间类上声明能力接口
  */
-export interface RemoteCrudEntityManager<TSearch extends IFlatSearchParams = IFlatSearchParams>
+export interface ForgedRemoteCrud<TSearch extends IFlatSearchParams = IFlatSearchParams>
     extends
-        RemoteReadonlyEntityManager<TSearch>,
+        ForgedRemoteReadonly<TSearch>,
         IRemoteCreateAbility,
         IRemoteUpdateAbility,
         IRemoteDeleteAbility,
         IRemoteToggleAbility {}
 
+/**
+ * 第二步：从中间类 extends
+ */
 export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager<TSearch> {
-    static readonly abilities = [
-        SchemaProxyAbility,
-        CacheAbility,
-        DirtyAbility,
-        SearchAbility,
-        DomainPagingAbility,
-        FlatRemoteStateAbility,
-        FlatRemoteListAbility,
-        FlatRemoteGetAllAbility,
-        RemoteGetAbility,
-        FlatRemoteQueryAbility,
-        RemoteCreateAbility,
-        RemoteUpdateAbility,
-        RemoteDeleteAbility,
-        RemoteToggleAbility,
+> extends ForgedRemoteCrud {
+    static override readonly abilities = [
+        SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+        DomainPagingAbility, FlatRemoteStateAbility, FlatRemoteListAbility,
+        FlatRemoteGetAllAbility, RemoteGetAbility, FlatRemoteQueryAbility,
+        RemoteCreateAbility, RemoteUpdateAbility, RemoteDeleteAbility, RemoteToggleAbility,
     ];
 
-    // 数据字段（原 FlatRemoteEntityState 的属性，直接在 Manager 上定义）
     isRemote: true = true;
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
-    search: TSearch = {} as TSearch;
+    search: TSearch = {} as IFlatSearchParams as TSearch;
     total: number = 0;
     page: number = 1;
-    // pageSize 和 pageSizes 由 DomainPagingAbility 提供（从 domainConfig 初始化）
     pages: number = 0;
     hasMore: boolean = false;
 }
 
+// ============================================
+// RemoteTreeEntityManager
+// ============================================
+
 /**
- * 远程树实体管理器
- *
- * 功能：
- * - list: 远程树查询
- * - get: 远程查询单个节点
- * - query: 远程条件查询
- * - create: 远程创建节点（必须远程）
- * - update: 远程更新节点
- * - delete: 远程删除节点（必须远程）
- * - move: 远程移动节点（必须远程）
- * - toggleExpand: 切换展开状态
- * - toggleLeaf: 切换叶子节点状态
+ * 第一步：合并能力
  */
+const ForgedRemoteTree = BaseEntityManager.forge([
+    SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+    TreePathAbility, TreeLifecycleAbility, TreeSearchAbility, TreeViewAbility,
+    TreeRemoteStateAbility, FlatRemoteListAbility, RemoteGetAbility,
+    FlatRemoteQueryAbility, RemoteCreateAbility, RemoteUpdateAbility, RemoteDeleteAbility,
+]);
+
 /**
- * RemoteTreeEntityManager 能力接口
+ * 在中间类上声明能力接口
  *
- * 组合能力：SchemaProxyAbility + CacheAbility + DirtyAbility + SearchAbility +
- *          TreePathAbility + TreeLifecycleAbility + TreeSearchAbility + TreeViewAbility +
- *          TreeRemoteStateAbility + FlatRemoteListAbility + RemoteGetAbility +
- *          FlatRemoteQueryAbility + RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility
- *
- * 注意：
- * - FlatRemoteQueryAbility 的 filter/searchBy/sort 覆盖了 IStateSearchAbility 的同名方法
- * - ITreeSearchAbility 的 matchKeyword 签名与 IStateSearchAbility 不同（多一个 keyword 参数）
- * - 因此不能同时 extends 冲突的接口，需手动声明覆盖后的签名
+ * 不需要 extends BaseEntityManager，因为派生类通过 class extends 已获得其类型。
+ * 只需声明 forge 注入的能力接口即可。
  */
-export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITreeSearchParams>
+export interface ForgedRemoteTree<TSearch extends ITreeSearchParams = ITreeSearchParams>
     extends
-        BaseEntityManager<TSearch>,
         IStateSchemaAbility,
         IStateCacheAbility,
         IStateDirtyAbility,
@@ -387,11 +360,9 @@ export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITr
         IRemoteUpdateAbility,
         IRemoteDeleteAbility {
     isRemote: true;
-    // TreeSearchAbility 覆盖 IStateSearchAbility 的方法
     applySearchExpansion(): void;
     applySort(list: any[]): any[];
     matchKeyword(node: any, keyword: string): boolean;
-    // FlatRemoteQueryAbility 覆盖 IStateSearchAbility 的方法
     prev(): Promise<any[]>;
     next(): Promise<any[]>;
     jump(page: number): Promise<any[]>;
@@ -400,37 +371,27 @@ export interface RemoteTreeEntityManager<TSearch extends ITreeSearchParams = ITr
     searchBy(search: any): Promise<any[]>;
     sort(prop: string, order: 'asc' | 'desc' | null): Promise<any[]>;
     reset(): Promise<any[]>;
-    // IStateSearchAbility 中未被覆盖的方法
     toParams(): any;
 }
 
+/**
+ * 第二步：从中间类 extends
+ */
 export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams,
-> extends BaseEntityManager<TSearch> {
-    static readonly abilities = [
-        SchemaProxyAbility,
-        CacheAbility,
-        DirtyAbility,
-        SearchAbility,
-        TreePathAbility,
-        TreeLifecycleAbility,
-        TreeSearchAbility,
-        TreeViewAbility,
-        TreeRemoteStateAbility,
-        FlatRemoteListAbility,
-        RemoteGetAbility,
-        FlatRemoteQueryAbility,
-        RemoteCreateAbility,
-        RemoteUpdateAbility,
-        RemoteDeleteAbility,
+> extends ForgedRemoteTree {
+    static override readonly abilities = [
+        SchemaProxyAbility, CacheAbility, DirtyAbility, SearchAbility,
+        TreePathAbility, TreeLifecycleAbility, TreeSearchAbility, TreeViewAbility,
+        TreeRemoteStateAbility, FlatRemoteListAbility, RemoteGetAbility,
+        FlatRemoteQueryAbility, RemoteCreateAbility, RemoteUpdateAbility, RemoteDeleteAbility,
     ];
 
-    // 数据字段（原 TreeRemoteEntityState 的属性，直接在 Manager 上定义）
     isRemote: true = true;
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
-    search: TSearch = {} as TSearch;
+    search: TSearch = {} as ITreeSearchParams as TSearch;
     total: number = 0;
     expandedIds: Set<string | number> = new Set();
 }

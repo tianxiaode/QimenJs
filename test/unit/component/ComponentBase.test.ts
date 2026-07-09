@@ -165,8 +165,8 @@ describe('ComponentBase', () => {
             const comp = new SimpleComponent();
             const updateSpy = jest.spyOn(comp, 'update');
 
-            comp.markDirty();
-            comp.markDirty(); // second call should be ignored
+            comp.markDirty('test');
+            comp.markDirty('test'); // second call should be ignored
 
             expect(updateSpy).not.toHaveBeenCalled();
 
