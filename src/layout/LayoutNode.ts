@@ -316,24 +316,26 @@ export interface AnimationProps {
  *
  * @example
  * ```js
+ * const sys = createDomainPermissions('system');
+ *
  * {
  *     type: ComponentTypes.BUTTON,
  *     permission: {
- *         code: 'user:delete',           // 需要的权限码
+ *         code: sys('user:delete'),      // → ['system:user:delete']
  *         behavior: 'disable',           // 无权限时禁用
  *     }
  * }
  * {
  *     type: ComponentTypes.BUTTON,
  *     permission: {
- *         code: 'admin:settings',
+ *         code: sys('admin:settings'),
  *         behavior: 'hidden',            // 无权限时隐藏
  *     }
  * }
  * {
  *     type: ComponentTypes.MENU_ITEM,
  *     permission: {
- *         code: 'report:export',
+ *         code: sys('report:export'),
  *         behavior: 'removed',           // 无权限时从 DOM 移除
  *     }
  * }
@@ -342,8 +344,8 @@ export interface AnimationProps {
 export interface PermissionProps {
     /** 权限配置 */
     permission?: {
-        /** 权限码，支持单个字符串或数组（数组时满足任一即可） */
-        code: string | string[];
+        /** 权限码数组，配合 createDomainPermissions 工厂函数使用 */
+        code: string[];
         /** 权限匹配模式：all 需要全部满足，any 满足任一即可，默认 'any' */
         matchMode?: 'all' | 'any';
         /** 无权限时的行为，默认 'disable' */

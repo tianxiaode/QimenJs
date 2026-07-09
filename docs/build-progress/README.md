@@ -23,14 +23,15 @@ docs/build-progress/
 │   ├── task.md
 │   ├── composable.md
 │   └── context.md
-├── layer-2/                     # 第 2 层包（7 个功能包）
+├── layer-2/                     # 第 2 层包（8 个功能包）
 │   ├── schema.md
 │   ├── validation.md
 │   ├── pipeline.md
 │   ├── mime.md
 │   ├── pattern.md
 │   ├── composable.md
-│   └── event-dom.md
+│   ├── event-dom.md
+│   └── permission.md
 ├── layer-3/                     # 第 3 层包（6 个高级功能包）
 │   ├── data-processor.md
 │   ├── data-processor-abp.md
@@ -48,10 +49,10 @@ docs/build-progress/
 |------|--------|--------|----------|------------|
 | 第 0 层 | 8 | 8 | 8 | ~85% |
 | 第 1 层 | 6 | 6 | 6 | ~89% |
-| 第 2 层 | 7 | 7 | 7 | ~86% |
+| 第 2 层 | 8 | 7 | 7 | ~86% |
 | 第 3 层 | 6 | 6 | 6 | ~87% |
 | 第 4 层 | 1 | 1 | 1 | ~83% |
-| **总计** | **28** | **28** | **28** | **~87%** |
+| **总计** | **29** | **28** | **28** | **~87%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%
 **测试**：238 套件 / 2833 用例（全部通过）
@@ -63,7 +64,7 @@ docs/build-progress/
 
 - [第 0 层：核心基础包](./layer-0/) - 8 个零依赖包
 - [第 1 层：基础设施工具包](./layer-1/) - 6 个包
-- [第 2 层：功能工具包](./layer-2/) - 7 个包
+- [第 2 层：功能工具包](./layer-2/) - 8 个包
 - [第 3 层：高级功能包](./layer-3/) - 6 个包
 - [第 4 层：业务包](./layer-4/) - 1 个包
 
@@ -91,6 +92,7 @@ docs/build-progress/
 - [mime](./layer-2/mime.md) - MIME 类型管理
 - [pattern](./layer-2/pattern.md) - 模式注册器
 - [event-dom](./layer-2/event-dom.md) - DOM 事件适配器
+- [permission](./layer-2/permission.md) - 权限注册与查询系统
 - [data-processor](./layer-3/data-processor.md) - 数据处理器
 - [data-processor-abp](./layer-3/data-processor-abp.md) - ABP 数据处理管道
 - [data-processor-spring](./layer-3/data-processor-spring.md) - Spring 数据处理管道
