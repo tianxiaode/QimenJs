@@ -34,11 +34,11 @@ export const StyleAbility: AbilityDefinition = {
 
     className: {
         get() { return this.props.className ?? ''; },
-        set(v: string) { this.props.className = v; this.markDirty('className'); },
+        set(v: string) { this.setProp('className', v); },
     },
 
     style: {
         get() { return this.props.style; },
-        set(v: Record<string, string> | string | undefined) { this.props.style = v; this.markDirty('style'); },
+        set(v: Record<string, string> | string | undefined) { this.setProp('style', v); },
     },
 };

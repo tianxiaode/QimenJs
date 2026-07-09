@@ -37,25 +37,25 @@ export const PositionRawAbility: AbilityDefinition = {
 
     margin: {
         get() { return this.props.margin; },
-        set(v: string | undefined) { this.props.margin = v; this.markDirty('margin'); },
+        set(v: string | undefined) { this.setProp('margin', v); },
     },
 
     padding: {
         get() { return this.props.padding; },
-        set(v: string | undefined) { this.props.padding = v; this.markDirty('padding'); },
+        set(v: string | undefined) { this.setProp('padding', v); },
     },
 
     // ── 视觉 ──
 
     shadow: {
         get() { return this.props.shadow; },
-        set(v: string | undefined) { this.props.shadow = v; this.markDirty('shadow'); },
+        set(v: string | undefined) { this.setProp('shadow', v); },
     },
 
     // ── 层叠 ──
 
     zIndex: {
         get() { return this.props.zIndex; },
-        set(v: number | undefined) { this.props.zIndex = v; this.markDirty('zIndex'); },
+        set(v: number | undefined) { this.setProp('zIndex', v); },
     },
 };

@@ -42,25 +42,25 @@ export const PositionBoolAbility: AbilityDefinition = {
 
     scrollable: {
         get() { return this.props.scrollable ?? false; },
-        set(v: boolean) { this.props.scrollable = v; this.markDirty('scrollable'); },
+        set(v: boolean) { this.setProp('scrollable', v); },
     },
 
     // ── 居中 ──
 
     center: {
         get() { return this.props.center ?? false; },
-        set(v: boolean) { this.props.center = v; this.markDirty('center'); },
+        set(v: boolean) { this.setProp('center', v); },
     },
 
     // ── 层叠与全屏 ──
 
     alwaysOnTop: {
         get() { return this.props.alwaysOnTop ?? false; },
-        set(v: boolean) { this.props.alwaysOnTop = v; this.markDirty('alwaysOnTop'); },
+        set(v: boolean) { this.setProp('alwaysOnTop', v); },
     },
 
     fullscreen: {
         get() { return this.props.fullscreen ?? false; },
-        set(v: boolean) { this.props.fullscreen = v; this.markDirty('fullscreen'); },
+        set(v: boolean) { this.setProp('fullscreen', v); },
     },
 };

@@ -42,65 +42,65 @@ export const PositionPxAbility: AbilityDefinition = {
 
     x: {
         get() { return this.props.x ?? 0; },
-        set(v: number) { this.props.x = v; this.markDirty('x'); },
+        set(v: number) { this.setProp('x', v); },
     },
 
     y: {
         get() { return this.props.y ?? 0; },
-        set(v: number) { this.props.y = v; this.markDirty('y'); },
+        set(v: number) { this.setProp('y', v); },
     },
 
     top: {
         get() { return this.props.top; },
-        set(v: number | undefined) { this.props.top = v; this.markDirty('top'); },
+        set(v: number | undefined) { this.setProp('top', v); },
     },
 
     left: {
         get() { return this.props.left; },
-        set(v: number | undefined) { this.props.left = v; this.markDirty('left'); },
+        set(v: number | undefined) { this.setProp('left', v); },
     },
 
     bottom: {
         get() { return this.props.bottom; },
-        set(v: number | undefined) { this.props.bottom = v; this.markDirty('bottom'); },
+        set(v: number | undefined) { this.setProp('bottom', v); },
     },
 
     right: {
         get() { return this.props.right; },
-        set(v: number | undefined) { this.props.right = v; this.markDirty('right'); },
+        set(v: number | undefined) { this.setProp('right', v); },
     },
 
     // ── 尺寸 ──
 
     width: {
         get() { return this.props.width; },
-        set(v: number | undefined) { this.props.width = v; this.markDirty('width'); },
+        set(v: number | undefined) { this.setProp('width', v); },
     },
 
     height: {
         get() { return this.props.height; },
-        set(v: number | undefined) { this.props.height = v; this.markDirty('height'); },
+        set(v: number | undefined) { this.setProp('height', v); },
     },
 
     // ── 约束 ──
 
     minWidth: {
         get() { return this.props.minWidth; },
-        set(v: number | undefined) { this.props.minWidth = v; this.markDirty('minWidth'); },
+        set(v: number | undefined) { this.setProp('minWidth', v); },
     },
 
     maxWidth: {
         get() { return this.props.maxWidth; },
-        set(v: number | undefined) { this.props.maxWidth = v; this.markDirty('maxWidth'); },
+        set(v: number | undefined) { this.setProp('maxWidth', v); },
     },
 
     minHeight: {
         get() { return this.props.minHeight; },
-        set(v: number | undefined) { this.props.minHeight = v; this.markDirty('minHeight'); },
+        set(v: number | undefined) { this.setProp('minHeight', v); },
     },
 
     maxHeight: {
         get() { return this.props.maxHeight; },
-        set(v: number | undefined) { this.props.maxHeight = v; this.markDirty('maxHeight'); },
+        set(v: number | undefined) { this.setProp('maxHeight', v); },
     },
 };

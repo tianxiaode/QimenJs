@@ -140,10 +140,12 @@ export class ComponentBase extends ComposableBase {
     // ─── 通用属性 ─────────────────────────────────────
 
     /**
-     * 设置自定义属性（阶段 4 剩余 props）
+     * 统一属性设置入口
+     * 写入 props + 标记脏，Ability setter 应调用此方法而非手动写 this.props + this.markDirty
      */
     setProp(key: string, value: any): void {
-        (this as any)[key] = value;
+        this.props[key] = value;
+        this.markDirty(key);
     }
 
     // ─── 销毁 ─────────────────────────────────────────
