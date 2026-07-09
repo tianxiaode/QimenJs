@@ -8,6 +8,7 @@
 docs/architecture/
 ├── README.md                    # 本文件
 ├── component-ability-index.md  # 组件能力索引（组件-能力映射、事件体系、分页设计等）
+├── render-pipeline.md          # 渲染流程设计（基于 LayoutNode 的创建/初始化/渲染流程）
 ├── ui-component-design.md      # UI 组件层设计方案
 ├── token-management.md         # Token 管理设计
 ├── principles/                  # 架构原则
@@ -36,6 +37,7 @@ docs/architecture/
 
 ### 组件层
 - [组件能力索引](./component-ability-index.md) - 组件-能力映射、事件体系、分页设计等（增量更新）
+- [渲染流程设计](./render-pipeline.md) - 基于 LayoutNode 的创建/初始化/渲染流程
 - [UI 组件层设计方案](./ui-component-design.md) - 组件层整体设计
 
 ### 包文档

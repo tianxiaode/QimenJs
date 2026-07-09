@@ -240,8 +240,10 @@ export abstract class ComposableBase implements IComposableBase {
      * - getter/setter 对象 → 直接作为 descriptor 的 get/set
      * - 函数 → bind 到宿主
      * - 普通值 → 直接作为 value
+     *
+     * public 以便渲染器注入 LayoutNode.abilities，与注入 meta/extraFns 同级操作。
      */
-    private setupAbilityDefinition(definition: AbilityDefinition): void {
+    public setupAbilityDefinition(definition: AbilityDefinition): void {
         const keys = [...Object.keys(definition), ...Object.getOwnPropertySymbols(definition)];
 
         for (const key of keys) {
