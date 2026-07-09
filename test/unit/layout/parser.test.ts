@@ -58,30 +58,30 @@ describe('parseLayout', () => {
         expect(result.id).toBe('123');
     });
 
-    it('should normalize string handlers to HandlerAction', () => {
+    it('should preserve string handlers', () => {
         const result = parseLayout({
             type: 'button',
             handlers: { click: 'handleClick' },
         });
-        expect(result.handlers!.click).toEqual({ action: 'handleClick' });
+        expect(result.handlers!.click).toBe('handleClick');
     });
 
-    it('should preserve HandlerAction objects', () => {
+    it('should preserve HandlerConfig objects', () => {
         const result = parseLayout({
             type: 'button',
-            handlers: { click: { action: 'submit', params: { url: '/api' } } },
+            handlers: { click: { handler: 'onSubmit', once: true, params: { url: '/api' } } },
         });
-        expect(result.handlers!.click).toEqual({ action: 'submit', params: { url: '/api' } });
+        expect(result.handlers!.click).toEqual({ handler: 'onSubmit', once: true, params: { url: '/api' } });
     });
 
     it('should handle array handlers', () => {
         const result = parseLayout({
             type: 'button',
-            handlers: { click: ['handleClick', { action: 'submit' }] },
+            handlers: { click: ['handleClick', { handler: 'onSubmit', once: true }] },
         });
         expect(Array.isArray(result.handlers!.click)).toBe(true);
-        expect((result.handlers!.click as any[])[0]).toEqual({ action: 'handleClick' });
-        expect((result.handlers!.click as any[])[1]).toEqual({ action: 'submit' });
+        expect((result.handlers!.click as any[])[0]).toBe('handleClick');
+        expect((result.handlers!.click as any[])[1]).toEqual({ handler: 'onSubmit', once: true });
     });
 
     it('should parse children recursively', () => {

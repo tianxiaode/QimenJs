@@ -4,7 +4,7 @@
  * 验证 LayoutNode 结构合法性
  */
 
-import type { LayoutNode, HandlerAction } from './LayoutNode';
+import type { LayoutNode, HandlerConfig } from './LayoutNode';
 
 /**
  * 验证结果
@@ -69,9 +69,9 @@ export function validateLayout(node: LayoutNode): ValidationResult {
 /**
  * 判断 handler 是否合法
  */
-function isValidHandler(handler: any): handler is string | HandlerAction | ((...args: any[]) => any) {
+function isValidHandler(handler: any): handler is string | HandlerConfig | ((...args: any[]) => any) {
     if (typeof handler === 'string') return true;
     if (typeof handler === 'function') return true;
-    if (handler && typeof handler === 'object' && 'action' in handler) return true;
+    if (handler && typeof handler === 'object' && 'handler' in handler) return true;
     return false;
 }

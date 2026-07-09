@@ -45,22 +45,21 @@ describe('Layout Integration', () => {
             });
 
             expect(layout.handlers).toBeDefined();
-            expect(layout.handlers!.click).toEqual({
-                action: 'handleClick',
-            });
+            expect(layout.handlers!.click).toBe('handleClick');
         });
 
-        it('should parse handlers as HandlerAction objects', () => {
+        it('should parse handlers as HandlerConfig objects', () => {
             const layout = parseLayout({
                 type: 'button',
                 id: 'btn1',
                 handlers: {
-                    click: { action: 'submit', params: { url: '/api' } },
+                    click: { handler: 'onSubmit', once: true, params: { url: '/api' } },
                 },
             });
 
             expect(layout.handlers!.click).toEqual({
-                action: 'submit',
+                handler: 'onSubmit',
+                once: true,
                 params: { url: '/api' },
             });
         });
