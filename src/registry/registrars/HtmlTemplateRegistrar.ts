@@ -64,15 +64,15 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
      * 后续调用通过 cloneNode(true) 复制缓存，跳过 HTML 解析。
      *
      * @param id - 模板ID
-     * @returns 克隆的 DocumentFragment
-     * @throws 模板不存在时抛出错误
+     * @returns 克隆的 DocumentFragment，模板不存在时返回空 DocumentFragment
      */
     getFragment(id: string): DocumentFragment {
         let tpl = this.templateCache.get(id);
         if (!tpl) {
             const html = this.storage.get(id);
             if (!html) {
-                throw new Error(`[HtmlTemplateRegistrar] template "${id}" not found`);
+                console.warn(`[HtmlTemplateRegistrar] template "${id}" not found`);
+                return document.createDocumentFragment();
             }
             tpl = document.createElement('template');
             tpl.innerHTML = html;
