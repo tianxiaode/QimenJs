@@ -2,97 +2,59 @@
 
 ## 1. 两种能力注入模式
 
-ComposableBase 支持两种能力注入模式：**动态注入**和**强类锻造（forge）**。
+ComposableBase 支持两种能力注入模式：**`with()` 原型固化**和**`setupAbilities()` 运行时注入**。
 
-### 1.1 动态注入模式
+### 1.1 `with()` 原型固化模式（推荐）
 
-通过 `static abilities` 声明能力，构造时 `setupAbilities()` 将每个能力的属性/方法逐个 `Object.defineProperty` 复制到实例上。
-
-```typescript
-class MyHost extends ComposableBase {
-    static readonly abilities = [EventAbility, DomainAbility];
-}
-// 每次实例化都执行 Object.defineProperty，能力在实例上
-```
-
-**适用场景**：运行时动态注入能力（如渲染器注入 `LayoutNode.abilities`）。
-
-**缺点**：每次实例化都要逐属性复制，能力越多开销越大。
-
-### 1.2 强类锻造模式（推荐用于框架内部）
-
-通过 `ComposableBase.forge(abilities)` 将能力合并到原型上，所有实例共享，构造时跳过 `setupAbilities()`。
+通过 `ComposableBase.with(abilities)` 将能力合并到原型上，所有实例共享，零实例化开销。`InferAbilities` 自动从能力数组推导接口，无需手动声明 `export interface`。
 
 ```typescript
-// 第一步：forge 合并能力到原型，得到中间类
-const ForgedMyHost = ComposableBase.forge([EventAbility, DomainAbility]);
-
-// 第二步：从中间类 extends，写自然的 class body
-class MyHost extends ForgedMyHost {
-    loading = false;
-    fetch() { this.emit('fetch'); }  // this 类型正确，无需 as any
+class MyManager extends ComposableBase.with([EventAbility, DomainAbility]) {
+    domain = 'default';
+    fetch() { this.emit('fetch'); }  // this.on / this.emit 类型自动推导
 }
 ```
 
-**适用场景**：框架内部类（ComponentBase、EntityManager 等），能力在编译期已知。
+**适用场景**：编译期已知能力的所有场景。
 
 **优点**：
 - 能力在原型上共享，实例化零开销
+- `InferAbilities` 自动推导接口，不需要 `export interface`
 - class body 中 `this` 类型自然正确
 - 支持 `abstract` 属性/方法
 - 支持 getter/setter 覆写
 
-### 1.3 forge 模式的接口声明技巧
+### 1.2 `setupAbilities()` 运行时注入模式
 
-forge 返回的中间类只有 `ComposableBase` 的类型信息，能力方法在类型上不可见。推荐做法：**在中间类上用 `export interface` 声明能力接口，派生类自动获得完整类型，不需要再声明 interface**。
+通过 `host.setupAbilities(definitions)` 在运行时将能力注入到实例上。支持单个能力或数组。
 
 ```typescript
-// 第一步：forge 合并能力，得到中间类
-const ForgedEntityManager = ComposableBase.forge(
-    [EventAbility, DomainAbility, SchemaAbility],
-);
+const host = new MyHost();
+host.setupAbilities(someAbility);              // 单个
+host.setupAbilities([ability1, ability2]);      // 数组
+```
 
-// 第二步：在中间类上声明能力接口（注意是 ForgedEntityManager，不是 CoreEntityManager）
-export interface ForgedEntityManager extends ISchemaAbility {
-    on(event: string, handler: EventHandler): () => void;
-    emit(event: string, data?: any): void;
-    readonly domainConfig: DomainConfig;
-    // ... 其他能力方法
-}
+**适用场景**：运行时才知道能力的场景（如 JSON 定义、渲染器动态注入）。
 
-// 第三步：派生类自动拥有完整类型，不需要再 export interface
-export abstract class CoreEntityManager extends ForgedEntityManager {
-    domain: string = 'default';
-    abstract entityName: string;
-    // this.on / this.emit / this.domainConfig 类型全部正确
+**注意**：每次调用都执行 `Object.defineProperty`，能力在实例上而非原型上，有性能开销。
+
+### 1.3 链式 `with()`
+
+`with()` 返回的强类自身也有 `with` 方法，可以链式合并更多能力：
+
+```typescript
+class MyManager extends ComposableBase.with([EventAbility]).with([DomainAbility]) {
+    // 等价于 ComposableBase.with([EventAbility, DomainAbility])
 }
 ```
 
-**关键点**：
-- `export interface ForgedEntityManager` 与 `const ForgedEntityManager = ComposableBase.forge(...)` 同名，TypeScript 自动声明合并
-- 派生类 `CoreEntityManager extends ForgedEntityManager` 自动继承接口，无需重复声明
-- `abstract` 属性不要放在 interface 中（interface 不支持 `abstract`），直接在 class 中声明即可
-- `forge` 不需要传 `name` 参数，中间类和最终类是不同的东西
-
-### 1.4 链式 forge
-
-forge 返回的强类自身也有 `forge` 方法，可以链式合并更多能力：
-
-```typescript
-const WithEvent = ComposableBase.forge([EventAbility]);
-const WithDomain = WithEvent.forge([DomainAbility]);
-// 等价于
-const WithBoth = ComposableBase.forge([EventAbility, DomainAbility]);
-```
-
-### 1.5 何时用哪种模式
+### 1.4 何时用哪种模式
 
 | 场景 | 推荐模式 |
 |------|----------|
-| 框架内部类（ComponentBase、EntityManager） | forge |
-| 能力在编译期已知 | forge |
-| 运行时动态注入能力（如渲染器） | 动态注入 |
-| 用户自定义组件 | 动态注入（简单）或 forge（性能敏感） |
+| 框架内部类（ComponentBase、EntityManager） | `with()` |
+| 能力在编译期已知 | `with()` |
+| 运行时动态注入能力（JSON 定义、渲染器） | `setupAbilities()` |
 
 ## 2. 能力定义：纯对象，不要用类
 
@@ -236,8 +198,8 @@ const DomEventsAbility: AbilityDefinition = {
 };
 
 // 声明顺序：被依赖的能力先声明
-class MyHost extends ComposableBase {
-    static readonly abilities = [EventAbility, DomEventsAbility];  // EventAbility 在前
+class MyHost extends ComposableBase.with([EventAbility, DomEventsAbility]) {
+    // EventAbility 在前
 }
 ```
 
@@ -266,30 +228,14 @@ const LabelAbility: AbilityDefinition = {
 后声明的能力覆盖先声明的同名属性：
 
 ```typescript
-class MyHost extends ComposableBase {
+class MyHost extends ComposableBase.with([AbilityA, AbilityB]) {
     // 如果 AbilityA 和 AbilityB 都有 'method'，AbilityB 的生效
-    static readonly abilities = [AbilityA, AbilityB];
 }
 ```
 
 利用这个特性可以实现能力覆盖/定制。
 
-## 10. 继承链中 abilities 的收集
-
-ComposableBase 从原型链收集所有 `abilities`，子类只需声明自己的能力：
-
-```typescript
-class BaseManager extends ComposableBase {
-    static readonly abilities: readonly AbilityDefinition[] = [EventAbility, DomainAbility];
-}
-
-class EntityManager extends BaseManager {
-    // 只声明新增能力，EventAbility 和 DomainAbility 自动继承
-    static readonly abilities: readonly AbilityDefinition[] = [SystemAbility];
-}
-```
-
-## 11. dispose 后不要继续使用
+## 10. dispose 后不要继续使用
 
 ```typescript
 const host = new MyHost() as any;
@@ -309,7 +255,6 @@ host.dispose();
 | 短 key 命名 abilityState | `AbilityName:stateName` |
 | 用方法模拟 getter/setter | 描述符对象 `{ get, set }` |
 | dispose 后继续使用 | 避免使用已销毁的实例 |
-| 框架内部类用动态注入 | 用 `forge()` 强类锻造 |
-| forge 后在派生类重复声明 interface | 在中间类上声明一次，派生类自动继承 |
-| abstract 属性放在 interface 中 | 直接在 class 中声明 |
-| forge 传最终类名作为 name | 不需要传 name，中间类和最终类是不同的东西 |
+| 框架内部类用 `setupAbilities()` | 用 `with()` 原型固化 |
+| 手动声明 `export interface` 拼接能力接口 | `InferAbilities` 自动推导 |
+| `static abilities` + `collectAbilities` | 已移除，用 `with()` |

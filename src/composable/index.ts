@@ -6,4 +6,5 @@
 export type { IComposable, IComposableBase, IExposeResult } from './types/composable';
 
 // 核心类导出
-export { ComposableBase, type AbilityDefinition, SKIP_SETUP_ABILITIES, type ForgedConstructor, type ForgeOptions } from './ComposableBase';
+export { ComposableBase } from './ComposableBase';
+export type { AbilityDefinition, ForgedConstructor, InferAbilities } from './ComposableBase';

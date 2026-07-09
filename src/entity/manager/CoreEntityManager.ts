@@ -3,9 +3,7 @@ import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
-import type { ENTITY_ACTION, ICoreEntityManager, ISchemaAbility } from '@/entity/types';
-import type { IEventScope, EventHandler } from '@/events';
-import type { DomainConfig, SystemConfig } from '@/registry';
+import type { ENTITY_ACTION, ICoreEntityManager } from '@/entity/types';
 import type { Schema, RegistrSchema } from '@/schema';
 import { SchemaRegistrar } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
@@ -27,38 +25,11 @@ export const CORE_ENTITY_ABILITIES: readonly AbilityDefinition[] = [
 ];
 
 /**
- * 第一步：合并能力到原型上，得到中间类
- */
-const ForgedCoreEntityManager = ComposableBase.forge(CORE_ENTITY_ABILITIES);
-
-/**
- * 在中间类上声明能力接口
+ * CoreEntityManager — 继承自带核心能力的 ComposableBase
  *
- * 派生类 CoreEntityManager extends ForgedCoreEntityManager 后，
- * 自动拥有这些类型，无需再 export interface。
+ * InferAbilities 自动从能力数组推导接口，无需 export interface。
  */
-export interface ForgedCoreEntityManager extends ISchemaAbility {
-    // ===== EventAbility =====
-    readonly eventScope: IEventScope;
-    on(event: string, handler: EventHandler): () => void;
-    once(event: string, handler: EventHandler): void;
-    emit(event: string, data?: any): void;
-
-    // ===== DomainAbility =====
-    readonly domainConfig: DomainConfig;
-
-    // ===== SystemAbility =====
-    systemConfig(): Partial<SystemConfig>;
-    systemConfig<K extends keyof SystemConfig>(key: K): any;
-}
-
-/**
- * 第二步：从中间类 extends 出 CoreEntityManager
- *
- * 自动继承 ForgedCoreEntityManager 的接口声明，
- * 不需要再 export interface CoreEntityManager。
- */
-export abstract class CoreEntityManager extends ForgedCoreEntityManager implements ICoreEntityManager {
+export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_ABILITIES) implements ICoreEntityManager {
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;

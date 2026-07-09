@@ -1,8 +1,8 @@
 /**
  * ComponentBase — 组件基类
  *
- * 通过 ComposableBase.forge() 合并标准能力到原型上，
- * 再从中间类 extends 出 ComponentBase，添加组件特有职责：
+ * 通过 ComposableBase.with() 合并标准能力到原型上，
+ * 再添加组件特有职责：
  * - el：根 DOM 元素
  * - meta：组件元数据
  * - setProp：通用属性设置
@@ -26,43 +26,11 @@ export const COMPONENT_BASE_ABILITIES: readonly AbilityDefinition[] = [
 ];
 
 /**
- * 第一步：合并标准能力到原型上，得到中间类
- */
-const ForgedComponentBase = ComposableBase.forge(COMPONENT_BASE_ABILITIES);
-
-/**
- * 在中间类上声明能力接口
+ * ComponentBase — 继承自带标准能力的 ComposableBase
  *
- * 派生类 ComponentBase extends ForgedComponentBase 后，
- * 自动拥有这些类型，无需再 export interface。
+ * InferAbilities 自动从能力数组推导接口，无需 export interface。
  */
-export interface ForgedComponentBase extends ComposableBase {
-    // ===== PositionPxAbility =====
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    flushPositionPx(): void;
-
-    // ===== StyleAbility =====
-    style: Record<string, string>;
-    flushStyle(): void;
-    flushAccessibility(): void;
-
-    // ===== EventAbility =====
-    readonly eventScope: any;
-    on(event: string, handler: any): () => void;
-    once(event: string, handler: any): void;
-    emit(event: string, data?: any): void;
-
-    // ===== DomEventsAbility =====
-    bind(target: EventTarget, semantic: any, options?: any): any;
-}
-
-/**
- * 第二步：从中间类 extends 出 ComponentBase，添加组件特有属性和方法
- */
-export class ComponentBase extends ForgedComponentBase {
+export class ComponentBase extends ComposableBase.with(COMPONENT_BASE_ABILITIES) {
     /** 根元素标签名，子类可 override */
     tag: string = 'div';
 

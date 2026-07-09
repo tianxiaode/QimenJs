@@ -6,16 +6,6 @@ import { CoreEntityManager } from './CoreEntityManager';
 import { buildRequestEvent, ENTITY_REQUEST_STATUS } from '@/events';
 
 /**
- * BaseEntityManager 能力接口
- *
- * BaseEntityManager 自身无额外 Ability 注入（abilities = []），
- * 仅继承 CoreEntityManager 的能力接口。
- */
-export interface BaseEntityManager<
-    TSearch extends SearchParams = SearchParams,
-> extends CoreEntityManager {}
-
-/**
  * BaseEntityManager — 基础实体管理器
  *
  * 无额外能力，在 CoreEntityManager 基础上增加 fetch/buildOptions 等通用方法。
@@ -24,7 +14,6 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
     extends CoreEntityManager
     implements IBaseEntityManager<TSearch>
 {
-    static override readonly abilities: readonly any[] = [];
 
     // 数据字段
     loading: boolean = false;
