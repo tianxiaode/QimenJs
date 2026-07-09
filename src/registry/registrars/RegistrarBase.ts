@@ -1,3 +1,5 @@
+import { RegistrarLockedError } from './errors';
+
 /**
  * 注册器基类
  * 定义了注册器的基本结构和通用操作方法
@@ -50,12 +52,12 @@ export abstract class RegistrarBase<M = any> {
      * 检查注册器是否被锁定
      * 如果已锁定则抛出错误
      *
-     * @throws Error - 当注册器被锁定时抛出
+     * @throws RegistrarLockedError - 当注册器被锁定时抛出
      * @protected
      */
     protected checkLock(): void {
         if (this.isLocked) {
-            throw new Error(`[Registrar: ${this.name}] modification denied: Locked.`);
+            throw new RegistrarLockedError(this.name);
         }
     }
 

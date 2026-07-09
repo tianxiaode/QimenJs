@@ -1,6 +1,6 @@
 import { HtmlTemplateRegistrarName } from '../types';
 import { RegistrarBase } from './RegistrarBase';
-import { Logger } from '@qimenjs/logger';
+import { RegistrarNotFoundError } from './errors';
 
 /**
  * HTML模板注册器
@@ -16,7 +16,6 @@ import { Logger } from '@qimenjs/logger';
 export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     public readonly name = HtmlTemplateRegistrarName;
     protected storage = new Map<string, string>();
-    private logger = Logger.for(HtmlTemplateRegistrar);
 
     /**
      * 模板元素缓存
@@ -66,15 +65,15 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
      * 后续调用通过 cloneNode(true) 复制缓存，跳过 HTML 解析。
      *
      * @param id - 模板ID
-     * @returns 克隆的 DocumentFragment，模板不存在时返回空 DocumentFragment
+     * @returns 克隆的 DocumentFragment
+     * @throws RegistrarNotFoundError - 模板不存在时抛出
      */
     getFragment(id: string): DocumentFragment {
         let tpl = this.templateCache.get(id);
         if (!tpl) {
             const html = this.storage.get(id);
             if (!html) {
-                this.logger.warn(`template "${id}" not found`);
-                return document.createDocumentFragment();
+                throw new RegistrarNotFoundError(this.name, id);
             }
             tpl = document.createElement('template');
             tpl.innerHTML = html;
