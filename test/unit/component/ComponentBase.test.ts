@@ -2,10 +2,10 @@
  * 单元测试：ComponentBase
  */
 
-import { ComponentBase, ComponentManager } from '@qimenjs/component';
-import { ChildrenAbility } from '@qimenjs/component';
-import { StyleAbility } from '@qimenjs/component';
-import { VisibleAbility } from '@qimenjs/component';
+import { ComponentBase, ComponentManager } from '@qimenjs/component-core';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
+import { StyleAbility } from '@qimenjs/component-core';
+import { VisibleAbility } from '@qimenjs/component-abilities';
 
 class SimpleComponent extends ComponentBase {
     static override readonly abilities = [ChildrenAbility, StyleAbility, VisibleAbility];

@@ -36,7 +36,7 @@ export interface ContentItemConfig {
 /**
  * 标准化内容项声明
  */
-function normalizeContentDecls(decls: ContentItemDecl[]): ContentItemConfig[] {
+export function normalizeContentDecls(decls: ContentItemDecl[]): ContentItemConfig[] {
     return decls.map(decl => {
         if (typeof decl === 'string') return { name: decl };
         if (Array.isArray(decl)) return { name: decl[0], order: decl[1] };
@@ -47,7 +47,7 @@ function normalizeContentDecls(decls: ContentItemDecl[]): ContentItemConfig[] {
 /**
  * 从标准化配置中提取 names 数组
  */
-function extractContentMeta(configs: ContentItemConfig[]): { names: string[] } {
+export function extractContentMeta(configs: ContentItemConfig[]): { names: string[] } {
     return { names: configs.map(c => c.name) };
 }
 

@@ -80,6 +80,38 @@ function buildContentMap(container: HTMLElement): Map<string, HTMLElement> {
 }
 
 export const OverlayAbility: AbilityDefinition = {
+    // ─── Tooltip 属性（由 assignProps 赋值，由 initTooltipOverlay 使用） ───
+
+    tooltip: {
+        get(): string | undefined { return this.props.tooltip; },
+        set(v: string | undefined) { this.setProp('tooltip', v); },
+    },
+
+    tooltipPlacement: {
+        get(): 'top' | 'bottom' | 'left' | 'right' { return this.props.tooltipPlacement ?? 'top'; },
+        set(v: 'top' | 'bottom' | 'left' | 'right') { this.setProp('tooltipPlacement', v); },
+    },
+
+    tooltipOffset: {
+        get(): number { return this.props.tooltipOffset ?? 4; },
+        set(v: number) { this.setProp('tooltipOffset', v); },
+    },
+
+    tooltipShowDelay: {
+        get(): number { return this.props.tooltipShowDelay ?? 0; },
+        set(v: number) { this.setProp('tooltipShowDelay', v); },
+    },
+
+    tooltipHideDelay: {
+        get(): number { return this.props.tooltipHideDelay ?? 0; },
+        set(v: number) { this.setProp('tooltipHideDelay', v); },
+    },
+
+    tooltipMaxWidth: {
+        get(): number | undefined { return this.props.tooltipMaxWidth; },
+        set(v: number | undefined) { this.setProp('tooltipMaxWidth', v); },
+    },
+
     /**
      * 创建浮层
      *

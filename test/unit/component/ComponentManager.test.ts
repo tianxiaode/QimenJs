@@ -2,7 +2,7 @@
  * 单元测试：ComponentManager
  */
 
-import { ComponentBase, ComponentManager, getCmp } from '@qimenjs/component';
+import { ComponentBase, ComponentManager, getCmp } from '@qimenjs/component-core';
 
 class TestComp extends ComponentBase {
     constructor(props?: Record<string, any>) {

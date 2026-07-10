@@ -2,16 +2,15 @@
  * 集成测试：ComponentBase + Abilities + ComponentManager
  */
 
-import { ComponentBase } from '@qimenjs/component';
-import { ComponentManager } from '@qimenjs/component';
-import { ChildrenAbility } from '@qimenjs/component';
-import { StyleAbility } from '@qimenjs/component';
-import { VisibleAbility } from '@qimenjs/component';
-import { DisableAbility } from '@qimenjs/component';
-import { ValueAbility } from '@qimenjs/component';
-import { EventBindingAbility } from '@qimenjs/component';
-import { LoadingAbility } from '@qimenjs/component';
-import { SizeAbility } from '@qimenjs/component';
+import { ComponentBase } from '@qimenjs/component-core';
+import { ComponentManager } from '@qimenjs/component-core';
+import { ChildrenAbility } from '@qimenjs/component-abilities';
+import { StyleAbility } from '@qimenjs/component-core';
+import { VisibleAbility } from '@qimenjs/component-abilities';
+import { DisableAbility } from '@qimenjs/component-abilities';
+import { ValueAbility } from '@qimenjs/component-abilities';
+import { LoadingAbility } from '@qimenjs/component-abilities';
+import { SizeAbility } from '@qimenjs/component-abilities';
 import { ComposableBase } from '@qimenjs/composable';
 
 /**
@@ -24,7 +23,6 @@ class TestComponent extends ComponentBase {
         VisibleAbility,
         DisableAbility,
         ValueAbility,
-        EventBindingAbility,
         LoadingAbility,
         SizeAbility,
     ];

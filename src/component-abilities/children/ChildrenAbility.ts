@@ -3,10 +3,16 @@
  *
  * 提供子组件的增删查改操作，参考 ExtJS 的 Container API。
  * 支持事件通知：childadd / childremove / childmove / childrenchange
+ *
+ * add(layout) 方法拆解 LayoutNode JSON 递归创建子组件，
+ * 是内部递归渲染模型的核心入口。
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
+import type { LayoutNode, HandlerConfig, StateTrigger } from '@qimenjs/layout';
 import { CHILDREN_EVENTS } from '@qimenjs/events';
+import { ComponentRegistrar } from '@qimenjs/component-core';
+import { ComponentManager } from '@qimenjs/component-core';
 
 /**
  * 子组件类型
@@ -15,6 +21,46 @@ import { CHILDREN_EVENTS } from '@qimenjs/events';
  * 实际运行时 this 指向 ComponentLike 实例。
  */
 type ComponentLike = any;
+
+/**
+ * PositionProps 中的 key 列表，用于从 LayoutNode 提取定位属性
+ */
+const POSITION_KEYS = [
+    'x', 'y', 'top', 'left', 'bottom', 'right',
+    'width', 'height',
+    'minWidth', 'maxWidth', 'minHeight', 'maxHeight',
+    'margin', 'padding',
+    'scrollable', 'center', 'hideMode', 'alwaysOnTop', 'fullscreen',
+    'shadow', 'focused', 'tabIndex', 'zIndex',
+] as const;
+
+/**
+ * 保留字 key 集合 — 这些字段不作为 props 传递
+ */
+const RESERVED_KEYS = new Set([
+    'type', 'id', 'template', 'tag', 'field', 'children',
+    'abilities', 'handlers', 'extraFns', 'meta', 'lifecycle',
+    'stateTriggers', 'visible', 'repeat', 'responsive', 'props',
+    'entity', 'permission',
+    // StyleProps
+    'className', 'style',
+    // AccessibilityProps
+    'role', 'ariaLabel', 'ariaDescribedBy', 'ariaLabelledBy', 'ariaHidden',
+    'ariaDisabled', 'ariaExpanded', 'ariaSelected', 'ariaPressed', 'ariaRequired',
+    'ariaInvalid', 'ariaLive', 'ariaControls', 'ariaOwns', 'ariaHasPopup',
+    'ariaCurrent', 'ariaLevel', 'ariaValueText', 'ariaValueMin', 'ariaValueMax',
+    'ariaValueNow', 'ariaModal', 'ariaReadOnly', 'ariaAutoComplete', 'ariaErrorMessage',
+    'ariaRowCount', 'ariaColCount', 'ariaRowIndex', 'ariaColIndex', 'ariaRowSpan',
+    'ariaColSpan', 'ariaSetSize', 'ariaPosInSet',
+    // TooltipProps
+    'tooltip', 'tooltipPlacement', 'tooltipOffset', 'tooltipShowDelay',
+    'tooltipHideDelay', 'tooltipMaxWidth',
+    // AnimationProps
+    'enterAnimation', 'enterAnimationOptions', 'leaveAnimation',
+    'leaveAnimationOptions', 'animationEnabled',
+    // PositionProps
+    ...POSITION_KEYS,
+]);
 
 export const ChildrenAbility: AbilityDefinition = {
     /**
@@ -33,6 +79,263 @@ export const ChildrenAbility: AbilityDefinition = {
         get(): number {
             return this.children.length;
         },
+    },
+
+    // ============================================
+    // Layout 渲染
+    // ============================================
+
+    /**
+     * 从 LayoutNode JSON 创建并挂载子组件
+     *
+     * 解析 Layout 定义，递归创建组件树。
+     * 每层只负责自己的直接子节点，子的子由子自己负责。
+     *
+     * 处理顺序：创建实例 → 挂载 → PositionProps → abilities →
+     *           extraFns → meta → handlers → stateTriggers → children 递归
+     *
+     * @param layout - LayoutNode 定义
+     * @returns 创建的子组件实例
+     */
+    add(layout: LayoutNode): ComponentLike {
+        // 1. 从 ComponentRegistrar 查找组件类
+        const ComponentClass = ComponentRegistrar.getInstance().get(layout.type);
+        if (!ComponentClass) {
+            console.warn(`ChildrenAbility.add: Component type "${layout.type}" not registered`);
+            return null;
+        }
+
+        // 2. 合并 props（非保留字的顶层属性 + layout.props + id/type/template/tag）
+        const props: Record<string, any> = { ...(layout as any).props };
+        if (layout.id) props.id = layout.id;
+        if (layout.type) props.type = layout.type;
+        if (layout.template) props.template = layout.template;
+        if (layout.tag) props.tag = layout.tag;
+        if (layout.field) props.field = layout.field;
+
+        // 收集非保留字的顶层属性作为 props
+        for (const key of Object.keys(layout as any)) {
+            if (!RESERVED_KEYS.has(key) && props[key] === undefined) {
+                props[key] = (layout as any)[key];
+            }
+        }
+
+        // 3. 创建组件实例
+        const child = new ComponentClass(props);
+
+        // 4. 创建 el + 注入模板 + buildNodeMap
+        if (layout.tag) child.tag = layout.tag;
+        if (layout.template) child.template = layout.template;
+        child.type = layout.type;
+        child.initElement();
+
+        // 5. 挂载到父 el + addChild
+        if (this.el && child.el) {
+            this.el.appendChild(child.el);
+        }
+        this.addChild(child);
+
+        // 6. 注入 abilities（展开后逐个注入组件实例）
+        if (layout.abilities) {
+            child.setupAbilities(layout.abilities);
+        }
+
+        // 7. 注入 extraFns（bind this 后挂到实例）
+        if (layout.extraFns) {
+            for (const [name, fn] of Object.entries(layout.extraFns)) {
+                Object.defineProperty(child, name, {
+                    value: fn.bind(child),
+                    writable: true,
+                    configurable: true,
+                    enumerable: true,
+                });
+            }
+        }
+
+        // 8. 注入 meta（纯数据，this.meta.xxx 访问）
+        if (layout.meta) {
+            child.meta = { ...layout.meta };
+        }
+
+        // 9. 赋值 PositionProps（直接赋给 setter，触发 el.style 操作）
+        const c = child as any;
+        for (const key of POSITION_KEYS) {
+            if ((layout as any)[key] !== undefined) {
+                c[key] = (layout as any)[key];
+            }
+        }
+
+        // StyleProps
+        if (layout.className !== undefined) c.className = layout.className;
+        if (layout.style !== undefined) c.style = layout.style;
+
+        // AccessibilityProps
+        if (layout.role !== undefined) c.role = layout.role;
+        if (layout.ariaLabel !== undefined) c.ariaLabel = layout.ariaLabel;
+        if (layout.ariaDescribedBy !== undefined) c.ariaDescribedBy = layout.ariaDescribedBy;
+        if (layout.ariaLabelledBy !== undefined) c.ariaLabelledBy = layout.ariaLabelledBy;
+        if (layout.ariaHidden !== undefined) c.ariaHidden = layout.ariaHidden;
+        if (layout.ariaDisabled !== undefined) c.ariaDisabled = layout.ariaDisabled;
+        if (layout.ariaExpanded !== undefined) c.ariaExpanded = layout.ariaExpanded;
+        if (layout.ariaSelected !== undefined) c.ariaSelected = layout.ariaSelected;
+        if (layout.ariaPressed !== undefined) c.ariaPressed = layout.ariaPressed;
+        if (layout.ariaRequired !== undefined) c.ariaRequired = layout.ariaRequired;
+        if (layout.ariaInvalid !== undefined) c.ariaInvalid = layout.ariaInvalid;
+        if (layout.ariaLive !== undefined) c.ariaLive = layout.ariaLive;
+        if (layout.ariaControls !== undefined) c.ariaControls = layout.ariaControls;
+        if (layout.ariaOwns !== undefined) c.ariaOwns = layout.ariaOwns;
+        if (layout.ariaHasPopup !== undefined) c.ariaHasPopup = layout.ariaHasPopup;
+        if (layout.ariaCurrent !== undefined) c.ariaCurrent = layout.ariaCurrent;
+        if (layout.ariaLevel !== undefined) c.ariaLevel = layout.ariaLevel;
+        if (layout.ariaValueText !== undefined) c.ariaValueText = layout.ariaValueText;
+        if (layout.ariaValueMin !== undefined) c.ariaValueMin = layout.ariaValueMin;
+        if (layout.ariaValueMax !== undefined) c.ariaValueMax = layout.ariaValueMax;
+        if (layout.ariaValueNow !== undefined) c.ariaValueNow = layout.ariaValueNow;
+        if (layout.ariaModal !== undefined) c.ariaModal = layout.ariaModal;
+        if (layout.ariaReadOnly !== undefined) c.ariaReadOnly = layout.ariaReadOnly;
+        if (layout.ariaAutoComplete !== undefined) c.ariaAutoComplete = layout.ariaAutoComplete;
+        if (layout.ariaErrorMessage !== undefined) c.ariaErrorMessage = layout.ariaErrorMessage;
+        if (layout.ariaRowCount !== undefined) c.ariaRowCount = layout.ariaRowCount;
+        if (layout.ariaColCount !== undefined) c.ariaColCount = layout.ariaColCount;
+        if (layout.ariaRowIndex !== undefined) c.ariaRowIndex = layout.ariaRowIndex;
+        if (layout.ariaColIndex !== undefined) c.ariaColIndex = layout.ariaColIndex;
+        if (layout.ariaRowSpan !== undefined) c.ariaRowSpan = layout.ariaRowSpan;
+        if (layout.ariaColSpan !== undefined) c.ariaColSpan = layout.ariaColSpan;
+        if (layout.ariaSetSize !== undefined) c.ariaSetSize = layout.ariaSetSize;
+        if (layout.ariaPosInSet !== undefined) c.ariaPosInSet = layout.ariaPosInSet;
+
+        // TooltipProps
+        if (layout.tooltip !== undefined) c.tooltip = layout.tooltip;
+        if (layout.tooltipPlacement !== undefined) c.tooltipPlacement = layout.tooltipPlacement;
+        if (layout.tooltipOffset !== undefined) c.tooltipOffset = layout.tooltipOffset;
+        if (layout.tooltipShowDelay !== undefined) c.tooltipShowDelay = layout.tooltipShowDelay;
+        if (layout.tooltipHideDelay !== undefined) c.tooltipHideDelay = layout.tooltipHideDelay;
+        if (layout.tooltipMaxWidth !== undefined) c.tooltipMaxWidth = layout.tooltipMaxWidth;
+
+        // AnimationProps
+        if (layout.enterAnimation !== undefined) c.enterAnimation = layout.enterAnimation;
+        if (layout.enterAnimationOptions !== undefined) c.enterAnimationOptions = layout.enterAnimationOptions;
+        if (layout.leaveAnimation !== undefined) c.leaveAnimation = layout.leaveAnimation;
+        if (layout.leaveAnimationOptions !== undefined) c.leaveAnimationOptions = layout.leaveAnimationOptions;
+        if (layout.animationEnabled !== undefined) c.animationEnabled = layout.animationEnabled;
+
+        // PermissionProps
+        if (layout.permission !== undefined) c.permission = layout.permission;
+
+        // EntityProps
+        if (layout.entity) {
+            const manager = new layout.entity();
+            child.mgr = manager;
+            child.onCleanup(() => manager.dispose());
+        }
+
+        // 剩余 props
+        if (layout.props) {
+            for (const [key, value] of Object.entries(layout.props)) {
+                child.setProp(key, value);
+            }
+        }
+
+        // 10. 绑定 handlers
+        if (layout.handlers) {
+            this._bindChildHandlers(child, layout.handlers);
+        }
+
+        // 11. 绑定 stateTriggers
+        if (layout.stateTriggers) {
+            this._bindChildStateTriggers(child, layout.stateTriggers);
+        }
+
+        // 12. 生命周期钩子
+        if (layout.lifecycle) {
+            if (layout.lifecycle.onMounted) {
+                layout.lifecycle.onMounted.call(child);
+            }
+        }
+
+        // 13. 注册到 ComponentManager
+        if (layout.id) {
+            child.id = layout.id;
+        }
+        ComponentManager.getInstance().register(child);
+
+        // 14. 递归渲染子节点
+        if (layout.children) {
+            for (const childLayout of layout.children) {
+                child.add(childLayout);
+            }
+        }
+
+        return child;
+    },
+
+    /**
+     * 绑定子组件的 handlers
+     */
+    _bindChildHandlers(child: ComponentLike, handlers: NonNullable<LayoutNode['handlers']>): void {
+        for (const [semantic, handlerDef] of Object.entries(handlers)) {
+            const resolved = this._resolveChildHandler(child, handlerDef);
+            if (!resolved) continue;
+
+            if (typeof child.bind === 'function') {
+                child.bind(child.el, semantic as any, { handler: resolved });
+            }
+        }
+    },
+
+    /**
+     * 解析子组件的 handler
+     */
+    _resolveChildHandler(child: ComponentLike, handler: any): EventListener | null {
+        if (typeof handler === 'function') {
+            return handler.bind(child) as EventListener;
+        }
+        if (typeof handler === 'string') {
+            const method = (child as any)[handler];
+            if (typeof method === 'function') {
+                return method.bind(child) as EventListener;
+            }
+            return null;
+        }
+        if (handler && typeof handler === 'object' && 'handler' in handler) {
+            const config = handler as HandlerConfig;
+            const resolved = this._resolveChildHandler(child, config.handler);
+            if (resolved && config.once) {
+                let called = false;
+                const onceHandler = ((e: Event) => {
+                    if (called) return;
+                    called = true;
+                    resolved(e);
+                }) as EventListener;
+                return onceHandler;
+            }
+            return resolved;
+        }
+        if (Array.isArray(handler)) {
+            const resolved = handler
+                .map((h: any) => this._resolveChildHandler(child, h))
+                .filter(Boolean) as EventListener[];
+            if (resolved.length === 0) return null;
+            return ((e: Event) => resolved.forEach(fn => fn(e))) as EventListener;
+        }
+        return null;
+    },
+
+    /**
+     * 绑定子组件的 stateTriggers
+     */
+    _bindChildStateTriggers(child: ComponentLike, triggers: StateTrigger[]): void {
+        for (const trigger of triggers) {
+            for (const [eventType, methodName] of Object.entries(trigger.events)) {
+                const eventKey = trigger.source ? `${trigger.source}:${eventType}` : eventType;
+                const off = child.on?.(eventKey, (e: any) => {
+                    (child as any)[methodName]?.(e);
+                });
+                if (typeof off === 'function') {
+                    child.onCleanup?.(off);
+                }
+            }
+        }
     },
 
     // ============================================

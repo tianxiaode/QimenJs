@@ -5,16 +5,6 @@
  * 与 @qimenjs/composable 的 AbilityDefinition 配合使用。
  */
 
-// 属性别名与初始化协议（从 component-core 重导出，保持向后兼容）
-export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from '@qimenjs/component-core';
-export type { PropAliasMap } from '@qimenjs/component-core';
-
-// 基础能力（从 component-core 重导出，保持向后兼容）
-export { ThemeAbility } from '@qimenjs/component-core';
-export { StyleAbility } from '@qimenjs/component-core';
-export { EventBridgeAbility } from '@qimenjs/component-core';
-export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SearchBridgeConfig } from '@qimenjs/component-core';
-
 // 通用 UI 能力
 export { PlaceholderAbility } from './ui';
 export { VisibleAbility } from './ui';
@@ -22,11 +12,9 @@ export { DisableAbility } from './ui';
 export { LoadingAbility } from './ui';
 export { SizeAbility } from './ui';
 
-// 内容管理（已迁移到 component-core，此处保留重导出以兼容）
+// 内容管理
 export { ContentAbility, type ContentSlotsDecl } from './content/ContentAbility';
 export { ContentPrefix, OVERLAY_PREFIXES, type ContentPrefixType } from './content/ContentPrefix';
-export { positionOverlay, type Placement } from '@qimenjs/component-core';
-export { I18N_PREFIX } from '@qimenjs/i18n';
 
 // 数据能力
 export { ValueAbility } from './data';
@@ -78,9 +66,6 @@ export { ToolbarAbility } from './toolbar';
 export { PaginationAbility, PAGINATION_POSITIONS } from './toolbar';
 export { CrudAbility, CRUD_POSITIONS } from './toolbar';
 export { SearchAbility as ToolbarSearchAbility, SEARCH_POSITIONS } from './toolbar';
-
-// 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
-export { EventBindingAbility } from './event';
 
 // 元素事件绑定能力
 export { ElementEventAbility } from './event';

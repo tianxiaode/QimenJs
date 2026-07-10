@@ -13,6 +13,12 @@
 import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { EventAbility, DomEventsAbility } from '@/system-abilities';
 import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
+import { AccessibilityAbility } from './abilities/AccessibilityAbility';
+import { AnimationAbility } from './abilities/AnimationAbility';
+import { EntityCoreAbility } from './abilities/EntityCoreAbility';
+import { PermissionAbility } from './abilities/PermissionAbility';
+import { EventBridgeAbility } from './abilities/EventBridgeAbility';
+import { ThemeAbility } from './abilities/ThemeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { OverlayAbility } from './abilities/OverlayAbility';
@@ -21,16 +27,6 @@ import { RegistryHub } from '@/registry/RegistryHub';
 import type { LayoutNode } from '@/layout/LayoutNode';
 import { ComponentManager } from './ComponentManager';
 
-// 重导出类型，保持外部导入路径不变
-export type {
-    InternalEventBinding,
-    ExternalEventMap,
-    EventMap,
-    NodeMetadata,
-    NodeIndexPath,
-    NodeTemplateMeta,
-} from './types';
-
 /**
  * 标准能力声明
  * 子类可在此基础上追加能力
@@ -38,6 +34,8 @@ export type {
 export const COMPONENT_BASE_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility, DomEventsAbility,
     PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
+    AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
+    EventBridgeAbility, ThemeAbility,
     InitAbility, NodeMapAbility, OverlayAbility,
 ];
 

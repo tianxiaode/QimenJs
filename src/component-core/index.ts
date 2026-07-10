@@ -5,7 +5,7 @@
  */
 
 // 组件基类
-export { ComponentBase } from './ComponentBase';
+export { ComponentBase, COMPONENT_BASE_ABILITIES } from './ComponentBase';
 export type { NodeMetadata, InternalEventBinding, ExternalEventMap, EventMap, NodeIndexPath, NodeTemplateMeta } from './types';
 
 // 注册管理器
@@ -17,10 +17,21 @@ export { ComponentEventRegistry } from './ComponentEventRegistry';
 export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 
 // 基础能力
-export { ThemeAbility } from './abilities/ThemeAbility';
-export { StyleAbility } from './abilities/StyleAbility';
+export { AccessibilityAbility } from './abilities/AccessibilityAbility';
+export { AnimationAbility } from './abilities/AnimationAbility';
+export { EntityCoreAbility } from './abilities/EntityCoreAbility';
+export { PermissionAbility } from './abilities/PermissionAbility';
 export { EventBridgeAbility } from './abilities/EventBridgeAbility';
 export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SelectionBridgeConfig, SearchBridgeConfig, CustomBridgeConfig } from './abilities/EventBridgeAbility';
+export { ThemeAbility } from './abilities/ThemeAbility';
+export { StyleAbility } from './abilities/StyleAbility';
+export { InitAbility } from './abilities/InitAbility';
+export { NodeMapAbility } from './abilities/NodeMapAbility';
+export { OverlayAbility } from './abilities/OverlayAbility';
+export { PositionPxAbility } from './abilities/PositionPxAbility';
+export { PositionRawAbility } from './abilities/PositionRawAbility';
+export { PositionBoolAbility } from './abilities/PositionBoolAbility';
+export { PositionDirectAbility } from './abilities/PositionDirectAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
