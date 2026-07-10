@@ -176,8 +176,6 @@ export interface ICoreEntityManager extends IComposableBase {
     url: string;
     schema: RegistrSchema;
     readonly compiledSchema: Schema;
-    getSchema(): Schema;
-    getSchemaRules(fieldName?: string): any;
     request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask;
     cancelAll(): void;
     dispose(): void;

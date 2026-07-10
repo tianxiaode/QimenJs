@@ -5,7 +5,6 @@ import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import type { ENTITY_ACTION, ICoreEntityManager } from '@/entity/types';
 import type { Schema, RegistrSchema } from '@/schema';
-import { SchemaRegistrar } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
 import { RequestContextBuilder } from '@/context';
@@ -29,7 +28,7 @@ export const CORE_ENTITY_ABILITIES: readonly AbilityDefinition[] = [
  *
  * InferAbilities 自动从能力数组推导接口，无需 export interface。
  */
-export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_ABILITIES) implements ICoreEntityManager {
+export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_ABILITIES) {
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;
@@ -40,24 +39,9 @@ export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_
     /** Schema 定义（原始，未编译） */
     abstract schema: RegistrSchema;
 
-    /** 获取编译后的 Schema */
+    /** 获取编译后的 Schema（复用 SchemaAbility 的 _getCompiledSchema） */
     get compiledSchema(): Schema {
-        const registrar = SchemaRegistrar.getInstance();
-        const key = this.schema.name;
-
-        if (!registrar.has(key)) {
-            registrar.register(this.schema);
-        }
-
-        return registrar.getCompiled(key).schema;
-    }
-
-    getSchema(): Schema {
-        return (this as any).getSchema();
-    }
-
-    getSchemaRules(fieldName?: string): any {
-        return (this as any).getSchemaRules(fieldName);
+        return (this as any)._getCompiledSchema().schema;
     }
 
     /** 获取域配置 */
