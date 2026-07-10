@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-10，基于 v0.2.0。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-11，基于 v0.2.0。
 
 ## 项目概览
 
@@ -24,7 +24,7 @@ Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, sc
 Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, template
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
 Layer 4 (应用层)  → entity, types
-UI 层             → component-core, component-abilities, component, layout, renderer, theme, imperative, permission
+UI 层             → component-core, component-abilities, component, layout, theme, imperative, permission
 ```
 
 依赖方向：高层可依赖低层，不可反向。UI 层依赖应用层及以下。
@@ -72,11 +72,13 @@ UI 层             → component-core, component-abilities, component, layout, r
 
 ### 5. Component 模式
 
-- `ComponentBase` extends ComposableBase，标准能力 = `[EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility]`
-- 9 阶段渲染管线（Renderer）：创建实例 → 创建el+注入模板 → 初始化能力 → 赋值属性 → 绑定事件 → 条件/循环/响应式 → 挂载DOM → 递归渲染children → 生命周期
+- `ComponentBase` extends ComposableBase，标准能力 = `[EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility, AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility, EventBridgeAbility, ThemeAbility, InitAbility, NodeMapAbility, OverlayAbility]`
+- 内部递归渲染模型：组件通过 `ChildrenAbility.add(layout)` 自渲染子组件，替代外部 Renderer
 - HTML 模板注入 + data-content 内容管理
 - EventBridgeAbility 声明式事件桥接
 - dirtySet + flush() 延迟刷新机制
+- 主题切换：CSS 变量自动生效 + `static themeAware = true` 声明 JS 层面感知
+- 权限控制：LayoutNode 声明 `permission` 字段后自动监听 `permission:change` 事件
 
 ### 6. 自动注册模式
 
@@ -158,7 +160,7 @@ composeMixins.ts, download.ts, index.ts
 
 #### `src/composable/` — 能力组合系统 `@qimenjs/composable`
 ```
-ComposableBase.ts, DescriptorFactory.ts, types/composable.ts, index.ts
+ComposableBase.ts, types/composable.ts, index.ts
 ```
 框架核心模式。`ComposableBase` 提供 abilityState()、setAbilityState()、debounce()、onCleanup()、collectAbilities()、setupAbilities()、dispose() 等方法。
 
@@ -197,7 +199,7 @@ errors/WorkerError.ts, errors/WorkerInitializationError.ts, index.ts
 
 #### `src/schema/` — Schema 定义系统 `@qimenjs/schema`
 ```
-SchemaRegistrar.ts, types/schema.ts, types/rule.ts, types/index.ts, presets.ts, index.ts
+SchemaRegistrar.ts, types/schema.ts, types/rule.ts, types/index.ts, index.ts
 ```
 实体 Schema + 字段组注册，编译缓存。`ValidationPatternType` 枚举 19 种模式。
 
@@ -213,7 +215,7 @@ DataProcessorRegistrar.ts, executor.ts, types.ts, weights.ts, register.ts, error
 ```
 core/ValidatorRegistrar.ts, core/validate.ts, core/executor.ts
 engine/validate.ts
-processors/array/, processors/boolean/, processors/common/, processors/compare/
+processors/array/, processors/boolean/, processors/common/
 processors/date/, processors/file/, processors/format/, processors/number/
 processors/object/, processors/password/, processors/split/, processors/string/
 errors/, types/, utils/, index.ts
@@ -316,16 +318,15 @@ ExecutionStep, IExecutableContext, IPipelineResult。
 ComponentBase.ts, ComponentManager.ts, ComponentRegistrar.ts
 ComponentEventRegistry.ts, ComponentTypes.ts
 abilities/ — InitAbility, NodeMapAbility, OverlayAbility, AnimationAbility
-           EntityCoreAbility, PermissionAbility
+           AccessibilityAbility, EntityCoreAbility, PermissionAbility
            PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
            StyleAbility, ThemeAbility, EventBridgeAbility, PropAlias.ts
            positionOverlay.ts
 interfaces/ — IRenderAbility, ILifecycleAbility, IPositionAbility, IStyleAbility
             IThemeAbility, IEventBridgeAbility, IChildrenAbility, IStateAbility
-renderer/Renderer.ts
 index.ts
 ```
-组件基类、注册管理器、基础能力、9 阶段渲染器。ComponentBase 通过 `COMPONENT_BASE_ABILITIES` 注入 InitAbility/NodeMapAbility/OverlayAbility 等核心能力，统一 `initialize(layout)` 初始化流程。
+组件基类、注册管理器、基础能力。ComponentBase 通过 `COMPONENT_BASE_ABILITIES` 注入 16 个核心能力，统一 `initialize(layout)` 初始化流程。内部递归渲染模型：`ChildrenAbility.add(layout)` 替代外部 Renderer。
 
 #### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities`
 ```
@@ -335,7 +336,7 @@ entity/ — EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbi
           EntityLocalReadonlyAbility, EntityLocalCrudAbility
           EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility
 selection/ — SelectionAbility, SelectableAbility
-children/ — ChildrenAbility
+children/ — ChildrenAbility（add/remove/removeAll，拆解 LayoutNode JSON 递归创建子组件）
 render/ — VirtualListAbility, OverlayAbility, AnimationAbility
 interaction/ — ClickAbility, OptionsAbility, SearchAbility, SortAbility, OpenableAbility, LayoutAbility
 column/ — ColumnAbility, ColumnManageAbility
@@ -343,11 +344,9 @@ toolbar/ — ToolbarAbility, CrudAbility
 toolbar/pagination/ — PaginationAbility (聚合 8 个子能力: State, Events, Nav, Pages, Jumper, Sizer, Info)
 toolbar/search/ — SearchAbility (聚合 4 个子能力: Input, Button, Events, Positions)
 ui/ — PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility
-event/ — EventBindingAbility (@deprecated)
-core/ — 重导出 PropAlias
 index.ts
 ```
-可组合的 UI 能力，供组件按需引用。
+可组合的 UI 能力，供组件按需引用。不再从 @qimenjs/component-core 重导出。
 
 #### `src/component/` — UI 组件层 `@qimenjs/component` (31 文件)
 ```
@@ -379,23 +378,17 @@ LayoutNode.ts, parser.ts, validator.ts, index.ts
 ```
 JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, children, handlers, extraFns, abilities, stateTriggers, entity, permission, position/style/tooltip/animation/accessibility props）。
 
-#### `src/renderer/` — 渲染系统 `@qimenjs/renderer`
+#### `src/imperative/` — 命令式 API `@qimenjs/imperative`
 ```
-processors/bind-children.ts
-```
-**注意**：此模块不完整，仅有 `bind-children.ts`，其导入的 `RenderContext` 和 `Renderer` 类文件不存在。实际的 Renderer 实现在 `src/component-core/renderer/Renderer.ts`。
-
-#### `src/theme/` — 主题系统 `@qimenjs/theme`
-```
-ThemeManager.ts, AtomicCSS.ts
+ThemeRegistrar.ts, AtomicCSS.ts, register.ts
 presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/index.ts
 types/, index.ts
 ```
-主题注册、切换、CSS 变量输出。`AtomicCSS` 按需原子 CSS 生成器。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
+主题注册器（extends RegistrarBase）+ CSS 变量输出 + 原子 CSS。`ThemeRegistrar` 通过 GlobalEventBus 触发 `theme:change` 事件，组件通过 `static themeAware = true` 声明 JS 层面感知。引入即自动注册预设主题 + 注册到 RegistryHub（键 `'theme'`）。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
 
 #### `src/imperative/` — 命令式 API `@qimenjs/imperative`
 ```
-toast.ts, msgbox.ts, types.ts, index.ts
+toast.ts, msgbox.ts, ToastManager.ts, MsgboxManager.ts, types.ts, index.ts
 ```
 `toast()` 函数（ToastManager, Thenable）、`msgbox.alert/confirm/prompt`（MsgboxManager）。
 
@@ -403,11 +396,11 @@ toast.ts, msgbox.ts, types.ts, index.ts
 ```
 PermissionRegistrar.ts, createDomainPermissions.ts, types.ts, index.ts
 ```
-域范围权限码（domain:code 格式），`createDomainPermissions()` 域前缀权限码工厂。
+域范围权限码（domain:code 格式），`PermissionRegistrar` extends RegistrarBase，通过 GlobalEventBus 触发 `permission:change` 事件。`createDomainPermissions()` 域前缀权限码工厂。
 
 ## 路径别名映射
 
-所有 36 个子包在 `tsconfig.json` 中配置了 `@qimenjs/*` 路径别名，例如：
+所有子包在 `tsconfig.json` 中配置了 `@qimenjs/*` 路径别名，例如：
 
 ```typescript
 import { EventBus } from '@qimenjs/events'
@@ -439,23 +432,45 @@ Component (EntityAbility)
 
 ### 组件渲染流程
 ```
-Renderer.render(layoutNode)
-  1. 创建组件实例 (ComponentRegistrar 查找类)
-  2. 创建 el + 注入 HTML 模板
-  3. 初始化 abilities (setupAbilities)
-  4. 赋值属性 (props → __initProps)
-  5. 绑定事件 (EventBridgeAbility)
-  6. 条件/循环/响应式
-  7. 挂载 DOM
-  8. 递归渲染 children
-  9. 生命周期回调 (mount)
+ChildrenAbility.add(layoutNode)
+  1. ComponentRegistrar.get(type) 查找组件类
+  2. 合并 props（非保留顶层 key + layout.props + id/type/template/tag/field）
+  3. new ComponentClass(props) 创建实例
+  4. initElement() 创建 el + 注入 HTML 模板
+  5. 挂载 DOM（appendChild + addChild）
+  6. setupAbilities(layout.abilities)
+  7. extraFns bind + defineProperty
+  8. meta 复制
+  9. PositionProps/StyleProps/AccessibilityProps/TooltipProps/AnimationProps/PermissionProps/EntityProps 赋值
+  10. bindHandlers + bindStateTriggers
+  11. lifecycle 钩子
+  12. ComponentManager.register
+  13. 递归 children.add(childLayout)
+```
+
+### 主题切换流程
+```
+ThemeRegistrar.apply('dark')
+  → flattenTokens(tokens) 扁平化 DesignTokens
+  → applyCSSVariables() 更新 :root CSS 变量（所有组件自动生效）
+  → GlobalEventBus.emit('theme:change', payload)
+  → ThemeAbility._initTheme() 中检查 static themeAware
+  → 声明了 themeAware 的组件调用 onThemeChange(event)
+```
+
+### 权限控制流程
+```
+PermissionRegistrar.registerBatch(entries)
+  → GlobalEventBus.emit('permission:change', payload)
+  → PermissionAbility setter 中 _listenPermissionChange()
+  → applyPermission() 根据 behavior 控制 UI
 ```
 
 ## 已知问题与注意事项
 
-1. **renderer 模块不完整**：`src/renderer/` 仅有 `processors/bind-children.ts`，其导入的 `RenderContext` 和 `Renderer` 类文件不存在。实际 Renderer 在 `src/component-core/renderer/Renderer.ts`。
+1. **renderer 模块已移除**：`src/renderer/` 和 `src/component-core/renderer/` 已删除，渲染流程由 `ChildrenAbility.add(layout)` 承担。
 
-2. **向后兼容重导出**：`component` 包从 `component-core` 和 `component-abilities` 重导出大量 API。`component-abilities` 的 `core/`、`event/`、`ui/` 子目录也从 `component-core` 重导出。
+2. **重导出已清理**：`component` 包不再从 `component-core` 和 `component-abilities` 重导出。`component-abilities` 不再从 `component-core` 重导出。外部应直接从各自的包导入。
 
 3. **jest.config.ts 包含过时别名**：如 `@qimenjs/base`、`@qimenjs/core`、`@qimenjs/kernel` 等在 tsconfig.json 中已不存在的路径别名。
 
@@ -463,12 +478,14 @@ Renderer.render(layoutNode)
 
 5. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
 
+6. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。
+
 ## 配置文件
 
 | 文件 | 用途 |
 |------|------|
 | `package.json` | 项目元数据、脚本、依赖 |
-| `tsconfig.json` | TypeScript 编译配置，36 个 @qimenjs/* 路径别名 |
+| `tsconfig.json` | TypeScript 编译配置，@qimenjs/* 路径别名 |
 | `tsconfig.build.json` | 构建专用配置，排除测试文件 |
 | `jest.config.ts` | Jest 测试配置，路径映射 |
 | `.eslintrc.js` | ESLint 规则 |

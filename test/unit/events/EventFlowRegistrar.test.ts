@@ -209,7 +209,7 @@ describe('EventFlowRegistrar', () => {
 
     test('bindStateTriggers 自动注册到 EventFlowRegistrar', () => {
         class SourceComp extends ComposableBase {
-            static override readonly abilities = [EventAbility];
+            static readonly abilities = [EventAbility];
             static readonly eventKey = 'testSource';
         }
 
@@ -217,7 +217,7 @@ describe('EventFlowRegistrar', () => {
         expect(source.eventScope).toBeDefined();
 
         const listener = new (class ListenerComp extends ComposableBase {
-            static override readonly abilities = [EventAbility];
+            static readonly abilities = [EventAbility];
             onEvent(_ctx: any) {}
         })();
 

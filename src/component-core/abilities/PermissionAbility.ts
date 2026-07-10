@@ -10,10 +10,15 @@
  * - defaultBehavior: 'visible' | 'disable' | 'hidden' | 'removed' — 默认行为
  * - noPermissionTip: string — 无权限提示
  * - onPermissionChange: (hasPermission: boolean) => boolean | void — 权限变化回调
+ *
+ * 声明 permission 后自动注册 permission:change 事件监听，
+ * 权限变更时重新检查并控制组件可见性/可用性。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import type { PermissionProps } from '@/layout/LayoutNode';
+import { globalEventBus } from '@qimenjs/events';
+import { PERMISSION_CHANGE_EVENT } from '@/permission/types';
 
 export const PermissionAbility: AbilityDefinition = {
     permission: {
@@ -22,14 +27,38 @@ export const PermissionAbility: AbilityDefinition = {
             this.setProp('permission', v);
             if (v) {
                 applyPermission(this, v);
+                this._listenPermissionChange();
             }
         },
     },
+
+    /**
+     * 注册权限变更监听器
+     *
+     * 仅在 permission 被赋值时调用，监听 GlobalEventBus 的 permission:change 事件。
+     * 组件销毁时通过 onCleanup 自动解绑。
+     */
+    _listenPermissionChange(): void {
+        // 避免重复注册
+        if (this._permissionListening) return;
+        this._permissionListening = true;
+
+        const off = globalEventBus.on(PERMISSION_CHANGE_EVENT, () => {
+            const perm = this.props.permission;
+            if (perm) {
+                applyPermission(this, perm);
+            }
+        });
+
+        this.onCleanup(off);
+    },
+
+    /** 防止重复注册监听器 */
+    _permissionListening: false,
 };
 
 /**
  * 应用权限控制
- * TODO: 对接权限检查服务
  */
 function applyPermission(component: any, permission: NonNullable<PermissionProps['permission']>): void {
     const { behavior = 'hidden' } = permission;
@@ -49,6 +78,17 @@ function applyPermission(component: any, permission: NonNullable<PermissionProps
                 component.el.remove();
                 break;
         }
+    } else {
+        // 有权限时恢复默认状态
+        switch (behavior) {
+            case 'hidden':
+                component.el.style.display = '';
+                break;
+            case 'disable':
+                (component.el as any).disabled = false;
+                component.el.removeAttribute('aria-disabled');
+                break;
+        }
     }
 
     if (permission.onPermissionChange) {
@@ -57,8 +97,8 @@ function applyPermission(component: any, permission: NonNullable<PermissionProps
 }
 
 /**
- * 权限检查（占位）
- * TODO: 对接实际权限服务
+ * 权限检查
+ * TODO: 对接 PermissionRegistrar.has()
  */
 function checkPermission(_permission: NonNullable<PermissionProps['permission']>): boolean {
     return true;

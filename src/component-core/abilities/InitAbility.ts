@@ -57,7 +57,7 @@ export const InitAbility: AbilityDefinition = {
             if (layout.id) {
                 this.id = layout.id;
             }
-            ComponentManager.getInstance().register(this);
+            ComponentManager.getInstance().register(this as any);
         } finally {
             this._initializing = false;
             this.flush();
@@ -286,7 +286,7 @@ export const InitAbility: AbilityDefinition = {
             }
         }
 
-        for (const [emitKey, node] of Object.entries(this.eventMap.external)) {
+        for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
 
             if (!listenedEvents.has(eventType) && !listenedEvents.has(emitKey)) continue;

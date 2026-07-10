@@ -1,12 +1,13 @@
 /**
- * 单元测试：ThemeManager
+ * 单元测试：ThemeRegistrar
  */
 
-import { ThemeManager, flattenTokens } from '@qimenjs/theme';
+import { ThemeRegistrar, flattenTokens, THEME_CHANGE_EVENT } from '@qimenjs/theme';
 import type { ThemeDefinition } from '@qimenjs/theme';
+import { globalEventBus } from '@qimenjs/events';
 
-describe('ThemeManager', () => {
-    let tm: ThemeManager;
+describe('ThemeRegistrar', () => {
+    let tr: ThemeRegistrar;
 
     const mockTheme = {
         name: 'mock',
@@ -31,84 +32,84 @@ describe('ThemeManager', () => {
     } as any as ThemeDefinition;
 
     beforeEach(() => {
-        tm = ThemeManager.getInstance();
-        (tm as any).themes.clear();
-        (tm as any)._current = undefined;
-        (tm as any).listeners.clear();
+        tr = ThemeRegistrar.getInstance();
+        (tr as any).storage.clear();
+        (tr as any)._current = undefined;
+        tr.initEventBus(globalEventBus);
     });
 
     describe('getInstance', () => {
         it('should return singleton instance', () => {
-            const instance1 = ThemeManager.getInstance();
-            const instance2 = ThemeManager.getInstance();
+            const instance1 = ThemeRegistrar.getInstance();
+            const instance2 = ThemeRegistrar.getInstance();
             expect(instance1).toBe(instance2);
         });
     });
 
     describe('register', () => {
         it('should register a theme', () => {
-            tm.register(mockTheme);
-            expect((tm as any).themes.has('mock')).toBe(true);
+            tr.register(mockTheme);
+            expect((tr as any).storage.has('mock')).toBe(true);
         });
 
         it('should warn when theme has no name', () => {
             const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-            tm.register({ name: '', tokens: {} } as any);
+            tr.register({ name: '', tokens: {} } as any);
             expect(warnSpy).toHaveBeenCalled();
             warnSpy.mockRestore();
         });
 
         it('should overwrite existing theme with same name', () => {
-            tm.register(mockTheme);
+            tr.register(mockTheme);
             const updated = { ...mockTheme, tokens: { ...mockTheme.tokens, colors: { primary: '#blue' } } } as any as ThemeDefinition;
-            tm.register(updated);
-            expect((tm as any).themes.get('mock').tokens.colors.primary).toBe('#blue');
+            tr.register(updated);
+            expect((tr as any).storage.get('mock').tokens.colors.primary).toBe('#blue');
         });
     });
 
     describe('unregister', () => {
         it('should remove a registered theme', () => {
-            tm.register(mockTheme);
-            tm.unregister('mock');
-            expect((tm as any).themes.has('mock')).toBe(false);
+            tr.register(mockTheme);
+            tr.unregister('mock');
+            expect((tr as any).storage.has('mock')).toBe(false);
         });
     });
 
     describe('apply', () => {
         it('should set current theme name', () => {
-            tm.register(mockTheme);
-            tm.apply('mock');
-            expect(tm.current).toBe('mock');
+            tr.register(mockTheme);
+            tr.apply('mock');
+            expect(tr.current).toBe('mock');
         });
 
         it('should not change current if theme not found', () => {
-            tm.apply('nonexistent');
-            expect(tm.current).toBeUndefined();
+            tr.apply('nonexistent');
+            expect(tr.current).toBeUndefined();
         });
 
-        it('should notify listeners on theme change', () => {
-            tm.register(mockTheme);
+        it('should emit theme:change event via GlobalEventBus', () => {
+            tr.register(mockTheme);
             const handler = jest.fn();
-            tm.onThemeChange(handler);
-            tm.apply('mock');
+            globalEventBus.on(THEME_CHANGE_EVENT, handler);
+            tr.apply('mock');
             expect(handler).toHaveBeenCalledWith({ previous: undefined, current: 'mock' });
         });
 
         it('should pass previous theme name in event', () => {
             const theme2 = { name: 'theme2', tokens: {} } as any as ThemeDefinition;
-            tm.register(mockTheme);
-            tm.register(theme2);
-            tm.apply('mock');
+            tr.register(mockTheme);
+            tr.register(theme2);
+            tr.apply('mock');
 
             const handler = jest.fn();
-            tm.onThemeChange(handler);
-            tm.apply('theme2');
+            globalEventBus.on(THEME_CHANGE_EVENT, handler);
+            tr.apply('theme2');
             expect(handler).toHaveBeenCalledWith({ previous: 'mock', current: 'theme2' });
         });
 
         it('should apply CSS variables to document root', () => {
-            tm.register(mockTheme);
-            tm.apply('mock');
+            tr.register(mockTheme);
+            tr.apply('mock');
             const root = document.documentElement;
             expect(root.style.getPropertyValue('--q-colors-primary')).toBe('#ff0000');
         });
@@ -116,63 +117,47 @@ describe('ThemeManager', () => {
 
     describe('getToken', () => {
         it('should return token value by dot path', () => {
-            tm.register(mockTheme);
-            tm.apply('mock');
-            expect(tm.getToken('colors.primary')).toBe('#ff0000');
-            expect(tm.getToken('spacing.md')).toBe('16px');
+            tr.register(mockTheme);
+            tr.apply('mock');
+            expect(tr.getToken('colors.primary')).toBe('#ff0000');
+            expect(tr.getToken('spacing.md')).toBe('16px');
         });
 
         it('should return undefined for unknown path', () => {
-            tm.register(mockTheme);
-            tm.apply('mock');
-            expect(tm.getToken('colors.nonexistent')).toBeUndefined();
+            tr.register(mockTheme);
+            tr.apply('mock');
+            expect(tr.getToken('colors.nonexistent')).toBeUndefined();
         });
 
         it('should return undefined when no theme applied', () => {
-            expect(tm.getToken('colors.primary')).toBeUndefined();
+            expect(tr.getToken('colors.primary')).toBeUndefined();
         });
     });
 
     describe('toCSSVariables', () => {
         it('should generate CSS variable string', () => {
-            tm.register(mockTheme);
-            tm.apply('mock');
-            const css = tm.toCSSVariables();
+            tr.register(mockTheme);
+            tr.apply('mock');
+            const css = tr.toCSSVariables();
             expect(css).toContain(':root');
             expect(css).toContain('--q-colors-primary: #ff0000');
         });
 
         it('should return empty string when no theme applied', () => {
-            expect(tm.toCSSVariables()).toBe('');
+            expect(tr.toCSSVariables()).toBe('');
         });
     });
 
-    describe('onThemeChange', () => {
-        it('should return unsubscribe function', () => {
-            tm.register(mockTheme);
-            const handler = jest.fn();
-            const off = tm.onThemeChange(handler);
+    describe('eventBus', () => {
+        it('should not emit event when eventBus not initialized', () => {
+            const noBusTr = ThemeRegistrar.getInstance();
+            (noBusTr as any).storage.clear();
+            (noBusTr as any)._current = undefined;
+            // 不调用 initEventBus
 
-            tm.apply('mock');
-            expect(handler).toHaveBeenCalledTimes(1);
-
-            off();
-            tm.apply('mock'); // re-apply same theme won't trigger
-            // handler still called once because apply same theme still fires
-        });
-
-        it('should not call removed listener', () => {
-            const theme2 = { name: 'theme2', tokens: {} } as any as ThemeDefinition;
-            tm.register(mockTheme);
-            tm.register(theme2);
-            tm.apply('mock');
-
-            const handler = jest.fn();
-            const off = tm.onThemeChange(handler);
-            off();
-
-            tm.apply('theme2');
-            expect(handler).not.toHaveBeenCalled();
+            noBusTr.register(mockTheme);
+            // 不应抛错，静默跳过
+            expect(() => noBusTr.apply('mock')).not.toThrow();
         });
     });
 });

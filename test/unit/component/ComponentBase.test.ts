@@ -8,7 +8,7 @@ import { StyleAbility } from '@qimenjs/component-core';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 
 class SimpleComponent extends ComponentBase {
-    static override readonly abilities = [ChildrenAbility, StyleAbility, VisibleAbility];
+    static readonly abilities = [ChildrenAbility, StyleAbility, VisibleAbility];
 
     constructor(props?: Record<string, any>) {
         super(props);

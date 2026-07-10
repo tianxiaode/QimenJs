@@ -20,12 +20,12 @@ import type { EventContext } from '@/context';
 
 // 测试用子类
 class SourceComponent extends ComposableBase {
-    static override readonly abilities = [EventAbility];
+    static readonly abilities = [EventAbility];
     static readonly eventKey = 'userTable';
 }
 
 class ListenerComponent extends ComposableBase {
-    static override readonly abilities = [EventAbility];
+    static readonly abilities = [EventAbility];
 
     handlerCallCount = 0;
     lastCtx: EventContext | undefined;
@@ -251,7 +251,7 @@ describe('bindStateTriggers', () => {
         expect(source.eventScope).toBeDefined();
 
         const dialog = new (class TestDialog extends ComposableBase {
-            static override readonly abilities = [EventAbility];
+            static readonly abilities = [EventAbility];
             static readonly eventKey = 'testDialog';
             chainInHandler: any = undefined;
 

@@ -422,8 +422,8 @@ export const NodeMapAbility: AbilityDefinition = {
      * 在 buildNodeMap 之后调用，将模板中声明的 i18n key 翻译并写入 DOM。
      */
     initI18nFromTemplate(): void {
-        for (const [, entries] of Object.entries(this.nodeMap)) {
-            for (const [, node] of Object.entries(entries)) {
+        for (const [, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
+            for (const [, node] of Object.entries(entries as Record<string, any>)) {
                 if (!node.i18nKey) continue;
                 const translated = translateI18nKey(node.i18nKey);
                 const mode = inferContentMode(node.el);
@@ -438,8 +438,8 @@ export const NodeMapAbility: AbilityDefinition = {
      * localeChange 事件触发时调用，也可手动调用。
      */
     refreshI18n(): void {
-        for (const [, entries] of Object.entries(this.nodeMap)) {
-            for (const [, node] of Object.entries(entries)) {
+        for (const [, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
+            for (const [, node] of Object.entries(entries as Record<string, any>)) {
                 if (!node.i18nKey) continue;
                 const translated = translateI18nKey(node.i18nKey);
                 const mode = inferContentMode(node.el);
@@ -476,8 +476,8 @@ export const NodeMapAbility: AbilityDefinition = {
      */
     getI18nKeys(): Record<string, string> {
         const result: Record<string, string> = {};
-        for (const [group, entries] of Object.entries(this.nodeMap)) {
-            for (const [name, node] of Object.entries(entries)) {
+        for (const [group, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
+            for (const [name, node] of Object.entries(entries as Record<string, any>)) {
                 if (node.i18nKey) {
                     result[`${group}:${name}`] = node.i18nKey;
                 }

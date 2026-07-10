@@ -41,9 +41,9 @@ export const ValidateAbility: AbilityDefinition = {
             return true;
         }
 
-        const result = await validate(this.value, rules);
+        const result = await validate.validate(this.value, rules);
 
-        if (result === true) {
+        if (result === null) {
             this.setAbilityState('ValidateAbility:errors', []);
             return true;
         }

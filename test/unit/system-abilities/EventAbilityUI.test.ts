@@ -16,17 +16,17 @@ import type { EventContext } from '@/context';
 
 // 测试用子类
 class TestToolbar extends ComposableBase {
-    static override readonly abilities = [EventAbility];
+    static readonly abilities = [EventAbility];
     static readonly eventKey = 'testToolbar';
 }
 
 class TestTable extends ComposableBase {
-    static override readonly abilities = [EventAbility];
+    static readonly abilities = [EventAbility];
     static readonly eventKey = 'testTable';
 }
 
 class NoEventKeyHost extends ComposableBase {
-    static override readonly abilities = [EventAbility];
+    static readonly abilities = [EventAbility];
 }
 
 describe('EventAbility UI 扩展', () => {
@@ -128,7 +128,7 @@ describe('EventAbility UI 扩展', () => {
     test('executeWithEventContext 构建 chain', () => {
         const toolbar = new TestToolbar();
         const dialog = new (class TestDialog extends ComposableBase {
-            static override readonly abilities = [EventAbility];
+            static readonly abilities = [EventAbility];
             static readonly eventKey = 'testDialog';
         })();
 

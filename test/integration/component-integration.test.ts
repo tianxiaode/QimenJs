@@ -17,7 +17,7 @@ import { ComposableBase } from '@qimenjs/composable';
  * 创建测试用组件类
  */
 class TestComponent extends ComponentBase {
-    static override readonly abilities = [
+    static readonly abilities = [
         ChildrenAbility,
         StyleAbility,
         VisibleAbility,

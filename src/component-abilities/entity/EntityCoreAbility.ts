@@ -12,7 +12,6 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { string } from '@qimenjs/utils';
-import { createEntityManager } from '@qimenjs/entity';
 
 export const EntityCoreAbility: AbilityDefinition = {
     /**
@@ -53,10 +52,9 @@ export const EntityCoreAbility: AbilityDefinition = {
         if (!config) return;
 
         // 1. 根据 entityConfig 创建 EntityManager
+        // TODO: createEntityManager 尚未实现，待 @qimenjs/entity 提供
         if (config.domain && config.schema && config.type) {
-            if (typeof createEntityManager === 'function') {
-                this.mgr = createEntityManager(config);
-            }
+            // this.mgr = createEntityManager(config);
         }
 
         // 2. 代理 mgr 的公共方法到组件实例

@@ -118,12 +118,17 @@ export interface DesignTokens {
 }
 
 /**
+ * 主题变更事件名称
+ */
+export const THEME_CHANGE_EVENT = 'theme:change' as const;
+
+/**
  * 主题定义
  *
  * 主题本质是设计令牌的集合，用 JSON 定义
  */
 export interface ThemeDefinition {
-    /** 主题名称，同一 ThemeManager 内唯一 */
+    /** 主题名称，同一 ThemeRegistrar 内唯一 */
     name: string;
     /** 设计令牌 */
     tokens: DesignTokens;

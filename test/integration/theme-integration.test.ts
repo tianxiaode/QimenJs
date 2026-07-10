@@ -1,53 +1,55 @@
 /**
- * 集成测试：ThemeManager + AtomicCSS + 主题预设
+ * 集成测试：ThemeRegistrar + AtomicCSS + 主题预设
  */
 
-import { ThemeManager, flattenTokens, AtomicCSS, lightTheme, darkTheme } from '@qimenjs/theme';
+import { ThemeRegistrar, flattenTokens, AtomicCSS, lightTheme, darkTheme, THEME_CHANGE_EVENT } from '@qimenjs/theme';
+import { globalEventBus } from '@qimenjs/events';
 
 describe('Theme Integration', () => {
-    let tm: ThemeManager;
+    let tr: ThemeRegistrar;
 
     beforeEach(() => {
-        tm = ThemeManager.getInstance();
+        tr = ThemeRegistrar.getInstance();
         // 清理状态
-        (tm as any).themes.clear();
-        (tm as any)._current = undefined;
-        (tm as any).listeners.clear();
+        (tr as any).storage.clear();
+        (tr as any)._current = undefined;
+        // 注入 EventBus
+        tr.initEventBus(globalEventBus);
     });
 
-    describe('ThemeManager', () => {
+    describe('ThemeRegistrar', () => {
         it('should register and apply theme', () => {
-            tm.register(lightTheme);
-            tm.apply('light');
+            tr.register(lightTheme);
+            tr.apply('light');
 
-            expect(tm.current).toBe('light');
+            expect(tr.current).toBe('light');
         });
 
         it('should get token value', () => {
-            tm.register(lightTheme);
-            tm.apply('light');
+            tr.register(lightTheme);
+            tr.apply('light');
 
-            const color = tm.getToken('colors.primary');
+            const color = tr.getToken('colors.primary');
             expect(color).toBeTruthy();
         });
 
-        it('should emit theme:change event', () => {
-            tm.register(lightTheme);
-            tm.register(darkTheme);
-            tm.apply('light');
+        it('should emit theme:change event via GlobalEventBus', () => {
+            tr.register(lightTheme);
+            tr.register(darkTheme);
+            tr.apply('light');
 
             const handler = jest.fn();
-            tm.onThemeChange(handler);
+            globalEventBus.on(THEME_CHANGE_EVENT, handler);
 
-            tm.apply('dark');
+            tr.apply('dark');
             expect(handler).toHaveBeenCalledTimes(1);
         });
 
         it('should convert tokens to CSS variables', () => {
-            tm.register(lightTheme);
-            tm.apply('light');
+            tr.register(lightTheme);
+            tr.apply('light');
 
-            const cssVars = tm.toCSSVariables();
+            const cssVars = tr.toCSSVariables();
             expect(cssVars).toContain('--q-');
         });
     });

@@ -1,17 +1,17 @@
-import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
+import { TemplateRegistrar } from '@qimenjs/template';
 
 /**
  * HTML模板注册器单元测试
- * 验证HtmlTemplateRegistrar类的各项功能是否正常工作
+ * 验证TemplateRegistrar类的各项功能是否正常工作
  */
-describe('HtmlTemplateRegistrar', () => {
-    let htmlTemplateRegistrar: HtmlTemplateRegistrar;
+describe('TemplateRegistrar', () => {
+    let htmlTemplateRegistrar: TemplateRegistrar;
 
     /**
-     * 在每个测试用例执行前初始化HtmlTemplateRegistrar实例
+     * 在每个测试用例执行前初始化TemplateRegistrar实例
      */
     beforeEach(() => {
-        htmlTemplateRegistrar = new HtmlTemplateRegistrar();
+        htmlTemplateRegistrar = new TemplateRegistrar();
     });
 
     describe('register', () => {

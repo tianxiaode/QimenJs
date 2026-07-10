@@ -2,7 +2,7 @@
  * 主题感知能力接口
  *
  * 组件自动感知主题变更，
- * 监听 ThemeManager 的 theme:change 事件。
+ * 监听 ThemeRegistrar 的主题变更事件。
  *
  * 所有组件都需要此能力。
  */

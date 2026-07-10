@@ -47,8 +47,12 @@ export function normalizeContentDecls(decls: ContentItemDecl[]): ContentItemConf
 /**
  * 从标准化配置中提取 names 数组
  */
-export function extractContentMeta(configs: ContentItemConfig[]): { names: string[] } {
-    return { names: configs.map(c => c.name) };
+export function extractContentMeta(configs: ContentItemConfig[]): { names: string[]; positions: Record<string, number | undefined> } {
+    const positions: Record<string, number | undefined> = {};
+    for (const c of configs) {
+        positions[c.name] = c.order;
+    }
+    return { names: configs.map(c => c.name), positions };
 }
 
 // ─── ContentAbility ───

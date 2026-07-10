@@ -178,6 +178,16 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
      * @param domain - 域名称
      * @returns 权限码数组，域不存在时返回空数组
      */
+    get(domain: string): string[] {
+        return this.getByDomain(domain);
+    }
+
+    /**
+     * 获取指定域的所有权限码
+     *
+     * @param domain - 域名称
+     * @returns 权限码数组，域不存在时返回空数组
+     */
     getByDomain(domain: string): string[] {
         const set = this.storage.get(domain);
         return set ? Array.from(set) : [];
