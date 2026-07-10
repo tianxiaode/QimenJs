@@ -14,7 +14,7 @@ import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { EventAbility, DomEventsAbility } from '@/system-abilities';
 import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
 import { RegistryHub } from '@/registry/RegistryHub';
-import { HtmlTemplateRegistrar } from '@/registry/registrars/HtmlTemplateRegistrar';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 
 /**
  * 标准能力声明

@@ -43,8 +43,8 @@ export class TableComponent extends ComponentBase {
         this.el.classList.add('q-table');
 
         // 查找模板注入的元素
-        this.headerEl = this.el.querySelector('[data-ref="header"]') as HTMLElement;
-        this.bodyEl = this.el.querySelector('[data-ref="body"]') as HTMLElement;
+        this.headerEl = this.el.querySelector('[data-content="table:headerRow"]') as HTMLElement;
+        this.bodyEl = this.el.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
 
         // 设置初始属性
         if (props?.rowHeight) this._rowHeight = props.rowHeight;

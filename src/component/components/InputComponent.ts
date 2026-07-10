@@ -38,7 +38,7 @@ export class InputComponent extends ComponentBase {
         this.el.classList.add('q-input');
 
         // 查找 input 元素（由模板注入）
-        this.inputEl = this.el.querySelector('[data-ref="input"]') as HTMLInputElement;
+        this.inputEl = this.el.querySelector('[data-content="input:field"]') as HTMLInputElement;
 
         // 绑定 input 事件 → 同步到 ValueAbility
         if (this.inputEl) {

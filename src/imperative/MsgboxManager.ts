@@ -4,7 +4,7 @@
  * 单例模式，管理 msgbox DOM 创建、遮罩、按钮事件、动画、Promise resolve、销毁。
  */
 
-import { HtmlTemplateRegistrar } from '@qimenjs/registry';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { OverlayRoot } from '@qimenjs/component';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@qimenjs/component';
@@ -76,20 +76,20 @@ export class MsgboxManager {
         overlayEl.style.pointerEvents = 'auto';
 
         // 4. 设置内容（支持 i18n: 前缀）
-        const titleEl = overlayEl.querySelector('[data-ref="title"]') as HTMLElement | null;
+        const titleEl = overlayEl.querySelector('[data-content="msgbox:text"]') as HTMLElement | null;
         if (titleEl) {
             titleEl.textContent = resolveI18nValue(options.title);
         }
 
-        const contentEl = overlayEl.querySelector('[data-ref="content"]') as HTMLElement | null;
+        const contentEl = overlayEl.querySelector('[data-content="msgbox:content"]') as HTMLElement | null;
         if (contentEl) {
             contentEl.textContent = resolveI18nValue(options.content ?? '');
         }
 
         // 5. 根据类型配置按钮区域
-        const cancelBtn = overlayEl.querySelector('[data-ref="cancelBtn"]') as HTMLElement | null;
-        const confirmBtn = overlayEl.querySelector('[data-ref="confirmBtn"]') as HTMLElement | null;
-        const inputEl = overlayEl.querySelector('[data-ref="input"]') as HTMLInputElement | null;
+        const cancelBtn = overlayEl.querySelector('[data-content="msgbox:cancel"]') as HTMLElement | null;
+        const confirmBtn = overlayEl.querySelector('[data-content="msgbox:confirm"]') as HTMLElement | null;
+        const inputEl = overlayEl.querySelector('[data-content="msgbox:field"]') as HTMLInputElement | null;
 
         if (type === 'alert') {
             // alert: 仅显示确认按钮

@@ -30,12 +30,12 @@ export class DialogComponent extends ComponentBase {
         this.el.classList.add('q-dialog');
         this.el.style.display = 'none';
 
-        this.headerEl = this.el.querySelector('[data-ref="header"]') as HTMLElement;
-        this.bodyEl = this.el.querySelector('[data-ref="body"]') as HTMLElement;
-        this.footerEl = this.el.querySelector('[data-ref="footer"]') as HTMLElement;
+        this.headerEl = this.el.querySelector('[data-content="dialog:header"]') as HTMLElement;
+        this.bodyEl = this.el.querySelector('[data-content="dialog:body"]') as HTMLElement;
+        this.footerEl = this.el.querySelector('[data-content="dialog:footer"]') as HTMLElement;
 
         // 关闭按钮
-        const closeBtn = this.el.querySelector('[data-ref="closeBtn"]') as HTMLElement;
+        const closeBtn = this.el.querySelector('[data-content="dialog:close"]') as HTMLElement;
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.close());
         }

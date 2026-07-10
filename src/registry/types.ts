@@ -86,5 +86,4 @@ export interface DomainConfig {
  */
 export const SystemRegistrarName = 'system' as const;
 export const DomainRegistrarName = 'domain' as const;
-export const HtmlTemplateRegistrarName = 'html' as const;
 export const DataProcessorRegistrarName = 'data-processor' as const;

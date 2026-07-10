@@ -3,7 +3,7 @@ import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
-import type { ENTITY_ACTION, ICoreEntityManager } from '@/entity/types';
+import type { ENTITY_ACTION } from '@/entity/types';
 import type { Schema, RegistrSchema } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';

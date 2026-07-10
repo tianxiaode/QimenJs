@@ -30,7 +30,7 @@ export class SelectComponent extends ComponentBase {
 
         this.el.classList.add('q-select');
 
-        this.selectEl = this.el.querySelector('[data-ref="select"]') as HTMLSelectElement;
+        this.selectEl = this.el.querySelector('[data-content="select:field"]') as HTMLSelectElement;
 
         // 设置初始选项
         if (props?.options && this.selectEl) {

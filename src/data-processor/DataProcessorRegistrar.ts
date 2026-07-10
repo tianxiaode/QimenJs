@@ -10,7 +10,6 @@
  */
 
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
-import type { RequestContext } from '@/context';
 import type { DataProcessorHandler, DataProcessorKey, DataProcessorTag } from './types';
 import { getWeightName } from './weights';
 

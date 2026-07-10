@@ -1,11 +1,11 @@
 /**
  * 自动注册组件 HTML 模板
  *
- * 引入 @qimenjs/component 时自动执行，将组件模板注册到 HtmlTemplateRegistrar。
+ * 引入 @qimenjs/html-template 时自动执行，将组件模板注册到 HtmlTemplateRegistrar。
  * 遵循 mime 包的自动注册模式。
  */
 
-import { HtmlTemplateRegistrar } from '@qimenjs/registry';
+import { HtmlTemplateRegistrar } from './HtmlTemplateRegistrar';
 import { COMPONENT_TEMPLATES } from './presets';
 
 /**

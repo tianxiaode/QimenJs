@@ -17,7 +17,7 @@ import type { LayoutNode, HandlerConfig, StateTrigger } from '../../layout/Layou
 import type { ComposableBase } from '../ComposableBase';
 import { ABILITY_INIT_PROPS } from '../ComposableBase';
 import { ComponentRegistrar } from '../ComponentRegistrar';
-import { HtmlTemplateRegistrar } from '../../registry/registrars/HtmlTemplateRegistrar';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 
 /** 全局事件总线接口 */
 export interface GlobalEventBus {

@@ -1,4 +1,4 @@
-import { HtmlTemplateRegistrar } from '@/registry/registrars';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 
 /**
  * HTML模板注册器单元测试

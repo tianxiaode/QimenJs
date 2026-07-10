@@ -1,6 +1,10 @@
-import { HtmlTemplateRegistrarName } from '../types';
-import { RegistrarBase } from './RegistrarBase';
-import { RegistrarNotFoundError } from './errors';
+import { RegistrarBase } from '@qimenjs/registry';
+import { RegistrarNotFoundError } from '@qimenjs/registry';
+
+/**
+ * HTML模板注册器名称
+ */
+export const HtmlTemplateRegistrarName = 'html' as const;
 
 /**
  * HTML模板注册器

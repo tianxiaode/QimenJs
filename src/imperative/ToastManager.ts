@@ -4,7 +4,7 @@
  * 单例模式，管理 toast DOM 创建、模板选择、堆叠队列、定时器、动画、销毁。
  */
 
-import { HtmlTemplateRegistrar } from '@qimenjs/registry';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { OverlayRoot } from '@qimenjs/component';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@qimenjs/component';
@@ -126,18 +126,18 @@ export class ToastManager {
         overlayEl.style.pointerEvents = 'auto';
 
         // 3. 设置内容（支持 i18n: 前缀）
-        const messageEl = overlayEl.querySelector('[data-ref="message"]') as HTMLElement | null;
+        const messageEl = overlayEl.querySelector('[data-content="toast:message"]') as HTMLElement | null;
         if (messageEl) {
             messageEl.textContent = resolveI18nValue(options.message);
         }
 
-        const iconEl = overlayEl.querySelector('[data-ref="icon"]') as HTMLElement | null;
+        const iconEl = overlayEl.querySelector('[data-content="toast:icon"]') as HTMLElement | null;
         if (iconEl) {
             iconEl.textContent = TYPE_ICON_MAP[type] ?? '';
         }
 
         if (hasTitle) {
-            const titleEl = overlayEl.querySelector('[data-ref="title"]') as HTMLElement | null;
+            const titleEl = overlayEl.querySelector('[data-content="toast:text"]') as HTMLElement | null;
             if (titleEl) {
                 titleEl.textContent = resolveI18nValue(options.title!);
             }
@@ -159,7 +159,7 @@ export class ToastManager {
 
         // 8. 绑定 closeBtn 事件（ToastNotification 模板）
         if (hasTitle) {
-            const closeBtn = overlayEl.querySelector('[data-ref="closeBtn"]') as HTMLElement | null;
+            const closeBtn = overlayEl.querySelector('[data-content="toast:close"]') as HTMLElement | null;
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => handle.close());
             }

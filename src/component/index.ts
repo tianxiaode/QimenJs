@@ -38,7 +38,7 @@ export { HiddenRoot } from './HiddenRoot';
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 
 // 组件模板预注册（引入即自动注册到 HtmlTemplateRegistrar）
-export { registerComponentTemplates, COMPONENT_TEMPLATES } from './templates';
+export { registerComponentTemplates, COMPONENT_TEMPLATES } from '@qimenjs/html-template';
 
 // i18n 桥接（从 @qimenjs/events 重导出，保持向后兼容）
 export { I18nEventBridge, i18nEventBridge, type I18nEventBridgeConfig } from '@qimenjs/events';

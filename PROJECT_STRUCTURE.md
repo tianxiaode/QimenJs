@@ -21,7 +21,7 @@
 ```
 Layer 0 (基础层)  → error, logger, utils, async, runtime, crypto, i18n, context
 Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, schema
-Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern
+Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, html-template
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
 Layer 4 (应用层)  → entity, types
 UI 层             → component-core, component-abilities, component, layout, renderer, theme, imperative, permission
@@ -43,7 +43,7 @@ UI 层             → component-core, component-abilities, component, layout, r
 
 `RegistrarBase<M>` 抽象基类派生出多个单例注册器，`RegistryHub` 中央管理所有注册器。
 
-注册器类型：System, Domain, HtmlTemplate, Schema, Validator, DataProcessor, MimeType, Pattern, Component, Permission
+注册器类型：System, Domain, Schema, Validator, DataProcessor, MimeType, Pattern, Component, Permission
 
 - 关键文件：`src/registry/RegistryHub.ts`、`src/registry/registrars/RegistrarBase.ts`
 
@@ -165,7 +165,7 @@ ComposableBase.ts, DescriptorFactory.ts, types/composable.ts, index.ts
 #### `src/registry/` — 注册表中心 `@qimenjs/registry`
 ```
 RegistryHub.ts, registrars/RegistrarBase.ts, registrars/SystemRegistrar.ts
-registrars/DomainRegistrar.ts, registrars/HtmlTemplateRegistrar.ts
+registrars/DomainRegistrar.ts
 registrars/errors.ts, registrars/index.ts, types.ts, errors.ts, index.ts
 ```
 `RegistryHub` 中央注册中心，管理所有注册器，锁机制。`RegistrarBase` 抽象基类（单例, 锁, 存储）。
@@ -242,6 +242,12 @@ PatternRegistrar.ts, presets.ts, register.ts, index.ts
 ```
 命名正则模式注册，内置 19 种模式（email, url, ipv4, phone, uuid 等）。
 
+#### `src/html-template/` — HTML 模板管理 `@qimenjs/html-template`
+```
+HtmlTemplateRegistrar.ts, presets.ts, register.ts, constants.ts, index.ts
+```
+HTML 模板注册器 + 组件预设模板 + 模板常量。`HtmlTemplateRegistrar` extends RegistrarBase，懒创建 `<template>` 缓存 + cloneNode 复用。引入即自动注册 15 种组件模板。
+
 ### Layer 3 — 服务层
 
 #### `src/http/` — HTTP 客户端 `@qimenjs/http` (22 文件)
@@ -286,7 +292,7 @@ types/abilities.ts, index.ts
 #### `src/entity/` — 实体管理框架 `@qimenjs/entity` (30 文件)
 ```
 manager/CoreEntityManager.ts, manager/BaseEntityManager.ts, manager/managers.ts
-abilities/core/ — SchemaProxyAbility, CacheAbility, DirtyAbility
+abilities/core/ — SchemaProxyAbility, CacheAbility, DirtyAbility, DomainPagingAbility
 abilities/local/ — FlatLocalStateAbility, FlatLocalMutationAbility, FlatLocalDeleteAbility, LocalGetAbility, LocalListAbility
 abilities/remote/ — FlatRemoteStateAbility, FlatRemoteListAbility, FlatRemoteGetAllAbility, FlatRemoteQueryAbility, RemoteGet/Create/Update/Delete/ToggleAbility, TreeManagerAbility, TreeRemoteStateAbility
 abilities/search/ — SearchAbility
@@ -361,8 +367,6 @@ components/ — 15 种内置组件:
   FormComponent     [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility]
   DialogComponent   [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
   ColumnBase, CellBase, NumberColumn, IdColumn, CheckboxColumn
-templates/presets.ts — 15 种 HTML 模板预设
-templates/register.ts — registerComponentTemplates()
 styles/animations.ts, styles/toolbar.ts
 index.ts
 ```
@@ -401,7 +405,7 @@ PermissionRegistrar.ts, createDomainPermissions.ts, types.ts, index.ts
 
 ## 路径别名映射
 
-所有 35 个子包在 `tsconfig.json` 中配置了 `@qimenjs/*` 路径别名，例如：
+所有 36 个子包在 `tsconfig.json` 中配置了 `@qimenjs/*` 路径别名，例如：
 
 ```typescript
 import { EventBus } from '@qimenjs/events'

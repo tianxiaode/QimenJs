@@ -10,7 +10,7 @@
  * @module createOverlayManager
  */
 
-import { HtmlTemplateRegistrar } from '@qimenjs/registry';
+import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 import { nextZIndex, releaseZIndex, ZIndexLevel } from '@/component/z-index';
 import { OverlayRoot } from '@/component/OverlayRoot';
 import { capitalize } from '@/utils/string/base';
