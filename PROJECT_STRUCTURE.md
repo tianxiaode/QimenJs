@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-09，基于 v0.2.0。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-10，基于 v0.2.0。
 
 ## 项目概览
 
@@ -21,7 +21,7 @@
 ```
 Layer 0 (基础层)  → error, logger, utils, async, runtime, crypto, i18n, context
 Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, schema
-Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, html-template
+Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, template
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
 Layer 4 (应用层)  → entity, types
 UI 层             → component-core, component-abilities, component, layout, renderer, theme, imperative, permission
@@ -242,11 +242,11 @@ PatternRegistrar.ts, presets.ts, register.ts, index.ts
 ```
 命名正则模式注册，内置 19 种模式（email, url, ipv4, phone, uuid 等）。
 
-#### `src/html-template/` — HTML 模板管理 `@qimenjs/html-template`
+#### `src/template/` — 模板管理 `@qimenjs/template`
 ```
-HtmlTemplateRegistrar.ts, presets.ts, register.ts, constants.ts, index.ts
+TemplateRegistrar.ts, presets.ts, register.ts, constants.ts, index.ts
 ```
-HTML 模板注册器 + 组件预设模板 + 模板常量。`HtmlTemplateRegistrar` extends RegistrarBase，懒创建 `<template>` 缓存 + cloneNode 复用。引入即自动注册 15 种组件模板。
+模板注册器 + 组件预设模板 + 模板常量。`TemplateRegistrar` extends RegistrarBase，懒创建 `<template>` 缓存 + cloneNode 复用。引入即自动注册 15 种组件模板，同时注册到 RegistryHub（键 `'template'`）。
 
 ### Layer 3 — 服务层
 
@@ -311,23 +311,25 @@ ExecutionStep, IExecutableContext, IPipelineResult。
 
 ### UI 层
 
-#### `src/component-core/` — 组件核心层 `@qimenjs/component-core` (32 文件)
+#### `src/component-core/` — 组件核心层 `@qimenjs/component-core`
 ```
 ComponentBase.ts, ComponentManager.ts, ComponentRegistrar.ts
 ComponentEventRegistry.ts, ComponentTypes.ts
-abilities/ — PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
-           StyleAbility, ThemeAbility, EventBridgeAbility, AccessibilityAbility
-           ContentAbility, EntityCoreAbility, AnimationAbility, PermissionAbility, PropAlias.ts
+abilities/ — InitAbility, NodeMapAbility, OverlayAbility, AnimationAbility
+           EntityCoreAbility, PermissionAbility
+           PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
+           StyleAbility, ThemeAbility, EventBridgeAbility, PropAlias.ts
+           positionOverlay.ts
 interfaces/ — IRenderAbility, ILifecycleAbility, IPositionAbility, IStyleAbility
-            IThemeAbility, IEventBridgeAbility, IChildrenAbility, IContentAbility, IStateAbility
+            IThemeAbility, IEventBridgeAbility, IChildrenAbility, IStateAbility
 renderer/Renderer.ts
 index.ts
 ```
-组件基类、注册管理器、基础能力、9 阶段渲染器。
+组件基类、注册管理器、基础能力、9 阶段渲染器。ComponentBase 通过 `COMPONENT_BASE_ABILITIES` 注入 InitAbility/NodeMapAbility/OverlayAbility 等核心能力，统一 `initialize(layout)` 初始化流程。
 
-#### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities` (67 文件)
+#### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities`
 ```
-content/ — ContentAbility, ContentPrefix, createContentManager, createOverlayManager, positionOverlay, normalize
+content/ — ContentAbility, ContentPrefix（浮层逻辑已迁移到 component-core/OverlayAbility）
 data/ — ValueAbility, ValidateAbility, SubmitAbility, FieldSetAbility, PlaceholderAbility
 entity/ — EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility
           EntityLocalReadonlyAbility, EntityLocalCrudAbility
@@ -453,22 +455,20 @@ Renderer.render(layoutNode)
 
 1. **renderer 模块不完整**：`src/renderer/` 仅有 `processors/bind-children.ts`，其导入的 `RenderContext` 和 `Renderer` 类文件不存在。实际 Renderer 在 `src/component-core/renderer/Renderer.ts`。
 
-2. **AbilityBase 类缺失**：`src/component-core/abilities/` 中的 ContentAbility、AnimationAbility、EntityCoreAbility、PermissionAbility 导入了 `./AbilityBase`，但该文件不存在。
+2. **向后兼容重导出**：`component` 包从 `component-core` 和 `component-abilities` 重导出大量 API。`component-abilities` 的 `core/`、`event/`、`ui/` 子目录也从 `component-core` 重导出。
 
-3. **向后兼容重导出**：`component` 包从 `component-core` 和 `component-abilities` 重导出大量 API。`component-abilities` 的 `core/`、`event/`、`ui/` 子目录也从 `component-core` 重导出。
+3. **jest.config.ts 包含过时别名**：如 `@qimenjs/base`、`@qimenjs/core`、`@qimenjs/kernel` 等在 tsconfig.json 中已不存在的路径别名。
 
-4. **jest.config.ts 包含过时别名**：如 `@qimenjs/base`、`@qimenjs/core`、`@qimenjs/kernel` 等在 tsconfig.json 中已不存在的路径别名。
+4. **i18n 运行时**：`src/i18n/i18n.iife.js` 是预编译的 IIFE 格式运行时，通过 `<script>` 标签加载到 `window.__qimen_i18n__`。
 
-5. **i18n 运行时**：`src/i18n/i18n.iife.js` 是预编译的 IIFE 格式运行时，通过 `<script>` 标签加载到 `window.__qimen_i18n__`。
-
-6. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
+5. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
 
 ## 配置文件
 
 | 文件 | 用途 |
 |------|------|
 | `package.json` | 项目元数据、脚本、依赖 |
-| `tsconfig.json` | TypeScript 编译配置，35 个 @qimenjs/* 路径别名 |
+| `tsconfig.json` | TypeScript 编译配置，36 个 @qimenjs/* 路径别名 |
 | `tsconfig.build.json` | 构建专用配置，排除测试文件 |
 | `jest.config.ts` | Jest 测试配置，路径映射 |
 | `.eslintrc.js` | ESLint 规则 |

@@ -44,7 +44,7 @@ export type ContentPrefixType = (typeof ContentPrefix)[keyof typeof ContentPrefi
 /**
  * 浮层前缀集合
  *
- * createContentManager 通过此集合判断是否触发浮层创建。
+ * OverlayAbility 通过此集合判断是否触发浮层创建。
  * 前缀在此集合中的 contentSlot 将自动创建浮层 DOM。
  */
 export const OVERLAY_PREFIXES: ReadonlySet<string> = new Set([

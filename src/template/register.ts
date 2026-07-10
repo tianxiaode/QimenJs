@@ -1,20 +1,21 @@
 /**
- * 自动注册组件 HTML 模板
+ * 自动注册组件模板
  *
- * 引入 @qimenjs/html-template 时自动执行，将组件模板注册到 HtmlTemplateRegistrar。
- * 遵循 mime 包的自动注册模式。
+ * 引入 @qimenjs/template 时自动执行，将组件模板注册到 TemplateRegistrar，
+ * 并将 TemplateRegistrar 注册到 RegistryHub。
  */
 
-import { HtmlTemplateRegistrar } from './HtmlTemplateRegistrar';
+import { TemplateRegistrar } from './TemplateRegistrar';
+import { RegistryHub } from '@qimenjs/registry';
 import { COMPONENT_TEMPLATES } from './presets';
 
 /**
- * 注册组件模板到 HtmlTemplateRegistrar
+ * 注册组件模板到 TemplateRegistrar
  *
  * @param extra - 额外的模板映射，与 COMPONENT_TEMPLATES 合并注册
  */
 export function registerComponentTemplates(extra?: Record<string, string>): void {
-    const registrar = HtmlTemplateRegistrar.getInstance();
+    const registrar = TemplateRegistrar.getInstance();
     for (const [id, template] of Object.entries(COMPONENT_TEMPLATES)) {
         registrar.register(id, template);
     }
@@ -24,6 +25,9 @@ export function registerComponentTemplates(extra?: Record<string, string>): void
         }
     }
 }
+
+// 将 TemplateRegistrar 注册到 RegistryHub
+RegistryHub.use(TemplateRegistrar.getInstance());
 
 // 自动注册组件模板
 registerComponentTemplates();

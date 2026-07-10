@@ -4,7 +4,7 @@
  * 单例模式，管理 toast DOM 创建、模板选择、堆叠队列、定时器、动画、销毁。
  */
 
-import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
+import { TemplateRegistrar } from '@qimenjs/template';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { OverlayRoot } from '@qimenjs/component';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@qimenjs/component';
@@ -113,7 +113,7 @@ export class ToastManager {
 
         // 1. 选择模板
         const templateId = hasTitle ? 'ToastNotification' : 'Toast';
-        const template = HtmlTemplateRegistrar.getInstance().get(templateId);
+        const template = TemplateRegistrar.getInstance().get(templateId);
 
         // 2. 创建 toast DOM 容器
         const overlayEl = document.createElement('div');

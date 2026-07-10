@@ -22,14 +22,11 @@ export { DisableAbility } from './ui';
 export { LoadingAbility } from './ui';
 export { SizeAbility } from './ui';
 
-// 内容管理
-export { ContentAbility, type ContentSlotsDecl } from './content';
-export { createContentManager, I18N_PREFIX } from './content';
-export type { ContentManagerConfig } from './content';
-export { ContentPrefix, OVERLAY_PREFIXES, type ContentPrefixType } from './content';
-export { createOverlayManager } from './content';
-export type { OverlayManagerConfig, OverlayManagerResult } from './content';
-export { positionOverlay, type Placement } from './content';
+// 内容管理（已迁移到 component-core，此处保留重导出以兼容）
+export { ContentAbility, type ContentSlotsDecl } from './content/ContentAbility';
+export { ContentPrefix, OVERLAY_PREFIXES, type ContentPrefixType } from './content/ContentPrefix';
+export { positionOverlay, type Placement } from '@qimenjs/component-core';
+export { I18N_PREFIX } from '@qimenjs/i18n';
 
 // 数据能力
 export { ValueAbility } from './data';
@@ -84,3 +81,6 @@ export { SearchAbility as ToolbarSearchAbility, SEARCH_POSITIONS } from './toolb
 
 // 兼容导出：EventBindingAbility 已废弃，由 system-abilities 的 EventAbility + DomEventsAbility 替代
 export { EventBindingAbility } from './event';
+
+// 元素事件绑定能力
+export { ElementEventAbility } from './event';

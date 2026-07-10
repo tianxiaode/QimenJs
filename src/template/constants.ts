@@ -10,7 +10,7 @@
  *
  * @example
  * ```typescript
- * import { Slot } from '@qimenjs/html-template';
+ * import { Slot } from '@qimenjs/template';
  *
  * // 模板中
  * `<span data-content="${Slot.INPUT_LABEL}"></span>`
@@ -96,6 +96,36 @@ export const Name = {
 } as const;
 
 export type NameType = (typeof Name)[keyof typeof Name];
+
+// ─── DOM 事件类型（data-event / data-emit） ───
+
+/** DOM 事件常量 — 用于 data-event（内部事件）和 data-emit（外部事件）属性声明 */
+export const Event = {
+    /** 点击 */
+    CLICK: 'click',
+    /** 输入 */
+    INPUT: 'input',
+    /** 值变更 */
+    CHANGE: 'change',
+    /** 滚动 */
+    SCROLL: 'scroll',
+    /** 提交 */
+    SUBMIT: 'submit',
+    /** 获得焦点 */
+    FOCUS: 'focus',
+    /** 失去焦点 */
+    BLUR: 'blur',
+    /** 按键按下 */
+    KEYDOWN: 'keydown',
+    /** 按键抬起 */
+    KEYUP: 'keyup',
+    /** 鼠标进入 */
+    MOUSEENTER: 'mouseenter',
+    /** 鼠标离开 */
+    MOUSELEAVE: 'mouseleave',
+} as const;
+
+export type EventType = (typeof Event)[keyof typeof Event];
 
 // ─── 组合插槽常量（prefix:name） ───
 

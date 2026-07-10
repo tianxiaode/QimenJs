@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-08
+> 最后更新：2026-07-10
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -92,7 +92,7 @@ interface IRenderAbility {
 ```
 
 - `el` 创建在 constructor 中（`document.createElement`），不经过 `__initProps`
-- 模板注入在 `__initProps` 中（从 HtmlTemplateRegistrar 获取 → `el.innerHTML`）
+- 模板注入在 `__initProps` 中（从 TemplateRegistrar 获取 → `el.innerHTML`）
 - `reinitElement` 切换模板时使用，修复了旧版修改 static templateId 的 bug
 
 #### ILifecycleAbility — 生命周期能力
@@ -173,17 +173,10 @@ interface IThemeAbility {
 }
 ```
 
-#### IContentAbility — 内容能力
+#### IContentAbility — 内容能力（已移除）
 
-```typescript
-interface IContentAbility {
-    /** 更新所有内容位的 i18n 翻译 */
-    updateAllI18n(): void;
-
-    /** 获取所有 i18n 原始 key */
-    getI18nKeys(): Record<string, Record<string, string>>;
-}
-```
+> IContentAbility 接口已删除。i18n 刷新功能由 NodeMapAbility 的 `refreshI18n()`/`getI18nKeys()` 提供，
+> 浮层管理由 OverlayAbility 的 `createOverlay()`/`initTooltipOverlay()` 提供。
 
 #### IEventBridgeAbility — 事件桥接能力
 
@@ -412,17 +405,14 @@ class RootComponent extends ComponentBase {
 
 | 工具 | 文件 | 说明 |
 |------|------|------|
-| createContentManager | `createContentManager.ts` | 工厂方法，根据 names 数组管理内容项 |
+| ContentAbility | `ContentAbility.ts` | 浮层内容位管理（dropdown/popover），调用 OverlayAbility.createOverlay |
+| ContentPrefix | `ContentPrefix.ts` | 内容前缀常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合 |
 
-**ContentManager 模式**：
-
-- 组件通过 `static icons = ['default']` / `static texts = ['default']` 声明内容项
-- 能力（IconAbility/TextAbility）在 `__initProps` 中调用 `createContentManager`
-- ContentManager 从容器中查找 `data-content` 标记的元素，或自动创建
-- 分配唯一 id（`string.getId`），存入 `abilityState` 自动销毁
-- 自动生成闭包方法绑定到 host（`set[Name][Prefix]` / `get` / `show` / `hide` / `setClass` 等）
-- 单项 `default` 时生成简化方法（`setIcon` / `setText` + 属性）
-- 运行时通过 `getElementById` 查找元素，不固化引用，销毁无泄漏
+> `createContentManager`、`createOverlayManager`、`positionOverlay`、`normalize` 已迁移：
+> - 浮层逻辑 → `src/component-core/abilities/OverlayAbility.ts`
+> - 定位工具 → `src/component-core/abilities/positionOverlay.ts`
+> - i18n 刷新 → `src/component-core/abilities/NodeMapAbility.ts`（data-i18n + refreshI18n）
+> - tooltip → `OverlayAbility.initTooltipOverlay()`（配置驱动，LayoutNode.tooltip）
 
 ### 2.2 数据能力 (`src/component-abilities/data/`)
 
@@ -517,10 +507,17 @@ class RootComponent extends ComponentBase {
 
 | 能力 | 文件 | 说明 |
 |------|------|------|
+| InitAbility | `InitAbility.ts` | 统一初始化流程（initialize/initConfig/initContent/assignProps/bindEvents） |
+| NodeMapAbility | `NodeMapAbility.ts` | 模板节点扫描、属性生成、data-i18n + refreshI18n 集中刷新 |
+| OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay/initTooltipOverlay） |
+| AnimationAbility | `AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
+| EntityCoreAbility | `EntityCoreAbility.ts` | EntityManager 实例声明 |
+| PermissionAbility | `PermissionAbility.ts` | 权限控制 |
 | ThemeAbility | `ThemeAbility.ts` | 主题样式 |
 | StyleAbility | `StyleAbility.ts` | 自定义样式 |
 | EventBridgeAbility | `EventBridgeAbility.ts` | 声明式事件桥接 |
 | PropAlias | `PropAlias.ts` | 属性别名与初始化协议 |
+| positionOverlay | `positionOverlay.ts` | 浮层定位工具函数（4方向定位、自动翻转、视口约束） |
 
 ---
 
@@ -731,3 +728,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | 工具栏重构：ToolbarAbility 新增外观声明（q-toolbar 类名 + role="toolbar" + 默认 gap=sm）和折叠切换（collapsed 属性 + toggleCollapsed 方法 + toolbarcollapsechange 事件）；ToolbarComponent 移除硬编码 PaginationAbility/CrudAbility/SearchAbility（改为 meta.abilities 按需注入），新增 direction 属性支持横/竖布局；新增 IconComponent（IconAbility + SizeAbility）和 TextComponent（TextAbility + SizeAbility）预置组件；新增 ComponentTypes.ICON/TEXT；新增 toolbarCSS 折叠样式 |
 | 2026-07-08 | 浮层能力：新增 ContentPrefix 常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合；新增 createOverlayManager 工厂方法（模板获取、DOM 创建、定位计算、生命周期管理）；新增 positionOverlay 定位工具函数（4方向定位、自动翻转、视口约束）；createContentManager 检测浮层前缀时自动调用 createOverlayManager；新增 Tips/Dropdown/Popover 模板；现有组件 contentSlots 迁移为 ContentPrefix 常量引用 |
 | 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IEventBridgeAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |
+| 2026-07-10 | ComponentBase 能力重构：InitAbility/NodeMapAbility/OverlayAbility 从 ComponentBase 拆分为 AbilityDefinition；AnimationAbility/EntityCoreAbility/PermissionAbility 从 AbilityBase 类模式改为 AbilityDefinition 对象模式；删除 AbilityBase（文件不存在）；删除 IContentAbility 接口（功能分散到 NodeMapAbility/OverlayAbility）；content 目录精简（createContentManager/createOverlayManager/positionOverlay/normalize 已迁移）；html-template 包重命名为 template（HtmlTemplateRegistrar → TemplateRegistrar，@qimenjs/html-template → @qimenjs/template，RegistryHub 键 'html' → 'template'） |

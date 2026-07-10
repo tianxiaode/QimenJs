@@ -18,7 +18,6 @@ export type { IEventBridgeAbility } from './IEventBridgeAbility';
 
 export type { IChildrenAbility } from './IChildrenAbility';
 export type { IStateAbility } from './IStateAbility';
-export type { IContentAbility } from './IContentAbility';
 
 // ── 系统能力接口（来自 @qimenjs/system-abilities） ──
 // IEventAbility、IDomEventsAbility 已在 system-abilities/interfaces 中定义

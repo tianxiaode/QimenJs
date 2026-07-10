@@ -33,7 +33,7 @@ render(layout: LayoutNode, parentEl?: HTMLElement)
   │   ├─ if (layout.tag) component.tag = layout.tag
   │   ├─ component.initElement()
   │   │   ├─ document.createElement(this.tag)
-  │   │   ├─ 从 RegistryHub 获取 HtmlTemplateRegistrar，用 this.type 查模板
+  │   │   ├─ 从 RegistryHub 获取 TemplateRegistrar，用 this.type 查模板
   │   │   ├─ el.appendChild(fragment)
   │   │   └─ buildContentMap() — 查询 data-content 元素，按语义前缀分层缓存
   │   └─ contentMap 结构：data-content="header:text" → contentMap.header.text = el
@@ -124,7 +124,7 @@ component.initElement();
 
 `initElement` 内部流程（无参数，自行从 RegistryHub 获取模板）：
 1. `document.createElement(this.tag)` 创建根元素
-2. 从 `RegistryHub` 获取 `HtmlTemplateRegistrar`，用 `this.type` 查模板
+2. 从 `RegistryHub` 获取 `TemplateRegistrar`，用 `this.type` 查模板
 3. 如有模板，`el.appendChild(fragment)` 注入
 4. `buildContentMap()` 查询所有 `data-content` 元素，按语义前缀分层缓存到 `this.contentMap`
 
@@ -329,7 +329,7 @@ if (layout.lifecycle?.onMounted) {
 
 ### 5.1 模板机制
 
-模板存储在 `HtmlTemplateRegistrar` 中，以 HTML 字符串形式注册，首次使用时创建 `<template>` 缓存，后续通过 `cloneNode(true)` 返回 DocumentFragment。
+模板存储在 `TemplateRegistrar` 中，以 HTML 字符串形式注册，首次使用时创建 `<template>` 缓存，后续通过 `cloneNode(true)` 返回 DocumentFragment。
 
 模板不含外层根元素（外层由组件创建），只包含内部结构。
 

@@ -2,9 +2,7 @@
  * 浮层定位工具函数
  *
  * 根据锚点元素计算浮层的绝对定位，支持自动翻转和视口约束。
- * 独立于 createOverlayManager，可单独测试和复用。
- *
- * @module positionOverlay
+ * 独立于 OverlayAbility，可单独测试和复用。
  */
 
 import type { Rect } from '@/utils/geometry/types';
@@ -38,11 +36,6 @@ function getViewportRect(): Rect {
 
 /**
  * 根据弹出方向计算浮层对齐后的 Rect
- *
- * @param overlayRect - 浮层矩形
- * @param anchorRect - 锚点矩形
- * @param placement - 弹出方向
- * @param offset - 间距
  */
 function alignByPlacement(
     overlayRect: Rect,
@@ -54,25 +47,21 @@ function alignByPlacement(
 
     switch (placement) {
         case 'bottom':
-            // 水平居中对齐锚点，垂直方向在锚点下方
             result = alignCenterX(result, anchorRect);
             result = { ...result, y: anchorRect.y + anchorRect.height + offset };
             break;
 
         case 'top':
-            // 水平居中对齐锚点，垂直方向在锚点上方
             result = alignCenterX(result, anchorRect);
             result = { ...result, y: anchorRect.y - result.height - offset };
             break;
 
         case 'right':
-            // 垂直居中对齐锚点，水平方向在锚点右侧
             result = alignCenterY(result, anchorRect);
             result = { ...result, x: anchorRect.x + anchorRect.width + offset };
             break;
 
         case 'left':
-            // 垂直居中对齐锚点，水平方向在锚点左侧
             result = alignCenterY(result, anchorRect);
             result = { ...result, x: anchorRect.x - result.width - offset };
             break;
@@ -126,24 +115,19 @@ export function positionOverlay(
     const overlayRect = toRect(overlayEl);
     const viewport = getViewportRect();
 
-    // 按指定方向计算定位
     let aligned = alignByPlacement(overlayRect, anchorRect, placement, offset);
 
-    // 自动翻转：如果超出视口，尝试翻转到对侧
     if (flip && isOverflowing(aligned, viewport)) {
         const flippedPlacement = flipPlacement(placement);
         const flipped = alignByPlacement(overlayRect, anchorRect, flippedPlacement, offset);
 
-        // 如果翻转后不超出视口，或比原方向溢出更少，则使用翻转结果
         if (!isOverflowing(flipped, viewport)) {
             aligned = flipped;
         }
     }
 
-    // 视口约束：确保浮层不超出视口
     aligned = keepInside(aligned, viewport);
 
-    // 应用定位到 DOM
     overlayEl.style.left = `${aligned.x}px`;
     overlayEl.style.top = `${aligned.y}px`;
 }

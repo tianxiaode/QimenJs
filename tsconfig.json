@@ -44,7 +44,7 @@
       "@qimenjs/i18n": ["src/i18n"],
       "@qimenjs/mime": ["src/mime"],
       "@qimenjs/pattern": ["src/pattern"],
-      "@qimenjs/html-template": ["src/html-template"],
+      "@qimenjs/template": ["src/template"],
       "@qimenjs/data-processor-abp": ["src/data-processor-abp"],
       "@qimenjs/data-processor-spring": ["src/data-processor-spring"],
       "@qimenjs/oauth2": ["src/oauth2"],

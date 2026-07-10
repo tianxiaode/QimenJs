@@ -196,10 +196,10 @@ export interface AccessibilityProps {
 /**
  * 实体管理配置
  *
- * Layout 中只需指定使用哪个 EntityManager，Manager 自身已包含 domain/schema/type 等全部配置。
- * 渲染时由 EntityCoreAbility 从注册表中查找或实例化对应的 Manager。
+ * Layout 中直接传入 EntityManager 派生类，初始化时 new 创建实例。
+ * Manager 自身已包含 domain/schema/type 等全部配置。
  *
- * Manager 类型对应 managers.ts 中的 4 种派生类：
+ * Manager 类型对应 managers.ts 中的 5 种派生类：
  * - LocalReadonlyEntityManager：本地只读（list/get/refresh/filter/sort）
  * - LocalCrudEntityManager：本地 CRUD（+ create/update/delete/save/toggle）
  * - RemoteReadonlyEntityManager：远程只读（+ 分页导航 prev/next/jump/changeSize）
@@ -208,27 +208,30 @@ export interface AccessibilityProps {
  *
  * @example
  * ```js
- * {
- *     type: ComponentTypes.TABLE,
- *     entity: 'UserManager',              // 字符串：从 EntityManagerRegistrar 查找
+ * import { RemoteCrudEntityManager } from '@qimenjs/entity';
+ *
+ * class UserManager extends RemoteCrudEntityManager {
+ *     entityName = 'User';
+ *     url = '/api/users';
+ *     schema = { ... };
  * }
+ *
  * {
  *     type: ComponentTypes.TABLE,
- *     entity: UserManager,                // 类引用：直接使用 Manager 派生类
+ *     entity: UserManager,                // 类引用：直接 new UserManager()
  * }
  * ```
  */
 export interface EntityProps {
     /**
-     * 实体管理器引用
+     * 实体管理器类引用
      *
-     * 支持两种形式：
-     * - 字符串：从 EntityManagerRegistrar 中按名称查找已注册的 Manager
-     * - 类引用：直接传入 LocalReadonlyEntityManager / LocalCrudEntityManager /
-     *           RemoteReadonlyEntityManager / RemoteCrudEntityManager /
-     *           RemoteTreeEntityManager 的派生类
+     * 直接传入 managers.ts 中的派生类（LocalReadonlyEntityManager /
+     * LocalCrudEntityManager / RemoteReadonlyEntityManager /
+     * RemoteCrudEntityManager / RemoteTreeEntityManager 的子类），
+     * 初始化时 new 创建实例。
      */
-    entity?: string | (new (...args: any[]) => any);
+    entity?: new (...args: any[]) => any;
 }
 
 /**
@@ -440,6 +443,24 @@ export interface PositionProps {
 export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, AnimationProps, PermissionProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
+
+    /**
+     * 模板ID — 指定组件使用的 HTML 模板
+     *
+     * 默认用 type 从 TemplateRegistrar 查找模板。
+     * 当同一组件类型需要不同模板时（如 Input 有普通/搜索/密码等多种样式），
+     * 通过 template 覆盖默认的 type 查找。
+     *
+     * @example
+     * ```js
+     * // 默认：用 type='Input' 查找模板
+     * { type: ComponentTypes.INPUT }
+     *
+     * // 指定模板：用 template='InputSearch' 查找模板
+     * { type: ComponentTypes.INPUT, template: 'InputSearch' }
+     * ```
+     */
+    template?: string;
 
     /** 根元素标签名，覆盖组件类默认的 static tag */
     tag?: string;

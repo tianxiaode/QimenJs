@@ -4,3 +4,4 @@ export { EventBridgeAbility } from '@qimenjs/component-core';
 export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SelectionBridgeConfig, CustomBridgeConfig } from '@qimenjs/component-core';
 
 export { EventBindingAbility } from './EventBindingAbility';
+export { ElementEventAbility } from './ElementEventAbility';

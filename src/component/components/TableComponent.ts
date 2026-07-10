@@ -1,13 +1,16 @@
 /**
  * TableComponent 表格组件
  *
- * abilities: [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
+ * abilities: [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
  * 支持虚拟列表、排序、列定义、列管理、选择、事件桥接（基类已包含 EventBridgeAbility）
+ * ElementEventAbility 自动绑定模板中 data-event 声明的事件
  *
- * 模板由 initElement 从 HtmlTemplateRegistrar 注入，包含 header 和 body 容器。
+ * 事件处理（由 ElementEventAbility 自动绑定）：
+ * - onBodyScroll — table:bodyScroll 的 scroll 事件（方法名从 data-content 推导）
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
+import { ElementEventAbility } from '@qimenjs/component-abilities';
 import { EntityAbility } from '@qimenjs/component-abilities';
 import { VirtualListAbility } from '@qimenjs/component-abilities';
 import { SortAbility } from '@qimenjs/component-abilities';
@@ -17,7 +20,7 @@ import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
 
 export class TableComponent extends ComponentBase {
-    static readonly abilities = [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
+    static readonly abilities = [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
 
     /** 行高（虚拟列表用） */
     private _rowHeight: number = 40;
@@ -31,20 +34,10 @@ export class TableComponent extends ComponentBase {
     /** 滚动位置 */
     private _scrollTop: number = 0;
 
-    /** 表头元素 */
-    private headerEl: HTMLElement | null = null;
-
-    /** 表体容器 */
-    private bodyEl: HTMLElement | null = null;
-
     constructor(props?: Record<string, any>) {
         super(props);
 
         this.el.classList.add('q-table');
-
-        // 查找模板注入的元素
-        this.headerEl = this.el.querySelector('[data-content="table:headerRow"]') as HTMLElement;
-        this.bodyEl = this.el.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
 
         // 设置初始属性
         if (props?.rowHeight) this._rowHeight = props.rowHeight;
@@ -52,16 +45,23 @@ export class TableComponent extends ComponentBase {
         if (props?.columns) this.columns = props.columns;
 
         // 设置容器高度
-        if (this.bodyEl) {
-            this.bodyEl.style.height = `${this._containerHeight}px`;
-            this.bodyEl.addEventListener('scroll', () => {
-                this._scrollTop = this.bodyEl!.scrollTop;
-                this.renderRows();
-            });
+        const bodyEntry = this.nodeMap['table']?.['bodyScroll'];
+        if (bodyEntry?.el) {
+            bodyEntry.el.style.height = `${this._containerHeight}px`;
         }
 
         // 渲染表头
         this.renderHeader();
+    }
+
+    /**
+     * table:bodyScroll 的 scroll 事件处理
+     * 由 ElementEventAbility 自动绑定（模板中 data-event="scroll"）
+     * 方法名从 data-content="table:bodyScroll" 推导：单 group → onBodyScroll
+     */
+    onBodyScroll(_event: Event, el: HTMLElement): void {
+        this._scrollTop = el.scrollTop;
+        this.renderRows();
     }
 
     /** rowHeight getter/setter */
@@ -99,10 +99,11 @@ export class TableComponent extends ComponentBase {
 
     /** 渲染表头（使用 textContent 避免 XSS，支持列配置） */
     private renderHeader(): void {
-        if (!this.headerEl) return;
+        const headerEl = this.nodeMap['table']?.['headerRow']?.el;
+        if (!headerEl) return;
 
         const cols = this.getVisibleColumns?.() || this.columns || [];
-        this.headerEl.innerHTML = '';
+        headerEl.innerHTML = '';
 
         const rowEl = document.createElement('div');
         rowEl.className = 'q-table__header-row q-flex';
@@ -122,12 +123,13 @@ export class TableComponent extends ComponentBase {
             rowEl.appendChild(cellEl);
         }
 
-        this.headerEl.appendChild(rowEl);
+        headerEl.appendChild(rowEl);
     }
 
     /** 渲染行（使用 ColumnAbility 的格式化/条件显隐/条件禁用） */
     private renderRows(): void {
-        if (!this.bodyEl) return;
+        const bodyEl = this.nodeMap['table']?.['bodyScroll']?.el;
+        if (!bodyEl) return;
 
         const data = this.mgr?.items || [];
         const cols = this.columns || [];
@@ -136,13 +138,13 @@ export class TableComponent extends ComponentBase {
         const end = Math.min(start + count, data.length);
 
         // 设置总高度占位
-        this.bodyEl.style.position = 'relative';
-        this.bodyEl.innerHTML = '';
+        bodyEl.style.position = 'relative';
+        bodyEl.innerHTML = '';
 
         const spacer = document.createElement('div');
         spacer.style.height = `${this.totalHeight}px`;
         spacer.style.position = 'relative';
-        this.bodyEl.appendChild(spacer);
+        bodyEl.appendChild(spacer);
 
         // 渲染可见行
         for (let i = start; i < end; i++) {

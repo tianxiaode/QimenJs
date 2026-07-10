@@ -6,15 +6,30 @@
  * - el：根 DOM 元素
  * - meta：组件元数据
  * - setProp：通用属性设置
- *
- * 渲染器仍可通过 setupAbilityDefinition 注入 LayoutNode.abilities。
+ * - initialize(layout)：统一初始化流程（由 InitAbility 提供）
+ * - buildNodeMap()：模板节点扫描（由 NodeMapAbility 提供）
  */
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { EventAbility, DomEventsAbility } from '@/system-abilities';
 import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
+import { InitAbility } from './abilities/InitAbility';
+import { NodeMapAbility } from './abilities/NodeMapAbility';
+import { OverlayAbility } from './abilities/OverlayAbility';
+import { TemplateRegistrar } from '@qimenjs/template';
 import { RegistryHub } from '@/registry/RegistryHub';
-import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
+import type { LayoutNode } from '@/layout/LayoutNode';
+import { ComponentManager } from './ComponentManager';
+
+// 重导出类型，保持外部导入路径不变
+export type {
+    InternalEventBinding,
+    ExternalEventMap,
+    EventMap,
+    NodeMetadata,
+    NodeIndexPath,
+    NodeTemplateMeta,
+} from './types';
 
 /**
  * 标准能力声明
@@ -23,19 +38,34 @@ import { HtmlTemplateRegistrar } from '@qimenjs/html-template';
 export const COMPONENT_BASE_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility, DomEventsAbility,
     PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
+    InitAbility, NodeMapAbility, OverlayAbility,
 ];
 
 /**
  * ComponentBase — 继承自带标准能力的 ComposableBase
- *
- * InferAbilities 自动从能力数组推导接口，无需 export interface。
  */
 export class ComponentBase extends ComposableBase.with(COMPONENT_BASE_ABILITIES) {
+    /**
+     * 是否为多区域组件
+     *
+     * - false（默认）：单区域，属性名/方法名用 name（如 icon, onField）
+     * - true：多区域，属性名/方法名用 group + Name（如 dialogHeader, onDialogClose）
+     */
+    static isMultiArea: boolean = false;
+
     /** 根元素标签名，子类可 override */
     tag: string = 'div';
 
-    /** 组件类型，由渲染器在阶段 1 设置 */
+    /** 组件类型 */
     type!: string;
+
+    /**
+     * 模板ID — 指定组件使用的 HTML 模板
+     *
+     * 默认用 type 从 TemplateRegistrar 查找模板。
+     * 当同一组件类型需要不同模板时，通过 template 覆盖。
+     */
+    template?: string;
 
     /** 根 DOM 元素 */
     el!: HTMLElement;
@@ -50,68 +80,54 @@ export class ComponentBase extends ComposableBase.with(COMPONENT_BASE_ABILITIES)
     dirtySet: Set<string> = new Set();
 
     /**
-     * data-content 查询结果缓存，按冒号前缀分层
+     * 初始化阶段标记
+     *
+     * initialize() 执行期间为 true，此时 setProp 只存值不触发 markDirty/flush。
      */
-    contentMap: Record<string, Record<string, HTMLElement>> = {};
+    _initializing: boolean = false;
+
+    /**
+     * 模板节点元信息缓存，按冒号前缀分层
+     *
+     * 结构：nodeMap[group][name] = NodeMetadata
+     */
+    nodeMap: Record<string, Record<string, import('./types').NodeMetadata>> = {};
+
+    /**
+     * 事件映射 — 内部事件 + 外部事件
+     */
+    eventMap: import('./types').EventMap = { internal: [], external: {} };
 
     // ─── 元素初始化 ──
 
     /**
-     * 创建根 DOM 元素 + 注入模板 + 查询 data-content 缓存
-     * 渲染器阶段 2 调用，从 RegistryHub 获取模板片段
+     * 创建根 DOM 元素 + 注入模板 + buildNodeMap
+     *
+     * 模板查找优先级：this.template > this.type
      */
     initElement(): void {
         this.el = document.createElement(this.tag);
 
-        const templateRegistrar = RegistryHub.get<HtmlTemplateRegistrar>('html');
+        const templateRegistrar = RegistryHub.get<TemplateRegistrar>('template');
         if (templateRegistrar) {
+            const templateId = this.template || this.type;
             try {
-                const fragment = templateRegistrar.getFragment(this.type);
+                const fragment = templateRegistrar.getFragment(templateId);
                 this.el.appendChild(fragment);
-                this.buildContentMap();
+                this.buildNodeMap();
             } catch {
                 // 没有注册模板，跳过
             }
         }
     }
 
-    /**
-     * 查询所有 data-content 元素，按冒号前缀分层缓存
-     */
-    buildContentMap(): void {
-        const els = Array.from(this.el.querySelectorAll('[data-content]'));
-        if (els.length === 0) return;
-
-        for (const el of els) {
-            const htmlEl = el as HTMLElement;
-            const value = htmlEl.getAttribute('data-content')!;
-
-            const colonIndex = value.indexOf(':');
-            if (colonIndex === -1) {
-                if (!this.contentMap[value]) this.contentMap[value] = {};
-                this.contentMap[value]['_'] = htmlEl;
-            } else {
-                const group = value.slice(0, colonIndex);
-                const key = value.slice(colonIndex + 1);
-                if (!this.contentMap[group]) this.contentMap[group] = {};
-                this.contentMap[group][key] = htmlEl;
-            }
-        }
-    }
-
     // ─── dirty 追踪 + 延时刷新 ──
 
-    /**
-     * 标记某个 key 为脏，触发延时刷新
-     */
     markDirty(key: string): void {
         this.dirtySet.add(key);
         this.debounce('ComponentBase:flush', () => this.flush(), 0);
     }
 
-    /**
-     * 统一刷新所有脏属性到 DOM
-     */
     flush(): void {
         if (this.dirtySet.size === 0) return;
 
@@ -128,21 +144,29 @@ export class ComponentBase extends ComposableBase.with(COMPONENT_BASE_ABILITIES)
 
     /**
      * 统一属性设置入口
+     *
+     * 初始化阶段只存值不触发 markDirty/flush。
      */
     setProp(key: string, value: any): void {
         this.props[key] = value;
-        this.markDirty(key);
+        if (!this._initializing) {
+            this.markDirty(key);
+        }
     }
 
     // ─── 销毁 ──
 
     override dispose(): void {
+        ComponentManager.getInstance().unregister(this);
+
         this.el?.remove();
 
         this.meta = {};
         this.props = {};
         this.dirtySet.clear();
-        this.contentMap = {};
+        this.nodeMap = {};
+        this.eventMap = { internal: [], external: {} };
+        this._initializing = false;
 
         super.dispose();
     }

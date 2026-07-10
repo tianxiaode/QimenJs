@@ -6,6 +6,7 @@
 
 // 组件基类
 export { ComponentBase } from './ComponentBase';
+export type { NodeMetadata, InternalEventBinding, ExternalEventMap, EventMap, NodeIndexPath, NodeTemplateMeta } from './types';
 
 // 注册管理器
 export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistrar';
@@ -24,3 +25,7 @@ export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, Selec
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 export type { PropAliasMap } from './abilities/PropAlias';
+
+// 浮层定位
+export { positionOverlay } from './abilities/positionOverlay';
+export type { Placement } from './abilities/positionOverlay';

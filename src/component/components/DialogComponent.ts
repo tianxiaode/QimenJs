@@ -1,44 +1,44 @@
 /**
  * DialogComponent 弹窗组件
  *
- * abilities: [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
+ * abilities: [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
  * ContentAbility 管理标题文本
+ * ElementEventAbility 自动绑定模板中 data-event 声明的事件
+ *
+ * 事件处理（由 ElementEventAbility 自动绑定）：
+ * - onClose — dialog:close 的 click 事件（方法名从 data-content 推导）
  */
 
 import { ComponentBase } from '@qimenjs/component-core';
-import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
+import { ContentAbility, ContentPrefix, ElementEventAbility } from '@qimenjs/component-abilities';
 import { OpenableAbility } from '@qimenjs/component-abilities';
 import { OverlayAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
 
 export class DialogComponent extends ComponentBase {
-    static readonly abilities = [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
+    static readonly abilities = [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
 
     static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['title'],
     };
 
     private _zIndex: number = 0;
-    private headerEl: HTMLElement | null = null;
-    private bodyEl: HTMLElement | null = null;
-    private footerEl: HTMLElement | null = null;
 
     constructor(props?: Record<string, any>) {
         super(props);
 
         this.el.classList.add('q-dialog');
         this.el.style.display = 'none';
+    }
 
-        this.headerEl = this.el.querySelector('[data-content="dialog:header"]') as HTMLElement;
-        this.bodyEl = this.el.querySelector('[data-content="dialog:body"]') as HTMLElement;
-        this.footerEl = this.el.querySelector('[data-content="dialog:footer"]') as HTMLElement;
-
-        // 关闭按钮
-        const closeBtn = this.el.querySelector('[data-content="dialog:close"]') as HTMLElement;
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.close());
-        }
+    /**
+     * dialog:close 的 click 事件处理
+     * 由 ElementEventAbility 自动绑定（模板中 data-event="click"）
+     * 方法名从 data-content="dialog:close" 推导：单 group → onClose
+     */
+    onClose(): void {
+        this.close();
     }
 
     /**

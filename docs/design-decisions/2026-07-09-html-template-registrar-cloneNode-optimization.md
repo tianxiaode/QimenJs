@@ -1,6 +1,6 @@
-# HtmlTemplateRegistrar cloneNode 优化
+# TemplateRegistrar cloneNode 优化 + 原型预热
 
-> 日期：2026-07-09
+> 日期：2026-07-09（初版） | 2026-07-10（追加原型预热）
 
 ## 1. 背景
 
@@ -9,16 +9,26 @@
 **每次创建组件实例，都要重复执行：**
 1. HTML 字符串解析（`innerHTML` 赋值触发浏览器 HTML parser 构建完整 DOM 树）
 2. DOM 树遍历查询锚点（`querySelectorAll` / `querySelector`）
+3. 事件属性读取（`getAttribute('data-event')` / `getAttribute('data-emit')`）
+4. 内容属性定义（`Object.defineProperty` 在实例上定义 getter/setter）
 
 对于频繁创建的组件（如 Table 行、Toast、Dropdown），这些开销是可避免的。
 
 ## 2. 决策
 
+### 2.1 cloneNode 优化（已实施）
+
 在 `HtmlTemplateRegistrar` 中新增 `getFragment(id)` 方法：
 
 - `register` 时预创建 `<template>` 元素缓存，跳过运行时 HTML 解析
 - `getFragment` 返回 `tpl.content.cloneNode(true)` 的 `DocumentFragment`
-- 锚点查询（`querySelectorAll` / `querySelector`）保持在组件层，不在注册器层缓存
+
+### 2.2 原型预热优化（已实施）
+
+在 `ComponentBase.buildNodeMap()` 中实现原型预热：
+
+- **首次实例化**：走完整路径（querySelectorAll + 生成索引表 + 模板元数据 + 原型属性），将结果存到类原型
+- **后续实例化**：用索引表 + `el.children` 直接定位节点，跳过 querySelectorAll；从模板元数据读取事件信息，跳过 getAttribute；getter/setter 已在原型上，跳过 Object.defineProperty
 
 ## 3. 原因
 
@@ -27,30 +37,47 @@
 - `<template>.content` 天然是 `DocumentFragment`，不会触发渲染、不加载图片/脚本
 - `div` 作为缓存容器，如果挂载到 document 会触发副作用；不挂载则 `innerHTML` 解析行为可能与实际 DOM 环境有差异（如 `<td>` 等元素会被修正）
 
-### 3.2 为什么锚点查询保持在组件层
+### 3.2 为什么最终采用了路径索引方案
 
-讨论中考虑了三种方案：
+最初评估时认为路径索引是"过度优化"（方案 B），但后续实践发现：
 
-| 方案 | innerHTML 解析 | querySelectorAll | 实现复杂度 | 评估 |
-|------|---------------|-----------------|-----------|------|
-| 现状 | 每次解析 | 每次查询 | - | - |
-| A: cloneNode + 缓存选择器 | 消除 | 每次查询（挪了位置） | 低 | 无实际收益 |
-| B: cloneNode + 路径索引 | 消除 | O(1) 索引 | 中 | 过度优化 |
-| C: cloneNode，锚点不变 | 消除 | 每次查询 | 低 | **推荐** |
+1. **Table 行组件场景**：表格可能有数百行，每行都是独立组件实例。querySelectorAll 在高频实例化时开销不可忽略
+2. **路径索引的"心智负担"问题不存在**：索引表由框架自动生成和维护，开发者无需手动编写。模板结构变化时，只需清除原型缓存，下次实例化自动重建
+3. **原型预热是零成本抽象**：首次实例化生成的东西（索引表、模板元数据、getter/setter）存到原型后，后续实例直接继承，不增加 API 复杂度
 
-**方案 A**：缓存 CSS 选择器字符串，克隆后还是要 `querySelector`，和消费方自己做没区别，只是把查询逻辑从消费方挪到了注册器。
+最终方案将路径索引从注册器层移到了组件层，更合理：
 
-**方案 B**：缓存树路径索引（如 `childNodes[0].childNodes[1].childNodes[2]`），克隆后按路径直接索引访问，O(1) 取到元素。但代价是：
-- 代码可读性降低，调试时不如 `querySelector('[data-ref="input"]')` 直观
-- 模板结构变化时路径失效（运行时模板不变，所以实际不会出问题，但维护时心智负担高）
+| 方案 | innerHTML 解析 | querySelectorAll | getAttribute | defineProperty | 评估 |
+|------|---------------|-----------------|-------------|---------------|------|
+| 现状 | 每次解析 | 每次查询 | 每次读取 | 每次定义 | - |
+| C: cloneNode | 消除 | 每次查询 | 每次读取 | 每次定义 | 只解决解析 |
+| **D: cloneNode + 原型预热** | 消除 | 首次查询 | 首次读取 | 首次定义 | **采用** |
 
-**方案 C（采用）**：`innerHTML` 解析是真正的性能瓶颈，`cloneNode` 消除了它。`querySelectorAll` 在组件级模板（通常几十个节点）上开销微乎其微，不值得用路径索引来优化。消费方改动也很小。
+### 3.3 原型预热实现思路
 
-### 3.3 性能对比
+```
+首次实例化                                    后续实例化
+─────────────────────────────────────────────────────────────
+querySelectorAll → nodeMap                    findByPath → nodeMap
+computeNodePath → _nodeIndexPath (原型)       直接使用原型上的 _nodeIndexPath
+getAttribute → _nodeTemplateMetas (原型)      直接使用原型上的 _nodeTemplateMetas
+buildContentPropertiesOnProto (原型)          原型上已有 getter/setter
+```
+
+关键数据结构：
+
+- **`_nodeIndexPath`**：`Record<string, number[]>` — 节点位置索引表，key 为 `"group:name"`，value 为 `el.children` 路径（如 `[0, 1]` 表示 `el.children[0].children[1]`）
+- **`_nodeTemplateMetas`**：`Record<string, NodeTemplateMeta>` — 模板元数据，包含 raw/group/name/mode/eventAttr/emitAttr 等信息，快速路径无需再读 DOM 属性
+- **`_contentPropNames`**：`string[]` — 内容属性名列表，`initContentFromProps` 使用
+
+使用 `el.children`（而非 `childNodes`）避免文本节点干扰。
+
+### 3.4 性能对比
 
 - `innerHTML = htmlString`：浏览器需经过 HTML parser → 构建 DOM 树 → 插入文档
 - `appendChild(fragment)`：`cloneNode` 是内存中的结构复制，跳过 HTML 解析阶段
-- 对于同一模板多次实例化的场景（如列表项、Toast），收益随实例数线性增长
+- `el.children[0].children[1]`：O(1) 直接索引访问，跳过 querySelectorAll 树遍历
+- 对于同一模板多次实例化的场景（如列表项、Toast、Table 行），收益随实例数线性增长
 
 ## 4. 影响范围
 
@@ -59,28 +86,18 @@
 ```typescript
 export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
     protected storage = new Map<string, string>();
-    // 新增：模板元素缓存（懒创建）
     private templateCache = new Map<string, HTMLTemplateElement>();
 
     register(id: string, template: string): void {
         this.checkLock();
         this.storage.set(id, template);
-        // 缓存失效，下次 getFragment 时重新创建
         this.templateCache.delete(id);
     }
 
-    unregister(id: string): void {
-        this.checkLock();
-        this.storage.delete(id);
-        this.templateCache.delete(id);
-    }
-
-    /** 原有方法保持不变，返回字符串 */
     get(id: string): string {
         return this.storage.get(id)!;
     }
 
-    /** 新增：返回克隆的 DocumentFragment，性能更优 */
     getFragment(id: string): DocumentFragment {
         let tpl = this.templateCache.get(id);
         if (!tpl) {
@@ -95,32 +112,65 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
 }
 ```
 
-### 4.2 消费方迁移
+### 4.2 ComponentBase 变更
 
-涉及 4 处生产代码：
+`buildNodeMap()` 新增原型预热逻辑：
+
+```typescript
+buildNodeMap(): void {
+    const proto = (this.constructor as typeof ComponentBase).prototype;
+
+    // 后续实例化：原型上已有索引表，走快速路径
+    if (proto._nodeIndexPath && proto._nodeTemplateMetas) {
+        this.injectTemplates();
+        this.buildNodeMapFast(proto._nodeIndexPath, proto._nodeTemplateMetas);
+        return;
+    }
+
+    // 首次实例化：完整路径
+    this.injectTemplates();
+    const els = Array.from(this.el.querySelectorAll('[data-content]'));
+    // ... 构建 nodeMap + eventMap + 索引表 + 模板元数据 ...
+    this.buildContentPropertiesOnProto(templateMetas, isMultiArea);
+    proto._nodeIndexPath = indexPath;
+    proto._nodeTemplateMetas = templateMetas;
+}
+```
+
+`NodeTemplateMeta` 包含 `eventAttr`/`emitAttr`，快速路径无需再读 DOM 属性：
+
+```typescript
+interface NodeTemplateMeta {
+    raw: string; group: string; name: string;
+    delegateTarget?: string; jsonRef?: string; jsonMode?: 'replace' | 'child';
+    templateRef?: string; mode: 'value' | 'src' | 'html';
+    eventAttr?: string;   // data-event 原始值
+    emitAttr?: string;    // data-emit 原始值
+}
+```
+
+### 4.3 消费方迁移
 
 | 文件 | 当前写法 | 迁移后写法 |
 |------|---------|-----------|
 | `ComponentBase.initElement()` | `this.el.innerHTML = registrar.get(id)` | `this.el.appendChild(registrar.getFragment(id))` |
-| `ComponentBase.reinitElement()` | `this.el.innerHTML = registrar.get(id)` | `this.el.appendChild(registrar.getFragment(id))` |
 | `createOverlayManager()` | `overlayEl.innerHTML = registrar.get(id)` | `overlayEl.appendChild(registrar.getFragment(id))` |
 | `ToastManager.create()` | `overlayEl.innerHTML = registrar.get(template)` | `overlayEl.appendChild(registrar.getFragment(template))` |
 | `MsgboxManager.create()` | `overlayEl.innerHTML = registrar.get('Msgbox')` | `overlayEl.appendChild(registrar.getFragment('Msgbox'))` |
 
-锚点查询代码（`querySelectorAll` / `querySelector`）无需任何改动。
-
-### 4.3 向后兼容
+### 4.4 向后兼容
 
 - `get(id)` 方法保持不变，返回 `string`，现有代码无需立即迁移
 - `getFragment(id)` 是新增方法，可逐步迁移
+- 原型预热对组件代码透明，无需任何改动
 
 ## 5. 替代方案
 
-### 5.1 在注册器层缓存锚点映射（方案 B）
+### 5.1 在注册器层缓存锚点映射
 
-在 `register` 时预扫描模板中的 `data-content` / `data-ref` 元素，记录树路径索引，`getFragment` 时一并返回。克隆后按路径索引直接取元素，跳过 `querySelectorAll`。
+在 `register` 时预扫描模板中的 `data-content` 元素，记录树路径索引，`getFragment` 时一并返回。
 
-未采用原因：组件级模板节点数少（通常 < 50），`querySelectorAll` 开销可忽略；路径索引增加代码复杂度和维护心智负担，收益不成比例。如果未来有性能数据证明 `querySelectorAll` 是瓶颈，可再追加此优化。
+未采用原因：路径索引与组件的 `isMultiArea`、事件推导等逻辑耦合，放在组件层更内聚。注册器只负责模板存储和克隆，不关心组件如何使用模板。
 
 ### 5.2 使用 `<template>` 标签替代字符串存储
 
@@ -134,12 +184,13 @@ export class HtmlTemplateRegistrar extends RegistrarBase<Map<string, string>> {
 2. `register()` 中同步创建 `<template>` 缓存
 3. `unregister()` / `clear()` 中同步清理 `templateCache`
 4. 逐个迁移消费方：`ComponentBase` → `createOverlayManager` → `ToastManager` → `MsgboxManager`
-5. 迁移完成后，`get(id)` 标记为 `@deprecated`，引导使用 `getFragment(id)`
+5. 在 `ComponentBase.buildNodeMap()` 中实现原型预热：首次生成索引表 + 模板元数据 + 原型属性，后续走快速路径
+6. `NodeTemplateMeta` 新增 `eventAttr`/`emitAttr`，快速路径免读 DOM
 
 ## 7. 后续工作
 
 - [x] 实施步骤 1-3：`HtmlTemplateRegistrar` 新增 `templateCache`、`getFragment()`、重写 `clear()`
+- [x] 实施步骤 5-6：`ComponentBase` 原型预热 + `NodeTemplateMeta` 事件信息缓存
 - [ ] 逐个迁移消费方：`ComponentBase` → `createOverlayManager` → `ToastManager` → `MsgboxManager`
 - [ ] 补充 `getFragment` 的单元测试
-- [ ] 性能基准测试：对比 `innerHTML` vs `cloneNode` 在不同模板大小和实例数量下的表现
-- [ ] 评估是否需要追加路径索引优化（方案 B）
+- [ ] 性能基准测试：对比 `innerHTML` vs `cloneNode` + 原型预热在不同模板大小和实例数量下的表现

@@ -6,7 +6,7 @@
  *
  * 职责：
  * - el 创建：constructor 中 document.createElement（不经过 __initProps）
- * - 模板注入：__initProps 中从 HtmlTemplateRegistrar 获取模板并注入 el
+ * - 模板注入：__initProps 中从 TemplateRegistrar 获取模板并注入 el
  * - reinitElement：切换模板时重新注入
  *
  * 时序：
