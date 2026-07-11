@@ -1,6 +1,6 @@
 # withTemplate 最佳实践
 
-> 日期：2026-07-11
+> 日期：2026-07-12
 > 状态：当前有效
 
 ## withTemplate 是什么
@@ -18,17 +18,58 @@
 
 **所有组件都是 withTemplate 强类，没有例外。**
 
-## 1. 基础组件定义
+## 1. 推荐写法
+
+```typescript
+import { TemplateComponent } from '@qimenjs/component-core';
+import { HOME_TEMPLATE } from '@qimenjs/template';
+
+class HomePage extends TemplateComponent.withTemplate(HOME_TEMPLATE) {
+    // static 配置 — 类级别，所有实例共享
+    static children = [
+        { target: 'grid', type: 'grid', columns: [...] },
+    ];
+    static bridges = ['saveBtn:tap', 'cancelBtn:tap'];
+
+    // handler — 直接写方法，自动发现
+    onSaveBtnTap(e) { /* 保存逻辑 */ }
+    onCancelBtnTap(e) { /* 取消逻辑 */ }
+}
+
+// 实例化 — 不需要 initialize，构造即完整
+const home = new HomePage();
+
+// 动态覆盖 — props 可覆盖 static 配置
+const home2 = new HomePage({ children: [...], data: someData });
+```
+
+**要点**：
+- `class Xxx extends TemplateComponent.withTemplate(tpl)` — 模板是类定义的一部分
+- `static children` / `static bridges` — 类级别配置，所有实例共享
+- `onXxx` 方法 — 外部事件自动发现，不需要 handlers 配置映射
+- `new Xxx()` 即完整实例，不需要再调 `initialize()`
+- `new Xxx(props)` 可覆盖 static 配置，满足动态场景
+
+### 配置优先级
+
+```
+static 属性（类定义时） < props 参数（实例化时）
+```
+
+props 会覆盖同名的 static 配置。children 和 bridges 会浅拷贝，不会污染 static。
+
+## 2. 基础组件定义
 
 ```typescript
 // Button.ts
+import { TemplateComponent } from '@qimenjs/component-core';
 import { BUTTON_TEMPLATE } from '@qimenjs/template';
 
-const ButtonBase = TemplateComponent.withTemplate(BUTTON_TEMPLATE);
-
-export class ButtonComponent extends ButtonBase {
+class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
+    static readonly elTag = 'button';
 
+    // 内部事件 — data-event 声明，handler 名自动推导
     onClick(e) {
         // 按钮点击逻辑
     }
@@ -37,12 +78,10 @@ export class ButtonComponent extends ButtonBase {
 
 **要点**：
 - 模板从 `@qimenjs/template` 导入，不在组件文件中定义
-- `const XxxBase = TemplateComponent.withTemplate(XXX_TEMPLATE)` 创建基类
-- `class XxxComponent extends XxxBase` 继承并添加业务逻辑
 - `data-content` 声明节点，自动生成同名属性（`this.text`、`this.icon`）
-- `data-event` 声明事件，自动推导 handler 名（`onClick`）
+- `data-event` 声明内部事件，handler 名自动推导（`onClick`）
 
-## 2. 页面组件定义
+## 3. 页面组件定义
 
 ```typescript
 // HomePage.ts
@@ -58,38 +97,25 @@ const HOME_TEMPLATE = `
 </div>
 `;
 
-const HomePageBase = TemplateComponent.withTemplate(HOME_TEMPLATE);
+class HomePage extends TemplateComponent.withTemplate(HOME_TEMPLATE) {
+    static children = [
+        { target: 'grid', type: 'grid', columns: [...] },
+    ];
+    static bridges = ['saveBtn:tap', 'cancelBtn:tap'];
 
-export class HomePage extends HomePageBase {
-    // 页面级逻辑
+    onSaveBtnTap(e) { /* 保存 */ }
+    onCancelBtnTap(e) { /* 取消 */ }
 }
 
-// 路由注册
+// 路由注册 — 只指定组件名
 router.register('home', HomePage);
 ```
 
 **要点**：
 - 页面也是 withTemplate 强类，和基础组件写法一致
 - `data-i18n` 声明翻译 key，自动翻译
-- 子组件位置用 `data-content` 声明，通过 children 配置填入
-
-## 3. 子组件嵌套
-
-```typescript
-// 使用
-const page = new HomePage();
-page.initialize({
-    type: 'page',
-    children: [
-        { target: 'grid', type: 'grid', rowClass: SelectableRow, columns: [...] },
-    ]
-});
-```
-
-**要点**：
-- `target` 对齐模板中 `data-content` 的 name 部分
-- 子组件类型通过 `type` 从 ComponentRegistrar 查找
-- 不需要手动 `add` + `appendChild`
+- 子组件位置用 `data-content` 声明，`static children` 配置填入
+- 路由只管组件名，实例化时自动从 static 读取配置
 
 ## 4. Grid 行强类
 
@@ -97,7 +123,7 @@ page.initialize({
 // 行模板定义
 const SELECTABLE_ROW_TEMPLATE = `
 <div class="q-row">
-    <div data-content="row:selector" data-event="tap">
+    <div data-content="row:selector" data-emit="tap">
         <input type="checkbox" data-content="row:checkbox" />
     </div>
     <div data-content="row:cells"></div>
@@ -106,28 +132,34 @@ const SELECTABLE_ROW_TEMPLATE = `
 
 const EDITABLE_ROW_TEMPLATE = `
 <div class="q-row">
-    <div data-content="row:selector" data-event="tap">
+    <div data-content="row:selector" data-emit="tap">
         <input type="checkbox" data-content="row:checkbox" />
     </div>
     <div data-content="row:id"></div>
     <div data-content="row:cells"></div>
     <div data-content="row:actions">
-        <button data-content="row:editBtn" data-event="tap">编辑</button>
-        <button data-content="row:deleteBtn" data-event="tap">删除</button>
+        <button data-content="row:editBtn" data-emit="tap">编辑</button>
+        <button data-content="row:deleteBtn" data-emit="tap">删除</button>
     </div>
 </div>
 `;
 
-// 行强类
-const SelectableRow = RowBase.withTemplate(SELECTABLE_ROW_TEMPLATE);
-const EditableRow = RowBase.withTemplate(EDITABLE_ROW_TEMPLATE);
+// 行强类 — 可复用
+class SelectableRow extends TemplateComponent.withTemplate(SELECTABLE_ROW_TEMPLATE) {
+    static bridges = ['selector:tap'];
+}
 
-// Grid 使用
-grid.initialize({
-    type: 'grid',
-    rowClass: EditableRow,
-    columns: [...],
-});
+class EditableRow extends TemplateComponent.withTemplate(EDITABLE_ROW_TEMPLATE) {
+    static bridges = ['selector:tap'];
+    onEditBtnTap(e) { /* 编辑 */ }
+    onDeleteBtnTap(e) { /* 删除 */ }
+}
+
+// Grid 使用 — 直接 new
+for (const item of items) {
+    const row = new EditableRow({ data: item });
+    this.el.appendChild(row.el);
+}
 ```
 
 **要点**：
@@ -135,6 +167,7 @@ grid.initialize({
 - 模板声明了什么节点，withTemplate 就预编译出什么属性
 - 不需要额外配置来声明"是否启用选择列"——模板里有就有，没有就没有
 - 不同行模板生成不同强类，互不干扰
+- `new RowClass({ data: item })` 即完整实例
 
 ## 5. 模板替换
 
@@ -185,60 +218,45 @@ Button = class extends TemplateComponent.withTemplate(CUSTOM_BUTTON_TEMPLATE) {
 <!-- → handler: onSaveBtn -->
 ```
 
-### 外部事件（data-emit）
+### 外部事件（data-emit）— 三种模式
 
-向外发布的事件，声明即生效，通过 `this.bind` 绑定 + `emitUI` 发布到事件桥：
+向外发布的事件，通过 `this.bind` 绑定。三种模式按优先级：
 
-```html
-<button data-content="page:saveBtn" data-emit="tap">保存</button>
-<!-- → emitUI('saveBtn:tap', data, domEvent) -->
-```
-
-emitKey 格式为 `name:event`（如 `saveBtn:tap`），同一组件内多个 tap 可区分。
-
-### bridges 配置
-
-声明走事件桥发布的事件，其他组件通过 `eventBus.on` 监听：
+**1. bridges — 走事件桥发布**
 
 ```typescript
-page.initialize({
-    type: 'page',
-    bridges: ['saveBtn:tap', 'cancelBtn:tap'],
-});
+class HomePage extends TemplateComponent.withTemplate(tpl) {
+    static bridges = ['saveBtn:tap', 'cancelBtn:tap'];
+}
+// → emitUI('saveBtn:tap', data, domEvent)，其他组件通过 eventBus.on 监听
 ```
 
-### handlers 配置
+**2. onXxx 方法 — 自动发现绑定**
 
-绑定具体函数，直接执行：
+emitKey 驼峰化为方法名，自动绑定：
 
-```typescript
-page.initialize({
-    type: 'page',
-    handlers: {
-        'saveBtn:tap': (e) => { /* 保存逻辑 */ },
-        'cancelBtn:tap': (e) => { /* 取消逻辑 */ },
-    }
-});
-```
-
-### 带特殊数据
-
-在 handler 里处理完再手动 `emitUI`：
+| emitKey | 方法名 |
+|---------|--------|
+| `saveBtn:tap` | `onSaveBtnTap` |
+| `cancelBtn:click` | `onCancelBtnClick` |
+| `submit` | `onSubmit` |
 
 ```typescript
-handlers: {
-    'saveBtn:tap': (e) => {
-        const data = { id: this.selectedId, action: 'save' };
-        this.emitUI('saveBtn:tap', data, e);
-    }
+class HomePage extends TemplateComponent.withTemplate(tpl) {
+    onSaveBtnTap(e) { /* 保存逻辑 */ }
+    onCancelBtnTap(e) { /* 取消逻辑 */ }
 }
 ```
 
+**3. 默认 — 走事件桥发布**
+
+既不在 bridges 中，也没有 onXxx 方法，自动走 emitUI 发布。
+
 ### 选择建议
 
-- **withTemplate 基础组件**：用 `data-event`，handler 写在类方法上
-- **JSON 驱动动态组件**：用 `data-emit`，handler 在 handlers 配置中
-- **跨组件通信**：用 `bridges` + `emitUI`，其他组件通过事件桥监听
+- **需要跨组件通信**：用 `bridges`，其他组件通过事件桥监听
+- **组件自身处理**：写 `onXxx` 方法，自动发现绑定
+- **不需要处理**：默认走事件桥，其他组件可监听
 
 ## 7. 组件注册
 
@@ -248,11 +266,13 @@ ComponentRegistrar.register('button', ButtonComponent);
 ComponentRegistrar.register('grid', GridComponent);
 ComponentRegistrar.register('home', HomePage);
 
+// 路由配置 — 只指定组件名
+{ path: '/home', component: 'Home' }
+
 // JSON 配置驱动时查找
 const config = { type: 'grid', ... };
 const GridClass = ComponentRegistrar.get(config.type);
-const grid = new GridClass();
-grid.initialize(config);
+const grid = new GridClass(config);
 ```
 
 ## 8. 应用启动
@@ -265,17 +285,15 @@ const APP_TEMPLATE = `
 </div>
 `;
 
-const AppBase = TemplateComponent.withTemplate(APP_TEMPLATE);
-export class App extends AppBase {}
+class App extends TemplateComponent.withTemplate(APP_TEMPLATE) {
+    static children = [
+        { target: 'page', type: 'home' },
+    ];
+}
 
 // main.ts
 const app = new App();
-app.initialize({
-    type: 'app',
-    children: [
-        { target: 'page', type: 'home' },
-    ]
-});
+document.body.appendChild(app.el);
 ```
 
 **要点**：
@@ -299,9 +317,10 @@ const DIALOG_TEMPLATE = `
 </div>
 `;
 
-const DialogComponent = Dialog.withTemplate(DIALOG_TEMPLATE);
-// 属性名：dialogHeader, dialogBody, dialogFooter
-// 事件 handler：onDialogCloseBtn
+class DialogComponent extends Dialog.withTemplate(DIALOG_TEMPLATE) {
+    // 属性名：dialogHeader, dialogBody, dialogFooter
+    // 事件 handler：onDialogCloseBtn
+}
 ```
 
 ## 10. 反模式
@@ -315,7 +334,6 @@ comp.initialize({ type: 'button' });
 
 // 正确
 const button = new ButtonComponent();
-button.initialize({ type: 'button' });
 ```
 
 ### 不要在运行时拼接模板后走 TemplateRegistrar
@@ -350,4 +368,37 @@ node.el.addEventListener('click', handler);
 // 正确 — 使用 this.bind，自动适配 pointer/touch/mouse
 this.bind(node.el, 'tap');
 this.on('tap', handler);
+```
+
+### 不要用 handlers 配置映射 onXxx 方法
+
+```typescript
+// 错误 — 多余的映射，onXxx 方法会被自动发现
+class Home extends TemplateComponent.withTemplate(tpl) {
+    static handlers = {
+        'saveBtn:tap': 'onSaveBtnTap',
+    };
+    onSaveBtnTap(e) { /* ... */ }
+}
+
+// 正确 — 直接写方法，自动发现
+class Home extends TemplateComponent.withTemplate(tpl) {
+    onSaveBtnTap(e) { /* ... */ }
+}
+```
+
+### 不要忘记 static 关键字
+
+```typescript
+// 错误 — children/bridges 是类级别配置，必须用 static
+class Home extends TemplateComponent.withTemplate(tpl) {
+    children = [...];   // 实例属性，每次 new 都重新创建
+    bridges = [...];    // 实例属性，浪费内存
+}
+
+// 正确 — static 属性，所有实例共享
+class Home extends TemplateComponent.withTemplate(tpl) {
+    static children = [...];
+    static bridges = [...];
+}
 ```

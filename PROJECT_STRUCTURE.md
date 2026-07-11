@@ -77,13 +77,18 @@ UI 层             → component-core, component-abilities, component, layout, t
   - 预编译：提取节点数据、生成内容属性、预编译事件模板
   - 实例化：cloneNode + 填 node 引用，零字符串处理开销
   - 不依赖 TemplateRegistrar
+  - **构造即完整**：`new Xxx()` 自动完成 initElement + 内容填充 + 事件绑定 + 注册，不需要 `initialize()`
+  - **static 配置**：`static children` / `static bridges` 等类级别配置，所有实例共享，props 可覆盖
+  - **onXxx 自动发现**：外部事件 emitKey 驼峰化为方法名（`saveBtn:tap` → `onSaveBtnTap`），自动绑定
 - 内部递归渲染模型：组件通过 `ChildrenAbility.add(layout)` 自渲染子组件，替代外部 Renderer
 - HTML 模板注入 + data-content 内容管理
 - **事件机制**：
   - 内部事件（`data-event`）：通过 `this.bind` 统一绑定，使用 event-dom 事件规范命名（`tap`/`click`/`input`/`change`/`scroll` 等），跨平台兼容
-  - 外部事件（`data-emit`）：声明即生效，通过 `this.bind` 绑定 + `emitUI` 发布到事件桥（自动带源、构建 EventContext）
-  - `bridges` 配置：声明走事件桥发布的事件
-  - `handlers` 配置：绑定具体函数
+  - 外部事件（`data-emit`）：三种模式按优先级：
+    1. `bridges` 声明的 → 走事件桥 `emitUI` 发布
+    2. 实例有 `onXxx` 方法 → emitKey 驼峰化自动绑定（`saveBtn:tap` → `onSaveBtnTap`）
+    3. 默认 → 走事件桥 `emitUI` 发布
+  - `bridges` 配置：`static bridges = ['saveBtn:tap']`，声明走事件桥发布的事件
   - `EventBridgeAbility` 声明式事件桥接
 - dirtySet + flush() 延迟刷新机制
 - 主题切换：CSS 变量自动生效 + `static themeAware = true` 声明 JS 层面感知
@@ -457,19 +462,15 @@ ChildrenAbility.add(layoutNode)
   1. ComponentRegistrar.get(type) 查找组件类
   2. 合并 props（非保留顶层 key + layout.props + id/type/template/tag/field）
   3. new ComponentClass(props) 创建实例
-  4. initElement() 创建 el + 注入 HTML 模板
-     - withTemplate 强类：cloneNode + 填 node 引用（纯克隆，零字符串处理）
+     - withTemplate 强类：构造时自动完成全部初始化
+       a. initElement() — cloneNode + 填 node 引用（纯克隆，零字符串处理）
+       b. 配置初始化 — abilities、extraFns、entity、eventBridge、meta
+       c. 内容填充 + i18n
+       d. 事件绑定 — bindInternalEvents + bindExternalEvents（bridges/onXxx/emitUI）
+       e. callInitMethods + ComponentManager.register
      - TemplateRegistrar 路径：从注册表查找模板 + buildNodeMap（已 deprecated）
-  5. 挂载 DOM（appendChild + addChild）
-  6. setupAbilities(layout.abilities)
-  7. extraFns bind + defineProperty
-  8. meta 复制
-  9. PositionProps/StyleProps/AccessibilityProps/TooltipProps/AnimationProps/PermissionProps/EntityProps 赋值
-  10. bindInternalEvents（this.bind + this.on，事件规范命名）
-      bindExternalEvents（this.bind + this.on + emitUI，bridges/handlers 配置）
-  11. lifecycle 钩子
-  12. ComponentManager.register
-  13. 递归 children.add(childLayout)
+  4. 挂载 DOM（appendChild + addChild）
+  5. 递归 children.add(childLayout)
 ```
 
 ### 主题切换流程
