@@ -254,7 +254,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * Button = Button.withTemplate(CUSTOM_BUTTON_TEMPLATE);
      * ```
      */
-    static withTemplate(templateHtml: string): any {
+    static withTemplate(templateHtml: string, config?: Record<string, any>): any {
         // 预编译：创建临时 DOM 解析模板，提取节点数据
         const compiled = precompileTemplate(templateHtml, (this as any).isMultiArea ?? false);
 
@@ -267,6 +267,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 // 不需要再调 initialize()
                 this._initWithTemplate(props);
             }
+
+            /** withTemplate 配置（children、handlers、bridges 等） */
+            static readonly _withTemplateConfig: Record<string, any> | undefined = config;
 
             /** 预编译的模板 HTML */
             static readonly _templateHtml: string = templateHtml;
@@ -333,40 +336,43 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             _initWithTemplate(props?: Record<string, any>): void {
                 this._initializing = true;
 
+                // 合并配置：withTemplate config 为基础，props 可覆盖
+                const ctor = this.constructor as any;
+                const cfg = { ...ctor._withTemplateConfig, ...props };
+
                 try {
                     // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
                     this.initElement();
 
                     // ── 2. 配置初始化（abilities、extraFns、entity、eventBridge、meta） ──
-                    if (props?.abilities) this.setupAbilities(props.abilities);
-                    if (props?.extraFns) {
-                        for (const [key, fn] of Object.entries(props.extraFns)) {
+                    if (cfg.abilities) this.setupAbilities(cfg.abilities);
+                    if (cfg.extraFns) {
+                        for (const [key, fn] of Object.entries(cfg.extraFns)) {
                             Object.defineProperty(this, key, {
                                 value: (fn as Function).bind(this),
                                 writable: true, configurable: true, enumerable: true,
                             });
                         }
                     }
-                    if (props?.entity) {
-                        const manager = new props.entity();
+                    if (cfg.entity) {
+                        const manager = new cfg.entity();
                         this.mgr = manager;
                         this.onCleanup(() => manager.dispose());
                     }
-                    if (props?.eventBridge) {
-                        this.setEventBridge(props.eventBridge);
+                    if (cfg.eventBridge) {
+                        this.setEventBridge(cfg.eventBridge);
                         queueMicrotask(() => {
                             if (typeof this.initEventBridge === 'function') this.initEventBridge();
                         });
                     }
-                    if (props?.meta) this.meta = { ...props.meta };
+                    if (cfg.meta) this.meta = { ...cfg.meta };
 
                     // ── 3. 内容填充 + i18n ──
-                    this.initContentFromProps(props || {});
-                    const ctor = this.constructor as any;
+                    this.initContentFromProps(cfg);
                     if (ctor.abilities) {
                         const aliasMap = mergePropAliases(ctor.abilities);
                         if (Object.keys(aliasMap).length > 0) {
-                            applyPropAliases(this, props || {}, aliasMap);
+                            applyPropAliases(this, cfg, aliasMap);
                         }
                     }
                     this.initI18nFromTemplate();
@@ -374,9 +380,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                     // ── 4. 事件绑定 ──
                     this.bindInternalEvents();
-                    this.bindExternalEvents({ handlers: props?.handlers, bridges: props?.bridges } as any);
-                    if (props?.handlers) this.bindHandlers(props.handlers);
-                    if (props?.stateTriggers) this.bindStateTriggers(props.stateTriggers);
+                    this.bindExternalEvents({ handlers: cfg.handlers, bridges: cfg.bridges } as any);
+                    if (cfg.handlers) this.bindHandlers(cfg.handlers);
+                    if (cfg.stateTriggers) this.bindStateTriggers(cfg.stateTriggers);
 
                     // ── 5. 调用能力的 __init__ 方法 ──
                     this.callInitMethods();
