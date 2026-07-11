@@ -2,29 +2,20 @@
  * OverlayAbility — 浮层管理能力
  *
  * 统一管理组件的浮层（tips/dropdown/popover），
- * 提供 createOverlay / openOverlay / closeOverlay / positionOverlay 方法。
+ * 通过 ComponentRegistrar 查找浮层组件类，创建实例并挂载。
  *
- * Tooltip 属性通过 getTooltip(key) / setTooltip(key, value) 方法访问，
- * 不再将 tooltip 系列属性暴露到组件顶层。
+ * 模式与 ChildrenAbility.add 一致：
+ * - 浮层是完整的 withTemplate 强类，有自己的模板和逻辑
+ * - 位置计算在浮层组件内部实现
+ * - 想换浮层样式？注册新的 withTemplate 强类覆盖对应 type
+ * - LayoutNode 可通过 tooltipType 指定不同的浮层注册名称
  *
- * 浮层创建流程：
- * 1. 从 TemplateRegistrar 获取模板
- * 2. 创建浮层 DOM（position: absolute, display: none）
- * 3. 扫描浮层内 data-content 元素
- * 4. 生成 open/close/position 控制方法
- * 5. 注册 onCleanup 自动清理
- *
- * Tooltip 特化：
- * - initTooltipOverlay(layout) — 配置驱动，LayoutNode 有 tooltip 字段时自动创建
- * - 自动注册 hover 事件（mouseenter/mouseleave + delay）
- * - 支持 i18n 内容 + localeChange 自动刷新
+ * Tooltip 属性通过 getTooltip(key) / setTooltip(key, value) 方法访问。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { LayoutNode } from '@/layout/LayoutNode';
-import { TemplateRegistrar } from '@qimenjs/template';
-import { RegistryHub } from '@/registry/RegistryHub';
-import { nextZIndex, releaseZIndex, ZIndexLevel } from '@/component/z-index';
+import { ComponentRegistrar } from '../ComponentRegistrar';
+import { ZIndexLevel } from '@/component/z-index';
 import { OverlayRoot } from '@/component/OverlayRoot';
 import { positionOverlay, type Placement } from './positionOverlay';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
@@ -33,7 +24,7 @@ import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
  * 浮层配置
  */
 export interface OverlayConfig {
-    /** 浮层类型前缀，如 'tips'、'dropdown'、'popover' */
+    /** 浮层类型前缀，对应 ComponentRegistrar 中注册的组件类名，如 'Tips'、'Dropdown'、'Popover' */
     prefix: string;
     /** 弹出方向，默认 'bottom' */
     placement?: Placement;
@@ -43,22 +34,42 @@ export interface OverlayConfig {
     zIndexLevel?: number;
     /** 是否启用自动翻转，默认 true */
     flip?: boolean;
+    /** 传递给浮层组件的 props */
+    overlayProps?: Record<string, any>;
 }
 
 /**
  * 浮层创建结果
  */
 export interface OverlayResult {
+    /** 浮层组件实例 */
+    overlayInstance: any;
     /** 浮层 DOM 元素 */
     overlayEl: HTMLElement;
-    /** 浮层内的 contentMap（key 为 "prefix:name"） */
-    contentMap: Map<string, HTMLElement>;
 }
 
 /**
  * 支持的 tooltip key 类型
  */
-export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth';
+export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth' | 'tooltipType';
+
+/**
+ * Tooltip 初始化配置
+ */
+export interface TooltipOverlayConfig {
+    /** Tooltip 文本内容 */
+    tooltip?: string;
+    /** 弹出方向，默认 'top' */
+    tooltipPlacement?: Placement;
+    /** 间距，默认 4 */
+    tooltipOffset?: number;
+    /** 显示延迟，默认 0 */
+    tooltipShowDelay?: number;
+    /** 隐藏延迟，默认 0 */
+    tooltipHideDelay?: number;
+    /** 浮层组件类型名，默认 'Tips' */
+    tooltipType?: string;
+}
 
 /**
  * tooltip 默认值
@@ -68,41 +79,21 @@ const TOOLTIP_DEFAULTS: Record<string, any> = {
     tooltipOffset: 4,
     tooltipShowDelay: 0,
     tooltipHideDelay: 0,
+    tooltipType: 'Tips',
 };
 
 /**
  * 前缀到 z-index 层级的默认映射
  */
 const PREFIX_ZINDEX_MAP: Record<string, number> = {
-    tips: ZIndexLevel.tooltip,
-    dropdown: ZIndexLevel.dropdown,
-    popover: ZIndexLevel.dropdown,
+    Tips: ZIndexLevel.tooltip,
+    Dropdown: ZIndexLevel.dropdown,
+    Popover: ZIndexLevel.dropdown,
 };
-
-/**
- * 一次性查询容器中所有 data-content 元素
- */
-function buildContentMap(container: HTMLElement): Map<string, HTMLElement> {
-    const map = new Map<string, HTMLElement>();
-    const elements = container.querySelectorAll('[data-content]');
-    for (let i = 0; i < elements.length; i++) {
-        const el = elements[i] as HTMLElement;
-        const key = el.dataset.content!;
-        if (key) {
-            map.set(key, el);
-        }
-    }
-    return map;
-}
 
 export const OverlayAbility: AbilityDefinition = {
     // ─── Tooltip 属性访问方法 ───
 
-    /**
-     * 获取 Tooltip 属性值
-     *
-     * @param key - Tooltip 属性名
-     */
     getTooltip(key: TooltipKey): any {
         if (key in TOOLTIP_DEFAULTS) {
             return this.props[key] ?? TOOLTIP_DEFAULTS[key];
@@ -110,12 +101,6 @@ export const OverlayAbility: AbilityDefinition = {
         return this.props[key];
     },
 
-    /**
-     * 设置 Tooltip 属性值
-     *
-     * @param key - Tooltip 属性名
-     * @param value - 属性值
-     */
     setTooltip(key: TooltipKey, value: any): void {
         this.setProp(key, value);
     },
@@ -123,53 +108,44 @@ export const OverlayAbility: AbilityDefinition = {
     /**
      * 创建浮层
      *
-     * 从 TemplateRegistrar 获取模板，创建浮层 DOM，
-     * 生成 open/close/position 控制方法，注册 onCleanup 自动清理。
+     * 从 ComponentRegistrar 查找浮层组件类，创建实例并挂载到 OverlayRoot。
+     * 浮层组件是 withTemplate 强类，位置计算在组件内部实现。
      *
      * @param config - 浮层配置
-     * @returns 浮层 DOM 和 contentMap，模板未注册时返回 null
+     * @returns 浮层组件实例和 DOM 元素，组件类未注册时返回 null
      */
     createOverlay(config: OverlayConfig): OverlayResult | null {
         const { prefix } = config;
         const capitalPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
         const placement: Placement = config.placement ?? 'bottom';
         const offset: number = config.offset ?? 4;
-        const zIndexLevel: number = config.zIndexLevel ?? PREFIX_ZINDEX_MAP[prefix] ?? ZIndexLevel.dropdown;
+        const zIndexLevel: number = config.zIndexLevel ?? PREFIX_ZINDEX_MAP[capitalPrefix] ?? ZIndexLevel.dropdown;
         const flip: boolean = config.flip ?? true;
 
-        // ── 1. 从模板注册表获取模板 ──
+        // ── 1. 从 ComponentRegistrar 查找浮层组件类 ──
 
-        const templateId = capitalPrefix;
-        const registrar = RegistryHub.get<TemplateRegistrar>('template');
-        if (!registrar) return null;
+        const OverlayClass = ComponentRegistrar.getInstance().get(capitalPrefix);
+        if (!OverlayClass) return null;
 
-        let template: string;
-        try {
-            template = registrar.get(templateId);
-        } catch {
-            return null;
-        }
+        // ── 2. 创建浮层组件实例 ──
 
-        // ── 2. 创建浮层 DOM ──
+        const overlayInstance = new OverlayClass(config.overlayProps);
+        const overlayEl = overlayInstance.el;
+        if (!overlayEl) return null;
 
-        const overlayEl = document.createElement('div');
-        overlayEl.innerHTML = template;
+        // 设置浮层样式
         overlayEl.classList.add(`q-${prefix}`);
         overlayEl.style.position = 'absolute';
         overlayEl.style.display = 'none';
         overlayEl.style.pointerEvents = 'auto';
 
-        // ── 3. 扫描浮层内的 data-content 元素 ──
-
-        const contentMap = buildContentMap(overlayEl);
-
-        // ── 4. 状态管理 ──
+        // ── 3. 状态管理 ──
 
         this.setAbilityState(`Overlay:${prefix}:isOpen`, false);
         this.setAbilityState(`Overlay:${prefix}:placement`, placement);
         this.setAbilityState(`Overlay:${prefix}:zIndexLevel`, zIndexLevel);
 
-        // ── 5. 定位更新回调 ──
+        // ── 4. 定位更新回调 ──
 
         let rafId: number | null = null;
 
@@ -184,23 +160,26 @@ export const OverlayAbility: AbilityDefinition = {
             });
         };
 
-        // ── 6. 生成控制方法 ──
+        // ── 5. 生成控制方法 ──
 
         const generatedProps: string[] = [];
 
-        // open 方法
         const openOverlay = () => {
             const isOpen: boolean = this.abilityState(`Overlay:${prefix}:isOpen`, () => false);
             const currentPlacement = this.abilityState(`Overlay:${prefix}:placement`, () => placement);
 
+            // z-index
+            const { nextZIndex } = require('@/component/z-index');
             const zIdx = nextZIndex(zIndexLevel);
             overlayEl.style.zIndex = String(zIdx);
             this.setAbilityState(`Overlay:${prefix}:zIndex`, zIdx);
 
+            // 定位
             if (this.el) {
                 positionOverlay(overlayEl, this.el, currentPlacement, offset, flip);
             }
 
+            // 挂载到 OverlayRoot
             const root = OverlayRoot.getInstance().getRoot();
             root.appendChild(overlayEl);
 
@@ -214,7 +193,6 @@ export const OverlayAbility: AbilityDefinition = {
             this.setAbilityState(`Overlay:${prefix}:isOpen`, true);
         };
 
-        // close 方法
         const closeOverlay = () => {
             const isOpen: boolean = this.abilityState(`Overlay:${prefix}:isOpen`, () => false);
             if (!isOpen) return;
@@ -225,6 +203,7 @@ export const OverlayAbility: AbilityDefinition = {
                 overlayEl.parentNode.removeChild(overlayEl);
             }
 
+            const { releaseZIndex } = require('@/component/z-index');
             releaseZIndex(zIndexLevel);
 
             window.removeEventListener('resize', onReposition);
@@ -238,7 +217,6 @@ export const OverlayAbility: AbilityDefinition = {
             this.setAbilityState(`Overlay:${prefix}:isOpen`, false);
         };
 
-        // position 方法
         const positionOverlayMethod = () => {
             const currentPlacement = this.abilityState(`Overlay:${prefix}:placement`, () => placement);
             if (this.el && overlayEl) {
@@ -246,7 +224,6 @@ export const OverlayAbility: AbilityDefinition = {
             }
         };
 
-        // 绑定方法到 this
         (this as any)[`open${capitalPrefix}`] = openOverlay;
         (this as any)[`close${capitalPrefix}`] = closeOverlay;
         (this as any)[`position${capitalPrefix}`] = positionOverlayMethod;
@@ -266,7 +243,7 @@ export const OverlayAbility: AbilityDefinition = {
 
         generatedProps.push(placementPropName);
 
-        // ── 7. 注册 onCleanup 清理回调 ──
+        // ── 6. 注册 onCleanup 清理回调 ──
 
         this.onCleanup(() => {
             const isOpen: boolean = this.abilityState(`Overlay:${prefix}:isOpen`, () => false);
@@ -276,6 +253,7 @@ export const OverlayAbility: AbilityDefinition = {
             }
 
             if (isOpen) {
+                const { releaseZIndex } = require('@/component/z-index');
                 releaseZIndex(zIndexLevel);
             }
 
@@ -287,52 +265,56 @@ export const OverlayAbility: AbilityDefinition = {
                 rafId = null;
             }
 
-            overlayEl.innerHTML = '';
+            // 销毁浮层组件实例
+            if (typeof overlayInstance.dispose === 'function') {
+                overlayInstance.dispose();
+            }
 
             for (const prop of generatedProps) {
                 delete (this as any)[prop];
             }
         });
 
-        // ── 8. 返回结果 ──
-
-        return { overlayEl, contentMap };
+        return { overlayInstance, overlayEl };
     },
 
     /**
      * 初始化 Tooltip 浮层 — 配置驱动
      *
-     * 当 LayoutNode 有 tooltip 字段时自动创建 tips 浮层，
-     * 不需要组件声明 contentSlots: { tips: ['default'] }。
-     *
-     * 生成的属性/方法：
-     * - openTips / closeTips / positionTips：浮层控制
-     * - tipsPlacement：弹出方向
+     * 从 ComponentRegistrar 查找 Tips 组件类（或 tooltipType 指定的类），
+     * 创建实例并注册 hover 事件。
      */
-    initTooltipOverlay(layout: LayoutNode): void {
+    initTooltipOverlay(config: TooltipOverlayConfig): void {
+        const tooltipType = config.tooltipType ?? 'Tips';
+
         const result = this.createOverlay({
             prefix: 'tips',
-            placement: layout.tooltipPlacement ?? 'top',
-            offset: layout.tooltipOffset ?? 4,
+            placement: config.tooltipPlacement ?? 'top',
+            offset: config.tooltipOffset ?? 4,
             zIndexLevel: ZIndexLevel.tooltip,
+            overlayProps: {
+                tooltip: config.tooltip,
+                tooltipPlacement: config.tooltipPlacement,
+            },
         });
 
         if (!result) return;
 
-        // 设置 tooltip 内容
-        const tooltipText = layout.tooltip ?? '';
+        const { overlayInstance } = result;
+
+        // 设置 tooltip 内容（如果浮层组件有内容属性）
+        const tooltipText = config.tooltip ?? '';
         const resolved = tooltipText.startsWith(I18N_PREFIX)
             ? (getI18nManager()?.t(tooltipText.slice(I18N_PREFIX.length)) ?? tooltipText)
             : tooltipText;
 
-        const contentEl = result.contentMap.get('tips:default');
-        if (contentEl) {
-            contentEl.textContent = resolved;
+        if (typeof overlayInstance.text === 'string' || typeof overlayInstance.text !== 'undefined') {
+            overlayInstance.text = resolved;
         }
 
-        // 注册 hover 事件：mouseenter → openTips, mouseleave → closeTips
-        const showDelay = layout.tooltipShowDelay ?? 0;
-        const hideDelay = layout.tooltipHideDelay ?? 0;
+        // 注册 hover 事件
+        const showDelay = config.tooltipShowDelay ?? 0;
+        const hideDelay = config.tooltipHideDelay ?? 0;
         let showTimer: ReturnType<typeof setTimeout> | null = null;
         let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -354,12 +336,14 @@ export const OverlayAbility: AbilityDefinition = {
             });
         }
 
-        // 如果 tooltip 内容是 i18n，注册 localeChange 刷新
+        // i18n 内容 → 注册 localeChange 刷新
         if (tooltipText.startsWith(I18N_PREFIX)) {
             const i18nKey = tooltipText.slice(I18N_PREFIX.length);
             const off = (this as any).on?.('localeChange', () => {
                 const translated = getI18nManager()?.t(i18nKey) ?? tooltipText;
-                if (contentEl) contentEl.textContent = translated;
+                if (typeof overlayInstance.text !== 'undefined') {
+                    overlayInstance.text = translated;
+                }
             });
             if (typeof off === 'function') {
                 this.onCleanup(off);

@@ -120,14 +120,15 @@ export const ChildrenAbility: AbilityDefinition = {
             }
         }
 
-        // 3. 创建组件实例
+        // 3. 创建组件实例（withTemplate 强类构造时已自动完成初始化）
         const child = new ComponentClass(props);
 
-        // 4. 创建 el + 注入模板 + buildNodeMap
-        if (layout.tag) child.tag = layout.tag;
-        if (layout.template) child.template = layout.template;
-        child.type = layout.type;
-        child.initElement();
+        // 4. 非 withTemplate 组件需要手动初始化
+        if (!child.el) {
+            if (layout.tag) child.tag = layout.tag;
+            child.type = layout.type;
+            child.initElement();
+        }
 
         // 5. 挂载到父 el + addChild
         if (this.el && child.el) {

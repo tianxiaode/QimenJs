@@ -30,7 +30,7 @@ export { ThemeAbility } from './abilities/ThemeAbility';
 export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
-export { OverlayAbility, type OverlayConfig, type OverlayResult, type TooltipKey } from './abilities/OverlayAbility';
+export { OverlayAbility, type OverlayConfig, type OverlayResult, type TooltipKey, type TooltipOverlayConfig } from './abilities/OverlayAbility';
 export { PositionPxAbility } from './abilities/PositionPxAbility';
 export { PositionRawAbility } from './abilities/PositionRawAbility';
 export { PositionBoolAbility } from './abilities/PositionBoolAbility';
@@ -44,3 +44,13 @@ export type { PropAliasMap } from './abilities/PropAlias';
 // 浮层定位
 export { positionOverlay } from './abilities/positionOverlay';
 export type { Placement } from './abilities/positionOverlay';
+
+// 模板编译
+export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplates, findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
+export type { InternalEventTemplate, ExternalEventTemplate, CompiledTemplate } from './template-compiler';
+
+// 内容属性
+export { buildContentProperties, translateI18nKey, applyValueToEl } from './content-properties';
+
+// withTemplate 工厂
+export { withTemplate } from './withTemplate';
