@@ -8,7 +8,7 @@
 import { ThemeRegistrar } from './ThemeRegistrar';
 import { RegistryHub } from '@qimenjs/registry';
 import { globalEventBus } from '@qimenjs/events';
-import { lightTheme, darkTheme } from './presets';
+import { lightTheme, darkTheme, chineseThemes } from './presets';
 import type { ThemeDefinition } from './types';
 
 /**
@@ -24,6 +24,19 @@ export function registerPresetThemes(extra?: ThemeDefinition[]): void {
         for (const theme of extra) {
             registrar.register(theme);
         }
+    }
+}
+
+/**
+ * 注册中国传统色主题到 ThemeRegistrar
+ *
+ * 包含：青瓷、朱砂、靛蓝、鹅黄、紫檀、墨色、黛色 共 7 个主题。
+ * 需用户手动调用，不会在 import 时自动注册。
+ */
+export function registerChineseThemes(): void {
+    const registrar = ThemeRegistrar.getInstance();
+    for (const theme of chineseThemes) {
+        registrar.register(theme);
     }
 }
 

@@ -130,6 +130,10 @@ export const THEME_CHANGE_EVENT = 'theme:change' as const;
 export interface ThemeDefinition {
     /** 主题名称，同一 ThemeRegistrar 内唯一 */
     name: string;
+    /** 主题显示名称 */
+    displayName?: string;
+    /** 主题描述 */
+    description?: string;
     /** 设计令牌 */
     tokens: DesignTokens;
 }

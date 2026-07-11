@@ -51,14 +51,17 @@
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "fantasticon": "^4.1.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^30.2.0",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
+    "svg2ttf": "^6.1.0",
     "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
+    "ttf2woff2": "^8.0.1",
     "typedoc": "^0.28.15",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.2"
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "typescript": ">=4.0.0"
