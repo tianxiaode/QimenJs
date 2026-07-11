@@ -40,4 +40,4 @@ jest-results.json
 .test-results/
 
 # ESLint cache
-.eslintcache
+.eslintcachenul

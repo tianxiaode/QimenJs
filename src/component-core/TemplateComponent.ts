@@ -52,6 +52,7 @@ import { TemplateRegistrar } from '@qimenjs/template';
 import { RegistryHub } from '@/registry/RegistryHub';
 import type { LayoutNode } from '@/layout/LayoutNode';
 import { ComponentManager } from './ComponentManager';
+import { mergePropAliases, applyPropAliases } from './abilities/PropAlias';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 import type { NodeMetadata, NodeIndexPath, NodeTemplateMeta, EventMap, InternalEventBinding } from './types';
 
@@ -261,6 +262,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         const TemplateComponent = class extends (this as any) {
             constructor(props?: Record<string, any>) {
                 super(props);
+
+                // withTemplate 强类：构造时自动完成全部初始化
+                // 不需要再调 initialize()
+                this._initWithTemplate(props);
             }
 
             /** 预编译的模板 HTML */
@@ -312,6 +317,77 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             static create(props?: Record<string, any>): any {
                 const instance = new (this as any)(props);
                 return instance;
+            }
+
+            // ── withTemplate 自动初始化 ──
+
+            /**
+             * withTemplate 强类自动初始化
+             *
+             * 构造时自动完成：内容填充、事件绑定、能力初始化、注册。
+             * 不需要再调 initialize()。
+             *
+             * 对于一次性配置组件（HomePage、Row），props 就是全部配置。
+             * 对于可配置组件（Button），子类构造函数可继续设置额外属性。
+             */
+            _initWithTemplate(props?: Record<string, any>): void {
+                this._initializing = true;
+
+                try {
+                    // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
+                    this.initElement();
+
+                    // ── 2. 配置初始化（abilities、extraFns、entity、eventBridge、meta） ──
+                    if (props?.abilities) this.setupAbilities(props.abilities);
+                    if (props?.extraFns) {
+                        for (const [key, fn] of Object.entries(props.extraFns)) {
+                            Object.defineProperty(this, key, {
+                                value: (fn as Function).bind(this),
+                                writable: true, configurable: true, enumerable: true,
+                            });
+                        }
+                    }
+                    if (props?.entity) {
+                        const manager = new props.entity();
+                        this.mgr = manager;
+                        this.onCleanup(() => manager.dispose());
+                    }
+                    if (props?.eventBridge) {
+                        this.setEventBridge(props.eventBridge);
+                        queueMicrotask(() => {
+                            if (typeof this.initEventBridge === 'function') this.initEventBridge();
+                        });
+                    }
+                    if (props?.meta) this.meta = { ...props.meta };
+
+                    // ── 3. 内容填充 + i18n ──
+                    this.initContentFromProps(props || {});
+                    const ctor = this.constructor as any;
+                    if (ctor.abilities) {
+                        const aliasMap = mergePropAliases(ctor.abilities);
+                        if (Object.keys(aliasMap).length > 0) {
+                            applyPropAliases(this, props || {}, aliasMap);
+                        }
+                    }
+                    this.initI18nFromTemplate();
+                    this.setupI18nListener();
+
+                    // ── 4. 事件绑定 ──
+                    this.bindInternalEvents();
+                    this.bindExternalEvents({ handlers: props?.handlers, bridges: props?.bridges } as any);
+                    if (props?.handlers) this.bindHandlers(props.handlers);
+                    if (props?.stateTriggers) this.bindStateTriggers(props.stateTriggers);
+
+                    // ── 5. 调用能力的 __init__ 方法 ──
+                    this.callInitMethods();
+
+                    // ── 6. 注册到 ComponentManager ──
+                    if (props?.id) this.id = props.id;
+                    ComponentManager.getInstance().register(this as any);
+                } finally {
+                    this._initializing = false;
+                    this.flush();
+                }
             }
 
             // ── 覆写 initElement：纯克隆流程，不依赖 TemplateRegistrar ──
