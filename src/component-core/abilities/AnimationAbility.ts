@@ -5,35 +5,40 @@
  * enterAnimation, enterAnimationOptions,
  * leaveAnimation, leaveAnimationOptions,
  * animationEnabled
+ *
+ * 通过 getAnimation(key) / setAnimation(key, value) 方法访问，
+ * 不再将动画属性暴露到组件顶层。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import type { AnimationProps } from '@/layout/LayoutNode';
 
+/**
+ * 支持的动画 key 类型
+ */
+export type AnimationKey = 'enterAnimation' | 'enterAnimationOptions' | 'leaveAnimation' | 'leaveAnimationOptions' | 'animationEnabled';
+
 export const AnimationAbility: AbilityDefinition = {
-    enterAnimation: {
-        get(): string | undefined { return this.props.enterAnimation; },
-        set(v: string | undefined) { this.setProp('enterAnimation', v); },
+    /**
+     * 获取动画属性值
+     *
+     * @param key - 动画属性名
+     */
+    getAnimation(key: AnimationKey): any {
+        if (key === 'animationEnabled') {
+            return this.props.animationEnabled ?? true;
+        }
+        return this.props[key];
     },
 
-    enterAnimationOptions: {
-        get(): AnimationProps['enterAnimationOptions'] { return this.props.enterAnimationOptions; },
-        set(v: AnimationProps['enterAnimationOptions']) { this.setProp('enterAnimationOptions', v); },
-    },
-
-    leaveAnimation: {
-        get(): string | undefined { return this.props.leaveAnimation; },
-        set(v: string | undefined) { this.setProp('leaveAnimation', v); },
-    },
-
-    leaveAnimationOptions: {
-        get(): AnimationProps['leaveAnimationOptions'] { return this.props.leaveAnimationOptions; },
-        set(v: AnimationProps['leaveAnimationOptions']) { this.setProp('leaveAnimationOptions', v); },
-    },
-
-    animationEnabled: {
-        get(): boolean { return this.props.animationEnabled ?? true; },
-        set(v: boolean) { this.setProp('animationEnabled', v); },
+    /**
+     * 设置动画属性值
+     *
+     * @param key - 动画属性名
+     * @param value - 属性值
+     */
+    setAnimation(key: AnimationKey, value: any): void {
+        this.setProp(key, value);
     },
 
     /**

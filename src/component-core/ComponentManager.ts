@@ -12,7 +12,7 @@
  * ```
  */
 
-import type { ComponentBase } from './ComponentBase';
+import type { TemplateComponent } from './TemplateComponent';
 import { EventSourceRegistrar } from '@qimenjs/events';
 
 /**
@@ -24,10 +24,10 @@ export class ComponentManager {
     private static instance: ComponentManager;
 
     /** id → 组件实例映射 */
-    private readonly byId = new Map<string, ComponentBase>();
+    private readonly byId = new Map<string, TemplateComponent>();
 
     /** cid → 组件实例映射 */
-    private readonly byCid = new Map<string, ComponentBase>();
+    private readonly byCid = new Map<string, TemplateComponent>();
 
     private constructor() {}
 
@@ -50,7 +50,7 @@ export class ComponentManager {
      *
      * @param component - 组件实例
      */
-    register(component: ComponentBase): void {
+    register(component: TemplateComponent): void {
         // 注册 cid（必有）
         this.byCid.set(component.cid, component);
 
@@ -75,7 +75,7 @@ export class ComponentManager {
      *
      * @param component - 组件实例
      */
-    unregister(component: ComponentBase): void {
+    unregister(component: TemplateComponent): void {
         this.byCid.delete(component.cid);
 
         if (component.id) {
@@ -94,7 +94,7 @@ export class ComponentManager {
      * @param idOrCid - 组件 id 或 cid
      * @returns 组件实例，未找到返回 undefined
      */
-    get(idOrCid: string): ComponentBase | undefined {
+    get(idOrCid: string): TemplateComponent | undefined {
         // id 优先查找
         const byId = this.byId.get(idOrCid);
         if (byId) return byId;
@@ -105,7 +105,7 @@ export class ComponentManager {
     /**
      * 获取所有已注册的组件实例（调试用）
      */
-    getAll(): ComponentBase[] {
+    getAll(): TemplateComponent[] {
         return [...this.byCid.values()];
     }
 
@@ -123,6 +123,6 @@ export class ComponentManager {
  * @param id - 组件 id 或 cid
  * @returns 组件实例，未找到返回 undefined
  */
-export const getCmp = (id: string): ComponentBase | undefined => {
+export const getCmp = (id: string): TemplateComponent | undefined => {
     return ComponentManager.getInstance().get(id);
 };

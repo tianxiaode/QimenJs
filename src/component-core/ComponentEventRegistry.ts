@@ -5,7 +5,7 @@
  * 与 EventSourceRegistrar 协作，在组件 dispose 时自动清理
  */
 
-import type { ComponentBase } from './ComponentBase';
+import type { TemplateComponent } from './TemplateComponent';
 
 interface EventRegistration {
     /** 组件 id */
@@ -49,7 +49,7 @@ export class ComponentEventRegistry {
      * @returns 清理函数
      */
     register(
-        component: ComponentBase,
+        component: TemplateComponent,
         eventType: string,
         handler: (...args: any[]) => void,
         eventBus: any

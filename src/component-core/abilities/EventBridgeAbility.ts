@@ -4,8 +4,8 @@
  * 声明式配置事件源，自动创建监听。
  * 利用 onCleanup 自动销毁，组件 dispose 时无需手动清理。
  *
- * 作为 BASE_ABILITIES 的一部分，所有组件都拥有此能力。
- * 只需在布局定义中配置 eventBridge，即可自动绑定事件。
+ * 通过 getEventBridge/setEventBridge 方法访问配置，
+ * 不再将 eventBridge 属性暴露到组件顶层。
  *
  * 内置桥接类型：
  * - pagination: 监听 pagechange → onPageChange
@@ -17,23 +17,18 @@
  * @example
  * ```js
  * // 字符串简写
- * { type: ComponentTypes.TABLE, eventBridge: {
+ * component.setEventBridge({
  *     pagination: 'myToolbar',
  *     crud: 'myToolbar',
  *     selection: 'myGrid'
- * }}
+ * });
  *
  * // 完整配置
- * { type: ComponentTypes.TABLE, eventBridge: {
+ * component.setEventBridge({
  *     pagination: { source: 'myToolbar' },
  *     crud: { source: 'myToolbar', actions: ['create', 'delete'] },
  *     selection: { source: 'myGrid' }
- * }}
- *
- * // 自定义事件
- * { type: ComponentTypes.TABLE, eventBridge: {
- *     filter: { source: 'filterBar', event: 'filterchange', handler: 'onFilterChange' }
- * }}
+ * });
  * ```
  */
 
@@ -130,15 +125,17 @@ function normalizeBridgeConfig(value: any): { source: string; [key: string]: any
 
 export const EventBridgeAbility: AbilityDefinition = {
     /**
-     * eventBridge 配置
+     * 获取事件桥接配置
      */
-    eventBridge: {
-        get(): EventBridgeConfig {
-            return this.abilityState('EventBridgeAbility:config', () => ({}));
-        },
-        set(value: EventBridgeConfig): void {
-            this.setAbilityState('EventBridgeAbility:config', value);
-        },
+    getEventBridge(): EventBridgeConfig {
+        return this.abilityState('EventBridgeAbility:config', () => ({}));
+    },
+
+    /**
+     * 设置事件桥接配置
+     */
+    setEventBridge(value: EventBridgeConfig): void {
+        this.setAbilityState('EventBridgeAbility:config', value);
     },
 
     /**
@@ -148,7 +145,7 @@ export const EventBridgeAbility: AbilityDefinition = {
      * 组件 dispose 时通过 onCleanup 自动解绑。
      */
     initEventBridge(): void {
-        const config = this.eventBridge;
+        const config = this.getEventBridge();
         if (!config) return;
 
         const mgr = ComponentManager.getInstance();
@@ -237,7 +234,7 @@ export const EventBridgeAbility: AbilityDefinition = {
      */
     __initProps(props: Record<string, any>): void {
         if (props.eventBridge) {
-            this.eventBridge = props.eventBridge;
+            this.setEventBridge(props.eventBridge);
             queueMicrotask(() => {
                 if (!this.destroyed) {
                     this.initEventBridge();

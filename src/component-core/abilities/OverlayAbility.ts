@@ -4,7 +4,8 @@
  * 统一管理组件的浮层（tips/dropdown/popover），
  * 提供 createOverlay / openOverlay / closeOverlay / positionOverlay 方法。
  *
- * 作为 ComponentBase 的标准能力，通过 ComposableBase.with() 合并到原型。
+ * Tooltip 属性通过 getTooltip(key) / setTooltip(key, value) 方法访问，
+ * 不再将 tooltip 系列属性暴露到组件顶层。
  *
  * 浮层创建流程：
  * 1. 从 TemplateRegistrar 获取模板
@@ -55,6 +56,21 @@ export interface OverlayResult {
 }
 
 /**
+ * 支持的 tooltip key 类型
+ */
+export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth';
+
+/**
+ * tooltip 默认值
+ */
+const TOOLTIP_DEFAULTS: Record<string, any> = {
+    tooltipPlacement: 'top',
+    tooltipOffset: 4,
+    tooltipShowDelay: 0,
+    tooltipHideDelay: 0,
+};
+
+/**
  * 前缀到 z-index 层级的默认映射
  */
 const PREFIX_ZINDEX_MAP: Record<string, number> = {
@@ -80,36 +96,28 @@ function buildContentMap(container: HTMLElement): Map<string, HTMLElement> {
 }
 
 export const OverlayAbility: AbilityDefinition = {
-    // ─── Tooltip 属性（由 assignProps 赋值，由 initTooltipOverlay 使用） ───
+    // ─── Tooltip 属性访问方法 ───
 
-    tooltip: {
-        get(): string | undefined { return this.props.tooltip; },
-        set(v: string | undefined) { this.setProp('tooltip', v); },
+    /**
+     * 获取 Tooltip 属性值
+     *
+     * @param key - Tooltip 属性名
+     */
+    getTooltip(key: TooltipKey): any {
+        if (key in TOOLTIP_DEFAULTS) {
+            return this.props[key] ?? TOOLTIP_DEFAULTS[key];
+        }
+        return this.props[key];
     },
 
-    tooltipPlacement: {
-        get(): 'top' | 'bottom' | 'left' | 'right' { return this.props.tooltipPlacement ?? 'top'; },
-        set(v: 'top' | 'bottom' | 'left' | 'right') { this.setProp('tooltipPlacement', v); },
-    },
-
-    tooltipOffset: {
-        get(): number { return this.props.tooltipOffset ?? 4; },
-        set(v: number) { this.setProp('tooltipOffset', v); },
-    },
-
-    tooltipShowDelay: {
-        get(): number { return this.props.tooltipShowDelay ?? 0; },
-        set(v: number) { this.setProp('tooltipShowDelay', v); },
-    },
-
-    tooltipHideDelay: {
-        get(): number { return this.props.tooltipHideDelay ?? 0; },
-        set(v: number) { this.setProp('tooltipHideDelay', v); },
-    },
-
-    tooltipMaxWidth: {
-        get(): number | undefined { return this.props.tooltipMaxWidth; },
-        set(v: number | undefined) { this.setProp('tooltipMaxWidth', v); },
+    /**
+     * 设置 Tooltip 属性值
+     *
+     * @param key - Tooltip 属性名
+     * @param value - 属性值
+     */
+    setTooltip(key: TooltipKey, value: any): void {
+        this.setProp(key, value);
     },
 
     /**

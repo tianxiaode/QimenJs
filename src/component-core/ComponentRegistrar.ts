@@ -13,7 +13,7 @@
  */
 
 import { RegistrarBase } from '@qimenjs/registry';
-import type { ComponentBase } from './ComponentBase';
+import type { TemplateComponent } from './TemplateComponent';
 
 /**
  * 组件定义
@@ -21,8 +21,8 @@ import type { ComponentBase } from './ComponentBase';
 export interface ComponentDefinition {
     /** 组件类型标识 */
     type: string;
-    /** 组件类 */
-    component: new (props?: Record<string, any>) => ComponentBase;
+    /** 组件类（withTemplate 强类或直接继承 TemplateComponent 的类） */
+    component: new (props?: Record<string, any>) => any;
 }
 
 /**
@@ -40,8 +40,8 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefin
      * @param definition - 组件定义，包含 type 和 component 类
      */
     register(definition: ComponentDefinition): void;
-    register(type: string, component: new (props?: Record<string, any>) => ComponentBase): void;
-    register(typeOrDef: string | ComponentDefinition, component?: new (props?: Record<string, any>) => ComponentBase): void {
+    register(type: string, component: new (props?: Record<string, any>) => any): void;
+    register(typeOrDef: string | ComponentDefinition, component?: new (props?: Record<string, any>) => any): void {
         this.checkLock();
 
         const def: ComponentDefinition = typeof typeOrDef === 'string'
@@ -67,7 +67,7 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefin
      * @param type - 组件类型标识
      * @returns 组件类，未找到返回 undefined
      */
-    get(type: string): (new (props?: Record<string, any>) => ComponentBase) | undefined {
+    get(type: string): (new (props?: Record<string, any>) => any) | undefined {
         const def = this.storage.get(type);
         return def?.component;
     }

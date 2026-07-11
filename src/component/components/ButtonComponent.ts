@@ -11,8 +11,11 @@ import { ClickAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { LoadingAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { BUTTON_TEMPLATE } from '@qimenjs/template';
 
-export class ButtonComponent extends ComponentBase {
+const ButtonBase = ComponentBase.withTemplate(BUTTON_TEMPLATE);
+
+export class ButtonComponent extends ButtonBase {
     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
 
     static readonly contentSlots = {

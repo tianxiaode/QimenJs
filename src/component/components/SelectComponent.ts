@@ -16,8 +16,11 @@ import { OptionsAbility } from '@qimenjs/component-abilities';
 import { SearchAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { SELECT_TEMPLATE } from '@qimenjs/template';
 
-export class SelectComponent extends ComponentBase {
+const SelectBase = ComponentBase.withTemplate(SELECT_TEMPLATE);
+
+export class SelectComponent extends SelectBase {
     static readonly abilities = [
         ElementEventAbility, ContentAbility, ValueAbility, OptionsAbility,
         SearchAbility, DisableAbility, SizeAbility,

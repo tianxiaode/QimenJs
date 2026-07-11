@@ -11,6 +11,7 @@
  * - noPermissionTip: string — 无权限提示
  * - onPermissionChange: (hasPermission: boolean) => boolean | void — 权限变化回调
  *
+ * 通过 getPermission/setPermission 方法访问，
  * 声明 permission 后自动注册 permission:change 事件监听，
  * 权限变更时重新检查并控制组件可见性/可用性。
  */
@@ -21,15 +22,24 @@ import { globalEventBus } from '@qimenjs/events';
 import { PERMISSION_CHANGE_EVENT } from '@/permission/types';
 
 export const PermissionAbility: AbilityDefinition = {
-    permission: {
-        get(): PermissionProps['permission'] { return this.props.permission; },
-        set(v: PermissionProps['permission']) {
-            this.setProp('permission', v);
-            if (v) {
-                applyPermission(this, v);
-                this._listenPermissionChange();
-            }
-        },
+    /**
+     * 获取权限配置
+     */
+    getPermission(): PermissionProps['permission'] {
+        return this.props.permission;
+    },
+
+    /**
+     * 设置权限配置
+     *
+     * 设置后自动应用权限控制并注册变更监听。
+     */
+    setPermission(v: PermissionProps['permission']): void {
+        this.setProp('permission', v);
+        if (v) {
+            applyPermission(this, v);
+            this._listenPermissionChange();
+        }
     },
 
     /**

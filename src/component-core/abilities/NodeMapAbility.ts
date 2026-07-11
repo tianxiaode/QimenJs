@@ -1,13 +1,17 @@
 /**
- * NodeMapAbility — 模板节点扫描、属性生成、i18n 集中刷新
+ * NodeMapAbility — 模板节点扫描、事件映射、i18n 集中刷新
  *
  * 负责：扫描 data-content/data-i18n 元素、构建 nodeMap/eventMap、
  *       生成原型属性、注册 localeChange 监听实现 i18n 集中刷新。
  *
  * 作为 ComponentBase 的标准能力，通过 ComposableBase.with() 合并到原型。
  *
- * 首次实例化：querySelectorAll 扫描 → 生成索引表 + 模板元数据 → 存到原型共享
- * 后续实例化：用索引表 + el.children 直接定位，跳过 querySelectorAll
+ * 本能力服务于 TemplateRegistrar 路径（JSON 定义 / 嵌套模板）：
+ * - 首次实例化：querySelectorAll 扫描 → 预编译事件模板 + 生成内容属性 → 存到原型共享
+ * - 后续实例化：用索引表 + el.children 直接定位，事件映射用预编译模板填 node 引用
+ *
+ * withTemplate 路径（基础组件）不使用本能力的 buildNodeMap，
+ * 而是在 initElement 中直接调用 _buildNodeMapFromCompiled，走纯克隆流程。
  *
  * i18n 机制：
  * - 模板中用 data-i18n="btn.save" 声明翻译 key
@@ -29,6 +33,31 @@ import type {
     ExternalEventMap,
     EventMap,
 } from '../types';
+
+// ─── 预编译事件模板类型 ───
+
+/**
+ * 预编译的内部事件模板 — 不含 node 引用，实例化时填入
+ */
+interface InternalEventTemplate {
+    event: string;
+    handler: string;
+    once?: boolean;
+    delegate?: boolean;
+    delegateTarget?: string;
+    /** 对应 nodeMap 中的 group:name key，用于查找 node */
+    nodeKey: string;
+}
+
+/**
+ * 预编译的外部事件模板 — 不含 node 引用，实例化时填入
+ */
+interface ExternalEventTemplate {
+    /** eventMap external 的 key（如 "button:click"） */
+    emitKey: string;
+    /** 对应 nodeMap 中的 group:name key，用于查找 node */
+    nodeKey: string;
+}
 
 // ─── 辅助函数 ───
 
@@ -146,7 +175,63 @@ function applyValueToEl(el: HTMLElement, value: string, mode: 'value' | 'src' | 
 }
 
 /**
- * 在类原型上生成内容 getter/setter（只做一次）
+ * 预编译事件模板 — 从模板元数据推导 handler 名、解析 eventAttr/emitAttr
+ *
+ * 只在首次实例化时调用一次，结果存到原型上共享。
+ * 后续实例化用 _buildEventMapFromTemplates 直接填 node 引用。
+ */
+function precompileEventTemplates(
+    templateMetas: Record<string, NodeTemplateMeta>,
+    isMultiArea: boolean,
+): {
+    internalEventTemplates: InternalEventTemplate[];
+    externalEventTemplates: ExternalEventTemplate[];
+} {
+    const internalEventTemplates: InternalEventTemplate[] = [];
+    const externalEventTemplates: ExternalEventTemplate[] = [];
+
+    for (const [key, meta] of Object.entries(templateMetas)) {
+        const capitalName = meta.name.charAt(0).toUpperCase() + meta.name.slice(1);
+
+        // 预编译内部事件模板
+        if (meta.eventAttr) {
+            const handlerName = isMultiArea
+                ? `on${meta.group.charAt(0).toUpperCase() + meta.group.slice(1)}${capitalName}`
+                : `on${meta.name === '_' ? meta.group.charAt(0).toUpperCase() + meta.group.slice(1) : capitalName}`;
+
+            const parsed = parseEventAttr(meta.eventAttr);
+            for (const { event, once, delegate } of parsed) {
+                internalEventTemplates.push({
+                    event,
+                    handler: handlerName,
+                    once,
+                    delegate,
+                    delegateTarget: meta.delegateTarget,
+                    nodeKey: key,
+                });
+            }
+        }
+
+        // 预编译外部事件模板
+        if (meta.emitAttr) {
+            const parsed = parseEventAttr(meta.emitAttr);
+            for (const { event } of parsed) {
+                externalEventTemplates.push({
+                    emitKey: `${meta.name}:${event}`,
+                    nodeKey: key,
+                });
+            }
+        }
+    }
+
+    return { internalEventTemplates, externalEventTemplates };
+}
+
+/**
+ * 在类原型上生成内容 getter/setter（非 withTemplate 路径使用）
+ *
+ * 首次实例化时调用一次，后续实例化跳过（原型上已有）。
+ * withTemplate 路径由 buildContentPropertiesOnClass 在预编译时完成，不走此函数。
  */
 function buildContentPropertiesOnProto(
     component: any,
@@ -179,7 +264,6 @@ function buildContentPropertiesOnProto(
             set: function (this: any, v: string) {
                 const el = this.nodeMap[group]?.[name]?.el;
                 if (!el) return;
-                // 支持 i18n: 前缀的值
                 const resolved = v.startsWith(I18N_PREFIX)
                     ? translateI18nKey(v.slice(I18N_PREFIX.length))
                     : v;
@@ -206,92 +290,37 @@ function buildContentPropertiesOnProto(
 }
 
 /**
- * 构建 eventMap（从 nodeMap 和 DOM 属性）
+ * 从预编译事件模板构建 eventMap — 只填 node 引用
  */
-function buildEventMap(
+function buildEventMapFromTemplates(
+    internalTemplates: InternalEventTemplate[],
+    externalTemplates: ExternalEventTemplate[],
     nodeMap: Record<string, Record<string, NodeMetadata>>,
-    isMultiArea: boolean,
 ): EventMap {
     const internalEvents: InternalEventBinding[] = [];
     const externalEvents: ExternalEventMap = {};
 
-    for (const [group, entries] of Object.entries(nodeMap)) {
-        for (const [name, node] of Object.entries(entries)) {
-            const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-            const handlerName = isMultiArea
-                ? `on${group.charAt(0).toUpperCase() + group.slice(1)}${capitalName}`
-                : `on${name === '_' ? group.charAt(0).toUpperCase() + group.slice(1) : capitalName}`;
-
-            const eventAttr = node.el.getAttribute('data-event');
-            if (eventAttr) {
-                const parsed = parseEventAttr(eventAttr);
-                for (const { event, once, delegate } of parsed) {
-                    internalEvents.push({
-                        event,
-                        handler: handlerName,
-                        once,
-                        delegate,
-                        delegateTarget: node.delegateTarget,
-                        node,
-                    });
-                }
-            }
-
-            const emitAttr = node.el.getAttribute('data-emit');
-            if (emitAttr) {
-                const parsed = parseEventAttr(emitAttr);
-                for (const { event } of parsed) {
-                    const emitKey = `${group}:${event}`;
-                    externalEvents[emitKey] = node;
-                }
-            }
-        }
-    }
-
-    return { internal: internalEvents, external: externalEvents };
-}
-
-/**
- * 构建 eventMap（从模板元数据，快速路径）
- */
-function buildEventMapFromMetas(
-    templateMetas: Record<string, NodeTemplateMeta>,
-    nodeMap: Record<string, Record<string, NodeMetadata>>,
-    isMultiArea: boolean,
-): EventMap {
-    const internalEvents: InternalEventBinding[] = [];
-    const externalEvents: ExternalEventMap = {};
-
-    for (const [, meta] of Object.entries(templateMetas)) {
-        const node = nodeMap[meta.group]?.[meta.name];
+    for (const tpl of internalTemplates) {
+        const [group, name] = tpl.nodeKey.split(':');
+        const node = nodeMap[group]?.[name];
         if (!node) continue;
 
-        const capitalName = meta.name.charAt(0).toUpperCase() + meta.name.slice(1);
-        const handlerName = isMultiArea
-            ? `on${meta.group.charAt(0).toUpperCase() + meta.group.slice(1)}${capitalName}`
-            : `on${meta.name === '_' ? meta.group.charAt(0).toUpperCase() + meta.group.slice(1) : capitalName}`;
+        internalEvents.push({
+            event: tpl.event,
+            handler: tpl.handler,
+            once: tpl.once,
+            delegate: tpl.delegate,
+            delegateTarget: tpl.delegateTarget,
+            node,
+        });
+    }
 
-        if (meta.eventAttr) {
-            const parsed = parseEventAttr(meta.eventAttr);
-            for (const { event, once, delegate } of parsed) {
-                internalEvents.push({
-                    event,
-                    handler: handlerName,
-                    once,
-                    delegate,
-                    delegateTarget: meta.delegateTarget,
-                    node,
-                });
-            }
-        }
+    for (const tpl of externalTemplates) {
+        const [group, name] = tpl.nodeKey.split(':');
+        const node = nodeMap[group]?.[name];
+        if (!node) continue;
 
-        if (meta.emitAttr) {
-            const parsed = parseEventAttr(meta.emitAttr);
-            for (const { event } of parsed) {
-                const emitKey = `${meta.group}:${event}`;
-                externalEvents[emitKey] = node;
-            }
-        }
+        externalEvents[tpl.emitKey] = node;
     }
 
     return { internal: internalEvents, external: externalEvents };
@@ -301,7 +330,17 @@ function buildEventMapFromMetas(
 
 export const NodeMapAbility: AbilityDefinition = {
     /**
-     * 构建 nodeMap — 首次实例化走 querySelectorAll，后续走索引表快速路径
+     * 构建 nodeMap — TemplateRegistrar 路径（JSON 定义 / 嵌套模板）
+     *
+     * 首次实例化：querySelectorAll 扫描 → 预编译事件模板 + 生成内容属性 → 存到原型共享
+     * 后续实例化：用索引表 + children 直接定位，事件映射用预编译模板填 node 引用
+     *
+     * 与 withTemplate 路径的区分：
+     * - withTemplate：类定义时预编译，initElement 覆写为纯克隆流程，不依赖 TemplateRegistrar
+     * - 本路径：运行时从 TemplateRegistrar 获取模板，首次实例化时编译优化，后续实例化复用
+     *
+     * @deprecated 建议使用 withTemplate 预编译强类。此方法仅保留向后兼容，
+     * 供未迁移到 withTemplate 的组件使用。
      */
     buildNodeMap(): void {
         const ctor = this.constructor as any;
@@ -357,27 +396,33 @@ export const NodeMapAbility: AbilityDefinition = {
             templateMetas[key] = { raw: value, group, name, delegateTarget, jsonRef, jsonMode, templateRef, mode, eventAttr, emitAttr, i18nKey };
         }
 
-        // 构建 eventMap
-        this.eventMap = buildEventMap(this.nodeMap, isMultiArea);
+        // 预编译事件模板（只做一次，存到原型共享）
+        const { internalEventTemplates, externalEventTemplates } = precompileEventTemplates(templateMetas, isMultiArea);
 
-        // 生成 getter/setter 到原型（只做一次）
+        // 用预编译模板构建 eventMap（只填 node 引用）
+        this.eventMap = buildEventMapFromTemplates(internalEventTemplates, externalEventTemplates, this.nodeMap);
+
+        // 生成内容 getter/setter 到原型（只做一次，非 withTemplate 路径）
         buildContentPropertiesOnProto(this, templateMetas, isMultiArea);
 
-        // 存储索引表和模板元数据到原型
+        // 存储索引表、模板元数据、事件模板到原型
         proto._nodeIndexPath = indexPath;
         proto._nodeTemplateMetas = templateMetas;
+        proto._internalEventTemplates = internalEventTemplates;
+        proto._externalEventTemplates = externalEventTemplates;
     },
 
     /**
      * 快速构建 nodeMap — 后续实例化路径
      *
      * 用索引表 + children 直接定位，跳过 querySelectorAll。
+     * 事件映射用预编译模板填 node 引用，跳过 handler 名推导和 eventAttr 解析。
      */
     _buildNodeMapFast(
         indexPath: NodeIndexPath,
         templateMetas: Record<string, NodeTemplateMeta>,
     ): void {
-        const isMultiArea = (this.constructor as any).isMultiArea;
+        const proto = (this.constructor as any).prototype as any;
 
         for (const [key, path] of Object.entries(indexPath)) {
             const meta = templateMetas[key];
@@ -397,8 +442,10 @@ export const NodeMapAbility: AbilityDefinition = {
             this.nodeMap[meta.group][meta.name] = node;
         }
 
-        // 构建 eventMap（从模板元数据读取，无需访问 DOM 属性）
-        this.eventMap = buildEventMapFromMetas(templateMetas, this.nodeMap, isMultiArea);
+        // 用预编译事件模板构建 eventMap（只填 node 引用）
+        const internalTemplates: InternalEventTemplate[] = proto._internalEventTemplates;
+        const externalTemplates: ExternalEventTemplate[] = proto._externalEventTemplates;
+        this.eventMap = buildEventMapFromTemplates(internalTemplates, externalTemplates, this.nodeMap);
     },
 
     /**

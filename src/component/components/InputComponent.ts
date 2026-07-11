@@ -16,8 +16,11 @@ import { ValidateAbility } from '@qimenjs/component-abilities';
 import { PlaceholderAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { INPUT_TEMPLATE } from '@qimenjs/template';
 
-export class InputComponent extends ComponentBase {
+const InputBase = ComponentBase.withTemplate(INPUT_TEMPLATE);
+
+export class InputComponent extends InputBase {
     static readonly abilities = [
         ElementEventAbility, ContentAbility, ValueAbility, ValidateAbility,
         PlaceholderAbility, DisableAbility, SizeAbility,

@@ -18,8 +18,11 @@ import { ColumnAbility, type ColumnDefinition } from '@qimenjs/component-abiliti
 import { ColumnManageAbility } from '@qimenjs/component-abilities';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
+import { TABLE_TEMPLATE } from '@qimenjs/template';
 
-export class TableComponent extends ComponentBase {
+const TableBase = ComponentBase.withTemplate(TABLE_TEMPLATE);
+
+export class TableComponent extends TableBase {
     static readonly abilities = [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];
 
     /** 行高（虚拟列表用） */
@@ -54,17 +57,11 @@ export class TableComponent extends ComponentBase {
         this.renderHeader();
     }
 
-    /**
-     * table:bodyScroll 的 scroll 事件处理
-     * 由 ElementEventAbility 自动绑定（模板中 data-event="scroll"）
-     * 方法名从 data-content="table:bodyScroll" 推导：单 group → onBodyScroll
-     */
     onBodyScroll(_event: Event, el: HTMLElement): void {
         this._scrollTop = el.scrollTop;
         this.renderRows();
     }
 
-    /** rowHeight getter/setter */
     get rowHeight(): number {
         return this._rowHeight;
     }
@@ -73,19 +70,16 @@ export class TableComponent extends ComponentBase {
         this.renderRows();
     }
 
-    /** 可见行数 */
     get visibleCount(): number {
         if (this._rowHeight <= 0) return 0;
         return Math.ceil(this._containerHeight / this._rowHeight);
     }
 
-    /** 起始索引 */
     get startIndex(): number {
         if (this._rowHeight <= 0) return 0;
         return Math.max(0, Math.floor(this._scrollTop / this._rowHeight) - this._bufferCount);
     }
 
-    /** 总高度 */
     get totalHeight(): number {
         const data = this.mgr?.items || [];
         return data.length * this._rowHeight;
@@ -97,7 +91,6 @@ export class TableComponent extends ComponentBase {
         this.renderRows();
     }
 
-    /** 渲染表头（使用 textContent 避免 XSS，支持列配置） */
     private renderHeader(): void {
         const headerEl = this.nodeMap['table']?.['headerRow']?.el;
         if (!headerEl) return;
@@ -126,7 +119,6 @@ export class TableComponent extends ComponentBase {
         headerEl.appendChild(rowEl);
     }
 
-    /** 渲染行（使用 ColumnAbility 的格式化/条件显隐/条件禁用） */
     private renderRows(): void {
         const bodyEl = this.nodeMap['table']?.['bodyScroll']?.el;
         if (!bodyEl) return;
@@ -137,7 +129,6 @@ export class TableComponent extends ComponentBase {
         const count = this.visibleCount + this._bufferCount * 2;
         const end = Math.min(start + count, data.length);
 
-        // 设置总高度占位
         bodyEl.style.position = 'relative';
         bodyEl.innerHTML = '';
 
@@ -146,7 +137,6 @@ export class TableComponent extends ComponentBase {
         spacer.style.position = 'relative';
         bodyEl.appendChild(spacer);
 
-        // 渲染可见行
         for (let i = start; i < end; i++) {
             const row = data[i];
             const rowEl = document.createElement('div');
@@ -157,14 +147,12 @@ export class TableComponent extends ComponentBase {
             rowEl.style.width = '100%';
 
             for (const col of cols as ColumnDefinition[]) {
-                // 条件显隐
                 if (col.hidden) continue;
                 if (typeof col.hiddenWhen === 'function' && col.hiddenWhen(row, col)) continue;
 
                 const cellEl = document.createElement('div');
                 cellEl.className = 'q-table__cell';
 
-                // 条件 class
                 const cellClass = this.getCellClass?.(col, row);
                 if (cellClass) cellEl.classList.add(...cellClass.split(/\s+/));
 
@@ -176,13 +164,11 @@ export class TableComponent extends ComponentBase {
                 if (col.align) cellEl.style.textAlign = col.align;
                 if (col.cellStyle) Object.assign(cellEl.style, col.cellStyle);
 
-                // 条件禁用
                 if (this.isCellDisabled?.(col, row)) {
                     cellEl.classList.add('q-cell--disabled');
                     cellEl.setAttribute('aria-disabled', 'true');
                 }
 
-                // 格式化值（使用 textContent 避免 XSS）
                 const displayValue = this.formatCellValue?.(col, row) ?? row[col.field] ?? '';
                 cellEl.textContent = displayValue;
 
@@ -193,14 +179,6 @@ export class TableComponent extends ComponentBase {
         }
     }
 
-    // ============================================
-    // 事件桥接默认处理方法
-    // 由 EventBridgeAbility 自动调用
-    // ============================================
-
-    /**
-     * 分页变更处理
-     */
     onPageChange(e: any): void {
         if (e?.page) {
             if (this.mgr && typeof this.mgr.loadPage === 'function') {
@@ -210,44 +188,25 @@ export class TableComponent extends ComponentBase {
         }
     }
 
-    /**
-     * 选择变更处理
-     *
-     * 由 EventBridgeAbility 在监听到 selectionchange 事件时自动调用
-     * 同步源组件的选择状态到当前组件
-     */
     onSelectionChange(e: any): void {
         if (e?.selectedIds) {
-            // 同步选择状态
             this.selectedIds = new Set(e.selectedIds);
         }
         this.emit?.(TABLE_EVENTS.SELECTION_CHANGE, e);
     }
 
-    /**
-     * 新建处理
-     */
     onCreate(e: any): void {
         this.emit?.(TABLE_EVENTS.CREATE, e);
     }
 
-    /**
-     * 编辑处理
-     */
     onEdit(e: any): void {
         this.emit?.(TABLE_EVENTS.EDIT, e);
     }
 
-    /**
-     * 删除处理
-     */
     onDelete(e: any): void {
         this.emit?.(TABLE_EVENTS.DELETE, e);
     }
 
-    /**
-     * 刷新处理
-     */
     onRefresh(e: any): void {
         if (this.mgr && typeof this.mgr.reload === 'function') {
             this.mgr.reload();
@@ -257,23 +216,14 @@ export class TableComponent extends ComponentBase {
         this.emit?.(TABLE_EVENTS.REFRESH, e);
     }
 
-    /**
-     * 导入处理
-     */
     onImport(e: any): void {
         this.emit?.(TABLE_EVENTS.IMPORT, e);
     }
 
-    /**
-     * 导出处理
-     */
     onExport(e: any): void {
         this.emit?.(TABLE_EVENTS.EXPORT, e);
     }
 
-    /**
-     * 保存处理
-     */
     onSave(e: any): void {
         this.emit?.(TABLE_EVENTS.SAVE, e);
     }

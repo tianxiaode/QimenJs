@@ -12,6 +12,9 @@ import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
 import { ComponentManager } from '../ComponentManager';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
+import type { AriaKey } from './AccessibilityAbility';
+import type { AnimationKey } from './AnimationAbility';
+import type { TooltipKey } from './OverlayAbility';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -90,7 +93,7 @@ export const InitAbility: AbilityDefinition = {
         }
 
         if ((layout as any).eventBridge) {
-            this.eventBridge = (layout as any).eventBridge;
+            this.setEventBridge((layout as any).eventBridge);
             queueMicrotask(() => {
                 if (typeof this.initEventBridge === 'function') {
                     this.initEventBridge();
@@ -124,11 +127,14 @@ export const InitAbility: AbilityDefinition = {
 
     /**
      * 赋值属性 — Position/Style/Accessibility/Tooltip/Animation/Permission
+     *
+     * 常用属性（Position/Style）直接赋值到顶层，
+     * 少用属性（Accessibility/Animation/Tooltip/Permission）通过方法设置。
      */
     assignProps(layout: LayoutNode): void {
         const c = this as any;
 
-        // PositionProps
+        // PositionProps — 常用，直接赋值到顶层
         if (layout.x !== undefined) c.x = layout.x;
         if (layout.y !== undefined) c.y = layout.y;
         if (layout.top !== undefined) c.top = layout.top;
@@ -153,62 +159,59 @@ export const InitAbility: AbilityDefinition = {
         if (layout.tabIndex !== undefined) c.tabIndex = layout.tabIndex;
         if (layout.zIndex !== undefined) c.zIndex = layout.zIndex;
 
-        // StyleProps
+        // StyleProps — 常用，直接赋值到顶层
         if (layout.className !== undefined) c.className = layout.className;
         if (layout.style !== undefined) c.style = layout.style;
 
-        // AccessibilityProps
-        if (layout.role !== undefined) c.role = layout.role;
-        if (layout.ariaLabel !== undefined) c.ariaLabel = layout.ariaLabel;
-        if (layout.ariaDescribedBy !== undefined) c.ariaDescribedBy = layout.ariaDescribedBy;
-        if (layout.ariaLabelledBy !== undefined) c.ariaLabelledBy = layout.ariaLabelledBy;
-        if (layout.ariaHidden !== undefined) c.ariaHidden = layout.ariaHidden;
-        if (layout.ariaDisabled !== undefined) c.ariaDisabled = layout.ariaDisabled;
-        if (layout.ariaExpanded !== undefined) c.ariaExpanded = layout.ariaExpanded;
-        if (layout.ariaSelected !== undefined) c.ariaSelected = layout.ariaSelected;
-        if (layout.ariaPressed !== undefined) c.ariaPressed = layout.ariaPressed;
-        if (layout.ariaRequired !== undefined) c.ariaRequired = layout.ariaRequired;
-        if (layout.ariaInvalid !== undefined) c.ariaInvalid = layout.ariaInvalid;
-        if (layout.ariaLive !== undefined) c.ariaLive = layout.ariaLive;
-        if (layout.ariaControls !== undefined) c.ariaControls = layout.ariaControls;
-        if (layout.ariaOwns !== undefined) c.ariaOwns = layout.ariaOwns;
-        if (layout.ariaHasPopup !== undefined) c.ariaHasPopup = layout.ariaHasPopup;
-        if (layout.ariaCurrent !== undefined) c.ariaCurrent = layout.ariaCurrent;
-        if (layout.ariaLevel !== undefined) c.ariaLevel = layout.ariaLevel;
-        if (layout.ariaValueText !== undefined) c.ariaValueText = layout.ariaValueText;
-        if (layout.ariaValueMin !== undefined) c.ariaValueMin = layout.ariaValueMin;
-        if (layout.ariaValueMax !== undefined) c.ariaValueMax = layout.ariaValueMax;
-        if (layout.ariaValueNow !== undefined) c.ariaValueNow = layout.ariaValueNow;
-        if (layout.ariaModal !== undefined) c.ariaModal = layout.ariaModal;
-        if (layout.ariaReadOnly !== undefined) c.ariaReadOnly = layout.ariaReadOnly;
-        if (layout.ariaAutoComplete !== undefined) c.ariaAutoComplete = layout.ariaAutoComplete;
-        if (layout.ariaErrorMessage !== undefined) c.ariaErrorMessage = layout.ariaErrorMessage;
-        if (layout.ariaRowCount !== undefined) c.ariaRowCount = layout.ariaRowCount;
-        if (layout.ariaColCount !== undefined) c.ariaColCount = layout.ariaColCount;
-        if (layout.ariaRowIndex !== undefined) c.ariaRowIndex = layout.ariaRowIndex;
-        if (layout.ariaColIndex !== undefined) c.ariaColIndex = layout.ariaColIndex;
-        if (layout.ariaRowSpan !== undefined) c.ariaRowSpan = layout.ariaRowSpan;
-        if (layout.ariaColSpan !== undefined) c.ariaColSpan = layout.ariaColSpan;
-        if (layout.ariaSetSize !== undefined) c.ariaSetSize = layout.ariaSetSize;
-        if (layout.ariaPosInSet !== undefined) c.ariaPosInSet = layout.ariaPosInSet;
+        // AccessibilityProps — 少用，通过 setAria 批量设置
+        const ariaValues: Partial<Record<AriaKey, any>> = {};
+        const ariaKeys: AriaKey[] = [
+            'role', 'ariaLabel', 'ariaDescribedBy', 'ariaLabelledBy',
+            'ariaHidden', 'ariaDisabled', 'ariaExpanded', 'ariaSelected',
+            'ariaPressed', 'ariaRequired', 'ariaInvalid', 'ariaLive',
+            'ariaControls', 'ariaOwns', 'ariaHasPopup', 'ariaCurrent',
+            'ariaLevel', 'ariaValueText', 'ariaValueMin', 'ariaValueMax',
+            'ariaValueNow', 'ariaModal', 'ariaReadOnly', 'ariaAutoComplete',
+            'ariaErrorMessage', 'ariaRowCount', 'ariaColCount', 'ariaRowIndex',
+            'ariaColIndex', 'ariaRowSpan', 'ariaColSpan', 'ariaSetSize', 'ariaPosInSet',
+        ];
+        let hasAria = false;
+        for (const key of ariaKeys) {
+            if ((layout as any)[key] !== undefined) {
+                ariaValues[key] = (layout as any)[key];
+                hasAria = true;
+            }
+        }
+        if (hasAria) {
+            this.setAriaBatch(ariaValues);
+        }
 
-        // TooltipProps
-        if (layout.tooltip !== undefined) c.tooltip = layout.tooltip;
-        if (layout.tooltipPlacement !== undefined) c.tooltipPlacement = layout.tooltipPlacement;
-        if (layout.tooltipOffset !== undefined) c.tooltipOffset = layout.tooltipOffset;
-        if (layout.tooltipShowDelay !== undefined) c.tooltipShowDelay = layout.tooltipShowDelay;
-        if (layout.tooltipHideDelay !== undefined) c.tooltipHideDelay = layout.tooltipHideDelay;
-        if (layout.tooltipMaxWidth !== undefined) c.tooltipMaxWidth = layout.tooltipMaxWidth;
+        // TooltipProps — 少用，通过 setTooltip 设置
+        const tooltipKeys: TooltipKey[] = [
+            'tooltip', 'tooltipPlacement', 'tooltipOffset',
+            'tooltipShowDelay', 'tooltipHideDelay', 'tooltipMaxWidth',
+        ];
+        for (const key of tooltipKeys) {
+            if ((layout as any)[key] !== undefined) {
+                this.setTooltip(key, (layout as any)[key]);
+            }
+        }
 
-        // AnimationProps
-        if (layout.enterAnimation !== undefined) c.enterAnimation = layout.enterAnimation;
-        if (layout.enterAnimationOptions !== undefined) c.enterAnimationOptions = layout.enterAnimationOptions;
-        if (layout.leaveAnimation !== undefined) c.leaveAnimation = layout.leaveAnimation;
-        if (layout.leaveAnimationOptions !== undefined) c.leaveAnimationOptions = layout.leaveAnimationOptions;
-        if (layout.animationEnabled !== undefined) c.animationEnabled = layout.animationEnabled;
+        // AnimationProps — 少用，通过 setAnimation 设置
+        const animationKeys: AnimationKey[] = [
+            'enterAnimation', 'enterAnimationOptions',
+            'leaveAnimation', 'leaveAnimationOptions', 'animationEnabled',
+        ];
+        for (const key of animationKeys) {
+            if ((layout as any)[key] !== undefined) {
+                this.setAnimation(key, (layout as any)[key]);
+            }
+        }
 
-        // PermissionProps
-        if (layout.permission !== undefined) c.permission = layout.permission;
+        // PermissionProps — 少用，通过 setPermission 设置
+        if (layout.permission !== undefined) {
+            this.setPermission(layout.permission);
+        }
 
         // 剩余 props
         if (layout.props) {
@@ -236,27 +239,39 @@ export const InitAbility: AbilityDefinition = {
 
     /**
      * 绑定内部事件 — data-event 声明的模板事件
+     *
+     * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
      */
     bindInternalEvents(): void {
         for (const binding of this.eventMap.internal) {
             const { event, handler, once, delegate, delegateTarget, node } = binding;
 
             if (delegate) {
-                const delegateHandler = (ev: Event) => {
-                    const target = (ev.target as HTMLElement).closest(delegateTarget || '*');
+                // 事件委托模式
+                this.bind(node.el, event as any, { selector: delegateTarget });
+                this.on(event, (gesture: any) => {
+                    const domEvent = gesture?.domEvent ?? gesture;
+                    const target = delegateTarget
+                        ? (domEvent.target as HTMLElement).closest(delegateTarget)
+                        : (domEvent.target as HTMLElement);
                     if (target) {
-                        (this as any)[handler](ev, target);
+                        (this as any)[handler](domEvent, target);
                     }
-                };
-                node.el.addEventListener(event, delegateHandler);
-                this.onCleanup(() => node.el.removeEventListener(event, delegateHandler));
+                });
             } else if (once) {
-                const boundHandler = (ev: Event) => (this as any)[handler](ev, node.el);
-                node.el.addEventListener(event, boundHandler, { once: true });
+                // 只触发一次
+                this.bind(node.el, event as any);
+                this.once(event, (gesture: any) => {
+                    const domEvent = gesture?.domEvent ?? gesture;
+                    (this as any)[handler](domEvent, node.el);
+                });
             } else {
-                const boundHandler = (ev: Event) => (this as any)[handler](ev, node.el);
-                node.el.addEventListener(event, boundHandler);
-                this.onCleanup(() => node.el.removeEventListener(event, boundHandler));
+                // 常规绑定
+                this.bind(node.el, event as any);
+                this.on(event, (gesture: any) => {
+                    const domEvent = gesture?.domEvent ?? gesture;
+                    (this as any)[handler](domEvent, node.el);
+                });
             }
         }
     },
@@ -264,40 +279,40 @@ export const InitAbility: AbilityDefinition = {
     /**
      * 绑定外部事件 — data-emit 声明的模板事件
      *
-     * 对照 handlers 和 eventBridge，只有配置了监听才绑定。
+     * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
+     *
+     * 两种模式：
+     * - handlers 里的 key → 绑定具体函数，直接执行
+     * - 默认（bridges + 未配置）→ 走事件桥 emitUI 发布
      */
     bindExternalEvents(layout: LayoutNode): void {
-        const listenedEvents = new Set<string>();
-
-        if (layout.handlers) {
-            for (const key of Object.keys(layout.handlers)) {
-                listenedEvents.add(key);
-            }
-        }
-
-        if ((this as any).eventBridge) {
-            const bridge = (this as any).eventBridge;
-            for (const key of Object.keys(bridge)) {
-                if (key === 'pagination') listenedEvents.add('pagechange');
-                else if (key === 'crud') listenedEvents.add('crudaction');
-                else if (key === 'selection') listenedEvents.add('selectionchange');
-                else if (key === 'search') listenedEvents.add('searchchange');
-                else listenedEvents.add(key);
-            }
-        }
+        const handlerKeys = new Set<string>(layout.handlers ? Object.keys(layout.handlers) : []);
 
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
 
-            if (!listenedEvents.has(eventType) && !listenedEvents.has(emitKey)) continue;
-
-            const handler = (ev: Event) => {
-                if (typeof this.emit === 'function') {
-                    this.emit(emitKey, ev);
+            // handlers 模式：绑定具体函数
+            if (handlerKeys.has(emitKey)) {
+                const handlerDef = layout.handlers![emitKey];
+                const resolved = this.resolveHandler(handlerDef);
+                if (resolved) {
+                    this.bind(node.el, eventType as any);
+                    this.on(eventType, (gesture: any) => {
+                        const domEvent = gesture?.domEvent ?? gesture;
+                        resolved(domEvent);
+                    });
                 }
-            };
-            node.el.addEventListener(eventType, handler);
-            this.onCleanup(() => node.el.removeEventListener(eventType, handler));
+                continue;
+            }
+
+            // bridges 模式 + 默认模式：走事件桥 emitUI 发布
+            this.bind(node.el, eventType as any);
+            this.on(eventType, (gesture: any) => {
+                const domEvent = gesture?.domEvent ?? gesture;
+                if (typeof this.emitUI === 'function') {
+                    this.emitUI(emitKey, undefined, domEvent);
+                }
+            });
         }
     },
 

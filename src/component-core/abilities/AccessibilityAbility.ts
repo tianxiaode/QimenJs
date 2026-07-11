@@ -2,7 +2,10 @@
  * AccessibilityAbility — ARIA 无障碍属性
  *
  * 对应 LayoutNode 的 AccessibilityProps 字段。
- * setter 只写 this.props + this.markDirty(key)，
+ * 通过 getAria(key) / setAria(key, value) 方法访问，
+ * 不再将 28 个 aria 属性暴露到组件顶层。
+ *
+ * setAria 只写 this.props + this.markDirty(key)，
  * flushAccessibility() 由 ComponentBase.flush() 调用。
  */
 
@@ -47,8 +50,43 @@ const ARIA_MAP: Record<string, string> = {
     ariaPosInSet: 'aria-posinset',
 };
 
-const ability: AbilityDefinition = {
-    flushAccessibility() {
+/**
+ * 支持的 aria key 类型
+ */
+export type AriaKey = keyof typeof ARIA_MAP;
+
+export const AccessibilityAbility: AbilityDefinition = {
+    /**
+     * 获取 ARIA 属性值
+     *
+     * @param key - ARIA 属性名（camelCase，如 'ariaLabel', 'role'）
+     */
+    getAria(key: AriaKey): any {
+        return this.props[key];
+    },
+
+    /**
+     * 设置 ARIA 属性值
+     *
+     * @param key - ARIA 属性名（camelCase，如 'ariaLabel', 'role'）
+     * @param value - 属性值，null/undefined 时移除属性
+     */
+    setAria(key: AriaKey, value: any): void {
+        this.setProp(key, value);
+    },
+
+    /**
+     * 批量设置 ARIA 属性
+     *
+     * @param values - ARIA 属性键值对
+     */
+    setAriaBatch(values: Partial<Record<AriaKey, any>>): void {
+        for (const [key, value] of Object.entries(values)) {
+            this.setProp(key, value);
+        }
+    },
+
+    flushAccessibility(): void {
         const dirty = this.dirtySet;
         const p = this.props;
         const el = this.el;
@@ -66,12 +104,3 @@ const ability: AbilityDefinition = {
         }
     },
 };
-
-for (const [propName] of Object.entries(ARIA_MAP)) {
-    ability[propName] = {
-        get() { return this.props[propName]; },
-        set(v: any) { this.setProp(propName, v); },
-    };
-}
-
-export const AccessibilityAbility: AbilityDefinition = ability;

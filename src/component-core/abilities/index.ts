@@ -12,3 +12,4 @@ export * from './ThemeAbility';
 export * from './InitAbility';
 export * from './NodeMapAbility';
 export * from './OverlayAbility';
+export * from './ElementEventAbility';

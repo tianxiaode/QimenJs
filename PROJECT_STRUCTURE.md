@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-11，基于 v0.2.0。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-11，基于 v0.2.0（withTemplate 统一架构）。
 
 ## 项目概览
 
@@ -24,7 +24,7 @@ Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, sc
 Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, template
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
 Layer 4 (应用层)  → entity, types
-UI 层             → component-core, component-abilities, component, layout, theme, imperative, permission
+UI 层             → component-core, component-abilities, component, layout, theme, icon, imperative, permission
 ```
 
 依赖方向：高层可依赖低层，不可反向。UI 层依赖应用层及以下。
@@ -72,10 +72,19 @@ UI 层             → component-core, component-abilities, component, layout, t
 
 ### 5. Component 模式
 
-- `ComponentBase` extends ComposableBase，标准能力 = `[EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility, AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility, EventBridgeAbility, ThemeAbility, InitAbility, NodeMapAbility, OverlayAbility]`
+- `TemplateComponent`（原 `ComponentBase`）extends ComposableBase，标准能力 = `[EventAbility, DomEventsAbility, PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility, AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility, EventBridgeAbility, ThemeAbility, InitAbility, NodeMapAbility, OverlayAbility]`
+- **withTemplate 统一架构**：所有组件通过 `TemplateComponent.withTemplate(templateHtml)` 创建强类，类定义时预编译模板，实例化时纯克隆
+  - 预编译：提取节点数据、生成内容属性、预编译事件模板
+  - 实例化：cloneNode + 填 node 引用，零字符串处理开销
+  - 不依赖 TemplateRegistrar
 - 内部递归渲染模型：组件通过 `ChildrenAbility.add(layout)` 自渲染子组件，替代外部 Renderer
 - HTML 模板注入 + data-content 内容管理
-- EventBridgeAbility 声明式事件桥接
+- **事件机制**：
+  - 内部事件（`data-event`）：通过 `this.bind` 统一绑定，使用 event-dom 事件规范命名（`tap`/`click`/`input`/`change`/`scroll` 等），跨平台兼容
+  - 外部事件（`data-emit`）：声明即生效，通过 `this.bind` 绑定 + `emitUI` 发布到事件桥（自动带源、构建 EventContext）
+  - `bridges` 配置：声明走事件桥发布的事件
+  - `handlers` 配置：绑定具体函数
+  - `EventBridgeAbility` 声明式事件桥接
 - dirtySet + flush() 延迟刷新机制
 - 主题切换：CSS 变量自动生效 + `static themeAware = true` 声明 JS 层面感知
 - 权限控制：LayoutNode 声明 `permission` 字段后自动监听 `permission:change` 事件
@@ -315,18 +324,18 @@ ExecutionStep, IExecutableContext, IPipelineResult。
 
 #### `src/component-core/` — 组件核心层 `@qimenjs/component-core`
 ```
-ComponentBase.ts, ComponentManager.ts, ComponentRegistrar.ts
+TemplateComponent.ts, ComponentManager.ts, ComponentRegistrar.ts
 ComponentEventRegistry.ts, ComponentTypes.ts
 abilities/ — InitAbility, NodeMapAbility, OverlayAbility, AnimationAbility
            AccessibilityAbility, EntityCoreAbility, PermissionAbility
            PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
-           StyleAbility, ThemeAbility, EventBridgeAbility, PropAlias.ts
-           positionOverlay.ts
+           StyleAbility, ThemeAbility, EventBridgeAbility, ElementEventAbility
+           PropAlias.ts, positionOverlay.ts
 interfaces/ — IRenderAbility, ILifecycleAbility, IPositionAbility, IStyleAbility
             IThemeAbility, IEventBridgeAbility, IChildrenAbility, IStateAbility
 index.ts
 ```
-组件基类、注册管理器、基础能力。ComponentBase 通过 `COMPONENT_BASE_ABILITIES` 注入 16 个核心能力，统一 `initialize(layout)` 初始化流程。内部递归渲染模型：`ChildrenAbility.add(layout)` 替代外部 Renderer。
+组件基类、注册管理器、基础能力。`TemplateComponent`（原 `ComponentBase`）通过 `TEMPLATE_COMPONENT_ABILITIES` 注入 16 个核心能力，统一 `initialize(layout)` 初始化流程。`withTemplate(templateHtml)` 静态方法创建预编译强类，类定义时编译模板，实例化时纯克隆。`ElementEventAbility` 通过 `this.bind` 统一绑定 DOM 事件，使用 event-dom 事件规范命名。内部递归渲染模型：`ChildrenAbility.add(layout)` 替代外部 Renderer。
 
 #### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities`
 ```
@@ -335,6 +344,7 @@ data/ — ValueAbility, ValidateAbility, SubmitAbility, FieldSetAbility, Placeho
 entity/ — EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility
           EntityLocalReadonlyAbility, EntityLocalCrudAbility
           EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility
+event/ — ElementEventAbility（已迁移到 component-core，此处重导出向后兼容）
 selection/ — SelectionAbility, SelectableAbility
 children/ — ChildrenAbility（add/remove/removeAll，拆解 LayoutNode JSON 递归创建子组件）
 render/ — VirtualListAbility, OverlayAbility, AnimationAbility
@@ -352,9 +362,11 @@ index.ts
 ```
 OverlayRoot.ts, HiddenRoot.ts, z-index.ts, register.ts, events.ts
 components/ — 15 种内置组件:
-  ButtonComponent   [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility]
-  InputComponent    [ContentAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility]
-  SelectComponent   [ContentAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility]
+  ButtonComponent   [ElementEventAbility, ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility] — withTemplate
+  InputComponent    [ElementEventAbility, ContentAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility] — withTemplate
+  SelectComponent   [ElementEventAbility, ContentAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility] — withTemplate
+  DialogComponent   [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility] — withTemplate
+  TableComponent    [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility] — withTemplate
   IconComponent     [SizeAbility]
   TextComponent     [SizeAbility]
   HBoxComponent     [LayoutAbility, ChildrenAbility, AnimationAbility]
@@ -364,9 +376,7 @@ components/ — 15 种内置组件:
   ToolbarComponent  [LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility]
   ButtonGroupComponent [ChildrenAbility, SizeAbility, DisableAbility]
   SeparatorComponent [VisibleAbility]
-  TableComponent    [EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility]
   FormComponent     [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility]
-  DialogComponent   [ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
   ColumnBase, CellBase, NumberColumn, IdColumn, CheckboxColumn
 styles/animations.ts, styles/toolbar.ts
 index.ts
@@ -378,13 +388,24 @@ LayoutNode.ts, parser.ts, validator.ts, index.ts
 ```
 JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, children, handlers, extraFns, abilities, stateTriggers, entity, permission, position/style/tooltip/animation/accessibility props）。
 
-#### `src/imperative/` — 命令式 API `@qimenjs/imperative`
+#### `src/theme/` — 主题系统 `@qimenjs/theme`
 ```
 ThemeRegistrar.ts, AtomicCSS.ts, register.ts
-presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/index.ts
+presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/chinese-themes.ts, presets/index.ts
 types/, index.ts
 ```
 主题注册器（extends RegistrarBase）+ CSS 变量输出 + 原子 CSS。`ThemeRegistrar` 通过 GlobalEventBus 触发 `theme:change` 事件，组件通过 `static themeAware = true` 声明 JS 层面感知。引入即自动注册预设主题 + 注册到 RegistryHub（键 `'theme'`）。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
+
+7 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色）通过 `registerChineseThemes()` 按需注册，不会自动加载。`AtomicCSS` 按需生成原子化 CSS 规则（~185 条预定义规则）。
+
+#### `src/icon/` — 中国风图标库 `@qimenjs/icon`
+```
+q-icon.css, fonts/q-icon.woff2, fonts/q-icon.woff, fonts/q-icon.ttf, fonts/icon-map.json
+svg/ — 102 个独立 SVG 源文件（24x24 viewBox, stroke-based, currentColor）
+```
+管理后台专用图标库，102 个图标覆盖 10 个分类（通用操作/导航/状态提示/文件文档/用户管理/日期时间/通讯消息/数据图表/电商财务/中国风特色）。字体图标方案：`@font-face` + Unicode 私用区（E900-E99F），CSS 类名 `q-icon-` 前缀，字体族名 `QIcon`。不参与 TypeScript 构建，纯静态资源目录。
+
+构建命令：`node scripts/build-icon-font.js`（SVG → TTF → WOFF2/WOFF）。
 
 #### `src/imperative/` — 命令式 API `@qimenjs/imperative`
 ```
@@ -405,7 +426,7 @@ PermissionRegistrar.ts, createDomainPermissions.ts, types.ts, index.ts
 ```typescript
 import { EventBus } from '@qimenjs/events'
 import { Pipeline } from '@qimenjs/pipeline'
-import { ComponentBase } from '@qimenjs/component-core'
+import { TemplateComponent } from '@qimenjs/component-core'
 ```
 
 ## 关键数据流
@@ -437,12 +458,15 @@ ChildrenAbility.add(layoutNode)
   2. 合并 props（非保留顶层 key + layout.props + id/type/template/tag/field）
   3. new ComponentClass(props) 创建实例
   4. initElement() 创建 el + 注入 HTML 模板
+     - withTemplate 强类：cloneNode + 填 node 引用（纯克隆，零字符串处理）
+     - TemplateRegistrar 路径：从注册表查找模板 + buildNodeMap（已 deprecated）
   5. 挂载 DOM（appendChild + addChild）
   6. setupAbilities(layout.abilities)
   7. extraFns bind + defineProperty
   8. meta 复制
   9. PositionProps/StyleProps/AccessibilityProps/TooltipProps/AnimationProps/PermissionProps/EntityProps 赋值
-  10. bindHandlers + bindStateTriggers
+  10. bindInternalEvents（this.bind + this.on，事件规范命名）
+      bindExternalEvents（this.bind + this.on + emitUI，bridges/handlers 配置）
   11. lifecycle 钩子
   12. ComponentManager.register
   13. 递归 children.add(childLayout)
@@ -478,7 +502,11 @@ PermissionRegistrar.registerBatch(entries)
 
 5. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
 
-6. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。
+6. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。主题代码已从 `src/imperative/` 迁移到独立的 `src/theme/` 包。
+
+7. **`src/icon/` 不参与 TypeScript 构建**：图标库是纯静态资源目录（CSS + SVG + 字体文件），没有 `index.ts` 入口，不在 `tsconfig.json` 和 `build-config.json` 中配置。字体文件通过 `node scripts/build-icon-font.js` 手动构建。
+
+8. **`build-config.json` 残留配置**：`renderer` 模块配置仍存在但 `src/renderer/` 已删除；`theme` 模块的 dependencies 为空数组但实际依赖 `@qimenjs/registry` 和 `@qimenjs/events`。
 
 ## 配置文件
 
@@ -492,3 +520,15 @@ PermissionRegistrar.registerBatch(entries)
 | `.prettierrc` | Prettier 格式化规则 |
 | `typedoc.json` | TypeDoc 文档生成配置 |
 | `VERSION` | 版本号文件 (0.2.0) |
+
+## 构建脚本
+
+| 脚本 | 用途 |
+|------|------|
+| `scripts/build.js` | 主构建脚本 |
+| `scripts/build-icon-font.js` | 图标字体构建：SVG → TTF → WOFF2/WOFF |
+| `scripts/split-icon-svg.js` | 拆分大 SVG 文件为独立图标 SVG |
+| `scripts/generate-missing-icons.js` | 批量生成缺失的图标 SVG 占位文件 |
+| `scripts/generate-tests.js` | 测试生成脚本 |
+| `scripts/cleanup.js` | 清理脚本 |
+| `scripts/publish.js` | 发布脚本 |

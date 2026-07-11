@@ -15,8 +15,11 @@ import { OpenableAbility } from '@qimenjs/component-abilities';
 import { OverlayAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
+import { DIALOG_TEMPLATE } from '@qimenjs/template';
 
-export class DialogComponent extends ComponentBase {
+const DialogBase = ComponentBase.withTemplate(DIALOG_TEMPLATE);
+
+export class DialogComponent extends DialogBase {
     static readonly abilities = [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
 
     static readonly contentSlots = {

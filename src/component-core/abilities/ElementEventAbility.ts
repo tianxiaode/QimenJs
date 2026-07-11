@@ -46,7 +46,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import type { InternalEventBinding, EventMap } from '@qimenjs/component-core';
+import type { InternalEventBinding, EventMap } from '../types';
 
 export const ElementEventAbility: AbilityDefinition = {
     /**
@@ -90,7 +90,7 @@ export const ElementEventAbility: AbilityDefinition = {
         }
 
         // ─── 绑定外部事件：data-emit 声明即生效，走事件桥 emitUI ───
-        for (const [emitKey, node] of Object.entries(eventMap.external)) {
+        for (const [emitKey, node] of Object.entries(eventMap.external) as [string, any][]) {
             // emitKey 格式为 "name:event"，取事件类型
             const eventType = emitKey.split(':')[1] || emitKey;
 

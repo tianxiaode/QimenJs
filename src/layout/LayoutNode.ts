@@ -500,6 +500,23 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
     handlers?: Record<string, string | ((...args: any[]) => any) | HandlerConfig | (string | ((...args: any[]) => any) | HandlerConfig)[]>;
 
     /**
+     * 事件桥接声明：声明哪些事件走事件桥发布
+     *
+     * bridges 中声明的事件，触发时自动通过 this.emit 发布到事件总线，
+     * 其他组件可通过 eventBus.on 监听。
+     *
+     * 与 handlers 的区别：
+     * - bridges：只声明发布，走事件桥，其他组件监听
+     * - handlers：绑定具体函数，直接执行
+     *
+     * @example
+     * ```js
+     * bridges: ['saveBtn:click', 'cancelBtn:click']
+     * ```
+     */
+    bridges?: string[];
+
+    /**
      * 附加函数：bind this 后挂到组件实例
      *
      * 渲染时每个函数 bind(component) 后通过 Object.defineProperty 注入实例，

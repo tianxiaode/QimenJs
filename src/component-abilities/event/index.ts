@@ -1,7 +1,5 @@
-// EventBridgeAbility 已迁移到 @qimenjs/component-core
+// ElementEventAbility 已迁移到 @qimenjs/component-core
 // 此处从 component-core 重导出以保持向后兼容
-export { EventBridgeAbility } from '@qimenjs/component-core';
-export type { EventBridgeConfig, PaginationBridgeConfig, CrudBridgeConfig, SelectionBridgeConfig, CustomBridgeConfig } from '@qimenjs/component-core';
+export { ElementEventAbility } from '@qimenjs/component-core';
 
-export { EventBindingAbility } from './EventBindingAbility';
-export { ElementEventAbility } from './ElementEventAbility';
+// EventBindingAbility 已废弃，请使用 DomEventsAbility.bind() 替代
