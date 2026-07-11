@@ -1,0 +1,249 @@
+/**
+ * QimenJS 组件演示 — 全局样式
+ *
+ * 使用 CSS 变量（--q-*）引用主题 Design Tokens，
+ * 主题切换时自动生效，无需 JS 介入。
+ */
+
+/* ===== 布局 ===== */
+
+.app-root {
+    flex: 1;
+    min-height: 100vh;
+    background: var(--q-colors-bg-secondary);
+    color: var(--q-colors-text);
+    font-family: var(--q-font-family);
+    font-size: var(--q-font-size-md);
+    line-height: var(--q-font-line-height-normal);
+    padding: var(--q-spacing-xl);
+    overflow-y: auto;
+    transition: background var(--q-transition-normal), color var(--q-transition-normal);
+}
+
+/* ===== 侧边导航 ===== */
+
+.sidebar-nav {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--q-colors-bg);
+    border-right: 1px solid var(--q-colors-border-light);
+    display: flex;
+    flex-direction: column;
+    padding: var(--q-spacing-md) 0;
+    position: sticky;
+    top: 0;
+    transition: background var(--q-transition-normal), border-color var(--q-transition-normal);
+}
+
+.nav-brand {
+    padding: var(--q-spacing-md) var(--q-spacing-lg);
+    font-size: var(--q-font-size-lg);
+    font-weight: var(--q-font-weight-bold);
+    color: var(--q-colors-primary);
+    margin-bottom: var(--q-spacing-md);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--q-spacing-sm);
+    padding: var(--q-spacing-sm) var(--q-spacing-lg);
+    color: var(--q-colors-text-secondary);
+    text-decoration: none;
+    transition: all var(--q-transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    color: var(--q-colors-primary);
+    background: var(--q-colors-bg-secondary);
+}
+
+.nav-item.active {
+    color: var(--q-colors-primary);
+    background: var(--q-colors-bg-secondary);
+    border-left-color: var(--q-colors-primary);
+    font-weight: var(--q-font-weight-medium);
+}
+
+.nav-item i {
+    font-size: var(--q-font-size-lg);
+}
+
+/* ===== 首页 ===== */
+
+.home-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.home-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--q-spacing-sm);
+    margin-bottom: var(--q-spacing-lg);
+}
+
+.home-title {
+    font-size: var(--q-font-size-3xl);
+    font-weight: var(--q-font-weight-bold);
+    color: var(--q-colors-primary);
+}
+
+.home-subtitle {
+    font-size: var(--q-font-size-lg);
+    color: var(--q-colors-text-secondary);
+}
+
+.home-desc {
+    color: var(--q-colors-text-secondary);
+    line-height: var(--q-font-line-height-loose);
+    margin-bottom: var(--q-spacing-xl);
+}
+
+.home-actions {
+    display: flex;
+    gap: var(--q-spacing-md);
+}
+
+.home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--q-spacing-sm);
+    padding: var(--q-spacing-sm) var(--q-spacing-lg);
+    background: var(--q-colors-primary);
+    color: #fff;
+    border-radius: var(--q-radius-md);
+    text-decoration: none;
+    font-size: var(--q-font-size-md);
+    transition: background var(--q-transition-fast);
+}
+
+.home-btn:hover {
+    background: var(--q-colors-primary-hover);
+}
+
+.home-btn:active {
+    background: var(--q-colors-primary-active);
+}
+
+.home-btn i {
+    font-size: var(--q-font-size-lg);
+}
+
+/* ===== 页面标题 ===== */
+
+.page-title {
+    font-size: var(--q-font-size-2xl);
+    font-weight: var(--q-font-weight-bold);
+    color: var(--q-colors-text);
+    margin-bottom: var(--q-spacing-lg);
+    padding-bottom: var(--q-spacing-sm);
+    border-bottom: 1px solid var(--q-colors-border-light);
+}
+
+/* ===== 图标页 ===== */
+
+.icons-page {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--q-spacing-md);
+}
+
+.icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--q-spacing-xs);
+    padding: var(--q-spacing-md) var(--q-spacing-sm);
+    background: var(--q-colors-bg);
+    border: 1px solid var(--q-colors-border-light);
+    border-radius: var(--q-radius-md);
+    cursor: default;
+    transition: all var(--q-transition-fast);
+}
+
+.icon-item:hover {
+    border-color: var(--q-colors-primary);
+    box-shadow: var(--q-shadow-sm);
+    transform: translateY(-1px);
+}
+
+.icon-item i {
+    font-size: 24px;
+    color: var(--q-colors-primary);
+}
+
+.icon-name {
+    font-size: var(--q-font-size-xs);
+    color: var(--q-colors-text-secondary);
+    text-align: center;
+    word-break: break-all;
+}
+
+/* ===== 主题页 ===== */
+
+.theme-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--q-spacing-md);
+}
+
+.theme-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--q-spacing-sm);
+    padding: var(--q-spacing-md);
+    background: var(--q-colors-bg);
+    border: 1px solid var(--q-colors-border-light);
+    border-radius: var(--q-radius-lg);
+    cursor: pointer;
+    transition: all var(--q-transition-fast);
+    font-family: inherit;
+    font-size: var(--q-font-size-sm);
+    color: var(--q-colors-text);
+}
+
+.theme-card:hover {
+    border-color: var(--q-colors-primary);
+    box-shadow: var(--q-shadow-md);
+    transform: translateY(-2px);
+}
+
+.theme-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--q-radius-round);
+    border: 2px solid var(--q-colors-border-light);
+    transition: border-color var(--q-transition-fast);
+}
+
+.theme-card:hover .theme-preview {
+    border-color: var(--q-colors-primary);
+}
+
+/* 主题预览色块 */
+.theme-preview[data-theme="light"]    { background: #ffffff; }
+.theme-preview[data-theme="dark"]     { background: #141414; }
+.theme-preview[data-theme="celadon"]  { background: #4e8f55; }
+.theme-preview[data-theme="cinnabar"] { background: #d94a2a; }
+.theme-preview[data-theme="indigo"]   { background: #4569a8; }
+.theme-preview[data-theme="yellow"]   { background: #e8ad2e; }
+.theme-preview[data-theme="rosewood"] { background: #8f636c; }
+.theme-preview[data-theme="ink"]      { background: #404040; }
+.theme-preview[data-theme="dai"]      { background: #456f74; }
+
+.theme-label {
+    font-weight: var(--q-font-weight-medium);
+}
