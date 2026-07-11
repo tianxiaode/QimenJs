@@ -1,139 +1,204 @@
 import { TemplateRegistrar } from '@qimenjs/template';
 
-/**
- * HTML模板注册器单元测试
- * 验证TemplateRegistrar类的各项功能是否正常工作
- */
 describe('TemplateRegistrar', () => {
-    let htmlTemplateRegistrar: TemplateRegistrar;
+    let templateRegistrar: TemplateRegistrar;
 
-    /**
-     * 在每个测试用例执行前初始化TemplateRegistrar实例
-     */
     beforeEach(() => {
-        htmlTemplateRegistrar = new TemplateRegistrar();
+        templateRegistrar = new TemplateRegistrar();
     });
 
     describe('register', () => {
-        /**
-         * 测试注册HTML模板功能
-         */
         it('应该能够注册HTML模板', () => {
-            htmlTemplateRegistrar.register('header', '<header>Header Content</header>');
+            templateRegistrar.register('header', '<header>Header Content</header>');
 
-            const result = htmlTemplateRegistrar.get('header');
+            const result = templateRegistrar.get('header');
             expect(result).toBe('<header>Header Content</header>');
         });
 
-        /**
-         * 测试在锁定状态下是否正确抛出错误
-         */
         it('在锁定状态下应该抛出错误', () => {
-            htmlTemplateRegistrar.lock();
+            templateRegistrar.lock();
 
             expect(() => {
-                htmlTemplateRegistrar.register('footer', '<footer>Footer Content</footer>');
-            }).toThrow('[Registrar: html] modification denied: Locked.');
+                templateRegistrar.register('footer', '<footer>Footer Content</footer>');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
     describe('unregister', () => {
-        /**
-         * 测试注销HTML模板功能
-         */
         it('应该能够注销HTML模板', () => {
-            htmlTemplateRegistrar.register('sidebar', '<aside>Sidebar Content</aside>');
-            expect(htmlTemplateRegistrar.get('sidebar')).toBe('<aside>Sidebar Content</aside>');
+            templateRegistrar.register('sidebar', '<aside>Sidebar Content</aside>');
+            expect(templateRegistrar.get('sidebar')).toBe('<aside>Sidebar Content</aside>');
 
-            htmlTemplateRegistrar.unregister('sidebar');
-            expect(htmlTemplateRegistrar.get('sidebar')).toBeUndefined();
+            templateRegistrar.unregister('sidebar');
+            expect(templateRegistrar.has('sidebar')).toBe(false);
         });
 
-        /**
-         * 测试在锁定状态下是否正确抛出错误
-         */
         it('在锁定状态下应该抛出错误', () => {
-            htmlTemplateRegistrar.lock();
+            templateRegistrar.lock();
 
             expect(() => {
-                htmlTemplateRegistrar.unregister('sidebar');
-            }).toThrow('[Registrar: html] modification denied: Locked.');
+                templateRegistrar.unregister('sidebar');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
     describe('get', () => {
-        /**
-         * 测试获取已注册的HTML模板
-         */
         it('应该能够获取已注册的HTML模板', () => {
-            htmlTemplateRegistrar.register('nav', '<nav>Navigation</nav>');
+            templateRegistrar.register('nav', '<nav>Navigation</nav>');
 
-            const result = htmlTemplateRegistrar.get('nav');
+            const result = templateRegistrar.get('nav');
             expect(result).toBe('<nav>Navigation</nav>');
         });
 
-        /**
-         * 测试获取不存在的模板时返回undefined
-         */
-        it('对于未注册的模板应该返回undefined', () => {
-            const result = htmlTemplateRegistrar.get('nonexistent');
-            expect(result).toBeUndefined();
+        it('对于未注册的模板应该抛出NotFoundError', () => {
+            expect(() => {
+                templateRegistrar.get('nonexistent');
+            }).toThrow('Not found');
+        });
+
+        it('对JSON类型应该抛出类型错误', () => {
+            templateRegistrar.registerJson('json-tpl', { type: 'div' } as any);
+
+            expect(() => {
+                templateRegistrar.get('json-tpl');
+            }).toThrow('is a JSON definition, not an HTML template');
+        });
+    });
+
+    describe('getFragment', () => {
+        it('应该返回DocumentFragment', () => {
+            templateRegistrar.register('frag', '<div>Fragment</div>');
+
+            const fragment = templateRegistrar.getFragment('frag');
+            expect(fragment).toBeInstanceOf(DocumentFragment);
+            expect(fragment.firstChild?.textContent).toBe('Fragment');
+        });
+
+        it('第二次调用应使用缓存', () => {
+            templateRegistrar.register('cached', '<span>Cached</span>');
+
+            const frag1 = templateRegistrar.getFragment('cached');
+            const frag2 = templateRegistrar.getFragment('cached');
+
+            expect(frag1).not.toBe(frag2);
+            expect(frag1.firstChild?.textContent).toBe('Cached');
+            expect(frag2.firstChild?.textContent).toBe('Cached');
+        });
+
+        it('对于未注册的模板应该抛出NotFoundError', () => {
+            expect(() => {
+                templateRegistrar.getFragment('nonexistent');
+            }).toThrow('Not found');
+        });
+
+        it('对JSON类型应该抛出类型错误', () => {
+            templateRegistrar.registerJson('json-frag', { type: 'div' } as any);
+
+            expect(() => {
+                templateRegistrar.getFragment('json-frag');
+            }).toThrow('is a JSON definition, not an HTML template');
+        });
+    });
+
+    describe('registerJson / getJson', () => {
+        it('应该能够注册和获取JSON定义', () => {
+            const layout = { type: 'div', id: 'test' } as any;
+            templateRegistrar.registerJson('my-json', layout);
+
+            const result = templateRegistrar.getJson('my-json');
+            expect(result).toBe(layout);
+        });
+
+        it('对于未注册的定义应该抛出NotFoundError', () => {
+            expect(() => {
+                templateRegistrar.getJson('nonexistent');
+            }).toThrow('Not found');
+        });
+
+        it('对HTML类型应该抛出类型错误', () => {
+            templateRegistrar.register('html-tpl', '<div>HTML</div>');
+
+            expect(() => {
+                templateRegistrar.getJson('html-tpl');
+            }).toThrow('is an HTML template, not a JSON definition');
+        });
+
+        it('在锁定状态下应该抛出错误', () => {
+            templateRegistrar.lock();
+
+            expect(() => {
+                templateRegistrar.registerJson('locked-json', { type: 'div' } as any);
+            }).toThrow('Registration failed: The registrar is locked');
+        });
+    });
+
+    describe('has / isHtml / isJson', () => {
+        it('has应该正确判断模板是否存在', () => {
+            expect(templateRegistrar.has('test')).toBe(false);
+            templateRegistrar.register('test', '<div>Test</div>');
+            expect(templateRegistrar.has('test')).toBe(true);
+        });
+
+        it('isHtml应该正确判断是否为HTML模板', () => {
+            templateRegistrar.register('html', '<div>HTML</div>');
+            templateRegistrar.registerJson('json', { type: 'div' } as any);
+
+            expect(templateRegistrar.isHtml('html')).toBe(true);
+            expect(templateRegistrar.isHtml('json')).toBe(false);
+            expect(templateRegistrar.isHtml('nonexistent')).toBe(false);
+        });
+
+        it('isJson应该正确判断是否为JSON定义', () => {
+            templateRegistrar.register('html', '<div>HTML</div>');
+            templateRegistrar.registerJson('json', { type: 'div' } as any);
+
+            expect(templateRegistrar.isJson('json')).toBe(true);
+            expect(templateRegistrar.isJson('html')).toBe(false);
+            expect(templateRegistrar.isJson('nonexistent')).toBe(false);
         });
     });
 
     describe('clear', () => {
-        /**
-         * 测试清空所有注册的模板
-         */
         it('应该清空所有注册的模板', () => {
-            htmlTemplateRegistrar.register('header', '<header>Header</header>');
-            htmlTemplateRegistrar.register('footer', '<footer>Footer</footer>');
+            templateRegistrar.register('header', '<header>Header</header>');
+            templateRegistrar.register('footer', '<footer>Footer</footer>');
 
-            expect(htmlTemplateRegistrar.get('header')).toBe('<header>Header</header>');
-            expect(htmlTemplateRegistrar.get('footer')).toBe('<footer>Footer</footer>');
+            expect(templateRegistrar.has('header')).toBe(true);
+            expect(templateRegistrar.has('footer')).toBe(true);
 
-            htmlTemplateRegistrar.clear();
+            templateRegistrar.clear();
 
-            expect(htmlTemplateRegistrar.get('header')).toBeUndefined();
-            expect(htmlTemplateRegistrar.get('footer')).toBeUndefined();
+            expect(templateRegistrar.has('header')).toBe(false);
+            expect(templateRegistrar.has('footer')).toBe(false);
         });
 
-        /**
-         * 测试在锁定状态下是否正确抛出错误
-         */
         it('在锁定状态下应该抛出错误', () => {
-            htmlTemplateRegistrar.lock();
+            templateRegistrar.lock();
 
             expect(() => {
-                htmlTemplateRegistrar.clear();
-            }).toThrow('[Registrar: html] modification denied: Locked.');
+                templateRegistrar.clear();
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
     describe('lock', () => {
-        /**
-         * 测试锁定注册器功能
-         */
         it('应该锁定注册器', () => {
-            htmlTemplateRegistrar.lock();
-            expect((htmlTemplateRegistrar as any).isLocked).toBe(true);
+            templateRegistrar.lock();
+            expect((templateRegistrar as any).isLocked).toBe(true);
         });
     });
 
     describe('inspect', () => {
-        /**
-         * 测试输出注册器状态功能
-         */
         it('应该输出注册器状态', () => {
-            htmlTemplateRegistrar.register('template', '<div>Test Template</div>');
+            templateRegistrar.register('template', '<div>Test Template</div>');
 
             const consoleSpy = jest.spyOn(console, 'group').mockImplementation(() => {});
             const consoleTableSpy = jest.spyOn(console, 'table').mockImplementation(() => {});
             const consoleGroupEndSpy = jest.spyOn(console, 'groupEnd').mockImplementation(() => {});
 
-            htmlTemplateRegistrar.inspect();
+            templateRegistrar.inspect();
 
-            expect(consoleSpy).toHaveBeenCalledWith('🔍 Registrar: html [🔓]');
+            expect(consoleSpy).toHaveBeenCalledWith('🔍 Registrar: template [🔓]');
             expect(consoleTableSpy).toHaveBeenCalled();
             expect(consoleGroupEndSpy).toHaveBeenCalled();
 

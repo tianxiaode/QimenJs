@@ -32,7 +32,7 @@ import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 
 export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager.with([FlatLocalStateAbility, LocalListAbility, LocalGetAbility]) {
+> extends BaseEntityManager.with(FlatLocalStateAbility, LocalListAbility, LocalGetAbility) {
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -47,13 +47,13 @@ export abstract class LocalReadonlyEntityManager<
 
 export abstract class LocalCrudEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager.with([
+> extends BaseEntityManager.with(
     FlatLocalStateAbility,
     LocalListAbility,
     LocalGetAbility,
     FlatLocalMutationAbility,
     FlatLocalDeleteAbility,
-]) {
+) {
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -68,7 +68,7 @@ export abstract class LocalCrudEntityManager<
 
 export abstract class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager.with([
+> extends BaseEntityManager.with(
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -79,7 +79,7 @@ export abstract class RemoteReadonlyEntityManager<
     FlatRemoteGetAllAbility,
     RemoteGetAbility,
     FlatRemoteQueryAbility,
-]) {
+) {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -97,7 +97,7 @@ export abstract class RemoteReadonlyEntityManager<
 
 export abstract class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager.with([
+> extends BaseEntityManager.with(
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -112,7 +112,7 @@ export abstract class RemoteCrudEntityManager<
     RemoteUpdateAbility,
     RemoteDeleteAbility,
     RemoteToggleAbility,
-]) {
+) {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -130,7 +130,7 @@ export abstract class RemoteCrudEntityManager<
 
 export abstract class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams,
-> extends BaseEntityManager.with([
+> extends BaseEntityManager.with(
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -146,7 +146,7 @@ export abstract class RemoteTreeEntityManager<
     RemoteCreateAbility,
     RemoteUpdateAbility,
     RemoteDeleteAbility,
-]) {
+) {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];

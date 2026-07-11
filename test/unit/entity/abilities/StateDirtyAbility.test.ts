@@ -33,8 +33,7 @@ import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 // ============================================
 
 function createDirtyHost() {
-    class DirtyHost extends ComposableBase {
-        static readonly abilities = [DirtyAbility];
+    class DirtyHost extends ComposableBase.with([DirtyAbility]) {
         schema = { idField: 'id' };
         sourceData = new Map<string, any>();
     }
@@ -216,8 +215,7 @@ describe('DirtyAbility', () => {
 
     describe('schema 无 idField 时使用默认值', () => {
         function createDirtyHostNoIdField() {
-            class DirtyHost extends ComposableBase {
-                static readonly abilities = [DirtyAbility];
+            class DirtyHost extends ComposableBase.with([DirtyAbility]) {
                 schema = {}; // 无 idField
                 sourceData = new Map<string, any>();
             }

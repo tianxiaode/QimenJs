@@ -32,8 +32,7 @@ import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 function createTreeHost() {
     const mockDebounce = jest.fn((_key: string, fn: any, _ms: number, _immediate?: boolean) => fn);
 
-    class TreeHost extends ComposableBase {
-        static readonly abilities = [TreeManagerAbility, DirtyAbility];
+    class TreeHost extends ComposableBase.with([TreeManagerAbility, DirtyAbility]) {
         schema = { idField: 'id', parentIdField: 'parentId' };
         debounce = mockDebounce as any;
 

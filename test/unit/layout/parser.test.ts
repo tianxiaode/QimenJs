@@ -193,6 +193,17 @@ describe('validateLayout', () => {
         expect(result.errors.some(e => e.includes('id'))).toBe(true);
     });
 
+    it('should report empty string id', () => {
+        const result = validateLayout({ type: 'button', id: '  ' });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('id'))).toBe(true);
+    });
+
+    it('should accept undefined id (id is optional)', () => {
+        const result = validateLayout({ type: 'button' });
+        expect(result.valid).toBe(true);
+    });
+
     it('should validate children recursively', () => {
         const result = validateLayout({
             type: 'vbox',
@@ -212,5 +223,82 @@ describe('validateLayout', () => {
         // 123 gets normalized to "123" string, so it's technically valid
         // but the validator might flag it
         expect(result).toBeDefined();
+    });
+
+    it('should accept string handler', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: 'handleClick' },
+        });
+        expect(result.valid).toBe(true);
+    });
+
+    it('should accept function handler', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: () => {} },
+        });
+        expect(result.valid).toBe(true);
+    });
+
+    it('should accept HandlerConfig handler', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: { handler: 'onSubmit' } },
+        });
+        expect(result.valid).toBe(true);
+    });
+
+    it('should accept array of handlers', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: ['handleClick', { handler: 'onSubmit' }] },
+        });
+        expect(result.valid).toBe(true);
+    });
+
+    it('should report invalid handler in array', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: [123 as any] },
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('handlers'))).toBe(true);
+    });
+
+    it('should report invalid non-array, non-string, non-function, non-HandlerConfig handler', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: 123 as any },
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('handlers'))).toBe(true);
+    });
+
+    it('should report invalid handler that is an object without handler property', () => {
+        const result = validateLayout({
+            type: 'button',
+            handlers: { click: { foo: 'bar' } as any },
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('handlers'))).toBe(true);
+    });
+
+    it('should validate children with errors prefixed by index', () => {
+        const result = validateLayout({
+            type: 'vbox',
+            children: [
+                { type: 'button' },
+                { type: '' } as any,
+            ],
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('children[1]'))).toBe(true);
+    });
+
+    it('should report type not a string', () => {
+        const result = validateLayout({ type: 123 as any });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('type'))).toBe(true);
     });
 });

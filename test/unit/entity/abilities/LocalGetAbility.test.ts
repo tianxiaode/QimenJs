@@ -27,8 +27,7 @@ import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
 import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createGetHost(idField: string = 'id') {
-    class GetHost extends ComposableBase {
-        static readonly abilities = [LocalGetAbility];
+    class GetHost extends ComposableBase.with([LocalGetAbility]) {
         compiledSchema = { idField };
         sourceData = new Map<string, any>();
         item: any = null;

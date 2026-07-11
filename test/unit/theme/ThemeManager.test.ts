@@ -92,7 +92,9 @@ describe('ThemeRegistrar', () => {
             const handler = jest.fn();
             globalEventBus.on(THEME_CHANGE_EVENT, handler);
             tr.apply('mock');
-            expect(handler).toHaveBeenCalledWith({ previous: undefined, current: 'mock' });
+            expect(handler).toHaveBeenCalledTimes(1);
+            const ctx = handler.mock.calls[0][0];
+            expect(ctx.data).toEqual({ previous: undefined, current: 'mock' });
         });
 
         it('should pass previous theme name in event', () => {
@@ -104,7 +106,9 @@ describe('ThemeRegistrar', () => {
             const handler = jest.fn();
             globalEventBus.on(THEME_CHANGE_EVENT, handler);
             tr.apply('theme2');
-            expect(handler).toHaveBeenCalledWith({ previous: 'mock', current: 'theme2' });
+            expect(handler).toHaveBeenCalledTimes(1);
+            const ctx = handler.mock.calls[0][0];
+            expect(ctx.data).toEqual({ previous: 'mock', current: 'theme2' });
         });
 
         it('should apply CSS variables to document root', () => {

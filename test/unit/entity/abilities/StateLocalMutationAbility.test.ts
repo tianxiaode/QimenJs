@@ -46,8 +46,7 @@ import { LocalMutationAbility } from '@/entity/abilities/mutation/LocalMutationA
 // ============================================
 
 function createMutationHost() {
-    class MutationHost extends ComposableBase {
-        static readonly abilities = [LocalMutationAbility];
+    class MutationHost extends ComposableBase.with([LocalMutationAbility]) {
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
         setCache = jest.fn().mockResolvedValue(undefined);

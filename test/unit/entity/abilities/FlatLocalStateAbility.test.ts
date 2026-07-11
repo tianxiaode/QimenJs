@@ -44,8 +44,7 @@ import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAb
 // ============================================
 
 function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) {
-    class FlatHost extends ComposableBase {
-        static readonly abilities = [FlatLocalStateAbility];
+    class FlatHost extends ComposableBase.with([FlatLocalStateAbility]) {
         schema: any = {
             idField: 'id',
             idType: 'string',

@@ -1,6 +1,6 @@
 import type { Config } from 'jest';
 
-const config = {
+const config: Config = {
   preset: 'ts-jest',
   collectCoverage: true,
   testEnvironment: 'jsdom',
@@ -48,7 +48,9 @@ const config = {
     '^@qimenjs/pipeline$': '<rootDir>/src/pipeline',
     '^@qimenjs/composable$': '<rootDir>/src/composable',
     '^@qimenjs/data-processor$': '<rootDir>/src/data-processor',
-    '^@qimenjs/mime
+    '^@qimenjs/mime$': '<rootDir>/src/mime',
+    '^@qimenjs/pattern$': '<rootDir>/src/pattern',
+    '^@qimenjs/html-template$': '<rootDir>/src/html-template',
     '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
     '^@qimenjs/events$': '<rootDir>/src/events',
     '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
@@ -59,69 +61,18 @@ const config = {
     '^@qimenjs/component-core$': '<rootDir>/src/component-core',
     '^@qimenjs/component$': '<rootDir>/src/component',
     '^@qimenjs/layout$': '<rootDir>/src/layout',
-    '^@qimenjs/renderer$': '<rootDir>/src/renderer'
-  },
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  clearMocks: true,
-  restoreMocks: true,
-  testTimeout: 10000
-};
-
-export default config;
-: '<rootDir>/src/mime',
-    '^@qimenjs/pattern
-    '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
-    '^@qimenjs/events$': '<rootDir>/src/events',
-    '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
-    '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
-    '^@qimenjs/theme$': '<rootDir>/src/theme',
-    '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
-    '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
-    '^@qimenjs/component-core$': '<rootDir>/src/component-core',
-    '^@qimenjs/component$': '<rootDir>/src/component',
-    '^@qimenjs/layout$': '<rootDir>/src/layout',
-    '^@qimenjs/renderer$': '<rootDir>/src/renderer'
-  },
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  clearMocks: true,
-  restoreMocks: true,
-  testTimeout: 10000
-};
-
-export default config;
-: '<rootDir>/src/pattern',
-    '^@qimenjs/html-template
-    '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
-    '^@qimenjs/events$': '<rootDir>/src/events',
-    '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
-    '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
-    '^@qimenjs/theme$': '<rootDir>/src/theme',
-    '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
-    '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
-    '^@qimenjs/component-core$': '<rootDir>/src/component-core',
-    '^@qimenjs/component$': '<rootDir>/src/component',
-    '^@qimenjs/layout$': '<rootDir>/src/layout',
-    '^@qimenjs/renderer$': '<rootDir>/src/renderer'
-  },
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  clearMocks: true,
-  restoreMocks: true,
-  testTimeout: 10000
-};
-
-export default config;
-: '<rootDir>/src/html-template',
-    '^@qimenjs/oauth2$': '<rootDir>/src/oauth2',
-    '^@qimenjs/events$': '<rootDir>/src/events',
-    '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
-    '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
-    '^@qimenjs/theme$': '<rootDir>/src/theme',
-    '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
-    '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
-    '^@qimenjs/component-core$': '<rootDir>/src/component-core',
-    '^@qimenjs/component$': '<rootDir>/src/component',
-    '^@qimenjs/layout$': '<rootDir>/src/layout',
-    '^@qimenjs/renderer$': '<rootDir>/src/renderer'
+    '^@qimenjs/renderer$': '<rootDir>/src/renderer',
+    '^@qimenjs/template$': '<rootDir>/src/template',
+    '^@qimenjs/i18n$': '<rootDir>/src/i18n',
+    '^@qimenjs/icon$': '<rootDir>/src/icon',
+    '^@qimenjs/router$': '<rootDir>/src/router',
+    '^@qimenjs/imperative$': '<rootDir>/src/imperative',
+    '^@qimenjs/permission$': '<rootDir>/src/permission',
+    '^@qimenjs/entity$': '<rootDir>/src/entity',
+    '^@qimenjs/http$': '<rootDir>/src/http',
+    '^@qimenjs/types$': '<rootDir>/src/types',
+    '^@qimenjs/data-processor-abp$': '<rootDir>/src/data-processor-abp',
+    '^@qimenjs/data-processor-spring$': '<rootDir>/src/data-processor-spring',
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   clearMocks: true,

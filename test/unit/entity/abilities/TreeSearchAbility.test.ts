@@ -31,8 +31,7 @@ import { TreeSearchAbility } from '@/entity/abilities/tree/TreeSearchAbility';
 // ============================================
 
 function createTreeSearchHost() {
-    class TreeSearchHost extends ComposableBase {
-        static readonly abilities = [TreeSearchAbility];
+    class TreeSearchHost extends ComposableBase.with([TreeSearchAbility]) {
         nodes = new Map<string, any>();
         search: any = { keyword: '', sortBy: '', order: 'asc' };
         searchFields = ['name'];

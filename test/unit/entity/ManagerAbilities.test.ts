@@ -65,8 +65,7 @@ describe('SchemaAbility', () => {
         ],
     };
 
-    class TestSchemaHost extends ComposableBase {
-        static readonly abilities = [SchemaAbility];
+    class TestSchemaHost extends ComposableBase.with([SchemaAbility]) {
         schema = mockSchema;
     }
 
@@ -153,8 +152,7 @@ describe('SchemaAbility', () => {
             ],
         };
 
-        class TestTreeSchemaHost extends ComposableBase {
-            static readonly abilities = [SchemaAbility];
+        class TestTreeSchemaHost extends ComposableBase.with([SchemaAbility]) {
             schema = mockTreeSchema;
         }
 
@@ -393,8 +391,7 @@ describe('SchemaProxyAbility', () => {
 // ============================================
 
 describe('LocalGetAbility', () => {
-    class TestLocalGetHost extends ComposableBase {
-        static readonly abilities = [LocalGetAbility];
+    class TestLocalGetHost extends ComposableBase.with([LocalGetAbility]) {
         compiledSchema = { idField: 'id' };
         sourceData = new Map<string | number, any>();
         item = null as any;
@@ -458,8 +455,7 @@ describe('LocalGetAbility', () => {
 // ============================================
 
 describe('RemoteCreateAbility', () => {
-    class TestRemoteCreateHost extends ComposableBase {
-        static readonly abilities = [RemoteCreateAbility];
+    class TestRemoteCreateHost extends ComposableBase.with([RemoteCreateAbility]) {
         loading = false;
         item = null as any;
         updateItem = jest.fn();

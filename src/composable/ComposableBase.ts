@@ -11,6 +11,22 @@ import type {
 import { createForgedClass } from './forge';
 
 /**
+ * 展平 with() 的参数
+ *
+ * 支持两种调用方式：
+ * - with(AbilityA, AbilityB) → [AbilityA, AbilityB]
+ * - with(abilityArray) → abilityArray（兼容 extends 语句中不能展开数组的限制）
+ */
+function flattenWithArgs(args: readonly AbilityDefinition[]): readonly AbilityDefinition[] {
+    // 如果只有一个参数且是数组，且第一个元素也是对象（不是 AbilityDefinition 的直接属性）
+    // 判断标准：参数长度为1，且 args[0] 是数组
+    if (args.length === 1 && Array.isArray(args[0])) {
+        return args[0] as readonly AbilityDefinition[];
+    }
+    return args;
+}
+
+/**
  * Symbol 用于存储能力私有状态
  */
 const ABILITY_STATES_KEY = Symbol('__abilityStates__');
@@ -63,9 +79,13 @@ export class ComposableBase implements IComposableBase {
      * ```
      */
     static with<A extends readonly AbilityDefinition[]>(
-        abilities: A
+        ...abilities: A
     ): ForgedConstructor<ComposableBase, A> {
-        return createForgedClass(this, abilities) as any;
+        // 支持两种调用方式：
+        // 1. with(AbilityA, AbilityB) — 可变参数
+        // 2. with(abilityArray) — 传数组（兼容 extends 语句）
+        const flat = flattenWithArgs(abilities);
+        return createForgedClass(this, flat) as any;
     }
 
     /**
@@ -150,12 +170,22 @@ export class ComposableBase implements IComposableBase {
 
     public getStatic<T>(key: string | symbol): T | undefined {
         const ctor = this.constructor as any;
-        return ctor._static_storage_?.get(key);
+        // 优先查自身存储，找不到再沿原型链查找
+        let current = ctor;
+        while (current) {
+            if (Object.prototype.hasOwnProperty.call(current, '_static_storage_')) {
+                const value = current._static_storage_.get(key);
+                if (value !== undefined) return value;
+            }
+            current = Object.getPrototypeOf(current);
+        }
+        return undefined;
     }
 
     public setStatic<T>(key: string | symbol, value: T): void {
         const ctor = this.constructor as any;
-        if (!ctor._static_storage_) {
+        // 必须检查自身属性，不能沿原型链查找，否则子类会错误地写入父类的存储
+        if (!Object.prototype.hasOwnProperty.call(ctor, '_static_storage_')) {
             Object.defineProperty(ctor, '_static_storage_', {
                 value: new Map<string | symbol, any>(),
                 enumerable: false,

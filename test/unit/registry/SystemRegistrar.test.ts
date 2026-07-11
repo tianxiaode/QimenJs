@@ -67,7 +67,7 @@ describe('SystemRegistrar', () => {
 
             expect(() => {
                 systemRegistrar.register('locale', 'fr-FR');
-            }).toThrow('[Registrar: system] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -95,7 +95,7 @@ describe('SystemRegistrar', () => {
 
             expect(() => {
                 systemRegistrar.registerAll({ locale: 'ko-KR' });
-            }).toThrow('[Registrar: system] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -119,7 +119,7 @@ describe('SystemRegistrar', () => {
 
             expect(() => {
                 systemRegistrar.unregister('locale');
-            }).toThrow('[Registrar: system] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -184,7 +184,7 @@ describe('SystemRegistrar', () => {
 
             expect(() => {
                 systemRegistrar.clear();
-            }).toThrow('[Registrar: system] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 

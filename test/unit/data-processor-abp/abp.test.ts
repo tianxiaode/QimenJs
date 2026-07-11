@@ -120,6 +120,102 @@ describe('ABP 前道处理器', () => {
             expect(ctx.request.queryParams!.skipCount).toBe(0);
             expect(ctx.request.queryParams!.maxResultCount).toBe(10);
         });
+
+        test('应该将 keyword 映射为 filter', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10, keyword: 'test' };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.filter).toBe('test');
+            expect((ctx.data.params as any).keyword).toBeUndefined();
+        });
+
+        test('keyword 为空字符串时不应映射为 filter', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10, keyword: '' };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.filter).toBeUndefined();
+        });
+
+        test('keyword 为 undefined 时不应映射为 filter', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10 };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.filter).toBeUndefined();
+        });
+
+        test('应该将 sortBy/sortOrder 映射为 sorting（asc）', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10, sortBy: 'name', sortOrder: 'asc' };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.sorting).toBe('name');
+            expect((ctx.data.params as any).sortBy).toBeUndefined();
+            expect((ctx.data.params as any).sortOrder).toBeUndefined();
+        });
+
+        test('应该将 sortBy/sortOrder 映射为 sorting（desc）', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10, sortBy: 'name', sortOrder: 'desc' };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.sorting).toBe('name DESC');
+        });
+
+        test('没有 sortBy 时不应设置 sorting', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { page: 1, pageSize: 10 };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.sorting).toBeUndefined();
+        });
+
+        test('应该支持 pageIndex 别名', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = { pageIndex: 3, pageSize: 10 };
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.skipCount).toBe(20);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(10);
+            expect((ctx.data.params as any).pageIndex).toBeUndefined();
+        });
+
+        test('应该使用默认 page=1 和 defaultPageSize', async () => {
+            const handler = createAbpPaginationHandler({ defaultPageSize: 25 });
+            const ctx = createContext();
+            ctx.data.params = {};
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.skipCount).toBe(0);
+            expect(ctx.request.queryParams!.maxResultCount).toBe(25);
+        });
+
+        test('params 为非对象类型时应该跳过', async () => {
+            const handler = createAbpPaginationHandler();
+            const ctx = createContext();
+            ctx.data.params = 'string' as any;
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.queryParams!.skipCount).toBeUndefined();
+        });
     });
 
     describe('abp-tenant-header', () => {
@@ -137,6 +233,22 @@ describe('ABP 前道处理器', () => {
             const ctx = createContext();
 
             expect(handler.shouldExecute?.(ctx)).toBe(false);
+        });
+
+        test('有 tenantId 时 shouldExecute 返回 true', () => {
+            const handler = createAbpTenantHeaderHandler({ tenantId: 'my-tenant' });
+            const ctx = createContext();
+
+            expect(handler.shouldExecute?.(ctx)).toBe(true);
+        });
+
+        test('没有 tenantId 时 handle 不应注入 Header', async () => {
+            const handler = createAbpTenantHeaderHandler();
+            const ctx = createContext();
+
+            await handler.handle(ctx);
+
+            expect(ctx.request.headers['__tenant']).toBeUndefined();
         });
     });
 

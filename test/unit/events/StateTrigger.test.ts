@@ -19,13 +19,11 @@ import { globalEventBus } from '@/events/GlobalEventBus';
 import type { EventContext } from '@/context';
 
 // 测试用子类
-class SourceComponent extends ComposableBase {
-    static readonly abilities = [EventAbility];
+class SourceComponent extends ComposableBase.with([EventAbility]) {
     static readonly eventKey = 'userTable';
 }
 
-class ListenerComponent extends ComposableBase {
-    static readonly abilities = [EventAbility];
+class ListenerComponent extends ComposableBase.with([EventAbility]) {
 
     handlerCallCount = 0;
     lastCtx: EventContext | undefined;
@@ -250,8 +248,7 @@ describe('bindStateTriggers', () => {
         const source = new SourceComponent();
         expect(source.eventScope).toBeDefined();
 
-        const dialog = new (class TestDialog extends ComposableBase {
-            static readonly abilities = [EventAbility];
+        const dialog = new (class TestDialog extends ComposableBase.with([EventAbility]) {
             static readonly eventKey = 'testDialog';
             chainInHandler: any = undefined;
 

@@ -66,7 +66,6 @@ const treeTestSchema: TreeSchema = {
 
 class TestTreeManager extends RemoteTreeEntityManager {
     // 添加 TreeManagerAbility 以支持 expand/collapse/refresh
-    static readonly abilities: any[] = [TreeManagerAbility];
 
     domain = 'tree-test';
     entityName = 'TestDepartment';
@@ -92,6 +91,12 @@ class TestTreeManager extends RemoteTreeEntityManager {
         } else {
             this._loadedNodes.delete(id);
         }
+    }
+
+    constructor() {
+        super();
+        // 注入 TreeManagerAbility 以支持 expand/collapse/refresh
+        this.setupAbilities([TreeManagerAbility]);
     }
 }
 

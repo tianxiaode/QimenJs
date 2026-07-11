@@ -34,7 +34,7 @@ describe('PatternRegistrar', () => {
             patternRegistrar.lock();
             expect(() => {
                 patternRegistrar.register('email', /^[a-z]+$/);
-            }).toThrow('[Registrar: pattern] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -50,7 +50,7 @@ describe('PatternRegistrar', () => {
             patternRegistrar.lock();
             expect(() => {
                 patternRegistrar.unregister('email');
-            }).toThrow('[Registrar: pattern] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -79,7 +79,7 @@ describe('PatternRegistrar', () => {
             patternRegistrar.lock();
             expect(() => {
                 patternRegistrar.clear();
-            }).toThrow('[Registrar: pattern] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -222,6 +222,26 @@ describe('registerValidationPatterns', () => {
         registrar.register(VALIDATION_PATTERNS);
         registrar.register({ custom: /^custom$/ });
         expect(registrar.get('custom')).toEqual(/^custom$/);
+        expect(registrar.get('email')).toBeDefined();
+    });
+
+    it('extra 为 undefined 时不应注册额外模式', () => {
+        const registrar = new PatternRegistrar();
+        registrar.register(VALIDATION_PATTERNS);
+        // No extra registered
+        expect(() => registrar.get('custom')).toThrow();
+    });
+
+    it('extra 有值时应合并注册', () => {
+        const registrar = new PatternRegistrar();
+        const extra: Record<string, RegExp> = {
+            custom: /^custom$/,
+            another: /^another$/,
+        };
+        registrar.register(VALIDATION_PATTERNS);
+        registrar.register(extra);
+        expect(registrar.get('custom')).toEqual(/^custom$/);
+        expect(registrar.get('another')).toEqual(/^another$/);
         expect(registrar.get('email')).toBeDefined();
     });
 });

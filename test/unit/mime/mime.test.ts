@@ -69,7 +69,7 @@ describe('MimeTypeRegistrar', () => {
             mimeTypeRegistrar.lock();
             expect(() => {
                 mimeTypeRegistrar.unregister('jpg');
-            }).toThrow('[Registrar: mimeType] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -145,7 +145,7 @@ describe('MimeTypeRegistrar', () => {
             mimeTypeRegistrar.lock();
             expect(() => {
                 mimeTypeRegistrar.clear();
-            }).toThrow('[Registrar: mimeType] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -225,6 +225,26 @@ describe('registerCommonMimeTypes', () => {
         registrar.register(COMMON_MIMES);
         registrar.register({ custom: 'application/custom' });
         expect(registrar.get('custom')).toEqual(['application/custom']);
+        expect(registrar.get('jpg')).toEqual(['image/jpeg']);
+    });
+
+    it('extra 为 undefined 时不应注册额外类型', () => {
+        const registrar = new MimeTypeRegistrar();
+        registrar.register(COMMON_MIMES);
+        // No extra registered
+        expect(registrar.get('custom')).toEqual([]);
+    });
+
+    it('extra 有值时应合并注册', () => {
+        const registrar = new MimeTypeRegistrar();
+        const extra: Record<string, string | string[]> = {
+            custom: 'application/custom',
+            multi: ['type/one', 'type/two'],
+        };
+        registrar.register(COMMON_MIMES);
+        registrar.register(extra);
+        expect(registrar.get('custom')).toEqual(['application/custom']);
+        expect(registrar.get('multi')).toEqual(['type/one', 'type/two']);
         expect(registrar.get('jpg')).toEqual(['image/jpeg']);
     });
 });

@@ -31,8 +31,7 @@ import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 // ============================================
 
 function createTreeViewHost(schemaOverrides: any = {}) {
-    class TreeViewHost extends ComposableBase {
-        static readonly abilities = [TreeViewAbility];
+    class TreeViewHost extends ComposableBase.with([TreeViewAbility]) {
         schema = {
             useFlat: true,
             expandedField: 'expanded',

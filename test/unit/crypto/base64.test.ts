@@ -1,5 +1,9 @@
 import base64 from '@/crypto/base64';
 
+// 保存原始环境引用，供环境切换测试使用
+const originalBtoaBackup = (globalThis as any).btoa;
+const originalAtobBackup = (globalThis as any).atob;
+
 describe('Base64编码解码功能测试', () => {
     it('应该正确编码普通字符串', () => {
         expect(base64.encode('hello')).toBe('aGVsbG8=');
@@ -104,6 +108,95 @@ describe('Base64编码解码功能测试', () => {
                 const result = base64.decode('!!!invalid!!!');
                 expect(result).toBe('');
             } finally {
+                (globalThis as any).atob = originalAtob;
+            }
+        });
+    });
+
+    describe('纯 JavaScript 实现分支', () => {
+        it('encode 应该在没有 btoa 和 Buffer 时使用纯 JS 实现', () => {
+            const originalBtoa = (globalThis as any).btoa;
+            const originalBuffer = global.Buffer;
+
+            delete (globalThis as any).btoa;
+            delete (globalThis as any).atob;
+            // @ts-ignore
+            delete global.Buffer;
+
+            try {
+                // 重新导入以获取新的模块实例
+                // 由于 jest 缓存，需要用 jest.isolateModules
+                jest.isolateModules(() => {
+                    const base64NoBtoa = require('@/crypto/base64').default;
+                    expect(base64NoBtoa.encode('hello')).toBe('aGVsbG8=');
+                    expect(base64NoBtoa.encode('AB')).toBe('QUI=');
+                    expect(base64NoBtoa.encode('A')).toBe('QQ==');
+                });
+            } finally {
+                (globalThis as any).btoa = originalBtoa;
+                (globalThis as any).atob = originalAtobBackup;
+                global.Buffer = originalBuffer;
+            }
+        });
+
+        it('decode 应该在没有 atob 和 Buffer 时使用纯 JS 实现', () => {
+            const originalAtob = (globalThis as any).atob;
+            const originalBuffer = global.Buffer;
+
+            delete (globalThis as any).btoa;
+            delete (globalThis as any).atob;
+            // @ts-ignore
+            delete global.Buffer;
+
+            try {
+                jest.isolateModules(() => {
+                    const base64NoAtob = require('@/crypto/base64').default;
+                    expect(base64NoAtob.decode('aGVsbG8=')).toBe('hello');
+                    expect(base64NoAtob.decode('QUI=')).toBe('AB');
+                    expect(base64NoAtob.decode('QQ==')).toBe('A');
+                });
+            } finally {
+                (globalThis as any).btoa = originalBtoaBackup;
+                (globalThis as any).atob = originalAtob;
+                global.Buffer = originalBuffer;
+            }
+        });
+    });
+
+    describe('Node.js Buffer 分支', () => {
+        it('encode 应该在没有 btoa 但有 Buffer 时使用 Buffer', () => {
+            const originalBtoa = (globalThis as any).btoa;
+            const originalAtob = (globalThis as any).atob;
+
+            delete (globalThis as any).btoa;
+            delete (globalThis as any).atob;
+
+            try {
+                jest.isolateModules(() => {
+                    const base64Buffer = require('@/crypto/base64').default;
+                    expect(base64Buffer.encode('hello')).toBe('aGVsbG8=');
+                    expect(base64Buffer.encode('你好')).toBeDefined();
+                });
+            } finally {
+                (globalThis as any).btoa = originalBtoa;
+                (globalThis as any).atob = originalAtob;
+            }
+        });
+
+        it('decode 应该在没有 atob 但有 Buffer 时使用 Buffer', () => {
+            const originalBtoa = (globalThis as any).btoa;
+            const originalAtob = (globalThis as any).atob;
+
+            delete (globalThis as any).btoa;
+            delete (globalThis as any).atob;
+
+            try {
+                jest.isolateModules(() => {
+                    const base64Buffer = require('@/crypto/base64').default;
+                    expect(base64Buffer.decode('aGVsbG8=')).toBe('hello');
+                });
+            } finally {
+                (globalThis as any).btoa = originalBtoa;
                 (globalThis as any).atob = originalAtob;
             }
         });

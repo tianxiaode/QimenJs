@@ -54,8 +54,7 @@ interface TestHostSchema {
 }
 
 function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: () => any) {
-    class CacheHost extends ComposableBase {
-        static readonly abilities = [CacheAbility];
+    class CacheHost extends ComposableBase.with([CacheAbility]) {
         schema = schema;
         isRemote = isRemote;
         cacheTTL = 300000;

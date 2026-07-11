@@ -18,10 +18,10 @@ export interface ForgedConstructor<T, A extends readonly AbilityDefinition[] = a
     new (...args: any[]): T & InferAbilities<A>;
     /**
      * 继续合并能力，返回新的强类
-     * 可链式调用：BaseClass.with(abilities).with(moreAbilities)
+     * 可链式调用：BaseClass.with(A, B).with(C, D)
      */
     with<Additional extends readonly AbilityDefinition[]>(
-        additionalAbilities: Additional
+        ...additionalAbilities: Additional
     ): ForgedConstructor<T & InferAbilities<Additional>, [...A, ...Additional]>;
 }
 
@@ -58,7 +58,7 @@ export type InferAbility<T> =
  * 
  * @example
  * ```typescript
- * const Base = ComposableBase.with([EventAbility, TransformAbility]);
+ * const Base = ComposableBase.with(EventAbility, TransformAbility);
  * type BaseType = InstanceType<typeof Base>;
  * // BaseType 自动包含 EventAbility 和 TransformAbility 的所有方法
  * ```

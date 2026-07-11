@@ -14,20 +14,16 @@ import { EventAbility } from '@/system-abilities/system/EventAbility';
 import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
 import type { EventContext } from '@/context';
 
-// 测试用子类
-class TestToolbar extends ComposableBase {
-    static readonly abilities = [EventAbility];
+// 测试用子类 - 使用 with() 模式
+class TestToolbar extends ComposableBase.with([EventAbility]) {
     static readonly eventKey = 'testToolbar';
 }
 
-class TestTable extends ComposableBase {
-    static readonly abilities = [EventAbility];
+class TestTable extends ComposableBase.with([EventAbility]) {
     static readonly eventKey = 'testTable';
 }
 
-class NoEventKeyHost extends ComposableBase {
-    static readonly abilities = [EventAbility];
-}
+class NoEventKeyHost extends ComposableBase.with([EventAbility]) {}
 
 describe('EventAbility UI 扩展', () => {
     let registrar: EventSourceRegistrar;
@@ -43,7 +39,7 @@ describe('EventAbility UI 扩展', () => {
         const toolbar = new TestToolbar();
         // eventScope 首次访问时触发 _initEventKey
         expect(toolbar.eventScope).toBeDefined();
-        expect(toolbar.eventKey).toBe('testToolbar');
+        expect((toolbar as any).eventKey).toBe('testToolbar');
     });
 
     test('eventKey 自动注册到 EventSourceRegistrar', () => {
@@ -56,7 +52,7 @@ describe('EventAbility UI 扩展', () => {
     test('无 eventKey 的宿主不注册', () => {
         const host = new NoEventKeyHost();
         expect(host.eventScope).toBeDefined();
-        expect(host.eventKey).toBeUndefined();
+        expect((host as any).eventKey).toBeUndefined();
     });
 
     test('重复 eventKey 报错', () => {
@@ -127,10 +123,9 @@ describe('EventAbility UI 扩展', () => {
 
     test('executeWithEventContext 构建 chain', () => {
         const toolbar = new TestToolbar();
-        const dialog = new (class TestDialog extends ComposableBase {
-            static readonly abilities = [EventAbility];
-            static readonly eventKey = 'testDialog';
-        })();
+        const DialogClass = ComposableBase.with([EventAbility]);
+        (DialogClass as any).eventKey = 'testDialog';
+        const dialog = new DialogClass();
 
         let toolbarCtx: EventContext | undefined;
         let dialogCtx: EventContext | undefined;

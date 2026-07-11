@@ -1,7 +1,7 @@
 /**
  * ComposableBase 多 Ability 交互集成测试
  *
- * 验证真实 Manager 场景中多 Ability 同时注入后的交互行为：
+ * 验证真实 Manager 场景中多 Ability 同时注入后的交互行为（with() 模式）：
  * 1. DomainAbility + SchemaAbility + EventAbility 在真实 Manager 中的协作
  * 2. Ability 方法中 this 指向的真实宿主交互
  * 3. 同名方法覆盖在真实场景中的影响
@@ -51,23 +51,19 @@ const testSchema: FlatSchema = {
 };
 
 // ============================================
-// 测试用 Manager（模拟 CoreEntityManager 的 Ability 组合）
+// 测试用 Manager（使用 with() 模式）
 // ============================================
 
-class TestAbilityManager extends ComposableBase {
-    static readonly abilities: readonly AbilityDefinition[] = [
-        EventAbility,
-        DomainAbility,
-        SchemaAbility,
-    ];
+const TestAbilityManagerBase = ComposableBase.with(
+    EventAbility,
+    DomainAbility,
+    SchemaAbility,
+);
 
+class TestAbilityManager extends TestAbilityManagerBase {
     domain = 'ability-test';
     entityName = 'AbilityTestUser';
     schema: RegistrSchema = testSchema;
-
-    constructor() {
-        super();
-    }
 }
 
 // ============================================
@@ -117,7 +113,6 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
             manager.emit('test-event', { data: 42 });
 
-            // emit 传递的 data 被包装在事件对象中
             expect(listener).toHaveBeenCalled();
             const callArg = listener.mock.calls[0][0];
             expect(callArg.data).toEqual({ data: 42 });
@@ -160,10 +155,11 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
         });
 
         it('domainConfig 未注册时应该返回 undefined', () => {
-            const unregisteredManager = new (class extends ComposableBase {
-                static readonly abilities = [DomainAbility];
+            const UnregisteredHost = ComposableBase.with(DomainAbility);
+            class UnregisteredManager extends UnregisteredHost {
                 domain = 'nonexistent-domain';
-            })();
+            }
+            const unregisteredManager = new UnregisteredManager();
 
             expect((unregisteredManager as any).domainConfig).toBeUndefined();
 
@@ -188,7 +184,6 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             const keys = (manager as any).schemaKeys;
 
             expect(keys).toBeDefined();
-            // schemaKeys 返回的是字段名映射，如 { id: 'id', label: 'name', ... }
             expect(keys.id).toBe('id');
         });
     });
@@ -223,22 +218,17 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
         });
 
         it('三个 Ability 同时注入后宿主应该有所有方法', () => {
-            // EventAbility 方法
             expect(typeof manager.on).toBe('function');
             expect(typeof manager.emit).toBe('function');
             expect(typeof manager.once).toBe('function');
-
-            // DomainAbility 方法
             expect(typeof (manager as any).domainConfig).toBeDefined();
-
-            // SchemaAbility 方法
             expect(typeof (manager as any).getSchema).toBe('function');
             expect(typeof (manager as any).schemaKeys).toBeDefined();
         });
     });
 
     // ========================================
-    // 5. 同名方法覆盖在真实场景中的影响
+    // 5. 同名方法覆盖
     // ========================================
 
     describe('同名方法覆盖', () => {
@@ -254,46 +244,39 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            class OverrideHost extends ComposableBase {
-                static readonly abilities = [AbilityA, AbilityB];
-            }
-
+            const OverrideHost = ComposableBase.with(AbilityA, AbilityB);
             const host = new OverrideHost() as any;
             expect(host.sharedAction()).toBe('B');
             host.dispose();
         });
 
-        it('宿主自身方法不应该被 Ability 覆盖（如果先定义）', () => {
-            // 注意：ComposableBase.setupAbilityDefinition 使用 Object.defineProperty
-            // 无条件覆盖，所以宿主自身方法会被 Ability 覆盖
-            // 这是当前架构的行为，需要测试确认
-
+        it('宿主自身方法优先于 Ability 注入的方法', () => {
             const OverrideAbility: AbilityDefinition = {
                 selfMethod() {
                     return 'from-ability';
                 },
             };
 
-            class SelfMethodHost extends ComposableBase {
-                static readonly abilities = [OverrideAbility];
+            const BaseHost = ComposableBase.with(OverrideAbility);
+
+            class SelfMethodHost extends BaseHost {
                 selfMethod() {
                     return 'from-host';
                 }
             }
 
             const host = new SelfMethodHost() as any;
-            // 当前架构下，Ability 会覆盖宿主自身方法
-            expect(host.selfMethod()).toBe('from-ability');
+            expect(host.selfMethod()).toBe('from-host');
             host.dispose();
         });
     });
 
     // ========================================
-    // 6. Ability 注入顺序对覆盖行为的影响
+    // 6. Ability 注入顺序
     // ========================================
 
     describe('Ability 注入顺序', () => {
-        it('基类 Ability 先注入，子类 Ability 后注入', () => {
+        it('基类 Ability 先注入，子类 with() 后注入', () => {
             const BaseAbility: AbilityDefinition = {
                 baseMethod() {
                     return 'base';
@@ -311,17 +294,12 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            class BaseHost extends ComposableBase {
-                static readonly abilities: readonly any[] = [BaseAbility];
-            }
-            class ChildHost extends BaseHost {
-                static readonly abilities: readonly any[] = [ChildAbility];
-            }
+            const BaseHost = ComposableBase.with(BaseAbility);
+            const ChildHost = BaseHost.with(ChildAbility);
 
             const child = new ChildHost() as any;
             expect(child.baseMethod()).toBe('base');
             expect(child.childMethod()).toBe('child');
-            // 子类 Ability 的 sharedMethod 应该覆盖基类的
             expect(child.sharedMethod()).toBe('child-shared');
             child.dispose();
         });
@@ -333,12 +311,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            class ParentHost extends ComposableBase {
-                static readonly abilities: readonly any[] = [SharedAbility];
-            }
-            class ChildHost extends ParentHost {
-                static readonly abilities: readonly any[] = [SharedAbility]; // 重复声明
-            }
+            const ParentHost = ComposableBase.with(SharedAbility);
+            const ChildHost = ParentHost.with(SharedAbility);
 
             const child = new ChildHost() as any;
             expect(child.sharedMethod()).toBe('shared');
@@ -357,7 +331,6 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
             manager.dispose();
 
-            // dispose 后 emit 不应该触发监听器
             manager.emit('test');
             expect(listener).not.toHaveBeenCalled();
         });
@@ -369,18 +342,12 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            class StateHost extends ComposableBase {
-                static readonly abilities = [StateAbility];
-            }
-
+            const StateHost = ComposableBase.with(StateAbility);
             const host = new StateHost() as any;
             const state1 = host.getState();
             expect(state1.value).toBe(42);
 
             host.dispose();
-
-            // dispose 后重新获取应该是新的状态
-            // 注意：dispose 后 abilityState 可能不可用
             host.dispose();
         });
     });

@@ -11,12 +11,12 @@ describe('Layout Integration', () => {
             const layout = parseLayout({
                 type: 'button',
                 id: 'btn1',
-                props: { text: 'Click me' },
+                text: 'Click me',
             });
 
             expect(layout.type).toBe('button');
             expect(layout.id).toBe('btn1');
-            expect(layout.props).toEqual({ text: 'Click me' });
+            expect((layout as any).props).toEqual({ text: 'Click me' });
         });
 
         it('should parse layout with children', () => {

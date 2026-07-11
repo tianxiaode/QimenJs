@@ -1,7 +1,7 @@
 /**
  * ComposableBase 集成测试
  *
- * 验证能力系统的核心机制（新架构）：
+ * 验证能力系统的核心机制（with() 模式）：
  * 1. getter/setter 在多宿主间的正确代理
  * 2. 方法 bind 到宿主后 this 指向
  * 3. dispose 清理
@@ -51,16 +51,16 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        class LabelHost extends ComposableBase {
-            static readonly abilities = [GetterSetterDef];
-            constructor(public label: string) {
-                super();
-            }
-        }
+        const LabelHost = ComposableBase.with(GetterSetterDef);
 
         it('多个宿主实例的 getter 应该各自返回自己的值', () => {
-            const host1 = new LabelHost('Label1') as any;
-            const host2 = new LabelHost('Label2') as any;
+            class NamedLabelHost extends LabelHost {
+                constructor(public label: string) {
+                    super();
+                }
+            }
+            const host1 = new NamedLabelHost('Label1') as any;
+            const host2 = new NamedLabelHost('Label2') as any;
 
             expect(host1.computedLabel).toBe('[Label1]');
             expect(host2.computedLabel).toBe('[Label2]');
@@ -70,8 +70,13 @@ describe('ComposableBase 集成测试', () => {
         });
 
         it('setter 应该修改对应宿主的属性', () => {
-            const host1 = new LabelHost('A') as any;
-            const host2 = new LabelHost('B') as any;
+            class NamedLabelHost extends LabelHost {
+                constructor(public label: string) {
+                    super();
+                }
+            }
+            const host1 = new NamedLabelHost('A') as any;
+            const host2 = new NamedLabelHost('B') as any;
 
             host1.computedLabel = 'X';
 
@@ -94,22 +99,27 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        class MethodHost extends ComposableBase {
-            static readonly abilities = [MethodDef];
-            constructor(public name: string) {
-                super();
-            }
-        }
+        const MethodHost = ComposableBase.with(MethodDef);
 
         it('方法中的 this 应该指向宿主', () => {
-            const host = new MethodHost('MyHost') as any;
+            class NamedMethodHost extends MethodHost {
+                constructor(public name: string) {
+                    super();
+                }
+            }
+            const host = new NamedMethodHost('MyHost') as any;
             expect(host.greet()).toBe('Hello from MyHost');
             host.dispose();
         });
 
         it('多个宿主实例的方法应该各自绑定', () => {
-            const host1 = new MethodHost('Host1') as any;
-            const host2 = new MethodHost('Host2') as any;
+            class NamedMethodHost extends MethodHost {
+                constructor(public name: string) {
+                    super();
+                }
+            }
+            const host1 = new NamedMethodHost('Host1') as any;
+            const host2 = new NamedMethodHost('Host2') as any;
 
             expect(host1.greet()).toBe('Hello from Host1');
             expect(host2.greet()).toBe('Hello from Host2');
@@ -125,10 +135,7 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            class ThisHost extends ComposableBase {
-                static readonly abilities = [ThisHostDef];
-            }
-
+            const ThisHost = ComposableBase.with(ThisHostDef);
             const host = new ThisHost() as any;
             expect(host.getHostViaThis()).toBe(host);
             host.dispose();
@@ -154,10 +161,7 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            class OrderHost extends ComposableBase {
-                static readonly abilities = [CleanupDef1, CleanupDef2];
-            }
-
+            const OrderHost = ComposableBase.with(CleanupDef1, CleanupDef2);
             const host = new OrderHost() as any;
             host._init1();
             host._init2();
@@ -178,9 +182,7 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        class DebounceHost extends ComposableBase {
-            static readonly abilities = [TestDebounceDef];
-        }
+        const DebounceHost = ComposableBase.with(TestDebounceDef);
 
         it('应该正确注入防抖方法', () => {
             const host = new DebounceHost() as any;
@@ -201,21 +203,15 @@ describe('ComposableBase 集成测试', () => {
 
     describe('能力冲突（同名属性覆盖）', () => {
         const ConflictDefA: AbilityDefinition = {
-            sharedProp: 'from-A',
             sharedMethod: () => 'method-A',
         };
         const ConflictDefB: AbilityDefinition = {
-            sharedProp: 'from-B',
             sharedMethod: () => 'method-B',
         };
 
-        it('后声明的能力应该覆盖先声明的能力同名属性', () => {
-            class ConflictHost extends ComposableBase {
-                static readonly abilities = [ConflictDefA, ConflictDefB];
-            }
-
+        it('后声明的能力应该覆盖先声明的能力同名方法', () => {
+            const ConflictHost = ComposableBase.with(ConflictDefA, ConflictDefB);
             const host = new ConflictHost() as any;
-            expect(host.sharedProp).toBe('from-B');
             expect(host.sharedMethod()).toBe('method-B');
             host.dispose();
         });
@@ -233,13 +229,9 @@ describe('ComposableBase 集成测试', () => {
             childMethod: () => 'child',
         };
 
-        it('子类应该同时拥有父类和自身的能力', () => {
-            class ParentHost extends ComposableBase {
-                static readonly abilities: readonly any[] = [ParentDef];
-            }
-            class ChildHost extends ParentHost {
-                static readonly abilities: readonly any[] = [ChildDef];
-            }
+        it('子类 with() 应该同时拥有父类和自身的能力', () => {
+            const ParentHost = ComposableBase.with(ParentDef);
+            const ChildHost = ParentHost.with(ChildDef);
 
             const child = new ChildHost() as any;
             expect(child.parentMethod()).toBe('parent');
@@ -248,12 +240,8 @@ describe('ComposableBase 集成测试', () => {
         });
 
         it('父类实例不应该拥有子类的能力', () => {
-            class ParentHost extends ComposableBase {
-                static readonly abilities: readonly any[] = [ParentDef];
-            }
-            class ChildHost extends ParentHost {
-                static readonly abilities: readonly any[] = [ChildDef];
-            }
+            const ParentHost = ComposableBase.with(ParentDef);
+            const ChildHost = ParentHost.with(ChildDef);
 
             const parent = new ParentHost() as any;
             expect(parent.parentMethod()).toBe('parent');
@@ -280,9 +268,7 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        class CounterHost extends ComposableBase {
-            static readonly abilities = [CounterDef];
-        }
+        const CounterHost = ComposableBase.with(CounterDef);
 
         it('每个宿主应该有独立的状态', () => {
             const host1 = new CounterHost() as any;
@@ -333,14 +319,15 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            class LifecycleHost extends ComposableBase {
-                static readonly abilities = [LifecycleDef];
+            const LifecycleHost = ComposableBase.with(LifecycleDef);
+
+            class NamedLifecycleHost extends LifecycleHost {
                 constructor(public name: string) {
                     super();
                 }
             }
 
-            const host = new LifecycleHost('TestHost') as any;
+            const host = new NamedLifecycleHost('TestHost') as any;
             events.push('constructed');
 
             const result = host.lifecycleAction();

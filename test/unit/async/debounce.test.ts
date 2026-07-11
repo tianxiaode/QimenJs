@@ -118,4 +118,59 @@ describe('debounce', () => {
 
         expect(fn).toHaveBeenCalledTimes(1);
     });
+
+    it('cancel 应该取消待执行的防抖调用', () => {
+        const fn = jest.fn();
+        const debouncedFn = debounce(fn, 100);
+
+        debouncedFn();
+        debouncedFn.cancel();
+
+        jest.advanceTimersByTime(100);
+
+        expect(fn).not.toHaveBeenCalled();
+    });
+
+    it('cancel 在没有待执行调用时不应报错', () => {
+        const fn = jest.fn();
+        const debouncedFn = debounce(fn, 100);
+
+        expect(() => debouncedFn.cancel()).not.toThrow();
+    });
+
+    it('cancel 后可以重新调用', () => {
+        const fn = jest.fn();
+        const debouncedFn = debounce(fn, 100);
+
+        debouncedFn();
+        debouncedFn.cancel();
+        debouncedFn();
+
+        jest.advanceTimersByTime(100);
+
+        expect(fn).toHaveBeenCalledTimes(1);
+    });
+
+    it('应该正确绑定 this 上下文', () => {
+        const obj = {
+            value: 42,
+            method: jest.fn(function (this: any) { return this.value; }),
+        };
+        const debouncedFn = debounce(obj.method, 100);
+
+        debouncedFn.call(obj);
+
+        jest.advanceTimersByTime(100);
+
+        expect(obj.method).toHaveBeenCalledTimes(1);
+    });
+
+    it('immediate 模式下应该返回函数执行结果', () => {
+        const fn = jest.fn(() => 'immediate-result');
+        const debouncedFn = debounce(fn, 100, true);
+
+        const result = debouncedFn();
+
+        expect(result).toBe('immediate-result');
+    });
 });

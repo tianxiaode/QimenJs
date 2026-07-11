@@ -27,8 +27,7 @@ import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
 import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createListHost() {
-    class ListHost extends ComposableBase {
-        static readonly abilities = [LocalListAbility];
+    class ListHost extends ComposableBase.with([LocalListAbility]) {
         items: any[] = [];
         search: any = {};
 

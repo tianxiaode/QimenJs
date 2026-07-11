@@ -45,8 +45,7 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
 // ============================================
 
 function createHost() {
-    class TestHost extends ComposableBase {
-        static readonly abilities = [FlatLocalStateAbility, FlatLocalMutationAbility];
+    class TestHost extends ComposableBase.with([FlatLocalStateAbility, FlatLocalMutationAbility]) {
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
         setCache = jest.fn().mockResolvedValue(undefined);

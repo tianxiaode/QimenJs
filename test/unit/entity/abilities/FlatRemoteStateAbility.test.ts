@@ -28,8 +28,7 @@ import { FlatRemoteStateAbility } from '@/entity/abilities/remote/FlatRemoteStat
 import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 function createRemoteHost() {
-    class RemoteHost extends ComposableBase {
-        static readonly abilities = [FlatRemoteStateAbility, DirtyAbility];
+    class RemoteHost extends ComposableBase.with([FlatRemoteStateAbility, DirtyAbility]) {
         schema = { idField: 'id' };
         items: any[] = [];
         item: any = null;

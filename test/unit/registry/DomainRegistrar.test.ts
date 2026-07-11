@@ -79,7 +79,7 @@ describe('DomainRegistrar', () => {
 
             expect(() => {
                 domainRegistrar.register('example', config);
-            }).toThrow('[Registrar: domain] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -104,7 +104,7 @@ describe('DomainRegistrar', () => {
 
             expect(() => {
                 domainRegistrar.unregister('example');
-            }).toThrow('[Registrar: domain] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 
@@ -166,7 +166,7 @@ describe('DomainRegistrar', () => {
 
             expect(() => {
                 domainRegistrar.clear();
-            }).toThrow('[Registrar: domain] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
     });
 

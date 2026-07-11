@@ -307,7 +307,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             mockFetchReturn({ list: createProductData(5), total: 5 });
 
-            const result = await manager.filter('Electronics');
+            const result = await (manager as any).filter('Electronics');
 
             expect((manager.search as any).keyword).toBe('Electronics');
             expect(manager.page).toBe(1);
@@ -320,7 +320,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
 
             mockFetchReturn({ list: createProductData(10), total: 30 });
 
-            await manager.filter('');
+            await (manager as any).filter('');
 
             expect((manager.search as any).keyword).toBe('');
             expect(manager.page).toBe(1);
@@ -337,7 +337,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
                     }) as any
             );
 
-            await manager.filter('Books');
+            await (manager as any).filter('Books');
 
             // filter 调用 _internalList(true)，跳过缓存，内部调用 fetch
             expect(fetchSpy).toHaveBeenCalled();
@@ -349,7 +349,7 @@ describe('FlatRemoteQueryAbility 集成测试', () => {
                 .spyOn(manager as any, '_internalList')
                 .mockImplementation(async () => []);
 
-            await manager.filter('Books');
+            await (manager as any).filter('Books');
 
             expect(internalListSpy).toHaveBeenCalledWith(true);
 

@@ -208,16 +208,14 @@ describe('EventFlowRegistrar', () => {
     // ============================================
 
     test('bindStateTriggers 自动注册到 EventFlowRegistrar', () => {
-        class SourceComp extends ComposableBase {
-            static readonly abilities = [EventAbility];
+        class SourceComp extends ComposableBase.with([EventAbility]) {
             static readonly eventKey = 'testSource';
         }
 
         const source = new SourceComp();
         expect(source.eventScope).toBeDefined();
 
-        const listener = new (class ListenerComp extends ComposableBase {
-            static readonly abilities = [EventAbility];
+        const listener = new (class ListenerComp extends ComposableBase.with([EventAbility]) {
             onEvent(_ctx: any) {}
         })();
 

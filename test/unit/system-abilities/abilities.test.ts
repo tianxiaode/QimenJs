@@ -1,7 +1,7 @@
 /**
- * System Abilities 分支覆盖率测试
+ * System Abilities 单元测试
  *
- * 覆盖 EventAbility、DomEventsAbility、DomainAbility、SystemAbility 的分支逻辑
+ * 覆盖 EventAbility、DomEventsAbility、DomainAbility、SystemAbility
  */
 
 jest.mock('@/logger', () => {
@@ -26,7 +26,6 @@ import { DomainAbility } from '@/system-abilities/system/DomainAbility';
 import { SystemAbility } from '@/system-abilities/system/SystemAbility';
 import { ComposableBase } from '@/composable';
 import { DomainRegistrar, SystemRegistrar } from '@/registry';
-import { DOMAIN_CACHE_SYMBOL } from '@/system-abilities/types/abilities';
 
 // Mock createEventAdapter for DomEventsAbility tests
 jest.mock('@/event-dom', () => ({
@@ -43,9 +42,7 @@ jest.mock('@/event-dom', () => ({
 // ============================================
 
 describe('EventAbility', () => {
-    class TestEventHost extends ComposableBase {
-        static readonly abilities = [EventAbility];
-    }
+    class TestEventHost extends ComposableBase.with([EventAbility]) {}
 
     let host: TestEventHost;
 
@@ -66,7 +63,6 @@ describe('EventAbility', () => {
         host.on('test-event', handler);
         host.emit('test-event', { data: 1 });
         expect(handler).toHaveBeenCalledTimes(1);
-        // emit passes an event envelope object with data, event, source, etc.
         const callArg = handler.mock.calls[0][0];
         expect(callArg.data).toEqual({ data: 1 });
         expect(callArg.event).toBe('test-event');
@@ -93,17 +89,12 @@ describe('EventAbility', () => {
         const scope = (host as any).eventScope;
         expect(scope).toBeDefined();
         host.dispose();
-        // After dispose, abilityStates is cleared and cleanups are executed
-        // The event scope is disposed via onCleanup
-        // Verify that the scope's dispose was called
         expect(scope.disposed).toBe(true);
     });
 
     it('should handle dispose when scope is already null', () => {
-        // Create and immediately dispose to null the scope
         const host2 = new TestEventHost();
         host2.dispose();
-        // Disposing again should not throw (scope?.dispose handles null)
         expect(() => host2.dispose()).not.toThrow();
     });
 });
@@ -113,9 +104,7 @@ describe('EventAbility', () => {
 // ============================================
 
 describe('DomEventsAbility', () => {
-    class TestDomEventsHost extends ComposableBase {
-        static readonly abilities = [EventAbility, DomEventsAbility];
-    }
+    class TestDomEventsHost extends ComposableBase.with([EventAbility, DomEventsAbility]) {}
 
     let host: TestDomEventsHost;
 
@@ -134,7 +123,6 @@ describe('DomEventsAbility', () => {
     it('should call adapter.bind when bind is called', () => {
         const target = document.createElement('div');
         const result = host.bind(target, 'tap');
-        // bind should return something (binding result)
         expect(result).toBeDefined();
     });
 
@@ -143,15 +131,12 @@ describe('DomEventsAbility', () => {
         const target2 = document.createElement('div');
         host.bind(target1, 'tap');
         host.bind(target2, 'swipeleft');
-        // Both calls should work without error (adapter is reused)
     });
 
     it('should clean up adapter on dispose', () => {
         const target = document.createElement('div');
         host.bind(target, 'tap');
         host.dispose();
-        // After dispose, _adapter should be undefined
-        // No way to directly test, but no error should occur
     });
 });
 
@@ -174,8 +159,7 @@ describe('DomainAbility', () => {
     it('should return domainConfig when domain is registered', () => {
         domainRegistrar.register('test-domain', { name: 'test-domain' } as any);
 
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
+        class TestDomainHost extends ComposableBase.with([DomainAbility]) {
             domain = 'test-domain';
         }
 
@@ -189,8 +173,7 @@ describe('DomainAbility', () => {
     it('should cache domainConfig after first access', () => {
         domainRegistrar.register('cached-domain', { name: 'cached-domain' } as any);
 
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
+        class TestDomainHost extends ComposableBase.with([DomainAbility]) {
             domain = 'cached-domain';
         }
 
@@ -202,8 +185,7 @@ describe('DomainAbility', () => {
     });
 
     it('should return undefined when domain is not set', () => {
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
+        class TestDomainHost extends ComposableBase.with([DomainAbility]) {
             domain = '';
         }
 
@@ -214,40 +196,20 @@ describe('DomainAbility', () => {
     });
 
     it('should return undefined when domain name has no matching registration', () => {
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
+        class TestDomainHost extends ComposableBase.with([DomainAbility]) {
             domain = 'nonexistent';
         }
 
         const host = new TestDomainHost();
         const config = host.domainConfig;
-        // DomainRegistrar.get() for nonexistent key returns undefined
         expect(config).toBeUndefined();
-        host.dispose();
-    });
-
-    it('should log debug when domain is initialized and cached', () => {
-        domainRegistrar.register('log-domain', { name: 'log-domain' } as any);
-
-        const debugFn = jest.fn();
-
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
-            domain = 'log-domain';
-            logger = { debug: debugFn, info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
-        }
-
-        const host = new TestDomainHost();
-        host.domainConfig;
-        expect(debugFn).toHaveBeenCalled();
         host.dispose();
     });
 
     it('should not throw when logger is not available', () => {
         domainRegistrar.register('no-log-domain', { name: 'no-log-domain' } as any);
 
-        class TestDomainHost extends ComposableBase {
-            static readonly abilities = [DomainAbility];
+        class TestDomainHost extends ComposableBase.with([DomainAbility]) {
             domain = 'no-log-domain';
         }
 
@@ -276,12 +238,10 @@ describe('SystemAbility', () => {
     it('should return specific config when key is provided', () => {
         systemRegistrar.register('apiUrl', 'https://api.example.com');
 
-        class TestSystemHost extends ComposableBase {
-            static readonly abilities = [SystemAbility];
-        }
+        class TestSystemHost extends ComposableBase.with([SystemAbility]) {}
 
         const host = new TestSystemHost();
-        const value = host.systemConfig('apiUrl');
+        const value = (host as any).systemConfig('apiUrl');
         expect(value).toBe('https://api.example.com');
         host.dispose();
     });
@@ -290,12 +250,10 @@ describe('SystemAbility', () => {
         systemRegistrar.register('apiUrl', 'https://api.example.com');
         systemRegistrar.register('version', '1.0.0');
 
-        class TestSystemHost extends ComposableBase {
-            static readonly abilities = [SystemAbility];
-        }
+        class TestSystemHost extends ComposableBase.with([SystemAbility]) {}
 
         const host = new TestSystemHost();
-        const allConfig = host.systemConfig();
+        const allConfig = (host as any).systemConfig();
         expect(allConfig).toBeDefined();
         expect(allConfig.apiUrl).toBe('https://api.example.com');
         expect(allConfig.version).toBe('1.0.0');

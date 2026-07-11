@@ -32,8 +32,7 @@ import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
 // ============================================
 
 function createPathHost() {
-    class PathHost extends ComposableBase {
-        static readonly abilities = [TreePathAbility];
+    class PathHost extends ComposableBase.with([TreePathAbility]) {
         nodes = new Map<string, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';

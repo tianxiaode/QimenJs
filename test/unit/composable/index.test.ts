@@ -26,15 +26,12 @@ describe('composable package exports', () => {
         expect(typeof ComposableBase).toBe('function');
     });
 
-    it('should allow creating composable with AbilityDefinition', () => {
+    it('should allow creating composable with with()', () => {
         const CustomAbility: AbilityDefinition = {
             customMethod: () => 'custom-result',
         };
 
-        class TestComposable extends ComposableBase {
-            static readonly abilities = [CustomAbility];
-        }
-
+        const TestComposable = ComposableBase.with(CustomAbility);
         const instance = new TestComposable() as any;
         expect(instance.customMethod()).toBe('custom-result');
     });

@@ -56,7 +56,6 @@ const toggleTestSchema: FlatSchema = {
 class TestToggleManager extends RemoteCrudEntityManager {
     // 按照任务要求，显式声明包含 RemoteToggleAbility
     // 虽然 RemoteCrudEntityManager 已包含，但此处显式列出以明确测试意图
-    static readonly abilities: any[] = [];
 
     domain = 'toggle-test';
     entityName = 'ToggleFeature';

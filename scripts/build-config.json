@@ -249,6 +249,13 @@
             "rootDir": "src/imperative",
             "dependencies": ["i18n", "registry", "component"],
             "packageName": "@qimen-lab/imperative"
+        },
+        "router": {
+            "entry": "src/router/index.ts",
+            "outDir": "dist/router",
+            "rootDir": "src/router",
+            "dependencies": ["events", "registry", "template", "layout", "composable"],
+            "packageName": "@qimen-lab/router"
         }
     },
     "build": {

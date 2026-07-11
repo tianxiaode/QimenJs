@@ -1,7 +1,7 @@
 /**
  * ComposableBase Ability 注入与覆盖规则集成测试
  *
- * 验证 ComposableBase 的 Ability 注入机制：
+ * 验证 ComposableBase 的 Ability 注入机制（with() 模式）：
  * 1. 同名方法覆盖
  * 2. 宿主自身方法优先
  * 3. 重命名解决冲突
@@ -32,7 +32,7 @@ import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import type { FlatSchema, RegistrSchema } from '@/schema';
 
 // ============================================
-// 自定义 Ability（扁平对象，方法直接定义在顶层）
+// 自定义 Ability
 // ============================================
 
 const AbilityA: AbilityDefinition = {
@@ -63,16 +63,14 @@ const AbilityWithDispose: AbilityDefinition = {
 };
 
 // ============================================
-// 测试用 Manager
+// 测试用 Manager（with() 模式）
 // ============================================
 
-class TestOverrideManager extends ComposableBase {
-    static readonly abilities: readonly AbilityDefinition[] = [AbilityA, AbilityB];
-}
+const TestOverrideManagerBase = ComposableBase.with(AbilityA, AbilityB);
+class TestOverrideManager extends TestOverrideManagerBase {}
 
-class TestHostDisposeManager extends ComposableBase {
-    static readonly abilities: readonly AbilityDefinition[] = [AbilityWithDispose];
-
+const TestHostDisposeManagerBase = ComposableBase.with(AbilityWithDispose);
+class TestHostDisposeManager extends TestHostDisposeManagerBase {
     private _disposed = false;
 
     dispose(): void {
@@ -89,39 +87,36 @@ class TestHostDisposeManager extends ComposableBase {
 // 测试
 // ============================================
 
-describe('ComposableBase Ability 注入与覆盖规则集成测试', () => {
-    describe('同名方法覆盖', () => {
-        it('后注入的 Ability 的同名方法覆盖先注入的', () => {
-            const manager = new TestOverrideManager();
+describe('ComposableBase Ability injection and override', () => {
+    describe('same-name method override', () => {
+        it('later ability overrides earlier one', () => {
+            const mgr = new TestOverrideManager();
 
-            // AbilityB 后注入，getData 应返回 AbilityB 的结果
-            expect((manager as any).getData()).toBe('from-ability-b');
-            expect((manager as any).sharedMethod()).toBe('shared-b');
+            expect((mgr as any).getData()).toBe('from-ability-b');
+            expect((mgr as any).sharedMethod()).toBe('shared-b');
         });
     });
 
-    describe('宿主自身方法优先', () => {
-        it('宿主自身定义的 dispose 不被 Ability 的同名方法覆盖', () => {
-            const manager = new TestHostDisposeManager();
+    describe('host own method priority', () => {
+        it('host own dispose is not overridden by ability', () => {
+            const mgr = new TestHostDisposeManager();
 
-            // 宿主自身的 dispose 应优先
-            expect(manager.isDisposed()).toBe(false);
-            manager.dispose();
-            expect(manager.isDisposed()).toBe(true);
+            expect(mgr.isDisposed()).toBe(false);
+            mgr.dispose();
+            expect(mgr.isDisposed()).toBe(true);
         });
 
-        it('Ability 注入的其他方法仍可正常调用', () => {
-            const manager = new TestHostDisposeManager();
+        it('other ability methods still work', () => {
+            const mgr = new TestHostDisposeManager();
 
-            expect((manager as any).customAction()).toBe('custom-action');
+            expect((mgr as any).customAction()).toBe('custom-action');
 
-            manager.dispose();
+            mgr.dispose();
         });
     });
 
-    describe('重命名解决冲突', () => {
-        it('RemoteCrudEntityManager 中 updateSourceData 和 updateData 均存在', () => {
-            // 注册测试域和 Schema
+    describe('rename to resolve conflict', () => {
+        it('RemoteCrudEntityManager has both updateSourceData and updateData', () => {
             const domainRegistrar = RegistryHub.get<DomainRegistrar>('domain');
             domainRegistrar.register(
                 'test-ability-rename',
@@ -155,38 +150,32 @@ describe('ComposableBase Ability 注入与覆盖规则集成测试', () => {
                 schema: RegistrSchema = testSchema;
             }
 
-            const manager = new TestRenameManager();
+            const mgr = new TestRenameManager();
 
-            // 验证两个方法都存在
-            expect(typeof manager.updateData).toBe('function');
-            expect(typeof (manager as any).updateSourceData).toBe('function');
+            expect(typeof mgr.updateData).toBe('function');
+            expect(typeof (mgr as any).updateSourceData).toBe('function');
 
-            manager.dispose();
+            mgr.dispose();
             domainRegistrar.unregister('test-ability-rename');
             schemaRegistrar.unregister('TestRenameUser');
         });
     });
 
-    describe('Ability 注入验证', () => {
-        it('Ability 方法通过 Object.defineProperty 注入到宿主实例', () => {
-            const manager = new TestOverrideManager();
+    describe('ability injection verification', () => {
+        it('ability methods are injected to prototype via with()', () => {
+            const mgr = new TestOverrideManager();
 
-            // 验证方法存在
-            expect(typeof (manager as any).getData).toBe('function');
-            expect(typeof (manager as any).sharedMethod).toBe('function');
+            expect(typeof (mgr as any).getData).toBe('function');
+            expect(typeof (mgr as any).sharedMethod).toBe('function');
 
-            // 验证方法可调用
-            expect((manager as any).getData()).toBe('from-ability-b');
-            expect((manager as any).sharedMethod()).toBe('shared-b');
+            expect((mgr as any).getData()).toBe('from-ability-b');
+            expect((mgr as any).sharedMethod()).toBe('shared-b');
         });
 
-        it('多个 Ability 方法共存（非同名方法）', () => {
-            const manager = new TestOverrideManager();
+        it('multiple ability methods coexist', () => {
+            const mgr = new TestOverrideManager();
 
-            // AbilityA 和 AbilityB 的非同名方法都应存在
-            // 但由于 AbilityB 覆盖了 getData 和 sharedMethod
-            // 只有 AbilityB 的版本存在
-            expect((manager as any).getData()).toBe('from-ability-b');
+            expect((mgr as any).getData()).toBe('from-ability-b');
         });
     });
 });

@@ -32,8 +32,7 @@ import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbili
 // ============================================
 
 function createTreeHost() {
-    class TreeHost extends ComposableBase {
-        static readonly abilities = [TreeLifecycleAbility];
+    class TreeHost extends ComposableBase.with([TreeLifecycleAbility]) {
         nodes = new Map<string | number, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';

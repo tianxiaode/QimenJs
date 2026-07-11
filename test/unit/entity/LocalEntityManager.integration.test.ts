@@ -312,7 +312,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('filter() + refreshView 应该按关键词过滤 items', () => {
-            manager.filter('Alpha');
+            (manager as any).filter('Alpha');
             manager.refreshView();
 
             expect(manager.items.length).toBe(1);
@@ -320,7 +320,7 @@ describe('LocalCrudEntityManager 集成测试', () => {
         });
 
         it('filter() 空关键词 + refreshView 应该返回全部', () => {
-            manager.filter('');
+            (manager as any).filter('');
             manager.refreshView();
 
             expect(manager.items.length).toBe(3);

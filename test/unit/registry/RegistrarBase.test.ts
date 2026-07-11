@@ -101,7 +101,7 @@ describe('RegistrarBase', () => {
 
             expect(() => {
                 registrar['checkLock']();
-            }).toThrow('[Registrar: test-object-storage] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
 
         it('当注册器未锁定时不应当抛出错误', () => {
@@ -154,7 +154,7 @@ describe('RegistrarBase', () => {
 
             expect(() => {
                 testRegistrar.clear();
-            }).toThrow('[Registrar: test-clear-locked] modification denied: Locked.');
+            }).toThrow('Registration failed: The registrar is locked');
         });
 
         it('应该处理storage为null的情况', () => {
