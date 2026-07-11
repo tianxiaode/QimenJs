@@ -281,31 +281,43 @@ export const InitAbility: AbilityDefinition = {
      *
      * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
      *
-     * 两种模式：
-     * - handlers 里的 key → 绑定具体函数，直接执行
-     * - 默认（bridges + 未配置）→ 走事件桥 emitUI 发布
+     * 三种模式（优先级从高到低）：
+     * 1. bridges 声明的 → 走事件桥 emitUI 发布
+     * 2. 实例有 onXxx 方法 → emitKey 驼峰化为方法名，自动绑定
+     *    'saveBtn:tap' → 'onSaveBtnTap'
+     * 3. 默认 → 走事件桥 emitUI 发布
      */
     bindExternalEvents(layout: LayoutNode): void {
-        const handlerKeys = new Set<string>(layout.handlers ? Object.keys(layout.handlers) : []);
+        const bridges = new Set<string>(layout.bridges || []);
 
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
 
-            // handlers 模式：绑定具体函数
-            if (handlerKeys.has(emitKey)) {
-                const handlerDef = layout.handlers![emitKey];
-                const resolved = this.resolveHandler(handlerDef);
-                if (resolved) {
-                    this.bind(node.el, eventType as any);
-                    this.on(eventType, (gesture: any) => {
-                        const domEvent = gesture?.domEvent ?? gesture;
-                        resolved(domEvent);
-                    });
-                }
+            // bridges 模式：走事件桥 emitUI 发布
+            if (bridges.has(emitKey)) {
+                this.bind(node.el, eventType as any);
+                this.on(eventType, (gesture: any) => {
+                    const domEvent = gesture?.domEvent ?? gesture;
+                    if (typeof this.emitUI === 'function') {
+                        this.emitUI(emitKey, undefined, domEvent);
+                    }
+                });
                 continue;
             }
 
-            // bridges 模式 + 默认模式：走事件桥 emitUI 发布
+            // 方法自动绑定：emitKey → onXxx 方法名
+            const handlerName = this._emitKeyToHandlerName(emitKey);
+            if (typeof (this as any)[handlerName] === 'function') {
+                const handler = (this as any)[handlerName].bind(this);
+                this.bind(node.el, eventType as any);
+                this.on(eventType, (gesture: any) => {
+                    const domEvent = gesture?.domEvent ?? gesture;
+                    handler(domEvent, node.el);
+                });
+                continue;
+            }
+
+            // 默认模式：走事件桥 emitUI 发布
             this.bind(node.el, eventType as any);
             this.on(eventType, (gesture: any) => {
                 const domEvent = gesture?.domEvent ?? gesture;
@@ -314,6 +326,20 @@ export const InitAbility: AbilityDefinition = {
                 }
             });
         }
+    },
+
+    /**
+     * emitKey 转方法名
+     *
+     * 'saveBtn:tap' → 'onSaveBtnTap'
+     * 'cancelBtn:click' → 'onCancelBtnClick'
+     * 'submit' → 'onSubmit'
+     */
+    _emitKeyToHandlerName(emitKey: string): string {
+        return 'on' + emitKey
+            .split(':')
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join('');
     },
 
     /**

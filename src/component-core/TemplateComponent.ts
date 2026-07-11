@@ -254,7 +254,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * Button = Button.withTemplate(CUSTOM_BUTTON_TEMPLATE);
      * ```
      */
-    static withTemplate(templateHtml: string, config?: Record<string, any>): any {
+    static withTemplate(templateHtml: string): any {
         // 预编译：创建临时 DOM 解析模板，提取节点数据
         const compiled = precompileTemplate(templateHtml, (this as any).isMultiArea ?? false);
 
@@ -267,9 +267,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 // 不需要再调 initialize()
                 this._initWithTemplate(props);
             }
-
-            /** withTemplate 配置（children、handlers、bridges 等） */
-            static readonly _withTemplateConfig: Record<string, any> | undefined = config;
 
             /** 预编译的模板 HTML */
             static readonly _templateHtml: string = templateHtml;
@@ -330,15 +327,29 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
              * 构造时自动完成：内容填充、事件绑定、能力初始化、注册。
              * 不需要再调 initialize()。
              *
-             * 对于一次性配置组件（HomePage、Row），props 就是全部配置。
-             * 对于可配置组件（Button），子类构造函数可继续设置额外属性。
+             * 配置来源（优先级从低到高）：
+             * 1. static 属性（children、bridges 等）— 类定义时确定
+             * 2. props 参数 — 实例化时传入，可覆盖 static
+             *
+             * 事件绑定：
+             * - bridges 声明的 → 走事件桥 emitUI
+             * - 实例有 onXxx 方法 → emitKey 驼峰化自动绑定
+             * - 默认 → 走事件桥 emitUI
              */
             _initWithTemplate(props?: Record<string, any>): void {
                 this._initializing = true;
 
-                // 合并配置：withTemplate config 为基础，props 可覆盖
+                // 合并配置：static 属性为基础，props 可覆盖
                 const ctor = this.constructor as any;
-                const cfg = { ...ctor._withTemplateConfig, ...props };
+                const cfg: Record<string, any> = {
+                    children: ctor.children ? [...ctor.children] : undefined,
+                    bridges: ctor.bridges ? [...ctor.bridges] : undefined,
+                    abilities: ctor.abilities,
+                    entity: ctor.entity,
+                    eventBridge: ctor.eventBridge,
+                    meta: ctor.meta,
+                    ...props,
+                };
 
                 try {
                     // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
@@ -380,8 +391,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                     // ── 4. 事件绑定 ──
                     this.bindInternalEvents();
-                    this.bindExternalEvents({ handlers: cfg.handlers, bridges: cfg.bridges } as any);
-                    if (cfg.handlers) this.bindHandlers(cfg.handlers);
+                    this.bindExternalEvents({ bridges: cfg.bridges } as any);
                     if (cfg.stateTriggers) this.bindStateTriggers(cfg.stateTriggers);
 
                     // ── 5. 调用能力的 __init__ 方法 ──
