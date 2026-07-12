@@ -38,6 +38,7 @@ export { PositionBoolAbility } from './abilities/PositionBoolAbility';
 export { PositionDirectAbility } from './abilities/PositionDirectAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
+export type { ChildComponentConfig } from './abilities/TemplateAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
