@@ -29,6 +29,7 @@ jest.mock('@/logger', () => {
 import { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from '@/component-core';
 import { ChildrenAbility } from '@/component-abilities';
 import type { AbilityDefinition } from '@/composable';
+import type { JsonTemplateNode } from '@/component-core/template-json';
 
 // 测试用能力
 const TestRouteAbility: AbilityDefinition = {
@@ -302,6 +303,51 @@ describe('TemplateComponent', () => {
             const instance = new ButtonClass() as any;
             expect(instance).toBeDefined();
             expect(instance.eventMap.external['save:tap']).toBeDefined();
+        });
+
+        it('withTemplate 支持 JSON 模板数组', () => {
+            const JSON_TEMPLATE: JsonTemplateNode[] = [
+                { tag: 'span', content: 'btn:icon' },
+                { tag: 'span', content: 'btn:text' },
+            ];
+            const ButtonClass = TemplateComponent.withTemplate(JSON_TEMPLATE);
+            const instance = new ButtonClass() as any;
+
+            expect(instance.el).toBeDefined();
+            expect(instance.nodeMap).toBeDefined();
+        });
+
+        it('withTemplate JSON 模板生成 _jsonComponentMap', () => {
+            class MyChild {}
+            const JSON_TEMPLATE: JsonTemplateNode[] = [
+                { content: 'slot:body', json: MyChild as any },
+            ];
+            const ContainerClass = TemplateComponent.withTemplate(JSON_TEMPLATE) as any;
+
+            expect(ContainerClass._jsonComponentMap).toBeDefined();
+            expect(ContainerClass._jsonComponentMap['body']).toBe(MyChild);
+        });
+
+        it('withTemplate 强类 dispose 时递归销毁子组件', () => {
+            const SIMPLE_TEMPLATE2 = '<div class="q-btn"><span data-content="btn:text"></span></div>';
+            const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE2);
+            const instance = new ButtonClass() as any;
+
+            // 模拟 nodeMap 中有子组件
+            const mockDispose = jest.fn();
+            instance.nodeMap['btn'] = {
+                text: {
+                    el: document.createElement('span'),
+                    raw: 'btn:text',
+                    group: 'btn',
+                    name: 'text',
+                    component: { dispose: mockDispose },
+                },
+            };
+
+            instance.dispose();
+            expect(mockDispose).toHaveBeenCalled();
+            expect(instance.nodeMap).toEqual({});
         });
 
         it('withTemplate 强类 _initWithTemplate 完成后 _initializing 为 false', () => {

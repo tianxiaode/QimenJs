@@ -2995,7 +2995,102 @@ EventFlowRegistrar 的 `getSubscriptionCount(event)` 可以返回某个事件的
 - 两者互补：调试时先看注册表了解全局监听关系，再看 chain 了解具体触发路径
 - **都不持有对象引用**：EventFlowEntry 用 WeakRef，chain 只存原始值，无需手动释放
 
-## 十八、待定决策
+## 十八、JSON 模板与子组件插槽
+
+### 18.1 JSON 模板（JsonTemplateNode）
+
+withTemplate 支持 JSON 模板数组（`JsonTemplateNode[]`），自动转换为 HTML 字符串后走原有 precompileTemplate 流程。JSON 模板字段与 data-* 属性一一对应：
+
+| JSON 字段 | data-* 属性 | 说明 |
+|-----------|------------|------|
+| content | data-content | 内容插槽声明 |
+| event | data-event | 内部事件声明 |
+| emit | data-emit | 外部事件声明 |
+| target | data-target | 事件委托目标 |
+| json | data-json | 组件类引用（字符串或类引用） |
+| jsonMode | data-json-mode | 渲染模式（replace/child） |
+| template | data-template | 嵌套模板引用 |
+| i18n | data-i18n | 国际化翻译 key |
+
+`jsonTemplateToHtml()` 返回 `{ html, componentMap }`，其中 componentMap 从 json 字段为组件类引用的节点提取 name → ComponentClass 映射。
+
+### 18.2 子组件渲染（TemplateAbility._renderChildComponents）
+
+模板中通过 data-json 声明占位节点，_renderChildComponents 遍历 nodeMap 中有 componentClass 的节点：
+
+1. 从 static children 查找差异化 props
+2. 创建子组件实例，设置 parent 引用
+3. 根据 jsonMode（replace/child）挂载到 DOM
+4. replace 模式记录 parentNode/nodeIndex 用于后续替换
+5. 更新 nodeMap 中的 el、component、componentClass 字段
+
+子组件销毁不使用 onCleanup（避免替换时回调累积），由 TemplateComponent.dispose 统一调用 _disposeChildComponents。
+
+### 18.3 子组件插槽替换（ChildSlotAbility）
+
+ChildSlotAbility 提供动态替换子组件的能力，按需组合（只有需要动态替换的场景才引入）：
+
+- `_replaceChildComponent(name, newComponentClass, props)` — 替换指定位置的子组件
+- 利用 NodeMetadata 中的 parentNode/nodeIndex 定位 DOM 位置
+- 销毁旧组件后在原位挂载新组件
+- 更新 nodeMap 中的引用
+
+### 18.4 浮层宿主能力（OverlayHostAbility + TooltipOverlayAbility）
+
+浮层组件通过组合 OverlayHostAbility + 自身特有逻辑实现：
+
+- OverlayHostAbility：浮层挂载、z-index 管理、定位计算、resize/scroll 重定位
+- TooltipOverlayAbility：hover 事件、show/hide delay、i18n 内容、open/close 生命周期
+
+宿主组件通过 OverlayAbility.createOverlay() 创建浮层实例，自动生成委托方法（openXxx/closeXxx/positionXxx）。
+
+## 十九、Router 纯事件模式
+
+### 19.1 设计思路
+
+Router 重构为纯事件模式：路由变化时只发切换事件，不再解析配置去找组件/模板。事件名由路径转换而来（`/` 替换为 `:`）。
+
+### 19.2 pathToEventName
+
+```typescript
+// /users/list → users:list
+function pathToEventName(path: string): string {
+    return path.split('/').map(s => s.trim()).filter(Boolean).join(':');
+}
+```
+
+### 19.3 路由事件发布
+
+Router 继承 ComposableBase.with(EventAbility)，通过 emit 发布路由切换事件：
+
+```typescript
+// source='router'，走 eventScope 隔离通道
+this.emit(eventName, event, { source: 'router' });
+```
+
+监听方通过 EventBridgeAbility 监听 router 源事件实现刷新。
+
+## 二十、emit 统一入口
+
+### 20.1 设计思路
+
+EventAbility.emit 作为统一入口，通过第三个参数 options 分流：
+
+- `emit(event, data)` → 传统模式，直接走 eventScope.emit()
+- `emit(event, data, { source })` → UI 事件模式，自动构建 EventContext
+
+scopeId 由 eventScope 内部自动绑定，无需手动传入。
+
+### 20.2 EventScope.emit 签名
+
+```typescript
+emit(event: string, data?: any, options?: { source?: any }): void
+```
+
+- 无 options 时 source 默认为 scope 自身
+- 有 options.source 时使用指定的事件源
+
+## 二十一、待定决策
 
 ### 18.1 可变行高虚拟列表
 

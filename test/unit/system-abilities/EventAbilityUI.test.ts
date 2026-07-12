@@ -173,4 +173,39 @@ describe('EventAbility UI 扩展', () => {
             toolbar.emitUI('add', {});
         }).not.toThrow();
     });
+
+    // === emit 统一入口 ===
+
+    test('emit(event, data) 传统模式直接走 eventScope', () => {
+        const toolbar = new TestToolbar();
+        const handler = jest.fn();
+        toolbar.on('simple-event', handler);
+
+        toolbar.emit('simple-event', { key: 'value' });
+
+        expect(handler).toHaveBeenCalledTimes(1);
+    });
+
+    test('emit(event, data, { source }) UI 事件模式构建 EventContext', () => {
+        const toolbar = new TestToolbar();
+        let receivedCtx: EventContext | undefined;
+
+        toolbar.on('testToolbar:action', (ctx: any) => { receivedCtx = ctx; });
+        toolbar.emit('action', { key: 'val' }, { source: 'testToolbar' });
+
+        expect(receivedCtx).toBeDefined();
+        expect(receivedCtx!.event).toBe('testToolbar:action');
+        expect(receivedCtx!.type).toBe('action');
+        expect(receivedCtx!.source).toBe('testToolbar');
+    });
+
+    test('emit 无 source 时走传统模式', () => {
+        const toolbar = new TestToolbar();
+        const handler = jest.fn();
+        toolbar.on('plain-event', handler);
+
+        toolbar.emit('plain-event', { data: 1 });
+
+        expect(handler).toHaveBeenCalledTimes(1);
+    });
 });

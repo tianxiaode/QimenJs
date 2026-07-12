@@ -5,7 +5,7 @@
 
 ## withTemplate 是什么
 
-`withTemplate` 是 `TemplateComponent` 的静态工厂方法，接收 HTML 模板字符串，在**类定义时**预编译，返回一个带模板的强类。
+`withTemplate` 是 `TemplateComponent` 的静态工厂方法，接收 HTML 模板字符串或 JSON 模板数组，在**类定义时**预编译，返回一个带模板的强类。
 
 **为什么用 withTemplate**：
 
@@ -402,3 +402,69 @@ class Home extends TemplateComponent.withTemplate(tpl) {
     static bridges = [...];
 }
 ```
+
+## 11. JSON 模板
+
+withTemplate 支持 JSON 模板数组（`JsonTemplateNode[]`），替代手写 HTML 字符串：
+
+```typescript
+import { TemplateComponent } from '@qimenjs/component-core';
+import type { JsonTemplateNode } from '@qimenjs/component-core';
+
+const BUTTON_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'span', content: 'button:icon' },
+    { tag: 'span', content: 'button:text' },
+];
+
+class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
+    onClick() { /* ... */ }
+}
+```
+
+**JSON 模板中声明子组件占位节点**：
+
+```typescript
+const CONTAINER_TEMPLATE: JsonTemplateNode[] = [
+    { content: 'slot:body', json: MyGridComponent, jsonMode: 'replace' },
+    { content: 'slot:panel', json: MyPanelComponent, jsonMode: 'child' },
+];
+```
+
+- `json` 为组件类引用时，withTemplate 自动提取到 `_jsonComponentMap`
+- `jsonMode: 'replace'` — 子组件 el 替换占位节点，记录 parentNode/nodeIndex
+- `jsonMode: 'child'` — 子组件 el 挂载到占位节点内部
+
+**子组件差异化配置**：
+
+```typescript
+class MyContainer extends TemplateComponent.withTemplate(CONTAINER_TEMPLATE) {
+    static children = [
+        { target: 'body', props: { columns: [...] } },
+        { target: 'panel', props: { title: '详情' } },
+    ];
+}
+```
+
+## 12. 子组件插槽替换
+
+需要动态替换子组件时，组合 ChildSlotAbility：
+
+```typescript
+import { ChildSlotAbility } from '@qimenjs/component-core';
+
+class DynamicContainer extends TemplateComponent.withTemplate(TEMPLATE) {
+    static readonly abilities = [ChildSlotAbility];
+
+    switchToDetail() {
+        this._replaceChildComponent('body', DetailComponent, { id: 123 });
+    }
+
+    switchToList() {
+        this._replaceChildComponent('body', ListComponent);
+    }
+}
+```
+
+- `_replaceChildComponent` 自动销毁旧组件、在原位挂载新组件
+- replace 模式利用 parentNode/nodeIndex 精确定位 DOM 位置
+- child 模式清空占位节点内容后挂载新组件

@@ -217,6 +217,33 @@ describe('EventScope', () => {
                 })
             );
         });
+
+        test('emit 传入 options.source 时使用指定的事件源', () => {
+            const handler = jest.fn();
+            bus.on('custom-source', handler);
+
+            const customSource = { name: 'router' };
+            scope.emit('custom-source', { data: 'test' }, { source: customSource });
+
+            expect(handler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    source: customSource,
+                })
+            );
+        });
+
+        test('emit 不传 options 时 source 默认为 scope 自身', () => {
+            const handler = jest.fn();
+            bus.on('no-options-source', handler);
+
+            scope.emit('no-options-source', { data: 'test' });
+
+            expect(handler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    source: scope,
+                })
+            );
+        });
     });
 
     // --- 作用域销毁测试 ---

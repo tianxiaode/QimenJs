@@ -103,6 +103,21 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-12
+- withTemplate 支持 JSON 模板数组（JsonTemplateNode[]），jsonTemplateToHtml 返回 { html, componentMap }
+- 新增 ChildSlotAbility 子组件插槽替换能力，支持 replace/child 两种模式
+- 新增 OverlayHostAbility 浮层宿主能力 + TooltipOverlayAbility tooltip 浮层能力
+- TemplateAbility 新增 _renderChildComponents / _disposeChildComponents，支持 data-json 占位节点渲染
+- TemplateComponent.dispose 递归销毁子组件
+- NodeMetadata 扩展 componentClass/component/parentNode/nodeIndex 字段
+- Router 重构为纯事件模式，pathToEventName 路径转事件名，emit source='router'
+- EventAbility.emit 统一入口，通过 options.source 分流传统模式和 UI 事件模式
+- EventScope.emit 支持 options.source 参数
+- 移除 template 包，模板预设/常量/JSON 迁移到 component-core
+- MsgboxManager/ToastManager 适配 jsonTemplateToHtml 返回值变更
+- 新增单元测试：template-json.test.ts、ChildSlotAbility.test.ts、Router.test.ts
+- 更新测试：TemplateComponent.test.ts、EventScope.test.ts、EventAbilityUI.test.ts
+
 ### 2026-07-05
 - 项目从 OrbitJS 重命名为 QimenJS，全量替换源码/测试/文档/示例/配置中的旧名称
 - 修复 package.json、tsconfig.json、jest.config.ts 的 UTF-8 BOM 问题
