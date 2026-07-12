@@ -4,8 +4,9 @@
  * 覆盖：initOverflowMenu、recalcOverflowItems、toggleOverflowMenu、
  *       openOverflowMenu、closeOverflowMenu、getOverflowItems、cleanup
  *
- * 由于 precompileTemplate 在多顶级元素模板中无法正确解析 data-content，
- * 测试通过手动创建 DOM 结构 + 直接调用能力方法来验证逻辑。
+ * 重构后 OverflowMenuAbility 委托给 MenuComponent 管理菜单项，
+ * 不再直接操作 toolbar:menuPanel。
+ * 测试通过 mock ComponentRegistrar 来验证 MenuComponent 的创建和调用。
  */
 
 jest.mock('@/logger', () => {
@@ -21,7 +22,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { TemplateComponent, TOOLBAR_TEMPLATE } from '@/component-core';
+import { TemplateComponent, TOOLBAR_TEMPLATE, ComponentRegistrar } from '@/component-core';
 import { OverflowMenuAbility } from '@/component-abilities/render/OverflowMenuAbility';
 import type { OverflowMenuItem } from '@/component-abilities/render/OverflowMenuAbility';
 
@@ -53,7 +54,40 @@ function buildManualNodeMap(host: any): void {
     if (menuPanel) host.nodeMap['toolbar']['menuPanel'] = { el: menuPanel };
 }
 
+/**
+ * Mock MenuComponent 类
+ */
+function createMockMenuClass() {
+    return jest.fn().mockImplementation((props?: any) => ({
+        _anchor: props?.anchor ?? null,
+        open: jest.fn(),
+        close: jest.fn(),
+        dispose: jest.fn(),
+        setMenuItems: jest.fn(),
+        el: document.createElement('div'),
+    }));
+}
+
 describe('OverflowMenuAbility', () => {
+
+    let mockMenuClass: ReturnType<typeof createMockMenuClass>;
+    let originalGet: typeof ComponentRegistrar.prototype.get;
+
+    beforeEach(() => {
+        mockMenuClass = createMockMenuClass();
+        // Mock ComponentRegistrar.getInstance().get('Menu')
+        const instance = ComponentRegistrar.getInstance();
+        originalGet = instance.get.bind(instance);
+        instance.get = jest.fn((type: string) => {
+            if (type === 'Menu') return mockMenuClass;
+            return originalGet(type);
+        });
+    });
+
+    afterEach(() => {
+        const instance = ComponentRegistrar.getInstance();
+        instance.get = originalGet;
+    });
 
     // ============================================
     // initOverflowMenu
@@ -89,14 +123,6 @@ describe('OverflowMenuAbility', () => {
             host.initOverflowMenu({ direction: 'horizontal' });
             const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
             expect(triggerBtn.classList.contains('q-overflow-menu__trigger--horizontal')).toBe(true);
-        });
-
-        it('menuPanel 添加方向类', () => {
-            const host = new (TestHost as any)();
-            buildManualNodeMap(host);
-            host.initOverflowMenu({ direction: 'horizontal' });
-            const menuPanel = host.nodeMap['toolbar']['menuPanel'].el;
-            expect(menuPanel.classList.contains('q-overflow-menu__panel--horizontal')).toBe(true);
         });
 
         it('存储 direction 和 maxVisibleItems 到 abilityState', () => {
@@ -204,6 +230,35 @@ describe('OverflowMenuAbility', () => {
             const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
             expect(triggerBtn.hidden).toBe(true);
         });
+
+        it('通过 MenuComponent.setMenuItems 更新菜单项', () => {
+            const host = new (TestHost as any)();
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'horizontal', maxVisibleItems: 1 });
+
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                child.setAttribute('data-key', `key-${i}`);
+                contentArea.appendChild(child);
+            }
+
+            host.recalcOverflowItems();
+
+            // MenuComponent 应该被创建
+            expect(mockMenuClass).toHaveBeenCalledTimes(1);
+
+            // setMenuItems 应该被调用
+            const menuInstance = host.getOverflowMenu('menuInstance');
+            expect(menuInstance.setMenuItems).toHaveBeenCalledTimes(1);
+            expect(menuInstance.setMenuItems).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({ key: 'key-1', text: 'Item 2' }),
+                    expect.objectContaining({ key: 'key-2', text: 'Item 3' }),
+                ]),
+            );
+        });
     });
 
     // ============================================
@@ -215,6 +270,16 @@ describe('OverflowMenuAbility', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
+
+            // 先添加溢出项，否则 triggerBtn 隐藏
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
             host.openOverflowMenu();
             expect(host.getOverflowMenu('isMenuOpen')).toBe(true);
         });
@@ -223,6 +288,15 @@ describe('OverflowMenuAbility', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
+
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
             host.openOverflowMenu();
             host.closeOverflowMenu();
             expect(host.getOverflowMenu('isMenuOpen')).toBe(false);
@@ -233,6 +307,14 @@ describe('OverflowMenuAbility', () => {
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
 
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
             host.toggleOverflowMenu();
             expect(host.getOverflowMenu('isMenuOpen')).toBe(true);
 
@@ -240,33 +322,59 @@ describe('OverflowMenuAbility', () => {
             expect(host.getOverflowMenu('isMenuOpen')).toBe(false);
         });
 
-        it('openOverflowMenu 显示 menuPanel', () => {
+        it('openOverflowMenu 调用 MenuComponent.open', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
-            const menuPanel = host.nodeMap['toolbar']['menuPanel'].el;
+
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
 
             host.openOverflowMenu();
-            expect(menuPanel.hidden).toBe(false);
+
+            const menuInstance = host.getOverflowMenu('menuInstance');
+            expect(menuInstance.open).toHaveBeenCalledTimes(1);
         });
 
-        it('closeOverflowMenu 隐藏 menuPanel', () => {
+        it('closeOverflowMenu 调用 MenuComponent.close', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
-            const menuPanel = host.nodeMap['toolbar']['menuPanel'].el;
+
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
 
             host.openOverflowMenu();
             host.closeOverflowMenu();
-            expect(menuPanel.hidden).toBe(true);
+
+            const menuInstance = host.getOverflowMenu('menuInstance');
+            expect(menuInstance.close).toHaveBeenCalledTimes(1);
         });
 
         it('openOverflowMenu 添加 trigger--active 类', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
-            const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
 
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
+            const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
             host.openOverflowMenu();
             expect(triggerBtn.classList.contains('q-overflow-menu__trigger--active')).toBe(true);
         });
@@ -275,8 +383,16 @@ describe('OverflowMenuAbility', () => {
             const host = new (TestHost as any)();
             buildManualNodeMap(host);
             host.initOverflowMenu({ direction: 'horizontal' });
-            const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
 
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
+            const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
             host.openOverflowMenu();
             host.closeOverflowMenu();
             expect(triggerBtn.classList.contains('q-overflow-menu__trigger--active')).toBe(false);
@@ -292,6 +408,55 @@ describe('OverflowMenuAbility', () => {
             const host = new (TestHost as any)();
             const items = host.getOverflowItems();
             expect(items).toEqual([]);
+        });
+    });
+
+    // ============================================
+    // _getOrCreateMenu (池化复用)
+    // ============================================
+
+    describe('_getOrCreateMenu', () => {
+        it('首次调用创建 MenuComponent 实例', () => {
+            const host = new (TestHost as any)();
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'horizontal' });
+
+            const menu = host._getOrCreateMenu();
+            expect(menu).toBeTruthy();
+            expect(mockMenuClass).toHaveBeenCalledTimes(1);
+        });
+
+        it('后续调用复用同一实例', () => {
+            const host = new (TestHost as any)();
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'horizontal' });
+
+            const menu1 = host._getOrCreateMenu();
+            const menu2 = host._getOrCreateMenu();
+            expect(menu1).toBe(menu2);
+            expect(mockMenuClass).toHaveBeenCalledTimes(1);
+        });
+
+        it('horizontal 方向使用 bottom-end 定位', () => {
+            const host = new (TestHost as any)();
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'horizontal' });
+
+            host._getOrCreateMenu();
+            expect(mockMenuClass).toHaveBeenCalledWith(
+                expect.objectContaining({ placement: 'bottom-end' }),
+            );
+        });
+
+        it('vertical 方向使用 left-start 定位', () => {
+            const host = new (TestHost as any)();
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'vertical' });
+
+            host._getOrCreateMenu();
+            expect(mockMenuClass).toHaveBeenCalledWith(
+                expect.objectContaining({ placement: 'left-start' }),
+            );
         });
     });
 
@@ -336,6 +501,30 @@ describe('OverflowMenuAbility', () => {
 
             host.dispose();
             expect(children[1].hidden).toBe(false);
+            container.remove();
+        });
+
+        it('dispose 后销毁 MenuComponent 实例', () => {
+            const container = document.createElement('div');
+            document.body.appendChild(container);
+            const host = new (TestHost as any)();
+            container.appendChild(host.el);
+            buildManualNodeMap(host);
+            host.initOverflowMenu({ direction: 'horizontal', maxVisibleItems: 1 });
+
+            const contentArea = host.nodeMap['toolbar']['contentArea'].el;
+            for (let i = 0; i < 3; i++) {
+                const child = document.createElement('div');
+                child.textContent = `Item ${i + 1}`;
+                contentArea.appendChild(child);
+            }
+            host.recalcOverflowItems();
+
+            const menuInstance = host.getOverflowMenu('menuInstance');
+            expect(menuInstance).toBeTruthy();
+
+            host.dispose();
+            expect(menuInstance.dispose).toHaveBeenCalledTimes(1);
             container.remove();
         });
     });

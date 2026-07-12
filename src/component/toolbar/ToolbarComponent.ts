@@ -127,9 +127,7 @@ export class ToolbarComponent extends ToolbarBase {
 
         // 隐藏 menu 模式节点
         const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
-        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | null;
         if (triggerBtn) triggerBtn.hidden = true;
-        if (menuPanel) menuPanel.hidden = true;
 
         // 还原 menu 模式隐藏的子项
         const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
@@ -157,6 +155,12 @@ export class ToolbarComponent extends ToolbarBase {
         // 清理触发按钮激活状态
         if (triggerBtn) {
             triggerBtn.classList.remove('q-overflow-menu__trigger--active');
+        }
+
+        // 销毁 MenuComponent 实例（如果存在）
+        const menuInstance = this.getOverflowMenu?.('menuInstance') as any;
+        if (menuInstance) {
+            menuInstance.dispose();
         }
     }
 
