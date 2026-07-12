@@ -57,7 +57,7 @@ export class MsgboxManager {
         const inputPlaceholder = options.inputPlaceholder ?? '';
 
         // 1. 获取模板
-        const template = jsonTemplateToHtml(MSGBOX_TEMPLATE);
+        const template = jsonTemplateToHtml(MSGBOX_TEMPLATE).html;
 
         // 2. 创建遮罩 DOM
         const maskEl = document.createElement('div');

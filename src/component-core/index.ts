@@ -53,7 +53,7 @@ export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplate
 export type { InternalEventTemplate, ExternalEventTemplate, CompiledTemplate } from './template-compiler';
 
 // JSON 模板
-export type { JsonTemplateNode } from './template-json';
+export type { JsonTemplateNode, JsonTemplateResult } from './template-json';
 export { jsonTemplateToHtml } from './template-json';
 
 // 模板常量（Area, Name, Slot, Event）

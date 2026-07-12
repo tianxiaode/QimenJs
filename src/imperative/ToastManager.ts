@@ -114,7 +114,7 @@ export class ToastManager {
 
         // 1. 选择模板
         const templateNodes = hasTitle ? TOAST_NOTIFICATION_TEMPLATE : TOAST_TEMPLATE;
-        const template = jsonTemplateToHtml(templateNodes);
+        const template = jsonTemplateToHtml(templateNodes).html;
 
         // 2. 创建 toast DOM 容器
         const overlayEl = document.createElement('div');

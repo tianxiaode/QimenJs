@@ -152,6 +152,11 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     override dispose(): void {
         ComponentRegistrar.getInstance().unregisterInstance(this);
 
+        // 遍历 nodeMap 递归销毁子组件（在清空 nodeMap 之前）
+        if (typeof this._disposeChildComponents === 'function') {
+            this._disposeChildComponents();
+        }
+
         this.el?.remove();
 
         this.meta = {};
@@ -184,10 +189,15 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * @returns 模板组件强类
      */
     static withTemplate(this: any, template: string | JsonTemplateNode[]): any {
-        // JSON 模板 → HTML 字符串，再走原流程
+        // JSON 模板 → HTML 字符串 + 组件类映射，再走原流程
+        let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
         const templateHtml = typeof template === 'string'
             ? template
-            : jsonTemplateToHtml(template);
+            : (() => {
+                const result = jsonTemplateToHtml(template);
+                jsonComponentMap = result.componentMap;
+                return result.html;
+            })();
 
         // 预编译：创建临时 DOM 解析模板，提取节点数据
         const compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
@@ -219,6 +229,15 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
             /** 预编译的内容属性名列表 */
             static readonly _contentPropNames: string[] = compiled.contentPropNames;
+
+            /**
+             * 预编译的组件类映射 — name → ComponentClass
+             *
+             * 从 JSON 模板的 json 字段提取，当 json 为组件类引用时，
+             * key 为 data-content 的 name 部分，value 为组件类。
+             * 运行时 _renderChildComponents 使用此映射创建子组件实例。
+             */
+            static readonly _jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = jsonComponentMap;
 
             /** 模板元素缓存（类级别共享） */
             static _templateCache: HTMLTemplateElement | null = null;

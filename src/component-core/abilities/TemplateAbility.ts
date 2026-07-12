@@ -8,18 +8,24 @@
  * - _initWithTemplate：withTemplate 强类自动初始化
  * - _initElementFromTemplate：创建 el + 克隆模板 + buildNodeMap
  * - _buildNodeMapFromCompiled：从预编译数据构建 nodeMap + eventMap
- * - _renderChildComponents：渲染 static children 声明的子组件实体
- *
- * withTemplate 工厂方法（TemplateComponent.withTemplate）在返回强类时，
- * 通过 ComposableBase.with([TemplateAbility]) 将这些方法注入到原型上，
- * 不再在强类内部直接定义。
+ * - _renderChildComponents：渲染 data-json 占位节点的子组件实体
  *
  * 子组件渲染流程：
  * 1. 模板中用 data-json 声明占位节点，data-json-mode 声明挂载模式
- * 2. static children 声明子组件配置（target 对应 data-content 的 name，component 为强类引用）
- * 3. _renderChildComponents() 遍历 children，创建子组件实例
- * 4. 根据 jsonMode 替换或挂载占位节点，更新 nodeMap 中的 el 引用
- * 5. 后续 bindExternalEvents 绑定到子组件实体的 el 上，事件从宿主的 eventScope 发出
+ * 2. JSON 模式的 json 字段可直接传组件类引用，withTemplate 预编译时提取到 _jsonComponentMap
+ * 3. static children 提供差异化配置（props），key 对应 data-content 的 name
+ * 4. _renderChildComponents() 遍历 nodeMap 中有 componentClass 的节点，
+ *    从 static children 查找对应 props，创建子组件实例
+ * 5. 根据 jsonMode 替换或挂载占位节点，记录 parentNode/nodeIndex 用于后续替换
+ * 6. 更新 nodeMap 中的 el、component、componentClass 字段
+ * 7. 后续 bindExternalEvents 绑定到子组件实体的 el 上，事件从宿主的 eventScope 发出
+ *
+ * 子组件销毁：
+ * - 不使用 onCleanup 注册子组件销毁（无法取消，替换时会累积）
+ * - 由 TemplateComponent.dispose 统一调用 _disposeChildComponents 遍历 nodeMap 销毁
+ * - 替换组件时只需更新 nodeMap 引用，旧组件手动 dispose
+ *
+ * 节点替换和递归销毁由 ChildSlotAbility 提供（独立能力，按需组合）
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
@@ -30,16 +36,14 @@ import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 
 /**
- * 子组件配置
+ * 子组件差异化配置
  *
- * 在 static children 中声明，描述模板占位节点对应的子组件。
- * target 对应 data-content 的 name 部分，component 是 withTemplate 生成的强类引用。
+ * 在 static children 中声明，为模板占位节点对应的子组件提供差异化 props。
+ * key 对应 data-content 的 name 部分，value 是传给子组件的 props。
  */
 export interface ChildComponentConfig {
     /** 目标节点名（对应 data-content 的 name 部分） */
     target: string;
-    /** 子组件强类（withTemplate 生成的完整类） */
-    component: new (props?: Record<string, any>) => any;
     /** 传递给子组件的 props */
     props?: Record<string, any>;
 }
@@ -107,10 +111,8 @@ export const TemplateAbility: AbilityDefinition = {
             this.initI18nFromTemplate();
             this.setupI18nListener();
 
-            // ── 3.5 渲染子组件（替换/挂载占位节点，更新 nodeMap el 引用） ──
-            if (cfg.children) {
-                this._renderChildComponents(cfg.children);
-            }
+            // ── 3.5 渲染子组件（data-json 占位节点 → 组件实体） ──
+            this._renderChildComponents(cfg.children);
 
             // ── 4. 事件绑定 ──
             this.bindInternalEvents();
@@ -148,6 +150,7 @@ export const TemplateAbility: AbilityDefinition = {
         const ctor = this.constructor as any;
         const indexPath: NodeIndexPath = ctor._indexPath;
         const templateMetas: Record<string, NodeTemplateMeta> = ctor._templateMetas;
+        const jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = ctor._jsonComponentMap || {};
 
         // 构建 nodeMap
         for (const [key, path] of Object.entries(indexPath)) {
@@ -164,6 +167,11 @@ export const TemplateAbility: AbilityDefinition = {
                 i18nKey: meta.i18nKey,
             };
 
+            // 如果有组件类映射，填充 componentClass
+            if (meta.jsonRef && jsonComponentMap[meta.name]) {
+                node.componentClass = jsonComponentMap[meta.name];
+            }
+
             if (!this.nodeMap[meta.group]) this.nodeMap[meta.group] = {};
             this.nodeMap[meta.group][meta.name] = node;
         }
@@ -177,54 +185,79 @@ export const TemplateAbility: AbilityDefinition = {
     /**
      * 渲染子组件实体
      *
-     * 遍历 static children 配置，在 nodeMap 中查找对应的占位节点，
-     * 创建子组件实例，根据 jsonMode 替换或挂载占位节点，
-     * 并更新 nodeMap 中的 el 引用为子组件实体的 el。
+     * 遍历 nodeMap 中有 componentClass 的节点（即 data-json 声明的占位节点），
+     * 从 static children 查找差异化 props，创建子组件实例，
+     * 根据 jsonMode 替换或挂载占位节点，记录 DOM 位置索引，
+     * 并更新 nodeMap 中的 el、component、componentClass 字段。
      *
-     * 这样后续 bindExternalEvents 绑定到子组件实体的 el 上，
-     * 事件从宿主的 eventScope 发出，source 是宿主的 eventKey。
+     * 注意：不使用 onCleanup 注册子组件销毁，避免替换时回调累积。
+     * 子组件销毁由 _disposeChildComponents 统一处理。
      *
-     * @param children - 子组件配置数组
+     * @param children - 子组件差异化配置（static children），可选
      */
-    _renderChildComponents(children: ChildComponentConfig[]): void {
-        for (const childConfig of children) {
-            const { target, component: ComponentClass, props: childProps } = childConfig;
+    _renderChildComponents(children?: ChildComponentConfig[]): void {
+        // 构建 target → props 的快速查找表
+        const propsMap: Record<string, Record<string, any>> = {};
+        if (children) {
+            for (const cfg of children) {
+                propsMap[cfg.target] = cfg.props || {};
+            }
+        }
 
-            // 在 nodeMap 中查找目标节点（遍历所有 group 查找匹配 name 的节点）
-            let node: NodeMetadata | undefined;
-            for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
-                if (group[target]) {
-                    node = group[target];
-                    break;
+        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
+            for (const node of Object.values(group) as NodeMetadata[]) {
+                if (!node.componentClass) continue;
+
+                const ComponentClass = node.componentClass;
+                const childProps = propsMap[node.name];
+
+                // 创建子组件实例（withTemplate 强类，new 即完整实例）
+                const child = new ComponentClass(childProps);
+
+                // 设置父引用
+                (child as any).parent = this;
+
+                // 根据 jsonMode 挂载，并记录 DOM 位置索引
+                const jsonMode = node.jsonMode ?? 'replace';
+                if (jsonMode === 'replace') {
+                    // replace 模式：记录位置索引，用于后续替换
+                    const parentEl = node.el.parentElement;
+                    if (parentEl) {
+                        node.parentNode = parentEl;
+                        node.nodeIndex = Array.from(parentEl.childNodes).indexOf(node.el);
+                    }
+                    // 子组件 el 替换占位节点
+                    node.el.replaceWith(child.el);
+                } else {
+                    // child 模式：子组件 el 挂载到占位节点内，位置固定
+                    node.parentNode = null;
+                    node.el.appendChild(child.el);
+                }
+
+                // 更新 nodeMap：el 指向子组件实体的 el，component 存实例引用
+                node.el = child.el;
+                node.component = child;
+            }
+        }
+    },
+
+    /**
+     * 遍历 nodeMap 递归销毁子组件
+     *
+     * 在 TemplateComponent.dispose 中调用，
+     * 确保所有 nodeMap 中的子组件被正确清理。
+     * 子组件的 dispose 会递归销毁其自身的 nodeMap 子组件。
+     *
+     * 不使用 onCleanup 注册，避免替换组件时回调累积无法取消。
+     */
+    _disposeChildComponents(): void {
+        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
+            for (const node of Object.values(group) as NodeMetadata[]) {
+                if (node.component && typeof node.component.dispose === 'function') {
+                    node.component.dispose();
+                    node.component = null;
                 }
             }
-
-            if (!node) {
-                console.warn(`TemplateAbility._renderChildComponents: target "${target}" not found in nodeMap`);
-                continue;
-            }
-
-            // 创建子组件实例（withTemplate 强类，new 即完整实例）
-            const child = new ComponentClass(childProps);
-
-            // 设置父引用
-            (child as any).parent = this;
-
-            // 根据 jsonMode 挂载
-            const jsonMode = node.jsonMode ?? 'replace';
-            if (jsonMode === 'replace') {
-                // replace 模式：子组件 el 替换占位节点
-                node.el.replaceWith(child.el);
-            } else {
-                // child 模式：子组件 el 挂载到占位节点内
-                node.el.appendChild(child.el);
-            }
-
-            // 更新 nodeMap 中的 el 引用为子组件实体的 el
-            node.el = child.el;
-
-            // 宿主销毁时自动销毁子组件
-            this.onCleanup(() => child.dispose());
         }
     },
 };

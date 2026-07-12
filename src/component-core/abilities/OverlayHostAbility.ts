@@ -179,4 +179,8 @@ export const OverlayHostAbility: AbilityDefinition = {
      * 关闭浮层 — 从 OverlayRoot 移除
      */
     closeOverlay(): void {
-        if (this.el && this.el.parentNode)
+        if (this.el && this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
+    },
+};

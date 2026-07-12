@@ -77,6 +77,26 @@ export interface NodeMetadata {
     templateRef?: string;
     /** i18n 翻译 key（由 data-i18n 声明，如 "btn.save"） */
     i18nKey?: string;
+    /**
+     * 子组件类引用（由 data-json 声明，JSON 模式可直接传组件类）
+     * 有值表示此节点是组件占位节点，而非普通 DOM 节点
+     */
+    componentClass?: new (props?: Record<string, any>) => any;
+    /**
+     * 子组件实例（渲染后填充）
+     * 通过 node.component 访问子组件实例，调用子组件的方法和属性
+     */
+    component?: any;
+    /**
+     * DOM 位置索引 — 用于节点替换时定位
+     *
+     * replace 模式下记录占位节点的父元素和位置，
+     * 当需要切换组件或 DOM 节点时，可销毁旧组件后在原位挂载新的。
+     * child 模式下为 null（子组件挂载在占位节点内部，位置固定）。
+     */
+    parentNode?: HTMLElement | null;
+    /** 在父元素子节点列表中的位置索引（replace 模式使用） */
+    nodeIndex?: number;
 }
 
 /**
