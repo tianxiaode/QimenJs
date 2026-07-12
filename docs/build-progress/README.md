@@ -103,6 +103,16 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-12（下午）
+- 重构 imperative 包：Toast/Msgbox 拆分为独立实例类 + Manager 调度器
+- 新增 TemplateCacheAbility（模板缓存+克隆+nodeMap+setTemplate）
+- 新增 FloatingLayerAbility（OverlayRoot挂载+z-index+动画+视口定位+bindDomEvent）
+- Toast/Msgbox 使用 ComposableBase.with() 组合能力，每个实例自带 eventScope/模板缓存/浮层能力
+- ToastManager 只管队列调度和堆叠定位，MsgboxManager 只管创建/销毁调度
+- api.ts 合并 toast()/msgbox 工厂函数
+- ToastOptions/MsgboxOptions 新增 eventKey 字段，支持 EventBridgeAbility 桥接监听
+- 新增 imperative 单元测试（19 个用例）
+
 ### 2026-07-12
 - withTemplate 支持 JSON 模板数组（JsonTemplateNode[]），jsonTemplateToHtml 返回 { html, componentMap }
 - 新增 ChildSlotAbility 子组件插槽替换能力，支持 replace/child 两种模式

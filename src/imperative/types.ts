@@ -20,6 +20,8 @@ export interface ToastOptions {
     duration?: number;
     /** 显示位置，默认 'top-right' */
     position?: ToastPosition;
+    /** 事件源标识，用于 EventBridgeAbility 桥接监听 */
+    eventKey?: string;
 }
 
 /**
@@ -54,6 +56,8 @@ export interface MsgboxOptions {
     cancelButtonText?: string;
     /** prompt 输入框占位文本，仅 prompt 模式，默认 '' */
     inputPlaceholder?: string;
+    /** 事件源标识，用于 EventBridgeAbility 桥接监听 */
+    eventKey?: string;
 }
 
 /** msgbox 返回结果 */
