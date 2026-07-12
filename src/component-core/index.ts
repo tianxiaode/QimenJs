@@ -6,10 +6,6 @@
 
 // 组件基类
 export { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from './TemplateComponent';
-/** @deprecated 使用 TemplateComponent */
-export { TemplateComponent as ComponentBase } from './TemplateComponent';
-/** @deprecated 使用 TEMPLATE_COMPONENT_ABILITIES */
-export { TEMPLATE_COMPONENT_ABILITIES as COMPONENT_BASE_ABILITIES } from './TemplateComponent';
 export type { NodeMetadata, InternalEventBinding, ExternalEventMap, EventMap, NodeIndexPath, NodeTemplateMeta } from './types';
 
 // 注册管理器

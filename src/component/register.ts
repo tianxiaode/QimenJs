@@ -12,7 +12,7 @@
  */
 
 import { ComponentRegistrar } from '@qimenjs/component-core';
-import { ButtonComponent } from './components/ButtonComponent';
+import { ButtonComponent } from './button/ButtonComponent';
 import { InputComponent } from './components/InputComponent';
 import { SelectComponent } from './components/SelectComponent';
 import { IconComponent } from './components/IconComponent';

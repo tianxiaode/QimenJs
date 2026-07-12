@@ -14,7 +14,7 @@ export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 export { registerAllComponents } from './register';
 
 // 基础组件
-export { ButtonComponent } from './components/ButtonComponent';
+export { ButtonComponent } from './button/ButtonComponent';
 export { InputComponent } from './components/InputComponent';
 export { SelectComponent } from './components/SelectComponent';
 export { IconComponent } from './components/IconComponent';
