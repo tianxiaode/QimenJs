@@ -12,10 +12,10 @@
  * ```
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 
-export class SeparatorComponent extends ComponentBase {
+export class SeparatorComponent extends TemplateComponent {
     static readonly abilities = [VisibleAbility];
 
     /** 是否垂直方向 */

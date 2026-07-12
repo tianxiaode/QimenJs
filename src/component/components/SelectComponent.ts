@@ -9,7 +9,7 @@
  * - onField — select:field 的 change 事件（方法名从 data-content 推导）
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix, ElementEventAbility } from '@qimenjs/component-abilities';
 import { ValueAbility } from '@qimenjs/component-abilities';
 import { OptionsAbility } from '@qimenjs/component-abilities';
@@ -18,7 +18,7 @@ import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { SELECT_TEMPLATE } from '@qimenjs/component-core';
 
-const SelectBase = ComponentBase.withTemplate(SELECT_TEMPLATE);
+const SelectBase = TemplateComponent.withTemplate(SELECT_TEMPLATE);
 
 export class SelectComponent extends SelectBase {
     static readonly abilities = [

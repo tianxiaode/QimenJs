@@ -5,12 +5,12 @@
  * abilities: [LayoutAbility, ChildrenAbility, AnimationAbility]
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { LayoutAbility } from '@qimenjs/component-abilities';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 
-export class GridComponent extends ComponentBase {
+export class GridComponent extends TemplateComponent {
     static readonly abilities = [LayoutAbility, ChildrenAbility, AnimationAbility];
 
     constructor(props?: Record<string, any>) {

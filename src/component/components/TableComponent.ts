@@ -9,7 +9,7 @@
  * - onBodyScroll — table:bodyScroll 的 scroll 事件（方法名从 data-content 推导）
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ElementEventAbility } from '@qimenjs/component-abilities';
 import { EntityAbility } from '@qimenjs/component-abilities';
 import { VirtualListAbility } from '@qimenjs/component-abilities';
@@ -20,7 +20,7 @@ import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
 import { TABLE_TEMPLATE } from '@qimenjs/component-core';
 
-const TableBase = ComponentBase.withTemplate(TABLE_TEMPLATE);
+const TableBase = TemplateComponent.withTemplate(TABLE_TEMPLATE);
 
 export class TableComponent extends TableBase {
     static readonly abilities = [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility];

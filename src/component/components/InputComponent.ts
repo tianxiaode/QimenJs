@@ -9,7 +9,7 @@
  * - onField — input:field 的 input 事件（方法名从 data-content 推导）
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix, ElementEventAbility } from '@qimenjs/component-abilities';
 import { ValueAbility } from '@qimenjs/component-abilities';
 import { ValidateAbility } from '@qimenjs/component-abilities';
@@ -18,7 +18,7 @@ import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { INPUT_TEMPLATE } from '@qimenjs/component-core';
 
-const InputBase = ComponentBase.withTemplate(INPUT_TEMPLATE);
+const InputBase = TemplateComponent.withTemplate(INPUT_TEMPLATE);
 
 export class InputComponent extends InputBase {
     static readonly abilities = [

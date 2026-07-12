@@ -65,8 +65,13 @@ export function precompileTemplate(
     const tpl = document.createElement('template');
     tpl.innerHTML = templateHtml;
 
-    const root = tpl.content.firstElementChild as HTMLElement || tpl.content as any;
-    const els = Array.from((root as HTMLElement).querySelectorAll('[data-content]'));
+    // 查找所有 data-content 节点：包括顶级元素和后代元素
+    const root = tpl.content;
+    const topEls = Array.from(root.children) as HTMLElement[];
+    const descendantEls = Array.from(root.querySelectorAll('[data-content]'));
+    // 合并去重：顶级元素可能也有 data-content
+    const allEls = [...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls])];
+    const els = allEls;
 
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};

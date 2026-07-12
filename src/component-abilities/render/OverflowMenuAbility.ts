@@ -10,6 +10,13 @@
  * 互斥说明：与 OverflowScrollAbility 互斥，
  * 同一容器不应同时使用两种溢出策略。
  *
+ * 模板约定：
+ * - 需要模板预定义以下节点（通过 nodeMap 引用）：
+ *   - toolbar:contentArea — 子项容器（兼做可见区域）
+ *   - toolbar:triggerBtn — 下拉触发按钮
+ *   - toolbar:menuPanel — 下拉菜单面板
+ * - 能力初始化时只做样式/事件绑定，不创建/移动 DOM
+ *
  * 事件模式：
  * - 使用 this.emit 发布 overflowmenu/overflowchange 事件
  * - 使用 abilityState / setAbilityState 做数据隔离
@@ -37,8 +44,6 @@ export interface OverflowMenuItem {
 export interface OverflowMenuConfig {
     /** 溢出方向，默认 'horizontal' */
     direction?: OverflowDirection;
-    /** 下拉按钮的 CSS 类名前缀，默认 'q-overflow-menu' */
-    menuClassPrefix?: string;
     /** 可见区域最多显示的子项数量，0 表示自动检测，默认 0 */
     maxVisibleItems?: number;
     /** 菜单弹出位置偏移，默认 0 */
@@ -69,19 +74,27 @@ export const OverflowMenuAbility: AbilityDefinition = {
     /**
      * 初始化溢出菜单能力
      *
+     * 从 nodeMap 获取模板预定义的节点，绑定事件和 Observer。
+     * 不创建/移动 DOM，所有节点由模板预定义。
+     *
      * @param config - 配置项
      */
     initOverflowMenu(config: OverflowMenuConfig = {}): void {
         const direction: OverflowDirection = config.direction ?? 'horizontal';
-        const menuClassPrefix: string = config.menuClassPrefix ?? 'q-overflow-menu';
         const maxVisibleItems: number = config.maxVisibleItems ?? 0;
         const menuOffset: number = config.menuOffset ?? 0;
 
         this.setOverflowMenu('direction', direction);
-        this.setOverflowMenu('menuClassPrefix', menuClassPrefix);
         this.setOverflowMenu('maxVisibleItems', maxVisibleItems);
         this.setOverflowMenu('menuOffset', menuOffset);
         this.setOverflowMenu('isMenuOpen', false);
+
+        // 从 nodeMap 获取模板预定义的节点
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | undefined;
+        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | undefined;
+        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | undefined;
+
+        if (!contentArea || !triggerBtn || !menuPanel) return;
 
         const container = this.el;
 
@@ -90,55 +103,23 @@ export const OverflowMenuAbility: AbilityDefinition = {
         container.classList.add('q-overflow-menu-container');
         container.classList.add(`q-overflow-menu-container--${direction}`);
 
-        // ── 2. 创建可见区域 ──
+        // contentArea 作为可见区域
+        contentArea.classList.add('q-overflow-menu__visible');
 
-        const visibleArea = document.createElement('div');
-        visibleArea.className = 'q-overflow-menu__visible';
+        // 触发按钮方向样式
+        triggerBtn.classList.add(`q-overflow-menu__trigger--${direction}`);
 
-        // 移动所有子节点到可见区域
-        while (container.firstChild) {
-            visibleArea.appendChild(container.firstChild);
-        }
-        container.appendChild(visibleArea);
+        // 菜单面板方向样式
+        menuPanel.classList.add(`q-overflow-menu__panel--${direction}`);
 
-        this.setOverflowMenu('visibleArea', visibleArea);
-
-        // ── 3. 创建下拉触发按钮 ──
-
-        const triggerBtn = document.createElement('button');
-        triggerBtn.type = 'button';
-        triggerBtn.className = `${menuClassPrefix}__trigger ${menuClassPrefix}__trigger--${direction}`;
-        triggerBtn.setAttribute('aria-label', direction === 'horizontal' ? '更多操作' : '更多操作');
-        triggerBtn.style.display = 'none';
-
-        const triggerIcon = document.createElement('span');
-        triggerIcon.className = `${menuClassPrefix}__trigger-icon ${menuClassPrefix}__trigger-icon--${direction}`;
-        triggerBtn.appendChild(triggerIcon);
-
-        container.appendChild(triggerBtn);
-
-        this.setOverflowMenu('triggerBtn', triggerBtn);
-
-        // ── 4. 创建下拉菜单面板 ──
-
-        const menuPanel = document.createElement('div');
-        menuPanel.className = `${menuClassPrefix}__panel ${menuClassPrefix}__panel--${direction}`;
-        menuPanel.style.display = 'none';
-        menuPanel.style.position = 'absolute';
-
-        // 挂载到容器（相对定位的父级）
-        container.appendChild(menuPanel);
-
-        this.setOverflowMenu('menuPanel', menuPanel);
-
-        // ── 5. 点击触发按钮切换菜单 ──
+        // ── 2. 点击触发按钮切换菜单 ──
 
         triggerBtn.addEventListener('click', (e: Event) => {
             e.stopPropagation();
             this.toggleOverflowMenu();
         });
 
-        // ── 6. 点击外部关闭菜单 ──
+        // ── 3. 点击外部关闭菜单 ──
 
         const onDocumentClick = (e: MouseEvent) => {
             if (!container.contains(e.target as Node)) {
@@ -147,7 +128,7 @@ export const OverflowMenuAbility: AbilityDefinition = {
         };
         document.addEventListener('click', onDocumentClick);
 
-        // ── 7. ResizeObserver 监听容器尺寸变化 ──
+        // ── 4. ResizeObserver 监听容器尺寸变化 ──
 
         const resizeObserver = new ResizeObserver(() => {
             this.recalcOverflowItems();
@@ -155,37 +136,42 @@ export const OverflowMenuAbility: AbilityDefinition = {
         resizeObserver.observe(container);
         this.setOverflowMenu('resizeObserver', resizeObserver);
 
-        // ── 8. MutationObserver 监听子元素变化 ──
+        // ── 5. MutationObserver 监听子元素变化 ──
 
         const mutationObserver = new MutationObserver(() => {
             this.recalcOverflowItems();
         });
-        mutationObserver.observe(visibleArea, { childList: true });
+        mutationObserver.observe(contentArea, { childList: true });
         this.setOverflowMenu('mutationObserver', mutationObserver);
 
-        // ── 9. 初始计算 ──
+        // ── 6. 初始计算 ──
 
         requestAnimationFrame(() => {
             this.recalcOverflowItems();
         });
 
-        // ── 10. 清理 ──
+        // ── 7. 清理 ──
 
         this.onCleanup(() => {
             document.removeEventListener('click', onDocumentClick);
             resizeObserver.disconnect();
             mutationObserver.disconnect();
 
-            triggerBtn.remove();
-            menuPanel.remove();
-
             container.classList.remove('q-overflow-menu-container', `q-overflow-menu-container--${direction}`);
+            container.classList.remove('q-overflow-menu-container--overflowing');
 
-            // 将子节点从可见区域移回容器
-            while (visibleArea.firstChild) {
-                container.insertBefore(visibleArea.firstChild, visibleArea);
+            contentArea.classList.remove('q-overflow-menu__visible');
+
+            // 隐藏触发按钮和菜单面板（不移除，模板节点由 withTemplate 管理）
+            triggerBtn.style.display = 'none';
+            menuPanel.style.display = 'none';
+            triggerBtn.classList.remove('q-overflow-menu__trigger--active');
+
+            // 还原被隐藏的子项
+            const children = Array.from(contentArea.children) as HTMLElement[];
+            for (const child of children) {
+                child.style.display = '';
             }
-            visibleArea.remove();
         });
     },
 
@@ -195,16 +181,16 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 重新计算哪些子项溢出，更新菜单内容
      */
     recalcOverflowItems(): void {
-        const visibleArea = this.getOverflowMenu('visibleArea') as HTMLElement | null;
-        const triggerBtn = this.getOverflowMenu('triggerBtn') as HTMLElement | null;
-        const menuPanel = this.getOverflowMenu('menuPanel') as HTMLElement | null;
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | null;
         const direction = this.getOverflowMenu('direction') as OverflowDirection;
         const maxVisibleItems = this.getOverflowMenu('maxVisibleItems') as number;
 
-        if (!visibleArea || !triggerBtn || !menuPanel) return;
+        if (!contentArea || !triggerBtn || !menuPanel) return;
 
         const containerRect = this.el.getBoundingClientRect();
-        const children = Array.from(visibleArea.children) as HTMLElement[];
+        const children = Array.from(contentArea.children) as HTMLElement[];
 
         const overflowItems: OverflowMenuItem[] = [];
         let firstOverflowIndex = children.length; // 默认全部可见
@@ -304,8 +290,8 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 打开下拉菜单
      */
     openOverflowMenu(): void {
-        const menuPanel = this.getOverflowMenu('menuPanel') as HTMLElement | null;
-        const triggerBtn = this.getOverflowMenu('triggerBtn') as HTMLElement | null;
+        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
         const direction = this.getOverflowMenu('direction') as OverflowDirection;
         const menuOffset = this.getOverflowMenu('menuOffset') as number;
 
@@ -339,8 +325,8 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 关闭下拉菜单
      */
     closeOverflowMenu(): void {
-        const menuPanel = this.getOverflowMenu('menuPanel') as HTMLElement | null;
-        const triggerBtn = this.getOverflowMenu('triggerBtn') as HTMLElement | null;
+        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
 
         if (!menuPanel || !triggerBtn) return;
 

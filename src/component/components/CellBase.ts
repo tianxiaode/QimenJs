@@ -19,12 +19,12 @@
  * ```
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
-export class CellBase extends ComponentBase {
+export class CellBase extends TemplateComponent {
     static readonly abilities = [ContentAbility, DisableAbility];
 
     static readonly contentSlots = {

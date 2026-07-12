@@ -5,10 +5,10 @@
  * abilities: [LayoutAbility]
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { LayoutAbility } from '@qimenjs/component-abilities';
 
-export class SpaceComponent extends ComponentBase {
+export class SpaceComponent extends TemplateComponent {
     static readonly abilities = [LayoutAbility];
 
     constructor(props?: Record<string, any>) {

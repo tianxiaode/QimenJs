@@ -19,12 +19,12 @@
  * ```
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 
-export class ButtonGroupComponent extends ComponentBase {
+export class ButtonGroupComponent extends TemplateComponent {
     static readonly abilities = [ChildrenAbility, SizeAbility, DisableAbility];
 
     constructor(props?: Record<string, any>) {

@@ -2,14 +2,15 @@
  * ToolbarComponent 工具栏组件
  *
  * 支持方向切换、溢出处理的工具栏容器。
- * 通过能力注入获得各种功能：
- * - OverflowScrollAbility: 溢出时箭头滚动 + 滑动滚动
- * - OverflowMenuAbility: 溢出时下拉菜单（与 OverflowScrollAbility 互斥）
+ * 模板预定义了所有溢出模式的节点（contentArea、prevBtn、nextBtn、triggerBtn、menuPanel），
+ * 通过显隐切换实现模式互斥，不需要运行时 DOM 改造。
  *
  * 溢出模式（overflowMode）：
  * - 'scroll': 子项超出时显示左/右（或上/下）箭头，支持拖拽滑动
  * - 'menu': 子项超出时在最右/下显示下拉箭头，弹出菜单显示溢出项
  * - 'none': 不处理溢出（默认）
+ *
+ * 互斥说明：scroll 和 menu 模式互斥，切换时隐藏前一个模式的节点并断开 Observer。
  *
  * @example
  * ```js
@@ -27,19 +28,24 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
-import { TOOLBAR_TEMPLATE } from '@qimenjs/component-core';
+import { TemplateComponent, TOOLBAR_TEMPLATE } from '@qimenjs/component-core';
 import { OverflowScrollAbility, OverflowMenuAbility } from '@qimenjs/component-abilities';
 import type { OverflowDirection } from '@qimenjs/component-abilities';
 
 /** 溢出模式 */
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 
-const ToolbarBase = TemplateComponent.withTemplate(TOOLBAR_TEMPLATE);
+/**
+ * ToolbarBase — 在 withTemplate 强类基础上，通过 with() 混入溢出能力
+ *
+ * OverflowScrollAbility / OverflowMenuAbility 的方法直接挂到原型上，
+ * 运行时按 overflowMode 选择性调用 init 方法。
+ */
+const ToolbarBase = TemplateComponent
+    .withTemplate(TOOLBAR_TEMPLATE)
+    .with([OverflowScrollAbility, OverflowMenuAbility]);
 
 export class ToolbarComponent extends ToolbarBase {
-    static readonly abilities = [OverflowScrollAbility, OverflowMenuAbility];
-
     private _direction: string = 'horizontal';
     private _overflowMode: OverflowMode = 'none';
 
@@ -47,9 +53,6 @@ export class ToolbarComponent extends ToolbarBase {
         super(props);
 
         this.el.classList.add('q-toolbar');
-
-        // 动态注入溢出能力
-        this.setupAbilities([OverflowScrollAbility, OverflowMenuAbility]);
 
         if (props?.direction) this._direction = props.direction;
         this.applyDirection();
@@ -78,6 +81,9 @@ export class ToolbarComponent extends ToolbarBase {
     }
 
     private applyOverflowMode(): void {
+        // 先清理当前溢出能力（断开 Observer、隐藏节点、清理样式类）
+        this.cleanupOverflow();
+
         const direction = this._direction as OverflowDirection;
 
         switch (this._overflowMode) {
@@ -90,6 +96,66 @@ export class ToolbarComponent extends ToolbarBase {
             case 'none':
             default:
                 break;
+        }
+    }
+
+    /**
+     * 清理当前激活的溢出能力
+     *
+     * 模板节点是固定的，不需要移除/还原 DOM。
+     * 只需：断开 Observer、隐藏模式专属节点、清理容器样式类。
+     */
+    private cleanupOverflow(): void {
+        // 断开 OverflowScrollAbility 的 Observer
+        const scrollResizeObserver = this.getOverflowScroll?.('resizeObserver') as ResizeObserver | null;
+        const scrollMutationObserver = this.getOverflowScroll?.('mutationObserver') as MutationObserver | null;
+        scrollResizeObserver?.disconnect();
+        scrollMutationObserver?.disconnect();
+
+        // 断开 OverflowMenuAbility 的 Observer
+        const menuResizeObserver = this.getOverflowMenu?.('resizeObserver') as ResizeObserver | null;
+        const menuMutationObserver = this.getOverflowMenu?.('mutationObserver') as MutationObserver | null;
+        menuResizeObserver?.disconnect();
+        menuMutationObserver?.disconnect();
+
+        // 隐藏 scroll 模式节点
+        const prevBtn = this.nodeMap?.['toolbar']?.['prevBtn']?.el as HTMLElement | null;
+        const nextBtn = this.nodeMap?.['toolbar']?.['nextBtn']?.el as HTMLElement | null;
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+
+        // 隐藏 menu 模式节点
+        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const menuPanel = this.nodeMap?.['toolbar']?.['menuPanel']?.el as HTMLElement | null;
+        if (triggerBtn) triggerBtn.style.display = 'none';
+        if (menuPanel) menuPanel.style.display = 'none';
+
+        // 还原 menu 模式隐藏的子项
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        if (contentArea) {
+            const children = Array.from(contentArea.children) as HTMLElement[];
+            for (const child of children) {
+                child.style.display = '';
+            }
+        }
+
+        // 清理容器样式类
+        const container = this.el;
+        container.classList.remove(
+            'q-overflow-scroll', 'q-overflow-scroll--horizontal', 'q-overflow-scroll--vertical',
+            'q-overflow-scroll--can-prev', 'q-overflow-scroll--can-next', 'q-overflow-scroll--overflowing',
+            'q-overflow-menu-container', 'q-overflow-menu-container--horizontal', 'q-overflow-menu-container--vertical',
+            'q-overflow-menu-container--overflowing',
+        );
+
+        // 清理 contentArea 上的能力样式类
+        if (contentArea) {
+            contentArea.classList.remove('q-overflow-scroll__area', 'q-overflow-menu__visible');
+        }
+
+        // 清理触发按钮激活状态
+        if (triggerBtn) {
+            triggerBtn.classList.remove('q-overflow-menu__trigger--active');
         }
     }
 

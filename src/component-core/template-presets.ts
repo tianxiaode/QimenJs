@@ -81,9 +81,24 @@ export const SELECT_TEMPLATE: JsonTemplateNode[] = [
 ];
 
 /**
- * 工具栏模板（子项由 ChildrenAbility 动态添加）
+ * 工具栏模板
+ *
+ * 统一模板包含所有溢出模式的节点，通过显隐切换：
+ * - toolbar:contentArea — 子项容器（所有模式共用）
+ * - toolbar:prevBtn — 左/上箭头按钮（scroll 模式，默认隐藏）
+ * - toolbar:nextBtn — 右/下箭头按钮（scroll 模式，默认隐藏）
+ * - toolbar:triggerBtn — 下拉触发按钮（menu 模式，默认隐藏）
+ * - toolbar:menuPanel — 下拉菜单面板（menu 模式，默认隐藏）
+ *
+ * 子项由外部动态添加到 contentArea 中。
  */
-export const TOOLBAR_TEMPLATE: JsonTemplateNode[] = [];
+export const TOOLBAR_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'button', content: 'toolbar:prevBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--prev', style: 'display:none;' },
+    { tag: 'div', content: 'toolbar:contentArea', class: 'q-toolbar__content', style: 'display:flex;' },
+    { tag: 'button', content: 'toolbar:nextBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--next', style: 'display:none;' },
+    { tag: 'button', content: 'toolbar:triggerBtn', event: 'click', class: 'q-overflow-menu__trigger', style: 'display:none;' },
+    { tag: 'div', content: 'toolbar:menuPanel', class: 'q-overflow-menu__panel', style: 'display:none;position:absolute;' },
+];
 
 /**
  * 图标模板（组件直接管理 DOM，无需内容项）

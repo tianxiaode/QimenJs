@@ -21,7 +21,7 @@
  * ```
  */
 
-import type { ComponentBase } from '@qimenjs/component-core';
+import type { TemplateComponent } from '@qimenjs/component-core';
 
 /** 隐藏根容器的 DOM ID */
 const HIDDEN_ROOT_ID = 'q-hidden-root';
@@ -71,7 +71,7 @@ export class HiddenRoot {
      *
      * @param comp - 要挂载的组件
      */
-    mountHidden(comp: ComponentBase): void {
+    mountHidden(comp: TemplateComponent): void {
         const root = this.getRoot();
         comp.mount(root);
     }
@@ -81,7 +81,7 @@ export class HiddenRoot {
      *
      * @param comp - 要卸载的组件
      */
-    unmountHidden(comp: ComponentBase): void {
+    unmountHidden(comp: TemplateComponent): void {
         comp.unmount();
     }
 

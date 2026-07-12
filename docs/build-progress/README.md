@@ -103,6 +103,18 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-12（晚间）
+- 重构 ToolbarComponent：模板预定义所有溢出模式节点，通过显隐切换实现模式互斥
+- TOOLBAR_TEMPLATE 从空数组改为包含 5 个预定义节点（contentArea/prevBtn/nextBtn/triggerBtn/menuPanel）
+- contentArea 设为 flex 容器，子节点通过 CSS order 属性自行决定排列顺序
+- OverflowScrollAbility 重构：从 nodeMap 获取模板预定义节点，不再动态创建 DOM
+- OverflowMenuAbility 重构：从 nodeMap 获取模板预定义节点，不再动态创建 DOM
+- ToolbarComponent.cleanupOverflow 简化为显隐切换 + 断开 Observer，不需要 DOM 还原
+- 修复 precompileTemplate bug：多顶级元素模板中 data-content 在顶级元素上无法被解析
+- 修复 ComponentBase → TemplateComponent 遗留引用（15 个组件文件 + HiddenRoot.ts）
+- 测试 setup 新增 ResizeObserver/MutationObserver/scrollBy/scrollTo polyfill
+- 新增单元测试：ToolbarComponent.test.ts（27 用例）、OverflowScrollAbility.test.ts（20 用例）、OverflowMenuAbility.test.ts（21 用例）
+
 ### 2026-07-12（下午）
 - 新增 LayoutAbility 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类）
 - 布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）

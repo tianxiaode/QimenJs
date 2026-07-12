@@ -13,7 +13,7 @@
 
 ```
 ComposableBase (src/composable/ComposableBase.ts)
-  └── ComponentBase (src/component-core/ComponentBase.ts)
+  └── TemplateComponent (src/component-core/TemplateComponent.ts)
         ├── ButtonComponent
         ├── InputComponent
         ├── SelectComponent
@@ -39,7 +39,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | GridComponent | `src/component/components/GridComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | SpaceComponent | `src/component/components/SpaceComponent.ts` | LayoutAbility |
-| ToolbarComponent | `src/component/components/ToolbarComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility |
+| ToolbarComponent | `src/component/toolbar/ToolbarComponent.ts` | OverflowScrollAbility, OverflowMenuAbility（模板预定义节点，显隐切换互斥） |
 | IconComponent | `src/component/components/IconComponent.ts` | SizeAbility（图标内容由组件直接管理，无需 IconAbility） |
 | TextComponent | `src/component/components/TextComponent.ts` | SizeAbility（文本内容由组件直接管理，无需 TextAbility） |
 | ButtonGroupComponent | `src/component/components/ButtonGroupComponent.ts` | ChildrenAbility, SizeAbility, DisableAbility |

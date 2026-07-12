@@ -5,7 +5,7 @@
  * 使用 ContentAbility 管理图标和文本内容位，支持 iconPosition 切换布局方向
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { ClickAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
@@ -13,7 +13,7 @@ import { LoadingAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
 
-const ButtonBase = ComponentBase.withTemplate(BUTTON_TEMPLATE);
+const ButtonBase = TemplateComponent.withTemplate(BUTTON_TEMPLATE);
 
 export class ButtonComponent extends ButtonBase {
     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];

@@ -19,14 +19,14 @@
  * ```
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix } from '@qimenjs/component-abilities';
 import { VisibleAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SortAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefinition } from '@qimenjs/component-abilities';
 
-export class ColumnBase extends ComponentBase {
+export class ColumnBase extends TemplateComponent {
     static readonly abilities = [ContentAbility, VisibleAbility, DisableAbility, SortAbility];
 
     static readonly contentSlots = {

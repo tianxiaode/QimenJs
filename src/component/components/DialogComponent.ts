@@ -9,14 +9,14 @@
  * - onClose — dialog:close 的 click 事件（方法名从 data-content 推导）
  */
 
-import { ComponentBase, OverlayHostAbility } from '@qimenjs/component-core';
+import { TemplateComponent, OverlayHostAbility } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix, ElementEventAbility } from '@qimenjs/component-abilities';
 import { OpenableAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel } from '../z-index';
 import { DIALOG_TEMPLATE } from '@qimenjs/component-core';
 
-const DialogBase = ComponentBase.withTemplate(DIALOG_TEMPLATE);
+const DialogBase = TemplateComponent.withTemplate(DIALOG_TEMPLATE);
 
 export class DialogComponent extends DialogBase {
     static readonly abilities = [ElementEventAbility, ContentAbility, OpenableAbility, OverlayHostAbility, AnimationAbility];

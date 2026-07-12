@@ -15,10 +15,10 @@
  * ```
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
-export class TextComponent extends ComponentBase {
+export class TextComponent extends TemplateComponent {
     static readonly abilities = [SizeAbility];
 
     /** 根元素标签：span 而非默认的 div */

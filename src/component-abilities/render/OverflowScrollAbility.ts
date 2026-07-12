@@ -10,9 +10,16 @@
  * 互斥说明：与 OverflowMenuAbility 互斥，
  * 同一容器不应同时使用两种溢出策略。
  *
+ * 模板约定：
+ * - 需要模板预定义以下节点（通过 nodeMap 引用）：
+ *   - toolbar:contentArea — 子项容器（兼做滚动区域）
+ *   - toolbar:prevBtn — 左/上箭头按钮
+ *   - toolbar:nextBtn — 右/下箭头按钮
+ * - 能力初始化时只做样式/事件绑定，不创建/移动 DOM
+ *
  * 事件模式：
  * - 使用 this.bind(el, 'drag') 绑定拖拽手势实现滑动滚动
- * - 使用 this.emit 发布 overflowscroll/overflowstate 事件
+ * - 使用 this.emit 发布 overflowstate 事件
  * - 使用 abilityState / setAbilityState 做数据隔离
  * - 使用 this.onCleanup 注册清理回调
  */
@@ -39,8 +46,6 @@ export interface OverflowScrollConfig {
     direction?: OverflowDirection;
     /** 每次箭头点击滚动的像素距离，默认 200 */
     scrollStep?: number;
-    /** 箭头按钮的 CSS 类名前缀，默认 'q-overflow-arrow' */
-    arrowClassPrefix?: string;
 }
 
 // ─── 能力定义 ──────────────────────────────────────────
@@ -67,16 +72,24 @@ export const OverflowScrollAbility: AbilityDefinition = {
     /**
      * 初始化溢出滚动能力
      *
+     * 从 nodeMap 获取模板预定义的节点，绑定事件和 Observer。
+     * 不创建/移动 DOM，所有节点由模板预定义。
+     *
      * @param config - 配置项
      */
     initOverflowScroll(config: OverflowScrollConfig = {}): void {
         const direction: OverflowDirection = config.direction ?? 'horizontal';
         const scrollStep: number = config.scrollStep ?? 200;
-        const arrowClassPrefix: string = config.arrowClassPrefix ?? 'q-overflow-arrow';
 
         this.setOverflowScroll('direction', direction);
         this.setOverflowScroll('scrollStep', scrollStep);
-        this.setOverflowScroll('arrowClassPrefix', arrowClassPrefix);
+
+        // 从 nodeMap 获取模板预定义的节点
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | undefined;
+        const prevBtn = this.nodeMap?.['toolbar']?.['prevBtn']?.el as HTMLElement | undefined;
+        const nextBtn = this.nodeMap?.['toolbar']?.['nextBtn']?.el as HTMLElement | undefined;
+
+        if (!contentArea) return;
 
         const container = this.el;
 
@@ -85,39 +98,23 @@ export const OverflowScrollAbility: AbilityDefinition = {
         container.classList.add('q-overflow-scroll');
         container.classList.add(`q-overflow-scroll--${direction}`);
 
-        // ── 2. 创建内部滚动区域 ──
+        // contentArea 作为滚动区域
+        contentArea.classList.add('q-overflow-scroll__area');
 
-        // 将现有子元素包裹到滚动区域中
-        const scrollArea = document.createElement('div');
-        scrollArea.className = 'q-overflow-scroll__area';
+        // ── 2. 箭头按钮方向样式 + aria ──
 
-        // 移动所有子节点到滚动区域
-        while (container.firstChild) {
-            scrollArea.appendChild(container.firstChild);
+        if (prevBtn) {
+            prevBtn.classList.add(`q-overflow-arrow--${direction}`);
+            prevBtn.setAttribute('aria-label', direction === 'horizontal' ? '向左滚动' : '向上滚动');
         }
-        container.appendChild(scrollArea);
+        if (nextBtn) {
+            nextBtn.classList.add(`q-overflow-arrow--${direction}`);
+            nextBtn.setAttribute('aria-label', direction === 'horizontal' ? '向右滚动' : '向下滚动');
+        }
 
-        this.setOverflowScroll('scrollArea', scrollArea);
+        // ── 3. 拖拽滑动滚动 ──
 
-        // ── 3. 创建箭头按钮 ──
-
-        const prevBtn = this.createArrowButton('prev', direction, arrowClassPrefix);
-        const nextBtn = this.createArrowButton('next', direction, arrowClassPrefix);
-
-        container.insertBefore(prevBtn, scrollArea);
-        container.appendChild(nextBtn);
-
-        this.setOverflowScroll('prevBtn', prevBtn);
-        this.setOverflowScroll('nextBtn', nextBtn);
-
-        // ── 4. 箭头点击滚动 ──
-
-        prevBtn.addEventListener('click', () => this.scrollOverflowByStep('prev'));
-        nextBtn.addEventListener('click', () => this.scrollOverflowByStep('next'));
-
-        // ── 5. 拖拽滑动滚动 ──
-
-        this.bind(scrollArea, 'drag');
+        this.bind(contentArea, 'drag');
 
         let dragStartScrollPos = 0;
 
@@ -126,103 +123,73 @@ export const OverflowScrollAbility: AbilityDefinition = {
 
             if (phase === 'start') {
                 dragStartScrollPos = direction === 'horizontal'
-                    ? scrollArea.scrollLeft
-                    : scrollArea.scrollTop;
+                    ? contentArea.scrollLeft
+                    : contentArea.scrollTop;
 
-                scrollArea.style.cursor = 'grabbing';
-                scrollArea.style.userSelect = 'none';
+                contentArea.style.cursor = 'grabbing';
+                contentArea.style.userSelect = 'none';
             } else if (phase === 'move') {
                 const dx = gesture.dx ?? 0;
                 const dy = gesture.dy ?? 0;
                 const delta = direction === 'horizontal' ? -dx : -dy;
 
                 if (direction === 'horizontal') {
-                    scrollArea.scrollLeft = dragStartScrollPos + delta;
+                    contentArea.scrollLeft = dragStartScrollPos + delta;
                 } else {
-                    scrollArea.scrollTop = dragStartScrollPos + delta;
+                    contentArea.scrollTop = dragStartScrollPos + delta;
                 }
 
-                this.updateOverflowState(scrollArea, direction, prevBtn, nextBtn);
+                this.updateOverflowState(contentArea, direction, prevBtn, nextBtn);
             } else if (phase === 'end' || phase === 'cancel') {
-                scrollArea.style.cursor = '';
-                scrollArea.style.userSelect = '';
+                contentArea.style.cursor = '';
+                contentArea.style.userSelect = '';
             }
         });
 
-        // ── 6. 滚动事件监听（更新箭头显隐） ──
+        // ── 4. 滚动事件监听（更新箭头显隐） ──
 
-        scrollArea.addEventListener('scroll', () => {
-            this.updateOverflowState(scrollArea, direction, prevBtn, nextBtn);
+        contentArea.addEventListener('scroll', () => {
+            this.updateOverflowState(contentArea, direction, prevBtn, nextBtn);
         });
 
-        // ── 7. ResizeObserver 监听容器尺寸变化 ──
+        // ── 5. ResizeObserver 监听容器尺寸变化 ──
 
         const resizeObserver = new ResizeObserver(() => {
-            this.updateOverflowState(scrollArea, direction, prevBtn, nextBtn);
+            this.updateOverflowState(contentArea, direction, prevBtn, nextBtn);
         });
-        resizeObserver.observe(scrollArea);
+        resizeObserver.observe(contentArea);
         this.setOverflowScroll('resizeObserver', resizeObserver);
 
-        // ── 8. MutationObserver 监听子元素变化 ──
+        // ── 6. MutationObserver 监听子元素变化 ──
 
         const mutationObserver = new MutationObserver(() => {
-            this.updateOverflowState(scrollArea, direction, prevBtn, nextBtn);
+            this.updateOverflowState(contentArea, direction, prevBtn, nextBtn);
         });
-        mutationObserver.observe(scrollArea, { childList: true });
+        mutationObserver.observe(contentArea, { childList: true });
         this.setOverflowScroll('mutationObserver', mutationObserver);
 
-        // ── 9. 初始状态检测 ──
+        // ── 7. 初始状态检测 ──
 
         // 延迟一帧确保布局完成
         requestAnimationFrame(() => {
-            this.updateOverflowState(scrollArea, direction, prevBtn, nextBtn);
+            this.updateOverflowState(contentArea, direction, prevBtn, nextBtn);
         });
 
-        // ── 10. 清理 ──
+        // ── 8. 清理 ──
 
         this.onCleanup(() => {
-            prevBtn.removeEventListener('click', () => this.scrollOverflowByStep('prev'));
-            nextBtn.removeEventListener('click', () => this.scrollOverflowByStep('next'));
             resizeObserver.disconnect();
             mutationObserver.disconnect();
 
             container.classList.remove('q-overflow-scroll', `q-overflow-scroll--${direction}`);
+            container.classList.remove('q-overflow-scroll--can-prev', 'q-overflow-scroll--can-next', 'q-overflow-scroll--overflowing');
 
-            // 移除箭头按钮
-            prevBtn.remove();
-            nextBtn.remove();
+            contentArea.classList.remove('q-overflow-scroll__area');
 
-            // 将子节点从滚动区域移回容器
-            while (scrollArea.firstChild) {
-                container.insertBefore(scrollArea.firstChild, scrollArea);
-            }
-            scrollArea.remove();
+            // 隐藏箭头按钮（不移除，模板节点由 withTemplate 管理）
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
         });
-    },
-
-    // ─── 创建箭头按钮 ───
-
-    /**
-     * 创建箭头按钮元素
-     */
-    createArrowButton(which: 'prev' | 'next', direction: OverflowDirection, classPrefix: string): HTMLElement {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `${classPrefix} ${classPrefix}--${which} ${classPrefix}--${direction}`;
-        btn.setAttribute('aria-label', which === 'prev'
-            ? (direction === 'horizontal' ? '向左滚动' : '向上滚动')
-            : (direction === 'horizontal' ? '向右滚动' : '向下滚动')
-        );
-
-        // 箭头图标用 CSS 绘制，不依赖图标库
-        const icon = document.createElement('span');
-        icon.className = `${classPrefix}__icon ${classPrefix}__icon--${which} ${classPrefix}__icon--${direction}`;
-        btn.appendChild(icon);
-
-        // 默认隐藏，溢出时才显示
-        btn.style.display = 'none';
-
-        return btn;
     },
 
     // ─── 按步长滚动 ───
@@ -231,15 +198,15 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 按步长滚动
      */
     scrollOverflowByStep(which: 'prev' | 'next'): void {
-        const scrollArea = this.getOverflowScroll('scrollArea') as HTMLElement | null;
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
         const scrollStep = this.getOverflowScroll('scrollStep') as number;
 
-        if (!scrollArea) return;
+        if (!contentArea) return;
 
         const delta = which === 'prev' ? -scrollStep : scrollStep;
 
-        scrollArea.scrollBy({
+        contentArea.scrollBy({
             [direction === 'horizontal' ? 'left' : 'top']: delta,
             behavior: 'smooth',
         });
@@ -253,8 +220,8 @@ export const OverflowScrollAbility: AbilityDefinition = {
     updateOverflowState(
         scrollArea: HTMLElement,
         direction: OverflowDirection,
-        prevBtn: HTMLElement,
-        nextBtn: HTMLElement,
+        prevBtn?: HTMLElement | null,
+        nextBtn?: HTMLElement | null,
     ): void {
         const scrollPos = direction === 'horizontal' ? scrollArea.scrollLeft : scrollArea.scrollTop;
         const scrollSize = direction === 'horizontal' ? scrollArea.scrollWidth : scrollArea.scrollHeight;
@@ -265,8 +232,8 @@ export const OverflowScrollAbility: AbilityDefinition = {
         const canScrollNext = scrollPos < maxScroll - 1;
 
         // 更新箭头显隐
-        prevBtn.style.display = canScrollPrev ? '' : 'none';
-        nextBtn.style.display = canScrollNext ? '' : 'none';
+        if (prevBtn) prevBtn.style.display = canScrollPrev ? '' : 'none';
+        if (nextBtn) nextBtn.style.display = canScrollNext ? '' : 'none';
 
         // 更新容器 CSS 状态类
         const container = this.el;
@@ -289,12 +256,12 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 滚动到指定位置
      */
     scrollOverflowTo(position: number, smooth: boolean = true): void {
-        const scrollArea = this.getOverflowScroll('scrollArea') as HTMLElement | null;
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
-        if (!scrollArea) return;
+        if (!contentArea) return;
 
-        scrollArea.scrollTo({
+        contentArea.scrollTo({
             [direction === 'horizontal' ? 'left' : 'top']: position,
             behavior: smooth ? 'smooth' : 'instant',
         });
@@ -306,34 +273,34 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 滚动到指定子元素使其可见
      */
     scrollOverflowToChild(child: HTMLElement, smooth: boolean = true): void {
-        const scrollArea = this.getOverflowScroll('scrollArea') as HTMLElement | null;
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
-        if (!scrollArea || !child) return;
+        if (!contentArea || !child) return;
 
-        const areaRect = scrollArea.getBoundingClientRect();
+        const areaRect = contentArea.getBoundingClientRect();
         const childRect = child.getBoundingClientRect();
 
         if (direction === 'horizontal') {
             if (childRect.left < areaRect.left) {
-                scrollArea.scrollBy({
+                contentArea.scrollBy({
                     left: childRect.left - areaRect.left,
                     behavior: smooth ? 'smooth' : 'instant',
                 });
             } else if (childRect.right > areaRect.right) {
-                scrollArea.scrollBy({
+                contentArea.scrollBy({
                     left: childRect.right - areaRect.right,
                     behavior: smooth ? 'smooth' : 'instant',
                 });
             }
         } else {
             if (childRect.top < areaRect.top) {
-                scrollArea.scrollBy({
+                contentArea.scrollBy({
                     top: childRect.top - areaRect.top,
                     behavior: smooth ? 'smooth' : 'instant',
                 });
             } else if (childRect.bottom > areaRect.bottom) {
-                scrollArea.scrollBy({
+                contentArea.scrollBy({
                     top: childRect.bottom - areaRect.bottom,
                     behavior: smooth ? 'smooth' : 'instant',
                 });
@@ -347,16 +314,16 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 获取当前溢出状态
      */
     getOverflowState(): OverflowState {
-        const scrollArea = this.getOverflowScroll('scrollArea') as HTMLElement | null;
+        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
-        if (!scrollArea) {
+        if (!contentArea) {
             return { canScrollPrev: false, canScrollNext: false };
         }
 
-        const scrollPos = direction === 'horizontal' ? scrollArea.scrollLeft : scrollArea.scrollTop;
-        const scrollSize = direction === 'horizontal' ? scrollArea.scrollWidth : scrollArea.scrollHeight;
-        const clientSize = direction === 'horizontal' ? scrollArea.clientWidth : scrollArea.clientHeight;
+        const scrollPos = direction === 'horizontal' ? contentArea.scrollLeft : contentArea.scrollTop;
+        const scrollSize = direction === 'horizontal' ? contentArea.scrollWidth : contentArea.scrollHeight;
+        const clientSize = direction === 'horizontal' ? contentArea.clientWidth : contentArea.clientHeight;
         const maxScroll = scrollSize - clientSize;
 
         return {

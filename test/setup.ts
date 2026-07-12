@@ -3,6 +3,34 @@
 // 设置测试环境标志
 (global as any).IS_TEST = true;
 
+// Polyfill: ResizeObserver (jsdom 不提供)
+if (typeof ResizeObserver === 'undefined') {
+    (global as any).ResizeObserver = class ResizeObserver {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    };
+}
+
+// Polyfill: MutationObserver (jsdom 可能缺失)
+if (typeof MutationObserver === 'undefined') {
+    (global as any).MutationObserver = class MutationObserver {
+        observe() {}
+        disconnect() {}
+        takeRecords() { return []; }
+    };
+}
+
+// Polyfill: Element.scrollBy / scrollTo (jsdom 不提供)
+if (typeof HTMLElement !== 'undefined') {
+    if (!HTMLElement.prototype.scrollBy) {
+        (HTMLElement.prototype as any).scrollBy = function() {};
+    }
+    if (!HTMLElement.prototype.scrollTo) {
+        (HTMLElement.prototype as any).scrollTo = function() {};
+    }
+}
+
 // Polyfill: TextEncoder / TextDecoder (jsdom 可能缺失)
 if (typeof TextEncoder === 'undefined') {
     const { TextEncoder, TextDecoder } = require('util');
