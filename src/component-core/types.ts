@@ -128,4 +128,6 @@ export interface NodeTemplateMeta {
     emitAttr?: string;
     /** i18n 翻译 key（由 data-i18n 声明，如 "btn.save"） */
     i18nKey?: string;
+    /** 初始隐藏状态（由 data-hidden 声明，运行时设置 el.hidden） */
+    hidden?: boolean;
 }

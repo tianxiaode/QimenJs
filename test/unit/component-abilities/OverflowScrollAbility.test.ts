@@ -145,8 +145,8 @@ describe('OverflowScrollAbility', () => {
             const nextBtn = host.nodeMap['toolbar']['nextBtn'].el;
 
             host.updateOverflowState(contentArea, 'horizontal', prevBtn, nextBtn);
-            expect(prevBtn.style.display).toBe('none');
-            expect(nextBtn.style.display).toBe('none');
+            expect(prevBtn.hidden).toBe(true);
+            expect(nextBtn.hidden).toBe(true);
         });
 
         it('无溢出时不添加 can-prev/can-next 类', () => {

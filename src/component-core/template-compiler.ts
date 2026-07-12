@@ -95,12 +95,14 @@ export function precompileTemplate(
         const templateRef = htmlEl.getAttribute('data-template') || undefined;
         const mode = inferContentMode(htmlEl);
         const i18nKey = htmlEl.getAttribute('data-i18n') || undefined;
+        const hiddenAttr = htmlEl.getAttribute('data-hidden');
+        const hidden = hiddenAttr === 'true';
         const eventAttr = htmlEl.getAttribute('data-event') || undefined;
         const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
 
         templateMetas[key] = {
             raw: value, group, name, delegateTarget, jsonRef, jsonMode,
-            templateRef, mode, eventAttr, emitAttr, i18nKey,
+            templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
         };
 
         // 计算节点路径（相对于模板根元素）

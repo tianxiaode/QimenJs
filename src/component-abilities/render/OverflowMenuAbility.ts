@@ -163,14 +163,14 @@ export const OverflowMenuAbility: AbilityDefinition = {
             contentArea.classList.remove('q-overflow-menu__visible');
 
             // 隐藏触发按钮和菜单面板（不移除，模板节点由 withTemplate 管理）
-            triggerBtn.style.display = 'none';
-            menuPanel.style.display = 'none';
+            triggerBtn.hidden = true;
+            menuPanel.hidden = true;
             triggerBtn.classList.remove('q-overflow-menu__trigger--active');
 
             // 还原被隐藏的子项
             const children = Array.from(contentArea.children) as HTMLElement[];
             for (const child of children) {
-                child.style.display = '';
+                child.hidden = false;
             }
         });
     },
@@ -217,19 +217,19 @@ export const OverflowMenuAbility: AbilityDefinition = {
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             if (i >= firstOverflowIndex) {
-                child.style.display = 'none';
+                child.hidden = true;
                 overflowItems.push({
                     key: child.getAttribute('data-key') ?? `item-${i}`,
                     label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
                     element: child,
                 });
             } else {
-                child.style.display = '';
+                child.hidden = false;
             }
         }
 
         // 更新触发按钮显隐
-        triggerBtn.style.display = overflowItems.length > 0 ? '' : 'none';
+        triggerBtn.hidden = overflowItems.length === 0;
 
         // 更新容器 CSS 状态类
         this.el.classList.toggle('q-overflow-menu-container--overflowing', overflowItems.length > 0);
@@ -313,7 +313,7 @@ export const OverflowMenuAbility: AbilityDefinition = {
             menuPanel.style.right = '';
         }
 
-        menuPanel.style.display = '';
+        menuPanel.hidden = false;
         triggerBtn.classList.add('q-overflow-menu__trigger--active');
 
         this.setOverflowMenu('isMenuOpen', true);
@@ -330,7 +330,7 @@ export const OverflowMenuAbility: AbilityDefinition = {
 
         if (!menuPanel || !triggerBtn) return;
 
-        menuPanel.style.display = 'none';
+        menuPanel.hidden = true;
         triggerBtn.classList.remove('q-overflow-menu__trigger--active');
 
         this.setOverflowMenu('isMenuOpen', false);

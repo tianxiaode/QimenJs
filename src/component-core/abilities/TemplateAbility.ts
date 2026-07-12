@@ -167,6 +167,11 @@ export const TemplateAbility: AbilityDefinition = {
                 i18nKey: meta.i18nKey,
             };
 
+            // 如果模板声明了 data-hidden，设置 el.hidden 初始状态
+            if (meta.hidden) {
+                el.hidden = true;
+            }
+
             // 如果有组件类映射，填充 componentClass
             if (meta.jsonRef && jsonComponentMap[meta.name]) {
                 node.componentClass = jsonComponentMap[meta.name];

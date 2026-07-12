@@ -17,6 +17,7 @@
  * - jsonMode → data-json-mode
  * - template → data-template
  * - i18n    → data-i18n
+ * - hidden  → data-hidden — 初始隐藏状态（对应 el.hidden）
  *
  * withTemplate 接收 JsonTemplateNode[] 后自动转换为 HTML 字符串，
  * 再走原有 precompileTemplate 流程。
@@ -50,6 +51,8 @@ export interface JsonTemplateNode {
     template?: string;
     /** i18n 翻译 key，对应 data-i18n */
     i18n?: string;
+    /** 初始隐藏状态，对应 data-hidden，运行时设置 el.hidden */
+    hidden?: boolean;
     /** 其他 HTML 属性 */
     attrs?: Record<string, string>;
     /** 文本内容 */
@@ -114,6 +117,7 @@ function jsonNodeToHtml(
     if (node.jsonMode) attrs.push(`data-json-mode="${node.jsonMode}"`);
     if (node.template) attrs.push(`data-template="${node.template}"`);
     if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);
+    if (node.hidden) attrs.push(`data-hidden="true"`);
     if (node.class) attrs.push(`class="${node.class}"`);
     if (node.style) attrs.push(`style="${node.style}"`);
     if (node.attrs) {

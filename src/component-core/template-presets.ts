@@ -18,6 +18,7 @@
  * - jsonMode → data-json-mode="replace|child" — JSON 渲染模式
  * - template → data-template="refId" — 嵌套模板引用
  * - i18n     → data-i18n="key" — 国际化翻译 key
+ * - hidden   → data-hidden="true" — 初始隐藏状态（运行时设置 el.hidden）
  */
 
 import type { JsonTemplateNode } from './template-json';
@@ -93,11 +94,11 @@ export const SELECT_TEMPLATE: JsonTemplateNode[] = [
  * 子项由外部动态添加到 contentArea 中。
  */
 export const TOOLBAR_TEMPLATE: JsonTemplateNode[] = [
-    { tag: 'button', content: 'toolbar:prevBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--prev', style: 'display:none;' },
+    { tag: 'button', content: 'toolbar:prevBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true },
     { tag: 'div', content: 'toolbar:contentArea', class: 'q-toolbar__content', style: 'display:flex;' },
-    { tag: 'button', content: 'toolbar:nextBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--next', style: 'display:none;' },
-    { tag: 'button', content: 'toolbar:triggerBtn', event: 'click', class: 'q-overflow-menu__trigger', style: 'display:none;' },
-    { tag: 'div', content: 'toolbar:menuPanel', class: 'q-overflow-menu__panel', style: 'display:none;position:absolute;' },
+    { tag: 'button', content: 'toolbar:nextBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--next', hidden: true },
+    { tag: 'button', content: 'toolbar:triggerBtn', event: 'click', class: 'q-overflow-menu__trigger', hidden: true },
+    { tag: 'div', content: 'toolbar:menuPanel', class: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
 ];
 
 /**

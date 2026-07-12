@@ -140,7 +140,7 @@ describe('OverflowMenuAbility', () => {
             const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
 
             host.recalcOverflowItems();
-            expect(triggerBtn.style.display).toBe('none');
+            expect(triggerBtn.hidden).toBe(true);
         });
 
         it('maxVisibleItems 限制时隐藏超出子项', () => {
@@ -159,13 +159,13 @@ describe('OverflowMenuAbility', () => {
             host.recalcOverflowItems();
 
             const children = Array.from(contentArea.children) as HTMLElement[];
-            expect(children[0].style.display).not.toBe('none');
-            expect(children[1].style.display).not.toBe('none');
-            expect(children[2].style.display).toBe('none');
-            expect(children[3].style.display).toBe('none');
+            expect(children[0].hidden).toBe(false);
+            expect(children[1].hidden).toBe(false);
+            expect(children[2].hidden).toBe(true);
+            expect(children[3].hidden).toBe(true);
 
             const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
-            expect(triggerBtn.style.display).not.toBe('none');
+            expect(triggerBtn.hidden).toBe(false);
         });
 
         it('maxVisibleItems 限制时生成正确的 overflowItems', () => {
@@ -202,7 +202,7 @@ describe('OverflowMenuAbility', () => {
             host.recalcOverflowItems();
 
             const triggerBtn = host.nodeMap['toolbar']['triggerBtn'].el;
-            expect(triggerBtn.style.display).toBe('none');
+            expect(triggerBtn.hidden).toBe(true);
         });
     });
 
@@ -247,7 +247,7 @@ describe('OverflowMenuAbility', () => {
             const menuPanel = host.nodeMap['toolbar']['menuPanel'].el;
 
             host.openOverflowMenu();
-            expect(menuPanel.style.display).not.toBe('none');
+            expect(menuPanel.hidden).toBe(false);
         });
 
         it('closeOverflowMenu 隐藏 menuPanel', () => {
@@ -258,7 +258,7 @@ describe('OverflowMenuAbility', () => {
 
             host.openOverflowMenu();
             host.closeOverflowMenu();
-            expect(menuPanel.style.display).toBe('none');
+            expect(menuPanel.hidden).toBe(true);
         });
 
         it('openOverflowMenu 添加 trigger--active 类', () => {
@@ -332,10 +332,10 @@ describe('OverflowMenuAbility', () => {
             host.recalcOverflowItems();
 
             const children = Array.from(contentArea.children) as HTMLElement[];
-            expect(children[1].style.display).toBe('none');
+            expect(children[1].hidden).toBe(true);
 
             host.dispose();
-            expect(children[1].style.display).toBe('');
+            expect(children[1].hidden).toBe(false);
             container.remove();
         });
     });

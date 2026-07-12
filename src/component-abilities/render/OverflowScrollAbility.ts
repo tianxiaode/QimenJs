@@ -187,8 +187,8 @@ export const OverflowScrollAbility: AbilityDefinition = {
             contentArea.classList.remove('q-overflow-scroll__area');
 
             // 隐藏箭头按钮（不移除，模板节点由 withTemplate 管理）
-            if (prevBtn) prevBtn.style.display = 'none';
-            if (nextBtn) nextBtn.style.display = 'none';
+            if (prevBtn) prevBtn.hidden = true;
+            if (nextBtn) nextBtn.hidden = true;
         });
     },
 
@@ -232,8 +232,8 @@ export const OverflowScrollAbility: AbilityDefinition = {
         const canScrollNext = scrollPos < maxScroll - 1;
 
         // 更新箭头显隐
-        if (prevBtn) prevBtn.style.display = canScrollPrev ? '' : 'none';
-        if (nextBtn) nextBtn.style.display = canScrollNext ? '' : 'none';
+        if (prevBtn) prevBtn.hidden = !canScrollPrev;
+        if (nextBtn) nextBtn.hidden = !canScrollNext;
 
         // 更新容器 CSS 状态类
         const container = this.el;
