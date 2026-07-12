@@ -104,6 +104,10 @@ docs/build-progress/
 ## 最近更新
 
 ### 2026-07-12（下午）
+- 新增 LayoutAbility 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类）
+- 布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）
+- 合并到 TEMPLATE_COMPONENT_ABILITIES，TemplateComponent.flush() 新增 flushLayout() 调用
+- 新增单元测试：layout-ability.test.ts（9 用例，全部通过）
 - 新增 Badge 角标能力：BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）
 - 新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染，src/component/badge/ 目录）
 - 新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）
@@ -111,6 +115,9 @@ docs/build-progress/
 - 新增 badge.css.ts（Badge 样式，TS 导出 CSS 字符串）
 - 新增单元测试：badge-ability.test.ts（18 用例）、BadgeComponent.test.ts（20 用例）、layout-keys.test.ts（4 用例）、init-ability.test.ts 新增 4 用例
 - 覆盖率：BadgeAbility 96%/94%/100%/100%、BadgeComponent 100%、layout-keys 100%
+- 新增 ButtonComponent（withTemplate + ContentAbility，支持 type/size/disabled 配置，src/component/button/ 目录）
+- 新增 button.css.ts（Button 样式，5 种类型 + 3 种尺寸 + 禁用状态）
+- 新增单元测试：ButtonComponent.test.ts（27 用例，全部通过）
 - 重构 imperative 包：Toast/Msgbox 拆分为独立实例类 + Manager 调度器
 - 新增 TemplateCacheAbility（模板缓存+克隆+nodeMap+setTemplate）
 - 新增 FloatingLayerAbility（OverlayRoot挂载+z-index+动画+视口定位+bindDomEvent）

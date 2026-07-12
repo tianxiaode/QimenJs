@@ -27,6 +27,7 @@ import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { OverlayAbility } from './abilities/OverlayAbility';
 import { BadgeAbility } from './abilities/BadgeAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
+import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
@@ -44,7 +45,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
     EventBridgeAbility, ThemeAbility,
     InitAbility, NodeMapAbility, OverlayAbility, BadgeAbility,
-    TemplateAbility,
+    TemplateAbility, LayoutAbility,
 ];
 
 /**
@@ -130,6 +131,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         this.flushPositionRaw();
         this.flushPositionBool();
         this.flushAccessibility();
+        this.flushLayout();
 
         this.dirtySet.clear();
     }

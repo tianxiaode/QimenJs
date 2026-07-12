@@ -17,3 +17,4 @@ export { OverlayHostAbility, type OverlayHostConfig } from './OverlayHostAbility
 export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from './TooltipOverlayAbility';
 export * from './ElementEventAbility';
 export * from './TemplateAbility';
+export * from './LayoutAbility';

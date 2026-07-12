@@ -521,6 +521,7 @@ class RootComponent extends ComponentBase {
 | EventBridgeAbility | `EventBridgeAbility.ts` | 声明式事件桥接 |
 | PropAlias | `PropAlias.ts` | 属性别名与初始化协议 |
 | positionOverlay | `positionOverlay.ts` | 浮层定位工具函数（4方向定位、自动翻转、视口约束） |
+| LayoutAbility | `LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类） |
 
 ---
 
@@ -733,3 +734,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IEventBridgeAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |
 | 2026-07-10 | ComponentBase 能力重构：InitAbility/NodeMapAbility/OverlayAbility 从 ComponentBase 拆分为 AbilityDefinition；AnimationAbility/EntityCoreAbility/PermissionAbility 从 AbilityBase 类模式改为 AbilityDefinition 对象模式；删除 AbilityBase（文件不存在）；删除 IContentAbility 接口（功能分散到 NodeMapAbility/OverlayAbility）；content 目录精简（createContentManager/createOverlayManager/positionOverlay/normalize 已迁移）；html-template 包重命名为 template（HtmlTemplateRegistrar → TemplateRegistrar，@qimenjs/html-template → @qimenjs/template，RegistryHub 键 'html' → 'template'） |
 | 2026-07-12 | Badge 角标能力：新增 BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）；新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染）；新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）；InitAbility 步骤6 驱动 initBadge + assignProps 赋值；BadgeComponent 放在 src/component/badge/ 目录（组件按目录分层） |
+| 2026-07-12 | 布局能力：新增 LayoutAbility（fit/hbox/vbox/grid/center 五种布局模式，自动为根元素添加布局 CSS 类）；布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）；合并到 TEMPLATE_COMPONENT_ABILITIES；TemplateComponent.flush() 新增 flushLayout() 调用 |
