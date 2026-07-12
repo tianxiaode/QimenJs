@@ -25,6 +25,7 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── FormComponent
         ├── DialogComponent
         ├── BadgeComponent
+        ├── TipsComponent
         ├── MenuComponent
         ├── MenuItemComponent
         └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
@@ -50,6 +51,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | FormComponent | `src/component/components/FormComponent.ts` | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility |
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
+| TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ hover 事件 + delay |
 | MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项） |
 | MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |
@@ -463,10 +465,10 @@ class RootComponent extends ComponentBase {
 |------|------|
 | RenderAbility | 渲染控制 |
 | VirtualListAbility | 虚拟列表 |
-| OverlayAbility | 浮层 |
+| OverlayAbility | 浮层管理（宿主侧，已迁至 component-core） |
 | AnimationAbility | 动画 |
 | FloatingLayerAbility | 浮层通用逻辑（OverlayRoot 挂载、z-index、动画、视口定位） |
-| OverlayHostAbility | 浮层宿主能力（z-index 管理、定位计算、挂载/卸载） |
+| OverlayHostAbility | 浮层宿主能力（已迁至 component-core，此处为重导出） |
 | TooltipOverlayAbility | Tooltip 浮层能力（hover 事件、delay、i18n） |
 
 ### 2.6.1 菜单能力 (`src/component-abilities/menu/`)
@@ -524,7 +526,9 @@ class RootComponent extends ComponentBase {
 |------|------|------|
 | InitAbility | `InitAbility.ts` | 统一初始化流程（initialize/initConfig/initContent/assignProps/bindEvents） |
 | NodeMapAbility | `NodeMapAbility.ts` | 模板节点扫描、属性生成、data-i18n + refreshI18n 集中刷新 |
-| OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay/initTooltipOverlay） |
+| OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay，宿主侧创建浮层实例+委托方法） |
+| OverlayHostAbility | `OverlayHostAbility.ts` | 浮层宿主能力（z-index 管理、定位计算、OverlayRoot 挂载/卸载，浮层组件侧） |
+| TooltipAbility | `TooltipAbility.ts` | Tooltip 专属能力（getTooltip/setTooltip/initTooltipOverlay，从 OverlayAbility 拆分） |
 | BadgeAbility | `BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
 | DragAbility | `DragAbility.ts` | 拖拽能力（initDrag/setDraggable，基于框架 DragProcessor） |
 | DropAbility | `DropAbility.ts` | 放置能力（initDrop/setDroppable/setDropAccept，HTML5 拖放事件） |
@@ -752,3 +756,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-12 | 布局能力：新增 LayoutAbility（fit/hbox/vbox/grid/center 五种布局模式，自动为根元素添加布局 CSS 类）；布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）；合并到 TEMPLATE_COMPONENT_ABILITIES；TemplateComponent.flush() 新增 flushLayout() 调用 |
 | 2026-07-12 | 拖拽/放置能力：新增 DragAbility（基于框架 DragProcessor 的 'drag' 手势语义，initDrag/setDraggable，发布 dragstart/dragmove/dragend/dragcancel 事件）和 DropAbility（HTML5 原生拖放事件，initDrop/setDroppable/setDropAccept，dropAccept 类型过滤，发布 dragenter/dragover/dragleave/drop 事件）；新增 DragProps/DropProps（LayoutNode 声明式配置，draggable/dragAxis/dragHandle/dragBounds/dragActiveClass/dragGrid + droppable/dropAccept/dropActiveClass）；新增 DRAG_KEYS/DROP_KEYS；InitAbility 步骤6 驱动 initDrag/initDrop + assignProps 赋值；事件走 UI 事件模式（this.emit + EventContext） |
 | 2026-07-12 | 菜单组件：新增 MenuComponent（浮层菜单容器，OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）；新增 MenuItemComponent（菜单项组件，OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）；新增 MenuItemManageAbility（菜单项管理能力，池化复用、增删改、状态管理，从 ComponentRegistrar 查找 MenuItem 组件类实现能力与组件解耦）；新增 MENU_TEMPLATE/MENU_ITEM_TEMPLATE 模板预设；新增 ComponentTypes.MENU/MENU_ITEM；OverlayHostAbility/TooltipOverlayAbility 从 component-core 迁移到 component-abilities/render |
+| 2026-07-13 | 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）；OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）；新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）；InitAbility 导入 TooltipKey 从 OverlayAbility 改为 TooltipAbility；component-abilities 的 OverlayHostAbility 改为从 component-core 重导出 |

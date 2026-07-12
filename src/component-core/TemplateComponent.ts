@@ -25,6 +25,8 @@ import { ThemeAbility } from './abilities/ThemeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { OverlayAbility } from './abilities/OverlayAbility';
+import { OverlayHostAbility } from './abilities/OverlayHostAbility';
+import { TooltipAbility } from './abilities/TooltipAbility';
 import { BadgeAbility } from './abilities/BadgeAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { DropAbility } from './abilities/DropAbility';
@@ -46,7 +48,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
     AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
     EventBridgeAbility, ThemeAbility,
-    InitAbility, NodeMapAbility, OverlayAbility, BadgeAbility,
+    InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, TooltipAbility, BadgeAbility,
     DragAbility, DropAbility,
     TemplateAbility, LayoutAbility,
 ];

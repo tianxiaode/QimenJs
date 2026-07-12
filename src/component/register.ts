@@ -15,6 +15,7 @@ import { ComponentRegistrar } from '@qimenjs/component-core';
 import { ButtonComponent } from './button/ButtonComponent';
 import { ToolbarComponent } from './toolbar/ToolbarComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
+import { TipsComponent } from './tips/TipsComponent';
 import { MenuItemComponent } from './menu/MenuItemComponent';
 import { MenuComponent } from './menu/MenuComponent';
 
@@ -30,6 +31,7 @@ export function registerAllComponents(): void {
     registrar.register('Button', ButtonComponent);
     registrar.register('Toolbar', ToolbarComponent);
     registrar.register('Badge', BadgeComponent);
+    registrar.register('Tips', TipsComponent);
     registrar.register('MenuItem', MenuItemComponent);
     registrar.register('Menu', MenuComponent);
 }

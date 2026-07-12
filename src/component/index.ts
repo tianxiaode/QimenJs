@@ -16,6 +16,8 @@ export { registerAllComponents } from './register';
 export { ButtonComponent } from './button/ButtonComponent';
 export { BadgeComponent } from './badge/BadgeComponent';
 export { badgeCSS } from './badge/badge.css';
+export { TipsComponent, type TipsProps } from './tips/TipsComponent';
+export { tipsCSS } from './tips/tips.css';
 
 // 工具栏组件
 export { ToolbarComponent, type OverflowMode } from './toolbar/ToolbarComponent';

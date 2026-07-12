@@ -15,7 +15,7 @@ import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
 import type { AnimationKey } from './AnimationAbility';
-import type { TooltipKey } from './OverlayAbility';
+import type { TooltipKey } from './TooltipAbility';
 import type { BadgeKey } from './BadgeAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';

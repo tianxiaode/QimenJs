@@ -1,5 +1,5 @@
 /**
- * OverlayAbility — 浮层管理能力
+ * OverlayAbility — 浮层管理能力（宿主侧）
  *
  * 宿主只负责：
  * - 从 ComponentRegistrar 查找浮层组件类
@@ -7,18 +7,11 @@
  * - 在宿主上生成委托方法（openXxx/closeXxx/positionXxx）
  *
  * 浮层组件自身负责：
- * - 定位计算、z-index 管理、OverlayRoot 挂载
+ * - 定位计算、z-index 管理、OverlayRoot 挂载（由 OverlayHostAbility 提供）
  * - open/close 生命周期、resize/scroll 监听
- * - tooltip 的 hover 事件、delay、i18n 内容
  * - dispose 时清理所有资源
  *
- * 浮层组件事件绑定规范：
- * - 必须使用 DomEventsAbility.bind() 绑定 DOM 事件，禁止直接 addEventListener
- * - hover 事件：this.bind(anchor, 'hover', { delay }) — 走 HoverProcessor
- * - scroll/resize：this.bind(window, 'scroll') / this.bind(window, 'enter') — 走 InputSignal
- * - bind 返回的 unbind 函数由 eventScope 自动管理，dispose 时统一清理
- *
- * Tooltip 属性通过 getTooltip(key) / setTooltip(key, value) 方法访问。
+ * Tooltip 专属逻辑已拆分到 TooltipAbility。
  */
 
 import type { AbilityDefinition } from '@/composable';
@@ -47,54 +40,7 @@ export interface OverlayResult {
     overlayEl: HTMLElement;
 }
 
-/**
- * 支持的 tooltip key 类型
- */
-export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth' | 'tooltipType';
-
-/**
- * Tooltip 初始化配置
- */
-export interface TooltipOverlayConfig {
-    /** Tooltip 文本内容 */
-    tooltip?: string;
-    /** 弹出方向，默认 'top' */
-    tooltipPlacement?: Placement;
-    /** 间距，默认 4 */
-    tooltipOffset?: number;
-    /** 显示延迟，默认 0 */
-    tooltipShowDelay?: number;
-    /** 隐藏延迟，默认 0 */
-    tooltipHideDelay?: number;
-    /** 浮层组件类型名，默认 'Tips' */
-    tooltipType?: string;
-}
-
-/**
- * tooltip 默认值
- */
-const TOOLTIP_DEFAULTS: Record<string, any> = {
-    tooltipPlacement: 'top',
-    tooltipOffset: 4,
-    tooltipShowDelay: 0,
-    tooltipHideDelay: 0,
-    tooltipType: 'Tips',
-};
-
 export const OverlayAbility: AbilityDefinition = {
-    // ─── Tooltip 属性访问方法 ───
-
-    getTooltip(key: TooltipKey): any {
-        if (key in TOOLTIP_DEFAULTS) {
-            return this.props[key] ?? TOOLTIP_DEFAULTS[key];
-        }
-        return this.props[key];
-    },
-
-    setTooltip(key: TooltipKey, value: any): void {
-        this.setProp(key, value);
-    },
-
     /**
      * 创建浮层
      *
@@ -176,22 +122,5 @@ export const OverlayAbility: AbilityDefinition = {
         });
 
         return { overlayInstance, overlayEl };
-    },
-
-    /**
-     * 初始化 Tooltip 浮层 — 配置驱动
-     *
-     * 从 ComponentRegistrar 查找 Tips 组件类（或 tooltipType 指定的类），
-     * 创建实例并传入 anchor 和全部配置。
-     * 浮层组件自身负责 hover 事件、delay、i18n 内容等。
-     */
-    initTooltipOverlay(config: TooltipOverlayConfig): void {
-        const tooltipType = config.tooltipType ?? 'Tips';
-
-        this.createOverlay({
-            prefix: 'tips',
-            typeOverride: tooltipType !== 'Tips' ? tooltipType : undefined,
-            overlayProps: config,
-        });
     },
 };

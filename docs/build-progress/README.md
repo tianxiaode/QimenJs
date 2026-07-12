@@ -103,6 +103,15 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-13
+- 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）
+- OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）
+- 新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）
+- 新增 tips.css.ts（Tips 样式，TS 导出 CSS 字符串）
+- InitAbility 导入 TooltipKey 从 OverlayAbility 改为 TooltipAbility
+- component-abilities 的 OverlayHostAbility 改为从 component-core 重导出
+- 新增单元测试：overlay-host-ability.test.ts（18 用例）、tooltip-ability.test.ts（14 用例）、overlay-ability.test.ts（16 用例）、TipsComponent.test.ts（8 用例）
+
 ### 2026-07-12（晚间）
 - 新增 MenuComponent 浮层菜单组件（OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）
 - 新增 MenuItemComponent 菜单项组件（OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）

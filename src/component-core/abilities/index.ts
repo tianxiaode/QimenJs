@@ -12,6 +12,8 @@ export * from './ThemeAbility';
 export * from './InitAbility';
 export * from './NodeMapAbility';
 export * from './OverlayAbility';
+export * from './OverlayHostAbility';
+export * from './TooltipAbility';
 export * from './BadgeAbility';
 export * from './DragAbility';
 export * from './DropAbility';
