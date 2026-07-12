@@ -1,70 +1,11 @@
 /**
- * 集成测试：Layout + Renderer
+ * 集成测试：Layout Validator
  */
 
-import { parseLayout, validateLayout } from '@qimenjs/layout';
+import { validateLayout } from '@qimenjs/layout';
 import type { LayoutNode } from '@qimenjs/layout';
 
 describe('Layout Integration', () => {
-    describe('parseLayout', () => {
-        it('should parse simple layout', () => {
-            const layout = parseLayout({
-                type: 'button',
-                id: 'btn1',
-                text: 'Click me',
-            });
-
-            expect(layout.type).toBe('button');
-            expect(layout.id).toBe('btn1');
-            expect((layout as any).props).toEqual({ text: 'Click me' });
-        });
-
-        it('should parse layout with children', () => {
-            const layout = parseLayout({
-                type: 'vbox',
-                id: 'root',
-                children: [
-                    { type: 'button', id: 'btn1' },
-                    { type: 'input', id: 'inp1' },
-                ],
-            });
-
-            expect(layout.type).toBe('vbox');
-            expect(layout.children).toHaveLength(2);
-            expect(layout.children![0].type).toBe('button');
-            expect(layout.children![1].type).toBe('input');
-        });
-
-        it('should normalize handlers', () => {
-            const layout = parseLayout({
-                type: 'button',
-                id: 'btn1',
-                handlers: {
-                    click: 'handleClick',
-                },
-            });
-
-            expect(layout.handlers).toBeDefined();
-            expect(layout.handlers!.click).toBe('handleClick');
-        });
-
-        it('should parse handlers as HandlerConfig objects', () => {
-            const layout = parseLayout({
-                type: 'button',
-                id: 'btn1',
-                handlers: {
-                    click: { handler: 'onSubmit', once: true, params: { url: '/api' } },
-                },
-            });
-
-            expect(layout.handlers!.click).toEqual({
-                handler: 'onSubmit',
-                once: true,
-                params: { url: '/api' },
-            });
-        });
-    });
-
     describe('validateLayout', () => {
         it('should validate correct layout', () => {
             const result = validateLayout({

@@ -557,7 +557,7 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
     /**
      * 剩余属性：非保留字、非已知 Props 的顶层属性
      *
-     * 由 parseLayout 自动归集，渲染时作为组件 props 传入。
+     * 非 RESERVED_KEYS / KNOWN_PROP_KEYS 的顶层属性自动归集，渲染时作为组件 props 传入。
      */
     props?: Record<string, any>;
 }

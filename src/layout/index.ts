@@ -1,14 +1,14 @@
 /**
  * @qimenjs/layout
  *
- * Layout 定义系统 - LayoutNode + HandlerAction + 解析 + 验证
+ * Layout 定义系统 - LayoutNode + 验证 + key 常量
  */
 
 // 类型导出
 export * from './LayoutNode';
 
-// 解析器导出
-export { parseLayout } from './parser';
+// key 常量导出
+export { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, ANIMATION_KEYS, STYLE_KEYS, RESERVED_KEYS, KNOWN_PROP_KEYS } from './layout-keys';
 
 // 验证器导出
 export { validateLayout, type ValidationResult } from './validator';

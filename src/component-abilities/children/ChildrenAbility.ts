@@ -10,6 +10,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger } from '@qimenjs/layout';
+import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, ANIMATION_KEYS, STYLE_KEYS, RESERVED_KEYS } from '@qimenjs/layout';
 import { CHILDREN_EVENTS } from '@qimenjs/events';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 
@@ -20,46 +21,6 @@ import { ComponentRegistrar } from '@qimenjs/component-core';
  * 实际运行时 this 指向 ComponentLike 实例。
  */
 type ComponentLike = any;
-
-/**
- * PositionProps 中的 key 列表，用于从 LayoutNode 提取定位属性
- */
-const POSITION_KEYS = [
-    'x', 'y', 'top', 'left', 'bottom', 'right',
-    'width', 'height',
-    'minWidth', 'maxWidth', 'minHeight', 'maxHeight',
-    'margin', 'padding',
-    'scrollable', 'center', 'hideMode', 'alwaysOnTop', 'fullscreen',
-    'shadow', 'focused', 'tabIndex', 'zIndex',
-] as const;
-
-/**
- * 保留字 key 集合 — 这些字段不作为 props 传递
- */
-const RESERVED_KEYS = new Set([
-    'type', 'id', 'template', 'tag', 'field', 'children',
-    'abilities', 'handlers', 'extraFns', 'meta', 'lifecycle',
-    'stateTriggers', 'visible', 'repeat', 'responsive', 'props',
-    'entity', 'permission',
-    // StyleProps
-    'className', 'style',
-    // AccessibilityProps
-    'role', 'ariaLabel', 'ariaDescribedBy', 'ariaLabelledBy', 'ariaHidden',
-    'ariaDisabled', 'ariaExpanded', 'ariaSelected', 'ariaPressed', 'ariaRequired',
-    'ariaInvalid', 'ariaLive', 'ariaControls', 'ariaOwns', 'ariaHasPopup',
-    'ariaCurrent', 'ariaLevel', 'ariaValueText', 'ariaValueMin', 'ariaValueMax',
-    'ariaValueNow', 'ariaModal', 'ariaReadOnly', 'ariaAutoComplete', 'ariaErrorMessage',
-    'ariaRowCount', 'ariaColCount', 'ariaRowIndex', 'ariaColIndex', 'ariaRowSpan',
-    'ariaColSpan', 'ariaSetSize', 'ariaPosInSet',
-    // TooltipProps
-    'tooltip', 'tooltipPlacement', 'tooltipOffset', 'tooltipShowDelay',
-    'tooltipHideDelay', 'tooltipMaxWidth', 'tooltipType',
-    // AnimationProps
-    'enterAnimation', 'enterAnimationOptions', 'leaveAnimation',
-    'leaveAnimationOptions', 'animationEnabled',
-    // PositionProps
-    ...POSITION_KEYS,
-]);
 
 export const ChildrenAbility: AbilityDefinition = {
     /**
@@ -166,59 +127,24 @@ export const ChildrenAbility: AbilityDefinition = {
         }
 
         // StyleProps
-        if (layout.className !== undefined) c.className = layout.className;
-        if (layout.style !== undefined) c.style = layout.style;
+        for (const key of STYLE_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // AccessibilityProps
-        if (layout.role !== undefined) c.role = layout.role;
-        if (layout.ariaLabel !== undefined) c.ariaLabel = layout.ariaLabel;
-        if (layout.ariaDescribedBy !== undefined) c.ariaDescribedBy = layout.ariaDescribedBy;
-        if (layout.ariaLabelledBy !== undefined) c.ariaLabelledBy = layout.ariaLabelledBy;
-        if (layout.ariaHidden !== undefined) c.ariaHidden = layout.ariaHidden;
-        if (layout.ariaDisabled !== undefined) c.ariaDisabled = layout.ariaDisabled;
-        if (layout.ariaExpanded !== undefined) c.ariaExpanded = layout.ariaExpanded;
-        if (layout.ariaSelected !== undefined) c.ariaSelected = layout.ariaSelected;
-        if (layout.ariaPressed !== undefined) c.ariaPressed = layout.ariaPressed;
-        if (layout.ariaRequired !== undefined) c.ariaRequired = layout.ariaRequired;
-        if (layout.ariaInvalid !== undefined) c.ariaInvalid = layout.ariaInvalid;
-        if (layout.ariaLive !== undefined) c.ariaLive = layout.ariaLive;
-        if (layout.ariaControls !== undefined) c.ariaControls = layout.ariaControls;
-        if (layout.ariaOwns !== undefined) c.ariaOwns = layout.ariaOwns;
-        if (layout.ariaHasPopup !== undefined) c.ariaHasPopup = layout.ariaHasPopup;
-        if (layout.ariaCurrent !== undefined) c.ariaCurrent = layout.ariaCurrent;
-        if (layout.ariaLevel !== undefined) c.ariaLevel = layout.ariaLevel;
-        if (layout.ariaValueText !== undefined) c.ariaValueText = layout.ariaValueText;
-        if (layout.ariaValueMin !== undefined) c.ariaValueMin = layout.ariaValueMin;
-        if (layout.ariaValueMax !== undefined) c.ariaValueMax = layout.ariaValueMax;
-        if (layout.ariaValueNow !== undefined) c.ariaValueNow = layout.ariaValueNow;
-        if (layout.ariaModal !== undefined) c.ariaModal = layout.ariaModal;
-        if (layout.ariaReadOnly !== undefined) c.ariaReadOnly = layout.ariaReadOnly;
-        if (layout.ariaAutoComplete !== undefined) c.ariaAutoComplete = layout.ariaAutoComplete;
-        if (layout.ariaErrorMessage !== undefined) c.ariaErrorMessage = layout.ariaErrorMessage;
-        if (layout.ariaRowCount !== undefined) c.ariaRowCount = layout.ariaRowCount;
-        if (layout.ariaColCount !== undefined) c.ariaColCount = layout.ariaColCount;
-        if (layout.ariaRowIndex !== undefined) c.ariaRowIndex = layout.ariaRowIndex;
-        if (layout.ariaColIndex !== undefined) c.ariaColIndex = layout.ariaColIndex;
-        if (layout.ariaRowSpan !== undefined) c.ariaRowSpan = layout.ariaRowSpan;
-        if (layout.ariaColSpan !== undefined) c.ariaColSpan = layout.ariaColSpan;
-        if (layout.ariaSetSize !== undefined) c.ariaSetSize = layout.ariaSetSize;
-        if (layout.ariaPosInSet !== undefined) c.ariaPosInSet = layout.ariaPosInSet;
+        for (const key of ACCESSIBILITY_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // TooltipProps
-        if (layout.tooltip !== undefined) c.tooltip = layout.tooltip;
-        if (layout.tooltipPlacement !== undefined) c.tooltipPlacement = layout.tooltipPlacement;
-        if (layout.tooltipOffset !== undefined) c.tooltipOffset = layout.tooltipOffset;
-        if (layout.tooltipShowDelay !== undefined) c.tooltipShowDelay = layout.tooltipShowDelay;
-        if (layout.tooltipHideDelay !== undefined) c.tooltipHideDelay = layout.tooltipHideDelay;
-        if (layout.tooltipMaxWidth !== undefined) c.tooltipMaxWidth = layout.tooltipMaxWidth;
-        if (layout.tooltipType !== undefined) c.tooltipType = layout.tooltipType;
+        for (const key of TOOLTIP_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // AnimationProps
-        if (layout.enterAnimation !== undefined) c.enterAnimation = layout.enterAnimation;
-        if (layout.enterAnimationOptions !== undefined) c.enterAnimationOptions = layout.enterAnimationOptions;
-        if (layout.leaveAnimation !== undefined) c.leaveAnimation = layout.leaveAnimation;
-        if (layout.leaveAnimationOptions !== undefined) c.leaveAnimationOptions = layout.leaveAnimationOptions;
-        if (layout.animationEnabled !== undefined) c.animationEnabled = layout.animationEnabled;
+        for (const key of ANIMATION_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // PermissionProps
         if (layout.permission !== undefined) c.permission = layout.permission;

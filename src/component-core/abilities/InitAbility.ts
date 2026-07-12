@@ -10,6 +10,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
+import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, ANIMATION_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
@@ -134,50 +135,21 @@ export const InitAbility: AbilityDefinition = {
         const c = this as any;
 
         // PositionProps — 常用，直接赋值到顶层
-        if (layout.x !== undefined) c.x = layout.x;
-        if (layout.y !== undefined) c.y = layout.y;
-        if (layout.top !== undefined) c.top = layout.top;
-        if (layout.left !== undefined) c.left = layout.left;
-        if (layout.bottom !== undefined) c.bottom = layout.bottom;
-        if (layout.right !== undefined) c.right = layout.right;
-        if (layout.width !== undefined) c.width = layout.width;
-        if (layout.height !== undefined) c.height = layout.height;
-        if (layout.minWidth !== undefined) c.minWidth = layout.minWidth;
-        if (layout.maxWidth !== undefined) c.maxWidth = layout.maxWidth;
-        if (layout.minHeight !== undefined) c.minHeight = layout.minHeight;
-        if (layout.maxHeight !== undefined) c.maxHeight = layout.maxHeight;
-        if (layout.margin !== undefined) c.margin = layout.margin;
-        if (layout.padding !== undefined) c.padding = layout.padding;
-        if (layout.scrollable !== undefined) c.scrollable = layout.scrollable;
-        if (layout.center !== undefined) c.center = layout.center;
-        if (layout.hideMode !== undefined) c.hideMode = layout.hideMode;
-        if (layout.alwaysOnTop !== undefined) c.alwaysOnTop = layout.alwaysOnTop;
-        if (layout.fullscreen !== undefined) c.fullscreen = layout.fullscreen;
-        if (layout.shadow !== undefined) c.shadow = layout.shadow;
-        if (layout.focused !== undefined) c.focused = layout.focused;
-        if (layout.tabIndex !== undefined) c.tabIndex = layout.tabIndex;
-        if (layout.zIndex !== undefined) c.zIndex = layout.zIndex;
+        for (const key of POSITION_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // StyleProps — 常用，直接赋值到顶层
-        if (layout.className !== undefined) c.className = layout.className;
-        if (layout.style !== undefined) c.style = layout.style;
+        for (const key of STYLE_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
 
         // AccessibilityProps — 少用，通过 setAria 批量设置
         const ariaValues: Partial<Record<AriaKey, any>> = {};
-        const ariaKeys: AriaKey[] = [
-            'role', 'ariaLabel', 'ariaDescribedBy', 'ariaLabelledBy',
-            'ariaHidden', 'ariaDisabled', 'ariaExpanded', 'ariaSelected',
-            'ariaPressed', 'ariaRequired', 'ariaInvalid', 'ariaLive',
-            'ariaControls', 'ariaOwns', 'ariaHasPopup', 'ariaCurrent',
-            'ariaLevel', 'ariaValueText', 'ariaValueMin', 'ariaValueMax',
-            'ariaValueNow', 'ariaModal', 'ariaReadOnly', 'ariaAutoComplete',
-            'ariaErrorMessage', 'ariaRowCount', 'ariaColCount', 'ariaRowIndex',
-            'ariaColIndex', 'ariaRowSpan', 'ariaColSpan', 'ariaSetSize', 'ariaPosInSet',
-        ];
         let hasAria = false;
-        for (const key of ariaKeys) {
+        for (const key of ACCESSIBILITY_KEYS) {
             if ((layout as any)[key] !== undefined) {
-                ariaValues[key] = (layout as any)[key];
+                ariaValues[key as AriaKey] = (layout as any)[key];
                 hasAria = true;
             }
         }
@@ -186,24 +158,16 @@ export const InitAbility: AbilityDefinition = {
         }
 
         // TooltipProps — 少用，通过 setTooltip 设置
-        const tooltipKeys: TooltipKey[] = [
-            'tooltip', 'tooltipPlacement', 'tooltipOffset',
-            'tooltipShowDelay', 'tooltipHideDelay', 'tooltipMaxWidth', 'tooltipType',
-        ];
-        for (const key of tooltipKeys) {
+        for (const key of TOOLTIP_KEYS) {
             if ((layout as any)[key] !== undefined) {
-                this.setTooltip(key, (layout as any)[key]);
+                this.setTooltip(key as TooltipKey, (layout as any)[key]);
             }
         }
 
         // AnimationProps — 少用，通过 setAnimation 设置
-        const animationKeys: AnimationKey[] = [
-            'enterAnimation', 'enterAnimationOptions',
-            'leaveAnimation', 'leaveAnimationOptions', 'animationEnabled',
-        ];
-        for (const key of animationKeys) {
+        for (const key of ANIMATION_KEYS) {
             if ((layout as any)[key] !== undefined) {
-                this.setAnimation(key, (layout as any)[key]);
+                this.setAnimation(key as AnimationKey, (layout as any)[key]);
             }
         }
 
