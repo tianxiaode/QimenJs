@@ -312,7 +312,7 @@ describe('GlobalEventBus', () => {
 
             const handler = jest.fn();
             testBus.on('scope-test', handler);
-            scope.emit('scope-test', { data: 'from-scope' }, 'TestSource');
+            scope.emit('scope-test', { data: 'from-scope' }, { source: 'TestSource' });
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(

@@ -195,12 +195,12 @@ describe('EventScope', () => {
             const handler = jest.fn();
             bus.on('source-test', handler);
 
-            const customSource = { name: 'CustomSource' };
+            const customSource = { source: { name: 'CustomSource' } };
             scope.emit('source-test', { data: 'test' }, customSource);
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    source: customSource,
+                    source: customSource.source,
                 })
             );
         });

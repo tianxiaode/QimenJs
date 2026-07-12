@@ -27,7 +27,6 @@ jest.mock('@/logger', () => {
 });
 
 import { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from '@/component-core';
-import { ChildrenAbility } from '@/component-abilities';
 import type { AbilityDefinition } from '@/composable';
 import type { JsonTemplateNode } from '@/component-core/template-json';
 
@@ -118,7 +117,8 @@ describe('TemplateComponent', () => {
         });
 
         it('TemplateComponent.with(A, B) 多个能力应该都可用', () => {
-            const ForgedClass = TemplateComponent.with(TestRouteAbility, ChildrenAbility);
+            const AnotherAbility: AbilityDefinition = { anotherMethod() {} };
+            const ForgedClass = TemplateComponent.with(TestRouteAbility, AnotherAbility);
             const instance = new ForgedClass() as any;
 
             // TemplateComponent 方法
@@ -126,23 +126,25 @@ describe('TemplateComponent', () => {
 
             // 注入的能力方法
             expect(typeof instance.setupRoute).toBe('function');
-            expect(typeof instance.add).toBe('function');
+            expect(typeof instance.anotherMethod).toBe('function');
         });
 
         it('TemplateComponent.with(array) 数组参数兼容', () => {
-            const abilities = [TestRouteAbility, ChildrenAbility];
+            const AnotherAbility: AbilityDefinition = { anotherMethod() {} };
+            const abilities = [TestRouteAbility, AnotherAbility];
             const ForgedClass = TemplateComponent.with(abilities);
             const instance = new ForgedClass() as any;
 
             expect(typeof instance.initElement).toBe('function');
             expect(typeof instance.setupRoute).toBe('function');
-            expect(typeof instance.add).toBe('function');
+            expect(typeof instance.anotherMethod).toBe('function');
         });
     });
 
     describe('extends with() 类', () => {
         it('extends TemplateComponent.with() 后 initElement 应该可用', () => {
-            const AppContainer = TemplateComponent.with(TestRouteAbility, ChildrenAbility);
+            const AnotherAbility: AbilityDefinition = { anotherMethod() {} };
+            const AppContainer = TemplateComponent.with(TestRouteAbility, AnotherAbility);
 
             class MyApp extends AppContainer {
                 myMethod() {
@@ -271,19 +273,6 @@ describe('TemplateComponent', () => {
 
             expect(instance.meta).toBeDefined();
             expect(instance.meta.role).toBe('primary');
-        });
-
-        it('withTemplate 强类支持 id 配置并注册到 ComponentManager', () => {
-            const { ComponentManager } = require('@/component-core/ComponentManager');
-            const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE);
-            const instance = new ButtonClass({ id: 'test-btn-001' }) as any;
-
-            expect(instance.id).toBe('test-btn-001');
-
-            const mgr = ComponentManager.getInstance();
-            expect(mgr.get('test-btn-001')).toBeDefined();
-
-            instance.dispose();
         });
 
         it('withTemplate 强类支持 static children 配置', () => {

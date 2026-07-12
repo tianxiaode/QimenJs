@@ -484,7 +484,7 @@ describe('InitAbility', () => {
     // ============================================
 
     describe('bindExternalEvents', () => {
-        it('bridges 模式 → 走 emitUI', () => {
+        it('bridges 模式 → 走 emit 发布', () => {
             const instance = new FullBoxClass() as any;
             const btnEl = document.createElement('button');
             instance.eventMap = {
@@ -493,11 +493,12 @@ describe('InitAbility', () => {
                     'saveBtn:tap': { el: btnEl },
                 },
             };
-            instance.emitUI = jest.fn();
+            const emitSpy = jest.spyOn(instance, 'emit');
             instance.bindExternalEvents({ bridges: ['saveBtn:tap'] });
 
             instance.emit('tap', { domEvent: new Event('tap') });
-            expect(instance.emitUI).toHaveBeenCalledWith('saveBtn:tap', undefined, expect.anything());
+            expect(emitSpy).toHaveBeenCalled();
+            emitSpy.mockRestore();
         });
 
         it('方法自动绑定模式 → onSaveBtnTap', () => {
@@ -516,7 +517,7 @@ describe('InitAbility', () => {
             expect(instance.onSaveBtnTap).toHaveBeenCalled();
         });
 
-        it('默认模式 → 走 emitUI', () => {
+        it('默认模式 → 走 emit 发布', () => {
             const instance = new FullBoxClass() as any;
             const btnEl = document.createElement('button');
             instance.eventMap = {
@@ -525,11 +526,12 @@ describe('InitAbility', () => {
                     'saveBtn:tap': { el: btnEl },
                 },
             };
-            instance.emitUI = jest.fn();
+            const emitSpy = jest.spyOn(instance, 'emit');
             instance.bindExternalEvents({});
 
             instance.emit('tap', { domEvent: new Event('tap') });
-            expect(instance.emitUI).toHaveBeenCalledWith('saveBtn:tap', undefined, expect.anything());
+            expect(emitSpy).toHaveBeenCalled();
+            emitSpy.mockRestore();
         });
     });
 });

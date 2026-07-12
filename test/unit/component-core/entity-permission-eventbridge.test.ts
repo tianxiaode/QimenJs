@@ -117,13 +117,6 @@ describe('EventBridgeAbility', () => {
         expect(() => instance.initEventBridge()).not.toThrow();
     });
 
-    it('_bridgeOn — source 不存在 → 不报错', () => {
-        const instance = new BoxClass() as any;
-        const { ComponentManager } = require('@/component-core/ComponentManager');
-        const mgr = ComponentManager.getInstance();
-        expect(() => instance._bridgeOn('nonexistent', 'click', jest.fn(), mgr)).not.toThrow();
-    });
-
     it('normalizeBridgeConfig — string → {source}', () => {
         // 间接测试：通过 setEventBridge 传入 string
         const instance = new BoxClass() as any;

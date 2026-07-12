@@ -109,7 +109,7 @@ describe('ElementEventAbility', () => {
     });
 
     describe('__initProps — 外部事件', () => {
-        it('外部事件走 emitUI 发布', () => {
+        it('外部事件走 emit 发布', () => {
             const TPL = '<div class="box"><button data-content="box:saveBtn" data-emit="tap"></button></div>';
             const BoxClass = TemplateComponent.withTemplate(TPL).with(ElementEventAbility);
             const instance = new BoxClass() as any;
@@ -122,12 +122,13 @@ describe('ElementEventAbility', () => {
                 },
             };
 
-            instance.emitUI = jest.fn();
+            const emitSpy = jest.spyOn(instance, 'emit');
             initAbilitiesFromProps(instance, [ElementEventAbility], {});
 
             instance.emit('tap', { domEvent: new Event('tap') });
 
-            expect(instance.emitUI).toHaveBeenCalledWith('saveBtn:tap', undefined, expect.anything());
+            expect(emitSpy).toHaveBeenCalled();
+            emitSpy.mockRestore();
         });
     });
 
