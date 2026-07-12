@@ -21,7 +21,7 @@ import { HBoxComponent } from './components/HBoxComponent';
 import { VBoxComponent } from './components/VBoxComponent';
 import { GridComponent } from './components/GridComponent';
 import { SpaceComponent } from './components/SpaceComponent';
-import { ToolbarComponent } from './components/ToolbarComponent';
+import { ToolbarComponent } from './toolbar/ToolbarComponent';
 import { ButtonGroupComponent } from './components/ButtonGroupComponent';
 import { SeparatorComponent } from './components/SeparatorComponent';
 import { DialogComponent } from './components/DialogComponent';

@@ -29,7 +29,8 @@ export { GridComponent } from './components/GridComponent';
 export { SpaceComponent } from './components/SpaceComponent';
 
 // 工具栏组件
-export { ToolbarComponent } from './components/ToolbarComponent';
+export { ToolbarComponent, type OverflowMode } from './toolbar/ToolbarComponent';
+export { toolbarCSS } from './toolbar/toolbar.css';
 export { ButtonGroupComponent } from './components/ButtonGroupComponent';
 export { SeparatorComponent } from './components/SeparatorComponent';
 
@@ -52,6 +53,3 @@ export * from './events';
 
 // 动画
 export { animationsCSS } from './styles/animations';
-
-// 组件样式
-export { toolbarCSS } from './styles/toolbar';

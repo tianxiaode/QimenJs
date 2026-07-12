@@ -45,6 +45,9 @@ export { ChildrenAbility } from './children';
 // 渲染能力
 export { VirtualListAbility } from './render';
 export { AnimationAbility } from './render';
+export { FloatingLayerAbility, type ViewportPosition, type FloatingAnimationOptions } from './render';
+export { OverflowScrollAbility, type OverflowDirection, type OverflowState, type OverflowScrollConfig } from './render';
+export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
 
 // 交互能力
 export { ClickAbility } from './interaction';
