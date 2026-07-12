@@ -36,6 +36,8 @@ export interface OverlayConfig {
     flip?: boolean;
     /** 传递给浮层组件的 props */
     overlayProps?: Record<string, any>;
+    /** 覆盖从 prefix 推导的组件类查找名，用于差异化浮层组件 */
+    typeOverride?: string;
 }
 
 /**
@@ -124,7 +126,8 @@ export const OverlayAbility: AbilityDefinition = {
 
         // ── 1. 从 ComponentRegistrar 查找浮层组件类 ──
 
-        const OverlayClass = ComponentRegistrar.getInstance().get(capitalPrefix);
+        const lookupName = config.typeOverride ?? capitalPrefix;
+        const OverlayClass = ComponentRegistrar.getInstance().get(lookupName);
         if (!OverlayClass) return null;
 
         // ── 2. 创建浮层组件实例 ──
@@ -289,6 +292,7 @@ export const OverlayAbility: AbilityDefinition = {
 
         const result = this.createOverlay({
             prefix: 'tips',
+            typeOverride: tooltipType !== 'Tips' ? tooltipType : undefined,
             placement: config.tooltipPlacement ?? 'top',
             offset: config.tooltipOffset ?? 4,
             zIndexLevel: ZIndexLevel.tooltip,

@@ -53,7 +53,7 @@ const RESERVED_KEYS = new Set([
     'ariaColSpan', 'ariaSetSize', 'ariaPosInSet',
     // TooltipProps
     'tooltip', 'tooltipPlacement', 'tooltipOffset', 'tooltipShowDelay',
-    'tooltipHideDelay', 'tooltipMaxWidth',
+    'tooltipHideDelay', 'tooltipMaxWidth', 'tooltipType',
     // AnimationProps
     'enterAnimation', 'enterAnimationOptions', 'leaveAnimation',
     'leaveAnimationOptions', 'animationEnabled',
@@ -211,6 +211,7 @@ export const ChildrenAbility: AbilityDefinition = {
         if (layout.tooltipShowDelay !== undefined) c.tooltipShowDelay = layout.tooltipShowDelay;
         if (layout.tooltipHideDelay !== undefined) c.tooltipHideDelay = layout.tooltipHideDelay;
         if (layout.tooltipMaxWidth !== undefined) c.tooltipMaxWidth = layout.tooltipMaxWidth;
+        if (layout.tooltipType !== undefined) c.tooltipType = layout.tooltipType;
 
         // AnimationProps
         if (layout.enterAnimation !== undefined) c.enterAnimation = layout.enterAnimation;

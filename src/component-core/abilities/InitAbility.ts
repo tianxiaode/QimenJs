@@ -188,7 +188,7 @@ export const InitAbility: AbilityDefinition = {
         // TooltipProps — 少用，通过 setTooltip 设置
         const tooltipKeys: TooltipKey[] = [
             'tooltip', 'tooltipPlacement', 'tooltipOffset',
-            'tooltipShowDelay', 'tooltipHideDelay', 'tooltipMaxWidth',
+            'tooltipShowDelay', 'tooltipHideDelay', 'tooltipMaxWidth', 'tooltipType',
         ];
         for (const key of tooltipKeys) {
             if ((layout as any)[key] !== undefined) {

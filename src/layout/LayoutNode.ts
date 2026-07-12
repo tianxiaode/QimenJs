@@ -272,6 +272,8 @@ export interface TooltipProps {
     tooltipHideDelay?: number;
     /** 提示框最大宽度（px） */
     tooltipMaxWidth?: number;
+    /** 提示框组件类型名（对应 ComponentRegistrar 中注册的 type），默认 'Tips' */
+    tooltipType?: string;
 }
 
 /**
