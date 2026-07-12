@@ -39,8 +39,8 @@ export interface StateTriggerSubscription {
  * 遍历 StateTrigger 数组，为每个 trigger 建立 source:event → handler 映射。
  * handler 执行时通过 executeWithEventContext 包装，确保 chain 正确构建。
  *
- * 绑定策略（基于 source + scopeId 对照）：
- * - 有 source 且 source 组件存在 → 监听该组件的 eventScope（scopeId 隔离）
+ * 绑定策略（基于 source 查找组件实例）：
+ * - 有 source 且 source 组件存在 → 监听该组件的 eventScope（scopeId 内部自动绑定）
  * - 有 source 但 source 组件不存在 → 监听全局事件总线（source:event 格式）
  * - 无 source → 监听全局事件总线（event 格式）
  *

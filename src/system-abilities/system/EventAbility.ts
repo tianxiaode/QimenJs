@@ -12,8 +12,12 @@ import { object } from '@/utils';
  *
  * emit 统一入口，通过第三个参数 options 分流：
  * - emit(event, data) → 传统模式，走 eventScope.emit()
- * - emit(event, data, { source, scopeId }) → UI 事件模式，
+ * - emit(event, data, { source }) → UI 事件模式，
  *   自动构建 EventContext（含 source/scopeId/chain 等），走 eventScope.emit()
+ *   scopeId 由 eventScope 内部自动绑定，无需手动传入
+ *
+ * 桥接的关键是 source：通过 source 找到对应组件实例，在其 eventScope 上注册监听。
+ * scopeId 只是 EventScope 内部自带的标识，用于 EventBus 层面的事件路由。
  *
  * this 指向宿主（ComposableBase）。
  */
@@ -58,18 +62,18 @@ export const EventAbility: AbilityDefinition = {
      *
      * 通过第三个参数 options 分流：
      * - 无 options → 传统模式，直接走 eventScope.emit()
-     * - 有 options（含 source/scopeId）→ UI 事件模式，
+     * - 有 options（含 source）→ UI 事件模式，
      *   自动构建 EventContext（含 chain/type/sourceType 等），走 eventScope.emit()
+     *   scopeId 由 eventScope 内部自动绑定
      *
      * @param event - 事件名称
      * @param data - 事件数据载荷
      * @param options - 可选配置：
-     *   - source: 事件源标识（如 eventKey、'router'）
-     *   - scopeId: 作用域ID（用于事件桥对照监听）
+     *   - source: 事件源标识（如 eventKey、'router'），桥接的关键
      *   - domEvent: 原始 DOM 事件（可选）
      */
-    emit(event: string, data?: any, options?: { source?: any; scopeId?: string; domEvent?: Event }) {
-        if (options && (options.source !== undefined || options.scopeId !== undefined)) {
+    emit(event: string, data?: any, options?: { source?: any; domEvent?: Event }) {
+        if (options && options.source !== undefined) {
             // UI 事件模式：自动构建 EventContext
             this._emitWithContext(event, data, options);
         } else {
@@ -116,13 +120,14 @@ export const EventAbility: AbilityDefinition = {
      * 1. 构建 EventContext（自动填充 event/type/source/sourceType/scopeId）
      * 2. 深拷贝 data（脱离原始引用）
      * 3. 自动构建 chain（从 _currentEventContext 继承事件链路）
-     * 4. 引用计数管理（EventBus.emit 中处理）
+     * 4. scopeId 由 eventScope 内部自动绑定
+     * 5. 引用计数管理（EventBus.emit 中处理）
      *
      * @param event - 事件类型（如 selectionChange）
      * @param data - 事件数据载荷
-     * @param options - 配置：source/scopeId/domEvent
+     * @param options - 配置：source/domEvent
      */
-    _emitWithContext(event: string, data?: any, options?: { source?: any; scopeId?: string; domEvent?: Event }) {
+    _emitWithContext(event: string, data?: any, options?: { source?: any; domEvent?: Event }) {
         // 1. 自动构建 chain
         const currentCtx = this._currentEventContext as EventContext | undefined;
         const chain: EventChainLink[] | undefined = currentCtx
@@ -140,9 +145,8 @@ export const EventAbility: AbilityDefinition = {
         const eventKey = this.eventKey as string | undefined;
         const fullEvent = eventKey ? `${eventKey}:${event}` : event;
 
-        // 4. 确定 source 和 scopeId
+        // 4. 确定 source（scopeId 由 eventScope 内部自动绑定）
         const source = options?.source ?? (eventKey ?? '');
-        const scopeId = options?.scopeId ?? this.eventScope.getScopeId();
 
         // 5. 构建 EventContext
         const ctx = EventContextBuilder.create()
@@ -152,7 +156,7 @@ export const EventAbility: AbilityDefinition = {
             .withSourceType(this.constructor.name)
             .withData(clonedData)
             .withBusId(globalEventBus.getBusId())
-            .withScopeId(scopeId)
+            .withScopeId(this.eventScope.getScopeId())
             .withChain(chain)
             .build();
 
@@ -160,7 +164,7 @@ export const EventAbility: AbilityDefinition = {
             ctx.domEvent = options.domEvent;
         }
 
-        // 6. 通过 eventScope 发布（传入预构建的 EventContext）
+        // 6. 通过 eventScope 发布（传入预构建的 EventContext，scopeId 内部自动绑定）
         this.eventScope.emit(fullEvent, ctx);
     },
 

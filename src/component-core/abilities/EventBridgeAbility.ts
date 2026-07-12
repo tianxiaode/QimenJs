@@ -7,11 +7,11 @@
  * 通过 getEventBridge/setEventBridge 方法访问配置，
  * 不再将 eventBridge 属性暴露到组件顶层。
  *
- * 桥接监听策略（基于 source + scopeId 对照）：
+ * 桥接监听策略（基于 source 查找组件实例）：
  * - router 源：通过 EventSourceRegistrar 查找 router 实例，
- *   在其 eventScope 上监听（scopeId 隔离）
+ *   在其 eventScope 上监听（scopeId 由 eventScope 内部自动绑定）
  * - 组件源：通过 ComponentRegistrar 查找源组件实例，
- *   在源组件的 eventScope 上监听（scopeId 隔离）
+ *   在源组件的 eventScope 上监听（scopeId 由 eventScope 内部自动绑定）
  * - 不再直接使用 globalEventBus.on()，避免占用全局事件通道
  *
  * 内置桥接类型：
@@ -221,11 +221,12 @@ export const EventBridgeAbility: AbilityDefinition = {
     },
 
     /**
-     * 桥接监听：基于 source + scopeId 对照，在源组件的 eventScope 上注册事件
+     * 桥接监听：基于 source 查找组件实例，在其 eventScope 上注册事件
      *
      * 监听策略：
      * - router 源：通过 EventSourceRegistrar 查找 router 实例，在其 eventScope 上监听
      * - 组件源：通过 ComponentRegistrar 查找源组件实例，在其 eventScope 上监听
+     * - scopeId 由 eventScope 内部自动绑定，无需手动传入
      * - 通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {

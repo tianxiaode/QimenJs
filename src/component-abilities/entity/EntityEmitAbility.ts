@@ -178,8 +178,8 @@ export const EntityEmitAbility: AbilityDefinition = {
             const data = buildData(...args);
             const hookResult = this._callEntityHook(hookName, data);
             if (hookResult === false) return;
-            // 带 source/scopeId 发布事件，走 eventScope 隔离通道
-            this.emit?.(targetEvent, hookResult || data, { source: this.id, scopeId: this.eventScope?.getScopeId() });
+            // 带 source 发布事件，走 eventScope 隔离通道（scopeId 内部自动绑定）
+            this.emit?.(targetEvent, hookResult || data, { source: this.id });
         });
         if (typeof off === 'function') this.onCleanup(off);
     },

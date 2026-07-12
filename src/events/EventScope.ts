@@ -71,17 +71,18 @@ export class EventScope implements IEventScope {
      * 触发事件
      *
      * 在当前作用域上下文中触发一个事件，如果作用域已被销毁，则记录警告日志。
+     * scopeId 由内部自动绑定（this.scopeId），无需外部传入。
      *
      * @param event - 事件名称
      * @param data - 事件数据
-     * @param options - 可选配置：source 事件源 / scopeId 作用域ID
+     * @param options - 可选配置：source 事件源（桥接的关键标识）
      */
-    emit(event: string, data?: any, options?: { source?: any; scopeId?: string }): void {
+    emit(event: string, data?: any, options?: { source?: any }): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
-        this.bus.emit(event, data, options?.source || this, options?.scopeId || this.scopeId);
+        this.bus.emit(event, data, options?.source || this, this.scopeId);
     }
 
     /**
