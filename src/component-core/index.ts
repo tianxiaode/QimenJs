@@ -13,8 +13,7 @@ export { TEMPLATE_COMPONENT_ABILITIES as COMPONENT_BASE_ABILITIES } from './Temp
 export type { NodeMetadata, InternalEventBinding, ExternalEventMap, EventMap, NodeIndexPath, NodeTemplateMeta } from './types';
 
 // 注册管理器
-export { ComponentRegistrar, type ComponentDefinition } from './ComponentRegistrar';
-export { ComponentManager, getCmp } from './ComponentManager';
+export { ComponentRegistrar, type ComponentDefinition, getCmp } from './ComponentRegistrar';
 export { ComponentEventRegistry } from './ComponentEventRegistry';
 
 // 组件类型常量
@@ -36,6 +35,7 @@ export { PositionRawAbility } from './abilities/PositionRawAbility';
 export { PositionBoolAbility } from './abilities/PositionBoolAbility';
 export { PositionDirectAbility } from './abilities/PositionDirectAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
+export { TemplateAbility } from './abilities/TemplateAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
@@ -51,6 +51,3 @@ export type { InternalEventTemplate, ExternalEventTemplate, CompiledTemplate } f
 
 // 内容属性
 export { buildContentProperties, translateI18nKey, applyValueToEl } from './content-properties';
-
-// withTemplate 工厂
-export { withTemplate } from './withTemplate';

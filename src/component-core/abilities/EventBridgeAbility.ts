@@ -34,7 +34,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
-import { ComponentManager } from '../ComponentManager';
+import { ComponentRegistrar } from '../ComponentRegistrar';
 
 /**
  * 分页桥接配置
@@ -148,7 +148,7 @@ export const EventBridgeAbility: AbilityDefinition = {
         const config = this.getEventBridge();
         if (!config) return;
 
-        const mgr = ComponentManager.getInstance();
+        const mgr = ComponentRegistrar.getInstance();
 
         // 分页桥接
         const paginationCfg = normalizeBridgeConfig(config.pagination);
@@ -216,7 +216,7 @@ export const EventBridgeAbility: AbilityDefinition = {
      * 桥接监听：在源组件上注册事件，通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
-        const source = mgr.get(sourceId);
+        const source = mgr.getInstance(sourceId);
         if (!source) return;
 
         const off = source.on?.(eventName, handler);
@@ -230,7 +230,7 @@ export const EventBridgeAbility: AbilityDefinition = {
      * 从 props 初始化
      *
      * 使用 queueMicrotask 延迟绑定，确保同一轮 mount 的所有组件
-     * 都已注册到 ComponentManager 后再查找源组件
+     * 都已注册到 ComponentRegistrar 后再查找源组件
      */
     __initProps(props: Record<string, any>): void {
         if (props.eventBridge) {

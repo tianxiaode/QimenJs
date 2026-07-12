@@ -12,7 +12,6 @@ import type { AbilityDefinition } from '@qimenjs/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger } from '@qimenjs/layout';
 import { CHILDREN_EVENTS } from '@qimenjs/events';
 import { ComponentRegistrar } from '@qimenjs/component-core';
-import { ComponentManager } from '@qimenjs/component-core';
 
 /**
  * 子组件类型
@@ -254,11 +253,11 @@ export const ChildrenAbility: AbilityDefinition = {
             }
         }
 
-        // 13. 注册到 ComponentManager
+        // 13. 注册到 ComponentRegistrar
         if (layout.id) {
             child.id = layout.id;
         }
-        ComponentManager.getInstance().register(child);
+        ComponentRegistrar.getInstance().registerInstance(child);
 
         // 14. 递归渲染子节点
         if (layout.children) {

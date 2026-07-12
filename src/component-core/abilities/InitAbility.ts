@@ -10,7 +10,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
-import { ComponentManager } from '../ComponentManager';
+import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
 import type { AnimationKey } from './AnimationAbility';
@@ -29,7 +29,6 @@ export const InitAbility: AbilityDefinition = {
         try {
             // ── 1. 创建 el + 注入模板 + buildNodeMap ──
             if (layout.tag) this.tag = layout.tag;
-            if (layout.template) this.template = layout.template;
             this.type = layout.type;
             this.initElement();
 
@@ -56,11 +55,11 @@ export const InitAbility: AbilityDefinition = {
             // ── 8. 生命周期钩子 ──
             this.callLifecycle(layout.lifecycle);
 
-            // ── 注册到 ComponentManager ──
+            // ── 注册到 ComponentRegistrar ──
             if (layout.id) {
                 this.id = layout.id;
             }
-            ComponentManager.getInstance().register(this as any);
+            ComponentRegistrar.getInstance().registerInstance(this as any);
         } finally {
             this._initializing = false;
             this.flush();
