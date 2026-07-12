@@ -29,8 +29,8 @@ import { TemplateAbility } from './abilities/TemplateAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate } from './template-compiler';
-import { precompileTemplate } from './template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, JsonTemplateNode } from './template-compiler';
+import { precompileTemplate, jsonTemplateToHtml } from './template-compiler';
 import { buildContentProperties } from './content-properties';
 
 /**
@@ -169,8 +169,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     /**
      * 模板预编译工厂方法
      *
-     * 接收 HTML 模板字符串，在类定义时预编译提取节点数据，
+     * 接收 HTML 模板字符串或 JSON 模板数组，在类定义时预编译提取节点数据，
      * 生成带内容属性和事件模板的强类返回。
+     *
+     * JSON 模板会自动转换为 HTML 字符串，再走原有 precompileTemplate 流程。
      *
      * 实例方法（_initWithTemplate、_initElementFromTemplate、_buildNodeMapFromCompiled）
      * 由 TemplateAbility 提供，已包含在 TEMPLATE_COMPONENT_ABILITIES 中。
@@ -178,10 +180,15 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * 模板替换：在已有强类上再次调用 withTemplate，
      * 新类继承旧类的自定义方法（如 onClick），但使用新模板。
      *
-     * @param templateHtml - HTML 模板字符串
+     * @param template - HTML 模板字符串或 JSON 模板数组
      * @returns 模板组件强类
      */
-    static withTemplate(this: any, templateHtml: string): any {
+    static withTemplate(this: any, template: string | JsonTemplateNode[]): any {
+        // JSON 模板 → HTML 字符串，再走原流程
+        const templateHtml = typeof template === 'string'
+            ? template
+            : jsonTemplateToHtml(template);
+
         // 预编译：创建临时 DOM 解析模板，提取节点数据
         const compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
 

@@ -1,6 +1,8 @@
 import { RegistrarBase } from '@qimenjs/registry';
 import { RegistrarNotFoundError } from '@qimenjs/registry';
 import type { LayoutNode } from '@/layout/LayoutNode';
+import type { JsonTemplateNode } from '@/component-core/template-compiler';
+import { jsonTemplateToHtml } from '@/component-core/template-compiler';
 
 /**
  * 模板注册器名称
@@ -11,9 +13,10 @@ export const TemplateRegistrarName = 'template' as const;
  * 模板条目类型
  *
  * - string：HTML 模板字符串
+ * - JsonTemplateNode[]：JSON 模板数组（自动转换为 HTML）
  * - LayoutNode：JSON 组件定义
  */
-export type TemplateEntry = string | LayoutNode;
+export type TemplateEntry = string | JsonTemplateNode[] | LayoutNode;
 
 /**
  * 模板注册器
@@ -46,11 +49,12 @@ export class TemplateRegistrar extends RegistrarBase<Map<string, TemplateEntry>>
      * 注册 HTML 模板
      *
      * @param id - 模板唯一标识符
-     * @param template - HTML 模板字符串
+     * @param template - HTML 模板字符串或 JSON 模板数组
      */
-    register(id: string, template: string): void {
+    register(id: string, template: string | JsonTemplateNode[]): void {
         this.checkLock();
-        this.storage.set(id, template);
+        const html = typeof template === 'string' ? template : jsonTemplateToHtml(template);
+        this.storage.set(id, html);
         // HTML 缓存失效，下次 getFragment 时重新创建
         this.templateCache.delete(id);
     }
