@@ -19,6 +19,7 @@ data-event="input"          →  eventMap.internal[...]        →  this.onField
 data-emit="click"           →  eventMap.external[...]        →  this.emit('input:click', event)
 data-json="UserGrid"        →  node.jsonRef                  →  Renderer 递归渲染子组件
 data-template="RowTpl"      →  node.templateRef              →  注入嵌套模板片段
+data-hidden="true"          →  meta.hidden → el.hidden       →  初始隐藏状态
 ```
 
 ### 渲染时序
@@ -325,6 +326,58 @@ data-template="TemplateId"
 
 ---
 
+## data-hidden — 初始隐藏状态
+
+**可选**。声明元素在初始渲染时是否隐藏，运行时通过 `el.hidden` 控制。
+
+### 格式
+
+```
+data-hidden="true"
+```
+
+### 工作方式
+
+1. `precompileTemplate()` 解析 `data-hidden="true"`，将 `hidden: true` 写入 `NodeTemplateMeta`
+2. `_buildNodeMapFromCompiled()` 构建 nodeMap 时，如果 `meta.hidden === true`，设置 `el.hidden = true`
+3. 运行时通过 `xxxHidden` 属性（由 `buildContentProperties` 自动生成）或直接 `el.hidden` 控制显隐
+
+### 与 `xxxHidden` 属性的关系
+
+`buildContentProperties()` 为每个 `data-content` 节点自动生成 `xxxHidden` getter/setter，底层就是 `el.hidden`。`data-hidden` 只是设置初始状态，运行时用 `xxxHidden` 切换：
+
+```typescript
+// 模板声明初始隐藏
+// <div data-content="toolbar:prevBtn" data-hidden="true">
+
+// 运行时切换
+this.prevBtnHidden = false;  // 显示
+this.prevBtnHidden = true;   // 隐藏
+```
+
+### 与 `style="display:none"` 的区别
+
+| 方式 | 语义 | 调试 | 与 xxxHidden 一致 |
+|------|------|------|-------------------|
+| `data-hidden="true"` | 声明式，语义清晰 | HTML 中可见 `data-hidden` | 一致，都是 `el.hidden` |
+| `style="display:none"` | 命令式，混在通用样式中 | 不直观 | 不一致，`xxxHidden` 用 `el.hidden` |
+
+**推荐**：用 `data-hidden` 而不是 `style="display:none"` 设置初始隐藏状态。
+
+### JSON 模板中
+
+```typescript
+const TOOLBAR_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'button', content: 'toolbar:prevBtn', hidden: true },
+    { tag: 'div', content: 'toolbar:contentArea', style: 'display:flex;' },
+    { tag: 'button', content: 'toolbar:nextBtn', hidden: true },
+];
+```
+
+JSON 模板的 `hidden: true` 会被转换为 `data-hidden="true"`。
+
+---
+
 ## 行组件模式 — Table 等列表场景
 
 ### 核心思路
@@ -529,6 +582,7 @@ dialog.dialogCloseHidden = true;  // 隐藏关闭按钮
 | `data-json` | 否 | `"DefinitionId"` | JSON 子组件引用，Renderer 递归渲染 |
 | `data-json-mode` | 否 | `"child\|replace"` | JSON 渲染挂载模式（默认 replace） |
 | `data-template` | 否 | `"TemplateId"` | 嵌套模板注入，模板拼接模板 |
+| `data-hidden` | 否 | `"true"` | 初始隐藏状态，运行时设置 el.hidden |
 
 ### 自动生成属性
 

@@ -421,6 +421,26 @@ class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
 }
 ```
 
+**JSON 模板字段速查**：
+
+| 字段 | 对应 HTML 属性 | 说明 |
+|------|---------------|------|
+| `content` | `data-content` | 元素身份标识（必须） |
+| `event` | `data-event` | 内部事件声明 |
+| `emit` | `data-emit` | 外部事件声明 |
+| `target` | `data-target` | 事件委托目标选择器 |
+| `json` | `data-json` | JSON 组件定义引用 |
+| `jsonMode` | `data-json-mode` | JSON 渲染模式 |
+| `template` | `data-template` | 嵌套模板引用 |
+| `i18n` | `data-i18n` | 国际化翻译 key |
+| `hidden` | `data-hidden` | 初始隐藏状态（`hidden: true` → `el.hidden = true`） |
+| `class` | `class` | CSS 类名 |
+| `style` | `style` | 内联样式 |
+| `tag` | — | DOM 标签名，默认 `div` |
+| `text` | — | 文本内容 |
+| `attrs` | — | 其他 HTML 属性 |
+| `children` | — | 子节点 |
+
 **JSON 模板中声明子组件占位节点**：
 
 ```typescript
