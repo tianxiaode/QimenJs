@@ -44,7 +44,6 @@ export { ChildrenAbility } from './children';
 
 // 渲染能力
 export { VirtualListAbility } from './render';
-export { OverlayAbility } from './render';
 export { AnimationAbility } from './render';
 
 // 交互能力

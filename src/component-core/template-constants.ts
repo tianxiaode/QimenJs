@@ -10,7 +10,7 @@
  *
  * @example
  * ```typescript
- * import { Slot } from '@qimenjs/template';
+ * import { Slot } from '@qimenjs/component-core';
  *
  * // 模板中
  * `<span data-content="${Slot.INPUT_LABEL}"></span>`

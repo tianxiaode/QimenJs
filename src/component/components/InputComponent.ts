@@ -16,7 +16,7 @@ import { ValidateAbility } from '@qimenjs/component-abilities';
 import { PlaceholderAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
-import { INPUT_TEMPLATE } from '@qimenjs/template';
+import { INPUT_TEMPLATE } from '@qimenjs/component-core';
 
 const InputBase = ComponentBase.withTemplate(INPUT_TEMPLATE);
 

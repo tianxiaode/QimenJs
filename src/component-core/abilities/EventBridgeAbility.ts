@@ -35,6 +35,7 @@
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
 import { ComponentRegistrar } from '../ComponentRegistrar';
+import { globalEventBus } from '@qimenjs/events';
 
 /**
  * 分页桥接配置
@@ -216,6 +217,15 @@ export const EventBridgeAbility: AbilityDefinition = {
      * 桥接监听：在源组件上注册事件，通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
+        // router 源：直接监听 globalEventBus 上的路由事件
+        if (sourceId === 'router') {
+            const off = globalEventBus.on(eventName, (ctx: any) => {
+                handler(ctx.data);
+            });
+            this.onCleanup(off);
+            return;
+        }
+
         const source = mgr.getInstance(sourceId);
         if (!source) return;
 

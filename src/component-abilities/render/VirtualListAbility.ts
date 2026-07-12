@@ -190,14 +190,10 @@ export const VirtualListAbility: AbilityDefinition = {
         const container = this.el?.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
         if (!container) return;
 
-        const onScroll = () => {
+        this.bind(container, 'scroll');
+        this.on('scroll', () => {
             this.scrollTop = container.scrollTop;
             this.renderVirtualList();
-        };
-
-        container.addEventListener('scroll', onScroll);
-        this.onCleanup(() => {
-            container.removeEventListener('scroll', onScroll);
         });
     },
 };

@@ -12,5 +12,7 @@ export * from './ThemeAbility';
 export * from './InitAbility';
 export * from './NodeMapAbility';
 export * from './OverlayAbility';
+export * from './OverlayHostAbility';
+export * from './TooltipOverlayAbility';
 export * from './ElementEventAbility';
 export * from './TemplateAbility';

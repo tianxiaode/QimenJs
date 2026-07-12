@@ -9,8 +9,6 @@ export { OverlayRoot } from './OverlayRoot';
 export { HiddenRoot } from './HiddenRoot';
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 
-// 组件模板预注册（引入即自动注册到 TemplateRegistrar）
-export { registerComponentTemplates, COMPONENT_TEMPLATES } from '@qimenjs/template';
 
 // 组件 type 注册
 export { registerAllComponents } from './register';

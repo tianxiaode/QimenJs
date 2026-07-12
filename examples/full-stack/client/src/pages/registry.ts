@@ -8,7 +8,7 @@ export function renderRegistry(): void {
     renderPageContent(`
         <div class="page-header">
             <h2>注册器</h2>
-            <p>@qimenjs/registry — RegistryHub + DomainRegistrar / SystemRegistrar / HtmlTemplateRegistrar</p>
+            <p>@qimenjs/registry — RegistryHub + DomainRegistrar / SystemRegistrar</p>
         </div>
 
         <div class="section">

@@ -254,7 +254,7 @@
             "entry": "src/router/index.ts",
             "outDir": "dist/router",
             "rootDir": "src/router",
-            "dependencies": ["events", "registry", "template", "layout", "composable"],
+            "dependencies": ["events", "registry", "layout", "composable"],
             "packageName": "@qimen-lab/router"
         }
     },

@@ -1,10 +1,8 @@
 /**
- * 路由配置类型
+ * 路由类型定义
  *
- * 路由字典中的值，支持三种形式：
- * - LayoutNode 对象：直接使用
- * - HTML 模板字符串：直接使用
- * - 字符串引用：去 TemplateRegistrar 查找
+ * 新模式：路由只发切换事件，不再解析配置去找组件/模板。
+ * 事件名由路径转换而来（/ → :），监听方自行处理。
  */
 
 import type { LayoutNode } from '@qimenjs/layout';
@@ -12,24 +10,13 @@ import type { LayoutNode } from '@qimenjs/layout';
 /**
  * 路由配置 — 路由字典的值类型
  *
- * 三种形式：
- * 1. LayoutNode 对象 → 直接渲染
- * 2. HTML 模板字符串（以 '<' 开头）→ 直接作为模板
- * 3. 字符串引用（如 'DashboardPage'）→ 去 TemplateRegistrar 查找
+ * 保留 LayoutNode 和字符串形式供路由字典声明使用，
+ * 但 Router 不再解析这些配置，只负责发出路径对应的事件。
  */
 export type RouteConfig = LayoutNode | string;
 
 /**
  * 路由字典 — 路径到配置的映射
- *
- * @example
- * ```typescript
- * const routes: RouteMap = {
- *     '/': { type: 'VBox', children: [...] },     // 直接 LayoutNode
- *     '/users': 'UserPage',                         // 字符串引用 TemplateRegistrar
- *     '/about': '<div data-content="about:content"></div>', // 直接 HTML 模板
- * };
- * ```
  */
 export type RouteMap = Record<string, RouteConfig>;
 
@@ -37,7 +24,7 @@ export type RouteMap = Record<string, RouteConfig>;
  * 路由参数 — 从路径中提取的动态参数
  *
  * @example
- * 路径 `/users/123` 匹配路由 `/users/:id` → `{ id: '123' }`
+ * 路径 /users/123 匹配路由 /users/:id → { id: '123' }
  */
 export type RouteParams = Record<string, string>;
 
@@ -51,8 +38,6 @@ export interface RouteChangeEvent {
     previousPath: string | null;
     /** 路由参数 */
     params: RouteParams;
-    /** 解析后的路由配置 */
-    config: RouteConfig | null;
 }
 
 /**
@@ -72,7 +57,5 @@ export interface RouteProps {
         defaultPath?: string;
         /** 是否使用 hash 模式，默认 true */
         hashMode?: boolean;
-        /** 自定义路由变化回调，覆盖默认的自动切换行为 */
-        onRouteChange?: (event: RouteChangeEvent) => void;
     };
 }

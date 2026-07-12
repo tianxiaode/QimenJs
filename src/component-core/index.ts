@@ -30,6 +30,8 @@ export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { OverlayAbility, type OverlayConfig, type OverlayResult, type TooltipKey, type TooltipOverlayConfig } from './abilities/OverlayAbility';
+export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
+export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from './abilities/TooltipOverlayAbility';
 export { PositionPxAbility } from './abilities/PositionPxAbility';
 export { PositionRawAbility } from './abilities/PositionRawAbility';
 export { PositionBoolAbility } from './abilities/PositionBoolAbility';
@@ -48,6 +50,34 @@ export type { Placement } from './abilities/positionOverlay';
 // 模板编译
 export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplates, findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
 export type { InternalEventTemplate, ExternalEventTemplate, CompiledTemplate } from './template-compiler';
+
+// JSON 模板
+export type { JsonTemplateNode } from './template-json';
+export { jsonTemplateToHtml } from './template-json';
+
+// 模板常量（Area, Name, Slot, Event）
+export { Area, Name, Slot, Event } from './template-constants';
+export type { AreaType, NameType, SlotType, EventType } from './template-constants';
+
+// 模板预设
+export {
+    BUTTON_TEMPLATE,
+    INPUT_TEMPLATE,
+    INPUT_TOP_TEMPLATE,
+    SELECT_TEMPLATE,
+    TOOLBAR_TEMPLATE,
+    ICON_TEMPLATE,
+    TEXT_TEMPLATE,
+    TABLE_TEMPLATE,
+    DIALOG_TEMPLATE,
+    TIPS_TEMPLATE,
+    DROPDOWN_TEMPLATE,
+    POPOVER_TEMPLATE,
+    TOAST_TEMPLATE,
+    TOAST_NOTIFICATION_TEMPLATE,
+    MSGBOX_TEMPLATE,
+    COMPONENT_TEMPLATES,
+} from './template-presets';
 
 // 内容属性
 export { buildContentProperties, translateI18nKey, applyValueToEl } from './content-properties';

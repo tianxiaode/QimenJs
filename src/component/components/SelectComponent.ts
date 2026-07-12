@@ -16,7 +16,7 @@ import { OptionsAbility } from '@qimenjs/component-abilities';
 import { SearchAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
-import { SELECT_TEMPLATE } from '@qimenjs/template';
+import { SELECT_TEMPLATE } from '@qimenjs/component-core';
 
 const SelectBase = ComponentBase.withTemplate(SELECT_TEMPLATE);
 

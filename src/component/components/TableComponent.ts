@@ -18,7 +18,7 @@ import { ColumnAbility, type ColumnDefinition } from '@qimenjs/component-abiliti
 import { ColumnManageAbility } from '@qimenjs/component-abilities';
 import { ChildrenAbility } from '@qimenjs/component-abilities';
 import { TABLE_EVENTS, ENTITY_EVENTS, SELECTION_EVENTS } from '../events';
-import { TABLE_TEMPLATE } from '@qimenjs/template';
+import { TABLE_TEMPLATE } from '@qimenjs/component-core';
 
 const TableBase = ComponentBase.withTemplate(TABLE_TEMPLATE);
 

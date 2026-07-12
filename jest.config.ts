@@ -62,8 +62,25 @@ const config: Config = {
     '^@qimenjs/component$': '<rootDir>/src/component',
     '^@qimenjs/layout$': '<rootDir>/src/layout',
     '^@qimenjs/renderer$': '<rootDir>/src/renderer',
-    '^@qimenjs/template$': '<rootDir>/src/template',
-    '^@qimenjs/i18n$': '<rootDir>/src/i18n',
+    '^@qimenjs/i18n
+    '^@qimenjs/icon$': '<rootDir>/src/icon',
+    '^@qimenjs/router$': '<rootDir>/src/router',
+    '^@qimenjs/imperative$': '<rootDir>/src/imperative',
+    '^@qimenjs/permission$': '<rootDir>/src/permission',
+    '^@qimenjs/entity$': '<rootDir>/src/entity',
+    '^@qimenjs/http$': '<rootDir>/src/http',
+    '^@qimenjs/types$': '<rootDir>/src/types',
+    '^@qimenjs/data-processor-abp$': '<rootDir>/src/data-processor-abp',
+    '^@qimenjs/data-processor-spring$': '<rootDir>/src/data-processor-spring',
+  },
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  clearMocks: true,
+  restoreMocks: true,
+  testTimeout: 10000
+};
+
+export default config;
+: '<rootDir>/src/i18n',
     '^@qimenjs/icon$': '<rootDir>/src/icon',
     '^@qimenjs/router$': '<rootDir>/src/router',
     '^@qimenjs/imperative$': '<rootDir>/src/imperative',

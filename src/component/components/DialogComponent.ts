@@ -1,7 +1,7 @@
 /**
  * DialogComponent 弹窗组件
  *
- * abilities: [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility]
+ * abilities: [ElementEventAbility, ContentAbility, OpenableAbility, OverlayHostAbility, AnimationAbility]
  * ContentAbility 管理标题文本
  * ElementEventAbility 自动绑定模板中 data-event 声明的事件
  *
@@ -9,24 +9,21 @@
  * - onClose — dialog:close 的 click 事件（方法名从 data-content 推导）
  */
 
-import { ComponentBase } from '@qimenjs/component-core';
+import { ComponentBase, OverlayHostAbility } from '@qimenjs/component-core';
 import { ContentAbility, ContentPrefix, ElementEventAbility } from '@qimenjs/component-abilities';
 import { OpenableAbility } from '@qimenjs/component-abilities';
-import { OverlayAbility } from '@qimenjs/component-abilities';
 import { AnimationAbility } from '@qimenjs/component-abilities';
-import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
-import { DIALOG_TEMPLATE } from '@qimenjs/template';
+import { ZIndexLevel } from '../z-index';
+import { DIALOG_TEMPLATE } from '@qimenjs/component-core';
 
 const DialogBase = ComponentBase.withTemplate(DIALOG_TEMPLATE);
 
 export class DialogComponent extends DialogBase {
-    static readonly abilities = [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility];
+    static readonly abilities = [ElementEventAbility, ContentAbility, OpenableAbility, OverlayHostAbility, AnimationAbility];
 
     static readonly contentSlots = {
         [ContentPrefix.TEXT]: ['title'],
     };
-
-    private _zIndex: number = 0;
 
     constructor(props?: Record<string, any>) {
         super(props);
@@ -50,9 +47,8 @@ export class DialogComponent extends DialogBase {
     open(): void {
         this.setAbilityState('OpenableAbility:isOpen', true);
 
-        // 获取 z-index
-        this._zIndex = nextZIndex(ZIndexLevel.modal);
-        this.el.style.zIndex = String(this._zIndex);
+        // z-index
+        this.acquireZIndex(ZIndexLevel.modal);
         this.el.style.display = '';
 
         // 挂载到 OverlayRoot
@@ -86,6 +82,6 @@ export class DialogComponent extends DialogBase {
         this.closeOverlay();
 
         // 释放 z-index
-        releaseZIndex(ZIndexLevel.modal);
+        this.releaseZIndex();
     }
 }

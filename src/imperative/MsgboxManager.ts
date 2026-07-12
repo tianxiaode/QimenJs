@@ -4,7 +4,8 @@
  * 单例模式，管理 msgbox DOM 创建、遮罩、按钮事件、动画、Promise resolve、销毁。
  */
 
-import { TemplateRegistrar } from '@qimenjs/template';
+import { MSGBOX_TEMPLATE } from '@/component-core/template-presets';
+import { jsonTemplateToHtml } from '@/component-core/template-json';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { OverlayRoot } from '@qimenjs/component';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@qimenjs/component';
@@ -56,7 +57,7 @@ export class MsgboxManager {
         const inputPlaceholder = options.inputPlaceholder ?? '';
 
         // 1. 获取模板
-        const template = TemplateRegistrar.getInstance().get('Msgbox');
+        const template = jsonTemplateToHtml(MSGBOX_TEMPLATE);
 
         // 2. 创建遮罩 DOM
         const maskEl = document.createElement('div');

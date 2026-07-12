@@ -11,7 +11,7 @@ import { ClickAbility } from '@qimenjs/component-abilities';
 import { DisableAbility } from '@qimenjs/component-abilities';
 import { LoadingAbility } from '@qimenjs/component-abilities';
 import { SizeAbility } from '@qimenjs/component-abilities';
-import { BUTTON_TEMPLATE } from '@qimenjs/template';
+import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
 
 const ButtonBase = ComponentBase.withTemplate(BUTTON_TEMPLATE);
 

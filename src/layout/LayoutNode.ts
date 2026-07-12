@@ -449,16 +449,16 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
     /**
      * 模板ID — 指定组件使用的 HTML 模板
      *
-     * 默认用 type 从 TemplateRegistrar 查找模板。
+     * 默认用 type 查找组件类（通过 withTemplate 绑定的模板）。
      * 当同一组件类型需要不同模板时（如 Input 有普通/搜索/密码等多种样式），
      * 通过 template 覆盖默认的 type 查找。
      *
      * @example
      * ```js
-     * // 默认：用 type='Input' 查找模板
+     * // 默认：用 type='Input' 查找组件类
      * { type: ComponentTypes.INPUT }
      *
-     * // 指定模板：用 template='InputSearch' 查找模板
+     * // 指定模板：用 template='InputSearch' 查找组件类
      * { type: ComponentTypes.INPUT, template: 'InputSearch' }
      * ```
      */

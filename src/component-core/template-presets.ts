@@ -20,7 +20,7 @@
  * - i18n     → data-i18n="key" — 国际化翻译 key
  */
 
-import type { JsonTemplateNode } from '@/component-core/template-compiler';
+import type { JsonTemplateNode } from './template-json';
 
 /**
  * 按钮模板

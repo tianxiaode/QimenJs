@@ -8,11 +8,8 @@
  * - RouteAbility：路由监听能力，注入容器组件后自动响应路由变化
  * - RouteMap：路由字典，路径 → 配置的映射
  *
- * 路由配置解析流程：
- * 1. 路由字典查找路径 → 获取 RouteConfig
- * 2. RouteConfig 是 LayoutNode → 直接渲染
- * 3. RouteConfig 是 HTML 模板字符串 → 直接渲染
- * 4. RouteConfig 是字符串引用 → 去 TemplateRegistrar 查找
+ * 新模式：路由只发切换事件，事件名由路径 / 替换为 :
+ * 监听方通过 EventBridgeAbility 监听 router 源事件实现刷新
  *
  * @example
  * ```typescript
@@ -46,7 +43,7 @@
  */
 
 // 核心
-export { Router, ROUTE_CHANGE_EVENT } from './Router';
+export { Router, pathToEventName } from './Router';
 
 // 能力
 export { RouteAbility } from './RouteAbility';

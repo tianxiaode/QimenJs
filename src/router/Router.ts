@@ -2,31 +2,33 @@
  * Router — 路由器核心
  *
  * 管理 URL 和路由状态的映射，支持 hash 和 history 两种模式。
- * 路由变化时通过 GlobalEventBus 发出 route:change 事件。
+ * 路由变化时通过 GlobalEventBus 发出路由切换事件。
  *
- * 路由解析流程：
- * 1. URL 变化 → 提取路径
- * 2. 路径匹配路由字典 → 获取 RouteConfig
- * 3. RouteConfig 解析：
- *    - LayoutNode 对象 → 直接使用
- *    - HTML 模板字符串（以 '<' 开头）→ 直接使用
- *    - 字符串引用 → 去 TemplateRegistrar 查找
- * 4. 发出 route:change 事件
+ * 新模式：路由只发切换事件，不再解析配置去找组件/模板。
+ * 事件名由路径转换而来：将 / 替换为 : 作为事件名。
+ * 例如路径 /users/list → 事件名 :users:list
+ *
+ * 其他组件通过 EventBridgeAbility 监听 router 源的对应事件实现刷新。
  */
 
 import { globalEventBus } from '@qimenjs/events';
-import { RegistryHub } from '@qimenjs/registry';
-import { TemplateRegistrar } from '@qimenjs/template';
-import type { LayoutNode } from '@qimenjs/layout';
-import type { RouteMap, RouteConfig, RouteParams, RouteChangeEvent, RouteGuard } from './types';
+import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
-/** 路由事件名 */
-export const ROUTE_CHANGE_EVENT = 'route:change';
+/**
+ * 将路由路径转换为事件名
+ *
+ * 规则：将 / 替换为 :
+ * 例如：'/' → ':', '/users' → ':users', '/users/list' → ':users:list'
+ */
+export function pathToEventName(path: string): string {
+    return path.split('/').map(s => s.trim()).filter(Boolean).join(':');
+}
 
 /**
  * 路由器类
  *
  * 单例模式，管理路由状态和 URL 监听。
+ * 路由变化时发出以路径转换的事件名，由监听方自行处理。
  */
 export class Router {
     private static instance: Router | null = null;
@@ -160,7 +162,7 @@ export class Router {
         // 更新 URL
         if (this.hashMode) {
             if (replace) {
-                window.location.replace(`#${path}`);
+                window.location.replace('#' + path);
             } else {
                 window.location.hash = path;
             }
@@ -183,71 +185,7 @@ export class Router {
         return this.currentPath;
     }
 
-    /**
-     * 获取当前路由配置
-     */
-    getCurrentConfig(): RouteConfig | null {
-        if (!this.currentPath) return null;
-        return this.resolveConfig(this.currentPath);
-    }
-
-    // ─── 配置解析 ───
-
-    /**
-     * 解析路由配置
-     *
-     * 解析流程：
-     * 1. 先查路由字典
-     * 2. 如果值是 LayoutNode 对象 → 直接返回
-     * 3. 如果值是 HTML 模板字符串（以 '<' 开头）→ 直接返回
-     * 4. 如果值是字符串引用 → 去 TemplateRegistrar 查找
-     */
-    resolveConfig(path: string): RouteConfig | null {
-        // 1. 精确匹配
-        const config = this.routes[path];
-        if (config !== undefined) {
-            return this.resolveReference(config);
-        }
-
-        // 2. 动态参数匹配（如 /users/:id）
-        for (const [pattern, routeConfig] of Object.entries(this.routes)) {
-            const params = this.matchPattern(pattern, path);
-            if (params !== null) {
-                return this.resolveReference(routeConfig);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * 解析引用 — 如果是字符串引用则去 TemplateRegistrar 查找
-     */
-    private resolveReference(config: RouteConfig): RouteConfig {
-        if (typeof config !== 'string') {
-            // LayoutNode 对象，直接返回
-            return config;
-        }
-
-        // HTML 模板字符串（以 '<' 开头），直接返回
-        if (config.trim().startsWith('<')) {
-            return config;
-        }
-
-        // 字符串引用 → 去 TemplateRegistrar 查找
-        const templateRegistrar = RegistryHub.get<TemplateRegistrar>('template');
-        if (templateRegistrar) {
-            if (templateRegistrar.isJson(config)) {
-                return templateRegistrar.getJson(config);
-            }
-            if (templateRegistrar.isHtml(config)) {
-                return templateRegistrar.get(config);
-            }
-        }
-
-        // 找不到，返回原始字符串引用（让调用方处理）
-        return config;
-    }
+    // ─── 路径匹配 ───
 
     /**
      * 匹配动态路由模式
@@ -282,23 +220,23 @@ export class Router {
     // ─── 内部方法 ───
 
     /**
-     * 应用路由变化
+     * 应用路由变化 — 发出路径对应的切换事件
      */
     private applyRoute(path: string): void {
         const previousPath = this.currentPath;
         this.currentPath = path;
 
-        const config = this.resolveConfig(path);
         const params = this.extractParams(path);
+        const eventName = pathToEventName(path);
 
         const event: RouteChangeEvent = {
             path,
             previousPath,
             params,
-            config,
         };
 
-        globalEventBus.emit(ROUTE_CHANGE_EVENT, event);
+        // 发出路径对应的切换事件（如 :users:list）
+        globalEventBus.emit(eventName, event);
     }
 
     /**

@@ -29,7 +29,6 @@ export default defineConfig({
             '@qimenjs/schema': path.join(srcRoot, 'schema'),
             '@qimenjs/cache': path.join(srcRoot, 'cache'),
             '@qimenjs/task': path.join(srcRoot, 'task'),
-            '@qimenjs/template': path.join(srcRoot, 'template'),
             '@qimenjs/layout': path.join(srcRoot, 'layout'),
             '@qimenjs/theme': path.join(srcRoot, 'theme'),
             '@qimenjs/system-abilities': path.join(srcRoot, 'system-abilities'),
