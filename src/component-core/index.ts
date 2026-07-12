@@ -26,8 +26,8 @@ export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { OverlayAbility, type OverlayConfig, type OverlayResult, type TooltipKey, type TooltipOverlayConfig } from './abilities/OverlayAbility';
-export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
-export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from './abilities/TooltipOverlayAbility';
+export { OverlayHostAbility, type OverlayHostConfig } from '@qimenjs/component-abilities';
+export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from '@qimenjs/component-abilities';
 export { PositionPxAbility } from './abilities/PositionPxAbility';
 export { PositionRawAbility } from './abilities/PositionRawAbility';
 export { PositionBoolAbility } from './abilities/PositionBoolAbility';
@@ -74,6 +74,8 @@ export {
     TOAST_NOTIFICATION_TEMPLATE,
     MSGBOX_TEMPLATE,
     BADGE_TEMPLATE,
+    MENU_ITEM_TEMPLATE,
+    MENU_TEMPLATE,
     COMPONENT_TEMPLATES,
 } from './template-presets';
 

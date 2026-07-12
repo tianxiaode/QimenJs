@@ -25,6 +25,8 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── FormComponent
         ├── DialogComponent
         ├── BadgeComponent
+        ├── MenuComponent
+        ├── MenuItemComponent
         └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
 ```
 
@@ -48,6 +50,8 @@ ComposableBase (src/composable/ComposableBase.ts)
 | FormComponent | `src/component/components/FormComponent.ts` | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility |
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
+| MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项） |
+| MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |
 | IdColumn | `src/component/components/IdColumn.ts` | 继承 ColumnBase |
 | NumberColumn | `src/component/components/NumberColumn.ts` | 继承 ColumnBase |
@@ -461,6 +465,15 @@ class RootComponent extends ComponentBase {
 | VirtualListAbility | 虚拟列表 |
 | OverlayAbility | 浮层 |
 | AnimationAbility | 动画 |
+| FloatingLayerAbility | 浮层通用逻辑（OverlayRoot 挂载、z-index、动画、视口定位） |
+| OverlayHostAbility | 浮层宿主能力（z-index 管理、定位计算、挂载/卸载） |
+| TooltipOverlayAbility | Tooltip 浮层能力（hover 事件、delay、i18n） |
+
+### 2.6.1 菜单能力 (`src/component-abilities/menu/`)
+
+| 能力 | 说明 |
+|------|------|
+| MenuItemManageAbility | 菜单项管理（池化复用、增删改、状态管理） |
 
 ### 2.7 交互能力 (`src/component-abilities/interaction/`)
 
@@ -738,3 +751,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-12 | Badge 角标能力：新增 BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）；新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染）；新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）；InitAbility 步骤6 驱动 initBadge + assignProps 赋值；BadgeComponent 放在 src/component/badge/ 目录（组件按目录分层） |
 | 2026-07-12 | 布局能力：新增 LayoutAbility（fit/hbox/vbox/grid/center 五种布局模式，自动为根元素添加布局 CSS 类）；布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）；合并到 TEMPLATE_COMPONENT_ABILITIES；TemplateComponent.flush() 新增 flushLayout() 调用 |
 | 2026-07-12 | 拖拽/放置能力：新增 DragAbility（基于框架 DragProcessor 的 'drag' 手势语义，initDrag/setDraggable，发布 dragstart/dragmove/dragend/dragcancel 事件）和 DropAbility（HTML5 原生拖放事件，initDrop/setDroppable/setDropAccept，dropAccept 类型过滤，发布 dragenter/dragover/dragleave/drop 事件）；新增 DragProps/DropProps（LayoutNode 声明式配置，draggable/dragAxis/dragHandle/dragBounds/dragActiveClass/dragGrid + droppable/dropAccept/dropActiveClass）；新增 DRAG_KEYS/DROP_KEYS；InitAbility 步骤6 驱动 initDrag/initDrop + assignProps 赋值；事件走 UI 事件模式（this.emit + EventContext） |
+| 2026-07-12 | 菜单组件：新增 MenuComponent（浮层菜单容器，OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）；新增 MenuItemComponent（菜单项组件，OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）；新增 MenuItemManageAbility（菜单项管理能力，池化复用、增删改、状态管理，从 ComponentRegistrar 查找 MenuItem 组件类实现能力与组件解耦）；新增 MENU_TEMPLATE/MENU_ITEM_TEMPLATE 模板预设；新增 ComponentTypes.MENU/MENU_ITEM；OverlayHostAbility/TooltipOverlayAbility 从 component-core 迁移到 component-abilities/render |

@@ -54,6 +54,12 @@ export const ComponentTypes = {
     /** 对话框 */
     DIALOG: 'Dialog',
 
+    // ---- 菜单组件 ----
+    /** 菜单 */
+    MENU: 'Menu',
+    /** 菜单项 */
+    MENU_ITEM: 'MenuItem',
+
     // ---- 列组件 ----
     /** 基础列 */
     COLUMN: 'Column',

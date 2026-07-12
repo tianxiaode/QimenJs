@@ -14,9 +14,9 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { ZIndexLevel } from '@/component/z-index';
+import { ZIndexLevel } from '@qimenjs/component';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
-import type { Placement } from './positionOverlay';
+import type { Placement } from '@qimenjs/component-core';
 
 /**
  * Tooltip 浮层配置

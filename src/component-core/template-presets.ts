@@ -237,6 +237,32 @@ export const BADGE_TEMPLATE: JsonTemplateNode[] = [
 ];
 
 /**
+ * 菜单项模板
+ *
+ * 内容项：
+ * - menuItem:icon — 图标
+ * - menuItem:text — 文本
+ * - menuItem:shortcut — 快捷键文本
+ * - menuItem:arrow — 子菜单箭头（事件：click → handleClick）
+ */
+export const MENU_ITEM_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'span', content: 'menuItem:icon', class: 'q-menu-item__icon' },
+    { tag: 'span', content: 'menuItem:text', class: 'q-menu-item__text' },
+    { tag: 'span', content: 'menuItem:shortcut', class: 'q-menu-item__shortcut' },
+    { tag: 'span', content: 'menuItem:arrow', event: 'click', class: 'q-menu-item__arrow', hidden: true },
+];
+
+/**
+ * 菜单模板
+ *
+ * 内容项：
+ * - menu:content — 菜单项容器
+ */
+export const MENU_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'div', content: 'menu:content', class: 'q-menu__content' },
+];
+
+/**
  * 所有组件模板预设
  *
  * key 为组件类型或模板 ID（对应 ComponentTypes / templateId），value 为 JSON 模板数组
@@ -258,4 +284,6 @@ export const COMPONENT_TEMPLATES: Record<string, JsonTemplateNode[]> = {
     ToastNotification: TOAST_NOTIFICATION_TEMPLATE,
     Msgbox: MSGBOX_TEMPLATE,
     Badge: BADGE_TEMPLATE,
+    MenuItem: MENU_ITEM_TEMPLATE,
+    Menu: MENU_TEMPLATE,
 };

@@ -28,6 +28,8 @@ import { DialogComponent } from './components/DialogComponent';
 import { FormComponent } from './components/FormComponent';
 import { TableComponent } from './components/TableComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
+import { MenuItemComponent } from './menu/MenuItemComponent';
+import { MenuComponent } from './menu/MenuComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -54,4 +56,6 @@ export function registerAllComponents(): void {
     registrar.register('Form', FormComponent);
     registrar.register('Table', TableComponent);
     registrar.register('Badge', BadgeComponent);
+    registrar.register('MenuItem', MenuItemComponent);
+    registrar.register('Menu', MenuComponent);
 }

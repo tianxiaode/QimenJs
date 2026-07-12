@@ -104,6 +104,16 @@ docs/build-progress/
 ## 最近更新
 
 ### 2026-07-12（晚间）
+- 新增 MenuComponent 浮层菜单组件（OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）
+- 新增 MenuItemComponent 菜单项组件（OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）
+- 新增 MenuItemManageAbility 菜单项管理能力（池化复用、增删改、状态管理，从 ComponentRegistrar 查找 MenuItem 组件类实现能力与组件解耦）
+- 新增 MENU_TEMPLATE/MENU_ITEM_TEMPLATE 模板预设
+- 新增 ComponentTypes.MENU/MENU_ITEM
+- ToolbarComponent 补充 type 定义
+- OverlayHostAbility 从 component-core/abilities 迁移到 component-abilities/render
+- TooltipOverlayAbility 从 component-core/abilities 迁移到 component-abilities/render
+- component-core/index.ts 改为从 @qimenjs/component-abilities 重导出（保持向后兼容）
+- 新增单元测试：MenuItemComponent.test.ts、MenuComponent.test.ts、MenuItemManageAbility.test.ts
 - 重构 ToolbarComponent：模板预定义所有溢出模式节点，通过显隐切换实现模式互斥
 - TOOLBAR_TEMPLATE 从空数组改为包含 5 个预定义节点（contentArea/prevBtn/nextBtn/triggerBtn/menuPanel）
 - contentArea 设为 flex 容器，子节点通过 CSS order 属性自行决定排列顺序

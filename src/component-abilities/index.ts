@@ -48,6 +48,8 @@ export { AnimationAbility } from './render';
 export { FloatingLayerAbility, type ViewportPosition, type FloatingAnimationOptions } from './render';
 export { OverflowScrollAbility, type OverflowDirection, type OverflowState, type OverflowScrollConfig } from './render';
 export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
+export { OverlayHostAbility, type OverlayHostConfig } from './render';
+export { TooltipOverlayAbility, type TooltipOverlayConfig } from './render';
 
 // 交互能力
 export { ClickAbility } from './interaction';
@@ -68,6 +70,9 @@ export { ToolbarAbility } from './toolbar';
 export { PaginationAbility, PAGINATION_POSITIONS } from './toolbar';
 export { CrudAbility, CRUD_POSITIONS } from './toolbar';
 export { SearchAbility as ToolbarSearchAbility, SEARCH_POSITIONS } from './toolbar';
+
+// 菜单能力
+export { MenuItemManageAbility, type MenuItemConfig } from './menu';
 
 // 元素事件绑定能力
 export { ElementEventAbility } from './event';

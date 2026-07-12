@@ -52,6 +52,7 @@ export class ToolbarComponent extends ToolbarBase {
     constructor(props?: Record<string, any>) {
         super(props);
 
+        this.type = 'Toolbar';
         this.el.classList.add('q-toolbar');
 
         if (props?.direction) this._direction = props.direction;
