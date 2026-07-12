@@ -6,14 +6,14 @@ import { object } from '@/utils';
 /**
  * EventAbility - 事件能力
  *
- * 提供事件监听、一次性监听、事件发射和 UI 事件发射的能力。
+ * 提供事件监听、一次性监听、事件发射的能力。
  * 通过创建独立的事件作用域（event scope）来管理事件，避免全局污染。
  * 每个宿主拥有独立的事件生命周期。
  *
- * UI 事件扩展：
- * - eventKey：组件事件标识，用于事件名前缀，全局唯一
- * - emitUI()：发射 UI 事件，自动构建 EventContext
- * - executeWithEventContext()：在 handler 执行期间设置 _currentEventContext
+ * emit 统一入口，通过第三个参数 options 分流：
+ * - emit(event, data) → 传统模式，走 eventScope.emit()
+ * - emit(event, data, { source, scopeId }) → UI 事件模式，
+ *   自动构建 EventContext（含 source/scopeId/chain 等），走 eventScope.emit()
  *
  * this 指向宿主（ComposableBase）。
  */
@@ -54,14 +54,32 @@ export const EventAbility: AbilityDefinition = {
     },
 
     /**
-     * 发射事件（传统方式）
+     * 发射事件（统一入口）
+     *
+     * 通过第三个参数 options 分流：
+     * - 无 options → 传统模式，直接走 eventScope.emit()
+     * - 有 options（含 source/scopeId）→ UI 事件模式，
+     *   自动构建 EventContext（含 chain/type/sourceType 等），走 eventScope.emit()
+     *
+     * @param event - 事件名称
+     * @param data - 事件数据载荷
+     * @param options - 可选配置：
+     *   - source: 事件源标识（如 eventKey、'router'）
+     *   - scopeId: 作用域ID（用于事件桥对照监听）
+     *   - domEvent: 原始 DOM 事件（可选）
      */
-    emit(event: string, data?: any) {
-        this.eventScope.emit(event, data, this);
+    emit(event: string, data?: any, options?: { source?: any; scopeId?: string; domEvent?: Event }) {
+        if (options && (options.source !== undefined || options.scopeId !== undefined)) {
+            // UI 事件模式：自动构建 EventContext
+            this._emitWithContext(event, data, options);
+        } else {
+            // 传统模式：直接走 eventScope
+            this.eventScope.emit(event, data);
+        }
     },
 
     // ============================================
-    // UI 事件扩展
+    // UI 事件扩展（内部方法）
     // ============================================
 
     /**
@@ -92,20 +110,19 @@ export const EventAbility: AbilityDefinition = {
     },
 
     /**
-     * 发射 UI 事件
+     * UI 事件模式：构建 EventContext 并通过 eventScope 发布
      *
-     * 组件必须通过此方法发事件，不直接调用 emit。
      * 框架自动处理：
-     * 1. 构建 EventContext（自动填充 event/type/source/sourceType）
+     * 1. 构建 EventContext（自动填充 event/type/source/sourceType/scopeId）
      * 2. 深拷贝 data（脱离原始引用）
      * 3. 自动构建 chain（从 _currentEventContext 继承事件链路）
      * 4. 引用计数管理（EventBus.emit 中处理）
      *
      * @param event - 事件类型（如 selectionChange）
      * @param data - 事件数据载荷
-     * @param domEvent - 原始 DOM 事件（可选）
+     * @param options - 配置：source/scopeId/domEvent
      */
-    emitUI(event: string, data?: any, domEvent?: Event) {
+    _emitWithContext(event: string, data?: any, options?: { source?: any; scopeId?: string; domEvent?: Event }) {
         // 1. 自动构建 chain
         const currentCtx = this._currentEventContext as EventContext | undefined;
         const chain: EventChainLink[] | undefined = currentCtx
@@ -123,29 +140,34 @@ export const EventAbility: AbilityDefinition = {
         const eventKey = this.eventKey as string | undefined;
         const fullEvent = eventKey ? `${eventKey}:${event}` : event;
 
-        // 4. 构建 EventContext
+        // 4. 确定 source 和 scopeId
+        const source = options?.source ?? (eventKey ?? '');
+        const scopeId = options?.scopeId ?? this.eventScope.getScopeId();
+
+        // 5. 构建 EventContext
         const ctx = EventContextBuilder.create()
             .withEvent(fullEvent)
             .withType(event)
-            .withSource(eventKey ?? '')
+            .withSource(source)
             .withSourceType(this.constructor.name)
             .withData(clonedData)
             .withBusId(globalEventBus.getBusId())
+            .withScopeId(scopeId)
             .withChain(chain)
             .build();
 
-        if (domEvent) {
-            ctx.domEvent = domEvent;
+        if (options?.domEvent) {
+            ctx.domEvent = options.domEvent;
         }
 
-        // 5. 通过全局事件总线发射（传入预构建的 EventContext）
-        globalEventBus.emit(fullEvent, ctx);
+        // 6. 通过 eventScope 发布（传入预构建的 EventContext）
+        this.eventScope.emit(fullEvent, ctx);
     },
 
     /**
      * 在 handler 执行期间设置当前事件上下文
      *
-     * 用于 bindStateTrigger 中，确保 emitUI 能正确构建 chain。
+     * 用于 bindStateTrigger 中，确保 emit 能正确构建 chain。
      * 同步 handler 执行完立即清除，异步 handler 等 Promise 完成后清除。
      *
      * @param handler - 要执行的 handler 函数

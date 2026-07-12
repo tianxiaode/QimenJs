@@ -39,8 +39,8 @@ export interface StateTriggerSubscription {
  * 遍历 StateTrigger 数组，为每个 trigger 建立 source:event → handler 映射。
  * handler 执行时通过 executeWithEventContext 包装，确保 chain 正确构建。
  *
- * 绑定策略：
- * - 有 source 且 source 组件存在 → 监听该组件的 eventScope
+ * 绑定策略（基于 source + scopeId 对照）：
+ * - 有 source 且 source 组件存在 → 监听该组件的 eventScope（scopeId 隔离）
  * - 有 source 但 source 组件不存在 → 监听全局事件总线（source:event 格式）
  * - 无 source → 监听全局事件总线（event 格式）
  *
@@ -63,7 +63,7 @@ export function bindStateTriggers(
             const sourceComponent = EventSourceRegistrar.getInstance().getComponent(trigger.source);
 
             if (sourceComponent && typeof (sourceComponent as any)[method] === 'function') {
-                // source 组件存在 → 监听该组件的事件
+                // source 组件存在 → 监听该组件的 eventScope（scopeId 隔离）
                 for (const [event, handlerName] of Object.entries(trigger.events)) {
                     const fullEvent = `${trigger.source}:${event}`;
                     const off = (sourceComponent as any)[method](fullEvent, (ctx: EventContext) => {
@@ -78,7 +78,7 @@ export function bindStateTriggers(
                     });
                 }
             } else {
-                // source 组件不存在 → 监听全局事件总线
+                // source 组件不存在 → 监听全局事件总线（降级策略）
                 for (const [event, handlerName] of Object.entries(trigger.events)) {
                     const fullEvent = `${trigger.source}:${event}`;
                     const off = (globalEventBus as any)[method](fullEvent, (ctx: EventContext) => {

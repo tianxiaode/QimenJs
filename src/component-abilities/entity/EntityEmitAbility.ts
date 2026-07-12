@@ -178,7 +178,8 @@ export const EntityEmitAbility: AbilityDefinition = {
             const data = buildData(...args);
             const hookResult = this._callEntityHook(hookName, data);
             if (hookResult === false) return;
-            this.emit?.(targetEvent, hookResult || data);
+            // 带 source/scopeId 发布事件，走 eventScope 隔离通道
+            this.emit?.(targetEvent, hookResult || data, { source: this.id, scopeId: this.eventScope?.getScopeId() });
         });
         if (typeof off === 'function') this.onCleanup(off);
     },

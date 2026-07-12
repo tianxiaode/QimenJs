@@ -33,8 +33,8 @@ export const SubmitAbility: AbilityDefinition = {
             await this.mgr.create(values);
         }
 
-        // 通过 emitUI 广播提交事件
-        this.emitUI?.('submit', values);
+        // 通过 emit 广播提交事件（带 source/scopeId，走 eventScope 隔离通道）
+        this.emit?.('submit', values, { source: this.id });
     },
 
     /**

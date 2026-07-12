@@ -148,7 +148,7 @@ export class DomEventAdapter {
         // 创建 gesture callback（可能带防抖/节流）
         let gestureCallback = (gesture: any) => {
             this.logAdapter('debug', 'emit_gesture', { semantic });
-            scope.emit(semantic, gesture, source);
+            scope.emit(semantic, gesture, { source });
         };
 
         if (options?.debounce && options.debounce > 0) {
@@ -212,7 +212,7 @@ export class DomEventAdapter {
         for (const domEvent of domEvents) {
             const handler = (event: Event) => {
                 const input = this.normalizeInput(signal, event);
-                scope.emit(signal, input, source);
+                scope.emit(signal, input, { source });
             };
 
             target.addEventListener(domEvent, handler, options);

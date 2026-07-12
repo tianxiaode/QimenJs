@@ -2,16 +2,20 @@
  * Router — 路由器核心
  *
  * 管理 URL 和路由状态的映射，支持 hash 和 history 两种模式。
- * 路由变化时通过 GlobalEventBus 发出路由切换事件。
+ * 路由变化时通过 emit 发布路由切换事件（source='router'）。
  *
  * 新模式：路由只发切换事件，不再解析配置去找组件/模板。
  * 事件名由路径转换而来：将 / 替换为 : 作为事件名。
  * 例如路径 /users/list → 事件名 :users:list
  *
+ * Router 继承 ComposableBase.with(EventAbility)，通过 emit 发布事件，
+ * 事件走 eventScope（隔离通道），不再占用全局事件通道。
  * 其他组件通过 EventBridgeAbility 监听 router 源的对应事件实现刷新。
  */
 
-import { globalEventBus } from '@qimenjs/events';
+import { ComposableBase } from '@/composable';
+import { EventAbility } from '@/system-abilities';
+import { EventSourceRegistrar } from '@qimenjs/events';
 import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
 /**
@@ -27,10 +31,11 @@ export function pathToEventName(path: string): string {
 /**
  * 路由器类
  *
- * 单例模式，管理路由状态和 URL 监听。
+ * 继承 ComposableBase.with(EventAbility)，通过 emit 发布路由切换事件。
  * 路由变化时发出以路径转换的事件名，由监听方自行处理。
+ * source='router'，scopeId 为 router 的 eventScope.scopeId。
  */
-export class Router {
+export class Router extends ComposableBase.with(EventAbility) {
     private static instance: Router | null = null;
 
     /** 路由字典 */
@@ -51,7 +56,14 @@ export class Router {
     /** popstate/hashchange 解绑函数 */
     private unlisten: (() => void) | null = null;
 
-    private constructor() {}
+    /** eventKey 标识，用于 EventSourceRegistrar 注册和事件桥对照 */
+    static eventKey = 'router';
+
+    private constructor() {
+        super();
+        // 注册到 EventSourceRegistrar，使 EventBridgeAbility 能通过 source='router' 找到
+        EventSourceRegistrar.getInstance().register('router', this);
+    }
 
     /**
      * 获取路由器单例
@@ -220,7 +232,10 @@ export class Router {
     // ─── 内部方法 ───
 
     /**
-     * 应用路由变化 — 发出路径对应的切换事件
+     * 应用路由变化 — 通过 emit 发布路径对应的切换事件
+     *
+     * 使用 emit(event, data, { source: 'router' }) 发布事件，
+     * 事件走 eventScope（隔离通道），source='router' 供事件桥对照。
      */
     private applyRoute(path: string): void {
         const previousPath = this.currentPath;
@@ -235,8 +250,8 @@ export class Router {
             params,
         };
 
-        // 发出路径对应的切换事件（如 :users:list）
-        globalEventBus.emit(eventName, event);
+        // 通过 emit 发布路由切换事件（source='router'，走 eventScope 隔离通道）
+        this.emit(eventName, event, { source: 'router' });
     }
 
     /**

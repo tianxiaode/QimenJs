@@ -28,9 +28,9 @@ export interface IEventScope<Events = any> {
      *
      * @param event 事件名称
      * @param data 事件数据
-     * @param source 事件源
+     * @param options 可选配置：source 事件源 / scopeId 作用域ID
      */
-    emit(event: string, data?: any, source?: any): void;
+    emit(event: string, data?: any, options?: { source?: any; scopeId?: string }): void;
 
     /**
      * 添加清理函数

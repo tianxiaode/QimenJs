@@ -89,7 +89,7 @@ export const ElementEventAbility: AbilityDefinition = {
             }
         }
 
-        // ─── 绑定外部事件：data-emit 声明即生效，走事件桥 emitUI ───
+        // ─── 绑定外部事件：data-emit 声明即生效，走事件桥 emit ───
         for (const [emitKey, node] of Object.entries(eventMap.external) as [string, any][]) {
             // emitKey 格式为 "name:event"，取事件类型
             const eventType = emitKey.split(':')[1] || emitKey;
@@ -97,8 +97,8 @@ export const ElementEventAbility: AbilityDefinition = {
             this.bind(node.el, eventType as any);
             this.on(eventType, (gesture: any) => {
                 const domEvent = gesture?.domEvent ?? gesture;
-                if (typeof this.emitUI === 'function') {
-                    this.emitUI(emitKey, undefined, domEvent);
+                if (typeof this.emit === 'function') {
+                    this.emit(emitKey, undefined, { domEvent });
                 }
             });
         }

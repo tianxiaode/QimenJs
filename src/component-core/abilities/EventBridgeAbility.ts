@@ -7,6 +7,13 @@
  * 通过 getEventBridge/setEventBridge 方法访问配置，
  * 不再将 eventBridge 属性暴露到组件顶层。
  *
+ * 桥接监听策略（基于 source + scopeId 对照）：
+ * - router 源：通过 EventSourceRegistrar 查找 router 实例，
+ *   在其 eventScope 上监听（scopeId 隔离）
+ * - 组件源：通过 ComponentRegistrar 查找源组件实例，
+ *   在源组件的 eventScope 上监听（scopeId 隔离）
+ * - 不再直接使用 globalEventBus.on()，避免占用全局事件通道
+ *
  * 内置桥接类型：
  * - pagination: 监听 pagechange → onPageChange
  * - crud: 监听 crudaction → onCreate/onEdit/onDelete/...
@@ -35,7 +42,7 @@
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
 import { ComponentRegistrar } from '../ComponentRegistrar';
-import { globalEventBus } from '@qimenjs/events';
+import { EventSourceRegistrar } from '@qimenjs/events';
 
 /**
  * 分页桥接配置
@@ -214,18 +221,27 @@ export const EventBridgeAbility: AbilityDefinition = {
     },
 
     /**
-     * 桥接监听：在源组件上注册事件，通过 onCleanup 管理生命周期
+     * 桥接监听：基于 source + scopeId 对照，在源组件的 eventScope 上注册事件
+     *
+     * 监听策略：
+     * - router 源：通过 EventSourceRegistrar 查找 router 实例，在其 eventScope 上监听
+     * - 组件源：通过 ComponentRegistrar 查找源组件实例，在其 eventScope 上监听
+     * - 通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
-        // router 源：直接监听 globalEventBus 上的路由事件
+        // router 源：通过 EventSourceRegistrar 查找 router 实例
         if (sourceId === 'router') {
-            const off = globalEventBus.on(eventName, (ctx: any) => {
-                handler(ctx.data);
-            });
-            this.onCleanup(off);
+            const routerSource = EventSourceRegistrar.getInstance().getComponent('router');
+            if (routerSource && typeof (routerSource as any).on === 'function') {
+                const off = (routerSource as any).on(eventName, (ctx: any) => {
+                    handler(ctx.data !== undefined ? ctx.data : ctx);
+                });
+                this.onCleanup(off);
+            }
             return;
         }
 
+        // 组件源：通过 ComponentRegistrar 查找源组件实例
         const source = mgr.getInstance(sourceId);
         if (!source) return;
 

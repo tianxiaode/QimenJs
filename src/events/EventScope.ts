@@ -74,14 +74,14 @@ export class EventScope implements IEventScope {
      *
      * @param event - 事件名称
      * @param data - 事件数据
-     * @param source - 事件源，默认为'UNKNOWN'
+     * @param options - 可选配置：source 事件源 / scopeId 作用域ID
      */
-    emit(event: string, data?: any, source?: any): void {
+    emit(event: string, data?: any, options?: { source?: any; scopeId?: string }): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
-        this.bus.emit(event, data, source || this, this.scopeId);
+        this.bus.emit(event, data, options?.source || this, options?.scopeId || this.scopeId);
     }
 
     /**

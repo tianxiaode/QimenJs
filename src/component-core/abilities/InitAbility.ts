@@ -256,13 +256,13 @@ export const InitAbility: AbilityDefinition = {
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
 
-            // bridges 模式：走事件桥 emitUI 发布
+            // bridges 模式：走事件桥 emit 发布
             if (bridges.has(emitKey)) {
                 this.bind(node.el, eventType as any);
                 this.on(eventType, (gesture: any) => {
                     const domEvent = gesture?.domEvent ?? gesture;
-                    if (typeof this.emitUI === 'function') {
-                        this.emitUI(emitKey, undefined, domEvent);
+                    if (typeof this.emit === 'function') {
+                        this.emit(emitKey, undefined, { domEvent });
                     }
                 });
                 continue;
@@ -280,12 +280,12 @@ export const InitAbility: AbilityDefinition = {
                 continue;
             }
 
-            // 默认模式：走事件桥 emitUI 发布
+            // 默认模式：走事件桥 emit 发布
             this.bind(node.el, eventType as any);
             this.on(eventType, (gesture: any) => {
                 const domEvent = gesture?.domEvent ?? gesture;
-                if (typeof this.emitUI === 'function') {
-                    this.emitUI(emitKey, undefined, domEvent);
+                if (typeof this.emit === 'function') {
+                    this.emit(emitKey, undefined, { domEvent });
                 }
             });
         }
