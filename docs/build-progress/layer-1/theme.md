@@ -17,6 +17,8 @@
 - **AtomicCSS** - 原子化 CSS 按需生成器
 - **预设主题** - light/dark 自动注册
 - **中国色主题** - 7 个中国传统色主题按需注册
+- **颜色变体常量** - ColorVariant 类型 + COLOR_VARIANTS + COLOR_VARIANT_MAP
+- **on-xxx 前景色** - 每个语义颜色搭配的前景色变量（所有主题预设）
 
 ## 依赖
 

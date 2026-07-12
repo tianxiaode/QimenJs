@@ -152,3 +152,35 @@ export interface ThemeChangeEvent {
  * 主题变更监听器
  */
 export type ThemeChangeHandler = (event: ThemeChangeEvent) => void;
+
+// ─── 颜色变体常量 ───
+
+/**
+ * 语义颜色变体类型
+ *
+ * 用于组件的 colorVariant 属性，控制组件的语义颜色方案。
+ * 设置后自动应用对应的背景色 + 前景色（on-xxx）CSS 变量。
+ */
+export type ColorVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+
+/**
+ * 所有可用的颜色变体常量数组
+ */
+export const COLOR_VARIANTS: readonly ColorVariant[] = [
+    'primary', 'secondary', 'success', 'warning', 'error', 'info',
+] as const;
+
+/**
+ * 颜色变体 → CSS 变量名映射
+ *
+ * key 为变体名，value 为对应的 CSS 变量名（不含 --q- 前缀）。
+ * 背景色用 colors.xxx，前景色用 colors.on-xxx。
+ */
+export const COLOR_VARIANT_MAP: Record<ColorVariant, { bg: string; fg: string }> = {
+    primary:   { bg: '--q-colors-primary',   fg: '--q-colors-on-primary' },
+    secondary: { bg: '--q-colors-secondary',  fg: '--q-colors-on-secondary' },
+    success:   { bg: '--q-colors-success',    fg: '--q-colors-on-success' },
+    warning:   { bg: '--q-colors-warning',    fg: '--q-colors-on-warning' },
+    error:     { bg: '--q-colors-error',      fg: '--q-colors-on-error' },
+    info:      { bg: '--q-colors-info',       fg: '--q-colors-on-info' },
+} as const;

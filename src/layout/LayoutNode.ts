@@ -315,6 +315,20 @@ export interface DragProps {
 }
 
 /**
+ * 颜色变体属性
+ *
+ * 配合 ColorVariantAbility 使用，
+ * 设置后自动应用对应的背景色 + 前景色（on-xxx）CSS 变量。
+ * 前景色自动搭配，无需手动配置。
+ */
+export interface ColorVariantProps {
+    /** 语义颜色变体，设置后自动应用背景色 + 搭配前景色 */
+    colorVariant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+    /** 仅设置前景色（on-xxx），不改背景色 */
+    colorVariantText?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+}
+
+/**
  * 放置配置
  *
  * 配合 DropAbility 使用，
@@ -495,7 +509,7 @@ export interface PositionProps {
  * }
  * ```
  */
-export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps {
+export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps, ColorVariantProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 

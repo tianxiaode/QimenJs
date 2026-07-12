@@ -541,6 +541,7 @@ class RootComponent extends ComponentBase {
 | PropAlias | `PropAlias.ts` | 属性别名与初始化协议 |
 | positionOverlay | `positionOverlay.ts` | 浮层定位工具函数（4方向定位、自动翻转、视口约束） |
 | LayoutAbility | `LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类） |
+| ColorVariantAbility | `ColorVariantAbility.ts` | 语义颜色变体（colorVariant 全套背景+前景，colorVariantText 仅前景色） |
 
 ---
 
@@ -757,3 +758,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-12 | 拖拽/放置能力：新增 DragAbility（基于框架 DragProcessor 的 'drag' 手势语义，initDrag/setDraggable，发布 dragstart/dragmove/dragend/dragcancel 事件）和 DropAbility（HTML5 原生拖放事件，initDrop/setDroppable/setDropAccept，dropAccept 类型过滤，发布 dragenter/dragover/dragleave/drop 事件）；新增 DragProps/DropProps（LayoutNode 声明式配置，draggable/dragAxis/dragHandle/dragBounds/dragActiveClass/dragGrid + droppable/dropAccept/dropActiveClass）；新增 DRAG_KEYS/DROP_KEYS；InitAbility 步骤6 驱动 initDrag/initDrop + assignProps 赋值；事件走 UI 事件模式（this.emit + EventContext） |
 | 2026-07-12 | 菜单组件：新增 MenuComponent（浮层菜单容器，OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）；新增 MenuItemComponent（菜单项组件，OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）；新增 MenuItemManageAbility（菜单项管理能力，池化复用、增删改、状态管理，从 ComponentRegistrar 查找 MenuItem 组件类实现能力与组件解耦）；新增 MENU_TEMPLATE/MENU_ITEM_TEMPLATE 模板预设；新增 ComponentTypes.MENU/MENU_ITEM；OverlayHostAbility/TooltipOverlayAbility 从 component-core 迁移到 component-abilities/render |
 | 2026-07-13 | 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）；OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）；新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）；InitAbility 导入 TooltipKey 从 OverlayAbility 改为 TooltipAbility；component-abilities 的 OverlayHostAbility 改为从 component-core 重导出 |
+| 2026-07-13 | 语义颜色变体：新增 ColorVariantAbility（colorVariant 全套背景+前景色，colorVariantText 仅前景色）；新增 ColorVariant/ColorVariantProps/COLOR_VARIANTS/COLOR_VARIANT_MAP 常量；新增 on-xxx 前景色变量（on-primary/on-secondary/on-success/on-warning/on-error/on-info）到所有主题预设（light/dark/7个中国主题）；LayoutNode 继承 ColorVariantProps；layout-keys 新增 COLOR_VARIANT_KEYS；InitAbility.assignProps 添加 ColorVariant 赋值；TemplateComponent 能力列表和 flush 添加 ColorVariantAbility |

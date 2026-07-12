@@ -31,6 +31,7 @@ import { BadgeAbility } from './abilities/BadgeAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { DropAbility } from './abilities/DropAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
+import { ColorVariantAbility } from './abilities/ColorVariantAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
@@ -50,7 +51,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventBridgeAbility, ThemeAbility,
     InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, TooltipAbility, BadgeAbility,
     DragAbility, DropAbility,
-    TemplateAbility, LayoutAbility,
+    TemplateAbility, LayoutAbility, ColorVariantAbility,
 ];
 
 /**
@@ -132,6 +133,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         if (this.dirtySet.size === 0) return;
 
         this.flushStyle();
+        this.flushColorVariant();
         this.flushPositionPx();
         this.flushPositionRaw();
         this.flushPositionBool();

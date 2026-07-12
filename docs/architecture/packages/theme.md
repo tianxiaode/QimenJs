@@ -140,3 +140,33 @@ src/theme/
 - **单例 + 注册中心**：ThemeRegistrar 是单例，通过 RegistryHub 统一管理
 - **事件驱动**：主题变更通过 GlobalEventBus 广播 `theme:change` 事件，组件按需响应
 - **中国色主题按需加载**：不自动注册，用户通过 `registerChineseThemes()` 按需启用
+- **前景色自动搭配**：每个语义颜色（primary/secondary/success/warning/error/info）都有对应的 `on-xxx` 前景色变量，确保背景色+前景色可读性
+
+## 颜色变体常量
+
+用于组件的 `colorVariant` / `colorVariantText` 属性，控制语义颜色方案：
+
+```typescript
+import { ColorVariant, COLOR_VARIANTS, COLOR_VARIANT_MAP } from '@qimenjs/theme';
+
+// 变体类型
+type ColorVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+
+// 变体 → CSS 变量映射
+COLOR_VARIANT_MAP['error'] // { bg: '--q-colors-error', fg: '--q-colors-on-error' }
+```
+
+### on-xxx 前景色变量
+
+所有主题预设均定义了 `on-xxx` 前景色，搭配对应背景色使用：
+
+| 变量 | 说明 | light 默认 | dark 默认 |
+|------|------|-----------|----------|
+| `--q-colors-on-primary` | 主色前景 | `#ffffff` | `#ffffff` |
+| `--q-colors-on-secondary` | 次要色前景 | `#ffffff` | `#ffffff` |
+| `--q-colors-on-success` | 成功色前景 | `#ffffff` | `#ffffff` |
+| `--q-colors-on-warning` | 警告色前景 | `#333333` | `#141414` |
+| `--q-colors-on-error` | 错误色前景 | `#ffffff` | `#ffffff` |
+| `--q-colors-on-info` | 信息色前景 | `#ffffff` | `#ffffff` |
+
+> warning 前景色为深色，因为黄色/警告色背景较浅，深色文字可读性更好。

@@ -16,6 +16,13 @@ export const lightTheme: ThemeDefinition = {
             warning: '#faad14',
             error: '#ff4d4f',
             info: '#1890ff',
+            // 前景色（on-xxx）：搭配对应背景色使用，确保可读性
+            'on-primary': '#ffffff',
+            'on-secondary': '#ffffff',
+            'on-success': '#ffffff',
+            'on-warning': '#333333',
+            'on-error': '#ffffff',
+            'on-info': '#ffffff',
             bg: '#ffffff',
             'bg-secondary': '#f5f5f5',
             text: '#333333',

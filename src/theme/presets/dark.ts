@@ -16,6 +16,13 @@ export const darkTheme: ThemeDefinition = {
             warning: '#d89614',
             error: '#d32029',
             info: '#177ddc',
+            // 前景色（on-xxx）：搭配对应背景色使用，确保可读性
+            'on-primary': '#ffffff',
+            'on-secondary': '#ffffff',
+            'on-success': '#ffffff',
+            'on-warning': '#141414',
+            'on-error': '#ffffff',
+            'on-info': '#ffffff',
             bg: '#141414',
             'bg-secondary': '#1f1f1f',
             text: '#ffffffd9',

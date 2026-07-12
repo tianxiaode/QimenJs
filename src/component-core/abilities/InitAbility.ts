@@ -10,7 +10,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
-import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
+import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, STYLE_KEYS, COLOR_VARIANT_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
@@ -153,6 +153,11 @@ export const InitAbility: AbilityDefinition = {
 
         // StyleProps — 常用，直接赋值到顶层
         for (const key of STYLE_KEYS) {
+            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
+        }
+
+        // ColorVariantProps — 常用，直接赋值到顶层
+        for (const key of COLOR_VARIANT_KEYS) {
             if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
         }
 

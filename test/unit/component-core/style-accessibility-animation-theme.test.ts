@@ -20,6 +20,7 @@ import { StyleAbility } from '@/component-core/abilities/StyleAbility';
 import { AccessibilityAbility } from '@/component-core/abilities/AccessibilityAbility';
 import { AnimationAbility } from '@/component-core/abilities/AnimationAbility';
 import { ThemeAbility } from '@/component-core/abilities/ThemeAbility';
+import { ColorVariantAbility } from '@/component-core/abilities/ColorVariantAbility';
 
 const TPL = '<div class="box"><span data-content="box:label"></span></div>';
 
@@ -234,5 +235,66 @@ describe('ThemeAbility', () => {
         const instance = new BoxClass() as any;
         expect(onSpy).toHaveBeenCalled();
         onSpy.mockRestore();
+    });
+});
+
+// ============================================
+// ColorVariantAbility
+// ============================================
+
+describe('ColorVariantAbility', () => {
+    const BoxClass = TemplateComponent.withTemplate(TPL).with(ColorVariantAbility);
+
+    it('colorVariant getter 默认 undefined', () => {
+        const instance = new BoxClass() as any;
+        expect(instance.colorVariant).toBeUndefined();
+    });
+
+    it('colorVariantText getter 默认 undefined', () => {
+        const instance = new BoxClass() as any;
+        expect(instance.colorVariantText).toBeUndefined();
+    });
+
+    it('flushColorVariant — colorVariant 设置背景色 + 前景色', () => {
+        const instance = new BoxClass() as any;
+        instance.colorVariant = 'error';
+        instance.flushColorVariant();
+        expect(instance.el.style.getPropertyValue('background-color')).toBe('var(--q-colors-error)');
+        expect(instance.el.style.getPropertyValue('color')).toBe('var(--q-colors-on-error)');
+    });
+
+    it('flushColorVariant — colorVariantText 仅设置前景色', () => {
+        const instance = new BoxClass() as any;
+        instance.colorVariantText = 'success';
+        instance.flushColorVariant();
+        expect(instance.el.style.getPropertyValue('background-color')).toBe('');
+        expect(instance.el.style.getPropertyValue('color')).toBe('var(--q-colors-on-success)');
+    });
+
+    it('flushColorVariant — colorVariantText 覆盖 colorVariant 的前景色', () => {
+        const instance = new BoxClass() as any;
+        instance.colorVariant = 'warning';
+        instance.colorVariantText = 'error';
+        instance.flushColorVariant();
+        expect(instance.el.style.getPropertyValue('background-color')).toBe('var(--q-colors-warning)');
+        expect(instance.el.style.getPropertyValue('color')).toBe('var(--q-colors-on-error)');
+    });
+
+    it('flushColorVariant — 无值时不修改 style', () => {
+        const instance = new BoxClass() as any;
+        instance.flushColorVariant();
+        expect(instance.el.style.getPropertyValue('background-color')).toBe('');
+        expect(instance.el.style.getPropertyValue('color')).toBe('');
+    });
+
+    it('flushColorVariant — 各变体映射正确', () => {
+        const variants = ['primary', 'secondary', 'success', 'warning', 'error', 'info'] as const;
+        for (const variant of variants) {
+            const instance = new BoxClass() as any;
+            instance.colorVariant = variant;
+            instance.flushColorVariant();
+            expect(instance.el.style.getPropertyValue('background-color')).toBe(`var(--q-colors-${variant})`);
+            expect(instance.el.style.getPropertyValue('color')).toBe(`var(--q-colors-on-${variant})`);
+        }
     });
 });

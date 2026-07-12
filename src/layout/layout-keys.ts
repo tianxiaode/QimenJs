@@ -97,6 +97,15 @@ export const STYLE_KEYS = [
 ] as const;
 
 /**
+ * ColorVariantProps 的 key 列表
+ *
+ * 颜色变体属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+export const COLOR_VARIANT_KEYS = [
+    'colorVariant', 'colorVariantText',
+] as const;
+
+/**
  * 框架保留字集合
  *
  * 这些顶层字段有特殊语义，不会自动归入 props。
@@ -110,6 +119,8 @@ export const RESERVED_KEYS = new Set([
     'permission',
     // StyleProps
     ...STYLE_KEYS,
+    // ColorVariantProps
+    ...COLOR_VARIANT_KEYS,
     // PositionProps
     ...POSITION_KEYS,
     // AccessibilityProps
@@ -140,4 +151,5 @@ export const KNOWN_PROP_KEYS = new Set<string>([
     ...ANIMATION_KEYS,
     ...DRAG_KEYS,
     ...DROP_KEYS,
+    ...COLOR_VARIANT_KEYS,
 ]);

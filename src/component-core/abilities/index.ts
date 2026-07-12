@@ -20,3 +20,4 @@ export * from './DropAbility';
 export * from './ElementEventAbility';
 export * from './TemplateAbility';
 export * from './LayoutAbility';
+export * from './ColorVariantAbility';
