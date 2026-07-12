@@ -10,5 +10,6 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
 
-export let ButtonComponent = TemplateComponent.withTemplate(BUTTON_TEMPLATE);
-ButtonComponent.prototype.type = 'button';
+
+export let ButtonComponent =  TemplateComponent.withTemplate(BUTTON_TEMPLATE) ;
+ButtonComponent.prototype.type = 'Button';

@@ -17,8 +17,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { OverlayRoot } from '@qimenjs/component';
-import { ZIndexLevel, nextZIndex, releaseZIndex } from '@qimenjs/component';
+import { OverlayRoot } from '@/component/OverlayRoot';
+import { ZIndexLevel, nextZIndex, releaseZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from '@qimenjs/component-core';
 
 /**

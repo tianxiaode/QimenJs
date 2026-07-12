@@ -31,9 +31,9 @@ describe('ButtonComponent', () => {
             expect(btn.el).toBeInstanceOf(HTMLElement);
         });
 
-        it('type 为 button', () => {
+        it('type 为 Button', () => {
             const btn = new ButtonComponent() as any;
-            expect(btn.type).toBe('button');
+            expect(btn.type).toBe('Button');
         });
     });
 

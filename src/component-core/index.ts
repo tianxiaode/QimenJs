@@ -26,8 +26,6 @@ export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { OverlayAbility, type OverlayConfig, type OverlayResult, type TooltipKey, type TooltipOverlayConfig } from './abilities/OverlayAbility';
-export { OverlayHostAbility, type OverlayHostConfig } from '@qimenjs/component-abilities';
-export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from '@qimenjs/component-abilities';
 export { PositionPxAbility } from './abilities/PositionPxAbility';
 export { PositionRawAbility } from './abilities/PositionRawAbility';
 export { PositionBoolAbility } from './abilities/PositionBoolAbility';

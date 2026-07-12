@@ -14,7 +14,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { ZIndexLevel } from '@qimenjs/component';
+import { ZIndexLevel } from '@/component/z-index';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 import type { Placement } from '@qimenjs/component-core';
 
