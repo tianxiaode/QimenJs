@@ -211,6 +211,16 @@ export const MSGBOX_TEMPLATE: JsonTemplateNode[] = [
 ];
 
 /**
+ * Badge 角标模板
+ *
+ * 内容项：
+ * - badge:default — 角标文本
+ */
+export const BADGE_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'span', content: 'badge:default', class: 'q-badge__content' },
+];
+
+/**
  * 所有组件模板预设
  *
  * key 为组件类型或模板 ID（对应 ComponentTypes / templateId），value 为 JSON 模板数组
@@ -231,4 +241,5 @@ export const COMPONENT_TEMPLATES: Record<string, JsonTemplateNode[]> = {
     Toast: TOAST_TEMPLATE,
     ToastNotification: TOAST_NOTIFICATION_TEMPLATE,
     Msgbox: MSGBOX_TEMPLATE,
+    Badge: BADGE_TEMPLATE,
 };

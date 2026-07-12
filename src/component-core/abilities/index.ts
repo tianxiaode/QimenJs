@@ -12,6 +12,7 @@ export * from './ThemeAbility';
 export * from './InitAbility';
 export * from './NodeMapAbility';
 export * from './OverlayAbility';
+export * from './BadgeAbility';
 export { OverlayHostAbility, type OverlayHostConfig } from './OverlayHostAbility';
 export { TooltipOverlayAbility, type TooltipOverlayConfig as TooltipOverlayAbilityConfig } from './TooltipOverlayAbility';
 export * from './ElementEventAbility';

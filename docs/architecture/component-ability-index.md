@@ -24,6 +24,7 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── TableComponent
         ├── FormComponent
         ├── DialogComponent
+        ├── BadgeComponent
         └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
 ```
 
@@ -46,6 +47,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | TableComponent | `src/component/components/TableComponent.ts` | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility |
 | FormComponent | `src/component/components/FormComponent.ts` | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility |
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
+| BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |
 | IdColumn | `src/component/components/IdColumn.ts` | 继承 ColumnBase |
 | NumberColumn | `src/component/components/NumberColumn.ts` | 继承 ColumnBase |
@@ -510,6 +512,7 @@ class RootComponent extends ComponentBase {
 | InitAbility | `InitAbility.ts` | 统一初始化流程（initialize/initConfig/initContent/assignProps/bindEvents） |
 | NodeMapAbility | `NodeMapAbility.ts` | 模板节点扫描、属性生成、data-i18n + refreshI18n 集中刷新 |
 | OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay/initTooltipOverlay） |
+| BadgeAbility | `BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
 | AnimationAbility | `AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
 | EntityCoreAbility | `EntityCoreAbility.ts` | EntityManager 实例声明 |
 | PermissionAbility | `PermissionAbility.ts` | 权限控制 |
@@ -729,3 +732,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-08 | 浮层能力：新增 ContentPrefix 常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合；新增 createOverlayManager 工厂方法（模板获取、DOM 创建、定位计算、生命周期管理）；新增 positionOverlay 定位工具函数（4方向定位、自动翻转、视口约束）；createContentManager 检测浮层前缀时自动调用 createOverlayManager；新增 Tips/Dropdown/Popover 模板；现有组件 contentSlots 迁移为 ContentPrefix 常量引用 |
 | 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IEventBridgeAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |
 | 2026-07-10 | ComponentBase 能力重构：InitAbility/NodeMapAbility/OverlayAbility 从 ComponentBase 拆分为 AbilityDefinition；AnimationAbility/EntityCoreAbility/PermissionAbility 从 AbilityBase 类模式改为 AbilityDefinition 对象模式；删除 AbilityBase（文件不存在）；删除 IContentAbility 接口（功能分散到 NodeMapAbility/OverlayAbility）；content 目录精简（createContentManager/createOverlayManager/positionOverlay/normalize 已迁移）；html-template 包重命名为 template（HtmlTemplateRegistrar → TemplateRegistrar，@qimenjs/html-template → @qimenjs/template，RegistryHub 键 'html' → 'template'） |
+| 2026-07-12 | Badge 角标能力：新增 BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）；新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染）；新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）；InitAbility 步骤6 驱动 initBadge + assignProps 赋值；BadgeComponent 放在 src/component/badge/ 目录（组件按目录分层） |

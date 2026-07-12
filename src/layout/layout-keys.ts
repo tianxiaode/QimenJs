@@ -52,6 +52,15 @@ export const TOOLTIP_KEYS = [
 ] as const;
 
 /**
+ * BadgeProps 的所有 key 列表
+ *
+ * Badge 属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+export const BADGE_KEYS = [
+    'badge', 'badgeType', 'badgePlacement', 'badgeTypeOverride',
+] as const;
+
+/**
  * AnimationProps 的所有 key 列表
  *
  * 动画属性直接保留在 LayoutNode 顶层，不归入 props。
@@ -89,6 +98,8 @@ export const RESERVED_KEYS = new Set([
     ...ACCESSIBILITY_KEYS,
     // TooltipProps
     ...TOOLTIP_KEYS,
+    // BadgeProps
+    ...BADGE_KEYS,
     // AnimationProps
     ...ANIMATION_KEYS,
 ]);
@@ -103,5 +114,6 @@ export const KNOWN_PROP_KEYS = new Set<string>([
     ...POSITION_KEYS,
     ...ACCESSIBILITY_KEYS,
     ...TOOLTIP_KEYS,
+    ...BADGE_KEYS,
     ...ANIMATION_KEYS,
 ]);

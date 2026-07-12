@@ -10,12 +10,13 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
-import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, ANIMATION_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
+import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
 import type { AnimationKey } from './AnimationAbility';
 import type { TooltipKey } from './OverlayAbility';
+import type { BadgeKey } from './BadgeAbility';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -45,9 +46,12 @@ export const InitAbility: AbilityDefinition = {
             // ── 5. 事件绑定 ──
             this.bindEvents(layout);
 
-            // ── 6. Tooltip 浮层（配置驱动） ──
+            // ── 6. Tooltip 浮层 + Badge 角标（配置驱动） ──
             if (layout.tooltip) {
                 this.initTooltipOverlay(layout);
+            }
+            if (layout.badge !== undefined) {
+                this.initBadge(layout);
             }
 
             // ── 7. 调用能力的 __init__ 方法 ──
@@ -161,6 +165,13 @@ export const InitAbility: AbilityDefinition = {
         for (const key of TOOLTIP_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setTooltip(key as TooltipKey, (layout as any)[key]);
+            }
+        }
+
+        // BadgeProps — 少用，通过 setBadge 设置
+        for (const key of BADGE_KEYS) {
+            if ((layout as any)[key] !== undefined) {
+                this.setBadge(key as BadgeKey, (layout as any)[key]);
             }
         }
 

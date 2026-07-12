@@ -77,6 +77,7 @@ export {
     TOAST_TEMPLATE,
     TOAST_NOTIFICATION_TEMPLATE,
     MSGBOX_TEMPLATE,
+    BADGE_TEMPLATE,
     COMPONENT_TEMPLATES,
 } from './template-presets';
 

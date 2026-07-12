@@ -19,6 +19,8 @@ export { InputComponent } from './components/InputComponent';
 export { SelectComponent } from './components/SelectComponent';
 export { IconComponent } from './components/IconComponent';
 export { TextComponent } from './components/TextComponent';
+export { BadgeComponent } from './badge/BadgeComponent';
+export { badgeCSS } from './badge/badge.css';
 
 // 布局组件
 export { HBoxComponent } from './components/HBoxComponent';

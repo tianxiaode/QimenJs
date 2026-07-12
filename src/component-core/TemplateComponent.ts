@@ -25,6 +25,7 @@ import { ThemeAbility } from './abilities/ThemeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { OverlayAbility } from './abilities/OverlayAbility';
+import { BadgeAbility } from './abilities/BadgeAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
@@ -42,7 +43,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
     AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
     EventBridgeAbility, ThemeAbility,
-    InitAbility, NodeMapAbility, OverlayAbility,
+    InitAbility, NodeMapAbility, OverlayAbility, BadgeAbility,
     TemplateAbility,
 ];
 

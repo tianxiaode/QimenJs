@@ -27,6 +27,7 @@ import { SeparatorComponent } from './components/SeparatorComponent';
 import { DialogComponent } from './components/DialogComponent';
 import { FormComponent } from './components/FormComponent';
 import { TableComponent } from './components/TableComponent';
+import { BadgeComponent } from './badge/BadgeComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -52,4 +53,5 @@ export function registerAllComponents(): void {
     registrar.register('Dialog', DialogComponent);
     registrar.register('Form', FormComponent);
     registrar.register('Table', TableComponent);
+    registrar.register('Badge', BadgeComponent);
 }

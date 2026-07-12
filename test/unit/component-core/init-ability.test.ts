@@ -27,13 +27,14 @@ import { AccessibilityAbility } from '@/component-core/abilities/AccessibilityAb
 import { AnimationAbility } from '@/component-core/abilities/AnimationAbility';
 import { PermissionAbility } from '@/component-core/abilities/PermissionAbility';
 import { OverlayAbility } from '@/component-core/abilities/OverlayAbility';
+import { BadgeAbility } from '@/component-core/abilities/BadgeAbility';
 
 const TPL = '<div class="box"><span data-content="box:label"></span></div>';
 
 describe('InitAbility', () => {
     const FullBoxClass = TemplateComponent.withTemplate(TPL).with([
         InitAbility, PositionPxAbility, StyleAbility,
-        AccessibilityAbility, AnimationAbility, PermissionAbility, OverlayAbility,
+        AccessibilityAbility, AnimationAbility, PermissionAbility, OverlayAbility, BadgeAbility,
     ]);
 
     // ============================================
@@ -88,6 +89,29 @@ describe('InitAbility', () => {
             expect(() => {
                 instance.initialize({ type: 'VBox', tooltip: 'Hello' });
             }).not.toThrow();
+        });
+
+        it('initialize 有 badge 时调用 initBadge', () => {
+            const instance = new FullBoxClass() as any;
+            // initBadge 需要 Badge 组件类注册，这里只验证不抛异常
+            expect(() => {
+                instance.initialize({ type: 'VBox', badge: 5 });
+            }).not.toThrow();
+        });
+
+        it('initialize badge 为 0 时仍然调用 initBadge', () => {
+            const instance = new FullBoxClass() as any;
+            expect(() => {
+                instance.initialize({ type: 'VBox', badge: 0 });
+            }).not.toThrow();
+        });
+
+        it('initialize 无 badge 时不调用 initBadge', () => {
+            const instance = new FullBoxClass() as any;
+            expect(() => {
+                instance.initialize({ type: 'VBox' });
+            }).not.toThrow();
+            expect(instance.setBadgeText).toBeUndefined();
         });
     });
 
@@ -193,6 +217,15 @@ describe('InitAbility', () => {
             instance.initialize({ type: 'VBox' });
             instance.assignProps({ props: { customKey: 'customValue' } });
             expect(instance.props.customKey).toBe('customValue');
+        });
+
+        it('Badge 属性通过 setBadge 设置', () => {
+            const instance = new FullBoxClass() as any;
+            instance.initialize({ type: 'VBox' });
+            instance.assignProps({ badge: 5, badgeType: 'dot', badgePlacement: 'top-left' });
+            expect(instance.getBadge('badge')).toBe(5);
+            expect(instance.getBadge('badgeType')).toBe('dot');
+            expect(instance.getBadge('badgePlacement')).toBe('top-left');
         });
     });
 

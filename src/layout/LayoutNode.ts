@@ -277,6 +277,23 @@ export interface TooltipProps {
 }
 
 /**
+ * Badge 角标配置
+ *
+ * 配合 BadgeAbility 使用，
+ * 渲染时由 add() 提取并赋给组件的 BadgeAbility。
+ */
+export interface BadgeProps {
+    /** Badge 文本内容 */
+    badge?: string | number;
+    /** Badge 类型：圆点/数字/文本，默认 'number' */
+    badgeType?: 'dot' | 'number' | 'text';
+    /** Badge 位置，默认 'top-right' */
+    badgePlacement?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+    /** Badge 组件类型名（对应 ComponentRegistrar 中注册的 type），默认 'Badge' */
+    badgeTypeOverride?: string;
+}
+
+/**
  * 动画配置
  *
  * 对应 AnimationAbility 的声明式配置，渲染时由 add() 提取并赋给组件的 AnimationAbility。
@@ -442,7 +459,7 @@ export interface PositionProps {
  * }
  * ```
  */
-export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, AnimationProps, PermissionProps {
+export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, AnimationProps, PermissionProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 
