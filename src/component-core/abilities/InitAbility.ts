@@ -10,13 +10,15 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
-import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
+import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, STYLE_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AriaKey } from './AccessibilityAbility';
 import type { AnimationKey } from './AnimationAbility';
 import type { TooltipKey } from './OverlayAbility';
 import type { BadgeKey } from './BadgeAbility';
+import type { DragKey } from './DragAbility';
+import type { DropKey } from './DropAbility';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -46,12 +48,18 @@ export const InitAbility: AbilityDefinition = {
             // ── 5. 事件绑定 ──
             this.bindEvents(layout);
 
-            // ── 6. Tooltip 浮层 + Badge 角标（配置驱动） ──
+            // ── 6. Tooltip 浮层 + Badge 角标 + Drag/Drop（配置驱动） ──
             if (layout.tooltip) {
                 this.initTooltipOverlay(layout);
             }
             if (layout.badge !== undefined) {
                 this.initBadge(layout);
+            }
+            if (layout.draggable) {
+                this.initDrag(layout);
+            }
+            if (layout.droppable) {
+                this.initDrop(layout);
             }
 
             // ── 7. 调用能力的 __init__ 方法 ──
@@ -179,6 +187,20 @@ export const InitAbility: AbilityDefinition = {
         for (const key of ANIMATION_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setAnimation(key as AnimationKey, (layout as any)[key]);
+            }
+        }
+
+        // DragProps — 少用，通过 setDrag 设置
+        for (const key of DRAG_KEYS) {
+            if ((layout as any)[key] !== undefined) {
+                this.setDrag(key as DragKey, (layout as any)[key]);
+            }
+        }
+
+        // DropProps — 少用，通过 setDrop 设置
+        for (const key of DROP_KEYS) {
+            if ((layout as any)[key] !== undefined) {
+                this.setDrop(key as DropKey, (layout as any)[key]);
             }
         }
 

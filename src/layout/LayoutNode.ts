@@ -294,6 +294,42 @@ export interface BadgeProps {
 }
 
 /**
+ * 拖拽配置
+ *
+ * 配合 DragAbility 使用，
+ * 渲染时由 add() 提取并赋给组件的 DragAbility。
+ */
+export interface DragProps {
+    /** 是否可拖拽 */
+    draggable?: boolean;
+    /** 拖拽方向约束，默认 'both' */
+    dragAxis?: 'x' | 'y' | 'both';
+    /** 拖拽手柄选择器 */
+    dragHandle?: string;
+    /** 拖拽范围约束 */
+    dragBounds?: HTMLElement | { left?: number; top?: number; right?: number; bottom?: number };
+    /** 拖拽时的 CSS class */
+    dragActiveClass?: string;
+    /** 网格对齐步长 */
+    dragGrid?: number;
+}
+
+/**
+ * 放置配置
+ *
+ * 配合 DropAbility 使用，
+ * 渲染时由 add() 提取并赋给组件的 DropAbility。
+ */
+export interface DropProps {
+    /** 是否可接收放置 */
+    droppable?: boolean;
+    /** 接受的拖拽源类型（对应组件 type），空则接受所有 */
+    dropAccept?: string | string[];
+    /** 拖拽悬停时的 CSS class */
+    dropActiveClass?: string;
+}
+
+/**
  * 动画配置
  *
  * 对应 AnimationAbility 的声明式配置，渲染时由 add() 提取并赋给组件的 AnimationAbility。
@@ -459,7 +495,7 @@ export interface PositionProps {
  * }
  * ```
  */
-export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, AnimationProps, PermissionProps {
+export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 

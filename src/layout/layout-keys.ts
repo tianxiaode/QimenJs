@@ -72,6 +72,24 @@ export const ANIMATION_KEYS = [
 ] as const;
 
 /**
+ * DragProps 的所有 key 列表
+ *
+ * 拖拽属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+export const DRAG_KEYS = [
+    'draggable', 'dragAxis', 'dragHandle', 'dragBounds', 'dragActiveClass', 'dragGrid',
+] as const;
+
+/**
+ * DropProps 的所有 key 列表
+ *
+ * 放置属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+export const DROP_KEYS = [
+    'droppable', 'dropAccept', 'dropActiveClass',
+] as const;
+
+/**
  * StyleProps 的 key 列表
  */
 export const STYLE_KEYS = [
@@ -102,6 +120,10 @@ export const RESERVED_KEYS = new Set([
     ...BADGE_KEYS,
     // AnimationProps
     ...ANIMATION_KEYS,
+    // DragProps
+    ...DRAG_KEYS,
+    // DropProps
+    ...DROP_KEYS,
 ]);
 
 /**
@@ -116,4 +138,6 @@ export const KNOWN_PROP_KEYS = new Set<string>([
     ...TOOLTIP_KEYS,
     ...BADGE_KEYS,
     ...ANIMATION_KEYS,
+    ...DRAG_KEYS,
+    ...DROP_KEYS,
 ]);

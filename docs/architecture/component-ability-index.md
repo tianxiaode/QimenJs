@@ -513,6 +513,8 @@ class RootComponent extends ComponentBase {
 | NodeMapAbility | `NodeMapAbility.ts` | 模板节点扫描、属性生成、data-i18n + refreshI18n 集中刷新 |
 | OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay/initTooltipOverlay） |
 | BadgeAbility | `BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
+| DragAbility | `DragAbility.ts` | 拖拽能力（initDrag/setDraggable，基于框架 DragProcessor） |
+| DropAbility | `DropAbility.ts` | 放置能力（initDrop/setDroppable/setDropAccept，HTML5 拖放事件） |
 | AnimationAbility | `AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
 | EntityCoreAbility | `EntityCoreAbility.ts` | EntityManager 实例声明 |
 | PermissionAbility | `PermissionAbility.ts` | 权限控制 |
@@ -735,3 +737,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-10 | ComponentBase 能力重构：InitAbility/NodeMapAbility/OverlayAbility 从 ComponentBase 拆分为 AbilityDefinition；AnimationAbility/EntityCoreAbility/PermissionAbility 从 AbilityBase 类模式改为 AbilityDefinition 对象模式；删除 AbilityBase（文件不存在）；删除 IContentAbility 接口（功能分散到 NodeMapAbility/OverlayAbility）；content 目录精简（createContentManager/createOverlayManager/positionOverlay/normalize 已迁移）；html-template 包重命名为 template（HtmlTemplateRegistrar → TemplateRegistrar，@qimenjs/html-template → @qimenjs/template，RegistryHub 键 'html' → 'template'） |
 | 2026-07-12 | Badge 角标能力：新增 BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）；新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染）；新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）；InitAbility 步骤6 驱动 initBadge + assignProps 赋值；BadgeComponent 放在 src/component/badge/ 目录（组件按目录分层） |
 | 2026-07-12 | 布局能力：新增 LayoutAbility（fit/hbox/vbox/grid/center 五种布局模式，自动为根元素添加布局 CSS 类）；布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）；合并到 TEMPLATE_COMPONENT_ABILITIES；TemplateComponent.flush() 新增 flushLayout() 调用 |
+| 2026-07-12 | 拖拽/放置能力：新增 DragAbility（基于框架 DragProcessor 的 'drag' 手势语义，initDrag/setDraggable，发布 dragstart/dragmove/dragend/dragcancel 事件）和 DropAbility（HTML5 原生拖放事件，initDrop/setDroppable/setDropAccept，dropAccept 类型过滤，发布 dragenter/dragover/dragleave/drop 事件）；新增 DragProps/DropProps（LayoutNode 声明式配置，draggable/dragAxis/dragHandle/dragBounds/dragActiveClass/dragGrid + droppable/dropAccept/dropActiveClass）；新增 DRAG_KEYS/DROP_KEYS；InitAbility 步骤6 驱动 initDrag/initDrop + assignProps 赋值；事件走 UI 事件模式（this.emit + EventContext） |
