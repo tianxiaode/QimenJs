@@ -1,22 +1,22 @@
-import type { StateTrigger } from './StateTrigger';
+import type { EventListen } from '../layout/LayoutNode';
 
 /**
  * EventFlowRegistrar - 事件流注册表
  *
- * 收集 stateTriggers 的定义和运行时订阅关系。
+ * 收集 bridges.on 的定义和运行时订阅关系。
  * 只做收集和生命周期管理，不做调度执行。
  *
  * 两层结构：
- * 1. 定义层（类级别，只注册一次）：组件类声明了哪些 stateTriggers
+ * 1. 定义层（类级别，只注册一次）：组件类声明了哪些 bridges.on 监听
  * 2. 订阅层（实例级别，每个实例绑定）：运行时的 on/off 订阅关系
  *
  * 为什么不做调度：如果注册表接管调度，handler 执行时 this 会丢失。
- * 调度还是走现有的 emit + stateTriggers，this 自然指向组件。
+ * 调度还是走现有的 emit + bridges.on，this 自然指向组件。
  */
 export class EventFlowRegistrar {
     private static instance: EventFlowRegistrar;
 
-    /** 定义层：组件类声明了哪些 stateTriggers（类级别，只注册一次） */
+    /** 定义层：组件类声明了哪些事件监听（类级别，只注册一次） */
     private readonly definitions = new Map<string, EventFlowDefinition>();
 
     /** 订阅层：运行时的订阅关系（实例级别，每个实例绑定） */
@@ -39,7 +39,7 @@ export class EventFlowRegistrar {
     // ============================================
 
     /**
-     * 注册组件类的 stateTriggers 定义（同一类型只注册一次）
+     * 注册组件类的事件监听定义（同一类型只注册一次）
      */
     registerDefinition(def: EventFlowDefinition): void {
         if (this.definitions.has(def.componentType)) return;
@@ -47,7 +47,7 @@ export class EventFlowRegistrar {
     }
 
     /**
-     * 查询组件类的 stateTriggers 定义
+     * 查询组件类的事件监听定义
      */
     getDefinition(componentType: string): EventFlowDefinition | undefined {
         return this.definitions.get(componentType);
@@ -59,15 +59,15 @@ export class EventFlowRegistrar {
     getDefinitionListeners(event: string): EventFlowDefinition[] {
         const result: EventFlowDefinition[] = [];
         for (const def of this.definitions.values()) {
-            for (const trigger of def.triggers) {
-                if (trigger.source) {
-                    const fullEvent = `${trigger.source}:${event}`;
-                    if (fullEvent in trigger.events || event in trigger.events) {
+            for (const listen of def.listens) {
+                if (listen.source) {
+                    const fullEvent = `${listen.source}:${event}`;
+                    if (fullEvent in listen.events || event in listen.events) {
                         result.push(def);
                         break;
                     }
                 } else {
-                    if (event in trigger.events) {
+                    if (event in listen.events) {
                         result.push(def);
                         break;
                     }
@@ -143,14 +143,14 @@ export class EventFlowRegistrar {
             lines.push('  (empty)');
         } else {
             for (const [type, def] of this.definitions) {
-                const triggerStrs = def.triggers.map(t => {
+                const listenStrs = def.listens.map(t => {
                     const source = t.source ? `${t.source} → ` : '';
                     const events = Object.entries(t.events)
                         .map(([e, h]) => `{ ${e}: ${h} }`)
                         .join(', ');
                     return `${source}${events}`;
                 });
-                lines.push(`  ${type} → [${triggerStrs.join(', ')}]`);
+                lines.push(`  ${type} → [${listenStrs.join(', ')}]`);
             }
         }
 
@@ -186,13 +186,13 @@ export class EventFlowRegistrar {
 }
 
 /**
- * 定义层：组件类声明了哪些 stateTriggers（类级别，只注册一次）
+ * 定义层：组件类声明了哪些事件监听（类级别，只注册一次）
  */
 export interface EventFlowDefinition {
     /** 组件类型名 */
     componentType: string;
-    /** 声明的 stateTriggers */
-    triggers: StateTrigger[];
+    /** 声明的事件监听 */
+    listens: EventListen[];
 }
 
 /**

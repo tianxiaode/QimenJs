@@ -283,6 +283,42 @@ export const MENU_TEMPLATE: JsonTemplateNode[] = [
 ];
 
 /**
+ * 面板模板
+ *
+ * 内容项：
+ * - panel:header — 标题栏容器
+ * - panel:expand — 折叠箭头（div > i 结构，默认隐藏，配置 expandable 时显示）
+ * - panel:title — 标题文本
+ * - panel:toolsLeft — 左侧工具图标区
+ * - panel:toolsRight — 右侧工具图标区
+ * - panel:body — 内容区域
+ */
+export const PANEL_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'div', content: 'panel:header', class: 'q-panel__header', children: [
+        { tag: 'div', content: 'panel:toolsLeft', class: 'q-panel__tools q-panel__tools--left' },
+        { tag: 'div', content: 'panel:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+            { tag: 'i' },
+        ]},
+        { tag: 'span', content: 'panel:title', class: 'q-panel__title' },
+        { tag: 'div', content: 'panel:toolsRight', class: 'q-panel__tools q-panel__tools--right' },
+    ]},
+    { tag: 'div', content: 'panel:body', class: 'q-panel__body' },
+];
+
+/**
+ * 项组模板
+ *
+ * 轻量排列容器，通过 items 数组管理子组件实例。
+ * direction 控制排列方向，itemType 指定子项组件类型。
+ *
+ * 内容项：
+ * - itemgroup:default — 子项挂载区
+ */
+export const ITEMGROUP_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'div', content: 'itemgroup:default', class: 'q-itemgroup__items' },
+];
+
+/**
  * 所有组件模板预设
  *
  * key 为组件类型或模板 ID（对应 ComponentTypes / templateId），value 为 JSON 模板数组
@@ -306,4 +342,6 @@ export const COMPONENT_TEMPLATES: Record<string, JsonTemplateNode[]> = {
     Badge: BADGE_TEMPLATE,
     MenuItem: MENU_ITEM_TEMPLATE,
     Menu: MENU_TEMPLATE,
+    Panel: PANEL_TEMPLATE,
+    ItemGroup: ITEMGROUP_TEMPLATE,
 };

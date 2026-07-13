@@ -9,7 +9,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { LayoutNode, HandlerConfig, StateTrigger, LifecycleHooks } from '@/layout/LayoutNode';
+import type { LayoutNode, HandlerConfig, EventListen, BridgesConfig, LifecycleHooks } from '@/layout/LayoutNode';
 import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, STYLE_KEYS, COLOR_VARIANT_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
@@ -223,7 +223,7 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 事件绑定 — 整合内部事件、外部事件、handlers、stateTriggers
+     * 事件绑定 — 整合内部事件、外部事件、handlers、bridges
      */
     bindEvents(layout: LayoutNode): void {
         this.bindInternalEvents();
@@ -233,8 +233,10 @@ export const InitAbility: AbilityDefinition = {
             this.bindHandlers(layout.handlers);
         }
 
-        if (layout.stateTriggers) {
-            this.bindStateTriggers(layout.stateTriggers);
+        // 从 bridges 中提取监听配置
+        const listenConfig = this._extractBridgesOn(layout.bridges);
+        if (listenConfig) {
+            this.bindEventListen(listenConfig);
         }
     },
 
@@ -289,7 +291,7 @@ export const InitAbility: AbilityDefinition = {
      * 3. 默认 → 走事件桥 emitUI 发布
      */
     bindExternalEvents(layout: LayoutNode): void {
-        const bridges = new Set<string>(layout.bridges || []);
+        const bridges = new Set<string>(this._extractBridgesEmit(layout.bridges));
 
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
@@ -394,12 +396,14 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 绑定 StateTrigger — 声明式事件绑定到全局 EventBus
+     * 绑定事件监听（bridges.on）
+     *
+     * 监听其他组件发出的事件，自动绑定到 extraFns 中的方法。
      */
-    bindStateTriggers(triggers: StateTrigger[]): void {
-        for (const trigger of triggers) {
-            for (const [eventType, methodName] of Object.entries(trigger.events)) {
-                const eventKey = trigger.source ? `${trigger.source}:${eventType}` : eventType;
+    bindEventListen(listens: EventListen[]): void {
+        for (const listen of listens) {
+            for (const [eventType, methodName] of Object.entries(listen.events)) {
+                const eventKey = listen.source ? `${listen.source}:${eventType}` : eventType;
                 const off = this.on(eventKey, (e: any) => {
                     (this as any)[methodName]?.(e);
                 });
@@ -408,6 +412,23 @@ export const InitAbility: AbilityDefinition = {
                 }
             }
         }
+    },
+
+    /**
+     * 从 bridges 配置中提取 emit 列表（string 项）
+     */
+    _extractBridgesEmit(bridges?: BridgesConfig): string[] {
+        if (!bridges) return [];
+        return bridges.filter((item): item is string => typeof item === 'string');
+    },
+
+    /**
+     * 从 bridges 配置中提取监听列表（EventListen 项）
+     */
+    _extractBridgesOn(bridges?: BridgesConfig): EventListen[] | null {
+        if (!bridges) return null;
+        const listens = bridges.filter((item): item is EventListen => typeof item !== 'string');
+        return listens.length > 0 ? listens : null;
     },
 
     /**

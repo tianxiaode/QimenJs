@@ -171,7 +171,7 @@ export const EventAbility: AbilityDefinition = {
     /**
      * 在 handler 执行期间设置当前事件上下文
      *
-     * 用于 bindStateTrigger 中，确保 emit 能正确构建 chain。
+     * 用于 bindEventListen 中，确保 emit 能正确构建 chain。
      * 同步 handler 执行完立即清除，异步 handler 等 Promise 完成后清除。
      *
      * @param handler - 要执行的 handler 函数

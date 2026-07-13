@@ -53,6 +53,8 @@ export const ComponentTypes = {
     FORM: 'Form',
     /** 对话框 */
     DIALOG: 'Dialog',
+    /** 面板 */
+    PANEL: 'Panel',
 
     // ---- 菜单组件 ----
     /** 菜单 */

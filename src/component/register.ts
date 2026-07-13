@@ -18,6 +18,8 @@ import { BadgeComponent } from './badge/BadgeComponent';
 import { TipsComponent } from './tips/TipsComponent';
 import { MenuItemComponent } from './menu/MenuItemComponent';
 import { MenuComponent } from './menu/MenuComponent';
+import { PanelComponent } from './panel/PanelComponent';
+import { ItemGroupComponent } from './itemgroup/ItemGroupComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -34,4 +36,6 @@ export function registerAllComponents(): void {
     registrar.register('Tips', TipsComponent);
     registrar.register('MenuItem', MenuItemComponent);
     registrar.register('Menu', MenuComponent);
+    registrar.register('Panel', PanelComponent);
+    registrar.register('ItemGroup', ItemGroupComponent);
 }

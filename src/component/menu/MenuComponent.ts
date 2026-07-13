@@ -1,32 +1,29 @@
 /**
  * MenuComponent 浮层菜单组件
  *
- * 弹出式菜单容器，复用 OverlayHostAbility 实现浮层协议（open/close/reposition）。
- * 通过 MenuItemManageAbility 管理菜单项的增删改和池化复用。
+ * 弹出式菜单容器，内置 ItemGroup 管理菜单项。
+ * 复用 OverlayHostAbility 实现浮层协议（open/close/reposition）。
  *
- * 使用方式：
- * 1. 宿主通过 OverlayAbility.createOverlay({ prefix: 'menu' }) 创建菜单浮层
- * 2. 宿主上自动生成 openMenu/closeMenu/positionMenu 委托方法
- * 3. 菜单项通过 setMenuItems 配置，支持池化复用
+ * 默认使用 MenuItem 作为子项组件，可通过 itemType 替换。
  *
  * @example
  * ```js
- * // 宿主创建菜单浮层
- * button.createOverlay({ prefix: 'menu' });
- * button.openMenu();
+ * // 默认 MenuItem
+ * { type: 'Menu', items: [{ text: '复制' }, { text: '粘贴' }] }
  *
- * // 配置菜单项
- * menu.setMenuItems([
- *     { text: '新建', icon: '📄', shortcut: 'Ctrl+N', onSelect: () => {} },
- *     { text: '打开', icon: '📂' },
- *     { text: '保存', icon: '💾', hasSubmenu: true },
- * ]);
+ * // 替换子项组件
+ * { type: 'Menu', itemType: 'ColorItem', items: [{ color: '#f00' }] }
+ *
+ * // 运行时增删
+ * menu.itemGroup.add({ text: '新增' });
+ * menu.itemGroup.removeAt(1);
  * ```
  */
 
 import { TemplateComponent, MENU_TEMPLATE } from '@qimenjs/component-core';
-import { OverlayHostAbility, MenuItemManageAbility, type MenuItemConfig } from '@qimenjs/component-abilities';
+import { OverlayHostAbility } from '@qimenjs/component-abilities';
 import type { Placement } from '@qimenjs/component-core';
+import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 
 /** 菜单配置 */
 export interface MenuProps {
@@ -36,20 +33,25 @@ export interface MenuProps {
     placement?: Placement;
     /** 浮层与锚点间距，默认 4 */
     offset?: number;
-    /** 菜单项配置 */
-    items?: MenuItemConfig[];
+    /** 子项组件类型，默认 'MenuItem' */
+    itemType?: string;
+    /** 菜单项数据 */
+    items?: Record<string, any>[];
 }
 
 /**
- * MenuBase — withTemplate + OverlayHostAbility + MenuItemManageAbility
+ * MenuBase — withTemplate + OverlayHostAbility
  */
 const MenuBase = TemplateComponent
     .withTemplate(MENU_TEMPLATE)
-    .with([OverlayHostAbility, MenuItemManageAbility]);
+    .with([OverlayHostAbility]);
 
 export class MenuComponent extends MenuBase {
     /** 是否已打开 */
     private _isOpen: boolean = false;
+
+    /** 内置 ItemGroup */
+    private _itemGroup!: ItemGroupComponent;
 
     /** 点击外部关闭的监听器 */
     private _documentClickHandler: ((e: MouseEvent) => void) | null = null;
@@ -69,10 +71,23 @@ export class MenuComponent extends MenuBase {
         // 保存锚点引用
         if (props?.anchor) this._anchor = props.anchor;
 
-        // 初始化菜单项
-        if (props?.items) {
-            this.setMenuItems(props.items);
+        // 创建内置 ItemGroup，默认 MenuItem，可替换
+        this._itemGroup = new ItemGroupComponent({
+            itemType: props?.itemType ?? 'MenuItem',
+            direction: 'vertical',
+            items: props?.items,
+        });
+
+        // 挂载到 menu:default 容器
+        const container = this.nodeMap?.['menu']?.['default']?.el;
+        if (container) {
+            container.appendChild(this._itemGroup.el);
         }
+    }
+
+    /** 内置 ItemGroup 实例 */
+    get itemGroup(): ItemGroupComponent {
+        return this._itemGroup;
     }
 
     /** 是否已打开 */
@@ -138,7 +153,9 @@ export class MenuComponent extends MenuBase {
 
     dispose(): void {
         this.close();
-        this.disposeAllMenuItems();
+        if (this._itemGroup) {
+            this._itemGroup.dispose();
+        }
         super.dispose();
     }
 }

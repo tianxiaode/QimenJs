@@ -3,7 +3,7 @@
  *
  * 覆盖：initialize、initConfig、initContent、assignProps、bindEvents、
  *       bindInternalEvents、bindExternalEvents、_emitKeyToHandlerName、
- *       resolveHandler、bindHandlers、bindStateTriggers、callInitMethods、callLifecycle
+ *       resolveHandler、bindHandlers、bindEventListen、callInitMethods、callLifecycle
  */
 
 jest.mock('@/logger', () => {
@@ -246,11 +246,11 @@ describe('InitAbility', () => {
             expect(() => instance.bindEvents({ handlers: { click: jest.fn() } })).not.toThrow();
         });
 
-        it('有 stateTriggers 时调用 bindStateTriggers', () => {
+        it('有 bridges.on 时调用 bindEventListen', () => {
             const instance = new FullBoxClass() as any;
             instance.initialize({ type: 'VBox' });
             expect(() => instance.bindEvents({
-                stateTriggers: [{ source: 'form', events: { change: 'onFormChange' } }],
+                bridges: [{ source: 'form', events: { change: 'onFormChange' } }],
             })).not.toThrow();
         });
     });
@@ -384,14 +384,14 @@ describe('InitAbility', () => {
     });
 
     // ============================================
-    // bindStateTriggers
+    // bindEventListen
     // ============================================
 
-    describe('bindStateTriggers', () => {
-        it('绑定 stateTriggers', () => {
+    describe('bindEventListen', () => {
+        it('绑定事件监听（bridges.on）', () => {
             const instance = new FullBoxClass() as any;
             instance.onFormChange = jest.fn();
-            instance.bindStateTriggers([
+            instance.bindEventListen([
                 { source: 'form', events: { change: 'onFormChange' } },
             ]);
             // 验证不抛异常
@@ -401,7 +401,7 @@ describe('InitAbility', () => {
         it('无 source 时用 eventType 作为 eventKey', () => {
             const instance = new FullBoxClass() as any;
             instance.onRefresh = jest.fn();
-            instance.bindStateTriggers([
+            instance.bindEventListen([
                 { events: { refresh: 'onRefresh' } },
             ]);
             expect(instance.onRefresh).toBeDefined();

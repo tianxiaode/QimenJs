@@ -117,7 +117,8 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 4. 事件绑定 ──
             this.bindInternalEvents();
             this.bindExternalEvents({ bridges: cfg.bridges } as any);
-            if (cfg.stateTriggers) this.bindStateTriggers(cfg.stateTriggers);
+            const listenConfig = this._extractBridgesOn(cfg.bridges);
+            if (listenConfig) this.bindEventListen(listenConfig);
 
             // ── 5. 调用能力的 __init__ 方法 ──
             this.callInitMethods();

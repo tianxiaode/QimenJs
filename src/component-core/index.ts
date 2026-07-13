@@ -76,6 +76,8 @@ export {
     BADGE_TEMPLATE,
     MENU_ITEM_TEMPLATE,
     MENU_TEMPLATE,
+    PANEL_TEMPLATE,
+    ITEMGROUP_TEMPLATE,
     COMPONENT_TEMPLATES,
 } from './template-presets';
 

@@ -27,6 +27,13 @@ export { MenuItemComponent, type MenuItemProps } from './menu/MenuItemComponent'
 export { MenuComponent, type MenuProps } from './menu/MenuComponent';
 export { menuCSS } from './menu/menu.css';
 
+// 面板组件
+export { PanelComponent, type PanelProps } from './panel/PanelComponent';
+
+// 项组组件
+export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupComponent';
+export { itemgroupCSS } from './itemgroup/itemgroup.css';
+
 // 事件枚举
 export * from './events';
 

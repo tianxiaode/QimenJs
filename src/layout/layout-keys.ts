@@ -106,13 +106,22 @@ export const COLOR_VARIANT_KEYS = [
 ] as const;
 
 /**
+ * ExpandableProps 的 key 列表
+ *
+ * 展开/折叠属性直接保留在 LayoutNode 顶层，不归入 props。
+ */
+export const EXPANDABLE_KEYS = [
+    'expandable',
+] as const;
+
+/**
  * 框架保留字集合
  *
  * 这些顶层字段有特殊语义，不会自动归入 props。
  */
 export const RESERVED_KEYS = new Set([
-    'type', 'id', 'field', 'children', 'handlers', 'extraFns', 'abilities', 'meta',
-    'visible', 'repeat', 'responsive', 'stateTriggers', 'lifecycle', 'props',
+    'type', 'id', 'field', 'children', 'handlers', 'bridges', 'extraFns', 'abilities', 'meta',
+    'visible', 'repeat', 'responsive', 'lifecycle', 'props',
     // EntityProps
     'entity',
     // PermissionProps
@@ -135,6 +144,8 @@ export const RESERVED_KEYS = new Set([
     ...DRAG_KEYS,
     // DropProps
     ...DROP_KEYS,
+    // ExpandableProps
+    ...EXPANDABLE_KEYS,
 ]);
 
 /**
@@ -152,4 +163,5 @@ export const KNOWN_PROP_KEYS = new Set<string>([
     ...DRAG_KEYS,
     ...DROP_KEYS,
     ...COLOR_VARIANT_KEYS,
+    ...EXPANDABLE_KEYS,
 ]);

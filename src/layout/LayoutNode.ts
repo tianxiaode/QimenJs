@@ -32,11 +32,11 @@ export interface HandlerConfig {
 }
 
 /**
- * stateTriggers 声明式事件绑定
+ * 事件监听声明
  *
  * 接收方声明监听哪些事件源的哪些事件类型，框架自动绑定到 EventBus
  */
-export interface StateTrigger {
+export interface EventListen {
     /** 监听的事件源（组件 id），不填则监听全局事件总线 */
     source?: string;
     /** 事件到 handler 的映射，key 为事件类型，value 为方法名 */
@@ -44,6 +44,26 @@ export interface StateTrigger {
     /** 是否只执行一次 */
     once?: boolean;
 }
+
+/**
+ * 桥接事件配置
+ *
+ * 混合数组，每项要么是字符串（发布），要么是对象（监听）：
+ * - string → 桥接发布到事件总线
+ * - EventListen → 监听其他组件的事件
+ *
+ * @example
+ * ```js
+ * bridges: [
+ *     // 发布
+ *     'panelLeft:click',
+ *     'panelRight:click',
+ *     // 监听
+ *     { source: 'panelLeft', events: { 'panelLeft:click': 'onToolClick' } },
+ * ]
+ * ```
+ */
+export type BridgesConfig = (string | EventListen)[];
 
 /**
  * 翻译表达式
@@ -291,6 +311,29 @@ export interface ArrowProps {
     arrowVars?: Record<string, string>;
 }
 
+/**
+ * 展开/折叠配置
+ *
+ * 配合 ExpandArrowAbility 使用，
+ * 有值即启用折叠功能，渲染时由 add() 提取并赋给组件的 ExpandArrowAbility。
+ */
+export interface ExpandableProps {
+    /** 是否启用折叠，或传入详细配置 */
+    expandable?: boolean | ExpandableConfig;
+}
+
+/**
+ * 展开/折叠详细配置
+ */
+export interface ExpandableConfig {
+    /** 初始状态，默认 'collapsed' */
+    arrowState?: 'collapsed' | 'expanded';
+    /** 点击触发的内部事件名，默认 'toggle' */
+    arrowEvent?: string;
+    /** 箭头节点名称，默认 'expand'（对应模板中 data-content 的 name） */
+    arrowName?: string;
+}
+
 
 /**
  * Badge 角标配置
@@ -525,7 +568,7 @@ export interface PositionProps {
  * }
  * ```
  */
-export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, ArrowProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps, ColorVariantProps {
+export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, ArrowProps, ExpandableProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps, ColorVariantProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 
@@ -585,21 +628,20 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
     handlers?: Record<string, string | ((...args: any[]) => any) | HandlerConfig | (string | ((...args: any[]) => any) | HandlerConfig)[]>;
 
     /**
-     * 事件桥接声明：声明哪些事件走事件桥发布
+     * 事件桥接配置：混合数组，同时管理发布和监听
      *
-     * bridges 中声明的事件，触发时自动通过 this.emit 发布到事件总线，
-     * 其他组件可通过 eventBus.on 监听。
-     *
-     * 与 handlers 的区别：
-     * - bridges：只声明发布，走事件桥，其他组件监听
-     * - handlers：绑定具体函数，直接执行
+     * - string → 桥接发布到事件总线
+     * - EventListen → 监听其他组件的事件
      *
      * @example
      * ```js
-     * bridges: ['saveBtn:click', 'cancelBtn:click']
+     * bridges: [
+     *     'panelLeft:click',                                          // 发布
+     *     { source: 'panelLeft', events: { 'panelLeft:click': 'onToolClick' } },  // 监听
+     * ]
      * ```
      */
-    bridges?: string[];
+    bridges?: BridgesConfig;
 
     /**
      * 附加函数：bind this 后挂到组件实例
@@ -633,9 +675,6 @@ export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProp
 
     /** 响应式配置 */
     responsive?: ResponsiveConfig;
-
-    /** stateTriggers 声明式事件绑定 */
-    stateTriggers?: StateTrigger[];
 
     /**
      * 剩余属性：非保留字、非已知 Props 的顶层属性

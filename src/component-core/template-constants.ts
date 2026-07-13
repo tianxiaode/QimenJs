@@ -53,6 +53,10 @@ export const Area = {
     DIALOG: 'dialog',
     /** 子组件挂载区 */
     CHILDREN: 'children',
+    /** 面板 */
+    PANEL: 'panel',
+    /** 项组 */
+    ITEMGROUP: 'itemgroup',
 } as const;
 
 export type AreaType = (typeof Area)[keyof typeof Area];
@@ -198,6 +202,17 @@ export const Slot = {
 
     // ─── Children（子组件挂载点） ───
     CHILDREN_DEFAULT: `${Area.CHILDREN}:${Name.DEFAULT}`,
+
+    // ─── Panel ───
+    PANEL_HEADER: `${Area.PANEL}:header`,
+    PANEL_EXPAND: `${Area.PANEL}:expand`,
+    PANEL_TITLE: `${Area.PANEL}:title`,
+    PANEL_TOOLS_LEFT: `${Area.PANEL}:toolsLeft`,
+    PANEL_TOOLS_RIGHT: `${Area.PANEL}:toolsRight`,
+    PANEL_BODY: `${Area.PANEL}:body`,
+
+    // ─── ItemGroup ───
+    ITEMGROUP_ITEMS: `${Area.ITEMGROUP}:${Name.DEFAULT}`,
 } as const;
 
 export type SlotType = (typeof Slot)[keyof typeof Slot];

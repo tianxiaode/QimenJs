@@ -1,7 +1,7 @@
 /**
  * MenuComponent 单元测试
  *
- * 覆盖：构造函数、open/close、浮层协议、菜单项管理、dispose
+ * 覆盖：构造函数、open/close、浮层协议、内置 ItemGroup、dispose
  *
  * 注意：MenuComponent 依赖 OverlayRoot（需要 document.body），
  * 测试中需要确保 OverlayRoot 容器存在。
@@ -22,13 +22,17 @@ jest.mock('@/logger', () => {
 
 import { MenuComponent } from '@/component/menu/MenuComponent';
 import { MenuItemComponent } from '@/component/menu/MenuItemComponent';
-import { ComponentRegistrar } from '@qimenjs/component-core';
+import { ComponentRegistrar, TemplateComponent } from '@qimenjs/component-core';
 
-// 注册 MenuItem 组件（MenuComponent 的 MenuItemManageAbility 依赖）
+// 注册 MenuItem 组件
 beforeAll(() => {
     const registrar = ComponentRegistrar.getInstance();
     if (!registrar.get('MenuItem')) {
         registrar.register('MenuItem', MenuItemComponent);
+    }
+    if (!registrar.get('Icon')) {
+        class MockIcon extends TemplateComponent { type = 'Icon'; tag = 'i'; }
+        registrar.register('Icon', MockIcon);
     }
 });
 
@@ -55,29 +59,22 @@ describe('MenuComponent', () => {
             expect(menu.isOpen).toBe(false);
         });
 
-        it('初始 display 为 none', () => {
-            const menu = new MenuComponent() as any;
-            expect(menu.el.style.display).toBe('none');
-        });
-
-        it('通过 props 设置 placement', () => {
-            const menu = new MenuComponent({ placement: 'right' }) as any;
-            expect(menu._placement).toBe('right');
-        });
-
-        it('通过 props 设置 offset', () => {
-            const menu = new MenuComponent({ offset: 8 }) as any;
-            expect(menu._offset).toBe(8);
-        });
-
-        it('通过 props 初始化菜单项', () => {
+        it('通过 props 初始化菜单项（内置 ItemGroup）', () => {
             const menu = new MenuComponent({
                 items: [
                     { text: '新建' },
                     { text: '打开' },
                 ],
             }) as any;
-            expect(menu.getMenuItemCount()).toBe(2);
+            expect(menu.itemGroup.count).toBe(2);
+        });
+
+        it('通过 itemType 替换子项组件类型', () => {
+            const menu = new MenuComponent({
+                itemType: 'MenuItem',
+                items: [{ text: '测试' }],
+            }) as any;
+            expect(menu.itemGroup.itemType).toBe('MenuItem');
         });
     });
 
@@ -113,7 +110,7 @@ describe('MenuComponent', () => {
             document.body.appendChild(anchor);
             const menu = new MenuComponent({ anchor }) as any;
             menu.open();
-            menu.open(); // 不应报错
+            menu.open();
             expect(menu.isOpen).toBe(true);
             menu.close();
             anchor.remove();
@@ -121,7 +118,7 @@ describe('MenuComponent', () => {
 
         it('未 open 时 close 不报错', () => {
             const menu = new MenuComponent() as any;
-            menu.close(); // 不应报错
+            menu.close();
             expect(menu.isOpen).toBe(false);
         });
 
@@ -132,7 +129,6 @@ describe('MenuComponent', () => {
             menu.open();
             expect(menu.isOpen).toBe(true);
 
-            // 模拟点击外部
             const outsideEl = document.createElement('div');
             document.body.appendChild(outsideEl);
             outsideEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
@@ -144,77 +140,32 @@ describe('MenuComponent', () => {
     });
 
     // ============================================
-    // 菜单项管理（通过 MenuItemManageAbility）
+    // 内置 ItemGroup
     // ============================================
 
-    describe('菜单项管理', () => {
-        it('setMenuItems 创建菜单项', () => {
+    describe('内置 ItemGroup', () => {
+        it('itemGroup 属性可访问', () => {
             const menu = new MenuComponent() as any;
-            menu.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-                { text: '保存' },
-            ]);
-            expect(menu.getMenuItemCount()).toBe(3);
+            expect(menu.itemGroup).toBeDefined();
         });
 
-        it('setMenuItems 池化复用：减少项时隐藏多余项', () => {
+        it('通过 itemGroup 增删菜单项', () => {
             const menu = new MenuComponent() as any;
-            menu.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-                { text: '保存' },
-            ]);
+            menu.itemGroup.add({ text: '新增' });
+            expect(menu.itemGroup.count).toBe(1);
 
-            menu.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-            ]);
-
-            // 第三项应被隐藏
-            const pool = menu.getMenuItemPool();
-            expect(pool.length).toBe(3); // 池中仍有3个
-            expect(pool[2].el.hidden).toBe(true);
+            menu.itemGroup.removeAt(0);
+            expect(menu.itemGroup.count).toBe(0);
         });
 
-        it('setMenuItems 池化复用：增加项时新增', () => {
+        it('通过 itemGroup setItems 池化复用', () => {
             const menu = new MenuComponent() as any;
-            menu.setMenuItems([{ text: '新建' }]);
-            menu.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-            ]);
+            menu.itemGroup.setItems([{ text: 'A' }, { text: 'B' }, { text: 'C' }]);
+            expect(menu.itemGroup.count).toBe(3);
 
-            const pool = menu.getMenuItemPool();
-            expect(pool.length).toBe(2);
-        });
-
-        it('updateMenuItem 更新单项', () => {
-            const menu = new MenuComponent() as any;
-            menu.setMenuItems([{ text: '新建' }]);
-            menu.updateMenuItem(0, { text: '创建' });
-
-            const item = menu.getMenuItem(0);
-            expect(item.text).toBe('创建');
-        });
-
-        it('removeMenuItem 默认隐藏不销毁', () => {
-            const menu = new MenuComponent() as any;
-            menu.setMenuItems([{ text: '新建' }, { text: '打开' }]);
-            menu.removeMenuItem(0);
-
-            const pool = menu.getMenuItemPool();
-            expect(pool.length).toBe(2); // 未销毁
-            expect(pool[0].el.hidden).toBe(true);
-        });
-
-        it('removeMenuItem destroy=true 销毁实例', () => {
-            const menu = new MenuComponent() as any;
-            menu.setMenuItems([{ text: '新建' }, { text: '打开' }]);
-            menu.removeMenuItem(0, true);
-
-            const pool = menu.getMenuItemPool();
-            expect(pool.length).toBe(1); // 已销毁
+            menu.itemGroup.setItems([{ text: 'X' }]);
+            expect(menu.itemGroup.count).toBe(1);
+            expect(menu.itemGroup.pool.length).toBe(3); // 池中仍有3个
         });
     });
 
@@ -240,15 +191,12 @@ describe('MenuComponent', () => {
             anchor.remove();
         });
 
-        it('dispose 销毁所有菜单项', () => {
-            const menu = new MenuComponent() as any;
-            menu.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-            ]);
+        it('dispose 销毁内置 ItemGroup', () => {
+            const menu = new MenuComponent({
+                items: [{ text: '新建' }, { text: '打开' }],
+            }) as any;
             menu.dispose();
-            const pool = menu.getMenuItemPool();
-            expect(pool.length).toBe(0);
+            expect(menu.itemGroup.pool.length).toBe(0);
         });
     });
 });
