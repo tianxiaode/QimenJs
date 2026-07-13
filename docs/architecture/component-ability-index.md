@@ -471,6 +471,8 @@ class RootComponent extends ComponentBase {
 | OverlayHostAbility | 浮层宿主能力（已迁至 component-core，此处为重导出） |
 | TooltipOverlayAbility | Tooltip 浮层能力（hover 事件、delay、i18n） |
 | ArrowAbility | 箭头指示器能力（浮层方向箭头，CSS 变量驱动样式） |
+| OverlayMaskAbility | 遮罩能力（半透明遮罩层，阻止交互，支持全屏模式） |
+| LoadingAbility | 加载状态能力（组合 OverlayMaskAbility + spinner，支持自定义文字和 spinner） |
 
 ### 2.6.1 菜单能力 (`src/component-abilities/menu/`)
 
@@ -761,3 +763,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-13 | 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）；OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）；新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）；InitAbility 导入 TooltipKey 从 OverlayAbility 改为 TooltipAbility；component-abilities 的 OverlayHostAbility 改为从 component-core 重导出 |
 | 2026-07-13 | 语义颜色变体：新增 ColorVariantAbility（colorVariant 全套背景+前景色，colorVariantText 仅前景色）；新增 ColorVariant/ColorVariantProps/COLOR_VARIANTS/COLOR_VARIANT_MAP 常量；新增 on-xxx 前景色变量（on-primary/on-secondary/on-success/on-warning/on-error/on-info）到所有主题预设（light/dark/7个中国主题）；LayoutNode 继承 ColorVariantProps；layout-keys 新增 COLOR_VARIANT_KEYS；InitAbility.assignProps 添加 ColorVariant 赋值；TemplateComponent 能力列表和 flush 添加 ColorVariantAbility |
 | 2026-07-13 | 箭头指示器能力：新增 ArrowAbility（通用浮层箭头能力，CSS 变量驱动样式 --q-arrow-color/--q-arrow-size，initArrow/updateArrowPlacement/setArrowVisible，能力状态管理 _arrowEl/_arrowVisible）；新增 arrowCSS 通用箭头样式（.q-arrow + .q-arrow--top/bottom/left/right）；新增 ArrowProps（LayoutNode 声明式配置 arrow/arrowVars）；positionOverlay 返回实际 Placement（flip 后可能改变）；OverlayHostAbility.positionOverlay 自动联动 ArrowAbility（检测 updateArrowPlacement）；TooltipProps/TooltipKey/TooltipOverlayConfig 新增 tooltipArrow；TipsComponent 改用 ArrowAbility（_initTips 调 initArrow，open 时箭头方向由 OverlayHostAbility 自动联动） |
+| 2026-07-13 | 遮罩与加载能力：新增 OverlayMaskAbility（纯遮罩能力，initMask/showMask/hideMask，支持 maskColor/maskZIndex/fullscreen/onMaskClick）；新增 LoadingAbility（组合 OverlayMaskAbility + spinner，initLoading/showLoading/hideLoading/setLoadingText，支持 loadingText/spinnerHtml/fullscreen）；删除 HiddenRoot（功能合并到 OverlayRoot，新增 mountOverlay/unmountOverlay 便捷方法，参数改为 HTMLElement）；OverlayRoot 移除 TemplateComponent 导入依赖 |

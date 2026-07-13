@@ -159,27 +159,11 @@ export const StyleAbility: AbilityDefinition = {
 
 ## 全局容器
 
-框架提供两个全局单例容器，用于挂载特殊组件：
+框架提供全局单例容器，用于挂载特殊组件：
 
 | 容器 | DOM ID | 可见性 | 用途 |
 |---|---|---|---|
-| **HiddenRoot** | `#q-hidden-root` | `display: none` | 挂载不需要可见的组件（隐藏表单、临时计算组件等） |
 | **OverlayRoot** | `#q-overlay-root` | 可见，`pointer-events: none` | 挂载浮层组件（Dialog、Tooltip、Notification 等） |
-
-### HiddenRoot
-
-```js
-const hiddenRoot = HiddenRoot.getInstance();
-
-// 挂载隐藏组件
-hiddenRoot.mountHidden(someComponent);
-
-// 卸载
-hiddenRoot.unmountHidden(someComponent);
-
-// 获取 DOM 容器
-const el = hiddenRoot.getRoot();
-```
 
 ### OverlayRoot
 
@@ -188,6 +172,12 @@ const overlayRoot = OverlayRoot.getInstance();
 
 // 获取浮层容器（Dialog 的 OverlayAbility 内部使用）
 const el = overlayRoot.getRoot();
+
+// 挂载组件元素到浮层容器
+overlayRoot.mountOverlay(componentEl);
+
+// 卸载组件元素
+overlayRoot.unmountOverlay(componentEl);
 ```
 
 ### z-index 层级

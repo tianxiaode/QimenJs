@@ -365,7 +365,7 @@ index.ts
 
 #### `src/component/` — UI 组件层 `@qimenjs/component` (31 文件)
 ```
-OverlayRoot.ts, HiddenRoot.ts, z-index.ts, register.ts, events.ts
+OverlayRoot.ts, z-index.ts, register.ts, events.ts
 components/ — 15 种内置组件:
   ButtonComponent   [ElementEventAbility, ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility] — withTemplate
   InputComponent    [ElementEventAbility, ContentAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility] — withTemplate

@@ -7,3 +7,5 @@ export { OverlayHostAbility, type OverlayHostConfig } from './OverlayHostAbility
 export { TooltipOverlayAbility, type TooltipOverlayConfig } from './TooltipOverlayAbility';
 export { ArrowAbility, type ArrowConfig } from './ArrowAbility';
 export { arrowCSS } from './arrow.css';
+export { OverlayMaskAbility, type OverlayMaskConfig } from './OverlayMaskAbility';
+export { LoadingAbility, type LoadingConfig } from './LoadingAbility';

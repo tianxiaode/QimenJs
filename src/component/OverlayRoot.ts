@@ -4,6 +4,9 @@
  * 在 <body> 下创建全局浮层容器，所有浮层组件渲染到该容器中。
  * 浮层容器本身可见（用于 z-index 层叠），但 pointer-events: none
  * 避免遮挡下层交互。
+ *
+ * 同时提供 mountOverlay / unmountOverlay 便捷方法，
+ * 用于将组件挂载到浮层根容器（替代已移除的 HiddenRoot）。
  */
 
 export class OverlayRoot {
@@ -49,6 +52,27 @@ export class OverlayRoot {
         }
 
         return this.root;
+    }
+
+    /**
+     * 将组件挂载到浮层根容器
+     *
+     * @param el - 要挂载的组件根元素
+     */
+    mountOverlay(el: HTMLElement): void {
+        const root = this.getRoot();
+        root.appendChild(el);
+    }
+
+    /**
+     * 从浮层根容器卸载组件
+     *
+     * @param el - 要卸载的组件根元素
+     */
+    unmountOverlay(el: HTMLElement): void {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
     }
 
     /**
