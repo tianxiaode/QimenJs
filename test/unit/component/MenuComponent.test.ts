@@ -1,10 +1,8 @@
 /**
  * MenuComponent 单元测试
  *
- * 覆盖：构造函数、open/close、浮层协议、内置 ItemGroup、dispose
- *
- * 注意：MenuComponent 依赖 OverlayRoot（需要 document.body），
- * 测试中需要确保 OverlayRoot 容器存在。
+ * 覆盖：构造函数、open/close、浮层协议、内置 ItemGroup、
+ *       分组选中（GroupSelectAbility）、dispose
  */
 
 jest.mock('@/logger', () => {
@@ -166,6 +164,86 @@ describe('MenuComponent', () => {
             menu.itemGroup.setItems([{ text: 'X' }]);
             expect(menu.itemGroup.count).toBe(1);
             expect(menu.itemGroup.pool.length).toBe(3); // 池中仍有3个
+        });
+    });
+
+    // ============================================
+    // 分组选中（GroupSelectAbility）
+    // ============================================
+
+    describe('分组选中', () => {
+        it('radio 分组：点击一项自动取消同组其他项', () => {
+            const menu = new MenuComponent({
+                items: [
+                    { text: '大图标', group: 'view', groupMode: 'radio', checked: true },
+                    { text: '小图标', group: 'view', groupMode: 'radio' },
+                ],
+            }) as any;
+
+            const items = menu.itemGroup.items;
+            expect(items[0].checked).toBe(true);
+            expect(items[1].checked).toBe(false);
+
+            // 模拟点击第二项
+            items[1].onContentClick();
+            menu.notifyGroupSelect(items[1]);
+
+            expect(items[1].checked).toBe(true);
+            expect(items[0].checked).toBe(false);
+        });
+
+        it('checkbox 分组：各项独立切换', () => {
+            const menu = new MenuComponent({
+                items: [
+                    { text: '状态栏', group: 'show', groupMode: 'checkbox' },
+                    { text: '工具栏', group: 'show', groupMode: 'checkbox' },
+                ],
+            }) as any;
+
+            const items = menu.itemGroup.items;
+            items[0].onContentClick();
+            items[1].onContentClick();
+
+            expect(items[0].checked).toBe(true);
+            expect(items[1].checked).toBe(true);
+        });
+
+        it('getGroupChecked 查询 radio 选中项', () => {
+            const menu = new MenuComponent({
+                items: [
+                    { text: '大图标', group: 'view', groupMode: 'radio', checked: true },
+                    { text: '小图标', group: 'view', groupMode: 'radio' },
+                ],
+            }) as any;
+
+            const checked = menu.getGroupChecked('view');
+            expect(checked).toBe(menu.itemGroup.items[0]);
+        });
+
+        it('getGroupChecked 查询 checkbox 选中项', () => {
+            const menu = new MenuComponent({
+                items: [
+                    { text: '状态栏', group: 'show', groupMode: 'checkbox', checked: true },
+                    { text: '工具栏', group: 'show', groupMode: 'checkbox' },
+                ],
+            }) as any;
+
+            const checked = menu.getGroupChecked('show');
+            expect(checked).toHaveLength(1);
+            expect(checked[0]).toBe(menu.itemGroup.items[0]);
+        });
+
+        it('setGroupChecked 程序化设置选中项', () => {
+            const menu = new MenuComponent({
+                items: [
+                    { text: '大图标', group: 'view', groupMode: 'radio' },
+                    { text: '小图标', group: 'view', groupMode: 'radio' },
+                ],
+            }) as any;
+
+            menu.setGroupChecked('view', 1);
+            expect(menu.itemGroup.items[1].checked).toBe(true);
+            expect(menu.itemGroup.items[0].checked).toBe(false);
         });
     });
 

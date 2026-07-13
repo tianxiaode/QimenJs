@@ -28,6 +28,8 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── TipsComponent
         ├── MenuComponent
         ├── MenuItemComponent
+        ├── NavItemComponent
+        ├── NavItemGroupComponent
         └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
 ```
 
@@ -52,8 +54,10 @@ ComposableBase (src/composable/ComposableBase.ts)
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
 | TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ ArrowAbility（浮层定位箭头，模板定义节点）+ hover 事件 + delay |
-| MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项） |
-| MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建）+ ExpandArrowAbility（展开/折叠箭头，点击切换状态） |
+| MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, GroupSelectAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项，分组选择互斥） |
+| MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建）+ ExpandArrowAbility（展开/折叠箭头，点击切换状态）+ 分组选择（group/groupMode/checked，radio 互斥/checkbox 多选） |
+| NavItemComponent | `src/component/nav/NavItemComponent.ts` | withTemplate(NAVITEM_TEMPLATE)，导航项组件（text/icon/active/disabled，eventKey 事件转发） |
+| NavItemGroupComponent | `src/component/nav/NavItemGroupComponent.ts` | 继承 ItemGroupComponent，导航项分组容器（eventKey='nav'，selectAt/clearSelection/activeIndex） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |
 | IdColumn | `src/component/components/IdColumn.ts` | 继承 ColumnBase |
 | NumberColumn | `src/component/components/NumberColumn.ts` | 继承 ColumnBase |
@@ -482,6 +486,12 @@ class RootComponent extends ComponentBase {
 |------|------|
 | MenuItemManageAbility | 菜单项管理（池化复用、增删改、状态管理） |
 
+### 2.6.2 分组选择能力 (`src/component-abilities/group/`)
+
+| 能力 | 说明 |
+|------|------|
+| GroupSelectAbility | 分组选择管理（radio 互斥/checkbox 多选，registerGroupItem/notifyGroupSelect/getGroupChecked，能力状态管理） |
+
 ### 2.7 交互能力 (`src/component-abilities/interaction/`)
 
 | 能力 | 说明 |
@@ -766,4 +776,5 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-13 | 语义颜色变体：新增 ColorVariantAbility（colorVariant 全套背景+前景色，colorVariantText 仅前景色）；新增 ColorVariant/ColorVariantProps/COLOR_VARIANTS/COLOR_VARIANT_MAP 常量；新增 on-xxx 前景色变量（on-primary/on-secondary/on-success/on-warning/on-error/on-info）到所有主题预设（light/dark/7个中国主题）；LayoutNode 继承 ColorVariantProps；layout-keys 新增 COLOR_VARIANT_KEYS；InitAbility.assignProps 添加 ColorVariant 赋值；TemplateComponent 能力列表和 flush 添加 ColorVariantAbility |
 | 2026-07-13 | 箭头指示器能力：新增 ArrowAbility（通用浮层箭头能力，CSS 变量驱动样式 --q-arrow-color/--q-arrow-size，initArrow/updateArrowPlacement/setArrowVisible，能力状态管理 _arrowEl/_arrowVisible）；新增 arrowCSS 通用箭头样式（.q-arrow + .q-arrow--top/bottom/left/right）；新增 ArrowProps（LayoutNode 声明式配置 arrow/arrowVars）；positionOverlay 返回实际 Placement（flip 后可能改变）；OverlayHostAbility.positionOverlay 自动联动 ArrowAbility（检测 updateArrowPlacement）；TooltipProps/TooltipKey/TooltipOverlayConfig 新增 tooltipArrow；TipsComponent 改用 ArrowAbility（_initTips 调 initArrow，open 时箭头方向由 OverlayHostAbility 自动联动） |
 | 2026-07-13 | 遮罩与加载能力：新增 OverlayMaskAbility（纯遮罩能力，initMask/showMask/hideMask，支持 maskColor/maskZIndex/fullscreen/onMaskClick）；新增 LoadingAbility（组合 OverlayMaskAbility + spinner，initLoading/showLoading/hideLoading/setLoadingText，支持 loadingText/spinnerHtml/fullscreen）；删除 HiddenRoot（功能合并到 OverlayRoot，新增 mountOverlay/unmountOverlay 便捷方法，参数改为 HTMLElement）；OverlayRoot 移除 TemplateComponent 导入依赖 |
-| 2026-07-13 | 箭头能力重构 + ExpandArrowAbility：ArrowAbility 改为从 nodeMap 定位箭头节点（不再 createElement，模板定义 div 节点，Ability 绑定行为）；新增 ExpandArrowAbility（展开/折叠箭头能力，模板定义 div>i 节点，Ability 切换 CSS 状态类 + 发射内部事件，不操作图标内容）；所有箭头模板统一为 div>i 结构（BUTTON/SELECT/MENU_ITEM 加 expand 节点，TIPS/DROPDOWN/POPOVER 加 arrow 节点，TOOLBAR prevBtn/nextBtn 改为 div>i）；arrowCSS 新增 ExpandArrow 样式（q-expand-arrow + collapsed/expanded 状态类）+ 溢出箭头 horizontal/vertical 方向适配 + 组件级覆盖（dropdown/popover/select）；图标替换统一模式：覆盖 i::before 即可替换为任意图标方案（FontAwesome/iconfont 等），内部零改动 |
+| 2026-07-13 | 箭头能力重构 + ExpandArrowAbility：ArrowAbility 改为从 nodeMap 定位箭头节点（不再 createElement，模板定义 div 节点，Ability 绑定行为）；新增 ExpandArrowAbility（展开/折叠箭头能力，模板定义 div>i 节点，Ability 切换 CSS 状态类 + 发射内部事件，不操作图标内容）；所有箭头模板统一为 div>i 结构（BUTTON/SELECT/MENU_ITEM 加 expand 节点，TIPS/DROPDOWN/POPOVER 加 arrow 节点，TOOLBAR prevBtn/nextBtn 改为 div>i）；arrowCSS 新增 ExpandArrow 样式（q-expand-arrow + collapsed/expanded 状态类）+ 溢出箭头 horizontal/vertical 方向适配 + 组件级覆盖（dropdown/popover/select）；图标替换统一模式：覆盖 i::before 即可替换为任图标方案（FontAwesome/iconfont 等），内部零改动 |
+| 2026-07-13 | 导航组件 + 分组选择能力：新增 NavItemComponent（导航项，withTemplate + eventKey 事件转发，text/icon/active/disabled）；新增 NavItemGroupComponent（导航项分组，继承 ItemGroupComponent，eventKey='nav'，selectAt/clearSelection/activeIndex）；新增 GroupSelectAbility（分组选择能力，radio 互斥/checkbox 多选，能力状态管理，MenuComponent 使用）；MenuItemComponent 新增分组选择属性（group/groupMode/checked，radio ●/○ + checkbox ☑/☐ 指示器，ARIA role 支持）；模板事件声明化（MENU_ITEM_TEMPLATE/NAVITEM_TEMPLATE 添加 event:'click'，handleClick → onContentClick）；ExpandArrowAbility 从 component-abilities/render 重导出到主入口 |

@@ -2,16 +2,27 @@
  * MenuItemComponent 菜单项组件
  *
  * 独立组件，每个菜单项是一个组件实例。
- * 支持图标、文本、快捷键、禁用状态、子菜单。
+ * 支持图标、文本、快捷键、禁用状态、子菜单、分组选中。
  *
  * 模板内容项（由 withTemplate 自动生成 getter/setter）：
- * - menuItem:icon — 图标
+ * - menuItem:content — 整行可点击区域（事件：click → onContentClick）
+ * - menuItem:icon — 图标（分组模式下自动渲染选中指示符，与自定义 icon 互斥）
  * - menuItem:text — 文本
  * - menuItem:shortcut — 快捷键文本
  * - menuItem:expand — 子菜单展开箭头（div > i 结构）
  *
- * 事件：
- * - click → handleClick（内部事件，触发外部 onSelect 回调）
+ * 分组选中：
+ * - group 指定所属分组（同组互斥或共存）
+ * - groupMode 控制分组模式：'radio'（单选，同组只能选一个）、'checkbox'（多选，同组可多选）
+ * - checked 表示当前选中状态
+ * - 选中指示符复用 icon 位：radio 用 ●/○，checkbox 用 ☑/☐
+ * - 自定义 icon 与分组指示符互斥：有 group 时优先显示指示符
+ *
+ * 事件流：
+ * - 内部事件：menuItem:content click → onContentClick
+ *   - 切换 checked 状态（分组模式）
+ *   - 通过 eventKey 触发外部事件（item:click / item:select），供 ItemGroup 转发
+ *   - 调用 onSelect 回调
  *
  * 子菜单：
  * - 通过 OverlayAbility 创建子 MenuComponent 浮层
@@ -19,19 +30,29 @@
  *
  * @example
  * ```js
+ * // 普通菜单项
  * const item = new MenuItemComponent({ text: '新建', icon: '📄', shortcut: 'Ctrl+N' });
- * item.onSelect = () => { ... };
+ *
+ * // 单选组
+ * { text: '大图标', group: 'view', groupMode: 'radio', checked: true }
+ * { text: '小图标', group: 'view', groupMode: 'radio' }
+ *
+ * // 多选组
+ * { text: '显示状态栏', group: 'show', groupMode: 'checkbox', checked: true }
  * ```
  */
 
 import { TemplateComponent, OverlayAbility, MENU_ITEM_TEMPLATE } from '@qimenjs/component-core';
 import { ExpandArrowAbility } from '@qimenjs/component-abilities';
 
+/** 分组模式 */
+export type MenuItemGroupMode = 'radio' | 'checkbox';
+
 /** 菜单项配置 */
 export interface MenuItemProps {
     /** 菜单项文本 */
     text?: string;
-    /** 图标（文本或 HTML） */
+    /** 图标（文本或 HTML，分组模式下与指示符互斥） */
     icon?: string;
     /** 快捷键文本 */
     shortcut?: string;
@@ -39,6 +60,12 @@ export interface MenuItemProps {
     disabled?: boolean;
     /** 是否有子菜单 */
     hasSubmenu?: boolean;
+    /** 所属分组名称，同组内互斥或共存 */
+    group?: string;
+    /** 分组模式：'radio' 单选（同组只能选一个）、'checkbox' 多选（同组可多选） */
+    groupMode?: MenuItemGroupMode;
+    /** 是否选中（分组模式下有效） */
+    checked?: boolean;
     /** 选中回调 */
     onSelect?: (item: MenuItemComponent) => void;
     /** 子菜单配置（hasSubmenu 为 true 时有效） */
@@ -59,6 +86,18 @@ export class MenuItemComponent extends MenuItemBase {
     /** 是否有子菜单 */
     private _hasSubmenu: boolean = false;
 
+    /** 所属分组 */
+    private _group: string = '';
+
+    /** 分组模式 */
+    private _groupMode: MenuItemGroupMode = 'radio';
+
+    /** 是否选中 */
+    private _checked: boolean = false;
+
+    /** 用户自定义 icon（分组模式下与指示符互斥时暂存） */
+    private _userIcon: string = '';
+
     /** 选中回调 */
     onSelect?: (item: MenuItemComponent) => void;
 
@@ -75,10 +114,13 @@ export class MenuItemComponent extends MenuItemBase {
         this.el.classList.add('q-menu-item');
 
         if (props?.text) this.text = props.text;
-        if (props?.icon) this.icon = props.icon;
+        if (props?.icon) this._userIcon = props.icon;
         if (props?.shortcut) this.shortcut = props.shortcut;
         if (props?.disabled) this._disabled = props.disabled;
         if (props?.hasSubmenu) this._hasSubmenu = props.hasSubmenu;
+        if (props?.group) this._group = props.group;
+        if (props?.groupMode) this._groupMode = props.groupMode;
+        if (props?.checked) this._checked = props.checked;
         if (props?.onSelect) this.onSelect = props.onSelect;
         if (props?.submenuProps) this.submenuProps = props.submenuProps;
 
@@ -101,12 +143,62 @@ export class MenuItemComponent extends MenuItemBase {
         this.applyState();
     }
 
-    /** 内部事件：点击处理 */
-    handleClick(): void {
+    /** 所属分组 */
+    get group(): string { return this._group; }
+    set group(value: string) {
+        this._group = value;
+        this.applyState();
+    }
+
+    /** 分组模式 */
+    get groupMode(): MenuItemGroupMode { return this._groupMode; }
+    set groupMode(value: MenuItemGroupMode) {
+        this._groupMode = value;
+        this.applyState();
+    }
+
+    /** 是否选中 */
+    get checked(): boolean { return this._checked; }
+    set checked(value: boolean) {
+        this._checked = value;
+        this.applyState();
+    }
+
+    // ─── 内部事件（由模板 event: 'click' 自动绑定） ───
+
+    /**
+     * menuItem:content 的 click 事件处理
+     *
+     * 事件流：
+     * 1. 切换 checked 状态（分组模式）
+     * 2. 通过 eventKey 触发 item:click（供 ItemGroup 转发）
+     * 3. 通过 eventKey 触发 item:select（供 GroupSelectAbility 处理互斥）
+     * 4. 调用 onSelect 回调
+     */
+    onContentClick(): void {
         if (this._disabled) return;
 
-        // 有子菜单时不触发 onSelect，由 hover 处理
+        // 有子菜单时不触发选中，由 hover 处理
         if (this._hasSubmenu) return;
+
+        // 分组模式下切换选中态
+        if (this._group) {
+            if (this._groupMode === 'checkbox') {
+                this._checked = !this._checked;
+            } else {
+                // radio 模式：点击未选中项才切换
+                if (!this._checked) {
+                    this._checked = true;
+                }
+            }
+            this.applyState();
+        }
+
+        // 通过 eventKey 触发外部事件（供 ItemGroup 转发）
+        if (this.eventKey) {
+            this.emit(`${this.eventKey}:click`, { item: this });
+            this.emit(`${this.eventKey}:select`, { item: this });
+        }
 
         this.onSelect?.(this);
     }
@@ -115,6 +207,15 @@ export class MenuItemComponent extends MenuItemBase {
     private applyState(): void {
         this.el.classList.toggle('q-menu-item--disabled', this._disabled);
         this.el.classList.toggle('q-menu-item--has-submenu', this._hasSubmenu);
+        this.el.classList.toggle('q-menu-item--checked', this._checked);
+        this.el.classList.toggle('q-menu-item--grouped', !!this._group);
+
+        // 分组指示符渲染到 icon 位（与自定义 icon 互斥）
+        if (this._group) {
+            this.renderGroupIndicator();
+        } else if (this._userIcon) {
+            this.icon = this._userIcon;
+        }
 
         // 展开箭头显隐
         const expandEl = this.nodeMap?.['menuItem']?.['expand']?.el as HTMLElement | null;
@@ -127,6 +228,29 @@ export class MenuItemComponent extends MenuItemBase {
             this.el.setAttribute('aria-disabled', 'true');
         } else {
             this.el.removeAttribute('aria-disabled');
+        }
+
+        // 分组 ARIA
+        if (this._group) {
+            this.el.setAttribute('role', this._groupMode === 'radio' ? 'menuitemradio' : 'menuitemcheckbox');
+            this.el.setAttribute('aria-checked', String(this._checked));
+        } else {
+            this.el.removeAttribute('role');
+            this.el.removeAttribute('aria-checked');
+        }
+    }
+
+    /**
+     * 渲染分组选中指示符到 icon 位
+     *
+     * radio 模式：●（选中）/ ○（未选中）
+     * checkbox 模式：☑（选中）/ ☐（未选中）
+     */
+    private renderGroupIndicator(): void {
+        if (this._groupMode === 'radio') {
+            this.icon = this._checked ? '●' : '○';
+        } else {
+            this.icon = this._checked ? '☑' : '☐';
         }
     }
 
@@ -186,10 +310,13 @@ export class MenuItemComponent extends MenuItemBase {
 
     update(props?: Partial<MenuItemProps> & Record<string, any>): void {
         if (props?.text !== undefined) this.text = props.text;
-        if (props?.icon !== undefined) this.icon = props.icon;
+        if (props?.icon !== undefined) this._userIcon = props.icon;
         if (props?.shortcut !== undefined) this.shortcut = props.shortcut;
         if (props?.disabled !== undefined) this.disabled = props.disabled;
         if (props?.hasSubmenu !== undefined) this.hasSubmenu = props.hasSubmenu;
+        if (props?.group !== undefined) this.group = props.group;
+        if (props?.groupMode !== undefined) this.groupMode = props.groupMode;
+        if (props?.checked !== undefined) this.checked = props.checked;
         if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
         if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
     }

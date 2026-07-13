@@ -258,17 +258,20 @@ export const BADGE_TEMPLATE: JsonTemplateNode[] = [
  * 菜单项模板
  *
  * 内容项：
+ * - menuItem:content — 整行可点击区域（事件：click → onContentClick）
  * - menuItem:icon — 图标
  * - menuItem:text — 文本
  * - menuItem:shortcut — 快捷键文本
  * - menuItem:expand — 子菜单展开箭头（div > i 结构，i 承载 CSS 图标）
  */
 export const MENU_ITEM_TEMPLATE: JsonTemplateNode[] = [
-    { tag: 'span', content: 'menuItem:icon', class: 'q-menu-item__icon' },
-    { tag: 'span', content: 'menuItem:text', class: 'q-menu-item__text' },
-    { tag: 'span', content: 'menuItem:shortcut', class: 'q-menu-item__shortcut' },
-    { tag: 'div', content: 'menuItem:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-        { tag: 'i' },
+    { tag: 'div', content: 'menuItem:content', event: 'click', class: 'q-menu-item__content', children: [
+        { tag: 'span', content: 'menuItem:icon', class: 'q-menu-item__icon' },
+        { tag: 'span', content: 'menuItem:text', class: 'q-menu-item__text' },
+        { tag: 'span', content: 'menuItem:shortcut', class: 'q-menu-item__shortcut' },
+        { tag: 'div', content: 'menuItem:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+            { tag: 'i' },
+        ]},
     ]},
 ];
 
@@ -303,6 +306,21 @@ export const PANEL_TEMPLATE: JsonTemplateNode[] = [
         { tag: 'div', content: 'panel:toolsRight', class: 'q-panel__tools q-panel__tools--right' },
     ]},
     { tag: 'div', content: 'panel:body', class: 'q-panel__body' },
+];
+
+/**
+ * 导航项模板
+ *
+ * 内容项：
+ * - navItem:content — 可点击区域（事件：click → onContentClick）
+ * - navItem:icon — 图标
+ * - navItem:text — 文本
+ */
+export const NAVITEM_TEMPLATE: JsonTemplateNode[] = [
+    { tag: 'div', content: 'navItem:content', event: 'click', class: 'q-nav-item__content', children: [
+        { tag: 'span', content: 'navItem:icon', class: 'q-nav-item__icon' },
+        { tag: 'span', content: 'navItem:text', class: 'q-nav-item__text' },
+    ]},
 ];
 
 /**
@@ -343,5 +361,6 @@ export const COMPONENT_TEMPLATES: Record<string, JsonTemplateNode[]> = {
     MenuItem: MENU_ITEM_TEMPLATE,
     Menu: MENU_TEMPLATE,
     Panel: PANEL_TEMPLATE,
+    NavItem: NAVITEM_TEMPLATE,
     ItemGroup: ITEMGROUP_TEMPLATE,
 };

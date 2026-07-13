@@ -16,10 +16,14 @@ export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } f
 export { OverlayHostAbility, type OverlayHostConfig } from './render';
 export { TooltipOverlayAbility, type TooltipOverlayConfig } from './render';
 export { ArrowAbility, type ArrowConfig } from './render';
+export { ExpandArrowAbility } from './render';
 export { arrowCSS } from './render';
 
 
 
 // 菜单能力
 export { MenuItemManageAbility, type MenuItemConfig } from './menu';
+
+// 分组选择能力
+export { GroupSelectAbility, type GroupSelectMode, type GroupInfo, type GroupSelectConfig } from './group';
 

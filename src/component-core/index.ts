@@ -78,6 +78,7 @@ export {
     MENU_TEMPLATE,
     PANEL_TEMPLATE,
     ITEMGROUP_TEMPLATE,
+    NAVITEM_TEMPLATE,
     COMPONENT_TEMPLATES,
 } from './template-presets';
 

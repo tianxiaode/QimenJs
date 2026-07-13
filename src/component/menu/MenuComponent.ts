@@ -3,25 +3,40 @@
  *
  * 弹出式菜单容器，内置 ItemGroup 管理菜单项。
  * 复用 OverlayHostAbility 实现浮层协议（open/close/reposition）。
+ * 复用 GroupSelectAbility 实现分组选中态管理（radio/checkbox）。
  *
  * 默认使用 MenuItem 作为子项组件，可通过 itemType 替换。
+ *
+ * 分组选中：
+ * - radio 组内选中一项时，自动取消同组其他项的选中
+ * - checkbox 组内各项独立切换
+ * - 通过 GroupSelectAbility 提供查询/设置方法
  *
  * @example
  * ```js
  * // 默认 MenuItem
  * { type: 'Menu', items: [{ text: '复制' }, { text: '粘贴' }] }
  *
- * // 替换子项组件
- * { type: 'Menu', itemType: 'ColorItem', items: [{ color: '#f00' }] }
+ * // 分组菜单项
+ * { type: 'Menu', items: [
+ *     { text: '大图标', group: 'view', groupMode: 'radio', checked: true },
+ *     { text: '小图标', group: 'view', groupMode: 'radio' },
+ *     { text: '显示状态栏', group: 'show', groupMode: 'checkbox', checked: true },
+ * ] }
  *
  * // 运行时增删
  * menu.itemGroup.add({ text: '新增' });
  * menu.itemGroup.removeAt(1);
+ *
+ * // 查询分组选中
+ * menu.getGroupChecked('view');        // radio → MenuItem | null
+ * menu.getGroupChecked('show');        // checkbox → MenuItem[]
+ * menu.setGroupChecked('view', 1);     // radio → 选中索引1
  * ```
  */
 
 import { TemplateComponent, MENU_TEMPLATE } from '@qimenjs/component-core';
-import { OverlayHostAbility } from '@qimenjs/component-abilities';
+import { OverlayHostAbility, GroupSelectAbility } from '@qimenjs/component-abilities';
 import type { Placement } from '@qimenjs/component-core';
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 
@@ -40,11 +55,11 @@ export interface MenuProps {
 }
 
 /**
- * MenuBase — withTemplate + OverlayHostAbility
+ * MenuBase — withTemplate + OverlayHostAbility + GroupSelectAbility
  */
 const MenuBase = TemplateComponent
     .withTemplate(MENU_TEMPLATE)
-    .with([OverlayHostAbility]);
+    .with([OverlayHostAbility, GroupSelectAbility]);
 
 export class MenuComponent extends MenuBase {
     /** 是否已打开 */
@@ -71,11 +86,24 @@ export class MenuComponent extends MenuBase {
         // 保存锚点引用
         if (props?.anchor) this._anchor = props.anchor;
 
+        // 初始化分组选择能力
+        this.initGroupSelect({ defaultMode: 'radio' });
+
         // 创建内置 ItemGroup，默认 MenuItem，可替换
         this._itemGroup = new ItemGroupComponent({
             itemType: props?.itemType ?? 'MenuItem',
             direction: 'vertical',
+            eventKey: 'item',
+            events: ['click', 'select'],
             items: props?.items,
+        });
+
+        // 注册子项到分组选择能力
+        this.registerGroupItems([...this._itemGroup.items]);
+
+        // 监听子项选中事件，委托给 GroupSelectAbility
+        this._itemGroup.on('item:select', (data: any) => {
+            this.notifyGroupSelect(data.item);
         });
 
         // 挂载到 menu:default 容器
@@ -153,6 +181,7 @@ export class MenuComponent extends MenuBase {
 
     dispose(): void {
         this.close();
+        this.clearGroups();
         if (this._itemGroup) {
             this._itemGroup.dispose();
         }

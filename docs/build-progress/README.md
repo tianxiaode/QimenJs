@@ -104,6 +104,16 @@ docs/build-progress/
 ## 最近更新
 
 ### 2026-07-13
+- 导航组件：新增 NavItemComponent（withTemplate + eventKey 事件转发，text/icon/active/disabled）
+- 导航组件：新增 NavItemGroupComponent（继承 ItemGroupComponent，eventKey='nav'，selectAt/clearSelection/activeIndex）
+- 分组选择能力：新增 GroupSelectAbility（radio 互斥/checkbox 多选，能力状态管理，MenuComponent 使用）
+- MenuItemComponent 新增分组选择属性（group/groupMode/checked，radio ●/○ + checkbox ☑/☐ 指示器，ARIA role 支持）
+- 模板事件声明化：MENU_ITEM_TEMPLATE/NAVITEM_TEMPLATE 添加 event:'click'，handleClick → onContentClick
+- ExpandArrowAbility 从 component-abilities/render 重导出到主入口
+- 新增单元测试：NavItemComponent.test.ts、NavItemGroupComponent.test.ts、GroupSelectAbility.test.ts
+- 更新单元测试：MenuItemComponent.test.ts（分组、onContentClick）、MenuComponent.test.ts（GroupSelectAbility）
+
+### 2026-07-13（早期）
 - 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）
 - OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）
 - 新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）
