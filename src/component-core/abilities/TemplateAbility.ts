@@ -41,12 +41,7 @@ import { mergePropAliases, applyPropAliases } from './PropAlias';
  * 在 static children 中声明，为模板占位节点对应的子组件提供差异化 props。
  * key 对应 data-content 的 name 部分，value 是传给子组件的 props。
  */
-export interface ChildComponentConfig {
-    /** 目标节点名（对应 data-content 的 name 部分） */
-    target: string;
-    /** 传递给子组件的 props */
-    props?: Record<string, any>;
-}
+export type ChildComponentConfig = Record<string, Record<string, any> | undefined>;
 
 export const TemplateAbility: AbilityDefinition = {
     /**
@@ -64,7 +59,7 @@ export const TemplateAbility: AbilityDefinition = {
         // 合并配置：static 属性为基础，props 可覆盖
         const ctor = this.constructor as any;
         const cfg: Record<string, any> = {
-            children: ctor.children ? [...ctor.children] : undefined,
+            children: ctor.children ? { ...ctor.children } : undefined,
             bridges: ctor.bridges ? [...ctor.bridges] : undefined,
             abilities: ctor.abilities,
             entity: ctor.entity,
@@ -201,21 +196,13 @@ export const TemplateAbility: AbilityDefinition = {
      *
      * @param children - 子组件差异化配置（static children），可选
      */
-    _renderChildComponents(children?: ChildComponentConfig[]): void {
-        // 构建 target → props 的快速查找表
-        const propsMap: Record<string, Record<string, any>> = {};
-        if (children) {
-            for (const cfg of children) {
-                propsMap[cfg.target] = cfg.props || {};
-            }
-        }
-
+    _renderChildComponents(children?: ChildComponentConfig): void {
         for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
             for (const node of Object.values(group) as NodeMetadata[]) {
                 if (!node.componentClass) continue;
 
                 const ComponentClass = node.componentClass;
-                const childProps = propsMap[node.name];
+                const childProps = children?.[node.name];
 
                 // 创建子组件实例（withTemplate 强类，new 即完整实例）
                 const child = new ComponentClass(childProps);

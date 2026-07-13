@@ -430,8 +430,11 @@ describe('InitAbility', () => {
             instance.onBtnClick = jest.fn();
             instance.bindInternalEvents();
 
-            instance.emit('click', { domEvent: new Event('click') });
-            expect(instance.onBtnClick).toHaveBeenCalled();
+            // 模拟真实调用链：EventScope.emit → EventBus.emit → handler(EventContext)
+            // data 是 GestureEmit { semantic, originalEvent }
+            const domEvent = new Event('click');
+            instance.emit('click', { semantic: 'click', originalEvent: domEvent });
+            expect(instance.onBtnClick).toHaveBeenCalledWith(domEvent, btnEl);
         });
 
         it('once 内部事件', () => {
@@ -451,8 +454,9 @@ describe('InitAbility', () => {
             instance.onBtnClick = jest.fn();
             instance.bindInternalEvents();
 
-            instance.emit('click', { domEvent: new Event('click') });
-            instance.emit('click', { domEvent: new Event('click') });
+            const domEvent = new Event('click');
+            instance.emit('click', { semantic: 'click', originalEvent: domEvent });
+            instance.emit('click', { semantic: 'click', originalEvent: new Event('click') });
             expect(instance.onBtnClick).toHaveBeenCalledTimes(1);
         });
 
@@ -496,7 +500,8 @@ describe('InitAbility', () => {
             const emitSpy = jest.spyOn(instance, 'emit');
             instance.bindExternalEvents({ bridges: ['saveBtn:tap'] });
 
-            instance.emit('tap', { domEvent: new Event('tap') });
+            const domEvent = new Event('tap');
+            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
             expect(emitSpy).toHaveBeenCalled();
             emitSpy.mockRestore();
         });
@@ -513,8 +518,9 @@ describe('InitAbility', () => {
             instance.onSaveBtnTap = jest.fn();
             instance.bindExternalEvents({});
 
-            instance.emit('tap', { domEvent: new Event('tap') });
-            expect(instance.onSaveBtnTap).toHaveBeenCalled();
+            const domEvent = new Event('tap');
+            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
+            expect(instance.onSaveBtnTap).toHaveBeenCalledWith(domEvent, btnEl);
         });
 
         it('默认模式 → 走 emit 发布', () => {
@@ -529,7 +535,8 @@ describe('InitAbility', () => {
             const emitSpy = jest.spyOn(instance, 'emit');
             instance.bindExternalEvents({});
 
-            instance.emit('tap', { domEvent: new Event('tap') });
+            const domEvent = new Event('tap');
+            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
             expect(emitSpy).toHaveBeenCalled();
             emitSpy.mockRestore();
         });

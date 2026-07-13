@@ -58,6 +58,7 @@ const config: Config = {
     '^@qimenjs/theme$': '<rootDir>/src/theme',
     '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
     '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
+    '^@qimenjs/component-abilities/(.*)$': '<rootDir>/src/component-abilities/$1',
     '^@qimenjs/component-core$': '<rootDir>/src/component-core',
     '^@qimenjs/component$': '<rootDir>/src/component',
     '^@qimenjs/layout$': '<rootDir>/src/layout',

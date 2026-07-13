@@ -1,11 +1,12 @@
 /**
  * QimenJS 组件演示 — 入口
  *
- * 测试内容：
- * 1. withTemplate 模式构建应用容器
- * 2. 主题切换（light/dark/中国色）
- * 3. 图标库（查看全部图标）
- * 4. 路由切换页面
+ * 架构：
+ * 1. AppShell = TemplateComponent.withTemplate
+ *    - 模板：左侧 RouteNavComponent（路由导航），右侧 RouteContainerComponent（路由容器）
+ *    - 路由导航自动处理：点击 → 切换路由，路由变化 → 切换高亮 + 发事件
+ *    - 路由容器自动处理：监听 route:change → 替换内容区域
+ * 2. HomePage / IconsPage / ThemePage 各自用 withTemplate 定义
  */
 
 // ─── 注册主题 ───
@@ -14,19 +15,64 @@ registerPresetThemes();
 registerChineseThemes();
 
 // ─── 引入样式 ───
-// 图标 CSS 通过 index.html <link> 引入，确保字体文件被浏览器正确下载
 import './styles.css';
+import { navCSS, RouteNavComponent, RouteContainerComponent } from '@qimenjs/component';
+import { registerAllComponents } from '@qimenjs/component';
 
-// ─── 引入组件系统 ───
+// 注入 nav CSS
+const styleEl = document.createElement('style');
+styleEl.textContent = navCSS;
+document.head.appendChild(styleEl);
+
+// 注册组件类型
+registerAllComponents();
+
+// ─── 组件系统 ───
 import { TemplateComponent } from '@qimenjs/component-core';
-import { ChildrenAbility } from '@qimenjs/component-abilities';
-import { RouteAbility } from '@qimenjs/router';
 
-// ─── 页面模块 ───
-import { HOME_TEMPLATE } from './pages/home';
-import { ICONS_TEMPLATE, renderIconGrid } from './pages/icons';
-import { THEME_TEMPLATE, renderThemePage, exposeThemeSwitch } from './pages/theme';
-import { renderSidebar, updateNavHighlight } from './sidebar';
+// ─── 页面组件 ───
+import { HomePage } from './pages/home';
+import { IconsPage } from './pages/icons';
+import { ThemePage } from './pages/theme';
+
+// ─── AppShell：声明式应用壳，基本不用写逻辑 ───
+
+class AppShell extends TemplateComponent.withTemplate([
+    { tag: 'div', class: 'app-root', children: [
+        { tag: 'div', class: 'app-sidebar', children: [
+            { tag: 'div', content: 'shell:nav', json: RouteNavComponent, jsonMode: 'child' },
+        ]},
+        { tag: 'div', class: 'app-content', children: [
+            { tag: 'div', content: 'shell:page', json: RouteContainerComponent, jsonMode: 'child' },
+        ]},
+    ]},
+]) {
+    static type = 'AppShell';
+    static children = {
+        nav: {
+            direction: 'vertical',
+            gap: '0',
+            cls: 'sidebar-nav',
+            pathIndex: { '/': 0, '/icons': 1, '/theme': 2 },
+            indexPath: ['/', '/icons', '/theme'],
+            items: [
+                { text: '首页', icon: '<i class="q-icon-home"></i>', active: true },
+                { text: '图标库', icon: '<i class="q-icon-dragon"></i>' },
+                { text: '主题', icon: '<i class="q-icon-yin-yang"></i>' },
+            ],
+            activeIndex: 0,
+            route: {
+                routes: { '/': 'home', '/icons': 'icons', '/theme': 'theme' },
+                defaultPath: '/',
+                hashMode: true,
+            },
+        },
+        page: {
+            routeMap: { home: HomePage, icons: IconsPage, theme: ThemePage },
+            defaultComponent: HomePage,
+        },
+    };
+}
 
 // ─── 启动应用 ───
 
@@ -35,52 +81,14 @@ function bootstrap(): void {
     ThemeRegistrar.getInstance().apply('light');
 
     // 暴露主题切换到 window
-    exposeThemeSwitch();
+    (window as any).__switchTheme = (name: string) => {
+        ThemeRegistrar.getInstance().apply(name);
+        console.log('[Theme] switched to', name);
+    };
 
-    // 创建应用容器 — withTemplate 模式
-    const AppContainer = TemplateComponent.withTemplate('<div class="app-root"></div>').with([
-        RouteAbility, ChildrenAbility,
-    ]);
-    const app = new AppContainer();
+    // 创建 AppShell 实例
+    const app = new AppShell();
     document.getElementById('app')!.appendChild(app.el);
-
-    // 设置路由
-    app.setupRoute({
-        routes: {
-            '/': HOME_TEMPLATE,
-            '/icons': ICONS_TEMPLATE,
-            '/theme': THEME_TEMPLATE,
-        },
-        defaultPath: '/',
-        hashMode: true,
-        onRouteChange: (event: any) => {
-            console.log('[Route]', event.previousPath, '->', event.path, event.params);
-
-            // 默认自动切换（RouteAbility 内置逻辑会处理 HTML 模板字符串）
-            if (event.config) {
-                app.removeAll();
-                if (typeof event.config === 'string') {
-                    app.el.innerHTML = event.config;
-                } else if (typeof event.config === 'object' && event.config.type) {
-                    app.add(event.config);
-                }
-            }
-
-            // 页面级额外渲染
-            if (event.path === '/icons') {
-                renderIconGrid();
-            }
-            if (event.path === '/theme') {
-                renderThemePage();
-            }
-
-            // 更新导航高亮
-            updateNavHighlight(event.path);
-        },
-    });
-
-    // 渲染侧边导航
-    renderSidebar();
 }
 
 bootstrap();

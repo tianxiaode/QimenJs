@@ -10,7 +10,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import type { NodeMetadata } from '../types';
+import type { NodeMetadata } from '@qimenjs/component-core';
 
 export const ChildSlotAbility: AbilityDefinition = {
     /**

@@ -1,13 +1,11 @@
 /**
- * 图标页 — 模板与渲染
+ * 图标页 — withTemplate 组件
+ *
+ * 使用 JSON 模板 + data-content 声明节点，
+ * 图标网格通过 nodeMap 动态填充。
  */
 
-export const ICONS_TEMPLATE = `
-<div class="icons-page">
-    <h2 class="page-title">图标库 — 全部图标</h2>
-    <div class="icon-grid"></div>
-</div>
-`;
+import { TemplateComponent } from '@qimenjs/component-core';
 
 const ICON_NAMES = [
     'save', 'refresh', 'edit', 'delete', 'add', 'copy', 'paste', 'cut',
@@ -21,13 +19,35 @@ const ICON_NAMES = [
     'abacus', 'brush', 'ink', 'fan', 'temple', 'greatwall', 'china', 'yin-yang',
 ];
 
-export function renderIconGrid(): void {
-    const grid = document.querySelector('.icon-grid');
-    if (!grid) return;
-    grid.innerHTML = ICON_NAMES.map(name =>
-        `<div class="icon-item" title="q-icon-${name}">
-            <i class="q-icon-${name}"></i>
-            <span class="icon-name">${name}</span>
-        </div>`
-    ).join('');
+/**
+ * 图标页组件
+ *
+ * 模板节点（自动生成 getter/setter）：
+ * - icons:title — 页面标题
+ * - icons:grid — 图标网格容器
+ */
+export class IconsPage extends TemplateComponent.withTemplate([
+    { tag: 'div', class: 'icons-page', children: [
+        { tag: 'h2', content: 'icons:title', class: 'page-title' },
+        { tag: 'div', content: 'icons:grid', class: 'icon-grid' },
+    ]},
+]) {
+    static type = 'IconsPage';
+    static defaults = {
+        title: '图标库 — 全部图标',
+    };
+
+    /** 初始化后填充图标网格 */
+    _initWithTemplate(props?: Record<string, any>): void {
+        super._initWithTemplate(props);
+        const gridEl = this.nodeMap?.icons?.grid?.el;
+        if (gridEl) {
+            gridEl.innerHTML = ICON_NAMES.map(name =>
+                `<div class="icon-item" title="q-icon-${name}">
+                    <i class="q-icon-${name}"></i>
+                    <span class="icon-name">${name}</span>
+                </div>`
+            ).join('');
+        }
+    }
 }

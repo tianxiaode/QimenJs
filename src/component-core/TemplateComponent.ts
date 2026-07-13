@@ -14,6 +14,7 @@
  */
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
+import { createForgedClass } from '@/composable/forge';
 import { EventAbility, DomEventsAbility } from '@/system-abilities';
 import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
 import { AccessibilityAbility } from './abilities/AccessibilityAbility';
@@ -51,7 +52,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventBridgeAbility, ThemeAbility,
     InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, TooltipAbility, BadgeAbility,
     DragAbility, DropAbility,
-    TemplateAbility, LayoutAbility, ColorVariantAbility,
+    TemplateAbility, LayoutAbility, ColorVariantAbility
 ];
 
 /**
@@ -216,10 +217,20 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         // TemplateAbility 已在 TEMPLATE_COMPONENT_ABILITIES 中，基类原型已有 _initWithTemplate 等方法
         const TemplateClass = class extends this {
             constructor(props?: Record<string, any>) {
+                // 先调用 super，再读取 static 属性
                 super(props);
 
+                // 合并 defaults：static defaults 为基础，props 可覆盖
+                const ctor = this.constructor as any;
+                const mergedProps = ctor.defaults
+                    ? { ...ctor.defaults, ...props }
+                    : props;
+
                 // withTemplate 强类：构造时自动完成全部初始化
-                this._initWithTemplate(props);
+                this._initWithTemplate(mergedProps);
+
+                // 设置组件类型（从 static type 读取）
+                if (ctor.type) this.type = ctor.type;
             }
 
             /** 预编译的模板 HTML */
@@ -277,6 +288,20 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
         // 在强类原型上生成内容 getter/setter（只做一次）
         buildContentProperties(TemplateClass, compiled.templateMetas, this.isMultiArea ?? false);
+
+        // 挂载 .with() 静态方法，与 ComposableBase.with() / createForgedClass 一致
+        // 使 withTemplate 返回的强类支持链式追加能力
+        (TemplateClass as any).with = function<Additional extends readonly AbilityDefinition[]>(
+            ...additionalAbilities: Additional
+        ): any {
+            let flat: readonly AbilityDefinition[];
+            if (additionalAbilities.length === 1 && Array.isArray(additionalAbilities[0])) {
+                flat = additionalAbilities[0] as readonly AbilityDefinition[];
+            } else {
+                flat = additionalAbilities;
+            }
+            return createForgedClass(this, flat);
+        };
 
         return TemplateClass;
     }

@@ -241,6 +241,25 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
+     * 从事件回调参数中提取原始 DOM 事件
+     *
+     * EventBus.on 回调收到的是 EventContext { event, data, source, ... }，
+     * data 是 GestureEmit { semantic, originalEvent } 或 InputSignal 的标准化输入。
+     * 需要穿透两层才能拿到原始 DOM Event。
+     */
+    _extractDomEvent(ctx: any): Event | undefined {
+        // ctx 是 EventContext，data 才是手势/输入数据
+        const data = ctx?.data;
+        // GestureEmit / GestureInput 的 originalEvent 字段
+        if (data?.originalEvent) return data.originalEvent;
+        // 兜底：data 本身可能是 Event
+        if (data instanceof Event) return data;
+        // 再兜底：ctx 本身可能是 Event（非 EventBus 路径）
+        if (ctx instanceof Event) return ctx;
+        return undefined;
+    },
+
+    /**
      * 绑定内部事件 — data-event 声明的模板事件
      *
      * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
@@ -252,28 +271,32 @@ export const InitAbility: AbilityDefinition = {
             if (delegate) {
                 // 事件委托模式
                 this.bind(node.el, event as any, { selector: delegateTarget });
-                this.on(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
+                this.on(event, (ctx: any) => {
+                    const domEvent = this._extractDomEvent(ctx);
                     const target = delegateTarget
-                        ? (domEvent.target as HTMLElement).closest(delegateTarget)
-                        : (domEvent.target as HTMLElement);
-                    if (target) {
+                        ? (domEvent?.target as HTMLElement)?.closest(delegateTarget)
+                        : (domEvent?.target as HTMLElement);
+                    if (target && typeof (this as any)[handler] === 'function') {
                         (this as any)[handler](domEvent, target);
                     }
                 });
             } else if (once) {
                 // 只触发一次
                 this.bind(node.el, event as any);
-                this.once(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
-                    (this as any)[handler](domEvent, node.el);
+                this.once(event, (ctx: any) => {
+                    const domEvent = this._extractDomEvent(ctx);
+                    if (typeof (this as any)[handler] === 'function') {
+                        (this as any)[handler](domEvent, node.el);
+                    }
                 });
             } else {
                 // 常规绑定
                 this.bind(node.el, event as any);
-                this.on(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
-                    (this as any)[handler](domEvent, node.el);
+                this.on(event, (ctx: any) => {
+                    const domEvent = this._extractDomEvent(ctx);
+                    if (typeof (this as any)[handler] === 'function') {
+                        (this as any)[handler](domEvent, node.el);
+                    }
                 });
             }
         }
@@ -299,8 +322,8 @@ export const InitAbility: AbilityDefinition = {
             // bridges 模式：走事件桥 emit 发布
             if (bridges.has(emitKey)) {
                 this.bind(node.el, eventType as any);
-                this.on(eventType, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
+                this.on(eventType, (ctx: any) => {
+                    const domEvent = this._extractDomEvent(ctx);
                     if (typeof this.emit === 'function') {
                         this.emit(emitKey, undefined, { domEvent });
                     }
@@ -313,8 +336,8 @@ export const InitAbility: AbilityDefinition = {
             if (typeof (this as any)[handlerName] === 'function') {
                 const handler = (this as any)[handlerName].bind(this);
                 this.bind(node.el, eventType as any);
-                this.on(eventType, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
+                this.on(eventType, (ctx: any) => {
+                    const domEvent = this._extractDomEvent(ctx);
                     handler(domEvent, node.el);
                 });
                 continue;
@@ -322,8 +345,8 @@ export const InitAbility: AbilityDefinition = {
 
             // 默认模式：走事件桥 emit 发布
             this.bind(node.el, eventType as any);
-            this.on(eventType, (gesture: any) => {
-                const domEvent = gesture?.domEvent ?? gesture;
+            this.on(eventType, (ctx: any) => {
+                const domEvent = this._extractDomEvent(ctx);
                 if (typeof this.emit === 'function') {
                     this.emit(emitKey, undefined, { domEvent });
                 }

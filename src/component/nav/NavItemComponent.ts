@@ -44,6 +44,9 @@ export class NavItemComponent extends TemplateComponent.withTemplate(NAVITEM_TEM
     /** 是否禁用 */
     private _disabled: boolean = false;
 
+    /** 事件源标识（由 ItemGroup 注入） */
+    eventKey: string = '';
+
     /** 选中回调 */
     onSelect?: (item: NavItemComponent) => void;
 
@@ -58,6 +61,7 @@ export class NavItemComponent extends TemplateComponent.withTemplate(NAVITEM_TEM
         if (props?.active) this._active = props.active;
         if (props?.disabled) this._disabled = props.disabled;
         if (props?.onSelect) this.onSelect = props.onSelect;
+        if (props?.eventKey) this.eventKey = props.eventKey;
 
         this.applyState();
     }

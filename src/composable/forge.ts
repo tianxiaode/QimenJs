@@ -97,6 +97,11 @@ export function createForgedClass<T, A extends readonly AbilityDefinition[]>(
     const rootProto = findRootProto(BaseClass);
     applyToPrototype(ForgedClass.prototype, merged, rootProto);
 
+    // 合并基类和新增的能力到 ForgedClass.abilities
+    // 使 callInitMethods 能发现所有能力的 __init__ 方法
+    const baseAbilities = (BaseClass as any).abilities || [];
+    (ForgedClass as any).abilities = [...baseAbilities, ...abilities];
+
     // with 静态方法：可变参数，合并所有能力后重新创建强类
     // 注意：必须用 this 而不是闭包中的 ForgedClass，
     // 因为子类可能 extends ForgedClass 并添加自身方法，

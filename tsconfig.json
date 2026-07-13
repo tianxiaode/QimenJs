@@ -50,6 +50,7 @@
       "@qimenjs/types": ["src/types"],
       "@qimenjs/theme": ["src/theme"],
       "@qimenjs/component-abilities": ["src/component-abilities"],
+      "@qimenjs/component-abilities/*": ["src/component-abilities/*"],
       "@qimenjs/component-core": ["src/component-core"],
       "@qimenjs/component": ["src/component"],
       "@qimenjs/layout": ["src/layout"],

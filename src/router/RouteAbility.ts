@@ -53,7 +53,10 @@ export const RouteAbility: AbilityDefinition = {
         if (routerSource && typeof (routerSource as any).on === 'function') {
             for (const path of Object.keys(config.routes)) {
                 const eventName = pathToEventName(path);
-                const off = (routerSource as any).on(eventName, (ctx: any) => {
+                // Router.emit 走 _emitWithContext，eventKey='router' 会给事件名加前缀
+                // 所以实际发出的事件名是 'router:${eventName}'，监听时需要匹配
+                const fullEventName = `router:${eventName}`;
+                const off = (routerSource as any).on(fullEventName, (ctx: any) => {
                     this._handleRouteChange(ctx.data as RouteChangeEvent);
                 });
                 this.onCleanup(off);
@@ -89,6 +92,12 @@ export const RouteAbility: AbilityDefinition = {
      * 默认行为：发出 route:change 事件供 EventBridgeAbility 监听。
      */
     _handleRouteChange(event: RouteChangeEvent): void {
+        // 附加路由配置值（如 '/': 'home' 中的 'home'）
+        const config = this._routeConfig;
+        if (config?.routes && config.routes[event.path] !== undefined) {
+            (event as any).routeName = config.routes[event.path];
+        }
+
         // 发出统一的 route:change 事件，供 EventBridgeAbility 监听
         if (typeof this.emit === 'function') {
             this.emit('route:change', event);

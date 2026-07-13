@@ -47,6 +47,8 @@ export { Router, pathToEventName } from './Router';
 
 // 能力
 export { RouteAbility } from './RouteAbility';
+export { RouteEmitAbility } from './RouteEmitAbility';
+export { RouteListenAbility } from './RouteListenAbility';
 
 // 类型
 export type {

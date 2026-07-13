@@ -34,6 +34,13 @@ export { PanelComponent, type PanelProps } from './panel/PanelComponent';
 export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupComponent';
 export { itemgroupCSS } from './itemgroup/itemgroup.css';
 
+// 导航组件
+export { NavItemComponent, type NavItemProps } from './nav/NavItemComponent';
+export { NavItemGroupComponent, type NavItemGroupProps } from './nav/NavItemGroupComponent';
+export { RouteNavComponent, type RouteNavProps } from './nav/RouteNavComponent';
+export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';
+export { navCSS } from './nav/nav.css';
+
 // 事件枚举
 export * from './events';
 

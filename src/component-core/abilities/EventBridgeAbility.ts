@@ -96,6 +96,26 @@ export interface CustomBridgeConfig {
     event?: string;
     /** 目标处理方法名，默认为 on + 首字母大写 key */
     handler?: string;
+    /**
+     * 事件映射 — 声明多事件到方法的映射
+     *
+     * key 为事件名后缀（会拼接到 event 前缀后），value 为方法名。
+     * 与 event + handler 互斥，有 events 时忽略 event/handler。
+     *
+     * @example
+     * // 路由桥接：监听 route:change → onRouteChange
+     * { source: 'router', events: { change: 'onRouteChange' }, match: '*' }
+     */
+    events?: Record<string, string>;
+    /**
+     * 事件粒度匹配 — 控制监听哪些细分事件
+     *
+     * - '*' : 监听通用事件（event 前缀本身，如 route:change）
+     * - 'a,b,c' : 只监听指定后缀的事件（如 route:change:a, route:change:b, route:change:c）
+     *
+     * 仅在 events 存在时生效。
+     */
+    match?: string;
     /** 是否启用，默认 true */
     enabled?: boolean;
 }
@@ -209,6 +229,38 @@ export const EventBridgeAbility: AbilityDefinition = {
             const cfg = normalizeBridgeConfig(rawCfg);
             if (!cfg || cfg.enabled === false) continue;
 
+            // events + match 模式：多事件映射 + 粒度匹配
+            if (cfg.events) {
+                const match = cfg.match || '*';
+                for (const [eventSuffix, handlerName] of Object.entries(cfg.events)) {
+                    const method = handlerName as string;
+                    // 事件前缀 = key（如 'route'），后缀 = eventSuffix（如 'change'）
+                    const eventPrefix = `${key}:${eventSuffix}`;
+
+                    if (match === '*') {
+                        // 监听通用事件（如 route:change）
+                        this._bridgeOn(cfg.source, eventPrefix, (e: any) => {
+                            if (typeof (this as any)[method] === 'function') {
+                                (this as any)[method](e);
+                            }
+                        }, mgr);
+                    } else {
+                        // 监听指定后缀的事件（如 route:change:home, route:change:icons）
+                        const suffixes = match.split(',').map((s: string) => s.trim()).filter(Boolean);
+                        for (const suffix of suffixes) {
+                            const eventName = `${eventPrefix}:${suffix}`;
+                            this._bridgeOn(cfg.source, eventName, (e: any) => {
+                                if (typeof (this as any)[method] === 'function') {
+                                    (this as any)[method](e);
+                                }
+                            }, mgr);
+                        }
+                    }
+                }
+                continue;
+            }
+
+            // 单事件模式（原有逻辑）
             const eventName = cfg.event || key;
             const methodName = cfg.handler || `on${key.charAt(0).toUpperCase() + key.slice(1)}`;
 

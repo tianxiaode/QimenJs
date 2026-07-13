@@ -251,7 +251,12 @@ export class Router extends ComposableBase.with(EventAbility) {
         };
 
         // 通过 emit 发布路由切换事件（source='router'，走 eventScope 隔离通道）
-        this.emit(eventName, event, { source: 'router' });
+        // 1. route:change — 通用事件，每次路由变化都触发，供 RouteListenAbility 监听
+        this.emit('route:change', event, { source: 'router' });
+        // 2. route:change:路径 — 特定路径事件，仅在该路径变化时触发，供精确监听
+        if (eventName) {
+            this.emit(`route:change:${eventName}`, event, { source: 'router' });
+        }
     }
 
     /**

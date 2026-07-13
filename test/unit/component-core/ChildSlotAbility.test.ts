@@ -10,7 +10,7 @@
  * - nodeMap 更新
  */
 
-import { ChildSlotAbility } from '@/component-core/abilities/ChildSlotAbility';
+import { ChildSlotAbility } from '@/component-abilities/render/ChildSlotAbility';
 import type { NodeMetadata } from '@/component-core/types';
 
 describe('ChildSlotAbility', () => {

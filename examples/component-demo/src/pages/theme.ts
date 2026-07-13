@@ -1,15 +1,12 @@
 /**
- * 主题页 — 模板与渲染
+ * 主题页 — withTemplate 组件
+ *
+ * 使用 JSON 模板 + data-content 声明节点，
+ * 主题卡片通过 nodeMap 动态填充。
  */
 
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ThemeRegistrar } from '@qimenjs/theme';
-
-export const THEME_TEMPLATE = `
-<div class="theme-page">
-    <h2 class="page-title">主题系统</h2>
-    <div class="theme-grid"></div>
-</div>
-`;
 
 const THEMES = [
     { name: 'light', label: '亮色' },
@@ -23,22 +20,35 @@ const THEMES = [
     { name: 'dai', label: '黛色' },
 ];
 
-export function renderThemePage(): void {
-    const grid = document.querySelector('.theme-grid');
-    if (!grid) return;
-
-    grid.innerHTML = THEMES.map(t =>
-        `<button class="theme-card" onclick="window.__switchTheme('${t.name}')">
-            <div class="theme-preview" data-theme="${t.name}"></div>
-            <span class="theme-label">${t.label}</span>
-        </button>`
-    ).join('');
-}
-
-/** 暴露主题切换到 window（供 onclick 调用） */
-export function exposeThemeSwitch(): void {
-    (window as any).__switchTheme = (name: string) => {
-        ThemeRegistrar.getInstance().apply(name);
-        console.log('[Theme] switched to', name);
+/**
+ * 主题页组件
+ *
+ * 模板节点（自动生成 getter/setter）：
+ * - theme:title — 页面标题
+ * - theme:grid — 主题卡片网格容器
+ */
+export class ThemePage extends TemplateComponent.withTemplate([
+    { tag: 'div', class: 'theme-page', children: [
+        { tag: 'h2', content: 'theme:title', class: 'page-title' },
+        { tag: 'div', content: 'theme:grid', class: 'theme-grid' },
+    ]},
+]) {
+    static type = 'ThemePage';
+    static defaults = {
+        title: '主题系统',
     };
+
+    /** 初始化后填充主题卡片 */
+    _initWithTemplate(props?: Record<string, any>): void {
+        super._initWithTemplate(props);
+        const gridEl = this.nodeMap?.theme?.grid?.el;
+        if (gridEl) {
+            gridEl.innerHTML = THEMES.map(t =>
+                `<button class="theme-card" onclick="window.__switchTheme('${t.name}')">
+                    <div class="theme-preview" data-theme="${t.name}"></div>
+                    <span class="theme-label">${t.label}</span>
+                </button>`
+            ).join('');
+        }
+    }
 }

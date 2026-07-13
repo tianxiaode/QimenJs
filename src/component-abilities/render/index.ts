@@ -10,3 +10,4 @@ export { ExpandArrowAbility, type ExpandArrowConfig } from './ExpandArrowAbility
 export { arrowCSS } from './arrow.css';
 export { OverlayMaskAbility, type OverlayMaskConfig } from './OverlayMaskAbility';
 export { LoadingAbility, type LoadingConfig } from './LoadingAbility';
+export { ChildSlotAbility } from './ChildSlotAbility';
