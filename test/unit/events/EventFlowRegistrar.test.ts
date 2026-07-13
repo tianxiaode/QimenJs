@@ -6,15 +6,15 @@
  * 2. 订阅层：registerSubscription / unregisterByComponent / getSubscriptions / getSubscriptionCount
  * 3. 调试：inspect
  * 4. 清理：clear
- * 5. 与 bindStateTriggers 的集成
+ * 5. 与 bindEventListens 的集成
  */
 
 import { EventFlowRegistrar } from '@/events/EventFlowRegistrar';
-import type { StateTrigger } from '@/events/StateTrigger';
-import { bindStateTriggers } from '@/events/StateTrigger';
+import { bindEventListens } from '@/events/StateTrigger';
 import { ComposableBase } from '@/composable';
 import { EventAbility } from '@/system-abilities/system/EventAbility';
 import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
+import type { EventListen } from '@/layout/LayoutNode';
 
 describe('EventFlowRegistrar', () => {
     let flowRegistrar: EventFlowRegistrar;
@@ -32,30 +32,30 @@ describe('EventFlowRegistrar', () => {
     // ============================================
 
     test('registerDefinition 注册定义', () => {
-        const triggers: StateTrigger[] = [
+        const listens: EventListen[] = [
             { source: 'userTable', events: { selectionChange: 'onSelectionChange' } },
         ];
-        flowRegistrar.registerDefinition({ componentType: 'Toolbar', triggers });
+        flowRegistrar.registerDefinition({ componentType: 'Toolbar', listens });
 
         const def = flowRegistrar.getDefinition('Toolbar');
         expect(def).toBeDefined();
-        expect(def!.triggers).toEqual(triggers);
+        expect(def!.listens).toEqual(listens);
     });
 
     test('registerDefinition 同一类型只注册一次', () => {
-        const triggers1: StateTrigger[] = [
+        const listens1: EventListen[] = [
             { source: 'userTable', events: { selectionChange: 'onSelectionChange' } },
         ];
-        const triggers2: StateTrigger[] = [
+        const listens2: EventListen[] = [
             { source: 'roleTable', events: { selectionChange: 'onRoleSelectionChange' } },
         ];
 
-        flowRegistrar.registerDefinition({ componentType: 'Toolbar', triggers: triggers1 });
-        flowRegistrar.registerDefinition({ componentType: 'Toolbar', triggers: triggers2 });
+        flowRegistrar.registerDefinition({ componentType: 'Toolbar', listens: listens1 });
+        flowRegistrar.registerDefinition({ componentType: 'Toolbar', listens: listens2 });
 
         // 第二次注册被忽略
         const def = flowRegistrar.getDefinition('Toolbar');
-        expect(def!.triggers).toEqual(triggers1);
+        expect(def!.listens).toEqual(listens1);
     });
 
     test('getDefinition 不存在返回 undefined', () => {
@@ -65,13 +65,13 @@ describe('EventFlowRegistrar', () => {
     test('getDefinitionListeners 查询监听某事件的组件类型', () => {
         flowRegistrar.registerDefinition({
             componentType: 'Toolbar',
-            triggers: [
+            listens: [
                 { source: 'userTable', events: { selectionChange: 'onSelectionChange' } },
             ],
         });
         flowRegistrar.registerDefinition({
             componentType: 'Table',
-            triggers: [
+            listens: [
                 { events: { dataChange: 'onDataChange' } },
             ],
         });
@@ -165,7 +165,7 @@ describe('EventFlowRegistrar', () => {
     test('inspect 输出调试信息', () => {
         flowRegistrar.registerDefinition({
             componentType: 'Toolbar',
-            triggers: [
+            listens: [
                 { source: 'userTable', events: { selectionChange: 'onSelectionChange' } },
             ],
         });
@@ -183,7 +183,7 @@ describe('EventFlowRegistrar', () => {
     test('clear 清空所有定义和订阅', () => {
         flowRegistrar.registerDefinition({
             componentType: 'Toolbar',
-            triggers: [
+            listens: [
                 { source: 'userTable', events: { selectionChange: 'onSelectionChange' } },
             ],
         });
@@ -204,10 +204,10 @@ describe('EventFlowRegistrar', () => {
     });
 
     // ============================================
-    // 与 bindStateTriggers 的集成
+    // 与 bindEventListens 的集成
     // ============================================
 
-    test('bindStateTriggers 自动注册到 EventFlowRegistrar', () => {
+    test('bindEventListens 自动注册到 EventFlowRegistrar', () => {
         class SourceComp extends ComposableBase.with([EventAbility]) {
             static readonly eventKey = 'testSource';
         }
@@ -219,7 +219,7 @@ describe('EventFlowRegistrar', () => {
             onEvent(_ctx: any) {}
         })();
 
-        bindStateTriggers([
+        bindEventListens([
             { source: 'testSource', events: { dataChange: 'onEvent' } },
         ], listener);
 

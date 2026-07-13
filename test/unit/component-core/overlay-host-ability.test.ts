@@ -213,7 +213,8 @@ describe('OverlayHostAbility', () => {
     // ============================================
 
     describe('ArrowAbility 联动', () => {
-        const HostWithArrow = TemplateComponent.withTemplate(TPL)
+        const TPL_WITH_ARROW = '<div class="overlay-host"></div><div data-content="arrow:arrow" class="q-arrow"></div>';
+        const HostWithArrow = TemplateComponent.withTemplate(TPL_WITH_ARROW)
             .with(OverlayHostAbility)
             .with(ArrowAbility);
 

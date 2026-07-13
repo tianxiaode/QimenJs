@@ -260,7 +260,7 @@ describe('DomEventAdapter', () => {
                     expect(emitSpy).toHaveBeenCalledWith(
                         'tap',
                         { semantic: 'tap', x: 100, y: 100 },
-                        undefined
+                        expect.objectContaining({ source: undefined })
                     );
                     resolve(undefined);
                 }, 10);
@@ -339,7 +339,7 @@ describe('DomEventAdapter', () => {
                     signal: 'focus',
                     originalEvent: mockEvent,
                 }),
-                undefined
+                expect.objectContaining({ source: undefined })
             );
         });
 

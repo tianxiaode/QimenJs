@@ -48,7 +48,18 @@ export const ArrowAbility: AbilityDefinition = {
     initArrow(config?: ArrowConfig): void {
         const arrowName = config?.arrowName ?? 'arrow';
         const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
-        const arrowNode = nodeMap?.[arrowName]?.[arrowName];
+
+        // 查找箭头节点：先尝试 nodeMap[arrowName][arrowName]（group=name=arrow），
+        // 再遍历所有 group 查找 name=arrow 的节点（如 tips:arrow、dropdown:arrow）
+        let arrowNode = nodeMap?.[arrowName]?.[arrowName];
+        if (!arrowNode?.el) {
+            for (const group of Object.values(nodeMap ?? {})) {
+                if (group[arrowName]?.el) {
+                    arrowNode = group[arrowName];
+                    break;
+                }
+            }
+        }
 
         if (!arrowNode?.el) return;
 
@@ -58,6 +69,7 @@ export const ArrowAbility: AbilityDefinition = {
         // 存储到实例属性
         (this as any)._arrowVisible = visible;
         (this as any)._arrowName = arrowName;
+        (this as any)._arrowEl = el;
 
         // 应用 CSS 变量覆盖
         if (config?.arrowVars) {
@@ -80,7 +92,12 @@ export const ArrowAbility: AbilityDefinition = {
     updateArrowPlacement(placement: Placement): void {
         const arrowName = (this as any)._arrowName as string;
         const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
-        const el = nodeMap?.[arrowName]?.[arrowName]?.el;
+        let el = nodeMap?.[arrowName]?.[arrowName]?.el;
+        if (!el) {
+            for (const group of Object.values(nodeMap ?? {})) {
+                if (group[arrowName]?.el) { el = group[arrowName].el; break; }
+            }
+        }
         if (!el) return;
         el.classList.remove('q-arrow--top', 'q-arrow--bottom', 'q-arrow--left', 'q-arrow--right');
         el.classList.add(`q-arrow--${placement}`);
@@ -93,7 +110,12 @@ export const ArrowAbility: AbilityDefinition = {
         (this as any)._arrowVisible = visible;
         const arrowName = (this as any)._arrowName as string;
         const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
-        const el = nodeMap?.[arrowName]?.[arrowName]?.el;
+        let el = nodeMap?.[arrowName]?.[arrowName]?.el;
+        if (!el) {
+            for (const group of Object.values(nodeMap ?? {})) {
+                if (group[arrowName]?.el) { el = group[arrowName].el; break; }
+            }
+        }
         if (el) {
             el.style.display = visible ? '' : 'none';
         }
