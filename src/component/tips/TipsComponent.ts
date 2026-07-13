@@ -41,9 +41,11 @@ export interface TipsProps {
 /**
  * TipsComponent — 提示浮层组件
  *
- * 继承 TemplateComponent（已含 OverlayHostAbility）+ TIPS_TEMPLATE
+ * 继承 TemplateComponent（已含 OverlayHostAbility）+ TIPS_TEMPLATE + ArrowAbility
  */
-export let TipsComponent = TemplateComponent.withTemplate(TIPS_TEMPLATE);
+export let TipsComponent = TemplateComponent
+    .withTemplate(TIPS_TEMPLATE)
+    .with([ArrowAbility]);
 
 TipsComponent.prototype.type = 'tips';
 
@@ -75,6 +77,7 @@ TipsComponent.prototype._initTips = function(props?: TipsProps): void {
     if (typeof this.initArrow === 'function') {
         this.initArrow({
             arrow: props?.tooltipArrow ?? true,
+            arrowName: 'arrow',
         });
     }
 

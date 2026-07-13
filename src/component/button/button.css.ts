@@ -94,4 +94,14 @@ export const buttonCSS = `
     align-items: center;
     justify-content: center;
 }
+
+/* 下拉展开箭头 */
+.q-button .q-expand-arrow {
+    margin-left: 6px;
+}
+
+/* 下拉按钮模式 */
+.q-button--dropdown {
+    padding-right: 8px;
+}
 `;

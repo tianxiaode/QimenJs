@@ -29,10 +29,14 @@ import type { JsonTemplateNode } from './template-json';
  * 内容项：
  * - button:icon — 图标
  * - button:text — 文本
+ * - button:expand — 下拉展开箭头（div > i 结构，默认隐藏，配置下拉时显示）
  */
 export const BUTTON_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'span', content: 'button:icon' },
     { tag: 'span', content: 'button:text' },
+    { tag: 'div', content: 'button:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+        { tag: 'i' },
+    ]},
 ];
 
 /**
@@ -75,10 +79,14 @@ export const INPUT_TOP_TEMPLATE: JsonTemplateNode[] = [
  * 内容项：
  * - select:label — 标签文本
  * - select:field — 下拉框（事件：change → handleChange）
+ * - select:expand — 下拉展开箭头（div > i 结构，默认隐藏）
  */
 export const SELECT_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'span', content: 'select:label' },
     { tag: 'select', content: 'select:field', event: 'change', class: 'q-select__field' },
+    { tag: 'div', content: 'select:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+        { tag: 'i' },
+    ]},
 ];
 
 /**
@@ -86,17 +94,21 @@ export const SELECT_TEMPLATE: JsonTemplateNode[] = [
  *
  * 统一模板包含所有溢出模式的节点，通过显隐切换：
  * - toolbar:contentArea — 子项容器（所有模式共用）
- * - toolbar:prevBtn — 左/上箭头按钮（scroll 模式，默认隐藏）
- * - toolbar:nextBtn — 右/下箭头按钮（scroll 模式，默认隐藏）
+ * - toolbar:prevBtn — 左/上箭头按钮（scroll 模式，默认隐藏，div > i 结构）
+ * - toolbar:nextBtn — 右/下箭头按钮（scroll 模式，默认隐藏，div > i 结构）
  * - toolbar:triggerBtn — 下拉触发按钮（menu 模式，默认隐藏）
  * - toolbar:menuPanel — 下拉菜单面板（menu 模式，默认隐藏）
  *
  * 子项由外部动态添加到 contentArea 中。
  */
 export const TOOLBAR_TEMPLATE: JsonTemplateNode[] = [
-    { tag: 'button', content: 'toolbar:prevBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true },
+    { tag: 'div', content: 'toolbar:prevBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
+        { tag: 'i' },
+    ]},
     { tag: 'div', content: 'toolbar:contentArea', class: 'q-toolbar__content', style: 'display:flex;' },
-    { tag: 'button', content: 'toolbar:nextBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--next', hidden: true },
+    { tag: 'div', content: 'toolbar:nextBtn', event: 'click', class: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
+        { tag: 'i' },
+    ]},
     { tag: 'button', content: 'toolbar:triggerBtn', event: 'click', class: 'q-overflow-menu__trigger', hidden: true },
     { tag: 'div', content: 'toolbar:menuPanel', class: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
 ];
@@ -147,9 +159,11 @@ export const DIALOG_TEMPLATE: JsonTemplateNode[] = [
  *
  * 内容项：
  * - tips:default — 提示文本
+ * - tips:arrow — 浮层定位箭头（div > i 结构，i 承载 CSS 图标）
  */
 export const TIPS_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'span', content: 'tips:default', class: 'q-tips__content' },
+    { tag: 'div', content: 'tips:arrow', class: 'q-arrow' },
 ];
 
 /**
@@ -157,9 +171,11 @@ export const TIPS_TEMPLATE: JsonTemplateNode[] = [
  *
  * 内容项：
  * - dropdown:default — 下拉内容
+ * - dropdown:arrow — 浮层定位箭头（div > i 结构）
  */
 export const DROPDOWN_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'div', content: 'dropdown:default', class: 'q-dropdown__content' },
+    { tag: 'div', content: 'dropdown:arrow', class: 'q-arrow' },
 ];
 
 /**
@@ -167,9 +183,11 @@ export const DROPDOWN_TEMPLATE: JsonTemplateNode[] = [
  *
  * 内容项：
  * - popover:default — 弹出内容
+ * - popover:arrow — 浮层定位箭头（div > i 结构）
  */
 export const POPOVER_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'div', content: 'popover:default', class: 'q-popover__content' },
+    { tag: 'div', content: 'popover:arrow', class: 'q-arrow' },
 ];
 
 /**
@@ -243,13 +261,15 @@ export const BADGE_TEMPLATE: JsonTemplateNode[] = [
  * - menuItem:icon — 图标
  * - menuItem:text — 文本
  * - menuItem:shortcut — 快捷键文本
- * - menuItem:arrow — 子菜单箭头（事件：click → handleClick）
+ * - menuItem:expand — 子菜单展开箭头（div > i 结构，i 承载 CSS 图标）
  */
 export const MENU_ITEM_TEMPLATE: JsonTemplateNode[] = [
     { tag: 'span', content: 'menuItem:icon', class: 'q-menu-item__icon' },
     { tag: 'span', content: 'menuItem:text', class: 'q-menu-item__text' },
     { tag: 'span', content: 'menuItem:shortcut', class: 'q-menu-item__shortcut' },
-    { tag: 'span', content: 'menuItem:arrow', event: 'click', class: 'q-menu-item__arrow', hidden: true },
+    { tag: 'div', content: 'menuItem:expand', class: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+        { tag: 'i' },
+    ]},
 ];
 
 /**

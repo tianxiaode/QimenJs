@@ -8,7 +8,7 @@
  * - menuItem:icon — 图标
  * - menuItem:text — 文本
  * - menuItem:shortcut — 快捷键文本
- * - menuItem:arrow — 子菜单箭头
+ * - menuItem:expand — 子菜单展开箭头（div > i 结构）
  *
  * 事件：
  * - click → handleClick（内部事件，触发外部 onSelect 回调）
@@ -25,6 +25,7 @@
  */
 
 import { TemplateComponent, OverlayAbility, MENU_ITEM_TEMPLATE } from '@qimenjs/component-core';
+import { ExpandArrowAbility } from '@qimenjs/component-abilities';
 
 /** 菜单项配置 */
 export interface MenuItemProps {
@@ -49,7 +50,7 @@ export interface MenuItemProps {
  */
 const MenuItemBase = TemplateComponent
     .withTemplate(MENU_ITEM_TEMPLATE)
-    .with([OverlayAbility]);
+    .with([OverlayAbility, ExpandArrowAbility]);
 
 export class MenuItemComponent extends MenuItemBase {
     /** 是否禁用 */
@@ -82,6 +83,7 @@ export class MenuItemComponent extends MenuItemBase {
         if (props?.submenuProps) this.submenuProps = props.submenuProps;
 
         this.applyState();
+        this.initExpandArrow({ arrowName: 'expand' });
         this.bindHoverEvents();
     }
 
@@ -114,10 +116,10 @@ export class MenuItemComponent extends MenuItemBase {
         this.el.classList.toggle('q-menu-item--disabled', this._disabled);
         this.el.classList.toggle('q-menu-item--has-submenu', this._hasSubmenu);
 
-        // 箭头显隐
-        const arrowEl = this.nodeMap?.['menuItem']?.['arrow']?.el as HTMLElement | null;
-        if (arrowEl) {
-            arrowEl.hidden = !this._hasSubmenu;
+        // 展开箭头显隐
+        const expandEl = this.nodeMap?.['menuItem']?.['expand']?.el as HTMLElement | null;
+        if (expandEl) {
+            expandEl.hidden = !this._hasSubmenu;
         }
 
         // 禁用时移除交互

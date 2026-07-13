@@ -30,4 +30,9 @@ export const tipsCSS = `
     align-items: center;
     justify-content: center;
 }
+
+/* 浮层定位箭头 */
+.q-tips .q-arrow {
+    --q-arrow-color: var(--q-color-dark, #303133);
+}
 `;

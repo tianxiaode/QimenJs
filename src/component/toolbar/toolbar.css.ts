@@ -108,7 +108,7 @@ export const toolbarCSS = `
 }
 
 /* 箭头图标 — 用 CSS border 绘制 */
-.q-overflow-arrow__icon {
+.q-overflow-arrow i {
     display: block;
     width: 8px;
     height: 8px;
@@ -117,25 +117,25 @@ export const toolbarCSS = `
 }
 
 /* 横向：左箭头 */
-.q-overflow-arrow__icon--prev.q-overflow-arrow__icon--horizontal {
+.q-overflow-arrow--prev.q-overflow-arrow--horizontal i {
     transform: rotate(135deg);
     margin-left: 3px;
 }
 
 /* 横向：右箭头 */
-.q-overflow-arrow__icon--next.q-overflow-arrow__icon--horizontal {
+.q-overflow-arrow--next.q-overflow-arrow--horizontal i {
     transform: rotate(-45deg);
     margin-right: 3px;
 }
 
 /* 纵向：上箭头 */
-.q-overflow-arrow__icon--prev.q-overflow-arrow__icon--vertical {
+.q-overflow-arrow--prev.q-overflow-arrow--vertical i {
     transform: rotate(-135deg);
     margin-top: 3px;
 }
 
 /* 纵向：下箭头 */
-.q-overflow-arrow__icon--next.q-overflow-arrow__icon--vertical {
+.q-overflow-arrow--next.q-overflow-arrow--vertical i {
     transform: rotate(45deg);
     margin-bottom: 3px;
 }

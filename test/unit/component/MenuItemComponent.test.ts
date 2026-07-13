@@ -135,15 +135,15 @@ describe('MenuItemComponent', () => {
             expect(item.el.classList.contains('q-menu-item--has-submenu')).toBe(true);
         });
 
-        it('箭头节点随 hasSubmenu 显隐', () => {
+        it('展开箭头节点随 hasSubmenu 显隐', () => {
             const item = new MenuItemComponent() as any;
-            const arrowEl = item.nodeMap?.['menuItem']?.['arrow']?.el as HTMLElement | null;
+            const expandEl = item.nodeMap?.['menuItem']?.['expand']?.el as HTMLElement | null;
 
             item.hasSubmenu = true;
-            if (arrowEl) expect(arrowEl.hidden).toBe(false);
+            if (expandEl) expect(expandEl.hidden).toBe(false);
 
             item.hasSubmenu = false;
-            if (arrowEl) expect(arrowEl.hidden).toBe(true);
+            if (expandEl) expect(expandEl.hidden).toBe(true);
         });
     });
 

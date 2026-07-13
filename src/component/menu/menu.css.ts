@@ -64,14 +64,10 @@ export const menuCSS = `
     color: var(--q-text-color-secondary, #909399);
 }
 
-/* 子菜单箭头 */
-.q-menu-item__arrow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* 子菜单展开箭头 */
+.q-menu-item .q-expand-arrow {
     position: absolute;
     right: 8px;
-    font-size: 12px;
     color: var(--q-text-color-secondary, #909399);
 }
 
