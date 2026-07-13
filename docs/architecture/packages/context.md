@@ -209,7 +209,7 @@ interface RequestContext extends BaseContext {
 
 ```typescript
 interface EventContext extends BaseContext {
-    /** 完整事件名（eventKey:type 格式），用于 EventBus 路由和 stateTriggers 匹配 */
+    /** 完整事件名（eventKey:type 格式），用于 EventBus 路由和 bridges.on 匹配 */
     event: string;
     /** 事件类型，"发生了什么"（如 "selectionChange"、"dataChange"、"click"） */
     type: string;

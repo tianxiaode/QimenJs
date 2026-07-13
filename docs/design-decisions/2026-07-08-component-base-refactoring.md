@@ -67,7 +67,7 @@ interface LayoutNode extends PositionProps {
     handlers?: Record<string, ...>;        // DOM 事件绑定（GestureSemantic | InputSignal）
     extraFns?: Record<string, Function>;   // 附加函数（bind this 后挂到实例）
     meta?: LayoutMeta;                     // 纯数据（this.meta.xxx 访问）
-    stateTriggers?: StateTrigger[];        // EventBus 事件绑定
+    bridges?: BridgesConfig;               // 事件桥接（string=发布，EventListen=监听）
     children?: LayoutNode[];               // 子布局
     visible?: boolean | string;            // 条件渲染
     repeat?: RepeatConfig;                 // 循环渲染
@@ -84,7 +84,7 @@ interface PositionProps {
 }
 ```
 
-add(layout) 处理顺序：PositionProps → abilities → extraFns → meta → handlers → stateTriggers → children
+add(layout) 处理顺序：PositionProps → abilities → extraFns → meta → handlers → bridges → children
 
 **handlers 与 extraFns 的关系**：handlers 只声明"绑定什么事件"，事件处理逻辑写在 extraFns 里。
 例如 `{ handlers: { click: "onDelete" }, extraFns: { onDelete(e) { ... } } }`。
@@ -101,7 +101,7 @@ handlers 的 key 支持 GestureSemantic 和 InputSignal：
 | 绑定机制 | 归属 | 说明 |
 |----------|------|------|
 | handlers | DomEventsAbility（bind） | 组件创建后自行绑定手势语义事件 |
-| stateTriggers | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
+| bridges.on | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
 | eventBridge | EventBridgeAbility | __initProps 中自动处理 |
 
 ### 决策五：能力接口定义
@@ -190,7 +190,7 @@ handlers 的 key 支持 GestureSemantic 和 InputSignal：
 ## 7. 后续工作
 
 - [x] 确定 ChildrenAbility.add(layout) 的具体实现（见下方）
-- [ ] 确定 handlers/stateTriggers 在内部渲染模型中的绑定时机
+- [ ] 确定 handlers/bridges 在内部渲染模型中的绑定时机
 - [ ] 确定 renderer 包的废弃策略（一次性移除还是渐进式）
 - [x] 确定 RootComponent 的完整 API（见下方）
 - [ ] 更新 ui-component-design.md 中的渲染章节
@@ -275,9 +275,10 @@ add(layout: LayoutNode): ComponentLike {
         this.bindHandlers(child, layout.handlers);
     }
 
-    // 9. 绑定 stateTriggers
-    if (layout.stateTriggers) {
-        this.bindStateTriggers(child, layout.stateTriggers);
+    // 9. 绑定 bridges.on
+    const listens = layout.bridges?.filter(item => typeof item !== 'string') || [];
+    if (listens.length) {
+        this.bindEventListen(child, listens);
     }
 
     // 10. 递归渲染子节点
@@ -321,15 +322,15 @@ bindHandlers(child: ComponentLike, handlers: Record<string, any>): void {
 }
 
 /**
- * 绑定 stateTriggers
+ * 绑定 bridges.on
  *
- * 从旧 renderer/mount.ts bindStateTriggers 迁移的逻辑。
+ * 从旧 renderer/mount.ts bindEventListen 迁移的逻辑。
  */
-bindStateTriggers(child: ComponentLike, triggers: StateTrigger[]): void {
-    for (const trigger of triggers) {
-        for (const [eventType, methodName] of Object.entries(trigger.events)) {
-            const eventName = trigger.source
-                ? `${trigger.source}:${String(eventType)}`
+bindEventListen(child: ComponentLike, listens: EventListen[]): void {
+    for (const listen of listens) {
+        for (const [eventType, methodName] of Object.entries(listen.events)) {
+            const eventName = listen.source
+                ? `${listen.source}:${String(eventType)}`
                 : String(eventType);
 
             const handler = (ctx: any) => {
@@ -360,7 +361,7 @@ bindStateTriggers(child: ComponentLike, triggers: StateTrigger[]): void {
 理由：
 - 符合"组件自治"理念——handler 就是组件自己的方法
 - 不需要额外的上下文传递，简化 API
-- 与 stateTriggers 的模式一致（`{ events: { pageChange: "onPageChange" } }` 也是映射到组件方法）
+- 与 bridges.on 的模式一致（`{ events: { pageChange: "onPageChange" } }` 也是映射到组件方法）
 - extraFns 中可以注入自定义方法，所以组件方法不限于能力提供的方法
 
 ```typescript

@@ -39,5 +39,5 @@ UI 组件事件系统设计中，最初计划创建 `ComponentBase` 基类，在
 
 ## 后续工作
 
-- Step 6: 实现 StateTrigger 绑定逻辑（bindStateTriggers）
+- Step 6: 实现 EventListen 绑定逻辑（bindEventListen）
 - Step 7: 实现 EventFlowRegistrar（事件流生命周期管理）

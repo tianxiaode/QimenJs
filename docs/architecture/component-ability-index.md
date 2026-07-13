@@ -257,13 +257,13 @@ EventBindingAbility 当前标记为 @deprecated，但 renderer 仍在使用，�
 - 保留 onDom 并归入 IDomEventsAbility
 - 或将 renderer 迁移到 DomEventsAbility.bind()
 
-#### 机制二：stateTriggers（接收方声明，renderer 绑定）
+#### 机制二：bridges.on（接收方声明，renderer 绑定）
 
-Layout JSON 中通过 `stateTriggers` 字段声明监听哪些事件源的哪些事件，renderer 的 mount 处理器负责绑定到 globalEventBus。
+Layout JSON 中通过 `bridges` 字段声明监听哪些事件源的哪些事件，renderer 的 mount 处理器负责绑定到 globalEventBus。bridges 是混合数组，string 项为发布，EventListen 项为监听。
 
 ```
-LayoutNode.stateTriggers
-  → renderer/mount.ts bindStateTriggers() 解析
+LayoutNode.bridges（混合数组）
+  → renderer/mount.ts bindEventListen() 提取 EventListen 项
   → globalEventBus.on(source:type, handler) 绑定
   → handler 中调用 component[methodName](eventContext)
   → 组件销毁时 onCleanup 自动解绑
@@ -275,7 +275,8 @@ LayoutNode.stateTriggers
 {
     "type": "Table",
     "id": "userTable",
-    "stateTriggers": [
+    "bridges": [
+        "userTable:selectionChange",
         { "source": "toolbar", "events": { "pageChange": "onPageChange", "crudAction": "onCrudAction" } }
     ]
 }
@@ -310,10 +311,10 @@ props.eventBridge
 | 机制 | 视角 | 绑定位置 | 事件源 | 适用场景 |
 |------|------|----------|--------|----------|
 | handlers | 发送方 | renderer bind-handler | DOM 事件 | 简单 UI 交互（click/input/submit） |
-| stateTriggers | 接收方 | renderer mount | globalEventBus | 组件联动 + 数据联动 + 全局状态 |
+| bridges.on | 接收方 | renderer mount | globalEventBus | 组件联动 + 数据联动 + 全局状态 |
 | eventBridge | 接收方 | EventBridgeAbility | 源组件的 on() | 声明式组件间事件桥接 |
 
-**底层统一**：handlers 最终走 onDom（addEventListener），stateTriggers 和 eventBridge 最终走 globalEventBus.on（EventBus）。
+**底层统一**：handlers 最终走 onDom（addEventListener），bridges.on 和 eventBridge 最终走 globalEventBus.on（EventBus）。
 
 ### 1.8 内部渲染模型
 
@@ -337,7 +338,7 @@ RootComponent.render()           // 递归渲染
     ├── child.mount(this.el)     // 挂载到父 el
     ├── 解析 children → 递归 render
     ├── 解析 handlers → onDom 绑定
-    ├── 解析 stateTriggers → globalEventBus 绑定
+    ├── 解析 bridges.on → globalEventBus 绑定
     └── 解析 eventBridge → EventBridgeAbility 处理
 ```
 
@@ -357,7 +358,7 @@ RootComponent.render()           // 递归渲染
 |------|------|------|
 | 解析 LayoutNode JSON | ChildrenAbility | 拆解 JSON，创建子组件，挂载到父 el |
 | handlers 绑定 | DomEventsAbility（onDom） | 组件创建后自行绑定 DOM 事件 |
-| stateTriggers 绑定 | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
+| bridges.on 绑定 | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
 | eventBridge 绑定 | EventBridgeAbility | __initProps 中自动处理 |
 | props 初始化 | 各能力的 __initProps | mount 时统一调用 |
 

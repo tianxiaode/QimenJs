@@ -1756,11 +1756,11 @@ renderer → layout, component, theme, pipeline, registry
 | 动画 | CSS transition 为主 + AnimationAbility + keyframes | 简单场景 transition，复杂场景能力类 |
 | 虚拟列表 | VirtualListAbility + IDataSource.getRange | 固定行高先行，EntityManager 配合缓存 |
 | 渲染流程 | Pipeline 模式 + RenderRegistrar | 复用 @qimen-lab/pipeline，可扩展/可替换/可调试/可熔断 |
-| 本地化 | stateTriggers + Renderer 翻译绑定表 | 全局状态变化走 stateTriggers，JSON 翻译表达式 Renderer 自动管理 |
+| 本地化 | bridges + Renderer 翻译绑定表 | 全局状态变化走 bridges.on，JSON 翻译表达式 Renderer 自动管理 |
 | Ability 初始化 | `__init__` 钩子 | 通用机制，Ability 注入后自动调用初始化方法，不耦合具体 Ability |
-| 组件间通信 | handler + stateTriggers + 事件总线 | 不提供组件搜索，全部走事件驱动，数据联动统一走 stateTriggers |
+| 组件间通信 | handler + bridges + 事件总线 | 不提供组件搜索，全部走事件驱动，数据联动统一走 bridges.on |
 | name 角色 | action target + Renderer 映射 | 不用于事件名前缀，事件源标识由 source 字段承担 |
-| source 角色 | 事件名前缀 + EventContext.source + stateTriggers 绑定 | 发布方用 eventKey 声明，接收方用 source 引用；EventSourceRegistrar 校验全局唯一 |
+| source 角色 | 事件名前缀 + EventContext.source + bridges.on 绑定 | 发布方用 eventKey 声明，接收方用 source 引用；EventSourceRegistrar 校验全局唯一 |
 | 事件上下文 | EventContext（@qimenjs/context）+ EventContextBuilder | 三字段分离：event/type/source，统一 UI 事件和数据事件 |
 | 事件链 | chain 摘要数组（EventChainLink[]） | 只存原始值，不阻止 GC，框架自动构建，组件无需手动传递 |
 | 事件上下文生命周期 | 引用计数（_refCount） | EventBus.emit 时设为 handler 数量，归零自动清理 domEvent/data/metadata |
@@ -1770,8 +1770,8 @@ renderer → layout, component, theme, pipeline, registry
 | handler 数据访问 | 只读 ctx.data，不修改 | 所有 handler 共享同一个 EventContext，修改会影响其他 handler |
 | 错误处理 | console.error + 继续执行 | 单个 handler 失败不影响其他 handler，引用计数必须正确递减 |
 | _currentEventContext | 等 Promise 完成后清除 | 异步 handler 中 emitUI 仍能正确构建 chain |
-| 事件名格式 | event 编码 source（name:type） | EventBus 按完整事件名路由，保证全局唯一；StateTrigger.source 指定监听目标 |
-| 单次事件 | StateTrigger.once 字段 | EventBus.once 原生支持，bindStateTrigger 自动选择 on/once |
+| 事件名格式 | event 编码 source（name:type） | EventBus 按完整事件名路由，保证全局唯一；EventListen.source 指定监听目标 |
+| 单次事件 | EventListen.once 字段 | EventBus.once 原生支持，bindEventListen 自动选择 on/once |
 | 条件执行 | 不提供 should，handler 内部 if | should 省不了一行代码，但增加框架复杂度 |
 | 事件同步/异步 | emit 同步，handler 可异步 | Promise 检测处理引用计数，不提供 emitAsync |
 
@@ -1793,7 +1793,7 @@ QimenJS：  我要做什么 → 声明触发条件 → 实现处理方法
 | 机制 | 视角 | 解决什么 | 需要找组件 |
 |------|------|---------|-----------|
 | handler | 发送方 | 简单 UI 操作 | 否，target 是组件 name |
-| stateTriggers | 接收方 | 组件联动 + 数据联动 + 全局状态 | 否，事件名匹配 |
+| bridges | 接收方 | 组件联动 + 数据联动 + 全局状态 | 否，事件名匹配 |
 | 事件总线 | — | 跨领域通信 | 否，发布-订阅 |
 
 **底层统一**：都是 `component.on(event, handler)`，基于 GlobalEventBus。
@@ -1806,7 +1806,7 @@ QimenJS：  我要做什么 → 声明触发条件 → 实现处理方法
 // @qimenjs/context
 
 interface EventContext extends BaseContext {
-    /** 完整事件名（name:type 格式），用于 EventBus 路由和 stateTriggers 匹配 */
+    /** 完整事件名（name:type 格式），用于 EventBus 路由和 bridges.on 匹配 */
     event: string;
 
     /** 事件类型，"发生了什么"（如 "selectionChange"、"dataChange"、"click"） */
@@ -1871,7 +1871,7 @@ class EventContextBuilder {
 | `type` | 事件类型，"发生了什么" | `"selectionChange"` |
 | `source` | 来源标识，"谁触发的" | `"userTable"` |
 
-**event 编码 eventKey**：事件名格式为 `eventKey:type`（如 `userTable:selectionChange`），保证全局唯一性。EventBus 按完整事件名索引，同名事件不会混淆。StateTrigger 的 `source` 字段指定监听哪个事件源（与发布方的 eventKey 对应），`events` 字段是事件类型→handler 映射。
+**event 编码 eventKey**：事件名格式为 `eventKey:type`（如 `userTable:selectionChange`），保证全局唯一性。EventBus 按完整事件名索引，同名事件不会混淆。EventListen 的 `source` 字段指定监听哪个事件源（与发布方的 eventKey 对应），`events` 字段是事件类型→handler 映射。
 
 #### 引用计数与自动销毁
 
@@ -2056,12 +2056,12 @@ eventScope: {
 | 构建 chain | ✅ 从 _currentEventContext 继承 | ❌ 手动传递 |
 | 引用计数 | ✅ EventBus 自动 | ✅ EventBus 自动 |
 
-**_currentEventContext 的管理**：stateTriggers handler 执行期间，框架临时保存当前 EventContext。handler 执行完后自动清除。这样 emitUI 就能自动继承 chain，组件不需要手动传递。
+**_currentEventContext 的管理**：bridges.on handler 执行期间，框架临时保存当前 EventContext。handler 执行完后自动清除。这样 emitUI 就能自动继承 chain，组件不需要手动传递。
 
 **清除时机**：和引用计数一样，_currentEventContext 的清除也等 Promise 完成后才执行。同步 handler 执行完立即清除，异步 handler 等 await 完成后清除：
 
 ```typescript
-// bindStateTrigger 中 handler 的包装逻辑（简化）
+// bindEventListen 中 handler 的包装逻辑（简化）
 function wrapHandler(component: ComponentBase, handlerName: string) {
     return (ctx: EventContext) => {
         component._currentEventContext = ctx;
@@ -2121,7 +2121,7 @@ emit(event: string, ctx: EventContext): void {
 | 层级 | 策略 | 原因 |
 |------|------|------|
 | HandlerAbility（DOM handler） | console.error + 继续执行下一个 | DOM 事件处理不应因单个 handler 失败而中断 |
-| EventBus.emit（stateTriggers handler） | console.error + 继续 + 确保 _refCount-- | 一个监听者出错不应影响其他监听者，引用计数必须正确递减 |
+| EventBus.emit（bridges.on handler） | console.error + 继续 + 确保 _refCount-- | 一个监听者出错不应影响其他监听者，引用计数必须正确递减 |
 | emitUI 内部 | 抛出异常 | clone/Builder 失败说明事件发射本身有问题，调用者应该知道 |
 | wrapHandler | console.error + 清除 _currentEventContext | handler 出错不应残留上下文状态 |
 
@@ -2370,11 +2370,11 @@ bindHandlers(handlers: Record<string, HandlerValue | HandlerValue[]>, context: R
 }
 ```
 
-**注意**：这里的 handler 是 DOM 事件处理器（通过 `onDom` 绑定），不是 EventBus 事件处理器。EventBus 的 handler 是通过 `stateTriggers` 绑定的，由 EventBus.forEach 并行执行。
+**注意**：这里的 handler 是 DOM 事件处理器（通过 `onDom` 绑定），不是 EventBus 事件处理器。EventBus 的 handler 是通过 `bridges.on` 绑定的，由 EventBus.forEach 并行执行。
 
-### 17.6 stateTriggers（接收方视角，组件联动）
+### 17.6 bridges（接收方视角，组件联动）
 
-stateTriggers 在接收方节点上声明，适合组件间事件联动、数据联动、全局状态响应。**接收方不需要知道发送方是谁，只需要知道事件名**：
+bridges 在接收方节点上声明，适合组件间事件联动、数据联动、全局状态响应。bridges 是混合数组 `(string | EventListen)[]`，string 项为发布（emit），EventListen 项为监听（on）。**接收方不需要知道发送方是谁，只需要知道事件名**：
 
 ```json
 {
@@ -2384,7 +2384,7 @@ stateTriggers 在接收方节点上声明，适合组件间事件联动、数据
             "type": "Toolbar",
             "name": "toolbar",
             "props": {
-                "stateTriggers": [
+                "bridges": [
                     {
                         "source": "userTable",
                         "events": { "selectionChange": "onSelectionChange" }
@@ -2405,7 +2405,7 @@ stateTriggers 在接收方节点上声明，适合组件间事件联动、数据
 
 ```json
 {
-    "stateTriggers": [
+    "bridges": [
         {
             "source": "userTable",
             "events": {
@@ -2425,7 +2425,7 @@ stateTriggers 在接收方节点上声明，适合组件间事件联动、数据
 
 ```json
 {
-    "stateTriggers": [
+    "bridges": [
         {
             "events": {
                 "localeChange": "onLocaleChange",
@@ -2436,10 +2436,10 @@ stateTriggers 在接收方节点上声明，适合组件间事件联动、数据
 }
 ```
 
-stateTriggers 类型：
+bridges 类型：
 
 ```typescript
-interface StateTrigger {
+interface EventListen {
     /** 监听哪个事件源（组件 source），不填则监听全局事件总线 */
     source?: string;
     /** 事件 → handler 映射（event 是事件类型，如 "selectionChange"） */
@@ -2452,7 +2452,7 @@ interface StateTrigger {
 Renderer 绑定逻辑：
 
 ```typescript
-function bindStateTriggers(triggers: StateTrigger[], component: ComponentBase, context: RenderContext): void {
+function bindEventListen(listens: EventListen[], component: ComponentBase, context: RenderContext): void {
     for (const trigger of triggers) {
         const on = trigger.once ? 'once' : 'on';
 
@@ -2500,7 +2500,7 @@ class ToolbarComponent extends ComponentBase {
 }
 ```
 
-**条件执行**：stateTriggers 不提供 `should` 条件字段。如果 handler 需要条件判断，在 handler 内部写 if：
+**条件执行**：bridges 不提供 `should` 条件字段。如果 handler 需要条件判断，在 handler 内部写 if：
 
 ```typescript
 onSelectionChange(ctx: EventContext) {
@@ -2513,19 +2513,19 @@ onSelectionChange(ctx: EventContext) {
 
 **事件同步/异步**：EventBus.emit 保持同步。handler 可以是异步的（返回 Promise），框架通过 Promise 检测处理引用计数。不提供 `emitAsync`——如果调用者需要等待异步 handler 完成，应该在 handler 内部处理。
 
-### 17.7 handler 与 stateTriggers 的选择
+### 17.7 handler 与 bridges 的选择
 
 | 场景 | 选择 | 理由 |
 |------|------|------|
 | 取消按钮关闭弹窗 | handler | 一行声明，简单直接 |
 | 提交按钮触发业务逻辑 | handler | 发送方明确知道要做什么 |
-| Grid 选中 → Toolbar 更新按钮状态 | stateTriggers | 接收方响应，解耦 |
-| Grid 选中 → 另一个 Grid 过滤 | stateTriggers | 接收方响应，解耦 |
-| 数据变更 → 组件刷新 | stateTriggers | 数据联动，接收方声明 |
-| 语言/主题切换 → 组件更新 | stateTriggers | 全局事件，接收方声明 |
+| Grid 选中 → Toolbar 更新按钮状态 | bridges | 接收方响应，解耦 |
+| Grid 选中 → 另一个 Grid 过滤 | bridges | 接收方响应，解耦 |
+| 数据变更 → 组件刷新 | bridges | 数据联动，接收方声明 |
+| 语言/主题切换 → 组件更新 | bridges | 全局事件，接收方声明 |
 | 跨模块通信 | 事件总线 | 完全解耦 |
 
-**原则**：简单操作用 handler，组件/数据联动用 stateTriggers，跨领域用事件总线。
+**原则**：简单操作用 handler，组件/数据联动用 bridges，跨领域用事件总线。
 
 ### 17.8 通用工具条场景
 
@@ -2547,7 +2547,7 @@ onSelectionChange(ctx: EventContext) {
                 "delete": "onDelete",
                 "edit": "onEdit"
             },
-            "stateTriggers": [
+            "bridges": [
                 { "source": "userTable", "events": { "selectionChange": "onSelectionChange" } }
             ]
         },
@@ -2586,14 +2586,14 @@ class ToolbarComponent extends ComponentBase {
 
 ### 17.9 数据联动
 
-数据变更通过 stateTriggers 统一处理，不需要 DataSourceAbility：
+数据变更通过 bridges 统一处理，不需要 DataSourceAbility：
 
 ```json
 {
     "type": "Table",
     "name": "userTable",
     "props": {
-        "stateTriggers": [
+        "bridges": [
             { "source": "abp:user", "events": { "dataChange": "onDataChange" } }
         ]
     }
@@ -2611,15 +2611,15 @@ class UserTableComponent extends ComponentBase {
 }
 ```
 
-### 17.10 本地化（stateTriggers 统一处理）
+### 17.10 本地化（bridges 统一处理）
 
-语言切换、主题切换等全局状态变化，通过 stateTriggers 统一处理：
+语言切换、主题切换等全局状态变化，通过 bridges 统一处理：
 
 ```json
 {
     "type": "Button",
     "props": {
-        "stateTriggers": [
+        "bridges": [
             { "events": { "localeChange": "onLocaleChange" } }
         ]
     }
@@ -2723,7 +2723,7 @@ private setupAbilityDefinition(definition: AbilityDefinition): void {
 
 1. **事件名前缀** — emitUI 自动构建 `eventKey:event` 格式的事件名
 2. **EventContext.source 的值** — 组件 emit 事件时，source 取自 eventKey
-3. **stateTriggers 绑定** — 接收方用 `source` 字段指定监听哪个事件源（与 eventKey 对应）
+3. **bridges.on 绑定** — 接收方用 `source` 字段指定监听哪个事件源（与 eventKey 对应）
 
 **name 和 eventKey 的区别**：
 
@@ -2776,7 +2776,7 @@ class EventSourceRegistrar {
 
 **事件命名规范**：
 
-| 场景 | EventContext.event | EventContext.type | StateTrigger.source | StateTrigger.events |
+| 场景 | EventContext.event | EventContext.type | EventListen.source | EventListen.events |
 |------|-------------------|------------------|---------------------|-------------------|
 | 有 eventKey 的组件 | `userTable:selectionChange` | `selectionChange` | `userTable` | `{ "selectionChange": "onSelectionChange" }` |
 | 无 eventKey 的组件 | `selectionChange` | `selectionChange` | （不填） | `{ "selectionChange": "onSelectionChange" }` |
@@ -2784,41 +2784,41 @@ class EventSourceRegistrar {
 
 - **EventContext.event**：完整事件名（eventKey:type），EventBus 按此路由，保证全局唯一
 - **EventContext.type**：事件类型，"发生了什么"
-- **StateTrigger.source**：监听哪个事件源（与发布方的 eventKey 对应），bindStateTriggers 用 `sourceComponent.on(event)` 监听
-- **StateTrigger.events**：事件类型 → handler 方法名映射
+- **EventListen.source**：监听哪个事件源（与发布方的 eventKey 对应），bindEventListen 用 `sourceComponent.on(event)` 监听
+- **EventListen.events**：事件类型 → handler 方法名映射
 
 ### 17.14 不提供的机制
 
 | 机制 | 为什么不提供 |
 |------|------------|
-| closest() | 组件间联动走 stateTriggers，不需要按类型搜索祖先 |
-| provide/inject | 组件间联动走 stateTriggers，不需要跨层传递引用 |
+| closest() | 组件间联动走 bridges，不需要按类型搜索祖先 |
+| provide/inject | 组件间联动走 bridges，不需要跨层传递引用 |
 | ComponentRegistry 查找 | 不需要全局查找组件实例 |
-| DataSourceAbility | 数据联动走 stateTriggers + EventContext，不需要单独 Ability |
-| LocaleAbility | 本地化走 stateTriggers，不需要单独 Ability |
+| DataSourceAbility | 数据联动走 bridges + EventContext，不需要单独 Ability |
+| LocaleAbility | 本地化走 bridges，不需要单独 Ability |
 | 事件冒泡 | 发布-订阅已足够，显式 emit 比隐式冒泡更可控 |
 | ComponentRegistrar 类注册 | 用简单的映射对象替代，不需要 RegistrarBase 重量级机制 |
 
 ### 17.15 EventFlowRegistrar（事件流注册表）
 
-EventFlowRegistrar 收集 stateTriggers 的定义和运行时订阅关系，**只做收集和生命周期管理，不做调度执行**。
+EventFlowRegistrar 收集 bridges 的定义和运行时订阅关系，**只做收集和生命周期管理，不做调度执行**。
 
-**为什么不做调度**：如果注册表接管调度，handler 执行时 `this` 会丢失（脱离组件上下文）。要保持 this 正确，注册表必须持有组件引用——这就回到了"组件搜索"的老路。调度还是走现有的 emit + stateTriggers，this 自然指向组件。
+**为什么不做调度**：如果注册表接管调度，handler 执行时 `this` 会丢失（脱离组件上下文）。要保持 this 正确，注册表必须持有组件引用——这就回到了"组件搜索"的老路。调度还是走现有的 emit + bridges，this 自然指向组件。
 
 #### 两层结构：定义 + 订阅
 
 注册表分两层：
 
-1. **定义层（类级别，只注册一次）**：组件类声明了哪些 stateTriggers
+1. **定义层（类级别，只注册一次）**：组件类声明了哪些 bridges
 2. **订阅层（实例级别，每个实例绑定）**：运行时的 on/off 订阅关系
 
 ```typescript
-/** 定义层：组件类声明了哪些 stateTriggers（类级别，只注册一次） */
+/** 定义层：组件类声明了哪些 bridges（类级别，只注册一次） */
 interface EventFlowDefinition {
     /** 组件类型名 */
     componentType: string;
-    /** 声明的 stateTriggers */
-    triggers: StateTrigger[];
+    /** 声明的 bridges */
+    listens: EventListen[];
 }
 
 /** 订阅层：运行时的订阅关系（实例级别，每个实例绑定） */
@@ -2836,7 +2836,7 @@ interface EventFlowEntry {
 
 #### 注册时机
 
-**定义注册**：组件类第一次被 Renderer 渲染时，注册 stateTriggers 定义到 EventFlowRegistrar。同一组件类型只注册一次：
+**定义注册**：组件类第一次被 Renderer 渲染时，注册 bridges 定义到 EventFlowRegistrar。同一组件类型只注册一次：
 
 ```typescript
 // Renderer 渲染逻辑（简化）
@@ -2844,17 +2844,17 @@ function renderNode(node: LayoutNode, context: RenderContext): ComponentBase {
     const component = createComponent(node);
 
     // 定义注册：同一组件类型只注册一次
-    if (node.props.stateTriggers?.length) {
+    if (node.props.bridges?.length) {
         EventFlowRegistrar.registerDefinition({
             componentType: node.type,
-            triggers: node.props.stateTriggers,
+            triggers: node.props.bridges,
         });
     }
 
     // 订阅绑定：每个实例都要绑定
-    if (node.props.stateTriggers?.length) {
-        for (const trigger of node.props.stateTriggers) {
-            bindStateTrigger(trigger, component, context);
+    if (node.props.bridges?.length) {
+        for (const trigger of node.props.bridges) {
+            bindEventListen(trigger, component, context);
         }
     }
 
@@ -2881,10 +2881,10 @@ class EventFlowRegistrar extends RegistrarBase<{
 }> {
     // --- 定义层 ---
 
-    /** 注册组件类的 stateTriggers 定义（同一类型只注册一次） */
+    /** 注册组件类的 bridges 定义（同一类型只注册一次） */
     registerDefinition(def: EventFlowDefinition): void;
 
-    /** 查询组件类的 stateTriggers 定义 */
+    /** 查询组件类的 bridges 定义 */
     getDefinition(componentType: string): EventFlowDefinition | undefined;
 
     /** 查询某个事件有哪些组件类型在监听 */
@@ -3113,7 +3113,7 @@ TemplateRegistry.extend 的扩展方式：
 
 - `@qimenjs/context` — EventContext + EventContextBuilder + EventType 枚举 + 预定义 data 结构类型 + EventChainLink
 - `@qimen-lab/theme` — DesignTokens 类型定义 + ThemeManager + CSS 变量生成 + 原子化 CSS 生成器 + 亮/暗主题
-- `@qimen-lab/component` — ComponentBase + TemplateRegistry + OverlayRoot + z-index 管理 + 基础能力（ThemeAbility, StyleAbility, VisibleAbility, DisableAbility, EventBindingAbility, HandlerAbility, AnimationAbility, markDirty）+ stateTriggers 绑定 + EventFlowRegistrar + 翻译表达式解析
+- `@qimen-lab/component` — ComponentBase + TemplateRegistry + OverlayRoot + z-index 管理 + 基础能力（ThemeAbility, StyleAbility, VisibleAbility, DisableAbility, EventBindingAbility, HandlerAbility, AnimationAbility, markDirty）+ bridges 绑定 + EventFlowRegistrar + 翻译表达式解析
 
 ### Phase 2：核心组件
 

@@ -52,7 +52,7 @@ render(layout: LayoutNode, parentEl?: HTMLElement)
   │
   ├─ 阶段 5：绑定事件（依赖 el + extraFns）
   │   ├─ handlers → component.onDom(event, handler) 绑定 DOM 事件
-  │   └─ stateTriggers → globalEventBus.on(source:type, handler) 绑定
+  │   └─ bridges.on → globalEventBus.on(source:type, handler) 绑定
   │
   ├─ 阶段 6：条件/循环/响应式
   │   ├─ visible → 条件渲染
@@ -220,12 +220,13 @@ if (layout.handlers) {
     }
 }
 
-// stateTriggers
-if (layout.stateTriggers) {
-    for (const trigger of layout.stateTriggers) {
-        for (const [eventType, methodName] of Object.entries(trigger.events)) {
+// bridges.on（从 bridges 混合数组中提取 EventListen 项）
+const listens = layout.bridges?.filter(item => typeof item !== 'string') || [];
+if (listens.length) {
+    for (const listen of listens) {
+        for (const [eventType, methodName] of Object.entries(listen.events)) {
             const off = globalEventBus.on(
-                trigger.source ? `${trigger.source}:${eventType}` : eventType,
+                listen.source ? `${listen.source}:${eventType}` : eventType,
                 (e) => component[methodName]?.(e)
             );
             component.onCleanup(off);
@@ -300,7 +301,7 @@ if (layout.lifecycle?.onMounted) {
 | extraFns | `bind(component)` + `defineProperty` | 阶段 1 |
 | tag | 覆盖 `component.tag` | 阶段 2（initElement 前） |
 | handlers | `component.onDom()` | 阶段 5（依赖 el + extraFns） |
-| stateTriggers | `globalEventBus.on()` | 阶段 5（依赖 extraFns） |
+| bridges.on | `globalEventBus.on()` | 阶段 5（依赖 extraFns） |
 | lifecycle | `bind(component)` 后在对应时机调用 | 阶段 9 |
 | visible | 条件渲染 | 阶段 6 |
 | repeat | 循环渲染 | 阶段 6 |
