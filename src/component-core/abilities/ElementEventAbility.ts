@@ -47,6 +47,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { InternalEventBinding, EventMap } from '../types';
+import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export const ElementEventAbility: AbilityDefinition = {
     /**
@@ -59,32 +60,34 @@ export const ElementEventAbility: AbilityDefinition = {
         // ─── 绑定内部事件 ───
         for (const binding of eventMap.internal) {
             const { event, handler, once, delegate, delegateTarget, node } = binding;
+            // DOM 事件加前缀，避免与组件 emit 的同名事件冲突
+            const domEvent = `${DOM_EVENT_PREFIX}${event}`;
 
             if (delegate) {
                 // 事件委托模式：bind 绑定 + on 监听 + closest 委托
                 this.bind(node.el, event as any, { selector: delegateTarget });
-                this.on(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
+                this.on(domEvent, (gesture: any) => {
+                    const domEvt = gesture?.domEvent ?? gesture;
                     const target = delegateTarget
-                        ? (domEvent.target as HTMLElement).closest(delegateTarget)
-                        : (domEvent.target as HTMLElement);
+                        ? (domEvt.target as HTMLElement).closest(delegateTarget)
+                        : (domEvt.target as HTMLElement);
                     if (target) {
-                        (this as any)[handler](domEvent, target);
+                        (this as any)[handler](domEvt, target);
                     }
                 });
             } else if (once) {
                 // 只触发一次：bind 绑定 + once 监听
                 this.bind(node.el, event as any);
-                this.once(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
-                    (this as any)[handler](domEvent, node.el);
+                this.once(domEvent, (gesture: any) => {
+                    const domEvt = gesture?.domEvent ?? gesture;
+                    (this as any)[handler](domEvt, node.el);
                 });
             } else {
                 // 常规绑定：bind 绑定 + on 监听
                 this.bind(node.el, event as any);
-                this.on(event, (gesture: any) => {
-                    const domEvent = gesture?.domEvent ?? gesture;
-                    (this as any)[handler](domEvent, node.el);
+                this.on(domEvent, (gesture: any) => {
+                    const domEvt = gesture?.domEvent ?? gesture;
+                    (this as any)[handler](domEvt, node.el);
                 });
             }
         }
@@ -93,12 +96,14 @@ export const ElementEventAbility: AbilityDefinition = {
         for (const [emitKey, node] of Object.entries(eventMap.external) as [string, any][]) {
             // emitKey 格式为 "name:event"，取事件类型
             const eventType = emitKey.split(':')[1] || emitKey;
+            // DOM 事件加前缀
+            const domEventType = `${DOM_EVENT_PREFIX}${eventType}`;
 
             this.bind(node.el, eventType as any);
-            this.on(eventType, (gesture: any) => {
-                const domEvent = gesture?.domEvent ?? gesture;
+            this.on(domEventType, (gesture: any) => {
+                const domEvt = gesture?.domEvent ?? gesture;
                 if (typeof this.emit === 'function') {
-                    this.emit(emitKey, undefined, { domEvent });
+                    this.emit(eventType, undefined, { domEvent: domEvt });
                 }
             });
         }

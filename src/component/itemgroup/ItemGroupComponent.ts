@@ -16,9 +16,10 @@
  * - items — 子项实例数组（只读）
  *
  * 事件转发机制：
- * - eventKey 作为事件源标识，自动注入子组件
- * - 子组件通过 eventKey 触发事件（如 this.emit(`${eventKey}:click`)）
- * - ItemGroup 自动绑定子组件的 click/close 事件并转发
+ * - eventKey 作为事件源标识（source），注入子组件
+ * - 子组件通过 source=eventKey 触发事件（如 this.emit('click', data, { source: eventKey })）
+ * - ItemGroup 通过 handlers 机制监听子组件的 click/close 事件
+ * - 转发为自身的 click/close 事件（source=eventKey），附带子项实例和索引信息
  * - 默认内置转发 click 和 close，可通过 events 扩展
  *
  * 组合：TemplateComponent + ITEMGROUP_TEMPLATE
@@ -49,6 +50,15 @@ export interface ItemGroupProps {
     eventKey?: string;
     /** 需要转发的事件类型，默认 ['click', 'close'] */
     events?: string[];
+    /**
+     * 从子项实例上提取哪些属性作为事件数据
+     *
+     * 转发事件时不传组件实例（避免 clone 遍历 getter 报错），
+     * 而是从实例上提取指定属性，构建纯数据对象。
+     * 例如 itemData: ['text', 'value', 'path'] → { text, value, path, index }
+     * 默认不提取任何属性，只附带 index
+     */
+    itemData?: string[];
 }
 
 /**
@@ -81,6 +91,9 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
     /** 需要转发的事件类型 */
     private _forwardEvents: string[] = [...DEFAULT_FORWARD_EVENTS];
 
+    /** 从子项实例上提取的属性名列表 */
+    private _itemData: string[] = [];
+
     /** 子项事件解绑函数列表 */
     private _itemUnsubscribes: Map<any, Map<string, () => void>> = new Map();
 
@@ -95,6 +108,7 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
         if (props?.gap) this._gap = props.gap;
         if (props?.eventKey) this._eventKey = props.eventKey;
         if (props?.events) this._forwardEvents = props.events;
+        if (props?.itemData) this._itemData = props.itemData;
 
         this.applyDirection();
         this.applyGap();
@@ -376,47 +390,6 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
 
     // ─── 事件转发 ──
 
-    /**
-     * 绑定子组件事件转发
-     *
-     * 对每个 forwardEvent，监听子组件的 `${eventKey}:${event}` 事件，
-     * 转发为 ItemGroup 自身的 `${eventKey}:${event}` 事件，
-     * 并附带子项实例和索引信息。
-     */
-    private bindItemEvents(instance: any): void {
-        if (!this._eventKey || typeof instance.on !== 'function') return;
-
-        const unsubMap = new Map<string, () => void>();
-
-        for (const event of this._forwardEvents) {
-            const fullEvent = `${this._eventKey}:${event}`;
-            const unsub = instance.on(fullEvent, (data: any) => {
-                this.emit(fullEvent, {
-                    ...data,
-                    item: instance,
-                    index: this.indexOf(instance),
-                });
-            });
-            unsubMap.set(event, unsub);
-        }
-
-        this._itemUnsubscribes.set(instance, unsubMap);
-    }
-
-    /**
-     * 解绑子组件事件转发
-     */
-    private unbindItemEvents(instance: any): void {
-        const unsubMap = this._itemUnsubscribes.get(instance);
-        if (!unsubMap) return;
-
-        for (const unsub of unsubMap.values()) {
-            if (typeof unsub === 'function') unsub();
-        }
-
-        this._itemUnsubscribes.delete(instance);
-    }
-
     // ─── 内部方法 ──
 
     /**
@@ -437,6 +410,89 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
         }
 
         return new ItemClass(props);
+    }
+
+    /**
+     * 绑定子组件事件转发
+     *
+     * 监听子组件的 click/close 等事件（组件级事件，非 DOM 事件），
+     * 通过 onForwardEvent 方法处理转发逻辑。
+     * DOM 事件有 dom: 前缀，组件 emit 的事件无前缀，不会冲突。
+     */
+    private bindItemEvents(instance: any): void {
+        if (!this._eventKey || typeof instance.on !== 'function') return;
+
+        this.logger.debug('[ItemGroup] bindItemEvents, eventKey =', this._eventKey, 'forwardEvents =', this._forwardEvents);
+
+        const unsubMap = new Map<string, () => void>();
+        // 记录子组件的 scopeId，用于过滤：只转发来自子组件的事件，忽略自身 emit 的
+        const childScopeId = instance.eventScope?.getScopeId?.();
+
+        for (const event of this._forwardEvents) {
+            const unsub = instance.on(event, (data: any) => {
+                // scopeId 过滤：只转发来自子组件 scopeId 的事件
+                // 避免收到自身 emit 的同名事件导致循环
+                if (childScopeId && data?.scopeId && data.scopeId !== childScopeId) {
+                    return;
+                }
+                const index = this.indexOf(instance);
+                this.logger.debug('[ItemGroup] forwarding event =', event, 'index =', index);
+                this.onForwardEvent(event, {
+                    ...data?.data,
+                    ...this._extractItemData(instance, index),
+                });
+            });
+            unsubMap.set(event, unsub);
+        }
+
+        this._itemUnsubscribes.set(instance, unsubMap);
+    }
+
+    /**
+     * 子组件事件转发处理
+     *
+     * 当子组件触发转发事件时调用。默认行为是 emit 为自身的同名事件（source=eventKey）。
+     * 子类可重写此方法，直接处理事件而不再 emit，避免全局 EventBus 上的事件名冲突。
+     *
+     * @param event - 事件类型（如 'click', 'close'）
+     * @param data - 事件数据（含子项属性和 index）
+     */
+    protected onForwardEvent(event: string, data: Record<string, any>): void {
+        this.emit(event, data, { source: this._eventKey || undefined });
+    }
+
+    /**
+     * 解绑子组件事件转发
+     */
+    private unbindItemEvents(instance: any): void {
+        const unsubMap = this._itemUnsubscribes.get(instance);
+        if (!unsubMap) return;
+
+        for (const unsub of unsubMap.values()) {
+            if (typeof unsub === 'function') unsub();
+        }
+
+        this._itemUnsubscribes.delete(instance);
+    }
+
+    /**
+     * 从子项实例提取事件数据
+     *
+     * 根据 itemData 配置从实例上提取指定属性，构建纯数据对象。
+     * 始终附带 index，避免直接传组件实例（clone 会遍历 getter 报错）。
+     */
+    protected _extractItemData(instance: any, index: number): Record<string, any> {
+        const result: Record<string, any> = { index };
+
+        for (const key of this._itemData) {
+            const value = instance[key];
+            // 只提取原始值，跳过函数和组件实例
+            if (value !== undefined && typeof value !== 'function' && !(value?.el)) {
+                result[key] = value;
+            }
+        }
+
+        return result;
     }
 
     /**

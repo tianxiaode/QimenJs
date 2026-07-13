@@ -53,6 +53,8 @@ export class TapProcessor extends GestureProcessor<'tap'> {
                 // 验证点击是否有效
                 const isValid = validateTap(duration, distance, maxDuration, maxDistance);
 
+                this.logProcessor('debug', 'tap_release', { duration, distance, maxDuration, maxDistance, isValid, active: this.active });
+
                 if (this.active && isValid) {
                     // 有效点击，触发手势事件
                     this.emitGesture(input.originalEvent);

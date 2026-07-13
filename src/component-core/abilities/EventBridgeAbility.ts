@@ -19,7 +19,8 @@
  * - crud: 监听 crudaction → onCreate/onEdit/onDelete/...
  * - selection: 监听 selectionchange → onSelectionChange
  * - search: 监听 searchchange → onSearchChange
- * - 自定义: 任意 key → 监听指定 event → 调用指定 handler
+ * - 自定义: key 即事件名（如 click、input、change），
+ *   match 用于只监听关心的细分事件（如 change:product、click:submitBtn）
  *
  * @example
  * ```js
@@ -30,11 +31,10 @@
  *     selection: 'myGrid'
  * });
  *
- * // 完整配置
+ * // 自定义桥接
  * component.setEventBridge({
- *     pagination: { source: 'myToolbar' },
- *     crud: { source: 'myToolbar', actions: ['create', 'delete'] },
- *     selection: { source: 'myGrid' }
+ *     click: { source: 'myBtn' },                    // 监听 click
+ *     change: { source: 'router', match: 'product' } // 只监听 change:product
  * });
  * ```
  */
@@ -88,32 +88,29 @@ export interface SearchBridgeConfig {
 
 /**
  * 自定义桥接配置
+ *
+ * key 即事件名（如 click、input、change）。
+ * - 组件内部只有一个同类事件时，直接发 key（如 click）
+ * - 组件内部有多个同类事件时，发 key:标识（如 click:submitBtn）来区分
+ * - 路由发 change 或 change:路径
+ *
+ * match 用于只监听关心的细分事件，避免全监听后再 if 判断：
+ * - 不传：监听 key 本身（如 click、change）
+ * - 'a,b,c'：只监听 key:a、key:b、key:c
  */
 export interface CustomBridgeConfig {
     /** 事件源组件 id */
     source: string;
-    /** 监听的事件名，默认为 key 名 */
-    event?: string;
     /** 目标处理方法名，默认为 on + 首字母大写 key */
     handler?: string;
     /**
-     * 事件映射 — 声明多事件到方法的映射
+     * 事件粒度匹配 — 只监听关心的细分事件
      *
-     * key 为事件名后缀（会拼接到 event 前缀后），value 为方法名。
-     * 与 event + handler 互斥，有 events 时忽略 event/handler。
+     * - 不传：监听 key 本身（如 click、change）
+     * - 'a,b,c'：只监听 key:a、key:b、key:c
      *
-     * @example
-     * // 路由桥接：监听 route:change → onRouteChange
-     * { source: 'router', events: { change: 'onRouteChange' }, match: '*' }
-     */
-    events?: Record<string, string>;
-    /**
-     * 事件粒度匹配 — 控制监听哪些细分事件
-     *
-     * - '*' : 监听通用事件（event 前缀本身，如 route:change）
-     * - 'a,b,c' : 只监听指定后缀的事件（如 route:change:a, route:change:b, route:change:c）
-     *
-     * 仅在 events 存在时生效。
+     * 用于路由路径匹配（如 match: 'product' 只监听 change:product）
+     * 或区分同组件内多个同类事件（如 match: 'submitBtn' 只监听 click:submitBtn）
      */
     match?: string;
     /** 是否启用，默认 true */
@@ -176,6 +173,8 @@ export const EventBridgeAbility: AbilityDefinition = {
         const config = this.getEventBridge();
         if (!config) return;
 
+        this.logger?.debug?.('[EventBridge] initEventBridge, config keys =', Object.keys(config));
+
         const mgr = ComponentRegistrar.getInstance();
 
         // 分页桥接
@@ -224,51 +223,35 @@ export const EventBridgeAbility: AbilityDefinition = {
         }
 
         // 自定义桥接
+        // key 即事件名（如 click、input、change）
+        // match 用于只监听关心的细分事件（如 change:product、click:submitBtn）
         for (const [key, rawCfg] of Object.entries(config)) {
             if (BUILTIN_BRIDGE_KEYS.has(key)) continue;
             const cfg = normalizeBridgeConfig(rawCfg);
             if (!cfg || cfg.enabled === false) continue;
 
-            // events + match 模式：多事件映射 + 粒度匹配
-            if (cfg.events) {
-                const match = cfg.match || '*';
-                for (const [eventSuffix, handlerName] of Object.entries(cfg.events)) {
-                    const method = handlerName as string;
-                    // 事件前缀 = key（如 'route'），后缀 = eventSuffix（如 'change'）
-                    const eventPrefix = `${key}:${eventSuffix}`;
-
-                    if (match === '*') {
-                        // 监听通用事件（如 route:change）
-                        this._bridgeOn(cfg.source, eventPrefix, (e: any) => {
-                            if (typeof (this as any)[method] === 'function') {
-                                (this as any)[method](e);
-                            }
-                        }, mgr);
-                    } else {
-                        // 监听指定后缀的事件（如 route:change:home, route:change:icons）
-                        const suffixes = match.split(',').map((s: string) => s.trim()).filter(Boolean);
-                        for (const suffix of suffixes) {
-                            const eventName = `${eventPrefix}:${suffix}`;
-                            this._bridgeOn(cfg.source, eventName, (e: any) => {
-                                if (typeof (this as any)[method] === 'function') {
-                                    (this as any)[method](e);
-                                }
-                            }, mgr);
-                        }
-                    }
-                }
-                continue;
-            }
-
-            // 单事件模式（原有逻辑）
-            const eventName = cfg.event || key;
             const methodName = cfg.handler || `on${key.charAt(0).toUpperCase() + key.slice(1)}`;
+            const match = cfg.match;
 
-            this._bridgeOn(cfg.source, eventName, (e: any) => {
-                if (typeof (this as any)[methodName] === 'function') {
-                    (this as any)[methodName](e);
+            if (!match) {
+                // 无 match：监听 key 本身（如 click、change）
+                this._bridgeOn(cfg.source, key, (e: any) => {
+                    if (typeof (this as any)[methodName] === 'function') {
+                        (this as any)[methodName](e);
+                    }
+                }, mgr);
+            } else {
+                // 有 match：只监听 key:match值（如 change:product、click:submitBtn）
+                const suffixes = match.split(',').map((s: string) => s.trim()).filter(Boolean);
+                for (const suffix of suffixes) {
+                    const eventName = `${key}:${suffix}`;
+                    this._bridgeOn(cfg.source, eventName, (e: any) => {
+                        if (typeof (this as any)[methodName] === 'function') {
+                            (this as any)[methodName](e);
+                        }
+                    }, mgr);
                 }
-            }, mgr);
+            }
         }
     },
 
@@ -282,23 +265,34 @@ export const EventBridgeAbility: AbilityDefinition = {
      * - 通过 onCleanup 管理生命周期
      */
     _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
+        this.logger?.debug?.('[EventBridge] _bridgeOn, sourceId =', sourceId, 'eventName =', eventName);
+
         // router 源：通过 EventSourceRegistrar 查找 router 实例
         if (sourceId === 'router') {
             const routerSource = EventSourceRegistrar.getInstance().getComponent('router');
             if (routerSource && typeof (routerSource as any).on === 'function') {
                 const off = (routerSource as any).on(eventName, (ctx: any) => {
+                    this.logger?.debug?.('[EventBridge] router event received, eventName =', eventName, 'data =', ctx.data !== undefined ? ctx.data : ctx);
                     handler(ctx.data !== undefined ? ctx.data : ctx);
                 });
                 this.onCleanup(off);
+            } else {
+                this.logger?.debug?.('[EventBridge] router source NOT found');
             }
             return;
         }
 
         // 组件源：通过 ComponentRegistrar 查找源组件实例
         const source = mgr.getInstance(sourceId);
-        if (!source) return;
+        if (!source) {
+            this.logger?.debug?.('[EventBridge] source component NOT found, sourceId =', sourceId);
+            return;
+        }
 
-        const off = source.on?.(eventName, handler);
+        const off = source.on?.(eventName, (e: any) => {
+            this.logger?.debug?.('[EventBridge] component event received, sourceId =', sourceId, 'eventName =', eventName);
+            handler(e);
+        });
 
         if (typeof off === 'function') {
             this.onCleanup(off);

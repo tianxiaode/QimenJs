@@ -94,7 +94,7 @@ export class Logger {
         const text = format(entry, this.options);
 
         // 输出到控制台
-        consoleSink(text, entry.level);
+        consoleSink(text, entry.level, ...(entry.data ?? []));
     }
 
     /**

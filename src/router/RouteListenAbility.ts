@@ -29,6 +29,8 @@ export const RouteListenAbility: AbilityDefinition = {
 
     /** 初始化路由监听 — 通过桥接事件配置实现 */
     _initRouteListen(): void {
+        this.logger?.debug?.('[RouteListen] _initRouteListen');
+
         // 设置桥接事件配置，由 EventBridgeAbility 的 initEventBridge 处理监听
         // 桥接声明 events: { change: 'onRouteChange' }，自动调用子类的 onRouteChange
         if (typeof this.setEventBridge === 'function') {

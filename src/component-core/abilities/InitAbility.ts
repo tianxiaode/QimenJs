@@ -19,6 +19,7 @@ import type { TooltipKey } from './TooltipAbility';
 import type { BadgeKey } from './BadgeAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
+import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -265,37 +266,42 @@ export const InitAbility: AbilityDefinition = {
      * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
      */
     bindInternalEvents(): void {
+        this.logger?.debug?.('[Init] bindInternalEvents, count =', this.eventMap.internal.length, 'type =', (this.constructor as any).type, 'scopeId =', this.eventScope?.getScopeId?.());
         for (const binding of this.eventMap.internal) {
             const { event, handler, once, delegate, delegateTarget, node } = binding;
+            // DOM 事件加前缀，避免与组件 emit 的同名事件冲突
+            const domEvent = `${DOM_EVENT_PREFIX}${event}`;
+
+            this.logger?.debug?.('[Init] bindInternal, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'delegate =', delegate, 'node.el =', node.el?.tagName, 'inDOM =', document.contains(node.el));
 
             if (delegate) {
                 // 事件委托模式
                 this.bind(node.el, event as any, { selector: delegateTarget });
-                this.on(event, (ctx: any) => {
-                    const domEvent = this._extractDomEvent(ctx);
+                this.on(domEvent, (ctx: any) => {
+                    const domEvt = this._extractDomEvent(ctx);
                     const target = delegateTarget
-                        ? (domEvent?.target as HTMLElement)?.closest(delegateTarget)
-                        : (domEvent?.target as HTMLElement);
+                        ? (domEvt?.target as HTMLElement)?.closest(delegateTarget)
+                        : (domEvt?.target as HTMLElement);
                     if (target && typeof (this as any)[handler] === 'function') {
-                        (this as any)[handler](domEvent, target);
+                        (this as any)[handler](domEvt, target);
                     }
                 });
             } else if (once) {
                 // 只触发一次
                 this.bind(node.el, event as any);
-                this.once(event, (ctx: any) => {
-                    const domEvent = this._extractDomEvent(ctx);
+                this.once(domEvent, (ctx: any) => {
+                    const domEvt = this._extractDomEvent(ctx);
                     if (typeof (this as any)[handler] === 'function') {
-                        (this as any)[handler](domEvent, node.el);
+                        (this as any)[handler](domEvt, node.el);
                     }
                 });
             } else {
                 // 常规绑定
                 this.bind(node.el, event as any);
-                this.on(event, (ctx: any) => {
-                    const domEvent = this._extractDomEvent(ctx);
+                this.on(domEvent, (ctx: any) => {
+                    const domEvt = this._extractDomEvent(ctx);
                     if (typeof (this as any)[handler] === 'function') {
-                        (this as any)[handler](domEvent, node.el);
+                        (this as any)[handler](domEvt, node.el);
                     }
                 });
             }
@@ -316,16 +322,20 @@ export const InitAbility: AbilityDefinition = {
     bindExternalEvents(layout: LayoutNode): void {
         const bridges = new Set<string>(this._extractBridgesEmit(layout.bridges));
 
+        this.logger?.debug?.('[Init] bindExternalEvents, count =', Object.keys(this.eventMap.external).length, 'bridgeEmits =', [...bridges]);
+
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
+            // DOM 事件加前缀，避免与组件 emit 的同名事件冲突
+            const domEventType = `${DOM_EVENT_PREFIX}${eventType}`;
 
             // bridges 模式：走事件桥 emit 发布
             if (bridges.has(emitKey)) {
                 this.bind(node.el, eventType as any);
-                this.on(eventType, (ctx: any) => {
+                this.on(domEventType, (ctx: any) => {
                     const domEvent = this._extractDomEvent(ctx);
                     if (typeof this.emit === 'function') {
-                        this.emit(emitKey, undefined, { domEvent });
+                        this.emit(eventType, undefined, { domEvent });
                     }
                 });
                 continue;
@@ -336,7 +346,7 @@ export const InitAbility: AbilityDefinition = {
             if (typeof (this as any)[handlerName] === 'function') {
                 const handler = (this as any)[handlerName].bind(this);
                 this.bind(node.el, eventType as any);
-                this.on(eventType, (ctx: any) => {
+                this.on(domEventType, (ctx: any) => {
                     const domEvent = this._extractDomEvent(ctx);
                     handler(domEvent, node.el);
                 });
@@ -345,10 +355,10 @@ export const InitAbility: AbilityDefinition = {
 
             // 默认模式：走事件桥 emit 发布
             this.bind(node.el, eventType as any);
-            this.on(eventType, (ctx: any) => {
+            this.on(domEventType, (ctx: any) => {
                 const domEvent = this._extractDomEvent(ctx);
                 if (typeof this.emit === 'function') {
-                    this.emit(emitKey, undefined, { domEvent });
+                    this.emit(eventType, undefined, { domEvent });
                 }
             });
         }
@@ -426,8 +436,9 @@ export const InitAbility: AbilityDefinition = {
     bindEventListen(listens: EventListen[]): void {
         for (const listen of listens) {
             for (const [eventType, methodName] of Object.entries(listen.events)) {
-                const eventKey = listen.source ? `${listen.source}:${eventType}` : eventType;
-                const off = this.on(eventKey, (e: any) => {
+                // 事件名直接使用 eventType，不再拼凑 source 前缀
+                // source 信息通过 EventContext.source 传递
+                const off = this.on(eventType, (e: any) => {
                     (this as any)[methodName]?.(e);
                 });
                 if (typeof off === 'function') {
@@ -468,6 +479,8 @@ export const InitAbility: AbilityDefinition = {
                 }
             }
         }
+
+        this.logger?.debug?.('[Init] callInitMethods, methods =', [...initMethods]);
 
         for (const methodName of initMethods) {
             if (typeof (this as any)[methodName] === 'function') {

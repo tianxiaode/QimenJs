@@ -11,6 +11,11 @@
 
 // ─── 注册主题 ───
 import { registerPresetThemes, registerChineseThemes, ThemeRegistrar } from '@qimenjs/theme';
+import { Logger } from '@qimenjs/logger';
+
+// 开启 debug 日志
+Logger.root = new Logger({ level: 'debug' });
+
 registerPresetThemes();
 registerChineseThemes();
 
@@ -50,6 +55,7 @@ class AppShell extends TemplateComponent.withTemplate([
     static type = 'AppShell';
     static children = {
         nav: {
+            eventKey: 'abc',
             direction: 'vertical',
             gap: '0',
             cls: 'sidebar-nav',
@@ -68,7 +74,7 @@ class AppShell extends TemplateComponent.withTemplate([
             },
         },
         page: {
-            routeMap: { home: HomePage, icons: IconsPage, theme: ThemePage },
+            routeMap: { '/': HomePage, '/icons': IconsPage, '/theme': ThemePage },
             defaultComponent: HomePage,
         },
     };

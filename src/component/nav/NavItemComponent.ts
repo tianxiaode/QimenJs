@@ -5,13 +5,13 @@
  * 支持图标、文本、激活状态、禁用状态。
  *
  * 模板内容项（由 withTemplate 自动生成 getter/setter）：
- * - navItem:content — 可点击区域（事件：click → onContentClick）
+ * - navItem:content — 可点击区域（内部事件：data-event="click" → onContent）
  * - navItem:icon — 图标
  * - navItem:text — 文本
  *
  * 事件流：
- * - 内部事件：navItem:content click → onContentClick
- *   - 通过 eventKey 触发外部事件（nav:click / nav:select），供 ItemGroup 转发
+ * - 内部事件：navItem:content click → onContent
+ *   - 调用 onClick 回调（由 ItemGroup 注入，用于事件转发）
  *   - 调用 onSelect 回调
  *
  * @example
@@ -85,19 +85,16 @@ export class NavItemComponent extends TemplateComponent.withTemplate(NAVITEM_TEM
     /**
      * navItem:content 的 click 事件处理
      *
-     * 事件流：
-     * 1. 通过 eventKey 触发 nav:click（供 ItemGroup 转发）
-     * 2. 通过 eventKey 触发 nav:select（供 NavItemGroup 处理选中态）
-     * 3. 调用 onSelect 回调
+     * DOM 事件名是 dom:click（加前缀），组件 emit 的是 click（无前缀），不会冲突。
      */
-    onContentClick(): void {
+    onContent(): void {
         if (this._disabled) return;
 
-        // 通过 eventKey 触发外部事件（供 ItemGroup 转发）
-        if (this.eventKey) {
-            this.emit(`${this.eventKey}:click`, { item: this });
-            this.emit(`${this.eventKey}:select`, { item: this });
-        }
+        this.logger.debug('[NavItem] onContent, eventKey =', this.eventKey);
+
+        // 发布 click 事件（source=eventKey），供 ItemGroup 转发
+        // 不传组件实例，ItemGroup 通过 itemData 配置提取子项属性
+        this.emit('click', undefined, { source: this.eventKey || undefined });
 
         this.onSelect?.(this);
     }

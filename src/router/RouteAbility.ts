@@ -3,9 +3,9 @@
  *
  * 容器组件声明此能力后，自动监听路由切换事件。
  *
- * 新模式：路由只发切换事件（事件名由路径 / 替换为 :），
- * 不再自动切换子组件。组件通过 EventBridgeAbility 监听 router 源事件
- * 或在此能力中监听路径对应的事件来实现刷新。
+ * 路由事件命名：change 或 change:路径（source='router'）
+ * 组件通过 EventBridgeAbility 监听 router 源的 change 事件，
+ * 用 match 过滤只关心的路径事件。
  *
  * 监听策略：通过 EventSourceRegistrar 查找 router 实例，
  * 在其 eventScope 上监听（scopeId 隔离），不再直接使用 globalEventBus。
@@ -13,7 +13,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { EventSourceRegistrar } from '@qimenjs/events';
-import { Router, pathToEventName } from './Router';
+import { Router } from './Router';
 import type { RouteMap, RouteChangeEvent } from './types';
 
 export const RouteAbility: AbilityDefinition = {
@@ -45,22 +45,21 @@ export const RouteAbility: AbilityDefinition = {
     }): void {
         this.setAbilityState('RouteAbility:config', config);
 
+        this.logger?.debug?.('[RouteAbility] setupRoute, routes =', Object.keys(config.routes), 'defaultPath =', config.defaultPath, 'hashMode =', config.hashMode);
+
         const router = Router.getInstance();
         router.register(config.routes);
 
-        // 通过 EventSourceRegistrar 查找 router 实例，在其 eventScope 上监听
+        // 统一监听 router 的 change 事件
         const routerSource = EventSourceRegistrar.getInstance().getComponent('router');
         if (routerSource && typeof (routerSource as any).on === 'function') {
-            for (const path of Object.keys(config.routes)) {
-                const eventName = pathToEventName(path);
-                // Router.emit 走 _emitWithContext，eventKey='router' 会给事件名加前缀
-                // 所以实际发出的事件名是 'router:${eventName}'，监听时需要匹配
-                const fullEventName = `router:${eventName}`;
-                const off = (routerSource as any).on(fullEventName, (ctx: any) => {
-                    this._handleRouteChange(ctx.data as RouteChangeEvent);
-                });
-                this.onCleanup(off);
-            }
+            const off = (routerSource as any).on('change', (ctx: any) => {
+                this.logger?.debug?.('[RouteAbility] route change event received, data =', ctx.data);
+                this._handleRouteChange(ctx.data as RouteChangeEvent);
+            });
+            this.onCleanup(off);
+        } else {
+            this.logger?.debug?.('[RouteAbility] router source NOT found in EventSourceRegistrar');
         }
 
         // 启动路由
@@ -80,6 +79,7 @@ export const RouteAbility: AbilityDefinition = {
     _initRoute(): void {
         // 从 props 中读取 route 配置
         const routeConfig = this.props?.route;
+        this.logger?.debug?.('[RouteAbility] _initRoute, hasRouteConfig =', !!routeConfig);
         if (routeConfig) {
             this.setupRoute(routeConfig);
         }
@@ -88,19 +88,16 @@ export const RouteAbility: AbilityDefinition = {
     /**
      * 处理路由变化
      *
-     * 新模式下路由只发事件，组件可在此处理路径切换逻辑。
-     * 默认行为：发出 route:change 事件供 EventBridgeAbility 监听。
+     * Router 已直接发 change / change:路径 事件，
+     * 此处仅附加路由配置值（routeName），供组件内部使用。
      */
     _handleRouteChange(event: RouteChangeEvent): void {
+        this.logger?.debug?.('[RouteAbility] _handleRouteChange, path =', event?.path);
+
         // 附加路由配置值（如 '/': 'home' 中的 'home'）
         const config = this._routeConfig;
-        if (config?.routes && config.routes[event.path] !== undefined) {
+        if (config?.routes && event && config.routes[event.path] !== undefined) {
             (event as any).routeName = config.routes[event.path];
-        }
-
-        // 发出统一的 route:change 事件，供 EventBridgeAbility 监听
-        if (typeof this.emit === 'function') {
-            this.emit('route:change', event);
         }
     },
 };

@@ -21,6 +21,7 @@ export const RouteEmitAbility: AbilityDefinition = {
      * @param replace - 是否替换当前历史记录
      */
     navigate(path: string, replace?: boolean): void {
+        this.logger?.debug?.('[RouteEmit] navigate, path =', path, 'replace =', replace);
         Router.getInstance().navigate(path, replace);
     },
 };

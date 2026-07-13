@@ -5,7 +5,7 @@
  * - 固定 itemType 为 'NavItem'
  * - 固定 eventKey 为 'nav'
  * - 内置选中态管理（activeIndex）
- * - 扩展转发 select 事件
+ * - 子项 click 时自动触发 select 事件
  *
  * 核心操作（继承自 ItemGroup）：
  * - add(data) / removeAt(index) / insert(index, data) / setItems(datas)
@@ -16,8 +16,8 @@
  * - activeIndex — 当前选中索引（-1 表示无选中）
  *
  * 事件：
- * - nav:select — 导航项被选中时触发，附带 { item, index }
- * - nav:click — 导航项被点击时触发（继承自 ItemGroup）
+ * - click — 导航项被点击时触发（继承自 ItemGroup 转发，source='nav'）
+ * - select — 导航项被选中时触发，附带 { item, index }（source='nav'）
  *
  * @example
  * ```js
@@ -27,7 +27,7 @@
  *         { text: '设置', icon: '⚙️' },
  *     ],
  * });
- * nav.on('nav:select', ({ item, index }) => { ... });
+ * nav.on('select', ({ item, index }) => { ... });
  * nav.selectAt(1);
  * ```
  */
@@ -35,8 +35,8 @@
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 import type { NavItemComponent } from './NavItemComponent';
 
-/** 默认转发的事件类型（在 ItemGroup 默认基础上增加 select） */
-const NAV_FORWARD_EVENTS = ['click', 'select'];
+/** 默认转发的事件类型（继承 ItemGroup 的 click/close） */
+const NAV_FORWARD_EVENTS = ['click', 'close'];
 
 /** 导航项组配置 */
 export interface NavItemGroupProps {
@@ -60,7 +60,6 @@ export class NavItemGroupComponent extends ItemGroupComponent {
 
     constructor(props?: NavItemGroupProps) {
         super({
-            ...props,
             itemType: 'NavItem',
             eventKey: 'nav',
             events: NAV_FORWARD_EVENTS,
@@ -69,15 +68,16 @@ export class NavItemGroupComponent extends ItemGroupComponent {
             cls: props?.cls,
             itemsCls: props?.itemsCls,
             items: props?.items,
+            ...props,
         });
 
         this.type = 'NavItemGroup';
         this.el.classList.remove('q-itemgroup');
         this.el.classList.add('q-nav');
 
-        // 初始选中
+        // 初始选中（静默，不触发事件）
         if (props?.activeIndex !== undefined && props.activeIndex >= 0) {
-            this.selectAt(props.activeIndex);
+            this.selectAt(props.activeIndex, true);
         }
     }
 
@@ -89,11 +89,13 @@ export class NavItemGroupComponent extends ItemGroupComponent {
     /**
      * 选中指定导航项
      *
-     * 取消前一个选中项，激活新选中项，触发 nav:select 事件。
+     * 取消前一个选中项，激活新选中项，触发 select 事件（source=eventKey）。
+     * 构造函数中的初始选中不触发事件（组件未完全初始化）。
      *
      * @param index - 目标索引
+     * @param silent - 是否静默（不触发事件），构造函数初始选中时用
      */
-    selectAt(index: number): void {
+    selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
         if (index === this._activeIndex) return;
 
@@ -107,6 +109,11 @@ export class NavItemGroupComponent extends ItemGroupComponent {
         const newItem = this.getAt(index) as NavItemComponent;
         newItem.active = true;
         this._activeIndex = index;
+
+        // 触发 select 事件（静默模式下不触发，如构造函数初始选中）
+        if (!silent) {
+            this.emit('select', { ...this._extractItemData(newItem, index) }, { source: this.eventKey || undefined });
+        }
     }
 
     /**

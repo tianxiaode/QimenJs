@@ -148,9 +148,8 @@ PanelComponent.prototype._initPanel = function(props?: PanelProps): void {
  */
 PanelComponent.prototype._bridgeToolEvents = function(group: ItemGroupComponent, eventKey: string): void {
     for (const event of group.forwardEvents) {
-        const fullEvent = `${eventKey}:${event}`;
-        group.on(fullEvent, (data: any) => {
-            this.emit(fullEvent, data);
+        group.on(event, (data: any) => {
+            this.emit(event, data, { source: eventKey });
         });
     }
 };

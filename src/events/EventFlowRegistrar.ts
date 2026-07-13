@@ -61,8 +61,8 @@ export class EventFlowRegistrar {
         for (const def of this.definitions.values()) {
             for (const listen of def.listens) {
                 if (listen.source) {
-                    const fullEvent = `${listen.source}:${event}`;
-                    if (fullEvent in listen.events || event in listen.events) {
+                    // 事件名不再拼凑 source 前缀，直接匹配 event
+                    if (event in listen.events) {
                         result.push(def);
                         break;
                     }

@@ -35,14 +35,13 @@ export function bindEventListens(
             if (sourceComponent && typeof (sourceComponent as any)[method] === 'function') {
                 // source 组件存在 → 监听该组件的 eventScope（scopeId 隔离）
                 for (const [event, handlerName] of Object.entries(listen.events)) {
-                    const fullEvent = `${listen.source}:${event}`;
-                    const off = (sourceComponent as any)[method](fullEvent, (ctx: EventContext) => {
+                    const off = (sourceComponent as any)[method](event, (ctx: EventContext) => {
                         invokeHandler(component, handlerName, ctx);
                     });
                     offs.push(off);
                     subscriptions.push({
                         component,
-                        event: fullEvent,
+                        event,
                         handler: handlerName,
                         off,
                     });
@@ -50,14 +49,13 @@ export function bindEventListens(
             } else {
                 // source 组件不存在 → 监听全局事件总线（降级策略）
                 for (const [event, handlerName] of Object.entries(listen.events)) {
-                    const fullEvent = `${listen.source}:${event}`;
-                    const off = (globalEventBus as any)[method](fullEvent, (ctx: EventContext) => {
+                    const off = (globalEventBus as any)[method](event, (ctx: EventContext) => {
                         invokeHandler(component, handlerName, ctx);
                     });
                     offs.push(off);
                     subscriptions.push({
                         component,
-                        event: fullEvent,
+                        event,
                         handler: handlerName,
                         off,
                     });

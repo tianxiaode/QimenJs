@@ -51,6 +51,13 @@ import { debounce, throttle } from '@qimenjs/async';
  * ============================================ */
 
 /**
+ * DOM 事件前缀 — scope.emit 时给 DOM 事件名加前缀，
+ * 避免与组件 emit 的同名事件冲突。
+ * 内部事件绑定（data-event / data-emit）监听时也使用此前缀。
+ */
+export const DOM_EVENT_PREFIX = 'dom:';
+
+/**
  * DOM 事件适配器，用于将原生 DOM 事件转换为手势事件
  * 将底层的 DOM 事件（如 mouse、touch、pointer）映射到高级手势语义（如 swipe、tap 等）
  *
@@ -115,9 +122,12 @@ export class DomEventAdapter {
         options?: BindOptions,
         source?: any
     ): () => void {
+        this.logAdapter('debug', 'bind_called', { semantic, hasTarget: !!target, sourceType: source?.constructor?.name });
+
         // GestureSemantic：走 Processor 流程
         const descriptor = this.gestureMap[semantic as GestureSemantic];
         if (descriptor) {
+            this.logAdapter('debug', 'bind_gesture_found', { semantic, requires: descriptor.requires, processor: descriptor.processor });
             return this.bindGesture(target, semantic as GestureSemantic, descriptor, scope, options, source);
         }
 
@@ -125,6 +135,7 @@ export class DomEventAdapter {
         const inputSignal = semantic as InputSignal;
         const binding = this.inputEventMap[inputSignal];
         if (binding) {
+            this.logAdapter('debug', 'bind_input_signal_found', { semantic: inputSignal });
             return this.bindInputSignal(target, inputSignal, binding, scope, options, source);
         }
 
@@ -147,8 +158,13 @@ export class DomEventAdapter {
 
         // 创建 gesture callback（可能带防抖/节流）
         let gestureCallback = (gesture: any) => {
-            this.logAdapter('debug', 'emit_gesture', { semantic });
-            scope.emit(semantic, gesture, { source });
+            this.logAdapter('debug', 'emit_gesture', { semantic, scopeType: scope?.constructor?.name });
+            try {
+                scope.emit(`${DOM_EVENT_PREFIX}${semantic}`, gesture, { source });
+                this.logAdapter('debug', 'emit_gesture_done', { semantic });
+            } catch (e: any) {
+                this.logAdapter('error', 'emit_gesture_error', { semantic, error: e?.message });
+            }
         };
 
         if (options?.debounce && options.debounce > 0) {
@@ -212,7 +228,7 @@ export class DomEventAdapter {
         for (const domEvent of domEvents) {
             const handler = (event: Event) => {
                 const input = this.normalizeInput(signal, event);
-                scope.emit(signal, input, { source });
+                scope.emit(`${DOM_EVENT_PREFIX}${signal}`, input, { source });
             };
 
             target.addEventListener(domEvent, handler, options);
@@ -261,6 +277,8 @@ export class DomEventAdapter {
         options?: BindOptions,
         unbindFunctions?: (() => void)[] // 新增参数
     ) {
+        this.logAdapter('debug', 'bindInputSignals', { signals, target: (target as any).tagName || target.constructor.name });
+
         for (const signal of signals) {
             const binding = this.inputEventMap[signal];
             if (!binding) {
@@ -269,6 +287,8 @@ export class DomEventAdapter {
             }
 
             const domEvents = this.selectDomEvents(binding);
+
+            this.logAdapter('debug', 'bindInputSignals_signal', { signal, domEvents });
 
             for (const domEvent of domEvents) {
                 const handler = (event: Event) => {
@@ -283,7 +303,7 @@ export class DomEventAdapter {
                 this.logAdapter('debug', 'dom_event_bound', {
                     domEvent,
                     signal,
-                    target: target.constructor.name,
+                    target: (target as any).tagName || target.constructor.name,
                 });
 
                 if (unbindFunctions) {

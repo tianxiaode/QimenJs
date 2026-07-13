@@ -82,6 +82,7 @@ export class EventScope implements IEventScope {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
+        this.logScope('debug', 'emit', { event: String(event), hasData: data !== undefined });
         this.bus.emit(event, data, options?.source || this, this.scopeId);
     }
 
@@ -101,7 +102,7 @@ export class EventScope implements IEventScope {
             return () => {};
         }
 
-        const off = this.bus.on(event, handler);
+        const off = this.bus.on(event, handler, this.scopeId);
         this.disposers.push(off);
         return off;
     }

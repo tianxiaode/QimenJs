@@ -19,16 +19,16 @@
  * consoleSink('2023-01-01T12:00:00.000Z INFO  Application started', 'info');
  * ```
  */
-export function consoleSink(text: string, level: string) {
+export function consoleSink(text: string, level: string, ...data: any[]) {
     // 根据日志级别选择适当的控制台方法
     if (level === 'error') {
         // 错误级别日志使用 console.error 输出
-        console.error(text);
+        console.error(text, ...data);
     } else if (level === 'warn') {
         // 警告级别日志使用 console.warn 输出
-        console.warn(text);
+        console.warn(text, ...data);
     } else {
         // 其他级别（info/debug）使用 console.log 输出
-        console.log(text);
+        console.log(text, ...data);
     }
 }

@@ -73,6 +73,7 @@ export const EventAbility: AbilityDefinition = {
      *   - domEvent: 原始 DOM 事件（可选）
      */
     emit(event: string, data?: any, options?: { source?: any; domEvent?: Event }) {
+        this.logger?.debug?.('[Event] emit, event =', event, 'hasSource =', !!options?.source, 'data =', data);
         if (options && options.source !== undefined) {
             // UI 事件模式：自动构建 EventContext
             this._emitWithContext(event, data, options);
@@ -141,16 +142,16 @@ export const EventAbility: AbilityDefinition = {
         // 2. 深拷贝 data，脱离原始引用
         const clonedData = data !== undefined ? object.clone(data) : undefined;
 
-        // 3. 构建完整事件名（eventKey:type，保证全局唯一性）
+        // 3. 事件名直接使用 event，不再拼凑 eventKey 前缀
+        //    eventKey 仅作为 source 标识，不参与事件名
         const eventKey = this.eventKey as string | undefined;
-        const fullEvent = eventKey ? `${eventKey}:${event}` : event;
 
         // 4. 确定 source（scopeId 由 eventScope 内部自动绑定）
         const source = options?.source ?? (eventKey ?? '');
 
         // 5. 构建 EventContext
         const ctx = EventContextBuilder.create()
-            .withEvent(fullEvent)
+            .withEvent(event)
             .withType(event)
             .withSource(source)
             .withSourceType(this.constructor.name)
@@ -165,7 +166,7 @@ export const EventAbility: AbilityDefinition = {
         }
 
         // 6. 通过 eventScope 发布（传入预构建的 EventContext，scopeId 内部自动绑定）
-        this.eventScope.emit(fullEvent, ctx);
+        this.eventScope.emit(event, ctx);
     },
 
     /**

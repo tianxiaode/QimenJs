@@ -4,13 +4,13 @@
  * 管理 URL 和路由状态的映射，支持 hash 和 history 两种模式。
  * 路由变化时通过 emit 发布路由切换事件（source='router'）。
  *
- * 新模式：路由只发切换事件，不再解析配置去找组件/模板。
- * 事件名由路径转换而来：将 / 替换为 : 作为事件名。
- * 例如路径 /users/list → 事件名 :users:list
+ * 事件命名规则：
+ * - 无路径时发 change
+ * - 有路径时发 change:路径（/ 替换为 :）
+ * 例如路径 /users/list → 事件名 change:users:list
  *
- * Router 继承 ComposableBase.with(EventAbility)，通过 emit 发布事件，
- * 事件走 eventScope（隔离通道），不再占用全局事件通道。
- * 其他组件通过 EventBridgeAbility 监听 router 源的对应事件实现刷新。
+ * 监听方通过 EventBridgeAbility 监听 router 源，
+ * 用 match 过滤只关心的路径事件，避免全触发。
  */
 
 import { ComposableBase } from '@/composable';
@@ -234,8 +234,8 @@ export class Router extends ComposableBase.with(EventAbility) {
     /**
      * 应用路由变化 — 通过 emit 发布路径对应的切换事件
      *
-     * 使用 emit(event, data, { source: 'router' }) 发布事件，
-     * 事件走 eventScope（隔离通道），source='router' 供事件桥对照。
+     * 事件命名：change 或 change:路径（source='router'）
+     * 监听方通过 EventBridge 的 match 过滤只关心的路径事件
      */
     private applyRoute(path: string): void {
         const previousPath = this.currentPath;
@@ -250,12 +250,11 @@ export class Router extends ComposableBase.with(EventAbility) {
             params,
         };
 
-        // 通过 emit 发布路由切换事件（source='router'，走 eventScope 隔离通道）
-        // 1. route:change — 通用事件，每次路由变化都触发，供 RouteListenAbility 监听
-        this.emit('route:change', event, { source: 'router' });
-        // 2. route:change:路径 — 特定路径事件，仅在该路径变化时触发，供精确监听
+        // 发 change 事件（source='router'，走 eventScope 隔离通道）
+        this.emit('change', event, { source: 'router' });
+        // 有路径时发 change:路径，供 match 精确过滤
         if (eventName) {
-            this.emit(`route:change:${eventName}`, event, { source: 'router' });
+            this.emit(`change:${eventName}`, event, { source: 'router' });
         }
     }
 

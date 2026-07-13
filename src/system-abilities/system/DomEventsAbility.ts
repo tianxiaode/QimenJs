@@ -22,6 +22,7 @@ export const DomEventsAbility: AbilityDefinition = {
      * @param options 绑定选项
      */
     bind(target: EventTarget, semantic: GestureSemantic | InputSignal, options?: BindOptions) {
+        this.logger?.debug?.('[DomEvents] bind, semantic =', semantic, 'scopeType =', this.eventScope?.constructor?.name, 'scopeId =', this.eventScope?.getScopeId?.());
         const adapter = this.abilityState('DomEventsAbility:adapter', () => createEventAdapter());
         return adapter.bind(target, semantic, this.eventScope, options, this);
     },

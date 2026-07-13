@@ -68,6 +68,8 @@ export const TemplateAbility: AbilityDefinition = {
             ...props,
         };
 
+        this.logger?.debug?.('[Template] _initWithTemplate, type =', ctor.type, 'children =', cfg.children ? Object.keys(cfg.children) : [], 'bridges =', cfg.bridges?.length ?? 0, 'eventBridge =', !!cfg.eventBridge);
+
         try {
             // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
             this._initElementFromTemplate();
@@ -203,6 +205,8 @@ export const TemplateAbility: AbilityDefinition = {
 
                 const ComponentClass = node.componentClass;
                 const childProps = children?.[node.name];
+
+                this.logger?.debug?.('[Template] _renderChildComponents, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
 
                 // 创建子组件实例（withTemplate 强类，new 即完整实例）
                 const child = new ComponentClass(childProps);

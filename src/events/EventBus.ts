@@ -63,6 +63,8 @@ export function deepNullify(obj: any): void {
 export class EventBus {
     private readonly busId = string.getId();
     private readonly listeners = new Map<string, Set<EventHandler>>();
+    /** handler → scopeId 映射，用于调试和隔离 */
+    private readonly handlerScopes = new Map<EventHandler, string>();
 
     /**
      * 构造函数
@@ -109,7 +111,7 @@ export class EventBus {
      * @param handler - 事件处理器函数
      * @returns 返回一个取消订阅的函数
      */
-    on(event: string, handler: EventHandler): () => void {
+    on(event: string, handler: EventHandler, scopeId?: string): () => void {
         let set = this.listeners.get(event);
         if (!set) {
             set = new Set();
@@ -117,8 +119,17 @@ export class EventBus {
         }
         set.add(handler);
 
+        // 记录 handler 的 scopeId
+        if (scopeId) {
+            this.handlerScopes.set(handler, scopeId);
+        }
+
+        console.log('[EventBus.on]', event, 'scopeId=', scopeId || 'NO_SCOPE', 'listenerCount=', set.size);
+        this.logBus('debug', 'on', { event: String(event), scopeId: scopeId || 'NO_SCOPE', listenerCount: set.size });
+
         return () => {
             set?.delete(handler);
+            this.handlerScopes.delete(handler);
             if (set?.size === 0) this.listeners.delete(event);
         };
     }
@@ -189,6 +200,9 @@ export class EventBus {
                 timestamp: Date.now(),
             };
 
+        const emitScopeId = context.scopeId || scopeId;
+        console.log('[EventBus.emit]', event, 'emitScopeId=', emitScopeId, 'isPrebuiltContext=', isPrebuiltContext, 'listenersCount=', this.listeners.get(event)?.size);
+
         const handlers = this.listeners.get(event);
 
         if (!handlers || handlers.size === 0) {
@@ -198,6 +212,7 @@ export class EventBus {
 
         this.logEvent('debug', 'emit', String(event), {
             handlerCount: handlers.size,
+            emitScopeId,
             source: context.source?.constructor?.name || context.source,
         });
 
@@ -206,7 +221,6 @@ export class EventBus {
 
         const done = () => {
             context._refCount!--;
-            // _refCount 归零时不自动清理，由调用方决定是否清理
         };
 
         handlers.forEach(handler => {

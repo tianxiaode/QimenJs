@@ -197,7 +197,6 @@ export abstract class GestureProcessor<S extends GestureSemantic = GestureSemant
      * @param originalEvent - 原始事件对象
      */
     protected emitGesture(originalEvent?: Event) {
-        this.logProcessor('info', 'gesture_emitted', { semantic: this.semantic });
         this.emit({
             semantic: this.semantic,
             originalEvent,

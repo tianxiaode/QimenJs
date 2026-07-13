@@ -195,9 +195,10 @@ export class MenuItemComponent extends MenuItemBase {
         }
 
         // 通过 eventKey 触发外部事件（供 ItemGroup 转发）
+        // eventKey 仅作为 source，不参与事件名
         if (this.eventKey) {
-            this.emit(`${this.eventKey}:click`, { item: this });
-            this.emit(`${this.eventKey}:select`, { item: this });
+            this.emit('click', undefined, { source: this.eventKey });
+            this.emit('select', undefined, { source: this.eventKey });
         }
 
         this.onSelect?.(this);
