@@ -249,19 +249,14 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
              */
             static readonly _jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = jsonComponentMap;
 
-            /** 模板元素缓存（类级别共享） */
-            static _templateCache: HTMLTemplateElement | null = null;
+            /** 模板元素缓存（类级别共享，预编译时直接复用） */
+            static _templateCache: HTMLTemplateElement | null = compiled.templateCache;
 
             /**
-             * 获取模板缓存，首次调用时创建
+             * 获取模板缓存
              */
             static _getTemplateCache(): HTMLTemplateElement {
-                if (!this._templateCache) {
-                    const tpl = document.createElement('template');
-                    tpl.innerHTML = this._templateHtml;
-                    this._templateCache = tpl;
-                }
-                return this._templateCache;
+                return this._templateCache!;
             }
 
             /**

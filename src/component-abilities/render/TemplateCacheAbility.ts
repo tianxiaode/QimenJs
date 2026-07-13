@@ -71,15 +71,11 @@ export const TemplateCacheAbility: AbilityDefinition = {
     buildTemplateCache(key: string, templateJson: any): void {
         const { html } = jsonTemplateToHtml(templateJson);
 
-        // 预编译提取节点索引路径
+        // 预编译提取节点索引路径 + 复用模板元素缓存
         const compiled = precompileTemplate(html, false);
 
-        // 创建 HTMLTemplateElement 缓存
-        const templateEl = document.createElement('template');
-        templateEl.innerHTML = html;
-
         this._templateCaches.set(key, {
-            templateEl,
+            templateEl: compiled.templateCache,
             indexPath: compiled.indexPath,
         });
     },

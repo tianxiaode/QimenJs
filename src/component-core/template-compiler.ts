@@ -48,6 +48,8 @@ export interface CompiledTemplate {
     internalEventTemplates: InternalEventTemplate[];
     externalEventTemplates: ExternalEventTemplate[];
     contentPropNames: string[];
+    /** 预编译的模板元素缓存，可直接用作 _templateCache */
+    templateCache: HTMLTemplateElement;
 }
 
 // ─── 预编译主函数 ───
@@ -150,7 +152,7 @@ export function precompileTemplate(
         }
     }
 
-    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, contentPropNames };
+    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, contentPropNames, templateCache: tpl };
 }
 
 /**
