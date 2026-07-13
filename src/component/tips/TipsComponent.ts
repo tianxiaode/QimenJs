@@ -6,15 +6,17 @@
  * - 定位计算、z-index 管理、OverlayRoot 挂载（由 OverlayHostAbility 提供）
  * - hover 事件监听、显示/隐藏延迟
  * - open/close 生命周期
+ * - 箭头指示器（由 ArrowAbility 提供）
  * - dispose 时清理所有资源
  *
- * 组合：OverlayHostAbility + hover 事件 + delay
+ * 组合：OverlayHostAbility + ArrowAbility + hover 事件 + delay
  *
  * OverlayHostAbility 已包含在 TEMPLATE_COMPONENT_ABILITIES 中，
- * 无需额外 with() 注入。
+ * ArrowAbility 通过 Layout abilities 按需注入。
  */
 
 import { TemplateComponent, TIPS_TEMPLATE, type Placement } from '@qimenjs/component-core';
+import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
 
 /**
  * Tips 组件 props
@@ -32,6 +34,8 @@ export interface TipsProps {
     tooltipShowDelay?: number;
     /** 隐藏延迟，默认 0 */
     tooltipHideDelay?: number;
+    /** 是否显示箭头，默认 true */
+    tooltipArrow?: boolean;
 }
 
 /**
@@ -65,6 +69,13 @@ TipsComponent.prototype._initTips = function(props?: TipsProps): void {
     // 设置提示文本
     if (props?.tooltip) {
         this.default = props.tooltip;
+    }
+
+    // 初始化箭头（ArrowAbility）
+    if (typeof this.initArrow === 'function') {
+        this.initArrow({
+            arrow: props?.tooltipArrow ?? true,
+        });
     }
 
     // 绑定 hover 事件

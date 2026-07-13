@@ -98,11 +98,7 @@ function flipPlacement(placement: Placement): Placement {
 /**
  * 计算浮层定位并应用到 DOM
  *
- * @param overlayEl - 浮层 DOM 元素
- * @param anchorEl - 锚点 DOM 元素
- * @param placement - 弹出方向
- * @param offset - 浮层与锚点的间距，默认 4
- * @param flip - 是否启用自动翻转，默认 true
+ * @returns 实际使用的 placement（flip 后可能改变）
  */
 export function positionOverlay(
     overlayEl: HTMLElement,
@@ -110,11 +106,12 @@ export function positionOverlay(
     placement: Placement = 'bottom',
     offset: number = 4,
     flip: boolean = true,
-): void {
+): Placement {
     const anchorRect = toRect(anchorEl);
     const overlayRect = toRect(overlayEl);
     const viewport = getViewportRect();
 
+    let actualPlacement = placement;
     let aligned = alignByPlacement(overlayRect, anchorRect, placement, offset);
 
     if (flip && isOverflowing(aligned, viewport)) {
@@ -123,6 +120,7 @@ export function positionOverlay(
 
         if (!isOverflowing(flipped, viewport)) {
             aligned = flipped;
+            actualPlacement = flippedPlacement;
         }
     }
 
@@ -130,4 +128,6 @@ export function positionOverlay(
 
     overlayEl.style.left = `${aligned.x}px`;
     overlayEl.style.top = `${aligned.y}px`;
+
+    return actualPlacement;
 }

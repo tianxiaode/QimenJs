@@ -15,6 +15,8 @@ export { OverflowScrollAbility, type OverflowDirection, type OverflowState, type
 export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
 export { OverlayHostAbility, type OverlayHostConfig } from './render';
 export { TooltipOverlayAbility, type TooltipOverlayConfig } from './render';
+export { ArrowAbility, type ArrowConfig } from './render';
+export { arrowCSS } from './render';
 
 
 

@@ -20,6 +20,7 @@ jest.mock('@/logger', () => {
 
 import { TemplateComponent } from '@/component-core';
 import { OverlayHostAbility } from '@/component-core/abilities/OverlayHostAbility';
+import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
 
 const TPL = '<div class="overlay-host"></div>';
 
@@ -170,6 +171,98 @@ describe('OverlayHostAbility', () => {
             instance.reposition();
             expect(spy).toHaveBeenCalled();
             spy.mockRestore();
+        });
+
+        it('返回实际 placement', () => {
+            const instance = new HostClass() as any;
+            instance.initOverlayHost({ placement: 'top' });
+
+            const anchor = document.createElement('div');
+            // mock getBoundingClientRect 使 top 方向不超出视口
+            anchor.getBoundingClientRect = () => ({
+                left: 200, top: 200, width: 100, height: 40,
+                right: 300, bottom: 240, x: 200, y: 200,
+                toJSON: () => ({}),
+            } as DOMRect);
+            instance.el.getBoundingClientRect = () => ({
+                left: 0, top: 0, width: 80, height: 30,
+                right: 80, bottom: 30, x: 0, y: 0,
+                toJSON: () => ({}),
+            } as DOMRect);
+            document.body.appendChild(anchor);
+            document.body.appendChild(instance.el);
+
+            instance._anchor = anchor;
+            const result = instance.positionOverlay();
+            expect(result).toBe('top');
+
+            anchor.remove();
+            instance.el.remove();
+        });
+
+        it('无 anchor 时返回传入的 placement', () => {
+            const instance = new HostClass() as any;
+            instance.initOverlayHost({ placement: 'left' });
+            const result = instance.positionOverlay();
+            expect(result).toBe('left');
+        });
+    });
+
+    // ============================================
+    // ArrowAbility 联动
+    // ============================================
+
+    describe('ArrowAbility 联动', () => {
+        const HostWithArrow = TemplateComponent.withTemplate(TPL)
+            .with(OverlayHostAbility)
+            .with(ArrowAbility);
+
+        it('positionOverlay 自动调用 updateArrowPlacement', () => {
+            const instance = new HostWithArrow() as any;
+            instance.initOverlayHost({ placement: 'top' });
+            instance.initArrow();
+
+            const anchor = document.createElement('div');
+            // mock getBoundingClientRect 使 top 方向不超出视口
+            anchor.getBoundingClientRect = () => ({
+                left: 200, top: 200, width: 100, height: 40,
+                right: 300, bottom: 240, x: 200, y: 200,
+                toJSON: () => ({}),
+            } as DOMRect);
+            instance.el.getBoundingClientRect = () => ({
+                left: 0, top: 0, width: 80, height: 30,
+                right: 80, bottom: 30, x: 0, y: 0,
+                toJSON: () => ({}),
+            } as DOMRect);
+            document.body.appendChild(anchor);
+            document.body.appendChild(instance.el);
+
+            instance._anchor = anchor;
+            instance.positionOverlay();
+            expect(instance._arrowEl.classList.contains('q-arrow--top')).toBe(true);
+
+            anchor.remove();
+            instance.el.remove();
+        });
+
+        it('无 ArrowAbility 时 positionOverlay 不报错', () => {
+            const instance = new HostClass() as any;
+            instance.initOverlayHost({ placement: 'top' });
+
+            const anchor = document.createElement('div');
+            anchor.style.position = 'absolute';
+            anchor.style.left = '100px';
+            anchor.style.top = '100px';
+            anchor.style.width = '50px';
+            anchor.style.height = '30px';
+            document.body.appendChild(anchor);
+            document.body.appendChild(instance.el);
+
+            instance._anchor = anchor;
+            expect(() => instance.positionOverlay()).not.toThrow();
+
+            anchor.remove();
+            instance.el.remove();
         });
     });
 

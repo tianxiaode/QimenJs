@@ -43,31 +43,35 @@ describe('positionOverlay', () => {
     });
 
     it('placement=bottom → 浮层在锚点下方', () => {
-        positionOverlay(overlayEl, anchorEl, 'bottom', 4);
+        const result = positionOverlay(overlayEl, anchorEl, 'bottom', 4);
         const top = parseFloat(overlayEl.style.top);
         // anchorRect.y + anchorRect.height + offset = 200 + 40 + 4 = 244
         expect(top).toBe(244);
+        expect(result).toBe('bottom');
     });
 
     it('placement=top → 浮层在锚点上方', () => {
-        positionOverlay(overlayEl, anchorEl, 'top', 4);
+        const result = positionOverlay(overlayEl, anchorEl, 'top', 4);
         const top = parseFloat(overlayEl.style.top);
         // anchorRect.y - overlayHeight - offset = 200 - 30 - 4 = 166
         expect(top).toBe(166);
+        expect(result).toBe('top');
     });
 
     it('placement=right → 浮层在锚点右侧', () => {
-        positionOverlay(overlayEl, anchorEl, 'right', 4);
+        const result = positionOverlay(overlayEl, anchorEl, 'right', 4);
         const left = parseFloat(overlayEl.style.left);
         // anchorRect.x + anchorRect.width + offset = 200 + 100 + 4 = 304
         expect(left).toBe(304);
+        expect(result).toBe('right');
     });
 
     it('placement=left → 浮层在锚点左侧', () => {
-        positionOverlay(overlayEl, anchorEl, 'left', 4);
+        const result = positionOverlay(overlayEl, anchorEl, 'left', 4);
         const left = parseFloat(overlayEl.style.left);
         // anchorRect.x - overlayWidth - offset = 200 - 80 - 4 = 116
         expect(left).toBe(116);
+        expect(result).toBe('left');
     });
 
     it('默认参数 → placement=bottom, offset=4, flip=true', () => {
@@ -85,10 +89,11 @@ describe('positionOverlay', () => {
             toJSON: () => ({}),
         } as DOMRect);
 
-        positionOverlay(overlayEl, anchorEl, 'bottom', 4, true);
+        const result = positionOverlay(overlayEl, anchorEl, 'bottom', 4, true);
         // 翻转到 top 方向
         const top = parseFloat(overlayEl.style.top);
         expect(top).toBeLessThan(750);
+        expect(result).toBe('top');
     });
 
     it('flip=false → 不翻转，但 keepInside 仍生效', () => {

@@ -274,6 +274,21 @@ export interface TooltipProps {
     tooltipMaxWidth?: number;
     /** 提示框组件类型名（对应 ComponentRegistrar 中注册的 type），默认 'Tips' */
     tooltipType?: string;
+    /** 是否显示箭头，默认 true */
+    tooltipArrow?: boolean;
+}
+
+/**
+ * 箭头指示器配置
+ *
+ * 配合 ArrowAbility 使用，
+ * 渲染时由 add() 提取并赋给组件的 ArrowAbility。
+ */
+export interface ArrowProps {
+    /** 是否显示箭头，默认 true */
+    arrow?: boolean;
+    /** CSS 变量覆盖，如 { '--q-arrow-color': '#fff', '--q-arrow-size': '6px' } */
+    arrowVars?: Record<string, string>;
 }
 
 /**
@@ -509,7 +524,7 @@ export interface PositionProps {
  * }
  * ```
  */
-export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps, ColorVariantProps {
+export interface LayoutNode extends PositionProps, StyleProps, AccessibilityProps, EntityProps, TooltipProps, ArrowProps, BadgeProps, DragProps, DropProps, AnimationProps, PermissionProps, ColorVariantProps {
     /** 组件类型（对应 ComponentRegistrar 中注册的 type） */
     type: string;
 

@@ -3,6 +3,9 @@
  *
  * 绝对定位在 anchor 元素附近，
  * 支持 top/bottom/left/right 四个方向。
+ *
+ * 箭头样式由 ArrowAbility 的 arrowCSS 提供，
+ * Tips 默认深色箭头无需额外覆盖。
  */
 
 export const tipsCSS = `

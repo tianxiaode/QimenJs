@@ -14,7 +14,7 @@ import type { Placement } from './positionOverlay';
 /**
  * 支持的 tooltip key 类型
  */
-export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth' | 'tooltipType';
+export type TooltipKey = 'tooltip' | 'tooltipPlacement' | 'tooltipOffset' | 'tooltipShowDelay' | 'tooltipHideDelay' | 'tooltipMaxWidth' | 'tooltipType' | 'tooltipArrow';
 
 /**
  * Tooltip 初始化配置
@@ -32,6 +32,8 @@ export interface TooltipOverlayConfig {
     tooltipHideDelay?: number;
     /** 浮层组件类型名，默认 'Tips' */
     tooltipType?: string;
+    /** 是否显示箭头，默认 true */
+    tooltipArrow?: boolean;
 }
 
 /**

@@ -51,7 +51,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | FormComponent | `src/component/components/FormComponent.ts` | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility |
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
-| TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ hover 事件 + delay |
+| TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ ArrowAbility（箭头指示器）+ hover 事件 + delay |
 | MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项） |
 | MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |
@@ -470,6 +470,7 @@ class RootComponent extends ComponentBase {
 | FloatingLayerAbility | 浮层通用逻辑（OverlayRoot 挂载、z-index、动画、视口定位） |
 | OverlayHostAbility | 浮层宿主能力（已迁至 component-core，此处为重导出） |
 | TooltipOverlayAbility | Tooltip 浮层能力（hover 事件、delay、i18n） |
+| ArrowAbility | 箭头指示器能力（浮层方向箭头，CSS 变量驱动样式） |
 
 ### 2.6.1 菜单能力 (`src/component-abilities/menu/`)
 
@@ -759,3 +760,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-12 | 菜单组件：新增 MenuComponent（浮层菜单容器，OverlayHostAbility + MenuItemManageAbility，池化复用菜单项，open/close/reposition 浮层协议）；新增 MenuItemComponent（菜单项组件，OverlayAbility 支持子菜单浮层，hover 延迟弹出/关闭）；新增 MenuItemManageAbility（菜单项管理能力，池化复用、增删改、状态管理，从 ComponentRegistrar 查找 MenuItem 组件类实现能力与组件解耦）；新增 MENU_TEMPLATE/MENU_ITEM_TEMPLATE 模板预设；新增 ComponentTypes.MENU/MENU_ITEM；OverlayHostAbility/TooltipOverlayAbility 从 component-core 迁移到 component-abilities/render |
 | 2026-07-13 | 浮层能力重构：OverlayHostAbility 从 component-abilities 迁回 component-core（消除循环依赖，所有浮层组件可直接使用）；OverlayAbility 拆分为 OverlayAbility（通用浮层创建+委托方法）+ TooltipAbility（tooltip 专属属性和初始化）；新增 TipsComponent 提示浮层组件（OverlayHostAbility + TIPS_TEMPLATE + hover 事件 + delay）；InitAbility 导入 TooltipKey 从 OverlayAbility 改为 TooltipAbility；component-abilities 的 OverlayHostAbility 改为从 component-core 重导出 |
 | 2026-07-13 | 语义颜色变体：新增 ColorVariantAbility（colorVariant 全套背景+前景色，colorVariantText 仅前景色）；新增 ColorVariant/ColorVariantProps/COLOR_VARIANTS/COLOR_VARIANT_MAP 常量；新增 on-xxx 前景色变量（on-primary/on-secondary/on-success/on-warning/on-error/on-info）到所有主题预设（light/dark/7个中国主题）；LayoutNode 继承 ColorVariantProps；layout-keys 新增 COLOR_VARIANT_KEYS；InitAbility.assignProps 添加 ColorVariant 赋值；TemplateComponent 能力列表和 flush 添加 ColorVariantAbility |
+| 2026-07-13 | 箭头指示器能力：新增 ArrowAbility（通用浮层箭头能力，CSS 变量驱动样式 --q-arrow-color/--q-arrow-size，initArrow/updateArrowPlacement/setArrowVisible，能力状态管理 _arrowEl/_arrowVisible）；新增 arrowCSS 通用箭头样式（.q-arrow + .q-arrow--top/bottom/left/right）；新增 ArrowProps（LayoutNode 声明式配置 arrow/arrowVars）；positionOverlay 返回实际 Placement（flip 后可能改变）；OverlayHostAbility.positionOverlay 自动联动 ArrowAbility（检测 updateArrowPlacement）；TooltipProps/TooltipKey/TooltipOverlayConfig 新增 tooltipArrow；TipsComponent 改用 ArrowAbility（_initTips 调 initArrow，open 时箭头方向由 OverlayHostAbility 自动联动） |

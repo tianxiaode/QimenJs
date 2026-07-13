@@ -142,17 +142,26 @@ export const OverlayHostAbility: AbilityDefinition = {
 
     /**
      * 计算并应用浮层定位
+     *
+     * @returns 实际使用的 placement（flip 后可能改变）
      */
-    positionOverlay(anchor?: HTMLElement, placement?: Placement, offset?: number, flip?: boolean): void {
+    positionOverlay(anchor?: HTMLElement, placement?: Placement, offset?: number, flip?: boolean): Placement {
         const anchorEl = anchor ?? this._anchor;
-        if (!anchorEl) return;
-        positionOverlay(
+        if (!anchorEl) return placement ?? this._placement;
+        const actualPlacement = positionOverlay(
             this.el,
             anchorEl,
             placement ?? this._placement,
             offset ?? this._offset,
             flip ?? this._flip,
         );
+
+        // 自动联动 ArrowAbility
+        if (typeof this.updateArrowPlacement === 'function') {
+            this.updateArrowPlacement(actualPlacement);
+        }
+
+        return actualPlacement;
     },
 
     /**
