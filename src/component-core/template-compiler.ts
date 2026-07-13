@@ -65,13 +65,17 @@ export function precompileTemplate(
     const tpl = document.createElement('template');
     tpl.innerHTML = templateHtml;
 
+    // 创建临时容器用于节点查找和路径计算
+    // DocumentFragment 的子元素没有 parentElement，computeNodePath 无法向上遍历
+    // 临时容器模拟 _initElementFromTemplate 中 this.el.appendChild(fragment) 的结构
+    const pathRoot = document.createElement('div');
+    pathRoot.appendChild(tpl.content.cloneNode(true));
+
     // 查找所有 data-content 节点：包括顶级元素和后代元素
-    const root = tpl.content;
-    const topEls = Array.from(root.children) as HTMLElement[];
-    const descendantEls = Array.from(root.querySelectorAll('[data-content]'));
+    const topEls = Array.from(pathRoot.children) as HTMLElement[];
+    const descendantEls = Array.from(pathRoot.querySelectorAll('[data-content]'));
     // 合并去重：顶级元素可能也有 data-content
-    const allEls = [...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls])];
-    const els = allEls;
+    const els = [...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls])];
 
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};
@@ -105,8 +109,8 @@ export function precompileTemplate(
             templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
         };
 
-        // 计算节点路径（相对于模板根元素）
-        indexPath[key] = computeNodePath(tpl.content as any, htmlEl);
+        // 计算节点路径（相对于 pathRoot，与 _buildNodeMapFromCompiled 中 this.el 结构一致）
+        indexPath[key] = computeNodePath(pathRoot, htmlEl);
 
         // 推导内容属性名
         const capitalName = name.charAt(0).toUpperCase() + name.slice(1);

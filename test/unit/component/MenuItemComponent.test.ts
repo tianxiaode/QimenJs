@@ -40,10 +40,7 @@ describe('MenuItemComponent', () => {
 
         it('通过 props 设置文本', () => {
             const item = new MenuItemComponent({ text: '新建' }) as any;
-            // text 由 withTemplate 自动生成，嵌套模板中 nodeMap 可能未构建
-            // 验证 DOM 中存在 text 节点
-            const textEl = item.el.querySelector('[data-content="menuItem:text"]');
-            expect(textEl).not.toBeNull();
+            expect(item.text).toBe('新建');
         });
 
         it('通过 props 设置图标', () => {
@@ -53,9 +50,7 @@ describe('MenuItemComponent', () => {
 
         it('通过 props 设置快捷键', () => {
             const item = new MenuItemComponent({ shortcut: 'Ctrl+N' }) as any;
-            // shortcut 由 withTemplate 自动生成，嵌套模板中 nodeMap 可能未构建
-            const shortcutEl = item.el.querySelector('[data-content="menuItem:shortcut"]');
-            expect(shortcutEl).not.toBeNull();
+            expect(item.shortcut).toBe('Ctrl+N');
         });
 
         it('默认不禁用', () => {
@@ -104,9 +99,8 @@ describe('MenuItemComponent', () => {
     describe('内容属性', () => {
         it('text getter/setter', () => {
             const item = new MenuItemComponent() as any;
-            // 嵌套模板中 text setter 可能因 nodeMap 未构建而静默返回
-            // 验证 setter 不报错即可
             item.text = '打开';
+            expect(item.text).toBe('打开');
         });
 
         it('icon getter/setter', () => {
@@ -118,7 +112,7 @@ describe('MenuItemComponent', () => {
         it('shortcut getter/setter', () => {
             const item = new MenuItemComponent() as any;
             item.shortcut = 'Ctrl+O';
-            // 嵌套模板中 shortcut setter 可能因 nodeMap 未构建而静默返回
+            expect(item.shortcut).toBe('Ctrl+O');
         });
     });
 
@@ -299,7 +293,7 @@ describe('MenuItemComponent', () => {
         it('更新文本', () => {
             const item = new MenuItemComponent() as any;
             item.update({ text: '保存' });
-            // 嵌套模板中 text setter 可能因 nodeMap 未构建而静默返回
+            expect(item.text).toBe('保存');
         });
 
         it('更新禁用状态', () => {

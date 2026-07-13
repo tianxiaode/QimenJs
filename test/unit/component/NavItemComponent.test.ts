@@ -39,10 +39,7 @@ describe('NavItemComponent', () => {
 
         it('通过 props 设置文本', () => {
             const item = new NavItemComponent({ text: '首页' }) as any;
-            // text 由 withTemplate 自动生成，嵌套模板中 nodeMap 可能未构建
-            // 直接验证 DOM 中存在文本内容
-            const textEl = item.el.querySelector('[data-content="navItem:text"]');
-            expect(textEl).not.toBeNull();
+            expect(item.text).toBe('首页');
         });
 
         it('通过 props 设置图标', () => {
@@ -157,7 +154,7 @@ describe('NavItemComponent', () => {
         it('更新文本', () => {
             const item = new NavItemComponent() as any;
             item.update({ text: '设置' });
-            // 嵌套模板中 text setter 可能因 nodeMap 未构建而静默返回
+            expect(item.text).toBe('设置');
         });
 
         it('更新激活状态', () => {
