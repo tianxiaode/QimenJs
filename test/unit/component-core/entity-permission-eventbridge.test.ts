@@ -123,6 +123,65 @@ describe('EventBridgeConfigAbility', () => {
         instance.setEventBridge({ pagination: 'pager1' });
         expect(() => instance.initEventBridge()).not.toThrow();
     });
+
+    it('initEventBridge — selection 配置', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ selection: { source: 'grid1' } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — search 配置', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ search: { source: 'search1' } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — crud 配置 with actions 过滤', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ crud: { source: 'crud1', actions: ['create', 'delete'] } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — 自定义桥接 with match', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ change: { source: 'router', match: 'product' } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — 自定义桥接 with handler', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ click: { source: 'btn1', handler: 'onCustomClick' } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — 自定义桥接 enabled=false → 跳过', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ myEvent: { source: 'src1', enabled: false } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('initEventBridge — 多个自定义桥接 with match 逗号分隔', () => {
+        const instance = new BoxClass() as any;
+        instance.setEventBridge({ change: { source: 'router', match: 'product,order' } });
+        expect(() => instance.initEventBridge()).not.toThrow();
+    });
+
+    it('__initProps — eventBridge props 自动初始化', () => {
+        const instance = new BoxClass() as any;
+        const config = { pagination: { source: 'pager1' } };
+        instance.__initProps({ eventBridge: config });
+        expect(instance.getEventBridge()).toEqual(config);
+    });
+
+    it('__initProps — 无 eventBridge props → 不报错', () => {
+        const instance = new BoxClass() as any;
+        expect(() => instance.__initProps({})).not.toThrow();
+    });
+
+    it('getEventBridge 默认返回空对象', () => {
+        const instance = new BoxClass() as any;
+        expect(instance.getEventBridge()).toEqual({});
+    });
 });
 
 // ============================================

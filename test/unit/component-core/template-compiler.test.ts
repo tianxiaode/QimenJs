@@ -13,6 +13,7 @@ import {
     computeNodePath,
     inferContentMode,
     parseEventAttr,
+    parseBridgeEventAttr,
 } from '@/component-core/template-compiler';
 import type { InternalEventTemplate, ExternalEventTemplate } from '@/component-core/template-compiler';
 
@@ -95,6 +96,86 @@ describe('parseEventAttr', () => {
 
     it('空字符串返回空数组', () => {
         const result = parseEventAttr('');
+        expect(result).toEqual([]);
+    });
+
+    it('debounce 修饰符', () => {
+        const result = parseEventAttr('input?debounce=300');
+        expect(result).toEqual([{ event: 'input', once: false, delegate: false, debounce: 300 }]);
+    });
+
+    it('throttle 修饰符', () => {
+        const result = parseEventAttr('scroll?throttle=100');
+        expect(result).toEqual([{ event: 'scroll', once: false, delegate: false, throttle: 100 }]);
+    });
+
+    it('once&debounce 组合修饰符', () => {
+        const result = parseEventAttr('click?once&debounce=500');
+        expect(result).toEqual([{ event: 'click', once: true, delegate: false, debounce: 500 }]);
+    });
+
+    it('delegate&throttle 组合修饰符', () => {
+        const result = parseEventAttr('tap?delegate&throttle=200');
+        expect(result).toEqual([{ event: 'tap', once: false, delegate: true, throttle: 200 }]);
+    });
+
+    it('多个事件各自带不同修饰符', () => {
+        const result = parseEventAttr('click?once, input?debounce=300');
+        expect(result).toEqual([
+            { event: 'click', once: true, delegate: false },
+            { event: 'input', once: false, delegate: false, debounce: 300 },
+        ]);
+    });
+});
+
+// ============================================
+// parseBridgeEventAttr
+// ============================================
+
+describe('parseBridgeEventAttr', () => {
+    it('单个桥接事件 — 同名', () => {
+        const result = parseBridgeEventAttr('click');
+        expect(result).toEqual([{ sourceEvent: 'click', targetEvent: 'click', once: false }]);
+    });
+
+    it('映射桥接 — source=target', () => {
+        const result = parseBridgeEventAttr('click=close');
+        expect(result).toEqual([{ sourceEvent: 'click', targetEvent: 'close', once: false }]);
+    });
+
+    it('带命名空间映射', () => {
+        const result = parseBridgeEventAttr('click=click:save');
+        expect(result).toEqual([{ sourceEvent: 'click', targetEvent: 'click:save', once: false }]);
+    });
+
+    it('once 修饰符', () => {
+        const result = parseBridgeEventAttr('click?once');
+        expect(result).toEqual([{ sourceEvent: 'click', targetEvent: 'click', once: true }]);
+    });
+
+    it('映射 + once 修饰符', () => {
+        const result = parseBridgeEventAttr('click=click:save?once');
+        expect(result).toEqual([{ sourceEvent: 'click', targetEvent: 'click:save', once: true }]);
+    });
+
+    it('多个桥接事件（逗号分隔）', () => {
+        const result = parseBridgeEventAttr('click, tap=close');
+        expect(result).toEqual([
+            { sourceEvent: 'click', targetEvent: 'click', once: false },
+            { sourceEvent: 'tap', targetEvent: 'close', once: false },
+        ]);
+    });
+
+    it('空格容错', () => {
+        const result = parseBridgeEventAttr(' click , tap=close ');
+        expect(result).toEqual([
+            { sourceEvent: 'click', targetEvent: 'click', once: false },
+            { sourceEvent: 'tap', targetEvent: 'close', once: false },
+        ]);
+    });
+
+    it('空字符串返回空数组', () => {
+        const result = parseBridgeEventAttr('');
         expect(result).toEqual([]);
     });
 });
@@ -295,6 +376,67 @@ describe('precompileTemplate', () => {
         expect(result.internalEventTemplates).toHaveLength(0);
         expect(result.externalEventTemplates).toHaveLength(0);
         expect(result.contentPropNames).toHaveLength(0);
+    });
+
+    it('预编译桥接事件模板（data-bridge）', () => {
+        const html = '<div><button data-content="btn:save" data-bridge="click"></button></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.bridgeEventTemplates.length).toBe(1);
+        expect(result.bridgeEventTemplates[0].sourceEvent).toBe('click');
+        expect(result.bridgeEventTemplates[0].targetEvent).toBe('click');
+        expect(result.bridgeEventTemplates[0].nodeKey).toBe('btn:save');
+    });
+
+    it('预编译桥接事件模板 — 映射模式', () => {
+        const html = '<div><button data-content="btn:save" data-bridge="click=click:save"></button></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.bridgeEventTemplates[0].sourceEvent).toBe('click');
+        expect(result.bridgeEventTemplates[0].targetEvent).toBe('click:save');
+    });
+
+    it('预编译桥接事件模板 — once 修饰符', () => {
+        const html = '<div><button data-content="btn:save" data-bridge="click?once"></button></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.bridgeEventTemplates[0].once).toBe(true);
+    });
+
+    it('预编译内部事件模板 — debounce 修饰符', () => {
+        const html = '<div><input data-content="form:field" data-event="input?debounce=300" /></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.internalEventTemplates[0].debounce).toBe(300);
+    });
+
+    it('预编译内部事件模板 — throttle 修饰符', () => {
+        const html = '<div><div data-content="list:scroll" data-event="scroll?throttle=100"></div></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.internalEventTemplates[0].throttle).toBe(100);
+    });
+
+    it('预编译内部事件模板 — once&debounce 组合', () => {
+        const html = '<div><button data-content="btn:save" data-event="click?once&debounce=500"></button></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.internalEventTemplates[0].once).toBe(true);
+        expect(result.internalEventTemplates[0].debounce).toBe(500);
+    });
+
+    it('data-hidden 属性提取', () => {
+        const html = '<div><span data-content="btn:text" data-hidden="true"></span></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.templateMetas['btn:text'].hidden).toBe(true);
+    });
+
+    it('data-hidden 非true不标记', () => {
+        const html = '<div><span data-content="btn:text" data-hidden="false"></span></div>';
+        const result = precompileTemplate(html, false);
+
+        expect(result.templateMetas['btn:text'].hidden).toBe(false);
     });
 });
 
