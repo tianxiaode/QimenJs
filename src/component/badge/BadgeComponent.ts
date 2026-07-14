@@ -8,7 +8,15 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { BADGE_TEMPLATE } from '@qimenjs/component-core';
 
-export let BadgeComponent = TemplateComponent.withTemplate(BADGE_TEMPLATE);
-BadgeComponent.prototype.type = 'badge';
+export let BadgeComponent = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        children: [
+            { tag: 'span', name: 'badge:default', content: 'text', className: 'q-badge__content' },
+        ]
+    },
+    body: {
+        type: 'badge',
+    },
+});

@@ -28,7 +28,7 @@
  * ```
  */
 
-import { TemplateComponent, TOOLBAR_TEMPLATE } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { OverflowScrollAbility, OverflowMenuAbility } from '@qimenjs/component-abilities';
 import type { OverflowDirection } from '@qimenjs/component-abilities';
 
@@ -42,17 +42,34 @@ export type OverflowMode = 'none' | 'scroll' | 'menu';
  * 运行时按 overflowMode 选择性调用 init 方法。
  */
 const ToolbarBase = TemplateComponent
-    .withTemplate(TOOLBAR_TEMPLATE)
+    .withTemplate({
+        tpl: {
+            tag: 'div',
+            children: [
+                { tag: 'div', name: 'toolbar:prevBtn', events: ['click=prev'], className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
+                    { tag: 'i' },
+                ]},
+                { tag: 'div', name: 'toolbar:contentArea', className: 'q-toolbar__content', style: 'display:flex;' },
+                { tag: 'div', name: 'toolbar:nextBtn', events: ['click=next'], className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
+                    { tag: 'i' },
+                ]},
+                { tag: 'button', name: 'toolbar:triggerBtn', events: ['click=trigger'], className: 'q-overflow-menu__trigger', hidden: true },
+                { tag: 'div', name: 'toolbar:menuPanel', className: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
+            ]
+        },
+        body: {
+            type: 'Toolbar',
+        },
+    })
     .with([OverflowScrollAbility, OverflowMenuAbility]);
 
-export class ToolbarComponent extends ToolbarBase {
+export let ToolbarComponent = class extends ToolbarBase {
     private _direction: string = 'horizontal';
     private _overflowMode: OverflowMode = 'none';
 
     constructor(props?: Record<string, any>) {
         super(props);
 
-        this.type = 'Toolbar';
         this.el.classList.add('q-toolbar');
 
         if (props?.direction) this._direction = props.direction;
@@ -174,4 +191,6 @@ export class ToolbarComponent extends ToolbarBase {
             this.applyOverflowMode();
         }
     }
-}
+};
+
+export type ToolbarComponent = InstanceType<typeof ToolbarComponent>;

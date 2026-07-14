@@ -8,8 +8,19 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
 
-
-export let ButtonComponent =  TemplateComponent.withTemplate(BUTTON_TEMPLATE) ;
-ButtonComponent.prototype.type = 'Button';
+export let ButtonComponent = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        children: [
+            { tag: 'span', name: 'button:icon', content: 'icon' },
+            { tag: 'span', name: 'button:text', content: 'text' },
+            { tag: 'div', name: 'button:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+                { tag: 'i' },
+            ]},
+        ]
+    },
+    body: {
+        type: 'Button',
+    },
+});

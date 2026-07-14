@@ -54,7 +54,7 @@ export interface NavItemGroupProps {
     activeIndex?: number;
 }
 
-export class NavItemGroupComponent extends ItemGroupComponent {
+export let NavItemGroupComponent = class extends ItemGroupComponent {
     /** 当前选中索引 */
     private _activeIndex: number = -1;
 
@@ -102,12 +102,12 @@ export class NavItemGroupComponent extends ItemGroupComponent {
         // 取消前一个
         if (this._activeIndex >= 0 && this._activeIndex < this.count) {
             const prevItem = this.getAt(this._activeIndex) as NavItemComponent;
-            prevItem.active = false;
+            prevItem.setActive(false);
         }
 
         // 激活新项
         const newItem = this.getAt(index) as NavItemComponent;
-        newItem.active = true;
+        newItem.setActive(true);
         this._activeIndex = index;
 
         // 触发 select 事件（静默模式下不触发，如构造函数初始选中）
@@ -122,7 +122,7 @@ export class NavItemGroupComponent extends ItemGroupComponent {
     clearSelection(): void {
         if (this._activeIndex >= 0 && this._activeIndex < this.count) {
             const item = this.getAt(this._activeIndex) as NavItemComponent;
-            item.active = false;
+            item.setActive(false);
         }
         this._activeIndex = -1;
     }
@@ -133,4 +133,6 @@ export class NavItemGroupComponent extends ItemGroupComponent {
             this.selectAt(props.activeIndex);
         }
     }
-}
+};
+
+export type NavItemGroupComponent = InstanceType<typeof NavItemGroupComponent>;

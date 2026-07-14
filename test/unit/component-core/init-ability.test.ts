@@ -433,7 +433,7 @@ describe('InitAbility', () => {
             // 模拟真实调用链：EventScope.emit → EventBus.emit → handler(EventContext)
             // data 是 GestureEmit { semantic, originalEvent }
             const domEvent = new Event('click');
-            instance.emit('click', { semantic: 'click', originalEvent: domEvent });
+            instance.emit('dom:click', { semantic: 'click', originalEvent: domEvent });
             expect(instance.onBtnClick).toHaveBeenCalledWith(domEvent, btnEl);
         });
 
@@ -455,8 +455,8 @@ describe('InitAbility', () => {
             instance.bindInternalEvents();
 
             const domEvent = new Event('click');
-            instance.emit('click', { semantic: 'click', originalEvent: domEvent });
-            instance.emit('click', { semantic: 'click', originalEvent: new Event('click') });
+            instance.emit('dom:click', { semantic: 'click', originalEvent: domEvent });
+            instance.emit('dom:click', { semantic: 'click', originalEvent: new Event('click') });
             expect(instance.onBtnClick).toHaveBeenCalledTimes(1);
         });
 
@@ -501,7 +501,7 @@ describe('InitAbility', () => {
             instance.bindExternalEvents({ bridges: ['saveBtn:tap'] });
 
             const domEvent = new Event('tap');
-            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
+            instance.emit('dom:tap', { semantic: 'tap', originalEvent: domEvent });
             expect(emitSpy).toHaveBeenCalled();
             emitSpy.mockRestore();
         });
@@ -519,7 +519,7 @@ describe('InitAbility', () => {
             instance.bindExternalEvents({});
 
             const domEvent = new Event('tap');
-            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
+            instance.emit('dom:tap', { semantic: 'tap', originalEvent: domEvent });
             expect(instance.onSaveBtnTap).toHaveBeenCalledWith(domEvent, btnEl);
         });
 
@@ -536,7 +536,7 @@ describe('InitAbility', () => {
             instance.bindExternalEvents({});
 
             const domEvent = new Event('tap');
-            instance.emit('tap', { semantic: 'tap', originalEvent: domEvent });
+            instance.emit('dom:tap', { semantic: 'tap', originalEvent: domEvent });
             expect(emitSpy).toHaveBeenCalled();
             emitSpy.mockRestore();
         });

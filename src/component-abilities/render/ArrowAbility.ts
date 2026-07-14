@@ -2,7 +2,7 @@
  * ArrowAbility — 浮层箭头指示器能力
  *
  * 通用浮层箭头能力，可组合到任何浮层组件（Tips/Dropdown/Popover 等）。
- * 模板中通过 data-content="arrow:arrow" 声明箭头节点，
+ * 模板中通过 name="xxx:arrow" 声明箭头节点，
  * 从 nodeMap 定位节点，控制方向类和显隐。
  * 不创建 DOM——箭头 div 由模板定义。
  *
@@ -18,7 +18,7 @@
  * - --q-arrow-size：箭头尺寸（px），默认 5
  *
  * 使用方式：
- * 1. 模板中定义 { tag: 'span', name: 'arrow', cls: 'q-arrow' }
+ * 1. 模板中定义 { tag: 'span', name: 'xxx:arrow', className: 'q-arrow' }
  * 2. 浮层组件声明 .with(ArrowAbility)
  * 3. constructor 中调用 initArrow()
  * 4. 定位后调用 updateArrowPlacement(placement) 更新方向
@@ -35,7 +35,7 @@ export interface ArrowConfig {
     arrow?: boolean;
     /** CSS 变量覆盖，如 { '--q-arrow-color': '#fff', '--q-arrow-size': '6px' } */
     arrowVars?: Record<string, string>;
-    /** 箭头节点名称，默认 'arrow'（对应模板中 data-content 的 name） */
+    /** 箭头节点名称，默认 'arrow'（对应模板中 name 的 name 部分） */
     arrowName?: string;
 }
 
@@ -49,38 +49,34 @@ export const ArrowAbility: AbilityDefinition = {
         const arrowName = config?.arrowName ?? 'arrow';
         const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
 
-        // 查找箭头节点：先尝试 nodeMap[arrowName][arrowName]（group=name=arrow），
-        // 再遍历所有 group 查找 name=arrow 的节点（如 tips:arrow、dropdown:arrow）
-        let arrowNode = nodeMap?.[arrowName]?.[arrowName];
-        if (!arrowNode?.el) {
-            for (const group of Object.values(nodeMap ?? {})) {
-                if (group[arrowName]?.el) {
-                    arrowNode = group[arrowName];
-                    break;
-                }
+        // 查找箭头节点：遍历所有 group 查找 name=arrowName 的节点
+        let arrowEl: HTMLElement | undefined;
+        for (const group of Object.values(nodeMap ?? {})) {
+            if (group[arrowName]?.el) {
+                arrowEl = group[arrowName].el;
+                break;
             }
         }
 
-        if (!arrowNode?.el) return;
+        if (!arrowEl) return;
 
-        const el = arrowNode.el;
         const visible = config?.arrow ?? true;
 
         // 存储到实例属性
         (this as any)._arrowVisible = visible;
         (this as any)._arrowName = arrowName;
-        (this as any)._arrowEl = el;
+        (this as any)._arrowEl = arrowEl;
 
         // 应用 CSS 变量覆盖
         if (config?.arrowVars) {
             for (const [key, value] of Object.entries(config.arrowVars)) {
-                el.style.setProperty(key, value);
+                arrowEl.style.setProperty(key, value);
             }
         }
 
         // 初始显隐
         if (!visible) {
-            el.style.display = 'none';
+            arrowEl.style.display = 'none';
         }
     },
 
@@ -90,14 +86,7 @@ export const ArrowAbility: AbilityDefinition = {
      * 定位后调用，传入实际 placement（flip 后可能改变）。
      */
     updateArrowPlacement(placement: Placement): void {
-        const arrowName = (this as any)._arrowName as string;
-        const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
-        let el = nodeMap?.[arrowName]?.[arrowName]?.el;
-        if (!el) {
-            for (const group of Object.values(nodeMap ?? {})) {
-                if (group[arrowName]?.el) { el = group[arrowName].el; break; }
-            }
-        }
+        const el = (this as any)._arrowEl as HTMLElement | undefined;
         if (!el) return;
         el.classList.remove('q-arrow--top', 'q-arrow--bottom', 'q-arrow--left', 'q-arrow--right');
         el.classList.add(`q-arrow--${placement}`);
@@ -108,14 +97,7 @@ export const ArrowAbility: AbilityDefinition = {
      */
     setArrowVisible(visible: boolean): void {
         (this as any)._arrowVisible = visible;
-        const arrowName = (this as any)._arrowName as string;
-        const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
-        let el = nodeMap?.[arrowName]?.[arrowName]?.el;
-        if (!el) {
-            for (const group of Object.values(nodeMap ?? {})) {
-                if (group[arrowName]?.el) { el = group[arrowName].el; break; }
-            }
-        }
+        const el = (this as any)._arrowEl as HTMLElement | undefined;
         if (el) {
             el.style.display = visible ? '' : 'none';
         }

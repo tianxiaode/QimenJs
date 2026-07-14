@@ -1,49 +1,36 @@
 /**
  * content-properties.ts — 统一内容属性生成
  *
- * 从 TemplateComponent.ts 和 NodeMapAbility.ts 提取的共享内容属性逻辑，
- * 消除两处重复代码。
- *
  * 职责：
- * - 在类原型上生成内容 getter/setter（data-content 节点属性）
+ * - 在类原型上生成内容 getter/setter（使用编译时收集的 contentInfos）
  * - i18n 翻译工具
  * - DOM 值写入工具
  */
 
-import type { NodeTemplateMeta } from './types';
+import type { ContentInfo } from './template-types';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
-import { inferContentMode } from './template-compiler';
 
 // ─── 内容属性生成 ───
 
 /**
  * 在强类原型上生成内容 getter/setter
  *
- * withTemplate 路径：类定义时调用一次（buildContentPropertiesOnClass）。
- * NodeMapAbility 路径：首次实例化时调用一次（buildContentPropertiesOnProto）。
- *
- * 两者逻辑相同，只是调用时机和参数来源不同。
- * 此函数统一处理，通过 target 参数区分写入目标。
+ * 直接遍历 contentInfos 数组，propName/mode 已在编译时确定，
+ * 无需运行时推导。
  */
 export function buildContentProperties(
     target: any,
-    templateMetas: Record<string, NodeTemplateMeta>,
-    isMultiArea: boolean,
+    contentInfos: ContentInfo[],
 ): string[] {
     const proto = target.prototype ?? target;
     const propNames: string[] = [];
 
-    for (const [, meta] of Object.entries(templateMetas)) {
-        const capitalName = meta.name.charAt(0).toUpperCase() + meta.name.slice(1);
-
-        const propName = isMultiArea
-            ? `${meta.group}${capitalName}`
-            : meta.name === '_' ? meta.group : meta.name;
+    for (const info of contentInfos) {
+        const { group, name, mode, propName } = info;
 
         propNames.push(propName);
 
         const hiddenPropName = `${propName}Hidden`;
-        const { group, name, mode } = meta;
 
         Object.defineProperty(proto, propName, {
             get: function (this: any) {

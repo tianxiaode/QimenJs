@@ -1,7 +1,7 @@
 /**
  * NavItemComponent 单元测试
  *
- * 覆盖：构造函数、内容属性、active/disabled 状态、onContentClick、update、dispose
+ * 覆盖：构造函数、内容属性、active/disabled 状态、onClick、update、dispose
  */
 
 jest.mock('@/logger', () => {
@@ -111,38 +111,36 @@ describe('NavItemComponent', () => {
     });
 
     // ============================================
-    // onContentClick
+    // onClick
     // ============================================
 
-    describe('onContentClick', () => {
+    describe('onClick', () => {
         it('正常点击触发 onSelect', () => {
             const onSelect = jest.fn();
             const item = new NavItemComponent({ onSelect }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).toHaveBeenCalledWith(item);
         });
 
         it('禁用时不触发 onSelect', () => {
             const onSelect = jest.fn();
             const item = new NavItemComponent({ disabled: true, onSelect }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).not.toHaveBeenCalled();
         });
 
-        it('有 eventKey 时触发 nav:click 和 nav:select 事件', () => {
-            const item = new NavItemComponent() as any;
-            item.eventKey = 'nav';
-            const emitSpy = jest.spyOn(item, 'emit');
-            item.onContentClick();
-            expect(emitSpy).toHaveBeenCalledWith('nav:click', { item });
-            expect(emitSpy).toHaveBeenCalledWith('nav:select', { item });
+        it('有 eventKey 时触发 onSelect', () => {
+            const onSelect = jest.fn();
+            const item = new NavItemComponent({ onSelect, eventKey: 'nav' }) as any;
+            item.onClick();
+            expect(onSelect).toHaveBeenCalledWith(item);
         });
 
-        it('无 eventKey 时不触发外部事件', () => {
-            const item = new NavItemComponent() as any;
-            const emitSpy = jest.spyOn(item, 'emit');
-            item.onContentClick();
-            expect(emitSpy).not.toHaveBeenCalled();
+        it('无 eventKey 时 onClick 仍触发 onSelect', () => {
+            const onSelect = jest.fn();
+            const item = new NavItemComponent({ onSelect }) as any;
+            item.onClick();
+            expect(onSelect).toHaveBeenCalledWith(item);
         });
     });
 

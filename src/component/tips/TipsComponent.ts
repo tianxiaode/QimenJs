@@ -15,7 +15,7 @@
  * ArrowAbility 通过 Layout abilities 按需注入。
  */
 
-import { TemplateComponent, TIPS_TEMPLATE, type Placement } from '@qimenjs/component-core';
+import { TemplateComponent, type Placement } from '@qimenjs/component-core';
 import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
 
 /**
@@ -42,73 +42,83 @@ export interface TipsProps {
  * TipsComponent — 提示浮层组件
  *
  * 继承 TemplateComponent（已含 OverlayHostAbility）+ TIPS_TEMPLATE + ArrowAbility
+ * type 和方法通过 body 定义
  */
 export let TipsComponent = TemplateComponent
-    .withTemplate(TIPS_TEMPLATE)
-    .with([ArrowAbility]);
-
-TipsComponent.prototype.type = 'tips';
-
-/**
- * 初始化 Tips 组件
- *
- * 在构造函数中调用，设置锚点、定位配置、hover 事件监听。
- */
-TipsComponent.prototype._initTips = function(props?: TipsProps): void {
-    const anchor = props?.anchor;
-    if (!anchor) return;
-
-    // 初始化 OverlayHostAbility
-    this.initOverlayHost({
-        placement: props?.tooltipPlacement ?? 'top',
-        offset: props?.tooltipOffset ?? 4,
-        flip: true,
-    });
-
-    // 保存锚点
-    this._anchor = anchor;
-
-    // 设置提示文本
-    if (props?.tooltip) {
-        this.default = props.tooltip;
-    }
-
-    // 初始化箭头（ArrowAbility）
-    if (typeof this.initArrow === 'function') {
-        this.initArrow({
-            arrow: props?.tooltipArrow ?? true,
-            arrowName: 'arrow',
-        });
-    }
-
-    // 绑定 hover 事件
-    const showDelay = props?.tooltipShowDelay ?? 0;
-    const hideDelay = props?.tooltipHideDelay ?? 0;
-
-    this.bind(anchor, 'hover', {
-        delay: showDelay,
-        onEnter: () => this.open(),
-        onLeave: () => {
-            setTimeout(() => this.close(), hideDelay);
+    .withTemplate({
+        tpl: {
+            tag: 'div',
+            children: [
+                { tag: 'span', name: 'tips:default', content: 'text', className: 'q-tips__content' },
+                { tag: 'div', name: 'tips:arrow', className: 'q-arrow' },
+            ]
         },
-    });
-};
+        body: {
+            type: 'tips',
 
-/**
- * 打开浮层
- */
-TipsComponent.prototype.open = function(): void {
-    this.openOverlay();
-    this.acquireZIndex();
-    this.positionOverlay();
-    this.el.style.display = '';
-};
+            /**
+             * 初始化 Tips 组件
+             *
+             * 在构造函数中调用，设置锚点、定位配置、hover 事件监听。
+             */
+            _initTips(props?: TipsProps): void {
+                const anchor = props?.anchor;
+                if (!anchor) return;
 
-/**
- * 关闭浮层
- */
-TipsComponent.prototype.close = function(): void {
-    this.closeOverlay();
-    this.el.style.display = 'none';
-    this.releaseZIndex();
-};
+                // 初始化 OverlayHostAbility
+                this.initOverlayHost({
+                    placement: props?.tooltipPlacement ?? 'top',
+                    offset: props?.tooltipOffset ?? 4,
+                    flip: true,
+                });
+
+                // 保存锚点
+                this._anchor = anchor;
+
+                // 设置提示文本
+                if (props?.tooltip) {
+                    this.default = props.tooltip;
+                }
+
+                // 初始化箭头（ArrowAbility）
+                if (typeof this.initArrow === 'function') {
+                    this.initArrow({
+                        arrow: props?.tooltipArrow ?? true,
+                        arrowName: 'arrow',
+                    });
+                }
+
+                // 绑定 hover 事件
+                const showDelay = props?.tooltipShowDelay ?? 0;
+                const hideDelay = props?.tooltipHideDelay ?? 0;
+
+                this.bind(anchor, 'hover', {
+                    delay: showDelay,
+                    onEnter: () => this.open(),
+                    onLeave: () => {
+                        setTimeout(() => this.close(), hideDelay);
+                    },
+                });
+            },
+
+            /**
+             * 打开浮层
+             */
+            open(): void {
+                this.openOverlay();
+                this.acquireZIndex();
+                this.positionOverlay();
+                this.el.style.display = '';
+            },
+
+            /**
+             * 关闭浮层
+             */
+            close(): void {
+                this.closeOverlay();
+                this.el.style.display = 'none';
+                this.releaseZIndex();
+            },
+        },
+    })
+    .with([ArrowAbility]);

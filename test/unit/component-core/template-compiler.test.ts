@@ -312,22 +312,22 @@ describe('precompileTemplate', () => {
 
         expect(result.internalEventTemplates.length).toBe(1);
         expect(result.internalEventTemplates[0].event).toBe('click');
-        expect(result.internalEventTemplates[0].handler).toBe('onSave');
+        expect(result.internalEventTemplates[0].handler).toBe('onClick');
         expect(result.internalEventTemplates[0].nodeKey).toBe('btn:save');
     });
 
-    it('预编译内部事件模板 — 多区域模式', () => {
-        const html = '<div><button data-content="dialog:closeBtn" data-event="tap"></button></div>';
+    it('预编译内部事件模板 — 语义名区分同事件', () => {
+        const html = '<div><button data-content="dialog:closeBtn" data-event="tap=dialog"></button></div>';
         const result = precompileTemplate(html, true);
 
-        expect(result.internalEventTemplates[0].handler).toBe('onDialogCloseBtn');
+        expect(result.internalEventTemplates[0].handler).toBe('onDialogTap');
     });
 
     it('预编译内部事件模板 — 无冒号 data-content', () => {
         const html = '<div><button data-content="save" data-event="click"></button></div>';
         const result = precompileTemplate(html, false);
 
-        expect(result.internalEventTemplates[0].handler).toBe('onSave');
+        expect(result.internalEventTemplates[0].handler).toBe('onClick');
     });
 
     it('预编译内部事件模板 — 带修饰符', () => {
@@ -458,7 +458,7 @@ describe('precompileEventTemplates', () => {
         // 内部事件
         expect(result.internalEventTemplates.length).toBe(1);
         expect(result.internalEventTemplates[0].event).toBe('click');
-        expect(result.internalEventTemplates[0].handler).toBe('onSave');
+        expect(result.internalEventTemplates[0].handler).toBe('onClick');
         expect(result.internalEventTemplates[0].once).toBe(true);
 
         // 外部事件
@@ -493,7 +493,7 @@ describe('buildEventMapFromTemplates', () => {
         };
 
         const internalTemplates: InternalEventTemplate[] = [{
-            event: 'click', handler: 'onSave', nodeKey: 'btn:save',
+            event: 'click', handler: 'onClick', nodeKey: 'btn:save',
         }];
         const externalTemplates: ExternalEventTemplate[] = [{
             emitKey: 'save:tap', nodeKey: 'btn:save',
@@ -503,7 +503,7 @@ describe('buildEventMapFromTemplates', () => {
 
         expect(result.internal.length).toBe(1);
         expect(result.internal[0].event).toBe('click');
-        expect(result.internal[0].handler).toBe('onSave');
+        expect(result.internal[0].handler).toBe('onClick');
         expect(result.internal[0].node.el).toBe(nodeEl);
 
         expect(result.external['save:tap']).toBeDefined();
@@ -513,7 +513,7 @@ describe('buildEventMapFromTemplates', () => {
     it('nodeMap 中无对应节点时跳过', () => {
         const nodeMap = {};
         const internalTemplates: InternalEventTemplate[] = [{
-            event: 'click', handler: 'onSave', nodeKey: 'btn:save',
+            event: 'click', handler: 'onClick', nodeKey: 'btn:save',
         }];
         const externalTemplates: ExternalEventTemplate[] = [];
 

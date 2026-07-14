@@ -71,54 +71,54 @@ describe('ToolbarComponent', () => {
     describe('DOM 结构', () => {
         it('包含 contentArea 节点', () => {
             const toolbar = new ToolbarComponent() as any;
-            const contentArea = toolbar.el.querySelector('[data-content="toolbar:contentArea"]');
+            const contentArea = toolbar.nodeMap?.['toolbar']?.['contentArea']?.el;
             expect(contentArea).not.toBeNull();
             expect(contentArea!.classList.contains('q-toolbar__content')).toBe(true);
         });
 
         it('包含 prevBtn 节点', () => {
             const toolbar = new ToolbarComponent() as any;
-            const prevBtn = toolbar.el.querySelector('[data-content="toolbar:prevBtn"]');
+            const prevBtn = toolbar.nodeMap?.['toolbar']?.['prevBtn']?.el;
             expect(prevBtn).not.toBeNull();
         });
 
         it('包含 nextBtn 节点', () => {
             const toolbar = new ToolbarComponent() as any;
-            const nextBtn = toolbar.el.querySelector('[data-content="toolbar:nextBtn"]');
+            const nextBtn = toolbar.nodeMap?.['toolbar']?.['nextBtn']?.el;
             expect(nextBtn).not.toBeNull();
         });
 
         it('包含 triggerBtn 节点', () => {
             const toolbar = new ToolbarComponent() as any;
-            const triggerBtn = toolbar.el.querySelector('[data-content="toolbar:triggerBtn"]');
+            const triggerBtn = toolbar.nodeMap?.['toolbar']?.['triggerBtn']?.el;
             expect(triggerBtn).not.toBeNull();
         });
 
         it('包含 menuPanel 节点', () => {
             const toolbar = new ToolbarComponent() as any;
-            const menuPanel = toolbar.el.querySelector('[data-content="toolbar:menuPanel"]');
+            const menuPanel = toolbar.nodeMap?.['toolbar']?.['menuPanel']?.el;
             expect(menuPanel).not.toBeNull();
         });
 
         it('contentArea 有 q-toolbar__content 类', () => {
             const toolbar = new ToolbarComponent() as any;
-            const contentArea = toolbar.el.querySelector('[data-content="toolbar:contentArea"]');
+            const contentArea = toolbar.nodeMap?.['toolbar']?.['contentArea']?.el;
             expect(contentArea).not.toBeNull();
             expect(contentArea!.classList.contains('q-toolbar__content')).toBe(true);
         });
 
         it('prevBtn/nextBtn 存在', () => {
             const toolbar = new ToolbarComponent() as any;
-            const prevBtn = toolbar.el.querySelector('[data-content="toolbar:prevBtn"]');
-            const nextBtn = toolbar.el.querySelector('[data-content="toolbar:nextBtn"]');
+            const prevBtn = toolbar.nodeMap?.['toolbar']?.['prevBtn']?.el;
+            const nextBtn = toolbar.nodeMap?.['toolbar']?.['nextBtn']?.el;
             expect(prevBtn).not.toBeNull();
             expect(nextBtn).not.toBeNull();
         });
 
         it('triggerBtn/menuPanel 存在', () => {
             const toolbar = new ToolbarComponent() as any;
-            const triggerBtn = toolbar.el.querySelector('[data-content="toolbar:triggerBtn"]');
-            const menuPanel = toolbar.el.querySelector('[data-content="toolbar:menuPanel"]');
+            const triggerBtn = toolbar.nodeMap?.['toolbar']?.['triggerBtn']?.el;
+            const menuPanel = toolbar.nodeMap?.['toolbar']?.['menuPanel']?.el;
             expect(triggerBtn).not.toBeNull();
             expect(menuPanel).not.toBeNull();
         });

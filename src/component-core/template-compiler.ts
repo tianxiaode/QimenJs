@@ -13,6 +13,7 @@
 
 import type { NodeIndexPath, NodeTemplateMeta, InternalEventBinding, EventMap, ExternalEventMap } from './types';
 import type { NodeMetadata } from './types';
+import type { ContentInfo } from './template-types';
 
 // ─── 预编译事件模板类型 ───
 
@@ -67,6 +68,8 @@ export interface CompiledTemplate {
     externalEventTemplates: ExternalEventTemplate[];
     bridgeEventTemplates: BridgeEventTemplate[];
     contentPropNames: string[];
+    /** 内容节点信息数组 — 只收集有 content 语义的节点，运行时直接遍历 */
+    contentInfos: ContentInfo[];
     /** 预编译的模板元素缓存，可直接用作 _templateCache */
     templateCache: HTMLTemplateElement;
 }
@@ -101,6 +104,7 @@ export function precompileTemplate(
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};
     const contentPropNames: string[] = [];
+    const contentInfos: ContentInfo[] = [];
     const internalEventTemplates: InternalEventTemplate[] = [];
     const externalEventTemplates: ExternalEventTemplate[] = [];
     const bridgeEventTemplates: BridgeEventTemplate[] = [];
@@ -142,14 +146,23 @@ export function precompileTemplate(
             : name === '_' ? group : name;
         contentPropNames.push(propName);
 
-        // 预编译内部事件模板（推导 handler 名 + 解析 eventAttr，只做一次）
-        if (eventAttr) {
-            const handlerName = isMultiArea
-                ? `on${group.charAt(0).toUpperCase() + group.slice(1)}${capitalName}`
-                : `on${name === '_' ? group.charAt(0).toUpperCase() + group.slice(1) : capitalName}`;
+        // 收集内容节点信息
+        contentInfos.push({
+            group, name, mode,
+            i18nKey,
+            propName,
+        });
 
+        // 预编译内部事件模板
+        // handler 推导：click=title → onTitleClick，click → onClick
+        if (eventAttr) {
             const parsed = parseEventAttr(eventAttr);
-            for (const { event, once, delegate, debounce, throttle } of parsed) {
+            for (const { event, name, once, delegate, debounce, throttle } of parsed) {
+                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
+                const handlerName = name
+                    ? `on${name.charAt(0).toUpperCase() + name.slice(1)}${capitalEvent}`
+                    : `on${capitalEvent}`;
+
                 internalEventTemplates.push({
                     event,
                     handler: handlerName,
@@ -188,7 +201,7 @@ export function precompileTemplate(
         }
     }
 
-    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, bridgeEventTemplates, contentPropNames, templateCache: tpl };
+    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, bridgeEventTemplates, contentPropNames, contentInfos, templateCache: tpl };
 }
 
 /**
@@ -211,12 +224,13 @@ export function precompileEventTemplates(
         const capitalName = meta.name.charAt(0).toUpperCase() + meta.name.slice(1);
 
         if (meta.eventAttr) {
-            const handlerName = isMultiArea
-                ? `on${meta.group.charAt(0).toUpperCase() + meta.group.slice(1)}${capitalName}`
-                : `on${meta.name === '_' ? meta.group.charAt(0).toUpperCase() + meta.group.slice(1) : capitalName}`;
-
             const parsed = parseEventAttr(meta.eventAttr);
-            for (const { event, once, delegate, debounce, throttle } of parsed) {
+            for (const { event, name, once, delegate, debounce, throttle } of parsed) {
+                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
+                const handlerName = name
+                    ? `on${name.charAt(0).toUpperCase() + name.slice(1)}${capitalEvent}`
+                    : `on${capitalEvent}`;
+
                 internalEventTemplates.push({
                     event,
                     handler: handlerName,
@@ -347,12 +361,13 @@ export function inferContentMode(el: HTMLElement): 'value' | 'src' | 'html' {
  * - "input?throttle=100"
  * - "input,change"
  */
-export function parseEventAttr(eventAttr: string): Array<{ event: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> {
-    const results: Array<{ event: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> = [];
+export function parseEventAttr(eventAttr: string): Array<{ event: string; name?: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> {
+    const results: Array<{ event: string; name?: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> = [];
     const parts = eventAttr.split(',').map(s => s.trim()).filter(Boolean);
 
     for (const part of parts) {
         let event: string;
+        let name: string | undefined;
         let once = false;
         let delegate = false;
         let debounce: number | undefined;
@@ -376,7 +391,14 @@ export function parseEventAttr(eventAttr: string): Array<{ event: string; once?:
             event = part.trim();
         }
 
-        results.push({ event, once, delegate, debounce, throttle });
+        // 支持 click=title 语法：事件名=语义名
+        const eqIndex = event.indexOf('=');
+        if (eqIndex !== -1) {
+            name = event.slice(eqIndex + 1).trim();
+            event = event.slice(0, eqIndex).trim();
+        }
+
+        results.push({ event, name, once, delegate, debounce, throttle });
     }
 
     return results;
@@ -389,6 +411,10 @@ export { jsonTemplateToHtml } from './template-json';
 // 新模板类型
 export type { TplNode, ComponentTemplate, EventDecl } from './template-types';
 export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
+
+// 新模板编译（一步到位，跳过 HTML data-* 属性）
+export { compileTemplate, type CompiledTemplateResult } from './template-json';
+export { type ContentInfo } from './template-types';
 
 /**
  * 解析桥接事件属性值（data-bridge）

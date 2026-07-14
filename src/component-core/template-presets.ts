@@ -114,14 +114,14 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'toolbar:prevBtn', events: ['click'], className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
+            { tag: 'div', name: 'toolbar:prevBtn', events: ['click=prev'], className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
                 { tag: 'i' },
             ]},
             { tag: 'div', name: 'toolbar:contentArea', className: 'q-toolbar__content', style: 'display:flex;' },
-            { tag: 'div', name: 'toolbar:nextBtn', events: ['click'], className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
+            { tag: 'div', name: 'toolbar:nextBtn', events: ['click=next'], className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
                 { tag: 'i' },
             ]},
-            { tag: 'button', name: 'toolbar:triggerBtn', events: ['click'], className: 'q-overflow-menu__trigger', hidden: true },
+            { tag: 'button', name: 'toolbar:triggerBtn', events: ['click=trigger'], className: 'q-overflow-menu__trigger', hidden: true },
             { tag: 'div', name: 'toolbar:menuPanel', className: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
         ]
     },
@@ -295,8 +295,8 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
                 { tag: 'input', name: 'msgbox:field', content: 'value', events: ['input'], className: 'q-msgbox__input', style: 'display:none;' },
             ]},
             { tag: 'div', className: 'q-msgbox__footer', children: [
-                { tag: 'button', name: 'msgbox:cancel', events: ['click'], className: 'q-msgbox__btn q-msgbox__btn--cancel', text: '\u53d6\u6d88' },
-                { tag: 'button', name: 'msgbox:confirm', events: ['click'], className: 'q-msgbox__btn q-msgbox__btn--confirm', text: '\u786e\u5b9a' },
+                { tag: 'button', name: 'msgbox:cancel', events: ['click=cancel'], className: 'q-msgbox__btn q-msgbox__btn--cancel', text: '\u53d6\u6d88' },
+                { tag: 'button', name: 'msgbox:confirm', events: ['click=confirm'], className: 'q-msgbox__btn q-msgbox__btn--confirm', text: '\u786e\u5b9a' },
             ]},
         ]
     },

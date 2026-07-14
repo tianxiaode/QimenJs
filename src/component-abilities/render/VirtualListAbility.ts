@@ -130,7 +130,7 @@ export const VirtualListAbility: AbilityDefinition = {
     renderVirtualList(): void {
         if (!this.el) return;
 
-        const container = this.el.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
+        const container = this.nodeMap?.['table']?.['bodyScroll']?.el as HTMLElement;
         if (!container) return;
 
         container.style.height = `${this.containerHeight}px`;
@@ -176,7 +176,7 @@ export const VirtualListAbility: AbilityDefinition = {
      * 滚动到指定索引
      */
     scrollToIndex(index: number): void {
-        const container = this.el?.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
+        const container = this.nodeMap?.['table']?.['bodyScroll']?.el as HTMLElement;
         if (container) {
             container.scrollTop = index * this.rowHeight;
         }
@@ -187,7 +187,7 @@ export const VirtualListAbility: AbilityDefinition = {
      * 初始化虚拟列表滚动监听
      */
     initVirtualScroll(): void {
-        const container = this.el?.querySelector('[data-content="table:bodyScroll"]') as HTMLElement;
+        const container = this.nodeMap?.['table']?.['bodyScroll']?.el as HTMLElement;
         if (!container) return;
 
         this.bind(container, 'scroll');

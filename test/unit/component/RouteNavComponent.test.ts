@@ -3,7 +3,7 @@
  *
  * 覆盖：
  * 1. 构造函数（pathIndex、indexPath、type）
- * 2. onNavSelect 导航选中切换路由（通过 this.navigate）
+ * 2. onNavClick 导航选中切换路由（通过 this.navigate）
  * 3. onRouteChange 路由变化切换高亮
  * 4. update 更新 pathIndex、indexPath
  * 5. dispose
@@ -94,10 +94,10 @@ describe('RouteNavComponent', () => {
     });
 
     // ============================================
-    // onNavSelect
+    // onNavClick
     // ============================================
 
-    describe('onNavSelect', () => {
+    describe('onNavClick', () => {
         it('导航选中时调用 this.navigate', () => {
             const nav = new RouteNavComponent({
                 indexPath: ['/', '/icons', '/theme'],
@@ -105,7 +105,7 @@ describe('RouteNavComponent', () => {
             }) as any;
 
             const navigateSpy = jest.spyOn(nav, 'navigate').mockImplementation(() => {});
-            nav.onNavSelect({ index: 1 });
+            nav.onNavClick({ index: 1 });
 
             expect(navigateSpy).toHaveBeenCalledWith('/icons');
         });
@@ -117,7 +117,7 @@ describe('RouteNavComponent', () => {
             }) as any;
 
             const navigateSpy = jest.spyOn(nav, 'navigate');
-            nav.onNavSelect({ index: 99 });
+            nav.onNavClick({ index: 99 });
 
             expect(navigateSpy).not.toHaveBeenCalled();
         });
@@ -130,7 +130,7 @@ describe('RouteNavComponent', () => {
             }) as any;
 
             const navigateSpy = jest.spyOn(nav, 'navigate').mockImplementation(() => {});
-            nav.onNavSelect({});
+            nav.onNavClick({});
 
             expect(navigateSpy).toHaveBeenCalledWith('/');
         });
@@ -198,7 +198,7 @@ describe('RouteNavComponent', () => {
             nav.update({ indexPath: ['/', '/icons'] });
 
             const navigateSpy = jest.spyOn(nav, 'navigate').mockImplementation(() => {});
-            nav.onNavSelect({ index: 1 });
+            nav.onNavClick({ index: 1 });
             expect(navigateSpy).toHaveBeenCalledWith('/icons');
         });
     });

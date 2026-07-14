@@ -34,24 +34,10 @@ const TestHost = TemplateComponent
     .with([OverflowMenuAbility]);
 
 /**
- * 手动构建 nodeMap（因为 precompileTemplate 无法解析多顶级元素模板）
+ * 手动补充 nodeMap（compileTemplate 不生成 data-content，nodeMap 已由 _buildNodeMapFromCompiled 构建）
  */
 function buildManualNodeMap(host: any): void {
-    const el = host.el;
-    host.nodeMap = host.nodeMap || {};
-    host.nodeMap['toolbar'] = {};
-
-    const contentArea = el.querySelector('[data-content="toolbar:contentArea"]');
-    const prevBtn = el.querySelector('[data-content="toolbar:prevBtn"]');
-    const nextBtn = el.querySelector('[data-content="toolbar:nextBtn"]');
-    const triggerBtn = el.querySelector('[data-content="toolbar:triggerBtn"]');
-    const menuPanel = el.querySelector('[data-content="toolbar:menuPanel"]');
-
-    if (contentArea) host.nodeMap['toolbar']['contentArea'] = { el: contentArea };
-    if (prevBtn) host.nodeMap['toolbar']['prevBtn'] = { el: prevBtn };
-    if (nextBtn) host.nodeMap['toolbar']['nextBtn'] = { el: nextBtn };
-    if (triggerBtn) host.nodeMap['toolbar']['triggerBtn'] = { el: triggerBtn };
-    if (menuPanel) host.nodeMap['toolbar']['menuPanel'] = { el: menuPanel };
+    // nodeMap 已由编译时自动构建，无需手动补充
 }
 
 /**

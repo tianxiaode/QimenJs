@@ -37,9 +37,10 @@ import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode } from './template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode, ContentInfo } from './template-compiler';
 import type { ComponentTemplate } from './template-types';
-import { precompileTemplate, jsonTemplateToHtml, convertTemplate } from './template-compiler';
+import { precompileTemplate, jsonTemplateToHtml, convertTemplate, compileTemplate } from './template-compiler';
+import type { CompiledTemplateResult } from './template-compiler';
 import { buildContentProperties } from './content-properties';
 
 /**
@@ -187,9 +188,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * 模板预编译工厂方法
      *
      * 支持三种模板格式：
-     * 1. HTML 字符串 — 直接使用
-     * 2. 旧版 JsonTemplateNode[] — 向后兼容，自动转换
+     * 1. HTML 字符串 — 直接使用（旧链路：precompileTemplate）
+     * 2. 旧版 JsonTemplateNode[] — 向后兼容，自动转换（旧链路）
      * 3. 新版 ComponentTemplate — 包含 tpl 根节点 + body 属性/方法
+     *    新链路：compileTemplate 一步到位，跳过 HTML data-* 属性
      *
      * @param template - HTML 字符串 / 旧版 JSON 模板数组 / 新版 ComponentTemplate
      * @returns 模板组件强类
@@ -197,26 +199,57 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     static withTemplate(this: any, template: string | JsonTemplateNode[] | ComponentTemplate): any {
         let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
         let body: Record<string, any> | undefined;
+        let templateHtml: string;
+        let compiled: {
+            indexPath: NodeIndexPath;
+            templateMetas: Record<string, NodeTemplateMeta>;
+            internalEventTemplates: InternalEventTemplate[];
+            externalEventTemplates: ExternalEventTemplate[];
+            bridgeEventTemplates: BridgeEventTemplate[];
+            contentPropNames: string[];
+            contentInfos: ContentInfo[];
+            rootClassName?: string;
+            rootStyle?: string;
+            templateCache: HTMLTemplateElement;
+        };
 
-        const templateHtml = typeof template === 'string'
-            ? template
-            : Array.isArray(template)
-                ? (() => {
-                    // 旧版 JsonTemplateNode[]
-                    const result = jsonTemplateToHtml(template);
-                    jsonComponentMap = result.componentMap;
-                    return result.html;
-                })()
-                : (() => {
-                    // 新版 ComponentTemplate
-                    const result = convertTemplate(template);
-                    jsonComponentMap = result.componentMap;
-                    body = template.body;
-                    return result.html;
-                })();
+        if (typeof template === 'string') {
+            // ── 旧链路：HTML 字符串 ──
+            templateHtml = template;
+            compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
 
-        // 预编译：创建临时 DOM 解析模板，提取节点数据
-        const compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
+        } else if (Array.isArray(template)) {
+            // ── 旧链路：JsonTemplateNode[] ──
+            const result = jsonTemplateToHtml(template);
+            jsonComponentMap = result.componentMap;
+            templateHtml = result.html;
+            compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
+
+        } else {
+            // ── 新链路：ComponentTemplate ──
+            // compileTemplate 一步到位：干净 HTML + indexPath + 元数据 + 事件模板
+            const result = compileTemplate(template, this.isMultiArea ?? false);
+            templateHtml = result.html;
+            jsonComponentMap = result.componentMap;
+            body = template.body;
+
+            // 构建 templateCache（干净 HTML 不含 data-* 属性，但结构一致）
+            const tpl = document.createElement('template');
+            tpl.innerHTML = templateHtml;
+
+            compiled = {
+                indexPath: result.indexPath,
+                templateMetas: result.templateMetas,
+                internalEventTemplates: result.internalEventTemplates,
+                externalEventTemplates: result.externalEventTemplates,
+                bridgeEventTemplates: result.bridgeEventTemplates,
+                contentPropNames: result.contentPropNames,
+                contentInfos: result.contentInfos,
+                rootClassName: result.rootClassName,
+                rootStyle: result.rootStyle,
+                templateCache: tpl,
+            };
+        }
 
         // 创建模板组件强类
         const TemplateClass = class extends this {
@@ -231,6 +264,22 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 this._initWithTemplate(mergedProps);
 
                 if (ctor.type) this.type = ctor.type;
+
+                // 将 defaults 中的属性赋值到实例（通过 setter 触发 _applyState）
+                if (ctor.defaults) {
+                    for (const [key, value] of Object.entries(ctor.defaults)) {
+                        (this as any)[key] = value;
+                    }
+                }
+
+                // 如果 props 中有覆盖 defaults 的值，也赋值到实例
+                if (props) {
+                    for (const [key, value] of Object.entries(props)) {
+                        if (key in (ctor.defaults || {})) {
+                            (this as any)[key] = value;
+                        }
+                    }
+                }
             }
 
             /** 预编译的模板 HTML */
@@ -254,11 +303,20 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             /** 预编译的内容属性名列表 */
             static readonly _contentPropNames: string[] = compiled.contentPropNames;
 
+            /** 预编译的内容节点信息数组 — 运行时直接遍历，无需遍历整个 nodeMap */
+            static readonly _contentInfos: ContentInfo[] = compiled.contentInfos;
+
             /** 预编译的组件类映射 */
             static readonly _jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = jsonComponentMap;
 
             /** 模板 body 定义（属性和方法，复制到组件实例） */
             static readonly _templateBody: Record<string, any> | undefined = body;
+
+            /** 根节点 className — 应用到组件 el 上 */
+            static readonly _rootClassName: string | undefined = compiled.rootClassName;
+
+            /** 根节点 style — 应用到组件 el 上 */
+            static readonly _rootStyle: string | undefined = compiled.rootStyle;
 
             /** 模板元素缓存 */
             static _templateCache: HTMLTemplateElement | null = compiled.templateCache;
@@ -278,19 +336,44 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         };
 
         // 在强类原型上生成内容 getter/setter
-        buildContentProperties(TemplateClass, compiled.templateMetas, this.isMultiArea ?? false);
+        buildContentProperties(TemplateClass, compiled.contentInfos);
 
         // 将 body 中的方法/属性复制到原型
         if (body) {
             const proto = TemplateClass.prototype;
             for (const [key, value] of Object.entries(body)) {
-                if (typeof value === 'function') {
+                if (key === 'type') {
+                    // type 特殊处理：设为静态属性，构造函数通过 ctor.type 读取
+                    (TemplateClass as any).type = value;
+                } else if (typeof value === 'function') {
                     proto[key] = value;
                 } else {
                     // 非函数属性作为默认值，存到 static defaults
                     if (!TemplateClass.defaults) TemplateClass.defaults = {};
                     TemplateClass.defaults[key] = value;
                 }
+            }
+        }
+
+        // 为 defaults 中的属性生成 getter/setter（setter 在值变化时调用 _applyState）
+        if (TemplateClass.defaults) {
+            const proto = TemplateClass.prototype;
+            for (const key of Object.keys(TemplateClass.defaults)) {
+                if (key === 'type') continue;
+                // 跳过已有 getter/setter 的属性（如 content 属性）
+                const existing = Object.getOwnPropertyDescriptor(proto, key);
+                if (existing && (existing.get || existing.set)) continue;
+
+                const privateKey = `__${key}`;
+                Object.defineProperty(proto, key, {
+                    get(this: any) { return this[privateKey]; },
+                    set(this: any, value: any) {
+                        this[privateKey] = value;
+                        if (typeof this._applyState === 'function') this._applyState();
+                    },
+                    configurable: true,
+                    enumerable: true,
+                });
             }
         }
 

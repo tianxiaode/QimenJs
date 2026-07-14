@@ -35,7 +35,7 @@
  * ```
  */
 
-import { TemplateComponent, MENU_TEMPLATE } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { OverlayHostAbility, GroupSelectAbility } from '@qimenjs/component-abilities';
 import type { Placement } from '@qimenjs/component-core';
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
@@ -58,10 +58,20 @@ export interface MenuProps {
  * MenuBase — withTemplate + OverlayHostAbility + GroupSelectAbility
  */
 const MenuBase = TemplateComponent
-    .withTemplate(MENU_TEMPLATE)
+    .withTemplate({
+        tpl: {
+            tag: 'div',
+            children: [
+                { tag: 'div', name: 'menu:content', className: 'q-menu__content' },
+            ]
+        },
+        body: {
+            type: 'Menu',
+        },
+    })
     .with([OverlayHostAbility, GroupSelectAbility]);
 
-export class MenuComponent extends MenuBase {
+export let MenuComponent = class extends MenuBase {
     /** 是否已打开 */
     private _isOpen: boolean = false;
 
@@ -74,7 +84,6 @@ export class MenuComponent extends MenuBase {
     constructor(props?: MenuProps & Record<string, any>) {
         super(props);
 
-        this.type = 'Menu';
         this.el.classList.add('q-menu');
 
         // 初始化浮层宿主（z-index、定位、挂载）
@@ -187,4 +196,6 @@ export class MenuComponent extends MenuBase {
         }
         super.dispose();
     }
-}
+};
+
+export type MenuComponent = InstanceType<typeof MenuComponent>;

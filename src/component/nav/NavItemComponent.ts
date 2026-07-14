@@ -5,14 +5,15 @@
  * 支持图标、文本、激活状态、禁用状态。
  *
  * 模板内容项（由 withTemplate 自动生成 getter/setter）：
- * - navItem:content — 可点击区域（内部事件：data-event="click" → onContent）
+ * - navItem:content — 可点击区域（内部事件：click → onClick）
  * - navItem:icon — 图标
  * - navItem:text — 文本
  *
  * 事件流：
- * - 内部事件：navItem:content click → onContent
- *   - 调用 onClick 回调（由 ItemGroup 注入，用于事件转发）
- *   - 调用 onSelect 回调
+ * - 内部事件：navItem:content click → onClick
+ *   - 支持 beforeClick/afterClick 钩子
+ * - 桥接事件：bridges: ['click'] → 自动通过 EventBridge 发布
+ *   - 不需要代码里手动 this.emit
  *
  * @example
  * ```js
@@ -21,7 +22,7 @@
  * ```
  */
 
-import { TemplateComponent, NAVITEM_TEMPLATE } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 
 /** 导航项配置 */
 export interface NavItemProps {
@@ -34,94 +35,83 @@ export interface NavItemProps {
     /** 是否禁用 */
     disabled?: boolean;
     /** 选中回调 */
-    onSelect?: (item: NavItemComponent) => void;
+    onSelect?: (item: any) => void;
 }
 
-export class NavItemComponent extends TemplateComponent.withTemplate(NAVITEM_TEMPLATE) {
-    /** 是否激活 */
-    private _active: boolean = false;
+export let NavItemComponent = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'q-nav-item',
+        children: [
+            { tag: 'div', name: 'navItem:content', events: ['click'], bridges: ['click'], className: 'q-nav-item__content', children: [
+                { tag: 'span', name: 'navItem:icon', content: 'icon', className: 'q-nav-item__icon' },
+                { tag: 'span', name: 'navItem:text', content: 'text', className: 'q-nav-item__text' },
+            ]},
+        ]
+    },
+    body: {
+        type: 'NavItem',
 
-    /** 是否禁用 */
-    private _disabled: boolean = false;
+        /** 是否激活 */
+        active: false,
 
-    /** 事件源标识（由 ItemGroup 注入） */
-    eventKey: string = '';
+        /** 是否禁用 */
+        disabled: false,
 
-    /** 选中回调 */
-    onSelect?: (item: NavItemComponent) => void;
+        /** 事件源标识（由 ItemGroup 注入） */
+        eventKey: '',
 
-    constructor(props?: NavItemProps & Record<string, any>) {
-        super(props);
+        /** 选中回调 */
+        onSelect: undefined as ((item: any) => void) | undefined,
 
-        this.type = 'NavItem';
-        this.el.classList.add('q-nav-item');
+        /**
+         * navItem:content 的 click 事件处理
+         *
+         * 由模板 events: ['click'] 自动绑定到 onClick handler
+         * 支持 beforeClick/afterClick 钩子
+         * 桥接事件由 bridges: ['click'] 自动发布，无需手动 this.emit
+         */
+        onClick(): void {
+            if (this.disabled) return;
+            this.onSelect?.(this);
+        },
 
-        if (props?.text) this.text = props.text;
-        if (props?.icon) this.icon = props.icon;
-        if (props?.active) this._active = props.active;
-        if (props?.disabled) this._disabled = props.disabled;
-        if (props?.onSelect) this.onSelect = props.onSelect;
-        if (props?.eventKey) this.eventKey = props.eventKey;
+        /** 应用状态到 DOM */
+        _applyState(): void {
+            this.el.classList.toggle('q-nav-item--active', this.active);
+            this.el.classList.toggle('q-nav-item--disabled', this.disabled);
 
-        this.applyState();
-    }
+            if (this.disabled) {
+                this.el.setAttribute('aria-disabled', 'true');
+            } else {
+                this.el.removeAttribute('aria-disabled');
+            }
 
-    /** 是否激活 */
-    get active(): boolean { return this._active; }
-    set active(value: boolean) {
-        this._active = value;
-        this.applyState();
-    }
+            if (this.active) {
+                this.el.setAttribute('aria-current', 'page');
+            } else {
+                this.el.removeAttribute('aria-current');
+            }
+        },
 
-    /** 是否禁用 */
-    get disabled(): boolean { return this._disabled; }
-    set disabled(value: boolean) {
-        this._disabled = value;
-        this.applyState();
-    }
+        setActive(value: boolean): void {
+            this.active = value;
+            this._applyState();
+        },
 
-    // ─── 内部事件（由模板 event: 'click' 自动绑定） ───
+        setDisabled(value: boolean): void {
+            this.disabled = value;
+            this._applyState();
+        },
 
-    /**
-     * navItem:content 的 click 事件处理
-     *
-     * DOM 事件名是 dom:click（加前缀），组件 emit 的是 click（无前缀），不会冲突。
-     */
-    onContent(): void {
-        if (this._disabled) return;
+        update(props?: Partial<NavItemProps> & Record<string, any>): void {
+            if (props?.text !== undefined) this.text = props.text;
+            if (props?.icon !== undefined) this.icon = props.icon;
+            if (props?.active !== undefined) this.setActive(props.active);
+            if (props?.disabled !== undefined) this.setDisabled(props.disabled);
+            if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
+        },
+    },
+});
 
-        this.logger.debug('[NavItem] onContent, eventKey =', this.eventKey);
-
-        // 发布 click 事件（source=eventKey），供 ItemGroup 转发
-        // 不传组件实例，ItemGroup 通过 itemData 配置提取子项属性
-        this.emit('click', undefined, { source: this.eventKey || undefined });
-
-        this.onSelect?.(this);
-    }
-
-    /** 应用状态到 DOM */
-    private applyState(): void {
-        this.el.classList.toggle('q-nav-item--active', this._active);
-        this.el.classList.toggle('q-nav-item--disabled', this._disabled);
-
-        if (this._disabled) {
-            this.el.setAttribute('aria-disabled', 'true');
-        } else {
-            this.el.removeAttribute('aria-disabled');
-        }
-
-        if (this._active) {
-            this.el.setAttribute('aria-current', 'page');
-        } else {
-            this.el.removeAttribute('aria-current');
-        }
-    }
-
-    update(props?: Partial<NavItemProps> & Record<string, any>): void {
-        if (props?.text !== undefined) this.text = props.text;
-        if (props?.icon !== undefined) this.icon = props.icon;
-        if (props?.active !== undefined) this.active = props.active;
-        if (props?.disabled !== undefined) this.disabled = props.disabled;
-        if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
-    }
-}
+export type NavItemComponent = InstanceType<typeof NavItemComponent>;

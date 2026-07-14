@@ -25,7 +25,7 @@
  * 组合：TemplateComponent + ITEMGROUP_TEMPLATE
  */
 
-import { TemplateComponent, ITEMGROUP_TEMPLATE, ComponentRegistrar } from '@qimenjs/component-core';
+import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
 
 /** 默认转发的事件类型 */
 const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
@@ -66,7 +66,17 @@ export interface ItemGroupProps {
  *
  * 继承 TemplateComponent + ITEMGROUP_TEMPLATE
  */
-export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP_TEMPLATE) {
+export let ItemGroupComponent = class extends TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        children: [
+            { tag: 'div', name: 'itemgroup:default', className: 'q-itemgroup__items' },
+        ]
+    },
+    body: {
+        type: 'ItemGroup',
+    },
+}) {
     /** 子项实例池（含隐藏的复用实例） */
     private _pool: any[] = [];
 
@@ -100,7 +110,6 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
     constructor(props?: ItemGroupProps) {
         super(props);
 
-        this.type = 'ItemGroup';
         this.el.classList.add('q-itemgroup');
 
         if (props?.direction) this._direction = props.direction;
@@ -572,4 +581,6 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate(ITEMGROUP
         this._itemUnsubscribes.clear();
         super.dispose();
     }
-}
+};
+
+export type ItemGroupComponent = InstanceType<typeof ItemGroupComponent>;

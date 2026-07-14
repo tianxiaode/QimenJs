@@ -26,6 +26,7 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 import { RouteListenAbility } from '@qimenjs/router';
 import { ChildSlotAbility } from '@qimenjs/component-abilities/render/ChildSlotAbility';
+import type { ComponentTemplate } from '@qimenjs/component-core';
 
 /** 路由容器配置 */
 export interface RouteContainerProps {
@@ -35,11 +36,18 @@ export interface RouteContainerProps {
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
-export class RouteContainerComponent extends TemplateComponent.withTemplate([
-    { tag: 'div', class: 'q-route-container', children: [
-        { tag: 'div', content: 'container:content', jsonMode: 'child' },
-    ]},
-]).with([RouteListenAbility, ChildSlotAbility]) {
+/** 路由容器模板（新格式 ComponentTemplate） */
+const ROUTE_CONTAINER_TEMPLATE: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'q-route-container',
+        children: [
+            { tag: 'div', name: 'container:content', className: 'q-route-container__content' },
+        ],
+    },
+};
+
+export let RouteContainerComponent = class extends TemplateComponent.withTemplate(ROUTE_CONTAINER_TEMPLATE).with([RouteListenAbility, ChildSlotAbility]) {
     static type = 'RouteContainer';
 
     /** 路径到组件类的映射 */
@@ -72,9 +80,11 @@ export class RouteContainerComponent extends TemplateComponent.withTemplate([
         const path = event?.path;
         this.logger.debug('[RouteContainer] onRouteChange, path =', path, 'routeMap keys =', Object.keys(this._routeMap));
         const PageClass = this._routeMap[path] || this._defaultComponent;
-        this.logger.debug('[RouteContainer] resolved PageClass =', PageClass?.name || PageClass?.type || 'null');
+        this.logger.debug('[RouteContainer] resolved PageClass =', PageClass?.name || (PageClass as any)?.type || 'null');
         if (PageClass) {
             this._replaceChildComponent('content', PageClass);
         }
     }
-}
+};
+
+export type RouteContainerComponent = InstanceType<typeof RouteContainerComponent>;

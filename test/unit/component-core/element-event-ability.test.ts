@@ -33,7 +33,7 @@ describe('ElementEventAbility', () => {
             instance.eventMap = {
                 internal: [{
                     event: 'click',
-                    handler: 'onBtnClick',
+                    handler: 'onClick',
                     once: false,
                     delegate: false,
                     delegateTarget: undefined,
@@ -42,14 +42,14 @@ describe('ElementEventAbility', () => {
                 external: {},
             };
 
-            instance.onBtnClick = jest.fn();
+            instance.onClick = jest.fn();
             initAbilitiesFromProps(instance, [ElementEventAbility], {});
 
             // 模拟触发事件
             const gesture = { domEvent: new Event('click') };
-            instance.emit('click', gesture);
+            instance.emit('dom:click', gesture);
 
-            expect(instance.onBtnClick).toHaveBeenCalled();
+            expect(instance.onClick).toHaveBeenCalled();
         });
 
         it('once 内部事件只触发一次', () => {
@@ -61,7 +61,7 @@ describe('ElementEventAbility', () => {
             instance.eventMap = {
                 internal: [{
                     event: 'click',
-                    handler: 'onBtnClick',
+                    handler: 'onClick',
                     once: true,
                     delegate: false,
                     delegateTarget: undefined,
@@ -70,13 +70,13 @@ describe('ElementEventAbility', () => {
                 external: {},
             };
 
-            instance.onBtnClick = jest.fn();
+            instance.onClick = jest.fn();
             initAbilitiesFromProps(instance, [ElementEventAbility], {});
 
-            instance.emit('click', { domEvent: new Event('click') });
-            instance.emit('click', { domEvent: new Event('click') });
+            instance.emit('dom:click', { domEvent: new Event('click') });
+            instance.emit('dom:click', { domEvent: new Event('click') });
 
-            expect(instance.onBtnClick).toHaveBeenCalledTimes(1);
+            expect(instance.onClick).toHaveBeenCalledTimes(1);
         });
 
         it('委托事件绑定 — delegate 模式注册监听', () => {

@@ -57,7 +57,7 @@ export interface RouteNavProps {
 // TS 类型无法推断，需 as any 绕过
 const RouteNavBase = (NavItemGroupComponent as any).with([RouteAbility, RouteEmitAbility, RouteListenAbility]);
 
-export class RouteNavComponent extends RouteNavBase {
+export let RouteNavComponent = class extends RouteNavBase {
     /** 路径到索引的映射 */
     private _pathIndex: Record<string, number> = {};
 
@@ -139,4 +139,6 @@ export class RouteNavComponent extends RouteNavBase {
             this._indexPath = props.indexPath;
         }
     }
-}
+};
+
+export type RouteNavComponent = InstanceType<typeof RouteNavComponent>;

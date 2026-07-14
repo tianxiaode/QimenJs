@@ -5,7 +5,7 @@
  * 支持图标、文本、快捷键、禁用状态、子菜单、分组选中。
  *
  * 模板内容项（由 withTemplate 自动生成 getter/setter）：
- * - menuItem:content — 整行可点击区域（事件：click → onContentClick）
+ * - menuItem:content — 整行可点击区域（事件：click → onClick）
  * - menuItem:icon — 图标（分组模式下自动渲染选中指示符，与自定义 icon 互斥）
  * - menuItem:text — 文本
  * - menuItem:shortcut — 快捷键文本
@@ -19,7 +19,7 @@
  * - 自定义 icon 与分组指示符互斥：有 group 时优先显示指示符
  *
  * 事件流：
- * - 内部事件：menuItem:content click → onContentClick
+ * - 内部事件：menuItem:content click → onClick
  *   - 切换 checked 状态（分组模式）
  *   - 通过 eventKey 触发外部事件（item:click / item:select），供 ItemGroup 转发
  *   - 调用 onSelect 回调
@@ -42,7 +42,7 @@
  * ```
  */
 
-import { TemplateComponent, OverlayAbility, MENU_ITEM_TEMPLATE } from '@qimenjs/component-core';
+import { TemplateComponent, OverlayAbility } from '@qimenjs/component-core';
 import { ExpandArrowAbility } from '@qimenjs/component-abilities';
 
 /** 分组模式 */
@@ -76,10 +76,27 @@ export interface MenuItemProps {
  * MenuItemBase — 在 withTemplate 强类基础上，通过 with() 混入 OverlayAbility
  */
 const MenuItemBase = TemplateComponent
-    .withTemplate(MENU_ITEM_TEMPLATE)
+    .withTemplate({
+        tpl: {
+            tag: 'div',
+            children: [
+                { tag: 'div', name: 'menuItem:content', events: ['click'], className: 'q-menu-item__content', children: [
+                    { tag: 'span', name: 'menuItem:icon', content: 'icon', className: 'q-menu-item__icon' },
+                    { tag: 'span', name: 'menuItem:text', content: 'text', className: 'q-menu-item__text' },
+                    { tag: 'span', name: 'menuItem:shortcut', content: 'text', className: 'q-menu-item__shortcut' },
+                    { tag: 'div', name: 'menuItem:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
+                        { tag: 'i' },
+                    ]},
+                ]},
+            ]
+        },
+        body: {
+            type: 'MenuItem',
+        },
+    })
     .with([OverlayAbility, ExpandArrowAbility]);
 
-export class MenuItemComponent extends MenuItemBase {
+export let MenuItemComponent = class extends MenuItemBase {
     /** 是否禁用 */
     private _disabled: boolean = false;
 
@@ -110,7 +127,6 @@ export class MenuItemComponent extends MenuItemBase {
     constructor(props?: MenuItemProps & Record<string, any>) {
         super(props);
 
-        this.type = 'MenuItem';
         this.el.classList.add('q-menu-item');
 
         if (props?.text) this.text = props.text;
@@ -169,13 +185,10 @@ export class MenuItemComponent extends MenuItemBase {
     /**
      * menuItem:content 的 click 事件处理
      *
-     * 事件流：
-     * 1. 切换 checked 状态（分组模式）
-     * 2. 通过 eventKey 触发 item:click（供 ItemGroup 转发）
-     * 3. 通过 eventKey 触发 item:select（供 GroupSelectAbility 处理互斥）
-     * 4. 调用 onSelect 回调
+     * 由模板 events: ['click'] 自动绑定到 onClick handler
+     * 支持 beforeClick/afterClick 钩子
      */
-    onContentClick(): void {
+    onClick(): void {
         if (this._disabled) return;
 
         // 有子菜单时不触发选中，由 hover 处理
@@ -321,4 +334,6 @@ export class MenuItemComponent extends MenuItemBase {
         if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
         if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
     }
-}
+};
+
+export type MenuItemComponent = InstanceType<typeof MenuItemComponent>;

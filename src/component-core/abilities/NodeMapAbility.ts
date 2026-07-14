@@ -2,17 +2,17 @@
  * NodeMapAbility — 内容属性初始化 + i18n 集中刷新
  *
  * 负责：
- * - 从 props 初始化内容属性（data-content 节点属性）
+ * - 从 props 初始化内容属性
  * - i18n 翻译初始化 + localeChange 集中刷新
  *
- * 模板节点扫描和事件映射已统一到 withTemplate 预编译流程，
- * 不再需要运行时 querySelectorAll 扫描。
+ * 使用编译时收集的 contentInfos 数组直接遍历，
+ * 无需遍历整个 nodeMap 再 if 过滤。
  */
 
 import type { AbilityDefinition } from '@/composable';
+import type { ContentInfo } from '../template-types';
 import { globalEventBus } from '@qimenjs/events';
 import { translateI18nKey, applyValueToEl } from '../content-properties';
-import { inferContentMode } from '../template-compiler';
 
 export const NodeMapAbility: AbilityDefinition = {
     /**
@@ -31,30 +31,41 @@ export const NodeMapAbility: AbilityDefinition = {
     // ─── i18n 集中刷新 ───
 
     /**
-     * 初始化所有 data-i18n 节点的翻译
+     * 获取编译时收集的 contentInfos
+     */
+    _getContentInfos(): ContentInfo[] {
+        return (this.constructor as any)._contentInfos || [];
+    },
+
+    /**
+     * 初始化所有 i18n 节点的翻译
+     *
+     * 直接遍历 contentInfos，只处理有 i18nKey 的条目
      */
     initI18nFromTemplate(): void {
-        for (const [, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
-            for (const [, node] of Object.entries(entries as Record<string, any>)) {
-                if (!node.i18nKey) continue;
-                const translated = translateI18nKey(node.i18nKey);
-                const mode = inferContentMode(node.el);
-                applyValueToEl(node.el, translated, mode);
-            }
+        const infos = this._getContentInfos();
+        for (const info of infos) {
+            if (!info.i18nKey) continue;
+            const el = this.nodeMap[info.group]?.[info.name]?.el;
+            if (!el) continue;
+            const translated = translateI18nKey(info.i18nKey);
+            applyValueToEl(el, translated, info.mode);
         }
     },
 
     /**
      * 刷新所有 i18n 节点的翻译
+     *
+     * 直接遍历 contentInfos，只处理有 i18nKey 的条目
      */
     refreshI18n(): void {
-        for (const [, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
-            for (const [, node] of Object.entries(entries as Record<string, any>)) {
-                if (!node.i18nKey) continue;
-                const translated = translateI18nKey(node.i18nKey);
-                const mode = inferContentMode(node.el);
-                applyValueToEl(node.el, translated, mode);
-            }
+        const infos = this._getContentInfos();
+        for (const info of infos) {
+            if (!info.i18nKey) continue;
+            const el = this.nodeMap[info.group]?.[info.name]?.el;
+            if (!el) continue;
+            const translated = translateI18nKey(info.i18nKey);
+            applyValueToEl(el, translated, info.mode);
         }
     },
 
@@ -77,14 +88,15 @@ export const NodeMapAbility: AbilityDefinition = {
 
     /**
      * 获取所有 i18n key
+     *
+     * 直接遍历 contentInfos，只处理有 i18nKey 的条目
      */
     getI18nKeys(): Record<string, string> {
         const result: Record<string, string> = {};
-        for (const [group, entries] of Object.entries(this.nodeMap as Record<string, Record<string, any>>)) {
-            for (const [name, node] of Object.entries(entries as Record<string, any>)) {
-                if (node.i18nKey) {
-                    result[`${group}:${name}`] = node.i18nKey;
-                }
+        const infos = this._getContentInfos();
+        for (const info of infos) {
+            if (info.i18nKey) {
+                result[`${info.group}:${info.name}`] = info.i18nKey;
             }
         }
         return result;

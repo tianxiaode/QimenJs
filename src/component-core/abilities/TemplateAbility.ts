@@ -139,6 +139,15 @@ export const TemplateAbility: AbilityDefinition = {
         const ctor = this.constructor as any;
         const fragment = ctor._cloneFragment();
         this.el.appendChild(fragment);
+
+        // 应用根节点的 className/style
+        if (ctor._rootClassName) {
+            this.el.className = ctor._rootClassName;
+        }
+        if (ctor._rootStyle) {
+            this.el.setAttribute('style', ctor._rootStyle);
+        }
+
         this._buildNodeMapFromCompiled();
     },
 

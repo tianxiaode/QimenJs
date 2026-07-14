@@ -185,7 +185,7 @@ describe('MenuComponent', () => {
             expect(items[1].checked).toBe(false);
 
             // 模拟点击第二项
-            items[1].onContentClick();
+            items[1].onClick();
             menu.notifyGroupSelect(items[1]);
 
             expect(items[1].checked).toBe(true);
@@ -201,8 +201,8 @@ describe('MenuComponent', () => {
             }) as any;
 
             const items = menu.itemGroup.items;
-            items[0].onContentClick();
-            items[1].onContentClick();
+            items[0].onClick();
+            items[1].onClick();
 
             expect(items[0].checked).toBe(true);
             expect(items[1].checked).toBe(true);

@@ -1,22 +1,65 @@
 /**
- * template-json.ts — 新模板 JSON → HTML 转换
+ * template-json.ts — 新模板编译
  *
- * 将 TplNode 树转换为 HTML 字符串 + 组件映射 + 模板元数据。
- * 新模板结构中 tag/type 互斥，events/forwards/bridges 三类事件分离。
+ * 核心函数 compileTemplate：
+ * 递归遍历 TplNode 树，一步到位产出：
+ * - 干净 HTML（只有 class/style/attrs，无 data-content/data-event 等）
+ * - indexPath（有 name 的节点在 DOM 树中的位置路径）
+ * - nodeMetas（节点元信息：group/name/content/mode/events 等）
+ * - 事件模板（internal/external/bridge）
+ * - componentMap（type 节点的组件类映射）
  *
- * 转换规则：
- * - tag 节点 → HTML 元素，data-* 属性编码节点信息
- * - type 节点 → 占位 div，data-json 编码组件类型
- * - name/content → data-content 编码节点索引
- * - events → data-event 编码内部事件
- * - forwards → data-emit 编码转发事件
- * - bridges → data-bridge 编码桥接事件
+ * 设计约定：
+ * - 模板嵌套最多3层，超过就拆子组件（组件原子化）
+ * - indexPath 最多3个数字，定位开销极小
+ * - HTML 中不需要 data-* 属性回找节点，indexPath 已在拆解 JSON 时提取
+ *
+ * 向后兼容：
+ * - convertTemplate — 旧链路（HTML 中带 data-* 属性）
+ * - jsonTemplateToHtml — 旧版 JsonTemplateNode[] 格式
  */
 
-import type { TplNode, ComponentTemplate } from './template-types';
+import type { TplNode, ComponentTemplate, ContentInfo } from './template-types';
+import type { NodeIndexPath, NodeTemplateMeta } from './types';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate } from './template-compiler';
+import { parseEventAttr, parseBridgeEventAttr } from './template-compiler';
+
+// ─── compileTemplate 编译结果 ──────────────────────────────
 
 /**
- * JSON 模板转换结果
+ * compileTemplate 编译结果
+ *
+ * 一步到位，供 withTemplate 直接使用，无需再走 precompileTemplate
+ */
+export interface CompiledTemplateResult {
+    /** 干净 HTML 字符串（无 data-content/data-event 等属性） */
+    html: string;
+    /** 节点位置索引 — key=group:name, value=从根元素开始的子元素路径 */
+    indexPath: NodeIndexPath;
+    /** 节点模板元数据 — key=group:name */
+    templateMetas: Record<string, NodeTemplateMeta>;
+    /** 预编译的内部事件模板 */
+    internalEventTemplates: InternalEventTemplate[];
+    /** 预编译的外部事件模板 */
+    externalEventTemplates: ExternalEventTemplate[];
+    /** 预编译的桥接事件模板 */
+    bridgeEventTemplates: BridgeEventTemplate[];
+    /** 内容属性名列表（用于生成 getter/setter） */
+    contentPropNames: string[];
+    /** 内容节点信息数组 — 只收集有 content 语义的节点，运行时直接遍历 */
+    contentInfos: ContentInfo[];
+    /** 组件类映射 — name → ComponentClass */
+    componentMap: Record<string, new (props?: Record<string, any>) => any>;
+    /** 根节点 className — 应用到组件 el 上 */
+    rootClassName?: string;
+    /** 根节点 style — 应用到组件 el 上 */
+    rootStyle?: string;
+}
+
+// ─── 旧格式兼容类型 ──────────────────────────────────────
+
+/**
+ * JSON 模板转换结果（旧格式，向后兼容）
  */
 export interface TemplateConvertResult {
     /** 转换后的 HTML 字符串 */
@@ -28,7 +71,7 @@ export interface TemplateConvertResult {
 }
 
 /**
- * 模板节点元数据 — 从 TplNode 提取，不含 DOM 引用
+ * 模板节点元数据 — 从 TplNode 提取，不含 DOM 引用（旧格式，向后兼容）
  */
 export interface TplNodeMeta {
     /** nodeMap 索引键（group:name 格式） */
@@ -58,6 +101,8 @@ export interface TplNodeMeta {
     /** 子组件 props */
     props?: Record<string, any>;
 }
+
+// ─── 通用工具 ──────────────────────────────────────────────
 
 /** 自闭合标签集合 */
 const VOID_TAGS = new Set(['input', 'img', 'br', 'hr', 'col', 'area', 'base', 'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
@@ -102,12 +147,301 @@ function styleToString(style: Record<string, any>): string {
         .join(';');
 }
 
+// ─── compileTemplate — 核心编译函数 ──────────────────────────
+
 /**
- * 转换 ComponentTemplate 为 HTML + 元数据
+ * 编译 ComponentTemplate — 一步到位
+ *
+ * 递归遍历 TplNode 树，产出干净 HTML + indexPath + 元数据 + 事件模板。
+ * HTML 中不包含 data-content/data-event 等属性，
+ * 所有元信息在拆解 JSON 时直接提取，存到静态属性上。
  *
  * tpl 根节点不生成 HTML 元素（根元素由组件的 tag 属性创建），
  * 只转换 tpl.children 为内部 HTML 片段。
- * tpl 根节点的 className/style/attrs 等属性由组件实例自行处理。
+ */
+export function compileTemplate(template: ComponentTemplate, isMultiArea: boolean = false): CompiledTemplateResult {
+    const indexPath: NodeIndexPath = {};
+    const templateMetas: Record<string, NodeTemplateMeta> = {};
+    const internalEventTemplates: InternalEventTemplate[] = [];
+    const externalEventTemplates: ExternalEventTemplate[] = [];
+    const bridgeEventTemplates: BridgeEventTemplate[] = [];
+    const contentPropNames: string[] = [];
+    const contentInfos: ContentInfo[] = [];
+    const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};
+
+    // 根节点不生成 HTML，只转换 children
+    // 但根节点的 className/style 需要提取，应用到组件 el 上
+    const root = template.tpl;
+    const rootClassName = root.className;
+    const rootStyle = typeof root.style === 'string' ? root.style : root.style ? styleToString(root.style) : undefined;
+
+    const children = template.tpl.children || [];
+    const htmlParts: string[] = [];
+
+    for (let i = 0; i < children.length; i++) {
+        htmlParts.push(
+            compileNode(children[i], [i], isMultiArea, {
+                indexPath,
+                templateMetas,
+                internalEventTemplates,
+                externalEventTemplates,
+                bridgeEventTemplates,
+                contentPropNames,
+                contentInfos,
+                componentMap,
+            })
+        );
+    }
+
+    return {
+        html: htmlParts.join(''),
+        indexPath,
+        templateMetas,
+        internalEventTemplates,
+        externalEventTemplates,
+        bridgeEventTemplates,
+        contentPropNames,
+        contentInfos,
+        componentMap,
+        rootClassName,
+        rootStyle,
+    };
+}
+
+/** 编译上下文 — 避免递归传参过多 */
+interface CompileContext {
+    indexPath: NodeIndexPath;
+    templateMetas: Record<string, NodeTemplateMeta>;
+    internalEventTemplates: InternalEventTemplate[];
+    externalEventTemplates: ExternalEventTemplate[];
+    bridgeEventTemplates: BridgeEventTemplate[];
+    contentPropNames: string[];
+    contentInfos: ContentInfo[];
+    componentMap: Record<string, new (props?: Record<string, any>) => any>;
+}
+
+/**
+ * 递归编译单个 TplNode
+ *
+ * @param node - 模板节点
+ * @param path - 当前节点在 DOM 树中的位置路径（从根元素的 children 开始）
+ * @param isMultiArea - 是否多区域组件
+ * @param ctx - 编译上下文
+ * @returns 干净 HTML 字符串
+ */
+function compileNode(
+    node: TplNode,
+    path: number[],
+    isMultiArea: boolean,
+    ctx: CompileContext,
+): string {
+    // ─── type 节点（组件占位） ───
+
+    if (node.type) {
+        const nameStr = node.name || node.content || '';
+        const { group, name } = nameStr ? parseName(nameStr) : { group: '_', name: '_' };
+        const key = `${group}:${name}`;
+
+        // 记录 indexPath
+        ctx.indexPath[key] = path;
+
+        // 记录组件类映射
+        if (typeof node.type === 'string') {
+            ctx.componentMap[name] = (window as any)[node.type];
+        } else if (typeof node.type === 'function') {
+            ctx.componentMap[name] = node.type as any;
+        }
+
+        // 记录 templateMetas
+        const mode = 'html' as const;
+        ctx.templateMetas[key] = {
+            raw: key, group, name,
+            jsonRef: typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
+            jsonMode: node.replace !== undefined ? (node.replace ? 'replace' : 'child') : undefined,
+            i18nKey: node.i18n,
+            hidden: node.hidden,
+            mode,
+        };
+
+        // 推导内容属性名
+        const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
+        const propName = isMultiArea
+            ? `${group}${capitalName}`
+            : name === '_' ? group : name;
+        ctx.contentPropNames.push(propName);
+
+        // 收集内容节点信息
+        ctx.contentInfos.push({
+            group, name, mode,
+            i18nKey: node.i18n,
+            propName,
+        });
+
+        // 编译事件模板
+        compileEvents(node, key, group, name, ctx);
+
+        // 生成干净 HTML（只有 class/style，无 data-* 属性）
+        const attrs: string[] = [];
+        if (node.className) attrs.push(`class="${node.className}"`);
+        if (node.style) {
+            const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
+            attrs.push(`style="${styleStr}"`);
+        }
+        const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+
+        return `<div${attrStr}></div>`;
+    }
+
+    // ─── tag 节点（DOM 元素） ───
+
+    const tag = node.tag || 'div';
+    const attrs: string[] = [];
+
+    // 有 name 或 content 的节点 → 记录到 indexPath + templateMetas
+    const nameStr = node.name || node.content;
+    if (nameStr) {
+        const { group, name } = parseName(nameStr);
+        const key = `${group}:${name}`;
+
+        // 记录 indexPath
+        ctx.indexPath[key] = path;
+
+        // 记录 templateMetas
+        const mode = inferMode(tag);
+        ctx.templateMetas[key] = {
+            raw: key, group, name,
+            i18nKey: node.i18n,
+            hidden: node.hidden,
+            mode,
+        };
+
+        // 推导内容属性名
+        const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
+        const propName = isMultiArea
+            ? `${group}${capitalName}`
+            : name === '_' ? group : name;
+        ctx.contentPropNames.push(propName);
+
+        // 收集内容节点信息
+        ctx.contentInfos.push({
+            group, name, mode,
+            i18nKey: node.i18n,
+            propName,
+        });
+
+        // 编译事件模板
+        compileEvents(node, key, group, name, ctx);
+    }
+
+    // 生成干净 HTML 属性（只有 class/style/attrs，无 data-* 属性）
+    if (node.className) attrs.push(`class="${node.className}"`);
+    if (node.style) {
+        const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
+        attrs.push(`style="${styleStr}"`);
+    }
+    if (node.attrs) {
+        for (const [key, value] of Object.entries(node.attrs)) {
+            attrs.push(`${key}="${value}"`);
+        }
+    }
+
+    const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+
+    // 自闭合标签
+    if (VOID_TAGS.has(tag)) {
+        return `<${tag}${attrStr} />`;
+    }
+
+    // 子节点 + 文本
+    const inner: string[] = [];
+    if (node.text) inner.push(node.text);
+
+    if (node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+            inner.push(
+                compileNode(node.children[i], [...path, i], isMultiArea, ctx)
+            );
+        }
+    }
+
+    return `<${tag}${attrStr}>${inner.join('')}</${tag}>`;
+}
+
+/**
+ * 编译节点的事件模板
+ *
+ * 从 TplNode 的 events/forwards/bridges 提取事件信息，
+ * 生成预编译的事件模板，供运行时绑定使用。
+ */
+function compileEvents(
+    node: TplNode,
+    key: string,
+    group: string,
+    name: string,
+    ctx: CompileContext,
+): void {
+    const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
+
+    // 内部事件 → InternalEventTemplate
+    // handler 推导：click=title → onTitleClick，click → onClick
+    if (node.events?.length) {
+        for (const eventDecl of node.events) {
+            const parsed = parseEventAttr(eventDecl);
+            for (const { event, name: eventName, once, delegate, debounce, throttle } of parsed) {
+                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
+                const handlerName = eventName
+                    ? `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}${capitalEvent}`
+                    : `on${capitalEvent}`;
+
+                ctx.internalEventTemplates.push({
+                    event,
+                    handler: handlerName,
+                    once,
+                    delegate,
+                    debounce,
+                    throttle,
+                    nodeKey: key,
+                });
+            }
+        }
+    }
+
+    // 转发事件 → ExternalEventTemplate
+    if (node.forwards?.length) {
+        for (const forwardDecl of node.forwards) {
+            const parsed = parseEventAttr(forwardDecl);
+            for (const { event } of parsed) {
+                ctx.externalEventTemplates.push({
+                    emitKey: `${name}:${event}`,
+                    nodeKey: key,
+                });
+            }
+        }
+    }
+
+    // 桥接事件 → BridgeEventTemplate
+    if (node.bridges?.length) {
+        for (const bridgeDecl of node.bridges) {
+            const parsed = parseBridgeEventAttr(bridgeDecl);
+            for (const { sourceEvent, targetEvent, once } of parsed) {
+                ctx.bridgeEventTemplates.push({
+                    sourceEvent,
+                    targetEvent,
+                    once,
+                    nodeKey: key,
+                });
+            }
+        }
+    }
+}
+
+// ─── 向后兼容：旧链路 convertTemplate ──────────────────────
+
+/**
+ * 转换 ComponentTemplate 为 HTML + 元数据（旧链路，向后兼容）
+ *
+ * HTML 中包含 data-content/data-event 等属性，
+ * 供 precompileTemplate 链路解析。
  */
 export function convertTemplate(template: ComponentTemplate): TemplateConvertResult {
     const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};

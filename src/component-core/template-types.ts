@@ -30,10 +30,20 @@
 /**
  * 事件声明语法
  *
- * - 'click' — 事件源名
- * - 'click=close' — 源事件 click，映射为目标事件 close
+ * events（内部事件）：
+ * - 'click' — 绑定 click → onClick handler
+ * - 'click=title' — 绑定 click → onTitleClick handler（语义名区分同事件多节点）
  * - 'click?once' — 只触发一次
- * - 'click=close?once' — 映射 + 只触发一次
+ * - 'click=title?once' — 语义名 + 只触发一次
+ * - 'input,change=filter' — 多事件，逗号分隔
+ *
+ * forwards（转发事件）：
+ * - 'click' — 同名转发
+ * - 'click=close' — 重命名转发
+ *
+ * bridges（桥接事件）：
+ * - 'click' — 同名桥接
+ * - 'click=save' — 重命名桥接
  */
 export type EventDecl = string;
 
@@ -163,4 +173,29 @@ export interface ComponentTemplate {
 
     /** 复制到组件实例的属性和方法 */
     body?: Record<string, any>;
+}
+
+// ─── 内容节点信息 ──────────────────────────────────────────
+
+/**
+ * 内容节点信息 — 编译时收集，运行时直接遍历
+ *
+ * 只收集有 content 语义的节点（text/title/icon 等），
+ * 运行时无需遍历整个 nodeMap 再 if 过滤。
+ *
+ * 刷新逻辑：
+ * - i18nKey 有值 → 翻译后写入
+ * - i18nKey 无值 → 直接赋值（由 getter/setter 处理）
+ */
+export interface ContentInfo {
+    /** nodeMap 索引 — group */
+    group: string;
+    /** nodeMap 索引 — name */
+    name: string;
+    /** 内容操作模式 */
+    mode: 'value' | 'src' | 'html';
+    /** i18n 翻译 key，有值时需要翻译 */
+    i18nKey?: string;
+    /** 对应的属性名（如 'text'、'icon'、'dialogTitle'） */
+    propName: string;
 }

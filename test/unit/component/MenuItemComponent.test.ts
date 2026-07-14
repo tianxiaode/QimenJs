@@ -2,7 +2,7 @@
  * MenuItemComponent 单元测试
  *
  * 覆盖：构造函数、内容属性、disabled/hasSubmenu/checked/group 状态、
- *       onContentClick（分组切换+事件触发）、update、dispose
+ *       onClick（分组切换+事件触发）、update、dispose
  */
 
 jest.mock('@/logger', () => {
@@ -221,66 +221,66 @@ describe('MenuItemComponent', () => {
     });
 
     // ============================================
-    // onContentClick
+    // onClick
     // ============================================
 
-    describe('onContentClick', () => {
+    describe('onClick', () => {
         it('正常点击触发 onSelect', () => {
             const onSelect = jest.fn();
             const item = new MenuItemComponent({ onSelect }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).toHaveBeenCalledWith(item);
         });
 
         it('禁用时不触发 onSelect', () => {
             const onSelect = jest.fn();
             const item = new MenuItemComponent({ disabled: true, onSelect }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).not.toHaveBeenCalled();
         });
 
         it('有子菜单时不触发 onSelect', () => {
             const onSelect = jest.fn();
             const item = new MenuItemComponent({ hasSubmenu: true, onSelect }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).not.toHaveBeenCalled();
         });
 
         it('checkbox 分组点击切换 checked', () => {
             const item = new MenuItemComponent({ group: 'show', groupMode: 'checkbox' }) as any;
             expect(item.checked).toBe(false);
-            item.onContentClick();
+            item.onClick();
             expect(item.checked).toBe(true);
-            item.onContentClick();
+            item.onClick();
             expect(item.checked).toBe(false);
         });
 
         it('radio 分组点击未选中项设为选中', () => {
             const item = new MenuItemComponent({ group: 'view', groupMode: 'radio' }) as any;
             expect(item.checked).toBe(false);
-            item.onContentClick();
+            item.onClick();
             expect(item.checked).toBe(true);
         });
 
         it('radio 分组点击已选中项保持选中', () => {
             const item = new MenuItemComponent({ group: 'view', groupMode: 'radio', checked: true }) as any;
-            item.onContentClick();
+            item.onClick();
             expect(item.checked).toBe(true);
         });
 
-        it('有 eventKey 时触发 item:click 和 item:select 事件', () => {
+        it('有 eventKey 时触发 click 和 select 事件', () => {
             const item = new MenuItemComponent() as any;
             item.eventKey = 'item';
             const emitSpy = jest.spyOn(item, 'emit');
-            item.onContentClick();
-            expect(emitSpy).toHaveBeenCalledWith('item:click', { item });
-            expect(emitSpy).toHaveBeenCalledWith('item:select', { item });
+            item.onClick();
+            expect(emitSpy).toHaveBeenCalledWith('click', undefined, { source: 'item' });
+            expect(emitSpy).toHaveBeenCalledWith('select', undefined, { source: 'item' });
         });
 
         it('无 eventKey 时不触发外部事件', () => {
             const item = new MenuItemComponent() as any;
             const emitSpy = jest.spyOn(item, 'emit');
-            item.onContentClick();
+            item.onClick();
             expect(emitSpy).not.toHaveBeenCalled();
         });
     });
@@ -320,7 +320,7 @@ describe('MenuItemComponent', () => {
             const onSelect = jest.fn();
             const item = new MenuItemComponent() as any;
             item.update({ onSelect });
-            item.onContentClick();
+            item.onClick();
             expect(onSelect).toHaveBeenCalled();
         });
     });
