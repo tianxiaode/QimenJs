@@ -20,7 +20,7 @@ export { AccessibilityAbility, type AriaKey } from './abilities/AccessibilityAbi
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
 export { EntityCoreAbility, type EntityManager } from './abilities/EntityCoreAbility';
 export { PermissionAbility } from './abilities/PermissionAbility';
-export { EventBridgeAbility, type EventBridgeConfig, type PaginationBridgeConfig, type CrudBridgeConfig, type SelectionBridgeConfig, type SearchBridgeConfig, type CustomBridgeConfig } from './abilities/EventBridgeAbility';
+export { EventBridgeConfigAbility, type EventBridgeConfig, type PaginationBridgeConfig, type CrudBridgeConfig, type SelectionBridgeConfig, type SearchBridgeConfig, type CustomBridgeConfig } from './abilities/EventBridgeAbility';
 export { ThemeAbility } from './abilities/ThemeAbility';
 export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
@@ -45,12 +45,16 @@ export { positionOverlay } from './abilities/positionOverlay';
 export type { Placement } from './abilities/positionOverlay';
 
 // 模板编译
-export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplates, findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
-export type { InternalEventTemplate, ExternalEventTemplate, CompiledTemplate } from './template-compiler';
+export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplates, findByPath, computeNodePath, inferContentMode, parseEventAttr, parseBridgeEventAttr } from './template-compiler';
+export type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, CompiledTemplate } from './template-compiler';
 
 // JSON 模板
 export type { JsonTemplateNode, JsonTemplateResult } from './template-json';
 export { jsonTemplateToHtml } from './template-json';
+
+// 新模板类型
+export type { TplNode, ComponentTemplate, EventDecl } from './template-types';
+export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';

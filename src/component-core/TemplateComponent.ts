@@ -15,13 +15,13 @@
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { createForgedClass } from '@/composable/forge';
-import { EventAbility, DomEventsAbility } from '@/system-abilities';
+import { EventAbility, DomEventsAbility, EventBridgeAbility as SystemEventBridgeAbility } from '@/system-abilities';
 import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
 import { AccessibilityAbility } from './abilities/AccessibilityAbility';
 import { AnimationAbility } from './abilities/AnimationAbility';
 import { EntityCoreAbility } from './abilities/EntityCoreAbility';
 import { PermissionAbility } from './abilities/PermissionAbility';
-import { EventBridgeAbility } from './abilities/EventBridgeAbility';
+import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { ThemeAbility } from './abilities/ThemeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
@@ -37,8 +37,9 @@ import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, JsonTemplateNode } from './template-compiler';
-import { precompileTemplate, jsonTemplateToHtml } from './template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode } from './template-compiler';
+import type { ComponentTemplate } from './template-types';
+import { precompileTemplate, jsonTemplateToHtml, convertTemplate } from './template-compiler';
 import { buildContentProperties } from './content-properties';
 
 /**
@@ -46,10 +47,10 @@ import { buildContentProperties } from './content-properties';
  * 子类可在此基础上追加能力
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
-    EventAbility, DomEventsAbility,
+    EventAbility, DomEventsAbility, SystemEventBridgeAbility,
     PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
     AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
-    EventBridgeAbility, ThemeAbility,
+    EventBridgeConfigAbility, ThemeAbility,
     InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, TooltipAbility, BadgeAbility,
     DragAbility, DropAbility,
     TemplateAbility, LayoutAbility, ColorVariantAbility
@@ -185,51 +186,50 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     /**
      * 模板预编译工厂方法
      *
-     * 接收 HTML 模板字符串或 JSON 模板数组，在类定义时预编译提取节点数据，
-     * 生成带内容属性和事件模板的强类返回。
+     * 支持三种模板格式：
+     * 1. HTML 字符串 — 直接使用
+     * 2. 旧版 JsonTemplateNode[] — 向后兼容，自动转换
+     * 3. 新版 ComponentTemplate — 包含 tpl 根节点 + body 属性/方法
      *
-     * JSON 模板会自动转换为 HTML 字符串，再走原有 precompileTemplate 流程。
-     *
-     * 实例方法（_initWithTemplate、_initElementFromTemplate、_buildNodeMapFromCompiled）
-     * 由 TemplateAbility 提供，已包含在 TEMPLATE_COMPONENT_ABILITIES 中。
-     *
-     * 模板替换：在已有强类上再次调用 withTemplate，
-     * 新类继承旧类的自定义方法（如 onClick），但使用新模板。
-     *
-     * @param template - HTML 模板字符串或 JSON 模板数组
+     * @param template - HTML 字符串 / 旧版 JSON 模板数组 / 新版 ComponentTemplate
      * @returns 模板组件强类
      */
-    static withTemplate(this: any, template: string | JsonTemplateNode[]): any {
-        // JSON 模板 → HTML 字符串 + 组件类映射，再走原流程
+    static withTemplate(this: any, template: string | JsonTemplateNode[] | ComponentTemplate): any {
         let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
+        let body: Record<string, any> | undefined;
+
         const templateHtml = typeof template === 'string'
             ? template
-            : (() => {
-                const result = jsonTemplateToHtml(template);
-                jsonComponentMap = result.componentMap;
-                return result.html;
-            })();
+            : Array.isArray(template)
+                ? (() => {
+                    // 旧版 JsonTemplateNode[]
+                    const result = jsonTemplateToHtml(template);
+                    jsonComponentMap = result.componentMap;
+                    return result.html;
+                })()
+                : (() => {
+                    // 新版 ComponentTemplate
+                    const result = convertTemplate(template);
+                    jsonComponentMap = result.componentMap;
+                    body = template.body;
+                    return result.html;
+                })();
 
         // 预编译：创建临时 DOM 解析模板，提取节点数据
         const compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
 
         // 创建模板组件强类
-        // TemplateAbility 已在 TEMPLATE_COMPONENT_ABILITIES 中，基类原型已有 _initWithTemplate 等方法
         const TemplateClass = class extends this {
             constructor(props?: Record<string, any>) {
-                // 先调用 super，再读取 static 属性
                 super(props);
 
-                // 合并 defaults：static defaults 为基础，props 可覆盖
                 const ctor = this.constructor as any;
                 const mergedProps = ctor.defaults
                     ? { ...ctor.defaults, ...props }
                     : props;
 
-                // withTemplate 强类：构造时自动完成全部初始化
                 this._initWithTemplate(mergedProps);
 
-                // 设置组件类型（从 static type 读取）
                 if (ctor.type) this.type = ctor.type;
             }
 
@@ -248,49 +248,53 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             /** 预编译的外部事件模板（不含 node 引用） */
             static readonly _externalEventTemplates: ExternalEventTemplate[] = compiled.externalEventTemplates;
 
+            /** 预编译的桥接事件模板（不含 node 引用） */
+            static readonly _bridgeEventTemplates: BridgeEventTemplate[] = compiled.bridgeEventTemplates;
+
             /** 预编译的内容属性名列表 */
             static readonly _contentPropNames: string[] = compiled.contentPropNames;
 
-            /**
-             * 预编译的组件类映射 — name → ComponentClass
-             *
-             * 从 JSON 模板的 json 字段提取，当 json 为组件类引用时，
-             * key 为 data-content 的 name 部分，value 为组件类。
-             * 运行时 _renderChildComponents 使用此映射创建子组件实例。
-             */
+            /** 预编译的组件类映射 */
             static readonly _jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = jsonComponentMap;
 
-            /** 模板元素缓存（类级别共享，预编译时直接复用） */
+            /** 模板 body 定义（属性和方法，复制到组件实例） */
+            static readonly _templateBody: Record<string, any> | undefined = body;
+
+            /** 模板元素缓存 */
             static _templateCache: HTMLTemplateElement | null = compiled.templateCache;
 
-            /**
-             * 获取模板缓存
-             */
             static _getTemplateCache(): HTMLTemplateElement {
                 return this._templateCache!;
             }
 
-            /**
-             * 克隆模板 DocumentFragment
-             */
             static _cloneFragment(): DocumentFragment {
                 return this._getTemplateCache().content.cloneNode(true) as DocumentFragment;
             }
 
-            /**
-             * 创建新实例（克隆方式）
-             */
             static create(props?: Record<string, any>): any {
                 const instance = new (this as any)(props);
                 return instance;
             }
         };
 
-        // 在强类原型上生成内容 getter/setter（只做一次）
+        // 在强类原型上生成内容 getter/setter
         buildContentProperties(TemplateClass, compiled.templateMetas, this.isMultiArea ?? false);
 
-        // 挂载 .with() 静态方法，与 ComposableBase.with() / createForgedClass 一致
-        // 使 withTemplate 返回的强类支持链式追加能力
+        // 将 body 中的方法/属性复制到原型
+        if (body) {
+            const proto = TemplateClass.prototype;
+            for (const [key, value] of Object.entries(body)) {
+                if (typeof value === 'function') {
+                    proto[key] = value;
+                } else {
+                    // 非函数属性作为默认值，存到 static defaults
+                    if (!TemplateClass.defaults) TemplateClass.defaults = {};
+                    TemplateClass.defaults[key] = value;
+                }
+            }
+        }
+
+        // 挂载 .with() 静态方法
         (TemplateClass as any).with = function<Additional extends readonly AbilityDefinition[]>(
             ...additionalAbilities: Additional
         ): any {

@@ -30,7 +30,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { NodeIndexPath, NodeTemplateMeta, NodeMetadata } from '../types';
-import type { InternalEventTemplate, ExternalEventTemplate } from '../template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate } from '../template-compiler';
 import { findByPath, buildEventMapFromTemplates } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
@@ -114,6 +114,7 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 4. 事件绑定 ──
             this.bindInternalEvents();
             this.bindExternalEvents({ bridges: cfg.bridges } as any);
+            this.bindBridgeEvents();
             const listenConfig = this._extractBridgesOn(cfg.bridges);
             if (listenConfig) this.bindEventListen(listenConfig);
 
@@ -183,6 +184,9 @@ export const TemplateAbility: AbilityDefinition = {
         const internalTemplates: InternalEventTemplate[] = ctor._internalEventTemplates;
         const externalTemplates: ExternalEventTemplate[] = ctor._externalEventTemplates;
         this.eventMap = buildEventMapFromTemplates(internalTemplates, externalTemplates, this.nodeMap);
+
+        // 存储桥接事件模板，供 bindBridgeEvents 使用
+        this._bridgeEventTemplates = ctor._bridgeEventTemplates || [];
     },
 
     /**
@@ -240,12 +244,6 @@ export const TemplateAbility: AbilityDefinition = {
 
     /**
      * 遍历 nodeMap 递归销毁子组件
-     *
-     * 在 TemplateComponent.dispose 中调用，
-     * 确保所有 nodeMap 中的子组件被正确清理。
-     * 子组件的 dispose 会递归销毁其自身的 nodeMap 子组件。
-     *
-     * 不使用 onCleanup 注册，避免替换组件时回调累积无法取消。
      */
     _disposeChildComponents(): void {
         for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
@@ -254,6 +252,59 @@ export const TemplateAbility: AbilityDefinition = {
                     node.component.dispose();
                     node.component = null;
                 }
+            }
+        }
+    },
+
+    /**
+     * 绑定桥接事件
+     *
+     * 从预编译的桥接事件模板（_bridgeEventTemplates）构建绑定。
+     * 桥接事件通过 EventBridge 单例转发，使用组件的 eventKey 作为 sourceId。
+     *
+     * 绑定流程：
+     * 1. 子组件 DOM 事件触发 → 子组件内部 handler
+     * 2. 子组件 handler 中调用 this.emit() → 父组件 eventScope
+     * 3. 父组件 bindExternalEvents 捕获 → 调用 EventBridge.bridgeEmit()
+     *
+     * 但对于模板中声明了 bridges 的子组件，直接在子组件的 DOM 事件上
+     * 绑定桥接转发，跳过 eventScope 中转。
+     */
+    bindBridgeEvents(): void {
+        const templates: BridgeEventTemplate[] = this._bridgeEventTemplates;
+        if (!templates || templates.length === 0) return;
+
+        const eventKey = this.eventKey;
+        if (!eventKey) {
+            this.logger?.debug?.('[Template] bindBridgeEvents: no eventKey, skip');
+            return;
+        }
+
+        for (const tpl of templates) {
+            const [group, name] = tpl.nodeKey.split(':');
+            const node = this.nodeMap[group]?.[name];
+            if (!node) continue;
+
+            // 如果是子组件，在子组件上监听源事件，通过 EventBridge 转发
+            if (node.component) {
+                const off = node.component.on?.(tpl.sourceEvent, (ctx: any) => {
+                    const data = ctx?.data !== undefined ? ctx.data : ctx;
+                    this.bridgeEmit(eventKey, tpl.targetEvent, data);
+                });
+                if (typeof off === 'function') {
+                    this.onCleanup(off);
+                }
+            } else {
+                // DOM 节点：直接绑定 DOM 事件，通过 EventBridge 转发
+                const el = node.el;
+                if (!el) continue;
+
+                const handler = (domEvent: Event) => {
+                    this.bridgeEmit(eventKey, tpl.targetEvent, domEvent);
+                };
+
+                el.addEventListener(tpl.sourceEvent, handler);
+                this.onCleanup(() => el.removeEventListener(tpl.sourceEvent, handler));
             }
         }
     },

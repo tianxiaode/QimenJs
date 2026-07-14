@@ -268,15 +268,20 @@ export const InitAbility: AbilityDefinition = {
     bindInternalEvents(): void {
         this.logger?.debug?.('[Init] bindInternalEvents, count =', this.eventMap.internal.length, 'type =', (this.constructor as any).type, 'scopeId =', this.eventScope?.getScopeId?.());
         for (const binding of this.eventMap.internal) {
-            const { event, handler, once, delegate, delegateTarget, node } = binding;
+            const { event, handler, once, delegate, delegateTarget, debounce, throttle, node } = binding;
             // DOM 事件加前缀，避免与组件 emit 的同名事件冲突
             const domEvent = `${DOM_EVENT_PREFIX}${event}`;
 
-            this.logger?.debug?.('[Init] bindInternal, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'delegate =', delegate, 'node.el =', node.el?.tagName, 'inDOM =', document.contains(node.el));
+            this.logger?.debug?.('[Init] bindInternal, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'delegate =', delegate, 'debounce =', debounce, 'throttle =', throttle, 'node.el =', node.el?.tagName, 'inDOM =', document.contains(node.el));
+
+            // 构建 bind 选项
+            const bindOptions: any = {};
+            if (debounce && debounce > 0) bindOptions.debounce = debounce;
+            if (throttle && throttle > 0) bindOptions.throttle = throttle;
 
             if (delegate) {
                 // 事件委托模式
-                this.bind(node.el, event as any, { selector: delegateTarget });
+                this.bind(node.el, event as any, { ...bindOptions, selector: delegateTarget });
                 this.on(domEvent, (ctx: any) => {
                     const domEvt = this._extractDomEvent(ctx);
                     const target = delegateTarget
@@ -288,7 +293,7 @@ export const InitAbility: AbilityDefinition = {
                 });
             } else if (once) {
                 // 只触发一次
-                this.bind(node.el, event as any);
+                this.bind(node.el, event as any, bindOptions);
                 this.once(domEvent, (ctx: any) => {
                     const domEvt = this._extractDomEvent(ctx);
                     if (typeof (this as any)[handler] === 'function') {
@@ -297,7 +302,7 @@ export const InitAbility: AbilityDefinition = {
                 });
             } else {
                 // 常规绑定
-                this.bind(node.el, event as any);
+                this.bind(node.el, event as any, bindOptions);
                 this.on(domEvent, (ctx: any) => {
                     const domEvt = this._extractDomEvent(ctx);
                     if (typeof (this as any)[handler] === 'function') {

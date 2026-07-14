@@ -7,12 +7,12 @@
  * 通过 getEventBridge/setEventBridge 方法访问配置，
  * 不再将 eventBridge 属性暴露到组件顶层。
  *
- * 桥接监听策略（基于 source 查找组件实例）：
- * - router 源：通过 EventSourceRegistrar 查找 router 实例，
- *   在其 eventScope 上监听（scopeId 由 eventScope 内部自动绑定）
- * - 组件源：通过 ComponentRegistrar 查找源组件实例，
- *   在源组件的 eventScope 上监听（scopeId 由 eventScope 内部自动绑定）
- * - 不再直接使用 globalEventBus.on()，避免占用全局事件通道
+ * 桥接策略（基于 EventBridge 单例）：
+ * - 所有桥接事件通过 EventBridge 单例的统一 eventScope 收发
+ * - 发送方调用 EventBridge.bridgeEmit(sourceId, eventName, data)
+ * - 监听方调用 EventBridge.bridgeOn(sourceId, eventName, handler)
+ * - 发送和监听使用同一个 eventScope，scopeId 统一，事件路由可靠
+ * - 不再依赖源组件实例是否存在，监听方可先于发送方注册
  *
  * 内置桥接类型：
  * - pagination: 监听 pagechange → onPageChange
@@ -41,8 +41,6 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events';
-import { ComponentRegistrar } from '../ComponentRegistrar';
-import { EventSourceRegistrar } from '@qimenjs/events';
 
 /**
  * 分页桥接配置
@@ -148,7 +146,7 @@ function normalizeBridgeConfig(value: any): { source: string; [key: string]: any
     return null;
 }
 
-export const EventBridgeAbility: AbilityDefinition = {
+export const EventBridgeConfigAbility: AbilityDefinition = {
     /**
      * 获取事件桥接配置
      */
@@ -166,7 +164,8 @@ export const EventBridgeAbility: AbilityDefinition = {
     /**
      * 初始化事件桥接
      *
-     * 根据 eventBridge 配置，自动创建事件监听。
+     * 根据 eventBridge 配置，通过 EventBridge 单例创建事件监听。
+     * 所有监听注册在 EventBridge 的统一 eventScope 上，确保 scopeId 一致。
      * 组件 dispose 时通过 onCleanup 自动解绑。
      */
     initEventBridge(): void {
@@ -175,8 +174,6 @@ export const EventBridgeAbility: AbilityDefinition = {
 
         this.logger?.debug?.('[EventBridge] initEventBridge, config keys =', Object.keys(config));
 
-        const mgr = ComponentRegistrar.getInstance();
-
         // 分页桥接
         const paginationCfg = normalizeBridgeConfig(config.pagination);
         if (paginationCfg && paginationCfg.enabled !== false) {
@@ -184,7 +181,7 @@ export const EventBridgeAbility: AbilityDefinition = {
                 if (typeof this.onPageChange === 'function') {
                     this.onPageChange(e);
                 }
-            }, mgr);
+            });
         }
 
         // CRUD 桥接
@@ -199,7 +196,7 @@ export const EventBridgeAbility: AbilityDefinition = {
                 if (typeof (this as any)[methodName] === 'function') {
                     (this as any)[methodName](e);
                 }
-            }, mgr);
+            });
         }
 
         // 选择桥接
@@ -209,7 +206,7 @@ export const EventBridgeAbility: AbilityDefinition = {
                 if (typeof this.onSelectionChange === 'function') {
                     this.onSelectionChange(e);
                 }
-            }, mgr);
+            });
         }
 
         // 搜索桥接
@@ -219,7 +216,7 @@ export const EventBridgeAbility: AbilityDefinition = {
                 if (typeof this.onSearchChange === 'function') {
                     this.onSearchChange(e);
                 }
-            }, mgr);
+            });
         }
 
         // 自定义桥接
@@ -239,7 +236,7 @@ export const EventBridgeAbility: AbilityDefinition = {
                     if (typeof (this as any)[methodName] === 'function') {
                         (this as any)[methodName](e);
                     }
-                }, mgr);
+                });
             } else {
                 // 有 match：只监听 key:match值（如 change:product、click:submitBtn）
                 const suffixes = match.split(',').map((s: string) => s.trim()).filter(Boolean);
@@ -249,70 +246,33 @@ export const EventBridgeAbility: AbilityDefinition = {
                         if (typeof (this as any)[methodName] === 'function') {
                             (this as any)[methodName](e);
                         }
-                    }, mgr);
+                    });
                 }
             }
         }
     },
 
     /**
-     * 桥接监听：基于 source 查找组件实例，在其 eventScope 上注册事件
+     * 桥接监听：通过系统能力 this.bridgeOn() 注册事件
      *
-     * 监听策略：
-     * - router 源：通过 EventSourceRegistrar 查找 router 实例，在其 eventScope 上监听
-     * - 组件源：通过 ComponentRegistrar 查找源组件实例，在其 eventScope 上监听
-     * - scopeId 由 eventScope 内部自动绑定，无需手动传入
-     * - 通过 onCleanup 管理生命周期
+     * this.bridgeOn() 由 EventBridgeAbility（系统能力）提供，
+     * 内部调用 EventBridge 单例，自动管理生命周期。
      */
-    _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void, mgr: any): void {
+    _bridgeOn(sourceId: string, eventName: string, handler: (e: any) => void): void {
         this.logger?.debug?.('[EventBridge] _bridgeOn, sourceId =', sourceId, 'eventName =', eventName);
-
-        // router 源：通过 EventSourceRegistrar 查找 router 实例
-        if (sourceId === 'router') {
-            const routerSource = EventSourceRegistrar.getInstance().getComponent('router');
-            if (routerSource && typeof (routerSource as any).on === 'function') {
-                const off = (routerSource as any).on(eventName, (ctx: any) => {
-                    this.logger?.debug?.('[EventBridge] router event received, eventName =', eventName, 'data =', ctx.data !== undefined ? ctx.data : ctx);
-                    handler(ctx.data !== undefined ? ctx.data : ctx);
-                });
-                this.onCleanup(off);
-            } else {
-                this.logger?.debug?.('[EventBridge] router source NOT found');
-            }
-            return;
-        }
-
-        // 组件源：通过 ComponentRegistrar 查找源组件实例
-        const source = mgr.getInstance(sourceId);
-        if (!source) {
-            this.logger?.debug?.('[EventBridge] source component NOT found, sourceId =', sourceId);
-            return;
-        }
-
-        const off = source.on?.(eventName, (e: any) => {
-            this.logger?.debug?.('[EventBridge] component event received, sourceId =', sourceId, 'eventName =', eventName);
-            handler(e);
-        });
-
-        if (typeof off === 'function') {
-            this.onCleanup(off);
-        }
+        this.bridgeOn(sourceId, eventName, handler);
     },
 
     /**
      * 从 props 初始化
      *
-     * 使用 queueMicrotask 延迟绑定，确保同一轮 mount 的所有组件
-     * 都已注册到 ComponentRegistrar 后再查找源组件
+     * 不再需要 queueMicrotask 延迟绑定，因为 EventBridge 单例
+     * 不依赖源组件实例是否存在，监听方可先于发送方注册。
      */
     __initProps(props: Record<string, any>): void {
         if (props.eventBridge) {
             this.setEventBridge(props.eventBridge);
-            queueMicrotask(() => {
-                if (!this.destroyed) {
-                    this.initEventBridge();
-                }
-            });
+            this.initEventBridge();
         }
     },
 };

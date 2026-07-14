@@ -23,6 +23,10 @@ export interface InternalEventBinding {
     delegate?: boolean;
     /** 事件委托目标选择器（由 data-target 声明） */
     delegateTarget?: string;
+    /** 防抖时间（毫秒） */
+    debounce?: number;
+    /** 节流时间（毫秒） */
+    throttle?: number;
     /** 节点元数据引用 */
     node: NodeMetadata;
 }
@@ -126,6 +130,8 @@ export interface NodeTemplateMeta {
     eventAttr?: string;
     /** 外部事件属性值（data-emit 的原始值，如 "click"） */
     emitAttr?: string;
+    /** 桥接事件属性值（data-bridge 的原始值，如 "click=click:save"） */
+    bridgeAttr?: string;
     /** i18n 翻译 key（由 data-i18n 声明，如 "btn.save"） */
     i18nKey?: string;
     /** 初始隐藏状态（由 data-hidden 声明，运行时设置 el.hidden） */

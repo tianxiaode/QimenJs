@@ -1774,6 +1774,11 @@ renderer → layout, component, theme, pipeline, registry
 | 单次事件 | EventListen.once 字段 | EventBus.once 原生支持，bindEventListen 自动选择 on/once |
 | 条件执行 | 不提供 should，handler 内部 if | should 省不了一行代码，但增加框架复杂度 |
 | 事件同步/异步 | emit 同步，handler 可异步 | Promise 检测处理引用计数，不提供 emitAsync |
+| EventBridge | 全局单例 + 统一 eventScope | 解决发送方/监听方 eventScope 不同导致事件无法路由的问题 |
+| 三类事件分离 | events/forwards/bridges | 内部事件、eventScope 转发、EventBridge 桥接三种通信机制分离 |
+| 模板格式 | ComponentTemplate（新）+ JsonTemplateNode[]（旧） | 新格式 name/content 分离 + 三类事件 + body 定义，旧格式向后兼容 |
+| 事件修饰符 | ?once/?debounce=N/?throttle=N | 声明式事件修饰，debounce/throttle 仅限 events（DOM 事件层） |
+| events handler 推导 | 固定推导 click → onClick | 不支持 = 语法，需要自定义 handler 用 body 定义 |
 
 ## 十七、事件调度与组件通信
 
@@ -3013,6 +3018,151 @@ withTemplate 支持 JSON 模板数组（`JsonTemplateNode[]`），自动转换�
 | i18n | data-i18n | 国际化翻译 key |
 
 `jsonTemplateToHtml()` 返回 `{ html, componentMap }`，其中 componentMap 从 json 字段为组件类引用的节点提取 name → ComponentClass 映射。
+
+### 18.2 新版模板格式（ComponentTemplate）
+
+新版模板使用 `ComponentTemplate` 格式，相比旧版 `JsonTemplateNode[]` 有以下改进：
+
+- **name/content 分离** — `name` 做 nodeMap 索引键，`content` 做语义描述
+- **三类事件分离** — `events`/`forwards`/`bridges` 替代旧版 `event`/`emit`
+- **tag/type 互斥** — DOM 元素用 `tag`，组件占位用 `type`
+- **body 定义** — 模板可携带属性和方法，自动复制到组件实例
+
+```typescript
+interface TplNode {
+    tag?: string;           // DOM 标签（与 type 互斥）
+    type?: string;          // 组件类型（与 tag 互斥）
+    name?: string;          // nodeMap 索引键（group:name 格式）
+    content?: string;       // 语义描述（title/text/icon/value）
+    events?: EventDecl[];   // 内部事件 — 触发组件自身 handler
+    forwards?: EventDecl[]; // 转发事件 — 通过 eventScope 转发给持有方
+    bridges?: EventDecl[];  // 桥接事件 — 通过 EventBridge 跨组件通信
+    className?: string;     // CSS 类名
+    style?: string | Record<string, any>;
+    children?: TplNode[];
+    // ... 其他字段
+}
+
+interface ComponentTemplate {
+    tpl: TplNode;           // 根节点（不生成 HTML，根元素由组件 tag 创建）
+    body?: Record<string, any>;  // 属性和方法，复制到组件实例
+}
+```
+
+**新旧格式对比**：
+
+| 旧版 JsonTemplateNode[] | 新版 ComponentTemplate |
+|------------------------|----------------------|
+| `content: 'button:icon'` | `name: 'button:icon', content: 'icon'` |
+| `event: 'input'` | `events: ['input']` |
+| `emit: 'click'` | `forwards: ['click']` 或 `bridges: ['click']` |
+| `class: 'q-field'` | `className: 'q-field'` |
+| 无 body | `body: { onClick(e) { ... } }` |
+
+**事件声明语法**：
+
+| 字段 | 语法 | 示例 | 语义 |
+|------|------|------|------|
+| events | `eventName[?modifier]` | `'click'`, `'input?debounce=300'` | 内部事件，handler 名自动推导（click → onClick） |
+| forwards | `eventName[=targetName][?modifier]` | `'click'`, `'click=save'` | eventScope 转发，同名或重命名 |
+| bridges | `eventName[=targetName][?modifier]` | `'click'`, `'click=click:save'` | EventBridge 桥接，同名或重命名 |
+
+**事件修饰符**：
+
+| 修饰符 | 含义 | 适用字段 |
+|--------|------|---------|
+| `?once` | 只触发一次 | events/forwards/bridges |
+| `?debounce=N` | N 毫秒防抖 | events |
+| `?throttle=N` | N 毫秒节流 | events |
+
+**withTemplate 三格式支持**：
+
+```typescript
+// 格式 1：HTML 字符串
+TemplateComponent.withTemplate('<div data-content="x:label"></div>')
+
+// 格式 2：旧版 JsonTemplateNode[]（向后兼容）
+TemplateComponent.withTemplate([{ tag: 'span', content: 'x:label' }])
+
+// 格式 3：新版 ComponentTemplate
+TemplateComponent.withTemplate({
+    tpl: { tag: 'div', children: [
+        { tag: 'span', name: 'x:label', content: 'text' },
+    ]},
+    body: {
+        onClick(e) { /* ... */ },
+    },
+})
+```
+
+### 18.3 EventBridge 事件桥
+
+EventBridge 是全局单例，解决组件间 eventScope 不同导致事件无法路由的问题。发送方和监听方的 eventScope 不同，但都通过 EventBridge 的统一 eventScope 中转。
+
+**架构**：
+
+```
+发送方组件                    EventBridge（单例）                监听方组件
+eventScope A  ─bridgeEmit→  bridgeScope  ─bridgeOn→  eventScope B
+                              bridge:${sourceId}:${eventName}
+```
+
+**系统能力**：`EventBridgeAbility`（`src/system-abilities/system/`）提供组件实例方法：
+
+```typescript
+// 组件实例可直接调用
+this.bridgeEmit(eventKey, eventName, data);
+this.bridgeOn(sourceId, eventName, handler);
+this.bridgeOnce(sourceId, eventName, handler);
+```
+
+**配置能力**：`EventBridgeConfigAbility`（`src/component-core/abilities/`）提供声明式桥接配置：
+
+```typescript
+// LayoutNode 中声明式配置
+{
+    type: 'Toolbar',
+    props: {
+        eventBridge: {
+            pagination: { source: 'pager1' },
+            crud: { source: 'crud1' },
+        }
+    }
+}
+```
+
+**模板中声明桥接事件**：
+
+```typescript
+// 新版 ComponentTemplate
+{
+    tpl: {
+        tag: 'div',
+        children: [
+            { tag: 'button', name: 'btn:save', bridges: ['click=click:save'] },
+        ]
+    }
+}
+// → 点击按钮时 EventBridge.bridgeEmit(eventKey, 'click:save', data)
+```
+
+### 18.4 三类事件的设计原则
+
+| 类型 | 视角 | 通信范围 | 声明字段 | data-* 属性 |
+|------|------|---------|---------|------------|
+| events（内部事件） | 组件自身 | 组件内部 handler | `events: ['click']` | `data-event` |
+| forwards（转发事件） | 持有方 | 父组件 eventScope | `forwards: ['click=save']` | `data-emit` |
+| bridges（桥接事件） | 接收方 | EventBridge 全局 | `bridges: ['click=click:save']` | `data-bridge` |
+
+**选择原则**：
+- **events**：组件自身处理的事件（如 Input 的 input 事件 → 更新内部状态）
+- **forwards**：需要父组件响应的事件（如 Button 的 click → 父组件执行保存）
+- **bridges**：跨组件通信（如 Grid 选中 → 另一个组件过滤数据）
+
+**handler 推导规则**：
+- `events` 不支持 `=` 语法，handler 名固定推导：`click` → `onClick`
+- 支持 before/after 钩子：`beforeClick()` → `onClick()` → `afterClick()`
+- `forwards` 和 `bridges` 支持 `=` 重命名：`click=save` → 转发/桥接为 save 事件
 
 ### 18.2 子组件渲染（TemplateAbility._renderChildComponents）
 

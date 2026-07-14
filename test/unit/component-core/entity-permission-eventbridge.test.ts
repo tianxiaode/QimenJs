@@ -18,7 +18,7 @@ jest.mock('@/logger', () => {
 import { TemplateComponent } from '@/component-core';
 import { EntityCoreAbility } from '@/component-core/abilities/EntityCoreAbility';
 import { PermissionAbility } from '@/component-core/abilities/PermissionAbility';
-import { EventBridgeAbility } from '@/component-core/abilities/EventBridgeAbility';
+import { EventBridgeConfigAbility } from '@/component-core/abilities/EventBridgeAbility';
 import { mergePropAliases, applyPropAliases, getPropAliases, getInitProps, initAbilitiesFromProps } from '@/component-core/abilities/PropAlias';
 import type { AbilityDefinition } from '@/composable';
 
@@ -83,8 +83,8 @@ describe('PermissionAbility', () => {
 // EventBridgeAbility
 // ============================================
 
-describe('EventBridgeAbility', () => {
-    const BoxClass = TemplateComponent.withTemplate(TPL).with(EventBridgeAbility);
+describe('EventBridgeConfigAbility', () => {
+    const BoxClass = TemplateComponent.withTemplate(TPL).with(EventBridgeConfigAbility);
 
     it('getEventBridge / setEventBridge 读写', () => {
         const instance = new BoxClass() as any;

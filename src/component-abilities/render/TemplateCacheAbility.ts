@@ -10,7 +10,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { jsonTemplateToHtml, precompileTemplate, findByPath } from '@/component-core/template-compiler';
+import { jsonTemplateToHtml, convertTemplate, precompileTemplate, findByPath } from '@/component-core/template-compiler';
+import type { ComponentTemplate } from '@/component-core/template-types';
 import type { NodeIndexPath } from '@/component-core/types';
 
 // ─── 模板缓存条目 ──────────────────────────────────────────
@@ -46,8 +47,8 @@ export const TemplateCacheAbility: AbilityDefinition = {
     /**
      * 初始化模板缓存
      *
-     * 注册一个模板 key 及其 JSON 模板定义，自动构建缓存。
-     * 通常在构造函数中调用。
+     * 注册一个模板 key 及其模板定义，自动构建缓存。
+     * 支持 ComponentTemplate（新格式）和 JsonTemplateNode[]（旧格式）。
      */
     initTemplateCache(key: string, templateJson: any): void {
         this._templateJsons.set(key, templateJson);
@@ -67,9 +68,25 @@ export const TemplateCacheAbility: AbilityDefinition = {
 
     /**
      * 构建模板缓存：HTMLTemplateElement + 预编译节点索引
+     *
+     * 自动识别模板格式：
+     * - ComponentTemplate（有 tpl 字段）→ convertTemplate
+     * - JsonTemplateNode[]（数组）→ jsonTemplateToHtml
      */
     buildTemplateCache(key: string, templateJson: any): void {
-        const { html } = jsonTemplateToHtml(templateJson);
+        let html: string;
+
+        if (templateJson && typeof templateJson === 'object' && templateJson.tpl) {
+            // 新格式：ComponentTemplate
+            const result = convertTemplate(templateJson as ComponentTemplate);
+            html = result.html;
+        } else if (Array.isArray(templateJson)) {
+            // 旧格式：JsonTemplateNode[]
+            const result = jsonTemplateToHtml(templateJson);
+            html = result.html;
+        } else {
+            throw new Error(`[TemplateCacheAbility] Unsupported template format for key: ${key}`);
+        }
 
         // 预编译提取节点索引路径 + 复用模板元素缓存
         const compiled = precompileTemplate(html, false);

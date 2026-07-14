@@ -103,6 +103,21 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-14
+- EventBridge 升级为单例模式：新建 `src/events/EventBridge.ts`，统一 eventScope 解决发送方/监听方 eventScope 不同导致事件无法路由的问题
+- EventBridge 系统能力：新建 `src/system-abilities/system/EventBridgeAbility.ts`，提供 `this.bridgeEmit()`/`this.bridgeOn()`/`this.bridgeOnce()` 组件实例方法
+- EventBridge 配置能力重命名：`EventBridgeAbility` → `EventBridgeConfigAbility`（component-core/abilities/），内部改用 `this.bridgeOn()`
+- 新版模板格式：新建 `template-types.ts`（TplNode/ComponentTemplate），name/content 分离 + events/forwards/bridges 三类事件 + body 定义
+- 模板转换重写：`template-json.ts` 新增 `convertTemplate()` 支持 ComponentTemplate → HTML，`tpl` 根节点不生成 HTML（根元素由组件 tag 创建）
+- 预编译扩展：`template-compiler.ts` 新增 BridgeEventTemplate/parseBridgeEventAttr/data-bridge 支持，parseEventAttr 支持 `?debounce=N`/`?throttle=N` 修饰符
+- 类型扩展：`types.ts` NodeTemplateMeta 增加 bridgeAttr，InternalEventBinding 增加 debounce/throttle 字段
+- withTemplate 三格式支持：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate
+- TemplateAbility 新增 `bindBridgeEvents()` 方法，桥接事件通过 EventBridge 单例转发
+- InitAbility `bindInternalEvents` 传递 debounce/throttle 给 `this.bind()`
+- 模板预设全量迁移：`template-presets.ts` 从 JsonTemplateNode[] 迁移到 ComponentTemplate 格式
+- TemplateCacheAbility 支持新格式自动识别（有 tpl 字段 → convertTemplate，数组 → jsonTemplateToHtml）
+- 修复测试文件：`entity-permission-eventbridge.test.ts` EventBridgeAbility → EventBridgeConfigAbility
+
 ### 2026-07-13
 - 导航组件：新增 NavItemComponent（withTemplate + eventKey 事件转发，text/icon/active/disabled）
 - 导航组件：新增 NavItemGroupComponent（继承 ItemGroupComponent，eventKey='nav'，selectAt/clearSelection/activeIndex）

@@ -25,6 +25,10 @@ export interface InternalEventTemplate {
     once?: boolean;
     delegate?: boolean;
     delegateTarget?: string;
+    /** 防抖时间（毫秒） */
+    debounce?: number;
+    /** 节流时间（毫秒） */
+    throttle?: number;
     /** 对应 nodeMap 中的 group:name key，用于查找 node */
     nodeKey: string;
 }
@@ -40,6 +44,20 @@ export interface ExternalEventTemplate {
 }
 
 /**
+ * 预编译的桥接事件模板 — 不含 node 引用，实例化时填入
+ */
+export interface BridgeEventTemplate {
+    /** 桥接源事件名 */
+    sourceEvent: string;
+    /** 桥接目标事件名（如 click:save） */
+    targetEvent: string;
+    /** 是否只触发一次 */
+    once?: boolean;
+    /** 对应 nodeMap 中的 group:name key，用于查找 node */
+    nodeKey: string;
+}
+
+/**
  * 预编译结果
  */
 export interface CompiledTemplate {
@@ -47,6 +65,7 @@ export interface CompiledTemplate {
     templateMetas: Record<string, NodeTemplateMeta>;
     internalEventTemplates: InternalEventTemplate[];
     externalEventTemplates: ExternalEventTemplate[];
+    bridgeEventTemplates: BridgeEventTemplate[];
     contentPropNames: string[];
     /** 预编译的模板元素缓存，可直接用作 _templateCache */
     templateCache: HTMLTemplateElement;
@@ -84,6 +103,7 @@ export function precompileTemplate(
     const contentPropNames: string[] = [];
     const internalEventTemplates: InternalEventTemplate[] = [];
     const externalEventTemplates: ExternalEventTemplate[] = [];
+    const bridgeEventTemplates: BridgeEventTemplate[] = [];
 
     for (const el of els) {
         const htmlEl = el as HTMLElement;
@@ -105,10 +125,11 @@ export function precompileTemplate(
         const hidden = hiddenAttr === 'true';
         const eventAttr = htmlEl.getAttribute('data-event') || undefined;
         const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
+        const bridgeAttr = htmlEl.getAttribute('data-bridge') || undefined;
 
         templateMetas[key] = {
             raw: value, group, name, delegateTarget, jsonRef, jsonMode,
-            templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
+            templateRef, mode, eventAttr, emitAttr, bridgeAttr, i18nKey, hidden,
         };
 
         // 计算节点路径（相对于 pathRoot，与 _buildNodeMapFromCompiled 中 this.el 结构一致）
@@ -128,13 +149,15 @@ export function precompileTemplate(
                 : `on${name === '_' ? group.charAt(0).toUpperCase() + group.slice(1) : capitalName}`;
 
             const parsed = parseEventAttr(eventAttr);
-            for (const { event, once, delegate } of parsed) {
+            for (const { event, once, delegate, debounce, throttle } of parsed) {
                 internalEventTemplates.push({
                     event,
                     handler: handlerName,
                     once,
                     delegate,
                     delegateTarget,
+                    debounce,
+                    throttle,
                     nodeKey: key,
                 });
             }
@@ -150,9 +173,22 @@ export function precompileTemplate(
                 });
             }
         }
+
+        // 预编译桥接事件模板
+        if (bridgeAttr) {
+            const parsed = parseBridgeEventAttr(bridgeAttr);
+            for (const { sourceEvent, targetEvent, once } of parsed) {
+                bridgeEventTemplates.push({
+                    sourceEvent,
+                    targetEvent,
+                    once,
+                    nodeKey: key,
+                });
+            }
+        }
     }
 
-    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, contentPropNames, templateCache: tpl };
+    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, bridgeEventTemplates, contentPropNames, templateCache: tpl };
 }
 
 /**
@@ -180,13 +216,15 @@ export function precompileEventTemplates(
                 : `on${meta.name === '_' ? meta.group.charAt(0).toUpperCase() + meta.group.slice(1) : capitalName}`;
 
             const parsed = parseEventAttr(meta.eventAttr);
-            for (const { event, once, delegate } of parsed) {
+            for (const { event, once, delegate, debounce, throttle } of parsed) {
                 internalEventTemplates.push({
                     event,
                     handler: handlerName,
                     once,
                     delegate,
                     delegateTarget: meta.delegateTarget,
+                    debounce,
+                    throttle,
                     nodeKey: key,
                 });
             }
@@ -232,6 +270,8 @@ export function buildEventMapFromTemplates(
             once: tpl.once,
             delegate: tpl.delegate,
             delegateTarget: tpl.delegateTarget,
+            debounce: tpl.debounce,
+            throttle: tpl.throttle,
             node,
         });
     }
@@ -294,16 +334,29 @@ export function inferContentMode(el: HTMLElement): 'value' | 'src' | 'html' {
  * 解析事件属性值（data-event / data-emit 通用）
  *
  * 格式：逗号分隔的事件类型，每个可带 ? 修饰符
- * 示例："click?once", "tap?once&delegate", "input,change"
+ * 修饰符：
+ * - once：只触发一次
+ * - delegate：事件委托
+ * - debounce=N：N 毫秒防抖
+ * - throttle=N：N 毫秒节流
+ *
+ * 示例：
+ * - "click?once"
+ * - "click?debounce=300"
+ * - "click?once&debounce=300"
+ * - "input?throttle=100"
+ * - "input,change"
  */
-export function parseEventAttr(eventAttr: string): Array<{ event: string; once?: boolean; delegate?: boolean }> {
-    const results: Array<{ event: string; once?: boolean; delegate?: boolean }> = [];
+export function parseEventAttr(eventAttr: string): Array<{ event: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> {
+    const results: Array<{ event: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> = [];
     const parts = eventAttr.split(',').map(s => s.trim()).filter(Boolean);
 
     for (const part of parts) {
         let event: string;
         let once = false;
         let delegate = false;
+        let debounce: number | undefined;
+        let throttle: number | undefined;
 
         const questionIndex = part.indexOf('?');
         if (questionIndex !== -1) {
@@ -311,13 +364,19 @@ export function parseEventAttr(eventAttr: string): Array<{ event: string; once?:
             const modifiers = part.slice(questionIndex + 1).split('&');
             for (const mod of modifiers) {
                 if (mod === 'once') once = true;
-                if (mod === 'delegate') delegate = true;
+                else if (mod === 'delegate') delegate = true;
+                else if (mod.startsWith('debounce=')) {
+                    debounce = parseInt(mod.slice(9), 10);
+                }
+                else if (mod.startsWith('throttle=')) {
+                    throttle = parseInt(mod.slice(9), 10);
+                }
             }
         } else {
             event = part.trim();
         }
 
-        results.push({ event, once, delegate });
+        results.push({ event, once, delegate, debounce, throttle });
     }
 
     return results;
@@ -326,3 +385,52 @@ export function parseEventAttr(eventAttr: string): Array<{ event: string; once?:
 // JSON 模板（从 template-json.ts 拆分）
 export type { JsonTemplateNode } from './template-json';
 export { jsonTemplateToHtml } from './template-json';
+
+// 新模板类型
+export type { TplNode, ComponentTemplate, EventDecl } from './template-types';
+export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
+
+/**
+ * 解析桥接事件属性值（data-bridge）
+ *
+ * 格式：逗号分隔的事件声明
+ * - 'click' → 源事件 click，目标事件 click
+ * - 'click=click:save' → 源事件 click，目标事件 click:save
+ * - 'click?once' → 只触发一次
+ * - 'click=click:save?once' → 映射 + 只触发一次
+ */
+export function parseBridgeEventAttr(bridgeAttr: string): Array<{ sourceEvent: string; targetEvent: string; once?: boolean }> {
+    const results: Array<{ sourceEvent: string; targetEvent: string; once?: boolean }> = [];
+    const parts = bridgeAttr.split(',').map(s => s.trim()).filter(Boolean);
+
+    for (const part of parts) {
+        let sourceEvent: string;
+        let targetEvent: string;
+        let once = false;
+
+        // 先分离 ?once 修饰符
+        let eventPart = part;
+        const questionIndex = part.indexOf('?');
+        if (questionIndex !== -1) {
+            eventPart = part.slice(0, questionIndex).trim();
+            const modifiers = part.slice(questionIndex + 1).split('&');
+            for (const mod of modifiers) {
+                if (mod === 'once') once = true;
+            }
+        }
+
+        // 解析 source=target
+        const equalIndex = eventPart.indexOf('=');
+        if (equalIndex !== -1) {
+            sourceEvent = eventPart.slice(0, equalIndex).trim();
+            targetEvent = eventPart.slice(equalIndex + 1).trim();
+        } else {
+            sourceEvent = eventPart;
+            targetEvent = eventPart;
+        }
+
+        results.push({ sourceEvent, targetEvent, once });
+    }
+
+    return results;
+}

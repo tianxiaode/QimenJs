@@ -405,10 +405,18 @@ class Home extends TemplateComponent.withTemplate(tpl) {
 
 ## 11. JSON 模板
 
-withTemplate 支持 JSON 模板数组（`JsonTemplateNode[]`），替代手写 HTML 字符串：
+withTemplate 支持三种模板格式：
+
+### 11.1 HTML 字符串（原始格式）
 
 ```typescript
-import { TemplateComponent } from '@qimenjs/component-core';
+const TEMPLATE = '<div data-content="x:label"></div>';
+class MyComponent extends TemplateComponent.withTemplate(TEMPLATE) { }
+```
+
+### 11.2 旧版 JsonTemplateNode[]（向后兼容）
+
+```typescript
 import type { JsonTemplateNode } from '@qimenjs/component-core';
 
 const BUTTON_TEMPLATE: JsonTemplateNode[] = [
@@ -440,6 +448,81 @@ class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
 | `text` | — | 文本内容 |
 | `attrs` | — | 其他 HTML 属性 |
 | `children` | — | 子节点 |
+
+### 11.3 新版 ComponentTemplate（推荐）
+
+```typescript
+import type { ComponentTemplate } from '@qimenjs/component-core';
+
+const BUTTON_TEMPLATE: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        children: [
+            { tag: 'span', name: 'button:icon', content: 'icon' },
+            { tag: 'span', name: 'button:text', content: 'text' },
+        ]
+    },
+    body: {
+        onClick(e) { /* ... */ },
+    },
+};
+
+class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) { }
+```
+
+**新格式改进**：
+
+| 改进 | 旧版 | 新版 |
+|------|------|------|
+| 索引键与语义分离 | `content: 'button:icon'` | `name: 'button:icon', content: 'icon'` |
+| 三类事件分离 | `event`/`emit` | `events`/`forwards`/`bridges` |
+| CSS 类名 | `class`（JS 保留字） | `className` |
+| 模板携带方法 | 不支持 | `body: { onClick() {} }` |
+| 组件占位 | `json` 字段 | `type` 字段（与 tag 互斥） |
+
+**三类事件**：
+
+| 字段 | 语义 | 示例 | 说明 |
+|------|------|------|------|
+| `events` | 内部事件 | `['click']` | handler 名自动推导：click → onClick |
+| `forwards` | 转发事件 | `['click=save']` | 通过 eventScope 转发给持有方 |
+| `bridges` | 桥接事件 | `['click=click:save']` | 通过 EventBridge 跨组件通信 |
+
+**事件修饰符**：
+
+```typescript
+events: ['click?once'],           // 只触发一次
+events: ['input?debounce=300'],   // 300ms 防抖
+events: ['scroll?throttle=100'],  // 100ms 节流
+events: ['click?once&debounce=300'], // 组合修饰符
+```
+
+**forwards/bridges 重命名**：
+
+```typescript
+forwards: ['click'],           // 同名转发：component.on('click', fn)
+forwards: ['click=save'],      // 重命名转发：component.on('save', fn)
+bridges: ['click'],            // 同名桥接：bridgeEmit(eventKey, 'click', data)
+bridges: ['click=save'],       // 重命名桥接：bridgeEmit(eventKey, 'save', data)
+bridges: ['click=click:save'], // 带命名空间桥接：bridgeEmit(eventKey, 'click:save', data)
+```
+
+**body 定义**：
+
+```typescript
+const TEMPLATE: ComponentTemplate = {
+    tpl: { tag: 'div', children: [...] },
+    body: {
+        // 方法 → 复制到原型
+        onClick(e) { this.save(); },
+        beforeClick(e) { this.validate(); },
+
+        // 非函数属性 → 存到 static defaults
+        defaultValue: '',
+        maxItems: 100,
+    },
+};
+```
 
 **JSON 模板中声明子组件占位节点**：
 
