@@ -186,6 +186,64 @@
     word-break: break-all;
 }
 
+/* ===== 图标对比页 ===== */
+
+.icon-compare-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.compare-desc {
+    color: var(--q-colors-text-secondary);
+    margin-bottom: var(--q-spacing-lg);
+}
+
+.compare-panels {
+    display: flex;
+    gap: var(--q-spacing-lg);
+}
+
+.compare-panel {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--q-colors-border-light);
+    border-radius: var(--q-radius-lg);
+    padding: var(--q-spacing-lg);
+    background: var(--q-colors-bg);
+}
+
+.compare-panel h3 {
+    font-size: var(--q-font-size-lg);
+    font-weight: var(--q-font-weight-bold);
+    color: var(--q-colors-primary);
+    margin-bottom: var(--q-spacing-md);
+    padding-bottom: var(--q-spacing-sm);
+    border-bottom: 2px solid var(--q-colors-primary);
+    text-align: center;
+}
+
+.svg-panel h3::before {
+    content: '🎨 ';
+}
+
+.font-panel h3::before {
+    content: '🔤 ';
+}
+
+.svg-icon-wrap {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--q-colors-primary, #C41A1A);
+}
+
+.svg-icon-wrap svg {
+    width: 24px;
+    height: 24px;
+}
+
 /* ===== 主题页 ===== */
 
 .theme-page {

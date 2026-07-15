@@ -40,6 +40,7 @@ import { Router } from '@qimenjs/router';
 import { HomePage } from './pages/home';
 import { IconsPage } from './pages/icons';
 import { ThemePage } from './pages/theme';
+import { IconComparePage } from './pages/icon-compare';
 
 // ─── AppShell：声明式应用壳，基本不用写逻辑 ───
 
@@ -65,17 +66,18 @@ class AppShell extends TemplateComponent.withTemplate({
             eventKey: 'abc',
             direction: 'vertical',
             gap: '0',
-            pathIndex: { '/': 0, '/icons': 1, '/theme': 2 },
-            indexPath: ['/', '/icons', '/theme'],
+            pathIndex: { '/': 0, '/icons': 1, '/theme': 2, '/compare': 3 },
+            indexPath: ['/', '/icons', '/theme', '/compare'],
             items: [
                 { text: '首页', icon: '<i class="q-icon-home"></i>', active: true },
                 { text: '图标库', icon: '<i class="q-icon-dragon"></i>' },
                 { text: '主题', icon: '<i class="q-icon-yin-yang"></i>' },
+                { text: 'SVG vs 字体', icon: '<i class="q-icon-search"></i>' },
             ],
             activeIndex: 0,
         },
         page: {
-            routeMap: { '/': HomePage, '/icons': IconsPage, '/theme': ThemePage },
+            routeMap: { '/': HomePage, '/icons': IconsPage, '/theme': ThemePage, '/compare': IconComparePage },
             defaultComponent: HomePage,
         },
     };
@@ -95,7 +97,7 @@ function bootstrap(): void {
 
     // 初始化路由
     const router = Router.getInstance();
-    router.register({ '/': 'home', '/icons': 'icons', '/theme': 'theme' });
+    router.register({ '/': 'home', '/icons': 'icons', '/theme': 'theme', '/compare': 'compare' });
     router.start(true); // hashMode = true
 
     // 创建 AppShell 实例
