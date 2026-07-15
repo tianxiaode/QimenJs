@@ -259,10 +259,26 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                 // v2 模式：propsDef 存在时启用
                 if (ctor._propsDef) {
-                    // v2: props 合并（defaults ← propsDef, 覆盖 ← 用户传入）
+                    // v2: 参数结构 { props, childProps, body }
+                    // props: 组件自身属性，与 _propsDef 合并
+                    // childProps: 子节点配置，递归传递
+                    // body: 行为/方法
+                    const userProps = (props as any)?.props;
+                    const userChildProps = (props as any)?.childProps;
+                    const userBody = (props as any)?.body;
+
+                    // 简写兼容：如果参数没有 props/childProps/body 层，视为纯 props
+                    const isStructured = userProps !== undefined || userChildProps !== undefined || userBody !== undefined;
+                    const flatProps = isStructured ? userProps : props;
+
                     const mergedProps = ctor._propsDef
-                        ? { ...ctor._propsDef, ...props }
-                        : props;
+                        ? { ...ctor._propsDef, ...flatProps }
+                        : flatProps;
+
+                    // childProps 和 body 挂到 mergedProps 上
+                    if (userChildProps) mergedProps.childProps = userChildProps;
+                    if (userBody) Object.assign(mergedProps, userBody);
+
                     this._initWithTemplate(mergedProps);
                 } else {
                     // v1 旧模式：defaults 驱动
