@@ -9,8 +9,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { LayoutNode, HandlerConfig, EventListen, BridgesConfig, LifecycleHooks } from '@/layout/LayoutNode';
-import { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS } from '@/layout/layout-keys';
+import type { HandlerConfig, EventListen, BridgesConfig, LifecycleHooks } from '../layout-types';
+import { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS } from '../layout-types';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import type { AnimationKey } from './AnimationAbility';
@@ -26,7 +26,7 @@ export const InitAbility: AbilityDefinition = {
      * 初始化期间 _initializing=true，setProp 只存值不触发 markDirty/flush。
      * 初始化结束后执行一次 flush 将所有属性统一写入 DOM。
      */
-    initialize(layout: LayoutNode): void {
+    initialize(layout: Record<string, any>): void {
         this._initializing = true;
 
         try {
@@ -81,7 +81,7 @@ export const InitAbility: AbilityDefinition = {
     /**
      * 配置初始化 — abilities 注入、extraFns 绑定、entity 实例化、eventBridge 存储、meta 复制
      */
-    initConfig(layout: LayoutNode): void {
+    initConfig(layout: Record<string, any>): void {
         if (layout.abilities) {
             this.setupAbilities(layout.abilities);
         }
@@ -142,7 +142,7 @@ export const InitAbility: AbilityDefinition = {
      * 纯赋值属性（Position/Style/Accessibility/Tooltip/Badge/Permission/ColorVariant）
      * 已移除，v2 由 props/content 直接驱动。
      */
-    assignProps(layout: LayoutNode): void {
+    assignProps(layout: Record<string, any>): void {
         // AnimationProps — 有行为，通过 setAnimation 设置
         for (const key of ANIMATION_KEYS) {
             if ((layout as any)[key] !== undefined) {
@@ -175,7 +175,7 @@ export const InitAbility: AbilityDefinition = {
     /**
      * 事件绑定 — 整合内部事件、外部事件、handlers、bridges
      */
-    bindEvents(layout: LayoutNode): void {
+    bindEvents(layout: Record<string, any>): void {
         this.bindInternalEvents();
         this.bindExternalEvents(layout);
 
@@ -282,7 +282,7 @@ export const InitAbility: AbilityDefinition = {
      *    'saveBtn:tap' → 'onSaveBtnTap'
      * 3. 默认 → 走事件桥 emitUI 发布
      */
-    bindExternalEvents(layout: LayoutNode): void {
+    bindExternalEvents(layout: Record<string, any>): void {
         const bridges = new Set<string>(this._extractBridgesEmit(layout.bridges));
 
         this.logger?.debug?.('[Init] bindExternalEvents, count =', Object.keys(this.eventMap.external).length, 'bridgeEmits =', [...bridges]);
@@ -342,9 +342,9 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 绑定 LayoutNode handlers — 声明式 DOM 事件绑定
+     * 绑定 handlers — 声明式 DOM 事件绑定
      */
-    bindHandlers(handlers: NonNullable<LayoutNode['handlers']>): void {
+    bindHandlers(handlers: Record<string, any>): void {
         for (const [semantic, handlerDef] of Object.entries(handlers)) {
             const resolved = this.resolveHandler(handlerDef);
             if (!resolved) continue;

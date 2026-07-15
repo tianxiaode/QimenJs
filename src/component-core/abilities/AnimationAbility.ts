@@ -11,7 +11,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { AnimationProps } from '@/layout/LayoutNode';
+import type { AnimationProps } from '../layout-types';
 
 /**
  * 支持的动画 key 类型

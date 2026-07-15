@@ -5,15 +5,13 @@
  * 事件名由路径转换而来（/ → :），监听方自行处理。
  */
 
-import type { LayoutNode } from '@qimenjs/layout';
-
 /**
  * 路由配置 — 路由字典的值类型
  *
- * 保留 LayoutNode 和字符串形式供路由字典声明使用，
+ * 保留 Record<string, any> 和字符串形式供路由字典声明使用，
  * 但 Router 不再解析这些配置，只负责发出路径对应的事件。
  */
-export type RouteConfig = LayoutNode | string;
+export type RouteConfig = Record<string, any> | string;
 
 /**
  * 路由字典 — 路径到配置的映射

@@ -53,7 +53,6 @@
       "@qimenjs/component-abilities/*": ["src/component-abilities/*"],
       "@qimenjs/component-core": ["src/component-core"],
       "@qimenjs/component": ["src/component"],
-      "@qimenjs/layout": ["src/layout"],
       "@qimenjs/imperative": ["src/imperative"],
       "@qimenjs/router": ["src/router"]
     }

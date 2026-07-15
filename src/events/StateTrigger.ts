@@ -1,7 +1,7 @@
 import type { EventContext } from '@/context';
 import { globalEventBus, EventSourceRegistrar } from '@/events';
 import { EventFlowRegistrar } from './EventFlowRegistrar';
-import type { EventListen } from '../layout/LayoutNode';
+import type { EventListen } from '../component-core/layout-types';
 
 /**
  * 绑定事件监听（bridges.on）
