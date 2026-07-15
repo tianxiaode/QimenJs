@@ -41,7 +41,7 @@ export function bindEventListens(
                     offs.push(off);
                     subscriptions.push({
                         component,
-                        event,
+                        event: `${listen.source}:${event}`,
                         handler: handlerName,
                         off,
                     });
@@ -55,7 +55,7 @@ export function bindEventListens(
                     offs.push(off);
                     subscriptions.push({
                         component,
-                        event,
+                        event: `${listen.source}:${event}`,
                         handler: handlerName,
                         off,
                     });

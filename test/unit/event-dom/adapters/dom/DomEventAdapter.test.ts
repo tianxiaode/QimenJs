@@ -258,7 +258,7 @@ describe('DomEventAdapter', () => {
             return new Promise(resolve => {
                 setTimeout(() => {
                     expect(emitSpy).toHaveBeenCalledWith(
-                        'tap',
+                        'dom:tap',
                         { semantic: 'tap', x: 100, y: 100 },
                         expect.objectContaining({ source: undefined })
                     );
@@ -334,7 +334,7 @@ describe('DomEventAdapter', () => {
 
             // 验证通过 scope.emit 发射了 InputSignal 事件
             expect(emitSpy).toHaveBeenCalledWith(
-                'focus',
+                'dom:focus',
                 expect.objectContaining({
                     signal: 'focus',
                     originalEvent: mockEvent,

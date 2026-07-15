@@ -56,6 +56,9 @@ export const TemplateAbility: AbilityDefinition = {
     _initWithTemplate(props?: Record<string, any>): void {
         this._initializing = true;
 
+        // 保存 props 到实例
+        if (props) this.props = { ...this.props, ...props };
+
         // 合并配置：static 属性为基础，props 可覆盖
         const ctor = this.constructor as any;
         const cfg: Record<string, any> = {

@@ -124,7 +124,6 @@ export class EventBus {
             this.handlerScopes.set(handler, scopeId);
         }
 
-        console.log('[EventBus.on]', event, 'scopeId=', scopeId || 'NO_SCOPE', 'listenerCount=', set.size);
         this.logBus('debug', 'on', { event: String(event), scopeId: scopeId || 'NO_SCOPE', listenerCount: set.size });
 
         return () => {
@@ -201,7 +200,6 @@ export class EventBus {
             };
 
         const emitScopeId = context.scopeId || scopeId;
-        console.log('[EventBus.emit]', event, 'emitScopeId=', emitScopeId, 'isPrebuiltContext=', isPrebuiltContext, 'listenersCount=', this.listeners.get(event)?.size);
 
         const handlers = this.listeners.get(event);
 

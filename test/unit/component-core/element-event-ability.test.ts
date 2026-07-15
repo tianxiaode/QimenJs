@@ -24,8 +24,8 @@ import { initAbilitiesFromProps } from '@/component-core/abilities/PropAlias';
 describe('ElementEventAbility', () => {
     describe('__initProps — 内部事件', () => {
         it('常规内部事件绑定', () => {
-            const TPL = '<div class="box"><button data-content="box:btn" data-event="click"></button></div>';
-            const BoxClass = TemplateComponent.withTemplate(TPL).with(ElementEventAbility);
+            const TPL = '<div class="box"><button data-content="box:btn"></button></div>';
+            const BoxClass = TemplateComponent.withTemplate(TPL);
             const instance = new BoxClass() as any;
 
             // 设置 eventMap
@@ -53,8 +53,8 @@ describe('ElementEventAbility', () => {
         });
 
         it('once 内部事件只触发一次', () => {
-            const TPL = '<div class="box"><button data-content="box:btn" data-event="click"></button></div>';
-            const BoxClass = TemplateComponent.withTemplate(TPL).with(ElementEventAbility);
+            const TPL = '<div class="box"><button data-content="box:btn"></button></div>';
+            const BoxClass = TemplateComponent.withTemplate(TPL);
             const instance = new BoxClass() as any;
 
             const btnEl = instance.el.querySelector('button');

@@ -20,6 +20,7 @@ import type { BadgeKey } from './BadgeAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { ElementEventAbility } from './ElementEventAbility';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -266,7 +267,16 @@ export const InitAbility: AbilityDefinition = {
      * 通过 this.bind 统一绑定，使用 event-dom 事件规范命名。
      */
     bindInternalEvents(): void {
-        this.logger?.debug?.('[Init] bindInternalEvents, count =', this.eventMap.internal.length, 'type =', (this.constructor as any).type, 'scopeId =', this.eventScope?.getScopeId?.());
+        // 如果 ElementEventAbility 已注册，由其 __initProps 接管内部事件绑定
+        const ctor = this.constructor as any;
+        const elementEventAbility = ctor.abilities?.find((a: any) => a === ElementEventAbility);
+        if (elementEventAbility) {
+            this.logger?.debug?.('[Init] bindInternalEvents delegated to ElementEventAbility.__initProps');
+            elementEventAbility.__initProps.call(this, this.props || {});
+            return;
+        }
+
+        this.logger?.debug?.('[Init] bindInternalEvents, count =', this.eventMap.internal.length, 'type =', ctor.type, 'scopeId =', this.eventScope?.getScopeId?.());
         for (const binding of this.eventMap.internal) {
             const { event, handler, once, delegate, delegateTarget, debounce, throttle, node } = binding;
             // DOM 事件加前缀，避免与组件 emit 的同名事件冲突

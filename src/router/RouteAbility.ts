@@ -99,5 +99,8 @@ export const RouteAbility: AbilityDefinition = {
         if (config?.routes && event && config.routes[event.path] !== undefined) {
             (event as any).routeName = config.routes[event.path];
         }
+
+        // 发射 route:change 事件
+        this.emit('route:change', event);
     },
 };
