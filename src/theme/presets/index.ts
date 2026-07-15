@@ -13,6 +13,7 @@ export {
   rosewoodTheme,
   inkTheme,
   daiTheme,
+  huaqingTheme,
   chineseThemes,
   CHINESE_THEME_NAMES,
 } from './chinese-themes';

@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-15，基于 v0.2.0（withTemplate 统一架构）。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-15，基于 v0.2.0（框架流程跑通）。
 
 ## 项目概览
 
@@ -138,7 +138,7 @@ ErrorBase.ts, KernelError.ts, GestureError.ts, codes.ts, index.ts
 ```
 i18n.iife.js, i18n-utils.ts, copy.js, global.d.ts
 locales/zh-CN.js, locales/en-US.js, locales/fr-FR.js
-types/, index.ts
+types/index.ts, index.ts
 ```
 运行时 I18nManager 通过 `<script>` 加载到 `window.__qimen_i18n__`，支持动态语言包加载。
 
@@ -154,18 +154,19 @@ platform.ts, locale.ts, timezone.ts, user-agent.ts, features.ts, input.ts, memor
 ```
 浏览器/Node/未知平台检测，`getRuntimeEnv()` 组合检测。
 
-#### `src/utils/` — 通用工具函数 `@qimenjs/utils` (89 文件)
+#### `src/utils/` — 通用工具函数 `@qimenjs/utils` (92 文件)
 ```
-array/         — base, collection, random, search, set, sort
+array/         — base (duplicates, transform), collection (chunk, flatten, groupBy), random (sample, shuffle), search (find, includes), set (difference, intersection, union), sort (sort, tree)
 color/         — generateColorShades, hex/hsl/rgb 互转
-cookie/        — get/set/remove/has 等操作
-date/          — calculation, calendar, format, utils
-geometry/      — align, clamp, point, rect, snap, vector, transform
+cookie/        — get/set/remove/has/getAll/getNumber/getBoolean/setJson
+crypto/        — 工具级加密（空目录）
+date/          — calculation (days, months, quarters, years), calendar, format, utils
+geometry/      — align, clamp, point, rect, snap, vector, transform (apply, matrix, rotate, scale, translate)
 number/        — base, format
 object/        — base, clone, iterate, properties
 string/        — base, css, format, id, plural
-time/          — after, delay, repeat
-units/         — angle, format, length, parse, percent, resolve, time
+time/          — after, delay, repeat, types
+units/         — angle, format, length, parse, percent, resolve, time, types
 composeMixins.ts, download.ts, index.ts
 ```
 按领域组织的通用工具函数库。
@@ -174,9 +175,9 @@ composeMixins.ts, download.ts, index.ts
 
 #### `src/composable/` — 能力组合系统 `@qimenjs/composable`
 ```
-ComposableBase.ts, types/composable.ts, index.ts
+ComposableBase.ts, forge.ts, types/composable.ts, types/ability.ts, index.ts
 ```
-框架核心模式。`ComposableBase` 提供 abilityState()、setAbilityState()、debounce()、onCleanup()、collectAbilities()、setupAbilities()、dispose() 等方法。
+框架核心模式。`ComposableBase` 提供 abilityState()、setAbilityState()、debounce()、onCleanup()、collectAbilities()、setupAbilities()、dispose() 等方法。`forge.ts` 提供能力锻造（类合并）工具函数。
 
 #### `src/registry/` — 注册表中心 `@qimenjs/registry`
 ```
@@ -201,7 +202,7 @@ executor.ts, types.ts, index.ts
 ```
 `Pipeline` 类：weight+offset 排序、熔断、追踪、计时、统计。
 
-#### `src/task/` — 任务调度 + 哈希任务 + Worker `@qimenjs/task` (44 文件)
+#### `src/task/` — 任务调度 + 哈希任务 + Worker `@qimenjs/task` (43 文件)
 ```
 task/TaskQueue.ts, task/types.ts
 worker/WorkerManagerBase.ts, worker/SimpleWorkerManager.ts, worker/types.ts
@@ -221,11 +222,12 @@ SchemaRegistrar.ts, types/schema.ts, types/rule.ts, types/index.ts, index.ts
 
 #### `src/data-processor/` — 数据处理管道框架 `@qimenjs/data-processor`
 ```
-DataProcessorRegistrar.ts, executor.ts, types.ts, weights.ts, register.ts, errors/index.ts, README.md, index.ts
+DataProcessorRegistrar.ts, executor.ts, types.ts, weights.ts, register.ts
+errors/index.ts, common/ (空), README.md, index.ts
 ```
 管道式请求/响应数据处理框架，`DataProcessorRegistrar` extends RegistrarBase，tags + weight 排序。
 
-#### `src/validation/` — 验证引擎 `@qimenjs/validation` (82 文件)
+#### `src/validation/` — 验证引擎 `@qimenjs/validation` (79 文件)
 ```
 core/ValidatorRegistrar.ts, core/validate.ts, core/executor.ts
 engine/validate.ts
@@ -236,13 +238,13 @@ errors/, types/, utils/, index.ts
 ```
 规则 + 链式验证引擎，11 种类型处理器。`ValidatorRegistrar` extends RegistrarBase，tag 过滤，链缓存。
 
-#### `src/event-dom/` — DOM 事件适配 + 手势识别 `@qimenjs/event-dom` (26 文件)
+#### `src/event-dom/` — DOM 事件适配 + 手势识别 `@qimenjs/event-dom` (31 文件)
 ```
 adapters/dom/DomEventAdapter.ts
 adapters/processors/ — 8 种手势处理器 (Tap, DoubleTap, LongPress, Swipe, Drag, Hover, ContextMenu, Submit)
-adapters/semantic-map/ — 原子信号 → 语义事件映射
+adapters/semantic-map/ — 原子信号 → 语义事件映射 (base, gesture, keyboard, mouse, pointer, resolve, touch)
 adapters/utils/validation.ts, adapters/createEventAdapter.ts
-types/adapters/, index.ts
+types/adapters/ (base, map, processors), index.ts
 ```
 DOM 事件适配，8 种手势识别。
 
@@ -273,7 +275,7 @@ HTTP 客户端，拦截器 + 重试 + 缓存 + SSE 流式。4 阶段管道：PRE
 
 #### `src/oauth2/` — OAuth2 认证 `@qimenjs/oauth2`
 ```
-OAuth2Manager.ts, TokenRefreshHandler.ts, TokenStorage.ts, types.ts, index.ts
+OAuth2Manager.ts, TokenRefreshHandler.ts, TokenStorage.ts, register.ts, types.ts, index.ts
 ```
 Token 生命周期（acquire/refresh/revoke），password/authorization_code/client_credentials 三种授权模式。`TokenRefreshHandler` 在 HTTP ALIGN 阶段 401 拦截 + 自动刷新 + 重试。
 
@@ -335,7 +337,7 @@ ComponentEventRegistry.ts, ComponentTypes.ts
 template-compiler.ts, template-constants.ts, template-json.ts
 template-presets.ts, template-types.ts
 content-properties.ts, types.ts
-abilities/ — 18 个核心能力:
+abilities/ — 25 个核心能力:
   InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, AnimationAbility
   AccessibilityAbility, PermissionAbility, BadgeAbility, ColorVariantAbility
   PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
@@ -383,9 +385,9 @@ index.ts
 
 #### `src/layout/` — 布局定义系统 `@qimenjs/layout`
 ```
-LayoutNode.ts, parser.ts, validator.ts, index.ts
+LayoutNode.ts, layout-keys.ts, validator.ts, types/ (空), index.ts
 ```
-JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, children, handlers, extraFns, abilities, stateTriggers, entity, permission, position/style/tooltip/animation/accessibility props）。
+JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, children, handlers, extraFns, abilities, stateTriggers, entity, permission, position/style/tooltip/animation/accessibility props）。`layout-keys.ts` 定义布局属性键常量。
 
 #### `src/theme/` — 主题系统 `@qimenjs/theme`
 ```
@@ -408,9 +410,9 @@ svg/ — 102 个独立 SVG 源文件（24x24 viewBox, stroke-based, currentColor
 
 #### `src/imperative/` — 命令式 API `@qimenjs/imperative`
 ```
-toast.ts, msgbox.ts, ToastManager.ts, MsgboxManager.ts, types.ts, index.ts
+Toast.ts, Msgbox.ts, ToastManager.ts, MsgboxManager.ts, api.ts, types.ts, index.ts
 ```
-`toast()` 函数（ToastManager, Thenable）、`msgbox.alert/confirm/prompt`（MsgboxManager）。
+`toast()` 函数（ToastManager, Thenable）、`msgbox.alert/confirm/prompt`（MsgboxManager）。`api.ts` 合并 toast()/msgbox 工厂函数。
 
 #### `src/permission/` — 权限系统 `@qimenjs/permission`
 ```

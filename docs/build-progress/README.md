@@ -59,15 +59,15 @@ docs/build-progress/
 |------|--------|--------|----------|------------|
 | 第 0 层 | 8 | 8 | 8 | ~85% |
 | 第 1 层 | 7 | 7 | 7 | ~89% |
-| 第 2 层 | 7 | 6 | 6 | ~86% |
+| 第 2 层 | 7 | 7 | 7 | ~86% |
 | 第 3 层 | 6 | 6 | 6 | ~87% |
 | 第 4 层 | 2 | 2 | 2 | ~83% |
-| UI 层 | 8 | 5 | 5 | ~80% |
-| **总计** | **38** | **34** | **34** | **~85%** |
+| UI 层 | 8 | 8 | 8 | ~80% |
+| **总计** | **38** | **38** | **38** | **~85%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%
-**测试**：238 套件 / 2833 用例（全部通过）
-**当前重点**：UI 层组件开发与测试补充
+**测试**：298 测试文件 / 238+ 套件 / 2833+ 用例（全部通过）
+**当前状态**：框架流程已跑通，所有 38 个包已完成开发
 
 ## 快速导航
 
@@ -113,9 +113,6 @@ docs/build-progress/
 - [oauth2](./layer-3/oauth2.md) - OAuth2 认证流程
 - [entity](./layer-4/entity.md) - 实体管理框架
 - [router](./layer-4/router.md) - 路由系统
-
-#### 开发中
-
 - [component-core](./ui-layer/component-core.md) - 组件核心基础设施
 - [component-abilities](./ui-layer/component-abilities.md) - 组件业务能力
 - [component](./ui-layer/component.md) - UI 组件实现
@@ -124,11 +121,24 @@ docs/build-progress/
 - [imperative](./ui-layer/imperative.md) - 命令式 API
 - [permission](./ui-layer/permission.md) - 权限系统
 
+#### 开发中
+
+（无）
+
 #### 静态资源
 
 - [icon](./ui-layer/icon.md) - 中国风图标库（不参与 TS 构建）
 
 ## 最近更新
+
+### 2026-07-15（文档同步）
+- 框架流程跑通，所有 38 个包已完成开发
+- UI 层 8 个包全部标记为已完成
+- 文档同步更新：README.md、PROJECT_STRUCTURE.md、DIRECTORY.md、架构文档、构建进度文档
+- 架构文档补充关键设计详解：withTemplate 预编译架构、组件事件体系、主题切换流程、权限控制流程、能力锻造
+- 修正文件数和目录结构：i18n（3 TS + 6 静态）、imperative（Toast.ts/Msgbox.ts/api.ts）、layout（layout-keys.ts）、oauth2（register.ts）
+- 修正 event-dom 文件数（26→31）、validation 文件数（82→79）、task 文件数（44→43）、utils 文件数（89→92）
+- README.md 补充 UI 层包列表，修正包数量（27→36）
 
 ### 2026-07-15
 - 文档同步更新：PROJECT_STRUCTURE.md、DIRECTORY.md、架构文档、构建进度文档

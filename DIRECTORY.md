@@ -1,6 +1,6 @@
 # QimenJs 源码目录索引
 
-> 供 AI 快速了解项目结构，避免重复搜索。共 569 个 TS 文件（683 总文件）。最后更新：2026-07-15。
+> 供 AI 快速了解项目结构，避免重复搜索。共 568 个 TS 文件（683 总文件）。最后更新：2026-07-15。
 
 ## src/async — 异步工具（3文件）
 
@@ -123,7 +123,7 @@
 | abilities/InitAbility.ts | 组件统一初始化流程能力 |
 | abilities/LayoutAbility.ts | 布局能力（fit/hbox/vbox等） |
 | abilities/NodeMapAbility.ts | 内容属性初始化与i18n刷新 |
-| abilities/OverlayAbility.ts | 浮层管理能力（宿主侧） |
+| abilities/OverlayAbility.ts | 浮层管理能力（通用浮层创建+委托方法） |
 | abilities/OverlayHostAbility.ts | 浮层宿主基础能力 |
 | abilities/PermissionAbility.ts | 权限控制能力 |
 | abilities/PositionBoolAbility.ts | 布尔定位属性能力 |
@@ -267,9 +267,9 @@
 | adapters/createEventAdapter.ts | 事件适配器工厂 |
 | adapters/dom/DomEventAdapter.ts | DOM事件适配器 |
 | adapters/processors/ — 8种手势处理器 | Tap/DoubleTap/LongPress/Swipe/Drag/Hover/ContextMenu/Submit |
-| adapters/semantic-map/ — 语义映射 | 原子信号→语义事件映射 |
+| adapters/semantic-map/ — 语义映射 | 原子信号→语义事件映射（base/gesture/keyboard/mouse/pointer/resolve/touch） |
 | adapters/utils/validation.ts | 验证工具 |
-| types/ | 类型定义 |
+| types/adapters/ | 适配器类型定义（base/map/processors） |
 | index.ts | 统一导出 |
 
 ## src/events — 事件系统（15文件）
@@ -308,24 +308,29 @@
 | types/ | 类型定义 |
 | index.ts | 统一导出 |
 
-## src/i18n — 国际化（4文件）
+## src/i18n — 国际化（3 TS文件 + 6 静态文件）
 
 | 文件 | 用途 |
 |------|------|
 | i18n-utils.ts | I18n工具函数 |
-| types/ | 类型定义 |
-| locales/ | 语言包（zh-CN, en-US, fr-FR） |
+| i18n.iife.js | 预编译IIFE运行时 |
+| copy.js | 复制工具脚本 |
+| global.d.ts | 全局类型声明 |
+| types/index.ts | 类型定义 |
+| locales/zh-CN.js | 中文语言包 |
+| locales/en-US.js | 英文语言包 |
+| locales/fr-FR.js | 法语语言包 |
 | index.ts | 统一导出 |
 
 ## src/imperative — 命令式API（7文件）
 
 | 文件 | 用途 |
 |------|------|
-| toast.ts | toast()函数 |
-| msgbox.ts | msgbox.alert/confirm/prompt |
-| ToastManager.ts | Toast管理器 |
-| MsgboxManager.ts | Msgbox管理器 |
-| api.ts | 统一API导出 |
+| Toast.ts | Toast实例类 |
+| Msgbox.ts | Msgbox实例类 |
+| ToastManager.ts | Toast管理器（队列调度+堆叠定位） |
+| MsgboxManager.ts | Msgbox管理器（创建/销毁调度） |
+| api.ts | 统一API导出（toast()/msgbox工厂函数） |
 | types.ts | 类型定义 |
 | index.ts | 统一导出 |
 
@@ -334,7 +339,7 @@
 | 文件 | 用途 |
 |------|------|
 | LayoutNode.ts | 布局节点核心类型 |
-| parser.ts | 布局解析器 |
+| layout-keys.ts | 布局属性键常量定义 |
 | validator.ts | 布局验证器 |
 | index.ts | 统一导出 |
 
@@ -366,6 +371,7 @@
 | OAuth2Manager.ts | OAuth2管理器 |
 | TokenRefreshHandler.ts | Token刷新处理器 |
 | TokenStorage.ts | Token存储 |
+| register.ts | 自动注册入口 |
 | types.ts | 类型定义 |
 | index.ts | 统一导出 |
 
@@ -465,11 +471,16 @@
 |------|------|
 | task/TaskQueue.ts | 优先级任务队列 |
 | task/types.ts | 任务类型 |
+| task/index.ts | 任务模块导出 |
 | worker/WorkerManagerBase.ts | Worker管理器基类 |
 | worker/SimpleWorkerManager.ts | 简单Worker管理器 |
 | worker/types.ts | Worker类型 |
+| worker/index.ts | Worker模块导出 |
 | hash-task/ | 完整哈希计算系统（分块+Worker池+健康监控） |
-| errors/ | Worker错误定义 |
+| hash-task/factory.ts | 哈希任务工厂 |
+| errors/WorkerError.ts | Worker错误 |
+| errors/WorkerInitializationError.ts | Worker初始化错误 |
+| errors/index.ts | 错误导出 |
 | index.ts | 统一导出 |
 
 ## src/theme — 主题系统（10文件）
@@ -498,18 +509,19 @@
 
 | 文件 | 用途 |
 |------|------|
-| array/ | 数组工具（base, collection, random, search, set, sort） |
+| array/ | 数组工具（base/collection/random/search/set/sort） |
 | color/ | 颜色工具（generateColorShades, hex/hsl/rgb互转） |
-| cookie/ | Cookie操作（get/set/remove/has） |
-| crypto/ | 工具级加密 |
+| cookie/ | Cookie操作（get/set/remove/has/getAll/getNumber/getBoolean/setJson） |
+| crypto/ | 工具级加密（空目录） |
 | date/ | 日期工具（calculation, calendar, format, utils） |
 | geometry/ | 几何工具（align, clamp, point, rect, snap, vector, transform） |
 | number/ | 数字工具（base, format） |
 | object/ | 对象工具（base, clone, iterate, properties） |
 | string/ | 字符串工具（base, css, format, id, plural） |
-| time/ | 时间工具（after, delay, repeat） |
-| units/ | 单位工具（angle, format, length, parse, percent, resolve, time） |
+| time/ | 时间工具（after, delay, repeat, types） |
+| units/ | 单位工具（angle, format, length, parse, percent, resolve, time, types） |
 | composeMixins.ts | Mixin组合工具 |
+| download.ts | 下载工具 |
 | index.ts | 统一导出 |
 
 ## src/validation — 验证引擎（79文件）
@@ -520,18 +532,18 @@
 | core/validate.ts | 核心验证函数 |
 | core/executor.ts | 验证执行器 |
 | engine/validate.ts | 引擎级验证 |
-| processors/array/ | 数组验证处理器（8个） |
-| processors/boolean/ | 布尔验证处理器 |
-| processors/common/ | 通用处理器（context, presence, transform, trim等） |
-| processors/date/ | 日期验证处理器 |
-| processors/file/ | 文件验证处理器 |
-| processors/format/ | 格式验证处理器 |
-| processors/number/ | 数字验证处理器 |
-| processors/object/ | 对象验证处理器 |
-| processors/password/ | 密码验证处理器 |
-| processors/split/ | 分割验证处理器 |
-| processors/string/ | 字符串验证处理器 |
-| errors/ | 错误定义（ValidationError, ValidatorNotFoundError等） |
-| types/ | 类型定义 |
+| processors/array/ | 数组验证处理器（children, entries, excludes, includes, length, type, unique, uniqueBy） |
+| processors/boolean/ | 布尔验证处理器（entries, type） |
+| processors/common/ | 通用处理器（context, entries, presence, rule-align, transform, trim） |
+| processors/date/ | 日期验证处理器（entries, excludes, includes, is, type, weekend） |
+| processors/file/ | 文件验证处理器（entries, file） |
+| processors/format/ | 格式验证处理器（entries, format） |
+| processors/number/ | 数字验证处理器（entries, excludes, includes, is, range, type） |
+| processors/object/ | 对象验证处理器（entries, properties, required-fields, type） |
+| processors/password/ | 密码验证处理器（entries, password） |
+| processors/split/ | 分割验证处理器（entries, split） |
+| processors/string/ | 字符串验证处理器（entries, excludes, includes, length, type） |
+| errors/ | 错误定义（ValidationError, ValidatorNotFoundError, DuplicateValidatorError, ValidationTypeNotDefinedError） |
+| types/ | 类型定义（base, context, processor, validate） |
 | utils/ | 工具函数（compare, pattern） |
 | index.ts | 统一导出 |

@@ -2,13 +2,13 @@
 
 > 现代化 TypeScript 基础设施库 — 奇门遁甲，排兵布阵
 
-QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 27 个独立子包，覆盖前端应用的基础层到服务层。
+QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 36 个独立子包，覆盖前端应用的基础层到 UI 层。
 
 名字取自"奇门遁甲"——古代排兵布阵的术数体系。正如奇门以八门九星组合千变万化的格局，QimenJS 通过能力组合（Ability）和数据管道（Pipeline）构建灵活的前端架构。
 
 ## 状态
 
-**0.2.0** — 初始开发阶段，核心 API 已可用，UI 组件层尚未实现。API 可能在后续版本中发生变化。
+**0.2.0** — 初始开发阶段，核心 API 和 UI 组件层已可用，框架流程已跑通。API 可能在后续版本中发生变化。
 
 ## 快速开始
 
@@ -80,6 +80,19 @@ npm start
 | `@qimen-lab/entity` | 实体管理框架，Manager + Ability 架构 |
 | `@qimen-lab/types` | 公共类型定义 |
 
+### UI 层
+
+| 包 | 说明 |
+|---|------|
+| `@qimen-lab/component-core` | 组件核心基础设施，TemplateComponent + withTemplate 预编译 |
+| `@qimen-lab/component-abilities` | UI 组件能力定义，实体/分组/菜单/渲染能力 |
+| `@qimen-lab/component` | UI 组件实现，Button/Badge/Menu/Nav/Panel/Tips/Toolbar |
+| `@qimen-lab/layout` | JSON 驱动的布局定义系统 |
+| `@qimen-lab/theme` | 主题系统，CSS 变量 + 原子 CSS + 中国传统色主题 |
+| `@qimen-lab/icon` | 中国风图标库，102 个 SVG + 字体图标 |
+| `@qimen-lab/imperative` | 命令式 API，toast/msgbox |
+| `@qimen-lab/permission` | 权限系统，域范围权限码 |
+
 ## 架构特点
 
 - **分层设计** — 从基础层到应用层，依赖方向单一，不跨层引用
@@ -95,7 +108,7 @@ npm start
 - OAuth2 认证（密码模式 + 授权码模式 + 客户端凭证）
 - ABP API 用户管理（分页、搜索、排序）
 - Spring Data 订单管理（Page\<T\> 分页）
-- 27 个 QimenJS 子包的功能演示页面
+- 36 个 QimenJS 子包的功能演示页面
 - 国际化（i18n 预编译 + 动态语言切换）
 
 ## 文档

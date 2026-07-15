@@ -125,6 +125,85 @@ UI 层（8 个，依赖应用层及以下）
 6. **EventBridge 单例模式** - 统一 eventScope 路由，解决跨作用域事件通信
 7. **自动注册模式** - 模块导入时自动注册，"引入即注册"约定
 
+### 架构关键设计详解
+
+#### withTemplate 预编译架构
+
+`TemplateComponent.withTemplate(templateHtml)` 是组件创建的核心机制，实现了"类定义时预编译，实例化时纯克隆"的高效模式：
+
+- **预编译阶段**（类定义时执行一次）：
+  - 提取节点数据（`data-content` 属性 → 内容属性映射）
+  - 生成 `contentProperties` 配置
+  - 预编译事件模板（`data-event`/`data-emit`/`data-bridge` → InternalEventBinding/BridgeEventTemplate）
+  - 创建模板 DOM 元素（`templateEl`）
+
+- **实例化阶段**（每次 `new Xxx()` 执行）：
+  - `cloneNode(true)` 深克隆模板 DOM
+  - 填充 node 引用（`nodeMap`）
+  - 零字符串处理开销
+
+- **构造即完整**：`new Xxx()` 自动完成 initElement + 内容填充 + 事件绑定 + 注册，不需要 `initialize()`
+
+- **static 配置**：`static children` / `static bridges` 等类级别配置，所有实例共享，props 可覆盖
+
+- **支持三种模板格式**：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate
+
+#### 组件事件体系
+
+组件事件分为内部事件和外部事件，通过不同机制处理：
+
+- **内部事件**（`data-event`）：
+  - 通过 `this.bind` 统一绑定
+  - 使用 event-dom 事件规范命名（`tap`/`click`/`input`/`change`/`scroll` 等），跨平台兼容
+  - 支持 `?debounce=N`/`?throttle=N` 修饰符
+
+- **外部事件**（`data-emit`），三种模式按优先级：
+  1. `bridges` 声明的 → 走事件桥 `emitUI` 发布
+  2. 实例有 `onXxx` 方法 → emitKey 驼峰化自动绑定（`saveBtn:tap` → `onSaveBtnTap`）
+  3. 默认 → 走事件桥 `emitUI` 发布
+
+- **EventBridge 单例**：
+  - `src/events/EventBridge.ts` 统一 eventScope，解决发送方/监听方 eventScope 不同导致事件无法路由的问题
+  - `EventBridgeAbility`（system-abilities）提供组件实例方法 `this.bridgeEmit()`/`this.bridgeOn()`/`this.bridgeOnce()`
+  - `EventBridgeAbility`（component-core/abilities/）是配置能力，声明式事件桥接
+
+#### 主题切换流程
+
+```
+ThemeRegistrar.apply('dark')
+  → flattenTokens(tokens) 扁平化 DesignTokens
+  → applyCSSVariables() 更新 :root CSS 变量（所有组件自动生效）
+  → GlobalEventBus.emit('theme:change', payload)
+  → ThemeAbility._initTheme() 中检查 static themeAware
+  → 声明了 themeAware 的组件调用 onThemeChange(event)
+```
+
+- CSS 变量自动生效：所有组件通过 CSS 变量引用主题色，切换主题时无需组件配合
+- JS 层面感知：组件声明 `static themeAware = true` 后，主题切换时触发 `onThemeChange(event)`
+- 7 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色）通过 `registerChineseThemes()` 按需注册
+
+#### 权限控制流程
+
+```
+PermissionRegistrar.registerBatch(entries)
+  → GlobalEventBus.emit('permission:change', payload)
+  → PermissionAbility setter 中 _listenPermissionChange()
+  → applyPermission() 根据 behavior 控制 UI
+```
+
+- 域范围权限码：`domain:code` 格式
+- `PermissionRegistrar` extends RegistrarBase，通过 GlobalEventBus 触发 `permission:change` 事件
+- `createDomainPermissions()` 域前缀权限码工厂
+- LayoutNode 声明 `permission` 字段后自动监听权限变化
+
+#### 能力锻造（forge.ts）
+
+`src/composable/forge.ts` 提供能力锻造工具函数，用于将多个 AbilityDefinition 合并到目标类：
+
+- `forge(Class, abilities)` — 将能力列表中的属性/方法/getter/setter 通过 `Object.defineProperty` 复制到类原型
+- 能力有特殊协议属性：`__propAliases`（属性别名映射）、`__initProps`（从 props 初始化）、`__init__`（初始化方法名）
+- 组件通过 `static readonly abilities` 数组声明所需能力
+
 ## 相关文档
 
 - [构建进度](../build-progress/README.md) - 构建进度
