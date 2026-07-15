@@ -2,7 +2,7 @@
 
 > 现代化 TypeScript 基础设施库 — 奇门遁甲，排兵布阵
 
-QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 36 个独立子包，覆盖前端应用的基础层到 UI 层。
+QimenJS 是一个模块化的 TypeScript 基础设施库，提供事件系统、数据管道、实体管理、国际化、HTTP 客户端等 38 个独立子包，覆盖前端应用的基础层到 UI 层。
 
 名字取自"奇门遁甲"——古代排兵布阵的术数体系。正如奇门以八门九星组合千变万化的格局，QimenJS 通过能力组合（Ability）和数据管道（Pipeline）构建灵活的前端架构。
 
@@ -34,51 +34,53 @@ npm start
 |---|------|
 | `@qimen-lab/error` | 统一错误体系，错误码 + 错误链 |
 | `@qimen-lab/logger` | 日志系统，多级别 + 多输出 |
-| `@qimen-lab/utils` | 通用工具函数 |
-| `@qimen-lab/async` | 异步工具（重试、并发控制、超时） |
-| `@qimen-lab/runtime` | 运行时环境检测 |
-| `@qimen-lab/crypto` | 哈希与编解码（MD5/SHA/XXHash/Base64） |
+| `@qimen-lab/utils` | 通用工具函数（数组/颜色/Cookie/日期/几何/数字/对象/字符串/时间/单位） |
+| `@qimen-lab/async` | 异步工具（防抖/节流） |
+| `@qimen-lab/runtime` | 运行时环境检测（平台/语言/时区/特性/输入/内存） |
+| `@qimen-lab/crypto` | 哈希与编解码（MD5/SHA-1/SHA-256/SHA-512/XXHash64/Base64） |
 | `@qimen-lab/i18n` | 国际化，loadScript 动态加载语言包，内置日期/货币/数字格式化 |
-| `@qimen-lab/context` | 请求上下文，贯穿数据处理管道 |
+| `@qimen-lab/context` | 请求/事件上下文，贯穿数据处理管道 |
+| `@qimen-lab/types` | 跨包共享基础类型（ExecutionStep/IExecutableContext/IPipelineResult） |
 
 ### 核心层 (Layer 1)
 
 | 包 | 说明 |
 |---|------|
 | `@qimen-lab/registry` | 注册表，领域隔离的注册中心 |
-| `@qimen-lab/events` | 事件总线，发布/订阅 |
-| `@qimen-lab/cache` | 缓存管理，LRU + TTL |
-| `@qimen-lab/pipeline` | 数据管道，可组合的处理链 |
-| `@qimen-lab/composable` | 能力组合，定义可复用的能力描述符 |
-| `@qimen-lab/task` | 任务调度，队列 + 优先级 |
-| `@qimen-lab/schema` | Schema 定义，字段 + 验证规则 |
+| `@qimen-lab/events` | 事件总线，发布/订阅 + EventBridge 单例路由 |
+| `@qimen-lab/cache` | 缓存管理，BaseCacheProvider + MemoryProvider |
+| `@qimen-lab/pipeline` | 数据管道，weight+offset 排序 + 熔断 + 追踪 + 计时 |
+| `@qimen-lab/composable` | 能力组合，ComposableBase + AbilityDefinition + forge 锻造 |
+| `@qimen-lab/task` | 任务调度，队列 + 优先级 + Worker 管理 + 哈希任务 |
 
 ### 数据层 (Layer 2)
 
 | 包 | 说明 |
 |---|------|
 | `@qimen-lab/data-processor` | 数据处理器框架，管道式请求/响应处理 |
-| `@qimen-lab/validation` | 验证引擎，规则 + 链式验证 |
-| `@qimen-lab/event-dom` | DOM 事件适配，手势识别 |
-| `@qimen-lab/mime` | MIME 类型解析 |
-| `@qimen-lab/pattern` | 设计模式工具（观察者、策略、工厂等） |
+| `@qimen-lab/validation` | 验证引擎，规则 + 链式验证，11 种类型处理器 |
+| `@qimen-lab/event-dom` | DOM 事件适配，8 种手势识别（Tap/LongPress/Swipe/Drag 等） |
+| `@qimen-lab/mime` | MIME 类型解析，双向查找 |
+| `@qimen-lab/pattern` | 命名正则模式注册器，内置 19 种验证模式 |
+| `@qimen-lab/schema` | Schema 定义，字段 + 验证规则 + 编译缓存 |
+| `@qimen-lab/permission` | 权限系统，域范围权限码 + 变更通知 |
 
 ### 服务层 (Layer 3)
 
 | 包 | 说明 |
 |---|------|
-| `@qimen-lab/http` | HTTP 客户端，拦截器 + 重试 + 缓存 |
-| `@qimen-lab/oauth2` | OAuth2 认证，授权码/密码/客户端模式 |
+| `@qimen-lab/http` | HTTP 客户端，4 阶段管道 + 拦截器 + SSE 流式 |
+| `@qimen-lab/oauth2` | OAuth2 认证，密码/授权码/客户端凭证模式 + 401 自动刷新 |
 | `@qimen-lab/data-processor-abp` | ABP 框架数据处理器，分页/过滤/排序参数转换 |
 | `@qimen-lab/data-processor-spring` | Spring Data 数据处理器，Page\<T\> 格式适配 |
-| `@qimen-lab/system-abilities` | 系统能力集，搜索/分页/CRUD 能力定义 |
+| `@qimen-lab/system-abilities` | 系统能力集，Event/Domain/DomEvents/EventBridge 能力定义 |
 
 ### 应用层 (Layer 4)
 
 | 包 | 说明 |
 |---|------|
-| `@qimen-lab/entity` | 实体管理框架，Manager + Ability 架构 |
-| `@qimen-lab/types` | 公共类型定义 |
+| `@qimen-lab/entity` | 实体管理框架，5 种 Manager + Ability 组合架构 |
+| `@qimen-lab/router` | 路由系统，纯事件模式 + RouteAbility 组件能力 |
 
 ### UI 层
 
@@ -88,10 +90,9 @@ npm start
 | `@qimen-lab/component-abilities` | UI 组件能力定义，实体/分组/菜单/渲染能力 |
 | `@qimen-lab/component` | UI 组件实现，Button/Badge/Menu/Nav/Panel/Tips/Toolbar |
 | `@qimen-lab/layout` | JSON 驱动的布局定义系统 |
-| `@qimen-lab/theme` | 主题系统，CSS 变量 + 原子 CSS + 中国传统色主题 |
+| `@qimen-lab/theme` | 主题系统，CSS 变量 + 原子 CSS + 7 个中国传统色主题 |
 | `@qimen-lab/icon` | 中国风图标库，102 个 SVG + 字体图标 |
 | `@qimen-lab/imperative` | 命令式 API，toast/msgbox |
-| `@qimen-lab/permission` | 权限系统，域范围权限码 |
 
 ## 架构特点
 

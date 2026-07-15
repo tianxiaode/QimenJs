@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-15，基于 v0.2.0（框架流程跑通）。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-16，基于 v0.2.0（框架流程跑通）。
 
 ## 项目概览
 
@@ -19,12 +19,12 @@
 ## 五层架构
 
 ```
-Layer 0 (基础层)  → error, logger, utils, async, runtime, crypto, i18n, context
-Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, schema
-Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern
+Layer 0 (基础层)  → error, logger, utils, async, runtime, crypto, i18n, context, types
+Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task
+Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, schema, permission
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
-Layer 4 (应用层)  → entity, types, router
-UI 层             → component-core, component-abilities, component, layout, theme, icon, imperative, permission
+Layer 4 (应用层)  → entity, router
+UI 层             → component-core, component-abilities, component, layout, theme, icon, imperative
 ```
 
 依赖方向：高层可依赖低层，不可反向。UI 层依赖应用层及以下。
@@ -112,7 +112,7 @@ debounce.ts, throttle.ts, index.ts
 ```
 BaseCacheProvider.ts, MemoryProvider.ts, CacheFactory.ts, types.ts, types/cache.ts, types/index.ts, index.ts
 ```
-LRU + TTL 缓存管理框架。`BaseCacheProvider` 抽象基类，`MemoryProvider` 内存 Map 实现。
+LRU + TTL 缓存管理框架。`BaseCacheProvider` 抽象基类，`MemoryProvider` 内存 Map 实现，`CacheFactory` 缓存工厂。
 
 #### `src/context/` — 请求/事件上下文 `@qimenjs/context`
 ```
@@ -154,14 +154,19 @@ platform.ts, locale.ts, timezone.ts, user-agent.ts, features.ts, input.ts, memor
 ```
 浏览器/Node/未知平台检测，`getRuntimeEnv()` 组合检测。
 
+#### `src/types/` — 公共类型定义 `@qimenjs/types`
+```
+flow-context.ts, index.ts
+```
+ExecutionStep, IExecutableContext, IPipelineResult。
+
 #### `src/utils/` — 通用工具函数 `@qimenjs/utils` (92 文件)
 ```
 array/         — base (duplicates, transform), collection (chunk, flatten, groupBy), random (sample, shuffle), search (find, includes), set (difference, intersection, union), sort (sort, tree)
 color/         — generateColorShades, hex/hsl/rgb 互转
 cookie/        — get/set/remove/has/getAll/getNumber/getBoolean/setJson
-crypto/        — 工具级加密（空目录）
 date/          — calculation (days, months, quarters, years), calendar, format, utils
-geometry/      — align, clamp, point, rect, snap, vector, transform (apply, matrix, rotate, scale, translate)
+geometry/      — align, clamp, point, rect, snap, vector, types
 number/        — base, format
 object/        — base, clone, iterate, properties
 string/        — base, css, format, id, plural
@@ -212,12 +217,6 @@ errors/WorkerError.ts, errors/WorkerInitializationError.ts, index.ts
 ```
 优先级任务队列（含重试）+ 完整的哈希计算系统（分块+Worker池+健康监控）。
 
-#### `src/schema/` — Schema 定义系统 `@qimenjs/schema`
-```
-SchemaRegistrar.ts, types/schema.ts, types/rule.ts, types/index.ts, index.ts
-```
-实体 Schema + 字段组注册，编译缓存。`ValidationPatternType` 枚举 19 种模式。
-
 ### Layer 2 — 数据层
 
 #### `src/data-processor/` — 数据处理管道框架 `@qimenjs/data-processor`
@@ -259,6 +258,18 @@ MIME 类型解析，双向查找。
 PatternRegistrar.ts, presets.ts, register.ts, index.ts
 ```
 命名正则模式注册，内置 19 种模式（email, url, ipv4, phone, uuid 等）。
+
+#### `src/schema/` — Schema 定义系统 `@qimenjs/schema`
+```
+SchemaRegistrar.ts, types/schema.ts, types/rule.ts, types/index.ts, index.ts
+```
+实体 Schema + 字段组注册，编译缓存。`ValidationPatternType` 枚举 19 种模式。
+
+#### `src/permission/` — 权限系统 `@qimenjs/permission`
+```
+PermissionRegistrar.ts, createDomainPermissions.ts, types.ts, index.ts
+```
+域范围权限码（domain:code 格式），`PermissionRegistrar` extends RegistrarBase，通过 GlobalEventBus 触发 `permission:change` 事件。`createDomainPermissions()` 域前缀权限码工厂。
 
 ### Layer 3 — 服务层
 
@@ -302,7 +313,7 @@ types/abilities.ts, index.ts
 
 ### Layer 4 — 应用层
 
-#### `src/entity/` — 实体管理框架 `@qimenjs/entity` (30 文件)
+#### `src/entity/` — 实体管理框架 `@qimenjs/entity` (40 文件)
 ```
 manager/CoreEntityManager.ts, manager/BaseEntityManager.ts, manager/managers.ts
 abilities/core/ — SchemaProxyAbility, CacheAbility, DirtyAbility, DomainPagingAbility
@@ -315,12 +326,6 @@ abilities/SchemaAbility.ts
 types/index.ts, index.ts
 ```
 5 种 Manager 类型，通过 Ability 组合获得不同功能。
-
-#### `src/types/` — 公共类型定义 `@qimenjs/types`
-```
-flow-context.ts, index.ts
-```
-ExecutionStep, IExecutableContext, IPipelineResult。
 
 #### `src/router/` — 路由系统 `@qimenjs/router` (6 文件)
 ```
@@ -413,12 +418,6 @@ svg/ — 102 个独立 SVG 源文件（24x24 viewBox, stroke-based, currentColor
 Toast.ts, Msgbox.ts, ToastManager.ts, MsgboxManager.ts, api.ts, types.ts, index.ts
 ```
 `toast()` 函数（ToastManager, Thenable）、`msgbox.alert/confirm/prompt`（MsgboxManager）。`api.ts` 合并 toast()/msgbox 工厂函数。
-
-#### `src/permission/` — 权限系统 `@qimenjs/permission`
-```
-PermissionRegistrar.ts, createDomainPermissions.ts, types.ts, index.ts
-```
-域范围权限码（domain:code 格式），`PermissionRegistrar` extends RegistrarBase，通过 GlobalEventBus 触发 `permission:change` 事件。`createDomainPermissions()` 域前缀权限码工厂。
 
 ## 路径别名映射
 

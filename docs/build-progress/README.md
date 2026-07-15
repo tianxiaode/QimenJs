@@ -8,7 +8,7 @@
 docs/build-progress/
 ├── README.md                    # 本文件（索引）
 ├── TEMPLATE.md                  # 进度文档模板
-├── layer-0/                     # 第 0 层包（8 个零依赖包）
+├── layer-0/                     # 第 0 层包（9 个零依赖包）
 │   ├── error.md
 │   ├── logger.md
 │   ├── utils.md
@@ -16,24 +16,24 @@ docs/build-progress/
 │   ├── runtime.md
 │   ├── crypto.md
 │   ├── types.md
-│   └── i18n.md
-├── layer-1/                     # 第 1 层包（7 个轻依赖包）
+│   ├── i18n.md
+│   └── context.md
+├── layer-1/                     # 第 1 层包（6 个轻依赖包）
 │   ├── registry.md
 │   ├── cache.md
 │   ├── events.md
 │   ├── task.md
 │   ├── composable.md
-│   └── context.md
+│   └── pipeline.md
 ├── layer-2/                     # 第 2 层包（7 个功能包）
 │   ├── schema.md
 │   ├── validation.md
-│   ├── pipeline.md
+│   ├── data-processor.md
 │   ├── mime.md
 │   ├── pattern.md
 │   ├── event-dom.md
 │   └── permission.md
-├── layer-3/                     # 第 3 层包（6 个高级功能包）
-│   ├── data-processor.md
+├── layer-3/                     # 第 3 层包（5 个高级功能包）
 │   ├── data-processor-abp.md
 │   ├── data-processor-spring.md
 │   ├── http.md
@@ -42,28 +42,27 @@ docs/build-progress/
 ├── layer-4/                     # 第 4 层包（2 个业务包）
 │   ├── entity.md
 │   └── router.md
-└── ui-layer/                    # UI 层包（8 个）
+└── ui-layer/                    # UI 层包（7 个）
     ├── component-core.md
     ├── component-abilities.md
     ├── component.md
     ├── layout.md
     ├── theme.md
     ├── icon.md
-    ├── imperative.md
-    └── permission.md
+    └── imperative.md
 ```
 
 ## 总体进度
 
 | 层级 | 总包数 | 已完成 | 测试通过 | 分支覆盖率 |
 |------|--------|--------|----------|------------|
-| 第 0 层 | 8 | 8 | 8 | ~85% |
-| 第 1 层 | 7 | 7 | 7 | ~89% |
+| 第 0 层 | 9 | 9 | 9 | ~85% |
+| 第 1 层 | 6 | 6 | 6 | ~89% |
 | 第 2 层 | 7 | 7 | 7 | ~86% |
-| 第 3 层 | 6 | 6 | 6 | ~87% |
+| 第 3 层 | 5 | 5 | 5 | ~87% |
 | 第 4 层 | 2 | 2 | 2 | ~83% |
-| UI 层 | 8 | 8 | 8 | ~80% |
-| **总计** | **38** | **38** | **38** | **~85%** |
+| UI 层 | 7 | 7 | 7 | ~80% |
+| **总计** | **36** | **36** | **36** | **~85%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%
 **测试**：298 测试文件 / 238+ 套件 / 2833+ 用例（全部通过）
@@ -73,12 +72,12 @@ docs/build-progress/
 
 ### 按层级查看
 
-- [第 0 层：核心基础包](./layer-0/) - 8 个零依赖包
-- [第 1 层：基础设施工具包](./layer-1/) - 7 个包
+- [第 0 层：核心基础包](./layer-0/) - 9 个零依赖包
+- [第 1 层：基础设施工具包](./layer-1/) - 6 个包
 - [第 2 层：功能工具包](./layer-2/) - 7 个包
-- [第 3 层：高级功能包](./layer-3/) - 6 个包
+- [第 3 层：高级功能包](./layer-3/) - 5 个包
 - [第 4 层：业务包](./layer-4/) - 2 个包
-- [UI 层：组件与界面](./ui-layer/) - 8 个包
+- [UI 层：组件与界面](./ui-layer/) - 7 个包
 
 ### 按状态查看
 
@@ -92,20 +91,20 @@ docs/build-progress/
 - [crypto](./layer-0/crypto.md) - 加密工具
 - [types](./layer-0/types.md) - 全局共享类型
 - [i18n](./layer-0/i18n.md) - 国际化
+- [context](./layer-0/context.md) - 请求/事件上下文
 - [registry](./layer-1/registry.md) - 注册器系统
 - [cache](./layer-1/cache.md) - 缓存系统
 - [events](./layer-1/events.md) - 事件系统
 - [task](./layer-1/task.md) - 任务系统
 - [composable](./layer-1/composable.md) - 可组合能力系统
-- [context](./layer-1/context.md) - 请求上下文
+- [pipeline](./layer-1/pipeline.md) - 管道执行器
 - [schema](./layer-2/schema.md) - Schema 定义系统
 - [validation](./layer-2/validation.md) - 验证系统
-- [pipeline](./layer-2/pipeline.md) - 管道执行器
+- [data-processor](./layer-2/data-processor.md) - 数据处理器
 - [mime](./layer-2/mime.md) - MIME 类型管理
 - [pattern](./layer-2/pattern.md) - 模式注册器
 - [event-dom](./layer-2/event-dom.md) - DOM 事件适配器
 - [permission](./layer-2/permission.md) - 权限注册与查询系统
-- [data-processor](./layer-3/data-processor.md) - 数据处理器
 - [data-processor-abp](./layer-3/data-processor-abp.md) - ABP 数据处理管道
 - [data-processor-spring](./layer-3/data-processor-spring.md) - Spring 数据处理管道
 - [http](./layer-3/http.md) - HTTP 客户端
@@ -119,7 +118,6 @@ docs/build-progress/
 - [layout](./ui-layer/layout.md) - 布局定义系统
 - [theme](./ui-layer/theme.md) - 主题系统
 - [imperative](./ui-layer/imperative.md) - 命令式 API
-- [permission](./ui-layer/permission.md) - 权限系统
 
 #### 开发中
 
@@ -130,6 +128,12 @@ docs/build-progress/
 - [icon](./ui-layer/icon.md) - 中国风图标库（不参与 TS 构建）
 
 ## 最近更新
+
+### 2026-07-16（文档同步）
+- 修正包层级结构：Layer 0 增加 context（9个包），Layer 1 移除 context/validation/schema 增加 pipeline（6个包），Layer 2 增加 data-processor/permission 移除 pipeline（7个包），Layer 3 移除 data-processor（5个包），UI 层移除 permission（7个包）
+- 总包数从 38 修正为 36（permission 从 UI 层移到 Layer 2，context 从 Layer 1 移到 Layer 0，pipeline 从 Layer 2 移到 Layer 1，data-processor 从 Layer 3 移到 Layer 2）
+- README.md 包描述更新：async 修正为防抖/节流，cache 修正为 BaseCacheProvider + MemoryProvider，pattern 修正为命名正则模式注册器
+- PROJECT_STRUCTURE.md 层级划分更新，utils 移除空目录 crypto/geometry/transform
 
 ### 2026-07-15（文档同步）
 - 框架流程跑通，所有 38 个包已完成开发

@@ -58,7 +58,7 @@ docs/architecture/
 ### 包层级结构
 
 ```
-第 0 层：核心基础包（8 个，零依赖或极轻依赖）
+第 0 层：核心基础包（9 个，零依赖或极轻依赖）
 ├── @qimenjs/error
 ├── @qimenjs/logger
 ├── @qimenjs/utils
@@ -66,26 +66,27 @@ docs/architecture/
 ├── @qimenjs/runtime
 ├── @qimenjs/crypto
 ├── @qimenjs/types
-└── @qimenjs/i18n
+├── @qimenjs/i18n
+└── @qimenjs/context
 
-第 1 层：基础设施工具包（7 个，只依赖第 0 层）
+第 1 层：基础设施工具包（6 个，只依赖第 0 层）
 ├── @qimenjs/registry
 ├── @qimenjs/cache
 ├── @qimenjs/events
-├── @qimenjs/validation
 ├── @qimenjs/task
 ├── @qimenjs/composable
-└── @qimenjs/context
+└── @qimenjs/pipeline
 
-第 2 层：功能工具包（5 个，依赖第 0-1 层）
+第 2 层：功能工具包（7 个，依赖第 0-1 层）
 ├── @qimenjs/schema
-├── @qimenjs/pipeline
+├── @qimenjs/validation
 ├── @qimenjs/event-dom
 ├── @qimenjs/mime
-└── @qimenjs/pattern
-
-第 3 层：高级功能包（6 个，依赖第 0-2 层）
+├── @qimenjs/pattern
 ├── @qimenjs/data-processor
+└── @qimenjs/permission
+
+第 3 层：高级功能包（5 个，依赖第 0-2 层）
 ├── @qimenjs/http
 ├── @qimenjs/system-abilities
 ├── @qimenjs/oauth2
@@ -96,15 +97,14 @@ docs/architecture/
 ├── @qimenjs/entity
 └── @qimenjs/router
 
-UI 层（8 个，依赖应用层及以下）
+UI 层（7 个，依赖应用层及以下）
 ├── @qimenjs/component-core
 ├── @qimenjs/component-abilities
 ├── @qimenjs/component
 ├── @qimenjs/layout
 ├── @qimenjs/theme
 ├── @qimenjs/icon
-├── @qimenjs/imperative
-└── @qimenjs/permission
+└── @qimenjs/imperative
 ```
 
 ### 核心原则
