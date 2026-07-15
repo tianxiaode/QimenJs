@@ -218,42 +218,33 @@ export interface TplNode {
 /**
  * 组件模板完整定义
  *
- * 支持两种模式：
- *
- * 1. tpl 模式（旧）：通过 tpl.children 定义 DOM 树，content 语义通过 TplNode.content 声明
- * 2. props+content 模式（v2）：props 定义组件自身配置，content 定义子节点配置（层次化）
- *
- * v2 模式下，tpl 仍然定义 DOM 骨架，但子节点的属性由 content 驱动：
- * - content 中的 key 对应 tpl.children 中的节点（通过 name 或 content 匹配）
- * - 递归渲染时，每层把自己的 content 对应部分传给子节点构造器
- * - 不需要透传，不需要 Ability 搬运纯赋值属性
+ * v2 模式：
+ * - tpl 定义 DOM 骨架（子节点通过 name 标识）
+ * - props 定义组件自身配置（壳）
+ * - content 不在组件定义时写，由使用方通过 props.content 传入
+ * - 使用方传 content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
+ * - 渲染时 content 按 key 匹配 nodeMap，填值到子节点
  *
  * @example
  * ```ts
- * // v2 模式
+ * // 组件定义
  * const ButtonTemplate: ComponentTemplate = {
  *     tpl: {
  *         tag: 'div',
  *         className: 'q-button',
  *         children: [
- *             { name: 'icon', type: IconComponent },
- *             { tag: 'span', name: 'text' },
- *             { name: 'dropIcon', type: IconComponent, hidden: true },
+ *             { name: 'icon', type: IconComponent, className: 'q-button__icon' },
+ *             { tag: 'span', name: 'text', className: 'q-button__text' },
  *         ]
  *     },
- *     props: {
- *         size: 'md',
- *         disabled: false,
- *     },
- *     content: {
- *         icon: { props: { className: 'q-button__icon' } },
- *         text: {},
- *         dropIcon: { props: { className: 'q-expand-arrow' } },
- *     },
- *     body: {
- *         type: 'button',
- *     }
+ *     props: { size: 'md', disabled: false },
+ *     body: { type: 'button' },
  * };
+ *
+ * // 使用方传 content
+ * { type: ButtonComponent, props: {
+ *     content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
+ * } }
  * ```
  */
 export interface ComponentTemplate {
@@ -262,9 +253,6 @@ export interface ComponentTemplate {
 
     /** 组件自身 HTML 元素的配置（壳），v2 新增 */
     props?: PropsDef;
-
-    /** 组件内部子节点的配置（瓤），v2 新增，层次化结构 */
-    content?: ContentDef;
 
     /** 复制到组件实例的属性和方法 */
     body?: Record<string, any>;

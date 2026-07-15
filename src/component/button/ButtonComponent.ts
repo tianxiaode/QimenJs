@@ -8,13 +8,15 @@
  *   - disabled: 禁用状态
  *   - width/height: 精确尺寸
  *
- * content: 声明组件子节点，使用时传入具体配置覆盖默认值
- *   - icon: 图标子组件
- *   - text: 文本 DOM 节点
+ * content: 使用方传入的子节点配置，key 对应 tpl children 的 name
+ *   - icon: 图标子组件 → 使用方传 { className: 'fa-solid fa-bars' }
+ *   - text: 文本 DOM 节点 → 使用方传 { innerHTML: '保存' }
  *   - dropIcon: 下拉箭头图标子组件
  *
- * 子节点的 className/style 等直接在 tpl 里写，content 不重复定义。
- * 使用时通过 content 传入覆盖值。
+ * 使用示例：
+ * ```ts
+ * { type: ButtonComponent, props: { content: { icon: { className: 'fa-solid fa-bars' }, text: { innerHTML: '菜单' } } } }
+ * ```
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';

@@ -92,14 +92,14 @@ class AppShell extends TemplateComponent.withTemplate({
                 ]},
                 // 右边：功能区 — 水平布局，垂直居中，间距4px
                 { tag: 'div', className: 'topbar-main', layout: 'hbox', align: 'center', gap: 4, children: [
-                    // 折叠按钮 — ButtonComponent ghost 模式
-                    { name: 'shell:toggleBtn', type: ButtonComponent, className: 'q-button--ghost', props: { icon: 'fa-solid fa-bars' }, events: { click: { handler: 'onToggleNavClick' } } },
+                    // 折叠按钮 — 通过 content 配置子节点
+                    { name: 'shell:toggleBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-bars' } } }, events: { click: { handler: 'onToggleNavClick' } } },
                     // dark 模式切换按钮
-                    { name: 'shell:darkBtn', type: ButtonComponent, className: 'q-button--ghost', props: { icon: 'fa-solid fa-moon' }, events: { click: { handler: 'onDarkToggleClick' } } },
+                    { name: 'shell:darkBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-moon' } } }, events: { click: { handler: 'onDarkToggleClick' } } },
                     // 弹性空间
                     { tag: 'div', className: 'topbar-spacer' },
-                    // 主题下拉按钮 — ButtonComponent ghost 模式
-                    { name: 'shell:themeBtn', type: ButtonComponent, className: 'q-button--ghost', props: { icon: 'fa-solid fa-palette', text: '浅色' }, events: { click: { handler: 'onThemeBtnClick' } } },
+                    // 主题下拉按钮
+                    { name: 'shell:themeBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-palette' }, text: { innerHTML: '浅色' } } }, events: { click: { handler: 'onThemeBtnClick' } } },
                 ]},
             ]},
             // 主体 — 水平布局

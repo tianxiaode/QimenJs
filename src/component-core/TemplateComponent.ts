@@ -31,7 +31,7 @@ import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { ContentInfo, DomEventBinding } from './template-compiler';
-import type { ComponentTemplate, ContentNodeDef } from './template-types';
+import type { ComponentTemplate } from './template-types';
 import { precompileTemplate, compileTemplate } from './template-compiler';
 import type { CompiledTemplateResult } from './template-json';
 import { buildContentProperties } from './content-properties';
@@ -207,7 +207,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         let body: Record<string, any> | undefined;
         let templateHtml: string;
         let propsDef: Record<string, any> | undefined;
-        let contentDef: Record<string, ContentNodeDef> | undefined;
         let compiled: {
             indexPath: NodeIndexPath;
             templateMetas: Record<string, NodeTemplateMeta>;
@@ -234,7 +233,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             jsonComponentMap = result.componentMap;
             body = template.body;
             propsDef = result.propsDef;
-            contentDef = result.contentDef;
 
             // 构建 templateCache
             const tpl = document.createElement('template');
@@ -259,8 +257,8 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                 const ctor = this.constructor as any;
 
-                // v2 模式：propsDef 或 contentDef 存在时启用
-                if (ctor._propsDef || ctor._contentDef) {
+                // v2 模式：propsDef 存在时启用
+                if (ctor._propsDef) {
                     // v2: props 合并（defaults ← propsDef, 覆盖 ← 用户传入）
                     const mergedProps = ctor._propsDef
                         ? { ...ctor._propsDef, ...props }
@@ -277,7 +275,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 if (ctor.type) this.type = ctor.type;
 
                 // v1 旧模式：将 defaults 中的属性赋值到实例（通过 setter 触发 _applyState）
-                if (!(ctor._propsDef || ctor._contentDef) && ctor.defaults) {
+                if (!ctor._propsDef && ctor.defaults) {
                     for (const [key, value] of Object.entries(ctor.defaults)) {
                         (this as any)[key] = value;
                     }
@@ -320,9 +318,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             /** v2: 组件 props 默认值定义 */
             static readonly _propsDef: Record<string, any> | undefined = propsDef;
 
-            /** v2: 组件 content 层次化定义，运行时递归渲染时使用 */
-            static readonly _contentDef: Record<string, ContentNodeDef> | undefined = contentDef;
-
             /** 对外暴露节点名列表 — 编译时从 autoExpose!==false 的 content 节点自动收集 */
             static readonly _expose: string[] = (compiled as any).exposeNames ?? [];
 
@@ -350,7 +345,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         };
 
         // 在强类原型上生成内容 getter/setter
-        buildContentProperties(TemplateClass, compiled.contentInfos, contentDef);
+        buildContentProperties(TemplateClass, compiled.contentInfos);
 
         // 将 body 中的方法/属性复制到原型
         if (body) {

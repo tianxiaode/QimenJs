@@ -35,7 +35,6 @@ import { findByPath } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
-import type { ContentNodeDef } from '../template-types';
 
 /**
  * 子组件差异化配置
@@ -224,12 +223,11 @@ export const TemplateAbility: AbilityDefinition = {
      */
     _renderChildComponents(children?: ChildComponentConfig): void {
         const ctor = this.constructor as any;
-        const contentDef: Record<string, ContentNodeDef> | undefined = ctor._contentDef;
         const propsDef: Record<string, any> | undefined = ctor._propsDef;
 
-        // v2 模式：propsDef 或 contentDef 存在时启用
-        if (contentDef || propsDef) {
-            this._renderChildComponentsV2(contentDef || {});
+        // v2 模式：propsDef 存在时启用
+        if (propsDef) {
+            this._renderChildComponentsV2();
             return;
         }
 
@@ -264,60 +262,38 @@ export const TemplateAbility: AbilityDefinition = {
     },
 
     /**
-     * v2 新模式渲染子组件 — contentDef 驱动
+     * v2 新模式渲染子组件 — props.content 驱动
      *
-     * 遍历 contentDef，每个 key 对应 nodeMap 中的一个子节点，
-     * 把 contentDef[key] 的 props + content 传给子节点构造器。
-     * 递归渲染时，子节点再把自己的 content 传给下一层，自然层层到达。
+     * content 是使用方传入的子节点配置，key 对应 tpl children 的 name。
+     * 组件定义时不写 content，由使用方在使用时传入。
      *
-     * 同时支持用户传入的 props 中的 content key 自动路由到子节点：
-     * - 用户传入 { icon: 'fa-solid fa-bars' } → 自动转为 content.icon = { props: { className: 'q-icon fa-bars' } }
-     * - 用户传入 { text: '保存' } → 自动转为 content.text = { props: { innerHTML: '保存' } }
+     * 流程：
+     * 1. 从 this.props.content 取使用方传入的配置
+     * 2. 遍历 content 的 key，在 nodeMap 中找对应子节点
+     * 3. DOM 节点：直接设 el 属性（className/innerHTML/style）
+     * 4. 组件节点：把 content 传给子组件构造器（递归）
+     *
+     * @example
+     * ```ts
+     * // AppShell 使用 Button
+     * { type: ButtonComponent, props: {
+     *     content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
+     * } }
+     * ```
      */
-    _renderChildComponentsV2(contentDef: Record<string, ContentNodeDef>): void {
-        // 合并用户传入的 content 配置（来自 props.content 或 props 中的 content key）
-        const mergedContentDef = { ...contentDef };
-        const userContent = this.props?.content as Record<string, ContentNodeDef> | undefined;
-        if (userContent) {
-            for (const [key, val] of Object.entries(userContent)) {
-                if (mergedContentDef[key]) {
-                    // 合并：用户配置覆盖默认配置
-                    mergedContentDef[key] = {
-                        ...mergedContentDef[key],
-                        ...val,
-                        props: { ...mergedContentDef[key].props, ...val.props },
-                        content: val.content ? { ...mergedContentDef[key].content, ...val.content } : mergedContentDef[key].content,
-                    };
-                } else {
-                    mergedContentDef[key] = val;
-                }
-            }
-        }
+    _renderChildComponentsV2(): void {
+        const userContent = this.props?.content as Record<string, any> | undefined;
+        if (!userContent || Object.keys(userContent).length === 0) return;
 
-        // 处理 props 中的简写 content key（如 icon: 'fa-bars', text: '保存'）
-        for (const [contentKey, nodeDef] of Object.entries(mergedContentDef)) {
-            const userValue = this.props?.[contentKey];
-            if (userValue !== undefined && typeof userValue === 'string') {
-                // 简写：字符串值自动路由到子节点的 className 或 innerHTML
-                if (nodeDef.type || this._findNodeByContentKey(contentKey)?.componentClass) {
-                    // 组件节点：字符串视为 className
-                    nodeDef.props = { ...nodeDef.props, className: `${nodeDef.props?.className || ''} ${userValue}`.trim() };
-                } else {
-                    // DOM 节点：字符串视为 innerHTML
-                    nodeDef.props = { ...nodeDef.props, innerHTML: userValue };
-                }
-            }
-        }
-
-        for (const [contentKey, nodeDef] of Object.entries(mergedContentDef)) {
+        for (const [contentKey, contentVal] of Object.entries(userContent)) {
             // 在 nodeMap 中查找对应的子节点
             const node = this._findNodeByContentKey(contentKey);
             if (!node) continue;
 
             // DOM 节点：直接设置属性
             if (!node.componentClass) {
-                if (nodeDef.props) {
-                    for (const [propKey, propVal] of Object.entries(nodeDef.props)) {
+                if (contentVal && typeof contentVal === 'object') {
+                    for (const [propKey, propVal] of Object.entries(contentVal)) {
                         if (propKey === 'innerHTML' && node.el) {
                             node.el.innerHTML = propVal;
                         } else if (propKey === 'className' && node.el) {
@@ -334,16 +310,21 @@ export const TemplateAbility: AbilityDefinition = {
                 continue;
             }
 
+            // 组件节点：把 content 传给子组件构造器
             const ComponentClass = node.componentClass;
+            const childProps: Record<string, any> = {};
 
-            // 构建子组件 props：nodeDef.props + nodeDef.content（递归传递）
-            const childProps: Record<string, any> = {
-                ...nodeDef.props,
-            };
-
-            // 如果 nodeDef 有 content，传递给子组件（递归渲染时子组件会使用）
-            if (nodeDef.content && Object.keys(nodeDef.content).length > 0) {
-                childProps.content = nodeDef.content;
+            // contentVal 里的 props 合并到 childProps
+            if (contentVal?.props) {
+                Object.assign(childProps, contentVal.props);
+            }
+            // contentVal 里的 content 递归传递
+            if (contentVal?.content && Object.keys(contentVal.content).length > 0) {
+                childProps.content = contentVal.content;
+            }
+            // contentVal 本身就是简单对象（没有 props/content 层），直接当 props 传
+            if (contentVal && typeof contentVal === 'object' && !contentVal.props && !contentVal.content) {
+                Object.assign(childProps, contentVal);
             }
 
             this.logger?.debug?.('[Template] _renderChildComponentsV2, key =', contentKey, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', Object.keys(childProps));

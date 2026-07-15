@@ -15,7 +15,7 @@
  * - HTML 中不需要 data-* 属性回找节点，indexPath 已在拆解 JSON 时提取
  */
 
-import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl, ContentNodeDef } from './template-types';
+import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl } from './template-types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { DomEventBinding } from './template-compiler';
 
@@ -49,8 +49,6 @@ export interface CompiledTemplateResult {
     exposeNames: string[];
     /** v2: 组件 props 默认值定义 */
     propsDef?: Record<string, any>;
-    /** v2: 组件 content 层次化定义，运行时递归渲染时使用 */
-    contentDef?: Record<string, ContentNodeDef>;
 }
 
 /**
@@ -275,9 +273,8 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         }
     }
 
-    // v2: 提取 props 和 content 定义，运行时递归渲染使用
+    // v2: 提取 props 定义
     const propsDef = template.props;
-    const contentDef = template.content;
 
     return {
         html: htmlParts.join(''),
@@ -291,7 +288,6 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         rootStyle,
         exposeNames,
         propsDef,
-        contentDef,
     };
 }
 

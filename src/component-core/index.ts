@@ -45,7 +45,7 @@ export { compileTemplate } from './template-json';
 export type { CompiledTemplateResult, TplNodeMeta } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo, ContentNodeDef, ContentDef, PropsDef } from './template-types';
+export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo, PropsDef } from './template-types';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';

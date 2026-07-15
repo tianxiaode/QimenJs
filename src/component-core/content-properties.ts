@@ -9,7 +9,7 @@
  * - DOM 值写入工具
  */
 
-import type { ContentInfo, ContentNodeDef } from './template-types';
+import type { ContentInfo } from './template-types';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 
 // ─── 内容属性生成 ───
@@ -17,23 +17,22 @@ import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 /**
  * 在强类原型上生成内容 getter/setter + 便捷方法
  *
- * v2 模式（contentDef 存在时）：
+ * v2 模式（_propsDef 存在时）：
  * - 组件节点：只生成 propName getter（返回子组件实例）+ className/style getter/setter
  * - DOM 节点：生成 propName getter/setter（操作 el）
- * - 不生成透传属性（iconContentClassName 等），子节点通过 content 递归传递
+ * - 不生成透传属性，子节点通过 props.content 递归传递
  *
- * v1 模式（contentDef 不存在时）：
+ * v1 模式（_propsDef 不存在时）：
  * - 保持原有行为，生成透传 getter/setter
  */
 export function buildContentProperties(
     target: any,
     contentInfos: ContentInfo[],
-    contentDef?: Record<string, ContentNodeDef>,
 ): string[] {
     const proto = target.prototype ?? target;
     const propNames: string[] = [];
 
-    const isV2 = !!(contentDef || (target as any)._propsDef);
+    const isV2 = !!(target as any)._propsDef;
 
     for (const info of contentInfos) {
         const { group, name, mode, propName, isComponent } = info;
