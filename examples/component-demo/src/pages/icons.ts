@@ -1,7 +1,7 @@
 /**
  * 图标页 — withTemplate 组件
  *
- * 使用 JSON 模板 + data-content 声明节点，
+ * 使用新版 ComponentTemplate 格式，
  * 图标网格通过 nodeMap 动态填充。
  */
 
@@ -26,17 +26,20 @@ const ICON_NAMES = [
  * - icons:title — 页面标题
  * - icons:grid — 图标网格容器
  */
-export class IconsPage extends TemplateComponent.withTemplate([
-    { tag: 'div', class: 'icons-page', children: [
-        { tag: 'h2', content: 'icons:title', class: 'page-title' },
-        { tag: 'div', content: 'icons:grid', class: 'icon-grid' },
-    ]},
-]) {
-    static type = 'IconsPage';
-    static defaults = {
+export class IconsPage extends TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'icons-page',
+        children: [
+            { tag: 'h2', name: 'icons:title', content: 'title', className: 'page-title' },
+            { tag: 'div', name: 'icons:grid', content: 'grid', className: 'icon-grid' },
+        ],
+    },
+    body: {
+        type: 'IconsPage',
         title: '图标库 — 全部图标',
-    };
-
+    },
+}) {
     /** 初始化后填充图标网格 */
     _initWithTemplate(props?: Record<string, any>): void {
         super._initWithTemplate(props);

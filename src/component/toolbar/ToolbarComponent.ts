@@ -46,14 +46,14 @@ const ToolbarBase = TemplateComponent
         tpl: {
             tag: 'div',
             children: [
-                { tag: 'div', name: 'toolbar:prevBtn', events: ['click=prev'], className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
+                { tag: 'div', name: 'toolbar:prevBtn', events: { click: { handler: 'onPrev' } }, className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
                     { tag: 'i' },
                 ]},
                 { tag: 'div', name: 'toolbar:contentArea', className: 'q-toolbar__content', style: 'display:flex;' },
-                { tag: 'div', name: 'toolbar:nextBtn', events: ['click=next'], className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
+                { tag: 'div', name: 'toolbar:nextBtn', events: { click: { handler: 'onNext' } }, className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
                     { tag: 'i' },
                 ]},
-                { tag: 'button', name: 'toolbar:triggerBtn', events: ['click=trigger'], className: 'q-overflow-menu__trigger', hidden: true },
+                { tag: 'button', name: 'toolbar:triggerBtn', events: { click: { handler: 'onTrigger' } }, className: 'q-overflow-menu__trigger', hidden: true },
                 { tag: 'div', name: 'toolbar:menuPanel', className: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
             ]
         },

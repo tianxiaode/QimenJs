@@ -30,10 +30,11 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { NodeIndexPath, NodeTemplateMeta, NodeMetadata } from '../types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate } from '../template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, DomEventBinding } from '../template-compiler';
 import { findByPath, buildEventMapFromTemplates } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
+import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 /**
  * 子组件差异化配置
@@ -114,10 +115,18 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 3.5 渲染子组件（data-json 占位节点 → 组件实体） ──
             this._renderChildComponents(cfg.children);
 
+            // ── 3.6 从 props 中提前设置 eventKey（bindDomEventBindings/bindBridgeEvents 依赖） ──
+            if (cfg.eventKey !== undefined) {
+                (this as any).eventKey = cfg.eventKey;
+            }
+
             // ── 4. 事件绑定 ──
-            this.bindInternalEvents();
-            this.bindExternalEvents({ bridges: cfg.bridges } as any);
+            // 4.1 统一 DOM 事件绑定（合并 handler/emits/bridges，一次 this.bind 搞定）
+            this.bindDomEventBindings();
+            // 4.2 子组件桥接事件（DOM 节点的桥接已在 bindDomEventBindings 中处理）
             this.bindBridgeEvents();
+            // 4.3 外部事件绑定（旧链路兼容）
+            this.bindExternalEvents({ bridges: cfg.bridges } as any);
             const listenConfig = this._extractBridgesOn(cfg.bridges);
             if (listenConfig) this.bindEventListen(listenConfig);
 
@@ -269,54 +278,183 @@ export const TemplateAbility: AbilityDefinition = {
     },
 
     /**
-     * 绑定桥接事件
+     * 绑定桥接事件（子组件专用，旧链路兼容）
      *
-     * 从预编译的桥接事件模板（_bridgeEventTemplates）构建绑定。
-     * 桥接事件通过 EventBridge 单例转发，使用组件的 eventKey 作为 sourceId。
-     *
-     * 绑定流程：
-     * 1. 子组件 DOM 事件触发 → 子组件内部 handler
-     * 2. 子组件 handler 中调用 this.emit() → 父组件 eventScope
-     * 3. 父组件 bindExternalEvents 捕获 → 调用 EventBridge.bridgeEmit()
-     *
-     * 但对于模板中声明了 bridges 的子组件，直接在子组件的 DOM 事件上
-     * 绑定桥接转发，跳过 eventScope 中转。
+     * DOM 节点的桥接事件已由 bindDomEventBindings 统一处理，
+     * 子组件的桥接事件也由 bindDomEventBindings 统一处理。
+     * 此方法保留为空，供旧链路兼容调用。
      */
     bindBridgeEvents(): void {
-        const templates: BridgeEventTemplate[] = this._bridgeEventTemplates;
-        if (!templates || templates.length === 0) return;
+        // 已由 bindDomEventBindings 统一处理，此方法保留为空
+    },
+
+    /**
+     * 绑定合并后的 DOM 事件
+     *
+     * 使用编译时从 DomEventDecl 生成的 DomEventBinding 结构，
+     * 区分两条执行路径：
+     *
+     * 1. DOM 节点：this.bind(el, event) → 手势适配器 → this.on('dom:xxx', callback)
+     *    callback 中统一处理 handler / emits / bridges
+     *
+     * 2. 子组件：childComponent.on(event, callback)
+     *    callback 中统一处理 emits / bridges
+     *    子组件不需要 handler（子组件自己内部处理 DOM 事件）
+     *
+     * 优势：
+     * - 同一 DOM 事件只绑定一次 this.bind()
+     * - 统一处理三种事件用途，代码更清晰
+     * - 天然解决 EventBus 无 scopeId 隔离导致的跨组件事件泄漏问题
+     */
+    bindDomEventBindings(): void {
+        const ctor = this.constructor as any;
+        const bindings: DomEventBinding[] = ctor._domEventBindings;
+        if (!bindings || bindings.length === 0) return;
 
         const eventKey = this.eventKey;
-        if (!eventKey) {
-            this.logger?.debug?.('[Template] bindBridgeEvents: no eventKey, skip');
-            return;
-        }
 
-        for (const tpl of templates) {
-            const [group, name] = tpl.nodeKey.split(':');
+        this.logger?.debug?.('[Template] bindDomEventBindings, count =', bindings.length, 'type =', ctor.type, 'scopeId =', this.eventScope?.getScopeId?.());
+
+        for (const binding of bindings) {
+            const { event, nodeKey, handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges } = binding;
+
+            const [group, name] = nodeKey.split(':');
             const node = this.nodeMap[group]?.[name];
             if (!node) continue;
 
-            // 如果是子组件，在子组件上监听源事件，通过 EventBridge 转发
             if (node.component) {
-                const off = node.component.on?.(tpl.sourceEvent, (ctx: any) => {
-                    const data = ctx?.data !== undefined ? ctx.data : ctx;
-                    this.bridgeEmit(eventKey, tpl.targetEvent, data);
-                });
-                if (typeof off === 'function') {
-                    this.onCleanup(off);
-                }
+                // ── 子组件路径：监听子组件事件，转发 emits/bridges ──
+                // 子组件不需要 handler（子组件自己内部处理 DOM 事件并 emit）
+                this._bindComponentEvent(node.component, event, { once, emits, bridges, eventKey });
             } else {
-                // DOM 节点：直接绑定 DOM 事件，通过 EventBridge 转发
-                const el = node.el;
-                if (!el) continue;
+                // ── DOM 节点路径：this.bind() → 手势适配器 → this.on('dom:xxx') ──
+                this._bindDomEvent(node, event, { handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges, eventKey });
+            }
+        }
+    },
 
-                const handler = (domEvent: Event) => {
-                    this.bridgeEmit(eventKey, tpl.targetEvent, domEvent);
-                };
+    /**
+     * 绑定 DOM 节点事件
+     *
+     * 通过 this.bind() 绑定 DOM 事件（走手势适配器），
+     * 在回调中统一处理 handler / emits / bridges。
+     */
+    _bindDomEvent(
+        node: NodeMetadata,
+        event: string,
+        options: {
+            handler?: string;
+            once?: boolean;
+            delegate?: boolean;
+            delegateTarget?: string;
+            debounce?: number;
+            throttle?: number;
+            emits?: string[];
+            bridges?: { targetEvent: string; once?: boolean }[];
+            eventKey?: string;
+        },
+    ): void {
+        const el = node.el;
+        if (!el) return;
 
-                el.addEventListener(tpl.sourceEvent, handler);
-                this.onCleanup(() => el.removeEventListener(tpl.sourceEvent, handler));
+        const { handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges, eventKey } = options;
+        const domEvent = `${DOM_EVENT_PREFIX}${event}`;
+
+        this.logger?.debug?.('[Template] _bindDomEvent, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'emits =', emits, 'bridges =', bridges);
+
+        // 构建 bind 选项
+        const bindOptions: any = {};
+        if (debounce && debounce > 0) bindOptions.debounce = debounce;
+        if (throttle && throttle > 0) bindOptions.throttle = throttle;
+
+        // 一次 this.bind() 绑定 DOM 事件
+        if (delegate) {
+            this.bind(el, event as any, { ...bindOptions, selector: delegateTarget });
+        } else {
+            this.bind(el, event as any, bindOptions);
+        }
+
+        // 统一回调：一次 this.on() 处理 handler + emits + bridges
+        const callback = (ctx: any) => {
+            const domEvt = this._extractDomEvent(ctx);
+
+            // 1. 内部 handler
+            if (handler && typeof (this as any)[handler] === 'function') {
+                if (delegate && delegateTarget) {
+                    const target = (domEvt?.target as HTMLElement)?.closest(delegateTarget);
+                    if (target) (this as any)[handler](domEvt, target);
+                } else {
+                    (this as any)[handler](domEvt, el);
+                }
+            }
+
+            // 2. 转发为组件事件（emits）
+            if (emits?.length) {
+                for (const emitName of emits) {
+                    this.emit(emitName, domEvt);
+                }
+            }
+
+            // 3. 桥接转发（bridges）
+            if (bridges?.length && eventKey) {
+                for (const bridge of bridges) {
+                    this.bridgeEmit(eventKey, bridge.targetEvent, domEvt);
+                }
+            }
+        };
+
+        if (once) {
+            this.once(domEvent, callback);
+        } else {
+            this.on(domEvent, callback);
+        }
+    },
+
+    /**
+     * 绑定子组件事件
+     *
+     * 通过 childComponent.on() 监听子组件事件，
+     * 在回调中统一处理 emits / bridges。
+     * 子组件不需要 handler（子组件自己内部处理 DOM 事件并 emit）。
+     */
+    _bindComponentEvent(
+        component: any,
+        event: string,
+        options: {
+            once?: boolean;
+            emits?: string[];
+            bridges?: { targetEvent: string; once?: boolean }[];
+            eventKey?: string;
+        },
+    ): void {
+        const { once, emits, bridges, eventKey } = options;
+
+        this.logger?.debug?.('[Template] _bindComponentEvent, event =', event, 'emits =', emits, 'bridges =', bridges);
+
+        const callback = (ctx: any) => {
+            const data = ctx?.data !== undefined ? ctx.data : ctx;
+
+            // 1. 转发为组件事件（emits）
+            if (emits?.length) {
+                for (const emitName of emits) {
+                    this.emit(emitName, data);
+                }
+            }
+
+            // 2. 桥接转发（bridges）
+            if (bridges?.length && eventKey) {
+                for (const bridge of bridges) {
+                    this.bridgeEmit(eventKey, bridge.targetEvent, data);
+                }
+            }
+        };
+
+        if (once) {
+            component.once?.(event, callback);
+        } else {
+            const off = component.on?.(event, callback);
+            if (typeof off === 'function') {
+                this.onCleanup(off);
             }
         }
     },

@@ -237,6 +237,14 @@ export const EventBridgeConfigAbility: AbilityDefinition = {
                         (this as any)[methodName](e);
                     }
                 });
+            } else if (match === '*') {
+                // match = '*'：监听 key 本身即可（Router 每次 change 都会 emit key 本身）
+                // 细分事件（如 change:icons）是额外发出的，key 本身已包含完整信息
+                this._bridgeOn(cfg.source, key, (e: any) => {
+                    if (typeof (this as any)[methodName] === 'function') {
+                        (this as any)[methodName](e);
+                    }
+                });
             } else {
                 // 有 match：只监听 key:match值（如 change:product、click:submitBtn）
                 const suffixes = match.split(',').map((s: string) => s.trim()).filter(Boolean);

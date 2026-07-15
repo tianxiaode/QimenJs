@@ -5,7 +5,7 @@
 
 ## withTemplate 是什么
 
-`withTemplate` 是 `TemplateComponent` 的静态工厂方法，接收 HTML 模板字符串或 JSON 模板数组，在**类定义时**预编译，返回一个带模板的强类。
+`withTemplate` 是 `TemplateComponent` 的静态工厂方法，接收 HTML 模板字符串、JSON 模板数组或 ComponentTemplate 对象，在**类定义时**预编译，返回一个带模板的强类。
 
 **为什么用 withTemplate**：
 
@@ -22,7 +22,7 @@
 
 ```typescript
 import { TemplateComponent } from '@qimenjs/component-core';
-import { HOME_TEMPLATE } from '@qimenjs/template';
+import { HOME_TEMPLATE } from '@qimenjs/component-core';
 
 class HomePage extends TemplateComponent.withTemplate(HOME_TEMPLATE) {
     // static 配置 — 类级别，所有实例共享
@@ -63,7 +63,7 @@ props 会覆盖同名的 static 配置。children 和 bridges 会浅拷贝，不
 ```typescript
 // Button.ts
 import { TemplateComponent } from '@qimenjs/component-core';
-import { BUTTON_TEMPLATE } from '@qimenjs/template';
+import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
 
 class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
     static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
@@ -77,7 +77,7 @@ class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
 ```
 
 **要点**：
-- 模板从 `@qimenjs/template` 导入，不在组件文件中定义
+- 模板从 `@qimenjs/component-core` 导入，不在组件文件中定义
 - `data-content` 声明节点，自动生成同名属性（`this.text`、`this.icon`）
 - `data-event` 声明内部事件，handler 名自动推导（`onClick`）
 

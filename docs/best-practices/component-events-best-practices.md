@@ -1,5 +1,72 @@
 # 组件事件最佳实践
 
+## 事件架构核心原理
+
+QimenJs 的事件系统基于 **scopeId 隔离**：每个 EventScope 有唯一的 scopeId，`emit` 只触发同一 scopeId 下的 handler，不广播到其他 scope。
+
+### 三种事件通道
+
+| 通道 | scope 来源 | 事件流转范围 | 典型用法 |
+|------|-----------|------------|---------|
+| 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
+| 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
+| 桥接事件 | EventBridge.bridgeScope | 桥接 scope 内 | `bridge.bridgeEmit(id, 'click')` |
+
+### scopeId 隔离规则
+
+```
+EventBus 内部数据结构：Map<scopeId, Map<event, Set<handler>>>
+
+emit(event, data, source, scopeId) → 只查找 scopeId 对应的 handler
+on(event, handler, scopeId)        → handler 注册到 scopeId 下
+```
+
+- **组件 A** `this.emit('click')` → 只触发组件 A scope 下的 `click` handler
+- **组件 B** `this.on('click', handler)` → handler 注册在组件 B scope 下
+- **ItemGroup** 通过 `navItem.on('click', handler)` → handler 注册在 navItem scope 下，所以 `navItem.emit('click')` 能触发
+- **GlobalEventBus** `emit('theme:change')` → 只触发 rootScope 下的 handler
+- **EventBridge** `bridgeEmit(id, 'click')` → 只触发 bridgeScope 下的 handler
+
+### 如何创建独立事件流
+
+如果需要新的独立事件流（类似 EventBridge），创建自己的 scope：
+
+```typescript
+import { globalEventBus } from '@qimenjs/event';
+
+class MyEventChannel {
+    private readonly channelScope = globalEventBus.createEventScope();
+
+    emit(eventName: string, data?: any): void {
+        this.channelScope.emit(eventName, data);
+    }
+
+    on(eventName: string, handler: (data: any) => void): () => void {
+        return this.channelScope.on(eventName, (ctx: any) => {
+            handler(ctx.data);
+        });
+    }
+}
+```
+
+所有事件收发都在 `channelScope` 内，天然隔离，不会和其他 scope 互相干扰。
+
+### DOM 事件流
+
+```
+用户点击 → DomEventAdapter → scope.emit('dom:click') → EventBus
+                                                          ↓
+                                              只触发同一 scopeId 下的 handler
+                                                          ↓
+                                              _bindDomEvent 的 callback
+                                                          ↓
+                                              handler / emits / bridges
+```
+
+DOM 事件通过 `dom:` 前缀区分，但隔离靠的是 scopeId，不是前缀。3 个 NavItem 各自有不同的 scopeId，所以 `dom:click` 不会跨组件泄漏。
+
+---
+
 ## 概述
 
 QimenJs 的事件系统分为三层，每层解决不同的问题：

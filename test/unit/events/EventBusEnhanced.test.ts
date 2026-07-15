@@ -7,7 +7,7 @@
  * 3. cleanupContext 显式清理
  * 4. 错误处理
  * 5. deepNullify 工具函数
- * 6. 向后兼容性
+ * 6. scopeId 隔离
  */
 
 import { EventBus, deepNullify } from '@/events/EventBus';
@@ -20,10 +20,11 @@ describe('EventBus emit 增强', () => {
     });
 
     test('引用计数：同步 handler 完成后归零', () => {
+        const scope = bus.createScope();
         const handler = jest.fn();
-        bus.on('test:count', handler);
+        scope.on('test:count', handler);
 
-        bus.emit('test:count', { items: [1, 2, 3], name: 'test' });
+        scope.emit('test:count', { items: [1, 2, 3], name: 'test' });
 
         expect(handler).toHaveBeenCalledTimes(1);
 
@@ -36,15 +37,16 @@ describe('EventBus emit 增强', () => {
     });
 
     test('引用计数：多个 handler 逐一递减', () => {
+        const scope = bus.createScope();
         const handler1 = jest.fn();
         const handler2 = jest.fn();
         const handler3 = jest.fn();
 
-        bus.on('test:multi', handler1);
-        bus.on('test:multi', handler2);
-        bus.on('test:multi', handler3);
+        scope.on('test:multi', handler1);
+        scope.on('test:multi', handler2);
+        scope.on('test:multi', handler3);
 
-        bus.emit('test:multi', { value: 1 });
+        scope.emit('test:multi', { value: 1 });
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).toHaveBeenCalledTimes(1);
@@ -55,6 +57,7 @@ describe('EventBus emit 增强', () => {
     });
 
     test('异步 handler：Promise 完成后递减引用计数', async () => {
+        const scope = bus.createScope();
         let resolvePromise: () => void;
         const promise = new Promise<void>(resolve => { resolvePromise = resolve; });
 
@@ -63,9 +66,9 @@ describe('EventBus emit 增强', () => {
             capturedCtx = ctx;
             return promise;
         });
-        bus.on('test:async', handler);
+        scope.on('test:async', handler);
 
-        bus.emit('test:async', { value: 1 });
+        scope.emit('test:async', { value: 1 });
 
         // 异步 handler 未完成，_refCount 仍为 1
         expect(capturedCtx._refCount).toBe(1);
@@ -80,16 +83,17 @@ describe('EventBus emit 增强', () => {
     });
 
     test('混合同步和异步 handler', async () => {
+        const scope = bus.createScope();
         let resolveAsync: () => void;
         const asyncPromise = new Promise<void>(resolve => { resolveAsync = resolve; });
 
         const syncHandler = jest.fn();
         const asyncHandler = jest.fn(() => asyncPromise);
 
-        bus.on('test:mixed', syncHandler);
-        bus.on('test:mixed', asyncHandler);
+        scope.on('test:mixed', syncHandler);
+        scope.on('test:mixed', asyncHandler);
 
-        bus.emit('test:mixed', { items: [1, 2] });
+        scope.emit('test:mixed', { items: [1, 2] });
 
         // 同步 handler 完成，异步未完成
         const ctx = syncHandler.mock.calls[0][0];
@@ -106,12 +110,13 @@ describe('EventBus emit 增强', () => {
     });
 
     test('错误处理：同步 handler 抛错不中断其他 handler', () => {
+        const scope = bus.createScope();
         const handler2 = jest.fn();
-        bus.on('test:error', () => { throw new Error('handler1 error'); });
-        bus.on('test:error', handler2);
+        scope.on('test:error', () => { throw new Error('handler1 error'); });
+        scope.on('test:error', handler2);
 
         expect(() => {
-            bus.emit('test:error', { value: 1 });
+            scope.emit('test:error', { value: 1 });
         }).not.toThrow();
 
         expect(handler2).toHaveBeenCalledTimes(1);
@@ -120,11 +125,12 @@ describe('EventBus emit 增强', () => {
     });
 
     test('错误处理：异步 handler reject 不中断其他 handler', async () => {
+        const scope = bus.createScope();
         const handler2 = jest.fn();
-        bus.on('test:asyncError', () => { return Promise.reject(new Error('async error')); });
-        bus.on('test:asyncError', handler2);
+        scope.on('test:asyncError', () => { return Promise.reject(new Error('async error')); });
+        scope.on('test:asyncError', handler2);
 
-        bus.emit('test:asyncError', { value: 1 });
+        scope.emit('test:asyncError', { value: 1 });
 
         expect(handler2).toHaveBeenCalledTimes(1);
 
@@ -135,16 +141,18 @@ describe('EventBus emit 增强', () => {
     });
 
     test('无监听器时不报错', () => {
+        const scope = bus.createScope();
         expect(() => {
-            bus.emit('test:noListeners', {});
+            scope.emit('test:noListeners', {});
         }).not.toThrow();
     });
 
     test('cleanupContext：显式清理 data', () => {
+        const scope = bus.createScope();
         const handler = jest.fn();
-        bus.on('test:cleanup', handler);
+        scope.on('test:cleanup', handler);
 
-        bus.emit('test:cleanup', { items: [1, 2, 3], name: 'test' });
+        scope.emit('test:cleanup', { items: [1, 2, 3], name: 'test' });
 
         const ctx = handler.mock.calls[0][0];
         // data 未被自动清理
@@ -156,47 +164,35 @@ describe('EventBus emit 增强', () => {
         expect(ctx.data.name).toBe('test');
     });
 
-    test('向后兼容：原有 emit 行为不变', () => {
-        const handler = jest.fn();
-        bus.on('legacy:event', handler);
+    test('scopeId 隔离：emit 只触发自己 scope 下的 handler', () => {
+        const scope1 = bus.createScope();
+        const scope2 = bus.createScope();
+        const handler1 = jest.fn();
+        const handler2 = jest.fn();
 
-        bus.emit('legacy:event', { data: 'test' });
+        scope1.on('test:isolate', handler1);
+        scope2.on('test:isolate', handler2);
 
-        expect(handler).toHaveBeenCalledTimes(1);
-        const ctx = handler.mock.calls[0][0];
-        expect(ctx.event).toBe('legacy:event');
-        expect(ctx.data).toEqual({ data: 'test' });
-        expect(ctx.source).toBe('UNKNOWN');
-        expect(ctx.timestamp).toBeDefined();
-        expect(ctx.busId).toBe(bus.getBusId());
-        expect(ctx.scopeId).toBe('NO_SCOPE');
+        scope1.emit('test:isolate', { data: 'from-scope1' });
+
+        expect(handler1).toHaveBeenCalledTimes(1);
+        expect(handler2).not.toHaveBeenCalled();
     });
 
-    test('向后兼容：source 参数正常传递', () => {
-        const handler = jest.fn();
-        bus.on('source:event', handler);
+    test('scopeId 隔离：不同 scope 互不干扰', () => {
+        const scope1 = bus.createScope();
+        const scope2 = bus.createScope();
+        const handler1 = jest.fn();
+        const handler2 = jest.fn();
 
-        const testSource = { name: 'TestSource' };
-        bus.emit('source:event', { data: 'test' }, testSource);
+        scope1.on('click', handler1);
+        scope2.on('click', handler2);
 
-        expect(handler).toHaveBeenCalledWith(
-            expect.objectContaining({
-                source: testSource,
-            })
-        );
-    });
+        scope1.emit('click', {});
+        scope2.emit('click', {});
 
-    test('向后兼容：scopeId 参数正常传递', () => {
-        const handler = jest.fn();
-        bus.on('scope:event', handler);
-
-        bus.emit('scope:event', { data: 'test' }, 'source', 'my-scope');
-
-        expect(handler).toHaveBeenCalledWith(
-            expect.objectContaining({
-                scopeId: 'my-scope',
-            })
-        );
+        expect(handler1).toHaveBeenCalledTimes(1);
+        expect(handler2).toHaveBeenCalledTimes(1);
     });
 });
 

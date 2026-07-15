@@ -61,6 +61,8 @@ export const ChildSlotAbility: AbilityDefinition = {
             } else {
                 node.parentNode.appendChild(newChild.el);
             }
+            // replace 模式下更新 el 引用（新组件 el 替换了旧 el）
+            node.el = newChild.el;
         } else if (node.jsonMode === 'child') {
             // child 模式：清空占位节点内容，挂载新组件
             const container = node.el.parentElement;
@@ -69,12 +71,13 @@ export const ChildSlotAbility: AbilityDefinition = {
                 container.appendChild(newChild.el);
             }
         } else {
-            // fallback：直接替换当前 el
-            node.el.replaceWith(newChild.el);
+            // 默认：清空容器节点内容，挂载新组件到内部
+            // node.el 保持为容器 div，不更新为子组件 el
+            node.el.innerHTML = '';
+            node.el.appendChild(newChild.el);
         }
 
         // 更新 nodeMap
-        node.el = newChild.el;
         node.component = newChild;
         node.componentClass = newComponentClass;
 

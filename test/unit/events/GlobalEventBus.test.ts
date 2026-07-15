@@ -1,4 +1,4 @@
-﻿import { GlobalEventBus, globalEventBus } from '@/events/GlobalEventBus';
+import { GlobalEventBus, globalEventBus } from '@/events/GlobalEventBus';
 import { EventScope } from '@/events/EventScope';
 import { Logger } from '@qimenjs/logger';
 
@@ -14,8 +14,9 @@ import { Logger } from '@qimenjs/logger';
  * 6. 事件作用域创建
  * 7. 全局事件源标识
  * 8. 多实例隔离
- * 9. 边界情况处理
- * 10. 性能测试
+ * 9. scopeId 隔离
+ * 10. 边界情况处理
+ * 11. 性能测试
  */
 
 // Mock Logger to avoid issues in test environment
@@ -307,37 +308,60 @@ describe('GlobalEventBus', () => {
             expect(scope1.getScopeId()).not.toBe(scope2.getScopeId());
         });
 
-        test('应该能够通过作用域管理事件', () => {
-            const scope = testBus.createEventScope();
-
-            const handler = jest.fn();
-            testBus.on('scope-test', handler);
-            scope.emit('scope-test', { data: 'from-scope' }, { source: 'TestSource' });
-
-            expect(handler).toHaveBeenCalledTimes(1);
-            expect(handler).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    data: { data: 'from-scope' },
-                    source: 'TestSource',
-                    event: 'scope-test',
-                    busId: testBus.getBusId(),
-                })
-            );
-        });
-
         test('作用域销毁应该清理相关订阅', () => {
             const scope = testBus.createEventScope();
             const handler = jest.fn();
 
             scope.on('scope-dispose-test', handler);
-            testBus.emit('scope-dispose-test', {});
+            scope.emit('scope-dispose-test', {});
 
             expect(handler).toHaveBeenCalledTimes(1);
 
             scope.dispose();
-            testBus.emit('scope-dispose-test', {});
+            scope.emit('scope-dispose-test', {});
 
             expect(handler).toHaveBeenCalledTimes(1); // 销毁后应该仍然是1
+        });
+    });
+
+    // --- scopeId 隔离测试 ---
+
+    describe('scopeId 隔离', () => {
+        test('rootScope 和子 scope 的事件应该互相隔离', () => {
+            const scope = testBus.createEventScope();
+            const rootHandler = jest.fn();
+            const scopeHandler = jest.fn();
+
+            testBus.on('isolate-test', rootHandler);
+            scope.on('isolate-test', scopeHandler);
+
+            // rootScope emit 只触发 rootScope 的 handler
+            testBus.emit('isolate-test', { from: 'root' });
+            expect(rootHandler).toHaveBeenCalledTimes(1);
+            expect(scopeHandler).not.toHaveBeenCalled();
+
+            // scope emit 只触发 scope 的 handler
+            scope.emit('isolate-test', { from: 'scope' });
+            expect(rootHandler).toHaveBeenCalledTimes(1); // 仍然是1
+            expect(scopeHandler).toHaveBeenCalledTimes(1);
+        });
+
+        test('不同子 scope 之间应该互相隔离', () => {
+            const scope1 = testBus.createEventScope();
+            const scope2 = testBus.createEventScope();
+            const handler1 = jest.fn();
+            const handler2 = jest.fn();
+
+            scope1.on('cross-scope', handler1);
+            scope2.on('cross-scope', handler2);
+
+            scope1.emit('cross-scope', {});
+            expect(handler1).toHaveBeenCalledTimes(1);
+            expect(handler2).not.toHaveBeenCalled();
+
+            scope2.emit('cross-scope', {});
+            expect(handler1).toHaveBeenCalledTimes(1);
+            expect(handler2).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -503,59 +527,6 @@ describe('GlobalEventBus', () => {
 
             // 确保性能合理（小于100ms）
             expect(end - start).toBeLessThan(100);
-        });
-    });
-
-    // --- 集成测试 ---
-
-    describe('集成测试', () => {
-        test('应该支持完整的事件生命周期', () => {
-            const handler1 = jest.fn();
-            const handler2 = jest.fn();
-            const scope = testBus.createEventScope();
-
-            // 订阅事件 - 通过rootScope和scope分别订阅
-            const unsub = testBus.on('lifecycle', handler1);
-            scope.on('lifecycle', handler2);
-
-            // 触发事件 - 两个订阅都会触发
-            testBus.emit('lifecycle', { phase: 1 });
-            expect(handler1).toHaveBeenCalledTimes(1);
-            expect(handler2).toHaveBeenCalledTimes(1);
-
-            // 取消订阅 - 只取消第一个订阅
-            unsub();
-            testBus.emit('lifecycle', { phase: 2 });
-            expect(handler1).toHaveBeenCalledTimes(1); // 仍然是1
-            expect(handler2).toHaveBeenCalledTimes(2); // scope的订阅仍然存在
-
-            // 销毁作用域 - 清理scope的订阅
-            scope.dispose();
-            testBus.emit('lifecycle', { phase: 3 });
-            expect(handler1).toHaveBeenCalledTimes(1); // 仍然是1
-            expect(handler2).toHaveBeenCalledTimes(2); // 仍然是2
-
-            // 清理所有
-            testBus.clear();
-            testBus.emit('lifecycle', { phase: 4 });
-            expect(handler1).toHaveBeenCalledTimes(1);
-            expect(handler2).toHaveBeenCalledTimes(2);
-        });
-
-        test('应该支持事件冒泡和捕获模式', () => {
-            const rootHandler = jest.fn();
-            const scopeHandler = jest.fn();
-
-            testBus.on('bubble-test', rootHandler);
-
-            const scope = testBus.createEventScope();
-            scope.on('bubble-test', scopeHandler);
-
-            testBus.emit('bubble-test', { data: 'test' });
-
-            // 两个处理器都应该被触发
-            expect(rootHandler).toHaveBeenCalledTimes(1);
-            expect(scopeHandler).toHaveBeenCalledTimes(1);
         });
     });
 });

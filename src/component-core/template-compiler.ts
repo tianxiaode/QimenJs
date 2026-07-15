@@ -59,6 +59,39 @@ export interface BridgeEventTemplate {
 }
 
 /**
+ * 合并后的 DOM 事件绑定 — 编译时从 DomEventDecl 生成
+ *
+ * 同一个 DOM 事件（如 click）可能同时需要：
+ * - 调用内部 handler（onClick）
+ * - 转发为组件事件（emits）
+ * - 通过 EventBridge 桥接（bridges）
+ *
+ * 绑定时只需一次 this.bind()，在回调中统一处理所有转发。
+ */
+export interface DomEventBinding {
+    /** DOM 事件语义（如 click, input） */
+    event: string;
+    /** 对应 nodeMap 中的 group:name key */
+    nodeKey: string;
+    /** 内部 handler 名（如 onClick），handler: true 时自动推导 */
+    handler?: string;
+    /** 是否只触发一次 */
+    once?: boolean;
+    /** 是否事件委托 */
+    delegate?: boolean;
+    /** 事件委托目标选择器 */
+    delegateTarget?: string;
+    /** 防抖时间（毫秒） */
+    debounce?: number;
+    /** 节流时间（毫秒） */
+    throttle?: number;
+    /** 转发为组件事件名列表（来自 emits 声明），如同名 'click' 或重命名 'close' */
+    emits?: string[];
+    /** 桥接事件列表（来自 bridges 声明） */
+    bridges?: { targetEvent: string; once?: boolean }[];
+}
+
+/**
  * 预编译结果
  */
 export interface CompiledTemplate {
@@ -409,7 +442,7 @@ export type { JsonTemplateNode } from './template-json';
 export { jsonTemplateToHtml } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, EventDecl } from './template-types';
+export type { TplNode, ComponentTemplate, DomEventDecl } from './template-types';
 export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
 
 // 新模板编译（一步到位，跳过 HTML data-* 属性）

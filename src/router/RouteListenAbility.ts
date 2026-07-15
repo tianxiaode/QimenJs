@@ -2,21 +2,16 @@
  * RouteListenAbility — 路由接收能力
  *
  * 组件声明此能力后，自动通过桥接事件监听路由变化，
- * 桥接配置声明 events: { change: 'onRouteChange' }，
  * EventBridgeAbility 的 initEventBridge 会自动调用子类的 onRouteChange(event)。
  *
  * 子类只需定义 onRouteChange 方法即可接收路由变化事件，无需重写能力方法。
  *
  * 桥接配置：
- * { source: 'router', events: { change: 'onRouteChange' }, match: '*' }
+ * { change: { source: 'router', match: '*' } }
  *
- * - events: 事件映射，change → onRouteChange（由桥接自动调用）
- * - match: 路径粒度匹配
- *   - '*' : 监听所有路由变化（监听 route:change）
- *   - 'home,icons,theme' : 只监听指定路径（监听 route:change:home 等）
- *
- * 默认 match 为 '*'，即监听所有路由变化。
- * 子类如需精确匹配，可在构造函数中调用 setEventBridge 覆盖配置。
+ * - key = 'change'：匹配 Router emit 的 change 事件
+ * - match: '*'：监听 change 本身以及 change:xxx 的所有细分事件
+ * - handler 默认推导为 onRouteChange（由 RouteListenAbility 的 _initRouteListen 中手动设置）
  *
  * 适用于：路由容器组件（RouteContainerComponent）等需要响应路由变化的接收方
  */
@@ -32,13 +27,15 @@ export const RouteListenAbility: AbilityDefinition = {
         this.logger?.debug?.('[RouteListen] _initRouteListen');
 
         // 设置桥接事件配置，由 EventBridgeAbility 的 initEventBridge 处理监听
-        // 桥接声明 events: { change: 'onRouteChange' }，自动调用子类的 onRouteChange
+        // key = 'change' 匹配 Router emit 的 change 事件
+        // match = '*' 监听 change 本身以及 change:xxx 的所有细分事件
+        // handler = 'onRouteChange' 指定处理方法名
         if (typeof this.setEventBridge === 'function') {
             this.setEventBridge({
-                route: {
+                change: {
                     source: 'router',
-                    events: { change: 'onRouteChange' },
                     match: '*',
+                    handler: 'onRouteChange',
                 },
             });
         }

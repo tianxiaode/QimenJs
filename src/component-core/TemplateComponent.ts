@@ -37,7 +37,7 @@ import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode, ContentInfo } from './template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode, ContentInfo, DomEventBinding } from './template-compiler';
 import type { ComponentTemplate } from './template-types';
 import { precompileTemplate, jsonTemplateToHtml, convertTemplate, compileTemplate } from './template-compiler';
 import type { CompiledTemplateResult } from './template-compiler';
@@ -208,6 +208,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             bridgeEventTemplates: BridgeEventTemplate[];
             contentPropNames: string[];
             contentInfos: ContentInfo[];
+            domEventBindings: DomEventBinding[];
             rootClassName?: string;
             rootStyle?: string;
             templateCache: HTMLTemplateElement;
@@ -216,14 +217,20 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         if (typeof template === 'string') {
             // ── 旧链路：HTML 字符串 ──
             templateHtml = template;
-            compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
+            compiled = {
+                ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
+                domEventBindings: [],
+            };
 
         } else if (Array.isArray(template)) {
             // ── 旧链路：JsonTemplateNode[] ──
             const result = jsonTemplateToHtml(template);
             jsonComponentMap = result.componentMap;
             templateHtml = result.html;
-            compiled = precompileTemplate(templateHtml, this.isMultiArea ?? false);
+            compiled = {
+                ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
+                domEventBindings: [],
+            };
 
         } else {
             // ── 新链路：ComponentTemplate ──
@@ -245,6 +252,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 bridgeEventTemplates: result.bridgeEventTemplates,
                 contentPropNames: result.contentPropNames,
                 contentInfos: result.contentInfos,
+                domEventBindings: result.domEventBindings,
                 rootClassName: result.rootClassName,
                 rootStyle: result.rootStyle,
                 templateCache: tpl,
@@ -299,6 +307,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
             /** 预编译的桥接事件模板（不含 node 引用） */
             static readonly _bridgeEventTemplates: BridgeEventTemplate[] = compiled.bridgeEventTemplates;
+
+            /** 预编译的合并 DOM 事件绑定（同一 DOM 事件只绑定一次） */
+            static readonly _domEventBindings: DomEventBinding[] = compiled.domEventBindings ?? [];
 
             /** 预编译的内容属性名列表 */
             static readonly _contentPropNames: string[] = compiled.contentPropNames;

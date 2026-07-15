@@ -53,7 +53,7 @@ export type { JsonTemplateNode, JsonTemplateResult } from './template-json';
 export { jsonTemplateToHtml } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, EventDecl } from './template-types';
+export type { TplNode, ComponentTemplate, DomEventDecl } from './template-types';
 export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
 
 // 模板常量（Area, Name, Slot, Event）

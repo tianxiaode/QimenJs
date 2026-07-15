@@ -17,7 +17,7 @@
 | @qimenjs/types | 完成 | 通过 | - | 全局共享类型 |
 | @qimenjs/i18n | 完成 | 通过 | ~90% | 国际化 |
 
-### 第 1 层：基础设施工具包（6 个）
+### 第 1 层：基础设施工具包（7 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
@@ -26,6 +26,7 @@
 | @qimenjs/events | 完成 | 通过 | ~80% | 事件系统 |
 | @qimenjs/validation | 完成 | 通过 | 82% | 验证系统 |
 | @qimenjs/task | 完成 | 通过 | ~85% | 任务系统 |
+| @qimenjs/composable | 完成 | 通过 | 90% | 可组合能力系统 |
 | @qimenjs/context | 完成 | 通过 | ~76% | 请求上下文 |
 
 ### 第 2 层：功能工具包（7 个）
@@ -51,25 +52,40 @@
 | @qimenjs/data-processor-abp | 完成 | 通过 | ~85% | ABP 数据处理器 |
 | @qimenjs/data-processor-spring | 完成 | 通过 | ~85% | Spring 数据处理器 |
 
-### 第 4 层：业务包（1 个）
+### 第 4 层：业务包（2 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
 | @qimenjs/entity | 完成 | 通过 | 83% | 实体管理框架 |
+| @qimenjs/router | 完成 | 通过 | ~85% | 路由系统 |
+
+### UI 层：组件与界面（8 个）
+
+| 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
+|------|------|------|------------|------|
+| @qimenjs/component-core | 开发中 | 通过 | ~82% | 组件核心基础设施 |
+| @qimenjs/component-abilities | 开发中 | 通过 | ~80% | 组件业务能力 |
+| @qimenjs/component | 开发中 | 通过 | ~78% | UI 组件实现 |
+| @qimenjs/layout | 完成 | 通过 | ~88% | 布局定义系统 |
+| @qimenjs/theme | 完成 | 通过 | ~85% | 主题系统 |
+| @qimenjs/icon | 完成 | N/A | N/A | 中国风图标库（静态资源） |
+| @qimenjs/imperative | 完成 | 通过 | ~83% | 命令式 API |
+| @qimenjs/permission | 完成 | 通过 | ~87% | 权限系统 |
 
 ## 统计信息
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 28 |
-| 已完成 | 27 |
-| 全局分支覆盖率 | ~87% |
+| 总包数 | 38 |
+| 已完成 | 30 |
+| 开发中 | 3 |
+| 全局分支覆盖率 | ~85% |
 
 ## 依赖关系图
 
 ```
 entity (L4)
-  ├─ composable (L2)
+  ├─ composable (L1)
   ├─ schema (L2)
   ├─ context (L1)
   ├─ http (L3)
@@ -79,6 +95,44 @@ entity (L4)
   ├─ data-processor (L3)
   ├─ registry (L1)
   └─ utils (L0)
+
+router (L4)
+  ├─ events (L1)
+  └─ composable (L1)
+
+component-core (UI)
+  ├─ composable (L1)
+  ├─ events (L1)
+  ├─ registry (L1)
+  ├─ event-dom (L2)
+  └─ system-abilities (L3)
+
+component-abilities (UI)
+  ├─ composable (L1)
+  └─ component-core (UI)
+
+component (UI)
+  ├─ component-core (UI)
+  ├─ component-abilities (UI)
+  ├─ composable (L1)
+  └─ events (L1)
+
+layout (UI)
+  └─ types (L0)
+
+theme (UI)
+  ├─ registry (L1)
+  └─ events (L1)
+
+imperative (UI)
+  ├─ composable (L1)
+  ├─ events (L1)
+  ├─ component-core (UI)
+  └─ component-abilities (UI)
+
+permission (UI)
+  ├─ registry (L1)
+  └─ events (L1)
 
 http (L3)
   ├─ context (L1)
@@ -101,7 +155,7 @@ data-processor-spring (L3)
 
 system-abilities (L3)
   ├─ events (L1)
-  ├─ composable (L2)
+  ├─ composable (L1)
   ├─ registry (L1)
   └─ event-dom (L2)
 
@@ -118,7 +172,7 @@ event-dom (L2)
   ├─ error (L0)
   └─ async (L0)
 
-composable (L2)
+composable (L1)
   ├─ logger (L0)
   └─ async (L0)
 
@@ -134,10 +188,6 @@ mime (L2)
 
 pattern (L2)
   └─ utils (L0)
-
-permission (L2)
-  ├─ registry (L1)
-  └─ events (L1)
 
 context (L1)
   └─ registry (L1)

@@ -1,4 +1,4 @@
-﻿import { EventBus } from '@/events/EventBus';
+import { EventBus } from '@/events/EventBus';
 import { EventScope } from '@/events/EventScope';
 import { ILogger } from '@qimenjs/logger';
 
@@ -16,6 +16,7 @@ import { ILogger } from '@qimenjs/logger';
  * 8. 错误处理
  * 9. 边界情况处理
  * 10. 生命周期管理
+ * 11. scopeId 隔离
  */
 describe('EventScope', () => {
     let bus: EventBus;
@@ -77,7 +78,7 @@ describe('EventScope', () => {
         test('应该能够通过作用域订阅事件', () => {
             const handler = jest.fn();
             const unsubscribe = scope.on('test-event', handler);
-            bus.emit('test-event', { data: 'test' });
+            scope.emit('test-event', { data: 'test' });
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -88,7 +89,7 @@ describe('EventScope', () => {
             );
 
             unsubscribe();
-            bus.emit('test-event', { data: 'test2' });
+            scope.emit('test-event', { data: 'test2' });
             expect(handler).toHaveBeenCalledTimes(1); // 取消订阅后应该仍然是1
         });
 
@@ -96,11 +97,11 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('test-event', handler);
 
-            bus.emit('test-event', { data: 'before-dispose' });
+            scope.emit('test-event', { data: 'before-dispose' });
             expect(handler).toHaveBeenCalledTimes(1);
 
             scope.dispose();
-            bus.emit('test-event', { data: 'after-dispose' });
+            scope.emit('test-event', { data: 'after-dispose' });
             expect(handler).toHaveBeenCalledTimes(1); // 销毁后应该仍然是1
         });
 
@@ -111,16 +112,16 @@ describe('EventScope', () => {
             scope.on('event-1', handler1);
             scope.on('event-2', handler2);
 
-            bus.emit('event-1', { data: 'test1' });
-            bus.emit('event-2', { data: 'test2' });
+            scope.emit('event-1', { data: 'test1' });
+            scope.emit('event-2', { data: 'test2' });
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope.dispose();
 
-            bus.emit('event-1', { data: 'test3' });
-            bus.emit('event-2', { data: 'test4' });
+            scope.emit('event-1', { data: 'test3' });
+            scope.emit('event-2', { data: 'test4' });
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -162,7 +163,7 @@ describe('EventScope', () => {
     describe('事件触发', () => {
         test('应该能够通过作用域触发事件', () => {
             const handler = jest.fn();
-            bus.on('through-scope', handler);
+            scope.on('through-scope', handler);
 
             scope.emit('through-scope', { data: 'test' });
 
@@ -177,7 +178,7 @@ describe('EventScope', () => {
 
         test('应该在事件上下文中包含scopeId和busId', () => {
             const handler = jest.fn();
-            bus.on('context-test', handler);
+            scope.on('context-test', handler);
 
             scope.emit('context-test', { data: 'test' });
 
@@ -193,37 +194,10 @@ describe('EventScope', () => {
 
         test('应该能够指定事件源', () => {
             const handler = jest.fn();
-            bus.on('source-test', handler);
+            scope.on('source-test', handler);
 
-            const customSource = { source: { name: 'CustomSource' } };
-            scope.emit('source-test', { data: 'test' }, customSource);
-
-            expect(handler).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    source: customSource.source,
-                })
-            );
-        });
-
-        test('应该使用作用域作为默认事件源', () => {
-            const handler = jest.fn();
-            bus.on('default-source', handler);
-
-            scope.emit('default-source', {});
-
-            expect(handler).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    source: scope,
-                })
-            );
-        });
-
-        test('emit 传入 options.source 时使用指定的事件源', () => {
-            const handler = jest.fn();
-            bus.on('custom-source', handler);
-
-            const customSource = { name: 'router' };
-            scope.emit('custom-source', { data: 'test' }, { source: customSource });
+            const customSource = { name: 'CustomSource' };
+            scope.emit('source-test', { data: 'test' }, { source: customSource });
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -232,11 +206,11 @@ describe('EventScope', () => {
             );
         });
 
-        test('emit 不传 options 时 source 默认为 scope 自身', () => {
+        test('应该使用作用域作为默认事件源', () => {
             const handler = jest.fn();
-            bus.on('no-options-source', handler);
+            scope.on('default-source', handler);
 
-            scope.emit('no-options-source', { data: 'test' });
+            scope.emit('default-source', {});
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -254,7 +228,7 @@ describe('EventScope', () => {
             scope.on('dispose-test', handler);
 
             scope.dispose();
-            bus.emit('dispose-test', {});
+            scope.emit('dispose-test', {});
 
             expect(handler).not.toHaveBeenCalled();
         });
@@ -301,7 +275,7 @@ describe('EventScope', () => {
         test('销毁后不应该能够订阅事件', () => {
             scope.dispose();
             const handler = jest.fn();
-            const unsubscribe = scope.on('post-dispose-event', handler);
+            scope.on('post-dispose-event', handler);
 
             scope.emit('post-dispose-event', { data: 'test' });
 
@@ -519,30 +493,30 @@ describe('EventScope', () => {
             scope1.on('event1', handler1);
             scope2.on('event2', handler2);
 
-            bus.emit('event1', {});
-            bus.emit('event2', {});
+            scope1.emit('event1', {});
+            scope2.emit('event2', {});
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope1.dispose();
 
-            bus.emit('event1', {});
-            bus.emit('event2', {});
+            scope1.emit('event1', {});
+            scope2.emit('event2', {});
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             scope2.dispose();
 
-            bus.emit('event1', {});
-            bus.emit('event2', {});
+            scope1.emit('event1', {});
+            scope2.emit('event2', {});
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
         });
 
-        test('作用域之间应该相互独立', () => {
+        test('作用域之间应该相互隔离', () => {
             const scope1 = bus.createScope();
             const scope2 = bus.createScope();
 
@@ -552,21 +526,27 @@ describe('EventScope', () => {
             scope1.on('shared-event', handler1);
             scope2.on('shared-event', handler2);
 
-            bus.emit('shared-event', {});
+            // scope1 emit 只触发 scope1 的 handler
+            scope1.emit('shared-event', {});
+            expect(handler1).toHaveBeenCalledTimes(1);
+            expect(handler2).not.toHaveBeenCalled();
 
+            // scope2 emit 只触发 scope2 的 handler
+            scope2.emit('shared-event', {});
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope1.dispose();
 
-            bus.emit('shared-event', {});
+            scope1.emit('shared-event', {});
+            scope2.emit('shared-event', {});
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             scope2.dispose();
 
-            bus.emit('shared-event', {});
+            scope2.emit('shared-event', {});
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);

@@ -91,7 +91,7 @@ export class GlobalEventBus {
      * 触发事件（实现）
      */
     emit(event: string, dataOrContext?: any): void {
-        this.bus.emit(event, dataOrContext, 'GLOBAL', 'ROOT_SCOPE');
+        this.bus.emit(event, dataOrContext, 'GLOBAL', this.rootScope.getScopeId());
     }
 
     /**
@@ -121,7 +121,7 @@ export class GlobalEventBus {
      * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
      */
     clear(event?: string) {
-        this.bus.clear(event);
+        this.bus.clear(this.rootScope.getScopeId(), event);
     }
 }
 

@@ -19,9 +19,9 @@
  * - jsonTemplateToHtml — 旧版 JsonTemplateNode[] 格式
  */
 
-import type { TplNode, ComponentTemplate, ContentInfo } from './template-types';
+import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl } from './template-types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate } from './template-compiler';
+import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, DomEventBinding } from './template-compiler';
 import { parseEventAttr, parseBridgeEventAttr } from './template-compiler';
 
 // ─── compileTemplate 编译结果 ──────────────────────────────
@@ -50,6 +50,8 @@ export interface CompiledTemplateResult {
     contentInfos: ContentInfo[];
     /** 组件类映射 — name → ComponentClass */
     componentMap: Record<string, new (props?: Record<string, any>) => any>;
+    /** 合并后的 DOM 事件绑定 — 同一 DOM 事件只绑定一次，统一处理 handler/forwards/bridges */
+    domEventBindings: DomEventBinding[];
     /** 根节点 className — 应用到组件 el 上 */
     rootClassName?: string;
     /** 根节点 style — 应用到组件 el 上 */
@@ -82,11 +84,11 @@ export interface TplNodeMeta {
     name: string;
     /** 内容语义 */
     content?: string;
-    /** 内部事件声明 */
-    events?: string[];
-    /** 转发事件声明 */
+    /** 事件声明（新格式：DomEventDecl 对象；旧格式：字符串数组） */
+    events?: Record<string, DomEventDecl> | string[];
+    /** 转发事件声明（旧格式兼容） */
     forwards?: string[];
-    /** 桥接事件声明 */
+    /** 桥接事件声明（旧格式兼容） */
     bridges?: string[];
     /** 组件类型引用 */
     typeRef?: string;
@@ -168,6 +170,7 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
     const contentPropNames: string[] = [];
     const contentInfos: ContentInfo[] = [];
     const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};
+    const domEventBindings: DomEventBinding[] = [];
 
     // 根节点不生成 HTML，只转换 children
     // 但根节点的 className/style 需要提取，应用到组件 el 上
@@ -189,6 +192,7 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
                 contentPropNames,
                 contentInfos,
                 componentMap,
+                domEventBindings,
             })
         );
     }
@@ -203,6 +207,7 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         contentPropNames,
         contentInfos,
         componentMap,
+        domEventBindings,
         rootClassName,
         rootStyle,
     };
@@ -218,6 +223,8 @@ interface CompileContext {
     contentPropNames: string[];
     contentInfos: ContentInfo[];
     componentMap: Record<string, new (props?: Record<string, any>) => any>;
+    /** 合并后的 DOM 事件绑定 — 同一 DOM 事件只绑定一次 */
+    domEventBindings: DomEventBinding[];
 }
 
 /**
@@ -370,8 +377,10 @@ function compileNode(
 /**
  * 编译节点的事件模板
  *
- * 从 TplNode 的 events/forwards/bridges 提取事件信息，
- * 生成预编译的事件模板，供运行时绑定使用。
+ * 从 TplNode 的 events（Record<string, DomEventDecl>）提取事件信息，
+ * 直接生成 DomEventBinding（新结构已天然按 DOM 事件名聚合，无需合并去重），
+ * 同时保留 internalEventTemplates/externalEventTemplates/bridgeEventTemplates
+ * 供旧链路（buildEventMapFromTemplates）兼容使用。
  */
 function compileEvents(
     node: TplNode,
@@ -380,54 +389,64 @@ function compileEvents(
     name: string,
     ctx: CompileContext,
 ): void {
-    const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
+    if (!node.events) return;
 
-    // 内部事件 → InternalEventTemplate
-    // handler 推导：click=title → onTitleClick，click → onClick
-    if (node.events?.length) {
-        for (const eventDecl of node.events) {
-            const parsed = parseEventAttr(eventDecl);
-            for (const { event, name: eventName, once, delegate, debounce, throttle } of parsed) {
-                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
-                const handlerName = eventName
-                    ? `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}${capitalEvent}`
-                    : `on${capitalEvent}`;
-
-                ctx.internalEventTemplates.push({
-                    event,
-                    handler: handlerName,
-                    once,
-                    delegate,
-                    debounce,
-                    throttle,
-                    nodeKey: key,
-                });
-            }
+    for (const [domEvent, decl] of Object.entries(node.events)) {
+        // ── 推导 handler 名 ──
+        let handlerName: string | undefined;
+        if (decl.handler === true) {
+            // 自动推导：click → onClick
+            const capitalEvent = domEvent.charAt(0).toUpperCase() + domEvent.slice(1);
+            handlerName = `on${capitalEvent}`;
+        } else if (typeof decl.handler === 'string') {
+            handlerName = decl.handler;
         }
-    }
 
-    // 转发事件 → ExternalEventTemplate
-    if (node.forwards?.length) {
-        for (const forwardDecl of node.forwards) {
-            const parsed = parseEventAttr(forwardDecl);
-            for (const { event } of parsed) {
+        // ── 生成 DomEventBinding（新链路） ──
+        const binding: DomEventBinding = {
+            event: domEvent,
+            nodeKey: key,
+        };
+        if (handlerName) binding.handler = handlerName;
+        if (decl.once) binding.once = decl.once;
+        if (decl.delegate) binding.delegate = decl.delegate;
+        if (decl.delegateTarget) binding.delegateTarget = decl.delegateTarget;
+        if (decl.debounce) binding.debounce = decl.debounce;
+        if (decl.throttle) binding.throttle = decl.throttle;
+        if (decl.emits?.length) binding.emits = decl.emits;
+        if (decl.bridges?.length) binding.bridges = decl.bridges.map(b => ({ targetEvent: b }));
+
+        ctx.domEventBindings.push(binding);
+
+        // ── 旧链路兼容：internalEventTemplates ──
+        if (handlerName) {
+            ctx.internalEventTemplates.push({
+                event: domEvent,
+                handler: handlerName,
+                once: decl.once,
+                delegate: decl.delegate,
+                debounce: decl.debounce,
+                throttle: decl.throttle,
+                nodeKey: key,
+            });
+        }
+
+        // ── 旧链路兼容：externalEventTemplates ──
+        if (decl.emits?.length) {
+            for (const emitName of decl.emits) {
                 ctx.externalEventTemplates.push({
-                    emitKey: `${name}:${event}`,
+                    emitKey: `${name}:${emitName}`,
                     nodeKey: key,
                 });
             }
         }
-    }
 
-    // 桥接事件 → BridgeEventTemplate
-    if (node.bridges?.length) {
-        for (const bridgeDecl of node.bridges) {
-            const parsed = parseBridgeEventAttr(bridgeDecl);
-            for (const { sourceEvent, targetEvent, once } of parsed) {
+        // ── 旧链路兼容：bridgeEventTemplates ──
+        if (decl.bridges?.length) {
+            for (const bridgeName of decl.bridges) {
                 ctx.bridgeEventTemplates.push({
-                    sourceEvent,
-                    targetEvent,
-                    once,
+                    sourceEvent: domEvent,
+                    targetEvent: bridgeName,
                     nodeKey: key,
                 });
             }
@@ -481,8 +500,6 @@ function tplNodeToHtml(
             key, group, name,
             content: node.content,
             events: node.events,
-            forwards: node.forwards,
-            bridges: node.bridges,
             typeRef: typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
             replace: node.replace,
             i18n: node.i18n,
@@ -498,9 +515,20 @@ function tplNodeToHtml(
         if (node.replace !== undefined) {
             attrs.push(`data-json-mode="${node.replace ? 'replace' : 'child'}"`);
         }
-        if (node.events?.length) attrs.push(`data-event="${node.events.join(',')}"`);
-        if (node.forwards?.length) attrs.push(`data-emit="${node.forwards.join(',')}"`);
-        if (node.bridges?.length) attrs.push(`data-bridge="${node.bridges.join(',')}"`);
+        // 事件属性：从 events 对象中提取
+        if (node.events) {
+            const eventParts: string[] = [];
+            const emitParts: string[] = [];
+            const bridgeParts: string[] = [];
+            for (const [domEvent, decl] of Object.entries(node.events)) {
+                if (decl.handler) eventParts.push(domEvent);
+                if (decl.emits?.length) emitParts.push(...decl.emits.map(e => e === domEvent ? e : `${domEvent}=${e}`));
+                if (decl.bridges?.length) bridgeParts.push(...decl.bridges.map(b => b === domEvent ? b : `${domEvent}=${b}`));
+            }
+            if (eventParts.length) attrs.push(`data-event="${eventParts.join(',')}"`);
+            if (emitParts.length) attrs.push(`data-emit="${emitParts.join(',')}"`);
+            if (bridgeParts.length) attrs.push(`data-bridge="${bridgeParts.join(',')}"`);
+        }
         if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);
         if (node.hidden) attrs.push(`data-hidden="true"`);
         if (node.className) attrs.push(`class="${node.className}"`);
@@ -530,18 +558,26 @@ function tplNodeToHtml(
             key, group, name,
             content: node.content,
             events: node.events,
-            forwards: node.forwards,
-            bridges: node.bridges,
             i18n: node.i18n,
             hidden: node.hidden,
             mode: inferMode(tag),
         };
     }
 
-    // 事件属性
-    if (node.events?.length) attrs.push(`data-event="${node.events.join(',')}"`);
-    if (node.forwards?.length) attrs.push(`data-emit="${node.forwards.join(',')}"`);
-    if (node.bridges?.length) attrs.push(`data-bridge="${node.bridges.join(',')}"`);
+    // 事件属性：从 events 对象中提取
+    if (node.events) {
+        const eventParts: string[] = [];
+        const emitParts: string[] = [];
+        const bridgeParts: string[] = [];
+        for (const [domEvent, decl] of Object.entries(node.events)) {
+            if (decl.handler) eventParts.push(domEvent);
+            if (decl.emits?.length) emitParts.push(...decl.emits.map(e => e === domEvent ? e : `${domEvent}=${e}`));
+            if (decl.bridges?.length) bridgeParts.push(...decl.bridges.map(b => b === domEvent ? b : `${domEvent}=${b}`));
+        }
+        if (eventParts.length) attrs.push(`data-event="${eventParts.join(',')}"`);
+        if (emitParts.length) attrs.push(`data-emit="${emitParts.join(',')}"`);
+        if (bridgeParts.length) attrs.push(`data-bridge="${bridgeParts.join(',')}"`);
+    }
 
     // 其他属性
     if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);

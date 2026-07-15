@@ -1,6 +1,6 @@
 # QimenJS 项目结构说明
 
-> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-11，基于 v0.2.0（withTemplate 统一架构）。
+> 本文档供新会话快速了解项目框架，避免每次遍历。最后更新：2026-07-15，基于 v0.2.0（withTemplate 统一架构）。
 
 ## 项目概览
 
@@ -21,9 +21,9 @@
 ```
 Layer 0 (基础层)  → error, logger, utils, async, runtime, crypto, i18n, context
 Layer 1 (核心层)  → registry, events, cache, pipeline, composable, task, schema
-Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern, template
+Layer 2 (数据层)  → data-processor, validation, event-dom, mime, pattern
 Layer 3 (服务层)  → http, oauth2, data-processor-abp, data-processor-spring, system-abilities
-Layer 4 (应用层)  → entity, types
+Layer 4 (应用层)  → entity, types, router
 UI 层             → component-core, component-abilities, component, layout, theme, icon, imperative, permission
 ```
 
@@ -258,12 +258,6 @@ PatternRegistrar.ts, presets.ts, register.ts, index.ts
 ```
 命名正则模式注册，内置 19 种模式（email, url, ipv4, phone, uuid 等）。
 
-#### `src/template/` — 模板管理 `@qimenjs/template`
-```
-TemplateRegistrar.ts, presets.ts, register.ts, constants.ts, index.ts
-```
-模板注册器 + 组件预设模板 + 模板常量。`TemplateRegistrar` extends RegistrarBase，懒创建 `<template>` 缓存 + cloneNode 复用。引入即自动注册 15 种组件模板，同时注册到 RegistryHub（键 `'template'`）。
-
 ### Layer 3 — 服务层
 
 #### `src/http/` — HTTP 客户端 `@qimenjs/http` (22 文件)
@@ -295,13 +289,14 @@ pre.ts, post.ts, register.ts, types.ts, index.ts
 ```
 Spring Data 适配：分页（page/size/sort）、Page\<T\> 提取。
 
-#### `src/system-abilities/` — 系统级能力 `@qimenjs/system-abilities`
+#### `src/system-abilities/` — 系统级能力 `@qimenjs/system-abilities` (10 文件)
 ```
 system/EventAbility.ts, system/DomEventsAbility.ts, system/DomainAbility.ts, system/SystemAbility.ts
+system/EventBridgeAbility.ts
 interfaces/IEventAbility.ts, IDomEventsAbility.ts, IDomainAbility.ts, ISystemAbility.ts, IFullSystemAbility.ts
 types/abilities.ts, index.ts
 ```
-系统级能力集：EventAbility（on/once/emit）、DomEventsAbility（onDom, bind/unbind 手势语义）、DomainAbility（域配置访问）、SystemAbility（系统配置访问）。
+系统级能力集：EventAbility（on/once/emit）、DomEventsAbility（onDom, bind/unbind 手势语义）、DomainAbility（域配置访问）、SystemAbility（系统配置访问）、EventBridgeAbility（bridgeEmit/bridgeOn/bridgeOnce，通过 EventBridge 单例路由事件）。
 
 ### Layer 4 — 应用层
 
@@ -325,65 +320,64 @@ flow-context.ts, index.ts
 ```
 ExecutionStep, IExecutableContext, IPipelineResult。
 
+#### `src/router/` — 路由系统 `@qimenjs/router` (6 文件)
+```
+Router.ts, RouteAbility.ts, RouteEmitAbility.ts, RouteListenAbility.ts, types.ts, index.ts
+```
+纯事件模式路由。`Router` 通过 `pathToEventName` 路径转事件名，emit source='router'。RouteAbility/RouteEmitAbility/RouteListenAbility 提供组件级路由能力。
+
 ### UI 层
 
-#### `src/component-core/` — 组件核心层 `@qimenjs/component-core`
+#### `src/component-core/` — 组件核心层 `@qimenjs/component-core` (38 文件)
 ```
 TemplateComponent.ts, ComponentManager.ts, ComponentRegistrar.ts
 ComponentEventRegistry.ts, ComponentTypes.ts
-abilities/ — InitAbility, NodeMapAbility, OverlayAbility, AnimationAbility
-           AccessibilityAbility, EntityCoreAbility, PermissionAbility
-           PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
-           StyleAbility, ThemeAbility, EventBridgeAbility, ElementEventAbility
-           PropAlias.ts, positionOverlay.ts
-interfaces/ — IRenderAbility, ILifecycleAbility, IPositionAbility, IStyleAbility
-            IThemeAbility, IEventBridgeAbility, IChildrenAbility, IStateAbility
+template-compiler.ts, template-constants.ts, template-json.ts
+template-presets.ts, template-types.ts
+content-properties.ts, types.ts
+abilities/ — 18 个核心能力:
+  InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, AnimationAbility
+  AccessibilityAbility, PermissionAbility, BadgeAbility, ColorVariantAbility
+  PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility
+  StyleAbility, ThemeAbility, EventBridgeAbility, ElementEventAbility
+  LayoutAbility, DragAbility, DropAbility, TemplateAbility, TooltipAbility
+  PropAlias.ts, positionOverlay.ts
 index.ts
 ```
-组件基类、注册管理器、基础能力。`TemplateComponent`（原 `ComponentBase`）通过 `TEMPLATE_COMPONENT_ABILITIES` 注入 16 个核心能力，统一 `initialize(layout)` 初始化流程。`withTemplate(templateHtml)` 静态方法创建预编译强类，类定义时编译模板，实例化时纯克隆。`ElementEventAbility` 通过 `this.bind` 统一绑定 DOM 事件，使用 event-dom 事件规范命名。内部递归渲染模型：`ChildrenAbility.add(layout)` 替代外部 Renderer。
+组件基类、注册管理器、基础能力。`TemplateComponent`（原 `ComponentBase`）通过 `TEMPLATE_COMPONENT_ABILITIES` 注入核心能力，统一 `initialize(layout)` 初始化流程。`withTemplate(templateHtml)` 静态方法创建预编译强类，类定义时编译模板，实例化时纯克隆。支持三种模板格式：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate。`ElementEventAbility` 通过 `this.bind` 统一绑定 DOM 事件，支持 `?debounce=N`/`?throttle=N` 修饰符。`EventBridgeAbility`（配置能力）声明式事件桥接，`TemplateAbility.bindBridgeEvents()` 通过 EventBridge 单例转发。内部递归渲染模型：`ChildrenAbility.add(layout)` 替代外部 Renderer。
 
-#### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities`
+#### `src/component-abilities/` — UI 组件能力定义 `@qimenjs/component-abilities` (30 文件)
 ```
-content/ — ContentAbility, ContentPrefix（浮层逻辑已迁移到 component-core/OverlayAbility）
-data/ — ValueAbility, ValidateAbility, SubmitAbility, FieldSetAbility, PlaceholderAbility
 entity/ — EntityCoreAbility, EntityEmitAbility, EntityListenAbility, EntityAbility
           EntityLocalReadonlyAbility, EntityLocalCrudAbility
           EntityRemoteReadonlyAbility, EntityRemoteCrudAbility, EntityRemoteTreeAbility
-event/ — ElementEventAbility（已迁移到 component-core，此处重导出向后兼容）
-selection/ — SelectionAbility, SelectableAbility
-children/ — ChildrenAbility（add/remove/removeAll，拆解 LayoutNode JSON 递归创建子组件）
-render/ — VirtualListAbility, OverlayAbility, AnimationAbility
-interaction/ — ClickAbility, OptionsAbility, SearchAbility, SortAbility, OpenableAbility, LayoutAbility
-column/ — ColumnAbility, ColumnManageAbility
-toolbar/ — ToolbarAbility, CrudAbility
-toolbar/pagination/ — PaginationAbility (聚合 8 个子能力: State, Events, Nav, Pages, Jumper, Sizer, Info)
-toolbar/search/ — SearchAbility (聚合 4 个子能力: Input, Button, Events, Positions)
-ui/ — PlaceholderAbility, VisibleAbility, DisableAbility, LoadingAbility, SizeAbility
+group/ — GroupSelectAbility（radio 互斥/checkbox 多选）
+menu/ — MenuItemManageAbility（池化复用菜单项）
+render/ — AnimationAbility, ArrowAbility, ChildSlotAbility, ExpandArrowAbility
+          FloatingLayerAbility, LoadingAbility, OverflowMenuAbility, OverflowScrollAbility
+          OverlayHostAbility（从 component-core 重导出）, OverlayMaskAbility
+          TemplateCacheAbility, TooltipOverlayAbility, VirtualListAbility
 index.ts
 ```
 可组合的 UI 能力，供组件按需引用。不再从 @qimenjs/component-core 重导出。
 
-#### `src/component/` — UI 组件层 `@qimenjs/component` (31 文件)
+#### `src/component/` — UI 组件层 `@qimenjs/component` (32 文件)
 ```
 OverlayRoot.ts, z-index.ts, register.ts, events.ts
-components/ — 15 种内置组件:
-  ButtonComponent   [ElementEventAbility, ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility] — withTemplate
-  InputComponent    [ElementEventAbility, ContentAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility] — withTemplate
-  SelectComponent   [ElementEventAbility, ContentAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility] — withTemplate
-  DialogComponent   [ElementEventAbility, ContentAbility, OpenableAbility, OverlayAbility, AnimationAbility] — withTemplate
-  TableComponent    [ElementEventAbility, EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility] — withTemplate
-  IconComponent     [SizeAbility]
-  TextComponent     [SizeAbility]
-  HBoxComponent     [LayoutAbility, ChildrenAbility, AnimationAbility]
-  VBoxComponent     [LayoutAbility, ChildrenAbility, AnimationAbility]
-  GridComponent     [LayoutAbility, ChildrenAbility, AnimationAbility]
-  SpaceComponent    [LayoutAbility]
-  ToolbarComponent  [LayoutAbility, ChildrenAbility, AnimationAbility, ToolbarAbility]
-  ButtonGroupComponent [ChildrenAbility, SizeAbility, DisableAbility]
-  SeparatorComponent [VisibleAbility]
-  FormComponent     [EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility]
-  ColumnBase, CellBase, NumberColumn, IdColumn, CheckboxColumn
+components/ — 8 种内置组件:
+  ButtonComponent   [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility] — withTemplate
+  BadgeComponent    [ContentAbility] — withTemplate
+  ItemGroupComponent [ContentAbility, GroupSelectAbility] — withTemplate
+  MenuComponent     [OverlayHostAbility, MenuItemManageAbility, GroupSelectAbility] — withTemplate
+  MenuItemComponent [OverlayAbility, ContentAbility] — withTemplate
+  NavItemComponent  [ContentAbility] — withTemplate
+  NavItemGroupComponent (extends ItemGroupComponent)
+  RouteNavComponent / RouteContainerComponent
+  PanelComponent    [ContentAbility, OverlayHostAbility] — withTemplate
+  TipsComponent     [OverlayHostAbility] — withTemplate
+  ToolbarComponent  [LayoutAbility, ChildrenAbility, OverflowScrollAbility, OverflowMenuAbility] — withTemplate
 styles/animations.ts, styles/toolbar.ts
+badge/, button/, itemgroup/, menu/, nav/, panel/, tips/, toolbar/ — 各含 Component + css.ts + index.ts
 index.ts
 ```
 
@@ -495,19 +489,23 @@ PermissionRegistrar.registerBatch(entries)
 
 1. **renderer 模块已移除**：`src/renderer/` 和 `src/component-core/renderer/` 已删除，渲染流程由 `ChildrenAbility.add(layout)` 承担。
 
-2. **重导出已清理**：`component` 包不再从 `component-core` 和 `component-abilities` 重导出。`component-abilities` 不再从 `component-core` 重导出。外部应直接从各自的包导入。
+2. **template 模块已移除**：`src/template/` 已删除，模板预设/常量/JSON 迁移到 `src/component-core/`（template-compiler.ts, template-constants.ts, template-json.ts, template-presets.ts, template-types.ts）。
 
-3. **jest.config.ts 包含过时别名**：如 `@qimenjs/base`、`@qimenjs/core`、`@qimenjs/kernel` 等在 tsconfig.json 中已不存在的路径别名。
+3. **重导出已清理**：`component` 包不再从 `component-core` 和 `component-abilities` 重导出。`component-abilities` 不再从 `component-core` 重导出。外部应直接从各自的包导入。
 
-4. **i18n 运行时**：`src/i18n/i18n.iife.js` 是预编译的 IIFE 格式运行时，通过 `<script>` 标签加载到 `window.__qimen_i18n__`。
+4. **jest.config.ts 包含过时别名**：如 `@qimenjs/base`、`@qimenjs/core`、`@qimenjs/kernel` 等在 tsconfig.json 中已不存在的路径别名。
 
-5. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
+5. **i18n 运行时**：`src/i18n/i18n.iife.js` 是预编译的 IIFE 格式运行时，通过 `<script>` 标签加载到 `window.__qimen_i18n__`。
 
-6. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。主题代码已从 `src/imperative/` 迁移到独立的 `src/theme/` 包。
+6. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
 
-7. **`src/icon/` 不参与 TypeScript 构建**：图标库是纯静态资源目录（CSS + SVG + 字体文件），没有 `index.ts` 入口，不在 `tsconfig.json` 和 `build-config.json` 中配置。字体文件通过 `node scripts/build-icon-font.js` 手动构建。
+7. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。主题代码已从 `src/imperative/` 迁移到独立的 `src/theme/` 包。
 
-8. **`build-config.json` 残留配置**：`renderer` 模块配置仍存在但 `src/renderer/` 已删除；`theme` 模块的 dependencies 为空数组但实际依赖 `@qimenjs/registry` 和 `@qimenjs/events`。
+8. **`src/icon/` 不参与 TypeScript 构建**：图标库是纯静态资源目录（CSS + SVG + 字体文件），没有 `index.ts` 入口，不在 `tsconfig.json` 和 `build-config.json` 中配置。字体文件通过 `node scripts/build-icon-font.js` 手动构建。
+
+9. **EventBridge 单例模式**：`src/events/EventBridge.ts` 统一 eventScope，解决发送方/监听方 eventScope 不同导致事件无法路由的问题。`EventBridgeAbility`（system-abilities）提供组件实例方法，`EventBridgeAbility`（component-core/abilities/）重命名为 `EventBridgeConfigAbility`。
+
+10. **withTemplate 三格式支持**：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate（name/content 分离 + events/forwards/bridges 三类事件 + body 定义）。
 
 ## 配置文件
 

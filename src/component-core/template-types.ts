@@ -6,7 +6,7 @@
  * 核心设计：
  * - tpl 是根节点定义，包含 tag 或 type，以及 children
  * - tag 和 type 互斥：tag 是 DOM 节点，type 是组件
- * - events/forwards/bridges 三类事件各司其职
+ * - events 统一声明 DOM 事件，聚合 handler/emits/bridges 三种用途
  * - body 复制到组件实例，提供属性和方法
  *
  * @example
@@ -28,24 +28,65 @@
  */
 
 /**
- * 事件声明语法
+ * 单个 DOM 事件声明
  *
- * events（内部事件）：
- * - 'click' — 绑定 click → onClick handler
- * - 'click=title' — 绑定 click → onTitleClick handler（语义名区分同事件多节点）
- * - 'click?once' — 只触发一次
- * - 'click=title?once' — 语义名 + 只触发一次
- * - 'input,change=filter' — 多事件，逗号分隔
+ * 聚合一个 DOM 事件的所有用途：
+ * - handler: 内部处理方法（自动推导或显式指定）
+ * - emits: 转发为组件事件（持有方通过 component.on 监听）
+ * - bridges: 转发为桥接事件（通过 EventBridge 解耦转发）
  *
- * forwards（转发事件）：
- * - 'click' — 同名转发
- * - 'click=close' — 重命名转发
- *
- * bridges（桥接事件）：
- * - 'click' — 同名桥接
- * - 'click=save' — 重命名桥接
+ * @example
+ * ```ts
+ * events: {
+ *     click: { emits: ['click'], bridges: ['click'] },
+ *     input: { handler: 'onSearch', debounce: 300, emits: ['input'] },
+ *     close: { handler: true, once: true },
+ * }
+ * ```
  */
-export type EventDecl = string;
+export interface DomEventDecl {
+    /**
+     * 内部 handler 方法
+     *
+     * - true: 自动推导（click → onClick）
+     * - string: 显式指定方法名（如 'onSearch'）
+     * - 省略/undefined: 不需要内部 handler
+     */
+    handler?: boolean | string;
+
+    /**
+     * 转发为组件事件列表
+     *
+     * 每项为转发后的事件名，持有方通过 component.on(name, fn) 监听。
+     * - 'click' → 同名转发
+     * - 'close' → 重命名转发（如 DOM 的 click 转发为 close 事件）
+     */
+    emits?: string[];
+
+    /**
+     * 转发为桥接事件列表
+     *
+     * 每项为桥接后的事件名，通过 EventBridge.bridgeEmit(eventKey, name, data) 转发。
+     * - 'click' → 同名桥接
+     * - 'save' → 重命名桥接
+     */
+    bridges?: string[];
+
+    /** 是否只触发一次 */
+    once?: boolean;
+
+    /** 防抖时间（毫秒） */
+    debounce?: number;
+
+    /** 节流时间（毫秒） */
+    throttle?: number;
+
+    /** 是否事件委托 */
+    delegate?: boolean;
+
+    /** 事件委托目标选择器 */
+    delegateTarget?: string;
+}
 
 /**
  * 模板节点定义
@@ -82,33 +123,24 @@ export interface TplNode {
      */
     content?: string;
 
-    // ─── 三类事件 ───
+    // ─── 事件 ───
 
     /**
-     * 内部事件 — 触发组件自身 handler
+     * DOM 事件声明 — 聚合 handler/emits/bridges
      *
-     * handler 名自动推导：'click' → onClick
-     * 支持 before/after 钩子：beforeClick / afterClick
-     */
-    events?: EventDecl[];
-
-    /**
-     * 转发事件 — 通过 eventScope 转发给持有方
+     * key 为 DOM 事件名（如 click、input），value 为事件声明对象。
+     * 同一 DOM 事件只绑定一次 this.bind()，在回调中统一处理所有转发。
      *
-     * 'click' → 同名转发，持有方通过 component.on('click', fn) 监听
-     * 'click=close' → 重命名转发，持有方通过 component.on('close', fn) 监听
-     * 'click=save' → 重命名转发，将 click 转发为 save 事件
+     * @example
+     * ```ts
+     * events: {
+     *     click: { emits: ['click'], bridges: ['click'] },
+     *     input: { handler: 'onSearch', debounce: 300, emits: ['input'] },
+     *     close: { handler: true, once: true },
+     * }
+     * ```
      */
-    forwards?: EventDecl[];
-
-    /**
-     * 桥接事件 — 通过 EventBridge 解耦转发
-     *
-     * 'click' → 同名桥接，EventBridge.bridgeEmit(eventKey, 'click', data)
-     * 'click=click:save' → 带命名空间桥接，EventBridge.bridgeEmit(eventKey, 'click:save', data)
-     * 'click=save' → 重命名桥接，EventBridge.bridgeEmit(eventKey, 'save', data)
-     */
-    bridges?: EventDecl[];
+    events?: Record<string, DomEventDecl>;
 
     // ─── 样式 ───
 

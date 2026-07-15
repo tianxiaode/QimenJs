@@ -7,6 +7,7 @@
 ```
 docs/build-progress/
 ├── README.md                    # 本文件（索引）
+├── TEMPLATE.md                  # 进度文档模板
 ├── layer-0/                     # 第 0 层包（8 个零依赖包）
 │   ├── error.md
 │   ├── logger.md
@@ -16,20 +17,19 @@ docs/build-progress/
 │   ├── crypto.md
 │   ├── types.md
 │   └── i18n.md
-├── layer-1/                     # 第 1 层包（6 个轻依赖包）
+├── layer-1/                     # 第 1 层包（7 个轻依赖包）
 │   ├── registry.md
 │   ├── cache.md
 │   ├── events.md
 │   ├── task.md
 │   ├── composable.md
 │   └── context.md
-├── layer-2/                     # 第 2 层包（8 个功能包）
+├── layer-2/                     # 第 2 层包（7 个功能包）
 │   ├── schema.md
 │   ├── validation.md
 │   ├── pipeline.md
 │   ├── mime.md
 │   ├── pattern.md
-│   ├── composable.md
 │   ├── event-dom.md
 │   └── permission.md
 ├── layer-3/                     # 第 3 层包（6 个高级功能包）
@@ -39,8 +39,18 @@ docs/build-progress/
 │   ├── http.md
 │   ├── system-abilities.md
 │   └── oauth2.md
-└── layer-4/                     # 第 4 层包（1 个业务包）
-    └── entity.md
+├── layer-4/                     # 第 4 层包（2 个业务包）
+│   ├── entity.md
+│   └── router.md
+└── ui-layer/                    # UI 层包（8 个）
+    ├── component-core.md
+    ├── component-abilities.md
+    ├── component.md
+    ├── layout.md
+    ├── theme.md
+    ├── icon.md
+    ├── imperative.md
+    └── permission.md
 ```
 
 ## 总体进度
@@ -48,25 +58,27 @@ docs/build-progress/
 | 层级 | 总包数 | 已完成 | 测试通过 | 分支覆盖率 |
 |------|--------|--------|----------|------------|
 | 第 0 层 | 8 | 8 | 8 | ~85% |
-| 第 1 层 | 6 | 6 | 6 | ~89% |
-| 第 2 层 | 8 | 7 | 7 | ~86% |
+| 第 1 层 | 7 | 7 | 7 | ~89% |
+| 第 2 层 | 7 | 6 | 6 | ~86% |
 | 第 3 层 | 6 | 6 | 6 | ~87% |
-| 第 4 层 | 1 | 1 | 1 | ~83% |
-| **总计** | **29** | **28** | **28** | **~87%** |
+| 第 4 层 | 2 | 2 | 2 | ~83% |
+| UI 层 | 8 | 5 | 5 | ~80% |
+| **总计** | **38** | **34** | **34** | **~85%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%
 **测试**：238 套件 / 2833 用例（全部通过）
-**当前重点**：准备 npm 发布
+**当前重点**：UI 层组件开发与测试补充
 
 ## 快速导航
 
 ### 按层级查看
 
 - [第 0 层：核心基础包](./layer-0/) - 8 个零依赖包
-- [第 1 层：基础设施工具包](./layer-1/) - 6 个包
-- [第 2 层：功能工具包](./layer-2/) - 8 个包
+- [第 1 层：基础设施工具包](./layer-1/) - 7 个包
+- [第 2 层：功能工具包](./layer-2/) - 7 个包
 - [第 3 层：高级功能包](./layer-3/) - 6 个包
-- [第 4 层：业务包](./layer-4/) - 1 个包
+- [第 4 层：业务包](./layer-4/) - 2 个包
+- [UI 层：组件与界面](./ui-layer/) - 8 个包
 
 ### 按状态查看
 
@@ -100,8 +112,30 @@ docs/build-progress/
 - [system-abilities](./layer-3/system-abilities.md) - 系统能力集
 - [oauth2](./layer-3/oauth2.md) - OAuth2 认证流程
 - [entity](./layer-4/entity.md) - 实体管理框架
+- [router](./layer-4/router.md) - 路由系统
+
+#### 开发中
+
+- [component-core](./ui-layer/component-core.md) - 组件核心基础设施
+- [component-abilities](./ui-layer/component-abilities.md) - 组件业务能力
+- [component](./ui-layer/component.md) - UI 组件实现
+- [layout](./ui-layer/layout.md) - 布局定义系统
+- [theme](./ui-layer/theme.md) - 主题系统
+- [imperative](./ui-layer/imperative.md) - 命令式 API
+- [permission](./ui-layer/permission.md) - 权限系统
+
+#### 静态资源
+
+- [icon](./ui-layer/icon.md) - 中国风图标库（不参与 TS 构建）
 
 ## 最近更新
+
+### 2026-07-15
+- 文档同步更新：PROJECT_STRUCTURE.md、DIRECTORY.md、架构文档、构建进度文档
+- 新增 router 模块文档（Layer 4）
+- 新增 UI 层构建进度目录（ui-layer/）
+- 修正包层级结构：Layer 1 增加 composable/context，Layer 2 增加 mime/pattern，Layer 3 增加 oauth2/abp/spring
+- template 模块已移除（迁移到 component-core），从文档中清理
 
 ### 2026-07-14
 - EventBridge 升级为单例模式：新建 `src/events/EventBridge.ts`，统一 eventScope 解决发送方/监听方 eventScope 不同导致事件无法路由的问题

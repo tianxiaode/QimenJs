@@ -42,10 +42,10 @@ describe('RouteListenAbility', () => {
             const host = createHost();
 
             const bridge = host.getEventBridge();
-            expect(bridge.route).toBeDefined();
-            expect(bridge.route.source).toBe('router');
-            expect(bridge.route.events).toEqual({ change: 'onRouteChange' });
-            expect(bridge.route.match).toBe('*');
+            expect(bridge.change).toBeDefined();
+            expect(bridge.change.source).toBe('router');
+            expect(bridge.change.handler).toBe('onRouteChange');
+            expect(bridge.change.match).toBe('*');
         });
     });
 

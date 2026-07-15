@@ -80,7 +80,7 @@ const MenuItemBase = TemplateComponent
         tpl: {
             tag: 'div',
             children: [
-                { tag: 'div', name: 'menuItem:content', events: ['click'], className: 'q-menu-item__content', children: [
+                { tag: 'div', name: 'menuItem:content', events: { click: { handler: true } }, className: 'q-menu-item__content', children: [
                     { tag: 'span', name: 'menuItem:icon', content: 'icon', className: 'q-menu-item__icon' },
                     { tag: 'span', name: 'menuItem:text', content: 'text', className: 'q-menu-item__text' },
                     { tag: 'span', name: 'menuItem:shortcut', content: 'text', className: 'q-menu-item__shortcut' },

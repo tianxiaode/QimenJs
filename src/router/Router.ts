@@ -15,7 +15,7 @@
 
 import { ComposableBase } from '@/composable';
 import { EventAbility } from '@/system-abilities';
-import { EventSourceRegistrar } from '@qimenjs/events';
+import { EventSourceRegistrar, EventBridge } from '@qimenjs/events';
 import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
 /**
@@ -133,15 +133,18 @@ export class Router extends ComposableBase.with(EventAbility) {
 
         this.listening = true;
 
-        // 初始导航：读取当前 URL
-        const initialPath = this.getCurrentPath();
-        if (initialPath) {
-            this.navigate(initialPath, true);
-        } else if (Object.keys(this.routes).length > 0) {
-            // 没有路径时导航到第一个路由
-            const firstRoute = Object.keys(this.routes)[0];
-            this.navigate(firstRoute, true);
-        }
+        // 延迟初始导航：等组件注册完 EventBridge 监听后再 emit
+        // 避免初始路由事件在监听注册之前发出导致丢失
+        queueMicrotask(() => {
+            const initialPath = this.getCurrentPath();
+            if (initialPath) {
+                this.navigate(initialPath, true);
+            } else if (Object.keys(this.routes).length > 0) {
+                // 没有路径时导航到第一个路由
+                const firstRoute = Object.keys(this.routes)[0];
+                this.navigate(firstRoute, true);
+            }
+        });
     }
 
     /**
@@ -250,11 +253,13 @@ export class Router extends ComposableBase.with(EventAbility) {
             params,
         };
 
-        // 发 change 事件（source='router'，走 eventScope 隔离通道）
-        this.emit('change', event, { source: 'router' });
+        // 通过 EventBridge 发送桥接事件（source='router'，走 bridgeScope 隔离通道）
+        // 监听方通过 EventBridge.bridgeOn('router', 'change', handler) 接收
+        const bridge = EventBridge.getInstance();
+        bridge.bridgeEmit('router', 'change', event);
         // 有路径时发 change:路径，供 match 精确过滤
         if (eventName) {
-            this.emit(`change:${eventName}`, event, { source: 'router' });
+            bridge.bridgeEmit('router', `change:${eventName}`, event);
         }
     }
 

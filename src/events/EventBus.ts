@@ -35,36 +35,35 @@ export function deepNullify(obj: any): void {
  * EventBus 提供了一个基于事件驱动的通信机制，允许不同组件之间解耦合地进行通信。
  * 它支持多种事件处理模式，包括一次性订阅、取消订阅、引用计数、异步 handler 等功能。
  *
- * @template Events 事件映射类型，定义了事件名称和载荷类型的对应关系
+ * 数据结构：按 scopeId 隔离，每个 scopeId 下有独立的事件监听器集合。
+ * emit 时只触发自己 scopeId 下的 handler，不广播到其他 scope。
  *
  * @example
  * ```ts
- * // 定义事件类型
- * type MyEvents = {
- *   'user:login': { userId: string };
- *   'user:logout': void;
- * };
+ * const bus = new EventBus();
+ * const scope = bus.createScope();
  *
- * // 创建事件总线实例
- * const bus = new EventBus<MyEvents>();
- *
- * // 订阅事件
- * const unsubscribe = bus.on('user:login', (payload) => {
- *   console.log('用户登录:', payload.data.userId);
+ * // 订阅事件（handler 注册在 scope 的 scopeId 下）
+ * scope.on('click', (payload) => {
+ *   console.log('点击:', payload.data);
  * });
  *
- * // 发布事件
- * bus.emit('user:login', { userId: '123' });
- *
- * // 取消订阅
- * unsubscribe();
+ * // 发布事件（只触发自己 scopeId 下的 handler）
+ * scope.emit('click', { x: 100, y: 200 });
  * ```
  */
 export class EventBus {
     private readonly busId = string.getId();
-    private readonly listeners = new Map<string, Set<EventHandler>>();
-    /** handler → scopeId 映射，用于调试和隔离 */
-    private readonly handlerScopes = new Map<EventHandler, string>();
+    /**
+     * 按 scopeId 隔离的监听器
+     *
+     * 结构：Map<scopeId, Map<event, Set<handler>>>
+     * - 每个 scopeId 下有独立的事件监听器集合
+     * - emit 时只查自己 scopeId 下的 handler
+     * - 组件事件：instance.on('click', handler) 注册在 instance 的 scopeId 下
+     * - 全局事件：globalEventBus.on('theme:change', handler) 注册在 rootScope 的 scopeId 下
+     */
+    private readonly scopedListeners = new Map<string, Map<string, Set<EventHandler>>>();
 
     /**
      * 构造函数
@@ -105,31 +104,33 @@ export class EventBus {
     /**
      * 订阅事件
      *
-     * 添加一个事件处理器，该处理器会在每次事件被触发时被调用。
+     * 将 handler 注册到指定 scopeId 下的事件监听器集合中。
+     * emit 时只触发同一 scopeId 下的 handler。
      *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
+     * @param scopeId - 作用域ID（必须传入，用于隔离）
      * @returns 返回一个取消订阅的函数
      */
-    on(event: string, handler: EventHandler, scopeId?: string): () => void {
-        let set = this.listeners.get(event);
+    on(event: string, handler: EventHandler, scopeId: string): () => void {
+        let scopeMap = this.scopedListeners.get(scopeId);
+        if (!scopeMap) {
+            scopeMap = new Map();
+            this.scopedListeners.set(scopeId, scopeMap);
+        }
+        let set = scopeMap.get(event);
         if (!set) {
             set = new Set();
-            this.listeners.set(event, set);
+            scopeMap.set(event, set);
         }
         set.add(handler);
 
-        // 记录 handler 的 scopeId
-        if (scopeId) {
-            this.handlerScopes.set(handler, scopeId);
-        }
-
-        this.logBus('debug', 'on', { event: String(event), scopeId: scopeId || 'NO_SCOPE', listenerCount: set.size });
+        this.logBus('debug', 'on', { event: String(event), scopeId, listenerCount: set.size });
 
         return () => {
             set?.delete(handler);
-            this.handlerScopes.delete(handler);
-            if (set?.size === 0) this.listeners.delete(event);
+            if (set?.size === 0) scopeMap?.delete(event);
+            if (scopeMap?.size === 0) this.scopedListeners.delete(scopeId);
         };
     }
 
@@ -140,12 +141,13 @@ export class EventBus {
      *
      * @param event - 事件名称
      * @param handler - 事件处理器函数
+     * @param scopeId - 作用域ID
      */
-    once(event: string, handler: EventHandler): void {
+    once(event: string, handler: EventHandler, scopeId: string): void {
         const off = this.on(event, payload => {
             off();
             handler(payload);
-        });
+        }, scopeId);
     }
 
     /**
@@ -154,7 +156,7 @@ export class EventBus {
      * @param event - 事件名称
      * @param data - 事件数据载荷
      * @param source - 事件源（可选）
-     * @param scopeId - 作用域ID（可选，默认为'NO_SCOPE'）
+     * @param scopeId - 作用域ID（必须传入，只触发该 scopeId 下的 handler）
      */
     emit(event: string, data?: any, source?: any, scopeId?: string): void;
 
@@ -172,7 +174,7 @@ export class EventBus {
     /**
      * 触发事件（实现）
      *
-     * 将事件数据传递给所有订阅了该事件的处理器。
+     * 只触发指定 scopeId 下的 handler，不广播到其他 scope。
      * 支持引用计数和异步 handler 检测。
      *
      * 当 handler 返回 Promise 时，引用计数会在 Promise 完成后递减。
@@ -201,10 +203,16 @@ export class EventBus {
 
         const emitScopeId = context.scopeId || scopeId;
 
-        const handlers = this.listeners.get(event);
+        // 只查 emit scopeId 下的 handler
+        const scopeMap = this.scopedListeners.get(emitScopeId);
+        if (!scopeMap) {
+            this.logBus('debug', 'emit_no_scope', { event: String(event), scopeId: emitScopeId });
+            return;
+        }
 
+        const handlers = scopeMap.get(event);
         if (!handlers || handlers.size === 0) {
-            this.logBus('debug', 'emit_no_listeners', { event: String(event) });
+            this.logBus('debug', 'emit_no_listeners', { event: String(event), scopeId: emitScopeId });
             return;
         }
 
@@ -256,13 +264,21 @@ export class EventBus {
     /**
      * 清理事件订阅
      *
-     * @param event 可选参数，如果指定则只清理该事件的订阅，否则清理所有事件订阅
+     * @param scopeId 作用域ID，清理该 scope 下的所有事件订阅
+     * @param event 可选参数，如果指定则只清理该事件的订阅
      */
-    clear(event?: string): void {
-        if (event) this.listeners.delete(event);
-        else this.listeners.clear();
+    clear(scopeId: string, event?: string): void {
+        if (event) {
+            const scopeMap = this.scopedListeners.get(scopeId);
+            if (scopeMap) {
+                scopeMap.delete(event);
+                if (scopeMap.size === 0) this.scopedListeners.delete(scopeId);
+            }
+        } else {
+            this.scopedListeners.delete(scopeId);
+        }
 
-        this.logBus('warn', 'clear', { event: event ? String(event) : 'all' });
+        this.logBus('warn', 'clear', { scopeId, event: event ? String(event) : 'all' });
     }
 
     /**

@@ -2,7 +2,7 @@
  * QimenJS 组件演示 — 入口
  *
  * 架构：
- * 1. AppShell = TemplateComponent.withTemplate
+ * 1. AppShell = TemplateComponent.withTemplate（新版 ComponentTemplate 格式）
  *    - 模板：左侧 RouteNavComponent（路由导航），右侧 RouteContainerComponent（路由容器）
  *    - 路由导航自动处理：点击 → 切换路由，路由变化 → 切换高亮 + 发事件
  *    - 路由容器自动处理：监听 route:change → 替换内容区域
@@ -34,6 +34,7 @@ registerAllComponents();
 
 // ─── 组件系统 ───
 import { TemplateComponent } from '@qimenjs/component-core';
+import { Router } from '@qimenjs/router';
 
 // ─── 页面组件 ───
 import { HomePage } from './pages/home';
@@ -42,23 +43,28 @@ import { ThemePage } from './pages/theme';
 
 // ─── AppShell：声明式应用壳，基本不用写逻辑 ───
 
-class AppShell extends TemplateComponent.withTemplate([
-    { tag: 'div', class: 'app-root', children: [
-        { tag: 'div', class: 'app-sidebar', children: [
-            { tag: 'div', content: 'shell:nav', json: RouteNavComponent, jsonMode: 'child' },
-        ]},
-        { tag: 'div', class: 'app-content', children: [
-            { tag: 'div', content: 'shell:page', json: RouteContainerComponent, jsonMode: 'child' },
-        ]},
-    ]},
-]) {
-    static type = 'AppShell';
+class AppShell extends TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'app-root',
+        children: [
+            { tag: 'div', className: 'app-sidebar', children: [
+                { tag: 'div', name: 'shell:nav', type: RouteNavComponent, className: 'sidebar-nav' },
+            ]},
+            { tag: 'div', className: 'app-content', children: [
+                { name: 'shell:page', type: RouteContainerComponent },
+            ]},
+        ],
+    },
+    body: {
+        type: 'AppShell',
+    },
+}) {
     static children = {
         nav: {
             eventKey: 'abc',
             direction: 'vertical',
             gap: '0',
-            cls: 'sidebar-nav',
             pathIndex: { '/': 0, '/icons': 1, '/theme': 2 },
             indexPath: ['/', '/icons', '/theme'],
             items: [
@@ -67,11 +73,6 @@ class AppShell extends TemplateComponent.withTemplate([
                 { text: '主题', icon: '<i class="q-icon-yin-yang"></i>' },
             ],
             activeIndex: 0,
-            route: {
-                routes: { '/': 'home', '/icons': 'icons', '/theme': 'theme' },
-                defaultPath: '/',
-                hashMode: true,
-            },
         },
         page: {
             routeMap: { '/': HomePage, '/icons': IconsPage, '/theme': ThemePage },
@@ -91,6 +92,11 @@ function bootstrap(): void {
         ThemeRegistrar.getInstance().apply(name);
         console.log('[Theme] switched to', name);
     };
+
+    // 初始化路由
+    const router = Router.getInstance();
+    router.register({ '/': 'home', '/icons': 'icons', '/theme': 'theme' });
+    router.start(true); // hashMode = true
 
     // 创建 AppShell 实例
     const app = new AppShell();

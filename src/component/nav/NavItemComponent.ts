@@ -10,8 +10,7 @@
  * - navItem:text — 文本
  *
  * 事件流：
- * - 内部事件：navItem:content click → onClick
- *   - 支持 beforeClick/afterClick 钩子
+ * - 内部事件：navItem:content click → onClick（handler: true 自动推导）
  * - 桥接事件：bridges: ['click'] → 自动通过 EventBridge 发布
  *   - 不需要代码里手动 this.emit
  *
@@ -43,7 +42,7 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         tag: 'div',
         className: 'q-nav-item',
         children: [
-            { tag: 'div', name: 'navItem:content', events: ['click'], bridges: ['click'], className: 'q-nav-item__content', children: [
+            { tag: 'div', name: 'navItem:content', events: { click: { handler: true, bridges: ['click'] } }, className: 'q-nav-item__content', children: [
                 { tag: 'span', name: 'navItem:icon', content: 'icon', className: 'q-nav-item__icon' },
                 { tag: 'span', name: 'navItem:text', content: 'text', className: 'q-nav-item__text' },
             ]},
@@ -67,12 +66,13 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         /**
          * navItem:content 的 click 事件处理
          *
-         * 由模板 events: ['click'] 自动绑定到 onClick handler
-         * 支持 beforeClick/afterClick 钩子
-         * 桥接事件由 bridges: ['click'] 自动发布，无需手动 this.emit
+         * 由模板 events: { click: { handler: true } } 自动绑定到 onClick handler
+         * 桥接事件由 bridges: ['click'] 自动通过 EventBridge 发布
+         * 同时 emit 组件级 click 事件，供 ItemGroup 等父组件通过 instance.on('click') 监听
          */
         onClick(): void {
             if (this.disabled) return;
+            this.emit('click', { item: this, index: this.props?.index });
             this.onSelect?.(this);
         },
 

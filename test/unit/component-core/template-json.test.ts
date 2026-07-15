@@ -308,7 +308,7 @@ describe('convertTemplate', () => {
     describe('三类事件属性', () => {
         it('events → data-event', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', events: ['click'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', events: { click: { handler: true } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-event="click"');
@@ -316,7 +316,7 @@ describe('convertTemplate', () => {
 
         it('forwards → data-emit', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', forwards: ['tap'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', events: { tap: { emits: ['tap'] } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-emit="tap"');
@@ -324,7 +324,7 @@ describe('convertTemplate', () => {
 
         it('bridges → data-bridge', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', bridges: ['click'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:save', events: { click: { bridges: ['click'] } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-bridge="click"');
@@ -332,7 +332,7 @@ describe('convertTemplate', () => {
 
         it('多个 events 用逗号连接', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'input', name: 'form:field', events: ['input', 'change'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'input', name: 'form:field', events: { input: { handler: true }, change: { handler: true } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-event="input,change"');
@@ -340,7 +340,7 @@ describe('convertTemplate', () => {
 
         it('多个 bridges 用逗号连接', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:action', bridges: ['click', 'tap=close'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'button', name: 'btn:action', events: { click: { bridges: ['click'] }, tap: { bridges: ['close'] } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-bridge="click,tap=close"');
@@ -384,9 +384,9 @@ describe('convertTemplate', () => {
             expect(result.html).toContain('data-json-mode="child"');
         });
 
-        it('type 节点支持 events/forwards/bridges', () => {
+        it('type 节点支持 events（handler/emits/bridges）', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ type: 'MyGrid', name: 'grid:body', events: ['click'], forwards: ['change'], bridges: ['tap'] }] },
+                tpl: { tag: 'div', children: [{ type: 'MyGrid', name: 'grid:body', events: { click: { handler: true }, change: { emits: ['change'] }, tap: { bridges: ['tap'] } } }] },
             };
             const result = convertTemplate(tpl);
             expect(result.html).toContain('data-event="click"');
@@ -451,7 +451,7 @@ describe('convertTemplate', () => {
     describe('nodeMetas 提取', () => {
         it('tag 节点提取 nodeMetas', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ tag: 'span', name: 'btn:text', events: ['click'], forwards: ['tap'], bridges: ['change'] }] },
+                tpl: { tag: 'div', children: [{ tag: 'span', name: 'btn:text', events: { click: { handler: true, emits: ['tap'], bridges: ['change'] } } }] },
             };
             const result = convertTemplate(tpl);
             const meta = result.nodeMetas['btn:text'];
@@ -459,9 +459,7 @@ describe('convertTemplate', () => {
             expect(meta.key).toBe('btn:text');
             expect(meta.group).toBe('btn');
             expect(meta.name).toBe('text');
-            expect(meta.events).toEqual(['click']);
-            expect(meta.forwards).toEqual(['tap']);
-            expect(meta.bridges).toEqual(['change']);
+            expect(meta.events).toEqual({ click: { handler: true, emits: ['tap'], bridges: ['change'] } });
             expect(meta.mode).toBe('html');
         });
 
@@ -483,14 +481,14 @@ describe('convertTemplate', () => {
 
         it('type 节点提取 nodeMetas', () => {
             const tpl: ComponentTemplate = {
-                tpl: { tag: 'div', children: [{ type: 'MyGrid', name: 'grid:body', events: ['click'], replace: true, i18n: 'grid.title', hidden: true }] },
+                tpl: { tag: 'div', children: [{ type: 'MyGrid', name: 'grid:body', events: { click: { handler: true } }, replace: true, i18n: 'grid.title', hidden: true }] },
             };
             const result = convertTemplate(tpl);
             const meta = result.nodeMetas['grid:body'];
             expect(meta).toBeDefined();
             expect(meta.typeRef).toBe('MyGrid');
             expect(meta.replace).toBe(true);
-            expect(meta.events).toEqual(['click']);
+            expect(meta.events).toEqual({ click: { handler: true } });
             expect(meta.i18n).toBe('grid.title');
             expect(meta.hidden).toBe(true);
             expect(meta.mode).toBe('html');

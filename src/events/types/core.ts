@@ -17,7 +17,7 @@ export type EventHandler<T = any> = (context: EventContext) => void | Promise<vo
 /**
  * 事件总线动作类型 - 定义事件总线可以记录的操作类型
  */
-export type BusAction = 'on' | 'emit' | 'emit_no_listeners' | 'clear' | 'handler_error' | 'off';
+export type BusAction = 'on' | 'emit' | 'emit_no_listeners' | 'emit_no_scope' | 'clear' | 'handler_error' | 'off';
 
 /**
  * 作用域日志动作类型 - 定义事件作用域可以记录的操作类型
