@@ -45,16 +45,15 @@ export { positionOverlay } from './abilities/positionOverlay';
 export type { Placement } from './abilities/positionOverlay';
 
 // 模板编译
-export { precompileTemplate, precompileEventTemplates, buildEventMapFromTemplates, findByPath, computeNodePath, inferContentMode, parseEventAttr, parseBridgeEventAttr } from './template-compiler';
-export type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, CompiledTemplate } from './template-compiler';
+export { precompileTemplate, findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
+export type { CompiledTemplate, DomEventBinding } from './template-compiler';
 
-// JSON 模板
-export type { JsonTemplateNode, JsonTemplateResult } from './template-json';
-export { jsonTemplateToHtml } from './template-json';
+// 新模板编译
+export { compileTemplate } from './template-json';
+export type { CompiledTemplateResult, TplNodeMeta } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, DomEventDecl } from './template-types';
-export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
+export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo } from './template-types';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';

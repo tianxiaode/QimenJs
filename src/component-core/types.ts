@@ -101,6 +101,8 @@ export interface NodeMetadata {
     parentNode?: HTMLElement | null;
     /** 在父元素子节点列表中的位置索引（replace 模式使用） */
     nodeIndex?: number;
+    /** 子组件静态属性（由 TplNode.props 声明，渲染时传给子组件构造函数） */
+    props?: Record<string, any>;
 }
 
 /**
@@ -130,10 +132,10 @@ export interface NodeTemplateMeta {
     eventAttr?: string;
     /** 外部事件属性值（data-emit 的原始值，如 "click"） */
     emitAttr?: string;
-    /** 桥接事件属性值（data-bridge 的原始值，如 "click=click:save"） */
-    bridgeAttr?: string;
     /** i18n 翻译 key（由 data-i18n 声明，如 "btn.save"） */
     i18nKey?: string;
     /** 初始隐藏状态（由 data-hidden 声明，运行时设置 el.hidden） */
     hidden?: boolean;
+    /** 子组件静态属性（由 TplNode.props 声明） */
+    props?: Record<string, any>;
 }

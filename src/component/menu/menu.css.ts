@@ -1,7 +1,7 @@
 /**
- * MenuItem 菜单项组件样式
+ * MenuItem 菜单项组件样式 — Metro 风格
  *
- * 支持默认/悬停/禁用/有子菜单等状态。
+ * 方角、粗边框、无阴影、高对比色块。
  */
 
 export const menuCSS = `
@@ -9,26 +9,28 @@ export const menuCSS = `
 .q-menu-item {
     display: flex;
     align-items: center;
-    padding: 6px 16px;
+    padding: 8px 16px;
     font-size: 14px;
+    font-weight: 500;
     line-height: 1.5;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.15s;
+    transition: background 0.15s, color 0.15s;
     box-sizing: border-box;
     user-select: none;
-    color: var(--q-text-color, #606266);
+    color: var(--q-colors-text, #1a1a1a);
 }
 
 /* 悬停状态 */
 .q-menu-item:hover {
-    background-color: var(--q-menu-item-hover-bg, #f5f7fa);
+    background: rgba(0, 120, 212, 0.06);
+    color: var(--q-colors-primary, #0078d4);
 }
 
 /* 禁用状态 */
 .q-menu-item--disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.4;
     pointer-events: none;
 }
 
@@ -61,14 +63,14 @@ export const menuCSS = `
     align-items: center;
     margin-left: 24px;
     font-size: 12px;
-    color: var(--q-text-color-secondary, #909399);
+    color: var(--q-colors-text-secondary, #666);
 }
 
 /* 子菜单展开箭头 */
 .q-menu-item .q-expand-arrow {
     position: absolute;
     right: 8px;
-    color: var(--q-text-color-secondary, #909399);
+    color: var(--q-colors-text-secondary, #666);
 }
 
 /* 菜单容器 */
@@ -77,10 +79,10 @@ export const menuCSS = `
     z-index: var(--q-z-index-menu, 2000);
     min-width: 120px;
     padding: 4px 0;
-    background: #fff;
-    border: 1px solid var(--q-border-color, #dcdfe6);
-    border-radius: var(--q-border-radius, 4px);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    background: var(--q-colors-bg, #fff);
+    border: 2px solid var(--q-colors-border, #e0e0e0);
+    border-radius: 0;
+    box-shadow: none;
 }
 
 /* 菜单内容区 */

@@ -184,7 +184,7 @@ export const TemplateAbility: AbilityDefinition = {
                 el, raw: meta.raw, group: meta.group, name: meta.name,
                 delegateTarget: meta.delegateTarget, jsonRef: meta.jsonRef,
                 jsonMode: meta.jsonMode, templateRef: meta.templateRef,
-                i18nKey: meta.i18nKey,
+                i18nKey: meta.i18nKey, props: meta.props,
             };
 
             // 如果模板声明了 data-hidden，设置 el.hidden 初始状态
@@ -229,7 +229,8 @@ export const TemplateAbility: AbilityDefinition = {
                 if (!node.componentClass) continue;
 
                 const ComponentClass = node.componentClass;
-                const childProps = children?.[node.name];
+                // 优先用 static children，fallback 到模板定义中的 props
+                const childProps = children?.[node.name] || node.props;
 
                 this.logger?.debug?.('[Template] _renderChildComponents, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
 

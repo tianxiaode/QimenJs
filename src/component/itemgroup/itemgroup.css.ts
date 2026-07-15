@@ -1,8 +1,7 @@
 /**
- * ItemGroup 项组组件样式
+ * ItemGroup 项组组件样式 — Metro 风格
  *
- * 支持横向/纵向排列、间距、换行、居中等场景。
- * 通过 CSS 变量可覆盖默认值。
+ * 方角、粗边框分隔线、高对比色块。
  */
 
 export const itemgroupCSS = `
@@ -64,14 +63,14 @@ export const itemgroupCSS = `
 
 /* 分隔线模式（纵向时子项之间加分隔线） */
 .q-itemgroup--divider.q-itemgroup--vertical > .q-itemgroup__items > :not([hidden]) + :not([hidden]) {
-    border-top: 1px solid var(--q-border-color, #dcdfe6);
+    border-top: 2px solid var(--q-colors-border, #e0e0e0);
     margin-top: var(--q-itemgroup-divider-gap, 0px);
     padding-top: var(--q-itemgroup-divider-gap, 0px);
 }
 
 /* 分隔线模式（横向时子项之间加分隔线） */
 .q-itemgroup--divider.q-itemgroup--horizontal > .q-itemgroup__items > :not([hidden]) + :not([hidden]) {
-    border-left: 1px solid var(--q-border-color, #dcdfe6);
+    border-left: 2px solid var(--q-colors-border, #e0e0e0);
     margin-left: var(--q-itemgroup-divider-gap, 0px);
     padding-left: var(--q-itemgroup-divider-gap, 0px);
 }

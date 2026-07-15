@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  
+  <!-- 龟甲外轮廓（圆角八边形） -->
+  <path d="M26,6 L54,6 L74,26 L74,54 L54,74 L26,74 L6,54 L6,26 Z" 
+        stroke="#D4A537" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+  
+  <!-- 龟甲纹：中心六边形 -->
+  <polygon points="40,22 56,31 56,49 40,58 24,49 24,31" 
+           stroke="#D4A537" stroke-width="2" fill="none" opacity="0.85"/>
+  
+  <!-- 龟甲纹：上片 -->
+  <path d="M24,31 L14,14" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M40,22 L40,6" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M56,31 L66,14" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  
+  <!-- 龟甲纹：下片 -->
+  <path d="M24,49 L14,66" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M40,58 L40,74" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M56,49 L66,66" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  
+  <!-- 龟甲纹：左片 -->
+  <path d="M24,31 L8,36" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M24,49 L8,44" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  
+  <!-- 龟甲纹：右片 -->
+  <path d="M56,31 L72,36" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M56,49 L72,44" stroke="#D4A537" stroke-width="1.8" fill="none" opacity="0.6"/>
+  
+  <!-- 中宫圆点（五，洛书中宫） -->
+  <circle cx="40" cy="40" r="3.5" fill="#D4A537"/>
+  
+</svg>

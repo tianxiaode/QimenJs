@@ -6,23 +6,18 @@
  * - 干净 HTML（只有 class/style/attrs，无 data-content/data-event 等）
  * - indexPath（有 name 的节点在 DOM 树中的位置路径）
  * - nodeMetas（节点元信息：group/name/content/mode/events 等）
- * - 事件模板（internal/external/bridge）
+ * - domEventBindings（DOM 事件绑定，统一 handler/emits/bridges）
  * - componentMap（type 节点的组件类映射）
  *
  * 设计约定：
  * - 模板嵌套最多3层，超过就拆子组件（组件原子化）
  * - indexPath 最多3个数字，定位开销极小
  * - HTML 中不需要 data-* 属性回找节点，indexPath 已在拆解 JSON 时提取
- *
- * 向后兼容：
- * - convertTemplate — 旧链路（HTML 中带 data-* 属性）
- * - jsonTemplateToHtml — 旧版 JsonTemplateNode[] 格式
  */
 
 import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl } from './template-types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, DomEventBinding } from './template-compiler';
-import { parseEventAttr, parseBridgeEventAttr } from './template-compiler';
+import type { DomEventBinding } from './template-compiler';
 
 // ─── compileTemplate 编译结果 ──────────────────────────────
 
@@ -38,42 +33,24 @@ export interface CompiledTemplateResult {
     indexPath: NodeIndexPath;
     /** 节点模板元数据 — key=group:name */
     templateMetas: Record<string, NodeTemplateMeta>;
-    /** 预编译的内部事件模板 */
-    internalEventTemplates: InternalEventTemplate[];
-    /** 预编译的外部事件模板 */
-    externalEventTemplates: ExternalEventTemplate[];
-    /** 预编译的桥接事件模板 */
-    bridgeEventTemplates: BridgeEventTemplate[];
     /** 内容属性名列表（用于生成 getter/setter） */
     contentPropNames: string[];
     /** 内容节点信息数组 — 只收集有 content 语义的节点，运行时直接遍历 */
     contentInfos: ContentInfo[];
     /** 组件类映射 — name → ComponentClass */
     componentMap: Record<string, new (props?: Record<string, any>) => any>;
-    /** 合并后的 DOM 事件绑定 — 同一 DOM 事件只绑定一次，统一处理 handler/forwards/bridges */
+    /** 合并后的 DOM 事件绑定 — 同一 DOM 事件只绑定一次，统一处理 handler/emits/bridges */
     domEventBindings: DomEventBinding[];
     /** 根节点 className — 应用到组件 el 上 */
     rootClassName?: string;
     /** 根节点 style — 应用到组件 el 上 */
     rootStyle?: string;
-}
-
-// ─── 旧格式兼容类型 ──────────────────────────────────────
-
-/**
- * JSON 模板转换结果（旧格式，向后兼容）
- */
-export interface TemplateConvertResult {
-    /** 转换后的 HTML 字符串 */
-    html: string;
-    /** 组件类映射 — name → ComponentClass（从 type 字段为组件类引用的节点提取） */
-    componentMap: Record<string, new (props?: Record<string, any>) => any>;
-    /** 模板元数据 — 从 TplNode 树提取，供预编译使用 */
-    nodeMetas: Record<string, TplNodeMeta>;
+    /** 自动收集的 expose 节点名列表 — autoExpose!==false 的 content 节点 */
+    exposeNames: string[];
 }
 
 /**
- * 模板节点元数据 — 从 TplNode 提取，不含 DOM 引用（旧格式，向后兼容）
+ * 模板节点元数据 — 从 TplNode 提取，不含 DOM 引用
  */
 export interface TplNodeMeta {
     /** nodeMap 索引键（group:name 格式） */
@@ -84,12 +61,8 @@ export interface TplNodeMeta {
     name: string;
     /** 内容语义 */
     content?: string;
-    /** 事件声明（新格式：DomEventDecl 对象；旧格式：字符串数组） */
-    events?: Record<string, DomEventDecl> | string[];
-    /** 转发事件声明（旧格式兼容） */
-    forwards?: string[];
-    /** 桥接事件声明（旧格式兼容） */
-    bridges?: string[];
+    /** 事件声明 — 统一使用 DomEventDecl 对象格式 */
+    events?: Record<string, DomEventDecl>;
     /** 组件类型引用 */
     typeRef?: string;
     /** 组件挂载模式 */
@@ -164,9 +137,6 @@ function styleToString(style: Record<string, any>): string {
 export function compileTemplate(template: ComponentTemplate, isMultiArea: boolean = false): CompiledTemplateResult {
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};
-    const internalEventTemplates: InternalEventTemplate[] = [];
-    const externalEventTemplates: ExternalEventTemplate[] = [];
-    const bridgeEventTemplates: BridgeEventTemplate[] = [];
     const contentPropNames: string[] = [];
     const contentInfos: ContentInfo[] = [];
     const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};
@@ -186,9 +156,6 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
             compileNode(children[i], [i], isMultiArea, {
                 indexPath,
                 templateMetas,
-                internalEventTemplates,
-                externalEventTemplates,
-                bridgeEventTemplates,
                 contentPropNames,
                 contentInfos,
                 componentMap,
@@ -197,19 +164,25 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         );
     }
 
+    // 自动收集 expose — 所有 content 子节点的 propName
+    const exposeNames: string[] = [];
+    for (const info of contentInfos) {
+        if (info.propName) {
+            exposeNames.push(info.propName);
+        }
+    }
+
     return {
         html: htmlParts.join(''),
         indexPath,
         templateMetas,
-        internalEventTemplates,
-        externalEventTemplates,
-        bridgeEventTemplates,
         contentPropNames,
         contentInfos,
         componentMap,
         domEventBindings,
         rootClassName,
         rootStyle,
+        exposeNames,
     };
 }
 
@@ -217,9 +190,6 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
 interface CompileContext {
     indexPath: NodeIndexPath;
     templateMetas: Record<string, NodeTemplateMeta>;
-    internalEventTemplates: InternalEventTemplate[];
-    externalEventTemplates: ExternalEventTemplate[];
-    bridgeEventTemplates: BridgeEventTemplate[];
     contentPropNames: string[];
     contentInfos: ContentInfo[];
     componentMap: Record<string, new (props?: Record<string, any>) => any>;
@@ -268,6 +238,7 @@ function compileNode(
             i18nKey: node.i18n,
             hidden: node.hidden,
             mode,
+            props: node.props,
         };
 
         // 推导内容属性名
@@ -277,11 +248,18 @@ function compileNode(
             : name === '_' ? group : name;
         ctx.contentPropNames.push(propName);
 
-        // 收集内容节点信息
+        // 从子组件类读取 _expose（content 名列表，如 ['content']）
+        // 运行时按规则自动生成 getter/setter：默认属性 + content 透传
+        const componentClass = typeof node.type === 'function' ? node.type : null;
+        const childExpose = componentClass ? (componentClass as any)._expose as string[] | undefined : undefined;
+
         ctx.contentInfos.push({
             group, name, mode,
             i18nKey: node.i18n,
             propName,
+            isComponent: true,
+            componentPropName: propName,
+            expose: childExpose,
         });
 
         // 编译事件模板
@@ -378,9 +356,7 @@ function compileNode(
  * 编译节点的事件模板
  *
  * 从 TplNode 的 events（Record<string, DomEventDecl>）提取事件信息，
- * 直接生成 DomEventBinding（新结构已天然按 DOM 事件名聚合，无需合并去重），
- * 同时保留 internalEventTemplates/externalEventTemplates/bridgeEventTemplates
- * 供旧链路（buildEventMapFromTemplates）兼容使用。
+ * 直接生成 DomEventBinding（天然按 DOM 事件名聚合，无需合并去重）。
  */
 function compileEvents(
     node: TplNode,
@@ -402,7 +378,7 @@ function compileEvents(
             handlerName = decl.handler;
         }
 
-        // ── 生成 DomEventBinding（新链路） ──
+        // ── 生成 DomEventBinding ──
         const binding: DomEventBinding = {
             event: domEvent,
             nodeKey: key,
@@ -417,283 +393,7 @@ function compileEvents(
         if (decl.bridges?.length) binding.bridges = decl.bridges.map(b => ({ targetEvent: b }));
 
         ctx.domEventBindings.push(binding);
-
-        // ── 旧链路兼容：internalEventTemplates ──
-        if (handlerName) {
-            ctx.internalEventTemplates.push({
-                event: domEvent,
-                handler: handlerName,
-                once: decl.once,
-                delegate: decl.delegate,
-                debounce: decl.debounce,
-                throttle: decl.throttle,
-                nodeKey: key,
-            });
-        }
-
-        // ── 旧链路兼容：externalEventTemplates ──
-        if (decl.emits?.length) {
-            for (const emitName of decl.emits) {
-                ctx.externalEventTemplates.push({
-                    emitKey: `${name}:${emitName}`,
-                    nodeKey: key,
-                });
-            }
-        }
-
-        // ── 旧链路兼容：bridgeEventTemplates ──
-        if (decl.bridges?.length) {
-            for (const bridgeName of decl.bridges) {
-                ctx.bridgeEventTemplates.push({
-                    sourceEvent: domEvent,
-                    targetEvent: bridgeName,
-                    nodeKey: key,
-                });
-            }
-        }
     }
 }
 
-// ─── 向后兼容：旧链路 convertTemplate ──────────────────────
 
-/**
- * 转换 ComponentTemplate 为 HTML + 元数据（旧链路，向后兼容）
- *
- * HTML 中包含 data-content/data-event 等属性，
- * 供 precompileTemplate 链路解析。
- */
-export function convertTemplate(template: ComponentTemplate): TemplateConvertResult {
-    const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};
-    const nodeMetas: Record<string, TplNodeMeta> = {};
-
-    // 根节点不生成 HTML，只转换 children
-    const children = template.tpl.children || [];
-    const html = children.map(c => tplNodeToHtml(c, componentMap, nodeMetas)).join('');
-
-    return { html, componentMap, nodeMetas };
-}
-
-/**
- * 递归转换 TplNode 为 HTML
- */
-function tplNodeToHtml(
-    node: TplNode,
-    componentMap: Record<string, new (props?: Record<string, any>) => any>,
-    nodeMetas: Record<string, TplNodeMeta>,
-): string {
-    // ─── type 节点（组件占位） ───
-
-    if (node.type) {
-        const nameStr = node.name || node.content || '';
-        const { group, name } = nameStr ? parseName(nameStr) : { group: '_', name: '_' };
-        const key = `${group}:${name}`;
-
-        // 记录组件类映射
-        if (typeof node.type === 'string') {
-            componentMap[name] = (window as any)[node.type]; // 运行时查找
-        } else if (typeof node.type === 'function') {
-            componentMap[name] = node.type as any;
-        }
-
-        // 记录元数据
-        nodeMetas[key] = {
-            key, group, name,
-            content: node.content,
-            events: node.events,
-            typeRef: typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
-            replace: node.replace,
-            i18n: node.i18n,
-            hidden: node.hidden,
-            mode: 'html',
-            props: node.props,
-        };
-
-        // 生成占位 div
-        const attrs: string[] = [];
-        attrs.push(`data-content="${key}"`);
-        attrs.push(`data-json="${typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous'}"`);
-        if (node.replace !== undefined) {
-            attrs.push(`data-json-mode="${node.replace ? 'replace' : 'child'}"`);
-        }
-        // 事件属性：从 events 对象中提取
-        if (node.events) {
-            const eventParts: string[] = [];
-            const emitParts: string[] = [];
-            const bridgeParts: string[] = [];
-            for (const [domEvent, decl] of Object.entries(node.events)) {
-                if (decl.handler) eventParts.push(domEvent);
-                if (decl.emits?.length) emitParts.push(...decl.emits.map(e => e === domEvent ? e : `${domEvent}=${e}`));
-                if (decl.bridges?.length) bridgeParts.push(...decl.bridges.map(b => b === domEvent ? b : `${domEvent}=${b}`));
-            }
-            if (eventParts.length) attrs.push(`data-event="${eventParts.join(',')}"`);
-            if (emitParts.length) attrs.push(`data-emit="${emitParts.join(',')}"`);
-            if (bridgeParts.length) attrs.push(`data-bridge="${bridgeParts.join(',')}"`);
-        }
-        if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);
-        if (node.hidden) attrs.push(`data-hidden="true"`);
-        if (node.className) attrs.push(`class="${node.className}"`);
-        if (node.style) {
-            const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
-            attrs.push(`style="${styleStr}"`);
-        }
-
-        return `<div ${attrs.join(' ')}></div>`;
-    }
-
-    // ─── tag 节点（DOM 元素） ───
-
-    const tag = node.tag || 'div';
-    const attrs: string[] = [];
-
-    // name/content → data-content
-    const nameStr = node.name || node.content;
-    if (nameStr) {
-        const { group, name } = parseName(nameStr);
-        const key = `${group}:${name}`;
-
-        attrs.push(`data-content="${key}"`);
-
-        // 记录元数据
-        nodeMetas[key] = {
-            key, group, name,
-            content: node.content,
-            events: node.events,
-            i18n: node.i18n,
-            hidden: node.hidden,
-            mode: inferMode(tag),
-        };
-    }
-
-    // 事件属性：从 events 对象中提取
-    if (node.events) {
-        const eventParts: string[] = [];
-        const emitParts: string[] = [];
-        const bridgeParts: string[] = [];
-        for (const [domEvent, decl] of Object.entries(node.events)) {
-            if (decl.handler) eventParts.push(domEvent);
-            if (decl.emits?.length) emitParts.push(...decl.emits.map(e => e === domEvent ? e : `${domEvent}=${e}`));
-            if (decl.bridges?.length) bridgeParts.push(...decl.bridges.map(b => b === domEvent ? b : `${domEvent}=${b}`));
-        }
-        if (eventParts.length) attrs.push(`data-event="${eventParts.join(',')}"`);
-        if (emitParts.length) attrs.push(`data-emit="${emitParts.join(',')}"`);
-        if (bridgeParts.length) attrs.push(`data-bridge="${bridgeParts.join(',')}"`);
-    }
-
-    // 其他属性
-    if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);
-    if (node.hidden) attrs.push(`data-hidden="true"`);
-    if (node.className) attrs.push(`class="${node.className}"`);
-    if (node.style) {
-        const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
-        attrs.push(`style="${styleStr}"`);
-    }
-    if (node.attrs) {
-        for (const [key, value] of Object.entries(node.attrs)) {
-            attrs.push(`${key}="${value}"`);
-        }
-    }
-
-    const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
-
-    // 自闭合标签
-    if (VOID_TAGS.has(tag)) {
-        return `<${tag}${attrStr} />`;
-    }
-
-    // 子节点 + 文本
-    const inner = [
-        node.text || '',
-        ...(node.children || []).map(c => tplNodeToHtml(c, componentMap, nodeMetas)),
-    ].filter(Boolean).join('');
-
-    return `<${tag}${attrStr}>${inner}</${tag}>`;
-}
-
-// ─── 向后兼容 ───
-
-/**
- * 旧版 JsonTemplateNode 类型（向后兼容）
- */
-export interface JsonTemplateNode {
-    tag?: string;
-    content?: string;
-    class?: string;
-    style?: string;
-    event?: string;
-    emit?: string;
-    target?: string;
-    json?: string | (new (props?: Record<string, any>) => any);
-    jsonMode?: 'replace' | 'child';
-    template?: string;
-    i18n?: string;
-    hidden?: boolean;
-    attrs?: Record<string, string>;
-    text?: string;
-    children?: JsonTemplateNode[];
-}
-
-/** 旧版转换结果 */
-export interface JsonTemplateResult {
-    html: string;
-    componentMap: Record<string, new (props?: Record<string, any>) => any>;
-}
-
-/**
- * 旧版 JSON 模板 → HTML + 组件映射（向后兼容）
- */
-export function jsonTemplateToHtml(nodes: JsonTemplateNode[]): JsonTemplateResult {
-    const componentMap: Record<string, new (props?: Record<string, any>) => any> = {};
-    const html = nodes.map(node => legacyNodeToHtml(node, componentMap)).join('');
-    return { html, componentMap };
-}
-
-function legacyNodeToHtml(
-    node: JsonTemplateNode,
-    componentMap: Record<string, new (props?: Record<string, any>) => any>,
-): string {
-    const tag = node.tag || 'div';
-    const attrs: string[] = [];
-
-    if (node.content) attrs.push(`data-content="${node.content}"`);
-    if (node.event) attrs.push(`data-event="${node.event}"`);
-    if (node.emit) attrs.push(`data-emit="${node.emit}"`);
-    if (node.target) attrs.push(`data-target="${node.target}"`);
-    if (node.json) {
-        if (typeof node.json === 'string') {
-            attrs.push(`data-json="${node.json}"`);
-        } else {
-            const className = (node.json as any).name || 'Anonymous';
-            attrs.push(`data-json="${className}"`);
-            const content = node.content || '';
-            const colonIndex = content.indexOf(':');
-            const name = colonIndex === -1 ? content : content.slice(colonIndex + 1);
-            if (name) {
-                componentMap[name] = node.json as new (props?: Record<string, any>) => any;
-            }
-        }
-    }
-    if (node.jsonMode) attrs.push(`data-json-mode="${node.jsonMode}"`);
-    if (node.template) attrs.push(`data-template="${node.template}"`);
-    if (node.i18n) attrs.push(`data-i18n="${node.i18n}"`);
-    if (node.hidden) attrs.push(`data-hidden="true"`);
-    if (node.class) attrs.push(`class="${node.class}"`);
-    if (node.style) attrs.push(`style="${node.style}"`);
-    if (node.attrs) {
-        for (const [key, value] of Object.entries(node.attrs)) {
-            attrs.push(`${key}="${value}"`);
-        }
-    }
-
-    const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
-
-    if (VOID_TAGS.has(tag)) {
-        return `<${tag}${attrStr} />`;
-    }
-
-    const inner = [
-        node.text || '',
-        ...(node.children || []).map(c => legacyNodeToHtml(c, componentMap)),
-    ].filter(Boolean).join('');
-
-    return `<${tag}${attrStr}>${inner}</${tag}>`;
-}

@@ -12,7 +12,10 @@ export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 export { registerAllComponents } from './register';
 
 // 基础组件
+export { IconComponent } from './icon/IconComponent';
+export { iconCSS } from './icon/icon.css';
 export { ButtonComponent } from './button/ButtonComponent';
+export { buttonCSS } from './button/button.css';
 export { BadgeComponent } from './badge/BadgeComponent';
 export { badgeCSS } from './badge/badge.css';
 export { TipsComponent, type TipsProps } from './tips/TipsComponent';
@@ -35,7 +38,7 @@ export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupCo
 export { itemgroupCSS } from './itemgroup/itemgroup.css';
 
 // 导航组件
-export { NavItemComponent, type NavItemProps } from './nav/NavItemComponent';
+export { NavItemComponent, type NavItemProps, type NavOverlayOptions, type NavPlacement } from './nav/NavItemComponent';
 export { NavItemGroupComponent, type NavItemGroupProps } from './nav/NavItemGroupComponent';
 export { RouteNavComponent, type RouteNavProps } from './nav/RouteNavComponent';
 export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';

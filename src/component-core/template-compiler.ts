@@ -11,52 +11,10 @@
  * - 构建事件映射
  */
 
-import type { NodeIndexPath, NodeTemplateMeta, InternalEventBinding, EventMap, ExternalEventMap } from './types';
-import type { NodeMetadata } from './types';
+import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { ContentInfo } from './template-types';
 
 // ─── 预编译事件模板类型 ───
-
-/**
- * 预编译的内部事件模板 — 不含 node 引用，实例化时填入
- */
-export interface InternalEventTemplate {
-    event: string;
-    handler: string;
-    once?: boolean;
-    delegate?: boolean;
-    delegateTarget?: string;
-    /** 防抖时间（毫秒） */
-    debounce?: number;
-    /** 节流时间（毫秒） */
-    throttle?: number;
-    /** 对应 nodeMap 中的 group:name key，用于查找 node */
-    nodeKey: string;
-}
-
-/**
- * 预编译的外部事件模板 — 不含 node 引用，实例化时填入
- */
-export interface ExternalEventTemplate {
-    /** eventMap external 的 key（如 "button:click"） */
-    emitKey: string;
-    /** 对应 nodeMap 中的 group:name key，用于查找 node */
-    nodeKey: string;
-}
-
-/**
- * 预编译的桥接事件模板 — 不含 node 引用，实例化时填入
- */
-export interface BridgeEventTemplate {
-    /** 桥接源事件名 */
-    sourceEvent: string;
-    /** 桥接目标事件名（如 click:save） */
-    targetEvent: string;
-    /** 是否只触发一次 */
-    once?: boolean;
-    /** 对应 nodeMap 中的 group:name key，用于查找 node */
-    nodeKey: string;
-}
 
 /**
  * 合并后的 DOM 事件绑定 — 编译时从 DomEventDecl 生成
@@ -97,9 +55,6 @@ export interface DomEventBinding {
 export interface CompiledTemplate {
     indexPath: NodeIndexPath;
     templateMetas: Record<string, NodeTemplateMeta>;
-    internalEventTemplates: InternalEventTemplate[];
-    externalEventTemplates: ExternalEventTemplate[];
-    bridgeEventTemplates: BridgeEventTemplate[];
     contentPropNames: string[];
     /** 内容节点信息数组 — 只收集有 content 语义的节点，运行时直接遍历 */
     contentInfos: ContentInfo[];
@@ -138,9 +93,6 @@ export function precompileTemplate(
     const templateMetas: Record<string, NodeTemplateMeta> = {};
     const contentPropNames: string[] = [];
     const contentInfos: ContentInfo[] = [];
-    const internalEventTemplates: InternalEventTemplate[] = [];
-    const externalEventTemplates: ExternalEventTemplate[] = [];
-    const bridgeEventTemplates: BridgeEventTemplate[] = [];
 
     for (const el of els) {
         const htmlEl = el as HTMLElement;
@@ -162,11 +114,10 @@ export function precompileTemplate(
         const hidden = hiddenAttr === 'true';
         const eventAttr = htmlEl.getAttribute('data-event') || undefined;
         const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
-        const bridgeAttr = htmlEl.getAttribute('data-bridge') || undefined;
 
         templateMetas[key] = {
             raw: value, group, name, delegateTarget, jsonRef, jsonMode,
-            templateRef, mode, eventAttr, emitAttr, bridgeAttr, i18nKey, hidden,
+            templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
         };
 
         // 计算节点路径（相对于 pathRoot，与 _buildNodeMapFromCompiled 中 this.el 结构一致）
@@ -185,153 +136,9 @@ export function precompileTemplate(
             i18nKey,
             propName,
         });
-
-        // 预编译内部事件模板
-        // handler 推导：click=title → onTitleClick，click → onClick
-        if (eventAttr) {
-            const parsed = parseEventAttr(eventAttr);
-            for (const { event, name, once, delegate, debounce, throttle } of parsed) {
-                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
-                const handlerName = name
-                    ? `on${name.charAt(0).toUpperCase() + name.slice(1)}${capitalEvent}`
-                    : `on${capitalEvent}`;
-
-                internalEventTemplates.push({
-                    event,
-                    handler: handlerName,
-                    once,
-                    delegate,
-                    delegateTarget,
-                    debounce,
-                    throttle,
-                    nodeKey: key,
-                });
-            }
-        }
-
-        // 预编译外部事件模板
-        if (emitAttr) {
-            const parsed = parseEventAttr(emitAttr);
-            for (const { event } of parsed) {
-                externalEventTemplates.push({
-                    emitKey: `${name}:${event}`,
-                    nodeKey: key,
-                });
-            }
-        }
-
-        // 预编译桥接事件模板
-        if (bridgeAttr) {
-            const parsed = parseBridgeEventAttr(bridgeAttr);
-            for (const { sourceEvent, targetEvent, once } of parsed) {
-                bridgeEventTemplates.push({
-                    sourceEvent,
-                    targetEvent,
-                    once,
-                    nodeKey: key,
-                });
-            }
-        }
     }
 
-    return { indexPath, templateMetas, internalEventTemplates, externalEventTemplates, bridgeEventTemplates, contentPropNames, contentInfos, templateCache: tpl };
-}
-
-/**
- * 仅预编译事件模板 — 从已有的 templateMetas 推导
- *
- * NodeMapAbility 首次实例化时使用：先 querySelectorAll 扫描节点，
- * 再用此函数从 templateMetas 预编译事件模板。
- */
-export function precompileEventTemplates(
-    templateMetas: Record<string, NodeTemplateMeta>,
-    isMultiArea: boolean,
-): {
-    internalEventTemplates: InternalEventTemplate[];
-    externalEventTemplates: ExternalEventTemplate[];
-} {
-    const internalEventTemplates: InternalEventTemplate[] = [];
-    const externalEventTemplates: ExternalEventTemplate[] = [];
-
-    for (const [key, meta] of Object.entries(templateMetas)) {
-        const capitalName = meta.name.charAt(0).toUpperCase() + meta.name.slice(1);
-
-        if (meta.eventAttr) {
-            const parsed = parseEventAttr(meta.eventAttr);
-            for (const { event, name, once, delegate, debounce, throttle } of parsed) {
-                const capitalEvent = event.charAt(0).toUpperCase() + event.slice(1);
-                const handlerName = name
-                    ? `on${name.charAt(0).toUpperCase() + name.slice(1)}${capitalEvent}`
-                    : `on${capitalEvent}`;
-
-                internalEventTemplates.push({
-                    event,
-                    handler: handlerName,
-                    once,
-                    delegate,
-                    delegateTarget: meta.delegateTarget,
-                    debounce,
-                    throttle,
-                    nodeKey: key,
-                });
-            }
-        }
-
-        if (meta.emitAttr) {
-            const parsed = parseEventAttr(meta.emitAttr);
-            for (const { event } of parsed) {
-                externalEventTemplates.push({
-                    emitKey: `${meta.name}:${event}`,
-                    nodeKey: key,
-                });
-            }
-        }
-    }
-
-    return { internalEventTemplates, externalEventTemplates };
-}
-
-// ─── 事件映射构建 ───
-
-/**
- * 从预编译事件模板构建 eventMap — 只填 node 引用
- *
- * withTemplate 路径和 NodeMapAbility 路径共用。
- */
-export function buildEventMapFromTemplates(
-    internalTemplates: InternalEventTemplate[],
-    externalTemplates: ExternalEventTemplate[],
-    nodeMap: Record<string, Record<string, NodeMetadata>>,
-): EventMap {
-    const internalEvents: InternalEventBinding[] = [];
-    const externalEvents: ExternalEventMap = {};
-
-    for (const tpl of internalTemplates) {
-        const [group, name] = tpl.nodeKey.split(':');
-        const node = nodeMap[group]?.[name];
-        if (!node) continue;
-
-        internalEvents.push({
-            event: tpl.event,
-            handler: tpl.handler,
-            once: tpl.once,
-            delegate: tpl.delegate,
-            delegateTarget: tpl.delegateTarget,
-            debounce: tpl.debounce,
-            throttle: tpl.throttle,
-            node,
-        });
-    }
-
-    for (const tpl of externalTemplates) {
-        const [group, name] = tpl.nodeKey.split(':');
-        const node = nodeMap[group]?.[name];
-        if (!node) continue;
-
-        externalEvents[tpl.emitKey] = node;
-    }
-
-    return { internal: internalEvents, external: externalEvents };
+    return { indexPath, templateMetas, contentPropNames, contentInfos, templateCache: tpl };
 }
 
 // ─── 节点定位 ───
@@ -437,59 +244,10 @@ export function parseEventAttr(eventAttr: string): Array<{ event: string; name?:
     return results;
 }
 
-// JSON 模板（从 template-json.ts 拆分）
-export type { JsonTemplateNode } from './template-json';
-export { jsonTemplateToHtml } from './template-json';
-
 // 新模板类型
 export type { TplNode, ComponentTemplate, DomEventDecl } from './template-types';
-export { convertTemplate, type TemplateConvertResult, type TplNodeMeta } from './template-json';
+export { type TplNodeMeta } from './template-json';
 
 // 新模板编译（一步到位，跳过 HTML data-* 属性）
 export { compileTemplate, type CompiledTemplateResult } from './template-json';
 export { type ContentInfo } from './template-types';
-
-/**
- * 解析桥接事件属性值（data-bridge）
- *
- * 格式：逗号分隔的事件声明
- * - 'click' → 源事件 click，目标事件 click
- * - 'click=click:save' → 源事件 click，目标事件 click:save
- * - 'click?once' → 只触发一次
- * - 'click=click:save?once' → 映射 + 只触发一次
- */
-export function parseBridgeEventAttr(bridgeAttr: string): Array<{ sourceEvent: string; targetEvent: string; once?: boolean }> {
-    const results: Array<{ sourceEvent: string; targetEvent: string; once?: boolean }> = [];
-    const parts = bridgeAttr.split(',').map(s => s.trim()).filter(Boolean);
-
-    for (const part of parts) {
-        let sourceEvent: string;
-        let targetEvent: string;
-        let once = false;
-
-        // 先分离 ?once 修饰符
-        let eventPart = part;
-        const questionIndex = part.indexOf('?');
-        if (questionIndex !== -1) {
-            eventPart = part.slice(0, questionIndex).trim();
-            const modifiers = part.slice(questionIndex + 1).split('&');
-            for (const mod of modifiers) {
-                if (mod === 'once') once = true;
-            }
-        }
-
-        // 解析 source=target
-        const equalIndex = eventPart.indexOf('=');
-        if (equalIndex !== -1) {
-            sourceEvent = eventPart.slice(0, equalIndex).trim();
-            targetEvent = eventPart.slice(equalIndex + 1).trim();
-        } else {
-            sourceEvent = eventPart;
-            targetEvent = eventPart;
-        }
-
-        results.push({ sourceEvent, targetEvent, once });
-    }
-
-    return results;
-}

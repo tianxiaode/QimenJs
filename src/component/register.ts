@@ -12,6 +12,7 @@
  */
 
 import { ComponentRegistrar } from '@qimenjs/component-core';
+import { IconComponent } from './icon/IconComponent';
 import { ButtonComponent } from './button/ButtonComponent';
 import { ToolbarComponent } from './toolbar/ToolbarComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
@@ -32,6 +33,7 @@ const registrar = ComponentRegistrar.getInstance();
  * 应在应用启动时调用一次。
  */
 export function registerAllComponents(): void {
+    registrar.register('Icon', IconComponent);
     registrar.register('Button', ButtonComponent);
     registrar.register('Toolbar', ToolbarComponent);
     registrar.register('Badge', BadgeComponent);

@@ -37,10 +37,10 @@ import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, JsonTemplateNode, ContentInfo, DomEventBinding } from './template-compiler';
+import type { ContentInfo, DomEventBinding } from './template-compiler';
 import type { ComponentTemplate } from './template-types';
-import { precompileTemplate, jsonTemplateToHtml, convertTemplate, compileTemplate } from './template-compiler';
-import type { CompiledTemplateResult } from './template-compiler';
+import { precompileTemplate, compileTemplate } from './template-compiler';
+import type { CompiledTemplateResult } from './template-json';
 import { buildContentProperties } from './content-properties';
 
 /**
@@ -196,16 +196,13 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * @param template - HTML 字符串 / 旧版 JSON 模板数组 / 新版 ComponentTemplate
      * @returns 模板组件强类
      */
-    static withTemplate(this: any, template: string | JsonTemplateNode[] | ComponentTemplate): any {
+    static withTemplate(this: any, template: string | ComponentTemplate): any {
         let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
         let body: Record<string, any> | undefined;
         let templateHtml: string;
         let compiled: {
             indexPath: NodeIndexPath;
             templateMetas: Record<string, NodeTemplateMeta>;
-            internalEventTemplates: InternalEventTemplate[];
-            externalEventTemplates: ExternalEventTemplate[];
-            bridgeEventTemplates: BridgeEventTemplate[];
             contentPropNames: string[];
             contentInfos: ContentInfo[];
             domEventBindings: DomEventBinding[];
@@ -215,41 +212,27 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         };
 
         if (typeof template === 'string') {
-            // ── 旧链路：HTML 字符串 ──
+            // ── HTML 字符串 ──
             templateHtml = template;
             compiled = {
                 ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
                 domEventBindings: [],
             };
 
-        } else if (Array.isArray(template)) {
-            // ── 旧链路：JsonTemplateNode[] ──
-            const result = jsonTemplateToHtml(template);
-            jsonComponentMap = result.componentMap;
-            templateHtml = result.html;
-            compiled = {
-                ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
-                domEventBindings: [],
-            };
-
         } else {
-            // ── 新链路：ComponentTemplate ──
-            // compileTemplate 一步到位：干净 HTML + indexPath + 元数据 + 事件模板
+            // ── ComponentTemplate ──
             const result = compileTemplate(template, this.isMultiArea ?? false);
             templateHtml = result.html;
             jsonComponentMap = result.componentMap;
             body = template.body;
 
-            // 构建 templateCache（干净 HTML 不含 data-* 属性，但结构一致）
+            // 构建 templateCache
             const tpl = document.createElement('template');
             tpl.innerHTML = templateHtml;
 
             compiled = {
                 indexPath: result.indexPath,
                 templateMetas: result.templateMetas,
-                internalEventTemplates: result.internalEventTemplates,
-                externalEventTemplates: result.externalEventTemplates,
-                bridgeEventTemplates: result.bridgeEventTemplates,
                 contentPropNames: result.contentPropNames,
                 contentInfos: result.contentInfos,
                 domEventBindings: result.domEventBindings,
@@ -299,15 +282,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             /** 预编译的模板元数据 */
             static readonly _templateMetas: Record<string, NodeTemplateMeta> = compiled.templateMetas;
 
-            /** 预编译的内部事件模板（不含 node 引用） */
-            static readonly _internalEventTemplates: InternalEventTemplate[] = compiled.internalEventTemplates;
-
-            /** 预编译的外部事件模板（不含 node 引用） */
-            static readonly _externalEventTemplates: ExternalEventTemplate[] = compiled.externalEventTemplates;
-
-            /** 预编译的桥接事件模板（不含 node 引用） */
-            static readonly _bridgeEventTemplates: BridgeEventTemplate[] = compiled.bridgeEventTemplates;
-
             /** 预编译的合并 DOM 事件绑定（同一 DOM 事件只绑定一次） */
             static readonly _domEventBindings: DomEventBinding[] = compiled.domEventBindings ?? [];
 
@@ -322,6 +296,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
             /** 模板 body 定义（属性和方法，复制到组件实例） */
             static readonly _templateBody: Record<string, any> | undefined = body;
+
+            /** 对外暴露节点名列表 — 编译时从 autoExpose!==false 的 content 节点自动收集 */
+            static readonly _expose: string[] = compiled.exposeNames;
 
             /** 根节点 className — 应用到组件 el 上 */
             static readonly _rootClassName: string | undefined = compiled.rootClassName;

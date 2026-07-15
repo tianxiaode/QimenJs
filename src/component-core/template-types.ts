@@ -117,9 +117,15 @@ export interface TplNode {
     /**
      * 内容语义描述 — 决定属性对接方式
      *
-     * - 'title' / 'text' / 'icon' 等语义标识
-     * - 也用于推导内容操作模式（html/value/src）
-     * - 当 name 缺省时，content 同时作为 nodeMap 索引键
+     * content 值作为 propName 和 nodeMap 索引键。
+     * 如果子组件有 expose 声明，编译时自动生成便捷方法：
+     * - 子组件 expose: { class: 'iconClass', size: 'size' }
+     * - content:'icon' → setIconClass(v) / setIconSize(v)
+     * - content:'leftIcon' → setLeftIconClass(v) / setLeftIconSize(v)
+     *
+     * 无 expose 的子组件只生成主属性 getter/setter。
+     *
+     * 当 name 缺省时，content 同时作为 nodeMap 索引键
      */
     content?: string;
 
@@ -228,6 +234,31 @@ export interface ContentInfo {
     mode: 'value' | 'src' | 'html';
     /** i18n 翻译 key，有值时需要翻译 */
     i18nKey?: string;
-    /** 对应的属性名（如 'text'、'icon'、'dialogTitle'） */
+    /** 对应的属性名（如 'icon'、'text'、'dropIcon'） */
     propName: string;
+    /** 是否为组件节点（type 节点），为 true 时 getter/setter 操作 component */
+    isComponent?: boolean;
+    /** 子组件主属性名（仅 isComponent 时有效） */
+    componentPropName?: string;
+    /**
+     * 子组件的 expose 列表 — content 名列表（如 ['content']）
+     *
+     * 运行时按规则自动生成 getter/setter：
+     * - 默认属性：{propName}ClassName / {propName}Style / {propName}Size
+     * - content 透传：{propName}{ContentName}ClassName / Style / Size
+     *
+     * 后缀和 DOM/组件属性名一致，零映射：
+     * - ClassName → component.el.className
+     * - Style → component.el.style
+     * - Size → component.size
+     *
+     * 例如 Icon._expose = ['content']，Button content:'icon'：
+     * - iconClassName → component.el.className = v
+     * - iconStyle → component.el.style = v
+     * - iconSize → component.size = v
+     * - iconContentClassName → component.content.el.className = v
+     * - iconContentStyle → component.content.el.style = v
+     * - iconContentSize → component.content.size = v
+     */
+    expose?: string[];
 }

@@ -1,6 +1,7 @@
 /**
- * Badge 角标组件样式
+ * Badge 角标组件样式 — Metro 风格
  *
+ * 方角、粗边框、高对比色块。
  * 绝对定位在 anchor 元素的角落，
  * 支持 dot/number/text 三种类型和四个方位。
  */
@@ -14,7 +15,8 @@ export const badgeCSS = `
     justify-content: center;
     pointer-events: none;
     z-index: 1;
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 700;
     line-height: 1;
     white-space: nowrap;
 }
@@ -23,8 +25,8 @@ export const badgeCSS = `
 .q-badge--dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    background: var(--q-color-danger, #f56c6c);
+    border-radius: 0;
+    background: var(--q-colors-error, #d13438);
 }
 
 /* 类型：数字/文本 */
@@ -33,9 +35,9 @@ export const badgeCSS = `
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
-    border-radius: 9px;
-    background: var(--q-color-danger, #f56c6c);
-    color: #fff;
+    border-radius: 0;
+    background: var(--q-colors-error, #d13438);
+    color: var(--q-colors-on-error, #fff);
 }
 
 /* 位置：右上 */

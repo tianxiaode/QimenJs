@@ -1,6 +1,7 @@
 /**
- * Button 按钮组件样式
+ * Button 按钮组件样式 — Metro 风格
  *
+ * 扁平、方角、粗边框、无渐变、高对比色块。
  * 支持 default/primary/success/warning/danger 五种类型，
  * small/medium/large 三种尺寸，以及禁用状态。
  */
@@ -12,53 +13,83 @@ export const buttonCSS = `
     align-items: center;
     justify-content: center;
     padding: 0 16px;
-    border: 1px solid var(--q-border-color, #dcdfe6);
-    border-radius: var(--q-border-radius, 4px);
+    border: 2px solid var(--q-colors-border, #dcdfe6);
+    border-radius: 0;
     font-size: 14px;
+    font-weight: 600;
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
     box-sizing: border-box;
     outline: none;
     user-select: none;
-    background: #fff;
-    color: var(--q-text-color, #606266);
+    background: var(--q-colors-bg, #fff);
+    color: var(--q-colors-text, #1a1a1a);
 }
 
 /* 类型：默认 */
 .q-button--default {
-    background: #fff;
-    border-color: var(--q-border-color, #dcdfe6);
-    color: var(--q-text-color, #606266);
+    background: var(--q-colors-bg, #fff);
+    border-color: var(--q-colors-border, #dcdfe6);
+    color: var(--q-colors-text, #1a1a1a);
+}
+
+.q-button--default:hover {
+    border-color: var(--q-colors-text-secondary, #666);
 }
 
 /* 类型：主要 */
 .q-button--primary {
-    background: var(--q-color-primary, #409eff);
-    border-color: var(--q-color-primary, #409eff);
-    color: #fff;
+    background: var(--q-colors-primary, #0078d4);
+    border-color: var(--q-colors-primary, #0078d4);
+    color: var(--q-colors-on-primary, #fff);
+}
+
+.q-button--primary:hover {
+    background: var(--q-colors-primary-hover, #106ebe);
+    border-color: var(--q-colors-primary-hover, #106ebe);
+}
+
+.q-button--primary:active {
+    background: var(--q-colors-primary-active, #005a9e);
+    border-color: var(--q-colors-primary-active, #005a9e);
 }
 
 /* 类型：成功 */
 .q-button--success {
-    background: var(--q-color-success, #67c23a);
-    border-color: var(--q-color-success, #67c23a);
-    color: #fff;
+    background: var(--q-colors-success, #107c10);
+    border-color: var(--q-colors-success, #107c10);
+    color: var(--q-colors-on-success, #fff);
+}
+
+.q-button--success:hover {
+    background: #0e6b0e;
+    border-color: #0e6b0e;
 }
 
 /* 类型：警告 */
 .q-button--warning {
-    background: var(--q-color-warning, #e6a23c);
-    border-color: var(--q-color-warning, #e6a23c);
-    color: #fff;
+    background: var(--q-colors-warning, #ca5010);
+    border-color: var(--q-colors-warning, #ca5010);
+    color: var(--q-colors-on-warning, #fff);
+}
+
+.q-button--warning:hover {
+    background: #b3450e;
+    border-color: #b3450e;
 }
 
 /* 类型：危险 */
 .q-button--danger {
-    background: var(--q-color-danger, #f56c6c);
-    border-color: var(--q-color-danger, #f56c6c);
-    color: #fff;
+    background: var(--q-colors-error, #d13438);
+    border-color: var(--q-colors-error, #d13438);
+    color: var(--q-colors-on-error, #fff);
+}
+
+.q-button--danger:hover {
+    background: #b22c2f;
+    border-color: #b22c2f;
 }
 
 /* 尺寸：小 */
@@ -85,7 +116,7 @@ export const buttonCSS = `
 /* 禁用状态 */
 .q-button--disabled {
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 0.4;
 }
 
 /* 内容文本 */
@@ -103,5 +134,32 @@ export const buttonCSS = `
 /* 下拉按钮模式 */
 .q-button--dropdown {
     padding-right: 8px;
+}
+
+/* 幽灵模式（无边框，与背景融合） */
+.q-button--ghost {
+    border-color: transparent;
+    background: transparent;
+}
+
+.q-button--ghost:hover {
+    background: var(--q-colors-ghost-hover, rgba(128, 128, 128, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost:active {
+    background: var(--q-colors-ghost-active, rgba(128, 128, 128, 0.15));
+}
+
+/* 幽灵模式 — 主要色 */
+.q-button--ghost.q-button--primary {
+    color: var(--q-colors-primary, #0078d4);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--primary:hover {
+    background: var(--q-colors-primary-hover, rgba(0, 120, 212, 0.1));
+    border-color: transparent;
 }
 `;

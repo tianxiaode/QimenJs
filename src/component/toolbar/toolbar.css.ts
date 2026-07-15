@@ -1,7 +1,7 @@
 /**
- * Toolbar 工具栏组件样式
+ * Toolbar 工具栏组件样式 — Metro 风格
  *
- * 支持横向/纵向布局、溢出滚动箭头、溢出下拉菜单。
+ * 方角、粗边框、无阴影、高对比色块。
  */
 
 export const toolbarCSS = `
@@ -62,19 +62,19 @@ export const toolbarCSS = `
     flex-shrink: 0;
     width: 28px;
     height: 28px;
-    border: none;
-    background: var(--q-bg-overlay, rgba(255, 255, 255, 0.9));
-    color: var(--q-text-secondary, #666);
+    border: 2px solid var(--q-colors-border, #e0e0e0);
+    background: var(--q-colors-bg, #fff);
+    color: var(--q-colors-text-secondary, #666);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0;
     z-index: 1;
-    transition: background 0.2s, color 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    box-shadow: none;
 }
 
 .q-overflow-arrow:hover {
-    background: var(--q-bg-overlay-hover, rgba(255, 255, 255, 1));
-    color: var(--q-text-primary, #333);
+    border-color: var(--q-colors-primary, #0078d4);
+    color: var(--q-colors-primary, #0078d4);
 }
 
 /* 横向箭头定位 */
@@ -202,19 +202,19 @@ export const toolbarCSS = `
     flex-shrink: 0;
     width: 28px;
     height: 28px;
-    border: none;
-    background: var(--q-bg-overlay, rgba(255, 255, 255, 0.9));
-    color: var(--q-text-secondary, #666);
+    border: 2px solid var(--q-colors-border, #e0e0e0);
+    background: var(--q-colors-bg, #fff);
+    color: var(--q-colors-text-secondary, #666);
     cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    box-shadow: none;
 }
 
 .q-overflow-menu__trigger:hover,
 .q-overflow-menu__trigger--active {
-    background: var(--q-bg-overlay-hover, rgba(255, 255, 255, 1));
-    color: var(--q-text-primary, #333);
+    border-color: var(--q-colors-primary, #0078d4);
+    color: var(--q-colors-primary, #0078d4);
 }
 
 /* 横向触发按钮定位 */
@@ -242,7 +242,7 @@ export const toolbarCSS = `
     display: block;
     width: 4px;
     height: 4px;
-    border-radius: 50%;
+    border-radius: 0;
     background: currentColor;
 }
 
@@ -266,10 +266,10 @@ export const toolbarCSS = `
     min-width: 120px;
     max-height: 240px;
     overflow-y: auto;
-    background: var(--q-bg-overlay, #fff);
-    border: 1px solid var(--q-border-color, #e0e0e0);
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    background: var(--q-colors-bg, #fff);
+    border: 2px solid var(--q-colors-border, #e0e0e0);
+    border-radius: 0;
+    box-shadow: none;
     z-index: 10;
 }
 
@@ -287,11 +287,13 @@ export const toolbarCSS = `
     cursor: pointer;
     white-space: nowrap;
     font-size: 14px;
-    color: var(--q-text-primary, #333);
-    transition: background 0.15s;
+    font-weight: 500;
+    color: var(--q-colors-text, #1a1a1a);
+    transition: background 0.15s, color 0.15s;
 }
 
 .q-overflow-menu__item:hover {
-    background: var(--q-bg-hover, #f5f5f5);
+    background: rgba(0, 120, 212, 0.06);
+    color: var(--q-colors-primary, #0078d4);
 }
 `;

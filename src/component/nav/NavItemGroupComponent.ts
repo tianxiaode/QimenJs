@@ -15,6 +15,10 @@
  * - selectAt(index) — 选中指定导航项
  * - activeIndex — 当前选中索引（-1 表示无选中）
  *
+ * 显示模式：
+ * - expanded（默认）：子项显示图标+文本
+ * - collapsed：子项仅显示图标，hover 弹出 tooltip
+ *
  * 事件：
  * - click — 导航项被点击时触发（继承自 ItemGroup 转发，source='nav'）
  * - select — 导航项被选中时触发，附带 { item, index }（source='nav'）
@@ -24,8 +28,10 @@
  * const nav = new NavItemGroupComponent({
  *     items: [
  *         { text: '首页', icon: '🏠', active: true },
- *         { text: '设置', icon: '⚙️' },
+ *         { text: '设置', icon: '⚙️', children: [...] },
  *     ],
+ *     mode: 'expanded',
+ *     maxDepth: 3,
  * });
  * nav.on('select', ({ item, index }) => { ... });
  * nav.selectAt(1);
@@ -34,6 +40,7 @@
 
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 import type { NavItemComponent } from './NavItemComponent';
+import type { NavOverlayOptions } from './NavItemComponent';
 
 /** 默认转发的事件类型（继承 ItemGroup 的 click/close） */
 const NAV_FORWARD_EVENTS = ['click', 'close'];
@@ -52,11 +59,31 @@ export interface NavItemGroupProps {
     itemsCls?: string;
     /** 初始选中索引，-1 表示无选中，默认 -1 */
     activeIndex?: number;
+    /** 显示模式：expanded=图标+文本，collapsed=仅图标 */
+    mode?: 'expanded' | 'collapsed';
+    /** 最大层级深度，默认 3 */
+    maxDepth?: number;
+    /** 浮层配置（传递给子 NavItemComponent） */
+    overlayOptions?: NavOverlayOptions;
+    /** 自定义浮层内容组件类（传递给子 NavItemComponent） */
+    overlayComponent?: any;
 }
 
 export let NavItemGroupComponent = class extends ItemGroupComponent {
     /** 当前选中索引 */
     private _activeIndex: number = -1;
+
+    /** 显示模式 */
+    private _mode: 'expanded' | 'collapsed';
+
+    /** 最大层级深度 */
+    private _maxDepth: number;
+
+    /** 浮层配置 */
+    private _overlayOptions?: NavOverlayOptions;
+
+    /** 自定义浮层内容组件类 */
+    private _overlayComponent?: any;
 
     constructor(props?: NavItemGroupProps) {
         super({
@@ -75,6 +102,14 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         this.el.classList.remove('q-itemgroup');
         this.el.classList.add('q-nav');
 
+        this._mode = props?.mode ?? 'expanded';
+        this._maxDepth = props?.maxDepth ?? 3;
+        this._overlayOptions = props?.overlayOptions;
+        this._overlayComponent = props?.overlayComponent;
+
+        // 应用模式样式
+        this.el.classList.toggle('q-nav--collapsed', this._mode === 'collapsed');
+
         // 初始选中（静默，不触发事件）
         if (props?.activeIndex !== undefined && props.activeIndex >= 0) {
             this.selectAt(props.activeIndex, true);
@@ -84,6 +119,16 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
     /** 当前选中索引（-1 表示无选中） */
     get activeIndex(): number {
         return this._activeIndex;
+    }
+
+    /** 当前显示模式 */
+    get mode(): 'expanded' | 'collapsed' {
+        return this._mode;
+    }
+
+    /** 最大层级深度 */
+    get maxDepth(): number {
+        return this._maxDepth;
     }
 
     /**
@@ -127,10 +172,44 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         this._activeIndex = -1;
     }
 
+    /**
+     * 切换显示模式
+     */
+    setMode(value: 'expanded' | 'collapsed'): void {
+        this._mode = value;
+        this.el.classList.toggle('q-nav--collapsed', value === 'collapsed');
+
+        // 更新所有子项的模式
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i) as NavItemComponent;
+            item.setMode(value);
+        }
+    }
+
+    /**
+     * 设置浮层配置（传递给所有子项）
+     */
+    setOverlayOptions(options: NavOverlayOptions): void {
+        this._overlayOptions = options;
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i) as NavItemComponent;
+            item.update({ overlayOptions: options });
+        }
+    }
+
     update(props?: Record<string, any>): void {
         super.update(props);
         if (props?.activeIndex !== undefined) {
             this.selectAt(props.activeIndex);
+        }
+        if (props?.mode !== undefined) {
+            this.setMode(props.mode);
+        }
+        if (props?.maxDepth !== undefined) {
+            this._maxDepth = props.maxDepth;
+        }
+        if (props?.overlayOptions !== undefined) {
+            this.setOverlayOptions(props.overlayOptions);
         }
     }
 };
