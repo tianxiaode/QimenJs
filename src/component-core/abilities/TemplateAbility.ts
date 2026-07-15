@@ -36,14 +36,6 @@ import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
-/**
- * 子组件差异化配置
- *
- * 在 static children 中声明，为模板占位节点对应的子组件提供差异化 props。
- * key 对应 data-content 的 name 部分，value 是传给子组件的 props。
- */
-export type ChildComponentConfig = Record<string, Record<string, any> | undefined>;
-
 export const TemplateAbility: AbilityDefinition = {
     /**
      * withTemplate 强类自动初始化
@@ -63,7 +55,6 @@ export const TemplateAbility: AbilityDefinition = {
         // 合并配置：static 属性为基础，props 可覆盖
         const ctor = this.constructor as any;
         const cfg: Record<string, any> = {
-            children: ctor.children ? { ...ctor.children } : undefined,
             bridges: ctor.bridges ? [...ctor.bridges] : undefined,
             abilities: ctor.abilities,
             entity: ctor.entity,
@@ -72,7 +63,7 @@ export const TemplateAbility: AbilityDefinition = {
             ...props,
         };
 
-        this.logger?.debug?.('[Template] _initWithTemplate, type =', ctor.type, 'children =', cfg.children ? Object.keys(cfg.children) : [], 'bridges =', cfg.bridges?.length ?? 0, 'eventBridge =', !!cfg.eventBridge);
+        this.logger?.debug?.('[Template] _initWithTemplate, type =', ctor.type, 'bridges =', cfg.bridges?.length ?? 0, 'eventBridge =', !!cfg.eventBridge);
 
         try {
             // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
@@ -113,7 +104,7 @@ export const TemplateAbility: AbilityDefinition = {
             this.setupI18nListener();
 
             // ── 3.5 渲染子组件（data-json 占位节点 → 组件实体） ──
-            this._renderChildComponents(cfg.children);
+            this._renderChildComponents();
 
             // ── 3.6 从 props 中提前设置 eventKey（bindDomEventBindings/bindBridgeEvents 依赖） ──
             if (cfg.eventKey !== undefined) {
@@ -221,7 +212,7 @@ export const TemplateAbility: AbilityDefinition = {
      *
      * @param children - 子组件差异化配置（v1: static children），可选
      */
-    _renderChildComponents(children?: ChildComponentConfig): void {
+    _renderChildComponents(): void {
         const ctor = this.constructor as any;
         const propsDef: Record<string, any> | undefined = ctor._propsDef;
 
@@ -232,20 +223,22 @@ export const TemplateAbility: AbilityDefinition = {
         }
 
         // v1 旧模式
-        this._renderChildComponentsV1(children);
+        this._renderChildComponentsV1();
     },
 
     /**
      * v1 旧模式渲染子组件
+     *
+     * 直接用 node.props（从 tpl 子节点定义的 props 字段取值），
+     * 不再查 static children。
      */
-    _renderChildComponentsV1(children?: ChildComponentConfig): void {
+    _renderChildComponentsV1(): void {
         for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
             for (const node of Object.values(group) as NodeMetadata[]) {
                 if (!node.componentClass) continue;
 
                 const ComponentClass = node.componentClass;
-                // 优先用 static children，fallback 到模板定义中的 props
-                const childProps = children?.[node.name] || node.props;
+                const childProps = node.props;
 
                 this.logger?.debug?.('[Template] _renderChildComponentsV1, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
 
@@ -262,38 +255,64 @@ export const TemplateAbility: AbilityDefinition = {
     },
 
     /**
-     * v2 新模式渲染子组件 — props.content 驱动
+                (child as any).parent = this;
+
+                // 根据 jsonMode 挂载，并记录 DOM 位置索引
+                this._mountChildComponent(node, child);
+            }
+        }
+    },
+
+    /**
+     * v2 新模式渲染子组件 — props.childProps 驱动
      *
-     * content 是使用方传入的子节点配置，key 对应 tpl children 的 name。
-     * 组件定义时不写 content，由使用方在使用时传入。
+     * childProps 是使用方传入的子节点配置，key 对应 tpl children 的 name。
+     * 每个子节点的值结构：{ props, body, childProps }，天然递归。
      *
      * 流程：
-     * 1. 从 this.props.content 取使用方传入的配置
-     * 2. 遍历 content 的 key，在 nodeMap 中找对应子节点
+     * 1. 从 this.props.childProps 取使用方传入的配置
+     * 2. 遍历 childProps 的 key，在 nodeMap 中找对应子节点
      * 3. DOM 节点：直接设 el 属性（className/innerHTML/style）
-     * 4. 组件节点：把 content 传给子组件构造器（递归）
+     * 4. 组件节点：把 props + body + childProps 传给子组件构造器（递归）
      *
      * @example
      * ```ts
      * // AppShell 使用 Button
      * { type: ButtonComponent, props: {
-     *     content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
+     *     childProps: {
+     *         icon: { props: { className: 'fa-bars' } },
+     *         text: { props: { innerHTML: '保存' } },
+     *     }
+     * } }
+     *
+     * // 三层递归：工具栏 → 按钮 → 图标
+     * { type: ToolbarComponent, props: {
+     *     childProps: {
+     *         darkBtn: {
+     *             props: { className: 'ghost' },
+     *             childProps: {
+     *                 icon: { props: { className: 'fa-moon' } },
+     *             },
+     *         },
+     *     }
      * } }
      * ```
      */
     _renderChildComponentsV2(): void {
-        const userContent = this.props?.content as Record<string, any> | undefined;
-        if (!userContent || Object.keys(userContent).length === 0) return;
+        const userChildProps = this.props?.childProps as Record<string, any> | undefined;
+        if (!userChildProps || Object.keys(userChildProps).length === 0) return;
 
-        for (const [contentKey, contentVal] of Object.entries(userContent)) {
+        for (const [nodeKey, nodeConfig] of Object.entries(userChildProps)) {
             // 在 nodeMap 中查找对应的子节点
-            const node = this._findNodeByContentKey(contentKey);
+            const node = this._findNodeByContentKey(nodeKey);
             if (!node) continue;
 
             // DOM 节点：直接设置属性
             if (!node.componentClass) {
-                if (contentVal && typeof contentVal === 'object') {
-                    for (const [propKey, propVal] of Object.entries(contentVal)) {
+                if (nodeConfig && typeof nodeConfig === 'object') {
+                    // nodeConfig.props 里的属性设到 el 上
+                    const elProps = nodeConfig.props || nodeConfig;
+                    for (const [propKey, propVal] of Object.entries(elProps)) {
                         if (propKey === 'innerHTML' && node.el) {
                             node.el.innerHTML = propVal;
                         } else if (propKey === 'className' && node.el) {
@@ -310,27 +329,31 @@ export const TemplateAbility: AbilityDefinition = {
                 continue;
             }
 
-            // 组件节点：把 content 传给子组件构造器
+            // 组件节点：构建子组件构造参数
             const ComponentClass = node.componentClass;
-            const childProps: Record<string, any> = {};
+            const ctorProps: Record<string, any> = {};
 
-            // contentVal 里的 props 合并到 childProps
-            if (contentVal?.props) {
-                Object.assign(childProps, contentVal.props);
+            // nodeConfig.props → 子组件的 props
+            if (nodeConfig?.props) {
+                Object.assign(ctorProps, nodeConfig.props);
             }
-            // contentVal 里的 content 递归传递
-            if (contentVal?.content && Object.keys(contentVal.content).length > 0) {
-                childProps.content = contentVal.content;
+            // nodeConfig.childProps → 递归传递
+            if (nodeConfig?.childProps && Object.keys(nodeConfig.childProps).length > 0) {
+                ctorProps.childProps = nodeConfig.childProps;
             }
-            // contentVal 本身就是简单对象（没有 props/content 层），直接当 props 传
-            if (contentVal && typeof contentVal === 'object' && !contentVal.props && !contentVal.content) {
-                Object.assign(childProps, contentVal);
+            // nodeConfig.body → 子组件的 body
+            if (nodeConfig?.body) {
+                Object.assign(ctorProps, nodeConfig.body);
+            }
+            // 简写：nodeConfig 没有 props/body/childProps 层，直接当 props 传
+            if (nodeConfig && typeof nodeConfig === 'object' && !nodeConfig.props && !nodeConfig.childProps && !nodeConfig.body) {
+                Object.assign(ctorProps, nodeConfig);
             }
 
-            this.logger?.debug?.('[Template] _renderChildComponentsV2, key =', contentKey, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', Object.keys(childProps));
+            this.logger?.debug?.('[Template] _renderChildComponentsV2, key =', nodeKey, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'ctorProps =', Object.keys(ctorProps));
 
             // 创建子组件实例
-            const child = new ComponentClass(childProps);
+            const child = new ComponentClass(ctorProps);
 
             // 设置父引用
             (child as any).parent = this;

@@ -221,9 +221,9 @@ export interface TplNode {
  * v2 模式：
  * - tpl 定义 DOM 骨架（子节点通过 name 标识）
  * - props 定义组件自身配置（壳）
- * - content 不在组件定义时写，由使用方通过 props.content 传入
- * - 使用方传 content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
- * - 渲染时 content 按 key 匹配 nodeMap，填值到子节点
+ * - body 定义组件行为/方法
+ * - childProps 不在组件定义时写，由使用方通过 props.childProps 传入
+ * - 递归结构：{ props, body, childProps } 每层都有，天然递归
  *
  * @example
  * ```ts
@@ -241,9 +241,12 @@ export interface TplNode {
  *     body: { type: 'button' },
  * };
  *
- * // 使用方传 content
+ * // 使用方传 childProps
  * { type: ButtonComponent, props: {
- *     content: { icon: { className: 'fa-bars' }, text: { innerHTML: '保存' } }
+ *     childProps: {
+ *         icon: { props: { className: 'fa-bars' } },
+ *         text: { props: { innerHTML: '保存' } },
+ *     }
  * } }
  * ```
  */

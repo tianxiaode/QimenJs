@@ -26,7 +26,7 @@ export { OverlayAbility, type OverlayConfig, type OverlayResult } from './abilit
 export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
-export type { ChildComponentConfig } from './abilities/TemplateAbility';
+
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';

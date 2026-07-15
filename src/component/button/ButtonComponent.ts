@@ -8,14 +8,14 @@
  *   - disabled: 禁用状态
  *   - width/height: 精确尺寸
  *
- * content: 使用方传入的子节点配置，key 对应 tpl children 的 name
- *   - icon: 图标子组件 → 使用方传 { className: 'fa-solid fa-bars' }
- *   - text: 文本 DOM 节点 → 使用方传 { innerHTML: '保存' }
+ * childProps: 使用方传入的子节点配置，key 对应 tpl children 的 name
+ *   - icon: 图标子组件 → 使用方传 { props: { className: 'fa-solid fa-bars' } }
+ *   - text: 文本 DOM 节点 → 使用方传 { props: { innerHTML: '保存' } }
  *   - dropIcon: 下拉箭头图标子组件
  *
  * 使用示例：
  * ```ts
- * { type: ButtonComponent, props: { content: { icon: { className: 'fa-solid fa-bars' }, text: { innerHTML: '菜单' } } } }
+ * { type: ButtonComponent, props: { childProps: { icon: { props: { className: 'fa-solid fa-bars' } }, text: { props: { innerHTML: '菜单' } } } } }
  * ```
  */
 

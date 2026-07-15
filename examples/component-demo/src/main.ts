@@ -92,25 +92,40 @@ class AppShell extends TemplateComponent.withTemplate({
                 ]},
                 // 右边：功能区 — 水平布局，垂直居中，间距4px
                 { tag: 'div', className: 'topbar-main', layout: 'hbox', align: 'center', gap: 4, children: [
-                    // 折叠按钮 — 通过 content 配置子节点
-                    { name: 'shell:toggleBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-bars' } } }, events: { click: { handler: 'onToggleNavClick' } } },
+                    // 折叠按钮 — 通过 childProps 配置子节点
+                    { name: 'shell:toggleBtn', type: ButtonComponent, className: 'q-button--ghost', props: { childProps: { icon: { props: { className: 'fa-solid fa-bars' } } } }, events: { click: { handler: 'onToggleNavClick' } } },
                     // dark 模式切换按钮
-                    { name: 'shell:darkBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-moon' } } }, events: { click: { handler: 'onDarkToggleClick' } } },
+                    { name: 'shell:darkBtn', type: ButtonComponent, className: 'q-button--ghost', props: { childProps: { icon: { props: { className: 'fa-solid fa-moon' } } } }, events: { click: { handler: 'onDarkToggleClick' } } },
                     // 弹性空间
                     { tag: 'div', className: 'topbar-spacer' },
                     // 主题下拉按钮
-                    { name: 'shell:themeBtn', type: ButtonComponent, className: 'q-button--ghost', props: { content: { icon: { className: 'fa-solid fa-palette' }, text: { innerHTML: '浅色' } } }, events: { click: { handler: 'onThemeBtnClick' } } },
+                    { name: 'shell:themeBtn', type: ButtonComponent, className: 'q-button--ghost', props: { childProps: { icon: { props: { className: 'fa-solid fa-palette' } }, text: { props: { innerHTML: '浅色' } } } }, events: { click: { handler: 'onThemeBtnClick' } } },
                 ]},
             ]},
             // 主体 — 水平布局
             { tag: 'div', className: 'app-body', layout: 'hbox', children: [
                 // 侧边栏
                 { tag: 'div', name: 'shell:sidebar', className: 'app-sidebar', layout: 'vbox', children: [
-                    { tag: 'div', name: 'shell:nav', type: RouteNavComponent, className: 'sidebar-nav' },
+                    { tag: 'div', name: 'shell:nav', type: RouteNavComponent, className: 'sidebar-nav', props: {
+                        eventKey: 'nav',
+                        direction: 'vertical',
+                        gap: '0',
+                        pathIndex: { '/': 0, '/components': 1, '/theme': 2 },
+                        indexPath: ['/', '/components', '/theme'],
+                        items: [
+                            { text: '首页', icon: '<i class="fa-solid fa-house"></i>', active: true },
+                            { text: '组件', icon: '<i class="fa-solid fa-cubes"></i>' },
+                            { text: '主题', icon: '<i class="fa-solid fa-palette"></i>' },
+                        ],
+                        activeIndex: 0,
+                    } },
                 ]},
                 // 内容区
                 { tag: 'div', className: 'app-content', layout: 'fit', children: [
-                    { name: 'shell:page', type: RouteContainerComponent },
+                    { name: 'shell:page', type: RouteContainerComponent, props: {
+                        routeMap: { '/': HomePage, '/components': ComponentsPage, '/theme': ThemePage },
+                        defaultComponent: HomePage,
+                    } },
                 ]},
             ]},
         ],
@@ -265,25 +280,6 @@ class AppShell extends TemplateComponent.withTemplate({
         },
     },
 }) {
-    static children = {
-        nav: {
-            eventKey: 'nav',
-            direction: 'vertical',
-            gap: '0',
-            pathIndex: { '/': 0, '/components': 1, '/theme': 2 },
-            indexPath: ['/', '/components', '/theme'],
-            items: [
-                { text: '首页', icon: '<i class="fa-solid fa-house"></i>', active: true },
-                { text: '组件', icon: '<i class="fa-solid fa-cubes"></i>' },
-                { text: '主题', icon: '<i class="fa-solid fa-palette"></i>' },
-            ],
-            activeIndex: 0,
-        },
-        page: {
-            routeMap: { '/': HomePage, '/components': ComponentsPage, '/theme': ThemePage },
-            defaultComponent: HomePage,
-        },
-    };
 }
 
 // ─── 启动应用 ───
