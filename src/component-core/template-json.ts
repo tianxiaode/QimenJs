@@ -15,7 +15,7 @@
  * - HTML 中不需要 data-* 属性回找节点，indexPath 已在拆解 JSON 时提取
  */
 
-import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl } from './template-types';
+import type { TplNode, ComponentTemplate, ContentInfo, DomEventDecl, ContentNodeDef } from './template-types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { DomEventBinding } from './template-compiler';
 
@@ -47,6 +47,10 @@ export interface CompiledTemplateResult {
     rootStyle?: string;
     /** 自动收集的 expose 节点名列表 — autoExpose!==false 的 content 节点 */
     exposeNames: string[];
+    /** v2: 组件 props 默认值定义 */
+    propsDef?: Record<string, any>;
+    /** v2: 组件 content 层次化定义，运行时递归渲染时使用 */
+    contentDef?: Record<string, ContentNodeDef>;
 }
 
 /**
@@ -81,6 +85,84 @@ export interface TplNodeMeta {
 
 /** 自闭合标签集合 */
 const VOID_TAGS = new Set(['input', 'img', 'br', 'hr', 'col', 'area', 'base', 'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+
+/** 对齐映射 */
+const ALIGN_MAP: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+    stretch: 'stretch',
+};
+
+/** 分布映射 */
+const PACK_MAP: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+    between: 'space-between',
+    around: 'space-around',
+};
+
+/**
+ * 将布局属性转为 CSS 样式对象
+ *
+ * layout: 'hbox' → display:flex; flex-direction:row
+ * layout: 'vbox' → display:flex; flex-direction:column
+ * layout: 'fit'  → position:relative
+ * layout: 'grid' → display:flex; flex-wrap:wrap
+ * layout: 'center' → display:flex; align-items:center; justify-content:center
+ */
+function layoutToStyle(node: TplNode): Record<string, string> {
+    if (!node.layout) return {};
+
+    const style: Record<string, string> = {};
+
+    switch (node.layout) {
+        case 'hbox':
+            style.display = 'flex';
+            style['flex-direction'] = 'row';
+            break;
+        case 'vbox':
+            style.display = 'flex';
+            style['flex-direction'] = 'column';
+            break;
+        case 'fit':
+            style.position = 'relative';
+            break;
+        case 'grid':
+            style.display = 'flex';
+            style['flex-direction'] = 'row';
+            style['flex-wrap'] = 'wrap';
+            break;
+        case 'center':
+            style.display = 'flex';
+            style['align-items'] = 'center';
+            style['justify-content'] = 'center';
+            break;
+    }
+
+    // gap
+    if (node.gap !== undefined) {
+        style.gap = typeof node.gap === 'number' ? `${node.gap}px` : node.gap;
+    }
+
+    // align（交叉轴）
+    if (node.align && ALIGN_MAP[node.align]) {
+        style['align-items'] = ALIGN_MAP[node.align];
+    }
+
+    // pack（主轴）
+    if (node.pack && PACK_MAP[node.pack]) {
+        style['justify-content'] = PACK_MAP[node.pack];
+    }
+
+    // wrap
+    if (node.wrap !== undefined && node.layout !== 'grid') {
+        style['flex-wrap'] = node.wrap ? 'wrap' : 'nowrap';
+    }
+
+    return style;
+}
 
 /**
  * 推导内容操作模式
@@ -120,6 +202,27 @@ function styleToString(style: Record<string, any>): string {
             return `${cssKey}:${value}`;
         })
         .join(';');
+}
+
+/**
+ * 合并节点 style 和布局样式，生成 style 属性字符串
+ */
+function buildStyleAttr(node: TplNode): string | undefined {
+    const layoutStyle = layoutToStyle(node);
+    const nodeStyle = typeof node.style === 'object' ? node.style : undefined;
+
+    // 合并：布局样式 + 节点 style（节点 style 优先）
+    const merged = { ...layoutStyle, ...nodeStyle };
+
+    if (Object.keys(merged).length === 0) return undefined;
+
+    // 如果节点 style 是字符串，追加到后面
+    if (typeof node.style === 'string') {
+        const objStr = styleToString(merged);
+        return `${objStr};${node.style}`;
+    }
+
+    return styleToString(merged);
 }
 
 // ─── compileTemplate — 核心编译函数 ──────────────────────────
@@ -172,6 +275,10 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         }
     }
 
+    // v2: 提取 props 和 content 定义，运行时递归渲染使用
+    const propsDef = template.props;
+    const contentDef = template.content;
+
     return {
         html: htmlParts.join(''),
         indexPath,
@@ -183,6 +290,8 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
         rootClassName,
         rootStyle,
         exposeNames,
+        propsDef,
+        contentDef,
     };
 }
 
@@ -268,10 +377,8 @@ function compileNode(
         // 生成干净 HTML（只有 class/style，无 data-* 属性）
         const attrs: string[] = [];
         if (node.className) attrs.push(`class="${node.className}"`);
-        if (node.style) {
-            const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
-            attrs.push(`style="${styleStr}"`);
-        }
+        const styleAttr = buildStyleAttr(node);
+        if (styleAttr) attrs.push(`style="${styleAttr}"`);
         const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
 
         return `<div${attrStr}></div>`;
@@ -320,10 +427,8 @@ function compileNode(
 
     // 生成干净 HTML 属性（只有 class/style/attrs，无 data-* 属性）
     if (node.className) attrs.push(`class="${node.className}"`);
-    if (node.style) {
-        const styleStr = typeof node.style === 'string' ? node.style : styleToString(node.style);
-        attrs.push(`style="${styleStr}"`);
-    }
+    const styleAttr = buildStyleAttr(node);
+    if (styleAttr) attrs.push(`style="${styleAttr}"`);
     if (node.attrs) {
         for (const [key, value] of Object.entries(node.attrs)) {
             attrs.push(`${key}="${value}"`);

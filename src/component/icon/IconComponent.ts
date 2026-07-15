@@ -1,16 +1,14 @@
 /**
  * IconComponent 图标组件
  *
- * 两层结构：外层 div（控制容器）+ 内层 i（图标显示）
+ * v2 模式：props + content 层次化结构
  *
- * 自动生成的对接属性：
- * - iconClassName → 外层 div 的 className
- * - iconStyle → 外层 div 的 style
- * - iconContentClassName → 内层 i 的 className（设置图标字体类名）
- * - iconContentStyle → 内层 i 的 style
- * - click 事件通过 emits 转发为组件事件
+ * props: 组件自身 HTML 元素的配置（壳）
+ * content: 组件内部子节点的配置（瓤）— 仅组件子节点需要，DOM 节点直接在 tpl 里写
  *
- * _expose = ['content'] — 内层 i 的 content 名
+ * 使用方式：
+ * - icon.el.querySelector('.q-icon').className = 'q-icon save'  // 直接操作 DOM
+ * - 或通过 nodeMap 访问：icon.nodeMap._.content.el.className = 'q-icon save'
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
@@ -22,14 +20,16 @@ export let IconComponent = TemplateComponent.withTemplate({
         children: [
             {
                 tag: 'i',
-                name: 'icon:content',
-                content: 'content',
+                name: 'content',
                 className: 'q-icon',
                 events: {
                     click: { emits: ['click'] },
                 },
             },
         ],
+    },
+    props: {
+        size: 'md',
     },
     body: {
         type: 'Icon',

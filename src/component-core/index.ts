@@ -15,23 +15,15 @@ export { ComponentEventRegistry } from './ComponentEventRegistry';
 // 组件类型常量
 export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 
-// 基础能力
-export { AccessibilityAbility, type AriaKey } from './abilities/AccessibilityAbility';
+// 基础能力（仅保留有行为逻辑 + 语义快捷方式）
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
 export { EntityCoreAbility, type EntityManager } from './abilities/EntityCoreAbility';
-export { PermissionAbility } from './abilities/PermissionAbility';
 export { EventBridgeConfigAbility, type EventBridgeConfig, type PaginationBridgeConfig, type CrudBridgeConfig, type SelectionBridgeConfig, type SearchBridgeConfig, type CustomBridgeConfig } from './abilities/EventBridgeAbility';
-export { ThemeAbility } from './abilities/ThemeAbility';
-export { StyleAbility } from './abilities/StyleAbility';
 export { InitAbility } from './abilities/InitAbility';
+export { LayoutAbility, LAYOUT_FIT, LAYOUT_HBOX, LAYOUT_VBOX, LAYOUT_GRID, LAYOUT_CENTER, type LayoutType } from './abilities/LayoutAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { OverlayAbility, type OverlayConfig, type OverlayResult } from './abilities/OverlayAbility';
 export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
-export { TooltipAbility, type TooltipKey, type TooltipOverlayConfig } from './abilities/TooltipAbility';
-export { PositionPxAbility } from './abilities/PositionPxAbility';
-export { PositionRawAbility } from './abilities/PositionRawAbility';
-export { PositionBoolAbility } from './abilities/PositionBoolAbility';
-export { PositionDirectAbility } from './abilities/PositionDirectAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
 export type { ChildComponentConfig } from './abilities/TemplateAbility';
@@ -53,7 +45,7 @@ export { compileTemplate } from './template-json';
 export type { CompiledTemplateResult, TplNodeMeta } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo } from './template-types';
+export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo, ContentNodeDef, ContentDef, PropsDef } from './template-types';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';

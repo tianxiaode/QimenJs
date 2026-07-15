@@ -10,13 +10,10 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LayoutNode, HandlerConfig, EventListen, BridgesConfig, LifecycleHooks } from '@/layout/LayoutNode';
-import { POSITION_KEYS, ACCESSIBILITY_KEYS, TOOLTIP_KEYS, BADGE_KEYS, ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, STYLE_KEYS, COLOR_VARIANT_KEYS } from '@/layout/layout-keys';
+import { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS } from '@/layout/layout-keys';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
-import type { AriaKey } from './AccessibilityAbility';
 import type { AnimationKey } from './AnimationAbility';
-import type { TooltipKey } from './TooltipAbility';
-import type { BadgeKey } from './BadgeAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
@@ -140,80 +137,31 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 赋值属性 — Position/Style/Accessibility/Tooltip/Animation/Permission
+     * 赋值属性 — 只处理有行为逻辑的能力（Animation/Drag/Drop）
      *
-     * 常用属性（Position/Style）直接赋值到顶层，
-     * 少用属性（Accessibility/Animation/Tooltip/Permission）通过方法设置。
+     * 纯赋值属性（Position/Style/Accessibility/Tooltip/Badge/Permission/ColorVariant）
+     * 已移除，v2 由 props/content 直接驱动。
      */
     assignProps(layout: LayoutNode): void {
-        const c = this as any;
-
-        // PositionProps — 常用，直接赋值到顶层
-        for (const key of POSITION_KEYS) {
-            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
-        }
-
-        // StyleProps — 常用，直接赋值到顶层
-        for (const key of STYLE_KEYS) {
-            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
-        }
-
-        // ColorVariantProps — 常用，直接赋值到顶层
-        for (const key of COLOR_VARIANT_KEYS) {
-            if ((layout as any)[key] !== undefined) c[key] = (layout as any)[key];
-        }
-
-        // AccessibilityProps — 少用，通过 setAria 批量设置
-        const ariaValues: Partial<Record<AriaKey, any>> = {};
-        let hasAria = false;
-        for (const key of ACCESSIBILITY_KEYS) {
-            if ((layout as any)[key] !== undefined) {
-                ariaValues[key as AriaKey] = (layout as any)[key];
-                hasAria = true;
-            }
-        }
-        if (hasAria) {
-            this.setAriaBatch(ariaValues);
-        }
-
-        // TooltipProps — 少用，通过 setTooltip 设置
-        for (const key of TOOLTIP_KEYS) {
-            if ((layout as any)[key] !== undefined) {
-                this.setTooltip(key as TooltipKey, (layout as any)[key]);
-            }
-        }
-
-        // BadgeProps — 少用，通过 setBadge 设置
-        for (const key of BADGE_KEYS) {
-            if ((layout as any)[key] !== undefined) {
-                this.setBadge(key as BadgeKey, (layout as any)[key]);
-            }
-        }
-
-        // AnimationProps — 少用，通过 setAnimation 设置
+        // AnimationProps — 有行为，通过 setAnimation 设置
         for (const key of ANIMATION_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setAnimation(key as AnimationKey, (layout as any)[key]);
             }
         }
 
-        // DragProps — 少用，通过 setDrag 设置
+        // DragProps — 有行为，通过 setDrag 设置
         for (const key of DRAG_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setDrag(key as DragKey, (layout as any)[key]);
             }
         }
 
-        // DropProps — 少用，通过 setDrop 设置
+        // DropProps — 有行为，通过 setDrop 设置
         for (const key of DROP_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setDrop(key as DropKey, (layout as any)[key]);
             }
-        }
-
-        // PermissionProps — 少用，通过 setPermission 设置
-        if (layout.permission !== undefined) {
-            this.setPermission(layout.permission);
         }
 
         // 剩余 props

@@ -30,11 +30,12 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { NodeIndexPath, NodeTemplateMeta, NodeMetadata } from '../types';
-import type { InternalEventTemplate, ExternalEventTemplate, BridgeEventTemplate, DomEventBinding } from '../template-compiler';
-import { findByPath, buildEventMapFromTemplates } from '../template-compiler';
+import type { DomEventBinding } from '../template-compiler';
+import { findByPath } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import type { ContentNodeDef } from '../template-types';
 
 /**
  * 子组件差异化配置
@@ -201,29 +202,45 @@ export const TemplateAbility: AbilityDefinition = {
             this.nodeMap[meta.group][meta.name] = node;
         }
 
-        // 用预编译模板构建 eventMap（只填 node 引用，不重复推导）
-        const internalTemplates: InternalEventTemplate[] = ctor._internalEventTemplates;
-        const externalTemplates: ExternalEventTemplate[] = ctor._externalEventTemplates;
-        this.eventMap = buildEventMapFromTemplates(internalTemplates, externalTemplates, this.nodeMap);
-
-        // 存储桥接事件模板，供 bindBridgeEvents 使用
-        this._bridgeEventTemplates = ctor._bridgeEventTemplates || [];
+        // 构建 eventMap（从预编译的 domEventBindings 构建）
+        // eventMap.internal 和 eventMap.external 由 bindDomEventBindings 在运行时使用
+        // 此处只初始化空结构
+        this.eventMap = { internal: [], external: {} };
     },
 
     /**
      * 渲染子组件实体
      *
-     * 遍历 nodeMap 中有 componentClass 的节点（即 data-json 声明的占位节点），
-     * 从 static children 查找差异化 props，创建子组件实例，
-     * 根据 jsonMode 替换或挂载占位节点，记录 DOM 位置索引，
-     * 并更新 nodeMap 中的 el、component、componentClass 字段。
+     * 支持两种模式：
      *
-     * 注意：不使用 onCleanup 注册子组件销毁，避免替换时回调累积。
-     * 子组件销毁由 _disposeChildComponents 统一处理。
+     * v1（旧）：遍历 nodeMap 中有 componentClass 的节点，
+     * 从 static children 查找差异化 props，创建子组件实例。
      *
-     * @param children - 子组件差异化配置（static children），可选
+     * v2（新）：从 _contentDef 获取子节点配置，
+     * 递归渲染时把 content 对应部分传给子节点构造器。
+     * 每层只传一层，自然层层到达，不需要透传。
+     *
+     * @param children - 子组件差异化配置（v1: static children），可选
      */
     _renderChildComponents(children?: ChildComponentConfig): void {
+        const ctor = this.constructor as any;
+        const contentDef: Record<string, ContentNodeDef> | undefined = ctor._contentDef;
+        const propsDef: Record<string, any> | undefined = ctor._propsDef;
+
+        // v2 模式：propsDef 或 contentDef 存在时启用
+        if (contentDef || propsDef) {
+            this._renderChildComponentsV2(contentDef || {});
+            return;
+        }
+
+        // v1 旧模式
+        this._renderChildComponentsV1(children);
+    },
+
+    /**
+     * v1 旧模式渲染子组件
+     */
+    _renderChildComponentsV1(children?: ChildComponentConfig): void {
         for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
             for (const node of Object.values(group) as NodeMetadata[]) {
                 if (!node.componentClass) continue;
@@ -232,7 +249,7 @@ export const TemplateAbility: AbilityDefinition = {
                 // 优先用 static children，fallback 到模板定义中的 props
                 const childProps = children?.[node.name] || node.props;
 
-                this.logger?.debug?.('[Template] _renderChildComponents, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
+                this.logger?.debug?.('[Template] _renderChildComponentsV1, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
 
                 // 创建子组件实例（withTemplate 强类，new 即完整实例）
                 const child = new ComponentClass(childProps);
@@ -241,27 +258,147 @@ export const TemplateAbility: AbilityDefinition = {
                 (child as any).parent = this;
 
                 // 根据 jsonMode 挂载，并记录 DOM 位置索引
-                const jsonMode = node.jsonMode ?? 'replace';
-                if (jsonMode === 'replace') {
-                    // replace 模式：记录位置索引，用于后续替换
-                    const parentEl = node.el.parentElement;
-                    if (parentEl) {
-                        node.parentNode = parentEl;
-                        node.nodeIndex = Array.from(parentEl.childNodes).indexOf(node.el);
-                    }
-                    // 子组件 el 替换占位节点
-                    node.el.replaceWith(child.el);
-                } else {
-                    // child 模式：子组件 el 挂载到占位节点内，位置固定
-                    node.parentNode = null;
-                    node.el.appendChild(child.el);
-                }
-
-                // 更新 nodeMap：el 指向子组件实体的 el，component 存实例引用
-                node.el = child.el;
-                node.component = child;
+                this._mountChildComponent(node, child);
             }
         }
+    },
+
+    /**
+     * v2 新模式渲染子组件 — contentDef 驱动
+     *
+     * 遍历 contentDef，每个 key 对应 nodeMap 中的一个子节点，
+     * 把 contentDef[key] 的 props + content 传给子节点构造器。
+     * 递归渲染时，子节点再把自己的 content 传给下一层，自然层层到达。
+     *
+     * 同时支持用户传入的 props 中的 content key 自动路由到子节点：
+     * - 用户传入 { icon: 'fa-solid fa-bars' } → 自动转为 content.icon = { props: { className: 'q-icon fa-bars' } }
+     * - 用户传入 { text: '保存' } → 自动转为 content.text = { props: { innerHTML: '保存' } }
+     */
+    _renderChildComponentsV2(contentDef: Record<string, ContentNodeDef>): void {
+        // 合并用户传入的 content 配置（来自 props.content 或 props 中的 content key）
+        const mergedContentDef = { ...contentDef };
+        const userContent = this.props?.content as Record<string, ContentNodeDef> | undefined;
+        if (userContent) {
+            for (const [key, val] of Object.entries(userContent)) {
+                if (mergedContentDef[key]) {
+                    // 合并：用户配置覆盖默认配置
+                    mergedContentDef[key] = {
+                        ...mergedContentDef[key],
+                        ...val,
+                        props: { ...mergedContentDef[key].props, ...val.props },
+                        content: val.content ? { ...mergedContentDef[key].content, ...val.content } : mergedContentDef[key].content,
+                    };
+                } else {
+                    mergedContentDef[key] = val;
+                }
+            }
+        }
+
+        // 处理 props 中的简写 content key（如 icon: 'fa-bars', text: '保存'）
+        for (const [contentKey, nodeDef] of Object.entries(mergedContentDef)) {
+            const userValue = this.props?.[contentKey];
+            if (userValue !== undefined && typeof userValue === 'string') {
+                // 简写：字符串值自动路由到子节点的 className 或 innerHTML
+                if (nodeDef.type || this._findNodeByContentKey(contentKey)?.componentClass) {
+                    // 组件节点：字符串视为 className
+                    nodeDef.props = { ...nodeDef.props, className: `${nodeDef.props?.className || ''} ${userValue}`.trim() };
+                } else {
+                    // DOM 节点：字符串视为 innerHTML
+                    nodeDef.props = { ...nodeDef.props, innerHTML: userValue };
+                }
+            }
+        }
+
+        for (const [contentKey, nodeDef] of Object.entries(mergedContentDef)) {
+            // 在 nodeMap 中查找对应的子节点
+            const node = this._findNodeByContentKey(contentKey);
+            if (!node) continue;
+
+            // DOM 节点：直接设置属性
+            if (!node.componentClass) {
+                if (nodeDef.props) {
+                    for (const [propKey, propVal] of Object.entries(nodeDef.props)) {
+                        if (propKey === 'innerHTML' && node.el) {
+                            node.el.innerHTML = propVal;
+                        } else if (propKey === 'className' && node.el) {
+                            node.el.className = propVal;
+                        } else if (propKey === 'style' && node.el) {
+                            if (typeof propVal === 'string') {
+                                node.el.setAttribute('style', propVal);
+                            } else {
+                                Object.assign(node.el.style, propVal);
+                            }
+                        }
+                    }
+                }
+                continue;
+            }
+
+            const ComponentClass = node.componentClass;
+
+            // 构建子组件 props：nodeDef.props + nodeDef.content（递归传递）
+            const childProps: Record<string, any> = {
+                ...nodeDef.props,
+            };
+
+            // 如果 nodeDef 有 content，传递给子组件（递归渲染时子组件会使用）
+            if (nodeDef.content && Object.keys(nodeDef.content).length > 0) {
+                childProps.content = nodeDef.content;
+            }
+
+            this.logger?.debug?.('[Template] _renderChildComponentsV2, key =', contentKey, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', Object.keys(childProps));
+
+            // 创建子组件实例
+            const child = new ComponentClass(childProps);
+
+            // 设置父引用
+            (child as any).parent = this;
+
+            // 挂载
+            this._mountChildComponent(node, child);
+        }
+    },
+
+    /**
+     * 根据 contentKey 在 nodeMap 中查找子节点
+     *
+     * contentKey 对应 tpl.children 中的 name 或 content 属性
+     */
+    _findNodeByContentKey(contentKey: string): NodeMetadata | null {
+        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
+            // 先按 name 精确匹配
+            if (group[contentKey]) return group[contentKey];
+        }
+        return null;
+    },
+
+    /**
+     * 挂载子组件到 DOM
+     *
+     * 根据 jsonMode 替换或挂载占位节点，记录 DOM 位置索引，
+     * 并更新 nodeMap 中的 el、component 字段。
+     */
+    _mountChildComponent(node: NodeMetadata, child: any): void {
+        // 根据 jsonMode 挂载，并记录 DOM 位置索引
+        const jsonMode = node.jsonMode ?? 'replace';
+        if (jsonMode === 'replace') {
+            // replace 模式：记录位置索引，用于后续替换
+            const parentEl = node.el.parentElement;
+            if (parentEl) {
+                node.parentNode = parentEl;
+                node.nodeIndex = Array.from(parentEl.childNodes).indexOf(node.el);
+            }
+            // 子组件 el 替换占位节点
+            node.el.replaceWith(child.el);
+        } else {
+            // child 模式：子组件 el 挂载到占位节点内，位置固定
+            node.parentNode = null;
+            node.el.appendChild(child.el);
+        }
+
+        // 更新 nodeMap：el 指向子组件实体的 el，component 存实例引用
+        node.el = child.el;
+        node.component = child;
     },
 
     /**

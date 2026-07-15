@@ -1,20 +1,20 @@
 /**
  * ButtonComponent 按钮组件
  *
- * 独立组件，使用 withTemplate 模板创建。
- * 支持类型、尺寸、禁用状态等配置。
+ * v2 模式：props + content 层次化结构
  *
- * icon/dropIcon 通过 content 声明，自动从 IconComponent._expose 透传：
- * - button.icon → IconComponent 实例
- * - button.iconClassName → icon.el.className
- * - button.iconStyle → icon.el.style
- * - button.iconSize → icon.size
- * - button.iconContentClassName → icon.content.el.className
- * - button.iconContentStyle → icon.content.el.style
- * - button.iconContentSize → icon.content.size
- * - button.dropIcon → IconComponent 实例
- * - button.dropIconClassName / Style / Size / ContentClassName / ContentStyle / ContentSize
- * - button.text → span.innerHTML
+ * props: 组件自身 HTML 元素的配置（壳）
+ *   - size: 规格档位 sm/md/lg
+ *   - disabled: 禁用状态
+ *   - width/height: 精确尺寸
+ *
+ * content: 声明组件子节点，使用时传入具体配置覆盖默认值
+ *   - icon: 图标子组件
+ *   - text: 文本 DOM 节点
+ *   - dropIcon: 下拉箭头图标子组件
+ *
+ * 子节点的 className/style 等直接在 tpl 里写，content 不重复定义。
+ * 使用时通过 content 传入覆盖值。
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
@@ -23,11 +23,16 @@ import { IconComponent } from '../icon/IconComponent';
 export let ButtonComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
+        className: 'q-button',
         children: [
-            { name: 'button:icon', type: IconComponent, content: 'icon' },
-            { tag: 'span', name: 'button:text', content: 'text' },
-            { name: 'button:expand', type: IconComponent, className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, content: 'dropIcon' },
-        ]
+            { name: 'icon', type: IconComponent, className: 'q-button__icon' },
+            { tag: 'span', name: 'text', className: 'q-button__text' },
+            { name: 'dropIcon', type: IconComponent, className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true },
+        ],
+    },
+    props: {
+        size: 'md',
+        disabled: false,
     },
     body: {
         type: 'Button',

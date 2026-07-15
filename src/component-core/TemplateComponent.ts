@@ -16,45 +16,57 @@
 import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { createForgedClass } from '@/composable/forge';
 import { EventAbility, DomEventsAbility, EventBridgeAbility as SystemEventBridgeAbility } from '@/system-abilities';
-import { PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility } from './abilities';
-import { AccessibilityAbility } from './abilities/AccessibilityAbility';
 import { AnimationAbility } from './abilities/AnimationAbility';
 import { EntityCoreAbility } from './abilities/EntityCoreAbility';
-import { PermissionAbility } from './abilities/PermissionAbility';
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
-import { ThemeAbility } from './abilities/ThemeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { OverlayAbility } from './abilities/OverlayAbility';
 import { OverlayHostAbility } from './abilities/OverlayHostAbility';
-import { TooltipAbility } from './abilities/TooltipAbility';
-import { BadgeAbility } from './abilities/BadgeAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { DropAbility } from './abilities/DropAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
-import { ColorVariantAbility } from './abilities/ColorVariantAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { ContentInfo, DomEventBinding } from './template-compiler';
-import type { ComponentTemplate } from './template-types';
+import type { ComponentTemplate, ContentNodeDef } from './template-types';
 import { precompileTemplate, compileTemplate } from './template-compiler';
 import type { CompiledTemplateResult } from './template-json';
 import { buildContentProperties } from './content-properties';
 
 /**
  * 标准能力声明
- * 子类可在此基础上追加能力
+ *
+ * 只保留有行为逻辑的能力，纯赋值能力已移除（v2 由 props/content 直接驱动）。
+ *
+ * 保留（有行为）：
+ * - EventAbility / DomEventsAbility / SystemEventBridgeAbility — 事件系统
+ * - AnimationAbility — 动画控制
+ * - EntityCoreAbility — 实体管理
+ * - EventBridgeConfigAbility — 桥接配置
+ * - InitAbility — 初始化流程
+ * - NodeMapAbility — i18n 刷新
+ * - OverlayAbility / OverlayHostAbility — 浮层生命周期
+ * - DragAbility / DropAbility — 拖放事件
+ * - TemplateAbility — 模板渲染
+ *
+ * 已移除（纯赋值，v2 由 props/content 直接驱动）：
+ * - PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility
+ * - StyleAbility / AccessibilityAbility / PermissionAbility / ThemeAbility
+ * - TooltipAbility / BadgeAbility / ColorVariantAbility
+ *
+ * 保留（语义快捷方式）：
+ * - LayoutAbility — layout: 'hbox' → layout-hbox className
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility, DomEventsAbility, SystemEventBridgeAbility,
-    PositionPxAbility, PositionRawAbility, PositionBoolAbility, PositionDirectAbility, StyleAbility,
-    AccessibilityAbility, AnimationAbility, EntityCoreAbility, PermissionAbility,
-    EventBridgeConfigAbility, ThemeAbility,
-    InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility, TooltipAbility, BadgeAbility,
+    AnimationAbility, EntityCoreAbility,
+    EventBridgeConfigAbility,
+    InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility,
     DragAbility, DropAbility,
-    TemplateAbility, LayoutAbility, ColorVariantAbility
+    TemplateAbility, LayoutAbility,
 ];
 
 /**
@@ -135,12 +147,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     flush(): void {
         if (this.dirtySet.size === 0) return;
 
-        this.flushStyle();
-        this.flushColorVariant();
-        this.flushPositionPx();
-        this.flushPositionRaw();
-        this.flushPositionBool();
-        this.flushAccessibility();
         this.flushLayout();
 
         this.dirtySet.clear();
@@ -200,6 +206,8 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
         let body: Record<string, any> | undefined;
         let templateHtml: string;
+        let propsDef: Record<string, any> | undefined;
+        let contentDef: Record<string, ContentNodeDef> | undefined;
         let compiled: {
             indexPath: NodeIndexPath;
             templateMetas: Record<string, NodeTemplateMeta>;
@@ -225,6 +233,8 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             templateHtml = result.html;
             jsonComponentMap = result.componentMap;
             body = template.body;
+            propsDef = result.propsDef;
+            contentDef = result.contentDef;
 
             // 构建 templateCache
             const tpl = document.createElement('template');
@@ -248,26 +258,36 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 super(props);
 
                 const ctor = this.constructor as any;
-                const mergedProps = ctor.defaults
-                    ? { ...ctor.defaults, ...props }
-                    : props;
 
-                this._initWithTemplate(mergedProps);
+                // v2 模式：propsDef 或 contentDef 存在时启用
+                if (ctor._propsDef || ctor._contentDef) {
+                    // v2: props 合并（defaults ← propsDef, 覆盖 ← 用户传入）
+                    const mergedProps = ctor._propsDef
+                        ? { ...ctor._propsDef, ...props }
+                        : props;
+                    this._initWithTemplate(mergedProps);
+                } else {
+                    // v1 旧模式：defaults 驱动
+                    const mergedProps = ctor.defaults
+                        ? { ...ctor.defaults, ...props }
+                        : props;
+                    this._initWithTemplate(mergedProps);
+                }
 
                 if (ctor.type) this.type = ctor.type;
 
-                // 将 defaults 中的属性赋值到实例（通过 setter 触发 _applyState）
-                if (ctor.defaults) {
+                // v1 旧模式：将 defaults 中的属性赋值到实例（通过 setter 触发 _applyState）
+                if (!(ctor._propsDef || ctor._contentDef) && ctor.defaults) {
                     for (const [key, value] of Object.entries(ctor.defaults)) {
                         (this as any)[key] = value;
                     }
-                }
 
-                // 如果 props 中有覆盖 defaults 的值，也赋值到实例
-                if (props) {
-                    for (const [key, value] of Object.entries(props)) {
-                        if (key in (ctor.defaults || {})) {
-                            (this as any)[key] = value;
+                    // 如果 props 中有覆盖 defaults 的值，也赋值到实例
+                    if (props) {
+                        for (const [key, value] of Object.entries(props)) {
+                            if (key in (ctor.defaults || {})) {
+                                (this as any)[key] = value;
+                            }
                         }
                     }
                 }
@@ -297,8 +317,14 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             /** 模板 body 定义（属性和方法，复制到组件实例） */
             static readonly _templateBody: Record<string, any> | undefined = body;
 
+            /** v2: 组件 props 默认值定义 */
+            static readonly _propsDef: Record<string, any> | undefined = propsDef;
+
+            /** v2: 组件 content 层次化定义，运行时递归渲染时使用 */
+            static readonly _contentDef: Record<string, ContentNodeDef> | undefined = contentDef;
+
             /** 对外暴露节点名列表 — 编译时从 autoExpose!==false 的 content 节点自动收集 */
-            static readonly _expose: string[] = compiled.exposeNames;
+            static readonly _expose: string[] = (compiled as any).exposeNames ?? [];
 
             /** 根节点 className — 应用到组件 el 上 */
             static readonly _rootClassName: string | undefined = compiled.rootClassName;
@@ -324,7 +350,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         };
 
         // 在强类原型上生成内容 getter/setter
-        buildContentProperties(TemplateClass, compiled.contentInfos);
+        buildContentProperties(TemplateClass, compiled.contentInfos, contentDef);
 
         // 将 body 中的方法/属性复制到原型
         if (body) {

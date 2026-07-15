@@ -9,6 +9,12 @@
  * - events 统一声明 DOM 事件，聚合 handler/emits/bridges 三种用途
  * - body 复制到组件实例，提供属性和方法
  *
+ * 层次化 content 结构（v2）：
+ * - props: 组件自身 HTML 元素的配置（壳）
+ * - content: 组件内部子节点的配置（瓤），每个子节点拥有独立的属性命名空间
+ * - 递归渲染时，每层把自己的 content 对应部分传给子节点构造器
+ * - 不需要透传，不需要 Ability 搬运纯赋值属性
+ *
  * @example
  * ```ts
  * const ButtonTemplate: ComponentTemplate = {
@@ -156,6 +162,31 @@ export interface TplNode {
     /** 内联样式（字符串或对象） */
     style?: string | Record<string, any>;
 
+    // ─── 布局 ───
+
+    /**
+     * 布局模式 — 编译时生成内联 flex 样式，不需要写 CSS
+     *
+     * - 'hbox': 水平布局（flex-direction: row）
+     * - 'vbox': 垂直布局（flex-direction: column）
+     * - 'fit': 自适应填充
+     * - 'grid': 网格布局（flex-wrap: wrap）
+     * - 'center': 居中布局
+     */
+    layout?: 'hbox' | 'vbox' | 'fit' | 'grid' | 'center';
+
+    /** 布局间距 — 数字自动加 px，字符串原样使用 */
+    gap?: number | string;
+
+    /** 交叉轴对齐 — 'start' | 'center' | 'end' | 'stretch' */
+    align?: 'start' | 'center' | 'end' | 'stretch';
+
+    /** 主轴分布 — 'start' | 'center' | 'end' | 'between' | 'around' */
+    pack?: 'start' | 'center' | 'end' | 'between' | 'around';
+
+    /** 是否换行 */
+    wrap?: boolean;
+
     // ─── 子节点 ───
 
     /** 子节点定义 */
@@ -187,27 +218,53 @@ export interface TplNode {
 /**
  * 组件模板完整定义
  *
+ * 支持两种模式：
+ *
+ * 1. tpl 模式（旧）：通过 tpl.children 定义 DOM 树，content 语义通过 TplNode.content 声明
+ * 2. props+content 模式（v2）：props 定义组件自身配置，content 定义子节点配置（层次化）
+ *
+ * v2 模式下，tpl 仍然定义 DOM 骨架，但子节点的属性由 content 驱动：
+ * - content 中的 key 对应 tpl.children 中的节点（通过 name 或 content 匹配）
+ * - 递归渲染时，每层把自己的 content 对应部分传给子节点构造器
+ * - 不需要透传，不需要 Ability 搬运纯赋值属性
+ *
  * @example
  * ```ts
+ * // v2 模式
  * const ButtonTemplate: ComponentTemplate = {
  *     tpl: {
  *         tag: 'div',
  *         className: 'q-button',
  *         children: [
- *             { tag: 'span', name: 'icon', content: 'icon' },
- *             { tag: 'span', name: 'text', content: 'text' },
+ *             { name: 'icon', type: IconComponent },
+ *             { tag: 'span', name: 'text' },
+ *             { name: 'dropIcon', type: IconComponent, hidden: true },
  *         ]
+ *     },
+ *     props: {
+ *         size: 'md',
+ *         disabled: false,
+ *     },
+ *     content: {
+ *         icon: { props: { className: 'q-button__icon' } },
+ *         text: {},
+ *         dropIcon: { props: { className: 'q-expand-arrow' } },
  *     },
  *     body: {
  *         type: 'button',
- *         onClick(e) { this.pressed = true },
  *     }
  * };
  * ```
  */
 export interface ComponentTemplate {
-    /** 模板根节点定义 */
+    /** 模板根节点定义（DOM 骨架） */
     tpl: TplNode;
+
+    /** 组件自身 HTML 元素的配置（壳），v2 新增 */
+    props?: PropsDef;
+
+    /** 组件内部子节点的配置（瓤），v2 新增，层次化结构 */
+    content?: ContentDef;
 
     /** 复制到组件实例的属性和方法 */
     body?: Record<string, any>;
@@ -261,4 +318,84 @@ export interface ContentInfo {
      * - iconContentSize → component.content.size = v
      */
     expose?: string[];
+}
+
+// ─── 层次化 content 结构（v2）──────────────────────────────────
+
+/**
+ * 子节点 content 定义
+ *
+ * 每个子节点拥有独立的属性命名空间：
+ * - props: 子节点自身 HTML 元素的配置
+ * - content: 子节点的子节点配置（递归）
+ *
+ * 递归渲染时，每层把自己的 content 对应部分传给子节点构造器，
+ * 不需要透传，不需要 Ability 搬运纯赋值属性。
+ */
+export interface ContentNodeDef {
+    /** 子节点类型（组件类引用或组件类型字符串） */
+    type?: string | (new (props?: any) => any);
+    /** 子节点自身 HTML 元素的配置（壳） */
+    props?: Record<string, any>;
+    /** 子节点的子节点配置（瓤），递归结构 */
+    content?: Record<string, ContentNodeDef>;
+    /** DOM 事件声明 */
+    events?: Record<string, DomEventDecl>;
+    /** 初始隐藏状态 */
+    hidden?: boolean;
+    /** i18n 翻译 key */
+    i18n?: string;
+}
+
+/**
+ * 组件 content 定义
+ *
+ * key 是子节点名（如 icon、text、dropIcon），
+ * value 是子节点的完整配置（props + content 递归）。
+ *
+ * @example
+ * ```ts
+ * content: {
+ *     icon: { type: IconComponent, props: { className: 'q-button__icon' }, content: { content: { className: 'q-icon save' } } },
+ *     text: { props: { className: 'q-button__text' } },
+ *     dropIcon: { type: IconComponent, props: { className: 'q-expand-arrow', hidden: true }, content: { content: { className: 'q-icon arrow-down' } } },
+ * }
+ * ```
+ */
+export type ContentDef = Record<string, ContentNodeDef>;
+
+/**
+ * 组件 props 定义
+ *
+ * 组件自身 HTML 元素的配置，纯数据，编译期直接赋值。
+ * 不需要 Ability 搬运，不需要透传。
+ *
+ * @example
+ * ```ts
+ * props: {
+ *     size: 'md',        // 枚举规格档位
+ *     disabled: false,    // 布尔状态
+ *     width: undefined,   // 精确尺寸，不设则由 size 决定
+ *     height: undefined,
+ * }
+ * ```
+ */
+export interface PropsDef {
+    /** 规格档位：sm / md / lg */
+    size?: 'sm' | 'md' | 'lg';
+    /** 禁用状态 */
+    disabled?: boolean;
+    /** 精确宽度，有值时覆盖 size 的默认尺寸 */
+    width?: number | string;
+    /** 精确高度，有值时覆盖 size 的默认尺寸 */
+    height?: number | string;
+    /** 是否可见（有行为，保留为能力） */
+    visible?: boolean;
+    /** CSS 类名 */
+    className?: string;
+    /** 内联样式 */
+    style?: string | Record<string, any>;
+
+    /** 其他自定义属性 */
+    [key: string]: any;
 }
