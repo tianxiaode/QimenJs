@@ -63,21 +63,32 @@ ComposableBase (src/composable/ComposableBase.ts)
 | NumberColumn | `src/component/components/NumberColumn.ts` | 继承 ColumnBase |
 | CheckboxColumn | `src/component/components/CheckboxColumn.ts` | 继承 ColumnBase + SelectableAbility |
 
-### 1.3 ComponentBase 内置能力
+### 1.3 TemplateComponent 内置能力
 
-ComponentBase 通过 BASE_ABILITIES 自动注入以下能力（所有组件都拥有）：
+TemplateComponent 通过 TEMPLATE_COMPONENT_ABILITIES 自动注入以下能力（所有 withTemplate 强类都拥有）：
 
-| 能力 | 接口 | 文件 | 说明 |
-|------|------|------|------|
-| EventAbility | IEventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
-| DomEventsAbility | IDomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配（含 onDom） |
-| ThemeAbility | IThemeAbility | `src/component-core/abilities/ThemeAbility.ts` | 主题感知 |
-| StyleAbility | IStyleAbility | `src/component-core/abilities/StyleAbility.ts` | 样式管理 |
-| EventBridgeAbility | IEventBridgeAbility | `src/component-core/abilities/EventBridgeAbility.ts` | 声明式事件桥接（含 navigate） |
-| RenderAbility | IRenderAbility | `src/component-core/abilities/RenderAbility.ts` | 模板注入与切换 |
-| LifecycleAbility | ILifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 挂载/卸载/销毁/组件树 |
-| PositionAbility | IPositionAbility | `src/component-core/abilities/PositionAbility.ts` | 位置/尺寸/约束/视觉（x/y/top/left/width/height/margin/padding/max*/min*/scrollable/center/hideMode/alwaysOnTop/fullscreen/shadow/tabIndex/zIndex） |
-| ChildrenAbility | IChildrenAbility | `src/component-abilities/children/ChildrenAbility.ts` | 子组件管理/渲染（add/remove/removeAll，按需声明） |
+| 能力 | 文件 | 说明 |
+|------|------|------|
+| EventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
+| DomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配（含 bind/onDom） |
+| SystemEventBridgeAbility | `src/system-abilities/system/EventBridgeAbility.ts` | 事件桥接（bridgeOn/bridgeEmit/bridgeOnce） |
+| AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
+| BadgeAbility | `src/component-core/abilities/BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
+| EntityCoreAbility | `src/component-core/abilities/EntityCoreAbility.ts` | EntityManager 实例声明 |
+| EventBridgeConfigAbility | `src/component-core/abilities/EventBridgeAbility.ts` | 声明式事件桥接配置 |
+| InitAbility | `src/component-core/abilities/InitAbility.ts` | 统一初始化流程 |
+| NodeMapAbility | `src/component-core/abilities/NodeMapAbility.ts` | i18n 刷新 |
+| OverlayAbility | `src/component-core/abilities/OverlayAbility.ts` | 浮层管理（createOverlay） |
+| OverlayHostAbility | `src/component-core/abilities/OverlayHostAbility.ts` | 浮层宿主能力 |
+| DragAbility | `src/component-core/abilities/DragAbility.ts` | 拖拽能力 |
+| DropAbility | `src/component-core/abilities/DropAbility.ts` | 放置能力 |
+| TemplateAbility | `src/component-core/abilities/TemplateAbility.ts` | 模板渲染 |
+| LayoutAbility | `src/component-core/abilities/LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center） |
+| TooltipAbility | `src/component-core/abilities/TooltipAbility.ts` | Tooltip 浮层（initTooltipOverlay） |
+
+> 已移除的纯赋值能力（v2 由通用属性体系替代）：
+> PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility /
+> StyleAbility / AccessibilityAbility / PermissionAbility / ThemeAbility / ColorVariantAbility
 
 ### 1.4 按需能力（组件通过 static abilities 声明）
 
@@ -549,14 +560,52 @@ class RootComponent extends ComponentBase {
 | DropAbility | `DropAbility.ts` | 放置能力（initDrop/setDroppable/setDropAccept，HTML5 拖放事件） |
 | AnimationAbility | `AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
 | EntityCoreAbility | `EntityCoreAbility.ts` | EntityManager 实例声明 |
-| PermissionAbility | `PermissionAbility.ts` | 权限控制 |
-| ThemeAbility | `ThemeAbility.ts` | 主题样式 |
-| StyleAbility | `StyleAbility.ts` | 自定义样式 |
-| EventBridgeAbility | `EventBridgeAbility.ts` | 声明式事件桥接 |
+| EventBridgeConfigAbility | `EventBridgeAbility.ts` | 声明式事件桥接配置 |
 | PropAlias | `PropAlias.ts` | 属性别名与初始化协议 |
 | positionOverlay | `positionOverlay.ts` | 浮层定位工具函数（4方向定位、自动翻转、视口约束） |
 | LayoutAbility | `LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类） |
-| ColorVariantAbility | `ColorVariantAbility.ts` | 语义颜色变体（colorVariant 全套背景+前景，colorVariantText 仅前景色） |
+| ElementEventAbility | `ElementEventAbility.ts` | DOM 事件绑定能力（从 eventMap 读取事件声明，this.bind 统一绑定） |
+| TemplateAbility | `TemplateAbility.ts` | 模板渲染能力（_initWithTemplate/_initElementFromTemplate/_buildNodeMapFromCompiled/_renderChildComponents） |
+
+### 2.11.1 通用属性体系 (`src/component-core/common-props.ts`)
+
+v2 模式下，组件自身和 DOM 子节点的通用属性由 `COMMON_PROPS` 常量数组统一定义，编译时自动生成 getter/setter。
+
+**14 个通用属性**：
+
+| 属性 | 操作目标 | 值类型 | 说明 |
+|------|---------|--------|------|
+| className | el.className | string | CSS 类名 |
+| style | el.style | string \| object | 内联样式 |
+| hidden | el.hidden | boolean | 显隐 |
+| width | el.style.width | number \| string | 宽度（数字加 px） |
+| height | el.style.height | number \| string | 高度（数字加 px） |
+| x | el.style.left | number \| string | 水平定位 |
+| y | el.style.top | number \| string | 垂直定位 |
+| margin | el.style.margin | number \| string \| MarginPadding | 外边距 |
+| padding | el.style.padding | number \| string \| MarginPadding | 内边距 |
+| fontSize | el.style.fontSize | number \| string | 字号 |
+| color | el.style.color | string | 文字颜色 |
+| bg | el.style.background | string | 背景 |
+| cursor | el.style.cursor | string | 光标 |
+| border | el.style.border | number \| string \| Border | 边框 |
+
+**三层属性命名规则**：
+
+| 层次 | 命名规则 | 示例 | 操作对象 |
+|------|---------|------|---------|
+| 组件自身 | `propName` | `this.className` / `this.width` | 组件自身的 el |
+| DOM 子节点 | `name + PropName` | `this.labelClassName` / `this.labelWidth` | nodeMap[name].el |
+| 组件子节点 | `$ + name` | `this.$icon` | 返回子组件实例 |
+
+**复杂属性类型**：
+
+- `MarginPadding`：`{ top?, right?, bottom?, left?, horizontal?, vertical? }`，支持 horizontal/vertical 简写
+- `Border`：`{ width?, style?, color?, top?, right?, bottom?, left? }`，支持单边覆盖
+
+**nodeMap 一级结构**：
+
+v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使用 `nodeMap[group][name]` 二级结构。name 来自 TplNode 的 name 或 content 属性，支持冒号语法（如 `dialog:header`）。
 
 ---
 
@@ -778,3 +827,5 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-13 | 遮罩与加载能力：新增 OverlayMaskAbility（纯遮罩能力，initMask/showMask/hideMask，支持 maskColor/maskZIndex/fullscreen/onMaskClick）；新增 LoadingAbility（组合 OverlayMaskAbility + spinner，initLoading/showLoading/hideLoading/setLoadingText，支持 loadingText/spinnerHtml/fullscreen）；删除 HiddenRoot（功能合并到 OverlayRoot，新增 mountOverlay/unmountOverlay 便捷方法，参数改为 HTMLElement）；OverlayRoot 移除 TemplateComponent 导入依赖 |
 | 2026-07-13 | 箭头能力重构 + ExpandArrowAbility：ArrowAbility 改为从 nodeMap 定位箭头节点（不再 createElement，模板定义 div 节点，Ability 绑定行为）；新增 ExpandArrowAbility（展开/折叠箭头能力，模板定义 div>i 节点，Ability 切换 CSS 状态类 + 发射内部事件，不操作图标内容）；所有箭头模板统一为 div>i 结构（BUTTON/SELECT/MENU_ITEM 加 expand 节点，TIPS/DROPDOWN/POPOVER 加 arrow 节点，TOOLBAR prevBtn/nextBtn 改为 div>i）；arrowCSS 新增 ExpandArrow 样式（q-expand-arrow + collapsed/expanded 状态类）+ 溢出箭头 horizontal/vertical 方向适配 + 组件级覆盖（dropdown/popover/select）；图标替换统一模式：覆盖 i::before 即可替换为任图标方案（FontAwesome/iconfont 等），内部零改动 |
 | 2026-07-13 | 导航组件 + 分组选择能力：新增 NavItemComponent（导航项，withTemplate + eventKey 事件转发，text/icon/active/disabled）；新增 NavItemGroupComponent（导航项分组，继承 ItemGroupComponent，eventKey='nav'，selectAt/clearSelection/activeIndex）；新增 GroupSelectAbility（分组选择能力，radio 互斥/checkbox 多选，能力状态管理，MenuComponent 使用）；MenuItemComponent 新增分组选择属性（group/groupMode/checked，radio ●/○ + checkbox ☑/☐ 指示器，ARIA role 支持）；模板事件声明化（MENU_ITEM_TEMPLATE/NAVITEM_TEMPLATE 添加 event:'click'，handleClick → onContentClick）；ExpandArrowAbility 从 component-abilities/render 重导出到主入口 |
+| 2026-07-16 | 组件属性体系重构：新增 common-props.ts（14 个通用属性统一定义 + 值转换器 + MarginPadding/Border 类型）；content-properties.ts v2 模式按三层生成属性（组件自身无前缀 / DOM 子节点 name+Prop / 组件子节点 $name）；nodeMap 改为一级结构（nodeMap[name] 替代 nodeMap[group][name]，NodeMetadata 移除 group 字段）；body 新增 bridges 属性支持（映射为 eventBridge 静态属性）；编译时命名冲突检测 |
+| 2026-07-16 | 恢复误删能力：BadgeAbility（角标管理，创建 Badge 组件实例+委托方法）和 TooltipAbility（Tooltip 浮层，调用 createOverlay）从"纯赋值能力"误删中恢复 |

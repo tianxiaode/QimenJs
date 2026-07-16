@@ -1,6 +1,6 @@
 # withTemplate 最佳实践
 
-> 日期：2026-07-12
+> 日期：2026-07-16
 > 状态：当前有效
 
 ## withTemplate 是什么
@@ -571,3 +571,110 @@ class DynamicContainer extends TemplateComponent.withTemplate(TEMPLATE) {
 - `_replaceChildComponent` 自动销毁旧组件、在原位挂载新组件
 - replace 模式利用 parentNode/nodeIndex 精确定位 DOM 位置
 - child 模式清空占位节点内容后挂载新组件
+
+## 13. 通用属性体系（v2）
+
+v2 模式下，组件自身和 DOM 子节点的通用属性由 `COMMON_PROPS` 统一定义，编译时自动生成 getter/setter，无需手动声明。
+
+### 13.1 三层属性命名
+
+| 层次 | 命名规则 | 示例 | 操作对象 |
+|------|---------|------|---------|
+| 组件自身 | `propName` | `this.className` / `this.width` | 组件自身的 el |
+| DOM 子节点 | `name + PropName` | `this.labelClassName` / `this.labelWidth` | nodeMap[name].el |
+| 组件子节点 | `$ + name` | `this.$icon` | 返回子组件实例 |
+
+### 13.2 组件自身属性
+
+```typescript
+// 组件自身的 el 直接操作，无前缀
+const btn = new ButtonComponent();
+btn.className = 'primary';     // → el.className = 'primary'
+btn.width = 200;               // → el.style.width = '200px'
+btn.hidden = true;             // → el.hidden = true
+btn.margin = { horizontal: 8, vertical: 4 }; // → el.style.margin = '4px 8px'
+```
+
+### 13.3 DOM 子节点属性
+
+```typescript
+// DOM 子节点：name + PropName 拼接
+const navItem = new NavItemComponent();
+navItem.labelClassName = 'bold';   // → nodeMap['label'].el.className = 'bold'
+navItem.labelWidth = 100;          // → nodeMap['label'].el.style.width = '100px'
+navItem.labelHidden = false;       // → nodeMap['label'].el.hidden = false
+```
+
+### 13.4 组件子节点访问
+
+```typescript
+// 组件子节点：$name 返回实例
+const panel = new PanelComponent();
+panel.$expand;    // → 返回 expand 子组件实例
+panel.$body;      // → 返回 body 子组件实例
+```
+
+### 13.5 复杂属性简写
+
+```typescript
+// MarginPadding — 支持 horizontal/vertical 简写
+btn.margin = 8;                              // → '8px'
+btn.margin = '1rem';                         // → '1rem'
+btn.margin = { top: 4, right: 8 };           // → '4px 8px 0 8px'
+btn.margin = { horizontal: 8, vertical: 4 }; // → '4px 8px'
+
+// Border — 支持单边覆盖
+btn.border = 1;                              // → '1px solid'
+btn.border = { width: 2, color: 'red' };     // → '2px solid red'
+btn.border = { top: { width: 1 }, bottom: { width: 2 } }; // 单边覆盖
+```
+
+### 13.6 命名冲突检测
+
+编译时自动检测 DOM 子节点名和组件 body/props 中的属性重名，输出控制台警告：
+
+```
+[QimenJS] 命名冲突：DOM 子节点名 "label" 与组件自身属性重名。建议修改子节点名以避免冲突。
+```
+
+## 14. nodeMap 一级结构（v2）
+
+v2 模式下 nodeMap 为一级结构，直接用 name 访问：
+
+```typescript
+// v1（旧）：二级结构
+this.nodeMap['dialog']['header'].el    // ❌ 已废弃
+
+// v2（新）：一级结构
+this.nodeMap['header'].el              // ✅ 推荐
+```
+
+**name 来源**：TplNode 的 `name` 或 `content` 属性，支持冒号语法（如 `dialog:header`），冒号后的部分作为 name。
+
+## 15. body.bridges 声明式桥接
+
+在 ComponentTemplate 的 body 中声明桥接事件配置，替代 static eventBridge：
+
+```typescript
+const TEMPLATE: ComponentTemplate = {
+    tpl: { tag: 'div', children: [...] },
+    body: {
+        type: 'myComponent',
+        bridges: {
+            pagination: 'myPager',
+            crud: { source: 'myGrid', actions: ['create', 'delete'] },
+        },
+        onPageChange(e) { /* ... */ },
+        onCreate(e) { /* ... */ },
+    },
+};
+```
+
+body 中的特殊 key 处理：
+
+| key | 处理方式 |
+|-----|---------|
+| `type` | 设为静态属性（组件类型标识） |
+| `bridges` | 映射为 eventBridge 静态属性 |
+| 函数 | 复制到原型（组件方法） |
+| 其他 | 存到 static defaults（默认属性值） |

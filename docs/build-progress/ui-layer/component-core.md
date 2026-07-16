@@ -7,6 +7,16 @@
 
 ## 构建历史
 
+### 2026-07-16
+- ✅ 新增 common-props.ts 通用属性定义（14 个属性 + 值转换器 + MarginPadding/Border 类型）
+- ✅ content-properties.ts v2 模式重构（三层属性生成：组件自身 / DOM 子节点 / 组件子节点）
+- ✅ nodeMap 改为一级结构（nodeMap[name] 替代 nodeMap[group][name]）
+- ✅ NodeMetadata 移除 group 字段
+- ✅ body 新增 bridges 属性支持（映射为 eventBridge 静态属性）
+- ✅ 编译时命名冲突检测
+- ✅ 恢复误删的 BadgeAbility 和 TooltipAbility
+- ✅ 删除 12 个纯赋值能力（Position*/Style/Accessibility/Permission/Theme/ColorVariant）
+
 ### 2026-07-14
 - ✅ EventBridgeAbility 重命名为 EventBridgeConfigAbility
 - ✅ 新版模板格式 template-types.ts（TplNode/ComponentTemplate）
