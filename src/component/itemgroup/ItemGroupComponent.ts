@@ -128,7 +128,7 @@ export let ItemGroupComponent = class extends TemplateComponent.withTemplate({
         }
 
         // 获取挂载区容器
-        this._containerEl = this.nodeMap?.itemgroup?.default?.el ?? null;
+        this._containerEl = this.nodeMap?.default?.el ?? null;
 
         // 子项挂载区额外类名
         if (props?.itemsCls && this._containerEl) {

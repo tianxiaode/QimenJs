@@ -80,7 +80,7 @@ export const MenuItemManageAbility: AbilityDefinition = {
      * 优先取 nodeMap.menu.content，其次取 this.el
      */
     getMenuItemContainer(): HTMLElement {
-        const contentEl = this.nodeMap?.['menu']?.['content']?.el as HTMLElement | undefined;
+        const contentEl = this.nodeMap?.['content']?.el as HTMLElement | undefined;
         return contentEl ?? this.el;
     },
 

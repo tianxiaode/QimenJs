@@ -46,7 +46,7 @@ export const NodeMapAbility: AbilityDefinition = {
         const infos = this._getContentInfos();
         for (const info of infos) {
             if (!info.i18nKey) continue;
-            const el = this.nodeMap[info.group]?.[info.name]?.el;
+            const el = this.nodeMap[info.name]?.el;
             if (!el) continue;
             const translated = translateI18nKey(info.i18nKey);
             applyValueToEl(el, translated, info.mode);
@@ -62,7 +62,7 @@ export const NodeMapAbility: AbilityDefinition = {
         const infos = this._getContentInfos();
         for (const info of infos) {
             if (!info.i18nKey) continue;
-            const el = this.nodeMap[info.group]?.[info.name]?.el;
+            const el = this.nodeMap[info.name]?.el;
             if (!el) continue;
             const translated = translateI18nKey(info.i18nKey);
             applyValueToEl(el, translated, info.mode);

@@ -47,16 +47,10 @@ export const ExpandArrowAbility: AbilityDefinition = {
      */
     initExpandArrow(config?: ExpandArrowConfig): void {
         const arrowName = config?.arrowName ?? 'expand';
-        const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
+        const nodeMap = this.nodeMap as Record<string, { el: HTMLElement }> | undefined;
 
-        // 查找箭头节点：遍历所有 group 查找 name=arrowName 的节点
-        let arrowEl: HTMLElement | undefined;
-        for (const group of Object.values(nodeMap ?? {})) {
-            if (group[arrowName]?.el) {
-                arrowEl = group[arrowName].el;
-                break;
-            }
-        }
+        // 查找箭头节点：一级结构直接按 name 查找
+        const arrowEl = nodeMap?.[arrowName]?.el;
 
         if (!arrowEl) return;
 

@@ -114,11 +114,12 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     _initializing: boolean = false;
 
     /**
-     * 模板节点元信息缓存，按冒号前缀分层
+     * 模板节点元信息缓存，一级结构
      *
-     * 结构：nodeMap[group][name] = NodeMetadata
+     * 结构：nodeMap[name] = NodeMetadata
+     * name 来自 TplNode 的 name 或 content 属性
      */
-    nodeMap: Record<string, Record<string, NodeMetadata>> = {};
+    nodeMap: Record<string, NodeMetadata> = {};
 
     /**
      * 事件映射 — 内部事件 + 外部事件
@@ -370,6 +371,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 if (key === 'type') {
                     // type 特殊处理：设为静态属性，构造函数通过 ctor.type 读取
                     (TemplateClass as any).type = value;
+                } else if (key === 'bridges') {
+                    // bridges 特殊处理：映射为 eventBridge 静态属性，_initWithTemplate 读取
+                    (TemplateClass as any).eventBridge = value;
                 } else if (typeof value === 'function') {
                     proto[key] = value;
                 } else {

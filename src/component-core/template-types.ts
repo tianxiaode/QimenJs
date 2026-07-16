@@ -257,7 +257,28 @@ export interface ComponentTemplate {
     /** 组件自身 HTML 元素的配置（壳），v2 新增 */
     props?: PropsDef;
 
-    /** 复制到组件实例的属性和方法 */
+    /**
+     * 复制到组件实例的属性和方法
+     *
+     * 特殊 key 处理：
+     * - type: 设为静态属性（组件类型标识）
+     * - bridges: 映射为 eventBridge 静态属性（桥接事件配置）
+     * - 函数: 复制到原型（组件方法）
+     * - 其他: 存到 static defaults（默认属性值）
+     *
+     * @example
+     * ```ts
+     * body: {
+     *     type: 'myComponent',
+     *     bridges: {
+     *         pagination: 'myPager',
+     *         crud: { source: 'myGrid', actions: ['create', 'delete'] },
+     *     },
+     *     onPageChange(e) { ... },
+     *     onCreate(e) { ... },
+     * }
+     * ```
+     */
     body?: Record<string, any>;
 }
 

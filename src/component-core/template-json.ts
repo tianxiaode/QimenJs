@@ -55,10 +55,8 @@ export interface CompiledTemplateResult {
  * 模板节点元数据 — 从 TplNode 提取，不含 DOM 引用
  */
 export interface TplNodeMeta {
-    /** nodeMap 索引键（group:name 格式） */
+    /** nodeMap 索引键（name） */
     key: string;
-    /** 分组 */
-    group: string;
     /** 名称 */
     name: string;
     /** 内容语义 */
@@ -322,7 +320,8 @@ function compileNode(
     if (node.type) {
         const nameStr = node.name || node.content || '';
         const { group, name } = nameStr ? parseName(nameStr) : { group: '_', name: '_' };
-        const key = `${group}:${name}`;
+        // nodeMap 一级结构：key 直接用 name
+        const key = name;
 
         // 记录 indexPath
         ctx.indexPath[key] = path;
@@ -337,7 +336,7 @@ function compileNode(
         // 记录 templateMetas
         const mode = 'html' as const;
         ctx.templateMetas[key] = {
-            raw: key, group, name,
+            raw: nameStr || key, name,
             jsonRef: typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
             jsonMode: node.replace !== undefined ? (node.replace ? 'replace' : 'child') : undefined,
             i18nKey: node.i18n,
@@ -389,7 +388,8 @@ function compileNode(
     const nameStr = node.name || node.content;
     if (nameStr) {
         const { group, name } = parseName(nameStr);
-        const key = `${group}:${name}`;
+        // nodeMap 一级结构：key 直接用 name
+        const key = name;
 
         // 记录 indexPath
         ctx.indexPath[key] = path;
@@ -397,7 +397,7 @@ function compileNode(
         // 记录 templateMetas
         const mode = inferMode(tag);
         ctx.templateMetas[key] = {
-            raw: key, group, name,
+            raw: nameStr, name,
             i18nKey: node.i18n,
             hidden: node.hidden,
             mode,
@@ -465,8 +465,7 @@ function compileEvents(
     group: string,
     name: string,
     ctx: CompileContext,
-): void {
-    if (!node.events) return;
+): void {    if (!node.events) return;
 
     for (const [domEvent, decl] of Object.entries(node.events)) {
         // ── 推导 handler 名 ──

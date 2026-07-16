@@ -60,6 +60,10 @@ export interface EventMap {
  * nodeMap 中每个条目存储节点的完整元数据，
  * 承载元素引用、附属声明等，各能力按需读取。
  *
+ * nodeMap 为一级结构：nodeMap[name] = NodeMetadata
+ * name 来自 TplNode 的 name 或 content 属性，
+ * 支持冒号语法（如 'dialog:header'），冒号只是 name 值的一部分。
+ *
  * 扩展方式：在 HTML 中通过 data-* 附属属性声明，buildNodeMap 统一收集。
  */
 export interface NodeMetadata {
@@ -67,9 +71,12 @@ export interface NodeMetadata {
     el: HTMLElement;
     /** data-content 原始值（如 "input:field"） */
     raw: string;
-    /** 解析后的分组/区域（冒号前缀，如 "input"） */
-    group: string;
-    /** 解析后的名称（冒号后缀，如 "field"） */
+    /**
+     * 节点名称 — nodeMap 的一级索引键
+     *
+     * 来自 TplNode 的 name 或 content 属性。
+     * 支持冒号语法（如 'dialog:header'），冒号只是 name 值的一部分。
+     */
     name: string;
     /** 事件委托目标选择器（由 data-target 声明） */
     delegateTarget?: string;
@@ -120,7 +127,7 @@ export type NodeIndexPath = Record<string, number[]>;
  */
 export interface NodeTemplateMeta {
     raw: string;
-    group: string;
+    /** 节点名称 — nodeMap 的一级索引键 */
     name: string;
     delegateTarget?: string;
     jsonRef?: string;

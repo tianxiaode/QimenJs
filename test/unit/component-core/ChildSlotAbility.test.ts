@@ -33,7 +33,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: oldEl,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 parentNode: parentEl,
                 nodeIndex: 0,
@@ -69,7 +68,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: placeholder,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 parentNode: null,
                 jsonMode: 'child',
@@ -101,7 +99,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: oldEl,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 jsonMode: undefined,
             };
@@ -132,7 +129,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: oldEl,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 component: oldComponent,
                 parentNode: document.createElement('div'),
@@ -164,7 +160,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: oldEl,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 parentNode: parentEl,
                 nodeIndex: 0,
@@ -196,7 +191,6 @@ describe('ChildSlotAbility', () => {
             const node: NodeMetadata = {
                 el: oldEl,
                 raw: 'slot:body',
-                group: 'slot',
                 name: 'body',
                 parentNode: parentEl,
                 nodeIndex: 0,

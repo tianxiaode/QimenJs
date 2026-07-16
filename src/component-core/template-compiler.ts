@@ -101,7 +101,8 @@ export function precompileTemplate(
         const colonIndex = value.indexOf(':');
         const group = colonIndex === -1 ? value : value.slice(0, colonIndex);
         const name = colonIndex === -1 ? '_' : value.slice(colonIndex + 1);
-        const key = `${group}:${name}`;
+        // nodeMap 一级结构：key 直接用 name
+        const key = name;
 
         const delegateTarget = htmlEl.getAttribute('data-target') || undefined;
         const jsonRef = htmlEl.getAttribute('data-json') || undefined;
@@ -116,7 +117,7 @@ export function precompileTemplate(
         const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
 
         templateMetas[key] = {
-            raw: value, group, name, delegateTarget, jsonRef, jsonMode,
+            raw: value, name, delegateTarget, jsonRef, jsonMode,
             templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
         };
 

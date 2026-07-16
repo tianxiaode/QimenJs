@@ -137,17 +137,17 @@ export let ToolbarComponent = class extends ToolbarBase {
         menuMutationObserver?.disconnect();
 
         // 隐藏 scroll 模式节点
-        const prevBtn = this.nodeMap?.['toolbar']?.['prevBtn']?.el as HTMLElement | null;
-        const nextBtn = this.nodeMap?.['toolbar']?.['nextBtn']?.el as HTMLElement | null;
+        const prevBtn = this.nodeMap?.['prevBtn']?.el as HTMLElement | null;
+        const nextBtn = this.nodeMap?.['nextBtn']?.el as HTMLElement | null;
         if (prevBtn) prevBtn.hidden = true;
         if (nextBtn) nextBtn.hidden = true;
 
         // 隐藏 menu 模式节点
-        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['triggerBtn']?.el as HTMLElement | null;
         if (triggerBtn) triggerBtn.hidden = true;
 
         // 还原 menu 模式隐藏的子项
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
         if (contentArea) {
             const children = Array.from(contentArea.children) as HTMLElement[];
             for (const child of children) {

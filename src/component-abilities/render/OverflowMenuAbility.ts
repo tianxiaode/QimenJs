@@ -97,8 +97,8 @@ export const OverflowMenuAbility: AbilityDefinition = {
         this.setOverflowMenu('isMenuOpen', false);
 
         // 从 nodeMap 获取模板预定义的节点
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | undefined;
-        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | undefined;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | undefined;
+        const triggerBtn = this.nodeMap?.['triggerBtn']?.el as HTMLElement | undefined;
 
         if (!contentArea || !triggerBtn) return;
 
@@ -182,8 +182,8 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 溢出项通过 MenuComponent.setMenuItems 更新，支持池化复用。
      */
     recalcOverflowItems(): void {
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
-        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['triggerBtn']?.el as HTMLElement | null;
         const direction = this.getOverflowMenu('direction') as OverflowDirection;
         const maxVisibleItems = this.getOverflowMenu('maxVisibleItems') as number;
 
@@ -289,7 +289,7 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 通过 MenuComponent 的浮层协议打开，定位到触发按钮。
      */
     openOverflowMenu(): void {
-        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['triggerBtn']?.el as HTMLElement | null;
         if (!triggerBtn) return;
 
         const menu = this._getOrCreateMenu();
@@ -312,7 +312,7 @@ export const OverflowMenuAbility: AbilityDefinition = {
      * 隐藏 MenuComponent，不销毁实例（池化复用）。
      */
     closeOverflowMenu(): void {
-        const triggerBtn = this.nodeMap?.['toolbar']?.['triggerBtn']?.el as HTMLElement | null;
+        const triggerBtn = this.nodeMap?.['triggerBtn']?.el as HTMLElement | null;
         const menu = this.getOverflowMenu('menuInstance') as any;
 
         if (menu) {

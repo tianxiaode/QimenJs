@@ -30,13 +30,7 @@ export const ChildSlotAbility: AbilityDefinition = {
         props?: Record<string, any>,
     ): any | null {
         // 在 nodeMap 中查找目标节点
-        let node: NodeMetadata | undefined;
-        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
-            if (group[name]) {
-                node = group[name];
-                break;
-            }
-        }
+        const node: NodeMetadata | undefined = this.nodeMap[name];
 
         if (!node) {
             console.warn(`ChildSlotAbility._replaceChildComponent: node "${name}" not found in nodeMap`);

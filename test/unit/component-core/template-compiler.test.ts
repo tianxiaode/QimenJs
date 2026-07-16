@@ -241,10 +241,9 @@ describe('precompileTemplate', () => {
         const result = precompileTemplate(html, false);
 
         expect(result.indexPath).toBeDefined();
-        expect(result.templateMetas['btn:text']).toBeDefined();
-        expect(result.templateMetas['btn:text'].group).toBe('btn');
-        expect(result.templateMetas['btn:text'].name).toBe('text');
-        expect(result.templateMetas['btn:text'].mode).toBe('html');
+        expect(result.templateMetas['text']).toBeDefined();
+        expect(result.templateMetas['text'].name).toBe('text');
+        expect(result.templateMetas['text'].mode).toBe('html');
     });
 
     it('无冒号的 data-content — group 为值本身，name 为 _', () => {
@@ -252,8 +251,7 @@ describe('precompileTemplate', () => {
         const result = precompileTemplate(html, false);
 
         expect(result.templateMetas['text:_']).toBeDefined();
-        expect(result.templateMetas['text:_'].group).toBe('text');
-        expect(result.templateMetas['text:_'].name).toBe('_');
+        expect(result.templateMetas['_'].name).toBe('_');
     });
 
     it('input 元素 mode 为 value', () => {

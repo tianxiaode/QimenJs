@@ -232,7 +232,7 @@ export let MenuItemComponent = class extends MenuItemBase {
         }
 
         // 展开箭头显隐
-        const expandEl = this.nodeMap?.['menuItem']?.['expand']?.el as HTMLElement | null;
+        const expandEl = this.nodeMap?.['expand']?.el as HTMLElement | null;
         if (expandEl) {
             expandEl.hidden = !this._hasSubmenu;
         }

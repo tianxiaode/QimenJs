@@ -101,7 +101,7 @@ export let PanelComponent = TemplateComponent
                         items: props.toolsLeft.items,
                         cls: props.toolsLeft.cls,
                     });
-                    const toolsLeftEl = this.nodeMap?.panel?.toolsLeft?.el;
+                    const toolsLeftEl = this.nodeMap?.toolsLeft?.el;
                     if (toolsLeftEl) {
                         toolsLeftEl.appendChild(this._toolsLeft.el);
                     }
@@ -120,7 +120,7 @@ export let PanelComponent = TemplateComponent
                         items: props.toolsRight.items,
                         cls: props.toolsRight.cls,
                     });
-                    const toolsRightEl = this.nodeMap?.panel?.toolsRight?.el;
+                    const toolsRightEl = this.nodeMap?.toolsRight?.el;
                     if (toolsRightEl) {
                         toolsRightEl.appendChild(this._toolsRight.el);
                     }
@@ -132,7 +132,7 @@ export let PanelComponent = TemplateComponent
                 // 折叠配置
                 if (props?.expandable) {
                     // 显示折叠箭头
-                    const expandNode = this.nodeMap?.panel?.expand;
+                    const expandNode = this.nodeMap?.expand;
                     if (expandNode?.el) {
                         expandNode.el.hidden = false;
                     }
@@ -146,7 +146,7 @@ export let PanelComponent = TemplateComponent
 
                     // 监听 toggle 事件，控制 body 显隐
                     this.on(config.arrowEvent ?? 'toggle', ({ state }: { state: string }) => {
-                        const bodyNode = this.nodeMap?.panel?.body;
+                        const bodyNode = this.nodeMap?.body;
                         if (bodyNode?.el) {
                             bodyNode.el.hidden = state === 'collapsed';
                         }

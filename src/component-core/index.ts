@@ -80,6 +80,14 @@ export {
 // 内容属性
 export { buildContentProperties, translateI18nKey, applyValueToEl } from './content-properties';
 
+// 通用属性定义
+export {
+    COMMON_PROPS, RESOLVERS,
+    resolvePx, resolveMarginPadding, resolveBorder,
+    childPropName, componentChildPropName,
+} from './common-props';
+export type { CommonPropDef, MarginPadding, Border, BorderSide, PropTarget } from './common-props';
+
 // Layout 类型（从 @qimenjs/layout 迁移）
 export type { HandlerConfig, EventListen, BridgesConfig, LifecycleHooks, LayoutMeta, TooltipProps, AnimationProps, DragProps, DropProps, EntityProps, ArrowProps, ExpandableProps, ExpandableConfig } from './layout-types';
 export { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, TOOLTIP_KEYS, EXPANDABLE_KEYS } from './layout-types';

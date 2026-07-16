@@ -85,9 +85,9 @@ export const OverflowScrollAbility: AbilityDefinition = {
         this.setOverflowScroll('scrollStep', scrollStep);
 
         // 从 nodeMap 获取模板预定义的节点
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | undefined;
-        const prevBtn = this.nodeMap?.['toolbar']?.['prevBtn']?.el as HTMLElement | undefined;
-        const nextBtn = this.nodeMap?.['toolbar']?.['nextBtn']?.el as HTMLElement | undefined;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | undefined;
+        const prevBtn = this.nodeMap?.['prevBtn']?.el as HTMLElement | undefined;
+        const nextBtn = this.nodeMap?.['nextBtn']?.el as HTMLElement | undefined;
 
         if (!contentArea) return;
 
@@ -198,7 +198,7 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 按步长滚动
      */
     scrollOverflowByStep(which: 'prev' | 'next'): void {
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
         const scrollStep = this.getOverflowScroll('scrollStep') as number;
 
@@ -256,7 +256,7 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 滚动到指定位置
      */
     scrollOverflowTo(position: number, smooth: boolean = true): void {
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
         if (!contentArea) return;
@@ -273,7 +273,7 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 滚动到指定子元素使其可见
      */
     scrollOverflowToChild(child: HTMLElement, smooth: boolean = true): void {
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
         if (!contentArea || !child) return;
@@ -314,7 +314,7 @@ export const OverflowScrollAbility: AbilityDefinition = {
      * 获取当前溢出状态
      */
     getOverflowState(): OverflowState {
-        const contentArea = this.nodeMap?.['toolbar']?.['contentArea']?.el as HTMLElement | null;
+        const contentArea = this.nodeMap?.['contentArea']?.el as HTMLElement | null;
         const direction = this.getOverflowScroll('direction') as OverflowDirection;
 
         if (!contentArea) {

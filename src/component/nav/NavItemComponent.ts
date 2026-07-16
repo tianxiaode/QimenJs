@@ -353,14 +353,12 @@ export let NavItemComponent = TemplateComponent.withTemplate({
          * 更新展开箭头状态
          */
         _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-            const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
+            const nodeMap = this.nodeMap as Record<string, { el: HTMLElement }> | undefined;
             if (!nodeMap) return;
-            for (const group of Object.values(nodeMap)) {
-                const expandEl = group['expand']?.el;
-                if (expandEl) {
-                    expandEl.classList.toggle('q-nav-item__expand--expanded', state === 'expanded');
-                    expandEl.classList.toggle('q-nav-item__expand--collapsed', state === 'collapsed');
-                }
+            const expandEl = nodeMap['expand']?.el;
+            if (expandEl) {
+                expandEl.classList.toggle('q-nav-item__expand--expanded', state === 'expanded');
+                expandEl.classList.toggle('q-nav-item__expand--collapsed', state === 'collapsed');
             }
         },
 
@@ -428,17 +426,15 @@ export let NavItemComponent = TemplateComponent.withTemplate({
             this.el.classList.toggle('q-nav-item--has-children', !!(this.children?.length));
 
             // collapsed 模式下隐藏文本
-            const nodeMap = this.nodeMap as Record<string, Record<string, { el: HTMLElement }>> | undefined;
+            const nodeMap = this.nodeMap as Record<string, { el: HTMLElement }> | undefined;
             if (nodeMap) {
-                for (const group of Object.values(nodeMap)) {
-                    const textEl = group['text']?.el;
-                    if (textEl) {
-                        textEl.style.display = this.mode === 'collapsed' ? 'none' : '';
-                    }
-                    const expandEl = group['expand']?.el;
-                    if (expandEl) {
-                        expandEl.style.display = this.children?.length ? '' : 'none';
-                    }
+                const textEl = nodeMap['text']?.el;
+                if (textEl) {
+                    textEl.style.display = this.mode === 'collapsed' ? 'none' : '';
+                }
+                const expandEl = nodeMap['expand']?.el;
+                if (expandEl) {
+                    expandEl.style.display = this.children?.length ? '' : 'none';
                 }
             }
 

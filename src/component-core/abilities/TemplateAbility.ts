@@ -172,7 +172,7 @@ export const TemplateAbility: AbilityDefinition = {
             if (!el) continue;
 
             const node: NodeMetadata = {
-                el, raw: meta.raw, group: meta.group, name: meta.name,
+                el, raw: meta.raw, name: meta.name,
                 delegateTarget: meta.delegateTarget, jsonRef: meta.jsonRef,
                 jsonMode: meta.jsonMode, templateRef: meta.templateRef,
                 i18nKey: meta.i18nKey, props: meta.props,
@@ -188,8 +188,7 @@ export const TemplateAbility: AbilityDefinition = {
                 node.componentClass = jsonComponentMap[meta.name];
             }
 
-            if (!this.nodeMap[meta.group]) this.nodeMap[meta.group] = {};
-            this.nodeMap[meta.group][meta.name] = node;
+            this.nodeMap[meta.name] = node;
         }
 
         // 构建 eventMap（从预编译的 domEventBindings 构建）
@@ -233,33 +232,22 @@ export const TemplateAbility: AbilityDefinition = {
      * 不再查 static children。
      */
     _renderChildComponentsV1(): void {
-        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
-            for (const node of Object.values(group) as NodeMetadata[]) {
-                if (!node.componentClass) continue;
+        for (const node of Object.values(this.nodeMap) as NodeMetadata[]) {
+            if (!node.componentClass) continue;
 
-                const ComponentClass = node.componentClass;
-                const childProps = node.props;
+            const ComponentClass = node.componentClass;
+            const childProps = node.props;
 
-                this.logger?.debug?.('[Template] _renderChildComponentsV1, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
+            this.logger?.debug?.('[Template] _renderChildComponentsV1, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
 
-                // 创建子组件实例（withTemplate 强类，new 即完整实例）
-                const child = new ComponentClass(childProps);
+            // 创建子组件实例（withTemplate 强类，new 即完整实例）
+            const child = new ComponentClass(childProps);
 
-                // 设置父引用
-                (child as any).parent = this;
+            // 设置父引用
+            (child as any).parent = this;
 
-                // 根据 jsonMode 挂载，并记录 DOM 位置索引
-                this._mountChildComponent(node, child);
-            }
-        }
-    },
-
-    /**
-                (child as any).parent = this;
-
-                // 根据 jsonMode 挂载，并记录 DOM 位置索引
-                this._mountChildComponent(node, child);
-            }
+            // 根据 jsonMode 挂载，并记录 DOM 位置索引
+            this._mountChildComponent(node, child);
         }
     },
 
@@ -369,11 +357,7 @@ export const TemplateAbility: AbilityDefinition = {
      * contentKey 对应 tpl.children 中的 name 或 content 属性
      */
     _findNodeByContentKey(contentKey: string): NodeMetadata | null {
-        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
-            // 先按 name 精确匹配
-            if (group[contentKey]) return group[contentKey];
-        }
-        return null;
+        return this.nodeMap[contentKey] ?? null;
     },
 
     /**
@@ -409,12 +393,10 @@ export const TemplateAbility: AbilityDefinition = {
      * 遍历 nodeMap 递归销毁子组件
      */
     _disposeChildComponents(): void {
-        for (const group of Object.values(this.nodeMap) as Record<string, NodeMetadata>[]) {
-            for (const node of Object.values(group) as NodeMetadata[]) {
-                if (node.component && typeof node.component.dispose === 'function') {
-                    node.component.dispose();
-                    node.component = null;
-                }
+        for (const node of Object.values(this.nodeMap) as NodeMetadata[]) {
+            if (node.component && typeof node.component.dispose === 'function') {
+                node.component.dispose();
+                node.component = null;
             }
         }
     },
@@ -461,7 +443,7 @@ export const TemplateAbility: AbilityDefinition = {
             const { event, nodeKey, handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges } = binding;
 
             const [group, name] = nodeKey.split(':');
-            const node = this.nodeMap[group]?.[name];
+            const node = this.nodeMap[name] ?? this.nodeMap[nodeKey];
             if (!node) continue;
 
             if (node.component) {

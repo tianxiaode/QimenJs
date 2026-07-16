@@ -116,7 +116,7 @@ export let MenuComponent = class extends MenuBase {
         });
 
         // 挂载到 menu:default 容器
-        const container = this.nodeMap?.['menu']?.['default']?.el;
+        const container = this.nodeMap?.['default']?.el;
         if (container) {
             container.appendChild(this._itemGroup.el);
         }
