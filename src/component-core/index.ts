@@ -17,6 +17,7 @@ export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 
 // 基础能力（仅保留有行为逻辑 + 语义快捷方式）
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
+export { BadgeAbility, type BadgeKey, type BadgeConfig } from './abilities/BadgeAbility';
 export { EntityCoreAbility, type EntityManager } from './abilities/EntityCoreAbility';
 export { EventBridgeConfigAbility, type EventBridgeConfig, type PaginationBridgeConfig, type CrudBridgeConfig, type SelectionBridgeConfig, type SearchBridgeConfig, type CustomBridgeConfig } from './abilities/EventBridgeAbility';
 export { InitAbility } from './abilities/InitAbility';
@@ -26,6 +27,7 @@ export { OverlayAbility, type OverlayConfig, type OverlayResult } from './abilit
 export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
+export { TooltipAbility, type TooltipKey, type TooltipOverlayConfig } from './abilities/TooltipAbility';
 
 
 // 能力协议

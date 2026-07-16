@@ -17,6 +17,7 @@ import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { createForgedClass } from '@/composable/forge';
 import { EventAbility, DomEventsAbility, EventBridgeAbility as SystemEventBridgeAbility } from '@/system-abilities';
 import { AnimationAbility } from './abilities/AnimationAbility';
+import { BadgeAbility } from './abilities/BadgeAbility';
 import { EntityCoreAbility } from './abilities/EntityCoreAbility';
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { InitAbility } from './abilities/InitAbility';
@@ -27,6 +28,7 @@ import { DragAbility } from './abilities/DragAbility';
 import { DropAbility } from './abilities/DropAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
+import { TooltipAbility } from './abilities/TooltipAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
@@ -44,6 +46,7 @@ import { buildContentProperties } from './content-properties';
  * 保留（有行为）：
  * - EventAbility / DomEventsAbility / SystemEventBridgeAbility — 事件系统
  * - AnimationAbility — 动画控制
+ * - BadgeAbility — 角标管理（创建 Badge 组件实例）
  * - EntityCoreAbility — 实体管理
  * - EventBridgeConfigAbility — 桥接配置
  * - InitAbility — 初始化流程
@@ -51,22 +54,23 @@ import { buildContentProperties } from './content-properties';
  * - OverlayAbility / OverlayHostAbility — 浮层生命周期
  * - DragAbility / DropAbility — 拖放事件
  * - TemplateAbility — 模板渲染
+ * - TooltipAbility — Tooltip 浮层（创建 overlay）
  *
  * 已移除（纯赋值，v2 由 props/content 直接驱动）：
  * - PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility
  * - StyleAbility / AccessibilityAbility / PermissionAbility / ThemeAbility
- * - TooltipAbility / BadgeAbility / ColorVariantAbility
+ * - ColorVariantAbility
  *
  * 保留（语义快捷方式）：
  * - LayoutAbility — layout: 'hbox' → layout-hbox className
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility, DomEventsAbility, SystemEventBridgeAbility,
-    AnimationAbility, EntityCoreAbility,
+    AnimationAbility, BadgeAbility, EntityCoreAbility,
     EventBridgeConfigAbility,
     InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility,
     DragAbility, DropAbility,
-    TemplateAbility, LayoutAbility,
+    TemplateAbility, LayoutAbility, TooltipAbility,
 ];
 
 /**

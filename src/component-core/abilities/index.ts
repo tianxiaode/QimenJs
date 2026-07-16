@@ -1,4 +1,5 @@
 export * from './AnimationAbility';
+export * from './BadgeAbility';
 export * from './EntityCoreAbility';
 export * from './EventBridgeAbility';
 export * from './InitAbility';
@@ -10,3 +11,4 @@ export * from './DragAbility';
 export * from './DropAbility';
 export * from './ElementEventAbility';
 export * from './TemplateAbility';
+export * from './TooltipAbility';
