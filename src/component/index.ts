@@ -16,6 +16,8 @@ export { IconComponent } from './icon/IconComponent';
 export { iconCSS } from './icon/icon.css';
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
+export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
+export { toggleCSS } from './toggle/toggle.css';
 export { BadgeComponent } from './badge/BadgeComponent';
 export { badgeCSS } from './badge/badge.css';
 export { TipsComponent, type TipsProps } from './tips/TipsComponent';

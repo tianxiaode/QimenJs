@@ -23,12 +23,14 @@ import { HeaderComponent } from './header/HeaderComponent';
 import { ItemGroupComponent } from './itemgroup/ItemGroupComponent';
 import { NavItemComponent } from './nav/NavItemComponent';
 import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
+import { ToggleComponent } from './toggle/ToggleComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
 export function registerAllComponents(): void {
     registrar.register('Icon', IconComponent);
     registrar.register('Button', ButtonComponent);
+    registrar.register('Toggle', ToggleComponent);
     registrar.register('Badge', BadgeComponent);
     registrar.register('Tips', TipsComponent);
     registrar.register('MenuItem', MenuItemComponent);
