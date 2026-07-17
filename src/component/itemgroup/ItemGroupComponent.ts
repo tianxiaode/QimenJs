@@ -3,29 +3,36 @@
  *
  * 轻量排列容器，通过 items 数组管理子组件实例。
  * direction 控制排列方向，itemType 指定子项组件类型。
+ * overflowMode 控制溢出处理方式（none/scroll/menu）。
  *
  * 模板节点：
- * - items — 子项挂载区
+ * - items — 子项挂载区（兼做溢出滚动/可见区域）
+ * - prevBtn — 溢出滚动左/上箭头（hidden 默认）
+ * - nextBtn — 溢出滚动右/下箭头（hidden 默认）
+ * - triggerBtn — 溢出菜单下拉触发按钮（hidden 默认）
  *
  * 核心操作：
- * - add(data) — 添加子项（根据 itemType 自动创建实例）
- * - removeAt(index) — 按索引移除子项
- * - insert(index, data) — 按索引插入子项
- * - setItems(datas) — 批量设置子项（池化复用）
- * - sort() — 按 order 属性排序并刷新 DOM 顺序
+ * - add(data) / removeAt(index) / insert(index, data) / setItems(datas)
+ * - sort() / move(from, to)
  * - items — 子项实例数组（只读）
  *
- * 事件转发机制：
+ * 事件转发：
  * - eventKey 作为事件源标识（source），注入子组件
- * - 子组件通过 source=eventKey 触发事件
- * - ItemGroup 监听子组件的 click/close 事件
- * - 转发为自身的 click/close 事件（source=eventKey），附带子项实例和索引信息
  * - 默认内置转发 click 和 close，可通过 events 扩展
+ *
+ * 溢出模式：
+ * - 'none'（默认）：不处理溢出
+ * - 'scroll'：子项超出时显示箭头，支持拖拽滑动
+ * - 'menu'：子项超出时显示下拉触发按钮，弹出菜单显示溢出项
  */
 
 import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
+import { OverflowScrollAbility, OverflowMenuAbility } from '@qimenjs/component-abilities';
+import type { OverflowDirection } from '@qimenjs/component-abilities';
 
 const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
+
+export type OverflowMode = 'none' | 'scroll' | 'menu';
 
 export interface ItemGroupProps {
     direction?: 'horizontal' | 'vertical';
@@ -37,12 +44,22 @@ export interface ItemGroupProps {
     eventKey?: string;
     events?: string[];
     itemData?: string[];
+    overflowMode?: OverflowMode;
 }
 
-export let ItemGroupComponent = TemplateComponent.withTemplate({
+const ItemGroupBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
+        children: [
+            { tag: 'div', name: 'prevBtn', events: { click: { handler: 'onPrev' } }, className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
+                { tag: 'i' },
+            ]},
+            { tag: 'div', name: 'items', className: 'q-itemgroup__items' },
+            { tag: 'div', name: 'nextBtn', events: { click: { handler: 'onNext' } }, className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
+                { tag: 'i' },
+            ]},
+            { tag: 'button', name: 'triggerBtn', events: { click: { handler: 'onTrigger' } }, className: 'q-overflow-menu__trigger', hidden: true },
+        ]
     },
     body: {
         type: 'ItemGroup',
@@ -57,6 +74,7 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         _forwardEvents: [...DEFAULT_FORWARD_EVENTS],
         _itemData: [] as string[],
         _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
+        _overflowMode: 'none' as OverflowMode,
 
         _initItemGroup(props?: ItemGroupProps): void {
             this.el.classList.add('q-itemgroup');
@@ -67,6 +85,7 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
             if (props?.eventKey) this._eventKey = props.eventKey;
             if (props?.events) this._forwardEvents = props.events;
             if (props?.itemData) this._itemData = props.itemData;
+            if (props?.overflowMode) this._overflowMode = props.overflowMode;
 
             this._applyDirection();
             this._applyGap();
@@ -83,6 +102,10 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
 
             if (props?.items?.length) {
                 this.setItems(props.items);
+            }
+
+            if (this._overflowMode !== 'none') {
+                this._applyOverflowMode();
             }
         },
 
@@ -123,6 +146,13 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         },
         get forwardEvents(): readonly string[] {
             return this._forwardEvents;
+        },
+        get overflowMode(): OverflowMode {
+            return this._overflowMode;
+        },
+        set overflowMode(value: OverflowMode) {
+            this._overflowMode = value;
+            this._applyOverflowMode();
         },
 
         setItems(datas: Record<string, any>[]): void {
@@ -306,7 +336,7 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
 
             for (const key of this._itemData) {
                 const value = instance[key];
-                if (value !== undefined && typeof value !== 'function' && !value?.el) {
+                if (value !== undefined && typeof value !== 'function' && !(value?.el)) {
                     result[key] = value;
                 }
             }
@@ -352,6 +382,68 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
             this._containerEl.appendChild(fragment);
         },
 
+        _applyOverflowMode(): void {
+            this._cleanupOverflow();
+
+            const direction = this._direction as OverflowDirection;
+
+            switch (this._overflowMode) {
+                case 'scroll':
+                    this.initOverflowScroll?.({ direction });
+                    break;
+                case 'menu':
+                    this.initOverflowMenu?.({ direction });
+                    break;
+            }
+        },
+
+        _cleanupOverflow(): void {
+            const scrollResizeObserver = this.getOverflowScroll?.('resizeObserver') as ResizeObserver | null;
+            const scrollMutationObserver = this.getOverflowScroll?.('mutationObserver') as MutationObserver | null;
+            scrollResizeObserver?.disconnect();
+            scrollMutationObserver?.disconnect();
+
+            const menuResizeObserver = this.getOverflowMenu?.('resizeObserver') as ResizeObserver | null;
+            const menuMutationObserver = this.getOverflowMenu?.('mutationObserver') as MutationObserver | null;
+            menuResizeObserver?.disconnect();
+            menuMutationObserver?.disconnect();
+
+            const prevBtn = this.nodeMap?.prevBtn?.el as HTMLElement | null;
+            const nextBtn = this.nodeMap?.nextBtn?.el as HTMLElement | null;
+            if (prevBtn) prevBtn.hidden = true;
+            if (nextBtn) nextBtn.hidden = true;
+
+            const triggerBtn = this.nodeMap?.triggerBtn?.el as HTMLElement | null;
+            if (triggerBtn) triggerBtn.hidden = true;
+
+            if (this._containerEl) {
+                const children = Array.from(this._containerEl.children) as HTMLElement[];
+                for (const child of children) {
+                    child.hidden = false;
+                }
+            }
+
+            this.el.classList.remove(
+                'q-overflow-scroll', 'q-overflow-scroll--horizontal', 'q-overflow-scroll--vertical',
+                'q-overflow-scroll--can-prev', 'q-overflow-scroll--can-next', 'q-overflow-scroll--overflowing',
+                'q-overflow-menu-container', 'q-overflow-menu-container--horizontal', 'q-overflow-menu-container--vertical',
+                'q-overflow-menu-container--overflowing',
+            );
+
+            if (this._containerEl) {
+                this._containerEl.classList.remove('q-overflow-scroll__area', 'q-overflow-menu__visible');
+            }
+
+            if (triggerBtn) {
+                triggerBtn.classList.remove('q-overflow-menu__trigger--active');
+            }
+
+            const menuInstance = this.getOverflowMenu?.('menuInstance') as any;
+            if (menuInstance) {
+                menuInstance.dispose();
+            }
+        },
+
         update(props?: Record<string, any>): void {
             if (props?.direction !== undefined) {
                 this._direction = props.direction;
@@ -367,14 +459,21 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
             if (props?.eventKey !== undefined) {
                 this._eventKey = props.eventKey;
             }
+            if (props?.overflowMode !== undefined) {
+                this._overflowMode = props.overflowMode;
+                this._applyOverflowMode();
+            }
         },
 
         dispose(): void {
+            this._cleanupOverflow();
             this.clear();
             this._itemUnsubscribes.clear();
             (this.constructor as any).__proto__.dispose.call(this);
         },
     },
-});
+}).with([OverflowScrollAbility, OverflowMenuAbility]);
 
-export type ItemGroupComponent = InstanceType<typeof ItemGroupComponent>;
+export let ItemGroupComponent = ItemGroupBase;
+
+export type ItemGroupComponent = InstanceType<typeof ItemGroupBase>;
