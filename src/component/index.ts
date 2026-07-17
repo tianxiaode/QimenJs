@@ -14,6 +14,8 @@ export { registerAllComponents } from './register';
 // 基础组件
 export { IconComponent } from './icon/IconComponent';
 export { iconCSS } from './icon/icon.css';
+export { AvatarComponent, type AvatarProps } from './avatar/AvatarComponent';
+export { avatarCSS } from './avatar/avatar.css';
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
 export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
