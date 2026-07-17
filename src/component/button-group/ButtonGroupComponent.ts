@@ -87,7 +87,9 @@ export let ButtonGroupComponent = class extends ItemGroupComponent {
         }
     }
 
-    get mode(): ButtonGroupMode { return this._mode; }
+    get mode(): ButtonGroupMode {
+        return this._mode;
+    }
 
     /** 单选：当前选中索引，-1 表示无选中 */
     get selectedIndex(): number {

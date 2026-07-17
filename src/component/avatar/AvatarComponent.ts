@@ -66,19 +66,25 @@ export let AvatarComponent = TemplateComponent.withTemplate({
             this._applySize();
         },
 
-        get src(): string { return this._src; },
+        get src(): string {
+            return this._src;
+        },
         set src(value: string) {
             this._src = value;
             this._applyContent();
         },
 
-        get text(): string { return this._text; },
+        get text(): string {
+            return this._text;
+        },
         set text(value: string) {
             this._text = value;
             this._applyContent();
         },
 
-        get icon(): string { return this._icon; },
+        get icon(): string {
+            return this._icon;
+        },
         set icon(value: string) {
             this._icon = value;
             this._applyContent();

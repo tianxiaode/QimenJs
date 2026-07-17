@@ -65,7 +65,9 @@ export let ToggleComponent = TemplateComponent.withTemplate({
             this._applyState();
         },
 
-        get pressed(): boolean { return this._pressed; },
+        get pressed(): boolean {
+            return this._pressed;
+        },
         set pressed(value: boolean) {
             this._pressed = value;
             this._applyState();

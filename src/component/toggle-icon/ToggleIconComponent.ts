@@ -32,9 +32,7 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         className: 'q-toggle-icon',
-        children: [
-            { name: 'icon', type: IconComponent, className: 'q-toggle-icon__icon' },
-        ],
+        children: [{ name: 'icon', type: IconComponent, className: 'q-toggle-icon__icon' }],
     },
     props: {
         size: 'md',
@@ -62,19 +60,25 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
             this._applyState();
         },
 
-        get on(): boolean { return this._on; },
+        get on(): boolean {
+            return this._on;
+        },
         set on(value: boolean) {
             this._on = value;
             this._applyState();
         },
 
-        get onIcon(): string { return this._onIcon; },
+        get onIcon(): string {
+            return this._onIcon;
+        },
         set onIcon(value: string) {
             this._onIcon = value;
             this._applyState();
         },
 
-        get offIcon(): string { return this._offIcon; },
+        get offIcon(): string {
+            return this._offIcon;
+        },
         set offIcon(value: string) {
             this._offIcon = value;
             this._applyState();
