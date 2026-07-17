@@ -32,6 +32,7 @@ export { menuCSS } from './menu/menu.css';
 
 // 面板组件
 export { PanelComponent, type PanelProps } from './panel/PanelComponent';
+export { panelCSS } from './panel/panel.css';
 
 // 头部组件
 export { HeaderComponent } from './header/HeaderComponent';
@@ -42,7 +43,12 @@ export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupCo
 export { itemgroupCSS } from './itemgroup/itemgroup.css';
 
 // 导航组件
-export { NavItemComponent, type NavItemProps, type NavOverlayOptions, type NavPlacement } from './nav/NavItemComponent';
+export {
+    NavItemComponent,
+    type NavItemProps,
+    type NavOverlayOptions,
+    type NavPlacement,
+} from './nav/NavItemComponent';
 export { NavItemGroupComponent, type NavItemGroupProps } from './nav/NavItemGroupComponent';
 export { RouteNavComponent, type RouteNavProps } from './nav/RouteNavComponent';
 export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';
