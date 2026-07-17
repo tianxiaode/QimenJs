@@ -24,6 +24,7 @@ import { ItemGroupComponent } from './itemgroup/ItemGroupComponent';
 import { NavItemComponent } from './nav/NavItemComponent';
 import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
 import { ToggleComponent } from './toggle/ToggleComponent';
+import { ToggleIconComponent } from './toggle-icon/ToggleIconComponent';
 import { ButtonGroupComponent } from './button-group/ButtonGroupComponent';
 
 const registrar = ComponentRegistrar.getInstance();
@@ -32,6 +33,7 @@ export function registerAllComponents(): void {
     registrar.register('Icon', IconComponent);
     registrar.register('Button', ButtonComponent);
     registrar.register('Toggle', ToggleComponent);
+    registrar.register('ToggleIcon', ToggleIconComponent);
     registrar.register('ButtonGroup', ButtonGroupComponent);
     registrar.register('Badge', BadgeComponent);
     registrar.register('Tips', TipsComponent);
