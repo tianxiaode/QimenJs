@@ -7,6 +7,12 @@
 
 ## 构建历史
 
+### 2026-07-17
+- ✅ 新增 body.forwards 属性/方法透传机制（替代 TplNode.forward，支持深层路径）
+- ✅ TemplateAbility 新增 _setupForwards/_resolveForwardPath/_setupPropertyForward/_setupComponentForward/_forwardAutoProps/_proxyComponentMethods
+- ✅ TemplateComponent.withTemplate body 处理新增 forwards 特殊 key（存为 _forwards 静态属性）
+- ✅ 命名冲突检测排除 forwards 特殊 key
+
 ### 2026-07-16
 - ✅ 新增 common-props.ts 通用属性定义（14 个属性 + 值转换器 + MarginPadding/Border 类型）
 - ✅ content-properties.ts v2 模式重构（三层属性生成：组件自身 / DOM 子节点 / 组件子节点）

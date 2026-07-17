@@ -3187,6 +3187,59 @@ ChildSlotAbility 提供动态替换子组件的能力，按需组合（只有需
 
 ### 18.4 浮层宿主能力（OverlayHostAbility + TooltipOverlayAbility）
 
+### 18.5 body.forwards 属性/方法透传
+
+`forwards` 定义在 `ComponentTemplate.body` 上，是属性和方法透传的统一入口，替代 TplNode 上的 `forward` 属性。
+
+**核心设计**：
+
+- `forwards` 是一个映射：`{ 本地属性名: 'nodeMap路径' }`
+- 路径沿 nodeMap 逐级解析，支持深层透传
+- body 是组合定义层，引用自己的组件树结构不算破坏封装
+
+**两种透传模式**：
+
+| 模式 | 写法 | 含义 |
+|------|------|------|
+| 属性级透传 | `title: 'header.title'` | `dialog.title` 代理到 `headerComponent.title` |
+| 组件级透传 | `icon: 'icon'` | `dialog.icon` 返回 iconComponent + 自动属性 + 方法代理 |
+| 深层透传 | `icon: 'header.icon'` | 沿 nodeMap 逐级解析到 header 下的 icon 组件 |
+
+**属性级透传**：在父组件上生成 getter/setter，代理到目标组件的指定属性。
+
+**组件级透传**：
+1. 生成 accessor：`dialog.icon` → iconComponent
+2. 生成自动属性透传：`dialog.iconClassName` → `iconComponent.el.className` 等
+3. 代理目标组件的公共方法：`dialog.open()` → `iconComponent.open()`
+
+**深层透传**：中间组件无需声明任何 forwards，透传由组合层（body）统一管控。路径解析通过 nodeMap 逐级递归：`this.nodeMap.header.component.nodeMap.icon.component`。
+
+**示例**：
+
+```typescript
+const DIALOG_TEMPLATE: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'q-dialog',
+        children: [
+            { name: 'header', type: HeaderComponent, className: 'q-dialog__header' },
+            { name: 'icon', type: IconComponent, className: 'q-dialog__icon' },
+        ]
+    },
+    body: {
+        type: 'dialog',
+        forwards: {
+            title: 'header.title',   // dialog.title → headerComponent.title
+            icon: 'icon',            // dialog.icon → iconComponent（自动属性+方法代理）
+        },
+    },
+};
+```
+
+**实现位置**：`TemplateAbility._setupForwards()`，在 `_renderChildComponents()` 之后调用。
+
+**与 TplNode.forward 的关系**：`forwards` on body 是 `forward` on TplNode 的统一替代，支持深层路径，由组合层声明而非节点层声明。
+
 浮层组件通过组合 OverlayHostAbility + 自身特有逻辑实现：
 
 - OverlayHostAbility：浮层挂载、z-index 管理、定位计算、resize/scroll 重定位

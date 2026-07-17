@@ -378,6 +378,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 } else if (key === 'bridges') {
                     // bridges 特殊处理：映射为 eventBridge 静态属性，_initWithTemplate 读取
                     (TemplateClass as any).eventBridge = value;
+                } else if (key === 'forwards') {
+                    // forwards 特殊处理：存为静态属性，_initWithTemplate 中 _setupForwards 读取
+                    (TemplateClass as any)._forwards = value;
                 } else if (typeof value === 'function') {
                     proto[key] = value;
                 } else {

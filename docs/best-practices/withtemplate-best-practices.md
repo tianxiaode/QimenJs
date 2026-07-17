@@ -676,5 +676,70 @@ body 中的特殊 key 处理：
 |-----|---------|
 | `type` | 设为静态属性（组件类型标识） |
 | `bridges` | 映射为 eventBridge 静态属性 |
+| `forwards` | 存为 _forwards 静态属性（属性/方法透传配置） |
 | 函数 | 复制到原型（组件方法） |
 | 其他 | 存到 static defaults（默认属性值） |
+
+## 16. body.forwards 属性/方法透传
+
+`forwards` 定义在 body 上，是属性和方法透传的统一入口，替代 TplNode 上的 `forward` 属性。
+
+### 16.1 基本写法
+
+```typescript
+const DIALOG_TEMPLATE: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'q-dialog',
+        children: [
+            { name: 'header', type: HeaderComponent, className: 'q-dialog__header' },
+            { name: 'icon', type: IconComponent, className: 'q-dialog__icon' },
+        ]
+    },
+    body: {
+        type: 'dialog',
+        forwards: {
+            title: 'header.title',   // 属性级透传
+            icon: 'icon',            // 组件级透传
+        },
+    },
+};
+```
+
+### 16.2 两种透传模式
+
+**属性级透传**（`title: 'header.title'`）：
+
+- `dialog.title` getter/setter → `headerComponent.title`
+- 适用于将子组件的某个属性暴露到父组件
+
+**组件级透传**（`icon: 'icon'`）：
+
+- `dialog.icon` → 返回 iconComponent 实例
+- `dialog.iconClassName` → `iconComponent.el.className`（自动属性透传）
+- `dialog.iconStyle` → `iconComponent.el.style`
+- `dialog.iconSize` → `iconComponent.size`
+- `dialog.open()` → `iconComponent.open()`（方法代理）
+
+### 16.3 深层透传
+
+路径沿 nodeMap 逐级解析，中间组件无需声明任何 forwards：
+
+```typescript
+forwards: {
+    icon: 'header.icon',   // → nodeMap.header.component.nodeMap.icon.component
+}
+```
+
+body 是组合定义层，引用自己的组件树结构不算破坏封装。中间组件（如 Header）零感知，透传由组合层统一管控。
+
+### 16.4 与 TplNode.forward 的关系
+
+| | TplNode.forward | body.forwards |
+|---|---|---|
+| 定义位置 | 节点层 | 组合层（body） |
+| 深层路径 | 不支持 | 支持（`header.icon`） |
+| 方法代理 | 不支持 | 支持 |
+| 统一性 | 分散在各节点 | 集中在 body |
+
+`forwards` on body 是 `forward` on TplNode 的统一替代，推荐使用 `forwards`。

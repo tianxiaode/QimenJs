@@ -106,6 +106,9 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 3.5 渲染子组件（data-json 占位节点 → 组件实体） ──
             this._renderChildComponents();
 
+            // ── 3.6 设置 forwards 透传（body.forwards → nodeMap 路径解析 → 属性/方法代理） ──
+            this._setupForwards();
+
             // ── 3.6 从 props 中提前设置 eventKey（bindDomEventBindings/bindBridgeEvents 依赖） ──
             if (cfg.eventKey !== undefined) {
                 (this as any).eventKey = cfg.eventKey;
@@ -580,6 +583,164 @@ export const TemplateAbility: AbilityDefinition = {
             if (typeof off === 'function') {
                 this.onCleanup(off);
             }
+        }
+    },
+
+    // ─── forwards 透传 ───
+
+    /**
+     * 设置 body.forwards 透传
+     *
+     * forwards 定义在 body 上，是属性/方法透传的统一入口：
+     * - 属性级透传：{ title: 'header.title' } → dialog.title 代理到 headerComponent.title
+     * - 组件级透传：{ icon: 'icon' } → dialog.icon 返回 iconComponent + 自动属性 + 方法代理
+     * - 深层透传：{ icon: 'header.icon' } → 沿 nodeMap 逐级解析
+     *
+     * 路径解析规则：
+     * - 'icon' → this.nodeMap.icon.component
+     * - 'header.title' → this.nodeMap.header.component.title（属性级）
+     * - 'header.icon' → this.nodeMap.header.component.nodeMap.icon.component（深层组件级）
+     */
+    _setupForwards(): void {
+        const ctor = this.constructor as any;
+        const forwards: Record<string, string> | undefined = ctor._forwards;
+        if (!forwards) return;
+
+        for (const [localName, path] of Object.entries(forwards)) {
+            const resolved = this._resolveForwardPath(path);
+            if (!resolved) {
+                this.logger?.warn?.('[Template] _setupForwards: path not resolved:', path);
+                continue;
+            }
+
+            const { target, propName } = resolved;
+
+            if (propName) {
+                this._setupPropertyForward(localName, target, propName);
+            } else {
+                this._setupComponentForward(localName, target);
+            }
+        }
+    },
+
+    /**
+     * 解析 forwards 路径
+     *
+     * 路径格式：'header.title' 或 'icon' 或 'header.icon'
+     * 沿 nodeMap 逐级查找，最后一段可能是组件名或属性名
+     */
+    _resolveForwardPath(path: string): { target: any, propName?: string } | null {
+        const parts = path.split('.');
+        let current: any = this;
+        let lastComponent: any = null;
+
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            const node = current.nodeMap?.[part];
+
+            if (node?.component) {
+                lastComponent = node.component;
+                current = node.component;
+            } else if (i === parts.length - 1 && lastComponent) {
+                return { target: lastComponent, propName: part };
+            } else {
+                return null;
+            }
+        }
+
+        return lastComponent ? { target: lastComponent } : null;
+    },
+
+    /**
+     * 属性级透传：dialog.title → headerComponent.title
+     *
+     * 在父组件上生成 getter/setter，代理到目标组件的指定属性
+     */
+    _setupPropertyForward(localName: string, target: any, propName: string): void {
+        Object.defineProperty(this, localName, {
+            get() { return target[propName]; },
+            set(v: any) { target[propName] = v; },
+            configurable: true,
+            enumerable: true,
+        });
+    },
+
+    /**
+     * 组件级透传：dialog.icon → iconComponent
+     *
+     * 1. 生成 accessor：dialog.icon → iconComponent
+     * 2. 生成自动属性透传：dialog.iconClassName → iconComponent.el.className 等
+     * 3. 代理目标组件的公共方法
+     */
+    _setupComponentForward(localName: string, target: any): void {
+        Object.defineProperty(this, localName, {
+            get() { return target; },
+            configurable: true,
+            enumerable: true,
+        });
+
+        this._forwardAutoProps(target, localName);
+        this._proxyComponentMethods(target, localName);
+    },
+
+    /**
+     * 自动属性透传（与 TplNode.forward: true 相同逻辑）
+     *
+     * 生成 iconClassName → iconComponent.el.className
+     * 生成 iconStyle → iconComponent.el.style
+     * 生成 iconSize → iconComponent.size
+     */
+    _forwardAutoProps(target: any, localName: string): void {
+        const elProps = ['className', 'style'];
+        const compProps = ['size'];
+
+        for (const prop of [...elProps, ...compProps]) {
+            const isElProp = elProps.includes(prop);
+            const attrName = `${localName}${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
+
+            if (attrName in this) continue;
+
+            if (isElProp) {
+                Object.defineProperty(this, attrName, {
+                    get() { return target.el?.[prop] ?? ''; },
+                    set(v: any) { if (target.el) target.el[prop] = v; },
+                    configurable: true,
+                    enumerable: true,
+                });
+            } else {
+                Object.defineProperty(this, attrName, {
+                    get() { return target[prop] ?? ''; },
+                    set(v: any) { target[prop] = v; },
+                    configurable: true,
+                    enumerable: true,
+                });
+            }
+        }
+    },
+
+    /**
+     * 代理目标组件的公共方法到父组件
+     *
+     * 遍历目标组件直接原型上的方法（不含 _ 前缀、constructor、
+     * 已存在于父组件的方法），在父组件上创建同名代理方法。
+     */
+    _proxyComponentMethods(target: any, localName: string): void {
+        const targetProto = Object.getPrototypeOf(target);
+        if (!targetProto) return;
+
+        for (const key of Object.getOwnPropertyNames(targetProto)) {
+            if (key === 'constructor') continue;
+            if (key.startsWith('_')) continue;
+            const desc = Object.getOwnPropertyDescriptor(targetProto, key);
+            if (!desc || typeof desc.value !== 'function') continue;
+            if (key in this) continue;
+
+            (this as any)[key] = function(this: any, ...args: any[]) {
+                const component = this[localName];
+                if (component && typeof component[key] === 'function') {
+                    return component[key](...args);
+                }
+            };
         }
     },
 };

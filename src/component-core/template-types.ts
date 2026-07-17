@@ -279,8 +279,15 @@ export interface ComponentTemplate {
      * 特殊 key 处理：
      * - type: 设为静态属性（组件类型标识）
      * - bridges: 映射为 eventBridge 静态属性（桥接事件配置）
+     * - forwards: 存为 _forwards 静态属性（属性/方法透传配置）
      * - 函数: 复制到原型（组件方法）
      * - 其他: 存到 static defaults（默认属性值）
+     *
+     * forwards 透传配置：
+     * - key 为本地属性名，value 为 nodeMap 路径
+     * - 属性级透传：{ title: 'header.title' } → dialog.title 代理到 headerComponent.title
+     * - 组件级透传：{ icon: 'icon' } → dialog.icon 返回 iconComponent + 自动属性 + 方法代理
+     * - 深层透传：{ icon: 'header.icon' } → 沿 nodeMap 逐级解析
      *
      * @example
      * ```ts
@@ -289,6 +296,10 @@ export interface ComponentTemplate {
      *     bridges: {
      *         pagination: 'myPager',
      *         crud: { source: 'myGrid', actions: ['create', 'delete'] },
+     *     },
+     *     forwards: {
+     *         title: 'header.title',  // dialog.title → headerComponent.title
+     *         icon: 'icon',           // dialog.icon → iconComponent
      *     },
      *     onPageChange(e) { ... },
      *     onCreate(e) { ... },

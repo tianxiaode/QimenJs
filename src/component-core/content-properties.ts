@@ -487,7 +487,7 @@ function checkNameConflicts(
     // body 中的属性（排除 type/bridges 等特殊 key）
     if (body) {
         for (const key of Object.keys(body)) {
-            if (key !== 'type' && key !== 'bridges') {
+            if (key !== 'type' && key !== 'bridges' && key !== 'forwards') {
                 selfProps.add(key);
             }
         }
