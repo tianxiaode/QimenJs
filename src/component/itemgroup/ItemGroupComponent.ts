@@ -5,7 +5,7 @@
  * direction 控制排列方向，itemType 指定子项组件类型。
  *
  * 模板节点：
- * - itemgroup:default — 子项挂载区
+ * - items — 子项挂载区
  *
  * 核心操作：
  * - add(data) — 添加子项（根据 itemType 自动创建实例）
@@ -42,9 +42,7 @@ export interface ItemGroupProps {
 export let ItemGroupComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [
-            { tag: 'div', name: 'itemgroup:default', className: 'q-itemgroup__items' },
-        ]
+        children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
     },
     body: {
         type: 'ItemGroup',
@@ -77,7 +75,7 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
                 this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
             }
 
-            this._containerEl = this.nodeMap?.default?.el ?? null;
+            this._containerEl = this.nodeMap?.items?.el ?? null;
 
             if (props?.itemsCls && this._containerEl) {
                 this._containerEl.classList.add(...props.itemsCls.split(/\s+/).filter(Boolean));
@@ -308,7 +306,7 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
 
             for (const key of this._itemData) {
                 const value = instance[key];
-                if (value !== undefined && typeof value !== 'function' && !(value?.el)) {
+                if (value !== undefined && typeof value !== 'function' && !value?.el) {
                     result[key] = value;
                 }
             }

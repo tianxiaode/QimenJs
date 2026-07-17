@@ -410,13 +410,13 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
  * 项组模板
  *
  * 节点：
- * - itemgroup:default — 子项挂载区
+ * - items — 子项挂载区
  */
 export const ITEMGROUP_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'itemgroup:default', className: 'q-itemgroup__items' },
+            { tag: 'div', name: 'items', className: 'q-itemgroup__items' },
         ]
     },
 };
