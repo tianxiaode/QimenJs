@@ -18,6 +18,8 @@ export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
 export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
 export { toggleCSS } from './toggle/toggle.css';
+export { ButtonGroupComponent, type ButtonGroupMode, type ButtonGroupProps } from './button-group/ButtonGroupComponent';
+export { buttonGroupCSS } from './button-group/button-group.css';
 export { BadgeComponent } from './badge/BadgeComponent';
 export { badgeCSS } from './badge/badge.css';
 export { TipsComponent, type TipsProps } from './tips/TipsComponent';
