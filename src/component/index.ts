@@ -16,6 +16,8 @@ export { IconComponent } from './icon/IconComponent';
 export { iconCSS } from './icon/icon.css';
 export { AvatarComponent, type AvatarProps } from './avatar/AvatarComponent';
 export { avatarCSS } from './avatar/avatar.css';
+export { CardComponent, type CardProps } from './card/CardComponent';
+export { cardCSS } from './card/card.css';
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
 export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
