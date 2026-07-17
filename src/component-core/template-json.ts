@@ -364,6 +364,7 @@ function compileNode(
             isComponent: true,
             componentPropName: propName,
             expose: childExpose,
+            forward: node.forward,
         });
 
         // 编译事件模板

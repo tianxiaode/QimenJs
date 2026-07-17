@@ -230,9 +230,16 @@ function buildDomChildProps(proto: any, info: ContentInfo, propNames: string[]):
  * 生成组件子节点的实例访问器
  *
  * this.$icon → nodeMap.icon.component
+ *
+ * 当 forward 配置存在时，额外生成子组件属性透传：
+ * - forward: true → 透传所有标准属性（className、style、size 等）
+ * - forward: ['size'] → 只透传 size
+ * - forward: undefined → 不透传
+ *
+ * 透传属性命名：{propName}{Prop}（如 iconSize、iconClassName）
  */
 function buildComponentChildAccessor(proto: any, info: ContentInfo, propNames: string[]): void {
-    const { group, name, propName } = info;
+    const { group, name, propName, forward } = info;
     const attrName = componentChildPropName(propName);
 
     propNames.push(attrName);
@@ -244,6 +251,53 @@ function buildComponentChildAccessor(proto: any, info: ContentInfo, propNames: s
         configurable: true,
         enumerable: true,
     });
+
+    if (!forward) return;
+
+    const elProps = ['className', 'style'];
+    const compProps = ['size'];
+
+    const propsToForward = forward === true
+        ? [...elProps, ...compProps]
+        : (forward as string[]);
+
+    for (const prop of propsToForward) {
+        const isElProp = elProps.includes(prop);
+        const forwardAttrName = `${propName}${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
+
+        const existing = Object.getOwnPropertyDescriptor(proto, forwardAttrName);
+        if (existing && (existing.get || existing.set)) continue;
+
+        propNames.push(forwardAttrName);
+
+        if (isElProp) {
+            Object.defineProperty(proto, forwardAttrName, {
+                get: function (this: any) {
+                    const component = this.nodeMap[name]?.component;
+                    return component?.el?.[prop] ?? '';
+                },
+                set: function (this: any, v: any) {
+                    const component = this.nodeMap[name]?.component;
+                    if (component?.el) component.el[prop] = v;
+                },
+                configurable: true,
+                enumerable: true,
+            });
+        } else {
+            Object.defineProperty(proto, forwardAttrName, {
+                get: function (this: any) {
+                    const component = this.nodeMap[name]?.component;
+                    return component?.[prop] ?? '';
+                },
+                set: function (this: any, v: any) {
+                    const component = this.nodeMap[name]?.component;
+                    if (component) component[prop] = v;
+                },
+                configurable: true,
+                enumerable: true,
+            });
+        }
+    }
 }
 
 // ─── v1 旧方案（兼容） ───
