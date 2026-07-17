@@ -28,10 +28,14 @@ export const BUTTON_TEMPLATE: ComponentTemplate = {
         children: [
             { tag: 'span', name: 'button:icon', content: 'icon' },
             { tag: 'span', name: 'button:text', content: 'text' },
-            { tag: 'div', name: 'button:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-                { tag: 'i' },
-            ]},
-        ]
+            {
+                tag: 'div',
+                name: 'button:expand',
+                className: 'q-expand-arrow q-expand-arrow--collapsed',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
+        ],
     },
 };
 
@@ -50,13 +54,44 @@ export const INPUT_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'input:label', content: 'text', className: 'q-input__text q-input__text--label' },
-            { tag: 'span', name: 'input:prefix', content: 'text', className: 'q-input__text q-input__text--prefix' },
-            { tag: 'input', name: 'input:field', content: 'value', events: { input: { handler: true } }, className: 'q-input__field' },
-            { tag: 'span', name: 'input:suffix', content: 'text', className: 'q-input__text q-input__text--suffix' },
-            { tag: 'span', name: 'input:error', content: 'text', className: 'q-input__text q-input__text--error' },
-            { tag: 'span', name: 'input:hint', content: 'text', className: 'q-input__text q-input__text--hint' },
-        ]
+            {
+                tag: 'span',
+                name: 'input:label',
+                content: 'text',
+                className: 'q-input__text q-input__text--label',
+            },
+            {
+                tag: 'span',
+                name: 'input:prefix',
+                content: 'text',
+                className: 'q-input__text q-input__text--prefix',
+            },
+            {
+                tag: 'input',
+                name: 'input:field',
+                content: 'value',
+                events: { input: { handler: true } },
+                className: 'q-input__field',
+            },
+            {
+                tag: 'span',
+                name: 'input:suffix',
+                content: 'text',
+                className: 'q-input__text q-input__text--suffix',
+            },
+            {
+                tag: 'span',
+                name: 'input:error',
+                content: 'text',
+                className: 'q-input__text q-input__text--error',
+            },
+            {
+                tag: 'span',
+                name: 'input:hint',
+                content: 'text',
+                className: 'q-input__text q-input__text--hint',
+            },
+        ],
     },
 };
 
@@ -67,15 +102,50 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'input:label', content: 'text', className: 'q-input__text q-input__text--label' },
-            { tag: 'div', className: 'q-input__field-wrap', children: [
-                { tag: 'span', name: 'input:prefix', content: 'text', className: 'q-input__text q-input__text--prefix' },
-                { tag: 'input', name: 'input:field', content: 'value', events: { input: { handler: true } }, className: 'q-input__field' },
-                { tag: 'span', name: 'input:suffix', content: 'text', className: 'q-input__text q-input__text--suffix' },
-            ]},
-            { tag: 'span', name: 'input:error', content: 'text', className: 'q-input__text q-input__text--error' },
-            { tag: 'span', name: 'input:hint', content: 'text', className: 'q-input__text q-input__text--hint' },
-        ]
+            {
+                tag: 'span',
+                name: 'input:label',
+                content: 'text',
+                className: 'q-input__text q-input__text--label',
+            },
+            {
+                tag: 'div',
+                className: 'q-input__field-wrap',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'input:prefix',
+                        content: 'text',
+                        className: 'q-input__text q-input__text--prefix',
+                    },
+                    {
+                        tag: 'input',
+                        name: 'input:field',
+                        content: 'value',
+                        events: { input: { handler: true } },
+                        className: 'q-input__field',
+                    },
+                    {
+                        tag: 'span',
+                        name: 'input:suffix',
+                        content: 'text',
+                        className: 'q-input__text q-input__text--suffix',
+                    },
+                ],
+            },
+            {
+                tag: 'span',
+                name: 'input:error',
+                content: 'text',
+                className: 'q-input__text q-input__text--error',
+            },
+            {
+                tag: 'span',
+                name: 'input:hint',
+                content: 'text',
+                className: 'q-input__text q-input__text--hint',
+            },
+        ],
     },
 };
 
@@ -92,11 +162,21 @@ export const SELECT_TEMPLATE: ComponentTemplate = {
         tag: 'div',
         children: [
             { tag: 'span', name: 'select:label', content: 'text' },
-            { tag: 'select', name: 'select:field', content: 'value', events: { change: { handler: true } }, className: 'q-select__field' },
-            { tag: 'div', name: 'select:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-                { tag: 'i' },
-            ]},
-        ]
+            {
+                tag: 'select',
+                name: 'select:field',
+                content: 'value',
+                events: { change: { handler: true } },
+                className: 'q-select__field',
+            },
+            {
+                tag: 'div',
+                name: 'select:expand',
+                className: 'q-expand-arrow q-expand-arrow--collapsed',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
+        ],
     },
 };
 
@@ -114,16 +194,43 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'toolbar:prevBtn', events: { click: { handler: 'onPrev' } }, className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
-                { tag: 'i' },
-            ]},
-            { tag: 'div', name: 'toolbar:contentArea', className: 'q-toolbar__content', style: 'display:flex;' },
-            { tag: 'div', name: 'toolbar:nextBtn', events: { click: { handler: 'onNext' } }, className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
-                { tag: 'i' },
-            ]},
-            { tag: 'button', name: 'toolbar:triggerBtn', events: { click: { handler: 'onTrigger' } }, className: 'q-overflow-menu__trigger', hidden: true },
-            { tag: 'div', name: 'toolbar:menuPanel', className: 'q-overflow-menu__panel', hidden: true, style: 'position:absolute;' },
-        ]
+            {
+                tag: 'div',
+                name: 'toolbar:prevBtn',
+                events: { click: { handler: 'onPrev' } },
+                className: 'q-overflow-arrow q-overflow-arrow--prev',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
+            {
+                tag: 'div',
+                name: 'toolbar:contentArea',
+                className: 'q-toolbar__content',
+                style: 'display:flex;',
+            },
+            {
+                tag: 'div',
+                name: 'toolbar:nextBtn',
+                events: { click: { handler: 'onNext' } },
+                className: 'q-overflow-arrow q-overflow-arrow--next',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
+            {
+                tag: 'button',
+                name: 'toolbar:triggerBtn',
+                events: { click: { handler: 'onTrigger' } },
+                className: 'q-overflow-menu__trigger',
+                hidden: true,
+            },
+            {
+                tag: 'div',
+                name: 'toolbar:menuPanel',
+                className: 'q-overflow-menu__panel',
+                hidden: true,
+                style: 'position:absolute;',
+            },
+        ],
     },
 };
 
@@ -153,8 +260,14 @@ export const TABLE_TEMPLATE: ComponentTemplate = {
         tag: 'div',
         children: [
             { tag: 'div', name: 'table:headerRow', className: 'q-table__header' },
-            { tag: 'div', name: 'table:bodyScroll', events: { scroll: { handler: true } }, className: 'q-table__body', style: 'overflow-y: auto;' },
-        ]
+            {
+                tag: 'div',
+                name: 'table:bodyScroll',
+                events: { scroll: { handler: true } },
+                className: 'q-table__body',
+                style: 'overflow-y: auto;',
+            },
+        ],
     },
 };
 
@@ -172,13 +285,29 @@ export const DIALOG_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'dialog:header', className: 'q-dialog__header', children: [
-                { tag: 'span', name: 'dialog:text', content: 'text', className: 'q-dialog__title' },
-                { tag: 'button', name: 'dialog:close', events: { click: { handler: true } }, className: 'q-dialog__close', text: '\u00d7' },
-            ]},
+            {
+                tag: 'div',
+                name: 'dialog:header',
+                className: 'q-dialog__header',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'dialog:text',
+                        content: 'text',
+                        className: 'q-dialog__title',
+                    },
+                    {
+                        tag: 'button',
+                        name: 'dialog:close',
+                        events: { click: { handler: true } },
+                        className: 'q-dialog__close',
+                        text: '\u00d7',
+                    },
+                ],
+            },
             { tag: 'div', name: 'dialog:body', className: 'q-dialog__body' },
             { tag: 'div', name: 'dialog:footer', className: 'q-dialog__footer' },
-        ]
+        ],
     },
 };
 
@@ -195,7 +324,7 @@ export const TIPS_TEMPLATE: ComponentTemplate = {
         children: [
             { tag: 'span', name: 'tips:default', content: 'text', className: 'q-tips__content' },
             { tag: 'div', name: 'tips:arrow', className: 'q-arrow' },
-        ]
+        ],
     },
 };
 
@@ -212,7 +341,7 @@ export const DROPDOWN_TEMPLATE: ComponentTemplate = {
         children: [
             { tag: 'div', name: 'dropdown:default', className: 'q-dropdown__content' },
             { tag: 'div', name: 'dropdown:arrow', className: 'q-arrow' },
-        ]
+        ],
     },
 };
 
@@ -229,7 +358,7 @@ export const POPOVER_TEMPLATE: ComponentTemplate = {
         children: [
             { tag: 'div', name: 'popover:default', className: 'q-popover__content' },
             { tag: 'div', name: 'popover:arrow', className: 'q-arrow' },
-        ]
+        ],
     },
 };
 
@@ -246,7 +375,7 @@ export const TOAST_TEMPLATE: ComponentTemplate = {
         children: [
             { tag: 'div', name: 'toast:icon', content: 'icon', className: 'q-toast__icon' },
             { tag: 'span', name: 'toast:message', content: 'text', className: 'q-toast__message' },
-        ]
+        ],
     },
 };
 
@@ -263,13 +392,28 @@ export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', className: 'q-toast__header', children: [
-                { tag: 'span', name: 'toast:text', content: 'text', className: 'q-toast__title' },
-                { tag: 'button', name: 'toast:close', events: { click: { handler: true } }, className: 'q-toast__close', text: '\u00d7' },
-            ]},
+            {
+                tag: 'div',
+                className: 'q-toast__header',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'toast:text',
+                        content: 'text',
+                        className: 'q-toast__title',
+                    },
+                    {
+                        tag: 'button',
+                        name: 'toast:close',
+                        events: { click: { handler: true } },
+                        className: 'q-toast__close',
+                        text: '\u00d7',
+                    },
+                ],
+            },
             { tag: 'div', name: 'toast:icon', content: 'icon', className: 'q-toast__icon' },
             { tag: 'span', name: 'toast:message', content: 'text', className: 'q-toast__message' },
-        ]
+        ],
     },
 };
 
@@ -287,18 +431,59 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', className: 'q-msgbox__header', children: [
-                { tag: 'span', name: 'msgbox:text', content: 'text', className: 'q-msgbox__title' },
-            ]},
-            { tag: 'div', className: 'q-msgbox__body', children: [
-                { tag: 'span', name: 'msgbox:content', content: 'text', className: 'q-msgbox__content' },
-                { tag: 'input', name: 'msgbox:field', content: 'value', events: { input: { handler: true } }, className: 'q-msgbox__input', style: 'display:none;' },
-            ]},
-            { tag: 'div', className: 'q-msgbox__footer', children: [
-                { tag: 'button', name: 'msgbox:cancel', events: { click: { handler: 'onCancel' } }, className: 'q-msgbox__btn q-msgbox__btn--cancel', text: '\u53d6\u6d88' },
-                { tag: 'button', name: 'msgbox:confirm', events: { click: { handler: 'onConfirm' } }, className: 'q-msgbox__btn q-msgbox__btn--confirm', text: '\u786e\u5b9a' },
-            ]},
-        ]
+            {
+                tag: 'div',
+                className: 'q-msgbox__header',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'msgbox:text',
+                        content: 'text',
+                        className: 'q-msgbox__title',
+                    },
+                ],
+            },
+            {
+                tag: 'div',
+                className: 'q-msgbox__body',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'msgbox:content',
+                        content: 'text',
+                        className: 'q-msgbox__content',
+                    },
+                    {
+                        tag: 'input',
+                        name: 'msgbox:field',
+                        content: 'value',
+                        events: { input: { handler: true } },
+                        className: 'q-msgbox__input',
+                        style: 'display:none;',
+                    },
+                ],
+            },
+            {
+                tag: 'div',
+                className: 'q-msgbox__footer',
+                children: [
+                    {
+                        tag: 'button',
+                        name: 'msgbox:cancel',
+                        events: { click: { handler: 'onCancel' } },
+                        className: 'q-msgbox__btn q-msgbox__btn--cancel',
+                        text: '\u53d6\u6d88',
+                    },
+                    {
+                        tag: 'button',
+                        name: 'msgbox:confirm',
+                        events: { click: { handler: 'onConfirm' } },
+                        className: 'q-msgbox__btn q-msgbox__btn--confirm',
+                        text: '\u786e\u5b9a',
+                    },
+                ],
+            },
+        ],
     },
 };
 
@@ -313,7 +498,7 @@ export const BADGE_TEMPLATE: ComponentTemplate = {
         tag: 'div',
         children: [
             { tag: 'span', name: 'badge:default', content: 'text', className: 'q-badge__content' },
-        ]
+        ],
     },
 };
 
@@ -331,15 +516,40 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'menuItem:content', events: { click: { handler: true } }, className: 'q-menu-item__content', children: [
-                { tag: 'span', name: 'menuItem:icon', content: 'icon', className: 'q-menu-item__icon' },
-                { tag: 'span', name: 'menuItem:text', content: 'text', className: 'q-menu-item__text' },
-                { tag: 'span', name: 'menuItem:shortcut', content: 'text', className: 'q-menu-item__shortcut' },
-                { tag: 'div', name: 'menuItem:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-                    { tag: 'i' },
-                ]},
-            ]},
-        ]
+            {
+                tag: 'div',
+                name: 'menuItem:content',
+                events: { click: { handler: true } },
+                className: 'q-menu-item__content',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'menuItem:icon',
+                        content: 'icon',
+                        className: 'q-menu-item__icon',
+                    },
+                    {
+                        tag: 'span',
+                        name: 'menuItem:text',
+                        content: 'text',
+                        className: 'q-menu-item__text',
+                    },
+                    {
+                        tag: 'span',
+                        name: 'menuItem:shortcut',
+                        content: 'text',
+                        className: 'q-menu-item__shortcut',
+                    },
+                    {
+                        tag: 'div',
+                        name: 'menuItem:expand',
+                        className: 'q-expand-arrow q-expand-arrow--collapsed',
+                        hidden: true,
+                        children: [{ tag: 'i' }],
+                    },
+                ],
+            },
+        ],
     },
 };
 
@@ -352,9 +562,7 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
 export const MENU_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
-        children: [
-            { tag: 'div', name: 'menu:content', className: 'q-menu__content' },
-        ]
+        children: [{ tag: 'div', name: 'menu:content', className: 'q-menu__content' }],
     },
 };
 
@@ -373,16 +581,38 @@ export const PANEL_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'panel:header', className: 'q-panel__header', children: [
-                { tag: 'div', name: 'panel:toolsLeft', className: 'q-panel__tools q-panel__tools--left' },
-                { tag: 'div', name: 'panel:expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-                    { tag: 'i' },
-                ]},
-                { tag: 'span', name: 'panel:title', content: 'text', className: 'q-panel__title' },
-                { tag: 'div', name: 'panel:toolsRight', className: 'q-panel__tools q-panel__tools--right' },
-            ]},
+            {
+                tag: 'div',
+                name: 'panel:header',
+                className: 'q-panel__header',
+                children: [
+                    {
+                        tag: 'div',
+                        name: 'panel:toolsLeft',
+                        className: 'q-panel__tools q-panel__tools--left',
+                    },
+                    {
+                        tag: 'div',
+                        name: 'panel:expand',
+                        className: 'q-expand-arrow q-expand-arrow--collapsed',
+                        hidden: true,
+                        children: [{ tag: 'i' }],
+                    },
+                    {
+                        tag: 'span',
+                        name: 'panel:title',
+                        content: 'text',
+                        className: 'q-panel__title',
+                    },
+                    {
+                        tag: 'div',
+                        name: 'panel:toolsRight',
+                        className: 'q-panel__tools q-panel__tools--right',
+                    },
+                ],
+            },
             { tag: 'div', name: 'panel:body', className: 'q-panel__body' },
-        ]
+        ],
     },
 };
 
@@ -398,11 +628,27 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'navItem:content', events: { click: { handler: true } }, className: 'q-nav-item__content', children: [
-                { tag: 'span', name: 'navItem:icon', content: 'icon', className: 'q-nav-item__icon' },
-                { tag: 'span', name: 'navItem:text', content: 'text', className: 'q-nav-item__text' },
-            ]},
-        ]
+            {
+                tag: 'div',
+                name: 'navItem:content',
+                events: { click: { handler: true } },
+                className: 'q-nav-item__content',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'navItem:icon',
+                        content: 'icon',
+                        className: 'q-nav-item__icon',
+                    },
+                    {
+                        tag: 'span',
+                        name: 'navItem:text',
+                        content: 'text',
+                        className: 'q-nav-item__text',
+                    },
+                ],
+            },
+        ],
     },
 };
 
@@ -415,9 +661,7 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
 export const ITEMGROUP_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
-        children: [
-            { tag: 'div', name: 'items', className: 'q-itemgroup__items' },
-        ]
+        children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
     },
 };
 

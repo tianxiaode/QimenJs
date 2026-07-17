@@ -19,7 +19,11 @@ export interface RouteNavProps {
     items?: Record<string, any>[];
 }
 
-const RouteNavBase = (NavItemGroupComponent as any).with([RouteAbility, RouteEmitAbility, RouteListenAbility]);
+const RouteNavBase = (NavItemGroupComponent as any).with([
+    RouteAbility,
+    RouteEmitAbility,
+    RouteListenAbility,
+]);
 
 export let RouteNavComponent = class extends RouteNavBase {
     private _pathIndex: Record<string, number> = {};
@@ -48,7 +52,14 @@ export let RouteNavComponent = class extends RouteNavBase {
     onNavClick(data: any): void {
         const index = data?.index ?? this.activeIndex;
         const path = this._indexPath[index];
-        this.logger.debug('[RouteNav] onNavClick, index =', index, 'path =', path, '_indexPath =', this._indexPath);
+        this.logger.debug(
+            '[RouteNav] onNavClick, index =',
+            index,
+            'path =',
+            path,
+            '_indexPath =',
+            this._indexPath
+        );
         if (!path) return;
 
         this.selectAt(index);
@@ -58,7 +69,12 @@ export let RouteNavComponent = class extends RouteNavBase {
 
     onRouteChange(event: any): void {
         const path = event?.path;
-        this.logger.debug('[RouteNav] onRouteChange, path =', path, '_lastNavigatedPath =', this._lastNavigatedPath);
+        this.logger.debug(
+            '[RouteNav] onRouteChange, path =',
+            path,
+            '_lastNavigatedPath =',
+            this._lastNavigatedPath
+        );
         if (path) {
             if (path === this._lastNavigatedPath) {
                 this.logger.debug('[RouteNav] onRouteChange skipped, same as last navigated path');

@@ -51,15 +51,31 @@ const ItemGroupBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'prevBtn', events: { click: { handler: 'onPrev' } }, className: 'q-overflow-arrow q-overflow-arrow--prev', hidden: true, children: [
-                { tag: 'i' },
-            ]},
+            {
+                tag: 'div',
+                name: 'prevBtn',
+                events: { click: { handler: 'onPrev' } },
+                className: 'q-overflow-arrow q-overflow-arrow--prev',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
             { tag: 'div', name: 'items', className: 'q-itemgroup__items' },
-            { tag: 'div', name: 'nextBtn', events: { click: { handler: 'onNext' } }, className: 'q-overflow-arrow q-overflow-arrow--next', hidden: true, children: [
-                { tag: 'i' },
-            ]},
-            { tag: 'button', name: 'triggerBtn', events: { click: { handler: 'onTrigger' } }, className: 'q-overflow-menu__trigger', hidden: true },
-        ]
+            {
+                tag: 'div',
+                name: 'nextBtn',
+                events: { click: { handler: 'onNext' } },
+                className: 'q-overflow-arrow q-overflow-arrow--next',
+                hidden: true,
+                children: [{ tag: 'i' }],
+            },
+            {
+                tag: 'button',
+                name: 'triggerBtn',
+                events: { click: { handler: 'onTrigger' } },
+                className: 'q-overflow-menu__trigger',
+                hidden: true,
+            },
+        ],
     },
     body: {
         type: 'ItemGroup',
@@ -336,7 +352,7 @@ const ItemGroupBase = TemplateComponent.withTemplate({
 
             for (const key of this._itemData) {
                 const value = instance[key];
-                if (value !== undefined && typeof value !== 'function' && !(value?.el)) {
+                if (value !== undefined && typeof value !== 'function' && !value?.el) {
                     result[key] = value;
                 }
             }
@@ -398,13 +414,21 @@ const ItemGroupBase = TemplateComponent.withTemplate({
         },
 
         _cleanupOverflow(): void {
-            const scrollResizeObserver = this.getOverflowScroll?.('resizeObserver') as ResizeObserver | null;
-            const scrollMutationObserver = this.getOverflowScroll?.('mutationObserver') as MutationObserver | null;
+            const scrollResizeObserver = this.getOverflowScroll?.(
+                'resizeObserver'
+            ) as ResizeObserver | null;
+            const scrollMutationObserver = this.getOverflowScroll?.(
+                'mutationObserver'
+            ) as MutationObserver | null;
             scrollResizeObserver?.disconnect();
             scrollMutationObserver?.disconnect();
 
-            const menuResizeObserver = this.getOverflowMenu?.('resizeObserver') as ResizeObserver | null;
-            const menuMutationObserver = this.getOverflowMenu?.('mutationObserver') as MutationObserver | null;
+            const menuResizeObserver = this.getOverflowMenu?.(
+                'resizeObserver'
+            ) as ResizeObserver | null;
+            const menuMutationObserver = this.getOverflowMenu?.(
+                'mutationObserver'
+            ) as MutationObserver | null;
             menuResizeObserver?.disconnect();
             menuMutationObserver?.disconnect();
 
@@ -424,14 +448,23 @@ const ItemGroupBase = TemplateComponent.withTemplate({
             }
 
             this.el.classList.remove(
-                'q-overflow-scroll', 'q-overflow-scroll--horizontal', 'q-overflow-scroll--vertical',
-                'q-overflow-scroll--can-prev', 'q-overflow-scroll--can-next', 'q-overflow-scroll--overflowing',
-                'q-overflow-menu-container', 'q-overflow-menu-container--horizontal', 'q-overflow-menu-container--vertical',
-                'q-overflow-menu-container--overflowing',
+                'q-overflow-scroll',
+                'q-overflow-scroll--horizontal',
+                'q-overflow-scroll--vertical',
+                'q-overflow-scroll--can-prev',
+                'q-overflow-scroll--can-next',
+                'q-overflow-scroll--overflowing',
+                'q-overflow-menu-container',
+                'q-overflow-menu-container--horizontal',
+                'q-overflow-menu-container--vertical',
+                'q-overflow-menu-container--overflowing'
             );
 
             if (this._containerEl) {
-                this._containerEl.classList.remove('q-overflow-scroll__area', 'q-overflow-menu__visible');
+                this._containerEl.classList.remove(
+                    'q-overflow-scroll__area',
+                    'q-overflow-menu__visible'
+                );
             }
 
             if (triggerBtn) {

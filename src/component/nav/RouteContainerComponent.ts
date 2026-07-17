@@ -14,49 +14,58 @@ export interface RouteContainerProps {
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
-const RouteContainerBase = TemplateComponent
-    .withTemplate({
-        tpl: {
-            tag: 'div',
-            className: 'q-route-container',
-            children: [
-                { tag: 'div', name: 'content', className: 'q-route-container__content' },
-            ],
+const RouteContainerBase = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'q-route-container',
+        children: [{ tag: 'div', name: 'content', className: 'q-route-container__content' }],
+    },
+    body: {
+        type: 'RouteContainer',
+
+        _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
+        _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
+
+        _initRouteContainer(props?: RouteContainerProps): void {
+            this.el.classList.add('q-route-container');
+
+            this.logger.debug(
+                '[RouteContainer] constructor, routeMap keys =',
+                props?.routeMap ? Object.keys(props.routeMap) : [],
+                'defaultComponent =',
+                !!props?.defaultComponent
+            );
+
+            if (props?.routeMap) this._routeMap = props.routeMap;
+            if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
+
+            if (this._defaultComponent) {
+                this.logger.debug('[RouteContainer] mounting default component');
+                this._replaceChildComponent('content', this._defaultComponent);
+            } else {
+                this.logger.debug('[RouteContainer] NO default component');
+            }
         },
-        body: {
-            type: 'RouteContainer',
 
-            _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
-            _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
-
-            _initRouteContainer(props?: RouteContainerProps): void {
-                this.el.classList.add('q-route-container');
-
-                this.logger.debug('[RouteContainer] constructor, routeMap keys =', props?.routeMap ? Object.keys(props.routeMap) : [], 'defaultComponent =', !!props?.defaultComponent);
-
-                if (props?.routeMap) this._routeMap = props.routeMap;
-                if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
-
-                if (this._defaultComponent) {
-                    this.logger.debug('[RouteContainer] mounting default component');
-                    this._replaceChildComponent('content', this._defaultComponent);
-                } else {
-                    this.logger.debug('[RouteContainer] NO default component');
-                }
-            },
-
-            onRouteChange(event: any): void {
-                const path = event?.path;
-                this.logger.debug('[RouteContainer] onRouteChange, path =', path, 'routeMap keys =', Object.keys(this._routeMap));
-                const PageClass = this._routeMap[path] || this._defaultComponent;
-                this.logger.debug('[RouteContainer] resolved PageClass =', PageClass?.name || (PageClass as any)?.type || 'null');
-                if (PageClass) {
-                    this._replaceChildComponent('content', PageClass);
-                }
-            },
+        onRouteChange(event: any): void {
+            const path = event?.path;
+            this.logger.debug(
+                '[RouteContainer] onRouteChange, path =',
+                path,
+                'routeMap keys =',
+                Object.keys(this._routeMap)
+            );
+            const PageClass = this._routeMap[path] || this._defaultComponent;
+            this.logger.debug(
+                '[RouteContainer] resolved PageClass =',
+                PageClass?.name || (PageClass as any)?.type || 'null'
+            );
+            if (PageClass) {
+                this._replaceChildComponent('content', PageClass);
+            }
         },
-    })
-    .with([RouteListenAbility, ChildSlotAbility]);
+    },
+}).with([RouteListenAbility, ChildSlotAbility]);
 
 export let RouteContainerComponent = RouteContainerBase;
 

@@ -31,98 +31,112 @@ export interface PanelProps {
     toolsRight?: ToolGroupConfig;
 }
 
-export let PanelComponent = TemplateComponent
-    .withTemplate({
-        tpl: {
-            tag: 'div',
-            className: 'q-panel',
-            children: [
-                { tag: 'div', name: 'header', className: 'q-panel__header', children: [
-                    { tag: 'div', name: 'toolsLeft', className: 'q-panel__tools q-panel__tools--left' },
-                    { tag: 'div', name: 'expand', className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true, children: [
-                        { tag: 'i' },
-                    ]},
+export let PanelComponent = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'q-panel',
+        children: [
+            {
+                tag: 'div',
+                name: 'header',
+                className: 'q-panel__header',
+                children: [
+                    {
+                        tag: 'div',
+                        name: 'toolsLeft',
+                        className: 'q-panel__tools q-panel__tools--left',
+                    },
+                    {
+                        tag: 'div',
+                        name: 'expand',
+                        className: 'q-expand-arrow q-expand-arrow--collapsed',
+                        hidden: true,
+                        children: [{ tag: 'i' }],
+                    },
                     { tag: 'span', name: 'title', className: 'q-panel__title' },
-                    { tag: 'div', name: 'toolsRight', className: 'q-panel__tools q-panel__tools--right' },
-                ]},
-                { tag: 'div', name: 'body', className: 'q-panel__body' },
-            ]
-        },
-        body: {
-            type: 'Panel',
-
-            _toolsLeft: null as ItemGroupComponent | null,
-            _toolsRight: null as ItemGroupComponent | null,
-
-            _initPanel(props?: PanelProps): void {
-                if (props?.title) {
-                    this.title = props.title;
-                }
-
-                if (props?.toolsLeft) {
-                    this._toolsLeft = new ItemGroupComponent({
-                        itemType: props.toolsLeft.itemType ?? 'Icon',
-                        direction: 'horizontal',
-                        gap: '4px',
-                        eventKey: props.toolsLeft.eventKey,
-                        items: props.toolsLeft.items,
-                        cls: props.toolsLeft.cls,
-                    });
-                    const toolsLeftEl = this.nodeMap?.toolsLeft?.el;
-                    if (toolsLeftEl) {
-                        toolsLeftEl.appendChild(this._toolsLeft.el);
-                    }
-
-                    this._bridgeToolEvents(this._toolsLeft, props.toolsLeft.eventKey);
-                }
-
-                if (props?.toolsRight) {
-                    this._toolsRight = new ItemGroupComponent({
-                        itemType: props.toolsRight.itemType ?? 'Icon',
-                        direction: 'horizontal',
-                        gap: '4px',
-                        eventKey: props.toolsRight.eventKey,
-                        items: props.toolsRight.items,
-                        cls: props.toolsRight.cls,
-                    });
-                    const toolsRightEl = this.nodeMap?.toolsRight?.el;
-                    if (toolsRightEl) {
-                        toolsRightEl.appendChild(this._toolsRight.el);
-                    }
-
-                    this._bridgeToolEvents(this._toolsRight, props.toolsRight.eventKey);
-                }
-
-                if (props?.expandable) {
-                    const expandNode = this.nodeMap?.expand;
-                    if (expandNode?.el) {
-                        expandNode.el.hidden = false;
-                    }
-
-                    const config: ExpandArrowConfig = typeof props.expandable === 'object'
-                        ? props.expandable
-                        : {};
-
-                    this.initExpandArrow(config);
-
-                    this.on(config.arrowEvent ?? 'toggle', ({ state }: { state: string }) => {
-                        const bodyNode = this.nodeMap?.body;
-                        if (bodyNode?.el) {
-                            bodyNode.el.hidden = state === 'collapsed';
-                        }
-                    });
-                }
+                    {
+                        tag: 'div',
+                        name: 'toolsRight',
+                        className: 'q-panel__tools q-panel__tools--right',
+                    },
+                ],
             },
+            { tag: 'div', name: 'body', className: 'q-panel__body' },
+        ],
+    },
+    body: {
+        type: 'Panel',
 
-            _bridgeToolEvents(group: ItemGroupComponent, eventKey: string): void {
-                for (const event of group.forwardEvents) {
-                    group.on(event, (data: any) => {
-                        this.emit(event, data, { source: eventKey });
-                    });
+        _toolsLeft: null as ItemGroupComponent | null,
+        _toolsRight: null as ItemGroupComponent | null,
+
+        _initPanel(props?: PanelProps): void {
+            if (props?.title) {
+                this.title = props.title;
+            }
+
+            if (props?.toolsLeft) {
+                this._toolsLeft = new ItemGroupComponent({
+                    itemType: props.toolsLeft.itemType ?? 'Icon',
+                    direction: 'horizontal',
+                    gap: '4px',
+                    eventKey: props.toolsLeft.eventKey,
+                    items: props.toolsLeft.items,
+                    cls: props.toolsLeft.cls,
+                });
+                const toolsLeftEl = this.nodeMap?.toolsLeft?.el;
+                if (toolsLeftEl) {
+                    toolsLeftEl.appendChild(this._toolsLeft.el);
                 }
-            },
+
+                this._bridgeToolEvents(this._toolsLeft, props.toolsLeft.eventKey);
+            }
+
+            if (props?.toolsRight) {
+                this._toolsRight = new ItemGroupComponent({
+                    itemType: props.toolsRight.itemType ?? 'Icon',
+                    direction: 'horizontal',
+                    gap: '4px',
+                    eventKey: props.toolsRight.eventKey,
+                    items: props.toolsRight.items,
+                    cls: props.toolsRight.cls,
+                });
+                const toolsRightEl = this.nodeMap?.toolsRight?.el;
+                if (toolsRightEl) {
+                    toolsRightEl.appendChild(this._toolsRight.el);
+                }
+
+                this._bridgeToolEvents(this._toolsRight, props.toolsRight.eventKey);
+            }
+
+            if (props?.expandable) {
+                const expandNode = this.nodeMap?.expand;
+                if (expandNode?.el) {
+                    expandNode.el.hidden = false;
+                }
+
+                const config: ExpandArrowConfig =
+                    typeof props.expandable === 'object' ? props.expandable : {};
+
+                this.initExpandArrow(config);
+
+                this.on(config.arrowEvent ?? 'toggle', ({ state }: { state: string }) => {
+                    const bodyNode = this.nodeMap?.body;
+                    if (bodyNode?.el) {
+                        bodyNode.el.hidden = state === 'collapsed';
+                    }
+                });
+            }
         },
-    })
-    .with([ExpandArrowAbility]);
+
+        _bridgeToolEvents(group: ItemGroupComponent, eventKey: string): void {
+            for (const event of group.forwardEvents) {
+                group.on(event, (data: any) => {
+                    this.emit(event, data, { source: eventKey });
+                });
+            }
+        },
+    },
+}).with([ExpandArrowAbility]);
 
 export type PanelComponent = InstanceType<typeof PanelComponent>;

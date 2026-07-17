@@ -63,21 +63,21 @@ const MenuItemBase = TemplateComponent.withTemplate({
         ],
     },
     body: {
-            type: 'MenuItem',
+        type: 'MenuItem',
 
-            _disabled: false,
-            _hasSubmenu: false,
-            _group: '',
-            _groupMode: 'radio' as MenuItemGroupMode,
-            _checked: false,
-            _userIcon: '',
-            onSelect: null as ((item: any) => void) | null,
-            submenuProps: null as Record<string, any> | null,
-            _submenuTimer: null as ReturnType<typeof setTimeout> | null,
+        _disabled: false,
+        _hasSubmenu: false,
+        _group: '',
+        _groupMode: 'radio' as MenuItemGroupMode,
+        _checked: false,
+        _userIcon: '',
+        onSelect: null as ((item: any) => void) | null,
+        submenuProps: null as Record<string, any> | null,
+        _submenuTimer: null as ReturnType<typeof setTimeout> | null,
 
-            forwards: {
-                icon: 'icon',
-            },
+        forwards: {
+            icon: 'icon',
+        },
 
         _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
             this.el.classList.add('q-menu-item');

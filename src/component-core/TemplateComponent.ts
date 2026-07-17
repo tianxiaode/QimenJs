@@ -15,7 +15,11 @@
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
 import { createForgedClass } from '@/composable/forge';
-import { EventAbility, DomEventsAbility, EventBridgeAbility as SystemEventBridgeAbility } from '@/system-abilities';
+import {
+    EventAbility,
+    DomEventsAbility,
+    EventBridgeAbility as SystemEventBridgeAbility,
+} from '@/system-abilities';
 import { AnimationAbility } from './abilities/AnimationAbility';
 import { BadgeAbility } from './abilities/BadgeAbility';
 import { EntityCoreAbility } from './abilities/EntityCoreAbility';
@@ -65,12 +69,22 @@ import { buildContentProperties } from './content-properties';
  * - LayoutAbility — layout: 'hbox' → layout-hbox className
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
-    EventAbility, DomEventsAbility, SystemEventBridgeAbility,
-    AnimationAbility, BadgeAbility, EntityCoreAbility,
+    EventAbility,
+    DomEventsAbility,
+    SystemEventBridgeAbility,
+    AnimationAbility,
+    BadgeAbility,
+    EntityCoreAbility,
     EventBridgeConfigAbility,
-    InitAbility, NodeMapAbility, OverlayAbility, OverlayHostAbility,
-    DragAbility, DropAbility,
-    TemplateAbility, LayoutAbility, TooltipAbility,
+    InitAbility,
+    NodeMapAbility,
+    OverlayAbility,
+    OverlayHostAbility,
+    DragAbility,
+    DropAbility,
+    TemplateAbility,
+    LayoutAbility,
+    TooltipAbility,
 ];
 
 /**
@@ -230,7 +244,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
                 domEventBindings: [],
             };
-
         } else {
             // ── ComponentTemplate ──
             const result = compileTemplate(template, this.isMultiArea ?? false);
@@ -273,7 +286,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                     const userBody = (props as any)?.body;
 
                     // 简写兼容：如果参数没有 props/childProps/body 层，视为纯 props
-                    const isStructured = userProps !== undefined || userChildProps !== undefined || userBody !== undefined;
+                    const isStructured =
+                        userProps !== undefined ||
+                        userChildProps !== undefined ||
+                        userBody !== undefined;
                     const flatProps = isStructured ? userProps : props;
 
                     const mergedProps = ctor._propsDef
@@ -287,9 +303,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                     this._initWithTemplate(mergedProps);
                 } else {
                     // v1 旧模式：defaults 驱动
-                    const mergedProps = ctor.defaults
-                        ? { ...ctor.defaults, ...props }
-                        : props;
+                    const mergedProps = ctor.defaults ? { ...ctor.defaults, ...props } : props;
                     this._initWithTemplate(mergedProps);
                 }
 
@@ -319,7 +333,8 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             static readonly _indexPath: NodeIndexPath = compiled.indexPath;
 
             /** 预编译的模板元数据 */
-            static readonly _templateMetas: Record<string, NodeTemplateMeta> = compiled.templateMetas;
+            static readonly _templateMetas: Record<string, NodeTemplateMeta> =
+                compiled.templateMetas;
 
             /** 预编译的合并 DOM 事件绑定（同一 DOM 事件只绑定一次） */
             static readonly _domEventBindings: DomEventBinding[] = compiled.domEventBindings ?? [];
@@ -331,7 +346,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             static readonly _contentInfos: ContentInfo[] = compiled.contentInfos;
 
             /** 预编译的组件类映射 */
-            static readonly _jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = jsonComponentMap;
+            static readonly _jsonComponentMap: Record<
+                string,
+                new (props?: Record<string, any>) => any
+            > = jsonComponentMap;
 
             /** 模板 body 定义（属性和方法，复制到组件实例） */
             static readonly _templateBody: Record<string, any> | undefined = body;
@@ -402,7 +420,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                 const privateKey = `__${key}`;
                 Object.defineProperty(proto, key, {
-                    get(this: any) { return this[privateKey]; },
+                    get(this: any) {
+                        return this[privateKey];
+                    },
                     set(this: any, value: any) {
                         this[privateKey] = value;
                         if (typeof this._applyState === 'function') this._applyState();
@@ -414,7 +434,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         }
 
         // 挂载 .with() 静态方法
-        (TemplateClass as any).with = function<Additional extends readonly AbilityDefinition[]>(
+        (TemplateClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
             ...additionalAbilities: Additional
         ): any {
             let flat: readonly AbilityDefinition[];

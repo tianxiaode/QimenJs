@@ -24,7 +24,19 @@ import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { OverlayRoot } from '@/component/OverlayRoot';
 import { IconComponent } from '../icon/IconComponent';
 
-export type NavPlacement = 'top' | 'bottom' | 'left' | 'right' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end' | 'right-start' | 'right-end';
+export type NavPlacement =
+    | 'top'
+    | 'bottom'
+    | 'left'
+    | 'right'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left-start'
+    | 'left-end'
+    | 'right-start'
+    | 'right-end';
 
 export interface NavOverlayOptions {
     placement?: NavPlacement;
@@ -64,12 +76,18 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         tag: 'div',
         className: 'q-nav-item',
         children: [
-            { tag: 'div', name: 'content', events: { click: { handler: true, bridges: ['click'] } }, className: 'q-nav-item__content', children: [
-                { name: 'icon', type: IconComponent, className: 'q-nav-item__icon' },
-                { tag: 'span', name: 'text', className: 'q-nav-item__text' },
-                { tag: 'span', name: 'expand', className: 'q-nav-item__expand' },
-            ]},
-        ]
+            {
+                tag: 'div',
+                name: 'content',
+                events: { click: { handler: true, bridges: ['click'] } },
+                className: 'q-nav-item__content',
+                children: [
+                    { name: 'icon', type: IconComponent, className: 'q-nav-item__icon' },
+                    { tag: 'span', name: 'text', className: 'q-nav-item__text' },
+                    { tag: 'span', name: 'expand', className: 'q-nav-item__expand' },
+                ],
+            },
+        ],
     },
     body: {
         type: 'NavItem',
@@ -217,19 +235,28 @@ export let NavItemComponent = TemplateComponent.withTemplate({
 
             if (placement === 'right-start' || placement === 'right') {
                 left = anchorRect.right + offset;
-                top = placement === 'right-start' ? anchorRect.top : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
+                top =
+                    placement === 'right-start'
+                        ? anchorRect.top
+                        : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
             } else if (placement === 'right-end') {
                 left = anchorRect.right + offset;
                 top = anchorRect.bottom - overlayRect.height;
             } else if (placement === 'bottom-start' || placement === 'bottom') {
                 top = anchorRect.bottom + offset;
-                left = placement === 'bottom-start' ? anchorRect.left : anchorRect.left + (anchorRect.width - overlayRect.width) / 2;
+                left =
+                    placement === 'bottom-start'
+                        ? anchorRect.left
+                        : anchorRect.left + (anchorRect.width - overlayRect.width) / 2;
             } else if (placement === 'bottom-end') {
                 top = anchorRect.bottom + offset;
                 left = anchorRect.right - overlayRect.width;
             } else if (placement === 'left-start' || placement === 'left') {
                 left = anchorRect.left - overlayRect.width - offset;
-                top = placement === 'left-start' ? anchorRect.top : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
+                top =
+                    placement === 'left-start'
+                        ? anchorRect.top
+                        : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
             }
 
             const vpWidth = window.innerWidth;
@@ -253,7 +280,11 @@ export let NavItemComponent = TemplateComponent.withTemplate({
 
         _bindOutsideClick(): void {
             this._outsideClickHandler = (e: MouseEvent) => {
-                if (this._overlayEl && !this._overlayEl.contains(e.target as Node) && !this.el.contains(e.target as Node)) {
+                if (
+                    this._overlayEl &&
+                    !this._overlayEl.contains(e.target as Node) &&
+                    !this.el.contains(e.target as Node)
+                ) {
                     this.closeOverlay();
                 }
             };
@@ -296,7 +327,7 @@ export let NavItemComponent = TemplateComponent.withTemplate({
             this.el.classList.toggle('q-nav-item--active', this.active);
             this.el.classList.toggle('q-nav-item--disabled', this.disabled);
             this.el.classList.toggle('q-nav-item--collapsed', this.mode === 'collapsed');
-            this.el.classList.toggle('q-nav-item--has-children', !!(this.children?.length));
+            this.el.classList.toggle('q-nav-item--has-children', !!this.children?.length);
 
             const textEl = this.nodeMap?.text?.el as HTMLElement | null;
             if (textEl) {
@@ -361,7 +392,8 @@ export let NavItemComponent = TemplateComponent.withTemplate({
             if (props?.mode !== undefined) this.setMode(props.mode);
             if (props?.children !== undefined) this.children = props.children;
             if (props?.overlayOptions !== undefined) this.overlayOptions = props.overlayOptions;
-            if (props?.overlayComponent !== undefined) this.overlayComponent = props.overlayComponent;
+            if (props?.overlayComponent !== undefined)
+                this.overlayComponent = props.overlayComponent;
             if (props?.maxDepth !== undefined) this.maxDepth = props.maxDepth;
             if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
         },

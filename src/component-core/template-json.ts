@@ -80,7 +80,22 @@ export interface TplNodeMeta {
 // ─── 通用工具 ──────────────────────────────────────────────
 
 /** 自闭合标签集合 */
-const VOID_TAGS = new Set(['input', 'img', 'br', 'hr', 'col', 'area', 'base', 'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+const VOID_TAGS = new Set([
+    'input',
+    'img',
+    'br',
+    'hr',
+    'col',
+    'area',
+    'base',
+    'embed',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+]);
 
 /** 对齐映射 */
 const ALIGN_MAP: Record<string, string> = {
@@ -233,7 +248,10 @@ function buildStyleAttr(node: TplNode): string | undefined {
  * tpl 根节点不生成 HTML 元素（根元素由组件的 tag 属性创建），
  * 只转换 tpl.children 为内部 HTML 片段。
  */
-export function compileTemplate(template: ComponentTemplate, isMultiArea: boolean = false): CompiledTemplateResult {
+export function compileTemplate(
+    template: ComponentTemplate,
+    isMultiArea: boolean = false
+): CompiledTemplateResult {
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};
     const contentPropNames: string[] = [];
@@ -245,7 +263,12 @@ export function compileTemplate(template: ComponentTemplate, isMultiArea: boolea
     // 但根节点的 className/style 需要提取，应用到组件 el 上
     const root = template.tpl;
     const rootClassName = root.className;
-    const rootStyle = typeof root.style === 'string' ? root.style : root.style ? styleToString(root.style) : undefined;
+    const rootStyle =
+        typeof root.style === 'string'
+            ? root.style
+            : root.style
+              ? styleToString(root.style)
+              : undefined;
 
     const children = template.tpl.children || [];
     const htmlParts: string[] = [];
@@ -313,7 +336,7 @@ function compileNode(
     node: TplNode,
     path: number[],
     isMultiArea: boolean,
-    ctx: CompileContext,
+    ctx: CompileContext
 ): string {
     // ─── type 节点（组件占位） ───
 
@@ -336,8 +359,10 @@ function compileNode(
         // 记录 templateMetas
         const mode = 'html' as const;
         ctx.templateMetas[key] = {
-            raw: nameStr || key, name,
-            jsonRef: typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
+            raw: nameStr || key,
+            name,
+            jsonRef:
+                typeof node.type === 'string' ? node.type : (node.type as any).name || 'Anonymous',
             jsonMode: node.replace !== undefined ? (node.replace ? 'replace' : 'child') : undefined,
             i18nKey: node.i18n,
             hidden: node.hidden,
@@ -347,24 +372,25 @@ function compileNode(
 
         // 推导内容属性名
         const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-        const propName = isMultiArea
-            ? `${group}${capitalName}`
-            : name === '_' ? group : name;
+        const propName = isMultiArea ? `${group}${capitalName}` : name === '_' ? group : name;
         ctx.contentPropNames.push(propName);
 
         // 从子组件类读取 _expose（content 名列表，如 ['content']）
         // 运行时按规则自动生成 getter/setter：默认属性 + content 透传
         const componentClass = typeof node.type === 'function' ? node.type : null;
-        const childExpose = componentClass ? (componentClass as any)._expose as string[] | undefined : undefined;
+        const childExpose = componentClass
+            ? ((componentClass as any)._expose as string[] | undefined)
+            : undefined;
 
         ctx.contentInfos.push({
-            group, name, mode,
+            group,
+            name,
+            mode,
             i18nKey: node.i18n,
             propName,
             isComponent: true,
             componentPropName: propName,
             expose: childExpose,
-
         });
 
         // 编译事件模板
@@ -398,7 +424,8 @@ function compileNode(
         // 记录 templateMetas
         const mode = inferMode(tag);
         ctx.templateMetas[key] = {
-            raw: nameStr, name,
+            raw: nameStr,
+            name,
             i18nKey: node.i18n,
             hidden: node.hidden,
             mode,
@@ -406,14 +433,14 @@ function compileNode(
 
         // 推导内容属性名
         const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-        const propName = isMultiArea
-            ? `${group}${capitalName}`
-            : name === '_' ? group : name;
+        const propName = isMultiArea ? `${group}${capitalName}` : name === '_' ? group : name;
         ctx.contentPropNames.push(propName);
 
         // 收集内容节点信息
         ctx.contentInfos.push({
-            group, name, mode,
+            group,
+            name,
+            mode,
             i18nKey: node.i18n,
             propName,
         });
@@ -445,9 +472,7 @@ function compileNode(
 
     if (node.children) {
         for (let i = 0; i < node.children.length; i++) {
-            inner.push(
-                compileNode(node.children[i], [...path, i], isMultiArea, ctx)
-            );
+            inner.push(compileNode(node.children[i], [...path, i], isMultiArea, ctx));
         }
     }
 
@@ -465,8 +490,9 @@ function compileEvents(
     key: string,
     group: string,
     name: string,
-    ctx: CompileContext,
-): void {    if (!node.events) return;
+    ctx: CompileContext
+): void {
+    if (!node.events) return;
 
     for (const [domEvent, decl] of Object.entries(node.events)) {
         // ── 推导 handler 名 ──
@@ -496,5 +522,3 @@ function compileEvents(
         ctx.domEventBindings.push(binding);
     }
 }
-
-

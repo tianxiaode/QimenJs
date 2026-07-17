@@ -63,9 +63,15 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         }
     }
 
-    get activeIndex(): number { return this._activeIndex; }
-    get mode(): 'expanded' | 'collapsed' { return this._mode; }
-    get maxDepth(): number { return this._maxDepth; }
+    get activeIndex(): number {
+        return this._activeIndex;
+    }
+    get mode(): 'expanded' | 'collapsed' {
+        return this._mode;
+    }
+    get maxDepth(): number {
+        return this._maxDepth;
+    }
 
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
@@ -81,7 +87,11 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         this._activeIndex = index;
 
         if (!silent) {
-            this.emit('select', { ...this._extractItemData(newItem, index) }, { source: this.eventKey || undefined });
+            this.emit(
+                'select',
+                { ...this._extractItemData(newItem, index) },
+                { source: this.eventKey || undefined }
+            );
         }
     }
 

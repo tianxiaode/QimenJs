@@ -63,7 +63,14 @@ export const TemplateAbility: AbilityDefinition = {
             ...props,
         };
 
-        this.logger?.debug?.('[Template] _initWithTemplate, type =', ctor.type, 'bridges =', cfg.bridges?.length ?? 0, 'eventBridge =', !!cfg.eventBridge);
+        this.logger?.debug?.(
+            '[Template] _initWithTemplate, type =',
+            ctor.type,
+            'bridges =',
+            cfg.bridges?.length ?? 0,
+            'eventBridge =',
+            !!cfg.eventBridge
+        );
 
         try {
             // ── 1. 创建 el + 克隆模板 + buildNodeMap ──
@@ -75,7 +82,9 @@ export const TemplateAbility: AbilityDefinition = {
                 for (const [key, fn] of Object.entries(cfg.extraFns)) {
                     Object.defineProperty(this, key, {
                         value: (fn as Function).bind(this),
-                        writable: true, configurable: true, enumerable: true,
+                        writable: true,
+                        configurable: true,
+                        enumerable: true,
                     });
                 }
             }
@@ -164,7 +173,8 @@ export const TemplateAbility: AbilityDefinition = {
         const ctor = this.constructor as any;
         const indexPath: NodeIndexPath = ctor._indexPath;
         const templateMetas: Record<string, NodeTemplateMeta> = ctor._templateMetas;
-        const jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = ctor._jsonComponentMap || {};
+        const jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> =
+            ctor._jsonComponentMap || {};
 
         // 构建 nodeMap
         for (const [key, path] of Object.entries(indexPath)) {
@@ -175,10 +185,15 @@ export const TemplateAbility: AbilityDefinition = {
             if (!el) continue;
 
             const node: NodeMetadata = {
-                el, raw: meta.raw, name: meta.name,
-                delegateTarget: meta.delegateTarget, jsonRef: meta.jsonRef,
-                jsonMode: meta.jsonMode, templateRef: meta.templateRef,
-                i18nKey: meta.i18nKey, props: meta.props,
+                el,
+                raw: meta.raw,
+                name: meta.name,
+                delegateTarget: meta.delegateTarget,
+                jsonRef: meta.jsonRef,
+                jsonMode: meta.jsonMode,
+                templateRef: meta.templateRef,
+                i18nKey: meta.i18nKey,
+                props: meta.props,
             };
 
             // 如果模板声明了 data-hidden，设置 el.hidden 初始状态
@@ -241,7 +256,14 @@ export const TemplateAbility: AbilityDefinition = {
             const ComponentClass = node.componentClass;
             const childProps = node.props;
 
-            this.logger?.debug?.('[Template] _renderChildComponentsV1, name =', node.name, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'childProps =', childProps ? Object.keys(childProps) : []);
+            this.logger?.debug?.(
+                '[Template] _renderChildComponentsV1, name =',
+                node.name,
+                'componentClass =',
+                ComponentClass?.name || (ComponentClass as any)?.type,
+                'childProps =',
+                childProps ? Object.keys(childProps) : []
+            );
 
             // 创建子组件实例（withTemplate 强类，new 即完整实例）
             const child = new ComponentClass(childProps);
@@ -337,11 +359,24 @@ export const TemplateAbility: AbilityDefinition = {
                 Object.assign(ctorProps, nodeConfig.body);
             }
             // 简写：nodeConfig 没有 props/body/childProps 层，直接当 props 传
-            if (nodeConfig && typeof nodeConfig === 'object' && !nodeConfig.props && !nodeConfig.childProps && !nodeConfig.body) {
+            if (
+                nodeConfig &&
+                typeof nodeConfig === 'object' &&
+                !nodeConfig.props &&
+                !nodeConfig.childProps &&
+                !nodeConfig.body
+            ) {
                 Object.assign(ctorProps, nodeConfig);
             }
 
-            this.logger?.debug?.('[Template] _renderChildComponentsV2, key =', nodeKey, 'componentClass =', ComponentClass?.name || (ComponentClass as any)?.type, 'ctorProps =', Object.keys(ctorProps));
+            this.logger?.debug?.(
+                '[Template] _renderChildComponentsV2, key =',
+                nodeKey,
+                'componentClass =',
+                ComponentClass?.name || (ComponentClass as any)?.type,
+                'ctorProps =',
+                Object.keys(ctorProps)
+            );
 
             // 创建子组件实例
             const child = new ComponentClass(ctorProps);
@@ -440,10 +475,28 @@ export const TemplateAbility: AbilityDefinition = {
 
         const eventKey = this.eventKey;
 
-        this.logger?.debug?.('[Template] bindDomEventBindings, count =', bindings.length, 'type =', ctor.type, 'scopeId =', this.eventScope?.getScopeId?.());
+        this.logger?.debug?.(
+            '[Template] bindDomEventBindings, count =',
+            bindings.length,
+            'type =',
+            ctor.type,
+            'scopeId =',
+            this.eventScope?.getScopeId?.()
+        );
 
         for (const binding of bindings) {
-            const { event, nodeKey, handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges } = binding;
+            const {
+                event,
+                nodeKey,
+                handler,
+                once,
+                delegate,
+                delegateTarget,
+                debounce,
+                throttle,
+                emits,
+                bridges,
+            } = binding;
 
             const [group, name] = nodeKey.split(':');
             const node = this.nodeMap[name] ?? this.nodeMap[nodeKey];
@@ -455,7 +508,17 @@ export const TemplateAbility: AbilityDefinition = {
                 this._bindComponentEvent(node.component, event, { once, emits, bridges, eventKey });
             } else {
                 // ── DOM 节点路径：this.bind() → 手势适配器 → this.on('dom:xxx') ──
-                this._bindDomEvent(node, event, { handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges, eventKey });
+                this._bindDomEvent(node, event, {
+                    handler,
+                    once,
+                    delegate,
+                    delegateTarget,
+                    debounce,
+                    throttle,
+                    emits,
+                    bridges,
+                    eventKey,
+                });
             }
         }
     },
@@ -479,15 +542,36 @@ export const TemplateAbility: AbilityDefinition = {
             emits?: string[];
             bridges?: { targetEvent: string; once?: boolean }[];
             eventKey?: string;
-        },
+        }
     ): void {
         const el = node.el;
         if (!el) return;
 
-        const { handler, once, delegate, delegateTarget, debounce, throttle, emits, bridges, eventKey } = options;
+        const {
+            handler,
+            once,
+            delegate,
+            delegateTarget,
+            debounce,
+            throttle,
+            emits,
+            bridges,
+            eventKey,
+        } = options;
         const domEvent = `${DOM_EVENT_PREFIX}${event}`;
 
-        this.logger?.debug?.('[Template] _bindDomEvent, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'emits =', emits, 'bridges =', bridges);
+        this.logger?.debug?.(
+            '[Template] _bindDomEvent, event =',
+            event,
+            'domEvent =',
+            domEvent,
+            'handler =',
+            handler,
+            'emits =',
+            emits,
+            'bridges =',
+            bridges
+        );
 
         // 构建 bind 选项
         const bindOptions: any = {};
@@ -552,11 +636,18 @@ export const TemplateAbility: AbilityDefinition = {
             emits?: string[];
             bridges?: { targetEvent: string; once?: boolean }[];
             eventKey?: string;
-        },
+        }
     ): void {
         const { once, emits, bridges, eventKey } = options;
 
-        this.logger?.debug?.('[Template] _bindComponentEvent, event =', event, 'emits =', emits, 'bridges =', bridges);
+        this.logger?.debug?.(
+            '[Template] _bindComponentEvent, event =',
+            event,
+            'emits =',
+            emits,
+            'bridges =',
+            bridges
+        );
 
         const callback = (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
@@ -629,7 +720,7 @@ export const TemplateAbility: AbilityDefinition = {
      * 路径格式：'header.title' 或 'icon' 或 'header.icon'
      * 沿 nodeMap 逐级查找，最后一段可能是组件名或属性名
      */
-    _resolveForwardPath(path: string): { target: any, propName?: string } | null {
+    _resolveForwardPath(path: string): { target: any; propName?: string } | null {
         const parts = path.split('.');
         let current: any = this;
         let lastComponent: any = null;
@@ -658,8 +749,12 @@ export const TemplateAbility: AbilityDefinition = {
      */
     _setupPropertyForward(localName: string, target: any, propName: string): void {
         Object.defineProperty(this, localName, {
-            get() { return target[propName]; },
-            set(v: any) { target[propName] = v; },
+            get() {
+                return target[propName];
+            },
+            set(v: any) {
+                target[propName] = v;
+            },
             configurable: true,
             enumerable: true,
         });
@@ -674,7 +769,9 @@ export const TemplateAbility: AbilityDefinition = {
      */
     _setupComponentForward(localName: string, target: any): void {
         Object.defineProperty(this, localName, {
-            get() { return target; },
+            get() {
+                return target;
+            },
             configurable: true,
             enumerable: true,
         });
@@ -702,15 +799,23 @@ export const TemplateAbility: AbilityDefinition = {
 
             if (isElProp) {
                 Object.defineProperty(this, attrName, {
-                    get() { return target.el?.[prop] ?? ''; },
-                    set(v: any) { if (target.el) target.el[prop] = v; },
+                    get() {
+                        return target.el?.[prop] ?? '';
+                    },
+                    set(v: any) {
+                        if (target.el) target.el[prop] = v;
+                    },
                     configurable: true,
                     enumerable: true,
                 });
             } else {
                 Object.defineProperty(this, attrName, {
-                    get() { return target[prop] ?? ''; },
-                    set(v: any) { target[prop] = v; },
+                    get() {
+                        return target[prop] ?? '';
+                    },
+                    set(v: any) {
+                        target[prop] = v;
+                    },
                     configurable: true,
                     enumerable: true,
                 });
@@ -735,7 +840,7 @@ export const TemplateAbility: AbilityDefinition = {
             if (!desc || typeof desc.value !== 'function') continue;
             if (key in this) continue;
 
-            (this as any)[key] = function(this: any, ...args: any[]) {
+            (this as any)[key] = function (this: any, ...args: any[]) {
                 const component = this[localName];
                 if (component && typeof component[key] === 'function') {
                     return component[key](...args);
