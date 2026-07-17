@@ -14,7 +14,6 @@
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import { IconComponent } from './icon/IconComponent';
 import { ButtonComponent } from './button/ButtonComponent';
-import { ToolbarComponent } from './toolbar/ToolbarComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
 import { TipsComponent } from './tips/TipsComponent';
 import { MenuItemComponent } from './menu/MenuItemComponent';
@@ -27,16 +26,9 @@ import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
-/**
- * 注册所有基础组件到 ComponentRegistrar
- *
- * 调用后，渲染器可通过 ComponentRegistrar.get(type) 获取组件类。
- * 应在应用启动时调用一次。
- */
 export function registerAllComponents(): void {
     registrar.register('Icon', IconComponent);
     registrar.register('Button', ButtonComponent);
-    registrar.register('Toolbar', ToolbarComponent);
     registrar.register('Badge', BadgeComponent);
     registrar.register('Tips', TipsComponent);
     registrar.register('MenuItem', MenuItemComponent);
@@ -44,6 +36,7 @@ export function registerAllComponents(): void {
     registrar.register('Panel', PanelComponent);
     registrar.register('Header', HeaderComponent);
     registrar.register('ItemGroup', ItemGroupComponent);
+    registrar.register('Toolbar', ItemGroupComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);
 }
