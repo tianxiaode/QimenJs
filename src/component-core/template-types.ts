@@ -215,18 +215,8 @@ export interface TplNode {
     attrs?: Record<string, string>;
 
     /**
-     * 子组件属性透传配置 — 仅 type 节点有效
-     *
-     * - true: 透传子组件所有标准属性（size、className、style 等）
-     * - string[]: 只透传指定的属性（如 ['size']）
-     * - 省略/undefined: 不透传，仅生成 $name 访问器
-     *
-     * @example
-     * ```ts
-     * { name: 'icon', type: IconComponent, forward: true }          // 透传所有标准属性
-     * { name: 'icon', type: IconComponent, forward: ['size'] }      // 只透传 size
-     * { name: 'dropIcon', type: IconComponent }                     // 不透传
-     * ```
+     * 子组件属性透传已迁移到 body.forwards，此字段已废弃
+     * @deprecated 使用 body.forwards 替代
      */
     forward?: boolean | string[];
 }
@@ -337,11 +327,8 @@ export interface ContentInfo {
     /** 子组件主属性名（仅 isComponent 时有效） */
     componentPropName?: string;
     /**
-     * 子组件属性透传配置
-     *
-     * - true: 透传子组件所有标准属性（className、style、size 等）
-     * - string[]: 只透传指定的属性
-     * - undefined: 不透传，仅生成 $name 访问器
+     * 子组件属性透传配置 — 已废弃，使用 body.forwards 替代
+     * @deprecated 使用 body.forwards 替代
      */
     forward?: boolean | string[];
     /**

@@ -45,7 +45,13 @@ export let HeaderComponent = TemplateComponent.withTemplate({
         align: 'center',
         gap: '8px',
         children: [
-            { name: 'icon', type: IconComponent, className: 'q-header__icon', forward: true, hidden: true },
+            {
+                name: 'icon',
+                type: IconComponent,
+                className: 'q-header__icon',
+
+                hidden: true,
+            },
             { tag: 'div', name: 'title', className: 'q-header__title' },
             { tag: 'span', name: 'subtitle', className: 'q-header__subtitle', hidden: true },
             { name: 'tools', type: ItemGroupComponent, className: 'q-header__tools', hidden: true },
@@ -57,5 +63,9 @@ export let HeaderComponent = TemplateComponent.withTemplate({
     },
     body: {
         type: 'Header',
+        forwards: {
+            icon: 'icon',
+            action: 'action',
+        },
     },
 });

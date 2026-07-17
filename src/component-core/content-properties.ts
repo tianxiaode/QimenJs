@@ -16,10 +16,7 @@
 
 import type { ContentInfo } from './template-types';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
-import {
-    COMMON_PROPS, RESOLVERS,
-    childPropName, componentChildPropName,
-} from './common-props';
+import { COMMON_PROPS, RESOLVERS, childPropName, componentChildPropName } from './common-props';
 import type { CommonPropDef } from './common-props';
 
 // ─── 内容属性生成 ───
@@ -35,10 +32,7 @@ import type { CommonPropDef } from './common-props';
  *
  * v1 兼容：保持原有行为，生成透传 getter/setter
  */
-export function buildContentProperties(
-    target: any,
-    contentInfos: ContentInfo[],
-): string[] {
+export function buildContentProperties(target: any, contentInfos: ContentInfo[]): string[] {
     const proto = target.prototype ?? target;
     const propNames: string[] = [];
 
@@ -231,15 +225,11 @@ function buildDomChildProps(proto: any, info: ContentInfo, propNames: string[]):
  *
  * this.$icon → nodeMap.icon.component
  *
- * 当 forward 配置存在时，额外生成子组件属性透传：
- * - forward: true → 透传所有标准属性（className、style、size 等）
- * - forward: ['size'] → 只透传 size
- * - forward: undefined → 不透传
- *
- * 透传属性命名：{propName}{Prop}（如 iconSize、iconClassName）
+ * 属性透传已迁移到 body.forwards（由 _setupForwards 在运行时处理），
+ * 此函数只生成 $name 访问器。
  */
 function buildComponentChildAccessor(proto: any, info: ContentInfo, propNames: string[]): void {
-    const { group, name, propName, forward } = info;
+    const { name, propName } = info;
     const attrName = componentChildPropName(propName);
 
     propNames.push(attrName);
@@ -251,53 +241,6 @@ function buildComponentChildAccessor(proto: any, info: ContentInfo, propNames: s
         configurable: true,
         enumerable: true,
     });
-
-    if (!forward) return;
-
-    const elProps = ['className', 'style'];
-    const compProps = ['size'];
-
-    const propsToForward = forward === true
-        ? [...elProps, ...compProps]
-        : (forward as string[]);
-
-    for (const prop of propsToForward) {
-        const isElProp = elProps.includes(prop);
-        const forwardAttrName = `${propName}${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
-
-        const existing = Object.getOwnPropertyDescriptor(proto, forwardAttrName);
-        if (existing && (existing.get || existing.set)) continue;
-
-        propNames.push(forwardAttrName);
-
-        if (isElProp) {
-            Object.defineProperty(proto, forwardAttrName, {
-                get: function (this: any) {
-                    const component = this.nodeMap[name]?.component;
-                    return component?.el?.[prop] ?? '';
-                },
-                set: function (this: any, v: any) {
-                    const component = this.nodeMap[name]?.component;
-                    if (component?.el) component.el[prop] = v;
-                },
-                configurable: true,
-                enumerable: true,
-            });
-        } else {
-            Object.defineProperty(proto, forwardAttrName, {
-                get: function (this: any) {
-                    const component = this.nodeMap[name]?.component;
-                    return component?.[prop] ?? '';
-                },
-                set: function (this: any, v: any) {
-                    const component = this.nodeMap[name]?.component;
-                    if (component) component[prop] = v;
-                },
-                configurable: true,
-                enumerable: true,
-            });
-        }
-    }
 }
 
 // ─── v1 旧方案（兼容） ───
@@ -305,7 +248,11 @@ function buildComponentChildAccessor(proto: any, info: ContentInfo, propNames: s
 /**
  * v1 旧方案：保持原有行为
  */
-function buildV1ContentProperties(proto: any, contentInfos: ContentInfo[], propNames: string[]): void {
+function buildV1ContentProperties(
+    proto: any,
+    contentInfos: ContentInfo[],
+    propNames: string[]
+): void {
     for (const info of contentInfos) {
         const { group, name, mode, propName, isComponent } = info;
 
@@ -364,7 +311,8 @@ function buildV1ContentProperties(proto: any, contentInfos: ContentInfo[], propN
             // v1: content 透传 getter/setter
             if (info.expose && info.expose.length > 0) {
                 for (const contentName of info.expose) {
-                    const capitalContentName = contentName.charAt(0).toUpperCase() + contentName.slice(1);
+                    const capitalContentName =
+                        contentName.charAt(0).toUpperCase() + contentName.slice(1);
                     for (const prop of [...elProps, ...compProps]) {
                         const attrName = `${propName}${capitalContentName}${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
                         const isElProp = elProps.includes(prop);
@@ -373,9 +321,12 @@ function buildV1ContentProperties(proto: any, contentInfos: ContentInfo[], propN
                                 get: function (this: any) {
                                     const component = this.nodeMap[name]?.component;
                                     if (!component) return '';
-                                    const childComponent = component.nodeMap?.[contentName]?.component;
+                                    const childComponent =
+                                        component.nodeMap?.[contentName]?.component;
                                     if (childComponent) {
-                                        return isElProp ? childComponent.el?.[prop] : childComponent[prop];
+                                        return isElProp
+                                            ? childComponent.el?.[prop]
+                                            : childComponent[prop];
                                     }
                                     const childEl = component.nodeMap?.[contentName]?.el;
                                     if (childEl && isElProp) return childEl[prop];
@@ -384,7 +335,8 @@ function buildV1ContentProperties(proto: any, contentInfos: ContentInfo[], propN
                                 set: function (this: any, v: any) {
                                     const component = this.nodeMap[name]?.component;
                                     if (!component) return;
-                                    const childComponent = component.nodeMap?.[contentName]?.component;
+                                    const childComponent =
+                                        component.nodeMap?.[contentName]?.component;
                                     if (childComponent) {
                                         if (isElProp) {
                                             if (childComponent.el) childComponent.el[prop] = v;
@@ -454,10 +406,18 @@ export function translateI18nKey(i18nKey: string): string {
 /**
  * 将翻译值写入 DOM 元素
  */
-export function applyValueToEl(el: HTMLElement, value: string, mode: 'value' | 'src' | 'html'): void {
-    if (mode === 'value') { (el as HTMLInputElement).value = value; }
-    else if (mode === 'src') { (el as HTMLImageElement).src = value; }
-    else { el.innerHTML = value; }
+export function applyValueToEl(
+    el: HTMLElement,
+    value: string,
+    mode: 'value' | 'src' | 'html'
+): void {
+    if (mode === 'value') {
+        (el as HTMLInputElement).value = value;
+    } else if (mode === 'src') {
+        (el as HTMLImageElement).src = value;
+    } else {
+        el.innerHTML = value;
+    }
 }
 
 // ─── 编译时命名冲突检测 ───
@@ -473,10 +433,7 @@ export function applyValueToEl(el: HTMLElement, value: string, mode: 'value' | '
  *
  * 冲突时在控制台输出警告，不阻止运行（避免破坏现有代码）。
  */
-function checkNameConflicts(
-    target: any,
-    contentInfos: ContentInfo[],
-): void {
+function checkNameConflicts(target: any, contentInfos: ContentInfo[]): void {
     const proto = target.prototype ?? target;
     const body = (target as any)._templateBody;
     const propsDef = (target as any)._propsDef;
@@ -507,7 +464,7 @@ function checkNameConflicts(
             if (selfProps.has(info.propName)) {
                 console.warn(
                     `[QimenJS] 命名冲突：DOM 子节点名 "${info.propName}" 与组件自身属性重名。` +
-                    `建议修改子节点名以避免冲突。组件类型：${(target as any).type || target.name || 'unknown'}`
+                        `建议修改子节点名以避免冲突。组件类型：${(target as any).type || target.name || 'unknown'}`
                 );
             }
         }

@@ -27,7 +27,7 @@ export let ButtonComponent = TemplateComponent.withTemplate({
         tag: 'div',
         className: 'q-button',
         children: [
-            { name: 'icon', type: IconComponent, className: 'q-button__icon', forward: true },
+            { name: 'icon', type: IconComponent, className: 'q-button__icon' },
             { tag: 'span', name: 'text', className: 'q-button__text' },
             { name: 'dropIcon', type: IconComponent, className: 'q-expand-arrow q-expand-arrow--collapsed', hidden: true },
         ],
@@ -38,5 +38,8 @@ export let ButtonComponent = TemplateComponent.withTemplate({
     },
     body: {
         type: 'Button',
+        forwards: {
+            icon: 'icon',
+        },
     },
 });
