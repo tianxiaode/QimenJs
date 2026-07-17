@@ -3,88 +3,61 @@
  *
  * 挂载 RouteListenAbility + ChildSlotAbility，
  * 路由变化时根据 path 自动替换内容区域的子组件。
- *
- * 使用方式：
- * - 在模板中用 json 声明，通过 children 传入 routeMap 和 defaultComponent
- * - 路由变化 → onRouteChange → _replaceChildComponent 自动替换内容
- *
- * @example
- * ```js
- * // AppShell 模板中声明
- * { tag: 'div', content: 'shell:page', json: RouteContainerComponent, jsonMode: 'child' }
- *
- * // children 配置
- * static children = {
- *     page: {
- *         routeMap: { '/': HomePage, '/icons': IconsPage, '/theme': ThemePage },
- *         defaultComponent: HomePage,
- *     },
- * };
- * ```
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
 import { RouteListenAbility } from '@qimenjs/router';
 import { ChildSlotAbility } from '@qimenjs/component-abilities/render/ChildSlotAbility';
-import type { ComponentTemplate } from '@qimenjs/component-core';
 
-/** 路由容器配置 */
 export interface RouteContainerProps {
-    /** 路径到组件类的映射 */
     routeMap?: Record<string, new (props?: Record<string, any>) => any>;
-    /** 默认组件类 */
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
-/** 路由容器模板（新格式 ComponentTemplate） */
-const ROUTE_CONTAINER_TEMPLATE: ComponentTemplate = {
-    tpl: {
-        tag: 'div',
-        className: 'q-route-container',
-        children: [
-            { tag: 'div', name: 'container:content', className: 'q-route-container__content' },
-        ],
-    },
-};
+const RouteContainerBase = TemplateComponent
+    .withTemplate({
+        tpl: {
+            tag: 'div',
+            className: 'q-route-container',
+            children: [
+                { tag: 'div', name: 'content', className: 'q-route-container__content' },
+            ],
+        },
+        body: {
+            type: 'RouteContainer',
 
-export let RouteContainerComponent = class extends TemplateComponent.withTemplate(ROUTE_CONTAINER_TEMPLATE).with([RouteListenAbility, ChildSlotAbility]) {
-    static type = 'RouteContainer';
+            _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
+            _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
 
-    /** 路径到组件类的映射 */
-    private _routeMap: Record<string, new (props?: Record<string, any>) => any> = {};
+            _initRouteContainer(props?: RouteContainerProps): void {
+                this.el.classList.add('q-route-container');
 
-    /** 默认组件类 */
-    private _defaultComponent: (new (props?: Record<string, any>) => any) | null = null;
+                this.logger.debug('[RouteContainer] constructor, routeMap keys =', props?.routeMap ? Object.keys(props.routeMap) : [], 'defaultComponent =', !!props?.defaultComponent);
 
-    constructor(props?: RouteContainerProps) {
-        super(props);
+                if (props?.routeMap) this._routeMap = props.routeMap;
+                if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
 
-        this.el.classList.add('q-route-container');
+                if (this._defaultComponent) {
+                    this.logger.debug('[RouteContainer] mounting default component');
+                    this._replaceChildComponent('content', this._defaultComponent);
+                } else {
+                    this.logger.debug('[RouteContainer] NO default component');
+                }
+            },
 
-        this.logger.debug('[RouteContainer] constructor, routeMap keys =', props?.routeMap ? Object.keys(props.routeMap) : [], 'defaultComponent =', !!props?.defaultComponent);
+            onRouteChange(event: any): void {
+                const path = event?.path;
+                this.logger.debug('[RouteContainer] onRouteChange, path =', path, 'routeMap keys =', Object.keys(this._routeMap));
+                const PageClass = this._routeMap[path] || this._defaultComponent;
+                this.logger.debug('[RouteContainer] resolved PageClass =', PageClass?.name || (PageClass as any)?.type || 'null');
+                if (PageClass) {
+                    this._replaceChildComponent('content', PageClass);
+                }
+            },
+        },
+    })
+    .with([RouteListenAbility, ChildSlotAbility]);
 
-        if (props?.routeMap) this._routeMap = props.routeMap;
-        if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
+export let RouteContainerComponent = RouteContainerBase;
 
-        // 挂载默认组件
-        if (this._defaultComponent) {
-            this.logger.debug('[RouteContainer] mounting default component');
-            this._replaceChildComponent('content', this._defaultComponent);
-        } else {
-            this.logger.debug('[RouteContainer] NO default component');
-        }
-    }
-
-    /** 路由变化时替换内容区域 */
-    onRouteChange(event: any): void {
-        const path = event?.path;
-        this.logger.debug('[RouteContainer] onRouteChange, path =', path, 'routeMap keys =', Object.keys(this._routeMap));
-        const PageClass = this._routeMap[path] || this._defaultComponent;
-        this.logger.debug('[RouteContainer] resolved PageClass =', PageClass?.name || (PageClass as any)?.type || 'null');
-        if (PageClass) {
-            this._replaceChildComponent('content', PageClass);
-        }
-    }
-};
-
-export type RouteContainerComponent = InstanceType<typeof RouteContainerComponent>;
+export type RouteContainerComponent = InstanceType<typeof RouteContainerBase>;
