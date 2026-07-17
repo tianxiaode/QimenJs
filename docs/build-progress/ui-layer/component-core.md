@@ -7,6 +7,21 @@
 
 ## 构建历史
 
+### 2026-07-18
+- ✅ 新增 ToggleComponent 切换按钮（pressed 态 + aria-pressed）
+- ✅ 新增 ToggleIconComponent 图标切换（onIcon/offIcon 双图标）
+- ✅ 新增 ButtonGroupComponent 按钮组（单选/多选，继承 ItemGroup）
+- ✅ 新增 AvatarComponent 头像（图片/文字/图标，圆形裁切）
+- ✅ 新增 CardComponent 卡片（HeaderComponent + body + footer）
+- ✅ 新增 IndicatorComponent 指示器（dot/number/dash，继承 ItemGroup）
+- ✅ 新增 TabBarComponent 标签栏（继承 ItemGroup，可独立使用）
+- ✅ 新增 TabsComponent 标签页（TabBar + 内容区，content 支持 HTML/type/类）
+- ✅ 新增 DropdownComponent 下拉按钮（Button 语义别名）
+- ✅ ItemGroup 内置溢出处理（overflowMode + OverflowScrollAbility/OverflowMenuAbility）
+- ✅ ToolbarComponent 改为 ItemGroup 语义别名
+- ✅ Indicator 从手动 DOM 改为继承 ItemGroupComponent
+- ✅ 全部新增组件 Metro 风格 CSS
+
 ### 2026-07-17
 - ✅ 新增 body.forwards 属性/方法透传机制（替代 TplNode.forward，支持深层路径）
 - ✅ TemplateAbility 新增 _setupForwards/_resolveForwardPath/_setupPropertyForward/_setupComponentForward/_forwardAutoProps/_proxyComponentMethods

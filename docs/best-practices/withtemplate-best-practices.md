@@ -743,3 +743,74 @@ body 是组合定义层，引用自己的组件树结构不算破坏封装。中
 | 统一性 | 分散在各节点 | 集中在 body |
 
 `forwards` on body 是 `forward` on TplNode 的统一替代，推荐使用 `forwards`。
+
+## 17. ItemGroup 派生组件
+
+ItemGroupComponent 是子项管理的基座，领域组件通过 extends 派生，固化 itemType 和选择行为：
+
+```typescript
+// ButtonGroup — 按钮组（单选/多选）
+export let ButtonGroupComponent = class extends ItemGroupComponent {
+    constructor(props) {
+        super({ itemType: 'Toggle', eventKey: 'btn', ... });
+    }
+}
+
+// TabBar — 标签栏（单选，底部粗线）
+export let TabBarComponent = class extends ItemGroupComponent {
+    constructor(props) {
+        super({ itemType: 'Toggle', eventKey: 'tab', ... });
+    }
+}
+
+// Indicator — 指示器（dot/number/dash）
+export let IndicatorComponent = class extends ItemGroupComponent {
+    constructor(props) {
+        super({ itemType: 'ToggleIcon', eventKey: 'indicator', ... });
+    }
+}
+```
+
+派生组件复用池化、事件转发、溢出处理，零手动 DOM。
+
+## 18. 组件定义模式
+
+### 18.1 body 定义（推荐）
+
+所有逻辑归入 body，不使用 class extends 扩展层：
+
+```typescript
+export let MyComponent = TemplateComponent.withTemplate({
+    tpl: { ... },
+    body: {
+        type: 'MyComponent',
+        _state: null,
+        _initMyComponent(props) { ... },
+        get state() { return this._state; },
+        doSomething() { ... },
+        dispose() { ... },
+    },
+});
+```
+
+### 18.2 extends 派生（ItemGroup 领域扩展）
+
+从 ItemGroupComponent 派生，固化领域逻辑：
+
+```typescript
+export let MyGroupComponent = class extends ItemGroupComponent {
+    constructor(props) {
+        super({ itemType: 'MyItem', eventKey: 'my', ... });
+    }
+    selectAt(index) { ... }
+}
+```
+
+### 18.3 语义别名
+
+无独立实现的组件，直接引用已有组件：
+
+```typescript
+export const DropdownComponent = ButtonComponent;
+export const ToolbarComponent = ItemGroupComponent;
+```

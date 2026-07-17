@@ -3240,6 +3240,33 @@ const DIALOG_TEMPLATE: ComponentTemplate = {
 
 **与 TplNode.forward 的关系**：`forwards` on body 是 `forward` on TplNode 的统一替代，支持深层路径，由组合层声明而非节点层声明。
 
+### 18.6 ItemGroup 派生组件体系
+
+ItemGroupComponent 是子项管理的基座，多个领域组件从它派生，固化不同的 itemType 和选择行为：
+
+| 派生组件 | itemType | 选择行为 | 场景 |
+|----------|----------|---------|------|
+| ButtonGroup | Toggle | 单选/多选（pressed 背景） | 工具栏按钮组 |
+| TabBar | Toggle | 单选（底部粗线） | 标签栏、筛选 |
+| Indicator | ToggleIcon/Toggle | 单选（●/○、数字、横线） | 走马灯、步骤条 |
+| NavItemGroup | NavItem | 单选（active 高亮） | 导航栏 |
+
+所有派生组件复用 ItemGroup 的池化、事件转发、溢出处理，零手动 DOM。
+
+### 18.7 组件分类
+
+**基础组件**：Icon、Avatar、Button、Toggle、ToggleIcon、Badge、Tips
+
+**容器组件**：Card（Header+body+footer）、Panel（折叠）、Tabs（TabBar+内容区）
+
+**项组派生**：ItemGroup、ButtonGroup、TabBar、Indicator、NavItemGroup
+
+**语义别名**：Dropdown = Button、Toolbar = ItemGroup
+
+**导航路由**：NavItem、NavItemGroup、RouteNav、RouteContainer
+
+**菜单浮层**：MenuItem、Menu
+
 浮层组件通过组合 OverlayHostAbility + 自身特有逻辑实现：
 
 - OverlayHostAbility：浮层挂载、z-index 管理、定位计算、resize/scroll 重定位

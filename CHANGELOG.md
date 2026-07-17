@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-07-18
+
+### Added
+
+- body.forwards 属性/方法透传机制（替代 TplNode.forward，支持深层 nodeMap 路径解析）
+- HeaderComponent 头部组件（统一架构，CSS + childProps 驱动场景差异）
+- ToggleComponent 切换按钮组件（pressed 态视觉反馈）
+- ToggleIconComponent 图标切换组件（onIcon/offIcon 双图标切换）
+- ButtonGroupComponent 按钮组组件（单选/多选，继承 ItemGroupComponent）
+- AvatarComponent 头像组件（图片/文字/图标三种模式，圆形裁切）
+- CardComponent 卡片组件（HeaderComponent + body + footer）
+- IndicatorComponent 指示器组件（dot/number/dash 三种类型，继承 ItemGroupComponent）
+- TabBarComponent 标签栏组件（继承 ItemGroupComponent，可独立使用）
+- TabsComponent 标签页组件（组合 TabBar + 内容区，content 支持 HTML/组件 type/组件类）
+- DropdownComponent 下拉按钮组件（ButtonComponent 语义别名）
+- panel.css.ts 面板 Metro 风格样式
+- toggle.css.ts / toggle-icon.css.ts / button-group.css.ts / avatar.css.ts / card.css.ts / indicator.css.ts / tab-bar.css.ts / tabs.css.ts
+
+### Changed
+
+- TplNode.forward 标记为 @deprecated，透传统一归入 body.forwards
+- 所有组件 class extends 扩展层归回 body 定义（Button/Header/ItemGroup/Menu/Nav/Panel）
+- 节点名扁平化：panel:*/menuItem:*/navItem:* → 扁平名
+- icon 节点统一改用 IconComponent + forwards 透传
+- ItemGroup 内置溢出处理（overflowMode: scroll/menu），组合 OverflowScrollAbility/OverflowMenuAbility
+- ToolbarComponent 改为 ItemGroupComponent 的语义别名
+- IndicatorComponent 从手动 DOM 改为继承 ItemGroupComponent
+
 ## [0.1.2] - 2026-07-05
 
 ### Fixed

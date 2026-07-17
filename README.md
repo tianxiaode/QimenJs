@@ -88,7 +88,7 @@ npm start
 |---|------|
 | `@qimen-lab/component-core` | 组件核心基础设施，TemplateComponent + withTemplate 预编译 |
 | `@qimen-lab/component-abilities` | UI 组件能力定义，实体/分组/菜单/渲染能力 |
-| `@qimen-lab/component` | UI 组件实现，Button/Badge/Menu/Nav/Panel/Tips/Toolbar |
+| `@qimen-lab/component` | UI 组件实现，Icon/Button/Toggle/Tabs/Card/Menu/Nav/Panel 等 |
 | `@qimen-lab/layout` | JSON 驱动的布局定义系统 |
 | `@qimen-lab/theme` | 主题系统，CSS 变量 + 原子 CSS + 7 个中国传统色主题 |
 | `@qimen-lab/icon` | 中国风图标库，102 个 SVG + 字体图标 |
