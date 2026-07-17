@@ -24,6 +24,8 @@ export {
     type IndicatorProps,
 } from './indicator/IndicatorComponent';
 export { indicatorCSS } from './indicator/indicator.css';
+export { TabBarComponent, type TabBarProps } from './tab-bar/TabBarComponent';
+export { tabBarCSS } from './tab-bar/tab-bar.css';
 export { TabsComponent, type TabItem, type TabsProps } from './tabs/TabsComponent';
 export { tabsCSS } from './tabs/tabs.css';
 export { ButtonComponent } from './button/ButtonComponent';

@@ -17,6 +17,7 @@ import { AvatarComponent } from './avatar/AvatarComponent';
 import { CardComponent } from './card/CardComponent';
 import { IndicatorComponent } from './indicator/IndicatorComponent';
 import { TabsComponent } from './tabs/TabsComponent';
+import { TabBarComponent } from './tab-bar/TabBarComponent';
 import { ButtonComponent } from './button/ButtonComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
 import { TipsComponent } from './tips/TipsComponent';
@@ -39,6 +40,7 @@ export function registerAllComponents(): void {
     registrar.register('Card', CardComponent);
     registrar.register('Indicator', IndicatorComponent);
     registrar.register('Tabs', TabsComponent);
+    registrar.register('TabBar', TabBarComponent);
     registrar.register('Button', ButtonComponent);
     registrar.register('Dropdown', ButtonComponent);
     registrar.register('Toggle', ToggleComponent);
