@@ -18,8 +18,14 @@ export { AvatarComponent, type AvatarProps } from './avatar/AvatarComponent';
 export { avatarCSS } from './avatar/avatar.css';
 export { CardComponent, type CardProps } from './card/CardComponent';
 export { cardCSS } from './card/card.css';
-export { IndicatorComponent, type IndicatorType, type IndicatorProps } from './indicator/IndicatorComponent';
+export {
+    IndicatorComponent,
+    type IndicatorType,
+    type IndicatorProps,
+} from './indicator/IndicatorComponent';
 export { indicatorCSS } from './indicator/indicator.css';
+export { TabsComponent, type TabItem, type TabsProps } from './tabs/TabsComponent';
+export { tabsCSS } from './tabs/tabs.css';
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
 export { DropdownComponent } from './dropdown/DropdownComponent';
