@@ -20,6 +20,7 @@ import { TipsComponent } from './tips/TipsComponent';
 import { MenuItemComponent } from './menu/MenuItemComponent';
 import { MenuComponent } from './menu/MenuComponent';
 import { PanelComponent } from './panel/PanelComponent';
+import { HeaderComponent } from './header/HeaderComponent';
 import { ItemGroupComponent } from './itemgroup/ItemGroupComponent';
 import { NavItemComponent } from './nav/NavItemComponent';
 import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
@@ -41,6 +42,7 @@ export function registerAllComponents(): void {
     registrar.register('MenuItem', MenuItemComponent);
     registrar.register('Menu', MenuComponent);
     registrar.register('Panel', PanelComponent);
+    registrar.register('Header', HeaderComponent);
     registrar.register('ItemGroup', ItemGroupComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);
