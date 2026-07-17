@@ -20,6 +20,7 @@ export { CardComponent, type CardProps } from './card/CardComponent';
 export { cardCSS } from './card/card.css';
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
+export { DropdownComponent } from './dropdown/DropdownComponent';
 export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
 export { toggleCSS } from './toggle/toggle.css';
 export { ToggleIconComponent, type ToggleIconProps } from './toggle-icon/ToggleIconComponent';

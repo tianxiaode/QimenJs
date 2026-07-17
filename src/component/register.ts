@@ -36,6 +36,7 @@ export function registerAllComponents(): void {
     registrar.register('Avatar', AvatarComponent);
     registrar.register('Card', CardComponent);
     registrar.register('Button', ButtonComponent);
+    registrar.register('Dropdown', ButtonComponent);
     registrar.register('Toggle', ToggleComponent);
     registrar.register('ToggleIcon', ToggleIconComponent);
     registrar.register('ButtonGroup', ButtonGroupComponent);
