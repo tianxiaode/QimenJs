@@ -34,9 +34,7 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         className: 'q-indicator',
-        children: [
-            { tag: 'div', name: 'items', className: 'q-indicator__items' },
-        ],
+        children: [{ tag: 'div', name: 'items', className: 'q-indicator__items' }],
     },
     body: {
         type: 'Indicator',
@@ -60,19 +58,25 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
             this.el.classList.add(`q-indicator--${this._type}`);
         },
 
-        get count(): number { return this._count; },
+        get count(): number {
+            return this._count;
+        },
         set count(value: number) {
             this._count = value;
             this._renderItems();
         },
 
-        get activeIndex(): number { return this._activeIndex; },
+        get activeIndex(): number {
+            return this._activeIndex;
+        },
         set activeIndex(value: number) {
             this._activeIndex = value;
             this._applyActive();
         },
 
-        get type(): IndicatorType { return this._type; },
+        get type(): IndicatorType {
+            return this._type;
+        },
         set type(value: IndicatorType) {
             this.el.classList.remove(`q-indicator--${this._type}`);
             this._type = value;
@@ -111,7 +115,10 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
 
         _applyActive(): void {
             for (let i = 0; i < this._itemEls.length; i++) {
-                this._itemEls[i].classList.toggle('q-indicator__item--active', i === this._activeIndex);
+                this._itemEls[i].classList.toggle(
+                    'q-indicator__item--active',
+                    i === this._activeIndex
+                );
             }
         },
 
