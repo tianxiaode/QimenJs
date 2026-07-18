@@ -9,13 +9,16 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
+import type { ComponentTemplate } from '@qimenjs/component-core';
 import { RouteAbility } from '@/router/RouteAbility';
 import { Router } from '@/router/Router';
 import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
 
 // 创建带 RouteAbility 的宿主组件
 function createHost(overrides?: Record<string, any>) {
-    const HostClass = TemplateComponent.withTemplate('<div></div>').with([RouteAbility]);
+    const HostClass = TemplateComponent.withTemplate({
+        tpl: { tag: 'div' },
+    } as ComponentTemplate).with([RouteAbility]);
     return new HostClass(overrides) as any;
 }
 
@@ -117,7 +120,9 @@ describe('RouteAbility', () => {
     describe('_initRoute', () => {
         it('从 props.route 自动调用 setupRoute', () => {
             const routeConfig = { routes: { '/': 'home' } as any, hashMode: true };
-            const HostClass = TemplateComponent.withTemplate('<div></div>').with([RouteAbility]);
+            const HostClass = TemplateComponent.withTemplate({
+                tpl: { tag: 'div' },
+            } as ComponentTemplate).with([RouteAbility]);
             const host = new HostClass({ route: routeConfig }) as any;
 
             expect(host._routeConfig).toBeDefined();

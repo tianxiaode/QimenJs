@@ -4,8 +4,9 @@
 
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { TemplateComponent } from '@/component-core';
+import type { ComponentTemplate } from '@/component-core';
 
-const TPL = '<div class="box"></div>';
+const TPL: ComponentTemplate = { tpl: { tag: 'div', className: 'box' } };
 
 describe('ComponentRegistrar', () => {
     let registrar: ComponentRegistrar;
@@ -16,8 +17,12 @@ describe('ComponentRegistrar', () => {
 
     afterEach(() => {
         // 清理测试注册
-        try { registrar.unregister('TestButton'); } catch {}
-        try { registrar.unregister('TestInput'); } catch {}
+        try {
+            registrar.unregister('TestButton');
+        } catch {}
+        try {
+            registrar.unregister('TestInput');
+        } catch {}
     });
 
     describe('register / get', () => {

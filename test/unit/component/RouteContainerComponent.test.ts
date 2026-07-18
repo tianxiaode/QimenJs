@@ -14,7 +14,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -22,18 +25,21 @@ jest.mock('@/logger', () => {
 
 import { RouteContainerComponent } from '@/component/nav/RouteContainerComponent';
 import { TemplateComponent } from '@qimenjs/component-core';
+import type { ComponentTemplate } from '@qimenjs/component-core';
 
-// 创建模拟页面组件
-class MockPageA extends TemplateComponent.withTemplate('<div class="page-a">A</div>') {
+class MockPageA extends TemplateComponent.withTemplate({
+    tpl: { tag: 'div', className: 'page-a', text: 'A' },
+} as ComponentTemplate) {
     static type = 'MockPageA';
 }
 
-class MockPageB extends TemplateComponent.withTemplate('<div class="page-b">B</div>') {
+class MockPageB extends TemplateComponent.withTemplate({
+    tpl: { tag: 'div', className: 'page-b', text: 'B' },
+} as ComponentTemplate) {
     static type = 'MockPageB';
 }
 
 describe('RouteContainerComponent', () => {
-
     // ============================================
     // 构造函数
     // ============================================

@@ -7,13 +7,16 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
+import type { ComponentTemplate } from '@qimenjs/component-core';
 import { RouteListenAbility } from '@/router/RouteListenAbility';
 import { Router } from '@/router/Router';
 import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
 
 // 创建带 RouteListenAbility 的宿主组件
 function createHost(overrides?: Record<string, any>) {
-    const HostClass = TemplateComponent.withTemplate('<div></div>').with([RouteListenAbility]);
+    const HostClass = TemplateComponent.withTemplate({
+        tpl: { tag: 'div' },
+    } as ComponentTemplate).with([RouteListenAbility]);
     return new HostClass(overrides) as any;
 }
 
@@ -57,7 +60,9 @@ describe('RouteListenAbility', () => {
         it('子类定义 onRouteChange 接收路由变化事件', () => {
             const received: any[] = [];
 
-            class CustomHost extends TemplateComponent.withTemplate('<div></div>').with([RouteListenAbility]) {
+            class CustomHost extends TemplateComponent.withTemplate({
+                tpl: { tag: 'div' },
+            } as ComponentTemplate).with([RouteListenAbility]) {
                 onRouteChange(event: any): void {
                     received.push(event);
                 }

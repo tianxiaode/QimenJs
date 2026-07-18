@@ -9,17 +9,33 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
 import { TemplateComponent } from '@/component-core';
+import type { ComponentTemplate } from '@/component-core';
 import { NodeMapAbility } from '@/component-core/abilities/NodeMapAbility';
 
-const TPL = '<div class="box"><span data-content="box:label"></span></div>';
-const I18N_TPL = '<div class="box"><span data-content="box:label" data-i18n="common.save"></span></div>';
+const TPL: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'box',
+        children: [{ tag: 'span', name: 'box:label', content: 'label' }],
+    },
+};
+const I18N_TPL: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'box',
+        children: [{ tag: 'span', name: 'box:label', content: 'label', i18n: 'common.save' }],
+    },
+};
 
 describe('NodeMapAbility', () => {
     const BoxClass = TemplateComponent.withTemplate(TPL).with(NodeMapAbility);

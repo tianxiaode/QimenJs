@@ -9,16 +9,33 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
 import { TemplateComponent } from '@/component-core';
-import { LayoutAbility, LAYOUT_FIT, LAYOUT_HBOX, LAYOUT_VBOX, LAYOUT_GRID, LAYOUT_CENTER } from '@/component-core/abilities/LayoutAbility';
+import type { ComponentTemplate } from '@/component-core';
+import {
+    LayoutAbility,
+    LAYOUT_FIT,
+    LAYOUT_HBOX,
+    LAYOUT_VBOX,
+    LAYOUT_GRID,
+    LAYOUT_CENTER,
+} from '@/component-core/abilities/LayoutAbility';
 
-const TPL = '<div class="box"><span data-content="box:label"></span></div>';
+const TPL: ComponentTemplate = {
+    tpl: {
+        tag: 'div',
+        className: 'box',
+        children: [{ tag: 'span', name: 'box:label', content: 'label' }],
+    },
+};
 
 describe('LayoutAbility', () => {
     const BoxClass = TemplateComponent.withTemplate(TPL).with(LayoutAbility);

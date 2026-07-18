@@ -4,8 +4,9 @@
 
 import { ComponentEventRegistry } from '@/component-core/ComponentEventRegistry';
 import { TemplateComponent } from '@/component-core';
+import type { ComponentTemplate } from '@/component-core';
 
-const TPL = '<div class="box"></div>';
+const TPL: ComponentTemplate = { tpl: { tag: 'div', className: 'box' } };
 
 describe('ComponentEventRegistry', () => {
     let registry: ComponentEventRegistry;

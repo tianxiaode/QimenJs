@@ -12,7 +12,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -29,13 +32,15 @@ beforeAll(() => {
         registrar.register('MenuItem', MenuItemComponent);
     }
     if (!registrar.get('Icon')) {
-        class MockIcon extends TemplateComponent { type = 'Icon'; tag = 'i'; }
+        class MockIcon extends TemplateComponent {
+            type = 'Icon';
+            tag = 'i';
+        }
         registrar.register('Icon', MockIcon);
     }
 });
 
 describe('MenuComponent', () => {
-
     // ============================================
     // 构造函数
     // ============================================
@@ -43,6 +48,7 @@ describe('MenuComponent', () => {
     describe('constructor', () => {
         it('创建 el 并添加 q-menu 类', () => {
             const menu = new MenuComponent() as any;
+
             expect(menu.el).toBeInstanceOf(HTMLElement);
             expect(menu.el.classList.contains('q-menu')).toBe(true);
         });
@@ -59,10 +65,7 @@ describe('MenuComponent', () => {
 
         it('通过 props 初始化菜单项（内置 ItemGroup）', () => {
             const menu = new MenuComponent({
-                items: [
-                    { text: '新建' },
-                    { text: '打开' },
-                ],
+                items: [{ text: '新建' }, { text: '打开' }],
             }) as any;
             expect(menu.itemGroup.count).toBe(2);
         });

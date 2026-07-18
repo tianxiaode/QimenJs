@@ -7,13 +7,16 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
+import type { ComponentTemplate } from '@qimenjs/component-core';
 import { RouteEmitAbility } from '@/router/RouteEmitAbility';
 import { Router } from '@/router/Router';
 import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
 
 // 创建带 RouteEmitAbility 的宿主组件
 function createHost(overrides?: Record<string, any>) {
-    const HostClass = TemplateComponent.withTemplate('<div></div>').with([RouteEmitAbility]);
+    const HostClass = TemplateComponent.withTemplate({
+        tpl: { tag: 'div' },
+    } as ComponentTemplate).with([RouteEmitAbility]);
     return new HostClass(overrides) as any;
 }
 

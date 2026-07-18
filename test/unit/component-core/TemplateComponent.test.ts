@@ -29,6 +29,7 @@ jest.mock('@/logger', () => {
 import { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from '@/component-core';
 import type { AbilityDefinition } from '@/composable';
 import type { JsonTemplateNode } from '@/component-core/template-json';
+import type { ComponentTemplate } from '@/component-core';
 
 // 测试用能力
 const TestRouteAbility: AbilityDefinition = {
@@ -162,7 +163,13 @@ describe('TemplateComponent', () => {
     });
 
     describe('withTemplate()', () => {
-        const SIMPLE_TEMPLATE = '<div class="q-btn"><span data-content="btn:text"></span></div>';
+        const SIMPLE_TEMPLATE: ComponentTemplate = {
+            tpl: {
+                tag: 'div',
+                className: 'q-btn',
+                children: [{ tag: 'span', name: 'btn:text', content: 'text' }],
+            },
+        };
 
         it('withTemplate 应该返回一个类', () => {
             const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE);
@@ -225,7 +232,8 @@ describe('TemplateComponent', () => {
 
         it('withTemplate 支持链式调用 — 在已有强类上再次 withTemplate', () => {
             const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE);
-            const CUSTOM_TEMPLATE = '<div class="my-btn"><span data-content="btn:text"></span></div>';
+            const CUSTOM_TEMPLATE =
+                '<div class="my-btn"><span data-content="btn:text"></span></div>';
             const CustomButton = ButtonClass.withTemplate(CUSTOM_TEMPLATE) as any;
 
             // 新类的 _templateHtml 应该是新模板
@@ -243,7 +251,9 @@ describe('TemplateComponent', () => {
 
         it('withTemplate 强类支持 extraFns 配置', () => {
             const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE);
-            const fn = jest.fn(function (this: any) { return this; });
+            const fn = jest.fn(function (this: any) {
+                return this;
+            });
             const instance = new ButtonClass({ extraFns: { myAction: fn } }) as any;
 
             expect(typeof instance.myAction).toBe('function');
@@ -254,7 +264,9 @@ describe('TemplateComponent', () => {
         it('withTemplate 强类支持 entity 配置', () => {
             class MockManager {
                 disposed = false;
-                dispose() { this.disposed = true; }
+                dispose() {
+                    this.disposed = true;
+                }
             }
 
             const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE);
@@ -285,7 +297,19 @@ describe('TemplateComponent', () => {
         });
 
         it('withTemplate 强类支持 static bridges 配置', () => {
-            const EVENT_TEMPLATE = '<div><button data-content="btn:save" data-emit="tap"></button></div>';
+            const EVENT_TEMPLATE: ComponentTemplate = {
+                tpl: {
+                    tag: 'div',
+                    children: [
+                        {
+                            tag: 'button',
+                            name: 'btn:save',
+                            content: 'save',
+                            events: { click: { emits: ['tap'] } },
+                        },
+                    ],
+                },
+            };
             const ButtonClass = TemplateComponent.withTemplate(EVENT_TEMPLATE) as any;
             ButtonClass.bridges = ['saveBtn:tap'];
 
@@ -318,7 +342,8 @@ describe('TemplateComponent', () => {
         });
 
         it('withTemplate 强类 dispose 时递归销毁子组件', () => {
-            const SIMPLE_TEMPLATE2 = '<div class="q-btn"><span data-content="btn:text"></span></div>';
+            const SIMPLE_TEMPLATE2 =
+                '<div class="q-btn"><span data-content="btn:text"></span></div>';
             const ButtonClass = TemplateComponent.withTemplate(SIMPLE_TEMPLATE2);
             const instance = new ButtonClass() as any;
 
