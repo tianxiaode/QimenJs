@@ -8,14 +8,7 @@
  * - 运行时校验：未知特殊 key 发出警告
  */
 
-export type BodyKeyCategory = 'static' | 'init' | 'exclude';
-
-export interface BodyKeyDef {
-    category: BodyKeyCategory;
-    description: string;
-    deprecated?: boolean;
-    alias?: string;
-}
+import type { BodyKeyDef, DomainOverlayKey } from './types/body-keys';
 
 export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     type: {
@@ -86,8 +79,6 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
 };
 
 export const DOMAIN_OVERLAY_KEYS = ['tooltip', 'overflowConfig', 'submenu', 'contextMenu'] as const;
-
-export type DomainOverlayKey = (typeof DOMAIN_OVERLAY_KEYS)[number];
 
 export const BODY_SPECIAL_KEY_SET = new Set(Object.keys(BODY_SPECIAL_KEYS));
 

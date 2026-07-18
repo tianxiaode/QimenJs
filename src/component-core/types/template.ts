@@ -122,27 +122,9 @@ export interface TplNode {
     // ─── 节点标识 ───
 
     /**
-     * 节点名称 — 作为 nodeMap 索引键
-     *
-     * 缺省时用 content 兜底。
-     * 多区域组件用冒号语法：name: 'dialog:header'
+     * 节点名称 — 作为 nodeMap 索引键和属性名
      */
     name?: string;
-
-    /**
-     * 内容语义描述 — 决定属性对接方式
-     *
-     * content 值作为 propName 和 nodeMap 索引键。
-     * 如果子组件有 expose 声明，编译时自动生成便捷方法：
-     * - 子组件 expose: { class: 'iconClass', size: 'size' }
-     * - content:'icon' → setIconClass(v) / setIconSize(v)
-     * - content:'leftIcon' → setLeftIconClass(v) / setLeftIconSize(v)
-     *
-     * 无 expose 的子组件只生成主属性 getter/setter。
-     *
-     * 当 name 缺省时，content 同时作为 nodeMap 索引键
-     */
-    content?: string;
 
     // ─── 事件 ───
 
@@ -322,46 +304,57 @@ export interface ComponentTemplate {
  * - i18nKey 无值 → 直接赋值（由 getter/setter 处理）
  */
 export interface ContentInfo {
-    /** nodeMap 索引 — group */
-    group: string;
-    /** nodeMap 索引 — name */
+    /** nodeMap 索引键 */
     name: string;
     /** 内容操作模式 */
     mode: 'value' | 'src' | 'html';
     /** i18n 翻译 key，有值时需要翻译 */
     i18nKey?: string;
-    /** 对应的属性名（如 'icon'、'text'、'dropIcon'） */
+    /** 对应的属性名（如 'icon'、'text'） */
     propName: string;
     /** 是否为组件节点（type 节点），为 true 时 getter/setter 操作 component */
     isComponent?: boolean;
     /** 子组件主属性名（仅 isComponent 时有效） */
     componentPropName?: string;
-    /**
-     * 子组件属性透传配置 — 已废弃，使用 body.forwards 替代
-     * @deprecated 使用 body.forwards 替代
-     */
-    forward?: boolean | string[];
-    /**
-     * 子组件的 expose 列表 — content 名列表（如 ['content']）
-     *
-     * 运行时按规则自动生成 getter/setter：
-     * - 默认属性：{propName}ClassName / {propName}Style / {propName}Size
-     * - content 透传：{propName}{ContentName}ClassName / Style / Size
-     *
-     * 后缀和 DOM/组件属性名一致，零映射：
-     * - ClassName → component.el.className
-     * - Style → component.el.style
-     * - Size → component.size
-     *
-     * 例如 Icon._expose = ['content']，Button content:'icon'：
-     * - iconClassName → component.el.className = v
-     * - iconStyle → component.el.style = v
-     * - iconSize → component.size = v
-     * - iconContentClassName → component.content.el.className = v
-     * - iconContentStyle → component.content.el.style = v
-     * - iconContentSize → component.content.size = v
-     */
+    /** 子组件的 expose 列表 */
     expose?: string[];
+}
+
+// ─── DOM 事件绑定（编译时生成）──────────────────────────────────
+
+/**
+ * 合并后的 DOM 事件绑定 — 编译时从 DomEventDecl 生成
+ *
+ * 同一个 DOM 事件（如 click）可能同时需要：
+ * - 调用内部 handler（onClick）
+ * - 转发为组件事件（emits）
+ * - 通过 EventBridge 桥接（bridges）
+ *
+ * 绑定时只需一次 this.bind()，在回调中统一处理所有转发。
+ */
+export interface DomEventBinding {
+    /** DOM 事件语义（如 click, input） */
+    event: string;
+    /** 对应 nodeMap 中的 group:name key */
+    nodeKey: string;
+    /** 内部 handler 名（如 onClick），handler: true 时自动推导 */
+    handler?: string;
+    /** 是否只触发一次 */
+    once?: boolean;
+    /** 是否事件委托 */
+    delegate?: boolean;
+    /** 事件委托目标选择器 */
+    delegateTarget?: string;
+    /** 防抖时间（毫秒） */
+    debounce?: number;
+    /** 节流时间（毫秒） */
+    throttle?: number;
+    /** 转发为组件事件名列表（来自 emits 声明），如同名 'click' 或重命名 'close' */
+    emits?: string[];
+    /** 桥接事件列表（来自 bridges 声明） */
+    bridges?: { targetEvent: string; once?: boolean }[];
+    /** 实体操作（来自 entities 声明），值为 mgr 方法名 */
+    entities?: string;
 }
 
 // ─── 层次化 content 结构（v2）──────────────────────────────────

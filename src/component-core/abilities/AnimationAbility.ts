@@ -11,12 +11,17 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { AnimationProps } from '../layout-types';
+import type { AnimationProps } from '../types/layout';
 
 /**
  * 支持的动画 key 类型
  */
-export type AnimationKey = 'enterAnimation' | 'enterAnimationOptions' | 'leaveAnimation' | 'leaveAnimationOptions' | 'animationEnabled';
+export type AnimationKey =
+    | 'enterAnimation'
+    | 'enterAnimationOptions'
+    | 'leaveAnimation'
+    | 'leaveAnimationOptions'
+    | 'animationEnabled';
 
 export const AnimationAbility: AbilityDefinition = {
     /**
@@ -90,12 +95,30 @@ function parseAnimationName(name: string): Keyframe[] | null {
     const presets: Record<string, Keyframe[]> = {
         fadeIn: [{ opacity: 0 }, { opacity: 1 }],
         fadeOut: [{ opacity: 1 }, { opacity: 0 }],
-        slideInUp: [{ transform: 'translateY(20px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
-        slideOutDown: [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(20px)', opacity: 0 }],
-        slideInLeft: [{ transform: 'translateX(-20px)', opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }],
-        slideOutRight: [{ transform: 'translateX(0)', opacity: 1 }, { transform: 'translateX(20px)', opacity: 0 }],
-        scaleIn: [{ transform: 'scale(0.9)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }],
-        scaleOut: [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(0.9)', opacity: 0 }],
+        slideInUp: [
+            { transform: 'translateY(20px)', opacity: 0 },
+            { transform: 'translateY(0)', opacity: 1 },
+        ],
+        slideOutDown: [
+            { transform: 'translateY(0)', opacity: 1 },
+            { transform: 'translateY(20px)', opacity: 0 },
+        ],
+        slideInLeft: [
+            { transform: 'translateX(-20px)', opacity: 0 },
+            { transform: 'translateX(0)', opacity: 1 },
+        ],
+        slideOutRight: [
+            { transform: 'translateX(0)', opacity: 1 },
+            { transform: 'translateX(20px)', opacity: 0 },
+        ],
+        scaleIn: [
+            { transform: 'scale(0.9)', opacity: 0 },
+            { transform: 'scale(1)', opacity: 1 },
+        ],
+        scaleOut: [
+            { transform: 'scale(1)', opacity: 1 },
+            { transform: 'scale(0.9)', opacity: 0 },
+        ],
     };
     return presets[name] ?? null;
 }

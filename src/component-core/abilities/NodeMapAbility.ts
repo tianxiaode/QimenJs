@@ -10,7 +10,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { ContentInfo } from '../template-types';
+import type { ContentInfo } from '../types/template';
+import type { CompiledComponentTemplate } from '../types/template-json';
 import { globalEventBus } from '@qimenjs/events';
 import { translateI18nKey, applyValueToEl } from '../content-properties';
 
@@ -19,7 +20,9 @@ export const NodeMapAbility: AbilityDefinition = {
      * 从 props 初始化自动生成的内容属性
      */
     initContentFromProps(props: Record<string, any>): void {
-        const propNames = (this.constructor as any).prototype._contentPropNames as string[] | undefined;
+        const propNames = (this.constructor as any).prototype._contentPropNames as
+            | string[]
+            | undefined;
         if (!propNames) return;
         for (const propName of propNames) {
             if (props[propName] !== undefined) {
@@ -34,7 +37,8 @@ export const NodeMapAbility: AbilityDefinition = {
      * 获取编译时收集的 contentInfos
      */
     _getContentInfos(): ContentInfo[] {
-        return (this.constructor as any)._contentInfos || [];
+        const compiled: CompiledComponentTemplate = (this.constructor as any)._compiledTemplate;
+        return compiled?.contentInfos || [];
     },
 
     /**
@@ -96,7 +100,7 @@ export const NodeMapAbility: AbilityDefinition = {
         const infos = this._getContentInfos();
         for (const info of infos) {
             if (info.i18nKey) {
-                result[`${info.group}:${info.name}`] = info.i18nKey;
+                result[info.name] = info.i18nKey;
             }
         }
         return result;

@@ -31,13 +31,10 @@ import { NodeMapAbility } from './abilities/NodeMapAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
-import type { NodeMetadata, EventMap } from './types';
-import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { ContentInfo, DomEventBinding } from './template-compiler';
-import type { ComponentTemplate } from './template-types';
+import type { NodeMetadata, EventMap } from './types/index';
+import type { ComponentTemplate } from './types/template';
 import { BODY_SPECIAL_KEYS, validateBodyKey } from './body-keys';
-import { precompileTemplate, compileTemplate } from './template-compiler';
-import type { CompiledTemplateResult } from './template-json';
+import { compileTemplate } from './template-json';
 import { buildContentProperties } from './content-properties';
 
 /**
@@ -83,14 +80,6 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
  * TemplateComponent — 继承自带标准能力的 ComposableBase
  */
 export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_ABILITIES) {
-    /**
-     * 是否为多区域组件
-     *
-     * - false（默认）：单区域，属性名/方法名用 name（如 icon, onField）
-     * - true：多区域，属性名/方法名用 group + Name（如 dialogHeader, onDialogClose）
-     */
-    static isMultiArea: boolean = false;
-
     /** 根元素标签名，子类可 override */
     tag: string = 'div';
 
@@ -180,9 +169,12 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     // ─── 销毁 ──
 
     override dispose(): void {
+        if (typeof this.onBeforeDispose === 'function') {
+            this.onBeforeDispose();
+        }
+
         ComponentRegistrar.getInstance().unregisterInstance(this);
 
-        // 遍历 nodeMap 递归销毁子组件（在清空 nodeMap 之前）
         if (typeof this._disposeChildComponents === 'function') {
             this._disposeChildComponents();
         }
@@ -197,22 +189,14 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         this._initializing = false;
 
         super.dispose();
+
+        if (typeof this.onDisposed === 'function') {
+            this.onDisposed();
+        }
     }
 
     // ─── withTemplate 模板预编译工厂 ──
 
-    /**
-     * 模板预编译工厂方法
-     *
-     * 支持三种模板格式：
-     * 1. HTML 字符串 — 直接使用（旧链路：precompileTemplate）
-     * 2. 旧版 JsonTemplateNode[] — 向后兼容，自动转换（旧链路）
-     * 3. 新版 ComponentTemplate — 包含 tpl 根节点 + body 属性/方法
-     *    新链路：compileTemplate 一步到位，跳过 HTML data-* 属性
-     *
-     * @param template - HTML 字符串 / 旧版 JSON 模板数组 / 新版 ComponentTemplate
-     * @returns 模板组件强类
-     */
     /**
      * 模板预编译工厂方法（延迟编译模式）
      *
@@ -224,12 +208,12 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * - 派生类用自己的模板，父模板从未编译，无冲突
      * - 首次 new 后缓存编译结果，后续 new 零开销
      *
-     * @param template - HTML 字符串 / ComponentTemplate
+     * @param template - ComponentTemplate
      * @returns 延迟编译的模板组件类
      */
-    static withTemplate(this: any, template: string | ComponentTemplate): any {
+    static withTemplate(this: any, template: ComponentTemplate): any {
         const LazyClass = class extends this {
-            static _pendingTemplate: string | ComponentTemplate = template;
+            static _pendingTemplate: ComponentTemplate = template;
             static _templateCompiled: boolean = false;
 
             constructor(props?: Record<string, any>) {
@@ -238,11 +222,15 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 if (!this._templateInitialized) {
                     const ctor = this.constructor as any;
 
+                    if (typeof this.onBeforeInit === 'function') {
+                        this.onBeforeInit(props);
+                    }
+
                     if (!ctor._templateCompiled) {
                         ctor._compilePendingTemplate();
                     }
 
-                    if (ctor._propsDef) {
+                    if (ctor._compiledTemplate?.propsDef) {
                         const userProps = (props as any)?.props;
                         const userChildProps = (props as any)?.childProps;
                         const userBody = (props as any)?.body;
@@ -251,8 +239,8 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                             userChildProps !== undefined ||
                             userBody !== undefined;
                         const flatProps = isStructured ? userProps : props;
-                        const mergedProps = ctor._propsDef
-                            ? { ...ctor._propsDef, ...flatProps }
+                        const mergedProps = ctor._compiledTemplate.propsDef
+                            ? { ...ctor._compiledTemplate.propsDef, ...flatProps }
                             : flatProps;
                         if (userChildProps) mergedProps.childProps = userChildProps;
                         if (userBody) Object.assign(mergedProps, userBody);
@@ -264,7 +252,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
                     if (ctor.type) this.type = ctor.type;
 
-                    if (!ctor._propsDef && ctor.defaults) {
+                    if (!ctor._compiledTemplate?.propsDef && ctor.defaults) {
                         for (const [key, value] of Object.entries(ctor.defaults)) {
                             (this as any)[key] = value;
                         }
@@ -278,6 +266,10 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                     }
 
                     this._templateInitialized = true;
+
+                    if (typeof this.onAfterInit === 'function') {
+                        this.onAfterInit(props);
+                    }
                 }
             }
 
@@ -287,72 +279,38 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 const template = this._pendingTemplate;
                 if (!template) return;
 
-                let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
-                let body: Record<string, any> | undefined;
-                let templateHtml: string;
-                let propsDef: Record<string, any> | undefined;
-                let compiled: any;
+                const result = compileTemplate(template);
 
-                if (typeof template === 'string') {
-                    templateHtml = template;
-                    compiled = {
-                        ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
-                        domEventBindings: [],
-                    };
-                } else {
-                    const result = compileTemplate(template, this.isMultiArea ?? false);
-                    templateHtml = result.html;
-                    jsonComponentMap = result.componentMap;
-                    body = template.body;
-                    propsDef = result.propsDef;
+                const tpl = document.createElement('template');
+                tpl.innerHTML = result.html;
 
-                    const tpl = document.createElement('template');
-                    tpl.innerHTML = templateHtml;
+                this._compiledTemplate = {
+                    ...result,
+                    templateCache: tpl,
+                    body: template.body,
+                };
 
-                    compiled = {
-                        indexPath: result.indexPath,
-                        templateMetas: result.templateMetas,
-                        contentPropNames: result.contentPropNames,
-                        contentInfos: result.contentInfos,
-                        domEventBindings: result.domEventBindings,
-                        rootClassName: result.rootClassName,
-                        rootStyle: result.rootStyle,
-                        templateCache: tpl,
-                        exposeNames: result.exposeNames,
-                    };
-                }
+                buildContentProperties(this, result.contentInfos);
 
-                this._templateHtml = templateHtml;
-                this._indexPath = compiled.indexPath;
-                this._templateMetas = compiled.templateMetas;
-                this._domEventBindings = compiled.domEventBindings ?? [];
-                this._contentPropNames = compiled.contentPropNames;
-                this._contentInfos = compiled.contentInfos;
-                this._jsonComponentMap = jsonComponentMap;
-                this._templateBody = body;
-                this._propsDef = propsDef;
-                this._expose = compiled.exposeNames ?? [];
-                this._rootClassName = compiled.rootClassName;
-                this._rootStyle = compiled.rootStyle;
-                this._templateCache = compiled.templateCache;
-
-                buildContentProperties(this, compiled.contentInfos);
-
+                const body = template.body;
                 if (body) {
                     const proto = this.prototype;
-                    for (const [key, value] of Object.entries(body)) {
+                    const descs = Object.getOwnPropertyDescriptors(body);
+                    for (const [key, desc] of Object.entries(descs)) {
                         validateBodyKey(key);
                         const def = BODY_SPECIAL_KEYS[key];
 
                         if (def?.category === 'static') {
                             const targetKey = def.alias ?? key;
                             const staticKey = key === 'forwards' ? '_forwards' : targetKey;
-                            (this as any)[staticKey] = value;
-                        } else if (typeof value === 'function') {
-                            proto[key] = value;
+                            (this as any)[staticKey] = desc.value;
+                        } else if (desc.get || desc.set) {
+                            Object.defineProperty(proto, key, desc);
+                        } else if (typeof desc.value === 'function') {
+                            proto[key] = desc.value;
                         } else {
                             if (!this.defaults) this.defaults = {};
-                            this.defaults[key] = value;
+                            this.defaults[key] = desc.value;
                         }
                     }
                 }
@@ -383,7 +341,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             }
 
             static _getTemplateCache(): HTMLTemplateElement {
-                return this._templateCache!;
+                return this._compiledTemplate.templateCache;
             }
 
             static _cloneFragment(): DocumentFragment {
@@ -409,5 +367,56 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         };
 
         return LazyClass;
+    }
+
+    /**
+     * 替换工厂方法 — 基于当前组件创建预配置子类
+     *
+     * 直接继承父类 + 原型复制，不走 withTemplate。
+     * 子类通过继承获得父组件所有方法，无需 forwards。
+     *
+     * @param options.type - 组件类型标识
+     * @param options.cls - 根元素追加的 CSS 类名
+     * @param options.itemsCls - items 容器的 CSS 类名（ItemGroup 专用）
+     * @param options.config - 传递给父类 onAfterInit 的默认配置
+     * @param options.body - 追加到原型的属性和方法
+     */
+    static replace(
+        this: any,
+        options: {
+            type?: string;
+            cls?: string;
+            itemsCls?: string;
+            config?: Record<string, any>;
+            body?: Record<string, any>;
+        }
+    ): any {
+        const ParentClass = this;
+        const { type, cls, itemsCls, config, body } = options;
+
+        const ReplaceClass = class extends ParentClass {
+            constructor(props?: Record<string, any>) {
+                super(config ? { ...config, ...props } : props);
+
+                if (type) this.type = type;
+                if (cls) this.el?.classList.add(...cls.split(/\s+/).filter(Boolean));
+                if (itemsCls) {
+                    const containerEl = this.nodeMap?.itemContainer?.el;
+                    if (containerEl)
+                        containerEl.classList.add(...itemsCls.split(/\s+/).filter(Boolean));
+                }
+            }
+        };
+
+        if (body) {
+            const proto = ReplaceClass.prototype;
+            const descs = Object.getOwnPropertyDescriptors(body);
+            for (const [key, desc] of Object.entries(descs)) {
+                if (key === 'type') continue;
+                Object.defineProperty(proto, key, desc);
+            }
+        }
+
+        return ReplaceClass;
     }
 }

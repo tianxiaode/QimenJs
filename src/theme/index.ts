@@ -16,15 +16,14 @@ export { lightTheme, darkTheme } from './presets';
 
 // 中国传统色主题导出
 export {
-  celadonTheme,
-  cinnabarTheme,
-  indigoTheme,
-  yellowTheme,
-  rosewoodTheme,
-  inkTheme,
-  daiTheme,
-  chineseThemes,
-  CHINESE_THEME_NAMES,
+    celadonTheme,
+    cinnabarTheme,
+    indigoTheme,
+    yellowTheme,
+    rosewoodTheme,
+    inkTheme,
+    daiTheme,
+    CHINESE_THEME_NAMES,
 } from './presets';
 
 export type { ChineseThemeName } from './presets';

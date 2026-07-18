@@ -13,14 +13,15 @@ export type {
     EventMap,
     NodeIndexPath,
     NodeTemplateMeta,
-} from './types';
+} from './types/index';
 
 // 注册管理器
-export { ComponentRegistrar, type ComponentDefinition, getCmp } from './ComponentRegistrar';
+export { ComponentRegistrar, getCmp } from './ComponentRegistrar';
 export { ComponentEventRegistry } from './ComponentEventRegistry';
 
 // 组件类型常量
-export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
+export { ComponentTypes } from './ComponentTypes';
+export type { ComponentTypeValue } from './types/component-types';
 
 // 基础能力（仅保留有行为逻辑 + 语义快捷方式）
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
@@ -53,32 +54,12 @@ export { TemplateAbility } from './abilities/TemplateAbility';
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 export type { PropAliasMap } from './abilities/PropAlias';
 
-// 模板编译
-export {
-    precompileTemplate,
-    findByPath,
-    computeNodePath,
-    inferContentMode,
-    parseEventAttr,
-} from './template-compiler';
-export type { CompiledTemplate, DomEventBinding } from './template-compiler';
-
-// 新模板编译
-export { compileTemplate } from './template-json';
-export type { CompiledTemplateResult, TplNodeMeta } from './template-json';
-
-// 新模板类型
-export type {
-    TplNode,
-    ComponentTemplate,
-    DomEventDecl,
-    ContentInfo,
-    PropsDef,
-} from './template-types';
+// 模板编译工具
+export { findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';
-export type { AreaType, NameType, SlotType, EventType } from './template-constants';
+export type { AreaType, NameType, SlotType, EventType } from './types/template-constants';
 
 // 模板预设
 export {
@@ -119,7 +100,13 @@ export {
     childPropName,
     componentChildPropName,
 } from './common-props';
-export type { CommonPropDef, MarginPadding, Border, BorderSide, PropTarget } from './common-props';
+export type {
+    CommonPropDef,
+    MarginPadding,
+    Border,
+    BorderSide,
+    PropTarget,
+} from './types/common-props';
 
 // Layout 类型（从 @qimenjs/layout 迁移）
 export type {
@@ -127,6 +114,8 @@ export type {
     EventListen,
     BridgesConfig,
     ListensConfig,
+    OverlayDecl,
+    OverlaysConfig,
     LifecycleHooks,
     LayoutMeta,
     TooltipProps,
@@ -137,7 +126,7 @@ export type {
     ArrowProps,
     ExpandableProps,
     ExpandableConfig,
-} from './layout-types';
+} from './types/layout';
 export { ANIMATION_KEYS, DRAG_DECL_KEYS, TOOLTIP_KEYS, EXPANDABLE_KEYS } from './layout-types';
 
 export {
@@ -145,9 +134,8 @@ export {
     BODY_SPECIAL_KEY_SET,
     isBodySpecialKey,
     validateBodyKey,
-    type BodyKeyDef,
-    type BodyKeyCategory,
 } from './body-keys';
+export type { BodyKeyDef, BodyKeyCategory } from './types/body-keys';
 
 // Re-export Placement from overlay
 export type { Placement } from '@/overlay/dispatch';

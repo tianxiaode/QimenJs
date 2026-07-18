@@ -12,72 +12,7 @@
  * - 一套定义驱动三层生成
  */
 
-// ─── 复杂属性类型 ──────────────────────────────────────────
-
-/**
- * margin/padding 对象结构
- *
- * 支持 horizontal/vertical 简写，与 CSS 简写规则对齐。
- */
-export interface MarginPadding {
-    top?: number | string;
-    right?: number | string;
-    bottom?: number | string;
-    left?: number | string;
-    /** 水平简写（right + left） */
-    horizontal?: number | string;
-    /** 垂直简写（top + bottom） */
-    vertical?: number | string;
-}
-
-/**
- * border 单边定义
- */
-export interface BorderSide {
-    width?: number | string;
-    style?: string;
-    color?: string;
-}
-
-/**
- * border 对象结构
- */
-export interface Border {
-    width?: number | string;
-    style?: string;
-    color?: string;
-    top?: BorderSide;
-    right?: BorderSide;
-    bottom?: BorderSide;
-    left?: BorderSide;
-}
-
-// ─── 通用属性定义 ──────────────────────────────────────────
-
-/**
- * 通用属性目标类型
- *
- * - 'el': 直接操作 el 属性（className, hidden）
- * - 'style': 操作 el.style 子属性（width, height, margin, ...）
- * - 'bg': 操作 el.style.background（特殊映射）
- */
-export type PropTarget = 'el' | 'style' | 'bg';
-
-/**
- * 单个通用属性定义
- */
-export interface CommonPropDef {
-    /** 属性名（如 className, width, margin） */
-    prop: string;
-    /** 操作目标类型 */
-    target: PropTarget;
-    /** 目标属性名（如 el.className, style.width），不传则等于 prop */
-    targetProp?: string;
-    /** 值类型描述（用于类型生成） */
-    valueType: string;
-    /** 值转换器名（对应 RESOLVERS 中的 key） */
-    resolver: string;
-}
+import type { MarginPadding, Border, CommonPropDef } from './types/common-props';
 
 /**
  * 通用属性常量数组
@@ -87,20 +22,53 @@ export interface CommonPropDef {
  * - DOM 子节点：name + Prop → labelClassName, labelWidth, labelMargin
  */
 export const COMMON_PROPS: readonly CommonPropDef[] = [
-    { prop: 'className', target: 'el',    valueType: 'string',                          resolver: 'identity' },
-    { prop: 'style',     target: 'el',    valueType: 'string | Record<string, any>',     resolver: 'identity' },
-    { prop: 'hidden',    target: 'el',    valueType: 'boolean',                          resolver: 'identity' },
-    { prop: 'width',     target: 'style', targetProp: 'width',  valueType: 'number | string',       resolver: 'px' },
-    { prop: 'height',    target: 'style', targetProp: 'height', valueType: 'number | string',       resolver: 'px' },
-    { prop: 'x',         target: 'style', targetProp: 'left',   valueType: 'number | string',       resolver: 'px' },
-    { prop: 'y',         target: 'style', targetProp: 'top',    valueType: 'number | string',       resolver: 'px' },
-    { prop: 'margin',    target: 'style', valueType: 'number | string | MarginPadding',  resolver: 'marginPadding' },
-    { prop: 'padding',   target: 'style', valueType: 'number | string | MarginPadding',  resolver: 'marginPadding' },
-    { prop: 'fontSize',  target: 'style', valueType: 'number | string',                   resolver: 'px' },
-    { prop: 'color',     target: 'style', valueType: 'string',                            resolver: 'identity' },
-    { prop: 'bg',        target: 'bg',    valueType: 'string',                            resolver: 'identity' },
-    { prop: 'cursor',    target: 'style', valueType: 'string',                            resolver: 'identity' },
-    { prop: 'border',    target: 'style', valueType: 'number | string | Border',          resolver: 'border' },
+    { prop: 'className', target: 'el', valueType: 'string', resolver: 'identity' },
+    {
+        prop: 'style',
+        target: 'el',
+        valueType: 'string | Record<string, any>',
+        resolver: 'identity',
+    },
+    { prop: 'hidden', target: 'el', valueType: 'boolean', resolver: 'identity' },
+    {
+        prop: 'width',
+        target: 'style',
+        targetProp: 'width',
+        valueType: 'number | string',
+        resolver: 'px',
+    },
+    {
+        prop: 'height',
+        target: 'style',
+        targetProp: 'height',
+        valueType: 'number | string',
+        resolver: 'px',
+    },
+    {
+        prop: 'x',
+        target: 'style',
+        targetProp: 'left',
+        valueType: 'number | string',
+        resolver: 'px',
+    },
+    { prop: 'y', target: 'style', targetProp: 'top', valueType: 'number | string', resolver: 'px' },
+    {
+        prop: 'margin',
+        target: 'style',
+        valueType: 'number | string | MarginPadding',
+        resolver: 'marginPadding',
+    },
+    {
+        prop: 'padding',
+        target: 'style',
+        valueType: 'number | string | MarginPadding',
+        resolver: 'marginPadding',
+    },
+    { prop: 'fontSize', target: 'style', valueType: 'number | string', resolver: 'px' },
+    { prop: 'color', target: 'style', valueType: 'string', resolver: 'identity' },
+    { prop: 'bg', target: 'bg', valueType: 'string', resolver: 'identity' },
+    { prop: 'cursor', target: 'style', valueType: 'string', resolver: 'identity' },
+    { prop: 'border', target: 'style', valueType: 'number | string | Border', resolver: 'border' },
 ] as const;
 
 // ─── 值转换器 ──────────────────────────────────────────────
@@ -128,7 +96,7 @@ export function resolveMarginPadding(v: number | string | MarginPadding): string
     const r = right ?? horizontal ?? 0;
     const b = bottom ?? vertical ?? 0;
     const l = left ?? horizontal ?? 0;
-    return [t, r, b, l].map(v => typeof v === 'number' ? v + 'px' : v).join(' ');
+    return [t, r, b, l].map(v => (typeof v === 'number' ? v + 'px' : v)).join(' ');
 }
 
 /**
@@ -142,7 +110,7 @@ export function resolveBorder(v: number | string | Border): string {
     if (typeof v === 'number') return v + 'px solid';
     if (typeof v === 'string') return v;
 
-    const w = typeof v.width === 'number' ? v.width + 'px' : v.width ?? '1px';
+    const w = typeof v.width === 'number' ? v.width + 'px' : (v.width ?? '1px');
     const s = v.style ?? 'solid';
     const c = v.color ?? '';
     return c ? `${w} ${s} ${c}` : `${w} ${s}`;

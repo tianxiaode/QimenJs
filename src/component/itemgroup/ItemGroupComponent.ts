@@ -31,10 +31,10 @@ export interface ItemGroupProps extends ItemGroupConfig {
 
 const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
 
-export class ItemGroupComponent extends TemplateComponent.withTemplate({
+export let ItemGroupComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
+        children: [{ tag: 'div', name: 'itemContainer', className: 'q-itemgroup__items' }],
     },
     body: {
         type: 'ItemGroup',
@@ -51,6 +51,10 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate({
         _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
         _overflowMode: 'none' as OverflowMode,
 
+        onAfterInit(props?: ItemGroupProps): void {
+            this._initItemGroupComponent(props);
+        },
+
         _initItemGroupComponent(props?: ItemGroupProps): void {
             this.el.classList.add('q-itemgroup');
 
@@ -58,7 +62,7 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate({
                 this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
             }
 
-            this._containerEl = this.nodeMap?.items?.el ?? null;
+            this._containerEl = this.nodeMap?.itemContainer?.el ?? null;
 
             if (props?.itemsCls && this._containerEl) {
                 this._containerEl.classList.add(...props.itemsCls.split(/\s+/).filter(Boolean));
@@ -362,20 +366,15 @@ export class ItemGroupComponent extends TemplateComponent.withTemplate({
                 this._overflowMode = props.overflowMode;
                 this._applyOverflowMode();
             }
+            if (typeof this.onUpdated === 'function') this.onUpdated(props);
         },
 
-        dispose(): void {
+        onBeforeDispose(): void {
             this._cleanupOverflow();
             this.clear();
             this._itemUnsubscribes.clear();
-            super.dispose();
         },
     },
-}) {
-    constructor(props?: ItemGroupProps) {
-        super(props);
-        this._initItemGroupComponent(props);
-    }
-}
+});
 
 export type ItemGroupComponentType = InstanceType<typeof ItemGroupComponent>;

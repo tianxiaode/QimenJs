@@ -4,15 +4,15 @@ import { ThemeRegistrar } from '@qimenjs/theme';
 import LOGO_SVG from '../logo.svg?raw';
 
 const THEME_LIST = [
-    { key: 'light',    label: '浅色' },
-    { key: 'dark',     label: '暗色' },
-    { key: 'celadon',  label: '青瓷' },
+    { key: 'light', label: '浅色' },
+    { key: 'dark', label: '暗色' },
+    { key: 'celadon', label: '青瓷' },
     { key: 'cinnabar', label: '朱砂' },
-    { key: 'indigo',   label: '靛蓝' },
-    { key: 'yellow',   label: '明黄' },
+    { key: 'indigo', label: '靛蓝' },
+    { key: 'yellow', label: '明黄' },
     { key: 'rosewood', label: '紫檀' },
-    { key: 'ink',      label: '水墨' },
-    { key: 'dai',      label: '黛色' },
+    { key: 'ink', label: '水墨' },
+    { key: 'dai', label: '黛色' },
 ];
 
 class TopbarComponent extends TemplateComponent.withTemplate({
@@ -23,31 +23,58 @@ class TopbarComponent extends TemplateComponent.withTemplate({
         align: 'center',
         children: [
             {
-                tag: 'div', name: 'topbar:brand', className: 'topbar-brand',
-                layout: 'hbox', align: 'center', gap: 10,
+                tag: 'div',
+                name: 'topbar:brand',
+                className: 'topbar-brand',
+                layout: 'hbox',
+                align: 'center',
+                gap: 10,
                 children: [
                     { tag: 'span', className: 'topbar-brand-logo', text: LOGO_SVG },
-                    { tag: 'span', name: 'topbar:brandText', content: 'brandText', className: 'topbar-brand-text' },
+                    {
+                        tag: 'span',
+                        name: 'topbar:brandText',
+                        content: 'brandText',
+                        className: 'topbar-brand-text',
+                    },
                 ],
             },
             {
-                tag: 'div', className: 'topbar-main',
-                layout: 'hbox', align: 'center', gap: 4,
+                tag: 'div',
+                className: 'topbar-main',
+                layout: 'hbox',
+                align: 'center',
+                gap: 4,
                 children: [
                     {
-                        name: 'topbar:toggleBtn', type: ButtonComponent, className: 'q-button--ghost',
-                        props: { childProps: { icon: { props: { className: 'fa-solid fa-bars' } } } },
-                        events: { click: { handler: 'onToggleNavClick', bridge: 'sidebar:toggle' } },
+                        name: 'topbar:toggleBtn',
+                        type: ButtonComponent,
+                        className: 'q-button--ghost',
+                        props: {
+                            childProps: { icon: { props: { className: 'fa-solid fa-bars' } } },
+                        },
+                        events: {
+                            click: { handler: 'onToggleNavClick', bridge: 'sidebar:toggle' },
+                        },
                     },
                     {
-                        name: 'topbar:darkBtn', type: ButtonComponent, className: 'q-button--ghost',
-                        props: { childProps: { icon: { props: { className: 'fa-solid fa-moon' } } } },
+                        name: 'topbar:darkBtn',
+                        type: ButtonComponent,
+                        className: 'q-button--ghost',
+                        props: {
+                            childProps: { icon: { props: { className: 'fa-solid fa-moon' } } },
+                        },
                         events: { click: { handler: 'onDarkToggleClick' } },
                     },
                     { tag: 'div', className: 'topbar-spacer' },
                     {
-                        name: 'topbar:themeBtn', type: ButtonComponent, className: 'q-button--ghost',
-                        props: { childProps: { icon: { props: { className: 'fa-solid fa-palette' } } }, text: { props: { innerHTML: '浅色' } } },
+                        name: 'topbar:themeBtn',
+                        type: ButtonComponent,
+                        className: 'q-button--ghost',
+                        props: {
+                            childProps: { icon: { props: { className: 'fa-solid fa-palette' } } },
+                            text: { props: { innerHTML: '浅色' } },
+                        },
                         events: { click: { handler: 'onThemeBtnClick' } },
                     },
                 ],
@@ -65,7 +92,7 @@ class TopbarComponent extends TemplateComponent.withTemplate({
 
         _isDark: false,
 
-        _themeMenu: null as MenuComponent | null,
+        _themeMenu: null as InstanceType<typeof MenuComponent> | null,
 
         onToggleNavClick(): void {
             this._navCollapsed = !this._navCollapsed;
@@ -100,7 +127,10 @@ class TopbarComponent extends TemplateComponent.withTemplate({
             const anchor = e.el || (e as any)?.currentTarget;
             const items = THEME_LIST.map(t => ({
                 text: t.label,
-                icon: t.key === this._currentTheme ? '<span style="color:var(--q-colors-primary,#0078d4)">●</span>' : '',
+                icon:
+                    t.key === this._currentTheme
+                        ? '<span style="color:var(--q-colors-primary,#0078d4)">●</span>'
+                        : '',
                 onSelect: () => {
                     this._applyTheme(t.key, t.label);
                     if (this._themeMenu) this._themeMenu.close();

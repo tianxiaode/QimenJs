@@ -59,8 +59,6 @@ export const Area = {
     ITEMGROUP: 'itemgroup',
 } as const;
 
-export type AreaType = (typeof Area)[keyof typeof Area];
-
 // ─── 内容名称（name） ───
 
 /** 内容名称常量 */
@@ -99,8 +97,6 @@ export const Name = {
     BODY_SCROLL: 'bodyScroll',
 } as const;
 
-export type NameType = (typeof Name)[keyof typeof Name];
-
 // ─── DOM 事件类型（data-event / data-emit） ───
 
 /** DOM 事件常量 — 用于 data-event（内部事件）和 data-emit（外部事件）属性声明 */
@@ -128,8 +124,6 @@ export const Event = {
     /** 鼠标离开 */
     MOUSELEAVE: 'mouseleave',
 } as const;
-
-export type EventType = (typeof Event)[keyof typeof Event];
 
 // ─── 组合插槽常量（prefix:name） ───
 
@@ -214,5 +208,3 @@ export const Slot = {
     // ─── ItemGroup ───
     ITEMGROUP_ITEMS: `${Area.ITEMGROUP}:${Name.DEFAULT}`,
 } as const;
-
-export type SlotType = (typeof Slot)[keyof typeof Slot];

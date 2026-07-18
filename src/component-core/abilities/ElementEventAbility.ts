@@ -46,7 +46,7 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import type { InternalEventBinding, EventMap } from '../types';
+import type { InternalEventBinding, EventMap } from '../types/index';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export const ElementEventAbility: AbilityDefinition = {

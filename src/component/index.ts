@@ -71,6 +71,10 @@ export { headerCSS } from './header/header.css';
 export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupComponent';
 export { itemgroupCSS } from './itemgroup/itemgroup.css';
 
+// 工具栏组件
+export { ToolbarComponent, type ToolbarProps } from './toolbar/ToolbarComponent';
+export { toolbarCSS } from './toolbar/toolbar.css';
+
 // 导航组件
 export {
     NavItemComponent,

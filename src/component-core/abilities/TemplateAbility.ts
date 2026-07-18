@@ -29,8 +29,9 @@
  */
 
 import type { AbilityDefinition } from '@qimenjs/composable';
-import type { NodeIndexPath, NodeTemplateMeta, NodeMetadata } from '../types';
-import type { DomEventBinding } from '../template-compiler';
+import type { NodeIndexPath, NodeTemplateMeta, NodeMetadata } from '../types/index';
+import type { DomEventBinding } from '../types/template';
+import type { CompiledComponentTemplate } from '../types/template-json';
 import { findByPath } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
@@ -119,7 +120,7 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 3.6 设置 forwards 透传（body.forwards → nodeMap 路径解析 → 属性/方法代理） ──
             this._setupForwards();
 
-            // ── 3.6 从 props 中提前设置 eventKey（bindDomEventBindings/bindBridgeEvents 依赖） ──
+            // ── 3.6 从 props 中提前设置 eventKey（bindDomEventBindings 依赖） ──
             if (cfg.eventKey !== undefined) {
                 (this as any).eventKey = cfg.eventKey;
             }
@@ -127,9 +128,7 @@ export const TemplateAbility: AbilityDefinition = {
             // ── 4. 事件绑定 ──
             // 4.1 统一 DOM 事件绑定（合并 handler/emits/bridges，一次 this.bind 搞定）
             this.bindDomEventBindings();
-            // 4.2 子组件桥接事件（DOM 节点的桥接已在 bindDomEventBindings 中处理）
-            this.bindBridgeEvents();
-            // 4.3 外部事件绑定（旧链路兼容）
+            // 4.2 外部事件绑定
             this.bindExternalEvents({ listens: cfg.listens } as any);
             const listenConfig = this._extractListensOn(cfg.listens);
             if (listenConfig) this.bindEventListen(listenConfig);
@@ -156,13 +155,18 @@ export const TemplateAbility: AbilityDefinition = {
         const fragment = ctor._cloneFragment();
         this.el.appendChild(fragment);
 
-        // 应用根节点的 className/style
-        if (ctor._rootClassName) {
-            this.el.className = ctor._rootClassName;
-        }
-        if (ctor._rootStyle) {
-            this.el.setAttribute('style', ctor._rootStyle);
-        }
+        const compiled: CompiledComponentTemplate = ctor._compiledTemplate;
+
+        if (compiled.rootClassName) this.el.className = compiled.rootClassName;
+        applyStyle(
+            this.el,
+            compiled.rootStyle,
+            compiled.rootLayout,
+            compiled.rootGap,
+            compiled.rootAlign,
+            compiled.rootPack,
+            compiled.rootWrap
+        );
 
         this._buildNodeMapFromCompiled();
     },
@@ -172,10 +176,11 @@ export const TemplateAbility: AbilityDefinition = {
      */
     _buildNodeMapFromCompiled(): void {
         const ctor = this.constructor as any;
-        const indexPath: NodeIndexPath = ctor._indexPath;
-        const templateMetas: Record<string, NodeTemplateMeta> = ctor._templateMetas;
+        const compiled: CompiledComponentTemplate = ctor._compiledTemplate;
+        const indexPath: NodeIndexPath = compiled.indexPath;
+        const templateMetas: Record<string, NodeTemplateMeta> = compiled.templateMetas;
         const jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> =
-            ctor._jsonComponentMap || {};
+            compiled.componentMap || {};
 
         // 构建 nodeMap
         for (const [key, path] of Object.entries(indexPath)) {
@@ -187,7 +192,6 @@ export const TemplateAbility: AbilityDefinition = {
 
             const node: NodeMetadata = {
                 el,
-                raw: meta.raw,
                 name: meta.name,
                 delegateTarget: meta.delegateTarget,
                 jsonRef: meta.jsonRef,
@@ -197,10 +201,15 @@ export const TemplateAbility: AbilityDefinition = {
                 props: meta.props,
             };
 
-            // 如果模板声明了 data-hidden，设置 el.hidden 初始状态
-            if (meta.hidden) {
-                el.hidden = true;
+            if (meta.className) el.className = meta.className;
+            applyStyle(el, meta.style, meta.layout, meta.gap, meta.align, meta.pack, meta.wrap);
+            if (meta.attrs) {
+                for (const [k, v] of Object.entries(meta.attrs)) {
+                    el.setAttribute(k, v);
+                }
             }
+            if (meta.text) el.textContent = meta.text;
+            if (meta.hidden) el.hidden = true;
 
             // 如果有组件类映射，填充 componentClass
             if (meta.jsonRef && jsonComponentMap[meta.name]) {
@@ -230,55 +239,9 @@ export const TemplateAbility: AbilityDefinition = {
      *
      * @param children - 子组件差异化配置（v1: static children），可选
      */
-    _renderChildComponents(): void {
-        const ctor = this.constructor as any;
-        const propsDef: Record<string, any> | undefined = ctor._propsDef;
-
-        // v2 模式：propsDef 存在时启用
-        if (propsDef) {
-            this._renderChildComponentsV2();
-            return;
-        }
-
-        // v1 旧模式
-        this._renderChildComponentsV1();
-    },
 
     /**
-     * v1 旧模式渲染子组件
-     *
-     * 直接用 node.props（从 tpl 子节点定义的 props 字段取值），
-     * 不再查 static children。
-     */
-    _renderChildComponentsV1(): void {
-        for (const node of Object.values(this.nodeMap) as NodeMetadata[]) {
-            if (!node.componentClass) continue;
-
-            const ComponentClass = node.componentClass;
-            const childProps = node.props;
-
-            this.logger?.debug?.(
-                '[Template] _renderChildComponentsV1, name =',
-                node.name,
-                'componentClass =',
-                ComponentClass?.name || (ComponentClass as any)?.type,
-                'childProps =',
-                childProps ? Object.keys(childProps) : []
-            );
-
-            // 创建子组件实例（withTemplate 强类，new 即完整实例）
-            const child = new ComponentClass(childProps);
-
-            // 设置父引用
-            (child as any).parent = this;
-
-            // 根据 jsonMode 挂载，并记录 DOM 位置索引
-            this._mountChildComponent(node, child);
-        }
-    },
-
-    /**
-     * v2 新模式渲染子组件 — props.childProps 驱动
+     * 渲染子组件 — props.childProps 驱动
      *
      * childProps 是使用方传入的子节点配置，key 对应 tpl children 的 name。
      * 每个子节点的值结构：{ props, body, childProps }，天然递归。
@@ -312,7 +275,7 @@ export const TemplateAbility: AbilityDefinition = {
      * } }
      * ```
      */
-    _renderChildComponentsV2(): void {
+    _renderChildComponents(): void {
         const userChildProps = this.props?.childProps as Record<string, any> | undefined;
         if (!userChildProps || Object.keys(userChildProps).length === 0) return;
 
@@ -371,7 +334,7 @@ export const TemplateAbility: AbilityDefinition = {
             }
 
             this.logger?.debug?.(
-                '[Template] _renderChildComponentsV2, key =',
+                '[Template] _renderChildComponents, key =',
                 nodeKey,
                 'componentClass =',
                 ComponentClass?.name || (ComponentClass as any)?.type,
@@ -441,17 +404,7 @@ export const TemplateAbility: AbilityDefinition = {
     },
 
     /**
-     * 绑定桥接事件（子组件专用，旧链路兼容）
-     *
-     * DOM 节点的桥接事件已由 bindDomEventBindings 统一处理，
-     * 子组件的桥接事件也由 bindDomEventBindings 统一处理。
-     * 此方法保留为空，供旧链路兼容调用。
-     */
-    bindBridgeEvents(): void {
-        // 已由 bindDomEventBindings 统一处理，此方法保留为空
-    },
 
-    /**
      * 绑定合并后的 DOM 事件
      *
      * 使用编译时从 DomEventDecl 生成的 DomEventBinding 结构，
@@ -471,7 +424,8 @@ export const TemplateAbility: AbilityDefinition = {
      */
     bindDomEventBindings(): void {
         const ctor = this.constructor as any;
-        const bindings: DomEventBinding[] = ctor._domEventBindings;
+        const compiled: CompiledComponentTemplate = ctor._compiledTemplate;
+        const bindings: DomEventBinding[] = compiled.domEventBindings;
         if (!bindings || bindings.length === 0) return;
 
         const eventKey = this.eventKey;
@@ -500,8 +454,7 @@ export const TemplateAbility: AbilityDefinition = {
                 entities,
             } = binding;
 
-            const [group, name] = nodeKey.split(':');
-            const node = this.nodeMap[name] ?? this.nodeMap[nodeKey];
+            const node = this.nodeMap[nodeKey];
             if (!node) continue;
 
             if (node.component) {
@@ -713,22 +666,37 @@ export const TemplateAbility: AbilityDefinition = {
      */
     _setupForwards(): void {
         const ctor = this.constructor as any;
-        const forwards: Record<string, string> | undefined = ctor._forwards;
+        const forwards: Record<string, any> | undefined = ctor._forwards;
         if (!forwards) return;
 
-        for (const [localName, path] of Object.entries(forwards)) {
-            const resolved = this._resolveForwardPath(path);
-            if (!resolved) {
-                this.logger?.warn?.('[Template] _setupForwards: path not resolved:', path);
-                continue;
-            }
-
-            const { target, propName } = resolved;
-
-            if (propName) {
-                this._setupPropertyForward(localName, target, propName);
-            } else {
-                this._setupComponentForward(localName, target);
+        for (const [localName, config] of Object.entries(forwards)) {
+            if (typeof config === 'string') {
+                const resolved = this._resolveForwardPath(config);
+                if (!resolved) {
+                    this.logger?.warn?.('[Template] _setupForwards: path not resolved:', config);
+                    continue;
+                }
+                const { target, propName } = resolved;
+                if (propName) {
+                    this._setupPropertyForward(localName, target, propName);
+                } else {
+                    this._setupComponentForward(localName, target);
+                }
+            } else if (config && typeof config === 'object') {
+                const resolved = this._resolveForwardPath(config.path);
+                if (!resolved) {
+                    this.logger?.warn?.(
+                        '[Template] _setupForwards: path not resolved:',
+                        config.path
+                    );
+                    continue;
+                }
+                const { target, propName } = resolved;
+                if (propName) {
+                    this._setupPropertyForward(localName, target, propName);
+                } else {
+                    this._setupComponentForward(localName, target, config.methods);
+                }
             }
         }
     },
@@ -786,7 +754,11 @@ export const TemplateAbility: AbilityDefinition = {
      * 2. 生成自动属性透传：dialog.iconClassName → iconComponent.el.className 等
      * 3. 代理目标组件的公共方法
      */
-    _setupComponentForward(localName: string, target: any): void {
+    _setupComponentForward(
+        localName: string,
+        target: any,
+        methods?: string[] | Record<string, string>
+    ): void {
         Object.defineProperty(this, localName, {
             get() {
                 return target;
@@ -796,7 +768,7 @@ export const TemplateAbility: AbilityDefinition = {
         });
 
         this._forwardAutoProps(target, localName);
-        this._proxyComponentMethods(target, localName);
+        this._proxyComponentMethods(target, localName, methods);
     },
 
     /**
@@ -848,23 +820,93 @@ export const TemplateAbility: AbilityDefinition = {
      * 遍历目标组件直接原型上的方法（不含 _ 前缀、constructor、
      * 已存在于父组件的方法），在父组件上创建同名代理方法。
      */
-    _proxyComponentMethods(target: any, localName: string): void {
-        const targetProto = Object.getPrototypeOf(target);
-        if (!targetProto) return;
+    _proxyComponentMethods(
+        target: any,
+        localName: string,
+        methods?: string[] | Record<string, string>
+    ): void {
+        if (!methods) return;
 
-        for (const key of Object.getOwnPropertyNames(targetProto)) {
-            if (key === 'constructor') continue;
-            if (key.startsWith('_')) continue;
-            const desc = Object.getOwnPropertyDescriptor(targetProto, key);
-            if (!desc || typeof desc.value !== 'function') continue;
-            if (key in this) continue;
+        const methodMap: Record<string, string> = Array.isArray(methods)
+            ? Object.fromEntries(methods.map(m => [m, m]))
+            : methods;
 
-            (this as any)[key] = function (this: any, ...args: any[]) {
+        for (const [localMethod, targetMethod] of Object.entries(methodMap)) {
+            if (localMethod in this) continue;
+
+            (this as any)[localMethod] = function (this: any, ...args: any[]) {
                 const component = this[localName];
-                if (component && typeof component[key] === 'function') {
-                    return component[key](...args);
+                if (component && typeof component[targetMethod] === 'function') {
+                    return component[targetMethod](...args);
                 }
             };
         }
     },
 };
+
+const ALIGN_MAP: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+    stretch: 'stretch',
+};
+
+const PACK_MAP: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+    between: 'space-between',
+    around: 'space-around',
+};
+
+function applyStyle(
+    el: HTMLElement,
+    style?: string | Record<string, any>,
+    layout?: 'hbox' | 'vbox' | 'fit' | 'grid' | 'center',
+    gap?: number | string,
+    align?: string,
+    pack?: string,
+    wrap?: boolean
+): void {
+    const css: Record<string, string> = {};
+
+    if (layout) {
+        switch (layout) {
+            case 'hbox':
+                css.display = 'flex';
+                css['flex-direction'] = 'row';
+                break;
+            case 'vbox':
+                css.display = 'flex';
+                css['flex-direction'] = 'column';
+                break;
+            case 'fit':
+                css.position = 'relative';
+                break;
+            case 'grid':
+                css.display = 'flex';
+                css['flex-direction'] = 'row';
+                css['flex-wrap'] = 'wrap';
+                break;
+            case 'center':
+                css.display = 'flex';
+                css['align-items'] = 'center';
+                css['justify-content'] = 'center';
+                break;
+        }
+        if (gap !== undefined) css.gap = typeof gap === 'number' ? `${gap}px` : gap;
+        if (align && ALIGN_MAP[align]) css['align-items'] = ALIGN_MAP[align];
+        if (pack && PACK_MAP[pack]) css['justify-content'] = PACK_MAP[pack];
+        if (wrap !== undefined && layout !== 'grid') css['flex-wrap'] = wrap ? 'wrap' : 'nowrap';
+    }
+
+    if (typeof style === 'object') Object.assign(css, style);
+
+    const keys = Object.keys(css);
+    if (keys.length === 0 && typeof style !== 'string') return;
+
+    const objStr = keys
+        .map(k => `${k.replace(/([A-Z])/g, '-$1').toLowerCase()}:${css[k]}`)
+        .join(';');
+    el.setAttribute('style', typeof style === 'string' ? `${objStr};${style}` : objStr);
+}

@@ -15,10 +15,10 @@ import type {
     BridgesConfig,
     ListensConfig,
     LifecycleHooks,
-} from '../layout-types';
+} from '../types/layout';
 import { ANIMATION_KEYS } from '../layout-types';
-import type { DragDecl } from '../layout-types';
-import type { OverflowConfigDecl, SubmenuDecl, ContextMenuDecl } from '../layout-types';
+import type { DragDecl } from '../types/layout';
+import type { OverflowConfigDecl, SubmenuDecl, ContextMenuDecl } from '../types/layout';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { EventBridge } from '@/events/EventBridge';
@@ -35,7 +35,8 @@ import {
 import type { AnimationKey } from './AnimationAbility';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { ElementEventAbility } from './ElementEventAbility';
-import { DOMAIN_OVERLAY_KEYS, type DomainOverlayKey } from '../body-keys';
+import { DOMAIN_OVERLAY_KEYS } from '../body-keys';
+import type { DomainOverlayKey } from '../types/body-keys';
 
 export const InitAbility: AbilityDefinition = {
     /**

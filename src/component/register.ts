@@ -34,6 +34,7 @@ import { ButtonGroupComponent } from './button-group/ButtonGroupComponent';
 import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
 import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
 import { AccordionComponent } from './accordion/AccordionComponent';
+import { ToolbarComponent } from './toolbar/ToolbarComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -56,7 +57,7 @@ export function registerAllComponents(): void {
     registrar.register('Panel', PanelComponent);
     registrar.register('Header', HeaderComponent);
     registrar.register('ItemGroup', ItemGroupComponent);
-    registrar.register('Toolbar', ItemGroupComponent);
+    registrar.register('Toolbar', ToolbarComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);
     registrar.register('OverflowScroll', OverflowScrollComponent);

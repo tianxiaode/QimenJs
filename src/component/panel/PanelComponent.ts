@@ -1,6 +1,8 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 
+type ItemGroupInstance = InstanceType<typeof ItemGroupComponent>;
+
 export interface ToolGroupConfig {
     eventKey: string;
     items: Record<string, any>[];
@@ -52,8 +54,8 @@ const PanelBase = TemplateComponent.withTemplate({
 });
 
 export class PanelComponent extends PanelBase {
-    private _toolsLeft: ItemGroupComponent | null = null;
-    private _toolsRight: ItemGroupComponent | null = null;
+    private _toolsLeft: ItemGroupInstance | null = null;
+    private _toolsRight: ItemGroupInstance | null = null;
 
     constructor(props?: PanelProps) {
         super();
@@ -121,7 +123,7 @@ export class PanelComponent extends PanelBase {
         }
     }
 
-    _bridgeToolEvents(group: ItemGroupComponent, eventKey: string): void {
+    _bridgeToolEvents(group: ItemGroupInstance, eventKey: string): void {
         for (const event of group.forwardEvents) {
             group.on(event, (data: any) => {
                 this.emit(event, data, { source: eventKey });

@@ -69,14 +69,7 @@ export interface EventMap {
 export interface NodeMetadata {
     /** DOM 元素引用 */
     el: HTMLElement;
-    /** data-content 原始值（如 "input:field"） */
-    raw: string;
-    /**
-     * 节点名称 — nodeMap 的一级索引键
-     *
-     * 来自 TplNode 的 name 或 content 属性。
-     * 支持冒号语法（如 'dialog:header'），冒号只是 name 值的一部分。
-     */
+    /** 节点名称 — nodeMap 的一级索引键 */
     name: string;
     /** 事件委托目标选择器（由 data-target 声明） */
     delegateTarget?: string;
@@ -126,23 +119,29 @@ export type NodeIndexPath = Record<string, number[]>;
  * 第一次实例化时由 buildNodeMap 生成，存到类原型上共享。
  */
 export interface NodeTemplateMeta {
-    raw: string;
-    /** 节点名称 — nodeMap 的一级索引键 */
     name: string;
     delegateTarget?: string;
     jsonRef?: string;
     jsonMode?: 'replace' | 'child';
     templateRef?: string;
-    /** 内容操作模式（从元素标签推导） */
     mode: 'value' | 'src' | 'html';
-    /** 内部事件属性值（data-event 的原始值，如 "click?once"） */
-    eventAttr?: string;
-    /** 外部事件属性值（data-emit 的原始值，如 "click"） */
-    emitAttr?: string;
-    /** i18n 翻译 key（由 data-i18n 声明，如 "btn.save"） */
+
     i18nKey?: string;
-    /** 初始隐藏状态（由 data-hidden 声明，运行时设置 el.hidden） */
     hidden?: boolean;
-    /** 子组件静态属性（由 TplNode.props 声明） */
     props?: Record<string, any>;
+    className?: string;
+    /** 内联样式（原始定义，运行时应用） */
+    style?: string | Record<string, any>;
+    /** 布局模式 */
+    layout?: 'hbox' | 'vbox' | 'fit' | 'grid' | 'center';
+    /** 布局间距 */
+    gap?: number | string;
+    /** 交叉轴对齐 */
+    align?: 'start' | 'center' | 'end' | 'stretch';
+    /** 主轴分布 */
+    pack?: 'start' | 'center' | 'end' | 'between' | 'around';
+    /** 是否换行 */
+    wrap?: boolean;
+    attrs?: Record<string, string>;
+    text?: string;
 }

@@ -1,161 +1,11 @@
 /**
- * template-compiler.ts — 统一预编译引擎
- *
- * 从 TemplateComponent.ts 和 NodeMapAbility.ts 提取的共享预编译逻辑，
- * 消除两处重复代码。
+ * template-compiler.ts — 模板编译工具函数
  *
  * 职责：
- * - 解析 HTML 模板，提取 data-content 节点元数据
- * - 预编译事件模板（内部事件 + 外部事件）
- * - 计算节点索引路径
- * - 构建事件映射
+ * - 节点定位（findByPath / computeNodePath）
+ * - 内容模式推导（inferContentMode）
+ * - 事件属性解析（parseEventAttr）
  */
-
-import type { NodeIndexPath, NodeTemplateMeta } from './types';
-import type { ContentInfo } from './template-types';
-
-// ─── 预编译事件模板类型 ───
-
-/**
- * 合并后的 DOM 事件绑定 — 编译时从 DomEventDecl 生成
- *
- * 同一个 DOM 事件（如 click）可能同时需要：
- * - 调用内部 handler（onClick）
- * - 转发为组件事件（emits）
- * - 通过 EventBridge 桥接（bridges）
- *
- * 绑定时只需一次 this.bind()，在回调中统一处理所有转发。
- */
-export interface DomEventBinding {
-    /** DOM 事件语义（如 click, input） */
-    event: string;
-    /** 对应 nodeMap 中的 group:name key */
-    nodeKey: string;
-    /** 内部 handler 名（如 onClick），handler: true 时自动推导 */
-    handler?: string;
-    /** 是否只触发一次 */
-    once?: boolean;
-    /** 是否事件委托 */
-    delegate?: boolean;
-    /** 事件委托目标选择器 */
-    delegateTarget?: string;
-    /** 防抖时间（毫秒） */
-    debounce?: number;
-    /** 节流时间（毫秒） */
-    throttle?: number;
-    /** 转发为组件事件名列表（来自 emits 声明），如同名 'click' 或重命名 'close' */
-    emits?: string[];
-    /** 桥接事件列表（来自 bridges 声明） */
-    bridges?: { targetEvent: string; once?: boolean }[];
-    /** 实体操作（来自 entities 声明），值为 mgr 方法名 */
-    entities?: string;
-}
-
-/**
- * 预编译结果
- */
-export interface CompiledTemplate {
-    indexPath: NodeIndexPath;
-    templateMetas: Record<string, NodeTemplateMeta>;
-    contentPropNames: string[];
-    /** 内容节点信息数组 — 只收集有 content 语义的节点，运行时直接遍历 */
-    contentInfos: ContentInfo[];
-    /** 预编译的模板元素缓存，可直接用作 _templateCache */
-    templateCache: HTMLTemplateElement;
-}
-
-// ─── 预编译主函数 ───
-
-/**
- * 预编译模板：解析 HTML 提取节点数据 + 预编译事件模板
- *
- * withTemplate 路径：类定义时调用一次，结果存到 static 属性。
- * NodeMapAbility 路径：首次实例化时调用，结果存到原型共享。
- */
-export function precompileTemplate(templateHtml: string, isMultiArea: boolean): CompiledTemplate {
-    const tpl = document.createElement('template');
-    tpl.innerHTML = templateHtml;
-
-    // 创建临时容器用于节点查找和路径计算
-    // DocumentFragment 的子元素没有 parentElement，computeNodePath 无法向上遍历
-    // 临时容器模拟 _initElementFromTemplate 中 this.el.appendChild(fragment) 的结构
-    const pathRoot = document.createElement('div');
-    pathRoot.appendChild(tpl.content.cloneNode(true));
-
-    // 查找所有 data-content 节点：包括顶级元素和后代元素
-    const topEls = Array.from(pathRoot.children) as HTMLElement[];
-    const descendantEls = Array.from(pathRoot.querySelectorAll('[data-content]'));
-    // 合并去重：顶级元素可能也有 data-content
-    const els = [
-        ...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls]),
-    ];
-
-    const indexPath: NodeIndexPath = {};
-    const templateMetas: Record<string, NodeTemplateMeta> = {};
-    const contentPropNames: string[] = [];
-    const contentInfos: ContentInfo[] = [];
-
-    for (const el of els) {
-        const htmlEl = el as HTMLElement;
-        const value = htmlEl.getAttribute('data-content')!;
-
-        const colonIndex = value.indexOf(':');
-        const group = colonIndex === -1 ? value : value.slice(0, colonIndex);
-        const name = colonIndex === -1 ? '_' : value.slice(colonIndex + 1);
-        // nodeMap 一级结构：key 直接用 name
-        const key = name;
-
-        const delegateTarget = htmlEl.getAttribute('data-target') || undefined;
-        const jsonRef = htmlEl.getAttribute('data-json') || undefined;
-        const jsonModeAttr = htmlEl.getAttribute('data-json-mode');
-        const jsonMode =
-            jsonModeAttr === 'child'
-                ? ('child' as const)
-                : jsonRef
-                  ? ('replace' as const)
-                  : undefined;
-        const templateRef = htmlEl.getAttribute('data-template') || undefined;
-        const mode = inferContentMode(htmlEl);
-        const i18nKey = htmlEl.getAttribute('data-i18n') || undefined;
-        const hiddenAttr = htmlEl.getAttribute('data-hidden');
-        const hidden = hiddenAttr === 'true';
-        const eventAttr = htmlEl.getAttribute('data-event') || undefined;
-        const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
-
-        templateMetas[key] = {
-            raw: value,
-            name,
-            delegateTarget,
-            jsonRef,
-            jsonMode,
-            templateRef,
-            mode,
-            eventAttr,
-            emitAttr,
-            i18nKey,
-            hidden,
-        };
-
-        // 计算节点路径（相对于 pathRoot，与 _buildNodeMapFromCompiled 中 this.el 结构一致）
-        indexPath[key] = computeNodePath(pathRoot, htmlEl);
-
-        // 推导内容属性名
-        const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-        const propName = isMultiArea ? `${group}${capitalName}` : name === '_' ? group : name;
-        contentPropNames.push(propName);
-
-        // 收集内容节点信息
-        contentInfos.push({
-            group,
-            name,
-            mode,
-            i18nKey,
-            propName,
-        });
-    }
-
-    return { indexPath, templateMetas, contentPropNames, contentInfos, templateCache: tpl };
-}
 
 // ─── 节点定位 ───
 
@@ -217,9 +67,7 @@ export function inferContentMode(el: HTMLElement): 'value' | 'src' | 'html' {
  * - "input?throttle=100"
  * - "input,change"
  */
-export function parseEventAttr(
-    eventAttr: string
-): Array<{
+export function parseEventAttr(eventAttr: string): Array<{
     event: string;
     name?: string;
     once?: boolean;
@@ -277,11 +125,3 @@ export function parseEventAttr(
 
     return results;
 }
-
-// 新模板类型
-export type { TplNode, ComponentTemplate, DomEventDecl } from './template-types';
-export { type TplNodeMeta } from './template-json';
-
-// 新模板编译（一步到位，跳过 HTML data-* 属性）
-export { compileTemplate, type CompiledTemplateResult } from './template-json';
-export { type ContentInfo } from './template-types';

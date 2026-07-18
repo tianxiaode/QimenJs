@@ -23,7 +23,7 @@ export class TabsComponent extends TemplateComponent.withTemplate({
     },
     body: { type: 'Tabs' },
 }) {
-    private _tabBar: TabBarComponent | null = null;
+    private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
     private _tabItems: TabItem[] = [];
     private _activeIndex: number = 0;
     private _contentInstances: any[] = [];
@@ -61,7 +61,7 @@ export class TabsComponent extends TemplateComponent.withTemplate({
         this._applyActive();
     }
 
-    get tabBar(): TabBarComponent | null {
+    get tabBar(): InstanceType<typeof TabBarComponent> | null {
         return this._tabBar;
     }
 

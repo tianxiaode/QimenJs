@@ -1,4 +1,4 @@
-import type { EventListen } from '../component-core/layout-types';
+import type { EventListen } from '../component-core/types/layout';
 
 /**
  * EventFlowRegistrar - 事件流注册表

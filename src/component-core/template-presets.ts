@@ -1,33 +1,28 @@
 /**
- * 组件模板预设（新格式）
- *
- * 所有模板使用 ComponentTemplate 格式定义：
- * - tpl: 根节点定义，包含 children
+ * 组件模板预设（新格式�? *
+ * 所有模板使�?ComponentTemplate 格式定义�? * - tpl: 根节点定义，包含 children
  * - body: 复制到组件实例的属性和方法
  *
  * 新格式特性：
- * - name 替代 content 作为 nodeMap 索引键
- * - content 作为语义描述（title/text/icon）
- * - events/forwards/bridges 三类事件分离
+ * - name 替代 content 作为 nodeMap 索引�? * - content 作为语义描述（title/text/icon�? * - events/forwards/bridges 三类事件分离
  * - style 支持字符串和对象
  */
 
-import type { ComponentTemplate } from './template-types';
+import type { ComponentTemplate } from './types/template';
 
 /**
  * 按钮模板
  *
- * 节点：
- * - button:icon — 图标
- * - button:text — 文本
- * - button:expand — 下拉展开箭头（默认隐藏，配置下拉时显示）
+ * 节点�? * - button:icon �?图标
+ * - button:text �?文本
+ * - button:expand �?下拉展开箭头（默认隐藏，配置下拉时显示）
  */
 export const BUTTON_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'button:icon', content: 'icon' },
-            { tag: 'span', name: 'button:text', content: 'text' },
+            { tag: 'span', name: 'button:icon' },
+            { tag: 'span', name: 'button:text' },
             {
                 tag: 'div',
                 name: 'button:expand',
@@ -40,15 +35,12 @@ export const BUTTON_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 输入框模板（label 在左侧，默认布局）
- *
- * 节点：
- * - input:label — 标签文本
- * - input:prefix — 前缀文本
- * - input:field — 输入框（内部事件：input）
- * - input:suffix — 后缀文本
- * - input:error — 错误提示
- * - input:hint — 提示文本
+ * Ã¨Â¾ÂÃ¥ÂÂ¥Ã¦Â¡ÂÃ¦Â¨Â¡Ã¦ÂÂ¿Ã¯Â¼Âlabel Ã¥ÂÂ¨Ã¥Â·Â¦Ã¤Â¾Â§Ã¯Â¼ÂÃ©Â»ÂÃ¨Â®Â¤Ã¥Â¸ÂÃ¥Â±ÂÃ¯Â¿Â½? *
+ * Ã¨ÂÂÃ§ÂÂ¹Ã¯Â¿Â½? * - input:label Ã¯Â¿Â½?Ã¦Â ÂÃ§Â­Â¾Ã¦ÂÂÃ¦ÂÂ¬
+ * - input:prefix Ã¯Â¿Â½?Ã¥ÂÂÃ§Â¼ÂÃ¦ÂÂÃ¦ÂÂ¬
+ * - input:field Ã¯Â¿Â½?Ã¨Â¾ÂÃ¥ÂÂ¥Ã¦Â¡ÂÃ¯Â¼ÂÃ¥ÂÂÃ©ÂÂ¨Ã¤ÂºÂÃ¤Â»Â¶Ã¯Â¼ÂinputÃ¯Â¿Â½? * - input:suffix Ã¯Â¿Â½?Ã¥ÂÂÃ§Â¼ÂÃ¦ÂÂÃ¦ÂÂ¬
+ * - input:error Ã¯Â¿Â½?Ã©ÂÂÃ¨Â¯Â¯Ã¦ÂÂÃ§Â¤Âº
+ * - input:hint Ã¯Â¿Â½?Ã¦ÂÂÃ§Â¤ÂºÃ¦ÂÂÃ¦ÂÂ¬
  */
 export const INPUT_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -57,38 +49,32 @@ export const INPUT_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'span',
                 name: 'input:label',
-                content: 'text',
                 className: 'q-input__text q-input__text--label',
             },
             {
                 tag: 'span',
                 name: 'input:prefix',
-                content: 'text',
                 className: 'q-input__text q-input__text--prefix',
             },
             {
                 tag: 'input',
                 name: 'input:field',
-                content: 'value',
                 events: { input: { handler: true } },
                 className: 'q-input__field',
             },
             {
                 tag: 'span',
                 name: 'input:suffix',
-                content: 'text',
                 className: 'q-input__text q-input__text--suffix',
             },
             {
                 tag: 'span',
                 name: 'input:error',
-                content: 'text',
                 className: 'q-input__text q-input__text--error',
             },
             {
                 tag: 'span',
                 name: 'input:hint',
-                content: 'text',
                 className: 'q-input__text q-input__text--hint',
             },
         ],
@@ -96,7 +82,7 @@ export const INPUT_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 输入框模板（label 在上方）
+ * ÃÂÃÂ¨ÃÂÃÂ¾ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ¦ÃÂÃÂ¡ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂlabel ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂ
  */
 export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -105,7 +91,6 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'span',
                 name: 'input:label',
-                content: 'text',
                 className: 'q-input__text q-input__text--label',
             },
             {
@@ -115,20 +100,17 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'input:prefix',
-                        content: 'text',
                         className: 'q-input__text q-input__text--prefix',
                     },
                     {
                         tag: 'input',
                         name: 'input:field',
-                        content: 'value',
                         events: { input: { handler: true } },
                         className: 'q-input__field',
                     },
                     {
                         tag: 'span',
                         name: 'input:suffix',
-                        content: 'text',
                         className: 'q-input__text q-input__text--suffix',
                     },
                 ],
@@ -136,13 +118,11 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'span',
                 name: 'input:error',
-                content: 'text',
                 className: 'q-input__text q-input__text--error',
             },
             {
                 tag: 'span',
                 name: 'input:hint',
-                content: 'text',
                 className: 'q-input__text q-input__text--hint',
             },
         ],
@@ -150,22 +130,19 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 下拉选择模板
+ * ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
- * 节点：
- * - select:label — 标签文本
- * - select:field — 下拉框（内部事件：change）
- * - select:expand — 下拉展开箭头（默认隐藏）
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - select:label ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ§ÃÂÃÂ­ÃÂÃÂ¾ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
+ * - select:field ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¡ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂchangeÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - select:expand ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ©ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ®ÃÂÃÂ¤ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂ
  */
 export const SELECT_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'select:label', content: 'text' },
+            { tag: 'span', name: 'select:label' },
             {
                 tag: 'select',
                 name: 'select:field',
-                content: 'value',
                 events: { change: { handler: true } },
                 className: 'q-select__field',
             },
@@ -181,14 +158,9 @@ export const SELECT_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 工具栏模板
- *
- * 节点：
- * - toolbar:prevBtn — 左/上箭头按钮（默认隐藏，内部事件：click）
- * - toolbar:contentArea — 子项容器
- * - toolbar:nextBtn — 右/下箭头按钮（默认隐藏，内部事件：click）
- * - toolbar:triggerBtn — 下拉触发按钮（默认隐藏，内部事件：click）
- * - toolbar:menuPanel — 下拉菜单面板（默认隐藏）
+ * ÃÂÃÂ¥ÃÂÃÂ·ÃÂÃÂ¥ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ·ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? *
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toolbar:prevBtn ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ®ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ©ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ®ÃÂÃÂ¤ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂclickÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toolbar:contentArea ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂ­ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¡ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¨
+ * - toolbar:nextBtn ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ®ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ©ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ®ÃÂÃÂ¤ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂclickÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toolbar:triggerBtn ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂ§ÃÂÃÂ¦ÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ®ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ©ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ®ÃÂÃÂ¤ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂclickÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toolbar:menuPanel ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¢ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ©ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ®ÃÂÃÂ¤ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂ
  */
 export const TOOLBAR_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -235,26 +207,22 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 图标模板（组件直接管理 DOM，无需节点）
- */
+ * ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¾ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ§ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ§ÃÂÃÂÃÂÃÂ´ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ¡ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?DOMÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? */
 export const ICON_TEMPLATE: ComponentTemplate = {
     tpl: { tag: 'div' },
 };
 
 /**
- * 文本模板（组件直接管理 DOM，无需节点）
- */
+ * ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬ÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ§ÃÂÃÂ»ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ§ÃÂÃÂÃÂÃÂ´ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ¡ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?DOMÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? */
 export const TEXT_TEMPLATE: ComponentTemplate = {
     tpl: { tag: 'span' },
 };
 
 /**
- * 表格模板
+ * ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¨ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂ¼ÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
- * 节点：
- * - table:headerRow — 表头容器
- * - table:bodyScroll — 表体容器（内部事件：scroll）
- */
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - table:headerRow ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¨ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´ÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¨
+ * - table:bodyScroll ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂ½ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂscrollÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? */
 export const TABLE_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
@@ -272,14 +240,12 @@ export const TABLE_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 弹窗模板
+ * ÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂ¹ÃÂÃÂ§ÃÂÃÂªÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
- * 节点：
- * - dialog:header — 头部区域
- * - dialog:text — 标题文本
- * - dialog:close — 关闭按钮（内部事件：click）
- * - dialog:body — 内容区域
- * - dialog:footer — 底部区域
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - dialog:header ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´ÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¥ÃÂÃÂÃÂÃÂºÃÂÃÂ¥ÃÂÃÂÃÂÃÂ
+ * - dialog:text ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
+ * - dialog:close ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ³ÃÂÃÂ©ÃÂÃÂÃÂÃÂ­ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ®ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂclickÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - dialog:body ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂºÃÂÃÂ¥ÃÂÃÂÃÂÃÂ
+ * - dialog:footer ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂºÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¥ÃÂÃÂÃÂÃÂºÃÂÃÂ¥ÃÂÃÂÃÂÃÂ
  */
 export const DIALOG_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -293,7 +259,6 @@ export const DIALOG_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'dialog:text',
-                        content: 'text',
                         className: 'q-dialog__title',
                     },
                     {
@@ -312,28 +277,26 @@ export const DIALOG_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 提示浮层模板
+ * ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
- * 节点：
- * - tips:default — 提示文本
- * - tips:arrow — 浮层定位箭头
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - tips:default ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
+ * - tips:arrow ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ½ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´
  */
 export const TIPS_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'tips:default', content: 'text', className: 'q-tips__content' },
+            { tag: 'span', name: 'tips:default', className: 'q-tips__content' },
             { tag: 'div', name: 'tips:arrow', className: 'q-arrow' },
         ],
     },
 };
 
 /**
- * 下拉菜单浮层模板
+ * ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
- * 节点：
- * - dropdown:default — 下拉内容
- * - dropdown:arrow — 浮层定位箭头
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - dropdown:default ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¤ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹
+ * - dropdown:arrow ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ½ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´
  */
 export const DROPDOWN_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -346,11 +309,9 @@ export const DROPDOWN_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 弹出框浮层模板
- *
- * 节点：
- * - popover:default — 弹出内容
- * - popover:arrow — 浮层定位箭头
+ * ÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂºÃÂÃÂ¦ÃÂÃÂ¡ÃÂÃÂÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? *
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - popover:default ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂ¹ÃÂÃÂ¥ÃÂÃÂÃÂÃÂºÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂ¹
+ * - popover:arrow ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂµÃÂÃÂ®ÃÂÃÂ¥ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ®ÃÂÃÂÃÂÃÂ¤ÃÂÃÂ½ÃÂÃÂÃÂÃÂ§ÃÂÃÂ®ÃÂÃÂ­ÃÂÃÂ¥ÃÂÃÂ¤ÃÂÃÂ´
  */
 export const POPOVER_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -363,30 +324,25 @@ export const POPOVER_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * Toast 轻量模板（无标题）
- *
- * 节点：
- * - toast:icon — 类型图标
- * - toast:message — 消息文本
+ * Toast ÃÂÃÂ¨ÃÂÃÂ½ÃÂÃÂ»ÃÂÃÂ©ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? *
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toast:icon ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ§ÃÂÃÂ±ÃÂÃÂ»ÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¾ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂ
+ * - toast:message ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂ¶ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
  */
 export const TOAST_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'div', name: 'toast:icon', content: 'icon', className: 'q-toast__icon' },
-            { tag: 'span', name: 'toast:message', content: 'text', className: 'q-toast__message' },
+            { tag: 'div', name: 'toast:icon', className: 'q-toast__icon' },
+            { tag: 'span', name: 'toast:message', className: 'q-toast__message' },
         ],
     },
 };
 
 /**
- * ToastNotification 增强模板（有标题）
- *
- * 节点：
- * - toast:text — 标题文本
- * - toast:close — 关闭按钮（内部事件：click）
- * - toast:icon — 类型图标
- * - toast:message — 消息文本
+ * ToastNotification ÃÂÃÂ¥ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂºÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? *
+ * ÃÂÃÂ¨ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toast:text ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂÃÂÃÂ©ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
+ * - toast:close ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¥ÃÂÃÂÃÂÃÂ³ÃÂÃÂ©ÃÂÃÂÃÂÃÂ­ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ®ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ¨ÃÂÃÂ¤ÃÂÃÂºÃÂÃÂÃÂÃÂ¤ÃÂÃÂ»ÃÂÃÂ¶ÃÂÃÂ¯ÃÂÃÂ¼ÃÂÃÂclickÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½? * - toast:icon ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ§ÃÂÃÂ±ÃÂÃÂ»ÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¾ÃÂÃÂ¦ÃÂÃÂ ÃÂÃÂ
+ * - toast:message ÃÂÃÂ¯ÃÂÃÂ¿ÃÂÃÂ½?ÃÂÃÂ¦ÃÂÃÂ¶ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¬
  */
 export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -399,7 +355,6 @@ export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'toast:text',
-                        content: 'text',
                         className: 'q-toast__title',
                     },
                     {
@@ -411,22 +366,18 @@ export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
                     },
                 ],
             },
-            { tag: 'div', name: 'toast:icon', content: 'icon', className: 'q-toast__icon' },
-            { tag: 'span', name: 'toast:message', content: 'text', className: 'q-toast__message' },
+            { tag: 'div', name: 'toast:icon', className: 'q-toast__icon' },
+            { tag: 'span', name: 'toast:message', className: 'q-toast__message' },
         ],
     },
 };
 
 /**
- * Msgbox 模态消息框模板
+ * Msgbox ÃÂ¦ÃÂ¨ÃÂ¡ÃÂ¦ÃÂÃÂÃÂ¦ÃÂ¶ÃÂÃÂ¦ÃÂÃÂ¯ÃÂ¦ÃÂ¡ÃÂÃÂ¦ÃÂ¨ÃÂ¡ÃÂ¦ÃÂÃÂ¿
  *
- * 节点：
- * - msgbox:text — 标题文本
- * - msgbox:content — 内容文本
- * - msgbox:field — prompt 输入框（内部事件：input）
- * - msgbox:cancel — 取消按钮（内部事件：click）
- * - msgbox:confirm — 确认按钮（内部事件：click）
- */
+ * ÃÂ¨ÃÂÃÂÃÂ§ÃÂÃÂ¹ÃÂ¯ÃÂ¿ÃÂ½? * - msgbox:text ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ¦ÃÂ ÃÂÃÂ©ÃÂ¢ÃÂÃÂ¦ÃÂÃÂÃÂ¦ÃÂÃÂ¬
+ * - msgbox:content ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ¥ÃÂÃÂÃÂ¥ÃÂ®ÃÂ¹ÃÂ¦ÃÂÃÂÃÂ¦ÃÂÃÂ¬
+ * - msgbox:field ÃÂ¯ÃÂ¿ÃÂ½?prompt ÃÂ¨ÃÂ¾ÃÂÃÂ¥ÃÂÃÂ¥ÃÂ¦ÃÂ¡ÃÂÃÂ¯ÃÂ¼ÃÂÃÂ¥ÃÂÃÂÃÂ©ÃÂÃÂ¨ÃÂ¤ÃÂºÃÂÃÂ¤ÃÂ»ÃÂ¶ÃÂ¯ÃÂ¼ÃÂinputÃÂ¯ÃÂ¿ÃÂ½? * - msgbox:cancel ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ¥ÃÂÃÂÃÂ¦ÃÂ¶ÃÂÃÂ¦ÃÂÃÂÃÂ©ÃÂÃÂ®ÃÂ¯ÃÂ¼ÃÂÃÂ¥ÃÂÃÂÃÂ©ÃÂÃÂ¨ÃÂ¤ÃÂºÃÂÃÂ¤ÃÂ»ÃÂ¶ÃÂ¯ÃÂ¼ÃÂclickÃÂ¯ÃÂ¿ÃÂ½? * - msgbox:confirm ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ§ÃÂ¡ÃÂ®ÃÂ¨ÃÂ®ÃÂ¤ÃÂ¦ÃÂÃÂÃÂ©ÃÂÃÂ®ÃÂ¯ÃÂ¼ÃÂÃÂ¥ÃÂÃÂÃÂ©ÃÂÃÂ¨ÃÂ¤ÃÂºÃÂÃÂ¤ÃÂ»ÃÂ¶ÃÂ¯ÃÂ¼ÃÂclickÃÂ¯ÃÂ¿ÃÂ½? */
 export const MSGBOX_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
@@ -438,7 +389,6 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'msgbox:text',
-                        content: 'text',
                         className: 'q-msgbox__title',
                     },
                 ],
@@ -450,13 +400,11 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'msgbox:content',
-                        content: 'text',
                         className: 'q-msgbox__content',
                     },
                     {
                         tag: 'input',
                         name: 'msgbox:field',
-                        content: 'value',
                         events: { input: { handler: true } },
                         className: 'q-msgbox__input',
                         style: 'display:none;',
@@ -488,29 +436,22 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * Badge 角标模板
+ * Badge Ã¨Â§ÂÃ¦Â ÂÃ¦Â¨Â¡Ã¦ÂÂ¿
  *
- * 节点：
- * - badge:default — 角标文本
+ * Ã¨ÂÂÃ§ÂÂ¹Ã¯Â¿Â½? * - badge:default Ã¯Â¿Â½?Ã¨Â§ÂÃ¦Â ÂÃ¦ÂÂÃ¦ÂÂ¬
  */
 export const BADGE_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
-        children: [
-            { tag: 'span', name: 'badge:default', content: 'text', className: 'q-badge__content' },
-        ],
+        children: [{ tag: 'span', name: 'badge:default', className: 'q-badge__content' }],
     },
 };
 
 /**
- * 菜单项模板
- *
- * 节点：
- * - menuItem:content — 整行可点击区域（内部事件：click）
- * - menuItem:icon — 图标
- * - menuItem:text — 文本
- * - menuItem:shortcut — 快捷键文本
- * - menuItem:expand — 子菜单展开箭头（默认隐藏）
+ * èåé¡¹æ¨¡ï¿½? *
+ * èç¹ï¿½? * - menuItem:content ï¿½?æ´è¡å¯ç¹å»åºåï¼åé¨äºä»¶ï¼clickï¿½? * - menuItem:icon ï¿½?å¾æ 
+ * - menuItem:text ï¿½?ææ¬
+ * - menuItem:shortcut ï¿½?å¿«æ·é®æï¿½? * - menuItem:expand ï¿½?å­èåå±å¼ç®­å¤´ï¼é»è®¤éèï¼
  */
 export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -525,19 +466,16 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'menuItem:icon',
-                        content: 'icon',
                         className: 'q-menu-item__icon',
                     },
                     {
                         tag: 'span',
                         name: 'menuItem:text',
-                        content: 'text',
                         className: 'q-menu-item__text',
                     },
                     {
                         tag: 'span',
                         name: 'menuItem:shortcut',
-                        content: 'text',
                         className: 'q-menu-item__shortcut',
                     },
                     {
@@ -554,11 +492,9 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 菜单模板
+ * Ã¨ÂÂÃ¥ÂÂÃ¦Â¨Â¡Ã¦ÂÂ¿
  *
- * 节点：
- * - menu:content — 菜单项容器
- */
+ * Ã¨ÂÂÃ§ÂÂ¹Ã¯Â¿Â½? * - menu:content Ã¯Â¿Â½?Ã¨ÂÂÃ¥ÂÂÃ©Â¡Â¹Ã¥Â®Â¹Ã¯Â¿Â½? */
 export const MENU_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
@@ -567,15 +503,11 @@ export const MENU_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 面板模板
+ * Ã©ÂÂ¢Ã¦ÂÂ¿Ã¦Â¨Â¡Ã¦ÂÂ¿
  *
- * 节点：
- * - panel:header — 标题栏容器
- * - panel:toolsLeft — 左侧工具图标区
- * - panel:expand — 折叠箭头（默认隐藏）
- * - panel:title — 标题文本
- * - panel:toolsRight — 右侧工具图标区
- * - panel:body — 内容区域
+ * Ã¨ÂÂÃ§ÂÂ¹Ã¯Â¿Â½? * - panel:header Ã¯Â¿Â½?Ã¦Â ÂÃ©Â¢ÂÃ¦Â ÂÃ¥Â®Â¹Ã¯Â¿Â½? * - panel:toolsLeft Ã¯Â¿Â½?Ã¥Â·Â¦Ã¤Â¾Â§Ã¥Â·Â¥Ã¥ÂÂ·Ã¥ÂÂ¾Ã¦Â ÂÃ¯Â¿Â½? * - panel:expand Ã¯Â¿Â½?Ã¦ÂÂÃ¥ÂÂ Ã§Â®Â­Ã¥Â¤Â´Ã¯Â¼ÂÃ©Â»ÂÃ¨Â®Â¤Ã©ÂÂÃ¨ÂÂÃ¯Â¼Â
+ * - panel:title Ã¯Â¿Â½?Ã¦Â ÂÃ©Â¢ÂÃ¦ÂÂÃ¦ÂÂ¬
+ * - panel:toolsRight Ã¯Â¿Â½?Ã¥ÂÂ³Ã¤Â¾Â§Ã¥Â·Â¥Ã¥ÂÂ·Ã¥ÂÂ¾Ã¦Â ÂÃ¯Â¿Â½? * - panel:body Ã¯Â¿Â½?Ã¥ÂÂÃ¥Â®Â¹Ã¥ÂÂºÃ¥ÂÂ
  */
 export const PANEL_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -601,7 +533,6 @@ export const PANEL_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'panel:title',
-                        content: 'text',
                         className: 'q-panel__title',
                     },
                     {
@@ -617,12 +548,9 @@ export const PANEL_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 导航项模板
- *
- * 节点：
- * - navItem:content — 可点击区域（内部事件：click）
- * - navItem:icon — 图标
- * - navItem:text — 文本
+ * Ã¥Â¯Â¼Ã¨ÂÂªÃ©Â¡Â¹Ã¦Â¨Â¡Ã¯Â¿Â½? *
+ * Ã¨ÂÂÃ§ÂÂ¹Ã¯Â¿Â½? * - navItem:content Ã¯Â¿Â½?Ã¥ÂÂ¯Ã§ÂÂ¹Ã¥ÂÂ»Ã¥ÂÂºÃ¥ÂÂÃ¯Â¼ÂÃ¥ÂÂÃ©ÂÂ¨Ã¤ÂºÂÃ¤Â»Â¶Ã¯Â¼ÂclickÃ¯Â¿Â½? * - navItem:icon Ã¯Â¿Â½?Ã¥ÂÂ¾Ã¦Â Â
+ * - navItem:text Ã¯Â¿Â½?Ã¦ÂÂÃ¦ÂÂ¬
  */
 export const NAVITEM_TEMPLATE: ComponentTemplate = {
     tpl: {
@@ -637,13 +565,11 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'span',
                         name: 'navItem:icon',
-                        content: 'icon',
                         className: 'q-nav-item__icon',
                     },
                     {
                         tag: 'span',
                         name: 'navItem:text',
-                        content: 'text',
                         className: 'q-nav-item__text',
                     },
                 ],
@@ -655,9 +581,7 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
 /**
  * 项组模板
  *
- * 节点：
- * - items — 子项挂载区
- */
+ * 节点�? * - items �?子项挂载�? */
 export const ITEMGROUP_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
@@ -666,9 +590,8 @@ export const ITEMGROUP_TEMPLATE: ComponentTemplate = {
 };
 
 /**
- * 所有组件模板预设
- *
- * key 为组件类型或模板 ID，value 为 ComponentTemplate
+ * 所有组件模板预�? *
+ * key 为组件类型或模板 ID，value �?ComponentTemplate
  */
 export const COMPONENT_TEMPLATES: Record<string, ComponentTemplate> = {
     Button: BUTTON_TEMPLATE,

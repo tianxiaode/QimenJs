@@ -2,7 +2,7 @@
  * TemplateCacheAbility — 模板缓存能力
  *
  * 提供 HTMLTemplateElement 缓存 + cloneNode 快速构建 DOM，
- * 以及 precompileTemplate 提取节点索引路径，克隆后通过 findByPath 定位节点。
+ * 以及 compileTemplate 提取节点索引路径，克隆后通过 findByPath 定位节点。
  * 支持通过 setTemplate() 替换模板，替换时自动重建缓存和节点索引。
  *
  * 适用于命令式管理器（ToastManager、MsgboxManager 等），
@@ -10,9 +10,10 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { jsonTemplateToHtml, convertTemplate, precompileTemplate, findByPath } from '@/component-core/template-compiler';
-import type { ComponentTemplate } from '@/component-core/template-types';
-import type { NodeIndexPath } from '@/component-core/types';
+import { compileTemplate } from '@/component-core/template-json';
+import { findByPath } from '@/component-core/template-compiler';
+import type { ComponentTemplate } from '@/component-core/types/template';
+import type { NodeIndexPath } from '@/component-core/types/index';
 
 // ─── 模板缓存条目 ──────────────────────────────────────────
 
@@ -48,9 +49,8 @@ export const TemplateCacheAbility: AbilityDefinition = {
      * 初始化模板缓存
      *
      * 注册一个模板 key 及其模板定义，自动构建缓存。
-     * 支持 ComponentTemplate（新格式）和 JsonTemplateNode[]（旧格式）。
      */
-    initTemplateCache(key: string, templateJson: any): void {
+    initTemplateCache(key: string, templateJson: ComponentTemplate): void {
         this._templateJsons.set(key, templateJson);
         this.buildTemplateCache(key, templateJson);
     },
@@ -61,39 +61,23 @@ export const TemplateCacheAbility: AbilityDefinition = {
      * 替换后自动重建缓存和节点索引，后续创建的实例使用新模板。
      * 已显示的实例不受影响。
      */
-    setTemplate(key: string, templateJson: any): void {
+    setTemplate(key: string, templateJson: ComponentTemplate): void {
         this._templateJsons.set(key, templateJson);
         this.buildTemplateCache(key, templateJson);
     },
 
     /**
      * 构建模板缓存：HTMLTemplateElement + 预编译节点索引
-     *
-     * 自动识别模板格式：
-     * - ComponentTemplate（有 tpl 字段）→ convertTemplate
-     * - JsonTemplateNode[]（数组）→ jsonTemplateToHtml
      */
-    buildTemplateCache(key: string, templateJson: any): void {
-        let html: string;
+    buildTemplateCache(key: string, templateJson: ComponentTemplate): void {
+        const result = compileTemplate(templateJson);
 
-        if (templateJson && typeof templateJson === 'object' && templateJson.tpl) {
-            // 新格式：ComponentTemplate
-            const result = convertTemplate(templateJson as ComponentTemplate);
-            html = result.html;
-        } else if (Array.isArray(templateJson)) {
-            // 旧格式：JsonTemplateNode[]
-            const result = jsonTemplateToHtml(templateJson);
-            html = result.html;
-        } else {
-            throw new Error(`[TemplateCacheAbility] Unsupported template format for key: ${key}`);
-        }
-
-        // 预编译提取节点索引路径 + 复用模板元素缓存
-        const compiled = precompileTemplate(html, false);
+        const tpl = document.createElement('template');
+        tpl.innerHTML = result.html;
 
         this._templateCaches.set(key, {
-            templateEl: compiled.templateCache,
-            indexPath: compiled.indexPath,
+            templateEl: tpl,
+            indexPath: result.indexPath,
         });
     },
 

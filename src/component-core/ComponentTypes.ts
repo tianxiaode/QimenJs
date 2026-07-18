@@ -76,11 +76,3 @@ export const ComponentTypes = {
     /** 基础单元格 */
     CELL: 'Cell',
 } as const;
-
-/**
- * 组件类型值类型
- *
- * 从 ComponentTypes 常量中提取所有 type 值的联合类型，
- * 用于 LayoutNode.type 的类型约束。
- */
-export type ComponentTypeValue = typeof ComponentTypes[keyof typeof ComponentTypes];
