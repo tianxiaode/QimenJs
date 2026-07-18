@@ -34,7 +34,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         this.logger.debug?.('[OverlayDispatchCenter] initialized');
     }
 
-
     register(overlayKey: string, definition: OverlayDefinition): void {
         this.checkLock();
         this.storage.set(overlayKey, definition);
@@ -103,7 +102,12 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
     }
 
-    private _createAndShow(overlayKey: string, component: any, anchor: HTMLElement, extraData: any): void {
+    private _createAndShow(
+        overlayKey: string,
+        component: any,
+        anchor: HTMLElement,
+        extraData: any
+    ): void {
         const def = this.storage.get(overlayKey);
         if (!def) {
             this.logger.warn?.(`[OverlayDispatchCenter] overlayKey="${overlayKey}" not registered`);
@@ -114,7 +118,9 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const lookupName = def.typeOverride ?? capitalPrefix;
         const OverlayClass = ComponentRegistrar.getInstance().get(lookupName);
         if (!OverlayClass) {
-            this.logger.warn?.(`[OverlayDispatchCenter] overlay class "${lookupName}" not found in ComponentRegistrar`);
+            this.logger.warn?.(
+                `[OverlayDispatchCenter] overlay class "${lookupName}" not found in ComponentRegistrar`
+            );
             return;
         }
 

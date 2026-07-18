@@ -23,7 +23,7 @@ import { EventBridge } from '@/events/EventBridge';
 import { EntityEventBus } from '@/events/EntityEventBus';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { validateEntityEvent } from '@/entity/dispatch';
-import { overlayDispatchCenter } from '@/overlay/dispatch';
+import { overlayDispatchCenter, validateOverlayDecl } from '@/overlay/dispatch';
 import type { AnimationKey } from './AnimationAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
@@ -498,6 +498,7 @@ export const InitAbility: AbilityDefinition = {
 
     _initOverlays(overlays: Record<string, any>): void {
         for (const [overlayKey, decl] of Object.entries(overlays)) {
+            validateOverlayDecl(overlayKey, decl);
             overlayDispatchCenter.register(overlayKey, decl);
 
             const trigger = decl.trigger ?? 'manual';

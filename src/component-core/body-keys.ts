@@ -38,7 +38,8 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     },
     overlays: {
         category: 'init',
-        description: '浮层配置，InitAbility._initOverlays 自动注册到 OverlayDispatchCenter 并绑定 trigger',
+        description:
+            '浮层配置，InitAbility._initOverlays 自动注册到 OverlayDispatchCenter 并绑定 trigger',
     },
     abilities: {
         category: 'init',
