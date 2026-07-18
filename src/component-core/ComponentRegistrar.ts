@@ -60,12 +60,21 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefin
      */
     register(definition: ComponentDefinition): void;
     register(type: string, component: new (props?: Record<string, any>) => any): void;
-    register(typeOrDef: string | ComponentDefinition, component?: new (props?: Record<string, any>) => any): void {
+    register(
+        typeOrDef: string | ComponentDefinition,
+        component?: new (props?: Record<string, any>) => any
+    ): void {
         this.checkLock();
 
-        const def: ComponentDefinition = typeof typeOrDef === 'string'
-            ? { type: typeOrDef, component: component! }
-            : typeOrDef;
+        const def: ComponentDefinition =
+            typeof typeOrDef === 'string' ? { type: typeOrDef, component: component! } : typeOrDef;
+
+        if (
+            typeof (def.component as any)._compilePendingTemplate === 'function' &&
+            !(def.component as any)._templateCompiled
+        ) {
+            (def.component as any)._compilePendingTemplate();
+        }
 
         this.storage.set(def.type, def);
     }
@@ -139,7 +148,7 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefin
             if (existing && existing !== component) {
                 console.warn(
                     `ComponentRegistrar: id "${component.id}" already registered by ${existing.constructor.name}, ` +
-                    `overwriting with ${component.constructor.name}`
+                        `overwriting with ${component.constructor.name}`
                 );
             }
             this.byId.set(component.id, component);

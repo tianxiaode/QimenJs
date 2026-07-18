@@ -1,29 +1,5 @@
-/**
- * TabsComponent 标签页组件
- *
- * items 统一定义，label 驱动标签栏，content 驱动内容区。
- * content 支持三种形式：HTML 字符串、组件 type 名、组件类。
- *
- * 模板节点：
- * - tabBar — 标签栏容器
- * - content — 内容区容器
- *
- * @example
- * ```ts
- * new TabsComponent({
- *     items: [
- *         { label: '用户', content: '<div>用户列表</div>' },
- *         { label: '角色', content: 'RoleManager' },
- *         { label: '权限', content: PermissionPanel },
- *     ]
- * })
- *
- * tabs.on('change', ({ index }) => { ... })
- * ```
- */
-
 import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
-import { ToggleComponent } from '../toggle/ToggleComponent';
+import { TabBarComponent } from '../tab-bar/TabBarComponent';
 
 export interface TabItem {
     label: string;
@@ -36,135 +12,133 @@ export interface TabsProps {
     activeIndex?: number;
 }
 
-export let TabsComponent = TemplateComponent.withTemplate({
+export class TabsComponent extends TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         className: 'q-tabs',
         children: [
             { tag: 'div', name: 'tabBar', className: 'q-tabs__bar' },
-            { tag: 'div', name: 'content', className: 'q-tabs__content' },
+            { tag: 'div', name: 'items', className: 'q-tabs__content' },
         ],
     },
-    body: {
-        type: 'Tabs',
+    body: { type: 'Tabs' },
+}) {
+    private _tabBar: TabBarComponent | null = null;
+    private _tabItems: TabItem[] = [];
+    private _activeIndex: number = 0;
+    private _contentInstances: any[] = [];
 
-        _items: [] as TabItem[],
-        _activeIndex: 0,
-        _tabButtons: [] as ToggleComponent[],
-        _contentInstances: [] as any[],
-        _contentEls: [] as HTMLElement[],
+    constructor(props?: TabsProps) {
+        super();
 
-        _initTabs(props?: TabsProps): void {
-            if (props?.items) {
-                this._items = props.items;
-                this._renderTabs();
-            }
-            if (props?.activeIndex !== undefined) {
-                this._activeIndex = props.activeIndex;
-            }
+        this._tabItems = props?.items ?? [];
+        this._activeIndex = props?.activeIndex ?? 0;
+
+        this._tabBar = new TabBarComponent({
+            items: this._tabItems.map((i: TabItem) => ({ text: i.label, icon: i.icon })),
+            selectedIndex: this._activeIndex,
+        });
+
+        const barEl = this.nodeMap?.tabBar?.el;
+        if (barEl) barEl.appendChild(this._tabBar.el);
+
+        this._tabBar.on('select', ({ index }: any) => {
+            this._activeIndex = index;
             this._applyActive();
-        },
+            this.emit('change', { index, item: this._tabItems[index] });
+        });
 
-        get activeIndex(): number {
-            return this._activeIndex;
-        },
-        set activeIndex(value: number) {
-            this._activeIndex = value;
-            this._applyActive();
-        },
+        this._renderContent();
+        this._applyActive();
+    }
 
-        get items(): readonly TabItem[] {
-            return this._items;
-        },
+    get activeIndex(): number {
+        return this._activeIndex;
+    }
+    set activeIndex(value: number) {
+        this._activeIndex = value;
+        this._tabBar?.selectAt(value);
+        this._applyActive();
+    }
 
-        _renderTabs(): void {
-            const barEl = this.nodeMap?.tabBar?.el as HTMLElement | null;
-            const contentEl = this.nodeMap?.content?.el as HTMLElement | null;
-            if (!barEl || !contentEl) return;
+    get tabBar(): TabBarComponent | null {
+        return this._tabBar;
+    }
 
-            barEl.innerHTML = '';
-            contentEl.innerHTML = '';
-            this._tabButtons = [];
-            this._contentInstances = [];
-            this._contentEls = [];
+    get tabItems(): readonly TabItem[] {
+        return this._tabItems;
+    }
 
-            for (let i = 0; i < this._items.length; i++) {
-                const item = this._items[i];
+    _renderContent(): void {
+        const contentEl = this.nodeMap?.items?.el;
+        if (!contentEl) return;
 
-                // 标签按钮
-                const btn = new ToggleComponent({
-                    text: item.label,
-                    icon: item.icon,
-                });
-                barEl.appendChild(btn.el);
-                this._tabButtons.push(btn);
+        contentEl.innerHTML = '';
+        this._contentInstances = [];
 
-                const idx = i;
-                btn.el.addEventListener('click', () => {
-                    this._activeIndex = idx;
-                    this._applyActive();
-                    this.emit('change', { index: idx, item: this._items[idx] });
-                });
+        for (let i = 0; i < this._tabItems.length; i++) {
+            const item = this._tabItems[i];
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'q-tabs__pane';
+            contentWrapper.hidden = true;
 
-                // 内容区
-                const contentWrapper = document.createElement('div');
-                contentWrapper.className = 'q-tabs__pane';
-                contentWrapper.hidden = true;
-
-                if (item.content) {
-                    if (typeof item.content === 'string') {
-                        if (item.content.startsWith('<')) {
-                            contentWrapper.innerHTML = item.content;
-                        } else {
-                            const CompClass = ComponentRegistrar.getInstance().get(item.content);
-                            if (CompClass) {
-                                const instance = new CompClass();
-                                contentWrapper.appendChild(instance.el);
-                                this._contentInstances.push(instance);
-                            }
-                        }
+            if (item.content) {
+                if (typeof item.content === 'string') {
+                    if (item.content.startsWith('<')) {
+                        contentWrapper.innerHTML = item.content;
                     } else {
-                        const instance = new item.content();
-                        contentWrapper.appendChild(instance.el);
-                        this._contentInstances.push(instance);
+                        const CompClass = ComponentRegistrar.getInstance().get(item.content);
+                        if (CompClass) {
+                            const instance = new CompClass();
+                            contentWrapper.appendChild(instance.el);
+                            this._contentInstances.push(instance);
+                        }
                     }
-                }
-
-                contentEl.appendChild(contentWrapper);
-                this._contentEls.push(contentWrapper);
-            }
-        },
-
-        _applyActive(): void {
-            for (let i = 0; i < this._tabButtons.length; i++) {
-                const isActive = i === this._activeIndex;
-                this._tabButtons[i].pressed = isActive;
-                if (this._contentEls[i]) {
-                    this._contentEls[i].hidden = !isActive;
+                } else {
+                    const instance = new item.content();
+                    contentWrapper.appendChild(instance.el);
+                    this._contentInstances.push(instance);
                 }
             }
-        },
 
-        update(props?: Partial<TabsProps>): void {
-            if (props?.items !== undefined) {
-                this._items = props.items;
-                this._renderTabs();
-            }
-            if (props?.activeIndex !== undefined) {
-                this.activeIndex = props.activeIndex;
-            }
-        },
+            contentEl.appendChild(contentWrapper);
+        }
+    }
 
-        dispose(): void {
-            for (const instance of this._contentInstances) {
-                instance?.dispose?.();
-            }
-            for (const btn of this._tabButtons) {
-                btn?.dispose?.();
-            }
-            (this.constructor as any).__proto__.dispose.call(this);
-        },
-    },
-});
+    _applyActive(): void {
+        const contentEl = this.nodeMap?.items?.el;
+        if (!contentEl) return;
 
-export type TabsComponent = InstanceType<typeof TabsComponent>;
+        const panes = contentEl.children;
+        for (let i = 0; i < panes.length; i++) {
+            (panes[i] as HTMLElement).hidden = i !== this._activeIndex;
+        }
+    }
+
+    update(props?: Partial<TabsProps>): void {
+        if (props?.items !== undefined) {
+            this._tabItems = props.items;
+            this._renderContent();
+            if (this._tabBar) {
+                this._tabBar.update({
+                    items: this._tabItems.map((i: TabItem) => ({
+                        text: i.label,
+                        icon: i.icon,
+                    })),
+                });
+            }
+            this._applyActive();
+        }
+        if (props?.activeIndex !== undefined) {
+            this.activeIndex = props.activeIndex;
+        }
+    }
+
+    dispose(): void {
+        for (const instance of this._contentInstances) {
+            instance?.dispose?.();
+        }
+        this._tabBar?.dispose?.();
+        super.dispose();
+    }
+}

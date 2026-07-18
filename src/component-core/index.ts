@@ -46,6 +46,7 @@ export {
 } from './abilities/LayoutAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
+
 export { TemplateAbility } from './abilities/TemplateAbility';
 
 // 能力协议
@@ -147,3 +148,6 @@ export {
     type BodyKeyDef,
     type BodyKeyCategory,
 } from './body-keys';
+
+// Re-export Placement from overlay
+export type { Placement } from '@/overlay/dispatch';

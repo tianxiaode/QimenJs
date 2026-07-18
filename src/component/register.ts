@@ -33,6 +33,7 @@ import { ToggleIconComponent } from './toggle-icon/ToggleIconComponent';
 import { ButtonGroupComponent } from './button-group/ButtonGroupComponent';
 import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
 import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
+import { AccordionComponent } from './accordion/AccordionComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -60,4 +61,5 @@ export function registerAllComponents(): void {
     registrar.register('NavItemGroup', NavItemGroupComponent);
     registrar.register('OverflowScroll', OverflowScrollComponent);
     registrar.register('OverflowMenu', OverflowMenuComponent);
+    registrar.register('Accordion', AccordionComponent);
 }

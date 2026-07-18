@@ -46,10 +46,6 @@ export { badgeCSS } from './badge/badge.css';
 export { TipsComponent, type TipsProps } from './tips/TipsComponent';
 export { tipsCSS } from './tips/tips.css';
 
-// 工具栏组件
-export { ToolbarComponent, type OverflowMode } from './toolbar/ToolbarComponent';
-export { toolbarCSS } from './toolbar/toolbar.css';
-
 // 菜单组件
 export { MenuItemComponent, type MenuItemProps } from './menu/MenuItemComponent';
 export { MenuComponent, type MenuProps } from './menu/MenuComponent';
@@ -58,6 +54,14 @@ export { menuCSS } from './menu/menu.css';
 // 面板组件
 export { PanelComponent, type PanelProps } from './panel/PanelComponent';
 export { panelCSS } from './panel/panel.css';
+
+// 手风琴组件
+export {
+    AccordionComponent,
+    type AccordionMode,
+    type AccordionProps,
+} from './accordion/AccordionComponent';
+export { accordionCSS } from './accordion/accordion.css';
 
 // 头部组件
 export { HeaderComponent } from './header/HeaderComponent';

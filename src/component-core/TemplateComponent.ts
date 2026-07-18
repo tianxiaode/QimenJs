@@ -213,153 +213,174 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
      * @param template - HTML 字符串 / 旧版 JSON 模板数组 / 新版 ComponentTemplate
      * @returns 模板组件强类
      */
+    /**
+     * 模板预编译工厂方法（延迟编译模式）
+     *
+     * withTemplate 只记录模板定义，不立即编译。
+     * 首次 new 时才编译模板、设置静态属性、复制 body 到原型。
+     *
+     * 优势：
+     * - 多次 withTemplate 只记录，最后一次生效，无需清理
+     * - 派生类用自己的模板，父模板从未编译，无冲突
+     * - 首次 new 后缓存编译结果，后续 new 零开销
+     *
+     * @param template - HTML 字符串 / ComponentTemplate
+     * @returns 延迟编译的模板组件类
+     */
     static withTemplate(this: any, template: string | ComponentTemplate): any {
-        let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
-        let body: Record<string, any> | undefined;
-        let templateHtml: string;
-        let propsDef: Record<string, any> | undefined;
-        let compiled: {
-            indexPath: NodeIndexPath;
-            templateMetas: Record<string, NodeTemplateMeta>;
-            contentPropNames: string[];
-            contentInfos: ContentInfo[];
-            domEventBindings: DomEventBinding[];
-            rootClassName?: string;
-            rootStyle?: string;
-            templateCache: HTMLTemplateElement;
-        };
+        const LazyClass = class extends this {
+            static _pendingTemplate: string | ComponentTemplate = template;
+            static _templateCompiled: boolean = false;
 
-        if (typeof template === 'string') {
-            // ── HTML 字符串 ──
-            templateHtml = template;
-            compiled = {
-                ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
-                domEventBindings: [],
-            };
-        } else {
-            // ── ComponentTemplate ──
-            const result = compileTemplate(template, this.isMultiArea ?? false);
-            templateHtml = result.html;
-            jsonComponentMap = result.componentMap;
-            body = template.body;
-            propsDef = result.propsDef;
-
-            // 构建 templateCache
-            const tpl = document.createElement('template');
-            tpl.innerHTML = templateHtml;
-
-            compiled = {
-                indexPath: result.indexPath,
-                templateMetas: result.templateMetas,
-                contentPropNames: result.contentPropNames,
-                contentInfos: result.contentInfos,
-                domEventBindings: result.domEventBindings,
-                rootClassName: result.rootClassName,
-                rootStyle: result.rootStyle,
-                templateCache: tpl,
-            };
-        }
-
-        // 创建模板组件强类
-        const TemplateClass = class extends this {
             constructor(props?: Record<string, any>) {
                 super(props);
 
-                const ctor = this.constructor as any;
+                if (!this._templateInitialized) {
+                    const ctor = this.constructor as any;
 
-                // v2 模式：propsDef 存在时启用
-                if (ctor._propsDef) {
-                    // v2: 参数结构 { props, childProps, body }
-                    // props: 组件自身属性，与 _propsDef 合并
-                    // childProps: 子节点配置，递归传递
-                    // body: 行为/方法
-                    const userProps = (props as any)?.props;
-                    const userChildProps = (props as any)?.childProps;
-                    const userBody = (props as any)?.body;
-
-                    // 简写兼容：如果参数没有 props/childProps/body 层，视为纯 props
-                    const isStructured =
-                        userProps !== undefined ||
-                        userChildProps !== undefined ||
-                        userBody !== undefined;
-                    const flatProps = isStructured ? userProps : props;
-
-                    const mergedProps = ctor._propsDef
-                        ? { ...ctor._propsDef, ...flatProps }
-                        : flatProps;
-
-                    // childProps 和 body 挂到 mergedProps 上
-                    if (userChildProps) mergedProps.childProps = userChildProps;
-                    if (userBody) Object.assign(mergedProps, userBody);
-
-                    this._initWithTemplate(mergedProps);
-                } else {
-                    // v1 旧模式：defaults 驱动
-                    const mergedProps = ctor.defaults ? { ...ctor.defaults, ...props } : props;
-                    this._initWithTemplate(mergedProps);
-                }
-
-                if (ctor.type) this.type = ctor.type;
-
-                // v1 旧模式：将 defaults 中的属性赋值到实例（通过 setter 触发 _applyState）
-                if (!ctor._propsDef && ctor.defaults) {
-                    for (const [key, value] of Object.entries(ctor.defaults)) {
-                        (this as any)[key] = value;
+                    if (!ctor._templateCompiled) {
+                        ctor._compilePendingTemplate();
                     }
 
-                    // 如果 props 中有覆盖 defaults 的值，也赋值到实例
-                    if (props) {
-                        for (const [key, value] of Object.entries(props)) {
-                            if (key in (ctor.defaults || {})) {
-                                (this as any)[key] = value;
+                    if (ctor._propsDef) {
+                        const userProps = (props as any)?.props;
+                        const userChildProps = (props as any)?.childProps;
+                        const userBody = (props as any)?.body;
+                        const isStructured =
+                            userProps !== undefined ||
+                            userChildProps !== undefined ||
+                            userBody !== undefined;
+                        const flatProps = isStructured ? userProps : props;
+                        const mergedProps = ctor._propsDef
+                            ? { ...ctor._propsDef, ...flatProps }
+                            : flatProps;
+                        if (userChildProps) mergedProps.childProps = userChildProps;
+                        if (userBody) Object.assign(mergedProps, userBody);
+                        this._initWithTemplate(mergedProps);
+                    } else {
+                        const mergedProps = ctor.defaults ? { ...ctor.defaults, ...props } : props;
+                        this._initWithTemplate(mergedProps);
+                    }
+
+                    if (ctor.type) this.type = ctor.type;
+
+                    if (!ctor._propsDef && ctor.defaults) {
+                        for (const [key, value] of Object.entries(ctor.defaults)) {
+                            (this as any)[key] = value;
+                        }
+                        if (props) {
+                            for (const [key, value] of Object.entries(props)) {
+                                if (key in (ctor.defaults || {})) {
+                                    (this as any)[key] = value;
+                                }
                             }
                         }
                     }
+
+                    this._templateInitialized = true;
                 }
             }
 
-            /** 预编译的模板 HTML */
-            static readonly _templateHtml: string = templateHtml;
+            _templateInitialized: boolean = false;
 
-            /** 预编译的节点索引路径 */
-            static readonly _indexPath: NodeIndexPath = compiled.indexPath;
+            static _compilePendingTemplate(): void {
+                const template = this._pendingTemplate;
+                if (!template) return;
 
-            /** 预编译的模板元数据 */
-            static readonly _templateMetas: Record<string, NodeTemplateMeta> =
-                compiled.templateMetas;
+                let jsonComponentMap: Record<string, new (props?: Record<string, any>) => any> = {};
+                let body: Record<string, any> | undefined;
+                let templateHtml: string;
+                let propsDef: Record<string, any> | undefined;
+                let compiled: any;
 
-            /** 预编译的合并 DOM 事件绑定（同一 DOM 事件只绑定一次） */
-            static readonly _domEventBindings: DomEventBinding[] = compiled.domEventBindings ?? [];
+                if (typeof template === 'string') {
+                    templateHtml = template;
+                    compiled = {
+                        ...precompileTemplate(templateHtml, this.isMultiArea ?? false),
+                        domEventBindings: [],
+                    };
+                } else {
+                    const result = compileTemplate(template, this.isMultiArea ?? false);
+                    templateHtml = result.html;
+                    jsonComponentMap = result.componentMap;
+                    body = template.body;
+                    propsDef = result.propsDef;
 
-            /** 预编译的内容属性名列表 */
-            static readonly _contentPropNames: string[] = compiled.contentPropNames;
+                    const tpl = document.createElement('template');
+                    tpl.innerHTML = templateHtml;
 
-            /** 预编译的内容节点信息数组 — 运行时直接遍历，无需遍历整个 nodeMap */
-            static readonly _contentInfos: ContentInfo[] = compiled.contentInfos;
+                    compiled = {
+                        indexPath: result.indexPath,
+                        templateMetas: result.templateMetas,
+                        contentPropNames: result.contentPropNames,
+                        contentInfos: result.contentInfos,
+                        domEventBindings: result.domEventBindings,
+                        rootClassName: result.rootClassName,
+                        rootStyle: result.rootStyle,
+                        templateCache: tpl,
+                        exposeNames: result.exposeNames,
+                    };
+                }
 
-            /** 预编译的组件类映射 */
-            static readonly _jsonComponentMap: Record<
-                string,
-                new (props?: Record<string, any>) => any
-            > = jsonComponentMap;
+                this._templateHtml = templateHtml;
+                this._indexPath = compiled.indexPath;
+                this._templateMetas = compiled.templateMetas;
+                this._domEventBindings = compiled.domEventBindings ?? [];
+                this._contentPropNames = compiled.contentPropNames;
+                this._contentInfos = compiled.contentInfos;
+                this._jsonComponentMap = jsonComponentMap;
+                this._templateBody = body;
+                this._propsDef = propsDef;
+                this._expose = compiled.exposeNames ?? [];
+                this._rootClassName = compiled.rootClassName;
+                this._rootStyle = compiled.rootStyle;
+                this._templateCache = compiled.templateCache;
 
-            /** 模板 body 定义（属性和方法，复制到组件实例） */
-            static readonly _templateBody: Record<string, any> | undefined = body;
+                buildContentProperties(this, compiled.contentInfos);
 
-            /** v2: 组件 props 默认值定义 */
-            static readonly _propsDef: Record<string, any> | undefined = propsDef;
+                if (body) {
+                    const proto = this.prototype;
+                    for (const [key, value] of Object.entries(body)) {
+                        validateBodyKey(key);
+                        const def = BODY_SPECIAL_KEYS[key];
 
-            /** 对外暴露节点名列表 — 编译时从 autoExpose!==false 的 content 节点自动收集 */
-            static readonly _expose: string[] = (compiled as any).exposeNames ?? [];
+                        if (def?.category === 'static') {
+                            const targetKey = def.alias ?? key;
+                            const staticKey = key === 'forwards' ? '_forwards' : targetKey;
+                            (this as any)[staticKey] = value;
+                        } else if (typeof value === 'function') {
+                            proto[key] = value;
+                        } else {
+                            if (!this.defaults) this.defaults = {};
+                            this.defaults[key] = value;
+                        }
+                    }
+                }
 
-            /** 根节点 className — 应用到组件 el 上 */
-            static readonly _rootClassName: string | undefined = compiled.rootClassName;
+                if (this.defaults) {
+                    const proto = this.prototype;
+                    for (const key of Object.keys(this.defaults)) {
+                        if (key === 'type') continue;
+                        const existing = Object.getOwnPropertyDescriptor(proto, key);
+                        if (existing && (existing.get || existing.set)) continue;
 
-            /** 根节点 style — 应用到组件 el 上 */
-            static readonly _rootStyle: string | undefined = compiled.rootStyle;
+                        const privateKey = `__${key}`;
+                        Object.defineProperty(proto, key, {
+                            get(this: any) {
+                                return this[privateKey];
+                            },
+                            set(this: any, value: any) {
+                                this[privateKey] = value;
+                                if (typeof this._applyState === 'function') this._applyState();
+                            },
+                            configurable: true,
+                            enumerable: true,
+                        });
+                    }
+                }
 
-            /** 模板元素缓存 */
-            static _templateCache: HTMLTemplateElement | null = compiled.templateCache;
+                this._templateCompiled = true;
+            }
 
             static _getTemplateCache(): HTMLTemplateElement {
                 return this._templateCache!;
@@ -375,55 +396,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             }
         };
 
-        // 在强类原型上生成内容 getter/setter
-        buildContentProperties(TemplateClass, compiled.contentInfos);
-
-        // 将 body 中的方法/属性复制到原型
-        if (body) {
-            const proto = TemplateClass.prototype;
-            for (const [key, value] of Object.entries(body)) {
-                validateBodyKey(key);
-                const def = BODY_SPECIAL_KEYS[key];
-
-                if (def?.category === 'static') {
-                    const targetKey = def.alias ?? key;
-                    const staticKey = key === 'forwards' ? '_forwards' : targetKey;
-                    (TemplateClass as any)[staticKey] = value;
-                } else if (typeof value === 'function') {
-                    proto[key] = value;
-                } else {
-                    if (!TemplateClass.defaults) TemplateClass.defaults = {};
-                    TemplateClass.defaults[key] = value;
-                }
-            }
-        }
-
-        // 为 defaults 中的属性生成 getter/setter（setter 在值变化时调用 _applyState）
-        if (TemplateClass.defaults) {
-            const proto = TemplateClass.prototype;
-            for (const key of Object.keys(TemplateClass.defaults)) {
-                if (key === 'type') continue;
-                // 跳过已有 getter/setter 的属性（如 content 属性）
-                const existing = Object.getOwnPropertyDescriptor(proto, key);
-                if (existing && (existing.get || existing.set)) continue;
-
-                const privateKey = `__${key}`;
-                Object.defineProperty(proto, key, {
-                    get(this: any) {
-                        return this[privateKey];
-                    },
-                    set(this: any, value: any) {
-                        this[privateKey] = value;
-                        if (typeof this._applyState === 'function') this._applyState();
-                    },
-                    configurable: true,
-                    enumerable: true,
-                });
-            }
-        }
-
-        // 挂载 .with() 静态方法
-        (TemplateClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
+        (LazyClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
             ...additionalAbilities: Additional
         ): any {
             let flat: readonly AbilityDefinition[];
@@ -435,6 +408,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             return createForgedClass(this, flat);
         };
 
-        return TemplateClass;
+        return LazyClass;
     }
 }

@@ -41,11 +41,11 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
 
         _count: 0,
         _activeIndex: -1,
-        _type: 'dot' as IndicatorType,
+        _indicatorType: 'dot' as IndicatorType,
         _itemEls: [] as HTMLElement[],
 
         _initIndicator(props?: IndicatorProps): void {
-            if (props?.type) this._type = props.type;
+            if (props?.type) this._indicatorType = props.type;
             if (props?.count) {
                 this._count = props.count;
                 this._renderItems();
@@ -55,7 +55,7 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
                 this._applyActive();
             }
 
-            this.el.classList.add(`q-indicator--${this._type}`);
+            this.el.classList.add(`q-indicator--${this._indicatorType}`);
         },
 
         get count(): number {
@@ -74,13 +74,13 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
             this._applyActive();
         },
 
-        get type(): IndicatorType {
-            return this._type;
+        get indicatorType(): IndicatorType {
+            return this._indicatorType;
         },
-        set type(value: IndicatorType) {
-            this.el.classList.remove(`q-indicator--${this._type}`);
-            this._type = value;
-            this.el.classList.add(`q-indicator--${this._type}`);
+        set indicatorType(value: IndicatorType) {
+            this.el.classList.remove(`q-indicator--${this._indicatorType}`);
+            this._indicatorType = value;
+            this.el.classList.add(`q-indicator--${this._indicatorType}`);
             this._renderItems();
         },
 
@@ -96,7 +96,7 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
                 itemEl.className = 'q-indicator__item';
                 itemEl.dataset.index = String(i);
 
-                if (this._type === 'number') {
+                if (this._indicatorType === 'number') {
                     itemEl.textContent = String(i + 1);
                 }
 
@@ -123,7 +123,7 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
         },
 
         update(props?: Partial<IndicatorProps>): void {
-            if (props?.type !== undefined) this.type = props.type;
+            if (props?.type !== undefined) this.indicatorType = props.type;
             if (props?.count !== undefined) this.count = props.count;
             if (props?.activeIndex !== undefined) this.activeIndex = props.activeIndex;
         },

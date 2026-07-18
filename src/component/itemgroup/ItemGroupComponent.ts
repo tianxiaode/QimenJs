@@ -2,47 +2,36 @@
  * ItemGroupComponent 项组组件
  *
  * 轻量排列容器，通过 items 数组管理子组件实例。
- * direction 控制排列方向，itemType 指定子项组件类型。
- * overflowConfig 控制溢出处理方式（scroll/menu），通过域配置自动对接浮动层。
+ * 行为内聚于类本身，派生组件通过 withTemplate 覆盖模板，
+ * 通过 extends 继承池化、事件转发等逻辑。
  *
  * 模板节点：
  * - items — 子项挂载区
- *
- * 核心操作：
- * - add(data) / removeAt(index) / insert(index, data) / setItems(datas)
- * - sort() / move(from, to)
- * - items — 子项实例数组（只读）
- *
- * 事件转发：
- * - eventKey 作为事件源标识（source），注入子组件
- * - 默认内置转发 click 和 close，可通过 events 扩展
- *
- * 溢出模式（通过 overflowConfig 域配置）：
- * - 不配置：不处理溢出
- * - { type: 'scroll', direction: 'horizontal' }：子项超出时显示浮动箭头
- * - { type: 'menu', direction: 'horizontal' }：子项超出时显示浮动触发按钮
  */
 
 import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
 
-const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
-
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 
-export interface ItemGroupProps {
+export interface ItemGroupConfig {
     direction?: 'horizontal' | 'vertical';
     itemType?: string;
     items?: Record<string, any>[];
     gap?: string;
-    cls?: string;
-    itemsCls?: string;
     eventKey?: string;
     events?: string[];
     itemData?: string[];
     overflowMode?: OverflowMode;
 }
 
-const ItemGroupBase = TemplateComponent.withTemplate({
+export interface ItemGroupProps extends ItemGroupConfig {
+    cls?: string;
+    itemsCls?: string;
+}
+
+const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
+
+export class ItemGroupComponent extends TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
@@ -52,7 +41,7 @@ const ItemGroupBase = TemplateComponent.withTemplate({
 
         _pool: [],
         _visibleCount: 0,
-        _direction: 'horizontal',
+        _direction: 'horizontal' as 'horizontal' | 'vertical',
         _itemType: '',
         _gap: '',
         _containerEl: null as HTMLElement | null,
@@ -62,8 +51,18 @@ const ItemGroupBase = TemplateComponent.withTemplate({
         _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
         _overflowMode: 'none' as OverflowMode,
 
-        _initItemGroup(props?: ItemGroupProps): void {
+        _initItemGroupComponent(props?: ItemGroupProps): void {
             this.el.classList.add('q-itemgroup');
+
+            if (props?.cls) {
+                this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
+            }
+
+            this._containerEl = this.nodeMap?.items?.el ?? null;
+
+            if (props?.itemsCls && this._containerEl) {
+                this._containerEl.classList.add(...props.itemsCls.split(/\s+/).filter(Boolean));
+            }
 
             if (props?.direction) this._direction = props.direction;
             if (props?.itemType) this._itemType = props.itemType;
@@ -75,16 +74,6 @@ const ItemGroupBase = TemplateComponent.withTemplate({
 
             this._applyDirection();
             this._applyGap();
-
-            if (props?.cls) {
-                this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
-            }
-
-            this._containerEl = this.nodeMap?.items?.el ?? null;
-
-            if (props?.itemsCls && this._containerEl) {
-                this._containerEl.classList.add(...props.itemsCls.split(/\s+/).filter(Boolean));
-            }
 
             if (props?.items?.length) {
                 this.setItems(props.items);
@@ -145,9 +134,7 @@ const ItemGroupBase = TemplateComponent.withTemplate({
             for (let i = 0; i < datas.length; i++) {
                 if (i < this._pool.length) {
                     const item = this._pool[i];
-                    if (typeof item.update === 'function') {
-                        item.update(datas[i]);
-                    }
+                    if (typeof item.update === 'function') item.update(datas[i]);
                     item.el.hidden = false;
                 } else {
                     const instance = this._createItemInstance(datas[i]);
@@ -158,18 +145,15 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                     }
                 }
             }
-
             for (let i = datas.length; i < this._pool.length; i++) {
                 this._pool[i].el.hidden = true;
             }
-
             this._visibleCount = datas.length;
         },
 
         add(data: Record<string, any>): any {
             const instance = this._createItemInstance(data);
             if (!instance) return null;
-
             this._pool.push(instance);
             this._visibleCount = this._pool.length;
             this._mountItem(instance);
@@ -180,29 +164,21 @@ const ItemGroupBase = TemplateComponent.withTemplate({
         insert(index: number, data: Record<string, any>): any {
             const instance = this._createItemInstance(data);
             if (!instance) return null;
-
             const clampedIndex = Math.min(Math.max(0, index), this._visibleCount);
             this._pool.splice(clampedIndex, 0, instance);
             this._visibleCount++;
-
             if (this._containerEl) {
                 const refNode = this._containerEl.children[clampedIndex];
-                if (refNode) {
-                    this._containerEl.insertBefore(instance.el, refNode);
-                } else {
-                    this._containerEl.appendChild(instance.el);
-                }
+                if (refNode) this._containerEl.insertBefore(instance.el, refNode);
+                else this._containerEl.appendChild(instance.el);
             }
-
             this._bindItemEvents(instance);
             return instance;
         },
 
         removeAt(index: number, destroy: boolean = true): any {
             if (index < 0 || index >= this._visibleCount) return undefined;
-
             const instance = this._pool[index];
-
             if (destroy) {
                 this._pool.splice(index, 1);
                 this._visibleCount--;
@@ -214,16 +190,13 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                 this._pool.push(instance);
                 this._visibleCount--;
             }
-
             return instance;
         },
 
         updateAt(index: number, data: Record<string, any>): void {
             if (index < 0 || index >= this._visibleCount) return;
             const item = this._pool[index];
-            if (typeof item.update === 'function') {
-                item.update(data);
-            }
+            if (typeof item.update === 'function') item.update(data);
         },
 
         clear(): void {
@@ -250,7 +223,6 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                 const orderB = b.order ?? b.props?.order ?? 0;
                 return orderA - orderB;
             };
-
             this._pool.sort(compareFn ?? defaultCompare);
             this._flushDOMOrder();
         },
@@ -259,7 +231,6 @@ const ItemGroupBase = TemplateComponent.withTemplate({
             if (fromIndex < 0 || fromIndex >= this._visibleCount) return;
             if (toIndex < 0 || toIndex >= this._visibleCount) return;
             if (fromIndex === toIndex) return;
-
             const [item] = this._pool.splice(fromIndex, 1);
             this._pool.splice(toIndex, 0, item);
             this._flushDOMOrder();
@@ -271,29 +242,20 @@ const ItemGroupBase = TemplateComponent.withTemplate({
 
         _createItemInstance(data: Record<string, any>): any {
             if (!this._itemType) return null;
-
             const ItemClass = ComponentRegistrar.getInstance().get(this._itemType);
             if (!ItemClass) return null;
-
             const props = { ...data };
-            if (this._eventKey) {
-                props.eventKey = this._eventKey;
-            }
-
+            if (this._eventKey) props.eventKey = this._eventKey;
             return new ItemClass(props);
         },
 
         _bindItemEvents(instance: any): void {
             if (!this._eventKey || typeof instance.on !== 'function') return;
-
             const unsubMap = new Map<string, () => void>();
             const childScopeId = instance.eventScope?.getScopeId?.();
-
             for (const event of this._forwardEvents) {
                 const unsub = instance.on(event, (data: any) => {
-                    if (childScopeId && data?.scopeId && data.scopeId !== childScopeId) {
-                        return;
-                    }
+                    if (childScopeId && data?.scopeId && data.scopeId !== childScopeId) return;
                     const index = this.indexOf(instance);
                     this.onForwardEvent(event, {
                         ...data?.data,
@@ -302,47 +264,35 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                 });
                 unsubMap.set(event, unsub);
             }
-
             this._itemUnsubscribes.set(instance, unsubMap);
         },
 
         _unbindItemEvents(instance: any): void {
             const unsubMap = this._itemUnsubscribes.get(instance);
             if (!unsubMap) return;
-
             for (const unsub of unsubMap.values()) {
                 if (typeof unsub === 'function') unsub();
             }
-
             this._itemUnsubscribes.delete(instance);
         },
 
         _extractItemData(instance: any, index: number): Record<string, any> {
             const result: Record<string, any> = { index };
-
             for (const key of this._itemData) {
                 const value = instance[key];
-                if (value !== undefined && typeof value !== 'function' && !value?.el) {
+                if (value !== undefined && typeof value !== 'function' && !value?.el)
                     result[key] = value;
-                }
             }
-
             return result;
         },
 
         _mountItem(instance: any): void {
-            if (this._containerEl && instance?.el) {
-                this._containerEl.appendChild(instance.el);
-            }
+            if (this._containerEl && instance?.el) this._containerEl.appendChild(instance.el);
         },
 
         _unmountItem(instance: any): void {
-            if (instance?.el) {
-                instance.el.remove();
-            }
-            if (typeof instance?.dispose === 'function') {
-                instance.dispose();
-            }
+            if (instance?.el) instance.el.remove();
+            if (typeof instance?.dispose === 'function') instance.dispose();
         },
 
         _applyDirection(): void {
@@ -351,26 +301,20 @@ const ItemGroupBase = TemplateComponent.withTemplate({
         },
 
         _applyGap(): void {
-            if (this._containerEl) {
-                this._containerEl.style.gap = this._gap || '';
-            }
+            if (this._containerEl) this._containerEl.style.gap = this._gap || '';
         },
 
         _flushDOMOrder(): void {
             if (!this._containerEl) return;
-
             const fragment = document.createDocumentFragment();
             for (const instance of this._pool) {
-                if (instance?.el) {
-                    fragment.appendChild(instance.el);
-                }
+                if (instance?.el) fragment.appendChild(instance.el);
             }
             this._containerEl.appendChild(fragment);
         },
 
         _applyOverflowMode(): void {
             if (this._overflowMode === 'none') return;
-
             this.overflowConfig = {
                 type: this._overflowMode as 'scroll' | 'menu',
                 direction: this._direction as 'horizontal' | 'vertical',
@@ -379,14 +323,11 @@ const ItemGroupBase = TemplateComponent.withTemplate({
 
         _cleanupOverflow(): void {
             this.overflowConfig = undefined;
-
             if (this._containerEl) {
-                const children = Array.from(this._containerEl.children) as HTMLElement[];
-                for (const child of children) {
+                for (const child of Array.from(this._containerEl.children) as HTMLElement[]) {
                     child.hidden = false;
                 }
             }
-
             this.el.classList.remove(
                 'q-overflow-scroll',
                 'q-overflow-scroll--horizontal',
@@ -399,13 +340,11 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                 'q-overflow-menu-container--vertical',
                 'q-overflow-menu-container--overflowing'
             );
-
-            if (this._containerEl) {
+            if (this._containerEl)
                 this._containerEl.classList.remove(
                     'q-overflow-scroll__area',
                     'q-overflow-menu__visible'
                 );
-            }
         },
 
         update(props?: Record<string, any>): void {
@@ -417,12 +356,8 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                 this._gap = props.gap;
                 this._applyGap();
             }
-            if (props?.itemType !== undefined) {
-                this._itemType = props.itemType;
-            }
-            if (props?.eventKey !== undefined) {
-                this._eventKey = props.eventKey;
-            }
+            if (props?.itemType !== undefined) this._itemType = props.itemType;
+            if (props?.eventKey !== undefined) this._eventKey = props.eventKey;
             if (props?.overflowMode !== undefined) {
                 this._overflowMode = props.overflowMode;
                 this._applyOverflowMode();
@@ -433,11 +368,14 @@ const ItemGroupBase = TemplateComponent.withTemplate({
             this._cleanupOverflow();
             this.clear();
             this._itemUnsubscribes.clear();
-            (this.constructor as any).__proto__.dispose.call(this);
+            super.dispose();
         },
     },
-});
+}) {
+    constructor(props?: ItemGroupProps) {
+        super(props);
+        this._initItemGroupComponent(props);
+    }
+}
 
-export let ItemGroupComponent = ItemGroupBase;
-
-export type ItemGroupComponent = InstanceType<typeof ItemGroupBase>;
+export type ItemGroupComponentType = InstanceType<typeof ItemGroupComponent>;

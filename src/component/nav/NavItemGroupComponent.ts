@@ -1,25 +1,11 @@
-/**
- * NavItemGroupComponent 导航项组组件
- *
- * 从 ItemGroupComponent 派生，固化导航栏领域逻辑：
- * - 固定 itemType 为 'NavItem'
- * - 固定 eventKey 为 'nav'
- * - 内置选中态管理（activeIndex）
- * - 子项 click 时自动触发 select 事件
- */
-
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
 import type { NavItemComponent } from './NavItemComponent';
 import type { NavOverlayOptions } from './NavItemComponent';
 
 const NAV_FORWARD_EVENTS = ['click', 'close'];
 
-export interface NavItemGroupProps {
-    direction?: 'horizontal' | 'vertical';
-    items?: Record<string, any>[];
-    gap?: string;
-    cls?: string;
-    itemsCls?: string;
+export interface NavItemGroupProps extends ItemGroupProps {
     activeIndex?: number;
     mode?: 'expanded' | 'collapsed';
     maxDepth?: number;
@@ -27,36 +13,44 @@ export interface NavItemGroupProps {
     overlayComponent?: any;
 }
 
-export let NavItemGroupComponent = class extends ItemGroupComponent {
+const NavItemGroupBase = ItemGroupComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        className: 'q-nav',
+        children: [{ tag: 'div', name: 'items', className: 'q-nav__items' }],
+    },
+    body: { type: 'NavItemGroup' },
+});
+
+export class NavItemGroupComponent extends NavItemGroupBase {
     private _activeIndex: number = -1;
-    private _mode: 'expanded' | 'collapsed';
-    private _maxDepth: number;
-    private _overlayOptions?: NavOverlayOptions;
-    private _overlayComponent?: any;
+    private _navMode: 'expanded' | 'collapsed' = 'expanded';
+    private _maxDepth: number = 3;
+    private _overlayOptions: NavOverlayOptions | undefined;
+    private _overlayComponent: any;
 
     constructor(props?: NavItemGroupProps) {
-        super({
+        super(props);
+
+        if (props?.cls) {
+            this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
+        }
+
+        this._navMode = props?.mode ?? 'expanded';
+        this._maxDepth = props?.maxDepth ?? 3;
+        this._overlayOptions = props?.overlayOptions;
+        this._overlayComponent = props?.overlayComponent;
+
+        this.el.classList.toggle('q-nav--collapsed', this._navMode === 'collapsed');
+
+        this._initItemGroupComponent({
             itemType: 'NavItem',
             eventKey: 'nav',
             events: NAV_FORWARD_EVENTS,
             direction: props?.direction ?? 'horizontal',
             gap: props?.gap,
-            cls: props?.cls,
-            itemsCls: props?.itemsCls,
             items: props?.items,
-            ...props,
         });
-
-        this.type = 'NavItemGroup';
-        this.el.classList.remove('q-itemgroup');
-        this.el.classList.add('q-nav');
-
-        this._mode = props?.mode ?? 'expanded';
-        this._maxDepth = props?.maxDepth ?? 3;
-        this._overlayOptions = props?.overlayOptions;
-        this._overlayComponent = props?.overlayComponent;
-
-        this.el.classList.toggle('q-nav--collapsed', this._mode === 'collapsed');
 
         if (props?.activeIndex !== undefined && props.activeIndex >= 0) {
             this.selectAt(props.activeIndex, true);
@@ -67,7 +61,7 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         return this._activeIndex;
     }
     get mode(): 'expanded' | 'collapsed' {
-        return this._mode;
+        return this._navMode;
     }
     get maxDepth(): number {
         return this._maxDepth;
@@ -104,7 +98,7 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
     }
 
     setMode(value: 'expanded' | 'collapsed'): void {
-        this._mode = value;
+        this._navMode = value;
         this.el.classList.toggle('q-nav--collapsed', value === 'collapsed');
 
         for (let i = 0; i < this.count; i++) {
@@ -128,6 +122,4 @@ export let NavItemGroupComponent = class extends ItemGroupComponent {
         if (props?.maxDepth !== undefined) this._maxDepth = props.maxDepth;
         if (props?.overlayOptions !== undefined) this.setOverlayOptions(props.overlayOptions);
     }
-};
-
-export type NavItemGroupComponent = InstanceType<typeof NavItemGroupComponent>;
+}
