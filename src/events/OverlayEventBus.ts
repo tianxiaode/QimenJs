@@ -38,7 +38,10 @@ export class OverlayEventBus {
     private constructor() {
         this.overlayScope = globalEventBus.createEventScope();
         this.logger = Logger.for('overlay-bus');
-        this.logger.debug?.('[OverlayEventBus] initialized, scopeId =', this.overlayScope.getScopeId());
+        this.logger.debug?.(
+            '[OverlayEventBus] initialized, scopeId =',
+            this.overlayScope.getScopeId()
+        );
     }
 
     static getInstance(): OverlayEventBus {
@@ -54,13 +57,23 @@ export class OverlayEventBus {
 
     overlayEmit(overlayKey: string, action: string, data?: any): void {
         const overlayEvent = encodeOverlayEvent(overlayKey, action);
-        this.logger.debug?.('[OverlayEventBus] overlayEmit, overlayKey =', overlayKey, 'action =', action);
+        this.logger.debug?.(
+            '[OverlayEventBus] overlayEmit, overlayKey =',
+            overlayKey,
+            'action =',
+            action
+        );
         this.overlayScope.emit(overlayEvent, data);
     }
 
     overlayOn(overlayKey: string, action: string, handler: (data: any) => void): () => void {
         const overlayEvent = encodeOverlayEvent(overlayKey, action);
-        this.logger.debug?.('[OverlayEventBus] overlayOn, overlayKey =', overlayKey, 'action =', action);
+        this.logger.debug?.(
+            '[OverlayEventBus] overlayOn, overlayKey =',
+            overlayKey,
+            'action =',
+            action
+        );
         return this.overlayScope.on(overlayEvent, (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
             handler(data);

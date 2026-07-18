@@ -1,44 +1,34 @@
 /**
  * TooltipOverlayAbility — Tooltip 浮层能力
  *
- * 组合 OverlayHostAbility，提供 tooltip 特有逻辑：
+ * 通过 OverlayEventBus 通知调度中心管理浮层生命周期。
+ * 提供 tooltip 特有逻辑：
  * - hover 事件绑定（通过 DomEventsAbility.bind）
  * - show/hide delay
  * - i18n 内容管理
- * - open/close 生命周期
  *
  * 使用方式：
- * 1. 浮层组件声明 abilities 包含 [OverlayHostAbility, TooltipOverlayAbility]
- * 2. constructor 中调用 initOverlayHost() + initTooltipOverlay()
- * 3. 其余自动处理
+ * 1. 浮层组件声明 abilities 包含 [TooltipOverlayAbility]
+ * 2. constructor 中调用 initTooltipOverlay()
+ * 3. hover 事件自动通过 OverlayEventBus 触发调度中心
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { ZIndexLevel } from '@/component/z-index';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 import type { Placement } from '@qimenjs/component-core';
 
-/**
- * Tooltip 浮层配置
- */
 export interface TooltipOverlayConfig {
-    /** 锚点元素 */
     anchor?: HTMLElement;
-    /** Tooltip 文本内容 */
     tooltip?: string;
-    /** 弹出方向，默认 'top' */
     tooltipPlacement?: Placement;
-    /** 间距，默认 4 */
     tooltipOffset?: number;
-    /** 显示延迟（毫秒），默认 0 */
     tooltipShowDelay?: number;
-    /** 隐藏延迟（毫秒），默认 0 */
     tooltipHideDelay?: number;
+    overlayKey?: string;
 }
 
 export const TooltipOverlayAbility: AbilityDefinition = {
-    // ─── Tooltip 属性 ───
-
     _tooltipText: {
         get(): string {
             return this.abilityState('TooltipOverlayAbility:text', '');
@@ -66,35 +56,34 @@ export const TooltipOverlayAbility: AbilityDefinition = {
         },
     },
 
-    /**
-     * 初始化 Tooltip 浮层
-     *
-     * 从配置中读取参数，绑定 hover 事件，注册 i18n 监听。
-     * 必须在 initOverlayHost() 之后调用。
-     */
+    _overlayKey: {
+        get(): string {
+            return this.abilityState('TooltipOverlayAbility:overlayKey', 'tooltip');
+        },
+        set(value: string) {
+            this.setAbilityState('TooltipOverlayAbility:overlayKey', value);
+        },
+    },
+
     initTooltipOverlay(config?: TooltipOverlayConfig): void {
-        // 设置锚点
         if (config?.anchor) {
             this._anchor = config.anchor;
         }
 
-        // 设置 tooltip 属性
         this._tooltipText = config?.tooltip ?? '';
         this._showDelay = config?.tooltipShowDelay ?? 0;
         this._hideDelay = config?.tooltipHideDelay ?? 0;
+        this._overlayKey = config?.overlayKey ?? 'tooltip';
 
-        // 解析 i18n 内容
         const tooltipText = this._tooltipText;
         const resolved = tooltipText.startsWith(I18N_PREFIX)
             ? (getI18nManager()?.t(tooltipText.slice(I18N_PREFIX.length)) ?? tooltipText)
             : tooltipText;
 
-        // 设置内容（如果浮层组件有 text 属性）
         if (typeof this.text !== 'undefined') {
             this.text = resolved;
         }
 
-        // 绑定 hover 事件
         const anchor = this._anchor;
         if (anchor) {
             this.bind(anchor, 'hover');
@@ -110,7 +99,6 @@ export const TooltipOverlayAbility: AbilityDefinition = {
             });
         }
 
-        // i18n 内容 → 注册 localeChange 刷新
         if (tooltipText.startsWith(I18N_PREFIX)) {
             const i18nKey = tooltipText.slice(I18N_PREFIX.length);
             const off = this.on?.('localeChange', () => {
@@ -124,8 +112,6 @@ export const TooltipOverlayAbility: AbilityDefinition = {
             }
         }
     },
-
-    // ─── open/close 生命周期 ───
 
     _showTimer: {
         get(): ReturnType<typeof setTimeout> | null {
@@ -146,39 +132,37 @@ export const TooltipOverlayAbility: AbilityDefinition = {
     },
 
     _scheduleShow(): void {
-        if (this._hideTimer !== null) { clearTimeout(this._hideTimer); this._hideTimer = null; }
+        if (this._hideTimer !== null) {
+            clearTimeout(this._hideTimer);
+            this._hideTimer = null;
+        }
         if (this._showDelay > 0) {
-            this._showTimer = setTimeout(() => this.open(), this._showDelay);
+            this._showTimer = setTimeout(() => this._showTooltip(), this._showDelay);
         } else {
-            this.open();
+            this._showTooltip();
         }
     },
 
     _scheduleHide(): void {
-        if (this._showTimer !== null) { clearTimeout(this._showTimer); this._showTimer = null; }
+        if (this._showTimer !== null) {
+            clearTimeout(this._showTimer);
+            this._showTimer = null;
+        }
         if (this._hideDelay > 0) {
-            this._hideTimer = setTimeout(() => this.close(), this._hideDelay);
+            this._hideTimer = setTimeout(() => this._hideTooltip(), this._hideDelay);
         } else {
-            this.close();
+            this._hideTooltip();
         }
     },
 
-    /**
-     * 打开 tooltip
-     */
-    open(): void {
-        this.acquireZIndex(ZIndexLevel.tooltip);
-        this.positionOverlay();
-        this.openOverlay();
-        this.el.style.display = '';
+    _showTooltip(): void {
+        const bus = OverlayEventBus.getInstance();
+        const anchor = this._anchor ?? this.el;
+        bus.overlayEmit(this._overlayKey, 'show', { component: this, anchor });
     },
 
-    /**
-     * 关闭 tooltip
-     */
-    close(): void {
-        this.el.style.display = 'none';
-        this.closeOverlay();
-        this.releaseZIndex();
+    _hideTooltip(): void {
+        const bus = OverlayEventBus.getInstance();
+        bus.overlayEmit(this._overlayKey, 'hide', { component: this });
     },
 };

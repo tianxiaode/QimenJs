@@ -5,25 +5,34 @@
  * 与 @qimenjs/composable 的 AbilityDefinition 配合使用。
  */
 
-
-
 // 渲染能力
 export { VirtualListAbility } from './render';
 export { AnimationAbility } from './render';
-export { FloatingLayerAbility, type ViewportPosition, type FloatingAnimationOptions } from './render';
-export { OverflowScrollAbility, type OverflowDirection, type OverflowState, type OverflowScrollConfig } from './render';
+export {
+    FloatingLayerAbility,
+    type ViewportPosition,
+    type FloatingAnimationOptions,
+} from './render';
+export {
+    OverflowScrollAbility,
+    type OverflowDirection,
+    type OverflowState,
+    type OverflowScrollConfig,
+} from './render';
 export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
-export { OverlayHostAbility, type OverlayHostConfig } from './render';
+
 export { TooltipOverlayAbility, type TooltipOverlayConfig } from './render';
 export { ArrowAbility, type ArrowConfig } from './render';
 export { ExpandArrowAbility, type ExpandArrowConfig } from './render';
 export { arrowCSS } from './render';
 
-
-
 // 菜单能力
 export { MenuItemManageAbility, type MenuItemConfig } from './menu';
 
 // 分组选择能力
-export { GroupSelectAbility, type GroupSelectMode, type GroupInfo, type GroupSelectConfig } from './group';
-
+export {
+    GroupSelectAbility,
+    type GroupSelectMode,
+    type GroupInfo,
+    type GroupSelectConfig,
+} from './group';

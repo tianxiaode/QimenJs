@@ -71,24 +71,27 @@ export type BridgesConfig = (string | EventListen)[];
  * 组件声明式定义浮层，框架根据 trigger 自动绑定 DOM 事件到 overlayEmit。
  * overlayKey 用于标识浮层实例，不同组件的同名 overlayKey 互不干扰。
  *
+ * type：浮层组件类型名，对应 ComponentRegistrar 中注册的组件类名。
+ *       不同业务可注册同名类型的不同实现，实现解耦。
+ * data：传递给浮层组件的额外数据，支持对象或返回对象的函数。
+ *       函数形式中 this 绑定到宿主组件实例，可读取动态属性。
+ *
  * @example
  * ```ts
  * overlays: {
- *     myTooltip: { prefix: 'tips', trigger: 'hover', overlayProps: { content: '提示' } },
- *     myDropdown: { prefix: 'dropdown', trigger: 'click', overlayProps: { items: [...] } }
+ *     myTooltip: { type: 'tips', trigger: 'hover', data: { text: '提示' } },
+ *     myDropdown: { type: 'dropdown', trigger: 'click', data() { return { items: this.menuItems } } }
  * }
  * ```
  */
 export interface OverlayDecl {
-    prefix: string;
-    typeOverride?: string;
+    type: string;
     trigger?: 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual';
     placement?: string;
     offset?: number;
-    items?: any[];
     closeOnClickOutside?: boolean;
     closeOnEscape?: boolean;
-    overlayProps?: Record<string, any>;
+    data?: Record<string, any> | (() => Record<string, any>);
 }
 
 export type OverlaysConfig = Record<string, OverlayDecl>;

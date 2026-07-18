@@ -17,6 +17,7 @@ export * from './StateTrigger';
 export { I18nEventBridge, i18nEventBridge, type I18nEventBridgeConfig } from './I18nEventBridge';
 export { EventBridge } from './EventBridge';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
+export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';
 
 // 导出实体事件常量
 export * from './entity-events';

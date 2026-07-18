@@ -34,6 +34,7 @@
 - [2026-07-08-component-base-refactoring.md](./2026-07-08-component-base-refactoring.md) - ComponentBase 重构与内部渲染模型
 - [2026-07-09-html-template-registrar-cloneNode-optimization.md](./2026-07-09-html-template-registrar-cloneNode-optimization.md) - TemplateRegistrar cloneNode 优化
 - [2026-07-10-component-ability-refactoring.md](./2026-07-10-component-ability-refactoring.md) - ComponentBase 能力拆分与模板包重命名
+- [2026-07-18-event-driven-dispatch-center-refactoring.md](./2026-07-18-event-driven-dispatch-center-refactoring.md) - 事件驱动调度中心重构
 
 ### 已过时（旧架构，保留作历史参考）
 

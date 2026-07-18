@@ -46,15 +46,8 @@ export {
     type LayoutType,
 } from './abilities/LayoutAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
-export { OverlayAbility, type OverlayConfig, type OverlayResult } from './abilities/OverlayAbility';
-export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
-export {
-    TooltipAbility,
-    type TooltipKey,
-    type TooltipOverlayConfig,
-} from './abilities/TooltipAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';

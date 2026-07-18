@@ -99,6 +99,7 @@ export const InitAbility: AbilityDefinition = {
 
         if (layout.extraFns) {
             for (const [key, fn] of Object.entries(layout.extraFns)) {
+                if (typeof fn !== 'function') continue;
                 Object.defineProperty(this, key, {
                     value: fn.bind(this),
                     writable: true,
@@ -505,13 +506,29 @@ export const InitAbility: AbilityDefinition = {
             if (trigger === 'manual') continue;
 
             const bus = OverlayEventBus.getInstance();
+            const overlayType = decl.type;
+            const createOverlay = () => {
+                const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
+                const OverlayClass = ComponentRegistrar.getInstance().get(capitalType);
+                if (!OverlayClass) return null;
+
+                const overlayData =
+                    typeof decl.data === 'function' ? decl.data.call(this) : decl.data;
+                return new OverlayClass({ anchor: this.el, ...overlayData });
+            };
 
             if (trigger === 'hover') {
                 const el = this.el;
                 if (!el) continue;
 
                 const showHandler = () => {
-                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el });
+                    const overlay = createOverlay();
+                    if (overlay)
+                        bus.overlayEmit(overlayKey, 'show', {
+                            component: this,
+                            anchor: el,
+                            overlay,
+                        });
                 };
                 const hideHandler = () => {
                     bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
@@ -528,7 +545,18 @@ export const InitAbility: AbilityDefinition = {
                 if (!el) continue;
 
                 const clickHandler = () => {
-                    bus.overlayEmit(overlayKey, 'toggle', { component: this, anchor: el });
+                    const existing = overlayDispatchCenter.getOverlay(overlayKey);
+                    if (existing) {
+                        bus.overlayEmit(overlayKey, 'toggle', { component: this, anchor: el });
+                    } else {
+                        const overlay = createOverlay();
+                        if (overlay)
+                            bus.overlayEmit(overlayKey, 'show', {
+                                component: this,
+                                anchor: el,
+                                overlay,
+                            });
+                    }
                 };
 
                 el.addEventListener('click', clickHandler);
@@ -540,7 +568,13 @@ export const InitAbility: AbilityDefinition = {
                 if (!el) continue;
 
                 const focusHandler = () => {
-                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el });
+                    const overlay = createOverlay();
+                    if (overlay)
+                        bus.overlayEmit(overlayKey, 'show', {
+                            component: this,
+                            anchor: el,
+                            overlay,
+                        });
                 };
                 const blurHandler = () => {
                     bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
@@ -558,7 +592,15 @@ export const InitAbility: AbilityDefinition = {
 
                 const contextHandler = (e: Event) => {
                     e.preventDefault();
-                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el, x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+                    const overlay = createOverlay();
+                    if (overlay)
+                        bus.overlayEmit(overlayKey, 'show', {
+                            component: this,
+                            anchor: el,
+                            overlay,
+                            x: (e as MouseEvent).clientX,
+                            y: (e as MouseEvent).clientY,
+                        });
                 };
 
                 el.addEventListener('contextmenu', contextHandler);

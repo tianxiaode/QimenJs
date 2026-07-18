@@ -1,15 +1,16 @@
 /**
  * MenuComponent 浮层菜单组件
  *
- * 弹出式菜单容器，内置 ItemGroup 管理菜单项。
- * 复用 OverlayHostAbility 实现浮层协议（open/close/reposition）。
- * 复用 GroupSelectAbility 实现分组选中态管理（radio/checkbox）。
+ * 纯渲染组件，由 OverlayDispatchCenter 创建和管理生命周期。
+ * 调度中心负责：定位计算、z-index 管理、OverlayRoot 挂载/卸载、clickOutside/escape 关闭。
+ * MenuComponent 只负责：渲染菜单项、分组选中态管理、open/close 简单生命周期。
  *
+ * 复用 GroupSelectAbility 实现分组选中态管理（radio/checkbox）。
  * 默认使用 MenuItem 作为子项组件，可通过 itemType 替换。
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { OverlayHostAbility, GroupSelectAbility } from '@qimenjs/component-abilities';
+import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import type { Placement } from '@qimenjs/component-core';
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 
@@ -35,11 +36,6 @@ const MenuBase = TemplateComponent.withTemplate({
 
         _initMenu(props?: MenuProps & Record<string, any>): void {
             this.el.classList.add('q-menu');
-
-            this.initOverlayHost({
-                placement: props?.placement,
-                offset: props?.offset,
-            });
 
             if (props?.anchor) this._anchor = props.anchor;
 
@@ -76,19 +72,8 @@ const MenuBase = TemplateComponent.withTemplate({
         open(): void {
             if (this._isOpen) return;
 
-            this.openOverlay();
-            this.positionOverlay();
-            this.acquireZIndex();
-
             this.el.style.display = '';
             this._isOpen = true;
-
-            this._documentClickHandler = (e: MouseEvent) => {
-                if (!this.el.contains(e.target as Node)) {
-                    this.close();
-                }
-            };
-            document.addEventListener('mousedown', this._documentClickHandler);
         },
 
         close(): void {
@@ -96,14 +81,6 @@ const MenuBase = TemplateComponent.withTemplate({
 
             this.el.style.display = 'none';
             this._isOpen = false;
-
-            this.releaseZIndex();
-            this.closeOverlay();
-
-            if (this._documentClickHandler) {
-                document.removeEventListener('mousedown', this._documentClickHandler);
-                this._documentClickHandler = null;
-            }
         },
 
         dispose(): void {
@@ -115,7 +92,7 @@ const MenuBase = TemplateComponent.withTemplate({
             (this.constructor as any).__proto__.dispose.call(this);
         },
     },
-}).with([OverlayHostAbility, GroupSelectAbility]);
+}).with([GroupSelectAbility]);
 
 export let MenuComponent = MenuBase;
 

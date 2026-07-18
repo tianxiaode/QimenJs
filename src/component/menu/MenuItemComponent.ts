@@ -17,10 +17,13 @@
  * - checked 表示当前选中状态
  * - 选中指示符复用 icon 位：radio 用 ●/○，checkbox 用 ☑/☐
  * - 自定义 icon 与分组指示符互斥：有 group 时优先显示指示符
+ *
+ * 子菜单：通过 OverlayEventBus 通知调度中心打开/关闭子菜单浮层
  */
 
-import { TemplateComponent, OverlayAbility } from '@qimenjs/component-core';
+import { TemplateComponent } from '@qimenjs/component-core';
 import { ExpandArrowAbility } from '@qimenjs/component-abilities';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { IconComponent } from '../icon/IconComponent';
 
 export type MenuItemGroupMode = 'radio' | 'checkbox';
@@ -243,21 +246,17 @@ const MenuItemBase = TemplateComponent.withTemplate({
         openSubmenu(): void {
             if (!this._hasSubmenu) return;
 
-            if (typeof this.openMenu !== 'function') {
-                this.createOverlay({
-                    prefix: 'menu',
-                    overlayProps: {
-                        placement: 'right',
-                        ...this.submenuProps,
-                    },
-                });
-            }
-
-            this.openMenu?.();
+            const bus = OverlayEventBus.getInstance();
+            bus.overlayEmit('submenu', 'show', {
+                component: this,
+                anchor: this.el,
+                ...this.submenuProps,
+            });
         },
 
         closeSubmenu(): void {
-            this.closeMenu?.();
+            const bus = OverlayEventBus.getInstance();
+            bus.overlayEmit('submenu', 'hide', {});
         },
 
         update(props?: Partial<MenuItemProps> & Record<string, any>): void {
@@ -273,7 +272,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
             if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
         },
     },
-}).with([OverlayAbility, ExpandArrowAbility]);
+}).with([ExpandArrowAbility]);
 
 export let MenuItemComponent = MenuItemBase;
 

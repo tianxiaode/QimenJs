@@ -1,18 +1,18 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
-import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+import { OverlayRoot } from '@/component/OverlayRoot';
+import { ZIndexLevel, nextZIndex } from '@/component/z-index';
+import { positionOverlay, type Placement } from '@/component-core/abilities/positionOverlay';
 import { Logger, type ILogger } from '@qimenjs/logger';
 
 export interface OverlayDefinition {
-    prefix: string;
-    typeOverride?: string;
+    type: string;
     trigger?: string;
-    placement?: string;
+    placement?: Placement;
     offset?: number;
-    items?: any[];
     closeOnClickOutside?: boolean;
     closeOnEscape?: boolean;
-    overlayProps?: Record<string, any>;
+    data?: Record<string, any> | (() => Record<string, any>);
 }
 
 interface OverlayInstance {
@@ -20,6 +20,8 @@ interface OverlayInstance {
     el: HTMLElement;
     anchor: HTMLElement;
     component: any;
+    clickOutsideHandler?: (e: MouseEvent) => void;
+    escapeHandler?: (e: KeyboardEvent) => void;
 }
 
 const OVERLAY_ACTIONS = ['show', 'hide', 'toggle', 'reposition', 'dispose'];
@@ -31,7 +33,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     private readonly instances = new Map<string, OverlayInstance>();
     private readonly bus: OverlayEventBus;
     private readonly logger: ILogger;
-    private zIndexCounter = 1000;
 
     constructor() {
         super();
@@ -68,10 +69,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         return this.instances.get(overlayKey)?.overlay;
     }
 
-    nextZIndex(): number {
-        return ++this.zIndexCounter;
-    }
-
     private _listenOverlayActions(overlayKey: string): void {
         for (const action of OVERLAY_ACTIONS) {
             this.bus.overlayOn(overlayKey, action, (data: any) => {
@@ -81,8 +78,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     }
 
     private _dispatchAction(overlayKey: string, action: string, data?: any): void {
-        const { component, anchor, ...rest } = data || {};
-
         if (action === 'show' || action === 'toggle') {
             const existing = this.instances.get(overlayKey);
             if (existing && action === 'toggle') {
@@ -90,78 +85,116 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 return;
             }
             if (existing && action === 'show') {
-                if (typeof existing.overlay.reposition === 'function') {
-                    existing.overlay.reposition();
-                }
+                this._reposition(overlayKey);
                 return;
             }
-            this._createAndShow(overlayKey, component, anchor, rest);
+            this._mountAndShow(overlayKey, data);
         } else if (action === 'hide') {
             this._closeOverlay(overlayKey);
         } else if (action === 'reposition') {
-            const inst = this.instances.get(overlayKey);
-            if (inst && typeof inst.overlay.reposition === 'function') {
-                inst.overlay.reposition();
-            }
+            this._reposition(overlayKey);
         } else if (action === 'dispose') {
             this._disposeInstance(overlayKey);
         }
     }
 
-    private _createAndShow(
-        overlayKey: string,
-        component: any,
-        anchor: HTMLElement,
-        extraData: any
-    ): void {
+    private _mountAndShow(overlayKey: string, data: any): void {
         const def = this.storage.get(overlayKey);
         if (!def) {
             this.logger.warn?.(`[OverlayDispatchCenter] overlayKey="${overlayKey}" not registered`);
             return;
         }
 
-        const capitalPrefix = def.prefix.charAt(0).toUpperCase() + def.prefix.slice(1);
-        const lookupName = def.typeOverride ?? capitalPrefix;
-        const OverlayClass = ComponentRegistrar.getInstance().get(lookupName);
-        if (!OverlayClass) {
+        const { component, anchor, overlay } = data || {};
+        if (!overlay) {
             this.logger.warn?.(
-                `[OverlayDispatchCenter] overlay class "${lookupName}" not found in ComponentRegistrar`
+                `[OverlayDispatchCenter] overlayKey="${overlayKey}" missing overlay instance in data`
             );
             return;
         }
 
-        const overlayInstance = new OverlayClass({
-            anchor: anchor ?? component?.el,
-            ...def.overlayProps,
-            ...extraData,
-        });
-
-        const overlayEl = overlayInstance.el;
+        const overlayEl = overlay.el;
         if (!overlayEl) return;
 
-        overlayEl.style.zIndex = String(this.nextZIndex());
+        const anchorEl = anchor ?? component?.el;
+        const placement = def.placement ?? 'bottom';
+        const offset = def.offset ?? 4;
 
-        this.instances.set(overlayKey, {
-            overlay: overlayInstance,
+        overlayEl.style.position = 'absolute';
+        overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
+        overlayEl.style.display = 'none';
+        overlayEl.style.pointerEvents = 'auto';
+
+        OverlayRoot.getInstance().mountOverlay(overlayEl);
+
+        const actualPlacement = positionOverlay(overlayEl, anchorEl, placement, offset, true);
+        overlayEl.style.display = '';
+
+        const inst: OverlayInstance = {
+            overlay,
             el: overlayEl,
-            anchor: anchor ?? component?.el,
+            anchor: anchorEl,
             component,
-        });
+        };
 
-        if (typeof overlayInstance.open === 'function') {
-            overlayInstance.open();
+        if (def.closeOnClickOutside !== false) {
+            inst.clickOutsideHandler = (e: MouseEvent) => {
+                if (!overlayEl.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) {
+                    this._closeOverlay(overlayKey);
+                }
+            };
+            document.addEventListener('mousedown', inst.clickOutsideHandler);
         }
 
-        this.bus.overlayEmit(overlayKey, 'shown', { overlayKey, component, anchor });
+        if (def.closeOnEscape !== false) {
+            inst.escapeHandler = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') {
+                    this._closeOverlay(overlayKey);
+                }
+            };
+            document.addEventListener('keydown', inst.escapeHandler);
+        }
+
+        this.instances.set(overlayKey, inst);
+
+        if (typeof overlay.open === 'function') {
+            overlay.open();
+        }
+
+        this.bus.overlayEmit(overlayKey, 'shown', {
+            overlayKey,
+            component,
+            anchor,
+            placement: actualPlacement,
+        });
+    }
+
+    private _reposition(overlayKey: string): void {
+        const inst = this.instances.get(overlayKey);
+        if (!inst) return;
+
+        const def = this.storage.get(overlayKey);
+        const placement = def?.placement ?? 'bottom';
+        const offset = def?.offset ?? 4;
+        positionOverlay(inst.el, inst.anchor, placement, offset, true);
     }
 
     private _closeOverlay(overlayKey: string): void {
         const inst = this.instances.get(overlayKey);
         if (!inst) return;
 
+        if (inst.clickOutsideHandler) {
+            document.removeEventListener('mousedown', inst.clickOutsideHandler);
+        }
+        if (inst.escapeHandler) {
+            document.removeEventListener('keydown', inst.escapeHandler);
+        }
+
         if (typeof inst.overlay.close === 'function') {
             inst.overlay.close();
         }
+
+        OverlayRoot.getInstance().unmountOverlay(inst.el);
 
         this.bus.overlayEmit(overlayKey, 'hidden', { overlayKey, component: inst.component });
     }
@@ -170,9 +203,18 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const inst = this.instances.get(overlayKey);
         if (!inst) return;
 
+        if (inst.clickOutsideHandler) {
+            document.removeEventListener('mousedown', inst.clickOutsideHandler);
+        }
+        if (inst.escapeHandler) {
+            document.removeEventListener('keydown', inst.escapeHandler);
+        }
+
         if (typeof inst.overlay.dispose === 'function') {
             inst.overlay.dispose();
         }
+
+        OverlayRoot.getInstance().unmountOverlay(inst.el);
         this.instances.delete(overlayKey);
     }
 
@@ -186,14 +228,20 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         console.log('Definitions:', definitions);
         console.log('Instances:', instances);
-        console.log('zIndexCounter:', this.zIndexCounter);
     }
 
     dispose(): void {
         for (const [key, inst] of this.instances) {
+            if (inst.clickOutsideHandler) {
+                document.removeEventListener('mousedown', inst.clickOutsideHandler);
+            }
+            if (inst.escapeHandler) {
+                document.removeEventListener('keydown', inst.escapeHandler);
+            }
             if (typeof inst.overlay.dispose === 'function') {
                 inst.overlay.dispose();
             }
+            OverlayRoot.getInstance().unmountOverlay(inst.el);
         }
         this.instances.clear();
         this.logger.debug?.('[OverlayDispatchCenter] all disposed');

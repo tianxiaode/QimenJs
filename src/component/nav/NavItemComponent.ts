@@ -18,8 +18,7 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 import { FloatingLayerAbility } from '@/component-abilities/render/FloatingLayerAbility';
 import { ExpandArrowAbility } from '@/component-abilities/render/ExpandArrowAbility';
-import { TooltipOverlayAbility } from '@/component-abilities/render/TooltipOverlayAbility';
-import { OverlayHostAbility } from '@qimenjs/component-core';
+
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { OverlayRoot } from '@/component/OverlayRoot';
 import { IconComponent } from '../icon/IconComponent';

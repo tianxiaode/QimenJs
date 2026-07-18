@@ -28,13 +28,10 @@ import { BadgeAbility } from './abilities/BadgeAbility';
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
-import { OverlayAbility } from './abilities/OverlayAbility';
-import { OverlayHostAbility } from './abilities/OverlayHostAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { DropAbility } from './abilities/DropAbility';
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
-import { TooltipAbility } from './abilities/TooltipAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
@@ -54,14 +51,11 @@ import { buildContentProperties } from './content-properties';
  * - EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility — 事件系统
  * - AnimationAbility — 动画控制
  * - BadgeAbility — 角标管理（创建 Badge 组件实例）
- * - EntityCoreAbility — 实体管理
  * - EventBridgeConfigAbility — 桥接配置
  * - InitAbility — 初始化流程
  * - NodeMapAbility — i18n 刷新
- * - OverlayAbility / OverlayHostAbility — 浮层生命周期
  * - DragAbility / DropAbility — 拖放事件
  * - TemplateAbility — 模板渲染
- * - TooltipAbility — Tooltip 浮层（创建 overlay）
  *
  * 已移除（纯赋值，v2 由 props/content 直接驱动）：
  * - PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility
@@ -82,13 +76,10 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventBridgeConfigAbility,
     InitAbility,
     NodeMapAbility,
-    OverlayAbility,
-    OverlayHostAbility,
     DragAbility,
     DropAbility,
     TemplateAbility,
     LayoutAbility,
-    TooltipAbility,
 ];
 
 /**
