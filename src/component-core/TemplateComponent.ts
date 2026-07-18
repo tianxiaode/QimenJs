@@ -20,6 +20,7 @@ import {
     DomEventsAbility,
     EventBridgeAbility as SystemEventBridgeAbility,
     EntityEventBusAbility,
+    OverlayEventBusAbility,
 } from '@/system-abilities';
 import { AnimationAbility } from './abilities/AnimationAbility';
 import { BadgeAbility } from './abilities/BadgeAbility';
@@ -74,6 +75,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     DomEventsAbility,
     SystemEventBridgeAbility,
     EntityEventBusAbility,
+    OverlayEventBusAbility,
     AnimationAbility,
     BadgeAbility,
     EventBridgeConfigAbility,

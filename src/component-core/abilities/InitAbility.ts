@@ -21,7 +21,9 @@ import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { EventBridge } from '@/events/EventBridge';
 import { EntityEventBus } from '@/events/EntityEventBus';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { validateEntityEvent } from '@/entity/dispatch';
+import { overlayDispatchCenter } from '@/overlay/dispatch';
 import type { AnimationKey } from './AnimationAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
@@ -123,6 +125,10 @@ export const InitAbility: AbilityDefinition = {
 
         if (layout.meta) {
             this.meta = { ...layout.meta };
+        }
+
+        if (layout.overlays) {
+            this._initOverlays(layout.overlays);
         }
     },
 
@@ -488,6 +494,65 @@ export const InitAbility: AbilityDefinition = {
             (item): item is EventListen => typeof item !== 'string'
         );
         return items.length > 0 ? items : null;
+    },
+
+    _initOverlays(overlays: Record<string, any>): void {
+        for (const [overlayKey, decl] of Object.entries(overlays)) {
+            overlayDispatchCenter.register(overlayKey, decl);
+
+            const trigger = decl.trigger ?? 'manual';
+            if (trigger === 'manual') continue;
+
+            const bus = OverlayEventBus.getInstance();
+
+            if (trigger === 'hover') {
+                const el = this.el;
+                if (!el) continue;
+
+                const showHandler = () => {
+                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el });
+                };
+                const hideHandler = () => {
+                    bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
+                };
+
+                el.addEventListener('mouseenter', showHandler);
+                el.addEventListener('mouseleave', hideHandler);
+                this.onCleanup(() => {
+                    el.removeEventListener('mouseenter', showHandler);
+                    el.removeEventListener('mouseleave', hideHandler);
+                });
+            } else if (trigger === 'click') {
+                const el = this.el;
+                if (!el) continue;
+
+                const clickHandler = () => {
+                    bus.overlayEmit(overlayKey, 'toggle', { component: this, anchor: el });
+                };
+
+                el.addEventListener('click', clickHandler);
+                this.onCleanup(() => {
+                    el.removeEventListener('click', clickHandler);
+                });
+            } else if (trigger === 'focus') {
+                const el = this.el;
+                if (!el) continue;
+
+                const focusHandler = () => {
+                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el });
+                };
+                const blurHandler = () => {
+                    bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
+                };
+
+                el.addEventListener('focus', focusHandler);
+                el.addEventListener('blur', blurHandler);
+                this.onCleanup(() => {
+                    el.removeEventListener('focus', focusHandler);
+                    el.removeEventListener('blur', blurHandler);
+                });
+            }
+        }
     },
 
     /**

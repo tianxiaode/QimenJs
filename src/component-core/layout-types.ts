@@ -63,7 +63,34 @@ export type ListensConfig = EventListen[];
  */
 export type BridgesConfig = (string | EventListen)[];
 
-// ── 生命周期 ──
+// ── 浮层配置 ──
+
+/**
+ * 浮层配置
+ *
+ * 组件声明式定义浮层，框架根据 trigger 自动绑定 DOM 事件到 overlayEmit。
+ * overlayKey 用于标识浮层实例，不同组件的同名 overlayKey 互不干扰。
+ *
+ * @example
+ * ```ts
+ * overlays: {
+ *     myTooltip: { prefix: 'tips', trigger: 'hover', overlayProps: { content: '提示' } },
+ *     myDropdown: { prefix: 'dropdown', trigger: 'click', overlayProps: { items: [...] } }
+ * }
+ * ```
+ */
+export interface OverlayDecl {
+    /** 浮层类型前缀，对应 ComponentRegistrar 中注册的组件类名 */
+    prefix: string;
+    /** 覆盖从 prefix 推导的组件类查找名 */
+    typeOverride?: string;
+    /** 触发方式：hover / click / focus / manual */
+    trigger?: 'hover' | 'click' | 'focus' | 'manual';
+    /** 传递给浮层组件的 props */
+    overlayProps?: Record<string, any>;
+}
+
+export type OverlaysConfig = Record<string, OverlayDecl>;
 
 /**
  * 生命周期钩子
