@@ -1,8 +1,8 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
-import { OverlayRoot } from '@/component/OverlayRoot';
+import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
-import { positionOverlay, type Placement } from '@/component-core/abilities/positionOverlay';
+import { positionOverlay, type Placement } from './positionOverlay';
 import { Logger, type ILogger } from '@qimenjs/logger';
 
 export interface OverlayDefinition {
@@ -13,6 +13,8 @@ export interface OverlayDefinition {
     closeOnClickOutside?: boolean;
     closeOnEscape?: boolean;
     data?: Record<string, any> | (() => Record<string, any>);
+    onOverlayChange?: (overlay: any, data: any) => void;
+    mask?: boolean | string;
 }
 
 interface OverlayInstance {
@@ -20,17 +22,24 @@ interface OverlayInstance {
     el: HTMLElement;
     anchor: HTMLElement;
     component: any;
+    maskEl?: HTMLElement;
     clickOutsideHandler?: (e: MouseEvent) => void;
     escapeHandler?: (e: KeyboardEvent) => void;
 }
 
-const OVERLAY_ACTIONS = ['show', 'hide', 'toggle', 'reposition', 'dispose'];
+const OVERLAY_ACTIONS = ['show', 'hide', 'toggle', 'reposition', 'change', 'dispose'];
+
+function encodeInstanceKey(componentId: string, overlayKey: string): string {
+    return `${componentId}:${overlayKey}`;
+}
 
 export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefinition>> {
     public readonly name = 'OverlayDispatchCenter';
     protected storage = new Map<string, OverlayDefinition>();
 
     private readonly instances = new Map<string, OverlayInstance>();
+    private _activeMaskEl: HTMLElement | null = null;
+    private _activeMaskCount: number = 0;
     private readonly bus: OverlayEventBus;
     private readonly logger: ILogger;
 
@@ -65,8 +74,26 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         return this.storage.get(overlayKey);
     }
 
-    getOverlay(overlayKey: string): any | undefined {
-        return this.instances.get(overlayKey)?.overlay;
+    getOverlay(componentId: string, overlayKey: string): any | undefined {
+        const key = encodeInstanceKey(componentId, overlayKey);
+        return this.instances.get(key)?.overlay;
+    }
+
+    disposeByComponent(componentId: string): void {
+        const prefix = `${componentId}:`;
+        for (const [key, inst] of this.instances) {
+            if (key.startsWith(prefix)) {
+                this._cleanupInstance(inst);
+                if (inst.maskEl) {
+                    this._releaseMask(inst.maskEl);
+                }
+                OverlayRoot.getInstance().unmountOverlay(inst.el);
+                this.instances.delete(key);
+            }
+        }
+        this.logger.debug?.(
+            `[OverlayDispatchCenter] disposed all overlays for componentId="${componentId}"`
+        );
     }
 
     private _listenOverlayActions(overlayKey: string): void {
@@ -78,27 +105,37 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     }
 
     private _dispatchAction(overlayKey: string, action: string, data?: any): void {
+        const componentId = data?.component?.id;
+        if (!componentId) {
+            this.logger.warn?.(`[OverlayDispatchCenter] action="${action}" missing component.id`);
+            return;
+        }
+
+        const instanceKey = encodeInstanceKey(componentId, overlayKey);
+
         if (action === 'show' || action === 'toggle') {
-            const existing = this.instances.get(overlayKey);
+            const existing = this.instances.get(instanceKey);
             if (existing && action === 'toggle') {
-                this._closeOverlay(overlayKey);
+                this._closeOverlay(instanceKey, overlayKey);
                 return;
             }
             if (existing && action === 'show') {
-                this._reposition(overlayKey);
+                this._reposition(instanceKey);
                 return;
             }
-            this._mountAndShow(overlayKey, data);
+            this._mountAndShow(instanceKey, overlayKey, data);
         } else if (action === 'hide') {
-            this._closeOverlay(overlayKey);
+            this._closeOverlay(instanceKey, overlayKey);
         } else if (action === 'reposition') {
-            this._reposition(overlayKey);
+            this._reposition(instanceKey);
+        } else if (action === 'change') {
+            this._changeOverlay(instanceKey, overlayKey, data);
         } else if (action === 'dispose') {
-            this._disposeInstance(overlayKey);
+            this._disposeInstance(instanceKey);
         }
     }
 
-    private _mountAndShow(overlayKey: string, data: any): void {
+    private _mountAndShow(instanceKey: string, overlayKey: string, data: any): void {
         const def = this.storage.get(overlayKey);
         if (!def) {
             this.logger.warn?.(`[OverlayDispatchCenter] overlayKey="${overlayKey}" not registered`);
@@ -119,6 +156,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const anchorEl = anchor ?? component?.el;
         const placement = def.placement ?? 'bottom';
         const offset = def.offset ?? 4;
+        const trigger = def.trigger ?? 'manual';
 
         overlayEl.style.position = 'absolute';
         overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
@@ -137,29 +175,31 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             component,
         };
 
-        if (def.closeOnClickOutside !== false) {
+        if (def.mask) {
+            inst.maskEl = this._acquireMask(def.mask === true ? undefined : def.mask);
+        }
+
+        if (trigger !== 'always' && !def.mask && def.closeOnClickOutside !== false) {
             inst.clickOutsideHandler = (e: MouseEvent) => {
                 if (!overlayEl.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) {
-                    this._closeOverlay(overlayKey);
+                    this._closeOverlay(instanceKey, overlayKey);
                 }
             };
             document.addEventListener('mousedown', inst.clickOutsideHandler);
         }
 
-        if (def.closeOnEscape !== false) {
+        if (trigger !== 'always' && def.closeOnEscape !== false) {
             inst.escapeHandler = (e: KeyboardEvent) => {
                 if (e.key === 'Escape') {
-                    this._closeOverlay(overlayKey);
+                    this._closeOverlay(instanceKey, overlayKey);
                 }
             };
             document.addEventListener('keydown', inst.escapeHandler);
         }
 
-        this.instances.set(overlayKey, inst);
+        this.instances.set(instanceKey, inst);
 
-        if (typeof overlay.open === 'function') {
-            overlay.open();
-        }
+        overlay.hidden = false;
 
         this.bus.overlayEmit(overlayKey, 'shown', {
             overlayKey,
@@ -169,18 +209,38 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         });
     }
 
-    private _reposition(overlayKey: string): void {
-        const inst = this.instances.get(overlayKey);
+    private _reposition(instanceKey: string): void {
+        const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
-        const def = this.storage.get(overlayKey);
+        const def = this.storage.get(instanceKey.split(':').pop()!);
         const placement = def?.placement ?? 'bottom';
         const offset = def?.offset ?? 4;
         positionOverlay(inst.el, inst.anchor, placement, offset, true);
     }
 
-    private _closeOverlay(overlayKey: string): void {
-        const inst = this.instances.get(overlayKey);
+    private _changeOverlay(instanceKey: string, overlayKey: string, data: any): void {
+        const inst = this.instances.get(instanceKey);
+        if (!inst) return;
+
+        const def = this.storage.get(overlayKey);
+        const changeData = data?.data ?? data;
+
+        if (def?.onOverlayChange) {
+            def.onOverlayChange(inst.overlay, changeData);
+        } else if (typeof inst.overlay.onOverlayChange === 'function') {
+            inst.overlay.onOverlayChange(changeData);
+        }
+
+        this.bus.overlayEmit(overlayKey, 'changed', {
+            overlayKey,
+            component: inst.component,
+            data: changeData,
+        });
+    }
+
+    private _closeOverlay(instanceKey: string, overlayKey: string): void {
+        const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
         if (inst.clickOutsideHandler) {
@@ -190,8 +250,11 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             document.removeEventListener('keydown', inst.escapeHandler);
         }
 
-        if (typeof inst.overlay.close === 'function') {
-            inst.overlay.close();
+        inst.overlay.hidden = true;
+
+        if (inst.maskEl) {
+            this._releaseMask(inst.maskEl);
+            inst.maskEl = undefined;
         }
 
         OverlayRoot.getInstance().unmountOverlay(inst.el);
@@ -199,51 +262,96 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         this.bus.overlayEmit(overlayKey, 'hidden', { overlayKey, component: inst.component });
     }
 
-    private _disposeInstance(overlayKey: string): void {
-        const inst = this.instances.get(overlayKey);
+    private _disposeInstance(instanceKey: string): void {
+        const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
+        this._cleanupInstance(inst);
+
+        if (inst.maskEl) {
+            this._releaseMask(inst.maskEl);
+        }
+
+        OverlayRoot.getInstance().unmountOverlay(inst.el);
+        this.instances.delete(instanceKey);
+    }
+
+    private _cleanupInstance(inst: OverlayInstance): void {
         if (inst.clickOutsideHandler) {
             document.removeEventListener('mousedown', inst.clickOutsideHandler);
         }
         if (inst.escapeHandler) {
             document.removeEventListener('keydown', inst.escapeHandler);
         }
-
         if (typeof inst.overlay.dispose === 'function') {
             inst.overlay.dispose();
         }
+    }
 
-        OverlayRoot.getInstance().unmountOverlay(inst.el);
-        this.instances.delete(overlayKey);
+    private _acquireMask(color?: string): HTMLElement {
+        this._activeMaskCount++;
+
+        if (!this._activeMaskEl) {
+            const mask = document.createElement('div');
+            mask.className = 'q-overlay-mask';
+            mask.style.position = 'fixed';
+            mask.style.top = '0';
+            mask.style.left = '0';
+            mask.style.width = '100%';
+            mask.style.height = '100%';
+            mask.style.backgroundColor = color ?? 'rgba(0, 0, 0, 0.5)';
+            mask.style.zIndex = String(nextZIndex(ZIndexLevel.mask));
+            mask.style.display = '';
+
+            OverlayRoot.getInstance().mountOverlay(mask);
+            this._activeMaskEl = mask;
+        }
+
+        return this._activeMaskEl;
+    }
+
+    private _releaseMask(maskEl: HTMLElement): void {
+        this._activeMaskCount--;
+        if (this._activeMaskCount <= 0) {
+            this._activeMaskCount = 0;
+            if (this._activeMaskEl) {
+                OverlayRoot.getInstance().unmountOverlay(this._activeMaskEl);
+                this._activeMaskEl = null;
+            }
+        }
     }
 
     protected doInspect(): void {
         const definitions = [...this.storage.keys()];
         const instances = [...this.instances.entries()].map(([key, inst]) => ({
-            overlayKey: key,
+            instanceKey: key,
             overlayType: inst.overlay.constructor.name,
             zIndex: inst.el.style.zIndex,
+            hasMask: !!inst.maskEl,
         }));
 
         console.log('Definitions:', definitions);
         console.log('Instances:', instances);
+        console.log(
+            'Active mask:',
+            this._activeMaskEl ? 'yes' : 'no',
+            `count=${this._activeMaskCount}`
+        );
     }
 
     dispose(): void {
         for (const [key, inst] of this.instances) {
-            if (inst.clickOutsideHandler) {
-                document.removeEventListener('mousedown', inst.clickOutsideHandler);
-            }
-            if (inst.escapeHandler) {
-                document.removeEventListener('keydown', inst.escapeHandler);
-            }
-            if (typeof inst.overlay.dispose === 'function') {
-                inst.overlay.dispose();
-            }
+            this._cleanupInstance(inst);
             OverlayRoot.getInstance().unmountOverlay(inst.el);
         }
         this.instances.clear();
+
+        if (this._activeMaskEl) {
+            OverlayRoot.getInstance().unmountOverlay(this._activeMaskEl);
+            this._activeMaskEl = null;
+        }
+        this._activeMaskCount = 0;
+
         this.logger.debug?.('[OverlayDispatchCenter] all disposed');
     }
 }

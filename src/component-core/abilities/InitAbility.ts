@@ -16,17 +16,17 @@ import type {
     ListensConfig,
     LifecycleHooks,
 } from '../layout-types';
-import { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS } from '../layout-types';
+import { ANIMATION_KEYS } from '../layout-types';
+import type { DragDecl } from '../layout-types';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { EventBridge } from '@/events/EventBridge';
 import { EntityEventBus } from '@/events/EntityEventBus';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { DragEventBus } from '@/events/DragEventBus';
 import { validateEntityEvent } from '@/entity/dispatch';
 import { overlayDispatchCenter, validateOverlayDecl } from '@/overlay/dispatch';
 import type { AnimationKey } from './AnimationAbility';
-import type { DragKey } from './DragAbility';
-import type { DropKey } from './DropAbility';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { ElementEventAbility } from './ElementEventAbility';
 
@@ -58,18 +58,9 @@ export const InitAbility: AbilityDefinition = {
             // ── 5. 事件绑定 ──
             this.bindEvents(layout);
 
-            // ── 6. Tooltip 浮层 + Badge 角标 + Drag/Drop（配置驱动） ──
+            // ── 6. Tooltip 浮层（配置驱动） ──
             if (layout.tooltip) {
                 this.initTooltipOverlay(layout);
-            }
-            if (layout.badge !== undefined) {
-                this.initBadge(layout);
-            }
-            if (layout.draggable) {
-                this.initDrag(layout);
-            }
-            if (layout.droppable) {
-                this.initDrop(layout);
             }
 
             // ── 7. 调用能力的 __init__ 方法 ──
@@ -131,6 +122,10 @@ export const InitAbility: AbilityDefinition = {
         if (layout.overlays) {
             this._initOverlays(layout.overlays);
         }
+
+        if (layout.drags) {
+            this._initDrags(layout.drags);
+        }
     },
 
     /**
@@ -153,30 +148,17 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 赋值属性 — 只处理有行为逻辑的能力（Animation/Drag/Drop）
+     * 赋值属性 — 只处理有行为逻辑的能力（Animation）
      *
      * 纯赋值属性（Position/Style/Accessibility/Tooltip/Badge/Permission/ColorVariant）
      * 已移除，v2 由 props/content 直接驱动。
+     * Drag/Drop 已改为声明式（body.drags + body.listens.dragKey），不再走 assignProps。
      */
     assignProps(layout: Record<string, any>): void {
         // AnimationProps — 有行为，通过 setAnimation 设置
         for (const key of ANIMATION_KEYS) {
             if ((layout as any)[key] !== undefined) {
                 this.setAnimation(key as AnimationKey, (layout as any)[key]);
-            }
-        }
-
-        // DragProps — 有行为，通过 setDrag 设置
-        for (const key of DRAG_KEYS) {
-            if ((layout as any)[key] !== undefined) {
-                this.setDrag(key as DragKey, (layout as any)[key]);
-            }
-        }
-
-        // DropProps — 有行为，通过 setDrop 设置
-        for (const key of DROP_KEYS) {
-            if ((layout as any)[key] !== undefined) {
-                this.setDrop(key as DropKey, (layout as any)[key]);
             }
         }
 
@@ -446,8 +428,11 @@ export const InitAbility: AbilityDefinition = {
      * 绑定事件监听（listens）
      *
      * 监听其他组件或实体发出的事件，自动绑定到 extraFns 中的方法。
-     * - source → 走 EventBridge
+     * 四路分流（优先级从高到低）：
      * - entityKey → 走 EntityDispatchCenter
+     * - dragKey → 走 DragEventBus
+     * - source → 走 EventBridge
+     * - 默认 → 走组件 scope
      */
     bindEventListen(listens: EventListen[]): void {
         for (const listen of listens) {
@@ -456,6 +441,14 @@ export const InitAbility: AbilityDefinition = {
                     validateEntityEvent(eventType);
                     const bus = EntityEventBus.getInstance();
                     const off = bus.entityOn(listen.entityKey, eventType, (data: any) => {
+                        (this as any)[methodName]?.(data);
+                    });
+                    if (typeof off === 'function') {
+                        this.onCleanup(off);
+                    }
+                } else if (listen.dragKey) {
+                    const bus = DragEventBus.getInstance();
+                    const off = bus.dragOn(listen.dragKey, eventType as any, (data: any) => {
                         (this as any)[methodName]?.(data);
                     });
                     if (typeof off === 'function') {
@@ -498,6 +491,8 @@ export const InitAbility: AbilityDefinition = {
     },
 
     _initOverlays(overlays: Record<string, any>): void {
+        const bus = OverlayEventBus.getInstance();
+
         for (const [overlayKey, decl] of Object.entries(overlays)) {
             validateOverlayDecl(overlayKey, decl);
             overlayDispatchCenter.register(overlayKey, decl);
@@ -505,7 +500,6 @@ export const InitAbility: AbilityDefinition = {
             const trigger = decl.trigger ?? 'manual';
             if (trigger === 'manual') continue;
 
-            const bus = OverlayEventBus.getInstance();
             const overlayType = decl.type;
             const createOverlay = () => {
                 const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
@@ -517,7 +511,16 @@ export const InitAbility: AbilityDefinition = {
                 return new OverlayClass({ anchor: this.el, ...overlayData });
             };
 
-            if (trigger === 'hover') {
+            if (trigger === 'always') {
+                const overlay = createOverlay();
+                if (overlay) {
+                    bus.overlayEmit(overlayKey, 'show', {
+                        component: this,
+                        anchor: this.el,
+                        overlay,
+                    });
+                }
+            } else if (trigger === 'hover') {
                 const el = this.el;
                 if (!el) continue;
 
@@ -545,7 +548,7 @@ export const InitAbility: AbilityDefinition = {
                 if (!el) continue;
 
                 const clickHandler = () => {
-                    const existing = overlayDispatchCenter.getOverlay(overlayKey);
+                    const existing = overlayDispatchCenter.getOverlay(this.id, overlayKey);
                     if (existing) {
                         bus.overlayEmit(overlayKey, 'toggle', { component: this, anchor: el });
                     } else {
@@ -609,6 +612,10 @@ export const InitAbility: AbilityDefinition = {
                 });
             }
         }
+
+        this.onCleanup(() => {
+            overlayDispatchCenter.disposeByComponent(this.id);
+        });
     },
 
     /**
@@ -643,6 +650,123 @@ export const InitAbility: AbilityDefinition = {
 
         if (lifecycle.onMounted) {
             lifecycle.onMounted.call(this);
+        }
+    },
+
+    /**
+     * 初始化拖拽源 — 声明式，类似 _initOverlays
+     *
+     * body.drags 声明拖拽源，框架自动：
+     * 1. 绑定 DragProcessor 手势到元素
+     * 2. start/end/cancel 走 DragEventBus 调度中心
+     * 3. move 本地处理（视觉反馈）
+     * 4. data 支持函数形式动态获取
+     */
+    _initDrags(drags: Record<string, DragDecl>): void {
+        const bus = DragEventBus.getInstance();
+
+        for (const [dragKey, decl] of Object.entries(drags)) {
+            const axis = decl.axis ?? 'both';
+            const handleSelector = decl.handle;
+            const bounds = decl.bounds;
+            const activeClass = decl.activeClass;
+            const grid = decl.grid;
+            const dragType = decl.type ?? null;
+
+            const target = handleSelector
+                ? (this.el.querySelector(handleSelector) as HTMLElement)
+                : this.el;
+
+            if (!target) continue;
+
+            let originX = 0;
+            let originY = 0;
+
+            this.bind(target, 'drag');
+
+            this.on('drag', (gesture: any) => {
+                const phase = gesture?.phase;
+
+                if (phase === 'start') {
+                    const rect = this.el.getBoundingClientRect();
+                    originX = rect.left;
+                    originY = rect.top;
+
+                    this.el.style.position = 'absolute';
+                    if (activeClass) {
+                        this.el.classList.add(activeClass);
+                    }
+
+                    const dragData =
+                        typeof decl.data === 'function'
+                            ? (decl.data as () => Record<string, any>).call(this)
+                            : decl.data;
+                    bus.dragStart(dragKey, {
+                        dragType,
+                        dragData: dragData ?? null,
+                        dragEl: this.el,
+                        dragSource: this,
+                    });
+
+                    this.emit('dragstart', { originX, originY });
+                } else if (phase === 'move') {
+                    let dx = gesture.dx ?? 0;
+                    let dy = gesture.dy ?? 0;
+
+                    if (axis === 'x') dy = 0;
+                    if (axis === 'y') dx = 0;
+
+                    let newX = originX + dx;
+                    let newY = originY + dy;
+
+                    if (bounds) {
+                        const boundRect =
+                            bounds instanceof HTMLElement ? bounds.getBoundingClientRect() : bounds;
+
+                        const elWidth = this.el.offsetWidth;
+                        const elHeight = this.el.offsetHeight;
+
+                        if (boundRect.left !== undefined) newX = Math.max(boundRect.left, newX);
+                        if (boundRect.top !== undefined) newY = Math.max(boundRect.top, newY);
+                        if (boundRect.right !== undefined)
+                            newX = Math.min(boundRect.right - elWidth, newX);
+                        if (boundRect.bottom !== undefined)
+                            newY = Math.min(boundRect.bottom - elHeight, newY);
+                    }
+
+                    if (grid && grid > 0) {
+                        newX = Math.round(newX / grid) * grid;
+                        newY = Math.round(newY / grid) * grid;
+                    }
+
+                    this.el.style.left = `${newX}px`;
+                    this.el.style.top = `${newY}px`;
+
+                    this.emit('dragmove', { dx, dy, newX, newY });
+                } else if (phase === 'end') {
+                    if (activeClass) {
+                        this.el.classList.remove(activeClass);
+                    }
+
+                    bus.dragEnd(dragKey);
+                    this.emit('dragend');
+                } else if (phase === 'cancel') {
+                    if (activeClass) {
+                        this.el.classList.remove(activeClass);
+                    }
+
+                    bus.dragCancel(dragKey);
+                    this.emit('dragcancel');
+                }
+            });
+
+            target.style.touchAction = 'none';
+            target.style.userSelect = 'none';
+
+            this.onCleanup(() => {
+                target.style.touchAction = '';
+                target.style.userSelect = '';
+            });
         }
     },
 };

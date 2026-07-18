@@ -11,18 +11,23 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
-import { OverlayRoot } from '@/component/OverlayRoot';
+import { OverlayRoot } from '@/overlay/OverlayRoot';
 
 describe('OverlayRoot', () => {
     afterEach(() => {
         // 每个测试后清理单例和 DOM
-        try { OverlayRoot.getInstance().destroy(); } catch {}
+        try {
+            OverlayRoot.getInstance().destroy();
+        } catch {}
     });
 
     // ============================================

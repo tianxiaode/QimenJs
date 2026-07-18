@@ -5,7 +5,7 @@
  */
 
 // 浮层与模板
-export { OverlayRoot } from './OverlayRoot';
+
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 
 // 组件 type 注册

@@ -12,8 +12,8 @@
 
 import { ComposableBase } from '@/composable';
 import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
-import { FloatingLayerAbility } from '@/component-abilities/render/FloatingLayerAbility';
-import type { ViewportPosition } from '@/component-abilities/render/FloatingLayerAbility';
+import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
+import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
 import { EventAbility } from '@/system-abilities/system/EventAbility';
 import { EventSourceRegistrar } from '@qimenjs/events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from '@/component-core/template-presets';
@@ -40,7 +40,7 @@ export class ToastHandleImpl implements ToastHandle {
     private _promise: Promise<void>;
 
     constructor(private readonly toast: Toast) {
-        this._promise = new Promise<void>((resolve) => {
+        this._promise = new Promise<void>(resolve => {
             this._resolve = resolve;
         });
     }
@@ -53,7 +53,7 @@ export class ToastHandleImpl implements ToastHandle {
 
     then<TResult1 = void, TResult2 = never>(
         onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,
-        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
+        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
     ): Promise<TResult1 | TResult2> {
         return this._promise.then(onfulfilled, onrejected);
     }
@@ -68,11 +68,7 @@ export class ToastHandleImpl implements ToastHandle {
 
 // ─── Toast ──────────────────────────────────────────────────
 
-const ToastBase = ComposableBase.with([
-    TemplateCacheAbility,
-    FloatingLayerAbility,
-    EventAbility,
-]);
+const ToastBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility]);
 
 export class Toast extends ToastBase {
     /** 根 DOM 元素 */

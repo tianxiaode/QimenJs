@@ -7,11 +7,11 @@
  * 新模式下，这些配置通过 props 的子字段传入：
  * - tooltip: { ...TooltipProps } — 和 body/childProps 同层
  * - animation: { ...AnimationProps }
- * - drag: { ...DragProps }
- * - drop: { ...DropProps }
  * - entity: { ...EntityProps }
  * - arrow: { ...ArrowProps }
  * - expandable: { ...ExpandableProps }
+ *
+ * 拖拽通过 body.drags 声明式定义（类似 overlays），放置通过 body.listens.dragKey 监听。
  */
 
 // ── 事件类型 ──
@@ -34,15 +34,18 @@ export interface HandlerConfig {
  * 事件监听声明
  *
  * 接收方声明监听哪些事件源的哪些事件类型，框架自动绑定到对应总线：
- * - source：走 EventBridge（组件间桥接事件）
  * - entityKey：走 EntityDispatchCenter（实体数据事件）
- * - 两者互斥，同时指定时 entityKey 优先
+ * - dragKey：走 DragEventBus（拖拽状态转换事件）
+ * - source：走 EventBridge（组件间桥接事件）
+ * - 三者互斥，优先级：entityKey > dragKey > source
  */
 export interface EventListen {
-    /** 监听的事件源（组件 id），走 EventBridge */
-    source?: string;
     /** 监听的实体键，走 EntityDispatchCenter */
     entityKey?: string;
+    /** 监听的拖拽键，走 DragEventBus */
+    dragKey?: string;
+    /** 监听的事件源（组件 id），走 EventBridge */
+    source?: string;
     /** 事件到 handler 的映射，key 为事件类型，value 为方法名 */
     events: Record<string, string>;
     /** 是否只执行一次 */
@@ -86,12 +89,13 @@ export type BridgesConfig = (string | EventListen)[];
  */
 export interface OverlayDecl {
     type: string;
-    trigger?: 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual';
+    trigger?: 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual' | 'always';
     placement?: string;
     offset?: number;
     closeOnClickOutside?: boolean;
     closeOnEscape?: boolean;
     data?: Record<string, any> | (() => Record<string, any>);
+    update?: (overlay: any, data: any) => void;
 }
 
 export type OverlaysConfig = Record<string, OverlayDecl>;
@@ -185,38 +189,41 @@ export interface AnimationProps {
 }
 
 /**
- * 拖拽配置
+ * 拖拽源声明
  *
- * 新模式下通过 props.drag 传入。
+ * 组件声明式定义拖拽源，框架自动绑定 DragProcessor 手势，
+ * 拖拽状态转换事件走 DragEventBus 调度中心。
+ *
+ * dragKey 用于标识拖拽源，放置目标通过 listens.dragKey 监听。
+ * type 为拖拽数据类型，放置目标用于过滤。
+ * data 支持函数形式获取动态值，this 绑定到宿主组件实例。
+ *
+ * @example
+ * ```ts
+ * drags: {
+ *     cardItem: { type: 'task', data() { return { id: this.taskId, name: this.taskName } } },
+ *     listItem: { type: 'file', axis: 'y', activeClass: 'dragging' }
+ * }
+ * ```
  */
-export interface DragProps {
-    /** 是否可拖拽 */
-    draggable?: boolean;
+export interface DragDecl {
+    /** 拖拽数据类型，放置目标用于过滤 */
+    type?: string;
+    /** 拖拽携带数据，支持函数形式动态获取 */
+    data?: Record<string, any> | (() => Record<string, any>);
     /** 拖拽方向约束，默认 'both' */
-    dragAxis?: 'x' | 'y' | 'both';
-    /** 拖拽手柄选择器 */
-    dragHandle?: string;
+    axis?: 'x' | 'y' | 'both';
+    /** 拖拽手柄选择器，默认 null（整个元素可拖） */
+    handle?: string;
     /** 拖拽范围约束 */
-    dragBounds?: HTMLElement | { left?: number; top?: number; right?: number; bottom?: number };
+    bounds?: HTMLElement | { left?: number; top?: number; right?: number; bottom?: number };
     /** 拖拽时的 CSS class */
-    dragActiveClass?: string;
+    activeClass?: string;
     /** 网格对齐步长 */
-    dragGrid?: number;
+    grid?: number;
 }
 
-/**
- * 放置配置
- *
- * 新模式下通过 props.drop 传入。
- */
-export interface DropProps {
-    /** 是否可接收放置 */
-    droppable?: boolean;
-    /** 接受的拖拽源类型（对应组件 type），空则接受所有 */
-    dropAccept?: string | string[];
-    /** 拖拽悬停时的 CSS class */
-    dropActiveClass?: string;
-}
+export type DragsConfig = Record<string, DragDecl>;
 
 /**
  * 实体管理配置
@@ -276,21 +283,17 @@ export const ANIMATION_KEYS = [
 ] as const;
 
 /**
- * DragProps 的 key 列表
+ * DragDecl 的 key 列表
  */
-export const DRAG_KEYS = [
-    'draggable',
-    'dragAxis',
-    'dragHandle',
-    'dragBounds',
-    'dragActiveClass',
-    'dragGrid',
+export const DRAG_DECL_KEYS = [
+    'type',
+    'data',
+    'axis',
+    'handle',
+    'bounds',
+    'activeClass',
+    'grid',
 ] as const;
-
-/**
- * DropProps 的 key 列表
- */
-export const DROP_KEYS = ['droppable', 'dropAccept', 'dropActiveClass'] as const;
 
 /**
  * TooltipProps 的 key 列表

@@ -12,7 +12,7 @@
 
 import { ComposableBase } from '@/composable';
 import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
-import { FloatingLayerAbility } from '@/component-abilities/render/FloatingLayerAbility';
+import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
 import { EventAbility } from '@/system-abilities/system/EventAbility';
 import { EventSourceRegistrar } from '@qimenjs/events';
 import { MSGBOX_TEMPLATE } from '@/component-core/template-presets';
@@ -20,11 +20,7 @@ import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 
-const MsgboxBase = ComposableBase.with([
-    TemplateCacheAbility,
-    FloatingLayerAbility,
-    EventAbility,
-]);
+const MsgboxBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility]);
 
 export class Msgbox extends MsgboxBase {
     /** 根 DOM 元素 */
@@ -42,7 +38,10 @@ export class Msgbox extends MsgboxBase {
     /** Promise resolve 回调 */
     resolve!: (result: MsgboxResult) => void;
 
-    constructor(options: MsgboxOptions & { type: MsgboxType }, resolve: (result: MsgboxResult) => void) {
+    constructor(
+        options: MsgboxOptions & { type: MsgboxType },
+        resolve: (result: MsgboxResult) => void
+    ) {
         super();
 
         const type: MsgboxType = options.type;
@@ -154,10 +153,7 @@ export class Msgbox extends MsgboxBase {
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
         ]);
 
-        this.playExitAnimation(this.maskEl, [
-            { opacity: 1 },
-            { opacity: 0 },
-        ]);
+        this.playExitAnimation(this.maskEl, [{ opacity: 1 }, { opacity: 0 }]);
 
         animation.onfinish = () => {
             this.unmountFromOverlay(this.el);

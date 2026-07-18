@@ -24,7 +24,6 @@ export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 
 // 基础能力（仅保留有行为逻辑 + 语义快捷方式）
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
-export { BadgeAbility, type BadgeKey, type BadgeConfig } from './abilities/BadgeAbility';
 
 export {
     EventBridgeConfigAbility,
@@ -52,10 +51,6 @@ export { TemplateAbility } from './abilities/TemplateAbility';
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
 export type { PropAliasMap } from './abilities/PropAlias';
-
-// 浮层定位
-export { positionOverlay } from './abilities/positionOverlay';
-export type { Placement } from './abilities/positionOverlay';
 
 // 模板编译
 export {
@@ -135,20 +130,14 @@ export type {
     LayoutMeta,
     TooltipProps,
     AnimationProps,
-    DragProps,
-    DropProps,
+    DragDecl,
+    DragsConfig,
     EntityProps,
     ArrowProps,
     ExpandableProps,
     ExpandableConfig,
 } from './layout-types';
-export {
-    ANIMATION_KEYS,
-    DRAG_KEYS,
-    DROP_KEYS,
-    TOOLTIP_KEYS,
-    EXPANDABLE_KEYS,
-} from './layout-types';
+export { ANIMATION_KEYS, DRAG_DECL_KEYS, TOOLTIP_KEYS, EXPANDABLE_KEYS } from './layout-types';
 
 export {
     BODY_SPECIAL_KEYS,

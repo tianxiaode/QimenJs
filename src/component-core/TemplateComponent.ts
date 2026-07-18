@@ -23,13 +23,11 @@ import {
     OverlayEventBusAbility,
 } from '@/system-abilities';
 import { AnimationAbility } from './abilities/AnimationAbility';
-import { BadgeAbility } from './abilities/BadgeAbility';
 
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
-import { DragAbility } from './abilities/DragAbility';
-import { DropAbility } from './abilities/DropAbility';
+
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
 import { ComponentRegistrar } from './ComponentRegistrar';
@@ -50,11 +48,11 @@ import { buildContentProperties } from './content-properties';
  * 保留（有行为）：
  * - EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility — 事件系统
  * - AnimationAbility — 动画控制
- * - BadgeAbility — 角标管理（创建 Badge 组件实例）
+
  * - EventBridgeConfigAbility — 桥接配置
  * - InitAbility — 初始化流程
  * - NodeMapAbility — i18n 刷新
- * - DragAbility / DropAbility — 拖放事件
+
  * - TemplateAbility — 模板渲染
  *
  * 已移除（纯赋值，v2 由 props/content 直接驱动）：
@@ -72,12 +70,11 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EntityEventBusAbility,
     OverlayEventBusAbility,
     AnimationAbility,
-    BadgeAbility,
+
     EventBridgeConfigAbility,
     InitAbility,
     NodeMapAbility,
-    DragAbility,
-    DropAbility,
+
     TemplateAbility,
     LayoutAbility,
 ];

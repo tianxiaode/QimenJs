@@ -11,3 +11,4 @@ export {
     type OverlayKeyDef,
     type OverlayTrigger,
 } from './overlay-keys';
+export { positionOverlay, type Placement } from './positionOverlay';

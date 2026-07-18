@@ -6,6 +6,7 @@
 
 /** 预定义层级常量 */
 export const ZIndexLevel = {
+    mask: 1040,
     dropdown: 1050,
     modal: 1060,
     notification: 1070,

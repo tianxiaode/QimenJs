@@ -41,6 +41,11 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
         description:
             '浮层配置，InitAbility._initOverlays 自动注册到 OverlayDispatchCenter 并绑定 trigger',
     },
+    drags: {
+        category: 'init',
+        description:
+            '拖拽源配置，InitAbility._initDrags 自动绑定 DragProcessor 手势并接入 DragEventBus',
+    },
     abilities: {
         category: 'init',
         description: '能力注入，InitAbility.setupAbilities 处理',

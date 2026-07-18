@@ -4,7 +4,7 @@
  * 覆盖：各方向定位、自动翻转、视口约束
  */
 
-import { positionOverlay } from '@/component-core/abilities/positionOverlay';
+import { positionOverlay } from '@/overlay/dispatch/positionOverlay';
 
 describe('positionOverlay', () => {
     let anchorEl: HTMLElement;
@@ -15,19 +15,31 @@ describe('positionOverlay', () => {
         overlayEl = document.createElement('div');
 
         // 模拟 getBoundingClientRect
-        anchorEl.getBoundingClientRect = () => ({
-            left: 200, top: 200, width: 100, height: 40,
-            right: 300, bottom: 240,
-            x: 200, y: 200,
-            toJSON: () => ({}),
-        } as DOMRect);
+        anchorEl.getBoundingClientRect = () =>
+            ({
+                left: 200,
+                top: 200,
+                width: 100,
+                height: 40,
+                right: 300,
+                bottom: 240,
+                x: 200,
+                y: 200,
+                toJSON: () => ({}),
+            }) as DOMRect;
 
-        overlayEl.getBoundingClientRect = () => ({
-            left: 0, top: 0, width: 80, height: 30,
-            right: 80, bottom: 30,
-            x: 0, y: 0,
-            toJSON: () => ({}),
-        } as DOMRect);
+        overlayEl.getBoundingClientRect = () =>
+            ({
+                left: 0,
+                top: 0,
+                width: 80,
+                height: 30,
+                right: 80,
+                bottom: 30,
+                x: 0,
+                y: 0,
+                toJSON: () => ({}),
+            }) as DOMRect;
 
         // 模拟 window
         Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
@@ -82,12 +94,18 @@ describe('positionOverlay', () => {
 
     it('flip=true 且超出视口 → 尝试翻转', () => {
         // 锚点在视口底部，bottom 方向会超出
-        anchorEl.getBoundingClientRect = () => ({
-            left: 200, top: 750, width: 100, height: 40,
-            right: 300, bottom: 790,
-            x: 200, y: 750,
-            toJSON: () => ({}),
-        } as DOMRect);
+        anchorEl.getBoundingClientRect = () =>
+            ({
+                left: 200,
+                top: 750,
+                width: 100,
+                height: 40,
+                right: 300,
+                bottom: 790,
+                x: 200,
+                y: 750,
+                toJSON: () => ({}),
+            }) as DOMRect;
 
         const result = positionOverlay(overlayEl, anchorEl, 'bottom', 4, true);
         // 翻转到 top 方向
@@ -97,12 +115,18 @@ describe('positionOverlay', () => {
     });
 
     it('flip=false → 不翻转，但 keepInside 仍生效', () => {
-        anchorEl.getBoundingClientRect = () => ({
-            left: 200, top: 750, width: 100, height: 40,
-            right: 300, bottom: 790,
-            x: 200, y: 750,
-            toJSON: () => ({}),
-        } as DOMRect);
+        anchorEl.getBoundingClientRect = () =>
+            ({
+                left: 200,
+                top: 750,
+                width: 100,
+                height: 40,
+                right: 300,
+                bottom: 790,
+                x: 200,
+                y: 750,
+                toJSON: () => ({}),
+            }) as DOMRect;
 
         positionOverlay(overlayEl, anchorEl, 'bottom', 4, false);
         // 不翻转，但 keepInside 会将位置约束在视口内

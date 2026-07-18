@@ -1,10 +1,11 @@
 /**
  * BadgeComponent 角标组件
  *
- * 独立组件，由 BadgeAbility 创建并挂载到宿主元素上。
- * 自身负责绝对定位、文本更新、显隐控制。
+ * 纯渲染组件，由 OverlayDispatchCenter 创建和管理生命周期。
+ * 调度中心负责：定位计算、z-index 管理、OverlayRoot 挂载/卸载。
+ * BadgeComponent 只负责：渲染内容、文本更新、显隐控制。
  *
- * 模板定义好后，setText 等方法由 withTemplate 自动生成。
+ * onOverlayChange(data) 默认实现：通过自动生成的 text/hidden 属性更新。
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
@@ -12,11 +13,20 @@ import { TemplateComponent } from '@qimenjs/component-core';
 export let BadgeComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [
-            { tag: 'span', name: 'badge:default', content: 'text', className: 'q-badge__content' },
-        ]
+        children: [{ tag: 'span', name: 'text', className: 'q-badge__content' }],
     },
     body: {
         type: 'badge',
+
+        onOverlayChange(data: any): void {
+            if (!data) return;
+            if (data.text !== undefined) {
+                this.text = String(data.text);
+                this.hidden = !data.text;
+            }
+            if (data.visible !== undefined) {
+                this.hidden = !data.visible;
+            }
+        },
     },
 });

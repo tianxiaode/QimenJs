@@ -6,8 +6,8 @@
  * ToastManager 只负责队列调度和堆叠定位。
  */
 
-import { FloatingLayerAbility } from '@/component-abilities/render/FloatingLayerAbility';
-import type { ViewportPosition } from '@/component-abilities/render/FloatingLayerAbility';
+import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
+import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
 import { Toast } from './Toast';
 import type { ToastOptions, ToastHandle, ToastPosition } from './types';
 

@@ -16,11 +16,11 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { FloatingLayerAbility } from '@/component-abilities/render/FloatingLayerAbility';
+
 import { ExpandArrowAbility } from '@/component-abilities/render/ExpandArrowAbility';
 
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
-import { OverlayRoot } from '@/component/OverlayRoot';
+import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { IconComponent } from '../icon/IconComponent';
 
 export type NavPlacement =

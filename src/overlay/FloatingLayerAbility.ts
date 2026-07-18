@@ -13,14 +13,21 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { OverlayRoot } from '@/component/OverlayRoot';
+import { OverlayRoot } from './OverlayRoot';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@/component/z-index';
 import { createEventAdapter } from '@qimenjs/event-dom';
 import type { GestureSemantic, InputSignal } from '@qimenjs/event-dom';
 
 // ─── 视口定位类型 ──────────────────────────────────────────
 
-export type ViewportPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top' | 'bottom' | 'center';
+export type ViewportPosition =
+    | 'top-right'
+    | 'top-left'
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'top'
+    | 'bottom'
+    | 'center';
 
 // ─── 动画配置 ──────────────────────────────────────────────
 
@@ -47,7 +54,10 @@ export const FloatingLayerAbility: AbilityDefinition = {
 
     _zIndexLevel: {
         get(): number {
-            return this.abilityState('FloatingLayerAbility:zIndexLevel', () => ZIndexLevel.notification);
+            return this.abilityState(
+                'FloatingLayerAbility:zIndexLevel',
+                () => ZIndexLevel.notification
+            );
         },
         set(value: number) {
             this.setAbilityState('FloatingLayerAbility:zIndexLevel', value);
@@ -95,7 +105,11 @@ export const FloatingLayerAbility: AbilityDefinition = {
     /**
      * 播放进入动画
      */
-    playEnterAnimation(el: HTMLElement, keyframes: Keyframe[], options?: FloatingAnimationOptions): Animation {
+    playEnterAnimation(
+        el: HTMLElement,
+        keyframes: Keyframe[],
+        options?: FloatingAnimationOptions
+    ): Animation {
         return el.animate(keyframes, {
             duration: options?.duration ?? 200,
             easing: options?.easing ?? 'ease-out',
@@ -105,7 +119,11 @@ export const FloatingLayerAbility: AbilityDefinition = {
     /**
      * 播放退出动画
      */
-    playExitAnimation(el: HTMLElement, keyframes: Keyframe[], options?: FloatingAnimationOptions): Animation {
+    playExitAnimation(
+        el: HTMLElement,
+        keyframes: Keyframe[],
+        options?: FloatingAnimationOptions
+    ): Animation {
         return el.animate(keyframes, {
             duration: options?.duration ?? 150,
             easing: options?.easing ?? 'ease-in',
@@ -122,7 +140,12 @@ export const FloatingLayerAbility: AbilityDefinition = {
      * @param offset - 距边缘偏移量 px（用于堆叠）
      * @param margin - 距视口边缘间距 px
      */
-    setViewportPosition(el: HTMLElement, position: ViewportPosition, offset: number = 0, margin: number = 16): void {
+    setViewportPosition(
+        el: HTMLElement,
+        position: ViewportPosition,
+        offset: number = 0,
+        margin: number = 16
+    ): void {
         // 重置所有定位属性
         el.style.top = '';
         el.style.bottom = '';

@@ -9,11 +9,6 @@
 export { VirtualListAbility } from './render';
 export { AnimationAbility } from './render';
 export {
-    FloatingLayerAbility,
-    type ViewportPosition,
-    type FloatingAnimationOptions,
-} from './render';
-export {
     OverflowScrollAbility,
     type OverflowDirection,
     type OverflowState,
@@ -21,7 +16,6 @@ export {
 } from './render';
 export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
 
-export { TooltipOverlayAbility, type TooltipOverlayConfig } from './render';
 export { ArrowAbility, type ArrowConfig } from './render';
 export { ExpandArrowAbility, type ExpandArrowConfig } from './render';
 export { arrowCSS } from './render';

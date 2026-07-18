@@ -9,9 +9,10 @@
  * - dropdown：click 触发，菜单列表
  * - popover：click/hover 触发，富内容弹窗
  * - contextmenu：contextmenu 触发，右键菜单
+ * - badge：always 触发，角标指示器（通过 change 更新数据）
  */
 
-export type OverlayTrigger = 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual';
+export type OverlayTrigger = 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual' | 'always';
 
 export type OverlayPlacement =
     | 'top'
@@ -39,7 +40,8 @@ export const OVERLAY_DECL_KEYS: Record<string, OverlayKeyDef> = {
             '浮层组件类型名，对应 ComponentRegistrar 中注册的组件类名（如 tips/dropdown/popover）',
     },
     trigger: {
-        description: '触发方式：hover/click/focus/contextmenu/manual（默认 manual）',
+        description:
+            '触发方式：hover/click/focus/contextmenu/manual/always（默认 manual），always 表示初始化时直接显示',
     },
     placement: {
         description:
@@ -57,6 +59,14 @@ export const OVERLAY_DECL_KEYS: Record<string, OverlayKeyDef> = {
     data: {
         description: '传递给浮层组件的额外数据，支持对象或返回对象的函数（this = 宿主组件实例）',
     },
+    onOverlayChange: {
+        description:
+            '自定义更新策略，覆盖浮层组件的默认 onOverlayChange 方法。签名：(overlay, data) => void',
+    },
+    mask: {
+        description:
+            '是否显示遮罩层。true = 默认半透明黑色遮罩，字符串 = 自定义遮罩颜色（如 rgba(255,255,255,0.7)）',
+    },
 };
 
 export const OVERLAY_DECL_KEY_SET = new Set(Object.keys(OVERLAY_DECL_KEYS));
@@ -67,6 +77,7 @@ export const OVERLAY_TRIGGER_SET = new Set<OverlayTrigger>([
     'focus',
     'contextmenu',
     'manual',
+    'always',
 ]);
 
 export const OVERLAY_PLACEMENT_SET = new Set<OverlayPlacement>([
