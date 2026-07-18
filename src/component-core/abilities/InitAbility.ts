@@ -552,6 +552,19 @@ export const InitAbility: AbilityDefinition = {
                     el.removeEventListener('focus', focusHandler);
                     el.removeEventListener('blur', blurHandler);
                 });
+            } else if (trigger === 'contextmenu') {
+                const el = this.el;
+                if (!el) continue;
+
+                const contextHandler = (e: Event) => {
+                    e.preventDefault();
+                    bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el, x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+                };
+
+                el.addEventListener('contextmenu', contextHandler);
+                this.onCleanup(() => {
+                    el.removeEventListener('contextmenu', contextHandler);
+                });
             }
         }
     },

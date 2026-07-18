@@ -80,13 +80,14 @@ export type BridgesConfig = (string | EventListen)[];
  * ```
  */
 export interface OverlayDecl {
-    /** 浮层类型前缀，对应 ComponentRegistrar 中注册的组件类名 */
     prefix: string;
-    /** 覆盖从 prefix 推导的组件类查找名 */
     typeOverride?: string;
-    /** 触发方式：hover / click / focus / manual */
-    trigger?: 'hover' | 'click' | 'focus' | 'manual';
-    /** 传递给浮层组件的 props */
+    trigger?: 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual';
+    placement?: string;
+    offset?: number;
+    items?: any[];
+    closeOnClickOutside?: boolean;
+    closeOnEscape?: boolean;
     overlayProps?: Record<string, any>;
 }
 

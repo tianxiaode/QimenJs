@@ -6,6 +6,12 @@ import { Logger, type ILogger } from '@qimenjs/logger';
 export interface OverlayDefinition {
     prefix: string;
     typeOverride?: string;
+    trigger?: string;
+    placement?: string;
+    offset?: number;
+    items?: any[];
+    closeOnClickOutside?: boolean;
+    closeOnEscape?: boolean;
     overlayProps?: Record<string, any>;
 }
 
