@@ -40,6 +40,7 @@ import type { NodeMetadata, EventMap } from './types';
 import type { NodeIndexPath, NodeTemplateMeta } from './types';
 import type { ContentInfo, DomEventBinding } from './template-compiler';
 import type { ComponentTemplate } from './template-types';
+import { BODY_SPECIAL_KEYS, validateBodyKey } from './body-keys';
 import { precompileTemplate, compileTemplate } from './template-compiler';
 import type { CompiledTemplateResult } from './template-json';
 import { buildContentProperties } from './content-properties';
@@ -393,22 +394,16 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         if (body) {
             const proto = TemplateClass.prototype;
             for (const [key, value] of Object.entries(body)) {
-                if (key === 'type') {
-                    // type 特殊处理：设为静态属性，构造函数通过 ctor.type 读取
-                    (TemplateClass as any).type = value;
-                } else if (key === 'bridges') {
-                    // bridges 向后兼容：映射为 listens 静态属性
-                    (TemplateClass as any).listens = value;
-                } else if (key === 'listens') {
-                    // listens 特殊处理：映射为 listens 静态属性，_initWithTemplate 读取
-                    (TemplateClass as any).listens = value;
-                } else if (key === 'forwards') {
-                    // forwards 特殊处理：存为静态属性，_initWithTemplate 中 _setupForwards 读取
-                    (TemplateClass as any)._forwards = value;
+                validateBodyKey(key);
+                const def = BODY_SPECIAL_KEYS[key];
+
+                if (def?.category === 'static') {
+                    const targetKey = def.alias ?? key;
+                    const staticKey = key === 'forwards' ? '_forwards' : targetKey;
+                    (TemplateClass as any)[staticKey] = value;
                 } else if (typeof value === 'function') {
                     proto[key] = value;
                 } else {
-                    // 非函数属性作为默认值，存到 static defaults
                     if (!TemplateClass.defaults) TemplateClass.defaults = {};
                     TemplateClass.defaults[key] = value;
                 }

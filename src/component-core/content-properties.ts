@@ -18,6 +18,7 @@ import type { ContentInfo } from './template-types';
 import { getI18nManager, I18N_PREFIX } from '@qimenjs/i18n';
 import { COMMON_PROPS, RESOLVERS, childPropName, componentChildPropName } from './common-props';
 import type { CommonPropDef } from './common-props';
+import { BODY_SPECIAL_KEY_SET } from './body-keys';
 
 // ─── 内容属性生成 ───
 
@@ -444,7 +445,7 @@ function checkNameConflicts(target: any, contentInfos: ContentInfo[]): void {
     // body 中的属性（排除 type/bridges 等特殊 key）
     if (body) {
         for (const key of Object.keys(body)) {
-            if (key !== 'type' && key !== 'bridges' && key !== 'listens' && key !== 'forwards' && key !== 'overlays') {
+            if (!BODY_SPECIAL_KEY_SET.has(key)) {
                 selfProps.add(key);
             }
         }

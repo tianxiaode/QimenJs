@@ -156,3 +156,5 @@ export {
     TOOLTIP_KEYS,
     EXPANDABLE_KEYS,
 } from './layout-types';
+
+export { BODY_SPECIAL_KEYS, BODY_SPECIAL_KEY_SET, isBodySpecialKey, validateBodyKey, type BodyKeyDef, type BodyKeyCategory } from './body-keys';
