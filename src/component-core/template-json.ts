@@ -518,6 +518,7 @@ function compileEvents(
         if (decl.throttle) binding.throttle = decl.throttle;
         if (decl.emits?.length) binding.emits = decl.emits;
         if (decl.bridges?.length) binding.bridges = decl.bridges.map(b => ({ targetEvent: b }));
+        if (decl.entities) binding.entities = decl.entities;
 
         ctx.domEventBindings.push(binding);
     }

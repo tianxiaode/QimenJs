@@ -1,6 +1,6 @@
 export * from './AnimationAbility';
 export * from './BadgeAbility';
-export * from './EntityCoreAbility';
+
 export * from './EventBridgeAbility';
 export * from './InitAbility';
 export * from './LayoutAbility';

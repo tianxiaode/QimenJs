@@ -47,6 +47,8 @@ export interface DomEventBinding {
     emits?: string[];
     /** 桥接事件列表（来自 bridges 声明） */
     bridges?: { targetEvent: string; once?: boolean }[];
+    /** 实体操作（来自 entities 声明），值为 mgr 方法名 */
+    entities?: string;
 }
 
 /**
@@ -70,10 +72,7 @@ export interface CompiledTemplate {
  * withTemplate 路径：类定义时调用一次，结果存到 static 属性。
  * NodeMapAbility 路径：首次实例化时调用，结果存到原型共享。
  */
-export function precompileTemplate(
-    templateHtml: string,
-    isMultiArea: boolean,
-): CompiledTemplate {
+export function precompileTemplate(templateHtml: string, isMultiArea: boolean): CompiledTemplate {
     const tpl = document.createElement('template');
     tpl.innerHTML = templateHtml;
 
@@ -87,7 +86,9 @@ export function precompileTemplate(
     const topEls = Array.from(pathRoot.children) as HTMLElement[];
     const descendantEls = Array.from(pathRoot.querySelectorAll('[data-content]'));
     // 合并去重：顶级元素可能也有 data-content
-    const els = [...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls])];
+    const els = [
+        ...new Set([...topEls.filter(el => el.hasAttribute('data-content')), ...descendantEls]),
+    ];
 
     const indexPath: NodeIndexPath = {};
     const templateMetas: Record<string, NodeTemplateMeta> = {};
@@ -107,7 +108,12 @@ export function precompileTemplate(
         const delegateTarget = htmlEl.getAttribute('data-target') || undefined;
         const jsonRef = htmlEl.getAttribute('data-json') || undefined;
         const jsonModeAttr = htmlEl.getAttribute('data-json-mode');
-        const jsonMode = jsonModeAttr === 'child' ? 'child' as const : jsonRef ? 'replace' as const : undefined;
+        const jsonMode =
+            jsonModeAttr === 'child'
+                ? ('child' as const)
+                : jsonRef
+                  ? ('replace' as const)
+                  : undefined;
         const templateRef = htmlEl.getAttribute('data-template') || undefined;
         const mode = inferContentMode(htmlEl);
         const i18nKey = htmlEl.getAttribute('data-i18n') || undefined;
@@ -117,8 +123,17 @@ export function precompileTemplate(
         const emitAttr = htmlEl.getAttribute('data-emit') || undefined;
 
         templateMetas[key] = {
-            raw: value, name, delegateTarget, jsonRef, jsonMode,
-            templateRef, mode, eventAttr, emitAttr, i18nKey, hidden,
+            raw: value,
+            name,
+            delegateTarget,
+            jsonRef,
+            jsonMode,
+            templateRef,
+            mode,
+            eventAttr,
+            emitAttr,
+            i18nKey,
+            hidden,
         };
 
         // 计算节点路径（相对于 pathRoot，与 _buildNodeMapFromCompiled 中 this.el 结构一致）
@@ -126,14 +141,14 @@ export function precompileTemplate(
 
         // 推导内容属性名
         const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-        const propName = isMultiArea
-            ? `${group}${capitalName}`
-            : name === '_' ? group : name;
+        const propName = isMultiArea ? `${group}${capitalName}` : name === '_' ? group : name;
         contentPropNames.push(propName);
 
         // 收集内容节点信息
         contentInfos.push({
-            group, name, mode,
+            group,
+            name,
+            mode,
             i18nKey,
             propName,
         });
@@ -202,9 +217,28 @@ export function inferContentMode(el: HTMLElement): 'value' | 'src' | 'html' {
  * - "input?throttle=100"
  * - "input,change"
  */
-export function parseEventAttr(eventAttr: string): Array<{ event: string; name?: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> {
-    const results: Array<{ event: string; name?: string; once?: boolean; delegate?: boolean; debounce?: number; throttle?: number }> = [];
-    const parts = eventAttr.split(',').map(s => s.trim()).filter(Boolean);
+export function parseEventAttr(
+    eventAttr: string
+): Array<{
+    event: string;
+    name?: string;
+    once?: boolean;
+    delegate?: boolean;
+    debounce?: number;
+    throttle?: number;
+}> {
+    const results: Array<{
+        event: string;
+        name?: string;
+        once?: boolean;
+        delegate?: boolean;
+        debounce?: number;
+        throttle?: number;
+    }> = [];
+    const parts = eventAttr
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
 
     for (const part of parts) {
         let event: string;
@@ -223,8 +257,7 @@ export function parseEventAttr(eventAttr: string): Array<{ event: string; name?:
                 else if (mod === 'delegate') delegate = true;
                 else if (mod.startsWith('debounce=')) {
                     debounce = parseInt(mod.slice(9), 10);
-                }
-                else if (mod.startsWith('throttle=')) {
+                } else if (mod.startsWith('throttle=')) {
                     throttle = parseInt(mod.slice(9), 10);
                 }
             }

@@ -9,10 +9,19 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { HandlerConfig, EventListen, BridgesConfig, LifecycleHooks } from '../layout-types';
+import type {
+    HandlerConfig,
+    EventListen,
+    BridgesConfig,
+    ListensConfig,
+    LifecycleHooks,
+} from '../layout-types';
 import { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS } from '../layout-types';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
+import { EventBridge } from '@/events/EventBridge';
+import { EntityEventBus } from '@/events/EntityEventBus';
+import { validateEntityEvent } from '@/entity/dispatch';
 import type { AnimationKey } from './AnimationAbility';
 import type { DragKey } from './DragAbility';
 import type { DropKey } from './DropAbility';
@@ -183,8 +192,8 @@ export const InitAbility: AbilityDefinition = {
             this.bindHandlers(layout.handlers);
         }
 
-        // 从 bridges 中提取监听配置
-        const listenConfig = this._extractBridgesOn(layout.bridges);
+        // 从 listens 中提取监听配置
+        const listenConfig = this._extractListensOn(layout.listens);
         if (listenConfig) {
             this.bindEventListen(listenConfig);
         }
@@ -219,18 +228,45 @@ export const InitAbility: AbilityDefinition = {
         const ctor = this.constructor as any;
         const elementEventAbility = ctor.abilities?.find((a: any) => a === ElementEventAbility);
         if (elementEventAbility) {
-            this.logger?.debug?.('[Init] bindInternalEvents delegated to ElementEventAbility.__initProps');
+            this.logger?.debug?.(
+                '[Init] bindInternalEvents delegated to ElementEventAbility.__initProps'
+            );
             elementEventAbility.__initProps.call(this, this.props || {});
             return;
         }
 
-        this.logger?.debug?.('[Init] bindInternalEvents, count =', this.eventMap.internal.length, 'type =', ctor.type, 'scopeId =', this.eventScope?.getScopeId?.());
+        this.logger?.debug?.(
+            '[Init] bindInternalEvents, count =',
+            this.eventMap.internal.length,
+            'type =',
+            ctor.type,
+            'scopeId =',
+            this.eventScope?.getScopeId?.()
+        );
         for (const binding of this.eventMap.internal) {
-            const { event, handler, once, delegate, delegateTarget, debounce, throttle, node } = binding;
+            const { event, handler, once, delegate, delegateTarget, debounce, throttle, node } =
+                binding;
             // DOM 事件加前缀，避免与组件 emit 的同名事件冲突
             const domEvent = `${DOM_EVENT_PREFIX}${event}`;
 
-            this.logger?.debug?.('[Init] bindInternal, event =', event, 'domEvent =', domEvent, 'handler =', handler, 'delegate =', delegate, 'debounce =', debounce, 'throttle =', throttle, 'node.el =', node.el?.tagName, 'inDOM =', document.contains(node.el));
+            this.logger?.debug?.(
+                '[Init] bindInternal, event =',
+                event,
+                'domEvent =',
+                domEvent,
+                'handler =',
+                handler,
+                'delegate =',
+                delegate,
+                'debounce =',
+                debounce,
+                'throttle =',
+                throttle,
+                'node.el =',
+                node.el?.tagName,
+                'inDOM =',
+                document.contains(node.el)
+            );
 
             // 构建 bind 选项
             const bindOptions: any = {};
@@ -283,9 +319,14 @@ export const InitAbility: AbilityDefinition = {
      * 3. 默认 → 走事件桥 emitUI 发布
      */
     bindExternalEvents(layout: Record<string, any>): void {
-        const bridges = new Set<string>(this._extractBridgesEmit(layout.bridges));
+        const bridges = new Set<string>(this._extractBridgesEmit(layout.listens || layout.bridges));
 
-        this.logger?.debug?.('[Init] bindExternalEvents, count =', Object.keys(this.eventMap.external).length, 'bridgeEmits =', [...bridges]);
+        this.logger?.debug?.(
+            '[Init] bindExternalEvents, count =',
+            Object.keys(this.eventMap.external).length,
+            'bridgeEmits =',
+            [...bridges]
+        );
 
         for (const [emitKey, node] of Object.entries(this.eventMap.external) as [string, any][]) {
             const eventType = emitKey.split(':')[1] || emitKey;
@@ -335,10 +376,13 @@ export const InitAbility: AbilityDefinition = {
      * 'submit' → 'onSubmit'
      */
     _emitKeyToHandlerName(emitKey: string): string {
-        return 'on' + emitKey
-            .split(':')
-            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-            .join('');
+        return (
+            'on' +
+            emitKey
+                .split(':')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('')
+        );
     },
 
     /**
@@ -392,20 +436,39 @@ export const InitAbility: AbilityDefinition = {
     },
 
     /**
-     * 绑定事件监听（bridges.on）
+     * 绑定事件监听（listens）
      *
-     * 监听其他组件发出的事件，自动绑定到 extraFns 中的方法。
+     * 监听其他组件或实体发出的事件，自动绑定到 extraFns 中的方法。
+     * - source → 走 EventBridge
+     * - entityKey → 走 EntityDispatchCenter
      */
     bindEventListen(listens: EventListen[]): void {
         for (const listen of listens) {
             for (const [eventType, methodName] of Object.entries(listen.events)) {
-                // 事件名直接使用 eventType，不再拼凑 source 前缀
-                // source 信息通过 EventContext.source 传递
-                const off = this.on(eventType, (e: any) => {
-                    (this as any)[methodName]?.(e);
-                });
-                if (typeof off === 'function') {
-                    this.onCleanup(off);
+                if (listen.entityKey) {
+                    validateEntityEvent(eventType);
+                    const bus = EntityEventBus.getInstance();
+                    const off = bus.entityOn(listen.entityKey, eventType, (data: any) => {
+                        (this as any)[methodName]?.(data);
+                    });
+                    if (typeof off === 'function') {
+                        this.onCleanup(off);
+                    }
+                } else if (listen.source) {
+                    const bridge = EventBridge.getInstance();
+                    const off = bridge.bridgeOn(listen.source, eventType, (data: any) => {
+                        (this as any)[methodName]?.(data);
+                    });
+                    if (typeof off === 'function') {
+                        this.onCleanup(off);
+                    }
+                } else {
+                    const off = this.on(eventType, (e: any) => {
+                        (this as any)[methodName]?.(e);
+                    });
+                    if (typeof off === 'function') {
+                        this.onCleanup(off);
+                    }
                 }
             }
         }
@@ -419,13 +482,12 @@ export const InitAbility: AbilityDefinition = {
         return bridges.filter((item): item is string => typeof item === 'string');
     },
 
-    /**
-     * 从 bridges 配置中提取监听列表（EventListen 项）
-     */
-    _extractBridgesOn(bridges?: BridgesConfig): EventListen[] | null {
-        if (!bridges) return null;
-        const listens = bridges.filter((item): item is EventListen => typeof item !== 'string');
-        return listens.length > 0 ? listens : null;
+    _extractListensOn(listens?: ListensConfig | BridgesConfig): EventListen[] | null {
+        if (!listens) return null;
+        const items = (Array.isArray(listens) ? listens : []).filter(
+            (item): item is EventListen => typeof item !== 'string'
+        );
+        return items.length > 0 ? items : null;
     },
 
     /**

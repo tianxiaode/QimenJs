@@ -19,10 +19,11 @@ import {
     EventAbility,
     DomEventsAbility,
     EventBridgeAbility as SystemEventBridgeAbility,
+    EntityEventBusAbility,
 } from '@/system-abilities';
 import { AnimationAbility } from './abilities/AnimationAbility';
 import { BadgeAbility } from './abilities/BadgeAbility';
-import { EntityCoreAbility } from './abilities/EntityCoreAbility';
+
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
@@ -48,7 +49,7 @@ import { buildContentProperties } from './content-properties';
  * 只保留有行为逻辑的能力，纯赋值能力已移除（v2 由 props/content 直接驱动）。
  *
  * 保留（有行为）：
- * - EventAbility / DomEventsAbility / SystemEventBridgeAbility — 事件系统
+ * - EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility — 事件系统
  * - AnimationAbility — 动画控制
  * - BadgeAbility — 角标管理（创建 Badge 组件实例）
  * - EntityCoreAbility — 实体管理
@@ -72,9 +73,9 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility,
     DomEventsAbility,
     SystemEventBridgeAbility,
+    EntityEventBusAbility,
     AnimationAbility,
     BadgeAbility,
-    EntityCoreAbility,
     EventBridgeConfigAbility,
     InitAbility,
     NodeMapAbility,
@@ -394,8 +395,11 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                     // type 特殊处理：设为静态属性，构造函数通过 ctor.type 读取
                     (TemplateClass as any).type = value;
                 } else if (key === 'bridges') {
-                    // bridges 特殊处理：映射为 eventBridge 静态属性，_initWithTemplate 读取
-                    (TemplateClass as any).eventBridge = value;
+                    // bridges 向后兼容：映射为 listens 静态属性
+                    (TemplateClass as any).listens = value;
+                } else if (key === 'listens') {
+                    // listens 特殊处理：映射为 listens 静态属性，_initWithTemplate 读取
+                    (TemplateClass as any).listens = value;
                 } else if (key === 'forwards') {
                     // forwards 特殊处理：存为静态属性，_initWithTemplate 中 _setupForwards 读取
                     (TemplateClass as any)._forwards = value;

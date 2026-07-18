@@ -35,6 +35,7 @@ import { findByPath } from '../template-compiler';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { EntityEventBus } from '@/events';
 
 export const TemplateAbility: AbilityDefinition = {
     /**
@@ -43,7 +44,7 @@ export const TemplateAbility: AbilityDefinition = {
      * 构造时自动完成：内容填充、事件绑定、能力初始化、注册。
      *
      * 配置来源（优先级从低到高）：
-     * 1. static 属性（children、bridges 等）— 类定义时确定
+     * 1. static 属性（children、listens 等）— 类定义时确定
      * 2. props 参数 — 实例化时传入，可覆盖 static
      */
     _initWithTemplate(props?: Record<string, any>): void {
@@ -55,7 +56,7 @@ export const TemplateAbility: AbilityDefinition = {
         // 合并配置：static 属性为基础，props 可覆盖
         const ctor = this.constructor as any;
         const cfg: Record<string, any> = {
-            bridges: ctor.bridges ? [...ctor.bridges] : undefined,
+            listens: ctor.listens ? [...ctor.listens] : undefined,
             abilities: ctor.abilities,
             entity: ctor.entity,
             eventBridge: ctor.eventBridge,
@@ -66,8 +67,8 @@ export const TemplateAbility: AbilityDefinition = {
         this.logger?.debug?.(
             '[Template] _initWithTemplate, type =',
             ctor.type,
-            'bridges =',
-            cfg.bridges?.length ?? 0,
+            'listens =',
+            cfg.listens?.length ?? 0,
             'eventBridge =',
             !!cfg.eventBridge
         );
@@ -129,8 +130,8 @@ export const TemplateAbility: AbilityDefinition = {
             // 4.2 子组件桥接事件（DOM 节点的桥接已在 bindDomEventBindings 中处理）
             this.bindBridgeEvents();
             // 4.3 外部事件绑定（旧链路兼容）
-            this.bindExternalEvents({ bridges: cfg.bridges } as any);
-            const listenConfig = this._extractBridgesOn(cfg.bridges);
+            this.bindExternalEvents({ listens: cfg.listens } as any);
+            const listenConfig = this._extractListensOn(cfg.listens);
             if (listenConfig) this.bindEventListen(listenConfig);
 
             // ── 5. 调用能力的 __init__ 方法 ──
@@ -496,6 +497,7 @@ export const TemplateAbility: AbilityDefinition = {
                 throttle,
                 emits,
                 bridges,
+                entities,
             } = binding;
 
             const [group, name] = nodeKey.split(':');
@@ -503,11 +505,14 @@ export const TemplateAbility: AbilityDefinition = {
             if (!node) continue;
 
             if (node.component) {
-                // ── 子组件路径：监听子组件事件，转发 emits/bridges ──
-                // 子组件不需要 handler（子组件自己内部处理 DOM 事件并 emit）
-                this._bindComponentEvent(node.component, event, { once, emits, bridges, eventKey });
+                this._bindComponentEvent(node.component, event, {
+                    once,
+                    emits,
+                    bridges,
+                    entities,
+                    eventKey,
+                });
             } else {
-                // ── DOM 节点路径：this.bind() → 手势适配器 → this.on('dom:xxx') ──
                 this._bindDomEvent(node, event, {
                     handler,
                     once,
@@ -517,6 +522,7 @@ export const TemplateAbility: AbilityDefinition = {
                     throttle,
                     emits,
                     bridges,
+                    entities,
                     eventKey,
                 });
             }
@@ -541,6 +547,7 @@ export const TemplateAbility: AbilityDefinition = {
             throttle?: number;
             emits?: string[];
             bridges?: { targetEvent: string; once?: boolean }[];
+            entities?: string;
             eventKey?: string;
         }
     ): void {
@@ -556,6 +563,7 @@ export const TemplateAbility: AbilityDefinition = {
             throttle,
             emits,
             bridges,
+            entities,
             eventKey,
         } = options;
         const domEvent = `${DOM_EVENT_PREFIX}${event}`;
@@ -612,6 +620,11 @@ export const TemplateAbility: AbilityDefinition = {
                     this.bridgeEmit(eventKey, bridge.targetEvent, domEvt);
                 }
             }
+
+            // 4. 实体操作（entities）
+            if (entities && this.entityKey) {
+                EntityEventBus.getInstance().entityEmit(this.entityKey, entities, domEvt);
+            }
         };
 
         if (once) {
@@ -635,10 +648,11 @@ export const TemplateAbility: AbilityDefinition = {
             once?: boolean;
             emits?: string[];
             bridges?: { targetEvent: string; once?: boolean }[];
+            entities?: string;
             eventKey?: string;
         }
     ): void {
-        const { once, emits, bridges, eventKey } = options;
+        const { once, emits, bridges, entities, eventKey } = options;
 
         this.logger?.debug?.(
             '[Template] _bindComponentEvent, event =',
@@ -664,6 +678,11 @@ export const TemplateAbility: AbilityDefinition = {
                 for (const bridge of bridges) {
                     this.bridgeEmit(eventKey, bridge.targetEvent, data);
                 }
+            }
+
+            // 3. 实体操作（entities）
+            if (entities && this.entityKey) {
+                EntityEventBus.getInstance().entityEmit(this.entityKey, entities, data);
             }
         };
 

@@ -4,13 +4,14 @@
 
 QimenJs 的事件系统基于 **scopeId 隔离**：每个 EventScope 有唯一的 scopeId，`emit` 只触发同一 scopeId 下的 handler，不广播到其他 scope。
 
-### 三种事件通道
+### 四种事件通道
 
 | 通道 | scope 来源 | 事件流转范围 | 典型用法 |
 |------|-----------|------------|---------|
 | 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
 | 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
 | 桥接事件 | EventBridge.bridgeScope | 桥接 scope 内 | `bridge.bridgeEmit(id, 'click')` |
+| 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
 
 ### scopeId 隔离规则
 

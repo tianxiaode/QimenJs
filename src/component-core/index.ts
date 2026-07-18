@@ -6,7 +6,14 @@
 
 // 组件基类
 export { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from './TemplateComponent';
-export type { NodeMetadata, InternalEventBinding, ExternalEventMap, EventMap, NodeIndexPath, NodeTemplateMeta } from './types';
+export type {
+    NodeMetadata,
+    InternalEventBinding,
+    ExternalEventMap,
+    EventMap,
+    NodeIndexPath,
+    NodeTemplateMeta,
+} from './types';
 
 // 注册管理器
 export { ComponentRegistrar, type ComponentDefinition, getCmp } from './ComponentRegistrar';
@@ -18,17 +25,36 @@ export { ComponentTypes, type ComponentTypeValue } from './ComponentTypes';
 // 基础能力（仅保留有行为逻辑 + 语义快捷方式）
 export { AnimationAbility, type AnimationKey } from './abilities/AnimationAbility';
 export { BadgeAbility, type BadgeKey, type BadgeConfig } from './abilities/BadgeAbility';
-export { EntityCoreAbility, type EntityManager } from './abilities/EntityCoreAbility';
-export { EventBridgeConfigAbility, type EventBridgeConfig, type PaginationBridgeConfig, type CrudBridgeConfig, type SelectionBridgeConfig, type SearchBridgeConfig, type CustomBridgeConfig } from './abilities/EventBridgeAbility';
+
+export {
+    EventBridgeConfigAbility,
+    type EventBridgeConfig,
+    type PaginationBridgeConfig,
+    type CrudBridgeConfig,
+    type SelectionBridgeConfig,
+    type SearchBridgeConfig,
+    type CustomBridgeConfig,
+} from './abilities/EventBridgeAbility';
 export { InitAbility } from './abilities/InitAbility';
-export { LayoutAbility, LAYOUT_FIT, LAYOUT_HBOX, LAYOUT_VBOX, LAYOUT_GRID, LAYOUT_CENTER, type LayoutType } from './abilities/LayoutAbility';
+export {
+    LayoutAbility,
+    LAYOUT_FIT,
+    LAYOUT_HBOX,
+    LAYOUT_VBOX,
+    LAYOUT_GRID,
+    LAYOUT_CENTER,
+    type LayoutType,
+} from './abilities/LayoutAbility';
 export { NodeMapAbility } from './abilities/NodeMapAbility';
 export { OverlayAbility, type OverlayConfig, type OverlayResult } from './abilities/OverlayAbility';
 export { OverlayHostAbility, type OverlayHostConfig } from './abilities/OverlayHostAbility';
 export { ElementEventAbility } from './abilities/ElementEventAbility';
 export { TemplateAbility } from './abilities/TemplateAbility';
-export { TooltipAbility, type TooltipKey, type TooltipOverlayConfig } from './abilities/TooltipAbility';
-
+export {
+    TooltipAbility,
+    type TooltipKey,
+    type TooltipOverlayConfig,
+} from './abilities/TooltipAbility';
 
 // 能力协议
 export { mergePropAliases, applyPropAliases, initAbilitiesFromProps } from './abilities/PropAlias';
@@ -39,7 +65,13 @@ export { positionOverlay } from './abilities/positionOverlay';
 export type { Placement } from './abilities/positionOverlay';
 
 // 模板编译
-export { precompileTemplate, findByPath, computeNodePath, inferContentMode, parseEventAttr } from './template-compiler';
+export {
+    precompileTemplate,
+    findByPath,
+    computeNodePath,
+    inferContentMode,
+    parseEventAttr,
+} from './template-compiler';
 export type { CompiledTemplate, DomEventBinding } from './template-compiler';
 
 // 新模板编译
@@ -47,7 +79,13 @@ export { compileTemplate } from './template-json';
 export type { CompiledTemplateResult, TplNodeMeta } from './template-json';
 
 // 新模板类型
-export type { TplNode, ComponentTemplate, DomEventDecl, ContentInfo, PropsDef } from './template-types';
+export type {
+    TplNode,
+    ComponentTemplate,
+    DomEventDecl,
+    ContentInfo,
+    PropsDef,
+} from './template-types';
 
 // 模板常量（Area, Name, Slot, Event）
 export { Area, Name, Slot, Event } from './template-constants';
@@ -84,12 +122,37 @@ export { buildContentProperties, translateI18nKey, applyValueToEl } from './cont
 
 // 通用属性定义
 export {
-    COMMON_PROPS, RESOLVERS,
-    resolvePx, resolveMarginPadding, resolveBorder,
-    childPropName, componentChildPropName,
+    COMMON_PROPS,
+    RESOLVERS,
+    resolvePx,
+    resolveMarginPadding,
+    resolveBorder,
+    childPropName,
+    componentChildPropName,
 } from './common-props';
 export type { CommonPropDef, MarginPadding, Border, BorderSide, PropTarget } from './common-props';
 
 // Layout 类型（从 @qimenjs/layout 迁移）
-export type { HandlerConfig, EventListen, BridgesConfig, LifecycleHooks, LayoutMeta, TooltipProps, AnimationProps, DragProps, DropProps, EntityProps, ArrowProps, ExpandableProps, ExpandableConfig } from './layout-types';
-export { ANIMATION_KEYS, DRAG_KEYS, DROP_KEYS, TOOLTIP_KEYS, EXPANDABLE_KEYS } from './layout-types';
+export type {
+    HandlerConfig,
+    EventListen,
+    BridgesConfig,
+    ListensConfig,
+    LifecycleHooks,
+    LayoutMeta,
+    TooltipProps,
+    AnimationProps,
+    DragProps,
+    DropProps,
+    EntityProps,
+    ArrowProps,
+    ExpandableProps,
+    ExpandableConfig,
+} from './layout-types';
+export {
+    ANIMATION_KEYS,
+    DRAG_KEYS,
+    DROP_KEYS,
+    TOOLTIP_KEYS,
+    EXPANDABLE_KEYS,
+} from './layout-types';

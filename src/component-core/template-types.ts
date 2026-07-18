@@ -78,6 +78,15 @@ export interface DomEventDecl {
      */
     bridges?: string[];
 
+    /**
+     * 转发为实体操作
+     *
+     * 指定 mgr 方法名，DOM 事件触发时直接调用 EntityDispatchCenter 对应 mgr 的方法。
+     * - 'list' → 调用 mgr.list()
+     * - 'create' → 调用 mgr.create()
+     */
+    entities?: string;
+
     /** 是否只触发一次 */
     once?: boolean;
 
@@ -268,7 +277,8 @@ export interface ComponentTemplate {
      *
      * 特殊 key 处理：
      * - type: 设为静态属性（组件类型标识）
-     * - bridges: 映射为 eventBridge 静态属性（桥接事件配置）
+     * - listens: 映射为 listens 静态属性（事件监听配置）
+     * - bridges: 向后兼容，映射为 listens 静态属性
      * - forwards: 存为 _forwards 静态属性（属性/方法透传配置）
      * - 函数: 复制到原型（组件方法）
      * - 其他: 存到 static defaults（默认属性值）
@@ -283,10 +293,10 @@ export interface ComponentTemplate {
      * ```ts
      * body: {
      *     type: 'myComponent',
-     *     bridges: {
-     *         pagination: 'myPager',
-     *         crud: { source: 'myGrid', actions: ['create', 'delete'] },
-     *     },
+     *     listens: [
+     *         { source: 'myGrid', events: { selectionchange: 'onSelect' } },
+     *         { entityKey: 'users', events: { listed: 'onUsersLoaded' } },
+     *     ],
      *     forwards: {
      *         title: 'header.title',  // dialog.title → headerComponent.title
      *         icon: 'icon',           // dialog.icon → iconComponent

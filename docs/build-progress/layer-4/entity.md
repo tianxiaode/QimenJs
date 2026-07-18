@@ -45,6 +45,10 @@ src/entity/
 │       ├── mutation/
 │       ├── search/
 │       └── tree/
+├── dispatch/                 # 实体调度中心（单例）
+│   ├── EntityDispatchCenter.ts
+│   ├── entity-definitions.ts  # entityKey → MgrType 预定义
+│   └── index.ts
 ├── manager/
 │   ├── CoreEntityManager.ts
 │   ├── BaseEntityManager.ts
@@ -74,6 +78,30 @@ src/entity/
 ```
 
 ## 构建历史
+
+### 2026-07-18
+- **EntityEventBus 实体事件总线**（`src/events/EntityEventBus.ts`）：独立 scopeId，类似 EventBridge
+  - `entityEmit(entityKey, eventName, data)` / `entityOn(entityKey, eventName, handler)` / `entityOnce()`
+  - 事件名编码：`entity:{entityKey}:{eventName}`
+  - 与组件事件、桥接事件三条总线互不干扰
+- **EntityEventBusAbility**（`src/system-abilities/system/EntityEventBusAbility.ts`）：系统能力
+  - 暴露 `this.entityEmit()` / `this.entityOn()` / `this.entityOnce()`
+  - 已添加到 TemplateComponent 标准能力列表
+- **EntityDispatchCenter**（`src/entity/dispatch/EntityDispatchCenter.ts`）：继承 RegistrarBase
+  - 预定义注册：`register(entityKey, MgrType)` 集中管理 entityKey → 类型映射
+  - register 时通过 EntityEventBus 监听动作事件，收到后自动调度到 mgr
+  - mgr 实例懒创建：首次动作时 connect，引用计数管理生命周期
+  - mgr 结果事件通过 EntityEventBus 发布
+  - 支持 `inspect()` / `lock()` / `unregister()`
+- **移除所有实体能力**：EntityAbility、EntityCoreAbility、component-abilities/entity 目录全部删除
+  - 组件通过 EntityEventBusAbility 的 `this.entityEmit()` / `this.entityOn()` 交互
+  - `events.entities: 'list'` → TemplateAbility 内建处理
+  - `body.listens: [{ entityKey, events }]` → bindEventListen 走 EntityEventBus
+- **body.bridges → body.listens**：重命名监听配置
+  - `ListensConfig = EventListen[]`，`EventListen` 新增 `entityKey` 字段
+  - `source` → EventBridge，`entityKey` → EntityEventBus
+- **DomEventDecl.entities**：新增实体操作字段（string，直接指定 mgr 方法名）
+- **DomEventBinding**：新增 `entities?: string` 字段
 
 ### 2026-07-02
 - FlatRemoteEntityState 运行时缺陷修复：

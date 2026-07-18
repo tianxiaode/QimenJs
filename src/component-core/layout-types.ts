@@ -33,11 +33,16 @@ export interface HandlerConfig {
 /**
  * 事件监听声明
  *
- * 接收方声明监听哪些事件源的哪些事件类型，框架自动绑定到 EventBus
+ * 接收方声明监听哪些事件源的哪些事件类型，框架自动绑定到对应总线：
+ * - source：走 EventBridge（组件间桥接事件）
+ * - entityKey：走 EntityDispatchCenter（实体数据事件）
+ * - 两者互斥，同时指定时 entityKey 优先
  */
 export interface EventListen {
-    /** 监听的事件源（组件 id），不填则监听全局事件总线 */
+    /** 监听的事件源（组件 id），走 EventBridge */
     source?: string;
+    /** 监听的实体键，走 EntityDispatchCenter */
+    entityKey?: string;
     /** 事件到 handler 的映射，key 为事件类型，value 为方法名 */
     events: Record<string, string>;
     /** 是否只执行一次 */
@@ -45,9 +50,16 @@ export interface EventListen {
 }
 
 /**
+ * 监听事件配置
+ *
+ * 统一管理组件的所有事件监听声明
+ */
+export type ListensConfig = EventListen[];
+
+/**
  * 桥接事件配置
  *
- * 混合数组，每项要么是字符串（发布），要么是对象（监听）
+ * @deprecated 使用 ListensConfig 替代
  */
 export type BridgesConfig = (string | EventListen)[];
 
@@ -225,8 +237,10 @@ export interface ExpandableConfig {
  * AnimationProps 的 key 列表
  */
 export const ANIMATION_KEYS = [
-    'enterAnimation', 'enterAnimationOptions',
-    'leaveAnimation', 'leaveAnimationOptions',
+    'enterAnimation',
+    'enterAnimationOptions',
+    'leaveAnimation',
+    'leaveAnimationOptions',
     'animationEnabled',
 ] as const;
 
@@ -234,27 +248,33 @@ export const ANIMATION_KEYS = [
  * DragProps 的 key 列表
  */
 export const DRAG_KEYS = [
-    'draggable', 'dragAxis', 'dragHandle', 'dragBounds', 'dragActiveClass', 'dragGrid',
+    'draggable',
+    'dragAxis',
+    'dragHandle',
+    'dragBounds',
+    'dragActiveClass',
+    'dragGrid',
 ] as const;
 
 /**
  * DropProps 的 key 列表
  */
-export const DROP_KEYS = [
-    'droppable', 'dropAccept', 'dropActiveClass',
-] as const;
+export const DROP_KEYS = ['droppable', 'dropAccept', 'dropActiveClass'] as const;
 
 /**
  * TooltipProps 的 key 列表
  */
 export const TOOLTIP_KEYS = [
-    'tooltip', 'tooltipPlacement', 'tooltipOffset',
-    'tooltipShowDelay', 'tooltipHideDelay', 'tooltipMaxWidth', 'tooltipType',
+    'tooltip',
+    'tooltipPlacement',
+    'tooltipOffset',
+    'tooltipShowDelay',
+    'tooltipHideDelay',
+    'tooltipMaxWidth',
+    'tooltipType',
 ] as const;
 
 /**
  * ExpandableProps 的 key 列表
  */
-export const EXPANDABLE_KEYS = [
-    'expandable',
-] as const;
+export const EXPANDABLE_KEYS = ['expandable'] as const;

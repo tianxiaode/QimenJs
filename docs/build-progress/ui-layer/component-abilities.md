@@ -7,6 +7,11 @@
 
 ## 构建历史
 
+### 2026-07-18
+- ✅ 8个实体能力文件合并为单一 EntityAbility + validateEntityEvent 校验
+- ✅ EntityDispatchCenter 改用独立 EventBus 实例（非 globalEventBus scope）
+- ✅ body.bridges → body.listens，DomEventDecl.entities 改为 string（直接指定 mgr 方法名）
+
 ### 2026-07-13
 - ✅ 新增 GroupSelectAbility（radio 互斥/checkbox 多选）
 - ✅ 新增 MenuItemManageAbility（池化复用菜单项）
