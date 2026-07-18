@@ -22,7 +22,7 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { ExpandArrowAbility } from '@qimenjs/component-abilities';
+
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { IconComponent } from '../icon/IconComponent';
 
@@ -97,7 +97,18 @@ const MenuItemBase = TemplateComponent.withTemplate({
             if (props?.submenuProps) this.submenuProps = props.submenuProps;
 
             this._applyState();
-            this.initExpandArrow({ arrowName: 'expand' });
+
+            if (this._hasSubmenu) {
+                this.submenu = {
+                    type: 'Menu',
+                    trigger: 'hover',
+                    placement: 'right',
+                    showDelay: 150,
+                    hideDelay: 200,
+                    data: () => this.submenuProps ?? {},
+                };
+            }
+
             this._bindHoverEvents();
         },
 
@@ -219,9 +230,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
                 this._clearSubmenuTimer();
 
                 if (this._hasSubmenu && !this._disabled) {
-                    this._submenuTimer = setTimeout(() => {
-                        this.openSubmenu();
-                    }, 150);
+                    this._updateExpandArrow('expanded');
                 }
             });
 
@@ -229,9 +238,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
                 this._clearSubmenuTimer();
 
                 if (this._hasSubmenu) {
-                    this._submenuTimer = setTimeout(() => {
-                        this.closeSubmenu();
-                    }, 200);
+                    this._updateExpandArrow('collapsed');
                 }
             });
         },
@@ -243,20 +250,12 @@ const MenuItemBase = TemplateComponent.withTemplate({
             }
         },
 
-        openSubmenu(): void {
-            if (!this._hasSubmenu) return;
-
-            const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit('submenu', 'show', {
-                component: this,
-                anchor: this.el,
-                ...this.submenuProps,
-            });
-        },
-
-        closeSubmenu(): void {
-            const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit('submenu', 'hide', {});
+        _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
+            const expandEl = this.nodeMap?.expand?.el as HTMLElement | null;
+            if (expandEl) {
+                expandEl.classList.toggle('q-expand-arrow--expanded', state === 'expanded');
+                expandEl.classList.toggle('q-expand-arrow--collapsed', state === 'collapsed');
+            }
         },
 
         update(props?: Partial<MenuItemProps> & Record<string, any>): void {
@@ -272,7 +271,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
             if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
         },
     },
-}).with([ExpandArrowAbility]);
+});
 
 export let MenuItemComponent = MenuItemBase;
 

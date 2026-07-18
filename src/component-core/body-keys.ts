@@ -41,6 +41,23 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
         description:
             '浮层配置，InitAbility._initOverlays 自动注册到 OverlayDispatchCenter 并绑定 trigger',
     },
+    tooltip: {
+        category: 'init',
+        description: '提示框域配置，InitAbility._initTooltipOverlay 自动注册 tooltip 浮层',
+    },
+    overflowConfig: {
+        category: 'init',
+        description:
+            '溢出域配置，InitAbility._initOverflowOverlay 自动注册溢出浮层（scroll 或 menu）',
+    },
+    submenu: {
+        category: 'init',
+        description: '子菜单域配置，InitAbility._initSubmenuOverlay 自动注册子菜单浮层',
+    },
+    contextMenu: {
+        category: 'init',
+        description: '右键菜单域配置，InitAbility._initContextMenuOverlay 自动注册右键菜单浮层',
+    },
     drags: {
         category: 'init',
         description:
@@ -67,6 +84,10 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
         description: '元数据，InitAbility.initConfig 中复制到实例',
     },
 };
+
+export const DOMAIN_OVERLAY_KEYS = ['tooltip', 'overflowConfig', 'submenu', 'contextMenu'] as const;
+
+export type DomainOverlayKey = (typeof DOMAIN_OVERLAY_KEYS)[number];
 
 export const BODY_SPECIAL_KEY_SET = new Set(Object.keys(BODY_SPECIAL_KEYS));
 

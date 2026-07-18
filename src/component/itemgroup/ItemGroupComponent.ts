@@ -3,13 +3,10 @@
  *
  * 轻量排列容器，通过 items 数组管理子组件实例。
  * direction 控制排列方向，itemType 指定子项组件类型。
- * overflowMode 控制溢出处理方式（none/scroll/menu）。
+ * overflowConfig 控制溢出处理方式（scroll/menu），通过域配置自动对接浮动层。
  *
  * 模板节点：
- * - items — 子项挂载区（兼做溢出滚动/可见区域）
- * - prevBtn — 溢出滚动左/上箭头（hidden 默认）
- * - nextBtn — 溢出滚动右/下箭头（hidden 默认）
- * - triggerBtn — 溢出菜单下拉触发按钮（hidden 默认）
+ * - items — 子项挂载区
  *
  * 核心操作：
  * - add(data) / removeAt(index) / insert(index, data) / setItems(datas)
@@ -20,15 +17,13 @@
  * - eventKey 作为事件源标识（source），注入子组件
  * - 默认内置转发 click 和 close，可通过 events 扩展
  *
- * 溢出模式：
- * - 'none'（默认）：不处理溢出
- * - 'scroll'：子项超出时显示箭头，支持拖拽滑动
- * - 'menu'：子项超出时显示下拉触发按钮，弹出菜单显示溢出项
+ * 溢出模式（通过 overflowConfig 域配置）：
+ * - 不配置：不处理溢出
+ * - { type: 'scroll', direction: 'horizontal' }：子项超出时显示浮动箭头
+ * - { type: 'menu', direction: 'horizontal' }：子项超出时显示浮动触发按钮
  */
 
 import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
-import { OverflowScrollAbility, OverflowMenuAbility } from '@qimenjs/component-abilities';
-import type { OverflowDirection } from '@qimenjs/component-abilities';
 
 const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
 
@@ -50,32 +45,7 @@ export interface ItemGroupProps {
 const ItemGroupBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [
-            {
-                tag: 'div',
-                name: 'prevBtn',
-                events: { click: { handler: 'onPrev' } },
-                className: 'q-overflow-arrow q-overflow-arrow--prev',
-                hidden: true,
-                children: [{ tag: 'i' }],
-            },
-            { tag: 'div', name: 'items', className: 'q-itemgroup__items' },
-            {
-                tag: 'div',
-                name: 'nextBtn',
-                events: { click: { handler: 'onNext' } },
-                className: 'q-overflow-arrow q-overflow-arrow--next',
-                hidden: true,
-                children: [{ tag: 'i' }],
-            },
-            {
-                tag: 'button',
-                name: 'triggerBtn',
-                events: { click: { handler: 'onTrigger' } },
-                className: 'q-overflow-menu__trigger',
-                hidden: true,
-            },
-        ],
+        children: [{ tag: 'div', name: 'items', className: 'q-itemgroup__items' }],
     },
     body: {
         type: 'ItemGroup',
@@ -399,46 +369,16 @@ const ItemGroupBase = TemplateComponent.withTemplate({
         },
 
         _applyOverflowMode(): void {
-            this._cleanupOverflow();
+            if (this._overflowMode === 'none') return;
 
-            const direction = this._direction as OverflowDirection;
-
-            switch (this._overflowMode) {
-                case 'scroll':
-                    this.initOverflowScroll?.({ direction });
-                    break;
-                case 'menu':
-                    this.initOverflowMenu?.({ direction });
-                    break;
-            }
+            this.overflowConfig = {
+                type: this._overflowMode as 'scroll' | 'menu',
+                direction: this._direction as 'horizontal' | 'vertical',
+            };
         },
 
         _cleanupOverflow(): void {
-            const scrollResizeObserver = this.getOverflowScroll?.(
-                'resizeObserver'
-            ) as ResizeObserver | null;
-            const scrollMutationObserver = this.getOverflowScroll?.(
-                'mutationObserver'
-            ) as MutationObserver | null;
-            scrollResizeObserver?.disconnect();
-            scrollMutationObserver?.disconnect();
-
-            const menuResizeObserver = this.getOverflowMenu?.(
-                'resizeObserver'
-            ) as ResizeObserver | null;
-            const menuMutationObserver = this.getOverflowMenu?.(
-                'mutationObserver'
-            ) as MutationObserver | null;
-            menuResizeObserver?.disconnect();
-            menuMutationObserver?.disconnect();
-
-            const prevBtn = this.nodeMap?.prevBtn?.el as HTMLElement | null;
-            const nextBtn = this.nodeMap?.nextBtn?.el as HTMLElement | null;
-            if (prevBtn) prevBtn.hidden = true;
-            if (nextBtn) nextBtn.hidden = true;
-
-            const triggerBtn = this.nodeMap?.triggerBtn?.el as HTMLElement | null;
-            if (triggerBtn) triggerBtn.hidden = true;
+            this.overflowConfig = undefined;
 
             if (this._containerEl) {
                 const children = Array.from(this._containerEl.children) as HTMLElement[];
@@ -465,15 +405,6 @@ const ItemGroupBase = TemplateComponent.withTemplate({
                     'q-overflow-scroll__area',
                     'q-overflow-menu__visible'
                 );
-            }
-
-            if (triggerBtn) {
-                triggerBtn.classList.remove('q-overflow-menu__trigger--active');
-            }
-
-            const menuInstance = this.getOverflowMenu?.('menuInstance') as any;
-            if (menuInstance) {
-                menuInstance.dispose();
             }
         },
 
@@ -505,7 +436,7 @@ const ItemGroupBase = TemplateComponent.withTemplate({
             (this.constructor as any).__proto__.dispose.call(this);
         },
     },
-}).with([OverflowScrollAbility, OverflowMenuAbility]);
+});
 
 export let ItemGroupComponent = ItemGroupBase;
 

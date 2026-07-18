@@ -31,6 +31,8 @@ import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
 import { ToggleComponent } from './toggle/ToggleComponent';
 import { ToggleIconComponent } from './toggle-icon/ToggleIconComponent';
 import { ButtonGroupComponent } from './button-group/ButtonGroupComponent';
+import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
+import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -56,4 +58,6 @@ export function registerAllComponents(): void {
     registrar.register('Toolbar', ItemGroupComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);
+    registrar.register('OverflowScroll', OverflowScrollComponent);
+    registrar.register('OverflowMenu', OverflowMenuComponent);
 }

@@ -498,9 +498,9 @@ function compileEvents(
         // ── 推导 handler 名 ──
         let handlerName: string | undefined;
         if (decl.handler === true) {
-            // 自动推导：click → onClick
             const capitalEvent = domEvent.charAt(0).toUpperCase() + domEvent.slice(1);
-            handlerName = `on${capitalEvent}`;
+            const capitalKey = key.charAt(0).toUpperCase() + key.slice(1);
+            handlerName = key ? `on${capitalKey}${capitalEvent}` : `on${capitalEvent}`;
         } else if (typeof decl.handler === 'string') {
             handlerName = decl.handler;
         }

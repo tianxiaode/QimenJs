@@ -312,3 +312,76 @@ export const TOOLTIP_KEYS = [
  * ExpandableProps 的 key 列表
  */
 export const EXPANDABLE_KEYS = ['expandable'] as const;
+
+// ── 域浮层配置 ──
+
+/**
+ * 溢出域配置
+ *
+ * 组件声明式定义溢出处理，框架自动注册到 OverlayDispatchCenter。
+ * type 决定溢出组件类型，组件内部处理箭头/菜单等复杂逻辑。
+ *
+ * @example
+ * ```ts
+ * overflowConfig: { type: 'scroll', direction: 'horizontal' }
+ * overflowConfig: { type: 'menu', direction: 'horizontal' }
+ * ```
+ */
+export interface OverflowConfigDecl {
+    /** 溢出组件类型：'scroll' 显示箭头滚动，'menu' 显示下拉菜单 */
+    type: 'scroll' | 'menu';
+    /** 溢出方向，默认 'horizontal' */
+    direction?: 'horizontal' | 'vertical';
+    /** 每次箭头点击滚动的像素距离（scroll 模式），默认 200 */
+    scrollStep?: number;
+    /** 菜单弹出位置偏移（menu 模式），默认 0 */
+    menuOffset?: number;
+    /** 可见区域最多显示的子项数量，0 表示自动检测（menu 模式），默认 0 */
+    maxVisibleItems?: number;
+}
+
+/**
+ * 子菜单域配置
+ *
+ * 组件声明式定义子菜单浮层，框架自动注册到 OverlayDispatchCenter。
+ *
+ * @example
+ * ```ts
+ * submenu: { type: 'Menu', trigger: 'hover', placement: 'right-start' }
+ * ```
+ */
+export interface SubmenuDecl {
+    /** 子菜单组件类型名，对应 ComponentRegistrar 中注册的组件类名，默认 'Menu' */
+    type?: string;
+    /** 触发方式，默认 'hover' */
+    trigger?: 'hover' | 'click' | 'manual';
+    /** 弹出方向，默认 'right-start' */
+    placement?: string;
+    /** 与锚点间距，默认 0 */
+    offset?: number;
+    /** 延迟显示时间（毫秒），默认 150 */
+    showDelay?: number;
+    /** 延迟隐藏时间（毫秒），默认 200 */
+    hideDelay?: number;
+    /** 传递给子菜单组件的额外数据 */
+    data?: Record<string, any> | (() => Record<string, any>);
+}
+
+/**
+ * 右键菜单域配置
+ *
+ * 组件声明式定义右键菜单浮层，框架自动注册到 OverlayDispatchCenter。
+ *
+ * @example
+ * ```ts
+ * contextMenu: { type: 'Menu', data: { items: [...] } }
+ * ```
+ */
+export interface ContextMenuDecl {
+    /** 右键菜单组件类型名，对应 ComponentRegistrar 中注册的组件类名，默认 'Menu' */
+    type?: string;
+    /** 与锚点间距，默认 4 */
+    offset?: number;
+    /** 传递给菜单组件的额外数据 */
+    data?: Record<string, any> | (() => Record<string, any>);
+}

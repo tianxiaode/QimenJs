@@ -17,8 +17,6 @@
 
 import { TemplateComponent } from '@qimenjs/component-core';
 
-import { ExpandArrowAbility } from '@/component-abilities/render/ExpandArrowAbility';
-
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { IconComponent } from '../icon/IconComponent';

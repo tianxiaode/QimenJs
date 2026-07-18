@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-10
+> 最后更新：2026-07-18
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -44,7 +44,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | GridComponent | `src/component/components/GridComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | SpaceComponent | `src/component/components/SpaceComponent.ts` | LayoutAbility |
-| ToolbarComponent | `src/component/toolbar/ToolbarComponent.ts` | OverflowScrollAbility, OverflowMenuAbility（模板预定义节点，显隐切换互斥） |
+| ToolbarComponent | `src/component/toolbar/ToolbarComponent.ts` | overflowConfig 域配置（type: 'scroll'/'menu'，浮动层自动管理） |
 | IconComponent | `src/component/components/IconComponent.ts` | SizeAbility（图标内容由组件直接管理，无需 IconAbility） |
 | TextComponent | `src/component/components/TextComponent.ts` | SizeAbility（文本内容由组件直接管理，无需 TextAbility） |
 | ButtonGroupComponent | `src/component/components/ButtonGroupComponent.ts` | ChildrenAbility, SizeAbility, DisableAbility |
@@ -55,7 +55,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
 | TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ ArrowAbility（浮层定位箭头，模板定义节点）+ hover 事件 + delay |
 | MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, GroupSelectAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项，分组选择互斥） |
-| MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | OverlayAbility（子菜单浮层创建）+ ExpandArrowAbility（展开/折叠箭头，点击切换状态）+ 分组选择（group/groupMode/checked，radio 互斥/checkbox 多选） |
+| MenuItemComponent | `src/component/menu/MenuItemComponent.ts` | submenu 域配置（子菜单浮层自动管理）+ 分组选择（group/groupMode/checked，radio 互斥/checkbox 多选） |
 | NavItemComponent | `src/component/nav/NavItemComponent.ts` | withTemplate(NAVITEM_TEMPLATE)，导航项组件（text/icon/active/disabled，eventKey 事件转发） |
 | NavItemGroupComponent | `src/component/nav/NavItemGroupComponent.ts` | 继承 ItemGroupComponent，导航项分组容器（eventKey='nav'，selectAt/clearSelection/activeIndex） |
 | ColumnBase | `src/component/components/ColumnBase.ts` | TextAbility, VisibleAbility, DisableAbility, SortAbility |

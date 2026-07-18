@@ -18,6 +18,7 @@ import type {
 } from '../layout-types';
 import { ANIMATION_KEYS } from '../layout-types';
 import type { DragDecl } from '../layout-types';
+import type { OverflowConfigDecl, SubmenuDecl, ContextMenuDecl } from '../layout-types';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 import { mergePropAliases, applyPropAliases } from './PropAlias';
 import { EventBridge } from '@/events/EventBridge';
@@ -25,10 +26,16 @@ import { EntityEventBus } from '@/events/EntityEventBus';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { DragEventBus } from '@/events/DragEventBus';
 import { validateEntityEvent } from '@/entity/dispatch';
-import { overlayDispatchCenter, validateOverlayDecl } from '@/overlay/dispatch';
+import {
+    overlayDispatchCenter,
+    validateOverlayDecl,
+    positionOverlay,
+    type Placement,
+} from '@/overlay/dispatch';
 import type { AnimationKey } from './AnimationAbility';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { ElementEventAbility } from './ElementEventAbility';
+import { DOMAIN_OVERLAY_KEYS, type DomainOverlayKey } from '../body-keys';
 
 export const InitAbility: AbilityDefinition = {
     /**
@@ -58,10 +65,9 @@ export const InitAbility: AbilityDefinition = {
             // ── 5. 事件绑定 ──
             this.bindEvents(layout);
 
-            // ── 6. Tooltip 浮层（配置驱动） ──
-            if (layout.tooltip) {
-                this.initTooltipOverlay(layout);
-            }
+            // ── 6. 域浮层初始化（tooltip / overflowConfig / submenu / contextMenu） ──
+
+            this._initDomainOverlays(layout);
 
             // ── 7. 调用能力的 __init__ 方法 ──
             this.callInitMethods();
@@ -615,6 +621,270 @@ export const InitAbility: AbilityDefinition = {
 
         this.onCleanup(() => {
             overlayDispatchCenter.disposeByComponent(this.id);
+        });
+    },
+
+    // ─── 域浮层初始化 ───
+
+    /**
+     * 统一初始化域浮层（tooltip / overflowConfig / submenu / contextMenu）
+     *
+     * 遍历 DOMAIN_OVERLAY_KEYS，对 layout 中存在的域配置自动注册到调度中心。
+     * 每个域有默认的 type/trigger/placement，组件只需填差异项。
+     */
+    _initDomainOverlays(layout: Record<string, any>): void {
+        for (const key of DOMAIN_OVERLAY_KEYS) {
+            const config = layout[key];
+            if (!config) continue;
+
+            switch (key as DomainOverlayKey) {
+                case 'tooltip':
+                    this._initTooltipOverlay(config);
+                    break;
+                case 'overflowConfig':
+                    this._initOverflowOverlay(config);
+                    break;
+                case 'submenu':
+                    this._initSubmenuOverlay(config);
+                    break;
+                case 'contextMenu':
+                    this._initContextMenuOverlay(config);
+                    break;
+            }
+        }
+    },
+
+    /**
+     * 初始化 tooltip 域浮层
+     *
+     * 配置示例：tooltip: { text: '提示内容', placement: 'top' }
+     * 自动注册 type='Tips'、trigger='hover' 的浮层到调度中心。
+     */
+    _initTooltipOverlay(config: Record<string, any>): void {
+        const text = config.text ?? config.tooltip;
+        if (!text) return;
+
+        const overlayKey = `${this.id ?? 'comp'}:tooltip`;
+        const overlayType = config.type ?? 'Tips';
+
+        const decl = {
+            type: overlayType,
+            trigger: 'hover' as const,
+            placement: config.placement ?? config.tooltipPlacement ?? 'top',
+            offset: config.offset ?? config.tooltipOffset ?? 4,
+            data: {
+                text,
+                ...(config.data ?? {}),
+            },
+        };
+
+        overlayDispatchCenter.register(overlayKey, decl);
+
+        const el = this.el;
+        const bus = OverlayEventBus.getInstance();
+
+        const showHandler = () => {
+            const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
+            const OverlayClass = ComponentRegistrar.getInstance().get(capitalType);
+            if (!OverlayClass) return;
+
+            const overlayData = typeof decl.data === 'function' ? decl.data.call(this) : decl.data;
+            const overlay = new OverlayClass({ anchor: el, ...overlayData });
+            bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el, overlay });
+        };
+
+        const hideHandler = () => {
+            bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
+        };
+
+        el.addEventListener('mouseenter', showHandler);
+        el.addEventListener('mouseleave', hideHandler);
+        this.onCleanup(() => {
+            el.removeEventListener('mouseenter', showHandler);
+            el.removeEventListener('mouseleave', hideHandler);
+        });
+    },
+
+    /**
+     * 初始化溢出域浮层
+     *
+     * 配置示例：overflowConfig: { type: 'scroll', direction: 'horizontal' }
+     * 自动注册对应溢出组件类型的浮层到调度中心。
+     * 溢出组件内部处理箭头/菜单等复杂逻辑，组件模板无需预定义节点。
+     */
+    _initOverflowOverlay(config: OverflowConfigDecl): void {
+        const overflowType = config.type;
+        const overlayType = overflowType === 'scroll' ? 'OverflowScroll' : 'OverflowMenu';
+        const overlayKey = `${this.id ?? 'comp'}:overflow`;
+
+        const decl = {
+            type: overlayType,
+            trigger: 'always' as const,
+            placement: (config.direction === 'vertical' ? 'bottom' : 'bottom') as Placement,
+            offset: config.menuOffset ?? 0,
+            data: {
+                direction: config.direction ?? 'horizontal',
+                scrollStep: config.scrollStep ?? 200,
+                maxVisibleItems: config.maxVisibleItems ?? 0,
+            },
+        };
+
+        overlayDispatchCenter.register(overlayKey, decl);
+
+        const el = this.el;
+        const bus = OverlayEventBus.getInstance();
+
+        const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
+        const OverlayClass = ComponentRegistrar.getInstance().get(capitalType);
+        if (!OverlayClass) return;
+
+        const overlayData =
+            typeof decl.data === 'function'
+                ? (decl.data as () => Record<string, any>).call(this)
+                : decl.data;
+        const overlay = new OverlayClass({ anchor: el, ...overlayData });
+        bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el, overlay });
+    },
+
+    /**
+     * 初始化子菜单域浮层
+     *
+     * 配置示例：submenu: { type: 'Menu', trigger: 'hover', placement: 'right-start' }
+     * 自动注册子菜单浮层到调度中心，支持 hover/click 触发。
+     */
+    _initSubmenuOverlay(config: SubmenuDecl): void {
+        const overlayKey = `${this.id ?? 'comp'}:submenu`;
+        const overlayType = config.type ?? 'Menu';
+
+        const decl = {
+            type: overlayType,
+            trigger: config.trigger ?? 'hover',
+            placement: (config.placement ?? 'right') as Placement,
+            offset: config.offset ?? 0,
+            data: config.data ?? {},
+        };
+
+        overlayDispatchCenter.register(overlayKey, decl);
+
+        const el = this.el;
+        const bus = OverlayEventBus.getInstance();
+        const trigger = decl.trigger;
+        const showDelay = config.showDelay ?? 150;
+        const hideDelay = config.hideDelay ?? 200;
+
+        let showTimer: ReturnType<typeof setTimeout> | null = null;
+        let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const clearTimers = () => {
+            if (showTimer) {
+                clearTimeout(showTimer);
+                showTimer = null;
+            }
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+        };
+
+        const createOverlay = () => {
+            const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
+            const OverlayClass = ComponentRegistrar.getInstance().get(capitalType);
+            if (!OverlayClass) return null;
+
+            const overlayData =
+                typeof decl.data === 'function'
+                    ? (decl.data as () => Record<string, any>).call(this)
+                    : decl.data;
+            return new OverlayClass({ anchor: el, ...overlayData });
+        };
+
+        const showOverlay = () => {
+            clearTimers();
+            const overlay = createOverlay();
+            if (overlay)
+                bus.overlayEmit(overlayKey, 'show', { component: this, anchor: el, overlay });
+        };
+
+        const hideOverlay = () => {
+            clearTimers();
+            bus.overlayEmit(overlayKey, 'hide', { component: this, anchor: el });
+        };
+
+        if (trigger === 'hover') {
+            el.addEventListener('mouseenter', () => {
+                clearTimers();
+                showTimer = setTimeout(showOverlay, showDelay);
+            });
+            el.addEventListener('mouseleave', () => {
+                clearTimers();
+                hideTimer = setTimeout(hideOverlay, hideDelay);
+            });
+            this.onCleanup(() => {
+                clearTimers();
+                el.removeEventListener('mouseenter', showOverlay);
+                el.removeEventListener('mouseleave', hideOverlay);
+            });
+        } else if (trigger === 'click') {
+            el.addEventListener('click', () => {
+                const existing = overlayDispatchCenter.getOverlay(this.id, overlayKey);
+                if (existing) {
+                    bus.overlayEmit(overlayKey, 'toggle', { component: this, anchor: el });
+                } else {
+                    showOverlay();
+                }
+            });
+            this.onCleanup(() => {
+                clearTimers();
+            });
+        }
+    },
+
+    /**
+     * 初始化右键菜单域浮层
+     *
+     * 配置示例：contextMenu: { type: 'Menu', data: { items: [...] } }
+     * 自动注册右键菜单浮层到调度中心。
+     */
+    _initContextMenuOverlay(config: ContextMenuDecl): void {
+        const overlayKey = `${this.id ?? 'comp'}:contextmenu`;
+        const overlayType = config.type ?? 'Menu';
+
+        const decl = {
+            type: overlayType,
+            trigger: 'contextmenu' as const,
+            placement: 'bottom-start' as Placement,
+            offset: config.offset ?? 4,
+            data: config.data ?? {},
+        };
+
+        overlayDispatchCenter.register(overlayKey, decl);
+
+        const el = this.el;
+        const bus = OverlayEventBus.getInstance();
+
+        const contextHandler = (e: Event) => {
+            e.preventDefault();
+            const capitalType = overlayType.charAt(0).toUpperCase() + overlayType.slice(1);
+            const OverlayClass = ComponentRegistrar.getInstance().get(capitalType);
+            if (!OverlayClass) return;
+
+            const overlayData =
+                typeof decl.data === 'function'
+                    ? (decl.data as () => Record<string, any>).call(this)
+                    : decl.data;
+            const overlay = new OverlayClass({ anchor: el, ...overlayData });
+            bus.overlayEmit(overlayKey, 'show', {
+                component: this,
+                anchor: el,
+                overlay,
+                x: (e as MouseEvent).clientX,
+                y: (e as MouseEvent).clientY,
+            });
+        };
+
+        el.addEventListener('contextmenu', contextHandler);
+        this.onCleanup(() => {
+            el.removeEventListener('contextmenu', contextHandler);
         });
     },
 

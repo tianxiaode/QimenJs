@@ -14,7 +14,7 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { ExpandArrowAbility, type ExpandArrowConfig } from '@qimenjs/component-abilities';
+
 import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 
 export interface ToolGroupConfig {
@@ -26,7 +26,7 @@ export interface ToolGroupConfig {
 
 export interface PanelProps {
     title?: string;
-    expandable?: boolean | ExpandArrowConfig;
+    expandable?: boolean;
     toolsLeft?: ToolGroupConfig;
     toolsRight?: ToolGroupConfig;
 }
@@ -115,17 +115,24 @@ export let PanelComponent = TemplateComponent.withTemplate({
                     expandNode.el.hidden = false;
                 }
 
-                const config: ExpandArrowConfig =
-                    typeof props.expandable === 'object' ? props.expandable : {};
+                const expandEl = expandNode?.el;
+                if (expandEl) {
+                    expandEl.classList.add('q-expand-arrow', 'q-expand-arrow--collapsed');
 
-                this.initExpandArrow(config);
+                    expandEl.addEventListener('click', (e: Event) => {
+                        e.stopPropagation();
+                        const isCollapsed = expandEl.classList.contains(
+                            'q-expand-arrow--collapsed'
+                        );
+                        expandEl.classList.toggle('q-expand-arrow--collapsed', !isCollapsed);
+                        expandEl.classList.toggle('q-expand-arrow--expanded', isCollapsed);
 
-                this.on(config.arrowEvent ?? 'toggle', ({ state }: { state: string }) => {
-                    const bodyNode = this.nodeMap?.body;
-                    if (bodyNode?.el) {
-                        bodyNode.el.hidden = state === 'collapsed';
-                    }
-                });
+                        const bodyNode = this.nodeMap?.body;
+                        if (bodyNode?.el) {
+                            bodyNode.el.hidden = isCollapsed;
+                        }
+                    });
+                }
             }
         },
 
@@ -137,6 +144,6 @@ export let PanelComponent = TemplateComponent.withTemplate({
             }
         },
     },
-}).with([ExpandArrowAbility]);
+});
 
 export type PanelComponent = InstanceType<typeof PanelComponent>;

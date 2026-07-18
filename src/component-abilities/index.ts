@@ -8,16 +8,8 @@
 // 渲染能力
 export { VirtualListAbility } from './render';
 export { AnimationAbility } from './render';
-export {
-    OverflowScrollAbility,
-    type OverflowDirection,
-    type OverflowState,
-    type OverflowScrollConfig,
-} from './render';
-export { OverflowMenuAbility, type OverflowMenuItem, type OverflowMenuConfig } from './render';
 
 export { ArrowAbility, type ArrowConfig } from './render';
-export { ExpandArrowAbility, type ExpandArrowConfig } from './render';
 export { arrowCSS } from './render';
 
 // 菜单能力
