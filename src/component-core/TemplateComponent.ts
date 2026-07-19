@@ -5,10 +5,9 @@
  * 再添加组件特有职责：
  * - el：根 DOM 元素
  * - meta：组件元数据
- * - setProp：通用属性设置
- * - markDirty/flush：脏属性追踪 + 延时刷新
  * - dispose：销毁清理
  *
+ * 节点属性读写、脏追踪、批量更新由 NodePropAbility 提供。
  * withTemplate / replace 使用扁平复制（非继承），避免链式污染。
  */
 
@@ -33,7 +32,7 @@ import { createTemplateClass, createReplaceClass } from './utils/template-factor
  *
  * 事件系统：EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility / OverlayEventBusAbility / SystemEventBusAbility
  * 事件转发：EventForwardAbility
- * 节点属性：NodePropAbility
+ * 节点属性：NodePropAbility（含脏追踪 + 批量写 DOM）
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility,
@@ -59,35 +58,11 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
     props: Record<string, any> = {};
 
-    dirtySet: Set<string> = new Set();
-
     _initializing: boolean = false;
 
+    _dirtyNodes: Record<string, Record<string, any>> = {};
+
     nodeMap: Record<string, NodeMetadata> = {};
-
-    initElement(): void {
-        this.el = document.createElement(this.tag);
-    }
-
-    markDirty(key: string): void {
-        this.dirtySet.add(key);
-        this.debounce('TemplateComponent:flush', () => this.flush(), 0);
-    }
-
-    flush(): void {
-        if (this.dirtySet.size === 0) return;
-
-        this.flushLayout();
-
-        this.dirtySet.clear();
-    }
-
-    setProp(key: string, value: any): void {
-        this.props[key] = value;
-        if (!this._initializing) {
-            this.markDirty(key);
-        }
-    }
 
     override dispose(): void {
         if (typeof this.onBeforeDispose === 'function') {
@@ -104,7 +79,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
         this.meta = {};
         this.props = {};
-        this.dirtySet.clear();
+        this._dirtyNodes = {};
         this.nodeMap = {};
 
         this._initializing = false;

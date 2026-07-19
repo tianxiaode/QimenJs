@@ -8,6 +8,7 @@
 import type { ComponentTemplate } from '../types/component-template';
 import { copyPrototypeMethods, copyStaticMethods } from './class-copy';
 import { compilePendingTemplate } from './template-compiler';
+import { initFromTemplate } from './template-init';
 import { Logger } from '@/logger';
 
 function initInstanceData(instance: any): void {
@@ -32,7 +33,7 @@ export function createTemplateClass(ParentClass: any, template: ComponentTemplat
             compilePendingTemplate(ctor, template, Logger.for(ctor));
         }
 
-        this._initWithTemplate(props);
+        initFromTemplate(this, props);
 
         if (ctor.type) this.type = ctor.type;
 

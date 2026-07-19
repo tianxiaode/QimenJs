@@ -8,8 +8,8 @@
 import type { ComponentTemplate } from '../types/component-template';
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath } from '../types/compiled-types';
-import { BODY_SPECIAL_KEYS, validateBodyKey } from '../body-keys';
 import { VOID_TAGS } from './template-constants';
+import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
 
 export function compilePendingTemplate(ctor: any, template: ComponentTemplate, logger: any): void {
     const result = compileTemplate(template, logger);
@@ -17,9 +17,22 @@ export function compilePendingTemplate(ctor: any, template: ComponentTemplate, l
     const tpl = document.createElement('template');
     tpl.innerHTML = result.html;
 
+    const root = template.tpl;
+    const rootMeta: NodeMetadata = {
+        name: 'root',
+        tag: root.tag,
+        cls: root.cls,
+        style: root.style,
+        flex: root.flex,
+        grid: root.grid,
+        role: root.role,
+        attrs: root.attrs,
+    };
+
     ctor._compiledTemplate = {
         ...result,
         templateCache: tpl,
+        rootMeta,
         body: template.body,
     };
 
@@ -152,6 +165,21 @@ function inferContentMode(tag?: string): 'value' | 'src' | 'html' | 'link' {
 // ══════════════════════════════════════════════════════════════
 // 内部：applyBody
 // ══════════════════════════════════════════════════════════════
+
+const BODY_KEY_SET = new Set(Object.keys(BODY_SPECIAL_KEYS));
+
+function validateBodyKey(key: string): void {
+    if (BODY_KEY_SET.has(key)) return;
+
+    if (key.startsWith('on') && key.length > 2) return;
+
+    const ch = key[0];
+    if (ch === '_' || ch === '$') return;
+
+    throw new Error(
+        `[Body] 不支持纯数据字段 "${key}"。默认属性值写在 TplNode，实例状态用 _applyState 模式。`
+    );
+}
 
 function applyBody(ctor: any, body: Record<string, any> | undefined): void {
     if (!body) return;

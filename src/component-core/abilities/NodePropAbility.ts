@@ -4,26 +4,26 @@
  * 数据驱动 + 统一分发：
  *   _getNodeProp(nodeName, prop)  → 查 NodePropMap → 读 DOM
  *   _setNodeProp(nodeName, prop, value) → 查 NodePropMap → 写 DOM
+ *   _updateNode(nodeName, props)  → 批量写 DOM，一次性更新
  *
  * 三种操作路径（由 NodePropDef 字段决定）：
  * - cssProp 有值 → el.style[cssProp]
  * - attr 有值   → el.getAttribute(attr) / el.setAttribute(attr, value)
  * - 其他        → el[domAttr]
  *
- * 原型 getter/setter 极简转发，不生成复杂闭包：
- *   get() { return this._getNodeProp('text', 'cls'); }
- *   set(v) { this._setNodeProp('text', 'cls', v); }
+ * flex/grid 布局也走 _updateNode，初始化和运行时共用同一路径。
+ *
+ * 脏追踪：
+ *   _markNodeDirty(nodeName, props) → 收集脏属性，防抖
+ *   _flushNodeProps()               → 一次性批量写 DOM
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { DEFAULT_NODE_PROP_MAP } from '../types';
-import type { NodePropMap, NodePropDef } from '../types';
+import type { NodePropDef } from '../types';
+import { ALIGN_MAP, PACK_MAP } from '../utils/template-constants';
 
 export const NodePropAbility: AbilityDefinition = {
-    static: {
-        _nodePropMap: { ...DEFAULT_NODE_PROP_MAP },
-    },
-
     _resolveNodeEl(nodeName: string): HTMLElement | undefined {
         if (nodeName === 'root') return this.el;
         const node = this.nodeMap?.[nodeName];
@@ -35,8 +35,7 @@ export const NodePropAbility: AbilityDefinition = {
         const el = this._resolveNodeEl(nodeName);
         if (!el) return undefined;
 
-        const map: NodePropMap = (this.constructor as any)._nodePropMap || DEFAULT_NODE_PROP_MAP;
-        const def: NodePropDef | undefined = map[prop];
+        const def: NodePropDef | undefined = DEFAULT_NODE_PROP_MAP[prop];
         if (!def) return undefined;
 
         if (def.cssProp) {
@@ -54,27 +53,151 @@ export const NodePropAbility: AbilityDefinition = {
         const el = this._resolveNodeEl(nodeName);
         if (!el) return;
 
-        const map: NodePropMap = (this.constructor as any)._nodePropMap || DEFAULT_NODE_PROP_MAP;
-        const def: NodePropDef | undefined = map[prop];
+        const def: NodePropDef | undefined = DEFAULT_NODE_PROP_MAP[prop];
         if (!def) return;
 
-        if (def.cssProp) {
-            if (el.style) {
-                el.style[def.cssProp] =
-                    def.autoPx && typeof value === 'number' ? `${value}px` : value;
-            }
-            return;
+        applyPropToEl(el, def, value);
+    },
+
+    _updateNode(nodeName: string, props: Record<string, any>): void {
+        const el = this._resolveNodeEl(nodeName);
+        if (!el) return;
+
+        applyNodeProps(el, props);
+    },
+
+    _markNodeDirty(nodeName: string, props: Record<string, any>): void {
+        if (!this._dirtyNodes) this._dirtyNodes = {};
+
+        const existing = this._dirtyNodes[nodeName];
+        if (existing) {
+            Object.assign(existing, props);
+        } else {
+            this._dirtyNodes[nodeName] = { ...props };
         }
 
-        if (def.attr) {
-            if (value === false || value === null || value === undefined) {
-                el.removeAttribute(def.attr);
-            } else {
-                el.setAttribute(def.attr, value === true ? '' : String(value));
-            }
-            return;
-        }
+        this.debounce('NodePropAbility:flush', () => this._flushNodeProps(), 0);
+    },
 
-        el[def.domAttr] = value;
+    _flushNodeProps(): void {
+        if (!this._dirtyNodes) return;
+
+        const dirty = this._dirtyNodes;
+        this._dirtyNodes = {};
+
+        for (const [nodeName, props] of Object.entries(dirty)) {
+            const el = this._resolveNodeEl(nodeName);
+            if (!el) continue;
+            applyNodeProps(el, props as Record<string, any>);
+        }
     },
 };
+
+function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
+    for (const [prop, value] of Object.entries(props)) {
+        if (value === undefined) continue;
+
+        switch (prop) {
+            case 'flex':
+            case 'grid':
+                applyFlexGrid(el, prop, value);
+                break;
+            case 'cls':
+                el.className = value;
+                break;
+            case 'style':
+                if (typeof value === 'string') {
+                    el.setAttribute('style', value);
+                } else {
+                    Object.assign(el.style, value);
+                }
+                break;
+            case 'role':
+                el.setAttribute('role', value);
+                break;
+            case 'attrs':
+                for (const [k, v] of Object.entries(value)) {
+                    el.setAttribute(k, v as string);
+                }
+                break;
+            case 'hidden':
+                applyHidden(el, value, props.hiddenMode);
+                break;
+            default: {
+                const def: NodePropDef | undefined = DEFAULT_NODE_PROP_MAP[prop];
+                if (def) applyPropToEl(el, def, value);
+                break;
+            }
+        }
+    }
+}
+
+function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
+    if (!value) return;
+
+    el.style.display = 'flex';
+
+    if (prop === 'flex') {
+        if (typeof value === 'object') {
+            if (value.direction)
+                el.style.flexDirection = value.direction === 'column' ? 'column' : 'row';
+            if (value.gap !== undefined)
+                el.style.gap = typeof value.gap === 'number' ? `${value.gap}px` : value.gap;
+            if (value.align) el.style.alignItems = ALIGN_MAP[value.align] ?? value.align;
+            if (value.pack) el.style.justifyContent = PACK_MAP[value.pack] ?? value.pack;
+            if (value.wrap !== undefined) el.style.flexWrap = value.wrap ? 'wrap' : 'nowrap';
+        } else {
+            el.style.flexDirection = 'row';
+        }
+    }
+
+    if (prop === 'grid') {
+        if (typeof value === 'object') {
+            el.style.flexDirection = 'row';
+            el.style.flexWrap = 'wrap';
+            if (value.columns) el.style.gridTemplateColumns = `repeat(${value.columns}, 1fr)`;
+            if (value.gap !== undefined)
+                el.style.gap = typeof value.gap === 'number' ? `${value.gap}px` : value.gap;
+        } else {
+            el.style.flexDirection = 'row';
+            el.style.flexWrap = 'wrap';
+        }
+    }
+}
+
+function applyHidden(el: HTMLElement, hidden: boolean, hiddenMode?: string): void {
+    if (!hidden) return;
+
+    switch (hiddenMode) {
+        case 'visibility':
+            el.style.visibility = 'hidden';
+            break;
+        case 'opacity':
+            el.style.opacity = '0';
+            break;
+        default:
+            el.hidden = true;
+            break;
+    }
+}
+
+function applyPropToEl(el: HTMLElement, def: NodePropDef, value: any): void {
+    if (def.cssProp) {
+        if (el.style) {
+            (el.style as any)[def.cssProp] =
+                def.autoPx && typeof value === 'number' ? `${value}px` : value;
+        }
+        return;
+    }
+
+    if (def.attr) {
+        if (value === false || value === null || value === undefined) {
+            el.removeAttribute(def.attr);
+        } else {
+            el.setAttribute(def.attr, value === true ? '' : String(value));
+        }
+        return;
+    }
+
+    (el as any)[def.domAttr] = value;
+}
