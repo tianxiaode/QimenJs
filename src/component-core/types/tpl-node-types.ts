@@ -289,6 +289,8 @@ export interface NodePropDef {
     domAttr: string;
     /** CSS 属性名（如 width, height），有值时操作 el.style[cssProp] */
     cssProp?: string;
+    /** HTML 属性名（如 aria-label, data-id），有值时走 setAttribute/getAttribute */
+    attr?: string;
     /** 数字值是否自动加 px（如 width: 100 → '100px'） */
     autoPx?: boolean;
 }

@@ -27,6 +27,331 @@ import { AnimationAbility } from './abilities/AnimationAbility';
 import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
 import { InitAbility } from './abilities/InitAbility';
 import { NodeMapAbility } from './abilities/NodeMapAbility';
+import { NodePropAbility } from './abilities/NodePropAbility';
+
+import { TemplateAbility } from './abilities/TemplateAbility';
+import { LayoutAbility } from './abilities/LayoutAbility';
+import { ComponentRegistrar } from './ComponentRegistrar';
+import type { NodeMetadata, EventMap } from './types/index';
+import type { ComponentTemplate } from './types/template';
+import { BODY_SPECIAL_KEYS, validateBodyKey } from './body-keys';
+import { compileTemplate } from './template-json';
+import { buildContentProperties } from './content-properties';
+
+export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
+    EventAbility,
+    DomEventsAbility,
+    SystemEventBridgeAbility,
+    EntityEventBusAbility,
+    OverlayEventBusAbility,
+    AnimationAbility,
+
+    EventBridgeConfigAbility,
+    InitAbility,
+    NodeMapAbility,
+    NodePropAbility,
+
+    TemplateAbility,
+    LayoutAbility,
+];
+
+export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_ABILITIES) {
+    tag: string = 'div';
+
+    type!: string;
+
+    template?: string;
+
+    el!: HTMLElement;
+
+    meta: Record<string, any> = {};
+
+    props: Record<string, any> = {};
+
+    dirtySet: Set<string> = new Set();
+
+    _initializing: boolean = false;
+
+    nodeMap: Record<string, NodeMetadata> = {};
+
+    eventMap: EventMap = { internal: [], external: {} };
+
+    initElement(): void {
+        this.el = document.createElement(this.tag);
+    }
+
+    markDirty(key: string): void {
+        this.dirtySet.add(key);
+        this.debounce('TemplateComponent:flush', () => this.flush(), 0);
+    }
+
+    flush(): void {
+        if (this.dirtySet.size === 0) return;
+
+        this.flushLayout();
+
+        this.dirtySet.clear();
+    }
+
+    setProp(key: string, value: any): void {
+        this.props[key] = value;
+        if (!this._initializing) {
+            this.markDirty(key);
+        }
+    }
+
+    override dispose(): void {
+        if (typeof this.onBeforeDispose === 'function') {
+            this.onBeforeDispose();
+        }
+
+        ComponentRegistrar.getInstance().unregisterInstance(this);
+
+        if (typeof this._disposeChildComponents === 'function') {
+            this._disposeChildComponents();
+        }
+
+        this.el?.remove();
+
+        this.meta = {};
+        this.props = {};
+        this.dirtySet.clear();
+        this.nodeMap = {};
+        this.eventMap = { internal: [], external: {} };
+        this._initializing = false;
+
+        super.dispose();
+
+        if (typeof this.onDisposed === 'function') {
+            this.onDisposed();
+        }
+    }
+
+    static withTemplate(this: any, template: ComponentTemplate): any {
+        const LazyClass = class extends this {
+            static _pendingTemplate: ComponentTemplate = template;
+            static _templateCompiled: boolean = false;
+
+            constructor(props?: Record<string, any>) {
+                super(props);
+
+                if (!this._templateInitialized) {
+                    const ctor = this.constructor as any;
+
+                    if (typeof this.onBeforeInit === 'function') {
+                        this.onBeforeInit(props);
+                    }
+
+                    if (!ctor._templateCompiled) {
+                        ctor._compilePendingTemplate();
+                    }
+
+                    if (ctor._compiledTemplate?.propsDef) {
+                        const userProps = (props as any)?.props;
+                        const userChildProps = (props as any)?.childProps;
+                        const userBody = (props as any)?.body;
+                        const isStructured =
+                            userProps !== undefined ||
+                            userChildProps !== undefined ||
+                            userBody !== undefined;
+                        const flatProps = isStructured ? userProps : props;
+                        const mergedProps = ctor._compiledTemplate.propsDef
+                            ? { ...ctor._compiledTemplate.propsDef, ...flatProps }
+                            : flatProps;
+                        if (userChildProps) mergedProps.childProps = userChildProps;
+                        if (userBody) Object.assign(mergedProps, userBody);
+                        this._initWithTemplate(mergedProps);
+                    } else {
+                        const mergedProps = ctor.defaults ? { ...ctor.defaults, ...props } : props;
+                        this._initWithTemplate(mergedProps);
+                    }
+
+                    if (ctor.type) this.type = ctor.type;
+
+                    if (!ctor._compiledTemplate?.propsDef && ctor.defaults) {
+                        for (const [key, value] of Object.entries(ctor.defaults)) {
+                            (this as any)[key] = value;
+                        }
+                        if (props) {
+                            for (const [key, value] of Object.entries(props)) {
+                                if (key in (ctor.defaults || {})) {
+                                    (this as any)[key] = value;
+                                }
+                            }
+                        }
+                    }
+
+                    this._templateInitialized = true;
+
+                    if (typeof this.onAfterInit === 'function') {
+                        this.onAfterInit(props);
+                    }
+                }
+            }
+
+            _templateInitialized: boolean = false;
+
+            static _compilePendingTemplate(): void {
+                const template = this._pendingTemplate;
+                if (!template) return;
+
+                const result = compileTemplate(template);
+
+                const tpl = document.createElement('template');
+                tpl.innerHTML = result.html;
+
+                this._compiledTemplate = {
+                    ...result,
+                    templateCache: tpl,
+                    body: template.body,
+                };
+
+                buildContentProperties(this, result.contentInfos);
+
+                const body = template.body;
+                if (body) {
+                    const proto = this.prototype;
+                    const descs = Object.getOwnPropertyDescriptors(body);
+                    for (const [key, desc] of Object.entries(descs)) {
+                        validateBodyKey(key);
+                        const def = BODY_SPECIAL_KEYS[key];
+
+                        if (def?.category === 'static') {
+                            const targetKey = def.alias ?? key;
+                            const staticKey = key === 'forwards' ? '_forwards' : targetKey;
+                            (this as any)[staticKey] = desc.value;
+                        } else if (desc.get || desc.set) {
+                            Object.defineProperty(proto, key, desc);
+                        } else if (typeof desc.value === 'function') {
+                            proto[key] = desc.value;
+                        } else {
+                            if (!this.defaults) this.defaults = {};
+                            this.defaults[key] = desc.value;
+                        }
+                    }
+                }
+
+                if (this.defaults) {
+                    const proto = this.prototype;
+                    for (const key of Object.keys(this.defaults)) {
+                        if (key === 'type') continue;
+                        const existing = Object.getOwnPropertyDescriptor(proto, key);
+                        if (existing && (existing.get || existing.set)) continue;
+
+                        const privateKey = `__${key}`;
+                        Object.defineProperty(proto, key, {
+                            get(this: any) {
+                                return this[privateKey];
+                            },
+                            set(this: any, value: any) {
+                                this[privateKey] = value;
+                                if (typeof this._applyState === 'function') this._applyState();
+                            },
+                            configurable: true,
+                            enumerable: true,
+                        });
+                    }
+                }
+
+                this._templateCompiled = true;
+            }
+
+            static _getTemplateCache(): HTMLTemplateElement {
+                return this._compiledTemplate.templateCache;
+            }
+
+            static _cloneFragment(): DocumentFragment {
+                return this._getTemplateCache().content.cloneNode(true) as DocumentFragment;
+            }
+
+            static create(props?: Record<string, any>): any {
+                const instance = new (this as any)(props);
+                return instance;
+            }
+        };
+
+        (LazyClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
+            ...additionalAbilities: Additional
+        ): any {
+            let flat: readonly AbilityDefinition[];
+            if (additionalAbilities.length === 1 && Array.isArray(additionalAbilities[0])) {
+                flat = additionalAbilities[0] as readonly AbilityDefinition[];
+            } else {
+                flat = additionalAbilities;
+            }
+            return createForgedClass(this, flat);
+        };
+
+        return LazyClass;
+    }
+
+    static replace(
+        this: any,
+        options: {
+            type?: string;
+            cls?: string;
+            itemsCls?: string;
+            config?: Record<string, any>;
+            body?: Record<string, any>;
+        }
+    ): any {
+        const ParentClass = this;
+        const { type, cls, itemsCls, config, body } = options;
+
+        const ReplaceClass = class extends ParentClass {
+            constructor(props?: Record<string, any>) {
+                super(config ? { ...config, ...props } : props);
+
+                if (type) this.type = type;
+                if (cls) this.el?.classList.add(...cls.split(/\s+/).filter(Boolean));
+                if (itemsCls) {
+                    const containerEl = this.nodeMap?.itemContainer?.el;
+                    if (containerEl)
+                        containerEl.classList.add(...itemsCls.split(/\s+/).filter(Boolean));
+                }
+            }
+        };
+
+        if (body) {
+            const proto = ReplaceClass.prototype;
+            const descs = Object.getOwnPropertyDescriptors(body);
+            for (const [key, desc] of Object.entries(descs)) {
+                if (key === 'type') continue;
+                Object.defineProperty(proto, key, desc);
+            }
+        }
+
+        return ReplaceClass;
+    }
+} /**
+ * TemplateComponent — 模板组件基类
+ *
+ * 通过 ComposableBase.with() 合并标准能力到原型上，
+ * 再添加组件特有职责：
+ * - el：根 DOM 元素
+ * - meta：组件元数据
+ * - setProp：通用属性设置
+ * - markDirty/flush：脏属性追踪 + 延时刷新
+ * - dispose：销毁清理
+ *
+ * withTemplate(templateHtml) — 模板预编译工厂，创建带模板的强类。
+ * 模板实例方法（_initWithTemplate 等）由 TemplateAbility 提供，已包含在 TEMPLATE_COMPONENT_ABILITIES 中。
+ */
+
+import { ComposableBase, type AbilityDefinition } from '@/composable';
+import { createForgedClass } from '@/composable/forge';
+import {
+    EventAbility,
+    DomEventsAbility,
+    EventBridgeAbility as SystemEventBridgeAbility,
+    EntityEventBusAbility,
+    OverlayEventBusAbility,
+} from '@/system-abilities';
+import { AnimationAbility } from './abilities/AnimationAbility';
+
+import { EventBridgeConfigAbility } from './abilities/EventBridgeAbility';
+import { InitAbility } from './abilities/InitAbility';
+import { NodeMapAbility } from './abilities/NodeMapAbility';
 
 import { TemplateAbility } from './abilities/TemplateAbility';
 import { LayoutAbility } from './abilities/LayoutAbility';
