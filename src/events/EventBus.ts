@@ -2,32 +2,7 @@ import { BusAction, EventHandler, EventLogAction, IEventScope } from './types';
 import { EventScope } from './EventScope';
 import type { EventContext } from '@/context';
 import { ILogger, LogLevel } from '@qimenjs/logger';
-import { string } from '@qimenjs/utils';
-
-/**
- * 一级深度清理：将对象属性中的引用类型替换为空值
- *
- * - 对象属性 → {}
- * - 数组属性 → []
- * - 原始值保持不变
- *
- * 用于 EventContext.data 的自动清理，防止事件处理后数据被意外引用。
- *
- * @param obj - 要清理的对象
- */
-export function deepNullify(obj: any): void {
-    if (obj === null || obj === undefined || typeof obj !== 'object') return;
-    if (Array.isArray(obj)) {
-        obj.length = 0;
-    } else {
-        for (const key of Object.keys(obj)) {
-            const val = obj[key];
-            if (val !== null && typeof val === 'object') {
-                obj[key] = Array.isArray(val) ? [] : {};
-            }
-        }
-    }
-}
+import { string, shallowNullify } from '@qimenjs/utils';
 
 /**
  * 事件总线 - 用于管理事件订阅、发布和取消订阅的核心类
@@ -144,10 +119,14 @@ export class EventBus {
      * @param scopeId - 作用域ID
      */
     once(event: string, handler: EventHandler, scopeId: string): void {
-        const off = this.on(event, payload => {
-            off();
-            handler(payload);
-        }, scopeId);
+        const off = this.on(
+            event,
+            payload => {
+                off();
+                handler(payload);
+            },
+            scopeId
+        );
     }
 
     /**
@@ -183,23 +162,24 @@ export class EventBus {
      */
     emit(event: string, dataOrContext?: any, source?: any, scopeId: string = 'NO_SCOPE'): void {
         // 判断第二个参数是否为预构建的 EventContext
-        const isPrebuiltContext = dataOrContext !== null
-            && dataOrContext !== undefined
-            && typeof dataOrContext === 'object'
-            && 'event' in dataOrContext
-            && 'timestamp' in dataOrContext
-            && 'busId' in dataOrContext;
+        const isPrebuiltContext =
+            dataOrContext !== null &&
+            dataOrContext !== undefined &&
+            typeof dataOrContext === 'object' &&
+            'event' in dataOrContext &&
+            'timestamp' in dataOrContext &&
+            'busId' in dataOrContext;
 
         const context: EventContext = isPrebuiltContext
             ? dataOrContext
             : {
-                event,
-                data: dataOrContext,
-                source: source || 'UNKNOWN',
-                busId: this.busId,
-                scopeId,
-                timestamp: Date.now(),
-            };
+                  event,
+                  data: dataOrContext,
+                  source: source || 'UNKNOWN',
+                  busId: this.busId,
+                  scopeId,
+                  timestamp: Date.now(),
+              };
 
         const emitScopeId = context.scopeId || scopeId;
 
@@ -212,7 +192,10 @@ export class EventBus {
 
         const handlers = scopeMap.get(event);
         if (!handlers || handlers.size === 0) {
-            this.logBus('debug', 'emit_no_listeners', { event: String(event), scopeId: emitScopeId });
+            this.logBus('debug', 'emit_no_listeners', {
+                event: String(event),
+                scopeId: emitScopeId,
+            });
             return;
         }
 
@@ -233,7 +216,7 @@ export class EventBus {
             try {
                 const result = handler(context);
                 if (result instanceof Promise) {
-                    result.then(done, (err) => {
+                    result.then(done, err => {
                         this.logEvent('error', 'handler_error', String(event), { error: err });
                         done();
                     });
@@ -257,7 +240,7 @@ export class EventBus {
      */
     cleanupContext(ctx: EventContext): void {
         if (ctx.data !== null && ctx.data !== undefined && typeof ctx.data === 'object') {
-            deepNullify(ctx.data);
+            shallowNullify(ctx.data);
         }
     }
 

@@ -87,6 +87,22 @@ export interface DragListen {
 }
 
 /**
+ * 系统事件订阅
+ *
+ * @example
+ * ```ts
+ * { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } }
+ * { system: true, events: { 'window:resize': 'onWindowResize' } }
+ * ```
+ */
+export interface SystemListen {
+    /** 标识为系统事件订阅 */
+    system: true;
+    /** 事件映射：系统事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
  * 统一事件订阅 — 数组格式，通过 key 名区分来源类型
  *
  * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
@@ -98,6 +114,7 @@ export interface DragListen {
  *           if (item.entity) EntityEventBus.on(this.entityKey, item.entity, item.events);
  *           if (item.float)  FloatSystem.on(this.floatKey, item.float, item.events);
  *           if (item.drag)   DragSystem.on(this.dragKey, item.drag, item.events);
+ *           if (item.system) SystemEventBus.on(item.events);
  *       }
  *   }
  *
@@ -108,10 +125,12 @@ export interface DragListen {
  *     { entity: 'users',   events: { listed: 'onUsersLoaded' } },
  *     { float: 'dropBtn',  events: { close: 'onClose' } },
  *     { drag: 'handle',    events: { start: 'onDragStart' } },
+ *     { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } },
+ *     { system: true, events: { 'window:resize': 'onWindowResize' } },
  * ]
  * ```
  */
-export type ListenItem = BridgeListen | EntityListen | FloatListen | DragListen;
+export type ListenItem = BridgeListen | EntityListen | FloatListen | DragListen | SystemListen;
 
 // ══════════════════════════════════════════════════════════════
 // 浮动层配置

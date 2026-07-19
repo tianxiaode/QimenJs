@@ -4,24 +4,36 @@
  * 应用级系统事件的统一收发中心，拥有独立的 eventScope。
  * 类似 EntityEventBus 的设计，所有系统事件收发都经过同一个 scopeId。
  *
- * 系统事件包括：i18n 变更、权限变更、应用初始化、配置变更等。
+ * 系统事件包括：i18n 变更、权限变更、应用初始化、配置变更、窗口事件等。
  * 组件通过 SystemEventBusAbility 获得实例方法。
  *
- * i18n 桥接：构造时自动尝试，i18n 延迟加载时在 emit/on 时重试。
+ * 懒桥接：
+ * - i18n 事件通过 I18nEventBridge，有订阅才注册回调
+ * - 窗口事件通过 WindowEventBridge，有订阅才 addEventListener
  */
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
 import { ILogger, Logger } from '@qimenjs/logger';
-import { getI18nManager } from '@qimenjs/i18n';
+import { WindowEventBridge } from './WindowEventBridge';
+import { I18nEventBridge } from './I18nEventBridge';
+
+const WINDOW_EVENT_PREFIX = 'window:';
+const I18N_EVENT_PREFIX = 'i18n:';
 
 export const SYSTEM_EVENTS = {
-    I18N_LOCALE_CHANGE: 'system:i18n:localeChange',
-    I18N_MESSAGES_UPDATE: 'system:i18n:messagesUpdate',
-    PERMISSION_CHANGE: 'system:permission:change',
-    APP_INIT: 'system:app:init',
-    APP_READY: 'system:app:ready',
-    CONFIG_CHANGE: 'system:config:change',
+    I18N_LOCALE_CHANGE: 'i18n:localeChange',
+    I18N_MESSAGES_UPDATE: 'i18n:messagesUpdate',
+    PERMISSION_CHANGE: 'permission:change',
+    APP_INIT: 'app:init',
+    APP_READY: 'app:ready',
+    CONFIG_CHANGE: 'config:change',
+    THEME_CHANGE: 'window:themeChange',
+    WINDOW_RESIZE: 'window:resize',
+    VISIBILITY_CHANGE: 'window:visibilityChange',
+    NETWORK_CHANGE: 'window:networkChange',
+    ORIENTATION_CHANGE: 'window:orientationChange',
+    MEDIA_QUERY_CHANGE: 'window:mediaQueryChange',
 } as const;
 
 export type SystemEventName = (typeof SYSTEM_EVENTS)[keyof typeof SYSTEM_EVENTS];
@@ -31,18 +43,18 @@ export class SystemEventBus {
 
     private readonly systemScope: IEventScope;
     private readonly logger: ILogger;
-    private offI18nLocale?: () => void;
-    private offI18nMessages?: () => void;
-    private i18nConnected = false;
+    private readonly windowBridge: WindowEventBridge;
+    private readonly i18nBridge: I18nEventBridge;
 
     private constructor() {
         this.systemScope = globalEventBus.createEventScope();
+        this.windowBridge = WindowEventBridge.getInstance();
+        this.i18nBridge = I18nEventBridge.getInstance();
         this.logger = Logger.for('system-bus');
         this.logger.debug?.(
             '[SystemEventBus] initialized, scopeId =',
             this.systemScope.getScopeId()
         );
-        this.tryConnectI18n();
     }
 
     static getInstance(): SystemEventBus {
@@ -56,39 +68,54 @@ export class SystemEventBus {
         return this.systemScope.getScopeId();
     }
 
-    private tryConnectI18n(): void {
-        if (this.i18nConnected) return;
-        const i18n = getI18nManager();
-        if (!i18n) return;
-
-        if (typeof i18n.onLocaleChange === 'function') {
-            this.offI18nLocale = i18n.onLocaleChange((e: any) => {
-                this.emit(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, e);
-            });
-        }
-
-        if (typeof i18n.onMessagesUpdate === 'function') {
-            this.offI18nMessages = i18n.onMessagesUpdate((e: any) => {
-                this.emit(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, e);
-            });
-        }
-
-        this.i18nConnected = true;
-        this.logger.debug?.('[SystemEventBus] i18n bridge connected');
-    }
-
     emit(event: string, data?: any): void {
+        if (event.startsWith(WINDOW_EVENT_PREFIX) || event.startsWith(I18N_EVENT_PREFIX)) {
+            this.logger.warn?.(
+                '[SystemEventBus] emit rejected: i18n/window events are auto-bridged, event =',
+                event
+            );
+            return;
+        }
         this.logger.debug?.('[SystemEventBus] emit, event =', event);
         this.systemScope.emit(event, data);
     }
 
+    /**
+     * 桥接层内部使用 — 直接发到 scope，不校验前缀
+     */
+    _bridgeEmit(event: string, data?: any): void {
+        this.systemScope.emit(event, data);
+    }
+
     on(event: string, handler: (data: any) => void): () => void {
-        this.tryConnectI18n();
         this.logger.debug?.('[SystemEventBus] on, event =', event);
-        return this.systemScope.on(event, (ctx: any) => {
+
+        const offScope = this.systemScope.on(event, (ctx: any) => {
             const d = ctx?.data !== undefined ? ctx.data : ctx;
             handler(d);
         });
+
+        if (event.startsWith(WINDOW_EVENT_PREFIX)) {
+            const offBridge = this.windowBridge.on(event, handler, (data: any) => {
+                this._bridgeEmit(event, data);
+            });
+            return () => {
+                offScope();
+                offBridge();
+            };
+        }
+
+        if (event.startsWith(I18N_EVENT_PREFIX)) {
+            const offBridge = this.i18nBridge.on(event, handler, (data: any) => {
+                this._bridgeEmit(event, data);
+            });
+            return () => {
+                offScope();
+                offBridge();
+            };
+        }
+
+        return offScope;
     }
 
     once(event: string, handler: (data: any) => void): void {
@@ -100,11 +127,8 @@ export class SystemEventBus {
     }
 
     dispose(): void {
-        this.offI18nLocale?.();
-        this.offI18nMessages?.();
-        this.offI18nLocale = undefined;
-        this.offI18nMessages = undefined;
-        this.i18nConnected = false;
+        this.i18nBridge.dispose();
+        this.windowBridge.dispose();
         this.systemScope.dispose();
         this.logger.debug?.('[SystemEventBus] disposed');
     }

@@ -132,18 +132,38 @@ export function destroyMembers(obj: Record<string, any>, members: string[]): voi
         if (obj.hasOwnProperty(member)) {
             const memberValue = obj[member];
 
-            // 如果成员有 destroy 方法，则调用它
             if (isObject(memberValue) && typeof memberValue.destroy === 'function') {
                 memberValue.destroy();
             }
 
-            // 如果成员是对象，则递归销毁其所有成员
             if (isObject(memberValue)) {
                 destroyMembers(memberValue, Object.keys(memberValue));
             }
 
-            // 删除成员
             delete obj[member];
         }
     });
+}
+
+/**
+ * 一级深度空值化 — 将对象属性中的引用类型替换为空值
+ *
+ * - 对象属性 → {}
+ * - 数组属性 → []
+ * - 原始值保持不变
+ *
+ * 用于 EventContext.data 的自动清理，防止事件处理后数据被意外引用。
+ */
+export function shallowNullify(obj: any): void {
+    if (obj === null || obj === undefined || typeof obj !== 'object') return;
+    if (Array.isArray(obj)) {
+        obj.length = 0;
+    } else {
+        for (const key of Object.keys(obj)) {
+            const val = obj[key];
+            if (val !== null && typeof val === 'object') {
+                obj[key] = Array.isArray(val) ? [] : {};
+            }
+        }
+    }
 }

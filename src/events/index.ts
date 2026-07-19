@@ -23,6 +23,8 @@ export {
     SYSTEM_EVENTS,
     type SystemEventName,
 } from './SystemEventBus';
+export { WindowEventBridge, windowEventBridge } from './WindowEventBridge';
+export { I18nEventBridge, i18nEventBridge } from './I18nEventBridge';
 
 // 导出实体事件常量
 export * from './entity-events';
