@@ -12,8 +12,8 @@
 import type { AbilityDefinition } from '@/composable';
 import { compileTemplate } from '@/component-core/template-json';
 import { findByPath } from '@/component-core/template-compiler';
-import type { ComponentTemplate } from '@/component-core/types/template';
-import type { NodeIndexPath } from '@/component-core/types/index';
+import type { ComponentTemplate } from '@/component-core/types/component-template';
+import type { NodeIndexPath, NodeMetadata } from '@/component-core/types/index';
 
 // ─── 模板缓存条目 ──────────────────────────────────────────
 
@@ -86,7 +86,7 @@ export const TemplateCacheAbility: AbilityDefinition = {
      *
      * 返回克隆的根元素和通过索引路径定位的节点映射。
      */
-    cloneFromCache(cacheKey: string): { root: HTMLElement; nodeMap: Record<string, HTMLElement> } {
+    cloneFromCache(cacheKey: string): { root: HTMLElement; nodeMap: Record<string, NodeMetadata> } {
         const entry = this._templateCaches.get(cacheKey);
         if (!entry) {
             throw new Error(`[TemplateCacheAbility] Template cache not found: ${cacheKey}`);
@@ -95,12 +95,11 @@ export const TemplateCacheAbility: AbilityDefinition = {
         const fragment = entry.templateEl.content.cloneNode(true) as DocumentFragment;
         const root = fragment.firstElementChild as HTMLElement;
 
-        // 通过索引路径定位节点，构建 nodeMap
-        const nodeMap: Record<string, HTMLElement> = {};
+        const nodeMap: Record<string, NodeMetadata> = {};
         for (const [key, path] of Object.entries(entry.indexPath)) {
             const el = findByPath(root, path as number[]);
             if (el) {
-                nodeMap[key] = el;
+                nodeMap[key] = { name: key, el } as NodeMetadata;
             }
         }
 

@@ -2,7 +2,7 @@
  * EventForwardAbility — 事件统一转发能力
  *
  * 数据驱动 + 统一分发，与 NodePropAbility 同模式：
- *   _handleDomEvent(ctx, nodeKey, event, binding)
+ *   _handleDomEvent(ctx, nodeName, domEvent, decl)
  *     → 唯一分发点，按类型分发：
  *        handler   → this[handlerName](ctx, el)
  *        emits     → this.emit(emitName, ctx)
@@ -11,113 +11,130 @@
  *
  * 绑定流程：
  *   bindDomEventBindings()
- *     → 遍历 compiled.domEventBindings
+ *     → 遍历 nodeMap，取每个节点的 events（原始 DomEventDecl）
  *     → DOM 节点：this.bind(el, event) + this.on('dom:xxx', callback)
  *     → 子组件：childComponent.on(event, callback)
  *     → callback 统一调用 _handleDomEvent
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { DomEventBinding } from '../types/tpl-node-types';
-import type { CompiledComponentTemplate } from '../types/template-json';
+import type { DomEventDecl } from '../types/tpl-node-types';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export const EventForwardAbility: AbilityDefinition = {
     bindDomEventBindings(): void {
-        const ctor = this.constructor as any;
-        const compiled: CompiledComponentTemplate = ctor._compiledTemplate;
-        const bindings: DomEventBinding[] = compiled?.domEventBindings;
-        if (!bindings || bindings.length === 0) return;
+        if (!this.nodeMap) return;
 
-        for (const binding of bindings) {
-            const { event, nodeKey } = binding;
-            const node = this.nodeMap?.[nodeKey];
-            if (!node) continue;
+        for (const [nodeName, node] of Object.entries(this.nodeMap as Record<string, any>)) {
+            if (!node.events) continue;
 
-            if (node.component) {
-                this._bindComponentEvent(node.component, event, binding);
-            } else {
-                this._bindDomEvent(node, event, binding);
+            for (const [domEvent, decl] of Object.entries(
+                node.events as Record<string, DomEventDecl>
+            )) {
+                if (node.component) {
+                    this._bindComponentEvent(node.component, nodeName, domEvent, decl);
+                } else {
+                    this._bindDomEvent(node, nodeName, domEvent, decl);
+                }
             }
         }
     },
 
-    _handleDomEvent(ctx: any, nodeKey: string, event: string, binding: DomEventBinding): void {
-        const node = this.nodeMap?.[nodeKey];
+    _handleDomEvent(ctx: any, nodeName: string, domEvent: string, decl: DomEventDecl): void {
+        const node = this.nodeMap?.[nodeName];
         if (!node) return;
 
         const el = node.component ? node.component.el : node.el;
-        const { handler, delegate, delegateTarget, emits, bridges, entities } = binding;
 
+        const handler = inferHandlerName(domEvent, nodeName, decl.handler);
         if (handler && typeof (this as any)[handler] === 'function') {
-            if (delegate && delegateTarget) {
-                const target = (ctx?.target as HTMLElement)?.closest(delegateTarget);
+            if (decl.delegate && decl.delegateTarget) {
+                const target = (ctx?.target as HTMLElement)?.closest(decl.delegateTarget);
                 if (target) (this as any)[handler](ctx, target);
             } else {
                 (this as any)[handler](ctx, el);
             }
         }
 
-        if (emits?.length) {
-            for (const emitName of emits) {
+        if (decl.emits?.length) {
+            for (const emitName of decl.emits) {
                 this.emit(emitName, ctx);
             }
         }
 
-        if (bridges?.length && this.eventKey) {
-            for (const bridge of bridges) {
-                this.bridgeEmit(this.eventKey, bridge.targetEvent, ctx);
+        if (decl.bridges?.length && this.eventKey) {
+            for (const bridge of decl.bridges) {
+                this.bridgeEmit(this.eventKey, bridge, ctx);
             }
         }
 
-        if (entities && this.entityKey) {
-            this.entityEmit(this.entityKey, entities, ctx);
+        if (decl.entities && this.entityKey) {
+            this.entityEmit(this.entityKey, decl.entities, ctx);
         }
     },
 
-    _bindDomEvent(node: any, event: string, binding: DomEventBinding): void {
+    _bindDomEvent(node: any, nodeName: string, domEvent: string, decl: DomEventDecl): void {
         const el = node.el;
         if (!el) return;
 
-        const { once, delegate, delegateTarget, debounce, throttle, nodeKey } = binding;
-        const domEvent = `${DOM_EVENT_PREFIX}${event}`;
+        const { once, delegate, delegateTarget, debounce, throttle } = decl;
+        const domEventKey = `${DOM_EVENT_PREFIX}${domEvent}`;
 
         const bindOptions: any = {};
         if (debounce && debounce > 0) bindOptions.debounce = debounce;
         if (throttle && throttle > 0) bindOptions.throttle = throttle;
 
         if (delegate) {
-            this.bind(el, event as any, { ...bindOptions, selector: delegateTarget });
+            this.bind(el, domEvent as any, { ...bindOptions, selector: delegateTarget });
         } else {
-            this.bind(el, event as any, bindOptions);
+            this.bind(el, domEvent as any, bindOptions);
         }
 
         const callback = (ctx: any) => {
-            this._handleDomEvent(this._extractDomEvent(ctx), nodeKey, event, binding);
+            this._handleDomEvent(this._extractDomEvent(ctx), nodeName, domEvent, decl);
         };
 
         if (once) {
-            this.once(domEvent, callback);
+            this.once(domEventKey, callback);
         } else {
-            this.on(domEvent, callback);
+            this.on(domEventKey, callback);
         }
     },
 
-    _bindComponentEvent(component: any, event: string, binding: DomEventBinding): void {
-        const { once, nodeKey } = binding;
+    _bindComponentEvent(
+        component: any,
+        nodeName: string,
+        domEvent: string,
+        decl: DomEventDecl
+    ): void {
+        const { once } = decl;
 
         const callback = (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
-            this._handleDomEvent(data, nodeKey, event, binding);
+            this._handleDomEvent(data, nodeName, domEvent, decl);
         };
 
         if (once) {
-            component.once?.(event, callback);
+            component.once?.(domEvent, callback);
         } else {
-            const off = component.on?.(event, callback);
+            const off = component.on?.(domEvent, callback);
             if (typeof off === 'function') {
                 this.onCleanup(off);
             }
         }
     },
 };
+
+function inferHandlerName(
+    domEvent: string,
+    nodeName: string,
+    handler: boolean | string | undefined
+): string | undefined {
+    if (handler === true) {
+        const capitalEvent = domEvent.charAt(0).toUpperCase() + domEvent.slice(1);
+        const capitalKey = nodeName.charAt(0).toUpperCase() + nodeName.slice(1);
+        return nodeName ? `on${capitalKey}${capitalEvent}` : `on${capitalEvent}`;
+    }
+    if (typeof handler === 'string') return handler;
+    return undefined;
+}

@@ -297,25 +297,61 @@ export interface LifecycleHooks {
 /**
  * 组件 body 定义 — 组件行为和配置的声明
  *
- * body 中的 key 按以下规则处理：
+ * body 只接受以下三类内容：
  *
  * 1. static 类（编译时设为类静态属性）：
- *    type / entityKey / eventKey / floatKey / dragKey / listens
+ *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
  *
- * 2. init 类（运行时由 InitAbility 初始化）：
- *    floats / drags / abilities
- *
- * 3. 函数 → 自动挂到原型（组件方法）：
- *    - 生命周期钩子：onBeforeInit / onAfterInit / onMounted / onResize / onUpdated / onBeforeUnmount / onBeforeDispose / onDisposed
+ * 2. 函数（编译时挂到原型）：
+ *    - 生命周期钩子：onBeforeInit / onAfterInit / onMounted / onResize / onUpdated / onBeforeUnmount / onBeforeDispose
  *    - 事件 handler：on{Name}{Event}（如 onBtnClick）
  *    - 拖拽回调：on{Name}Drag{Event}（如 onHandleDragStart）
  *    - 浮动层回调：on{Name}Float{Event}（如 onDropBtnFloatClose）
  *    - 自定义方法：任意方法名
- *    - 子组件事件监听：直接覆盖自动生成的同名方法
  *
- * 4. getter/setter → defineProperty 到原型
+ * 3. getter/setter（编译时 defineProperty 到原型）：
+ *    - 计算属性：get/set 定义
  *
- * 5. 其他值 → 存入 static defaults（默认属性值，实例化时复制）
+ * 不接受纯数据值（如 _pool: []、title: 'Hello'）：
+ *    - 默认属性值 → 写在 TplNode 节点定义里
+ *    - 实例内部状态 → 推荐使用 _applyState 模式（见下方）
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 推荐做法：_applyState 模式
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 内部状态初始化和状态→DOM 同步集中到 _applyState 方法：
+ *
+ * 1. 在 onAfterInit 中初始化内部状态 + 首次调用 _applyState
+ * 2. setter 中调用 _applyState 自动刷新 DOM
+ * 3. dispose 时框架自动清理 DOM，无需手动释放
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     // ❌ 不要这样写纯数据值
+ *     // _pool: [],
+ *     // _pressed: false,
+ *
+ *     onAfterInit() {
+ *         // ✅ 在钩子中初始化内部状态
+ *         this._pool = [];
+ *         this._pressed = false;
+ *         this._applyState();
+ *     },
+ *
+ *     // ✅ _applyState 集中处理状态→DOM 同步
+ *     _applyState() {
+ *         this.el.classList.toggle('q-toggle--pressed', this._pressed);
+ *         this.el.classList.toggle('q-toggle--disabled', this.disabled);
+ *         this.el.setAttribute('aria-pressed', String(this._pressed));
+ *     },
+ *
+ *     // ✅ setter 中调 _applyState 自动刷新
+ *     get pressed() { return this._pressed; },
+ *     set pressed(v) { this._pressed = v; this._applyState(); },
+ * }
+ * ```
  *
  * @example
  * ```ts
@@ -378,7 +414,7 @@ export interface BodyDef extends LifecycleHooks {
     /** 附加能力，替代 .with() 的声明式注入 */
     abilities?: any[];
 
-    // ─── 其他：函数→原型方法，其他值→defaults ───
+    // ─── 其他：函数→原型方法，getter/setter→defineProperty ───
 
     [key: string]: any;
 }
