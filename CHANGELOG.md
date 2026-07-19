@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- COMPONENT_LIFECYCLE_EVENTS 常量（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
+- LifecycleAbility 组件生命周期事件能力（_emitMounted/_emitUpdated/_emitResize/_emitLifecycleEvent）
+- 组件初始化完成后自动发送 `init` 事件，有 eventKey 时发送桥接事件
+- 组件销毁时自动发送 `beforeunmount` 和 `dispose` 事件，有 eventKey 时发送桥接事件
+- hidden 状态变化时自动发送 `hiddenchange` 事件
+- child-node-props.ts 子节点属性自动构建（contentMode→属性映射、通用属性、组件子节点 $name + 属性转发、i18n 节点特殊处理）
+- template-constants.ts 常量集中管理（CONTENT_MODE_MAP/COMMON_NODE_PROPS/RESERVED_KEYS/ANIMATION_PRESETS）
+- AnimationAbility 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation）
+- DragAbility 声明式拖拽（move 本地处理，start/end 走 DragEventBus）
+- NodePropAbility._updateNode hidden 动画通过 _state 对比 + playEnter/playLeave
+- 14 个测试套件（69 tests）覆盖 component-core 核心模块
+
+### Changed
+
+- copyPrototypeMethods 跳过目标原型上已有的方法（不覆盖）
+- TemplateComponent.dispose 增加 onBeforeUnmount 钩子调用 + beforeunmount/dispose 事件发送
+- TEMPLATE_COMPONENT_ABILITIES 新增 LifecycleAbility
+- 包入口 index.ts 完全重写，只导出当前实际存在的模块
+
+### Removed
+
+- 删除 11 个过时的旧测试文件（引用已不存在的模块）
+- 删除 19 个 .bak 备份文件
+
 ## [0.2.1] - 2026-07-18
 
 ### Added

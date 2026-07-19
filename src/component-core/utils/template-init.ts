@@ -4,9 +4,11 @@
  * initFromTemplate: 编译后实例化流程
  *   1. 创建 el + 克隆模板 + buildNodeMap
  *   2. 应用节点属性（样式/布局/DOM属性/状态/内容）→ 统一走 _updateNode
- *   3. 渲染子组件
- *   4. 绑定 DOM 事件
- *   5. 能力初始化
+ *   3. i18n 初始化 + 绑定 localeChange 事件
+ *   4. 渲染子组件
+ *   5. 绑定 DOM 事件
+ *   6. 播放进入动画
+ *   7. 能力初始化
  *
  * 与 template-compiler.ts（编译时）对称，
  * 本文件只处理运行时实例初始化。
@@ -18,6 +20,8 @@ import type {
     CompiledComponentTemplate,
 } from '../types/compiled-types';
 import { findByPath } from './template-compiler';
+import { SYSTEM_EVENTS } from '@/events';
+import { resolveI18nValue } from '@qimenjs/i18n';
 
 export function initFromTemplate(instance: any, props?: Record<string, any>): void {
     instance._initializing = true;
@@ -31,9 +35,13 @@ export function initFromTemplate(instance: any, props?: Record<string, any>): vo
 
         initContentFromProps(instance);
 
+        initI18nFromTemplate(instance);
+
         renderChildComponents(instance);
 
         bindDomEventBindings(instance);
+
+        initDrags(instance);
 
         callInitMethods(instance);
 
@@ -186,11 +194,68 @@ function bindDomEventBindings(instance: any): void {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 6. 能力初始化
+// 6. 播放进入动画
+// ══════════════════════════════════════════════════════════════
+
+function playEnterAnimation(instance: any): void {
+    if (typeof instance.playEnter === 'function') {
+        instance.playEnter();
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 6.5 拖拽初始化
+// ══════════════════════════════════════════════════════════════
+
+function initDrags(instance: any): void {
+    if (typeof instance._initDrags === 'function') {
+        instance._initDrags();
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 7. 能力初始化
 // ══════════════════════════════════════════════════════════════
 
 function callInitMethods(instance: any): void {
     if (typeof instance.callInitMethods === 'function') {
         instance.callInitMethods();
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 3.5 i18n 初始化 + localeChange 事件绑定
+// ══════════════════════════════════════════════════════════════
+
+function initI18nFromTemplate(instance: any): void {
+    const ctor = instance.constructor as any;
+    const i18nNodes: Array<{ name: string; i18nKey: string }> = ctor._i18nNodes;
+    if (!i18nNodes || i18nNodes.length === 0) return;
+
+    applyI18nTranslations(instance, i18nNodes);
+
+    if (typeof instance.systemOn === 'function') {
+        instance.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, () => {
+            applyI18nTranslations(instance, i18nNodes);
+        });
+        instance.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => {
+            applyI18nTranslations(instance, i18nNodes);
+        });
+    }
+}
+
+function applyI18nTranslations(
+    instance: any,
+    i18nNodes: Array<{ name: string; i18nKey: string }>
+): void {
+    for (const { name, i18nKey } of i18nNodes) {
+        const node: NodeMetadata = instance.nodeMap[name];
+        if (!node) continue;
+
+        const translated = resolveI18nValue(`i18n:${i18nKey}`);
+        const contentProp =
+            node.contentMode === 'value' ? 'value' : node.contentMode === 'src' ? 'src' : 'text';
+
+        instance._markNodeDirty(name, { [contentProp]: translated });
     }
 }

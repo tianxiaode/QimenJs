@@ -15,7 +15,7 @@ import { ComposableBase, type AbilityDefinition } from '@/composable';
 import {
     EventAbility,
     DomEventsAbility,
-    EventBridgeAbility as SystemEventBridgeAbility,
+    EventBridgeAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
     SystemEventBusAbility,
@@ -26,6 +26,11 @@ import { ComponentRegistrar } from './ComponentRegistrar';
 import type { NodeMetadata } from './types/compiled-types';
 import type { ComponentTemplate } from './types/component-template';
 import { createTemplateClass, createReplaceClass } from './utils/template-factory';
+import { CommonPropsAbility } from './abilities/CommonPropsAbility';
+import { AnimationAbility } from './abilities';
+import { DragAbility } from './abilities/DragAbility';
+import { LifecycleAbility } from './abilities/LifecycleAbility';
+import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 /**
  * 标准能力声明
@@ -33,16 +38,21 @@ import { createTemplateClass, createReplaceClass } from './utils/template-factor
  * 事件系统：EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility / OverlayEventBusAbility / SystemEventBusAbility
  * 事件转发：EventForwardAbility
  * 节点属性：NodePropAbility（含脏追踪 + 批量写 DOM）
+ * 生命周期：LifecycleAbility（mounted/updated/resize 事件发送）
  */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility,
     DomEventsAbility,
-    SystemEventBridgeAbility,
+    EventBridgeAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
     SystemEventBusAbility,
     EventForwardAbility,
     NodePropAbility,
+    CommonPropsAbility,
+    AnimationAbility,
+    DragAbility,
+    LifecycleAbility,
 ];
 
 export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_ABILITIES) {
@@ -65,6 +75,12 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
     nodeMap: Record<string, NodeMetadata> = {};
 
     override dispose(): void {
+        if (typeof this.onBeforeUnmount === 'function') {
+            this.onBeforeUnmount();
+        }
+
+        this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
+
         if (typeof this.onBeforeDispose === 'function') {
             this.onBeforeDispose();
         }
@@ -86,8 +102,21 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
         super.dispose();
 
+        this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
+
         if (typeof this.onDisposed === 'function') {
             this.onDisposed();
+        }
+    }
+
+    _emitLifecycleEvent(event: string, data?: any): void {
+        if (typeof this.emit === 'function') {
+            this.emit(event, data);
+        }
+
+        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
+        if (eventKey && typeof this.bridgeEmit === 'function') {
+            this.bridgeEmit(eventKey, event, data);
         }
     }
 

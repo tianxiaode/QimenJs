@@ -10,12 +10,24 @@ import { copyPrototypeMethods, copyStaticMethods } from './class-copy';
 import { compilePendingTemplate } from './template-compiler';
 import { initFromTemplate } from './template-init';
 import { Logger } from '@/logger';
+import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 function initInstanceData(instance: any): void {
     instance.meta = {};
     instance.props = {};
     instance.dirtySet = new Set();
     instance._initializing = false;
+}
+
+function emitLifecycleEvent(instance: any, event: string, data?: any): void {
+    if (typeof instance.emit === 'function') {
+        instance.emit(event, data);
+    }
+
+    const eventKey = instance.eventKey ?? (instance.constructor as any).eventKey;
+    if (eventKey && typeof instance.bridgeEmit === 'function') {
+        instance.bridgeEmit(eventKey, event, data);
+    }
 }
 
 export function createTemplateClass(ParentClass: any, template: ComponentTemplate): any {
@@ -42,6 +54,8 @@ export function createTemplateClass(ParentClass: any, template: ComponentTemplat
         if (typeof this.onAfterInit === 'function') {
             this.onAfterInit(props);
         }
+
+        emitLifecycleEvent(this, COMPONENT_LIFECYCLE_EVENTS.INIT, { props });
     };
 
     copyPrototypeMethods(ParentClass, NewClass);

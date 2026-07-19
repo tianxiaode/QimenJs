@@ -248,6 +248,50 @@ export interface DragDecl {
 export type DragsConfig = Record<string, DragDecl>;
 
 // ══════════════════════════════════════════════════════════════
+// 动画配置
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 组件动画配置 — 声明式，自动触发
+ *
+ * 在 body 中声明，运行时自动在对应生命周期播放：
+ * - enter: 组件初始化完成后自动播放
+ * - leave: 组件销毁前自动播放
+ *
+ * 动画是组件行为，不是节点属性：
+ * - CSS transition 写在 TplNode 的 cls/style 里
+ * - 进入/退出动画在这里声明，由框架自动触发
+ * - 浮层组件（如 Menu）自己管自己的动画，触发组件（如 Button）只管 floats 声明
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     animation: {
+ *         enter: 'slideInUp',
+ *         leave: 'slideOutDown',
+ *         duration: 200,
+ *     }
+ * }
+ * ```
+ */
+export interface AnimationDecl {
+    /** 进入动画预设名（如 fadeIn / slideInUp / scaleIn） */
+    enter?: string;
+    /** 进入动画自定义 Keyframe（与 enter 二选一） */
+    enterKeyframes?: Keyframe[];
+    /** 退出动画预设名（如 fadeOut / slideOutDown / scaleOut） */
+    leave?: string;
+    /** 退出动画自定义 Keyframe（与 leave 二选一） */
+    leaveKeyframes?: Keyframe[];
+    /** 动画时长（毫秒），默认 300 */
+    duration?: number;
+    /** 缓动函数，默认 'ease' */
+    easing?: string;
+    /** 是否启用动画，默认 true */
+    enabled?: boolean;
+}
+
+// ══════════════════════════════════════════════════════════════
 // 生命周期钩子
 // ══════════════════════════════════════════════════════════════
 
@@ -410,6 +454,9 @@ export interface BodyDef extends LifecycleHooks {
 
     /** 拖拽配置，key=节点name，行为配置+可选影子组件 */
     drags?: DragsConfig;
+
+    /** 组件动画配置，声明式，初始化/销毁时自动触发 */
+    animation?: AnimationDecl;
 
     /** 附加能力，替代 .with() 的声明式注入 */
     abilities?: any[];

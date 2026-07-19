@@ -10,6 +10,7 @@ import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath } from '../types/compiled-types';
 import { VOID_TAGS } from './template-constants';
 import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
+import { applyChildNodeProps } from './child-node-props';
 
 export function compilePendingTemplate(ctor: any, template: ComponentTemplate, logger: any): void {
     const result = compileTemplate(template, logger);
@@ -37,8 +38,11 @@ export function compilePendingTemplate(ctor: any, template: ComponentTemplate, l
     };
 
     ctor._nodeMetas = result.nodeMetas;
+    ctor._i18nNodes = result.i18nNodes;
 
     applyBody(ctor, template.body);
+
+    applyChildNodeProps(ctor, result.nodeMetas, result.i18nNodes);
 
     ctor._templateCompiled = true;
 }
@@ -60,6 +64,7 @@ function compileTemplate(template: ComponentTemplate, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};
     const exposeNames: string[] = [];
+    const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
     const root = template.tpl;
     const children = root.children || [];
@@ -67,11 +72,11 @@ function compileTemplate(template: ComponentTemplate, logger: any) {
 
     for (let i = 0; i < children.length; i++) {
         htmlParts.push(
-            compileNode(children[i], [i], { indexPath, nodeMetas, exposeNames, logger })
+            compileNode(children[i], [i], { indexPath, nodeMetas, exposeNames, i18nNodes, logger })
         );
     }
 
-    return { html: htmlParts.join(''), indexPath, nodeMetas, exposeNames };
+    return { html: htmlParts.join(''), indexPath, nodeMetas, exposeNames, i18nNodes };
 }
 
 function compileNode(node: TplNode, path: number[], ctx: any): string {
@@ -107,6 +112,10 @@ function compileTypeNode(node: TplNode, path: number[], ctx: any): string {
     ctx.nodeMetas[name] = meta;
     ctx.exposeNames.push(name);
 
+    if (node.i18n) {
+        ctx.i18nNodes.push({ name, i18nKey: node.i18n });
+    }
+
     return '<div></div>';
 }
 
@@ -136,6 +145,10 @@ function compileTagNode(node: TplNode, path: number[], ctx: any): string {
 
         ctx.nodeMetas[name] = meta;
         ctx.exposeNames.push(name);
+
+        if (node.i18n) {
+            ctx.i18nNodes.push({ name, i18nKey: node.i18n });
+        }
     }
 
     return buildTagHtml(tag, node, path, ctx);
@@ -194,6 +207,8 @@ function applyBody(ctor: any, body: Record<string, any> | undefined): void {
             const targetKey = def.alias ?? key;
             const staticKey = key === 'forwards' ? '_forwards' : targetKey;
             ctor[staticKey] = desc.value;
+        } else if (def?.category === 'init') {
+            ctor[`_${key}`] = desc.value;
         } else if (desc.get || desc.set) {
             Object.defineProperty(proto, key, desc);
         } else if (typeof desc.value === 'function') {

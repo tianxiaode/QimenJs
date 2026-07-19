@@ -49,8 +49,33 @@
  * ├──────────┼──────────────────────────────────────────────────┤
  * │ floats   │ 浮动层配置，key=节点name，type+配置=构造参数     │
  * │ drags    │ 拖拽配置，key=节点name，行为配置+可选影子组件    │
+ * │ animation│ 组件动画配置，声明式，初始化/销毁时自动触发      │
  * │ abilities│ 附加能力，替代 .with() 的声明式注入              │
  * └──────────┴──────────────────────────────────────────────────┘
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 动画机制
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 动画是组件行为，不是节点属性，在 body 中声明式配置：
+ *
+ *   body: {
+ *       animation: {
+ *           enter: 'slideInUp',
+ *           leave: 'slideOutDown',
+ *           duration: 200,
+ *       }
+ *   }
+ *
+ * 运行时自动触发：
+ * - enter: 组件初始化完成后自动播放
+ * - leave: 组件销毁前自动播放
+ *
+ * 设计要点：
+ * - 动画不属于 TplNode（DOM 骨架），而是组件运行时行为
+ * - CSS transition 写在 TplNode 的 cls/style 里，不需要单独字段
+ * - 进入/退出动画在 body.animation 声明，由框架自动触发
+ * - 浮层动画由浮层组件自己管（如 Menu），触发组件（如 Button）只管 floats 声明
  */
 
 export interface BodyKeyDef {
@@ -75,5 +100,6 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
 
     floats: { category: 'init' },
     drags: { category: 'init' },
+    animation: { category: 'init' },
     abilities: { category: 'init' },
 };

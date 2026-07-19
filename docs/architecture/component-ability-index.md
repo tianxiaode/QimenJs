@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-18
+> 最后更新：2026-07-19
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -71,20 +71,16 @@ TemplateComponent 通过 TEMPLATE_COMPONENT_ABILITIES 自动注入以下能力�
 |------|------|------|
 | EventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
 | DomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配（含 bind/onDom） |
-| SystemEventBridgeAbility | `src/system-abilities/system/EventBridgeAbility.ts` | 事件桥接（bridgeOn/bridgeEmit/bridgeOnce） |
-| AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
-| BadgeAbility | `src/component-core/abilities/BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
-| EntityCoreAbility | `src/component-core/abilities/EntityCoreAbility.ts` | EntityManager 实例声明 |
-| EventBridgeConfigAbility | `src/component-core/abilities/EventBridgeAbility.ts` | 声明式事件桥接配置 |
-| InitAbility | `src/component-core/abilities/InitAbility.ts` | 统一初始化流程 |
-| NodeMapAbility | `src/component-core/abilities/NodeMapAbility.ts` | i18n 刷新 |
-| OverlayAbility | `src/component-core/abilities/OverlayAbility.ts` | 浮层管理（createOverlay） |
-| OverlayHostAbility | `src/component-core/abilities/OverlayHostAbility.ts` | 浮层宿主能力 |
-| DragAbility | `src/component-core/abilities/DragAbility.ts` | 拖拽能力 |
-| DropAbility | `src/component-core/abilities/DropAbility.ts` | 放置能力 |
-| TemplateAbility | `src/component-core/abilities/TemplateAbility.ts` | 模板渲染 |
-| LayoutAbility | `src/component-core/abilities/LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center） |
-| TooltipAbility | `src/component-core/abilities/TooltipAbility.ts` | Tooltip 浮层（initTooltipOverlay） |
+| EventBridgeAbility | `src/system-abilities/system/EventBridgeAbility.ts` | 事件桥接（bridgeOn/bridgeEmit/bridgeOnce） |
+| EntityEventBusAbility | `src/system-abilities/system/EntityEventBusAbility.ts` | 实体事件总线 |
+| OverlayEventBusAbility | `src/system-abilities/system/OverlayEventBusAbility.ts` | 浮层事件总线 |
+| SystemEventBusAbility | `src/system-abilities/system/SystemEventBusAbility.ts` | 系统事件总线 |
+| EventForwardAbility | `src/component-core/abilities/EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
+| NodePropAbility | `src/component-core/abilities/NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 |
+| CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 |
+| AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
+| DragAbility | `src/component-core/abilities/DragAbility.ts` | 声明式拖拽（move 本地，start/end 走 DragEventBus） |
+| LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + 桥接事件） |
 
 > 已移除的纯赋值能力（v2 由通用属性体系替代）：
 > PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility /
@@ -550,22 +546,12 @@ class RootComponent extends ComponentBase {
 
 | 能力 | 文件 | 说明 |
 |------|------|------|
-| InitAbility | `InitAbility.ts` | 统一初始化流程（initialize/initConfig/initContent/assignProps/bindEvents） |
-| NodeMapAbility | `NodeMapAbility.ts` | 模板节点扫描、属性生成、data-i18n + refreshI18n 集中刷新 |
-| OverlayAbility | `OverlayAbility.ts` | 浮层管理（createOverlay，宿主侧创建浮层实例+委托方法） |
-| OverlayHostAbility | `OverlayHostAbility.ts` | 浮层宿主能力（z-index 管理、定位计算、OverlayRoot 挂载/卸载，浮层组件侧） |
-| TooltipAbility | `TooltipAbility.ts` | Tooltip 专属能力（getTooltip/setTooltip/initTooltipOverlay，从 OverlayAbility 拆分） |
-| BadgeAbility | `BadgeAbility.ts` | 角标管理（initBadge/setBadgeText/setBadgeVisible） |
-| DragAbility | `DragAbility.ts` | 拖拽能力（initDrag/setDraggable，基于框架 DragProcessor） |
-| DropAbility | `DropAbility.ts` | 放置能力（initDrop/setDroppable/setDropAccept，HTML5 拖放事件） |
-| AnimationAbility | `AnimationAbility.ts` | 动画控制（playEnter/playLeave） |
-| EntityCoreAbility | `EntityCoreAbility.ts` | EntityManager 实例声明 |
-| EventBridgeConfigAbility | `EventBridgeAbility.ts` | 声明式事件桥接配置 |
-| PropAlias | `PropAlias.ts` | 属性别名与初始化协议 |
-| positionOverlay | `positionOverlay.ts` | 浮层定位工具函数（4方向定位、自动翻转、视口约束） |
-| LayoutAbility | `LayoutAbility.ts` | 布局能力（fit/hbox/vbox/grid/center，自动为根元素添加布局 CSS 类） |
-| ElementEventAbility | `ElementEventAbility.ts` | DOM 事件绑定能力（从 eventMap 读取事件声明，this.bind 统一绑定） |
-| TemplateAbility | `TemplateAbility.ts` | 模板渲染能力（_initWithTemplate/_initElementFromTemplate/_buildNodeMapFromCompiled/_renderChildComponents） |
+| EventForwardAbility | `EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
+| NodePropAbility | `NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 + hiddenchange 事件 |
+| CommonPropsAbility | `CommonPropsAbility.ts` | 组件根元素常用属性快捷方式（cls/style/hidden/disabled/width/height 等） |
+| AnimationAbility | `AnimationAbility.ts` | 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation） |
+| DragAbility | `DragAbility.ts` | 声明式拖拽（move 本地处理，start/end 走 DragEventBus） |
+| LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，有 eventKey 时发桥接事件） |
 
 ### 2.11.1 通用属性体系 (`src/component-core/common-props.ts`)
 
@@ -611,7 +597,19 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 
 ## 3. 事件体系
 
-### 3.1 事件常量 (`src/events/component-events.ts`)
+### 3.1 组件生命周期事件 (`src/events/component-events.ts`)
+
+| 常量 | 事件名 | 触发时机 | 桥接 |
+|------|--------|----------|------|
+| COMPONENT_LIFECYCLE_EVENTS.INIT | `init` | onAfterInit 之后 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.MOUNTED | `mounted` | onMounted 之后 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT | `beforeunmount` | onBeforeUnmount 时 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.DISPOSE | `dispose` | dispose 完成后 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.UPDATED | `updated` | onUpdated 之后 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.RESIZE | `resize` | onResize 时 | 有 eventKey 时 |
+| COMPONENT_LIFECYCLE_EVENTS.HIDDEN_CHANGE | `hiddenchange` | _updateNode 中 hidden 变化时 | 有 eventKey 时 |
+
+### 3.2 能力事件常量 (`src/events/component-events.ts`)
 
 | 常量 | 事件名 | 发射方 |
 |------|--------|--------|
@@ -636,7 +634,7 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | SEARCH_EVENTS.SUBMIT | `searchsubmit` | SearchEventsAbility |
 | ENTITY_EVENTS.* | `entity:*` | EntityEmitAbility 转发 |
 
-### 3.2 实体事件 (`src/events/entity-events.ts`)
+### 3.3 实体事件 (`src/events/entity-events.ts`)
 
 | 常量 | 说明 |
 |------|------|
@@ -647,7 +645,7 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | ENTITY_SEARCH_EVENTS.CHANGE | 搜索条件变更 |
 | ENTITY_REQUEST_STATUS.LOADING/SUCCESS/ERROR | 请求状态 |
 
-### 3.3 组件事件 (`src/component/events.ts`)
+### 3.4 组件事件 (`src/component/events.ts`)
 
 | 常量 | 说明 |
 |------|------|
@@ -656,7 +654,7 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | TABLE_EVENTS.SELECTION_CHANGE/ROW_SELECT | 表格选择 |
 | FORM_EVENTS.SAVE/CREATE/EDIT/DELETE/REFRESH | 表单操作 |
 
-### 3.4 事件桥接 (`src/component-core/abilities/EventBridgeAbility.ts`)
+### 3.5 事件桥接 (`src/component-core/abilities/EventBridgeAbility.ts`)
 
 内置桥接类型：
 

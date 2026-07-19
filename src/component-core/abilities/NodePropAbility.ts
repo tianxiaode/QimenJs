@@ -22,6 +22,7 @@ import type { AbilityDefinition } from '@/composable';
 import { DEFAULT_NODE_PROP_MAP } from '../types';
 import type { NodePropDef } from '../types';
 import { ALIGN_MAP, PACK_MAP } from '../utils/template-constants';
+import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 export const NodePropAbility: AbilityDefinition = {
     _resolveNodeEl(nodeName: string): HTMLElement | undefined {
@@ -63,7 +64,43 @@ export const NodePropAbility: AbilityDefinition = {
         const el = this._resolveNodeEl(nodeName);
         if (!el) return;
 
+        const node = this.nodeMap?.[nodeName];
+        if (!node) {
+            applyNodeProps(el, props);
+            return;
+        }
+
+        if (!node._state) node._state = {};
+
+        if ('hidden' in props && nodeName === 'root') {
+            const wasHidden = node._state.hidden ?? false;
+            const willHidden = !!props.hidden;
+
+            if (wasHidden !== willHidden) {
+                this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.HIDDEN_CHANGE, {
+                    hidden: willHidden,
+                    previous: wasHidden,
+                });
+
+                if (willHidden && typeof (this as any).playLeave === 'function') {
+                    (this as any).playLeave().then(() => {
+                        applyNodeProps(el, props);
+                        node._state = { ...node._state, ...props };
+                    });
+                    return;
+                }
+
+                if (!willHidden && typeof (this as any).playEnter === 'function') {
+                    applyNodeProps(el, props);
+                    node._state = { ...node._state, ...props };
+                    (this as any).playEnter();
+                    return;
+                }
+            }
+        }
+
         applyNodeProps(el, props);
+        node._state = { ...node._state, ...props };
     },
 
     _markNodeDirty(nodeName: string, props: Record<string, any>): void {
@@ -89,6 +126,17 @@ export const NodePropAbility: AbilityDefinition = {
             const el = this._resolveNodeEl(nodeName);
             if (!el) continue;
             applyNodeProps(el, props as Record<string, any>);
+        }
+    },
+
+    _emitLifecycleEvent(event: string, data?: any): void {
+        if (typeof this.emit === 'function') {
+            this.emit(event, data);
+        }
+
+        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
+        if (eventKey && typeof this.bridgeEmit === 'function') {
+            this.bridgeEmit(eventKey, event, data);
         }
     },
 };

@@ -2,10 +2,27 @@
 
 **层级**: UI 层  
 **状态**: ⚠️ 开发中  
-**测试**: ✅  
+**测试**: ✅ 14 suites / 69 tests  
 **覆盖率**: ~82%
 
 ## 构建历史
+
+### 2026-07-19
+- ✅ 子节点属性自动构建（child-node-props.ts）：contentMode→属性映射、通用属性、组件子节点 $name + 属性转发、i18n 节点特殊处理
+- ✅ template-constants.ts 常量集中管理（CONTENT_MODE_MAP/COMMON_NODE_PROPS/RESERVED_KEYS/ANIMATION_PRESETS）
+- ✅ template-compiler.ts i18nNodes 编译时收集，applyBody init 字段存 ctor._key
+- ✅ template-init.ts i18n 初始化 + localeChange 事件绑定 + 进入动画播放 + 拖拽初始化
+- ✅ AnimationAbility 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation）
+- ✅ DragAbility 声明式拖拽（move 本地处理，start/end 走 DragEventBus）
+- ✅ NodePropAbility._updateNode hidden 动画通过 _state 对比 + playEnter/playLeave
+- ✅ LifecycleAbility 组件生命周期事件能力（mounted/updated/resize 事件发送）
+- ✅ COMPONENT_LIFECYCLE_EVENTS 常量（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
+- ✅ 组件生命周期事件发送：初始化→init、挂载→mounted、卸载→beforeunmount、销毁→dispose、更新→updated、尺寸变化→resize、hidden变化→hiddenchange
+- ✅ 有 eventKey 时自动发送桥接事件（bridgeEmit）
+- ✅ class-copy.ts copyPrototypeMethods 跳过目标已有方法
+- ✅ 包入口 index.ts 完全重写，只导出当前实际存在的模块
+- ✅ 14 个测试套件全部通过（69 tests）
+- ✅ 删除 11 个过时的旧测试文件 + 19 个 .bak 文件
 
 ### 2026-07-18
 - ✅ 新增 ToggleComponent 切换按钮（pressed 态 + aria-pressed）
@@ -59,15 +76,21 @@
 
 ## 测试状态
 
-### 通过的测试
-- ✅ TemplateComponent - withTemplate 三格式支持
-- ✅ template-compiler - 预编译引擎
-- ✅ template-json - JSON模板转换
-- ✅ LayoutAbility - 布局能力
-- ✅ BadgeAbility - 角标能力
-- ✅ InitAbility - 初始化流程
-- ✅ OverlayAbility - 浮层管理
-- ✅ TooltipAbility - Tooltip能力
+### 通过的测试（14 suites / 69 tests）
+- ✅ template-constants — 常量定义
+- ✅ template-compiler — 预编译引擎
+- ✅ child-node-props — 子节点属性自动构建
+- ✅ class-copy — 类原型方法复制
+- ✅ template-factory — 模板组件工厂 + init 事件
+- ✅ NodePropAbility — 节点属性读写 + hiddenchange 事件
+- ✅ EventForwardAbility — 事件转发
+- ✅ CommonPropsAbility — 通用属性
+- ✅ AnimationAbility — 声明式动画
+- ✅ DragAbility — 拖拽能力
+- ✅ LifecycleAbility — 生命周期事件
+- ✅ tpl-body-def — Body 字段定义
+- ✅ common-props — 属性定义
+- ✅ ComponentTypes — 组件类型常量
 
 ## 已知问题
 

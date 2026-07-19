@@ -41,6 +41,9 @@ export interface NodeMetadata {
     /** 在父元素子节点列表中的位置索引 */
     nodeIndex?: number;
 
+    /** 当前生效的属性快照，用于对比新旧值决定动画方向 */
+    _state?: Record<string, any>;
+
     // ─── identity：节点标识 ───
 
     /** 节点名称 — nodeMap 索引键 */

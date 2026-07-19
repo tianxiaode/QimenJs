@@ -14,6 +14,7 @@ export function copyPrototypeMethods(source: any, target: any): void {
         const desc = Object.getOwnPropertyDescriptor(source.prototype, key);
         if (!desc) continue;
         if (desc.get || desc.set || typeof desc.value === 'function') {
+            if (Object.prototype.hasOwnProperty.call(target.prototype, key)) continue;
             Object.defineProperty(target.prototype, key, desc);
         }
     }

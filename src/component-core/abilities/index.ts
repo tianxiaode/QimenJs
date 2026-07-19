@@ -1,3 +1,6 @@
 export * from './EventForwardAbility';
-export * from './InitAbility';
 export * from './NodePropAbility';
+export * from './CommonPropsAbility';
+export * from './AnimationAbility';
+export * from './DragAbility';
+export * from './LifecycleAbility';

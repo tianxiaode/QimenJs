@@ -1,4 +1,5 @@
 export * from './class-copy';
+export * from './child-node-props';
 export * from './template-compiler';
 export * from './template-constants';
 export * from './template-factory';
