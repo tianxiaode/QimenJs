@@ -1,0 +1,365 @@
+/**
+ * Body 类型定义 — 组件模板 body 部分的完整类型系统
+ *
+ * 本文件是 body 相关所有类型的唯一定义源，
+ * 与 body-keys.ts（字段定义常量）配合使用。
+ *
+ * 详细设计说明见 body-keys.ts 顶部注释。
+ */
+
+// ══════════════════════════════════════════════════════════════
+// 事件订阅
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 事件映射值 — 字符串简写 或 带选项对象
+ *
+ * once 等选项在事件级别定义，避免多个事件全部 once。
+ *
+ * @example
+ * ```ts
+ * events: {
+ *     save: 'onSave',                              // 简写
+ *     cancel: { handler: 'onCancel', once: true }, // 带选项
+ * }
+ * ```
+ */
+export type EventMapping = string | { handler: string; once?: boolean };
+
+/**
+ * 桥接事件订阅
+ *
+ * @example
+ * ```ts
+ * { source: 'formKey', events: { save: 'onSave', cancel: { handler: 'onCancel', once: true } } }
+ * ```
+ */
+export interface BridgeListen {
+    /** 桥接事件源 key */
+    source: string;
+    /** 事件映射：源事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 实体事件订阅
+ *
+ * @example
+ * ```ts
+ * { entity: 'users', events: { listed: 'onUsersLoaded', created: { handler: 'onUserCreated', once: true } } }
+ * ```
+ */
+export interface EntityListen {
+    /** 实体 key */
+    entity: string;
+    /** 事件映射：实体事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 浮动层事件订阅
+ *
+ * @example
+ * ```ts
+ * { float: 'dropBtn', events: { close: 'onClose', open: { handler: 'onOpen', once: true } } }
+ * ```
+ */
+export interface FloatListen {
+    /** 浮动层节点 name */
+    float: string;
+    /** 事件映射：浮动层事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 拖拽事件订阅
+ *
+ * @example
+ * ```ts
+ * { drag: 'handle', events: { start: 'onDragStart', end: { handler: 'onDragEnd', once: true } } }
+ * ```
+ */
+export interface DragListen {
+    /** 拖拽节点 name */
+    drag: string;
+    /** 事件映射：拖拽事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 统一事件订阅 — 数组格式，通过 key 名区分来源类型
+ *
+ * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
+ *
+ * 注册流程统一：
+ *   _setupListens() {
+ *       for (const item of this.listens) {
+ *           if (item.source) EventBridge.on(this.eventKey, item.source, item.events);
+ *           if (item.entity) EntityEventBus.on(this.entityKey, item.entity, item.events);
+ *           if (item.float)  FloatSystem.on(this.floatKey, item.float, item.events);
+ *           if (item.drag)   DragSystem.on(this.dragKey, item.drag, item.events);
+ *       }
+ *   }
+ *
+ * @example
+ * ```ts
+ * listens: [
+ *     { source: 'formKey', events: { save: 'onSave' } },
+ *     { entity: 'users',   events: { listed: 'onUsersLoaded' } },
+ *     { float: 'dropBtn',  events: { close: 'onClose' } },
+ *     { drag: 'handle',    events: { start: 'onDragStart' } },
+ * ]
+ * ```
+ */
+export type ListenItem = BridgeListen | EntityListen | FloatListen | DragListen;
+
+// ══════════════════════════════════════════════════════════════
+// 浮动层配置
+// ══════════════════════════════════════════════════════════════
+
+/** 浮动层触发方式 */
+export type FloatTrigger = 'click' | 'hover' | 'focus' | 'manual' | 'always';
+
+/**
+ * 浮动层定义 — type 是唯一特殊字段，去掉 type 后直接作为组件构造参数
+ *
+ * 触发方式由 trigger 字段控制，不需要在 TplNode events 中声明：
+ * - 有 trigger → 系统自动在锚点元素上绑定对应事件
+ * - 无 trigger → 手动控制（代码调用 onFloat）
+ *
+ * 两种浮动模式：
+ *
+ * 1. 节点触发型：key 匹配节点 name，自动锚定该节点
+ *    floats: {
+ *        dropBtn: { type: 'DropPanel', align: 'bottom', trigger: 'click' },
+ *        // key='dropBtn' → 锚定 nodeMap.dropBtn.el，点击触发
+ *    }
+ *
+ * 2. 组件级浮动：key 是语义名，必须指定 anchor
+ *    floats: {
+ *        tooltip: { type: 'Tips', anchor: 'self', trigger: 'hover' },
+ *        // anchor='self' → 锚定组件自身 el，悬停触发
+ *        tooltip: { type: 'Tips', anchor: 'self', trigger: ['hover', 'click'] },
+ *        // 悬停或点击都触发
+ *        badge: { type: 'Badge', anchor: 'icon', trigger: 'always' },
+ *        // anchor='icon' → 锚定 nodeMap.icon.el，始终显示
+ *    }
+ *
+ * 处理流程：
+ *   1. 取出 type → 解析组件类
+ *   2. 删掉 type → 剩余配置
+ *   3. new Component(remainingConfig) → 直接传入构造函数
+ *
+ * 统一了所有浮动场景：下拉面板、菜单、提示框、徽章等。
+ */
+export interface FloatDecl {
+    /** 浮动层组件类型（唯一特殊字段，去掉后剩余配置直接作为构造参数） */
+    type: string;
+    /**
+     * 锚定目标：
+     * - 省略 → key 即为节点 name，自动锚定该节点
+     * - 'self' → 锚定组件自身 el
+     * - 节点 name → 锚定指定节点
+     */
+    anchor?: string | 'self';
+    /**
+     * 触发方式（有值则系统自动绑定，无值则手动控制）：
+     * - 'click': 点击触发
+     * - 'hover': 悬停触发
+     * - 'focus': 聚焦触发
+     * - 'manual': 手动控制
+     * - 'always': 始终显示（如 badge，初始化时显示一次）
+     * - 数组：多种触发方式组合（如 ['hover', 'click']）
+     */
+    trigger?: FloatTrigger | FloatTrigger[];
+    /** 显示延迟（毫秒），trigger 为 hover 时生效 */
+    showDelay?: number;
+    /** 隐藏延迟（毫秒），trigger 为 hover 时生效 */
+    hideDelay?: number;
+    /** 组件构造参数（由具体组件类型决定） */
+    [key: string]: any;
+}
+
+export type FloatsConfig = Record<string, FloatDecl>;
+
+// ══════════════════════════════════════════════════════════════
+// 拖拽配置
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 拖拽定义 — 行为配置 + 可选影子组件 + 回调
+ *
+ * key=节点name（触发源），触发方式由 trigger 字段控制。
+ *
+ * 与 floats 不同，drags 的配置分两部分：
+ * - 拖拽行为配置：axis、bounds 等 → 给 DragProcessor 用
+ * - 拖拽影子组件：ghost 字段 → 影子组件类型
+ *
+ * 拖拽回调通过 body 中定义方法实现（函数自动挂原型）：
+ *   body: {
+ *       drags: { handle: { axis: 'y' } },
+ *       onHandleDragStart(ctx) { ... },
+ *       onHandleDragEnd(ctx) { ... },
+ *   }
+ *
+ * @example
+ * ```ts
+ * drags: {
+ *     handle: { axis: 'y', bounds: 'parent' },
+ *     card:   { ghost: 'DragGhost', axis: 'both', bounds: { left: 0, top: 0 } },
+ * }
+ * ```
+ */
+export interface DragDecl {
+    /** 拖拽影子组件类型（可选） */
+    ghost?: string;
+    /** 拖拽轴向：'x' | 'y' | 'both' */
+    axis?: 'x' | 'y' | 'both';
+    /** 拖拽边界约束 */
+    bounds?:
+        | HTMLElement
+        | { left?: number; top?: number; right?: number; bottom?: number }
+        | string;
+    /** 拖拽时添加的 CSS 类 */
+    activeClass?: string;
+    /** 网格吸附步长 */
+    grid?: number;
+}
+
+export type DragsConfig = Record<string, DragDecl>;
+
+// ══════════════════════════════════════════════════════════════
+// 生命周期钩子
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 组件生命周期钩子 — 在 body 中定义，函数自动挂原型
+ *
+ * 调用顺序：
+ *   onBeforeInit → 模板注入 → onAfterInit → onMounted → [运行中] → onBeforeUnmount → onBeforeDispose → [框架销毁]
+ *
+ * 注意：onDisposed 不暴露给组件，销毁由框架内部保证执行，不可覆写。
+ * 组件清理逻辑统一放在 onBeforeDispose 中。
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     onBeforeInit() { ... },   // 初始化前
+ *     onAfterInit() { ... },    // 初始化后
+ *     onMounted() { ... },      // 挂载后
+ *     onResize(entry) { ... },  // 元素尺寸变化（有此方法才绑 ResizeObserver）
+ *     onUpdated() { ... },      // 更新后
+ *     onBeforeUnmount() { ... },// 卸载前
+ *     onBeforeDispose() { ... },// 销毁前（组件清理的唯一入口）
+ * }
+ * ```
+ */
+export interface LifecycleHooks {
+    /** 初始化前（模板注入前） */
+    onBeforeInit?: () => void;
+    /** 初始化后（模板注入、事件绑定、能力注入完成） */
+    onAfterInit?: () => void;
+    /** 挂载后（DOM 已渲染，可访问 el 和 nodeMap） */
+    onMounted?: () => void;
+    /** 元素尺寸变化（定义此方法才自动绑 ResizeObserver，否则不绑） */
+    onResize?: (entry: ResizeObserverEntry) => void;
+    /** 更新后（属性或内容变更后） */
+    onUpdated?: () => void;
+    /** 卸载前（组件即将从 DOM 移除） */
+    onBeforeUnmount?: () => void;
+    /** 销毁前（组件清理的唯一入口，框架销毁不可覆写） */
+    onBeforeDispose?: () => void;
+}
+
+// ══════════════════════════════════════════════════════════════
+// Body 定义
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 组件 body 定义 — 组件行为和配置的声明
+ *
+ * body 中的 key 按以下规则处理：
+ *
+ * 1. static 类（编译时设为类静态属性）：
+ *    type / entityKey / eventKey / floatKey / dragKey / listens
+ *
+ * 2. init 类（运行时由 InitAbility 初始化）：
+ *    floats / drags / abilities
+ *
+ * 3. 函数 → 自动挂到原型（组件方法）：
+ *    - 生命周期钩子：onBeforeInit / onAfterInit / onMounted / onResize / onUpdated / onBeforeUnmount / onBeforeDispose / onDisposed
+ *    - 事件 handler：on{Name}{Event}（如 onBtnClick）
+ *    - 拖拽回调：on{Name}Drag{Event}（如 onHandleDragStart）
+ *    - 浮动层回调：on{Name}Float{Event}（如 onDropBtnFloatClose）
+ *    - 自定义方法：任意方法名
+ *    - 子组件事件监听：直接覆盖自动生成的同名方法
+ *
+ * 4. getter/setter → defineProperty 到原型
+ *
+ * 5. 其他值 → 存入 static defaults（默认属性值，实例化时复制）
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     type: 'myComponent',
+ *     entityKey: 'users',
+ *     eventKey: 'formKey',
+ *     floatKey: 'myFloats',
+ *     dragKey: 'myDrags',
+ *     listens: [
+ *         { source: 'formKey', events: { save: 'onSave' } },
+ *         { entity: 'users', events: { listed: 'onUsersLoaded' } },
+ *         { float: 'dropBtn', events: { close: 'onClose' } },
+ *         { drag: 'handle', events: { start: 'onDragStart' } },
+ *     ],
+ *     floats: {
+ *         dropBtn: { type: 'DropPanel', align: 'bottom' },
+ *         helpIcon: { type: 'Tips', placement: 'top' },
+ *     },
+ *     drags: {
+ *         handle: { axis: 'y', bounds: 'parent' },
+ *     },
+ *     abilities: [DragAbility],
+ *     onMounted() { ... },
+ *     onResize(entry) { ... },
+ *     onBtnClick(ctx, el) { ... },
+ *     onUsersListed(data) { ... },
+ * }
+ * ```
+ */
+export interface BodyDef extends LifecycleHooks {
+    // ─── static: 编译时设为类静态属性 ───
+
+    /** 组件类型标识 */
+    type?: string;
+
+    /** 实体 key，TplNode events 中 entities 引用 */
+    entityKey?: string;
+
+    /** 桥接事件 key，TplNode events 中 bridges 引用 */
+    eventKey?: string;
+
+    /** 浮动层 key */
+    floatKey?: string;
+
+    /** 拖拽 key */
+    dragKey?: string;
+
+    /** 统一事件订阅数组 */
+    listens?: ListenItem[];
+
+    // ─── init: 运行时由 InitAbility 初始化 ───
+
+    /** 浮动层配置，key=节点name，type+配置=构造参数 */
+    floats?: FloatsConfig;
+
+    /** 拖拽配置，key=节点name，行为配置+可选影子组件 */
+    drags?: DragsConfig;
+
+    /** 附加能力，替代 .with() 的声明式注入 */
+    abilities?: any[];
+
+    // ─── 其他：函数→原型方法，其他值→defaults ───
+
+    [key: string]: any;
+}

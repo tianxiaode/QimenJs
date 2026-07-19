@@ -128,20 +128,12 @@ export interface NodeTemplateMeta {
 
     i18nKey?: string;
     hidden?: boolean;
-    props?: Record<string, any>;
-    className?: string;
-    /** 内联样式（原始定义，运行时应用） */
-    style?: string | Record<string, any>;
-    /** 布局模式 */
-    layout?: 'hbox' | 'vbox' | 'fit' | 'grid' | 'center';
-    /** 布局间距 */
-    gap?: number | string;
-    /** 交叉轴对齐 */
-    align?: 'start' | 'center' | 'end' | 'stretch';
-    /** 主轴分布 */
-    pack?: 'start' | 'center' | 'end' | 'between' | 'around';
-    /** 是否换行 */
-    wrap?: boolean;
+    hiddenMode?: 'display' | 'visibility' | 'opacity';
+    role?: string;
     attrs?: Record<string, string>;
-    text?: string;
+    initConfig?: Record<string, any>;
+    cls?: string;
+    style?: string | Record<string, any>;
+    flex?: boolean | import('./tpl-node-types').FlexConfig;
+    grid?: boolean | import('./tpl-node-types').GridConfig;
 }
