@@ -16,8 +16,11 @@ export let MenuComponent = ItemGroupComponent.replace({
     config: {
         direction: 'vertical',
         itemType: 'MenuItem',
-        eventKey: 'item',
-        events: ['click', 'select'],
+        defaultItem: {
+            MenuItem: {
+                events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } },
+            },
+        },
     },
     body: {
         onInitState() {
@@ -33,7 +36,7 @@ export let MenuComponent = ItemGroupComponent.replace({
             this.initGroupSelect({ defaultMode: 'radio' });
             this.registerGroupItems([...this.items]);
 
-            this.on('item:select', (data: any) => {
+            this.on('select', (data: any) => {
                 this.notifyGroupSelect(data.item);
             });
         },

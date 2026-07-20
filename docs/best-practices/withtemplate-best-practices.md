@@ -746,32 +746,60 @@ body 是组合定义层，引用自己的组件树结构不算破坏封装。中
 
 ## 17. ItemGroup 派生组件
 
-ItemGroupComponent 是子项管理的基座，领域组件通过 extends 派生，固化 itemType 和选择行为：
+ItemGroupComponent 是子项管理的基座，领域组件通过 `replace` 派生，固化 itemType、defaultItem 和选择行为：
 
 ```typescript
-// ButtonGroup — 按钮组（单选/多选）
-export let ButtonGroupComponent = class extends ItemGroupComponent {
-    constructor(props) {
-        super({ itemType: 'Toggle', eventKey: 'btn', ... });
-    }
-}
+// TabBar — 标签栏（单选，池化复用）
+export let TabBarComponent = ItemGroupComponent.replace({
+    type: 'TabBar',
+    cls: 'q-tab-bar',
+    itemsCls: 'q-tab-bar__items',
+    config: {
+        direction: 'horizontal',
+        gap: '0',
+        itemType: 'Toggle',
+        itemDestroy: false,
+        defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
+    },
+    body: {
+        onAfterInit(props) {
+            this.on('toggle', (data) => this._onItemToggle(data));
+        },
+        selectAt(index, silent = false) { ... },
+    },
+});
 
-// TabBar — 标签栏（单选，底部粗线）
-export let TabBarComponent = class extends ItemGroupComponent {
-    constructor(props) {
-        super({ itemType: 'Toggle', eventKey: 'tab', ... });
-    }
-}
+// Menu — 菜单（垂直，分隔符不适合池化）
+export let MenuComponent = ItemGroupComponent.replace({
+    type: 'Menu',
+    cls: 'q-menu',
+    itemsCls: 'q-menu__content',
+    config: {
+        direction: 'vertical',
+        itemType: 'MenuItem',
+        defaultItem: { events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } } },
+    },
+    body: { ... },
+});
 
-// Indicator — 指示器（dot/number/dash）
-export let IndicatorComponent = class extends ItemGroupComponent {
-    constructor(props) {
-        super({ itemType: 'ToggleIcon', eventKey: 'indicator', ... });
-    }
-}
+// Toolbar — 工具栏（异质子项，Map 形式 defaultItem）
+export let ToolbarComponent = ItemGroupComponent.replace({
+    type: 'Toolbar',
+    cls: 'q-toolbar',
+    itemsCls: 'q-toolbar__items',
+    config: {
+        direction: 'horizontal',
+        gap: '4px',
+        defaultItem: {
+            button: { events: { click: { bridges: ['click'] } } },
+            input:  { events: { input: { bridges: ['input'] } } },
+        },
+    },
+    body: {},
+});
 ```
 
-派生组件复用池化、事件转发、溢出处理，零手动 DOM。
+派生组件复用池化、事件转发、溢出处理，零手动 DOM。详见 [ItemGroup 最佳实践](./itemgroup-best-practices.md)。
 
 ## 18. 组件定义模式
 
@@ -793,17 +821,22 @@ export let MyComponent = TemplateComponent.withTemplate({
 });
 ```
 
-### 18.2 extends 派生（ItemGroup 领域扩展）
+### 18.2 replace 派生（ItemGroup 领域扩展）
 
-从 ItemGroupComponent 派生，固化领域逻辑：
+从 ItemGroupComponent 通过 `replace` 派生，固化领域逻辑：
 
 ```typescript
-export let MyGroupComponent = class extends ItemGroupComponent {
-    constructor(props) {
-        super({ itemType: 'MyItem', eventKey: 'my', ... });
-    }
-    selectAt(index) { ... }
-}
+export let MyGroupComponent = ItemGroupComponent.replace({
+    type: 'MyGroup',
+    cls: 'q-my-group',
+    config: {
+        itemType: 'MyItem',
+        defaultItem: { events: { click: { bridges: ['click'] } } },
+    },
+    body: {
+        selectAt(index) { ... },
+    },
+});
 ```
 
 ### 18.3 语义别名
@@ -812,5 +845,4 @@ export let MyGroupComponent = class extends ItemGroupComponent {
 
 ```typescript
 export const DropdownComponent = ButtonComponent;
-export const ToolbarComponent = ItemGroupComponent;
 ```

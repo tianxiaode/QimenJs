@@ -13,8 +13,10 @@ export let TabBarComponent = ItemGroupComponent.replace({
         direction: 'horizontal',
         gap: '0',
         itemType: 'Toggle',
-        eventKey: 'tab',
-        events: ['toggle'],
+        itemDestroy: false,
+        defaultItem: {
+            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
+        },
     },
     body: {
         onInitState() {
@@ -24,7 +26,7 @@ export let TabBarComponent = ItemGroupComponent.replace({
         },
 
         onAfterInit(props?: TabBarProps): void {
-            this.on('tab:toggle', (data: any) => this._onItemToggle(data));
+            this.on('toggle', (data: any) => this._onItemToggle(data));
 
             if (props?.selectedIndex !== undefined && props.selectedIndex >= 0) {
                 this.selectAt(props.selectedIndex, true);
@@ -48,7 +50,7 @@ export let TabBarComponent = ItemGroupComponent.replace({
             if (newItem) newItem.pressed = true;
             this._selectedIndex = index;
 
-            if (!silent) this.emit('select', { index }, { source: 'tab' });
+            if (!silent) this.emit('select', { index });
         },
 
         _onItemToggle(data: any): void {

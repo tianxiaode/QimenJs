@@ -2,25 +2,35 @@
  * ItemGroupComponent 项组组件
  *
  * 轻量排列容器，通过 items 数组管理子组件实例。
- * 行为内聚于类本身，派生组件通过 withTemplate 覆盖模板，
- * 通过 extends 继承池化、事件转发等逻辑。
+ * 子项注册进 nodeMap，事件转发由 EventForwardAbility 统一处理。
+ *
+ * 核心设计：
+ * - defaultItem：按 type 索引的 TplNode 默认定义，子项创建时深合并
+ * - _visibleNames：有序可见 name 列表，控制 DOM 顺序和数据映射
+ * - _hiddenNames：池化可用 name 列表（itemDestroy=false 时复用）
+ * - nodeMap[name]：子项实例 + 事件声明，EventForwardAbility 自动接管
  *
  * 模板节点：
- * - items — 子项挂载区
+ * - itemContainer — 子项挂载区
  */
 
 import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
+import type { DomEventDecl } from '@qimenjs/component-core';
+import { getId } from '@/utils/string/id';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
+
+export type DefaultItemDef = Record<string, any>;
+
+export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
 
 export interface ItemGroupConfig {
     direction?: 'horizontal' | 'vertical';
     itemType?: string;
     items?: Record<string, any>[];
     gap?: string;
-    eventKey?: string;
-    events?: string[];
-    itemData?: string[];
+    defaultItem?: DefaultItemConfig;
+    itemDestroy?: boolean;
     overflowMode?: OverflowMode;
 }
 
@@ -29,28 +39,24 @@ export interface ItemGroupProps extends ItemGroupConfig {
     itemsCls?: string;
 }
 
-const DEFAULT_FORWARD_EVENTS = ['click', 'close'];
-
 export let ItemGroupComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [{ tag: 'div', name: 'itemContainer', className: 'q-itemgroup__items' }],
+        children: [{ tag: 'div', name: 'itemContainer', cls: 'q-itemgroup__items' }],
     },
     body: {
         type: 'ItemGroup',
 
         onInitState() {
             return {
-                _pool: [] as any[],
-                _visibleCount: 0,
+                _visibleNames: [] as string[],
+                _hiddenNames: [] as string[],
                 _direction: 'horizontal' as 'horizontal' | 'vertical',
                 _itemType: '',
                 _gap: '',
                 _containerEl: null as HTMLElement | null,
-                _eventKey: '',
-                _forwardEvents: [...DEFAULT_FORWARD_EVENTS],
-                _itemData: [] as string[],
-                _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
+                _defaultItem: {} as DefaultItemConfig,
+                _itemDestroy: true,
                 _overflowMode: 'none' as OverflowMode,
             };
         },
@@ -75,9 +81,8 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
             if (props?.direction) this._direction = props.direction;
             if (props?.itemType) this._itemType = props.itemType;
             if (props?.gap) this._gap = props.gap;
-            if (props?.eventKey) this._eventKey = props.eventKey;
-            if (props?.events) this._forwardEvents = props.events;
-            if (props?.itemData) this._itemData = props.itemData;
+            if (props?.defaultItem) this._defaultItem = props.defaultItem;
+            if (props?.itemDestroy !== undefined) this._itemDestroy = props.itemDestroy;
             if (props?.overflowMode) this._overflowMode = props.overflowMode;
 
             this._applyDirection();
@@ -93,13 +98,12 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         },
 
         get items(): readonly any[] {
-            return this._pool.slice(0, this._visibleCount);
-        },
-        get pool(): readonly any[] {
-            return this._pool;
+            return this._visibleNames
+                .map((name: string) => this.nodeMap[name]?.component)
+                .filter(Boolean);
         },
         get count(): number {
-            return this._visibleCount;
+            return this._visibleNames.length;
         },
         get direction(): 'horizontal' | 'vertical' {
             return this._direction;
@@ -121,14 +125,11 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
             this._gap = value;
             this._applyGap();
         },
-        get eventKey(): string {
-            return this._eventKey;
+        get defaultItem(): DefaultItemConfig {
+            return this._defaultItem;
         },
-        set eventKey(value: string) {
-            this._eventKey = value;
-        },
-        get forwardEvents(): readonly string[] {
-            return this._forwardEvents;
+        get itemDestroy(): boolean {
+            return this._itemDestroy;
         },
         get overflowMode(): OverflowMode {
             return this._overflowMode;
@@ -140,159 +141,264 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
 
         setItems(datas: Record<string, any>[]): void {
             for (let i = 0; i < datas.length; i++) {
-                if (i < this._pool.length) {
-                    const item = this._pool[i];
-                    if (typeof item.update === 'function') item.update(datas[i]);
-                    item.el.hidden = false;
-                } else {
-                    const instance = this._createItemInstance(datas[i]);
-                    if (instance) {
-                        this._pool.push(instance);
-                        this._mountItem(instance);
-                        this._bindItemEvents(instance);
+                if (i < this._visibleNames.length) {
+                    const name = this._visibleNames[i];
+                    const component = this.nodeMap[name]?.component;
+                    if (component && typeof component.update === 'function') {
+                        component.update(datas[i]);
                     }
+                    const el = this.nodeMap[name]?.el;
+                    if (el) el.hidden = false;
+                } else {
+                    this._createAndRegister(datas[i]);
                 }
             }
-            for (let i = datas.length; i < this._pool.length; i++) {
-                this._pool[i].el.hidden = true;
+
+            if (this._itemDestroy) {
+                for (let i = datas.length; i < this._visibleNames.length; i++) {
+                    const name = this._visibleNames[i];
+                    this._destroyItem(name);
+                }
+                this._visibleNames.length = datas.length;
+            } else {
+                for (let i = datas.length; i < this._visibleNames.length; i++) {
+                    const name = this._visibleNames[i];
+                    const el = this.nodeMap[name]?.el;
+                    if (el) el.hidden = true;
+                    this._hiddenNames.push(name);
+                }
+                this._visibleNames.length = datas.length;
             }
-            this._visibleCount = datas.length;
         },
 
         add(data: Record<string, any>): any {
-            const instance = this._createItemInstance(data);
-            if (!instance) return null;
-            this._pool.push(instance);
-            this._visibleCount = this._pool.length;
-            this._mountItem(instance);
-            this._bindItemEvents(instance);
-            return instance;
+            if (!this._itemDestroy) {
+                const reuseName = this._findReusableHidden(data.type);
+                if (reuseName) {
+                    const component = this.nodeMap[reuseName]?.component;
+                    if (component && typeof component.update === 'function') {
+                        component.update(data);
+                    }
+                    const el = this.nodeMap[reuseName]?.el;
+                    if (el) el.hidden = false;
+                    this._visibleNames.push(reuseName);
+                    this._hiddenNames.splice(this._hiddenNames.indexOf(reuseName), 1);
+                    return component;
+                }
+            }
+
+            const name = this._createAndRegister(data);
+            return name ? this.nodeMap[name]?.component : null;
         },
 
         insert(index: number, data: Record<string, any>): any {
-            const instance = this._createItemInstance(data);
-            if (!instance) return null;
-            const clampedIndex = Math.min(Math.max(0, index), this._visibleCount);
-            this._pool.splice(clampedIndex, 0, instance);
-            this._visibleCount++;
-            if (this._containerEl) {
-                const refNode = this._containerEl.children[clampedIndex];
-                if (refNode) this._containerEl.insertBefore(instance.el, refNode);
-                else this._containerEl.appendChild(instance.el);
+            const clampedIndex = Math.min(Math.max(0, index), this._visibleNames.length);
+
+            if (!this._itemDestroy) {
+                const reuseName = this._findReusableHidden(data.type);
+                if (reuseName) {
+                    const component = this.nodeMap[reuseName]?.component;
+                    if (component && typeof component.update === 'function') {
+                        component.update(data);
+                    }
+                    const el = this.nodeMap[reuseName]?.el;
+                    if (el) el.hidden = false;
+                    this._visibleNames.splice(clampedIndex, 0, reuseName);
+                    this._hiddenNames.splice(this._hiddenNames.indexOf(reuseName), 1);
+                    this._insertDOMAt(clampedIndex, el);
+                    return component;
+                }
             }
-            this._bindItemEvents(instance);
-            return instance;
+
+            const name = this._createAndRegister(data);
+            if (!name) return null;
+
+            this._visibleNames.splice(clampedIndex, 1);
+            this._visibleNames.splice(clampedIndex, 0, name);
+            this._insertDOMAt(clampedIndex, this.nodeMap[name]?.el);
+            return this.nodeMap[name]?.component;
         },
 
-        removeAt(index: number, destroy: boolean = true): any {
-            if (index < 0 || index >= this._visibleCount) return undefined;
-            const instance = this._pool[index];
-            if (destroy) {
-                this._pool.splice(index, 1);
-                this._visibleCount--;
-                this._unbindItemEvents(instance);
-                this._unmountItem(instance);
+        removeAt(index: number): any {
+            if (index < 0 || index >= this._visibleNames.length) return undefined;
+            const name = this._visibleNames[index];
+            const component = this.nodeMap[name]?.component;
+            this._visibleNames.splice(index, 1);
+
+            if (this._itemDestroy) {
+                this._destroyItem(name);
             } else {
-                instance.el.hidden = true;
-                this._pool.splice(index, 1);
-                this._pool.push(instance);
-                this._visibleCount--;
+                const el = this.nodeMap[name]?.el;
+                if (el) el.hidden = true;
+                this._hiddenNames.push(name);
             }
-            return instance;
+            return component;
         },
 
         updateAt(index: number, data: Record<string, any>): void {
-            if (index < 0 || index >= this._visibleCount) return;
-            const item = this._pool[index];
-            if (typeof item.update === 'function') item.update(data);
+            if (index < 0 || index >= this._visibleNames.length) return;
+            const name = this._visibleNames[index];
+            const component = this.nodeMap[name]?.component;
+            if (component && typeof component.update === 'function') component.update(data);
         },
 
         clear(): void {
-            for (const instance of this._pool) {
-                this._unbindItemEvents(instance);
-                this._unmountItem(instance);
+            for (const name of this._visibleNames) {
+                if (this._itemDestroy) {
+                    this._destroyItem(name);
+                } else {
+                    const el = this.nodeMap[name]?.el;
+                    if (el) el.hidden = true;
+                    this._hiddenNames.push(name);
+                }
             }
-            this._pool.length = 0;
-            this._visibleCount = 0;
+            this._visibleNames.length = 0;
+
+            if (this._itemDestroy) {
+                for (const name of this._hiddenNames) {
+                    this._destroyItem(name);
+                }
+                this._hiddenNames.length = 0;
+            }
         },
 
         indexOf(instance: any): number {
-            return this._pool.slice(0, this._visibleCount).indexOf(instance);
+            for (let i = 0; i < this._visibleNames.length; i++) {
+                if (this.nodeMap[this._visibleNames[i]]?.component === instance) return i;
+            }
+            return -1;
         },
 
         getAt(index: number): any {
-            if (index < 0 || index >= this._visibleCount) return null;
-            return this._pool[index];
+            if (index < 0 || index >= this._visibleNames.length) return null;
+            return this.nodeMap[this._visibleNames[index]]?.component ?? null;
         },
 
         sort(compareFn?: (a: any, b: any) => number): void {
-            const defaultCompare = (a: any, b: any): number => {
-                const orderA = a.order ?? a.props?.order ?? 0;
-                const orderB = b.order ?? b.props?.order ?? 0;
+            const defaultCompare = (nameA: string, nameB: string): number => {
+                const a = this.nodeMap[nameA]?.component;
+                const b = this.nodeMap[nameB]?.component;
+                const orderA = a?.order ?? a?.props?.order ?? 0;
+                const orderB = b?.order ?? b?.props?.order ?? 0;
                 return orderA - orderB;
             };
-            this._pool.sort(compareFn ?? defaultCompare);
+            this._visibleNames.sort(
+                compareFn
+                    ? (a: string, b: string) => {
+                          const compA = this.nodeMap[a]?.component;
+                          const compB = this.nodeMap[b]?.component;
+                          return compareFn(compA, compB);
+                      }
+                    : defaultCompare
+            );
             this._flushDOMOrder();
         },
 
         move(fromIndex: number, toIndex: number): void {
-            if (fromIndex < 0 || fromIndex >= this._visibleCount) return;
-            if (toIndex < 0 || toIndex >= this._visibleCount) return;
+            if (fromIndex < 0 || fromIndex >= this._visibleNames.length) return;
+            if (toIndex < 0 || toIndex >= this._visibleNames.length) return;
             if (fromIndex === toIndex) return;
-            const [item] = this._pool.splice(fromIndex, 1);
-            this._pool.splice(toIndex, 0, item);
+            const [name] = this._visibleNames.splice(fromIndex, 1);
+            this._visibleNames.splice(toIndex, 0, name);
             this._flushDOMOrder();
         },
 
-        onForwardEvent(event: string, data: Record<string, any>): void {
-            this.emit(event, data, { source: this._eventKey || undefined });
-        },
-
-        _createItemInstance(data: Record<string, any>): any {
+        _createAndRegister(data: Record<string, any>): string | null {
             const itemType = data.type ?? this._itemType;
             if (!itemType) return null;
+
             const ItemClass = ComponentRegistrar.getInstance().get(itemType);
             if (!ItemClass) return null;
+
+            const mergedEvents = this._mergeEvents(data, itemType);
+            const name = data.name ?? getId('item');
             const props = { ...data };
-            if (this._eventKey) props.eventKey = this._eventKey;
-            return new ItemClass(props);
+            delete props.name;
+            delete props.events;
+
+            const instance = new ItemClass(props);
+
+            this.nodeMap[name] = {
+                name,
+                el: instance.el,
+                component: instance,
+                events: mergedEvents,
+            };
+
+            this._mountItem(instance);
+
+            if (mergedEvents && Object.keys(mergedEvents).length > 0) {
+                this._bindItemNodeEvents(name);
+            }
+
+            this._visibleNames.push(name);
+            return name;
         },
 
-        _bindItemEvents(instance: any): void {
-            if (!this._eventKey || typeof instance.on !== 'function') return;
-            const unsubMap = new Map<string, () => void>();
-            const childScopeId = instance.eventScope?.getScopeId?.();
-            for (const event of this._forwardEvents) {
-                const unsub = instance.on(event, (data: any) => {
-                    if (childScopeId && data?.scopeId && data.scopeId !== childScopeId) return;
-                    const index = this.indexOf(instance);
-                    this.onForwardEvent(event, {
-                        ...data?.data,
-                        ...this._extractItemData(instance, index),
-                    });
-                });
-                unsubMap.set(event, unsub);
+        _mergeEvents(
+            data: Record<string, any>,
+            itemType: string
+        ): Record<string, DomEventDecl> | undefined {
+            const itemEvents = data.events as Record<string, DomEventDecl> | undefined;
+            const defaultDef = this._defaultItem[itemType];
+            if (!defaultDef?.events && !itemEvents) return undefined;
+            if (!defaultDef?.events) return itemEvents;
+            if (!itemEvents) return defaultDef.events;
+
+            const merged: Record<string, DomEventDecl> = { ...defaultDef.events };
+            for (const [event, decl] of Object.entries(itemEvents)) {
+                if (merged[event]) {
+                    merged[event] = { ...merged[event], ...decl };
+                } else {
+                    merged[event] = decl;
+                }
             }
-            this._itemUnsubscribes.set(instance, unsubMap);
+            return merged;
         },
 
-        _unbindItemEvents(instance: any): void {
-            const unsubMap = this._itemUnsubscribes.get(instance);
-            if (!unsubMap) return;
-            for (const unsub of unsubMap.values()) {
-                if (typeof unsub === 'function') unsub();
+        _bindItemNodeEvents(name: string): void {
+            const node = this.nodeMap[name];
+            if (!node?.component || !node.events) return;
+
+            for (const [domEvent, decl] of Object.entries(node.events)) {
+                if (typeof this._bindComponentEvent === 'function') {
+                    this._bindComponentEvent(node.component, name, domEvent, decl);
+                }
             }
-            this._itemUnsubscribes.delete(instance);
         },
 
-        _extractItemData(instance: any, index: number): Record<string, any> {
-            const result: Record<string, any> = { index };
-            for (const key of this._itemData) {
-                const value = instance[key];
-                if (value !== undefined && typeof value !== 'function' && !value?.el)
-                    result[key] = value;
+        _unbindItemNodeEvents(name: string): void {
+            const node = this.nodeMap[name];
+            if (!node?.component) return;
+
+            if (typeof this.onCleanup === 'function') {
+                const unsubKey = `_itemUnsub_${name}`;
+                const unsub = (this as any)[unsubKey];
+                if (typeof unsub === 'function') {
+                    unsub();
+                    delete (this as any)[unsubKey];
+                }
             }
-            return result;
+        },
+
+        _findReusableHidden(itemType?: string): string | null {
+            if (!itemType) return this._hiddenNames.length > 0 ? this._hiddenNames[0] : null;
+            for (const name of this._hiddenNames) {
+                const component = this.nodeMap[name]?.component;
+                if (component?.type === itemType || component?.constructor?.type === itemType) {
+                    return name;
+                }
+            }
+            return null;
+        },
+
+        _destroyItem(name: string): void {
+            this._unbindItemNodeEvents(name);
+            const node = this.nodeMap[name];
+            if (node?.component) {
+                this._unmountItem(node.component);
+            }
+            delete this.nodeMap[name];
         },
 
         _mountItem(instance: any): void {
@@ -302,6 +408,13 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         _unmountItem(instance: any): void {
             if (instance?.el) instance.el.remove();
             if (typeof instance?.dispose === 'function') instance.dispose();
+        },
+
+        _insertDOMAt(index: number, el?: HTMLElement): void {
+            if (!this._containerEl || !el) return;
+            const refNode = this._containerEl.children[index];
+            if (refNode) this._containerEl.insertBefore(el, refNode);
+            else this._containerEl.appendChild(el);
         },
 
         _applyDirection(): void {
@@ -316,8 +429,9 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         _flushDOMOrder(): void {
             if (!this._containerEl) return;
             const fragment = document.createDocumentFragment();
-            for (const instance of this._pool) {
-                if (instance?.el) fragment.appendChild(instance.el);
+            for (const name of this._visibleNames) {
+                const el = this.nodeMap[name]?.el;
+                if (el) fragment.appendChild(el);
             }
             this._containerEl.appendChild(fragment);
         },
@@ -366,7 +480,6 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
                 this._applyGap();
             }
             if (props?.itemType !== undefined) this._itemType = props.itemType;
-            if (props?.eventKey !== undefined) this._eventKey = props.eventKey;
             if (props?.overflowMode !== undefined) {
                 this._overflowMode = props.overflowMode;
                 this._applyOverflowMode();
@@ -377,7 +490,6 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         onBeforeDispose(): void {
             this._cleanupOverflow();
             this.clear();
-            this._itemUnsubscribes.clear();
         },
     },
 });

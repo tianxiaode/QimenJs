@@ -4,10 +4,10 @@ import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
 type ItemGroupInstance = InstanceType<typeof ItemGroupComponent>;
 
 export interface ToolGroupConfig {
-    eventKey: string;
     items: Record<string, any>[];
     itemType?: string;
     cls?: string;
+    defaultItem?: Record<string, any>;
 }
 
 export interface PanelProps {
@@ -20,34 +20,34 @@ export interface PanelProps {
 const PanelBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-panel',
+        cls: 'q-panel',
         children: [
             {
                 tag: 'div',
                 name: 'header',
-                className: 'q-panel__header',
+                cls: 'q-panel__header',
                 children: [
                     {
                         tag: 'div',
                         name: 'toolsLeft',
-                        className: 'q-panel__tools q-panel__tools--left',
+                        cls: 'q-panel__tools q-panel__tools--left',
                     },
                     {
                         tag: 'div',
                         name: 'expand',
-                        className: 'q-expand-arrow q-expand-arrow--collapsed',
+                        cls: 'q-expand-arrow q-expand-arrow--collapsed',
                         hidden: true,
                         children: [{ tag: 'i' }],
                     },
-                    { tag: 'span', name: 'title', className: 'q-panel__title' },
+                    { tag: 'span', name: 'title', cls: 'q-panel__title' },
                     {
                         tag: 'div',
                         name: 'toolsRight',
-                        className: 'q-panel__tools q-panel__tools--right',
+                        cls: 'q-panel__tools q-panel__tools--right',
                     },
                 ],
             },
-            { tag: 'div', name: 'body', className: 'q-panel__body' },
+            { tag: 'div', name: 'body', cls: 'q-panel__body' },
         ],
     },
     body: { type: 'Panel' },
@@ -69,7 +69,7 @@ export class PanelComponent extends PanelBase {
                 itemType: props.toolsLeft.itemType ?? 'Icon',
                 direction: 'horizontal',
                 gap: '4px',
-                eventKey: props.toolsLeft.eventKey,
+                defaultItem: props.toolsLeft.defaultItem,
                 items: props.toolsLeft.items,
                 cls: props.toolsLeft.cls,
             });
@@ -77,8 +77,6 @@ export class PanelComponent extends PanelBase {
             if (toolsLeftEl) {
                 toolsLeftEl.appendChild(this._toolsLeft.el);
             }
-
-            this._bridgeToolEvents(this._toolsLeft, props.toolsLeft.eventKey);
         }
 
         if (props?.toolsRight) {
@@ -86,7 +84,7 @@ export class PanelComponent extends PanelBase {
                 itemType: props.toolsRight.itemType ?? 'Icon',
                 direction: 'horizontal',
                 gap: '4px',
-                eventKey: props.toolsRight.eventKey,
+                defaultItem: props.toolsRight.defaultItem,
                 items: props.toolsRight.items,
                 cls: props.toolsRight.cls,
             });
@@ -94,8 +92,6 @@ export class PanelComponent extends PanelBase {
             if (toolsRightEl) {
                 toolsRightEl.appendChild(this._toolsRight.el);
             }
-
-            this._bridgeToolEvents(this._toolsRight, props.toolsRight.eventKey);
         }
 
         if (props?.expandable) {
@@ -120,14 +116,6 @@ export class PanelComponent extends PanelBase {
                     }
                 });
             }
-        }
-    }
-
-    _bridgeToolEvents(group: ItemGroupInstance, eventKey: string): void {
-        for (const event of group.forwardEvents) {
-            group.on(event, (data: any) => {
-                this.emit(event, data, { source: eventKey });
-            });
         }
     }
 }

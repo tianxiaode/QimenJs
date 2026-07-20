@@ -15,8 +15,9 @@ export let ButtonGroupComponent = ItemGroupComponent.replace({
     itemsCls: 'q-button-group__items',
     config: {
         itemType: 'Toggle',
-        eventKey: 'btn',
-        events: ['toggle'],
+        defaultItem: {
+            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
+        },
         direction: 'horizontal',
         gap: '2px',
     },
@@ -31,7 +32,7 @@ export let ButtonGroupComponent = ItemGroupComponent.replace({
             this._mode = props?.mode ?? 'single';
             this.el.classList.toggle('q-button-group--multiple', this._mode === 'multiple');
 
-            this.on('btn:toggle', (data: any) => {
+            this.on('toggle', (data: any) => {
                 this._onItemToggle(data);
             });
 
@@ -80,7 +81,7 @@ export let ButtonGroupComponent = ItemGroupComponent.replace({
             }
 
             if (!silent) {
-                this.emit('select', { index, item: target }, { source: 'btn' });
+                this.emit('select', { index, item: target });
             }
         },
 
@@ -91,7 +92,7 @@ export let ButtonGroupComponent = ItemGroupComponent.replace({
                 item.pressed = pressed;
             }
             if (!silent) {
-                this.emit('select', { index, pressed, item }, { source: 'btn' });
+                this.emit('select', { index, pressed, item });
             }
         },
 

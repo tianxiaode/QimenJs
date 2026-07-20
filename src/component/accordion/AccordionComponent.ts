@@ -17,8 +17,9 @@ export let AccordionComponent = ItemGroupComponent.replace({
         direction: 'vertical',
         gap: '0',
         itemType: 'Panel',
-        eventKey: 'accordion',
-        events: ['click'],
+        defaultItem: {
+            Panel: { events: { click: { bridges: ['click'] } } },
+        },
     },
     body: {
         onInitState() {
@@ -32,7 +33,7 @@ export let AccordionComponent = ItemGroupComponent.replace({
             this._mode = props?.mode ?? 'single';
             this.el.classList.toggle('q-accordion--multiple', this._mode === 'multiple');
 
-            this.on('accordion:click', (data: any) => this._onPanelClick(data));
+            this.on('click', (data: any) => this._onPanelClick(data));
 
             if (this._mode === 'single' && props?.expandedIndex !== undefined) {
                 this.expandAt(props.expandedIndex, true);
@@ -66,7 +67,7 @@ export let AccordionComponent = ItemGroupComponent.replace({
             } else {
                 this._expandPanel(index);
             }
-            if (!silent) this.emit('select', { index, expanded: true }, { source: 'accordion' });
+            if (!silent) this.emit('select', { index, expanded: true });
         },
 
         collapseAt(index: number, silent: boolean = false): void {
@@ -79,7 +80,7 @@ export let AccordionComponent = ItemGroupComponent.replace({
             } else {
                 this._collapsePanel(index);
             }
-            if (!silent) this.emit('select', { index, expanded: false }, { source: 'accordion' });
+            if (!silent) this.emit('select', { index, expanded: false });
         },
 
         toggleAt(index: number, silent: boolean = false): void {

@@ -3,8 +3,6 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
 import type { NavItemComponent } from './NavItemComponent';
 import type { NavOverlayOptions } from './NavItemComponent';
 
-const NAV_FORWARD_EVENTS = ['click', 'close'];
-
 export interface NavItemGroupProps extends ItemGroupProps {
     activeIndex?: number;
     mode?: 'expanded' | 'collapsed';
@@ -19,8 +17,9 @@ export let NavItemGroupComponent = ItemGroupComponent.replace({
     itemsCls: 'q-nav__items',
     config: {
         itemType: 'NavItem',
-        eventKey: 'nav',
-        events: NAV_FORWARD_EVENTS,
+        defaultItem: {
+            NavItem: { events: { click: { bridges: ['click'] }, close: { bridges: ['close'] } } },
+        },
         direction: 'horizontal',
     },
     body: {
@@ -71,11 +70,7 @@ export let NavItemGroupComponent = ItemGroupComponent.replace({
             this._activeIndex = index;
 
             if (!silent) {
-                this.emit(
-                    'select',
-                    { ...this._extractItemData(newItem, index) },
-                    { source: this.eventKey || undefined }
-                );
+                this.emit('select', { index });
             }
         },
 
