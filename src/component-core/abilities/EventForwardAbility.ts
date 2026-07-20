@@ -42,6 +42,7 @@ import type { EventContext, EventChainLink } from '@/context';
 import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
+import { getId } from '@/utils/string/id';
 
 type EventDataType = 'emit' | 'bridge' | 'entity' | 'float';
 
@@ -120,7 +121,10 @@ export const EventForwardAbility: AbilityDefinition = {
             this.entityEmit(ctx);
         }
 
-        if (decl.floats?.length && this.floatKey) {
+        if (decl.floats?.length) {
+            if (!this.floatKey) {
+                this.floatKey = getId('float');
+            }
             for (const floatAction of decl.floats) {
                 const floatData = this._collectEventData(nodeName, floatAction, 'float');
                 const payload = mergeEventData(floatData, data);
