@@ -142,7 +142,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
     }
 
-    private _handleInit(overlayKey: string, data: any): void {
+    private _handleInit(componentId: string, data: any): void {
         const component = data?.component;
         const floats = data?.floats;
         if (!component || !floats) return;
@@ -150,6 +150,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         for (const [nodeName, floatDef] of Object.entries(floats)) {
             const def = floatDef as Record<string, any>;
             const anchor = component.nodeMap?.[nodeName]?.el ?? component.el;
+            const overlayKey = `${componentId}:${nodeName}`;
 
             this.register(overlayKey, {
                 type: def.type,
@@ -167,14 +168,13 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             for (const t of triggers) {
                 if (t === 'manual' || t === 'always') continue;
 
+                const showAction = t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE;
                 const handler = (e: Event) => {
                     e.stopPropagation();
                     this.bus.overlayEmit(
                         EventContextBuilder.create()
-                            .withEvent(
-                                `overlay:${overlayKey}:${t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE}`
-                            )
-                            .withType(t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE)
+                            .withEvent(`overlay:${overlayKey}:${showAction}`)
+                            .withType(showAction)
                             .withSource(overlayKey)
                             .withData({ component, anchor })
                             .build()
@@ -209,24 +209,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                     });
                 }
             }
-
-            const handlerKey = `on${nodeName[0].toUpperCase()}${nodeName.slice(1)}Float`;
-            const offs: Array<() => void> = component._floatOffs ?? [];
-
-            for (const feedbackAction of Object.values(OVERLAY_FEEDBACK_EVENTS)) {
-                const off = this.bus.overlayOn(
-                    overlayKey,
-                    feedbackAction as string,
-                    (feedbackData: any) => {
-                        if (typeof component[handlerKey] === 'function') {
-                            component[handlerKey]({ action: feedbackAction, ...feedbackData });
-                        }
-                    }
-                );
-                offs.push(off);
-            }
-
-            component._floatOffs = offs;
         }
     }
 

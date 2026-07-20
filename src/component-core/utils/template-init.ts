@@ -43,7 +43,7 @@ export function initFromTemplate(instance: any, props?: Record<string, any>): vo
 
         renderChildComponents(instance);
 
-        ensureFloatKey(instance);
+        initFloats(instance);
 
         bindDomEventBindings(instance);
 
@@ -259,22 +259,18 @@ function applyI18nTranslations(
     }
 }
 
-function ensureFloatKey(instance: any): void {
-    if (instance.floatKey) return;
-
+function initFloats(instance: any): void {
     const ctor = instance.constructor as any;
     const floats = ctor._floats;
     if (!floats || Object.keys(floats).length === 0) return;
 
-    instance.floatKey = getId('float');
-
     const overlayEventBus = OverlayEventBus.getInstance();
     overlayEventBus.overlayEmit(
         EventContextBuilder.create()
-            .withEvent(`overlay:${instance.floatKey}:${OVERLAY_ACTIONS.INIT}`)
+            .withEvent(`overlay:${instance.id}:${OVERLAY_ACTIONS.INIT}`)
             .withType(OVERLAY_ACTIONS.INIT)
-            .withSource(instance.floatKey)
-            .withData({ component: instance, floats, floatKey: instance.floatKey })
+            .withSource(instance.id)
+            .withData({ component: instance, floats })
             .build()
     );
 }
