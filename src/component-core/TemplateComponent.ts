@@ -98,6 +98,11 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         this._dirtyNodes = {};
         this.nodeMap = {};
 
+        if (this._floatOffs) {
+            for (const off of this._floatOffs) off();
+            this._floatOffs = null;
+        }
+
         this._initializing = false;
 
         super.dispose();

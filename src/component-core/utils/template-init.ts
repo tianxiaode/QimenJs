@@ -21,8 +21,11 @@ import type {
 } from '../types/compiled-types';
 import { findByPath } from './template-compiler';
 import { SYSTEM_EVENTS } from '@/events';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { getId } from '@/utils/string/id';
+
+const OVERLAY_FEEDBACK_ACTIONS = ['shown', 'hidden'] as const;
 
 export function initFromTemplate(instance: any, props?: Record<string, any>): void {
     instance._initializing = true;
@@ -259,14 +262,39 @@ function applyI18nTranslations(
 function ensureFloatKey(instance: any): void {
     if (instance.floatKey) return;
 
-    for (const node of Object.values(instance.nodeMap as Record<string, NodeMetadata>)) {
-        if (node.events) {
-            for (const decl of Object.values(node.events as Record<string, any>)) {
-                if (decl.floats?.length) {
-                    instance.floatKey = getId('float');
-                    return;
-                }
+    const floatNodes: string[] = [];
+
+    for (const [nodeName, node] of Object.entries(
+        instance.nodeMap as Record<string, NodeMetadata>
+    )) {
+        if (!node.events) continue;
+        for (const decl of Object.values(node.events as Record<string, any>)) {
+            if (decl.floats?.length) {
+                floatNodes.push(nodeName);
+                break;
             }
         }
     }
+
+    if (floatNodes.length === 0) return;
+
+    instance.floatKey = getId('float');
+
+    const overlayEventBus = OverlayEventBus.getInstance();
+    const offs: Array<() => void> = [];
+
+    for (const nodeName of floatNodes) {
+        const handlerKey = `on${nodeName[0].toUpperCase()}${nodeName.slice(1)}Float`;
+
+        for (const action of OVERLAY_FEEDBACK_ACTIONS) {
+            const off = overlayEventBus.overlayOn(instance.floatKey, action, (data: any) => {
+                if (typeof instance[handlerKey] === 'function') {
+                    instance[handlerKey]({ action, ...data });
+                }
+            });
+            offs.push(off);
+        }
+    }
+
+    instance._floatOffs = offs;
 }
