@@ -122,9 +122,6 @@ export const EventForwardAbility: AbilityDefinition = {
         }
 
         if (decl.floats?.length) {
-            if (!this.floatKey) {
-                this.floatKey = getId('float');
-            }
             for (const floatAction of decl.floats) {
                 const floatData = this._collectEventData(nodeName, floatAction, 'float');
                 const payload = mergeEventData(floatData, data);

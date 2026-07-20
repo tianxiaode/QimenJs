@@ -22,6 +22,7 @@ import type {
 import { findByPath } from './template-compiler';
 import { SYSTEM_EVENTS } from '@/events';
 import { resolveI18nValue } from '@qimenjs/i18n';
+import { getId } from '@/utils/string/id';
 
 export function initFromTemplate(instance: any, props?: Record<string, any>): void {
     instance._initializing = true;
@@ -38,6 +39,8 @@ export function initFromTemplate(instance: any, props?: Record<string, any>): vo
         initI18nFromTemplate(instance);
 
         renderChildComponents(instance);
+
+        ensureFloatKey(instance);
 
         bindDomEventBindings(instance);
 
@@ -250,5 +253,20 @@ function applyI18nTranslations(
             node.contentMode === 'value' ? 'value' : node.contentMode === 'src' ? 'src' : 'text';
 
         instance._markNodeDirty(name, { [contentProp]: translated });
+    }
+}
+
+function ensureFloatKey(instance: any): void {
+    if (instance.floatKey) return;
+
+    for (const node of Object.values(instance.nodeMap as Record<string, NodeMetadata>)) {
+        if (node.events) {
+            for (const decl of Object.values(node.events as Record<string, any>)) {
+                if (decl.floats?.length) {
+                    instance.floatKey = getId('float');
+                    return;
+                }
+            }
+        }
     }
 }
