@@ -43,7 +43,7 @@ import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 
-type EventDataType = 'emit' | 'bridge' | 'entity';
+type EventDataType = 'emit' | 'bridge' | 'entity' | 'float';
 
 export const EventForwardAbility: AbilityDefinition = {
     bindDomEventBindings(): void {
@@ -118,6 +118,23 @@ export const EventForwardAbility: AbilityDefinition = {
             const payload = mergeEventData(entityData, data);
             const ctx = this._buildForwardContext(decl.entities, payload, this.entityKey, 'entity');
             this.entityEmit(ctx);
+        }
+
+        if (decl.floats?.length && this.floatKey) {
+            for (const floatAction of decl.floats) {
+                const floatData = this._collectEventData(nodeName, floatAction, 'float');
+                const payload = mergeEventData(floatData, data);
+                const ctx = this._buildForwardContext(
+                    floatAction,
+                    { ...payload, component: this, anchor: el },
+                    this.floatKey,
+                    'float'
+                );
+                if (originalDomEvent) {
+                    ctx.domEvent = originalDomEvent;
+                }
+                this.overlayEmit(ctx);
+            }
         }
     },
 
