@@ -18,22 +18,9 @@ export function compilePendingTemplate(ctor: any, template: ComponentTemplate, l
     const tpl = document.createElement('template');
     tpl.innerHTML = result.html;
 
-    const root = template.tpl;
-    const rootMeta: NodeMetadata = {
-        name: 'root',
-        tag: root.tag,
-        cls: root.cls,
-        style: root.style,
-        flex: root.flex,
-        grid: root.grid,
-        role: root.role,
-        attrs: root.attrs,
-    };
-
     ctor._compiledTemplate = {
         ...result,
         templateCache: tpl,
-        rootMeta,
         body: template.body,
     };
 
@@ -67,6 +54,20 @@ function compileTemplate(template: ComponentTemplate, logger: any) {
     const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
     const root = template.tpl;
+
+    indexPath['root'] = [];
+    nodeMetas['root'] = {
+        name: 'root',
+        tag: root.tag,
+        cls: root.cls,
+        style: root.style,
+        flex: root.flex,
+        grid: root.grid,
+        role: root.role,
+        attrs: root.attrs,
+        events: root.events,
+    };
+
     const children = root.children || [];
     const htmlParts: string[] = [];
 

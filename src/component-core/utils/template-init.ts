@@ -64,10 +64,6 @@ function initElementFromTemplate(instance: any): void {
     const fragment = compiled.templateCache.content.cloneNode(true);
     instance.el.appendChild(fragment);
 
-    if (compiled.rootMeta) {
-        instance._updateNode('root', buildNodePropsFromMeta(compiled.rootMeta));
-    }
-
     buildNodeMap(instance);
 }
 

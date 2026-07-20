@@ -7,6 +7,13 @@
 
 ## 构建历史
 
+### 2026-07-20
+- ✅ 根节点统一纳入 nodeMap（编译时 root 写入 indexPath/nodeMetas，移除 rootMeta）
+- ✅ 移除所有 root 特判：_resolveNodeEl 不再 if(nodeName==='root')、initNodeProps 不再跳过 root、initElementFromTemplate 不再单独 _updateNode('root')
+- ✅ 根节点 events 支持：根节点可声明 events，自动走 bindDomEventBindings 统一绑定
+- ✅ ToggleComponent/ToggleIconComponent 重构：移除 props/forwards、events 声明式事件转发、$icon 属性机制、onAfterInit 生命周期
+- ✅ body.forwards 对简单组件转发已冗余（addComponentForwardDescs 自动生成 $name/nameCls/nameHidden 等）
+
 ### 2026-07-19
 - ✅ 子节点属性自动构建（child-node-props.ts）：contentMode→属性映射、通用属性、组件子节点 $name + 属性转发、i18n 节点特殊处理
 - ✅ template-constants.ts 常量集中管理（CONTENT_MODE_MAP/COMMON_NODE_PROPS/RESERVED_KEYS/ANIMATION_PRESETS）

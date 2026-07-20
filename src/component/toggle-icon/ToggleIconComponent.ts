@@ -4,15 +4,16 @@
  * 通过切换图标来表达状态变化。
  * 两个状态各对应一个图标，点击自动切换。
  *
+ * 模板节点：
+ * - icon — 图标（IconComponent），通过 $icon 访问
+ *
+ * 事件：
+ * - toggle — 切换状态变化时触发，数据 { on }
+ *
  * 使用示例：
  * ```ts
- * // 播放/暂停
  * new ToggleIconComponent({ onIcon: '⏸', offIcon: '▶' })
- *
- * // 静音/取消静音
  * new ToggleIconComponent({ onIcon: '🔊', offIcon: '🔇', on: true })
- *
- * // 监听切换
  * toggleIcon.on('toggle', ({ on }) => { ... })
  * ```
  */
@@ -31,12 +32,11 @@ export interface ToggleIconProps {
 export let ToggleIconComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-toggle-icon',
-        children: [{ name: 'icon', type: IconComponent, className: 'q-toggle-icon__icon' }],
-    },
-    props: {
-        size: 'md',
-        disabled: false,
+        cls: 'q-toggle-icon',
+        events: {
+            click: { handler: true, emits: ['toggle'] },
+        },
+        children: [{ name: 'icon', type: IconComponent, cls: 'q-toggle-icon__icon' }],
     },
     body: {
         type: 'ToggleIcon',
@@ -49,19 +49,23 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
             };
         },
 
-        forwards: {
-            icon: 'icon',
-        },
-
-        _initToggleIcon(props?: ToggleIconProps): void {
+        onAfterInit(props?: ToggleIconProps): void {
             if (props?.onIcon) this._onIcon = props.onIcon;
             if (props?.offIcon) this._offIcon = props.offIcon;
             if (props?.on) this._on = props.on;
             if (props?.disabled) this.disabled = props.disabled;
             if (props?.size) this.size = props.size;
-
-            this.el.addEventListener('click', () => this._handleClick());
             this._applyState();
+        },
+
+        onRootClick(): void {
+            if (this.disabled) return;
+            this._on = !this._on;
+            this._applyState();
+        },
+
+        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
+            return { on: this._on };
         },
 
         get on(): boolean {
@@ -88,18 +92,11 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
             this._applyState();
         },
 
-        _handleClick(): void {
-            if (this.disabled) return;
-            this._on = !this._on;
-            this._applyState();
-            this.emit('toggle', { on: this._on });
-        },
-
         _applyState(): void {
             const iconValue = this._on ? this._onIcon : this._offIcon;
-            const iconComponent = this.icon;
-            if (iconComponent?.nodeMap?.content?.el && iconValue) {
-                iconComponent.nodeMap.content.el.innerHTML = iconValue;
+            const iconComponent = this.$icon;
+            if (iconComponent && iconValue) {
+                iconComponent.content = iconValue;
             }
 
             this.el.classList.toggle('q-toggle-icon--on', this._on);

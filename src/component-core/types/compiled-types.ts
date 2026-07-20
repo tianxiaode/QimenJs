@@ -130,9 +130,6 @@ export interface CompiledComponentTemplate extends CompiledTemplateResult {
     /** HTMLTemplateElement 缓存，用于 cloneNode */
     templateCache: HTMLTemplateElement;
 
-    /** 根节点元数据（从 tpl 根节点收集的 cls/style/flex/grid/role/attrs） */
-    rootMeta?: NodeMetadata;
-
     /** 原始 body 定义 */
     body?: Record<string, any>;
 }

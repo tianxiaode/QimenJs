@@ -58,6 +58,8 @@ export function buildChildNodePropDescs(
     const i18nSet = new Set(i18nNodes.map(n => n.name));
 
     for (const [nodeName, meta] of Object.entries(nodeMetas)) {
+        if (nodeName === 'root') continue;
+
         if (meta.componentClass) {
             addComponentRefDesc(descs, nodeName);
             addComponentForwardDescs(descs, nodeName, meta.componentClass);

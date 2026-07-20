@@ -5,18 +5,16 @@
  * 点击自动切换状态，视觉反馈跟随状态变化。
  *
  * 模板节点：
- * - icon — 图标（IconComponent）
+ * - icon — 图标（IconComponent），通过 $icon 访问
  * - text — 文本
+ *
+ * 事件：
+ * - toggle — 切换状态变化时触发，数据 { pressed }
  *
  * 使用示例：
  * ```ts
- * // 简单切换
  * new ToggleComponent({ text: '粗体', icon: 'B' })
- *
- * // 带初始状态
  * new ToggleComponent({ text: '斜体', icon: 'I', pressed: true })
- *
- * // 监听切换
  * toggle.on('toggle', ({ pressed }) => { ... })
  * ```
  */
@@ -36,14 +34,13 @@ export let ToggleComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-toggle',
+        events: {
+            click: { handler: true, emits: ['toggle'] },
+        },
         children: [
             { name: 'icon', type: IconComponent, cls: 'q-toggle__icon', hidden: true },
             { tag: 'span', name: 'text', cls: 'q-toggle__text' },
         ],
-    },
-    props: {
-        size: 'md',
-        disabled: false,
     },
     body: {
         type: 'Toggle',
@@ -54,19 +51,23 @@ export let ToggleComponent = TemplateComponent.withTemplate({
             };
         },
 
-        forwards: {
-            icon: 'icon',
-        },
-
-        _initToggle(props?: ToggleProps): void {
+        onAfterInit(props?: ToggleProps): void {
             if (props?.pressed) this._pressed = props.pressed;
             if (props?.disabled) this.disabled = props.disabled;
             if (props?.size) this.size = props.size;
             if (props?.text) this.text = props.text;
             if (props?.icon) this._setIcon(props.icon);
-
-            this.el.addEventListener('click', () => this._handleClick());
             this._applyState();
+        },
+
+        onRootClick(): void {
+            if (this.disabled) return;
+            this._pressed = !this._pressed;
+            this._applyState();
+        },
+
+        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
+            return { pressed: this._pressed };
         },
 
         get pressed(): boolean {
@@ -77,19 +78,11 @@ export let ToggleComponent = TemplateComponent.withTemplate({
             this._applyState();
         },
 
-        _handleClick(): void {
-            if (this.disabled) return;
-            this._pressed = !this._pressed;
-            this._applyState();
-            this.emit('toggle', { pressed: this._pressed });
-        },
-
         _setIcon(value: string): void {
-            const iconComponent = this.icon;
-            if (iconComponent?.nodeMap?.content?.el) {
-                iconComponent.nodeMap.content.el.innerHTML = value;
-                const iconWrap = iconComponent.el;
-                if (iconWrap) iconWrap.hidden = false;
+            const iconComponent = this.$icon;
+            if (iconComponent) {
+                iconComponent.content = value;
+                this.iconHidden = false;
             }
         },
 

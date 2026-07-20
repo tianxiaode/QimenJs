@@ -651,6 +651,21 @@ this.nodeMap['header'].el              // ✅ 推荐
 
 **name 来源**：TplNode 的 `name` 或 `content` 属性，支持冒号语法（如 `dialog:header`），冒号后的部分作为 name。
 
+### 14.1 根节点也在 nodeMap 中
+
+根节点（`root`）在编译时自动写入 nodeMap，path 为 `[]`，el 指向 `this.el`：
+
+```typescript
+this.nodeMap['root']       // { name: 'root', el: this.el, cls: ..., events: ... }
+this.nodeMap['root'].el    // === this.el
+```
+
+**统一收益**：
+- 根节点 events 声明后自动走 `bindDomEventBindings`，无需手动 `bind`/`addEventListener`
+- `_updateNode('root', ...)` / `_setNodeProp('root', ...)` / `_markNodeDirty('root', ...)` 与子节点完全统一
+- `_resolveNodeEl` 不再需要 `if (nodeName === 'root')` 特判
+- 根节点属性（cls/style/flex/grid/role/attrs/events）编译时统一进入 nodeMetas
+
 ## 15. body.bridges 声明式桥接
 
 在 ComponentTemplate 的 body 中声明桥接事件配置，替代 static eventBridge：
@@ -683,6 +698,24 @@ body 中的特殊 key 处理：
 ## 16. body.forwards 属性/方法透传
 
 `forwards` 定义在 body 上，是属性和方法透传的统一入口，替代 TplNode 上的 `forward` 属性。
+
+### 16.0 简单转发已自动处理
+
+对于组件子节点的**通用属性转发**，`addComponentForwardDescs` 已自动生成，无需手动声明 forwards：
+
+```typescript
+// 组件子节点自动生成的属性（以 name='icon' 为例）：
+this.$icon          // → iconComponent 实例引用
+this.iconCls        // → iconComponent.cls
+this.iconHidden     // → iconComponent.hidden
+this.iconDisabled   // → iconComponent.disabled
+this.iconWidth      // → iconComponent.width
+// ... 等 14 个通用属性
+```
+
+因此 `forwards: { icon: 'icon' }` 这种简单组件级转发已冗余，直接用 `$icon` 访问子组件即可。
+
+`forwards` 仅在需要**深层路径透传**或**自定义属性透传**时使用。
 
 ### 16.1 基本写法
 

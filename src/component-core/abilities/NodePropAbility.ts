@@ -27,7 +27,6 @@ import { EventContextBuilder } from '@/context';
 
 export const NodePropAbility: AbilityDefinition = {
     _resolveNodeEl(nodeName: string): HTMLElement | undefined {
-        if (nodeName === 'root') return this.el;
         const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;
         return node.component ? node.component.el : node.el;
