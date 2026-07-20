@@ -169,23 +169,34 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 if (t === 'manual' || t === 'always') continue;
 
                 const showAction = t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE;
-                const handler = (e: Event) => {
-                    e.stopPropagation();
-                    this.bus.overlayEmit(
-                        EventContextBuilder.create()
-                            .withEvent(`overlay:${overlayKey}:${showAction}`)
-                            .withType(showAction)
-                            .withSource(overlayKey)
-                            .withData({ component, anchor })
-                            .build()
-                    );
-                };
 
                 if (t === 'click') {
-                    anchor.addEventListener('click', handler);
+                    component.bind(anchor, 'click');
+                    component.on('dom:click', (e: any) => {
+                        e?.stopPropagation?.();
+                        this.bus.overlayEmit(
+                            EventContextBuilder.create()
+                                .withEvent(`overlay:${overlayKey}:${showAction}`)
+                                .withType(showAction)
+                                .withSource(overlayKey)
+                                .withData({ component, anchor })
+                                .build()
+                        );
+                    });
                 } else if (t === 'hover') {
-                    anchor.addEventListener('mouseenter', handler);
-                    anchor.addEventListener('mouseleave', () => {
+                    component.bind(anchor, 'mouseenter');
+                    component.on('dom:mouseenter', () => {
+                        this.bus.overlayEmit(
+                            EventContextBuilder.create()
+                                .withEvent(`overlay:${overlayKey}:${showAction}`)
+                                .withType(showAction)
+                                .withSource(overlayKey)
+                                .withData({ component, anchor })
+                                .build()
+                        );
+                    });
+                    component.bind(anchor, 'mouseleave');
+                    component.on('dom:mouseleave', () => {
                         this.bus.overlayEmit(
                             EventContextBuilder.create()
                                 .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
@@ -196,8 +207,19 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                         );
                     });
                 } else if (t === 'focus') {
-                    anchor.addEventListener('focus', handler);
-                    anchor.addEventListener('blur', () => {
+                    component.bind(anchor, 'focus');
+                    component.on('dom:focus', () => {
+                        this.bus.overlayEmit(
+                            EventContextBuilder.create()
+                                .withEvent(`overlay:${overlayKey}:${showAction}`)
+                                .withType(showAction)
+                                .withSource(overlayKey)
+                                .withData({ component, anchor })
+                                .build()
+                        );
+                    });
+                    component.bind(anchor, 'blur');
+                    component.on('dom:blur', () => {
                         this.bus.overlayEmit(
                             EventContextBuilder.create()
                                 .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
