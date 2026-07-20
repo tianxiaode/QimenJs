@@ -29,6 +29,9 @@ export { I18nEventBridge, i18nEventBridge } from './I18nEventBridge';
 // 导出实体事件常量
 export * from './entity-events';
 
+// 导出浮层事件常量
+export * from './overlay-events';
+
 // 导出组件能力事件常量
 export * from './component-events';
 

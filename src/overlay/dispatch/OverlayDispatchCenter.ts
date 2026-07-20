@@ -1,5 +1,6 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events/overlay-events';
 import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
@@ -28,7 +29,7 @@ interface OverlayInstance {
     escapeHandler?: (e: KeyboardEvent) => void;
 }
 
-const OVERLAY_ACTIONS = ['show', 'hide', 'toggle', 'reposition', 'change', 'dispose'];
+const OVERLAY_ACTION_LIST = Object.values(OVERLAY_ACTIONS);
 
 function encodeInstanceKey(componentId: string, overlayKey: string): string {
     return `${componentId}:${overlayKey}`;
@@ -98,7 +99,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     }
 
     private _listenOverlayActions(overlayKey: string): void {
-        for (const action of OVERLAY_ACTIONS) {
+        for (const action of OVERLAY_ACTION_LIST) {
             this.bus.overlayOn(overlayKey, action, (data: any) => {
                 this._dispatchAction(overlayKey, action, data);
             });
@@ -114,24 +115,24 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         const instanceKey = encodeInstanceKey(componentId, overlayKey);
 
-        if (action === 'show' || action === 'toggle') {
+        if (action === OVERLAY_ACTIONS.SHOW || action === OVERLAY_ACTIONS.TOGGLE) {
             const existing = this.instances.get(instanceKey);
-            if (existing && action === 'toggle') {
+            if (existing && action === OVERLAY_ACTIONS.TOGGLE) {
                 this._closeOverlay(instanceKey, overlayKey);
                 return;
             }
-            if (existing && action === 'show') {
+            if (existing && action === OVERLAY_ACTIONS.SHOW) {
                 this._reposition(instanceKey);
                 return;
             }
             this._mountAndShow(instanceKey, overlayKey, data);
-        } else if (action === 'hide') {
+        } else if (action === OVERLAY_ACTIONS.HIDE) {
             this._closeOverlay(instanceKey, overlayKey);
-        } else if (action === 'reposition') {
+        } else if (action === OVERLAY_ACTIONS.REPOSITION) {
             this._reposition(instanceKey);
-        } else if (action === 'change') {
+        } else if (action === OVERLAY_ACTIONS.CHANGE) {
             this._changeOverlay(instanceKey, overlayKey, data);
-        } else if (action === 'dispose') {
+        } else if (action === OVERLAY_ACTIONS.DISPOSE) {
             this._disposeInstance(instanceKey);
         }
     }
