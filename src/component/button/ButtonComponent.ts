@@ -10,7 +10,7 @@
  * - click — 按钮（icon/text）点击时触发
  *
  * 浮动层：
- * - dropIcon — click 触发 toggle（由 body.floats 声明，调度中心自动处理）
+ * - 由派生组件（如 DropdownComponent）通过 body.floats 声明驱动
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
@@ -43,9 +43,6 @@ export let ButtonComponent = TemplateComponent.withTemplate({
     },
     body: {
         type: 'Button',
-        floats: {
-            dropIcon: { type: 'DropPanel', trigger: 'click', placement: 'bottom' },
-        },
     },
 });
 

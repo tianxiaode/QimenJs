@@ -6,6 +6,11 @@ export let DropdownComponent = ButtonComponent.replace({
     nodeOverrides: {
         dropIcon: { hidden: false },
     },
+    body: {
+        floats: {
+            dropIcon: { type: 'Menu', trigger: 'click', placement: 'bottom' },
+        },
+    },
 });
 
 export type DropdownComponent = InstanceType<typeof DropdownComponent>;
