@@ -209,6 +209,8 @@ function applyBody(ctor: any, body: Record<string, any> | undefined): void {
             ctor[staticKey] = desc.value;
         } else if (def?.category === 'init') {
             ctor[`_${key}`] = desc.value;
+        } else if (def?.category === 'hook') {
+            proto[key] = desc.value;
         } else if (desc.get || desc.set) {
             Object.defineProperty(proto, key, desc);
         } else if (typeof desc.value === 'function') {

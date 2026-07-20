@@ -8,7 +8,7 @@
  * Body 字段分类
  * ══════════════════════════════════════════════════════════════
  *
- * body 只接受以下三类内容：
+ * body 只接受以下四类内容：
  *
  * 1. static 类（编译时设为类静态属性）：
  *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
@@ -16,13 +16,16 @@
  * 2. init 类（运行时由 InitAbility 初始化）：
  *    floats / drags / abilities
  *
- * 3. 其他（编译时挂原型）：
+ * 3. hook 类（实例化时由框架调用，返回值赋给实例）：
+ *    onInitState
+ *
+ * 4. 其他（编译时挂原型）：
  *    - 函数 → proto[key] = fn
  *    - getter/setter → Object.defineProperty(proto, key, desc)
  *
  * 不接受纯数据值（如 _pool: []、title: 'Hello'）：
  *    - 默认属性值 → 写在 TplNode 节点定义里
- *    - 实例内部状态 → 推荐使用 _applyState 模式
+ *    - 实例内部状态 → 使用 onInitState 钩子
  *
  * ══════════════════════════════════════════════════════════════
  * static 字段说明
@@ -54,6 +57,31 @@
  * └──────────┴──────────────────────────────────────────────────┘
  *
  * ══════════════════════════════════════════════════════════════
+ * hook 字段说明
+ * ══════════════════════════════════════════════════════════════
+ *
+ * ┌────────────┬──────────────────────────────────────────────────┐
+ * │ 字段       │ 说明                                             │
+ * ├────────────┼──────────────────────────────────────────────────┤
+ * │ onInitState│ 实例状态初始化钩子，实例化时调用，返回值赋给实例  │
+ * └────────────┴──────────────────────────────────────────────────┘
+ *
+ * 用法：
+ *
+ *   body: {
+ *       onInitState() {
+ *           return {
+ *               _pool: [],
+ *               _visibleCount: 0,
+ *               _itemUnsubscribes: new Map(),
+ *           };
+ *       }
+ *   }
+ *
+ * 执行时机：实例化时，在 onAfterInit 之前。
+ * 每次调用产生新对象，避免原型共享引用问题。
+ *
+ * ══════════════════════════════════════════════════════════════
  * 动画机制
  * ══════════════════════════════════════════════════════════════
  *
@@ -79,8 +107,8 @@
  */
 
 export interface BodyKeyDef {
-    /** 字段分类：static → 编译时设为类静态属性；init → 运行时由 InitAbility 初始化 */
-    category: 'static' | 'init';
+    /** 字段分类：static → 编译时设为类静态属性；init → 运行时由 InitAbility 初始化；hook → 实例化时由框架调用 */
+    category: 'static' | 'init' | 'hook';
     /** 静态属性别名（如 forwards → _forwards） */
     alias?: string;
 }
@@ -102,4 +130,8 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     drags: { category: 'init' },
     animation: { category: 'init' },
     abilities: { category: 'init' },
+
+    // ─── hook: 实例化时由框架调用 ───
+
+    onInitState: { category: 'hook' },
 };
