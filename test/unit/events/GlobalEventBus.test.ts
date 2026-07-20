@@ -1,5 +1,6 @@
 import { GlobalEventBus, globalEventBus } from '@/events/GlobalEventBus';
 import { EventScope } from '@/events/EventScope';
+import { EventContextBuilder } from '@/context';
 import { Logger } from '@qimenjs/logger';
 
 /**
@@ -81,7 +82,14 @@ describe('GlobalEventBus', () => {
         test('globalEventBus应该保持状态', () => {
             const handler = jest.fn();
             globalEventBus.on('singleton-test', handler);
-            globalEventBus.emit('singleton-test', { data: 'test' });
+            globalEventBus.emit(
+                'singleton-test',
+                EventContextBuilder.create()
+                    .withEvent('singleton-test')
+                    .withData({ data: 'test' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
         });
@@ -94,7 +102,14 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             const unsubscribe = testBus.on('test-event', handler);
 
-            testBus.emit('test-event', { data: 'test' });
+            testBus.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -105,7 +120,14 @@ describe('GlobalEventBus', () => {
             );
 
             unsubscribe();
-            testBus.emit('test-event', { data: 'test2' });
+            testBus.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test2' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 取消订阅后应该仍然是1
         });
 
@@ -116,7 +138,14 @@ describe('GlobalEventBus', () => {
             testBus.on('multi-listeners', handler1);
             testBus.on('multi-listeners', handler2);
 
-            testBus.emit('multi-listeners', {});
+            testBus.emit(
+                'multi-listeners',
+                EventContextBuilder.create()
+                    .withEvent('multi-listeners')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -129,17 +158,38 @@ describe('GlobalEventBus', () => {
             const unsub1 = testBus.on('independent-unsub', handler1);
             const unsub2 = testBus.on('independent-unsub', handler2);
 
-            testBus.emit('independent-unsub', {});
+            testBus.emit(
+                'independent-unsub',
+                EventContextBuilder.create()
+                    .withEvent('independent-unsub')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             unsub1();
-            testBus.emit('independent-unsub', {});
+            testBus.emit(
+                'independent-unsub',
+                EventContextBuilder.create()
+                    .withEvent('independent-unsub')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             unsub2();
-            testBus.emit('independent-unsub', {});
+            testBus.emit(
+                'independent-unsub',
+                EventContextBuilder.create()
+                    .withEvent('independent-unsub')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
         });
@@ -152,8 +202,22 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.once('test-event', handler);
 
-            testBus.emit('test-event', { data: 'first' });
-            testBus.emit('test-event', { data: 'second' });
+            testBus.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'first' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
+            testBus.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'second' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -172,11 +236,25 @@ describe('GlobalEventBus', () => {
             testBus.once('multi-once', handler1);
             testBus.once('multi-once', handler2);
 
-            testBus.emit('multi-once', {});
+            testBus.emit(
+                'multi-once',
+                EventContextBuilder.create()
+                    .withEvent('multi-once')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
-            testBus.emit('multi-once', {});
+            testBus.emit(
+                'multi-once',
+                EventContextBuilder.create()
+                    .withEvent('multi-once')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
         });
@@ -189,7 +267,14 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.on('emit-test', handler);
 
-            testBus.emit('emit-test', { data: 'test' });
+            testBus.emit(
+                'emit-test',
+                EventContextBuilder.create()
+                    .withEvent('emit-test')
+                    .withData({ data: 'test' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -205,7 +290,14 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.on('global-source-test', handler);
 
-            testBus.emit('global-source-test', { data: 'test' });
+            testBus.emit(
+                'global-source-test',
+                EventContextBuilder.create()
+                    .withEvent('global-source-test')
+                    .withData({ data: 'test' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -223,8 +315,18 @@ describe('GlobalEventBus', () => {
             testBus.on('user:login', userLoginHandler);
             testBus.on('user:logout', userLogoutHandler);
 
-            testBus.emit('user:login', { userId: '123' });
-            testBus.emit('user:logout');
+            testBus.emit(
+                'user:login',
+                EventContextBuilder.create()
+                    .withEvent('user:login')
+                    .withData({ userId: '123' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
+            testBus.emit(
+                'user:logout',
+                EventContextBuilder.create().withEvent('user:logout').withSource('GLOBAL').build()
+            );
 
             expect(userLoginHandler).toHaveBeenCalledTimes(1);
             expect(userLoginHandler).toHaveBeenCalledWith(
@@ -246,7 +348,14 @@ describe('GlobalEventBus', () => {
 
         test('应该能够触发没有监听器的事件而不报错', () => {
             expect(() => {
-                testBus.emit('nonexistent-event', {});
+                testBus.emit(
+                    'nonexistent-event',
+                    EventContextBuilder.create()
+                        .withEvent('nonexistent-event')
+                        .withData({})
+                        .withSource('GLOBAL')
+                        .build()
+                );
             }).not.toThrow();
         });
     });
@@ -258,11 +367,25 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.on('clear-test', handler);
 
-            testBus.emit('clear-test', { data: 'before-clear' });
+            testBus.emit(
+                'clear-test',
+                EventContextBuilder.create()
+                    .withEvent('clear-test')
+                    .withData({ data: 'before-clear' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
 
             testBus.clear('clear-test');
-            testBus.emit('clear-test', { data: 'after-clear' });
+            testBus.emit(
+                'clear-test',
+                EventContextBuilder.create()
+                    .withEvent('clear-test')
+                    .withData({ data: 'after-clear' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 清理后应该仍然是1
         });
 
@@ -273,15 +396,43 @@ describe('GlobalEventBus', () => {
             testBus.on('clear-all-1', handler1);
             testBus.on('clear-all-2', handler2);
 
-            testBus.emit('clear-all-1', { data: 'before' });
-            testBus.emit('clear-all-2', { data: 'before' });
+            testBus.emit(
+                'clear-all-1',
+                EventContextBuilder.create()
+                    .withEvent('clear-all-1')
+                    .withData({ data: 'before' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
+            testBus.emit(
+                'clear-all-2',
+                EventContextBuilder.create()
+                    .withEvent('clear-all-2')
+                    .withData({ data: 'before' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             testBus.clear();
 
-            testBus.emit('clear-all-1', { data: 'after' });
-            testBus.emit('clear-all-2', { data: 'after' });
+            testBus.emit(
+                'clear-all-1',
+                EventContextBuilder.create()
+                    .withEvent('clear-all-1')
+                    .withData({ data: 'after' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
+            testBus.emit(
+                'clear-all-2',
+                EventContextBuilder.create()
+                    .withEvent('clear-all-2')
+                    .withData({ data: 'after' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1); // 应该仍然是1
             expect(handler2).toHaveBeenCalledTimes(1); // 应该仍然是1
         });
@@ -313,12 +464,18 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
 
             scope.on('scope-dispose-test', handler);
-            scope.emit('scope-dispose-test', {});
+            scope.emit(
+                'scope-dispose-test',
+                EventContextBuilder.create().withEvent('scope-dispose-test').withData({}).build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
 
             scope.dispose();
-            scope.emit('scope-dispose-test', {});
+            scope.emit(
+                'scope-dispose-test',
+                EventContextBuilder.create().withEvent('scope-dispose-test').withData({}).build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1); // 销毁后应该仍然是1
         });
@@ -336,12 +493,25 @@ describe('GlobalEventBus', () => {
             scope.on('isolate-test', scopeHandler);
 
             // rootScope emit 只触发 rootScope 的 handler
-            testBus.emit('isolate-test', { from: 'root' });
+            testBus.emit(
+                'isolate-test',
+                EventContextBuilder.create()
+                    .withEvent('isolate-test')
+                    .withData({ from: 'root' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
             expect(rootHandler).toHaveBeenCalledTimes(1);
             expect(scopeHandler).not.toHaveBeenCalled();
 
             // scope emit 只触发 scope 的 handler
-            scope.emit('isolate-test', { from: 'scope' });
+            scope.emit(
+                'isolate-test',
+                EventContextBuilder.create()
+                    .withEvent('isolate-test')
+                    .withData({ from: 'scope' })
+                    .build()
+            );
             expect(rootHandler).toHaveBeenCalledTimes(1); // 仍然是1
             expect(scopeHandler).toHaveBeenCalledTimes(1);
         });
@@ -355,11 +525,17 @@ describe('GlobalEventBus', () => {
             scope1.on('cross-scope', handler1);
             scope2.on('cross-scope', handler2);
 
-            scope1.emit('cross-scope', {});
+            scope1.emit(
+                'cross-scope',
+                EventContextBuilder.create().withEvent('cross-scope').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).not.toHaveBeenCalled();
 
-            scope2.emit('cross-scope', {});
+            scope2.emit(
+                'cross-scope',
+                EventContextBuilder.create().withEvent('cross-scope').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
         });
@@ -376,7 +552,14 @@ describe('GlobalEventBus', () => {
             testBus.on('separate-test', handler1);
             anotherBus.on('separate-test', handler2);
 
-            testBus.emit('separate-test', { data: 'test' });
+            testBus.emit(
+                'separate-test',
+                EventContextBuilder.create()
+                    .withEvent('separate-test')
+                    .withData({ data: 'test' })
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             // 每个bus应该只触发自己的处理器
             expect(handler1).toHaveBeenCalledTimes(1);
@@ -393,8 +576,22 @@ describe('GlobalEventBus', () => {
 
             testBus.clear();
 
-            testBus.emit('independent-clear', {});
-            anotherBus.emit('independent-clear', {});
+            testBus.emit(
+                'independent-clear',
+                EventContextBuilder.create()
+                    .withEvent('independent-clear')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
+            anotherBus.emit(
+                'independent-clear',
+                EventContextBuilder.create()
+                    .withEvent('independent-clear')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler1).not.toHaveBeenCalled();
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -408,7 +605,13 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.on('undefined-data', handler);
 
-            testBus.emit('undefined-data', undefined);
+            testBus.emit(
+                'undefined-data',
+                EventContextBuilder.create()
+                    .withEvent('undefined-data')
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -421,7 +624,14 @@ describe('GlobalEventBus', () => {
             const handler = jest.fn();
             testBus.on('null-data', handler);
 
-            testBus.emit('null-data', null);
+            testBus.emit(
+                'null-data',
+                EventContextBuilder.create()
+                    .withEvent('null-data')
+                    .withData(null)
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -443,7 +653,14 @@ describe('GlobalEventBus', () => {
                 date: new Date(),
             };
 
-            testBus.emit('complex-data', complexData);
+            testBus.emit(
+                'complex-data',
+                EventContextBuilder.create()
+                    .withEvent('complex-data')
+                    .withData(complexData)
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -459,7 +676,14 @@ describe('GlobalEventBus', () => {
                 testBus.on('many-listeners', handler);
             });
 
-            testBus.emit('many-listeners', {});
+            testBus.emit(
+                'many-listeners',
+                EventContextBuilder.create()
+                    .withEvent('many-listeners')
+                    .withData({})
+                    .withSource('GLOBAL')
+                    .build()
+            );
 
             handlers.forEach(handler => {
                 expect(handler).toHaveBeenCalledTimes(1);
@@ -474,7 +698,14 @@ describe('GlobalEventBus', () => {
             }
 
             for (let i = 0; i < 100; i++) {
-                testBus.emit(`event-${i}`, { index: i });
+                testBus.emit(
+                    `event-${i}`,
+                    EventContextBuilder.create()
+                        .withEvent(`event-${i}`)
+                        .withData({ index: i })
+                        .withSource('GLOBAL')
+                        .build()
+                );
             }
 
             expect(handler).toHaveBeenCalledTimes(100);
@@ -506,7 +737,14 @@ describe('GlobalEventBus', () => {
             const iterations = 1000;
             const start = performance.now();
             for (let i = 0; i < iterations; i++) {
-                testBus.emit('perf-emit', { index: i });
+                testBus.emit(
+                    'perf-emit',
+                    EventContextBuilder.create()
+                        .withEvent('perf-emit')
+                        .withData({ index: i })
+                        .withSource('GLOBAL')
+                        .build()
+                );
             }
             const end = performance.now();
 

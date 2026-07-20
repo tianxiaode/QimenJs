@@ -16,6 +16,7 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { EventContextBuilder } from '@/context';
 import { positionOverlay, type Placement } from '@/overlay/dispatch';
 import { overlayDispatchCenter } from '@/overlay/dispatch';
 import { ComponentRegistrar } from '@qimenjs/component-core';
@@ -228,11 +229,18 @@ export let OverflowMenuComponent = TemplateComponent.withTemplate({
             menu.hidden = false;
 
             const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit(this._menuOverlayKey, 'show', {
-                component: this,
-                anchor: this._triggerBtn,
-                overlay: menu,
-            });
+            bus.overlayEmit(
+                EventContextBuilder.create()
+                    .withEvent(`overlay:${this._menuOverlayKey}:show`)
+                    .withType('show')
+                    .withSource(this._menuOverlayKey)
+                    .withData({
+                        component: this,
+                        anchor: this._triggerBtn,
+                        overlay: menu,
+                    })
+                    .build()
+            );
 
             this._triggerBtn.classList.add('q-overflow-menu__trigger--active');
             this._isMenuOpen = true;
@@ -242,10 +250,17 @@ export let OverflowMenuComponent = TemplateComponent.withTemplate({
             if (!this._isMenuOpen) return;
 
             const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit(this._menuOverlayKey, 'hide', {
-                component: this,
-                anchor: this._triggerBtn,
-            });
+            bus.overlayEmit(
+                EventContextBuilder.create()
+                    .withEvent(`overlay:${this._menuOverlayKey}:hide`)
+                    .withType('hide')
+                    .withSource(this._menuOverlayKey)
+                    .withData({
+                        component: this,
+                        anchor: this._triggerBtn,
+                    })
+                    .build()
+            );
 
             if (this._triggerBtn) {
                 this._triggerBtn.classList.remove('q-overflow-menu__trigger--active');

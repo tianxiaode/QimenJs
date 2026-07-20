@@ -1,5 +1,6 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
@@ -201,12 +202,19 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         overlay.hidden = false;
 
-        this.bus.overlayEmit(overlayKey, 'shown', {
-            overlayKey,
-            component,
-            anchor,
-            placement: actualPlacement,
-        });
+        this.bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:shown`)
+                .withType('shown')
+                .withSource(overlayKey)
+                .withData({
+                    overlayKey,
+                    component,
+                    anchor,
+                    placement: actualPlacement,
+                })
+                .build()
+        );
     }
 
     private _reposition(instanceKey: string): void {
@@ -232,11 +240,18 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             inst.overlay.onOverlayChange(changeData);
         }
 
-        this.bus.overlayEmit(overlayKey, 'changed', {
-            overlayKey,
-            component: inst.component,
-            data: changeData,
-        });
+        this.bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:changed`)
+                .withType('changed')
+                .withSource(overlayKey)
+                .withData({
+                    overlayKey,
+                    component: inst.component,
+                    data: changeData,
+                })
+                .build()
+        );
     }
 
     private _closeOverlay(instanceKey: string, overlayKey: string): void {
@@ -259,7 +274,14 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         OverlayRoot.getInstance().unmountOverlay(inst.el);
 
-        this.bus.overlayEmit(overlayKey, 'hidden', { overlayKey, component: inst.component });
+        this.bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:hidden`)
+                .withType('hidden')
+                .withSource(overlayKey)
+                .withData({ overlayKey, component: inst.component })
+                .build()
+        );
     }
 
     private _disposeInstance(instanceKey: string): void {

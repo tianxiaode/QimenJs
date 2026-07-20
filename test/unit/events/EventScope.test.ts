@@ -1,5 +1,6 @@
 import { EventBus } from '@/events/EventBus';
 import { EventScope } from '@/events/EventScope';
+import { EventContextBuilder } from '@/context';
 import { ILogger } from '@qimenjs/logger';
 
 /**
@@ -78,7 +79,13 @@ describe('EventScope', () => {
         test('应该能够通过作用域订阅事件', () => {
             const handler = jest.fn();
             const unsubscribe = scope.on('test-event', handler);
-            scope.emit('test-event', { data: 'test' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -89,7 +96,13 @@ describe('EventScope', () => {
             );
 
             unsubscribe();
-            scope.emit('test-event', { data: 'test2' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test2' })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 取消订阅后应该仍然是1
         });
 
@@ -97,11 +110,23 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('test-event', handler);
 
-            scope.emit('test-event', { data: 'before-dispose' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'before-dispose' })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
 
             scope.dispose();
-            scope.emit('test-event', { data: 'after-dispose' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'after-dispose' })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 销毁后应该仍然是1
         });
 
@@ -112,16 +137,40 @@ describe('EventScope', () => {
             scope.on('event-1', handler1);
             scope.on('event-2', handler2);
 
-            scope.emit('event-1', { data: 'test1' });
-            scope.emit('event-2', { data: 'test2' });
+            scope.emit(
+                'event-1',
+                EventContextBuilder.create()
+                    .withEvent('event-1')
+                    .withData({ data: 'test1' })
+                    .build()
+            );
+            scope.emit(
+                'event-2',
+                EventContextBuilder.create()
+                    .withEvent('event-2')
+                    .withData({ data: 'test2' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope.dispose();
 
-            scope.emit('event-1', { data: 'test3' });
-            scope.emit('event-2', { data: 'test4' });
+            scope.emit(
+                'event-1',
+                EventContextBuilder.create()
+                    .withEvent('event-1')
+                    .withData({ data: 'test3' })
+                    .build()
+            );
+            scope.emit(
+                'event-2',
+                EventContextBuilder.create()
+                    .withEvent('event-2')
+                    .withData({ data: 'test4' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -135,8 +184,20 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.once('test-event', handler);
 
-            scope.emit('test-event', { data: 'first' });
-            scope.emit('test-event', { data: 'second' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'first' })
+                    .build()
+            );
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'second' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -152,7 +213,10 @@ describe('EventScope', () => {
             scope.once('once-event', handler);
 
             scope.dispose();
-            scope.emit('once-event', {});
+            scope.emit(
+                'once-event',
+                EventContextBuilder.create().withEvent('once-event').withData({}).build()
+            );
 
             expect(handler).not.toHaveBeenCalled();
         });
@@ -165,7 +229,13 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('through-scope', handler);
 
-            scope.emit('through-scope', { data: 'test' });
+            scope.emit(
+                'through-scope',
+                EventContextBuilder.create()
+                    .withEvent('through-scope')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -180,7 +250,13 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('context-test', handler);
 
-            scope.emit('context-test', { data: 'test' });
+            scope.emit(
+                'context-test',
+                EventContextBuilder.create()
+                    .withEvent('context-test')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -197,7 +273,14 @@ describe('EventScope', () => {
             scope.on('source-test', handler);
 
             const customSource = { name: 'CustomSource' };
-            scope.emit('source-test', { data: 'test' }, { source: customSource });
+            scope.emit(
+                'source-test',
+                EventContextBuilder.create()
+                    .withEvent('source-test')
+                    .withData({ data: 'test' })
+                    .withSource(customSource)
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -210,7 +293,14 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('default-source', handler);
 
-            scope.emit('default-source', {});
+            scope.emit(
+                'default-source',
+                EventContextBuilder.create()
+                    .withEvent('default-source')
+                    .withData({})
+                    .withSource(scope)
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -228,7 +318,10 @@ describe('EventScope', () => {
             scope.on('dispose-test', handler);
 
             scope.dispose();
-            scope.emit('dispose-test', {});
+            scope.emit(
+                'dispose-test',
+                EventContextBuilder.create().withEvent('dispose-test').withData({}).build()
+            );
 
             expect(handler).not.toHaveBeenCalled();
         });
@@ -263,7 +356,13 @@ describe('EventScope', () => {
             scope.on('post-dispose-event', handler);
 
             scope.dispose();
-            scope.emit('post-dispose-event', { data: 'test' });
+            scope.emit(
+                'post-dispose-event',
+                EventContextBuilder.create()
+                    .withEvent('post-dispose-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(0);
             expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -277,7 +376,13 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('post-dispose-event', handler);
 
-            scope.emit('post-dispose-event', { data: 'test' });
+            scope.emit(
+                'post-dispose-event',
+                EventContextBuilder.create()
+                    .withEvent('post-dispose-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(0);
             expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -408,7 +513,10 @@ describe('EventScope', () => {
             scope.on('error-event', workingHandler);
 
             expect(() => {
-                scope.emit('error-event', {});
+                scope.emit(
+                    'error-event',
+                    EventContextBuilder.create().withEvent('error-event').withData({}).build()
+                );
             }).not.toThrow();
 
             expect(workingHandler).toHaveBeenCalled();
@@ -422,7 +530,10 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('undefined-data', handler);
 
-            scope.emit('undefined-data', undefined);
+            scope.emit(
+                'undefined-data',
+                EventContextBuilder.create().withEvent('undefined-data').build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -435,7 +546,10 @@ describe('EventScope', () => {
             const handler = jest.fn();
             scope.on('null-data', handler);
 
-            scope.emit('null-data', null);
+            scope.emit(
+                'null-data',
+                EventContextBuilder.create().withEvent('null-data').withData(null).build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -451,14 +565,20 @@ describe('EventScope', () => {
                 scope.on('many-subscriptions', handler);
             });
 
-            scope.emit('many-subscriptions', {});
+            scope.emit(
+                'many-subscriptions',
+                EventContextBuilder.create().withEvent('many-subscriptions').withData({}).build()
+            );
 
             handlers.forEach(handler => {
                 expect(handler).toHaveBeenCalledTimes(1);
             });
 
             scope.dispose();
-            scope.emit('many-subscriptions', {});
+            scope.emit(
+                'many-subscriptions',
+                EventContextBuilder.create().withEvent('many-subscriptions').withData({}).build()
+            );
 
             handlers.forEach(handler => {
                 expect(handler).toHaveBeenCalledTimes(1); // 销毁后不应该再触发
@@ -493,24 +613,42 @@ describe('EventScope', () => {
             scope1.on('event1', handler1);
             scope2.on('event2', handler2);
 
-            scope1.emit('event1', {});
-            scope2.emit('event2', {});
+            scope1.emit(
+                'event1',
+                EventContextBuilder.create().withEvent('event1').withData({}).build()
+            );
+            scope2.emit(
+                'event2',
+                EventContextBuilder.create().withEvent('event2').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope1.dispose();
 
-            scope1.emit('event1', {});
-            scope2.emit('event2', {});
+            scope1.emit(
+                'event1',
+                EventContextBuilder.create().withEvent('event1').withData({}).build()
+            );
+            scope2.emit(
+                'event2',
+                EventContextBuilder.create().withEvent('event2').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             scope2.dispose();
 
-            scope1.emit('event1', {});
-            scope2.emit('event2', {});
+            scope1.emit(
+                'event1',
+                EventContextBuilder.create().withEvent('event1').withData({}).build()
+            );
+            scope2.emit(
+                'event2',
+                EventContextBuilder.create().withEvent('event2').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
@@ -527,26 +665,41 @@ describe('EventScope', () => {
             scope2.on('shared-event', handler2);
 
             // scope1 emit 只触发 scope1 的 handler
-            scope1.emit('shared-event', {});
+            scope1.emit(
+                'shared-event',
+                EventContextBuilder.create().withEvent('shared-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).not.toHaveBeenCalled();
 
             // scope2 emit 只触发 scope2 的 handler
-            scope2.emit('shared-event', {});
+            scope2.emit(
+                'shared-event',
+                EventContextBuilder.create().withEvent('shared-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             scope1.dispose();
 
-            scope1.emit('shared-event', {});
-            scope2.emit('shared-event', {});
+            scope1.emit(
+                'shared-event',
+                EventContextBuilder.create().withEvent('shared-event').withData({}).build()
+            );
+            scope2.emit(
+                'shared-event',
+                EventContextBuilder.create().withEvent('shared-event').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             scope2.dispose();
 
-            scope2.emit('shared-event', {});
+            scope2.emit(
+                'shared-event',
+                EventContextBuilder.create().withEvent('shared-event').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
@@ -579,7 +732,13 @@ describe('EventScope', () => {
             const iterations = 1000;
             const start = performance.now();
             for (let i = 0; i < iterations; i++) {
-                scope.emit('perf-emit', { index: i });
+                scope.emit(
+                    'perf-emit',
+                    EventContextBuilder.create()
+                        .withEvent('perf-emit')
+                        .withData({ index: i })
+                        .build()
+                );
             }
             const end = performance.now();
 

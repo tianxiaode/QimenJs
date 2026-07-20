@@ -1,4 +1,5 @@
 import { EventHandler } from './core';
+import type { EventContext } from '@/context';
 
 /**
  * 事件作用域接口 - 用于管理一组相关事件的生命周期
@@ -24,13 +25,15 @@ export interface IEventScope<Events = any> {
     once(event: string, handler: EventHandler): void;
 
     /**
-     * 触发事件
+     * 触发事件（只接收 EventContext）
+     *
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
+     * scopeId 由 EventScope.emit 自动补回。
      *
      * @param event 事件名称
-     * @param data 事件数据
-     * @param options 可选配置：source 事件源（桥接的关键标识，scopeId 内部自动绑定）
+     * @param ctx 预构建的 EventContext
      */
-    emit(event: string, data?: any, options?: { source?: any }): void;
+    emit(event: string, ctx: EventContext): void;
 
     /**
      * 添加清理函数

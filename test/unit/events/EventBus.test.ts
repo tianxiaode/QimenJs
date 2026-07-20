@@ -1,5 +1,6 @@
 import { EventBus } from '@/events/EventBus';
 import { EventScope } from '@/events/EventScope';
+import { EventContextBuilder } from '@/context';
 import { ILogger } from '@qimenjs/logger';
 
 /**
@@ -70,7 +71,13 @@ describe('EventBus', () => {
             const scope = bus.createScope();
             const handler = jest.fn();
             const unsubscribe = scope.on('test-event', handler);
-            scope.emit('test-event', { data: 'test' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -81,7 +88,13 @@ describe('EventBus', () => {
             );
 
             unsubscribe();
-            scope.emit('test-event', { data: 'test2' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test2' })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 取消订阅后应该仍然是1
         });
 
@@ -92,7 +105,13 @@ describe('EventBus', () => {
 
             scope.on('test-event', handler1);
             scope.on('test-event', handler2);
-            scope.emit('test-event', { data: 'test' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler1).toHaveBeenCalledWith(
@@ -118,17 +137,26 @@ describe('EventBus', () => {
             const unsub1 = scope.on('test-event', handler1);
             const unsub2 = scope.on('test-event', handler2);
 
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
             unsub1();
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
 
             unsub2();
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(2);
         });
@@ -142,8 +170,20 @@ describe('EventBus', () => {
             const handler = jest.fn();
             scope.once('test-event', handler);
 
-            scope.emit('test-event', { data: 'first' });
-            scope.emit('test-event', { data: 'second' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'first' })
+                    .build()
+            );
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'second' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -162,11 +202,17 @@ describe('EventBus', () => {
             scope.once('test-event', handler1);
             scope.once('test-event', handler2);
 
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
 
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
         });
@@ -178,7 +224,13 @@ describe('EventBus', () => {
         test('应该能够触发没有监听器的事件而不报错', () => {
             const scope = bus.createScope();
             expect(() => {
-                scope.emit('nonexistent-event', { data: 'test' });
+                scope.emit(
+                    'nonexistent-event',
+                    EventContextBuilder.create()
+                        .withEvent('nonexistent-event')
+                        .withData({ data: 'test' })
+                        .build()
+                );
             }).not.toThrow();
         });
 
@@ -189,7 +241,14 @@ describe('EventBus', () => {
 
             const testData = { value: 42 };
             const testSource = { name: 'TestSource' };
-            scope.emit('context-test', testData, { source: testSource });
+            scope.emit(
+                'context-test',
+                EventContextBuilder.create()
+                    .withEvent('context-test')
+                    .withData(testData)
+                    .withSource(testSource)
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -207,7 +266,14 @@ describe('EventBus', () => {
             const handler = jest.fn();
             scope.on('default-source', handler);
 
-            scope.emit('default-source', {});
+            scope.emit(
+                'default-source',
+                EventContextBuilder.create()
+                    .withEvent('default-source')
+                    .withData({})
+                    .withSource(scope)
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -222,7 +288,10 @@ describe('EventBus', () => {
             scope.on('timestamp-test', handler);
 
             const beforeEmit = Date.now();
-            scope.emit('timestamp-test', {});
+            scope.emit(
+                'timestamp-test',
+                EventContextBuilder.create().withEvent('timestamp-test').withData({}).build()
+            );
             const afterEmit = Date.now();
 
             const callArgs = handler.mock.calls[0][0];
@@ -243,7 +312,13 @@ describe('EventBus', () => {
             scope1.on('test-event', handler1);
             scope2.on('test-event', handler2);
 
-            scope1.emit('test-event', { data: 'from-scope1' });
+            scope1.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'from-scope1' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler1).toHaveBeenCalledWith(
@@ -261,7 +336,10 @@ describe('EventBus', () => {
             scope1.on('click', handler1);
             scope2.on('click', handler2);
 
-            scope2.emit('click', {});
+            scope2.emit(
+                'click',
+                EventContextBuilder.create().withEvent('click').withData({}).build()
+            );
 
             expect(handler1).not.toHaveBeenCalled();
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -275,7 +353,10 @@ describe('EventBus', () => {
             scope.on('click', handler1);
             scope.on('click', handler2);
 
-            scope.emit('click', {});
+            scope.emit(
+                'click',
+                EventContextBuilder.create().withEvent('click').withData({}).build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -289,10 +370,22 @@ describe('EventBus', () => {
             const scope = bus.createScope();
             const handler = jest.fn();
             scope.on('test-event', handler);
-            scope.emit('test-event', { data: 'before-clear' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'before-clear' })
+                    .build()
+            );
 
             bus.clear(scope.getScopeId(), 'test-event');
-            scope.emit('test-event', { data: 'after-clear' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'after-clear' })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith(
@@ -311,13 +404,37 @@ describe('EventBus', () => {
             scope.on('test-event-1', handler1);
             scope.on('test-event-2', handler2);
 
-            scope.emit('test-event-1', { data: 'before-clear' });
-            scope.emit('test-event-2', { data: 'before-clear' });
+            scope.emit(
+                'test-event-1',
+                EventContextBuilder.create()
+                    .withEvent('test-event-1')
+                    .withData({ data: 'before-clear' })
+                    .build()
+            );
+            scope.emit(
+                'test-event-2',
+                EventContextBuilder.create()
+                    .withEvent('test-event-2')
+                    .withData({ data: 'before-clear' })
+                    .build()
+            );
 
             bus.clear(scope.getScopeId());
 
-            scope.emit('test-event-1', { data: 'after-clear' });
-            scope.emit('test-event-2', { data: 'after-clear' });
+            scope.emit(
+                'test-event-1',
+                EventContextBuilder.create()
+                    .withEvent('test-event-1')
+                    .withData({ data: 'after-clear' })
+                    .build()
+            );
+            scope.emit(
+                'test-event-2',
+                EventContextBuilder.create()
+                    .withEvent('test-event-2')
+                    .withData({ data: 'after-clear' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -334,11 +451,17 @@ describe('EventBus', () => {
             const handler = jest.fn();
             scope.on('test-event', handler);
 
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
 
             scope.dispose();
-            scope.emit('test-event', {});
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({}).build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // dispose后不再触发
         });
     });
@@ -366,7 +489,13 @@ describe('EventBus', () => {
             const scope = bus.createScope();
             const handler = jest.fn();
             scope.on('test-event', handler);
-            scope.emit('test-event', { data: 'test' });
+            scope.emit(
+                'test-event',
+                EventContextBuilder.create()
+                    .withEvent('test-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 '[event] emit',
@@ -380,7 +509,13 @@ describe('EventBus', () => {
 
         test('应该在触发没有监听器的事件时记录日志', () => {
             const scope = bus.createScope();
-            scope.emit('no-handlers-event', { data: 'test' });
+            scope.emit(
+                'no-handlers-event',
+                EventContextBuilder.create()
+                    .withEvent('no-handlers-event')
+                    .withData({ data: 'test' })
+                    .build()
+            );
 
             // scope 没有注册任何 handler，scopedListeners 中没有该 scopeId 的条目
             expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -414,7 +549,13 @@ describe('EventBus', () => {
             scope.on('error-event', workingHandler);
 
             expect(() => {
-                scope.emit('error-event', { data: 'test' });
+                scope.emit(
+                    'error-event',
+                    EventContextBuilder.create()
+                        .withEvent('error-event')
+                        .withData({ data: 'test' })
+                        .build()
+                );
             }).not.toThrow();
 
             expect(workingHandler).toHaveBeenCalledTimes(1);
@@ -447,7 +588,10 @@ describe('EventBus', () => {
             scope.on('multi-error', handler4);
 
             expect(() => {
-                scope.emit('multi-error', {});
+                scope.emit(
+                    'multi-error',
+                    EventContextBuilder.create().withEvent('multi-error').withData({}).build()
+                );
             }).not.toThrow();
 
             expect(handler1).toHaveBeenCalled();
@@ -465,7 +609,10 @@ describe('EventBus', () => {
             const handler = jest.fn();
             scope.on('undefined-data', handler);
 
-            scope.emit('undefined-data', undefined);
+            scope.emit(
+                'undefined-data',
+                EventContextBuilder.create().withEvent('undefined-data').build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -480,7 +627,10 @@ describe('EventBus', () => {
             const handler = jest.fn();
             scope.on('null-data', handler);
 
-            scope.emit('null-data', null);
+            scope.emit(
+                'null-data',
+                EventContextBuilder.create().withEvent('null-data').withData(null).build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -504,7 +654,10 @@ describe('EventBus', () => {
                 date: new Date(),
             };
 
-            scope.emit('complex-data', complexData);
+            scope.emit(
+                'complex-data',
+                EventContextBuilder.create().withEvent('complex-data').withData(complexData).build()
+            );
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -522,7 +675,10 @@ describe('EventBus', () => {
                 scope.on('many-listeners', handler);
             });
 
-            scope.emit('many-listeners', {});
+            scope.emit(
+                'many-listeners',
+                EventContextBuilder.create().withEvent('many-listeners').withData({}).build()
+            );
 
             handlers.forEach(handler => {
                 expect(handler).toHaveBeenCalledTimes(1);
@@ -538,7 +694,13 @@ describe('EventBus', () => {
             }
 
             for (let i = 0; i < 100; i++) {
-                scope.emit(`event-${i}`, { index: i });
+                scope.emit(
+                    `event-${i}`,
+                    EventContextBuilder.create()
+                        .withEvent(`event-${i}`)
+                        .withData({ index: i })
+                        .build()
+                );
             }
 
             expect(handler).toHaveBeenCalledTimes(100);
@@ -572,7 +734,13 @@ describe('EventBus', () => {
             const iterations = 1000;
             const start = performance.now();
             for (let i = 0; i < iterations; i++) {
-                scope.emit('perf-emit', { index: i });
+                scope.emit(
+                    'perf-emit',
+                    EventContextBuilder.create()
+                        .withEvent('perf-emit')
+                        .withData({ index: i })
+                        .build()
+                );
             }
             const end = performance.now();
 

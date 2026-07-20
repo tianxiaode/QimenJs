@@ -91,11 +91,16 @@ export const EventForwardAbility: AbilityDefinition = {
             for (const emitName of decl.emits) {
                 const eventData = this._collectEventData(nodeName, emitName, 'emit');
                 const payload = mergeEventData(eventData, data);
-                this.emit(
+                const ctx = this._buildForwardContext(
                     emitName,
                     payload,
-                    originalDomEvent ? { domEvent: originalDomEvent } : undefined
+                    this.eventKey ?? '',
+                    'emit'
                 );
+                if (originalDomEvent) {
+                    ctx.domEvent = originalDomEvent;
+                }
+                this.emit(emitName, ctx);
             }
         }
 

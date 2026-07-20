@@ -12,13 +12,17 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
 import { EventBridge } from '@/events/EventBridge';
+import { EventContextBuilder } from '@/context';
 
 describe('EventBridge', () => {
     beforeEach(() => {
@@ -76,7 +80,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('myGrid', 'selectionchange', handler);
 
-            bridge.bridgeEmit('myGrid', 'selectionchange', { selected: [1, 2] });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:myGrid:selectionchange')
+                    .withType('selectionchange')
+                    .withSource('myGrid')
+                    .withData({ selected: [1, 2] })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith({ selected: [1, 2] });
@@ -90,7 +101,14 @@ describe('EventBridge', () => {
             bridge.bridgeOn('grid1', 'change', handler1);
             bridge.bridgeOn('grid2', 'change', handler2);
 
-            bridge.bridgeEmit('grid1', 'change', { data: 'a' });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:grid1:change')
+                    .withType('change')
+                    .withSource('grid1')
+                    .withData({ data: 'a' })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledWith({ data: 'a' });
             expect(handler2).not.toHaveBeenCalled();
@@ -104,7 +122,14 @@ describe('EventBridge', () => {
             bridge.bridgeOn('myGrid', 'selectionchange', handler1);
             bridge.bridgeOn('myGrid', 'pagechange', handler2);
 
-            bridge.bridgeEmit('myGrid', 'selectionchange', { page: 1 });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:myGrid:selectionchange')
+                    .withType('selectionchange')
+                    .withSource('myGrid')
+                    .withData({ page: 1 })
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledWith({ page: 1 });
             expect(handler2).not.toHaveBeenCalled();
@@ -115,12 +140,26 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             const off = bridge.bridgeOn('myGrid', 'change', handler);
 
-            bridge.bridgeEmit('myGrid', 'change', { a: 1 });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:myGrid:change')
+                    .withType('change')
+                    .withSource('myGrid')
+                    .withData({ a: 1 })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
 
             off();
 
-            bridge.bridgeEmit('myGrid', 'change', { a: 2 });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:myGrid:change')
+                    .withType('change')
+                    .withSource('myGrid')
+                    .withData({ a: 2 })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1); // 仍然是1
         });
 
@@ -132,7 +171,14 @@ describe('EventBridge', () => {
             bridge.bridgeOn('src', 'click', handler1);
             bridge.bridgeOn('src', 'click', handler2);
 
-            bridge.bridgeEmit('src', 'click', {});
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(1);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -148,7 +194,14 @@ describe('EventBridge', () => {
 
             off1();
 
-            bridge.bridgeEmit('src', 'click', {});
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
 
             expect(handler1).toHaveBeenCalledTimes(0);
             expect(handler2).toHaveBeenCalledTimes(1);
@@ -159,7 +212,13 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('src', 'click', handler);
 
-            bridge.bridgeEmit('src', 'click');
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
         });
@@ -169,8 +228,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('router', 'change', handler);
 
-            // 通过发送验证编码正确性
-            bridge.bridgeEmit('router', 'change', { path: '/home' });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:router:change')
+                    .withType('change')
+                    .withSource('router')
+                    .withData({ path: '/home' })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledWith({ path: '/home' });
         });
     });
@@ -186,8 +251,22 @@ describe('EventBridge', () => {
 
             bridge.bridgeOnce('src', 'click', handler);
 
-            bridge.bridgeEmit('src', 'click', { a: 1 });
-            bridge.bridgeEmit('src', 'click', { a: 2 });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({ a: 1 })
+                    .build()
+            );
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({ a: 2 })
+                    .build()
+            );
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith({ a: 1 });
@@ -201,8 +280,22 @@ describe('EventBridge', () => {
             bridge.bridgeOnce('src', 'click', onceHandler);
             bridge.bridgeOn('src', 'click', onHandler);
 
-            bridge.bridgeEmit('src', 'click', {});
-            bridge.bridgeEmit('src', 'click', {});
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
 
             expect(onceHandler).toHaveBeenCalledTimes(1);
             expect(onHandler).toHaveBeenCalledTimes(2);
@@ -227,7 +320,14 @@ describe('EventBridge', () => {
             const newHandler = jest.fn();
             newBridge.bridgeOn('src', 'click', newHandler);
 
-            newBridge.bridgeEmit('src', 'click', {});
+            newBridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
 
             // 旧 handler 不应被调用
             expect(handler).toHaveBeenCalledTimes(0);
@@ -247,7 +347,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('my-grid_v2', 'change', handler);
 
-            bridge.bridgeEmit('my-grid_v2', 'change', { ok: true });
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:my-grid_v2:change')
+                    .withType('change')
+                    .withSource('my-grid_v2')
+                    .withData({ ok: true })
+                    .build()
+            );
             expect(handler).toHaveBeenCalledWith({ ok: true });
         });
 
@@ -256,7 +363,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('src', 'click:save', handler);
 
-            bridge.bridgeEmit('src', 'click:save', {});
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click:save')
+                    .withType('click:save')
+                    .withSource('src')
+                    .withData({})
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
         });
 
@@ -265,7 +379,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('src', 'click', handler);
 
-            bridge.bridgeEmit('src', 'click', null);
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData(null)
+                    .build()
+            );
             expect(handler).toHaveBeenCalledWith(null);
         });
 
@@ -274,7 +395,14 @@ describe('EventBridge', () => {
             const handler = jest.fn();
             bridge.bridgeOn('src', 'click', handler);
 
-            bridge.bridgeEmit('src', 'click', undefined);
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent('bridge:src:click')
+                    .withType('click')
+                    .withSource('src')
+                    .withData(undefined)
+                    .build()
+            );
             expect(handler).toHaveBeenCalledTimes(1);
         });
     });

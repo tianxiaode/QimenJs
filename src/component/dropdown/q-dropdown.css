@@ -1,0 +1,12 @@
+.q-dropdown {
+    cursor: pointer;
+}
+
+.q-dropdown .q-expand-arrow {
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+}
+
+.q-dropdown.q-dropdown--open .q-expand-arrow {
+    transform: rotate(180deg);
+}

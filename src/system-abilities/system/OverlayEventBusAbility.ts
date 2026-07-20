@@ -4,19 +4,17 @@
  * 将 OverlayEventBus 单例的方法暴露为组件实例方法，
  * 组件可直接通过 this.overlayEmit() / this.overlayOn() 调用。
  *
- * 事件数据自动携带组件实例和锚定元素，确保浮层能锚定到正确的组件。
+ * overlayEmit 只接收 EventContext，由发送方构建。
+ * OverlayEventBus 内部从 ctx.source 提取 overlayKey，从 ctx.type 提取 action。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { OverlayEventBus } from '@/events';
+import type { EventContext } from '@/context';
 
 export const OverlayEventBusAbility: AbilityDefinition = {
-    overlayEmit(overlayKey: string, action: string, data?: any): void {
-        OverlayEventBus.getInstance().overlayEmit(overlayKey, action, {
-            ...data,
-            component: this,
-            anchor: data?.anchor ?? this.el,
-        });
+    overlayEmit(ctx: EventContext): void {
+        OverlayEventBus.getInstance().overlayEmit(ctx);
     },
 
     overlayOn(overlayKey: string, action: string, handler: (data: any) => void): () => void {

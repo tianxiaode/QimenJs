@@ -35,10 +35,10 @@ export interface ToggleProps {
 export let ToggleComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-toggle',
+        cls: 'q-toggle',
         children: [
-            { name: 'icon', type: IconComponent, className: 'q-toggle__icon', hidden: true },
-            { tag: 'span', name: 'text', className: 'q-toggle__text' },
+            { name: 'icon', type: IconComponent, cls: 'q-toggle__icon', hidden: true },
+            { tag: 'span', name: 'text', cls: 'q-toggle__text' },
         ],
     },
     props: {

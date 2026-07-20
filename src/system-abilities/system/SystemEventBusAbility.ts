@@ -3,14 +3,17 @@
  *
  * 将 SystemEventBus 单例的方法暴露为组件实例方法，
  * 组件可直接通过 this.systemEmit() / this.systemOn() 调用。
+ *
+ * systemEmit 只接收 EventContext，由发送方构建。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { SystemEventBus } from '@/events';
+import type { EventContext } from '@/context';
 
 export const SystemEventBusAbility: AbilityDefinition = {
-    systemEmit(event: string, data?: any): void {
-        SystemEventBus.getInstance().emit(event, data);
+    systemEmit(event: string, ctx: EventContext): void {
+        SystemEventBus.getInstance().emit(event, ctx);
     },
 
     systemOn(event: string, handler: (data: any) => void): () => void {

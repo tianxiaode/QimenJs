@@ -11,6 +11,7 @@
  */
 
 import { EventBus, deepNullify } from '@/events/EventBus';
+import { EventContextBuilder } from '@/context';
 
 describe('EventBus emit 增强', () => {
     let bus: EventBus;
@@ -24,7 +25,13 @@ describe('EventBus emit 增强', () => {
         const handler = jest.fn();
         scope.on('test:count', handler);
 
-        scope.emit('test:count', { items: [1, 2, 3], name: 'test' });
+        scope.emit(
+            'test:count',
+            EventContextBuilder.create()
+                .withEvent('test:count')
+                .withData({ items: [1, 2, 3], name: 'test' })
+                .build()
+        );
 
         expect(handler).toHaveBeenCalledTimes(1);
 
@@ -46,7 +53,10 @@ describe('EventBus emit 增强', () => {
         scope.on('test:multi', handler2);
         scope.on('test:multi', handler3);
 
-        scope.emit('test:multi', { value: 1 });
+        scope.emit(
+            'test:multi',
+            EventContextBuilder.create().withEvent('test:multi').withData({ value: 1 }).build()
+        );
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).toHaveBeenCalledTimes(1);
@@ -59,7 +69,9 @@ describe('EventBus emit 增强', () => {
     test('异步 handler：Promise 完成后递减引用计数', async () => {
         const scope = bus.createScope();
         let resolvePromise: () => void;
-        const promise = new Promise<void>(resolve => { resolvePromise = resolve; });
+        const promise = new Promise<void>(resolve => {
+            resolvePromise = resolve;
+        });
 
         let capturedCtx: any;
         const handler = jest.fn((ctx: any) => {
@@ -68,7 +80,10 @@ describe('EventBus emit 增强', () => {
         });
         scope.on('test:async', handler);
 
-        scope.emit('test:async', { value: 1 });
+        scope.emit(
+            'test:async',
+            EventContextBuilder.create().withEvent('test:async').withData({ value: 1 }).build()
+        );
 
         // 异步 handler 未完成，_refCount 仍为 1
         expect(capturedCtx._refCount).toBe(1);
@@ -85,7 +100,9 @@ describe('EventBus emit 增强', () => {
     test('混合同步和异步 handler', async () => {
         const scope = bus.createScope();
         let resolveAsync: () => void;
-        const asyncPromise = new Promise<void>(resolve => { resolveAsync = resolve; });
+        const asyncPromise = new Promise<void>(resolve => {
+            resolveAsync = resolve;
+        });
 
         const syncHandler = jest.fn();
         const asyncHandler = jest.fn(() => asyncPromise);
@@ -93,7 +110,13 @@ describe('EventBus emit 增强', () => {
         scope.on('test:mixed', syncHandler);
         scope.on('test:mixed', asyncHandler);
 
-        scope.emit('test:mixed', { items: [1, 2] });
+        scope.emit(
+            'test:mixed',
+            EventContextBuilder.create()
+                .withEvent('test:mixed')
+                .withData({ items: [1, 2] })
+                .build()
+        );
 
         // 同步 handler 完成，异步未完成
         const ctx = syncHandler.mock.calls[0][0];
@@ -112,11 +135,16 @@ describe('EventBus emit 增强', () => {
     test('错误处理：同步 handler 抛错不中断其他 handler', () => {
         const scope = bus.createScope();
         const handler2 = jest.fn();
-        scope.on('test:error', () => { throw new Error('handler1 error'); });
+        scope.on('test:error', () => {
+            throw new Error('handler1 error');
+        });
         scope.on('test:error', handler2);
 
         expect(() => {
-            scope.emit('test:error', { value: 1 });
+            scope.emit(
+                'test:error',
+                EventContextBuilder.create().withEvent('test:error').withData({ value: 1 }).build()
+            );
         }).not.toThrow();
 
         expect(handler2).toHaveBeenCalledTimes(1);
@@ -127,10 +155,15 @@ describe('EventBus emit 增强', () => {
     test('错误处理：异步 handler reject 不中断其他 handler', async () => {
         const scope = bus.createScope();
         const handler2 = jest.fn();
-        scope.on('test:asyncError', () => { return Promise.reject(new Error('async error')); });
+        scope.on('test:asyncError', () => {
+            return Promise.reject(new Error('async error'));
+        });
         scope.on('test:asyncError', handler2);
 
-        scope.emit('test:asyncError', { value: 1 });
+        scope.emit(
+            'test:asyncError',
+            EventContextBuilder.create().withEvent('test:asyncError').withData({ value: 1 }).build()
+        );
 
         expect(handler2).toHaveBeenCalledTimes(1);
 
@@ -143,7 +176,10 @@ describe('EventBus emit 增强', () => {
     test('无监听器时不报错', () => {
         const scope = bus.createScope();
         expect(() => {
-            scope.emit('test:noListeners', {});
+            scope.emit(
+                'test:noListeners',
+                EventContextBuilder.create().withEvent('test:noListeners').withData({}).build()
+            );
         }).not.toThrow();
     });
 
@@ -152,7 +188,13 @@ describe('EventBus emit 增强', () => {
         const handler = jest.fn();
         scope.on('test:cleanup', handler);
 
-        scope.emit('test:cleanup', { items: [1, 2, 3], name: 'test' });
+        scope.emit(
+            'test:cleanup',
+            EventContextBuilder.create()
+                .withEvent('test:cleanup')
+                .withData({ items: [1, 2, 3], name: 'test' })
+                .build()
+        );
 
         const ctx = handler.mock.calls[0][0];
         // data 未被自动清理
@@ -173,7 +215,13 @@ describe('EventBus emit 增强', () => {
         scope1.on('test:isolate', handler1);
         scope2.on('test:isolate', handler2);
 
-        scope1.emit('test:isolate', { data: 'from-scope1' });
+        scope1.emit(
+            'test:isolate',
+            EventContextBuilder.create()
+                .withEvent('test:isolate')
+                .withData({ data: 'from-scope1' })
+                .build()
+        );
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).not.toHaveBeenCalled();
@@ -188,8 +236,8 @@ describe('EventBus emit 增强', () => {
         scope1.on('click', handler1);
         scope2.on('click', handler2);
 
-        scope1.emit('click', {});
-        scope2.emit('click', {});
+        scope1.emit('click', EventContextBuilder.create().withEvent('click').withData({}).build());
+        scope2.emit('click', EventContextBuilder.create().withEvent('click').withData({}).build());
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).toHaveBeenCalledTimes(1);

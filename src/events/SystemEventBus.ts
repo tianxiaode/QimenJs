@@ -70,7 +70,7 @@ export class SystemEventBus {
         return this.systemScope.getScopeId();
     }
 
-    emit(event: string, data?: any): void {
+    emit(event: string, ctx: EventContext): void {
         if (event.startsWith(WINDOW_EVENT_PREFIX) || event.startsWith(I18N_EVENT_PREFIX)) {
             this.logger.warn?.(
                 '[SystemEventBus] emit rejected: i18n/window events are auto-bridged, event =',
@@ -79,22 +79,10 @@ export class SystemEventBus {
             return;
         }
         this.logger.debug?.('[SystemEventBus] emit, event =', event);
-        const ctx = EventContextBuilder.create()
-            .withEvent(event)
-            .withType(event)
-            .withSource('system')
-            .withData(data)
-            .build();
         this.systemScope.emit(event, ctx);
     }
 
-    _bridgeEmit(event: string, data?: any): void {
-        const ctx = EventContextBuilder.create()
-            .withEvent(event)
-            .withType(event)
-            .withSource('system')
-            .withData(data)
-            .build();
+    _bridgeEmit(event: string, ctx: EventContext): void {
         this.systemScope.emit(event, ctx);
     }
 
@@ -108,7 +96,13 @@ export class SystemEventBus {
 
         if (event.startsWith(WINDOW_EVENT_PREFIX)) {
             const offBridge = this.windowBridge.on(event, handler, (data: any) => {
-                this._bridgeEmit(event, data);
+                const ctx = EventContextBuilder.create()
+                    .withEvent(event)
+                    .withType(event)
+                    .withSource('system')
+                    .withData(data)
+                    .build();
+                this._bridgeEmit(event, ctx);
             });
             return () => {
                 offScope();
@@ -118,7 +112,13 @@ export class SystemEventBus {
 
         if (event.startsWith(I18N_EVENT_PREFIX)) {
             const offBridge = this.i18nBridge.on(event, handler, (data: any) => {
-                this._bridgeEmit(event, data);
+                const ctx = EventContextBuilder.create()
+                    .withEvent(event)
+                    .withType(event)
+                    .withSource('system')
+                    .withData(data)
+                    .build();
+                this._bridgeEmit(event, ctx);
             });
             return () => {
                 offScope();

@@ -24,7 +24,7 @@
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
 import type { EventContext } from '@/context';
-import { EventContextBuilder } from '@/context';
+
 import { ILogger, Logger } from '@qimenjs/logger';
 
 function encodeOverlayEvent(overlayKey: string, action: string): string {
@@ -57,7 +57,17 @@ export class OverlayEventBus {
         return this.overlayScope.getScopeId();
     }
 
-    overlayEmit(overlayKey: string, action: string, data?: any): void {
+    /**
+     * 发送浮层事件（只接收 EventContext）
+     *
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
+     * 从 ctx.source 提取 overlayKey，从 ctx.type 提取 action。
+     *
+     * @param ctx - 预构建的 EventContext
+     */
+    overlayEmit(ctx: EventContext): void {
+        const overlayKey = ctx.source;
+        const action = ctx.type!;
         const overlayEvent = encodeOverlayEvent(overlayKey, action);
         this.logger.debug?.(
             '[OverlayEventBus] overlayEmit, overlayKey =',
@@ -65,12 +75,6 @@ export class OverlayEventBus {
             'action =',
             action
         );
-        const ctx = EventContextBuilder.create()
-            .withEvent(overlayEvent)
-            .withType(action)
-            .withSource(overlayKey)
-            .withData(data)
-            .build();
         this.overlayScope.emit(overlayEvent, ctx);
     }
 
