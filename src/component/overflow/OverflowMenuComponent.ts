@@ -46,18 +46,22 @@ export let OverflowMenuComponent = TemplateComponent.withTemplate({
     body: {
         type: 'OverflowMenu',
 
-        _anchor: null as HTMLElement | null,
-        _direction: 'horizontal' as OverflowDirection,
-        _menuOffset: 0,
-        _maxVisibleItems: 0,
-        _triggerBtn: null as HTMLElement | null,
-        _menuInstance: null as any,
-        _isMenuOpen: false,
-        _overflowItems: [] as OverflowMenuItem[],
-        _resizeObserver: null as ResizeObserver | null,
-        _mutationObserver: null as MutationObserver | null,
-        _rafId: 0,
-        _menuOverlayKey: '',
+        onInitState() {
+            return {
+                _anchor: null as HTMLElement | null,
+                _direction: 'horizontal' as OverflowDirection,
+                _menuOffset: 0,
+                _maxVisibleItems: 0,
+                _triggerBtn: null as HTMLElement | null,
+                _menuInstance: null as any,
+                _isMenuOpen: false,
+                _overflowItems: [] as OverflowMenuItem[],
+                _resizeObserver: null as ResizeObserver | null,
+                _mutationObserver: null as MutationObserver | null,
+                _rafId: 0,
+                _menuOverlayKey: '',
+            };
+        },
 
         _initOverflowMenu(props?: OverflowMenuProps): void {
             const anchor = props?.anchor;

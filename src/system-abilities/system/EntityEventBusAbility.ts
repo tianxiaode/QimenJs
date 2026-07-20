@@ -5,16 +5,17 @@
  * 组件可直接通过 this.entityEmit() / this.entityOn() 调用，
  * 无需手动获取 EntityEventBus.getInstance()。
  *
- * 所有实体事件通过 EntityEventBus 单例的统一 eventScope 收发，
- * 发送和监听使用同一个 scopeId，事件路由可靠。
+ * entityEmit 只接收 EventContext，由发送方构建。
+ * EntityEventBus 内部从 ctx.source 提取 entityKey，从 ctx.type 提取 eventName。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { EntityEventBus } from '@/events';
+import type { EventContext } from '@/context';
 
 export const EntityEventBusAbility: AbilityDefinition = {
-    entityEmit(entityKey: string, eventName: string, data?: any): void {
-        EntityEventBus.getInstance().entityEmit(entityKey, eventName, data);
+    entityEmit(ctx: EventContext): void {
+        EntityEventBus.getInstance().entityEmit(ctx);
     },
 
     entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {

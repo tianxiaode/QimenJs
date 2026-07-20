@@ -1,6 +1,12 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
-import { PERMISSION_CHANGE_EVENT, PERMISSION_SEPARATOR, type PermissionChangePayload, type PermissionEntry } from './types';
+import {
+    PERMISSION_CHANGE_EVENT,
+    PERMISSION_SEPARATOR,
+    type PermissionChangePayload,
+    type PermissionEntry,
+} from './types';
 import type { GlobalEventBus } from '@/events/GlobalEventBus';
+import { EventContextBuilder } from '@/context';
 
 /**
  * 权限注册器名称
@@ -231,7 +237,13 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
      * @param payload - 事件载荷
      */
     private emitChange(payload: PermissionChangePayload): void {
-        this.eventBus?.emit(PERMISSION_CHANGE_EVENT, payload);
+        const ctx = EventContextBuilder.create()
+            .withEvent(PERMISSION_CHANGE_EVENT)
+            .withType(PERMISSION_CHANGE_EVENT)
+            .withSource('permission')
+            .withData(payload)
+            .build();
+        this.eventBus?.emit(PERMISSION_CHANGE_EVENT, ctx);
     }
 
     /**

@@ -13,6 +13,7 @@ import {
     buildRequestEvent,
 } from '@/events/entity-events';
 import { ENTITY_EVENTS } from '@/events/component-events';
+import { EventContextBuilder } from '@/context';
 
 interface EntityEntry {
     mgrType: EntityManagerConstructor;
@@ -211,7 +212,14 @@ export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityEntry>
         for (const event of BRIDGED_EVENTS) {
             const off = mgr.on(event, (ctx: any) => {
                 const data = ctx?.data !== undefined ? ctx.data : ctx;
-                this.bus.entityEmit(entityKey, event, data);
+                this.bus.entityEmit(
+                    EventContextBuilder.create()
+                        .withEvent(event)
+                        .withType(event)
+                        .withSource(entityKey)
+                        .withData(data)
+                        .build()
+                );
             });
             offFns.push(off);
         }
@@ -225,7 +233,14 @@ export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityEntry>
                 const mgrEvent = buildRequestEvent(action, status);
                 const off = mgr.on(mgrEvent, (ctx: any) => {
                     const data = ctx?.data !== undefined ? ctx.data : ctx;
-                    this.bus.entityEmit(entityKey, mgrEvent, data);
+                    this.bus.entityEmit(
+                        EventContextBuilder.create()
+                            .withEvent(mgrEvent)
+                            .withType(mgrEvent)
+                            .withSource(entityKey)
+                            .withData(data)
+                            .build()
+                    );
                 });
                 offFns.push(off);
             }

@@ -33,6 +33,7 @@
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
+import type { EventContext } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
 
 /**
@@ -74,19 +75,26 @@ export class EventBridge {
     }
 
     /**
-     * 发送桥接事件
+     * 发送桥接事件（只接收 EventContext）
      *
-     * 源组件调用此方法发送桥接事件，事件会通过桥接的统一 eventScope 发布，
-     * 确保所有通过 bridgeOn 注册的监听器都能收到。
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
+     * 从 ctx.source 提取 sourceId，从 ctx.type 提取 eventName。
      *
-     * @param sourceId - 事件源标识（组件 id 或 'router'）
-     * @param eventName - 事件名称（如 selectionchange、pagechange）
-     * @param data - 事件数据
+     * @param ctx - 预构建的 EventContext
      */
-    bridgeEmit(sourceId: string, eventName: string, data?: any): void {
+    bridgeEmit(ctx: EventContext): void {
+        const sourceId = ctx.source;
+        const eventName = ctx.type!;
         const bridgeEvent = encodeBridgeEvent(sourceId, eventName);
-        this.logger.debug?.('[EventBridge] bridgeEmit, sourceId =', sourceId, 'eventName =', eventName, 'bridgeEvent =', bridgeEvent);
-        this.bridgeScope.emit(bridgeEvent, data);
+        this.logger.debug?.(
+            '[EventBridge] bridgeEmit, sourceId =',
+            sourceId,
+            'eventName =',
+            eventName,
+            'bridgeEvent =',
+            bridgeEvent
+        );
+        this.bridgeScope.emit(bridgeEvent, ctx);
     }
 
     /**
@@ -102,7 +110,14 @@ export class EventBridge {
      */
     bridgeOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void {
         const bridgeEvent = encodeBridgeEvent(sourceId, eventName);
-        this.logger.debug?.('[EventBridge] bridgeOn, sourceId =', sourceId, 'eventName =', eventName, 'bridgeEvent =', bridgeEvent);
+        this.logger.debug?.(
+            '[EventBridge] bridgeOn, sourceId =',
+            sourceId,
+            'eventName =',
+            eventName,
+            'bridgeEvent =',
+            bridgeEvent
+        );
         return this.bridgeScope.on(bridgeEvent, (ctx: any) => {
             // EventScope.on 的 handler 接收 EventContext，提取 data 传给业务 handler
             const data = ctx?.data !== undefined ? ctx.data : ctx;

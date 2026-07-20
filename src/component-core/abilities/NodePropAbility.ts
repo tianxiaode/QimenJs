@@ -22,7 +22,8 @@ import type { AbilityDefinition } from '@/composable';
 import { DEFAULT_NODE_PROP_MAP } from '../types';
 import type { NodePropDef } from '../types';
 import { ALIGN_MAP, PACK_MAP } from '../utils/template-constants';
-import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
+import { COMPONENT_LIFECYCLE_EVENTS, globalEventBus } from '@/events';
+import { EventContextBuilder } from '@/context';
 
 export const NodePropAbility: AbilityDefinition = {
     _resolveNodeEl(nodeName: string): HTMLElement | undefined {
@@ -136,7 +137,15 @@ export const NodePropAbility: AbilityDefinition = {
 
         const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
         if (eventKey && typeof this.bridgeEmit === 'function') {
-            this.bridgeEmit(eventKey, event, data);
+            const ctx = EventContextBuilder.create()
+                .withEvent(event)
+                .withType(event)
+                .withSource(eventKey)
+                .withSourceType(this.constructor.name)
+                .withData(data)
+                .withBusId(globalEventBus.getBusId())
+                .build();
+            this.bridgeEmit(ctx);
         }
     },
 };

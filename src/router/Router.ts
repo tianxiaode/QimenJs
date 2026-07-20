@@ -16,6 +16,7 @@
 import { ComposableBase } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { EventSourceRegistrar, EventBridge } from '@qimenjs/events';
+import { EventContextBuilder } from '@/context';
 import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
 /**
@@ -25,7 +26,11 @@ import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './type
  * 例如：'/' → ':', '/users' → ':users', '/users/list' → ':users:list'
  */
 export function pathToEventName(path: string): string {
-    return path.split('/').map(s => s.trim()).filter(Boolean).join(':');
+    return path
+        .split('/')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .join(':');
 }
 
 /**
@@ -256,10 +261,23 @@ export class Router extends ComposableBase.with(EventAbility) {
         // 通过 EventBridge 发送桥接事件（source='router'，走 bridgeScope 隔离通道）
         // 监听方通过 EventBridge.bridgeOn('router', 'change', handler) 接收
         const bridge = EventBridge.getInstance();
-        bridge.bridgeEmit('router', 'change', event);
-        // 有路径时发 change:路径，供 match 精确过滤
+        bridge.bridgeEmit(
+            EventContextBuilder.create()
+                .withEvent('change')
+                .withType('change')
+                .withSource('router')
+                .withData(event)
+                .build()
+        );
         if (eventName) {
-            bridge.bridgeEmit('router', `change:${eventName}`, event);
+            bridge.bridgeEmit(
+                EventContextBuilder.create()
+                    .withEvent(`change:${eventName}`)
+                    .withType(`change:${eventName}`)
+                    .withSource('router')
+                    .withData(event)
+                    .build()
+            );
         }
     }
 

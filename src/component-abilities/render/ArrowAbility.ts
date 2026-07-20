@@ -11,7 +11,9 @@
  * 特定组件能力：由组件定义时 .with(ArrowAbility) 注入，
  * 不加入 TEMPLATE_COMPONENT_ABILITIES，与 tooltip/badge 等通用能力不同。
  *
- * 状态直接存储在实例属性上，通过 nodeMap 操作 DOM，不使用 abilityState。
+ * 状态直接存储在实例属性上（_arrowVisible/_arrowName/_arrowEl），
+ * 通过 nodeMap 操作 DOM，不使用 abilityState。
+ * 默认值在能力定义中声明，initArrow() 运行时覆写为实例属性。
  *
  * CSS 变量（在 .q-arrow 上定义默认值）：
  * - --q-arrow-color：箭头颜色，默认 var(--q-color-dark, #303133)
@@ -40,58 +42,45 @@ export interface ArrowConfig {
 }
 
 export const ArrowAbility: AbilityDefinition = {
-    /**
-     * 初始化箭头 — 从 nodeMap 定位箭头节点，应用配置
-     *
-     * 在模板渲染完成后调用。
-     */
+    _arrowVisible: false,
+    _arrowName: '',
+    _arrowEl: null as HTMLElement | null,
+
     initArrow(config?: ArrowConfig): void {
         const arrowName = config?.arrowName ?? 'arrow';
         const nodeMap = this.nodeMap as Record<string, { el: HTMLElement }> | undefined;
 
-        // 查找箭头节点：一级结构直接按 name 查找
         const arrowEl = nodeMap?.[arrowName]?.el;
 
         if (!arrowEl) return;
 
         const visible = config?.arrow ?? true;
 
-        // 存储到实例属性
-        (this as any)._arrowVisible = visible;
-        (this as any)._arrowName = arrowName;
-        (this as any)._arrowEl = arrowEl;
+        this._arrowVisible = visible;
+        this._arrowName = arrowName;
+        this._arrowEl = arrowEl;
 
-        // 应用 CSS 变量覆盖
         if (config?.arrowVars) {
             for (const [key, value] of Object.entries(config.arrowVars)) {
                 arrowEl.style.setProperty(key, value);
             }
         }
 
-        // 初始显隐
         if (!visible) {
             arrowEl.style.display = 'none';
         }
     },
 
-    /**
-     * 更新箭头方向类
-     *
-     * 定位后调用，传入实际 placement（flip 后可能改变）。
-     */
     updateArrowPlacement(placement: Placement): void {
-        const el = (this as any)._arrowEl as HTMLElement | undefined;
+        const el = this._arrowEl;
         if (!el) return;
         el.classList.remove('q-arrow--top', 'q-arrow--bottom', 'q-arrow--left', 'q-arrow--right');
         el.classList.add(`q-arrow--${placement}`);
     },
 
-    /**
-     * 设置箭头显隐
-     */
     setArrowVisible(visible: boolean): void {
-        (this as any)._arrowVisible = visible;
-        const el = (this as any)._arrowEl as HTMLElement | undefined;
+        this._arrowVisible = visible;
+        const el = this._arrowEl;
         if (el) {
             el.style.display = visible ? '' : 'none';
         }

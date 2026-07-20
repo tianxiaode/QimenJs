@@ -21,7 +21,11 @@ export let ButtonGroupComponent = ItemGroupComponent.replace({
         gap: '2px',
     },
     body: {
-        _mode: 'single' as ButtonGroupMode,
+        onInitState() {
+            return {
+                _mode: 'single' as ButtonGroupMode,
+            };
+        },
 
         onAfterInit(props?: ButtonGroupProps): void {
             this._mode = props?.mode ?? 'single';

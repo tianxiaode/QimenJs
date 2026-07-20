@@ -20,8 +20,12 @@ export let MenuComponent = ItemGroupComponent.replace({
         events: ['click', 'select'],
     },
     body: {
-        _anchor: null as HTMLElement | null,
-        _isOpen: false,
+        onInitState() {
+            return {
+                _anchor: null as HTMLElement | null,
+                _isOpen: false,
+            };
+        },
 
         onAfterInit(props?: MenuProps & Record<string, any>): void {
             if (props?.anchor) this._anchor = props.anchor;

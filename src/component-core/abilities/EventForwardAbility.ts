@@ -2,12 +2,30 @@
  * EventForwardAbility — 事件统一转发能力
  *
  * 数据驱动 + 统一分发，与 NodePropAbility 同模式：
- *   _handleDomEvent(ctx, nodeName, domEvent, decl)
+ *   _handleDomEvent(data, nodeName, domEvent, decl, originalDomEvent?)
  *     → 唯一分发点，按类型分发：
- *        handler   → this[handlerName](ctx, el)
- *        emits     → this.emit(emitName, ctx)
- *        bridges   → this.bridgeEmit(eventKey, targetEvent, ctx)
- *        entities  → this.entityEmit(entityKey, action, ctx)
+ *        handler   → this[handlerName](originalDomEvent ?? data, el)
+ *        emits     → this.emit(emitName, payload, { domEvent })
+ *        bridges   → this.bridgeEmit(ctx)
+ *        entities  → this.entityEmit(ctx)
+ *
+ * 数据收集约定（组件在 body 中定义）：
+ *   getEventData(nodeName, eventName, eventType) → 统一数据钩子
+ *     - eventType: 'emit' | 'bridge' | 'entity'
+ *     - 组件根据参数返回不同数据，相同数据直接返回一个对象即可
+ *
+ * 示例：
+ *   body: {
+ *       getEventData(nodeName, eventName, eventType) {
+ *           if (eventType === 'bridge') return { value: this.text, source: this.id };
+ *           return { value: this.text };
+ *       },
+ *   }
+ *
+ * 事件总线统一约定：
+ *   - 所有事件总线只接收 EventContext
+ *   - EventForwardAbility 负责构建 EventContext
+ *   - EventScope.emit 自动补回 scopeId
  *
  * 绑定流程：
  *   bindDomEventBindings()
@@ -20,6 +38,12 @@
 import type { AbilityDefinition } from '@/composable';
 import type { DomEventDecl } from '../types/tpl-node-types';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import type { EventContext, EventChainLink } from '@/context';
+import { EventContextBuilder } from '@/context';
+import { globalEventBus } from '@/events';
+import { object } from '@/utils';
+
+type EventDataType = 'emit' | 'bridge' | 'entity';
 
 export const EventForwardAbility: AbilityDefinition = {
     bindDomEventBindings(): void {
@@ -40,7 +64,13 @@ export const EventForwardAbility: AbilityDefinition = {
         }
     },
 
-    _handleDomEvent(ctx: any, nodeName: string, domEvent: string, decl: DomEventDecl): void {
+    _handleDomEvent(
+        data: any,
+        nodeName: string,
+        domEvent: string,
+        decl: DomEventDecl,
+        originalDomEvent?: any
+    ): void {
         const node = this.nodeMap?.[nodeName];
         if (!node) return;
 
@@ -48,29 +78,85 @@ export const EventForwardAbility: AbilityDefinition = {
 
         const handler = inferHandlerName(domEvent, nodeName, decl.handler);
         if (handler && typeof (this as any)[handler] === 'function') {
+            const handlerCtx = originalDomEvent ?? data;
             if (decl.delegate && decl.delegateTarget) {
-                const target = (ctx?.target as HTMLElement)?.closest(decl.delegateTarget);
-                if (target) (this as any)[handler](ctx, target);
+                const target = (handlerCtx?.target as HTMLElement)?.closest(decl.delegateTarget);
+                if (target) (this as any)[handler](handlerCtx, target);
             } else {
-                (this as any)[handler](ctx, el);
+                (this as any)[handler](handlerCtx, el);
             }
         }
 
         if (decl.emits?.length) {
             for (const emitName of decl.emits) {
-                this.emit(emitName, ctx);
+                const eventData = this._collectEventData(nodeName, emitName, 'emit');
+                const payload = mergeEventData(eventData, data);
+                this.emit(
+                    emitName,
+                    payload,
+                    originalDomEvent ? { domEvent: originalDomEvent } : undefined
+                );
             }
         }
 
         if (decl.bridges?.length && this.eventKey) {
             for (const bridge of decl.bridges) {
-                this.bridgeEmit(this.eventKey, bridge, ctx);
+                const bridgeData = this._collectEventData(nodeName, bridge, 'bridge');
+                const payload = mergeEventData(bridgeData, data);
+                const ctx = this._buildForwardContext(bridge, payload, this.eventKey, 'bridge');
+                this.bridgeEmit(ctx);
             }
         }
 
         if (decl.entities && this.entityKey) {
-            this.entityEmit(this.entityKey, decl.entities, ctx);
+            const entityData = this._collectEventData(nodeName, domEvent, 'entity');
+            const payload = mergeEventData(entityData, data);
+            const ctx = this._buildForwardContext(decl.entities, payload, this.entityKey, 'entity');
+            this.entityEmit(ctx);
         }
+    },
+
+    _collectEventData(
+        nodeName: string,
+        eventName: string,
+        eventType: EventDataType
+    ): Record<string, any> | undefined {
+        if (typeof (this as any).getEventData === 'function') {
+            return (this as any).getEventData(nodeName, eventName, eventType);
+        }
+        return undefined;
+    },
+
+    _buildForwardContext(
+        eventName: string,
+        data: any,
+        source: string,
+        eventType: EventDataType
+    ): EventContext {
+        const currentCtx = this._currentEventContext as EventContext | undefined;
+        const chain: EventChainLink[] | undefined = currentCtx
+            ? [
+                  ...(currentCtx.chain || []),
+                  {
+                      event: currentCtx.event,
+                      type: currentCtx.type!,
+                      source: currentCtx.source,
+                      sourceType: currentCtx.sourceType!,
+                  },
+              ]
+            : undefined;
+
+        const clonedData = data !== undefined ? object.clone(data) : undefined;
+
+        return EventContextBuilder.create()
+            .withEvent(eventName)
+            .withType(eventName)
+            .withSource(source)
+            .withSourceType(this.constructor.name)
+            .withData(clonedData)
+            .withBusId(globalEventBus.getBusId())
+            .withChain(chain)
+            .build();
     },
 
     _bindDomEvent(node: any, nodeName: string, domEvent: string, decl: DomEventDecl): void {
@@ -90,8 +176,8 @@ export const EventForwardAbility: AbilityDefinition = {
             this.bind(el, domEvent as any, bindOptions);
         }
 
-        const callback = (ctx: any) => {
-            this._handleDomEvent(this._extractDomEvent(ctx), nodeName, domEvent, decl);
+        const callback = (domEvt: any) => {
+            this._handleDomEvent(undefined, nodeName, domEvent, decl, domEvt);
         };
 
         if (once) {
@@ -137,4 +223,13 @@ function inferHandlerName(
     }
     if (typeof handler === 'string') return handler;
     return undefined;
+}
+
+function mergeEventData(eventData: Record<string, any> | undefined, data: any): any {
+    if (eventData === undefined) return data;
+    if (data === undefined) return eventData;
+    if (typeof data === 'object' && typeof eventData === 'object') {
+        return { ...eventData, ...data };
+    }
+    return data;
 }

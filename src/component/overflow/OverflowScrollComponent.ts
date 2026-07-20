@@ -62,17 +62,21 @@ export let OverflowScrollComponent = TemplateComponent.withTemplate({
     body: {
         type: 'OverflowScroll',
 
-        _anchor: null as HTMLElement | null,
-        _direction: 'horizontal' as OverflowDirection,
-        _scrollStep: 200,
-        _scrollArea: null as HTMLElement | null,
-        _resizeObserver: null as ResizeObserver | null,
-        _mutationObserver: null as MutationObserver | null,
-        _rafId: 0,
-        _dragStartScrollPos: 0,
-        _lastState: null as OverflowState | null,
-        _onOverflowChange: null as ((state: OverflowState) => void) | null,
-        _onScrollStateChange: null as ((state: OverflowState) => void) | null,
+        onInitState() {
+            return {
+                _anchor: null as HTMLElement | null,
+                _direction: 'horizontal' as OverflowDirection,
+                _scrollStep: 200,
+                _scrollArea: null as HTMLElement | null,
+                _resizeObserver: null as ResizeObserver | null,
+                _mutationObserver: null as MutationObserver | null,
+                _rafId: 0,
+                _dragStartScrollPos: 0,
+                _lastState: null as OverflowState | null,
+                _onOverflowChange: null as ((state: OverflowState) => void) | null,
+                _onScrollStateChange: null as ((state: OverflowState) => void) | null,
+            };
+        },
 
         _initOverflowScroll(props?: OverflowScrollProps): void {
             const anchor = props?.anchor;

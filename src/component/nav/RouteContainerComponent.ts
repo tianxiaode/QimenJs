@@ -23,8 +23,12 @@ const RouteContainerBase = TemplateComponent.withTemplate({
     body: {
         type: 'RouteContainer',
 
-        _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
-        _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
+        onInitState() {
+            return {
+                _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
+                _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
+            };
+        },
 
         _initRouteContainer(props?: RouteContainerProps): void {
             this.el.classList.add('q-route-container');

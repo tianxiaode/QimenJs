@@ -35,7 +35,11 @@ export let TipsComponent = TemplateComponent.withTemplate({
     body: {
         type: 'tips',
 
-        _anchor: null as HTMLElement | null,
+        onInitState() {
+            return {
+                _anchor: null as HTMLElement | null,
+            };
+        },
 
         _initTips(props?: TipsProps): void {
             const anchor = props?.anchor;

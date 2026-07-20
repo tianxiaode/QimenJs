@@ -70,28 +70,16 @@ export class GlobalEventBus {
     }
 
     /**
-     * 触发事件
+     * 触发事件（只接收 EventContext）
      *
-     * 在全局范围内触发一个事件，将事件传播给所有订阅者。
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
+     * scopeId 由 EventScope.emit 自动补回。
      *
-     * @param event 事件名称
-     * @param data 事件数据载荷
+     * @param event - 事件名称
+     * @param ctx - 预构建的 EventContext
      */
-    emit(event: string, data?: any): void;
-
-    /**
-     * 触发事件（使用预构建的 EventContext）
-     *
-     * @param event 事件名称
-     * @param context 预构建的 EventContext
-     */
-    emit(event: string, context: EventContext): void;
-
-    /**
-     * 触发事件（实现）
-     */
-    emit(event: string, dataOrContext?: any): void {
-        this.bus.emit(event, dataOrContext, 'GLOBAL', this.rootScope.getScopeId());
+    emit(event: string, ctx: EventContext): void {
+        this.bus.emit(event, ctx);
     }
 
     /**

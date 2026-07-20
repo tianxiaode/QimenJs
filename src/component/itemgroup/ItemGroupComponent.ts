@@ -39,17 +39,21 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
     body: {
         type: 'ItemGroup',
 
-        _pool: [],
-        _visibleCount: 0,
-        _direction: 'horizontal' as 'horizontal' | 'vertical',
-        _itemType: '',
-        _gap: '',
-        _containerEl: null as HTMLElement | null,
-        _eventKey: '',
-        _forwardEvents: [...DEFAULT_FORWARD_EVENTS],
-        _itemData: [] as string[],
-        _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
-        _overflowMode: 'none' as OverflowMode,
+        onInitState() {
+            return {
+                _pool: [] as any[],
+                _visibleCount: 0,
+                _direction: 'horizontal' as 'horizontal' | 'vertical',
+                _itemType: '',
+                _gap: '',
+                _containerEl: null as HTMLElement | null,
+                _eventKey: '',
+                _forwardEvents: [...DEFAULT_FORWARD_EVENTS],
+                _itemData: [] as string[],
+                _itemUnsubscribes: new Map<any, Map<string, () => void>>(),
+                _overflowMode: 'none' as OverflowMode,
+            };
+        },
 
         onAfterInit(props?: ItemGroupProps): void {
             this._initItemGroupComponent(props);
@@ -245,8 +249,9 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         },
 
         _createItemInstance(data: Record<string, any>): any {
-            if (!this._itemType) return null;
-            const ItemClass = ComponentRegistrar.getInstance().get(this._itemType);
+            const itemType = data.type ?? this._itemType;
+            if (!itemType) return null;
+            const ItemClass = ComponentRegistrar.getInstance().get(itemType);
             if (!ItemClass) return null;
             const props = { ...data };
             if (this._eventKey) props.eventKey = this._eventKey;

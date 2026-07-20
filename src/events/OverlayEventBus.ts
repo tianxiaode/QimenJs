@@ -23,6 +23,8 @@
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
+import type { EventContext } from '@/context';
+import { EventContextBuilder } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
 
 function encodeOverlayEvent(overlayKey: string, action: string): string {
@@ -63,7 +65,13 @@ export class OverlayEventBus {
             'action =',
             action
         );
-        this.overlayScope.emit(overlayEvent, data);
+        const ctx = EventContextBuilder.create()
+            .withEvent(overlayEvent)
+            .withType(action)
+            .withSource(overlayKey)
+            .withData(data)
+            .build();
+        this.overlayScope.emit(overlayEvent, ctx);
     }
 
     overlayOn(overlayKey: string, action: string, handler: (data: any) => void): () => void {

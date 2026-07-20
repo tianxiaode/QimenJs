@@ -41,9 +41,13 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
     body: {
         type: 'ToggleIcon',
 
-        _on: false,
-        _onIcon: '',
-        _offIcon: '',
+        onInitState() {
+            return {
+                _on: false,
+                _onIcon: '',
+                _offIcon: '',
+            };
+        },
 
         forwards: {
             icon: 'icon',

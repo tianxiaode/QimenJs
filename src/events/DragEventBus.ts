@@ -36,6 +36,8 @@
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
+import type { EventContext } from '@/context';
+import { EventContextBuilder } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
 
 export interface DragState {
@@ -83,26 +85,24 @@ export class DragEventBus {
         return this.dragScope.getScopeId();
     }
 
-    /**
-     * 获取当前活跃拖拽状态
-     */
     getActiveDrag(): DragState | null {
         return this.activeDrag;
     }
 
-    /**
-     * 是否有活跃拖拽
-     */
     isDragging(): boolean {
         return this.activeDrag !== null;
     }
 
-    /**
-     * 拖拽开始
-     *
-     * 拖拽源调用，设置全局拖拽状态并广播 start 事件。
-     * 如果已有活跃拖拽，忽略新的 start。
-     */
+    private _emitDrag(event: string, dragKey: string, action: string, data: any): void {
+        const ctx = EventContextBuilder.create()
+            .withEvent(event)
+            .withType(action)
+            .withSource(dragKey)
+            .withData(data)
+            .build();
+        this.dragScope.emit(event, ctx);
+    }
+
     dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
         if (this.activeDrag) {
             this.logger.debug?.('[DragEventBus] dragStart ignored, already dragging');
@@ -113,83 +113,64 @@ export class DragEventBus {
 
         const event = encodeDragEvent(dragKey, 'start');
         this.logger.debug?.('[DragEventBus] dragStart, dragKey =', dragKey);
-        this.dragScope.emit(event, this.activeDrag);
+        this._emitDrag(event, dragKey, 'start', this.activeDrag);
     }
 
-    /**
-     * 拖拽结束（正常放下或取消）
-     */
     dragEnd(dragKey: string): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
         this.logger.debug?.('[DragEventBus] dragEnd, dragKey =', dragKey);
 
         const event = encodeDragEvent(dragKey, 'end');
-        this.dragScope.emit(event, this.activeDrag);
+        this._emitDrag(event, dragKey, 'end', this.activeDrag);
 
         this.activeDrag = null;
     }
 
-    /**
-     * 拖拽取消
-     */
     dragCancel(dragKey: string): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
         this.logger.debug?.('[DragEventBus] dragCancel, dragKey =', dragKey);
 
         const event = encodeDragEvent(dragKey, 'cancel');
-        this.dragScope.emit(event, this.activeDrag);
+        this._emitDrag(event, dragKey, 'cancel', this.activeDrag);
 
         this.activeDrag = null;
     }
 
-    /**
-     * 拖拽进入放置目标
-     *
-     * 由放置目标在检测到拖拽进入时调用，广播 enter 事件。
-     */
     dragEnter(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
         this.logger.debug?.('[DragEventBus] dragEnter, dragKey =', dragKey);
 
         const event = encodeDragEvent(dragKey, 'enter');
-        this.dragScope.emit(event, {
+        this._emitDrag(event, dragKey, 'enter', {
             ...this.activeDrag,
             dropTarget,
             dropEl,
         });
     }
 
-    /**
-     * 拖拽离开放置目标
-     */
     dragLeave(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
         this.logger.debug?.('[DragEventBus] dragLeave, dragKey =', dragKey);
 
         const event = encodeDragEvent(dragKey, 'leave');
-        this.dragScope.emit(event, {
+        this._emitDrag(event, dragKey, 'leave', {
             ...this.activeDrag,
             dropTarget,
             dropEl,
         });
     }
 
-    /**
-     * 放置完成
-     *
-     * 由放置目标在 drop 时调用，广播 drop 事件后自动清除拖拽状态。
-     */
     dragDrop(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
         this.logger.debug?.('[DragEventBus] dragDrop, dragKey =', dragKey);
 
         const event = encodeDragEvent(dragKey, 'drop');
-        this.dragScope.emit(event, {
+        this._emitDrag(event, dragKey, 'drop', {
             ...this.activeDrag,
             dropTarget,
             dropEl,

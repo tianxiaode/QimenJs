@@ -17,7 +17,11 @@ export let TabBarComponent = ItemGroupComponent.replace({
         events: ['toggle'],
     },
     body: {
-        _selectedIndex: -1,
+        onInitState() {
+            return {
+                _selectedIndex: -1,
+            };
+        },
 
         onAfterInit(props?: TabBarProps): void {
             this.on('tab:toggle', (data: any) => this._onItemToggle(data));

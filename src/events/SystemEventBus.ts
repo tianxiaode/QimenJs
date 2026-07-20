@@ -14,6 +14,8 @@
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
+import type { EventContext } from '@/context';
+import { EventContextBuilder } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
 import { WindowEventBridge } from './WindowEventBridge';
 import { I18nEventBridge } from './I18nEventBridge';
@@ -77,14 +79,23 @@ export class SystemEventBus {
             return;
         }
         this.logger.debug?.('[SystemEventBus] emit, event =', event);
-        this.systemScope.emit(event, data);
+        const ctx = EventContextBuilder.create()
+            .withEvent(event)
+            .withType(event)
+            .withSource('system')
+            .withData(data)
+            .build();
+        this.systemScope.emit(event, ctx);
     }
 
-    /**
-     * 桥接层内部使用 — 直接发到 scope，不校验前缀
-     */
     _bridgeEmit(event: string, data?: any): void {
-        this.systemScope.emit(event, data);
+        const ctx = EventContextBuilder.create()
+            .withEvent(event)
+            .withType(event)
+            .withSource('system')
+            .withData(data)
+            .build();
+        this.systemScope.emit(event, ctx);
     }
 
     on(event: string, handler: (data: any) => void): () => void {

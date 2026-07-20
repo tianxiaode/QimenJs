@@ -68,15 +68,19 @@ const MenuItemBase = TemplateComponent.withTemplate({
     body: {
         type: 'MenuItem',
 
-        _disabled: false,
-        _hasSubmenu: false,
-        _group: '',
-        _groupMode: 'radio' as MenuItemGroupMode,
-        _checked: false,
-        _userIcon: '',
-        onSelect: null as ((item: any) => void) | null,
-        submenuProps: null as Record<string, any> | null,
-        _submenuTimer: null as ReturnType<typeof setTimeout> | null,
+        onInitState() {
+            return {
+                _disabled: false,
+                _hasSubmenu: false,
+                _group: '',
+                _groupMode: 'radio' as MenuItemGroupMode,
+                _checked: false,
+                _userIcon: '',
+                onSelect: null as ((item: any) => void) | null,
+                submenuProps: null as Record<string, any> | null,
+                _submenuTimer: null as ReturnType<typeof setTimeout> | null,
+            };
+        },
 
         forwards: {
             icon: 'icon',

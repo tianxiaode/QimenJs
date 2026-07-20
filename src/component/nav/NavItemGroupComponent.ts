@@ -24,11 +24,15 @@ export let NavItemGroupComponent = ItemGroupComponent.replace({
         direction: 'horizontal',
     },
     body: {
-        _activeIndex: -1,
-        _navMode: 'expanded' as 'expanded' | 'collapsed',
-        _maxDepth: 3,
-        _overlayOptions: undefined as NavOverlayOptions | undefined,
-        _overlayComponent: undefined as any,
+        onInitState() {
+            return {
+                _activeIndex: -1,
+                _navMode: 'expanded' as 'expanded' | 'collapsed',
+                _maxDepth: 3,
+                _overlayOptions: undefined as NavOverlayOptions | undefined,
+                _overlayComponent: undefined as any,
+            };
+        },
 
         onAfterInit(props?: NavItemGroupProps): void {
             this._navMode = props?.mode ?? 'expanded';

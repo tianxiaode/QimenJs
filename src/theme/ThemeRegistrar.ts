@@ -3,6 +3,7 @@ import { RegistrarNotFoundError } from '@qimenjs/registry';
 import { THEME_CHANGE_EVENT } from './types';
 import type { ThemeDefinition, ThemeChangeEvent, DesignTokens } from './types';
 import type { GlobalEventBus } from '@qimenjs/events';
+import { EventContextBuilder } from '@/context';
 
 /**
  * 主题注册器名称
@@ -195,7 +196,13 @@ export class ThemeRegistrar extends RegistrarBase<Map<string, ThemeDefinition>> 
      * 触发主题变更事件
      */
     private emitChange(payload: ThemeChangeEvent): void {
-        this.eventBus?.emit(THEME_CHANGE_EVENT, payload);
+        const ctx = EventContextBuilder.create()
+            .withEvent(THEME_CHANGE_EVENT)
+            .withType(THEME_CHANGE_EVENT)
+            .withSource('theme')
+            .withData(payload)
+            .build();
+        this.eventBus?.emit(THEME_CHANGE_EVENT, ctx);
     }
 
     /**

@@ -11,6 +11,7 @@ import { compilePendingTemplate } from './template-compiler';
 import { initFromTemplate } from './template-init';
 import { Logger } from '@/logger';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
+import { deepMerge } from '@/utils/object/clone';
 
 function initInstanceData(instance: any): void {
     instance.meta = {};
@@ -19,21 +20,14 @@ function initInstanceData(instance: any): void {
     instance._initializing = false;
 }
 
-function emitLifecycleEvent(instance: any, event: string, data?: any): void {
-    if (typeof instance.emit === 'function') {
-        instance.emit(event, data);
-    }
-
-    const eventKey = instance.eventKey ?? (instance.constructor as any).eventKey;
-    if (eventKey && typeof instance.bridgeEmit === 'function') {
-        instance.bridgeEmit(eventKey, event, data);
-    }
-}
-
 export function createTemplateClass(ParentClass: any, template: ComponentTemplate): any {
     const NewClass = function (this: any, props?: Record<string, any>) {
         initInstanceData(this);
         this._templateInitialized = false;
+
+        if (typeof this.onInitState === 'function') {
+            Object.assign(this, this.onInitState());
+        }
 
         if (typeof this.onBeforeInit === 'function') {
             this.onBeforeInit(props);
@@ -55,7 +49,9 @@ export function createTemplateClass(ParentClass: any, template: ComponentTemplat
             this.onAfterInit(props);
         }
 
-        emitLifecycleEvent(this, COMPONENT_LIFECYCLE_EVENTS.INIT, { props });
+        if (typeof this._emitLifecycleEvent === 'function') {
+            this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.INIT, { props });
+        }
     };
 
     copyPrototypeMethods(ParentClass, NewClass);
@@ -79,10 +75,11 @@ export function createReplaceClass(
         cls?: string;
         itemsCls?: string;
         config?: Record<string, any>;
+        nodeOverrides?: Record<string, Record<string, any>>;
         body?: Record<string, any>;
     }
 ): any {
-    const { type, cls, itemsCls, config, body } = options;
+    const { type, cls, itemsCls, config, nodeOverrides, body } = options;
 
     const NewClass = function (this: any, props?: Record<string, any>) {
         initInstanceData(this);
@@ -99,6 +96,13 @@ export function createReplaceClass(
 
     copyPrototypeMethods(ParentClass, NewClass);
     copyStaticMethods(ParentClass, NewClass);
+
+    if (nodeOverrides) {
+        const parentOverrides = (ParentClass as any)._nodeOverrides;
+        (NewClass as any)._nodeOverrides = parentOverrides
+            ? deepMerge(parentOverrides, nodeOverrides)
+            : nodeOverrides;
+    }
 
     if (body) {
         const proto = NewClass.prototype;

@@ -48,7 +48,11 @@ export let ToggleComponent = TemplateComponent.withTemplate({
     body: {
         type: 'Toggle',
 
-        _pressed: false,
+        onInitState() {
+            return {
+                _pressed: false,
+            };
+        },
 
         forwards: {
             icon: 'icon',

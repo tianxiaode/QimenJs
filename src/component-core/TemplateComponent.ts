@@ -109,21 +109,22 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         }
     }
 
-    _emitLifecycleEvent(event: string, data?: any): void {
-        if (typeof this.emit === 'function') {
-            this.emit(event, data);
-        }
-
-        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
-        if (eventKey && typeof this.bridgeEmit === 'function') {
-            this.bridgeEmit(eventKey, event, data);
-        }
-    }
-
     static withTemplate(this: any, template: ComponentTemplate): any {
         return createTemplateClass(this, template);
     }
 
+    /**
+     * 基于当前组件创建派生类（扁平复制，非继承）
+     *
+     * @param options.type - 组件类型标识
+     * @param options.cls - 追加到根元素的 CSS 类名
+     * @param options.itemsCls - 追加到 itemContainer 的 CSS 类名
+     * @param options.config - 默认 props，合并到构造参数
+     * @param options.nodeOverrides - 覆盖模板节点属性，key 为节点 name，值合并到 initNodeProps
+     *   键名与 _updateNode 一致：hidden / cls / style / attrs / flex / grid / role 等
+     *   链式 replace 时深度合并（子覆盖父）
+     * @param options.body - 追加到原型的方法/getter/setter
+     */
     static replace(
         this: any,
         options: {
@@ -131,6 +132,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             cls?: string;
             itemsCls?: string;
             config?: Record<string, any>;
+            nodeOverrides?: Record<string, Record<string, any>>;
             body?: Record<string, any>;
         }
     ): any {

@@ -104,6 +104,33 @@
  * - CSS transition 写在 TplNode 的 cls/style 里，不需要单独字段
  * - 进入/退出动画在 body.animation 声明，由框架自动触发
  * - 浮层动画由浮层组件自己管（如 Menu），触发组件（如 Button）只管 floats 声明
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 事件数据自动收集
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 组件 emit(event) 时，如果未传 data 参数，框架自动查找
+ * get{Event}EventData() 方法（约定命名）：
+ * - 存在 → 调用并以其返回值作为 data
+ * - 不存在 → data 为 undefined（向后兼容）
+ *
+ * 命名规则：事件名 click → getClickEventData，toggle → getToggleEventData
+ *
+ * 示例：
+ *
+ *   body: {
+ *       getClickEventData() {
+ *           return { key: this.key, text: this.text };
+ *       },
+ *       getSelectEventData() {
+ *           return { key: this.key, checked: this._checked };
+ *       },
+ *   }
+ *
+ * 调用方无需改动：
+ *   this.emit('click')                    // 自动带 { key, text }
+ *   this.emit('click', { key: 'save' })   // 手动传 data，不走自动收集
+ *   this.emit('click', undefined, { source: 'menu' })  // 自动收集 + 桥接
  */
 
 export interface BodyKeyDef {

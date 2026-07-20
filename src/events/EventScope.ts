@@ -1,5 +1,6 @@
 ﻿import { EventBus } from './EventBus';
-import { EventHandler, IEventContext, IEventScope, ScopeLogAction } from './types';
+import { EventHandler, IEventScope, ScopeLogAction } from './types';
+import type { EventContext } from '@/context';
 
 import { ILogger, LogLevel } from '@qimenjs/logger';
 import { string } from '@qimenjs/utils';
@@ -68,22 +69,22 @@ export class EventScope implements IEventScope {
     }
 
     /**
-     * 触发事件
+     * 触发事件（只接收 EventContext）
      *
-     * 在当前作用域上下文中触发一个事件，如果作用域已被销毁，则记录警告日志。
-     * scopeId 由内部自动绑定（this.scopeId），无需外部传入。
+     * 自动补回 scopeId，然后委托 EventBus.emit 分发。
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
      *
      * @param event - 事件名称
-     * @param data - 事件数据
-     * @param options - 可选配置：source 事件源（桥接的关键标识）
+     * @param ctx - 预构建的 EventContext
      */
-    emit(event: string, data?: any, options?: { source?: any }): void {
+    emit(event: string, ctx: EventContext): void {
         if (this.disposed) {
             this.logScope('warn', 'emit_after_dispose', { event: String(event) });
             return;
         }
-        this.logScope('debug', 'emit', { event: String(event), hasData: data !== undefined });
-        this.bus.emit(event, data, options?.source || this, this.scopeId);
+        this.logScope('debug', 'emit', { event: String(event), hasData: ctx?.data !== undefined });
+        ctx.scopeId = this.scopeId;
+        this.bus.emit(event, ctx);
     }
 
     /**

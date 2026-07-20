@@ -89,24 +89,26 @@ export let NavItemComponent = TemplateComponent.withTemplate({
     body: {
         type: 'NavItem',
 
-        active: false,
-        disabled: false,
-        mode: 'expanded' as 'expanded' | 'collapsed',
-        children: undefined as Record<string, any>[] | undefined,
-        overlayOptions: undefined as NavOverlayOptions | undefined,
-        overlayComponent: undefined as any,
-        depth: 0,
-        maxDepth: 3,
-        eventKey: '',
-        onSelect: undefined as ((item: any) => void) | undefined,
-
-        _overlayEl: null as HTMLElement | null,
-        _overlayContent: null as any,
-        _overlayOpen: false,
-        _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
-        _tooltipEl: null as HTMLElement | null,
-        _tooltipBound: false,
-        _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
+        onInitState() {
+            return {
+                active: false,
+                disabled: false,
+                mode: 'expanded' as 'expanded' | 'collapsed',
+                children: undefined as Record<string, any>[] | undefined,
+                overlayOptions: undefined as NavOverlayOptions | undefined,
+                overlayComponent: undefined as any,
+                depth: 0,
+                maxDepth: 3,
+                onSelect: undefined as ((item: any) => void) | undefined,
+                _overlayEl: null as HTMLElement | null,
+                _overlayContent: null as any,
+                _overlayOpen: false,
+                _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
+                _tooltipEl: null as HTMLElement | null,
+                _tooltipBound: false,
+                _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
+            };
+        },
 
         forwards: {
             icon: 'icon',

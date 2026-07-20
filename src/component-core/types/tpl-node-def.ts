@@ -59,6 +59,11 @@
  * - 无条件绑定：emits/entities/bridges 是跨组件桥接，
  *   组件自身无法知道外部有没有监听，只能全部触发
  *
+ * 事件数据自动收集：
+ * - emits 触发 this.emit(emitName, ctx) 时，如果 ctx 无自定义数据，
+ *   框架自动查找 get{EmitName}EventData() 方法获取数据
+ * - 详见 tpl-body-def.ts「事件数据自动收集」章节
+ *
  * DomEventDecl 各字段含义：
  * ┌──────────────┬──────────────────────────────────────────────────┐
  * │ 字段         │ 说明                                             │

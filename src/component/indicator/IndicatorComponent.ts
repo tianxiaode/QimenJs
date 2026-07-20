@@ -39,10 +39,14 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
     body: {
         type: 'Indicator',
 
-        _count: 0,
-        _activeIndex: -1,
-        _indicatorType: 'dot' as IndicatorType,
-        _itemEls: [] as HTMLElement[],
+        onInitState() {
+            return {
+                _count: 0,
+                _activeIndex: -1,
+                _indicatorType: 'dot' as IndicatorType,
+                _itemEls: [] as HTMLElement[],
+            };
+        },
 
         _initIndicator(props?: IndicatorProps): void {
             if (props?.type) this._indicatorType = props.type;

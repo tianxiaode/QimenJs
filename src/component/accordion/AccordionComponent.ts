@@ -21,8 +21,12 @@ export let AccordionComponent = ItemGroupComponent.replace({
         events: ['click'],
     },
     body: {
-        _mode: 'single' as AccordionMode,
-        _expandedIndex: -1,
+        onInitState() {
+            return {
+                _mode: 'single' as AccordionMode,
+                _expandedIndex: -1,
+            };
+        },
 
         onAfterInit(props?: AccordionProps): void {
             this._mode = props?.mode ?? 'single';

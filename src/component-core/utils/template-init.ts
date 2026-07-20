@@ -93,10 +93,16 @@ function buildNodeMap(instance: any): void {
 // ══════════════════════════════════════════════════════════════
 
 function initNodeProps(instance: any): void {
+    const ctor = instance.constructor as any;
+    const nodeOverrides: Record<string, Record<string, any>> | undefined = ctor._nodeOverrides;
+
     for (const [name, node] of Object.entries(instance.nodeMap as Record<string, NodeMetadata>)) {
         if (!node.el || node.componentClass) continue;
 
         const nodeProps = buildNodePropsFromMeta(node);
+        if (nodeOverrides?.[name]) {
+            Object.assign(nodeProps, nodeOverrides[name]);
+        }
         if (Object.keys(nodeProps).length > 0) {
             instance._updateNode(name, nodeProps);
         }
@@ -194,16 +200,7 @@ function bindDomEventBindings(instance: any): void {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 6. 播放进入动画
-// ══════════════════════════════════════════════════════════════
 
-function playEnterAnimation(instance: any): void {
-    if (typeof instance.playEnter === 'function') {
-        instance.playEnter();
-    }
-}
-
-// ══════════════════════════════════════════════════════════════
 // 6.5 拖拽初始化
 // ══════════════════════════════════════════════════════════════
 

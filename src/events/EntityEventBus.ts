@@ -26,6 +26,7 @@
 
 import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
+import type { EventContext } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
 
 function encodeEntityEvent(entityKey: string, eventName: string): string {
@@ -58,7 +59,17 @@ export class EntityEventBus {
         return this.entityScope.getScopeId();
     }
 
-    entityEmit(entityKey: string, eventName: string, data?: any): void {
+    /**
+     * 发送实体事件（只接收 EventContext）
+     *
+     * 事件总线统一约定：只接收 EventContext，由发送方构建。
+     * 从 ctx.source 提取 entityKey，从 ctx.type 提取 eventName。
+     *
+     * @param ctx - 预构建的 EventContext
+     */
+    entityEmit(ctx: EventContext): void {
+        const entityKey = ctx.source;
+        const eventName = ctx.type!;
         const entityEvent = encodeEntityEvent(entityKey, eventName);
         this.logger.debug?.(
             '[EntityEventBus] entityEmit, entityKey =',
@@ -66,7 +77,7 @@ export class EntityEventBus {
             'eventName =',
             eventName
         );
-        this.entityScope.emit(entityEvent, data);
+        this.entityScope.emit(entityEvent, ctx);
     }
 
     entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {

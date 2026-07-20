@@ -45,6 +45,7 @@ import { createGestureProcessor } from '../processors';
 import { ILogger, LogLevel, Logger } from '@/logger';
 import { string } from '@/utils';
 import { debounce, throttle } from '@qimenjs/async';
+import { EventContextBuilder } from '@/context';
 
 /* ============================================
  * DomEventAdapter
@@ -122,13 +123,28 @@ export class DomEventAdapter {
         options?: BindOptions,
         source?: any
     ): () => void {
-        this.logAdapter('debug', 'bind_called', { semantic, hasTarget: !!target, sourceType: source?.constructor?.name });
+        this.logAdapter('debug', 'bind_called', {
+            semantic,
+            hasTarget: !!target,
+            sourceType: source?.constructor?.name,
+        });
 
         // GestureSemantic：走 Processor 流程
         const descriptor = this.gestureMap[semantic as GestureSemantic];
         if (descriptor) {
-            this.logAdapter('debug', 'bind_gesture_found', { semantic, requires: descriptor.requires, processor: descriptor.processor });
-            return this.bindGesture(target, semantic as GestureSemantic, descriptor, scope, options, source);
+            this.logAdapter('debug', 'bind_gesture_found', {
+                semantic,
+                requires: descriptor.requires,
+                processor: descriptor.processor,
+            });
+            return this.bindGesture(
+                target,
+                semantic as GestureSemantic,
+                descriptor,
+                scope,
+                options,
+                source
+            );
         }
 
         // InputSignal：直接绑定，不走 Processor
@@ -154,13 +170,26 @@ export class DomEventAdapter {
         options?: BindOptions,
         source?: any
     ): () => void {
-        this.logAdapter('debug', 'bind_gesture_start', { semantic, target: target.constructor.name });
+        this.logAdapter('debug', 'bind_gesture_start', {
+            semantic,
+            target: target.constructor.name,
+        });
 
         // 创建 gesture callback（可能带防抖/节流）
         let gestureCallback = (gesture: any) => {
-            this.logAdapter('debug', 'emit_gesture', { semantic, scopeType: scope?.constructor?.name });
+            this.logAdapter('debug', 'emit_gesture', {
+                semantic,
+                scopeType: scope?.constructor?.name,
+            });
             try {
-                scope.emit(`${DOM_EVENT_PREFIX}${semantic}`, gesture, { source });
+                scope.emit(
+                    `${DOM_EVENT_PREFIX}${semantic}`,
+                    EventContextBuilder.create()
+                        .withEvent(`${DOM_EVENT_PREFIX}${semantic}`)
+                        .withSource(source)
+                        .withData(gesture)
+                        .build()
+                );
                 this.logAdapter('debug', 'emit_gesture_done', { semantic });
             } catch (e: any) {
                 this.logAdapter('error', 'emit_gesture_error', { semantic, error: e?.message });
@@ -220,7 +249,10 @@ export class DomEventAdapter {
         options?: BindOptions,
         source?: any
     ): () => void {
-        this.logAdapter('debug', 'bind_input_signal_start', { signal, target: target.constructor.name });
+        this.logAdapter('debug', 'bind_input_signal_start', {
+            signal,
+            target: target.constructor.name,
+        });
 
         const domEvents = this.selectDomEvents(binding);
         const unbindFunctions: (() => void)[] = [];
@@ -228,7 +260,14 @@ export class DomEventAdapter {
         for (const domEvent of domEvents) {
             const handler = (event: Event) => {
                 const input = this.normalizeInput(signal, event);
-                scope.emit(`${DOM_EVENT_PREFIX}${signal}`, input, { source });
+                scope.emit(
+                    `${DOM_EVENT_PREFIX}${signal}`,
+                    EventContextBuilder.create()
+                        .withEvent(`${DOM_EVENT_PREFIX}${signal}`)
+                        .withSource(source)
+                        .withData(input)
+                        .build()
+                );
             };
 
             target.addEventListener(domEvent, handler, options);
@@ -277,7 +316,10 @@ export class DomEventAdapter {
         options?: BindOptions,
         unbindFunctions?: (() => void)[] // 新增参数
     ) {
-        this.logAdapter('debug', 'bindInputSignals', { signals, target: (target as any).tagName || target.constructor.name });
+        this.logAdapter('debug', 'bindInputSignals', {
+            signals,
+            target: (target as any).tagName || target.constructor.name,
+        });
 
         for (const signal of signals) {
             const binding = this.inputEventMap[signal];

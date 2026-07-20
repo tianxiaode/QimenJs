@@ -48,9 +48,13 @@ export let AvatarComponent = TemplateComponent.withTemplate({
     body: {
         type: 'Avatar',
 
-        _src: '',
-        _text: '',
-        _icon: '',
+        onInitState() {
+            return {
+                _src: '',
+                _text: '',
+                _icon: '',
+            };
+        },
 
         forwards: {
             icon: 'icon',
