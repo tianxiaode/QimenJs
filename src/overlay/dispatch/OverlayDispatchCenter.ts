@@ -107,14 +107,15 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     }
 
     private _dispatchAction(overlayKey: string, action: string, data?: any): void {
+        if (action === OVERLAY_ACTIONS.INIT) {
+            this._handleInit(overlayKey, data);
+            return;
+        }
+
         const componentId = data?.component?.id;
         if (!componentId) {
             this.logger.warn?.(`[OverlayDispatchCenter] action="${action}" missing component.id`);
             return;
-        }
-
-        if (!this.storage.has(overlayKey) && data?.floatConfig) {
-            this.register(overlayKey, data.floatConfig);
         }
 
         const instanceKey = encodeInstanceKey(componentId, overlayKey);
@@ -138,6 +139,94 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             this._changeOverlay(instanceKey, overlayKey, data);
         } else if (action === OVERLAY_ACTIONS.DISPOSE) {
             this._disposeInstance(instanceKey);
+        }
+    }
+
+    private _handleInit(overlayKey: string, data: any): void {
+        const component = data?.component;
+        const floats = data?.floats;
+        if (!component || !floats) return;
+
+        for (const [nodeName, floatDef] of Object.entries(floats)) {
+            const def = floatDef as Record<string, any>;
+            const anchor = component.nodeMap?.[nodeName]?.el ?? component.el;
+
+            this.register(overlayKey, {
+                type: def.type,
+                trigger: def.trigger,
+                placement: def.placement,
+                offset: def.offset,
+                closeOnClickOutside: def.closeOnClickOutside,
+                closeOnEscape: def.closeOnEscape,
+                mask: def.mask,
+            });
+
+            const trigger = def.trigger ?? 'click';
+            const triggers = Array.isArray(trigger) ? trigger : [trigger];
+
+            for (const t of triggers) {
+                if (t === 'manual' || t === 'always') continue;
+
+                const handler = (e: Event) => {
+                    e.stopPropagation();
+                    this.bus.overlayEmit(
+                        EventContextBuilder.create()
+                            .withEvent(
+                                `overlay:${overlayKey}:${t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE}`
+                            )
+                            .withType(t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE)
+                            .withSource(overlayKey)
+                            .withData({ component, anchor })
+                            .build()
+                    );
+                };
+
+                if (t === 'click') {
+                    anchor.addEventListener('click', handler);
+                } else if (t === 'hover') {
+                    anchor.addEventListener('mouseenter', handler);
+                    anchor.addEventListener('mouseleave', () => {
+                        this.bus.overlayEmit(
+                            EventContextBuilder.create()
+                                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
+                                .withType(OVERLAY_ACTIONS.HIDE)
+                                .withSource(overlayKey)
+                                .withData({ component, anchor })
+                                .build()
+                        );
+                    });
+                } else if (t === 'focus') {
+                    anchor.addEventListener('focus', handler);
+                    anchor.addEventListener('blur', () => {
+                        this.bus.overlayEmit(
+                            EventContextBuilder.create()
+                                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
+                                .withType(OVERLAY_ACTIONS.HIDE)
+                                .withSource(overlayKey)
+                                .withData({ component, anchor })
+                                .build()
+                        );
+                    });
+                }
+            }
+
+            const handlerKey = `on${nodeName[0].toUpperCase()}${nodeName.slice(1)}Float`;
+            const offs: Array<() => void> = component._floatOffs ?? [];
+
+            for (const feedbackAction of Object.values(OVERLAY_FEEDBACK_EVENTS)) {
+                const off = this.bus.overlayOn(
+                    overlayKey,
+                    feedbackAction as string,
+                    (feedbackData: any) => {
+                        if (typeof component[handlerKey] === 'function') {
+                            component[handlerKey]({ action: feedbackAction, ...feedbackData });
+                        }
+                    }
+                );
+                offs.push(off);
+            }
+
+            component._floatOffs = offs;
         }
     }
 

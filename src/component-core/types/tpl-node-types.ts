@@ -43,9 +43,6 @@ export interface DomEventDecl {
     /** 转发为实体操作，值为 mgr 方法名 */
     entities?: string;
 
-    /** 转发为浮动层操作，值为 action 名（show/hide/toggle） */
-    floats?: string[];
-
     /** handler 只执行一次 */
     once?: boolean;
 

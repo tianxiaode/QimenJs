@@ -8,7 +8,9 @@
  *
  * 事件：
  * - click — 按钮（icon/text）点击时触发
- * - dropdown — 展开箭头点击时转发到浮动调度中心
+ *
+ * 浮动层：
+ * - dropIcon — click 触发 toggle（由 body.floats 声明，调度中心自动处理）
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
@@ -36,12 +38,14 @@ export let ButtonComponent = TemplateComponent.withTemplate({
                 type: IconComponent,
                 cls: 'q-expand-arrow q-expand-arrow--collapsed',
                 hidden: true,
-                events: { click: { floats: ['toggle'] } },
             },
         ],
     },
     body: {
         type: 'Button',
+        floats: {
+            dropIcon: { type: 'DropPanel', trigger: 'click', placement: 'bottom' },
+        },
     },
 });
 

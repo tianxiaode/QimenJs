@@ -13,6 +13,8 @@
 // 请求动作（组件 → OverlayDispatchCenter）
 // ============================================
 export const OVERLAY_ACTIONS = {
+    /** 初始化浮层（组件实例+配置发送给调度中心） */
+    INIT: 'init',
     /** 显示浮层 */
     SHOW: 'show',
     /** 隐藏浮层 */
