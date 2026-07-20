@@ -53,7 +53,7 @@ export interface DragState {
     dragSource: any;
 }
 
-type DragAction = 'start' | 'end' | 'cancel' | 'enter' | 'leave' | 'drop';
+export type DragAction = 'start' | 'end' | 'cancel' | 'enter' | 'leave' | 'drop';
 
 function encodeDragEvent(dragKey: string, action: DragAction): string {
     return `drag:${dragKey}:${action}`;

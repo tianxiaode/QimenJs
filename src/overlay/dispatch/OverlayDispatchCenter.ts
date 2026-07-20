@@ -147,6 +147,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const floats = data?.floats;
         if (!component || !floats) return;
 
+        component.onCleanup(() => this.disposeByComponent(componentId));
+
         for (const [nodeName, floatDef] of Object.entries(floats)) {
             const def = floatDef as Record<string, any>;
             const anchor = component.nodeMap?.[nodeName]?.el ?? component.el;

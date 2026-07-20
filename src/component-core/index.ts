@@ -18,7 +18,7 @@ export { EventForwardAbility } from './abilities/EventForwardAbility';
 export { NodePropAbility } from './abilities/NodePropAbility';
 export { CommonPropsAbility } from './abilities/CommonPropsAbility';
 export { AnimationAbility } from './abilities/AnimationAbility';
-export { DragAbility } from './abilities/DragAbility';
+
 export { LifecycleAbility } from './abilities/LifecycleAbility';
 
 // 模板编译工具

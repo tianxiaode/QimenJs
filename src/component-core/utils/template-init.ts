@@ -23,6 +23,8 @@ import { findByPath } from './template-compiler';
 import { SYSTEM_EVENTS } from '@/events';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
+import { DRAG_ACTIONS } from '@/events/drag-events';
+import { dragDispatchCenter } from '@/drag';
 import { EventContextBuilder } from '@/context';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { getId } from '@/utils/string/id';
@@ -207,9 +209,11 @@ function bindDomEventBindings(instance: any): void {
 // ══════════════════════════════════════════════════════════════
 
 function initDrags(instance: any): void {
-    if (typeof instance._initDrags === 'function') {
-        instance._initDrags();
-    }
+    const ctor = instance.constructor as any;
+    const drags = ctor._drags;
+    if (!drags || Object.keys(drags).length === 0) return;
+
+    dragDispatchCenter.handleInit(instance.id, { component: instance, drags });
 }
 
 // ══════════════════════════════════════════════════════════════

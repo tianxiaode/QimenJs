@@ -16,7 +16,7 @@ export * from './EventFlowRegistrar';
 export { EventBridge } from './EventBridge';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
 export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';
-export { DragEventBus, dragEventBus, type DragState } from './DragEventBus';
+export { DragEventBus, dragEventBus, type DragState, type DragAction } from './DragEventBus';
 export {
     SystemEventBus,
     systemEventBus,
@@ -31,6 +31,9 @@ export * from './entity-events';
 
 // 导出浮层事件常量
 export * from './overlay-events';
+
+// 导出拖拽事件常量
+export * from './drag-events';
 
 // 导出组件能力事件常量
 export * from './component-events';

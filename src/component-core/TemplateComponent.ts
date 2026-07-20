@@ -18,6 +18,7 @@ import {
     EventBridgeAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
+    DragEventBusAbility,
     SystemEventBusAbility,
 } from '@/system-abilities';
 import { EventForwardAbility } from './abilities/EventForwardAbility';
@@ -28,7 +29,7 @@ import type { ComponentTemplate } from './types/component-template';
 import { createTemplateClass, createReplaceClass } from './utils/template-factory';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
-import { DragAbility } from './abilities/DragAbility';
+
 import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
@@ -46,12 +47,13 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventBridgeAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
+    DragEventBusAbility,
     SystemEventBusAbility,
     EventForwardAbility,
     NodePropAbility,
     CommonPropsAbility,
     AnimationAbility,
-    DragAbility,
+
     LifecycleAbility,
 ];
 

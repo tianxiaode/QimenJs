@@ -127,6 +127,8 @@ const CounterAbility: AbilityDefinition = {
 
 ## 5. 清理资源用 onCleanup，不要手动管理
 
+### 5.1 基本用法
+
 ```typescript
 // 正确 - 自动清理
 const TimerAbility: AbilityDefinition = {
@@ -144,6 +146,39 @@ const TimerAbility: AbilityDefinition = {
     // 忘记在 dispose 中清理 → 内存泄漏
 };
 ```
+
+### 5.2 跨模块解耦：onCleanup 替代直接依赖
+
+当模块 A 需要在组件销毁时清理资源，但不想让组件直接依赖模块 A 时，用 `onCleanup` 注册回调：
+
+```typescript
+// ❌ 错误 — 组件直接 import 调度中心，强耦合
+// TemplateComponent.ts
+import { dragDispatchCenter } from '@/drag';
+import { overlayDispatchCenter } from '@/overlay/dispatch';
+
+class TemplateComponent {
+    dispose() {
+        dragDispatchCenter.disposeByComponent(this.id);
+        overlayDispatchCenter.disposeByComponent(this.id);
+    }
+}
+
+// ✅ 正确 — 调度中心在 handleInit 时注册 onCleanup，组件完全不知道调度中心存在
+// DragDispatchCenter.ts
+handleInit(componentId, data) {
+    const component = data.component;
+    component.onCleanup(() => this.disposeByComponent(componentId));
+    // ...
+}
+```
+
+**原理**：`ComposableBase.dispose()` 按注册逆序执行所有 cleanup 回调。组件销毁时自动触发，调度中心清理组件之外的外部资源（事件总线状态、OverlayRoot DOM、document 级监听等），而组件自身的 `component.bind`/`component.on` 由 eventScope.dispose() 自动清理。
+
+**适用场景**：
+- 调度中心（OverlayDispatchCenter、DragDispatchCenter）需要在组件销毁时清理外部资源
+- 任何需要在组件生命周期内注册清理逻辑，但不想与组件耦合的模块
+- 替代"组件发事件 → 调度中心监听"的复杂方案
 
 ## 6. 防抖用 debounce，不要自己实现
 
