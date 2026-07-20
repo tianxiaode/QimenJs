@@ -122,12 +122,13 @@ export const EventForwardAbility: AbilityDefinition = {
         }
 
         if (decl.floats?.length) {
+            const floatConfig = this._floats?.[nodeName];
             for (const floatAction of decl.floats) {
                 const floatData = this._collectEventData(nodeName, floatAction, 'float');
                 const payload = mergeEventData(floatData, data);
                 const ctx = this._buildForwardContext(
                     floatAction,
-                    { ...payload, component: this, anchor: el },
+                    { ...payload, component: this, anchor: el, floatConfig },
                     this.floatKey,
                     'float'
                 );

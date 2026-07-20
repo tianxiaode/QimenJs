@@ -113,6 +113,10 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             return;
         }
 
+        if (!this.storage.has(overlayKey) && data?.floatConfig) {
+            this.register(overlayKey, data.floatConfig);
+        }
+
         const instanceKey = encodeInstanceKey(componentId, overlayKey);
 
         if (action === OVERLAY_ACTIONS.SHOW || action === OVERLAY_ACTIONS.TOGGLE) {
