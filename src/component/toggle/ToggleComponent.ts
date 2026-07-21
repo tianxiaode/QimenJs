@@ -79,7 +79,7 @@ export let ToggleComponent = TemplateComponent.withTemplate({
 
         _setIcon(value: string): void {
             this.icon = value;
-            this.iconHidden = false;
+            this.setNodeHidden(false, 'icon');
         },
 
         _applyState(): void {

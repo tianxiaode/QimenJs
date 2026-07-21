@@ -17,8 +17,8 @@ export interface RouteContainerProps {
 const RouteContainerBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-route-container',
-        children: [{ tag: 'div', name: 'content', className: 'q-route-container__content' }],
+        cls: 'q-route-container',
+        children: [{ tag: 'div', name: 'content', cls: 'q-route-container__content' }],
     },
     body: {
         type: 'RouteContainer',

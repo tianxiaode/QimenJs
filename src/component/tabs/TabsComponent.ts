@@ -15,10 +15,10 @@ export interface TabsProps {
 export class TabsComponent extends TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-tabs',
+        cls: 'q-tabs',
         children: [
-            { tag: 'div', name: 'tabBar', className: 'q-tabs__bar' },
-            { tag: 'div', name: 'items', className: 'q-tabs__content' },
+            { tag: 'div', name: 'tabBar', cls: 'q-tabs__bar' },
+            { tag: 'div', name: 'items', cls: 'q-tabs__content' },
         ],
     },
     body: { type: 'Tabs' },

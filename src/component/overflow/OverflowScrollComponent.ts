@@ -38,19 +38,19 @@ export interface OverflowScrollProps {
 export let OverflowScrollComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-overflow-scroll-overlay',
+        cls: 'q-overflow-scroll-overlay',
         children: [
             {
                 tag: 'div',
                 name: 'prevIcon',
-                className: 'q-overflow-arrow q-overflow-arrow--prev',
+                cls: 'q-overflow-arrow q-overflow-arrow--prev',
                 hidden: true,
                 events: { click: { handler: true } },
             },
             {
                 tag: 'div',
                 name: 'nextIcon',
-                className: 'q-overflow-arrow q-overflow-arrow--next',
+                cls: 'q-overflow-arrow q-overflow-arrow--next',
                 hidden: true,
                 events: { click: { handler: true } },
             },

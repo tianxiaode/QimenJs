@@ -70,17 +70,18 @@ const DEFAULT_EXIT_ANIMATION: Keyframe[] = [
 export let NavItemComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-nav-item',
+        cls: 'q-nav-item',
+        events: { enter: { handler: true }, leave: { handler: true } },
         children: [
             {
                 tag: 'div',
                 name: 'content',
                 events: { click: { handler: true, bridges: ['click'] } },
-                className: 'q-nav-item__content',
+                cls: 'q-nav-item__content',
                 children: [
-                    { tag: 'i', name: 'icon', className: 'q-nav-item__icon' },
-                    { tag: 'span', name: 'text', className: 'q-nav-item__text' },
-                    { tag: 'span', name: 'expand', className: 'q-nav-item__expand' },
+                    { tag: 'i', name: 'icon', cls: 'q-nav-item__icon' },
+                    { tag: 'span', name: 'text', cls: 'q-nav-item__text' },
+                    { tag: 'span', name: 'expand', cls: 'q-nav-item__expand' },
                 ],
             },
         ],
@@ -104,7 +105,7 @@ export let NavItemComponent = TemplateComponent.withTemplate({
                 _overlayOpen: false,
                 _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
                 _tooltipEl: null as HTMLElement | null,
-                _tooltipBound: false,
+
                 _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
             };
         },
@@ -265,10 +266,12 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         },
 
         _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-            const expandEl = this.nodeMap?.expand?.el as HTMLElement | null;
-            if (expandEl) {
-                expandEl.classList.toggle('q-nav-item__expand--expanded', state === 'expanded');
-                expandEl.classList.toggle('q-nav-item__expand--collapsed', state === 'collapsed');
+            if (state === 'expanded') {
+                this.addCls('q-nav-item__expand--expanded', 'expand');
+                this.removeCls('q-nav-item__expand--collapsed', 'expand');
+            } else {
+                this.removeCls('q-nav-item__expand--expanded', 'expand');
+                this.addCls('q-nav-item__expand--collapsed', 'expand');
             }
         },
 
@@ -318,41 +321,33 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         },
 
         _applyState(): void {
-            this.el.classList.toggle('q-nav-item--active', this.active);
-            this.el.classList.toggle('q-nav-item--disabled', this.disabled);
-            this.el.classList.toggle('q-nav-item--collapsed', this.mode === 'collapsed');
-            this.el.classList.toggle('q-nav-item--has-children', !!this.children?.length);
+            if (this.active) this.addCls('q-nav-item--active');
+            else this.removeCls('q-nav-item--active');
 
-            const textEl = this.nodeMap?.text?.el as HTMLElement | null;
-            if (textEl) {
-                textEl.style.display = this.mode === 'collapsed' ? 'none' : '';
-            }
-            const expandEl = this.nodeMap?.expand?.el as HTMLElement | null;
-            if (expandEl) {
-                expandEl.style.display = this.children?.length ? '' : 'none';
-            }
+            if (this.disabled) this.addCls('q-nav-item--disabled');
+            else this.removeCls('q-nav-item--disabled');
 
-            if (this.disabled) {
-                this.el.setAttribute('aria-disabled', 'true');
-            } else {
-                this.el.removeAttribute('aria-disabled');
-            }
+            if (this.mode === 'collapsed') this.addCls('q-nav-item--collapsed');
+            else this.removeCls('q-nav-item--collapsed');
 
-            if (this.active) {
-                this.el.setAttribute('aria-current', 'page');
-            } else {
-                this.el.removeAttribute('aria-current');
-            }
+            if (this.children?.length) this.addCls('q-nav-item--has-children');
+            else this.removeCls('q-nav-item--has-children');
 
-            this._setupHoverTooltip();
+            this.setNodeHidden(this.mode === 'collapsed', 'text');
+            this.setNodeHidden(!this.children?.length, 'expand');
+
+            this.ariaDisabled = this.disabled ? 'true' : false;
+            if (this.active) this.setAttr('aria-current', 'page');
+            else this.removeAttr('aria-current');
         },
 
-        _setupHoverTooltip(): void {
-            if (this.mode !== 'collapsed' || this._tooltipBound) return;
-            this._tooltipBound = true;
+        onRootEnter(): void {
+            if (this.mode === 'collapsed') this._showTooltip();
+            this._clearSubmenuTimer?.();
+        },
 
-            this.el.addEventListener('mouseenter', () => this._showTooltip());
-            this.el.addEventListener('mouseleave', () => this._hideTooltip());
+        onRootLeave(): void {
+            if (this.mode === 'collapsed') this._hideTooltip();
         },
 
         _setIcon(value: string): void {

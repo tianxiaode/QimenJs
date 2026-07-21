@@ -110,60 +110,82 @@
  * - 内置防重入锁，防双击重复开关 / 拖拽进行中不重复触发
  *
  * ══════════════════════════════════════════════════════════════
- * name 字段与属性机制
+ * name 字段与属性机制（两层架构）
  * ══════════════════════════════════════════════════════════════
  *
- * name 是 nodeMap 中的索引键，同时承担自动属性生成。
- * 属性访问同样遵循数据驱动 + 统一分发原则：
+ * name 是 nodeMap 中的索引键。属性操作采用两层架构，
+ * 不再为每个节点自动生成 xxxCls/xxxHidden 等描述符。
  *
  * 【属性映射表】纯数据，定义属性名到 DOM 操作的映射：
- *   static _nodePropMap = {
+ *   DEFAULT_NODE_PROP_MAP = {
  *       cls:    { domAttr: 'className' },
  *       style:  { domAttr: 'style' },
  *       hidden: { domAttr: 'hidden' },
- *       text:   { domAttr: 'innerHTML' },   // 默认，按 tag 自动调整
- *       src:    { domAttr: 'href' },         // a 标签
  *       width:  { domAttr: 'style', cssProp: 'width', autoPx: true },
  *       ...
  *   };
  *
- * 【统一方法】所有属性操作集中处理：
- *   _getNodeProp(nodeName, prop)
- *     → 查 _nodePropMap[prop] 取映射
- *     → cssProp → el.style[cssProp]
- *     → 其他 → el[domAttr]
+ * 【统一读写】NodePropAbility 提供：
+ *   _getNodeProp(nodeName, prop) — 查映射表读 DOM
+ *   _setNodeProp(nodeName, prop, value) — 查映射表写 DOM
+ *   _markNodeDirty(nodeName, props) — 脏追踪批量写 DOM
  *
- *   _setNodeProp(nodeName, prop, value)
- *     → 查 _nodePropMap[prop] 取映射
- *     → cssProp + autoPx → 数字自动加 px
- *     → 其他 → el[domAttr] = value
+ * ══════════════════════════════════════════════════════════════
+ * Layer 1 — root 属性 + 方法
+ * ══════════════════════════════════════════════════════════════
  *
- * 【原型 getter/setter】极简转发，不生成复杂闭包：
- *   Object.defineProperty(proto, 'textCls', {
- *       get() { return this._getNodeProp('text', 'cls'); },
- *       set(v) { this._setNodeProp('text', 'cls', v); }
- *   });
+ * CommonPropsAbility 在原型上生成 root getter/setter：
+ *   this.cls = 'xxx'        → _markNodeDirty('root', { cls: 'xxx' })
+ *   this.hidden = true      → _markNodeDirty('root', { hidden: true })
+ *   this.width = 200        → _markNodeDirty('root', { width: 200 })
+ *   this.border = { width: 1 } → _markNodeDirty('root', { border: ... })
  *
- * 【tag 自动推导内容属性】不需要 textMode，按 tag 自动决定：
+ * cls 相关方法（root 默认，可传 nodeName 切换到子节点）：
+ *   this.addCls('active')           → root.classList.add('active')
+ *   this.removeCls('active')        → root.classList.remove('active')
+ *   this.toggleCls('active')        → root.classList.toggle('active')
+ *   this.toggleCls('active', true)  → root.classList.toggle('active', true)
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Layer 2 — 子节点方法（nodeName 在末尾，可选）
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 方法重载：nodeName 在末尾，不传默认操作 root：
+ *   this.addCls('active', 'expand')     → expand.classList.add('active')
+ *   this.removeCls('active', 'expand')  → expand.classList.remove('active')
+ *   this.toggleCls('active', 'expand')  → expand.classList.toggle('active')
+ *
+ * 属性方法：setNodeXxx(value, nodeName?)
+ *   this.setNodeCls('xxx', 'expand')       → _markNodeDirty('expand', { cls: 'xxx' })
+ *   this.setNodeHidden(true, 'expand')     → _markNodeDirty('expand', { hidden: true })
+ *   this.setNodeWidth(200, 'expand')       → _markNodeDirty('expand', { width: 200 })
+ *   this.setNodeBorder({...}, 'expand')    → _markNodeDirty('expand', { border: ... })
+ *
+ * 通用兜底：setNodeProp(prop, value, nodeName?)
+ *   this.setNodeProp('tabIndex', 0, 'expand') → _markNodeDirty('expand', { tabIndex: 0 })
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 内容属性（addContentPropDesc）— 保留
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 【tag 自动推导内容属性】按 tag 自动决定：
  *   tag: 'div'/'span' → this.name → el.innerHTML
  *   tag: 'input'      → this.name → el.value
  *   tag: 'img'        → this.name → el.src
  *   tag: 'a'          → this.name → el.innerHTML + this.nameSrc → el.href
  *
- * 【DOM 子节点】name='text' 自动生成：
- *   - this.text → el.innerHTML（按 tag 自动推导）
- *   - this.textCls → el.className
- *   - this.textStyle → el.style
- *   - this.textHidden → el.hidden
- *   - this.textWidth → el.style.width
- *   - ...通用属性由 _nodePropMap 定义
+ * 内容属性仍自动生成 getter/setter（如 this.title = 'Hello'），
+ * 通用属性不再自动生成，改用 setNodeXxx 方法。
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 组件引用（addComponentRefDesc）— 保留
+ * ══════════════════════════════════════════════════════════════
  *
  * 【组件子节点】name='icon' 自动生成：
  *   - this.$icon → nodeMap.icon.component（组件访问器，$ 前缀）
- *   - this.iconCls → iconComponent.el.className
- *   - this.iconStyle → iconComponent.el.style
- *   - this.iconSize → iconComponent.size
- *   - ...同上通用属性
+ *
+ * 不再自动生成 iconCls/iconHidden 等属性转发，
+ * 改用 this.setNodeCls('xxx', 'icon') 或 this.$icon.cls = 'xxx'
  *
  * ══════════════════════════════════════════════════════════════
  * role / attrs 机制

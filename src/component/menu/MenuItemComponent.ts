@@ -43,20 +43,21 @@ export interface MenuItemProps {
 const MenuItemBase = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
+        events: { enter: { handler: true }, leave: { handler: true } },
         children: [
             {
                 tag: 'div',
                 name: 'content',
                 events: { click: { handler: true } },
-                className: 'q-menu-item__content',
+                cls: 'q-menu-item__content',
                 children: [
-                    { tag: 'i', name: 'icon', className: 'q-menu-item__icon' },
-                    { tag: 'span', name: 'text', className: 'q-menu-item__text' },
-                    { tag: 'span', name: 'shortcut', className: 'q-menu-item__shortcut' },
+                    { tag: 'i', name: 'icon', cls: 'q-menu-item__icon' },
+                    { tag: 'span', name: 'text', cls: 'q-menu-item__text' },
+                    { tag: 'span', name: 'shortcut', cls: 'q-menu-item__shortcut' },
                     {
                         tag: 'div',
                         name: 'expand',
-                        className: 'q-expand-arrow q-expand-arrow--collapsed',
+                        cls: 'q-expand-arrow q-expand-arrow--collapsed',
                         hidden: true,
                         children: [{ tag: 'i' }],
                     },
@@ -82,7 +83,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
         },
 
         _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
-            this.el.classList.add('q-menu-item');
+            this.addCls('q-menu-item');
 
             if (props?.text) this.text = props.text;
             if (props?.icon) this._userIcon = props.icon;
@@ -107,8 +108,6 @@ const MenuItemBase = TemplateComponent.withTemplate({
                     data: () => this.submenuProps ?? {},
                 };
             }
-
-            this._bindHoverEvents();
         },
 
         get disabled(): boolean {
@@ -175,10 +174,17 @@ const MenuItemBase = TemplateComponent.withTemplate({
         },
 
         _applyState(): void {
-            this.el.classList.toggle('q-menu-item--disabled', this._disabled);
-            this.el.classList.toggle('q-menu-item--has-submenu', this._hasSubmenu);
-            this.el.classList.toggle('q-menu-item--checked', this._checked);
-            this.el.classList.toggle('q-menu-item--grouped', !!this._group);
+            if (this._disabled) this.addCls('q-menu-item--disabled');
+            else this.removeCls('q-menu-item--disabled');
+
+            if (this._hasSubmenu) this.addCls('q-menu-item--has-submenu');
+            else this.removeCls('q-menu-item--has-submenu');
+
+            if (this._checked) this.addCls('q-menu-item--checked');
+            else this.removeCls('q-menu-item--checked');
+
+            if (this._group) this.addCls('q-menu-item--grouped');
+            else this.removeCls('q-menu-item--grouped');
 
             if (this._group) {
                 this._renderGroupIndicator();
@@ -186,26 +192,16 @@ const MenuItemBase = TemplateComponent.withTemplate({
                 this._setIcon(this._userIcon);
             }
 
-            const expandEl = this.nodeMap?.expand?.el as HTMLElement | null;
-            if (expandEl) {
-                expandEl.hidden = !this._hasSubmenu;
-            }
+            this.setNodeHidden(!this._hasSubmenu, 'expand');
 
-            if (this._disabled) {
-                this.el.setAttribute('aria-disabled', 'true');
-            } else {
-                this.el.removeAttribute('aria-disabled');
-            }
+            this.ariaDisabled = this._disabled ? 'true' : false;
 
             if (this._group) {
-                this.el.setAttribute(
-                    'role',
-                    this._groupMode === 'radio' ? 'menuitemradio' : 'menuitemcheckbox'
-                );
-                this.el.setAttribute('aria-checked', String(this._checked));
+                this.role = this._groupMode === 'radio' ? 'menuitemradio' : 'menuitemcheckbox';
+                this.ariaChecked = String(this._checked);
             } else {
-                this.el.removeAttribute('role');
-                this.el.removeAttribute('aria-checked');
+                this.role = false;
+                this.ariaChecked = false;
             }
         },
 
@@ -221,22 +217,20 @@ const MenuItemBase = TemplateComponent.withTemplate({
             this.icon = value;
         },
 
-        _bindHoverEvents(): void {
-            this.el.addEventListener('mouseenter', () => {
-                this._clearSubmenuTimer();
+        onRootEnter(): void {
+            this._clearSubmenuTimer();
 
-                if (this._hasSubmenu && !this._disabled) {
-                    this._updateExpandArrow('expanded');
-                }
-            });
+            if (this._hasSubmenu && !this._disabled) {
+                this._updateExpandArrow('expanded');
+            }
+        },
 
-            this.el.addEventListener('mouseleave', () => {
-                this._clearSubmenuTimer();
+        onRootLeave(): void {
+            this._clearSubmenuTimer();
 
-                if (this._hasSubmenu) {
-                    this._updateExpandArrow('collapsed');
-                }
-            });
+            if (this._hasSubmenu) {
+                this._updateExpandArrow('collapsed');
+            }
         },
 
         _clearSubmenuTimer(): void {
@@ -247,10 +241,12 @@ const MenuItemBase = TemplateComponent.withTemplate({
         },
 
         _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-            const expandEl = this.nodeMap?.expand?.el as HTMLElement | null;
-            if (expandEl) {
-                expandEl.classList.toggle('q-expand-arrow--expanded', state === 'expanded');
-                expandEl.classList.toggle('q-expand-arrow--collapsed', state === 'collapsed');
+            if (state === 'expanded') {
+                this.addCls('q-expand-arrow--expanded', 'expand');
+                this.removeCls('q-expand-arrow--collapsed', 'expand');
+            } else {
+                this.removeCls('q-expand-arrow--expanded', 'expand');
+                this.addCls('q-expand-arrow--collapsed', 'expand');
             }
         },
 

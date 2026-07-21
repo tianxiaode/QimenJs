@@ -28,8 +28,8 @@ export let TipsComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         children: [
-            { tag: 'span', name: 'text', className: 'q-tips__content' },
-            { tag: 'div', name: 'arrow', className: 'q-arrow' },
+            { tag: 'span', name: 'text', cls: 'q-tips__content' },
+            { tag: 'div', name: 'arrow', cls: 'q-arrow' },
         ],
     },
     body: {

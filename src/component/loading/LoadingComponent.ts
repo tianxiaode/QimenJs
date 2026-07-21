@@ -24,10 +24,10 @@ import { TemplateComponent } from '@qimenjs/component-core';
 export let LoadingComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-loading',
+        cls: 'q-loading',
         children: [
-            { tag: 'div', name: 'spinner', className: 'q-loading-spinner' },
-            { tag: 'div', name: 'text', className: 'q-loading-text' },
+            { tag: 'div', name: 'spinner', cls: 'q-loading-spinner' },
+            { tag: 'div', name: 'text', cls: 'q-loading-text' },
         ],
     },
     body: {
@@ -37,7 +37,7 @@ export let LoadingComponent = TemplateComponent.withTemplate({
             if (props?.text) {
                 this.text = props.text;
             } else {
-                this.textHidden = true;
+                this.setNodeHidden(true, 'text');
             }
 
             if (props?.spinner) {
@@ -52,7 +52,7 @@ export let LoadingComponent = TemplateComponent.withTemplate({
             if (!data) return;
             if (data.text !== undefined) {
                 this.text = data.text;
-                this.textHidden = !data.text;
+                this.setNodeHidden(!data.text, 'text');
             }
             if (data.visible !== undefined) {
                 this.hidden = !data.visible;

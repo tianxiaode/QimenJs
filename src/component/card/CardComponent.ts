@@ -47,12 +47,12 @@ export let CardComponent = TemplateComponent.withTemplate({
 
             if (props?.icon) {
                 this.headerIcon = props.icon;
-                this.headerIconHidden = false;
+                this.setNodeHidden(false, 'headerIcon');
             }
 
             if (props?.action) {
                 this.headerActionIcon = props.action;
-                this.headerActionHidden = false;
+                this.setNodeHidden(false, 'headerAction');
             }
         },
     },

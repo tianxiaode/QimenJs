@@ -1,4 +1,5 @@
 import { TemplateComponent } from '@qimenjs/component-core';
+import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 
 type ItemGroupInstance = InstanceType<typeof ItemGroupPooledComponent>;
@@ -95,27 +96,25 @@ export class PanelComponent extends PanelBase {
         }
 
         if (props?.expandable) {
-            const expandNode = this.nodeMap?.expand;
-            if (expandNode?.el) {
-                expandNode.el.hidden = false;
-            }
+            this.setNodeHidden(false, 'expand');
+            this.addCls('q-expand-arrow q-expand-arrow--collapsed', 'expand');
 
-            const expandEl = expandNode?.el;
-            if (expandEl) {
-                expandEl.classList.add('q-expand-arrow', 'q-expand-arrow--collapsed');
-
-                expandEl.addEventListener('click', (e: Event) => {
-                    e.stopPropagation();
-                    const isCollapsed = expandEl.classList.contains('q-expand-arrow--collapsed');
-                    expandEl.classList.toggle('q-expand-arrow--collapsed', !isCollapsed);
-                    expandEl.classList.toggle('q-expand-arrow--expanded', isCollapsed);
-
-                    const bodyNode = this.nodeMap?.body;
-                    if (bodyNode?.el) {
-                        bodyNode.el.hidden = isCollapsed;
-                    }
-                });
-            }
+            this.bind(this.nodeMap?.expand?.el, 'click');
+            this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
+                const originalEvent = ctx?.data?.originalEvent;
+                originalEvent?.stopPropagation();
+                const isCollapsed = this.nodeMap?.expand?.el?.classList.contains(
+                    'q-expand-arrow--collapsed'
+                );
+                if (isCollapsed) {
+                    this.removeCls('q-expand-arrow--collapsed', 'expand');
+                    this.addCls('q-expand-arrow--expanded', 'expand');
+                } else {
+                    this.removeCls('q-expand-arrow--expanded', 'expand');
+                    this.addCls('q-expand-arrow--collapsed', 'expand');
+                }
+                this.setNodeHidden(!!isCollapsed, 'body');
+            });
         }
     }
 }

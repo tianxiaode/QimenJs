@@ -1,8 +1,8 @@
 /**
- * child-node-props.ts — 子节点属性自动构建
+ * child-node-props.ts — 子节点内容属性自动构建
  *
  * 编译时根据 nodeMetas 中每个命名子节点的 contentMode，
- * 自动生成对应的 getter/setter 描述符并挂到构造函数原型上。
+ * 自动生成对应的内容属性 getter/setter 描述符并挂到构造函数原型上。
  *
  * 组件实例可直接 this.title = 'Hello' 更新子节点内容，
  * 无需在 body 中手写 getter/setter。
@@ -18,23 +18,21 @@
  * | src         | src         | el.src                |
  * | link        | text + href | el.innerHTML + el.href|
  *
- * 通用属性（所有命名子节点均生成）：
- * cls / style / hidden / disabled / width / height / margin / padding
- * fontSize / color / bg / cursor / border
+ * 通用属性（cls/hidden/style 等）已由 CommonPropsAbility 的
+ * setNodeXxx / addCls / removeCls 等方法统一提供，
+ * 不再为每个节点自动生成属性描述符。
  *
  * 属性名规则：
  * - 内容属性直接用子节点 name（如 this.title → 更新 title 节点内容）
- * - 通用属性用 name + Prop 名（如 this.titleCls → 更新 title 节点 cls）
  * - name 与内置方法冲突时加 _ 后缀（如 this.text_ → 更新 text 节点内容）
  * - 组件子节点用 $name（如 this.$icon → 访问 icon 子组件实例）
- * - 组件子节点通用属性转发到子组件实例（如 this.iconCls → iconComponent.cls）
  * - i18n 节点的内容 setter 设置 i18nKey，自动翻译后写入 DOM
  */
 
 import type { NodeMetadata } from '../types/compiled-types';
 import { capitalize } from '@/utils/string/base';
 import { resolveI18nValue } from '@qimenjs/i18n';
-import { CONTENT_MODE_MAP, COMMON_NODE_PROPS, RESERVED_KEYS } from './template-constants';
+import { CONTENT_MODE_MAP, RESERVED_KEYS } from './template-constants';
 
 export function applyChildNodeProps(
     ctor: any,
@@ -62,7 +60,6 @@ export function buildChildNodePropDescs(
 
         if (meta.componentClass) {
             addComponentRefDesc(descs, nodeName);
-            addComponentForwardDescs(descs, nodeName, meta.componentClass);
             continue;
         }
 
@@ -74,10 +71,6 @@ export function buildChildNodePropDescs(
             for (const def of contentDefs) {
                 addContentPropDesc(descs, nodeName, def.nodeProp, isI18n);
             }
-        }
-
-        for (const prop of COMMON_NODE_PROPS) {
-            addCommonPropDesc(descs, nodeName, prop);
         }
     }
 
@@ -128,62 +121,6 @@ function addContentPropDesc(
     }
 }
 
-function addCommonPropDesc(
-    descs: Record<string, PropertyDescriptor>,
-    nodeName: string,
-    prop: string
-): void {
-    const key = `${nodeName}${capitalize(prop)}`;
-
-    if (descs[key]) return;
-
-    descs[key] = {
-        get(this: any) {
-            return this._getNodeProp(nodeName, prop);
-        },
-        set(this: any, v: any) {
-            this._markNodeDirty(nodeName, { [prop]: v });
-        },
-        configurable: true,
-        enumerable: true,
-    };
-
-    if (prop === 'cls') {
-        addClsMethodDescs(descs, nodeName);
-    }
-}
-
-function addClsMethodDescs(descs: Record<string, PropertyDescriptor>, nodeName: string): void {
-    const addKey = `${nodeName}AddCls`;
-    const removeKey = `${nodeName}RemoveCls`;
-
-    if (!descs[addKey]) {
-        descs[addKey] = {
-            value(this: any, value: string) {
-                const el = this._resolveNodeEl(nodeName);
-                if (!el) return;
-                const classes = value.split(/\s+/).filter(Boolean);
-                if (classes.length) el.classList.add(...classes);
-            },
-            configurable: true,
-            writable: true,
-        };
-    }
-
-    if (!descs[removeKey]) {
-        descs[removeKey] = {
-            value(this: any, value: string) {
-                const el = this._resolveNodeEl(nodeName);
-                if (!el) return;
-                const classes = value.split(/\s+/).filter(Boolean);
-                if (classes.length) el.classList.remove(...classes);
-            },
-            configurable: true,
-            writable: true,
-        };
-    }
-}
-
 function addComponentRefDesc(descs: Record<string, PropertyDescriptor>, nodeName: string): void {
     const key = `$${nodeName}`;
 
@@ -196,67 +133,4 @@ function addComponentRefDesc(descs: Record<string, PropertyDescriptor>, nodeName
         configurable: true,
         enumerable: true,
     };
-}
-
-function addComponentForwardDescs(
-    descs: Record<string, PropertyDescriptor>,
-    nodeName: string,
-    componentClass: new (...args: any[]) => any
-): void {
-    const exposeList = getComponentExpose(componentClass);
-
-    for (const prop of COMMON_NODE_PROPS) {
-        if (exposeList && !exposeList.includes(prop)) continue;
-
-        const key = `${nodeName}${capitalize(prop)}`;
-        if (descs[key]) continue;
-
-        descs[key] = {
-            get(this: any) {
-                return this.nodeMap?.[nodeName]?.component?.[prop];
-            },
-            set(this: any, v: any) {
-                const comp = this.nodeMap?.[nodeName]?.component;
-                if (comp) comp[prop] = v;
-            },
-            configurable: true,
-            enumerable: true,
-        };
-
-        if (prop === 'cls') {
-            addForwardClsMethodDescs(descs, nodeName, exposeList);
-        }
-    }
-}
-
-function addForwardClsMethodDescs(
-    descs: Record<string, PropertyDescriptor>,
-    nodeName: string,
-    exposeList: string[] | null
-): void {
-    const methodNames = ['addCls', 'removeCls'] as const;
-
-    for (const method of methodNames) {
-        if (exposeList && !exposeList.includes(method)) continue;
-
-        const key = `${nodeName}${capitalize(method)}`;
-        if (descs[key]) continue;
-
-        descs[key] = {
-            value(this: any, ...args: any[]) {
-                const comp = this.nodeMap?.[nodeName]?.component;
-                if (comp) comp[method](...args);
-            },
-            configurable: true,
-            writable: true,
-        };
-    }
-}
-
-function getComponentExpose(componentClass: new (...args: any[]) => any): string[] | null {
-    if (componentClass._expose) return componentClass._expose as string[];
-    const proto = componentClass.prototype;
-    if (!proto) return null;
-    const props = Object.getOwnPropertyDescriptors(proto);
-    return Object.keys(props).filter(k => k !== 'constructor' && !k.startsWith('_'));
 }

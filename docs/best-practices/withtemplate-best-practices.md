@@ -476,7 +476,7 @@ class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) { 
 |------|------|------|
 | 索引键与语义分离 | `content: 'button:icon'` | `name: 'button:icon', content: 'icon'` |
 | 三类事件分离 | `event`/`emit` | `events`/`forwards`/`bridges` |
-| CSS 类名 | `class`（JS 保留字） | `className` |
+| CSS 类名 | `class`（JS 保留字） | `cls` |
 | 模板携带方法 | 不支持 | `body: { onClick() {} }` |
 | 组件占位 | `json` 字段 | `type` 字段（与 tag 互斥） |
 
@@ -572,47 +572,81 @@ class DynamicContainer extends TemplateComponent.withTemplate(TEMPLATE) {
 - replace 模式利用 parentNode/nodeIndex 精确定位 DOM 位置
 - child 模式清空占位节点内容后挂载新组件
 
-## 13. 通用属性体系（v2）
+## 13. 通用属性体系（两层架构）
 
-v2 模式下，组件自身和 DOM 子节点的通用属性由 `COMMON_PROPS` 统一定义，编译时自动生成 getter/setter，无需手动声明。
+组件属性操作采用两层架构，不再为每个节点自动生成 `xxxCls`/`xxxHidden` 等描述符。
 
-### 13.1 三层属性命名
+### 13.1 Layer 1 — root 属性 + 方法
 
-| 层次 | 命名规则 | 示例 | 操作对象 |
-|------|---------|------|---------|
-| 组件自身 | `propName` | `this.className` / `this.width` | 组件自身的 el |
-| DOM 子节点 | `name + PropName` | `this.labelClassName` / `this.labelWidth` | nodeMap[name].el |
-| 组件子节点 | `$ + name` | `this.$icon` | 返回子组件实例 |
-
-### 13.2 组件自身属性
+root 属性直接通过 getter/setter 操作根元素：
 
 ```typescript
-// 组件自身的 el 直接操作，无前缀
 const btn = new ButtonComponent();
-btn.className = 'primary';     // → el.className = 'primary'
-btn.width = 200;               // → el.style.width = '200px'
-btn.hidden = true;             // → el.hidden = true
-btn.margin = { horizontal: 8, vertical: 4 }; // → el.style.margin = '4px 8px'
+btn.cls = 'primary';                     // → el.className = 'primary'
+btn.hidden = true;                        // → el.hidden = true
+btn.width = 200;                          // → el.style.width = '200px'
+btn.border = { width: 1, color: 'red' }; // → el.style.border = '1px solid red'
 ```
 
-### 13.3 DOM 子节点属性
+cls 相关方法（root 默认，可传 nodeName 切换到子节点）：
 
 ```typescript
-// DOM 子节点：name + PropName 拼接
+btn.addCls('active');            // → el.classList.add('active')
+btn.removeCls('active');         // → el.classList.remove('active')
+btn.toggleCls('active');         // → el.classList.toggle('active')
+btn.toggleCls('active', true);   // → el.classList.toggle('active', true)
+```
+
+### 13.2 Layer 2 — 子节点方法（nodeName 在末尾，可选）
+
+方法重载：nodeName 在末尾，不传默认操作 root：
+
+```typescript
 const navItem = new NavItemComponent();
-navItem.labelClassName = 'bold';   // → nodeMap['label'].el.className = 'bold'
-navItem.labelWidth = 100;          // → nodeMap['label'].el.style.width = '100px'
-navItem.labelHidden = false;       // → nodeMap['label'].el.hidden = false
+navItem.addCls('active', 'expand');      // → expand.classList.add('active')
+navItem.removeCls('active', 'expand');   // → expand.classList.remove('active')
+navItem.toggleCls('active', 'expand');   // → expand.classList.toggle('active')
 ```
 
-### 13.4 组件子节点访问
+属性方法：`setNodeXxx(value, nodeName?)`
 
 ```typescript
-// 组件子节点：$name 返回实例
+navItem.setNodeCls('q-nav-item--active', 'expand');
+navItem.setNodeHidden(true, 'expand');
+navItem.setNodeWidth(200, 'expand');
+navItem.setNodeBorder({ width: 1 }, 'expand');
+navItem.setNodeAriaExpanded(true, 'expand');
+```
+
+通用兜底：`setNodeProp(prop, value, nodeName?)`
+
+```typescript
+navItem.setNodeProp('tabIndex', 0, 'expand');
+```
+
+### 13.3 内容属性（保留自动生成）
+
+内容属性仍由 `addContentPropDesc` 自动生成 getter/setter：
+
+```typescript
+btn.text = 'Click me';    // → el.innerHTML = 'Click me'
+btn.value = 'hello';      // → el.value = 'hello'（input 标签）
+btn.src = '/img.png';     // → el.src = '/img.png'（img 标签）
+```
+
+### 13.4 组件引用（保留 $name 访问器）
+
+组件子节点仍自动生成 `$name` 访问器：
+
+```typescript
 const panel = new PanelComponent();
 panel.$expand;    // → 返回 expand 子组件实例
 panel.$body;      // → 返回 body 子组件实例
 ```
+
+不再自动生成 `expandCls`/`expandHidden` 等属性转发，改用：
+- `panel.setNodeCls('xxx', 'expand')` — 通过 CommonPropsAbility
+- `panel.$expand.cls = 'xxx'` — 直接访问子组件
 
 ### 13.5 复杂属性简写
 
@@ -629,7 +663,37 @@ btn.border = { width: 2, color: 'red' };     // → '2px solid red'
 btn.border = { top: { width: 1 }, bottom: { width: 2 } }; // 单边覆盖
 ```
 
-### 13.6 命名冲突检测
+### 13.6 root 属性完整列表
+
+CommonPropsAbility 提供的 root getter/setter（与 DEFAULT_NODE_PROP_MAP 对齐）：
+
+| 属性 | DOM 操作 | 说明 |
+|------|---------|------|
+| `cls` | el.className | CSS 类名 |
+| `style` | el.style | 内联样式 |
+| `hidden` | el.hidden | 隐藏状态 |
+| `disabled` | el.disabled | 禁用状态 |
+| `order` | el.style.order | flex 顺序 |
+| `role` | el.role / setAttribute | ARIA role |
+| `ariaLabel` | el.ariaLabel / setAttribute | ARIA label |
+| `ariaChecked` | el.ariaChecked / setAttribute | ARIA checked |
+| `ariaDisabled` | el.ariaDisabled / setAttribute | ARIA disabled |
+| `ariaExpanded` | el.ariaExpanded / setAttribute | ARIA expanded |
+| `ariaSelected` | el.ariaSelected / setAttribute | ARIA selected |
+| `ariaHidden` | el.ariaHidden / setAttribute | ARIA hidden |
+| `width` | el.style.width | 宽度（数字自动 px） |
+| `height` | el.style.height | 高度（数字自动 px） |
+| `x` | el.style.left | 水平位置（数字自动 px） |
+| `y` | el.style.top | 垂直位置（数字自动 px） |
+| `margin` | el.style.margin | 外边距 |
+| `padding` | el.style.padding | 内边距 |
+| `fontSize` | el.style.fontSize | 字号（数字自动 px） |
+| `color` | el.style.color | 文字颜色 |
+| `bg` | el.style.background | 背景 |
+| `cursor` | el.style.cursor | 光标样式 |
+| `border` | el.style.border | 边框 |
+
+### 13.7 命名冲突检测
 
 编译时自动检测 DOM 子节点名和组件 body/props 中的属性重名，输出控制台警告：
 
@@ -699,23 +763,25 @@ body 中的特殊 key 处理：
 
 `forwards` 定义在 body 上，是属性和方法透传的统一入口，替代 TplNode 上的 `forward` 属性。
 
-### 16.0 简单转发已自动处理
+### 16.0 组件子节点属性操作
 
-对于组件子节点的**通用属性转发**，`addComponentForwardDescs` 已自动生成，无需手动声明 forwards：
+组件子节点不再自动生成 `iconCls`/`iconHidden` 等属性转发描述符，改用两层架构方法：
 
 ```typescript
-// 组件子节点自动生成的属性（以 name='icon' 为例）：
-this.$icon          // → iconComponent 实例引用
-this.iconCls        // → iconComponent.cls
-this.iconHidden     // → iconComponent.hidden
-this.iconDisabled   // → iconComponent.disabled
-this.iconWidth      // → iconComponent.width
-// ... 等 14 个通用属性
+// ❌ 旧方式（已移除）：自动生成 xxxCls/xxxHidden 属性
+this.iconCls = 'active';
+this.iconHidden = true;
+
+// ✅ 新方式：setNodeXxx 方法
+this.setNodeCls('active', 'icon');
+this.setNodeHidden(true, 'icon');
+
+// ✅ 或直接访问子组件
+this.$icon.cls = 'active';
+this.$icon.hidden = true;
 ```
 
-因此 `forwards: { icon: 'icon' }` 这种简单组件级转发已冗余，直接用 `$icon` 访问子组件即可。
-
-`forwards` 仅在需要**深层路径透传**或**自定义属性透传**时使用。
+`$name` 组件引用仍自动生成，`forwards` 仅在需要**深层路径透传**或**自定义属性透传**时使用。
 
 ### 16.1 基本写法
 
@@ -723,10 +789,10 @@ this.iconWidth      // → iconComponent.width
 const DIALOG_TEMPLATE: ComponentTemplate = {
     tpl: {
         tag: 'div',
-        className: 'q-dialog',
-        children: [
-            { name: 'header', type: HeaderComponent, className: 'q-dialog__header' },
-            { name: 'icon', type: IconComponent, className: 'q-dialog__icon' },
+            cls: 'q-dialog',
+            children: [
+            { name: 'header', type: HeaderComponent, cls: 'q-dialog__header' },
+            { name: 'icon', type: IconComponent, cls: 'q-dialog__icon' },
         ]
     },
     body: {
@@ -749,7 +815,7 @@ const DIALOG_TEMPLATE: ComponentTemplate = {
 **组件级透传**（`icon: 'icon'`）：
 
 - `dialog.icon` → 返回 iconComponent 实例
-- `dialog.iconClassName` → `iconComponent.el.className`（自动属性透传）
+- `dialog.iconCls` → `iconComponent.cls`（通过 setNodeCls 或 $icon 访问）
 - `dialog.iconStyle` → `iconComponent.el.style`
 - `dialog.iconSize` → `iconComponent.size`
 - `dialog.open()` → `iconComponent.open()`（方法代理）

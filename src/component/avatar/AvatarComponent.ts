@@ -58,9 +58,9 @@ export let AvatarComponent = TemplateComponent.withTemplate({
             }
             this.size = props?.size || 'md';
 
-            this.imageHidden = props?.src === undefined;
-            this.textHidden = props?.text === undefined;
-            this.iconHidden = props?.icon === undefined;
+            this.setNodeHidden(props?.src === undefined, 'image');
+            this.setNodeHidden(props?.text === undefined, 'text');
+            this.setNodeHidden(props?.icon === undefined, 'icon');
         },
     },
 }).with([SizeAbility]);

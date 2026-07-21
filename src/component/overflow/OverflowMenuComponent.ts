@@ -42,7 +42,7 @@ export interface OverflowMenuProps {
 export let OverflowMenuComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-overflow-menu-overlay',
+        cls: 'q-overflow-menu-overlay',
     },
     body: {
         type: 'OverflowMenu',
