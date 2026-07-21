@@ -43,64 +43,27 @@ export let AvatarComponent = TemplateComponent.withTemplate({
     body: {
         type: 'Avatar',
 
-        onInitState() {
-            return {
-                _mode: null as AvatarMode | null,
-            };
-        },
-
         onAfterInit(props?: AvatarProps): void {
-            this.initSize();
-            this._initAvatar(props);
-        },
-
-        _initAvatar(props?: AvatarProps): void {
-            if (props?.src) {
-                this.image = props.src;
-                this._mode = 'src';
-            } else if (props?.text) {
-                this.text = props.text.charAt(0).toUpperCase();
-                this._mode = 'text';
-            } else if (props?.icon) {
-                this._setIconContent(props.icon);
-                this._mode = 'icon';
-            }
-
-            if (props?.size) this.size = props.size;
-            this._applyMode();
-        },
-
-        _setIconContent(icon: string): void {
-            const iconComp = this.$icon;
-            if (iconComp?.nodeMap?.content?.el) {
-                iconComp.nodeMap.content.el.innerHTML = icon;
-            }
-        },
-
-        _applyMode(): void {
-            const mode = this._mode;
-            this.imageHidden = mode !== 'src';
-            this.textHidden = mode !== 'text';
-            this.iconHidden = mode !== 'icon';
+            this.update(props);
         },
 
         update(props?: Partial<AvatarProps>): void {
             if (props?.src !== undefined) {
                 this.image = props.src;
-                this._mode = 'src';
-                this._applyMode();
             }
             if (props?.text !== undefined) {
                 this.text = props.text.charAt(0).toUpperCase();
-                this._mode = 'text';
-                this._applyMode();
             }
             if (props?.icon !== undefined) {
-                this._setIconContent(props.icon);
-                this._mode = 'icon';
-                this._applyMode();
+                this.icon = props.icon;
             }
-            if (props?.size !== undefined) this.size = props.size;
+            // 设置默认尺寸为 md
+            this.size = props?.size || 'md';
+
+            // 根据属性值自动判断显示模式
+            this.imageHidden = props?.src === undefined;
+            this.textHidden = props?.text === undefined;
+            this.iconHidden = props?.icon === undefined;
         },
     },
 }).with([SizeAbility]);

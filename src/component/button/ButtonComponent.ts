@@ -11,10 +11,21 @@
  *
  * 浮动层：
  * - 由派生组件（如 DropdownComponent）通过 body.floats 声明驱动
+ *
+ * 尺寸：
+ * - 支持 sm/md/lg 三档尺寸，由 SizeAbility 提供
+ * - 默认尺寸为 md
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
 import { IconComponent } from '../icon/IconComponent';
+import { SizeAbility } from '@qimenjs/component-abilities';
+
+export interface ButtonProps {
+    icon?: string;
+    text?: string;
+    size?: 'sm' | 'md' | 'lg';
+}
 
 export let ButtonComponent = TemplateComponent.withTemplate({
     tpl: {
@@ -43,7 +54,26 @@ export let ButtonComponent = TemplateComponent.withTemplate({
     },
     body: {
         type: 'Button',
+
+        onAfterInit(props?: ButtonProps): void {
+            this.initSize();
+            this.update(props);
+        },
+
+        update(props?: Partial<ButtonProps>): void {
+            if (props?.icon !== undefined) {
+                this.icon = props.icon;
+            }
+            if (props?.text !== undefined) {
+                this.text = props.text;
+            }
+            this.size = props?.size || 'md  ';
+            // 图标尺寸跟随按钮尺寸变化
+            if (this.$icon) {
+                this.$icon.size = this.size;
+            }
+        },
     },
-});
+}).with([SizeAbility]);
 
 export type ButtonComponent = InstanceType<typeof ButtonComponent>;
