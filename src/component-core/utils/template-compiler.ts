@@ -13,7 +13,10 @@ import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
 import { applyChildNodeProps } from './child-node-props';
 
 export function compilePendingTemplate(ctor: any, template: ComponentTemplate, logger: any): void {
-    const result = compileTemplate(template, logger);
+    const expandedTpl = expandFragments(template.tpl);
+    const expandedTemplate = { ...template, tpl: expandedTpl };
+
+    const result = compileTemplate(expandedTemplate, logger);
 
     const tpl = document.createElement('template');
     tpl.innerHTML = result.html;
@@ -32,6 +35,30 @@ export function compilePendingTemplate(ctor: any, template: ComponentTemplate, l
     applyChildNodeProps(ctor, result.nodeMetas, result.i18nNodes);
 
     ctor._templateCompiled = true;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 预处理：展开 fragment 为普通 children
+// ══════════════════════════════════════════════════════════════
+
+function expandFragments(node: TplNode, ns?: string): TplNode {
+    let result = { ...node };
+
+    if (ns && result.name) {
+        result.name = `${ns}:${result.name}`;
+    }
+
+    if (result.fragment) {
+        const fragmentNs = result.fragment.name;
+        result.children = result.fragment.children.map(child => expandFragments(child, fragmentNs));
+        delete result.fragment;
+    }
+
+    if (result.children) {
+        result.children = result.children.map(child => expandFragments(child, ns));
+    }
+
+    return result;
 }
 
 export function findByPath(root: HTMLElement, path: number[]): HTMLElement | null {

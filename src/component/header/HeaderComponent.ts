@@ -5,7 +5,7 @@
  * 通过 CSS 和 childProps 区分不同场景的样式和行为。
  *
  * 子节点：
- * - icon: 图标组件（IconComponent）
+ * - icon: 图标（DOM 节点）
  * - title: 标题文本（DOM 节点）
  * - subtitle: 子标题文本（DOM 节点）
  * - tools: 工具区（ItemGroupComponent）
@@ -16,7 +16,7 @@
  * // Dialog 头部 — 带 close 按钮
  * { type: HeaderComponent, props: {
  *     childProps: {
- *         icon: { props: { className: 'q-icon warning' } },
+ *         icon: { props: { innerHTML: '⚠' } },
  *         title: { props: { innerHTML: '确认删除' } },
  *         action: { props: { icon: 'close' } },
  *     }
@@ -33,34 +33,32 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { IconComponent } from '../icon/IconComponent';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
 export let HeaderComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-header',
+        cls: 'q-header',
         layout: 'hbox',
         align: 'center',
         gap: '8px',
         children: [
             {
+                tag: 'i',
                 name: 'icon',
-                type: IconComponent,
-                className: 'q-header__icon',
-
+                cls: 'q-header__icon',
                 hidden: true,
             },
-            { tag: 'div', name: 'title', className: 'q-header__title' },
-            { tag: 'span', name: 'subtitle', className: 'q-header__subtitle', hidden: true },
+            { tag: 'div', name: 'title', cls: 'q-header__title' },
+            { tag: 'span', name: 'subtitle', cls: 'q-header__subtitle', hidden: true },
             {
                 name: 'tools',
                 type: ItemGroupPooledComponent,
-                className: 'q-header__tools',
+                cls: 'q-header__tools',
                 hidden: true,
             },
-            { name: 'action', type: ButtonComponent, className: 'q-header__action', hidden: true },
+            { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
         ],
     },
     props: {
@@ -69,7 +67,6 @@ export let HeaderComponent = TemplateComponent.withTemplate({
     body: {
         type: 'Header',
         forwards: {
-            icon: 'icon',
             action: 'action',
         },
     },

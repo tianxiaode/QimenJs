@@ -50,6 +50,7 @@ export type {
 export type { ComponentTemplate } from './types/component-template';
 export type {
     TplNode,
+    TplFragment,
     FlexConfig,
     GridConfig,
     DomEventDecl,

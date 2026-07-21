@@ -105,7 +105,11 @@ function initNodeProps(instance: any): void {
 
         const nodeProps = buildNodePropsFromMeta(node);
         if (nodeOverrides?.[name]) {
-            Object.assign(nodeProps, nodeOverrides[name]);
+            const override = nodeOverrides[name];
+            Object.assign(nodeProps, override);
+            if (override.events !== undefined) {
+                node.events = override.events;
+            }
         }
         if (Object.keys(nodeProps).length > 0) {
             instance._updateNode(name, nodeProps);

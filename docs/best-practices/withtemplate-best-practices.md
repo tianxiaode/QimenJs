@@ -879,3 +879,105 @@ export let MyGroupComponent = ItemGroupComponent.replace({
 ```typescript
 export const DropdownComponent = ButtonComponent;
 ```
+
+## 19. 模板片段（TplFragment）
+
+### 19.1 什么是模板片段
+
+`TplFragment` 是可复用的节点定义集合，编译前内联展开为普通 `children`，不创建组件边界，无透传问题。
+
+### 19.2 与组件（type）的区别
+
+| | `type: HeaderComponent` | `fragment: HeaderFragment` |
+|---|---|---|
+| 组件边界 | 有，需要 `forwards` 透传 | 无，节点直接属于父组件 |
+| 访问方式 | `this.header.icon`（跨组件） | `this.headerIcon`（直接访问） |
+| CSS 作用域 | 需要 `:deep()` 穿透 | 自然继承父组件作用域 |
+| 行为封装 | 组件可携带方法 | 纯结构，行为由父组件 + Ability 提供 |
+
+### 19.3 定义和使用
+
+```typescript
+import type { TplFragment } from '@qimenjs/component-core';
+
+const HeaderFragment: TplFragment = {
+    name: 'header',
+    children: [
+        { tag: 'i', name: 'icon', cls: 'q-header__icon', hidden: true },
+        { tag: 'div', name: 'title', cls: 'q-header__title' },
+        { tag: 'i', name: 'action', cls: 'q-header__action', hidden: true },
+    ],
+};
+
+// 使用：fragment 的 children 展开到 div 内
+// name 自动变为 header:icon / header:title / header:action
+export let CardComponent = TemplateComponent.withTemplate({
+    tpl: {
+        tag: 'div',
+        cls: 'q-card',
+        children: [
+            { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment },
+            { tag: 'div', name: 'body', cls: 'q-card__body' },
+        ],
+    },
+    body: {
+        type: 'Card',
+        _initCard(props) {
+            if (props?.title) this.headerTitle = props.title;
+            if (props?.icon) { this.headerIcon = props.icon; this.headerIconHidden = false; }
+        },
+    },
+});
+```
+
+### 19.4 编译流程
+
+```
+compilePendingTemplate
+  → expandFragments(tpl)      // 预处理：fragment → children + 自动命名空间
+  → compileTemplate(expanded)  // 正常编译，完全不知道 fragment 的存在
+```
+
+展开后与手写 `children` 无异，`nodeMetas`、`indexPath`、`child-node-props` 全部走正常路径。
+
+### 19.5 与 nodeOverrides 配合
+
+展开后的节点名带命名空间，`nodeOverrides` 用全名覆盖。`events` 为全覆盖语义（不合并）：
+
+```typescript
+export let DialogCardComponent = CardComponent.replace({
+    nodeOverrides: {
+        'header:action': {
+            hidden: false,
+            events: { click: { bridges: ['close'] } },
+        },
+    },
+});
+```
+
+## 20. 图标使用原则
+
+### 20.1 用 HTML 节点，不用 IconComponent
+
+按钮、菜单项、头部等组件中的装饰性图标，使用 HTML `<i>` 节点，不使用 `IconComponent`：
+
+```typescript
+// ✅ 推荐：HTML 节点
+{ tag: 'i', name: 'icon', cls: 'q-button__icon' }
+
+// ❌ 避免：IconComponent（需要透传）
+{ name: 'icon', type: IconComponent, cls: 'q-button__icon' }
+```
+
+### 20.2 原因
+
+| | HTML `<i>` | IconComponent |
+|---|---|---|
+| 透传 | 零成本，`this.icon = 'save'` | 需要 `forwards` + 8 个自动生成属性 |
+| CSS | 父组件直接控制 | 需要 `:deep()` 或 `cls` 属性透传 |
+| DOM | 扁平，`<i>` 直接在父容器内 | 多一层 `div.q-icon-wrap` |
+| 位置 | CSS 直接控制 | 需要 JS 逻辑 |
+
+### 20.3 IconComponent 保留场景
+
+`IconComponent` 保留给需要独立行为封装的特殊用途。大多数场景用 HTML 节点 + CSS 即可。

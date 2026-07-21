@@ -5,7 +5,7 @@
  * 两个状态各对应一个图标，点击自动切换。
  *
  * 模板节点：
- * - icon — 图标（IconComponent），通过 $icon 访问
+ * - icon — 图标（DOM 节点），通过 this.icon 设置内容
  *
  * 事件：
  * - toggle — 切换状态变化时触发，数据 { on }
@@ -19,7 +19,6 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { IconComponent } from '../icon/IconComponent';
 
 export interface ToggleIconProps {
     onIcon?: string;
@@ -36,7 +35,7 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
         events: {
             click: { handler: true, emits: ['toggle'] },
         },
-        children: [{ name: 'icon', type: IconComponent, cls: 'q-toggle-icon__icon' }],
+        children: [{ tag: 'i', name: 'icon', cls: 'q-toggle-icon__icon' }],
     },
     body: {
         type: 'ToggleIcon',
@@ -94,9 +93,8 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
 
         _applyState(): void {
             const iconValue = this._on ? this._onIcon : this._offIcon;
-            const iconComponent = this.$icon;
-            if (iconComponent && iconValue) {
-                iconComponent.content = iconValue;
+            if (iconValue) {
+                this.icon = iconValue;
             }
 
             this.el.classList.toggle('q-toggle-icon--on', this._on);

@@ -6,7 +6,7 @@
  *
  * 模板节点：
  * - content — 整行可点击区域（事件：click → onClick）
- * - icon — 图标（分组模式下自动渲染选中指示符，与自定义 icon 互斥）
+ * - icon — 图标（DOM 节点），分组模式下自动渲染选中指示符，与自定义 icon 互斥
  * - text — 文本
  * - shortcut — 快捷键文本
  * - expand — 子菜单展开箭头
@@ -24,7 +24,6 @@
 import { TemplateComponent } from '@qimenjs/component-core';
 
 import { OverlayEventBus } from '@/events/OverlayEventBus';
-import { IconComponent } from '../icon/IconComponent';
 
 export type MenuItemGroupMode = 'radio' | 'checkbox';
 
@@ -51,7 +50,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
                 events: { click: { handler: true } },
                 className: 'q-menu-item__content',
                 children: [
-                    { name: 'icon', type: IconComponent, className: 'q-menu-item__icon' },
+                    { tag: 'i', name: 'icon', className: 'q-menu-item__icon' },
                     { tag: 'span', name: 'text', className: 'q-menu-item__text' },
                     { tag: 'span', name: 'shortcut', className: 'q-menu-item__shortcut' },
                     {
@@ -80,10 +79,6 @@ const MenuItemBase = TemplateComponent.withTemplate({
                 submenuProps: null as Record<string, any> | null,
                 _submenuTimer: null as ReturnType<typeof setTimeout> | null,
             };
-        },
-
-        forwards: {
-            icon: 'icon',
         },
 
         _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
@@ -223,10 +218,7 @@ const MenuItemBase = TemplateComponent.withTemplate({
         },
 
         _setIcon(value: string): void {
-            const iconComponent = this.icon;
-            if (iconComponent?.nodeMap?.content?.el) {
-                iconComponent.nodeMap.content.el.innerHTML = value;
-            }
+            this.icon = value;
         },
 
         _bindHoverEvents(): void {

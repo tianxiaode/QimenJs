@@ -2,31 +2,24 @@
  * CardComponent 卡片组件
  *
  * 通用内容容器，由 header + body + footer 三区组成。
- * header 复用 HeaderComponent，footer 可选。
+ * header 通过 HeaderFragment 模板片段内联，无组件边界。
  *
  * 模板节点：
- * - header — 头部区域（HeaderComponent）
+ * - header:icon — 头部图标（来自 HeaderFragment）
+ * - header:title — 头部标题（来自 HeaderFragment）
+ * - header:action — 头部操作按钮（来自 HeaderFragment）
  * - body — 内容区域
  * - footer — 底部区域（可选）
  *
  * @example
  * ```ts
- * // 简单卡片
  * new CardComponent({ title: '用户信息' })
- *
- * // 带图标和操作按钮
- * new CardComponent({
- *     title: '通知',
- *     icon: '🔔',
- *     action: '✕',
- * })
- *
- * // 使用方通过 childProps 定制 header 子节点
+ * new CardComponent({ title: '通知', icon: '🔔', action: '✕' })
  * ```
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { HeaderComponent } from '../header/HeaderComponent';
+import { HeaderFragment } from '../header/HeaderFragment';
 
 export interface CardProps {
     title?: string;
@@ -37,43 +30,29 @@ export interface CardProps {
 export let CardComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        className: 'q-card',
+        cls: 'q-card',
         children: [
-            { name: 'header', type: HeaderComponent, className: 'q-card__header' },
-            { tag: 'div', name: 'body', className: 'q-card__body' },
-            { tag: 'div', name: 'footer', className: 'q-card__footer', hidden: true },
+            { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment },
+            { tag: 'div', name: 'body', cls: 'q-card__body' },
+            { tag: 'div', name: 'footer', cls: 'q-card__footer', hidden: true },
         ],
     },
     body: {
         type: 'Card',
 
-        forwards: {
-            header: 'header',
-        },
-
         _initCard(props?: CardProps): void {
             if (props?.title) {
-                const textEl = this.header?.nodeMap?.text?.el as HTMLElement | null;
-                if (textEl) textEl.textContent = props.title;
+                this.headerTitle = props.title;
             }
 
             if (props?.icon) {
-                const iconComponent = this.header?.icon;
-                if (iconComponent?.nodeMap?.content?.el) {
-                    iconComponent.nodeMap.content.el.innerHTML = props.icon;
-                    if (iconComponent.el) iconComponent.el.hidden = false;
-                }
+                this.headerIcon = props.icon;
+                this.headerIconHidden = false;
             }
 
             if (props?.action) {
-                const actionComponent = this.header?.action;
-                if (actionComponent?.nodeMap?.icon?.nodeMap?.content?.el) {
-                    actionComponent.nodeMap.icon.nodeMap.content.el.innerHTML = props.action;
-                    if (actionComponent.el) actionComponent.el.hidden = false;
-                }
-                if (actionComponent?.nodeMap?.text?.el) {
-                    actionComponent.nodeMap.text.el.textContent = '';
-                }
+                this.headerActionIcon = props.action;
+                this.headerActionHidden = false;
             }
         },
     },

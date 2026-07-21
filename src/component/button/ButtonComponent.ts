@@ -2,9 +2,9 @@
  * ButtonComponent 按钮组件
  *
  * 模板节点：
- * - icon — 图标（IconComponent），通过 $icon 访问
+ * - icon — 图标（DOM 节点），通过 this.icon 设置内容
  * - text — 文本
- * - dropIcon — 下拉箭头图标（IconComponent），默认隐藏
+ * - dropIcon — 下拉箭头图标（DOM 节点），默认隐藏
  *
  * 事件：
  * - click — 按钮（icon/text）点击时触发
@@ -18,7 +18,6 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { IconComponent } from '../icon/IconComponent';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ButtonProps {
@@ -33,8 +32,8 @@ export let ButtonComponent = TemplateComponent.withTemplate({
         cls: 'q-button',
         children: [
             {
+                tag: 'i',
                 name: 'icon',
-                type: IconComponent,
                 cls: 'q-button__icon',
                 events: { click: { emits: ['click'] } },
             },
@@ -45,8 +44,8 @@ export let ButtonComponent = TemplateComponent.withTemplate({
                 events: { click: { emits: ['click'] } },
             },
             {
+                tag: 'i',
                 name: 'dropIcon',
-                type: IconComponent,
                 cls: 'q-expand-arrow q-expand-arrow--collapsed',
                 hidden: true,
             },
@@ -67,11 +66,7 @@ export let ButtonComponent = TemplateComponent.withTemplate({
             if (props?.text !== undefined) {
                 this.text = props.text;
             }
-            this.size = props?.size || 'md  ';
-            // 图标尺寸跟随按钮尺寸变化
-            if (this.$icon) {
-                this.$icon.size = this.size;
-            }
+            this.size = props?.size || 'md';
         },
     },
 }).with([SizeAbility]);

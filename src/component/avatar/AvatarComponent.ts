@@ -7,7 +7,7 @@
  * 模板节点（自动生成属性）：
  * - image — img，自动生成 this.image（读写 src）、this.imageHidden
  * - text  — span，自动生成 this.text（读写 innerHTML）、this.textHidden
- * - icon  — IconComponent，自动生成 this.$icon（组件实例）、this.iconHidden
+ * - icon  — i，自动生成 this.icon（读写 innerHTML）、this.iconHidden
  *
  * @example
  * ```ts
@@ -18,7 +18,6 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
-import { IconComponent } from '../icon/IconComponent';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export type AvatarMode = 'src' | 'text' | 'icon';
@@ -37,7 +36,7 @@ export let AvatarComponent = TemplateComponent.withTemplate({
         children: [
             { tag: 'img', name: 'image', cls: 'q-avatar__image', hidden: true },
             { tag: 'span', name: 'text', cls: 'q-avatar__text', hidden: true },
-            { name: 'icon', type: IconComponent, cls: 'q-avatar__icon', hidden: true },
+            { tag: 'i', name: 'icon', cls: 'q-avatar__icon', hidden: true },
         ],
     },
     body: {
@@ -57,10 +56,8 @@ export let AvatarComponent = TemplateComponent.withTemplate({
             if (props?.icon !== undefined) {
                 this.icon = props.icon;
             }
-            // 设置默认尺寸为 md
             this.size = props?.size || 'md';
 
-            // 根据属性值自动判断显示模式
             this.imageHidden = props?.src === undefined;
             this.textHidden = props?.text === undefined;
             this.iconHidden = props?.icon === undefined;

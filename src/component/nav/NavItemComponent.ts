@@ -6,7 +6,7 @@
  *
  * 模板节点：
  * - content — 可点击区域（内部事件：click → onClick）
- * - icon — 图标（IconComponent）
+ * - icon — 图标（DOM 节点）
  * - text — 文本
  * - expand — 展开箭头
  *
@@ -19,7 +19,6 @@ import { TemplateComponent } from '@qimenjs/component-core';
 
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
-import { IconComponent } from '../icon/IconComponent';
 
 export type NavPlacement =
     | 'top'
@@ -79,7 +78,7 @@ export let NavItemComponent = TemplateComponent.withTemplate({
                 events: { click: { handler: true, bridges: ['click'] } },
                 className: 'q-nav-item__content',
                 children: [
-                    { name: 'icon', type: IconComponent, className: 'q-nav-item__icon' },
+                    { tag: 'i', name: 'icon', className: 'q-nav-item__icon' },
                     { tag: 'span', name: 'text', className: 'q-nav-item__text' },
                     { tag: 'span', name: 'expand', className: 'q-nav-item__expand' },
                 ],
@@ -108,10 +107,6 @@ export let NavItemComponent = TemplateComponent.withTemplate({
                 _tooltipBound: false,
                 _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
             };
-        },
-
-        forwards: {
-            icon: 'icon',
         },
 
         onClick(): void {
@@ -361,10 +356,7 @@ export let NavItemComponent = TemplateComponent.withTemplate({
         },
 
         _setIcon(value: string): void {
-            const iconComponent = this.icon;
-            if (iconComponent?.nodeMap?.content?.el) {
-                iconComponent.nodeMap.content.el.innerHTML = value;
-            }
+            this.icon = value;
         },
 
         setActive(value: boolean): void {

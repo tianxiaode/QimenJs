@@ -19,7 +19,7 @@ import type { BodyDef } from './tpl-body';
  *         cls: 'q-button',
  *         flex: true,
  *         children: [
- *             { name: 'icon', type: IconComponent, cls: 'q-button__icon' },
+ *             { tag: 'i', name: 'icon', cls: 'q-button__icon' },
  *             { tag: 'span', name: 'text', cls: 'q-button__text' },
  *         ]
  *     },

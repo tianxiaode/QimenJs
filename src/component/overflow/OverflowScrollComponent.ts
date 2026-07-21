@@ -3,11 +3,11 @@
  *
  * 由 OverlayDispatchCenter 创建和管理生命周期。
  * 检测宿主容器溢出状态，在容器边缘浮动显示箭头按钮。
- * 内置 prevIcon / nextIcon 两个 IconComponent，模板声明 + handler 自动转发。
+ * 内置 prevIcon / nextIcon 两个箭头（DOM 节点），模板声明 + handler 自动转发。
  *
  * 职责：
  * - 监听宿主容器 scroll/resize/mutation，检测溢出状态
- * - 内置 IconComponent 箭头，挂载到 OverlayRoot，positionOverlay 定位
+ * - 内置箭头，挂载到 OverlayRoot，positionOverlay 定位
  * - 点击箭头 → scrollBy 宿主容器
  * - 拖拽滑动滚动（bind drag 手势）
  * - 便捷方法：scrollByStep / scrollTo / scrollToChild / autoGrowScroll
@@ -19,7 +19,6 @@ import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { positionOverlay, type Placement } from '@/overlay/dispatch';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
-import { IconComponent } from '../icon/IconComponent';
 
 export type OverflowDirection = 'horizontal' | 'vertical';
 
@@ -44,7 +43,6 @@ export let OverflowScrollComponent = TemplateComponent.withTemplate({
             {
                 tag: 'div',
                 name: 'prevIcon',
-                type: IconComponent,
                 className: 'q-overflow-arrow q-overflow-arrow--prev',
                 hidden: true,
                 events: { click: { handler: true } },
@@ -52,7 +50,6 @@ export let OverflowScrollComponent = TemplateComponent.withTemplate({
             {
                 tag: 'div',
                 name: 'nextIcon',
-                type: IconComponent,
                 className: 'q-overflow-arrow q-overflow-arrow--next',
                 hidden: true,
                 events: { click: { handler: true } },

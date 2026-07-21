@@ -234,6 +234,56 @@
  * - state:     状态（hidden/hiddenMode），运行时映射 DOM 属性
  * - component: 组件专属（initConfig），编译时存元数据
  * - children:  子节点（children），编译时递归处理
+ * - children:  模板片段（fragment），编译前展开为 children + 自动命名空间
+ *
+ * ══════════════════════════════════════════════════════════════
+ * fragment 模板片段机制
+ * ══════════════════════════════════════════════════════════════
+ *
+ * fragment 允许在模板中引用可复用的节点集合，编译前展开为普通 children，
+ * 编译器完全不感知 fragment，展开后与手写 children 无异。
+ *
+ * 核心设计：
+ * - TplFragment = { name, children } — 纯数据定义，无行为
+ * - 编译前 expandFragments 将 fragment 展开为 children
+ * - fragment.name 作为命名空间前缀，自动加到子节点 name 上
+ * - 不创建组件边界，无透传问题
+ *
+ * @example
+ * ```ts
+ * const HeaderFragment: TplFragment = {
+ *     name: 'header',
+ *     children: [
+ *         { tag: 'i', name: 'icon', cls: 'q-header__icon', hidden: true },
+ *         { tag: 'div', name: 'title', cls: 'q-header__title' },
+ *         { tag: 'i', name: 'action', cls: 'q-header__action', hidden: true },
+ *     ],
+ * };
+ *
+ * // 使用：fragment 的 children 展开到 div 内
+ * // name 自动变为 header:icon / header:title / header:action
+ * { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment }
+ *
+ * // 等价于手写：
+ * { tag: 'div', cls: 'q-card__header', children: [
+ *     { tag: 'i', name: 'header:icon', cls: 'q-header__icon', hidden: true },
+ *     { tag: 'div', name: 'header:title', cls: 'q-header__title' },
+ *     { tag: 'i', name: 'header:action', cls: 'q-header__action', hidden: true },
+ * ]}
+ * ```
+ *
+ * 与组件（type）的区别：
+ * - type: 创建组件实例，有组件边界，需要 forwards 透传
+ * - fragment: 编译前展开，无组件边界，直接访问节点属性
+ *
+ * 与 nodeOverrides 配合：
+ * - 展开后的节点名带命名空间，nodeOverrides 用全名覆盖
+ * - events 覆盖为全覆盖语义（不合并）
+ * ```ts
+ * nodeOverrides: {
+ *     'header:action': { hidden: false, events: { click: { bridges: ['close'] } } }
+ * }
+ * ```
  *
  * toMeta: 是否复制到 NodeTemplateMeta（编译时元数据）
  * toRoot: 是否复制到根节点属性（如 rootCls、rootFlex）
@@ -305,6 +355,10 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     // ─── children: 子节点 ───
 
     { field: 'children', category: 'children', toMeta: false, toRoot: false },
+
+    // ─── fragment: 模板片段 ───
+
+    { field: 'fragment', category: 'children', toMeta: false, toRoot: false },
 ] as const;
 
 export const META_COPY_KEYS = TPL_NODE_FIELDS.filter(f => f.toMeta).map(

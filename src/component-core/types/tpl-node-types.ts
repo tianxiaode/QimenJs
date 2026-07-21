@@ -99,6 +99,40 @@ export interface GridConfig {
 export type HiddenMode = 'display' | 'visibility' | 'opacity';
 
 // ══════════════════════════════════════════════════════════════
+// 模板片段
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 模板片段 — 可复用的节点定义集合
+ *
+ * 编译时内联展开为父节点的 children，不创建组件边界。
+ * fragment.name 作为命名空间前缀，自动加到子节点 name 上，
+ * 避免与父模板中的同名节点冲突。
+ *
+ * @example
+ * ```ts
+ * const HeaderFragment: TplFragment = {
+ *     name: 'header',
+ *     children: [
+ *         { tag: 'i', name: 'icon', cls: 'q-header__icon', hidden: true },
+ *         { tag: 'div', name: 'title', cls: 'q-header__title' },
+ *         { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
+ *     ],
+ * };
+ *
+ * // 使用：fragment 的 children 展开到 div 内，name 自动变为 header:icon / header:title / header:action
+ * { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment }
+ * ```
+ */
+export interface TplFragment {
+    /** 片段名称，作为子节点 name 的命名空间前缀 */
+    name: string;
+
+    /** 子节点定义 */
+    children: TplNode[];
+}
+
+// ══════════════════════════════════════════════════════════════
 // 模板节点定义
 // ══════════════════════════════════════════════════════════════
 
@@ -171,4 +205,9 @@ export interface TplNode {
 
     /** 子节点定义 */
     children?: TplNode[];
+
+    // ─── fragment: 模板片段 ───
+
+    /** 模板片段引用，编译时内联展开为 children，自动命名空间 */
+    fragment?: TplFragment;
 }
