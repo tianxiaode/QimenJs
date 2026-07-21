@@ -13,7 +13,7 @@ import { TemplateComponent } from '@qimenjs/component-core';
 export let BadgeComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
-        children: [{ tag: 'span', name: 'text', className: 'q-badge__content' }],
+        children: [{ tag: 'span', name: 'text', cls: 'q-badge__content' }],
     },
     body: {
         type: 'badge',

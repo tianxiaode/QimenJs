@@ -42,6 +42,7 @@ export interface ItemGroupProps extends ItemGroupConfig {
 export let ItemGroupComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
+        cls: 'q-itemgroup',
         children: [{ tag: 'div', name: 'itemContainer', cls: 'q-itemgroup__items' }],
     },
     body: {
@@ -66,24 +67,23 @@ export let ItemGroupComponent = TemplateComponent.withTemplate({
         },
 
         _initItemGroupComponent(props?: ItemGroupProps): void {
-            this.el.classList.add('q-itemgroup');
 
             if (props?.cls) {
-                this.el.classList.add(...props.cls.split(/\s+/).filter(Boolean));
+                this.addCls(props.cls);
             }
 
-            this._containerEl = this.nodeMap?.itemContainer?.el ?? null;
 
             if (props?.itemsCls && this._containerEl) {
-                this._containerEl.classList.add(...props.itemsCls.split(/\s+/).filter(Boolean));
+                this.itemContainer.addCls(props.itemsCls);
             }
 
-            if (props?.direction) this._direction = props.direction;
-            if (props?.itemType) this._itemType = props.itemType;
-            if (props?.gap) this._gap = props.gap;
+            if (props?.direction) this.direction = props.direction;
+            if (props?.gap) this.gap = props.gap;
+            if (props?.itemType) this.itemType = props.itemType;
+            if (props?.overflowMode) this.overflowMode = props.overflowMode;
+
             if (props?.defaultItem) this._defaultItem = props.defaultItem;
             if (props?.itemDestroy !== undefined) this._itemDestroy = props.itemDestroy;
-            if (props?.overflowMode) this._overflowMode = props.overflowMode;
 
             this._applyDirection();
             this._applyGap();
