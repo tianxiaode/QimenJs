@@ -87,15 +87,16 @@ describe('NodePropAbility', () => {
         expect(result).toBe('existing');
     });
 
-    it('_flushNodeProps 子组件委托', () => {
+    it('_flushNodeProps 委托 _updateNode', () => {
         const component = { cls: '', hidden: false };
+        const node = { _state: {} as Record<string, any>, component };
         const instance = {
             _resolveNodeTarget: () => ({ el: undefined, component }),
+            _updateNode: jest.fn(),
             _dirtyNodes: { icon: { cls: 'active', hidden: true } },
             debounce: jest.fn(),
         };
         NodePropAbility._flushNodeProps.call(instance);
-        expect(component.cls).toBe('active');
-        expect(component.hidden).toBe(true);
+        expect(instance._updateNode).toHaveBeenCalledWith('icon', { cls: 'active', hidden: true });
     });
 });

@@ -164,23 +164,7 @@ export const NodePropAbility: AbilityDefinition = {
         this._dirtyNodes = {};
 
         for (const [nodeName, props] of Object.entries(dirty)) {
-            const { el, component } = this._resolveNodeTarget(nodeName);
-
-            if (component) {
-                for (const [prop, value] of Object.entries(props as Record<string, any>)) {
-                    if (value === undefined) continue;
-                    if (prop in component) {
-                        component[prop] = value;
-                    } else if (component.el) {
-                        applyNodeProps(component.el, { [prop]: value });
-                    }
-                }
-                continue;
-            }
-
-            if (el) {
-                applyNodeProps(el, props as Record<string, any>);
-            }
+            this._updateNode(nodeName, props as Record<string, any>);
         }
     },
 
