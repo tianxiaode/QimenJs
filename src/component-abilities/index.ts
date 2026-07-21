@@ -22,3 +22,6 @@ export {
     type GroupInfo,
     type GroupSelectConfig,
 } from './group';
+
+// 尺寸能力
+export { SizeAbility, type SizeConfig } from './size';

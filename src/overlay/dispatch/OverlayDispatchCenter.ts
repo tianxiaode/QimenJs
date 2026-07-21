@@ -5,7 +5,6 @@ import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
-import { Logger, type ILogger } from '@qimenjs/logger';
 
 export interface OverlayDefinition {
     type: string;
@@ -43,12 +42,10 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     private _activeMaskEl: HTMLElement | null = null;
     private _activeMaskCount: number = 0;
     private readonly bus: OverlayEventBus;
-    private readonly logger: ILogger;
 
     constructor() {
         super();
         this.bus = OverlayEventBus.getInstance();
-        this.logger = Logger.for('overlay-dispatch');
         this.logger.debug?.('[OverlayDispatchCenter] initialized');
     }
 

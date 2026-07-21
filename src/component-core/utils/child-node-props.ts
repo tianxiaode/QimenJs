@@ -147,6 +147,41 @@ function addCommonPropDesc(
         configurable: true,
         enumerable: true,
     };
+
+    if (prop === 'cls') {
+        addClsMethodDescs(descs, nodeName);
+    }
+}
+
+function addClsMethodDescs(descs: Record<string, PropertyDescriptor>, nodeName: string): void {
+    const addKey = `${nodeName}AddCls`;
+    const removeKey = `${nodeName}RemoveCls`;
+
+    if (!descs[addKey]) {
+        descs[addKey] = {
+            value(this: any, value: string) {
+                const el = this._resolveNodeEl(nodeName);
+                if (!el) return;
+                const classes = value.split(/\s+/).filter(Boolean);
+                if (classes.length) el.classList.add(...classes);
+            },
+            configurable: true,
+            writable: true,
+        };
+    }
+
+    if (!descs[removeKey]) {
+        descs[removeKey] = {
+            value(this: any, value: string) {
+                const el = this._resolveNodeEl(nodeName);
+                if (!el) return;
+                const classes = value.split(/\s+/).filter(Boolean);
+                if (classes.length) el.classList.remove(...classes);
+            },
+            configurable: true,
+            writable: true,
+        };
+    }
 }
 
 function addComponentRefDesc(descs: Record<string, PropertyDescriptor>, nodeName: string): void {
@@ -186,6 +221,34 @@ function addComponentForwardDescs(
             },
             configurable: true,
             enumerable: true,
+        };
+
+        if (prop === 'cls') {
+            addForwardClsMethodDescs(descs, nodeName, exposeList);
+        }
+    }
+}
+
+function addForwardClsMethodDescs(
+    descs: Record<string, PropertyDescriptor>,
+    nodeName: string,
+    exposeList: string[] | null
+): void {
+    const methodNames = ['addCls', 'removeCls'] as const;
+
+    for (const method of methodNames) {
+        if (exposeList && !exposeList.includes(method)) continue;
+
+        const key = `${nodeName}${capitalize(method)}`;
+        if (descs[key]) continue;
+
+        descs[key] = {
+            value(this: any, ...args: any[]) {
+                const comp = this.nodeMap?.[nodeName]?.component;
+                if (comp) comp[method](...args);
+            },
+            configurable: true,
+            writable: true,
         };
     }
 }

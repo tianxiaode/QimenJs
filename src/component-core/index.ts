@@ -8,7 +8,7 @@
 export { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from './TemplateComponent';
 
 // 注册管理器
-export { ComponentRegistrar, getCmp } from './ComponentRegistrar';
+export { ComponentRegistrar } from './ComponentRegistrar';
 
 // 组件类型常量
 export { ComponentTypes } from './ComponentTypes';

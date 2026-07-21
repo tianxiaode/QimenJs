@@ -23,7 +23,7 @@ import {
 } from '@/system-abilities';
 import { EventForwardAbility } from './abilities/EventForwardAbility';
 import { NodePropAbility } from './abilities/NodePropAbility';
-import { ComponentRegistrar } from './ComponentRegistrar';
+
 import type { NodeMetadata } from './types/compiled-types';
 import type { ComponentTemplate } from './types/component-template';
 import { createTemplateClass, createReplaceClass } from './utils/template-factory';
@@ -87,11 +87,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
             this.onBeforeDispose();
         }
 
-        ComponentRegistrar.getInstance().unregisterInstance(this);
-
-        if (typeof this._disposeChildComponents === 'function') {
-            this._disposeChildComponents();
-        }
+        this._disposeChildComponents();
 
         this.el?.remove();
 
@@ -99,11 +95,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         this.props = {};
         this._dirtyNodes = {};
         this.nodeMap = {};
-
-        if (this._floatOffs) {
-            for (const off of this._floatOffs) off();
-            this._floatOffs = null;
-        }
 
         this._initializing = false;
 
@@ -113,6 +104,14 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
         if (typeof this.onDisposed === 'function') {
             this.onDisposed();
+        }
+    }
+
+    private _disposeChildComponents(): void {
+        for (const node of Object.values(this.nodeMap)) {
+            if (node.component && typeof node.component.dispose === 'function') {
+                node.component.dispose();
+            }
         }
     }
 

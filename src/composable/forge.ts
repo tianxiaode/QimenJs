@@ -1,10 +1,9 @@
 // src/composable/forge.ts
 
-import type {
-    AbilityDefinition,
-    ForgedConstructor,
-    InferAbilities,
-} from './types/ability';
+import type { AbilityDefinition, ForgedConstructor, InferAbilities } from './types/ability';
+import { Logger } from '@/logger';
+
+const logger = Logger.for('Forge');
 
 /**
  * 将多个能力定义展平合并为一个 Map（后声明的覆盖先声明的同名键）
@@ -15,12 +14,20 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
     const merged = new Map<string | symbol, any>();
 
     for (const ability of abilities) {
+        const abilityName = (ability as any).__name__ || '(anonymous)';
+
         for (const key of Object.keys(ability)) {
             if (key.startsWith('__')) continue;
 
             const value = ability[key];
-            if (typeof value !== 'function' && !(value && typeof value === 'object' && ('get' in value || 'set' in value))) {
+            if (
+                typeof value !== 'function' &&
+                !(value && typeof value === 'object' && ('get' in value || 'set' in value))
+            ) {
                 continue;
+            }
+            if (merged.has(key)) {
+                logger.warn(`Ability "${abilityName}" overrides existing key "${String(key)}"`);
             }
             merged.set(key, value);
         }
@@ -28,6 +35,11 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
         for (const key of Object.getOwnPropertySymbols(ability)) {
             const value = ability[key as any];
             if (typeof value === 'function') {
+                if (merged.has(key)) {
+                    logger.warn(
+                        `Ability "${abilityName}" overrides existing symbol key "${String(key)}"`
+                    );
+                }
                 merged.set(key, value);
             }
         }
@@ -83,9 +95,8 @@ function findRootProto(baseClass: new (...args: any[]) => any): any {
  */
 export function createForgedClass<T, A extends readonly AbilityDefinition[]>(
     BaseClass: new (...args: any[]) => T,
-    abilities: A,
+    abilities: A
 ): ForgedConstructor<T, A> {
-
     const ForgedClass = class extends (BaseClass as new (...args: any[]) => any) {
         constructor(...args: any[]) {
             super(...args);
@@ -106,7 +117,7 @@ export function createForgedClass<T, A extends readonly AbilityDefinition[]>(
     // 注意：必须用 this 而不是闭包中的 ForgedClass，
     // 因为子类可能 extends ForgedClass 并添加自身方法，
     // 用 this 才能保证子类再 with() 时继承的是子类自身
-    (ForgedClass as any).with = function<Additional extends readonly AbilityDefinition[]>(
+    (ForgedClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
         ...additionalAbilities: Additional
     ): ForgedConstructor<T & InferAbilities<Additional>, [...A, ...Additional]> {
         // 展平：支持 with(A, B) 和 with(array) 两种方式

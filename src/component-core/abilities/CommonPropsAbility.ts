@@ -20,6 +20,18 @@ export const CommonPropsAbility: AbilityDefinition = {
             this._markNodeDirty('root', { cls: v });
         },
     },
+    addCls(value: string): void {
+        const el = this.el as HTMLElement | undefined;
+        if (!el) return;
+        const classes = value.split(/\s+/).filter(Boolean);
+        if (classes.length) el.classList.add(...classes);
+    },
+    removeCls(value: string): void {
+        const el = this.el as HTMLElement | undefined;
+        if (!el) return;
+        const classes = value.split(/\s+/).filter(Boolean);
+        if (classes.length) el.classList.remove(...classes);
+    },
     style: {
         get() {
             return this._getNodeProp('root', 'style');

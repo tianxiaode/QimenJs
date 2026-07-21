@@ -1,4 +1,5 @@
 import { RegistrarLockedError } from './errors';
+import { Logger, type ILogger } from '@qimenjs/logger';
 
 /**
  * 注册器基类
@@ -34,6 +35,12 @@ export abstract class RegistrarBase<M = any> {
      * @protected
      */
     protected abstract storage: M;
+
+    protected readonly logger: ILogger;
+
+    constructor() {
+        this.logger = Logger.for(this.constructor);
+    }
 
     /**
      * 获取注册器实例，确保单例模式

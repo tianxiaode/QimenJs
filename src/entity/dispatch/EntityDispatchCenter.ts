@@ -1,6 +1,6 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { EntityEventBus } from '@/events/EntityEventBus';
-import { Logger, type ILogger } from '@qimenjs/logger';
+import { Logger } from '@qimenjs/logger';
 import type { CoreEntityManager } from '../manager/CoreEntityManager';
 import type { EntityDefinitions, EntityManagerConstructor } from './entity-definitions';
 import {
@@ -72,12 +72,10 @@ export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityEntry>
 
     private readonly instances = new Map<string, EntityInstance>();
     private readonly bus: EntityEventBus;
-    private readonly logger: ILogger;
 
     constructor() {
         super();
         this.bus = EntityEventBus.getInstance();
-        this.logger = Logger.for('entity-dispatch');
         this.logger.debug?.('[EntityDispatchCenter] initialized');
     }
 

@@ -14,7 +14,7 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { DragEventBus } from '@/events/DragEventBus';
 import { DRAG_ACTIONS } from '@/events/drag-events';
-import { Logger, type ILogger } from '@qimenjs/logger';
+
 import type { DragDecl } from '@/component-core/types/tpl-body';
 
 export interface DragDefinition extends DragDecl {}
@@ -40,12 +40,10 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
 
     private readonly instances = new Map<string, DragInstance>();
     private readonly bus: DragEventBus;
-    private readonly logger: ILogger;
 
     constructor() {
         super();
         this.bus = DragEventBus.getInstance();
-        this.logger = Logger.for('drag-dispatch');
         this.logger.debug?.('[DragDispatchCenter] initialized');
     }
 
