@@ -10,9 +10,15 @@
  *   属性方法：this.setNodeCls('xxx', 'expand') / this.setNodeHidden(true, 'expand')
  *   通用方法：this.setNodeProp('tabIndex', 0, 'expand')
  *
+ * 子组件委托：
+ *   addCls/removeCls/toggleCls — 子组件有同名方法时委托
+ *   setAttr/removeAttr — 子组件有同名方法时委托
+ *   setNodeXxx/setNodeProp — 通过 _markNodeDirty → _flushNodeProps 委托
+ *
  * 全部委托 NodePropAbility：
- *   _resolveNodeEl(nodeName) — 解析元素（含子组件）
- *   _markNodeDirty(nodeName, props) — 脏追踪写 DOM
+ *   _resolveNodeTarget(nodeName) — 解析 { el, component }（含子组件）
+ *   _resolveNodeEl(nodeName) — 便捷方法，只返回 el
+ *   _markNodeDirty(nodeName, props) — 脏追踪写 DOM（子组件有同名属性时委托）
  */
 
 import type { AbilityDefinition } from '@/composable';
@@ -213,18 +219,28 @@ export const CommonPropsAbility: AbilityDefinition = {
     // ── Layer 1+2: 方法（nodeName 在末尾，可选）──
 
     addCls(value: string, nodeName?: string): void {
-        const el = this._resolveNodeEl(nodeName ?? 'root');
-        if (el) {
+        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
+        if (component && typeof component.addCls === 'function') {
+            component.addCls(value);
+            return;
+        }
+        const target = component?.el ?? el;
+        if (target) {
             const c = splitClasses(value);
-            if (c.length) el.classList.add(...c);
+            if (c.length) target.classList.add(...c);
         }
     },
 
     removeCls(value: string, nodeName?: string): void {
-        const el = this._resolveNodeEl(nodeName ?? 'root');
-        if (el) {
+        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
+        if (component && typeof component.removeCls === 'function') {
+            component.removeCls(value);
+            return;
+        }
+        const target = component?.el ?? el;
+        if (target) {
             const c = splitClasses(value);
-            if (c.length) el.classList.remove(...c);
+            if (c.length) target.classList.remove(...c);
         }
     },
 
@@ -238,18 +254,33 @@ export const CommonPropsAbility: AbilityDefinition = {
             actualForce = force;
             actualNode = nodeName ?? 'root';
         }
-        const el = this._resolveNodeEl(actualNode);
-        if (el) el.classList.toggle(cls, actualForce);
+        const { el, component } = this._resolveNodeTarget(actualNode);
+        if (component && typeof component.toggleCls === 'function') {
+            component.toggleCls(cls, actualForce);
+            return;
+        }
+        const target = component?.el ?? el;
+        if (target) target.classList.toggle(cls, actualForce);
     },
 
     setAttr(key: string, value: string, nodeName?: string): void {
-        const el = this._resolveNodeEl(nodeName ?? 'root');
-        if (el) el.setAttribute(key, value);
+        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
+        if (component && typeof component.setAttr === 'function') {
+            component.setAttr(key, value);
+            return;
+        }
+        const target = component?.el ?? el;
+        if (target) target.setAttribute(key, value);
     },
 
     removeAttr(key: string, nodeName?: string): void {
-        const el = this._resolveNodeEl(nodeName ?? 'root');
-        if (el) el.removeAttribute(key);
+        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
+        if (component && typeof component.removeAttr === 'function') {
+            component.removeAttr(key);
+            return;
+        }
+        const target = component?.el ?? el;
+        if (target) target.removeAttribute(key);
     },
 
     // ── Layer 2: 子节点属性方法（nodeName 在末尾，委托 _markNodeDirty）──

@@ -2,20 +2,25 @@
  * NodePropAbility — 节点属性统一读写能力
  *
  * 数据驱动 + 统一分发：
- *   _getNodeProp(nodeName, prop)  → 查 NodePropMap → 读 DOM
- *   _setNodeProp(nodeName, prop, value) → 查 NodePropMap → 写 DOM
- *   _updateNode(nodeName, props)  → 批量写 DOM，一次性更新
+ *   _getNodeProp(nodeName, prop)  → 查 NodePropMap → 读 DOM（子组件有同名属性时委托）
+ *   _setNodeProp(nodeName, prop, value) → 查 NodePropMap → 写 DOM（子组件有同名属性时委托）
+ *   _updateNode(nodeName, props)  → 批量写 DOM，一次性更新（子组件委托属性系统）
  *
  * 三种操作路径（由 NodePropDef 字段决定）：
  * - cssProp 有值 → el.style[cssProp]
  * - attr 有值   → el.getAttribute(attr) / el.setAttribute(attr, value)
  * - 其他        → el[domAttr]
  *
+ * 子组件委托：
+ *   _resolveNodeTarget(nodeName) → { el, component }
+ *   子组件有同名属性时走 component[prop]，否则走 component.el 或 node.el
+ *   _updateNode 对子组件逐属性委托，有同名属性走 setter，无则直接操作 el
+ *
  * flex/grid 布局也走 _updateNode，初始化和运行时共用同一路径。
  *
  * 脏追踪：
  *   _markNodeDirty(nodeName, props) → 收集脏属性，防抖
- *   _flushNodeProps()               → 一次性批量写 DOM
+ *   _flushNodeProps()               → 一次性批量写 DOM（子组件委托）
  */
 
 import type { AbilityDefinition } from '@/composable';
@@ -32,41 +37,77 @@ export const NodePropAbility: AbilityDefinition = {
         return node.component ? node.component.el : node.el;
     },
 
+    _resolveNodeTarget(nodeName: string): { el?: HTMLElement; component?: any } {
+        const node = this.nodeMap?.[nodeName];
+        if (!node) return {};
+        return { el: node.el, component: node.component };
+    },
+
     _getNodeProp(nodeName: string, prop: string): any {
-        const el = this._resolveNodeEl(nodeName);
-        if (!el) return undefined;
+        const { el, component } = this._resolveNodeTarget(nodeName);
+        if (!el && !component) return undefined;
+
+        if (component && prop in component) {
+            return component[prop];
+        }
+
+        const target = component?.el ?? el;
+        if (!target) return undefined;
 
         const def: NodePropDef | undefined = DEFAULT_NODE_PROP_MAP[prop];
         if (!def) return undefined;
 
         if (def.cssProp) {
-            return el.style?.[def.cssProp] ?? '';
+            return target.style?.[def.cssProp] ?? '';
         }
 
         if (def.attr) {
-            return el.getAttribute(def.attr);
+            return target.getAttribute(def.attr);
         }
 
-        return el[def.domAttr];
+        return (target as any)[def.domAttr];
     },
 
     _setNodeProp(nodeName: string, prop: string, value: any): void {
-        const el = this._resolveNodeEl(nodeName);
-        if (!el) return;
+        const { el, component } = this._resolveNodeTarget(nodeName);
+        if (!el && !component) return;
+
+        if (component && prop in component) {
+            component[prop] = value;
+            return;
+        }
+
+        const target = component?.el ?? el;
+        if (!target) return;
 
         const def: NodePropDef | undefined = DEFAULT_NODE_PROP_MAP[prop];
         if (!def) return;
 
-        applyPropToEl(el, def, value);
+        applyPropToEl(target, def, value);
     },
 
     _updateNode(nodeName: string, props: Record<string, any>): void {
-        const el = this._resolveNodeEl(nodeName);
-        if (!el) return;
+        const { el, component } = this._resolveNodeTarget(nodeName);
+        if (!el && !component) return;
 
         const node = this.nodeMap?.[nodeName];
         if (!node) {
-            applyNodeProps(el, props);
+            const target = component?.el ?? el;
+            if (target) applyNodeProps(target, props);
+            return;
+        }
+
+        if (component) {
+            for (const [prop, value] of Object.entries(props)) {
+                if (value === undefined) continue;
+                if (prop in component) {
+                    component[prop] = value;
+                } else if (component.el) {
+                    applyNodeProps(component.el, { [prop]: value });
+                }
+            }
+            if (!node._state) node._state = {};
+            node._state = { ...node._state, ...props };
             return;
         }
 
@@ -84,14 +125,14 @@ export const NodePropAbility: AbilityDefinition = {
 
                 if (willHidden && typeof (this as any).playLeave === 'function') {
                     (this as any).playLeave().then(() => {
-                        applyNodeProps(el, props);
+                        applyNodeProps(el!, props);
                         node._state = { ...node._state, ...props };
                     });
                     return;
                 }
 
                 if (!willHidden && typeof (this as any).playEnter === 'function') {
-                    applyNodeProps(el, props);
+                    applyNodeProps(el!, props);
                     node._state = { ...node._state, ...props };
                     (this as any).playEnter();
                     return;
@@ -99,7 +140,7 @@ export const NodePropAbility: AbilityDefinition = {
             }
         }
 
-        applyNodeProps(el, props);
+        applyNodeProps(el!, props);
         node._state = { ...node._state, ...props };
     },
 
@@ -123,9 +164,23 @@ export const NodePropAbility: AbilityDefinition = {
         this._dirtyNodes = {};
 
         for (const [nodeName, props] of Object.entries(dirty)) {
-            const el = this._resolveNodeEl(nodeName);
-            if (!el) continue;
-            applyNodeProps(el, props as Record<string, any>);
+            const { el, component } = this._resolveNodeTarget(nodeName);
+
+            if (component) {
+                for (const [prop, value] of Object.entries(props as Record<string, any>)) {
+                    if (value === undefined) continue;
+                    if (prop in component) {
+                        component[prop] = value;
+                    } else if (component.el) {
+                        applyNodeProps(component.el, { [prop]: value });
+                    }
+                }
+                continue;
+            }
+
+            if (el) {
+                applyNodeProps(el, props as Record<string, any>);
+            }
         }
     },
 
