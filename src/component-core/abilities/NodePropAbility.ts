@@ -227,7 +227,6 @@ function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
     }
 }
 
-
 function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
     if (!value) return;
 

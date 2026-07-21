@@ -17,6 +17,10 @@
 - ✅ IndicatorComponent 新增 itemTpl 自定义模板支持
 - ✅ 4 个组件模板 className → cls 修复（NavItem/OverflowScroll/Tabs/RouteContainer）
 - ✅ toggleCls 支持 force + nodeName 重载
+- ✅ NodePropAbility 子组件委托：_resolveNodeTarget 返回 {el,component}，子组件有同名属性时走 component[prop]
+- ✅ CommonPropsAbility addCls/removeCls/toggleCls/setAttr/removeAttr 子组件有同名方法时委托
+- ✅ _flushNodeProps 委托 _updateNode，不再绕过生命周期事件和动画
+- ✅ 移除未使用的 applyCls 函数
 
 ### 2026-07-20
 - ✅ 根节点统一纳入 nodeMap（编译时 root 写入 indexPath/nodeMetas，移除 rootMeta）
