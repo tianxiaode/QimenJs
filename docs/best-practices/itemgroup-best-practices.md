@@ -1,71 +1,123 @@
 # ItemGroup 最佳实践
 
-> 日期：2026-07-20
+> 日期：2026-07-21
 > 状态：当前有效
 
 ## 一、ItemGroup 是什么
 
 ItemGroup 是轻量排列容器，通过 `items` 数组动态管理子组件实例。核心设计理念：
 
-1. **子项即 nodeMap 节点** — 每个子项注册进 `nodeMap`，事件转发由 `EventForwardAbility` 统一处理
-2. **数据驱动声明** — 通过 `defaultItem` 声明子项的默认事件定义，读配置即知事件流向
-3. **池化可选** — `itemDestroy` 控制移除时是销毁还是隐藏复用
+1. **数据驱动声明** — 通过 `defaultItem` 声明子项的默认事件定义，读配置即知事件流向
+2. **两种模式分离** — `ItemGroupPooledComponent`（池化复用）和 `ItemGroupStaticComponent`（静态生灭），按场景选择
+3. **生命周期自动链式** — `replace()` 派生时，生命周期钩子自动先调基类再调子类，无需手动 `_initItemGroupComponent`
 
-## 二、核心配置
+## 二、两种模式
 
-### 2.1 defaultItem — 子项默认事件定义
+### 2.1 池化模式 — ItemGroupPooledComponent
+
+**核心**：数据驱动，索引即位置，子项隐藏/显示复用，不销毁。
+
+**适用场景**：同质子项，频繁增减，子项类型固定（如 TabBar、ButtonGroup、Accordion、NavItemGroup）。
+
+**要求**：子项**必须实现 `update()` 方法**，否则池化更新时数据变更不会反映到视图，框架会输出 logger 警告。
+
+```typescript
+// TabBar — 同质子项，池化复用
+export let TabBarComponent = ItemGroupPooledComponent.replace({
+    type: 'TabBar',
+    cls: 'q-tab-bar',
+    itemsCls: 'q-tab-bar__items',
+    config: {
+        direction: 'horizontal',
+        gap: '0',
+        defaultItemType: 'Toggle',
+        defaultItem: {
+            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
+        },
+    },
+    body: { ... },
+});
+```
+
+### 2.2 静态模式 — ItemGroupStaticComponent
+
+**核心**：使用 `order` 控制顺序，组件随数据生灭（移除即销毁），支持 `sort()`/`move()`。
+
+**适用场景**：异质子项，含分隔符，子项类型不固定（如 Menu、Toolbar）。
+
+```typescript
+// Menu — 异质子项（MenuItem + MenuSeparator），静态生灭
+export let MenuComponent = ItemGroupStaticComponent.replace({
+    type: 'Menu',
+    cls: 'q-menu',
+    itemsCls: 'q-menu__content',
+    config: {
+        direction: 'vertical',
+        defaultItemType: 'MenuItem',
+        defaultItem: {
+            MenuItem: {
+                events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } },
+            },
+        },
+    },
+    body: { ... },
+});
+```
+
+### 2.3 选择依据
+
+| 特征 | 池化 (Pooled) | 静态 (Static) |
+|------|:---:|:---:|
+| 同质子项 | ✅ | ✅ |
+| 异质子项/分隔符 | ❌ | ✅ |
+| 频繁增减 | ✅ 复用 | ⚠️ 销毁重建 |
+| 子项需要 `update()` | ✅ 必须 | 不需要 |
+| `sort()`/`move()` | ❌ | ✅ |
+| 内存占用 | 较高（池保留） | 较低（即时销毁） |
+
+## 三、核心配置
+
+### 3.1 defaultItemType — 默认子项类型
+
+当 item 没有指定 `type` 时，使用 `defaultItemType` 作为兜底：
+
+```typescript
+config: {
+    defaultItemType: 'Toggle',  // items 中无 type 字段时默认创建 Toggle
+}
+```
+
+### 3.2 defaultItem — 子项默认事件定义
 
 `defaultItem` 支持两种形态，根据子项是否同质选择：
 
 #### 简单形式（同质子项）
 
-当所有子项类型相同（通过 `itemType` 指定），使用简单形式，不需要 type key：
+当所有子项类型相同（通过 `defaultItemType` 指定），使用简单形式：
 
 ```typescript
-// TabBar — 所有子项都是 Toggle
 {
-    type: 'TabBar',
-    itemType: 'Toggle',
+    defaultItemType: 'Toggle',
     defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
-    items: [
-        { text: '首页' },
-        { text: '设置' },
-    ]
-}
-
-// Menu — 所有子项都是 MenuItem
-{
-    type: 'Menu',
-    itemType: 'MenuItem',
-    defaultItem: { events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } } },
-    items: [
-        { text: '新建' },
-        { text: '打开' },
-    ]
 }
 ```
 
 #### Map 形式（异质子项）
 
-当子项类型不同（如 Toolbar），使用 Map 形式，按 type 索引：
+当子项类型不同，使用 Map 形式，按 type 索引：
 
 ```typescript
 {
-    type: 'Toolbar',
     defaultItem: {
         button: { events: { click: { bridges: ['click'] } } },
         input:  { events: { input: { bridges: ['input'] } } },
     },
-    items: [
-        { type: 'button', text: '保存' },
-        { type: 'input', placeholder: '搜索' },
-    ]
 }
 ```
 
 **区分规则**：`defaultItem.events` 存在 → 简单形式，否则 → Map 形式。
 
-### 2.2 事件合并规则
+### 3.3 事件合并规则
 
 item 自身的 `events` 与 `defaultItem` 深合并，item 优先：
 
@@ -80,26 +132,9 @@ defaultItem: { events: { click: { handler: true, bridges: ['click'] } } }
 // click: { handler: true, bridges: ['click'], entities: 'create' }
 ```
 
-### 2.3 itemDestroy — 池化模式
+## 四、事件三路分发
 
-| 值 | 行为 | 适用场景 |
-|----|------|---------|
-| `true`（默认） | 移除时销毁，从 nodeMap 删除 | Menu、Toolbar（异质/有分隔符） |
-| `false` | 移除时隐藏，保留在池中可复用 | TabBar（同质，频繁增减） |
-
-```typescript
-// TabBar — 池化复用
-{
-    type: 'TabBar',
-    itemDestroy: false,
-    itemType: 'Toggle',
-    defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
-}
-```
-
-## 三、事件三路分发
-
-子项注册进 nodeMap 后，事件声明遵循 `DomEventDecl` 规范，支持三路分发：
+子项事件声明遵循 `DomEventDecl` 规范，支持三路分发：
 
 ```
 子项事件 → _handleDomEvent → 按 DomEventDecl 分发
@@ -108,45 +143,27 @@ defaultItem: { events: { click: { handler: true, bridges: ['click'] } } }
     └── entities: 'save'   → this.entityEmit()        实体操作
 ```
 
-### 3.1 bridges — 桥接转发
-
-子项事件通过 EventBridge 转发，持有方通过 `bridgeOn` 监听：
+### 4.1 bridges — 桥接转发
 
 ```typescript
-// TabBar 的 tab 点击转发为桥接事件
 defaultItem: { events: { toggle: { bridges: ['toggle'] } } }
 
 // 监听方
 bridge.bridgeOn('tabBar', 'toggle', (data) => { ... });
 ```
 
-### 3.2 entities — 实体操作
-
-CRUD 按钮直接触发实体操作，不走桥接：
+### 4.2 entities — 实体操作
 
 ```typescript
-// Toolbar 的 CRUD 按钮
-{
-    type: 'Toolbar',
-    defaultItem: {
-        button: { events: { click: { handler: true } } },
-    },
-    items: [
-        { type: 'button', text: '新建', events: { click: { entities: 'create' } } },
-        { type: 'button', text: '保存', events: { click: { entities: 'save' } } },
-        { type: 'button', text: '删除', events: { click: { entities: 'delete' } } },
-    ]
-}
+{ type: 'button', text: '新建', events: { click: { entities: 'create' } } }
+// 事件流：按钮 click → _handleDomEvent → entities: 'create' → entityEmit → EntityManager.create()
 ```
 
-事件流：`按钮 click → _handleDomEvent → entities: 'create' → entityEmit → EntityManager.create()`
+### 4.3 handler — 内部处理
 
-### 3.3 handler — 内部处理
-
-组件自身处理事件，自动推导方法名 `on{Name}{Event}`：
+自动推导方法名 `on{Name}{Event}`：
 
 ```typescript
-// TabBar 内部处理 toggle 逻辑
 defaultItem: { events: { toggle: { handler: true, bridges: ['toggle'] } } }
 
 // body 中定义处理方法
@@ -155,93 +172,109 @@ body: {
 }
 ```
 
-### 3.4 三路可共存
-
-同一个事件可以同时走多条通道：
+### 4.4 三路可共存
 
 ```typescript
-// 内部处理 + 桥接转发 + 实体操作
 { type: 'button', events: { click: { handler: true, bridges: ['click'], entities: 'save' } } }
 ```
 
-## 四、内部数据结构
+## 五、生命周期自动链式调用
 
-### 4.1 三个核心状态
+`replace()` 派生时，生命周期钩子（`onBeforeInit`/`onAfterInit`/`onMounted`/`onUpdated`/`onBeforeUnmount`/`onBeforeDispose`）自动链式调用：**先调基类，再调子类**。
 
-| 状态 | 类型 | 职责 |
-|------|------|------|
-| `_visibleNames` | `string[]` | 有序可见 name 列表，控制 DOM 顺序和数据映射 |
-| `_hiddenNames` | `string[]` | 池化可用 name 列表（itemDestroy=false 时） |
-| `nodeMap[name]` | `NodeEntry` | 实例 + 事件声明（"具体是什么"） |
+子类**不需要**手动调用 `_initItemGroupComponent`，基类的 `onAfterInit` 会自动执行，处理 `direction`、`gap`、`defaultItemType`、`defaultItem` 等配置。
 
-```
-_visibleNames: ['item_1', 'item_2', 'item_3']   ← 顺序 + 可见性
-_hiddenNames:  ['item_0']                        ← 池中可用
-nodeMap: {
-    'item_0': { component, el, events: { click: { bridges: ['click'] } } },
-    'item_1': { component, el, events: { click: { bridges: ['click'] } } },
+```typescript
+// ✅ 正确 — 子类 onAfterInit 自动链式，基类初始化已执行
+export let TabBarComponent = ItemGroupPooledComponent.replace({
+    config: { direction: 'horizontal', defaultItemType: 'Toggle', ... },
+    body: {
+        onAfterInit(props) {
+            // 基类 onAfterInit 已自动执行，direction/defaultItemType 已设置
+            this.on('toggle', (data) => this._onItemToggle(data));
+        },
+    },
+});
+
+// ❌ 旧写法 — 不再需要手动 _initItemGroupComponent
+onAfterInit(props) {
+    this._initItemGroupComponent(props);  // 冗余，基类已自动调用
     ...
 }
 ```
 
-### 4.2 name 生成规则
+## 六、内部数据结构
 
-- item 有 `name` 字段 → 使用该 name
-- item 无 `name` → 使用 `getId('item')` 生成唯一 name
+### 6.1 核心状态
 
-### 4.3 池化复用流程
+| 状态 | 类型 | 职责 |
+|------|------|------|
+| `_items` | `Array<{data, component, el, events?}>` | 有序可见项列表，控制 DOM 顺序 |
+| `_hiddenItems`（仅池化） | 同上 | 隐藏项池，可复用 |
+| `_defaultItemType` | `string` | 默认子组件类型 |
+| `_defaultItem` | `DefaultItemConfig` | 按 type 索引的默认配置 |
+
+### 6.2 池化复用流程
 
 ```
 add(data)
-  → _findReusableHidden(data.type)   // 查找池中同类型隐藏项
-  → 找到 → update(data) + hidden=false + 移入 _visibleNames
-  → 没找到 → _createAndRegister(data)  // 正常创建
+  → _reuseFromPool(data.type ?? defaultItemType)   // 按 type 匹配池中隐藏项
+  → 找到 → update(data) + hidden=false + 移入 _items
+  → 没找到 → _createItem(data)                      // 正常创建
 ```
 
-## 五、派生组件定义模式
+### 6.3 事件绑定/解绑
 
-使用 `replace` 从 ItemGroupComponent 派生：
+```
+_bindItemEvents(item)
+  → item.component.on(domEvent, callback) → 收集 off 到 item._unsubs
+_unbindItemEvents(item)
+  → 遍历 item._unsubs 调用 off()
+```
+
+## 七、派生组件定义模式
+
+### 各组件配置速查
+
+| 组件 | 基类 | defaultItemType | defaultItem 形式 | 事件 |
+|------|------|-----------------|-----------------|------|
+| TabBar | Pooled | Toggle | Map | toggle → bridges |
+| ButtonGroup | Pooled | Toggle | Map | toggle → bridges |
+| Accordion | Pooled | Panel | Map | click → bridges |
+| NavItemGroup | Pooled | NavItem | Map | click/close → bridges |
+| Menu | Static | MenuItem | Map | click/select → bridges |
+| Toolbar | Static | — | — | — |
+
+### 派生模板
 
 ```typescript
-export let TabBarComponent = ItemGroupComponent.replace({
-    type: 'TabBar',
-    cls: 'q-tab-bar',
-    itemsCls: 'q-tab-bar__items',
+export let MyComponent = ItemGroupPooledComponent.replace({  // 或 ItemGroupStaticComponent
+    type: 'MyComponent',
+    cls: 'q-my',
+    itemsCls: 'q-my__items',
     config: {
-        direction: 'horizontal',
-        gap: '0',
-        itemType: 'Toggle',
-        itemDestroy: false,
-        defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
+        direction: 'horizontal',       // 'horizontal' | 'vertical'
+        gap: '4px',                    // CSS gap 值
+        defaultItemType: 'Toggle',     // 默认子组件类型
+        defaultItem: {                 // 事件声明
+            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
+        },
     },
     body: {
         onInitState() {
-            return { _selectedIndex: -1 };
+            return { _myState: null };
         },
         onAfterInit(props) {
-            this.on('toggle', (data) => this._onItemToggle(data));
+            // 基类初始化已自动执行
         },
-        selectAt(index, silent = false) { ... },
     },
 });
 ```
 
-### 各组件配置速查
-
-| 组件 | itemType | itemDestroy | defaultItem 形式 | 事件 |
-|------|----------|-------------|-----------------|------|
-| TabBar | Toggle | false | 简单 | toggle → bridges |
-| Menu | MenuItem | true（默认） | 简单 | click/select → bridges |
-| Accordion | Panel | true（默认） | 简单 | click → bridges |
-| ButtonGroup | Toggle | true（默认） | 简单 | toggle → bridges |
-| NavItemGroup | NavItem | true（默认） | 简单 | click/close → bridges |
-| Toolbar | — | true（默认） | Map | 按钮各自声明 |
-
-## 六、CRUD 工具栏完整示例
+## 八、CRUD 工具栏完整示例
 
 ```typescript
-// 实体工具栏 — entities 直接触发实体操作
-export let CrudToolbarComponent = ItemGroupComponent.replace({
+export let CrudToolbarComponent = ItemGroupStaticComponent.replace({
     type: 'CrudToolbar',
     cls: 'q-toolbar',
     itemsCls: 'q-toolbar__items',
@@ -265,42 +298,22 @@ new CrudToolbarComponent({
 });
 ```
 
-事件流：
+## 九、设计决策记录
 
-```
-[新建] click → entities: 'create' → entityEmit → EntityManager.create()
-[保存] click → entities: 'save'   → entityEmit → EntityManager.save()
-[删除] click → entities: 'delete' → entityEmit → EntityManager.delete()
-```
+### 为什么拆分 Pooled/Static 而不是 itemDestroy 开关？
 
-## 七、设计决策记录
+1. **类型安全** — 池化模式子项必须实现 `update()`，静态模式不需要，混在一个类里无法表达这个约束
+2. **API 清晰** — 池化没有 `sort()`/`move()`，静态有，混在一起容易误用
+3. **避免隐式行为** — `itemDestroy` 开关让同一个类有两种截然不同的行为模式，容易踩坑
+
+### 为什么生命周期钩子自动链式？
+
+1. **避免遗漏** — 旧模式子类覆写 `onAfterInit` 后基类初始化丢失，`config` 中的默认值不生效
+2. **减少样板** — 不再需要每个子类手动 `_initItemGroupComponent(props)`
+3. **符合直觉** — 生命周期钩子"先基类后子类"是 OOP 的自然期望
 
 ### 为什么用 defaultItem 而不是 eventKey + events？
-
-旧方案通过 `eventKey` + `events` 列表配置事件转发，存在以下问题：
 
 1. **语义层级不对** — `bridges`/`handler` 是 TplNode 层概念，放在 ItemGroup 配置里层级混乱
 2. **两套事件声明** — 子项自身有 TplNode events，ItemGroup 又有 events 列表，容易冲突
 3. **无法区分三路分发** — 只知道转发哪些事件名，不知道走 bridges 还是 entities
-
-新方案 `defaultItem` 直接使用 `DomEventDecl` 声明，与 TplNode 事件声明完全一致：
-
-```typescript
-// 旧方案 — 只有事件名，不知道走什么通道
-eventKey: 'tab', events: ['toggle']
-
-// 新方案 — 完整声明事件流向
-defaultItem: { events: { toggle: { bridges: ['toggle'] } } }
-```
-
-### 为什么子项注册进 nodeMap？
-
-1. **复用 EventForwardAbility** — `_bindComponentEvent` 已能处理组件级事件绑定，不需要 ItemGroup 自己实现
-2. **统一事件管线** — 所有事件走 `_handleDomEvent` → 三路分发，与静态模板节点完全一致
-3. **handler 自动推导** — `close: { handler: true }` 自动推导 `onItem0Close`，ItemGroup body 中直接写处理方法
-
-### 为什么 _visibleNames/_hiddenNames 替换 _pool？
-
-1. **职责分离** — `_visibleNames` 管顺序，`_hiddenNames` 管池化，`nodeMap` 管数据
-2. **按 name 索引** — 不依赖数组位置，removeAt 中间项不会导致错位
-3. **池化更自然** — hidden name 列表就是池，不需要额外的 `_pool` 数组

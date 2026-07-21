@@ -68,6 +68,15 @@ export function createTemplateClass(ParentClass: any, template: ComponentTemplat
     return NewClass;
 }
 
+const LIFECYCLE_HOOKS = new Set([
+    'onBeforeInit',
+    'onAfterInit',
+    'onMounted',
+    'onUpdated',
+    'onBeforeUnmount',
+    'onBeforeDispose',
+]);
+
 export function createReplaceClass(
     ParentClass: any,
     options: {
@@ -109,6 +118,19 @@ export function createReplaceClass(
         const descs = Object.getOwnPropertyDescriptors(body);
         for (const [key, desc] of Object.entries(descs)) {
             if (key === 'type') continue;
+
+            if (LIFECYCLE_HOOKS.has(key) && typeof desc.value === 'function') {
+                const parentMethod = ParentClass.prototype[key];
+                if (typeof parentMethod === 'function') {
+                    const childMethod = desc.value;
+                    proto[key] = function (this: any, ...args: any[]): void {
+                        parentMethod.call(this, ...args);
+                        childMethod.call(this, ...args);
+                    };
+                    continue;
+                }
+            }
+
             Object.defineProperty(proto, key, desc);
         }
     }

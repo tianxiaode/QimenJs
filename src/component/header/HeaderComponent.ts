@@ -34,7 +34,7 @@
 
 import { TemplateComponent } from '@qimenjs/component-core';
 import { IconComponent } from '../icon/IconComponent';
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
 export let HeaderComponent = TemplateComponent.withTemplate({
@@ -54,7 +54,12 @@ export let HeaderComponent = TemplateComponent.withTemplate({
             },
             { tag: 'div', name: 'title', className: 'q-header__title' },
             { tag: 'span', name: 'subtitle', className: 'q-header__subtitle', hidden: true },
-            { name: 'tools', type: ItemGroupComponent, className: 'q-header__tools', hidden: true },
+            {
+                name: 'tools',
+                type: ItemGroupPooledComponent,
+                className: 'q-header__tools',
+                hidden: true,
+            },
             { name: 'action', type: ButtonComponent, className: 'q-header__action', hidden: true },
         ],
     },

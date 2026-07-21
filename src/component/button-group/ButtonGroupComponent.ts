@@ -1,5 +1,5 @@
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export type ButtonGroupMode = 'single' | 'multiple';
 
@@ -9,12 +9,12 @@ export interface ButtonGroupProps extends ItemGroupProps {
     selectedIndices?: number[];
 }
 
-export let ButtonGroupComponent = ItemGroupComponent.replace({
+export let ButtonGroupComponent = ItemGroupPooledComponent.replace({
     type: 'ButtonGroup',
     cls: 'q-button-group',
     itemsCls: 'q-button-group__items',
     config: {
-        itemType: 'Toggle',
+        defaultItemType: 'Toggle',
         defaultItem: {
             Toggle: { events: { toggle: { bridges: ['toggle'] } } },
         },

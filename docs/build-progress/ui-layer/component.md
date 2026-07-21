@@ -7,6 +7,16 @@
 
 ## 构建历史
 
+### 2026-07-21
+- ✅ 重构 ItemGroup 为三层架构：ItemGroupBaseComponent / ItemGroupPooledComponent / ItemGroupStaticComponent
+- ✅ 池化模式：数据驱动，索引即位置，子项隐藏/显示复用，要求子项实现 update()
+- ✅ 静态模式：order 控制顺序，组件随数据生灭，支持 sort()/move()，适用于异质子项（Menu、Toolbar）
+- ✅ 框架改进：replace() 生命周期钩子自动链式调用（先基类后子类）
+- ✅ 修复事件解绑机制：_bindItemEvents 收集 off 到 item._unsubs，_unbindItemEvents 遍历调用
+- ✅ 修复 _reorderDOM：用 removeChild 替代 innerHTML='' 避免误删非管理 DOM
+- ✅ Menu/Toolbar 改为 ItemGroupStaticComponent（异质子项/分隔符不适合池化）
+- ✅ 所有派生类 config.itemType → defaultItemType，删除废弃的 itemDestroy
+
 ### 2026-07-13
 - ✅ 新增 NavItemComponent（withTemplate + eventKey 事件转发）
 - ✅ 新增 NavItemGroupComponent（继承 ItemGroupComponent）

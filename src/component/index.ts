@@ -68,7 +68,9 @@ export { HeaderComponent } from './header/HeaderComponent';
 export { headerCSS } from './header/header.css';
 
 // 项组组件
-export { ItemGroupComponent, type ItemGroupProps } from './itemgroup/ItemGroupComponent';
+export { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
+export type { ItemGroupProps } from './itemgroup/ItemGroupBaseComponent';
+export { ItemGroupStaticComponent } from './itemgroup/ItemGroupStaticComponent';
 export { itemgroupCSS } from './itemgroup/itemgroup.css';
 
 // 工具栏组件

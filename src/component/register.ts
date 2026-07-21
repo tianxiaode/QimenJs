@@ -25,7 +25,7 @@ import { MenuItemComponent } from './menu/MenuItemComponent';
 import { MenuComponent } from './menu/MenuComponent';
 import { PanelComponent } from './panel/PanelComponent';
 import { HeaderComponent } from './header/HeaderComponent';
-import { ItemGroupComponent } from './itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
 import { NavItemComponent } from './nav/NavItemComponent';
 import { NavItemGroupComponent } from './nav/NavItemGroupComponent';
 import { ToggleComponent } from './toggle/ToggleComponent';
@@ -56,7 +56,7 @@ export function registerAllComponents(): void {
     registrar.register('Menu', MenuComponent);
     registrar.register('Panel', PanelComponent);
     registrar.register('Header', HeaderComponent);
-    registrar.register('ItemGroup', ItemGroupComponent);
+    registrar.register('ItemGroup', ItemGroupPooledComponent);
     registrar.register('Toolbar', ToolbarComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);

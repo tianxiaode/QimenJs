@@ -1,7 +1,7 @@
 import { TemplateComponent } from '@qimenjs/component-core';
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 
-type ItemGroupInstance = InstanceType<typeof ItemGroupComponent>;
+type ItemGroupInstance = InstanceType<typeof ItemGroupPooledComponent>;
 
 export interface ToolGroupConfig {
     items: Record<string, any>[];
@@ -65,7 +65,7 @@ export class PanelComponent extends PanelBase {
         }
 
         if (props?.toolsLeft) {
-            this._toolsLeft = new ItemGroupComponent({
+            this._toolsLeft = new ItemGroupPooledComponent({
                 itemType: props.toolsLeft.itemType ?? 'Icon',
                 direction: 'horizontal',
                 gap: '4px',
@@ -80,7 +80,7 @@ export class PanelComponent extends PanelBase {
         }
 
         if (props?.toolsRight) {
-            this._toolsRight = new ItemGroupComponent({
+            this._toolsRight = new ItemGroupPooledComponent({
                 itemType: props.toolsRight.itemType ?? 'Icon',
                 direction: 'horizontal',
                 gap: '4px',

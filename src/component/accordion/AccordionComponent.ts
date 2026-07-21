@@ -1,5 +1,5 @@
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export type AccordionMode = 'single' | 'multiple';
 
@@ -9,14 +9,14 @@ export interface AccordionProps extends ItemGroupProps {
     expandedIndices?: number[];
 }
 
-export let AccordionComponent = ItemGroupComponent.replace({
+export let AccordionComponent = ItemGroupPooledComponent.replace({
     type: 'Accordion',
     cls: 'q-accordion',
     itemsCls: 'q-accordion__items',
     config: {
         direction: 'vertical',
         gap: '0',
-        itemType: 'Panel',
+        defaultItemType: 'Panel',
         defaultItem: {
             Panel: { events: { click: { bridges: ['click'] } } },
         },

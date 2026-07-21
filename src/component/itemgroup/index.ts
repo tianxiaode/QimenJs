@@ -8,20 +8,13 @@ export type {
     DefaultItemDef,
     DefaultItemConfig,
     ItemGroupConfig,
-    ItemGroupProps
-} from './ItemGroupComponent';
-
-// 导出公共能力
-export { ItemGroupAbility } from './ItemGroupAbility';
+    ItemGroupProps,
+} from './ItemGroupBaseComponent';
 
 // 导出具体组件
-export { ItemGroupComponent } from './ItemGroupComponent';
-export { ItemGroupNoPoolComponent } from './ItemGroupNoPoolComponent';
-export { ItemGroupWithPoolComponent } from './ItemGroupWithPoolComponent';
-
-// 导出具体组件类型
-export type { 
-    ItemGroupComponentType,
-    ItemGroupNoPoolComponentType,
-    ItemGroupWithPoolComponentType
-};
+export { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
+export type { ItemGroupBaseComponentType } from './ItemGroupBaseComponent';
+export { ItemGroupStaticComponent } from './ItemGroupStaticComponent';
+export type { ItemGroupStaticComponentType } from './ItemGroupStaticComponent';
+export { ItemGroupPooledComponent } from './ItemGroupPooledComponent';
+export type { ItemGroupPooledComponentType } from './ItemGroupPooledComponent';

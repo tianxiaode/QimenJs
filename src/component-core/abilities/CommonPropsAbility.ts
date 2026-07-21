@@ -128,4 +128,12 @@ export const CommonPropsAbility: AbilityDefinition = {
             this._markNodeDirty('root', { disabled: v });
         },
     },
+    order: {
+        get() {
+            return this._getNodeProp('root', 'order') ?? 0;
+        },
+        set(v: any) {
+            this._markNodeDirty('root', { order: v });
+        },
+    },
 };

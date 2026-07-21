@@ -1,19 +1,18 @@
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export interface TabBarProps extends ItemGroupProps {
     selectedIndex?: number;
 }
 
-export let TabBarComponent = ItemGroupComponent.replace({
+export let TabBarComponent = ItemGroupPooledComponent.replace({
     type: 'TabBar',
     cls: 'q-tab-bar',
     itemsCls: 'q-tab-bar__items',
     config: {
         direction: 'horizontal',
         gap: '0',
-        itemType: 'Toggle',
-        itemDestroy: false,
+        defaultItemType: 'Toggle',
         defaultItem: {
             Toggle: { events: { toggle: { bridges: ['toggle'] } } },
         },

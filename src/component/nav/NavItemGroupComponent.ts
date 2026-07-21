@@ -1,5 +1,5 @@
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { NavItemComponent } from './NavItemComponent';
 import type { NavOverlayOptions } from './NavItemComponent';
 
@@ -11,12 +11,12 @@ export interface NavItemGroupProps extends ItemGroupProps {
     overlayComponent?: any;
 }
 
-export let NavItemGroupComponent = ItemGroupComponent.replace({
+export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
     type: 'NavItemGroup',
     cls: 'q-nav',
     itemsCls: 'q-nav__items',
     config: {
-        itemType: 'NavItem',
+        defaultItemType: 'NavItem',
         defaultItem: {
             NavItem: { events: { click: { bridges: ['click'] }, close: { bridges: ['close'] } } },
         },

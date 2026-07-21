@@ -1,5 +1,5 @@
-import { ItemGroupComponent } from '../itemgroup/ItemGroupComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupComponent';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import type { Placement } from '@qimenjs/component-core';
 
@@ -9,13 +9,13 @@ export interface MenuProps extends ItemGroupProps {
     offset?: number;
 }
 
-export let MenuComponent = ItemGroupComponent.replace({
+export let MenuComponent = ItemGroupStaticComponent.replace({
     type: 'Menu',
     cls: 'q-menu',
     itemsCls: 'q-menu__content',
     config: {
         direction: 'vertical',
-        itemType: 'MenuItem',
+        defaultItemType: 'MenuItem',
         defaultItem: {
             MenuItem: {
                 events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } },
