@@ -227,21 +227,6 @@ function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
     }
 }
 
-function applyCls(el: HTMLElement, value: string | undefined, prevValue?: string): void {
-    if (prevValue) {
-        const oldSet = new Set(prevValue.split(/\s+/).filter(Boolean));
-        for (const cls of oldSet) {
-            el.classList.remove(cls);
-        }
-    }
-
-    if (value) {
-        const newSet = value.split(/\s+/).filter(Boolean);
-        for (const cls of newSet) {
-            el.classList.add(cls);
-        }
-    }
-}
 
 function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
     if (!value) return;
