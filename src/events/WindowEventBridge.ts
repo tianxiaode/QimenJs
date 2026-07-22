@@ -160,6 +160,24 @@ export class WindowEventBridge {
                     },
                 };
             },
+            [SYSTEM_EVENTS.WINDOW_HASH_CHANGE]: () => {
+                const handler = () => {
+                    dispatch({ hash: window.location.hash });
+                };
+                return {
+                    add: () => window.addEventListener('hashchange', handler),
+                    remove: () => window.removeEventListener('hashchange', handler),
+                };
+            },
+            [SYSTEM_EVENTS.WINDOW_POP_STATE]: () => {
+                const handler = () => {
+                    dispatch({ pathname: window.location.pathname, hash: window.location.hash });
+                };
+                return {
+                    add: () => window.addEventListener('popstate', handler),
+                    remove: () => window.removeEventListener('popstate', handler),
+                };
+            },
         };
 
         const builder = builders[event];

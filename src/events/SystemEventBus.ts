@@ -36,6 +36,8 @@ export const SYSTEM_EVENTS = {
     NETWORK_CHANGE: 'window:networkChange',
     ORIENTATION_CHANGE: 'window:orientationChange',
     MEDIA_QUERY_CHANGE: 'window:mediaQueryChange',
+    WINDOW_HASH_CHANGE: 'window:hashChange',
+    WINDOW_POP_STATE: 'window:popState',
 } as const;
 
 export type SystemEventName = (typeof SYSTEM_EVENTS)[keyof typeof SYSTEM_EVENTS];

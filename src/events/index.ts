@@ -17,6 +17,7 @@ export { EventBridge } from './EventBridge';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
 export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';
 export { DragEventBus, dragEventBus, type DragState, type DragAction } from './DragEventBus';
+export { RouteEventBus, routeEventBus } from './RouteEventBus';
 export {
     SystemEventBus,
     systemEventBus,

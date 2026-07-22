@@ -1,12 +1,14 @@
 /**
  * RouteNavComponent — 路由导航组件
  *
- * 继承 NavItemGroupComponent + RouteEmitAbility + RouteListenAbility，
- * 导航点击自动发路由，路由变化自动切换高亮。
+ * 继承 NavItemGroupComponent + RouteEventBusAbility，
+ * 导航点击通过 routeEmit 发送 switch 事件，
+ * 路由变化通过 routeOn 监听 change 事件自动切换高亮。
  */
 
 import { NavItemGroupComponent } from './NavItemGroupComponent';
-import { RouteAbility, RouteEmitAbility, RouteListenAbility } from '@qimenjs/router';
+import { RouteEventBusAbility } from '@qimenjs/system-abilities';
+import { EventContextBuilder } from '@qimenjs/context';
 
 export interface RouteNavProps {
     direction?: 'horizontal' | 'vertical';
@@ -19,11 +21,7 @@ export interface RouteNavProps {
     items?: Record<string, any>[];
 }
 
-const RouteNavBase = (NavItemGroupComponent as any).with([
-    RouteAbility,
-    RouteEmitAbility,
-    RouteListenAbility,
-]);
+const RouteNavBase = (NavItemGroupComponent as any).with([RouteEventBusAbility]);
 
 export let RouteNavComponent = class extends RouteNavBase {
     private _pathIndex: Record<string, number> = {};
@@ -39,6 +37,11 @@ export let RouteNavComponent = class extends RouteNavBase {
 
         if (props?.pathIndex) this._pathIndex = props.pathIndex;
         if (props?.indexPath) this._indexPath = props.indexPath;
+
+        const off = this.routeOn('router', 'change', (data: any) => {
+            this.onRouteChange(data);
+        });
+        this.onCleanup(off);
     }
 
     protected onForwardEvent(event: string, data: Record<string, any>): void {
@@ -64,7 +67,15 @@ export let RouteNavComponent = class extends RouteNavBase {
 
         this.selectAt(index);
         this._lastNavigatedPath = path;
-        this.navigate(path);
+
+        this.routeEmit(
+            EventContextBuilder.create()
+                .withEvent('switch')
+                .withType('switch')
+                .withSource('router')
+                .withData({ path })
+                .build()
+        );
     }
 
     onRouteChange(event: any): void {

@@ -1,12 +1,12 @@
 /**
  * RouteContainerComponent — 路由容器组件
  *
- * 挂载 RouteListenAbility + ChildSlotAbility，
- * 路由变化时根据 path 自动替换内容区域的子组件。
+ * 混入 RouteEventBusAbility + ChildSlotAbility，
+ * 通过 routeOn 监听路由变化，根据 path 自动替换内容区域的子组件。
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
-import { RouteListenAbility } from '@qimenjs/router';
+import { Component } from '@qimenjs/component-core';
+import { RouteEventBusAbility } from '@qimenjs/system-abilities';
 import { ChildSlotAbility } from '@qimenjs/component-abilities/render/ChildSlotAbility';
 
 export interface RouteContainerProps {
@@ -14,7 +14,7 @@ export interface RouteContainerProps {
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
-const RouteContainerBase = TemplateComponent.withTemplate({
+const RouteContainerBase = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-route-container',
@@ -30,11 +30,11 @@ const RouteContainerBase = TemplateComponent.withTemplate({
             };
         },
 
-        _initRouteContainer(props?: RouteContainerProps): void {
+        onAfterInit(props?: RouteContainerProps): void {
             this.el.classList.add('q-route-container');
 
             this.logger.debug(
-                '[RouteContainer] constructor, routeMap keys =',
+                '[RouteContainer] onAfterInit, routeMap keys =',
                 props?.routeMap ? Object.keys(props.routeMap) : [],
                 'defaultComponent =',
                 !!props?.defaultComponent
@@ -49,6 +49,11 @@ const RouteContainerBase = TemplateComponent.withTemplate({
             } else {
                 this.logger.debug('[RouteContainer] NO default component');
             }
+
+            const off = this.routeOn('router', 'change', (data: any) => {
+                this.onRouteChange(data);
+            });
+            this.onCleanup(off);
         },
 
         onRouteChange(event: any): void {
@@ -69,7 +74,7 @@ const RouteContainerBase = TemplateComponent.withTemplate({
             }
         },
     },
-}).with([RouteListenAbility, ChildSlotAbility]);
+}).with([RouteEventBusAbility, ChildSlotAbility]);
 
 export let RouteContainerComponent = RouteContainerBase;
 

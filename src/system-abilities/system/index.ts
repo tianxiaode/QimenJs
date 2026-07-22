@@ -4,6 +4,7 @@ export { EventBridgeAbility } from './EventBridgeAbility';
 export { EntityEventBusAbility } from './EntityEventBusAbility';
 export { OverlayEventBusAbility } from './OverlayEventBusAbility';
 export { DragEventBusAbility } from './DragEventBusAbility';
+export { RouteEventBusAbility } from './RouteEventBusAbility';
 export { SystemEventBusAbility } from './SystemEventBusAbility';
 export { DomainAbility } from './DomainAbility';
 export { SystemAbility } from './SystemAbility';

@@ -2,9 +2,22 @@
  * Body 类型定义 — 组件模板 body 部分的完整类型系统
  *
  * 本文件是 body 相关所有类型的唯一定义源，
- * 与 body-keys.ts（字段定义常量）配合使用。
+ * 与 tpl-body-def.ts（字段定义常量）配合使用。
  *
- * 详细设计说明见 body-keys.ts 顶部注释。
+ * 详细设计说明见 tpl-body-def.ts 顶部注释。
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 双层架构下的 Body
+ * ══════════════════════════════════════════════════════════════
+ *
+ * body 挂在内部类（InnerComponent）原型上，定义组件行为。
+ * 闭包基类（ComponentFactory）不持有 body，只负责生成内部类。
+ *
+ * 新架构下 replace 的变化：
+ *   - 旧：replace 通过 nodeOverrides 覆盖节点属性 + body 追加方法
+ *   - 新：replace 基于已有内部类派生新内部类，可换模板 + 追加 body
+ *   - 同结构小改（如 Date 改 attrs）仍可用 replace + nodeOverrides
+ *   - 结构差异大的变体直接用 withTemplate 新建闭包类 + Ability 组合
  */
 
 // ══════════════════════════════════════════════════════════════
@@ -103,6 +116,21 @@ export interface SystemListen {
 }
 
 /**
+ * 路由事件订阅
+ *
+ * @example
+ * ```ts
+ * { route: 'router', events: { change: 'onRouteChange', 'change:users': 'onUsersRoute' } }
+ * ```
+ */
+export interface RouteListen {
+    /** 路由源 key（通常为 'router'） */
+    route: string;
+    /** 事件映射：路由事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
  * 统一事件订阅 — 数组格式，通过 key 名区分来源类型
  *
  * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
@@ -115,6 +143,7 @@ export interface SystemListen {
  *           if (item.float)  FloatSystem.on(this.floatKey, item.float, item.events);
  *           if (item.drag)   DragSystem.on(this.dragKey, item.drag, item.events);
  *           if (item.system) SystemEventBus.on(item.events);
+ *           if (item.route)  RouteEventBus.on(item.route, item.events);
  *       }
  *   }
  *
@@ -127,10 +156,17 @@ export interface SystemListen {
  *     { drag: 'handle',    events: { start: 'onDragStart' } },
  *     { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } },
  *     { system: true, events: { 'window:resize': 'onWindowResize' } },
+ *     { route: 'router', events: { change: 'onRouteChange' } },
  * ]
  * ```
  */
-export type ListenItem = BridgeListen | EntityListen | FloatListen | DragListen | SystemListen;
+export type ListenItem =
+    | BridgeListen
+    | EntityListen
+    | FloatListen
+    | DragListen
+    | SystemListen
+    | RouteListen;
 
 // ══════════════════════════════════════════════════════════════
 // 浮动层配置
@@ -410,6 +446,7 @@ export interface LifecycleHooks {
  *         { entity: 'users', events: { listed: 'onUsersLoaded' } },
  *         { float: 'dropBtn', events: { close: 'onClose' } },
  *         { drag: 'handle', events: { start: 'onDragStart' } },
+ *         { route: 'router', events: { change: 'onRouteChange' } },
  *     ],
  *     floats: {
  *         dropBtn: { type: 'DropPanel', align: 'bottom' },

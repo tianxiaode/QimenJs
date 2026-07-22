@@ -7,11 +7,12 @@
  * 3. 路由注册和导航
  * 4. 路由守卫
  * 5. 动态路由匹配
- * 6. 路由事件发布（emit source='router'）
+ * 6. RouteEventBus 双向交互（switch → navigate → change）
  */
 
 import { Router, pathToEventName } from '@/router/Router';
-import { EventSourceRegistrar } from '@/events/EventSourceRegistrar';
+import { RouteEventBus } from '@/events/RouteEventBus';
+import { EventContextBuilder } from '@/context';
 
 describe('pathToEventName', () => {
     it('根路径 / 转换为空字符串', () => {
@@ -50,7 +51,6 @@ describe('Router', () => {
     afterEach(() => {
         router.stop();
         router.clearRoutes();
-        EventSourceRegistrar.getInstance().clear();
     });
 
     describe('单例', () => {
@@ -146,9 +146,42 @@ describe('Router', () => {
         });
     });
 
-    describe('eventKey', () => {
-        it('Router 有 static eventKey = "router"', () => {
-            expect(Router.eventKey).toBe('router');
+    describe('RouteEventBus', () => {
+        it('Router 通过 RouteEventBus 发送 change 事件', () => {
+            const bus = RouteEventBus.getInstance();
+            const received: any[] = [];
+            bus.routeOn('router', 'change', (data: any) => {
+                received.push(data);
+            });
+
+            router.register({ '/home': 'HomePage' });
+            router.navigate('/home');
+
+            expect(received).toHaveLength(1);
+            expect(received[0].path).toBe('/home');
+        });
+
+        it('Router 监听 switch 事件执行导航', () => {
+            const bus = RouteEventBus.getInstance();
+            const received: any[] = [];
+            bus.routeOn('router', 'change', (data: any) => {
+                received.push(data);
+            });
+
+            router.register({ '/home': 'HomePage' });
+            router.start(true);
+
+            bus.routeEmit(
+                EventContextBuilder.create()
+                    .withEvent('switch')
+                    .withType('switch')
+                    .withSource('router')
+                    .withData({ path: '/home' })
+                    .build()
+            );
+
+            expect(router.getPath()).toBe('/home');
+            expect(received.length).toBeGreaterThanOrEqual(1);
         });
     });
 });

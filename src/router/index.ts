@@ -1,56 +1,42 @@
 /**
  * @qimenjs/router
  *
- * 路由系统 — 声明式路由管理，支持自动切换和自定义回调
+ * 路由系统 — 基于 RouteEventBus 的双向事件驱动路由
  *
- * 核心概念：
- * - Router：路由器单例，管理 URL 和路由状态
- * - RouteAbility：路由监听能力，注入容器组件后自动响应路由变化
- * - RouteMap：路由字典，路径 → 配置的映射
+ * Router 作为 RouteEventBus 的双向参与者：
+ * - 监听 switch 事件 → 执行导航
+ * - 发出 change 事件 → 通知路由变化
  *
- * 新模式：路由只发切换事件，事件名由路径 / 替换为 :
- * 监听方通过 EventBridgeAbility 监听 router 源事件实现刷新
+ * 组件通过 RouteEventBusAbility 直接交互：
+ * - this.routeEmit(switchCtx) → 导航
+ * - this.routeOn('router', 'change', handler) → 监听变化
+ * - 或用 listens 声明：{ route: 'router', events: { change: 'onRouteChange' } }
  *
  * @example
  * ```typescript
- * import { Router, RouteAbility } from '@qimenjs/router';
+ * import { Router } from '@qimenjs/router';
+ * import { RouteEventBusAbility } from '@qimenjs/system-abilities';
+ * import { EventContextBuilder } from '@qimenjs/context';
  *
- * // 1. 注册路由
+ * // 1. 注册路由并启动
  * const router = Router.getInstance();
- * router.register({
- *     '/': 'HomePage',
- *     '/users': { type: 'VBox', children: [...] },
+ * router.register({ '/': 'HomePage', '/users': 'UserPage' });
+ * router.start(true);
+ *
+ * // 2. 组件导航（需混入 RouteEventBusAbility）
+ * this.routeEmit(EventContextBuilder.create()
+ *     .withEvent('switch').withType('switch').withSource('router')
+ *     .withData({ path: '/users' }).build());
+ *
+ * // 3. 组件监听（需混入 RouteEventBusAbility）
+ * this.routeOn('router', 'change', (data) => {
+ *     console.log('路由变化:', data.path);
  * });
- *
- * // 2. 在容器组件中使用 RouteAbility
- * class AppContainer extends ComponentBase {
- *     static readonly abilities = [RouteAbility, ChildrenAbility, ...];
- * }
- *
- * // 3. 声明式定义（LayoutNode）
- * {
- *     type: 'VBox',
- *     id: 'app',
- *     route: {
- *         routes: {
- *             '/': 'HomePage',
- *             '/users': 'UserPage',
- *         },
- *         defaultPath: '/',
- *     },
- * }
  * ```
  */
 
-// 核心
 export { Router, pathToEventName } from './Router';
 
-// 能力
-export { RouteAbility } from './RouteAbility';
-export { RouteEmitAbility } from './RouteEmitAbility';
-export { RouteListenAbility } from './RouteListenAbility';
-
-// 类型
 export type {
     RouteConfig,
     RouteMap,

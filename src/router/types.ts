@@ -44,7 +44,7 @@ export interface RouteChangeEvent {
 export type RouteGuard = (from: string | null, to: string) => boolean;
 
 /**
- * RouteAbility 的 route 配置 — 声明在 LayoutNode 中
+ * 路由配置 — 声明在 LayoutNode 中
  */
 export interface RouteProps {
     /** 路由配置 */
