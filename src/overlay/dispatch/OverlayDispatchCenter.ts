@@ -5,6 +5,7 @@ import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
+import { ComponentRegistrar } from '@qimenjs/component-core';
 
 export interface OverlayDefinition {
     type: string;
@@ -165,7 +166,19 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             const triggers = Array.isArray(trigger) ? trigger : [trigger];
 
             for (const t of triggers) {
-                if (t === 'manual' || t === 'always') continue;
+                if (t === 'manual') continue;
+
+                if (t === 'always') {
+                    this.bus.overlayEmit(
+                        EventContextBuilder.create()
+                            .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.SHOW}`)
+                            .withType(OVERLAY_ACTIONS.SHOW)
+                            .withSource(overlayKey)
+                            .withData({ component, anchor })
+                            .build()
+                    );
+                    continue;
+                }
 
                 const showAction = t === 'hover' ? OVERLAY_ACTIONS.SHOW : OVERLAY_ACTIONS.TOGGLE;
 
@@ -241,14 +254,20 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
 
         const { component, anchor, overlay } = data || {};
-        if (!overlay) {
-            this.logger.warn?.(
-                `[OverlayDispatchCenter] overlayKey="${overlayKey}" missing overlay instance in data`
-            );
-            return;
+        let overlayInst = overlay;
+        if (!overlayInst) {
+            const OverlayClass = ComponentRegistrar.getInstance().get(def.type);
+            if (!OverlayClass) {
+                this.logger.warn?.(
+                    `[OverlayDispatchCenter] overlayKey="${overlayKey}" type="${def.type}" not registered in ComponentRegistrar`
+                );
+                return;
+            }
+            const overlayData = typeof def.data === 'function' ? def.data() : def.data;
+            overlayInst = new OverlayClass({ anchor, ...overlayData });
         }
 
-        const overlayEl = overlay.el;
+        const overlayEl = overlayInst.el;
         if (!overlayEl) return;
 
         const anchorEl = anchor ?? component?.el;
@@ -267,7 +286,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         overlayEl.style.display = '';
 
         const inst: OverlayInstance = {
-            overlay,
+            overlay: overlayInst,
             el: overlayEl,
             anchor: anchorEl,
             component,
@@ -297,7 +316,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         this.instances.set(instanceKey, inst);
 
-        overlay.hidden = false;
+        overlayInst.hidden = false;
 
         this.bus.overlayEmit(
             EventContextBuilder.create()

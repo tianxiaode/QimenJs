@@ -19,6 +19,7 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
+import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ToggleIconProps {
     onIcon?: string;
@@ -49,6 +50,7 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
         },
 
         onAfterInit(props?: ToggleIconProps): void {
+            this.initSize();
             if (props?.onIcon) this._onIcon = props.onIcon;
             if (props?.offIcon) this._offIcon = props.offIcon;
             if (props?.on) this._on = props.on;
@@ -121,6 +123,6 @@ export let ToggleIconComponent = TemplateComponent.withTemplate({
             if (props?.size !== undefined) this.size = props.size;
         },
     },
-});
+}).with([SizeAbility]);
 
 export type ToggleIconComponent = InstanceType<typeof ToggleIconComponent>;

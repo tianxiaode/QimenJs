@@ -43,6 +43,7 @@ export let AvatarComponent = TemplateComponent.withTemplate({
         type: 'Avatar',
 
         onAfterInit(props?: AvatarProps): void {
+            this.initSize();
             this.update(props);
         },
 

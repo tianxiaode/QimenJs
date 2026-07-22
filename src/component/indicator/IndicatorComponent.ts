@@ -1,28 +1,25 @@
 /**
- * IndicatorComponent 指示器组件
+ * IndicatorComponent 指示器浮层组件
  *
  * 轻量索引指示器，用于走马灯、步骤条、分页器、标签页等场景。
- * 直接管理 DOM 子项的 active 标记，事件走 component.bind 委托。
+ * 作为浮层挂载到 OverlayRoot，通过 floats 声明使用。
+ * 可选 prev/next 箭头切换，事件走 component.bind 委托。
  *
  * 模板节点：
- * - items — 指示项容器
+ * - prevBtn — 上一项箭头按钮
+ * - nextBtn — 下一项箭头按钮
+ * - items   — 指示项容器
  *
- * @example
+ * 使用方式（在父组件 floats 中声明）：
  * ```ts
- * // 圆点指示器
+ * floats: {
+ *     indicator: { type: 'Indicator', trigger: 'always', placement: 'bottom', arrows: true }
+ * }
+ * ```
+ *
+ * 手动创建：
+ * ```ts
  * new IndicatorComponent({ count: 5, activeIndex: 0, type: 'dot' })
- *
- * // 数字指示器
- * new IndicatorComponent({ count: 3, activeIndex: 1, type: 'number' })
- *
- * // 自定义指示项
- * new IndicatorComponent({
- *     count: 4,
- *     type: 'custom',
- *     itemTpl: (i) => { const el = document.createElement('span'); el.textContent = `P${i+1}`; return el; }
- * })
- *
- * // 监听切换
  * indicator.on('change', ({ index }) => { ... })
  * ```
  */
@@ -37,13 +34,31 @@ export interface IndicatorProps {
     activeIndex?: number;
     type?: IndicatorType;
     itemTpl?: (index: number) => HTMLElement;
+    arrows?: boolean;
+    anchor?: HTMLElement;
 }
 
 export let IndicatorComponent = TemplateComponent.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-indicator',
-        children: [{ tag: 'div', name: 'items', cls: 'q-indicator__items' }],
+        children: [
+            {
+                tag: 'div',
+                name: 'prevBtn',
+                cls: 'q-indicator__arrow q-indicator__arrow--prev',
+                hidden: true,
+                events: { click: { handler: true } },
+            },
+            { tag: 'div', name: 'items', cls: 'q-indicator__items' },
+            {
+                tag: 'div',
+                name: 'nextBtn',
+                cls: 'q-indicator__arrow q-indicator__arrow--next',
+                hidden: true,
+                events: { click: { handler: true } },
+            },
+        ],
     },
     body: {
         type: 'Indicator',
@@ -56,12 +71,26 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
                 _itemEls: [] as HTMLElement[],
                 _itemTpl: undefined as ((index: number) => HTMLElement) | undefined,
                 _clickBound: false,
+                _arrows: false,
             };
+        },
+
+        onAfterInit(props?: IndicatorProps): void {
+            this._initIndicator(props);
+        },
+
+        onPrevBtnClick(): void {
+            this.prev();
+        },
+
+        onNextBtnClick(): void {
+            this.next();
         },
 
         _initIndicator(props?: IndicatorProps): void {
             if (props?.type) this._indicatorType = props.type;
             if (props?.itemTpl) this._itemTpl = props.itemTpl;
+            if (props?.arrows) this._arrows = props.arrows;
             if (props?.count) {
                 this._count = props.count;
                 this._renderItems();
@@ -72,10 +101,11 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
             }
 
             this.addCls(`q-indicator--${this._indicatorType}`);
-            this._bindClick();
+            this._updateArrows();
+            this._bindItemClick();
         },
 
-        _bindClick(): void {
+        _bindItemClick(): void {
             if (this._clickBound) return;
             const container = this.nodeMap?.items?.el as HTMLElement | null;
             if (!container) return;
@@ -92,6 +122,25 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
                     this.emit('change', { index: this._activeIndex });
                 }
             });
+        },
+
+        _updateArrows(): void {
+            if (!this._arrows) return;
+            this.setNodeHidden(false, 'prevBtn');
+            this.setNodeHidden(false, 'nextBtn');
+            this.addCls('q-indicator--arrows');
+        },
+
+        prev(): void {
+            if (this._activeIndex > 0) {
+                this.activeIndex = this._activeIndex - 1;
+            }
+        },
+
+        next(): void {
+            if (this._activeIndex < this._count - 1) {
+                this.activeIndex = this._activeIndex + 1;
+            }
         },
 
         get count(): number {
@@ -165,11 +214,26 @@ export let IndicatorComponent = TemplateComponent.withTemplate({
             }
         },
 
+        onOverlayChange(data: any): void {
+            if (!data) return;
+            if (data.count !== undefined) this.count = data.count;
+            if (data.activeIndex !== undefined) this.activeIndex = data.activeIndex;
+            if (data.type !== undefined) this.indicatorType = data.type;
+            if (data.arrows !== undefined) {
+                this._arrows = data.arrows;
+                this._updateArrows();
+            }
+        },
+
         update(props?: Partial<IndicatorProps>): void {
             if (props?.type !== undefined) this.indicatorType = props.type;
             if (props?.count !== undefined) this.count = props.count;
             if (props?.activeIndex !== undefined) this.activeIndex = props.activeIndex;
             if (props?.itemTpl !== undefined) this.itemTpl = props.itemTpl;
+            if (props?.arrows !== undefined) {
+                this._arrows = props.arrows;
+                this._updateArrows();
+            }
         },
     },
 });

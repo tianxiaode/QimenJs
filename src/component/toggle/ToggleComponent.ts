@@ -20,6 +20,7 @@
  */
 
 import { TemplateComponent } from '@qimenjs/component-core';
+import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ToggleProps {
     text?: string;
@@ -51,6 +52,7 @@ export let ToggleComponent = TemplateComponent.withTemplate({
         },
 
         onAfterInit(props?: ToggleProps): void {
+            this.initSize();
             if (props?.pressed) this._pressed = props.pressed;
             if (props?.disabled) this.disabled = props.disabled;
             if (props?.size) this.size = props.size;
@@ -106,6 +108,6 @@ export let ToggleComponent = TemplateComponent.withTemplate({
             if (props?.icon !== undefined) this._setIcon(props.icon);
         },
     },
-});
+}).with([SizeAbility]);
 
 export type ToggleComponent = InstanceType<typeof ToggleComponent>;
