@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-19
+> 最后更新：2026-07-22
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -79,7 +79,7 @@ TemplateComponent 通过 TEMPLATE_COMPONENT_ABILITIES 自动注入以下能力�
 | NodePropAbility | `src/component-core/abilities/NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 |
 | CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 |
 | AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
-| DragAbility | `src/component-core/abilities/DragAbility.ts` | 声明式拖拽（move 本地，start/end 走 DragEventBus） |
+| DragAbility | `src/component-abilities/drag/DragAbility.ts` | 声明式拖拽（move 本地，start/end 走 DragEventBus） |
 | LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + 桥接事件） |
 
 > 已移除的纯赋值能力（v2 由通用属性体系替代）：

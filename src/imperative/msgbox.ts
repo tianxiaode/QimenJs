@@ -23,20 +23,17 @@ import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 const MsgboxBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility]);
 
 export class Msgbox extends MsgboxBase {
-    /** 根 DOM 元素 */
     el!: HTMLElement;
-    /** 遮罩 DOM 元素 */
     maskEl!: HTMLElement;
-    /** 节点缓存（data-content key → HTMLElement） */
     nodeMap!: Record<string, HTMLElement>;
-    /** z-index 值 */
     zIndex!: number;
-    /** msgbox 类型 */
     type!: MsgboxType;
-    /** 输入框元素（prompt 模式） */
     inputEl!: HTMLInputElement | null;
-    /** Promise resolve 回调 */
     resolve!: (result: MsgboxResult) => void;
+    /** 关闭完成回调（由 Manager 设置） */
+    onClose!: () => void;
+    /** 是否已 resolve，防止重复调用 */
+    private _resolved = false;
 
     constructor(
         options: MsgboxOptions & { type: MsgboxType },
@@ -120,20 +117,28 @@ export class Msgbox extends MsgboxBase {
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
         ]);
 
-        // 11. 绑定按钮事件（使用 bindDomEvent 跨平台适配）
+        // 11. 绑定按钮事件
         if (confirmBtn) {
             const unbind = this.bindDomEvent(confirmBtn, 'tap', () => {
-                const value = type === 'prompt' && this.inputEl ? this.inputEl.value : '';
-                this.emit('confirm', { action: 'confirm', value }, { source: this.eventKey });
-                this.resolve({ action: 'confirm', value });
+                this._doResolve({
+                    action: 'confirm',
+                    value: type === 'prompt' && this.inputEl ? this.inputEl.value : '',
+                });
             });
             this.onCleanup(unbind);
         }
 
         if (cancelBtn) {
             const unbind = this.bindDomEvent(cancelBtn, 'tap', () => {
-                this.emit('cancel', { action: 'cancel', value: '' }, { source: this.eventKey });
-                this.resolve({ action: 'cancel', value: '' });
+                this._doResolve({ action: 'cancel', value: '' });
+            });
+            this.onCleanup(unbind);
+        }
+
+        // 12. 遮罩点击关闭（alert 类型）
+        if (type === 'alert') {
+            const unbind = this.bindDomEvent(this.maskEl, 'tap', () => {
+                this._doResolve({ action: 'cancel', value: '' });
             });
             this.onCleanup(unbind);
         }
@@ -145,9 +150,26 @@ export class Msgbox extends MsgboxBase {
     }
 
     /**
+     * 安全 resolve，防止重复调用
+     */
+    private _doResolve(result: MsgboxResult): void {
+        if (this._resolved) return;
+        this._resolved = true;
+        this.emit(result.action, result, { source: this.eventKey });
+        this.resolve(result);
+        this.close();
+    }
+
+    /**
      * 关闭 msgbox（播放退出动画后销毁）
      */
     close(): void {
+        // 未 resolve 时兜底 cancel
+        if (!this._resolved) {
+            this._resolved = true;
+            this.resolve({ action: 'cancel', value: '' });
+        }
+
         const animation = this.playExitAnimation(this.el, [
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
@@ -160,6 +182,7 @@ export class Msgbox extends MsgboxBase {
             this.unmountFromOverlay(this.maskEl);
             this.releaseZIndex();
             this.dispose();
+            this.onClose?.();
         };
     }
 }

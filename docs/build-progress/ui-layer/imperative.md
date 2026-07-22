@@ -7,6 +7,13 @@
 
 ## 构建历史
 
+### 2026-07-22
+- ✅ 修复 MsgboxManager 内存泄漏：instance.onClose 回调删除 Set 条目
+- ✅ 修复 Msgbox resolve 无保障：_doResolve 防重复 + close() 兜底 cancel
+- ✅ 修复 Msgbox 遮罩不可点击：alert 类型遮罩绑定 tap 事件关闭
+- ✅ 修复 Toast 私有属性访问：ToastHandleImpl 加 isClosed getter 替代 _closed 直接访问
+- ✅ 修复 index.ts 泄露内部类：移除 ToastHandleImpl 导出
+
 ### 2026-07-12
 - ✅ 重构：Toast/Msgbox 拆分为独立实例类 + Manager 调度器
 - ✅ ToastManager 只管队列调度和堆叠定位

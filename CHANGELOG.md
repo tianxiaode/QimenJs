@@ -9,7 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- COMPONENT_LIFECYCLE_EVENTS 常量（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
+- HeroComponent 横幅区域组件（title/subtitle/desc/actionText，action 事件）
+- BreadcrumbComponent 面包屑导航组件（数据驱动 items，navigate 事件，自定义分隔符）
+- DividerComponent 分割线组件（水平/垂直、虚线、文字标签）
+- SpacerComponent 弹性间距组件（flex grow 或固定 size）
+- TagComponent 标签组件（类型色、closable、SizeAbility）
+- AlertComponent 页面内提示条组件（info/success/warning/error、closable、图标）
+- ProgressComponent 进度条组件（百分比、类型色、条纹动画）
+- IndicatorComponent 改造为浮层组件（onOverlayChange + prev/next 箭头切换）
+- OverlayDispatchCenter._mountAndShow 支持从 def.type 通过 ComponentRegistrar 自动创建浮层实例
+- OverlayDispatchCenter 支持 trigger: 'always' 注册后自动显示浮层
+- ToastHandleImpl.isClosed getter（替代 _closed 私有属性直接访问）
+
+### Changed
+
+- ToggleComponent/ToggleIconComponent 补充 SizeAbility（.with([SizeAbility]) + initSize()）
+- AvatarComponent 补充缺失的 initSize() 调用
+- register.ts：Dropdown 注册改为 DropdownComponent（原来错误注册了 ButtonComponent）
+- register.ts：补注册 Loading、Hero、Breadcrumb、Divider、Spacer、Tag、Alert、Progress
+- MsgboxManager 增加 onClose 回调清理 instances Set（修复内存泄漏）
+- Msgbox 增加 _doResolve 防重复 resolve + close() 兜底 cancel
+- Msgbox alert 类型遮罩绑定 tap 事件关闭
+- imperative/index.ts 移除 ToastHandleImpl 内部类导出
+
+### Removed
+
+- 删除旧版 src/component-core/abilities/DragAbility.ts（已迁移至 component-abilities/drag/）
+
+### COMPONENT_LIFECYCLE_EVENTS 常量（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
 - LifecycleAbility 组件生命周期事件能力（_emitMounted/_emitUpdated/_emitResize/_emitLifecycleEvent）
 - 组件初始化完成后自动发送 `init` 事件，有 eventKey 时发送桥接事件
 - 组件销毁时自动发送 `beforeunmount` 和 `dispose` 事件，有 eventKey 时发送桥接事件

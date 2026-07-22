@@ -28,11 +28,14 @@ export class MsgboxManager {
      */
     create(options: MsgboxOptions & { type: MsgboxType }): Promise<MsgboxResult> {
         let resolveFn!: (result: MsgboxResult) => void;
-        const promise = new Promise<MsgboxResult>((resolve) => {
+        const promise = new Promise<MsgboxResult>(resolve => {
             resolveFn = resolve;
         });
 
         const instance = new Msgbox(options, resolveFn);
+        instance.onClose = () => {
+            this.instances.delete(instance);
+        };
         this.instances.add(instance);
 
         return promise;

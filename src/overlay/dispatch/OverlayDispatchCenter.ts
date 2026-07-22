@@ -168,6 +168,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             for (const t of triggers) {
                 if (t === 'manual') continue;
 
+                // trigger: 'always' 注册后立即显示浮层
                 if (t === 'always') {
                     this.bus.overlayEmit(
                         EventContextBuilder.create()
@@ -246,6 +247,13 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
     }
 
+    /**
+     * 挂载并显示浮层
+     *
+     * 优先使用 data.overlay（调用方提供的实例）；
+     * 若未提供，则从 def.type 通过 ComponentRegistrar 自动创建实例。
+     * trigger: 'always' 的浮层在 _handleInit 中自动触发 SHOW，无需手动调用。
+     */
     private _mountAndShow(instanceKey: string, overlayKey: string, data: any): void {
         const def = this.storage.get(overlayKey);
         if (!def) {

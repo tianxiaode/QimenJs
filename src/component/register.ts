@@ -19,6 +19,7 @@ import { IndicatorComponent } from './indicator/IndicatorComponent';
 import { TabsComponent } from './tabs/TabsComponent';
 import { TabBarComponent } from './tab-bar/TabBarComponent';
 import { ButtonComponent } from './button/ButtonComponent';
+import { DropdownComponent } from './dropdown/DropdownComponent';
 import { BadgeComponent } from './badge/BadgeComponent';
 import { TipsComponent } from './tips/TipsComponent';
 import { MenuItemComponent } from './menu/MenuItemComponent';
@@ -35,6 +36,14 @@ import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
 import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
 import { AccordionComponent } from './accordion/AccordionComponent';
 import { ToolbarComponent } from './toolbar/ToolbarComponent';
+import { LoadingComponent } from './loading/LoadingComponent';
+import { HeroComponent } from './hero/HeroComponent';
+import { BreadcrumbComponent } from './breadcrumb/BreadcrumbComponent';
+import { DividerComponent } from './divider/DividerComponent';
+import { SpacerComponent } from './spacer/SpacerComponent';
+import { TagComponent } from './tag/TagComponent';
+import { AlertComponent } from './alert/AlertComponent';
+import { ProgressComponent } from './progress/ProgressComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -46,7 +55,7 @@ export function registerAllComponents(): void {
     registrar.register('Tabs', TabsComponent);
     registrar.register('TabBar', TabBarComponent);
     registrar.register('Button', ButtonComponent);
-    registrar.register('Dropdown', ButtonComponent);
+    registrar.register('Dropdown', DropdownComponent);
     registrar.register('Toggle', ToggleComponent);
     registrar.register('ToggleIcon', ToggleIconComponent);
     registrar.register('ButtonGroup', ButtonGroupComponent);
@@ -63,4 +72,12 @@ export function registerAllComponents(): void {
     registrar.register('OverflowScroll', OverflowScrollComponent);
     registrar.register('OverflowMenu', OverflowMenuComponent);
     registrar.register('Accordion', AccordionComponent);
+    registrar.register('Loading', LoadingComponent);
+    registrar.register('Hero', HeroComponent);
+    registrar.register('Breadcrumb', BreadcrumbComponent);
+    registrar.register('Divider', DividerComponent);
+    registrar.register('Spacer', SpacerComponent);
+    registrar.register('Tag', TagComponent);
+    registrar.register('Alert', AlertComponent);
+    registrar.register('Progress', ProgressComponent);
 }

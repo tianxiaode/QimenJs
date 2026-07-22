@@ -45,6 +45,10 @@ export class ToastHandleImpl implements ToastHandle {
         });
     }
 
+    get isClosed(): boolean {
+        return this._closed;
+    }
+
     close(): void {
         if (this._closed) return;
         this._closed = true;
@@ -157,9 +161,8 @@ export class Toast extends ToastBase {
         // 11. 自动关闭定时器
         if (duration > 0) {
             this.timerId = setTimeout(() => {
-                if (!this.handle['_closed']) {
-                    this.handle['_closed'] = true;
-                    this.close();
+                if (!this.handle.isClosed) {
+                    this.handle.close();
                 }
             }, duration);
         }

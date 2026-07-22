@@ -6,7 +6,7 @@
 
 export { toast, msgbox } from './api';
 export { ToastManager } from './ToastManager';
-export { Toast, ToastHandleImpl } from './Toast';
+export { Toast } from './Toast';
 export { MsgboxManager } from './MsgboxManager';
 export { Msgbox } from './Msgbox';
 export type {

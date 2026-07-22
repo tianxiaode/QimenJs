@@ -7,6 +7,22 @@
 
 ## 构建历史
 
+### 2026-07-22
+- ✅ 新增 HeroComponent 横幅区域组件（title/subtitle/desc/actionText）
+- ✅ 新增 BreadcrumbComponent 面包屑导航组件（数据驱动 items，navigate 事件）
+- ✅ 新增 DividerComponent 分割线组件（水平/垂直、虚线、文字标签）
+- ✅ 新建 SpacerComponent 弹性间距组件（flex grow 或固定 size）
+- ✅ 新建 TagComponent 标签组件（类型色、closable、SizeAbility）
+- ✅ 新建 AlertComponent 页面内提示条组件（info/success/warning/error、closable）
+- ✅ 新建 ProgressComponent 进度条组件（百分比、类型色、条纹动画）
+- ✅ IndicatorComponent 改造为浮层组件（onOverlayChange + prev/next 箭头切换）
+- ✅ OverlayDispatchCenter._mountAndShow 支持从 type 自动创建浮层实例
+- ✅ OverlayDispatchCenter 支持 trigger: 'always' 自动显示
+- ✅ ToggleComponent/ToggleIconComponent 补充 SizeAbility（with + initSize）
+- ✅ AvatarComponent 补充缺失的 initSize() 调用
+- ✅ 修复 register.ts：Dropdown 注册改为 DropdownComponent，补注册 Loading/Hero/Breadcrumb/Divider/Spacer/Tag/Alert/Progress
+- ✅ 删除旧版 src/component-core/abilities/DragAbility.ts
+
 ### 2026-07-21
 - ✅ 重构 ItemGroup 为三层架构：ItemGroupBaseComponent / ItemGroupPooledComponent / ItemGroupStaticComponent
 - ✅ 池化模式：数据驱动，索引即位置，子项隐藏/显示复用，要求子项实现 update()

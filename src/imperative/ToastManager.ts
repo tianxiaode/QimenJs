@@ -95,9 +95,8 @@ export class ToastManager {
         if (samePosition.length <= MAX_COUNT) return;
 
         const oldest = samePosition[0];
-        if (!oldest.handle['_closed']) {
-            oldest.handle['_closed'] = true;
-            oldest.close();
+        if (!oldest.handle.isClosed) {
+            oldest.handle.close();
         }
     }
 }
