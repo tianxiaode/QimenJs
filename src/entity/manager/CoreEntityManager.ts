@@ -1,4 +1,4 @@
-import { ComposableBase, type AbilityDefinition } from '@/composable';
+import { ComposableBase, withAbilities, type AbilityDefinition } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
@@ -28,7 +28,7 @@ export const CORE_ENTITY_ABILITIES: readonly AbilityDefinition[] = [
  *
  * InferAbilities 自动从能力数组推导接口，无需 export interface。
  */
-export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_ABILITIES) {
+export abstract class CoreEntityManager extends ComposableBase {
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;
@@ -133,3 +133,5 @@ export abstract class CoreEntityManager extends ComposableBase.with(CORE_ENTITY_
         super.dispose();
     }
 }
+
+withAbilities(CoreEntityManager, CORE_ENTITY_ABILITIES);
