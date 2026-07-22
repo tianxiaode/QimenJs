@@ -29,7 +29,7 @@
 - [2026-06-15-validation-package-design.md](./2026-06-15-validation-package-design.md) - Validation 包设计
 - [2026-06-15-validation-refactoring.md](./2026-06-15-validation-refactoring.md) - Validation 重构
 - [2026-06-17-context-refactoring.md](./2026-06-17-context-refactoring.md) - Context 重构
-- [2026-07-06-host-property-retention.md](./2026-07-06-host-property-retention.md) - ComposableBase.host 属性保留决策
+- [2026-07-06-host-property-retention.md](./2026-07-06-host-property-retention.md) - ComposableBase.host 属性移除决策
 - [2026-07-06-event-ability-composition.md](./2026-07-06-event-ability-composition.md) - EventAbility 组合模式替代 ComponentBase 继承
 - [2026-07-08-component-base-refactoring.md](./2026-07-08-component-base-refactoring.md) - ComponentBase 重构与内部渲染模型
 - [2026-07-09-html-template-registrar-cloneNode-optimization.md](./2026-07-09-html-template-registrar-cloneNode-optimization.md) - TemplateRegistrar cloneNode 优化

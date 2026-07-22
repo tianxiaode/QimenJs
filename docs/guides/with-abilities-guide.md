@@ -37,8 +37,9 @@ class MyManager extends ComposableBase.with([EventAbility, DomainAbility]) {
 | `abilityState(key, creator?)` | 获取/创建能力私有状态 |
 | `setAbilityState(key, value)` | 设置能力私有状态 |
 | `onCleanup(callback)` | 注册释放回调 |
-| `dispose()` | 释放资源 |
-| `host` | 宿主自身引用 |
+| `onBeforeDispose()` | 释放前置钩子（可覆写） |
+| `onDisposed()` | 释放后置钩子（可覆写） |
+| `dispose()` | 释放资源（onBeforeDispose → onCleanup → 清理状态 → onDisposed） |
 | `logger` | 日志记录器 |
 
 ## 定义能力
@@ -145,7 +146,7 @@ const instance = new Cls();
 ```typescript
 const Ability: AbilityDefinition = {
     method() {
-        this.host;          // 宿主自身
+
         this.abilityState;  // 内置方法
         this.logger;        // 内置日志
     },

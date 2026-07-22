@@ -1,61 +1,33 @@
-# ComposableBase.host 属性保留决策
+# ComposableBase.host 属性移除决策
 
 ## 背景
 
-`ComposableBase.host` 是一个 getter 属性，返回 `this` 自身。在代码审查中，发现该属性在生产代码中完全没有被使用，仅在一个专门测试其行为的单元测试中被访问。因此需要决定是否移除。
+`ComposableBase.host` 是一个 getter 属性，返回 `this` 自身。在生产代码中完全没有被使用，仅在单元测试中被访问。
 
 ## 决策
 
-**保留 `host` 属性，暂不移除。**
+**移除 `host` 属性。**
 
 ## 原因
 
-### 1. 语义价值
+### 1. 原型复制模式下无语义价值
 
-在 Ability 方法中，`this` 被 `bind` 到宿主实例。虽然 `this.host === this`，但 `this.host` 在语义上更清晰地表达了"我要访问宿主"的意图：
+在当前原型复制架构（`createForgedClass` + `copyPrototypeMethods`）下，能力方法中的 `this` 直接指向宿主实例，不存在"能力自身"与"宿主"的区分。`this.host === this` 恒成立，`host` 没有提供任何额外信息。
 
-```typescript
-// 语义模糊：this 是谁？是能力自身？还是宿主？
-const data = this.abilityState('SomeAbility:data');
+### 2. 生产代码零使用
 
-// 语义清晰：this.host 明确表达"访问宿主"
-const data = this.host.abilityState('SomeAbility:data');
-```
+全局搜索 `src/` 目录，`this.host` 无任何实际使用。所有能力方法直接使用 `this` 访问宿主。
 
-### 2. 未来 UI 组件层的潜在需求
+### 3. 减少原型污染
 
-在 UI 组件层设计中，Ability 方法内部可能需要区分：
-- "我作为能力方法的逻辑身份" — 能力内部的局部逻辑
-- "我操作宿主" — 对宿主实例的操作
+每移除一个内置属性，`BUILTIN_KEYS` 保护列表就少一项，原型也更精简。
 
-`this.host` 提供了这种语义区分的可能性，而 `this` 本身无法做到。
+## 变更
 
-### 3. 移除成本低但保留价值存在
+- `src/composable/forge.ts` — 移除 host getter 定义和 BUILTIN_KEYS 中的 'host'
+- `src/composable/types/composable.ts` — 移除 IComposableBase 中的 `readonly host: any`
 
-- 移除只需删除 3 处代码（getter 定义、接口声明、测试用例）
-- 但一旦移除，未来需要时又要重新引入，且可能破坏已有依赖
-- 属于"留着不碍事，删了可能后悔"的情况
+## 历史
 
-### 4. 与其他框架的类比
-
-- Vue 的 `$el`、`$refs` 也是语义属性，虽然等价于直接访问 DOM，但提供了更清晰的意图表达
-- ExtJS 的 `getViewModel()` 也是类似的语义访问模式
-
-## 影响范围
-
-- `src/composable/ComposableBase.ts` — getter 定义（保留）
-- `src/composable/types/composable.ts` — 接口声明（保留）
-- `test/unit/composable/ComposableIntegration.test.ts` — 测试用例（保留）
-
-## 替代方案
-
-### 移除 host 属性
-
-- 优点：减少死代码
-- 缺点：失去语义区分能力，未来 UI 组件层可能需要重新引入
-- 结论：不采用
-
-## 后续工作
-
-- 在 UI 组件层的 Ability 定义中，评估是否实际使用 `this.host` 来区分语义
-- 如果 UI 组件层完成后仍未使用，可重新评估是否移除
+- 2026-07-06：初始决策为保留 host 属性（见下方历史原因）
+- 2026-07-22：重新评估后决定移除。原因：原型复制模式下 this 即宿主，host 无语义价值；生产代码零使用

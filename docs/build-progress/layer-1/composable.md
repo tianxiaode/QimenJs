@@ -10,8 +10,11 @@
 - 重构为原型工厂函数架构（createForgedClass）
 - ComposableBase 从 class 改为 const 语法糖
 - debounce 迁移为 DebounceAbility（移至 system-abilities 包）
-- 移除 getStatic / setStatic / setupAbilities / applyOverrides
-- 内置方法（abilityState / onCleanup / dispose）不可被能力覆盖
+- 移除 getStatic / setStatic / setupAbilities / applyOverrides / host
+- 内置方法（abilityState / onCleanup / onBeforeDispose / onDisposed / dispose）不可被能力覆盖
+- 新增 onBeforeDispose / onDisposed 可覆写钩子
+- 提取 initForgedState()，供原型复制场景手动初始化
+- 修复 copyPrototypeMethods 不遍历原型链的 bug
 - IComposableBase 接口更新
 
 ### 2026-07-01
@@ -38,8 +41,9 @@
 | `abilityState(key, creator?)` | 获取/创建能力私有状态（per-instance 隔离） |
 | `setAbilityState(key, value)` | 设置能力私有状态 |
 | `onCleanup(callback)` | 注册清理回调（dispose 时逆序执行） |
-| `dispose()` | 释放：清理回调 → 取消防抖 → 清空状态 |
-| `host` | 返回宿主自身 |
+| `onBeforeDispose()` | 释放前置钩子（可覆写） |
+| `onDisposed()` | 释放后置钩子（可覆写） |
+| `dispose()` | 释放：onBeforeDispose → onCleanup → 清理状态 → onDisposed |
 | `logger` | 日志记录器 |
 
 ### 目录结构

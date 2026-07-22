@@ -1,14 +1,15 @@
 /**
- * TemplateComponent — 模板组件基类
+ * TemplateComponent — 内部类基类（实现层）
  *
- * 通过 ComposableBase.with() 合并标准能力到原型上，
- * 再添加组件特有职责：
- * - el：根 DOM 元素
- * - meta：组件元数据
- * - dispose：销毁清理
+ * 拥有完整初始化流程、能力（Ability）、el、nodeMap。
+ * 是真正被实例化的组件，外部拿到的就是这个实例。
  *
- * 节点属性读写、脏追踪、批量更新由 NodePropAbility 提供。
- * withTemplate / replace 使用扁平复制（非继承），避免链式污染。
+ * 双层架构：
+ *   Component（闭包基类）— 工厂层，withTemplate / replace 在此
+ *   TemplateComponent（内部类基类）— 实现层，纯组件基类
+ *
+ * TemplateComponent 不再提供 withTemplate / replace，
+ * 这些工厂方法已移至 Component。
  */
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
@@ -25,8 +26,6 @@ import { EventForwardAbility } from './abilities/EventForwardAbility';
 import { NodePropAbility } from './abilities/NodePropAbility';
 
 import type { NodeMetadata } from './types/compiled-types';
-import type { ComponentTemplate } from './types/component-template';
-import { createTemplateClass, createReplaceClass } from './utils/template-factory';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
 
@@ -83,9 +82,7 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
 
-        if (typeof this.onBeforeDispose === 'function') {
-            this.onBeforeDispose();
-        }
+        this.onBeforeDispose();
 
         this._disposeChildComponents();
 
@@ -101,10 +98,6 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         super.dispose();
 
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
-
-        if (typeof this.onDisposed === 'function') {
-            this.onDisposed();
-        }
     }
 
     private _disposeChildComponents(): void {
@@ -113,35 +106,5 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
                 node.component.dispose();
             }
         }
-    }
-
-    static withTemplate(this: any, template: ComponentTemplate): any {
-        return createTemplateClass(this, template);
-    }
-
-    /**
-     * 基于当前组件创建派生类（扁平复制，非继承）
-     *
-     * @param options.type - 组件类型标识
-     * @param options.cls - 追加到根元素的 CSS 类名
-     * @param options.itemsCls - 追加到 itemContainer 的 CSS 类名
-     * @param options.config - 默认 props，合并到构造参数
-     * @param options.nodeOverrides - 覆盖模板节点属性，key 为节点 name，值合并到 initNodeProps
-     *   键名与 _updateNode 一致：hidden / cls / style / attrs / flex / grid / role 等
-     *   链式 replace 时深度合并（子覆盖父）
-     * @param options.body - 追加到原型的方法/getter/setter
-     */
-    static replace(
-        this: any,
-        options: {
-            type?: string;
-            cls?: string;
-            itemsCls?: string;
-            config?: Record<string, any>;
-            nodeOverrides?: Record<string, Record<string, any>>;
-            body?: Record<string, any>;
-        }
-    ): any {
-        return createReplaceClass(this, options);
     }
 }

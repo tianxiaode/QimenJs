@@ -28,8 +28,9 @@ composable 包提供原型工厂函数 `createForgedClass`，是 QimenJS 能力�
 | `abilityState` | `abilityState<T>(key, creator?): T \| undefined` | 获取/创建能力私有状态，per-instance 隔离 |
 | `setAbilityState` | `setAbilityState<T>(key, value): void` | 设置能力私有状态 |
 | `onCleanup` | `onCleanup(callback): void` | 注册释放回调，dispose 时逆序执行 |
-| `dispose` | `dispose(): void` | 释放：清理回调 → 取消防抖 → 清空状态 |
-| `host` | `get host(): this` | 返回宿主自身 |
+| `onBeforeDispose` | `onBeforeDispose(): void` | 释放前置钩子（可覆写，dispose 最先调用） |
+| `onDisposed` | `onDisposed(): void` | 释放后置钩子（可覆写，dispose 最后调用） |
+| `dispose` | `dispose(): void` | 释放：onBeforeDispose → onCleanup → 清理状态 → onDisposed |
 | `logger` | `logger: ILogger` | 日志记录器 |
 
 内置方法不可被能力覆盖。
@@ -128,7 +129,7 @@ src/composable/
 ## 设计决策
 
 - **原型工厂而非类继承**：`createForgedClass` 创建纯函数 + 原型复制，无继承链污染
-- **内置方法不可覆盖**：abilityState / onCleanup / dispose 等内置方法受保护，能力无法覆盖
+- **内置方法不可覆盖**：abilityState / onCleanup / onBeforeDispose / onDisposed / dispose 等内置方法受保护，能力无法覆盖
 - **debounce 迁移为能力**：DebounceAbility 从 ComposableBase 剥离，按需组合
 - **移除 getStatic/setStatic**：工厂模式下用闭包变量或构造函数静态属性替代
 - **移除 setupAbilities**：运行时注入不再需要，所有能力在类创建时确定
@@ -143,5 +144,8 @@ src/composable/
 - ComposableBase 从 class 改为 const 语法糖
 - debounce 迁移为 DebounceAbility（移至 system-abilities 包）
 - 移除 getStatic / setStatic / setupAbilities / applyOverrides
-- 内置方法（abilityState / onCleanup / dispose）不可被能力覆盖
-- IComposableBase 接口更新：移除 getStatic/setStatic，新增 abilityState/setAbilityState/onCleanup/dispose
+- 移除 host 属性（原型复制模式下 this 即宿主，host 无语义价值）
+- 内置方法（abilityState / onCleanup / onBeforeDispose / onDisposed / dispose）不可被能力覆盖
+- 新增 onBeforeDispose / onDisposed 可覆写钩子，dispose 流程：onBeforeDispose → onCleanup → 清理状态 → onDisposed
+- 提取 initForgedState()，供原型复制场景（createInnerClass）手动初始化内置状态
+- 修复 copyPrototypeMethods / copyStaticMethods 不遍历原型链的 bug

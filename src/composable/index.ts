@@ -7,7 +7,7 @@ export type { IComposable, IComposableBase, IExposeResult } from './types/compos
 export type { AbilityDefinition, ForgedConstructor, InferAbilities } from './types/ability';
 
 // 核心机制导出
-export { createForgedClass } from './forge';
+export { createForgedClass, initForgedState } from './forge';
 
 // 语法糖导出
 export { ComposableBase } from './ComposableBase';

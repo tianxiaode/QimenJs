@@ -14,33 +14,25 @@ import type { ILogger } from '@qimenjs/logger';
  * 工厂函数内置方法签名，所有强类实例均满足此接口。
  */
 export interface IComposableBase {
-    /**
-     * 日志记录器
-     */
     logger: ILogger;
 
-    /**
-     * 获取宿主对象自身
-     */
-    readonly host: any;
-
-    /**
-     * 获取能力私有状态
-     */
     abilityState<T>(key: string, creator?: () => T): T | undefined;
 
-    /**
-     * 设置能力私有状态
-     */
     setAbilityState<T>(key: string, value: T): void;
 
-    /**
-     * 注册释放回调（dispose 时 LIFO 调用）
-     */
     onCleanup(callback: () => void): void;
+
+    onBeforeDispose(): void;
+
+    /**
+     * 释放后置钩子（可覆写，dispose 最后调用）
+     */
+    onDisposed(): void;
 
     /**
      * 释放资源
+     *
+     * 执行顺序：onBeforeDispose → onCleanup(LIFO) → 清理 abilityState → onDisposed
      */
     dispose(): void;
 

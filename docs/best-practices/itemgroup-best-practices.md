@@ -180,7 +180,7 @@ body: {
 
 ## 五、生命周期自动链式调用
 
-`replace()` 派生时，生命周期钩子（`onBeforeInit`/`onAfterInit`/`onMounted`/`onUpdated`/`onBeforeUnmount`/`onBeforeDispose`）自动链式调用：**先调基类，再调子类**。
+`replace()` 派生时，生命周期钩子（`onBeforeInit`/`onAfterInit`/`onMounted`/`onUpdated`/`onBeforeUnmount`/`onBeforeDispose`/`onDisposed`）自动链式调用：**先调基类，再调子类**。
 
 子类**不需要**手动调用 `_initItemGroupComponent`，基类的 `onAfterInit` 会自动执行，处理 `direction`、`gap`、`defaultItemType`、`defaultItem` 等配置。
 
