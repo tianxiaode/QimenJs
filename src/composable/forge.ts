@@ -1,9 +1,55 @@
-// src/composable/forge.ts
+/**
+ * forge.ts — 原型工厂函数
+ *
+ * 核心机制：创建纯函数类 → 初始化内置状态 → 注入能力到原型
+ *
+ * 内置功能（不可选）：
+ *   - abilityState / setAbilityState — 能力私有状态
+ *   - onCleanup — 释放钩子注册
+ *   - dispose — 释放机制（调用 onCleanup 回调 + 清理能力状态）
+ *   - logger — 日志记录器
+ *   - host — 宿主自身引用
+ *
+ * 可选功能：通过 abilities 参数按需组合
+ *
+ * @example
+ * ```ts
+ * // 组件：直接用工厂函数
+ * const InnerClass = createForgedClass([EventAbility, DomEventsAbility]);
+ *
+ * // 语法糖：ComposableBase.with()
+ * class MyManager extends ComposableBase.with([EventAbility]) {}
+ * ```
+ */
 
+import { Logger, type ILogger } from '@/logger';
+import { debounce as debounceFn } from '@qimenjs/async';
 import type { AbilityDefinition, ForgedConstructor, InferAbilities } from './types/ability';
-import { Logger } from '@/logger';
 
-const logger = Logger.for('Forge');
+// ══════════════════════════════════════════════════════════════
+// 内置 Symbol Keys
+// ══════════════════════════════════════════════════════════════
+
+const ABILITY_STATES_KEY = Symbol('__abilityStates__');
+const CLEANUPS_KEY = Symbol('__cleanups__');
+
+// ══════════════════════════════════════════════════════════════
+// 工具函数
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 展平 with() 的参数
+ *
+ * 支持两种调用方式：
+ * - with(AbilityA, AbilityB) → [AbilityA, AbilityB]
+ * - with(abilityArray) → abilityArray
+ */
+function flattenWithArgs(args: readonly AbilityDefinition[]): readonly AbilityDefinition[] {
+    if (args.length === 1 && Array.isArray(args[0])) {
+        return args[0] as readonly AbilityDefinition[];
+    }
+    return args;
+}
 
 /**
  * 将多个能力定义展平合并为一个 Map（后声明的覆盖先声明的同名键）
@@ -27,7 +73,9 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
                 continue;
             }
             if (merged.has(key)) {
-                logger.warn(`Ability "${abilityName}" overrides existing key "${String(key)}"`);
+                Logger.for('Forge').warn(
+                    `Ability "${abilityName}" overrides existing key "${String(key)}"`
+                );
             }
             merged.set(key, value);
         }
@@ -36,7 +84,7 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
             const value = ability[key as any];
             if (typeof value === 'function') {
                 if (merged.has(key)) {
-                    logger.warn(
+                    Logger.for('Forge').warn(
                         `Ability "${abilityName}" overrides existing symbol key "${String(key)}"`
                     );
                 }
@@ -51,13 +99,14 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
 /**
  * 将合并后的能力属性写入原型
  *
- * 只保护原始基类（ComposableBase.prototype）上已有的属性不被覆盖。
- * 能力之间后声明的同名属性覆盖先声明的。
+ * 只保护内置方法（abilityState / setAbilityState / onCleanup / dispose / host）
+ * 不被能力覆盖，能力之间后声明的同名属性覆盖先声明的。
  */
-function applyToPrototype(proto: any, merged: Map<string | symbol, any>, rootProto: any): void {
+const BUILTIN_KEYS = new Set(['abilityState', 'setAbilityState', 'onCleanup', 'dispose', 'host']);
+
+function applyAbilities(proto: any, merged: Map<string | symbol, any>): void {
     for (const [key, value] of merged) {
-        // 只保护原始基类原型链上的属性
-        if ((typeof key === 'string' || typeof key === 'symbol') && key in rootProto) continue;
+        if (typeof key === 'string' && BUILTIN_KEYS.has(key)) continue;
 
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
             const descriptor: PropertyDescriptor = {
@@ -76,60 +125,121 @@ function applyToPrototype(proto: any, merged: Map<string | symbol, any>, rootPro
     }
 }
 
-/**
- * 沿原型链找到根基类（ComposableBase）的 prototype
- */
-function findRootProto(baseClass: new (...args: any[]) => any): any {
-    let current = baseClass;
-    while (Object.getPrototypeOf(current.prototype)?.constructor !== Object) {
-        current = Object.getPrototypeOf(current.prototype).constructor;
+// ══════════════════════════════════════════════════════════════
+// 内置方法定义
+// ══════════════════════════════════════════════════════════════
+
+function abilityState(this: any, key: string, creator?: () => any): any | undefined {
+    const states = this[ABILITY_STATES_KEY] as Map<string, any>;
+    if (!states.has(key) && creator) {
+        states.set(key, creator());
     }
-    return current.prototype;
+    return states.get(key);
 }
 
-/**
- * 创建强类的内部实现
- *
- * 生成一个继承 BaseClass 的匿名类，将能力合并到其原型上，
- * 并挂载 with 静态方法支持链式调用。
- */
-export function createForgedClass<T, A extends readonly AbilityDefinition[]>(
-    BaseClass: new (...args: any[]) => T,
-    abilities: A
-): ForgedConstructor<T, A> {
-    const ForgedClass = class extends (BaseClass as new (...args: any[]) => any) {
-        constructor(...args: any[]) {
-            super(...args);
+function setAbilityState(this: any, key: string, value: any): void {
+    const states = this[ABILITY_STATES_KEY] as Map<string, any>;
+    states.set(key, value);
+}
+
+function onCleanup(this: any, callback: () => void): void {
+    const cleanups = this[CLEANUPS_KEY] as (() => void)[];
+    cleanups.push(callback);
+}
+
+function dispose(this: any): void {
+    const cleanups = this[CLEANUPS_KEY] as (() => void)[];
+    for (let i = cleanups.length - 1; i >= 0; i--) {
+        try {
+            cleanups[i]();
+        } catch (e) {
+            this.logger?.error?.(`Cleanup error:`, e);
         }
+    }
+    cleanups.length = 0;
+
+    const states = this[ABILITY_STATES_KEY] as Map<string, any>;
+    states.forEach(value => {
+        if (value && typeof value === 'object' && typeof value.cancel === 'function') {
+            try {
+                value.cancel();
+            } catch (e) {
+                this.logger?.error?.(`Debounce cancel error:`, e);
+            }
+        }
+    });
+    states.clear();
+}
+
+// ══════════════════════════════════════════════════════════════
+// 原型工厂函数
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 创建强类 — 原型工厂函数
+ *
+ * 生成一个拥有内置方法和指定能力的构造函数。
+ * 内置方法（abilityState / onCleanup / dispose 等）不可被能力覆盖。
+ *
+ * @param abilities - 能力定义数组
+ * @returns 强类构造函数
+ */
+export function createForgedClass<A extends readonly AbilityDefinition[]>(
+    abilities: A
+): ForgedConstructor<any, A> {
+    const flat = flattenWithArgs(abilities);
+    const merged = flattenAbilities(flat);
+
+    const ForgedClass = function (this: any, ...args: any[]) {
+        this.logger = Logger.for(this.constructor.name);
+
+        Object.defineProperty(this, ABILITY_STATES_KEY, {
+            value: new Map<string, any>(),
+            enumerable: false,
+            configurable: true,
+        });
+
+        Object.defineProperty(this, CLEANUPS_KEY, {
+            value: [] as (() => void)[],
+            enumerable: false,
+            configurable: true,
+        });
     };
 
-    // 展平合并所有能力，一次性写入原型
-    const merged = flattenAbilities(abilities);
-    const rootProto = findRootProto(BaseClass);
-    applyToPrototype(ForgedClass.prototype, merged, rootProto);
+    // 内置方法
+    ForgedClass.prototype.abilityState = abilityState;
+    ForgedClass.prototype.setAbilityState = setAbilityState;
+    ForgedClass.prototype.onCleanup = onCleanup;
+    ForgedClass.prototype.dispose = dispose;
 
-    // 合并基类和新增的能力到 ForgedClass.abilities
-    // 使 callInitMethods 能发现所有能力的 __init__ 方法
-    const baseAbilities = (BaseClass as any).abilities || [];
-    (ForgedClass as any).abilities = [...baseAbilities, ...abilities];
+    // host getter
+    Object.defineProperty(ForgedClass.prototype, 'host', {
+        get(this: any) {
+            return this;
+        },
+        enumerable: true,
+        configurable: true,
+    });
 
-    // with 静态方法：可变参数，合并所有能力后重新创建强类
-    // 注意：必须用 this 而不是闭包中的 ForgedClass，
-    // 因为子类可能 extends ForgedClass 并添加自身方法，
-    // 用 this 才能保证子类再 with() 时继承的是子类自身
+    // 注入能力
+    applyAbilities(ForgedClass.prototype, merged);
+
+    // 合并能力列表（供 __init__ 机制使用）
+    (ForgedClass as any).abilities = [...flat];
+
+    // with 静态方法：链式追加能力
     (ForgedClass as any).with = function <Additional extends readonly AbilityDefinition[]>(
         ...additionalAbilities: Additional
-    ): ForgedConstructor<T & InferAbilities<Additional>, [...A, ...Additional]> {
-        // 展平：支持 with(A, B) 和 with(array) 两种方式
-        let flat: readonly AbilityDefinition[];
+    ): ForgedConstructor<any, [...A, ...Additional]> {
+        let additionalFlat: readonly AbilityDefinition[];
         if (additionalAbilities.length === 1 && Array.isArray(additionalAbilities[0])) {
-            flat = additionalAbilities[0] as readonly AbilityDefinition[];
+            additionalFlat = additionalAbilities[0] as readonly AbilityDefinition[];
         } else {
-            flat = additionalAbilities;
+            additionalFlat = additionalAbilities;
         }
-        const mergedAbilities = [...abilities, ...flat] as unknown as [...A, ...Additional];
-        return createForgedClass(this, mergedAbilities) as any;
+        const mergedAbilities = [...flat, ...additionalFlat] as unknown as [...A, ...Additional];
+        return createForgedClass(mergedAbilities) as any;
     };
 
-    return ForgedClass as ForgedConstructor<T, A>;
+    return ForgedClass as unknown as ForgedConstructor<any, A>;
 }

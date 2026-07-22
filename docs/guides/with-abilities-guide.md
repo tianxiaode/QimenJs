@@ -2,13 +2,48 @@
 
 ## 概述
 
-QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + `ComposableBase` 原型链复制机制。能力（Ability）是普通对象，通过 `static readonly abilities` 声明，ComposableBase 在实例化时自动注入。
+QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + 原型工厂函数 `createForgedClass`。能力是普通对象，通过工厂函数注入到强类原型上。`ComposableBase.with()` 是工厂函数的语法糖，用于 `class extends` 写法。
 
-## 基本用法
+## 两种使用模式
 
-### 定义能力
+### 原型工厂函数（组件推荐）
 
-能力是普通对象，包含方法、getter/setter 或普通值：
+```typescript
+import { createForgedClass } from '@/composable';
+
+const InnerClass = createForgedClass([EventAbility, DomEventsAbility]);
+const instance = new InnerClass();
+instance.on('click', handler);
+instance.dispose();
+```
+
+### ComposableBase.with() 语法糖（EntityManager 推荐）
+
+```typescript
+import { ComposableBase } from '@/composable';
+
+class MyManager extends ComposableBase.with([EventAbility, DomainAbility]) {
+    domain = 'default';
+    fetch() { this.emit('fetch'); }
+}
+```
+
+## 内置功能
+
+所有强类实例自动拥有以下内置方法（不可被能力覆盖）：
+
+| 方法 | 说明 |
+|------|------|
+| `abilityState(key, creator?)` | 获取/创建能力私有状态 |
+| `setAbilityState(key, value)` | 设置能力私有状态 |
+| `onCleanup(callback)` | 注册释放回调 |
+| `dispose()` | 释放资源 |
+| `host` | 宿主自身引用 |
+| `logger` | 日志记录器 |
+
+## 定义能力
+
+能力是普通对象，包含方法、getter/setter：
 
 ```typescript
 import type { AbilityDefinition } from '@qimenjs/composable';
@@ -27,93 +62,42 @@ const LabelAbility: AbilityDefinition = {
         set(v: string) { this._label = v; },
     },
 };
-
-// 普通值
-const VersionAbility: AbilityDefinition = {
-    version: '1.0.0',
-};
-```
-
-### 使用能力
-
-```typescript
-import { ComposableBase } from '@qimenjs/composable';
-
-class MyHost extends ComposableBase {
-    static readonly abilities = [GreetAbility, LabelAbility];
-    _label = 'default';
-    constructor(public name: string) { super(); }
-}
-
-const host = new MyHost('World') as any;
-host.greet();       // 'Hello, World!'
-host.label;         // 'default'
-host.label = 'new'; // setter
-```
-
-### 组合多个能力
-
-```typescript
-class FullHost extends ComposableBase {
-    static readonly abilities = [GreetAbility, LabelAbility, VersionAbility];
-}
-```
-
-### 能力继承
-
-子类自动继承父类的所有能力：
-
-```typescript
-class BaseManager extends ComposableBase {
-    static readonly abilities: readonly AbilityDefinition[] = [EventAbility];
-}
-
-class EntityManager extends BaseManager {
-    static readonly abilities: readonly AbilityDefinition[] = [DomainAbility, SystemAbility];
-}
-
-// EntityManager 实例拥有 EventAbility + DomainAbility + SystemAbility
 ```
 
 ## 私有状态
 
-能力通过 `abilityState()` 管理私有状态，每个宿主实例独立隔离：
+能力通过 `abilityState()` 管理私有状态，每个实例独立隔离：
 
 ```typescript
 const CounterAbility: AbilityDefinition = {
     count: {
         get() {
-            return this.abilityState('Counter:count', () => 0);
+            return this.abilityState('CounterAbility:count', () => 0);
         },
     },
     increment() {
-        const current = this.abilityState('Counter:count', () => 0)!;
-        this.setAbilityState('Counter:count', current + 1);
+        const current = this.abilityState('CounterAbility:count', () => 0)!;
+        this.setAbilityState('CounterAbility:count', current + 1);
     },
 };
-
-// 多实例隔离
-const host1 = new MyHost() as any;
-const host2 = new MyHost() as any;
-host1.increment();
-host1.count;  // 1
-host2.count;  // 0
 ```
 
 **key 命名约定**：使用 `AbilityName:stateName` 格式避免冲突。
 
 ## 防抖
 
-能力通过 `debounce()` 管理防抖函数，每个宿主实例独立隔离：
+防抖通过 `DebounceAbility` 提供，需要显式声明：
 
 ```typescript
-const SearchAbility: AbilityDefinition = {
+import { DebounceAbility } from '@/system-abilities';
+
+class MyManager extends ComposableBase.with([EventAbility, DebounceAbility]) {
     search(keyword: string) {
-        return this.debounce('SearchAbility:search', () => {
+        return this.debounce('MyManager:search', () => {
             // 执行搜索
         }, 300);
-    },
-};
+    }
+}
 ```
 
 宿主 `dispose()` 时自动取消所有防抖函数。
@@ -134,10 +118,10 @@ const TimerAbility: AbilityDefinition = {
 ## 生命周期
 
 ```typescript
-const host = new MyHost() as any;
-// 1. 构造 → 能力自动注入
+const instance = new InnerClass();
+// 1. 构造 → 内置状态初始化 → 能力方法可用
 // 2. 使用 → 方法/getter/setter 可用
-host.dispose();
+instance.dispose();
 // 3. 销毁 → 清理回调 → 取消防抖 → 清空状态
 ```
 
@@ -149,12 +133,9 @@ host.dispose();
 const AbilityA: AbilityDefinition = { value: 'A' };
 const AbilityB: AbilityDefinition = { value: 'B' };
 
-class Host extends ComposableBase {
-    static readonly abilities = [AbilityA, AbilityB];
-}
-
-const host = new Host() as any;
-host.value;  // 'B'（AbilityB 覆盖了 AbilityA）
+const Cls = createForgedClass([AbilityA, AbilityB]);
+const instance = new Cls();
+(instance as any).value;  // 'B'
 ```
 
 ## this 指向
@@ -164,11 +145,9 @@ host.value;  // 'B'（AbilityB 覆盖了 AbilityA）
 ```typescript
 const Ability: AbilityDefinition = {
     method() {
-        // this === 宿主实例
         this.host;          // 宿主自身
-        this.abilityState;  // 宿主方法
-        this.logger;        // 宿主日志
-        this.domain;        // 宿主属性
+        this.abilityState;  // 内置方法
+        this.logger;        // 内置日志
     },
 };
 ```

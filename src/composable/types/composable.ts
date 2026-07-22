@@ -10,13 +10,10 @@ import type { ILogger } from '@qimenjs/logger';
 
 /**
  * 可组合基类接口
+ *
+ * 工厂函数内置方法签名，所有强类实例均满足此接口。
  */
 export interface IComposableBase {
-    /**
-     * 域名称（可选）
-     */
-    domain?: string;
-
     /**
      * 日志记录器
      */
@@ -28,14 +25,24 @@ export interface IComposableBase {
     readonly host: any;
 
     /**
-     * 获取类级缓存
+     * 获取能力私有状态
      */
-    getStatic<T>(key: string | symbol): T | undefined;
+    abilityState<T>(key: string, creator?: () => T): T | undefined;
 
     /**
-     * 设置类级缓存
+     * 设置能力私有状态
      */
-    setStatic<T>(key: string | symbol, value: T): void;
+    setAbilityState<T>(key: string, value: T): void;
+
+    /**
+     * 注册释放回调（dispose 时 LIFO 调用）
+     */
+    onCleanup(callback: () => void): void;
+
+    /**
+     * 释放资源
+     */
+    dispose(): void;
 
     /**
      * 动态属性

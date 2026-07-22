@@ -4,7 +4,10 @@
 
 // 核心类型导出
 export type { IComposable, IComposableBase, IExposeResult } from './types/composable';
+export type { AbilityDefinition, ForgedConstructor, InferAbilities } from './types/ability';
 
-// 核心类导出
+// 核心机制导出
+export { createForgedClass } from './forge';
+
+// 语法糖导出
 export { ComposableBase } from './ComposableBase';
-export type { AbilityDefinition, ForgedConstructor, InferAbilities } from './ComposableBase';

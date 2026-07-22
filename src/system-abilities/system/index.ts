@@ -7,3 +7,4 @@ export { DragEventBusAbility } from './DragEventBusAbility';
 export { SystemEventBusAbility } from './SystemEventBusAbility';
 export { DomainAbility } from './DomainAbility';
 export { SystemAbility } from './SystemAbility';
+export { DebounceAbility } from './DebounceAbility';
