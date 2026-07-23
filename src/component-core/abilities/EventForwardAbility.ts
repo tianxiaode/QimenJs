@@ -46,7 +46,7 @@ import { getId } from '@/utils/string/id';
 
 type EventDataType = 'emit' | 'bridge' | 'entity' | 'float';
 
-export const EventForwardAbility: AbilityDefinition = {
+export const EventForwardAbility= {
     bindDomEventBindings(): void {
         if (!this.nodeMap) return;
 

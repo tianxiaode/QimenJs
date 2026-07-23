@@ -13,7 +13,7 @@ import type { AbilityDefinition } from '@/composable';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
-export const RouteEventBusAbility: AbilityDefinition = {
+export const RouteEventBusAbility = {
     routeEmit(ctx: EventContext): void {
         RouteEventBus.getInstance().routeEmit(ctx);
     },
@@ -27,4 +27,4 @@ export const RouteEventBusAbility: AbilityDefinition = {
     routeOnce(routeKey: string, eventName: string, handler: (data: any) => void): void {
         RouteEventBus.getInstance().routeOnce(routeKey, eventName, handler);
     },
-};
+} satisfies AbilityDefinition;

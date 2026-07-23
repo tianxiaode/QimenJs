@@ -1,4 +1,4 @@
-import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import { TabBarComponent } from '../tab-bar/TabBarComponent';
 
 export interface TabItem {
@@ -12,7 +12,7 @@ export interface TabsProps {
     activeIndex?: number;
 }
 
-export class TabsComponent extends TemplateComponent.withTemplate({
+export class TabsComponent extends Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-tabs',

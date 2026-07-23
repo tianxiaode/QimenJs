@@ -27,7 +27,7 @@ import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
 import { RemoteCreateAbility } from '@/entity/abilities/remote/RemoteCreateAbility';
 import { ENTITY_CRUD_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
-import { ComposableBase } from '@/composable';
+import { ComposableBase, withAbilities } from '@/composable';
 import { SchemaRegistrar } from '@/schema';
 import type { FlatSchema, TreeSchema } from '@/schema';
 import { KernelError, KernelErrorCode } from '@/error';
@@ -65,9 +65,10 @@ describe('SchemaAbility', () => {
         ],
     };
 
-    class TestSchemaHost extends ComposableBase.with([SchemaAbility]) {
+    class TestSchemaHost extends ComposableBase {
         schema = mockSchema;
     }
+    withAbilities(TestSchemaHost, [SchemaAbility]);
 
     let host: TestSchemaHost;
 
@@ -152,9 +153,10 @@ describe('SchemaAbility', () => {
             ],
         };
 
-        class TestTreeSchemaHost extends ComposableBase.with([SchemaAbility]) {
+        class TestTreeSchemaHost extends ComposableBase {
             schema = mockTreeSchema;
         }
+        withAbilities(TestTreeSchemaHost, [SchemaAbility]);
 
         it('schemaTree 应该返回正确的树配置', () => {
             const treeHost = createHostWithAbility(TestTreeSchemaHost);
@@ -391,7 +393,7 @@ describe('SchemaProxyAbility', () => {
 // ============================================
 
 describe('LocalGetAbility', () => {
-    class TestLocalGetHost extends ComposableBase.with([LocalGetAbility]) {
+    class TestLocalGetHost extends ComposableBase {
         compiledSchema = { idField: 'id' };
         sourceData = new Map<string | number, any>();
         item = null as any;
@@ -455,7 +457,7 @@ describe('LocalGetAbility', () => {
 // ============================================
 
 describe('RemoteCreateAbility', () => {
-    class TestRemoteCreateHost extends ComposableBase.with([RemoteCreateAbility]) {
+    class TestRemoteCreateHost extends ComposableBase {
         loading = false;
         item = null as any;
         updateItem = jest.fn();
@@ -463,6 +465,7 @@ describe('RemoteCreateAbility', () => {
         fetch = jest.fn();
         emit = jest.fn();
     }
+    withAbilities(TestRemoteCreateHost, [RemoteCreateAbility]);
 
     let host: TestRemoteCreateHost;
 

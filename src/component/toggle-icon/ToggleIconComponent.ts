@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ToggleIconProps {
@@ -29,7 +29,7 @@ export interface ToggleIconProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ToggleIconComponent = TemplateComponent.withTemplate({
+export let ToggleIconComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-toggle-icon',

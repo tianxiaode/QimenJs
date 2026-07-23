@@ -10,7 +10,7 @@ import type { AbilityDefinition } from '@/composable';
  *
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const TreeRemoteStateAbility: AbilityDefinition = {
+export const TreeRemoteStateAbility= {
     // 计算属性（不与 Manager 数据字段同名）
     isEmpty: {
         get() {
@@ -34,4 +34,4 @@ export const TreeRemoteStateAbility: AbilityDefinition = {
     refreshView(): void {
         this.items = [...this.items];
     },
-};
+} satisfies AbilityDefinition;

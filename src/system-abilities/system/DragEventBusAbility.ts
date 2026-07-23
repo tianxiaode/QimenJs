@@ -13,7 +13,7 @@ import type { AbilityDefinition } from '@/composable';
 import { DragEventBus } from '@/events';
 import type { DragState, DragAction } from '@/events';
 
-export const DragEventBusAbility: AbilityDefinition = {
+export const DragEventBusAbility= {
     dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
         DragEventBus.getInstance().dragStart(dragKey, state);
     },
@@ -55,4 +55,4 @@ export const DragEventBusAbility: AbilityDefinition = {
     isDragging(): boolean {
         return DragEventBus.getInstance().isDragging();
     },
-};
+} satisfies AbilityDefinition;

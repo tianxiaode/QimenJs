@@ -24,6 +24,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 
 // ============================================
@@ -31,7 +32,8 @@ import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 // ============================================
 
 function createTreeViewHost(schemaOverrides: any = {}) {
-    class TreeViewHost extends ComposableBase.with([TreeViewAbility]) {
+    class TreeViewHost extends ComposableBase {
+
         schema = {
             useFlat: true,
             expandedField: 'expanded',

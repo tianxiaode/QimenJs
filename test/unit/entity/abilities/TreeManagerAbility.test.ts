@@ -26,13 +26,15 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { TreeManagerAbility } from '@/entity/abilities/remote/TreeManagerAbility';
 import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 function createTreeHost() {
     const mockDebounce = jest.fn((_key: string, fn: any, _ms: number, _immediate?: boolean) => fn);
 
-    class TreeHost extends ComposableBase.with([TreeManagerAbility, DirtyAbility]) {
+    class TreeHost extends ComposableBase {
+
         schema = { idField: 'id', parentIdField: 'parentId' };
         debounce = mockDebounce as any;
 

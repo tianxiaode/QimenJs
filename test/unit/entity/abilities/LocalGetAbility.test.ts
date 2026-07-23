@@ -23,11 +23,13 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { LocalGetAbility } from '@/entity/abilities/local/LocalGetAbility';
 import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createGetHost(idField: string = 'id') {
-    class GetHost extends ComposableBase.with([LocalGetAbility]) {
+    class GetHost extends ComposableBase {
+
         compiledSchema = { idField };
         sourceData = new Map<string, any>();
         item: any = null;

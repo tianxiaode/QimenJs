@@ -11,7 +11,7 @@ import type { AbilityDefinition } from '@/composable';
  * - 后续读写直接操作实例属性
  * - 避免在构造函数中访问尚未初始化的子类属性（如 domain）
  */
-export const DomainPagingAbility: AbilityDefinition = {
+export const DomainPagingAbility= {
     pageSize: {
         get(): number {
             const config = this.domainConfig;
@@ -58,4 +58,4 @@ export const DomainPagingAbility: AbilityDefinition = {
         configurable: true,
         enumerable: true,
     },
-};
+} satisfies AbilityDefinition;

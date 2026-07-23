@@ -40,6 +40,7 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { CacheAbility } from '@/entity/abilities/core/CacheAbility';
 import { CacheFactory } from '@/cache';
 
@@ -54,7 +55,8 @@ interface TestHostSchema {
 }
 
 function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: () => any) {
-    class CacheHost extends ComposableBase.with([CacheAbility]) {
+    class CacheHost extends ComposableBase {
+
         schema = schema;
         isRemote = isRemote;
         cacheTTL = 300000;

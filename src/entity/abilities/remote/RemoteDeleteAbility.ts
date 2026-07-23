@@ -9,7 +9,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  * 使用 loading 锁防止并发删除请求。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const RemoteDeleteAbility: AbilityDefinition = {
+export const RemoteDeleteAbility= {
     /**
      * 远程删除一个或多个实体
      *
@@ -36,4 +36,4 @@ export const RemoteDeleteAbility: AbilityDefinition = {
         await this.fetch(action, options);
         this.deleteFromItems(id);
     },
-};
+} satisfies AbilityDefinition;

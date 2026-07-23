@@ -10,12 +10,18 @@ QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + `withAbilities` / 
 
 ```typescript
 import { ComposableBase, withAbilities } from '@/composable';
+import type { InferAbilities } from '@/composable';
 
 class MyManager extends ComposableBase {
     domain = 'default';
     fetch() { this.emit('fetch'); }
 }
-withAbilities(MyManager, [EventAbility, DomainAbility]);
+
+const MY_ABILITIES = [EventAbility, DomainAbility] as const;
+withAbilities(MyManager, MY_ABILITIES);
+
+// 声明合并：让 TypeScript 知道 MyManager 实例拥有能力注入的方法
+export interface MyManager extends InferAbilities<typeof MY_ABILITIES> {}
 
 new MyManager() instanceof ComposableBase // true
 ```
@@ -23,10 +29,15 @@ new MyManager() instanceof ComposableBase // true
 ### 多层继承 + 逐层注入能力
 
 ```typescript
+import type { InferAbilities } from '@/composable';
+
 class CoreEntityManager extends ComposableBase {
     domain = 'default';
 }
-withAbilities(CoreEntityManager, [EventAbility, DomainAbility, SystemAbility, SchemaAbility]);
+
+const CORE_ABILITIES = [EventAbility, DomainAbility, SystemAbility, SchemaAbility] as const;
+withAbilities(CoreEntityManager, CORE_ABILITIES);
+export interface CoreEntityManager extends InferAbilities<typeof CORE_ABILITIES> {}
 
 class BaseEntityManager extends CoreEntityManager {
     async fetch(action, options) { /* ... */ }
@@ -36,7 +47,10 @@ class LocalReadonlyEntityManager extends BaseEntityManager {
     isRemote = false;
     items: IEntity[] = [];
 }
-withAbilities(LocalReadonlyEntityManager, [FlatLocalStateAbility, LocalListAbility, LocalGetAbility]);
+
+const LOCAL_READONLY_ABILITIES = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility] as const;
+withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+export interface LocalReadonlyEntityManager extends InferAbilities<typeof LOCAL_READONLY_ABILITIES> {}
 ```
 
 ### withDefinitions：注入 body 定义
@@ -185,17 +199,33 @@ const Ability: AbilityDefinition = {
 | 维护 `abilities` 数组 | ✅ | ❌ |
 | 典型用途 | 注入能力 | 注入 body 定义 |
 
+## InferAbilities 声明合并
+
+`withAbilities` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知这些方法。通过 `InferAbilities` + 声明合并解决：
+
+```typescript
+const ABILITIES = [EventAbility, DomainAbility] as const;
+withAbilities(MyClass, ABILITIES);
+
+// 让 TS 知道 MyClass 实例拥有 EventAbility 和 DomainAbility 注入的方法
+export interface MyClass extends InferAbilities<typeof ABILITIES> {}
+```
+
+**关键**：能力数组必须用 `as const` 断言，否则 `InferAbilities` 无法推导具体类型。
+
 ## 旧 API 迁移指南
 
-### ComposableBase.with() → extends + withAbilities
+### ComposableBase.with() → extends + withAbilities + InferAbilities
 
 ```typescript
 // 旧
 class MyManager extends ComposableBase.with([EventAbility, DomainAbility]) { }
 
 // 新
+const MY_ABILITIES = [EventAbility, DomainAbility] as const;
 class MyManager extends ComposableBase { }
-withAbilities(MyManager, [EventAbility, DomainAbility]);
+withAbilities(MyManager, MY_ABILITIES);
+export interface MyManager extends InferAbilities<typeof MY_ABILITIES> {}
 ```
 
 ### createForgedClass → extends ComposableBase + withAbilities

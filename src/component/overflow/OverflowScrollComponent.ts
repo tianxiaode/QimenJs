@@ -14,7 +14,7 @@
  * - 钩子：onOverflowChange / onScrollStateChange
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { positionOverlay, type Placement } from '@/overlay/dispatch';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
@@ -35,7 +35,7 @@ export interface OverflowScrollProps {
     scrollStep?: number;
 }
 
-export let OverflowScrollComponent = TemplateComponent.withTemplate({
+export let OverflowScrollComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-overflow-scroll-overlay',

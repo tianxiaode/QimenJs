@@ -27,6 +27,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { SearchAbility } from '@/entity/abilities/search/SearchAbility';
 
 // ============================================
@@ -34,7 +35,8 @@ import { SearchAbility } from '@/entity/abilities/search/SearchAbility';
 // ============================================
 
 function createSearchHost(isTree = false) {
-    class SearchHost extends ComposableBase.with([SearchAbility]) {
+    class SearchHost extends ComposableBase {
+
         schema = {
             isTree,
             searchFields: ['name', 'email'],

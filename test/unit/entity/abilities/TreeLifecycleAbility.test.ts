@@ -25,6 +25,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbility';
 
 // ============================================
@@ -32,7 +33,8 @@ import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbili
 // ============================================
 
 function createTreeHost() {
-    class TreeHost extends ComposableBase.with([TreeLifecycleAbility]) {
+    class TreeHost extends ComposableBase {
+
         nodes = new Map<string | number, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';

@@ -17,7 +17,7 @@ module.exports = {
         sourceType: 'module', // ✅ 允许使用 import/export
     },
     rules: {
-        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/no-unsafe-declaration-merging': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unused-vars': [
             'error',

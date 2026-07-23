@@ -7,7 +7,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 
-export const VirtualListAbility: AbilityDefinition = {
+export const VirtualListAbility= {
     /**
      * 容器高度
      */
@@ -196,4 +196,4 @@ export const VirtualListAbility: AbilityDefinition = {
             this.renderVirtualList();
         });
     },
-};
+} satisfies AbilityDefinition;

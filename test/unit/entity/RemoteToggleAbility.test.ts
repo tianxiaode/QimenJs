@@ -8,11 +8,11 @@
  * - _internalToggle: 失败回滚路径
  */
 
-import { ComposableBase } from '@/composable';
+import { ComposableBase, withAbilities } from '@/composable';
 import { RemoteToggleAbility } from '@/entity/abilities/remote/RemoteToggleAbility';
 import { ENTITY_CRUD_EVENTS } from '@/events';
 
-class TestToggleHost extends ComposableBase.with([RemoteToggleAbility]) {
+class TestToggleHost extends ComposableBase {
     idField = 'id';
     item: any = null;
     items: any[] = [];
@@ -24,6 +24,7 @@ class TestToggleHost extends ComposableBase.with([RemoteToggleAbility]) {
     });
     emit = jest.fn();
 }
+withAbilities(TestToggleHost, [RemoteToggleAbility]);
 
 describe('RemoteToggleAbility', () => {
     let host: TestToggleHost;

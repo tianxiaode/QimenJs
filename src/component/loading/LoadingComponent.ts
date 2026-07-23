@@ -19,9 +19,9 @@
  * onOverlayChange(data) 默认实现：通过自动生成的 text/hidden 属性更新。
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
-export let LoadingComponent = TemplateComponent.withTemplate({
+export let LoadingComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-loading',

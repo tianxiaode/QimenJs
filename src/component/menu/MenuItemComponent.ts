@@ -21,7 +21,7 @@
  * 子菜单：通过 OverlayEventBus 通知调度中心打开/关闭子菜单浮层
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 
@@ -40,7 +40,7 @@ export interface MenuItemProps {
     submenuProps?: Record<string, any>;
 }
 
-const MenuItemBase = TemplateComponent.withTemplate({
+const MenuItemBase = Component.withTemplate({
     tpl: {
         tag: 'div',
         events: { enter: { handler: true }, leave: { handler: true } },

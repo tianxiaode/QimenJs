@@ -18,7 +18,7 @@ import { object } from '@/utils';
  *
  * this 指向宿主（ComposableBase）。
  */
-export const EventAbility: AbilityDefinition = {
+export const EventAbility= {
     eventScope: {
         get() {
             return this.abilityState('EventAbility:scope', () => {
@@ -95,4 +95,4 @@ export const EventAbility: AbilityDefinition = {
             throw undefined;
         }
     },
-};
+} satisfies AbilityDefinition;

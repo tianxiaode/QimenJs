@@ -11,7 +11,7 @@ import type { AbilityDefinition } from '@/composable';
 import { SystemEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
-export const SystemEventBusAbility: AbilityDefinition = {
+export const SystemEventBusAbility = {
     systemEmit(event: string, ctx: EventContext): void {
         SystemEventBus.getInstance().emit(event, ctx);
     },
@@ -25,4 +25,4 @@ export const SystemEventBusAbility: AbilityDefinition = {
     systemOnce(event: string, handler: (data: any) => void): void {
         SystemEventBus.getInstance().once(event, handler);
     },
-};
+} satisfies AbilityDefinition;

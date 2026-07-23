@@ -17,7 +17,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
@@ -31,7 +31,7 @@ export interface TagProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let TagComponent = TemplateComponent.withTemplate({
+export let TagComponent = Component.withTemplate({
     tpl: {
         tag: 'span',
         cls: 'q-tag',

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- 组件核心双层架构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
+- 多模板条件选择：ComponentTemplate.tpl 支持 TplNode | TplVariant[]，when 条件函数
+- Component 闭包基类导出（component-core/index.ts）
+- TplVariant 类型导出
+- 错误码：COMPONENT_TPL_KEY_NOT_FOUND、COMPONENT_BODY_INVALID_FIELD
+- 模板工厂：createComponentFactory、createInnerClass（原 createTemplateClass）、createReplaceFactory（原 createReplaceClass）
 - HeroComponent 横幅区域组件（title/subtitle/desc/actionText，action 事件）
 - BreadcrumbComponent 面包屑导航组件（数据驱动 items，navigate 事件，自定义分隔符）
 - DividerComponent 分割线组件（水平/垂直、虚线、文字标签）
@@ -23,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Entity Manager 全量迁移：从 BaseEntityManager.with() 改为 extends + withAbilities() + InferAbilities 声明合并
+- Router 迁移：从 ComposableBase.with() 改为 extends + withAbilities() + InferAbilities 声明合并
+- CoreEntityManager 移除 AbilityDefinition 类型导入，改用 as const + InferAbilities 推导接口
+- BaseEntityManager.emit 改用 EventContextBuilder 构建 EventContext
+- BaseEntityManager.dispose 移除 disposeAbilities?.() 调用（super.dispose 自动处理）
 - ToggleComponent/ToggleIconComponent 补充 SizeAbility（.with([SizeAbility]) + initSize()）
 - AvatarComponent 补充缺失的 initSize() 调用
 - register.ts：Dropdown 注册改为 DropdownComponent（原来错误注册了 ButtonComponent）

@@ -1,11 +1,11 @@
 # withTemplate 最佳实践
 
-> 日期：2026-07-16
+> 日期：2026-07-23
 > 状态：当前有效
 
 ## withTemplate 是什么
 
-`withTemplate` 是 `TemplateComponent` 的静态工厂方法，接收 HTML 模板字符串、JSON 模板数组或 ComponentTemplate 对象，在**类定义时**预编译，返回一个带模板的强类。
+`withTemplate` 是组件系统的核心工厂方法，接收 HTML 模板字符串、JSON 模板数组或 ComponentTemplate 对象，在**类定义时**预编译，生成内部类（InnerComponent），闭包基类（ComponentFactory）保存内部类引用。实例化时根据 `when` 条件选择内部类，返回内部类实例。
 
 **为什么用 withTemplate**：
 
@@ -13,6 +13,7 @@
 2. **类型安全** — 模板声明了什么节点，强类就有什么属性，编译期可检查
 3. **跨平台** — 事件绑定使用 event-dom 规范命名（`tap`/`click`/`input`/`change`），自动适配 pointer/touch/mouse
 4. **统一架构** — 所有组件都是 withTemplate 强类，不需要区分模板组件和 JSON 组件
+5. **多模板支持** — 同一闭包类可关联多个模板，按 `when` 条件选择，零代理
 
 ## 核心原则
 
@@ -548,7 +549,39 @@ class MyContainer extends TemplateComponent.withTemplate(CONTAINER_TEMPLATE) {
 }
 ```
 
-## 12. 子组件插槽替换
+## 12. 多模板条件选择（TplVariant）
+
+同一闭包类可关联多个模板，实例化时根据 `when` 条件自动选择：
+
+```typescript
+import type { ComponentTemplate, TplVariant } from '@qimenjs/component-core';
+
+const InputTemplate: ComponentTemplate = {
+    tpl: [
+        { tpl: { tag: 'div', cls: 'q-input--top', children: [...] }, when: (cfg) => cfg.labelPosition === 'top' },
+        { tpl: { tag: 'div', cls: 'q-input--left', children: [...] }, when: (cfg) => cfg.labelPosition === 'left' },
+        { tpl: { tag: 'div', cls: 'q-input--default', children: [...] } },  // 兜底
+    ],
+    body: {
+        type: 'input',
+        onInput(e) { /* ... */ },
+    },
+};
+
+// 使用：按配置自动选择模板
+const input1 = new InputComponent({ labelPosition: 'top' });    // → 匹配 q-input--top
+const input2 = new InputComponent({ labelPosition: 'left' });   // → 匹配 q-input--left
+const input3 = new InputComponent({});                           // → 兜底 q-input--default
+```
+
+**要点**：
+- `tpl` 为 `TplVariant[]` 时，每个变体有 `tpl` + 可选 `when` 条件
+- `when(props)` 返回 `true` 的首个变体胜出
+- `when` 省略 → 兜底匹配，放在数组末尾
+- 全部不匹配 → 抛出 `ComponentError(COMPONENT_TPL_KEY_NOT_FOUND)`
+- 运行时切换模板：销毁旧实例 + 创建新实例 + 替换 el 位置
+
+## 13. 子组件插槽替换
 
 需要动态替换子组件时，组合 ChildSlotAbility：
 
@@ -572,7 +605,7 @@ class DynamicContainer extends TemplateComponent.withTemplate(TEMPLATE) {
 - replace 模式利用 parentNode/nodeIndex 精确定位 DOM 位置
 - child 模式清空占位节点内容后挂载新组件
 
-## 13. 通用属性体系（两层架构）
+## 14. 通用属性体系（两层架构）
 
 组件属性操作采用两层架构，不再为每个节点自动生成 `xxxCls`/`xxxHidden` 等描述符。
 
@@ -701,7 +734,7 @@ CommonPropsAbility 提供的 root getter/setter（与 DEFAULT_NODE_PROP_MAP 对�
 [QimenJS] 命名冲突：DOM 子节点名 "label" 与组件自身属性重名。建议修改子节点名以避免冲突。
 ```
 
-## 14. nodeMap 一级结构（v2）
+## 15. nodeMap 一级结构（v2）
 
 v2 模式下 nodeMap 为一级结构，直接用 name 访问：
 
@@ -730,7 +763,7 @@ this.nodeMap['root'].el    // === this.el
 - `_resolveNodeEl` 不再需要 `if (nodeName === 'root')` 特判
 - 根节点属性（cls/style/flex/grid/role/attrs/events）编译时统一进入 nodeMetas
 
-## 15. body.bridges 声明式桥接
+## 16. body.bridges 声明式桥接
 
 在 ComponentTemplate 的 body 中声明桥接事件配置，替代 static eventBridge：
 
@@ -759,7 +792,7 @@ body 中的特殊 key 处理：
 | 函数 | 复制到原型（组件方法） |
 | 其他 | 存到 static defaults（默认属性值） |
 
-## 16. body.forwards 属性/方法透传
+## 17. body.forwards 属性/方法透传
 
 `forwards` 定义在 body 上，是属性和方法透传的统一入口，替代 TplNode 上的 `forward` 属性。
 
@@ -843,7 +876,7 @@ body 是组合定义层，引用自己的组件树结构不算破坏封装。中
 
 `forwards` on body 是 `forward` on TplNode 的统一替代，推荐使用 `forwards`。
 
-## 17. ItemGroup 派生组件
+## 18. ItemGroup 派生组件
 
 ItemGroupComponent 是子项管理的基座，领域组件通过 `replace` 派生，固化 itemType、defaultItem 和选择行为：
 
@@ -900,7 +933,7 @@ export let ToolbarComponent = ItemGroupComponent.replace({
 
 派生组件复用池化、事件转发、溢出处理，零手动 DOM。详见 [ItemGroup 最佳实践](./itemgroup-best-practices.md)。
 
-## 18. 组件定义模式
+## 19. 组件定义模式
 
 ### 18.1 body 定义（推荐）
 
@@ -946,7 +979,7 @@ export let MyGroupComponent = ItemGroupComponent.replace({
 export const DropdownComponent = ButtonComponent;
 ```
 
-## 19. 模板片段（TplFragment）
+## 20. 模板片段（TplFragment）
 
 ### 19.1 什么是模板片段
 

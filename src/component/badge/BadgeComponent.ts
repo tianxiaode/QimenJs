@@ -8,9 +8,9 @@
  * onOverlayChange(data) 默认实现：通过自动生成的 text/hidden 属性更新。
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
-export let BadgeComponent = TemplateComponent.withTemplate({
+export let BadgeComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         children: [{ tag: 'span', name: 'text', cls: 'q-badge__content' }],

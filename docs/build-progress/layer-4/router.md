@@ -7,6 +7,9 @@
 
 ## 构建历史
 
+### 2026-07-23
+- ✅ Router 迁移：从 `ComposableBase.with([SystemEventBusAbility, RouteEventBusAbility])` 改为 `extends ComposableBase` + `withAbilities()` + `InferAbilities` 声明合并
+
 ### 2026-07-22
 - ✅ 路由事件重构：Router 作为 RouteEventBus 双向参与者
 - ✅ 新增 RouteEventBus（独立路由事件总线，routeScope 隔离）
@@ -28,7 +31,7 @@
 
 - **导航**：`this.routeEmit(switchCtx)` — 需混入 RouteEventBusAbility
 - **监听**：`this.routeOn('router', 'change', handler)` 或 `listens: [{ route: 'router', events: { change: 'onRouteChange' } }]`
-- **Router** 混入 SystemEventBusAbility + RouteEventBusAbility，通过 `this.systemOn` 监听窗口事件
+- **Router** extends ComposableBase + withAbilities([SystemEventBusAbility, RouteEventBusAbility])，通过 `this.systemOn` 监听窗口事件
 
 ## 测试状态
 

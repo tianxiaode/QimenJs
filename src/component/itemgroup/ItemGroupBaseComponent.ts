@@ -3,7 +3,7 @@
 // 提供：模板、工具方法、事件处理、defaultItem 合并
 // ============================================
 
-import { TemplateComponent, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { DomEventDecl } from '@qimenjs/component-core';
 import { getId } from '@/utils/string/id';
 
@@ -28,7 +28,7 @@ export interface ItemGroupProps extends ItemGroupConfig {
 }
 
 // 基类：模板 + 工具方法 + 事件处理
-export let ItemGroupBaseComponent = TemplateComponent.withTemplate({
+export let ItemGroupBaseComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-itemgroup',

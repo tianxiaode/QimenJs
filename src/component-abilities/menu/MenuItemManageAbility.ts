@@ -55,7 +55,7 @@ export interface MenuItemConfig {
 
 // ─── 能力定义 ──────────────────────────────────────────
 
-export const MenuItemManageAbility: AbilityDefinition = {
+export const MenuItemManageAbility= {
     // ─── 属性访问方法 ───
 
     /**
@@ -319,4 +319,4 @@ export const MenuItemManageAbility: AbilityDefinition = {
         }
         return MenuItemClass;
     },
-};
+} satisfies AbilityDefinition;

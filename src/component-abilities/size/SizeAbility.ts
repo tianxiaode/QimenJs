@@ -42,7 +42,7 @@ interface SizeState {
     classPrefix: string;
 }
 
-export const SizeAbility: AbilityDefinition = {
+export const SizeAbility= {
     initSize(config?: SizeConfig): void {
         const sizes = config?.sizes ?? DEFAULT_SIZES;
         const defaultSize = config?.defaultSize ?? DEFAULT_SIZE;
@@ -72,4 +72,4 @@ export const SizeAbility: AbilityDefinition = {
 
         state.currentSize = value;
     },
-};
+} satisfies AbilityDefinition;

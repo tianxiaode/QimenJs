@@ -63,6 +63,8 @@ class TestLocalTaskManager extends LocalCrudEntityManager {
     schema: RegistrSchema = localTestSchema;
 }
 
+interface TestLocalTaskManager extends LocalCrudEntityManager {}
+
 // ============================================
 // 辅助函数
 // ============================================
@@ -104,7 +106,7 @@ function mockFetchReturn(data: any): void {
 // ============================================
 
 describe('LocalCrudEntityManager 集成测试', () => {
-    let manager: TestLocalTaskManager;
+    let manager: any;
 
     beforeAll(() => {
         ensureLocalTestDomain();

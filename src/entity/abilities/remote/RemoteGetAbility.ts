@@ -5,7 +5,7 @@ import type { AbilityDefinition } from '@/composable';
  *
  * this 指向宿主（Manager），this.state 可直接访问。
  */
-export const RemoteGetAbility: AbilityDefinition = {
+export const RemoteGetAbility= {
     /**
      * 远程获取实体
      *
@@ -23,4 +23,4 @@ export const RemoteGetAbility: AbilityDefinition = {
         this.updateItem(result);
         return result;
     },
-};
+} satisfies AbilityDefinition;

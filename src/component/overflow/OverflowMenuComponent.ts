@@ -13,7 +13,7 @@
  * - 菜单通过调度中心管理
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { EventContextBuilder } from '@/context';
@@ -39,7 +39,7 @@ export interface OverflowMenuProps {
     maxVisibleItems?: number;
 }
 
-export let OverflowMenuComponent = TemplateComponent.withTemplate({
+export let OverflowMenuComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-overflow-menu-overlay',

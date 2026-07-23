@@ -7,7 +7,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  * 提供分页导航、过滤、排序等查询操作。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const FlatRemoteQueryAbility: AbilityDefinition = {
+export const FlatRemoteQueryAbility= {
     async prev() {
         const page = this.page - 1;
         if (this.isValidPage(page)) {
@@ -78,4 +78,4 @@ export const FlatRemoteQueryAbility: AbilityDefinition = {
         this.search = {} as any;
         return await this._internalList(true);
     },
-};
+} satisfies AbilityDefinition;

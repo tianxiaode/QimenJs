@@ -7,7 +7,7 @@ import { array } from '@qimenjs/utils';
  * 为宿主提供搜索、过滤、排序功能。
  * this 指向宿主（Manager），this.schema/search 可直接访问。
  */
-export const SearchAbility: AbilityDefinition = {
+export const SearchAbility= {
     toParams(): Record<string, any> {
         const { schema } = this;
         const params: Record<string, any> = {};
@@ -77,4 +77,4 @@ export const SearchAbility: AbilityDefinition = {
         (this.search as any).sortBy = field;
         (this.search as any).sortOrder = order;
     },
-};
+} satisfies AbilityDefinition;

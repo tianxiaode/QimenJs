@@ -29,7 +29,8 @@
  * ```
  */
 
-import { ComposableBase } from '@/composable';
+import { ComposableBase, withAbilities } from '@/composable';
+import type { InferAbilities } from '@/composable';
 import { SystemEventBusAbility, RouteEventBusAbility } from '@/system-abilities';
 import { SYSTEM_EVENTS } from '@qimenjs/events';
 import { EventContextBuilder } from '@/context';
@@ -50,7 +51,7 @@ export function pathToEventName(path: string): string {
  * - routeOn('router', 'switch') ← 接收导航指令
  * - routeEmit('change') → 发出路由变化通知
  */
-export class Router extends ComposableBase.with([SystemEventBusAbility, RouteEventBusAbility]) {
+export class Router extends ComposableBase {
     private static instance: Router | null = null;
 
     private routes: RouteMap = {};
@@ -240,3 +241,9 @@ export class Router extends ComposableBase.with([SystemEventBusAbility, RouteEve
         }
     }
 }
+
+withAbilities(Router, [SystemEventBusAbility, RouteEventBusAbility]);
+
+export interface Router extends InferAbilities<
+    [typeof SystemEventBusAbility, typeof RouteEventBusAbility]
+> {}

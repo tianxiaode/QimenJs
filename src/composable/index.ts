@@ -3,7 +3,7 @@
  */
 
 export type { IComposable, IComposableBase, IExposeResult } from './types/composable';
-export type { AbilityDefinition, InferAbilities } from './types/ability';
+export type { AbilityDefinition, InferAbility, InferAbilities } from './types/ability';
 
 export { ComposableBase } from './ComposableBase';
 export { withAbilities, withDefinitions, ABILITY_STATES_KEY, CLEANUPS_KEY } from './forge';

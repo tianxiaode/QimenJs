@@ -72,7 +72,7 @@ interface GroupSelectState {
     defaultMode: GroupSelectMode;
 }
 
-export const GroupSelectAbility: AbilityDefinition = {
+export const GroupSelectAbility= {
     // ─── 初始化 ───
 
     /**
@@ -308,4 +308,4 @@ export const GroupSelectAbility: AbilityDefinition = {
         if (!state) return;
         state.groups = {};
     },
-};
+} satisfies AbilityDefinition;

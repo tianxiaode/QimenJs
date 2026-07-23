@@ -10,7 +10,7 @@
  * - 通过 size 属性控制图标尺寸：icon.size = 'lg'
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface IconProps {
@@ -18,7 +18,7 @@ export interface IconProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let IconComponent = TemplateComponent.withTemplate({
+export let IconComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-icon-wrap',

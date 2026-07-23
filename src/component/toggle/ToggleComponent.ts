@@ -19,7 +19,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ToggleProps {
@@ -30,7 +30,7 @@ export interface ToggleProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ToggleComponent = TemplateComponent.withTemplate({
+export let ToggleComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-toggle',

@@ -6,7 +6,7 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 
-export const AnimationAbility: AbilityDefinition = {
+export const AnimationAbility= {
     /**
      * 播放动画
      *
@@ -43,4 +43,4 @@ export const AnimationAbility: AbilityDefinition = {
         if (!this.el || typeof this.el.animate !== 'function') return undefined;
         return this.el.animate(keyframes, options);
     },
-};
+} satisfies AbilityDefinition;

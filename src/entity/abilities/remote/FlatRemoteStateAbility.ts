@@ -12,7 +12,7 @@ import type { AbilityDefinition } from '@/composable';
  *
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const FlatRemoteStateAbility: AbilityDefinition = {
+export const FlatRemoteStateAbility= {
     // 计算属性（不与 Manager 数据字段同名）
     isEmpty: {
         get() {
@@ -83,4 +83,4 @@ export const FlatRemoteStateAbility: AbilityDefinition = {
     rollback(): void {
         this.rollbackAll();
     },
-};
+} satisfies AbilityDefinition;

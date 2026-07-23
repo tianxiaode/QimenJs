@@ -30,7 +30,7 @@ import { ALIGN_MAP, PACK_MAP } from '../utils/template-constants';
 import { COMPONENT_LIFECYCLE_EVENTS, globalEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 
-export const NodePropAbility: AbilityDefinition = {
+export const NodePropAbility= {
     _resolveNodeEl(nodeName: string): HTMLElement | undefined {
         const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;

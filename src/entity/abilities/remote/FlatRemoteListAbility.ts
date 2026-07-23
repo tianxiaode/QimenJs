@@ -13,7 +13,7 @@ import { ENTITY_LIST_EVENTS } from '@/events';
  * 因此 list/refresh 直接调用 _internalList，
  * 防抖仅用于合并短时间内的重复调用（防止并发请求）。
  */
-export const FlatRemoteListAbility: AbilityDefinition = {
+export const FlatRemoteListAbility= {
     /**
      * 普通查询
      */
@@ -52,4 +52,4 @@ export const FlatRemoteListAbility: AbilityDefinition = {
         this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
         return this.items;
     },
-};
+} satisfies AbilityDefinition;

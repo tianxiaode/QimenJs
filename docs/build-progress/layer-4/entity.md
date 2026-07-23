@@ -7,7 +7,7 @@
 
 ## 概述
 
-实体管理框架，提供实体管理功能。采用 Manager + State 双层架构，Manager 负责远程通信和生命周期，State 负责本地数据管理。所有 Ability 均为 AbilityDefinition 纯对象。
+实体管理框架，提供实体管理功能。采用 Manager + State 双层架构，Manager 负责远程通信和生命周期，State 负责本地数据管理。所有 Ability 均为 AbilityDefinition 纯对象，通过 `withAbilities()` + `InferAbilities` 声明合并注入。
 
 ## 架构
 
@@ -78,6 +78,13 @@ src/entity/
 ```
 
 ## 构建历史
+
+### 2026-07-23
+- ✅ Entity Manager 全量迁移：从 `BaseEntityManager.with()` 改为 `extends BaseEntityManager` + `withAbilities()` + `InferAbilities` 声明合并
+  - CoreEntityManager：移除 `AbilityDefinition` 类型导入，改用 `as const` + `InferAbilities` 推导接口
+  - managers.ts 5 个 Manager 变体全部迁移：LocalReadonly/LocalCrud/RemoteReadonly/RemoteCrud/RemoteTree
+  - BaseEntityManager.emit 改用 EventContextBuilder 构建 EventContext
+  - BaseEntityManager.dispose 移除 `disposeAbilities?.()` 调用（super.dispose 自动处理）
 
 ### 2026-07-18
 - **EntityEventBus 实体事件总线**（`src/events/EntityEventBus.ts`）：独立 scopeId，类似 EventBridge

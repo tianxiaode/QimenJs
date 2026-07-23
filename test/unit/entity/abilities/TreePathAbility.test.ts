@@ -25,6 +25,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
 
 // ============================================
@@ -32,7 +33,8 @@ import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
 // ============================================
 
 function createPathHost() {
-    class PathHost extends ComposableBase.with([TreePathAbility]) {
+    class PathHost extends ComposableBase {
+
         nodes = new Map<string, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';

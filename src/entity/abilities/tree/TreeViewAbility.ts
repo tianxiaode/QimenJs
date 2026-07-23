@@ -7,7 +7,7 @@ import type { TreeSchema } from '@/schema';
  * 为宿主提供树形结构的视图刷新功能（flat/tree 两种格式）。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/schema/items 可直接访问。
  */
-export const TreeViewAbility: AbilityDefinition = {
+export const TreeViewAbility= {
     refreshView() {
         const schema = this.schema as TreeSchema;
 
@@ -59,4 +59,4 @@ export const TreeViewAbility: AbilityDefinition = {
 
         return build(this.root || null);
     },
-};
+} satisfies AbilityDefinition;

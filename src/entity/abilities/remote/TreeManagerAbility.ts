@@ -14,7 +14,7 @@ import { ENTITY_TREE_EVENTS } from '@/events';
  * - moved: 节点移动后触发
  * - childrenRefreshed: 子节点刷新后触发
  */
-export const TreeManagerAbility: AbilityDefinition = {
+export const TreeManagerAbility= {
     // 基础操作
     expand(id: string | number) {
         return this.debounce('expand', (i: string | number) => this._expand(i), 200, true)(id);
@@ -101,4 +101,4 @@ export const TreeManagerAbility: AbilityDefinition = {
         this.refreshView();
         this.emit(ENTITY_TREE_EVENTS.MOVED, { id, targetPid });
     },
-};
+} satisfies AbilityDefinition;

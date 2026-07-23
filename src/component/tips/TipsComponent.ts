@@ -11,7 +11,7 @@
  * - 显隐由调度中心通过 hidden 属性控制
  */
 
-import { TemplateComponent, type Placement } from '@qimenjs/component-core';
+import { Component, type Placement } from '@qimenjs/component-core';
 import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
 
 export interface TipsProps {
@@ -24,7 +24,7 @@ export interface TipsProps {
     tooltipArrow?: boolean;
 }
 
-export let TipsComponent = TemplateComponent.withTemplate({
+export let TipsComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         children: [

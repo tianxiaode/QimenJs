@@ -1,4 +1,5 @@
-import { ComposableBase, withAbilities, type AbilityDefinition } from '@/composable';
+import { ComposableBase, withAbilities } from '@/composable';
+import type { InferAbilities } from '@/composable';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
@@ -13,49 +14,35 @@ import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 
-/**
- * CoreEntityManager 能力声明
- */
-export const CORE_ENTITY_ABILITIES: readonly AbilityDefinition[] = [
+export const CORE_ENTITY_ABILITIES = [
     EventAbility,
     DomainAbility,
     SystemAbility,
     SchemaAbility,
-];
+] as const;
 
-/**
- * CoreEntityManager — 继承自带核心能力的 ComposableBase
- *
- * InferAbilities 自动从能力数组推导接口，无需 export interface。
- */
 export abstract class CoreEntityManager extends ComposableBase {
     domain: string = 'default';
     abstract entityName: string;
     abstract url: string;
 
-    /** 缓存过期时间（毫秒），默认 5 分钟 */
     cacheTTL: number = 300000;
 
-    /** Schema 定义（原始，未编译） */
     abstract schema: RegistrSchema;
 
-    /** 获取编译后的 Schema（复用 SchemaAbility 的 _getCompiledSchema） */
     get compiledSchema(): Schema {
-        return (this as any)._getCompiledSchema().schema;
+        return this._getCompiledSchema().schema;
     }
 
-    /** 获取域配置 */
     protected getDomainConfig(): any {
         return (RegistryHub.get('domain') as any)?.get(this.domain);
     }
 
-    /** 获取数据处理预设 */
     protected getDataProcessorPreset(): string {
         const domainConfig = this.getDomainConfig();
         return domainConfig?.preset || 'default';
     }
 
-    /** 创建请求任务 */
     request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask {
         const context = this.buildRequestContext(action, options);
 
@@ -80,7 +67,6 @@ export abstract class CoreEntityManager extends ComposableBase {
         };
     }
 
-    /** 构建请求上下文 */
     protected buildRequestContext(
         action: ENTITY_ACTION,
         options: HttpRequestOptions
@@ -108,7 +94,6 @@ export abstract class CoreEntityManager extends ComposableBase {
             .build();
     }
 
-    /** 执行数据处理管道 */
     protected async executeDataProcessor(
         stage: 'pre' | 'post',
         context: RequestContext
@@ -123,7 +108,6 @@ export abstract class CoreEntityManager extends ComposableBase {
         }
     }
 
-    /** 取消所有请求 */
     cancelAll(): void {
         this.logger.warn(`Cancelling all requests for Entity [${this.entityName}]`);
     }
@@ -135,3 +119,5 @@ export abstract class CoreEntityManager extends ComposableBase {
 }
 
 withAbilities(CoreEntityManager, CORE_ENTITY_ABILITIES);
+
+export interface CoreEntityManager extends InferAbilities<typeof CORE_ENTITY_ABILITIES> {}

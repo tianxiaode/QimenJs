@@ -24,11 +24,13 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { FlatRemoteStateAbility } from '@/entity/abilities/remote/FlatRemoteStateAbility';
 import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 function createRemoteHost() {
-    class RemoteHost extends ComposableBase.with([FlatRemoteStateAbility, DirtyAbility]) {
+    class RemoteHost extends ComposableBase {
+
         schema = { idField: 'id' };
         items: any[] = [];
         item: any = null;

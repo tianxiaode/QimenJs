@@ -17,7 +17,7 @@
  * - 默认尺寸为 md
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export interface ButtonProps {
@@ -26,7 +26,7 @@ export interface ButtonProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ButtonComponent = TemplateComponent.withTemplate({
+export let ButtonComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-button',

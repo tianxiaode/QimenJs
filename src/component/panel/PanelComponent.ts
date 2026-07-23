@@ -1,4 +1,4 @@
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 
@@ -18,7 +18,7 @@ export interface PanelProps {
     toolsRight?: ToolGroupConfig;
 }
 
-const PanelBase = TemplateComponent.withTemplate({
+const PanelBase = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-panel',

@@ -31,6 +31,7 @@ jest.mock('@/logger', () => {
 
 import { RemoteTreeEntityManager } from '@/entity/manager/managers';
 import { TreeManagerAbility } from '@/entity/abilities/remote/TreeManagerAbility';
+import { withAbilities } from '@/composable';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { SchemaRegistrar } from '@/schema';
@@ -65,20 +66,14 @@ const treeTestSchema: TreeSchema = {
 // ============================================
 
 class TestTreeManager extends RemoteTreeEntityManager {
-    // 添加 TreeManagerAbility 以支持 expand/collapse/refresh
-
     domain = 'tree-test';
     entityName = 'TestDepartment';
     url = '/api/departments';
     schema: RegistrSchema = treeTestSchema;
 
-    // TreePathAbility 和 TreeLifecycleAbility 依赖 nodes/hierarchy
-    // 这些在宿主构造时通过 abilityState 初始化
     nodes: Map<string | number, any> = new Map();
     hierarchy: Map<string | number | null, (string | number)[]> = new Map();
 
-    // TreeManagerAbility 依赖 isLoaded/setLoaded
-    // 用于跟踪节点是否已从远程加载
     private _loadedNodes = new Set<string | number>();
 
     isLoaded(id: string | number): boolean {
@@ -92,12 +87,13 @@ class TestTreeManager extends RemoteTreeEntityManager {
             this._loadedNodes.delete(id);
         }
     }
+}
 
-    constructor() {
-        super();
-        // 注入 TreeManagerAbility 以支持 expand/collapse/refresh
-        this.setupAbilities([TreeManagerAbility]);
-    }
+withAbilities(TestTreeManager, [TreeManagerAbility]);
+
+interface TestTreeManager extends RemoteTreeEntityManager {
+    collapse(id: any): void;
+    expand(id: any): Promise<void>;
 }
 
 // ============================================
@@ -146,7 +142,7 @@ function createTreeData() {
 // ============================================
 
 describe('RemoteTreeEntityManager 集成测试', () => {
-    let manager: TestTreeManager;
+    let manager: any;
 
     beforeAll(() => {
         ensureTreeTestDomain();

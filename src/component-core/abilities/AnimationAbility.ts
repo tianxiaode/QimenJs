@@ -23,7 +23,7 @@ import type { AbilityDefinition } from '@/composable';
 import type { AnimationDecl } from '../types/tpl-body';
 import { ANIMATION_PRESETS } from '../utils/template-constants';
 
-export const AnimationAbility: AbilityDefinition = {
+export const AnimationAbility= {
     get _animDecl(): AnimationDecl | undefined {
         const ctor = this.constructor as any;
         return ctor._animation ?? undefined;

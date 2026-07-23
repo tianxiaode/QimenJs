@@ -23,11 +23,13 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { LocalListAbility } from '@/entity/abilities/local/LocalListAbility';
 import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createListHost() {
-    class ListHost extends ComposableBase.with([LocalListAbility]) {
+    class ListHost extends ComposableBase {
+
         items: any[] = [];
         search: any = {};
 

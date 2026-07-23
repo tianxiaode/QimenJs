@@ -7,6 +7,20 @@
 
 ## 构建历史
 
+### 2026-07-23
+- ✅ 双层架构重构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
+  - ComponentFactory：纯工厂，不持有 el/nodeMap，withTemplate 编译模板生成内部类
+  - InnerComponent：完整组件，拥有初始化流程/能力/el/nodeMap，是真正被实例化的组件
+  - new OuterClass(props) 根据 when 条件选择内部类，直接返回内部类实例
+- ✅ 多模板支持：ComponentTemplate.tpl 支持 TplNode | TplVariant[]，条件选择
+  - TplVariant：{ tpl: TplNode, when?: (config) => boolean }，when 省略为兜底
+  - 全部不匹配 → 抛出 ComponentError(COMPONENT_TPL_KEY_NOT_FOUND)
+- ✅ 模板工厂重命名：createTemplateClass → createInnerClass, createReplaceClass → createReplaceFactory, 新增 createComponentFactory
+- ✅ 新增 Component 闭包基类导出（component-core/index.ts）
+- ✅ 新增 TplVariant 类型导出
+- ✅ 新增错误码：COMPONENT_TPL_KEY_NOT_FOUND, COMPONENT_BODY_INVALID_FIELD
+- ✅ tpl-node-def.ts / tpl-body-def.ts / component-template.ts 注释全面更新为双层架构
+
 ### 2026-07-21
 - ✅ CommonPropsAbility 两层架构重构：root getter/setter + 方法重载 + setNodeXxx + setNodeProp 兜底
 - ✅ 移除 addCommonPropDesc / addClsMethodDescs / addComponentForwardDescs / addForwardClsMethodDescs

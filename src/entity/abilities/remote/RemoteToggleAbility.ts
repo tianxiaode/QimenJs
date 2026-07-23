@@ -13,7 +13,7 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
-export const RemoteToggleAbility: AbilityDefinition = {
+export const RemoteToggleAbility= {
     async toggle(item: any, field: string): Promise<any> {
         return this.debounce(
             'toggle',
@@ -45,4 +45,4 @@ export const RemoteToggleAbility: AbilityDefinition = {
             return this.item!;
         }
     },
-};
+} satisfies AbilityDefinition;

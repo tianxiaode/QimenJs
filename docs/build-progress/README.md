@@ -129,6 +129,17 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-23（文档同步）
+- 组件核心双层架构重构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
+- 多模板支持：ComponentTemplate.tpl 支持 TplNode | TplVariant[]，条件选择
+- 模板工厂重命名：createTemplateClass → createInnerClass, createReplaceClass → createReplaceFactory, 新增 createComponentFactory
+- 新增 Component 闭包基类导出、TplVariant 类型导出
+- 新增错误码：COMPONENT_TPL_KEY_NOT_FOUND, COMPONENT_BODY_INVALID_FIELD
+- Entity Manager 全量迁移：从 BaseEntityManager.with() 改为 extends + withAbilities() + InferAbilities 声明合并
+- Router 迁移：从 ComposableBase.with() 改为 extends + withAbilities() + InferAbilities 声明合并
+- BaseEntityManager.emit 改用 EventContextBuilder 构建 EventContext
+- 更新文档：架构文档、构建进度、组件能力索引
+
 ### 2026-07-16（文档同步）
 - 修正包层级结构：Layer 0 增加 context（9个包），Layer 1 移除 context/validation/schema 增加 pipeline（6个包），Layer 2 增加 data-processor/permission 移除 pipeline（7个包），Layer 3 移除 data-processor（5个包），UI 层移除 permission（7个包）
 - 总包数从 38 修正为 36（permission 从 UI 层移到 Layer 2，context 从 Layer 1 移到 Layer 0，pipeline 从 Layer 2 移到 Layer 1，data-processor 从 Layer 3 移到 Layer 2）

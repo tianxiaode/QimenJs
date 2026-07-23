@@ -24,7 +24,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export type IndicatorType = 'dot' | 'number' | 'dash' | string;
@@ -38,7 +38,7 @@ export interface IndicatorProps {
     anchor?: HTMLElement;
 }
 
-export let IndicatorComponent = TemplateComponent.withTemplate({
+export let IndicatorComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-indicator',

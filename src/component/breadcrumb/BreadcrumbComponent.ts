@@ -20,7 +20,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export interface BreadcrumbItem {
@@ -33,7 +33,7 @@ export interface BreadcrumbProps {
     separator?: string;
 }
 
-export let BreadcrumbComponent = TemplateComponent.withTemplate({
+export let BreadcrumbComponent = Component.withTemplate({
     tpl: {
         tag: 'nav',
         cls: 'q-breadcrumb',

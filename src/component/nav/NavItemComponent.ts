@@ -15,7 +15,7 @@
  * - 浮层定位/动画等通过 overlayOptions 配置
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
@@ -67,7 +67,7 @@ const DEFAULT_EXIT_ANIMATION: Keyframe[] = [
     { opacity: 0, transform: 'translateX(-4px)' },
 ];
 
-export let NavItemComponent = TemplateComponent.withTemplate({
+export let NavItemComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-nav-item',

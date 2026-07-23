@@ -8,7 +8,7 @@ import { ENTITY_LIST_EVENTS } from '@/events';
  * UI 绑定 items 后，搜索条件变化会自动触发重绘。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const LocalListAbility: AbilityDefinition = {
+export const LocalListAbility= {
     async list() {
         const options = await this.buildOptions('list', this.toParams(), null, {});
         const context = await this.fetch('list', options);
@@ -32,4 +32,4 @@ export const LocalListAbility: AbilityDefinition = {
         this.search.sortOrder = sortOrder;
         return this.items;
     },
-};
+} satisfies AbilityDefinition;

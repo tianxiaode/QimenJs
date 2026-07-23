@@ -7,7 +7,7 @@ import type { AbilityDefinition } from '@/composable';
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
-export const FlatRemoteGetAllAbility: AbilityDefinition = {
+export const FlatRemoteGetAllAbility= {
     getAll(): Promise<any[]> {
         return this.debounce('get-all', () => this._internalGetAll(), 300, true)();
     },
@@ -19,4 +19,4 @@ export const FlatRemoteGetAllAbility: AbilityDefinition = {
         this.updateData(items, items.length);
         return this.items;
     },
-};
+} satisfies AbilityDefinition;

@@ -8,7 +8,7 @@ import { array } from '@qimenjs/utils';
  * 为宿主提供树形结构的搜索和排序功能。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/searchFields/search 可直接访问。
  */
-export const TreeSearchAbility: AbilityDefinition = {
+export const TreeSearchAbility= {
     applySearchExpansion() {
         const expandedField = this.expandedField;
         const pidField = this.parentIdField;
@@ -54,4 +54,4 @@ export const TreeSearchAbility: AbilityDefinition = {
             return typeof value === 'string' && value.toLowerCase().includes(k);
         });
     },
-};
+} satisfies AbilityDefinition;

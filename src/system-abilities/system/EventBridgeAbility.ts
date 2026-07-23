@@ -15,7 +15,7 @@ import type { AbilityDefinition } from '@/composable';
 import { EventBridge } from '@/events';
 import type { EventContext } from '@/context';
 
-export const EventBridgeAbility: AbilityDefinition = {
+export const EventBridgeAbility= {
     bridgeEmit(ctx: EventContext): void {
         EventBridge.getInstance().bridgeEmit(ctx);
     },
@@ -29,4 +29,4 @@ export const EventBridgeAbility: AbilityDefinition = {
     bridgeOnce(sourceId: string, eventName: string, handler: (data: any) => void): void {
         EventBridge.getInstance().bridgeOnce(sourceId, eventName, handler);
     },
-};
+} satisfies AbilityDefinition;

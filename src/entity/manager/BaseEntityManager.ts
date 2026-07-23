@@ -2,6 +2,7 @@ import type { ENTITY_ACTION, IBaseEntityManager, IEntity, SearchParams } from '@
 import type { FieldDefinition } from '@/schema/types/schema';
 import type { HttpRequestOptions } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
+import { EventContextBuilder } from '@/context';
 import { CoreEntityManager } from './CoreEntityManager';
 import { buildRequestEvent, ENTITY_REQUEST_STATUS } from '@/events';
 
@@ -14,7 +15,6 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
     extends CoreEntityManager
     implements IBaseEntityManager<TSearch>
 {
-
     // 数据字段
     loading: boolean = false;
     items: IEntity[] = [];
@@ -30,7 +30,13 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
         options: HttpRequestOptions
     ): Promise<RequestContext> {
         this.loading = true;
-        this.emit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), true);
+        this.emit(
+            buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING),
+            EventContextBuilder.create()
+                .withEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING))
+                .withData(true)
+                .build()
+        );
 
         try {
             const task = this.request(action as any, options);
@@ -38,19 +44,37 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
 
             if (ctx.metadata.hasError) {
                 const error = ctx.error || ctx.metadata.error;
-                this.emit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), ctx);
+                this.emit(
+                    buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR),
+                    EventContextBuilder.create()
+                        .withEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR))
+                        .withData(ctx)
+                        .build()
+                );
                 this.logger.error('Fetch failed: ', error);
                 throw error;
             }
 
             this.populateResponseData(ctx);
             await this.onAfterFetch(action as any, ctx);
-            this.emit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.SUCCESS), ctx);
+            this.emit(
+                buildRequestEvent(action, ENTITY_REQUEST_STATUS.SUCCESS),
+                EventContextBuilder.create()
+                    .withEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.SUCCESS))
+                    .withData(ctx)
+                    .build()
+            );
             this.logger.debug('Fetch success');
             return ctx;
         } finally {
             this.loading = false;
-            this.emit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), false);
+            this.emit(
+                buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING),
+                EventContextBuilder.create()
+                    .withEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING))
+                    .withData(false)
+                    .build()
+            );
         }
     }
 
@@ -181,7 +205,7 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
         this.item = null;
         this.search = null as any;
         this.loading = false;
-        this.disposeAbilities?.();
+
         super.dispose();
     }
 }

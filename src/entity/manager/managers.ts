@@ -1,4 +1,6 @@
 import { BaseEntityManager } from './BaseEntityManager';
+import { withAbilities } from '@/composable';
+import type { InferAbilities } from '@/composable';
 import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@/entity/types';
 import type { IEntity } from '@/schema';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
@@ -30,9 +32,15 @@ import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 // LocalReadonlyEntityManager
 // ============================================
 
+const LOCAL_READONLY_ABILITIES = [
+    FlatLocalStateAbility,
+    LocalListAbility,
+    LocalGetAbility,
+] as const;
+
 export abstract class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager.with(FlatLocalStateAbility, LocalListAbility, LocalGetAbility) {
+> extends BaseEntityManager {
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -40,20 +48,28 @@ export abstract class LocalReadonlyEntityManager<
     item: IEntity | null = null;
     search: TSearch = {} as TSearch;
 }
+
+withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+
+export interface LocalReadonlyEntityManager extends InferAbilities<
+    typeof LOCAL_READONLY_ABILITIES
+> {}
 
 // ============================================
 // LocalCrudEntityManager
 // ============================================
 
-export abstract class LocalCrudEntityManager<
-    TSearch extends ILocalSearchParams = ILocalSearchParams,
-> extends BaseEntityManager.with(
+const LOCAL_CRUD_ABILITIES = [
     FlatLocalStateAbility,
     LocalListAbility,
     LocalGetAbility,
     FlatLocalMutationAbility,
     FlatLocalDeleteAbility,
-) {
+] as const;
+
+export abstract class LocalCrudEntityManager<
+    TSearch extends ILocalSearchParams = ILocalSearchParams,
+> extends BaseEntityManager {
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
@@ -62,13 +78,15 @@ export abstract class LocalCrudEntityManager<
     search: TSearch = {} as TSearch;
 }
 
+withAbilities(LocalCrudEntityManager, LOCAL_CRUD_ABILITIES);
+
+export interface LocalCrudEntityManager extends InferAbilities<typeof LOCAL_CRUD_ABILITIES> {}
+
 // ============================================
 // RemoteReadonlyEntityManager
 // ============================================
 
-export abstract class RemoteReadonlyEntityManager<
-    TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager.with(
+const REMOTE_READONLY_ABILITIES = [
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -79,7 +97,11 @@ export abstract class RemoteReadonlyEntityManager<
     FlatRemoteGetAllAbility,
     RemoteGetAbility,
     FlatRemoteQueryAbility,
-) {
+] as const;
+
+export abstract class RemoteReadonlyEntityManager<
+    TSearch extends IFlatSearchParams = IFlatSearchParams,
+> extends BaseEntityManager {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -91,13 +113,17 @@ export abstract class RemoteReadonlyEntityManager<
     hasMore: boolean = false;
 }
 
+withAbilities(RemoteReadonlyEntityManager, REMOTE_READONLY_ABILITIES);
+
+export interface RemoteReadonlyEntityManager extends InferAbilities<
+    typeof REMOTE_READONLY_ABILITIES
+> {}
+
 // ============================================
 // RemoteCrudEntityManager
 // ============================================
 
-export abstract class RemoteCrudEntityManager<
-    TSearch extends IFlatSearchParams = IFlatSearchParams,
-> extends BaseEntityManager.with(
+const REMOTE_CRUD_ABILITIES = [
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -112,7 +138,11 @@ export abstract class RemoteCrudEntityManager<
     RemoteUpdateAbility,
     RemoteDeleteAbility,
     RemoteToggleAbility,
-) {
+] as const;
+
+export abstract class RemoteCrudEntityManager<
+    TSearch extends IFlatSearchParams = IFlatSearchParams,
+> extends BaseEntityManager {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -124,13 +154,15 @@ export abstract class RemoteCrudEntityManager<
     hasMore: boolean = false;
 }
 
+withAbilities(RemoteCrudEntityManager, REMOTE_CRUD_ABILITIES);
+
+export interface RemoteCrudEntityManager extends InferAbilities<typeof REMOTE_CRUD_ABILITIES> {}
+
 // ============================================
 // RemoteTreeEntityManager
 // ============================================
 
-export abstract class RemoteTreeEntityManager<
-    TSearch extends ITreeSearchParams = ITreeSearchParams,
-> extends BaseEntityManager.with(
+const REMOTE_TREE_ABILITIES = [
     SchemaProxyAbility,
     CacheAbility,
     DirtyAbility,
@@ -146,7 +178,11 @@ export abstract class RemoteTreeEntityManager<
     RemoteCreateAbility,
     RemoteUpdateAbility,
     RemoteDeleteAbility,
-) {
+] as const;
+
+export abstract class RemoteTreeEntityManager<
+    TSearch extends ITreeSearchParams = ITreeSearchParams,
+> extends BaseEntityManager {
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -155,3 +191,7 @@ export abstract class RemoteTreeEntityManager<
     total: number = 0;
     expandedIds: Set<string | number> = new Set();
 }
+
+withAbilities(RemoteTreeEntityManager, REMOTE_TREE_ABILITIES);
+
+export interface RemoteTreeEntityManager extends InferAbilities<typeof REMOTE_TREE_ABILITIES> {}

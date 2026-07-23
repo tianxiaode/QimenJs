@@ -12,7 +12,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 export interface DividerProps {
     vertical?: boolean;
@@ -20,7 +20,7 @@ export interface DividerProps {
     text?: string;
 }
 
-export let DividerComponent = TemplateComponent.withTemplate({
+export let DividerComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-divider',

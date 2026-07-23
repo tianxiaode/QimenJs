@@ -26,7 +26,7 @@ interface TemplateCacheEntry {
 
 // ─── 能力定义 ──────────────────────────────────────────────
 
-export const TemplateCacheAbility: AbilityDefinition = {
+export const TemplateCacheAbility= {
     /**
      * 模板缓存映射：key → TemplateCacheEntry
      */
@@ -105,4 +105,4 @@ export const TemplateCacheAbility: AbilityDefinition = {
 
         return { root, nodeMap };
     },
-};
+} satisfies AbilityDefinition;

@@ -15,7 +15,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 
@@ -26,7 +26,7 @@ export interface ProgressProps {
     showText?: boolean;
 }
 
-export let ProgressComponent = TemplateComponent.withTemplate({
+export let ProgressComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-progress',

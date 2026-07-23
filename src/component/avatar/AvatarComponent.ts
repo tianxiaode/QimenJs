@@ -17,7 +17,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 
 export type AvatarMode = 'src' | 'text' | 'icon';
@@ -29,7 +29,7 @@ export interface AvatarProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let AvatarComponent = TemplateComponent.withTemplate({
+export let AvatarComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-avatar',

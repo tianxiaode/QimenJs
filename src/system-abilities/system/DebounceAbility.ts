@@ -15,7 +15,7 @@
 import { debounce as debounceFn } from '@qimenjs/async';
 import type { AbilityDefinition } from '@/composable';
 
-export const DebounceAbility: AbilityDefinition = {
+export const DebounceAbility= {
     __name__: 'DebounceAbility',
 
     debounce<A extends (...args: any[]) => any>(
@@ -29,4 +29,4 @@ export const DebounceAbility: AbilityDefinition = {
             debounceFn(fn, wait, immediate)
         ) as A & { cancel(): void };
     },
-};
+} satisfies AbilityDefinition;

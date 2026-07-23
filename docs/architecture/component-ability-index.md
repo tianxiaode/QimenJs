@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-22
+> 最后更新：2026-07-23
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -13,24 +13,27 @@
 
 ```
 ComposableBase (src/composable/ComposableBase.ts)
-  └── TemplateComponent (src/component-core/TemplateComponent.ts)
-        ├── ButtonComponent
-        ├── InputComponent
-        ├── SelectComponent
-        ├── IconComponent / TextComponent
-        ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
-        ├── ToolbarComponent
-        ├── ButtonGroupComponent / SeparatorComponent
-        ├── TableComponent
-        ├── FormComponent
-        ├── DialogComponent
-        ├── BadgeComponent
-        ├── TipsComponent
-        ├── MenuComponent
-        ├── MenuItemComponent
-        ├── NavItemComponent
-        ├── NavItemGroupComponent
-        └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
+  ├── TemplateComponent (src/component-core/TemplateComponent.ts) — 内部类基类
+  │     ├── ButtonComponent
+  │     ├── InputComponent
+  │     ├── SelectComponent
+  │     ├── IconComponent / TextComponent
+  │     ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
+  │     ├── ToolbarComponent
+  │     ├── ButtonGroupComponent / SeparatorComponent
+  │     ├── TableComponent
+  │     ├── FormComponent
+  │     ├── DialogComponent
+  │     ├── BadgeComponent
+  │     ├── TipsComponent
+  │     ├── MenuComponent
+  │     ├── MenuItemComponent
+  │     ├── NavItemComponent
+  │     ├── NavItemGroupComponent
+  │     └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
+  └── Component (src/component-core/Component.ts) — 闭包基类（工厂层）
+        withTemplate(templates) → 编译生成内部类 → 闭包保存
+        new OuterClass(props) → when 条件选择内部类 → 返回内部类实例
 ```
 
 ### 1.2 组件能力组合
@@ -65,7 +68,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 
 ### 1.3 TemplateComponent 内置能力
 
-TemplateComponent 通过 TEMPLATE_COMPONENT_ABILITIES 自动注入以下能力（所有 withTemplate 强类都拥有）：
+TemplateComponent（内部类基类）通过 `withAbilities(TemplateComponent, TEMPLATE_COMPONENT_ABILITIES)` 自动注入以下能力（所有 withTemplate 生成的内部类都拥有）：
 
 | 能力 | 文件 | 说明 |
 |------|------|------|
@@ -672,6 +675,8 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 
 ### 4.1 管理器变体 (`src/entity/manager/managers.ts`)
 
+所有 Manager 变体已迁移为 `extends BaseEntityManager` + `withAbilities()` + `InferAbilities` 声明合并模式，不再使用 `BaseEntityManager.with()` 语法。
+
 | 管理器 | 能力组合 | 说明 |
 |--------|----------|------|
 | LocalReadonlyEntityManager | FlatLocalStateAbility + LocalListAbility + LocalGetAbility | 本地只读 |
@@ -679,6 +684,15 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | RemoteReadonlyEntityManager | SchemaProxyAbility + CacheAbility + DirtyAbility + SearchAbility + DomainPagingAbility + FlatRemoteStateAbility + FlatRemoteListAbility + FlatRemoteGetAllAbility + RemoteGetAbility + FlatRemoteQueryAbility | 远程只读（含分页） |
 | RemoteCrudEntityManager | + RemoteCreateAbility + RemoteUpdateAbility + RemoteDeleteAbility + RemoteToggleAbility | 远程 CRUD（含分页） |
 | RemoteTreeEntityManager | + TreePathAbility + TreeLifecycleAbility + TreeSearchAbility + TreeViewAbility + TreeRemoteStateAbility | 远程树形 |
+
+```typescript
+// 迁移后写法
+const LOCAL_READONLY_ABILITIES = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility] as const;
+
+export abstract class LocalReadonlyEntityManager extends BaseEntityManager { /* ... */ }
+withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+export interface LocalReadonlyEntityManager extends InferAbilities<typeof LOCAL_READONLY_ABILITIES> {}
+```
 
 ### 4.2 分页相关能力
 

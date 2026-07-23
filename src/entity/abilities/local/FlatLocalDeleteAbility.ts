@@ -8,7 +8,7 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
  * localOnly 数据直接删除，persistent 数据可选立即或延迟同步到远程。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const FlatLocalDeleteAbility: AbilityDefinition = {
+export const FlatLocalDeleteAbility= {
     async delete(ids: (string | number)[], immediate: boolean = true) {
         // 1. 获取分流计划
         const plan = this.getDeletionPlan(ids);
@@ -30,4 +30,4 @@ export const FlatLocalDeleteAbility: AbilityDefinition = {
 
         return plan;
     },
-};
+} satisfies AbilityDefinition;

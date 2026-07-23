@@ -12,7 +12,7 @@ import type { AbilityDefinition } from '@/composable';
 import { OverlayEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
-export const OverlayEventBusAbility: AbilityDefinition = {
+export const OverlayEventBusAbility= {
     overlayEmit(ctx: EventContext): void {
         OverlayEventBus.getInstance().overlayEmit(ctx);
     },
@@ -26,4 +26,4 @@ export const OverlayEventBusAbility: AbilityDefinition = {
     overlayOnce(overlayKey: string, action: string, handler: (data: any) => void): void {
         OverlayEventBus.getInstance().overlayOnce(overlayKey, action, handler);
     },
-};
+} satisfies AbilityDefinition;

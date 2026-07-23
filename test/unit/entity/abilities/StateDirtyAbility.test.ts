@@ -26,6 +26,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 // ============================================
@@ -33,7 +34,8 @@ import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 // ============================================
 
 function createDirtyHost() {
-    class DirtyHost extends ComposableBase.with([DirtyAbility]) {
+    class DirtyHost extends ComposableBase {
+
         schema = { idField: 'id' };
         sourceData = new Map<string, any>();
     }
@@ -215,7 +217,8 @@ describe('DirtyAbility', () => {
 
     describe('schema 无 idField 时使用默认值', () => {
         function createDirtyHostNoIdField() {
-            class DirtyHost extends ComposableBase.with([DirtyAbility]) {
+            class DirtyHost extends ComposableBase {
+
                 schema = {}; // 无 idField
                 sourceData = new Map<string, any>();
             }

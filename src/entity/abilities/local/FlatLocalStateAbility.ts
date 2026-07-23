@@ -509,7 +509,7 @@ const searchMethods: AbilityDefinition = {
 
 // ---- 合并导出 ----
 
-export const FlatLocalStateAbility: AbilityDefinition = {
+export const FlatLocalStateAbility = {
     // 数据字段由 Manager 类定义，Ability 不再提供初始值
     // （isRemote, sourceData, loading, items, item, search 均在 Manager 上定义）
 
@@ -563,4 +563,4 @@ export const FlatLocalStateAbility: AbilityDefinition = {
     ...dirtyMethods,
     ...mutationMethods,
     ...searchMethods,
-};
+} satisfies AbilityDefinition;

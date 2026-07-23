@@ -7,7 +7,7 @@ import type { IEntity } from '@/schema';
  * 为宿主提供树形结构的路径管理功能（ingest/rebuild/toggle）。
  * this 指向宿主（TreeRemoteEntityState），this.nodes/hierarchy/parentIdField/root 可直接访问。
  */
-export const TreePathAbility: AbilityDefinition = {
+export const TreePathAbility= {
     ingest(data: IEntity | IEntity[], manualParentId?: string | number | null) {
         const list = Array.isArray(data) ? data : [data];
         const parentIdField = this.parentIdField;
@@ -89,4 +89,4 @@ export const TreePathAbility: AbilityDefinition = {
             node[this.leafField] = leaf;
         }
     },
-};
+} satisfies AbilityDefinition;

@@ -7,7 +7,7 @@ import type { AbilityDefinition } from '@/composable';
  * this 指向宿主（Manager），this.schema 可直接访问。
  * 私有状态 _snapshots 通过 abilityState 管理，宿主 dispose 时自动清空。
  */
-export const DirtyAbility: AbilityDefinition = {
+export const DirtyAbility= {
     isDirty(item?: any): boolean {
         const snapshots = this.abilityState('StateDirty:snapshots', () => new Map<string, any>())!;
         if (!item) return snapshots.size > 0;
@@ -60,4 +60,4 @@ export const DirtyAbility: AbilityDefinition = {
         const snapshots = this.abilityState('StateDirty:snapshots', () => new Map<string, any>())!;
         snapshots.clear();
     },
-};
+} satisfies AbilityDefinition;

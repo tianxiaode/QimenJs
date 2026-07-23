@@ -5,12 +5,27 @@
  * 本文件定义 body 中所有特殊字段的分类和处理方式。
  *
  * ══════════════════════════════════════════════════════════════
+ * Body 在双层架构中的位置
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 新架构下，body 挂在内部类（InnerComponent）上，不在闭包基类上：
+ *
+ *   闭包基类（ComponentFactory）— 纯工厂，不持有 body
+ *   内部类基类（InnerComponent）— 持有 body，是真正的组件
+ *
+ * withTemplate(templates, body) 时：
+ *   1. 为每个模板编译生成内部类
+ *   2. body 中的方法/getter/setter 挂到内部类原型上
+ *   3. static 类字段挂到内部类构造函数上
+ *   4. 闭包类只保存内部类引用，不处理 body
+ *
+ * ══════════════════════════════════════════════════════════════
  * Body 字段分类
  * ══════════════════════════════════════════════════════════════
  *
  * body 只接受以下四类内容：
  *
- * 1. static 类（编译时设为类静态属性）：
+ * 1. static 类（编译时设为内部类静态属性）：
  *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
  *
  * 2. init 类（运行时由 InitAbility 初始化）：
@@ -19,9 +34,9 @@
  * 3. hook 类（实例化时由框架调用，返回值赋给实例）：
  *    onInitState
  *
- * 4. 其他（编译时挂原型）：
- *    - 函数 → proto[key] = fn
- *    - getter/setter → Object.defineProperty(proto, key, desc)
+ * 4. 其他（编译时挂内部类原型）：
+ *    - 函数 → innerProto[key] = fn
+ *    - getter/setter → Object.defineProperty(innerProto, key, desc)
  *
  * 不接受纯数据值（如 _pool: []、title: 'Hello'）：
  *    - 默认属性值 → 写在 TplNode 节点定义里
@@ -112,7 +127,7 @@
  * 组件 emit(event) 时，如果未传 data 参数，框架自动查找
  * get{Event}EventData() 方法（约定命名）：
  * - 存在 → 调用并以其返回值作为 data
- * - 不存在 → data 为 undefined（向后兼容）
+ * - 不存在 → data 为 undefined
  *
  * 命名规则：事件名 click → getClickEventData，toggle → getToggleEventData
  *

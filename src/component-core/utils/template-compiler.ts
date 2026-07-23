@@ -5,32 +5,32 @@
  * findByPath: 索引路径定位元素
  */
 
-import type { ComponentTemplate } from '../types/component-template';
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath } from '../types/compiled-types';
+import type { BodyDef } from '../types/tpl-body';
 import { VOID_TAGS } from './template-constants';
 import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
 import { applyChildNodeProps } from './child-node-props';
+import { ComponentError, KernelErrorCode } from '@/error';
 
-export function compilePendingTemplate(ctor: any, template: ComponentTemplate, logger: any): void {
-    const expandedTpl = expandFragments(template.tpl);
-    const expandedTemplate = { ...template, tpl: expandedTpl };
+export function compilePendingTemplate(ctor: any, tpl: TplNode, logger: any, body?: BodyDef): void {
+    const expandedTpl = expandFragments(tpl);
 
-    const result = compileTemplate(expandedTemplate, logger);
+    const result = compileTemplate(expandedTpl, logger);
 
-    const tpl = document.createElement('template');
-    tpl.innerHTML = result.html;
+    const tplEl = document.createElement('template');
+    tplEl.innerHTML = result.html;
 
     ctor._compiledTemplate = {
         ...result,
-        templateCache: tpl,
-        body: template.body,
+        templateCache: tplEl,
+        body,
     };
 
     ctor._nodeMetas = result.nodeMetas;
     ctor._i18nNodes = result.i18nNodes;
 
-    applyBody(ctor, template.body);
+    applyBody(ctor, body);
 
     applyChildNodeProps(ctor, result.nodeMetas, result.i18nNodes);
 
@@ -74,13 +74,11 @@ export function findByPath(root: HTMLElement, path: number[]): HTMLElement | nul
 // 内部：compileTemplate
 // ══════════════════════════════════════════════════════════════
 
-function compileTemplate(template: ComponentTemplate, logger: any) {
+function compileTemplate(root: TplNode, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};
     const exposeNames: string[] = [];
     const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
-
-    const root = template.tpl;
 
     indexPath['root'] = [];
     nodeMetas['root'] = {
@@ -217,8 +215,10 @@ function validateBodyKey(key: string): void {
     const ch = key[0];
     if (ch === '_' || ch === '$') return;
 
-    throw new Error(
-        `[Body] 不支持纯数据字段 "${key}"。默认属性值写在 TplNode，实例状态用 _applyState 模式。`
+    throw new ComponentError(
+        `Body 不支持纯数据字段 "${key}"。默认属性值写在 TplNode，实例状态用 _applyState 模式。`,
+        KernelErrorCode.COMPONENT_BODY_INVALID_FIELD,
+        { field: key }
     );
 }
 

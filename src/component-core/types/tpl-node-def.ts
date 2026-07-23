@@ -13,28 +13,94 @@
  *   定义 → 存为纯数据 → 统一方法分发 → 不生成复杂闭包
  *
  * ══════════════════════════════════════════════════════════════
- * 组件构建流程
+ * 双层架构：闭包基类 + 内部类基类
  * ══════════════════════════════════════════════════════════════
+ *
+ * 组件系统采用双层架构，彻底解耦模板结构与组件逻辑：
+ *
+ * 【闭包基类】ComponentFactory — 工厂层，纯闭包
+ *   - 不持有 el、nodeMap，不挂载能力
+ *   - withTemplate(templates) → 编译模板 → 生成内部类 → 闭包保存
+ *   - replace() → 基于已有内部类派生新内部类
+ *   - 构造函数 / create() → 根据 when 条件选择内部类，返回内部类实例
+ *   - new OuterClass({ labelPosition: 'top' }) 直接返回内部类实例（JS 规范支持）
+ *
+ * 【内部类基类】InnerComponent — 实现层，完整组件
+ *   - 拥有完整初始化流程、能力（Ability）、el、nodeMap
+ *   - 预编译产物直接挂在自己身上
+ *   - 是真正被实例化的组件，外部拿到的就是这个实例
+ *   - 不需要代理、不需要 forwards 转发 nodeMap
+ *
+ * 核心优势：
+ *   - 模板与组件类解绑：同一闭包类可关联多个模板，按 when 条件选择
+ *   - 逻辑复用：InputAbility 等能力跨模板共享，挂在内部类上
+ *   - 零代理：外部直接操作内部类实例，所有能力方法直接可用
+ *   - 动态切换：销毁旧内部实例 + 创建新内部实例 + 替换 el 位置
+ *   - 预编译不变：每个内部类独立预编译，cloneNode 性能完全保留
+ *
+ * @example
+ * ```ts
+ * // 定义：闭包类关联多套模板（条件选择）
+ * const InputComponent = ComponentFactory.withTemplate({
+ *     tpl: [
+ *         { tpl: INPUT_TOP_TEMPLATE, when: (cfg) => cfg.labelPosition === 'top' },
+ *         { tpl: INPUT_LEFT_TEMPLATE, when: (cfg) => cfg.labelPosition === 'left' },
+ *         { tpl: INPUT_DEFAULT_TEMPLATE },  // 兜底
+ *     ],
+ *     body: { type: 'input' },
+ * });
+ *
+ * // 使用：按配置自动选择模板
+ * const input = new InputComponent({ labelPosition: 'top' });
+ * // → when 条件匹配 INPUT_TOP_TEMPLATE，返回对应内部类实例
+ *
+ * // 运行时切换模板
+ * const state = { value: input.value };
+ * input.dispose();
+ * const newInput = new InputComponent({ labelPosition: 'left', ...state });
+ * parentEl.appendChild(newInput.el);
+ * ```
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 组件构建流程（新架构）
+ * ══════════════════════════════════════════════════════════════
+ *
+ * 【定义时】withTemplate(templates) → 闭包基类
+ *   1. templates.tpl 为 TplNode | TplVariant[]，支持单模板或多模板
+ *   2. 单模板（TplNode）→ 直接编译，无条件
+ *   3. 多模板（TplVariant[]）→ 每个变体有 tpl + 可选 when 条件
+ *   4. 遍历变体，对每个 tpl 执行编译
+ *   5. compileTemplate(template) → 生成 HTML + indexPath + nodeMetas
+ *   6. 创建 <template> 元素缓存 HTML 片段
+ *   7. 创建内部类（InnerComponent 子类），挂载预编译产物 + body + 能力
+ *   8. 内部类 + when 保存到闭包中（_variants 数组）
+ *   9. 返回闭包类（构造函数返回内部类实例）
  *
  * 【编译时】compileTemplate(template)
  *   1. 递归遍历 TplNode 树
- *   2. tag 节点 → 生成 HTML 标签 + 收集 name 到 nodeMap
+ *   2. tag 节点 → 生成 HTML 标签 + 收集 name 到 nodeMetas
  *   3. type 节点 → 生成占位 <div>，运行时由子组件替换
- *   4. events → 存入 nodeMap 元数据（纯数据，不生成闭包）
+ *   4. events → 存入 nodeMetas（纯数据，不生成闭包）
  *   5. flex/grid/cls/style → 存入 meta，运行时由 applyStyle 应用
  *   6. i18n → 存入 meta，运行时写入 DOM
  *   7. initConfig → 存入 meta，子组件渲染时传入构造函数
  *   8. 创建 <template> 元素缓存 HTML 片段
- *   9. buildContentProperties 在原型上生成极简 getter/setter（只转发）
  *
- * 【运行时】_initWithTemplate()
- *   1. 克隆模板 → 构建 nodeMap（el + meta）
- *   2. applyStyle — 将 flex/grid/cls/style 应用到 DOM
+ * 【实例化时】new OuterClass(props) → 内部类实例
+ *   1. 遍历 _variants，when(props) 首个为 true 的变体胜出
+ *   2. when 省略 → 兜底匹配（放在数组末尾）
+ *   3. 全部不匹配 → 抛出 ComponentError(COMPONENT_TPL_KEY_NOT_FOUND)
+ *   4. new InnerClass(props) → 返回内部类实例
+ *
+ * 【运行时】initFromTemplate(instance) — 内部类实例初始化
+ *   1. 克隆模板 → 构建 nodeMap（浅复制 nodeMetas + findByPath 挂 el）
+ *   2. applyNodeProps — 将 flex/grid/cls/style 应用到 DOM
  *   3. initContentFromProps — 填充内容属性
  *   4. initI18nFromTemplate — 翻译 i18n key 并写入 DOM
- *   5. _renderChildComponents — 渲染 type 子组件，initConfig 传入构造函数
- *   6. _bindDomEvents — 统一绑定 DOM 事件到 _handleDomEvent
- *   7. 调用能力 __init__ 方法
+ *   5. renderChildComponents — 渲染 type 子组件，initConfig 传入构造函数
+ *   6. bindDomEventBindings — 统一绑定 DOM 事件到 _handleDomEvent
+ *   7. initFloats / initDrags — 初始化浮动层和拖拽
+ *   8. callInitMethods — 调用能力 __init__ 方法
  *
  * ══════════════════════════════════════════════════════════════
  * 事件机制

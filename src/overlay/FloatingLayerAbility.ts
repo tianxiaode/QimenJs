@@ -40,7 +40,7 @@ export interface FloatingAnimationOptions {
 
 // ─── 能力定义 ──────────────────────────────────────────────
 
-export const FloatingLayerAbility: AbilityDefinition = {
+export const FloatingLayerAbility= {
     // ─── OverlayRoot 容器访问 ───
 
     overlayRoot: {
@@ -204,4 +204,4 @@ export const FloatingLayerAbility: AbilityDefinition = {
         if (position.startsWith('bottom')) return 'translateY(100%)';
         return 'translateY(-100%)';
     },
-};
+} satisfies AbilityDefinition;

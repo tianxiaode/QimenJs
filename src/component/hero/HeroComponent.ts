@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export interface HeroProps {
@@ -28,7 +28,7 @@ export interface HeroProps {
     actionText?: string;
 }
 
-export let HeroComponent = TemplateComponent.withTemplate({
+export let HeroComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-hero',

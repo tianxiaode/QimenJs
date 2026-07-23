@@ -20,7 +20,7 @@ import type { AbilityDefinition } from '@/composable';
 import { COMPONENT_LIFECYCLE_EVENTS, globalEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 
-export const LifecycleAbility: AbilityDefinition = {
+export const LifecycleAbility= {
     _emitMounted(): void {
         if (typeof this.onMounted === 'function') {
             this.onMounted();
@@ -63,4 +63,4 @@ export const LifecycleAbility: AbilityDefinition = {
             this.bridgeEmit(ctx);
         }
     },
-};
+} satisfies AbilityDefinition;

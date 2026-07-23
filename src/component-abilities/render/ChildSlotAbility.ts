@@ -12,7 +12,7 @@
 import type { AbilityDefinition } from '@qimenjs/composable';
 import type { NodeMetadata } from '@qimenjs/component-core';
 
-export const ChildSlotAbility: AbilityDefinition = {
+export const ChildSlotAbility= {
     /**
      * 替换指定位置的子组件
      *
@@ -77,4 +77,4 @@ export const ChildSlotAbility: AbilityDefinition = {
 
         return newChild;
     },
-};
+} satisfies AbilityDefinition;

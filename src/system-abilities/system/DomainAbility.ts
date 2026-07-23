@@ -10,7 +10,7 @@ import { DOMAIN_CACHE_SYMBOL } from '../types/abilities';
  * 通过 DomainRegistrar 单例获取域配置，并利用静态缓存机制提升性能。
  * this 指向宿主（ComposableBase），this.domain / this.getStatic / this.setStatic 可直接使用。
  */
-export const DomainAbility: AbilityDefinition = {
+export const DomainAbility= {
     domainConfig: {
         get(): DomainConfig {
             // 1. 尝试从缓存获取
@@ -30,4 +30,4 @@ export const DomainAbility: AbilityDefinition = {
         },
         enumerable: true,
     },
-};
+} satisfies AbilityDefinition;

@@ -117,19 +117,33 @@ UI 层（7 个，依赖应用层及以下）
 
 ### 关键架构模式
 
-1. **Ability/Composable 模式** - `ComposableBase` 基类 + `AbilityDefinition` 纯对象，通过 `Object.defineProperty` 复制到宿主
+1. **Ability/Composable 模式** - `ComposableBase` 基类 + `AbilityDefinition` 纯对象，通过 `withAbilities` 注入到类原型，`InferAbilities` 自动推导接口
 2. **Registry 模式** - `RegistrarBase<M>` 抽象基类 + `RegistryHub` 中央管理
 3. **Pipeline 模式** - weight+offset 排序、熔断、追踪、计时、统计
-4. **Entity Manager 模式** - 5 种 Manager 通过 Ability 组合获得不同功能
-5. **Component 模式** - `TemplateComponent.withTemplate()` 预编译 + 纯克隆实例化
+4. **Entity Manager 模式** - 5 种 Manager 通过 `extends + withAbilities + InferAbilities` 组合获得不同功能
+5. **Component 模式** - 双层架构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent），withTemplate 预编译 + 纯克隆实例化 + 多模板条件选择
 6. **EventBridge 单例模式** - 统一 eventScope 路由，解决跨作用域事件通信
 7. **自动注册模式** - 模块导入时自动注册，"引入即注册"约定
 
 ### 架构关键设计详解
 
-#### withTemplate 预编译架构
+#### withTemplate 预编译架构（双层架构）
 
-`TemplateComponent.withTemplate(templateHtml)` 是组件创建的核心机制，实现了"类定义时预编译，实例化时纯克隆"的高效模式：
+组件系统采用双层架构，彻底解耦模板结构与组件逻辑：
+
+**闭包基类（ComponentFactory）** — 工厂层，纯闭包：
+- 不持有 el、nodeMap，不挂载能力
+- `withTemplate(templates)` → 编译模板 → 生成内部类 → 闭包保存
+- `replace()` → 基于已有内部类派生新内部类
+- 构造函数 / `create()` → 根据 `when` 条件选择内部类，返回内部类实例
+
+**内部类基类（InnerComponent）** — 实现层，完整组件：
+- 拥有完整初始化流程、能力（Ability）、el、nodeMap
+- 预编译产物直接挂在自己身上
+- 是真正被实例化的组件，外部拿到的就是这个实例
+- 不需要代理、不需要 forwards 转发 nodeMap
+
+`TemplateComponent.withTemplate(template)` 是组件创建的核心机制，实现了"类定义时预编译，实例化时纯克隆"的高效模式：
 
 - **预编译阶段**（类定义时执行一次）：
   - 提取节点数据（`data-content` 属性 → 内容属性映射）
@@ -138,9 +152,14 @@ UI 层（7 个，依赖应用层及以下）
   - 创建模板 DOM 元素（`templateEl`）
 
 - **实例化阶段**（每次 `new Xxx()` 执行）：
+  - 遍历 `_variants`，`when(props)` 首个为 true 的变体胜出
   - `cloneNode(true)` 深克隆模板 DOM
   - 填充 node 引用（`nodeMap`）
   - 零字符串处理开销
+
+- **多模板支持**：`ComponentTemplate.tpl` 支持 `TplNode | TplVariant[]`
+  - 单模板（TplNode）→ 直接使用，无条件
+  - 多模板（TplVariant[]）→ 每个 `when(props)` 首个为 true 的胜出，省略 when 为兜底
 
 - **构造即完整**：`new Xxx()` 自动完成 initElement + 内容填充 + 事件绑定 + 注册，不需要 `initialize()`
 
@@ -200,9 +219,10 @@ PermissionRegistrar.registerBatch(entries)
 
 `src/composable/forge.ts` 提供能力锻造工具函数，用于将多个 AbilityDefinition 合并到目标类：
 
-- `forge(Class, abilities)` — 将能力列表中的属性/方法/getter/setter 通过 `Object.defineProperty` 复制到类原型
+- `withAbilities(Class, abilities)` — 将能力列表中的属性/方法/getter/setter 复制到类原型，保留 instanceof
+- `withDefinitions(Class, definitions)` — 将非能力定义（body 方法、getter/setter、普通值）复制到类原型
 - 能力有特殊协议属性：`__propAliases`（属性别名映射）、`__initProps`（从 props 初始化）、`__init__`（初始化方法名）
-- 组件通过 `static readonly abilities` 数组声明所需能力
+- `InferAbilities<typeof abilities>` — 从能力数组自动推导交叉类型，通过声明合并注入到类接口
 
 ## 相关文档
 

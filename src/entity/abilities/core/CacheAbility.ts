@@ -21,7 +21,7 @@ function _simpleHash(str: string): string {
  * this 指向宿主（Manager），this.schema 可直接访问。
  * 私有状态 _provider 通过 abilityState 管理，onCleanup 注册释放回调。
  */
-export const CacheAbility: AbilityDefinition = {
+export const CacheAbility= {
     cacheKey: {
         get() {
             return this._getCacheKey();
@@ -91,4 +91,4 @@ export const CacheAbility: AbilityDefinition = {
         }
         return providerPromise;
     },
-};
+} satisfies AbilityDefinition;

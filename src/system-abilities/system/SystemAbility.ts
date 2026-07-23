@@ -8,7 +8,7 @@ import { SystemRegistrar } from '@/registry';
  * 提供对系统级配置的访问能力，通过封装 SystemRegistrar 实现统一的系统配置管理。
  * this 指向宿主（ComposableBase）。
  */
-export const SystemAbility: AbilityDefinition = {
+export const SystemAbility= {
     /**
      * 系统配置访问器
      *
@@ -21,4 +21,4 @@ export const SystemAbility: AbilityDefinition = {
         }
         return registrar.getAll();
     },
-};
+} satisfies AbilityDefinition;

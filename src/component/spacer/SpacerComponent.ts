@@ -14,13 +14,13 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 export interface SpacerProps {
     size?: number;
 }
 
-export let SpacerComponent = TemplateComponent.withTemplate({
+export let SpacerComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-spacer',

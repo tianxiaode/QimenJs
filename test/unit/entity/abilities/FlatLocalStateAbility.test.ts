@@ -37,6 +37,7 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
 
 // ============================================
@@ -44,7 +45,8 @@ import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAb
 // ============================================
 
 function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) {
-    class FlatHost extends ComposableBase.with([FlatLocalStateAbility]) {
+    class FlatHost extends ComposableBase {
+
         schema: any = {
             idField: 'id',
             idType: 'string',

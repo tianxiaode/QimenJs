@@ -97,4 +97,14 @@ export enum KernelErrorCode {
      * Layout 定义缺少有效的 type 字段
      */
     LAYOUT_MISSING_TYPE = 'LAYOUT_MISSING_TYPE',
+
+    /**
+     * 未找到指定的模板 key
+     */
+    COMPONENT_TPL_KEY_NOT_FOUND = 'COMPONENT_TPL_KEY_NOT_FOUND',
+
+    /**
+     * Body 中包含不支持的数据字段
+     */
+    COMPONENT_BODY_INVALID_FIELD = 'COMPONENT_BODY_INVALID_FIELD',
 }

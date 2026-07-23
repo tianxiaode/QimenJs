@@ -5,6 +5,26 @@
  * 与 tpl-node-def.ts（字段定义常量）配合使用。
  *
  * 详细设计说明见 tpl-node-def.ts 顶部注释。
+ *
+ * ══════════════════════════════════════════════════════════════
+ * 双层架构下的 TplNode
+ * ══════════════════════════════════════════════════════════════
+ *
+ * TplNode 定义模板结构，编译时产出预编译产物（HTML + nodeMetas + indexPath），
+ * 挂在内部类（InnerComponent）上。闭包基类不直接处理 TplNode。
+ *
+ * 节点命名约定（Ability 与模板的契约）：
+ *   - field   — 输入框本体（InputAbility 核心，必须）
+ *   - label   — 标签文本
+ *   - prefix  — 前缀
+ *   - suffix  — 后缀
+ *   - error   — 错误提示
+ *   - hint    — 提示文本
+ *   - eye     — 密码显示切换（PasswordAbility）
+ *   - strength — 复杂度指示条（PasswordAbility）
+ *
+ * 不同模板的节点命名必须统一，Ability 通过显式配置（fieldNodeName 等）
+ * 或约定命名访问节点，与具体模板结构解耦。
  */
 
 // ══════════════════════════════════════════════════════════════

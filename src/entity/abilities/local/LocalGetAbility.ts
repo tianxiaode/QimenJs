@@ -7,7 +7,7 @@ import { ENTITY_LIST_EVENTS } from '@/events';
  * 从本地内存中根据 ID 获取实体。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const LocalGetAbility: AbilityDefinition = {
+export const LocalGetAbility= {
     get(id: string | number) {
         const { idField } = this.compiledSchema;
 
@@ -26,4 +26,4 @@ export const LocalGetAbility: AbilityDefinition = {
 
         return result;
     },
-};
+} satisfies AbilityDefinition;

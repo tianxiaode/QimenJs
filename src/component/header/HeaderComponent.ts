@@ -32,11 +32,11 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
-export let HeaderComponent = TemplateComponent.withTemplate({
+export let HeaderComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-header',

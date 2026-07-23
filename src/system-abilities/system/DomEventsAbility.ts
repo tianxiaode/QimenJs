@@ -13,7 +13,7 @@ import { createEventAdapter } from '@qimenjs/event-dom';
  *
  * this 指向宿主（ComposableBase），this.eventScope 可直接访问。
  */
-export const DomEventsAbility: AbilityDefinition = {
+export const DomEventsAbility= {
     /**
      * 绑定DOM事件到目标元素
      *
@@ -26,4 +26,4 @@ export const DomEventsAbility: AbilityDefinition = {
         const adapter = this.abilityState('DomEventsAbility:adapter', () => createEventAdapter());
         return adapter.bind(target, semantic, this.eventScope, options, this);
     },
-};
+} satisfies AbilityDefinition;

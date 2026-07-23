@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { HeaderFragment } from '../header/HeaderFragment';
 
 export interface CardProps {
@@ -27,7 +27,7 @@ export interface CardProps {
     action?: string;
 }
 
-export let CardComponent = TemplateComponent.withTemplate({
+export let CardComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-card',

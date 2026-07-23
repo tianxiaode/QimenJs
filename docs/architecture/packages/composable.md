@@ -119,21 +119,41 @@ function withDefinitions(target: any, definitions: Record<string, any>): void
 | 类型 | 说明 |
 |------|------|
 | `AbilityDefinition` | 能力定义类型，`Record<string \| symbol, any>` |
-| `InferAbilities` | 从能力数组自动推导交叉类型 |
+| `InferAbilities` | 从能力数组自动推导交叉类型，配合声明合并让 TS 感知注入的方法 |
 | `IComposableBase` | 强类实例接口 |
+| `ABILITY_STATES_KEY` | 能力状态 Symbol key（ComposableBase 与 forge 共享） |
+| `CLEANUPS_KEY` | 清理回调 Symbol key（ComposableBase 与 forge 共享） |
+
+### InferAbilities 声明合并模式
+
+`withAbilities` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知。通过 `InferAbilities` + 声明合并解决：
+
+```typescript
+const ABILITIES = [EventAbility, DomainAbility] as const;
+withAbilities(MyClass, ABILITIES);
+
+// 让 TS 知道 MyClass 实例拥有能力注入的方法
+export interface MyClass extends InferAbilities<typeof ABILITIES> {}
+```
+
+**关键**：能力数组必须用 `as const` 断言，否则 `InferAbilities` 无法推导具体类型。
 
 ## 使用示例
 
-### 实体管理类：extends + withAbilities
+### 实体管理类：extends + withAbilities + InferAbilities
 
 ```typescript
 import { ComposableBase, withAbilities } from '@/composable';
+import type { InferAbilities } from '@/composable';
 
 class CoreEntityManager extends ComposableBase {
     domain = 'default';
     abstract entityName: string;
 }
-withAbilities(CoreEntityManager, [EventAbility, DomainAbility, SystemAbility, SchemaAbility]);
+
+const CORE_ABILITIES = [EventAbility, DomainAbility, SystemAbility, SchemaAbility] as const;
+withAbilities(CoreEntityManager, CORE_ABILITIES);
+export interface CoreEntityManager extends InferAbilities<typeof CORE_ABILITIES> {}
 
 class BaseEntityManager extends CoreEntityManager {
     async fetch(action, options) { /* ... */ }
@@ -143,12 +163,22 @@ class LocalReadonlyEntityManager extends BaseEntityManager {
     isRemote = false;
     items: IEntity[] = [];
 }
-withAbilities(LocalReadonlyEntityManager, [FlatLocalStateAbility, LocalListAbility, LocalGetAbility]);
+
+const LOCAL_READONLY_ABILITIES = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility] as const;
+withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+export interface LocalReadonlyEntityManager extends InferAbilities<typeof LOCAL_READONLY_ABILITIES> {}
 ```
 
-### 组件系统：extends + withAbilities + withDefinitions
+### 组件系统：双层架构 + withAbilities + withDefinitions
 
 ```typescript
+// 闭包基类（ComponentFactory）— 工厂层
+class Component extends ComposableBase {
+    // 纯工厂，不持有 el/nodeMap
+}
+// withTemplate 编译模板 → 生成内部类 → 闭包保存
+
+// 内部类基类（InnerComponent）— 实现层
 class TemplateComponent extends ComposableBase {
     tag = 'div';
     el!: HTMLElement;
@@ -196,6 +226,8 @@ src/composable/
 - 新增 `withDefinitions` 独立函数（向已有类注入非能力定义）
 - 导出 `ABILITY_STATES_KEY` / `CLEANUPS_KEY` Symbol keys
 - 修复 `with` 方法在继承链中断裂的 bug（根本解决：移除 `with` 方法）
+- 新增 `InferAbilities` 类型：从能力数组自动推导交叉类型，配合声明合并让 TS 感知注入的方法
+- 消费者迁移：CoreEntityManager、managers.ts 5 个变体、Router 均迁移为 extends + withAbilities + InferAbilities
 
 ### 2026-07-22
 - 重构为原型工厂函数架构（createForgedClass）

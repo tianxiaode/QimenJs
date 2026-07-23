@@ -36,6 +36,7 @@ jest.mock('@/cache', () => ({
 }));
 
 import { ComposableBase } from '@/composable/ComposableBase';
+import { withAbilities } from '@/composable';
 import { FlatLocalMutationAbility } from '@/entity/abilities/local/FlatLocalMutationAbility';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
 import { ENTITY_CRUD_EVENTS } from '@/events';
@@ -45,7 +46,7 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
 // ============================================
 
 function createHost() {
-    class TestHost extends ComposableBase.with([FlatLocalStateAbility, FlatLocalMutationAbility]) {
+    class TestHost extends ComposableBase {
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
         setCache = jest.fn().mockResolvedValue(undefined);
@@ -54,6 +55,7 @@ function createHost() {
         buildOptions = jest.fn().mockResolvedValue({});
         emit = jest.fn();
     }
+    withAbilities(TestHost, [FlatLocalStateAbility, FlatLocalMutationAbility]);
     return new TestHost() as any;
 }
 
@@ -97,7 +99,12 @@ describe('FlatLocalMutationAbility', () => {
             const item = { id: '1', name: 'test', active: true };
             host.toggle(item, 'active');
             expect(item.active).toBe(false);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, { id: '1', item, field: 'active', oldValue: true });
+            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
+                id: '1',
+                item,
+                field: 'active',
+                oldValue: true,
+            });
             host.dispose();
         });
 

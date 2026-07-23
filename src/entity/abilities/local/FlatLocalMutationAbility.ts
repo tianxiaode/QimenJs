@@ -10,7 +10,7 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
-export const FlatLocalMutationAbility: AbilityDefinition = {
+export const FlatLocalMutationAbility= {
     create(item: any) {
         this.addItem(item);
         this.emit(ENTITY_CRUD_EVENTS.CREATED, item);
@@ -59,4 +59,4 @@ export const FlatLocalMutationAbility: AbilityDefinition = {
 
         this.emit(ENTITY_CRUD_EVENTS.SAVED);
     },
-};
+} satisfies AbilityDefinition;

@@ -41,7 +41,7 @@ export interface ArrowConfig {
     arrowName?: string;
 }
 
-export const ArrowAbility: AbilityDefinition = {
+export const ArrowAbility= {
     _arrowVisible: false,
     _arrowName: '',
     _arrowEl: null as HTMLElement | null,
@@ -85,4 +85,4 @@ export const ArrowAbility: AbilityDefinition = {
             el.style.display = visible ? '' : 'none';
         }
     },
-};
+} satisfies AbilityDefinition;
