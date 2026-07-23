@@ -7,9 +7,6 @@
 
 ## 构建历史
 
-### 2026-07-23
-- ✅ 新增 FormValueAbility 表单值能力（formValue getter/setter + formValueChange 事件 + setFormValue 方法）
-- ✅ component-abilities/index.ts 新增 FormValueAbility 导出
 
 ### 2026-07-18
 - ✅ 溢出处理从 Ability 模式迁移到域配置驱动模式

@@ -25,6 +25,3 @@ export {
 
 // 尺寸能力
 export { SizeAbility, type SizeConfig } from './size';
-
-// 表单值能力
-export { FormValueAbility } from './form';

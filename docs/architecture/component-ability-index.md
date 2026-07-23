@@ -481,11 +481,6 @@ class RootComponent extends ComponentBase {
 | SubmitAbility | 提交 |
 | FieldSetAbility | 字段集 |
 
-### 2.2.1 表单能力 (`src/component-abilities/form/`)
-
-| 能力 | 文件 | 说明 |
-|------|------|------|
-| FormValueAbility | `FormValueAbility.ts` | 表单值管理（formValue getter/setter + formValueChange 事件 + setFormValue 方法） |
 
 ### 2.3 实体能力 (`src/component-abilities/entity/`)
 
