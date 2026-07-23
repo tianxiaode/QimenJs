@@ -13,27 +13,37 @@
 
 ```
 ComposableBase (src/composable/ComposableBase.ts)
-  ├── TemplateComponent (src/component-core/TemplateComponent.ts) — 内部类基类
-  │     ├── ButtonComponent
-  │     ├── InputComponent
-  │     ├── SelectComponent
-  │     ├── IconComponent / TextComponent
-  │     ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
-  │     ├── ToolbarComponent
-  │     ├── ButtonGroupComponent / SeparatorComponent
-  │     ├── TableComponent
-  │     ├── FormComponent
-  │     ├── DialogComponent
-  │     ├── BadgeComponent
-  │     ├── TipsComponent
-  │     ├── MenuComponent
-  │     ├── MenuItemComponent
-  │     ├── NavItemComponent
-  │     ├── NavItemGroupComponent
-  │     └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
-  └── Component (src/component-core/Component.ts) — 闭包基类（工厂层）
-        withTemplate(templates) → 编译生成内部类 → 闭包保存
-        new OuterClass(props) → when 条件选择内部类 → 返回内部类实例
+  └── TemplateComponent (src/component-core/TemplateComponent.ts) — 内部类基类
+        │   extends ComposableBase + withAbilities(TEMPLATE_COMPONENT_ABILITIES)
+        │   interface 声明合并：InferAbility<typeof XAbility> 逐能力提取
+        │   生命周期钩子：onBeforeUnmount/onAfterInit/onBeforeInit/onMounted/onUpdated/onResize/onInitState/onLocaleChange
+        │   dispose 拆分：onBeforeDispose + onDisposed
+        ├── ButtonComponent
+        ├── InputComponent (多模板: labelPosition top/left/default)
+        ├── PasswordInputComponent
+        ├── FormFieldComponent
+        ├── FormComponent
+        ├── TextComponent
+        ├── SelectComponent
+        ├── IconComponent
+        ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
+        ├── ToolbarComponent
+        ├── ButtonGroupComponent / SeparatorComponent
+        ├── TableComponent
+        ├── DialogComponent
+        ├── BadgeComponent
+        ├── TipsComponent
+        ├── MenuComponent
+        ├── MenuItemComponent
+        ├── NavItemComponent
+        ├── NavItemGroupComponent
+        ├── AccordionComponent
+        ├── TabBarComponent
+        ├── HeroComponent / BreadcrumbComponent / DividerComponent
+        ├── SpacerComponent / TagComponent / AlertComponent / ProgressComponent
+        ├── OverflowMenuComponent / OverflowScrollComponent
+        ├── LoadingComponent
+        └── ColumnBase → IdColumn / NumberColumn / CheckboxColumn
 ```
 
 ### 1.2 组件能力组合
@@ -41,7 +51,11 @@ ComposableBase (src/composable/ComposableBase.ts)
 | 组件 | 文件 | 能力列表 |
 |------|------|----------|
 | ButtonComponent | `src/component/components/ButtonComponent.ts` | IconAbility, TextAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility |
-| InputComponent | `src/component/components/InputComponent.ts` | TextAbility, ValueAbility, ValidateAbility, PlaceholderAbility, DisableAbility, SizeAbility |
+| InputComponent | `src/component/form/InputComponent.ts` | 多模板(labelPosition top/left/default)、FormValueAbility、SizeAbility、clearable |
+| PasswordInputComponent | `src/component/form/PasswordInputComponent.ts` | 继承 InputComponent、密码强度指示器、显示/隐藏切换 |
+| FormFieldComponent | `src/component/form/FormFieldComponent.ts` | label/验证消息/必填标记包装 |
+| FormComponent | `src/component/form/FormComponent.ts` | 字段收集、统一验证、提交/重置 |
+| TextComponent | `src/component/text/TextComponent.ts` | 文本显示 |
 | SelectComponent | `src/component/components/SelectComponent.ts` | TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility |
 | HBoxComponent | `src/component/components/HBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
@@ -49,11 +63,11 @@ ComposableBase (src/composable/ComposableBase.ts)
 | SpaceComponent | `src/component/components/SpaceComponent.ts` | LayoutAbility |
 | ToolbarComponent | `src/component/toolbar/ToolbarComponent.ts` | overflowConfig 域配置（type: 'scroll'/'menu'，浮动层自动管理） |
 | IconComponent | `src/component/components/IconComponent.ts` | SizeAbility（图标内容由组件直接管理，无需 IconAbility） |
-| TextComponent | `src/component/components/TextComponent.ts` | SizeAbility（文本内容由组件直接管理，无需 TextAbility） |
+
 | ButtonGroupComponent | `src/component/components/ButtonGroupComponent.ts` | ChildrenAbility, SizeAbility, DisableAbility |
 | SeparatorComponent | `src/component/components/SeparatorComponent.ts` | VisibleAbility |
 | TableComponent | `src/component/components/TableComponent.ts` | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility |
-| FormComponent | `src/component/components/FormComponent.ts` | EntityAbility, ValidateAbility, SubmitAbility, FieldSetAbility |
+
 | DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
 | TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ ArrowAbility（浮层定位箭头，模板定义节点）+ hover 事件 + delay |
@@ -70,6 +84,25 @@ ComposableBase (src/composable/ComposableBase.ts)
 
 TemplateComponent（内部类基类）通过 `withAbilities(TemplateComponent, TEMPLATE_COMPONENT_ABILITIES)` 自动注入以下能力（所有 withTemplate 生成的内部类都拥有）：
 
+TemplateComponent 同时通过 `interface` 声明合并暴露能力类型签名，生命周期钩子声明为可选方法：
+
+```typescript
+export interface TemplateComponent
+    extends InferAbility<typeof EventAbility>,
+        InferAbility<typeof DomEventsAbility>,
+        // ... 其他能力
+        InferAbility<typeof LifecycleAbility> {
+    onBeforeUnmount?(): void;
+    onAfterInit?(props?: any): void;
+    onBeforeInit?(props?: any): void;
+    onMounted?(): void;
+    onUpdated?(data?: any): void;
+    onResize?(entry: ResizeObserverEntry): void;
+    onInitState?(): Record<string, any>;
+    onLocaleChange?(): void;
+}
+```
+
 | 能力 | 文件 | 说明 |
 |------|------|------|
 | EventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
@@ -77,13 +110,14 @@ TemplateComponent（内部类基类）通过 `withAbilities(TemplateComponent, T
 | EventBridgeAbility | `src/system-abilities/system/EventBridgeAbility.ts` | 事件桥接（bridgeOn/bridgeEmit/bridgeOnce） |
 | EntityEventBusAbility | `src/system-abilities/system/EntityEventBusAbility.ts` | 实体事件总线 |
 | OverlayEventBusAbility | `src/system-abilities/system/OverlayEventBusAbility.ts` | 浮层事件总线 |
+| DragEventBusAbility | `src/system-abilities/system/DragEventBusAbility.ts` | 拖拽事件总线 |
 | SystemEventBusAbility | `src/system-abilities/system/SystemEventBusAbility.ts` | 系统事件总线 |
 | EventForwardAbility | `src/component-core/abilities/EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
 | NodePropAbility | `src/component-core/abilities/NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 |
-| CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 |
+| CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 + setNodeHtml |
 | AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
 | DragAbility | `src/component-abilities/drag/DragAbility.ts` | 声明式拖拽（move 本地，start/end 走 DragEventBus） |
-| LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + 桥接事件） |
+| LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + bridgeEmit 传 EventContext） |
 
 > 已移除的纯赋值能力（v2 由通用属性体系替代）：
 > PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility /
@@ -447,6 +481,12 @@ class RootComponent extends ComponentBase {
 | SubmitAbility | 提交 |
 | FieldSetAbility | 字段集 |
 
+### 2.2.1 表单能力 (`src/component-abilities/form/`)
+
+| 能力 | 文件 | 说明 |
+|------|------|------|
+| FormValueAbility | `FormValueAbility.ts` | 表单值管理（formValue getter/setter + formValueChange 事件 + setFormValue 方法） |
+
 ### 2.3 实体能力 (`src/component-abilities/entity/`)
 
 | 能力 | 文件 | 说明 |
@@ -550,11 +590,11 @@ class RootComponent extends ComponentBase {
 | 能力 | 文件 | 说明 |
 |------|------|------|
 | EventForwardAbility | `EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
-| NodePropAbility | `NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 + hiddenchange 事件 |
-| CommonPropsAbility | `CommonPropsAbility.ts` | 组件根元素常用属性快捷方式（cls/style/hidden/disabled/width/height 等） |
+| NodePropAbility | `NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 + hiddenchange 事件（_emitLifecycleEvent 已移至 LifecycleAbility） |
+| CommonPropsAbility | `CommonPropsAbility.ts` | 组件根元素常用属性快捷方式（cls/style/hidden/disabled/width/height 等）+ setNodeHtml |
 | AnimationAbility | `AnimationAbility.ts` | 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation） |
 | DragAbility | `DragAbility.ts` | 声明式拖拽（move 本地处理，start/end 走 DragEventBus） |
-| LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，有 eventKey 时发桥接事件） |
+| LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，bridgeEmit 传 EventContext 对象） |
 
 ### 2.11.1 通用属性体系 (`src/component-core/common-props.ts`)
 
@@ -636,6 +676,8 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | SEARCH_EVENTS.CHANGE | `searchchange` | SearchEventsAbility |
 | SEARCH_EVENTS.SUBMIT | `searchsubmit` | SearchEventsAbility |
 | ENTITY_EVENTS.* | `entity:*` | EntityEmitAbility 转发 |
+| ENTITY_EVENTS.VALIDATE | `entity:validate` | 验证请求 |
+| ENTITY_EVENTS.VALIDATION | `entity:validation` | 验证结果 |
 
 ### 3.3 实体事件 (`src/events/entity-events.ts`)
 
@@ -646,6 +688,7 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | ENTITY_LIST_EVENTS.LISTED/GOT | 列表加载 |
 | ENTITY_TREE_EVENTS.EXPANDED/COLLAPSED/MOVED/CHILDREN_REFRESHED | 树操作 |
 | ENTITY_SEARCH_EVENTS.CHANGE | 搜索条件变更 |
+| ENTITY_VALIDATION_EVENTS.VALIDATE/VALIDATION | 验证请求/结果 |
 | ENTITY_REQUEST_STATUS.LOADING/SUCCESS/ERROR | 请求状态 |
 
 ### 3.4 组件事件 (`src/component/events.ts`)

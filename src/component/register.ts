@@ -44,6 +44,11 @@ import { SpacerComponent } from './spacer/SpacerComponent';
 import { TagComponent } from './tag/TagComponent';
 import { AlertComponent } from './alert/AlertComponent';
 import { ProgressComponent } from './progress/ProgressComponent';
+import { InputComponent } from './form/InputComponent';
+import { PasswordInputComponent } from './form/PasswordInputComponent';
+import { TextComponent } from './text/TextComponent';
+import { InputInfoGroupComponent } from './form/InputInfoGroupComponent';
+import { FormComponent } from './form/FormComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -80,4 +85,9 @@ export function registerAllComponents(): void {
     registrar.register('Tag', TagComponent);
     registrar.register('Alert', AlertComponent);
     registrar.register('Progress', ProgressComponent);
+    registrar.register('Input', InputComponent);
+    registrar.register('PasswordInput', PasswordInputComponent);
+    registrar.register('Text', TextComponent);
+    registrar.register('InputInfoGroup', InputInfoGroupComponent);
+    registrar.register('Form', FormComponent);
 }

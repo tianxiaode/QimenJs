@@ -23,11 +23,10 @@ import { findByPath } from './template-compiler';
 import { SYSTEM_EVENTS } from '@/events';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
-import { DRAG_ACTIONS } from '@/events/drag-events';
 import { dragDispatchCenter } from '@/drag';
 import { EventContextBuilder } from '@/context';
 import { resolveI18nValue } from '@qimenjs/i18n';
-import { getId } from '@/utils/string/id';
+import type { ListenItem, EventMapping } from '../types/tpl-body';
 
 export function initFromTemplate(instance: any, props?: Record<string, any>): void {
     instance._initializing = true;
@@ -52,6 +51,8 @@ export function initFromTemplate(instance: any, props?: Record<string, any>): vo
         initDrags(instance);
 
         callInitMethods(instance);
+
+        setupListens(instance);
 
         if (props?.id) instance.id = props.id;
     } finally {
@@ -173,11 +174,29 @@ function initContentFromProps(instance: any): void {
 // ══════════════════════════════════════════════════════════════
 
 function renderChildComponents(instance: any): void {
+    const ctor = instance.constructor as any;
+    const nodeOverrides: Record<string, Record<string, any>> | undefined = ctor._nodeOverrides;
+
     for (const [name, node] of Object.entries(instance.nodeMap as Record<string, NodeMetadata>)) {
         if (!node.componentClass) continue;
 
-        const ComponentClass = node.componentClass;
-        const initConfig = node.initConfig ?? {};
+        const override = nodeOverrides?.[name];
+        let ComponentClass = node.componentClass;
+
+        if (override?.type) {
+            if (typeof override.type === 'function') {
+                ComponentClass = override.type;
+            } else if (typeof override.type === 'string') {
+                const resolved = (window as any)[override.type];
+                if (resolved) ComponentClass = resolved;
+            }
+            node.componentClass = ComponentClass;
+        }
+
+        const initConfig = override?.initConfig
+            ? { ...(node.initConfig ?? {}), ...override.initConfig }
+            : (node.initConfig ?? {});
+
         const child = new ComponentClass(initConfig);
         (child as any).parent = instance;
 
@@ -244,9 +263,15 @@ function initI18nFromTemplate(instance: any): void {
     if (typeof instance.systemOn === 'function') {
         instance.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, () => {
             applyI18nTranslations(instance, i18nNodes);
+            if (typeof instance.onLocaleChange === 'function') {
+                instance.onLocaleChange();
+            }
         });
         instance.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => {
             applyI18nTranslations(instance, i18nNodes);
+            if (typeof instance.onLocaleChange === 'function') {
+                instance.onLocaleChange();
+            }
         });
     }
 }
@@ -281,4 +306,119 @@ function initFloats(instance: any): void {
             .withData({ component: instance, floats })
             .build()
     );
+}
+
+// ══════════════════════════════════════════════════════════════
+// 8. listens 统一事件订阅
+// ══════════════════════════════════════════════════════════════
+
+function setupListens(instance: any): void {
+    const ctor = instance.constructor as any;
+    const listens: ListenItem[] | undefined = ctor.listens;
+    if (!listens || listens.length === 0) return;
+
+    for (const item of listens) {
+        if ('source' in item) {
+            bindBridgeListens(instance, item as Extract<ListenItem, { source: string }>);
+        } else if ('entity' in item) {
+            bindEntityListens(instance, item as Extract<ListenItem, { entity: string }>);
+        } else if ('float' in item) {
+            bindFloatListens(instance, item as Extract<ListenItem, { float: string }>);
+        } else if ('drag' in item) {
+            bindDragListens(instance, item as Extract<ListenItem, { drag: string }>);
+        } else if ('system' in item) {
+            bindSystemListens(instance, item as Extract<ListenItem, { system: true }>);
+        } else if ('route' in item) {
+            bindRouteListens(instance, item as Extract<ListenItem, { route: string }>);
+        }
+    }
+}
+
+function resolveHandler(instance: any, mapping: EventMapping): (data: any) => void {
+    if (typeof mapping === 'string') {
+        const method = instance[mapping];
+        if (typeof method === 'function') return method.bind(instance);
+        return () => {};
+    }
+    const method = instance[mapping.handler];
+    if (typeof method === 'function') return method.bind(instance);
+    return () => {};
+}
+
+function bindEventMappings(
+    instance: any,
+    events: Record<string, EventMapping>,
+    binder: (eventName: string, handler: (data: any) => void, once?: boolean) => void
+): void {
+    for (const [eventName, mapping] of Object.entries(events)) {
+        const handler = resolveHandler(instance, mapping);
+        const once = typeof mapping === 'object' ? mapping.once : false;
+        binder(eventName, handler, once);
+    }
+}
+
+function bindBridgeListens(instance: any, item: Extract<ListenItem, { source: string }>): void {
+    if (typeof instance.bridgeOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.bridgeOnce === 'function') {
+            instance.bridgeOnce(item.source, eventName, handler);
+        } else {
+            instance.bridgeOn(item.source, eventName, handler);
+        }
+    });
+}
+
+function bindEntityListens(instance: any, item: Extract<ListenItem, { entity: string }>): void {
+    if (typeof instance.entityOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.entityOnce === 'function') {
+            instance.entityOnce(item.entity, eventName, handler);
+        } else {
+            instance.entityOn(item.entity, eventName, handler);
+        }
+    });
+}
+
+function bindFloatListens(instance: any, item: Extract<ListenItem, { float: string }>): void {
+    if (typeof instance.overlayOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.overlayOnce === 'function') {
+            instance.overlayOnce(item.float, eventName, handler);
+        } else {
+            instance.overlayOn(item.float, eventName, handler);
+        }
+    });
+}
+
+function bindDragListens(instance: any, item: Extract<ListenItem, { drag: string }>): void {
+    if (typeof instance.dragOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.dragOnce === 'function') {
+            instance.dragOnce(item.drag, eventName, handler);
+        } else {
+            instance.dragOn(item.drag, eventName, handler);
+        }
+    });
+}
+
+function bindSystemListens(instance: any, item: Extract<ListenItem, { system: true }>): void {
+    if (typeof instance.systemOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.systemOnce === 'function') {
+            instance.systemOnce(eventName, handler);
+        } else {
+            instance.systemOn(eventName, handler);
+        }
+    });
+}
+
+function bindRouteListens(instance: any, item: Extract<ListenItem, { route: string }>): void {
+    if (typeof instance.routeOn !== 'function') return;
+    bindEventMappings(instance, item.events, (eventName, handler, once) => {
+        if (once && typeof instance.routeOnce === 'function') {
+            instance.routeOnce(item.route, eventName, handler);
+        } else {
+            instance.routeOn(item.route, eventName, handler);
+        }
+    });
 }

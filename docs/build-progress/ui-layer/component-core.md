@@ -2,7 +2,7 @@
 
 **层级**: UI 层  
 **状态**: ⚠️ 开发中  
-**测试**: ✅ 14 suites / 69 tests  
+**测试**: ✅ 12 suites / 55 tests  
 **覆盖率**: ~82%
 
 ## 构建历史
@@ -20,6 +20,35 @@
 - ✅ 新增 TplVariant 类型导出
 - ✅ 新增错误码：COMPONENT_TPL_KEY_NOT_FOUND, COMPONENT_BODY_INVALID_FIELD
 - ✅ tpl-node-def.ts / tpl-body-def.ts / component-template.ts 注释全面更新为双层架构
+- ✅ TemplateComponent 改为 extends ComposableBase + withAbilities 注入能力
+  - 新增 interface TemplateComponent 声明合并（InferAbility 逐能力提取公共签名）
+  - 生命周期钩子声明为可选方法（onBeforeUnmount/onAfterInit/onBeforeInit/onMounted/onUpdated/onResize/onInitState/onLocaleChange）
+  - dispose 拆分为 onBeforeDispose + onDisposed 两个钩子
+- ✅ 模板工厂从闭包函数改为 class extends 继承
+  - createInnerClass: class extends ParentClass，编译模板 + withAbilities + attachStaticMethods
+  - createAbilityInnerClass: class extends ParentInner，withAbilities 附加额外能力
+  - createDerivedInnerClass: class extends ParentInner，replace 场景派生
+  - 单模板直接返回 InnerClass（真正的 class），多模板返回工厂函数
+  - 移除 copyPrototypeMethods/copyStaticMethods/initForgedState，改用原生继承
+  - InnerClass 自带 .create/.with/.replace 静态方法
+- ✅ 能力方法添加 `this: any` 类型标注（withAbilities 模式下 this 指向宿主实例）
+  - AnimationAbility / EventForwardAbility / LifecycleAbility / NodePropAbility / CommonPropsAbility
+  - 能力对象从 `satisfies AbilityDefinition` 改为 `as AbilityDefinition`
+- ✅ NodePropAbility 移除 _emitLifecycleEvent（已由 LifecycleAbility 提供）
+- ✅ LifecycleAbility bridgeEmit 改为传 EventContext 对象（不再传 globalEventBus.getBusId()）
+- ✅ CommonPropsAbility 新增 setNodeHtml 方法 + html 节点属性
+- ✅ contentMode 拆分：html → text(textContent) + html(innerHTML)
+  - DEFAULT_NODE_PROP_MAP: text → textContent, 新增 html → innerHTML
+  - CONTENT_MODE_MAP: text → text, html → html
+- ✅ template-init.ts 新增 listens 统一事件订阅机制
+  - 支持 bridge/entity/float/drag/system/route 六种事件源
+  - bindEventMappings 统一处理 once 和 handler 解析
+  - setupListens 在 callInitMethods 之后自动调用
+- ✅ template-init.ts 新增 onLocaleChange 钩子（i18n locale/messages 更新时调用）
+- ✅ template-init.ts renderChildComponents 支持 _nodeOverrides 子组件差异化配置
+  - override.type 可替换子组件类型（函数或字符串）
+  - override.initConfig 合并子组件初始化配置
+- ✅ composable/index.ts 新增导出 createForgedClass
 
 ### 2026-07-21
 - ✅ CommonPropsAbility 两层架构重构：root getter/setter + 方法重载 + setNodeXxx + setNodeProp 兜底
@@ -112,18 +141,16 @@
 
 ## 测试状态
 
-### 通过的测试（14 suites / 69 tests）
+### 通过的测试（12 suites / 55 tests）
 - ✅ template-constants — 常量定义
 - ✅ template-compiler — 预编译引擎
 - ✅ child-node-props — 子节点属性自动构建
-- ✅ class-copy — 类原型方法复制
-- ✅ template-factory — 模板组件工厂 + init 事件
+- ✅ template-factory — 模板组件工厂（createInnerClass + createReplaceFactory）
 - ✅ NodePropAbility — 节点属性读写 + hiddenchange 事件
 - ✅ EventForwardAbility — 事件转发
 - ✅ CommonPropsAbility — 通用属性
 - ✅ AnimationAbility — 声明式动画
-- ✅ DragAbility — 拖拽能力
-- ✅ LifecycleAbility — 生命周期事件
+- ✅ LifecycleAbility — 生命周期事件（bridgeEmit 传 EventContext）
 - ✅ tpl-body-def — Body 字段定义
 - ✅ common-props — 属性定义
 - ✅ ComponentTypes — 组件类型常量

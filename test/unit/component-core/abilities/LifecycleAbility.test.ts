@@ -8,6 +8,9 @@ jest.mock('@/events', () => ({
         RESIZE: 'resize',
         HIDDEN_CHANGE: 'hiddenchange',
     },
+    globalEventBus: {
+        getBusId: jest.fn(() => 'test-bus-id'),
+    },
 }));
 
 import { LifecycleAbility } from '@/component-core/abilities/LifecycleAbility';
@@ -72,7 +75,9 @@ describe('LifecycleAbility', () => {
         });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'mounted');
         expect(emitSpy).toHaveBeenCalledWith('mounted', undefined);
-        expect(bridgeEmitSpy).toHaveBeenCalledWith('formKey', 'mounted', undefined);
+        expect(bridgeEmitSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'mounted', source: 'formKey' })
+        );
     });
 
     it('_emitLifecycleEvent 无 eventKey 时不发送桥接事件', () => {
@@ -90,9 +95,11 @@ describe('LifecycleAbility', () => {
         const instance = makeInstance({
             emit: emitSpy,
             bridgeEmit: bridgeEmitSpy,
-            constructor: { eventKey: 'tableKey' },
+            constructor: { eventKey: 'tableKey', name: 'TestComp' },
         });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'updated');
-        expect(bridgeEmitSpy).toHaveBeenCalledWith('tableKey', 'updated', undefined);
+        expect(bridgeEmitSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ event: 'updated', source: 'tableKey' })
+        );
     });
 });

@@ -7,6 +7,22 @@
 
 ## 构建历史
 
+### 2026-07-23
+- ✅ 新增表单组件体系
+  - InputComponent 输入组件（labelPosition 多模板、验证、前缀后缀图标、clearable、SizeAbility）
+  - PasswordInputComponent 密码输入组件（强度指示器、显示/隐藏切换、生成密码）
+  - FormFieldComponent 表单字段包装组件（label/验证消息/必填标记）
+  - FormComponent 表单容器组件（字段收集、统一验证、提交/重置）
+  - InputInfoGroupComponent 输入信息组（关联 Input + FormField）
+  - TextComponent 文本显示组件
+- ✅ 新增 OverflowMenuComponent / OverflowScrollComponent 溢出组件
+- ✅ 新增 LoadingComponent 加载组件
+- ✅ ItemGroupBaseComponent 新增 cols 多列 Grid 布局支持（CSS Grid + --q-itemgroup-cols 变量）
+- ✅ HeaderComponent 模板改用 flex 简写（layout/align/gap → flex: { direction, align, gap }）
+- ✅ 组件 body 方法改用 `const self = this as any` 模式（适配 withAbilities 能力注入）
+- ✅ AccordionComponent/ButtonGroupComponent/MenuComponent/NavItemGroupComponent/TabBarComponent 迁移
+- ✅ register.ts 补注册 Input/PasswordInput/Text/InputInfoGroup/Form
+
 ### 2026-07-22
 - ✅ 新增 HeroComponent 横幅区域组件（title/subtitle/desc/actionText）
 - ✅ 新增 BreadcrumbComponent 面包屑导航组件（数据驱动 items，navigate 事件）
@@ -68,7 +84,7 @@
 - [ ] 补充 ItemGroupComponent 测试
 
 ### 中优先级
-- [ ] 新增 InputComponent 输入组件
+
 - [ ] 新增 SelectComponent 选择组件
 - [ ] 新增 DialogComponent 对话框组件
 - [ ] 新增 TableComponent 表格组件

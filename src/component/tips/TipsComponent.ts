@@ -11,13 +11,13 @@
  * - 显隐由调度中心通过 hidden 属性控制
  */
 
-import { Component, type Placement } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
 
 export interface TipsProps {
     anchor?: HTMLElement;
     tooltip?: string;
-    tooltipPlacement?: Placement;
+    tooltipPlacement?: string;
     tooltipOffset?: number;
     tooltipShowDelay?: number;
     tooltipHideDelay?: number;

@@ -68,6 +68,16 @@ export const ENTITY_SEARCH_EVENTS = {
 } as const;
 
 // ============================================
+// 验证事件（组件触发，验证方响应）
+// ============================================
+export const ENTITY_VALIDATION_EVENTS = {
+    /** 请求验证（组件 → 验证方） */
+    VALIDATE: 'validate',
+    /** 验证结果（验证方 → 组件） */
+    VALIDATION: 'validation',
+} as const;
+
+// ============================================
 // 请求状态事件（BaseEntityManager.fetch 触发）
 //
 // 格式为 {action}:{status}，action 来自 ENTITY_ACTION 枚举，

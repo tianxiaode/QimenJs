@@ -662,10 +662,13 @@ navItem.setNodeProp('tabIndex', 0, 'expand');
 内容属性仍由 `addContentPropDesc` 自动生成 getter/setter：
 
 ```typescript
-btn.text = 'Click me';    // → el.innerHTML = 'Click me'
+btn.text = 'Click me';    // → el.textContent = 'Click me'（纯文本，安全）
+btn.html = '<b>Bold</b>'; // → el.innerHTML = '<b>Bold</b>'（HTML 内容）
 btn.value = 'hello';      // → el.value = 'hello'（input 标签）
 btn.src = '/img.png';     // → el.src = '/img.png'（img 标签）
 ```
+
+> **text vs html**：`text` 使用 `textContent`（纯文本，自动转义 HTML），`html` 使用 `innerHTML`（可插入 HTML 标签）。contentMode 为 `html` 的节点映射到 `html` 属性，`text` 映射到 `text` 属性。
 
 ### 13.4 组件引用（保留 $name 访问器）
 
@@ -789,6 +792,7 @@ body 中的特殊 key 处理：
 | `type` | 设为静态属性（组件类型标识） |
 | `bridges` | 映射为 eventBridge 静态属性 |
 | `forwards` | 存为 _forwards 静态属性（属性/方法透传配置） |
+| `listens` | 存为静态属性（统一事件订阅配置，初始化时自动绑定） |
 | 函数 | 复制到原型（组件方法） |
 | 其他 | 存到 static defaults（默认属性值） |
 
@@ -937,7 +941,7 @@ export let ToolbarComponent = ItemGroupComponent.replace({
 
 ### 18.1 body 定义（推荐）
 
-所有逻辑归入 body，不使用 class extends 扩展层：
+所有逻辑归入 body，不使用 class extends 扩展层。body 方法中使用 `const self = this as any` 访问能力注入的方法和属性：
 
 ```typescript
 export let MyComponent = TemplateComponent.withTemplate({
@@ -945,13 +949,30 @@ export let MyComponent = TemplateComponent.withTemplate({
     body: {
         type: 'MyComponent',
         _state: null,
-        _initMyComponent(props) { ... },
-        get state() { return this._state; },
-        doSomething() { ... },
-        dispose() { ... },
+        _initMyComponent(props) {
+            const self = this as any;
+            self.emit('ready');
+        },
+        get state() {
+            const self = this as any;
+            return self._state;
+        },
+        doSomething() {
+            const self = this as any;
+            self.setNodeCls('active', 'root');
+        },
+        onBeforeDispose() {
+            const self = this as any;
+            self._cleanup();
+        },
+        onDisposed() {
+            // dispose 完成后的回调
+        },
     },
 });
 ```
+
+> **`const self = this as any` 模式**：withAbilities 将能力方法注入到类原型上，TypeScript 无法通过 body 对象字面量的类型推断感知这些方法。使用 `self` 局部变量避免箭头函数中 `this` 丢失，`as any` 绕过类型检查。
 
 ### 18.2 replace 派生（ItemGroup 领域扩展）
 

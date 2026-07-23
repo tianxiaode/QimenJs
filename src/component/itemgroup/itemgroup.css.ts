@@ -74,4 +74,11 @@ export const itemgroupCSS = `
     margin-left: var(--q-itemgroup-divider-gap, 0px);
     padding-left: var(--q-itemgroup-divider-gap, 0px);
 }
+
+/* 多列 Grid 布局 */
+.q-itemgroup__items--cols {
+    display: grid;
+    grid-template-columns: repeat(var(--q-itemgroup-cols, 1), 1fr);
+    align-items: start;
+}
 `;

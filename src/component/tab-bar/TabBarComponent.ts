@@ -25,44 +25,49 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         },
 
         onAfterInit(props?: TabBarProps): void {
-            this.on('toggle', (data: any) => this._onItemToggle(data));
+            const self = this as any;
+            self.on('toggle', (data: any) => self._onItemToggle(data));
 
             if (props?.selectedIndex !== undefined && props.selectedIndex >= 0) {
-                this.selectAt(props.selectedIndex, true);
+                self.selectAt(props.selectedIndex, true);
             }
         },
 
         get selectedIndex(): number {
-            return this._selectedIndex;
+            const self = this as any;
+            return self._selectedIndex;
         },
 
         selectAt(index: number, silent: boolean = false): void {
-            if (index < 0 || index >= this.count) return;
-            if (index === this._selectedIndex) return;
+            const self = this as any;
+            if (index < 0 || index >= self.count) return;
+            if (index === self._selectedIndex) return;
 
-            if (this._selectedIndex >= 0 && this._selectedIndex < this.count) {
-                const prevItem = this.getAt(this._selectedIndex);
+            if (self._selectedIndex >= 0 && self._selectedIndex < self.count) {
+                const prevItem = self.getAt(self._selectedIndex);
                 if (prevItem) prevItem.pressed = false;
             }
 
-            const newItem = this.getAt(index);
+            const newItem = self.getAt(index);
             if (newItem) newItem.pressed = true;
-            this._selectedIndex = index;
+            self._selectedIndex = index;
 
-            if (!silent) this.emit('select', { index });
+            if (!silent) self.emit('select', { index });
         },
 
         _onItemToggle(data: any): void {
+            const self = this as any;
             const index = data?.index;
             if (index === undefined) return;
-            const item = this.getAt(index);
+            const item = self.getAt(index);
             if (!item) return;
-            if (item.pressed) this.selectAt(index);
+            if (item.pressed) self.selectAt(index);
             else item.pressed = true;
         },
 
         onUpdated(props?: Record<string, any>): void {
-            if (props?.selectedIndex !== undefined) this.selectAt(props.selectedIndex);
+            const self = this as any;
+            if (props?.selectedIndex !== undefined) self.selectAt(props.selectedIndex);
         },
     },
 });

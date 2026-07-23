@@ -1,11 +1,10 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
-import type { Placement } from '@qimenjs/component-core';
 
 export interface MenuProps extends ItemGroupProps {
     anchor?: HTMLElement;
-    placement?: Placement;
+    placement?: string;
     offset?: number;
 }
 
@@ -31,13 +30,14 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
         },
 
         onAfterInit(props?: MenuProps & Record<string, any>): void {
-            if (props?.anchor) this._anchor = props.anchor;
+            const self = this as any;
+            if (props?.anchor) self._anchor = props.anchor;
 
-            this.initGroupSelect({ defaultMode: 'radio' });
-            this.registerGroupItems([...this.items]);
+            self.initGroupSelect({ defaultMode: 'radio' });
+            self.registerGroupItems([...self.items]);
 
-            this.on('select', (data: any) => {
-                this.notifyGroupSelect(data.item);
+            self.on('select', (data: any) => {
+                self.notifyGroupSelect(data.item);
             });
         },
 
@@ -46,24 +46,28 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
         },
 
         get isOpen(): boolean {
-            return this._isOpen;
+            const self = this as any;
+            return self._isOpen;
         },
 
         open(): void {
-            if (this._isOpen) return;
-            this.el.style.display = '';
-            this._isOpen = true;
+            const self = this as any;
+            if (self._isOpen) return;
+            self.el.style.display = '';
+            self._isOpen = true;
         },
 
         close(): void {
-            if (!this._isOpen) return;
-            this.el.style.display = 'none';
-            this._isOpen = false;
+            const self = this as any;
+            if (!self._isOpen) return;
+            self.el.style.display = 'none';
+            self._isOpen = false;
         },
 
         onBeforeDispose(): void {
-            this.close();
-            this.clearGroups();
+            const self = this as any;
+            self.close();
+            self.clearGroups();
         },
     },
 }).with([GroupSelectAbility]);

@@ -43,7 +43,8 @@ export interface ContentPropDef {
 }
 
 export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
-    html: [{ nodeProp: 'text' }],
+    text: [{ nodeProp: 'text' }],
+    html: [{ nodeProp: 'html' }],
     value: [{ nodeProp: 'value' }],
     src: [{ nodeProp: 'src' }],
     link: [{ nodeProp: 'text' }, { nodeProp: 'href' }],

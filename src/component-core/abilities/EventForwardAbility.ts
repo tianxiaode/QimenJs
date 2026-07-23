@@ -46,8 +46,8 @@ import { getId } from '@/utils/string/id';
 
 type EventDataType = 'emit' | 'bridge' | 'entity' | 'float';
 
-export const EventForwardAbility= {
-    bindDomEventBindings(): void {
+export const EventForwardAbility: AbilityDefinition = {
+    bindDomEventBindings(this: any): void {
         if (!this.nodeMap) return;
 
         for (const [nodeName, node] of Object.entries(this.nodeMap as Record<string, any>)) {
@@ -66,6 +66,7 @@ export const EventForwardAbility= {
     },
 
     _handleDomEvent(
+        this: any,
         data: any,
         nodeName: string,
         domEvent: string,
@@ -123,6 +124,7 @@ export const EventForwardAbility= {
     },
 
     _collectEventData(
+        this: any,
         nodeName: string,
         eventName: string,
         eventType: EventDataType
@@ -134,6 +136,7 @@ export const EventForwardAbility= {
     },
 
     _buildForwardContext(
+        this: any,
         eventName: string,
         data: any,
         source: string,
@@ -165,7 +168,13 @@ export const EventForwardAbility= {
             .build();
     },
 
-    _bindDomEvent(node: any, nodeName: string, domEvent: string, decl: DomEventDecl): void {
+    _bindDomEvent(
+        this: any,
+        node: any,
+        nodeName: string,
+        domEvent: string,
+        decl: DomEventDecl
+    ): void {
         const el = node.el;
         if (!el) return;
 
@@ -194,6 +203,7 @@ export const EventForwardAbility= {
     },
 
     _bindComponentEvent(
+        this: any,
         component: any,
         nodeName: string,
         domEvent: string,

@@ -8,34 +8,32 @@
  *
  * 事件发送规则：
  * 1. 本地事件：this.emit(event, data)
- * 2. 桥接事件：如果有 eventKey，this.bridgeEmit(eventKey, event, data)
+ * 2. 桥接事件：如果有 eventKey，this.bridgeEmit(ctx)
  *
- * 调用方式：
- * - mounted：DOM 挂载后调用 this._emitMounted()
- * - updated：属性/内容更新后调用 this._emitUpdated(data)
- * - resize：ResizeObserver 回调中调用 this._emitResize(entry)
+ * bridgeEmit 走 EventBridge，busId 由 EventScope 自动填充，
+ * 发送方不需要也不应该直接依赖 globalEventBus。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { COMPONENT_LIFECYCLE_EVENTS, globalEventBus } from '@/events';
+import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 
-export const LifecycleAbility= {
-    _emitMounted(): void {
+export const LifecycleAbility = {
+    _emitMounted(this: any): void {
         if (typeof this.onMounted === 'function') {
             this.onMounted();
         }
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.MOUNTED);
     },
 
-    _emitUpdated(data?: any): void {
+    _emitUpdated(this: any, data?: any): void {
         if (typeof this.onUpdated === 'function') {
             this.onUpdated();
         }
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.UPDATED, data);
     },
 
-    _emitResize(entry: ResizeObserverEntry): void {
+    _emitResize(this: any, entry: ResizeObserverEntry): void {
         if (typeof this.onResize === 'function') {
             this.onResize(entry);
         }
@@ -45,7 +43,7 @@ export const LifecycleAbility= {
         });
     },
 
-    _emitLifecycleEvent(event: string, data?: any): void {
+    _emitLifecycleEvent(this: any, event: string, data?: any): void {
         if (typeof this.emit === 'function') {
             this.emit(event, data);
         }
@@ -58,9 +56,8 @@ export const LifecycleAbility= {
                 .withSource(eventKey)
                 .withSourceType(this.constructor.name)
                 .withData(data)
-                .withBusId(globalEventBus.getBusId())
                 .build();
             this.bridgeEmit(ctx);
         }
     },
-} satisfies AbilityDefinition;
+} as AbilityDefinition;

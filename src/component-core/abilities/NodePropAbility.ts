@@ -27,23 +27,22 @@ import type { AbilityDefinition } from '@/composable';
 import { DEFAULT_NODE_PROP_MAP } from '../types';
 import type { NodePropDef } from '../types';
 import { ALIGN_MAP, PACK_MAP } from '../utils/template-constants';
-import { COMPONENT_LIFECYCLE_EVENTS, globalEventBus } from '@/events';
-import { EventContextBuilder } from '@/context';
+import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-export const NodePropAbility= {
-    _resolveNodeEl(nodeName: string): HTMLElement | undefined {
+export const NodePropAbility: AbilityDefinition = {
+    _resolveNodeEl(this: any, nodeName: string): HTMLElement | undefined {
         const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;
         return node.component ? node.component.el : node.el;
     },
 
-    _resolveNodeTarget(nodeName: string): { el?: HTMLElement; component?: any } {
+    _resolveNodeTarget(this: any, nodeName: string): { el?: HTMLElement; component?: any } {
         const node = this.nodeMap?.[nodeName];
         if (!node) return {};
         return { el: node.el, component: node.component };
     },
 
-    _getNodeProp(nodeName: string, prop: string): any {
+    _getNodeProp(this: any, nodeName: string, prop: string): any {
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return undefined;
 
@@ -68,7 +67,7 @@ export const NodePropAbility= {
         return (target as any)[def.domAttr];
     },
 
-    _setNodeProp(nodeName: string, prop: string, value: any): void {
+    _setNodeProp(this: any, nodeName: string, prop: string, value: any): void {
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return;
 
@@ -86,7 +85,7 @@ export const NodePropAbility= {
         applyPropToEl(target, def, value);
     },
 
-    _updateNode(nodeName: string, props: Record<string, any>): void {
+    _updateNode(this: any, nodeName: string, props: Record<string, any>): void {
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return;
 
@@ -144,7 +143,7 @@ export const NodePropAbility= {
         node._state = { ...node._state, ...props };
     },
 
-    _markNodeDirty(nodeName: string, props: Record<string, any>): void {
+    _markNodeDirty(this: any, nodeName: string, props: Record<string, any>): void {
         if (!this._dirtyNodes) this._dirtyNodes = {};
 
         const existing = this._dirtyNodes[nodeName];
@@ -157,7 +156,7 @@ export const NodePropAbility= {
         this.debounce('NodePropAbility:flush', () => this._flushNodeProps(), 0);
     },
 
-    _flushNodeProps(): void {
+    _flushNodeProps(this: any): void {
         if (!this._dirtyNodes) return;
 
         const dirty = this._dirtyNodes;
@@ -165,25 +164,6 @@ export const NodePropAbility= {
 
         for (const [nodeName, props] of Object.entries(dirty)) {
             this._updateNode(nodeName, props as Record<string, any>);
-        }
-    },
-
-    _emitLifecycleEvent(event: string, data?: any): void {
-        if (typeof this.emit === 'function') {
-            this.emit(event, data);
-        }
-
-        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
-        if (eventKey && typeof this.bridgeEmit === 'function') {
-            const ctx = EventContextBuilder.create()
-                .withEvent(event)
-                .withType(event)
-                .withSource(eventKey)
-                .withSourceType(this.constructor.name)
-                .withData(data)
-                .withBusId(globalEventBus.getBusId())
-                .build();
-            this.bridgeEmit(ctx);
         }
     },
 };

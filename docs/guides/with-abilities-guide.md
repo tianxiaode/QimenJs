@@ -179,16 +179,18 @@ instance.value();  // 'B'
 
 ## this 指向
 
-能力方法中的 `this` 自动指向宿主实例：
+能力方法中的 `this` 自动指向宿主实例。在 withAbilities 模式下，能力方法需添加 `this: any` 类型标注以避免 TypeScript 类型错误：
 
 ```typescript
 const Ability: AbilityDefinition = {
-    method() {
+    method(this: any) {
         this.abilityState;  // 内置方法
         this.logger;        // 内置日志
     },
 };
 ```
+
+> **注意**：`this: any` 是编译期类型标注，运行时 `this` 仍正确指向宿主实例。这是因为 withAbilities 将方法注入到类原型上，调用时 `this` 自然绑定到实例。
 
 ## withAbilities vs withDefinitions
 

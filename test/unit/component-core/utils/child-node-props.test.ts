@@ -12,13 +12,10 @@ describe('child-node-props', () => {
         return result;
     };
 
-    it('DOM 子节点生成内容属性 + 通用属性', () => {
+    it('DOM 子节点生成内容属性', () => {
         const nodeMetas = makeNodeMetas({ title: { contentMode: 'html' } });
         const descs = buildChildNodePropDescs(nodeMetas, []);
         expect(descs.title).toBeDefined();
-        expect(descs.titleCls).toBeDefined();
-        expect(descs.titleStyle).toBeDefined();
-        expect(descs.titleHidden).toBeDefined();
     });
 
     it('value 模式生成 value 属性', () => {

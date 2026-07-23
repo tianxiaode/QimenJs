@@ -40,9 +40,7 @@ export let HeaderComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-header',
-        layout: 'hbox',
-        align: 'center',
-        gap: '8px',
+        flex: { direction: 'row', align: 'center', gap: '8px' },
         children: [
             {
                 tag: 'i',
@@ -61,9 +59,7 @@ export let HeaderComponent = Component.withTemplate({
             { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
         ],
     },
-    props: {
-        size: 'md',
-    },
+
     body: {
         type: 'Header',
         forwards: {

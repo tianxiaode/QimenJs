@@ -30,70 +30,79 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         },
 
         onAfterInit(props?: AccordionProps): void {
-            this._mode = props?.mode ?? 'single';
-            this.el.classList.toggle('q-accordion--multiple', this._mode === 'multiple');
+            const self = this as any;
+            self._mode = props?.mode ?? 'single';
+            self.el.classList.toggle('q-accordion--multiple', self._mode === 'multiple');
 
-            this.on('click', (data: any) => this._onPanelClick(data));
+            self.on('click', (data: any) => self._onPanelClick(data));
 
-            if (this._mode === 'single' && props?.expandedIndex !== undefined) {
-                this.expandAt(props.expandedIndex, true);
+            if (self._mode === 'single' && props?.expandedIndex !== undefined) {
+                self.expandAt(props.expandedIndex, true);
             }
-            if (this._mode === 'multiple' && props?.expandedIndices?.length) {
-                for (const idx of props.expandedIndices) this.expandAt(idx, true);
+            if (self._mode === 'multiple' && props?.expandedIndices?.length) {
+                for (const idx of props.expandedIndices) self.expandAt(idx, true);
             }
         },
 
         get mode(): AccordionMode {
-            return this._mode;
+            const self = this as any;
+            return self._mode;
         },
         get expandedIndex(): number {
-            return this._expandedIndex;
+            const self = this as any;
+            return self._expandedIndex;
         },
         get expandedIndices(): number[] {
+            const self = this as any;
             const indices: number[] = [];
-            for (let i = 0; i < this.count; i++) {
-                if (this._isExpanded(i)) indices.push(i);
+            for (let i = 0; i < self.count; i++) {
+                if (self._isExpanded(i)) indices.push(i);
             }
             return indices;
         },
 
         expandAt(index: number, silent: boolean = false): void {
-            if (index < 0 || index >= this.count) return;
-            if (this._mode === 'single') {
-                if (this._expandedIndex >= 0 && this._expandedIndex < this.count)
-                    this._collapsePanel(this._expandedIndex);
-                this._expandPanel(index);
-                this._expandedIndex = index;
+            const self = this as any;
+            if (index < 0 || index >= self.count) return;
+            if (self._mode === 'single') {
+                if (self._expandedIndex >= 0 && self._expandedIndex < self.count)
+                    self._collapsePanel(self._expandedIndex);
+                self._expandPanel(index);
+                self._expandedIndex = index;
             } else {
-                this._expandPanel(index);
+                self._expandPanel(index);
             }
-            if (!silent) this.emit('select', { index, expanded: true });
+            if (!silent) self.emit('select', { index, expanded: true });
         },
 
         collapseAt(index: number, silent: boolean = false): void {
-            if (index < 0 || index >= this.count) return;
-            if (this._mode === 'single') {
-                if (index === this._expandedIndex) {
-                    this._collapsePanel(index);
-                    this._expandedIndex = -1;
+            const self = this as any;
+            if (index < 0 || index >= self.count) return;
+            if (self._mode === 'single') {
+                if (index === self._expandedIndex) {
+                    self._collapsePanel(index);
+                    self._expandedIndex = -1;
                 }
             } else {
-                this._collapsePanel(index);
+                self._collapsePanel(index);
             }
-            if (!silent) this.emit('select', { index, expanded: false });
+            if (!silent) self.emit('select', { index, expanded: false });
         },
 
         toggleAt(index: number, silent: boolean = false): void {
-            this._isExpanded(index) ? this.collapseAt(index, silent) : this.expandAt(index, silent);
+            const self = this as any;
+            self._isExpanded(index) ? self.collapseAt(index, silent) : self.expandAt(index, silent);
         },
 
         _onPanelClick(data: any): void {
+            const self = this as any;
             const index = data?.index;
-            if (index !== undefined) this.toggleAt(index);
+            if (index !== undefined) self.toggleAt(index);
         },
 
         _expandPanel(index: number): void {
-            const panel = this.getAt(index);
+            const self = this as any;
+            const panel = self.getAt(index);
             if (!panel) return;
             if (panel.nodeMap?.body?.el) panel.nodeMap.body.el.hidden = false;
             if (panel.nodeMap?.expand?.el) {
@@ -104,7 +113,8 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         },
 
         _collapsePanel(index: number): void {
-            const panel = this.getAt(index);
+            const self = this as any;
+            const panel = self.getAt(index);
             if (!panel) return;
             if (panel.nodeMap?.body?.el) panel.nodeMap.body.el.hidden = true;
             if (panel.nodeMap?.expand?.el) {
@@ -115,16 +125,20 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         },
 
         _isExpanded(index: number): boolean {
-            const panel = this.getAt(index);
+            const self = this as any;
+            const panel = self.getAt(index);
             return panel ? !panel.el.classList.contains('q-panel--collapsed') : false;
         },
 
         onUpdated(props?: Record<string, any>): void {
+            const self = this as any;
             if (props?.mode !== undefined) {
-                this._mode = props.mode;
-                this.el.classList.toggle('q-accordion--multiple', this._mode === 'multiple');
+                self._mode = props.mode;
+                self.el.classList.toggle('q-accordion--multiple', self._mode === 'multiple');
             }
-            if (props?.expandedIndex !== undefined) this.expandAt(props.expandedIndex);
+            if (props?.expandedIndex !== undefined) self.expandAt(props.expandedIndex);
         },
     },
 });
+
+export type AccordionComponent = InstanceType<typeof AccordionComponent>;

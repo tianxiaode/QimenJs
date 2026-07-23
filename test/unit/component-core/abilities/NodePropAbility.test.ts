@@ -11,6 +11,7 @@ jest.mock('@/events', () => ({
 }));
 
 import { NodePropAbility } from '@/component-core/abilities/NodePropAbility';
+import { LifecycleAbility } from '@/component-core/abilities/LifecycleAbility';
 
 describe('NodePropAbility', () => {
     it('提供核心方法', () => {
@@ -52,7 +53,7 @@ describe('NodePropAbility', () => {
             _resolveNodeTarget: () => ({ el, component: undefined }),
             nodeMap: { root: node },
             emit: emitSpy,
-            _emitLifecycleEvent: NodePropAbility._emitLifecycleEvent,
+            _emitLifecycleEvent: LifecycleAbility._emitLifecycleEvent,
         };
         NodePropAbility._updateNode.call(instance, 'root', { hidden: true });
         expect(emitSpy).toHaveBeenCalledWith('hiddenchange', { hidden: true, previous: false });

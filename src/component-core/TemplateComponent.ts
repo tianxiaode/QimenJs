@@ -8,11 +8,21 @@
  *   Component（闭包基类）— 工厂层，withTemplate / replace 在此
  *   TemplateComponent（内部类基类）— 实现层，纯组件基类
  *
- * TemplateComponent 不再提供 withTemplate / replace，
- * 这些工厂方法已移至 Component。
+ * 新模式：从 ComposableBase 派生，通过 withAbilities 附加能力。
+ * withTemplate 时 class extends TemplateComponent，拆解模板并复制功能到新类。
+ *
+ * 类型策略：
+ *   export interface TemplateComponent 声明合并，用 InferAbility<typeof XAbility>
+ *   提取每个能力的公共签名，运行时由 withAbilities 注入实现。
+ *   生命周期钩子声明为可选方法（组件 body 中按需定义）。
  */
 
-import { ComposableBase, type AbilityDefinition } from '@/composable';
+import {
+    ComposableBase,
+    withAbilities,
+    type AbilityDefinition,
+    type InferAbility,
+} from '@/composable';
 import {
     EventAbility,
     DomEventsAbility,
@@ -32,14 +42,6 @@ import { AnimationAbility } from './abilities';
 import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-/**
- * 标准能力声明
- *
- * 事件系统：EventAbility / DomEventsAbility / SystemEventBridgeAbility / EntityEventBusAbility / OverlayEventBusAbility / SystemEventBusAbility
- * 事件转发：EventForwardAbility
- * 节点属性：NodePropAbility（含脏追踪 + 批量写 DOM）
- * 生命周期：LifecycleAbility（mounted/updated/resize 事件发送）
- */
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility,
     DomEventsAbility,
@@ -56,7 +58,31 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     LifecycleAbility,
 ];
 
-export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_ABILITIES) {
+export interface TemplateComponent
+    extends
+        InferAbility<typeof EventAbility>,
+        InferAbility<typeof DomEventsAbility>,
+        InferAbility<typeof EventBridgeAbility>,
+        InferAbility<typeof EntityEventBusAbility>,
+        InferAbility<typeof OverlayEventBusAbility>,
+        InferAbility<typeof DragEventBusAbility>,
+        InferAbility<typeof SystemEventBusAbility>,
+        InferAbility<typeof EventForwardAbility>,
+        InferAbility<typeof NodePropAbility>,
+        InferAbility<typeof CommonPropsAbility>,
+        InferAbility<typeof AnimationAbility>,
+        InferAbility<typeof LifecycleAbility> {
+    onBeforeUnmount?(): void;
+    onAfterInit?(props?: any): void;
+    onBeforeInit?(props?: any): void;
+    onMounted?(): void;
+    onUpdated?(data?: any): void;
+    onResize?(entry: ResizeObserverEntry): void;
+    onInitState?(): Record<string, any>;
+    onLocaleChange?(): void;
+}
+
+export class TemplateComponent extends ComposableBase {
     tag: string = 'div';
 
     type!: string;
@@ -75,14 +101,14 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
 
     nodeMap: Record<string, NodeMetadata> = {};
 
-    override dispose(): void {
+    _templateInitialized: boolean = false;
+
+    override onBeforeDispose(): void {
         if (typeof this.onBeforeUnmount === 'function') {
             this.onBeforeUnmount();
         }
 
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
-
-        this.onBeforeDispose();
 
         this._disposeChildComponents();
 
@@ -94,9 +120,9 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         this.nodeMap = {};
 
         this._initializing = false;
+    }
 
-        super.dispose();
-
+    override onDisposed(): void {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
     }
 
@@ -108,3 +134,5 @@ export class TemplateComponent extends ComposableBase.with(TEMPLATE_COMPONENT_AB
         }
     }
 }
+
+withAbilities(TemplateComponent, TEMPLATE_COMPONENT_ABILITIES);

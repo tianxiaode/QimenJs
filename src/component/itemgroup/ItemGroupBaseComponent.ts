@@ -17,6 +17,8 @@ export interface ItemGroupConfig {
     defaultItemType?: string;
     items?: Record<string, any>[];
     gap?: string;
+    /** 列数，大于 1 时使用 CSS Grid 多列布局，行内顶部对齐 */
+    cols?: number;
     /** 按 type 索引的默认配置，主要用于事件转发 */
     defaultItem?: DefaultItemConfig;
     overflowMode?: OverflowMode;
@@ -49,6 +51,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
                 /** 默认子组件类型 */
                 _defaultItemType: '',
                 _gap: '',
+                _cols: 1 as number,
                 /** 按 type 索引的默认配置（事件等） */
                 _defaultItem: {} as DefaultItemConfig,
                 _overflowMode: 'none' as OverflowMode,
@@ -62,6 +65,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         _initItemGroupComponent(props?: any): void {
             if (props?.direction) this.direction = props.direction;
             if (props?.gap) this.gap = props.gap;
+            if (props?.cols) this.cols = props.cols;
             if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
             if (props?.defaultItem) this.defaultItem = props.defaultItem;
             if (props?.overflowMode) this.overflowMode = props.overflowMode;
@@ -98,6 +102,14 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         set gap(value: string) {
             this._gap = value;
             this._applyGap();
+        },
+
+        get cols(): number {
+            return this._cols;
+        },
+        set cols(value: number) {
+            this._cols = value;
+            this._applyCols();
         },
 
         get defaultItem(): DefaultItemConfig {
@@ -280,6 +292,17 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             this.itemContainer.el.style.gap = this._gap || '';
         },
 
+        _applyCols(): void {
+            const container = this.itemContainer.el;
+            if (this._cols > 1) {
+                container.style.setProperty('--q-itemgroup-cols', String(this._cols));
+                container.classList.add('q-itemgroup__items--cols');
+            } else {
+                container.style.removeProperty('--q-itemgroup-cols');
+                container.classList.remove('q-itemgroup__items--cols');
+            }
+        },
+
         _applyOverflowMode(): void {
             if (this._overflowMode === 'none') return;
             this.overflowConfig = {
@@ -318,6 +341,10 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             if (props?.gap !== undefined) {
                 this._gap = props.gap;
                 this._applyGap();
+            }
+            if (props?.cols !== undefined) {
+                this._cols = props.cols;
+                this._applyCols();
             }
             if (props?.defaultItemType !== undefined) {
                 this.defaultItemType = props.defaultItemType;

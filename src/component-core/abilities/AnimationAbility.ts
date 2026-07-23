@@ -23,13 +23,13 @@ import type { AbilityDefinition } from '@/composable';
 import type { AnimationDecl } from '../types/tpl-body';
 import { ANIMATION_PRESETS } from '../utils/template-constants';
 
-export const AnimationAbility= {
+export const AnimationAbility = {
     get _animDecl(): AnimationDecl | undefined {
-        const ctor = this.constructor as any;
+        const ctor = (this as any).constructor as any;
         return ctor._animation ?? undefined;
     },
 
-    playEnter(): void {
+    playEnter(this: any): void {
         const decl = this._animDecl;
         if (!decl || decl.enabled === false) return;
 
@@ -43,7 +43,7 @@ export const AnimationAbility= {
         });
     },
 
-    playLeave(): Promise<void> {
+    playLeave(this: any): Promise<void> {
         const decl = this._animDecl;
         if (!decl || decl.enabled === false) return Promise.resolve();
 
@@ -58,7 +58,7 @@ export const AnimationAbility= {
 
         return anim ? anim.finished.then(() => {}) : Promise.resolve();
     },
-};
+} as AbilityDefinition;
 
 function resolveKeyframes(name?: string, custom?: Keyframe[]): Keyframe[] | null {
     if (custom) return custom;

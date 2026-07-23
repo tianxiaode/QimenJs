@@ -27,7 +27,7 @@ function splitClasses(value: string): string[] {
     return value.split(/\s+/).filter(Boolean);
 }
 
-export const CommonPropsAbility= {
+export const CommonPropsAbility: AbilityDefinition = {
     // ── Layer 1: root 属性（getter/setter）──
 
     cls: {
@@ -376,4 +376,8 @@ export const CommonPropsAbility= {
     setNodeBorder(value: any, nodeName?: string): void {
         this._markNodeDirty(nodeName ?? 'root', { border: value });
     },
-} satisfies AbilityDefinition;
+
+    setNodeHtml(value: any, nodeName?: string): void {
+        this._markNodeDirty(nodeName ?? 'root', { html: value });
+    },
+} as AbilityDefinition;

@@ -174,4 +174,10 @@ export const ENTITY_EVENTS = {
     // ---- UI 选择 ----
     /** 选择变更（SelectionAbility 自身触发，非 EntityManager 事件） */
     SELECTION_CHANGE: 'entity:selectionchange',
+
+    // ---- 验证 ----
+    /** 请求验证（对应 ENTITY_VALIDATION_EVENTS.VALIDATE） */
+    VALIDATE: 'entity:validate',
+    /** 验证结果（对应 ENTITY_VALIDATION_EVENTS.VALIDATION） */
+    VALIDATION: 'entity:validation',
 } as const;

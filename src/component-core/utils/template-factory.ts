@@ -1,28 +1,25 @@
 /**
  * template-factory.ts — 模板组件工厂
  *
- * 双层架构：
- *   createInnerClass     → 创建内部类（TemplateComponent 子类，立即编译，完整组件）
- *   createComponentFactory → 创建闭包类（工厂函数，按 when 条件选择内部类实例）
- *   createReplaceFactory   → 基于已有闭包类创建派生闭包类
+ * 核心函数：
+ *   createInnerClass   → class extends ParentClass，编译模板，完整组件类
+ *   createComponentFactory → withTemplate 入口
+ *   createReplaceFactory   → replace 入口
  *
- * 模板选择机制：
- *   - 单模板（tpl: TplNode）→ 直接使用，无条件
- *   - 多模板（tpl: TplVariant[]）→ 遍历变体，when(props) 首个为 true 的胜出
- *   - when 省略 → 兜底匹配
- *   - 全部不匹配 → 抛出 ComponentError
-
+ * 单模板：直接返回 InnerClass（真正的 class），无需闭包封装
+ * 多模板：返回简单工厂函数，按 when 选择变体后实例化
+ *
+ * InnerClass 自带 .create / .with / .replace 静态方法，支持链式调用。
  */
 
-import type { ComponentTemplate, TplNode, TplVariant, BodyDef } from '../types';
-import { copyPrototypeMethods, copyStaticMethods } from './class-copy';
+import type { ComponentTemplate, TplNode, BodyDef } from '../types';
 import { compilePendingTemplate } from './template-compiler';
 import { initFromTemplate } from './template-init';
 import { Logger } from '@/logger';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 import { deepMerge } from '@/utils/object/clone';
 import type { AbilityDefinition } from '@/composable';
-import { initForgedState } from '@/composable';
+import { withAbilities } from '@/composable';
 import { ComponentError, KernelErrorCode } from '@/error';
 import { TemplateComponent } from '../TemplateComponent';
 
@@ -32,10 +29,6 @@ function initInstanceData(instance: any): void {
     instance.dirtySet = new Set();
     instance._initializing = false;
 }
-
-// ══════════════════════════════════════════════════════════════
-// 内部类创建（TemplateComponent 子类，完整组件）
-// ══════════════════════════════════════════════════════════════
 
 const LIFECYCLE_HOOKS = new Set([
     'onBeforeInit',
@@ -47,8 +40,33 @@ const LIFECYCLE_HOOKS = new Set([
     'onDisposed',
 ]);
 
+// ══════════════════════════════════════════════════════════════
+// 内部类创建（class extends ParentClass，完整组件）
+// ══════════════════════════════════════════════════════════════
+
+function attachStaticMethods(Cls: any): void {
+    Cls.create = function (props?: Record<string, any>): any {
+        return new Cls(props);
+    };
+
+    Cls.with = function (abilities: AbilityDefinition[]): any {
+        return createAbilityInnerClass(Cls, abilities);
+    };
+
+    Cls.replace = function (options: any): any {
+        return createDerivedInnerClass(Cls, options);
+    };
+}
+
 /**
- * 创建内部类 — 立即编译模板，完整组件类
+ * 创建内部类 — class extends ParentClass，立即编译模板
+ *
+ * 流程：
+ *   1. class extends ParentClass 创建新类
+ *   2. 构造函数中完成实例化初始化
+ *   3. compilePendingTemplate 编译模板并拆解到新类
+ *   4. withAbilities 附加额外能力
+ *   5. 挂载 .create / .with / .replace 静态方法
  */
 export function createInnerClass(
     ParentClass: any,
@@ -56,185 +74,71 @@ export function createInnerClass(
     body?: BodyDef,
     extraAbilities?: AbilityDefinition[]
 ): any {
-    const InnerClass = function (this: any, props?: Record<string, any>) {
-        initForgedState(this);
-        initInstanceData(this);
-        this._templateInitialized = false;
+    const InnerClass = class extends ParentClass {
+        constructor(props?: Record<string, any>) {
+            super();
 
-        if (typeof this.onInitState === 'function') {
-            Object.assign(this, this.onInitState());
-        }
+            initInstanceData(this);
+            this._templateInitialized = false;
 
-        if (typeof this.onBeforeInit === 'function') {
-            this.onBeforeInit(props);
-        }
+            if (typeof this.onInitState === 'function') {
+                Object.assign(this, this.onInitState());
+            }
 
-        initFromTemplate(this, props);
+            if (typeof this.onBeforeInit === 'function') {
+                this.onBeforeInit(props);
+            }
 
-        const ctor = this.constructor as any;
-        if (ctor.type) this.type = ctor.type;
+            initFromTemplate(this, props);
 
-        this._templateInitialized = true;
+            const ctor = this.constructor as any;
+            if (ctor.type) this.type = ctor.type;
 
-        if (typeof this.onAfterInit === 'function') {
-            this.onAfterInit(props);
-        }
+            this._templateInitialized = true;
 
-        if (typeof this._emitLifecycleEvent === 'function') {
-            this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.INIT, { props });
+            if (typeof this.onAfterInit === 'function') {
+                this.onAfterInit(props);
+            }
+
+            if (typeof this._emitLifecycleEvent === 'function') {
+                this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.INIT, { props });
+            }
         }
     };
-
-    copyPrototypeMethods(ParentClass, InnerClass);
-    copyStaticMethods(ParentClass, InnerClass);
 
     compilePendingTemplate(InnerClass, tpl, Logger.for(InnerClass), body);
 
     if (extraAbilities && extraAbilities.length > 0) {
-        const ComposableInner = (InnerClass as any).with(extraAbilities);
-        return ComposableInner;
+        withAbilities(InnerClass, extraAbilities);
     }
 
-    (InnerClass as any).create = function (props?: Record<string, any>): any {
-        const instance = Object.create(this.prototype);
-        this.call(instance, props);
-        return instance;
-    };
+    attachStaticMethods(InnerClass);
 
     return InnerClass;
 }
 
-// ══════════════════════════════════════════════════════════════
-// 模板选择：根据 when 条件匹配变体
-// ══════════════════════════════════════════════════════════════
-
-interface VariantEntry {
-    innerClass: any;
-    when?: (config: Record<string, any>) => boolean;
-}
-
-function selectVariant(variants: VariantEntry[], props?: Record<string, any>): any {
-    for (const entry of variants) {
-        if (!entry.when || entry.when(props ?? {})) {
-            return entry.innerClass;
-        }
-    }
-    throw new ComponentError('没有匹配的模板变体', KernelErrorCode.COMPONENT_TPL_KEY_NOT_FOUND, {
-        props,
-    });
-}
-
-// ══════════════════════════════════════════════════════════════
-// 闭包类创建（工厂函数，按 when 条件返回内部类实例）
-// ══════════════════════════════════════════════════════════════
-
 /**
- * 创建闭包类 — 工厂函数
+ * 基于已有内部类创建附加能力的派生类
  *
- * @param templates - 模板配置
- * @returns 闭包类，new ClosureClass(props) 返回内部类实例
+ * class extends ParentInner，withAbilities 附加能力。
+ * 不需要重新编译模板，父类的编译结果通过原型链继承。
  */
-export function createComponentFactory(templates: ComponentTemplate): any {
-    const variants: VariantEntry[] = [];
-    const body = templates.body;
-
-    if (Array.isArray(templates.tpl)) {
-        for (const variant of templates.tpl) {
-            variants.push({
-                innerClass: createInnerClass(TemplateComponent, variant.tpl, body),
-                when: variant.when,
-            });
+function createAbilityInnerClass(ParentInner: any, abilities: AbilityDefinition[]): any {
+    const NewClass = class extends ParentInner {
+        constructor(props?: Record<string, any>) {
+            super(props);
         }
-    } else {
-        variants.push({
-            innerClass: createInnerClass(TemplateComponent, templates.tpl, body),
-        });
-    }
-
-    const ClosureClass = function (this: any, props?: Record<string, any>) {
-        const InnerClass = selectVariant(variants, props);
-        return new InnerClass(props);
     };
 
-    ClosureClass._variants = variants;
-    ClosureClass._isClosureClass = true;
+    withAbilities(NewClass, abilities);
+    attachStaticMethods(NewClass);
 
-    ClosureClass.create = function (props?: Record<string, any>): any {
-        const InnerClass = selectVariant(variants, props);
-        return InnerClass.create(props);
-    };
-
-    ClosureClass.with = function (abilities: AbilityDefinition[]): any {
-        const newVariants: VariantEntry[] = variants.map(v => ({
-            innerClass: v.innerClass.with(abilities),
-            when: v.when,
-        }));
-        const NewClosureClass = function (this: any, props?: Record<string, any>) {
-            const Inner = selectVariant(newVariants, props);
-            return new Inner(props);
-        };
-        NewClosureClass._variants = newVariants;
-        NewClosureClass._isClosureClass = true;
-        NewClosureClass.create = ClosureClass.create;
-        NewClosureClass.with = ClosureClass.with;
-        NewClosureClass.replace = ClosureClass.replace;
-        return NewClosureClass;
-    };
-
-    ClosureClass.replace = function (replaceOptions: any): any {
-        return createReplaceFactory(ClosureClass, replaceOptions);
-    };
-
-    return ClosureClass;
+    return NewClass;
 }
 
 /**
- * 创建派生闭包类 — 基于已有闭包类的 replace
+ * 基于已有内部类创建派生类（replace 场景）
  */
-export function createReplaceFactory(
-    ParentClosure: any,
-    options: {
-        type?: string;
-        cls?: string;
-        itemsCls?: string;
-        config?: Record<string, any>;
-        nodeOverrides?: Record<string, Record<string, any>>;
-        body?: Record<string, any>;
-    }
-): any {
-    const { type, cls, itemsCls, config, nodeOverrides, body } = options;
-    const parentVariants: VariantEntry[] = ParentClosure._variants || [];
-    const newVariants: VariantEntry[] = parentVariants.map(v => ({
-        innerClass: createDerivedInnerClass(v.innerClass, {
-            type,
-            cls,
-            itemsCls,
-            config,
-            nodeOverrides,
-            body,
-        }),
-        when: v.when,
-    }));
-
-    const ClosureClass = function (this: any, props?: Record<string, any>) {
-        const InnerClass = selectVariant(newVariants, props);
-        return new InnerClass(props);
-    };
-
-    ClosureClass._variants = newVariants;
-    ClosureClass._isClosureClass = true;
-
-    ClosureClass.create = function (props?: Record<string, any>): any {
-        const InnerClass = selectVariant(newVariants, props);
-        return InnerClass.create(props);
-    };
-
-    ClosureClass.with = ParentClosure.with;
-    ClosureClass.replace = ParentClosure.replace;
-
-    return ClosureClass;
-}
-
 function createDerivedInnerClass(
     ParentInner: any,
     options: {
@@ -248,21 +152,19 @@ function createDerivedInnerClass(
 ): any {
     const { type, cls, itemsCls, config, nodeOverrides, body } = options;
 
-    const NewClass = function (this: any, props?: Record<string, any>) {
-        initInstanceData(this);
+    const NewClass = class extends ParentInner {
+        constructor(props?: Record<string, any>) {
+            super(config ? { ...config, ...props } : props);
 
-        ParentInner.call(this, config ? { ...config, ...props } : props);
-
-        if (type) this.type = type;
-        if (cls) this.el?.classList.add(...cls.split(/\s+/).filter(Boolean));
-        if (itemsCls) {
-            const containerEl = this.nodeMap?.itemContainer?.el;
-            if (containerEl) containerEl.classList.add(...itemsCls.split(/\s+/).filter(Boolean));
+            if (type) this.type = type;
+            if (cls) this.el?.classList.add(...cls.split(/\s+/).filter(Boolean));
+            if (itemsCls) {
+                const containerEl = this.nodeMap?.itemContainer?.el;
+                if (containerEl)
+                    containerEl.classList.add(...itemsCls.split(/\s+/).filter(Boolean));
+            }
         }
     };
-
-    copyPrototypeMethods(ParentInner, NewClass);
-    copyStaticMethods(ParentInner, NewClass);
 
     if (nodeOverrides) {
         const parentOverrides = (ParentInner as any)._nodeOverrides;
@@ -293,11 +195,132 @@ function createDerivedInnerClass(
         }
     }
 
-    (NewClass as any).create = function (props?: Record<string, any>): any {
-        const instance = Object.create(this.prototype);
-        this.call(instance, props);
-        return instance;
-    };
+    attachStaticMethods(NewClass);
 
     return NewClass;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 模板选择：根据 when 条件匹配变体
+// ══════════════════════════════════════════════════════════════
+
+interface VariantEntry {
+    innerClass: any;
+    when?: (config: Record<string, any>) => boolean;
+}
+
+function selectVariant(variants: VariantEntry[], props?: Record<string, any>): any {
+    for (const entry of variants) {
+        if (!entry.when || entry.when(props ?? {})) {
+            return entry.innerClass;
+        }
+    }
+    throw new ComponentError('没有匹配的模板变体', KernelErrorCode.COMPONENT_TPL_KEY_NOT_FOUND, {
+        props,
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+// withTemplate 入口
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 创建组件工厂
+ *
+ * 单模板 → 直接返回 InnerClass（真正的 class）
+ * 多模板 → 返回工厂函数，按 when 选择变体后实例化
+ */
+export function createComponentFactory(templates: ComponentTemplate): any {
+    const body = templates.body;
+
+    if (!Array.isArray(templates.tpl)) {
+        return createInnerClass(TemplateComponent, templates.tpl, body);
+    }
+
+    const variants: VariantEntry[] = templates.tpl.map(v => ({
+        innerClass: createInnerClass(TemplateComponent, v.tpl, body),
+        when: v.when,
+    }));
+
+    const factory = function (props?: Record<string, any>): any {
+        const InnerClass = selectVariant(variants, props);
+        return new InnerClass(props);
+    };
+
+    factory._variants = variants;
+
+    factory.create = function (props?: Record<string, any>): any {
+        const InnerClass = selectVariant(variants, props);
+        return new InnerClass(props);
+    };
+
+    factory.with = function (abilities: AbilityDefinition[]): any {
+        const newVariants: VariantEntry[] = variants.map(v => ({
+            innerClass: createAbilityInnerClass(v.innerClass, abilities),
+            when: v.when,
+        }));
+        return createVariantFactory(newVariants);
+    };
+
+    factory.replace = function (replaceOptions: any): any {
+        return createReplaceFactory(variants, replaceOptions);
+    };
+
+    return factory;
+}
+
+function createVariantFactory(variants: VariantEntry[]): any {
+    const factory = function (props?: Record<string, any>): any {
+        const InnerClass = selectVariant(variants, props);
+        return new InnerClass(props);
+    };
+
+    factory._variants = variants;
+
+    factory.create = function (props?: Record<string, any>): any {
+        const InnerClass = selectVariant(variants, props);
+        return new InnerClass(props);
+    };
+
+    factory.with = function (abilities: AbilityDefinition[]): any {
+        const newVariants: VariantEntry[] = variants.map(v => ({
+            innerClass: createAbilityInnerClass(v.innerClass, abilities),
+            when: v.when,
+        }));
+        return createVariantFactory(newVariants);
+    };
+
+    factory.replace = function (replaceOptions: any): any {
+        return createReplaceFactory(variants, replaceOptions);
+    };
+
+    return factory;
+}
+
+// ══════════════════════════════════════════════════════════════
+// replace 入口
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 创建派生组件
+ *
+ * 基于已有 variants 创建派生 variants，每个变体 class extends 原变体内部类。
+ */
+export function createReplaceFactory(
+    parentVariants: VariantEntry[],
+    options: {
+        type?: string;
+        cls?: string;
+        itemsCls?: string;
+        config?: Record<string, any>;
+        nodeOverrides?: Record<string, Record<string, any>>;
+        body?: Record<string, any>;
+    }
+): any {
+    const newVariants: VariantEntry[] = parentVariants.map(v => ({
+        innerClass: createDerivedInnerClass(v.innerClass, options),
+        when: v.when,
+    }));
+
+    return createVariantFactory(newVariants);
 }
