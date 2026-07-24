@@ -1,13 +1,13 @@
 # ItemGroup 最佳实践
 
-> 日期：2026-07-21
+> 日期：2026-07-25
 > 状态：当前有效
 
 ## 一、ItemGroup 是什么
 
 ItemGroup 是轻量排列容器，通过 `items` 数组动态管理子组件实例。核心设计理念：
 
-1. **数据驱动声明** — 通过 `defaultItem` 声明子项的默认事件定义，读配置即知事件流向
+1. **事件委托声明** — 通过 `itemEvents` 声明子组件事件转发规则，DOM 委托自动处理，零手动绑定
 2. **两种模式分离** — `ItemGroupPooledComponent`（池化复用）和 `ItemGroupStaticComponent`（静态生灭），按场景选择
 3. **生命周期自动链式** — `replace()` 派生时，生命周期钩子自动先调基类再调子类，无需手动 `_initItemGroupComponent`
 
@@ -31,9 +31,9 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         direction: 'horizontal',
         gap: '0',
         defaultItemType: 'Toggle',
-        defaultItem: {
-            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
-        },
+    },
+    itemEvents: {
+        Toggle: { toggle: { emits: ['toggle'] } },
     },
     body: { ... },
 });
@@ -54,11 +54,9 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
     config: {
         direction: 'vertical',
         defaultItemType: 'MenuItem',
-        defaultItem: {
-            MenuItem: {
-                events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } },
-            },
-        },
+    },
+    itemEvents: {
+        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
     },
     body: { ... },
 });
@@ -87,107 +85,156 @@ config: {
 }
 ```
 
-### 3.2 defaultItem — 子项默认事件定义
+### 3.2 defaultItem — 子项默认配置
 
-`defaultItem` 支持两种形态，根据子项是否同质选择：
+`defaultItem` 用于非事件相关的子项默认配置（如 cls、initConfig 等）。
 
-#### 简单形式（同质子项）
+> **注意**：事件声明已迁移到 `itemEvents`（见第四节），`defaultItem` 不再包含 `events` 字段。
 
-当所有子项类型相同（通过 `defaultItemType` 指定），使用简单形式：
+### 3.3 itemEvents — 子组件事件委托声明
+
+`itemEvents` 与 `tplEvents` 同级，声明 ItemGroup 子组件的事件转发规则。
+
+**key = 子组件类型名**（如 `Toggle`、`MenuItem`、`NavItem`），**value = 该类型的事件声明**。
 
 ```typescript
-{
-    defaultItemType: 'Toggle',
-    defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
+itemEvents: {
+    Toggle: { toggle: { emits: ['toggle'] } },
+    MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+    NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
 }
 ```
 
-#### Map 形式（异质子项）
+#### ItemEventAction 字段
 
-当子项类型不同，使用 Map 形式，按 type 索引：
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `emits` | `string[]` | 转发为组件事件，emit `${itemKey}:${emitName}` 和 `${emitName}` |
+| `bridges` | `string[]` | 转发为桥接事件（通过 EventBridge 解耦转发） |
+| `entities` | `string` | 转发为实体操作 |
+| `router` | `string` | 转发为路由事件 |
+| `system` | `string \| string[]` | 转发为系统事件 |
+
+## 四、事件委托机制
+
+### 4.1 工作原理
+
+ItemGroup 的子组件事件通过 **DOM 委托 + data-cmp-id 匹配** 自动处理：
+
+```
+子组件 DOM 事件冒泡 → ItemGroup root el
+  → DelegatedEventEngine.handleDelegatedEvent
+  → data-cmp-id 匹配 → 找到 itemKey
+  → _dispatchItemEvent → 查 itemEvents[type][event]
+  → 按 ItemEventAction 分发
+```
+
+### 4.2 data-cmp-id 设置
+
+`_createItem` 自动设置 `instance.el.dataset.cmpId = itemKey`，无需手动处理。
+
+`itemKey` 从 item 数据中取值：`data.itemKey || data.name || 自动生成ID`。
+
+### 4.3 emits — 组件事件转发（推荐）
+
+子组件事件通过 `emits` 转发为 ItemGroup 自身的组件事件：
 
 ```typescript
-{
-    defaultItem: {
-        button: { events: { click: { bridges: ['click'] } } },
-        input:  { events: { input: { bridges: ['input'] } } },
-    },
+itemEvents: {
+    Toggle: { toggle: { emits: ['toggle'] } },
 }
-```
-
-**区分规则**：`defaultItem.events` 存在 → 简单形式，否则 → Map 形式。
-
-### 3.3 事件合并规则
-
-item 自身的 `events` 与 `defaultItem` 深合并，item 优先：
-
-```typescript
-// defaultItem 定义公共事件
-defaultItem: { events: { click: { handler: true, bridges: ['click'] } } }
-
-// item 补充差异
-{ type: 'button', text: '新建', events: { click: { entities: 'create' } } }
-
-// 合并结果
-// click: { handler: true, bridges: ['click'], entities: 'create' }
-```
-
-## 四、事件三路分发
-
-子项事件声明遵循 `DomEventDecl` 规范，支持三路分发：
-
-```
-子项事件 → _handleDomEvent → 按 DomEventDecl 分发
-    ├── handler: true     → this.on{Name}{Event}()   内部处理
-    ├── bridges: ['click'] → this.bridgeEmit()        桥接转发
-    └── entities: 'save'   → this.entityEmit()        实体操作
-```
-
-### 4.1 bridges — 桥接转发
-
-```typescript
-defaultItem: { events: { toggle: { bridges: ['toggle'] } } }
 
 // 监听方
-bridge.bridgeOn('tabBar', 'toggle', (data) => { ... });
+group.on('toggle', (data) => { ... });        // 通用事件
+group.on('item1:toggle', (data) => { ... });  // 带 itemKey 前缀的精确事件
 ```
 
-### 4.2 entities — 实体操作
+### 4.4 bridges — 桥接事件转发
+
+跨组件通信时使用 `bridges`：
 
 ```typescript
-{ type: 'button', text: '新建', events: { click: { entities: 'create' } } }
-// 事件流：按钮 click → _handleDomEvent → entities: 'create' → entityEmit → EntityManager.create()
+itemEvents: {
+    Button: { click: { bridges: ['click'] } },
+}
+
+// 监听方
+bridge.bridgeOn(group.eventKey, 'click', (data) => { ... });
 ```
 
-### 4.3 handler — 内部处理
-
-自动推导方法名 `on{Name}{Event}`：
+### 4.5 entities — 实体操作
 
 ```typescript
-defaultItem: { events: { toggle: { handler: true, bridges: ['toggle'] } } }
+itemEvents: {
+    Button: { click: { entities: 'create' } },
+}
+// 事件流：按钮 click → 委托 → entityEmit → EntityManager.create()
+```
 
-// body 中定义处理方法
-body: {
-    onItemToggle(data) { this.selectAt(data.index); }
+### 4.6 多路可共存
+
+```typescript
+itemEvents: {
+    Button: { click: { emits: ['click'], entities: 'save' } },
 }
 ```
 
-### 4.4 三路可共存
+## 五、事件通信三层模型
+
+ItemGroup 的事件通信遵循三层模型：
+
+| 层级 | 机制 | 解决的问题 | 配置方式 |
+|------|------|-----------|---------|
+| tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { ... }` |
+| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `itemEvents: { Type: { event: { emits: [...] } } }` |
+| bridges | EventBridge | 跨组件解耦通信 | `itemEvents: { Type: { event: { bridges: [...] } } }` |
+
+**关键规则**：
+- tplEvents 不跨组件边界做委托
+- ItemGroup 是硬边界，子组件事件全部走 DOM 委托 + data-cmp-id 匹配 + itemEvents 规则分发
+- ItemGroup 用 emits + itemKey（不用 bridges），事件名格式 `${itemKey}:${eventName}`
+
+## 六、replace() 合并规则
+
+`replace()` 派生时，`tplEvents` 和 `itemEvents` 各自独立合并：
+
+### tplEvents 合并
+
+- 同 nodeName 对象级浅合并，不同 nodeName 追加
+- 合并后重新 compileTplEvents
+
+### itemEvents 合并
+
+- 同 type 事件级浅合并，不同 type 追加
 
 ```typescript
-{ type: 'button', events: { click: { handler: true, bridges: ['click'], entities: 'save' } } }
+// 基类
+const Base = ItemGroupPooledComponent.replace({
+    itemEvents: {
+        Toggle: { toggle: { emits: ['toggle'] } },
+    },
+});
+
+// 派生类追加
+const Derived = Base.replace({
+    itemEvents: {
+        Button: { click: { emits: ['click'] } },
+    },
+});
+// 结果：Toggle + Button 两种类型的 itemEvents
 ```
 
-## 五、生命周期自动链式调用
+## 七、生命周期自动链式调用
 
-`replace()` 派生时，生命周期钩子（`onBeforeInit`/`onAfterInit`/`onMounted`/`onUpdated`/`onBeforeUnmount`/`onBeforeDispose`/`onDisposed`）自动链式调用：**先调基类，再调子类**。
+`replace()` 派生时，生命周期钩子（`onBeforeInit`/`onAfterInit`/`onMounted`/`onUpdated`/`onBeforeDispose`/`onDisposed`）自动链式调用：**先调基类，再调子类**。
 
-子类**不需要**手动调用 `_initItemGroupComponent`，基类的 `onAfterInit` 会自动执行，处理 `direction`、`gap`、`defaultItemType`、`defaultItem` 等配置。
+子类**不需要**手动调用 `_initItemGroupComponent`，基类的 `onAfterInit` 会自动执行，处理 `direction`、`gap`、`defaultItemType` 等配置。
 
 ```typescript
 // ✅ 正确 — 子类 onAfterInit 自动链式，基类初始化已执行
 export let TabBarComponent = ItemGroupPooledComponent.replace({
     config: { direction: 'horizontal', defaultItemType: 'Toggle', ... },
+    itemEvents: { Toggle: { toggle: { emits: ['toggle'] } } },
     body: {
         onAfterInit(props) {
             // 基类 onAfterInit 已自动执行，direction/defaultItemType 已设置
@@ -203,18 +250,19 @@ onAfterInit(props) {
 }
 ```
 
-## 六、内部数据结构
+## 八、内部数据结构
 
-### 6.1 核心状态
+### 8.1 核心状态
 
 | 状态 | 类型 | 职责 |
 |------|------|------|
-| `_items` | `Array<{data, component, el, events?}>` | 有序可见项列表，控制 DOM 顺序 |
+| `_items` | `Array<{data, component, el}>` | 有序可见项列表，控制 DOM 顺序 |
 | `_hiddenItems`（仅池化） | 同上 | 隐藏项池，可复用 |
 | `_defaultItemType` | `string` | 默认子组件类型 |
 | `_defaultItem` | `DefaultItemConfig` | 按 type 索引的默认配置 |
+| `_itemEvents` | `ItemEvents` | 子组件事件委托规则（实例级，运行时可通过 initConfig 传入） |
 
-### 6.2 池化复用流程
+### 8.2 池化复用流程
 
 ```
 add(data)
@@ -223,26 +271,30 @@ add(data)
   → 没找到 → _createItem(data)                      // 正常创建
 ```
 
-### 6.3 事件绑定/解绑
+### 8.3 事件委托流程
 
 ```
-_bindItemEvents(item)
-  → item.component.on(domEvent, callback) → 收集 off 到 item._unsubs
-_unbindItemEvents(item)
-  → 遍历 item._unsubs 调用 off()
+DOM 事件冒泡到 ItemGroup root el
+  → DelegatedEventEngine.handleDelegatedEvent
+  → 1. childEventIndex → 子组件 tplEvents 规则（不适用于 ItemGroup）
+  → 2. nodeElMap → 自身模板节点规则
+  → 3. data-cmp-id → itemEvents 规则
+     → _dispatchItemEvent
+     → 查 itemEvents[componentType][eventType]
+     → 按 ItemEventAction 分发（emits/bridges/entities/router/system）
 ```
 
-## 七、派生组件定义模式
+## 九、派生组件定义模式
 
 ### 各组件配置速查
 
-| 组件 | 基类 | defaultItemType | defaultItem 形式 | 事件 |
-|------|------|-----------------|-----------------|------|
-| TabBar | Pooled | Toggle | Map | toggle → bridges |
-| ButtonGroup | Pooled | Toggle | Map | toggle → bridges |
-| Accordion | Pooled | Panel | Map | click → bridges |
-| NavItemGroup | Pooled | NavItem | Map | click/close → bridges |
-| Menu | Static | MenuItem | Map | click/select → bridges |
+| 组件 | 基类 | defaultItemType | itemEvents | 事件 |
+|------|------|-----------------|------------|------|
+| TabBar | Pooled | Toggle | `Toggle: { toggle: { emits } }` | toggle → emits |
+| ButtonGroup | Pooled | Toggle | `Toggle: { toggle: { emits } }` | toggle → emits |
+| Accordion | Pooled | Panel | `Panel: { click: { emits } }` | click → emits |
+| NavItemGroup | Pooled | NavItem | `NavItem: { click/close: { emits } }` | click/close → emits |
+| Menu | Static | MenuItem | `MenuItem: { click/select: { emits } }` | click/select → emits |
 | Toolbar | Static | — | — | — |
 
 ### 派生模板
@@ -256,9 +308,9 @@ export let MyComponent = ItemGroupPooledComponent.replace({  // 或 ItemGroupSta
         direction: 'horizontal',       // 'horizontal' | 'vertical'
         gap: '4px',                    // CSS gap 值
         defaultItemType: 'Toggle',     // 默认子组件类型
-        defaultItem: {                 // 事件声明
-            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
-        },
+    },
+    itemEvents: {                      // 子组件事件委托声明
+        Toggle: { toggle: { emits: ['toggle'] } },
     },
     body: {
         onInitState() {
@@ -271,7 +323,7 @@ export let MyComponent = ItemGroupPooledComponent.replace({  // 或 ItemGroupSta
 });
 ```
 
-## 八、CRUD 工具栏完整示例
+## 十、CRUD 工具栏完整示例
 
 ```typescript
 export let CrudToolbarComponent = ItemGroupStaticComponent.replace({
@@ -281,9 +333,9 @@ export let CrudToolbarComponent = ItemGroupStaticComponent.replace({
     config: {
         direction: 'horizontal',
         gap: '4px',
-        defaultItem: {
-            button: { events: { click: { handler: true } } },
-        },
+    },
+    itemEvents: {
+        button: { click: { emits: ['click'] } },
     },
     body: {},
 });
@@ -291,14 +343,14 @@ export let CrudToolbarComponent = ItemGroupStaticComponent.replace({
 // 使用
 new CrudToolbarComponent({
     items: [
-        { type: 'button', text: '新建', events: { click: { entities: 'create' } } },
-        { type: 'button', text: '保存', events: { click: { entities: 'save' } } },
-        { type: 'button', text: '删除', events: { click: { entities: 'delete' } } },
+        { type: 'button', text: '新建' },
+        { type: 'button', text: '保存' },
+        { type: 'button', text: '删除' },
     ],
 });
 ```
 
-## 九、设计决策记录
+## 十一、设计决策记录
 
 ### 为什么拆分 Pooled/Static 而不是 itemDestroy 开关？
 
@@ -312,8 +364,9 @@ new CrudToolbarComponent({
 2. **减少样板** — 不再需要每个子类手动 `_initItemGroupComponent(props)`
 3. **符合直觉** — 生命周期钩子"先基类后子类"是 OOP 的自然期望
 
-### 为什么用 defaultItem 而不是 eventKey + events？
+### 为什么用 itemEvents 替代 defaultItem.events？
 
-1. **语义层级不对** — `bridges`/`handler` 是 TplNode 层概念，放在 ItemGroup 配置里层级混乱
-2. **两套事件声明** — 子项自身有 TplNode events，ItemGroup 又有 events 列表，容易冲突
-3. **无法区分三路分发** — 只知道转发哪些事件名，不知道走 bridges 还是 entities
+1. **架构层级清晰** — `itemEvents` 是编译时数据（类级），`defaultItem` 是运行时数据（实例级），职责分离
+2. **委托事件引擎统一** — 所有 DOM 事件走 DelegatedEventEngine，不再有 `_bindItemEvents`/`_handleDomEvent` 的手动绑定链路
+3. **data-cmp-id 匹配** — 子组件事件通过 DOM 委托 + data-cmp-id 自动匹配，零手动绑定
+4. **replace() 合并** — `itemEvents` 支持 replace 合并（同 type 事件级浅合并），`defaultItem.events` 无法合并

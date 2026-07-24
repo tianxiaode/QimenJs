@@ -14,11 +14,12 @@ export let ButtonGroupComponent = ItemGroupPooledComponent.replace({
 
     config: {
         defaultItemType: 'Toggle',
-        defaultItem: {
-            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
-        },
         direction: 'horizontal',
         gap: '2px',
+    },
+
+    itemEvents: {
+        Toggle: { toggle: { emits: ['toggle'] } },
     },
     body: {
         nodes: {

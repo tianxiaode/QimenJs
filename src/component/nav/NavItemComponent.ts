@@ -71,12 +71,10 @@ export let NavItemComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-nav-item',
-        events: { enter: { handler: true }, leave: { handler: true } },
         children: [
             {
                 tag: 'div',
                 name: 'content',
-                events: { click: { handler: true, bridges: ['click'] } },
                 cls: 'q-nav-item__content',
                 children: [
                     { tag: 'i', name: 'icon', cls: 'q-nav-item__icon' },
@@ -85,6 +83,10 @@ export let NavItemComponent = Component.withTemplate({
                 ],
             },
         ],
+    },
+    tplEvents: {
+        '': { enter: { handler: true }, leave: { handler: true } },
+        content: { click: { handler: true, emits: ['click'] } },
     },
     body: {
         type: 'NavItem',

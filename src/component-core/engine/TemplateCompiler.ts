@@ -9,11 +9,7 @@
  */
 
 import type { TplNode } from '../types/tpl-node-types';
-import type {
-    NodeMetadata,
-    NodeIndexPath,
-    CompiledTemplateCache,
-} from '../types/compiled-types';
+import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
 import type { BodyDef } from '../types/tpl-body';
 import { applyChildNodeProps } from './ChildNodeProps';
 import { Logger } from '@/logger';
@@ -23,8 +19,20 @@ import { Logger } from '@/logger';
 // ══════════════════════════════════════════════════════════════
 
 export const VOID_TAGS = new Set([
-    'input', 'img', 'br', 'hr', 'col', 'area', 'base',
-    'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+    'input',
+    'img',
+    'br',
+    'hr',
+    'col',
+    'area',
+    'base',
+    'embed',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
 ]);
 
 // ══════════════════════════════════════════════════════════════
@@ -84,7 +92,6 @@ export function compileTemplate(root: TplNode, logger: any) {
         grid: root.grid,
         role: root.role,
         attrs: root.attrs,
-        events: root.events,
     };
 
     const children = root.children || [];
@@ -120,7 +127,7 @@ function compileTypeNode(node: TplNode, path: number[], ctx: any): string {
         cls: node.cls,
         contentMode: 'html',
         i18nKey: node.i18n,
-        events: node.events,
+
         initConfig: node.initConfig,
     };
 
@@ -153,7 +160,7 @@ function compileTagNode(node: TplNode, path: number[], ctx: any): string {
             tag,
             contentMode: inferContentMode(tag),
             i18nKey: node.i18n,
-            events: node.events,
+
             cls: node.cls,
             style: node.style,
             flex: node.flex,

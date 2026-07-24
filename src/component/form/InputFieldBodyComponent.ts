@@ -37,13 +37,6 @@ export let InputFieldBodyComponent = Component.withTemplate({
                 tag: 'input',
                 name: 'field',
                 cls: 'q-input__field',
-                events: {
-                    input: { emits: ['input'], debounce: 150 },
-                    focus: { emits: ['focus'] },
-                    blur: { emits: ['blur'] },
-                    change: { emits: ['change'], debounce: 150 },
-                    keydown: { emits: ['keydown'] },
-                },
             },
             {
                 name: 'actions',
@@ -53,8 +46,8 @@ export let InputFieldBodyComponent = Component.withTemplate({
                 initConfig: {
                     direction: 'horizontal',
                     gap: '4px',
-                    defaultItem: {
-                        Icon: { events: { click: { emits: ['actionClick'] } } },
+                    itemEvents: {
+                        Icon: { click: { emits: ['actionClick'] } },
                     },
                 },
             },
@@ -71,6 +64,15 @@ export let InputFieldBodyComponent = Component.withTemplate({
                 hidden: true,
             },
         ],
+    },
+    tplEvents: {
+        field: {
+            input: { emits: ['input'], debounce: 150 },
+            focus: { emits: ['focus'] },
+            blur: { emits: ['blur'] },
+            change: { emits: ['change'], debounce: 150 },
+            keydown: { emits: ['keydown'] },
+        },
     },
     body: {
         type: 'InputFieldBody',

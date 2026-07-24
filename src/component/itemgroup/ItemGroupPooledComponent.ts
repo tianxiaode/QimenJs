@@ -4,7 +4,7 @@
 // ============================================
 
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
-import type { DomEventDecl } from '@qimenjs/component-core';
+import type { TplEventAction } from '@qimenjs/component-core';
 import { Logger } from '@qimenjs/logger';
 
 const logger = Logger.for('ItemGroupPooled');
@@ -18,7 +18,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
                 data: Record<string, any>;
                 component: any;
                 el: HTMLElement;
-                events?: Record<string, DomEventDecl>;
+                events?: Record<string, TplEventAction>;
             }>,
         };
     },

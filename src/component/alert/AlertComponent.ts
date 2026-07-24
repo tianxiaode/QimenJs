@@ -56,9 +56,11 @@ export let AlertComponent = Component.withTemplate({
                 name: 'closeBtn',
                 cls: 'q-alert__close',
                 hidden: true,
-                events: { click: { handler: true, emits: ['close'] } },
             },
         ],
+    },
+    tplEvents: {
+        closeBtn: { click: { handler: true, emits: ['close'] } },
     },
     body: {
         type: 'Alert',

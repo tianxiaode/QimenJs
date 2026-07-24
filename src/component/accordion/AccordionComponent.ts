@@ -16,9 +16,10 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         direction: 'vertical',
         gap: '0',
         defaultItemType: 'Panel',
-        defaultItem: {
-            Panel: { events: { click: { bridges: ['click'] } } },
-        },
+    },
+
+    itemEvents: {
+        Panel: { click: { emits: ['click'] } },
     },
     body: {
         nodes: {

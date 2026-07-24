@@ -34,13 +34,13 @@ export let ToggleComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-toggle',
-        events: {
-            click: { handler: true, emits: ['toggle'] },
-        },
         children: [
             { tag: 'i', name: 'icon', cls: 'q-toggle__icon', hidden: true },
             { tag: 'span', name: 'text', cls: 'q-toggle__text' },
         ],
+    },
+    tplEvents: {
+        '': { click: { handler: true, emits: ['toggle'] } },
     },
     body: {
         type: 'Toggle',

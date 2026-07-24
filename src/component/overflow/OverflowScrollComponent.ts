@@ -45,16 +45,18 @@ export let OverflowScrollComponent = Component.withTemplate({
                 name: 'prevIcon',
                 cls: 'q-overflow-arrow q-overflow-arrow--prev',
                 hidden: true,
-                events: { click: { handler: true } },
             },
             {
                 tag: 'div',
                 name: 'nextIcon',
                 cls: 'q-overflow-arrow q-overflow-arrow--next',
                 hidden: true,
-                events: { click: { handler: true } },
             },
         ],
+    },
+    tplEvents: {
+        prevIcon: { click: { handler: true } },
+        nextIcon: { click: { handler: true } },
     },
     body: {
         type: 'OverflowScroll',

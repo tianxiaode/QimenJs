@@ -11,7 +11,7 @@
  */
 
 import type { TplNode, BodyDef } from '../types';
-import type { TplEvents } from '../types/tpl-events';
+import type { TplEvents, ItemEvents } from '../types/tpl-events';
 import { applyChildNodeProps } from './ChildNodeProps';
 import type { AbilityDefinition } from '@/composable';
 import { withAbilities } from '@/composable';
@@ -153,7 +153,8 @@ export function createInnerClass(
     body?: BodyDef,
     extraAbilities?: AbilityDefinition[],
     nodeOverrides?: Record<string, Record<string, any>>,
-    tplEvents?: TplEvents
+    tplEvents?: TplEvents,
+    itemEvents?: ItemEvents
 ): any {
     const InnerClass = class extends ParentClass {
         constructor(props?: Record<string, any>) {
@@ -193,6 +194,11 @@ export function createInnerClass(
     if (tplEvents && Object.keys(tplEvents).length > 0) {
         (InnerClass as any)._tplEvents = tplEvents;
         (InnerClass as any)._delegatedEventRules = DelegatedEventEngine.compileTplEvents(tplEvents);
+    }
+
+    const ie = itemEvents;
+    if (ie && Object.keys(ie).length > 0) {
+        (InnerClass as any)._itemEvents = ie;
     }
 
     (InnerClass as any)._templateCompiled = true;
@@ -289,9 +295,19 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     (NewClass as any)._i18nNodes = cache.i18nNodes;
 
     const parentTplEvents = (ParentInner as any)._tplEvents;
-    if (parentTplEvents) {
-        (NewClass as any)._tplEvents = parentTplEvents;
-        (NewClass as any)._delegatedEventRules = (ParentInner as any)._delegatedEventRules;
+    const childTplEvents = options.tplEvents;
+    if (parentTplEvents || childTplEvents) {
+        const mergedTplEvents = mergeTplEvents(parentTplEvents, childTplEvents);
+        (NewClass as any)._tplEvents = mergedTplEvents;
+        const { DelegatedEventEngine } = require('./DelegatedEventEngine');
+        (NewClass as any)._delegatedEventRules =
+            DelegatedEventEngine.compileTplEvents(mergedTplEvents);
+    }
+
+    const parentItemEvents = (ParentInner as any)._itemEvents;
+    const childItemEvents = options.itemEvents || config?.itemEvents;
+    if (parentItemEvents || childItemEvents) {
+        (NewClass as any)._itemEvents = mergeItemEvents(parentItemEvents, childItemEvents);
     }
 
     (NewClass as any)._templateCompiled = true;
@@ -321,4 +337,38 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     attachStaticMethods(NewClass);
 
     return NewClass;
+}
+
+function mergeTplEvents(
+    parent: Record<string, any> | undefined,
+    child: Record<string, any> | undefined
+): Record<string, any> {
+    if (!parent) return child || {};
+    if (!child) return parent;
+    const result: Record<string, any> = { ...parent };
+    for (const [nodeName, decl] of Object.entries(child)) {
+        if (result[nodeName] && !Array.isArray(result[nodeName]) && !Array.isArray(decl)) {
+            result[nodeName] = { ...result[nodeName], ...decl };
+        } else {
+            result[nodeName] = decl;
+        }
+    }
+    return result;
+}
+
+function mergeItemEvents(
+    parent: Record<string, any> | undefined,
+    child: Record<string, any> | undefined
+): Record<string, any> {
+    if (!parent) return child || {};
+    if (!child) return parent;
+    const result: Record<string, any> = { ...parent };
+    for (const [type, events] of Object.entries(child)) {
+        if (result[type]) {
+            result[type] = { ...result[type], ...events };
+        } else {
+            result[type] = events;
+        }
+    }
+    return result;
 }

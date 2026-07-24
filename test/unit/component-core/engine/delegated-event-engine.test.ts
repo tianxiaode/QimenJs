@@ -40,24 +40,24 @@ describe('DelegatedEventEngine', () => {
             expect(rules[1].debounce).toBe(300);
         });
 
-        it('emits: true 自动用 nodeName', () => {
+        it('emits 自动用 nodeName', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
-                saveBtn: { click: { handler: true, emits: true } },
+                saveBtn: { click: { handler: true, emits: ['saveBtn'] } },
             });
             expect(rules[0].emits).toEqual(['saveBtn']);
             expect(rules[0].needsBinding).toBe(true);
         });
 
-        it('bridges: true 自动用 nodeName', () => {
+        it('bridges 自动用 nodeName', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
-                saveBtn: { click: { bridges: true } },
+                saveBtn: { click: { bridges: ['saveBtn'] } },
             });
             expect(rules[0].bridges).toEqual(['saveBtn']);
         });
 
-        it('entities: true 自动用 nodeName', () => {
+        it('entities 自动用 nodeName', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
-                saveBtn: { click: { entities: true } },
+                saveBtn: { click: { entities: 'saveBtn' } },
             });
             expect(rules[0].entities).toBe('saveBtn');
         });
@@ -147,7 +147,7 @@ describe('DelegatedEventEngine', () => {
             ];
             const nodeElMap = new WeakMap<Element, string>();
             nodeElMap.set(childEl, 'item');
-            const childEventIndex = [{ nodeName: 'item', el: childEl }];
+            const childEventIndex = [{ nodeName: 'item', el: childEl, rules: [] }];
 
             const domEvt = { target: innerEl, type: 'click' };
             DelegatedEventEngine.handleDelegatedEvent(
@@ -217,8 +217,8 @@ describe('DelegatedEventEngine', () => {
             ];
             const nodeElMap = new WeakMap<Element, string>();
             const childEventIndex = [
-                { nodeName: 'itemA', el: childA },
-                { nodeName: 'itemB', el: childB },
+                { nodeName: 'itemA', el: childA, rules: [] },
+                { nodeName: 'itemB', el: childB, rules: [] },
             ];
 
             const domEvt = { target: innerA, type: 'click' };
@@ -257,7 +257,7 @@ describe('DelegatedEventEngine', () => {
             ];
             const parentNodeElMap = new WeakMap<Element, string>();
             parentNodeElMap.set(aEl, 'a');
-            const parentChildIndex = [{ nodeName: 'a', el: aEl }];
+            const parentChildIndex = [{ nodeName: 'a', el: aEl, rules: [] }];
 
             const domEvt = { target: cInner, type: 'click' };
             DelegatedEventEngine.handleDelegatedEvent(

@@ -6,7 +6,7 @@
  * 运行时浅复制 + 挂 el/component 构建 nodeMap。
  */
 
-import type { DomEventDecl, FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
+import type { FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
 
 // ══════════════════════════════════════════════════════════════
 // 节点元数据 — 唯一运行时数据载体
@@ -19,9 +19,9 @@ import type { DomEventDecl, FlexConfig, GridConfig, HiddenMode } from './tpl-nod
  * 运行时：浅复制 nodeMetas + 挂 el/component → 构建 nodeMap
  *
  * 字段与 TplNode 几乎一一对应，无需中间转换类型：
- * - events 直接存 DomEventDecl，运行时按需推导 handler 名
  * - i18n → i18nKey（唯一重命名）
  * - componentClass 从 TplNode.type 解析
+ * - DOM 事件通过 tplEvents 委托机制处理，不存入 NodeMetadata
  */
 export interface NodeMetadata {
     // ─── runtime：运行时附加 ───
@@ -54,10 +54,6 @@ export interface NodeMetadata {
 
     /** 组件类型名 */
     type?: string;
-
-    // ─── event：事件声明（原始 DomEventDecl，运行时按需推导 handler） ───
-
-    events?: Record<string, DomEventDecl>;
 
     // ─── layout：布局 ───
 

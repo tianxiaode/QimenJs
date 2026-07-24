@@ -14,7 +14,7 @@ import type {
     TplEventAction,
     DelegatedEventRule,
 } from '../types/tpl-events';
-import type { DomEventDecl } from '../types/tpl-node-types';
+
 import type { NodeMetadata } from '../types/compiled-types';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import type { EventContext, EventChainLink } from '@/context';
@@ -22,7 +22,7 @@ import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 
-type EventDataType = 'emit' | 'bridge' | 'entity' | 'float';
+type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
 
 export interface ChildEventEntry {
     nodeName: string;
@@ -50,14 +50,22 @@ export class DelegatedEventEngine {
                         event,
                         action.handler
                     );
-                    const emits = action.emits === true ? [nodeName] : action.emits;
-                    const bridges = action.bridges === true ? [nodeName] : action.bridges;
-                    const entities = action.entities === true ? nodeName : action.entities;
+                    const emits = action.emits;
+                    const bridges = action.bridges;
+                    const entities = action.entities;
+                    const router = action.router;
+                    const system = action.system
+                        ? Array.isArray(action.system)
+                            ? action.system
+                            : [action.system]
+                        : undefined;
                     const needsBinding = !!(
                         handler ||
                         emits?.length ||
                         bridges?.length ||
-                        entities
+                        entities ||
+                        router ||
+                        system?.length
                     );
                     rules.push({
                         nodeName,
@@ -66,6 +74,8 @@ export class DelegatedEventEngine {
                         emits,
                         bridges,
                         entities,
+                        router,
+                        system,
                         once: action.once,
                         debounce: action.debounce,
                         throttle: action.throttle,
@@ -89,6 +99,7 @@ export class DelegatedEventEngine {
             index.push({
                 nodeName,
                 el: node.component.el,
+                rules: [],
             });
         }
 
@@ -103,6 +114,8 @@ export class DelegatedEventEngine {
             const el = node.component ? node.component.el : node.el;
             if (el) map.set(el, nodeName);
         }
+
+        if (instance.el) map.set(instance.el, '');
 
         return map;
     }
@@ -152,10 +165,14 @@ export class DelegatedEventEngine {
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
 
-            const node = instance.nodeMap?.[rule.nodeName];
-            if (!node) continue;
-
-            const el = node.component ? node.component.el : node.el;
+            let el: any;
+            if (rule.nodeName === '') {
+                el = instance.el;
+            } else {
+                const node = instance.nodeMap?.[rule.nodeName];
+                if (!node) continue;
+                el = node.component ? node.component.el : node.el;
+            }
             if (!el) continue;
 
             const bindOptions: any = {};
@@ -188,6 +205,7 @@ export class DelegatedEventEngine {
         if (!target) return;
 
         const eventType = domEvt?.type as string;
+        let matchedNamedNode = false;
 
         for (const child of childEventIndex) {
             if (!child.el.contains(target)) continue;
@@ -198,27 +216,111 @@ export class DelegatedEventEngine {
             for (const rule of matchingRules) {
                 DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
             }
+            matchedNamedNode = true;
             return;
         }
 
         let el: Element | null = target;
-        while (el && el !== instance.el) {
+        while (el) {
             const nodeName = nodeElMap.get(el);
-            if (nodeName) {
+            if (nodeName && nodeName !== '') {
                 const matchingRules = rules.filter(r => r.nodeName === nodeName && !r.needsBinding);
                 for (const rule of matchingRules) {
                     DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
                 }
+                matchedNamedNode = true;
             }
+
+            const cmpId = (el as HTMLElement).dataset?.cmpId;
+            if (cmpId) {
+                DelegatedEventEngine._dispatchItemEvent(instance, cmpId, eventType, domEvt);
+                matchedNamedNode = true;
+            }
+
+            if (el === instance.el) break;
             el = el.parentElement;
+        }
+
+        if (!matchedNamedNode) {
+            const rootRules = rules.filter(r => r.nodeName === '' && r.event === eventType);
+            for (const rule of rootRules) {
+                DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
+            }
+        }
+    }
+
+    static _dispatchItemEvent(
+        instance: any,
+        itemKey: string,
+        eventType: string,
+        domEvt: any
+    ): void {
+        const itemEvents: Record<string, Record<string, any>> | undefined =
+            instance._itemEvents || instance.constructor._itemEvents;
+        if (!itemEvents) return;
+
+        const node = instance.nodeMap?.[itemKey];
+        if (!node?.component) return;
+
+        const componentType = node.component.constructor?._type || node.component.type;
+        if (!componentType) return;
+
+        const typeEvents = itemEvents[componentType];
+        if (!typeEvents) return;
+
+        const action = typeEvents[eventType];
+        if (!action) return;
+
+        const emitsList = action.emits;
+        if (emitsList) {
+            for (const emitName of emitsList) {
+                const ctx = DelegatedEventEngine._buildForwardContext(
+                    instance,
+                    emitName,
+                    { itemKey, index: node.component._itemIndex },
+                    instance.eventKey ?? '',
+                    'emit'
+                );
+                if (domEvt) (ctx as any).domEvent = domEvt;
+                instance.emit(`${itemKey}:${emitName}`, ctx);
+                instance.emit(emitName, ctx);
+            }
+        }
+
+        if (action.bridges && instance.eventKey) {
+            for (const bridge of action.bridges) {
+                const ctx = DelegatedEventEngine._buildForwardContext(
+                    instance,
+                    bridge,
+                    { itemKey },
+                    instance.eventKey,
+                    'bridge'
+                );
+                instance.bridgeEmit(ctx);
+            }
+        }
+
+        if (action.entities && instance.entityKey) {
+            const ctx = DelegatedEventEngine._buildForwardContext(
+                instance,
+                action.entities,
+                { itemKey },
+                instance.entityKey,
+                'entity'
+            );
+            instance.entityEmit(ctx);
         }
     }
 
     static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
-        const node = instance.nodeMap?.[rule.nodeName];
-        if (!node) return;
-
-        const el = node.component ? node.component.el : node.el;
+        let el: any;
+        if (rule.nodeName === '') {
+            el = instance.el;
+        } else {
+            const node = instance.nodeMap?.[rule.nodeName];
+            if (!node) return;
+            el = node.component ? node.component.el : node.el;
+        }
 
         if (rule.handler && typeof instance[rule.handler] === 'function') {
             instance[rule.handler](domEvt, el);
@@ -283,6 +385,44 @@ export class DelegatedEventEngine {
                 'entity'
             );
             instance.entityEmit(ctx);
+        }
+
+        if (rule.router && instance.routeKey) {
+            const routerData = DelegatedEventEngine._collectEventData(
+                instance,
+                rule.nodeName,
+                rule.event,
+                'router'
+            );
+            const payload = mergeEventData(routerData, undefined);
+            const ctx = DelegatedEventEngine._buildForwardContext(
+                instance,
+                rule.router,
+                payload,
+                instance.routeKey,
+                'router'
+            );
+            instance.routerEmit?.(ctx);
+        }
+
+        if (rule.system?.length) {
+            for (const sysEvent of rule.system) {
+                const systemData = DelegatedEventEngine._collectEventData(
+                    instance,
+                    rule.nodeName,
+                    sysEvent,
+                    'system'
+                );
+                const payload = mergeEventData(systemData, undefined);
+                const ctx = DelegatedEventEngine._buildForwardContext(
+                    instance,
+                    sysEvent,
+                    payload,
+                    instance.constructor.name,
+                    'system'
+                );
+                instance.systemEmit?.(ctx);
+            }
         }
     }
 

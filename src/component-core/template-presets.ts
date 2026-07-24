@@ -59,7 +59,6 @@ export const INPUT_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'input',
                 name: 'input:field',
-                events: { input: { handler: true } },
                 cls: 'q-input__field',
             },
             {
@@ -78,6 +77,9 @@ export const INPUT_TEMPLATE: ComponentTemplate = {
                 cls: 'q-input__text q-input__text--hint',
             },
         ],
+    },
+    tplEvents: {
+        'input:field': { input: { handler: true } },
     },
 };
 
@@ -105,7 +107,6 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'input',
                         name: 'input:field',
-                        events: { input: { handler: true } },
                         cls: 'q-input__field',
                     },
                     {
@@ -127,6 +128,9 @@ export const INPUT_TOP_TEMPLATE: ComponentTemplate = {
             },
         ],
     },
+    tplEvents: {
+        'input:field': { input: { handler: true } },
+    },
 };
 
 /**
@@ -143,7 +147,6 @@ export const SELECT_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'select',
                 name: 'select:field',
-                events: { change: { handler: true } },
                 cls: 'q-select__field',
             },
             {
@@ -154,6 +157,9 @@ export const SELECT_TEMPLATE: ComponentTemplate = {
                 children: [{ tag: 'i' }],
             },
         ],
+    },
+    tplEvents: {
+        'select:field': { change: { handler: true } },
     },
 };
 
@@ -169,7 +175,6 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'div',
                 name: 'toolbar:prevBtn',
-                events: { click: { handler: 'onPrev' } },
                 cls: 'q-overflow-arrow q-overflow-arrow--prev',
                 hidden: true,
                 children: [{ tag: 'i' }],
@@ -183,7 +188,6 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'div',
                 name: 'toolbar:nextBtn',
-                events: { click: { handler: 'onNext' } },
                 cls: 'q-overflow-arrow q-overflow-arrow--next',
                 hidden: true,
                 children: [{ tag: 'i' }],
@@ -191,7 +195,6 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'button',
                 name: 'toolbar:triggerBtn',
-                events: { click: { handler: 'onTrigger' } },
                 cls: 'q-overflow-menu__trigger',
                 hidden: true,
             },
@@ -203,6 +206,11 @@ export const TOOLBAR_TEMPLATE: ComponentTemplate = {
                 style: 'position:absolute;',
             },
         ],
+    },
+    tplEvents: {
+        'toolbar:prevBtn': { click: { handler: 'onPrev' } },
+        'toolbar:nextBtn': { click: { handler: 'onNext' } },
+        'toolbar:triggerBtn': { click: { handler: 'onTrigger' } },
     },
 };
 
@@ -231,11 +239,13 @@ export const TABLE_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'div',
                 name: 'table:bodyScroll',
-                events: { scroll: { handler: true } },
                 cls: 'q-table__body',
                 style: 'overflow-y: auto;',
             },
         ],
+    },
+    tplEvents: {
+        'table:bodyScroll': { scroll: { handler: true } },
     },
 };
 
@@ -264,7 +274,6 @@ export const DIALOG_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'button',
                         name: 'dialog:close',
-                        events: { click: { handler: true } },
                         cls: 'q-dialog__close',
                         text: '\u00d7',
                     },
@@ -273,6 +282,9 @@ export const DIALOG_TEMPLATE: ComponentTemplate = {
             { tag: 'div', name: 'dialog:body', cls: 'q-dialog__body' },
             { tag: 'div', name: 'dialog:footer', cls: 'q-dialog__footer' },
         ],
+    },
+    tplEvents: {
+        'dialog:close': { click: { handler: true } },
     },
 };
 
@@ -360,7 +372,6 @@ export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'button',
                         name: 'toast:close',
-                        events: { click: { handler: true } },
                         cls: 'q-toast__close',
                         text: '\u00d7',
                     },
@@ -370,10 +381,13 @@ export const TOAST_NOTIFICATION_TEMPLATE: ComponentTemplate = {
             { tag: 'span', name: 'toast:message', cls: 'q-toast__message' },
         ],
     },
+    tplEvents: {
+        'toast:close': { click: { handler: true } },
+    },
 };
 
 /**
- * Msgbox ÃÂ¦ÃÂ¨ÃÂ¡ÃÂ¦ÃÂÃÂÃÂ¦ÃÂ¶ÃÂÃÂ¦ÃÂÃÂ¯ÃÂ¦ÃÂ¡ÃÂÃÂ¦ÃÂ¨ÃÂ¡ÃÂ¦ÃÂÃÂ¿
+ * ÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¶ÃÂÃÂÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¦ÃÂÃÂ¡ÃÂÃÂÃÂÃÂ¦ÃÂÃÂ¨ÃÂÃÂ¡ÃÂÃÂ¦ÃÂÃÂÃÂÃÂ¿
  *
  * ÃÂ¨ÃÂÃÂÃÂ§ÃÂÃÂ¹ÃÂ¯ÃÂ¿ÃÂ½? * - msgbox:text ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ¦ÃÂ ÃÂÃÂ©ÃÂ¢ÃÂÃÂ¦ÃÂÃÂÃÂ¦ÃÂÃÂ¬
  * - msgbox:content ÃÂ¯ÃÂ¿ÃÂ½?ÃÂ¥ÃÂÃÂÃÂ¥ÃÂ®ÃÂ¹ÃÂ¦ÃÂÃÂÃÂ¦ÃÂÃÂ¬
@@ -405,7 +419,6 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'input',
                         name: 'msgbox:field',
-                        events: { input: { handler: true } },
                         cls: 'q-msgbox__input',
                         style: 'display:none;',
                     },
@@ -418,20 +431,23 @@ export const MSGBOX_TEMPLATE: ComponentTemplate = {
                     {
                         tag: 'button',
                         name: 'msgbox:cancel',
-                        events: { click: { handler: 'onCancel' } },
                         cls: 'q-msgbox__btn q-msgbox__btn--cancel',
                         text: '\u53d6\u6d88',
                     },
                     {
                         tag: 'button',
                         name: 'msgbox:confirm',
-                        events: { click: { handler: 'onConfirm' } },
                         cls: 'q-msgbox__btn q-msgbox__btn--confirm',
                         text: '\u786e\u5b9a',
                     },
                 ],
             },
         ],
+    },
+    tplEvents: {
+        'msgbox:field': { input: { handler: true } },
+        'msgbox:cancel': { click: { handler: 'onCancel' } },
+        'msgbox:confirm': { click: { handler: 'onConfirm' } },
     },
 };
 
@@ -460,7 +476,6 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'div',
                 name: 'menuItem:content',
-                events: { click: { handler: true } },
                 cls: 'q-menu-item__content',
                 children: [
                     {
@@ -488,6 +503,9 @@ export const MENU_ITEM_TEMPLATE: ComponentTemplate = {
                 ],
             },
         ],
+    },
+    tplEvents: {
+        'menuItem:content': { click: { handler: true } },
     },
 };
 
@@ -559,7 +577,6 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
             {
                 tag: 'div',
                 name: 'navItem:content',
-                events: { click: { handler: true } },
                 cls: 'q-nav-item__content',
                 children: [
                     {
@@ -575,6 +592,9 @@ export const NAVITEM_TEMPLATE: ComponentTemplate = {
                 ],
             },
         ],
+    },
+    tplEvents: {
+        'navItem:content': { click: { handler: true } },
     },
 };
 

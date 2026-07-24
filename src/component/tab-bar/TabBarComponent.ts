@@ -11,9 +11,10 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         direction: 'horizontal',
         gap: '0',
         defaultItemType: 'Toggle',
-        defaultItem: {
-            Toggle: { events: { toggle: { bridges: ['toggle'] } } },
-        },
+    },
+
+    itemEvents: {
+        Toggle: { toggle: { emits: ['toggle'] } },
     },
     body: {
         nodes: {

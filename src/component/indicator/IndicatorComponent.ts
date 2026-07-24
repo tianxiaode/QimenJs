@@ -48,7 +48,6 @@ export let IndicatorComponent = Component.withTemplate({
                 name: 'prevBtn',
                 cls: 'q-indicator__arrow q-indicator__arrow--prev',
                 hidden: true,
-                events: { click: { handler: true } },
             },
             { tag: 'div', name: 'items', cls: 'q-indicator__items' },
             {
@@ -56,9 +55,12 @@ export let IndicatorComponent = Component.withTemplate({
                 name: 'nextBtn',
                 cls: 'q-indicator__arrow q-indicator__arrow--next',
                 hidden: true,
-                events: { click: { handler: true } },
             },
         ],
+    },
+    tplEvents: {
+        prevBtn: { click: { handler: true } },
+        nextBtn: { click: { handler: true } },
     },
     body: {
         type: 'Indicator',

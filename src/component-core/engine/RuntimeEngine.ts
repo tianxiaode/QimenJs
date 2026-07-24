@@ -130,7 +130,7 @@ function step_applyNodeConfigs(ctx: RuntimeContext): void {
     const nodeOverrides: Record<string, any> = ctor._nodeOverrides || {};
     const allNodes = nodeMapMgr.getAll();
 
-    for (const [name, node] of Object.entries(allNodes)) {
+    for (const [name, node] of Object.entries(allNodes) as [string, NodeMetadata][]) {
         if (!node.el || node.componentClass) continue;
 
         const nodeProps = RuntimeEngine._buildNodePropsFromMeta(node);
@@ -142,9 +142,6 @@ function step_applyNodeConfigs(ctx: RuntimeContext): void {
         if (nodeOverrides[name]) {
             const override = nodeOverrides[name];
             Object.assign(nodeProps, override);
-            if (override.events !== undefined) {
-                node.events = override.events;
-            }
         }
 
         if (Object.keys(nodeProps).length > 0) {
@@ -444,11 +441,6 @@ export class RuntimeEngine {
                 node.componentClass = (window as any)[resolved.type];
             }
             delete resolved.type;
-        }
-
-        if (resolved.events !== undefined) {
-            node.events = resolved.events;
-            delete resolved.events;
         }
 
         if (resolved.initConfig !== undefined) {

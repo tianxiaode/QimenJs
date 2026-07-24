@@ -94,18 +94,11 @@
  * 事件机制
  * ══════════════════════════════════════════════════════════════
  *
- * TplNode 的 events 是【发布端】，声明节点会发出什么事件；
- * body 的 listens 是【订阅端】，声明组件监听什么事件。
- * 一出一进，不应混谈。
+ * 事件声明已迁移到 tplEvents（组件级），与 tpl/body 同级定义。
+ * 详见 tpl-events.ts。
  *
- * 统一事件处理流程：
- *   _handleDomEvent(ctx, nodeName, event)
- *     → 从 nodeMap[nodeName].eventDefs[event] 取事件定义（纯数据）
- *     → 遍历定义，按类型分发：
- *        handler   → this[handlerName](ctx, el)
- *        emits     → this.emit(emitName, ctx)
- *        entities  → EntityEventBus.entityEmit(entityKey, action, ctx)
- *        bridges   → this.bridgeEmit(eventKey, targetEvent, ctx)
+ * TplNode 不再内联 events 字段，所有 DOM 事件统一通过 tplEvents 委托到组件根 el，
+ * 通过 nodeElMap (WeakMap) 反查匹配。
  *
  * 设计要点：
  * - 不为每个事件生成闭包，事件定义存在 nodeMap 元数据中
@@ -118,7 +111,7 @@
  *   框架自动查找 get{EmitName}EventData() 方法获取数据
  * - 详见 tpl-body-def.ts「事件数据自动收集」章节
  *
- * DomEventDecl 各字段含义：
+ * TplEventAction 各字段含义：
  * ┌──────────────┬──────────────────────────────────────────────────┐
  * │ 字段         │ 说明                                             │
  * ├──────────────┼──────────────────────────────────────────────────┤
@@ -131,8 +124,7 @@
  * │ once         │ handler 只执行一次                               │
  * │ debounce     │ 防抖时间（毫秒），预定义包装函数                  │
  * │ throttle     │ 节流时间（毫秒），预定义包装函数                  │
- * │ delegate     │ 委托模式（原子化组件极少使用）                    │
- * │ delegateTarget│ 委托目标，与 delegate 配合                       │
+
  * └──────────────┴──────────────────────────────────────────────────┘
  *
  * ══════════════════════════════════════════════════════════════

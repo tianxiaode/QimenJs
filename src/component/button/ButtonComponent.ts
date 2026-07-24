@@ -35,13 +35,11 @@ export let ButtonComponent = Component.withTemplate({
                 tag: 'i',
                 name: 'icon',
                 cls: 'q-button__icon',
-                events: { click: { emits: ['click'] } },
             },
             {
                 tag: 'span',
                 name: 'text',
                 cls: 'q-button__text',
-                events: { click: { emits: ['click'] } },
             },
             {
                 tag: 'i',
@@ -50,6 +48,10 @@ export let ButtonComponent = Component.withTemplate({
                 hidden: true,
             },
         ],
+    },
+    tplEvents: {
+        '': { click: { emits: ['click'] } },
+        dropIcon: { click: { emits: ['dropClick'] } },
     },
     body: {
         type: 'Button',

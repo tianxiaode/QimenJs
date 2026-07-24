@@ -33,10 +33,10 @@ export let ToggleIconComponent = Component.withTemplate({
     tpl: {
         tag: 'div',
         cls: 'q-toggle-icon',
-        events: {
-            click: { handler: true, emits: ['toggle'] },
-        },
         children: [{ tag: 'i', name: 'icon', cls: 'q-toggle-icon__icon' }],
+    },
+    tplEvents: {
+        '': { click: { handler: true, emits: ['toggle'] } },
     },
     body: {
         type: 'ToggleIcon',

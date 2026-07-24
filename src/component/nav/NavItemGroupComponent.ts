@@ -16,10 +16,11 @@ export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
 
     config: {
         defaultItemType: 'NavItem',
-        defaultItem: {
-            NavItem: { events: { click: { bridges: ['click'] }, close: { bridges: ['close'] } } },
-        },
         direction: 'horizontal',
+    },
+
+    itemEvents: {
+        NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
     },
     body: {
         nodes: {

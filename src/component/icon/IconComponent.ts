@@ -27,11 +27,11 @@ export let IconComponent = Component.withTemplate({
                 tag: 'i',
                 name: 'content',
                 cls: 'q-icon',
-                events: {
-                    click: { emits: ['click'] },
-                },
             },
         ],
+    },
+    tplEvents: {
+        content: { click: { emits: ['click'] } },
     },
     body: {
         type: 'Icon',

@@ -46,11 +46,13 @@ export let HeroComponent = Component.withTemplate({
                         tag: 'button',
                         name: 'actionBtn',
                         cls: 'q-hero__action-btn',
-                        events: { click: { handler: true, emits: ['action'] } },
                     },
                 ],
             },
         ],
+    },
+    tplEvents: {
+        actionBtn: { click: { handler: true, emits: ['action'] } },
     },
     body: {
         type: 'Hero',

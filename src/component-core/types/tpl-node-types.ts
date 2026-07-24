@@ -28,58 +28,6 @@
  */
 
 // ══════════════════════════════════════════════════════════════
-// 事件声明
-// ══════════════════════════════════════════════════════════════
-
-/**
- * 单个 DOM 事件声明（发布端）
- *
- * TplNode 的 events 是【发布端】，声明节点会发出什么事件；
- * body 的 listens 是【订阅端】，声明组件监听什么事件。一出进，不应混谈。
- *
- * @example
- * ```ts
- * events: {
- *     click: { handler: true, emits: ['click'] },
- *     input: { handler: 'onSearch', debounce: 300, emits: ['input'] },
- *     pointerdown: { drag: true },
- * }
- * ```
- */
-export interface DomEventDecl {
-    /**
-     * 内部 handler 方法
-     * - true: 自动推导 on{Name}{Event}（推荐）
-     * - string: 显式指定方法名（不推荐，与钩子脱节）
-     */
-    handler?: boolean | string;
-
-    /** 转发为组件事件，持有方通过 on(name, fn) 监听 */
-    emits?: string[];
-
-    /** 转发为桥接事件（通过 EventBridge 解耦转发） */
-    bridges?: string[];
-
-    /** 转发为实体操作，值为 mgr 方法名 */
-    entities?: string;
-
-    /** handler 只执行一次 */
-    once?: boolean;
-
-    /** 防抖时间（毫秒），预定义包装函数 */
-    debounce?: number;
-
-    /** 节流时间（毫秒），预定义包装函数 */
-    throttle?: number;
-
-    /** 委托模式（原子化组件极少使用） */
-    delegate?: boolean;
-
-    /** 委托目标，与 delegate 配合 */
-    delegateTarget?: string;
-}
-
-// ══════════════════════════════════════════════════════════════
 // 布局配置
 // ══════════════════════════════════════════════════════════════
 
@@ -173,11 +121,6 @@ export interface TplNode {
 
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;
-
-    // ─── event: 事件发布 ───
-
-    /** DOM 事件声明（发布端），key 为事件名，value 为声明对象 */
-    events?: Record<string, DomEventDecl>;
 
     // ─── style: 样式 ───
 

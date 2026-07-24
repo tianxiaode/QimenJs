@@ -14,11 +14,10 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
     config: {
         direction: 'vertical',
         defaultItemType: 'MenuItem',
-        defaultItem: {
-            MenuItem: {
-                events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } },
-            },
-        },
+    },
+
+    itemEvents: {
+        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
     },
     body: {
         nodes: {

@@ -72,11 +72,59 @@ DOM 事件通过 `dom:` 前缀区分，但隔离靠的是 scopeId，不是前缀
 
 QimenJs 的事件系统分为三层，每层解决不同的问题：
 
+### 组件事件通信三层模型
+
 | 层级 | 机制 | 解决的问题 | 配置方式 |
 |------|------|-----------|---------|
-| DOM 交互层 | `handlers` | 用户操作 → 组件动作 | Layout 定义 |
-| 组件通信层 | `eventBridge` | 组件间事件桥接 | Layout 定义 |
-| 实体数据层 | `EntityEmitAbility` / `EntityListenAbility` | EntityManager ↔ 组件事件双向同步 | 组件内置 |
+| tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { nodeName: { event: { ... } } }` |
+| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `TplEventAction.emits` / `ItemEventAction.emits` |
+| bridges | EventBridge | 跨组件解耦通信 | `TplEventAction.bridges` / `ItemEventAction.bridges` |
+
+**关键规则**：
+- **tplEvents** — 组件内部，自己模板的 DOM 事件委托到 root el
+- **emits** — 组件对外，emit() 发布组件级事件，直接消费者 .on() 监听
+- **bridges** — 跨组件，bridgeEmit() 通过 EventBridge 解耦，任意层 listens 订阅
+- tplEvents 不跨组件边界做委托
+- ItemGroup 是硬边界，子组件事件走 DOM 委托 + data-cmp-id 匹配 + itemEvents 规则分发
+
+### 根节点事件
+
+tplEvents 中根节点用空字符串 `''` 作为 key，handler 推导为 `on${capitalEvent}`（无 nodeName 前缀）：
+
+```typescript
+tplEvents: {
+    '': { click: { emits: ['click'] } },           // 根节点 click → emit('click')
+    dropIcon: { click: { emits: ['dropClick'] } },  // dropIcon click → emit('dropClick')
+}
+```
+
+**排他性**：命名子节点匹配后不触发根节点 `''` 规则。
+
+### ItemGroup 子组件事件
+
+ItemGroup 通过 `itemEvents` 声明子组件事件转发规则，DOM 委托自动处理：
+
+```typescript
+Component.replace({
+    itemEvents: {
+        Toggle: { toggle: { emits: ['toggle'] } },
+        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+    },
+})
+```
+
+事件名格式：`${itemKey}:${eventName}` 和 `${eventName}` 双发。
+
+### 应用层事件通道
+
+| 通道 | scope 来源 | 事件流转范围 | 典型用法 |
+|------|-----------|------------|---------|
+| 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
+| 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
+| 桥接事件 | EventBridge.bridgeScope | 桥接 scope 内 | `bridge.bridgeEmit(id, 'click')` |
+| 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
+| 路由事件 | RouteEventBus | 路由 scope 内 | `TplEventAction.router` |
+| 系统事件 | SystemEventBus | 系统 scope 内 | `TplEventAction.system` |
 
 ---
 

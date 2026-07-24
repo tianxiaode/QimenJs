@@ -4,7 +4,7 @@
 // ============================================
 
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
-import type { DomEventDecl } from '@qimenjs/component-core';
+
 import { getId } from '@/utils/string/id';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
@@ -45,7 +45,6 @@ export let ItemGroupBaseComponent = Component.withTemplate({
                     data: Record<string, any>;
                     component: any;
                     el: HTMLElement;
-                    events?: Record<string, DomEventDecl>;
                 }>,
                 _direction: 'horizontal' as 'horizontal' | 'vertical',
                 /** 默认子组件类型 */
@@ -69,6 +68,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
             if (props?.defaultItem) this.defaultItem = props.defaultItem;
             if (props?.overflowMode) this.overflowMode = props.overflowMode;
+            if (props?.itemEvents) this._itemEvents = props.itemEvents;
             if (props?.cls) this.addCls(props.cls);
             if (props?.items) this.setItems(props.items);
         },
@@ -151,121 +151,46 @@ export let ItemGroupBaseComponent = Component.withTemplate({
 
         // ========== 创建/销毁 ==========
         _createItem(data: Record<string, any>): any {
-            // 优先使用 data.type，否则使用 defaultItemType
             const itemType = data.type ?? this._defaultItemType;
             if (!itemType) return null;
 
             const ItemClass = ComponentRegistrar.getInstance().get(itemType);
             if (!ItemClass) return null;
 
-            // 合并事件：defaultItem[type] 中的 events + data 中的 events
-            const mergedEvents = this._mergeEvents(data, itemType);
+            const itemKey = data.itemKey || data.name || getId('item');
 
-            // 准备 props，剔除控制字段
             const props = { ...data };
             delete props.type;
             delete props.events;
+            delete props.itemKey;
 
             const instance = new ItemClass(props);
-            const name = getId('item');
 
-            // ✅ 关键：先注册到 nodeMap
-            this.nodeMap[name] = {
-                name,
+            instance.el.dataset.cmpId = itemKey;
+
+            this.nodeMap[itemKey] = {
+                name: itemKey,
                 el: instance.el,
                 component: instance,
-                events: mergedEvents,
             };
 
             const item = {
-                name,
+                name: itemKey,
                 data,
                 component: instance,
                 el: instance.el,
-                events: mergedEvents,
             };
 
-            // 挂载 DOM
             this.itemContainer.el.appendChild(instance.el);
-
-            // 绑定事件
-            if (mergedEvents && Object.keys(mergedEvents).length > 0) {
-                this._bindItemEvents(item);
-            }
 
             return item;
         },
 
         _destroyItem(item: any): void {
-            this._unbindItemEvents(item);
             delete this.nodeMap[item.name];
             if (typeof item?.component?.dispose === 'function') {
                 item.component.dispose();
             }
-        },
-
-        // ========== 事件处理 ==========
-        /**
-         * 合并事件配置
-         * defaultItem[type].events 作为基础，data.events 覆盖
-         */
-        _mergeEvents(
-            data: Record<string, any>,
-            itemType: string
-        ): Record<string, DomEventDecl> | undefined {
-            const itemEvents = data.events as Record<string, DomEventDecl> | undefined;
-            const defaultDef = this._defaultItem[itemType];
-
-            // 都没有事件
-            if (!defaultDef?.events && !itemEvents) return undefined;
-            // 只有 default 有事件
-            if (!itemEvents) return defaultDef.events;
-            // 只有 data 有事件
-            if (!defaultDef?.events) return itemEvents;
-
-            // 两者都有，合并（data 覆盖 default）
-            const merged: Record<string, DomEventDecl> = { ...defaultDef.events };
-            for (const [event, decl] of Object.entries(itemEvents)) {
-                if (merged[event]) {
-                    merged[event] = { ...merged[event], ...decl };
-                } else {
-                    merged[event] = decl;
-                }
-            }
-            return merged;
-        },
-
-        _bindItemEvents(item: any): void {
-            if (!item?.component || !item.events) return;
-            item._unsubs = [];
-            for (const [domEvent, decl] of Object.entries(item.events) as [
-                string,
-                DomEventDecl,
-            ][]) {
-                const { once } = decl;
-                const callback = (ctx: any) => {
-                    const data = ctx?.data !== undefined ? ctx.data : ctx;
-                    this._handleDomEvent(data, item.component.name || 'item', domEvent, decl);
-                };
-
-                let off: (() => void) | undefined;
-                if (once) {
-                    off = item.component.once?.(domEvent, callback);
-                } else {
-                    off = item.component.on?.(domEvent, callback);
-                }
-                if (typeof off === 'function') {
-                    item._unsubs.push(off);
-                }
-            }
-        },
-
-        _unbindItemEvents(item: any): void {
-            if (!item?._unsubs) return;
-            for (const off of item._unsubs) {
-                if (typeof off === 'function') off();
-            }
-            item._unsubs = [];
         },
 
         // ========== DOM 操作 ==========

@@ -73,6 +73,12 @@ export interface TplEventAction {
     /** 转发为实体操作，值为 mgr 方法名 */
     entities?: string;
 
+    /** 转发为路由事件（通过 RouteEventBus 解耦转发） */
+    router?: string;
+
+    /** 转发为系统事件（通过 SystemEventBus 解耦转发） */
+    system?: string | string[];
+
     /** handler 只执行一次 */
     once?: boolean;
 
@@ -141,6 +147,12 @@ export interface DelegatedEventRule {
     /** 转发为实体操作 */
     entities?: string;
 
+    /** 转发为路由事件 */
+    router?: string;
+
+    /** 转发为系统事件 */
+    system?: string[];
+
     /** 只执行一次 */
     once?: boolean;
 
@@ -150,6 +162,54 @@ export interface DelegatedEventRule {
     /** 节流时间 */
     throttle?: number;
 
-    /** 是否需要内部绑定（有 handler/emits/bridges/entities） */
+    /** 是否需要内部绑定（有 handler/emits/bridges/entities/router/system） */
     needsBinding: boolean;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ItemGroup 子组件事件委托声明
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 单个 Item 事件转发声明
+ *
+ * ItemGroup 通过 DOM 委托捕获子组件事件，根据 itemEvents 规则转发。
+ * itemKey 从 item 数据中取值，作为事件名前缀和 data-cmp-id。
+ */
+export interface ItemEventAction {
+    /** 转发为组件事件，emit `${itemKey}:${emitName}` 和 `${emitName}` */
+    emits?: string[];
+
+    /** 转发为桥接事件（通过 EventBridge 解耦转发） */
+    bridges?: string[];
+
+    /** 转发为实体操作 */
+    entities?: string;
+
+    /** 转发为路由事件 */
+    router?: string;
+
+    /** 转发为系统事件 */
+    system?: string | string[];
+}
+
+/**
+ * ItemGroup 子组件事件委托声明 — 与 tplEvents 同级
+ *
+ * key = 子组件类型名（Button/Input/MenuItem 等），
+ * value = 该类型子组件的事件转发声明。
+ *
+ * 运行时通过 data-cmp-id 匹配子组件，查 itemEvents[type][event] 转发。
+ *
+ * @example
+ * ```ts
+ * itemEvents: {
+ *     Button: { click: { emits: ['click'] } },
+ *     Input:  { change: { emits: ['change'] } },
+ *     MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+ * }
+ * ```
+ */
+export interface ItemEvents {
+    [componentType: string]: Record<string, ItemEventAction>;
 }

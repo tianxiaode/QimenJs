@@ -69,7 +69,6 @@ export let InputComponent = FormFieldComponent.replace({
             root: { addCls: 'q-input' },
             fieldBody: {
                 type: InputFieldBodyComponent,
-                events: { actionClick: { handler: true } },
             },
         },
         onInitState() {
@@ -100,6 +99,15 @@ export let InputComponent = FormFieldComponent.replace({
         _initInput(props?: InputProps): void {
             const self = this as any;
             const fieldEl = getFieldEl(self);
+
+            const fieldBodyCmp = self.nodeMap?.fieldBody?.component;
+            if (fieldBodyCmp) {
+                fieldBodyCmp.on('actionClick', (data: any) => self.onFieldBodyActionClick(data));
+                fieldBodyCmp.on('input', () => self.onFieldInput());
+                fieldBodyCmp.on('focus', () => self.onFieldFocus());
+                fieldBodyCmp.on('blur', () => self.onFieldBlur());
+                fieldBodyCmp.on('change', () => self.onFieldChange());
+            }
 
             if (props?.value !== undefined) {
                 self._value = props.value;

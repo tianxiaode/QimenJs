@@ -43,12 +43,10 @@ export interface MenuItemProps {
 const MenuItemBase = Component.withTemplate({
     tpl: {
         tag: 'div',
-        events: { enter: { handler: true }, leave: { handler: true } },
         children: [
             {
                 tag: 'div',
                 name: 'content',
-                events: { click: { handler: true } },
                 cls: 'q-menu-item__content',
                 children: [
                     { tag: 'i', name: 'icon', cls: 'q-menu-item__icon' },
@@ -64,6 +62,10 @@ const MenuItemBase = Component.withTemplate({
                 ],
             },
         ],
+    },
+    tplEvents: {
+        '': { enter: { handler: true }, leave: { handler: true } },
+        content: { click: { handler: true } },
     },
     body: {
         type: 'MenuItem',

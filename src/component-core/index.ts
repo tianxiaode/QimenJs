@@ -60,7 +60,6 @@ export type {
     TplFragment,
     FlexConfig,
     GridConfig,
-    DomEventDecl,
     HiddenMode,
 } from './types/tpl-node-types';
 export type {
@@ -80,6 +79,8 @@ export type {
     NodeEventDecl,
     TplEvents,
     DelegatedEventRule,
+    ItemEventAction,
+    ItemEvents,
 } from './types/tpl-events';
 
 // 模板预设
