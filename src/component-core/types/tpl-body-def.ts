@@ -29,7 +29,7 @@
  *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
  *
  * 2. init 类（运行时由 InitAbility 初始化）：
- *    floats / drags / abilities
+ *    floats / drags / animation / abilities / nodes
  *
  * 3. hook 类（实例化时由框架调用，返回值赋给实例）：
  *    onInitState
@@ -69,6 +69,7 @@
  * │ drags    │ 拖拽配置，key=节点name，行为配置+可选影子组件    │
  * │ animation│ 组件动画配置，声明式，初始化/销毁时自动触发      │
  * │ abilities│ 附加能力，替代 .with() 的声明式注入              │
+ * │ nodes    │ 节点配置，声明式覆盖节点属性，替代 nodeOverrides │
  * └──────────┴──────────────────────────────────────────────────┘
  *
  * ══════════════════════════════════════════════════════════════
@@ -146,6 +147,44 @@
  *   this.emit('click')                    // 自动带 { key, text }
  *   this.emit('click', { key: 'save' })   // 手动传 data，不走自动收集
  *   this.emit('click', undefined, { source: 'menu' })  // 自动收集 + 桥接
+ *
+ * ══════════════════════════════════════════════════════════════
+ * nodes 节点配置机制
+ * ══════════════════════════════════════════════════════════════
+ *
+ * body.nodes 统一替代 nodeOverrides 和 replace() 的 cls/itemsCls，
+ * 在 body 中声明式配置节点属性，编译时提取为 ctor._nodes，运行时由 initNodeProps 应用。
+ *
+ * 字段语义：
+ * - addCls: 追加 CSS 类（与现有 cls 拼接，替代 replace 的 cls/itemsCls）
+ * - cls: 替换 CSS 类（覆盖 TplNode 中的 cls）
+ * - hidden: 覆盖隐藏状态
+ * - type: 替换子组件类型
+ * - events: 替换事件声明（全量替换，不合并）
+ * - initConfig: 合并子组件初始配置
+ * - style/flex/grid/role/attrs: 覆盖对应属性
+ *
+ * 处理流程：
+ *   1. applyBodyToClass → ctor._nodes = body.nodes（init 类别）
+ *   2. updateNodeMetasFromOverrides → 更新 nodeMetas 中的 componentClass
+ *   3. initNodeProps → applyNodeConfig 合并到 nodeProps → _updateNode
+ *
+ * 与 nodeOverrides 的关系：
+ *   - body.nodes 是新方案（推荐），nodeOverrides 是旧方案（向后兼容）
+ *   - 运行时先应用 body.nodes，再应用 nodeOverrides
+ *   - replace() 的 cls/itemsCls 自动转为 body.nodes.addCls
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     nodes: {
+ *         root: { addCls: 'q-form' },
+ *         itemContainer: { addCls: 'q-form__fields' },
+ *         fieldBody: { type: InputFieldBodyComponent, events: { actionClick: { handler: true } } },
+ *         dropIcon: { hidden: false },
+ *     }
+ * }
+ * ```
  */
 
 export interface BodyKeyDef {
@@ -172,8 +211,13 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     drags: { category: 'init' },
     animation: { category: 'init' },
     abilities: { category: 'init' },
+    nodes: { category: 'init' },
 
     // ─── hook: 实例化时由框架调用 ───
 
     onInitState: { category: 'hook' },
+
+    // ─── overrides: 声明需要链式调用的方法名列表 ───
+
+    overrides: { category: 'static' },
 };

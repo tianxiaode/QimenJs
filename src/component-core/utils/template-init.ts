@@ -100,11 +100,17 @@ function buildNodeMap(instance: any): void {
 function initNodeProps(instance: any): void {
     const ctor = instance.constructor as any;
     const nodeOverrides: Record<string, Record<string, any>> | undefined = ctor._nodeOverrides;
+    const nodesConfig: Record<string, Record<string, any>> | undefined = ctor._nodes;
 
     for (const [name, node] of Object.entries(instance.nodeMap as Record<string, NodeMetadata>)) {
         if (!node.el || node.componentClass) continue;
 
         const nodeProps = buildNodePropsFromMeta(node);
+
+        if (nodesConfig?.[name]) {
+            applyNodeConfig(nodeProps, nodesConfig[name], node);
+        }
+
         if (nodeOverrides?.[name]) {
             const override = nodeOverrides[name];
             Object.assign(nodeProps, override);
@@ -116,6 +122,41 @@ function initNodeProps(instance: any): void {
             instance._updateNode(name, nodeProps);
         }
     }
+}
+
+function applyNodeConfig(
+    nodeProps: Record<string, any>,
+    config: Record<string, any>,
+    node: NodeMetadata
+): void {
+    const resolved = { ...config };
+
+    if (resolved.addCls !== undefined) {
+        const existingCls = nodeProps.cls || '';
+        nodeProps.cls = existingCls ? `${existingCls} ${resolved.addCls}` : resolved.addCls;
+        delete resolved.addCls;
+    }
+
+    if (resolved.type !== undefined) {
+        if (typeof resolved.type === 'function') {
+            node.componentClass = resolved.type;
+        } else if (typeof resolved.type === 'string') {
+            node.componentClass = (window as any)[resolved.type];
+        }
+        delete resolved.type;
+    }
+
+    if (resolved.events !== undefined) {
+        node.events = resolved.events;
+        delete resolved.events;
+    }
+
+    if (resolved.initConfig !== undefined) {
+        node.initConfig = { ...(node.initConfig ?? {}), ...resolved.initConfig };
+        delete resolved.initConfig;
+    }
+
+    Object.assign(nodeProps, resolved);
 }
 
 function buildNodePropsFromMeta(meta: NodeMetadata): Record<string, any> {
@@ -176,12 +217,24 @@ function initContentFromProps(instance: any): void {
 function renderChildComponents(instance: any): void {
     const ctor = instance.constructor as any;
     const nodeOverrides: Record<string, Record<string, any>> | undefined = ctor._nodeOverrides;
+    const nodesConfig: Record<string, Record<string, any>> | undefined = ctor._nodes;
 
     for (const [name, node] of Object.entries(instance.nodeMap as Record<string, NodeMetadata>)) {
         if (!node.componentClass) continue;
 
+        const nodeConfig = nodesConfig?.[name];
         const override = nodeOverrides?.[name];
         let ComponentClass = node.componentClass;
+
+        if (nodeConfig?.type) {
+            if (typeof nodeConfig.type === 'function') {
+                ComponentClass = nodeConfig.type;
+            } else if (typeof nodeConfig.type === 'string') {
+                const resolved = (window as any)[nodeConfig.type];
+                if (resolved) ComponentClass = resolved;
+            }
+            node.componentClass = ComponentClass;
+        }
 
         if (override?.type) {
             if (typeof override.type === 'function') {
@@ -200,11 +253,11 @@ function renderChildComponents(instance: any): void {
         const child = new ComponentClass(initConfig);
         (child as any).parent = instance;
 
-        mountChildComponent(node, child);
+        mountChildComponent(node, child, instance);
     }
 }
 
-function mountChildComponent(node: NodeMetadata, child: any): void {
+function mountChildComponent(node: NodeMetadata, child: any, instance: any): void {
     const placeholder = node.el!;
     const parentEl = placeholder.parentElement;
     if (parentEl) {
@@ -214,6 +267,15 @@ function mountChildComponent(node: NodeMetadata, child: any): void {
     placeholder.replaceWith(child.el);
     node.el = child.el;
     node.component = child;
+
+    if (node.cls && child.el) {
+        const classes = node.cls.split(/\s+/).filter(Boolean);
+        if (classes.length) child.el.classList.add(...classes);
+    }
+
+    if (child.nodeMap && instance.nodeMap) {
+        Object.assign(instance.nodeMap, child.nodeMap);
+    }
 }
 
 // ══════════════════════════════════════════════════════════════

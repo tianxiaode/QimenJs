@@ -13,8 +13,7 @@ export interface NavItemGroupProps extends ItemGroupProps {
 
 export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
     type: 'NavItemGroup',
-    cls: 'q-nav',
-    itemsCls: 'q-nav__items',
+
     config: {
         defaultItemType: 'NavItem',
         defaultItem: {
@@ -23,6 +22,11 @@ export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
         direction: 'horizontal',
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-nav' },
+            itemContainer: { addCls: 'q-nav__items' },
+        },
+
         onInitState() {
             return {
                 _activeIndex: -1,

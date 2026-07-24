@@ -1,26 +1,19 @@
 /**
  * InputComponent 输入框组件
  *
- * 统一模板 + CSS 变量驱动布局，i18n 切换时无需重建 DOM。
- * 三封装结构：
+ * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
+ * 通过 nodeOverrides 指定 fieldBody 为 InputFieldBodyComponent。
+ *
+ * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
- * - wrapper     输入封装：prefix + field + actions(ItemGroup) + suffix + dropdownIcon
+ * - fieldBody   输入封装：prefix + field + actions(ItemGroup) + suffix + dropdownIcon
  * - infoGroup   信息封装：InputInfoGroupComponent (error/help/扩展信息)
  *
- * 标签位置（top/left/right）通过 CSS 变量 --q-input-direction / --q-input-label-order 控制，
- * i18n 切换时只需更新 CSS 变量即可调整布局。
- *
- * 可替换节点：
- * - prefix        前缀区域（字符如 ¥/$ 或 CSS 图标）
- * - actions       操作按钮区域（ItemGroupStaticComponent，clearBtn/eyeBtn 等）
- * - suffix        右侧装饰区域（密码眼睛图标、搜索图标等）
- * - dropdownIcon  下拉箭头图标区域
- * - infoGroup     信息区域（InputInfoGroupComponent，error/help/扩展信息）
- *
- * 便捷方法：
- * - addAction(data) / removeAction(index) / setActionHidden(index, hidden)
- * - addError(text) / removeError() / addHelp(text) / removeHelp()
- * - addInfo(data) / removeInfo(index)
+ * Input 特有功能：
+ * - value/disabled/readonly 属性
+ * - clearable 清除按钮
+ * - field 事件处理（input/focus/blur/change/keydown）
+ * - actions 便捷方法
  *
  * 派生组件通过 replace() 实现：
  * - PasswordInputComponent: nodeOverrides 开启 suffix，addAction 添加 eyeBtn
@@ -36,22 +29,18 @@
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
-import { SizeAbility } from '@qimenjs/component-abilities';
-
-import { getI18nManager } from '@qimenjs/i18n';
+import { FormFieldComponent } from './FormFieldComponent';
+import { InputFieldBodyComponent } from './InputFieldBodyComponent';
 import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
-export type LabelPosition = 'top' | 'left' | 'right';
-export type ValidateTrigger = 'blur' | 'change' | 'input';
 
 export interface InputProps {
     value?: string;
     placeholder?: string;
     label?: string;
-    labelPosition?: LabelPosition;
+    labelPosition?: 'top' | 'left' | 'right';
     type?: InputType;
     disabled?: boolean;
     readonly?: boolean;
@@ -63,208 +52,57 @@ export interface InputProps {
     requiredMarkPosition?: 'before' | 'after';
     fieldName?: string;
     validation?: boolean | ValidationRule | ValidationRule[];
-    validateTrigger?: ValidateTrigger;
+    validateTrigger?: 'blur' | 'change' | 'input';
 }
 
 function getFieldEl(cmp: any): HTMLInputElement | null {
     return cmp.nodeMap?.field?.el as HTMLInputElement | null;
 }
 
-function getI18nUiConfig(): {
-    requiredMark: string;
-    requiredMarkPosition: 'before' | 'after';
-    labelSeparator: string;
-} {
-    const i18n = getI18nManager();
-    if (!i18n) {
-        return { requiredMark: '*', requiredMarkPosition: 'after', labelSeparator: '：' };
-    }
-    const config = i18n.getLocaleConfig();
-    const ui = config?.ui;
-    return {
-        requiredMark: ui?.requiredMark ?? '*',
-        requiredMarkPosition: ui?.requiredMarkPosition ?? 'after',
-        labelSeparator: ui?.labelSeparator ?? '：',
-    };
-}
-
-const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
-    top: 'q-input--top',
-    left: 'q-input--left',
-    right: 'q-input--right',
-};
-
 const CLEAR_BTN_ORDER = 0;
 
-export let InputComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-input',
-        children: [
-            {
-                tag: 'div',
-                name: 'labelGroup',
-                cls: 'q-input__label-group',
-                hidden: true,
-                children: [
-                    { tag: 'label', name: 'label', cls: 'q-input__label' },
-                    {
-                        tag: 'span',
-                        name: 'requiredMark',
-                        cls: 'q-input__required-mark',
-                        hidden: true,
-                    },
-                    { tag: 'span', name: 'separator', cls: 'q-input__separator' },
-                ],
-            },
-            {
-                tag: 'div',
-                cls: 'q-input__wrapper',
-                children: [
-                    {
-                        tag: 'span',
-                        name: 'prefix',
-                        cls: 'q-input__prefix',
-                        hidden: true,
-                    },
-                    {
-                        tag: 'input',
-                        name: 'field',
-                        cls: 'q-input__field',
-                        events: {
-                            input: { handler: true, emits: ['input'], debounce: 150 },
-                            focus: { handler: true, emits: ['focus'] },
-                            blur: { handler: true, emits: ['blur'] },
-                            change: { handler: true, emits: ['change'], debounce: 150 },
-                            keydown: { handler: true, emits: ['keydown'] },
-                        },
-                    },
-                    {
-                        name: 'actions',
-                        type: 'ItemGroupStatic',
-                        cls: 'q-input__actions',
-                        hidden: true,
-                        initConfig: {
-                            direction: 'horizontal',
-                            gap: '4px',
-                            defaultItem: {
-                                Icon: { events: { click: { bridges: ['actionClick'] } } },
-                                Text: { events: { click: { bridges: ['actionClick'] } } },
-                            },
-                        },
-                    },
-                    {
-                        tag: 'div',
-                        name: 'suffix',
-                        cls: 'q-input__slot q-input__slot--suffix',
-                        hidden: true,
-                    },
-                    {
-                        tag: 'div',
-                        name: 'dropdownIcon',
-                        cls: 'q-input__slot q-input__slot--dropdown',
-                        hidden: true,
-                    },
-                ],
-            },
-            {
-                name: 'infoGroup',
-                type: 'InputInfoGroup',
-            },
-        ],
-    },
-    body: {
-        type: 'Input',
+export let InputComponent = FormFieldComponent.replace({
+    type: 'Input',
 
+    body: {
+        nodes: {
+            root: { addCls: 'q-input' },
+            fieldBody: {
+                type: InputFieldBodyComponent,
+                events: { actionClick: { handler: true } },
+            },
+        },
         onInitState() {
+            const self = this as any;
+            const state = self._super.onInitState();
             return {
+                ...state,
                 _value: '',
                 _focused: false,
-                _error: '',
                 _clearable: false,
-                _required: false,
-                _requiredMark: '',
-                _requiredMarkPosition: 'after' as 'before' | 'after',
-                _labelText: '',
-                _unsubscribeLocale: null as (() => void) | null,
-                _fieldName: '' as string,
-                _validation: null as boolean | ValidationRule | ValidationRule[] | null,
-                _validateTrigger: 'blur' as ValidateTrigger,
-                _offValidation: null as (() => void) | null,
                 _clearBtnItem: null as any,
             };
         },
 
         onAfterInit(props?: InputProps): void {
-            this._applyLabelPosition(props?.labelPosition);
-            this.initSize();
-            this._initInput(props);
-            this._initI18n();
-            this._initValidation(props);
-            this._initActionEvents();
+            const self = this as any;
+            self._initInput(props);
         },
 
         onBeforeDispose(): void {
-            if (this._unsubscribeLocale) {
-                this._unsubscribeLocale();
-                this._unsubscribeLocale = null;
-            }
-            if (this._offValidation) {
-                this._offValidation();
-                this._offValidation = null;
-            }
-        },
-
-        _applyLabelPosition(position?: LabelPosition): void {
-            const pos = position || 'top';
-            const cls = LABEL_POSITION_MAP[pos];
-            if (cls) this.toggleCls(cls, true);
-        },
-
-        _initI18n(): void {
-            const i18n = getI18nManager();
-            if (!i18n) return;
-            this._unsubscribeLocale = i18n.onLocaleChange(() => {
-                this._applyRequiredConfig();
-            });
-        },
-
-        _applyRequiredConfig(): void {
-            const config = getI18nUiConfig();
-            const mark = this._requiredMark || config.requiredMark;
-            const position = this._requiredMarkPosition || config.requiredMarkPosition;
-
-            const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
-            if (markEl) {
-                markEl.textContent = mark;
-                markEl.classList.toggle('q-input__required-mark--before', position === 'before');
-                markEl.classList.toggle('q-input__required-mark--after', position === 'after');
-            }
-
-            const separatorEl = this.nodeMap?.separator?.el as HTMLElement | null;
-            if (separatorEl) {
-                separatorEl.textContent = config.labelSeparator ?? '';
+            const self = this as any;
+            if (self._offValidation) {
+                self._offValidation();
+                self._offValidation = null;
             }
         },
 
         _initInput(props?: InputProps): void {
-            const fieldEl = getFieldEl(this);
+            const self = this as any;
+            const fieldEl = getFieldEl(self);
 
-            const config = getI18nUiConfig();
-            this._requiredMark = props?.requiredMark ?? config.requiredMark;
-            this._requiredMarkPosition = props?.requiredMarkPosition ?? config.requiredMarkPosition;
-
-            if (props?.label) {
-                this._labelText = props.label;
-                this.setNodeHidden(false, 'labelGroup');
-                this.label = props.label;
-                this._applyRequiredConfig();
-                if (this._required) {
-                    this.setNodeHidden(false, 'requiredMark');
-                }
-            }
             if (props?.value !== undefined) {
-                this._value = props.value;
+                self._value = props.value;
                 if (fieldEl) fieldEl.value = props.value;
             }
             if (props?.placeholder && fieldEl) {
@@ -276,49 +114,29 @@ export let InputComponent = Component.withTemplate({
             if (props?.maxLength !== undefined && fieldEl) {
                 fieldEl.setAttribute('maxlength', String(props.maxLength));
             }
-            if (props?.disabled) this.disabled = true;
-            if (props?.readonly) this.readonly = true;
-            if (props?.required) {
-                this._required = true;
-                if (fieldEl) fieldEl.setAttribute('required', 'true');
-                this._applyRequiredConfig();
-                if (this._labelText) {
-                    this.setNodeHidden(false, 'requiredMark');
-                }
-            }
-            if (props?.size) this.size = props.size;
+            if (props?.disabled) self.disabled = true;
+            if (props?.readonly) self.readonly = true;
             if (props?.clearable) {
-                this._clearable = true;
-                this.setNodeHidden(false, 'actions');
-                this._initClearBtn();
-                this._toggleClearBtn();
+                self._clearable = true;
+                self.setNodeHidden(false, 'actions');
+                self._initClearBtn();
+                self._toggleClearBtn();
             }
-            this._applyState();
+            self._applyState();
         },
 
-        _initValidation(props?: InputProps): void {
-            if (props?.fieldName) this._fieldName = props.fieldName;
-            if (props?.validation !== undefined) this._validation = props.validation;
-            if (props?.validateTrigger) this._validateTrigger = props.validateTrigger;
-
-            if (this._validation === true) {
-                this.on('validation', this._onValidationResult);
-            }
-        },
-
-        _initActionEvents(): void {
-            const actionsCmp = this.nodeMap?.actions?.component;
+        onFieldBodyActionClick(data: any): void {
+            const self = this as any;
+            const index = data?.index;
+            if (index === undefined) return;
+            const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return;
-            actionsCmp.on('actionClick', (data: any) => {
-                const index = data?.index;
-                if (index === undefined) return;
-                if (
-                    this._clearBtnItem &&
-                    this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index
-                ) {
-                    this.onClearBtnClick();
-                }
-            });
+            if (
+                self._clearBtnItem &&
+                self._itemsIndexOf(actionsCmp, self._clearBtnItem) === index
+            ) {
+                self.onClearBtnClick();
+            }
         },
 
         _itemsIndexOf(group: any, item: any): number {
@@ -328,43 +146,10 @@ export let InputComponent = Component.withTemplate({
             return -1;
         },
 
-        _shouldValidate(eventName: string): boolean {
-            if (!this._validation) return false;
-            if (eventName === this._validateTrigger) return true;
-            if (this._validateTrigger === 'blur' && eventName === 'change') return false;
-            return false;
-        },
-
-        async _doValidate(): Promise<void> {
-            if (!this._validation || this._validation === true) {
-                this.emit('validate', { fieldName: this._fieldName, value: this._value });
-                return;
-            }
-
-            const rules = Array.isArray(this._validation) ? this._validation : [this._validation];
-            const allErrors: any[] = [];
-
-            for (const rule of rules) {
-                const errors = await doValidate.validate(this._value, rule);
-                if (errors) allErrors.push(...errors);
-            }
-
-            this.error = allErrors.length > 0 ? allErrors[0].message || String(allErrors[0]) : '';
-            this.emit('validation', {
-                fieldName: this._fieldName,
-                isValid: allErrors.length === 0,
-                errors: allErrors,
-            });
-        },
-
-        _onValidationResult(data: any): void {
-            if (data.fieldName && data.fieldName !== this._fieldName) return;
-            this.error = data.errors?.[0]?.message || '';
-        },
-
         _initClearBtn(): void {
-            if (this._clearBtnItem) return;
-            const actionsCmp = this.nodeMap?.actions?.component;
+            const self = this as any;
+            if (self._clearBtnItem) return;
+            const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return;
             actionsCmp.add({
                 type: 'Text',
@@ -372,281 +157,194 @@ export let InputComponent = Component.withTemplate({
                 text: '×',
                 order: CLEAR_BTN_ORDER,
             });
-            this._clearBtnItem = actionsCmp._items[actionsCmp._items.length - 1] ?? null;
+            self._clearBtnItem = actionsCmp._items[actionsCmp._items.length - 1] ?? null;
         },
 
         onClearBtnClick(): void {
-            this.value = '';
-            this.emit('input', { value: '' });
-            this._toggleClearBtn();
-            getFieldEl(this)?.focus();
+            const self = this as any;
+            self.value = '';
+            self.emit('input', { value: '' });
+            self._toggleClearBtn();
+            getFieldEl(self)?.focus();
         },
 
         _toggleClearBtn(): void {
-            if (!this._clearable || !this._clearBtnItem) return;
-            const hasValue = !!this._value;
-            this._clearBtnItem.el.hidden = !hasValue;
+            const self = this as any;
+            if (!self._clearable || !self._clearBtnItem) return;
+            const hasValue = !!self._value;
+            self._clearBtnItem.el.hidden = !hasValue;
         },
 
         onFieldInput(): void {
-            this._value = this.field;
-            this._toggleClearBtn();
-            if (this._shouldValidate('input')) this._doValidate();
+            const self = this as any;
+            self._value = self.field;
+            self._toggleClearBtn();
+            if (self._shouldValidate('input')) self._doValidate();
         },
 
         onFieldFocus(): void {
-            this._focused = true;
-            this._applyState();
+            const self = this as any;
+            self._focused = true;
+            self._applyState();
         },
 
         onFieldBlur(): void {
-            this._focused = false;
-            this._applyState();
-            if (this._shouldValidate('blur')) this._doValidate();
+            const self = this as any;
+            self._focused = false;
+            self._applyState();
+            if (self._shouldValidate('blur')) self._doValidate();
         },
 
         onFieldChange(): void {
-            this._value = this.field;
-            if (this._shouldValidate('change')) this._doValidate();
+            const self = this as any;
+            self._value = self.field;
+            if (self._shouldValidate('change')) self._doValidate();
         },
 
         getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            return { value: this._value };
+            const self = this as any;
+            return { value: self._value };
         },
 
-        // ========== actions 便捷方法 ==========
-
         addAction(data: Record<string, any>): any {
-            const actionsCmp = this.nodeMap?.actions?.component;
+            const self = this as any;
+            const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return null;
-            this.setNodeHidden(false, 'actions');
+            self.setNodeHidden(false, 'actions');
             return actionsCmp.add(data);
         },
 
         removeAction(index: number): any {
-            const actionsCmp = this.nodeMap?.actions?.component;
+            const self = this as any;
+            const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return undefined;
             const result = actionsCmp.removeAt(index);
-            if (actionsCmp.count === 0) this.setNodeHidden(true, 'actions');
+            if (actionsCmp.count === 0) self.setNodeHidden(true, 'actions');
             return result;
         },
 
         setActionHidden(index: number, hidden: boolean): void {
-            const actionsCmp = this.nodeMap?.actions?.component;
+            const self = this as any;
+            const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return;
             const item = actionsCmp.getAt(index);
             if (item?.el) item.el.hidden = hidden;
         },
 
-        // ========== infoGroup 便捷方法 ==========
-
-        addError(text: string): any {
-            return this.nodeMap?.infoGroup?.component?.addError(text);
-        },
-
-        removeError(): void {
-            this.nodeMap?.infoGroup?.component?.removeError();
-        },
-
-        addHelp(text: string): any {
-            return this.nodeMap?.infoGroup?.component?.addHelp(text);
-        },
-
-        removeHelp(): void {
-            this.nodeMap?.infoGroup?.component?.removeHelp();
-        },
-
-        addInfo(data: Record<string, any>): any {
-            return this.nodeMap?.infoGroup?.component?.addInfo(data);
-        },
-
-        removeInfo(index: number): any {
-            return this.nodeMap?.infoGroup?.component?.removeInfo(index);
-        },
-
-        // ========== 属性 ==========
-
         get value(): string {
-            return this._value;
+            const self = this as any;
+            return self._value;
         },
         set value(v: string) {
-            this._value = v;
-            const fieldEl = getFieldEl(this);
+            const self = this as any;
+            self._value = v;
+            const fieldEl = getFieldEl(self);
             if (fieldEl && fieldEl.value !== v) {
                 fieldEl.value = v;
             }
-            this._toggleClearBtn();
+            self._toggleClearBtn();
         },
 
         get disabled(): boolean {
-            return this.el.classList.contains('q-input--disabled');
+            const self = this as any;
+            return self.el.classList.contains('q-input--disabled');
         },
         set disabled(v: boolean) {
-            const fieldEl = getFieldEl(this);
+            const self = this as any;
+            const fieldEl = getFieldEl(self);
             if (fieldEl) {
                 if (v) fieldEl.setAttribute('disabled', 'true');
                 else fieldEl.removeAttribute('disabled');
             }
-            this.toggleCls('q-input--disabled', v);
+            self.toggleCls('q-input--disabled', v);
         },
 
         get readonly(): boolean {
-            return this.el.classList.contains('q-input--readonly');
+            const self = this as any;
+            return self.el.classList.contains('q-input--readonly');
         },
         set readonly(v: boolean) {
-            const fieldEl = getFieldEl(this);
+            const self = this as any;
+            const fieldEl = getFieldEl(self);
             if (fieldEl) {
                 if (v) fieldEl.setAttribute('readonly', 'true');
                 else fieldEl.removeAttribute('readonly');
             }
-            this.toggleCls('q-input--readonly', v);
-        },
-
-        get error(): string {
-            return this._error;
-        },
-        set error(v: string) {
-            this._error = v;
-            const infoCmp = this.nodeMap?.infoGroup?.component;
-            if (v) {
-                infoCmp?.addError(v);
-                this.toggleCls('q-input--error', true);
-            } else {
-                infoCmp?.removeError();
-                this.toggleCls('q-input--error', false);
-            }
+            self.toggleCls('q-input--readonly', v);
         },
 
         focus(): void {
-            const fieldEl = getFieldEl(this);
-            fieldEl?.focus();
+            getFieldEl(this)?.focus();
         },
 
         blur(): void {
-            const fieldEl = getFieldEl(this);
-            fieldEl?.blur();
+            getFieldEl(this)?.blur();
         },
 
         select(): void {
-            const fieldEl = getFieldEl(this);
-            fieldEl?.select();
+            getFieldEl(this)?.select();
         },
 
         _applyState(): void {
-            this.toggleCls('q-input--focused', this._focused);
-            this.toggleCls('q-input--error', !!this._error);
+            const self = this as any;
+            self.toggleCls('q-input--focused', self._focused);
+            self.toggleCls('q-input--error', !!self._error);
         },
 
-        // ========== 表单值接口（供 FormComponent 收集） ==========
-
         getFormValue(): any {
-            return this._value;
+            const self = this as any;
+            return self._value;
         },
 
         setFormValue(v: any): void {
-            this.value = v;
+            const self = this as any;
+            self.value = v;
         },
 
         getFormDisplayValue(): any {
-            return this._value;
-        },
-
-        getFormError(): string {
-            return this._error ?? '';
-        },
-
-        setFormError(v: string): void {
-            this.error = v;
+            const self = this as any;
+            return self._value;
         },
 
         formReset(defaultValue?: any): void {
-            this.value = defaultValue ?? '';
-            this.error = '';
+            const self = this as any;
+            self.value = defaultValue ?? '';
+            self.error = '';
         },
 
         update(props?: Partial<InputProps>): void {
-            const fieldEl = getFieldEl(this);
+            const self = this as any;
+            const fieldEl = getFieldEl(self);
 
-            if (props?.value !== undefined) this.value = props.value;
+            self._super.update(props);
+
+            if (props?.value !== undefined) self.value = props.value;
             if (props?.placeholder !== undefined && fieldEl) {
                 fieldEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.label !== undefined) {
-                this._labelText = props.label || '';
-                if (props.label) {
-                    this.setNodeHidden(false, 'labelGroup');
-                    this.label = props.label;
-                    if (this._required) {
-                        this.setNodeHidden(false, 'requiredMark');
-                    }
-                } else {
-                    this.setNodeHidden(true, 'labelGroup');
-                    this.setNodeHidden(true, 'requiredMark');
-                }
-            }
-            if (props?.labelPosition !== undefined) {
-                for (const cls of Object.values(LABEL_POSITION_MAP)) {
-                    this.toggleCls(cls, false);
-                }
-                this._applyLabelPosition(props.labelPosition);
             }
             if (props?.type !== undefined && fieldEl) {
                 fieldEl.setAttribute('type', props.type);
             }
-            if (props?.disabled !== undefined) this.disabled = props.disabled;
-            if (props?.readonly !== undefined) this.readonly = props.readonly;
+            if (props?.disabled !== undefined) self.disabled = props.disabled;
+            if (props?.readonly !== undefined) self.readonly = props.readonly;
             if (props?.maxLength !== undefined && fieldEl) {
                 fieldEl.setAttribute('maxlength', String(props.maxLength));
             }
-            if (props?.required !== undefined) {
-                this._required = props.required;
-                if (fieldEl) {
-                    if (props.required) fieldEl.setAttribute('required', 'true');
-                    else fieldEl.removeAttribute('required');
-                }
-                if (props.required && this._labelText) {
-                    this._applyRequiredConfig();
-                    this.setNodeHidden(false, 'requiredMark');
-                } else {
-                    this.setNodeHidden(true, 'requiredMark');
-                }
-            }
-            if (props?.requiredMark !== undefined) {
-                this._requiredMark = props.requiredMark;
-                this._applyRequiredConfig();
-            }
-            if (props?.requiredMarkPosition !== undefined) {
-                this._requiredMarkPosition = props.requiredMarkPosition;
-                this._applyRequiredConfig();
-            }
-            if (props?.size !== undefined) this.size = props.size;
             if (props?.clearable !== undefined) {
-                this._clearable = props.clearable;
+                self._clearable = props.clearable;
                 if (props.clearable) {
-                    this.setNodeHidden(false, 'actions');
-                    this._initClearBtn();
-                    this._toggleClearBtn();
+                    self.setNodeHidden(false, 'actions');
+                    self._initClearBtn();
+                    self._toggleClearBtn();
                 } else {
-                    if (this._clearBtnItem) {
-                        this._clearBtnItem.el.hidden = true;
+                    if (self._clearBtnItem) {
+                        self._clearBtnItem.el.hidden = true;
                     }
-                    this.setNodeHidden(true, 'actions');
+                    self.setNodeHidden(true, 'actions');
                 }
             }
-            if (props?.fieldName !== undefined) this._fieldName = props.fieldName;
-            if (props?.validation !== undefined) {
-                if (this._offValidation) {
-                    this._offValidation();
-                    this._offValidation = null;
-                }
-                this._validation = props.validation;
-                if (this._validation === true) {
-                    this.on('validation', this._onValidationResult);
-                }
-            }
-            if (props?.validateTrigger !== undefined) this._validateTrigger = props.validateTrigger;
         },
     },
-}).with([SizeAbility]);
+});
 
 export type InputComponent = InstanceType<typeof InputComponent>;

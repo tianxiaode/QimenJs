@@ -5,8 +5,11 @@ export interface ToolbarProps extends ItemGroupProps {}
 
 export let ToolbarComponent = ItemGroupStaticComponent.replace({
     type: 'Toolbar',
-    cls: 'q-toolbar',
-    itemsCls: 'q-toolbar__items',
     config: { direction: 'horizontal', gap: '4px' },
-    body: {},
+    body: {
+        nodes: {
+            root: { addCls: 'q-toolbar' },
+            itemContainer: { addCls: 'q-toolbar__items' },
+        },
+    },
 });

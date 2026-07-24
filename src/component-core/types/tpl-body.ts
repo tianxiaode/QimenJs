@@ -463,6 +463,51 @@ export interface LifecycleHooks {
  * }
  * ```
  */
+/**
+ * 节点配置 — 声明式节点属性覆盖
+ *
+ * 统一替代 nodeOverrides 和 replace() 中的 cls/itemsCls，
+ * 在 body 中声明式配置节点属性，编译时提取，运行时由 initNodeProps 应用。
+ *
+ * 字段语义：
+ * - addCls: 追加 CSS 类（与现有 cls 拼接，替代 replace 的 cls/itemsCls）
+ * - cls: 替换 CSS 类（覆盖 TplNode 中的 cls）
+ * - hidden: 覆盖隐藏状态
+ * - type: 替换子组件类型
+ * - events: 替换事件声明（全量替换，不合并）
+ * - initConfig: 合并子组件初始配置
+ * - style/flex/grid/role/attrs: 覆盖对应属性
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     nodes: {
+ *         root: { addCls: 'q-form' },
+ *         itemContainer: { addCls: 'q-form__fields' },
+ *         fieldBody: { type: InputFieldBodyComponent, events: { actionClick: { handler: true } } },
+ *         dropIcon: { hidden: false },
+ *     }
+ * }
+ * ```
+ */
+export interface NodeConfig {
+    addCls?: string;
+    cls?: string;
+    hidden?: boolean;
+    hiddenMode?: string;
+    type?: any;
+    events?: Record<string, any>;
+    initConfig?: Record<string, any>;
+    style?: string | Record<string, any>;
+    flex?: boolean | Record<string, any>;
+    grid?: boolean | Record<string, any>;
+    role?: string;
+    attrs?: Record<string, string>;
+    [key: string]: any;
+}
+
+export type NodesConfig = Record<string, NodeConfig>;
+
 export interface BodyDef extends LifecycleHooks {
     // ─── static: 编译时设为类静态属性 ───
 
@@ -497,6 +542,9 @@ export interface BodyDef extends LifecycleHooks {
 
     /** 附加能力，替代 .with() 的声明式注入 */
     abilities?: any[];
+
+    /** 节点配置，声明式覆盖节点属性，替代 nodeOverrides 和 replace 的 cls/itemsCls */
+    nodes?: NodesConfig;
 
     // ─── 其他：函数→原型方法，getter/setter→defineProperty ───
 

@@ -11,8 +11,7 @@ export interface AccordionProps extends ItemGroupProps {
 
 export let AccordionComponent = ItemGroupPooledComponent.replace({
     type: 'Accordion',
-    cls: 'q-accordion',
-    itemsCls: 'q-accordion__items',
+
     config: {
         direction: 'vertical',
         gap: '0',
@@ -22,6 +21,11 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         },
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-accordion' },
+            itemContainer: { addCls: 'q-accordion__items' },
+        },
+
         onInitState() {
             return {
                 _mode: 'single' as AccordionMode,

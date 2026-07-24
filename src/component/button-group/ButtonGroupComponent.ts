@@ -11,8 +11,7 @@ export interface ButtonGroupProps extends ItemGroupProps {
 
 export let ButtonGroupComponent = ItemGroupPooledComponent.replace({
     type: 'ButtonGroup',
-    cls: 'q-button-group',
-    itemsCls: 'q-button-group__items',
+
     config: {
         defaultItemType: 'Toggle',
         defaultItem: {
@@ -22,6 +21,11 @@ export let ButtonGroupComponent = ItemGroupPooledComponent.replace({
         gap: '2px',
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-button-group' },
+            itemContainer: { addCls: 'q-button-group__items' },
+        },
+
         onInitState() {
             return {
                 _mode: 'single' as ButtonGroupMode,

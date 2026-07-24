@@ -10,8 +10,7 @@ export interface MenuProps extends ItemGroupProps {
 
 export let MenuComponent = ItemGroupStaticComponent.replace({
     type: 'Menu',
-    cls: 'q-menu',
-    itemsCls: 'q-menu__content',
+
     config: {
         direction: 'vertical',
         defaultItemType: 'MenuItem',
@@ -22,6 +21,11 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
         },
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-menu' },
+            itemContainer: { addCls: 'q-menu__content' },
+        },
+
         onInitState() {
             return {
                 _anchor: null as HTMLElement | null,

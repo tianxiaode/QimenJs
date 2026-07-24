@@ -7,8 +7,6 @@ export interface TabBarProps extends ItemGroupProps {
 
 export let TabBarComponent = ItemGroupPooledComponent.replace({
     type: 'TabBar',
-    cls: 'q-tab-bar',
-    itemsCls: 'q-tab-bar__items',
     config: {
         direction: 'horizontal',
         gap: '0',
@@ -18,6 +16,10 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         },
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-tab-bar' },
+            itemContainer: { addCls: 'q-tab-bar__items' },
+        },
         onInitState() {
             return {
                 _selectedIndex: -1,

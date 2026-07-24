@@ -59,13 +59,11 @@ const STRENGTH_ORDER = 5;
 
 export let PasswordInputComponent = InputComponent.replace({
     type: 'PasswordInput',
-    cls: 'q-input--password',
-
-    nodeOverrides: {
-        suffix: { hidden: false },
-    },
 
     body: {
+        nodes: {
+            root: { addCls: 'q-input--password' },
+        },
         onInitState() {
             const self = this as any;
             const state = self._super.onInitState();
@@ -82,6 +80,8 @@ export let PasswordInputComponent = InputComponent.replace({
             const self = this as any;
             self._visible = props?.visible ?? false;
             self._strength = 0;
+
+            self.setNodeHidden(false, 'suffix');
 
             const fieldEl = getFieldEl(self);
             if (fieldEl && !props?.type) {
@@ -117,26 +117,21 @@ export let PasswordInputComponent = InputComponent.replace({
             self._eyeBtnItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
         },
 
-        _initActionEvents(): void {
+        onFieldBodyActionClick(data: any): void {
             const self = this as any;
+            const index = data?.index;
+            if (index === undefined) return;
             const actionsCmp = self.nodeMap?.actions?.component;
             if (!actionsCmp) return;
-            actionsCmp.on('actionClick', (data: any) => {
-                const index = data?.index;
-                if (index === undefined) return;
-                if (
-                    self._clearBtnItem &&
-                    self._itemsIndexOf(actionsCmp, self._clearBtnItem) === index
-                ) {
-                    self.onClearBtnClick();
-                }
-                if (
-                    self._eyeBtnItem &&
-                    self._itemsIndexOf(actionsCmp, self._eyeBtnItem) === index
-                ) {
-                    self.toggleVisibility();
-                }
-            });
+            if (
+                self._clearBtnItem &&
+                self._itemsIndexOf(actionsCmp, self._clearBtnItem) === index
+            ) {
+                self.onClearBtnClick();
+            }
+            if (self._eyeBtnItem && self._itemsIndexOf(actionsCmp, self._eyeBtnItem) === index) {
+                self.toggleVisibility();
+            }
         },
 
         _mountStrengthIndicator(): void {

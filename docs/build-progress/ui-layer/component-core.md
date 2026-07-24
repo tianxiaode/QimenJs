@@ -49,6 +49,20 @@
   - override.type 可替换子组件类型（函数或字符串）
   - override.initConfig 合并子组件初始化配置
 - ✅ composable/index.ts 新增导出 createForgedClass
+- ✅ 新增 body.nodes 声明式节点配置机制（替代 nodeOverrides 和 replace 的 cls/itemsCls）
+  - NodeConfig / NodesConfig 类型定义（tpl-body.ts）
+  - BODY_SPECIAL_KEYS 新增 nodes: { category: 'init' }
+  - addCls 字段：追加 CSS 类（与现有 cls 拼接），替代 replace 的 cls/itemsCls
+  - cls/hidden/type/events/initConfig/style/flex/grid/role/attrs：覆盖/替换语义
+  - mergeBodies 对 nodes 字段深合并（同 mergeNodeOverrides 逻辑）
+  - createInnerClass/createDerivedInnerClass 调用 updateNodeMetasFromOverrides 处理 body.nodes
+  - initNodeProps 新增 applyNodeConfig：先处理 body.nodes，再处理 nodeOverrides（向后兼容）
+  - renderChildComponents 支持 body.nodes 中的 type/initConfig
+  - replace 的 cls/itemsCls 自动转为 body.nodes.addCls（替代构造函数包装 hack）
+- ✅ 构造函数去重：createInnerClass 和 createDerivedInnerClass 共享 templateComponentConstructor
+- ✅ 11 个 replace 组件迁移到 body.nodes 新写法
+  - InputComponent / PasswordInputComponent / DropdownComponent / FormComponent / InputInfoGroupComponent
+  - NavItemGroupComponent / AccordionComponent / ButtonGroupComponent / MenuComponent / TabBarComponent / ToolbarComponent
 
 ### 2026-07-21
 - ✅ CommonPropsAbility 两层架构重构：root getter/setter + 方法重载 + setNodeXxx + setNodeProp 兜底

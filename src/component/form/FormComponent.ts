@@ -69,14 +69,16 @@ const bus = EntityEventBus.getInstance();
 
 export let FormComponent = ItemGroupStaticComponent.replace({
     type: 'Form',
-    cls: 'q-form',
-    itemsCls: 'q-form__fields',
     config: {
         direction: 'vertical',
         gap: '16px',
         cols: 1,
     },
     body: {
+        nodes: {
+            root: { addCls: 'q-form' },
+            itemContainer: { addCls: 'q-form__fields' },
+        },
         onInitState() {
             return {
                 _entityKey: '' as string,

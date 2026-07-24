@@ -65,32 +65,19 @@
  * 组件构建流程（新架构）
  * ══════════════════════════════════════════════════════════════
  *
- * 【定义时】withTemplate(templates) → 闭包基类
- *   1. templates.tpl 为 TplNode | TplVariant[]，支持单模板或多模板
- *   2. 单模板（TplNode）→ 直接编译，无条件
- *   3. 多模板（TplVariant[]）→ 每个变体有 tpl + 可选 when 条件
- *   4. 遍历变体，对每个 tpl 执行编译
- *   5. compileTemplate(template) → 生成 HTML + indexPath + nodeMetas
- *   6. 创建 <template> 元素缓存 HTML 片段
- *   7. 创建内部类（InnerComponent 子类），挂载预编译产物 + body + 能力
- *   8. 内部类 + when 保存到闭包中（_variants 数组）
- *   9. 返回闭包类（构造函数返回内部类实例）
+ * 【定义时】withTemplate(templates) → 内部类
+ *   1. templates.tpl 为 TplNode，单模板模式
+ *   2. compileTemplate(template) → 生成 HTML + indexPath + nodeMetas
+ *   3. 创建 <template> 元素缓存 HTML 片段
+ *   4. 创建内部类（TemplateComponent 子类），挂载预编译产物 + body + 能力
+ *   5. 返回内部类（真正的 class，可直接 new）
  *
- * 【编译时】compileTemplate(template)
- *   1. 递归遍历 TplNode 树
- *   2. tag 节点 → 生成 HTML 标签 + 收集 name 到 nodeMetas
- *   3. type 节点 → 生成占位 <div>，运行时由子组件替换
- *   4. events → 存入 nodeMetas（纯数据，不生成闭包）
- *   5. flex/grid/cls/style → 存入 meta，运行时由 applyStyle 应用
- *   6. i18n → 存入 meta，运行时写入 DOM
- *   7. initConfig → 存入 meta，子组件渲染时传入构造函数
- *   8. 创建 <template> 元素缓存 HTML 片段
- *
- * 【实例化时】new OuterClass(props) → 内部类实例
- *   1. 遍历 _variants，when(props) 首个为 true 的变体胜出
- *   2. when 省略 → 兜底匹配（放在数组末尾）
- *   3. 全部不匹配 → 抛出 ComponentError(COMPONENT_TPL_KEY_NOT_FOUND)
- *   4. new InnerClass(props) → 返回内部类实例
+ * 【实例化时】new InnerClass(props) → 组件实例
+ *   1. super() → ComposableBase 初始化
+ *   2. initInstanceData → 设置 meta / props / dirtySet
+ *   3. onBeforeInit(props) → 组件自定义初始化钩子
+ *   4. initFromTemplate(instance) → 模板渲染 + 子组件挂载
+ *   5. onAfterInit(props) → 组件自定义后初始化钩子
  *
  * 【运行时】initFromTemplate(instance) — 内部类实例初始化
  *   1. 克隆模板 → 构建 nodeMap（浅复制 nodeMetas + findByPath 挂 el）
@@ -364,12 +351,19 @@
  * - type: 创建组件实例，有组件边界，需要 forwards 透传
  * - fragment: 编译前展开，无组件边界，直接访问节点属性
  *
- * 与 nodeOverrides 配合：
- * - 展开后的节点名带命名空间，nodeOverrides 用全名覆盖
+ * 与 nodeOverrides / body.nodes 配合：
+ * - 展开后的节点名带命名空间，nodeOverrides 或 body.nodes 用全名覆盖
  * - events 覆盖为全覆盖语义（不合并）
  * ```ts
+ * // 旧方案（nodeOverrides，仍兼容）
  * nodeOverrides: {
  *     'header:action': { hidden: false, events: { click: { bridges: ['close'] } } }
+ * }
+ * // 新方案（body.nodes，推荐）
+ * body: {
+ *     nodes: {
+ *         'header:action': { hidden: false, events: { click: { bridges: ['close'] } } }
+ *     }
  * }
  * ```
  *

@@ -26,87 +26,92 @@ const HELP_ORDER = 10;
 
 export let InputInfoGroupComponent = ItemGroupStaticComponent.replace({
     type: 'InputInfoGroup',
-    cls: 'q-input__info',
 
-    onInitState() {
-        const self = this as any;
-        const state = self._super.onInitState();
-        return {
-            ...state,
-            _errorItem: null as any,
-            _helpItem: null as any,
-        };
-    },
+    body: {
+        nodes: {
+            root: { addCls: 'q-input__info' },
+        },
 
-    onAfterInit(props?: any): void {
-        const self = this as any;
-        self._super.onAfterInit(props);
-        if (props?.direction === undefined) self.direction = 'vertical';
-        if (props?.gap === undefined) self.gap = '2px';
-    },
+        onInitState() {
+            const self = this as any;
+            const state = self._super.onInitState();
+            return {
+                ...state,
+                _errorItem: null as any,
+                _helpItem: null as any,
+            };
+        },
 
-    addError(text: string): any {
-        const self = this as any;
-        if (self._errorItem) {
-            self._errorItem.component.update({ text });
-            return self._errorItem.component;
-        }
-        const component = self.add({
-            type: 'Text',
-            cls: 'q-input__error',
-            text,
-            role: 'alert',
-            order: ERROR_ORDER,
-        });
-        self._errorItem = self._items[self._items.length - 1] ?? null;
-        return component;
-    },
+        onAfterInit(props?: any): void {
+            const self = this as any;
+            self._super.onAfterInit(props);
+            if (props?.direction === undefined) self.direction = 'vertical';
+            if (props?.gap === undefined) self.gap = '2px';
+        },
 
-    removeError(): void {
-        const self = this as any;
-        if (!self._errorItem) return;
-        const idx = self._items.indexOf(self._errorItem);
-        if (idx >= 0) self.removeAt(idx);
-        self._errorItem = null;
-    },
+        addError(text: string): any {
+            const self = this as any;
+            if (self._errorItem) {
+                self._errorItem.component.update({ text });
+                return self._errorItem.component;
+            }
+            const component = self.add({
+                type: 'Text',
+                cls: 'q-input__error',
+                text,
+                role: 'alert',
+                order: ERROR_ORDER,
+            });
+            self._errorItem = self._items[self._items.length - 1] ?? null;
+            return component;
+        },
 
-    get errorText(): string {
-        const self = this as any;
-        return self._errorItem?.component?.text ?? '';
-    },
+        removeError(): void {
+            const self = this as any;
+            if (!self._errorItem) return;
+            const idx = self._items.indexOf(self._errorItem);
+            if (idx >= 0) self.removeAt(idx);
+            self._errorItem = null;
+        },
 
-    addHelp(text: string): any {
-        const self = this as any;
-        if (self._helpItem) {
-            self._helpItem.component.update({ text });
-            return self._helpItem.component;
-        }
-        const component = self.add({
-            type: 'Text',
-            cls: 'q-input__help',
-            text,
-            order: HELP_ORDER,
-        });
-        self._helpItem = self._items[self._items.length - 1] ?? null;
-        return component;
-    },
+        get errorText(): string {
+            const self = this as any;
+            return self._errorItem?.component?.text ?? '';
+        },
 
-    removeHelp(): void {
-        const self = this as any;
-        if (!self._helpItem) return;
-        const idx = self._items.indexOf(self._helpItem);
-        if (idx >= 0) self.removeAt(idx);
-        self._helpItem = null;
-    },
+        addHelp(text: string): any {
+            const self = this as any;
+            if (self._helpItem) {
+                self._helpItem.component.update({ text });
+                return self._helpItem.component;
+            }
+            const component = self.add({
+                type: 'Text',
+                cls: 'q-input__help',
+                text,
+                order: HELP_ORDER,
+            });
+            self._helpItem = self._items[self._items.length - 1] ?? null;
+            return component;
+        },
 
-    addInfo(data: Record<string, any>): any {
-        const self = this as any;
-        return self.add(data);
-    },
+        removeHelp(): void {
+            const self = this as any;
+            if (!self._helpItem) return;
+            const idx = self._items.indexOf(self._helpItem);
+            if (idx >= 0) self.removeAt(idx);
+            self._helpItem = null;
+        },
 
-    removeInfo(index: number): any {
-        const self = this as any;
-        return self.removeAt(index);
+        addInfo(data: Record<string, any>): any {
+            const self = this as any;
+            return self.add(data);
+        },
+
+        removeInfo(index: number): any {
+            const self = this as any;
+            return self.removeAt(index);
+        },
     },
 });
 
