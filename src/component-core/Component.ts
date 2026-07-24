@@ -31,7 +31,7 @@
  */
 
 import type { ComponentTemplate } from './types';
-import { createInnerClass, createDerivedInnerClass } from './utils/template-factory';
+import { createInnerClass, createDerivedInnerClass } from './engine/TemplateFactory';
 import { TemplateComponent } from './TemplateComponent';
 
 /**

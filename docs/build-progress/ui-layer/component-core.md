@@ -2,10 +2,23 @@
 
 **层级**: UI 层  
 **状态**: ⚠️ 开发中  
-**测试**: ✅ 12 suites / 55 tests  
+**测试**: ✅ 12 suites / 55 tests（路径已更新至 engine/）  
 **覆盖率**: ~82%
 
 ## 构建历史
+
+### 2026-07-24
+- ✅ 构建流程引擎化重构：utils/ → engine/，散落步骤整合为四个纯函数引擎
+  - TemplateCompiler — 模板编译引擎（compile → { cache, nodeMetas }）
+  - TemplateDeriver — 模板替换引擎（derive → { cache, nodeMetas }，cache 共享，nodeMetas 独立）
+  - BodyMerger — Body 合并引擎（merge → newBody，纯函数不修改输入）
+  - RuntimeEngine — 运行时引擎（init 统一编排 15 步管线）
+- ✅ 删除 utils/ 目录（template-factory/template-compiler/template-init/template-constants/child-node-props/class-copy）
+- ✅ 新增 CompiledTemplateCache 类型（只读可共享部分，与 nodeMetas 分离）
+- ✅ CompiledComponentTemplate 标记 @deprecated
+- ✅ TemplateComponent 新增 nodeMapMgr 字段，dispose 改为 nodeMapMgr.disposeAll()
+- ✅ NodeMapManager 从 engine 导入路径更新
+- ✅ 测试文件路径同步更新（utils/ → engine/）
 
 ### 2026-07-23
 - ✅ 双层架构重构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
@@ -156,10 +169,10 @@
 ## 测试状态
 
 ### 通过的测试（12 suites / 55 tests）
-- ✅ template-constants — 常量定义
-- ✅ template-compiler — 预编译引擎
-- ✅ child-node-props — 子节点属性自动构建
-- ✅ template-factory — 模板组件工厂（createInnerClass + createReplaceFactory）
+- ✅ TemplateConstants — 常量定义
+- ✅ TemplateCompiler — 预编译引擎
+- ✅ ChildNodeProps — 子节点属性自动构建
+- ✅ TemplateFactory — 模板组件工厂（createInnerClass + createDerivedInnerClass）
 - ✅ NodePropAbility — 节点属性读写 + hiddenchange 事件
 - ✅ EventForwardAbility — 事件转发
 - ✅ CommonPropsAbility — 通用属性

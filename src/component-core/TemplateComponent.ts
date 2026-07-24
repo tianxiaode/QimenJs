@@ -41,6 +41,7 @@ import { AnimationAbility } from './abilities';
 
 import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
+import type { NodeMapManager } from './NodeMapManager';
 
 export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     EventAbility,
@@ -101,6 +102,8 @@ export class TemplateComponent extends ComposableBase {
 
     nodeMap: Record<string, NodeMetadata> = {};
 
+    nodeMapMgr!: NodeMapManager;
+
     _templateInitialized: boolean = false;
 
     override onBeforeDispose(): void {
@@ -127,11 +130,7 @@ export class TemplateComponent extends ComposableBase {
     }
 
     private _disposeChildComponents(): void {
-        for (const node of Object.values(this.nodeMap)) {
-            if (node.component && typeof node.component.dispose === 'function') {
-                node.component.dispose();
-            }
-        }
+        this.nodeMapMgr.disposeAll();
     }
 }
 

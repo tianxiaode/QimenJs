@@ -1,47 +1,37 @@
 /**
- * template-compiler.ts — 模板编译
+ * TemplateCompiler — 模板编译引擎
  *
- * compilePendingTemplate: 编译 + 应用到构造函数
- * findByPath: 索引路径定位元素
+ * 纯函数引擎：把 TplNode 编译为编译产物
+ * 输入：tpl (TplNode)
+ * 输出：{ cache: CompiledTemplateCache, nodeMetas: Record<string, NodeMetadata> }
+ *
+ * cache 是只读可共享部分，nodeMetas 是每类独立部分
  */
 
 import type { TplNode } from '../types/tpl-node-types';
-import type { NodeMetadata, NodeIndexPath } from '../types/compiled-types';
+import type {
+    NodeMetadata,
+    NodeIndexPath,
+    CompiledTemplateCache,
+} from '../types/compiled-types';
 import type { BodyDef } from '../types/tpl-body';
-import { VOID_TAGS } from './template-constants';
-import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
-import { applyChildNodeProps } from './child-node-props';
-import { ComponentError, KernelErrorCode } from '@/error';
+import { applyChildNodeProps } from './ChildNodeProps';
+import { Logger } from '@/logger';
 
-export function compilePendingTemplate(ctor: any, tpl: TplNode, logger: any, body?: BodyDef): void {
-    const expandedTpl = expandFragments(tpl);
+// ══════════════════════════════════════════════════════════════
+// 常量
+// ══════════════════════════════════════════════════════════════
 
-    const result = compileTemplate(expandedTpl, logger);
-
-    const tplEl = document.createElement('template');
-    tplEl.innerHTML = result.html;
-
-    ctor._compiledTemplate = {
-        ...result,
-        templateCache: tplEl,
-        body,
-    };
-
-    ctor._nodeMetas = result.nodeMetas;
-    ctor._i18nNodes = result.i18nNodes;
-
-    applyBody(ctor, body);
-
-    applyChildNodeProps(ctor, result.nodeMetas, result.i18nNodes);
-
-    ctor._templateCompiled = true;
-}
+export const VOID_TAGS = new Set([
+    'input', 'img', 'br', 'hr', 'col', 'area', 'base',
+    'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
 
 // ══════════════════════════════════════════════════════════════
 // 预处理：展开 fragment 为普通 children
 // ══════════════════════════════════════════════════════════════
 
-function expandFragments(node: TplNode, ns?: string): TplNode {
+export function expandFragments(node: TplNode, ns?: string): TplNode {
     let result = { ...node };
 
     if (ns && result.name) {
@@ -61,6 +51,10 @@ function expandFragments(node: TplNode, ns?: string): TplNode {
     return result;
 }
 
+// ══════════════════════════════════════════════════════════════
+// 工具：路径查找
+// ══════════════════════════════════════════════════════════════
+
 export function findByPath(root: HTMLElement, path: number[]): HTMLElement | null {
     let current: Element = root;
     for (const idx of path) {
@@ -71,10 +65,10 @@ export function findByPath(root: HTMLElement, path: number[]): HTMLElement | nul
 }
 
 // ══════════════════════════════════════════════════════════════
-// 内部：compileTemplate
+// 核心编译
 // ══════════════════════════════════════════════════════════════
 
-function compileTemplate(root: TplNode, logger: any) {
+export function compileTemplate(root: TplNode, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};
     const exposeNames: string[] = [];
@@ -203,50 +197,58 @@ function inferContentMode(tag?: string): 'value' | 'src' | 'html' | 'link' {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 内部：applyBody
+// 遗留兼容：编译 + 绑定到构造函数
 // ══════════════════════════════════════════════════════════════
 
-const BODY_KEY_SET = new Set(Object.keys(BODY_SPECIAL_KEYS));
+export function compilePendingTemplate(ctor: any, tpl: TplNode, logger: any, body?: BodyDef): void {
+    const expandedTpl = expandFragments(tpl);
 
-function validateBodyKey(key: string, desc?: PropertyDescriptor): void {
-    if (BODY_KEY_SET.has(key)) return;
+    const result = compileTemplate(expandedTpl, logger);
 
-    if (key.startsWith('on') && key.length > 2) return;
+    const tplEl = document.createElement('template');
+    tplEl.innerHTML = result.html;
 
-    const ch = key[0];
-    if (ch === '_' || ch === '$') return;
+    ctor._compiledTemplate = {
+        ...result,
+        templateCache: tplEl,
+        body,
+    };
 
-    if (desc && (desc.get || desc.set)) return;
-    if (desc && typeof desc.value === 'function') return;
+    ctor._nodeMetas = result.nodeMetas;
+    ctor._i18nNodes = result.i18nNodes;
 
-    throw new ComponentError(
-        `Body 不支持纯数据字段 "${key}"。默认属性值写在 TplNode，实例状态用 _applyState 模式。`,
-        KernelErrorCode.COMPONENT_BODY_INVALID_FIELD,
-        { field: key }
-    );
+    applyChildNodeProps(ctor, result.nodeMetas, result.i18nNodes);
+
+    ctor._templateCompiled = true;
 }
 
-function applyBody(ctor: any, body: Record<string, any> | undefined): void {
-    if (!body) return;
+// ══════════════════════════════════════════════════════════════
+// TemplateCompiler 类
+// ══════════════════════════════════════════════════════════════
 
-    const proto = ctor.prototype;
-    const descs = Object.getOwnPropertyDescriptors(body);
-    for (const [key, desc] of Object.entries(descs)) {
-        validateBodyKey(key, desc);
-        const def = BODY_SPECIAL_KEYS[key];
+export interface CompileResult {
+    cache: CompiledTemplateCache;
+    nodeMetas: Record<string, NodeMetadata>;
+}
 
-        if (def?.category === 'static') {
-            const targetKey = def.alias ?? key;
-            const staticKey = key === 'forwards' ? '_forwards' : targetKey;
-            ctor[staticKey] = desc.value;
-        } else if (def?.category === 'init') {
-            ctor[`_${key}`] = desc.value;
-        } else if (def?.category === 'hook') {
-            proto[key] = desc.value;
-        } else if (desc.get || desc.set) {
-            Object.defineProperty(proto, key, desc);
-        } else if (typeof desc.value === 'function') {
-            proto[key] = desc.value;
-        }
+export class TemplateCompiler {
+    static compile(tpl: TplNode, owner?: any): CompileResult {
+        const expandedTpl = expandFragments(tpl);
+        const result = compileTemplate(expandedTpl, Logger.for(owner?.constructor));
+
+        const tplEl = document.createElement('template');
+        tplEl.innerHTML = result.html;
+
+        const cache: CompiledTemplateCache = {
+            html: result.html,
+            indexPath: result.indexPath,
+            exposeNames: result.exposeNames,
+            i18nNodes: result.i18nNodes,
+            templateCache: tplEl,
+        };
+
+        const nodeMetas = result.nodeMetas;
+
+        return { cache, nodeMetas };
     }
 }

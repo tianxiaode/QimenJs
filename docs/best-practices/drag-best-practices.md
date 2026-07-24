@@ -389,7 +389,7 @@ if (gesture.originalEvent?.target !== el && !el.contains(gesture.originalEvent?.
 
 ### initDrags 时机
 
-在 `initFromTemplate` 中，`initDrags` 在 `initFloats` 之后、`bindDomEventBindings` 之前执行，确保 nodeMap 和子组件已就绪。
+在 RuntimeEngine 管线中，`initDrags` 在 `initFloats` 之后、`bindDomEvents` 之前执行，确保 nodeMap 和子组件已就绪。
 
 ### 组件销毁时的自动清理
 

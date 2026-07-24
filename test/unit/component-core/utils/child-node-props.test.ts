@@ -1,4 +1,4 @@
-import { buildChildNodePropDescs } from '@/component-core/utils/child-node-props';
+import { buildChildNodePropDescs } from '@/component-core/engine/ChildNodeProps';
 import type { NodeMetadata } from '@/component-core/types/compiled-types';
 
 describe('child-node-props', () => {
@@ -15,7 +15,7 @@ describe('child-node-props', () => {
     it('DOM 子节点生成内容属性', () => {
         const nodeMetas = makeNodeMetas({ title: { contentMode: 'html' } });
         const descs = buildChildNodePropDescs(nodeMetas, []);
-        expect(descs.title).toBeDefined();
+        expect(descs.titleHtml).toBeDefined();
     });
 
     it('value 模式生成 value 属性', () => {
@@ -42,7 +42,7 @@ describe('child-node-props', () => {
     it('保留名冲突加 _ 后缀', () => {
         const nodeMetas = makeNodeMetas({ dispose: { contentMode: 'html' } });
         const descs = buildChildNodePropDescs(nodeMetas, []);
-        expect(descs.dispose_).toBeDefined();
+        expect(descs.disposeHtml).toBeDefined();
         expect(descs.dispose).toBeUndefined();
     });
 });

@@ -16,42 +16,46 @@ export { ComponentRegistrar } from './ComponentRegistrar';
 // 组件类型常量
 export { ComponentTypes } from './ComponentTypes';
 
+// 节点结构管理器
+export { NodeMapManager } from './NodeMapManager';
+
 // 基础能力
 export { EventForwardAbility } from './abilities/EventForwardAbility';
 export { NodePropAbility } from './abilities/NodePropAbility';
 export { CommonPropsAbility } from './abilities/CommonPropsAbility';
-export { AnimationAbility } from './abilities/AnimationAbility';
+export { AnimationAbility } from './abilities';
 
 export { LifecycleAbility } from './abilities/LifecycleAbility';
 
 // 模板编译工具
-export { findByPath, compilePendingTemplate } from './utils/template-compiler';
-export { initFromTemplate } from './utils/template-init';
-export { applyChildNodeProps, buildChildNodePropDescs } from './utils/child-node-props';
-export { copyPrototypeMethods } from './utils/class-copy';
-export {
-    createInnerClass,
-    createDerivedInnerClass,
-} from './utils/template-factory';
+export { findByPath, compilePendingTemplate } from './engine/TemplateCompiler';
+export { applyChildNodeProps, buildChildNodePropDescs } from './engine/ChildNodeProps';
+export { createInnerClass, createDerivedInnerClass } from './engine/TemplateFactory';
+
+// 构建引擎
+export { TemplateCompiler } from './engine/TemplateCompiler';
+export type { CompileResult } from './engine/TemplateCompiler';
+export { TemplateDeriver } from './engine/TemplateDeriver';
+export { BodyMerger } from './engine/BodyMerger';
+export { RuntimeEngine, executeOverrideQueue } from './engine/RuntimeEngine';
 
 // 模板常量
+export { VOID_TAGS } from './engine/TemplateCompiler';
 export {
-    VOID_TAGS,
     ALIGN_MAP,
     PACK_MAP,
     CONTENT_MODE_MAP,
     COMMON_NODE_PROPS,
     RESERVED_KEYS,
     ANIMATION_PRESETS,
-} from './utils/template-constants';
-export type { ContentPropDef, AnimationOptions } from './utils/template-constants';
+} from './engine/TemplateConstants';
+export type { ContentPropDef, AnimationOptions } from './engine/TemplateConstants';
 
 // 类型
 export type {
     NodeMetadata,
     NodeIndexPath,
     CompiledTemplateResult,
-    CompiledComponentTemplate,
 } from './types/compiled-types';
 export type { ComponentTemplate } from './types/component-template';
 export type {

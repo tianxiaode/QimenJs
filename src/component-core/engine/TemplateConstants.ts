@@ -1,23 +1,6 @@
 /**
- * template-constants.ts — 模板相关常量
+ * TemplateConstants — 模板相关常量
  */
-
-export const VOID_TAGS = new Set([
-    'input',
-    'img',
-    'br',
-    'hr',
-    'col',
-    'area',
-    'base',
-    'embed',
-    'link',
-    'meta',
-    'param',
-    'source',
-    'track',
-    'wbr',
-]);
 
 export const ALIGN_MAP: Record<string, string> = {
     start: 'flex-start',
@@ -33,10 +16,6 @@ export const PACK_MAP: Record<string, string> = {
     between: 'space-between',
     around: 'space-around',
 };
-
-// ══════════════════════════════════════════════════════════════
-// 子节点属性自动构建常量
-// ══════════════════════════════════════════════════════════════
 
 export interface ContentPropDef {
     nodeProp: string;
@@ -83,10 +62,6 @@ export const RESERVED_KEYS = new Set([
     'debounce',
     'parent',
 ]);
-
-// ══════════════════════════════════════════════════════════════
-// 动画预设
-// ══════════════════════════════════════════════════════════════
 
 export const ANIMATION_PRESETS: Record<string, Keyframe[]> = {
     fadeIn: [{ opacity: 0 }, { opacity: 1 }],

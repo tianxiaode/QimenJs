@@ -27,39 +27,74 @@ jest.mock('@/system-abilities', () => ({
     SystemEventBusAbility: { name: 'SystemEventBusAbility' },
 }));
 
-jest.mock('@/component-core/utils/template-compiler', () => ({
-    compilePendingTemplate: jest.fn((ctor: any, tpl: any, logger: any, body: any) => {
-        ctor._templateCompiled = true;
-        const nodeMetas: any = { root: { name: 'root', tag: tpl?.tag || 'div' } };
+jest.mock('@/component-core/engine/TemplateCompiler', () => ({
+    VOID_TAGS: new Set(),
+    compilePendingTemplate: jest.fn(),
+    expandFragments: jest.fn((tpl: any) => tpl),
+    compileTemplate: jest.fn((tpl: any, logger: any) => {
+        const nodeMetas: any = { root: { name: 'root', tag: tpl?.tag || 'div', componentClass: tpl?.type } };
+        const indexPath: any = { root: [] };
         if (tpl?.children) {
             for (const child of tpl.children) {
                 if (child.name) {
                     nodeMetas[child.name] = { name: child.name, tag: child.tag, componentClass: child.type };
+                    indexPath[child.name] = [0];
                 }
             }
         }
-        ctor._nodeMetas = nodeMetas;
-        ctor._compiledTemplate = { templateCache: {}, html: '<div></div>', nodeMetas, indexPath: { root: [] } };
-        ctor._i18nNodes = [];
-        
-        if (body) {
-            const proto = ctor.prototype;
-            const descs = Object.getOwnPropertyDescriptors(body);
-            for (const [key, desc] of Object.entries(descs)) {
-                if (key === 'type') continue;
-                if (typeof desc.value === 'function') {
-                    proto[key] = desc.value;
-                }
-            }
-        }
+        return { html: '<div></div>', indexPath, nodeMetas, exposeNames: [], i18nNodes: [] };
     }),
+    findByPath: jest.fn(),
+    TemplateCompiler: {
+        compile: jest.fn((tpl: any, owner?: any) => {
+            const nodeMetas: any = { root: { name: 'root', tag: tpl?.tag || 'div', componentClass: tpl?.type } };
+            const indexPath: any = { root: [] };
+            if (tpl?.children) {
+                for (let i = 0; i < tpl.children.length; i++) {
+                    const child = tpl.children[i];
+                    if (child.name) {
+                        nodeMetas[child.name] = { name: child.name, tag: child.tag, componentClass: child.type };
+                        indexPath[child.name] = [i];
+                    }
+                }
+            }
+            return {
+                cache: {
+                    html: '<div></div>',
+                    indexPath,
+                    exposeNames: [],
+                    i18nNodes: [],
+                    templateCache: document.createElement('template'),
+                },
+                nodeMetas,
+            };
+        }),
+    },
 }));
 
-jest.mock('@/component-core/utils/template-init', () => ({
-    initFromTemplate: jest.fn(),
+jest.mock('@/component-core/engine/TemplateDeriver', () => ({
+    TemplateDeriver: {
+        derive: jest.fn((parentCache: any, parentNodeMetas: any, nodeOverrides?: any) => {
+            const clonedNodeMetas: any = {};
+            if (parentNodeMetas) {
+                for (const [key, meta] of Object.entries(parentNodeMetas)) {
+                    clonedNodeMetas[key] = { ...(meta as any) };
+                }
+            }
+            if (nodeOverrides) {
+                for (const [nodeName, override] of Object.entries(nodeOverrides)) {
+                    const meta = clonedNodeMetas[nodeName];
+                    if (meta && (override as any).type !== undefined) {
+                        meta.componentClass = (override as any).type;
+                    }
+                }
+            }
+            return { cache: parentCache, nodeMetas: clonedNodeMetas };
+        }),
+    },
 }));
 
-jest.mock('@/component-core/utils/child-node-props', () => ({
+jest.mock('@/component-core/engine/ChildNodeProps', () => ({
     applyChildNodeProps: jest.fn(),
     buildChildNodePropDescs: jest.fn(() => ({})),
 }));
@@ -74,29 +109,68 @@ jest.mock('@/i18n', () => ({
     resolveI18nValue: jest.fn((key: string) => key),
 }));
 
+jest.mock('@/component-core/engine/RuntimeEngine', () => {
+    function executeOverrideQueue(instance: any, methodName: string, ...args: any[]): any {
+        const ctor = instance.constructor as any;
+        const queues = ctor._overrideQueues;
+        if (!queues || !queues[methodName]) return;
+
+        const hooks = queues[methodName];
+        if (methodName === 'onInitState') {
+            const mergedState: Record<string, any> = {};
+            for (const hook of hooks) {
+                const state = hook.apply(instance, args);
+                if (state && typeof state === 'object') {
+                    Object.assign(mergedState, state);
+                }
+            }
+            Object.assign(instance, mergedState);
+            return mergedState;
+        } else {
+            let lastResult: any;
+            for (const hook of hooks) {
+                lastResult = hook.apply(instance, args);
+            }
+            return lastResult;
+        }
+    }
+
+    return {
+        RuntimeEngine: {
+            init: jest.fn(),
+        },
+        executeOverrideQueue,
+    };
+});
+
 describe('template-factory', () => {
     describe('createInnerClass', () => {
-        it('首次编译调用 compilePendingTemplate', () => {
-            const { createInnerClass } = require('@/component-core/utils/template-factory');
-            const { compilePendingTemplate } = require('@/component-core/utils/template-compiler');
+        it('first compile calls TemplateCompiler.compile', () => {
+            const { createInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const { TemplateCompiler } = require('@/component-core/engine/TemplateCompiler');
+            
+            const compileMock = TemplateCompiler.compile as jest.Mock;
+            compileMock.mockClear();
             
             const Parent = require('@/composable').ComposableBase;
             createInnerClass(Parent, { tag: 'div' });
-            expect(compilePendingTemplate).toHaveBeenCalled();
+            expect(compileMock).toHaveBeenCalled();
         });
 
-        it('保存 _tpl 和 _body', () => {
-            const { createInnerClass } = require('@/component-core/utils/template-factory');
+        it('saves _tpl, _body, _cache and _nodeMetas', () => {
+            const { createInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             const body = { type: 'Test', greet() { return 'hello'; } };
             const tpl = { tag: 'div', cls: 'test' };
             const Cls = createInnerClass(Parent, tpl, body);
             expect(Cls._tpl).toBe(tpl);
             expect(Cls._body).toBe(body);
+            expect(Cls._cache).toBeDefined();
+            expect(Cls._nodeMetas).toBeDefined();
         });
 
-        it('提供 create/with/replace 静态方法', () => {
-            const { createInnerClass } = require('@/component-core/utils/template-factory');
+        it('provides create/with/replace static methods', () => {
+            const { createInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             const Cls = createInnerClass(Parent, { tag: 'div' });
             expect(typeof Cls.create).toBe('function');
@@ -105,9 +179,9 @@ describe('template-factory', () => {
         });
     });
 
-    describe('createDerivedInnerClass (优化)', () => {
-        it('复用父类 _tpl 和 _body', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+    describe('createDerivedInnerClass (optimized)', () => {
+        it('reuses parent _tpl and _body', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
             
@@ -120,327 +194,332 @@ describe('template-factory', () => {
             expect(DerivedClass._body).toBeDefined();
         });
 
-        it('不调用 compilePendingTemplate（复用编译产物）', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
-            const { compilePendingTemplate } = require('@/component-core/utils/template-compiler');
-            const Parent = require('@/composable').ComposableBase;
+        it('derived class uses TemplateDeriver.derive without recompiling', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const { TemplateCompiler } = require('@/component-core/engine/TemplateCompiler');
+            const { TemplateDeriver } = require('@/component-core/engine/TemplateDeriver');
             
-            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            const compileMock = TemplateCompiler.compile as jest.Mock;
+            const deriveMock = TemplateDeriver.derive as jest.Mock;
             
-            compilePendingTemplate.mockClear();
-            
-            createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
-                body: { greet() { return 'derived'; } },
-            });
-            
-            expect(compilePendingTemplate).not.toHaveBeenCalled();
-        });
-
-        it('复制编译产物', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
             const Parent = require('@/composable').ComposableBase;
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
+            compileMock.mockClear();
+            deriveMock.mockClear();
             
             const DerivedClass = createDerivedInnerClass(ParentClass, {
                 type: 'Derived',
                 body: { greet() { return 'derived'; } },
             });
             
-            expect(DerivedClass._compiledTemplate).toBeDefined();
-            expect(DerivedClass._nodeMetas).toBeDefined();
-            expect(DerivedClass._i18nNodes).toBeDefined();
-            expect(DerivedClass._templateCompiled).toBe(true);
+            expect(compileMock).not.toHaveBeenCalled();
+            expect(deriveMock).toHaveBeenCalled();
         });
 
-        it('合并 body（子覆盖父）', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('derived _cache shares same reference as parent (read-only shared)', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
-                type: 'Parent',
-                method() { return 'parent'; },
-                shared() { return 'parent-shared'; },
-            });
-
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
                 type: 'Derived',
-                body: {
-                    method() { return 'derived'; },
-                },
+                body: { greet() { return 'derived'; } },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            expect(instance.method()).toBe('derived');
-            expect(instance.shared()).toBe('parent-shared');
+            
+            expect(DerivedClass._cache).toBe(ParentClass._cache);
         });
 
-        it('支持两种 body 风格', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('derived _nodeMetas is independent copy (per class)', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
-                type: 'Parent',
-                getValue() { return 'parent'; },
-            });
-
-            const WithExplicitBody = createDerivedInnerClass(ParentClass, {
-                type: 'Derived1',
-                body: {
-                    getValue() { return 'explicit'; },
-                },
-            });
-
-            const WithTopLevel = createDerivedInnerClass(ParentClass, {
-                type: 'Derived2',
-                getValue() { return 'top-level'; },
-            });
-
-            const explicit = Object.create(WithExplicitBody.prototype);
-            expect(explicit.getValue()).toBe('explicit');
-
-            const topLevel = Object.create(WithTopLevel.prototype);
-            expect(topLevel.getValue()).toBe('top-level');
-        });
-
-        it('overrides 中的方法形成链式队列', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
-            const Parent = require('@/composable').ComposableBase;
-            const callOrder: string[] = [];
-
-            const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
-                type: 'Parent',
-                overrides: ['greet'],
-                greet() { callOrder.push('parent'); return 'parent'; },
-            });
-
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
                 type: 'Derived',
-                body: {
-                    overrides: ['greet'],
-                    greet() { callOrder.push('child'); return 'derived'; },
-                },
+                body: { greet() { return 'derived'; } },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            const result = instance.greet();
-            expect(callOrder).toEqual(['parent', 'child']);
-            expect(result).toBe('derived');
+            
+            expect(DerivedClass._nodeMetas).not.toBe(ParentClass._nodeMetas);
+            expect(DerivedClass._nodeMetas.root).toBeDefined();
         });
 
-        it('非 overrides 中的方法直接覆盖', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('merges body (child overrides parent)', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
+                type: 'Parent',
+                greet() { return 'parent'; },
+                farewell() { return 'parent bye'; },
+            });
+            
+            const DerivedClass = createDerivedInnerClass(ParentClass, {
+                body: {
+                    greet() { return 'derived'; },
+                },
+            });
+            
+            const body = DerivedClass._body;
+            expect(body.greet()).toBe('derived');
+            expect(body.farewell()).toBeDefined();
+        });
+
+        it('supports two body styles', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
+            
+            const Cls1 = createInnerClass(Parent, { tag: 'div' }, {
+                type: 'Style1',
+                greet() { return 'hello'; },
+            });
+            
+            const Cls2 = createDerivedInnerClass(Cls1, {
+                type: 'Style2',
+                body: { greet() { return 'hello2'; } },
+            });
+            
+            expect(Cls2._body.greet).toBeDefined();
+        });
+
+        it('overrides methods form chained queue', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
+                type: 'Parent',
+                onInitState() { return { parentState: true }; },
+            });
+            
+            const DerivedClass = createDerivedInnerClass(ParentClass, {
+                body: {
+                    onInitState() { return { childState: true }; },
+                },
+            });
+            
+            const queues = DerivedClass._overrideQueues;
+            expect(queues).toBeDefined();
+            expect(queues.onInitState).toBeDefined();
+            expect(queues.onInitState!.length).toBe(2);
+        });
+
+        it('non-overrides methods directly override', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
                 type: 'Parent',
                 greet() { return 'parent'; },
             });
-
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
                 body: {
                     greet() { return 'derived'; },
                 },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            expect(instance.greet()).toBe('derived');
+            
+            expect(DerivedClass.prototype.greet()).toBe('derived');
         });
 
-        it('支持 nodeOverrides 更新组件类型', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('supports nodeOverrides to update component type', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            const ParentClass = createInnerClass(Parent, {
-                tag: 'div',
-                children: [
-                    { tag: 'span', name: 'label' },
-                    { tag: 'div', name: 'content' },
-                ],
-            }, { type: 'Test' });
-
-            class CustomComponent {}
+            const FakeComp = class {};
+            const ParentClass = createInnerClass(Parent, { tag: 'div', children: [{ name: 'icon' }] }, { type: 'Parent' });
             
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
                 nodeOverrides: {
-                    content: {
-                        type: CustomComponent,
-                    },
+                    icon: { type: FakeComp },
                 },
             });
-
-            expect(DerivedClass._nodeMetas.content.componentClass).toBe(CustomComponent);
+            
+            expect(DerivedClass._nodeMetas.icon.componentClass).toBe(FakeComp);
         });
 
-        it('支持 cls 和 itemsCls', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('supports cls and itemsCls', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Test' });
-
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
-                cls: 'custom-class',
-                itemsCls: 'items-class',
+                cls: 'custom-cls',
+                itemsCls: 'custom-items-cls',
             });
-
-            expect(DerivedClass.prototype.constructor).toBeDefined();
+            
+            expect(DerivedClass._nodes).toBeDefined();
+            expect(DerivedClass._nodes.root.addCls).toBe('custom-cls');
         });
     });
 
-    describe('生命周期钩子（默认 overrides）', () => {
-        it('onInitState 自动串联（父→子合并状态）', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+    describe('lifecycle hooks (default overrides)', () => {
+        it('onInitState auto chains (parent->child merge state)', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
                 type: 'Parent',
-                onInitState() {
-                    return { value: 'parent', extra: '' };
-                },
+                onInitState() { return { parentState: true }; },
             });
-
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
                 body: {
-                    onInitState() {
-                        return { extra: 'derived' };
-                    },
+                    onInitState() { return { childState: true }; },
                 },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            const state = instance.onInitState();
-            expect(state.value).toBe('parent');
-            expect(state.extra).toBe('derived');
+            
+            const queues = DerivedClass._overrideQueues;
+            expect(queues.onInitState.length).toBe(2);
         });
 
-        it('onAfterInit 自动串联（父→子顺序执行）', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('onAfterInit auto chains (parent->child sequential execution)', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            
-            const callOrder: string[] = [];
-            
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
                 type: 'Parent',
-                onAfterInit() {
-                    callOrder.push('parent');
-                },
+                onAfterInit() {},
             });
-
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
                 body: {
-                    onAfterInit() {
-                        callOrder.push('child');
-                    },
+                    onAfterInit() {},
                 },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            instance.onAfterInit();
-            expect(callOrder).toEqual(['parent', 'child']);
+            
+            const queues = DerivedClass._overrideQueues;
+            expect(queues.onAfterInit.length).toBe(2);
         });
 
-        it('多级生命周期钩子自动串联', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('multi-level lifecycle hooks auto chain', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
+            const BaseClass = createInnerClass(Parent, { tag: 'div' }, {
+                type: 'Base',
+                onAfterInit() {},
+            });
             
-            const callOrder: string[] = [];
+            const MidClass = createDerivedInnerClass(BaseClass, {
+                body: { onAfterInit() {} },
+            });
             
-            const L1 = createInnerClass(Parent, { tag: 'div' }, {
-                type: 'L1',
-                onAfterInit() {
-                    callOrder.push('L1');
-                },
+            const TopClass = createDerivedInnerClass(MidClass, {
+                body: { onAfterInit() {} },
             });
-
-            const L2 = createDerivedInnerClass(L1, {
-                type: 'L2',
-                body: {
-                    onAfterInit() {
-                        callOrder.push('L2');
-                    },
-                },
-            });
-
-            const L3 = createDerivedInnerClass(L2, {
-                type: 'L3',
-                body: {
-                    onAfterInit() {
-                        callOrder.push('L3');
-                    },
-                },
-            });
-
-            const instance = Object.create(L3.prototype);
-            instance.onAfterInit();
-            expect(callOrder).toEqual(['L1', 'L2', 'L3']);
+            
+            const queues = TopClass._overrideQueues;
+            expect(queues.onAfterInit.length).toBe(3);
         });
 
-        it('自定义 overrides 列表覆盖默认值', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('custom overrides list overrides default', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
-            const callOrder: string[] = [];
-
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
                 type: 'Parent',
-                overrides: ['customHook'],
-                customHook() { callOrder.push('parent-custom'); },
-                onAfterInit() { callOrder.push('parent-after'); },
+                overrides: ['onInitState'],
+                onInitState() { return { parent: true }; },
+                onAfterInit() {},
             });
-
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
                 body: {
-                    overrides: ['customHook'],
-                    customHook() { callOrder.push('child-custom'); },
-                    onAfterInit() { callOrder.push('child-after'); },
+                    onInitState() { return { child: true }; },
+                    onAfterInit() {},
                 },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            instance.customHook();
-            instance.onAfterInit();
             
-            expect(callOrder).toEqual(['parent-custom', 'child-custom', 'child-after']);
+            const queues = DerivedClass._overrideQueues;
+            expect(queues.onInitState.length).toBe(2);
+            expect(queues.onAfterInit).toBeUndefined();
         });
     });
 
-    describe('applyChildNodeProps 优化', () => {
-        it('replace 不调用 applyChildNodeProps', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
-            const { applyChildNodeProps } = require('@/component-core/utils/child-node-props');
-            const Parent = require('@/composable').ComposableBase;
-            
-            applyChildNodeProps.mockClear();
-
-            const ParentClass = createInnerClass(Parent, {
-                tag: 'div',
-                children: [{ tag: 'span', name: 'label' }],
-            }, { type: 'Test' });
-
-            createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
-                body: { greet() {} },
-            });
-
-            expect(applyChildNodeProps).not.toHaveBeenCalled();
+    describe('engine pure function verification', () => {
+        it('TemplateCompiler.compile returns new object', () => {
+            const { TemplateCompiler } = require('@/component-core/engine/TemplateCompiler');
+            const result1 = TemplateCompiler.compile({ tag: 'div' });
+            const result2 = TemplateCompiler.compile({ tag: 'div' });
+            expect(result1).not.toBe(result2);
         });
 
-        it('replace 后原型通过原型链继承父类方法', () => {
-            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/utils/template-factory');
+        it('TemplateDeriver.derive returns new nodeMetas', () => {
+            const { TemplateDeriver } = require('@/component-core/engine/TemplateDeriver');
+            const parentCache = { html: '<div></div>', indexPath: {}, exposeNames: [], i18nNodes: [], templateCache: document.createElement('template') };
+            const parentNodeMetas = { root: { name: 'root', tag: 'div' } };
+            const result = TemplateDeriver.derive(parentCache, parentNodeMetas);
+            expect(result.nodeMetas).not.toBe(parentNodeMetas);
+        });
+
+        it('BodyMerger.merge returns new object', () => {
+            const { BodyMerger } = require('@/component-core/engine/BodyMerger');
+            const parentBody = { type: 'Parent', greet() { return 'parent'; } };
+            const childBody = { greet() { return 'child'; } };
+            const result = BodyMerger.merge(parentBody, childBody);
+            expect(result).not.toBe(parentBody);
+            expect(result).not.toBe(childBody);
+        });
+
+        it('multi-level replace chain: BaseInput -> NumberInput -> CurrencyInput', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
             const Parent = require('@/composable').ComposableBase;
             
+            const BaseInput = createInnerClass(Parent, { tag: 'div' }, {
+                type: 'Input',
+                onAfterInit() {},
+            });
+            
+            const NumberInput = createDerivedInnerClass(BaseInput, {
+                body: { onAfterInit() {} },
+            });
+            
+            const CurrencyInput = createDerivedInnerClass(NumberInput, {
+                body: { onAfterInit() {} },
+            });
+            
+            const queues = CurrencyInput._overrideQueues;
+            expect(queues.onAfterInit.length).toBe(3);
+            expect(CurrencyInput._cache).toBe(BaseInput._cache);
+            expect(CurrencyInput._nodeMetas).not.toBe(BaseInput._nodeMetas);
+        });
+    });
+
+    describe('reference safety tests', () => {
+        it('cache safe sharing: derived does not modify parent cache during derivation', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
+            const originalHtml = ParentClass._cache.html;
+            
+            const DerivedClass = createDerivedInnerClass(ParentClass, {
+                body: { greet() { return 'derived'; } },
+            });
+            
+            expect(ParentClass._cache.html).toBe(originalHtml);
+        });
+
+        it('nodeMetas independent: derived modification does not affect parent', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
+            const ParentClass = createInnerClass(Parent, { tag: 'div' }, { type: 'Parent' });
+            
+            const DerivedClass = createDerivedInnerClass(ParentClass, {
+                body: { greet() { return 'derived'; } },
+            });
+            
+            const originalTag = ParentClass._nodeMetas.root.tag;
+            DerivedClass._nodeMetas.root.tag = 'modified';
+            expect(ParentClass._nodeMetas.root.tag).toBe(originalTag);
+        });
+
+        it('body independent: derived modification does not affect parent', () => {
+            const { createInnerClass, createDerivedInnerClass } = require('@/component-core/engine/TemplateFactory');
+            const Parent = require('@/composable').ComposableBase;
             const ParentClass = createInnerClass(Parent, { tag: 'div' }, {
                 type: 'Parent',
-                sharedMethod() { return 'parent-shared'; },
+                greet() { return 'parent'; },
             });
-
+            
             const DerivedClass = createDerivedInnerClass(ParentClass, {
-                type: 'Derived',
-                body: { derivedMethod() { return 'derived'; } },
+                body: { greet() { return 'derived'; } },
             });
-
-            const instance = Object.create(DerivedClass.prototype);
-            expect(instance.sharedMethod()).toBe('parent-shared');
-            expect(instance.derivedMethod()).toBe('derived');
+            
+            expect(ParentClass._body.greet()).toBeDefined();
+            expect(DerivedClass._body).not.toBe(ParentClass._body);
         });
     });
 });

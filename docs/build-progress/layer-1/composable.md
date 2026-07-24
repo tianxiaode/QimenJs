@@ -78,7 +78,7 @@ src/composable/
 - `src/router/Router.ts` — `ComposableBase.with([SystemEventBusAbility, RouteEventBusAbility])`
 - `src/imperative/Msgbox.ts` — `ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility])`
 - `src/imperative/Toast.ts` — `ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility])`
-- `src/component-core/utils/template-factory.ts` — `initForgedState` / `InnerClass.with(extraAbilities)`
+- `src/component-core/engine/TemplateFactory.ts` — `templateComponentConstructor` / `InnerClass.with(extraAbilities)`
 - 组件 `.with()` 调用 — ButtonComponent, TipsComponent, MenuComponent, RouteNavComponent, RouteContainerComponent 等
 
 ## 参考资料

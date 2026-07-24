@@ -336,4 +336,4 @@ export let DropdownComponent = ButtonComponent.replace({
 
 ### initFloats 时机
 
-在 `initFromTemplate` 中，`initFloats` 在 `renderChildComponents` 之后、`bindDomEventBindings` 之前执行，确保 nodeMap 和子组件已就绪。
+在 RuntimeEngine 管线中，`initFloats` 在 `renderChildComponents` 之后、`bindDomEvents` 之前执行，确保 nodeMap 和子组件已就绪。

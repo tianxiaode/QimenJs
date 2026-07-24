@@ -73,21 +73,22 @@
  *   5. 返回内部类（真正的 class，可直接 new）
  *
  * 【实例化时】new InnerClass(props) → 组件实例
- *   1. super() → ComposableBase 初始化
- *   2. initInstanceData → 设置 meta / props / dirtySet
+ *   RuntimeEngine.init(instance, props) 统一编排运行时初始化管线：
+ *   1. initInstanceData → 设置 meta / props / dirtySet
+ *   2. onInitState → 实例状态合并
  *   3. onBeforeInit(props) → 组件自定义初始化钩子
- *   4. initFromTemplate(instance) → 模板渲染 + 子组件挂载
- *   5. onAfterInit(props) → 组件自定义后初始化钩子
- *
- * 【运行时】initFromTemplate(instance) — 内部类实例初始化
- *   1. 克隆模板 → 构建 nodeMap（浅复制 nodeMetas + findByPath 挂 el）
- *   2. applyNodeProps — 将 flex/grid/cls/style 应用到 DOM
- *   3. initContentFromProps — 填充内容属性
- *   4. initI18nFromTemplate — 翻译 i18n key 并写入 DOM
- *   5. renderChildComponents — 渲染 type 子组件，initConfig 传入构造函数
- *   6. bindDomEventBindings — 统一绑定 DOM 事件到 _handleDomEvent
- *   7. initFloats / initDrags — 初始化浮动层和拖拽
- *   8. callInitMethods — 调用能力 __init__ 方法
+ *   4. buildNodeMap → 克隆模板 + 构建 nodeMap + 挂 el
+ *   5. applyNodeConfigs → 将 flex/grid/cls/style 应用到 DOM
+ *   6. initContentFromProps → 填充内容属性
+ *   7. initI18n → 翻译 i18n key 并写入 DOM
+ *   8. renderChildComponents → 渲染 type 子组件
+ *   9. initFloats → 初始化浮动层
+ *  10. bindDomEvents → 统一绑定 DOM 事件
+ *  11. initDrags → 初始化拖拽
+ *  12. callInitMethods → 调用能力 __init__ 方法
+ *  13. setupListens → 事件订阅
+ *  14. onAfterInit(props) → 组件自定义后初始化钩子
+ *  15. emitLifecycle → 发射生命周期事件
  *
  * ══════════════════════════════════════════════════════════════
  * 事件机制

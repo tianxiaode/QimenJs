@@ -11,7 +11,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { compileTemplate } from '@/component-core/template-json';
-import { findByPath } from '@/component-core/template-compiler';
+import { findByPath } from '@/component-core/engine/TemplateCompiler';
 import type { ComponentTemplate } from '@/component-core/types/component-template';
 import type { NodeIndexPath, NodeMetadata } from '@/component-core/types/index';
 

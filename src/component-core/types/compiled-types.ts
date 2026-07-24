@@ -121,10 +121,35 @@ export interface CompiledTemplateResult {
 
     /** 暴露的属性名列表（用于生成 getter/setter） */
     exposeNames: string[];
+
+    /** i18n 节点列表 */
+    i18nNodes: Array<{ name: string; i18nKey: string }>;
 }
 
 /**
- * 编译后的组件模板 — 编译产物 + 运行时缓存
+ * 编译缓存（只读可共享部分）
+ *
+ * 包含编译产物中不可变、可安全跨类共享的部分：
+ * - html: HTML 模板字符串
+ * - indexPath: 节点位置索引
+ * - exposeNames: 暴露的属性名列表
+ * - i18nNodes: i18n 节点列表
+ * - templateCache: HTMLTemplateElement 缓存（只读 cloneNode 源）
+ *
+ * nodeMetas 不属于此缓存，因为它会被 nodeOverrides/body 修改
+ */
+export interface CompiledTemplateCache {
+    html: string;
+    indexPath: NodeIndexPath;
+    exposeNames: string[];
+    i18nNodes: Array<{ name: string; i18nKey: string }>;
+    templateCache: HTMLTemplateElement;
+}
+
+/**
+ * 编译后的组件模板 — 保留兼容，内部使用 CompiledTemplateCache
+ *
+ * @deprecated 直接使用 CompiledTemplateCache + 独立的 nodeMetas
  */
 export interface CompiledComponentTemplate extends CompiledTemplateResult {
     /** HTMLTemplateElement 缓存，用于 cloneNode */

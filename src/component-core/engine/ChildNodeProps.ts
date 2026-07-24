@@ -1,5 +1,5 @@
 /**
- * child-node-props.ts — 子节点内容属性自动构建
+ * ChildNodeProps — 子节点内容属性自动构建
  *
  * 编译时根据 nodeMetas 中每个命名子节点的 contentMode，
  * 自动生成对应的内容属性 getter/setter 描述符并挂到构造函数原型上。
@@ -32,7 +32,7 @@
 import type { NodeMetadata } from '../types/compiled-types';
 import { capitalize } from '@/utils/string/base';
 import { resolveI18nValue } from '@qimenjs/i18n';
-import { CONTENT_MODE_MAP, RESERVED_KEYS } from './template-constants';
+import { CONTENT_MODE_MAP, RESERVED_KEYS } from './TemplateConstants';
 
 export function applyChildNodeProps(
     ctor: any,

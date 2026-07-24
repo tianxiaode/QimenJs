@@ -186,7 +186,7 @@ class TemplateComponent extends ComposableBase {
 }
 withAbilities(TemplateComponent, TEMPLATE_COMPONENT_ABILITIES);
 
-// 内部类（template-factory 创建）
+// 内部类（TemplateFactory 创建）
 const InnerClass = class extends TemplateComponent {};
 withAbilities(InnerClass, extraAbilities);
 withDefinitions(InnerClass, bodyDef);

@@ -1,12 +1,12 @@
+import { VOID_TAGS } from '@/component-core/engine/TemplateCompiler';
 import {
-    VOID_TAGS,
     ALIGN_MAP,
     PACK_MAP,
     CONTENT_MODE_MAP,
     COMMON_NODE_PROPS,
     RESERVED_KEYS,
     ANIMATION_PRESETS,
-} from '@/component-core/utils/template-constants';
+} from '@/component-core/engine/TemplateConstants';
 
 describe('template-constants', () => {
     it('VOID_TAGS 包含自闭合标签', () => {
@@ -29,8 +29,9 @@ describe('template-constants', () => {
         expect(PACK_MAP.around).toBe('space-around');
     });
 
-    it('CONTENT_MODE_MAP 包含四种模式', () => {
-        expect(CONTENT_MODE_MAP.html).toEqual([{ nodeProp: 'text' }]);
+    it('CONTENT_MODE_MAP 包含五种模式', () => {
+        expect(CONTENT_MODE_MAP.text).toEqual([{ nodeProp: 'text' }]);
+        expect(CONTENT_MODE_MAP.html).toEqual([{ nodeProp: 'html' }]);
         expect(CONTENT_MODE_MAP.value).toEqual([{ nodeProp: 'value' }]);
         expect(CONTENT_MODE_MAP.src).toEqual([{ nodeProp: 'src' }]);
         expect(CONTENT_MODE_MAP.link).toEqual([{ nodeProp: 'text' }, { nodeProp: 'href' }]);
