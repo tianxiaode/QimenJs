@@ -7,7 +7,7 @@
 // 组件基类
 export { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from './TemplateComponent';
 
-// 闭包基类（工厂层，多模板支持）
+// 工厂层基类（withTemplate / replace 创建内部类）
 export { Component } from './Component';
 
 // 注册管理器
@@ -31,8 +31,7 @@ export { applyChildNodeProps, buildChildNodePropDescs } from './utils/child-node
 export { copyPrototypeMethods } from './utils/class-copy';
 export {
     createInnerClass,
-    createComponentFactory,
-    createReplaceFactory,
+    createDerivedInnerClass,
 } from './utils/template-factory';
 
 // 模板常量
@@ -54,7 +53,7 @@ export type {
     CompiledTemplateResult,
     CompiledComponentTemplate,
 } from './types/compiled-types';
-export type { ComponentTemplate, TplVariant } from './types/component-template';
+export type { ComponentTemplate } from './types/component-template';
 export type {
     TplNode,
     TplFragment,

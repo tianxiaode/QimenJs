@@ -126,6 +126,14 @@ export const CommonPropsAbility: AbilityDefinition = {
             this._markNodeDirty('root', { ariaHidden: v });
         },
     },
+    hint: {
+        get() {
+            return this._getNodeProp('root', 'hint');
+        },
+        set(v: any) {
+            this._markNodeDirty('root', { hint: v });
+        },
+    },
 
     width: {
         get() {
@@ -331,6 +339,10 @@ export const CommonPropsAbility: AbilityDefinition = {
 
     setNodeAriaHidden(value: any, nodeName?: string): void {
         this._markNodeDirty(nodeName ?? 'root', { ariaHidden: value });
+    },
+
+    setNodeHint(value: any, nodeName?: string): void {
+        this._markNodeDirty(nodeName ?? 'root', { hint: value });
     },
 
     setNodeWidth(value: any, nodeName?: string): void {

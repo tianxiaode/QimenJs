@@ -68,6 +68,7 @@ export const DEFAULT_NODE_PROP_MAP: NodePropMap = {
     ariaExpanded: { domAttr: 'ariaExpanded', attr: 'aria-expanded' },
     ariaSelected: { domAttr: 'ariaSelected', attr: 'aria-selected' },
     ariaHidden: { domAttr: 'ariaHidden', attr: 'aria-hidden' },
+    hint: { domAttr: 'title', attr: 'title' },
 }; /**
  * common-props 类型定义
  */

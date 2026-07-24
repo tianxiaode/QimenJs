@@ -123,6 +123,7 @@ function compileTypeNode(node: TplNode, path: number[], ctx: any): string {
         name,
         tag: node.tag,
         type: typeof node.type === 'string' ? node.type : undefined,
+        cls: node.cls,
         contentMode: 'html',
         i18nKey: node.i18n,
         events: node.events,
@@ -207,13 +208,16 @@ function inferContentMode(tag?: string): 'value' | 'src' | 'html' | 'link' {
 
 const BODY_KEY_SET = new Set(Object.keys(BODY_SPECIAL_KEYS));
 
-function validateBodyKey(key: string): void {
+function validateBodyKey(key: string, desc?: PropertyDescriptor): void {
     if (BODY_KEY_SET.has(key)) return;
 
     if (key.startsWith('on') && key.length > 2) return;
 
     const ch = key[0];
     if (ch === '_' || ch === '$') return;
+
+    if (desc && (desc.get || desc.set)) return;
+    if (desc && typeof desc.value === 'function') return;
 
     throw new ComponentError(
         `Body 不支持纯数据字段 "${key}"。默认属性值写在 TplNode，实例状态用 _applyState 模式。`,
@@ -228,7 +232,7 @@ function applyBody(ctor: any, body: Record<string, any> | undefined): void {
     const proto = ctor.prototype;
     const descs = Object.getOwnPropertyDescriptors(body);
     for (const [key, desc] of Object.entries(descs)) {
-        validateBodyKey(key);
+        validateBodyKey(key, desc);
         const def = BODY_SPECIAL_KEYS[key];
 
         if (def?.category === 'static') {

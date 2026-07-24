@@ -25,7 +25,7 @@ export class WindowEventBridge {
 
     static getInstance(): WindowEventBridge {
         if (!WindowEventBridge.instance) {
-            WindowEventBus.instance = new WindowEventBridge();
+            WindowEventBridge.instance = new WindowEventBridge();
         }
         return WindowEventBridge.instance;
     }

@@ -25,22 +25,24 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
     for (const ability of abilities) {
         const abilityName = (ability as any).__name__ || '(anonymous)';
 
-        for (const key of Object.keys(ability)) {
+        const descs = Object.getOwnPropertyDescriptors(ability);
+        for (const key of Object.keys(descs)) {
             if (key.startsWith('__')) continue;
 
-            const value = ability[key];
-            if (
-                typeof value !== 'function' &&
-                !(value && typeof value === 'object' && ('get' in value || 'set' in value))
-            ) {
+            const desc = descs[key];
+            if (desc.get || desc.set) {
+                merged.set(key, { get: desc.get, set: desc.set });
                 continue;
             }
+
+            if (typeof desc.value !== 'function') continue;
+
             if (merged.has(key)) {
                 Logger.for('Forge').warn(
                     `Ability "${abilityName}" overrides existing key "${String(key)}"`
                 );
             }
-            merged.set(key, value);
+            merged.set(key, desc.value);
         }
 
         for (const key of Object.getOwnPropertySymbols(ability)) {

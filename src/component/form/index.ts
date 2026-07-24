@@ -1,10 +1,6 @@
-export {
-    InputComponent,
-    type InputType,
-    type LabelPosition,
-    type InputProps,
-} from './InputComponent';
+export { InputComponent, type InputType, type InputProps } from './InputComponent';
 export { inputCSS } from './input.css';
+export { InputFieldBodyComponent } from './InputFieldBodyComponent';
 export {
     PasswordInputComponent,
     type PasswordStrength,
@@ -14,6 +10,7 @@ export { passwordCSS } from './password.css';
 export { InputInfoGroupComponent } from './InputInfoGroupComponent';
 export {
     FormFieldComponent,
+    type LabelPosition,
     type ValidateTrigger,
     type FormFieldProps,
 } from './FormFieldComponent';

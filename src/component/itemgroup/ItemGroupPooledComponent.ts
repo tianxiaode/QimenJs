@@ -13,9 +13,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
     type: 'ItemGroupPooled',
 
     onInitState() {
-        const state = this._super.onInitState();
         return {
-            ...state,
             _hiddenItems: [] as Array<{
                 data: Record<string, any>;
                 component: any;

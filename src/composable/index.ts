@@ -6,4 +6,4 @@ export type { IComposable, IComposableBase, IExposeResult } from './types/compos
 export type { AbilityDefinition, InferAbility, InferAbilities } from './types/ability';
 
 export { ComposableBase } from './ComposableBase';
-export { createForgedClass, withAbilities, withDefinitions, ABILITY_STATES_KEY, CLEANUPS_KEY } from './forge';
+export { withAbilities, withDefinitions, ABILITY_STATES_KEY, CLEANUPS_KEY } from './forge';

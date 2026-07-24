@@ -2,7 +2,7 @@ import { BusAction, EventHandler, EventLogAction, IEventScope } from './types';
 import { EventScope } from './EventScope';
 import type { EventContext } from '@/context';
 import { ILogger, LogLevel } from '@qimenjs/logger';
-import { string, shallowNullify } from '@qimenjs/utils';
+import { string, object } from '@qimenjs/utils';
 
 /**
  * 事件总线 - 用于管理事件订阅、发布和取消订阅的核心类
@@ -200,7 +200,7 @@ export class EventBus {
      */
     cleanupContext(ctx: EventContext): void {
         if (ctx.data !== null && ctx.data !== undefined && typeof ctx.data === 'object') {
-            shallowNullify(ctx.data);
+            object.shallowNullify(ctx.data);
         }
     }
 

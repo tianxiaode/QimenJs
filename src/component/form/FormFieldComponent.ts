@@ -3,8 +3,12 @@
  *
  * 提供所有表单字段（Input/Select/CheckboxGroup/RadioGroup）的通用逻辑：
  * - labelGroup  标签封装：label + requiredMark + separator
- * - wrapper     字段内容区：含 fieldBody 可替换子组件
+ * - fieldBody   字段内容区：可替换子组件，el 直接充当 wrapper 层
  * - infoGroup   信息封装：error/help/扩展信息
+ *
+ * fieldBody 子组件的 el 同时承载 q-formfield__wrapper（布局）和
+ * 具体字段样式（如 q-input__wrapper），避免多套一层 div。
+ * 子组件的 nodeMap 会自动合并到父组件，可直接 this.nodeMap.field 访问。
  *
  * 构建自动生成（无需手写）：
  * - $infoGroup / $fieldBody — 子组件快捷访问（addComponentRefDesc）
@@ -24,7 +28,7 @@
  * const InputComponent = FormFieldComponent.replace({
  *     type: 'Input',
  *     cls: 'q-input',
- *     nodeOverrides: { fieldBody: { type: 'InputFieldBody' } },
+ *     nodeOverrides: { fieldBody: { type: InputFieldBodyComponent } },
  *     body: { ... }
  * });
  * ```
@@ -100,14 +104,9 @@ export let FormFieldComponent = Component.withTemplate({
                 ],
             },
             {
-                tag: 'div',
+                name: 'fieldBody',
+                type: 'InputFieldBody',
                 cls: 'q-formfield__wrapper',
-                children: [
-                    {
-                        name: 'fieldBody',
-                        type: 'InputFieldBody',
-                    },
-                ],
             },
             {
                 name: 'infoGroup',
