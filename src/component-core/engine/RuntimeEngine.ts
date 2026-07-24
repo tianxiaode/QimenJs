@@ -38,6 +38,7 @@ import { EventContextBuilder } from '@/context';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import type { ListenItem, EventMapping } from '../types/tpl-body';
 import { Logger } from '@/logger';
+import { DelegatedEventEngine } from './DelegatedEventEngine';
 
 // ══════════════════════════════════════════════════════════════
 // 上下文
@@ -271,9 +272,7 @@ function step_initFloats(ctx: RuntimeContext): void {
 
 function step_bindDomEvents(ctx: RuntimeContext): void {
     const { instance } = ctx;
-    if (typeof instance.bindDomEventBindings === 'function') {
-        instance.bindDomEventBindings();
-    }
+    DelegatedEventEngine.bindDelegatedEvents(instance);
     logStep(ctx, 'bindDomEvents');
 }
 

@@ -1,6 +1,6 @@
 # QimenJS 组件能力索引
 
-> 最后更新：2026-07-23
+> 最后更新：2026-07-24
 >
 > 本文档记录组件层（L5）的完整结构，包括组件-能力映射、事件体系、实体管理器等。
 > 每次功能变更后请更新对应章节，避免全量扫描。
@@ -112,7 +112,7 @@ export interface TemplateComponent
 | OverlayEventBusAbility | `src/system-abilities/system/OverlayEventBusAbility.ts` | 浮层事件总线 |
 | DragEventBusAbility | `src/system-abilities/system/DragEventBusAbility.ts` | 拖拽事件总线 |
 | SystemEventBusAbility | `src/system-abilities/system/SystemEventBusAbility.ts` | 系统事件总线 |
-| EventForwardAbility | `src/component-core/abilities/EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
+| DelegatedEventEngine | `src/component-core/engine/DelegatedEventEngine.ts` | DOM 事件委托（根 el 统一绑定，nodeElMap 反查 + childEventIndex 隔离子组件边界） |
 | NodePropAbility | `src/component-core/abilities/NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 |
 | CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 + setNodeHtml |
 | AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
@@ -584,12 +584,33 @@ class RootComponent extends ComponentBase {
 
 | 能力 | 文件 | 说明 |
 |------|------|------|
-| EventForwardAbility | `EventForwardAbility.ts` | 事件转发（bindDomEventBindings） |
 | NodePropAbility | `NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 + hiddenchange 事件（_emitLifecycleEvent 已移至 LifecycleAbility） |
 | CommonPropsAbility | `CommonPropsAbility.ts` | 组件根元素常用属性快捷方式（cls/style/hidden/disabled/width/height 等）+ setNodeHtml |
 | AnimationAbility | `AnimationAbility.ts` | 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation） |
 | DragAbility | `DragAbility.ts` | 声明式拖拽（move 本地处理，start/end 走 DragEventBus） |
 | LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，bridgeEmit 传 EventContext 对象） |
+
+### 2.11.0 委托事件引擎 (`src/component-core/engine/DelegatedEventEngine.ts`)
+
+DOM 事件从逐节点绑定改为组件根 el 委托模式，替代已移除的 EventForwardAbility。
+
+| 方法 | 说明 |
+|------|------|
+| compileTplEvents | 编译 tplEvents 为 DelegatedEventRule[] |
+| buildNodeElMap | 构建 WeakMap<el, nodeName> 反查映射 |
+| buildChildEventIndex | 构建直接子组件 el → nodeName 映射（隔离子组件边界） |
+| bindDelegatedEvents | 在根 el 上统一绑定委托监听器 |
+| handleDelegatedEvent | 事件分发：nodeElMap 反查 → childEventIndex 隔离 → _dispatchRule 转发 |
+| _dispatchRule | handler → emits(mergeEventData + ctx.domEvent) → bridges(check eventKey) → entities(check entityKey) |
+
+**tplEvents 声明格式**：
+
+| 格式 | 示例 | 说明 |
+|------|------|------|
+| 纯声明 | `btn: ['click']` | 零绑定，事件冒泡给父组件委托处理 |
+| 内部处理 | `eye: { click: { handler: true } }` | 在对应 el 上绑定监听器 |
+
+**emits/bridges/entities 自动推导**：`true` 自动使用 nodeName 作为事件名。
 
 ### 2.11.1 通用属性体系 (`src/component-core/common-props.ts`)
 

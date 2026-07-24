@@ -29,6 +29,35 @@ export class BodyMerger {
         return merged;
     }
 
+    static mergeTplEvents(
+        parentEvents: Record<string, any> | undefined,
+        childEvents: Record<string, any>
+    ): Record<string, any> {
+        if (!parentEvents) return { ...childEvents };
+
+        const result: Record<string, any> = { ...parentEvents };
+        for (const [nodeName, childDecl] of Object.entries(childEvents)) {
+            const parentDecl = result[nodeName];
+            if (parentDecl && childDecl) {
+                if (Array.isArray(parentDecl) && Array.isArray(childDecl)) {
+                    result[nodeName] = [...parentDecl, ...childDecl];
+                } else if (
+                    typeof parentDecl === 'object' &&
+                    typeof childDecl === 'object' &&
+                    !Array.isArray(parentDecl) &&
+                    !Array.isArray(childDecl)
+                ) {
+                    result[nodeName] = { ...parentDecl, ...childDecl };
+                } else {
+                    result[nodeName] = childDecl;
+                }
+            } else {
+                result[nodeName] = childDecl;
+            }
+        }
+        return result;
+    }
+
     static mergeNodeOverrides(
         parentOverrides: Record<string, Record<string, any>> | undefined,
         childOverrides: Record<string, Record<string, any>>

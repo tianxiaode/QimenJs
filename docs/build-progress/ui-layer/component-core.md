@@ -2,8 +2,8 @@
 
 **层级**: UI 层  
 **状态**: ⚠️ 开发中  
-**测试**: ✅ 12 suites / 55 tests（路径已更新至 engine/）  
-**覆盖率**: ~82%
+**测试**: ✅ 12 suites / 103 tests（含委托事件引擎 23 tests）
+**覆盖率**: ~85%
 
 ## 构建历史
 
@@ -19,6 +19,25 @@
 - ✅ TemplateComponent 新增 nodeMapMgr 字段，dispose 改为 nodeMapMgr.disposeAll()
 - ✅ NodeMapManager 从 engine 导入路径更新
 - ✅ 测试文件路径同步更新（utils/ → engine/）
+- ✅ 委托事件引擎（DelegatedEventEngine）：DOM 事件从逐节点绑定改为组件根 el 委托模式
+  - compileTplEvents — 编译 tplEvents 为 DelegatedEventRule[]
+  - buildNodeElMap — 构建 WeakMap<el, nodeName> 反查映射
+  - buildChildEventIndex — 构建直接子组件 el → nodeName 映射
+  - bindDelegatedEvents — 在根 el 上统一绑定委托监听器
+  - handleDelegatedEvent — 事件分发：nodeElMap 反查 → childEventIndex 隔离 → _dispatchRule 转发
+  - _dispatchRule — handler → emits(mergeEventData + ctx.domEvent) → bridges(check eventKey) → entities(check entityKey)
+- ✅ ComponentTemplate 新增 tplEvents 字段（与 tpl/body 同级）
+- ✅ TemplateFactory.createInnerClass 接收 tplEvents，编译为 _delegatedEventRules
+- ✅ RuntimeEngine.step_bindDomEvents 改用 DelegatedEventEngine.bindDelegatedEvents
+- ✅ BodyMerger 新增 mergeTplEvents 静态方法
+- ✅ Component.withTemplate 传递 tplEvents
+- ✅ EventForwardAbility 完全移除（文件 + 测试 + TEMPLATE_COMPONENT_ABILITIES 引用）
+- ✅ InputFieldBodyComponent 移除空的 bindDomEventBindings
+- ✅ emits/bridges/entities 支持 `true` 自动推导 nodeName 作为事件名
+- ✅ childEventIndex 只记录直接子组件的 el → nodeName 映射，分发时用父组件自己的 rules
+- ✅ 新增 tpl-events.ts 类型定义（TplEventAction / NodeEventDecl / TplEvents / DelegatedEventRule）
+- ✅ 23 个委托事件引擎单元测试全部通过
+- ✅ 全部 12 套件 / 103 测试通过
 
 ### 2026-07-23
 - ✅ 双层架构重构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
@@ -168,13 +187,13 @@
 
 ## 测试状态
 
-### 通过的测试（12 suites / 55 tests）
+### 通过的测试（12 suites / 103 tests）
 - ✅ TemplateConstants — 常量定义
 - ✅ TemplateCompiler — 预编译引擎
 - ✅ ChildNodeProps — 子节点属性自动构建
 - ✅ TemplateFactory — 模板组件工厂（createInnerClass + createDerivedInnerClass）
 - ✅ NodePropAbility — 节点属性读写 + hiddenchange 事件
-- ✅ EventForwardAbility — 事件转发
+- ✅ DelegatedEventEngine — 委托事件引擎（compileTplEvents / buildNodeElMap / buildChildEventIndex / handleDelegatedEvent / 嵌套组件 / _dispatchRule / _resolveHandlerName）
 - ✅ CommonPropsAbility — 通用属性
 - ✅ AnimationAbility — 声明式动画
 - ✅ LifecycleAbility — 生命周期事件（bridgeEmit 传 EventContext）

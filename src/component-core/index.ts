@@ -20,7 +20,7 @@ export { ComponentTypes } from './ComponentTypes';
 export { NodeMapManager } from './NodeMapManager';
 
 // 基础能力
-export { EventForwardAbility } from './abilities/EventForwardAbility';
+
 export { NodePropAbility } from './abilities/NodePropAbility';
 export { CommonPropsAbility } from './abilities/CommonPropsAbility';
 export { AnimationAbility } from './abilities';
@@ -37,6 +37,7 @@ export { TemplateCompiler } from './engine/TemplateCompiler';
 export type { CompileResult } from './engine/TemplateCompiler';
 export { TemplateDeriver } from './engine/TemplateDeriver';
 export { BodyMerger } from './engine/BodyMerger';
+export { DelegatedEventEngine } from './engine/DelegatedEventEngine';
 export { RuntimeEngine, executeOverrideQueue } from './engine/RuntimeEngine';
 
 // 模板常量
@@ -52,11 +53,7 @@ export {
 export type { ContentPropDef, AnimationOptions } from './engine/TemplateConstants';
 
 // 类型
-export type {
-    NodeMetadata,
-    NodeIndexPath,
-    CompiledTemplateResult,
-} from './types/compiled-types';
+export type { NodeMetadata, NodeIndexPath, CompiledTemplateResult } from './types/compiled-types';
 export type { ComponentTemplate } from './types/component-template';
 export type {
     TplNode,
@@ -78,6 +75,12 @@ export type {
 } from './types/tpl-body';
 export type { BodyKeyDef } from './types/tpl-body-def';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
+export type {
+    TplEventAction,
+    NodeEventDecl,
+    TplEvents,
+    DelegatedEventRule,
+} from './types/tpl-events';
 
 // 模板预设
 export {

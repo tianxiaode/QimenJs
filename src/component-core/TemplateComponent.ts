@@ -32,7 +32,7 @@ import {
     DragEventBusAbility,
     SystemEventBusAbility,
 } from '@/system-abilities';
-import { EventForwardAbility } from './abilities/EventForwardAbility';
+
 import { NodePropAbility } from './abilities/NodePropAbility';
 
 import type { NodeMetadata } from './types/compiled-types';
@@ -51,7 +51,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     OverlayEventBusAbility,
     DragEventBusAbility,
     SystemEventBusAbility,
-    EventForwardAbility,
+
     NodePropAbility,
     CommonPropsAbility,
     AnimationAbility,
@@ -68,7 +68,6 @@ export interface TemplateComponent
         InferAbility<typeof OverlayEventBusAbility>,
         InferAbility<typeof DragEventBusAbility>,
         InferAbility<typeof SystemEventBusAbility>,
-        InferAbility<typeof EventForwardAbility>,
         InferAbility<typeof NodePropAbility>,
         InferAbility<typeof CommonPropsAbility>,
         InferAbility<typeof AnimationAbility>,

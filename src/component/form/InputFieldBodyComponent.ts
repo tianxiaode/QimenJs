@@ -75,8 +75,6 @@ export let InputFieldBodyComponent = Component.withTemplate({
     body: {
         type: 'InputFieldBody',
 
-        bindDomEventBindings(): void {},
-
         onAfterInit(): void {
             const actionsCmp = this.nodeMap?.actions?.component;
             if (actionsCmp) {

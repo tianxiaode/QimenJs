@@ -11,6 +11,7 @@
  */
 
 import type { TplNode, BodyDef } from '../types';
+import type { TplEvents } from '../types/tpl-events';
 import { applyChildNodeProps } from './ChildNodeProps';
 import type { AbilityDefinition } from '@/composable';
 import { withAbilities } from '@/composable';
@@ -19,6 +20,7 @@ import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
 import { TemplateCompiler } from './TemplateCompiler';
 import { TemplateDeriver } from './TemplateDeriver';
 import { BodyMerger } from './BodyMerger';
+import { DelegatedEventEngine } from './DelegatedEventEngine';
 import { RuntimeEngine, executeOverrideQueue } from './RuntimeEngine';
 import { ComponentError, KernelErrorCode } from '@/error';
 
@@ -150,7 +152,8 @@ export function createInnerClass(
     tpl: TplNode,
     body?: BodyDef,
     extraAbilities?: AbilityDefinition[],
-    nodeOverrides?: Record<string, Record<string, any>>
+    nodeOverrides?: Record<string, Record<string, any>>,
+    tplEvents?: TplEvents
 ): any {
     const InnerClass = class extends ParentClass {
         constructor(props?: Record<string, any>) {
@@ -186,6 +189,11 @@ export function createInnerClass(
     }
 
     applyChildNodeProps(InnerClass, nodeMetas, cache.i18nNodes);
+
+    if (tplEvents && Object.keys(tplEvents).length > 0) {
+        (InnerClass as any)._tplEvents = tplEvents;
+        (InnerClass as any)._delegatedEventRules = DelegatedEventEngine.compileTplEvents(tplEvents);
+    }
 
     (InnerClass as any)._templateCompiled = true;
 
@@ -279,6 +287,12 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     (NewClass as any)._nodeMetas = nodeMetas;
     (NewClass as any)._nodeOverrides = mergedNodeOverrides;
     (NewClass as any)._i18nNodes = cache.i18nNodes;
+
+    const parentTplEvents = (ParentInner as any)._tplEvents;
+    if (parentTplEvents) {
+        (NewClass as any)._tplEvents = parentTplEvents;
+        (NewClass as any)._delegatedEventRules = (ParentInner as any)._delegatedEventRules;
+    }
 
     (NewClass as any)._templateCompiled = true;
 

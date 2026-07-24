@@ -52,7 +52,14 @@ export class Component {
      *   - InnerClass.replace(options) → 派生新类
      */
     static withTemplate(this: any, templates: ComponentTemplate): any {
-        return createInnerClass(TemplateComponent, templates.tpl, templates.body);
+        return createInnerClass(
+            TemplateComponent,
+            templates.tpl,
+            templates.body,
+            undefined,
+            undefined,
+            templates.tplEvents
+        );
     }
 
     /**
