@@ -8,6 +8,26 @@
 ## 构建历史
 
 ### 2026-07-25
+- ✅ HeaderComponent 重构：单 tools → toolsLeft + toolsRight 双 ItemGroup
+  - 布局：icon → toolsLeft → title → subtitle → toolsRight → action
+  - 新增 tplEvents：toolsLeft/toolsRight 的 $items 点击事件 + action click 事件
+  - 新增 HeaderProps 接口和 onAfterInit 初始化逻辑
+  - HeaderFragment 同步更新
+- ✅ PanelComponent 重构：内联 header → HeaderComponent 子组件
+  - forwards: { title: 'header.title' } 透传
+  - tplEvents 转发 header 的 toolsLeftClick/toolsRightClick/actionClick
+  - 折叠逻辑改为监听 headerActionClick
+  - 新增 ResizeAbility 支持（.with([ResizeAbility])，resizable: true 时启用 e/s/se 三边）
+- ✅ DialogComponent 新建：纯内容浮层组件
+  - 由 OverlayDispatchCenter 调度显示/隐藏（placement: 'center', mask: true）
+  - 使用 HeaderComponent 作为头部，默认 close 按钮
+  - Header 拖动移动：_initHeaderDrag() 绑定 drag 事件，拖动时切换为 fixed 定位
+  - ResizeAbility：.with([ResizeAbility])，默认 8 边全开
+  - onOverlayChange 支持调度中心动态更新数据
+- ✅ OverlayDispatchCenter 扩展：center 定位支持
+  - positionOverlay 新增 'center' Placement（fixed + 50%/translate 居中）
+  - OverlayDispatchCenter 在 placement='center' 时不设 position: absolute
+  - OverlayPlacement 类型新增 'center'
 - ✅ 新增表单扩展组件（6 个）
   - TextareaComponent 多行文本组件（FormFieldComponent.replace + TextareaFieldBodyComponent，autoSize/rows/resize）
   - NumberInputComponent 数字输入框组件（InputComponent.replace，min/max/step/precision/步进按钮）
@@ -99,10 +119,10 @@
 ### 高优先级
 - [ ] 补充 PanelComponent 测试
 - [ ] 补充 ItemGroupComponent 测试
+- [ ] 补充 DialogComponent 测试
 
 ### 中优先级
 
-- [ ] 新增 DialogComponent 对话框组件
 - [ ] 新增 TableComponent 表格组件
 - [ ] 补充 TextareaComponent / NumberInputComponent / SelectComponent / SwitchComponent / CheckboxGroupComponent / RadioGroupComponent 测试
 

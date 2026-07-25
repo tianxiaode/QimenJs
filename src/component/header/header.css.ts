@@ -54,6 +54,14 @@ export const headerCSS = `
     gap: 4px;
 }
 
+.q-header__tools--left {
+    margin-right: 4px;
+}
+
+.q-header__tools--right {
+    margin-left: auto;
+}
+
 /* 操作按钮 */
 .q-header__action {
     flex-shrink: 0;

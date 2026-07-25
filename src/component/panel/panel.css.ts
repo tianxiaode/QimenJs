@@ -2,7 +2,7 @@
  * Panel 面板组件样式 — Metro 风格
  *
  * 扁平、方角、粗边框、无渐变。
- * 支持折叠态（header 箭头点击切换 body 显隐）。
+ * 支持折叠态（header action 按钮点击切换 body 显隐）。
  */
 
 export const panelCSS = `
@@ -16,44 +16,11 @@ export const panelCSS = `
     box-sizing: border-box;
 }
 
-/* 标题栏 */
-.q-panel__header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* 标题栏 — 由 HeaderComponent 提供，此处仅做场景覆盖 */
+.q-panel__header .q-header {
     padding: 8px 12px;
     border-bottom: 2px solid var(--q-colors-border, #dcdfe6);
     background: var(--q-colors-bg-secondary, #f5f5f5);
-    user-select: none;
-    min-height: 40px;
-}
-
-/* 标题文本 */
-.q-panel__title {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--q-colors-text, #1a1a1a);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* 工具区 */
-.q-panel__tools {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.q-panel__tools--left {
-    margin-right: 4px;
-}
-
-.q-panel__tools--right {
-    margin-left: auto;
 }
 
 /* 内容区 */
@@ -69,7 +36,7 @@ export const panelCSS = `
 }
 
 /* 折叠态 — header 无下边框 */
-.q-panel--collapsed .q-panel__header {
+.q-panel--collapsed .q-panel__header .q-header {
     border-bottom-color: transparent;
 }
 `;

@@ -8,7 +8,8 @@
  * - header:icon — 图标
  * - header:title — 标题
  * - header:subtitle — 子标题
- * - header:tools — 工具区
+ * - header:toolsLeft — 左侧工具区
+ * - header:toolsRight — 右侧工具区
  * - header:action — 操作按钮
  *
  * @example
@@ -24,9 +25,20 @@ export const HeaderFragment: TplFragment = {
     name: 'header',
     children: [
         { tag: 'i', name: 'icon', cls: 'q-header__icon', hidden: true },
+        {
+            name: 'toolsLeft',
+            type: ItemGroupPooledComponent,
+            cls: 'q-header__tools q-header__tools--left',
+            hidden: true,
+        },
         { tag: 'div', name: 'title', cls: 'q-header__title' },
         { tag: 'span', name: 'subtitle', cls: 'q-header__subtitle', hidden: true },
-        { name: 'tools', type: ItemGroupPooledComponent, cls: 'q-header__tools', hidden: true },
+        {
+            name: 'toolsRight',
+            type: ItemGroupPooledComponent,
+            cls: 'q-header__tools q-header__tools--right',
+            hidden: true,
+        },
         { tag: 'i', name: 'action', cls: 'q-header__action', hidden: true },
     ],
 };

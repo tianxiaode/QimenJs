@@ -101,6 +101,10 @@ export { accordionCSS } from './accordion/accordion.css';
 export { HeaderComponent } from './header/HeaderComponent';
 export { headerCSS } from './header/header.css';
 
+// 对话框组件
+export { DialogComponent, type DialogProps } from './dialog/DialogComponent';
+export { dialogCSS } from './dialog/dialog.css';
+
 // 项组组件
 export { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
 export type { ItemGroupProps } from './itemgroup/ItemGroupBaseComponent';

@@ -78,7 +78,7 @@ ComposableBase (src/composable/ComposableBase.ts)
 | SeparatorComponent | `src/component/components/SeparatorComponent.ts` | VisibleAbility |
 | TableComponent | `src/component/components/TableComponent.ts` | EntityAbility, VirtualListAbility, SortAbility, ColumnAbility, ColumnManageAbility, ChildrenAbility |
 
-| DialogComponent | `src/component/components/DialogComponent.ts` | TextAbility, OpenableAbility, OverlayAbility, AnimationAbility |
+| DialogComponent | `src/component/dialog/DialogComponent.ts` | ResizeAbility，HeaderComponent 头部，header 拖动移动，OverlayDispatchCenter 调度 |
 | BadgeComponent | `src/component/badge/BadgeComponent.ts` | ContentAbility（角标文本） |
 | TipsComponent | `src/component/tips/TipsComponent.ts` | OverlayHostAbility（浮层定位、z-index、挂载）+ ArrowAbility（浮层定位箭头，模板定义节点）+ hover 事件 + delay |
 | MenuComponent | `src/component/menu/MenuComponent.ts` | OverlayHostAbility, GroupSelectAbility, MenuItemManageAbility（浮层菜单容器，池化复用菜单项，分组选择互斥） |

@@ -6,13 +6,20 @@
  */
 
 import type { Rect } from '@/utils/geometry/types';
-import { alignLeft, alignRight, alignTop, alignBottom, alignCenterX, alignCenterY } from '@/utils/geometry/align';
+import {
+    alignLeft,
+    alignRight,
+    alignTop,
+    alignBottom,
+    alignCenterX,
+    alignCenterY,
+} from '@/utils/geometry/align';
 import { keepInside } from '@/utils/geometry/clamp';
 
 /**
  * 弹出方向
  */
-export type Placement = 'top' | 'bottom' | 'left' | 'right';
+export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center';
 
 /**
  * 将 HTMLElement 的 getBoundingClientRect 转换为 Rect
@@ -40,8 +47,8 @@ function getViewportRect(): Rect {
 function alignByPlacement(
     overlayRect: Rect,
     anchorRect: Rect,
-    placement: Placement,
-    offset: number,
+    placement: 'top' | 'bottom' | 'left' | 'right',
+    offset: number
 ): Rect {
     let result = overlayRect;
 
@@ -85,8 +92,10 @@ function isOverflowing(rect: Rect, viewport: Rect): boolean {
 /**
  * 获取翻转方向
  */
-function flipPlacement(placement: Placement): Placement {
-    const flipMap: Record<Placement, Placement> = {
+function flipPlacement(
+    placement: 'top' | 'bottom' | 'left' | 'right'
+): 'top' | 'bottom' | 'left' | 'right' {
+    const flipMap: Record<string, 'top' | 'bottom' | 'left' | 'right'> = {
         top: 'bottom',
         bottom: 'top',
         left: 'right',
@@ -105,17 +114,27 @@ export function positionOverlay(
     anchorEl: HTMLElement,
     placement: Placement = 'bottom',
     offset: number = 4,
-    flip: boolean = true,
+    flip: boolean = true
 ): Placement {
     const anchorRect = toRect(anchorEl);
     const overlayRect = toRect(overlayEl);
     const viewport = getViewportRect();
 
-    let actualPlacement = placement;
-    let aligned = alignByPlacement(overlayRect, anchorRect, placement, offset);
+    if (placement === 'center') {
+        overlayEl.style.position = 'fixed';
+        overlayEl.style.top = '50%';
+        overlayEl.style.left = '50%';
+        overlayEl.style.transform = 'translate(-50%, -50%)';
+        return 'center';
+    }
+
+    type AnchorPlacement = 'top' | 'bottom' | 'left' | 'right';
+    const anchorPlacement = placement as AnchorPlacement;
+    let actualPlacement: AnchorPlacement = anchorPlacement;
+    let aligned = alignByPlacement(overlayRect, anchorRect, anchorPlacement, offset);
 
     if (flip && isOverflowing(aligned, viewport)) {
-        const flippedPlacement = flipPlacement(placement);
+        const flippedPlacement = flipPlacement(anchorPlacement);
         const flipped = alignByPlacement(overlayRect, anchorRect, flippedPlacement, offset);
 
         if (!isOverflowing(flipped, viewport)) {

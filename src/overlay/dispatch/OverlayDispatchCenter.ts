@@ -283,10 +283,13 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const offset = def.offset ?? 4;
         const trigger = def.trigger ?? 'manual';
 
-        overlayEl.style.position = 'absolute';
         overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
         overlayEl.style.display = 'none';
         overlayEl.style.pointerEvents = 'auto';
+
+        if (placement !== 'center') {
+            overlayEl.style.position = 'absolute';
+        }
 
         OverlayRoot.getInstance().mountOverlay(overlayEl);
 

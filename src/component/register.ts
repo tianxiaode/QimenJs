@@ -36,6 +36,7 @@ import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
 import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
 import { AccordionComponent } from './accordion/AccordionComponent';
 import { ToolbarComponent } from './toolbar/ToolbarComponent';
+import { DialogComponent } from './dialog/DialogComponent';
 import { LoadingComponent } from './loading/LoadingComponent';
 import { HeroComponent } from './hero/HeroComponent';
 import { BreadcrumbComponent } from './breadcrumb/BreadcrumbComponent';
@@ -84,6 +85,7 @@ export function registerAllComponents(): void {
     registrar.register('OverflowScroll', OverflowScrollComponent);
     registrar.register('OverflowMenu', OverflowMenuComponent);
     registrar.register('Accordion', AccordionComponent);
+    registrar.register('Dialog', DialogComponent);
     registrar.register('Loading', LoadingComponent);
     registrar.register('Hero', HeroComponent);
     registrar.register('Breadcrumb', BreadcrumbComponent);

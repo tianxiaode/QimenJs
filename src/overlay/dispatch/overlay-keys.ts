@@ -26,7 +26,8 @@ export type OverlayPlacement =
     | 'left-end'
     | 'right'
     | 'right-start'
-    | 'right-end';
+    | 'right-end'
+    | 'center';
 
 export interface OverlayKeyDef {
     required?: boolean;
@@ -93,6 +94,7 @@ export const OVERLAY_PLACEMENT_SET = new Set<OverlayPlacement>([
     'right',
     'right-start',
     'right-end',
+    'center',
 ]);
 
 export function validateOverlayDecl(overlayKey: string, decl: Record<string, any>): void {

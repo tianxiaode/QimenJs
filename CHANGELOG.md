@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- HeaderComponent 重构：单 tools → toolsLeft + toolsRight 双 ItemGroupPooledComponent，新增 tplEvents 和 HeaderProps
+- PanelComponent 重构：内联 header → HeaderComponent 子组件，forwards 透传 title，tplEvents 转发 header 事件
+- PanelComponent 新增 ResizeAbility 支持（.with([ResizeAbility])，resizable: true 时 e/s/se 三边）
+- DialogComponent 对话框组件：纯内容浮层，由 OverlayDispatchCenter 调度（placement: 'center', mask: true）
+- DialogComponent header 拖动移动 + ResizeAbility 四边调整大小
+- ResizeAbility 四边/四角拖动调整大小能力（initResize/edges/minWidth/minHeight/maxWidth/maxHeight/resizable）
+- positionOverlay 新增 'center' 定位（fixed + 50%/translate 居中）
+- OverlayPlacement 类型新增 'center'
+
 - 组件核心双层架构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
 - 多模板条件选择：ComponentTemplate.tpl 支持 TplNode | TplVariant[]，when 条件函数
 - Component 闭包基类导出（component-core/index.ts）

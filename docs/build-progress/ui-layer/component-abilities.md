@@ -7,6 +7,15 @@
 
 ## 构建历史
 
+### 2026-07-25
+- ✅ 新增 ResizeAbility 四边/四角拖动调整大小能力
+  - 独立能力，通过 .with([ResizeAbility]) 组合
+  - initResize(config?) 自动注入 8 个边缘/角点手柄 DOM
+  - 内部用 component.bind(handle, 'drag') 走 DragProcessor
+  - 支持 edges/minWidth/minHeight/maxWidth/maxHeight 配置
+  - resizable getter/setter 控制启用/禁用
+  - emit 'resize' 事件（{ width, height, edge }）
+  - resize.css.ts Metro 风格手柄样式
 
 ### 2026-07-18
 - ✅ 溢出处理从 Ability 模式迁移到域配置驱动模式
