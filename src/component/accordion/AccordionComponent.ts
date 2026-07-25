@@ -18,8 +18,12 @@ export let AccordionComponent = ItemGroupPooledComponent.replace({
         defaultItemType: 'Panel',
     },
 
-    itemEvents: {
-        Panel: { click: { emits: ['click'] } },
+    tplEvents: {
+        itemContainer: {
+            $items: {
+                Panel: { click: { emits: ['click'] } },
+            },
+        },
     },
     body: {
         nodes: {

@@ -58,8 +58,7 @@ export class Component {
             templates.body,
             undefined,
             undefined,
-            templates.tplEvents,
-            templates.itemEvents
+            templates.tplEvents
         );
     }
 

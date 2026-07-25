@@ -18,8 +18,12 @@ export let ButtonGroupComponent = ItemGroupPooledComponent.replace({
         gap: '2px',
     },
 
-    itemEvents: {
-        Toggle: { toggle: { emits: ['toggle'] } },
+    tplEvents: {
+        itemContainer: {
+            $items: {
+                Toggle: { toggle: { emits: ['toggle'] } },
+            },
+        },
     },
     body: {
         nodes: {

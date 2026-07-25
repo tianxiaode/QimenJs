@@ -77,15 +77,15 @@ QimenJs 的事件系统分为三层，每层解决不同的问题：
 | 层级 | 机制 | 解决的问题 | 配置方式 |
 |------|------|-----------|---------|
 | tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { nodeName: { event: { ... } } }` |
-| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `TplEventAction.emits` / `ItemEventAction.emits` |
-| bridges | EventBridge | 跨组件解耦通信 | `TplEventAction.bridges` / `ItemEventAction.bridges` |
+| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `TplEventAction.emits` |
+| bridges | EventBridge | 跨组件解耦通信 | `TplEventAction.bridges` |
 
 **关键规则**：
 - **tplEvents** — 组件内部，自己模板的 DOM 事件委托到 root el
 - **emits** — 组件对外，emit() 发布组件级事件，直接消费者 .on() 监听
 - **bridges** — 跨组件，bridgeEmit() 通过 EventBridge 解耦，任意层 listens 订阅
 - tplEvents 不跨组件边界做委托
-- ItemGroup 是硬边界，子组件事件走 DOM 委托 + data-cmp-id 匹配 + itemEvents 规则分发
+- ItemGroup 子组件事件走 tplEvents.$items 声明 + getTargetItem 匹配
 
 ### 根节点事件
 
@@ -102,18 +102,24 @@ tplEvents: {
 
 ### ItemGroup 子组件事件
 
-ItemGroup 通过 `itemEvents` 声明子组件事件转发规则，DOM 委托自动处理：
+ItemGroup 通过 `tplEvents` 的 `$items` 声明子组件事件转发规则，`getTargetItem(target)` 自动匹配触发事件的 item 组件：
 
 ```typescript
 Component.replace({
-    itemEvents: {
-        Toggle: { toggle: { emits: ['toggle'] } },
-        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+    tplEvents: {
+        $items: {
+            keyProp: 'name',
+            Toggle: { toggle: { emits: ['toggle'] } },
+            MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+        },
     },
 })
 ```
 
-事件名格式：`${itemKey}:${eventName}` 和 `${eventName}` 双发。
+- **keyProp**：默认 `'name'`，从 item 组件取属性值作为事件名前缀
+- **handler: true + keyProp**：自动路由到 `on${KeyProp}${Event}` 方法，零分支
+- **entities: true / router: true**：支持 keyProp 动态解析
+- **data 声明**：支持属性取值和 get 方法引用，按事件类型区分
 
 ### 应用层事件通道
 

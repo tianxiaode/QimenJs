@@ -7,7 +7,7 @@
 
 ItemGroup 是轻量排列容器，通过 `items` 数组动态管理子组件实例。核心设计理念：
 
-1. **事件委托声明** — 通过 `itemEvents` 声明子组件事件转发规则，DOM 委托自动处理，零手动绑定
+1. **事件委托声明** — 通过 `tplEvents.$items` 声明子组件事件转发规则，`getTargetItem` 自动匹配，零手动绑定
 2. **两种模式分离** — `ItemGroupPooledComponent`（池化复用）和 `ItemGroupStaticComponent`（静态生灭），按场景选择
 3. **生命周期自动链式** — `replace()` 派生时，生命周期钩子自动先调基类再调子类，无需手动 `_initItemGroupComponent`
 
@@ -32,8 +32,11 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         gap: '0',
         defaultItemType: 'Toggle',
     },
-    itemEvents: {
-        Toggle: { toggle: { emits: ['toggle'] } },
+    tplEvents: {
+        $items: {
+            keyProp: 'name',
+            Toggle: { toggle: { emits: ['toggle'] } },
+        },
     },
     body: { ... },
 });
@@ -55,8 +58,11 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
         direction: 'vertical',
         defaultItemType: 'MenuItem',
     },
-    itemEvents: {
-        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+    tplEvents: {
+        $items: {
+            keyProp: 'name',
+            MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+        },
     },
     body: { ... },
 });
@@ -89,93 +95,149 @@ config: {
 
 `defaultItem` 用于非事件相关的子项默认配置（如 cls、initConfig 等）。
 
-> **注意**：事件声明已迁移到 `itemEvents`（见第四节），`defaultItem` 不再包含 `events` 字段。
+> **注意**：事件声明在 `tplEvents.$items` 中（见第四节），`defaultItem` 不再包含 `events` 字段。
 
-### 3.3 itemEvents — 子组件事件委托声明
+### 3.3 tplEvents.$items — 子组件事件委托声明
 
-`itemEvents` 与 `tplEvents` 同级，声明 ItemGroup 子组件的事件转发规则。
+`tplEvents.$items` 在 `tplEvents` 内部声明 ItemGroup 子组件的事件转发规则，与模板节点事件统一在 `tplEvents` 中。
 
 **key = 子组件类型名**（如 `Toggle`、`MenuItem`、`NavItem`），**value = 该类型的事件声明**。
 
 ```typescript
-itemEvents: {
-    Toggle: { toggle: { emits: ['toggle'] } },
-    MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
-    NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Toggle: { toggle: { emits: ['toggle'] } },
+        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+        NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
+    },
 }
 ```
 
-#### ItemEventAction 字段
+#### $items 特有字段
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `emits` | `string[]` | 转发为组件事件，emit `${itemKey}:${emitName}` 和 `${emitName}` |
+| `keyProp` | `string` | 默认 `'name'`，从 item 组件取属性值作为事件名前缀 |
+| `data` | `Record<string, string>` | 属性取值和 get 方法引用，按事件类型区分 |
+
+#### TplEventAction 字段（$items 内部复用）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `emits` | `string[]` | 转发为组件事件，emit `${keyProp}:${emitName}` 和 `${emitName}` |
 | `bridges` | `string[]` | 转发为桥接事件（通过 EventBridge 解耦转发） |
-| `entities` | `string` | 转发为实体操作 |
-| `router` | `string` | 转发为路由事件 |
+| `entities` | `string \| true` | 转发为实体操作；`true` 时自动用 keyProp 解析 |
+| `router` | `string \| true` | 转发为路由事件；`true` 时自动用 keyProp 解析 |
 | `system` | `string \| string[]` | 转发为系统事件 |
+| `handler` | `true` | 自动路由到 `on${KeyProp}${Event}` 方法，零分支 |
 
 ## 四、事件委托机制
 
 ### 4.1 工作原理
 
-ItemGroup 的子组件事件通过 **DOM 委托 + data-cmp-id 匹配** 自动处理：
+ItemGroup 的子组件事件通过 **containsElement + getTargetItem** 自动匹配：
 
 ```
 子组件 DOM 事件冒泡 → ItemGroup root el
   → DelegatedEventEngine.handleDelegatedEvent
-  → data-cmp-id 匹配 → 找到 itemKey
-  → _dispatchItemEvent → 查 itemEvents[type][event]
-  → 按 ItemEventAction 分发
+  → TemplateComponent.containsElement(nodeName, target) 匹配模板节点
+  → ItemGroupBaseComponent.getTargetItem(target) 匹配 item 组件
+  → 查 tplEvents.$items[type][event]
+  → 按 TplEventAction 分发
 ```
 
-### 4.2 data-cmp-id 设置
+### 4.2 containsElement + getTargetItem
 
-`_createItem` 自动设置 `instance.el.dataset.cmpId = itemKey`，无需手动处理。
+- **TemplateComponent.containsElement(nodeName, target)**：检查 target 是否在指定 nodeName 的模板节点 DOM 范围内
+- **ItemGroupBaseComponent.getTargetItem(target)**：遍历 `_items`，找到 target 所属的 item 组件实例，返回 `{ data, component, el }`
 
-`itemKey` 从 item 数据中取值：`data.itemKey || data.name || 自动生成ID`。
+替代了旧的 `data-cmp-id` + `nodeElMap` + `childEventIndex` 机制，无需在 DOM 上设置额外属性。
 
-### 4.3 emits — 组件事件转发（推荐）
+### 4.3 keyProp — 事件名前缀
 
-子组件事件通过 `emits` 转发为 ItemGroup 自身的组件事件：
+`keyProp` 默认为 `'name'`，从 item 组件取属性值作为事件名前缀：
 
 ```typescript
-itemEvents: {
-    Toggle: { toggle: { emits: ['toggle'] } },
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Toggle: { toggle: { emits: ['toggle'] } },
+    },
 }
 
 // 监听方
-group.on('toggle', (data) => { ... });        // 通用事件
-group.on('item1:toggle', (data) => { ... });  // 带 itemKey 前缀的精确事件
+group.on('toggle', (data) => { ... });           // 通用事件
+group.on('item1:toggle', (data) => { ... });     // 带 keyProp 值前缀的精确事件
 ```
 
-### 4.4 bridges — 桥接事件转发
+### 4.4 handler: true — 零分支自动路由
 
-跨组件通信时使用 `bridges`：
+`handler: true` + `keyProp` 自动路由到 `on${KeyProp}${Event}` 方法，无需 if-else 分支：
 
 ```typescript
-itemEvents: {
-    Button: { click: { bridges: ['click'] } },
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Button: { click: { handler: true } },
+    },
 }
 
-// 监听方
-bridge.bridgeOn(group.eventKey, 'click', (data) => { ... });
+// item name='save' → 自动调用 this.onSaveClick(domEvent)
+// item name='delete' → 自动调用 this.onDeleteClick(domEvent)
 ```
 
-### 4.5 entities — 实体操作
+### 4.5 emits — 组件事件转发（推荐）
 
 ```typescript
-itemEvents: {
-    Button: { click: { entities: 'create' } },
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Toggle: { toggle: { emits: ['toggle'] } },
+    },
+}
+```
+
+### 4.6 bridges — 桥接事件转发
+
+```typescript
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Button: { click: { bridges: ['click'] } },
+    },
+}
+```
+
+### 4.7 entities — 实体操作
+
+```typescript
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Button: { click: { entities: 'create' } },
+    },
 }
 // 事件流：按钮 click → 委托 → entityEmit → EntityManager.create()
+
+// entities: true 时自动用 keyProp 解析
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Button: { click: { entities: true } },
+    },
+}
+// item name='save' → entityEmit('save', ...)
 ```
 
-### 4.6 多路可共存
+### 4.8 多路可共存
 
 ```typescript
-itemEvents: {
-    Button: { click: { emits: ['click'], entities: 'save' } },
+tplEvents: {
+    $items: {
+        keyProp: 'name',
+        Button: { click: { emits: ['click'], entities: 'save' } },
+    },
 }
 ```
 
@@ -186,42 +248,44 @@ ItemGroup 的事件通信遵循三层模型：
 | 层级 | 机制 | 解决的问题 | 配置方式 |
 |------|------|-----------|---------|
 | tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { ... }` |
-| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `itemEvents: { Type: { event: { emits: [...] } } }` |
-| bridges | EventBridge | 跨组件解耦通信 | `itemEvents: { Type: { event: { bridges: [...] } } }` |
+| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `tplEvents.$items: { Type: { event: { emits: [...] } } }` |
+| bridges | EventBridge | 跨组件解耦通信 | `tplEvents.$items: { Type: { event: { bridges: [...] } } }` |
 
 **关键规则**：
 - tplEvents 不跨组件边界做委托
-- ItemGroup 是硬边界，子组件事件全部走 DOM 委托 + data-cmp-id 匹配 + itemEvents 规则分发
-- ItemGroup 用 emits + itemKey（不用 bridges），事件名格式 `${itemKey}:${eventName}`
+- ItemGroup 是硬边界，子组件事件走 tplEvents.$items 声明 + getTargetItem 匹配
+- ItemGroup 用 emits + keyProp（不用 bridges），事件名格式 `${keyProp}:${eventName}`
 
 ## 六、replace() 合并规则
 
-`replace()` 派生时，`tplEvents` 和 `itemEvents` 各自独立合并：
+`replace()` 派生时，`tplEvents` 统一合并（含 `$items`）：
 
 ### tplEvents 合并
 
 - 同 nodeName 对象级浅合并，不同 nodeName 追加
+- `$items` 内同 type 事件级浅合并，不同 type 追加
 - 合并后重新 compileTplEvents
-
-### itemEvents 合并
-
-- 同 type 事件级浅合并，不同 type 追加
 
 ```typescript
 // 基类
 const Base = ItemGroupPooledComponent.replace({
-    itemEvents: {
-        Toggle: { toggle: { emits: ['toggle'] } },
+    tplEvents: {
+        $items: {
+            keyProp: 'name',
+            Toggle: { toggle: { emits: ['toggle'] } },
+        },
     },
 });
 
 // 派生类追加
 const Derived = Base.replace({
-    itemEvents: {
-        Button: { click: { emits: ['click'] } },
+    tplEvents: {
+        $items: {
+            Button: { click: { emits: ['click'] } },
+        },
     },
 });
-// 结果：Toggle + Button 两种类型的 itemEvents
+// 结果：Toggle + Button 两种类型的 $items 事件
 ```
 
 ## 七、生命周期自动链式调用
@@ -234,7 +298,7 @@ const Derived = Base.replace({
 // ✅ 正确 — 子类 onAfterInit 自动链式，基类初始化已执行
 export let TabBarComponent = ItemGroupPooledComponent.replace({
     config: { direction: 'horizontal', defaultItemType: 'Toggle', ... },
-    itemEvents: { Toggle: { toggle: { emits: ['toggle'] } } },
+    tplEvents: { $items: { keyProp: 'name', Toggle: { toggle: { emits: ['toggle'] } } } },
     body: {
         onAfterInit(props) {
             // 基类 onAfterInit 已自动执行，direction/defaultItemType 已设置
@@ -260,7 +324,7 @@ onAfterInit(props) {
 | `_hiddenItems`（仅池化） | 同上 | 隐藏项池，可复用 |
 | `_defaultItemType` | `string` | 默认子组件类型 |
 | `_defaultItem` | `DefaultItemConfig` | 按 type 索引的默认配置 |
-| `_itemEvents` | `ItemEvents` | 子组件事件委托规则（实例级，运行时可通过 initConfig 传入） |
+
 
 ### 8.2 池化复用流程
 
@@ -276,20 +340,18 @@ add(data)
 ```
 DOM 事件冒泡到 ItemGroup root el
   → DelegatedEventEngine.handleDelegatedEvent
-  → 1. childEventIndex → 子组件 tplEvents 规则（不适用于 ItemGroup）
-  → 2. nodeElMap → 自身模板节点规则
-  → 3. data-cmp-id → itemEvents 规则
-     → _dispatchItemEvent
-     → 查 itemEvents[componentType][eventType]
-     → 按 ItemEventAction 分发（emits/bridges/entities/router/system）
+  → 1. TemplateComponent.containsElement(nodeName, target) → 模板节点规则
+  → 2. ItemGroupBaseComponent.getTargetItem(target) → item 组件匹配
+     → 查 tplEvents.$items[componentType][eventType]
+     → 按 TplEventAction 分发（emits/bridges/entities/router/system/handler）
 ```
 
 ## 九、派生组件定义模式
 
 ### 各组件配置速查
 
-| 组件 | 基类 | defaultItemType | itemEvents | 事件 |
-|------|------|-----------------|------------|------|
+| 组件 | 基类 | defaultItemType | tplEvents.$items | 事件 |
+|------|------|-----------------|------------------|------|
 | TabBar | Pooled | Toggle | `Toggle: { toggle: { emits } }` | toggle → emits |
 | ButtonGroup | Pooled | Toggle | `Toggle: { toggle: { emits } }` | toggle → emits |
 | Accordion | Pooled | Panel | `Panel: { click: { emits } }` | click → emits |
@@ -309,8 +371,11 @@ export let MyComponent = ItemGroupPooledComponent.replace({  // 或 ItemGroupSta
         gap: '4px',                    // CSS gap 值
         defaultItemType: 'Toggle',     // 默认子组件类型
     },
-    itemEvents: {                      // 子组件事件委托声明
-        Toggle: { toggle: { emits: ['toggle'] } },
+    tplEvents: {                      // 子组件事件委托声明
+        $items: {
+            keyProp: 'name',
+            Toggle: { toggle: { emits: ['toggle'] } },
+        },
     },
     body: {
         onInitState() {
@@ -334,8 +399,11 @@ export let CrudToolbarComponent = ItemGroupStaticComponent.replace({
         direction: 'horizontal',
         gap: '4px',
     },
-    itemEvents: {
-        button: { click: { emits: ['click'] } },
+    tplEvents: {
+        $items: {
+            keyProp: 'name',
+            button: { click: { emits: ['click'] } },
+        },
     },
     body: {},
 });
@@ -364,9 +432,10 @@ new CrudToolbarComponent({
 2. **减少样板** — 不再需要每个子类手动 `_initItemGroupComponent(props)`
 3. **符合直觉** — 生命周期钩子"先基类后子类"是 OOP 的自然期望
 
-### 为什么用 itemEvents 替代 defaultItem.events？
+### 为什么用 tplEvents.$items 统一替代 itemEvents？
 
-1. **架构层级清晰** — `itemEvents` 是编译时数据（类级），`defaultItem` 是运行时数据（实例级），职责分离
-2. **委托事件引擎统一** — 所有 DOM 事件走 DelegatedEventEngine，不再有 `_bindItemEvents`/`_handleDomEvent` 的手动绑定链路
-3. **data-cmp-id 匹配** — 子组件事件通过 DOM 委托 + data-cmp-id 自动匹配，零手动绑定
-4. **replace() 合并** — `itemEvents` 支持 replace 合并（同 type 事件级浅合并），`defaultItem.events` 无法合并
+1. **架构统一** — `itemEvents` 与 `tplEvents` 同级但职责重叠，`$items` 将子组件事件纳入 `tplEvents` 统一声明，一套编译/合并/分发流程
+2. **委托事件引擎统一** — 所有 DOM 事件走 DelegatedEventEngine，不再有 `_dispatchItemEvent` 的独立分发链路
+3. **containsElement + getTargetItem 匹配** — 替代 `data-cmp-id` + `nodeElMap` + `childEventIndex`，无需在 DOM 上设置额外属性，直接通过组件实例匹配
+4. **keyProp 动态解析** — `handler: true` + `keyProp` 自动路由到 `on${KeyProp}${Event}` 方法，`entities: true` / `router: true` 支持动态解析，零分支
+5. **replace() 合并** — `$items` 随 `tplEvents` 统一合并，不再需要独立的 `itemEvents` 合并逻辑

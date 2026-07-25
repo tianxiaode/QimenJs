@@ -77,10 +77,9 @@ export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/co
 export type {
     TplEventAction,
     NodeEventDecl,
+    ItemTypeEvents,
     TplEvents,
     DelegatedEventRule,
-    ItemEventAction,
-    ItemEvents,
 } from './types/tpl-events';
 
 // 模板预设

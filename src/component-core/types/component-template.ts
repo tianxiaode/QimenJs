@@ -10,7 +10,7 @@
 
 import type { TplNode } from './tpl-node-types';
 import type { BodyDef } from './tpl-body';
-import type { TplEvents, ItemEvents } from './tpl-events';
+import type { TplEvents } from './tpl-events';
 
 /**
  * 组件模板定义
@@ -42,7 +42,4 @@ export interface ComponentTemplate {
 
     /** 组件级事件委托声明（与 body 同级） */
     tplEvents?: TplEvents;
-
-    /** ItemGroup 子组件事件委托声明（与 tplEvents 同级） */
-    itemEvents?: ItemEvents;
 }

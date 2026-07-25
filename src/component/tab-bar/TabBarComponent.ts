@@ -13,8 +13,12 @@ export let TabBarComponent = ItemGroupPooledComponent.replace({
         defaultItemType: 'Toggle',
     },
 
-    itemEvents: {
-        Toggle: { toggle: { emits: ['toggle'] } },
+    tplEvents: {
+        itemContainer: {
+            $items: {
+                Toggle: { toggle: { emits: ['toggle'] } },
+            },
+        },
     },
     body: {
         nodes: {

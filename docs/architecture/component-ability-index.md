@@ -112,7 +112,7 @@ export interface TemplateComponent
 | OverlayEventBusAbility | `src/system-abilities/system/OverlayEventBusAbility.ts` | 浮层事件总线 |
 | DragEventBusAbility | `src/system-abilities/system/DragEventBusAbility.ts` | 拖拽事件总线 |
 | SystemEventBusAbility | `src/system-abilities/system/SystemEventBusAbility.ts` | 系统事件总线 |
-| DelegatedEventEngine | `src/component-core/engine/DelegatedEventEngine.ts` | DOM 事件委托（根 el 统一绑定，nodeElMap 反查 + childEventIndex 隔离子组件边界） |
+| DelegatedEventEngine | `src/component-core/engine/DelegatedEventEngine.ts` | DOM 事件委托（根 el 统一绑定，containsElement + getTargetItem 匹配） |
 | NodePropAbility | `src/component-core/abilities/NodePropAbility.ts` | 节点属性统一读写 + 脏追踪 + 批量写 DOM + hidden 动画 |
 | CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 + setNodeHtml |
 | AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
@@ -597,10 +597,10 @@ DOM 事件从逐节点绑定改为组件根 el 委托模式，替代已移除的
 | 方法 | 说明 |
 |------|------|
 | compileTplEvents | 编译 tplEvents 为 DelegatedEventRule[] |
-| buildNodeElMap | 构建 WeakMap<el, nodeName> 反查映射 |
-| buildChildEventIndex | 构建直接子组件 el → nodeName 映射（隔离子组件边界） |
+| containsElement | TemplateComponent.containsElement(nodeName, target) — 检查 target 是否在指定模板节点 DOM 范围内 |
+| getTargetItem | ItemGroupBaseComponent.getTargetItem(target) — 遍历 _items 匹配 target 所属 item 组件 |
 | bindDelegatedEvents | 在根 el 上统一绑定委托监听器 |
-| handleDelegatedEvent | 事件分发：nodeElMap 反查 → childEventIndex 隔离 → _dispatchRule 转发 |
+| handleDelegatedEvent | 事件分发：containsElement + getTargetItem 匹配 → _dispatchRule 转发 |
 | _dispatchRule | handler → emits(mergeEventData + ctx.domEvent) → bridges(check eventKey) → entities(check entityKey) |
 
 **tplEvents 声明格式**：

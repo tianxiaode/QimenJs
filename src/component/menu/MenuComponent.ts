@@ -16,8 +16,12 @@ export let MenuComponent = ItemGroupStaticComponent.replace({
         defaultItemType: 'MenuItem',
     },
 
-    itemEvents: {
-        MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+    tplEvents: {
+        itemContainer: {
+            $items: {
+                MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
+            },
+        },
     },
     body: {
         nodes: {

@@ -39,6 +39,7 @@ import { resolveI18nValue } from '@qimenjs/i18n';
 import type { ListenItem, EventMapping } from '../types/tpl-body';
 import { Logger } from '@/logger';
 import { DelegatedEventEngine } from './DelegatedEventEngine';
+import { getId } from '@/utils/string/id';
 
 // ══════════════════════════════════════════════════════════════
 // 上下文
@@ -386,7 +387,7 @@ export class RuntimeEngine {
                 step(ctx);
             }
 
-            if (props?.id) instance.id = props.id;
+            instance.id = props?.id || getId('cmp');
         } catch (err) {
             Logger.for(RuntimeEngine).error('RuntimeEngine.init failed:', err);
             throw err;

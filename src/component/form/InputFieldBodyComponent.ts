@@ -46,9 +46,6 @@ export let InputFieldBodyComponent = Component.withTemplate({
                 initConfig: {
                     direction: 'horizontal',
                     gap: '4px',
-                    itemEvents: {
-                        Icon: { click: { emits: ['actionClick'] } },
-                    },
                 },
             },
             {
@@ -73,18 +70,14 @@ export let InputFieldBodyComponent = Component.withTemplate({
             change: { emits: ['change'], debounce: 150 },
             keydown: { emits: ['keydown'] },
         },
+        actions: {
+            $items: {
+                Icon: { click: { emits: ['actionClick'], keyProp: 'name' } },
+            },
+        },
     },
     body: {
         type: 'InputFieldBody',
-
-        onAfterInit(): void {
-            const actionsCmp = this.nodeMap?.actions?.component;
-            if (actionsCmp) {
-                actionsCmp.on('actionClick', (data: any) => {
-                    this.emit('actionClick', data);
-                });
-            }
-        },
     },
 });
 

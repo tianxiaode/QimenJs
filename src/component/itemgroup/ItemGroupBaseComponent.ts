@@ -5,8 +5,6 @@
 
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 
-import { getId } from '@/utils/string/id';
-
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 export type DefaultItemDef = Record<string, any>;
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
@@ -68,7 +66,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
             if (props?.defaultItem) this.defaultItem = props.defaultItem;
             if (props?.overflowMode) this.overflowMode = props.overflowMode;
-            if (props?.itemEvents) this._itemEvents = props.itemEvents;
+
             if (props?.cls) this.addCls(props.cls);
             if (props?.items) this.setItems(props.items);
         },
@@ -128,6 +126,17 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         },
 
         // ========== 通用方法 ==========
+        getTargetItem(target: Element): { component: any; type: string; index: number } | null {
+            for (let i = 0; i < this._items.length; i++) {
+                const item = this._items[i];
+                if (item.component.containsElement('', target) || item.el.contains(target)) {
+                    const type = item.component.constructor?._type || item.component.type || '';
+                    return { component: item.component, type, index: i };
+                }
+            }
+            return null;
+        },
+
         getAt(index: number): any {
             if (index < 0 || index >= this._items.length) return null;
             return this._items[index].component;
@@ -157,25 +166,22 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             const ItemClass = ComponentRegistrar.getInstance().get(itemType);
             if (!ItemClass) return null;
 
-            const itemKey = data.itemKey || data.name || getId('item');
-
             const props = { ...data };
             delete props.type;
             delete props.events;
-            delete props.itemKey;
 
             const instance = new ItemClass(props);
 
-            instance.el.dataset.cmpId = itemKey;
+            const name = instance.id;
 
-            this.nodeMap[itemKey] = {
-                name: itemKey,
+            this.nodeMap[name] = {
+                name,
                 el: instance.el,
                 component: instance,
             };
 
             const item = {
-                name: itemKey,
+                name,
                 data,
                 component: instance,
                 el: instance.el,

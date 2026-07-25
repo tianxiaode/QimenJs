@@ -105,6 +105,13 @@ export class TemplateComponent extends ComposableBase {
 
     _templateInitialized: boolean = false;
 
+    containsElement(nodeName: string, target: Element): boolean {
+        const node = this.nodeMap[nodeName];
+        if (!node) return false;
+        const el = node.component ? node.component.el : node.el;
+        return el ? el.contains(target) : false;
+    }
+
     override onBeforeDispose(): void {
         if (typeof this.onBeforeUnmount === 'function') {
             this.onBeforeUnmount();

@@ -19,8 +19,12 @@ export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
         direction: 'horizontal',
     },
 
-    itemEvents: {
-        NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
+    tplEvents: {
+        itemContainer: {
+            $items: {
+                NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
+            },
+        },
     },
     body: {
         nodes: {
