@@ -60,9 +60,16 @@
   - RadioGroupFieldBodyComponent（单选框组选项容器）
 - ✅ 新增 CSS 样式文件（4 个）
   - textarea.css.ts / number-input.css.ts / select.css.ts / switch.css.ts / selection-group.css.ts
-- ✅ register.ts 补注册 Textarea/NumberInput/Select/Switch/CheckboxGroup/RadioGroup（6 个新 type）
-
-### 2026-07-23
+- ✅ register.ts 补注册 TextCell/TreeCell/CheckboxCell/ActionCell（4 个 cell type）
+- ✅ ItemGroupPooledComponent 辅助池（AuxPool）机制
+  - registerAuxPool/unregisterAuxPool：注册/注销辅助池（group/expand/groupSummary/tableSummary 角色）
+  - setAuxItems/addAuxItem/removeAuxItemAt/clearAuxPool：辅助池 CRUD
+  - CSS order 布局：_applyOrders() 替代 _reorderDOM()，辅助池元素按 offset 插入主池间隙
+  - 表格角色便捷方法：setGroupRows/setExpandRows/setGroupSummaries/setTableSummaries
+  - getTargetItem 支持辅助池查找
+- ✅ css.ts 新增 indentStyle()：树形缩进 CSS 生成（depth * CSS 变量 + offset）
+- ✅ 删除 EventFlowRegistrar（功能已由 DragDispatchCenter/OverlayDispatchCenter/EntityDispatchCenter 替代）
+- ✅ HeaderComponent 重构：单 tools → toolsLeft + toolsRight 双 ItemGroup
 - ✅ 新增表单组件体系
   - InputComponent 输入组件（labelPosition 多模板、验证、前缀后缀图标、clearable、SizeAbility）
   - PasswordInputComponent 密码输入组件（强度指示器、显示/隐藏切换、生成密码）

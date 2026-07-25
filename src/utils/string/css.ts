@@ -70,3 +70,30 @@ export function resolveBorder(v: number | string | Border): string {
     const c = v.color ?? '';
     return c ? `${w} ${s} ${c}` : `${w} ${s}`;
 }
+
+export interface IndentStyleOptions {
+    depth: number;
+    prefix?: string;
+    property?: string;
+    offset?: number | string;
+}
+
+export function indentStyle(options: IndentStyleOptions): string {
+    const { depth, prefix, property = 'padding-left', offset } = options;
+    if (depth <= 0 && !offset) return '';
+
+    const stepVar = prefix
+        ? `var(--q-indent-step-${prefix}, var(--q-indent-step, 16px))`
+        : `var(--q-indent-step, 16px)`;
+
+    const parts: string[] = [];
+    if (depth > 0) parts.push(`${depth} * ${stepVar}`);
+    if (offset !== undefined) {
+        const offsetVal = typeof offset === 'number' ? offset + 'px' : offset;
+        parts.push(offsetVal);
+    }
+
+    const value = parts.length === 1 ? parts[0] : `calc(${parts.join(' + ')})`;
+
+    return `${property}: ${value};`;
+}

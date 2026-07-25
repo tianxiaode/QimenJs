@@ -52,15 +52,25 @@ function getOverridesList(body: Record<string, any>): string[] {
     return DEFAULT_OVERRIDES;
 }
 
+function getReplacesSet(body: Record<string, any>): Set<string> {
+    if (Array.isArray(body.replaces)) {
+        return new Set(body.replaces);
+    }
+    return new Set();
+}
+
 function collectOverrideHooks(
     parentBody: Record<string, any> | undefined,
     childBody: Record<string, any>,
     parentQueues?: Record<string, Function[]>
 ): Record<string, Function[]> {
     const overrides = getOverridesList(childBody);
+    const replaces = getReplacesSet(childBody);
     const queues: Record<string, Function[]> = {};
 
     for (const methodName of overrides) {
+        if (replaces.has(methodName)) continue;
+
         const hooks: Function[] = [];
 
         if (parentQueues && parentQueues[methodName]) {
@@ -81,8 +91,10 @@ function collectOverrideHooks(
     return queues;
 }
 
-function wrapOverrideMethodsOnProto(proto: any, overrides: string[]): void {
+function wrapOverrideMethodsOnProto(proto: any, overrides: string[], replaces: Set<string>): void {
     for (const methodName of overrides) {
+        if (replaces.has(methodName)) continue;
+
         const original = proto[methodName];
         if (typeof original !== 'function') continue;
 
@@ -198,11 +210,12 @@ export function createInnerClass(
     (InnerClass as any)._templateCompiled = true;
 
     const overrides = getOverridesList(body || {});
+    const replaces = getReplacesSet(body || {});
     (InnerClass as any)._overrideQueues = collectOverrideHooks(undefined, body || {});
 
     applyBodyToClass(InnerClass, body);
 
-    wrapOverrideMethodsOnProto(InnerClass.prototype, overrides);
+    wrapOverrideMethodsOnProto(InnerClass.prototype, overrides, replaces);
 
     if (extraAbilities && extraAbilities.length > 0) {
         withAbilities(InnerClass, extraAbilities);
@@ -213,7 +226,15 @@ export function createInnerClass(
     return InnerClass;
 }
 
-const REPLACE_OPTION_KEYS = new Set(['type', 'cls', 'itemsCls', 'config', 'nodeOverrides', 'body']);
+const REPLACE_OPTION_KEYS = new Set([
+    'type',
+    'cls',
+    'itemsCls',
+    'config',
+    'nodeOverrides',
+    'tplReplaces',
+    'body',
+]);
 
 function extractBodyFromOptions(options: Record<string, any>): Record<string, any> {
     if (options.body) {
@@ -253,15 +274,28 @@ function extractBodyFromOptions(options: Record<string, any>): Record<string, an
  *   - body 完全隔离（纯函数输出）
  */
 export function createDerivedInnerClass(ParentInner: any, options: Record<string, any>): any {
-    const { type, cls, itemsCls, config, nodeOverrides } = options;
+    const { type, cls, itemsCls, config, nodeOverrides, tplReplaces } = options;
 
     const body = extractBodyFromOptions(options);
 
-    const { cache, nodeMetas } = TemplateDeriver.derive(
-        (ParentInner as any)._cache,
-        (ParentInner as any)._nodeMetas,
-        nodeOverrides
-    );
+    let cache, nodeMetas;
+    const hasTplReplaces = tplReplaces && Object.keys(tplReplaces).length > 0;
+
+    if (hasTplReplaces) {
+        ({ cache, nodeMetas } = TemplateDeriver.deriveWithTplReplaces(
+            (ParentInner as any)._cache,
+            (ParentInner as any)._nodeMetas,
+            tplReplaces,
+            nodeOverrides,
+            ParentInner
+        ));
+    } else {
+        ({ cache, nodeMetas } = TemplateDeriver.derive(
+            (ParentInner as any)._cache,
+            (ParentInner as any)._nodeMetas,
+            nodeOverrides
+        ));
+    }
 
     let mergedBody = BodyMerger.merge((ParentInner as any)._body, body);
 
@@ -288,6 +322,10 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     (NewClass as any)._nodeOverrides = mergedNodeOverrides;
     (NewClass as any)._i18nNodes = cache.i18nNodes;
 
+    if (hasTplReplaces) {
+        applyChildNodeProps(NewClass, nodeMetas, cache.i18nNodes);
+    }
+
     const parentTplEvents = (ParentInner as any)._tplEvents;
     const childTplEvents = options.tplEvents;
     if (parentTplEvents || childTplEvents) {
@@ -301,6 +339,7 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     (NewClass as any)._templateCompiled = true;
 
     const overrides = getOverridesList(mergedBody);
+    const replaces = getReplacesSet(mergedBody);
     (NewClass as any)._overrideQueues = collectOverrideHooks(
         ParentInner._body,
         mergedBody,
@@ -309,7 +348,7 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
 
     applyBodyToClass(NewClass, mergedBody);
 
-    wrapOverrideMethodsOnProto(NewClass.prototype, overrides);
+    wrapOverrideMethodsOnProto(NewClass.prototype, overrides, replaces);
 
     if (cls || itemsCls) {
         const nodesConfig: Record<string, any> = mergedBody.nodes ?? {};

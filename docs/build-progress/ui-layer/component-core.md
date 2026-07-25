@@ -8,6 +8,14 @@
 ## 构建历史
 
 ### 2026-07-25
+- ✅ tplReplaces 模板子树替换机制
+  - TemplateDeriver.deriveWithTplReplaces()：替换父模板中指定节点的 DOM 子树，产出新 cache
+  - TemplateCompiler.compileSubtree()：编译子树为 HTML + indexPath + nodeMetas
+  - TemplateFactory.createDerivedInnerClass() 支持 tplReplaces 选项，有 tplReplaces 时走 deriveWithTplReplaces
+  - replace() 选项新增 tplReplaces 字段
+- ✅ replaces 声明：body.replaces 声明直接覆盖（不走继承链）的方法名列表
+  - tpl-body-def.ts 新增 replaces: { category: 'static' }
+  - collectOverrideHooks/wrapOverrideMethodsOnProto 跳过 replaces 中的方法名
 - ✅ itemEvents 消融进 tplEvents.$items：统一事件声明和分发机制
   - 删除 ItemEventAction/ItemEvents 类型，新增 ItemTypeEvents
   - 删除 component-template.ts 的 itemEvents 字段

@@ -20,6 +20,7 @@ export interface ItemGroupConfig {
     /** 按 type 索引的默认配置，主要用于事件转发 */
     defaultItem?: DefaultItemConfig;
     overflowMode?: OverflowMode;
+    step?: number;
 }
 
 export interface ItemGroupProps extends ItemGroupConfig {
@@ -52,6 +53,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
                 /** 按 type 索引的默认配置（事件等） */
                 _defaultItem: {} as DefaultItemConfig,
                 _overflowMode: 'none' as OverflowMode,
+                _step: 100 as number,
             };
         },
 
@@ -66,6 +68,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
             if (props?.defaultItem) this.defaultItem = props.defaultItem;
             if (props?.overflowMode) this.overflowMode = props.overflowMode;
+            if (props?.step) this.step = props.step;
 
             if (props?.cls) this.addCls(props.cls);
             if (props?.items) this.setItems(props.items);
@@ -123,6 +126,14 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         set overflowMode(value: OverflowMode) {
             this._overflowMode = value;
             this._applyOverflowMode();
+        },
+
+        get step(): number {
+            return this._step;
+        },
+        set step(value: number) {
+            this._step = value;
+            this._applyOrders();
         },
 
         // ========== 通用方法 ==========
@@ -199,6 +210,10 @@ export let ItemGroupBaseComponent = Component.withTemplate({
             }
         },
 
+        // ========== Order 布局 ==========
+
+        _applyOrders(): void {},
+
         // ========== DOM 操作 ==========
         _reorderDOM(): void {
             const container = this.itemContainer.el;
@@ -217,6 +232,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         _applyDirection(): void {
             this.el.classList.remove('q-itemgroup--horizontal', 'q-itemgroup--vertical');
             this.el.classList.add(`q-itemgroup--${this._direction}`);
+            this._applyOrders();
         },
 
         _applyGap(): void {

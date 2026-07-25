@@ -12,7 +12,7 @@ export * from './EventBus';
 export * from './EventScope';
 export * from './GlobalEventBus';
 export * from './EventSourceRegistrar';
-export * from './EventFlowRegistrar';
+
 export { EventBridge } from './EventBridge';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
 export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';

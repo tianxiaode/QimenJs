@@ -76,6 +76,17 @@ export function findByPath(root: HTMLElement, path: number[]): HTMLElement | nul
 // 核心编译
 // ══════════════════════════════════════════════════════════════
 
+export function compileSubtree(node: TplNode, logger: any) {
+    const indexPath: NodeIndexPath = {};
+    const nodeMetas: Record<string, NodeMetadata> = {};
+    const exposeNames: string[] = [];
+    const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
+
+    const html = compileNode(node, [], { indexPath, nodeMetas, exposeNames, i18nNodes, logger });
+
+    return { html, indexPath, nodeMetas, exposeNames, i18nNodes };
+}
+
 export function compileTemplate(root: TplNode, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};

@@ -220,4 +220,8 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     // ─── overrides: 声明需要链式调用的方法名列表 ───
 
     overrides: { category: 'static' },
+
+    // ─── replaces: 声明直接覆盖（不走继承链）的方法名列表 ───
+
+    replaces: { category: 'static' },
 };
