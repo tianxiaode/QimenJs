@@ -8,6 +8,24 @@
 ## 构建历史
 
 ### 2026-07-25
+- ✅ Table 组件体系搭建
+  - 新增 column-types.ts：ColumnDef 扩展 editable/editType/editComponent/groupAggregator/tableAggregator
+  - 新增 EditType 类型：text/number/date/select/custom
+  - 新增 AggregatorType 类型：sum/count/avg/min/max/label
+  - ColumnMeta 扩展为全量字段（sortable/resizable/editable/editType/fixed/groupAggregator/tableAggregator 等）
+- ✅ Table 引擎体系（engine/）
+  - ColumnMetaManager：列元数据管理器，NodeMapManager 模式，compile/get/getAll/getEditable/getGroupable/getSummarizable
+  - RowEngine：数据行引擎，Component.withTemplate 编译行组件
+  - HeaderEngine：表头引擎，支持多级分组（ColumnGroupDef 递归）
+  - EditOverlayEngine：浮动编辑层引擎，editable slot + actions + error，走 OverlayDispatchCenter
+  - GroupSummaryEngine：分组统计行引擎，groupAggregator 驱动
+  - TableSummaryEngine：整表统计行引擎，tableAggregator 驱动
+  - cell-tpl-helpers：共享 cell TplNode 工具函数（createCellTpl/createTextCellTpl/createRowTpl）
+  - 五引擎统一 WeakMap<ColumnDefOrGroup[], any> 缓存，同一列定义引用编译一次
+- ✅ HeaderCell resize 改造
+  - LeafHeaderCellComponent：原生 mousedown/mousemove/mouseup → body.drags 声明式（axis:'x', activeClass）
+  - GroupHeaderCellComponent：tplReplaces 恢复 resizeHandle（绝对定位右边缘），拖拽代理到最右子列
+  - header-cell.css.ts：新增 .q-header-cell__group-body（flex column）+ group resizeHandle 绝对定位
 - ✅ HeaderComponent 重构：单 tools → toolsLeft + toolsRight 双 ItemGroup
   - 布局：icon → toolsLeft → title → subtitle → toolsRight → action
   - 新增 tplEvents：toolsLeft/toolsRight 的 $items 点击事件 + action click 事件
