@@ -7,36 +7,71 @@
  * 通过 ComposableBase.with() 组合能力：
  * - TemplateCacheAbility：模板缓存 + 克隆 + nodeMap
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
- * - EventAbility：事件作用域（emit 桥接事件，供外部组件监听）
+ *
+ * 事件通过 OverlayEventBus 发送，编码：overlay:{overlayKey}:{action}
+ * 外部可通过 overlayEventBus.overlayOn(overlayKey, action, handler) 监听。
  */
 
 import { ComposableBase } from '@/composable';
 import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
 import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
-import { EventAbility } from '@/system-abilities/system/EventAbility';
-import { EventSourceRegistrar } from '@qimenjs/events';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { EventContextBuilder } from '@/context';
+import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from '@/component-core/template-presets';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 
-const MsgboxBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility]);
+const MsgboxBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility]);
 
 export class Msgbox extends MsgboxBase {
+    // ─── TemplateCacheAbility 方法 ───
+    declare initTemplateCache: (name: string, template: string) => void;
+    declare cloneFromCache: (name: string) => {
+        root: HTMLElement;
+        nodeMap: Record<string, HTMLElement>;
+    };
+
+    // ─── FloatingLayerAbility 方法 ───
+    declare _zIndexLevel: number;
+    declare acquireZIndex: (level?: number) => number;
+    declare releaseZIndex: () => void;
+    declare mountToOverlay: (el: HTMLElement) => void;
+    declare unmountFromOverlay: (el: HTMLElement) => void;
+    declare setViewportPosition: (
+        el: HTMLElement,
+        position: any,
+        offset?: number,
+        margin?: number
+    ) => void;
+    declare playEnterAnimation: (
+        el: HTMLElement,
+        keyframes: Keyframe[],
+        options?: any
+    ) => Animation;
+    declare playExitAnimation: (el: HTMLElement, keyframes: Keyframe[], options?: any) => Animation;
+    declare bindDomEvent: (
+        el: HTMLElement,
+        semantic: string,
+        handler: (e: Event) => void
+    ) => () => void;
+
     el!: HTMLElement;
     maskEl!: HTMLElement;
     nodeMap!: Record<string, HTMLElement>;
     zIndex!: number;
     type!: MsgboxType;
+    overlayKey!: string;
     inputEl!: HTMLInputElement | null;
     resolve!: (result: MsgboxResult) => void;
-    /** 关闭完成回调（由 Manager 设置） */
     onClose!: () => void;
-    /** 是否已 resolve，防止重复调用 */
     private _resolved = false;
 
+    private readonly bus = OverlayEventBus.getInstance();
+
     constructor(
-        options: MsgboxOptions & { type: MsgboxType },
+        options: MsgboxOptions & { type: MsgboxType; overlayKey: string },
         resolve: (result: MsgboxResult) => void
     ) {
         super();
@@ -47,17 +82,12 @@ export class Msgbox extends MsgboxBase {
         const inputPlaceholder = options.inputPlaceholder ?? '';
 
         this.type = type;
+        this.overlayKey = options.overlayKey;
         this.resolve = resolve;
 
         // 1. 初始化能力
         this._zIndexLevel = ZIndexLevel.modal;
         this.initTemplateCache('msgbox', MSGBOX_TEMPLATE);
-
-        // 注册 eventKey（在 eventScope 首次创建前设置）
-        if (options.eventKey) {
-            this.eventKey = options.eventKey;
-            EventSourceRegistrar.getInstance().register(options.eventKey, this);
-        }
 
         // 2. 从缓存克隆 DOM + 构建 nodeMap
         const { root, nodeMap } = this.cloneFromCache('msgbox');
@@ -119,28 +149,25 @@ export class Msgbox extends MsgboxBase {
 
         // 11. 绑定按钮事件
         if (confirmBtn) {
-            const unbind = this.bindDomEvent(confirmBtn, 'tap', () => {
+            this.bindDomEvent(confirmBtn, 'tap', () => {
                 this._doResolve({
                     action: 'confirm',
                     value: type === 'prompt' && this.inputEl ? this.inputEl.value : '',
                 });
             });
-            this.onCleanup(unbind);
         }
 
         if (cancelBtn) {
-            const unbind = this.bindDomEvent(cancelBtn, 'tap', () => {
+            this.bindDomEvent(cancelBtn, 'tap', () => {
                 this._doResolve({ action: 'cancel', value: '' });
             });
-            this.onCleanup(unbind);
         }
 
         // 12. 遮罩点击关闭（alert 类型）
         if (type === 'alert') {
-            const unbind = this.bindDomEvent(this.maskEl, 'tap', () => {
+            this.bindDomEvent(this.maskEl, 'tap', () => {
                 this._doResolve({ action: 'cancel', value: '' });
             });
-            this.onCleanup(unbind);
         }
     }
 
@@ -149,22 +176,26 @@ export class Msgbox extends MsgboxBase {
         if (el) el.textContent = text;
     }
 
-    /**
-     * 安全 resolve，防止重复调用
-     */
     private _doResolve(result: MsgboxResult): void {
         if (this._resolved) return;
         this._resolved = true;
-        this.emit(result.action, result, { source: this.eventKey });
+
+        const action = result.action === 'confirm' ? MSGBOX_ACTIONS.CONFIRM : MSGBOX_ACTIONS.CANCEL;
+
+        this.bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${this.overlayKey}:${action}`)
+                .withType(action)
+                .withSource(this.overlayKey)
+                .withData({ overlayKey: this.overlayKey, result })
+                .build()
+        );
+
         this.resolve(result);
         this.close();
     }
 
-    /**
-     * 关闭 msgbox（播放退出动画后销毁）
-     */
     close(): void {
-        // 未 resolve 时兜底 cancel
         if (!this._resolved) {
             this._resolved = true;
             this.resolve({ action: 'cancel', value: '' });
@@ -181,6 +212,16 @@ export class Msgbox extends MsgboxBase {
             this.unmountFromOverlay(this.el);
             this.unmountFromOverlay(this.maskEl);
             this.releaseZIndex();
+
+            this.bus.overlayEmit(
+                EventContextBuilder.create()
+                    .withEvent(`overlay:${this.overlayKey}:${MSGBOX_FEEDBACK_EVENTS.CLOSED}`)
+                    .withType(MSGBOX_FEEDBACK_EVENTS.CLOSED)
+                    .withSource(this.overlayKey)
+                    .withData({ overlayKey: this.overlayKey })
+                    .build()
+            );
+
             this.dispose();
             this.onClose?.();
         };

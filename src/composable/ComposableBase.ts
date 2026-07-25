@@ -16,7 +16,8 @@
  */
 
 import { Logger } from '@/logger';
-import { ABILITY_STATES_KEY, CLEANUPS_KEY } from './forge';
+import { ABILITY_STATES_KEY, CLEANUPS_KEY, withAbilities } from './forge';
+import type { AbilityDefinition } from './types/ability';
 
 export class ComposableBase {
     logger: any;
@@ -35,6 +36,23 @@ export class ComposableBase {
             enumerable: false,
             configurable: true,
         });
+    }
+
+    /**
+     * 创建组合了指定能力的派生类
+     *
+     * 等价于先定义子类再调用 withAbilities，但更简洁：
+     * ```ts
+     * const Derived = ComposableBase.with([AbilityA, AbilityB]);
+     * // 等价于：
+     * // class Derived extends ComposableBase {}
+     * // withAbilities(Derived, [AbilityA, AbilityB]);
+     * ```
+     */
+    static with(abilities: readonly AbilityDefinition[]): typeof ComposableBase {
+        class Derived extends ComposableBase {}
+        withAbilities(Derived, abilities);
+        return Derived as typeof ComposableBase;
     }
 
     abilityState(key: string, creator?: () => any): any | undefined {

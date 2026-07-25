@@ -7,24 +7,25 @@
  * 通过 ComposableBase.with() 组合能力：
  * - TemplateCacheAbility：模板缓存 + 克隆 + nodeMap
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
- * - EventAbility：事件作用域（emit 桥接事件）
+ *
+ * 事件通过 OverlayEventBus 发送，编码：overlay:{overlayKey}:{action}
+ * 外部可通过 overlayEventBus.overlayOn(overlayKey, action, handler) 监听。
  */
 
 import { ComposableBase } from '@/composable';
 import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
 import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
 import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
-import { EventAbility } from '@/system-abilities/system/EventAbility';
-import { EventSourceRegistrar } from '@qimenjs/events';
+import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { EventContextBuilder } from '@/context';
+import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from '@/component-core/template-presets';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
 import type { ToastOptions, ToastHandle, ToastPosition, ToastType } from './types';
 
-/** 默认持续时间 ms */
 const DEFAULT_DURATION = 3000;
 
-/** 类型图标映射 */
 const TYPE_ICON_MAP: Record<ToastType, string> = {
     info: 'ℹ',
     success: '✓',
@@ -72,25 +73,52 @@ export class ToastHandleImpl implements ToastHandle {
 
 // ─── Toast ──────────────────────────────────────────────────
 
-const ToastBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility, EventAbility]);
+const ToastBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility]);
 
 export class Toast extends ToastBase {
-    /** 根 DOM 元素 */
+    // ─── TemplateCacheAbility 方法 ───
+    declare initTemplateCache: (name: string, template: string) => void;
+    declare cloneFromCache: (name: string) => {
+        root: HTMLElement;
+        nodeMap: Record<string, HTMLElement>;
+    };
+
+    // ─── FloatingLayerAbility 方法 ───
+    declare _zIndexLevel: number;
+    declare acquireZIndex: (level?: number) => number;
+    declare releaseZIndex: () => void;
+    declare mountToOverlay: (el: HTMLElement) => void;
+    declare unmountFromOverlay: (el: HTMLElement) => void;
+    declare setViewportPosition: (
+        el: HTMLElement,
+        position: any,
+        offset?: number,
+        margin?: number
+    ) => void;
+    declare playEnterAnimation: (
+        el: HTMLElement,
+        keyframes: Keyframe[],
+        options?: any
+    ) => Animation;
+    declare playExitAnimation: (el: HTMLElement, keyframes: Keyframe[], options?: any) => Animation;
+    declare bindDomEvent: (
+        el: HTMLElement,
+        semantic: string,
+        handler: (e: Event) => void
+    ) => () => void;
+
     el!: HTMLElement;
-    /** 节点缓存 */
     nodeMap!: Record<string, HTMLElement>;
-    /** z-index 值 */
     zIndex!: number;
-    /** 显示位置 */
     position!: ToastPosition;
-    /** ToastHandle */
+    overlayKey!: string;
     handle!: ToastHandleImpl;
-    /** 自动关闭定时器 */
     timerId: ReturnType<typeof setTimeout> | null = null;
-    /** 关闭完成回调（由 Manager 设置） */
     onClose!: () => void;
 
-    constructor(options: ToastOptions) {
+    private readonly bus = OverlayEventBus.getInstance();
+
+    constructor(options: ToastOptions & { overlayKey: string }) {
         super();
 
         const type: ToastType = options.type ?? 'info';
@@ -99,17 +127,12 @@ export class Toast extends ToastBase {
         const hasTitle = !!options.title;
 
         this.position = position;
+        this.overlayKey = options.overlayKey;
 
         // 1. 初始化能力
         this._zIndexLevel = ZIndexLevel.notification;
         this.initTemplateCache('toast', TOAST_TEMPLATE);
         this.initTemplateCache('notification', TOAST_NOTIFICATION_TEMPLATE);
-
-        // 注册 eventKey（在 eventScope 首次创建前设置）
-        if (options.eventKey) {
-            this.eventKey = options.eventKey;
-            EventSourceRegistrar.getInstance().register(options.eventKey, this);
-        }
 
         // 2. 从缓存克隆 DOM + 构建 nodeMap
         const { root, nodeMap } = this.cloneFromCache(hasTitle ? 'notification' : 'toast');
@@ -147,8 +170,7 @@ export class Toast extends ToastBase {
         if (hasTitle) {
             const closeBtn = this.nodeMap['toast:close'];
             if (closeBtn) {
-                const unbind = this.bindDomEvent(closeBtn, 'tap', () => this.handle.close());
-                this.onCleanup(unbind);
+                this.bindDomEvent(closeBtn, 'tap', () => this.handle.close());
             }
         }
 
@@ -185,14 +207,20 @@ export class Toast extends ToastBase {
         return 'translateY(-100%)';
     }
 
-    /**
-     * 关闭 toast（播放退出动画后销毁）
-     */
     close(): void {
         if (this.timerId !== null) {
             clearTimeout(this.timerId);
             this.timerId = null;
         }
+
+        this.bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${this.overlayKey}:${TOAST_ACTIONS.CLOSE}`)
+                .withType(TOAST_ACTIONS.CLOSE)
+                .withSource(this.overlayKey)
+                .withData({ overlayKey: this.overlayKey })
+                .build()
+        );
 
         const animation = this.playExitAnimation(this.el, [
             { opacity: 1, transform: 'translate(0, 0)' },
@@ -202,6 +230,16 @@ export class Toast extends ToastBase {
         animation.onfinish = () => {
             this.unmountFromOverlay(this.el);
             this.releaseZIndex();
+
+            this.bus.overlayEmit(
+                EventContextBuilder.create()
+                    .withEvent(`overlay:${this.overlayKey}:${TOAST_FEEDBACK_EVENTS.CLOSED}`)
+                    .withType(TOAST_FEEDBACK_EVENTS.CLOSED)
+                    .withSource(this.overlayKey)
+                    .withData({ overlayKey: this.overlayKey })
+                    .build()
+            );
+
             this.dispose();
             this.handle._doResolve();
             this.onClose();

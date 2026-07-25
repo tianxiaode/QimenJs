@@ -166,5 +166,5 @@ src/overlay/
 
 ## 后续工作
 
-- imperative 包改造（Toast/Msgbox 走 OverlayEventBus）
+- ~~imperative 包改造（Toast/Msgbox 走 OverlayEventBus）~~ ✅ 已完成（2026-07-25）
 - 浮层组件注册：启动时向 ComponentRegistrar 注册默认浮层组件（Tips/Menu/Dropdown/Popover/Badge/Loading）

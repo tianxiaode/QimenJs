@@ -15,8 +15,6 @@
 import type { AbilityDefinition } from '@/composable';
 import { OverlayRoot } from './OverlayRoot';
 import { ZIndexLevel, nextZIndex, releaseZIndex } from '@/component/z-index';
-import { createEventAdapter } from '@qimenjs/event-dom';
-import type { GestureSemantic, InputSignal } from '@qimenjs/event-dom';
 
 // ─── 视口定位类型 ──────────────────────────────────────────
 
@@ -40,7 +38,7 @@ export interface FloatingAnimationOptions {
 
 // ─── 能力定义 ──────────────────────────────────────────────
 
-export const FloatingLayerAbility= {
+export const FloatingLayerAbility = {
     // ─── OverlayRoot 容器访问 ───
 
     overlayRoot: {
@@ -195,13 +193,18 @@ export const FloatingLayerAbility= {
         return 'translateY(-100%)';
     },
 
-    /**
-     * 获取退出动画的最终 transform
-     */
     getExitTransform(position: ViewportPosition): string {
         if (position === 'center') return 'scale(0.8)';
         if (position.startsWith('top')) return 'translateY(-100%)';
         if (position.startsWith('bottom')) return 'translateY(100%)';
         return 'translateY(-100%)';
+    },
+
+    bindDomEvent(el: HTMLElement, semantic: string, handler: (e: Event) => void): () => void {
+        const eventType = semantic === 'tap' ? 'click' : semantic;
+        el.addEventListener(eventType, handler);
+        const unbind = () => el.removeEventListener(eventType, handler);
+        this.onCleanup(unbind);
+        return unbind;
     },
 } satisfies AbilityDefinition;

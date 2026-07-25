@@ -6,7 +6,13 @@
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
 /** toast 显示位置 */
-export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top' | 'bottom';
+export type ToastPosition =
+    | 'top-right'
+    | 'top-left'
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'top'
+    | 'bottom';
 
 /** toast 配置选项 */
 export interface ToastOptions {
@@ -20,8 +26,8 @@ export interface ToastOptions {
     duration?: number;
     /** 显示位置，默认 'top-right' */
     position?: ToastPosition;
-    /** 事件源标识，用于 EventBridgeAbility 桥接监听 */
-    eventKey?: string;
+    /** 浮层事件标识，用于 OverlayEventBus 监听，默认自动生成 toast:{id} */
+    overlayKey?: string;
 }
 
 /**
@@ -37,7 +43,7 @@ export interface ToastHandle {
     /** Promise then — 支持 await */
     then<TResult1 = void, TResult2 = never>(
         onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,
-        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
+        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
     ): Promise<TResult1 | TResult2>;
 }
 
@@ -56,8 +62,8 @@ export interface MsgboxOptions {
     cancelButtonText?: string;
     /** prompt 输入框占位文本，仅 prompt 模式，默认 '' */
     inputPlaceholder?: string;
-    /** 事件源标识，用于 EventBridgeAbility 桥接监听 */
-    eventKey?: string;
+    /** 浮层事件标识，用于 OverlayEventBus 监听，默认自动生成 msgbox:{id} */
+    overlayKey?: string;
 }
 
 /** msgbox 返回结果 */

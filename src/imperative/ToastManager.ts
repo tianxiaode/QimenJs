@@ -4,6 +4,8 @@
  * 单例模式，管理 toast 实例的创建、堆叠队列、销毁调度。
  * Toast 类内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能，
  * ToastManager 只负责队列调度和堆叠定位。
+ *
+ * overlayKey 自动生成：toast:{id}，也可通过 ToastOptions.overlayKey 自定义。
  */
 
 import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
@@ -11,13 +13,8 @@ import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
 import { Toast } from './Toast';
 import type { ToastOptions, ToastHandle, ToastPosition } from './types';
 
-/** 同时显示的 toast 最大数量 */
 const MAX_COUNT = 5;
-
-/** toast 间距 px */
 const GAP = 16;
-
-/** 距视口边缘间距 px */
 const MARGIN = 16;
 
 export class ToastManager {
@@ -35,16 +32,13 @@ export class ToastManager {
         return ToastManager.instance;
     }
 
-    /**
-     * 创建 toast 实例
-     */
     create(options: ToastOptions): ToastHandle {
         const position: ToastPosition = options.position ?? 'top-right';
-
         const id = this.nextId++;
-        const toast = new Toast(options);
+        const overlayKey = options.overlayKey ?? `toast:${id}`;
 
-        // 设置关闭回调：从队列移除 + 重新计算堆叠
+        const toast = new Toast({ ...options, overlayKey });
+
         toast.onClose = () => {
             this.instances.delete(id);
             this.repositionAll(position);
@@ -52,18 +46,12 @@ export class ToastManager {
 
         this.instances.set(id, toast);
 
-        // 超过上限时关闭最早的
         this.enforceMaxCount(position);
-
-        // 重新计算所有同位置 toast 的堆叠位置
         this.repositionAll(position);
 
         return toast.handle;
     }
 
-    /**
-     * 重新计算指定位置所有活跃 toast 的堆叠位置
-     */
     private repositionAll(position: ToastPosition): void {
         const samePosition = this.getInstancesByPosition(position);
         let offset = 0;
@@ -74,9 +62,6 @@ export class ToastManager {
         }
     }
 
-    /**
-     * 获取指定位置的所有实例（按创建顺序）
-     */
     private getInstancesByPosition(position: ToastPosition): Toast[] {
         const result: Toast[] = [];
         for (const toast of this.instances.values()) {
@@ -87,9 +72,6 @@ export class ToastManager {
         return result;
     }
 
-    /**
-     * 超过上限时关闭最早的同位置 toast
-     */
     private enforceMaxCount(position: ToastPosition): void {
         const samePosition = this.getInstancesByPosition(position);
         if (samePosition.length <= MAX_COUNT) return;
