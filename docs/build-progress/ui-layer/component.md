@@ -7,6 +7,23 @@
 
 ## 构建历史
 
+### 2026-07-25
+- ✅ 新增表单扩展组件（6 个）
+  - TextareaComponent 多行文本组件（FormFieldComponent.replace + TextareaFieldBodyComponent，autoSize/rows/resize）
+  - NumberInputComponent 数字输入框组件（InputComponent.replace，min/max/step/precision/步进按钮）
+  - SelectComponent 下拉选择组件（InputComponent.replace + dropdownIcon，options/filterable/multiple/下拉面板）
+  - SwitchComponent 开关组件（FormFieldComponent.replace + SwitchFieldBodyComponent，track/thumb/activeText/inactiveText）
+  - CheckboxGroupComponent 复选框组组件（FormFieldComponent.replace + CheckboxGroupFieldBodyComponent，ItemGroupStatic 管理选项）
+  - RadioGroupComponent 单选框组组件（FormFieldComponent.replace + RadioGroupFieldBodyComponent，ItemGroupStatic 管理选项）
+- ✅ 新增 FieldBody 子组件（4 个）
+  - TextareaFieldBodyComponent（textarea 字段体）
+  - SwitchFieldBodyComponent（开关轨道 + 滑块）
+  - CheckboxGroupFieldBodyComponent（复选框组选项容器）
+  - RadioGroupFieldBodyComponent（单选框组选项容器）
+- ✅ 新增 CSS 样式文件（4 个）
+  - textarea.css.ts / number-input.css.ts / select.css.ts / switch.css.ts / selection-group.css.ts
+- ✅ register.ts 补注册 Textarea/NumberInput/Select/Switch/CheckboxGroup/RadioGroup（6 个新 type）
+
 ### 2026-07-23
 - ✅ 新增表单组件体系
   - InputComponent 输入组件（labelPosition 多模板、验证、前缀后缀图标、clearable、SizeAbility）
@@ -85,9 +102,9 @@
 
 ### 中优先级
 
-- [ ] 新增 SelectComponent 选择组件
 - [ ] 新增 DialogComponent 对话框组件
 - [ ] 新增 TableComponent 表格组件
+- [ ] 补充 TextareaComponent / NumberInputComponent / SelectComponent / SwitchComponent / CheckboxGroupComponent / RadioGroupComponent 测试
 
 ## 使用统计
 

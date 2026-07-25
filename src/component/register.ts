@@ -49,6 +49,12 @@ import { PasswordInputComponent } from './form/PasswordInputComponent';
 import { TextComponent } from './text/TextComponent';
 import { InputInfoGroupComponent } from './form/InputInfoGroupComponent';
 import { FormComponent } from './form/FormComponent';
+import { TextareaComponent } from './form/TextareaComponent';
+import { NumberInputComponent } from './form/NumberInputComponent';
+import { SelectComponent } from './form/SelectComponent';
+import { SwitchComponent } from './form/SwitchComponent';
+import { CheckboxGroupComponent } from './form/CheckboxGroupComponent';
+import { RadioGroupComponent } from './form/RadioGroupComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -90,4 +96,10 @@ export function registerAllComponents(): void {
     registrar.register('Text', TextComponent);
     registrar.register('InputInfoGroup', InputInfoGroupComponent);
     registrar.register('Form', FormComponent);
+    registrar.register('Textarea', TextareaComponent);
+    registrar.register('NumberInput', NumberInputComponent);
+    registrar.register('Select', SelectComponent);
+    registrar.register('Switch', SwitchComponent);
+    registrar.register('CheckboxGroup', CheckboxGroupComponent);
+    registrar.register('RadioGroup', RadioGroupComponent);
 }

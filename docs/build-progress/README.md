@@ -129,6 +129,13 @@ docs/build-progress/
 
 ## 最近更新
 
+### 2026-07-25（表单扩展组件）
+- 新增 6 个表单扩展组件：TextareaComponent / NumberInputComponent / SelectComponent / SwitchComponent / CheckboxGroupComponent / RadioGroupComponent
+- 新增 4 个 FieldBody 子组件：TextareaFieldBody / SwitchFieldBody / CheckboxGroupFieldBody / RadioGroupFieldBody
+- 新增 5 个 CSS 样式文件：textarea.css / number-input.css / select.css / switch.css / selection-group.css
+- register.ts 补注册 6 个新 type（Textarea / NumberInput / Select / Switch / CheckboxGroup / RadioGroup）
+- 所有新组件遵循 FormFieldComponent.replace() 派生模式，复用标签/验证/信息区域等通用逻辑
+
 ### 2026-07-23（文档同步）
 - 组件核心双层架构重构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent）
 - 多模板支持：ComponentTemplate.tpl 支持 TplNode | TplVariant[]，条件选择

@@ -24,7 +24,12 @@ ComposableBase (src/composable/ComposableBase.ts)
         ├── FormFieldComponent
         ├── FormComponent
         ├── TextComponent
+        ├── TextareaComponent
+        ├── NumberInputComponent
         ├── SelectComponent
+        ├── SwitchComponent
+        ├── CheckboxGroupComponent
+        ├── RadioGroupComponent
         ├── IconComponent
         ├── HBoxComponent / VBoxComponent / GridComponent / SpaceComponent
         ├── ToolbarComponent
@@ -56,7 +61,12 @@ ComposableBase (src/composable/ComposableBase.ts)
 | FormFieldComponent | `src/component/form/FormFieldComponent.ts` | label/验证消息/必填标记包装 |
 | FormComponent | `src/component/form/FormComponent.ts` | 字段收集、统一验证、提交/重置 |
 | TextComponent | `src/component/text/TextComponent.ts` | 文本显示 |
-| SelectComponent | `src/component/components/SelectComponent.ts` | TextAbility, ValueAbility, OptionsAbility, SearchAbility, DisableAbility, SizeAbility |
+| TextareaComponent | `src/component/form/TextareaComponent.ts` | FormFieldComponent.replace + TextareaFieldBodyComponent，autoSize/rows/resize |
+| NumberInputComponent | `src/component/form/NumberInputComponent.ts` | InputComponent.replace，min/max/step/precision/步进按钮 |
+| SelectComponent | `src/component/form/SelectComponent.ts` | InputComponent.replace + dropdownIcon，options/filterable/multiple/下拉面板 |
+| SwitchComponent | `src/component/form/SwitchComponent.ts` | FormFieldComponent.replace + SwitchFieldBodyComponent，track/thumb/activeText/inactiveText |
+| CheckboxGroupComponent | `src/component/form/CheckboxGroupComponent.ts` | FormFieldComponent.replace + CheckboxGroupFieldBodyComponent，ItemGroupStatic 管理选项 |
+| RadioGroupComponent | `src/component/form/RadioGroupComponent.ts` | FormFieldComponent.replace + RadioGroupFieldBodyComponent，ItemGroupStatic 管理选项 |
 | HBoxComponent | `src/component/components/HBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | VBoxComponent | `src/component/components/VBoxComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
 | GridComponent | `src/component/components/GridComponent.ts` | LayoutAbility, ChildrenAbility, AnimationAbility |
@@ -900,3 +910,4 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 2026-07-13 | 导航组件 + 分组选择能力：新增 NavItemComponent（导航项，withTemplate + eventKey 事件转发，text/icon/active/disabled）；新增 NavItemGroupComponent（导航项分组，继承 ItemGroupComponent，eventKey='nav'，selectAt/clearSelection/activeIndex）；新增 GroupSelectAbility（分组选择能力，radio 互斥/checkbox 多选，能力状态管理，MenuComponent 使用）；MenuItemComponent 新增分组选择属性（group/groupMode/checked，radio ●/○ + checkbox ☑/☐ 指示器，ARIA role 支持）；模板事件声明化（MENU_ITEM_TEMPLATE/NAVITEM_TEMPLATE 添加 event:'click'，handleClick → onContentClick）；ExpandArrowAbility 从 component-abilities/render 重导出到主入口 |
 | 2026-07-16 | 组件属性体系重构：新增 common-props.ts（14 个通用属性统一定义 + 值转换器 + MarginPadding/Border 类型）；content-properties.ts v2 模式按三层生成属性（组件自身无前缀 / DOM 子节点 name+Prop / 组件子节点 $name）；nodeMap 改为一级结构（nodeMap[name] 替代 nodeMap[group][name]，NodeMetadata 移除 group 字段）；body 新增 bridges 属性支持（映射为 eventBridge 静态属性）；编译时命名冲突检测 |
 | 2026-07-16 | 恢复误删能力：BadgeAbility（角标管理，创建 Badge 组件实例+委托方法）和 TooltipAbility（Tooltip 浮层，调用 createOverlay）从"纯赋值能力"误删中恢复 |
+| 2026-07-25 | 表单扩展组件：新增 TextareaComponent（多行文本，autoSize/rows/resize）、NumberInputComponent（数字输入，min/max/step/precision/步进按钮）、SelectComponent（下拉选择，dropdownIcon/filterable/multiple/下拉面板）、SwitchComponent（开关，track/thumb/activeText/inactiveText）、CheckboxGroupComponent（复选框组，ItemGroupStatic 管理选项）、RadioGroupComponent（单选框组，ItemGroupStatic 管理选项）；新增 4 个 FieldBody 子组件（TextareaFieldBody/SwitchFieldBody/CheckboxGroupFieldBody/RadioGroupFieldBody）；新增 5 个 CSS 样式文件；register.ts 补注册 6 个新 type |
