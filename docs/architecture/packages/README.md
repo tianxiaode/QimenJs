@@ -59,13 +59,14 @@
 | @qimenjs/entity | 完成 | 通过 | 83% | 实体管理框架 |
 | @qimenjs/router | 完成 | 通过 | ~85% | 路由系统 |
 
-### UI 层：组件与界面（8 个）
+### UI 层：组件与界面（9 个）
 
 | 包名 | 状态 | 测试 | 分支覆盖率 | 说明 |
 |------|------|------|------------|------|
 | @qimenjs/component-core | 开发中 | 通过 | ~82% | 组件核心基础设施 |
 | @qimenjs/component-abilities | 开发中 | 通过 | ~80% | 组件业务能力 |
 | @qimenjs/component | 开发中 | 通过 | ~78% | UI 组件实现 |
+| @qimenjs/markdown | 完成 | 待补充 | - | Markdown 引擎 + 编辑器 |
 | @qimenjs/layout | 完成 | 通过 | ~88% | 布局定义系统 |
 | @qimenjs/theme | 完成 | 通过 | ~85% | 主题系统 |
 | @qimenjs/icon | 完成 | N/A | N/A | 中国风图标库（静态资源） |
@@ -76,8 +77,8 @@
 
 | 指标 | 数值 |
 |------|------|
-| 总包数 | 38 |
-| 已完成 | 30 |
+| 总包数 | 39 |
+| 已完成 | 31 |
 | 开发中 | 3 |
 | 全局分支覆盖率 | ~85% |
 
@@ -116,6 +117,10 @@ component (UI)
   ├─ component-abilities (UI)
   ├─ composable (L1)
   └─ events (L1)
+
+markdown (UI)
+  ├─ component-core (UI)
+  └─ component (UI)
 
 layout (UI)
   └─ types (L0)

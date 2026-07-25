@@ -25,6 +25,7 @@ docs/architecture/
     ├── event-dom.md            # event-dom 包
     ├── i18n.md                 # i18n 包
     ├── icon.md                 # icon 包
+    ├── markdown.md             # markdown 包（引擎 + 编辑器）
     ├── oauth2.md               # oauth2 包
     ├── permission.md           # permission 包
     ├── schema.md               # schema 包
@@ -97,10 +98,11 @@ docs/architecture/
 ├── @qimenjs/entity
 └── @qimenjs/router
 
-UI 层（7 个，依赖应用层及以下）
+UI 层（8 个，依赖应用层及以下）
 ├── @qimenjs/component-core
 ├── @qimenjs/component-abilities
 ├── @qimenjs/component
+├── @qimenjs/markdown
 ├── @qimenjs/layout
 ├── @qimenjs/theme
 ├── @qimenjs/icon

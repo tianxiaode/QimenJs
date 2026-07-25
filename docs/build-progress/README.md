@@ -61,12 +61,12 @@ docs/build-progress/
 | 第 2 层 | 7 | 7 | 7 | ~86% |
 | 第 3 层 | 5 | 5 | 5 | ~87% |
 | 第 4 层 | 2 | 2 | 2 | ~83% |
-| UI 层 | 7 | 7 | 7 | ~80% |
-| **总计** | **36** | **36** | **36** | **~85%** |
+| UI 层 | 8 | 8 | 8 | ~80% |
+| **总计** | **37** | **37** | **37** | **~85%** |
 
 **全局覆盖率**：语句 95% | 分支 87% | 函数 95% | 行 96%
 **测试**：298 测试文件 / 238+ 套件 / 2833+ 用例（全部通过）
-**当前状态**：框架流程已跑通，所有 38 个包已完成开发
+**当前状态**：框架流程已跑通，所有 39 个包已完成开发
 
 ## 快速导航
 
@@ -128,6 +128,16 @@ docs/build-progress/
 - [icon](./ui-layer/icon.md) - 中国风图标库（不参与 TS 构建）
 
 ## 最近更新
+
+### 2026-07-25（Markdown 包）
+- 新增 @qimenjs/markdown 包：零依赖 Markdown → HTML 解析引擎 + FormFieldComponent 派生编辑器
+- MarkdownEngine：规则管道架构，6 个块级规则（heading/code/blockquote/list/hr/html-block）+ 4 个内联规则（emphasis/inline-code/link/image），支持 addBlockRule/addInlineRule 扩展
+- MarkdownEditorComponent：从 FormFieldComponent.replace 派生，edit/preview/split 三模式，内置 MarkdownEngine 实时渲染预览
+- MarkdownEditorFieldBodyComponent：textarea + preview 双栏字段体，keydown 事件冒泡
+- 10 个格式快捷键：Ctrl+B（加粗）/ Ctrl+I（斜体）/ Ctrl+Shift+D（删除线）/ Ctrl+`（行内代码）/ Ctrl+K（链接）/ Ctrl+Shift+K（代码块）/ Ctrl+H（标题）/ Ctrl+Q（引用）/ Ctrl+U（无序列表）/ Ctrl+O（有序列表）+ Tab/Shift+Tab 缩进
+- markdown-editor.css（Metro 风格编辑器样式）+ markdown-viewer.css（预览排版样式）
+- 注册 MarkdownEditor 到 ComponentRegistrar，添加 @qimenjs/markdown 路径别名
+- 新增架构文档：docs/architecture/packages/markdown.md
 
 ### 2026-07-25（表单扩展组件）
 - 新增 6 个表单扩展组件：TextareaComponent / NumberInputComponent / SelectComponent / SwitchComponent / CheckboxGroupComponent / RadioGroupComponent

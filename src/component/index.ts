@@ -144,5 +144,17 @@ export { LoadingComponent } from './loading/LoadingComponent';
 // 事件枚举
 export * from './events';
 
+// Markdown 组件
+export {
+    MarkdownEditorComponent,
+    type MarkdownEditorProps,
+    type MarkdownEditMode,
+    type MarkdownShortcutAction,
+    type ShortcutContext,
+} from '../markdown/MarkdownEditorComponent';
+export { MarkdownEditorFieldBodyComponent } from '../markdown/MarkdownEditorFieldBodyComponent';
+export { markdownEditorCSS } from '../markdown/markdown-editor.css';
+export { markdownViewerCSS } from '../markdown/markdown-viewer.css';
+
 // 动画
 export { animationsCSS } from './styles/animations';

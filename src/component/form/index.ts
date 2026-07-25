@@ -41,3 +41,11 @@ export {
 export { RadioGroupFieldBodyComponent } from './RadioGroupFieldBodyComponent';
 export { RadioGroupComponent, type RadioOption, type RadioGroupProps } from './RadioGroupComponent';
 export { selectionGroupCSS } from './selection-group.css';
+export {
+    MarkdownEditorComponent,
+    type MarkdownEditorProps,
+    type MarkdownEditMode,
+} from '../../markdown/MarkdownEditorComponent';
+export { MarkdownEditorFieldBodyComponent } from '../../markdown/MarkdownEditorFieldBodyComponent';
+export { markdownEditorCSS } from '../../markdown/markdown-editor.css';
+export { markdownViewerCSS } from '../../markdown/markdown-viewer.css';

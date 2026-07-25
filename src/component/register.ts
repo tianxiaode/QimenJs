@@ -55,6 +55,7 @@ import { SelectComponent } from './form/SelectComponent';
 import { SwitchComponent } from './form/SwitchComponent';
 import { CheckboxGroupComponent } from './form/CheckboxGroupComponent';
 import { RadioGroupComponent } from './form/RadioGroupComponent';
+import { MarkdownEditorComponent } from '../markdown/MarkdownEditorComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -102,4 +103,5 @@ export function registerAllComponents(): void {
     registrar.register('Switch', SwitchComponent);
     registrar.register('CheckboxGroup', CheckboxGroupComponent);
     registrar.register('RadioGroup', RadioGroupComponent);
+    registrar.register('MarkdownEditor', MarkdownEditorComponent);
 }
