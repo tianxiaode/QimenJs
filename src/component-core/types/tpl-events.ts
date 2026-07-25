@@ -128,8 +128,12 @@ export interface TplEventAction {
      */
     entities?: boolean | string;
 
-    /** 转发为路由事件（通过 RouteEventBus 解耦转发） */
-    router?: string;
+    /**
+     * 转发为路由事件（通过 RouteEventBus 解耦转发）
+     * - true: 配合 keyProp，运行时从 item 取 keyProp 值作为路由名
+     * - string: 显式指定路由名
+     */
+    router?: boolean | string;
 
     /** 转发为系统事件（通过 SystemEventBus 解耦转发） */
     system?: string | string[];
@@ -256,7 +260,7 @@ export interface DelegatedEventRule {
     entities?: boolean | string;
 
     /** 转发为路由事件 */
-    router?: string;
+    router?: boolean | string;
 
     /** 转发为系统事件 */
     system?: string[];

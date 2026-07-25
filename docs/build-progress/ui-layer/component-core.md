@@ -7,6 +7,29 @@
 
 ## 构建历史
 
+### 2026-07-25
+- ✅ itemEvents 消融进 tplEvents.$items：统一事件声明和分发机制
+  - 删除 ItemEventAction/ItemEvents 类型，新增 ItemTypeEvents
+  - 删除 component-template.ts 的 itemEvents 字段
+  - 删除 TemplateFactory 的 itemEvents 参数和 mergeItemEvents
+  - 删除 Component 的 itemEvents 传参
+- ✅ containsElement + getTargetItem 替代 childEventIndex/nodeElMap/data-cmp-id
+  - TemplateComponent.containsElement(nodeName, target) 统一判断 target 所属节点
+  - ItemGroupBaseComponent.getTargetItem(target) 遍历 items 定位 item
+  - DelegatedEventEngine 不再预建索引，直接遍历 rules + containsElement 匹配
+- ✅ keyProp 默认 'name'：编译时自动补上，支持 handler:true/emits/entities/router 动态名解析
+- ✅ data 声明式数据：支持数组（共享）和对象（按事件类型区分），支持属性取值和 get 方法引用
+- ✅ entities: true / router: true + keyProp：运行时从 item 取 key 值作为实体/路由名
+  - TplEventAction.router 类型从 string 改为 boolean | string
+  - DelegatedEventRule.router 类型从 string 改为 boolean | string
+  - _dispatchRule router 分发逻辑与 entities 对齐
+- ✅ 6 个组件迁移：ButtonGroup/Menu/NavItemGroup/TabBar/Accordion/InputFieldBodyComponent 从 itemEvents → tplEvents.$items
+- ✅ RuntimeEngine 每个实例保证有 id：instance.id = props?.id || getId('cmp')
+- ✅ _createItem 去掉 itemKey：直接用 instance.id 作为 nodeMap key
+- ✅ EventDataType 新增 'handler'，修复 buildPayload 类型
+- ✅ 委托事件引擎测试重写：删除旧 buildNodeElMap/buildChildEventIndex 测试，新增 $items/keyProp/entities:true/router:true 测试
+- ✅ OverlayDispatchCenter/DragDispatchCenter 不需要修改（与 tplEvents 属于不同架构层）
+
 ### 2026-07-24
 - ✅ 构建流程引擎化重构：utils/ → engine/，散落步骤整合为四个纯函数引擎
   - TemplateCompiler — 模板编译引擎（compile → { cache, nodeMetas }）

@@ -5,8 +5,23 @@ function makeEl(tag: string = 'div'): HTMLElement {
     return document.createElement(tag);
 }
 
-function makeNodeMap(entries: Record<string, { el?: Element; component?: any }>) {
-    return entries;
+function makeInstance(overrides: Record<string, any> = {}): any {
+    return {
+        el: makeEl(),
+        nodeMap: {} as Record<string, any>,
+        containsElement(nodeName: string, target: Element): boolean {
+            const node = this.nodeMap?.[nodeName];
+            if (!node) return false;
+            const el = node.component ? node.component.el : node.el;
+            return el?.contains(target) ?? false;
+        },
+        emit: jest.fn(),
+        bridgeEmit: jest.fn(),
+        entityEmit: jest.fn(),
+        routerEmit: jest.fn(),
+        systemEmit: jest.fn(),
+        ...overrides,
+    };
 }
 
 describe('DelegatedEventEngine', () => {
@@ -40,7 +55,7 @@ describe('DelegatedEventEngine', () => {
             expect(rules[1].debounce).toBe(300);
         });
 
-        it('emits 自动用 nodeName', () => {
+        it('emits 声明', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
                 saveBtn: { click: { handler: true, emits: ['saveBtn'] } },
             });
@@ -48,18 +63,44 @@ describe('DelegatedEventEngine', () => {
             expect(rules[0].needsBinding).toBe(true);
         });
 
-        it('bridges 自动用 nodeName', () => {
+        it('bridges 声明', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
                 saveBtn: { click: { bridges: ['saveBtn'] } },
             });
             expect(rules[0].bridges).toEqual(['saveBtn']);
         });
 
-        it('entities 自动用 nodeName', () => {
+        it('entities 声明', () => {
             const rules = DelegatedEventEngine.compileTplEvents({
                 saveBtn: { click: { entities: 'saveBtn' } },
             });
             expect(rules[0].entities).toBe('saveBtn');
+        });
+
+        it('entities: true 声明', () => {
+            const rules = DelegatedEventEngine.compileTplEvents({
+                container: {
+                    $items: {
+                        Button: { click: { entities: true } },
+                    },
+                },
+            });
+            expect(rules[0].entities).toBe(true);
+            expect(rules[0].itemType).toBe('Button');
+            expect(rules[0].keyProp).toBe('name');
+        });
+
+        it('router: true 声明', () => {
+            const rules = DelegatedEventEngine.compileTplEvents({
+                nav: {
+                    $items: {
+                        NavItem: { click: { router: true } },
+                    },
+                },
+            });
+            expect(rules[0].router).toBe(true);
+            expect(rules[0].itemType).toBe('NavItem');
+            expect(rules[0].keyProp).toBe('name');
         });
 
         it('纯声明 + 对象混合', () => {
@@ -71,238 +112,164 @@ describe('DelegatedEventEngine', () => {
             expect(rules.find(r => r.nodeName === 'btn')!.needsBinding).toBe(false);
             expect(rules.find(r => r.nodeName === 'eye')!.needsBinding).toBe(true);
         });
-    });
 
-    describe('buildNodeElMap', () => {
-        it('构建 el → nodeName 反向映射', () => {
-            const btnEl = makeEl();
-            const fieldEl = makeEl();
-            const instance = {
-                nodeMap: {
-                    btn: { el: btnEl },
-                    field: { el: fieldEl },
+        it('$items 编译：默认 keyProp=name', () => {
+            const rules = DelegatedEventEngine.compileTplEvents({
+                itemContainer: {
+                    $items: {
+                        Button: { click: { emits: ['itemClick'] } },
+                        MenuItem: { click: { emits: ['select'] } },
+                    },
                 },
-            };
-            const map = DelegatedEventEngine.buildNodeElMap(instance);
-            expect(map.get(btnEl)).toBe('btn');
-            expect(map.get(fieldEl)).toBe('field');
+            });
+            expect(rules).toHaveLength(2);
+            expect(rules[0].itemType).toBe('Button');
+            expect(rules[0].keyProp).toBe('name');
+            expect(rules[1].itemType).toBe('MenuItem');
+            expect(rules[1].keyProp).toBe('name');
         });
 
-        it('子组件取 component.el', () => {
-            const compEl = makeEl();
-            const instance = {
-                nodeMap: {
-                    item: { component: { el: compEl } },
+        it('$items 编译：显式 keyProp 覆盖默认值', () => {
+            const rules = DelegatedEventEngine.compileTplEvents({
+                list: {
+                    $items: {
+                        Icon: { click: { emits: ['actionClick'], keyProp: 'id' } },
+                    },
                 },
-            };
-            const map = DelegatedEventEngine.buildNodeElMap(instance);
-            expect(map.get(compEl)).toBe('item');
-        });
-    });
-
-    describe('buildChildEventIndex', () => {
-        it('只收集子组件节点', () => {
-            const compEl = makeEl();
-            const domEl = makeEl();
-            const instance = {
-                nodeMap: {
-                    item: { component: { el: compEl } },
-                    label: { el: domEl },
-                },
-            };
-            const index = DelegatedEventEngine.buildChildEventIndex(instance);
-            expect(index).toHaveLength(1);
-            expect(index[0].nodeName).toBe('item');
-            expect(index[0].el).toBe(compEl);
+            });
+            expect(rules[0].keyProp).toBe('id');
         });
 
-        it('没有子组件时返回空数组', () => {
-            const instance = {
-                nodeMap: {
-                    label: { el: makeEl() },
+        it('容器节点同时有自身事件和 $items', () => {
+            const rules = DelegatedEventEngine.compileTplEvents({
+                itemContainer: {
+                    scroll: { handler: true },
+                    $items: {
+                        Button: { click: { emits: ['itemClick'] } },
+                    },
                 },
-            };
-            const index = DelegatedEventEngine.buildChildEventIndex(instance);
-            expect(index).toHaveLength(0);
+            });
+            expect(rules).toHaveLength(2);
+            const scrollRule = rules.find(r => r.event === 'scroll')!;
+            expect(scrollRule.nodeName).toBe('itemContainer');
+            expect(scrollRule.handler).toBe('onItemContainerScroll');
+            expect(scrollRule.itemType).toBeUndefined();
+
+            const itemRule = rules.find(r => r.itemType === 'Button')!;
+            expect(itemRule.event).toBe('click');
         });
     });
 
-    describe('handleDelegatedEvent - 子组件委托', () => {
-        it('点击子组件内部元素，匹配父组件的 rules', () => {
+    describe('handleDelegatedEvent - containsElement 匹配', () => {
+        it('点击节点内元素，匹配对应规则', () => {
             const rootEl = makeEl();
-            const childEl = makeEl();
+            const btnEl = makeEl();
             const innerEl = makeEl();
-            rootEl.appendChild(childEl);
-            childEl.appendChild(innerEl);
-
-            const dispatched: string[] = [];
-            const instance = {
-                el: rootEl,
-                nodeMap: { item: { component: { el: childEl } } },
-                emit: (name: string) => dispatched.push(name),
-            };
-
-            const rules: DelegatedEventRule[] = [
-                { nodeName: 'item', event: 'click', emits: ['itemClick'], needsBinding: true },
-            ];
-            const nodeElMap = new WeakMap<Element, string>();
-            nodeElMap.set(childEl, 'item');
-            const childEventIndex = [{ nodeName: 'item', el: childEl, rules: [] }];
-
-            const domEvt = { target: innerEl, type: 'click' };
-            DelegatedEventEngine.handleDelegatedEvent(
-                instance,
-                domEvt,
-                rules,
-                nodeElMap,
-                childEventIndex
-            );
-
-            expect(dispatched).toContain('itemClick');
-        });
-
-        it('点击不在任何子组件内，走自身 nodeElMap 查找', () => {
-            const rootEl = makeEl();
-            const btnEl = makeEl();
             rootEl.appendChild(btnEl);
+            btnEl.appendChild(innerEl);
 
-            const dispatched: string[] = [];
-            const instance = {
+            const instance = makeInstance({
                 el: rootEl,
                 nodeMap: { btn: { el: btnEl } },
-                emit: (name: string) => dispatched.push(name),
-            };
+            });
 
             const rules: DelegatedEventRule[] = [
-                { nodeName: 'btn', event: 'click', emits: ['btnClick'], needsBinding: false },
+                { nodeName: 'btn', event: 'click', emits: ['btnClick'], needsBinding: true },
             ];
-            const nodeElMap = new WeakMap<Element, string>();
-            nodeElMap.set(btnEl, 'btn');
-            const childEventIndex: any[] = [];
+            const domEvt = { target: innerEl, type: 'click' };
+            DelegatedEventEngine.handleDelegatedEvent(instance, domEvt, rules);
 
-            const domEvt = { target: btnEl, type: 'click' };
-            DelegatedEventEngine.handleDelegatedEvent(
-                instance,
-                domEvt,
-                rules,
-                nodeElMap,
-                childEventIndex
-            );
-
-            expect(dispatched).toContain('btnClick');
+            expect(instance.emit).toHaveBeenCalled();
         });
 
-        it('点击子组件内部，不匹配其他子组件', () => {
+        it('点击不在任何节点内，不匹配', () => {
             const rootEl = makeEl();
-            const childA = makeEl();
-            const childB = makeEl();
-            const innerA = makeEl();
-            rootEl.appendChild(childA);
-            rootEl.appendChild(childB);
-            childA.appendChild(innerA);
+            const otherEl = makeEl();
+            rootEl.appendChild(otherEl);
 
-            const dispatched: string[] = [];
-            const instance = {
+            const instance = makeInstance({
+                el: rootEl,
+                nodeMap: { btn: { el: makeEl() } },
+            });
+
+            const rules: DelegatedEventRule[] = [
+                { nodeName: 'btn', event: 'click', emits: ['btnClick'], needsBinding: true },
+            ];
+            const domEvt = { target: otherEl, type: 'click' };
+            DelegatedEventEngine.handleDelegatedEvent(instance, domEvt, rules);
+
+            expect(instance.emit).not.toHaveBeenCalled();
+        });
+
+        it('$items 规则：通过 getTargetItem 定位 item', () => {
+            const rootEl = makeEl();
+            const containerEl = makeEl();
+            const itemEl = makeEl();
+            rootEl.appendChild(containerEl);
+            containerEl.appendChild(itemEl);
+
+            const itemComponent = { id: 'icon-1', name: 'eye', el: itemEl };
+            const instance = makeInstance({
                 el: rootEl,
                 nodeMap: {
-                    itemA: { component: { el: childA } },
-                    itemB: { component: { el: childB } },
+                    actions: { component: { el: containerEl, getTargetItem: jest.fn() } },
                 },
-                emit: (name: string) => dispatched.push(name),
-            };
+            });
+            instance.nodeMap.actions.component.getTargetItem.mockReturnValue({
+                component: itemComponent,
+                type: 'Icon',
+                index: 0,
+            });
 
             const rules: DelegatedEventRule[] = [
-                { nodeName: 'itemA', event: 'click', emits: ['aClick'], needsBinding: true },
-                { nodeName: 'itemB', event: 'click', emits: ['bClick'], needsBinding: true },
+                {
+                    nodeName: 'actions',
+                    event: 'click',
+                    itemType: 'Icon',
+                    keyProp: 'name',
+                    emits: ['actionClick'],
+                    needsBinding: true,
+                },
             ];
-            const nodeElMap = new WeakMap<Element, string>();
-            const childEventIndex = [
-                { nodeName: 'itemA', el: childA, rules: [] },
-                { nodeName: 'itemB', el: childB, rules: [] },
-            ];
+            const domEvt = { target: itemEl, type: 'click' };
+            DelegatedEventEngine.handleDelegatedEvent(instance, domEvt, rules);
 
-            const domEvt = { target: innerA, type: 'click' };
-            DelegatedEventEngine.handleDelegatedEvent(
-                instance,
-                domEvt,
-                rules,
-                nodeElMap,
-                childEventIndex
-            );
-
-            expect(dispatched).toContain('aClick');
-            expect(dispatched).not.toContain('bClick');
+            expect(instance.nodeMap.actions.component.getTargetItem).toHaveBeenCalledWith(itemEl);
         });
-    });
 
-    describe('嵌套组件场景', () => {
-        it('Parent → A → C: 点击 C 内部，Parent 分发自己的 A 事件，不是 C 的事件', () => {
+        it('$items 规则：itemType 不匹配时跳过', () => {
             const rootEl = makeEl();
-            const aEl = makeEl();
-            const cEl = makeEl();
-            const cInner = makeEl();
-            rootEl.appendChild(aEl);
-            aEl.appendChild(cEl);
-            cEl.appendChild(cInner);
+            const containerEl = makeEl();
+            const itemEl = makeEl();
+            rootEl.appendChild(containerEl);
+            containerEl.appendChild(itemEl);
 
-            const parentDispatched: string[] = [];
-            const parentInstance = {
+            const instance = makeInstance({
                 el: rootEl,
-                nodeMap: { a: { component: { el: aEl } } },
-                emit: (name: string) => parentDispatched.push(name),
-            };
+                nodeMap: {
+                    actions: { component: { el: containerEl, getTargetItem: jest.fn() } },
+                },
+            });
+            instance.nodeMap.actions.component.getTargetItem.mockReturnValue({
+                component: { name: 'btn1' },
+                type: 'Button',
+                index: 0,
+            });
 
-            const parentRules: DelegatedEventRule[] = [
-                { nodeName: 'a', event: 'click', emits: ['abc1', 'abc2'], needsBinding: true },
+            const rules: DelegatedEventRule[] = [
+                {
+                    nodeName: 'actions',
+                    event: 'click',
+                    itemType: 'Icon',
+                    keyProp: 'name',
+                    emits: ['actionClick'],
+                    needsBinding: true,
+                },
             ];
-            const parentNodeElMap = new WeakMap<Element, string>();
-            parentNodeElMap.set(aEl, 'a');
-            const parentChildIndex = [{ nodeName: 'a', el: aEl, rules: [] }];
+            const domEvt = { target: itemEl, type: 'click' };
+            DelegatedEventEngine.handleDelegatedEvent(instance, domEvt, rules);
 
-            const domEvt = { target: cInner, type: 'click' };
-            DelegatedEventEngine.handleDelegatedEvent(
-                parentInstance,
-                domEvt,
-                parentRules,
-                parentNodeElMap,
-                parentChildIndex
-            );
-
-            expect(parentDispatched).toEqual(['abc1', 'abc2']);
-            expect(parentDispatched).not.toContain('c1');
-        });
-
-        it('C 组件自己也处理事件（DOM 冒泡自然触发）', () => {
-            const rootEl = makeEl();
-            const cEl = makeEl();
-            const cInner = makeEl();
-            rootEl.appendChild(cEl);
-            cEl.appendChild(cInner);
-
-            const cDispatched: string[] = [];
-            const cInstance = {
-                el: cEl,
-                nodeMap: { icon: { el: cInner } },
-                emit: (name: string) => cDispatched.push(name),
-            };
-
-            const cRules: DelegatedEventRule[] = [
-                { nodeName: 'icon', event: 'click', emits: ['c1', 'c2'], needsBinding: false },
-            ];
-            const cNodeElMap = new WeakMap<Element, string>();
-            cNodeElMap.set(cInner, 'icon');
-            const cChildIndex: any[] = [];
-
-            const domEvt = { target: cInner, type: 'click' };
-            DelegatedEventEngine.handleDelegatedEvent(
-                cInstance,
-                domEvt,
-                cRules,
-                cNodeElMap,
-                cChildIndex
-            );
-
-            expect(cDispatched).toEqual(['c1', 'c2']);
+            expect(instance.emit).not.toHaveBeenCalled();
         });
     });
 
@@ -322,7 +289,7 @@ describe('DelegatedEventEngine', () => {
             };
             const domEvt = { type: 'click', target: el };
             DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
-            expect(handlerFn).toHaveBeenCalledWith(domEvt, el);
+            expect(handlerFn).toHaveBeenCalledWith(domEvt, el, {});
         });
 
         it('emits 转发', () => {
@@ -400,6 +367,69 @@ describe('DelegatedEventEngine', () => {
             const domEvt = { type: 'click', target: el };
             DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
             expect(entitied).toHaveLength(1);
+        });
+
+        it('entities: true + keyProp 从 item 取名', () => {
+            const el = makeEl();
+            const entitied: any[] = [];
+            const instance = {
+                nodeMap: { actions: { component: { el } } },
+                entityEmit: (ctx: any) => entitied.push(ctx),
+                entityKey: 'testEntity',
+            };
+            const rule: DelegatedEventRule = {
+                nodeName: 'actions',
+                event: 'click',
+                entities: true,
+                keyProp: 'name',
+                needsBinding: true,
+            };
+            const itemInfo = { component: { name: 'save' }, type: 'Button', index: 0 };
+            const domEvt = { type: 'click', target: el };
+            DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+            expect(entitied).toHaveLength(1);
+        });
+
+        it('router: true + keyProp 从 item 取名', () => {
+            const el = makeEl();
+            const routed: any[] = [];
+            const instance = {
+                nodeMap: { nav: { component: { el } } },
+                routerEmit: (ctx: any) => routed.push(ctx),
+                routeKey: 'testRoute',
+            };
+            const rule: DelegatedEventRule = {
+                nodeName: 'nav',
+                event: 'click',
+                router: true,
+                keyProp: 'name',
+                needsBinding: true,
+            };
+            const itemInfo = { component: { name: 'users' }, type: 'NavItem', index: 0 };
+            const domEvt = { type: 'click', target: el };
+            DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+            expect(routed).toHaveLength(1);
+        });
+
+        it('keyProp 生成带前缀的 emit 名', () => {
+            const el = makeEl();
+            const emitted: any[] = [];
+            const instance = {
+                nodeMap: { actions: { component: { el } } },
+                emit: (name: string, ctx: any) => emitted.push(name),
+                eventKey: 'testKey',
+            };
+            const rule: DelegatedEventRule = {
+                nodeName: 'actions',
+                event: 'click',
+                keyProp: 'name',
+                emits: ['actionClick'],
+                needsBinding: true,
+            };
+            const itemInfo = { component: { name: 'eye' }, type: 'Icon', index: 0 };
+            const domEvt = { type: 'click', target: el };
+            DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+            expect(emitted).toEqual(['eyeActionClick', 'actionClick']);
         });
     });
 

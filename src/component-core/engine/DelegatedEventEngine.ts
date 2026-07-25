@@ -22,7 +22,7 @@ import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 
-type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
+type EventDataType = 'handler' | 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
 
 export class DelegatedEventEngine {
     static compileTplEvents(tplEvents: TplEvents): DelegatedEventRule[] {
@@ -224,7 +224,7 @@ export class DelegatedEventEngine {
 
         const itemPayload = keyValue ? { ...itemInfo, [rule.keyProp!]: keyValue } : itemInfo;
 
-        const buildPayload = (eventType: string): any => {
+        const buildPayload = (eventType: EventDataType): any => {
             const fields = DelegatedEventEngine._resolveDataFields(rule.data, eventType);
             const extraData = fields
                 ? DelegatedEventEngine._collectDataFields(instance, itemPayload, fields)
@@ -309,8 +309,12 @@ export class DelegatedEventEngine {
         }
 
         if (rule.router && instance.routeKey) {
-            let routeName = rule.router;
+            let routeName: string | undefined;
+            if (typeof rule.router === 'string' && rule.router !== 'true') {
+                routeName = rule.router;
+            }
             if (keyValue) routeName = keyValue;
+            if (!routeName) return;
             const payload = buildPayload('router');
             const ctx = DelegatedEventEngine._buildForwardContext(
                 instance,
