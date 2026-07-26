@@ -7,6 +7,8 @@
  * - 年份数字矩阵生成
  * - 分钟/秒十位+个位拆分
  * - 预览栏格式化
+ *
+ * @module utils/date/datetime-picker
  */
 
 import { getDaysInMonth } from './calculation';
