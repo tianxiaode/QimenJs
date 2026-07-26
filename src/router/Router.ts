@@ -36,6 +36,14 @@ import { SYSTEM_EVENTS } from '@qimenjs/events';
 import { EventContextBuilder } from '@/context';
 import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
+/**
+ * 路径转事件名
+ *
+ * 将 URL 路径转换为事件名（/ 替换为 :，首尾空段过滤）
+ *
+ * @param path URL 路径
+ * @returns 事件名（如 /users/list → users:list）
+ */
 export function pathToEventName(path: string): string {
     return path
         .split('/')
