@@ -2,6 +2,10 @@
 import { CacheType, ICacheProvider } from './types';
 import { MemoryProvider } from './MemoryProvider';
 
+/**
+ * 缓存工厂类
+ * 负责创建和释放缓存提供者实例
+ */
 export class CacheFactory {
     static _instances = new Map<string, ICacheProvider>();
 

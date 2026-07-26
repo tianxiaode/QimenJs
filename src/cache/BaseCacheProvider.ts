@@ -1,6 +1,13 @@
 ﻿import { string } from '@qimenjs/utils';
 import { CacheType, ICacheEntry, ICacheProvider } from './types';
 
+/**
+ * 缓存提供者抽象基类
+ * 实现了统一的获取（含过期检查）和存储逻辑，具体介质由子类实现
+ *
+ * @template TKey - 缓存键类型，默认为string
+ * @template TData - 缓存数据类型，默认为any
+ */
 export abstract class BaseCacheProvider<TKey = string, TData = any> implements ICacheProvider<
     TKey,
     TData
