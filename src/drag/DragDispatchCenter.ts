@@ -19,6 +19,7 @@ import type { DragDecl } from '@/component-core/types/tpl-body';
 
 export interface DragDefinition extends DragDecl {}
 
+/** 拖拽实例内部结构 */
 interface DragInstance {
     el: HTMLElement;
     component: any;
@@ -26,10 +27,23 @@ interface DragInstance {
     config: DragDecl;
 }
 
+/**
+ * 编码实例键
+ *
+ * @param componentId 组件 ID
+ * @param nodeName 节点名
+ * @returns 编码后的键（格式：componentId:nodeName）
+ */
 function encodeInstanceKey(componentId: string, nodeName: string): string {
     return `${componentId}:${nodeName}`;
 }
 
+/**
+ * 首字母大写
+ *
+ * @param s 输入字符串
+ * @returns 首字母大写后的字符串
+ */
 function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -47,12 +61,23 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         this.logger.debug?.('[DragDispatchCenter] initialized');
     }
 
+    /**
+     * 注册拖拽定义
+     *
+     * @param dragKey 拖拽键
+     * @param definition 拖拽定义
+     */
     register(dragKey: string, definition: DragDefinition): void {
         this.checkLock();
         this.storage.set(dragKey, definition);
         this.logger.debug?.(`[DragDispatchCenter] registered dragKey="${dragKey}"`);
     }
 
+    /**
+     * 注销拖拽定义
+     *
+     * @param dragKey 拖拽键
+     */
     unregister(dragKey: string): void {
         this.checkLock();
         this._disposeInstance(dragKey);
@@ -60,10 +85,21 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         this.logger.debug?.(`[DragDispatchCenter] unregistered dragKey="${dragKey}"`);
     }
 
+    /**
+     * 获取拖拽定义
+     *
+     * @param dragKey 拖拽键
+     * @returns 拖拽定义，若不存在则返回 undefined
+     */
     get(dragKey: string): DragDefinition | undefined {
         return this.storage.get(dragKey);
     }
 
+    /**
+     * 按组件 ID 销毁所有拖拽实例
+     *
+     * @param componentId 组件 ID
+     */
     disposeByComponent(componentId: string): void {
         const prefix = `${componentId}:`;
         for (const [key, inst] of this.instances) {
@@ -77,6 +113,12 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         );
     }
 
+    /**
+     * 处理初始化事件
+     *
+     * @param componentId 组件 ID
+     * @param data 初始化数据（包含 component 和 drags）
+     */
     handleInit(componentId: string, data: any): void {
         const component = data?.component;
         const drags = data?.drags;
@@ -208,6 +250,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         console.log('Instances:', instances);
     }
 
+    /** 销毁所有拖拽实例并清理资源 */
     dispose(): void {
         for (const [key, inst] of this.instances) {
             this._cleanupInstance(inst);
