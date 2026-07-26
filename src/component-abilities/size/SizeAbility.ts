@@ -26,8 +26,11 @@
 
 import type { AbilityDefinition } from '@/composable';
 
+/** 尺寸配置 */
 export interface SizeConfig {
+    /** 可用尺寸列表，默认 ['sm','md','lg'] */
     sizes?: string[];
+    /** 默认尺寸，默认 'md' */
     defaultSize?: string;
 }
 
@@ -42,7 +45,8 @@ interface SizeState {
     classPrefix: string;
 }
 
-export const SizeAbility= {
+export const SizeAbility = {
+    /** 初始化尺寸能力，设置默认尺寸 CSS 类 */
     initSize(config?: SizeConfig): void {
         const sizes = config?.sizes ?? DEFAULT_SIZES;
         const defaultSize = config?.defaultSize ?? DEFAULT_SIZE;

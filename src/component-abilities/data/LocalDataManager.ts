@@ -3,15 +3,23 @@ import type { InferAbilities } from '@/composable';
 import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
 import type { ILocalSearchParams } from '@/schema';
 
+/** 本地数据管理器配置 */
 export interface LocalDataManagerConfig {
+    /** 主键字段名，默认 'id' */
     idField?: string;
+    /** 主键类型，默认 'number' */
     idType?: 'number' | 'string';
+    /** 名称字段名，默认 'name' */
     nameField?: string;
+    /** 搜索字段列表 */
     searchFields?: string[];
+    /** 默认排序字段 */
     defaultSort?: string;
+    /** 默认排序方向 */
     defaultOrder?: 'asc' | 'desc';
 }
 
+/** 本地数据管理器接口 */
 export interface ILocalDataManager {
     isRemote: boolean;
     sourceData: Map<string | number, any>;
@@ -49,6 +57,10 @@ export interface ILocalDataManager {
 
 const LOCAL_DATA_MANAGER_ABILITIES = [FlatLocalStateAbility] as const;
 
+/**
+ * 本地数据管理器
+ * 基于 ComposableBase + FlatLocalStateAbility，提供本地数据的 CRUD、搜索、排序等操作
+ */
 export class LocalDataManager extends ComposableBase {
     isRemote: boolean = false;
     sourceData: Map<string | number, any> = new Map();
@@ -86,6 +98,7 @@ export class LocalDataManager extends ComposableBase {
         };
     }
 
+    /** 根据主键获取数据项，支持自定义 idField 查找 */
     get(id: string | number): any | null {
         const idField = this.schema.idField;
         let result = this.sourceData.get(id) ?? null;
