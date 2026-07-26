@@ -485,11 +485,37 @@ class RootComponent extends ComponentBase {
 
 | 能力 | 说明 |
 |------|------|
-| ValueAbility | 值管理 |
-| ValidateAbility | 校验 |
-| PlaceholderAbility | 占位文本 |
-| SubmitAbility | 提交 |
-| FieldSetAbility | 字段集 |
+| LocalDataAbility | 本地数据管理（CRUD + 变更通知 + filter/sort 转接 LocalDataManager） |
+| LocalDataManager | 轻量本地数据管理类（ComposableBase + FlatLocalStateAbility，纯内存，无远程） |
+
+**LocalDataManager 核心接口**：
+
+```typescript
+interface ILocalDataManager {
+    sourceData: Map<string | number, any>;  // 原始数据
+    items: any[];                           // 过滤+排序后的视图数据
+    search: ILocalSearchParams;             // 搜索状态（keyword/sortBy/sortOrder）
+
+    updateData(result: any[]): Promise<void>;  // 外部注入数据
+    filter(text: string): void;               // 设置关键词过滤
+    sort(field: string, order: 'asc' | 'desc'): void;  // 设置排序
+    refreshView(): Promise<void>;             // 执行 filter + sort → items
+    get(id: string | number): any | null;     // 按 ID 查找
+    dispose(): void;                          // 释放资源
+}
+```
+
+**LocalDataAbility 转接方法**：
+
+| 方法 | 说明 | 场景 |
+|------|------|------|
+| filterLocalData(key, keyword) | 关键词过滤 | 下拉选择 |
+| sortLocalData(key, field, order) | 字段排序 | 表格列排序 |
+| getLocalDataView(key) | 获取过滤+排序后的视图数据 | 渲染 |
+| getLocalDataRaw(key) | 获取原始全量数据 | 重置/回退 |
+| getLocalDataItem(key, id) | 按 ID 查找数据项 | 行操作 |
+
+**数据注入时机**：setLocalData 首次调用时懒创建 LocalDataManager 实例（方案 A），与 RuntimeEngine 管线第 14 步无缝衔接。
 
 
 ### 2.3 实体能力 (`src/component-abilities/entity/`)

@@ -7,6 +7,22 @@
 
 ## 构建历史
 
+### 2026-07-26
+- ✅ 新增 LocalDataManager 轻量本地数据管理类
+  - 派生 ComposableBase + withAbilities([FlatLocalStateAbility])
+  - 纯内存数据管理：sourceData/items/search/schema，无 url/fetch/request
+  - 自带 get(id) 方法（替代 LocalGetAbility，避免 compiledSchema/emit 依赖）
+  - ILocalDataManager 接口定义完整方法签名
+  - LocalDataManagerConfig 支持 idField/idType/nameField/searchFields/defaultSort/defaultOrder
+- ✅ 扩展 LocalDataAbility 支持数据操作
+  - setLocalData(key, data, config?) 懒创建 LocalDataManager 实例（方案 A）
+  - 新增 filterLocalData(key, keyword) — 关键词过滤（下拉选择场景）
+  - 新增 sortLocalData(key, field, order) — 字段排序（表格列排序场景）
+  - 新增 getLocalDataView(key) — 获取过滤+排序后的视图数据
+  - 新增 getLocalDataRaw(key) — 获取原始全量数据
+  - 新增 getLocalDataItem(key, id) — 按 ID 查找数据项
+  - removeLocalData/clearAllLocalData 清理时自动 manager.dispose()
+
 ### 2026-07-25
 - ✅ 新增 ResizeAbility 四边/四角拖动调整大小能力
   - 独立能力，通过 .with([ResizeAbility]) 组合

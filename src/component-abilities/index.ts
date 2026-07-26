@@ -32,3 +32,4 @@ export { resizeCSS } from './resize/resize.css';
 
 // 本地数据能力
 export { LocalDataAbility, type LocalDataChangeCallback } from './data';
+export { LocalDataManager, type LocalDataManagerConfig, type ILocalDataManager } from './data';
