@@ -53,8 +53,10 @@ export interface DragState {
     dragSource: any;
 }
 
+/** 拖拽动作类型 */
 export type DragAction = 'start' | 'end' | 'cancel' | 'enter' | 'leave' | 'drop';
 
+/** 编码拖拽事件名：drag:{dragKey}:{action} */
 function encodeDragEvent(dragKey: string, action: DragAction): string {
     return `drag:${dragKey}:${action}`;
 }
@@ -74,6 +76,7 @@ export class DragEventBus {
         this.logger.debug?.('[DragEventBus] initialized, scopeId =', this.dragScope.getScopeId());
     }
 
+    /** 获取单例实例 */
     static getInstance(): DragEventBus {
         if (!DragEventBus.instance) {
             DragEventBus.instance = new DragEventBus();
@@ -81,14 +84,17 @@ export class DragEventBus {
         return DragEventBus.instance;
     }
 
+    /** 获取当前拖拽作用域 ID */
     getScopeId(): string {
         return this.dragScope.getScopeId();
     }
 
+    /** 获取当前活跃拖拽状态，无拖拽时返回 null */
     getActiveDrag(): DragState | null {
         return this.activeDrag;
     }
 
+    /** 是否有活跃拖拽 */
     isDragging(): boolean {
         return this.activeDrag !== null;
     }
@@ -103,6 +109,7 @@ export class DragEventBus {
         this.dragScope.emit(event, ctx);
     }
 
+    /** 开始拖拽，同一时刻只允许一个活跃拖拽 */
     dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
         if (this.activeDrag) {
             this.logger.debug?.('[DragEventBus] dragStart ignored, already dragging');
@@ -116,6 +123,7 @@ export class DragEventBus {
         this._emitDrag(event, dragKey, 'start', this.activeDrag);
     }
 
+    /** 结束拖拽，dragKey 不匹配时忽略 */
     dragEnd(dragKey: string): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
@@ -127,6 +135,7 @@ export class DragEventBus {
         this.activeDrag = null;
     }
 
+    /** 取消拖拽，dragKey 不匹配时忽略 */
     dragCancel(dragKey: string): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
@@ -138,6 +147,7 @@ export class DragEventBus {
         this.activeDrag = null;
     }
 
+    /** 拖拽进入放置目标 */
     dragEnter(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
@@ -151,6 +161,7 @@ export class DragEventBus {
         });
     }
 
+    /** 拖拽离开放置目标 */
     dragLeave(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
@@ -164,6 +175,7 @@ export class DragEventBus {
         });
     }
 
+    /** 拖拽放下，结束后清除活跃状态 */
     dragDrop(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
         if (!this.activeDrag || this.activeDrag.dragKey !== dragKey) return;
 
@@ -202,6 +214,7 @@ export class DragEventBus {
         });
     }
 
+    /** 销毁拖拽总线，清理状态和作用域 */
     dispose(): void {
         this.activeDrag = null;
         this.dragScope.dispose();

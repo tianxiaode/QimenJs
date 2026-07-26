@@ -55,6 +55,7 @@ export class ComposableBase {
         return Derived as typeof ComposableBase;
     }
 
+    /** 获取能力状态，不存在时可用 creator 惰性创建 */
     abilityState(key: string, creator?: () => any): any | undefined {
         const states = (this as any)[ABILITY_STATES_KEY] as Map<string, any>;
         if (!states.has(key) && creator) {
@@ -63,11 +64,13 @@ export class ComposableBase {
         return states.get(key);
     }
 
+    /** 设置能力状态 */
     setAbilityState(key: string, value: any): void {
         const states = (this as any)[ABILITY_STATES_KEY] as Map<string, any>;
         states.set(key, value);
     }
 
+    /** 注册清理回调，dispose 时逆序执行 */
     onCleanup(callback: () => void): void {
         const cleanups = (this as any)[CLEANUPS_KEY] as (() => void)[];
         cleanups.push(callback);
