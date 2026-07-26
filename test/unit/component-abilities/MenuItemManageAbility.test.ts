@@ -12,13 +12,16 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
-import { TemplateComponent, MENU_TEMPLATE } from '@/component-core';
+import { Component, MENU_TEMPLATE } from '@/component-core';
 import { MenuItemManageAbility } from '@/component-abilities/menu/MenuItemManageAbility';
 import { MenuItemComponent } from '@/component/menu/MenuItemComponent';
 import { ComponentRegistrar } from '@qimenjs/component-core';
@@ -34,12 +37,9 @@ beforeAll(() => {
 /**
  * 创建测试用宿主类
  */
-const TestHost = TemplateComponent
-    .withTemplate(MENU_TEMPLATE)
-    .with([MenuItemManageAbility]);
+const TestHost = Component.withTemplate(MENU_TEMPLATE).with([MenuItemManageAbility]);
 
 describe('MenuItemManageAbility', () => {
-
     // ============================================
     // setMenuItems（池化复用核心）
     // ============================================
@@ -47,25 +47,16 @@ describe('MenuItemManageAbility', () => {
     describe('setMenuItems', () => {
         it('创建菜单项', () => {
             const host = new TestHost() as any;
-            host.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-            ]);
+            host.setMenuItems([{ text: '新建' }, { text: '打开' }]);
             expect(host.getMenuItemCount()).toBe(2);
         });
 
         it('复用已有项：更新属性', () => {
             const host = new TestHost() as any;
-            host.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-            ]);
+            host.setMenuItems([{ text: '新建' }, { text: '打开' }]);
 
             // 更新第一项文本
-            host.setMenuItems([
-                { text: '创建' },
-                { text: '打开' },
-            ]);
+            host.setMenuItems([{ text: '创建' }, { text: '打开' }]);
 
             const item = host.getMenuItem(0);
             expect(item.text).toBe('创建');
@@ -73,11 +64,7 @@ describe('MenuItemManageAbility', () => {
 
         it('复用已有项：减少时隐藏多余项', () => {
             const host = new TestHost() as any;
-            host.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-                { text: '保存' },
-            ]);
+            host.setMenuItems([{ text: '新建' }, { text: '打开' }, { text: '保存' }]);
 
             host.setMenuItems([{ text: '新建' }]);
 
@@ -91,11 +78,7 @@ describe('MenuItemManageAbility', () => {
         it('增加项时新增', () => {
             const host = new TestHost() as any;
             host.setMenuItems([{ text: '新建' }]);
-            host.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-                { text: '保存' },
-            ]);
+            host.setMenuItems([{ text: '新建' }, { text: '打开' }, { text: '保存' }]);
 
             const pool = host.getMenuItemPool();
             expect(pool.length).toBe(3);
@@ -278,11 +261,7 @@ describe('MenuItemManageAbility', () => {
     describe('disposeAllMenuItems', () => {
         it('销毁所有菜单项', () => {
             const host = new TestHost() as any;
-            host.setMenuItems([
-                { text: '新建' },
-                { text: '打开' },
-                { text: '保存' },
-            ]);
+            host.setMenuItems([{ text: '新建' }, { text: '打开' }, { text: '保存' }]);
             host.disposeAllMenuItems();
 
             const pool = host.getMenuItemPool();

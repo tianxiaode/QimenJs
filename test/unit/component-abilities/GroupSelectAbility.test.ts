@@ -12,21 +12,22 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
 });
 
-import { TemplateComponent, ITEMGROUP_TEMPLATE } from '@/component-core';
+import { Component, ITEMGROUP_TEMPLATE } from '@/component-core';
 import { GroupSelectAbility } from '@/component-abilities/group/GroupSelectAbility';
 
 /**
  * 创建测试用宿主类
  */
-const TestHost = TemplateComponent
-    .withTemplate(ITEMGROUP_TEMPLATE)
-    .with([GroupSelectAbility]);
+const TestHost = Component.withTemplate(ITEMGROUP_TEMPLATE).with([GroupSelectAbility]);
 
 /** 创建 mock 子项 */
 function createMockItem(group: string, groupMode: 'radio' | 'checkbox', checked: boolean = false) {
@@ -34,7 +35,6 @@ function createMockItem(group: string, groupMode: 'radio' | 'checkbox', checked:
 }
 
 describe('GroupSelectAbility', () => {
-
     // ============================================
     // initGroupSelect
     // ============================================
@@ -109,10 +109,7 @@ describe('GroupSelectAbility', () => {
         it('registerGroupItems 批量注册', () => {
             const host = new TestHost() as any;
             host.initGroupSelect();
-            const items = [
-                createMockItem('view', 'radio'),
-                createMockItem('view', 'radio'),
-            ];
+            const items = [createMockItem('view', 'radio'), createMockItem('view', 'radio')];
             host.registerGroupItems(items);
             expect(host.getGroupInfo('view').items).toHaveLength(2);
         });

@@ -21,7 +21,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { TemplateComponent } from '@/component-core';
+import { Component } from '@/component-core';
 import type { ComponentTemplate } from '@/component-core';
 import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
 
@@ -30,7 +30,7 @@ const TPL: ComponentTemplate = {
 };
 
 describe('ArrowAbility', () => {
-    const HostClass = TemplateComponent.withTemplate(TPL).with(ArrowAbility);
+    const HostClass = Component.withTemplate(TPL).with([ArrowAbility]);
 
     // ============================================
     // initArrow
@@ -82,9 +82,9 @@ describe('ArrowAbility', () => {
         });
 
         it('nodeMap 中无 arrow 节点时不报错', () => {
-            const NoArrowClass = TemplateComponent.withTemplate({ tpl: { tag: 'div' } }).with(
-                ArrowAbility
-            );
+            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
+                ArrowAbility,
+            ]);
             const instance = new NoArrowClass() as any;
             expect(() => instance.initArrow()).not.toThrow();
         });
@@ -139,9 +139,9 @@ describe('ArrowAbility', () => {
         });
 
         it('无箭头节点时不报错', () => {
-            const NoArrowClass = TemplateComponent.withTemplate({ tpl: { tag: 'div' } }).with(
-                ArrowAbility
-            );
+            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
+                ArrowAbility,
+            ]);
             const instance = new NoArrowClass() as any;
             expect(() => instance.updateArrowPlacement('top')).not.toThrow();
         });
@@ -171,9 +171,9 @@ describe('ArrowAbility', () => {
         });
 
         it('无箭头节点时不报错', () => {
-            const NoArrowClass = TemplateComponent.withTemplate({ tpl: { tag: 'div' } }).with(
-                ArrowAbility
-            );
+            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
+                ArrowAbility,
+            ]);
             const instance = new NoArrowClass() as any;
             expect(() => instance.setArrowVisible(false)).not.toThrow();
         });

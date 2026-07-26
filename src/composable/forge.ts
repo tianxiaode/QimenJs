@@ -35,7 +35,11 @@ function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string |
                 continue;
             }
 
-            if (typeof desc.value !== 'function') continue;
+            const isAccessorDef =
+                desc.value &&
+                typeof desc.value === 'object' &&
+                ('get' in desc.value || 'set' in desc.value);
+            if (typeof desc.value !== 'function' && !isAccessorDef) continue;
 
             if (merged.has(key)) {
                 Logger.for('Forge').warn(
