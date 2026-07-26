@@ -221,28 +221,21 @@ export let EntityToolbarComponent = ToolbarComponent.replace({
                         emits: ['action'],
                         entities: true,
                         bridges: ['action'],
-                        keyProp: 'name',
                     },
                 },
                 Input: {
                     input: {
                         emits: ['inputChange'],
-                        keyProp: 'name',
-                        data: ['getFormValue'],
                     },
                 },
                 NumberInput: {
                     input: {
                         emits: ['inputChange'],
-                        keyProp: 'name',
-                        data: ['getFormValue'],
                     },
                 },
                 Select: {
                     'select:change': {
                         emits: ['selectChange'],
-                        keyProp: 'name',
-                        data: ['getFormValue'],
                     },
                 },
             },

@@ -9,20 +9,10 @@ export let ToolbarComponent = ItemGroupStaticComponent.replace({
     tplEvents: {
         itemContainer: {
             $items: {
-                Button: { click: { emits: ['action'], keyProp: 'name' } },
-                Input: {
-                    input: { emits: ['inputChange'], keyProp: 'name', data: ['getFormValue'] },
-                },
-                NumberInput: {
-                    input: { emits: ['inputChange'], keyProp: 'name', data: ['getFormValue'] },
-                },
-                Select: {
-                    'select:change': {
-                        emits: ['selectChange'],
-                        keyProp: 'name',
-                        data: ['getFormValue'],
-                    },
-                },
+                Button: { click: { emits: ['action'] } },
+                Input: { input: { emits: ['inputChange'] } },
+                NumberInput: { input: { emits: ['inputChange'] } },
+                Select: { 'select:change': { emits: ['selectChange'] } },
             },
         },
     },

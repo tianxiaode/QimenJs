@@ -21,6 +21,7 @@ import type { EventContext, EventChainLink } from '@/context';
 import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
+import { ComponentRegistrar } from '../ComponentRegistrar';
 
 type EventDataType = 'handler' | 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
 
@@ -100,16 +101,54 @@ export class DelegatedEventEngine {
         nodeName: string,
         itemTypeEvents: ItemTypeEvents
     ): void {
+        const registrar = ComponentRegistrar.getInstance();
+
         for (const [itemType, eventDecls] of Object.entries(itemTypeEvents)) {
+            const defaultEventData = registrar.getMeta(itemType)?.defaultEventData;
+
             for (const [event, action] of Object.entries(eventDecls)) {
                 const rule = DelegatedEventEngine._compileEventAction(nodeName, event, action);
                 if (rule) {
                     rule.itemType = itemType;
                     if (!rule.keyProp) rule.keyProp = 'name';
+
+                    if (defaultEventData?.length) {
+                        rule.data = DelegatedEventEngine._mergeData(defaultEventData, rule.data);
+                    }
+
                     rules.push(rule);
                 }
             }
         }
+    }
+
+    private static _mergeData(
+        base: string[],
+        extra: string[] | Record<string, string[]> | undefined
+    ): string[] | Record<string, string[]> | undefined {
+        if (!extra) return base.length ? base : undefined;
+
+        if (Array.isArray(extra)) {
+            const merged = [...base];
+            for (const field of extra) {
+                if (!merged.includes(field)) merged.push(field);
+            }
+            return merged;
+        }
+
+        if (typeof extra === 'object') {
+            const result: Record<string, string[]> = {};
+            for (const [key, fields] of Object.entries(extra)) {
+                const merged = [...base];
+                for (const field of fields) {
+                    if (!merged.includes(field)) merged.push(field);
+                }
+                result[key] = merged;
+            }
+            return result;
+        }
+
+        return extra;
     }
 
     static bindDelegatedEvents(instance: any): void {

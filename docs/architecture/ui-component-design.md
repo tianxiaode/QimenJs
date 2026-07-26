@@ -98,15 +98,20 @@ import { RegistrarBase } from '@qimen-lab/registry';
 class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefinition>> {
     readonly name = 'component';
 
-    register(definition: ComponentDefinition): void;
+    register(type: string, definition: ComponentDefinition, meta?: ComponentMeta): void;
     get(type: string): ComponentDefinition | undefined;
+    getMeta(type: string): ComponentMeta | undefined;
+    setMeta(type: string, meta: ComponentMeta): void;
+}
+
+interface ComponentMeta {
+    /** 组件基础事件数据字段，编译时自动合并到 tplEvents.data */
+    defaultEventData?: string[];
 }
 
 // 使用
-Registry.component.register({
-    type: ComponentTypes.BUTTON,
-    component: ButtonComponent,
-    defaultProps: { size: 'md', variant: 'primary' },
+Registry.component.register(ComponentTypes.BUTTON, ButtonComponent, {
+    defaultEventData: ['name'],
 });
 ```
 

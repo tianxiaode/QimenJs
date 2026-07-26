@@ -15,21 +15,30 @@
 
 import { RegistrarBase } from '@qimenjs/registry';
 
+export interface ComponentMeta {
+    defaultEventData?: string[];
+}
+
 /**
  * 组件注册器
  *
- * 管理 type → ComponentClass 的映射
+ * 管理 type → ComponentClass 的映射，以及 type → ComponentMeta 的元数据
  */
 export class ComponentRegistrar extends RegistrarBase<
     Map<string, new (props?: Record<string, any>) => any>
 > {
     public readonly name = 'component';
     protected storage = new Map<string, new (props?: Record<string, any>) => any>();
+    private metaStorage = new Map<string, ComponentMeta>();
 
     /**
      * 注册组件类
      */
-    register(type: string, component: new (props?: Record<string, any>) => any): void {
+    register(
+        type: string,
+        component: new (props?: Record<string, any>) => any,
+        meta?: ComponentMeta
+    ): void {
         this.checkLock();
 
         if (this.storage.has(type)) {
@@ -48,6 +57,7 @@ export class ComponentRegistrar extends RegistrarBase<
         }
 
         this.storage.set(type, component);
+        if (meta) this.metaStorage.set(type, meta);
     }
 
     /**
@@ -56,6 +66,7 @@ export class ComponentRegistrar extends RegistrarBase<
     unregister(type: string): void {
         this.checkLock();
         this.storage.delete(type);
+        this.metaStorage.delete(type);
     }
 
     /**
@@ -63,6 +74,21 @@ export class ComponentRegistrar extends RegistrarBase<
      */
     get(type: string): (new (props?: Record<string, any>) => any) | undefined {
         return this.storage.get(type);
+    }
+
+    /**
+     * 获取组件元数据
+     */
+    getMeta(type: string): ComponentMeta | undefined {
+        return this.metaStorage.get(type);
+    }
+
+    /**
+     * 设置/更新组件元数据
+     */
+    setMeta(type: string, meta: ComponentMeta): void {
+        this.checkLock();
+        this.metaStorage.set(type, meta);
     }
 
     /**
@@ -84,7 +110,11 @@ export class ComponentRegistrar extends RegistrarBase<
     protected doInspect(): void {
         const data: Record<string, string> = {};
         this.storage.forEach((component, type) => {
-            data[type] = component.name || 'Anonymous';
+            const meta = this.metaStorage.get(type);
+            const metaStr = meta?.defaultEventData?.length
+                ? ` [data: ${meta.defaultEventData.join(',')}]`
+                : '';
+            data[type] = (component.name || 'Anonymous') + metaStr;
         });
         console.table(data);
     }

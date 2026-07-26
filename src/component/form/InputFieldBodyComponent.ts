@@ -72,7 +72,7 @@ export let InputFieldBodyComponent = Component.withTemplate({
         },
         actions: {
             $items: {
-                Icon: { click: { emits: ['actionClick'], keyProp: 'name' } },
+                Icon: { click: { emits: ['actionClick'] } },
             },
         },
     },

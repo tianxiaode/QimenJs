@@ -80,21 +80,21 @@ export function registerAllComponents(): void {
     registrar.register('Indicator', IndicatorComponent);
     registrar.register('Tabs', TabsComponent);
     registrar.register('TabBar', TabBarComponent);
-    registrar.register('Button', ButtonComponent);
+    registrar.register('Button', ButtonComponent, { defaultEventData: ['name'] });
     registrar.register('Dropdown', DropdownComponent);
     registrar.register('Toggle', ToggleComponent);
     registrar.register('ToggleIcon', ToggleIconComponent);
     registrar.register('ButtonGroup', ButtonGroupComponent);
     registrar.register('Badge', BadgeComponent);
     registrar.register('Tips', TipsComponent);
-    registrar.register('MenuItem', MenuItemComponent);
+    registrar.register('MenuItem', MenuItemComponent, { defaultEventData: ['name'] });
     registrar.register('Menu', MenuComponent);
-    registrar.register('Panel', PanelComponent);
+    registrar.register('Panel', PanelComponent, { defaultEventData: ['name'] });
     registrar.register('Header', HeaderComponent);
     registrar.register('ItemGroup', ItemGroupPooledComponent);
     registrar.register('Toolbar', ToolbarComponent);
     registrar.register('EntityToolbar', EntityToolbarComponent);
-    registrar.register('NavItem', NavItemComponent);
+    registrar.register('NavItem', NavItemComponent, { defaultEventData: ['name', 'path'] });
     registrar.register('NavItemGroup', NavItemGroupComponent);
     registrar.register('OverflowScroll', OverflowScrollComponent);
     registrar.register('OverflowMenu', OverflowMenuComponent);
@@ -108,17 +108,27 @@ export function registerAllComponents(): void {
     registrar.register('Tag', TagComponent);
     registrar.register('Alert', AlertComponent);
     registrar.register('Progress', ProgressComponent);
-    registrar.register('Input', InputComponent);
-    registrar.register('PasswordInput', PasswordInputComponent);
+    registrar.register('Input', InputComponent, { defaultEventData: ['name', 'getFormValue'] });
+    registrar.register('PasswordInput', PasswordInputComponent, {
+        defaultEventData: ['name', 'getFormValue'],
+    });
     registrar.register('Text', TextComponent);
     registrar.register('InputInfoGroup', InputInfoGroupComponent);
     registrar.register('Form', FormComponent);
-    registrar.register('Textarea', TextareaComponent);
-    registrar.register('NumberInput', NumberInputComponent);
-    registrar.register('Select', SelectComponent);
-    registrar.register('Switch', SwitchComponent);
-    registrar.register('CheckboxGroup', CheckboxGroupComponent);
-    registrar.register('RadioGroup', RadioGroupComponent);
+    registrar.register('Textarea', TextareaComponent, {
+        defaultEventData: ['name', 'getFormValue'],
+    });
+    registrar.register('NumberInput', NumberInputComponent, {
+        defaultEventData: ['name', 'getFormValue'],
+    });
+    registrar.register('Select', SelectComponent, { defaultEventData: ['name', 'getFormValue'] });
+    registrar.register('Switch', SwitchComponent, { defaultEventData: ['name', 'getFormValue'] });
+    registrar.register('CheckboxGroup', CheckboxGroupComponent, {
+        defaultEventData: ['name', 'getFormValue'],
+    });
+    registrar.register('RadioGroup', RadioGroupComponent, {
+        defaultEventData: ['name', 'getFormValue'],
+    });
     registrar.register('MarkdownEditor', MarkdownEditorComponent);
     registrar.register('TextCell', TextCellComponent);
     registrar.register('TreeCell', TreeCellComponent);

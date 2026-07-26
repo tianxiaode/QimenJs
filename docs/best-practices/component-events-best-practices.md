@@ -120,6 +120,33 @@ Component.replace({
 - **handler: true + keyProp**：自动路由到 `on${KeyProp}${Event}` 方法，零分支
 - **entities: true / router: true**：支持 keyProp 动态解析
 - **data 声明**：支持属性取值和 get 方法引用，按事件类型区分
+- **defaultEventData**：组件注册时声明的基础数据字段，编译时自动合并到 data，tplEvents 中只需声明额外字段
+
+### defaultEventData 机制
+
+组件注册时通过 `ComponentRegistrar.register()` 第三个参数声明基础数据字段：
+
+```typescript
+registrar.register('Button', ButtonComponent, { defaultEventData: ['name'] });
+registrar.register('Input', InputComponent,  { defaultEventData: ['name', 'getFormValue'] });
+registrar.register('Select', SelectComponent, { defaultEventData: ['name', 'getFormValue'] });
+```
+
+编译时自动合并：`effectiveData = defaultEventData ∪ data`（去重）
+
+```typescript
+// 之前：每个使用处都要重复声明
+$items: {
+    Input: { input: { emits: ['inputChange'], keyProp: 'name', data: ['getFormValue'] } },
+}
+
+// 之后：基础数据自动带上，只需声明额外字段
+$items: {
+    Input: { input: { emits: ['inputChange'] } },
+}
+```
+
+运行时可通过 `ComponentRegistrar.getMeta(type)` 查询，`setMeta(type, meta)` 覆盖，插件/扩展可动态修改。
 
 ### 应用层事件通道
 

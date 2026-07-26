@@ -53,6 +53,17 @@
  *   // 对象形式（按事件类型区分）
  *   data: { emit: ['name'], entity: ['getEntityData'], router: ['path'] }
  *
+ * defaultEventData — 组件注册时声明的基础数据字段（ComponentRegistrar.register 第三个参数）
+ *   registrar.register('Button', ButtonComponent, { defaultEventData: ['name'] })
+ *   registrar.register('Input', InputComponent,  { defaultEventData: ['name', 'getFormValue'] })
+ *
+ *   编译时自动合并：effectiveData = defaultEventData ∪ data（去重）
+ *   tplEvents 中只需声明额外字段，基础数据自动带上
+ *
+ *   例：Input 注册了 defaultEventData: ['name', 'getFormValue']
+ *   tplEvents: { Input: { input: { emits: ['inputChange'] } } }
+ *   // 编译后 data 自动包含 ['name', 'getFormValue']，无需显式声明
+ *
  * ══════════════════════════════════════════════════════════════
  * 绑定策略
  * ══════════════════════════════════════════════════════════════
@@ -68,7 +79,7 @@
  * 匹配机制：
  * - 普通节点：containsElement(nodeName, target) 判断 target 所属
  * - $items 节点：containsElement 判断容器 → getTargetItem 定位 item → itemType 匹配
- * - 数据合并：itemPayload → data 声明提取 → getEventData 兜底
+ * - 数据合并：defaultEventData(基础) ∪ data(额外) → itemPayload → getEventData 兜底
  *
  * @example
  * ```ts
