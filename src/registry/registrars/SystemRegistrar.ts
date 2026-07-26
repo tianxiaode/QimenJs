@@ -12,20 +12,7 @@ export class SystemRegistrar extends RegistrarBase<Partial<SystemConfig>> {
     public readonly name = SystemRegistrarName;
 
     // 静态配置池：这是唯一的真相来源（Source of Truth）
-    protected storage: Partial<SystemConfig> = {
-        locale: 'zh-CN',
-        dateFormat: 'YYYY-MM-DD',
-        datetimeFormat: 'YYYY-MM-DD HH:mm:ss',
-        timezone: 'UTC+8',
-        password: {
-            minLength: 8,
-            maxLength: 16,
-            upperCase: true,
-            lowerCase: true,
-            digit: true,
-            specialChar: true,
-        },
-    };
+    protected storage: Partial<SystemConfig> = {};
 
     /**
      * 注册系统配置

@@ -1,12 +1,12 @@
 /**
- * DayGridComponent 日期网格组件
+ * DayGridComponent 日期网格组件（池化版）
  *
- * 7列×5-6行日历网格，含星期标题行。
- * 非当月日期灰色不可点击，今天有小圆点标识。
- * 日期格子通过 data-value 标记，dayGrid 容器用 tplEvents 委托 click。
- * emits 自动转发 daySelect 事件，数据通过 getEventData 提取。
+ * 7列×6行日历网格，含星期标题行。
+ * 初始化时创建 7 个 weekday cell + 42 个 day cell，
+ * update 时只更新 textContent/classList/dataset，不销毁重建 DOM。
  *
- * 纯展示组件，不含导航栏。由 DatePanelComponent 组合使用。
+ * 星期标签和 weekStart 从 i18nConfig() 获取，
+ * locale 切换时通过 onLocaleChange 自动刷新。
  *
  * 事件：daySelect
  */
@@ -22,7 +22,9 @@ export interface DayGridProps {
     startDayOfWeek?: number;
 }
 
-const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+const TOTAL_WEEKDAYS = 7;
+const TOTAL_DAY_CELLS = 42;
+const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
 
 export const DayGridComponent = Component.withTemplate({
     tpl: {
@@ -54,6 +56,8 @@ export const DayGridComponent = Component.withTemplate({
                 _selectedDay: undefined as number | undefined,
                 _startDayOfWeek: 0,
                 _lastClickedDay: undefined as number | undefined,
+                _weekdayCells: [] as HTMLElement[],
+                _dayCells: [] as HTMLElement[],
             };
         },
 
@@ -62,9 +66,20 @@ export const DayGridComponent = Component.withTemplate({
             self._year = props?.year ?? 2026;
             self._month = props?.month ?? 1;
             self._selectedDay = props?.selectedDay;
-            self._startDayOfWeek = props?.startDayOfWeek ?? 0;
-            self._renderWeekdays();
-            self._renderGrid();
+            self._startDayOfWeek = props?.startDayOfWeek ?? self._getWeekStart();
+            self._createCells();
+            self._applyWeekdays();
+            self._applyGrid();
+        },
+
+        onLocaleChange(): void {
+            const self = this as any;
+            const newStart = self._getWeekStart();
+            if (newStart !== self._startDayOfWeek) {
+                self._startDayOfWeek = newStart;
+                self._applyWeekdays();
+            }
+            self._applyGrid();
         },
 
         onDayGridClick(e: Event): void {
@@ -84,37 +99,68 @@ export const DayGridComponent = Component.withTemplate({
             return { day: self._lastClickedDay };
         },
 
-        _renderWeekdays(): void {
+        _getWeekStart(): number {
+            const self = this as any;
+            return self.i18nConfig()?.weekStart ?? 0;
+        },
+
+        _getWeekdaysShort(): string[] {
+            const self = this as any;
+            return self.i18nConfig()?.weekdaysShort ?? DEFAULT_WEEKDAYS_SHORT;
+        },
+
+        _createCells(): void {
             const self = this as any;
             const row = self.nodeMap?.weekdayRow?.el as HTMLElement | null;
-            if (!row) return;
-            row.innerHTML = '';
+            const grid = self.nodeMap?.dayGrid?.el as HTMLElement | null;
+            if (!row || !grid) return;
 
-            for (let i = 0; i < 7; i++) {
-                const idx = (self._startDayOfWeek + i) % 7;
+            self._weekdayCells = [];
+            for (let i = 0; i < TOTAL_WEEKDAYS; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'q-dtpanel__weekday-cell';
-                cell.textContent = WEEKDAY_LABELS[idx];
                 row.appendChild(cell);
+                self._weekdayCells.push(cell);
+            }
+
+            self._dayCells = [];
+            for (let i = 0; i < TOTAL_DAY_CELLS; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'q-dtpanel__day-cell';
+                grid.appendChild(cell);
+                self._dayCells.push(cell);
             }
         },
 
-        _renderGrid(): void {
+        _applyWeekdays(): void {
             const self = this as any;
-            const grid = self.nodeMap?.dayGrid?.el as HTMLElement | null;
-            if (!grid) return;
-            grid.innerHTML = '';
+            const labels = self._getWeekdaysShort();
+            for (let i = 0; i < TOTAL_WEEKDAYS; i++) {
+                const idx = (self._startDayOfWeek + i) % 7;
+                self._weekdayCells[i].textContent = labels[idx] ?? '';
+            }
+        },
 
+        _applyGrid(): void {
+            const self = this as any;
             const days: CalendarDay[] = generateCalendarView(
                 self._year,
                 self._month,
                 self._startDayOfWeek
             );
 
-            for (const day of days) {
-                const cell = document.createElement('div');
-                cell.className = 'q-dtpanel__day-cell';
+            for (let i = 0; i < TOTAL_DAY_CELLS; i++) {
+                const cell = self._dayCells[i];
+                const day = days[i];
+                if (!day) {
+                    cell.textContent = '';
+                    cell.className = 'q-dtpanel__day-cell';
+                    delete cell.dataset.value;
+                    continue;
+                }
+
                 cell.textContent = String(day.date.getDate());
+                cell.className = 'q-dtpanel__day-cell';
 
                 if (!day.isCurrentMonth) {
                     cell.classList.add('q-dtpanel__day-cell--other-month');
@@ -131,19 +177,26 @@ export const DayGridComponent = Component.withTemplate({
                 if (day.isToday) {
                     cell.classList.add('q-dtpanel__day-cell--today');
                 }
-
-                grid.appendChild(cell);
             }
         },
 
         update(props?: Partial<DayGridProps>): void {
             const self = this as any;
+            let needWeekdayRefresh = false;
+
+            if (
+                props?.startDayOfWeek !== undefined &&
+                props.startDayOfWeek !== self._startDayOfWeek
+            ) {
+                self._startDayOfWeek = props.startDayOfWeek;
+                needWeekdayRefresh = true;
+            }
             if (props?.year !== undefined) self._year = props.year;
             if (props?.month !== undefined) self._month = props.month;
             if (props?.selectedDay !== undefined) self._selectedDay = props.selectedDay;
-            if (props?.startDayOfWeek !== undefined) self._startDayOfWeek = props.startDayOfWeek;
-            self._renderWeekdays();
-            self._renderGrid();
+
+            if (needWeekdayRefresh) self._applyWeekdays();
+            self._applyGrid();
         },
     },
 });

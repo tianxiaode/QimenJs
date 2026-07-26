@@ -161,6 +161,11 @@ export const DatePanelComponent = Component.withTemplate({
             }
         },
 
+        onLocaleChange(): void {
+            const self = this as any;
+            self._updateLabel();
+        },
+
         onBackBtnClick(): void {
             const self = this as any;
             self.emit('back', {});
@@ -263,7 +268,13 @@ export const DatePanelComponent = Component.withTemplate({
         _updateLabel(): void {
             const self = this as any;
             const label = self.nodeMap?.dateLabel?.el as HTMLElement | null;
-            if (label) {
+            if (!label) return;
+
+            const locale = self.i18nConfig();
+            const months = locale?.months;
+            if (months && months.length === 12) {
+                label.textContent = `${self._viewYear} ${months[self._viewMonth - 1]}`;
+            } else {
                 label.textContent = `${self._viewYear}年 ${String(self._viewMonth).padStart(2, '0')}月`;
             }
         },

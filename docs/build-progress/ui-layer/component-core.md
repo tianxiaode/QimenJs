@@ -7,6 +7,18 @@
 
 ## 构建历史
 
+### 2026-07-26
+- ✅ SystemAbility 注入 TemplateComponent：所有组件可通过 this.i18nConfig() / this.systemConfig() 访问
+- ✅ FormFieldComponent 移除私有 getI18nUiConfig，改用 this.i18nConfig()?.ui 获取 i18n UI 配置
+- ✅ onLocaleChange 钩子：FormFieldComponent 在 locale 变化时自动刷新 requiredMark/separator
+- ✅ DayGridComponent 池化：初始化创建固定 7 weekday + 42 day cell，update 只改 textContent/classList/dataset，不重建 DOM
+- ✅ DayGridComponent 从 i18nConfig 获取 weekdaysShort 和 weekStart，locale 切换自动刷新
+- ✅ MonthPanelComponent 池化：初始化创建固定 12 cell，update 只改内容和样式
+- ✅ MonthPanelComponent 从 i18nConfig 获取 monthsShort 显示，locale 切换自动刷新
+- ✅ DatePanelComponent _updateLabel 用 i18nConfig().months 显示月份名
+- ✅ 语言包补充日期显示配置：weekdays/weekdaysShort/weekdaysMin/months/monthsShort
+- ✅ SystemRegistrar storage 默认值改为空对象，默认设置转移到 i18n
+
 ### 2026-07-25
 - ✅ tplReplaces 模板子树替换机制
   - TemplateDeriver.deriveWithTplReplaces()：替换父模板中指定节点的 DOM 子树，产出新 cache

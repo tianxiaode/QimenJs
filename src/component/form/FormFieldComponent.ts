@@ -36,7 +36,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
-import { getI18nManager } from '@qimenjs/i18n';
+
 import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';
 import './formfield.css';
@@ -56,24 +56,6 @@ export interface FormFieldProps {
     fieldName?: string;
     validation?: boolean | ValidationRule | ValidationRule[];
     validateTrigger?: ValidateTrigger;
-}
-
-function getI18nUiConfig(): {
-    requiredMark: string;
-    requiredMarkPosition: 'before' | 'after';
-    labelSeparator: string;
-} {
-    const i18n = getI18nManager();
-    if (!i18n) {
-        return { requiredMark: '*', requiredMarkPosition: 'after', labelSeparator: '：' };
-    }
-    const config = i18n.getLocaleConfig();
-    const ui = config?.ui;
-    return {
-        requiredMark: ui?.requiredMark ?? '*',
-        requiredMarkPosition: ui?.requiredMarkPosition ?? 'after',
-        labelSeparator: ui?.labelSeparator ?? '：',
-    };
 }
 
 const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
@@ -139,6 +121,10 @@ export let FormFieldComponent = Component.withTemplate({
             this._initValidation(props);
         },
 
+        onLocaleChange(): void {
+            this._applyRequiredConfig();
+        },
+
         // ========== label 逻辑 ==========
 
         _applyLabelPosition(position?: LabelPosition): void {
@@ -154,9 +140,10 @@ export let FormFieldComponent = Component.withTemplate({
         },
 
         _initLabel(props?: FormFieldProps): void {
-            const config = getI18nUiConfig();
-            this._requiredMark = props?.requiredMark ?? config.requiredMark;
-            this._requiredMarkPosition = props?.requiredMarkPosition ?? config.requiredMarkPosition;
+            const ui = this.i18nConfig()?.ui;
+            this._requiredMark = props?.requiredMark ?? ui?.requiredMark ?? '*';
+            this._requiredMarkPosition =
+                props?.requiredMarkPosition ?? ui?.requiredMarkPosition ?? 'after';
 
             if (props?.i18nLabel) {
                 this._labelText = props.i18nLabel;
@@ -180,9 +167,9 @@ export let FormFieldComponent = Component.withTemplate({
         },
 
         _applyRequiredConfig(): void {
-            const config = getI18nUiConfig();
-            const mark = this._requiredMark || config.requiredMark;
-            const position = this._requiredMarkPosition || config.requiredMarkPosition;
+            const ui = this.i18nConfig()?.ui;
+            const mark = this._requiredMark || ui?.requiredMark || '*';
+            const position = this._requiredMarkPosition || ui?.requiredMarkPosition || 'after';
 
             const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
             if (markEl) {
@@ -196,7 +183,7 @@ export let FormFieldComponent = Component.withTemplate({
 
             const separatorEl = this.nodeMap?.separator?.el as HTMLElement | null;
             if (separatorEl) {
-                separatorEl.textContent = config.labelSeparator ?? '';
+                separatorEl.textContent = ui?.labelSeparator ?? '：';
             }
         },
 

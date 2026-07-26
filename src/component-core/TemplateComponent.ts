@@ -31,6 +31,7 @@ import {
     OverlayEventBusAbility,
     DragEventBusAbility,
     SystemEventBusAbility,
+    SystemAbility,
 } from '@/system-abilities';
 
 import { NodePropAbility } from './abilities/NodePropAbility';
@@ -38,7 +39,6 @@ import { NodePropAbility } from './abilities/NodePropAbility';
 import type { NodeMetadata } from './types/compiled-types';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
-
 import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 import type { NodeMapManager } from './NodeMapManager';
@@ -51,6 +51,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     OverlayEventBusAbility,
     DragEventBusAbility,
     SystemEventBusAbility,
+    SystemAbility,
 
     NodePropAbility,
     CommonPropsAbility,
@@ -68,6 +69,7 @@ export interface TemplateComponent
         InferAbility<typeof OverlayEventBusAbility>,
         InferAbility<typeof DragEventBusAbility>,
         InferAbility<typeof SystemEventBusAbility>,
+        InferAbility<typeof SystemAbility>,
         InferAbility<typeof NodePropAbility>,
         InferAbility<typeof CommonPropsAbility>,
         InferAbility<typeof AnimationAbility>,

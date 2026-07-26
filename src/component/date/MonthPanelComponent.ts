@@ -1,11 +1,9 @@
 /**
- * MonthPanelComponent 月份选择面板
+ * MonthPanelComponent 月份选择面板（池化版）
  *
  * 6列×2行，直接显示1-12月。点1个数字即选中，触发 autoNext。
- * 数字格子通过 data-value 属性标记，grid 容器用 tplEvents 委托 click。
- * emits 自动转发 monthSelect / confirm 事件，数据通过 getEventData 提取。
- *
- * 导航栏：← 返回 | ↶ 上一步 |C选择月份 | 确认 ✓
+ * 初始化时创建 12 个固定 cell，update 时只更新内容和样式。
+ * 月份标签从 i18nConfig() 获取 monthsShort，locale 切换自动刷新。
  *
  * 事件：monthSelect / back / prev / confirm
  */
@@ -18,6 +16,8 @@ export interface MonthPanelProps {
     value: DateTimeValue;
     showPrev?: boolean;
 }
+
+const TOTAL_MONTHS = 12;
 
 export const MonthPanelComponent = Component.withTemplate({
     tpl: {
@@ -65,6 +65,7 @@ export const MonthPanelComponent = Component.withTemplate({
         onInitState() {
             return {
                 _value: null as DateTimeValue | null,
+                _cells: [] as HTMLElement[],
             };
         },
 
@@ -83,7 +84,13 @@ export const MonthPanelComponent = Component.withTemplate({
                 self.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
             }
 
-            self._renderGrid();
+            self._createCells();
+            self._applyCells();
+        },
+
+        onLocaleChange(): void {
+            const self = this as any;
+            self._applyCells();
         },
 
         onBackBtnClick(): void {
@@ -107,7 +114,7 @@ export const MonthPanelComponent = Component.withTemplate({
             if (value === undefined) return;
             const month = parseInt(value);
             self._value = { ...self._value, month };
-            self._renderGrid();
+            self._applyCells();
         },
 
         getEventData(
@@ -119,21 +126,39 @@ export const MonthPanelComponent = Component.withTemplate({
             return { value: self._value };
         },
 
-        _renderGrid(): void {
+        _getMonthsShort(): string[] | undefined {
+            const self = this as any;
+            return self.i18nConfig()?.monthsShort;
+        },
+
+        _createCells(): void {
             const self = this as any;
             const grid = self.nodeMap?.grid?.el as HTMLElement | null;
             if (!grid) return;
-            grid.innerHTML = '';
 
-            for (let m = 1; m <= 12; m++) {
+            self._cells = [];
+            for (let m = 1; m <= TOTAL_MONTHS; m++) {
                 const cell = document.createElement('div');
                 cell.className = 'q-dtpanel__cell';
-                cell.textContent = String(m).padStart(2, '0');
                 cell.dataset.value = String(m);
+                grid.appendChild(cell);
+                self._cells.push(cell);
+            }
+        },
+
+        _applyCells(): void {
+            const self = this as any;
+            const monthsShort = self._getMonthsShort();
+
+            for (let m = 1; m <= TOTAL_MONTHS; m++) {
+                const cell = self._cells[m - 1];
+                if (!cell) continue;
+
+                cell.textContent = monthsShort?.[m - 1] ?? String(m).padStart(2, '0');
+                cell.className = 'q-dtpanel__cell';
                 if (self._value.month === m) {
                     cell.classList.add('q-dtpanel__cell--active');
                 }
-                grid.appendChild(cell);
             }
         },
 

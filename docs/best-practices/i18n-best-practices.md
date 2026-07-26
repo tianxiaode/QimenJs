@@ -286,3 +286,53 @@ public/
 | 所有翻译放一个文件 | 基础翻译放 public，业务翻译按需加载 |
 | 轮询检查语言变化 | `onLocaleChange` 事件监听 |
 | 语言包打包进应用代码 | 放 public 目录动态加载 |
+
+## 11. 组件通过 SystemAbility.i18nConfig() 获取 i18n 配置
+
+```typescript
+// 正确 - 通过 SystemAbility 内置方法，事件触发后获取保证最新
+const locale = this.i18nConfig();
+const ui = locale?.ui;                    // { requiredMark, labelSeparator, ... }
+const weekdays = locale?.weekdaysShort;   // ['日', '一', ...] 或 ['Sun', 'Mon', ...]
+const weekStart = locale?.weekStart;      // 0 或 1
+const months = locale?.monthsShort;       // ['1月', ...] 或 ['Jan', ...]
+```
+
+```typescript
+// 错误 - 组件自己缓存 i18n 配置，locale 切换后不会更新
+const config = getI18nManager().getLocaleConfig();
+this._cachedConfig = config;  // 切换语言后还是旧值
+```
+
+**原因**：`this.i18nConfig()` 每次调用都从 I18nManager 获取最新配置，不缓存。组件在 `onLocaleChange()` 钩子中调用 `this.i18nConfig()` 做刷新，保证语言切换后立即生效。
+
+## 12. 语言包应包含完整的日期显示配置
+
+```js
+// 正确 - 包含 weekdays/months，供日期组件直接使用
+__qimen_i18n_register__('zh-CN', {
+  _locale: {
+    date: { short: 'yyyy/M/d', medium: 'yyyy年M月d日' },
+    weekdays: ['日', '一', '二', '三', '四', '五', '六'],
+    weekdaysShort: ['日', '一', '二', '三', '四', '五', '六'],
+    weekdaysMin: ['日', '一', '二', '三', '四', '五', '六'],
+    months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    monthsShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+    weekStart: 1,
+    hourCycle: 'h23',
+    ui: { labelSeparator: '：', requiredMark: '*', requiredMarkPosition: 'after' },
+  },
+});
+```
+
+```js
+// 错误 - 只有 date 格式字符串，没有 weekdays/months，日期组件无法显示星期/月份名
+__qimen_i18n_register__('zh-CN', {
+  _locale: {
+    date: { short: 'yyyy/M/d' },
+    weekStart: 1,
+  },
+});
+```
+
+**原因**：`date.short/medium/long` 是格式化模板，供 `formatDate()` 使用。但日期选择器等组件需要直接显示星期标签（日/一/.../Sun/Mon/...）和月份名（1月/.../Jan/...），这些必须通过 `weekdaysShort`/`monthsShort` 提供。

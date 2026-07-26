@@ -20,7 +20,7 @@
 - **SystemEventBusAbility** - 系统事件总线能力，暴露 systemEmit/systemOn/systemOnce
 - **RouteEventBusAbility** - 路由事件总线能力，暴露 routeEmit/routeOn/routeOnce
 - **DomainAbility** - 域配置能力，提供域配置访问功能
-- **SystemAbility** - 系统配置能力，提供系统配置访问功能
+- **SystemAbility** - 系统配置能力，提供系统配置访问功能 + i18nConfig() 获取当前语言区域配置
 - **registerSystemAbilities()** - 能力注册函数
 
 ## 依赖
@@ -84,6 +84,10 @@ Time:        1.847 s
 - 导出所有必要的接口和类型
 
 ### 📝 变更历史
+
+#### 2026-07-26
+- SystemAbility 新增 i18nConfig(locale?) 方法，直接从 I18nManager 获取当前语言的完整区域配置
+- 组件通过 this.i18nConfig() 获取最新 i18n 配置，事件触发后获取保证是最新的
 
 #### 2026-06-30
 - 补充单元测试，分支覆盖率从 0% 提升到 88.23%
