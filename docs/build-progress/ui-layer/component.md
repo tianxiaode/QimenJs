@@ -7,6 +7,30 @@
 
 ## 构建历史
 
+### 2026-07-26
+- ✅ 新增 DatePickerComponent 日期时间选择器（InputComponent.replace 派生）
+  - 预览栏显示完整日期时间，单击字段进入对应面板，选完自动流转
+  - 导航栏三按钮：← 返回（放弃修改）| ↶ 上一步 | 确认 ✓（保存+结束流转）
+  - 面板切换 + 流转逻辑 + 浮动层下拉
+- ✅ 新增日期面板组件体系（src/component/date/）
+  - YearPanelComponent：千位3按钮 + 百十个6列×5行数字矩阵（4次点击）
+  - MonthPanelComponent：6列×2行，直接显示1-12月（1次点击）
+  - DayGridComponent：7列×5-6行日历网格（子组件）
+  - DatePanelComponent：日历网格 + 6翻页按钮 + 底部快捷（昨天/今天/明天）
+  - HourPanelComponent：6列×4行，直接显示0-23（1次点击）
+  - MinutePanelComponent：十位6按钮 + 个位2列×5行（2次点击）
+  - SecondPanelComponent：同 MinutePanel 布局（2次点击）
+- ✅ 新增工具函数（src/utils/date/datetime-picker.ts）
+  - createDateTimeValue / dateTimeValueToDate / fixDateTime
+  - formatPreview / getNextField / getFlowFromEntry
+  - generateYearDigits / splitToDigits / generateMinuteSecondDigits
+  - clampDay / DateTimeField / DateTimeValue 类型
+- ✅ 新增 CSS 样式：date-panel.css.ts / datepicker.css.ts（Metro 风格，q- 前缀 BEM）
+- ✅ tplEvents emits + getEventData 统一事件模式
+  - 单次点击事件：emits 自动转发 + getEventData 提取数据
+  - 多次点击事件：handler 中手动 emit
+  - 子组件事件监听：cmp.on() 模式
+
 ### 2026-07-25
 - ✅ Table 组件体系搭建
   - 新增 column-types.ts：ColumnDef 扩展 editable/editType/editComponent/groupAggregator/tableAggregator
@@ -150,6 +174,7 @@
 
 - [ ] 新增 TableComponent 表格组件
 - [ ] 补充 TextareaComponent / NumberInputComponent / SelectComponent / SwitchComponent / CheckboxGroupComponent / RadioGroupComponent 测试
+- [ ] 补充 DatePickerComponent 及各面板组件测试
 
 ## 使用统计
 
