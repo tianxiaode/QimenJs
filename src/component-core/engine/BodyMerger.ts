@@ -8,12 +8,16 @@
  * 所有输出都是新对象，不修改输入
  */
 
+/** 合并结果 */
 export interface MergeResult {
+    /** 合并后的 body 对象 */
     body: Record<string, any>;
+    /** 合并后的节点覆盖配置 */
     nodeOverrides: Record<string, Record<string, any>>;
 }
 
 export class BodyMerger {
+    /** 合并父和子 body，nodes 配置深度合并 */
     static merge(
         parentBody: Record<string, any> | undefined,
         childBody: Record<string, any>
@@ -29,6 +33,7 @@ export class BodyMerger {
         return merged;
     }
 
+    /** 合并父和子模板事件声明，数组拼接，对象合并 */
     static mergeTplEvents(
         parentEvents: Record<string, any> | undefined,
         childEvents: Record<string, any>
@@ -58,6 +63,7 @@ export class BodyMerger {
         return result;
     }
 
+    /** 合并父和子节点覆盖配置，同名节点属性合并 */
     static mergeNodeOverrides(
         parentOverrides: Record<string, Record<string, any>> | undefined,
         childOverrides: Record<string, Record<string, any>>

@@ -91,7 +91,7 @@ export function compileTemplate(root: TplNode, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};
     const exposeNames: string[] = [];
-    const i18nNodes: Array<{ name: string; i18nKey: string }> = {};
+    const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
     const skeletonPaths: NodeIndexPath = {};
 
     indexPath['root'] = [];
