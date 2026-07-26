@@ -84,6 +84,8 @@ export interface TemplateComponent
     onLocaleChange?(): void;
 }
 
+const SKELETON_CLS = 'q-skeleton';
+
 export class TemplateComponent extends ComposableBase {
     tag: string = 'div';
 
@@ -107,11 +109,59 @@ export class TemplateComponent extends ComposableBase {
 
     _templateInitialized: boolean = false;
 
+    _skeletonActive: boolean = false;
+
+    _skeletonManual: boolean = false;
+
+    get skeleton(): boolean {
+        return this._skeletonActive;
+    }
+
+    set skeleton(value: boolean) {
+        const ctor = this.constructor as any;
+        const skeletonPaths = ctor._cache?.skeletonPaths;
+        if (!skeletonPaths || Object.keys(skeletonPaths).length === 0) return;
+
+        if (this._skeletonActive === value) return;
+
+        this._skeletonManual = true;
+
+        if (value) {
+            this._applySkeletonByPaths(skeletonPaths);
+        } else {
+            this._removeSkeletonByPaths(skeletonPaths);
+        }
+
+        this._skeletonActive = value;
+    }
+
     containsElement(nodeName: string, target: Element): boolean {
         const node = this.nodeMap[nodeName];
         if (!node) return false;
         const el = node.component ? node.component.el : node.el;
         return el ? el.contains(target) : false;
+    }
+
+    _applySkeletonByPaths(skeletonPaths: Record<string, number[]>): void {
+        for (const [name, path] of Object.entries(skeletonPaths)) {
+            if (name === 'root') {
+                this.el.classList.add(SKELETON_CLS);
+                continue;
+            }
+            const el = this.nodeMap[name]?.el;
+            if (el) el.classList.add(SKELETON_CLS);
+        }
+    }
+
+    _removeSkeletonByPaths(skeletonPaths: Record<string, number[]>): void {
+        for (const [name] of Object.entries(skeletonPaths)) {
+            if (name === 'root') {
+                this.el.classList.remove(SKELETON_CLS);
+                continue;
+            }
+            const el = this.nodeMap[name]?.el;
+            if (el) el.classList.remove(SKELETON_CLS);
+        }
     }
 
     override onBeforeDispose(): void {

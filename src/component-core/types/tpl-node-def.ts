@@ -416,6 +416,7 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
 
     { field: 'hidden', category: 'state', toMeta: true, toRoot: false },
     { field: 'hiddenMode', category: 'state', toMeta: true, toRoot: false },
+    { field: 'skeleton', category: 'state', toMeta: true, toRoot: true },
 
     // ─── component: 组件专属 ───
 

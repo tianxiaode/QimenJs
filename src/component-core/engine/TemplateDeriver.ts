@@ -121,6 +121,7 @@ export class TemplateDeriver {
             exposeNames: newExposeNames,
             i18nNodes: newI18nNodes,
             templateCache: clonedTemplate,
+            skeletonPaths: parentCache.skeletonPaths ?? {},
         };
 
         return {

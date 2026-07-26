@@ -55,6 +55,32 @@ interface RuntimeContext {
 }
 
 // ══════════════════════════════════════════════════════════════
+// 骨架屏工具
+// ══════════════════════════════════════════════════════════════
+
+const SKELETON_CLS = 'q-skeleton';
+
+function applySkeletonClasses(
+    instance: any,
+    skeletonPaths: Record<string, number[]>,
+    add: boolean
+): void {
+    const method = add ? 'add' : 'remove';
+
+    for (const [name, path] of Object.entries(skeletonPaths)) {
+        if (name === 'root') {
+            instance.el.classList[method](SKELETON_CLS);
+            continue;
+        }
+
+        const el = findByPath(instance.el, path);
+        if (el) {
+            el.classList[method](SKELETON_CLS);
+        }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
 // 工具函数
 // ══════════════════════════════════════════════════════════════
 
@@ -122,6 +148,12 @@ function step_buildNodeMap(ctx: RuntimeContext): void {
 
     instance.el = instance.nodeMapMgr.buildDOM(instance.tag);
     instance.nodeMap = instance.nodeMapMgr.getAll();
+
+    if (ctor._cache?.skeletonPaths && Object.keys(ctor._cache.skeletonPaths).length > 0) {
+        applySkeletonClasses(instance, ctor._cache.skeletonPaths, true);
+        instance._skeletonActive = true;
+    }
+
     logStep(ctx, 'buildNodeMap');
 }
 
@@ -366,6 +398,15 @@ function step_onAfterInit(ctx: RuntimeContext): void {
     if (ctor.type) instance.type = ctor.type;
     instance._templateInitialized = true;
     executeOverrideQueue(instance, 'onAfterInit', props);
+
+    if (instance._skeletonActive && !instance._skeletonManual) {
+        const skeletonPaths = ctor._cache?.skeletonPaths;
+        if (skeletonPaths) {
+            applySkeletonClasses(instance, skeletonPaths, false);
+            instance._skeletonActive = false;
+        }
+    }
+
     logStep(ctx, 'onAfterInit');
 }
 

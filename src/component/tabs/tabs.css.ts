@@ -51,4 +51,63 @@ export const tabsCSS = `
 .q-tabs__pane {
     display: block;
 }
+
+/* 竖向标签页 */
+.q-tabs--vertical {
+    flex-direction: row;
+}
+
+.q-tabs--vertical .q-tabs__bar {
+    flex-direction: column;
+    border-bottom: none;
+    border-right: 2px solid var(--q-colors-border, #dcdfe6);
+    min-width: 120px;
+}
+
+.q-tabs--vertical .q-tabs__bar .q-toggle {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+    border-radius: 0;
+    margin-bottom: 0;
+    margin-right: -2px;
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.q-tabs--vertical .q-tabs__bar .q-toggle--pressed {
+    border-bottom-color: transparent;
+    border-right-color: var(--q-colors-primary, #0078d4);
+}
+
+.q-tabs--vertical .q-tabs__content {
+    flex: 1;
+    padding: 0 0 0 16px;
+}
+
+/* 关闭按钮 */
+.q-tabs__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 6px;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--q-colors-text-secondary, #666);
+    cursor: pointer;
+    border-radius: 0;
+    transition: color 0.15s, background 0.15s;
+}
+
+.q-tabs__close:hover {
+    color: var(--q-colors-text, #1a1a1a);
+    background: var(--q-colors-ghost-hover, rgba(128, 128, 128, 0.15));
+}
+
+/* 禁用标签内容 */
+.q-tabs__pane--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
 `;

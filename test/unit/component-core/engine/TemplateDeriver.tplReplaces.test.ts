@@ -18,6 +18,7 @@ describe('TemplateDeriver.deriveWithTplReplaces', () => {
                 exposeNames: result.exposeNames,
                 i18nNodes: result.i18nNodes,
                 templateCache: tplEl,
+                skeletonPaths: result.skeletonPaths ?? {},
             },
             nodeMetas: result.nodeMetas,
         };

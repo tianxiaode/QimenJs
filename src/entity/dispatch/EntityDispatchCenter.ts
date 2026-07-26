@@ -9,6 +9,7 @@ import {
     ENTITY_LIST_EVENTS,
     ENTITY_TREE_EVENTS,
     ENTITY_SEARCH_EVENTS,
+    ENTITY_UPLOAD_EVENTS,
     ENTITY_REQUEST_STATUS,
     buildRequestEvent,
 } from '@/events/entity-events';
@@ -40,6 +41,7 @@ const BRIDGED_EVENTS: string[] = [
     ENTITY_TREE_EVENTS.MOVED,
     ENTITY_TREE_EVENTS.CHILDREN_REFRESHED,
     ENTITY_SEARCH_EVENTS.CHANGE,
+    ENTITY_UPLOAD_EVENTS.PROGRESS,
 ];
 
 const ENTITY_ACTIONS = [
@@ -64,6 +66,7 @@ const ENTITY_ACTIONS = [
     'collapse',
     'move',
     'getSubTree',
+    'upload',
 ];
 
 export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityEntry>> {
@@ -222,7 +225,15 @@ export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityEntry>
             offFns.push(off);
         }
 
-        for (const action of ['list', 'create', 'update', 'delete', 'toggle', 'save'] as const) {
+        for (const action of [
+            'list',
+            'create',
+            'update',
+            'delete',
+            'toggle',
+            'save',
+            'upload',
+        ] as const) {
             for (const status of [
                 ENTITY_REQUEST_STATUS.LOADING,
                 ENTITY_REQUEST_STATUS.SUCCESS,

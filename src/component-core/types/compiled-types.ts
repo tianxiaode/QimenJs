@@ -90,6 +90,9 @@ export interface NodeMetadata {
     // ─── component：组件专属 ───
 
     initConfig?: Record<string, any>;
+
+    /** 骨架屏占位标记（编译时从 TplNode.skeleton 带入） */
+    skeleton?: boolean;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -140,6 +143,8 @@ export interface CompiledTemplateCache {
     exposeNames: string[];
     i18nNodes: Array<{ name: string; i18nKey: string }>;
     templateCache: HTMLTemplateElement;
+    /** 骨架屏节点路径索引 — 编译时从 TplNode.skeleton 提取 */
+    skeletonPaths: NodeIndexPath;
 }
 
 /**

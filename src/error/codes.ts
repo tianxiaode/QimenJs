@@ -107,4 +107,26 @@ export enum KernelErrorCode {
      * Body 中包含不支持的数据字段
      */
     COMPONENT_BODY_INVALID_FIELD = 'COMPONENT_BODY_INVALID_FIELD',
+
+    // ---- 文件上传错误 ----
+
+    /**
+     * 文件大小超出限制
+     */
+    FILE_SIZE_EXCEEDED = 'FILE_SIZE_EXCEEDED',
+
+    /**
+     * 文件哈希计算失败
+     */
+    FILE_HASH_FAILED = 'FILE_HASH_FAILED',
+
+    /**
+     * 文件上传失败
+     */
+    FILE_UPLOAD_FAILED = 'FILE_UPLOAD_FAILED',
+
+    /**
+     * 文件类型不匹配
+     */
+    FILE_TYPE_MISMATCH = 'FILE_TYPE_MISMATCH',
 }

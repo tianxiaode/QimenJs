@@ -91,7 +91,8 @@ export function compileTemplate(root: TplNode, logger: any) {
     const indexPath: NodeIndexPath = {};
     const nodeMetas: Record<string, NodeMetadata> = {};
     const exposeNames: string[] = [];
-    const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
+    const i18nNodes: Array<{ name: string; i18nKey: string }> = {};
+    const skeletonPaths: NodeIndexPath = {};
 
     indexPath['root'] = [];
     nodeMetas['root'] = {
@@ -103,18 +104,37 @@ export function compileTemplate(root: TplNode, logger: any) {
         grid: root.grid,
         role: root.role,
         attrs: root.attrs,
+        skeleton: root.skeleton,
     };
+
+    if (root.skeleton) {
+        skeletonPaths['root'] = [];
+    }
 
     const children = root.children || [];
     const htmlParts: string[] = [];
 
     for (let i = 0; i < children.length; i++) {
         htmlParts.push(
-            compileNode(children[i], [i], { indexPath, nodeMetas, exposeNames, i18nNodes, logger })
+            compileNode(children[i], [i], {
+                indexPath,
+                nodeMetas,
+                exposeNames,
+                i18nNodes,
+                skeletonPaths,
+                logger,
+            })
         );
     }
 
-    return { html: htmlParts.join(''), indexPath, nodeMetas, exposeNames, i18nNodes };
+    return {
+        html: htmlParts.join(''),
+        indexPath,
+        nodeMetas,
+        exposeNames,
+        i18nNodes,
+        skeletonPaths,
+    };
 }
 
 function compileNode(node: TplNode, path: number[], ctx: any): string {
@@ -180,6 +200,7 @@ function compileTagNode(node: TplNode, path: number[], ctx: any): string {
             hiddenMode: node.hiddenMode,
             role: node.role,
             attrs: node.attrs,
+            skeleton: node.skeleton,
         };
 
         ctx.nodeMetas[name] = meta;
@@ -187,6 +208,10 @@ function compileTagNode(node: TplNode, path: number[], ctx: any): string {
 
         if (node.i18n) {
             ctx.i18nNodes.push({ name, i18nKey: node.i18n });
+        }
+
+        if (node.skeleton) {
+            ctx.skeletonPaths[name] = path;
         }
     }
 
@@ -263,6 +288,7 @@ export class TemplateCompiler {
             exposeNames: result.exposeNames,
             i18nNodes: result.i18nNodes,
             templateCache: tplEl,
+            skeletonPaths: result.skeletonPaths,
         };
 
         const nodeMetas = result.nodeMetas;

@@ -34,6 +34,11 @@
 - ✅ 子组件样式通过 CommonPropsAbility 方法操作（setItemCls/setItemIconCls 等），不直接操作 el
 - ✅ 新增 toolbar.css.ts（Metro 风格，q-toolbar/q-entity-toolbar BEM）
 - ✅ register.ts 注册 EntityToolbar
+- ✅ 新增 UI 组件（9个）：FieldsetComponent / FileInputComponent / LabelComponent / OneTimePasswordComponent / RatingComponent / SidebarComponent / SkeletonComponent / StepComponent / TimelineComponent
+- ✅ TabsComponent 重构（tplEvents + CSS 增强）
+- ✅ component-core tplEvents data 声明式取值支持（RuntimeEngine._collectEventData + tpl-node-types 扩展）
+- ✅ EntityDispatchCenter 扩展 + error/codes 新增错误码
+- ✅ 新增 DatePickerComponent 日期时间选择器（InputComponent.replace 派生）
   - 预览栏显示完整日期时间，单击字段进入对应面板，选完自动流转
   - 导航栏三按钮：← 返回（放弃修改）| ↶ 上一步 | 确认 ✓（保存+结束流转）
   - 面板切换 + 流转逻辑 + 浮动层下拉
