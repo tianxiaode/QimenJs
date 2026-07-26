@@ -250,4 +250,133 @@ describe('RequestContextBuilder', () => {
             expect(context.data.total).toBe(1);
         });
     });
+
+    describe('withIdentity', () => {
+        it('should merge identity fields', () => {
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withIdentity({ entityName: 'User', action: 'list' })
+                .build();
+
+            expect(context.identity.domain).toBe('test');
+            expect(context.identity.entityName).toBe('User');
+            expect(context.identity.action).toBe('list');
+        });
+    });
+
+    describe('withMetadataMap', () => {
+        it('should batch set metadata', () => {
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withMetadataMap({
+                    isTransportFailure: true,
+                    contentType: 'application/json',
+                    isJson: true,
+                })
+                .build();
+
+            expect(context.metadata.isTransportFailure).toBe(true);
+            expect(context.metadata.contentType).toBe('application/json');
+            expect(context.metadata.isJson).toBe(true);
+        });
+
+        it('should merge with existing metadata', () => {
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withMetadata('custom', 'value')
+                .withMetadataMap({ isUpload: true })
+                .build();
+
+            expect(context.metadata.custom).toBe('value');
+            expect(context.metadata.isUpload).toBe(true);
+        });
+    });
+
+    describe('addSteps', () => {
+        it('should batch add execution steps', () => {
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .addSteps([
+                    { processor: 'P1', action: 'executed' },
+                    { processor: 'P2', action: 'skipped' },
+                    { processor: 'P3', action: 'terminated' },
+                ])
+                .build();
+
+            expect(context.steps).toHaveLength(3);
+            expect(context.steps[0].processor).toBe('P1');
+            expect(context.steps[1].processor).toBe('P2');
+            expect(context.steps[2].processor).toBe('P3');
+        });
+
+        it('should work with addStep together', () => {
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .addStep({ processor: 'P0', action: 'executed' })
+                .addSteps([
+                    { processor: 'P1', action: 'executed' },
+                    { processor: 'P2', action: 'skipped' },
+                ])
+                .build();
+
+            expect(context.steps).toHaveLength(3);
+        });
+    });
+
+    describe('withAlignToFrontend', () => {
+        it('should set alignToFrontend method', () => {
+            const alignFn = (target: any) => ({ ...target, aligned: true });
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withAlignToFrontend(alignFn)
+                .build();
+
+            const result = context.alignToFrontend({ id: 1 });
+            expect(result).toEqual({ id: 1, aligned: true });
+        });
+    });
+
+    describe('withSchema', () => {
+        it('should set schema', () => {
+            const schema = { type: 'object', properties: { name: { type: 'string' } } };
+            const context = RequestContextBuilder.create()
+                .withDomain('test')
+                .withUrl('/api/test')
+                .withSchema(schema)
+                .build();
+
+            expect(context.schema).toEqual(schema);
+        });
+    });
+
+    describe('clone with controller', () => {
+        it('should recreate AbortController in clone', () => {
+            const builder1 = RequestContextBuilder.create()
+                .withDomain('user')
+                .withUrl('/api/users');
+
+            const builder2 = builder1.clone();
+            const context2 = builder2.build();
+
+            expect(context2.request.controller).toBeInstanceOf(AbortController);
+        });
+
+        it('should handle clone without controller', () => {
+            const builder1 = RequestContextBuilder.create()
+                .withDomain('user')
+                .withUrl('/api/users');
+            (builder1 as any).context.request = { url: '/api/users', method: 'GET', headers: {} };
+
+            const builder2 = builder1.clone();
+            const context2 = builder2.build();
+
+            expect(context2.request.url).toBe('/api/users');
+        });
+    });
 });
