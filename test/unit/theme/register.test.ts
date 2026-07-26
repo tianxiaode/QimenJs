@@ -38,6 +38,14 @@ jest.mock('@/events/GlobalEventBus', () => ({
     globalEventBus: {
         emit: jest.fn(),
         on: jest.fn(() => jest.fn()),
+        createEventScope: jest.fn(() => ({
+            on: jest.fn(() => jest.fn()),
+            once: jest.fn(),
+            emit: jest.fn(),
+            dispose: jest.fn(),
+            getScopeId: jest.fn(() => 'mock-scope'),
+            addCleanup: jest.fn(),
+        })),
     },
 }));
 
@@ -128,9 +136,7 @@ describe('register', () => {
         it('应注册正确的主题名称', () => {
             registerModule.registerChineseThemes();
 
-            const registeredNames = mockRegister.mock.calls.map(
-                (call: any[]) => call[0].name
-            );
+            const registeredNames = mockRegister.mock.calls.map((call: any[]) => call[0].name);
             expect(registeredNames).toContain('celadon');
             expect(registeredNames).toContain('cinnabar');
             expect(registeredNames).toContain('indigo');

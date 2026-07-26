@@ -259,8 +259,10 @@ describe('DomEventAdapter', () => {
                 setTimeout(() => {
                     expect(emitSpy).toHaveBeenCalledWith(
                         'dom:tap',
-                        { semantic: 'tap', x: 100, y: 100 },
-                        expect.objectContaining({ source: undefined })
+                        expect.objectContaining({
+                            data: { semantic: 'tap', x: 100, y: 100 },
+                            source: 'UNKNOWN',
+                        })
                     );
                     resolve(undefined);
                 }, 10);
@@ -293,7 +295,7 @@ describe('DomEventAdapter', () => {
         it('should bind InputSignal directly without Processor', () => {
             // 添加 input 信号到 inputEventMap
             inputEventMap.input = {
-                keyboard: ['input'],  // input 事件用 other/keyboard 类型
+                keyboard: ['input'], // input 事件用 other/keyboard 类型
             };
 
             const emitSpy = jest.spyOn(mockEventScope, 'emit');
@@ -336,10 +338,12 @@ describe('DomEventAdapter', () => {
             expect(emitSpy).toHaveBeenCalledWith(
                 'dom:focus',
                 expect.objectContaining({
-                    signal: 'focus',
-                    originalEvent: mockEvent,
-                }),
-                expect.objectContaining({ source: undefined })
+                    data: expect.objectContaining({
+                        signal: 'focus',
+                        originalEvent: mockEvent,
+                    }),
+                    source: 'UNKNOWN',
+                })
             );
         });
 
@@ -349,7 +353,11 @@ describe('DomEventAdapter', () => {
                 keyboard: ['change'],
             };
 
-            const unbind = domEventAdapter.bind(mockTarget, 'change' as InputSignal, mockEventScope);
+            const unbind = domEventAdapter.bind(
+                mockTarget,
+                'change' as InputSignal,
+                mockEventScope
+            );
 
             // 验证绑定了事件
             expect(mockTarget.addEventListener).toHaveBeenCalledWith(
@@ -370,11 +378,7 @@ describe('DomEventAdapter', () => {
         });
 
         it('should return empty function when semantic is neither GestureSemantic nor InputSignal', () => {
-            const unbind = domEventAdapter.bind(
-                mockTarget,
-                'unknown' as any,
-                mockEventScope
-            );
+            const unbind = domEventAdapter.bind(mockTarget, 'unknown' as any, mockEventScope);
 
             expect(unbind).toBeDefined();
             expect(typeof unbind).toBe('function');

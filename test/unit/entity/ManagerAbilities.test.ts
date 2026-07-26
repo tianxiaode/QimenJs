@@ -399,6 +399,7 @@ describe('LocalGetAbility', () => {
         item = null as any;
         emit = jest.fn();
     }
+    withAbilities(TestLocalGetHost, [LocalGetAbility]);
 
     let host: TestLocalGetHost;
 

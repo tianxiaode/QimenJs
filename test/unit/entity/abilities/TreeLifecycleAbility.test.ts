@@ -34,7 +34,6 @@ import { TreeLifecycleAbility } from '@/entity/abilities/tree/TreeLifecycleAbili
 
 function createTreeHost() {
     class TreeHost extends ComposableBase {
-
         nodes = new Map<string | number, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';
@@ -44,6 +43,7 @@ function createTreeHost() {
         toggleExpand = jest.fn();
         toggleLeaf = jest.fn();
     }
+    withAbilities(TreeHost, [TreeLifecycleAbility]);
     return new TreeHost() as any;
 }
 

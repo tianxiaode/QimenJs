@@ -1,6 +1,6 @@
 import { ComposableBase, withAbilities } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import { EventAbility } from '@/system-abilities';
+import { EventAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
@@ -16,6 +16,7 @@ import { HttpExecutor } from '@/http';
 
 export const CORE_ENTITY_ABILITIES = [
     EventAbility,
+    DebounceAbility,
     DomainAbility,
     SystemAbility,
     SchemaAbility,

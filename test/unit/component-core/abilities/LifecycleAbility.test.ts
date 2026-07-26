@@ -43,7 +43,10 @@ describe('LifecycleAbility', () => {
         const instance = makeInstance({ onMounted: onMountedSpy, emit: emitSpy });
         LifecycleAbility._emitMounted.call(instance);
         expect(onMountedSpy).toHaveBeenCalled();
-        expect(emitSpy).toHaveBeenCalledWith('mounted', undefined);
+        expect(emitSpy).toHaveBeenCalledWith(
+            'mounted',
+            expect.objectContaining({ data: undefined })
+        );
     });
 
     it('_emitUpdated 调用 onUpdated 钩子并发送 updated 事件', () => {
@@ -52,7 +55,10 @@ describe('LifecycleAbility', () => {
         const instance = makeInstance({ onUpdated: onUpdatedSpy, emit: emitSpy });
         LifecycleAbility._emitUpdated.call(instance, { prop: 'cls' });
         expect(onUpdatedSpy).toHaveBeenCalled();
-        expect(emitSpy).toHaveBeenCalledWith('updated', { prop: 'cls' });
+        expect(emitSpy).toHaveBeenCalledWith(
+            'updated',
+            expect.objectContaining({ data: { prop: 'cls' } })
+        );
     });
 
     it('_emitResize 调用 onResize 钩子并发送 resize 事件', () => {
@@ -62,7 +68,10 @@ describe('LifecycleAbility', () => {
         const instance = makeInstance({ onResize: onResizeSpy, emit: emitSpy });
         LifecycleAbility._emitResize.call(instance, entry);
         expect(onResizeSpy).toHaveBeenCalledWith(entry);
-        expect(emitSpy).toHaveBeenCalledWith('resize', { width: 100, height: 200 });
+        expect(emitSpy).toHaveBeenCalledWith(
+            'resize',
+            expect.objectContaining({ data: { width: 100, height: 200 } })
+        );
     });
 
     it('_emitLifecycleEvent 有 eventKey 时发送桥接事件', () => {
@@ -74,7 +83,10 @@ describe('LifecycleAbility', () => {
             eventKey: 'formKey',
         });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'mounted');
-        expect(emitSpy).toHaveBeenCalledWith('mounted', undefined);
+        expect(emitSpy).toHaveBeenCalledWith(
+            'mounted',
+            expect.objectContaining({ data: undefined })
+        );
         expect(bridgeEmitSpy).toHaveBeenCalledWith(
             expect.objectContaining({ event: 'mounted', source: 'formKey' })
         );
@@ -85,7 +97,10 @@ describe('LifecycleAbility', () => {
         const bridgeEmitSpy = jest.fn();
         const instance = makeInstance({ emit: emitSpy, bridgeEmit: bridgeEmitSpy });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'mounted');
-        expect(emitSpy).toHaveBeenCalledWith('mounted', undefined);
+        expect(emitSpy).toHaveBeenCalledWith(
+            'mounted',
+            expect.objectContaining({ data: undefined })
+        );
         expect(bridgeEmitSpy).not.toHaveBeenCalled();
     });
 

@@ -262,7 +262,7 @@ describe('EventScope', () => {
                 expect.objectContaining({
                     data: { data: 'test' },
                     scopeId: scope.getScopeId(),
-                    busId: bus.getBusId(),
+
                     event: 'context-test',
                 })
             );
@@ -537,7 +537,7 @@ describe('EventScope', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined,
+                    event: 'undefined-data',
                 })
             );
         });

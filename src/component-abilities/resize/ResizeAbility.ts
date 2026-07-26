@@ -106,6 +106,8 @@ export const ResizeAbility = {
             this._onResizeDrag(ctx);
         });
 
+        this.onCleanup(() => this._cleanupHandles());
+
         this.addCls('q-resizable');
     },
 
@@ -166,7 +168,7 @@ export const ResizeAbility = {
         }
     },
 
-    onBeforeDispose(): void {
+    _cleanupHandles(): void {
         const state = this.abilityState(STATE_KEY) as ResizeState | undefined;
         if (!state) return;
         for (const [, handle] of state.handles) {

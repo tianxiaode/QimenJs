@@ -56,13 +56,13 @@ interface TestHostSchema {
 
 function createCacheHost(schema: TestHostSchema, isRemote = false, toParams?: () => any) {
     class CacheHost extends ComposableBase {
-
         schema = schema;
         isRemote = isRemote;
         cacheTTL = 300000;
         sourceData = new Map<string, any>();
         toParams = toParams;
     }
+    withAbilities(CacheHost, [CacheAbility]);
     return new CacheHost() as any;
 }
 

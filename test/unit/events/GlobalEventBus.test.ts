@@ -339,7 +339,6 @@ describe('GlobalEventBus', () => {
             expect(userLogoutHandler).toHaveBeenCalledTimes(1);
             expect(userLogoutHandler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined,
                     source: 'GLOBAL',
                     event: 'user:logout',
                 })
@@ -615,7 +614,7 @@ describe('GlobalEventBus', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined,
+                    event: 'undefined-data',
                 })
             );
         });

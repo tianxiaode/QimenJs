@@ -76,10 +76,10 @@ export let ItemGroupBaseComponent = Component.withTemplate({
 
         // ========== 公共属性 ==========
         get items(): readonly any[] {
-            return this._items.map((item: any) => item.component);
+            return (this._items || []).map((item: any) => item.component);
         },
         get count(): number {
-            return this._items.length;
+            return (this._items || []).length;
         },
 
         get direction(): 'horizontal' | 'vertical' {
@@ -198,7 +198,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
                 el: instance.el,
             };
 
-            this.itemContainer.el.appendChild(instance.el);
+            this.itemContainer?.el?.appendChild(instance.el);
 
             return item;
         },
@@ -216,7 +216,7 @@ export let ItemGroupBaseComponent = Component.withTemplate({
 
         // ========== DOM 操作 ==========
         _reorderDOM(): void {
-            const container = this.itemContainer.el;
+            const container = this.itemContainer?.el;
             if (!container) return;
             const fragment = document.createDocumentFragment();
             for (const item of this._items) {
@@ -236,11 +236,13 @@ export let ItemGroupBaseComponent = Component.withTemplate({
         },
 
         _applyGap(): void {
+            if (!this.itemContainer?.el) return;
             this.itemContainer.el.style.gap = this._gap || '';
         },
 
         _applyCols(): void {
-            const container = this.itemContainer.el;
+            const container = this.itemContainer?.el;
+            if (!container) return;
             if (this._cols > 1) {
                 container.style.setProperty('--q-itemgroup-cols', String(this._cols));
                 container.classList.add('q-itemgroup__items--cols');

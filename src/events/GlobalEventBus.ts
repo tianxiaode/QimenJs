@@ -79,6 +79,7 @@ export class GlobalEventBus {
      * @param ctx - 预构建的 EventContext
      */
     emit(event: string, ctx: EventContext): void {
+        ctx.scopeId = this.rootScope.getScopeId();
         this.bus.emit(event, ctx);
     }
 

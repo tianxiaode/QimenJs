@@ -1,6 +1,6 @@
 import type { AbilityDefinition } from '@/composable';
 import { globalEventBus, EventHandler, EventSourceRegistrar } from '@/events';
-import { EventContext, EventChainLink } from '@/context';
+import { EventContext, EventChainLink, EventContextBuilder } from '@/context';
 import { object } from '@/utils';
 
 /**
@@ -18,7 +18,7 @@ import { object } from '@/utils';
  *
  * this 指向宿主（ComposableBase）。
  */
-export const EventAbility= {
+export const EventAbility = {
     eventScope: {
         get() {
             return this.abilityState('EventAbility:scope', () => {
@@ -42,15 +42,39 @@ export const EventAbility= {
     },
 
     /**
-     * 发射事件（只接收 EventContext）
+     * 发射事件
      *
-     * 事件总线统一约定：只接收 EventContext，由发送方构建。
-     * scopeId 由 EventScope.emit 自动补回。
+     * 支持两种调用方式：
+     * 1. emit(event, ctx) — 传入预构建的 EventContext
+     * 2. emit(event, data?, options?) — 传入普通数据，内部构建 EventContext
      *
      * @param event - 事件名称
-     * @param ctx - 预构建的 EventContext
+     * @param dataOrCtx - EventContext 或普通数据
+     * @param options - 可选，{ source } 指定事件源
      */
-    emit(event: string, ctx: EventContext) {
+    emit(event: string, dataOrCtx?: any, options?: { source?: string }) {
+        let ctx: EventContext;
+        if (
+            dataOrCtx &&
+            typeof dataOrCtx === 'object' &&
+            'event' in dataOrCtx &&
+            'scopeId' in dataOrCtx
+        ) {
+            ctx = dataOrCtx;
+        } else {
+            ctx = EventContextBuilder.create()
+                .withEvent(event)
+                .withType(event)
+                .withSource(
+                    options?.source ??
+                        this.eventKey ??
+                        (this.constructor as any).eventKey ??
+                        this.constructor.name
+                )
+                .withSourceType(this.constructor.name)
+                .withData(dataOrCtx)
+                .build();
+        }
         this.logger?.debug?.(
             '[Event] emit, event =',
             event,

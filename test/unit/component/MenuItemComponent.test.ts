@@ -12,7 +12,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -21,7 +24,6 @@ jest.mock('@/logger', () => {
 import { MenuItemComponent } from '@/component/menu/MenuItemComponent';
 
 describe('MenuItemComponent', () => {
-
     // ============================================
     // 构造函数
     // ============================================
@@ -85,7 +87,11 @@ describe('MenuItemComponent', () => {
         });
 
         it('通过 props 设置分组属性', () => {
-            const item = new MenuItemComponent({ group: 'view', groupMode: 'radio', checked: true }) as any;
+            const item = new MenuItemComponent({
+                group: 'view',
+                groupMode: 'radio',
+                checked: true,
+            }) as any;
             expect(item.group).toBe('view');
             expect(item.groupMode).toBe('radio');
             expect(item.checked).toBe(true);
@@ -122,18 +128,25 @@ describe('MenuItemComponent', () => {
 
     describe('disabled', () => {
         it('setter 切换禁用状态', () => {
+            jest.useFakeTimers();
             const item = new MenuItemComponent() as any;
             item.disabled = true;
+            jest.advanceTimersByTime(0);
             expect(item.disabled).toBe(true);
             expect(item.el.classList.contains('q-menu-item--disabled')).toBe(true);
             expect(item.el.getAttribute('aria-disabled')).toBe('true');
+            jest.useRealTimers();
         });
 
         it('取消禁用移除 aria-disabled', () => {
+            jest.useFakeTimers();
             const item = new MenuItemComponent({ disabled: true }) as any;
+            jest.advanceTimersByTime(0);
             item.disabled = false;
+            jest.advanceTimersByTime(0);
             expect(item.el.classList.contains('q-menu-item--disabled')).toBe(false);
             expect(item.el.hasAttribute('aria-disabled')).toBe(false);
+            jest.useRealTimers();
         });
     });
 
@@ -167,10 +180,13 @@ describe('MenuItemComponent', () => {
 
     describe('分组选中', () => {
         it('checked setter 更新 CSS 类和 ARIA', () => {
+            jest.useFakeTimers();
             const item = new MenuItemComponent({ group: 'view', groupMode: 'radio' }) as any;
             item.checked = true;
+            jest.advanceTimersByTime(0);
             expect(item.el.classList.contains('q-menu-item--checked')).toBe(true);
             expect(item.el.getAttribute('aria-checked')).toBe('true');
+            jest.useRealTimers();
         });
 
         it('radio 分组渲染 ●/○ 指示符', () => {
@@ -193,7 +209,11 @@ describe('MenuItemComponent', () => {
         });
 
         it('有分组时自定义 icon 被指示符覆盖', () => {
-            const item = new MenuItemComponent({ icon: '📄', group: 'view', groupMode: 'radio' }) as any;
+            const item = new MenuItemComponent({
+                icon: '📄',
+                group: 'view',
+                groupMode: 'radio',
+            }) as any;
             expect(item.icon).toBe('○'); // 指示符优先
         });
 
@@ -208,8 +228,11 @@ describe('MenuItemComponent', () => {
         });
 
         it('无分组时无 role 属性', () => {
+            jest.useFakeTimers();
             const item = new MenuItemComponent() as any;
+            jest.advanceTimersByTime(0);
             expect(item.el.hasAttribute('role')).toBe(false);
+            jest.useRealTimers();
         });
 
         it('grouped CSS 类随 group 属性切换', () => {
@@ -263,7 +286,11 @@ describe('MenuItemComponent', () => {
         });
 
         it('radio 分组点击已选中项保持选中', () => {
-            const item = new MenuItemComponent({ group: 'view', groupMode: 'radio', checked: true }) as any;
+            const item = new MenuItemComponent({
+                group: 'view',
+                groupMode: 'radio',
+                checked: true,
+            }) as any;
             item.onClick();
             expect(item.checked).toBe(true);
         });

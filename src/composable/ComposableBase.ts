@@ -50,7 +50,8 @@ export class ComposableBase {
      * ```
      */
     static with(abilities: readonly AbilityDefinition[]): typeof ComposableBase {
-        class Derived extends ComposableBase {}
+        const Base = this;
+        class Derived extends Base {}
         withAbilities(Derived, abilities);
         return Derived as typeof ComposableBase;
     }

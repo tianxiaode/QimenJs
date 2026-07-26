@@ -300,7 +300,13 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     let mergedBody = BodyMerger.merge((ParentInner as any)._body, body);
 
     if (type) {
-        mergedBody = { ...mergedBody, type };
+        const descs = Object.getOwnPropertyDescriptors(mergedBody);
+        descs.type = { value: type, writable: true, enumerable: true, configurable: true };
+        const result: Record<string, any> = {};
+        for (const [key, desc] of Object.entries(descs)) {
+            Object.defineProperty(result, key, desc);
+        }
+        mergedBody = result;
     }
 
     const mergedNodeOverrides = BodyMerger.mergeNodeOverrides(

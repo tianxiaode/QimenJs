@@ -43,6 +43,9 @@ export const NodePropAbility: AbilityDefinition = {
     },
 
     _getNodeProp(this: any, nodeName: string, prop: string): any {
+        const pending = this._dirtyNodes?.[nodeName]?.[prop];
+        if (pending !== undefined) return pending;
+
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return undefined;
 
@@ -153,7 +156,7 @@ export const NodePropAbility: AbilityDefinition = {
             this._dirtyNodes[nodeName] = { ...props };
         }
 
-        this.debounce('NodePropAbility:flush', () => this._flushNodeProps(), 0);
+        this.debounce('NodePropAbility:flush', () => this._flushNodeProps(), 0)();
     },
 
     _flushNodeProps(this: any): void {
@@ -188,7 +191,11 @@ function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
                 }
                 break;
             case 'role':
-                el.setAttribute('role', value);
+                if (value === false) {
+                    el.removeAttribute('role');
+                } else {
+                    el.setAttribute('role', value);
+                }
                 break;
             case 'attrs':
                 for (const [k, v] of Object.entries(value)) {
@@ -241,7 +248,12 @@ function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
 }
 
 function applyHidden(el: HTMLElement, hidden: boolean, hiddenMode?: string): void {
-    if (!hidden) return;
+    if (!hidden) {
+        el.hidden = false;
+        el.style.visibility = '';
+        el.style.opacity = '';
+        return;
+    }
 
     switch (hiddenMode) {
         case 'visibility':

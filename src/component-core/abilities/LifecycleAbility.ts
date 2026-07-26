@@ -44,19 +44,20 @@ export const LifecycleAbility = {
     },
 
     _emitLifecycleEvent(this: any, event: string, data?: any): void {
+        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
+        const ctx = EventContextBuilder.create()
+            .withEvent(event)
+            .withType(event)
+            .withSource(eventKey ?? this.constructor.name)
+            .withSourceType(this.constructor.name)
+            .withData(data)
+            .build();
+
         if (typeof this.emit === 'function') {
-            this.emit(event, data);
+            this.emit(event, ctx);
         }
 
-        const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
         if (eventKey && typeof this.bridgeEmit === 'function') {
-            const ctx = EventContextBuilder.create()
-                .withEvent(event)
-                .withType(event)
-                .withSource(eventKey)
-                .withSourceType(this.constructor.name)
-                .withData(data)
-                .build();
             this.bridgeEmit(ctx);
         }
     },

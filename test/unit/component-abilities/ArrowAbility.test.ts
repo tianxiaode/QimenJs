@@ -26,7 +26,7 @@ import type { ComponentTemplate } from '@/component-core';
 import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
 
 const TPL: ComponentTemplate = {
-    tpl: { tag: 'div', name: 'arrow:arrow', content: 'arrow', className: 'q-arrow' },
+    tpl: { tag: 'div', name: 'arrow', content: 'arrow', className: 'q-arrow' },
 };
 
 describe('ArrowAbility', () => {
@@ -40,7 +40,7 @@ describe('ArrowAbility', () => {
         it('从 nodeMap 定位箭头节点', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl).toBeTruthy();
             expect(arrowEl.classList.contains('q-arrow')).toBe(true);
         });
@@ -49,7 +49,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             expect(instance._arrowVisible).toBe(true);
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.display).not.toBe('none');
         });
 
@@ -57,7 +57,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow({ arrow: false });
             expect(instance._arrowVisible).toBe(false);
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.display).toBe('none');
         });
 
@@ -69,7 +69,7 @@ describe('ArrowAbility', () => {
                     '--q-arrow-size': '6px',
                 },
             });
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.getPropertyValue('--q-arrow-color')).toBe('#fff');
             expect(arrowEl.style.getPropertyValue('--q-arrow-size')).toBe('6px');
         });
@@ -77,7 +77,7 @@ describe('ArrowAbility', () => {
         it('无 arrowVars 时不设置 CSS 变量', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.getPropertyValue('--q-arrow-color')).toBe('');
         });
 
@@ -99,7 +99,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             instance.updateArrowPlacement('top');
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.classList.contains('q-arrow--top')).toBe(true);
         });
 
@@ -107,7 +107,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             instance.updateArrowPlacement('bottom');
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.classList.contains('q-arrow--bottom')).toBe(true);
         });
 
@@ -115,7 +115,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             instance.updateArrowPlacement('left');
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.classList.contains('q-arrow--left')).toBe(true);
         });
 
@@ -123,7 +123,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             instance.updateArrowPlacement('right');
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.classList.contains('q-arrow--right')).toBe(true);
         });
 
@@ -131,7 +131,7 @@ describe('ArrowAbility', () => {
             const instance = new HostClass() as any;
             instance.initArrow();
             instance.updateArrowPlacement('top');
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.classList.contains('q-arrow--top')).toBe(true);
             instance.updateArrowPlacement('bottom');
             expect(arrowEl.classList.contains('q-arrow--top')).toBe(false);
@@ -157,7 +157,7 @@ describe('ArrowAbility', () => {
             instance.initArrow();
             instance.setArrowVisible(false);
             expect(instance._arrowVisible).toBe(false);
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.display).toBe('none');
         });
 
@@ -166,7 +166,7 @@ describe('ArrowAbility', () => {
             instance.initArrow({ arrow: false });
             instance.setArrowVisible(true);
             expect(instance._arrowVisible).toBe(true);
-            const arrowEl = instance.nodeMap?.['arrow']?.['arrow']?.el as HTMLElement;
+            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
             expect(arrowEl.style.display).toBe('');
         });
 

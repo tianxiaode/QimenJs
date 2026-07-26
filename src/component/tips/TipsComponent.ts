@@ -13,6 +13,8 @@
 
 import { Component } from '@qimenjs/component-core';
 import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
+import { OverlayRoot } from '@/overlay/OverlayRoot';
+import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 
 export interface TipsProps {
     anchor?: HTMLElement;
@@ -38,6 +40,7 @@ export let TipsComponent = Component.withTemplate({
         onInitState() {
             return {
                 _anchor: null as HTMLElement | null,
+                _overlayOpen: false,
             };
         },
 
@@ -57,6 +60,40 @@ export let TipsComponent = Component.withTemplate({
                     arrowName: 'arrow',
                 });
             }
+        },
+
+        initOverlayHost(): void {
+            this.el.style.display = 'none';
+            this.el.style.position = 'fixed';
+        },
+
+        open(): void {
+            this.el.style.display = '';
+            this.el.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
+            this._overlayOpen = true;
+            if (this._anchor && typeof this.updateArrowPlacement === 'function') {
+                const anchorRect = this._anchor.getBoundingClientRect();
+                const elRect = this.el.getBoundingClientRect();
+                const placement = this._inferPlacement(anchorRect, elRect);
+                this.updateArrowPlacement(placement);
+            }
+        },
+
+        close(): void {
+            this.el.style.display = 'none';
+            this._overlayOpen = false;
+        },
+
+        _inferPlacement(anchorRect: DOMRect, elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
+            const spaceAbove = anchorRect.top;
+            const spaceBelow = window.innerHeight - anchorRect.bottom;
+            const spaceLeft = anchorRect.left;
+            const spaceRight = window.innerWidth - anchorRect.right;
+            const max = Math.max(spaceAbove, spaceBelow, spaceLeft, spaceRight);
+            if (max === spaceAbove) return 'bottom';
+            if (max === spaceBelow) return 'top';
+            if (max === spaceLeft) return 'right';
+            return 'left';
         },
 
         onOverlayChange(data: any): void {

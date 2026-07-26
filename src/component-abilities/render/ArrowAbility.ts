@@ -41,16 +41,24 @@ export interface ArrowConfig {
     arrowName?: string;
 }
 
-export const ArrowAbility= {
+export const ArrowAbility = {
     _arrowVisible: false,
     _arrowName: '',
     _arrowEl: null as HTMLElement | null,
 
     initArrow(config?: ArrowConfig): void {
         const arrowName = config?.arrowName ?? 'arrow';
-        const nodeMap = this.nodeMap as Record<string, { el: HTMLElement }> | undefined;
+        const nodeMap = this.nodeMap as Record<string, any> | undefined;
 
-        const arrowEl = nodeMap?.[arrowName]?.el;
+        let arrowEl: HTMLElement | null = null;
+        const entry = nodeMap?.[arrowName];
+        if (entry) {
+            if (entry.el instanceof HTMLElement) {
+                arrowEl = entry.el;
+            } else if (entry[arrowName]?.el instanceof HTMLElement) {
+                arrowEl = entry[arrowName].el;
+            }
+        }
 
         if (!arrowEl) return;
 

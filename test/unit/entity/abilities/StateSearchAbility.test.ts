@@ -36,7 +36,6 @@ import { SearchAbility } from '@/entity/abilities/search/SearchAbility';
 
 function createSearchHost(isTree = false) {
     class SearchHost extends ComposableBase {
-
         schema = {
             isTree,
             searchFields: ['name', 'email'],
@@ -46,6 +45,7 @@ function createSearchHost(isTree = false) {
         pageSize = 20;
         root = null;
     }
+    withAbilities(SearchHost, [SearchAbility]);
     return new SearchHost() as any;
 }
 

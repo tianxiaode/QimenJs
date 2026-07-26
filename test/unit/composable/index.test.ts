@@ -31,7 +31,7 @@ describe('composable package exports', () => {
             customMethod: () => 'custom-result',
         };
 
-        const TestComposable = ComposableBase.with(CustomAbility);
+        const TestComposable = ComposableBase.with([CustomAbility]);
         const instance = new TestComposable() as any;
         expect(instance.customMethod()).toBe('custom-result');
     });

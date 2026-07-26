@@ -34,7 +34,6 @@ import { TreePathAbility } from '@/entity/abilities/tree/TreePathAbility';
 
 function createPathHost() {
     class PathHost extends ComposableBase {
-
         nodes = new Map<string, any>();
         hierarchy = new Map<string | number | null, (string | number)[]>();
         idField = 'id';
@@ -43,6 +42,7 @@ function createPathHost() {
         expandedField = 'expanded';
         leafField = 'leaf';
     }
+    withAbilities(PathHost, [TreePathAbility]);
     return new PathHost() as any;
 }
 

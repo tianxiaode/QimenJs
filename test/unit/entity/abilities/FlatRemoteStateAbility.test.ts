@@ -30,7 +30,6 @@ import { DirtyAbility } from '@/entity/abilities/core/DirtyAbility';
 
 function createRemoteHost() {
     class RemoteHost extends ComposableBase {
-
         schema = { idField: 'id' };
         items: any[] = [];
         item: any = null;
@@ -41,6 +40,7 @@ function createRemoteHost() {
         hasMore = false;
         loading = false;
     }
+    withAbilities(RemoteHost, [FlatRemoteStateAbility, DirtyAbility]);
     return new RemoteHost() as any;
 }
 

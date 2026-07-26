@@ -7,17 +7,17 @@
 
 import type { AbilityDefinition } from '@qimenjs/composable';
 
-export const VirtualListAbility= {
+export const VirtualListAbility = {
     /**
      * 容器高度
      */
     containerHeight: {
         get(): number {
-            return this.abilityState('VirtualListAbility:containerHeight', 400);
+            return this.abilityState('VirtualListAbility:containerHeight', () => 400);
         },
         set(value: number) {
             this.setAbilityState('VirtualListAbility:containerHeight', value);
-            this.markDirty();
+            this.debounce('VirtualListAbility:render', () => this.renderVirtualList(), 0)();
         },
     },
 
@@ -26,11 +26,11 @@ export const VirtualListAbility= {
      */
     rowHeight: {
         get(): number {
-            return this.abilityState('VirtualListAbility:rowHeight', 40);
+            return this.abilityState('VirtualListAbility:rowHeight', () => 40);
         },
         set(value: number) {
             this.setAbilityState('VirtualListAbility:rowHeight', value);
-            this.markDirty();
+            this.debounce('VirtualListAbility:render', () => this.renderVirtualList(), 0)();
         },
     },
 
@@ -39,7 +39,7 @@ export const VirtualListAbility= {
      */
     bufferCount: {
         get(): number {
-            return this.abilityState('VirtualListAbility:bufferCount', 2);
+            return this.abilityState('VirtualListAbility:bufferCount', () => 2);
         },
         set(value: number) {
             this.setAbilityState('VirtualListAbility:bufferCount', value);
@@ -55,7 +55,7 @@ export const VirtualListAbility= {
         },
         set(value: any[]) {
             this.setAbilityState('VirtualListAbility:items', value);
-            this.markDirty();
+            this.debounce('VirtualListAbility:render', () => this.renderVirtualList(), 0)();
         },
     },
 
@@ -64,7 +64,7 @@ export const VirtualListAbility= {
      */
     rowRenderer: {
         get(): ((item: any, index: number) => HTMLElement) | null {
-            return this.abilityState('VirtualListAbility:rowRenderer', null);
+            return this.abilityState('VirtualListAbility:rowRenderer', () => null);
         },
         set(value: ((item: any, index: number) => HTMLElement) | null) {
             this.setAbilityState('VirtualListAbility:rowRenderer', value);
@@ -76,7 +76,7 @@ export const VirtualListAbility= {
      */
     scrollTop: {
         get(): number {
-            return this.abilityState('VirtualListAbility:scrollTop', 0);
+            return this.abilityState('VirtualListAbility:scrollTop', () => 0);
         },
         set(value: number) {
             this.setAbilityState('VirtualListAbility:scrollTop', value);

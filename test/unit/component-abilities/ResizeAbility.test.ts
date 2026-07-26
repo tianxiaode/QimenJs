@@ -183,7 +183,7 @@ describe('ResizeAbility', () => {
             const host = new HostClass() as any;
             host.initResize();
             expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(8);
-            host.onBeforeDispose();
+            host.dispose();
             expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(0);
         });
 

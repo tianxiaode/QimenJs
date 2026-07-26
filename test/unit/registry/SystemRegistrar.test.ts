@@ -13,6 +13,19 @@ describe('SystemRegistrar', () => {
      */
     beforeEach(() => {
         systemRegistrar = new SystemRegistrar();
+        systemRegistrar.register({
+            locale: 'zh-CN',
+            dateFormat: 'YYYY-MM-DD',
+            timezone: 'UTC+8',
+            password: {
+                minLength: 8,
+                maxLength: 16,
+                upperCase: true,
+                lowerCase: true,
+                digit: true,
+                specialChar: true,
+            },
+        });
     });
 
     describe('initial state', () => {

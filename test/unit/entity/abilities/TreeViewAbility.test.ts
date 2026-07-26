@@ -33,7 +33,6 @@ import { TreeViewAbility } from '@/entity/abilities/tree/TreeViewAbility';
 
 function createTreeViewHost(schemaOverrides: any = {}) {
     class TreeViewHost extends ComposableBase {
-
         schema = {
             useFlat: true,
             expandedField: 'expanded',
@@ -47,6 +46,7 @@ function createTreeViewHost(schemaOverrides: any = {}) {
         root = null;
         applySort = jest.fn((items: any[]) => items);
     }
+    withAbilities(TreeViewHost, [TreeViewAbility]);
     return new TreeViewHost() as any;
 }
 

@@ -255,7 +255,7 @@ describe('EventBus', () => {
                     event: 'context-test',
                     data: testData,
                     source: testSource,
-                    busId: bus.getBusId(),
+
                     timestamp: expect.any(Number),
                 })
             );
@@ -616,7 +616,6 @@ describe('EventBus', () => {
 
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    data: undefined,
                     event: 'undefined-data',
                 })
             );

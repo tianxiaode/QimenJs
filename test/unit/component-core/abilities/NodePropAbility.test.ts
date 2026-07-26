@@ -56,7 +56,10 @@ describe('NodePropAbility', () => {
             _emitLifecycleEvent: LifecycleAbility._emitLifecycleEvent,
         };
         NodePropAbility._updateNode.call(instance, 'root', { hidden: true });
-        expect(emitSpy).toHaveBeenCalledWith('hiddenchange', { hidden: true, previous: false });
+        expect(emitSpy).toHaveBeenCalledWith(
+            'hiddenchange',
+            expect.objectContaining({ data: { hidden: true, previous: false } })
+        );
     });
 
     it('_updateNode 子组件委托属性系统', () => {

@@ -120,10 +120,13 @@ describe('PermissionRegistrar', () => {
 
             registrar.registerBatch([{ domain: 'system', codes: ['user:create'] }]);
 
-            expect(emitSpy).toHaveBeenCalledWith(PERMISSION_CHANGE_EVENT, {
-                domains: ['system'],
-                type: 'register',
-            });
+            expect(emitSpy).toHaveBeenCalledWith(
+                PERMISSION_CHANGE_EVENT,
+                expect.objectContaining({
+                    data: { domains: ['system'], type: 'register' },
+                    source: 'permission',
+                })
+            );
         });
     });
 
@@ -178,10 +181,13 @@ describe('PermissionRegistrar', () => {
 
             registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
 
-            expect(emitSpy).toHaveBeenCalledWith(PERMISSION_CHANGE_EVENT, {
-                domains: ['system'],
-                type: 'unregister',
-            });
+            expect(emitSpy).toHaveBeenCalledWith(
+                PERMISSION_CHANGE_EVENT,
+                expect.objectContaining({
+                    data: { domains: ['system'], type: 'unregister' },
+                    source: 'permission',
+                })
+            );
         });
     });
 
@@ -198,10 +204,13 @@ describe('PermissionRegistrar', () => {
 
             expect(registrar.has('system:user:create')).toBe(false);
             expect(registrar.getDomains()).not.toContain('system');
-            expect(emitSpy).toHaveBeenCalledWith(PERMISSION_CHANGE_EVENT, {
-                domains: ['system'],
-                type: 'clear',
-            });
+            expect(emitSpy).toHaveBeenCalledWith(
+                PERMISSION_CHANGE_EVENT,
+                expect.objectContaining({
+                    data: { domains: ['system'], type: 'clear' },
+                    source: 'permission',
+                })
+            );
         });
 
         it('不存在的域不应触发事件', () => {

@@ -66,7 +66,7 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
             this._destroyItem(item);
         }
         this._items = [];
-        this.itemContainer.el.innerHTML = '';
+        this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
     },
 
     // ========== 排序 ==========

@@ -10,7 +10,8 @@
  * 6. scopeId 隔离
  */
 
-import { EventBus, deepNullify } from '@/events/EventBus';
+import { EventBus } from '@/events/EventBus';
+import { shallowNullify } from '@/utils/object/properties';
 import { EventContextBuilder } from '@/context';
 
 describe('EventBus emit 增强', () => {
@@ -244,10 +245,10 @@ describe('EventBus emit 增强', () => {
     });
 });
 
-describe('deepNullify', () => {
+describe('shallowNullify', () => {
     test('清理对象中的嵌套对象', () => {
         const obj = { items: [1, 2, 3], name: 'test', nested: { a: 1 } };
-        deepNullify(obj);
+        shallowNullify(obj);
 
         expect(obj.items).toEqual([]);
         expect(obj.name).toBe('test');
@@ -256,27 +257,27 @@ describe('deepNullify', () => {
 
     test('清理数组', () => {
         const arr = [1, 2, 3];
-        deepNullify(arr);
+        shallowNullify(arr);
         expect(arr).toEqual([]);
     });
 
     test('不处理原始值', () => {
         const obj = { count: 5, flag: true, text: 'hello' };
-        deepNullify(obj);
+        shallowNullify(obj);
         expect(obj.count).toBe(5);
         expect(obj.flag).toBe(true);
         expect(obj.text).toBe('hello');
     });
 
     test('null 和 undefined 不报错', () => {
-        expect(() => deepNullify(null)).not.toThrow();
-        expect(() => deepNullify(undefined)).not.toThrow();
+        expect(() => shallowNullify(null)).not.toThrow();
+        expect(() => shallowNullify(undefined)).not.toThrow();
     });
 
     test('原始类型不报错', () => {
-        expect(() => deepNullify(42)).not.toThrow();
-        expect(() => deepNullify('string')).not.toThrow();
-        expect(() => deepNullify(true)).not.toThrow();
+        expect(() => shallowNullify(42)).not.toThrow();
+        expect(() => shallowNullify('string')).not.toThrow();
+        expect(() => shallowNullify(true)).not.toThrow();
     });
 
     test('混合结构', () => {
@@ -286,7 +287,7 @@ describe('deepNullify', () => {
             count: 10,
             name: 'test',
         };
-        deepNullify(obj);
+        shallowNullify(obj);
 
         expect(obj.list).toEqual([]);
         expect(obj.config).toEqual({});

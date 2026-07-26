@@ -34,7 +34,6 @@ function createTreeHost() {
     const mockDebounce = jest.fn((_key: string, fn: any, _ms: number, _immediate?: boolean) => fn);
 
     class TreeHost extends ComposableBase {
-
         schema = { idField: 'id', parentIdField: 'parentId' };
         debounce = mockDebounce as any;
 
@@ -54,7 +53,7 @@ function createTreeHost() {
         parentIdField = 'parentId';
         idField = 'id';
     }
-
+    withAbilities(TreeHost, [TreeManagerAbility, DirtyAbility]);
     const host = new TreeHost() as any;
     return { host, mockDebounce };
 }
@@ -105,7 +104,10 @@ describe('TreeManagerAbility', () => {
             expect(host.fetch).toHaveBeenCalledWith('update', expect.anything());
             expect(host.moveNode).toHaveBeenCalledWith('node-1', 'new-parent');
             expect(host.refreshView).toHaveBeenCalled();
-            expect(host.emit).toHaveBeenCalledWith('moved', { id: 'node-1', targetPid: 'new-parent' });
+            expect(host.emit).toHaveBeenCalledWith('moved', {
+                id: 'node-1',
+                targetPid: 'new-parent',
+            });
             host.dispose();
         });
 
@@ -174,7 +176,10 @@ describe('TreeManagerAbility', () => {
             expect(host.setLoaded).toHaveBeenCalledWith('parent-1', true);
             expect(host.syncChildren).toHaveBeenCalled();
             expect(host.updateData).toHaveBeenCalled();
-            expect(host.emit).toHaveBeenCalledWith('childrenRefreshed', { pid: 'parent-1', items: [{ id: 'c1' }] });
+            expect(host.emit).toHaveBeenCalledWith('childrenRefreshed', {
+                pid: 'parent-1',
+                items: [{ id: 'c1' }],
+            });
             host.dispose();
         });
 

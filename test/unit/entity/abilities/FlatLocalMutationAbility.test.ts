@@ -54,6 +54,7 @@ function createHost() {
         fetch = jest.fn().mockResolvedValue({ data: {}, metadata: { hasError: false } });
         buildOptions = jest.fn().mockResolvedValue({});
         emit = jest.fn();
+        debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
     }
     withAbilities(TestHost, [FlatLocalStateAbility, FlatLocalMutationAbility]);
     return new TestHost() as any;

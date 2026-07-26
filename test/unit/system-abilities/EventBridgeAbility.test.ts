@@ -12,7 +12,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -20,6 +23,7 @@ jest.mock('@/logger', () => {
 
 import { EventBridgeAbility } from '@/system-abilities/system/EventBridgeAbility';
 import { EventBridge } from '@/events/EventBridge';
+import { EventContextBuilder } from '@/context/EventContextBuilder';
 
 describe('EventBridgeAbility (system)', () => {
     beforeEach(() => {
@@ -58,9 +62,21 @@ describe('EventBridgeAbility (system)', () => {
             const bridge = EventBridge.getInstance();
             const emitSpy = jest.spyOn(bridge, 'bridgeEmit');
 
-            EventBridgeAbility.bridgeEmit('src1', 'click', { data: 1 });
+            const ctx = EventContextBuilder.create()
+                .withEvent('click')
+                .withType('click')
+                .withSource('src1')
+                .withData({ data: 1 })
+                .build();
+            EventBridgeAbility.bridgeEmit(ctx);
 
-            expect(emitSpy).toHaveBeenCalledWith('src1', 'click', { data: 1 });
+            expect(emitSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    source: 'src1',
+                    type: 'click',
+                    data: { data: 1 },
+                })
+            );
             emitSpy.mockRestore();
         });
     });
@@ -131,7 +147,13 @@ describe('EventBridgeAbility (system)', () => {
             const mockThis = { onCleanup: jest.fn() } as any;
 
             EventBridgeAbility.bridgeOn.call(mockThis, 'myGrid', 'change', handler);
-            EventBridgeAbility.bridgeEmit('myGrid', 'change', { page: 2 });
+            const ctx = EventContextBuilder.create()
+                .withEvent('change')
+                .withType('change')
+                .withSource('myGrid')
+                .withData({ page: 2 })
+                .build();
+            EventBridgeAbility.bridgeEmit(ctx);
 
             expect(handler).toHaveBeenCalledWith({ page: 2 });
         });

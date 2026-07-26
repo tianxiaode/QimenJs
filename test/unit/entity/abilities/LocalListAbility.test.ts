@@ -29,7 +29,6 @@ import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createListHost() {
     class ListHost extends ComposableBase {
-
         items: any[] = [];
         search: any = {};
 
@@ -39,6 +38,7 @@ function createListHost() {
         toParams = jest.fn().mockReturnValue({});
         emit = jest.fn();
     }
+    withAbilities(ListHost, [LocalListAbility]);
     return new ListHost() as any;
 }
 

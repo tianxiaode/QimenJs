@@ -46,7 +46,6 @@ import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAb
 
 function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) {
     class FlatHost extends ComposableBase {
-
         schema: any = {
             idField: 'id',
             idType: 'string',
@@ -79,6 +78,7 @@ function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) 
         cacheTTL = 300000;
         debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
     }
+    withAbilities(FlatHost, [FlatLocalStateAbility]);
     return new FlatHost() as any;
 }
 

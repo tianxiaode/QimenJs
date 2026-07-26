@@ -29,12 +29,12 @@ import { ENTITY_LIST_EVENTS } from '@/events';
 
 function createGetHost(idField: string = 'id') {
     class GetHost extends ComposableBase {
-
         compiledSchema = { idField };
         sourceData = new Map<string, any>();
         item: any = null;
         emit = jest.fn();
     }
+    withAbilities(GetHost, [LocalGetAbility]);
     return new GetHost() as any;
 }
 

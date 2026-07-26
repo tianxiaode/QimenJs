@@ -191,7 +191,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             }
             pool.items = [];
         }
-        this.itemContainer.el.innerHTML = '';
+        this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
     },
 
     // ========== 池化管理 ==========
@@ -381,7 +381,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
     // ========== Order 布局 ==========
 
     _applyOrders(): void {
-        const container = this.itemContainer.el;
+        const container = this.itemContainer?.el;
         if (!container) return;
 
         container.style.display = 'flex';

@@ -33,6 +33,7 @@ import { SchemaRegistrar } from '@/schema';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import type { RegistrSchema, FlatSchema } from '@/schema';
+import { EventContextBuilder } from '@/context';
 
 // ============================================
 // 测试用 Schema
@@ -54,11 +55,7 @@ const testSchema: FlatSchema = {
 // 测试用 Manager（使用 with() 模式）
 // ============================================
 
-const TestAbilityManagerBase = ComposableBase.with(
-    EventAbility,
-    DomainAbility,
-    SchemaAbility,
-);
+const TestAbilityManagerBase = ComposableBase.with([EventAbility, DomainAbility, SchemaAbility]);
 
 class TestAbilityManager extends TestAbilityManagerBase {
     domain = 'ability-test';
@@ -111,7 +108,10 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             const listener = jest.fn();
             manager.on('test-event', listener);
 
-            manager.emit('test-event', { data: 42 });
+            manager.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').withData({ data: 42 }).build()
+            );
 
             expect(listener).toHaveBeenCalled();
             const callArg = listener.mock.calls[0][0];
@@ -122,8 +122,14 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             const listener = jest.fn();
             manager.once('test-event', listener);
 
-            manager.emit('test-event');
-            manager.emit('test-event');
+            manager.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').build()
+            );
+            manager.emit(
+                'test-event',
+                EventContextBuilder.create().withEvent('test-event').build()
+            );
 
             expect(listener).toHaveBeenCalledTimes(1);
         });
@@ -135,7 +141,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             manager.on('event1', listener1);
             manager.on('event2', listener2);
 
-            manager.emit('event1');
+            manager.emit('event1', EventContextBuilder.create().withEvent('event1').build());
 
             expect(listener1).toHaveBeenCalled();
             expect(listener2).not.toHaveBeenCalled();
@@ -155,7 +161,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
         });
 
         it('domainConfig 未注册时应该返回 undefined', () => {
-            const UnregisteredHost = ComposableBase.with(DomainAbility);
+            const UnregisteredHost = ComposableBase.with([DomainAbility]);
             class UnregisteredManager extends UnregisteredHost {
                 domain = 'nonexistent-domain';
             }
@@ -198,7 +204,10 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             manager.on('domain-loaded', listener);
 
             const config = (manager as any).domainConfig;
-            manager.emit('domain-loaded', config);
+            manager.emit(
+                'domain-loaded',
+                EventContextBuilder.create().withEvent('domain-loaded').withData(config).build()
+            );
 
             expect(listener).toHaveBeenCalled();
             const callArg = listener.mock.calls[0][0];
@@ -244,7 +253,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const OverrideHost = ComposableBase.with(AbilityA, AbilityB);
+            const OverrideHost = ComposableBase.with([AbilityA, AbilityB]);
             const host = new OverrideHost() as any;
             expect(host.sharedAction()).toBe('B');
             host.dispose();
@@ -257,7 +266,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const BaseHost = ComposableBase.with(OverrideAbility);
+            const BaseHost = ComposableBase.with([OverrideAbility]);
 
             class SelfMethodHost extends BaseHost {
                 selfMethod() {
@@ -294,8 +303,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const BaseHost = ComposableBase.with(BaseAbility);
-            const ChildHost = BaseHost.with(ChildAbility);
+            const BaseHost = ComposableBase.with([BaseAbility]);
+            const ChildHost = BaseHost.with([ChildAbility]);
 
             const child = new ChildHost() as any;
             expect(child.baseMethod()).toBe('base');
@@ -311,8 +320,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const ParentHost = ComposableBase.with(SharedAbility);
-            const ChildHost = ParentHost.with(SharedAbility);
+            const ParentHost = ComposableBase.with([SharedAbility]);
+            const ChildHost = ParentHost.with([SharedAbility]);
 
             const child = new ChildHost() as any;
             expect(child.sharedMethod()).toBe('shared');
@@ -331,7 +340,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
             manager.dispose();
 
-            manager.emit('test');
+            manager.emit('test', EventContextBuilder.create().withEvent('test').build());
             expect(listener).not.toHaveBeenCalled();
         });
 
@@ -342,7 +351,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const StateHost = ComposableBase.with(StateAbility);
+            const StateHost = ComposableBase.with([StateAbility]);
             const host = new StateHost() as any;
             const state1 = host.getState();
             expect(state1.value).toBe(42);

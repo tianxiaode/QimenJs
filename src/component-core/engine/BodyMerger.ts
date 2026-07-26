@@ -22,9 +22,24 @@ export class BodyMerger {
         parentBody: Record<string, any> | undefined,
         childBody: Record<string, any>
     ): Record<string, any> {
-        if (!parentBody) return { ...childBody };
+        if (!parentBody) {
+            const result: Record<string, any> = {};
+            const descs = Object.getOwnPropertyDescriptors(childBody);
+            for (const [key, desc] of Object.entries(descs)) {
+                Object.defineProperty(result, key, desc);
+            }
+            return result;
+        }
 
-        const merged: Record<string, any> = { ...parentBody, ...childBody };
+        const merged: Record<string, any> = {};
+        const parentDescs = Object.getOwnPropertyDescriptors(parentBody);
+        for (const [key, desc] of Object.entries(parentDescs)) {
+            Object.defineProperty(merged, key, desc);
+        }
+        const childDescs = Object.getOwnPropertyDescriptors(childBody);
+        for (const [key, desc] of Object.entries(childDescs)) {
+            Object.defineProperty(merged, key, desc);
+        }
 
         if (parentBody.nodes && childBody.nodes) {
             merged.nodes = BodyMerger._mergeNodeConfigs(parentBody.nodes, childBody.nodes);

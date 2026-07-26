@@ -11,7 +11,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -21,7 +24,6 @@ import { TipsComponent } from '@/component/tips/TipsComponent';
 import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
 
 describe('TipsComponent', () => {
-
     // ============================================
     // 构造函数
     // ============================================
@@ -83,7 +85,7 @@ describe('TipsComponent', () => {
     // ============================================
 
     describe('ArrowAbility 集成', () => {
-        const TipsWithArrow = (TipsComponent as any).with(ArrowAbility);
+        const TipsWithArrow = (TipsComponent as any).with([ArrowAbility]);
 
         it('_initTips 调用 initArrow', () => {
             const tips = new TipsWithArrow() as any;
@@ -115,16 +117,30 @@ describe('TipsComponent', () => {
             const tips = new TipsWithArrow() as any;
             const anchor = document.createElement('div');
             // mock getBoundingClientRect 使 top 方向不超出视口
-            anchor.getBoundingClientRect = () => ({
-                left: 200, top: 200, width: 100, height: 40,
-                right: 300, bottom: 240, x: 200, y: 200,
-                toJSON: () => ({}),
-            } as DOMRect);
-            tips.el.getBoundingClientRect = () => ({
-                left: 0, top: 0, width: 80, height: 30,
-                right: 80, bottom: 30, x: 0, y: 0,
-                toJSON: () => ({}),
-            } as DOMRect);
+            anchor.getBoundingClientRect = () =>
+                ({
+                    left: 200,
+                    top: 200,
+                    width: 100,
+                    height: 40,
+                    right: 300,
+                    bottom: 240,
+                    x: 200,
+                    y: 200,
+                    toJSON: () => ({}),
+                }) as DOMRect;
+            tips.el.getBoundingClientRect = () =>
+                ({
+                    left: 0,
+                    top: 0,
+                    width: 80,
+                    height: 30,
+                    right: 80,
+                    bottom: 30,
+                    x: 0,
+                    y: 0,
+                    toJSON: () => ({}),
+                }) as DOMRect;
             document.body.appendChild(anchor);
             document.body.appendChild(tips.el);
 

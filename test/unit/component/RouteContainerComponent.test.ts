@@ -24,16 +24,16 @@ jest.mock('@/logger', () => {
 });
 
 import { RouteContainerComponent } from '@/component/nav/RouteContainerComponent';
-import { TemplateComponent } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import type { ComponentTemplate } from '@qimenjs/component-core';
 
-class MockPageA extends TemplateComponent.withTemplate({
+class MockPageA extends Component.withTemplate({
     tpl: { tag: 'div', className: 'page-a', text: 'A' },
 } as ComponentTemplate) {
     static type = 'MockPageA';
 }
 
-class MockPageB extends TemplateComponent.withTemplate({
+class MockPageB extends Component.withTemplate({
     tpl: { tag: 'div', className: 'page-b', text: 'B' },
 } as ComponentTemplate) {
     static type = 'MockPageB';

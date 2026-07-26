@@ -66,10 +66,10 @@ const AbilityWithDispose: AbilityDefinition = {
 // 测试用 Manager（with() 模式）
 // ============================================
 
-const TestOverrideManagerBase = ComposableBase.with(AbilityA, AbilityB);
+const TestOverrideManagerBase = ComposableBase.with([AbilityA, AbilityB]);
 class TestOverrideManager extends TestOverrideManagerBase {}
 
-const TestHostDisposeManagerBase = ComposableBase.with(AbilityWithDispose);
+const TestHostDisposeManagerBase = ComposableBase.with([AbilityWithDispose]);
 class TestHostDisposeManager extends TestHostDisposeManagerBase {
     private _disposed = false;
 

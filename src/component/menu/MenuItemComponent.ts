@@ -84,6 +84,10 @@ const MenuItemBase = Component.withTemplate({
             };
         },
 
+        onAfterInit(props?: MenuItemProps & Record<string, any>): void {
+            this._initMenuItem(props);
+        },
+
         _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
             this.addCls('q-menu-item');
 

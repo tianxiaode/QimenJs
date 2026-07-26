@@ -32,6 +32,7 @@ import {
     DragEventBusAbility,
     SystemEventBusAbility,
     SystemAbility,
+    DebounceAbility,
 } from '@/system-abilities';
 
 import { NodePropAbility } from './abilities/NodePropAbility';
@@ -52,6 +53,7 @@ export const TEMPLATE_COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
     DragEventBusAbility,
     SystemEventBusAbility,
     SystemAbility,
+    DebounceAbility,
 
     NodePropAbility,
     CommonPropsAbility,
@@ -70,6 +72,7 @@ export interface TemplateComponent
         InferAbility<typeof DragEventBusAbility>,
         InferAbility<typeof SystemEventBusAbility>,
         InferAbility<typeof SystemAbility>,
+        InferAbility<typeof DebounceAbility>,
         InferAbility<typeof NodePropAbility>,
         InferAbility<typeof CommonPropsAbility>,
         InferAbility<typeof AnimationAbility>,

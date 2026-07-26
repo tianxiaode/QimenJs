@@ -41,6 +41,7 @@ jest.mock('@/cache', () => ({
 import { ComposableBase } from '@/composable/ComposableBase';
 import { withAbilities } from '@/composable';
 import { LocalMutationAbility } from '@/entity/abilities/mutation/LocalMutationAbility';
+import { DebounceAbility } from '@/system-abilities/system';
 
 // ============================================
 // 辅助
@@ -48,12 +49,12 @@ import { LocalMutationAbility } from '@/entity/abilities/mutation/LocalMutationA
 
 function createMutationHost() {
     class MutationHost extends ComposableBase {
-
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
         setCache = jest.fn().mockResolvedValue(undefined);
         refreshView = jest.fn();
     }
+    withAbilities(MutationHost, [LocalMutationAbility, DebounceAbility]);
     return new MutationHost() as any;
 }
 
