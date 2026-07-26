@@ -1,5 +1,9 @@
 /**
  * CSS单位处理工具函数
+ *
+ * 提供 CSS 值的规范化、解析和边距/边框样式生成
+ *
+ * @module utils/string/css
  */
 
 export type CssUnitType = string | number | null | undefined;
@@ -29,6 +33,12 @@ export interface Border {
     left?: BorderSide;
 }
 
+/**
+ * 规范化 CSS 单位值
+ *
+ * @param value CSS 值（数字、字符串、null 或 undefined）
+ * @returns 规范化后的字符串
+ */
 export function normalizeCssUnit(value: CssUnitType): string {
     if (value === 0) return '0';
     if (typeof value === 'number') return value + 'px';
@@ -37,6 +47,12 @@ export function normalizeCssUnit(value: CssUnitType): string {
     return value as string;
 }
 
+/**
+ * CSS 单位值转数字
+ *
+ * @param value CSS 值
+ * @returns 解析后的数字值，无法解析时返回 0
+ */
 export function cssUnitTypeToNumber(value: CssUnitType): number {
     if (typeof value === 'number') return value;
     const match = value!.match(/^(\d+(\.\d+)?)(px|em|rem|%|pt|pc|ex|ch|vw|vh|vmin|vmax)?$/);
@@ -47,10 +63,22 @@ export function cssUnitTypeToNumber(value: CssUnitType): number {
     return 0;
 }
 
+/**
+ * 解析像素值
+ *
+ * @param v 数值或字符串
+ * @returns 数值追加 px 后缀，字符串原样返回
+ */
 export function resolvePx(v: number | string): string {
     return typeof v === 'number' ? v + 'px' : v;
 }
 
+/**
+ * 解析边距/内边距
+ *
+ * @param v 数值、字符串或 MarginPadding 对象
+ * @returns CSS 边距字符串
+ */
 export function resolveMarginPadding(v: number | string | MarginPadding): string {
     if (typeof v === 'number') return v + 'px';
     if (typeof v === 'string') return v;
@@ -62,6 +90,12 @@ export function resolveMarginPadding(v: number | string | MarginPadding): string
     return [t, r, b, l].map(v => (typeof v === 'number' ? v + 'px' : v)).join(' ');
 }
 
+/**
+ * 解析边框
+ *
+ * @param v 数值、字符串或 Border 对象
+ * @returns CSS 边框字符串
+ */
 export function resolveBorder(v: number | string | Border): string {
     if (typeof v === 'number') return v + 'px solid';
     if (typeof v === 'string') return v;
@@ -78,6 +112,12 @@ export interface IndentStyleOptions {
     offset?: number | string;
 }
 
+/**
+ * 生成缩进样式
+ *
+ * @param options 缩进选项
+ * @returns CSS 缩进样式字符串
+ */
 export function indentStyle(options: IndentStyleOptions): string {
     const { depth, prefix, property = 'padding-left', offset } = options;
     if (depth <= 0 && !offset) return '';
