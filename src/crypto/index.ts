@@ -1,3 +1,11 @@
+/**
+ * 加密哈希包 - 统一导出
+ *
+ * 提供 MD5、SHA-1、SHA-256、SHA-512、XXH64 哈希算法及 Base64 编解码
+ *
+ * @module crypto
+ */
+
 export { default as md5 } from './md5';
 export { default as sha1 } from './sha1';
 export { default as sha256 } from './sha256';
