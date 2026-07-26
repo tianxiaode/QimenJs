@@ -8,7 +8,32 @@
 ## 构建历史
 
 ### 2026-07-26
-- ✅ 新增 DatePickerComponent 日期时间选择器（InputComponent.replace 派生）
+- ✅ 新增 ToolbarComponent + EntityToolbarComponent 工具栏组件体系
+  - ToolbarComponent：极简空容器（ItemGroupStatic 派生），用户自由 add() 任意子组件
+  - EntityToolbarComponent：实体工具栏（Toolbar 派生 + DomainAbility），面向分页/CRUD 场景
+- ✅ EntityToolbar 扁平 items 定义（Record<string, boolean | EntityToolbarItemDef>）
+  - 内置名 key 直接点菜：`{ create: true, edit: { iconCls: 'fa-edit' }, delete: false }`
+  - 自定义 key 自由插入：`{ myBtn: { type:'Button', name:'custom', order:150, text:'自定义' } }`
+  - 内置名匹配 BUILTIN_DEFS 自动合并默认值，自定义名需提供 type
+- ✅ EntityToolbar 内置 item 定义（BUILTIN_DEFS）
+  - 分页组（order 100-180）：firstPage/prevPage/pageNum/pageTotal/nextPage/lastPage/pageSize/totalRecords/search
+  - CRUD 组（order 200-300）：create(primary)/edit/delete(warning)/refresh/save(primary)/import/export/upload/download/history/help
+  - 间隔 10，用户可在任意间隙插入自定义组件
+- ✅ tplEvents 声明式事件处理
+  - Button click：emits + entities + bridges + keyProp:'name'，编译时自动 entity/bridge 转发
+  - Input/NumberInput/Select：emits + keyProp:'name' + data:['getFormValue']，声明式取值
+  - search 事件由 tplEvents 自动转发（searchInputChange），无需手动 on
+- ✅ EntityToolbar 语义事件
+  - PAGINATION_EVENTS.CHANGE：分页按钮 + pageSize 变更
+  - CRUD_EVENTS.ACTION：CRUD 按钮动作
+  - pageNumInputChange → 自动更新 currentPage
+  - pageSizeSelectChange → 自动更新 pageSize
+- ✅ CSS 图标切换机制
+  - 按钮默认 icon 为 q-toolbar-btn-{name} 类，::before 定义默认图标
+  - 用户可覆盖 CSS 类或通过 iconCls 传入 fa-xxx 替换
+- ✅ 子组件样式通过 CommonPropsAbility 方法操作（setItemCls/setItemIconCls 等），不直接操作 el
+- ✅ 新增 toolbar.css.ts（Metro 风格，q-toolbar/q-entity-toolbar BEM）
+- ✅ register.ts 注册 EntityToolbar
   - 预览栏显示完整日期时间，单击字段进入对应面板，选完自动流转
   - 导航栏三按钮：← 返回（放弃修改）| ↶ 上一步 | 确认 ✓（保存+结束流转）
   - 面板切换 + 流转逻辑 + 浮动层下拉

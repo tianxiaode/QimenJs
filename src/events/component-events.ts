@@ -115,6 +115,10 @@ export const TOOLBAR_EVENTS = {
     INSERT: 'toolbarinsert',
     /** 折叠状态变更 */
     COLLAPSE_CHANGE: 'toolbarcollapsechange',
+    /** 按钮动作（name 为按钮名：create/edit/delete/refresh/save/import/export/upload/download/history/help） */
+    ACTION: 'toolbaraction',
+    /** 搜索提交 */
+    SEARCH: 'toolbarsearch',
 } as const;
 
 // ============================================
@@ -180,4 +184,8 @@ export const ENTITY_EVENTS = {
     VALIDATE: 'entity:validate',
     /** 验证结果（对应 ENTITY_VALIDATION_EVENTS.VALIDATION） */
     VALIDATION: 'entity:validation',
+
+    // ---- 上传（对应 ENTITY_UPLOAD_EVENTS） ----
+    /** 上传进度（对应 ENTITY_UPLOAD_EVENTS.PROGRESS，需桥接以刷新 UI） */
+    UPLOAD_PROGRESS: 'entity:upload:progress',
 } as const;

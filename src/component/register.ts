@@ -36,6 +36,7 @@ import { OverflowScrollComponent } from './overflow/OverflowScrollComponent';
 import { OverflowMenuComponent } from './overflow/OverflowMenuComponent';
 import { AccordionComponent } from './accordion/AccordionComponent';
 import { ToolbarComponent } from './toolbar/ToolbarComponent';
+import { EntityToolbarComponent } from './entity-toolbar/EntityToolbarComponent';
 import { DialogComponent } from './dialog/DialogComponent';
 import { LoadingComponent } from './loading/LoadingComponent';
 import { HeroComponent } from './hero/HeroComponent';
@@ -61,6 +62,14 @@ import { TextCellComponent } from './table/cells/TextCellComponent';
 import { TreeCellComponent } from './table/cells/TreeCellComponent';
 import { CheckboxCellComponent } from './table/cells/CheckboxCellComponent';
 import { ActionCellComponent } from './table/cells/ActionCellComponent';
+import { LabelComponent } from './label/LabelComponent';
+import { RatingComponent } from './rating/RatingComponent';
+import { FieldsetComponent } from './fieldset/FieldsetComponent';
+import { OneTimePasswordComponent } from './one-time-password/OneTimePasswordComponent';
+import { FileInputComponent } from './file-input/FileInputComponent';
+import { StepComponent } from './step/StepComponent';
+import { TimelineComponent } from './timeline/TimelineComponent';
+import { SidebarComponent } from './sidebar/SidebarComponent';
 
 const registrar = ComponentRegistrar.getInstance();
 
@@ -84,6 +93,7 @@ export function registerAllComponents(): void {
     registrar.register('Header', HeaderComponent);
     registrar.register('ItemGroup', ItemGroupPooledComponent);
     registrar.register('Toolbar', ToolbarComponent);
+    registrar.register('EntityToolbar', EntityToolbarComponent);
     registrar.register('NavItem', NavItemComponent);
     registrar.register('NavItemGroup', NavItemGroupComponent);
     registrar.register('OverflowScroll', OverflowScrollComponent);
@@ -114,4 +124,12 @@ export function registerAllComponents(): void {
     registrar.register('TreeCell', TreeCellComponent);
     registrar.register('CheckboxCell', CheckboxCellComponent);
     registrar.register('ActionCell', ActionCellComponent);
+    registrar.register('Label', LabelComponent);
+    registrar.register('Rating', RatingComponent);
+    registrar.register('Fieldset', FieldsetComponent);
+    registrar.register('OneTimePassword', OneTimePasswordComponent);
+    registrar.register('FileInput', FileInputComponent);
+    registrar.register('Step', StepComponent);
+    registrar.register('Timeline', TimelineComponent);
+    registrar.register('Sidebar', SidebarComponent);
 }

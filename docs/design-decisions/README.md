@@ -36,6 +36,7 @@
 - [2026-07-10-component-ability-refactoring.md](./2026-07-10-component-ability-refactoring.md) - ComponentBase 能力拆分与模板包重命名
 - [2026-07-18-event-driven-dispatch-center-refactoring.md](./2026-07-18-event-driven-dispatch-center-refactoring.md) - 事件驱动调度中心重构
 - [2026-07-26-datetime-picker-design.md](./2026-07-26-datetime-picker-design.md) - 日期时间选择器设计
+- [2026-07-26-toolbar-entity-toolbar-design.md](./2026-07-26-toolbar-entity-toolbar-design.md) - Toolbar + EntityToolbar 工具栏设计
 
 ### 已过时（旧架构，保留作历史参考）
 

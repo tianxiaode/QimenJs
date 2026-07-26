@@ -68,6 +68,18 @@ export const ENTITY_SEARCH_EVENTS = {
 } as const;
 
 // ============================================
+// 上传事件（FileUpload Ability / mgr 触发）
+// ============================================
+export const ENTITY_UPLOAD_EVENTS = {
+    /** 单文件上传完成 */
+    UPLOADED: 'uploaded',
+    /** 上传进度 */
+    PROGRESS: 'upload:progress',
+    /** 上传失败 */
+    ERROR: 'upload:error',
+} as const;
+
+// ============================================
 // 验证事件（组件触发，验证方响应）
 // ============================================
 export const ENTITY_VALIDATION_EVENTS = {
