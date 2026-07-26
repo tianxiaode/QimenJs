@@ -41,6 +41,8 @@ export {
 export { RadioGroupFieldBodyComponent } from './RadioGroupFieldBodyComponent';
 export { RadioGroupComponent, type RadioOption, type RadioGroupProps } from './RadioGroupComponent';
 export { selectionGroupCSS } from './selection-group.css';
+export { DatePickerComponent, type DatePickerProps } from './DatePickerComponent';
+export { datepickerCSS } from './datepicker.css';
 export {
     MarkdownEditorComponent,
     type MarkdownEditorProps,
