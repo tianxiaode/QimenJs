@@ -9,3 +9,6 @@ export * from './calendar';
 
 // 日期工具函数
 export * from './utils';
+
+// 日期时间选择器计算
+export * from './datetime-picker';

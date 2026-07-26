@@ -26,10 +26,10 @@
  * body 只接受以下四类内容：
  *
  * 1. static 类（编译时设为内部类静态属性）：
- *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
+ *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards / localDataKey
  *
  * 2. init 类（运行时由 InitAbility 初始化）：
- *    floats / drags / animation / abilities / nodes
+ *    floats / drags / animation / abilities / nodes / localData
  *
  * 3. hook 类（实例化时由框架调用，返回值赋给实例）：
  *    onInitState
@@ -56,6 +56,7 @@
  * │ dragKey  │ 拖拽 key                                         │
  * │ listens  │ 统一事件订阅数组                                 │
  * │ forwards │ 跨组件层透传，编译时存为 _forwards 静态属性      │
+ * │localDataKey│ 本地数据激活 key，声明组件渲染使用的数据源     │
  * └──────────┴──────────────────────────────────────────────────┘
  *
  * ══════════════════════════════════════════════════════════════
@@ -70,6 +71,7 @@
  * │ animation│ 组件动画配置，声明式，初始化/销毁时自动触发      │
  * │ abilities│ 附加能力，替代 .with() 的声明式注入              │
  * │ nodes    │ 节点配置，声明式覆盖节点属性，替代 nodeOverrides │
+ * │ localData│ 本地数据，key→数据数组，运行时自动注入组件      │
  * └──────────┴──────────────────────────────────────────────────┘
  *
  * ══════════════════════════════════════════════════════════════
@@ -204,6 +206,7 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     dragKey: { category: 'static' },
     listens: { category: 'static' },
     forwards: { category: 'static', alias: '_forwards' },
+    localDataKey: { category: 'static' },
 
     // ─── init: 运行时由 InitAbility 初始化 ───
 
@@ -212,6 +215,7 @@ export const BODY_SPECIAL_KEYS: Record<string, BodyKeyDef> = {
     animation: { category: 'init' },
     abilities: { category: 'init' },
     nodes: { category: 'init' },
+    localData: { category: 'init' },
 
     // ─── hook: 实例化时由框架调用 ───
 

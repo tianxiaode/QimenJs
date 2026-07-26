@@ -18,8 +18,9 @@
  *  11. initDrags                 — 拖拽初始化
  *  12. callInitMethods           — 能力初始化
  *  13. setupListens              — 事件订阅
- *  14. executeOverrideQueue      — onAfterInit（初始化后钩子）
- *  15. emitLifecycle             — 发射生命周期事件
+ *  14. initLocalData             — 本地数据初始化
+ *  15. executeOverrideQueue      — onAfterInit（初始化后钩子）
+ *  16. emitLifecycle             — 发射生命周期事件
  *
  * 设计原则：
  *   - 同步执行（组件初始化是同步的，不需要 async）
@@ -329,6 +330,37 @@ function step_setupListens(ctx: RuntimeContext): void {
     logStep(ctx, 'setupListens');
 }
 
+function step_initLocalData(ctx: RuntimeContext): void {
+    const { instance, ctor, props } = ctx;
+    const bodyLocalData = ctor._localData;
+    const propsLocalData = props?.localData;
+
+    if (!bodyLocalData && !propsLocalData) return;
+    if (typeof instance.setLocalData !== 'function') return;
+
+    const merged: Record<string, any[]> = { ...(bodyLocalData || {}) };
+    if (propsLocalData) {
+        for (const [key, data] of Object.entries(propsLocalData)) {
+            if (Array.isArray(data)) {
+                merged[key] = data;
+            }
+        }
+    }
+
+    for (const [key, data] of Object.entries(merged)) {
+        if (Array.isArray(data)) {
+            instance.setLocalData(key, [...data]);
+        }
+    }
+
+    const key = props?.localDataKey ?? ctor.localDataKey;
+    if (key && typeof instance.localDataKey !== 'undefined') {
+        instance.localDataKey = key;
+    }
+
+    logStep(ctx, 'initLocalData');
+}
+
 function step_onAfterInit(ctx: RuntimeContext): void {
     const { instance, props, ctor } = ctx;
     if (ctor.type) instance.type = ctor.type;
@@ -364,6 +396,7 @@ export class RuntimeEngine {
         step_initDrags,
         step_callInitMethods,
         step_setupListens,
+        step_initLocalData,
         step_onAfterInit,
         step_emitLifecycle,
     ];

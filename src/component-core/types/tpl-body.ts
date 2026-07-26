@@ -508,6 +508,33 @@ export interface NodeConfig {
 
 export type NodesConfig = Record<string, NodeConfig>;
 
+// ══════════════════════════════════════════════════════════════
+// 本地数据配置
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 本地数据配置 — key→数据数组，运行时自动注入组件
+ *
+ * 在 body 中声明式定义本地数据，不经过 Entity 系统。
+ * RuntimeEngine 初始化时自动调用 setLocalData 注册到组件。
+ *
+ * 与 props.localData 合并规则：props 中同名 key 覆盖 body 中的定义。
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     localDataKey: 'rows',
+ *     localData: {
+ *         rows: [
+ *             { id: 1, name: 'Alice' },
+ *             { id: 2, name: 'Bob' },
+ *         ],
+ *     },
+ * }
+ * ```
+ */
+export type LocalDataConfig = Record<string, any[]>;
+
 export interface BodyDef extends LifecycleHooks {
     // ─── static: 编译时设为类静态属性 ───
 
@@ -529,6 +556,9 @@ export interface BodyDef extends LifecycleHooks {
     /** 统一事件订阅数组 */
     listens?: ListenItem[];
 
+    /** 本地数据激活 key，声明组件渲染使用的数据源 */
+    localDataKey?: string;
+
     // ─── init: 运行时由 InitAbility 初始化 ───
 
     /** 浮动层配置，key=节点name，type+配置=构造参数 */
@@ -545,6 +575,9 @@ export interface BodyDef extends LifecycleHooks {
 
     /** 节点配置，声明式覆盖节点属性，替代 nodeOverrides 和 replace 的 cls/itemsCls */
     nodes?: NodesConfig;
+
+    /** 本地数据，key→数据数组，运行时自动注入组件 */
+    localData?: LocalDataConfig;
 
     // ─── 其他：函数→原型方法，getter/setter→defineProperty ───
 

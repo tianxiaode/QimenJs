@@ -29,3 +29,6 @@ export { SizeAbility, type SizeConfig } from './size';
 // 调整大小能力
 export { ResizeAbility, type ResizeConfig, type ResizeEdge } from './resize';
 export { resizeCSS } from './resize/resize.css';
+
+// 本地数据能力
+export { LocalDataAbility, type LocalDataChangeCallback } from './data';
