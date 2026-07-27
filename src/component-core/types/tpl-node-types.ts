@@ -176,4 +176,12 @@ export interface TplNode {
 
     /** 模板片段引用，编译时内联展开为 children，自动命名空间 */
     fragment?: TplFragment;
+
+    // ─── template-level: 模板级声明（仅根节点使用）───
+
+    /** 替换来源 — 声明本模板基于哪个已注册模板做替换 */
+    replace?: string;
+
+    /** 替换映射 — key=命名节点name, value=替换内容 */
+    replaces?: Record<string, any>;
 }

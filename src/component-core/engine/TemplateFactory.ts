@@ -2,7 +2,7 @@
  * TemplateFactory — 模板组件工厂
  *
  * 使用四个引擎实现纯函数构建流程：
- *   TemplateCompiler  → compile(tpl) → { cache, nodeMetas }
+ *   CompileEngine  → compile(tpl) → { cache, nodeMetas }
  *   TemplateDeriver   → derive(parentCache, parentNodeMetas, nodeOverrides) → { cache, nodeMetas }
  *   BodyMerger        → merge(parentBody, childBody) → newBody
  *   RuntimeEngine     → init(instance, props) 统一编排运行时初始化
@@ -15,16 +15,17 @@ import type { TplEvents } from '../types/tpl-events';
 import { applyChildNodeProps } from './ChildNodeProps';
 import type { AbilityDefinition } from '@/composable';
 import { withAbilities } from '@/composable';
-import { TemplateComponent } from '../TemplateComponent';
+import { Component } from '../Component';
 import { BODY_SPECIAL_KEYS } from '../types/tpl-body-def';
-import { TemplateCompiler } from './TemplateCompiler';
+import { CompileEngine } from './CompileEngine';
 import { TemplateDeriver } from './TemplateDeriver';
 import { BodyMerger } from './BodyMerger';
-import { DelegatedEventEngine } from './DelegatedEventEngine';
+import { EventEngine } from './EventEngine';
 import { RuntimeEngine, executeOverrideQueue } from './RuntimeEngine';
 import { ComponentError, KernelErrorCode } from '@/error';
 
 function templateComponentConstructor(this: any, props?: Record<string, any>): void {
+    this._runtimeInitDone = true;
     RuntimeEngine.init(this, props);
 }
 
@@ -153,7 +154,7 @@ function applyBodyToClass(ctor: any, body: Record<string, any> | undefined): voi
  * 创建内部类 — 模板编译引擎（首次编译，耗时）
  *
  * 流程：
- *   1. TemplateCompiler.compile(tpl) → { cache, nodeMetas }
+ *   1. CompileEngine.compile(tpl) → { cache, nodeMetas }
  *   2. cache 保存到类上（只读共享）
  *   3. nodeMetas 保存到类上（每类独立）
  *   4. body 应用到 nodeMetas（更新 componentClass 等）
@@ -169,8 +170,7 @@ export function createInnerClass(
 ): any {
     const InnerClass = class extends ParentClass {
         constructor(props?: Record<string, any>) {
-            super();
-            templateComponentConstructor.call(this, props);
+            super(props);
         }
     };
 
@@ -181,7 +181,7 @@ export function createInnerClass(
         (InnerClass as any)._nodeOverrides = nodeOverrides;
     }
 
-    const { cache, nodeMetas } = TemplateCompiler.compile(tpl, InnerClass);
+    const { cache, nodeMetas } = CompileEngine.compile(tpl, InnerClass);
 
     (InnerClass as any)._cache = cache;
     (InnerClass as any)._nodeMetas = nodeMetas;
@@ -204,7 +204,7 @@ export function createInnerClass(
 
     if (tplEvents && Object.keys(tplEvents).length > 0) {
         (InnerClass as any)._tplEvents = tplEvents;
-        (InnerClass as any)._delegatedEventRules = DelegatedEventEngine.compileTplEvents(tplEvents);
+        (InnerClass as any)._delegatedEventRules = EventEngine.compileTplEvents(tplEvents);
     }
 
     (InnerClass as any)._templateCompiled = true;
@@ -314,10 +314,9 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
         nodeOverrides || {}
     );
 
-    const NewClass = class extends TemplateComponent {
+    const NewClass = class extends Component {
         constructor(props?: Record<string, any>) {
-            super();
-            templateComponentConstructor.call(this, props);
+            super(props);
         }
     };
 
@@ -337,9 +336,8 @@ export function createDerivedInnerClass(ParentInner: any, options: Record<string
     if (parentTplEvents || childTplEvents) {
         const mergedTplEvents = mergeTplEvents(parentTplEvents, childTplEvents);
         (NewClass as any)._tplEvents = mergedTplEvents;
-        const { DelegatedEventEngine } = require('./DelegatedEventEngine');
-        (NewClass as any)._delegatedEventRules =
-            DelegatedEventEngine.compileTplEvents(mergedTplEvents);
+        const { EventEngine } = require('./EventEngine');
+        (NewClass as any)._delegatedEventRules = EventEngine.compileTplEvents(mergedTplEvents);
     }
 
     (NewClass as any)._templateCompiled = true;

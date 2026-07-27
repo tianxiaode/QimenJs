@@ -11,7 +11,10 @@ jest.mock('@/logger', () => {
         Logger: {
             ...actualLogger.Logger,
             for: jest.fn(() => ({
-                debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+                debug: jest.fn(),
+                info: jest.fn(),
+                warn: jest.fn(),
+                error: jest.fn(),
             })),
         },
     };
@@ -20,19 +23,18 @@ jest.mock('@/logger', () => {
 import { ButtonComponent } from '@/component/button/ButtonComponent';
 
 describe('ButtonComponent', () => {
-
     // ============================================
     // 构造函数
     // ============================================
 
     describe('constructor', () => {
         it('创建 el', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             expect(btn.el).toBeInstanceOf(HTMLElement);
         });
 
         it('type 为 Button', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             expect(btn.type).toBe('Button');
         });
     });
@@ -43,25 +45,25 @@ describe('ButtonComponent', () => {
 
     describe('内容属性', () => {
         it('text getter/setter', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             btn.text = 'Submit';
             expect(btn.text).toBe('Submit');
         });
 
         it('textHidden getter/setter', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             btn.textHidden = true;
             expect(btn.textHidden).toBe(true);
         });
 
         it('icon getter/setter', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             btn.icon = '🔍';
             expect(btn.icon).toBe('🔍');
         });
 
         it('iconHidden getter/setter', () => {
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             btn.iconHidden = true;
             expect(btn.iconHidden).toBe(true);
         });
@@ -75,7 +77,7 @@ describe('ButtonComponent', () => {
         it('dispose 后 el 被移除', () => {
             const container = document.createElement('div');
             document.body.appendChild(container);
-            const btn = new ButtonComponent() as any;
+            const btn = ButtonComponent.create() as any;
             container.appendChild(btn.el);
             expect(container.contains(btn.el)).toBe(true);
             btn.dispose();

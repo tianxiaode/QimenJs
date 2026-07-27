@@ -39,7 +39,8 @@ import { EventContextBuilder } from '@/context';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import type { ListenItem, EventMapping } from '../types/tpl-body';
 import { Logger } from '@/logger';
-import { DelegatedEventEngine } from './DelegatedEventEngine';
+import { EventEngine } from './EventEngine';
+import { findByPath } from './utils/dom-path';
 import { getId } from '@/utils/string/id';
 
 // ══════════════════════════════════════════════════════════════
@@ -130,12 +131,29 @@ function step_initInstanceData(ctx: RuntimeContext): void {
 }
 
 function step_onInitState(ctx: RuntimeContext): void {
-    executeOverrideQueue(ctx.instance, 'onInitState');
+    const { instance, ctor } = ctx;
+    if (ctor._compiled) {
+        if (typeof instance.onInitState === 'function') {
+            const state = instance.onInitState();
+            if (state && typeof state === 'object') {
+                Object.assign(instance, state);
+            }
+        }
+    } else {
+        executeOverrideQueue(instance, 'onInitState');
+    }
     logStep(ctx, 'onInitState');
 }
 
 function step_onBeforeInit(ctx: RuntimeContext): void {
-    executeOverrideQueue(ctx.instance, 'onBeforeInit', ctx.props);
+    const { instance, ctor, props } = ctx;
+    if (ctor._compiled) {
+        if (typeof instance.onBeforeInit === 'function') {
+            instance.onBeforeInit(props);
+        }
+    } else {
+        executeOverrideQueue(instance, 'onBeforeInit', props);
+    }
     logStep(ctx, 'onBeforeInit');
 }
 
@@ -286,7 +304,7 @@ function step_renderChildren(ctx: RuntimeContext): void {
 
 function step_initFloats(ctx: RuntimeContext): void {
     const { instance, ctor } = ctx;
-    const floats = ctor._floats;
+    const floats = instance.floats;
     if (!floats || Object.keys(floats).length === 0) return;
 
     const overlayEventBus = OverlayEventBus.getInstance();
@@ -303,13 +321,13 @@ function step_initFloats(ctx: RuntimeContext): void {
 
 function step_bindDomEvents(ctx: RuntimeContext): void {
     const { instance } = ctx;
-    DelegatedEventEngine.bindDelegatedEvents(instance);
+    EventEngine.bindDelegatedEvents(instance);
     logStep(ctx, 'bindDomEvents');
 }
 
 function step_initDrags(ctx: RuntimeContext): void {
     const { instance, ctor } = ctx;
-    const drags = ctor._drags;
+    const drags = instance.drags;
     if (!drags || Object.keys(drags).length === 0) return;
 
     dragDispatchCenter.handleInit(instance.id, { component: instance, drags });
@@ -395,9 +413,16 @@ function step_initLocalData(ctx: RuntimeContext): void {
 
 function step_onAfterInit(ctx: RuntimeContext): void {
     const { instance, props, ctor } = ctx;
-    if (ctor.type) instance.type = ctor.type;
+
     instance._templateInitialized = true;
-    executeOverrideQueue(instance, 'onAfterInit', props);
+
+    if (ctor._compiled) {
+        if (typeof instance.onAfterInit === 'function') {
+            instance.onAfterInit(props);
+        }
+    } else {
+        executeOverrideQueue(instance, 'onAfterInit', props);
+    }
 
     if (instance._skeletonActive && !instance._skeletonManual) {
         const skeletonPaths = ctor._cache?.skeletonPaths;
@@ -423,15 +448,19 @@ function step_emitLifecycle(ctx: RuntimeContext): void {
 // ══════════════════════════════════════════════════════════════
 
 export class RuntimeEngine {
-    private static readonly PIPELINE = [
+    private static readonly MOUNT_PHASE = [
         step_initInstanceData,
         step_onInitState,
         step_onBeforeInit,
         step_buildNodeMap,
         step_applyNodeConfigs,
-        step_initContent,
-        step_initI18n,
-        step_renderChildren,
+    ];
+
+    private static readonly FILL_PHASE = [step_initContent, step_initI18n];
+
+    private static readonly INSTANTIATE_PHASE = [step_renderChildren];
+
+    private static readonly FINALIZE_PHASE = [
         step_initFloats,
         step_bindDomEvents,
         step_initDrags,
@@ -442,17 +471,15 @@ export class RuntimeEngine {
         step_emitLifecycle,
     ];
 
-    static init(instance: any, props?: Record<string, any>): void {
-        const ctor = instance.constructor as any;
-        const debug = ctor.__runtimeDebug === true;
+    private static readonly PIPELINE = [
+        ...RuntimeEngine.MOUNT_PHASE,
+        ...RuntimeEngine.FILL_PHASE,
+        ...RuntimeEngine.INSTANTIATE_PHASE,
+        ...RuntimeEngine.FINALIZE_PHASE,
+    ];
 
-        const ctx: RuntimeContext = {
-            instance,
-            props,
-            ctor,
-            steps: [],
-            debug,
-        };
+    static init(instance: any, props?: Record<string, any>): void {
+        const ctx = RuntimeEngine._createContext(instance, props);
 
         instance._initializing = true;
 
@@ -469,12 +496,117 @@ export class RuntimeEngine {
             instance._initializing = false;
             instance._flushNodeProps?.();
 
-            if (debug) {
+            if (ctx.debug) {
                 Logger.for(RuntimeEngine).debug(
-                    `[${ctor.name}] Pipeline: ${ctx.steps.join(' → ')}`
+                    `[${ctx.ctor.name}] Pipeline: ${ctx.steps.join(' → ')}`
                 );
             }
         }
+    }
+
+    /**
+     * 渐进渲染 — 阶段1：建DOM + 挂载
+     * 编译模板、创建 NodeMap、构建 DOM、应用节点配置。
+     * 调用后 el 可用，子组件位显示 skeleton 占位。
+     */
+    static mount(instance: any, props?: Record<string, any>): void {
+        const ctx = RuntimeEngine._createContext(instance, props);
+        instance._initializing = true;
+        try {
+            for (const step of RuntimeEngine.MOUNT_PHASE) step(ctx);
+        } catch (err) {
+            Logger.for(RuntimeEngine).error('RuntimeEngine.mount failed:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * 渐进渲染 — 阶段2：填充内容 + 样式
+     * 从 props 填充节点内容，应用 i18n。
+     */
+    static fill(instance: any, props?: Record<string, any>): void {
+        const ctx = RuntimeEngine._createContext(instance, props);
+        try {
+            for (const step of RuntimeEngine.FILL_PHASE) step(ctx);
+        } catch (err) {
+            Logger.for(RuntimeEngine).error('RuntimeEngine.fill failed:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * 渐进渲染 — 阶段3：实例化子组件
+     * 替换 skeleton 占位为真实子组件。
+     */
+    static instantiate(instance: any, props?: Record<string, any>): void {
+        const ctx = RuntimeEngine._createContext(instance, props);
+        try {
+            for (const step of RuntimeEngine.INSTANTIATE_PHASE) step(ctx);
+        } catch (err) {
+            Logger.for(RuntimeEngine).error('RuntimeEngine.instantiate failed:', err);
+            throw err;
+        }
+    }
+
+    /**
+     * 渐进渲染 — 阶段4：收尾
+     * floats、事件、drags、能力初始化、onAfterInit、生命周期。
+     */
+    static finalize(instance: any, props?: Record<string, any>): void {
+        const ctx = RuntimeEngine._createContext(instance, props);
+        try {
+            for (const step of RuntimeEngine.FINALIZE_PHASE) {
+                step(ctx);
+                // DEBUG: check skeleton after each step
+                for (const [n, nd] of Object.entries(instance.nodeMap || {})) {
+                    const m = nd as any;
+                    if (m.type && m.el && !m.el.className?.includes('q-skeleton')) {
+                        console.warn(
+                            `SKELETON LOST after step ${step.name} in finalize: '${n}' className="${m.el.className}"`
+                        );
+                    }
+                }
+            }
+            instance.id = ctx.props?.id || getId('cmp');
+        } catch (err) {
+            Logger.for(RuntimeEngine).error('RuntimeEngine.finalize failed:', err);
+            throw err;
+        } finally {
+            instance._initializing = false;
+            instance._flushNodeProps?.();
+
+            // DEBUG: check after flush
+            for (const [n, nd] of Object.entries(instance.nodeMap || {})) {
+                const m = nd as any;
+                if (m.type && m.el && !m.el.className?.includes('q-skeleton')) {
+                    console.warn(
+                        `SKELETON LOST after flush in finalize: '${n}' className="${m.el.className}"`
+                    );
+                }
+            }
+
+            if (ctx.debug) {
+                Logger.for(RuntimeEngine).debug(
+                    `[${ctx.ctor.name}] Pipeline: ${ctx.steps.join(' → ')}`
+                );
+            }
+        }
+    }
+
+    private static _createContext(instance: any, props?: Record<string, any>): RuntimeContext {
+        const ctor = instance.constructor as any;
+
+        if (typeof (ctor as any)._ensureCompiled === 'function' && !ctor._compiled) {
+            (ctor as any)._ensureCompiled(ctor, instance);
+        }
+
+        return {
+            instance,
+            props,
+            ctor,
+            steps: [],
+            debug: ctor.__runtimeDebug === true,
+        };
     }
 
     // ══════════════════════════════════════════════════════════

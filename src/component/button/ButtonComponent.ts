@@ -10,7 +10,7 @@
  * - click — 按钮（icon/text）点击时触发
  *
  * 浮动层：
- * - 由派生组件（如 DropdownComponent）通过 body.floats 声明驱动
+ * - 由派生组件（如 DropdownComponent）通过 floats 声明驱动
  *
  * 尺寸：
  * - 支持 sm/md/lg 三档尺寸，由 SizeAbility 提供
@@ -26,8 +26,10 @@ export interface ButtonProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ButtonComponent = Component.withTemplate({
-    tpl: {
+class ButtonComponent extends Component {
+    type = 'Button';
+
+    tpl = {
         tag: 'div',
         cls: 'q-button',
         children: [
@@ -48,29 +50,30 @@ export let ButtonComponent = Component.withTemplate({
                 hidden: true,
             },
         ],
-    },
-    tplEvents: {
+    };
+
+    events = {
         '': { click: { emits: ['click'] } },
         dropIcon: { click: { emits: ['dropClick'] } },
-    },
-    body: {
-        type: 'Button',
+    };
 
-        onAfterInit(props?: ButtonProps): void {
-            this.initSize();
-            this.update(props);
-        },
+    use = [SizeAbility];
 
-        update(props?: Partial<ButtonProps>): void {
-            if (props?.icon !== undefined) {
-                this.icon = props.icon;
-            }
-            if (props?.text !== undefined) {
-                this.text = props.text;
-            }
-            this.size = props?.size || 'md';
-        },
-    },
-}).with([SizeAbility]);
+    onAfterInit(props?: ButtonProps): void {
+        this.initSize();
+        this.update(props);
+    }
 
-export type ButtonComponent = InstanceType<typeof ButtonComponent>;
+    update(props?: Partial<ButtonProps>): void {
+        if (props?.icon !== undefined) {
+            this.icon = props.icon;
+        }
+        if (props?.text !== undefined) {
+            this.text = props.text;
+        }
+        this.size = props?.size || 'md';
+    }
+}
+
+export { ButtonComponent };
+export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

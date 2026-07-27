@@ -1,47 +1,44 @@
 /**
  * @qimenjs/component-core
  *
- * 组件核心层 - 基类、注册管理器、基础能力、模板编译
+ * 组件核心层 - 基类、注册管理器、基础能力、编译引擎
  */
 
 // 组件基类
-export { TemplateComponent, TEMPLATE_COMPONENT_ABILITIES } from './TemplateComponent';
-
-// 工厂层基类（withTemplate / replace 创建内部类）
-export { Component } from './Component';
+export { Component, COMPONENT_ABILITIES, TEMPLATE_COMPONENT_ABILITIES } from './Component';
 
 // 注册管理器
 export { ComponentRegistrar } from './ComponentRegistrar';
-
-// 组件类型常量
-export { ComponentTypes } from './ComponentTypes';
 
 // 节点结构管理器
 export { NodeMapManager } from './NodeMapManager';
 
 // 基础能力
-
 export { NodePropAbility } from './abilities/NodePropAbility';
 export { CommonPropsAbility } from './abilities/CommonPropsAbility';
 export { AnimationAbility } from './abilities';
-
 export { LifecycleAbility } from './abilities/LifecycleAbility';
 
-// 模板编译工具
-export { findByPath, compilePendingTemplate } from './engine/TemplateCompiler';
-export { applyChildNodeProps, buildChildNodePropDescs } from './engine/ChildNodeProps';
-export { createInnerClass, createDerivedInnerClass } from './engine/TemplateFactory';
+// 编译引擎
+export { CompileEngine } from './engine/CompileEngine';
+export type { CompileResult } from './engine/types/compile-engine-types';
+export { VOID_TAGS } from './engine/constants/compile-constants';
+export { findByPath } from './engine/utils/dom-path';
 
-// 构建引擎
-export { TemplateCompiler } from './engine/TemplateCompiler';
-export type { CompileResult } from './engine/TemplateCompiler';
-export { TemplateDeriver } from './engine/TemplateDeriver';
-export { BodyMerger } from './engine/BodyMerger';
-export { DelegatedEventEngine } from './engine/DelegatedEventEngine';
+// 事件引擎
+export { EventEngine, DelegatedEventEngine } from './engine/EventEngine';
+
+// 运行时引擎
 export { RuntimeEngine, executeOverrideQueue } from './engine/RuntimeEngine';
 
+// 模板注册器
+export { TemplateRegistrar } from './engine/TemplateRegistrar';
+export type { TemplateEntry, CompiledProduct } from './types/template-registrar';
+
+// 节点属性工具
+export { applyChildNodeProps, buildChildNodePropDescs } from './engine/ChildNodeProps';
+
 // 模板常量
-export { VOID_TAGS } from './engine/TemplateCompiler';
 export {
     ALIGN_MAP,
     PACK_MAP,
@@ -53,7 +50,12 @@ export {
 export type { ContentPropDef, AnimationOptions } from './engine/TemplateConstants';
 
 // 类型
-export type { NodeMetadata, NodeIndexPath, CompiledTemplateResult } from './types/compiled-types';
+export type {
+    NodeMetadata,
+    NodeIndexPath,
+    CompiledTemplateResult,
+    CompiledTemplateCache,
+} from './types/compiled-types';
 export type { ComponentTemplate } from './types/component-template';
 export type {
     TplNode,
@@ -82,28 +84,7 @@ export type {
     DelegatedEventRule,
 } from './types/tpl-events';
 
-// 模板预设
-export {
-    BUTTON_TEMPLATE,
-    INPUT_TEMPLATE,
-    INPUT_TOP_TEMPLATE,
-    SELECT_TEMPLATE,
-    TOOLBAR_TEMPLATE,
-    ICON_TEMPLATE,
-    TEXT_TEMPLATE,
-    TABLE_TEMPLATE,
-    DIALOG_TEMPLATE,
-    TIPS_TEMPLATE,
-    DROPDOWN_TEMPLATE,
-    POPOVER_TEMPLATE,
-    TOAST_TEMPLATE,
-    TOAST_NOTIFICATION_TEMPLATE,
-    MSGBOX_TEMPLATE,
-    BADGE_TEMPLATE,
-    MENU_ITEM_TEMPLATE,
-    MENU_TEMPLATE,
-    PANEL_TEMPLATE,
-    ITEMGROUP_TEMPLATE,
-    NAVITEM_TEMPLATE,
-    COMPONENT_TEMPLATES,
-} from './template-presets';
+// 初始化 TemplateRegistrar 到 RegistryHub
+import { TemplateRegistrar } from './engine/TemplateRegistrar';
+import { RegistryHub } from '@qimenjs/registry';
+RegistryHub.use(TemplateRegistrar.getInstance());
