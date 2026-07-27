@@ -271,8 +271,11 @@ if (ctor._compiled) {
 
 - `instance.type` 直接可用（实例属性）
 - `instance.floats` / `instance.drags` 直接可用
-- 生命周期钩子直接调用，无 overrideQueue
+- 生命周期钩子直接调用，无 overrideQueue（step-on-init-state / step-on-before-init / step-on-after-init 三个独立步骤）
 - `ctor._cache` / `ctor._nodeMetas` / `ctor._tplEvents` 不变
+- 管线异步化：`InitStep` 支持 `void | Promise<void>`，`runPhase` 为 async
+- 子组件 self-mount：MOUNT 阶段 buildDOM 后自行挂载到父占位符，骨架立即可见
+- INSTANTIATE 阶段通过 GlobalTaskQueue 队列化子组件创建
 
 ## 8. 可删除的代码
 
@@ -285,7 +288,7 @@ if (ctor._compiled) {
 | `BodyMerger` | body 不存在，无需合并 |
 | `collectOverrideHooks` | 原生 super 替代 |
 | `wrapOverrideMethodsOnProto` | 原生 super 替代 |
-| `executeOverrideQueue` | 原生 super 替代 |
+| `executeOverrideQueue` | 原生 super 替代，已删除 step-override-queue.ts，拆为 3 个独立步骤 |
 | `validateBodyKey` | body 不存在 |
 | `BODY_SPECIAL_KEYS` | body 不存在 |
 | `extractBodyFromOptions` | replace 不再从 options 提取 body |

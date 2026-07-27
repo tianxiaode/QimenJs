@@ -28,9 +28,6 @@ export { findByPath } from './engine/utils/dom-path';
 // 事件引擎
 export { DelegatedEventEngine } from './engine/DelegatedEventEngine';
 
-// 运行时引擎
-export { RuntimeEngine, executeOverrideQueue } from './engine/RuntimeEngine';
-
 // 初始化管线
 export {
     MOUNT_PHASE,
@@ -39,7 +36,6 @@ export {
     FINALIZE_PHASE,
     runPhase,
 } from './engine/pipeline';
-export { executeOverrideQueue as pipelineOverrideQueue } from './engine/pipeline';
 
 // 模板注册器
 export { TemplateRegistrar } from './engine/TemplateRegistrar';

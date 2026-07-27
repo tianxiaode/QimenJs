@@ -5,7 +5,8 @@
  *
  * 职责：
  * - buildDOM: 从 cache 克隆模板 + buildNodeMap
- * - replace: 运行时组件替换
+ * - replace: 运行时动态替换子组件（销毁旧 → 创建新 → DOM 原位替换 → 合并 nodeMap）
+ * - mountChildComponent: 运行时子组件挂载（已创建的实例挂载到占位节点）
  * - disposeAll: 清理运行时资源
  *
  * 实例级：每个组件实例创建自己的 NodeMapManager，不跨类共享
@@ -93,6 +94,17 @@ export class NodeMapManager implements INodeMapManager {
         delete this._map[name];
     }
 
+    /**
+     * 运行时动态替换指定节点的子组件
+     *
+     * 销毁旧组件及其子条目 → 创建新组件实例 → DOM 原位替换 → 合并 nodeMap。
+     * 与模板编译期的 Component.replace() 不同，这是运行时操作。
+     *
+     * @param name - 节点名
+     * @param ComponentClass - 新的组件类
+     * @param props - 传给新组件的 props
+     * @returns 新组件实例，或 null 如果节点未找到
+     */
     replace(
         name: string,
         ComponentClass: new (props?: Record<string, any>) => any,
@@ -134,6 +146,15 @@ export class NodeMapManager implements INodeMapManager {
         this._map = {};
     }
 
+    /**
+     * 将已创建的子组件实例挂载到指定节点的占位元素上
+     *
+     * 用占位元素替换为子组件的 el，合并 nodeMap。
+     * 与 replace() 不同，此方法不处理旧组件销毁，也不创建新实例。
+     *
+     * @param node - 目标节点元数据（含占位 el）
+     * @param child - 已创建的子组件实例
+     */
     mountChildComponent(node: NodeMetadata, child: any): void {
         const placeholder = node.el!;
         const parentEl = placeholder.parentElement;
@@ -144,6 +165,7 @@ export class NodeMapManager implements INodeMapManager {
         placeholder.replaceWith(child.el);
         node.el = child.el;
         node.component = child;
+        child.parent = this._owner;
 
         if (node.cls && child.el) {
             const classes = node.cls.split(/\s+/).filter(Boolean);

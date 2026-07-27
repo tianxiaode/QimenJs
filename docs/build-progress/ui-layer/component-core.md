@@ -7,6 +7,22 @@
 
 ## 构建历史
 
+### 2026-07-28
+- ✅ 初始化管线步骤拆分 + 异步化 + 子组件 self-mount
+  - step-override-queue.ts 拆为 3 个独立步骤文件：step-on-init-state / step-on-before-init / step-on-after-init
+  - 删除 executeOverrideQueue / _overrideQueues / _compiled 分支（旧模式遗留，原生 super 替代）
+  - InitStep 类型改为 `(ctx) => void | Promise<void>`，runPhase 改为 async
+  - 新增 step-self-mount.ts：子组件在 MOUNT 阶段 buildDOM 后自行挂载到父占位符，骨架立即可见
+  - 新增 step-instantiate-child-components.ts：INSTANTIATE 阶段通过 GlobalTaskQueue 队列化子组件创建
+  - Component 增加 parent / slotName 属性，子组件接收父引用后自主挂载
+  - mountChildComponent 补上 child.parent 设置
+  - MOUNT_PHASE: [ensureNodeMap, selfMount, setupNodeProps, onInitState, onBeforeInit]
+  - INSTANTIATE_PHASE: [instantiateChildComponents]
+  - component-core/index.ts 清理 RuntimeEngine / executeOverrideQueue / pipelineOverrideQueue 死导出
+- ✅ NodeMapManager.replace() JSDoc 注释补充
+  - replace() 保留（运行时动态替换，与模板编译期 Component.replace() 不同）
+  - mountChildComponent() 补充 JSDoc（挂载已创建实例，不处理旧组件销毁）
+
 ### 2026-07-27
 - ✅ CompileEngine 职责收归 + 结构分离
   - CompileEngine.ts 纯编译引擎类，散装函数内聚为静态方法

@@ -1,21 +1,25 @@
 /**
  * pipeline-registry.ts — 管线集合定义 + 执行器
  *
- * 声明式定义四个 Phase，runPhase 遍历执行步骤。
+ * 声明式定义四个 Phase，runPhase 遍历执行步骤（支持异步）。
  * 步骤抛错时包装为 ComponentError 重新抛出。
  */
 
 import type { Phase } from './pipeline-types';
 import type { InitContext } from '../../types/init-context';
 import { ensureNodeMap } from './step-ensure-node-map';
-import { onInitState, onBeforeInit, onAfterInit } from './step-override-queue';
+import { selfMount } from './step-self-mount';
+import { onInitState } from './step-on-init-state';
+import { onBeforeInit } from './step-on-before-init';
+import { onAfterInit } from './step-on-after-init';
 import { setupNodeProps } from './step-setup-node-props';
+import { instantiateChildComponents } from './step-instantiate-child-components';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error/codes';
 
 export const MOUNT_PHASE: Phase = {
     name: 'mount',
-    steps: [ensureNodeMap, setupNodeProps, onInitState, onBeforeInit],
+    steps: [ensureNodeMap, selfMount, setupNodeProps, onInitState, onBeforeInit],
 };
 
 export const FILL_PHASE: Phase = {
@@ -25,7 +29,7 @@ export const FILL_PHASE: Phase = {
 
 export const INSTANTIATE_PHASE: Phase = {
     name: 'instantiate',
-    steps: [],
+    steps: [instantiateChildComponents],
 };
 
 export const FINALIZE_PHASE: Phase = {
@@ -35,10 +39,10 @@ export const FINALIZE_PHASE: Phase = {
 
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, FILL_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];
 
-export function runPhase(phase: Phase, ctx: InitContext): void {
+export async function runPhase(phase: Phase, ctx: InitContext): Promise<void> {
     for (const step of phase.steps) {
         try {
-            step(ctx);
+            await step(ctx);
         } catch (err) {
             if (err instanceof ComponentError) throw err;
             throw new ComponentError(

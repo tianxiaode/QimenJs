@@ -19,11 +19,19 @@ export interface INodeMapManager {
     getAll(): Record<string, NodeMetadata>;
     set(name: string, meta: NodeMetadata): void;
     remove(name: string): void;
+
+    /**
+     * 运行时动态替换指定节点的子组件
+     *
+     * 销毁旧组件 → 创建新组件实例 → DOM 原位替换 → 合并 nodeMap。
+     * 与模板编译期的 Component.replace() 不同，这是运行时操作。
+     */
     replace(
         name: string,
         ComponentClass: new (props?: Record<string, any>) => any,
         props?: Record<string, any>
     ): any | null;
+
     disposeAll(): void;
     mountChildComponent(node: NodeMetadata, child: any): void;
     buildDOM(): HTMLElement;

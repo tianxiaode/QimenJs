@@ -1,8 +1,8 @@
 /**
  * ChildSlotAbility — 子组件插槽能力
  *
- * 提供 nodeMap 中子组件的替换操作。
- * 通过 NodeMapManager.replace() 自动处理 nodeMap 合并/清理。
+ * 提供运行时子组件替换操作。
+ * 通过 NodeMapManager.replace() 自动处理销毁旧组件 → 创建新组件 → DOM 原位替换 → nodeMap 合并。
  *
  * 按需组合：只有需要动态替换子组件的场景才引入此能力。
  */

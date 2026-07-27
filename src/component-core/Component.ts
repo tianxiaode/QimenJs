@@ -120,6 +120,9 @@ export class Component extends ComposableBase {
     nodeMap: Record<string, NodeMetadata>;
     nodeMapMgr!: INodeMapManager;
 
+    parent?: any;
+    slotName?: string;
+
     _initializing: boolean;
     _templateInitialized: boolean;
     _dirtyNodes: Record<string, Record<string, any>>;
@@ -131,6 +134,8 @@ export class Component extends ComposableBase {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
         this.props = props ?? {};
+        this.parent = this.props.parent;
+        this.slotName = this.props.slotName;
         this.meta = {};
         this._dirtyNodes = {};
         this.nodeMap = {};
@@ -148,22 +153,21 @@ export class Component extends ComposableBase {
      *
      * Phase 1: MOUNT — 同步（首个 await 前，el 立即可用）
      * Phase 2: FILL — 同步
-     * Phase 3: INSTANTIATE — 异步（Promise.all）
+     * Phase 3: INSTANTIATE — 异步（TaskQueue 队列化子组件渲染）
      * Phase 4: FINALIZE — 同步
      */
     async init(): Promise<void> {
         const ctx = createInitContext(this, this.props);
 
         try {
-            runPhase(MOUNT_PHASE, ctx);
+            await runPhase(MOUNT_PHASE, ctx);
             if (!ctx.nodeMapMgr) return;
 
-            runPhase(FILL_PHASE, ctx);
+            await runPhase(FILL_PHASE, ctx);
 
-            // Phase 3: INSTANTIATE — 异步
-            // await Promise.all(childSlots.map(s => this._instantiateChild(s)));
+            await runPhase(INSTANTIATE_PHASE, ctx);
 
-            runPhase(FINALIZE_PHASE, ctx);
+            await runPhase(FINALIZE_PHASE, ctx);
 
             this.id = this.props.id || getId('cmp');
         } finally {
