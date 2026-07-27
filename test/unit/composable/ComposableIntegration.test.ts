@@ -1,7 +1,7 @@
 /**
  * ComposableBase 集成测试
  *
- * 验证能力系统的核心机制（with() 模式）：
+ * 验证能力系统的核心机制（use() 模式）：
  * 1. getter/setter 在多宿主间的正确代理
  * 2. 方法 bind 到宿主后 this 指向
  * 3. dispose 清理
@@ -51,7 +51,8 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        const LabelHost = ComposableBase.with([GetterSetterDef]);
+        class LabelHost extends ComposableBase {}
+        LabelHost.use([GetterSetterDef]);
 
         it('多个宿主实例的 getter 应该各自返回自己的值', () => {
             class NamedLabelHost extends LabelHost {
@@ -99,7 +100,8 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        const MethodHost = ComposableBase.with([MethodDef]);
+        class MethodHost extends ComposableBase {}
+        MethodHost.use([MethodDef]);
 
         it('方法中的 this 应该指向宿主', () => {
             class NamedMethodHost extends MethodHost {
@@ -135,7 +137,8 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            const ThisHost = ComposableBase.with([ThisHostDef]);
+            class ThisHost extends ComposableBase {}
+            ThisHost.use([ThisHostDef]);
             const host = new ThisHost() as any;
             expect(host.getThisInstance()).toBe(host);
             host.dispose();
@@ -161,7 +164,8 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            const OrderHost = ComposableBase.with([CleanupDef1, CleanupDef2]);
+            class OrderHost extends ComposableBase {}
+            OrderHost.use([CleanupDef1, CleanupDef2]);
             const host = new OrderHost() as any;
             host._init1();
             host._init2();
@@ -182,7 +186,8 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        const CancelableHost = ComposableBase.with([TestCancelableDef]);
+        class CancelableHost extends ComposableBase {}
+        CancelableHost.use([TestCancelableDef]);
 
         it('应该正确注入方法', () => {
             const host = new CancelableHost() as any;
@@ -212,7 +217,8 @@ describe('ComposableBase 集成测试', () => {
         };
 
         it('后声明的能力应该覆盖先声明的能力同名方法', () => {
-            const ConflictHost = ComposableBase.with([ConflictDefA, ConflictDefB]);
+            class ConflictHost extends ComposableBase {}
+            ConflictHost.use([ConflictDefA, ConflictDefB]);
             const host = new ConflictHost() as any;
             expect(host.sharedMethod()).toBe('method-B');
             host.dispose();
@@ -231,9 +237,12 @@ describe('ComposableBase 集成测试', () => {
             childMethod: () => 'child',
         };
 
-        it('子类 with() 应该同时拥有父类和自身的能力', () => {
-            const ParentHost = ComposableBase.with([ParentDef]);
-            const ChildHost = ParentHost.with([ChildDef]);
+        it('子类 use() 应该同时拥有父类和自身的能力', () => {
+            class ParentHost extends ComposableBase {}
+            ParentHost.use([ParentDef]);
+
+            class ChildHost extends ParentHost {}
+            ChildHost.use([ChildDef]);
 
             const child = new ChildHost() as any;
             expect(child.parentMethod()).toBe('parent');
@@ -242,8 +251,11 @@ describe('ComposableBase 集成测试', () => {
         });
 
         it('父类实例不应该拥有子类的能力', () => {
-            const ParentHost = ComposableBase.with([ParentDef]);
-            const ChildHost = ParentHost.with([ChildDef]);
+            class ParentHost extends ComposableBase {}
+            ParentHost.use([ParentDef]);
+
+            class ChildHost extends ParentHost {}
+            ChildHost.use([ChildDef]);
 
             const parent = new ParentHost() as any;
             expect(parent.parentMethod()).toBe('parent');
@@ -270,7 +282,8 @@ describe('ComposableBase 集成测试', () => {
             },
         };
 
-        const CounterHost = ComposableBase.with([CounterDef]);
+        class CounterHost extends ComposableBase {}
+        CounterHost.use([CounterDef]);
 
         it('每个宿主应该有独立的状态', () => {
             const host1 = new CounterHost() as any;
@@ -321,7 +334,8 @@ describe('ComposableBase 集成测试', () => {
                 },
             };
 
-            const LifecycleHost = ComposableBase.with([LifecycleDef]);
+            class LifecycleHost extends ComposableBase {}
+            LifecycleHost.use([LifecycleDef]);
 
             class NamedLifecycleHost extends LifecycleHost {
                 constructor(public name: string) {

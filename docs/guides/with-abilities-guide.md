@@ -2,14 +2,14 @@
 
 ## 概述
 
-QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + `withAbilities` / `withDefinitions` 独立函数。能力是普通对象，通过函数注入到类原型上。`ComposableBase` 是正常类，子类 `extends` 后 `super()` 即可，天然保留原型链和 `instanceof`。
+QimenJS 的能力系统基于 `AbilityDefinition` 纯对象 + `ComposableBase.use()` / `ComposableBase.define()` 静态方法。能力是普通对象，通过静态方法注入到类原型上。`ComposableBase` 是正常类，子类 `extends` 后 `super()` 即可，天然保留原型链和 `instanceof`。
 
 ## 使用模式
 
-### extends ComposableBase + withAbilities（推荐）
+### extends ComposableBase + use()（推荐）
 
 ```typescript
-import { ComposableBase, withAbilities } from '@/composable';
+import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
 
 class MyManager extends ComposableBase {
@@ -18,7 +18,7 @@ class MyManager extends ComposableBase {
 }
 
 const MY_ABILITIES = [EventAbility, DomainAbility] as const;
-withAbilities(MyManager, MY_ABILITIES);
+MyManager.use(MY_ABILITIES);
 
 // 声明合并：让 TypeScript 知道 MyManager 实例拥有能力注入的方法
 export interface MyManager extends InferAbilities<typeof MY_ABILITIES> {}
@@ -36,7 +36,7 @@ class CoreEntityManager extends ComposableBase {
 }
 
 const CORE_ABILITIES = [EventAbility, DomainAbility, SystemAbility, SchemaAbility] as const;
-withAbilities(CoreEntityManager, CORE_ABILITIES);
+CoreEntityManager.use(CORE_ABILITIES);
 export interface CoreEntityManager extends InferAbilities<typeof CORE_ABILITIES> {}
 
 class BaseEntityManager extends CoreEntityManager {
@@ -49,16 +49,16 @@ class LocalReadonlyEntityManager extends BaseEntityManager {
 }
 
 const LOCAL_READONLY_ABILITIES = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility] as const;
-withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+LocalReadonlyEntityManager.use(LOCAL_READONLY_ABILITIES);
 export interface LocalReadonlyEntityManager extends InferAbilities<typeof LOCAL_READONLY_ABILITIES> {}
 ```
 
-### withDefinitions：注入 body 定义
+### define()：注入 body 定义
 
 ```typescript
 class MyComponent extends TemplateComponent {}
-withAbilities(MyComponent, [EventAbility]);
-withDefinitions(MyComponent, {
+MyComponent.use([EventAbility]);
+MyComponent.define({
     type: 'MyComponent',
     onAfterInit(props) { /* ... */ },
     update(props) { /* ... */ },
@@ -130,7 +130,7 @@ const CounterAbility: AbilityDefinition = {
 import { DebounceAbility } from '@/system-abilities';
 
 class MyManager extends ComposableBase {}
-withAbilities(MyManager, [EventAbility, DebounceAbility]);
+MyManager.use([EventAbility, DebounceAbility]);
 
 // 使用
 const mgr = new MyManager();
@@ -171,7 +171,7 @@ const AbilityA: AbilityDefinition = { value() { return 'A'; } };
 const AbilityB: AbilityDefinition = { value() { return 'B'; } };
 
 class Cls extends ComposableBase {}
-withAbilities(Cls, [AbilityA, AbilityB]);
+Cls.use([AbilityA, AbilityB]);
 
 const instance = new Cls();
 instance.value();  // 'B'
@@ -179,7 +179,7 @@ instance.value();  // 'B'
 
 ## this 指向
 
-能力方法中的 `this` 自动指向宿主实例。在 withAbilities 模式下，能力方法需添加 `this: any` 类型标注以避免 TypeScript 类型错误：
+能力方法中的 `this` 自动指向宿主实例。能力方法需添加 `this: any` 类型标注以避免 TypeScript 类型错误：
 
 ```typescript
 const Ability: AbilityDefinition = {
@@ -190,12 +190,12 @@ const Ability: AbilityDefinition = {
 };
 ```
 
-> **注意**：`this: any` 是编译期类型标注，运行时 `this` 仍正确指向宿主实例。这是因为 withAbilities 将方法注入到类原型上，调用时 `this` 自然绑定到实例。
+> **注意**：`this: any` 是编译期类型标注，运行时 `this` 仍正确指向宿主实例。这是因为 use() 将方法注入到类原型上，调用时 `this` 自然绑定到实例。
 
-## withAbilities vs withDefinitions
+## use() vs define()
 
-| 特性 | withAbilities | withDefinitions |
-|------|---------------|-----------------|
+| 特性 | use() | define() |
+|------|-------|----------|
 | 跳过 `__` 前缀 key | ✅ | ❌ |
 | 过滤非函数/非 accessor 值 | ✅ | ❌（普通值也复制） |
 | 维护 `abilities` 数组 | ✅ | ❌ |
@@ -203,11 +203,11 @@ const Ability: AbilityDefinition = {
 
 ## InferAbilities 声明合并
 
-`withAbilities` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知这些方法。通过 `InferAbilities` + 声明合并解决：
+`use()` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知这些方法。通过 `InferAbilities` + 声明合并解决：
 
 ```typescript
 const ABILITIES = [EventAbility, DomainAbility] as const;
-withAbilities(MyClass, ABILITIES);
+MyClass.use(ABILITIES);
 
 // 让 TS 知道 MyClass 实例拥有 EventAbility 和 DomainAbility 注入的方法
 export interface MyClass extends InferAbilities<typeof ABILITIES> {}
@@ -217,7 +217,7 @@ export interface MyClass extends InferAbilities<typeof ABILITIES> {}
 
 ## 旧 API 迁移指南
 
-### ComposableBase.with() → extends + withAbilities + InferAbilities
+### ComposableBase.with() → extends + use() + InferAbilities
 
 ```typescript
 // 旧
@@ -226,11 +226,31 @@ class MyManager extends ComposableBase.with([EventAbility, DomainAbility]) { }
 // 新
 const MY_ABILITIES = [EventAbility, DomainAbility] as const;
 class MyManager extends ComposableBase { }
-withAbilities(MyManager, MY_ABILITIES);
+MyManager.use(MY_ABILITIES);
 export interface MyManager extends InferAbilities<typeof MY_ABILITIES> {}
 ```
 
-### createForgedClass → extends ComposableBase + withAbilities
+### withAbilities → use()
+
+```typescript
+// 旧
+withAbilities(MyClass, [EventAbility, DomainAbility]);
+
+// 新
+MyClass.use([EventAbility, DomainAbility]);
+```
+
+### withDefinitions → define()
+
+```typescript
+// 旧
+withDefinitions(MyClass, bodyDef);
+
+// 新
+MyClass.define(bodyDef);
+```
+
+### createForgedClass → extends ComposableBase + use()
 
 ```typescript
 // 旧
@@ -238,7 +258,7 @@ const InnerClass = createForgedClass([EventAbility, DomEventsAbility]);
 
 // 新
 const InnerClass = class extends ComposableBase {};
-withAbilities(InnerClass, [EventAbility, DomEventsAbility]);
+InnerClass.use([EventAbility, DomEventsAbility]);
 ```
 
 ### initForgedState → 不再需要

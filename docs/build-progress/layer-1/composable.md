@@ -6,6 +6,11 @@
 
 ## 构建历史
 
+### 2026-07-27
+- `ComposableBase.with()` 改为 `ComposableBase.use()`：原地修改 this 原型，不再创建派生类
+- 新增 `ComposableBase.define()` 静态方法：原地修改 this 原型注入非能力定义
+- 补全 ComposableBase JSDoc 注释
+
 ### 2026-07-23
 - 移除 `createForgedClass`、`initForgedState`、`ForgedConstructor` 导出
 - 移除 `copyCallerPrototype`、内置方法独立导出
@@ -41,8 +46,10 @@
 | 导出 | 说明 |
 |------|------|
 | `ComposableBase` | 正常 class，构造器自动初始化 |
-| `withAbilities` | 向已有类注入能力（原地修改原型，保留 instanceof） |
-| `withDefinitions` | 向已有类注入非能力定义（body 方法、getter/setter、普通值） |
+| `ComposableBase.use()` | 向自身注入能力（原地修改 this 原型，保留 instanceof） |
+| `ComposableBase.define()` | 向自身注入非能力定义（body 方法、getter/setter、普通值） |
+| `withAbilities` | 独立函数，向已有类注入能力（底层实现） |
+| `withDefinitions` | 独立函数，向已有类注入非能力定义（底层实现） |
 
 ### 内置方法（所有 ComposableBase 子类实例自动拥有）
 

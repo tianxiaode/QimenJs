@@ -26,12 +26,13 @@ describe('composable package exports', () => {
         expect(typeof ComposableBase).toBe('function');
     });
 
-    it('should allow creating composable with with()', () => {
+    it('should allow creating composable with use()', () => {
         const CustomAbility: AbilityDefinition = {
             customMethod: () => 'custom-result',
         };
 
-        const TestComposable = ComposableBase.with([CustomAbility]);
+        class TestComposable extends ComposableBase {}
+        TestComposable.use([CustomAbility]);
         const instance = new TestComposable() as any;
         expect(instance.customMethod()).toBe('custom-result');
     });

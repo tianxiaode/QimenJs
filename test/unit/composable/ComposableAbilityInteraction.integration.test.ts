@@ -1,7 +1,7 @@
 /**
  * ComposableBase 多 Ability 交互集成测试
  *
- * 验证真实 Manager 场景中多 Ability 同时注入后的交互行为（with() 模式）：
+ * 验证真实 Manager 场景中多 Ability 同时注入后的交互行为（use() 模式）：
  * 1. DomainAbility + SchemaAbility + EventAbility 在真实 Manager 中的协作
  * 2. Ability 方法中 this 指向的真实宿主交互
  * 3. 同名方法覆盖在真实场景中的影响
@@ -52,10 +52,11 @@ const testSchema: FlatSchema = {
 };
 
 // ============================================
-// 测试用 Manager（使用 with() 模式）
+// 测试用 Manager（使用 use() 模式）
 // ============================================
 
-const TestAbilityManagerBase = ComposableBase.with([EventAbility, DomainAbility, SchemaAbility]);
+class TestAbilityManagerBase extends ComposableBase {}
+TestAbilityManagerBase.use([EventAbility, DomainAbility, SchemaAbility]);
 
 class TestAbilityManager extends TestAbilityManagerBase {
     domain = 'ability-test';
@@ -161,7 +162,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
         });
 
         it('domainConfig 未注册时应该返回 undefined', () => {
-            const UnregisteredHost = ComposableBase.with([DomainAbility]);
+            class UnregisteredHost extends ComposableBase {}
+            UnregisteredHost.use([DomainAbility]);
             class UnregisteredManager extends UnregisteredHost {
                 domain = 'nonexistent-domain';
             }
@@ -253,7 +255,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const OverrideHost = ComposableBase.with([AbilityA, AbilityB]);
+            class OverrideHost extends ComposableBase {}
+            OverrideHost.use([AbilityA, AbilityB]);
             const host = new OverrideHost() as any;
             expect(host.sharedAction()).toBe('B');
             host.dispose();
@@ -266,7 +269,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const BaseHost = ComposableBase.with([OverrideAbility]);
+            class BaseHost extends ComposableBase {}
+            BaseHost.use([OverrideAbility]);
 
             class SelfMethodHost extends BaseHost {
                 selfMethod() {
@@ -285,7 +289,7 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     // ========================================
 
     describe('Ability 注入顺序', () => {
-        it('基类 Ability 先注入，子类 with() 后注入', () => {
+        it('基类 Ability 先注入，子类 use() 后注入', () => {
             const BaseAbility: AbilityDefinition = {
                 baseMethod() {
                     return 'base';
@@ -303,8 +307,11 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const BaseHost = ComposableBase.with([BaseAbility]);
-            const ChildHost = BaseHost.with([ChildAbility]);
+            class BaseHost extends ComposableBase {}
+            BaseHost.use([BaseAbility]);
+
+            class ChildHost extends BaseHost {}
+            ChildHost.use([ChildAbility]);
 
             const child = new ChildHost() as any;
             expect(child.baseMethod()).toBe('base');
@@ -320,8 +327,11 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const ParentHost = ComposableBase.with([SharedAbility]);
-            const ChildHost = ParentHost.with([SharedAbility]);
+            class ParentHost extends ComposableBase {}
+            ParentHost.use([SharedAbility]);
+
+            class ChildHost extends ParentHost {}
+            ChildHost.use([SharedAbility]);
 
             const child = new ChildHost() as any;
             expect(child.sharedMethod()).toBe('shared');
@@ -351,7 +361,8 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
                 },
             };
 
-            const StateHost = ComposableBase.with([StateAbility]);
+            class StateHost extends ComposableBase {}
+            StateHost.use([StateAbility]);
             const host = new StateHost() as any;
             const state1 = host.getState();
             expect(state1.value).toBe(42);

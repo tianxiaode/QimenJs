@@ -1,16 +1,30 @@
 # ComposableBase 最佳实践
 
-## 1. 两种使用模式
+## 1. 使用模式
 
-### 1.1 原型工厂函数（组件推荐）
+### 1.1 extends ComposableBase + use()（推荐）
 
-通过 `createForgedClass` 直接创建强类，无继承链，纯原型组装：
+定义类之后，通过 `use()` 为类自身注入能力：
 
 ```typescript
-import { createForgedClass } from '@/composable';
+import { ComposableBase } from '@/composable';
 
-const InnerClass = createForgedClass([EventAbility, DomEventsAbility]);
-const instance = new InnerClass();
+class MyManager extends ComposableBase {
+    domain = 'default';
+    fetch() { this.emit('fetch'); }
+}
+MyManager.use([EventAbility, DomainAbility]);
+```
+
+**适用场景**：所有需要能力注入的类。
+
+### 1.2 链式 use()
+
+`use()` 返回 this，可以链式合并更多能力：
+
+```typescript
+MyManager.use([EventAbility]).use([DomainAbility]);
+// 等价于 MyManager.use([EventAbility, DomainAbility])
 ```
 
 **适用场景**：组件等不需要 `extends` 的场景。
@@ -144,13 +158,14 @@ handleInit(componentId, data) {
 ```typescript
 import { DebounceAbility } from '@/system-abilities';
 
-class MyManager extends ComposableBase.with([EventAbility, DebounceAbility]) {
+class MyManager extends ComposableBase {
     search(keyword: string) {
         return this.debounce('MyManager:search', () => {
             // 执行搜索
         }, 300);
     }
 }
+MyManager.use([EventAbility, DebounceAbility]);
 ```
 
 **原因**：防抖不是所有类都需要，迁移为能力后按需组合，减少不必要的依赖。
@@ -180,7 +195,8 @@ const DomEventsAbility: AbilityDefinition = {
 };
 
 // 声明顺序：被依赖的能力先声明
-class MyHost extends ComposableBase.with([EventAbility, DomEventsAbility]) {}
+class MyHost extends ComposableBase {}
+MyHost.use([EventAbility, DomEventsAbility]);
 ```
 
 ## 8. getter/setter 用描述符对象，不要用方法模拟
@@ -206,9 +222,9 @@ const LabelAbility: AbilityDefinition = {
 后声明的能力覆盖先声明的同名属性：
 
 ```typescript
-class MyHost extends ComposableBase.with([AbilityA, AbilityB]) {
-    // 如果 AbilityA 和 AbilityB 都有 'method'，AbilityB 的生效
-}
+class MyHost extends ComposableBase {}
+MyHost.use([AbilityA, AbilityB]);
+// 如果 AbilityA 和 AbilityB 都有 'method'，AbilityB 的生效
 ```
 
 ## 10. dispose 后不要继续使用

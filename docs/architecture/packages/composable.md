@@ -6,7 +6,7 @@
 
 ## 概述
 
-composable 包提供能力注入机制，是 QimenJS 能力系统的核心。通过 `ComposableBase` 正常类 + `withAbilities` / `withDefinitions` 独立函数，实现能力的声明、注入和生命周期管理，天然保留原型链和 `instanceof`。
+composable 包提供能力注入机制，是 QimenJS 能力系统的核心。通过 `ComposableBase` 正常类 + 静态方法 `use()` / `define()`，实现能力的声明、注入和生命周期管理，天然保留原型链和 `instanceof`。
 
 ## 核心概念
 
@@ -15,15 +15,17 @@ composable 包提供能力注入机制，是 QimenJS 能力系统的核心。通
 | 组件 | 说明 |
 |------|------|
 | **ComposableBase** | 正常 class，构造器自动初始化 logger / abilityStates / cleanups |
-| **withAbilities** | 向已有类注入能力（原地修改原型，保留 instanceof） |
-| **withDefinitions** | 向已有类注入非能力定义（body 方法、getter/setter、普通值） |
+| **ComposableBase.use()** | 向自身注入能力（原地修改 this 原型，保留 instanceof），支持链式调用 |
+| **ComposableBase.define()** | 向自身注入非能力定义（)body 方法、getter/setter、普通值），支持链式调用 |
+| **withAbilities** | 独立函数，向已有类注入能力（原地修改原型，保留 instanceof） |
+| **withDefinitions** | 独立函数，向已有类注入非能力定义（body 方法、getter/setter、普通值） |
 
 ```typescript
 class MyManager extends ComposableBase {
     domain = 'default';
     fetch() { this.emit('fetch'); }
 }
-withAbilities(MyManager, [EventAbility, DomainAbility]);
+MyManager.use([EventAbility, DomainAbility]);
 
 new MyManager() instanceof ComposableBase // true
 ```
@@ -33,7 +35,7 @@ new MyManager() instanceof ComposableBase // true
 | 组件 | 说明 | 移除原因 |
 |------|------|----------|
 | `createForgedClass` | 原型工厂函数，纯函数 + 原型复制 | `with` 方法在继承链中断裂 |
-| `ComposableBase.with()` | 语法糖，内部调 createForgedClass | 同上 |
+| `ComposableBase.with()` | 语法糖，创建派生类并注入能力 | 改为 `use()` 原地修改自身，更简洁 |
 | `initForgedState` | 手动初始化实例内置状态 | ComposableBase 构造器自动初始化 |
 
 旧架构的 bug：`A = ComposableBase.with([...])` → `B extends A` → `C extends B` → `C.with([...])` 时，C 的自身方法丢失，因为 `with` 闭包只记录创建时的能力数组，不感知 `extends` 子类新增的原型方法。
@@ -56,7 +58,7 @@ ComposableBase 内置以下功能，所有子类实例自动拥有：
 
 ### AbilityDefinition
 
-能力定义为普通对象（`Record<string | symbol, any>`），属性/方法通过 `withAbilities` 复制到宿主原型：
+能力定义为普通对象（`Record<string | symbol, any>`），属性/方法通过 `use()` 复制到宿主原型：
 
 | 属性类型 | 形式 | 复制行为 |
 |----------|------|----------|
@@ -66,10 +68,10 @@ ComposableBase 内置以下功能，所有子类实例自动拥有：
 
 方法中的 `this` 自动指向宿主实例，无需手动绑定。
 
-### withAbilities vs withDefinitions
+### use() vs define()
 
-| 特性 | withAbilities | withDefinitions |
-|------|---------------|-----------------|
+| 特性 | use() | define() |
+|------|-------|----------|
 | 跳过 `__` 前缀 key | ✅ | ❌ |
 | 过滤非函数/非 accessor 值 | ✅ | ❌（普通值也复制） |
 | 维护 `abilities` 数组 | ✅ | ❌ |
@@ -87,6 +89,10 @@ ComposableBase 内置以下功能，所有子类实例自动拥有：
 class ComposableBase {
     logger: any;
     constructor();
+
+    static use(abilities: AbilityDefinition | AbilityDefinition[]): typeof ComposableBase;
+    static define(definitions: Record<string, any>): typeof ComposableBase;
+
     abilityState(key: string, creator?: () => any): any | undefined;
     setAbilityState(key: string, value: any): void;
     onCleanup(callback: () => void): void;
@@ -97,6 +103,22 @@ class ComposableBase {
 ```
 
 正常类定义，子类 `extends` 后 `super()` 即可，不需要手动初始化。
+
+### ComposableBase.use()
+
+```typescript
+static use(abilities: AbilityDefinition | AbilityDefinition[]): typeof ComposableBase
+```
+
+向自身注入能力（原地修改 this 原型），保留原型链和 instanceof。返回 this 支持链式调用。
+
+### ComposableBase.define()
+
+```typescript
+static define(definitions: Record<string, any>): typeof ComposableBase
+```
+
+向自身注入非能力定义（body 方法、getter/setter、普通值属性）。返回 this 支持链式调用。
 
 ### withAbilities
 
@@ -126,11 +148,11 @@ function withDefinitions(target: any, definitions: Record<string, any>): void
 
 ### InferAbilities 声明合并模式
 
-`withAbilities` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知。通过 `InferAbilities` + 声明合并解决：
+`use()` 在运行时将能力方法注入到类原型，但 TypeScript 无法自动感知。通过 `InferAbilities` + 声明合并解决：
 
 ```typescript
 const ABILITIES = [EventAbility, DomainAbility] as const;
-withAbilities(MyClass, ABILITIES);
+MyClass.use(ABILITIES);
 
 // 让 TS 知道 MyClass 实例拥有能力注入的方法
 export interface MyClass extends InferAbilities<typeof ABILITIES> {}
@@ -140,10 +162,10 @@ export interface MyClass extends InferAbilities<typeof ABILITIES> {}
 
 ## 使用示例
 
-### 实体管理类：extends + withAbilities + InferAbilities
+### 实体管理类：extends + use() + InferAbilities
 
 ```typescript
-import { ComposableBase, withAbilities } from '@/composable';
+import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
 
 class CoreEntityManager extends ComposableBase {
@@ -152,7 +174,7 @@ class CoreEntityManager extends ComposableBase {
 }
 
 const CORE_ABILITIES = [EventAbility, DomainAbility, SystemAbility, SchemaAbility] as const;
-withAbilities(CoreEntityManager, CORE_ABILITIES);
+CoreEntityManager.use(CORE_ABILITIES);
 export interface CoreEntityManager extends InferAbilities<typeof CORE_ABILITIES> {}
 
 class BaseEntityManager extends CoreEntityManager {
@@ -165,11 +187,11 @@ class LocalReadonlyEntityManager extends BaseEntityManager {
 }
 
 const LOCAL_READONLY_ABILITIES = [FlatLocalStateAbility, LocalListAbility, LocalGetAbility] as const;
-withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+LocalReadonlyEntityManager.use(LOCAL_READONLY_ABILITIES);
 export interface LocalReadonlyEntityManager extends InferAbilities<typeof LOCAL_READONLY_ABILITIES> {}
 ```
 
-### 组件系统：双层架构 + withAbilities + withDefinitions
+### 组件系统：双层架构 + use() + define()
 
 ```typescript
 // 闭包基类（ComponentFactory）— 工厂层
@@ -184,12 +206,12 @@ class TemplateComponent extends ComposableBase {
     el!: HTMLElement;
     nodeMap: Record<string, any> = {};
 }
-withAbilities(TemplateComponent, TEMPLATE_COMPONENT_ABILITIES);
+TemplateComponent.use(TEMPLATE_COMPONENT_ABILITIES);
 
 // 内部类（TemplateFactory 创建）
 const InnerClass = class extends TemplateComponent {};
-withAbilities(InnerClass, extraAbilities);
-withDefinitions(InnerClass, bodyDef);
+InnerClass.use(extraAbilities);
+InnerClass.define(bodyDef);
 ```
 
 ## 目录结构
@@ -207,7 +229,7 @@ src/composable/
 ## 设计决策
 
 - **正常类而非工厂函数**：`ComposableBase` 是正常 class，子类 `extends` 后 `super()` 即可，天然保留原型链和 `instanceof`
-- **独立函数而非静态方法**：`withAbilities` / `withDefinitions` 是独立函数，不再挂载在类上，避免 `with` 在继承链中断裂
+- **静态方法 + 独立函数并存**：`use()` / `define()` 是 ComposableBase 静态方法（原地修改 this 原型），`withAbilities` / `withDefinitions` 是独立函数（底层实现），两者功能等价
 - **内置方法不可覆盖**：abilityState / onCleanup / onBeforeDispose / onDisposed / dispose 等内置方法受保护，能力无法覆盖
 - **debounce 迁移为能力**：DebounceAbility 从 ComposableBase 剥离，按需组合
 - **移除 getStatic/setStatic**：用闭包变量或构造函数静态属性替代
@@ -217,6 +239,13 @@ src/composable/
 - **key 命名约定**：`abilityState` 的 key 建议使用 `AbilityName:stateName` 格式避免冲突
 
 ## 变更历史
+
+### 2026-07-27
+- `ComposableBase.with()` 改为 `ComposableBase.use()`：原地修改 this 原型，不再创建派生类，消除中间层
+- 新增 `ComposableBase.define()` 静态方法：原地修改 this 原型注入非能力定义，等价于 `withDefinitions(this, definitions)`
+- `use()` 支持单个能力或数组参数，返回 this 支持链式调用
+- `define()` 返回 this 支持链式调用
+- 补全 ComposableBase 所有方法的 JSDoc 注释
 
 ### 2026-07-23
 - 移除 `createForgedClass`、`initForgedState`、`ForgedConstructor` 导出
