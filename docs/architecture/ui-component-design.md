@@ -35,26 +35,37 @@
 
 ## 三、组件基类设计
 
-### 3.1 ComponentBase
+### 3.1 Component（Direct Extends 模式）
 
-从 ComposableBase 派生，所有 UI 组件的基类：
+所有组件直接 `extends Component`，通过实例属性 + static 声明 + 显式 compile() 定义：
 
 ```typescript
-// @qimen-lab/component
-import { ComposableBase } from '@qimen-lab/composable';
+import { ComposableBase } from '@qimenjs/composable';
 
-export class ComponentBase extends ComposableBase {
+export class Component extends ComposableBase {
     /** 组件根 DOM 元素 */
     readonly el: HTMLElement;
 
     /** 组件唯一 ID */
-    readonly cid: string;
+    readonly id: string;
+
+    /** 组件类型标识（实例属性） */
+    type: string;
 
     /** 是否已挂载 */
     mounted: boolean;
 
     /** 是否已销毁 */
     destroyed: boolean;
+
+    /**
+     * 显式编译 — 触发模板编译、事件编译、能力注入
+     * 三种模式：全编译(own tpl) / 派生(replaceTpl) / 继承(复用父类产物)
+     */
+    static compile(this: any): any;
+
+    /** 工厂方法 */
+    static create(this: any, props?: Record<string, any>): any;
 
     /** 挂载到目标容器 */
     mount(container: HTMLElement | string): void;
@@ -74,46 +85,40 @@ export class ComponentBase extends ComposableBase {
 
 ```
 ComposableBase
-  └── ComponentBase (abilities: ThemeAbility, StyleAbility, EventBindingAbility)
-        ├── Button (abilities: ClickAbility, DisableAbility, LoadingAbility)
-        ├── Input (abilities: ValueAbility, ValidateAbility, PlaceholderAbility)
-        ├── Select (abilities: ValueAbility, OptionsAbility, SearchAbility)
-        ├── Table (abilities: DataSourceAbility, VirtualListAbility, SortAbility, ColumnAbility)
-        ├── Form (abilities: ValidateAbility, SubmitAbility, FieldSetAbility)
-        ├── Dialog (abilities: OpenableAbility, OverlayAbility, AnimationAbility)
-        ├── HBox (abilities: LayoutAbility, ChildrenAbility)     ← 水平 Flex 布局
-        ├── VBox (abilities: LayoutAbility, ChildrenAbility)     ← 垂直 Flex 布局
-        ├── Grid (abilities: LayoutAbility, ChildrenAbility)     ← CSS Grid 布局
-        └── Space (abilities: LayoutAbility, ChildrenAbility)    ← 间距布局
+  └── Component (abilities: NodePropAbility, CommonPropsAbility, LifecycleAbility, ...)
+        ├── ButtonComponent (abilities: SizeAbility)
+        │     └── DropdownComponent (语义别名)
+        ├── InputComponent
+        ├── SelectComponent
+        ├── TableComponent (abilities: DataSourceAbility, VirtualListAbility, SortAbility, ColumnAbility)
+        ├── FormComponent (abilities: ValidateAbility, SubmitAbility, FieldSetAbility)
+        ├── DialogComponent (abilities: OpenableAbility, OverlayAbility, AnimationAbility)
+        ├── ItemGroupPooledComponent
+        │     ├── TabBarComponent (replaceTpl 派生)
+        │     ├── MenuComponent (replaceTpl 派生)
+        │     └── ToolbarComponent (replaceTpl 派生)
+        ├── HBoxComponent (abilities: LayoutAbility, ChildrenAbility)     ← 水平 Flex 布局
+        ├── VBoxComponent (abilities: LayoutAbility, ChildrenAbility)     ← 垂直 Flex 布局
+        ├── GridComponent (abilities: LayoutAbility, ChildrenAbility)     ← CSS Grid 布局
+        └── SpaceComponent (abilities: LayoutAbility, ChildrenAbility)    ← 间距布局
 ```
 
 ### 3.3 组件注册
 
-复用 `@qimen-lab/registry`，新增 `ComponentRegistrar`：
+使用 `TemplateRegistrar`（唯一注册生态），通过 `RegistryHub` 自动注册：
 
 ```typescript
-// @qimen-lab/component
-import { RegistrarBase } from '@qimen-lab/registry';
+// @qimenjs/component-core
+import { TemplateRegistrar } from './engine/TemplateRegistrar';
+import { RegistryHub } from '@qimenjs/registry';
+RegistryHub.use(TemplateRegistrar.getInstance());
 
-class ComponentRegistrar extends RegistrarBase<Map<string, ComponentDefinition>> {
-    readonly name = 'component';
-
-    register(type: string, definition: ComponentDefinition, meta?: ComponentMeta): void;
-    get(type: string): ComponentDefinition | undefined;
-    getMeta(type: string): ComponentMeta | undefined;
-    setMeta(type: string, meta: ComponentMeta): void;
-}
-
-interface ComponentMeta {
-    /** 组件基础事件数据字段，编译时自动合并到 tplEvents.data */
-    defaultEventData?: string[];
-}
-
-// 使用
-Registry.component.register(ComponentTypes.BUTTON, ButtonComponent, {
-    defaultEventData: ['name'],
-});
+// 组件类直接 import 引用，无需注册到 ComponentRegistrar
+import { ButtonComponent } from '@qimenjs/button';
+const btn = ButtonComponent.create({ text: 'OK' });
 ```
+
+> **注意**：ComponentRegistrar 已移除。需要动态实例化的组件（ItemGroup/Tabs/Overlay）内部维护自己的 type 映射表。
 
 ## 四、UI 能力定义
 

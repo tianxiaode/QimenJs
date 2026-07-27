@@ -7,6 +7,44 @@
 
 ## 构建历史
 
+### 2026-07-27
+- ✅ CompileEngine 职责收归 + 结构分离
+  - CompileEngine.ts 纯编译引擎类，散装函数内聚为静态方法
+  - constants/compile-constants.ts：VOID_TAGS 等编译常量独立目录
+  - types/compile-engine-types.ts：CompileResult 等编译类型独立目录
+  - utils/dom-path.ts：findByPath 运行时 DOM 工具独立目录
+  - compilePendingTemplate 删除（消费者改为 CompileEngine.compile() + 自行装配）
+- ✅ EventEngine 统一事件引擎（原 DelegatedEventEngine 重命名 + 扩展）
+  - compileTplEvents / bindDelegatedEvents / handleDelegatedEvent 统一入口
+- ✅ TemplateRegistrar 模板注册器（唯一注册生态，替代 ComponentRegistrar）
+  - 懒编译：get() 时触发编译，编译产物缓存
+  - RegistryHub.use(TemplateRegistrar.getInstance()) 自动注册
+- ✅ ComponentRegistrar 移除（消费者迁移到内部映射表或直接 import）
+  - ItemGroupBaseComponent → 内部 ITEM_TYPE_MAP
+  - TabsComponent → 内部 CONTENT_TYPE_MAP
+  - OverlayDispatchCenter → 内部 OVERLAY_TYPE_MAP
+  - MenuItemManageAbility → 直接 import MenuItemComponent
+  - OverflowMenuComponent → 直接 import MenuComponent
+  - EventEngine → 从组件类静态属性读取 defaultEventData
+- ✅ Component.ts 重构：所有组件直接 extends Component
+  - 实例属性声明：type / floats / drags / animation
+  - static 声明：tpl / events / use / replaceTpl
+  - static compile()：显式编译，三种模式（全编译/派生/继承）
+  - static create()：工厂方法
+  - constructor(props) 调 RuntimeEngine.init
+  - WeakMap 缓存编译产物
+- ✅ RuntimeEngine 双模式适配
+  - 新模式：instance.type / instance.floats / instance.drags 直接可用
+  - 新模式：生命周期钩子直接调用（onInitState/onBeforeInit/onAfterInit）
+  - 旧模式：overrideQueue 兼容
+  - Pipeline 拆分为 MOUNT/FILL/INSTANTIATE/FINALIZE 四阶段
+- ✅ ButtonComponent 迁移为 Direct Extends 模式
+  - class ButtonComponent extends Component + 实例属性 + static 声明
+  - 删除 body 对象，方法直接写在 class 里
+- ✅ TemplateFactory 旧模式构造函数改为 super(props) 避免双重初始化
+- ✅ 删除文件：ComponentRegistrar.ts / ComponentTypes.ts / TemplateComponent.ts / template-presets.ts
+- ✅ index.ts 重写导出：CompileEngine / EventEngine / TemplateRegistrar / RuntimeEngine
+
 ### 2026-07-26
 - ✅ SystemAbility 注入 TemplateComponent：所有组件可通过 this.i18nConfig() / this.systemConfig() 访问
 - ✅ FormFieldComponent 移除私有 getI18nUiConfig，改用 this.i18nConfig()?.ui 获取 i18n UI 配置

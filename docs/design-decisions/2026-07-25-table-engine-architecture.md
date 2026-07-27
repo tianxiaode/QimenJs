@@ -1,7 +1,7 @@
 # Table 引擎架构设计决策
 
 > 日期：2026-07-25
-> 状态：当前有效
+> 状态：**部分过时** — 决策 1（五引擎分离）和决策 3（WeakMap 缓存）中的"引擎动态生成类"模式已过时，改为组件模式（见 2026-07-27-compile-engine-refactoring.md）。决策 2/4/5/6 仍有效。
 
 ## 决策 1：五引擎分离，同源消费 ColumnDef[]
 
@@ -12,12 +12,16 @@
 ```
 ColumnDef[]
     │
-    ├── HeaderEngine.compile(mgr)        → HeaderComponent
-    ├── RowEngine.compile(mgr)           → RowComponent
-    ├── EditOverlayEngine.compile(mgr)   → EditOverlayComponent
-    ├── GroupSummaryEngine.compile(mgr)  → GroupSummaryComponent
-    └── TableSummaryEngine.compile(mgr)  → TableSummaryComponent
+    ├── HeaderEngine.compile(mgr)        → headerTpl → HeaderComponent
+    ├── RowEngine.compile(mgr)           → rowTpl    → RowComponent
+    ├── EditOverlayEngine.compile(mgr)   → editTpl   → EditOverlayComponent
+    ├── GroupSummaryEngine.compile(mgr)  → summaryTpl → GroupSummaryComponent
+    └── TableSummaryEngine.compile(mgr)  → totalTpl   → TableSummaryComponent
 ```
+
+> **注意**：引擎现在只负责生成模板（tpl），不再动态生成类。
+> 组件类（RowComponent 等）是预定义的，引擎产出的 tpl 作为参数注入。
+> 详见 [2026-07-27-compile-engine-refactoring.md](./2026-07-27-compile-engine-refactoring.md)
 
 **理由**：
 - 单一职责，逻辑链路清晰

@@ -1,7 +1,7 @@
 # Direct Extends 组件模式重构
 
 > 日期：2026-07-27
-> 状态：已决定，待实施
+> 状态：已决定，实施中
 
 ## 1. 背景
 
@@ -14,7 +14,7 @@
 
 ## 2. 决策
 
-### 组件直接 extends TemplateComponent，body 彻底消除
+### 组件直接 extends TemplateComponent，声明式定义 + 显式 compile()
 
 ```ts
 // 之前
@@ -30,9 +30,21 @@ export let ButtonComponent = Component.withTemplate({
 
 // 之后
 class ButtonComponent extends TemplateComponent {
-    static type = 'Button';
+    type = 'Button';
+
+    static tpl = {
+        tag: 'div', cls: 'q-button',
+        children: [
+            { tag: 'i', name: 'icon', cls: 'q-button__icon' },
+            { tag: 'span', name: 'text', cls: 'q-button__text' },
+            { tag: 'i', name: 'dropIcon', cls: 'q-expand-arrow ...', hidden: true },
+        ],
+    };
+    static events = { '': { click: { emits: ['click'] } } };
+    static use = [SizeAbility];
 
     onAfterInit(props?: ButtonProps): void {
+        this.initSize();
         this.update(props);
     }
 
@@ -42,83 +54,81 @@ class ButtonComponent extends TemplateComponent {
         this.size = props?.size || 'md';
     }
 }
-
-ButtonComponent
-    .withTemplate({ tpl, tplEvents })
-    .with([SizeAbility]);
+ButtonComponent.compile();
 ```
 
 ### 核心原则
 
 1. **具名 class**：组件是具名类，不是匿名 InnerClass
-2. **body 消除**：方法直接写在 class 里，元数据用 static 字段
+2. **body 消除**：方法直接写在 class 里，元数据按归属分布
 3. **原生继承**：方法/逻辑派生用 `extends`，super() 自然调用，overrides/BodyMerger 删除
-4. **replace 保留**：模板派生（tplReplaces/nodeOverrides/cls）仍用 `replace()`，与 extends 正交
-5. **withTemplate/with/replace 内置为 static**：在 TemplateComponent 上定义，子类直接调用
+4. **声明式定义**：tpl/events/use/replaceTpl 全部在类内 static 声明
+5. **显式 compile()**：类定义后调 `Xxx.compile()` 触发预编译，框架组件全部预编译
+6. **两条腿走路**：预编译型调 compile()，运行时型不调（引擎现场遍历 tpl）
 
-## 3. 新 API 设计
+## 3. 元数据归属
 
-### 3.1 TemplateComponent 新增 static 方法
+body 中每个字段按语义归到最自然的位置，**不设 static config**：
+
+| 原 body 字段 | 新归属 | 理由 |
+|-------------|--------|------|
+| `type` | 实例属性 `type = 'Button'` | 组件类型标识，实例级，注册靠 `register('button', Cls)` |
+| `entityKey` | 实例属性，运行时从 props 传入 | 声明"我要发实体事件"，同一类不同实例 key 不同 |
+| `eventKey` | 实例属性，运行时从 props 传入 | 声明"我要发桥接事件"，同 entityKey |
+| `forwards` | `static tpl` 内 `forwards` 字段 | 预编译生成 getter/setter，属于模板结构 |
+| `floats` | 实例属性，运行时从 props 传入 | tooltip 等运行时能力，按实例配置 |
+| `drags` | 实例属性，运行时从 props 传入 | 拖放运行时能力 |
+| `animation` | 实例属性，运行时从 props 传入 | 动画运行时能力 |
+| `nodes` | 合并进 `static replaceTpl` | 本质是节点替换/覆盖，模板层的事 |
+| `overrides` | **删除** | 原生 super 替代 |
+| `replaces` | **删除** | 原生 super 替代 |
+
+### 类内三区
 
 ```ts
-class TemplateComponent extends ComposableBase {
-    // ... 现有实例属性和方法 ...
+class XxxComponent extends TemplateComponent {
+    // ── 实例属性（运行时配置）──
+    type = 'Xxx';
 
-    /**
-     * 编译模板并注入到类静态属性
-     *
-     * 不创建新类，只编译 tpl → 挂 _cache/_nodeMetas → 生成子节点属性 → 编译 tplEvents
-     * 返回 this（类本身），支持链式调用
-     */
-    static withTemplate(this: any, templates: { tpl: TplNode; tplEvents?: TplEvents }): any {
-        const { cache, nodeMetas } = TemplateCompiler.compile(templates.tpl, this);
+    // ── static 声明（模板 + 能力）──
+    static tpl = { ... };
+    static events = { ... };
+    static use = [SomeAbility];
+    // 或派生时：
+    static replaceTpl = { cls: '...', nodeOverrides: { ... } };
 
-        this._tpl = templates.tpl;
+    // ── 方法（逻辑）──
+    onAfterInit(props) { ... }
+    update(props) { ... }
+}
+XxxComponent.compile();
+```
+
+## 4. compile() 实现
+
+```ts
+static compile(this: any): any {
+    // 校验：tpl/events/use/replaceTpl 必须是 static
+    const proto = this.prototype;
+    for (const key of ['tpl', 'events', 'use', 'replaceTpl']) {
+        if (Object.prototype.hasOwnProperty.call(proto, key)) {
+            throw new Error(`${this.name}: ${key} must be static, did you forget 'static'?`);
+        }
+    }
+
+    // 全编译模式：own tpl（遮蔽父类）
+    if (Object.prototype.hasOwnProperty.call(this, 'tpl')) {
+        const { cache, nodeMetas } = TemplateCompiler.compile(this.tpl, this);
+        this._tpl = this.tpl;
         this._cache = cache;
         this._nodeMetas = nodeMetas;
         this._i18nNodes = cache.i18nNodes;
-        this._templateCompiled = true;
-
         applyChildNodeProps(this, nodeMetas, cache.i18nNodes);
-
-        if (templates.tplEvents && Object.keys(templates.tplEvents).length > 0) {
-            this._tplEvents = templates.tplEvents;
-            this._delegatedEventRules = DelegatedEventEngine.compileTplEvents(templates.tplEvents);
-        }
-
-        return this;
     }
 
-    /**
-     * 追加能力，返回 this 支持链式调用
-     */
-    static with(this: any, abilities: AbilityDefinition[]): any {
-        withAbilities(this, abilities);
-        return this;
-    }
-
-    /**
-     * 工厂方法
-     */
-    static create(this: any, props?: Record<string, any>): any {
-        return new this(props);
-    }
-
-    /**
-     * 模板派生 — 基于当前类的编译产物派生新模板
-     *
-     * 只处理模板层面：TemplateDeriver + nodeOverrides + tplEvents 合并 + cls
-     * 不碰 body（body 不存在），不碰方法（方法继承用 extends）
-     * 返回 this（类本身），就地替换编译产物
-     */
-    static replace(this: any, options: {
-        cls?: string;
-        itemsCls?: string;
-        nodeOverrides?: Record<string, Record<string, any>>;
-        tplReplaces?: Record<string, TplNode>;
-        tplEvents?: TplEvents;
-    }): any {
-        const { cls, itemsCls, nodeOverrides, tplReplaces, tplEvents } = options;
+    // 派生模式：replaceTpl（基于继承的 _cache 派生）
+    if (this.replaceTpl) {
+        const { cls, itemsCls, nodeOverrides, tplReplaces } = this.replaceTpl;
         const hasTplReplaces = tplReplaces && Object.keys(tplReplaces).length > 0;
 
         let cache, nodeMetas;
@@ -126,90 +136,99 @@ class TemplateComponent extends ComposableBase {
             ({ cache, nodeMetas } = TemplateDeriver.deriveWithTplReplaces(
                 this._cache, this._nodeMetas, tplReplaces, nodeOverrides, this
             ));
-        } else {
+        } else if (nodeOverrides && Object.keys(nodeOverrides).length > 0) {
             ({ cache, nodeMetas } = TemplateDeriver.derive(
                 this._cache, this._nodeMetas, nodeOverrides
             ));
         }
 
-        this._cache = cache;
-        this._nodeMetas = nodeMetas;
-        this._i18nNodes = cache.i18nNodes;
-
-        if (hasTplReplaces) {
+        if (cache) {
+            this._cache = cache;
+            this._nodeMetas = nodeMetas;
+            this._i18nNodes = cache.i18nNodes;
             applyChildNodeProps(this, nodeMetas, cache.i18nNodes);
         }
 
-        if (tplEvents) {
-            const merged = mergeTplEvents(this._tplEvents, tplEvents);
-            this._tplEvents = merged;
-            this._delegatedEventRules = DelegatedEventEngine.compileTplEvents(merged);
+        // cls/itemsCls → _nodes
+        if (cls || itemsCls) {
+            const nodesConfig: Record<string, any> = this._nodes ? { ...this._nodes } : {};
+            if (cls) nodesConfig.root = { ...(nodesConfig.root || {}), addCls: cls };
+            if (itemsCls) nodesConfig.itemContainer = { ...(nodesConfig.itemContainer || {}), addCls: itemsCls };
+            this._nodes = nodesConfig;
         }
-
-        if (cls) {
-            this._nodes = { ...(this._nodes || {}), root: { addCls: cls } };
-        }
-        if (itemsCls) {
-            this._nodes = { ...(this._nodes || {}), itemContainer: { addCls: itemsCls } };
-        }
-
-        return this;
     }
+
+    // 继承模式：无 own tpl 也无 replaceTpl → 复用父类编译产物
+
+    // 编译 events（与父类 _tplEvents 合并）
+    if (this.events) {
+        const parentEvents = this._tplEvents;
+        const merged = parentEvents ? mergeTplEvents(parentEvents, this.events) : this.events;
+        this._tplEvents = merged;
+        this._delegatedEventRules = DelegatedEventEngine.compileTplEvents(merged);
+    }
+
+    // 注入能力
+    if (this.use) {
+        withAbilities(this, this.use);
+    }
+
+    this._compiled = true;
+    this._templateCompiled = true;
+    return this;
 }
 ```
 
-### 3.2 元数据用 static 字段
+### 三种编译模式
 
-body 中所有结构性数据改为 static 字段：
+| 模式 | 触发条件 | 行为 |
+|------|---------|------|
+| 全编译 | `this.hasOwnProperty('tpl')` | 编译 own tpl，遮蔽父类 |
+| 派生 | `this.replaceTpl` 存在 | 基于继承的 _cache 派生 |
+| 继承 | 两者皆无 | 复用父类编译产物，零开销 |
 
-| 原 body 字段 | 新写法 | 引擎读取位置（不变） |
-|-------------|--------|-------------------|
-| `body.type` | `static type = 'Button'` | `ctor.type` |
-| `body.entityKey` | `static entityKey = 'btn'` | `ctor.entityKey` |
-| `body.eventKey` | `static eventKey = 'btn'` | `ctor.eventKey` |
-| `body.forwards` | `static _forwards = { title: 'header.title' }` | `ctor._forwards` |
-| `body.floats` | `static _floats = [...]` | `ctor._floats` |
-| `body.drags` | `static _drags = [...]` | `ctor._drags` |
-| `body.animation` | `static _animation = {...}` | `ctor._animation` |
-| `body.nodes` | `static _nodes = { root: { addCls: '...' } }` | `ctor._nodes` |
-| `body.overrides` | **删除** | 原生 super 替代 |
-| `body.replaces` | **删除** | 原生 super 替代 |
+### static 覆盖机制
 
-### 3.3 派生：extends 管方法，replace 管模板
+JS static 属性通过原型链继承：
+- 子类定义 `static tpl` → 创建 own property，**遮蔽**父类 tpl（全编译模式）
+- 子类定义 `static replaceTpl` → 不同属性名，不遮蔽父类 tpl（派生模式）
+- `compile()` 写 `this._cache = ...` → 在子类自身创建 own property，**不污染**父类
 
-**extends 和 replace 正交**：
-- `extends` — 方法/逻辑继承，super() 自然调用
-- `replace` — 模板派生（nodeOverrides/tplReplaces/cls），就地替换编译产物
+## 5. 派生示例
 
 ```ts
 // 场景1：只改方法，模板不变 — 纯 extends
 class DropdownButton extends ButtonComponent {
-    static type = 'Dropdown';
+    type = 'Dropdown';
     onAfterInit(props) { super.onAfterInit(props); this._initDropdown(); }
 }
-// 无需调 replace，继承父类模板
+DropdownButton.compile(); // 继承模式，复用父类编译产物
 
-// 场景2：方法 + 模板都要改 — extends + replace
+// 场景2：方法 + 模板都要改 — extends + replaceTpl
 class ButtonGroupComponent extends ItemGroupPooledComponent {
-    static type = 'ButtonGroup';
+    type = 'ButtonGroup';
+    static replaceTpl = {
+        cls: 'q-button-group',
+        itemsCls: 'q-button-group__items',
+    };
+    static events = {
+        itemContainer: { $items: { Toggle: { toggle: { emits: ['toggle'] } } } },
+    };
     onAfterInit(props) { super.onAfterInit(props); this._initGroup(); }
 }
-ButtonGroupComponent.replace({
-    cls: 'q-button-group',
-    itemsCls: 'q-button-group__items',
-    tplEvents: { itemContainer: { $items: { Toggle: { toggle: { emits: ['toggle'] } } } } },
-});
+ButtonGroupComponent.compile(); // 派生模式
 
-// 场景3：只改模板，方法不变 — 纯 replace
-CustomDialogComponent.replace({
-    nodeOverrides: { header: { type: CustomHeaderComponent } },
-    tplReplaces: { body: { tag: 'div', cls: 'custom-body' } },
-});
+// 场景3：只改模板，方法不变 — 纯 replaceTpl
+class CustomDialogComponent extends DialogComponent {
+    static replaceTpl = {
+        nodeOverrides: { header: { type: CustomHeaderComponent } },
+        tplReplaces: { body: { tag: 'div', cls: 'custom-body' } },
+    };
+}
+CustomDialogComponent.compile();
 ```
 
-**replace 不再创建新类**，就地修改当前类的 `_cache/_nodeMetas/_tplEvents`，返回 this 支持链式。
-
-### 3.4 构造函数
+## 6. 构造函数
 
 TemplateComponent 基类构造函数统一处理初始化：
 
@@ -222,29 +241,46 @@ class TemplateComponent extends ComposableBase {
 }
 ```
 
-子类**不需要写 constructor**，除非有特殊初始化需求：
+子类**不需要写 constructor**，除非有特殊初始化需求。
+
+## 7. RuntimeEngine 适配
+
+### 双模式过渡
+
+迁移期间 RuntimeEngine 同时支持新旧两种模式：
 
 ```ts
-class ButtonComponent extends TemplateComponent {
-    // 不写 constructor → 自动走 TemplateComponent 构造函数
-    // ...
-}
+// type：新模式读实例属性，旧模式读 ctor.type
+instance.type = instance.type ?? ctor.type;
 
-class SpecialComponent extends TemplateComponent {
-    constructor(props?: any) {
-        super(props);  // 显式传递
-        // 额外初始化
-    }
+// floats/drags：新模式读实例属性，旧模式读 ctor._floats / ctor._drags
+const floats = instance.floats ?? ctor._floats;
+const drags = instance.drags ?? ctor._drags;
+
+// 生命周期钩子：新模式直接调用，旧模式走 overrideQueue
+if (ctor._compiled) {
+    // 新模式：直接调用实例方法（原生 super 链）
+    instance.onInitState?.();
+} else {
+    // 旧模式：overrideQueue
+    executeOverrideQueue(instance, 'onInitState');
 }
 ```
 
-## 4. 可删除的代码
+### 最终状态（旧模式删除后）
+
+- `instance.type` 直接可用（实例属性）
+- `instance.floats` / `instance.drags` 直接可用
+- 生命周期钩子直接调用，无 overrideQueue
+- `ctor._cache` / `ctor._nodeMetas` / `ctor._tplEvents` 不变
+
+## 8. 可删除的代码
 
 | 模块/函数 | 原因 |
 |----------|------|
-| `Component` 类 | 工厂层不再需要，withTemplate/with/replace 移入 TemplateComponent |
+| `Component` 类 | 工厂层不再需要 |
 | `createInnerClass` | 不再创建匿名内部类 |
-| `createDerivedInnerClass` | replace 不再创建新类，就地修改编译产物 |
+| `createDerivedInnerClass` | replaceTpl 在 compile() 中处理 |
 | `applyBodyToClass` | body 不存在，方法直接在 class 里 |
 | `BodyMerger` | body 不存在，无需合并 |
 | `collectOverrideHooks` | 原生 super 替代 |
@@ -253,84 +289,65 @@ class SpecialComponent extends TemplateComponent {
 | `validateBodyKey` | body 不存在 |
 | `BODY_SPECIAL_KEYS` | body 不存在 |
 | `extractBodyFromOptions` | replace 不再从 options 提取 body |
-| `attachStaticMethods` | withTemplate/with/replace/create 积入 TemplateComponent |
+| `attachStaticMethods` | compile/create 积入 TemplateComponent |
 
-**保留**：`TemplateCompiler`、`TemplateDeriver`、`DelegatedEventEngine`、`RuntimeEngine`、`applyChildNodeProps` — 这些引擎/工具函数不变。
+**保留**：`TemplateCompiler`、`TemplateDeriver`、`DelegatedEventEngine`、`RuntimeEngine`、`applyChildNodeProps`
 
-## 5. RuntimeEngine 适配
-
-RuntimeEngine.init 读取元数据的位置**完全不变**：
-
-```ts
-// 之前从 InnerClass 静态属性读
-const ctor = instance.constructor;
-ctor._cache      // ← 不变
-ctor._nodeMetas  // ← 不变
-ctor._forwards   // ← 不变
-ctor._floats     // ← 不变
-ctor.type        // ← 不变
-```
-
-唯一变化：`ctor._body` 不再存在。RuntimeEngine 中读 `_body` 的地方需逐个检查，改为读 static 字段或 class 原型。
-
-## 6. 优势总结
+## 9. 优势总结
 
 | 维度 | 之前 | 之后 |
 |------|------|------|
-| 组件定义 | body 对象间接定义 | class 直接定义 |
+| 组件定义 | body 对象间接定义 | class 直接定义，声明内聚 |
 | 类型推导 | 匿名 InnerClass，推导弱 | 具名 class，推导完整 |
 | IDE 支持 | Go to Definition 断 | 完整支持 |
 | 单测 | 必须走 createInnerClass | 直接 new ClassName() |
-| 派生 | replace + BodyMerger + overrides | extends 管方法 + replace 管模板 |
-| 元数据 | body 特殊字段 | static 字段，直觉清晰 |
-| 代码量 | createInnerClass + createDerivedInnerClass + BodyMerger + overrides 机制 ≈ 200行 | 删除，TemplateComponent 新增 withTemplate/with ≈ 30行 |
+| 派生 | replace + BodyMerger + overrides | extends 管方法 + replaceTpl 管模板 |
+| 元数据 | body 特殊字段散落 | 实例属性 + static tpl/events/use，各归各位 |
+| 编译 | 隐式（withTemplate 内） | 显式 compile()，两条腿走路 |
+| 代码量 | createInnerClass + ... ≈ 200行 | 删除，TemplateComponent 新增 compile ≈ 50行 |
 
-## 7. 实施步骤
+## 10. 实施步骤
 
-### Phase 1：TemplateComponent 增加 static 方法
+### Phase 1：TemplateComponent 增加 compile/create + 构造函数
 
-1. 在 TemplateComponent 上实现 `static withTemplate`（编译 + 挂载，不创建新类）
-2. 在 TemplateComponent 上实现 `static with`（链式追加能力）
-3. 在 TemplateComponent 上实现 `static create`（工厂方法）
-4. 在 TemplateComponent 上实现 `static replace`（模板派生，就地替换编译产物）
-5. TemplateComponent 构造函数加入 `RuntimeEngine.init(this, props)`
+1. TemplateComponent 添加 `constructor(props)` 调用 `RuntimeEngine.init(this, props)`
+2. TemplateComponent 添加 `static compile()`
+3. TemplateComponent 添加 `static create()`
+4. TemplateFactory 旧模式构造函数改为 `super(props)` 避免双重初始化
+5. RuntimeEngine 适配双模式（instance.type / instance.floats / 直接调用钩子）
 
-### Phase 2：迁移一个简单组件验证
+### Phase 2：迁移 ButtonComponent
 
-6. 选 ButtonComponent 作为首个迁移目标
-7. 改为 `class ButtonComponent extends TemplateComponent` + static 字段 + `.withTemplate().with()`
-8. 跑通 ButtonComponent 所有单测
-9. 验证 RuntimeEngine.init 流程完整
+6. 改为 `class ButtonComponent extends TemplateComponent` + 实例属性 + static 声明 + `compile()`
+7. 跑通 ButtonComponent 所有单测
 
-### Phase 3：迁移一个 replace 场景验证
+### Phase 3：迁移 ButtonGroupComponent（replace 场景）
 
-10. 选 ButtonGroupComponent（当前用 ItemGroupPooledComponent.replace）作为 replace 验证目标
-11. 改为 `class extends ItemGroupPooledComponent` + `.replace({ cls, itemsCls, tplEvents })`
-12. 跑通 ButtonGroupComponent 所有单测
+8. 改为 `class extends ItemGroupPooledComponent` + `static replaceTpl` + `compile()`
+9. 跑通 ButtonGroupComponent 所有单测
 
 ### Phase 4：迁移所有组件
 
-13. 逐个迁移现有组件（Input、Dialog、Header、Tab 等）
-14. 每迁移一个，跑对应单测
+10. 逐个迁移现有组件
+11. 每迁移一个，跑对应单测
 
 ### Phase 5：清理旧代码
 
-15. 删除 Component 类
-16. 删除 createInnerClass / createDerivedInnerClass
-17. 删除 BodyMerger
-18. 删除 overrides 相关（collectOverrideHooks / wrapOverrideMethodsOnProto / executeOverrideQueue）
-19. 删除 applyBodyToClass / validateBodyKey / BODY_SPECIAL_KEYS
-20. 清理 RuntimeEngine 中对 `_body` 的引用
+12. 删除 Component / createInnerClass / createDerivedInnerClass / BodyMerger / overrides 机制
+13. 删除 applyBodyToClass / validateBodyKey / BODY_SPECIAL_KEYS
+14. RuntimeEngine 移除旧模式分支
 
 ### Phase 6：文档更新
 
-21. 更新 withtemplate-best-practices.md
-22. 更新 ui-component-design.md
-23. 更新 component-core.md
+15. 更新 withtemplate-best-practices.md
+16. 更新 ui-component-design.md
+17. 更新 component-core.md
 
-## 8. 风险与注意事项
+## 11. 风险与注意事项
 
-- **RuntimeEngine.init 中读 `_body` 的地方**：需逐个排查，改为读 static 字段或跳过
-- **replace 就地修改**：replace 不再创建新类，就地修改 `_cache/_nodeMetas`。如果多个派生类基于同一个父类 replace，会互相覆盖。需要确认：replace 是在子类上调还是父类上调？**答案：在子类上调**，子类先 extends 继承方法，再 replace 修改自己的模板，互不影响。
+- **双重初始化**：TemplateComponent 构造函数调 RuntimeEngine.init，旧模式 InnerClass 也有构造函数。需将旧模式改为 `super(props)` 避免双重调用
+- **static 遗漏**：compile() 中校验 `prototype.hasOwnProperty('tpl')` 等，漏写 static 必被抓到
+- **replaceTpl 就地修改**：compile() 写 `this._cache` 在子类自身创建 own property，不污染父类
+- **events 合并**：子类 `static events` 与父类 `_tplEvents` 合并（加法语义），tpl 是替换语义
 - **现有单测**：大量测试基于旧 API，需同步迁移
 - **ComponentRegistrar 注册**：注册逻辑不变，`register('button', ButtonComponent)` 照常

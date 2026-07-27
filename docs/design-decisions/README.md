@@ -37,6 +37,14 @@
 - [2026-07-18-event-driven-dispatch-center-refactoring.md](./2026-07-18-event-driven-dispatch-center-refactoring.md) - 事件驱动调度中心重构
 - [2026-07-26-datetime-picker-design.md](./2026-07-26-datetime-picker-design.md) - 日期时间选择器设计
 - [2026-07-26-toolbar-entity-toolbar-design.md](./2026-07-26-toolbar-entity-toolbar-design.md) - Toolbar + EntityToolbar 工具栏设计
+- [2026-07-27-compile-engine-refactoring.md](./2026-07-27-compile-engine-refactoring.md) - 编译引擎重构 + ComponentRegistrar 移除
+- [2026-07-27-direct-extends-component-pattern.md](./2026-07-27-direct-extends-component-pattern.md) - Direct Extends 组件模式重构
+
+### 部分过时
+
+- [2026-07-25-table-engine-architecture.md](./2026-07-25-table-engine-architecture.md) - Table 引擎架构（决策 1/3 中的引擎动态生成类模式已过时，改为组件模式）
+- [2026-07-11-withtemplate-discussion.md](./2026-07-11-withtemplate-discussion.md) - withTemplate 讨论（已被 Direct Extends 模式替代）
+- [2026-07-11-withtemplate-unified-architecture.md](./2026-07-11-withtemplate-unified-architecture.md) - withTemplate 统一架构（已被 Direct Extends 模式替代）
 
 ### 已过时（旧架构，保留作历史参考）
 

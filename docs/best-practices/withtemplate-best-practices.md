@@ -1,86 +1,140 @@
-# withTemplate 最佳实践
+# 组件定义最佳实践
 
-> 日期：2026-07-23
-> 状态：当前有效
+> 日期：2026-07-27
+> 状态：当前有效（Direct Extends + compile() 模式）
+> 旧模式（withTemplate/with/replace）仍兼容但不再推荐，详见旧版文档
 
-## withTemplate 是什么
+## 组件定义方式
 
-`withTemplate` 是组件系统的核心工厂方法，接收 HTML 模板字符串、JSON 模板数组或 ComponentTemplate 对象，在**类定义时**预编译，生成内部类（InnerComponent），闭包基类（ComponentFactory）保存内部类引用。实例化时根据 `when` 条件选择内部类，返回内部类实例。
+所有组件直接 `extends Component`，通过实例属性声明 type/floats/drags，static 声明 tpl/events/use/replaceTpl，类定义后调 `compile()` 触发预编译。
 
-**为什么用 withTemplate**：
+**为什么用 Direct Extends + compile()**：
 
-1. **性能** — 类定义时预编译（提取节点、生成属性、预编译事件），实例化时纯克隆（cloneNode + 填引用），零字符串处理开销
-2. **类型安全** — 模板声明了什么节点，强类就有什么属性，编译期可检查
-3. **跨平台** — 事件绑定使用 event-dom 规范命名（`tap`/`click`/`input`/`change`），自动适配 pointer/touch/mouse
-4. **统一架构** — 所有组件都是 withTemplate 强类，不需要区分模板组件和 JSON 组件
-5. **多模板支持** — 同一闭包类可关联多个模板，按 `when` 条件选择，零代理
+1. **具名 class** — 组件是具名类，不是匿名 InnerClass，IDE Go to Definition 完整支持
+2. **body 消除** — 方法直接写在 class 里，元数据按归属分布（实例属性 vs static 声明）
+3. **原生继承** — 方法/逻辑派生用 `extends`，`super()` 自然调用，overrides/BodyMerger 删除
+4. **显式 compile()** — 编译时机显式可控，两条腿走路（预编译型调 compile()，运行时型不调）
+5. **性能** — 类定义时预编译（提取节点、生成属性、预编译事件），实例化时纯克隆（cloneNode + 填引用），零字符串处理开销
+6. **类型安全** — 模板声明了什么节点，强类就有什么属性，编译期可检查
+7. **跨平台** — 事件绑定使用 event-dom 规范命名（`tap`/`click`/`input`/`change`），自动适配 pointer/touch/mouse
 
 ## 核心原则
 
-**所有组件都是 withTemplate 强类，没有例外。**
+**所有组件都是 `class extends Component` + 声明式定义 + 显式 compile()，没有例外。**
 
 ## 1. 推荐写法
 
 ```typescript
-import { TemplateComponent } from '@qimenjs/component-core';
-import { HOME_TEMPLATE } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
+import { SizeAbility } from '@qimenjs/system-abilities';
 
-class HomePage extends TemplateComponent.withTemplate(HOME_TEMPLATE) {
-    // static 配置 — 类级别，所有实例共享
-    static children = [
-        { target: 'grid', type: 'grid', columns: [...] },
-    ];
-    static bridges = ['saveBtn:tap', 'cancelBtn:tap'];
+class ButtonComponent extends Component {
+    // ── 实例属性（运行时配置）──
+    type = 'Button';
 
-    // handler — 直接写方法，自动发现
-    onSaveBtnTap(e) { /* 保存逻辑 */ }
-    onCancelBtnTap(e) { /* 取消逻辑 */ }
+    // ── static 声明（模板 + 能力）──
+    static tpl = {
+        tag: 'div', cls: 'q-button',
+        children: [
+            { tag: 'i', name: 'icon', cls: 'q-button__icon' },
+            { tag: 'span', name: 'text', cls: 'q-button__text' },
+            { tag: 'i', name: 'dropIcon', cls: 'q-expand-arrow', hidden: true },
+        ],
+    };
+    static events = {
+        '': { click: { emits: ['click'] } },
+        dropIcon: { click: { emits: ['dropClick'] } },
+    };
+    static use = [SizeAbility];
+
+    // ── 方法（逻辑）──
+    onAfterInit(props?: ButtonProps): void {
+        this.initSize();
+        this.update(props);
+    }
+
+    update(props?: Partial<ButtonProps>): void {
+        if (props?.icon !== undefined) this.icon = props.icon;
+        if (props?.text !== undefined) this.text = props.text;
+        this.size = props?.size || 'md';
+    }
 }
-
-// 实例化 — 不需要 initialize，构造即完整
-const home = new HomePage();
-
-// 动态覆盖 — props 可覆盖 static 配置
-const home2 = new HomePage({ children: [...], data: someData });
+ButtonComponent.compile();
 ```
 
 **要点**：
-- `class Xxx extends TemplateComponent.withTemplate(tpl)` — 模板是类定义的一部分
-- `static children` / `static bridges` — 类级别配置，所有实例共享
-- `onXxx` 方法 — 外部事件自动发现，不需要 handlers 配置映射
-- `new Xxx()` 即完整实例，不需要再调 `initialize()`
-- `new Xxx(props)` 可覆盖 static 配置，满足动态场景
+- `class XxxComponent extends Component` — 具名类，IDE 完整支持
+- 实例属性 `type` — 组件类型标识
+- `static tpl` — 模板定义，编译时处理
+- `static events` — 事件声明，编译时生成委托规则
+- `static use` — 能力注入
+- `XxxComponent.compile()` — 显式触发预编译
+- `XxxComponent.create(props)` — 工厂方法
 
-### 配置优先级
+### 类内三区
 
+```typescript
+class XxxComponent extends Component {
+    // ── 实例属性（运行时配置）──
+    type = 'Xxx';
+    floats = { ... };  // 可选
+    drags = { ... };   // 可选
+
+    // ── static 声明（模板 + 能力）──
+    static tpl = { ... };
+    static events = { ... };
+    static use = [SomeAbility];
+    // 或派生时：
+    static replaceTpl = { cls: '...', nodeOverrides: { ... } };
+
+    // ── 方法（逻辑）──
+    onAfterInit(props) { ... }
+    update(props) { ... }
+}
+XxxComponent.compile();
 ```
-static 属性（类定义时） < props 参数（实例化时）
-```
 
-props 会覆盖同名的 static 配置。children 和 bridges 会浅拷贝，不会污染 static。
+### 三种编译模式
+
+| 模式 | 触发条件 | 行为 |
+|------|---------|------|
+| 全编译 | `this.hasOwnProperty('tpl')` | 编译 own tpl，遮蔽父类 |
+| 派生 | `this.replaceTpl` 存在 | 基于继承的 _cache 派生 |
+| 继承 | 两者皆无 | 复用父类编译产物，零开销 |
 
 ## 2. 基础组件定义
 
 ```typescript
-// Button.ts
-import { TemplateComponent } from '@qimenjs/component-core';
-import { BUTTON_TEMPLATE } from '@qimenjs/component-core';
+class ButtonComponent extends Component {
+    type = 'Button';
 
-class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
-    static readonly abilities = [ContentAbility, ClickAbility, DisableAbility, LoadingAbility, SizeAbility];
-    static readonly elTag = 'button';
+    static tpl = {
+        tag: 'div', cls: 'q-button',
+        children: [
+            { tag: 'i', name: 'icon', cls: 'q-button__icon' },
+            { tag: 'span', name: 'text', cls: 'q-button__text' },
+        ],
+    };
+    static events = { '': { click: { emits: ['click'] } } };
+    static use = [SizeAbility];
 
-    // 内部事件 — data-event 声明，handler 名自动推导
-    onClick(e) {
-        // 按钮点击逻辑
+    onAfterInit(props?: ButtonProps): void {
+        this.initSize();
+        this.update(props);
+    }
+
+    update(props?: Partial<ButtonProps>): void {
+        if (props?.icon !== undefined) this.icon = props.icon;
+        if (props?.text !== undefined) this.text = props.text;
     }
 }
+ButtonComponent.compile();
 ```
 
 **要点**：
-- 模板从 `@qimenjs/component-core` 导入，不在组件文件中定义
-- `data-content` 声明节点，自动生成同名属性（`this.text`、`this.icon`）
-- `data-event` 声明内部事件，handler 名自动推导（`onClick`）
+- 模板、事件、能力全部在类内 static 声明
+- 方法直接写在 class 里，无需 body 对象
+- `compile()` 后类即完整可用
 
 ## 3. 页面组件定义
 
@@ -170,24 +224,51 @@ for (const item of items) {
 - 不同行模板生成不同强类，互不干扰
 - `new RowClass({ data: item })` 即完整实例
 
-## 5. 模板替换
+## 5. 模板派生（replaceTpl）
+
+### 场景 1：只改方法，模板不变 — 纯 extends
 
 ```typescript
-// 定义
-export let Button = class extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) {
-    onClick() { ... }
-};
+class DropdownButton extends ButtonComponent {
+    type = 'Dropdown';
+    onAfterInit(props) { super.onAfterInit(props); this._initDropdown(); }
+}
+DropdownButton.compile(); // 继承模式，复用父类编译产物
+```
 
-// 替换 — 直接从 TemplateComponent 重新生成
-Button = class extends TemplateComponent.withTemplate(CUSTOM_BUTTON_TEMPLATE) {
-    onClick() { ... }
-};
+### 场景 2：方法 + 模板都要改 — extends + replaceTpl
+
+```typescript
+class ButtonGroupComponent extends ItemGroupPooledComponent {
+    type = 'ButtonGroup';
+    static replaceTpl = {
+        cls: 'q-button-group',
+        itemsCls: 'q-button-group__items',
+    };
+    static events = {
+        itemContainer: { $items: { Toggle: { toggle: { emits: ['toggle'] } } } },
+    };
+    onAfterInit(props) { super.onAfterInit(props); this._initGroup(); }
+}
+ButtonGroupComponent.compile(); // 派生模式
+```
+
+### 场景 3：只改模板，方法不变 — 纯 replaceTpl
+
+```typescript
+class CustomDialogComponent extends DialogComponent {
+    static replaceTpl = {
+        nodeOverrides: { header: { type: CustomHeaderComponent } },
+        tplReplaces: { body: { tag: 'div', cls: 'custom-body' } },
+    };
+}
+CustomDialogComponent.compile();
 ```
 
 **要点**：
-- 每次都是从 TemplateComponent 出发生成全新强类
-- 方法手动重新声明
-- 已有实例不受影响，后续实例化用新模板
+- `extends` 管方法/逻辑继承，`replaceTpl` 管模板派生，两者正交
+- `replaceTpl` 不创建新类，就地替换编译产物
+- `compile()` 写 `this._cache` 在子类自身创建 own property，不污染父类
 
 ## 6. 事件处理
 
@@ -882,123 +963,132 @@ body 是组合定义层，引用自己的组件树结构不算破坏封装。中
 
 ## 18. ItemGroup 派生组件
 
-ItemGroupComponent 是子项管理的基座，领域组件通过 `replace` 派生，固化 itemType、defaultItem 和选择行为：
+ItemGroupComponent 是子项管理的基座，领域组件通过 `extends` + `replaceTpl` 派生，固化 itemType、defaultItem 和选择行为：
 
 ```typescript
 // TabBar — 标签栏（单选，池化复用）
-export let TabBarComponent = ItemGroupComponent.replace({
-    type: 'TabBar',
-    cls: 'q-tab-bar',
-    itemsCls: 'q-tab-bar__items',
-    config: {
-        direction: 'horizontal',
-        gap: '0',
-        itemType: 'Toggle',
-        itemDestroy: false,
-        defaultItem: { events: { toggle: { bridges: ['toggle'] } } },
-    },
-    body: {
-        onAfterInit(props) {
-            this.on('toggle', (data) => this._onItemToggle(data));
-        },
-        selectAt(index, silent = false) { ... },
-    },
-});
+class TabBarComponent extends ItemGroupPooledComponent {
+    type = 'TabBar';
+    static replaceTpl = {
+        cls: 'q-tab-bar',
+        itemsCls: 'q-tab-bar__items',
+    };
+    static events = {
+        itemContainer: { $items: { Toggle: { toggle: { emits: ['toggle'] } } } },
+    };
+
+    onAfterInit(props) {
+        super.onAfterInit(props);
+        this.on('toggle', (data) => this._onItemToggle(data));
+    }
+
+    selectAt(index, silent = false) { ... }
+}
+TabBarComponent.compile();
 
 // Menu — 菜单（垂直，分隔符不适合池化）
-export let MenuComponent = ItemGroupComponent.replace({
-    type: 'Menu',
-    cls: 'q-menu',
-    itemsCls: 'q-menu__content',
-    config: {
-        direction: 'vertical',
-        itemType: 'MenuItem',
-        defaultItem: { events: { click: { bridges: ['click'] }, select: { bridges: ['select'] } } },
-    },
-    body: { ... },
-});
-
-// Toolbar — 工具栏（异质子项，Map 形式 defaultItem）
-export let ToolbarComponent = ItemGroupComponent.replace({
-    type: 'Toolbar',
-    cls: 'q-toolbar',
-    itemsCls: 'q-toolbar__items',
-    config: {
-        direction: 'horizontal',
-        gap: '4px',
-        defaultItem: {
-            button: { events: { click: { bridges: ['click'] } } },
-            input:  { events: { input: { bridges: ['input'] } } },
-        },
-    },
-    body: {},
-});
+class MenuComponent extends ItemGroupPooledComponent {
+    type = 'Menu';
+    static replaceTpl = {
+        cls: 'q-menu',
+        itemsCls: 'q-menu__content',
+    };
+    static events = {
+        itemContainer: { $items: { MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } } } },
+    };
+    // ...
+}
+MenuComponent.compile();
 ```
 
 派生组件复用池化、事件转发、溢出处理，零手动 DOM。详见 [ItemGroup 最佳实践](./itemgroup-best-practices.md)。
 
 ## 19. 组件定义模式
 
-### 18.1 body 定义（推荐）
+### 19.1 Direct Extends + compile()（推荐，新模式）
 
-所有逻辑归入 body，不使用 class extends 扩展层。body 方法中使用 `const self = this as any` 访问能力注入的方法和属性：
-
-```typescript
-export let MyComponent = TemplateComponent.withTemplate({
-    tpl: { ... },
-    body: {
-        type: 'MyComponent',
-        _state: null,
-        _initMyComponent(props) {
-            const self = this as any;
-            self.emit('ready');
-        },
-        get state() {
-            const self = this as any;
-            return self._state;
-        },
-        doSomething() {
-            const self = this as any;
-            self.setNodeCls('active', 'root');
-        },
-        onBeforeDispose() {
-            const self = this as any;
-            self._cleanup();
-        },
-        onDisposed() {
-            // dispose 完成后的回调
-        },
-    },
-});
-```
-
-> **`const self = this as any` 模式**：withAbilities 将能力方法注入到类原型上，TypeScript 无法通过 body 对象字面量的类型推断感知这些方法。使用 `self` 局部变量避免箭头函数中 `this` 丢失，`as any` 绕过类型检查。
-
-### 18.2 replace 派生（ItemGroup 领域扩展）
-
-从 ItemGroupComponent 通过 `replace` 派生，固化领域逻辑：
+所有逻辑直接写在 class 里，无需 body 对象：
 
 ```typescript
-export let MyGroupComponent = ItemGroupComponent.replace({
-    type: 'MyGroup',
-    cls: 'q-my-group',
-    config: {
-        itemType: 'MyItem',
-        defaultItem: { events: { click: { bridges: ['click'] } } },
-    },
-    body: {
-        selectAt(index) { ... },
-    },
-});
+class MyComponent extends Component {
+    type = 'MyComponent';
+
+    static tpl = { tag: 'div', cls: 'q-my', children: [...] };
+    static events = { '': { click: { emits: ['click'] } } };
+    static use = [SomeAbility];
+
+    onAfterInit(props) {
+        this.emit('ready');
+    }
+
+    doSomething() {
+        this.setNodeCls('active', 'root');
+    }
+
+    onBeforeDispose() {
+        this._cleanup();
+    }
+}
+MyComponent.compile();
 ```
 
-### 18.3 语义别名
+**优势**：
+- 具名 class，IDE Go to Definition 完整支持
+- 方法直接在 class 里，无需 `const self = this as any`
+- 原生 `extends` + `super()` 替代 overrides/BodyMerger
+- 编译时机显式可控
+
+### 19.2 replaceTpl 派生（ItemGroup 领域扩展）
+
+从 ItemGroupComponent 通过 `extends` + `replaceTpl` 派生：
+
+```typescript
+class MyGroupComponent extends ItemGroupPooledComponent {
+    type = 'MyGroup';
+    static replaceTpl = {
+        cls: 'q-my-group',
+        itemsCls: 'q-my-group__items',
+    };
+    static events = {
+        itemContainer: { $items: { MyItem: { click: { emits: ['click'] } } } },
+    };
+
+    selectAt(index) { ... }
+}
+MyGroupComponent.compile();
+```
+
+### 19.3 语义别名
 
 无独立实现的组件，直接引用已有组件：
 
 ```typescript
 export const DropdownComponent = ButtonComponent;
 ```
+
+### 19.4 body 定义（旧模式，兼容但不再推荐）
+
+> ⚠️ 旧模式仍兼容，但新组件应使用 Direct Extends 模式
+
+```typescript
+export let MyComponent = Component.withTemplate({
+    tpl: { ... },
+    body: {
+        type: 'MyComponent',
+        _state: null,
+        onAfterInit(props) {
+            const self = this as any;
+            self.emit('ready');
+        },
+        doSomething() {
+            const self = this as any;
+            self.setNodeCls('active', 'root');
+        },
+    },
+});
+```
+
+> **`const self = this as any` 模式**：withAbilities 将能力方法注入到类原型上，TypeScript 无法通过 body 对象字面量的类型推断感知这些方法。Direct Extends 模式下无需此模式。
 
 ## 20. 模板片段（TplFragment）
 
