@@ -6,3 +6,7 @@ export * from './tpl-node-types';
 export * from './component-template';
 export * from './compiled-types';
 export * from './template-registrar';
+export * from './compile-engine-types';
+export * from './template-constants';
+export * from './init-context';
+export * from './node-map-manager-types';

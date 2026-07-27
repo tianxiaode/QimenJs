@@ -1,0 +1,129 @@
+ts-jest[config] (WARN) 
+    The "ts-jest" config option "isolatedModules" is deprecated and will be removed in v30.0.0. Please use "isolatedModules: true" in D:/Workspace/projects/QimenJs/tsconfig.json instead, see https://www.typescriptlang.org/tsconfig/#isolatedModules
+  
+FAIL test/unit/component-core/engine/CompileEngine.test.ts
+  CompileEngine
+    compile
+      脳 杩斿洖 CompileResult 缁撴瀯 (7 ms)
+      鈭?fragment 妯℃澘鍏堝睍寮€鍐嶇紪璇?(1 ms)
+      鈭?skeletonPaths 鍖呭惈鍦?cache 涓?(1 ms)
+    expandFragments
+      鈭?鏃?fragment 鏃跺師鏍疯繑鍥烇紙娴呭鍒讹級 (1 ms)
+      鈭?灞曞紑 fragment 涓?children
+      脳 閫掑綊灞曞紑宓屽 fragment
+      鈭?宸叉湁 children 鏃堕€掑綊灞曞紑瀛愯妭鐐?      鈭?ns 鍓嶇紑杩藉姞鍒?name
+      鈭?鏃?name 鏃?ns 涓嶈拷鍔犲墠缂€
+    compileTemplate
+      脳 缂栬瘧绠€鍗曟ā鏉跨敓鎴?html + indexPath + nodeMetas
+      鈭?void 鏍囩鐢熸垚鑷棴鍚?html
+      鈭?type 鑺傜偣鐢熸垚楠ㄦ灦鍗犱綅 div
+      鈭?type 涓哄瓧绗︿覆鏃朵粠 window 瑙ｆ瀽 componentClass
+      鈭?type 涓洪潪鍑芥暟闈炲瓧绗︿覆鏃?componentClass 涓嶈缃?      鈭?skeleton 鑺傜偣璁板綍 skeletonPaths (1 ms)
+      鈭?鏍硅妭鐐?skeleton 璁板綍 skeletonPaths
+      鈭?i18n 鑺傜偣鏀堕泦鍒?i18nNodes
+      鈭?type 鑺傜偣 i18n 涔熸敹闆嗗埌 i18nNodes
+      鈭?contentMode 鎸?tag 鎺ㄥ (1 ms)
+      脳 宓屽瓒呰繃3灞傛椂 warn
+      鈭?宓屽涓嶈秴杩?灞傛椂涓?warn
+      鈭?鏃?name 鐨?tag 鑺傜偣涓嶅啓鍏?indexPath/nodeMetas
+      鈭?hidden/hiddenMode/role/attrs 浼犲叆 nodeMetas
+      鈭?flex/grid/style 浼犲叆 nodeMetas
+      脳 鏃?children 鏃?html 涓虹┖鏍囩瀵?      鈭?type 鑺傜偣 initConfig 浼犲叆 nodeMetas
+    compileSubtree
+      鈭?缂栬瘧鍗曡妭鐐瑰瓙鏍?      鈭?缂栬瘧甯﹀瓙鑺傜偣鐨勫瓙鏍?(1 ms)
+  findByPath (dom-path)
+    鈭?鎸夎矾寰勫畾浣嶅瓙鍏冪礌 (1 ms)
+    鈭?璺緞涓嶅瓨鍦ㄨ繑鍥?null (1 ms)
+    鈭?绌鸿矾寰勮繑鍥炴牴鍏冪礌
+  VOID_TAGS (compile-constants)
+    鈭?鍖呭惈鏍囧噯鑷棴鍚堟爣绛?(1 ms)
+    鈭?涓嶅寘鍚櫘閫氭爣绛?
+  鈼?CompileEngine 鈥?compile 鈥?杩斿洖 CompileResult 缁撴瀯
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "<div><span></span></div>"
+    Received: "<span></span>"
+
+      23 |             const result: CompileResult = CompileEngine.compile(tpl);
+      24 |
+    > 25 |             expect(result.cache.html).toBe('<div><span></span></div>');
+         |                                       ^
+      26 |             expect(result.cache.indexPath['root']).toEqual([]);
+      27 |             expect(result.cache.indexPath['text']).toEqual([0]);
+      28 |             expect(result.cache.exposeNames).toContain('text');
+
+      at Object.<anonymous> (test/unit/component-core/engine/CompileEngine.test.ts:25:39)
+
+  鈼?CompileEngine 鈥?expandFragments 鈥?閫掑綊灞曞紑宓屽 fragment
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "outer:inner:deep"
+    Received: undefined
+
+      92 |             const result = CompileEngine.expandFragments(tpl);
+      93 |             expect(result.children).toHaveLength(1);
+    > 94 |             expect(result.children![0].name).toBe('outer:inner:deep');
+         |                                              ^
+      95 |         });
+      96 |
+      97 |         it('宸叉湁 children 鏃堕€掑綊灞曞紑瀛愯妭鐐?, () => {
+
+      at Object.<anonymous> (test/unit/component-core/engine/CompileEngine.test.ts:94:46)
+
+  鈼?CompileEngine 鈥?compileTemplate 鈥?缂栬瘧绠€鍗曟ā鏉跨敓鎴?html + indexPath + nodeMetas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "<div><span></span></div>"
+    Received: "<span></span>"
+
+      131 |             const result = CompileEngine.compileTemplate(tpl, noopLogger);
+      132 |
+    > 133 |             expect(result.html).toBe('<div><span></span></div>');
+          |                                 ^
+      134 |             expect(result.indexPath['root']).toEqual([]);
+      135 |             expect(result.indexPath['text']).toEqual([0]);
+      136 |             expect(result.nodeMetas['root'].tag).toBe('div');
+
+      at Object.<anonymous> (test/unit/component-core/engine/CompileEngine.test.ts:133:33)
+
+  鈼?CompileEngine 鈥?compileTemplate 鈥?宓屽瓒呰繃3灞傛椂 warn
+
+    expect(jest.fn()).toHaveBeenCalled()
+
+    Expected number of calls: >= 1
+    Received number of calls:    0
+
+      257 |             CompileEngine.compileTemplate(tpl, { warn });
+      258 |
+    > 259 |             expect(warn).toHaveBeenCalled();
+          |                          ^
+      260 |         });
+      261 |
+      262 |         it('宓屽涓嶈秴杩?灞傛椂涓?warn', () => {
+
+      at Object.<anonymous> (test/unit/component-core/engine/CompileEngine.test.ts:259:26)
+
+  鈼?CompileEngine 鈥?compileTemplate 鈥?鏃?children 鏃?html 涓虹┖鏍囩瀵?
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "<div></div>"
+    Received: ""
+
+      327 |             const result = CompileEngine.compileTemplate(tpl, noopLogger);
+      328 |
+    > 329 |             expect(result.html).toBe('<div></div>');
+          |                                 ^
+      330 |         });
+      331 |
+      332 |         it('type 鑺傜偣 initConfig 浼犲叆 nodeMetas', () => {
+
+      at Object.<anonymous> (test/unit/component-core/engine/CompileEngine.test.ts:329:33)
+
+Test Suites: 1 failed, 1 total
+Tests:       5 failed, 28 passed, 33 total
+Snapshots:   0 total
+Time:        0.893 s, estimated 1 s
+Ran all test suites matching /test\\unit\\component-core\\engine\\CompileEngine.test.ts/i.

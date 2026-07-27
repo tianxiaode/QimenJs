@@ -21,7 +21,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { AnimationDecl } from '../types/tpl-body';
-import { ANIMATION_PRESETS } from '../engine/TemplateConstants';
+import { ANIMATION_PRESETS } from '../constants/template-constants';
 
 export const AnimationAbility = {
     get _animDecl(): AnimationDecl | undefined {

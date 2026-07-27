@@ -159,9 +159,6 @@ export interface TplNode {
     /** 隐藏模式：'display' | 'visibility' | 'opacity' */
     hiddenMode?: HiddenMode;
 
-    /** 骨架屏占位 — 编译时提取 path，运行时自动加/减 .q-skeleton 类 */
-    skeleton?: boolean;
-
     // ─── component: 组件专属 ───
 
     /** 子组件初始配置，传入构造函数 */

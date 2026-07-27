@@ -26,7 +26,7 @@
 import type { AbilityDefinition } from '@/composable';
 import { DEFAULT_NODE_PROP_MAP } from '../types';
 import type { NodePropDef } from '../types';
-import { ALIGN_MAP, PACK_MAP } from '../engine/TemplateConstants';
+import { ALIGN_MAP, PACK_MAP } from '../constants/template-constants';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 export const NodePropAbility: AbilityDefinition = {

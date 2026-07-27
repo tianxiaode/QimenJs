@@ -1,4 +1,4 @@
-import { VOID_TAGS } from '@/component-core/engine/TemplateCompiler';
+import { VOID_TAGS } from '@/component-core/constants/compile-constants';
 import {
     ALIGN_MAP,
     PACK_MAP,
@@ -6,7 +6,7 @@ import {
     COMMON_NODE_PROPS,
     RESERVED_KEYS,
     ANIMATION_PRESETS,
-} from '@/component-core/engine/TemplateConstants';
+} from '@/component-core/constants/template-constants';
 
 describe('template-constants', () => {
     it('VOID_TAGS 包含自闭合标签', () => {

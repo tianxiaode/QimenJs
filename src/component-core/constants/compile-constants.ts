@@ -2,6 +2,8 @@
  * compile-constants.ts — 编译引擎常量
  */
 
+export const SKELETON_CLS = 'q-skeleton';
+
 export const VOID_TAGS = new Set([
     'input',
     'img',

@@ -10,40 +10,38 @@
 ### 2026-07-27
 - ✅ CompileEngine 职责收归 + 结构分离
   - CompileEngine.ts 纯编译引擎类，散装函数内聚为静态方法
-  - constants/compile-constants.ts：VOID_TAGS 等编译常量独立目录
+  - constants/compile-constants.ts：VOID_TAGS / SKELETON_CLS 等编译常量独立目录
   - types/compile-engine-types.ts：CompileResult 等编译类型独立目录
   - utils/dom-path.ts：findByPath 运行时 DOM 工具独立目录
-  - compilePendingTemplate 删除（消费者改为 CompileEngine.compile() + 自行装配）
-- ✅ EventEngine 统一事件引擎（原 DelegatedEventEngine 重命名 + 扩展）
-  - compileTplEvents / bindDelegatedEvents / handleDelegatedEvent 统一入口
+  - compilePendingTemplate / compileSubtree 删除（旧 replace 模式遗留）
+- ✅ 骨架屏编译时内化，运行时零开销
+  - type 节点（组件）编译时 HTML 输出 `<div class="q-skeleton"></div>`，cls 元数据含 `q-skeleton`
+  - tag 节点 `skeleton: true` 属性删除（组件天然有骨架，tag 节点不需要）
+  - `skeletonPaths` 从 CompiledTemplateCache / CompileEngine 产物中移除
+  - step-ensure-node-map.ts 运行时骨架逻辑（applySkeletonClasses）删除
+- ✅ step-ensure-node-map.ts 简化
+  - 去掉 ctor 缓存分支（`_cache`/`_nodeMetas`），统一走 TemplateRegistrar.createNodeMapManager()
+  - buildDOM() 不再传 tag，从 nodeMetas root 取 rootTag
+- ✅ NodeMapManager 精简
+  - 删除 appendTo / _replaceWithSubtree / _compileSubtree（旧 replace 模式遗留）
+  - replace() 简化为只接受组件类（TplNode 子树替换已由编译时 tplReplaces 处理）
+  - 新增 rootTag getter，buildDOM() 无参数
+- ✅ ChildNodeProps → ChildNodePropsEngine 引擎化
+  - applyChildNodeProps / buildChildNodePropDescs → ChildNodePropsEngine.apply / buildDescs
+  - 新增 step-setup-node-props.ts 管道步骤
+- ✅ 初始化管道重构
+  - MOUNT_PHASE: [ensureNodeMap, setupNodeProps, onInitState, onBeforeInit]
+  - 删除 step-apply-node-configs.ts（依赖已删的 RuntimeEngine）
+- ✅ 删除旧模式遗留文件
+  - EventEngine.ts（DelegatedEventEngine 的旧别名，DelegatedEventEngine.ts 保留）
+  - TemplateFactory.ts / TemplateDeriver.ts / BodyMerger.ts
+  - 相关测试：template-factory.test.ts / TemplateDeriver.tplReplaces.test.ts / body-merger.test.ts / compile-bench.test.ts
+- ✅ 类型清理
+  - TplNode / NodeMetadata 删除 skeleton 属性
+  - CompiledTemplateCache 删除 skeletonPaths
+  - INodeMapManager 简化 replace 签名、删除 appendTo、新增 rootTag
+  - tpl-node-def.ts 删除 skeleton 字段定义
 - ✅ TemplateRegistrar 模板注册器（唯一注册生态，替代 ComponentRegistrar）
-  - 懒编译：get() 时触发编译，编译产物缓存
-  - RegistryHub.use(TemplateRegistrar.getInstance()) 自动注册
-- ✅ ComponentRegistrar 移除（消费者迁移到内部映射表或直接 import）
-  - ItemGroupBaseComponent → 内部 ITEM_TYPE_MAP
-  - TabsComponent → 内部 CONTENT_TYPE_MAP
-  - OverlayDispatchCenter → 内部 OVERLAY_TYPE_MAP
-  - MenuItemManageAbility → 直接 import MenuItemComponent
-  - OverflowMenuComponent → 直接 import MenuComponent
-  - EventEngine → 从组件类静态属性读取 defaultEventData
-- ✅ Component.ts 重构：所有组件直接 extends Component
-  - 实例属性声明：type / floats / drags / animation
-  - static 声明：tpl / events / use / replaceTpl
-  - static compile()：显式编译，三种模式（全编译/派生/继承）
-  - static create()：工厂方法
-  - constructor(props) 调 RuntimeEngine.init
-  - WeakMap 缓存编译产物
-- ✅ RuntimeEngine 双模式适配
-  - 新模式：instance.type / instance.floats / instance.drags 直接可用
-  - 新模式：生命周期钩子直接调用（onInitState/onBeforeInit/onAfterInit）
-  - 旧模式：overrideQueue 兼容
-  - Pipeline 拆分为 MOUNT/FILL/INSTANTIATE/FINALIZE 四阶段
-- ✅ ButtonComponent 迁移为 Direct Extends 模式
-  - class ButtonComponent extends Component + 实例属性 + static 声明
-  - 删除 body 对象，方法直接写在 class 里
-- ✅ TemplateFactory 旧模式构造函数改为 super(props) 避免双重初始化
-- ✅ 删除文件：ComponentRegistrar.ts / ComponentTypes.ts / TemplateComponent.ts / template-presets.ts
-- ✅ index.ts 重写导出：CompileEngine / EventEngine / TemplateRegistrar / RuntimeEngine
 
 ### 2026-07-26
 - ✅ SystemAbility 注入 TemplateComponent：所有组件可通过 this.i18nConfig() / this.systemConfig() 访问
@@ -268,11 +266,9 @@
 
 ## 测试状态
 
-### 通过的测试（12 suites / 103 tests）
-- ✅ TemplateConstants — 常量定义
-- ✅ TemplateCompiler — 预编译引擎
-- ✅ ChildNodeProps — 子节点属性自动构建
-- ✅ TemplateFactory — 模板组件工厂（createInnerClass + createDerivedInnerClass）
+### 通过的测试
+- ✅ CompileEngine — 编译引擎（compileTemplate / expandFragments / compileTypeNode / compileTagNode）
+- ✅ ChildNodePropsEngine — 子节点属性引擎（buildDescs / apply）
 - ✅ NodePropAbility — 节点属性读写 + hiddenchange 事件
 - ✅ DelegatedEventEngine — 委托事件引擎（compileTplEvents / containsElement / getTargetItem / handleDelegatedEvent / 嵌套组件 / _dispatchRule / _resolveHandlerName）
 - ✅ CommonPropsAbility — 通用属性
@@ -280,7 +276,6 @@
 - ✅ LifecycleAbility — 生命周期事件（bridgeEmit 传 EventContext）
 - ✅ tpl-body-def — Body 字段定义
 - ✅ common-props — 属性定义
-- ✅ ComponentTypes — 组件类型常量
 
 ## 已知问题
 

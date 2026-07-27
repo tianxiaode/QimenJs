@@ -1,6 +1,8 @@
 /**
- * TemplateConstants — 模板相关常量
+ * template-constants.ts — 模板相关常量
  */
+
+import type { ContentPropDef } from '../types/template-constants';
 
 export const ALIGN_MAP: Record<string, string> = {
     start: 'flex-start',
@@ -16,10 +18,6 @@ export const PACK_MAP: Record<string, string> = {
     between: 'space-between',
     around: 'space-around',
 };
-
-export interface ContentPropDef {
-    nodeProp: string;
-}
 
 export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
     text: [{ nodeProp: 'text' }],
@@ -91,9 +89,3 @@ export const ANIMATION_PRESETS: Record<string, Keyframe[]> = {
         { transform: 'scale(0.9)', opacity: 0 },
     ],
 };
-
-export interface AnimationOptions {
-    duration?: number;
-    easing?: string;
-    fill?: FillMode;
-}

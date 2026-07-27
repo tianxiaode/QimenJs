@@ -22,8 +22,10 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { CompileEngine } from './CompileEngine';
 import { clone } from '@/utils/object/clone';
+import { NodeMapManager } from '../NodeMapManager';
 import type { TplNode } from '../types/tpl-node-types';
 import type { TemplateEntry, CompiledProduct } from '../types/template-registrar';
+import type { INodeMapManager } from '../types/node-map-manager-types';
 
 interface TemplateStorage {
     entries: Map<string, TemplateEntry>;
@@ -68,6 +70,12 @@ export class TemplateRegistrar extends RegistrarBase<TemplateStorage> {
         const { cache, nodeMetas } = CompileEngine.compile(entry.tpl);
         entry.compiled = { cache, nodeMetas };
         return entry.compiled;
+    }
+
+    createNodeMapManager(name: string, owner?: any): INodeMapManager | undefined {
+        const compiled = this.get(name);
+        if (!compiled) return undefined;
+        return new NodeMapManager(compiled.cache, compiled.nodeMetas, owner);
     }
 
     unregister(id: string): void {

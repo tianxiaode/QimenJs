@@ -11,7 +11,7 @@ jest.mock('@/logger', () => ({
 
 import { CompileEngine } from '@/component-core/engine/CompileEngine';
 import type { CompileResult } from '@/component-core/engine/CompileEngine';
-import { VOID_TAGS } from '@/component-core/engine/constants/compile-constants';
+import { VOID_TAGS } from '@/component-core/constants/compile-constants';
 import { findByPath } from '@/component-core/engine/utils/dom-path';
 
 const noopLogger = { warn: () => {} };
@@ -39,13 +39,6 @@ describe('CompileEngine', () => {
             const result = CompileEngine.compile(tpl);
 
             expect(result.cache.indexPath['btn:icon']).toEqual([0]);
-        });
-
-        it('skeletonPaths 包含在 cache 中', () => {
-            const tpl = { tag: 'div', children: [{ tag: 'span', name: 'ghost', skeleton: true }] };
-            const result = CompileEngine.compile(tpl);
-
-            expect(result.cache.skeletonPaths['ghost']).toEqual([0]);
         });
     });
 
@@ -180,21 +173,6 @@ describe('CompileEngine', () => {
 
             expect(result.nodeMetas['widget'].componentClass).toBeUndefined();
             expect(result.nodeMetas['widget'].type).toBeUndefined();
-        });
-
-        it('skeleton 节点记录 skeletonPaths', () => {
-            const tpl = { tag: 'div', children: [{ tag: 'span', name: 'ghost', skeleton: true }] };
-            const result = CompileEngine.compileTemplate(tpl, noopLogger);
-
-            expect(result.skeletonPaths['root']).toBeUndefined();
-            expect(result.skeletonPaths['ghost']).toEqual([0]);
-        });
-
-        it('根节点 skeleton 记录 skeletonPaths', () => {
-            const tpl = { tag: 'div', skeleton: true, children: [] };
-            const result = CompileEngine.compileTemplate(tpl, noopLogger);
-
-            expect(result.skeletonPaths['root']).toEqual([]);
         });
 
         it('i18n 节点收集到 i18nNodes', () => {
@@ -338,25 +316,6 @@ describe('CompileEngine', () => {
             const result = CompileEngine.compileTemplate(tpl, noopLogger);
 
             expect(result.nodeMetas['w'].initConfig).toEqual({ a: 1 });
-        });
-    });
-
-    describe('compileSubtree', () => {
-        it('编译单节点子树', () => {
-            const node = { tag: 'span', name: 'item', cls: 'q-item' };
-            const result = CompileEngine.compileSubtree(node, noopLogger);
-
-            expect(result.html).toBe('<span></span>');
-            expect(result.indexPath['item']).toEqual([]);
-            expect(result.nodeMetas['item'].cls).toBe('q-item');
-        });
-
-        it('编译带子节点的子树', () => {
-            const node = { tag: 'div', name: 'wrap', children: [{ tag: 'span', name: 'inner' }] };
-            const result = CompileEngine.compileSubtree(node, noopLogger);
-
-            expect(result.html).toBe('<div><span></span></div>');
-            expect(result.indexPath['inner']).toEqual([0]);
         });
     });
 });

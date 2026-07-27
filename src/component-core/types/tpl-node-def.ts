@@ -78,7 +78,7 @@
  *   2. onInitState → 实例状态合并
  *   3. onBeforeInit(props) → 组件自定义初始化钩子
  *   4. buildNodeMap → 克隆模板 + 构建 nodeMap + 挂 el
- *   5. applyNodeConfigs → 将 flex/grid/cls/style 应用到 DOM
+ *   5. setupNodeProps → 安装子节点内容属性描述符
  *   6. initContentFromProps → 填充内容属性
  *   7. initI18n → 翻译 i18n key 并写入 DOM
  *   8. renderChildComponents → 渲染 type 子组件
@@ -416,7 +416,6 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
 
     { field: 'hidden', category: 'state', toMeta: true, toRoot: false },
     { field: 'hiddenMode', category: 'state', toMeta: true, toRoot: false },
-    { field: 'skeleton', category: 'state', toMeta: true, toRoot: true },
 
     // ─── component: 组件专属 ───
 

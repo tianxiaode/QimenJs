@@ -8,15 +8,16 @@
  * cache 是只读可共享部分，nodeMetas 是每类独立部分
  *
  * 职责边界：
- *   - 编译：TplNode → HTML + indexPath + nodeMetas + exposeNames + i18nNodes + skeletonPaths
+ *   - 编译：TplNode → HTML + indexPath + nodeMetas + exposeNames + i18nNodes
  *   - 预处理：expandFragments 将 fragment 展开为普通 children
- *   - 不负责：DOM 路径查找（→ utils/dom-path）、构造函数装饰（→ TemplateFactory）
+ *   - 不负责：DOM 路径查找（→ utils/dom-path）
  */
 
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
-import type { CompileResult } from './types/compile-engine-types';
-import { VOID_TAGS } from './constants/compile-constants';
+import type { CompileResult } from '../types/compile-engine-types';
+import { VOID_TAGS } from '../constants/compile-constants';
+import { SKELETON_CLS } from '../constants/compile-constants';
 import { Logger } from '@/logger';
 
 export class CompileEngine {
@@ -32,7 +33,7 @@ export class CompileEngine {
      * @example
      * ```ts
      * const { cache, nodeMetas } = CompileEngine.compile(tpl, this);
-     * // cache: 只读可共享（html, indexPath, exposeNames, i18nNodes, templateCache, skeletonPaths）
+     * // cache: 只读可共享（html, indexPath, exposeNames, i18nNodes, templateCache）
      * // nodeMetas: 每类独立（运行时附加 el/component）
      * ```
      */
@@ -49,7 +50,6 @@ export class CompileEngine {
             exposeNames: result.exposeNames,
             i18nNodes: result.i18nNodes,
             templateCache: tplEl,
-            skeletonPaths: result.skeletonPaths,
         };
 
         const nodeMetas = result.nodeMetas;
@@ -105,14 +105,13 @@ export class CompileEngine {
      *
      * @param root - 已展开的模板根节点（无 fragment）
      * @param logger - 日志器，用于嵌套深度警告
-     * @returns 编译中间产物 { html, indexPath, nodeMetas, exposeNames, i18nNodes, skeletonPaths }
+     * @returns 编译中间产物 { html, indexPath, nodeMetas, exposeNames, i18nNodes }
      */
     static compileTemplate(root: TplNode, logger: any) {
         const indexPath: NodeIndexPath = {};
         const nodeMetas: Record<string, NodeMetadata> = {};
         const exposeNames: string[] = [];
         const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
-        const skeletonPaths: NodeIndexPath = {};
 
         indexPath['root'] = [];
         nodeMetas['root'] = {
@@ -124,12 +123,7 @@ export class CompileEngine {
             grid: root.grid,
             role: root.role,
             attrs: root.attrs,
-            skeleton: root.skeleton,
         };
-
-        if (root.skeleton) {
-            skeletonPaths['root'] = [];
-        }
 
         const children = root.children || [];
         const htmlParts: string[] = [];
@@ -141,7 +135,6 @@ export class CompileEngine {
                     nodeMetas,
                     exposeNames,
                     i18nNodes,
-                    skeletonPaths,
                     logger,
                 })
             );
@@ -153,38 +146,11 @@ export class CompileEngine {
             nodeMetas,
             exposeNames,
             i18nNodes,
-            skeletonPaths,
         };
     }
 
     /**
-     * 编译子树 — 局部编译入口
-     *
-     * 编译单个节点为 HTML + 元数据，不注册 root。
-     * 用于 TemplateDeriver 替换子树场景。
-     *
-     * @param node - 子树根节点
-     * @param logger - 日志器
-     * @returns 编译中间产物（无 skeletonPaths）
-     */
-    static compileSubtree(node: TplNode, logger: any) {
-        const indexPath: NodeIndexPath = {};
-        const nodeMetas: Record<string, NodeMetadata> = {};
-        const exposeNames: string[] = [];
-        const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
-        const html = CompileEngine.compileNode(node, [], {
-            indexPath,
-            nodeMetas,
-            exposeNames,
-            i18nNodes,
-            logger,
-        });
-
-        return { html, indexPath, nodeMetas, exposeNames, i18nNodes };
-    }
-
-    /**
      * 编译单节点 — 内部分派
      *
      * 根据 node.type 存在与否分派到 compileTypeNode 或 compileTagNode。
@@ -217,7 +183,7 @@ export class CompileEngine {
             name,
             tag: node.tag,
             type: typeof node.type === 'string' ? node.type : undefined,
-            cls: node.cls,
+            cls: appendCls(node.cls, SKELETON_CLS),
             contentMode: 'html',
             i18nKey: node.i18n,
             initConfig: node.initConfig,
@@ -236,9 +202,7 @@ export class CompileEngine {
             ctx.i18nNodes.push({ name, i18nKey: node.i18n });
         }
 
-        ctx.skeletonPaths[name] = path;
-
-        return '<div class="q-skeleton"></div>';
+        return `<div class="${SKELETON_CLS}"></div>`;
     }
 
     /**
@@ -268,7 +232,6 @@ export class CompileEngine {
                 hiddenMode: node.hiddenMode,
                 role: node.role,
                 attrs: node.attrs,
-                skeleton: node.skeleton,
             };
 
             ctx.nodeMetas[name] = meta;
@@ -276,10 +239,6 @@ export class CompileEngine {
 
             if (node.i18n) {
                 ctx.i18nNodes.push({ name, i18nKey: node.i18n });
-            }
-
-            if (node.skeleton) {
-                ctx.skeletonPaths[name] = path;
             }
         }
 
@@ -320,4 +279,8 @@ export class CompileEngine {
         if (t === 'a') return 'link';
         return 'html';
     }
+}
+
+function appendCls(cls: string | undefined, extra: string): string {
+    return cls ? `${cls} ${extra}` : extra;
 }

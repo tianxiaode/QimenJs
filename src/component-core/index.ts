@@ -21,22 +21,32 @@ export { LifecycleAbility } from './abilities/LifecycleAbility';
 
 // 编译引擎
 export { CompileEngine } from './engine/CompileEngine';
-export type { CompileResult } from './engine/types/compile-engine-types';
-export { VOID_TAGS } from './engine/constants/compile-constants';
+export type { CompileResult } from './types/compile-engine-types';
+export { VOID_TAGS } from './constants/compile-constants';
 export { findByPath } from './engine/utils/dom-path';
 
 // 事件引擎
-export { EventEngine, DelegatedEventEngine } from './engine/EventEngine';
+export { DelegatedEventEngine } from './engine/DelegatedEventEngine';
 
 // 运行时引擎
 export { RuntimeEngine, executeOverrideQueue } from './engine/RuntimeEngine';
+
+// 初始化管线
+export {
+    MOUNT_PHASE,
+    FILL_PHASE,
+    INSTANTIATE_PHASE,
+    FINALIZE_PHASE,
+    runPhase,
+} from './engine/pipeline';
+export { executeOverrideQueue as pipelineOverrideQueue } from './engine/pipeline';
 
 // 模板注册器
 export { TemplateRegistrar } from './engine/TemplateRegistrar';
 export type { TemplateEntry, CompiledProduct } from './types/template-registrar';
 
-// 节点属性工具
-export { applyChildNodeProps, buildChildNodePropDescs } from './engine/ChildNodeProps';
+// 节点属性引擎
+export { ChildNodePropsEngine } from './engine/ChildNodePropsEngine';
 
 // 模板常量
 export {
@@ -46,8 +56,8 @@ export {
     COMMON_NODE_PROPS,
     RESERVED_KEYS,
     ANIMATION_PRESETS,
-} from './engine/TemplateConstants';
-export type { ContentPropDef, AnimationOptions } from './engine/TemplateConstants';
+} from './constants/template-constants';
+export type { ContentPropDef, AnimationOptions } from './types/template-constants';
 
 // 类型
 export type {
@@ -83,6 +93,8 @@ export type {
     TplEvents,
     DelegatedEventRule,
 } from './types/tpl-events';
+export type { ComponentProps, InitContext } from './types/init-context';
+export type { INodeMapManager } from './types/node-map-manager-types';
 
 // 初始化 TemplateRegistrar 到 RegistryHub
 import { TemplateRegistrar } from './engine/TemplateRegistrar';

@@ -2,23 +2,21 @@
  * Component — 组件基类
  *
  * 所有组件直接 extends Component，通过实例字段声明 tpl/events/type 等。
- * 首次 create() 时自动编译模板，WeakMap 缓存编译产物。
+ * 构造函数启动异步初始化管线，el 立即可用。
  *
- * tpl 三种语义：
- *   - { tag, children } → 全编译
- *   - { replace: true, nodeName: { tag, ... } } → 子树替换
- *   - { replace: true, nodeName: { type, ... } } → 属性覆盖
- *   - 无 tpl → 继承父类编译产物
+ * 生命周期：
+ *   new Component(props)  →  Phase 1+2 同步（el 就绪）  →  Phase 3 异步（子组件实例化）  →  Phase 4 收尾
+ *   component.ready       →  Promise<void>，等全部阶段完成
  *
  * @example
  * ```ts
  * class ButtonComponent extends Component {
+ *     static templateName = 'Button';
  *     type = 'Button';
- *     tpl = { tag: 'div', cls: 'q-button', children: [...] };
- *     events = { '': { click: { emits: ['click'] } } };
- *     use = [SizeAbility];
  * }
- * const btn = ButtonComponent.create({ text: 'OK' });
+ * const btn = new ButtonComponent({ text: 'OK' });
+ * container.appendChild(btn.el);   // 骨架立即可见
+ * await btn.ready;                 // 等子组件 + 收尾
  * ```
  */
 
@@ -47,19 +45,19 @@ import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { NodeMetadata } from './types/compiled-types';
-import type { TplNode } from './types';
-import type { TplEvents } from './types/tpl-events';
-import type { NodeMapManager } from './NodeMapManager';
+import type { INodeMapManager } from './types/node-map-manager-types';
+import type { ComponentProps } from './types/init-context';
+import { createInitContext } from './types/init-context';
 
-import { CompileEngine } from './engine/CompileEngine';
-import { EventEngine } from './engine/EventEngine';
-import { applyChildNodeProps } from './engine/ChildNodeProps';
-import { RuntimeEngine } from './engine/RuntimeEngine';
-import { TemplateRegistrar } from './engine/TemplateRegistrar';
+import {
+    MOUNT_PHASE,
+    FILL_PHASE,
+    INSTANTIATE_PHASE,
+    FINALIZE_PHASE,
+    runPhase,
+} from './engine/pipeline';
+import { getId } from '@/utils/string/id';
 
-// ══════════════════════════════════════════════════════════════
-
-// 默认能力
 // ══════════════════════════════════════════════════════════════
 
 export const COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
@@ -100,8 +98,8 @@ export interface Component
         InferAbility<typeof AnimationAbility>,
         InferAbility<typeof LifecycleAbility> {
     onBeforeUnmount?(): void;
-    onAfterInit?(props?: any): void;
-    onBeforeInit?(props?: any): void;
+    onAfterInit?(props?: ComponentProps): void;
+    onBeforeInit?(props?: ComponentProps): void;
     onMounted?(): void;
     onUpdated?(data?: any): void;
     onResize?(entry: ResizeObserverEntry): void;
@@ -113,151 +111,65 @@ export interface Component
 // Component 基类
 // ══════════════════════════════════════════════════════════════
 
-const SKELETON_CLS = 'q-skeleton';
-
 export class Component extends ComposableBase {
-    tag: string = 'div';
-
-    /**
-     * 组件类型 — 由构造函数从类名自动推导
-     * ButtonComponent → Button
-     */
     type: string;
 
-    template?: string;
+    el!: HTMLElement;
+    meta: Record<string, any>;
+    props: ComponentProps;
+    nodeMap: Record<string, NodeMetadata>;
+    nodeMapMgr!: INodeMapManager;
 
-    static templateName?: string;
+    _initializing: boolean;
+    _templateInitialized: boolean;
+    _dirtyNodes: Record<string, Record<string, any>>;
+    dirtySet!: Set<string>;
 
-    constructor(props?: Record<string, any>) {
+    private _ready: Promise<void> = Promise.resolve();
+
+    constructor(props?: ComponentProps) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
+        this.props = props ?? {};
+        this.meta = {};
+        this._dirtyNodes = {};
+        this.nodeMap = {};
+        this.dirtySet = new Set();
+        this._initializing = true;
+        this._ready = this.init();
+    }
+
+    get ready(): Promise<void> {
+        return this._ready;
     }
 
     /**
-     * 静态能力注入 — 预编译阶段将能力方法复制到原型
-     * 支持单个能力或数组，返回自身供链式调用
+     * 异步初始化管线
      *
-     * @example
-     * ```ts
-     * ButtonComponent.use(SizeAbility);
-     * ButtonComponent.use([SizeAbility, AnotherAbility]);
-     * // 类型推断需手动 interface merge:
-     * // interface ButtonComponent extends InferAbility<typeof SizeAbility> {}
-     * ```
+     * Phase 1: MOUNT — 同步（首个 await 前，el 立即可用）
+     * Phase 2: FILL — 同步
+     * Phase 3: INSTANTIATE — 异步（Promise.all）
+     * Phase 4: FINALIZE — 同步
      */
-    static use(abilities: AbilityDefinition | AbilityDefinition[]): typeof Component {
-        const arr = Array.isArray(abilities) ? abilities : [abilities];
-        withAbilities(this, arr);
-        return this;
-    }
+    async init(): Promise<void> {
+        const ctx = createInitContext(this, this.props);
 
-    /**
-     * 工厂创建 — 推荐方式
-     *
-     * 从 TemplateRegistrar 获取编译产物，注入到 ctor，然后初始化。
-     * 传入 { progressive: true } 只完成 mount 阶段。
-     */
-    static create(
-        this: any,
-        props?: Record<string, any>,
-        options?: { progressive?: boolean }
-    ): any {
-        const inst = new this(props);
-        const ctor = inst.constructor;
+        try {
+            runPhase(MOUNT_PHASE, ctx);
+            if (!ctx.nodeMapMgr) return;
 
-        Component._ensureFromRegistry(ctor);
+            runPhase(FILL_PHASE, ctx);
 
-        if (!inst._initializing && !inst.el) {
-            if (options?.progressive) {
-                RuntimeEngine.mount(inst, props);
-            } else {
-                RuntimeEngine.init(inst, props);
-            }
+            // Phase 3: INSTANTIATE — 异步
+            // await Promise.all(childSlots.map(s => this._instantiateChild(s)));
+
+            runPhase(FINALIZE_PHASE, ctx);
+
+            this.id = this.props.id || getId('cmp');
+        } finally {
+            this._initializing = false;
+            this._flushNodeProps?.();
         }
-        return inst;
-    }
-
-    /**
-     * 从 TemplateRegistrar 注入编译产物到 ctor
-     */
-    static _ensureFromRegistry(ctor: any): void {
-        if (ctor._compiled) return;
-
-        const templateName = ctor.templateName;
-        if (!templateName) return;
-
-        const registry = TemplateRegistrar.getInstance();
-        const compiled = registry.get(templateName);
-        if (!compiled) return;
-
-        ctor._cache = compiled.cache;
-        ctor._nodeMetas = compiled.nodeMetas;
-        ctor._compiled = true;
-        ctor._templateCompiled = true;
-    }
-
-    /**
-     * 渐进渲染 — 阶段2：填充内容
-     * 在 create({ progressive: true }) 后调用。
-     */
-    fill(props?: Record<string, any>): void {
-        RuntimeEngine.fill(this, props ?? this.props);
-    }
-
-    /**
-     * 渐进渲染 — 阶段3：实例化子组件（替换 skeleton 占位）
-     */
-    instantiate(props?: Record<string, any>): void {
-        RuntimeEngine.instantiate(this, props ?? this.props);
-    }
-
-    /**
-     * 渐进渲染 — 阶段4：收尾
-     */
-    finalize(props?: Record<string, any>): void {
-        RuntimeEngine.finalize(this, props ?? this.props);
-    }
-
-    el!: HTMLElement;
-
-    meta: Record<string, any> = {};
-
-    props: Record<string, any> = {};
-
-    _initializing: boolean = false;
-
-    _dirtyNodes: Record<string, Record<string, any>> = {};
-
-    nodeMap: Record<string, NodeMetadata> = {};
-
-    nodeMapMgr!: NodeMapManager;
-
-    _templateInitialized: boolean = false;
-
-    _skeletonActive: boolean = false;
-
-    _skeletonManual: boolean = false;
-
-    get skeleton(): boolean {
-        return this._skeletonActive;
-    }
-
-    set skeleton(value: boolean) {
-        const ctor = this.constructor as any;
-        const skeletonPaths = ctor._cache?.skeletonPaths;
-        if (!skeletonPaths || Object.keys(skeletonPaths).length === 0) return;
-
-        if (this._skeletonActive === value) return;
-
-        this._skeletonManual = true;
-
-        if (value) {
-            this._applySkeletonByPaths(skeletonPaths);
-        } else {
-            this._removeSkeletonByPaths(skeletonPaths);
-        }
-
-        this._skeletonActive = value;
     }
 
     containsElement(nodeName: string, target: Element): boolean {
@@ -265,28 +177,6 @@ export class Component extends ComposableBase {
         if (!node) return false;
         const el = node.component ? node.component.el : node.el;
         return el ? el.contains(target) : false;
-    }
-
-    _applySkeletonByPaths(skeletonPaths: Record<string, number[]>): void {
-        for (const [name, path] of Object.entries(skeletonPaths)) {
-            if (name === 'root') {
-                this.el.classList.add(SKELETON_CLS);
-                continue;
-            }
-            const el = this.nodeMap[name]?.el;
-            if (el) el.classList.add(SKELETON_CLS);
-        }
-    }
-
-    _removeSkeletonByPaths(skeletonPaths: Record<string, number[]>): void {
-        for (const [name] of Object.entries(skeletonPaths)) {
-            if (name === 'root') {
-                this.el.classList.remove(SKELETON_CLS);
-                continue;
-            }
-            const el = this.nodeMap[name]?.el;
-            if (el) el.classList.remove(SKELETON_CLS);
-        }
     }
 
     override onBeforeDispose(): void {
@@ -317,7 +207,4 @@ export class Component extends ComposableBase {
     }
 }
 
-withAbilities(Component, COMPONENT_ABILITIES);
-
-// 向后兼容别名
-export const TEMPLATE_COMPONENT_ABILITIES = COMPONENT_ABILITIES;
+Component.use(COMPONENT_ABILITIES);

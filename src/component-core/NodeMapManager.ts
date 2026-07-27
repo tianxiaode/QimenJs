@@ -2,25 +2,20 @@
  * NodeMapManager — 运行时 DOM 管理器（实例级）
  *
  * 只负责运行时 DOM 操作，不涉及编译/缓存逻辑。
- * 编译和派生由 TemplateCompiler / TemplateDeriver 引擎处理。
  *
  * 职责：
  * - buildDOM: 从 cache 克隆模板 + buildNodeMap
- * - replace/appendTo: 运行时节点替换/追加
+ * - replace: 运行时组件替换
  * - disposeAll: 清理运行时资源
  *
  * 实例级：每个组件实例创建自己的 NodeMapManager，不跨类共享
  */
 
-import type { TplNode } from './types/tpl-node-types';
-import type {
-    NodeMetadata,
-    NodeIndexPath,
-    CompiledTemplateCache,
-} from './types/compiled-types';
-import { findByPath, expandFragments, compileTemplate } from './engine/TemplateCompiler';
+import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from './types/compiled-types';
+import type { INodeMapManager } from './types/node-map-manager-types';
+import { findByPath } from './engine/utils/dom-path';
 
-export class NodeMapManager {
+export class NodeMapManager implements INodeMapManager {
     private _cache: CompiledTemplateCache;
     private _nodeMetas: Record<string, NodeMetadata>;
     private _map: Record<string, NodeMetadata> = {};
@@ -53,8 +48,12 @@ export class NodeMapManager {
         return this._cache.exposeNames;
     }
 
-    buildDOM(tag: string): HTMLElement {
-        this._el = document.createElement(tag);
+    get rootTag(): string {
+        return this._nodeMetas['root']?.tag ?? 'div';
+    }
+
+    buildDOM(): HTMLElement {
+        this._el = document.createElement(this.rootTag);
         const fragment = this._cache.templateCache.content.cloneNode(true);
         this._el.appendChild(fragment);
         this._buildNodeMap();
@@ -96,7 +95,7 @@ export class NodeMapManager {
 
     replace(
         name: string,
-        replacement: TplNode | (new (props?: Record<string, any>) => any),
+        ComponentClass: new (props?: Record<string, any>) => any,
         props?: Record<string, any>
     ): any | null {
         const old = this._map[name];
@@ -104,38 +103,26 @@ export class NodeMapManager {
 
         this._removeChildEntries(name);
 
-        if (this._isComponentClass(replacement)) {
-            return this._replaceWithComponent(name, old, replacement, props);
-        } else {
-            return this._replaceWithSubtree(name, old, replacement);
-        }
-    }
-
-    appendTo(parentName: string, child: TplNode): NodeMetadata | null {
-        const parent = this._map[parentName];
-        if (!parent?.el) return null;
-
-        const tplEl = document.createElement('template');
-        tplEl.innerHTML = this._compileSubtreeHtml(child);
-        const newEl = tplEl.content.firstChild as HTMLElement;
-        if (!newEl) return null;
-
-        parent.el.appendChild(newEl);
-
-        for (const [n, meta] of Object.entries(this._compileSubtreeMetas(child))) {
-            const path = this._cache.indexPath[n];
-            if (path) {
-                const el = findByPath(
-                    newEl as HTMLElement,
-                    path.slice((this._cache.indexPath[parentName]?.length ?? 0) + 1)
-                );
-                this._map[n] = { ...meta, el: el ?? newEl };
-            } else {
-                this._map[n] = { ...meta, el: newEl };
-            }
+        if (old.component && typeof old.component.dispose === 'function') {
+            old.component.dispose();
         }
 
-        return this._map[child.name!] ?? null;
+        const newChild = new ComponentClass(props);
+        if (this._owner) (newChild as any).parent = this._owner;
+
+        this._replaceDOM(old, newChild.el);
+
+        old.el = newChild.el;
+        old.component = newChild;
+        old.componentClass = ComponentClass;
+
+        if (newChild.nodeMap && this._owner) {
+            Object.assign(this._owner.nodeMap, newChild.nodeMap);
+        } else if ((newChild as any).nodeMapMgr) {
+            this._mergeChildNodeMap((newChild as any).nodeMapMgr);
+        }
+
+        return newChild;
     }
 
     disposeAll(): void {
@@ -208,72 +195,6 @@ export class NodeMapManager {
         }
     }
 
-    private _isComponentClass(value: any): value is new (props?: Record<string, any>) => any {
-        return typeof value === 'function' && value.prototype && value !== Object;
-    }
-
-    private _replaceWithComponent(
-        name: string,
-        old: NodeMetadata,
-        ComponentClass: new (props?: Record<string, any>) => any,
-        props?: Record<string, any>
-    ): any {
-        if (old.component && typeof old.component.dispose === 'function') {
-            old.component.dispose();
-        }
-
-        const newChild = new ComponentClass(props);
-        if (this._owner) (newChild as any).parent = this._owner;
-
-        this._replaceDOM(old, newChild.el);
-
-        old.el = newChild.el;
-        old.component = newChild;
-        old.componentClass = ComponentClass;
-
-        if (newChild.nodeMap && this._owner) {
-            Object.assign(this._owner.nodeMap, newChild.nodeMap);
-        } else if ((newChild as any).nodeMapMgr) {
-            this._mergeChildNodeMap((newChild as any).nodeMapMgr);
-        }
-
-        return newChild;
-    }
-
-    private _replaceWithSubtree(name: string, old: NodeMetadata, tplNode: TplNode): any {
-        const html = this._compileSubtreeHtml(tplNode);
-        const metas = this._compileSubtreeMetas(tplNode);
-
-        const tplEl = document.createElement('template');
-        tplEl.innerHTML = html;
-        const newEl = tplEl.content.firstChild as HTMLElement;
-        if (!newEl) return null;
-
-        this._replaceDOM(old, newEl);
-
-        old.el = newEl;
-        old.component = undefined;
-        old.componentClass = undefined;
-
-        if (tplNode.name) {
-            const meta = metas[tplNode.name];
-            if (meta) {
-                Object.assign(old, meta, { el: newEl });
-            }
-        }
-
-        for (const [n, meta] of Object.entries(metas)) {
-            if (n === tplNode.name) continue;
-            const path = this._cache.indexPath[n];
-            if (path) {
-                const el = findByPath(newEl, path.slice(1));
-                this._map[n] = { ...meta, el: el ?? newEl };
-            }
-        }
-
-        return newEl;
-    }
-
     private _replaceDOM(old: NodeMetadata, newEl: HTMLElement): void {
         if (old.parentNode && old.nodeIndex !== undefined) {
             const referenceNode = old.parentNode.childNodes[old.nodeIndex];
@@ -285,18 +206,6 @@ export class NodeMapManager {
         } else {
             old.el?.replaceWith(newEl);
         }
-    }
-
-    private _compileSubtreeHtml(tplNode: TplNode): string {
-        const expanded = expandFragments(tplNode);
-        const result = compileTemplate(expanded, { warn: () => {} });
-        return result.html;
-    }
-
-    private _compileSubtreeMetas(tplNode: TplNode): Record<string, NodeMetadata> {
-        const expanded = expandFragments(tplNode);
-        const result = compileTemplate(expanded, { warn: () => {} });
-        return result.nodeMetas;
     }
 
     private _mergeChildNodeMap(childMgr: NodeMapManager): void {
