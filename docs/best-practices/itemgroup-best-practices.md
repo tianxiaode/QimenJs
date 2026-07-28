@@ -439,3 +439,41 @@ new CrudToolbarComponent({
 3. **containsElement + getTargetItem 匹配** — 替代 `data-cmp-id` + `nodeElMap` + `childEventIndex`，无需在 DOM 上设置额外属性，直接通过组件实例匹配
 4. **keyProp 动态解析** — `handler: true` + `keyProp` 自动路由到 `on${KeyProp}${Event}` 方法，`entities: true` / `router: true` 支持动态解析，零分支
 5. **replace() 合并** — `$items` 随 `tplEvents` 统一合并，不再需要独立的 `itemEvents` 合并逻辑
+
+### 为什么 ItemGroup 子组件不走 slot 挂载（无 parent/slotName）？
+
+ItemGroup 子组件通过 `appendChild` 直接追加到 `itemContainer`，而非通过 slot 挂载。这是一个有意的设计选择：
+
+1. **挂载方式** — `_createItem` 创建子组件后，直接 `instance.el` 追加到容器：
+   ```typescript
+   // ItemGroupBaseComponent._createItem
+   const instance = new ItemClass(instanceData);
+   this.itemContainer?.el?.appendChild(instance.el);
+   ```
+   对比 slot 挂载：子组件需要有 `parent` 和 `slotName`，由 `step-self-mount` 自动挂载到父组件的占位符节点。
+
+2. **骨架恢复天然排除** — slot 挂载的子组件销毁时，框架会恢复骨架占位符（`<div class="q-skeleton">`），以保持父组件布局不塌陷。ItemGroup 子组件不走此流程：
+   - 骨架恢复条件：`this.parent && this.slotName`
+   - ItemGroup 子组件没有 `parent`/`slotName`，条件为 false，自动跳过骨架恢复
+   - 无需额外的 `isItemContainer` flag
+
+3. **事件通信不依赖 parent** — 事件通过 `EventBridge` + `eventKey` 注册机制（pub/sub 模式），而非父子链遍历：
+   - 每个组件有独立的 EventScope
+   - 子组件事件通过 `tplEvents.$items` 声明 + `getTargetItem` 匹配
+   - 父组件通过 `.on('item:event', handler)` 监听
+
+4. **为什么不加 isItemContainer flag？**
+   - 当前 `parent && slotName` 检查已经隐式排除了 ItemGroup 子组件
+   - 加 flag 反而增加维护成本（每次新建 ItemGroup 子类都要记住声明）
+   - 如果未来 ItemGroup 子组件需要 `parent`（如主题继承），再加 flag 不迟
+
+### 两种挂载模式对比
+
+| 维度 | Slot 挂载（普通子组件） | 直挂（ItemGroup 子组件） |
+|------|:---:|:---:|
+| parent/slotName | ✅ 有 | ❌ 无 |
+| 挂载时机 | step-self-mount 自动 | _createItem 手动 |
+| 骨架恢复 | 销毁时恢复占位符 | 销毁时直接移除 |
+| 销毁流程 | 先恢复骨架再 dispose | 直接 dispose |
+| 配置访问 | 通过 parent.nodeMapMgr | 通过 defaultItem + 直接方法 |
+| 事件冒泡 | 通过 EventBridge | 通过 tplEvents.$items + getTargetItem |

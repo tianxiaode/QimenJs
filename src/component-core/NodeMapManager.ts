@@ -15,6 +15,7 @@
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
 import { findByPath } from './engine/utils/dom-path';
+import { SKELETON_CLS } from './constants/compile-constants';
 
 export class NodeMapManager implements INodeMapManager {
     private _cache: CompiledTemplateCache;
@@ -77,6 +78,31 @@ export class NodeMapManager implements INodeMapManager {
         this._map[name] = meta;
     }
 
+    restoreSkeleton(name: string): void {
+        const node = this._map[name];
+        if (!node) return;
+
+        const placeholder = document.createElement('div');
+        placeholder.className = SKELETON_CLS;
+
+        if (node.el) {
+            node.el.replaceWith(placeholder);
+        } else if (node.parentNode) {
+            const refNode =
+                node.nodeIndex !== undefined
+                    ? node.parentNode.childNodes[node.nodeIndex]
+                    : null;
+            if (refNode) {
+                node.parentNode.insertBefore(placeholder, refNode);
+            } else {
+                node.parentNode.appendChild(placeholder);
+            }
+        }
+
+        node.el = placeholder;
+        node.component = undefined;
+    }
+
     remove(name: string): void {
         const node = this._map[name];
         if (!node) return;
@@ -84,7 +110,9 @@ export class NodeMapManager implements INodeMapManager {
         this._removeChildEntries(name);
 
         if (node.component && typeof node.component.dispose === 'function') {
+            (node.component as any).__noSkeletonRestore = true;
             node.component.dispose();
+            (node.component as any).__noSkeletonRestore = false;
         }
 
         if (node.el) {
@@ -210,7 +238,9 @@ export class NodeMapManager implements INodeMapManager {
             if (pathStr.startsWith(prefix)) {
                 const node = this._map[name];
                 if (node?.component && typeof node.component.dispose === 'function') {
+                    (node.component as any).__noSkeletonRestore = true;
                     node.component.dispose();
+                    (node.component as any).__noSkeletonRestore = false;
                 }
                 delete this._map[name];
             }
@@ -218,15 +248,15 @@ export class NodeMapManager implements INodeMapManager {
     }
 
     private _replaceDOM(old: NodeMetadata, newEl: HTMLElement): void {
-        if (old.parentNode && old.nodeIndex !== undefined) {
+        if (old.el?.parentNode) {
+            old.el.replaceWith(newEl);
+        } else if (old.parentNode && old.nodeIndex !== undefined) {
             const referenceNode = old.parentNode.childNodes[old.nodeIndex];
             if (referenceNode) {
                 old.parentNode.insertBefore(newEl, referenceNode);
             } else {
                 old.parentNode.appendChild(newEl);
             }
-        } else {
-            old.el?.replaceWith(newEl);
         }
     }
 

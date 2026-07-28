@@ -126,6 +126,7 @@ export class Component extends ComposableBase {
     _initializing: boolean;
     _templateInitialized: boolean;
     _dirtyNodes: Record<string, Record<string, any>>;
+    _disposing: boolean;
     dirtySet!: Set<string>;
 
     private _ready: Promise<void> = Promise.resolve();
@@ -141,6 +142,7 @@ export class Component extends ComposableBase {
         this.nodeMap = {};
         this.dirtySet = new Set();
         this._initializing = true;
+        this._disposing = false;
         this._ready = this.init();
     }
 
@@ -184,15 +186,36 @@ export class Component extends ComposableBase {
     }
 
     override onBeforeDispose(): void {
+        this._disposing = true;
+
         if (typeof this.onBeforeUnmount === 'function') {
             this.onBeforeUnmount();
         }
 
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
 
+        // Restore skeleton placeholder if this was slot-mounted and
+        // the parent is not being disposed and removal is not forced
+        if (
+            this.parent &&
+            this.slotName &&
+            !this.parent._disposing &&
+            !(this as any).__noSkeletonRestore
+        ) {
+            const parentNodeMapMgr = this.parent.nodeMapMgr;
+            if (parentNodeMapMgr) {
+                const node = parentNodeMapMgr.get(this.slotName);
+                if (node && node.component === this) {
+                    parentNodeMapMgr.restoreSkeleton(this.slotName);
+                }
+            }
+        }
+
         this._disposeChildComponents();
 
-        this.el?.remove();
+        if (this.el?.parentElement) {
+            this.el.remove();
+        }
 
         this.meta = {};
         this.props = {};

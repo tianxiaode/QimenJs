@@ -8,6 +8,18 @@
 ## 构建历史
 
 ### 2026-07-28
+- ✅ 组件销毁骨架占位恢复机制
+  - NodeMapManager 新增 restoreSkeleton(name) 方法：用 `<div class="q-skeleton">` 替换被销毁组件的 DOM 位置
+  - Component.onBeforeDispose 增加条件性骨架恢复：仅对 slot 挂载的子组件（有 parent + slotName）恢复骨架
+  - _disposing 标志：销毁时设为 true，子组件检查此标志跳过骨架恢复（防止父组件销毁时的重复恢复）
+  - __noSkeletonRestore 标志：NodeMapManager.remove() / _removeChildEntries() 销毁子组件前设置，阻止递归骨架恢复
+  - _replaceDOM 优化：优先使用 old.el.parentNode 定位（骨架恢复后 el 可能被替换为占位符）
+- ✅ ItemGroup 直挂模式设计决策
+  - ItemGroup 子组件通过 appendChild 直接追加到 itemContainer，不走 slot 挂载（无 parent/slotName）
+  - 骨架恢复的 `this.parent && this.slotName` 条件天然排除 ItemGroup 子组件，无需额外 isItemContainer flag
+  - 事件通信走 EventBridge + eventKey 注册机制（pub/sub），不依赖 parent 冒泡
+  - 配置访问通过 defaultItem 事件转发 + 直接方法调用（getAt/indexOf/updateAt）解决
+  - 决策：当前不加 parent 是正确选择，避免引入循环引用和不必要的 flag 维护成本
 - ✅ 初始化管线步骤拆分 + 异步化 + 子组件 self-mount
   - step-override-queue.ts 拆为 3 个独立步骤文件：step-on-init-state / step-on-before-init / step-on-after-init
   - 删除 executeOverrideQueue / _overrideQueues / _compiled 分支（旧模式遗留，原生 super 替代）

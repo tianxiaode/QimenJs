@@ -21,6 +21,15 @@ export interface INodeMapManager {
     remove(name: string): void;
 
     /**
+     * 恢复指定节点的骨架占位符
+     *
+     * 当 slot 挂载的子组件被销毁时，用骨架占位符替换回原位，
+     * 保持父组件 slot 结构不塌陷。
+     * itemGroup 子组件不走此流程（它们通过 appendChild 直接挂载）。
+     */
+    restoreSkeleton(name: string): void;
+
+    /**
      * 运行时动态替换指定节点的子组件
      *
      * 销毁旧组件 → 创建新组件实例 → DOM 原位替换 → 合并 nodeMap。
