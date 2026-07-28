@@ -36,7 +36,29 @@ import { CONTENT_MODE_MAP, RESERVED_KEYS } from '../constants/template-constants
 
 export class ChildNodePropsEngine {
     /**
-     * 将子节点内容属性描述符安装到 ctor.prototype
+     * 将子节点内容属性描述符安装到组件构造函数的原型上
+     *
+     * 此方法会遍历所有子节点元数据，为每个命名子节点生成对应的内容属性描述符，
+     * 并将其安装到组件构造函数的原型上，使组件实例可以直接通过属性访问器操作子节点内容。
+     *
+     * @param ctor - 组件构造函数，属性描述符将被安装到其原型上
+     * @param nodeMetas - 节点元数据映射表，包含所有命名子节点的配置信息
+     * @param i18nNodes - 国际化节点列表，包含需要翻译的节点名称和i18nKey
+     *
+     * @example
+     * ```ts
+     * // 在组件类装饰器中调用
+     * ChildNodePropsEngine.apply(MyComponent, nodeMetas, i18nNodes);
+     *
+     * // 之后在组件实例中可直接使用
+     * this.title = '新标题';  // 自动更新 title 子节点的 innerHTML
+     * this.inputValue = '文本';  // 自动更新 input 子节点的 value
+     * ```
+     *
+     * @remarks
+     * - 如果原型上已存在同名属性，则跳过该属性
+     * - root 节点不会生成属性描述符
+     * - 组件子节点会生成 `$nodeName` 形式的引用属性
      */
     static apply(
         ctor: any,
@@ -54,6 +76,29 @@ export class ChildNodePropsEngine {
 
     /**
      * 构建子节点内容属性描述符集合
+     *
+     * 根据节点元数据和国际化配置，为每个命名子节点生成对应的属性描述符。
+     * 描述符包含 getter 和 setter，用于读写子节点的内容属性。
+     *
+     * @param nodeMetas - 节点元数据映射表，key 为节点名称，value 为节点配置
+     * @param i18nNodes - 国际化节点列表，包含需要翻译的节点信息
+     * @returns 属性描述符映射表，key 为属性名，value 为属性描述符
+     *
+     * @example
+     * ```ts
+     * const descs = ChildNodePropsEngine.buildDescs(nodeMetas, i18nNodes);
+     * // 返回类似：
+     * // {
+     * //   title: { get() {...}, set(v) {...}, configurable: true, enumerable: true },
+     * //   inputValue: { get() {...}, set(v) {...}, configurable: true, enumerable: true },
+     * //   $icon: { get() { return this.nodeMap?.icon?.component }, ... }
+     * // }
+     * ```
+     *
+     * @remarks
+     * - root 节点会被跳过
+     * - 组件子节点（有 componentClass）生成 `$nodeName` 引用属性
+     * - 内容属性根据 contentMode 推导：html → text, value → value, src → src, link → text + href
      */
     static buildDescs(
         nodeMetas: Record<string, NodeMetadata>,
@@ -84,6 +129,34 @@ export class ChildNodePropsEngine {
         return descs;
     }
 
+    /**
+     * 添加内容属性描述符
+     *
+     * 为单个节点添加内容属性描述符，包括属性名计算和 getter/setter 生成。
+     * 根据是否为 i18n 节点，生成不同的 setter 行为。
+     *
+     * @param descs - 描述符集合，新描述符将被添加到此对象
+     * @param nodeName - 节点名称，用于生成属性名
+     * @param nodeProp - 节点属性名（如 text、value、src）
+     * @param isI18n - 是否为国际化节点
+     *
+     * @example
+     * ```ts
+     * // 普通节点
+     * _addContentPropDesc(descs, 'title', 'text', false);
+     * // 生成: descs.title = { get() { return this._getNodeProp('title', 'text'); }, ... }
+     *
+     * // i18n 节点
+     * _addContentPropDesc(descs, 'title', 'text', true);
+     * // 生成: descs.title = { get() { return this.nodeMap?.title?.i18nKey; }, set(v) { ... } }
+     * ```
+     *
+     * @remarks
+     * - 属性名生成规则：
+     *   - text/value/src：直接用节点名，冲突时加 `_` 后缀
+     *   - 其他属性：节点名 + 属性名首字母大写（如 titleHref）
+     * - i18n 节点的 setter 会自动翻译并更新 DOM
+     */
     private static _addContentPropDesc(
         descs: Record<string, PropertyDescriptor>,
         nodeName: string,
@@ -128,6 +201,32 @@ export class ChildNodePropsEngine {
         }
     }
 
+    /**
+     * 添加组件引用属性描述符
+     *
+     * 为组件类型的子节点生成 `$nodeName` 形式的引用属性，
+     * 用于在父组件中访问子组件实例。
+     *
+     * @param descs - 描述符集合，新描述符将被添加到此对象
+     * @param nodeName - 子节点名称
+     *
+     * @example
+     * ```ts
+     * // 模板中定义了 icon 子组件
+     * // { name: 'icon', type: IconComponent }
+     *
+     * _addComponentRefDesc(descs, 'icon');
+     * // 生成: descs.$icon = { get() { return this.nodeMap?.icon?.component; }, ... }
+     *
+     * // 在组件中使用
+     * this.$icon.play();  // 调用 icon 子组件的 play 方法
+     * ```
+     *
+     * @remarks
+     * - 属性名格式：`$` + 节点名
+     * - 只生成 getter，不支持 setter
+     * - 如果描述符已存在，则跳过
+     */
     private static _addComponentRefDesc(
         descs: Record<string, PropertyDescriptor>,
         nodeName: string

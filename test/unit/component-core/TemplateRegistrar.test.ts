@@ -321,4 +321,115 @@ describe('TemplateRegistrar', () => {
             expect(() => registry.inspect()).not.toThrow();
         });
     });
+
+    describe('createNodeMapManager', () => {
+        it('应基于编译产物创建 NodeMapManager', () => {
+            const registry = createRegistry();
+            registry.register('TestTpl', {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'title' },
+                    { tag: 'span', name: 'content' },
+                ],
+            });
+
+            const manager = registry.createNodeMapManager('TestTpl');
+
+            expect(manager).toBeDefined();
+            expect(manager).toHaveProperty('get');
+            expect(manager).toHaveProperty('set');
+        });
+
+        it('模板不存在时返回 undefined', () => {
+            const registry = createRegistry();
+
+            const manager = registry.createNodeMapManager('NotExist');
+
+            expect(manager).toBeUndefined();
+        });
+
+        it('应接受可选的 owner 参数', () => {
+            const registry = createRegistry();
+            registry.register('OwnerTpl', {
+                tag: 'div',
+                children: [{ tag: 'span', name: 'label' }],
+            });
+
+            const owner = { id: 'testOwner' };
+            const manager = registry.createNodeMapManager('OwnerTpl', owner);
+
+            expect(manager).toBeDefined();
+        });
+
+        it('创建前应先触发编译', () => {
+            const registry = createRegistry();
+            registry.register('LazyTpl', {
+                tag: 'div',
+                children: [{ tag: 'span', name: 'text' }],
+            });
+
+            // 未调用 get，直接调用 createNodeMapManager
+            const manager = registry.createNodeMapManager('LazyTpl');
+
+            expect(manager).toBeDefined();
+            // 确认编译产物已生成
+            const compiled = registry.get('LazyTpl');
+            expect(compiled).toBeDefined();
+        });
+
+        it('创建的 NodeMapManager 应能管理节点', () => {
+            const registry = createRegistry();
+            registry.register('NodeTestTpl', {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'node1' },
+                    { tag: 'span', name: 'node2' },
+                ],
+            });
+
+            const manager = registry.createNodeMapManager('NodeTestTpl');
+            expect(manager).toBeDefined();
+
+            // 测试管理器的基本功能
+            const el1 = document.createElement('span');
+            const el2 = document.createElement('span');
+
+            manager!.set('node1', el1);
+            manager!.set('node2', el2);
+
+            expect(manager!.get('node1')).toBeDefined();
+            expect(manager!.get('node2')).toBeDefined();
+        });
+
+        it('replace 模板创建的 NodeMapManager 应包含合并后的节点', () => {
+            const registry = createRegistry();
+            registry.register('BaseTpl', {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'label' },
+                    { tag: 'div', name: 'content' },
+                ],
+            });
+
+            registry.register('DerivedTpl', {
+                replace: 'BaseTpl',
+                replaces: {
+                    content: {
+                        tag: 'div',
+                        children: [
+                            { tag: 'span', name: 'icon' },
+                            { tag: 'span', name: 'text' },
+                        ],
+                    },
+                },
+            } as TplNode);
+
+            const manager = registry.createNodeMapManager('DerivedTpl');
+
+            expect(manager).toBeDefined();
+            // 应包含基础模板的 label
+            const compiled = registry.get('DerivedTpl');
+            expect(compiled!.nodeMetas.label).toBeDefined();
+        });
+    });
 });

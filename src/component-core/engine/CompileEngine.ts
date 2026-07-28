@@ -11,6 +11,38 @@
  *   - 编译：TplNode → HTML + indexPath + nodeMetas + exposeNames + i18nNodes
  *   - 预处理：expandFragments 将 fragment 展开为普通 children
  *   - 不负责：DOM 路径查找（→ utils/dom-path）
+ *
+ * @module CompileEngine
+ *
+ * @example
+ * ```ts
+ * // 编译简单模板
+ * const tpl = {
+ *   tag: 'div',
+ *   name: 'root',
+ *   children: [
+ *     { name: 'title', tag: 'h1' },
+ *     { name: 'content', tag: 'p' }
+ *   ]
+ * };
+ *
+ * const { cache, nodeMetas } = CompileEngine.compile(tpl);
+ *
+ * // cache.html: '<h1></h1><p></p>'
+ * // cache.indexPath: { root: [], title: [0], content: [1] }
+ * // nodeMetas: { root: {...}, title: {...}, content: {...} }
+ * ```
+ *
+ * @remarks
+ * ## 编译流程
+ * 1. **展开 Fragment**：将 fragment 节点展开为普通 children
+ * 2. **生成 HTML**：递归遍历节点树生成 HTML 字符串
+ * 3. **收集元数据**：为每个命名节点生成 NodeMetadata
+ * 4. **构建缓存**：创建可复用的 CompiledTemplateCache
+ *
+ * ## 节点类型
+ * - **type 节点**：组件类型节点，生成骨架占位 HTML
+ * - **tag 节点**：原生标签节点，直接生成 HTML
  */
 
 import type { TplNode } from '../types/tpl-node-types';
@@ -36,6 +68,11 @@ export class CompileEngine {
      * // cache: 只读可共享（html, indexPath, exposeNames, i18nNodes, templateCache）
      * // nodeMetas: 每类独立（运行时附加 el/component）
      * ```
+     *
+     * @remarks
+     * - cache.html 可用于多次创建 DOM 元素
+     * - cache.templateCache 是预解析的 template 元素
+     * - nodeMetas 在运行时会被附加 el 和 component 引用
      */
     static compile(tpl: TplNode, owner?: any): CompileResult {
         const expandedTpl = CompileEngine.expandFragments(tpl);
@@ -106,6 +143,18 @@ export class CompileEngine {
      * @param root - 已展开的模板根节点（无 fragment）
      * @param logger - 日志器，用于嵌套深度警告
      * @returns 编译中间产物 { html, indexPath, nodeMetas, exposeNames, i18nNodes }
+     *
+     * @example
+     * ```ts
+     * const result = CompileEngine.compileTemplate(expandedTpl, logger);
+     * // result.html: '<div class="title">...</div>'
+     * // result.indexPath: { root: [], title: [0] }
+     * // result.nodeMetas: { root: {...}, title: {...} }
+     * ```
+     *
+     * @remarks
+     * - 根节点会被注册为 'root'，indexPath 为空数组 []
+     * - 子节点按 children 数组索引注册路径
      */
     static compileTemplate(root: TplNode, logger: any) {
         const indexPath: NodeIndexPath = {};
@@ -150,11 +199,29 @@ export class CompileEngine {
     }
 
     /**
-
      * 编译单节点 — 内部分派
      *
      * 根据 node.type 存在与否分派到 compileTypeNode 或 compileTagNode。
      * 嵌套超过 3 层时发出警告（建议拆分子组件）。
+     *
+     * @param node - 当前编译的节点
+     * @param path - 节点在树中的路径（索引数组）
+     * @param ctx - 编译上下文，包含 indexPath、nodeMetas、exposeNames 等
+     * @returns 生成的 HTML 字符串
+     *
+     * @example
+     * ```ts
+     * // type 节点
+     * const html = compileNode({ name: 'icon', type: IconComponent }, [0], ctx);
+     * // 返回: '<div class="q-skeleton"></div>'
+     *
+     * // tag 节点
+     * const html = compileNode({ name: 'title', tag: 'h1' }, [1], ctx);
+     * // 返回: '<h1></h1>'
+     * ```
+     *
+     * @remarks
+     * - 嵌套超过 3 层会输出警告，建议拆分子组件
      */
     private static compileNode(node: TplNode, path: number[], ctx: any): string {
         if (path.length > 3) {
@@ -173,6 +240,27 @@ export class CompileEngine {
      * 产出骨架占位 HTML（`<div class="q-skeleton"></div>`），
      * 将组件类引用存入 nodeMetas.componentClass。
      * type 为函数时直接引用，为字符串时从 window 解析。
+     *
+     * @param node - 包含 type 属性的节点
+     * @param path - 节点路径
+     * @param ctx - 编译上下文
+     * @returns 骨架占位 HTML 字符串
+     *
+     * @example
+     * ```ts
+     * // 函数引用
+     * compileTypeNode({ name: 'icon', type: IconComponent }, [0], ctx);
+     * // 返回: '<div class="q-skeleton"></div>'
+     * // nodeMetas.icon.componentClass = IconComponent
+     *
+     * // 字符串引用
+     * compileTypeNode({ name: 'icon', type: 'IconComponent' }, [0], ctx);
+     * // 从 window.IconComponent 解析组件类
+     * ```
+     *
+     * @remarks
+     * - 生成的骨架 HTML 用于运行时定位和替换
+     * - 组件实例化后会替换骨架元素
      */
     private static compileTypeNode(node: TplNode, path: number[], ctx: any): string {
         const name = node.name!;
@@ -210,6 +298,26 @@ export class CompileEngine {
      *
      * 根据 tag 推导 contentMode，收集节点元数据，
      * 委托 buildTagHtml 生成 HTML。
+     *
+     * @param node - 包含 tag 属性的节点
+     * @param path - 节点路径
+     * @param ctx - 编译上下文
+     * @returns 生成的 HTML 字符串
+     *
+     * @example
+     * ```ts
+     * compileTagNode({ name: 'title', tag: 'h1' }, [0], ctx);
+     * // 返回: '<h1></h1>'
+     * // nodeMetas.title.contentMode = 'html'
+     *
+     * compileTagNode({ name: 'input', tag: 'input' }, [1], ctx);
+     * // 返回: '<input />'
+     * // nodeMetas.input.contentMode = 'value'
+     * ```
+     *
+     * @remarks
+     * - 自动推导 contentMode：input/value/select → 'value', img → 'src', a → 'link'
+     * - 无 name 的节点不会注册到 nodeMetas
      */
     private static compileTagNode(node: TplNode, path: number[], ctx: any): string {
         const tag = node.tag || 'div';
@@ -249,6 +357,26 @@ export class CompileEngine {
      * 构建标签 HTML
      *
      * void 标签生成自闭合 `<tag />`，其余递归编译 children 后包裹开闭标签。
+     *
+     * @param tag - 标签名
+     * @param node - 节点对象
+     * @param path - 节点路径
+     * @param ctx - 编译上下文
+     * @returns 生成的 HTML 字符串
+     *
+     * @example
+     * ```ts
+     * // void 标签
+     * buildTagHtml('input', { tag: 'input' }, [0], ctx);
+     * // 返回: '<input />'
+     *
+     * // 带子节点的标签
+     * buildTagHtml('div', { tag: 'div', children: [...] }, [1], ctx);
+     * // 返回: '<div>...</div>'
+     * ```
+     *
+     * @remarks
+     * - void 标签包括：area, base, br, col, embed, hr, img, input, link, meta, param, source, track, wbr
      */
     private static buildTagHtml(tag: string, node: TplNode, path: number[], ctx: any): string {
         if (VOID_TAGS.has(tag)) return `<${tag} />`;
@@ -270,6 +398,22 @@ export class CompileEngine {
      * - img → 'src'（读写 src 属性）
      * - a → 'link'（读写 text + href）
      * - 其余 → 'html'（读写 innerHTML）
+     *
+     * @param tag - 标签名（可选）
+     * @returns 内容操作模式
+     *
+     * @example
+     * ```ts
+     * inferContentMode('input');   // 'value'
+     * inferContentMode('img');     // 'src'
+     * inferContentMode('a');       // 'link'
+     * inferContentMode('div');     // 'html'
+     * inferContentMode();          // 'html'
+     * ```
+     *
+     * @remarks
+     * - 返回值决定 ChildNodePropsEngine 生成的属性类型
+     * - 'link' 模式会生成 text 和 href 两个属性
      */
     private static inferContentMode(tag?: string): 'value' | 'src' | 'html' | 'link' {
         if (!tag) return 'html';

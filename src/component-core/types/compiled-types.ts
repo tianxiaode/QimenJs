@@ -22,6 +22,21 @@ import type { FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
  * - i18n → i18nKey（唯一重命名）
  * - componentClass 从 TplNode.type 解析
  * - DOM 事件通过 tplEvents 委托机制处理，不存入 NodeMetadata
+ *
+ * @example
+ * ```ts
+ * // 编译时创建的 nodeMetas
+ * const nodeMetas = {
+ *     root: { name: 'root', tag: 'div', cls: 'q-button', flex: true },
+ *     icon: { name: 'icon', tag: 'i', cls: 'q-button__icon', hidden: true },
+ *     text: { name: 'text', tag: 'span', cls: 'q-button__text', i18nKey: 'button.submit' }
+ * };
+ *
+ * // 运行时附加实例数据
+ * nodeMetas.root.el = document.querySelector('.q-button');
+ * nodeMetas.icon.el = document.querySelector('.q-button__icon');
+ * nodeMetas.icon.component = iconComponent;  // 如果 icon 是组件节点
+ * ```
  */
 export interface NodeMetadata {
     // ─── runtime：运行时附加 ───
@@ -96,7 +111,32 @@ export interface NodeMetadata {
 // 编译产物
 // ══════════════════════════════════════════════════════════════
 
-/** 节点位置索引 — 记录命名节点在模板 DOM 树中的位置路径 */
+/**
+ * 节点位置索引 — 记录命名节点在模板 DOM 树中的位置路径
+ *
+ * key 为节点 name，value 为从根节点到该节点的子节点索引路径。
+ * 用于运行时快速定位节点元素，避免每次查询。
+ *
+ * @example
+ * ```ts
+ * const indexPath: NodeIndexPath = {
+ *     'root': [],                    // 根节点，路径为空
+ *     'header': [0],                 // 第一个子节点
+ *     'title': [0, 1],               // header 的第二个子节点
+ *     'content': [1],                // 第二个子节点
+ *     'footer': [2, 0, 1]            // footer 的第一个子节点的第二个子节点
+ * };
+ *
+ * // 使用 indexPath 定位节点
+ * function locateNode(template: HTMLTemplateElement, indexPath: number[]): HTMLElement {
+ *     let current = template.content.firstChild;
+ *     for (const index of indexPath) {
+ *         current = current.childNodes[index];
+ *     }
+ *     return current as HTMLElement;
+ * }
+ * ```
+ */
 export type NodeIndexPath = Record<string, number[]>;
 
 /**
@@ -104,6 +144,21 @@ export type NodeIndexPath = Record<string, number[]>;
  *
  * nodeMetas 替代了原 contentInfos + domEventBindings + componentMap，
  * 所有节点级数据统一收归到 nodeMetas 中。
+ *
+ * @example
+ * ```ts
+ * const result: CompiledTemplateResult = compileTemplate(BUTTON_TEMPLATE);
+ *
+ * // 访问编译产物
+ * console.log(result.html);              // "<div class='q-button'>...</div>"
+ * console.log(result.indexPath);         // { root: [], icon: [0], text: [1] }
+ * console.log(result.nodeMetas.root);    // { name: 'root', tag: 'div', ... }
+ * console.log(result.exposeNames);       // ['title', 'disabled', 'onClick']
+ * console.log(result.i18nNodes);         // [{ name: 'text', i18nKey: 'button.submit' }]
+ * ```
+ *
+ * @see compileTemplate - 编译函数
+ * @see CompiledTemplateCache - 可共享的缓存部分
  */
 export interface CompiledTemplateResult {
     /** 生成的 HTML 字符串 */
@@ -132,7 +187,21 @@ export interface CompiledTemplateResult {
  * - i18nNodes: i18n 节点列表
  * - templateCache: HTMLTemplateElement 缓存（只读 cloneNode 源）
  *
- * nodeMetas 不属于此缓存，因为它会被 nodeOverrides/body 修改
+ * nodeMetas 不属于此缓存，因为它会被 nodeOverrides/body 修改。
+ * 多个组件实例可以共享同一个 CompiledTemplateCache，但各自维护独立的 nodeMetas。
+ *
+ * @example
+ * ```ts
+ * // 多个按钮实例共享同一个缓存
+ * const cache: CompiledTemplateCache = compileTemplate(BUTTON_TEMPLATE).cache;
+ *
+ * const button1 = new ButtonComponent({ ... });
+ * const button2 = new ButtonComponent({ ... });
+ * // button1 和 button2 共享 cache，但各自有独立的 nodeMetas
+ *
+ * // 克隆模板
+ * const fragment = cache.templateCache.content.cloneNode(true);
+ * ```
  */
 export interface CompiledTemplateCache {
     html: string;

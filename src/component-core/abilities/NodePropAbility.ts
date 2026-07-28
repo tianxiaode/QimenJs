@@ -30,18 +30,66 @@ import { ALIGN_MAP, PACK_MAP } from '../constants/template-constants';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 export const NodePropAbility: AbilityDefinition = {
+    /**
+     * 解析节点的 DOM 元素
+     *
+     * 根据节点名称从 nodeMap 中获取对应的 DOM 元素。
+     * 如果节点是子组件，返回子组件的 el；否则返回节点的 el。
+     *
+     * @param {string} nodeName - 节点名称（如 'root', 'icon'）
+     * @returns {HTMLElement | undefined} DOM 元素，节点不存在时返回 undefined
+     *
+     * @example
+     * const el = this._resolveNodeEl('icon');
+     * if (el) {
+     *     el.style.color = 'red';
+     * }
+     */
     _resolveNodeEl(this: any, nodeName: string): HTMLElement | undefined {
         const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;
         return node.component ? node.component.el : node.el;
     },
 
+    /**
+     * 解析节点的目标信息
+     *
+     * 根据节点名称从 nodeMap 中获取节点的 el 和 component 信息。
+     * 用于确定操作目标是子组件还是 DOM 元素。
+     *
+     * @param {string} nodeName - 节点名称（如 'root', 'icon'）
+     * @returns {{ el?: HTMLElement; component?: any }} 节点目标信息
+     *
+     * @example
+     * const { el, component } = this._resolveNodeTarget('icon');
+     * if (component) {
+     *     // 委托给子组件
+     *     component.hidden = true;
+     * } else if (el) {
+     *     // 直接操作 DOM
+     *     el.hidden = true;
+     * }
+     */
     _resolveNodeTarget(this: any, nodeName: string): { el?: HTMLElement; component?: any } {
         const node = this.nodeMap?.[nodeName];
         if (!node) return {};
         return { el: node.el, component: node.component };
     },
 
+    /**
+     * 获取节点的属性值
+     *
+     * 读取指定节点的属性值。优先从脏追踪缓存中读取，其次从子组件属性读取，最后从 DOM 读取。
+     * 根据属性定义（NodePropDef）决定读取路径：cssProp、attr 或 domAttr。
+     *
+     * @param {string} nodeName - 节点名称
+     * @param {string} prop - 属性名（如 'hidden', 'disabled', 'width'）
+     * @returns {any} 属性值
+     *
+     * @example
+     * const hidden = this._getNodeProp('root', 'hidden');
+     * const width = this._getNodeProp('icon', 'width');
+     */
     _getNodeProp(this: any, nodeName: string, prop: string): any {
         const pending = this._dirtyNodes?.[nodeName]?.[prop];
         if (pending !== undefined) return pending;
@@ -70,6 +118,21 @@ export const NodePropAbility: AbilityDefinition = {
         return (target as any)[def.domAttr];
     },
 
+    /**
+     * 设置节点的单个属性
+     *
+     * 立即设置指定节点的单个属性值。不经过脏追踪，直接写入。
+     * 如果目标节点是子组件且该子组件有同名属性，则委托给子组件处理。
+     *
+     * @param {string} nodeName - 节点名称
+     * @param {string} prop - 属性名
+     * @param {any} value - 属性值
+     * @returns {void}
+     *
+     * @example
+     * this._setNodeProp('icon', 'hidden', true);
+     * this._setNodeProp('root', 'width', '100px');
+     */
     _setNodeProp(this: any, nodeName: string, prop: string, value: any): void {
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return;
@@ -88,6 +151,21 @@ export const NodePropAbility: AbilityDefinition = {
         applyPropToEl(target, def, value);
     },
 
+    /**
+     * 批量更新节点的属性
+     *
+     * 一次性更新指定节点的多个属性。支持 flex/grid 布局、hidden 动画等特殊处理。
+     * 如果目标节点是子组件，逐属性委托；否则直接应用到 DOM。
+     * 会触发 hiddenchange 生命周期事件（root 节点的 hidden 变化）。
+     *
+     * @param {string} nodeName - 节点名称
+     * @param {Record<string, any>} props - 属性对象
+     * @returns {void}
+     *
+     * @example
+     * this._updateNode('root', { hidden: true, cls: 'active' });
+     * this._updateNode('icon', { flex: { direction: 'column', gap: 10 } });
+     */
     _updateNode(this: any, nodeName: string, props: Record<string, any>): void {
         const { el, component } = this._resolveNodeTarget(nodeName);
         if (!el && !component) return;
@@ -146,6 +224,20 @@ export const NodePropAbility: AbilityDefinition = {
         node._state = { ...node._state, ...props };
     },
 
+    /**
+     * 标记节点属性为脏
+     *
+     * 将节点属性变更记录到脏追踪缓存，并通过 debounce 延迟批量更新 DOM。
+     * 这是 CommonPropsAbility 中属性 setter 的核心机制，避免频繁的 DOM 操作。
+     *
+     * @param {string} nodeName - 节点名称
+     * @param {Record<string, any>} props - 属性对象
+     * @returns {void}
+     *
+     * @example
+     * this._markNodeDirty('icon', { hidden: true, cls: 'active' });
+     * // 稍后会自动调用 _flushNodeProps 批量更新
+     */
     _markNodeDirty(this: any, nodeName: string, props: Record<string, any>): void {
         if (!this._dirtyNodes) this._dirtyNodes = {};
 
@@ -159,6 +251,18 @@ export const NodePropAbility: AbilityDefinition = {
         this.debounce('NodePropAbility:flush', () => this._flushNodeProps(), 0)();
     },
 
+    /**
+     * 刷新脏节点属性
+     *
+     * 将脏追踪缓存中的所有节点属性批量应用到 DOM。
+     * 清空脏追踪缓存后，逐个调用 _updateNode 更新节点。
+     *
+     * @returns {void}
+     *
+     * @example
+     * // 通常由 debounce 自动调用，也可手动触发
+     * this._flushNodeProps();
+     */
     _flushNodeProps(this: any): void {
         if (!this._dirtyNodes) return;
 
@@ -171,6 +275,16 @@ export const NodePropAbility: AbilityDefinition = {
     },
 };
 
+/**
+ * 应用节点属性到 DOM 元素
+ *
+ * 根据属性类型执行不同的 DOM 操作。支持特殊属性（flex/grid/cls/style/role/attrs/hidden）
+ * 和通用属性（通过 NodePropDef）。
+ *
+ * @param {HTMLElement} el - DOM 元素
+ * @param {Record<string, any>} props - 属性对象
+ * @returns {void}
+ */
 function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
     for (const [prop, value] of Object.entries(props)) {
         if (value === undefined) continue;
@@ -214,6 +328,18 @@ function applyNodeProps(el: HTMLElement, props: Record<string, any>): void {
     }
 }
 
+/**
+ * 应用 flex/grid 布局属性
+ *
+ * 将 flex 或 grid 配置应用到元素的 style 属性。
+ * flex 布局支持 direction、gap、align、pack、wrap 参数。
+ * grid 布局会自动设置 flexWrap 和 gridTemplateColumns。
+ *
+ * @param {HTMLElement} el - DOM 元素
+ * @param {string} prop - 属性名（'flex' 或 'grid'）
+ * @param {any} value - 布局配置对象或布尔值
+ * @returns {void}
+ */
 function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
     if (!value) return;
 
@@ -247,6 +373,17 @@ function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
     }
 }
 
+/**
+ * 应用 hidden 属性
+ *
+ * 根据 hiddenMode 参数决定隐藏方式：默认（hidden 属性）、visibility 或 opacity。
+ * 取消隐藏时恢复所有隐藏相关的样式。
+ *
+ * @param {HTMLElement} el - DOM 元素
+ * @param {boolean} hidden - 是否隐藏
+ * @param {string} [hiddenMode] - 隐藏模式（'visibility' | 'opacity' | 默认）
+ * @returns {void}
+ */
 function applyHidden(el: HTMLElement, hidden: boolean, hiddenMode?: string): void {
     if (!hidden) {
         el.hidden = false;
@@ -268,6 +405,19 @@ function applyHidden(el: HTMLElement, hidden: boolean, hiddenMode?: string): voi
     }
 }
 
+/**
+ * 应用单个属性到 DOM 元素
+ *
+ * 根据 NodePropDef 定义决定应用方式：
+ * - cssProp: 设置 el.style[cssProp]（支持 autoPx 自动加 px）
+ * - attr: 设置 HTML 属性（支持 false/null/undefined 移除，true 设置为空字符串）
+ * - domAttr: 直接设置 DOM 属性
+ *
+ * @param {HTMLElement} el - DOM 元素
+ * @param {NodePropDef} def - 属性定义
+ * @param {any} value - 属性值
+ * @returns {void}
+ */
 function applyPropToEl(el: HTMLElement, def: NodePropDef, value: any): void {
     if (def.cssProp) {
         if (el.style) {
