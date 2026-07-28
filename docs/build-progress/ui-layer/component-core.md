@@ -20,16 +20,18 @@
   - 事件通信走 EventBridge + eventKey 注册机制（pub/sub），不依赖 parent 冒泡
   - 配置访问通过 defaultItem 事件转发 + 直接方法调用（getAt/indexOf/updateAt）解决
   - 决策：当前不加 parent 是正确选择，避免引入循环引用和不必要的 flag 维护成本
-- ✅ 初始化管线步骤拆分 + 异步化 + 子组件 self-mount
+- ✅ 初始化管线步骤拆分 + 异步化 + 子组件 self-mount + 委托事件绑定
   - step-override-queue.ts 拆为 3 个独立步骤文件：step-on-init-state / step-on-before-init / step-on-after-init
   - 删除 executeOverrideQueue / _overrideQueues / _compiled 分支（旧模式遗留，原生 super 替代）
   - InitStep 类型改为 `(ctx) => void | Promise<void>`，runPhase 改为 async
   - 新增 step-self-mount.ts：子组件在 MOUNT 阶段 buildDOM 后自行挂载到父占位符，骨架立即可见
   - 新增 step-instantiate-child-components.ts：INSTANTIATE 阶段通过 GlobalTaskQueue 队列化子组件创建
+  - 新增 step-bind-delegated-events.ts：FINALIZE 阶段调用 DelegatedEventEngine.bindDelegatedEvents 绑定委托事件
   - Component 增加 parent / slotName 属性，子组件接收父引用后自主挂载
   - mountChildComponent 补上 child.parent 设置
   - MOUNT_PHASE: [ensureNodeMap, selfMount, setupNodeProps, onInitState, onBeforeInit]
   - INSTANTIATE_PHASE: [instantiateChildComponents]
+  - FINALIZE_PHASE: [bindDelegatedEvents, onAfterInit]
   - component-core/index.ts 清理 RuntimeEngine / executeOverrideQueue / pipelineOverrideQueue 死导出
 - ✅ NodeMapManager.replace() JSDoc 注释补充
   - replace() 保留（运行时动态替换，与模板编译期 Component.replace() 不同）

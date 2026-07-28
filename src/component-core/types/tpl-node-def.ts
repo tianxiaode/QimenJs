@@ -73,22 +73,13 @@
  *   5. 返回内部类（真正的 class，可直接 new）
  *
  * 【实例化时】new InnerClass(props) → 组件实例
- *   RuntimeEngine.init(instance, props) 统一编排运行时初始化管线：
- *   1. initInstanceData → 设置 meta / props / dirtySet
- *   2. onInitState → 实例状态合并
- *   3. onBeforeInit(props) → 组件自定义初始化钩子
- *   4. buildNodeMap → 克隆模板 + 构建 nodeMap + 挂 el
- *   5. setupNodeProps → 安装子节点内容属性描述符
- *   6. initContentFromProps → 填充内容属性
- *   7. initI18n → 翻译 i18n key 并写入 DOM
- *   8. renderChildComponents → 渲染 type 子组件
- *   9. initFloats → 初始化浮动层
- *  10. bindDomEvents → 统一绑定 DOM 事件
- *  11. initDrags → 初始化拖拽
- *  12. callInitMethods → 调用能力 __init__ 方法
- *  13. setupListens → 事件订阅
- *  14. onAfterInit(props) → 组件自定义后初始化钩子
- *  15. emitLifecycle → 发射生命周期事件
+ *   管线分 4 Phase 顺序执行：
+ *   Phase 1 MOUNT: ensureNodeMap → selfMount → setupNodeProps → onInitState → onBeforeInit
+ *   Phase 2 FILL: (预留)
+ *   Phase 3 INSTANTIATE: instantiateChildComponents
+ *   Phase 4 FINALIZE: bindDelegatedEvents → onAfterInit
+ *
+ * 旧的 RuntimeEngine 15 步管线已拆分为上述 4 Phase。
  *
  * ══════════════════════════════════════════════════════════════
  * 事件机制
