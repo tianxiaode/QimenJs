@@ -6,7 +6,7 @@
  */
 
 import type { InitContext } from '../../types/init-context';
-import { TemplateRegistrar } from '../TemplateRegistrar';
+import { TemplateRegistrar } from '../ComponentRegistrar';
 
 export function ensureNodeMap(ctx: InitContext): void {
     const ctor = ctx.ctor;

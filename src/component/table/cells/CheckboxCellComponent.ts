@@ -29,10 +29,6 @@ export let CheckboxCellComponent = BaseCellComponent.replace({
         },
     },
 
-    tplEvents: {
-        '': { click: { handler: true, emits: ['change'] } },
-    },
-
     body: {
         onInitState() {
             return {

@@ -7,9 +7,6 @@
 // 组件基类
 export { Component, COMPONENT_ABILITIES } from './Component';
 
-// 注册管理器（保留兼容，后续可移除）
-export { ComponentRegistrar } from './ComponentRegistrar';
-
 // 节点结构管理器
 export { NodeMapManager } from './NodeMapManager';
 
@@ -38,8 +35,8 @@ export {
 } from './engine/pipeline';
 
 // 模板注册器
-export { TemplateRegistrar } from './engine/TemplateRegistrar';
-export type { TemplateEntry, CompiledProduct } from './types/template-registrar';
+export { ComponentRegistrar } from './engine';
+export type { ComponentEntry as TemplateEntry, CompiledProduct } from './types/template-registrar';
 
 // 节点属性引擎
 export { ChildNodePropsEngine } from './engine/ChildNodePropsEngine';
@@ -89,6 +86,6 @@ export type { INodeMapManager } from './types/node-map-manager-types';
 export type { Placement } from '@/overlay/dispatch/positionOverlay';
 
 // 初始化 TemplateRegistrar 到 RegistryHub
-import { TemplateRegistrar } from './engine/TemplateRegistrar';
+import { ComponentRegistrar } from './engine';
 import { RegistryHub } from '@qimenjs/registry';
-RegistryHub.use(TemplateRegistrar.getInstance());
+RegistryHub.use(ComponentRegistrar.getInstance());

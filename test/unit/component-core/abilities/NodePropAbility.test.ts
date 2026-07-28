@@ -101,6 +101,44 @@ describe('NodePropAbility', () => {
             const result = NodePropAbility._getNodeProp.call(instance, 'root', 'nonexistentProp');
             expect(result).toBeUndefined();
         });
+
+        it('cssProp 属性从 style 读取', () => {
+            const el = document.createElement('div');
+            el.style.width = '100px';
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+            };
+            const result = NodePropAbility._getNodeProp.call(instance, 'root', 'width');
+            expect(result).toBe('100px');
+        });
+
+        it('attr 属性从 getAttribute 读取', () => {
+            const el = document.createElement('div');
+            el.setAttribute('role', 'button');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+            };
+            const result = NodePropAbility._getNodeProp.call(instance, 'root', 'role');
+            expect(result).toBe('button');
+        });
+
+        it('domAttr 属性直接读取', () => {
+            const el = document.createElement('div');
+            el.hidden = true;
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+            };
+            const result = NodePropAbility._getNodeProp.call(instance, 'root', 'hidden');
+            expect(result).toBe(true);
+        });
+
+        it('target 不存在时返回 undefined', () => {
+            const instance = {
+                _resolveNodeTarget: () => ({ el: undefined, component: {} }),
+            };
+            const result = NodePropAbility._getNodeProp.call(instance, 'root', 'hidden');
+            expect(result).toBeUndefined();
+        });
     });
 
     describe('_setNodeProp', () => {
@@ -108,7 +146,9 @@ describe('NodePropAbility', () => {
             const instance = {
                 _resolveNodeTarget: () => ({ el: undefined, component: undefined }),
             };
-            expect(() => NodePropAbility._setNodeProp.call(instance, 'root', 'hidden', true)).not.toThrow();
+            expect(() =>
+                NodePropAbility._setNodeProp.call(instance, 'root', 'hidden', true)
+            ).not.toThrow();
         });
 
         it('子组件有同名属性时设置子组件属性', () => {
@@ -125,7 +165,27 @@ describe('NodePropAbility', () => {
             const instance = {
                 _resolveNodeTarget: () => ({ el, component: undefined }),
             };
-            expect(() => NodePropAbility._setNodeProp.call(instance, 'root', 'nonexistent', 'value')).not.toThrow();
+            expect(() =>
+                NodePropAbility._setNodeProp.call(instance, 'root', 'nonexistent', 'value')
+            ).not.toThrow();
+        });
+
+        it('设置 hidden 属性到 DOM', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+            };
+            NodePropAbility._setNodeProp.call(instance, 'root', 'hidden', true);
+            expect(el.hidden).toBe(true);
+        });
+
+        it('target 不存在时直接返回', () => {
+            const instance = {
+                _resolveNodeTarget: () => ({ el: undefined, component: {} }),
+            };
+            expect(() =>
+                NodePropAbility._setNodeProp.call(instance, 'root', 'hidden', true)
+            ).not.toThrow();
         });
     });
 
@@ -221,7 +281,9 @@ describe('NodePropAbility', () => {
                 _resolveNodeTarget: () => ({ el, component: undefined }),
                 nodeMap: { root: { _state: {} } },
             };
-            NodePropAbility._updateNode.call(instance, 'root', { style: 'color: red; font-size: 14px' });
+            NodePropAbility._updateNode.call(instance, 'root', {
+                style: 'color: red; font-size: 14px',
+            });
             expect(el.getAttribute('style')).toBe('color: red; font-size: 14px');
         });
 
@@ -231,7 +293,9 @@ describe('NodePropAbility', () => {
                 _resolveNodeTarget: () => ({ el, component: undefined }),
                 nodeMap: { root: { _state: {} } },
             };
-            NodePropAbility._updateNode.call(instance, 'root', { style: { color: 'red', fontSize: '14px' } });
+            NodePropAbility._updateNode.call(instance, 'root', {
+                style: { color: 'red', fontSize: '14px' },
+            });
             expect(el.style.color).toBe('red');
             expect(el.style.fontSize).toBe('14px');
         });
@@ -263,7 +327,9 @@ describe('NodePropAbility', () => {
                 _resolveNodeTarget: () => ({ el, component: undefined }),
                 nodeMap: { root: { _state: {} } },
             };
-            NodePropAbility._updateNode.call(instance, 'root', { attrs: { 'data-id': '123', 'data-name': 'test' } });
+            NodePropAbility._updateNode.call(instance, 'root', {
+                attrs: { 'data-id': '123', 'data-name': 'test' },
+            });
             expect(el.getAttribute('data-id')).toBe('123');
             expect(el.getAttribute('data-name')).toBe('test');
         });
@@ -286,7 +352,10 @@ describe('NodePropAbility', () => {
                 nodeMap: { root: { _state: {} } },
                 _emitLifecycleEvent: jest.fn(),
             };
-            NodePropAbility._updateNode.call(instance, 'root', { hidden: true, hiddenMode: 'visibility' });
+            NodePropAbility._updateNode.call(instance, 'root', {
+                hidden: true,
+                hiddenMode: 'visibility',
+            });
             expect(el.style.visibility).toBe('hidden');
         });
 
@@ -297,7 +366,10 @@ describe('NodePropAbility', () => {
                 nodeMap: { root: { _state: {} } },
                 _emitLifecycleEvent: jest.fn(),
             };
-            NodePropAbility._updateNode.call(instance, 'root', { hidden: true, hiddenMode: 'opacity' });
+            NodePropAbility._updateNode.call(instance, 'root', {
+                hidden: true,
+                hiddenMode: 'opacity',
+            });
             expect(el.style.opacity).toBe('0');
         });
 
@@ -370,6 +442,95 @@ describe('NodePropAbility', () => {
             NodePropAbility._updateNode.call(instance, 'icon', { cls: 'active' });
             expect(el.className).toBe('active');
         });
+
+        it('应用 flex 布局非对象值', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { flex: true });
+            expect(el.style.display).toBe('flex');
+            expect(el.style.flexDirection).toBe('row');
+        });
+
+        it('应用 grid 布局非对象值', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { grid: true });
+            expect(el.style.display).toBe('flex');
+            expect(el.style.flexWrap).toBe('wrap');
+        });
+
+        it('子组件 value 为 undefined 时跳过', () => {
+            const componentEl = document.createElement('div');
+            const component = { el: componentEl, cls: '' };
+            const node = { _state: {} as Record<string, any>, component };
+            const instance = {
+                _resolveNodeTarget: () => ({ el: undefined, component }),
+                nodeMap: { icon: node },
+            };
+            NodePropAbility._updateNode.call(instance, 'icon', {
+                cls: 'active',
+                hidden: undefined,
+            });
+            expect(component.cls).toBe('active');
+        });
+
+        it('子组件无 el 且无同名属性时跳过', () => {
+            const component = {};
+            const node = { _state: {} as Record<string, any>, component };
+            const instance = {
+                _resolveNodeTarget: () => ({ el: undefined, component }),
+                nodeMap: { icon: node },
+            };
+            expect(() =>
+                NodePropAbility._updateNode.call(instance, 'icon', { cls: 'active' })
+            ).not.toThrow();
+        });
+
+        it('hidden 相同值时不触发事件', () => {
+            const el = document.createElement('div');
+            const emitSpy = jest.fn();
+            const node = { _state: { hidden: true } as Record<string, any> };
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: node },
+                emit: emitSpy,
+                _emitLifecycleEvent: jest.fn(),
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { hidden: true });
+            expect(emitSpy).not.toHaveBeenCalled();
+        });
+
+        it('非 root 节点 hidden 变化不触发事件', () => {
+            const el = document.createElement('div');
+            const emitSpy = jest.fn();
+            const node = { _state: { hidden: false } as Record<string, any> };
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { icon: node },
+                emit: emitSpy,
+                _emitLifecycleEvent: jest.fn(),
+            };
+            NodePropAbility._updateNode.call(instance, 'icon', { hidden: true });
+            expect(emitSpy).not.toHaveBeenCalled();
+        });
+
+        it('node 无 _state 时初始化 _state', () => {
+            const el = document.createElement('div');
+            const node = {} as any;
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: node },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { cls: 'test' });
+            expect(node._state).toBeDefined();
+            expect(node._state.cls).toBe('test');
+        });
     });
 
     describe('_markNodeDirty', () => {
@@ -400,7 +561,10 @@ describe('NodePropAbility', () => {
                 debounce: jest.fn(),
             };
             NodePropAbility._flushNodeProps.call(instance);
-            expect(instance._updateNode).toHaveBeenCalledWith('icon', { cls: 'active', hidden: true });
+            expect(instance._updateNode).toHaveBeenCalledWith('icon', {
+                cls: 'active',
+                hidden: true,
+            });
         });
 
         it('清空脏节点', () => {
@@ -417,6 +581,80 @@ describe('NodePropAbility', () => {
         it('无脏节点时不执行操作', () => {
             const instance = { _updateNode: jest.fn() };
             expect(() => NodePropAbility._flushNodeProps.call(instance)).not.toThrow();
+        });
+    });
+
+    describe('_updateNode applyPropToEl 分支', () => {
+        it('width 数字值自动加 px', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { width: 100 });
+            expect(el.style.width).toBe('100px');
+        });
+
+        it('ariaLabel 属性设置', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { ariaLabel: 'test' });
+            expect(el.getAttribute('aria-label')).toBe('test');
+        });
+
+        it('ariaLabel 值为 false 时移除属性', () => {
+            const el = document.createElement('div');
+            el.setAttribute('aria-label', 'test');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { ariaLabel: false });
+            expect(el.hasAttribute('aria-label')).toBe(false);
+        });
+
+        it('ariaLabel 值为 null 时移除属性', () => {
+            const el = document.createElement('div');
+            el.setAttribute('aria-label', 'test');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { ariaLabel: null });
+            expect(el.hasAttribute('aria-label')).toBe(false);
+        });
+
+        it('ariaLabel 值为 true 时设为空字符串', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { ariaLabel: true });
+            expect(el.getAttribute('aria-label')).toBe('');
+        });
+
+        it('disabled 属性设置', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { disabled: true });
+            expect((el as any).disabled).toBe(true);
+        });
+
+        it('margin 字符串值', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', { margin: '10px' });
+            expect(el.style.margin).toBe('10px');
         });
     });
 });

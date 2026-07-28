@@ -21,7 +21,7 @@ import type { FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
  * 字段与 TplNode 几乎一一对应，无需中间转换类型：
  * - i18n → i18nKey（唯一重命名）
  * - componentClass 从 TplNode.type 解析
- * - DOM 事件通过 tplEvents 委托机制处理，不存入 NodeMetadata
+ * - DOM 事件通过节点内联 emits 声明处理，不存入 NodeMetadata
  *
  * @example
  * ```ts

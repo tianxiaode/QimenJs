@@ -5,7 +5,6 @@
  */
 
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const ICON_TPL: TplNode = {
     tag: 'div',
@@ -17,8 +16,4 @@ export const ICON_TPL: TplNode = {
             cls: 'q-icon',
         },
     ],
-};
-
-export const ICON_EVENTS: TplEvents = {
-    content: { click: { emits: ['click'] } },
 };

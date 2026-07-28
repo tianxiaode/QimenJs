@@ -4,7 +4,7 @@
  * 应用启动时调用 registerDividerTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { DIVIDER_TPL } from './divider-tpl';
 
 export function registerDividerTemplates(): void {

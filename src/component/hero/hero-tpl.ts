@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const HERO_TPL: TplNode = {
     tag: 'div',
@@ -22,8 +21,4 @@ export const HERO_TPL: TplNode = {
             ],
         },
     ],
-};
-
-export const HERO_EVENTS: TplEvents = {
-    actionBtn: { click: { handler: true, emits: ['action'] } },
 };

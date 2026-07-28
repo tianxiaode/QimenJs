@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const DAY_GRID_TPL: TplNode = {
     tag: 'div',
@@ -16,8 +15,4 @@ export const DAY_GRID_TPL: TplNode = {
             cls: 'q-dtpanel__day-grid',
         },
     ],
-};
-
-export const DAY_GRID_EVENTS: TplEvents = {
-    dayGrid: { click: { handler: true, emits: ['daySelect'] } },
 };

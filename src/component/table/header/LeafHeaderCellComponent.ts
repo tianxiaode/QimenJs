@@ -37,12 +37,6 @@ export let LeafHeaderCellComponent = BaseHeaderCellComponent.replace({
         },
     },
 
-    tplEvents: {
-        content: {
-            click: { handler: '_onSortClick' },
-        },
-    },
-
     body: {
         drags: {
             resizeHandle: { axis: 'x', activeClass: 'q-header-cell__resize--active' },

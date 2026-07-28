@@ -4,7 +4,7 @@
  * 应用启动时调用 registerTextTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { TEXT_TPL } from './text-tpl';
 
 export function registerTextTemplates(): void {

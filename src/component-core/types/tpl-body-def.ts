@@ -49,7 +49,7 @@
  * ┌──────────┬──────────────────────────────────────────────────┐
  * │ 字段     │ 说明                                             │
  * ├──────────┼──────────────────────────────────────────────────┤
- * │ type     │ 组件类型标识，注册到 ComponentRegistrar          │
+ * │ type     │ 组件类型标识，注册到 TemplateRegistrar          │
  * │ entityKey│ 实体 key，TplNode events 中 entities 引用        │
  * │ eventKey │ 桥接事件 key，TplNode events 中 bridges 引用     │
  * │ floatKey │ 浮动层 key                                       │
@@ -127,13 +127,13 @@
  * 事件数据自动收集
  * ══════════════════════════════════════════════════════════════
  *
- * 事件数据通过四层声明式配置合并而成：
+ * 事件数据通过三层声明式配置合并而成：
  *
  * 1. defaultEventData — 组件注册时声明的基础字段
  *    registrar.register('Button', ButtonComponent, { defaultEventData: ['name', 'text'] })
  *    registrar.register('Input', InputComponent,  { defaultEventData: ['name', 'getFormValue'] })
  *
- *    编译时自动合并到每条 rule.data 中，tplEvents 中只需声明额外字段
+ *    编译时自动合并到每条 rule.data 中
  *
  * 2. action — 节点声明的语义动作（TplNode.action）
  *    { action: 'save' } → 事件数据中自动包含 { action: 'save' }
@@ -144,12 +144,7 @@
  *    { data: { emit: ['name'], entity: ['getEntityData'] } } → 按事件类型区分
  *    支持属性取值和方法调用两种方式
  *
- * 4. rule.data — tplEvents 中声明的额外字段（旧方案，仍支持）
- *    data: ['name', 'path', 'getFormData']
- *    - 'name'/'path' → 从组件取属性值
- *    - 'getFormData' → 调用组件方法取返回值
- *
- * 最终事件数据 = defaultEventData + action + data + rule.data（合并，不覆盖）
+ * 最终事件数据 = defaultEventData + action + data（合并，不覆盖）
  *
  * @example
  * ```ts

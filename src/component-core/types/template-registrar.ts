@@ -90,10 +90,11 @@ export interface CompiledProduct {
  *
  * @see TemplateRegistrar - 模板注册器
  */
-export interface TemplateEntry {
+export interface ComponentEntry {
     name: string;
-    tpl: TplNode;
+    tpl?: TplNode;
     compiled?: CompiledProduct;
     replaceFrom?: string;
     componentClass?: new (props?: Record<string, any>) => any;
+    templateRef?: string;
 }

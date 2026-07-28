@@ -4,7 +4,7 @@
  * 千位3按钮（0/1/2）+ 百十个位6列×5行数字矩阵。
  * 依次点4个数字（千/百/十/个），点完第4个数字触发 yearSelect。
  * 千位按钮通过 data-value 标记，数字矩阵格子通过 data-group + data-value 标记。
- * thousandsRow / digitGroups 容器用 tplEvents 委托 click。
+ * thousandsRow / digitGroups 容器委托 click。
  * confirmBtn 用 emits 自动转发 confirm 事件。
  * yearSelect 因4次点击才触发，在 handler 中手动 emit。
  *

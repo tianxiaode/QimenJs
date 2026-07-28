@@ -4,7 +4,7 @@
  * 与 MinutePanelComponent 布局完全一致。
  * 十位6按钮（0-5）+ 个位2列×5行数字矩阵。
  * 十位按钮通过 data-value 标记，个位格子通过 data-value 标记。
- * tensRow / onesGrid 容器用 tplEvents 委托 click。
+ * tensRow / onesGrid 容器委托 click。
  * confirmBtn 用 emits 自动转发 confirm 事件，数据通过 getEventData 提取。
  * secondSelect 因2次点击才触发，在 handler 中手动 emit。
  *

@@ -1,10 +1,7 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const BASE_CELL_TPL: TplNode = {
     tag: 'div',
     cls: 'q-cell',
     children: [{ tag: 'span', name: 'content', cls: 'q-cell__text' }],
 };
-
-export const BASE_CELL_EVENTS: TplEvents = {};

@@ -2,7 +2,7 @@
  * Progress 模板注册
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { PROGRESS_TPL } from './progress-tpl';
 
 export function registerProgressTemplates(): void {

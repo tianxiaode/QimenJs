@@ -150,8 +150,8 @@ export class HeaderEngine {
         for (const config of configs) {
             const isGroup = 'childNames' in config;
             const cellType = isGroup ? 'GroupHeaderCell' : 'LeafHeaderCell';
-            const { ComponentRegistrar } = require('../../../component-core');
-            const CellClass = ComponentRegistrar.getInstance().get(cellType);
+            const { TemplateRegistrar } = require('../../../component-core');
+            const CellClass = TemplateRegistrar.getInstance().get(cellType);
             if (!CellClass) continue;
 
             const instance = new CellClass(config);

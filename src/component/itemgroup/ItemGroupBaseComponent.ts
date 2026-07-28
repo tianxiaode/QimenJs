@@ -3,7 +3,7 @@
 // 提供：模板、工具方法、事件处理、defaultItem 合并
 // ============================================
 
-import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component, TemplateRegistrar } from '@qimenjs/component-core';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 export type DefaultItemDef = Record<string, any>;
@@ -161,7 +161,7 @@ class ItemGroupBaseComponent extends Component {
         const itemType = data.type ?? this._defaultItemType;
         if (!itemType) return null;
 
-        const ItemClass = ComponentRegistrar.getInstance().get(itemType) as any;
+        const ItemClass = TemplateRegistrar.getInstance().get(itemType) as any;
         if (!ItemClass) return null;
 
         const props = { ...data };

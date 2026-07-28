@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const DATE_PANEL_TPL: TplNode = {
     tag: 'div',
@@ -88,19 +87,4 @@ export const DATE_PANEL_TPL: TplNode = {
             ],
         },
     ],
-};
-
-export const DATE_PANEL_EVENTS: TplEvents = {
-    backBtn: { click: { handler: true } },
-    confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-    prev10y: { click: { handler: true } },
-    prev1y: { click: { handler: true } },
-    prev1m: { click: { handler: true } },
-    next1m: { click: { handler: true } },
-    next1y: { click: { handler: true } },
-    next10y: { click: { handler: true } },
-    yesterdayBtn: { click: { handler: true, emits: ['daySelect'] } },
-    todayBtn: { click: { handler: true, emits: ['daySelect'] } },
-    tomorrowBtn: { click: { handler: true, emits: ['daySelect'] } },
-    dateLabel: { click: { handler: true } },
 };

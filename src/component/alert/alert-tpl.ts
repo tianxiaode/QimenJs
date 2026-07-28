@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const ALERT_TPL: TplNode = {
     tag: 'div',
@@ -22,8 +21,4 @@ export const ALERT_TPL: TplNode = {
             hidden: true,
         },
     ],
-};
-
-export const ALERT_EVENTS: TplEvents = {
-    closeBtn: { click: { handler: true, emits: ['close'] } },
 };

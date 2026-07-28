@@ -1,10 +1,7 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
-import { DelegatedEventEngine } from '@/component-core/engine/DelegatedEventEngine';
-import { DIALOG_TPL, DIALOG_EVENTS } from './dialog-tpl';
-import { DialogComponent } from './DialogComponent';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { DIALOG_TPL } from './dialog-tpl';
 
 export function registerDialogTemplates(): void {
     const registry = TemplateRegistrar.getInstance();
     registry.register('Dialog', DIALOG_TPL);
-    DialogComponent._delegatedEventRules = DelegatedEventEngine.compileTplEvents(DIALOG_EVENTS);
 }

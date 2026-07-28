@@ -5,7 +5,7 @@ import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
-import { ComponentRegistrar } from '@qimenjs/component-core';
+import { TemplateRegistrar } from '@qimenjs/component-core';
 
 export interface OverlayDefinition {
     type: string;
@@ -251,7 +251,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
      * 挂载并显示浮层
      *
      * 优先使用 data.overlay（调用方提供的实例）；
-     * 若未提供，则从 def.type 通过 ComponentRegistrar 自动创建实例。
+     * 若未提供，则从 def.type 通过 TemplateRegistrar 自动创建实例。
      * trigger: 'always' 的浮层在 _handleInit 中自动触发 SHOW，无需手动调用。
      */
     private _mountAndShow(instanceKey: string, overlayKey: string, data: any): void {
@@ -264,10 +264,10 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const { component, anchor, overlay } = data || {};
         let overlayInst = overlay;
         if (!overlayInst) {
-            const OverlayClass = ComponentRegistrar.getInstance().get(def.type);
+            const OverlayClass = TemplateRegistrar.getInstance().get(def.type);
             if (!OverlayClass) {
                 this.logger.warn?.(
-                    `[OverlayDispatchCenter] overlayKey="${overlayKey}" type="${def.type}" not registered in ComponentRegistrar`
+                    `[OverlayDispatchCenter] overlayKey="${overlayKey}" type="${def.type}" not registered in TemplateRegistrar`
                 );
                 return;
             }

@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const MINUTE_PANEL_TPL: TplNode = {
     tag: 'div',
@@ -38,12 +37,4 @@ export const MINUTE_PANEL_TPL: TplNode = {
             style: 'grid-template-columns: repeat(2, 1fr); padding-left: 24px; padding-right: 24px;',
         },
     ],
-};
-
-export const MINUTE_PANEL_EVENTS: TplEvents = {
-    backBtn: { click: { handler: true } },
-    prevBtn: { click: { handler: true } },
-    confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-    tensRow: { click: { handler: true } },
-    onesGrid: { click: { handler: true } },
 };

@@ -4,7 +4,7 @@
  * 应用启动时调用 registerFormFieldTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { FORMFIELD_TPL } from './formfield-tpl';
 
 export function registerFormFieldTemplates(): void {

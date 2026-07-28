@@ -5,7 +5,6 @@
  */
 
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const BUTTON_TPL: TplNode = {
     tag: 'div',
@@ -28,9 +27,4 @@ export const BUTTON_TPL: TplNode = {
             hidden: true,
         },
     ],
-};
-
-export const BUTTON_EVENTS: TplEvents = {
-    '': { click: { emits: ['click'] } },
-    dropIcon: { click: { emits: ['dropClick'] } },
 };

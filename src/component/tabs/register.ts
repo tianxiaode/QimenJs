@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { TABS_TPL } from './tabs-tpl';
 
 export function registerTabsTemplates(): void {

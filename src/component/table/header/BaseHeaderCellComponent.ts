@@ -8,7 +8,7 @@
  * - update() 基础契约
  *
  * 子类派生方式：
- *   LeafHeaderCell  = BaseHeaderCell.replace({ tplReplaces, tplEvents, body })
+ *   LeafHeaderCell  = BaseHeaderCell.replace({ tplReplaces, body })
  *   GroupHeaderCell = BaseHeaderCell.replace({ tplReplaces, body })
  */
 

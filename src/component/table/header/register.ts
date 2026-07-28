@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 

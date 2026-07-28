@@ -2,7 +2,7 @@
  * HourPanelComponent 小时选择面板
  *
  * 6列×4行，直接显示0-23。点1个数字即选中，触发 autoNext。
- * 数字格子通过 data-value 标记，grid 容器用 tplEvents 委托 click。
+ * 数字格子通过 data-value 标记，grid 容器委托 click。
  *
  * 导航栏：← 返回 | ↶ 上一步 | 选择小时 | 确认 ✓
  *

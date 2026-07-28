@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { SIDEBAR_TPL } from './sidebar-tpl';
 
 export function registerSidebarTemplates(): void {

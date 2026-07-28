@@ -4,7 +4,7 @@
  * 应用启动时调用 registerBadgeTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { BADGE_TPL } from './badge-tpl';
 
 export function registerBadgeTemplates(): void {

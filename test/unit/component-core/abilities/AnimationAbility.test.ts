@@ -188,5 +188,26 @@ describe('AnimationAbility', () => {
             await expect(result).resolves.toBeUndefined();
             expect(animateSpy).not.toHaveBeenCalled();
         });
+
+        it('enter 预设名称不存在时不播放', () => {
+            const el = document.createElement('div');
+            const animateSpy = jest.fn();
+            el.animate = animateSpy;
+            const ctor = { _animation: { enter: 'nonExistentAnimation' } };
+            const instance = { el, constructor: ctor };
+            AnimationAbility.playEnter.call(instance);
+            expect(animateSpy).not.toHaveBeenCalled();
+        });
+
+        it('leave 预设名称不存在时返回 resolved Promise', async () => {
+            const el = document.createElement('div');
+            const animateSpy = jest.fn();
+            el.animate = animateSpy;
+            const ctor = { _animation: { leave: 'nonExistentAnimation' } };
+            const instance = { el, constructor: ctor };
+            const result = AnimationAbility.playLeave.call(instance);
+            await expect(result).resolves.toBeUndefined();
+            expect(animateSpy).not.toHaveBeenCalled();
+        });
     });
 });

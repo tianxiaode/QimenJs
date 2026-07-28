@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const YEAR_PANEL_TPL: TplNode = {
     tag: 'div',
@@ -32,12 +31,4 @@ export const YEAR_PANEL_TPL: TplNode = {
             cls: 'q-dtpanel__digit-groups',
         },
     ],
-};
-
-export const YEAR_PANEL_EVENTS: TplEvents = {
-    backBtn: { click: { handler: true } },
-    prevBtn: { click: { handler: true } },
-    confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-    thousandsRow: { click: { handler: true } },
-    digitGroups: { click: { handler: true } },
 };

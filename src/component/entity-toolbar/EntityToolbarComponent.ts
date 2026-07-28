@@ -362,7 +362,7 @@ class EntityToolbarComponent extends ToolbarComponent {
     }
 
     // ══════════════════════════════════════════════
-    // 语义事件（tplEvents 已处理 entity/bridge 转发）
+    // 语义事件
     // ══════════════════════════════════════════════
 
     _setupSemanticEvents(): void {

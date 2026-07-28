@@ -19,13 +19,6 @@ export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
         direction: 'horizontal',
     },
 
-    tplEvents: {
-        itemContainer: {
-            $items: {
-                NavItem: { click: { emits: ['click'] }, close: { emits: ['close'] } },
-            },
-        },
-    },
     body: {
         nodes: {
             root: { addCls: 'q-nav' },

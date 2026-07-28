@@ -4,7 +4,7 @@
  * 应用启动时调用 registerButtonTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { BUTTON_TPL } from './button-tpl';
 
 export function registerButtonTemplates(): void {

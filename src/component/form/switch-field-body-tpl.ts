@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const SWITCH_FIELD_BODY_TPL: TplNode = {
     tag: 'div',
@@ -18,10 +17,4 @@ export const SWITCH_FIELD_BODY_TPL: TplNode = {
             ],
         },
     ],
-};
-
-export const SWITCH_FIELD_BODY_EVENTS: TplEvents = {
-    track: {
-        click: { handler: true, emits: ['switchToggle'] },
-    },
 };

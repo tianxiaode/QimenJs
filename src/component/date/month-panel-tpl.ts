@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const MONTH_PANEL_TPL: TplNode = {
     tag: 'div',
@@ -33,11 +32,4 @@ export const MONTH_PANEL_TPL: TplNode = {
             style: 'grid-template-columns: repeat(6, 1fr);',
         },
     ],
-};
-
-export const MONTH_PANEL_EVENTS: TplEvents = {
-    backBtn: { click: { handler: true } },
-    prevBtn: { click: { handler: true } },
-    confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-    grid: { click: { handler: true, emits: ['monthSelect'] } },
 };

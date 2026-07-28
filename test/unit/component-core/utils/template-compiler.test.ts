@@ -1,4 +1,4 @@
-import { findByPath } from '@/component-core/engine/TemplateCompiler';
+import { findByPath } from '@/component-core/engine/utils/dom-path';
 
 describe('template-compiler', () => {
     describe('findByPath', () => {

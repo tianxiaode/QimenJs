@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { BREADCRUMB_TPL } from './breadcrumb-tpl';
 
 export function registerBreadcrumbTemplates(): void {

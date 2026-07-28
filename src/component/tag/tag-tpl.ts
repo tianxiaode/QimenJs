@@ -5,7 +5,6 @@
  */
 
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const TAG_TPL: TplNode = {
     tag: 'span',
@@ -20,8 +19,4 @@ export const TAG_TPL: TplNode = {
             hidden: true,
         },
     ],
-};
-
-export const TAG_EVENTS: TplEvents = {
-    closeBtn: { click: { handler: true, emits: ['close'] } },
 };

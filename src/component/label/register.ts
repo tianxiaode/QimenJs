@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { LABEL_TPL } from './label-tpl';
 
 export function registerLabelTemplates(): void {

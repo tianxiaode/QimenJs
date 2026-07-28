@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { OVERFLOW_MENU_TPL } from './overflow-menu-tpl';
 import { OverflowMenuComponent } from './OverflowMenuComponent';
 

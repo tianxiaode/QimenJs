@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const FORMFIELD_TPL: TplNode = {
     tag: 'div',
@@ -32,5 +31,3 @@ export const FORMFIELD_TPL: TplNode = {
         },
     ],
 };
-
-export const FORMFIELD_EVENTS: TplEvents = {};

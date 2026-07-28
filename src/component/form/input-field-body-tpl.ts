@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const INPUT_FIELD_BODY_TPL: TplNode = {
     tag: 'div',
@@ -39,19 +38,4 @@ export const INPUT_FIELD_BODY_TPL: TplNode = {
             hidden: true,
         },
     ],
-};
-
-export const INPUT_FIELD_BODY_EVENTS: TplEvents = {
-    field: {
-        input: { emits: ['input'], debounce: 150 },
-        focus: { emits: ['focus'] },
-        blur: { emits: ['blur'] },
-        change: { emits: ['change'], debounce: 150 },
-        keydown: { emits: ['keydown'] },
-    },
-    actions: {
-        $items: {
-            Icon: { click: { emits: ['actionClick'] } },
-        },
-    },
 };

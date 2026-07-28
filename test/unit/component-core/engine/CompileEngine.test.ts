@@ -10,7 +10,7 @@ jest.mock('@/logger', () => ({
 }));
 
 import { CompileEngine } from '@/component-core/engine/CompileEngine';
-import type { CompileResult } from '@/component-core/engine/CompileEngine';
+import type { CompileResult } from '@/component-core/types/compile-engine-types';
 import { VOID_TAGS } from '@/component-core/constants/compile-constants';
 import { findByPath } from '@/component-core/engine/utils/dom-path';
 
@@ -22,7 +22,7 @@ describe('CompileEngine', () => {
             const tpl = { tag: 'div', children: [{ tag: 'span', name: 'text' }] };
             const result: CompileResult = CompileEngine.compile(tpl);
 
-            expect(result.cache.html).toBe('<div><span></span></div>');
+            expect(result.cache.html).toBe('<span></span>');
             expect(result.cache.indexPath['root']).toEqual([]);
             expect(result.cache.indexPath['text']).toEqual([0]);
             expect(result.cache.exposeNames).toContain('text');
@@ -84,7 +84,7 @@ describe('CompileEngine', () => {
             };
             const result = CompileEngine.expandFragments(tpl);
             expect(result.children).toHaveLength(1);
-            expect(result.children![0].name).toBe('outer:inner:deep');
+            expect(result.children![0].children![0].name).toBe('outer:inner:deep');
         });
 
         it('已有 children 时递归展开子节点', () => {
@@ -123,7 +123,7 @@ describe('CompileEngine', () => {
             };
             const result = CompileEngine.compileTemplate(tpl, noopLogger);
 
-            expect(result.html).toBe('<div><span></span></div>');
+            expect(result.html).toBe('<span></span>');
             expect(result.indexPath['root']).toEqual([]);
             expect(result.indexPath['text']).toEqual([0]);
             expect(result.nodeMetas['root'].tag).toBe('div');
@@ -226,7 +226,12 @@ describe('CompileEngine', () => {
                         children: [
                             {
                                 tag: 'div',
-                                children: [{ tag: 'div', name: 'deep', children: [] }],
+                                children: [
+                                    {
+                                        tag: 'div',
+                                        children: [{ tag: 'div', name: 'deep', children: [] }],
+                                    },
+                                ],
                             },
                         ],
                     },
@@ -300,11 +305,11 @@ describe('CompileEngine', () => {
             expect(result.nodeMetas['row'].style).toBe('font-size:12px');
         });
 
-        it('无 children 时 html 为空标签对', () => {
+        it('无 children 时 html 为空字符串', () => {
             const tpl = { tag: 'div' };
             const result = CompileEngine.compileTemplate(tpl, noopLogger);
 
-            expect(result.html).toBe('<div></div>');
+            expect(result.html).toBe('');
         });
 
         it('type 节点 initConfig 传入 nodeMetas', () => {

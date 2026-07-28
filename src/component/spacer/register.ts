@@ -4,7 +4,7 @@
  * 应用启动时调用 registerSpacerTemplates()。
  */
 
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { SPACER_TPL } from './spacer-tpl';
 
 export function registerSpacerTemplates(): void {

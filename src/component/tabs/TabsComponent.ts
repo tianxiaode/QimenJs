@@ -24,7 +24,7 @@
  * ```
  */
 
-import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component, TemplateRegistrar } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { TabBarComponent } from '../tab-bar/TabBarComponent';
 
@@ -146,7 +146,7 @@ class TabsComponent extends Component {
                     if (item.content.startsWith('<')) {
                         contentWrapper.innerHTML = item.content;
                     } else {
-                        const CompClass = ComponentRegistrar.getInstance().get(item.content) as any;
+                        const CompClass = TemplateRegistrar.getInstance().get(item.content) as any;
                         if (CompClass) {
                             const instance = new CompClass();
                             contentWrapper.appendChild(instance.el);

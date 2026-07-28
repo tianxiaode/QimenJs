@@ -1,4 +1,4 @@
-import { TemplateRegistrar } from '@/component-core/engine/TemplateRegistrar';
+import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import { RADIO_GROUP_FIELD_BODY_TPL } from './radio-group-field-body-tpl';
 
 export function registerRadioGroupFieldBodyTemplates(): void {

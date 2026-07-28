@@ -9,10 +9,7 @@
  * - 直传模式：transport: { url } → HttpClient.upload() 直接上传
  *   事件走桥接通道（有 eventKey 时 bridgeEmit）或组件通道（on 监听）
  *
- * tplEvents 事件发布规则：
- * - btn click → handler:true（内部处理选文件）+ emits:['select'] + bridges:['select']
- * - 有 eventKey 时自动走 bridgeEmit，无 eventKey 时只走 emit
- *
+
  * 支持 hashEnabled 开关，开启后先计算文件哈希再上传（秒传/断点续传）。
  * 文件类型校验通过 MimeTypeRegistrar 与 accept 配置对照。
  *
@@ -95,16 +92,6 @@ function isFileTypeAllowed(file: File, accept: string): boolean {
 
 export let FileInputComponent = ButtonComponent.replace({
     type: 'FileInput',
-
-    tplEvents: {
-        btn: {
-            click: {
-                handler: true,
-                emits: ['select'],
-                bridges: ['select'],
-            },
-        },
-    },
 
     body: {
         nodes: {

@@ -22,27 +22,19 @@
  *   - 生命周期钩子：onBeforeInit/onAfterInit/onMounted/onResize/onUpdated/onBeforeUnmount/onBeforeDispose
  *   - 自定义方法：任意方法名
  *
- * tplEvents: 组件级事件委托声明（TplEvents）
- *   - 与 tpl/body 同级定义
- *   - 所有 DOM 事件统一委托到组件根 el
- *   - 通过 containsElement 匹配分发
- *
  * @see TplNode - 模板节点定义
  * @see BodyDef - 组件行为定义
- * @see TplEvents - 事件委托定义
  */
 
 import type { TplNode } from './tpl-node-types';
 import type { BodyDef } from './tpl-body';
-import type { TplEvents } from './tpl-events';
 
 /**
  * 组件模板定义
  *
- * 完整的组件模板由三部分组成：
+ * 完整的组件模板由两部分组成：
  * 1. tpl - DOM 骨架结构
  * 2. body - 组件行为和配置
- * 3. tplEvents - 事件委托声明
  *
  * @example
  * ```ts
@@ -73,10 +65,7 @@ import type { TplEvents } from './tpl-events';
  *             { tag: 'span', name: 'text', cls: 'q-button__text' },
  *         ]
  *     },
- *     tplEvents: {
- *         btn: ['click'],  // 纯声明，事件冒泡给父组件
- *         icon: { click: { handler: 'onIconClick' } }  // 内部处理
- *     },
+
  *     body: {
  *         type: 'button',
  *         onIconClick(ctx, el) {
@@ -108,7 +97,7 @@ import type { TplEvents } from './tpl-events';
  * @see withTemplate - 创建组件的工厂函数
  * @see TplNode - 模板节点定义
  * @see BodyDef - 组件行为定义
- * @see TplEvents - 事件委托定义
+
  */
 export interface ComponentTemplate {
     /**
@@ -126,12 +115,4 @@ export interface ComponentTemplate {
      * 包括静态属性、初始化配置、生命周期方法、自定义方法。
      */
     body?: BodyDef;
-
-    /**
-     * 组件级事件委托声明
-     *
-     * 与 body 同级定义，所有 DOM 事件统一委托到组件根 el。
-     * 通过 containsElement 匹配分发，$items 规则通过 getTargetItem 定位 item。
-     */
-    tplEvents?: TplEvents;
 }

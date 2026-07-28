@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const FIELDSET_TPL: TplNode = {
     tag: 'fieldset',
@@ -30,8 +29,4 @@ export const FIELDSET_TPL: TplNode = {
             cls: 'q-fieldset__content',
         },
     ],
-};
-
-export const FIELDSET_EVENTS: TplEvents = {
-    legend: { click: { handler: true, emits: ['toggle'] } },
 };

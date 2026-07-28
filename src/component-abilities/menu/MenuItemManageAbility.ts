@@ -11,7 +11,7 @@
  *
  * 宿主需要：
  * - 提供一个容器元素（通过 getMenuItemContainer 指定，默认取 nodeMap.menu.content 或 this.el）
- * - 从 ComponentRegistrar 查找 MenuItemComponent 类
+ * - 从 TemplateRegistrar 查找 MenuItemComponent 类
  *
  * @example
  * ```js
@@ -30,7 +30,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { ComponentRegistrar } from '@qimenjs/component-core';
+import { TemplateRegistrar } from '@qimenjs/component-core';
 
 // ─── 菜单项配置 ────────────────────────────────────────
 
@@ -55,7 +55,7 @@ export interface MenuItemConfig {
 
 // ─── 能力定义 ──────────────────────────────────────────
 
-export const MenuItemManageAbility= {
+export const MenuItemManageAbility = {
     // ─── 属性访问方法 ───
 
     /**
@@ -307,13 +307,13 @@ export const MenuItemManageAbility= {
     // ─── 内部方法 ───
 
     /**
-     * 从 ComponentRegistrar 查找 MenuItemComponent 类
+     * 从 TemplateRegistrar 查找 MenuItemComponent 类
      */
     _getMenuItemClass(): any {
         const cached = this.getMenuItemManage('menuItemClass');
         if (cached) return cached;
 
-        const MenuItemClass = ComponentRegistrar.getInstance().get('MenuItem');
+        const MenuItemClass = TemplateRegistrar.getInstance().get('MenuItem');
         if (MenuItemClass) {
             this.setMenuItemManage('menuItemClass', MenuItemClass);
         }

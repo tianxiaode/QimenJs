@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const OVERFLOW_SCROLL_TPL: TplNode = {
     tag: 'div',
@@ -18,9 +17,4 @@ export const OVERFLOW_SCROLL_TPL: TplNode = {
             hidden: true,
         },
     ],
-};
-
-export const OVERFLOW_SCROLL_EVENTS: TplEvents = {
-    prevIcon: { click: { handler: true } },
-    nextIcon: { click: { handler: true } },
 };

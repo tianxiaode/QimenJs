@@ -1,5 +1,4 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const BASE_HEADER_CELL_TPL: TplNode = {
     tag: 'div',
@@ -14,5 +13,3 @@ export const BASE_HEADER_CELL_TPL: TplNode = {
         { tag: 'span', name: 'resizeHandle', cls: 'q-header-cell__resize' },
     ],
 };
-
-export const BASE_HEADER_CELL_EVENTS: TplEvents = {};

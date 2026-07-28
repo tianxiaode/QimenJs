@@ -78,7 +78,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.style.get.call(instance)).toBe('color: red');
                 CommonPropsAbility.style.set.call(instance, 'color: blue');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { style: 'color: blue' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    style: 'color: blue',
+                });
             });
 
             it('role getter/setter', () => {
@@ -100,7 +102,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaLabel.get.call(instance)).toBe('label');
                 CommonPropsAbility.ariaLabel.set.call(instance, 'new-label');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaLabel: 'new-label' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaLabel: 'new-label',
+                });
             });
 
             it('ariaChecked getter/setter', () => {
@@ -110,7 +114,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaChecked.get.call(instance)).toBe('true');
                 CommonPropsAbility.ariaChecked.set.call(instance, 'false');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaChecked: 'false' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaChecked: 'false',
+                });
             });
 
             it('ariaDisabled getter/setter', () => {
@@ -120,7 +126,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaDisabled.get.call(instance)).toBe('false');
                 CommonPropsAbility.ariaDisabled.set.call(instance, 'true');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaDisabled: 'true' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaDisabled: 'true',
+                });
             });
 
             it('ariaExpanded getter/setter', () => {
@@ -130,7 +138,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaExpanded.get.call(instance)).toBe('true');
                 CommonPropsAbility.ariaExpanded.set.call(instance, 'false');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaExpanded: 'false' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaExpanded: 'false',
+                });
             });
 
             it('ariaSelected getter/setter', () => {
@@ -140,7 +150,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaSelected.get.call(instance)).toBe('true');
                 CommonPropsAbility.ariaSelected.set.call(instance, 'false');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaSelected: 'false' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaSelected: 'false',
+                });
             });
 
             it('ariaHidden getter/setter', () => {
@@ -150,7 +162,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.ariaHidden.get.call(instance)).toBe('false');
                 CommonPropsAbility.ariaHidden.set.call(instance, 'true');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { ariaHidden: 'true' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    ariaHidden: 'true',
+                });
             });
 
             it('hint getter/setter', () => {
@@ -274,7 +288,9 @@ describe('CommonPropsAbility', () => {
                 };
                 expect(CommonPropsAbility.border.get.call(instance)).toBe('1px solid #ccc');
                 CommonPropsAbility.border.set.call(instance, '2px solid #999');
-                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { border: '2px solid #999' });
+                expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                    border: '2px solid #999',
+                });
             });
         });
     });
@@ -590,7 +606,171 @@ describe('CommonPropsAbility', () => {
         it('setNodeBorder 委托 _markNodeDirty', () => {
             const instance = { _markNodeDirty: jest.fn() };
             CommonPropsAbility.setNodeBorder.call(instance, '1px solid #ccc', 'icon');
-            expect(instance._markNodeDirty).toHaveBeenCalledWith('icon', { border: '1px solid #ccc' });
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('icon', {
+                border: '1px solid #ccc',
+            });
+        });
+
+        it('setNodeStyle 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeStyle.call(instance, 'color: red');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { style: 'color: red' });
+        });
+
+        it('setNodeHidden 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeHidden.call(instance, true);
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { hidden: true });
+        });
+
+        it('setNodeDisabled 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeDisabled.call(instance, true);
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { disabled: true });
+        });
+
+        it('setNodeProp 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeProp.call(instance, 'cls', 'active');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { cls: 'active' });
+        });
+
+        it('setNodeX 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeX.call(instance, '10px');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { x: '10px' });
+        });
+
+        it('setNodeY 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeY.call(instance, '20px');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { y: '20px' });
+        });
+
+        it('setNodeMargin 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeMargin.call(instance, '10px');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { margin: '10px' });
+        });
+
+        it('setNodePadding 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodePadding.call(instance, '5px');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { padding: '5px' });
+        });
+
+        it('setNodeFontSize 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeFontSize.call(instance, '14px');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { fontSize: '14px' });
+        });
+
+        it('setNodeColor 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeColor.call(instance, '#333');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { color: '#333' });
+        });
+
+        it('setNodeBg 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeBg.call(instance, '#fff');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { bg: '#fff' });
+        });
+
+        it('setNodeCursor 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeCursor.call(instance, 'pointer');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', { cursor: 'pointer' });
+        });
+
+        it('setNodeBorder 默认 nodeName 为 root', () => {
+            const instance = { _markNodeDirty: jest.fn() };
+            CommonPropsAbility.setNodeBorder.call(instance, '1px solid #ccc');
+            expect(instance._markNodeDirty).toHaveBeenCalledWith('root', {
+                border: '1px solid #ccc',
+            });
+        });
+
+        it('addCls 无 target 时不报错', () => {
+            const instance = {
+                _resolveNodeTarget: jest
+                    .fn()
+                    .mockReturnValue({ el: undefined, component: undefined }),
+            };
+            expect(() => CommonPropsAbility.addCls.call(instance, 'active')).not.toThrow();
+        });
+
+        it('removeCls 无 target 时不报错', () => {
+            const instance = {
+                _resolveNodeTarget: jest
+                    .fn()
+                    .mockReturnValue({ el: undefined, component: undefined }),
+            };
+            expect(() => CommonPropsAbility.removeCls.call(instance, 'active')).not.toThrow();
+        });
+
+        it('toggleCls 无 target 时不报错', () => {
+            const instance = {
+                _resolveNodeTarget: jest
+                    .fn()
+                    .mockReturnValue({ el: undefined, component: undefined }),
+            };
+            expect(() => CommonPropsAbility.toggleCls.call(instance, 'active')).not.toThrow();
+        });
+
+        it('setAttr 无 target 时不报错', () => {
+            const instance = {
+                _resolveNodeTarget: jest
+                    .fn()
+                    .mockReturnValue({ el: undefined, component: undefined }),
+            };
+            expect(() => CommonPropsAbility.setAttr.call(instance, 'data-id', '123')).not.toThrow();
+        });
+
+        it('removeAttr 无 target 时不报错', () => {
+            const instance = {
+                _resolveNodeTarget: jest
+                    .fn()
+                    .mockReturnValue({ el: undefined, component: undefined }),
+            };
+            expect(() => CommonPropsAbility.removeAttr.call(instance, 'data-id')).not.toThrow();
+        });
+
+        it('removeCls 委托子组件', () => {
+            const component = { removeCls: jest.fn() };
+            const instance = {
+                _resolveNodeTarget: jest.fn().mockReturnValue({ el: undefined, component }),
+            };
+            CommonPropsAbility.removeCls.call(instance, 'active', 'icon');
+            expect(instance._resolveNodeTarget).toHaveBeenCalledWith('icon');
+        });
+
+        it('addCls 指定 nodeName', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+            };
+            CommonPropsAbility.addCls.call(instance, 'active', 'icon');
+            expect(instance._resolveNodeTarget).toHaveBeenCalledWith('icon');
+        });
+
+        it('setAttr 指定 nodeName', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+            };
+            CommonPropsAbility.setAttr.call(instance, 'data-id', '123', 'icon');
+            expect(instance._resolveNodeTarget).toHaveBeenCalledWith('icon');
+        });
+
+        it('removeAttr 指定 nodeName', () => {
+            const el = document.createElement('div');
+            el.setAttribute('data-id', '123');
+            const instance = {
+                _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+            };
+            CommonPropsAbility.removeAttr.call(instance, 'data-id', 'icon');
+            expect(instance._resolveNodeTarget).toHaveBeenCalledWith('icon');
         });
     });
 });

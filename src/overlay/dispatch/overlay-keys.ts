@@ -38,7 +38,7 @@ export const OVERLAY_DECL_KEYS: Record<string, OverlayKeyDef> = {
     type: {
         required: true,
         description:
-            '浮层组件类型名，对应 ComponentRegistrar 中注册的组件类名（如 tips/dropdown/popover）',
+            '浮层组件类型名，对应 TemplateRegistrar 中注册的组件类名（如 tips/dropdown/popover）',
     },
     trigger: {
         description:

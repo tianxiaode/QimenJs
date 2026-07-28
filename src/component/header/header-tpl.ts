@@ -1,5 +1,5 @@
 import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { TplEvents } from '@/component-core/types/tpl-events';
+
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
@@ -30,20 +30,4 @@ export const HEADER_TPL: TplNode = {
         },
         { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
     ],
-};
-
-export const HEADER_EVENTS: TplEvents = {
-    toolsLeft: {
-        $items: {
-            Icon: { click: { emits: ['toolsLeftClick'] } },
-            Button: { click: { emits: ['toolsLeftClick'] } },
-        },
-    },
-    toolsRight: {
-        $items: {
-            Icon: { click: { emits: ['toolsRightClick'] } },
-            Button: { click: { emits: ['toolsRightClick'] } },
-        },
-    },
-    action: { click: { emits: ['actionClick'] } },
 };

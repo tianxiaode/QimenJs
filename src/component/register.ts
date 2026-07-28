@@ -1,8 +1,7 @@
 /**
  * 组件 type 注册入口
  *
- * 提供 registerAllComponents() 方法，将所有基础组件的元数据注册到 ComponentRegistrar，
- * 并将模板注册到 TemplateRegistrar。
+ * 提供 registerAllComponents() 方法，将所有基础组件注册到 TemplateRegistrar。
  * 采用 ExtJS 模式——基础组件全量注册，扩展组件按需注册。
  *
  * @example
@@ -12,7 +11,7 @@
  * ```
  */
 
-import { ComponentRegistrar } from '@qimenjs/component-core';
+import { TemplateRegistrar } from '@qimenjs/component-core';
 import { registerButtonTemplates } from './button/register';
 import { registerDividerTemplates } from './divider/register';
 import { registerSpacerTemplates } from './spacer/register';
@@ -65,68 +64,7 @@ import { registerBaseHeaderCellTemplates } from './table/header/register';
 import { registerBaseCellTemplates } from './table/cells/register';
 import { registerRouteContainerTemplates } from './nav/register';
 
-const registrar = ComponentRegistrar.getInstance();
-
 export function registerAllComponents(): void {
-    registrar.registerMeta('Icon', {});
-    registrar.registerMeta('Avatar', {});
-    registrar.registerMeta('Card', {});
-    registrar.registerMeta('Indicator', {});
-    registrar.registerMeta('Tabs', {});
-    registrar.registerMeta('TabBar', {});
-    registrar.registerMeta('Button', { defaultEventData: ['name'] });
-    registrar.registerMeta('Dropdown', {});
-    registrar.registerMeta('Toggle', {});
-    registrar.registerMeta('ToggleIcon', {});
-    registrar.registerMeta('ButtonGroup', {});
-    registrar.registerMeta('Badge', {});
-    registrar.registerMeta('Tips', {});
-    registrar.registerMeta('MenuItem', { defaultEventData: ['name'] });
-    registrar.registerMeta('Menu', {});
-    registrar.registerMeta('Panel', { defaultEventData: ['name'] });
-    registrar.registerMeta('Header', {});
-    registrar.registerMeta('ItemGroup', {});
-    registrar.registerMeta('Toolbar', {});
-    registrar.registerMeta('EntityToolbar', {});
-    registrar.registerMeta('NavItem', { defaultEventData: ['name', 'path'] });
-    registrar.registerMeta('NavItemGroup', {});
-    registrar.registerMeta('OverflowScroll', {});
-    registrar.registerMeta('OverflowMenu', {});
-    registrar.registerMeta('Accordion', {});
-    registrar.registerMeta('Dialog', {});
-    registrar.registerMeta('Loading', {});
-    registrar.registerMeta('Hero', {});
-    registrar.registerMeta('Breadcrumb', {});
-    registrar.registerMeta('Divider', {});
-    registrar.registerMeta('Spacer', {});
-    registrar.registerMeta('Tag', {});
-    registrar.registerMeta('Alert', {});
-    registrar.registerMeta('Progress', {});
-    registrar.registerMeta('Input', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('PasswordInput', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('Text', {});
-    registrar.registerMeta('InputInfoGroup', {});
-    registrar.registerMeta('Form', {});
-    registrar.registerMeta('Textarea', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('NumberInput', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('Select', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('Switch', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('CheckboxGroup', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('RadioGroup', { defaultEventData: ['name', 'getFormValue'] });
-    registrar.registerMeta('MarkdownEditor', {});
-    registrar.registerMeta('TextCell', {});
-    registrar.registerMeta('TreeCell', {});
-    registrar.registerMeta('CheckboxCell', {});
-    registrar.registerMeta('ActionCell', {});
-    registrar.registerMeta('Label', {});
-    registrar.registerMeta('Rating', {});
-    registrar.registerMeta('Fieldset', {});
-    registrar.registerMeta('OneTimePassword', {});
-    registrar.registerMeta('FileInput', {});
-    registrar.registerMeta('Step', {});
-    registrar.registerMeta('Timeline', {});
-    registrar.registerMeta('Sidebar', {});
-
     registerButtonTemplates();
     registerDividerTemplates();
     registerSpacerTemplates();
