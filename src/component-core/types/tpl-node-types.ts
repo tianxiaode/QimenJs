@@ -122,23 +122,23 @@ export interface TplNode {
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;
 
-    // ─── event: 事件声明（新方案：统一在 tplEvents 中声明，节点上仅保留 action） ───
+    // ─── event: 事件声明（全委托模式：统一在 tplEvents 三层嵌套中声明） ───
 
     /**
      * 节点事件映射（旧方案，逐步废弃）
      *
-     * 新方案中事件委托统一在 tplEvents 中声明，不再在节点上写 emits。
+     * 全委托模式中事件委托统一在 tplEvents 三层嵌套中声明，不再在节点上写 emits。
      * 保留此字段用于过渡期兼容。
      *
-     * @deprecated 请使用 tplEvents 统一声明
+     * @deprecated 请使用 tplEvents 三层嵌套统一声明
      */
     emits?: Record<string, string>;
 
     /**
-     * 语义动作名 — 用于 action 路径定位和事件数据
+     * 语义动作名 — 用于 tplEvents 第三层 key 定位和事件数据
      *
-     * 新方案中 action 有两个用途：
-     *   1. 作为 tplEvents 路径的定位标识（如 'toolbar.save' 中的 save）
+     * 全委托模式中 action 有两个用途：
+     *   1. 作为 tplEvents 第三层 key 的定位标识（区分同类型多实例）
      *   2. 自动合并到事件数据中（{ action: 'save' }）
      *
      * action 由使用方在模板节点上定义，不是组件自身定义的。
@@ -157,7 +157,7 @@ export interface TplNode {
      *
      * 新方案中事件数据通过 tplEvents 的 data 字段声明。
      *
-     * @deprecated 请使用 tplEvents 中的 data 声明
+     * @deprecated 请使用 tplEvents 三层嵌套中的 data 声明
      */
     data?: string[] | Record<string, string[]>;
 

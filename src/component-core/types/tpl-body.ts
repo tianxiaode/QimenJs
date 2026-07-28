@@ -131,36 +131,62 @@ export interface RouteListen {
 }
 
 /**
+ * 子组件事件监听 — nodeMap 中子组件的 child.on() 订阅
+ *
+ * key = nodeName（nodeMap key，仅直接子组件）
+ * value = 事件名数组，自动推导方法名 on${PascalCase(nodeName)}${PascalCase(event)}
+ *
+ * 仅限直接子组件（FINALIZE 时已实例化），跨层走桥接。
+ * 复杂逻辑仍推荐派生子组件。
+ *
+ * @example
+ * ```ts
+ * { handlers: { toolbar: ['save', 'create'], grid: ['rowClick'] } }
+ * // → nodeMap.toolbar.on('save', this.onToolbarSave)
+ * // → nodeMap.toolbar.on('create', this.onToolbarCreate)
+ * // → nodeMap.grid.on('rowClick', this.onGridRowClick)
+ * ```
+ */
+export interface HandlersListen {
+    /**
+     * 子组件事件监听映射
+     *
+     * key = nodeName，value = 事件名数组
+     * 方法名自动推导：on${PascalCase(nodeName)}${PascalCase(event)}
+     */
+    handlers: Record<string, string[]>;
+}
+
+/**
  * 统一事件订阅 — 数组格式，通过 key 名区分来源类型
  *
  * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
  *
- * 注册流程统一：
+ * 注册流程统一（五路分流，float/drag 已自动绑定）：
  *   _setupListens() {
  *       for (const item of this.listens) {
- *           if (item.source) EventBridge.on(this.eventKey, item.source, item.events);
- *           if (item.entity) EntityEventBus.on(this.entityKey, item.entity, item.events);
- *           if (item.float)  FloatSystem.on(this.floatKey, item.float, item.events);
- *           if (item.drag)   DragSystem.on(this.dragKey, item.drag, item.events);
- *           if (item.system) SystemEventBus.on(item.events);
- *           if (item.route)  RouteEventBus.on(item.route, item.events);
+ *           if (item.handlers)  for (const [nodeName, events] of Object.entries(item.handlers))
+ *                                                            this.nodeMap[nodeName].on(event, method);
+ *           if (item.source)    EventBridge.on(this.eventKey, item.source, item.events);
+ *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
+ *           if (item.system)    SystemEventBus.on(item.events);
+ *           if (item.route)     RouteEventBus.on(item.route, item.events);
  *       }
  *   }
  *
  * @example
  * ```ts
  * listens: [
- *     { source: 'formKey', events: { save: 'onSave' } },
- *     { entity: 'users',   events: { listed: 'onUsersLoaded' } },
- *     { float: 'dropBtn',  events: { close: 'onClose' } },
- *     { drag: 'handle',    events: { start: 'onDragStart' } },
- *     { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } },
- *     { system: true, events: { 'window:resize': 'onWindowResize' } },
- *     { route: 'router', events: { change: 'onRouteChange' } },
+ *     { handlers: { toolbar: ['save', 'create'] } },
+ *     { source: 'formKey',    events: { save: 'onSave' } },
+ *     { entity: 'users',     events: { listed: 'onUsersLoaded' } },
+ *     { system: true,        events: { 'i18n:localeChange': 'onLocaleChange' } },
+ *     { route: 'router',     events: { change: 'onRouteChange' } },
  * ]
  * ```
  */
 export type ListenItem =
+    | HandlersListen
     | BridgeListen
     | EntityListen
     | FloatListen
@@ -541,11 +567,25 @@ export interface BodyDef extends LifecycleHooks {
     /** 组件类型标识 */
     type?: string;
 
-    /** 实体 key，TplNode events 中 entities 引用 */
-    entityKey?: string;
+    /**
+     * 实体 key，TplNode events 中 entities 引用
+     *
+     * 父组件实例化子组件时向下传播：
+     *   - 子组件有定义且 fixed → 保留子组件的值
+     *   - 子组件有定义且非 fixed → 替换为父组件的值
+     *   - 子组件无定义 → 不管
+     */
+    entityKey?: string | { key: string; fixed?: boolean };
 
-    /** 桥接事件 key，TplNode events 中 bridges 引用 */
-    eventKey?: string;
+    /**
+     * 桥接事件 key，TplNode events 中 bridges 引用
+     *
+     * 父组件实例化子组件时向下传播：
+     *   - 子组件有定义且 fixed → 保留子组件的值
+     *   - 子组件有定义且非 fixed → 替换为父组件的值
+     *   - 子组件无定义 → 不管
+     */
+    eventKey?: string | { key: string; fixed?: boolean };
 
     /** 浮动层 key */
     floatKey?: string;

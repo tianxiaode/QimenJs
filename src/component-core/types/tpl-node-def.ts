@@ -82,30 +82,33 @@
  * 旧的 RuntimeEngine 15 步管线已拆分为上述 4 Phase。
  *
  * ══════════════════════════════════════════════════════════════
- * 事件机制（新方案：action 路径 + 监听驱动 + 前缀匹配）
+ * 事件机制（全委托模式：三层嵌套 tplEvents）
  * ══════════════════════════════════════════════════════════════
  *
- * 事件委托统一在 tplEvents 中声明，节点上不再写 emits/action。
+ * 全委托模式：{ [domEvent]: { [componentPath]: { [action]: eventConfig } } }
+ * 使用方在当前组件 el 上绑定 DOM 事件，通过组件路径 + action 直接定位目标，天然跨层穿透。
  *
  * tplEvents 定义：
- *   // 组件定义 — 声明节点前缀
  *   tplEvents = {
- *       root: { prefix: '' },          // click → 'click'
- *       dropIcon: { prefix: 'drop' },  // click → 'dropClick'
- *   }
- *
- *   // 使用方 — 按 action 路径声明委托
- *   tplEvents = {
- *       'toolbar.save': { click: { emits: ['save'] } },
- *       'toolbar.create': { click: { emits: ['create'] } },
+ *       click: {
+ *           'toolbar.Button': {
+ *               'save':   { emits: ['save'] },
+ *               'create': { emits: ['create'] },
+ *           },
+ *       },
+ *       keypress: {
+ *           'toolbar.Button': {
+ *               'save': { handler: true, emits: ['save'], entities: true },
+ *           },
+ *       },
  *   }
  *
  * 核心规则：
- *   1. tplEvents 是唯一事件定义入口
- *   2. 监听驱动绑定：没有 on() 就不绑定
- *   3. action 路径定位：'toolbar.save' 沿 nodeMap + action 逐层定位
- *   4. 前缀匹配：prefix + eventName 组合事件名
- *   5. 两条通道：节点通道（DOM 委托）+ 组件通道（on 显式监听）
+ *   1. tplEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
+ *   2. 组件路径格式 [nodeName].[componentName]...，首段为 nodeName（nodeMap key）
+ *   3. 按钮不需要定义 tplEvents，完全被动
+ *   4. tplEvents 就是声明式监听：handler:true 本地监听，emits 转发，可共存
+ *   5. 前缀匹配：prefix + eventName 组合事件名
  *
  * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  *
