@@ -159,6 +159,56 @@ export class TemplateRegistrar extends RegistrarBase<TemplateStorage> {
     }
 
     /**
+     * 注册组件定义
+     *
+     * 同时完成组件类注册和模板注册：
+     * - 从 ComponentClass.type 提取类型名作为注册 key
+     * - 从 ComponentClass.tpl 获取模板（如果有静态 tpl 字段）
+     * - 存储组件类引用，供 getComponent 使用
+     *
+     * @param type - 组件类型标识
+     * @param componentClass - 组件类
+     *
+     * @example
+     * ```ts
+     * const registry = TemplateRegistrar.getInstance();
+     * registry.registerComponent('Button', ButtonComponent);
+     * // 同时注册了组件类和模板
+     *
+     * const BtnClass = registry.getComponent('Button'); // 获取组件类
+     * ```
+     */
+    registerComponent(
+        type: string,
+        componentClass: new (props?: Record<string, any>) => any
+    ): void {
+        this.checkLock();
+
+        const entry = this.storage.entries.get(type);
+        if (entry) {
+            entry.componentClass = componentClass;
+        } else {
+            this.storage.entries.set(type, {
+                name: type,
+                tpl: { tag: 'div' },
+                componentClass,
+            });
+        }
+
+        this.logger.debug(`Component registered: ${type}`);
+    }
+
+    /**
+     * 获取组件类
+     *
+     * @param type - 组件类型标识
+     * @returns 组件类，未找到返回 undefined
+     */
+    getComponent(type: string): (new (props?: Record<string, any>) => any) | undefined {
+        return this.storage.entries.get(type)?.componentClass;
+    }
+
+    /**
      * 注销模板
      *
      * 从注册表中移除指定名称的模板。

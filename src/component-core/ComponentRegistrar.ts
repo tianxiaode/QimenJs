@@ -3,22 +3,11 @@
  *
  * 统一管理组件类型注册和组件元数据注册，复用 RegistrarBase 模式。
  *
- * 元数据注册：通过 registerMeta 注册组件元数据（defaultEventData 等）。
- * 类型注册：通过 register 注册组件类型到组件类的映射。
- *
  * @example
  * ```ts
  * const registrar = ComponentRegistrar.getInstance();
- *
- * // 元数据注册
- * registrar.registerMeta('Button', { defaultEventData: ['name', 'text'] });
- *
- * // 类型注册
  * registrar.register('Button', ButtonComponent);
- *
- * // 获取元数据
- * const meta = registrar.getMeta('Button');
- * // meta.defaultEventData → ['name', 'text']
+ * registrar.registerMeta('Button', {});
  * ```
  */
 
@@ -26,13 +15,8 @@ import { RegistrarBase } from '@qimenjs/registry';
 
 /**
  * 组件元数据 — 注册到组件类型上的声明式配置
- *
- * 用于事件系统中自动合并 defaultEventData 到事件数据中。
  */
 export interface ComponentMeta {
-    /** 默认事件数据字段 — 组件注册时声明的基础字段 */
-    defaultEventData?: string[];
-    /** 允许自定义扩展字段 */
     [key: string]: any;
 }
 

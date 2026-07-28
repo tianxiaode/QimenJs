@@ -7,7 +7,7 @@
 // 组件基类
 export { Component, COMPONENT_ABILITIES } from './Component';
 
-// 注册管理器
+// 注册管理器（保留兼容，后续可移除）
 export { ComponentRegistrar } from './ComponentRegistrar';
 
 // 节点结构管理器
@@ -82,13 +82,7 @@ export type {
 } from './types/tpl-body';
 export type { BodyKeyDef } from './types/tpl-body-def';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
-export type {
-    TplEventAction,
-    NodeEventDecl,
-    ItemTypeEvents,
-    TplEvents,
-    DelegatedEventRule,
-} from './types/tpl-events';
+export type { DelegatedEventRule } from './types/tpl-events';
 export type { ComponentProps, InitContext } from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager-types';
 

@@ -91,33 +91,9 @@ export interface CompiledProduct {
  * @see TemplateRegistrar - 模板注册器
  */
 export interface TemplateEntry {
-    /**
-     * 模板名称
-     *
-     * 模板的唯一标识，用于查找和引用。
-     */
     name: string;
-
-    /**
-     * 模板定义
-     *
-     * TplNode 树，定义组件的 DOM 结构。
-     */
     tpl: TplNode;
-
-    /**
-     * 编译产物（可选）
-     *
-     * 模板编译后的缓存和元数据。
-     * 未编译时为 undefined，首次使用时自动编译。
-     */
     compiled?: CompiledProduct;
-
-    /**
-     * 替换来源（可选）
-     *
-     * 声明本模板基于哪个已注册模板做替换。
-     * 用于追踪模板继承关系。
-     */
     replaceFrom?: string;
+    componentClass?: new (props?: Record<string, any>) => any;
 }
