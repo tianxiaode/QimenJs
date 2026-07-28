@@ -15,6 +15,7 @@ import { onAfterInit } from './step-on-after-init';
 import { setupNodeProps } from './step-setup-node-props';
 import { instantiateChildComponents } from './step-instantiate-child-components';
 import { bindDelegatedEvents } from './step-bind-delegated-events';
+import { bindNodeEventMeta } from './step-bind-node-event-meta';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error/codes';
 
@@ -35,7 +36,7 @@ export const INSTANTIATE_PHASE: Phase = {
 
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
-    steps: [bindDelegatedEvents, onAfterInit],
+    steps: [bindNodeEventMeta, bindDelegatedEvents, onAfterInit],
 };
 
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, FILL_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];

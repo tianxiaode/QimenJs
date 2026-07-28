@@ -6,6 +6,7 @@ export { onAfterInit } from './step-on-after-init';
 export { setupNodeProps } from './step-setup-node-props';
 export { instantiateChildComponents } from './step-instantiate-child-components';
 export { bindDelegatedEvents } from './step-bind-delegated-events';
+export { bindNodeEventMeta } from './step-bind-node-event-meta';
 export type { Phase, InitStep } from './pipeline-types';
 export {
     MOUNT_PHASE,

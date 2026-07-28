@@ -82,48 +82,55 @@
  * 旧的 RuntimeEngine 15 步管线已拆分为上述 4 Phase。
  *
  * ══════════════════════════════════════════════════════════════
- * 事件机制
+ * 事件机制（新方案：节点内联声明）
  * ══════════════════════════════════════════════════════════════
  *
- * 事件声明已迁移到 tplEvents（组件级），与 tpl/body 同级定义。
- * 详见 tpl-events.ts。
+ * 事件声明已内联到 TplNode 上，通过 emits 和 action 字段声明，
+ * 不再需要组件级 tplEvents 字段。
  *
- * TplNode 不再内联 events 字段，所有 DOM 事件统一通过 tplEvents 委托到组件根 el，
- * 通过 nodeElMap (WeakMap) 反查匹配。
+ * emits 字段：声明节点的 DOM 事件到组件事件的映射
+ *   emits: { click: 'click' }          // click → emit('click')
+ *   emits: { click: 'dropClick' }      // click → emit('dropClick')
+ *   emits: { click: 'click', mouseenter: 'hoverOn' }  // 多事件类型
+ *
+ * action 字段：声明节点的语义动作，自动合并到事件数据
+ *   { action: 'save' }  → 事件数据中包含 { action: 'save' }
  *
  * 设计要点：
  * - 不为每个事件生成闭包，事件定义存在 nodeMap 元数据中
  * - debounce/throttle 通过预定义包装函数处理，不每次生成
- * - 无条件绑定：emits/entities/bridges 是跨组件桥接，
+ * - 无条件绑定：emits 是跨组件桥接，
  *   组件自身无法知道外部有没有监听，只能全部触发
  *
- * 事件数据自动收集：
- * - emits 触发 this.emit(emitName, ctx) 时，如果 ctx 无自定义数据，
- *   框架自动查找 get{EmitName}EventData() 方法获取数据
- * - 详见 tpl-body-def.ts「事件数据自动收集」章节
+ * 编译流程：
+ *   TplNode.emits → CompileEngine → NodeMetadata.emits
+ *   TplNode.action → CompileEngine → NodeMetadata.action
  *
- * TplEventAction 各字段含义：
- * ┌──────────────┬──────────────────────────────────────────────────┐
- * │ 字段         │ 说明                                             │
- * ├──────────────┼──────────────────────────────────────────────────┤
- * │ handler      │ 内部处理方法                                     │
- * │              │ true → 自动推导 on{Name}{Event}（推荐）          │
- * │              │ string → 显式指定方法名（不推荐，与钩子脱节）     │
- * │ emits        │ 转发为组件事件，持有方通过 on(name, fn) 监听      │
- * │ entities     │ 转发为实体操作，调用 EntityEventBus               │
- * │ bridges      │ 转发为桥接事件（通过 EventBridge 解耦转发）       │
- * │ once         │ handler 只执行一次                               │
- * │ debounce     │ 防抖时间（毫秒），预定义包装函数                  │
- * │ throttle     │ 节流时间（毫秒），预定义包装函数                  │
-
- * └──────────────┴──────────────────────────────────────────────────┘
+ * 运行时流程：
+ *   1. Pipeline 中 bindNodeEventMeta 步骤：
+ *      - 为节点 el 设置 NODE_EVENT_META = { nodeName, eventTypes: Set, action? }
+ *      - 为组件 el 设置 COMPONENT_ROOT 标记（边界保护）
+ *   2. 事件委托触发时 handleDelegatedEvent：
+ *      - 从 event.target 向上遍历 parentElement
+ *      - 查找最近的 NODE_EVENT_META（匹配 eventType）
+ *      - 碰到 COMPONENT_ROOT 停止（防止越界）
+ *      - 找到匹配 → 合并事件数据 → 执行 emit
+ *
+  * 事件数据收集：
+ *   - defaultEventData: 组件注册时声明的基础字段
+ *   - action: 节点声明的语义动作（自动加入）
+ *   - data: 节点声明的额外数据字段（自动收集）
+ *   - rule.data: tplEvents 中声明的额外字段（旧方案）
+ *   - 四者合并构成最终事件数据
+ *
+ * 详见 tpl-events.ts「节点级事件声明（新方案）」章节
  *
  * ══════════════════════════════════════════════════════════════
  * floats / drags 机制
  * ══════════════════════════════════════════════════════════════
  *
  * 浮动层和拖拽由 body 中的 floats/drags 配置驱动，
- * 触发方式由 FloatDecl.trigger 字段控制，不需要在 TplNode events 中声明。
+ * 触发方式由 FloatDecl.trigger 字段控制，不需要在 TplNode emits 中声明。
  *
  * floats 配置（详见 tpl-body.ts FloatDecl）：
  *   body: {
@@ -285,7 +292,7 @@
  * ══════════════════════════════════════════════════════════════
  *
  * - identity:  节点标识（tag/type/name），编译时直接处理
- * - event:     事件发布（events），编译时存入元数据，运行时统一绑定
+ * - event:     事件声明（emits/action），内联到节点，编译时存入元数据
  * - style:     样式（cls/style），运行时由 applyStyle 应用
  * - layout:    布局（flex/grid），互斥，运行时转为内联 CSS
  * - content:   内容（i18n），运行时由 getter/setter 处理
@@ -337,16 +344,16 @@
  *
  * 与 nodeOverrides / body.nodes 配合：
  * - 展开后的节点名带命名空间，nodeOverrides 或 body.nodes 用全名覆盖
- * - events 覆盖为全覆盖语义（不合并）
+ * - emits 覆盖为全量替换语义
  * ```ts
  * // 旧方案（nodeOverrides，仍兼容）
  * nodeOverrides: {
- *     'header:action': { hidden: false, events: { click: { bridges: ['close'] } } }
+ *     'header:action': { hidden: false, emits: { click: 'close' } }
  * }
  * // 新方案（body.nodes，推荐）
  * body: {
  *     nodes: {
- *         'header:action': { hidden: false, events: { click: { bridges: ['close'] } } }
+ *         'header:action': { hidden: false, emits: { click: 'close' } }
  *     }
  * }
  * ```
@@ -380,9 +387,11 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     { field: 'type', category: 'identity', toMeta: false, toRoot: false },
     { field: 'name', category: 'identity', toMeta: false, toRoot: false },
 
-    // ─── event: 事件发布（详见上方事件机制章节） ───
+    // ─── event: 事件声明（节点内联，详见上方事件机制章节） ───
 
-    { field: 'events', category: 'event', toMeta: false, toRoot: false },
+    { field: 'emits', category: 'event', toMeta: true, toRoot: false },
+    { field: 'action', category: 'event', toMeta: true, toRoot: false },
+    { field: 'data', category: 'event', toMeta: true, toRoot: false },
 
     // ─── style: 样式 ───
 

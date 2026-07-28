@@ -113,6 +113,7 @@ export interface Component
 
 export class Component extends ComposableBase {
     static _delegatedEventRules: any;
+    static _nodeEventRules: any;
     static withTemplate: any;
     static replace: any;
 

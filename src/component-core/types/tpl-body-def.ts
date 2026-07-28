@@ -127,28 +127,42 @@
  * 事件数据自动收集
  * ══════════════════════════════════════════════════════════════
  *
- * 组件 emit(event) 时，如果未传 data 参数，框架自动查找
- * get{Event}EventData() 方法（约定命名）：
- * - 存在 → 调用并以其返回值作为 data
- * - 不存在 → data 为 undefined
+ * 事件数据通过四层声明式配置合并而成：
  *
- * 命名规则：事件名 click → getClickEventData，toggle → getToggleEventData
+ * 1. defaultEventData — 组件注册时声明的基础字段
+ *    registrar.register('Button', ButtonComponent, { defaultEventData: ['name', 'text'] })
+ *    registrar.register('Input', InputComponent,  { defaultEventData: ['name', 'getFormValue'] })
  *
- * 示例：
+ *    编译时自动合并到每条 rule.data 中，tplEvents 中只需声明额外字段
  *
- *   body: {
- *       getClickEventData() {
- *           return { key: this.key, text: this.text };
- *       },
- *       getSelectEventData() {
- *           return { key: this.key, checked: this._checked };
- *       },
- *   }
+ * 2. action — 节点声明的语义动作（TplNode.action）
+ *    { action: 'save' } → 事件数据中自动包含 { action: 'save' }
+ *    用于 entity/route 等语义化事件的标识
  *
- * 调用方无需改动：
- *   this.emit('click')                    // 自动带 { key, text }
- *   this.emit('click', { key: 'save' })   // 手动传 data，不走自动收集
- *   this.emit('click', undefined, { source: 'menu' })  // 自动收集 + 桥接
+ * 3. data — 节点声明的额外数据字段（TplNode.data）
+ *    { data: ['name', 'getFormData'] } → 自动收集并合并
+ *    { data: { emit: ['name'], entity: ['getEntityData'] } } → 按事件类型区分
+ *    支持属性取值和方法调用两种方式
+ *
+ * 4. rule.data — tplEvents 中声明的额外字段（旧方案，仍支持）
+ *    data: ['name', 'path', 'getFormData']
+ *    - 'name'/'path' → 从组件取属性值
+ *    - 'getFormData' → 调用组件方法取返回值
+ *
+ * 最终事件数据 = defaultEventData + action + data + rule.data（合并，不覆盖）
+ *
+ * @example
+ * ```ts
+ * // Button 注册
+ * registrar.register('Button', ButtonComponent, { defaultEventData: ['name', 'text'] })
+ *
+ * // 模板节点声明（新方案：节点级 data）
+ * { tag: 'div', name: 'saveBtn', emits: { click: 'click' }, action: 'save',
+ *   data: ['getFormData'] }
+ *
+ * // 编译后事件数据
+ * // → { name: 'Save', text: '保存', action: 'save', formData: {...} }
+ * ```
  *
  * ══════════════════════════════════════════════════════════════
  * nodes 节点配置机制

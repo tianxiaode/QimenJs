@@ -1,38 +1,25 @@
 /**
  * DelegatedEventEngine — 委托事件引擎
  *
- * 纯函数引擎：编译 tplEvents 为运行时元数据 + 运行时委托绑定/分发
+ * 纯函数引擎：编译事件声明为运行时元数据 + 运行时委托绑定/分发
  *
- * 编译时：compileTplEvents(tplEvents) → DelegatedEventRule[]
- * 运行时：bindDelegatedEvents(instance) → 根 el 委托 + 少量内部绑定
- *         handleDelegatedEvent(instance, event, rules) → 分发
+ * 两种事件声明来源：
+ *   1. 节点级（新方案）：TplNode.emits/action → NodeMetadata.emits/action
+ *      → compileNodeEmits → DelegatedEventRule[]
+ *   2. 组件级（旧方案）：TplEvents → compileTplEvents → DelegatedEventRule[]
+ *
+ * 运行时分发流程：
+ *   1. Pipeline 中 bindNodeEventMeta 步骤：
+ *      - 为节点 el 设置 NODE_EVENT_META = { nodeName, eventTypes, action? }
+ *      - 为组件 el 设置 COMPONENT_ROOT 标记（边界保护）
+ *   2. 事件委托触发时 handleDelegatedEvent：
+ *      - 优先使用节点级匹配：从 event.target 向上遍历 parentElement
+ *      - 查找最近的 NODE_EVENT_META（匹配 eventType）
+ *      - 碰到 COMPONENT_ROOT 停止（防止越界）
+ *      - 找到匹配 → 合并事件数据 → 执行 emit
+ *      - 未找到则回退到旧方案的 containsElement 匹配
  *
  * @module DelegatedEventEngine
- *
- * @remarks
- * ## 核心职责
- * 1. **编译时**：将模板事件声明（TplEvents）编译为可执行的委托规则（DelegatedEventRule[]）
- * 2. **运行时**：为组件实例绑定委托事件监听器，并在事件触发时分发到正确的处理函数
- *
- * ## 事件类型支持
- * - **handler**：调用组件方法处理事件
- * - **emit**：向上冒泡事件，通知父组件
- * - **bridge**：通过 bridgeEmit 跨层级传递事件
- * - **entity**：触发实体相关事件
- * - **router**：触发路由事件
- * - **system**：触发系统级事件
- *
- * @example
- * ```ts
- * // 编译时：将模板事件声明编译为规则
- * const rules = DelegatedEventEngine.compileTplEvents({
- *   button: { click: { handler: true } },
- *   list: { $items: { Item: { click: { emits: ['itemClick'] } } } }
- * });
- *
- * // 运行时：为组件实例绑定事件
- * DelegatedEventEngine.bindDelegatedEvents(componentInstance);
- * ```
  */
 
 import type {
@@ -43,6 +30,7 @@ import type {
     DelegatedEventRule,
 } from '../types/tpl-events';
 
+import type { NodeMetadata } from '../types/compiled-types';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { debounce, throttle } from '@qimenjs/async';
 import type { EventContext, EventChainLink } from '@/context';
@@ -50,42 +38,60 @@ import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 import { ComponentRegistrar } from '../ComponentRegistrar';
+import { NODE_EVENT_META, COMPONENT_ROOT } from '../constants/event-constants';
 
 type EventDataType = 'handler' | 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
 
 export class DelegatedEventEngine {
     /**
-     * 编译模板事件声明为委托规则
+     * 编译节点级事件声明 — 从 NodeMetadata.emits/action 生成 DelegatedEventRule[]
+     *
+     * 新方案：直接从编译产物 NodeMetadata 中提取 emits 和 action，
+     * 生成可执行的委托规则数组。
+     *
+     * @param nodeMetas - 节点元数据映射
+     * @returns 委托规则数组
+     *
+     * @example
+     * ```ts
+     * // NodeMetadata: { saveBtn: { emits: { click: 'saveClick' }, action: 'save', data: ['name'] } }
+     * const rules = DelegatedEventEngine.compileNodeEmits(nodeMetas);
+     * // 返回: [{ nodeName: 'saveBtn', event: 'click', emits: ['saveClick'], action: 'save', data: ['name'], needsBinding: true }]
+     * ```
+     */
+    static compileNodeEmits(nodeMetas: Record<string, NodeMetadata>): DelegatedEventRule[] {
+        const rules: DelegatedEventRule[] = [];
+
+        for (const [nodeName, meta] of Object.entries(nodeMetas)) {
+            if (nodeName === 'root') continue;
+
+            const emits = meta.emits;
+            if (!emits) continue;
+
+            for (const [domEvent, componentEvent] of Object.entries(emits)) {
+                const rule: DelegatedEventRule = {
+                    nodeName,
+                    event: domEvent,
+                    emits: [componentEvent],
+                    action: meta.action,
+                    data: meta.data,
+                    needsBinding: true,
+                };
+                rules.push(rule);
+            }
+        }
+
+        return rules;
+    }
+
+    /**
+     * 编译模板事件声明为委托规则（旧方案，仍支持）
      *
      * 将模板中定义的事件声明编译为运行时可执行的委托规则数组。
      * 支持普通节点事件、列表项事件（$items）等多种事件类型。
      *
      * @param tplEvents - 模板事件声明对象，key 为节点名称，value 为事件配置
      * @returns 委托规则数组，包含所有编译后的事件处理规则
-     *
-     * @example
-     * ```ts
-     * const rules = DelegatedEventEngine.compileTplEvents({
-     *   // 普通节点事件
-     *   button: {
-     *     click: { handler: true },           // 调用 onButtonClick 方法
-     *     dblclick: { emits: ['doubleClick'] } // 触发 doubleClick 事件
-     *   },
-     *   // 列表项事件
-     *   list: {
-     *     $items: {
-     *       Item: {
-     *         click: { emits: ['itemClick'], keyProp: 'name' }
-     *       }
-     *     }
-     *   }
-     * });
-     * ```
-     *
-     * @remarks
-     * - 支持数组形式的多事件声明
-     * - 自动合并组件默认事件数据（defaultEventData）
-     * - 编译结果会缓存到组件构造函数的 `_delegatedEventRules` 属性
      */
     static compileTplEvents(tplEvents: TplEvents): DelegatedEventRule[] {
         const rules: DelegatedEventRule[] = [];
@@ -122,20 +128,10 @@ export class DelegatedEventEngine {
      * 将单个事件的动作配置编译为委托规则对象。
      * 处理 handler、emits、bridges、entities、router、system 等多种动作类型。
      *
-     * @param nodeName - 节点名称，用于生成处理器方法名
-     * @param event - DOM 事件名（如 click、change）
+     * @param nodeName - 节点名称
+     * @param event - DOM 事件名
      * @param action - 事件动作配置
-     * @returns 编译后的委托规则，如果无有效动作则返回 null
-     *
-     * @example
-     * ```ts
-     * const rule = _compileEventAction('button', 'click', {
-     *   handler: true,
-     *   emits: ['buttonClick'],
-     *   debounce: 300
-     * });
-     * // 返回包含 handler='onButtonClick'、emits=['buttonClick']、debounce=300 的规则
-     * ```
+     * @returns 编译后的委托规则
      */
     private static _compileEventAction(
         nodeName: string,
@@ -171,6 +167,7 @@ export class DelegatedEventEngine {
             system,
             keyProp: action.keyProp,
             data: action.data,
+            action: (action as any).action,
             once: action.once,
             debounce: action.debounce,
             throttle: action.throttle,
@@ -184,22 +181,9 @@ export class DelegatedEventEngine {
      * 处理 $items 声明中的列表项事件，为每个 item 类型生成对应的事件规则。
      * 会自动合并组件注册表中定义的默认事件数据。
      *
-     * @param rules - 规则数组，新规则将被添加到此数组
+     * @param rules - 规则数组
      * @param nodeName - 列表容器节点名称
      * @param itemTypeEvents - item 类型到事件声明的映射
-     *
-     * @example
-     * ```ts
-     * // 模板声明
-     * // list: { $items: { UserItem: { click: { emits: ['userClick'] } } } }
-     * _compileItemEvents(rules, 'list', { UserItem: { click: { emits: ['userClick'] } } });
-     * // 会为 UserItem 生成带有 itemType='UserItem'、keyProp='name' 的规则
-     * ```
-     *
-     * @remarks
-     * - 自动设置 itemType 标识
-     * - 默认 keyProp 为 'name'，可在声明中覆盖
-     * - 会从 ComponentRegistrar 获取组件的 defaultEventData 并合并
      */
     private static _compileItemEvents(
         rules: DelegatedEventRule[],
@@ -230,22 +214,9 @@ export class DelegatedEventEngine {
     /**
      * 合并事件数据字段
      *
-     * 将基础数据字段与额外数据字段合并，支持数组和对象两种格式。
-     *
      * @param base - 基础数据字段数组
-     * @param extra - 额外数据字段，可以是数组或按事件类型分组的对象
-     * @returns 合并后的数据字段，数组或对象格式与 extra 一致
-     *
-     * @example
-     * ```ts
-     * // 数组合并
-     * _mergeData(['id', 'name'], ['value']);
-     * // 返回: ['id', 'name', 'value']
-     *
-     * // 对象合并
-     * _mergeData(['id'], { click: ['value'], change: ['text'] });
-     * // 返回: { click: ['id', 'value'], change: ['id', 'text'] }
-     * ```
+     * @param extra - 额外数据字段
+     * @returns 合并后的数据字段
      */
     private static _mergeData(
         base: string[],
@@ -279,29 +250,18 @@ export class DelegatedEventEngine {
     /**
      * 为组件实例绑定委托事件
      *
-     * 根据编译后的委托规则，为组件实例绑定事件监听器。
-     * 支持 focus/blur 的捕获阶段、debounce/throttle 调节、once 单次触发等特性。
+     * 同时绑定节点级事件（新方案）和组件级事件（旧方案），
+     * 将所有需要绑定的事件类型统一委托到根元素。
      *
-     * @param instance - 组件实例，需要有 el、bind、on 等方法
-     *
-     * @example
-     * ```ts
-     * // 在组件初始化时调用
-     * class MyComponent extends Component {
-     *   created() {
-     *     DelegatedEventEngine.bindDelegatedEvents(this);
-     *   }
-     * }
-     * ```
-     *
-     * @remarks
-     * - focus/blur 事件使用捕获阶段（capture: true）
-     * - 支持 debounce 和 throttle 选项
-     * - 支持 once 单次触发
-     * - 空节点名（''）表示绑定到根元素
+     * @param instance - 组件实例
      */
     static bindDelegatedEvents(instance: any): void {
-        const rules: DelegatedEventRule[] = instance.constructor._delegatedEventRules;
+        const ctor = instance.constructor;
+
+        const nodeRules: DelegatedEventRule[] = ctor._nodeEventRules || [];
+        const tplRules: DelegatedEventRule[] = ctor._delegatedEventRules || [];
+        const rules = [...nodeRules, ...tplRules];
+
         if (!rules || rules.length === 0) return;
 
         const allEventTypes = new Set<string>();
@@ -391,33 +351,111 @@ export class DelegatedEventEngine {
     /**
      * 处理委托事件分发
      *
-     * 当委托事件触发时，根据事件目标匹配对应的规则并分发执行。
-     * 支持普通节点事件和列表项事件的匹配分发。
+     * 优先使用节点级匹配（边界限制的祖先遍历），未找到则回退到旧方案。
      *
      * @param instance - 组件实例
      * @param domEvt - 原生 DOM 事件对象
      * @param rules - 委托规则数组
-     *
-     * @example
-     * ```ts
-     * // 在事件监听器中调用
-     * instance.on('dom:click', (domEvt) => {
-     *   DelegatedEventEngine.handleDelegatedEvent(instance, domEvt, rules);
-     * });
-     * ```
-     *
-     * @remarks
-     * - 首先尝试匹配命名节点事件
-     * - 如果未匹配，则尝试匹配根元素事件（nodeName === ''）
-     * - 列表项事件需要额外匹配 itemType
      */
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
         const target = domEvt?.target as Element;
         if (!target) return;
 
         const eventType = domEvt?.type as string;
+        if (!eventType) return;
+
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
             (instance as any)._delegatedDispatchers;
+
+        const matched = DelegatedEventEngine._matchNodeLevelEvent(
+            instance,
+            target,
+            eventType,
+            domEvt,
+            rules,
+            dispatchers
+        );
+
+        if (matched) return;
+
+        DelegatedEventEngine._matchTplLevelEvent(
+            instance,
+            target,
+            eventType,
+            domEvt,
+            rules,
+            dispatchers
+        );
+    }
+
+    /**
+     * 节点级事件匹配 — 从 event.target 向上遍历，查找 NODE_EVENT_META
+     *
+     * 碰到 COMPONENT_ROOT 即停止，防止跨组件传播。
+     *
+     * @param instance - 组件实例
+     * @param target - 事件目标元素
+     * @param eventType - 事件类型
+     * @param domEvt - 原生 DOM 事件
+     * @param rules - 委托规则数组
+     * @param dispatchers - 调度器映射
+     * @returns 是否匹配到事件
+     */
+    private static _matchNodeLevelEvent(
+        instance: any,
+        target: Element,
+        eventType: string,
+        domEvt: any,
+        rules: DelegatedEventRule[],
+        dispatchers?: Map<string, (...args: any[]) => void>
+    ): boolean {
+        let current: Element | null = target;
+
+        while (current) {
+            const eventMeta = (current as any)[NODE_EVENT_META];
+
+            if (eventMeta && eventMeta.eventTypes.has(eventType)) {
+                const rule = rules.find(
+                    r => r.nodeName === eventMeta.nodeName && r.event === eventType
+                );
+
+                if (rule) {
+                    const dispatch = dispatchers?.get(DelegatedEventEngine._ruleKey(rule));
+                    if (dispatch) {
+                        dispatch(domEvt);
+                    } else {
+                        DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
+                    }
+                    return true;
+                }
+            }
+
+            if ((current as any)[COMPONENT_ROOT]) break;
+
+            current = current.parentElement;
+        }
+
+        return false;
+    }
+
+    /**
+     * 组件级事件匹配 — 回退到旧方案（containsElement 匹配）
+     *
+     * @param instance - 组件实例
+     * @param target - 事件目标元素
+     * @param eventType - 事件类型
+     * @param domEvt - 原生 DOM 事件
+     * @param rules - 委托规则数组
+     * @param dispatchers - 调度器映射
+     */
+    private static _matchTplLevelEvent(
+        instance: any,
+        target: Element,
+        eventType: string,
+        domEvt: any,
+        rules: DelegatedEventRule[],
+        dispatchers?: Map<string, (...args: any[]) => void>
+    ): void {
         let matchedNamedNode = false;
 
         for (const rule of rules) {
@@ -461,29 +499,13 @@ export class DelegatedEventEngine {
     /**
      * 分发单个事件规则
      *
-     * 根据规则配置执行对应的事件动作：handler、emit、bridge、entity、router、system。
-     * 构建事件上下文并传递给各动作处理器。
+     * 构建事件上下文并执行对应的事件动作：handler、emit、bridge、entity、router、system。
+     * 事件数据合并：defaultEventData + action + rule.data（额外数据）
      *
      * @param instance - 组件实例
      * @param rule - 委托规则
      * @param domEvt - 原生 DOM 事件对象
-     * @param itemInfo - 可选的列表项信息，包含 component、type 等
-     *
-     * @example
-     * ```ts
-     * // 执行 handler 动作
-     * _dispatchRule(instance, { handler: 'onClick', nodeName: 'button' }, domEvt);
-     * // 调用: instance.onClick(domEvt, el, payload);
-     *
-     * // 执行 emit 动作
-     * _dispatchRule(instance, { emits: ['click'], nodeName: 'button' }, domEvt);
-     * // 调用: instance.emit('click', eventContext);
-     * ```
-     *
-     * @remarks
-     * - handler 支持动态方法名（根据 keyProp 解析）
-     * - emit 会同时触发通用事件和 keyProp 特定事件
-     * - 各动作类型会构建独立的 payload
+     * @param itemInfo - 可选的列表项信息
      */
     static _dispatchRule(
         instance: any,
@@ -510,13 +532,17 @@ export class DelegatedEventEngine {
             const extraData = fields
                 ? DelegatedEventEngine._collectDataFields(instance, itemPayload, fields)
                 : {};
+
+            const actionData = rule.action ? { action: rule.action } : {};
+
             const eventData = DelegatedEventEngine._collectEventData(
                 instance,
                 rule.nodeName,
                 rule.event,
                 eventType
             );
-            return mergeEventData(eventData, { ...itemPayload, ...extraData });
+
+            return mergeEventData(eventData, { ...actionData, ...itemPayload, ...extraData });
         };
 
         if (rule.handler) {
@@ -625,24 +651,10 @@ export class DelegatedEventEngine {
     /**
      * 解析处理器方法名
      *
-     * 根据节点名、事件名和处理器配置，推导出实际要调用的方法名。
-     *
      * @param nodeName - 节点名称
      * @param domEvent - DOM 事件名
-     * @param handler - 处理器配置：true 表示自动生成，string 表示指定方法名
-     * @returns 解析后的方法名，如果无处理器则返回 undefined
-     *
-     * @example
-     * ```ts
-     * _resolveHandlerName('button', 'click', true);
-     * // 返回: 'onButtonClick'
-     *
-     * _resolveHandlerName('', 'click', true);
-     * // 返回: 'onClick'
-     *
-     * _resolveHandlerName('button', 'click', 'handleClick');
-     * // 返回: 'handleClick'
-     * ```
+     * @param handler - 处理器配置
+     * @returns 解析后的方法名
      */
     static _resolveHandlerName(
         nodeName: string,
@@ -661,20 +673,9 @@ export class DelegatedEventEngine {
     /**
      * 解析数据字段声明
      *
-     * 根据事件类型从数据声明中提取对应的字段列表。
-     *
-     * @param dataDecl - 数据声明，可以是数组或按事件类型分组的对象
-     * @param eventType - 事件类型（handler/emit/bridge等）
+     * @param dataDecl - 数据声明
+     * @param eventType - 事件类型
      * @returns 该事件类型对应的数据字段数组
-     *
-     * @example
-     * ```ts
-     * _resolveDataFields(['id', 'name'], 'handler');
-     * // 返回: ['id', 'name']
-     *
-     * _resolveDataFields({ handler: ['id'], emit: ['name'] }, 'emit');
-     * // 返回: ['name']
-     * ```
      */
     private static _resolveDataFields(
         dataDecl: string[] | Record<string, string[]> | undefined,
@@ -692,20 +693,9 @@ export class DelegatedEventEngine {
      * 支持 getXxx 方法调用和直接属性访问。
      *
      * @param instance - 组件实例
-     * @param itemPayload - 列表项信息，包含 component 等
+     * @param itemPayload - 列表项信息
      * @param fields - 要收集的字段名数组
      * @returns 收集到的字段值映射对象
-     *
-     * @example
-     * ```ts
-     * // 组件有 getName() 方法
-     * _collectDataFields(instance, null, ['getName']);
-     * // 返回: { ...instance.getName() }
-     *
-     * // 列表项有 name 属性
-     * _collectDataFields(instance, { component: { name: 'item1' } }, ['name']);
-     * // 返回: { name: 'item1' }
-     * ```
      */
     private static _collectDataFields(
         instance: any,
@@ -724,6 +714,8 @@ export class DelegatedEventEngine {
                 result[field] = itemPayload.component[field];
             } else if (itemPayload && field in itemPayload) {
                 result[field] = itemPayload[field];
+            } else if (field in instance) {
+                result[field] = instance[field];
             }
         }
         return result;
@@ -739,17 +731,7 @@ export class DelegatedEventEngine {
      * @param nodeName - 节点名称
      * @param eventName - 事件名称
      * @param eventType - 事件类型
-     * @returns 组件返回的事件数据，如果组件没有实现则返回 undefined
-     *
-     * @example
-     * ```ts
-     * // 组件实现
-     * class MyComponent extends Component {
-     *   getEventData(nodeName, eventName, eventType) {
-     *     return { userId: this.userId, timestamp: Date.now() };
-     *   }
-     * }
-     * ```
+     * @returns 组件返回的事件数据
      */
     static _collectEventData(
         instance: any,
@@ -766,25 +748,12 @@ export class DelegatedEventEngine {
     /**
      * 构建转发事件上下文
      *
-     * 创建用于事件转发（emit/bridge/entity等）的 EventContext 对象。
-     * 自动维护事件调用链，支持事件溯源。
-     *
      * @param instance - 组件实例
      * @param eventName - 事件名称
      * @param data - 事件数据
-     * @param source - 事件源标识（如 eventKey、entityKey 等）
+     * @param source - 事件源标识
      * @param eventType - 事件类型
      * @returns 构建好的 EventContext 对象
-     *
-     * @example
-     * ```ts
-     * const ctx = _buildForwardContext(instance, 'click', { id: 1 }, 'myEventKey', 'emit');
-     * // ctx 包含: event, type, source, sourceType, data, busId, chain
-     * ```
-     *
-     * @remarks
-     * - 会深拷贝数据对象，避免引用污染
-     * - 自动维护事件调用链（chain）
      */
     static _buildForwardContext(
         instance: any,

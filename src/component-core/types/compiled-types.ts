@@ -70,6 +70,35 @@ export interface NodeMetadata {
     /** 组件类型名 */
     type?: string;
 
+    // ─── event：事件声明（从 TplNode 编译） ───
+
+    /**
+     * 节点事件映射 — 从 TplNode.emits 编译
+     *
+     * key = DOM 事件类型（click/hover/input 等），value = 组件事件名
+     * 运行时通过 bindNodeEventMeta 步骤绑定到 NODE_EVENT_META
+     */
+    emits?: Record<string, string>;
+
+    /**
+     * 语义动作名 — 从 TplNode.action 编译
+     *
+     * 节点声明的语义动作，事件触发时自动合并到事件数据中
+     */
+    action?: string;
+
+    /**
+     * 节点级事件数据声明 — 从 TplNode.data 编译
+     *
+     * 节点声明的额外数据字段，事件触发时自动收集并合并到事件数据中。
+     * 支持数组形式（所有事件共享）和对象形式（按事件类型区分）。
+     *
+     * @example
+     * // 数组形式: ['name', 'getFormData']
+     * // 对象形式: { emit: ['name'], entity: ['getEntityData'] }
+     */
+    data?: string[] | Record<string, string[]>;
+
     // ─── layout：布局 ───
 
     flex?: boolean | FlexConfig;
