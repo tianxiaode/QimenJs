@@ -122,69 +122,42 @@ export interface TplNode {
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;
 
-    // ─── event: 事件声明（内联到节点，不再需要组件级 events 字段） ───
+    // ─── event: 事件声明（新方案：统一在 tplEvents 中声明，节点上仅保留 action） ───
 
     /**
-     * 节点事件映射 — 声明该节点触发的 DOM 事件到组件事件的转发
+     * 节点事件映射（旧方案，逐步废弃）
      *
-     * key = DOM 事件类型（click/hover/input 等），value = 组件事件名
+     * 新方案中事件委托统一在 tplEvents 中声明，不再在节点上写 emits。
+     * 保留此字段用于过渡期兼容。
      *
-     * @example
-     * ```ts
-     * // 按钮根节点：click → emit('click')
-     * { tag: 'div', name: 'root', emits: { click: 'click' } }
-     *
-     * // 下拉图标：click → emit('dropClick')
-     * { tag: 'div', name: 'dropIcon', emits: { click: 'dropClick' } }
-     *
-     * // 支持多事件类型
-     * { tag: 'div', name: 'btn', emits: { click: 'click', mouseenter: 'hoverOn' } }
-     * ```
+     * @deprecated 请使用 tplEvents 统一声明
      */
     emits?: Record<string, string>;
 
     /**
-     * 语义动作名 — 自动合并到事件数据中的 action 字段
+     * 语义动作名 — 用于 action 路径定位和事件数据
      *
-     * 当节点声明了 emits 时，action 会自动合并到事件数据中，
-     * 用于 entity/route 等语义化事件的标识。
+     * 新方案中 action 有两个用途：
+     *   1. 作为 tplEvents 路径的定位标识（如 'toolbar.save' 中的 save）
+     *   2. 自动合并到事件数据中（{ action: 'save' }）
+     *
+     * action 由使用方在模板节点上定义，不是组件自身定义的。
+     * 同类型多实例通过不同 action 区分（save vs create）。
      *
      * @example
      * ```ts
-     * // 按钮：点击时事件数据自动包含 { action: 'save' }
-     * { tag: 'div', name: 'saveBtn', emits: { click: 'click' }, action: 'save' }
+     * { name: 'save', type: 'Button', action: 'save' }
+     * { name: 'create', type: 'Button', action: 'create' }
      * ```
      */
     action?: string;
 
     /**
-     * 节点级事件数据声明 — 额外附加到事件数据中的字段
+     * 节点级事件数据声明（旧方案，逐步废弃）
      *
-     * 当节点声明了 emits 时，data 中声明的字段会被自动收集并合并到事件数据中。
-     * 支持三种取值方式：
-     *   - 'property' → 从组件实例取同名属性值（如 'name' → instance.name）
-     *   - 'getXxx'   → 调用组件实例方法取返回值（如 'getFormData' → instance.getFormData()）
-     *   - '$items'   → 从 $items 子组件取属性值（如 'name' → itemComponent.name）
+     * 新方案中事件数据通过 tplEvents 的 data 字段声明。
      *
-     * 两种声明形式：
-     *   1. 数组 — 所有事件类型共享
-     *      data: ['name', 'path', 'getFormData']
-     *
-     *   2. 对象 — 按事件类型区分
-     *      data: { emit: ['name'], entity: ['getEntityData'], router: ['path'] }
-     *
-     * 事件数据合成流程：defaultEventData(注册声明) + action(语义动作) + data(额外字段)
-     *
-     * @example
-     * ```ts
-     * // 简单声明：所有事件共享 name 和 getFormData
-     * { tag: 'div', name: 'saveBtn', emits: { click: 'click' }, action: 'save',
-     *   data: ['name', 'getFormData'] }
-     *
-     * // 按事件类型区分
-     * { tag: 'div', name: 'navItem', emits: { click: 'navClick' }, action: 'users',
-     *   data: { emit: ['name'], router: ['path'] } }
-     * ```
+     * @deprecated 请使用 tplEvents 中的 data 声明
      */
     data?: string[] | Record<string, string[]>;
 

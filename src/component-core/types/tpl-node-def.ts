@@ -82,47 +82,32 @@
  * 旧的 RuntimeEngine 15 步管线已拆分为上述 4 Phase。
  *
  * ══════════════════════════════════════════════════════════════
- * 事件机制（新方案：节点内联声明）
+ * 事件机制（新方案：action 路径 + 监听驱动 + 前缀匹配）
  * ══════════════════════════════════════════════════════════════
  *
- * 事件声明已内联到 TplNode 上，通过 emits 和 action 字段声明，
- * 不再需要组件级 tplEvents 字段。
+ * 事件委托统一在 tplEvents 中声明，节点上不再写 emits/action。
  *
- * emits 字段：声明节点的 DOM 事件到组件事件的映射
- *   emits: { click: 'click' }          // click → emit('click')
- *   emits: { click: 'dropClick' }      // click → emit('dropClick')
- *   emits: { click: 'click', mouseenter: 'hoverOn' }  // 多事件类型
+ * tplEvents 定义：
+ *   // 组件定义 — 声明节点前缀
+ *   tplEvents = {
+ *       root: { prefix: '' },          // click → 'click'
+ *       dropIcon: { prefix: 'drop' },  // click → 'dropClick'
+ *   }
  *
- * action 字段：声明节点的语义动作，自动合并到事件数据
- *   { action: 'save' }  → 事件数据中包含 { action: 'save' }
+ *   // 使用方 — 按 action 路径声明委托
+ *   tplEvents = {
+ *       'toolbar.save': { click: { emits: ['save'] } },
+ *       'toolbar.create': { click: { emits: ['create'] } },
+ *   }
  *
- * 设计要点：
- * - 不为每个事件生成闭包，事件定义存在 nodeMap 元数据中
- * - debounce/throttle 通过预定义包装函数处理，不每次生成
- * - 无条件绑定：emits 是跨组件桥接，
- *   组件自身无法知道外部有没有监听，只能全部触发
+ * 核心规则：
+ *   1. tplEvents 是唯一事件定义入口
+ *   2. 监听驱动绑定：没有 on() 就不绑定
+ *   3. action 路径定位：'toolbar.save' 沿 nodeMap + action 逐层定位
+ *   4. 前缀匹配：prefix + eventName 组合事件名
+ *   5. 两条通道：节点通道（DOM 委托）+ 组件通道（on 显式监听）
  *
- * 编译流程：
- *   TplNode.emits → CompileEngine → NodeMetadata.emits
- *   TplNode.action → CompileEngine → NodeMetadata.action
- *
- * 运行时流程：
- *   1. Pipeline 中 bindNodeEventMeta 步骤：
- *      - 为节点 el 设置 NODE_EVENT_META = { nodeName, eventTypes: Set, action? }
- *      - 为组件 el 设置 COMPONENT_ROOT 标记（边界保护）
- *   2. 事件委托触发时 handleDelegatedEvent：
- *      - 从 event.target 向上遍历 parentElement
- *      - 查找最近的 NODE_EVENT_META（匹配 eventType）
- *      - 碰到 COMPONENT_ROOT 停止（防止越界）
- *      - 找到匹配 → 合并事件数据 → 执行 emit
- *
- * 事件数据收集：
- *   - defaultEventData: 组件注册时声明的基础字段
- *   - action: 节点声明的语义动作（自动加入）
- *   - data: 节点声明的额外数据字段（自动收集）
- *   - 三者合并构成最终事件数据
- *
- * 详见 tpl-events.ts「节点级事件声明（新方案）」章节
+ * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  *
  * ══════════════════════════════════════════════════════════════
  * floats / drags 机制

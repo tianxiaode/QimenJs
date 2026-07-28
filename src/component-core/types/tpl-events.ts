@@ -1,49 +1,58 @@
 /**
- * 事件委托类型定义 — 节点级事件声明
+ * 事件委托类型定义 — tplEvents 声明式事件系统
  *
  * ══════════════════════════════════════════════════════════════
- * 节点级事件声明
+ * 新方案：action 路径 + 监听驱动 + 前缀匹配
  * ══════════════════════════════════════════════════════════════
  *
- * 事件声明内联到 TplNode 上，通过 emits 和 action 字段声明。
- * 详见 tpl-node-types.ts（TplNode.emits / TplNode.action）和 tpl-node-def.ts。
+ * 核心规则：
+ *   1. tplEvents 是唯一事件定义入口，节点上不写 emits/action
+ *   2. 监听驱动绑定：没有 on() 就不绑定，首次 on 时懒绑定，最后 off 时解绑
+ *   3. action 路径定位：tplEvents 的 key 是 action 路径，沿 nodeMap + action 逐层定位
  *
- * emits 字段：声明节点的 DOM 事件到组件事件的映射
- *   { emits: { click: 'click' } }
- *   { emits: { click: 'dropClick' } }
- *   { emits: { click: 'click', mouseenter: 'hoverOn' } }
+ * tplEvents 定义示例：
  *
- * action 字段：声明节点的语义动作，自动合并到事件数据
- *   { action: 'save' }  → 事件数据中包含 { action: 'save' }
+ *   // 组件定义 — 声明节点前缀
+ *   tplEvents = {
+ *       root: { prefix: '' },          // click → 'click', keypress → 'keypress'
+ *       dropIcon: { prefix: 'drop' },  // click → 'dropClick', keypress → 'dropKeypress'
+ *   }
  *
- * data 字段：声明节点的额外事件数据字段，自动收集并合并
- *   { data: ['name', 'getFormData'] }  → 从组件取 name 属性 + 调用 getFormData()
- *   { data: { emit: ['name'], entity: ['getEntityData'] } }  → 按事件类型区分
+ *   // 使用方 — 按 action 路径声明委托
+ *   tplEvents = {
+ *       'toolbar.save': { click: { emits: ['save'] } },
+ *       'toolbar.create': { click: { emits: ['create'] } },
+ *       'toolbar.search': { change: { emits: ['searchChange'] } },
+ *   }
  *
- * 编译流程：
- *   TplNode.emits → CompileEngine → NodeMetadata.emits
- *   TplNode.action → CompileEngine → NodeMetadata.action
- *   TplNode.data → CompileEngine → NodeMetadata.data
+ * 前缀机制：
+ *   节点声明 prefix，事件名 = prefix + eventName（首字母大写）
+ *   prefix:'' + click → 'click'
+ *   prefix:'drop' + click → 'dropClick'
+ *   prefix:'search' + change → 'searchChange'
+ *   前缀解决同一组件内多节点的同事件区分（root vs dropIcon）
  *
- * 运行时流程：
- *   1. Pipeline 中 bindNodeEventMeta 步骤：
- *      - 为节点 el 设置 NODE_EVENT_META = { nodeName, eventTypes: Set, action?, data? }
- *      - 为组件 el 设置 COMPONENT_ROOT 标记（边界保护）
- *   2. 事件委托触发时 handleDelegatedEvent：
- *      - 从 event.target 向上遍历 parentElement
- *      - 查找最近的 NODE_EVENT_META（匹配 eventType）
- *      - 碰到 COMPONENT_ROOT 停止（防止越界）
- *      - 找到匹配 → 合并事件数据 → 执行 emit
+ * action 路径：
+ *   tplEvents 的 key 是 action 路径，从外到内逐层定位
+ *   'toolbar.save' → action='toolbar' 的子组件 → action='save' 的子组件 → 绑定委托
+ *   统一用 action 定位，不用 name（action 是语义标识，name 是结构标识）
+ *   action 路径解决同类型多实例区分（两个 Button，一个 save 一个 create）
  *
- * 事件数据收集：
- *   - action: 节点声明的语义动作（自动加入）
- *   - data: 节点声明的额外数据字段（自动收集）
- *   - 两者合并构成最终事件数据
+ * 两条事件通道：
+ *   节点通道：DOM 事件委托（tplEvents），可跨组件边界穿透
+ *   组件通道：child.on() 显式监听，跨组件边界层层转发
  *
- * 匹配机制：
- *   从 event.target 向上遍历查找 NODE_EVENT_META，碰到 COMPONENT_ROOT 停止
- *   子组件自己声明事件能力，父组件通过 item.on('click', handler) 监听
- *   不需要 $items 或 containsElement
+ * 监听驱动：
+ *   没人 on → 不绑定
+ *   有人 on('save', handler) → 懒绑定 'toolbar.save' 的 click 委托
+ *   全部 off('save') → 解绑
+ *   子组件自带 tplEvents + 使用方追加 tplEvents，运行时合并，按需激活
+ *
+ * 组件事件能力声明：
+ *   static actions = ['create', 'edit', 'delete', 'save']
+ *   使用方据此知道能 on 什么，TypeScript 也可提示
+ *
+ * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  */
 
 // ══════════════════════════════════════════════════════════════
@@ -62,28 +71,28 @@
  *   action(语义动作) + data(额外字段)
  */
 export interface DelegatedEventRule {
-    /** 节点名 */
+    /** 节点名或 action 路径（如 'toolbar.save'） */
     nodeName: string;
 
     /** DOM 事件名 */
     event: string;
 
     /**
-     * 语义动作名 — 从 TplNode.action 继承
+     * 节点事件前缀 — 事件名 = prefix + eventName（首字母大写）
      *
-     * 节点声明的 action 字段自动合并到事件数据中，
-     * 用于 entity/route 等语义化事件的标识。
+     * prefix:'' + click → 'click'
+     * prefix:'drop' + click → 'dropClick'
+     * prefix:'search' + change → 'searchChange'
+     */
+    prefix?: string;
+
+    /**
+     * 语义动作名 — 事件数据中自动包含 { action }
      */
     action?: string;
 
     /**
      * 事件数据声明 — 从 TplNode.data 继承
-     *
-     * 支持两种形式：
-     *   1. 数组 — 所有事件类型共享
-     *      data: ['name', 'getFormData']
-     *   2. 对象 — 按事件类型区分
-     *      data: { emit: ['name'], entity: ['getEntityData'] }
      */
     data?: string[] | Record<string, string[]>;
 
@@ -95,18 +104,19 @@ export interface DelegatedEventRule {
 
     /**
      * 转发为实体操作
-     * - string: 硬编码实体动作名
      */
     entities?: string;
 
     /**
      * 转发为路由事件
-     * - string: 硬编码路由名
      */
     router?: string;
 
     /** 转发为系统事件 */
     system?: string[];
+
+    /** 本地监听：调用组件方法 on${CapitalNodeName}${CapitalEvent}() */
+    handler?: boolean;
 
     /** 只执行一次 */
     once?: boolean;
