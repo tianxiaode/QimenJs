@@ -210,336 +210,312 @@ const CRUD_ACTION_NAMES = new Set([
 // EntityToolbarComponent
 // ══════════════════════════════════════════════════════════════
 
-export let EntityToolbarComponent = ToolbarComponent.replace({
-    type: 'EntityToolbar',
-    config: { direction: 'horizontal', defaultItemType: 'Button', gap: '4px' },
-    tplEvents: {
-        itemContainer: {
-            $items: {
-                Button: {
-                    click: {
-                        emits: ['action'],
-                        entities: true,
-                        bridges: ['action'],
-                    },
-                },
-                Input: {
-                    input: {
-                        emits: ['inputChange'],
-                    },
-                },
-                NumberInput: {
-                    input: {
-                        emits: ['inputChange'],
-                    },
-                },
-                Select: {
-                    'select:change': {
-                        emits: ['selectChange'],
-                    },
-                },
-            },
-        },
-    },
-    body: {
-        nodes: {
-            root: { addCls: 'q-entity-toolbar' },
-            itemContainer: { addCls: 'q-entity-toolbar__items' },
-        },
+class EntityToolbarComponent extends ToolbarComponent {
+    static type = 'EntityToolbar';
+    type = 'EntityToolbar' as const;
 
-        onInitState() {
-            return {
-                _itemsConfig: {} as EntityToolbarItems,
-                _entityKey: '' as string,
-                _eventKey: '' as string,
-                _currentPage: 1 as number,
-                _totalPages: 0 as number,
-                _totalRecords: 0 as number,
-                _pageSize: 10 as number,
-            };
-        },
+    onInitState() {
+        return {
+            ...super.onInitState(),
+            _itemsConfig: {} as EntityToolbarItems,
+            _entityKey: '' as string,
+            _eventKey: '' as string,
+            _currentPage: 1 as number,
+            _totalPages: 0 as number,
+            _totalRecords: 0 as number,
+            _pageSize: 10 as number,
+        };
+    }
 
-        onAfterInit(props?: EntityToolbarProps): void {
-            this._initEntityToolbar(props);
-        },
+    onAfterInit(props?: any): void {
+        const self = this as any;
+        self.addCls('q-entity-toolbar');
+        if (self.itemContainer) self.itemContainer.addCls('q-entity-toolbar__items');
+        super.onAfterInit({
+            direction: 'horizontal',
+            defaultItemType: 'Button',
+            gap: '4px',
+            ...props,
+        } as any);
+        this._initEntityToolbar(props);
+    }
 
-        _initEntityToolbar(props?: EntityToolbarProps): void {
-            const self = this as any;
-            self._itemsConfig = props?.items ?? {};
-            self._entityKey = props?.entityKey ?? '';
-            self._eventKey = props?.eventKey ?? '';
+    _initEntityToolbar(props?: EntityToolbarProps): void {
+        const self = this as any;
+        self._itemsConfig = props?.items ?? {};
+        self._entityKey = props?.entityKey ?? '';
+        self._eventKey = props?.eventKey ?? '';
 
-            const resolved = self._resolveItems(self._itemsConfig);
-            if (resolved.length > 0) self.setItems(resolved);
-            self._setupSemanticEvents();
-        },
+        const resolved = self._resolveItems(self._itemsConfig);
+        if (resolved.length > 0) self.setItems(resolved);
+        self._setupSemanticEvents();
+    }
 
-        // ══════════════════════════════════════════════
-        // items 解析
-        // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════
+    // items 解析
+    // ══════════════════════════════════════════════
 
-        _resolveItems(config: EntityToolbarItems): Record<string, any>[] {
-            const self = this as any;
-            const items: Record<string, any>[] = [];
+    _resolveItems(config: EntityToolbarItems): Record<string, any>[] {
+        const self = this as any;
+        const items: Record<string, any>[] = [];
 
-            for (const [key, val] of Object.entries(config)) {
-                if (val === false) continue;
+        for (const [key, val] of Object.entries(config)) {
+            if (val === false) continue;
 
-                const builtin = BUILTIN_DEFS[key];
-                if (builtin) {
-                    if (val === true) {
-                        items.push(self._buildBuiltinItem(builtin, {}));
-                    } else {
-                        items.push(self._buildBuiltinItem(builtin, val as EntityToolbarItemDef));
-                    }
+            const builtin = BUILTIN_DEFS[key];
+            if (builtin) {
+                if (val === true) {
+                    items.push(self._buildBuiltinItem(builtin, {}));
                 } else {
-                    items.push(self._buildCustomItem(key, val as EntityToolbarItemDef));
+                    items.push(self._buildBuiltinItem(builtin, val as EntityToolbarItemDef));
                 }
+            } else {
+                items.push(self._buildCustomItem(key, val as EntityToolbarItemDef));
             }
+        }
 
-            return items;
-        },
+        return items;
+    }
 
-        _buildBuiltinItem(
-            def: BuiltinItemDef,
-            override: EntityToolbarItemDef
-        ): Record<string, any> {
-            const self = this as any;
-            const name = override.name ?? def.name;
-            const order = override.order ?? def.order;
-            const iconCls = override.iconCls ?? def.iconCls;
-            const text = override.text ?? def.text;
-            const variant = override.variant ?? def.variant;
+    _buildBuiltinItem(def: BuiltinItemDef, override: EntityToolbarItemDef): Record<string, any> {
+        const self = this as any;
+        const name = override.name ?? def.name;
+        const order = override.order ?? def.order;
+        const iconCls = override.iconCls ?? def.iconCls;
+        const text = override.text ?? def.text;
+        const variant = override.variant ?? def.variant;
 
-            if (def.type === 'Button') {
-                const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
-                return {
-                    type: 'Button',
-                    name,
-                    icon: iconCls,
-                    text,
-                    cls: `q-entity-toolbar__btn q-entity-toolbar__btn--${name}${variantCls}${override.cls ? ' ' + override.cls : ''}`,
-                    order,
-                };
-            }
+        if (def.type === 'Button') {
+            const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
+            return {
+                type: 'Button',
+                name,
+                icon: iconCls,
+                text,
+                cls: `q-entity-toolbar__btn q-entity-toolbar__btn--${name}${variantCls}${override.cls ? ' ' + override.cls : ''}`,
+                order,
+            };
+        }
 
-            if (name === 'pageNum') {
-                return {
-                    type: 'NumberInput',
-                    name: 'pageNum',
-                    value: 1,
-                    min: 1,
-                    cls: 'q-entity-toolbar__input q-entity-toolbar__input--page-num',
-                    order,
-                };
-            }
-            if (name === 'pageSize') {
-                const defaultPageSize = self.domainConfig?.pageSize ?? 10;
-                const pageSizes: number[] = self.domainConfig?.pagesizes ?? [10, 20, 50, 100];
-                return {
-                    type: 'Select',
-                    name: 'pageSize',
-                    value: defaultPageSize,
-                    options: pageSizes.map((s: number) => ({ label: String(s), value: s })),
-                    cls: 'q-entity-toolbar__select q-entity-toolbar__select--page-size',
-                    order,
-                };
-            }
-            if (name === 'pageTotal') {
-                return {
-                    type: 'Text',
-                    name: 'pageTotal',
-                    text: '1/0',
-                    cls: 'q-entity-toolbar__text q-entity-toolbar__text--page-total',
-                    order,
-                };
-            }
-            if (name === 'totalRecords') {
-                return {
-                    type: 'Text',
-                    name: 'totalRecords',
-                    text: '0',
-                    cls: 'q-entity-toolbar__text q-entity-toolbar__text--total-records',
-                    order,
-                };
-            }
-            if (name === 'search') {
-                return {
-                    type: 'Input',
-                    name: 'search',
-                    placeholder: 'i18n:toolbar.searchPlaceholder',
-                    clearable: true,
-                    cls: 'q-entity-toolbar__input q-entity-toolbar__input--search',
-                    order,
-                };
-            }
+        if (name === 'pageNum') {
+            return {
+                type: 'NumberInput',
+                name: 'pageNum',
+                value: 1,
+                min: 1,
+                cls: 'q-entity-toolbar__input q-entity-toolbar__input--page-num',
+                order,
+            };
+        }
+        if (name === 'pageSize') {
+            const defaultPageSize = self.domainConfig?.pageSize ?? 10;
+            const pageSizes: number[] = self.domainConfig?.pagesizes ?? [10, 20, 50, 100];
+            return {
+                type: 'Select',
+                name: 'pageSize',
+                value: defaultPageSize,
+                options: pageSizes.map((s: number) => ({ label: String(s), value: s })),
+                cls: 'q-entity-toolbar__select q-entity-toolbar__select--page-size',
+                order,
+            };
+        }
+        if (name === 'pageTotal') {
+            return {
+                type: 'Text',
+                name: 'pageTotal',
+                text: '1/0',
+                cls: 'q-entity-toolbar__text q-entity-toolbar__text--page-total',
+                order,
+            };
+        }
+        if (name === 'totalRecords') {
+            return {
+                type: 'Text',
+                name: 'totalRecords',
+                text: '0',
+                cls: 'q-entity-toolbar__text q-entity-toolbar__text--total-records',
+                order,
+            };
+        }
+        if (name === 'search') {
+            return {
+                type: 'Input',
+                name: 'search',
+                placeholder: 'i18n:toolbar.searchPlaceholder',
+                clearable: true,
+                cls: 'q-entity-toolbar__input q-entity-toolbar__input--search',
+                order,
+            };
+        }
 
-            return { type: def.type, name, text, order, ...override };
-        },
+        return { type: def.type, name, text, order, ...override };
+    }
 
-        _buildCustomItem(key: string, def: EntityToolbarItemDef): Record<string, any> {
-            const type = def.type ?? 'Button';
-            const name = def.name ?? key;
-            const order = def.order ?? 150;
-            const item: Record<string, any> = { type, name, order, ...def };
-            delete item.type;
-            item.type = type;
-            return item;
-        },
+    _buildCustomItem(key: string, def: EntityToolbarItemDef): Record<string, any> {
+        const type = def.type ?? 'Button';
+        const name = def.name ?? key;
+        const order = def.order ?? 150;
+        const item: Record<string, any> = { type, name, order, ...def };
+        delete item.type;
+        item.type = type;
+        return item;
+    }
 
-        // ══════════════════════════════════════════════
-        // 语义事件（tplEvents 已处理 entity/bridge 转发）
-        // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════
+    // 语义事件（tplEvents 已处理 entity/bridge 转发）
+    // ══════════════════════════════════════════════
 
-        _setupSemanticEvents(): void {
-            const self = this as any;
+    _setupSemanticEvents(): void {
+        const self = this as any;
 
-            self.on('action', (data: any) => {
-                const itemName = data?.name ?? data?.item?.name;
-                if (!itemName) return;
+        self.on('action', (data: any) => {
+            const itemName = data?.name ?? data?.item?.name;
+            if (!itemName) return;
 
-                if (PAGINATION_ACTION_NAMES.has(itemName)) {
-                    self.emit(PAGINATION_EVENTS.CHANGE, {
-                        action: itemName,
-                        page: self._currentPage,
-                        ...data,
-                    });
-                }
-                if (CRUD_ACTION_NAMES.has(itemName)) {
-                    self.emit(CRUD_EVENTS.ACTION, { action: itemName, ...data });
-                }
-            });
-
-            self.on('pageNumInputChange', (data: any) => {
-                const page = parseInt(data?.formValue, 10);
-                if (!isNaN(page) && page >= 1) self.currentPage = page;
-            });
-
-            self.on('pageSizeSelectChange', (data: any) => {
-                self.pageSize = data?.formValue;
+            if (PAGINATION_ACTION_NAMES.has(itemName)) {
                 self.emit(PAGINATION_EVENTS.CHANGE, {
-                    action: 'pageSizeChange',
-                    pageSize: data?.formValue,
+                    action: itemName,
+                    page: self._currentPage,
+                    ...data,
                 });
+            }
+            if (CRUD_ACTION_NAMES.has(itemName)) {
+                self.emit(CRUD_EVENTS.ACTION, { action: itemName, ...data });
+            }
+        });
+
+        self.on('pageNumInputChange', (data: any) => {
+            const page = parseInt(data?.formValue, 10);
+            if (!isNaN(page) && page >= 1) self.currentPage = page;
+        });
+
+        self.on('pageSizeSelectChange', (data: any) => {
+            self.pageSize = data?.formValue;
+            self.emit(PAGINATION_EVENTS.CHANGE, {
+                action: 'pageSizeChange',
+                pageSize: data?.formValue,
             });
-        },
+        });
+    }
 
-        // ══════════════════════════════════════════════
-        // 分页状态
-        // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════
+    // 分页状态
+    // ══════════════════════════════════════════════
 
-        get currentPage(): number {
-            return (this as any)._currentPage;
-        },
-        set currentPage(v: number) {
-            const self = this as any;
-            self._currentPage = v;
-            self._updatePageDisplay();
-        },
+    get currentPage(): number {
+        return (this as any)._currentPage;
+    }
+    set currentPage(v: number) {
+        const self = this as any;
+        self._currentPage = v;
+        self._updatePageDisplay();
+    }
 
-        get totalPages(): number {
-            return (this as any)._totalPages;
-        },
-        set totalPages(v: number) {
-            const self = this as any;
-            self._totalPages = v;
-            self._updatePageDisplay();
-        },
+    get totalPages(): number {
+        return (this as any)._totalPages;
+    }
+    set totalPages(v: number) {
+        const self = this as any;
+        self._totalPages = v;
+        self._updatePageDisplay();
+    }
 
-        get totalRecords(): number {
-            return (this as any)._totalRecords;
-        },
-        set totalRecords(v: number) {
-            const self = this as any;
-            self._totalRecords = v;
-            self._updateTotalRecordsDisplay();
-        },
+    get totalRecords(): number {
+        return (this as any)._totalRecords;
+    }
+    set totalRecords(v: number) {
+        const self = this as any;
+        self._totalRecords = v;
+        self._updateTotalRecordsDisplay();
+    }
 
-        get pageSize(): number {
-            return (this as any)._pageSize;
-        },
-        set pageSize(v: number) {
-            (this as any)._pageSize = v;
-        },
+    get pageSize(): number {
+        return (this as any)._pageSize;
+    }
+    set pageSize(v: number) {
+        (this as any)._pageSize = v;
+    }
 
-        _updatePageDisplay(): void {
-            const self = this as any;
-            const pageNumItem = self._findItemByName('pageNum');
-            if (pageNumItem) pageNumItem.numValue = self._currentPage;
-            const pageTotalItem = self._findItemByName('pageTotal');
-            if (pageTotalItem) pageTotalItem.text = `${self._currentPage}/${self._totalPages}`;
-        },
+    _updatePageDisplay(): void {
+        const self = this as any;
+        const pageNumItem = self._findItemByName('pageNum');
+        if (pageNumItem) pageNumItem.numValue = self._currentPage;
+        const pageTotalItem = self._findItemByName('pageTotal');
+        if (pageTotalItem) pageTotalItem.text = `${self._currentPage}/${self._totalPages}`;
+    }
 
-        _updateTotalRecordsDisplay(): void {
-            const self = this as any;
-            const totalItem = self._findItemByName('totalRecords');
-            if (totalItem) totalItem.text = `${self._totalRecords}`;
-        },
+    _updateTotalRecordsDisplay(): void {
+        const self = this as any;
+        const totalItem = self._findItemByName('totalRecords');
+        if (totalItem) totalItem.text = `${self._totalRecords}`;
+    }
 
-        _findItemByName(name: string): any {
-            const self = this as any;
-            for (const item of self._items) {
-                if (item.component?.name === name) return item.component;
-            }
-            return null;
-        },
+    _findItemByName(name: string): any {
+        const self = this as any;
+        for (const item of self._items) {
+            if (item.component?.name === name) return item.component;
+        }
+        return null;
+    }
 
-        // ══════════════════════════════════════════════
-        // 便捷方法
-        // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════
+    // 便捷方法
+    // ══════════════════════════════════════════════
 
-        setPageInfo(page: number, totalPages: number, totalRecords: number): void {
-            const self = this as any;
-            self._currentPage = page;
-            self._totalPages = totalPages;
-            self._totalRecords = totalRecords;
-            self._updatePageDisplay();
-            self._updateTotalRecordsDisplay();
-        },
+    setPageInfo(page: number, totalPages: number, totalRecords: number): void {
+        const self = this as any;
+        self._currentPage = page;
+        self._totalPages = totalPages;
+        self._totalRecords = totalRecords;
+        self._updatePageDisplay();
+        self._updateTotalRecordsDisplay();
+    }
 
-        setItemEnabled(name: string, enabled: boolean): void {
-            const item = (this as any)._findItemByName(name);
-            if (item) item.disabled = !enabled;
-        },
+    setItemEnabled(name: string, enabled: boolean): void {
+        const item = (this as any)._findItemByName(name);
+        if (item) item.disabled = !enabled;
+    }
 
-        setItemHidden(name: string, hidden: boolean): void {
-            const item = (this as any)._findItemByName(name);
-            if (item) item.hidden = hidden;
-        },
+    setItemHidden(name: string, hidden: boolean): void {
+        const item = (this as any)._findItemByName(name);
+        if (item) item.hidden = hidden;
+    }
 
-        setItemCls(name: string, cls: string): void {
-            const item = (this as any)._findItemByName(name);
-            if (item && typeof item.addCls === 'function') item.addCls(cls);
-        },
+    setItemCls(name: string, cls: string): void {
+        const item = (this as any)._findItemByName(name);
+        if (item && typeof item.addCls === 'function') item.addCls(cls);
+    }
 
-        setItemIconCls(name: string, iconCls: string): void {
-            const item = (this as any)._findItemByName(name);
-            if (item) item.icon = iconCls;
-        },
+    setItemIconCls(name: string, iconCls: string): void {
+        const item = (this as any)._findItemByName(name);
+        if (item) item.icon = iconCls;
+    }
 
-        getSearchValue(): string {
-            const searchItem = (this as any)._findItemByName('search');
-            return searchItem?.value ?? '';
-        },
+    getSearchValue(): string {
+        const searchItem = (this as any)._findItemByName('search');
+        return searchItem?.value ?? '';
+    }
 
-        // ══════════════════════════════════════════════
-        // update
-        // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════
+    // update
+    // ══════════════════════════════════════════════
 
-        update(props?: Partial<EntityToolbarProps>): void {
-            const self = this as any;
-            self._super.update(props);
+    update(props?: Partial<EntityToolbarProps>): void {
+        const self = this as any;
+        super.update(props);
 
-            if (props?.items !== undefined) {
-                self._itemsConfig = props.items;
-                self.clear();
-                const resolved = self._resolveItems(props.items);
-                if (resolved.length > 0) self.setItems(resolved);
-            }
-            if (props?.entityKey !== undefined) self._entityKey = props.entityKey;
-            if (props?.eventKey !== undefined) self._eventKey = props.eventKey;
-        },
-    },
-}).with([DomainAbility]);
+        if (props?.items !== undefined) {
+            self._itemsConfig = props.items;
+            self.clear();
+            const resolved = self._resolveItems(props.items);
+            if (resolved.length > 0) self.setItems(resolved);
+        }
+        if (props?.entityKey !== undefined) self._entityKey = props.entityKey;
+        if (props?.eventKey !== undefined) self._eventKey = props.eventKey;
+    }
+}
 
-export type EntityToolbarComponent = InstanceType<typeof EntityToolbarComponent>;
+EntityToolbarComponent.use([DomainAbility]);
+
+export { EntityToolbarComponent };
+export type EntityToolbarComponentInstance = InstanceType<typeof EntityToolbarComponent>;

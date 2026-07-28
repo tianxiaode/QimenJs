@@ -117,6 +117,8 @@ export interface DesignTokens {
     breakpoint: BreakpointTokens;
 }
 
+export type ThemeTokens = DesignTokens;
+
 /**
  * 主题变更事件名称
  */
@@ -167,7 +169,12 @@ export type ColorVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'er
  * 所有可用的颜色变体常量数组
  */
 export const COLOR_VARIANTS: readonly ColorVariant[] = [
-    'primary', 'secondary', 'success', 'warning', 'error', 'info',
+    'primary',
+    'secondary',
+    'success',
+    'warning',
+    'error',
+    'info',
 ] as const;
 
 /**
@@ -177,10 +184,10 @@ export const COLOR_VARIANTS: readonly ColorVariant[] = [
  * 背景色用 colors.xxx，前景色用 colors.on-xxx。
  */
 export const COLOR_VARIANT_MAP: Record<ColorVariant, { bg: string; fg: string }> = {
-    primary:   { bg: '--q-colors-primary',   fg: '--q-colors-on-primary' },
-    secondary: { bg: '--q-colors-secondary',  fg: '--q-colors-on-secondary' },
-    success:   { bg: '--q-colors-success',    fg: '--q-colors-on-success' },
-    warning:   { bg: '--q-colors-warning',    fg: '--q-colors-on-warning' },
-    error:     { bg: '--q-colors-error',      fg: '--q-colors-on-error' },
-    info:      { bg: '--q-colors-info',       fg: '--q-colors-on-info' },
+    primary: { bg: '--q-colors-primary', fg: '--q-colors-on-primary' },
+    secondary: { bg: '--q-colors-secondary', fg: '--q-colors-on-secondary' },
+    success: { bg: '--q-colors-success', fg: '--q-colors-on-success' },
+    warning: { bg: '--q-colors-warning', fg: '--q-colors-on-warning' },
+    error: { bg: '--q-colors-error', fg: '--q-colors-on-error' },
+    info: { bg: '--q-colors-info', fg: '--q-colors-on-info' },
 } as const;

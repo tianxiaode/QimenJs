@@ -39,11 +39,14 @@ interface AuxPool {
     offset: number;
 }
 
-export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
-    type: 'ItemGroupPooled',
+class ItemGroupPooledComponent extends ItemGroupBaseComponent {
+    static type = 'ItemGroupPooled';
+
+    type = 'ItemGroupPooled';
 
     onInitState() {
         return {
+            ...super.onInitState(),
             _hiddenItems: [] as Array<{
                 data: Record<string, any>;
                 component: any;
@@ -52,12 +55,11 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             }>,
             _auxPools: new Map<string, AuxPool>(),
         };
-    },
+    }
 
-    // ========== 属性 ==========
     get poolSize(): number {
         return this._hiddenItems.length;
-    },
+    }
 
     onAfterInit(props?: any): void {
         this._initItemGroupComponent(props);
@@ -93,9 +95,8 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             this.setAuxItems(AUX_ROLE_GROUP_SUMMARY, props.groupSummaryItems);
         if (props?.tableSummaryItems)
             this.setAuxItems(AUX_ROLE_TABLE_SUMMARY, props.tableSummaryItems);
-    },
+    }
 
-    // ========== 业务方法 ==========
     setItems(datas: Record<string, any>[]): void {
         const newLength = datas.length;
         const currentLength = this._items.length;
@@ -131,7 +132,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         this._items.length = newLength;
 
         this._applyOrders();
-    },
+    }
 
     add(data: Record<string, any>): any {
         const reused = this._reuseFromPool(data);
@@ -148,7 +149,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             return item.component;
         }
         return null;
-    },
+    }
 
     insert(index: number, data: Record<string, any>): any {
         const clampedIndex = Math.min(Math.max(0, index), this._items.length);
@@ -167,7 +168,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             return item.component;
         }
         return null;
-    },
+    }
 
     removeAt(index: number): any {
         if (index < 0 || index >= this._items.length) return undefined;
@@ -176,7 +177,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         this._hiddenItems.push(item);
         this._applyOrders();
         return item.component;
-    },
+    }
 
     clear(): void {
         for (const item of this._items) {
@@ -192,9 +193,8 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             pool.items = [];
         }
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
-    },
+    }
 
-    // ========== 池化管理 ==========
     _reuseFromPool(data: Record<string, any>): any {
         const dataType = data.type ?? this._defaultItemType;
         if (!dataType) return null;
@@ -212,16 +212,14 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             }
         }
         return null;
-    },
+    }
 
     trimPool(maxSize: number = 10): void {
         while (this._hiddenItems.length > maxSize) {
             const item = this._hiddenItems.pop();
             if (item) this._destroyItem(item);
         }
-    },
-
-    // ========== 辅助池 ==========
+    }
 
     registerAuxPool(role: string, config: AuxPoolConfig): void {
         this._auxPools.set(role, {
@@ -230,7 +228,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             itemType: config.itemType,
             offset: config.offset,
         });
-    },
+    }
 
     unregisterAuxPool(role: string): void {
         const pool = this._auxPools.get(role);
@@ -238,7 +236,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         for (const item of pool.items) this._destroyItem(item);
         for (const item of pool.hiddenItems) this._destroyItem(item);
         this._auxPools.delete(role);
-    },
+    }
 
     setAuxItems(role: string, datas: Record<string, any>[]): void {
         const pool = this._auxPools.get(role);
@@ -274,7 +272,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         pool.items.length = newLength;
 
         this._applyOrders();
-    },
+    }
 
     addAuxItem(role: string, data: Record<string, any>): any {
         const pool = this._auxPools.get(role);
@@ -294,7 +292,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             return item.component;
         }
         return null;
-    },
+    }
 
     removeAuxItemAt(role: string, index: number): any {
         const pool = this._auxPools.get(role);
@@ -306,7 +304,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         pool.hiddenItems.push(item);
         this._applyOrders();
         return item.component;
-    },
+    }
 
     clearAuxPool(role: string): void {
         const pool = this._auxPools.get(role);
@@ -318,18 +316,18 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
         }
         pool.items = [];
         this._applyOrders();
-    },
+    }
 
     getAuxItems(role: string): readonly any[] {
         const pool = this._auxPools.get(role);
         if (!pool) return [];
         return pool.items.map((item: any) => item.component);
-    },
+    }
 
     getAuxCount(role: string): number {
         const pool = this._auxPools.get(role);
         return pool ? pool.items.length : 0;
-    },
+    }
 
     trimAuxPool(role: string, maxSize: number = 10): void {
         const pool = this._auxPools.get(role);
@@ -338,7 +336,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             const item = pool.hiddenItems.pop();
             if (item) this._destroyItem(item);
         }
-    },
+    }
 
     _reuseFromAuxPool(role: string, data: Record<string, any>): any {
         const pool = this._auxPools.get(role);
@@ -361,24 +359,20 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             }
         }
         return null;
-    },
-
-    // ========== 表格角色便捷方法 ==========
+    }
 
     setGroupRows(datas: any[]): void {
         this.setAuxItems(AUX_ROLE_GROUP, datas);
-    },
+    }
     setExpandRows(datas: any[]): void {
         this.setAuxItems(AUX_ROLE_EXPAND, datas);
-    },
+    }
     setGroupSummaries(datas: any[]): void {
         this.setAuxItems(AUX_ROLE_GROUP_SUMMARY, datas);
-    },
+    }
     setTableSummaries(datas: any[]): void {
         this.setAuxItems(AUX_ROLE_TABLE_SUMMARY, datas);
-    },
-
-    // ========== Order 布局 ==========
+    }
 
     _applyOrders(): void {
         const container = this.itemContainer?.el;
@@ -399,9 +393,7 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
                 item.el.style.order = String(Math.floor(orderIndex * step + step * pool.offset));
             }
         }
-    },
-
-    // ========== 事件 ==========
+    }
 
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
         for (let i = 0; i < this._items.length; i++) {
@@ -421,7 +413,8 @@ export let ItemGroupPooledComponent = ItemGroupBaseComponent.replace({
             }
         }
         return null;
-    },
-});
+    }
+}
 
+export { ItemGroupPooledComponent };
 export type ItemGroupPooledComponentType = InstanceType<typeof ItemGroupPooledComponent>;

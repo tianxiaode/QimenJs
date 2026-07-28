@@ -5,7 +5,7 @@
  */
 
 // 组件基类
-export { Component, COMPONENT_ABILITIES, TEMPLATE_COMPONENT_ABILITIES } from './Component';
+export { Component, COMPONENT_ABILITIES } from './Component';
 
 // 注册管理器
 export { ComponentRegistrar } from './ComponentRegistrar';
@@ -91,6 +91,8 @@ export type {
 } from './types/tpl-events';
 export type { ComponentProps, InitContext } from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager-types';
+
+export type { Placement } from '@/overlay/dispatch/positionOverlay';
 
 // 初始化 TemplateRegistrar 到 RegistryHub
 import { TemplateRegistrar } from './engine/TemplateRegistrar';

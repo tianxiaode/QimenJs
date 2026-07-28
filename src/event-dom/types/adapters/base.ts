@@ -25,6 +25,9 @@ export interface BindOptions {
 
     /** 节流时间（毫秒）：在指定时间内最多执行一次 */
     throttle?: number;
+
+    /** 是否为委托绑定（事件已由父元素委托处理，不再直接绑定） */
+    delegated?: boolean;
 }
 
 export interface IEventAdapter<TTarget = any> {

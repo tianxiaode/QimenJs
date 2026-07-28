@@ -26,6 +26,7 @@ export interface BindOptions {
     throttle?: number;
     preventDefault?: boolean;
     stopPropagation?: boolean;
+    delegated?: boolean;
 }
 
 /**
@@ -33,12 +34,18 @@ export interface BindOptions {
  */
 export type GestureSemantic =
     | 'tap'
+    | 'click'
+    | 'dblclick'
     | 'doubletap'
     | 'longpress'
+    | 'drag'
     | 'swipe'
     | 'swipeleft'
     | 'swiperight'
     | 'swipeup'
     | 'swipedown'
+    | 'hover'
     | 'pinch'
-    | 'rotate';
+    | 'rotate'
+    | 'contextmenu'
+    | 'submit';

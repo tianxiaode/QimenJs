@@ -453,19 +453,19 @@ ItemGroup 子组件通过 `appendChild` 直接追加到 `itemContainer`，而非
    对比 slot 挂载：子组件需要有 `parent` 和 `slotName`，由 `step-self-mount` 自动挂载到父组件的占位符节点。
 
 2. **骨架恢复天然排除** — slot 挂载的子组件销毁时，框架会恢复骨架占位符（`<div class="q-skeleton">`），以保持父组件布局不塌陷。ItemGroup 子组件不走此流程：
-   - 骨架恢复条件：`this.parent && this.slotName`
+   - 骨架恢复条件：`this.parent && this.slotName && !this.isItemContainer`
    - ItemGroup 子组件没有 `parent`/`slotName`，条件为 false，自动跳过骨架恢复
-   - 无需额外的 `isItemContainer` flag
+   - `isItemContainer` getter 作为额外安全网：未来若 ItemGroup 子组件需要 parent，重写此 getter 返回 true 即可
 
 3. **事件通信不依赖 parent** — 事件通过 `EventBridge` + `eventKey` 注册机制（pub/sub 模式），而非父子链遍历：
    - 每个组件有独立的 EventScope
    - 子组件事件通过 `tplEvents.$items` 声明 + `getTargetItem` 匹配
    - 父组件通过 `.on('item:event', handler)` 监听
 
-4. **为什么不加 isItemContainer flag？**
-   - 当前 `parent && slotName` 检查已经隐式排除了 ItemGroup 子组件
-   - 加 flag 反而增加维护成本（每次新建 ItemGroup 子类都要记住声明）
-   - 如果未来 ItemGroup 子组件需要 `parent`（如主题继承），再加 flag 不迟
+4. **isItemContainer flag 的作用**
+   - `Component` 基类定义 `get isItemContainer()` 默认返回 false
+   - `ItemGroupBaseComponent` 可重写返回 true（当前因 parent/slotName 条件已天然排除，实际未重写）
+   - 作为未来扩展的安全网：若 ItemGroup 子组件需要 parent（如主题继承），重写此 getter 即可跳过骨架恢复
 
 ### 两种挂载模式对比
 

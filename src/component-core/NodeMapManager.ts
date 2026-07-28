@@ -326,19 +326,21 @@ export class NodeMapManager implements INodeMapManager {
      * @remarks
      * - 如果节点不存在，方法会静默返回
      * - 会调用子组件的 dispose() 方法进行清理
-     * - 设置 __noSkeletonRestore 标志防止组件 dispose 时恢复骨架
+     * - 通过 isItemContainer 控制是否在 dispose 时恢复骨架
      * - 会同时删除所有以该节点路径为前缀的子节点条目
      */
     remove(name: string): void {
+        if (name === 'root') {
+            throw new Error('[NodeMapManager] Cannot remove root node');
+        }
+
         const node = this._map[name];
         if (!node) return;
 
         this._removeChildEntries(name);
 
         if (node.component && typeof node.component.dispose === 'function') {
-            (node.component as any).__noSkeletonRestore = true;
             node.component.dispose();
-            (node.component as any).__noSkeletonRestore = false;
         }
 
         if (node.el) {
@@ -534,24 +536,22 @@ export class NodeMapManager implements INodeMapManager {
      *
      * @remarks
      * - 通过路径前缀匹配确定子节点关系
-     * - 设置 __noSkeletonRestore 标志防止 dispose 时恢复骨架
+     * - 通过 isItemContainer 控制是否在 dispose 时恢复骨架
      * - 会从映射表中删除所有匹配的子节点
      */
     private _removeChildEntries(parentName: string): void {
         const parentPath = this._cache.indexPath[parentName];
         if (!parentPath) return;
 
-        const prefix = parentPath.join(',');
-
         for (const [name, path] of Object.entries(this._cache.indexPath)) {
             if (name === parentName) continue;
-            const pathStr = path.join(',');
-            if (pathStr.startsWith(prefix)) {
+            if (
+                path.length > parentPath.length &&
+                path.slice(0, parentPath.length).every((v, i) => v === parentPath[i])
+            ) {
                 const node = this._map[name];
                 if (node?.component && typeof node.component.dispose === 'function') {
-                    (node.component as any).__noSkeletonRestore = true;
                     node.component.dispose();
-                    (node.component as any).__noSkeletonRestore = false;
                 }
                 delete this._map[name];
             }

@@ -49,12 +49,12 @@ export class GroupSummaryEngine {
                     };
                 },
 
-                onAfterInit(): void {
+                onAfterInit(this: any): void {
                     this.el.classList.add('q-table-row--group-summary');
                     this._applyWidths();
                 },
 
-                _applyWidths(): void {
+                _applyWidths(this: any): void {
                     for (const meta of this._columnMetas) {
                         const node = this.nodeMap?.[meta.name]?.el as HTMLElement | null;
                         if (node && meta.width) {
@@ -64,7 +64,7 @@ export class GroupSummaryEngine {
                     }
                 },
 
-                update(data: any): void {
+                update(this: any, data: any): void {
                     if (!data) return;
                     for (const meta of this._columnMetas) {
                         const cell = this.nodeMap?.[meta.name]?.component;

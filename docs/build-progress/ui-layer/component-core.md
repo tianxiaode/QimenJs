@@ -8,6 +8,39 @@
 ## 构建历史
 
 ### 2026-07-28
+- ✅ NodeMapManager 路径前缀匹配 Bug 修复
+  - `_removeChildEntries` 从 `pathStr.startsWith(prefix)` 改为路径长度 + 逐元素精确匹配
+  - 修复了同父节点名的兄弟节点互相误删的边界情况
+- ✅ 禁止 remove('root')
+  - `remove()` 开头添加 `if (name === 'root') throw new Error(...)` 守卫
+  - 防止根节点被误删导致整个组件崩溃
+- ✅ nodeMap 改为 getter
+  - `Component.nodeMap` 从直接属性改为 getter：`get nodeMap() { return this.nodeMapMgr?.getAll() ?? {}; }`
+  - 外部无法直接修改内部映射表，提升封装性
+- ✅ readyAll / 深度等待
+  - 新增 `Component.readyAll` getter（Promise），递归等待所有子组件 ready 完成
+  - 实现 `_readyAll()`：遍历 nodeMap 中所有子组件，等待其 readyAll 或 ready
+- ✅ 跳过空 FILL_PHASE
+  - `init()` 添加 `if (FILL_PHASE.steps.length > 0)` 守卫，空阶段不再增加微任务延迟
+- ✅ isItemContainer 替代 __noSkeletonRestore
+  - `Component` 新增 `get isItemContainer()` getter（默认 false）
+  - `onBeforeDispose` 骨架恢复条件增加 `!this.isItemContainer` 检查
+  - `ItemGroupBaseComponent` 重写返回 true（骨架恢复的额外安全网）
+- ✅ DelegatedEventEngine 事件引擎修复
+  - 委托事件双重绑定修复：`bindDelegatedEvents` 只绑定根节点规则（`rule.nodeName !== ''`），命名节点规则通过委托分发
+  - dispatchers 缓存机制：`bindDelegatedEvents` 预包装 debounce/throttle/once，存入 `_delegatedDispatchers`，分发时直接取用
+  - handler 正确包装：命名节点规则的 handler 在分发时通过 dispatchers 获取已包装版本
+- ✅ BindOptions 添加 delegated 标记
+  - `event-dom/types/adapters/base.ts` 和 `system-abilities/types/abilities.ts` 中 `BindOptions` 新增 `delegated?: boolean`
+  - 标记事件是否已由父元素委托处理，避免重复绑定
+- ✅ 类型清理：节点纯结构，语义归使用方
+  - 删除 `NodeBehavior` 接口：节点不携带实体/路由语义
+  - 删除 `NodeEventConfig` 接口：节点不携带默认事件配置
+  - 删除 `TplNode.behavior`、`TplNode.events` 字段
+  - 删除 `NodeMetadata.behavior`、`NodeMetadata.events` 字段
+  - 编译引擎（CompileEngine）不再感知事件信息，职责回归纯编译
+  - 事件语义（entity/route 名）完全由 `tplEvents` 在使用时声明，支持旧写法（string）和 $items 动态写法
+  - 理由：节点是多用途的，语义应在使用时确定而非写死
 - ✅ 组件销毁骨架占位恢复机制
   - NodeMapManager 新增 restoreSkeleton(name) 方法：用 `<div class="q-skeleton">` 替换被销毁组件的 DOM 位置
   - Component.onBeforeDispose 增加条件性骨架恢复：仅对 slot 挂载的子组件（有 parent + slotName）恢复骨架

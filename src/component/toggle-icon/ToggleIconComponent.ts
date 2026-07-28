@@ -29,100 +29,95 @@ export interface ToggleIconProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ToggleIconComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-toggle-icon',
-        children: [{ tag: 'i', name: 'icon', cls: 'q-toggle-icon__icon' }],
-    },
-    tplEvents: {
-        '': { click: { handler: true, emits: ['toggle'] } },
-    },
-    body: {
-        type: 'ToggleIcon',
+class ToggleIconComponent extends Component {
+    static type = 'ToggleIcon';
 
-        onInitState() {
-            return {
-                _on: false,
-                _onIcon: '',
-                _offIcon: '',
-            };
-        },
+    type = 'ToggleIcon';
 
-        onAfterInit(props?: ToggleIconProps): void {
-            this.initSize();
-            if (props?.onIcon) this._onIcon = props.onIcon;
-            if (props?.offIcon) this._offIcon = props.offIcon;
-            if (props?.on) this._on = props.on;
-            if (props?.disabled) this.disabled = props.disabled;
-            if (props?.size) this.size = props.size;
+    onInitState() {
+        return {
+            _on: false,
+            _onIcon: '',
+            _offIcon: '',
+        };
+    }
+
+    onAfterInit(props?: ToggleIconProps): void {
+        this.initSize();
+        if (props?.onIcon) this._onIcon = props.onIcon;
+        if (props?.offIcon) this._offIcon = props.offIcon;
+        if (props?.on) this._on = props.on;
+        if (props?.disabled) this.disabled = props.disabled;
+        if (props?.size) this.size = props.size;
+        this._applyState();
+    }
+
+    onRootClick(): void {
+        if (this.disabled) return;
+        this._on = !this._on;
+        this._applyState();
+    }
+
+    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
+        return { on: this._on };
+    }
+
+    get isOn(): boolean {
+        return this._on;
+    }
+    set isOn(value: boolean) {
+        this._on = value;
+        this._applyState();
+    }
+
+    get onIcon(): string {
+        return this._onIcon;
+    }
+    set onIcon(value: string) {
+        this._onIcon = value;
+        this._applyState();
+    }
+
+    get offIcon(): string {
+        return this._offIcon;
+    }
+    set offIcon(value: string) {
+        this._offIcon = value;
+        this._applyState();
+    }
+
+    _applyState(): void {
+        const iconValue = this._on ? this._onIcon : this._offIcon;
+        if (iconValue) {
+            this.icon = iconValue;
+        }
+
+        this.el.classList.toggle('q-toggle-icon--on', this._on);
+        this.el.classList.toggle('q-toggle-icon--off', !this._on);
+        this.el.classList.toggle('q-toggle-icon--disabled', this.disabled);
+
+        this.el.setAttribute('aria-pressed', String(this._on));
+
+        if (this.disabled) {
+            this.el.setAttribute('aria-disabled', 'true');
+        } else {
+            this.el.removeAttribute('aria-disabled');
+        }
+    }
+
+    update(props?: Partial<ToggleIconProps>): void {
+        if (props?.on !== undefined) this.isOn = props.on;
+        if (props?.onIcon !== undefined) this.onIcon = props.onIcon;
+        if (props?.offIcon !== undefined) this.offIcon = props.offIcon;
+        if (props?.disabled !== undefined) {
+            this.disabled = props.disabled;
             this._applyState();
-        },
+        }
+        if (props?.size !== undefined) this.size = props.size;
+    }
+}
 
-        onRootClick(): void {
-            if (this.disabled) return;
-            this._on = !this._on;
-            this._applyState();
-        },
+ToggleIconComponent.use([SizeAbility]);
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            return { on: this._on };
-        },
-
-        get on(): boolean {
-            return this._on;
-        },
-        set on(value: boolean) {
-            this._on = value;
-            this._applyState();
-        },
-
-        get onIcon(): string {
-            return this._onIcon;
-        },
-        set onIcon(value: string) {
-            this._onIcon = value;
-            this._applyState();
-        },
-
-        get offIcon(): string {
-            return this._offIcon;
-        },
-        set offIcon(value: string) {
-            this._offIcon = value;
-            this._applyState();
-        },
-
-        _applyState(): void {
-            const iconValue = this._on ? this._onIcon : this._offIcon;
-            if (iconValue) {
-                this.icon = iconValue;
-            }
-
-            this.el.classList.toggle('q-toggle-icon--on', this._on);
-            this.el.classList.toggle('q-toggle-icon--off', !this._on);
-            this.el.classList.toggle('q-toggle-icon--disabled', this.disabled);
-
-            this.el.setAttribute('aria-pressed', String(this._on));
-
-            if (this.disabled) {
-                this.el.setAttribute('aria-disabled', 'true');
-            } else {
-                this.el.removeAttribute('aria-disabled');
-            }
-        },
-
-        update(props?: Partial<ToggleIconProps>): void {
-            if (props?.on !== undefined) this.on = props.on;
-            if (props?.onIcon !== undefined) this.onIcon = props.onIcon;
-            if (props?.offIcon !== undefined) this.offIcon = props.offIcon;
-            if (props?.disabled !== undefined) {
-                this.disabled = props.disabled;
-                this._applyState();
-            }
-            if (props?.size !== undefined) this.size = props.size;
-        },
-    },
-}).with([SizeAbility]);
-
-export type ToggleIconComponent = InstanceType<typeof ToggleIconComponent>;
+export { ToggleIconComponent };
+export type ToggleIconComponentInstance = InstanceType<typeof ToggleIconComponent>;

@@ -28,127 +28,97 @@ export interface FieldsetProps {
     cls?: string;
 }
 
-export let FieldsetComponent = Component.withTemplate({
-    tpl: {
-        tag: 'fieldset',
-        cls: 'q-fieldset',
-        children: [
-            {
-                tag: 'legend',
-                name: 'legend',
-                cls: 'q-fieldset__legend',
-                i18n: 'legend',
-                children: [
-                    {
-                        tag: 'span',
-                        name: 'toggleIcon',
-                        cls: 'q-fieldset__toggle-icon',
-                        hidden: true,
-                    },
-                    {
-                        tag: 'span',
-                        name: 'legendText',
-                        cls: 'q-fieldset__legend-text',
-                    },
-                ],
-            },
-            {
-                tag: 'div',
-                name: 'content',
-                cls: 'q-fieldset__content',
-            },
-        ],
-    },
-    tplEvents: {
-        legend: { click: { handler: true, emits: ['toggle'] } },
-    },
-    body: {
-        type: 'Fieldset',
+class FieldsetComponent extends Component {
+    static type = 'Fieldset';
 
-        onInitState() {
-            return {
-                _collapsible: false,
-                _collapsed: false,
-            };
-        },
+    type = 'Fieldset';
 
-        onAfterInit(props?: FieldsetProps): void {
-            this._initFieldset(props);
-        },
+    onInitState() {
+        return {
+            _collapsible: false,
+            _collapsed: false,
+        };
+    }
 
-        _initFieldset(props?: FieldsetProps): void {
-            if (props?.collapsible) {
-                this._collapsible = true;
-                this.setNodeHidden(false, 'toggleIcon');
-            }
-            if (props?.i18nLegend) {
-                this.legendText = props.i18nLegend;
-            } else if (props?.legend) {
-                this.legendText = props.legend;
-            }
-            if (props?.collapsed) {
-                this._collapsed = true;
-                this._applyCollapsed();
-            }
-            if (props?.cls) this.addCls(props.cls);
-        },
+    onAfterInit(props?: FieldsetProps): void {
+        this._initFieldset(props);
+    }
 
-        onLegendClick(): void {
-            if (!this._collapsible) return;
-            this._collapsed = !this._collapsed;
+    _initFieldset(props?: FieldsetProps): void {
+        if (props?.collapsible) {
+            this._collapsible = true;
+            this.setNodeHidden(false, 'toggleIcon');
+        }
+        if (props?.i18nLegend) {
+            this.legendText = props.i18nLegend;
+        } else if (props?.legend) {
+            this.legendText = props.legend;
+        }
+        if (props?.collapsed) {
+            this._collapsed = true;
             this._applyCollapsed();
-        },
+        }
+        if (props?.cls) this.addCls(props.cls);
+    }
 
-        _applyCollapsed(): void {
-            this.toggleCls('q-fieldset--collapsed', this._collapsed);
-            this.setNodeHidden(this._collapsed, 'content');
+    onLegendClick(): void {
+        if (!this._collapsible) return;
+        this._collapsed = !this._collapsed;
+        this._applyCollapsed();
+    }
 
-            const iconEl = this.nodeMap?.toggleIcon?.el as HTMLElement | null;
-            if (iconEl) {
-                iconEl.textContent = this._collapsed ? '▶' : '▼';
-            }
-        },
+    _applyCollapsed(): void {
+        this.toggleCls('q-fieldset--collapsed', this._collapsed);
+        this.setNodeHidden(this._collapsed, 'content');
 
-        get collapsed(): boolean {
-            return this._collapsed;
-        },
-        set collapsed(v: boolean) {
-            this._collapsed = v;
+        const iconEl = this.nodeMap?.toggleIcon?.el as HTMLElement | null;
+        if (iconEl) {
+            iconEl.textContent = this._collapsed ? '▶' : '▼';
+        }
+    }
+
+    get collapsed(): boolean {
+        return this._collapsed;
+    }
+    set collapsed(v: boolean) {
+        this._collapsed = v;
+        this._applyCollapsed();
+    }
+
+    get collapsible(): boolean {
+        return this._collapsible;
+    }
+    set collapsible(v: boolean) {
+        this._collapsible = v;
+        this.setNodeHidden(!v, 'toggleIcon');
+        if (!v) {
+            this._collapsed = false;
             this._applyCollapsed();
-        },
+        }
+    }
 
-        get collapsible(): boolean {
-            return this._collapsible;
-        },
-        set collapsible(v: boolean) {
-            this._collapsible = v;
-            this.setNodeHidden(!v, 'toggleIcon');
-            if (!v) {
-                this._collapsed = false;
-                this._applyCollapsed();
-            }
-        },
+    get legendText(): string {
+        const el = this.nodeMap?.legendText?.el as HTMLElement | null;
+        return el?.textContent ?? '';
+    }
+    set legendText(v: string) {
+        this.setNodeProp('text', v, 'legendText');
+    }
 
-        get legendText(): string {
-            const el = this.nodeMap?.legendText?.el as HTMLElement | null;
-            return el?.textContent ?? '';
-        },
-        set legendText(v: string) {
-            this.setNodeProp('text', v, 'legendText');
-        },
+    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
+        return { collapsed: this._collapsed };
+    }
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            return { collapsed: this._collapsed };
-        },
+    update(props?: Partial<FieldsetProps>): void {
+        if (props?.i18nLegend !== undefined) this.legendText = props.i18nLegend;
+        else if (props?.legend !== undefined) this.legendText = props.legend;
+        if (props?.collapsible !== undefined) this.collapsible = props.collapsible;
+        if (props?.collapsed !== undefined) this.collapsed = props.collapsed;
+        if (props?.cls !== undefined) this.addCls(props.cls);
+    }
+}
 
-        update(props?: Partial<FieldsetProps>): void {
-            if (props?.i18nLegend !== undefined) this.legendText = props.i18nLegend;
-            else if (props?.legend !== undefined) this.legendText = props.legend;
-            if (props?.collapsible !== undefined) this.collapsible = props.collapsible;
-            if (props?.collapsed !== undefined) this.collapsed = props.collapsed;
-            if (props?.cls !== undefined) this.addCls(props.cls);
-        },
-    },
-}).with([CommonPropsAbility]);
+FieldsetComponent.use([CommonPropsAbility]);
 
-export type FieldsetComponent = InstanceType<typeof FieldsetComponent>;
+export { FieldsetComponent };
+export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;

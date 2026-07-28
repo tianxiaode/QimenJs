@@ -17,29 +17,10 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let TextareaFieldBodyComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-textarea__wrapper',
-        children: [
-            {
-                tag: 'textarea',
-                name: 'field',
-                cls: 'q-textarea__field',
-            },
-        ],
-    },
-    tplEvents: {
-        field: {
-            input: { emits: ['input'], debounce: 150 },
-            focus: { emits: ['focus'] },
-            blur: { emits: ['blur'] },
-            change: { emits: ['change'], debounce: 150 },
-        },
-    },
-    body: {
-        type: 'TextareaFieldBody',
-    },
-});
+class TextareaFieldBodyComponent extends Component {
+    static type = 'TextareaFieldBody';
+    type = 'TextareaFieldBody';
+}
 
-export type TextareaFieldBodyComponent = InstanceType<typeof TextareaFieldBodyComponent>;
+export { TextareaFieldBodyComponent };
+export type TextareaFieldBodyComponentInstance = InstanceType<typeof TextareaFieldBodyComponent>;

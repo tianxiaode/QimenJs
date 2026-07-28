@@ -10,9 +10,9 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { compileTemplate } from '@/component-core/template-json';
-import { findByPath } from '@/component-core/engine/TemplateCompiler';
-import type { ComponentTemplate } from '@/component-core/types/component-template';
+import { CompileEngine } from '@/component-core/engine/CompileEngine';
+import { findByPath } from '@/component-core/engine/utils/dom-path';
+import type { TplNode } from '@/component-core/types/tpl-node-types';
 import type { NodeIndexPath, NodeMetadata } from '@/component-core/types/index';
 
 // ─── 模板缓存条目 ──────────────────────────────────────────
@@ -26,7 +26,7 @@ interface TemplateCacheEntry {
 
 // ─── 能力定义 ──────────────────────────────────────────────
 
-export const TemplateCacheAbility= {
+export const TemplateCacheAbility = {
     /**
      * 模板缓存映射：key → TemplateCacheEntry
      */
@@ -50,7 +50,7 @@ export const TemplateCacheAbility= {
      *
      * 注册一个模板 key 及其模板定义，自动构建缓存。
      */
-    initTemplateCache(key: string, templateJson: ComponentTemplate): void {
+    initTemplateCache(key: string, templateJson: TplNode): void {
         this._templateJsons.set(key, templateJson);
         this.buildTemplateCache(key, templateJson);
     },
@@ -61,7 +61,7 @@ export const TemplateCacheAbility= {
      * 替换后自动重建缓存和节点索引，后续创建的实例使用新模板。
      * 已显示的实例不受影响。
      */
-    setTemplate(key: string, templateJson: ComponentTemplate): void {
+    setTemplate(key: string, templateJson: TplNode): void {
         this._templateJsons.set(key, templateJson);
         this.buildTemplateCache(key, templateJson);
     },
@@ -69,8 +69,8 @@ export const TemplateCacheAbility= {
     /**
      * 构建模板缓存：HTMLTemplateElement + 预编译节点索引
      */
-    buildTemplateCache(key: string, templateJson: ComponentTemplate): void {
-        const result = compileTemplate(templateJson);
+    buildTemplateCache(key: string, templateJson: TplNode): void {
+        const result = CompileEngine.compileTemplate(templateJson, null);
 
         const tpl = document.createElement('template');
         tpl.innerHTML = result.html;

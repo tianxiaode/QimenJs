@@ -3,25 +3,22 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export interface ToolbarProps extends ItemGroupProps {}
 
-export let ToolbarComponent = ItemGroupStaticComponent.replace({
-    type: 'Toolbar',
-    config: { direction: 'horizontal', gap: '4px' },
-    tplEvents: {
-        itemContainer: {
-            $items: {
-                Button: { click: { emits: ['action'] } },
-                Input: { input: { emits: ['inputChange'] } },
-                NumberInput: { input: { emits: ['inputChange'] } },
-                Select: { 'select:change': { emits: ['selectChange'] } },
-            },
-        },
-    },
-    body: {
-        nodes: {
-            root: { addCls: 'q-toolbar' },
-            itemContainer: { addCls: 'q-toolbar__items' },
-        },
-    },
-});
+class ToolbarComponent extends ItemGroupStaticComponent {
+    static type = 'Toolbar';
 
-export type ToolbarComponent = InstanceType<typeof ToolbarComponent>;
+    type = 'Toolbar';
+
+    onAfterInit(props?: ToolbarProps): void {
+        this.addCls('q-toolbar');
+        (this as any).itemContainer?.el?.classList.add('q-toolbar__items');
+
+        super.onAfterInit({
+            ...props,
+            direction: props?.direction ?? 'horizontal',
+            gap: props?.gap ?? '4px',
+        });
+    }
+}
+
+export { ToolbarComponent };
+export type ToolbarComponentInstance = InstanceType<typeof ToolbarComponent>;

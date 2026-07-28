@@ -43,209 +43,193 @@ export interface SidebarProps {
     collapsible?: boolean;
 }
 
-export let SidebarComponent = Component.withTemplate({
-    tpl: {
-        tag: 'aside',
-        cls: 'q-sidebar',
-        attrs: { role: 'complementary' },
-        children: [
-            {
-                tag: 'div',
-                name: 'header',
-                cls: 'q-sidebar__header',
-                children: [
-                    { tag: 'span', name: 'title', cls: 'q-sidebar__title' },
-                    { tag: 'button', name: 'toggle', cls: 'q-sidebar__toggle', hidden: true },
-                ],
-            },
-            { tag: 'nav', name: 'items', cls: 'q-sidebar__nav' },
-        ],
-    },
-    body: {
-        type: 'Sidebar',
+class SidebarComponent extends Component {
+    static type = 'Sidebar';
 
-        onInitState() {
-            return {
-                _title: '' as string,
-                _items: [] as SidebarItem[],
-                _collapsed: false,
-                _width: '240px',
-                _collapsible: false,
-                _itemEls: [] as HTMLElement[],
-                _clickBound: false,
-            };
-        },
+    type = 'Sidebar';
 
-        onAfterInit(props?: SidebarProps): void {
-            this._initSidebar(props);
-        },
+    onInitState() {
+        return {
+            _title: '' as string,
+            _items: [] as SidebarItem[],
+            _collapsed: false,
+            _width: '240px',
+            _collapsible: false,
+            _itemEls: [] as HTMLElement[],
+            _clickBound: false,
+        };
+    }
 
-        _initSidebar(props?: SidebarProps): void {
-            if (props?.title) {
-                this._title = props.title;
-                this.title = props.title;
-            } else {
-                this.setNodeHidden(true, 'title');
-            }
+    onAfterInit(props?: SidebarProps): void {
+        this._initSidebar(props);
+    }
 
-            if (props?.width) {
-                this._width = props.width;
-                (this.el as HTMLElement).style.width = props.width;
-            }
+    _initSidebar(props?: SidebarProps): void {
+        if (props?.title) {
+            this._title = props.title;
+            this.title = props.title;
+        } else {
+            this.setNodeHidden(true, 'title');
+        }
 
-            if (props?.collapsible) {
-                this._collapsible = props.collapsible;
-                this.setNodeHidden(false, 'toggle');
-                this._bindToggle();
-            }
+        if (props?.width) {
+            this._width = props.width;
+            (this.el as HTMLElement).style.width = props.width;
+        }
 
-            if (props?.collapsed) {
-                this.collapsed = props.collapsed;
-            }
+        if (props?.collapsible) {
+            this._collapsible = props.collapsible;
+            this.setNodeHidden(false, 'toggle');
+            this._bindToggle();
+        }
 
-            if (props?.items) {
-                this._items = props.items;
-                this._renderItems();
-            }
+        if (props?.collapsed) {
+            this.collapsed = props.collapsed;
+        }
 
-            this._bindItemClick();
-        },
-
-        _bindToggle(): void {
-            const toggleEl = this.nodeMap?.toggle?.el as HTMLElement | null;
-            if (!toggleEl) return;
-            this.bind(toggleEl, 'click');
-            this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-                const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
-                if (target?.closest('.q-sidebar__toggle')) {
-                    this.collapsed = !this._collapsed;
-                    this.emit('collapse', { collapsed: this._collapsed });
-                }
-            });
-        },
-
-        _bindItemClick(): void {
-            if (this._clickBound) return;
-            const container = this.nodeMap?.items?.el as HTMLElement | null;
-            if (!container) return;
-
-            this._clickBound = true;
-            this.bind(container, 'click');
-            this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-                const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
-                const itemEl = target?.closest('.q-sidebar__item') as HTMLElement | null;
-                if (!itemEl || itemEl.classList.contains('q-sidebar__item--disabled')) return;
-                const key = itemEl?.dataset?.key;
-                const index = itemEl?.dataset?.index;
-                if (key !== undefined && index !== undefined) {
-                    this._setActiveItem(Number(index));
-                    this.emit('itemClick', { key, index: Number(index) });
-                }
-            });
-        },
-
-        _setActiveItem(activeIndex: number): void {
-            for (let i = 0; i < this._itemEls.length; i++) {
-                this._itemEls[i].classList.toggle('q-sidebar__item--active', i === activeIndex);
-            }
-        },
-
-        get title(): string {
-            return this._title;
-        },
-        set title(value: string) {
-            this._title = value;
-        },
-
-        get items(): SidebarItem[] {
-            return this._items;
-        },
-        set items(value: SidebarItem[]) {
-            this._items = value;
+        if (props?.items) {
+            this._items = props.items;
             this._renderItems();
-        },
+        }
 
-        get collapsed(): boolean {
-            return this._collapsed;
-        },
-        set collapsed(value: boolean) {
-            this._collapsed = value;
-            this.toggleCls('q-sidebar--collapsed', value);
-            if (value) {
-                (this.el as HTMLElement).style.width = '56px';
-            } else {
-                (this.el as HTMLElement).style.width = this._width;
+        this._bindItemClick();
+    }
+
+    _bindToggle(): void {
+        const toggleEl = this.nodeMap?.toggle?.el as HTMLElement | null;
+        if (!toggleEl) return;
+        this.bind(toggleEl, 'click');
+        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
+            const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
+            if (target?.closest('.q-sidebar__toggle')) {
+                this.collapsed = !this._collapsed;
+                this.emit('collapse', { collapsed: this._collapsed });
             }
-        },
+        });
+    }
 
-        get collapsible(): boolean {
-            return this._collapsible;
-        },
+    _bindItemClick(): void {
+        if (this._clickBound) return;
+        const container = this.nodeMap?.items?.el as HTMLElement | null;
+        if (!container) return;
 
-        _renderItems(): void {
-            const container = this.nodeMap?.items?.el as HTMLElement | null;
-            if (!container) return;
+        this._clickBound = true;
+        this.bind(container, 'click');
+        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
+            const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
+            const itemEl = target?.closest('.q-sidebar__item') as HTMLElement | null;
+            if (!itemEl || itemEl.classList.contains('q-sidebar__item--disabled')) return;
+            const key = itemEl?.dataset?.key;
+            const index = itemEl?.dataset?.index;
+            if (key !== undefined && index !== undefined) {
+                this._setActiveItem(Number(index));
+                this.emit('itemClick', { key, index: Number(index) });
+            }
+        });
+    }
 
-            container.innerHTML = '';
-            this._itemEls = [];
+    _setActiveItem(activeIndex: number): void {
+        for (let i = 0; i < this._itemEls.length; i++) {
+            this._itemEls[i].classList.toggle('q-sidebar__item--active', i === activeIndex);
+        }
+    }
 
-            for (let i = 0; i < this._items.length; i++) {
-                const item = this._items[i];
-                const itemEl = document.createElement('div');
-                itemEl.className = 'q-sidebar__item';
-                itemEl.dataset.key = item.key;
-                itemEl.dataset.index = String(i);
+    get title(): string {
+        return this._title;
+    }
+    set title(value: string) {
+        this._title = value;
+    }
 
-                if (item.active) itemEl.classList.add('q-sidebar__item--active');
-                if (item.disabled) itemEl.classList.add('q-sidebar__item--disabled');
+    get items(): SidebarItem[] {
+        return this._items;
+    }
+    set items(value: SidebarItem[]) {
+        this._items = value;
+        this._renderItems();
+    }
 
-                if (item.icon) {
-                    const iconEl = document.createElement('span');
-                    iconEl.className = 'q-sidebar__item-icon';
-                    iconEl.textContent = item.icon;
-                    itemEl.appendChild(iconEl);
+    get collapsed(): boolean {
+        return this._collapsed;
+    }
+    set collapsed(value: boolean) {
+        this._collapsed = value;
+        this.toggleCls('q-sidebar--collapsed', value);
+        if (value) {
+            (this.el as HTMLElement).style.width = '56px';
+        } else {
+            (this.el as HTMLElement).style.width = this._width;
+        }
+    }
+
+    get collapsible(): boolean {
+        return this._collapsible;
+    }
+
+    _renderItems(): void {
+        const container = this.nodeMap?.items?.el as HTMLElement | null;
+        if (!container) return;
+
+        container.innerHTML = '';
+        this._itemEls = [];
+
+        for (let i = 0; i < this._items.length; i++) {
+            const item = this._items[i];
+            const itemEl = document.createElement('div');
+            itemEl.className = 'q-sidebar__item';
+            itemEl.dataset.key = item.key;
+            itemEl.dataset.index = String(i);
+
+            if (item.active) itemEl.classList.add('q-sidebar__item--active');
+            if (item.disabled) itemEl.classList.add('q-sidebar__item--disabled');
+
+            if (item.icon) {
+                const iconEl = document.createElement('span');
+                iconEl.className = 'q-sidebar__item-icon';
+                iconEl.textContent = item.icon;
+                itemEl.appendChild(iconEl);
+            }
+
+            const textEl = document.createElement('span');
+            textEl.className = 'q-sidebar__item-text';
+            textEl.textContent = item.text;
+            itemEl.appendChild(textEl);
+
+            container.appendChild(itemEl);
+            this._itemEls.push(itemEl);
+
+            if (item.children?.length) {
+                for (let j = 0; j < item.children.length; j++) {
+                    const child = item.children[j];
+                    const childEl = document.createElement('div');
+                    childEl.className = 'q-sidebar__item q-sidebar__item--sub';
+                    childEl.dataset.key = child.key;
+                    childEl.dataset.index = String(i);
+
+                    if (child.active) childEl.classList.add('q-sidebar__item--active');
+                    if (child.disabled) childEl.classList.add('q-sidebar__item--disabled');
+
+                    const childTextEl = document.createElement('span');
+                    childTextEl.className = 'q-sidebar__item-text';
+                    childTextEl.textContent = child.text;
+                    childEl.appendChild(childTextEl);
+
+                    container.appendChild(childEl);
+                    this._itemEls.push(childEl);
                 }
-
-                const textEl = document.createElement('span');
-                textEl.className = 'q-sidebar__item-text';
-                textEl.textContent = item.text;
-                itemEl.appendChild(textEl);
-
-                container.appendChild(itemEl);
-                this._itemEls.push(itemEl);
-
-                if (item.children?.length) {
-                    for (let j = 0; j < item.children.length; j++) {
-                        const child = item.children[j];
-                        const childEl = document.createElement('div');
-                        childEl.className = 'q-sidebar__item q-sidebar__item--sub';
-                        childEl.dataset.key = child.key;
-                        childEl.dataset.index = String(i);
-
-                        if (child.active) childEl.classList.add('q-sidebar__item--active');
-                        if (child.disabled) childEl.classList.add('q-sidebar__item--disabled');
-
-                        const childTextEl = document.createElement('span');
-                        childTextEl.className = 'q-sidebar__item-text';
-                        childTextEl.textContent = child.text;
-                        childEl.appendChild(childTextEl);
-
-                        container.appendChild(childEl);
-                        this._itemEls.push(childEl);
-                    }
-                }
             }
-        },
+        }
+    }
 
-        update(props?: Partial<SidebarProps>): void {
-            if (props?.title !== undefined) {
-                this.title = props.title;
-                this.setNodeHidden(!props.title, 'title');
-            }
-            if (props?.items !== undefined) this.items = props.items;
-            if (props?.collapsed !== undefined) this.collapsed = props.collapsed;
-        },
-    },
-});
+    update(props?: Partial<SidebarProps>): void {
+        if (props?.title !== undefined) {
+            this.title = props.title;
+            this.setNodeHidden(!props.title, 'title');
+        }
+        if (props?.items !== undefined) this.items = props.items;
+        if (props?.collapsed !== undefined) this.collapsed = props.collapsed;
+    }
+}
 
-export type SidebarComponent = InstanceType<typeof SidebarComponent>;
+export { SidebarComponent };
+export type SidebarComponentInstance = InstanceType<typeof SidebarComponent>;

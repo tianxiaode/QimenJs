@@ -17,25 +17,12 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let RadioGroupFieldBodyComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-radio-group__wrapper',
-        children: [
-            {
-                name: 'options',
-                type: 'ItemGroupStatic',
-                cls: 'q-radio-group__options',
-                initConfig: {
-                    direction: 'vertical',
-                    gap: '8px',
-                },
-            },
-        ],
-    },
-    body: {
-        type: 'RadioGroupFieldBody',
-    },
-});
+class RadioGroupFieldBodyComponent extends Component {
+    static type = 'RadioGroupFieldBody';
+    type = 'RadioGroupFieldBody';
+}
 
-export type RadioGroupFieldBodyComponent = InstanceType<typeof RadioGroupFieldBodyComponent>;
+export { RadioGroupFieldBodyComponent };
+export type RadioGroupFieldBodyComponentInstance = InstanceType<
+    typeof RadioGroupFieldBodyComponent
+>;

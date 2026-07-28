@@ -26,84 +26,82 @@ export interface TipsProps {
     tooltipArrow?: boolean;
 }
 
-export let TipsComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        children: [
-            { tag: 'span', name: 'text', cls: 'q-tips__content' },
-            { tag: 'div', name: 'arrow', cls: 'q-arrow' },
-        ],
-    },
-    body: {
-        type: 'tips',
+class TipsComponent extends Component {
+    static type = 'Tips';
 
-        onInitState() {
-            return {
-                _anchor: null as HTMLElement | null,
-                _overlayOpen: false,
-            };
-        },
+    type = 'Tips';
 
-        _initTips(props?: TipsProps): void {
-            const anchor = props?.anchor;
-            if (!anchor) return;
+    onInitState() {
+        return {
+            _anchor: null as HTMLElement | null,
+            _overlayOpen: false,
+        };
+    }
 
-            this._anchor = anchor;
+    _initTips(props?: TipsProps): void {
+        const anchor = props?.anchor;
+        if (!anchor) return;
 
-            if (props?.tooltip) {
-                this.text = props.tooltip;
-            }
+        this._anchor = anchor;
 
-            if (typeof this.initArrow === 'function') {
-                this.initArrow({
-                    arrow: props?.tooltipArrow ?? true,
-                    arrowName: 'arrow',
-                });
-            }
-        },
+        if (props?.tooltip) {
+            this.text = props.tooltip;
+        }
 
-        initOverlayHost(): void {
-            this.el.style.display = 'none';
-            this.el.style.position = 'fixed';
-        },
+        if (typeof this.initArrow === 'function') {
+            this.initArrow({
+                arrow: props?.tooltipArrow ?? true,
+                arrowName: 'arrow',
+            });
+        }
+    }
 
-        open(): void {
-            this.el.style.display = '';
-            this.el.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
-            this._overlayOpen = true;
-            if (this._anchor && typeof this.updateArrowPlacement === 'function') {
-                const anchorRect = this._anchor.getBoundingClientRect();
-                const elRect = this.el.getBoundingClientRect();
-                const placement = this._inferPlacement(anchorRect, elRect);
-                this.updateArrowPlacement(placement);
-            }
-        },
+    initOverlayHost(): void {
+        this.el.style.display = 'none';
+        this.el.style.position = 'fixed';
+    }
 
-        close(): void {
-            this.el.style.display = 'none';
-            this._overlayOpen = false;
-        },
+    open(): void {
+        this.el.style.display = '';
+        this.el.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
+        this._overlayOpen = true;
+        if (this._anchor && typeof this.updateArrowPlacement === 'function') {
+            const anchorRect = this._anchor.getBoundingClientRect();
+            const elRect = this.el.getBoundingClientRect();
+            const placement = this._inferPlacement(anchorRect, elRect);
+            this.updateArrowPlacement(placement);
+        }
+    }
 
-        _inferPlacement(anchorRect: DOMRect, elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
-            const spaceAbove = anchorRect.top;
-            const spaceBelow = window.innerHeight - anchorRect.bottom;
-            const spaceLeft = anchorRect.left;
-            const spaceRight = window.innerWidth - anchorRect.right;
-            const max = Math.max(spaceAbove, spaceBelow, spaceLeft, spaceRight);
-            if (max === spaceAbove) return 'bottom';
-            if (max === spaceBelow) return 'top';
-            if (max === spaceLeft) return 'right';
-            return 'left';
-        },
+    close(): void {
+        this.el.style.display = 'none';
+        this._overlayOpen = false;
+    }
 
-        onOverlayChange(data: any): void {
-            if (!data) return;
-            if (data.tooltip !== undefined) {
-                this.text = data.tooltip;
-            }
-            if (data.visible !== undefined) {
-                this.hidden = !data.visible;
-            }
-        },
-    },
-}).with([ArrowAbility]);
+    _inferPlacement(anchorRect: DOMRect, elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
+        const spaceAbove = anchorRect.top;
+        const spaceBelow = window.innerHeight - anchorRect.bottom;
+        const spaceLeft = anchorRect.left;
+        const spaceRight = window.innerWidth - anchorRect.right;
+        const max = Math.max(spaceAbove, spaceBelow, spaceLeft, spaceRight);
+        if (max === spaceAbove) return 'bottom';
+        if (max === spaceBelow) return 'top';
+        if (max === spaceLeft) return 'right';
+        return 'left';
+    }
+
+    onOverlayChange(data: any): void {
+        if (!data) return;
+        if (data.tooltip !== undefined) {
+            this.text = data.tooltip;
+        }
+        if (data.visible !== undefined) {
+            this.hidden = !data.visible;
+        }
+    }
+}
+
+TipsComponent.use([ArrowAbility]);
+
+export { TipsComponent };
+export type TipsComponentInstance = InstanceType<typeof TipsComponent>;

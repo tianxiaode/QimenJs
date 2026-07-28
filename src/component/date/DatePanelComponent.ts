@@ -25,302 +25,178 @@ export interface DatePanelProps {
     value: DateTimeValue;
 }
 
-export const DatePanelComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-dtpanel',
-        children: [
-            {
-                tag: 'div',
-                name: 'nav',
-                cls: 'q-dtpanel__nav',
-                children: [
-                    { tag: 'button', name: 'backBtn', cls: 'q-dtpanel__nav-btn', i18n: 'back' },
-                    {
-                        tag: 'div',
-                        name: 'dateNav',
-                        cls: 'q-dtpanel__date-nav',
-                        children: [
-                            {
-                                tag: 'button',
-                                name: 'prev10y',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'prev10y',
-                            },
-                            {
-                                tag: 'button',
-                                name: 'prev1y',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'prev1y',
-                            },
-                            {
-                                tag: 'button',
-                                name: 'prev1m',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'prev1m',
-                            },
-                            { tag: 'span', name: 'dateLabel', cls: 'q-dtpanel__date-nav-label' },
-                            {
-                                tag: 'button',
-                                name: 'next1m',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'next1m',
-                            },
-                            {
-                                tag: 'button',
-                                name: 'next1y',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'next1y',
-                            },
-                            {
-                                tag: 'button',
-                                name: 'next10y',
-                                cls: 'q-dtpanel__nav-btn',
-                                i18n: 'next10y',
-                            },
-                        ],
-                    },
-                    {
-                        tag: 'button',
-                        name: 'confirmBtn',
-                        cls: 'q-dtpanel__nav-btn q-dtpanel__nav-confirm',
-                        i18n: 'confirm',
-                    },
-                ],
-            },
-            {
-                name: 'dayGrid',
-                type: 'DayGrid',
-            },
-            {
-                tag: 'div',
-                name: 'quickRow',
-                cls: 'q-dtpanel__quick-row',
-                children: [
-                    {
-                        tag: 'button',
-                        name: 'yesterdayBtn',
-                        cls: 'q-dtpanel__quick-btn',
-                        i18n: 'yesterday',
-                    },
-                    { tag: 'button', name: 'todayBtn', cls: 'q-dtpanel__quick-btn', i18n: 'today' },
-                    {
-                        tag: 'button',
-                        name: 'tomorrowBtn',
-                        cls: 'q-dtpanel__quick-btn',
-                        i18n: 'tomorrow',
-                    },
-                ],
-            },
-        ],
-    },
-    tplEvents: {
-        backBtn: { click: { handler: true } },
-        confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-        prev10y: { click: { handler: true } },
-        prev1y: { click: { handler: true } },
-        prev1m: { click: { handler: true } },
-        next1m: { click: { handler: true } },
-        next1y: { click: { handler: true } },
-        next10y: { click: { handler: true } },
-        yesterdayBtn: { click: { handler: true, emits: ['daySelect'] } },
-        todayBtn: { click: { handler: true, emits: ['daySelect'] } },
-        tomorrowBtn: { click: { handler: true, emits: ['daySelect'] } },
-        dateLabel: { click: { handler: true } },
-    },
-    body: {
-        type: 'DatePanel',
+class DatePanelComponent extends Component {
+    static type = 'DatePanel';
 
-        onInitState() {
-            return {
-                _value: null as DateTimeValue | null,
-                _viewYear: 2026,
-                _viewMonth: 1,
-            };
-        },
+    type = 'DatePanel';
 
-        onAfterInit(props?: DatePanelProps): void {
-            const self = this as any;
-            self._value = props?.value ?? {
-                year: 2026,
-                month: 1,
-                day: 1,
-                hour: 0,
-                minute: 0,
-                second: 0,
-            };
-            self._viewYear = self._value.year;
-            self._viewMonth = self._value.month;
+    onInitState() {
+        return {
+            _value: null as DateTimeValue | null,
+            _viewYear: 2026,
+            _viewMonth: 1,
+        };
+    }
 
-            self._updateLabel();
-            self._updateDayGrid();
+    onAfterInit(props?: DatePanelProps): void {
+        this._value = props?.value ?? {
+            year: 2026,
+            month: 1,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+        };
+        this._viewYear = this._value.year;
+        this._viewMonth = this._value.month;
 
-            const dayGridCmp = self.nodeMap?.dayGrid?.component;
-            if (dayGridCmp) {
-                dayGridCmp.on('daySelect', (data: any) => self._onDaySelect(data.day));
-            }
-        },
+        this._updateLabel();
+        this._updateDayGrid();
 
-        onLocaleChange(): void {
-            const self = this as any;
-            self._updateLabel();
-        },
+        const dayGridCmp = this.nodeMap?.dayGrid?.component;
+        if (dayGridCmp) {
+            dayGridCmp.on('daySelect', (data: any) => this._onDaySelect(data.day));
+        }
+    }
 
-        onBackBtnClick(): void {
-            const self = this as any;
-            self.emit('back', {});
-        },
+    onLocaleChange(): void {
+        this._updateLabel();
+    }
 
-        onConfirmBtnClick(): void {},
+    onBackBtnClick(): void {
+        this.emit('back', {});
+    }
 
-        onPrev10yClick(): void {
-            const self = this as any;
-            self._navigate(-10, 0);
-        },
+    onConfirmBtnClick(): void {}
 
-        onPrev1yClick(): void {
-            const self = this as any;
-            self._navigate(-1, 0);
-        },
+    onPrev10yClick(): void {
+        this._navigate(-10, 0);
+    }
 
-        onPrev1mClick(): void {
-            const self = this as any;
-            self._navigate(0, -1);
-        },
+    onPrev1yClick(): void {
+        this._navigate(-1, 0);
+    }
 
-        onNext1mClick(): void {
-            const self = this as any;
-            self._navigate(0, 1);
-        },
+    onPrev1mClick(): void {
+        this._navigate(0, -1);
+    }
 
-        onNext1yClick(): void {
-            const self = this as any;
-            self._navigate(1, 0);
-        },
+    onNext1mClick(): void {
+        this._navigate(0, 1);
+    }
 
-        onNext10yClick(): void {
-            const self = this as any;
-            self._navigate(10, 0);
-        },
+    onNext1yClick(): void {
+        this._navigate(1, 0);
+    }
 
-        onYesterdayBtnClick(): void {
-            const self = this as any;
-            const d = addDays(new Date(), -1);
-            self._value = {
-                ...self._value,
-                year: d.getFullYear(),
-                month: d.getMonth() + 1,
-                day: d.getDate(),
-            };
-            self._viewYear = self._value.year;
-            self._viewMonth = self._value.month;
-            self._updateLabel();
-            self._updateDayGrid();
-        },
+    onNext10yClick(): void {
+        this._navigate(10, 0);
+    }
 
-        onTodayBtnClick(): void {
-            const self = this as any;
-            const d = new Date();
-            self._value = {
-                ...self._value,
-                year: d.getFullYear(),
-                month: d.getMonth() + 1,
-                day: d.getDate(),
-            };
-            self._viewYear = self._value.year;
-            self._viewMonth = self._value.month;
-            self._updateLabel();
-            self._updateDayGrid();
-        },
+    onYesterdayBtnClick(): void {
+        const d = addDays(new Date(), -1);
+        this._value = {
+            ...this._value,
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            day: d.getDate(),
+        };
+        this._viewYear = this._value.year;
+        this._viewMonth = this._value.month;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
 
-        onTomorrowBtnClick(): void {
-            const self = this as any;
-            const d = addDays(new Date(), 1);
-            self._value = {
-                ...self._value,
-                year: d.getFullYear(),
-                month: d.getMonth() + 1,
-                day: d.getDate(),
-            };
-            self._viewYear = self._value.year;
-            self._viewMonth = self._value.month;
-            self._updateLabel();
-            self._updateDayGrid();
-        },
+    onTodayBtnClick(): void {
+        const d = new Date();
+        this._value = {
+            ...this._value,
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            day: d.getDate(),
+        };
+        this._viewYear = this._value.year;
+        this._viewMonth = this._value.month;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
 
-        onDateLabelClick(): void {
-            const self = this as any;
-            self.emit('navigate', { year: self._viewYear, month: self._viewMonth });
-        },
+    onTomorrowBtnClick(): void {
+        const d = addDays(new Date(), 1);
+        this._value = {
+            ...this._value,
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            day: d.getDate(),
+        };
+        this._viewYear = this._value.year;
+        this._viewMonth = this._value.month;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
 
-        _navigate(yearDelta: number, monthDelta: number): void {
-            const self = this as any;
-            const d = addMonths(
-                addYears(new Date(self._viewYear, self._viewMonth - 1, 1), yearDelta),
-                monthDelta
-            );
-            self._viewYear = d.getFullYear();
-            self._viewMonth = d.getMonth() + 1;
-            self._updateLabel();
-            self._updateDayGrid();
-        },
+    onDateLabelClick(): void {
+        this.emit('navigate', { year: this._viewYear, month: this._viewMonth });
+    }
 
-        _updateLabel(): void {
-            const self = this as any;
-            const label = self.nodeMap?.dateLabel?.el as HTMLElement | null;
-            if (!label) return;
+    _navigate(yearDelta: number, monthDelta: number): void {
+        const d = addMonths(
+            addYears(new Date(this._viewYear, this._viewMonth - 1, 1), yearDelta),
+            monthDelta
+        );
+        this._viewYear = d.getFullYear();
+        this._viewMonth = d.getMonth() + 1;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
 
-            const locale = self.i18nConfig();
-            const months = locale?.months;
-            if (months && months.length === 12) {
-                label.textContent = `${self._viewYear} ${months[self._viewMonth - 1]}`;
-            } else {
-                label.textContent = `${self._viewYear}年 ${String(self._viewMonth).padStart(2, '0')}月`;
-            }
-        },
+    _updateLabel(): void {
+        const label = this.nodeMap?.dateLabel?.el as HTMLElement | null;
+        if (!label) return;
 
-        _updateDayGrid(): void {
-            const self = this as any;
-            const dayGridCmp = self.nodeMap?.dayGrid?.component;
-            if (dayGridCmp) {
-                dayGridCmp.update({
-                    year: self._viewYear,
-                    month: self._viewMonth,
-                    selectedDay:
-                        self._value.year === self._viewYear && self._value.month === self._viewMonth
-                            ? self._value.day
-                            : undefined,
-                });
-            }
-        },
+        const locale = this.i18nConfig();
+        const months = locale?.months;
+        if (months && months.length === 12) {
+            label.textContent = `${this._viewYear} ${months[this._viewMonth - 1]}`;
+        } else {
+            label.textContent = `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
+        }
+    }
 
-        _onDaySelect(day: number): void {
-            const self = this as any;
-            const fixedDay = clampDay(self._viewYear, self._viewMonth, day);
-            self._value = {
-                ...self._value,
-                year: self._viewYear,
-                month: self._viewMonth,
-                day: fixedDay,
-            };
-            self._updateDayGrid();
-            self.emit('daySelect', { value: self._value });
-        },
+    _updateDayGrid(): void {
+        const dayGridCmp = this.nodeMap?.dayGrid?.component;
+        if (dayGridCmp) {
+            dayGridCmp.update({
+                year: this._viewYear,
+                month: this._viewMonth,
+                selectedDay:
+                    this._value.year === this._viewYear && this._value.month === this._viewMonth
+                        ? this._value.day
+                        : undefined,
+            });
+        }
+    }
 
-        getEventData(
-            _nodeName: string,
-            _eventName: string,
-            _eventType: string
-        ): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
+    _onDaySelect(day: number): void {
+        const fixedDay = clampDay(this._viewYear, this._viewMonth, day);
+        this._value = {
+            ...this._value,
+            year: this._viewYear,
+            month: this._viewMonth,
+            day: fixedDay,
+        };
+        this._updateDayGrid();
+        this.emit('daySelect', { value: this._value });
+    }
 
-        get panelValue(): DateTimeValue {
-            const self = this as any;
-            return self._value;
-        },
-    },
-});
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
 
-export type DatePanelComponent = InstanceType<typeof DatePanelComponent>;
+    get panelValue(): DateTimeValue {
+        return this._value;
+    }
+}
+
+export { DatePanelComponent };
+export type DatePanelComponentInstance = InstanceType<typeof DatePanelComponent>;

@@ -43,17 +43,11 @@ export interface TabsProps {
     closable?: boolean;
 }
 
-export class TabsComponent extends Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-tabs',
-        children: [
-            { tag: 'div', name: 'tabBar', cls: 'q-tabs__bar' },
-            { tag: 'div', name: 'items', cls: 'q-tabs__content' },
-        ],
-    },
-    body: { type: 'Tabs' },
-}) {
+class TabsComponent extends Component {
+    static type = 'Tabs';
+
+    type = 'Tabs';
+
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
     private _tabItems: TabItem[] = [];
     private _activeIndex: number = 0;
@@ -152,7 +146,7 @@ export class TabsComponent extends Component.withTemplate({
                     if (item.content.startsWith('<')) {
                         contentWrapper.innerHTML = item.content;
                     } else {
-                        const CompClass = ComponentRegistrar.getInstance().get(item.content);
+                        const CompClass = ComponentRegistrar.getInstance().get(item.content) as any;
                         if (CompClass) {
                             const instance = new CompClass();
                             contentWrapper.appendChild(instance.el);
@@ -278,3 +272,6 @@ export class TabsComponent extends Component.withTemplate({
         super.dispose();
     }
 }
+
+export { TabsComponent };
+export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

@@ -514,8 +514,8 @@ describe('DelegatedEventEngine', () => {
 
             DelegatedEventEngine.bindDelegatedEvents(instance);
 
-            // 应绑定 click 和 dblclick 事件
-            expect(instance.bind).toHaveBeenCalledTimes(4); // 2 全局 + 2 节点级
+            // 所有事件类型绑定到根元素（click、dblclick），不再为命名节点单独绑定
+            expect(instance.bind).toHaveBeenCalledTimes(2);
             expect(instance.on).toHaveBeenCalled();
         });
 
@@ -630,10 +630,10 @@ describe('DelegatedEventEngine', () => {
 
             DelegatedEventEngine.bindDelegatedEvents(instance);
 
-            const debounceCall = instance.bind.mock.calls.find(
-                call => call[1] === 'input' && call[2]?.debounce === 300
-            );
-            expect(debounceCall).toBeDefined();
+            // debounce 通过 dispatcher 包装实现，不再直接绑定到节点
+            const dispatchers = (instance as any)._delegatedDispatchers;
+            expect(dispatchers).toBeDefined();
+            expect(dispatchers.has('btn::input::')).toBe(true);
         });
 
         it('应支持 throttle 选项', () => {
@@ -654,10 +654,10 @@ describe('DelegatedEventEngine', () => {
 
             DelegatedEventEngine.bindDelegatedEvents(instance);
 
-            const throttleCall = instance.bind.mock.calls.find(
-                call => call[1] === 'scroll' && call[2]?.throttle === 100
-            );
-            expect(throttleCall).toBeDefined();
+            // throttle 通过 dispatcher 包装实现
+            const dispatchers = (instance as any)._delegatedDispatchers;
+            expect(dispatchers).toBeDefined();
+            expect(dispatchers.has('btn::scroll::')).toBe(true);
         });
 
         it('once: true 时应使用 once 而非 on', () => {
@@ -671,18 +671,18 @@ describe('DelegatedEventEngine', () => {
                 once: jest.fn(),
                 constructor: {
                     _delegatedEventRules: [
-                        { nodeName: 'btn', event: 'click', needsBinding: true, once: true },
+                        { nodeName: '', event: 'click', needsBinding: true, once: true },
                     ],
                 },
             };
 
             DelegatedEventEngine.bindDelegatedEvents(instance);
 
-            // once 应被调用
+            // 根元素规则仍通过 instance.once 绑定
             expect(instance.once).toHaveBeenCalled();
         });
 
-        it('组件节点应使用 component.el', () => {
+        it('组件节点事件通过委托分发而非直接绑定', () => {
             const rootEl = makeEl();
             const componentEl = makeEl();
             const instance = {
@@ -700,10 +700,16 @@ describe('DelegatedEventEngine', () => {
 
             DelegatedEventEngine.bindDelegatedEvents(instance);
 
+            // 不应直接绑定到 component.el，而是通过根元素委托
             const componentCall = instance.bind.mock.calls.find(
                 call => call[0] === componentEl
             );
-            expect(componentCall).toBeDefined();
+            expect(componentCall).toBeUndefined();
+
+            // 根元素委托绑定应存在
+            const dispatchers = (instance as any)._delegatedDispatchers;
+            expect(dispatchers).toBeDefined();
+            expect(dispatchers.has('icon::click::')).toBe(true);
         });
     });
 
@@ -750,6 +756,7 @@ describe('DelegatedEventEngine', () => {
         it('应调用 getXxx 方法并合并返回值', () => {
             const el = makeEl();
             const instance = {
+                onClick: jest.fn(),
                 getFormData: jest.fn().mockReturnValue({ field1: 'value1', field2: 'value2' }),
                 nodeMap: { btn: { el } },
             };
@@ -964,24 +971,51 @@ describe('DelegatedEventEngine', () => {
             ).not.toThrow();
         });
 
-        it('entities: "true" 字符串时应作为实体名', () => {
+        it('entities: 字符串应作为硬编码实体动作名', () => {
             const el = makeEl();
             const entitied: any[] = [];
             const instance = {
                 nodeMap: { btn: { el } },
                 entityEmit: (ctx: any) => entitied.push(ctx),
-                entityKey: 'testEntity',
+                entityKey: 'users',
             };
             const rule: DelegatedEventRule = {
                 nodeName: 'btn',
                 event: 'click',
-                entities: 'true',
+                entities: 'Save',
                 needsBinding: true,
             };
 
             DelegatedEventEngine._dispatchRule(instance, rule, { type: 'click', target: el });
 
+            // 编码: entity:users:Save
             expect(entitied.length).toBe(1);
+            expect(entitied[0].type).toBe('Save');
+            expect(entitied[0].source).toBe('users');
+        });
+
+        it('entities: 字符串 + keyValue 时 keyValue 覆盖字符串', () => {
+            const el = makeEl();
+            const entitied: any[] = [];
+            const instance = {
+                nodeMap: { btn: { el } },
+                entityEmit: (ctx: any) => entitied.push(ctx),
+                entityKey: 'users',
+            };
+            const rule: DelegatedEventRule = {
+                nodeName: 'btn',
+                event: 'click',
+                entities: 'Save',
+                keyProp: 'name',
+                needsBinding: true,
+            };
+            const itemInfo = { component: { name: 'eye' } };
+
+            DelegatedEventEngine._dispatchRule(instance, rule, { type: 'click', target: el }, itemInfo);
+
+            // keyValue 优先: entity:users:eye
+            expect(entitied.length).toBe(1);
+            expect(entitied[0].type).toBe('eye');
         });
 
         it('entities: true 且无 keyValue 时不转发', () => {

@@ -112,19 +112,26 @@ export interface Component
 // ══════════════════════════════════════════════════════════════
 
 export class Component extends ComposableBase {
+    static _delegatedEventRules: any;
+    static withTemplate: any;
+    static replace: any;
+
     type: string;
 
     el!: HTMLElement;
     meta: Record<string, any>;
     props: ComponentProps;
-    nodeMap: Record<string, NodeMetadata>;
     nodeMapMgr!: INodeMapManager;
+
+    get isItemContainer(): boolean {
+        return false;
+    }
 
     parent?: any;
     slotName?: string;
 
     _initializing: boolean;
-    _templateInitialized: boolean;
+    _templateInitialized: boolean = false;
     _dirtyNodes: Record<string, Record<string, any>>;
     _disposing: boolean;
     dirtySet!: Set<string>;
@@ -139,15 +146,35 @@ export class Component extends ComposableBase {
         this.slotName = this.props.slotName;
         this.meta = {};
         this._dirtyNodes = {};
-        this.nodeMap = {};
         this.dirtySet = new Set();
         this._initializing = true;
         this._disposing = false;
         this._ready = this.init();
     }
 
+    get nodeMap(): Record<string, NodeMetadata> {
+        return this.nodeMapMgr?.getAll() ?? {};
+    }
+
     get ready(): Promise<void> {
         return this._ready;
+    }
+
+    get readyAll(): Promise<void> {
+        return this._readyAll();
+    }
+
+    private async _readyAll(): Promise<void> {
+        await this._ready;
+        const mgr = this.nodeMapMgr;
+        if (!mgr) return;
+        for (const node of Object.values(mgr.getAll())) {
+            if (node.component && typeof (node.component as any).readyAll === 'function') {
+                await (node.component as any).readyAll;
+            } else if (node.component && (node.component as any).ready) {
+                await (node.component as any).ready;
+            }
+        }
     }
 
     /**
@@ -165,7 +192,9 @@ export class Component extends ComposableBase {
             await runPhase(MOUNT_PHASE, ctx);
             if (!ctx.nodeMapMgr) return;
 
-            await runPhase(FILL_PHASE, ctx);
+            if (FILL_PHASE.steps.length > 0) {
+                await runPhase(FILL_PHASE, ctx);
+            }
 
             await runPhase(INSTANTIATE_PHASE, ctx);
 
@@ -194,14 +223,7 @@ export class Component extends ComposableBase {
 
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
 
-        // Restore skeleton placeholder if this was slot-mounted and
-        // the parent is not being disposed and removal is not forced
-        if (
-            this.parent &&
-            this.slotName &&
-            !this.parent._disposing &&
-            !(this as any).__noSkeletonRestore
-        ) {
+        if (this.parent && this.slotName && !this.parent._disposing && !this.isItemContainer) {
             const parentNodeMapMgr = this.parent.nodeMapMgr;
             if (parentNodeMapMgr) {
                 const node = parentNodeMapMgr.get(this.slotName);
@@ -220,7 +242,6 @@ export class Component extends ComposableBase {
         this.meta = {};
         this.props = {};
         this._dirtyNodes = {};
-        this.nodeMap = {};
 
         this._initializing = false;
     }

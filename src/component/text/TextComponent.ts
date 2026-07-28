@@ -14,7 +14,7 @@
  * ```
  */
 
-import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 export interface TextProps {
     text?: string;
@@ -23,49 +23,45 @@ export interface TextProps {
     role?: string;
 }
 
-export let TextComponent = Component.withTemplate({
-    tpl: {
-        tag: 'span',
-        name: 'content',
-        cls: 'q-text',
-    },
-    body: {
-        type: 'Text',
+class TextComponent extends Component {
+    static type = 'Text';
 
-        onAfterInit(props?: TextProps): void {
-            this.update(props);
-        },
+    type = 'Text';
 
-        update(props?: Partial<TextProps>): void {
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.cls !== undefined) this.cls = props.cls;
-            if (props?.role !== undefined) this.role = props.role;
-            if (props?.tag !== undefined) this.tag = props.tag;
-        },
+    onAfterInit(props?: TextProps): void {
+        this.update(props);
+    }
 
-        get text(): string {
-            return this.nodeMap?.content?.el?.textContent ?? '';
-        },
-        set text(v: string) {
-            this.setNodeProp('text', v, 'content');
-        },
+    update(props?: Partial<TextProps>): void {
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.cls !== undefined) this.cls = props.cls;
+        if (props?.role !== undefined) this.role = props.role;
+        if (props?.tag !== undefined) this.tag = props.tag;
+    }
 
-        get tag(): string {
-            return this.nodeMap?.content?.el?.tagName?.toLowerCase() ?? 'span';
-        },
-        set tag(v: string) {
-            const el = this.nodeMap?.content?.el as HTMLElement | null;
-            if (!el?.parentElement) return;
-            const newEl = document.createElement(v);
-            newEl.className = el.className;
-            newEl.textContent = el.textContent;
-            for (const attr of Array.from(el.attributes)) {
-                if (attr.name !== 'class') newEl.setAttribute(attr.name, attr.value);
-            }
-            el.replaceWith(newEl);
-            this.nodeMap.content.el = newEl;
-        },
-    },
-}).with([CommonPropsAbility]);
+    get text(): string {
+        return this.nodeMap?.content?.el?.textContent ?? '';
+    }
+    set text(v: string) {
+        this.setNodeProp('text', v, 'content');
+    }
 
-export type TextComponent = InstanceType<typeof TextComponent>;
+    get tag(): string {
+        return this.nodeMap?.content?.el?.tagName?.toLowerCase() ?? 'span';
+    }
+    set tag(v: string) {
+        const el = this.nodeMap?.content?.el as HTMLElement | null;
+        if (!el?.parentElement) return;
+        const newEl = document.createElement(v);
+        newEl.className = el.className;
+        newEl.textContent = el.textContent;
+        for (const attr of Array.from(el.attributes)) {
+            if (attr.name !== 'class') newEl.setAttribute(attr.name, attr.value);
+        }
+        el.replaceWith(newEl);
+        this.nodeMap.content.el = newEl;
+    }
+}
+
+export { TextComponent };
+export type TextComponentInstance = InstanceType<typeof TextComponent>;

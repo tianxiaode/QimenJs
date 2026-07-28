@@ -40,237 +40,210 @@ export interface MenuItemProps {
     submenuProps?: Record<string, any>;
 }
 
-const MenuItemBase = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        children: [
-            {
-                tag: 'div',
-                name: 'content',
-                cls: 'q-menu-item__content',
-                children: [
-                    { tag: 'i', name: 'icon', cls: 'q-menu-item__icon' },
-                    { tag: 'span', name: 'text', cls: 'q-menu-item__text' },
-                    { tag: 'span', name: 'shortcut', cls: 'q-menu-item__shortcut' },
-                    {
-                        tag: 'div',
-                        name: 'expand',
-                        cls: 'q-expand-arrow q-expand-arrow--collapsed',
-                        hidden: true,
-                        children: [{ tag: 'i' }],
-                    },
-                ],
-            },
-        ],
-    },
-    tplEvents: {
-        '': { enter: { handler: true }, leave: { handler: true } },
-        content: { click: { handler: true } },
-    },
-    body: {
-        type: 'MenuItem',
+class MenuItemComponent extends Component {
+    static type = 'MenuItem';
 
-        onInitState() {
-            return {
-                _disabled: false,
-                _hasSubmenu: false,
-                _group: '',
-                _groupMode: 'radio' as MenuItemGroupMode,
-                _checked: false,
-                _userIcon: '',
-                onSelect: null as ((item: any) => void) | null,
-                submenuProps: null as Record<string, any> | null,
-                _submenuTimer: null as ReturnType<typeof setTimeout> | null,
+    type = 'MenuItem';
+
+    onInitState() {
+        return {
+            _disabled: false,
+            _hasSubmenu: false,
+            _group: '',
+            _groupMode: 'radio' as MenuItemGroupMode,
+            _checked: false,
+            _userIcon: '',
+            onSelect: null as ((item: any) => void) | null,
+            submenuProps: null as Record<string, any> | null,
+            _submenuTimer: null as ReturnType<typeof setTimeout> | null,
+        };
+    }
+
+    onAfterInit(props?: MenuItemProps & Record<string, any>): void {
+        this._initMenuItem(props);
+    }
+
+    _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
+        this.addCls('q-menu-item');
+
+        if (props?.text) this.text = props.text;
+        if (props?.icon) this._userIcon = props.icon;
+        if (props?.shortcut) this.shortcut = props.shortcut;
+        if (props?.disabled) this._disabled = props.disabled;
+        if (props?.hasSubmenu) this._hasSubmenu = props.hasSubmenu;
+        if (props?.group) this._group = props.group;
+        if (props?.groupMode) this._groupMode = props.groupMode;
+        if (props?.checked) this._checked = props.checked;
+        if (props?.onSelect) this.onSelect = props.onSelect;
+        if (props?.submenuProps) this.submenuProps = props.submenuProps;
+
+        this._applyState();
+
+        if (this._hasSubmenu) {
+            this.submenu = {
+                type: 'Menu',
+                trigger: 'hover',
+                placement: 'right',
+                showDelay: 150,
+                hideDelay: 200,
+                data: () => this.submenuProps ?? {},
             };
-        },
+        }
+    }
 
-        onAfterInit(props?: MenuItemProps & Record<string, any>): void {
-            this._initMenuItem(props);
-        },
+    get disabled(): boolean {
+        return this._disabled;
+    }
+    set disabled(value: boolean) {
+        this._disabled = value;
+        this._applyState();
+    }
 
-        _initMenuItem(props?: MenuItemProps & Record<string, any>): void {
-            this.addCls('q-menu-item');
+    get hasSubmenu(): boolean {
+        return this._hasSubmenu;
+    }
+    set hasSubmenu(value: boolean) {
+        this._hasSubmenu = value;
+        this._applyState();
+    }
 
-            if (props?.text) this.text = props.text;
-            if (props?.icon) this._userIcon = props.icon;
-            if (props?.shortcut) this.shortcut = props.shortcut;
-            if (props?.disabled) this._disabled = props.disabled;
-            if (props?.hasSubmenu) this._hasSubmenu = props.hasSubmenu;
-            if (props?.group) this._group = props.group;
-            if (props?.groupMode) this._groupMode = props.groupMode;
-            if (props?.checked) this._checked = props.checked;
-            if (props?.onSelect) this.onSelect = props.onSelect;
-            if (props?.submenuProps) this.submenuProps = props.submenuProps;
+    get group(): string {
+        return this._group;
+    }
+    set group(value: string) {
+        this._group = value;
+        this._applyState();
+    }
 
-            this._applyState();
+    get groupMode(): MenuItemGroupMode {
+        return this._groupMode;
+    }
+    set groupMode(value: MenuItemGroupMode) {
+        this._groupMode = value;
+        this._applyState();
+    }
 
-            if (this._hasSubmenu) {
-                this.submenu = {
-                    type: 'Menu',
-                    trigger: 'hover',
-                    placement: 'right',
-                    showDelay: 150,
-                    hideDelay: 200,
-                    data: () => this.submenuProps ?? {},
-                };
-            }
-        },
+    get checked(): boolean {
+        return this._checked;
+    }
+    set checked(value: boolean) {
+        this._checked = value;
+        this._applyState();
+    }
 
-        get disabled(): boolean {
-            return this._disabled;
-        },
-        set disabled(value: boolean) {
-            this._disabled = value;
-            this._applyState();
-        },
+    onClick(): void {
+        if (this._disabled) return;
+        if (this._hasSubmenu) return;
 
-        get hasSubmenu(): boolean {
-            return this._hasSubmenu;
-        },
-        set hasSubmenu(value: boolean) {
-            this._hasSubmenu = value;
-            this._applyState();
-        },
-
-        get group(): string {
-            return this._group;
-        },
-        set group(value: string) {
-            this._group = value;
-            this._applyState();
-        },
-
-        get groupMode(): MenuItemGroupMode {
-            return this._groupMode;
-        },
-        set groupMode(value: MenuItemGroupMode) {
-            this._groupMode = value;
-            this._applyState();
-        },
-
-        get checked(): boolean {
-            return this._checked;
-        },
-        set checked(value: boolean) {
-            this._checked = value;
-            this._applyState();
-        },
-
-        onClick(): void {
-            if (this._disabled) return;
-            if (this._hasSubmenu) return;
-
-            if (this._group) {
-                if (this._groupMode === 'checkbox') {
-                    this._checked = !this._checked;
-                } else {
-                    if (!this._checked) {
-                        this._checked = true;
-                    }
+        if (this._group) {
+            if (this._groupMode === 'checkbox') {
+                this._checked = !this._checked;
+            } else {
+                if (!this._checked) {
+                    this._checked = true;
                 }
-                this._applyState();
             }
+            this._applyState();
+        }
 
-            if (this.eventKey) {
-                this.emit('click', undefined, { source: this.eventKey });
-                this.emit('select', undefined, { source: this.eventKey });
-            }
+        if (this.eventKey) {
+            this.emit('click', undefined, { source: this.eventKey });
+            this.emit('select', undefined, { source: this.eventKey });
+        }
 
-            this.onSelect?.(this);
-        },
+        this.onSelect?.(this);
+    }
 
-        _applyState(): void {
-            if (this._disabled) this.addCls('q-menu-item--disabled');
-            else this.removeCls('q-menu-item--disabled');
+    _applyState(): void {
+        if (this._disabled) this.addCls('q-menu-item--disabled');
+        else this.removeCls('q-menu-item--disabled');
 
-            if (this._hasSubmenu) this.addCls('q-menu-item--has-submenu');
-            else this.removeCls('q-menu-item--has-submenu');
+        if (this._hasSubmenu) this.addCls('q-menu-item--has-submenu');
+        else this.removeCls('q-menu-item--has-submenu');
 
-            if (this._checked) this.addCls('q-menu-item--checked');
-            else this.removeCls('q-menu-item--checked');
+        if (this._checked) this.addCls('q-menu-item--checked');
+        else this.removeCls('q-menu-item--checked');
 
-            if (this._group) this.addCls('q-menu-item--grouped');
-            else this.removeCls('q-menu-item--grouped');
+        if (this._group) this.addCls('q-menu-item--grouped');
+        else this.removeCls('q-menu-item--grouped');
 
-            if (this._group) {
-                this._renderGroupIndicator();
-            } else if (this._userIcon) {
-                this._setIcon(this._userIcon);
-            }
+        if (this._group) {
+            this._renderGroupIndicator();
+        } else if (this._userIcon) {
+            this._setIcon(this._userIcon);
+        }
 
-            this.setNodeHidden(!this._hasSubmenu, 'expand');
+        this.setNodeHidden(!this._hasSubmenu, 'expand');
 
-            this.ariaDisabled = this._disabled ? 'true' : false;
+        this.ariaDisabled = this._disabled ? 'true' : false;
 
-            if (this._group) {
-                this.role = this._groupMode === 'radio' ? 'menuitemradio' : 'menuitemcheckbox';
-                this.ariaChecked = String(this._checked);
-            } else {
-                this.role = false;
-                this.ariaChecked = false;
-            }
-        },
+        if (this._group) {
+            this.role = this._groupMode === 'radio' ? 'menuitemradio' : 'menuitemcheckbox';
+            this.ariaChecked = String(this._checked);
+        } else {
+            this.role = false;
+            this.ariaChecked = false;
+        }
+    }
 
-        _renderGroupIndicator(): void {
-            if (this._groupMode === 'radio') {
-                this._setIcon(this._checked ? '●' : '○');
-            } else {
-                this._setIcon(this._checked ? '☑' : '☐');
-            }
-        },
+    _renderGroupIndicator(): void {
+        if (this._groupMode === 'radio') {
+            this._setIcon(this._checked ? '●' : '○');
+        } else {
+            this._setIcon(this._checked ? '☑' : '☐');
+        }
+    }
 
-        _setIcon(value: string): void {
-            this.icon = value;
-        },
+    _setIcon(value: string): void {
+        this.icon = value;
+    }
 
-        onRootEnter(): void {
-            this._clearSubmenuTimer();
+    onRootEnter(): void {
+        this._clearSubmenuTimer();
 
-            if (this._hasSubmenu && !this._disabled) {
-                this._updateExpandArrow('expanded');
-            }
-        },
+        if (this._hasSubmenu && !this._disabled) {
+            this._updateExpandArrow('expanded');
+        }
+    }
 
-        onRootLeave(): void {
-            this._clearSubmenuTimer();
+    onRootLeave(): void {
+        this._clearSubmenuTimer();
 
-            if (this._hasSubmenu) {
-                this._updateExpandArrow('collapsed');
-            }
-        },
+        if (this._hasSubmenu) {
+            this._updateExpandArrow('collapsed');
+        }
+    }
 
-        _clearSubmenuTimer(): void {
-            if (this._submenuTimer) {
-                clearTimeout(this._submenuTimer);
-                this._submenuTimer = null;
-            }
-        },
+    _clearSubmenuTimer(): void {
+        if (this._submenuTimer) {
+            clearTimeout(this._submenuTimer);
+            this._submenuTimer = null;
+        }
+    }
 
-        _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-            if (state === 'expanded') {
-                this.addCls('q-expand-arrow--expanded', 'expand');
-                this.removeCls('q-expand-arrow--collapsed', 'expand');
-            } else {
-                this.removeCls('q-expand-arrow--expanded', 'expand');
-                this.addCls('q-expand-arrow--collapsed', 'expand');
-            }
-        },
+    _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
+        if (state === 'expanded') {
+            this.addCls('q-expand-arrow--expanded', 'expand');
+            this.removeCls('q-expand-arrow--collapsed', 'expand');
+        } else {
+            this.removeCls('q-expand-arrow--expanded', 'expand');
+            this.addCls('q-expand-arrow--collapsed', 'expand');
+        }
+    }
 
-        update(props?: Partial<MenuItemProps> & Record<string, any>): void {
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.icon !== undefined) this._userIcon = props.icon;
-            if (props?.shortcut !== undefined) this.shortcut = props.shortcut;
-            if (props?.disabled !== undefined) this.disabled = props.disabled;
-            if (props?.hasSubmenu !== undefined) this.hasSubmenu = props.hasSubmenu;
-            if (props?.group !== undefined) this.group = props.group;
-            if (props?.groupMode !== undefined) this.groupMode = props.groupMode;
-            if (props?.checked !== undefined) this.checked = props.checked;
-            if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
-            if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
-        },
-    },
-});
+    update(props?: Partial<MenuItemProps> & Record<string, any>): void {
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.icon !== undefined) this._userIcon = props.icon;
+        if (props?.shortcut !== undefined) this.shortcut = props.shortcut;
+        if (props?.disabled !== undefined) this.disabled = props.disabled;
+        if (props?.hasSubmenu !== undefined) this.hasSubmenu = props.hasSubmenu;
+        if (props?.group !== undefined) this.group = props.group;
+        if (props?.groupMode !== undefined) this.groupMode = props.groupMode;
+        if (props?.checked !== undefined) this.checked = props.checked;
+        if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
+        if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
+    }
+}
 
-export let MenuItemComponent = MenuItemBase;
-
-export type MenuItemComponent = InstanceType<typeof MenuItemBase>;
+export { MenuItemComponent };
+export type MenuItemComponentInstance = InstanceType<typeof MenuItemComponent>;

@@ -117,7 +117,7 @@ export interface TplNode {
     tag?: string;
 
     /** 组件类型名（如 ButtonComponent），与 tag 互斥 */
-    type?: string;
+    type?: string | (new (...args: any[]) => any);
 
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;

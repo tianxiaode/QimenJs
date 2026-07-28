@@ -5,10 +5,11 @@
 
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 
-export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
-    type: 'ItemGroupStatic',
+class ItemGroupStaticComponent extends ItemGroupBaseComponent {
+    static type = 'ItemGroupStatic';
 
-    // ========== 业务方法 ==========
+    type = 'ItemGroupStatic';
+
     setItems(datas: Record<string, any>[]): void {
         this.clear();
         for (const data of datas) {
@@ -16,7 +17,7 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
             if (item) this._items.push(item);
         }
         this.sort();
-    },
+    }
 
     add(data: Record<string, any>): any {
         const item = this._createItem(data);
@@ -26,7 +27,7 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
             return item.component;
         }
         return null;
-    },
+    }
 
     insert(index: number, data: Record<string, any>): any {
         const item = this._createItem(data);
@@ -52,14 +53,14 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
 
         this.sort();
         return item.component;
-    },
+    }
 
     removeAt(index: number): any {
         if (index < 0 || index >= this._items.length) return undefined;
         const [item] = this._items.splice(index, 1);
         this._destroyItem(item);
         return item.component;
-    },
+    }
 
     clear(): void {
         for (const item of this._items) {
@@ -67,9 +68,8 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
         }
         this._items = [];
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
-    },
+    }
 
-    // ========== 排序 ==========
     sort(compareFn?: (a: any, b: any) => number): void {
         if (compareFn) {
             this._items.sort((a: any, b: any) => compareFn(a.component, b.component));
@@ -81,7 +81,7 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
             });
         }
         this._reorderDOM();
-    },
+    }
 
     move(fromIndex: number, toIndex: number): void {
         if (fromIndex < 0 || fromIndex >= this._items.length) return;
@@ -93,7 +93,8 @@ export let ItemGroupStaticComponent = ItemGroupBaseComponent.replace({
         this._items[fromIndex].component.order = toOrder;
         this._items[toIndex].component.order = fromOrder;
         this.sort();
-    },
-});
+    }
+}
 
+export { ItemGroupStaticComponent };
 export type ItemGroupStaticComponentType = InstanceType<typeof ItemGroupStaticComponent>;

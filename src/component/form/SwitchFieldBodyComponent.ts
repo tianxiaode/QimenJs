@@ -17,33 +17,10 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let SwitchFieldBodyComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-switch__wrapper',
-        children: [
-            {
-                tag: 'div',
-                name: 'track',
-                cls: 'q-switch__track',
-                children: [
-                    {
-                        tag: 'div',
-                        name: 'thumb',
-                        cls: 'q-switch__thumb',
-                    },
-                ],
-            },
-        ],
-    },
-    tplEvents: {
-        track: {
-            click: { handler: true, emits: ['switchToggle'] },
-        },
-    },
-    body: {
-        type: 'SwitchFieldBody',
-    },
-});
+class SwitchFieldBodyComponent extends Component {
+    static type = 'SwitchFieldBody';
+    type = 'SwitchFieldBody';
+}
 
-export type SwitchFieldBodyComponent = InstanceType<typeof SwitchFieldBodyComponent>;
+export { SwitchFieldBodyComponent };
+export type SwitchFieldBodyComponentInstance = InstanceType<typeof SwitchFieldBodyComponent>;

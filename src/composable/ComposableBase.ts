@@ -64,6 +64,13 @@ export class ComposableBase {
         return this;
     }
 
+    static with(abilities: AbilityDefinition | AbilityDefinition[]): typeof ComposableBase {
+        const Derived = class extends (this as any) {};
+        const arr = Array.isArray(abilities) ? abilities : [abilities];
+        withAbilities(Derived, arr);
+        return Derived as typeof ComposableBase;
+    }
+
     /**
      * 向自身注入非能力定义（原地修改 this 原型）
      *

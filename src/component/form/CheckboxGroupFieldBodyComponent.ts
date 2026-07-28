@@ -17,25 +17,12 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let CheckboxGroupFieldBodyComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-checkbox-group__wrapper',
-        children: [
-            {
-                name: 'options',
-                type: 'ItemGroupStatic',
-                cls: 'q-checkbox-group__options',
-                initConfig: {
-                    direction: 'vertical',
-                    gap: '8px',
-                },
-            },
-        ],
-    },
-    body: {
-        type: 'CheckboxGroupFieldBody',
-    },
-});
+class CheckboxGroupFieldBodyComponent extends Component {
+    static type = 'CheckboxGroupFieldBody';
+    type = 'CheckboxGroupFieldBody';
+}
 
-export type CheckboxGroupFieldBodyComponent = InstanceType<typeof CheckboxGroupFieldBodyComponent>;
+export { CheckboxGroupFieldBodyComponent };
+export type CheckboxGroupFieldBodyComponentInstance = InstanceType<
+    typeof CheckboxGroupFieldBodyComponent
+>;

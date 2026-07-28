@@ -30,47 +30,42 @@ export interface BaseCellProps {
     align?: ColumnAlign;
 }
 
-export let BaseCellComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-cell',
-        children: [{ tag: 'span', name: 'content', cls: 'q-cell__text' }],
-    },
-    body: {
-        type: 'BaseCell',
+class BaseCellComponent extends Component {
+    static type = 'BaseCell';
+    type = 'BaseCell';
 
-        onInitState() {
-            return {
-                _align: 'left' as ColumnAlign,
-            };
-        },
+    onInitState() {
+        return {
+            _align: 'left' as ColumnAlign,
+        };
+    }
 
-        onAfterInit(props?: BaseCellProps): void {
-            if (props?.align) this._align = props.align;
-            this._applyAlign();
-        },
+    onAfterInit(props?: BaseCellProps): void {
+        if (props?.align) this._align = props.align;
+        this._applyAlign();
+    }
 
-        get align(): ColumnAlign {
-            return this._align;
-        },
-        set align(v: ColumnAlign) {
-            this._align = v;
-            this._applyAlign();
-        },
+    get align(): ColumnAlign {
+        return this._align;
+    }
+    set align(v: ColumnAlign) {
+        this._align = v;
+        this._applyAlign();
+    }
 
-        _applyAlign(): void {
-            this.el.style.textAlign = this._align;
-            this.el.classList.toggle('q-cell--left', this._align === 'left');
-            this.el.classList.toggle('q-cell--center', this._align === 'center');
-            this.el.classList.toggle('q-cell--right', this._align === 'right');
-        },
+    _applyAlign(): void {
+        this.el.style.textAlign = this._align;
+        this.el.classList.toggle('q-cell--left', this._align === 'left');
+        this.el.classList.toggle('q-cell--center', this._align === 'center');
+        this.el.classList.toggle('q-cell--right', this._align === 'right');
+    }
 
-        update(data: any): void {
-            if (data?.value !== undefined) {
-                this.setNodeProp('text', String(data.value ?? ''), 'content');
-            }
-        },
-    },
-});
+    update(data: any): void {
+        if (data?.value !== undefined) {
+            this.setNodeProp('text', String(data.value ?? ''), 'content');
+        }
+    }
+}
 
-export type BaseCellComponent = InstanceType<typeof BaseCellComponent>;
+export { BaseCellComponent };
+export type BaseCellComponentInstance = InstanceType<typeof BaseCellComponent>;

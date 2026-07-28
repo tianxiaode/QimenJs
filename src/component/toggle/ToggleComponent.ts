@@ -30,84 +30,76 @@ export interface ToggleProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let ToggleComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-toggle',
-        children: [
-            { tag: 'i', name: 'icon', cls: 'q-toggle__icon', hidden: true },
-            { tag: 'span', name: 'text', cls: 'q-toggle__text' },
-        ],
-    },
-    tplEvents: {
-        '': { click: { handler: true, emits: ['toggle'] } },
-    },
-    body: {
-        type: 'Toggle',
+class ToggleComponent extends Component {
+    static type = 'Toggle';
 
-        onInitState() {
-            return {
-                _pressed: false,
-            };
-        },
+    type = 'Toggle';
 
-        onAfterInit(props?: ToggleProps): void {
-            this.initSize();
-            if (props?.pressed) this._pressed = props.pressed;
-            if (props?.disabled) this.disabled = props.disabled;
-            if (props?.size) this.size = props.size;
-            if (props?.text) this.text = props.text;
-            if (props?.icon) this._setIcon(props.icon);
+    onInitState() {
+        return {
+            _pressed: false,
+        };
+    }
+
+    onAfterInit(props?: ToggleProps): void {
+        this.initSize();
+        if (props?.pressed) this._pressed = props.pressed;
+        if (props?.disabled) this.disabled = props.disabled;
+        if (props?.size) this.size = props.size;
+        if (props?.text) this.text = props.text;
+        if (props?.icon) this._setIcon(props.icon);
+        this._applyState();
+    }
+
+    onRootClick(): void {
+        if (this.disabled) return;
+        this._pressed = !this._pressed;
+        this._applyState();
+    }
+
+    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
+        return { pressed: this._pressed };
+    }
+
+    get pressed(): boolean {
+        return this._pressed;
+    }
+    set pressed(value: boolean) {
+        this._pressed = value;
+        this._applyState();
+    }
+
+    _setIcon(value: string): void {
+        this.icon = value;
+        this.setNodeHidden(false, 'icon');
+    }
+
+    _applyState(): void {
+        this.el.classList.toggle('q-toggle--pressed', this._pressed);
+        this.el.classList.toggle('q-toggle--disabled', this.disabled);
+
+        if (this.disabled) {
+            this.el.setAttribute('aria-disabled', 'true');
+        } else {
+            this.el.removeAttribute('aria-disabled');
+        }
+
+        this.el.setAttribute('aria-pressed', String(this._pressed));
+    }
+
+    update(props?: Partial<ToggleProps>): void {
+        if (props?.pressed !== undefined) this.pressed = props.pressed;
+        if (props?.disabled !== undefined) {
+            this.disabled = props.disabled;
             this._applyState();
-        },
+        }
+        if (props?.size !== undefined) this.size = props.size;
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.icon !== undefined) this._setIcon(props.icon);
+    }
+}
 
-        onRootClick(): void {
-            if (this.disabled) return;
-            this._pressed = !this._pressed;
-            this._applyState();
-        },
+ToggleComponent.use([SizeAbility]);
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            return { pressed: this._pressed };
-        },
-
-        get pressed(): boolean {
-            return this._pressed;
-        },
-        set pressed(value: boolean) {
-            this._pressed = value;
-            this._applyState();
-        },
-
-        _setIcon(value: string): void {
-            this.icon = value;
-            this.setNodeHidden(false, 'icon');
-        },
-
-        _applyState(): void {
-            this.el.classList.toggle('q-toggle--pressed', this._pressed);
-            this.el.classList.toggle('q-toggle--disabled', this.disabled);
-
-            if (this.disabled) {
-                this.el.setAttribute('aria-disabled', 'true');
-            } else {
-                this.el.removeAttribute('aria-disabled');
-            }
-
-            this.el.setAttribute('aria-pressed', String(this._pressed));
-        },
-
-        update(props?: Partial<ToggleProps>): void {
-            if (props?.pressed !== undefined) this.pressed = props.pressed;
-            if (props?.disabled !== undefined) {
-                this.disabled = props.disabled;
-                this._applyState();
-            }
-            if (props?.size !== undefined) this.size = props.size;
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.icon !== undefined) this._setIcon(props.icon);
-        },
-    },
-}).with([SizeAbility]);
-
-export type ToggleComponent = InstanceType<typeof ToggleComponent>;
+export { ToggleComponent };
+export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;

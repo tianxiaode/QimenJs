@@ -33,84 +33,65 @@ export interface PanelProps {
     toolsRight?: ToolGroupConfig;
 }
 
-const PanelBase = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-panel',
-        children: [
-            {
-                name: 'header',
-                type: HeaderComponent,
-                cls: 'q-panel__header',
-            },
-            { tag: 'div', name: 'body', cls: 'q-panel__body' },
-        ],
-    },
-    tplEvents: {
-        header: {
-            toolsLeftClick: { emits: ['headerToolsLeftClick'] },
-            toolsRightClick: { emits: ['headerToolsRightClick'] },
-            actionClick: { emits: ['headerActionClick'] },
-        },
-    },
-    body: {
-        type: 'Panel',
-        forwards: {
-            title: 'header.title',
-        },
+class PanelComponent extends Component {
+    static type = 'Panel';
 
-        onAfterInit(props?: PanelProps): void {
-            const headerComp = this.nodeMap?.header?.component;
-            if (!headerComp) return;
+    type = 'Panel';
 
-            if (props?.title) {
-                headerComp.title = props.title;
+    forwards = {
+        title: 'header.title',
+    };
+
+    onAfterInit(props?: PanelProps): void {
+        const headerComp = this.nodeMap?.header?.component;
+        if (!headerComp) return;
+
+        if (props?.title) {
+            headerComp.title = props.title;
+        }
+
+        if (props?.toolsLeft) {
+            headerComp.setNodeHidden(false, 'toolsLeft');
+            const toolsLeftComp = headerComp.nodeMap?.toolsLeft?.component;
+            if (toolsLeftComp) {
+                toolsLeftComp._initItemGroupComponent(props.toolsLeft);
+            }
+        }
+
+        if (props?.toolsRight) {
+            headerComp.setNodeHidden(false, 'toolsRight');
+            const toolsRightComp = headerComp.nodeMap?.toolsRight?.component;
+            if (toolsRightComp) {
+                toolsRightComp._initItemGroupComponent(props.toolsRight);
+            }
+        }
+
+        if (props?.expandable) {
+            headerComp.setNodeHidden(false, 'action');
+            const actionComp = headerComp.nodeMap?.action?.component;
+            if (actionComp && typeof actionComp.update === 'function') {
+                actionComp.update({ icon: 'expand_more' });
             }
 
-            if (props?.toolsLeft) {
-                headerComp.setNodeHidden(false, 'toolsLeft');
-                const toolsLeftComp = headerComp.nodeMap?.toolsLeft?.component;
-                if (toolsLeftComp) {
-                    toolsLeftComp._initItemGroupComponent(props.toolsLeft);
+            this.on('headerActionClick', () => {
+                const isCollapsed = this.el.classList.contains('q-panel--collapsed');
+                if (isCollapsed) {
+                    this.el.classList.remove('q-panel--collapsed');
+                    this.setNodeHidden(false, 'body');
+                } else {
+                    this.el.classList.add('q-panel--collapsed');
+                    this.setNodeHidden(true, 'body');
                 }
-            }
+            });
+        }
 
-            if (props?.toolsRight) {
-                headerComp.setNodeHidden(false, 'toolsRight');
-                const toolsRightComp = headerComp.nodeMap?.toolsRight?.component;
-                if (toolsRightComp) {
-                    toolsRightComp._initItemGroupComponent(props.toolsRight);
-                }
-            }
-
-            if (props?.expandable) {
-                headerComp.setNodeHidden(false, 'action');
-                const actionComp = headerComp.nodeMap?.action?.component;
-                if (actionComp && typeof actionComp.update === 'function') {
-                    actionComp.update({ icon: 'expand_more' });
-                }
-
-                this.on('headerActionClick', () => {
-                    const isCollapsed = this.el.classList.contains('q-panel--collapsed');
-                    if (isCollapsed) {
-                        this.el.classList.remove('q-panel--collapsed');
-                        this.setNodeHidden(false, 'body');
-                    } else {
-                        this.el.classList.add('q-panel--collapsed');
-                        this.setNodeHidden(true, 'body');
-                    }
-                });
-            }
-
-            if (props?.resizable) {
-                this.initResize({ edges: ['e', 's', 'se'] });
-            }
-        },
-    },
-}).with([ResizeAbility]);
-
-export class PanelComponent extends PanelBase {
-    constructor(props?: PanelProps) {
-        super();
+        if (props?.resizable) {
+            this.initResize({ edges: ['e', 's', 'se'] });
+        }
     }
 }
+
+PanelComponent.use([ResizeAbility]);
+
+export { PanelComponent };
+export type PanelComponentInstance = InstanceType<typeof PanelComponent>;

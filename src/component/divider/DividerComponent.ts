@@ -20,39 +20,33 @@ export interface DividerProps {
     text?: string;
 }
 
-export let DividerComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-divider',
-        attrs: { role: 'separator' },
-        children: [{ tag: 'span', name: 'text', cls: 'q-divider__text', hidden: true }],
-    },
-    body: {
-        type: 'Divider',
+class DividerComponent extends Component {
+    static type = 'Divider';
 
-        onAfterInit(props?: DividerProps): void {
-            this._initDivider(props);
-        },
+    type = 'Divider';
 
-        _initDivider(props?: DividerProps): void {
-            if (props?.vertical) this.addCls('q-divider--vertical');
-            if (props?.dashed) this.addCls('q-divider--dashed');
-            if (props?.text) {
-                this.text = props.text;
-                this.setNodeHidden(false, 'text');
-            }
-        },
+    onAfterInit(props?: DividerProps): void {
+        this._initDivider(props);
+    }
 
-        update(props?: Partial<DividerProps>): void {
-            if (props?.vertical !== undefined)
-                this.toggleCls('q-divider--vertical', props.vertical);
-            if (props?.dashed !== undefined) this.toggleCls('q-divider--dashed', props.dashed);
-            if (props?.text !== undefined) {
-                this.text = props.text;
-                this.setNodeHidden(!props.text, 'text');
-            }
-        },
-    },
-});
+    _initDivider(props?: DividerProps): void {
+        if (props?.vertical) this.addCls('q-divider--vertical');
+        if (props?.dashed) this.addCls('q-divider--dashed');
+        if (props?.text) {
+            this.text = props.text;
+            this.setNodeHidden(false, 'text');
+        }
+    }
 
-export type DividerComponent = InstanceType<typeof DividerComponent>;
+    update(props?: Partial<DividerProps>): void {
+        if (props?.vertical !== undefined) this.toggleCls('q-divider--vertical', props.vertical);
+        if (props?.dashed !== undefined) this.toggleCls('q-divider--dashed', props.dashed);
+        if (props?.text !== undefined) {
+            this.text = props.text;
+            this.setNodeHidden(!props.text, 'text');
+        }
+    }
+}
+
+export { DividerComponent };
+export type DividerComponentInstance = InstanceType<typeof DividerComponent>;

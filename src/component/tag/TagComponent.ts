@@ -19,7 +19,6 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
@@ -31,70 +30,56 @@ export interface TagProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let TagComponent = Component.withTemplate({
-    tpl: {
-        tag: 'span',
-        cls: 'q-tag',
-        children: [
-            { tag: 'i', name: 'icon', cls: 'q-tag__icon', hidden: true },
-            { tag: 'span', name: 'text', cls: 'q-tag__text' },
-            {
-                tag: 'span',
-                name: 'closeBtn',
-                cls: 'q-tag__close',
-                hidden: true,
-            },
-        ],
-    },
-    tplEvents: {
-        closeBtn: { click: { handler: true, emits: ['close'] } },
-    },
-    body: {
-        type: 'Tag',
+class TagComponent extends Component {
+    static type = 'Tag';
 
-        onAfterInit(props?: TagProps): void {
-            this.initSize();
-            this._initTag(props);
-        },
+    type = 'Tag';
 
-        onCloseBtnClick(): void {
-            this.emit('close', {});
-        },
+    onAfterInit(props?: TagProps): void {
+        this.initSize();
+        this._initTag(props);
+    }
 
-        _initTag(props?: TagProps): void {
-            if (props?.type) this.addCls(`q-tag--${props.type}`);
-            if (props?.icon) {
-                this.icon = props.icon;
-                this.setNodeHidden(false, 'icon');
-            }
-            if (props?.text) this.text = props.text;
-            if (props?.closable) this.setNodeHidden(false, 'closeBtn');
-            if (props?.size) this.size = props.size;
-        },
+    onCloseBtnClick(): void {
+        this.emit('close', {});
+    }
 
-        get tagType(): TagType {
-            const el = this.el as HTMLElement;
-            for (const t of ['primary', 'success', 'warning', 'error', 'info']) {
-                if (el?.classList.contains(`q-tag--${t}`)) return t as TagType;
-            }
-            return 'default';
-        },
-        set tagType(value: TagType) {
-            this.removeCls(`q-tag--${this.tagType}`);
-            if (value !== 'default') this.addCls(`q-tag--${value}`);
-        },
+    _initTag(props?: TagProps): void {
+        if (props?.type) this.addCls(`q-tag--${props.type}`);
+        if (props?.icon) {
+            this.icon = props.icon;
+            this.setNodeHidden(false, 'icon');
+        }
+        if (props?.text) this.text = props.text;
+        if (props?.closable) this.setNodeHidden(false, 'closeBtn');
+        if (props?.size) this.size = props.size;
+    }
 
-        update(props?: Partial<TagProps>): void {
-            if (props?.type !== undefined) this.tagType = props.type;
-            if (props?.icon !== undefined) {
-                this.icon = props.icon;
-                this.setNodeHidden(!props.icon, 'icon');
-            }
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.closable !== undefined) this.setNodeHidden(!props.closable, 'closeBtn');
-            if (props?.size !== undefined) this.size = props.size;
-        },
-    },
-}).with([SizeAbility]);
+    get tagType(): TagType {
+        const el = this.el as HTMLElement;
+        for (const t of ['primary', 'success', 'warning', 'error', 'info']) {
+            if (el?.classList.contains(`q-tag--${t}`)) return t as TagType;
+        }
+        return 'default';
+    }
+    set tagType(value: TagType) {
+        this.removeCls(`q-tag--${this.tagType}`);
+        if (value !== 'default') this.addCls(`q-tag--${value}`);
+    }
 
-export type TagComponent = InstanceType<typeof TagComponent>;
+    update(props?: Partial<TagProps>): void {
+        if (props?.type !== undefined) this.tagType = props.type;
+        if (props?.icon !== undefined) {
+            this.icon = props.icon;
+            this.setNodeHidden(!props.icon, 'icon');
+        }
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.closable !== undefined) this.setNodeHidden(!props.closable, 'closeBtn');
+        if (props?.size !== undefined) this.size = props.size;
+    }
+}
+
+TagComponent.use([SizeAbility]);
+
+export { TagComponent };
+export type TagComponentInstance = InstanceType<typeof TagComponent>;

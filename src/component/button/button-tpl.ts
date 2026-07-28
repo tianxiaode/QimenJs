@@ -4,8 +4,8 @@
  * 通过 TemplateRegistrar 注册，编译产物缓存于注册表。
  */
 
-import type { TplNode } from '@qimenjs/component-core/types/tpl-node-types';
-import type { TplEvents } from '@qimenjs/component-core/types/tpl-events';
+import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplEvents } from '@/component-core/types/tpl-events';
 
 export const BUTTON_TPL: TplNode = {
     tag: 'div',

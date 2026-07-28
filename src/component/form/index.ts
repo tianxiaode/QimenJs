@@ -10,6 +10,7 @@ export { passwordCSS } from './password.css';
 export { InputInfoGroupComponent } from './InputInfoGroupComponent';
 export {
     FormFieldComponent,
+    type FormFieldComponentInstance,
     type LabelPosition,
     type ValidateTrigger,
     type FormFieldProps,

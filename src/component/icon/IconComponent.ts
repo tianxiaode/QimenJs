@@ -18,36 +18,25 @@ export interface IconProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-export let IconComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-icon-wrap',
-        children: [
-            {
-                tag: 'i',
-                name: 'content',
-                cls: 'q-icon',
-            },
-        ],
-    },
-    tplEvents: {
-        content: { click: { emits: ['click'] } },
-    },
-    body: {
-        type: 'Icon',
+class IconComponent extends Component {
+    static type = 'Icon';
 
-        onAfterInit(props?: IconProps): void {
-            this.initSize();
-            this.update(props);
-        },
+    type = 'Icon';
 
-        update(props?: Partial<IconProps>): void {
-            if (props?.content !== undefined) {
-                this.content = props.content;
-            }
-            this.size = props?.size || 'md';
-        },
-    },
-}).with([SizeAbility]);
+    onAfterInit(props?: IconProps): void {
+        this.initSize();
+        this.update(props);
+    }
 
-export type IconComponent = InstanceType<typeof IconComponent>;
+    update(props?: Partial<IconProps>): void {
+        if (props?.content !== undefined) {
+            this.content = props.content;
+        }
+        this.size = props?.size || 'md';
+    }
+}
+
+IconComponent.use([SizeAbility]);
+
+export { IconComponent };
+export type IconComponentInstance = InstanceType<typeof IconComponent>;

@@ -27,134 +27,122 @@ export interface LabelProps {
     role?: string;
 }
 
-export let LabelComponent = Component.withTemplate({
-    tpl: {
-        tag: 'label',
-        name: 'content',
-        cls: 'q-label',
-        i18n: 'labelText',
-        children: [
-            {
-                tag: 'span',
-                name: 'requiredMark',
-                cls: 'q-label__required-mark',
-                hidden: true,
-            },
-        ],
-    },
-    body: {
-        type: 'Label',
+class LabelComponent extends Component {
+    static type = 'Label';
 
-        onInitState() {
-            return {
-                _required: false,
-                _requiredMark: '*',
-                _requiredMarkPosition: 'after' as 'before' | 'after',
-            };
-        },
+    type = 'Label';
 
-        onAfterInit(props?: LabelProps): void {
-            this._initLabel(props);
-        },
+    onInitState() {
+        return {
+            _required: false,
+            _requiredMark: '*',
+            _requiredMarkPosition: 'after' as 'before' | 'after',
+        };
+    }
 
-        _initLabel(props?: LabelProps): void {
-            if (props?.i18nText) {
-                this.text = props.i18nText;
-            } else if (props?.text) {
-                this.text = props.text;
-            }
-            if (props?.requiredMark) this._requiredMark = props.requiredMark;
-            if (props?.requiredMarkPosition)
-                this._requiredMarkPosition = props.requiredMarkPosition;
-            if (props?.required) {
-                this._required = true;
-                this._applyRequiredMark();
-                this.setNodeHidden(false, 'requiredMark');
-            }
-            if (props?.tag) this.tag = props.tag;
-            if (props?.cls) this.addCls(props.cls);
-            if (props?.role) this.role = props.role;
-        },
+    onAfterInit(props?: LabelProps): void {
+        this._initLabel(props);
+    }
 
-        _applyRequiredMark(): void {
-            const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
-            if (!markEl) return;
-            markEl.textContent = this._requiredMark;
-            markEl.classList.toggle(
-                'q-label__required-mark--before',
-                this._requiredMarkPosition === 'before'
-            );
-            markEl.classList.toggle(
-                'q-label__required-mark--after',
-                this._requiredMarkPosition === 'after'
-            );
-        },
+    _initLabel(props?: LabelProps): void {
+        if (props?.i18nText) {
+            this.text = props.i18nText;
+        } else if (props?.text) {
+            this.text = props.text;
+        }
+        if (props?.requiredMark) this._requiredMark = props.requiredMark;
+        if (props?.requiredMarkPosition) this._requiredMarkPosition = props.requiredMarkPosition;
+        if (props?.required) {
+            this._required = true;
+            this._applyRequiredMark();
+            this.setNodeHidden(false, 'requiredMark');
+        }
+        if (props?.tag) this.tag = props.tag;
+        if (props?.cls) this.addCls(props.cls);
+        if (props?.role) this.role = props.role;
+    }
 
-        get text(): string {
-            const contentEl = this.nodeMap?.content?.el as HTMLElement | null;
-            if (!contentEl) return '';
-            const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
-            if (!markEl) return contentEl.textContent ?? '';
-            return contentEl.textContent?.replace(markEl.textContent ?? '', '') ?? '';
-        },
-        set text(v: string) {
-            this.setNodeProp('text', v, 'content');
-        },
+    _applyRequiredMark(): void {
+        const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
+        if (!markEl) return;
+        markEl.textContent = this._requiredMark;
+        markEl.classList.toggle(
+            'q-label__required-mark--before',
+            this._requiredMarkPosition === 'before'
+        );
+        markEl.classList.toggle(
+            'q-label__required-mark--after',
+            this._requiredMarkPosition === 'after'
+        );
+    }
 
-        get tag(): string {
-            return this.nodeMap?.content?.el?.tagName?.toLowerCase() ?? 'label';
-        },
-        set tag(v: string) {
+    get text(): string {
+        const contentEl = this.nodeMap?.content?.el as HTMLElement | null;
+        if (!contentEl) return '';
+        const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
+        if (!markEl) return contentEl.textContent ?? '';
+        return contentEl.textContent?.replace(markEl.textContent ?? '', '') ?? '';
+    }
+    set text(v: string) {
+        this.setNodeProp('text', v, 'content');
+    }
+
+    get tag(): string {
+        return this.nodeMap?.content?.el?.tagName?.toLowerCase() ?? 'label';
+    }
+    set tag(v: string) {
+        const el = this.nodeMap?.content?.el as HTMLElement | null;
+        if (!el?.parentElement) return;
+        const newEl = document.createElement(v);
+        newEl.className = el.className;
+        for (const attr of Array.from(el.attributes)) {
+            if (attr.name !== 'class') newEl.setAttribute(attr.name, attr.value);
+        }
+        while (el.firstChild) newEl.appendChild(el.firstChild);
+        el.replaceWith(newEl);
+        this.nodeMap.content.el = newEl;
+    }
+
+    get role(): string {
+        return this.nodeMap?.content?.el?.getAttribute('role') ?? '';
+    }
+    set role(v: string) {
+        if (v) {
+            this.setAttr('role', v);
+        } else {
             const el = this.nodeMap?.content?.el as HTMLElement | null;
-            if (!el?.parentElement) return;
-            const newEl = document.createElement(v);
-            newEl.className = el.className;
-            for (const attr of Array.from(el.attributes)) {
-                if (attr.name !== 'class') newEl.setAttribute(attr.name, attr.value);
-            }
-            while (el.firstChild) newEl.appendChild(el.firstChild);
-            el.replaceWith(newEl);
-            this.nodeMap.content.el = newEl;
-        },
+            el?.removeAttribute('role');
+        }
+    }
 
-        get role(): string {
-            return this.nodeMap?.content?.el?.getAttribute('role') ?? '';
-        },
-        set role(v: string) {
-            if (v) {
-                this.setAttr('role', v);
-            } else {
-                const el = this.nodeMap?.content?.el as HTMLElement | null;
-                el?.removeAttribute('role');
-            }
-        },
+    get required(): boolean {
+        return this._required;
+    }
+    set required(v: boolean) {
+        this._required = v;
+        this.setNodeHidden(!v, 'requiredMark');
+        if (v) this._applyRequiredMark();
+    }
 
-        get required(): boolean {
-            return this._required;
-        },
-        set required(v: boolean) {
-            this._required = v;
-            this.setNodeHidden(!v, 'requiredMark');
-            if (v) this._applyRequiredMark();
-        },
+    update(props?: Partial<LabelProps>): void {
+        if (props?.i18nText !== undefined) this.text = props.i18nText;
+        else if (props?.text !== undefined) this.text = props.text;
+        if (props?.required !== undefined) this.required = props.required;
+        if (props?.requiredMark !== undefined) {
+            this._requiredMark = props.requiredMark;
+            this._applyRequiredMark();
+        }
+        if (props?.requiredMarkPosition !== undefined) {
+            this._requiredMarkPosition = props.requiredMarkPosition;
+            this._applyRequiredMark();
+        }
+        if (props?.tag !== undefined) this.tag = props.tag;
+        if (props?.cls !== undefined) this.addCls(props.cls);
+        if (props?.role !== undefined) this.role = props.role;
+    }
+}
 
-        update(props?: Partial<LabelProps>): void {
-            if (props?.i18nText !== undefined) this.text = props.i18nText;
-            else if (props?.text !== undefined) this.text = props.text;
-            if (props?.required !== undefined) this.required = props.required;
-            if (props?.requiredMark !== undefined) {
-                this._requiredMark = props.requiredMark;
-                this._applyRequiredMark();
-            }
-            if (props?.requiredMarkPosition !== undefined) {
-                this._requiredMarkPosition = props.requiredMarkPosition;
-                this._applyRequiredMark();
-            }
-            if (props?.tag !== undefined) this.tag = props.tag;
-            if (props?.cls !== undefined) this.addCls(props.cls);
-            if (props?.role !== undefined) this.role = props.role;
-        },
-    },
-}).with([CommonPropsAbility]);
+LabelComponent.use([CommonPropsAbility]);
 
-export type LabelComponent = InstanceType<typeof LabelComponent>;
+export { LabelComponent };
+export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

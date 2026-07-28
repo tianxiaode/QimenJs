@@ -48,91 +48,50 @@ export interface HeaderProps {
     action?: Record<string, any>;
 }
 
-export let HeaderComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-header',
-        flex: { direction: 'row', align: 'center', gap: '8px' },
-        children: [
-            {
-                tag: 'i',
-                name: 'icon',
-                cls: 'q-header__icon',
-                hidden: true,
-            },
-            {
-                name: 'toolsLeft',
-                type: ItemGroupPooledComponent,
-                cls: 'q-header__tools q-header__tools--left',
-                hidden: true,
-            },
-            { tag: 'div', name: 'title', cls: 'q-header__title' },
-            { tag: 'span', name: 'subtitle', cls: 'q-header__subtitle', hidden: true },
-            {
-                name: 'toolsRight',
-                type: ItemGroupPooledComponent,
-                cls: 'q-header__tools q-header__tools--right',
-                hidden: true,
-            },
-            { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
-        ],
-    },
+class HeaderComponent extends Component {
+    static type = 'Header';
 
-    tplEvents: {
-        toolsLeft: {
-            $items: {
-                Icon: { click: { emits: ['toolsLeftClick'] } },
-                Button: { click: { emits: ['toolsLeftClick'] } },
-            },
-        },
-        toolsRight: {
-            $items: {
-                Icon: { click: { emits: ['toolsRightClick'] } },
-                Button: { click: { emits: ['toolsRightClick'] } },
-            },
-        },
-        action: { click: { emits: ['actionClick'] } },
-    },
+    type = 'Header';
 
-    body: {
-        type: 'Header',
-        forwards: {
-            action: 'action',
-        },
+    forwards = {
+        action: 'action',
+    };
 
-        onAfterInit(props?: HeaderProps): void {
-            if (props?.icon !== undefined) {
-                this.setNodeHidden(false, 'icon');
-                this.icon = props.icon;
+    onAfterInit(props?: HeaderProps): void {
+        if (props?.icon !== undefined) {
+            this.setNodeHidden(false, 'icon');
+            this.icon = props.icon;
+        }
+        if (props?.title !== undefined) {
+            this.title = props.title;
+        }
+        if (props?.subtitle !== undefined) {
+            this.setNodeHidden(false, 'subtitle');
+            this.subtitle = props.subtitle;
+        }
+        if (props?.toolsLeft) {
+            this.setNodeHidden(false, 'toolsLeft');
+            const toolsLeftComp = this.nodeMap?.toolsLeft?.component;
+            if (toolsLeftComp) {
+                toolsLeftComp._initItemGroupComponent(props.toolsLeft);
             }
-            if (props?.title !== undefined) {
-                this.title = props.title;
+        }
+        if (props?.toolsRight) {
+            this.setNodeHidden(false, 'toolsRight');
+            const toolsRightComp = this.nodeMap?.toolsRight?.component;
+            if (toolsRightComp) {
+                toolsRightComp._initItemGroupComponent(props.toolsRight);
             }
-            if (props?.subtitle !== undefined) {
-                this.setNodeHidden(false, 'subtitle');
-                this.subtitle = props.subtitle;
+        }
+        if (props?.action) {
+            this.setNodeHidden(false, 'action');
+            const actionComp = this.nodeMap?.action?.component;
+            if (actionComp && typeof actionComp.update === 'function') {
+                actionComp.update(props.action);
             }
-            if (props?.toolsLeft) {
-                this.setNodeHidden(false, 'toolsLeft');
-                const toolsLeftComp = this.nodeMap?.toolsLeft?.component;
-                if (toolsLeftComp) {
-                    toolsLeftComp._initItemGroupComponent(props.toolsLeft);
-                }
-            }
-            if (props?.toolsRight) {
-                this.setNodeHidden(false, 'toolsRight');
-                const toolsRightComp = this.nodeMap?.toolsRight?.component;
-                if (toolsRightComp) {
-                    toolsRightComp._initItemGroupComponent(props.toolsRight);
-                }
-            }
-            if (props?.action) {
-                this.setNodeHidden(false, 'action');
-                const actionComp = this.nodeMap?.action?.component;
-                if (actionComp && typeof actionComp.update === 'function') {
-                    actionComp.update(props.action);
-                }
-            }
-        },
-    },
-});
+        }
+    }
+}
+
+export { HeaderComponent };
+export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

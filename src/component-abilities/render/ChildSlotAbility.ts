@@ -28,8 +28,6 @@ export const ChildSlotAbility = {
         newComponentClass: new (props?: Record<string, any>) => any,
         props?: Record<string, any>
     ): any | null {
-        const result = this.nodeMapMgr.replace(name, newComponentClass, props);
-        this.nodeMap = this.nodeMapMgr.getAll();
-        return result;
+        return this.nodeMapMgr.replace(name, newComponentClass, props);
     },
 } satisfies AbilityDefinition;

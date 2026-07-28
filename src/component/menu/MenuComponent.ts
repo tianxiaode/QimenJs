@@ -8,73 +8,64 @@ export interface MenuProps extends ItemGroupProps {
     offset?: number;
 }
 
-export let MenuComponent = ItemGroupStaticComponent.replace({
-    type: 'Menu',
+class MenuComponent extends ItemGroupStaticComponent {
+    static type = 'Menu';
 
-    config: {
-        direction: 'vertical',
-        defaultItemType: 'MenuItem',
-    },
+    type = 'Menu';
 
-    tplEvents: {
-        itemContainer: {
-            $items: {
-                MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
-            },
-        },
-    },
-    body: {
-        nodes: {
-            root: { addCls: 'q-menu' },
-            itemContainer: { addCls: 'q-menu__content' },
-        },
+    onInitState() {
+        return {
+            ...super.onInitState?.(),
+            _anchor: null as HTMLElement | null,
+            _isOpen: false,
+        };
+    }
 
-        onInitState() {
-            return {
-                _anchor: null as HTMLElement | null,
-                _isOpen: false,
-            };
-        },
+    onAfterInit(props?: MenuProps & Record<string, any>): void {
+        const self = this as any;
+        if (props?.anchor) self._anchor = props.anchor;
 
-        onAfterInit(props?: MenuProps & Record<string, any>): void {
-            const self = this as any;
-            if (props?.anchor) self._anchor = props.anchor;
+        super.onAfterInit(props);
 
-            self.initGroupSelect({ defaultMode: 'radio' });
-            self.registerGroupItems([...self.items]);
+        self.initGroupSelect({ defaultMode: 'radio' });
+        self.registerGroupItems([...self.items]);
 
-            self.on('select', (data: any) => {
-                self.notifyGroupSelect(data.item);
-            });
-        },
+        self.on('select', (data: any) => {
+            self.notifyGroupSelect(data.item);
+        });
+    }
 
-        get itemGroup(): any {
-            return this;
-        },
+    get itemGroup(): any {
+        return this;
+    }
 
-        get isOpen(): boolean {
-            const self = this as any;
-            return self._isOpen;
-        },
+    get isOpen(): boolean {
+        const self = this as any;
+        return self._isOpen;
+    }
 
-        open(): void {
-            const self = this as any;
-            if (self._isOpen) return;
-            self.el.style.display = '';
-            self._isOpen = true;
-        },
+    open(): void {
+        const self = this as any;
+        if (self._isOpen) return;
+        self.el.style.display = '';
+        self._isOpen = true;
+    }
 
-        close(): void {
-            const self = this as any;
-            if (!self._isOpen) return;
-            self.el.style.display = 'none';
-            self._isOpen = false;
-        },
+    close(): void {
+        const self = this as any;
+        if (!self._isOpen) return;
+        self.el.style.display = 'none';
+        self._isOpen = false;
+    }
 
-        onBeforeDispose(): void {
-            const self = this as any;
-            self.close();
-            self.clearGroups();
-        },
-    },
-}).with([GroupSelectAbility]);
+    onBeforeDispose(): void {
+        const self = this as any;
+        self.close();
+        self.clearGroups();
+    }
+}
+
+MenuComponent.use([GroupSelectAbility]);
+
+export { MenuComponent };
+export type MenuComponentInstance = InstanceType<typeof MenuComponent>;

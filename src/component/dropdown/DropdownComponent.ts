@@ -1,16 +1,22 @@
 import { ButtonComponent } from '../button/ButtonComponent';
 
-export let DropdownComponent = ButtonComponent.replace({
-    type: 'Dropdown',
-    body: {
-        nodes: {
-            root: { addCls: 'q-dropdown' },
-            dropIcon: { hidden: false },
-        },
-        floats: {
-            dropIcon: { type: 'Menu', trigger: 'click', placement: 'bottom' },
-        },
-    },
-});
+class DropdownComponent extends ButtonComponent {
+    static type = 'Dropdown';
 
-export type DropdownComponent = InstanceType<typeof DropdownComponent>;
+    type = 'Dropdown';
+
+    onAfterInit(props?: any): void {
+        super.onAfterInit(props);
+        this.addCls('q-dropdown');
+        this.setNodeHidden(false, 'dropIcon');
+    }
+
+    get floats(): any {
+        return {
+            dropIcon: { type: 'Menu', trigger: 'click', placement: 'bottom' },
+        };
+    }
+}
+
+export { DropdownComponent };
+export type DropdownComponentInstance = InstanceType<typeof DropdownComponent>;

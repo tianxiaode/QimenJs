@@ -67,332 +67,312 @@ const DEFAULT_EXIT_ANIMATION: Keyframe[] = [
     { opacity: 0, transform: 'translateX(-4px)' },
 ];
 
-export let NavItemComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-nav-item',
-        children: [
-            {
-                tag: 'div',
-                name: 'content',
-                cls: 'q-nav-item__content',
-                children: [
-                    { tag: 'i', name: 'icon', cls: 'q-nav-item__icon' },
-                    { tag: 'span', name: 'text', cls: 'q-nav-item__text' },
-                    { tag: 'span', name: 'expand', cls: 'q-nav-item__expand' },
-                ],
-            },
-        ],
-    },
-    tplEvents: {
-        '': { enter: { handler: true }, leave: { handler: true } },
-        content: { click: { handler: true, emits: ['click'] } },
-    },
-    body: {
-        type: 'NavItem',
+class NavItemComponent extends Component {
+    static type = 'NavItem';
 
-        onInitState() {
-            return {
-                active: false,
-                disabled: false,
-                mode: 'expanded' as 'expanded' | 'collapsed',
-                children: undefined as Record<string, any>[] | undefined,
-                overlayOptions: undefined as NavOverlayOptions | undefined,
-                overlayComponent: undefined as any,
-                depth: 0,
-                maxDepth: 3,
-                onSelect: undefined as ((item: any) => void) | undefined,
-                _overlayEl: null as HTMLElement | null,
-                _overlayContent: null as any,
-                _overlayOpen: false,
-                _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
-                _tooltipEl: null as HTMLElement | null,
+    type = 'NavItem';
 
-                _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
-            };
-        },
+    onInitState() {
+        return {
+            active: false,
+            disabled: false,
+            mode: 'expanded' as 'expanded' | 'collapsed',
+            children: undefined as Record<string, any>[] | undefined,
+            overlayOptions: undefined as NavOverlayOptions | undefined,
+            overlayComponent: undefined as any,
+            depth: 0,
+            maxDepth: 3,
+            onSelect: undefined as ((item: any) => void) | undefined,
+            _overlayEl: null as HTMLElement | null,
+            _overlayContent: null as any,
+            _overlayOpen: false,
+            _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
+            _tooltipEl: null as HTMLElement | null,
 
-        onClick(): void {
-            if (this.disabled) return;
+            _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
+        };
+    }
 
-            if (this.children?.length) {
-                this.toggleOverlay();
-                return;
-            }
+    onClick(): void {
+        if (this.disabled) return;
 
-            this.emit('click', { item: this, index: this.props?.index });
-            this.onSelect?.(this);
-        },
+        if (this.children?.length) {
+            this.toggleOverlay();
+            return;
+        }
 
-        toggleOverlay(): void {
-            if (this._overlayOpen) {
-                this.closeOverlay();
-            } else {
-                this.openOverlay();
-            }
-        },
+        this.emit('click', { item: this, index: this.props?.index });
+        this.onSelect?.(this);
+    }
 
-        openOverlay(): void {
-            if (this._overlayOpen || !this.children?.length) return;
-            if (this.depth >= this.maxDepth) return;
+    toggleOverlay(): void {
+        if (this._overlayOpen) {
+            this.closeOverlay();
+        } else {
+            this.openOverlay();
+        }
+    }
 
-            const options = this.overlayOptions ?? {};
-            const placement = options.placement ?? 'right-start';
-            const offset = options.offset ?? 0;
+    openOverlay(): void {
+        if (this._overlayOpen || !this.children?.length) return;
+        if (this.depth >= this.maxDepth) return;
 
-            const overlayEl = document.createElement('div');
-            overlayEl.className = `q-nav-overlay ${options.overlayClass ?? ''}`;
-            overlayEl.style.position = 'fixed';
-            overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
+        const options = this.overlayOptions ?? {};
+        const placement = options.placement ?? 'right-start';
+        const offset = options.offset ?? 0;
 
-            const ContentComponent = this.overlayComponent;
-            if (ContentComponent) {
-                this._overlayContent = new ContentComponent({
-                    items: this.children,
-                    direction: 'vertical',
-                    mode: this.mode,
-                    depth: this.depth + 1,
-                    maxDepth: this.maxDepth,
-                });
-                overlayEl.appendChild(this._overlayContent.el);
-            } else {
-                const listEl = document.createElement('div');
-                listEl.className = 'q-nav-overlay__list';
-                for (const child of this.children) {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'q-nav-overlay__item';
-                    if (child.icon) {
-                        const iconEl = document.createElement('span');
-                        iconEl.className = 'q-nav-overlay__item-icon';
-                        iconEl.innerHTML = child.icon;
-                        itemEl.appendChild(iconEl);
-                    }
-                    if (child.text) {
-                        const textEl = document.createElement('span');
-                        textEl.className = 'q-nav-overlay__item-text';
-                        textEl.textContent = child.text;
-                        itemEl.appendChild(textEl);
-                    }
-                    itemEl.addEventListener('click', () => {
-                        this.emit('childClick', { item: child, parent: this });
-                        this.closeOverlay();
-                    });
-                    listEl.appendChild(itemEl);
+        const overlayEl = document.createElement('div');
+        overlayEl.className = `q-nav-overlay ${options.overlayClass ?? ''}`;
+        overlayEl.style.position = 'fixed';
+        overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
+
+        const ContentComponent = this.overlayComponent;
+        if (ContentComponent) {
+            this._overlayContent = new ContentComponent({
+                items: this.children,
+                direction: 'vertical',
+                mode: this.mode,
+                depth: this.depth + 1,
+                maxDepth: this.maxDepth,
+            });
+            overlayEl.appendChild(this._overlayContent.el);
+        } else {
+            const listEl = document.createElement('div');
+            listEl.className = 'q-nav-overlay__list';
+            for (const child of this.children) {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'q-nav-overlay__item';
+                if (child.icon) {
+                    const iconEl = document.createElement('span');
+                    iconEl.className = 'q-nav-overlay__item-icon';
+                    iconEl.innerHTML = child.icon;
+                    itemEl.appendChild(iconEl);
                 }
-                overlayEl.appendChild(listEl);
-            }
-
-            const root = OverlayRoot.getInstance().getRoot();
-            if (root) root.appendChild(overlayEl);
-
-            this._positionOverlay(overlayEl, placement, offset);
-
-            const enterAnim = options.enterAnimation ?? DEFAULT_ENTER_ANIMATION;
-            overlayEl.animate(enterAnim, {
-                duration: options.animationDuration ?? 200,
-                easing: 'ease-out',
-            });
-
-            this._overlayEl = overlayEl;
-            this._overlayOpen = true;
-            this._updateExpandArrow('expanded');
-            this._bindOutsideClick();
-            this.emit('overlayOpen', { item: this });
-        },
-
-        closeOverlay(): void {
-            if (!this._overlayOpen || !this._overlayEl) return;
-
-            const options = this.overlayOptions ?? {};
-            const exitAnim = options.exitAnimation ?? DEFAULT_EXIT_ANIMATION;
-            const anim = this._overlayEl.animate(exitAnim, {
-                duration: options.animationDuration ?? 150,
-                easing: 'ease-in',
-            });
-
-            anim.onfinish = () => {
-                this._overlayEl?.remove();
-                this._overlayEl = null;
-                this._overlayContent?.dispose?.();
-                this._overlayContent = null;
-            };
-
-            this._overlayOpen = false;
-            this._updateExpandArrow('collapsed');
-            this._unbindOutsideClick();
-            this.emit('overlayClose', { item: this });
-        },
-
-        _positionOverlay(overlayEl: HTMLElement, placement: NavPlacement, offset: number): void {
-            const anchorRect = this.el.getBoundingClientRect();
-            const overlayRect = overlayEl.getBoundingClientRect();
-
-            let top = 0;
-            let left = 0;
-
-            if (placement === 'right-start' || placement === 'right') {
-                left = anchorRect.right + offset;
-                top =
-                    placement === 'right-start'
-                        ? anchorRect.top
-                        : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
-            } else if (placement === 'right-end') {
-                left = anchorRect.right + offset;
-                top = anchorRect.bottom - overlayRect.height;
-            } else if (placement === 'bottom-start' || placement === 'bottom') {
-                top = anchorRect.bottom + offset;
-                left =
-                    placement === 'bottom-start'
-                        ? anchorRect.left
-                        : anchorRect.left + (anchorRect.width - overlayRect.width) / 2;
-            } else if (placement === 'bottom-end') {
-                top = anchorRect.bottom + offset;
-                left = anchorRect.right - overlayRect.width;
-            } else if (placement === 'left-start' || placement === 'left') {
-                left = anchorRect.left - overlayRect.width - offset;
-                top =
-                    placement === 'left-start'
-                        ? anchorRect.top
-                        : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
-            }
-
-            const vpWidth = window.innerWidth;
-            const vpHeight = window.innerHeight;
-            if (left + overlayRect.width > vpWidth) left = vpWidth - overlayRect.width - 8;
-            if (top + overlayRect.height > vpHeight) top = vpHeight - overlayRect.height - 8;
-            if (left < 0) left = 8;
-            if (top < 0) top = 8;
-
-            overlayEl.style.top = `${top}px`;
-            overlayEl.style.left = `${left}px`;
-        },
-
-        _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-            if (state === 'expanded') {
-                this.addCls('q-nav-item__expand--expanded', 'expand');
-                this.removeCls('q-nav-item__expand--collapsed', 'expand');
-            } else {
-                this.removeCls('q-nav-item__expand--expanded', 'expand');
-                this.addCls('q-nav-item__expand--collapsed', 'expand');
-            }
-        },
-
-        _bindOutsideClick(): void {
-            this._outsideClickHandler = (e: MouseEvent) => {
-                if (
-                    this._overlayEl &&
-                    !this._overlayEl.contains(e.target as Node) &&
-                    !this.el.contains(e.target as Node)
-                ) {
+                if (child.text) {
+                    const textEl = document.createElement('span');
+                    textEl.className = 'q-nav-overlay__item-text';
+                    textEl.textContent = child.text;
+                    itemEl.appendChild(textEl);
+                }
+                itemEl.addEventListener('click', () => {
+                    this.emit('childClick', { item: child, parent: this });
                     this.closeOverlay();
-                }
-            };
-            document.addEventListener('click', this._outsideClickHandler, true);
-        },
-
-        _unbindOutsideClick(): void {
-            if (this._outsideClickHandler) {
-                document.removeEventListener('click', this._outsideClickHandler, true);
-                this._outsideClickHandler = null;
+                });
+                listEl.appendChild(itemEl);
             }
-        },
+            overlayEl.appendChild(listEl);
+        }
 
-        _showTooltip(): void {
-            if (this.mode !== 'collapsed' || !this.text) return;
-            const tooltipEl = document.createElement('div');
-            tooltipEl.className = 'q-nav-tooltip';
-            tooltipEl.textContent = this.text;
-            tooltipEl.style.position = 'fixed';
-            tooltipEl.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
+        const root = OverlayRoot.getInstance().getRoot();
+        if (root) root.appendChild(overlayEl);
 
-            const rect = this.el.getBoundingClientRect();
-            tooltipEl.style.left = `${rect.right + 8}px`;
-            tooltipEl.style.top = `${rect.top + rect.height / 2 - 14}px`;
+        this._positionOverlay(overlayEl, placement, offset);
 
-            const root = OverlayRoot.getInstance().getRoot();
-            if (root) root.appendChild(tooltipEl);
+        const enterAnim = options.enterAnimation ?? DEFAULT_ENTER_ANIMATION;
+        overlayEl.animate(enterAnim, {
+            duration: options.animationDuration ?? 200,
+            easing: 'ease-out',
+        });
 
-            this._tooltipEl = tooltipEl;
-        },
+        this._overlayEl = overlayEl;
+        this._overlayOpen = true;
+        this._updateExpandArrow('expanded');
+        this._bindOutsideClick();
+        this.emit('overlayOpen', { item: this });
+    }
 
-        _hideTooltip(): void {
-            if (this._tooltipEl) {
-                this._tooltipEl.remove();
-                this._tooltipEl = null;
+    closeOverlay(): void {
+        if (!this._overlayOpen || !this._overlayEl) return;
+
+        const options = this.overlayOptions ?? {};
+        const exitAnim = options.exitAnimation ?? DEFAULT_EXIT_ANIMATION;
+        const anim = this._overlayEl.animate(exitAnim, {
+            duration: options.animationDuration ?? 150,
+            easing: 'ease-in',
+        });
+
+        anim.onfinish = () => {
+            this._overlayEl?.remove();
+            this._overlayEl = null;
+            this._overlayContent?.dispose?.();
+            this._overlayContent = null;
+        };
+
+        this._overlayOpen = false;
+        this._updateExpandArrow('collapsed');
+        this._unbindOutsideClick();
+        this.emit('overlayClose', { item: this });
+    }
+
+    _positionOverlay(overlayEl: HTMLElement, placement: NavPlacement, offset: number): void {
+        const anchorRect = this.el.getBoundingClientRect();
+        const overlayRect = overlayEl.getBoundingClientRect();
+
+        let top = 0;
+        let left = 0;
+
+        if (placement === 'right-start' || placement === 'right') {
+            left = anchorRect.right + offset;
+            top =
+                placement === 'right-start'
+                    ? anchorRect.top
+                    : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
+        } else if (placement === 'right-end') {
+            left = anchorRect.right + offset;
+            top = anchorRect.bottom - overlayRect.height;
+        } else if (placement === 'bottom-start' || placement === 'bottom') {
+            top = anchorRect.bottom + offset;
+            left =
+                placement === 'bottom-start'
+                    ? anchorRect.left
+                    : anchorRect.left + (anchorRect.width - overlayRect.width) / 2;
+        } else if (placement === 'bottom-end') {
+            top = anchorRect.bottom + offset;
+            left = anchorRect.right - overlayRect.width;
+        } else if (placement === 'left-start' || placement === 'left') {
+            left = anchorRect.left - overlayRect.width - offset;
+            top =
+                placement === 'left-start'
+                    ? anchorRect.top
+                    : anchorRect.top + (anchorRect.height - overlayRect.height) / 2;
+        }
+
+        const vpWidth = window.innerWidth;
+        const vpHeight = window.innerHeight;
+        if (left + overlayRect.width > vpWidth) left = vpWidth - overlayRect.width - 8;
+        if (top + overlayRect.height > vpHeight) top = vpHeight - overlayRect.height - 8;
+        if (left < 0) left = 8;
+        if (top < 0) top = 8;
+
+        overlayEl.style.top = `${top}px`;
+        overlayEl.style.left = `${left}px`;
+    }
+
+    _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
+        if (state === 'expanded') {
+            this.addCls('q-nav-item__expand--expanded', 'expand');
+            this.removeCls('q-nav-item__expand--collapsed', 'expand');
+        } else {
+            this.removeCls('q-nav-item__expand--expanded', 'expand');
+            this.addCls('q-nav-item__expand--collapsed', 'expand');
+        }
+    }
+
+    _bindOutsideClick(): void {
+        this._outsideClickHandler = (e: MouseEvent) => {
+            if (
+                this._overlayEl &&
+                !this._overlayEl.contains(e.target as Node) &&
+                !this.el.contains(e.target as Node)
+            ) {
+                this.closeOverlay();
             }
-        },
+        };
+        document.addEventListener('click', this._outsideClickHandler, true);
+    }
 
-        _applyState(): void {
-            if (this.active) this.addCls('q-nav-item--active');
-            else this.removeCls('q-nav-item--active');
+    _unbindOutsideClick(): void {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler, true);
+            this._outsideClickHandler = null;
+        }
+    }
 
-            if (this.disabled) this.addCls('q-nav-item--disabled');
-            else this.removeCls('q-nav-item--disabled');
+    _showTooltip(): void {
+        if (this.mode !== 'collapsed' || !this.text) return;
+        const tooltipEl = document.createElement('div');
+        tooltipEl.className = 'q-nav-tooltip';
+        tooltipEl.textContent = this.text;
+        tooltipEl.style.position = 'fixed';
+        tooltipEl.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
 
-            if (this.mode === 'collapsed') this.addCls('q-nav-item--collapsed');
-            else this.removeCls('q-nav-item--collapsed');
+        const rect = this.el.getBoundingClientRect();
+        tooltipEl.style.left = `${rect.right + 8}px`;
+        tooltipEl.style.top = `${rect.top + rect.height / 2 - 14}px`;
 
-            if (this.children?.length) this.addCls('q-nav-item--has-children');
-            else this.removeCls('q-nav-item--has-children');
+        const root = OverlayRoot.getInstance().getRoot();
+        if (root) root.appendChild(tooltipEl);
 
-            this.setNodeHidden(this.mode === 'collapsed', 'text');
-            this.setNodeHidden(!this.children?.length, 'expand');
+        this._tooltipEl = tooltipEl;
+    }
 
-            this.ariaDisabled = this.disabled ? 'true' : false;
-            if (this.active) this.setAttr('aria-current', 'page');
-            else this.removeAttr('aria-current');
-        },
+    _hideTooltip(): void {
+        if (this._tooltipEl) {
+            this._tooltipEl.remove();
+            this._tooltipEl = null;
+        }
+    }
 
-        onRootEnter(): void {
-            if (this.mode === 'collapsed') this._showTooltip();
-            this._clearSubmenuTimer?.();
-        },
+    _applyState(): void {
+        if (this.active) this.addCls('q-nav-item--active');
+        else this.removeCls('q-nav-item--active');
 
-        onRootLeave(): void {
-            if (this.mode === 'collapsed') this._hideTooltip();
-        },
+        if (this.disabled) this.addCls('q-nav-item--disabled');
+        else this.removeCls('q-nav-item--disabled');
 
-        _setIcon(value: string): void {
-            this.icon = value;
-        },
+        if (this.mode === 'collapsed') this.addCls('q-nav-item--collapsed');
+        else this.removeCls('q-nav-item--collapsed');
 
-        setActive(value: boolean): void {
-            this.active = value;
-            this._applyState();
-        },
+        if (this.children?.length) this.addCls('q-nav-item--has-children');
+        else this.removeCls('q-nav-item--has-children');
 
-        setDisabled(value: boolean): void {
-            this.disabled = value;
-            this._applyState();
-        },
+        this.setNodeHidden(this.mode === 'collapsed', 'text');
+        this.setNodeHidden(!this.children?.length, 'expand');
 
-        setMode(value: 'expanded' | 'collapsed'): void {
-            this.mode = value;
-            if (this._overlayOpen) this.closeOverlay();
-            this._applyState();
-        },
+        this.ariaDisabled = this.disabled ? 'true' : false;
+        if (this.active) this.setAttr('aria-current', 'page');
+        else this.removeAttr('aria-current');
+    }
 
-        update(props?: Partial<NavItemProps> & Record<string, any>): void {
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.icon !== undefined) this._setIcon(props.icon);
-            if (props?.active !== undefined) this.setActive(props.active);
-            if (props?.disabled !== undefined) this.setDisabled(props.disabled);
-            if (props?.mode !== undefined) this.setMode(props.mode);
-            if (props?.children !== undefined) this.children = props.children;
-            if (props?.overlayOptions !== undefined) this.overlayOptions = props.overlayOptions;
-            if (props?.overlayComponent !== undefined)
-                this.overlayComponent = props.overlayComponent;
-            if (props?.maxDepth !== undefined) this.maxDepth = props.maxDepth;
-            if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
-        },
+    onRootEnter(): void {
+        if (this.mode === 'collapsed') this._showTooltip();
+        this._clearSubmenuTimer?.();
+    }
 
-        dispose(): void {
-            if (this._overlayOpen) this.closeOverlay();
-            this._hideTooltip();
-            this._unbindOutsideClick();
-            (this.constructor as any).__proto__.dispose.call(this);
-        },
-    },
-});
+    onRootLeave(): void {
+        if (this.mode === 'collapsed') this._hideTooltip();
+    }
 
-export type NavItemComponent = InstanceType<typeof NavItemComponent>;
+    _setIcon(value: string): void {
+        this.icon = value;
+    }
+
+    setActive(value: boolean): void {
+        this.active = value;
+        this._applyState();
+    }
+
+    setDisabled(value: boolean): void {
+        this.disabled = value;
+        this._applyState();
+    }
+
+    setMode(value: 'expanded' | 'collapsed'): void {
+        this.mode = value;
+        if (this._overlayOpen) this.closeOverlay();
+        this._applyState();
+    }
+
+    update(props?: Partial<NavItemProps> & Record<string, any>): void {
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.icon !== undefined) this._setIcon(props.icon);
+        if (props?.active !== undefined) this.setActive(props.active);
+        if (props?.disabled !== undefined) this.setDisabled(props.disabled);
+        if (props?.mode !== undefined) this.setMode(props.mode);
+        if (props?.children !== undefined) this.children = props.children;
+        if (props?.overlayOptions !== undefined) this.overlayOptions = props.overlayOptions;
+        if (props?.overlayComponent !== undefined) this.overlayComponent = props.overlayComponent;
+        if (props?.maxDepth !== undefined) this.maxDepth = props.maxDepth;
+        if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
+    }
+
+    dispose(): void {
+        if (this._overlayOpen) this.closeOverlay();
+        this._hideTooltip();
+        this._unbindOutsideClick();
+        super.dispose();
+    }
+}
+
+export { NavItemComponent };
+export type NavItemComponentInstance = InstanceType<typeof NavItemComponent>;

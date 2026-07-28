@@ -39,292 +39,299 @@ export interface OverflowMenuProps {
     maxVisibleItems?: number;
 }
 
-export let OverflowMenuComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-overflow-menu-overlay',
-    },
-    body: {
-        type: 'OverflowMenu',
+class OverflowMenuComponent extends Component {
+    static type = 'OverflowMenu';
+    type = 'OverflowMenu';
 
-        onInitState() {
-            return {
-                _anchor: null as HTMLElement | null,
-                _direction: 'horizontal' as OverflowDirection,
-                _menuOffset: 0,
-                _maxVisibleItems: 0,
-                _triggerBtn: null as HTMLElement | null,
-                _menuInstance: null as any,
-                _isMenuOpen: false,
-                _overflowItems: [] as OverflowMenuItem[],
-                _resizeObserver: null as ResizeObserver | null,
-                _mutationObserver: null as MutationObserver | null,
-                _rafId: 0,
-                _menuOverlayKey: '',
-            };
-        },
+    _anchor: HTMLElement | null = null;
+    _direction: OverflowDirection = 'horizontal';
+    _menuOffset: number = 0;
+    _maxVisibleItems: number = 0;
+    _triggerBtn: HTMLElement | null = null;
+    _menuInstance: any = null;
+    _isMenuOpen: boolean = false;
+    _overflowItems: OverflowMenuItem[] = [];
+    _resizeObserver: ResizeObserver | null = null;
+    _mutationObserver: MutationObserver | null = null;
+    _rafId: number = 0;
+    _menuOverlayKey: string = '';
 
-        _initOverflowMenu(props?: OverflowMenuProps): void {
-            const anchor = props?.anchor;
-            if (!anchor) return;
+    onInitState() {
+        return {
+            _anchor: null as HTMLElement | null,
+            _direction: 'horizontal' as OverflowDirection,
+            _menuOffset: 0,
+            _maxVisibleItems: 0,
+            _triggerBtn: null as HTMLElement | null,
+            _menuInstance: null as any,
+            _isMenuOpen: false,
+            _overflowItems: [] as OverflowMenuItem[],
+            _resizeObserver: null as ResizeObserver | null,
+            _mutationObserver: null as MutationObserver | null,
+            _rafId: 0,
+            _menuOverlayKey: '',
+        };
+    }
 
-            this._anchor = anchor;
-            this._direction = props?.direction ?? 'horizontal';
-            this._menuOffset = props?.menuOffset ?? 0;
-            this._maxVisibleItems = props?.maxVisibleItems ?? 0;
+    _initOverflowMenu(props?: OverflowMenuProps): void {
+        const anchor = props?.anchor;
+        if (!anchor) return;
 
-            this.el.classList.add(`q-overflow-menu-overlay--${this._direction}`);
+        this._anchor = anchor;
+        this._direction = props?.direction ?? 'horizontal';
+        this._menuOffset = props?.menuOffset ?? 0;
+        this._maxVisibleItems = props?.maxVisibleItems ?? 0;
 
-            this._menuOverlayKey = `${this.id ?? 'comp'}:overflow-menu`;
+        this.el.classList.add(`q-overflow-menu-overlay--${this._direction}`);
 
-            this._createTriggerBtn();
-            this._bindEvents();
+        this._menuOverlayKey = `${this.id ?? 'comp'}:overflow-menu`;
+
+        this._createTriggerBtn();
+        this._bindEvents();
+        this._recalcOverflowItems();
+
+        this.onCleanup(() => {
+            this._destroy();
+        });
+    }
+
+    _createTriggerBtn(): void {
+        const root = OverlayRoot.getInstance().getRoot();
+        if (!root) return;
+
+        const btn = document.createElement('div');
+        btn.className = `q-overflow-menu__trigger q-overflow-menu__trigger--${this._direction}`;
+        btn.hidden = true;
+        btn.style.position = 'absolute';
+        btn.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
+        btn.style.pointerEvents = 'auto';
+        btn.innerHTML = '<i></i>';
+
+        this.bind(btn, 'click');
+        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
+            const domEvt = ctx?.data?.originalEvent ?? ctx?.data;
+            domEvt?.stopPropagation?.();
+            this._toggleMenu();
+        });
+
+        root.appendChild(btn);
+        this._triggerBtn = btn;
+    }
+
+    _bindEvents(): void {
+        if (!this._anchor) return;
+
+        this._resizeObserver = new ResizeObserver(() => this._scheduleUpdate());
+        this._resizeObserver.observe(this._anchor);
+
+        const contentArea = this._anchor;
+        this._mutationObserver = new MutationObserver(() => this._scheduleUpdate());
+        this._mutationObserver.observe(contentArea, { childList: true });
+    }
+
+    _scheduleUpdate(): void {
+        if (this._rafId) cancelAnimationFrame(this._rafId);
+        this._rafId = requestAnimationFrame(() => {
             this._recalcOverflowItems();
+            this._rafId = 0;
+        });
+    }
 
-            this.onCleanup(() => {
-                this._destroy();
-            });
-        },
+    _recalcOverflowItems(): void {
+        if (!this._anchor) return;
 
-        _createTriggerBtn(): void {
-            const root = OverlayRoot.getInstance().getRoot();
-            if (!root) return;
+        const containerRect = this._anchor.getBoundingClientRect();
+        const children = Array.from(this._anchor.children) as HTMLElement[];
 
-            const btn = document.createElement('div');
-            btn.className = `q-overflow-menu__trigger q-overflow-menu__trigger--${this._direction}`;
-            btn.hidden = true;
-            btn.style.position = 'absolute';
-            btn.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
-            btn.style.pointerEvents = 'auto';
-            btn.innerHTML = '<i></i>';
+        const overflowItems: OverflowMenuItem[] = [];
+        let firstOverflowIndex = children.length;
 
-            this.bind(btn, 'click');
-            this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-                const domEvt = ctx?.data?.originalEvent ?? ctx?.data;
-                domEvt?.stopPropagation?.();
-                this._toggleMenu();
-            });
-
-            root.appendChild(btn);
-            this._triggerBtn = btn;
-        },
-
-        _bindEvents(): void {
-            if (!this._anchor) return;
-
-            this._resizeObserver = new ResizeObserver(() => this._scheduleUpdate());
-            this._resizeObserver.observe(this._anchor);
-
-            const contentArea = this._anchor;
-            this._mutationObserver = new MutationObserver(() => this._scheduleUpdate());
-            this._mutationObserver.observe(contentArea, { childList: true });
-        },
-
-        _scheduleUpdate(): void {
-            if (this._rafId) cancelAnimationFrame(this._rafId);
-            this._rafId = requestAnimationFrame(() => {
-                this._recalcOverflowItems();
-                this._rafId = 0;
-            });
-        },
-
-        _recalcOverflowItems(): void {
-            if (!this._anchor) return;
-
-            const containerRect = this._anchor.getBoundingClientRect();
-            const children = Array.from(this._anchor.children) as HTMLElement[];
-
-            const overflowItems: OverflowMenuItem[] = [];
-            let firstOverflowIndex = children.length;
-
-            if (this._maxVisibleItems > 0) {
-                firstOverflowIndex = this._maxVisibleItems;
-            } else {
-                for (let i = 0; i < children.length; i++) {
-                    const childRect = children[i].getBoundingClientRect();
-                    const isOverflowing =
-                        this._direction === 'horizontal'
-                            ? childRect.right > containerRect.right
-                            : childRect.bottom > containerRect.bottom;
-
-                    if (isOverflowing) {
-                        firstOverflowIndex = i;
-                        break;
-                    }
-                }
-            }
-
+        if (this._maxVisibleItems > 0) {
+            firstOverflowIndex = this._maxVisibleItems;
+        } else {
             for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                if (i >= firstOverflowIndex) {
-                    child.hidden = true;
-                    overflowItems.push({
-                        key: child.getAttribute('data-key') ?? `item-${i}`,
-                        label:
-                            child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
-                        element: child,
-                    });
-                } else {
-                    child.hidden = false;
+                const childRect = children[i].getBoundingClientRect();
+                const isOverflowing =
+                    this._direction === 'horizontal'
+                        ? childRect.right > containerRect.right
+                        : childRect.bottom > containerRect.bottom;
+
+                if (isOverflowing) {
+                    firstOverflowIndex = i;
+                    break;
                 }
             }
+        }
 
-            this._overflowItems = overflowItems;
-
-            if (this._triggerBtn) {
-                this._triggerBtn.hidden = overflowItems.length === 0;
-                if (overflowItems.length > 0) {
-                    const placement: Placement =
-                        this._direction === 'horizontal' ? 'right' : 'bottom';
-                    positionOverlay(this._triggerBtn, this._anchor, placement, 0, false);
-                }
-            }
-
-            this._anchor.classList.toggle(
-                'q-overflow-menu-container--overflowing',
-                overflowItems.length > 0
-            );
-
-            if (this._menuInstance) {
-                this._menuInstance.setMenuItems?.(
-                    overflowItems.map(item => ({
-                        key: item.key,
-                        text: item.label,
-                        onSelect: () => {
-                            this.emit(
-                                'overflowmenu',
-                                {
-                                    key: item.key,
-                                    label: item.label,
-                                    element: item.element,
-                                },
-                                { source: this.eventKey }
-                            );
-                            this._closeMenu();
-                        },
-                    }))
-                );
-            }
-
-            if (this._isMenuOpen) {
-                this._closeMenu();
-            }
-        },
-
-        _toggleMenu(): void {
-            if (this._isMenuOpen) {
-                this._closeMenu();
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (i >= firstOverflowIndex) {
+                child.hidden = true;
+                overflowItems.push({
+                    key: child.getAttribute('data-key') ?? `item-${i}`,
+                    label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
+                    element: child,
+                });
             } else {
-                this._openMenu();
+                child.hidden = false;
             }
-        },
+        }
 
-        _openMenu(): void {
-            if (!this._triggerBtn || !this._anchor) return;
+        this._overflowItems = overflowItems;
 
-            const menu = this._getOrCreateMenu();
-            if (!menu) return;
+        if (this._triggerBtn) {
+            this._triggerBtn.hidden = overflowItems.length === 0;
+            if (overflowItems.length > 0) {
+                const placement: Placement = this._direction === 'horizontal' ? 'right' : 'bottom';
+                positionOverlay(this._triggerBtn, this._anchor, placement, 0, false);
+            }
+        }
 
-            menu._anchor = this._triggerBtn;
-            menu.hidden = false;
+        this._anchor.classList.toggle(
+            'q-overflow-menu-container--overflowing',
+            overflowItems.length > 0
+        );
 
-            const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit(
-                EventContextBuilder.create()
-                    .withEvent(`overlay:${this._menuOverlayKey}:show`)
-                    .withType('show')
-                    .withSource(this._menuOverlayKey)
-                    .withData({
-                        component: this,
-                        anchor: this._triggerBtn,
-                        overlay: menu,
-                    })
-                    .build()
+        if (this._menuInstance) {
+            this._menuInstance.setMenuItems?.(
+                overflowItems.map(item => ({
+                    key: item.key,
+                    text: item.label,
+                    onSelect: () => {
+                        this.emit(
+                            'overflowmenu',
+                            {
+                                key: item.key,
+                                label: item.label,
+                                element: item.element,
+                            },
+                            { source: this.eventKey }
+                        );
+                        this._closeMenu();
+                    },
+                }))
             );
+        }
 
-            this._triggerBtn.classList.add('q-overflow-menu__trigger--active');
-            this._isMenuOpen = true;
-        },
+        if (this._isMenuOpen) {
+            this._closeMenu();
+        }
+    }
 
-        _closeMenu(): void {
-            if (!this._isMenuOpen) return;
+    _toggleMenu(): void {
+        if (this._isMenuOpen) {
+            this._closeMenu();
+        } else {
+            this._openMenu();
+        }
+    }
 
-            const bus = OverlayEventBus.getInstance();
-            bus.overlayEmit(
-                EventContextBuilder.create()
-                    .withEvent(`overlay:${this._menuOverlayKey}:hide`)
-                    .withType('hide')
-                    .withSource(this._menuOverlayKey)
-                    .withData({
-                        component: this,
-                        anchor: this._triggerBtn,
-                    })
-                    .build()
-            );
+    _openMenu(): void {
+        if (!this._triggerBtn || !this._anchor) return;
 
-            if (this._triggerBtn) {
-                this._triggerBtn.classList.remove('q-overflow-menu__trigger--active');
+        const menu = this._getOrCreateMenu();
+        if (!menu) return;
+
+        menu._anchor = this._triggerBtn;
+        menu.hidden = false;
+
+        const bus = OverlayEventBus.getInstance();
+        bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${this._menuOverlayKey}:show`)
+                .withType('show')
+                .withSource(this._menuOverlayKey)
+                .withData({
+                    component: this,
+                    anchor: this._triggerBtn,
+                    overlay: menu,
+                })
+                .build()
+        );
+
+        this._triggerBtn.classList.add('q-overflow-menu__trigger--active');
+        this._isMenuOpen = true;
+    }
+
+    _closeMenu(): void {
+        if (!this._isMenuOpen) return;
+
+        const bus = OverlayEventBus.getInstance();
+        bus.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${this._menuOverlayKey}:hide`)
+                .withType('hide')
+                .withSource(this._menuOverlayKey)
+                .withData({
+                    component: this,
+                    anchor: this._triggerBtn,
+                })
+                .build()
+        );
+
+        if (this._triggerBtn) {
+            this._triggerBtn.classList.remove('q-overflow-menu__trigger--active');
+        }
+
+        this._isMenuOpen = false;
+    }
+
+    _getOrCreateMenu(): any {
+        if (this._menuInstance) return this._menuInstance;
+
+        const MenuClass = ComponentRegistrar.getInstance().get('Menu') as any;
+        if (!MenuClass) return null;
+
+        const placement: Placement = this._direction === 'horizontal' ? 'bottom' : 'right';
+        this._menuInstance = new MenuClass({
+            anchor: this._triggerBtn,
+            placement,
+            offset: this._menuOffset,
+        });
+
+        overlayDispatchCenter.register(this._menuOverlayKey, {
+            type: 'Menu',
+            trigger: 'manual',
+            placement,
+            offset: this._menuOffset,
+        });
+
+        return this._menuInstance;
+    }
+
+    _destroy(): void {
+        if (this._rafId) cancelAnimationFrame(this._rafId);
+
+        this._resizeObserver?.disconnect();
+        this._mutationObserver?.disconnect();
+
+        if (this._triggerBtn) {
+            this._triggerBtn.remove();
+            this._triggerBtn = null;
+        }
+
+        if (this._menuInstance) {
+            this._menuInstance.dispose?.();
+            this._menuInstance = null;
+        }
+
+        if (this._anchor) {
+            const children = Array.from(this._anchor.children) as HTMLElement[];
+            for (const child of children) {
+                child.hidden = false;
             }
+            this._anchor.classList.remove('q-overflow-menu-container--overflowing');
+        }
+    }
 
-            this._isMenuOpen = false;
-        },
+    onOverlayChange(data: any): void {
+        if (!data) return;
+        if (data.direction !== undefined) this._direction = data.direction;
+        if (data.menuOffset !== undefined) this._menuOffset = data.menuOffset;
+        if (data.maxVisibleItems !== undefined) this._maxVisibleItems = data.maxVisibleItems;
+        this._recalcOverflowItems();
+    }
+}
 
-        _getOrCreateMenu(): any {
-            if (this._menuInstance) return this._menuInstance;
-
-            const MenuClass = ComponentRegistrar.getInstance().get('Menu');
-            if (!MenuClass) return null;
-
-            const placement: Placement = this._direction === 'horizontal' ? 'bottom' : 'right';
-            this._menuInstance = new MenuClass({
-                anchor: this._triggerBtn,
-                placement,
-                offset: this._menuOffset,
-            });
-
-            overlayDispatchCenter.register(this._menuOverlayKey, {
-                type: 'Menu',
-                trigger: 'manual',
-                placement,
-                offset: this._menuOffset,
-            });
-
-            return this._menuInstance;
-        },
-
-        _destroy(): void {
-            if (this._rafId) cancelAnimationFrame(this._rafId);
-
-            this._resizeObserver?.disconnect();
-            this._mutationObserver?.disconnect();
-
-            if (this._triggerBtn) {
-                this._triggerBtn.remove();
-                this._triggerBtn = null;
-            }
-
-            if (this._menuInstance) {
-                this._menuInstance.dispose?.();
-                this._menuInstance = null;
-            }
-
-            if (this._anchor) {
-                const children = Array.from(this._anchor.children) as HTMLElement[];
-                for (const child of children) {
-                    child.hidden = false;
-                }
-                this._anchor.classList.remove('q-overflow-menu-container--overflowing');
-            }
-        },
-
-        onOverlayChange(data: any): void {
-            if (!data) return;
-            if (data.direction !== undefined) this._direction = data.direction;
-            if (data.menuOffset !== undefined) this._menuOffset = data.menuOffset;
-            if (data.maxVisibleItems !== undefined) this._maxVisibleItems = data.maxVisibleItems;
-            this._recalcOverflowItems();
-        },
-    },
-});
-
-export type OverflowMenuComponent = InstanceType<typeof OverflowMenuComponent>;
+export { OverflowMenuComponent };
+export type OverflowMenuComponentInstance = InstanceType<typeof OverflowMenuComponent>;

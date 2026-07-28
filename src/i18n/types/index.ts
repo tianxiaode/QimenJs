@@ -63,6 +63,9 @@ export interface I18nLocaleConfig {
     units?: Record<string, string>;
     weekStart?: number;
     hourCycle?: string;
+    months?: string[];
+    monthsShort?: string[];
+    weekdaysShort?: string[];
     /** 内部标记，供格式化函数判断语言 */
     _lang?: string;
     /** UI 组件配置 */
@@ -103,10 +106,18 @@ export interface II18nManager {
     formatTime(date: Date | string | number, style: string, locale?: Locale): string;
 
     /** 格式化数字 */
-    formatNumber(num: number, options?: { decimalDigits?: number; groupSeparator?: string; decimalSeparator?: string }, locale?: Locale): string;
+    formatNumber(
+        num: number,
+        options?: { decimalDigits?: number; groupSeparator?: string; decimalSeparator?: string },
+        locale?: Locale
+    ): string;
 
     /** 格式化货币 */
-    formatCurrency(num: number, options?: { symbol?: string; position?: string; decimalDigits?: number }, locale?: Locale): string;
+    formatCurrency(
+        num: number,
+        options?: { symbol?: string; position?: string; decimalDigits?: number },
+        locale?: Locale
+    ): string;
 
     /** 监听语言变更，返回取消监听函数 */
     onLocaleChange(handler: (event: ILocaleChangeEvent) => void): () => void;

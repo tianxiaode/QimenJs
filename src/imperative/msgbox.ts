@@ -21,13 +21,14 @@ import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from '@/component-core/template-presets';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
+import type { TplNode } from '@/component-core/types/tpl-node-types';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 
-const MsgboxBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility]);
+const MsgboxBase = ComposableBase.use([TemplateCacheAbility, FloatingLayerAbility]);
 
 export class Msgbox extends MsgboxBase {
     // ─── TemplateCacheAbility 方法 ───
-    declare initTemplateCache: (name: string, template: string) => void;
+    declare initTemplateCache: (name: string, template: TplNode) => void;
     declare cloneFromCache: (name: string) => {
         root: HTMLElement;
         nodeMap: Record<string, HTMLElement>;
@@ -87,7 +88,7 @@ export class Msgbox extends MsgboxBase {
 
         // 1. 初始化能力
         this._zIndexLevel = ZIndexLevel.modal;
-        this.initTemplateCache('msgbox', MSGBOX_TEMPLATE);
+        this.initTemplateCache('msgbox', { tpl: MSGBOX_TEMPLATE });
 
         // 2. 从缓存克隆 DOM + 构建 nodeMap
         const { root, nodeMap } = this.cloneFromCache('msgbox');

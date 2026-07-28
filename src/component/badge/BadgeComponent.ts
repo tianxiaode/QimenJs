@@ -10,23 +10,22 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let BadgeComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        children: [{ tag: 'span', name: 'text', cls: 'q-badge__content' }],
-    },
-    body: {
-        type: 'badge',
+class BadgeComponent extends Component {
+    static type = 'Badge';
 
-        onOverlayChange(data: any): void {
-            if (!data) return;
-            if (data.text !== undefined) {
-                this.text = String(data.text);
-                this.hidden = !data.text;
-            }
-            if (data.visible !== undefined) {
-                this.hidden = !data.visible;
-            }
-        },
-    },
-});
+    type = 'Badge';
+
+    onOverlayChange(data: any): void {
+        if (!data) return;
+        if (data.text !== undefined) {
+            this.text = String(data.text);
+            this.hidden = !data.text;
+        }
+        if (data.visible !== undefined) {
+            this.hidden = !data.visible;
+        }
+    }
+}
+
+export { BadgeComponent };
+export type BadgeComponentInstance = InstanceType<typeof BadgeComponent>;

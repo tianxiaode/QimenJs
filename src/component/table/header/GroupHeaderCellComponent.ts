@@ -107,7 +107,7 @@ export let GroupHeaderCellComponent = BaseHeaderCellComponent.replace({
             for (const config of configs) {
                 const componentType =
                     config.type === 'group' ? 'GroupHeaderCell' : 'LeafHeaderCell';
-                const ChildClass = ComponentRegistrar.getInstance().get(componentType);
+                const ChildClass = ComponentRegistrar.getInstance().get(componentType) as any;
                 if (!ChildClass) continue;
 
                 const childProps: any = {

@@ -58,11 +58,11 @@ export class HeaderEngine {
                     };
                 },
 
-                onAfterInit(): void {
+                onAfterInit(this: any): void {
                     this._createHeaderCells();
                 },
 
-                _createHeaderCells(): void {
+                _createHeaderCells(this: any): void {
                     const container = this.el;
                     if (!container) return;
                     HeaderEngine._renderHeaderCells(this._headerConfigs, container, this);

@@ -22,188 +22,129 @@ export interface MinutePanelProps {
     showPrev?: boolean;
 }
 
-export const MinutePanelComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-dtpanel',
-        children: [
-            {
-                tag: 'div',
-                name: 'nav',
-                cls: 'q-dtpanel__nav',
-                children: [
-                    { tag: 'button', name: 'backBtn', cls: 'q-dtpanel__nav-btn', i18n: 'back' },
-                    { tag: 'button', name: 'prevBtn', cls: 'q-dtpanel__nav-btn', i18n: 'prev' },
-                    {
-                        tag: 'span',
-                        name: 'title',
-                        cls: 'q-dtpanel__nav-title',
-                        i18n: 'selectMinute',
-                    },
-                    {
-                        tag: 'button',
-                        name: 'confirmBtn',
-                        cls: 'q-dtpanel__nav-btn q-dtpanel__nav-confirm',
-                        i18n: 'confirm',
-                    },
-                ],
-            },
-            {
-                tag: 'div',
-                name: 'tensRow',
-                cls: 'q-dtpanel__high-row',
-            },
-            {
-                tag: 'div',
-                name: 'onesGrid',
-                cls: 'q-dtpanel__grid',
-                style: 'grid-template-columns: repeat(2, 1fr); padding-left: 24px; padding-right: 24px;',
-            },
-        ],
-    },
-    tplEvents: {
-        backBtn: { click: { handler: true } },
-        prevBtn: { click: { handler: true } },
-        confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-        tensRow: { click: { handler: true } },
-        onesGrid: { click: { handler: true } },
-    },
-    body: {
-        type: 'MinutePanel',
+class MinutePanelComponent extends Component {
+    static type = 'MinutePanel';
 
-        onInitState() {
-            return {
-                _value: null as DateTimeValue | null,
-                _tensSelected: -1,
-                _onesSelected: -1,
-                _selectingTens: true,
-            };
-        },
+    type = 'MinutePanel';
 
-        onAfterInit(props?: MinutePanelProps): void {
-            const self = this as any;
-            self._value = props?.value ?? {
-                year: 2026,
-                month: 1,
-                day: 1,
-                hour: 0,
-                minute: 0,
-                second: 0,
-            };
-            self._tensSelected = Math.floor(self._value.minute / 10);
-            self._onesSelected = self._value.minute % 10;
-            self._selectingTens = true;
+    onInitState() {
+        return {
+            _value: null as DateTimeValue | null,
+            _tensSelected: -1,
+            _onesSelected: -1,
+            _selectingTens: true,
+        };
+    }
 
-            if (!props?.showPrev) {
-                self.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+    onAfterInit(props?: MinutePanelProps): void {
+        this._value = props?.value ?? {
+            year: 2026,
+            month: 1,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+        };
+        this._tensSelected = Math.floor(this._value.minute / 10);
+        this._onesSelected = this._value.minute % 10;
+        this._selectingTens = true;
+
+        if (!props?.showPrev) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+        }
+
+        this._renderTens();
+        this._renderOnes();
+    }
+
+    onBackBtnClick(): void {
+        this.emit('back', {});
+    }
+
+    onPrevBtnClick(): void {
+        this.emit('prev', {});
+    }
+
+    onConfirmBtnClick(): void {}
+
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
+
+    onTensRowClick(e: Event): void {
+        const target = e.target as HTMLElement;
+        const value = target.dataset.value;
+        if (value === undefined) return;
+        this._onTensSelect(parseInt(value));
+    }
+
+    onOnesGridClick(e: Event): void {
+        const target = e.target as HTMLElement;
+        const value = target.dataset.value;
+        if (value === undefined) return;
+        this._onOnesSelect(parseInt(value));
+    }
+
+    _renderTens(): void {
+        const row = this.nodeMap?.tensRow?.el as HTMLElement | null;
+        if (!row) return;
+        row.innerHTML = '';
+
+        const label = document.createElement('span');
+        label.className = 'q-dtpanel__digit-label';
+        label.textContent = '十位';
+        row.appendChild(label);
+
+        const digits = generateMinuteSecondDigits();
+        for (const d of digits.tens) {
+            const btn = document.createElement('button');
+            btn.className = 'q-dtpanel__high-btn';
+            btn.textContent = String(d);
+            btn.dataset.value = String(d);
+            if (this._tensSelected === d) {
+                btn.classList.add('q-dtpanel__high-btn--active');
             }
+            row.appendChild(btn);
+        }
+    }
 
-            self._renderTens();
-            self._renderOnes();
-        },
+    _renderOnes(): void {
+        const grid = this.nodeMap?.onesGrid?.el as HTMLElement | null;
+        if (!grid) return;
+        grid.innerHTML = '';
 
-        onBackBtnClick(): void {
-            const self = this as any;
-            self.emit('back', {});
-        },
-
-        onPrevBtnClick(): void {
-            const self = this as any;
-            self.emit('prev', {});
-        },
-
-        onConfirmBtnClick(): void {},
-
-        getEventData(
-            _nodeName: string,
-            _eventName: string,
-            _eventType: string
-        ): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
-
-        onTensRowClick(e: Event): void {
-            const self = this as any;
-            const target = e.target as HTMLElement;
-            const value = target.dataset.value;
-            if (value === undefined) return;
-            self._onTensSelect(parseInt(value));
-        },
-
-        onOnesGridClick(e: Event): void {
-            const self = this as any;
-            const target = e.target as HTMLElement;
-            const value = target.dataset.value;
-            if (value === undefined) return;
-            self._onOnesSelect(parseInt(value));
-        },
-
-        _renderTens(): void {
-            const self = this as any;
-            const row = self.nodeMap?.tensRow?.el as HTMLElement | null;
-            if (!row) return;
-            row.innerHTML = '';
-
-            const label = document.createElement('span');
-            label.className = 'q-dtpanel__digit-label';
-            label.textContent = '十位';
-            row.appendChild(label);
-
-            const digits = generateMinuteSecondDigits();
-            for (const d of digits.tens) {
-                const btn = document.createElement('button');
-                btn.className = 'q-dtpanel__high-btn';
-                btn.textContent = String(d);
-                btn.dataset.value = String(d);
-                if (self._tensSelected === d) {
-                    btn.classList.add('q-dtpanel__high-btn--active');
-                }
-                row.appendChild(btn);
+        const digits = generateMinuteSecondDigits();
+        for (const d of digits.ones) {
+            const cell = document.createElement('div');
+            cell.className = 'q-dtpanel__cell';
+            cell.textContent = String(d);
+            cell.dataset.value = String(d);
+            if (this._onesSelected === d) {
+                cell.classList.add('q-dtpanel__cell--active');
             }
-        },
+            grid.appendChild(cell);
+        }
+    }
 
-        _renderOnes(): void {
-            const self = this as any;
-            const grid = self.nodeMap?.onesGrid?.el as HTMLElement | null;
-            if (!grid) return;
-            grid.innerHTML = '';
+    _onTensSelect(tens: number): void {
+        this._tensSelected = tens;
+        this._selectingTens = false;
+        this._renderTens();
+    }
 
-            const digits = generateMinuteSecondDigits();
-            for (const d of digits.ones) {
-                const cell = document.createElement('div');
-                cell.className = 'q-dtpanel__cell';
-                cell.textContent = String(d);
-                cell.dataset.value = String(d);
-                if (self._onesSelected === d) {
-                    cell.classList.add('q-dtpanel__cell--active');
-                }
-                grid.appendChild(cell);
-            }
-        },
+    _onOnesSelect(ones: number): void {
+        this._onesSelected = ones;
+        const minute = this._tensSelected * 10 + ones;
+        this._value = { ...this._value, minute };
+        this._renderTens();
+        this._renderOnes();
+        this.emit('minuteSelect', { value: this._value });
+    }
 
-        _onTensSelect(tens: number): void {
-            const self = this as any;
-            self._tensSelected = tens;
-            self._selectingTens = false;
-            self._renderTens();
-        },
+    get panelValue(): DateTimeValue {
+        return this._value;
+    }
+}
 
-        _onOnesSelect(ones: number): void {
-            const self = this as any;
-            self._onesSelected = ones;
-            const minute = self._tensSelected * 10 + ones;
-            self._value = { ...self._value, minute };
-            self._renderTens();
-            self._renderOnes();
-            self.emit('minuteSelect', { value: self._value });
-        },
-
-        get panelValue(): DateTimeValue {
-            const self = this as any;
-            return self._value;
-        },
-    },
-});
-
-export type MinutePanelComponent = InstanceType<typeof MinutePanelComponent>;
+export { MinutePanelComponent };
+export type MinutePanelComponentInstance = InstanceType<typeof MinutePanelComponent>;

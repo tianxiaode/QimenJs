@@ -36,80 +36,56 @@ export interface AlertProps {
     closable?: boolean;
 }
 
-export let AlertComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-alert',
-        attrs: { role: 'alert' },
-        children: [
-            { tag: 'i', name: 'icon', cls: 'q-alert__icon' },
-            {
-                tag: 'div',
-                cls: 'q-alert__body',
-                children: [
-                    { tag: 'div', name: 'title', cls: 'q-alert__title', hidden: true },
-                    { tag: 'div', name: 'text', cls: 'q-alert__text' },
-                ],
-            },
-            {
-                tag: 'span',
-                name: 'closeBtn',
-                cls: 'q-alert__close',
-                hidden: true,
-            },
-        ],
-    },
-    tplEvents: {
-        closeBtn: { click: { handler: true, emits: ['close'] } },
-    },
-    body: {
-        type: 'Alert',
+class AlertComponent extends Component {
+    static type = 'Alert';
 
-        onAfterInit(props?: AlertProps): void {
-            this._initAlert(props);
-        },
+    type = 'Alert';
 
-        onCloseBtnClick(): void {
-            this.emit('close', {});
-            this.hidden = true;
-        },
+    onAfterInit(props?: AlertProps): void {
+        this._initAlert(props);
+    }
 
-        _initAlert(props?: AlertProps): void {
-            const type: AlertType = props?.type ?? 'info';
-            this.addCls(`q-alert--${type}`);
-            this.icon = TYPE_ICON_MAP[type];
+    onCloseBtnClick(): void {
+        this.emit('close', {});
+        this.hidden = true;
+    }
 
-            if (props?.title) {
-                this.title = props.title;
-                this.setNodeHidden(false, 'title');
-            }
-            if (props?.text) this.text = props.text;
-            if (props?.closable) this.setNodeHidden(false, 'closeBtn');
-        },
+    _initAlert(props?: AlertProps): void {
+        const type: AlertType = props?.type ?? 'info';
+        this.addCls(`q-alert--${type}`);
+        this.icon = TYPE_ICON_MAP[type];
 
-        get alertType(): AlertType {
-            const el = this.el as HTMLElement;
-            for (const t of ['info', 'success', 'warning', 'error']) {
-                if (el?.classList.contains(`q-alert--${t}`)) return t as AlertType;
-            }
-            return 'info';
-        },
-        set alertType(value: AlertType) {
-            this.removeCls(`q-alert--${this.alertType}`);
-            this.addCls(`q-alert--${value}`);
-            this.icon = TYPE_ICON_MAP[value];
-        },
+        if (props?.title) {
+            this.title = props.title;
+            this.setNodeHidden(false, 'title');
+        }
+        if (props?.text) this.text = props.text;
+        if (props?.closable) this.setNodeHidden(false, 'closeBtn');
+    }
 
-        update(props?: Partial<AlertProps>): void {
-            if (props?.type !== undefined) this.alertType = props.type;
-            if (props?.title !== undefined) {
-                this.title = props.title;
-                this.setNodeHidden(!props.title, 'title');
-            }
-            if (props?.text !== undefined) this.text = props.text;
-            if (props?.closable !== undefined) this.setNodeHidden(!props.closable, 'closeBtn');
-        },
-    },
-});
+    get alertType(): AlertType {
+        const el = this.el as HTMLElement;
+        for (const t of ['info', 'success', 'warning', 'error']) {
+            if (el?.classList.contains(`q-alert--${t}`)) return t as AlertType;
+        }
+        return 'info';
+    }
+    set alertType(value: AlertType) {
+        this.removeCls(`q-alert--${this.alertType}`);
+        this.addCls(`q-alert--${value}`);
+        this.icon = TYPE_ICON_MAP[value];
+    }
 
-export type AlertComponent = InstanceType<typeof AlertComponent>;
+    update(props?: Partial<AlertProps>): void {
+        if (props?.type !== undefined) this.alertType = props.type;
+        if (props?.title !== undefined) {
+            this.title = props.title;
+            this.setNodeHidden(!props.title, 'title');
+        }
+        if (props?.text !== undefined) this.text = props.text;
+        if (props?.closable !== undefined) this.setNodeHidden(!props.closable, 'closeBtn');
+    }
+}
+
+export { AlertComponent };
+export type AlertComponentInstance = InstanceType<typeof AlertComponent>;

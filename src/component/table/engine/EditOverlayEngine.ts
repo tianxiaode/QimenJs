@@ -61,11 +61,11 @@ export class EditOverlayEngine {
                     };
                 },
 
-                onAfterInit(): void {
+                onAfterInit(this: any): void {
                     this._hideAllSlots();
                 },
 
-                activate(colName: string, value?: any): void {
+                activate(this: any, colName: string, value?: any): void {
                     this._activeColName = colName;
                     this._hideAllSlots();
                     this._showSlot(colName);
@@ -74,19 +74,19 @@ export class EditOverlayEngine {
                     this._focusInput(colName);
                 },
 
-                deactivate(): void {
+                deactivate(this: any): void {
                     this._activeColName = null;
                     this._hideAllSlots();
                     this._clearError();
                 },
 
-                getEditValue(): any {
+                getEditValue(this: any): any {
                     if (!this._activeColName) return undefined;
                     const input = this._getInput(this._activeColName);
                     return input ? input.value : undefined;
                 },
 
-                showError(message: string): void {
+                showError(this: any, message: string): void {
                     const errorEl = this.nodeMap?.error?.el as HTMLElement | null;
                     if (errorEl) {
                         errorEl.textContent = message;
@@ -94,19 +94,19 @@ export class EditOverlayEngine {
                     }
                 },
 
-                _hideAllSlots(): void {
+                _hideAllSlots(this: any): void {
                     for (const meta of this._editableMetas) {
                         const slot = this.nodeMap?.[`slot_${meta.name}`]?.el as HTMLElement | null;
                         if (slot) slot.style.display = 'none';
                     }
                 },
 
-                _showSlot(colName: string): void {
+                _showSlot(this: any, colName: string): void {
                     const slot = this.nodeMap?.[`slot_${colName}`]?.el as HTMLElement | null;
                     if (slot) slot.style.display = '';
                 },
 
-                _clearError(): void {
+                _clearError(this: any): void {
                     const errorEl = this.nodeMap?.error?.el as HTMLElement | null;
                     if (errorEl) {
                         errorEl.textContent = '';
@@ -114,21 +114,21 @@ export class EditOverlayEngine {
                     }
                 },
 
-                _setValue(colName: string, value?: any): void {
+                _setValue(this: any, colName: string, value?: any): void {
                     const input = this._getInput(colName);
                     if (input && value !== undefined) {
                         input.value = String(value);
                     }
                 },
 
-                _focusInput(colName: string): void {
+                _focusInput(this: any, colName: string): void {
                     const input = this._getInput(colName);
                     if (input) {
                         requestAnimationFrame(() => input.focus());
                     }
                 },
 
-                _getInput(colName: string): HTMLInputElement | null {
+                _getInput(this: any, colName: string): HTMLInputElement | null {
                     const inputNode = this.nodeMap?.[`input_${colName}`]?.el;
                     return (inputNode as HTMLInputElement) || null;
                 },

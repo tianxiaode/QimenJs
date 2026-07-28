@@ -22,5 +22,4 @@ export function ensureNodeMap(ctx: InitContext): void {
     ctx.nodeMapMgr = mgr;
     instance.nodeMapMgr = mgr;
     instance.el = mgr.buildDOM();
-    instance.nodeMap = mgr.getAll();
 }

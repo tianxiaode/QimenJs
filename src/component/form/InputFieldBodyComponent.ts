@@ -22,63 +22,10 @@
 
 import { Component } from '@qimenjs/component-core';
 
-export let InputFieldBodyComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-input__wrapper',
-        children: [
-            {
-                tag: 'span',
-                name: 'prefix',
-                cls: 'q-input__prefix',
-                hidden: true,
-            },
-            {
-                tag: 'input',
-                name: 'field',
-                cls: 'q-input__field',
-            },
-            {
-                name: 'actions',
-                type: 'ItemGroupStatic',
-                cls: 'q-input__actions',
-                hidden: true,
-                initConfig: {
-                    direction: 'horizontal',
-                    gap: '4px',
-                },
-            },
-            {
-                tag: 'div',
-                name: 'suffix',
-                cls: 'q-input__slot q-input__slot--suffix',
-                hidden: true,
-            },
-            {
-                tag: 'div',
-                name: 'dropdownIcon',
-                cls: 'q-input__slot q-input__slot--dropdown',
-                hidden: true,
-            },
-        ],
-    },
-    tplEvents: {
-        field: {
-            input: { emits: ['input'], debounce: 150 },
-            focus: { emits: ['focus'] },
-            blur: { emits: ['blur'] },
-            change: { emits: ['change'], debounce: 150 },
-            keydown: { emits: ['keydown'] },
-        },
-        actions: {
-            $items: {
-                Icon: { click: { emits: ['actionClick'] } },
-            },
-        },
-    },
-    body: {
-        type: 'InputFieldBody',
-    },
-});
+class InputFieldBodyComponent extends Component {
+    static type = 'InputFieldBody';
+    type = 'InputFieldBody';
+}
 
-export type InputFieldBodyComponent = InstanceType<typeof InputFieldBodyComponent>;
+export { InputFieldBodyComponent };
+export type InputFieldBodyComponentInstance = InstanceType<typeof InputFieldBodyComponent>;

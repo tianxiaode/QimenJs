@@ -18,124 +18,78 @@ export interface HourPanelProps {
     showPrev?: boolean;
 }
 
-export const HourPanelComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-dtpanel',
-        children: [
-            {
-                tag: 'div',
-                name: 'nav',
-                cls: 'q-dtpanel__nav',
-                children: [
-                    { tag: 'button', name: 'backBtn', cls: 'q-dtpanel__nav-btn', i18n: 'back' },
-                    { tag: 'button', name: 'prevBtn', cls: 'q-dtpanel__nav-btn', i18n: 'prev' },
-                    { tag: 'span', name: 'title', cls: 'q-dtpanel__nav-title', i18n: 'selectHour' },
-                    {
-                        tag: 'button',
-                        name: 'confirmBtn',
-                        cls: 'q-dtpanel__nav-btn q-dtpanel__nav-confirm',
-                        i18n: 'confirm',
-                    },
-                ],
-            },
-            {
-                tag: 'div',
-                name: 'grid',
-                cls: 'q-dtpanel__grid',
-                style: 'grid-template-columns: repeat(6, 1fr);',
-            },
-        ],
-    },
-    tplEvents: {
-        backBtn: { click: { handler: true } },
-        prevBtn: { click: { handler: true } },
-        confirmBtn: { click: { handler: true, emits: ['confirm'] } },
-        grid: { click: { handler: true, emits: ['hourSelect'] } },
-    },
-    body: {
-        type: 'HourPanel',
+class HourPanelComponent extends Component {
+    static type = 'HourPanel';
 
-        onInitState() {
-            return {
-                _value: null as DateTimeValue | null,
-            };
-        },
+    type = 'HourPanel';
 
-        onAfterInit(props?: HourPanelProps): void {
-            const self = this as any;
-            self._value = props?.value ?? {
-                year: 2026,
-                month: 1,
-                day: 1,
-                hour: 0,
-                minute: 0,
-                second: 0,
-            };
+    onInitState() {
+        return {
+            _value: null as DateTimeValue | null,
+        };
+    }
 
-            if (!props?.showPrev) {
-                self.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+    onAfterInit(props?: HourPanelProps): void {
+        this._value = props?.value ?? {
+            year: 2026,
+            month: 1,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+        };
+
+        if (!props?.showPrev) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+        }
+
+        this._renderGrid();
+    }
+
+    onBackBtnClick(): void {
+        this.emit('back', {});
+    }
+
+    onPrevBtnClick(): void {
+        this.emit('prev', {});
+    }
+
+    onConfirmBtnClick(): void {}
+
+    onGridClick(e: Event): void {
+        const target = e.target as HTMLElement;
+        const value = target.dataset.value;
+        if (value === undefined) return;
+        const hour = parseInt(value);
+        this._value = { ...this._value, hour };
+        this._renderGrid();
+    }
+
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
+
+    _renderGrid(): void {
+        const grid = this.nodeMap?.grid?.el as HTMLElement | null;
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        for (let h = 0; h <= 23; h++) {
+            const cell = document.createElement('div');
+            cell.className = 'q-dtpanel__cell';
+            cell.textContent = String(h).padStart(2, '0');
+            cell.dataset.value = String(h);
+            if (this._value.hour === h) {
+                cell.classList.add('q-dtpanel__cell--active');
             }
+            grid.appendChild(cell);
+        }
+    }
 
-            self._renderGrid();
-        },
+    get panelValue(): DateTimeValue {
+        return this._value;
+    }
+}
 
-        onBackBtnClick(): void {
-            const self = this as any;
-            self.emit('back', {});
-        },
-
-        onPrevBtnClick(): void {
-            const self = this as any;
-            self.emit('prev', {});
-        },
-
-        onConfirmBtnClick(): void {
-            const self = this as any;
-        },
-
-        onGridClick(e: Event): void {
-            const self = this as any;
-            const target = e.target as HTMLElement;
-            const value = target.dataset.value;
-            if (value === undefined) return;
-            const hour = parseInt(value);
-            self._value = { ...self._value, hour };
-            self._renderGrid();
-        },
-
-        getEventData(
-            _nodeName: string,
-            _eventName: string,
-            _eventType: string
-        ): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
-
-        _renderGrid(): void {
-            const self = this as any;
-            const grid = self.nodeMap?.grid?.el as HTMLElement | null;
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            for (let h = 0; h <= 23; h++) {
-                const cell = document.createElement('div');
-                cell.className = 'q-dtpanel__cell';
-                cell.textContent = String(h).padStart(2, '0');
-                cell.dataset.value = String(h);
-                if (self._value.hour === h) {
-                    cell.classList.add('q-dtpanel__cell--active');
-                }
-                grid.appendChild(cell);
-            }
-        },
-
-        get panelValue(): DateTimeValue {
-            const self = this as any;
-            return self._value;
-        },
-    },
-});
-
-export type HourPanelComponent = InstanceType<typeof HourPanelComponent>;
+export { HourPanelComponent };
+export type HourPanelComponentInstance = InstanceType<typeof HourPanelComponent>;

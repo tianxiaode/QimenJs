@@ -5,76 +5,66 @@ export interface TabBarProps extends ItemGroupProps {
     selectedIndex?: number;
 }
 
-export let TabBarComponent = ItemGroupPooledComponent.replace({
-    type: 'TabBar',
-    config: {
-        direction: 'horizontal',
-        gap: '0',
-        defaultItemType: 'Toggle',
-    },
+class TabBarComponent extends ItemGroupPooledComponent {
+    static type = 'TabBar';
 
-    tplEvents: {
-        itemContainer: {
-            $items: {
-                Toggle: { toggle: { emits: ['toggle'] } },
-            },
-        },
-    },
-    body: {
-        nodes: {
-            root: { addCls: 'q-tab-bar' },
-            itemContainer: { addCls: 'q-tab-bar__items' },
-        },
-        onInitState() {
-            return {
-                _selectedIndex: -1,
-            };
-        },
+    type = 'TabBar';
 
-        onAfterInit(props?: TabBarProps): void {
-            const self = this as any;
-            self.on('toggle', (data: any) => self._onItemToggle(data));
+    onInitState() {
+        return {
+            ...super.onInitState?.(),
+            _selectedIndex: -1,
+        };
+    }
 
-            if (props?.selectedIndex !== undefined && props.selectedIndex >= 0) {
-                self.selectAt(props.selectedIndex, true);
-            }
-        },
+    onAfterInit(props?: TabBarProps): void {
+        const self = this as any;
+        super.onAfterInit(props);
 
-        get selectedIndex(): number {
-            const self = this as any;
-            return self._selectedIndex;
-        },
+        self.on('toggle', (data: any) => self._onItemToggle(data));
 
-        selectAt(index: number, silent: boolean = false): void {
-            const self = this as any;
-            if (index < 0 || index >= self.count) return;
-            if (index === self._selectedIndex) return;
+        if (props?.selectedIndex !== undefined && props.selectedIndex >= 0) {
+            self.selectAt(props.selectedIndex, true);
+        }
+    }
 
-            if (self._selectedIndex >= 0 && self._selectedIndex < self.count) {
-                const prevItem = self.getAt(self._selectedIndex);
-                if (prevItem) prevItem.pressed = false;
-            }
+    get selectedIndex(): number {
+        const self = this as any;
+        return self._selectedIndex;
+    }
 
-            const newItem = self.getAt(index);
-            if (newItem) newItem.pressed = true;
-            self._selectedIndex = index;
+    selectAt(index: number, silent: boolean = false): void {
+        const self = this as any;
+        if (index < 0 || index >= self.count) return;
+        if (index === self._selectedIndex) return;
 
-            if (!silent) self.emit('select', { index });
-        },
+        if (self._selectedIndex >= 0 && self._selectedIndex < self.count) {
+            const prevItem = self.getAt(self._selectedIndex);
+            if (prevItem) prevItem.pressed = false;
+        }
 
-        _onItemToggle(data: any): void {
-            const self = this as any;
-            const index = data?.index;
-            if (index === undefined) return;
-            const item = self.getAt(index);
-            if (!item) return;
-            if (item.pressed) self.selectAt(index);
-            else item.pressed = true;
-        },
+        const newItem = self.getAt(index);
+        if (newItem) newItem.pressed = true;
+        self._selectedIndex = index;
 
-        onUpdated(props?: Record<string, any>): void {
-            const self = this as any;
-            if (props?.selectedIndex !== undefined) self.selectAt(props.selectedIndex);
-        },
-    },
-});
+        if (!silent) self.emit('select', { index });
+    }
+
+    _onItemToggle(data: any): void {
+        const self = this as any;
+        const index = data?.index;
+        if (index === undefined) return;
+        const item = self.getAt(index);
+        if (!item) return;
+        if (item.pressed) self.selectAt(index);
+        else item.pressed = true;
+    }
+
+    onUpdated(props?: Record<string, any>): void {
+        const self = this as any;
+        if (props?.selectedIndex !== undefined) self.selectAt(props.selectedIndex);
+    }
+}
+
+export { TabBarComponent };
+export type TabBarComponentInstance = InstanceType<typeof TabBarComponent>;

@@ -22,6 +22,7 @@ import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from '@/component-core/template-presets';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
+import type { TplNode } from '@/component-core/types/tpl-node-types';
 import type { ToastOptions, ToastHandle, ToastPosition, ToastType } from './types';
 
 const DEFAULT_DURATION = 3000;
@@ -73,11 +74,11 @@ export class ToastHandleImpl implements ToastHandle {
 
 // ─── Toast ──────────────────────────────────────────────────
 
-const ToastBase = ComposableBase.with([TemplateCacheAbility, FloatingLayerAbility]);
+const ToastBase = ComposableBase.use([TemplateCacheAbility, FloatingLayerAbility]);
 
 export class Toast extends ToastBase {
     // ─── TemplateCacheAbility 方法 ───
-    declare initTemplateCache: (name: string, template: string) => void;
+    declare initTemplateCache: (name: string, template: TplNode) => void;
     declare cloneFromCache: (name: string) => {
         root: HTMLElement;
         nodeMap: Record<string, HTMLElement>;
@@ -131,8 +132,8 @@ export class Toast extends ToastBase {
 
         // 1. 初始化能力
         this._zIndexLevel = ZIndexLevel.notification;
-        this.initTemplateCache('toast', TOAST_TEMPLATE);
-        this.initTemplateCache('notification', TOAST_NOTIFICATION_TEMPLATE);
+        this.initTemplateCache('toast', { tpl: TOAST_TEMPLATE });
+        this.initTemplateCache('notification', { tpl: TOAST_NOTIFICATION_TEMPLATE });
 
         // 2. 从缓存克隆 DOM + 构建 nodeMap
         const { root, nodeMap } = this.cloneFromCache(hasTitle ? 'notification' : 'toast');

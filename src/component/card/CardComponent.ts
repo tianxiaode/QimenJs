@@ -4,13 +4,6 @@
  * 通用内容容器，由 header + body + footer 三区组成。
  * header 通过 HeaderFragment 模板片段内联，无组件边界。
  *
- * 模板节点：
- * - header:icon — 头部图标（来自 HeaderFragment）
- * - header:title — 头部标题（来自 HeaderFragment）
- * - header:action — 头部操作按钮（来自 HeaderFragment）
- * - body — 内容区域
- * - footer — 底部区域（可选）
- *
  * @example
  * ```ts
  * new CardComponent({ title: '用户信息' })
@@ -19,7 +12,6 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import { HeaderFragment } from '../header/HeaderFragment';
 
 export interface CardProps {
     title?: string;
@@ -27,35 +19,27 @@ export interface CardProps {
     action?: string;
 }
 
-export let CardComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-card',
-        children: [
-            { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment },
-            { tag: 'div', name: 'body', cls: 'q-card__body' },
-            { tag: 'div', name: 'footer', cls: 'q-card__footer', hidden: true },
-        ],
-    },
-    body: {
-        type: 'Card',
+class CardComponent extends Component {
+    static type = 'Card';
 
-        _initCard(props?: CardProps): void {
-            if (props?.title) {
-                this.headerTitle = props.title;
-            }
+    type = 'Card';
 
-            if (props?.icon) {
-                this.headerIcon = props.icon;
-                this.setNodeHidden(false, 'headerIcon');
-            }
+    _initCard(props?: CardProps): void {
+        if (props?.title) {
+            this.headerTitle = props.title;
+        }
 
-            if (props?.action) {
-                this.headerActionIcon = props.action;
-                this.setNodeHidden(false, 'headerAction');
-            }
-        },
-    },
-});
+        if (props?.icon) {
+            this.headerIcon = props.icon;
+            this.setNodeHidden(false, 'headerIcon');
+        }
 
-export type CardComponent = InstanceType<typeof CardComponent>;
+        if (props?.action) {
+            this.headerActionIcon = props.action;
+            this.setNodeHidden(false, 'headerAction');
+        }
+    }
+}
+
+export { CardComponent };
+export type CardComponentInstance = InstanceType<typeof CardComponent>;

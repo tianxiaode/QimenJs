@@ -134,15 +134,36 @@ export interface TplEventAction {
 
     /**
      * 转发为实体操作
-     * - true: 配合 keyProp，运行时从 item 取 keyProp 值作为方法名
-     * - string: 显式指定 mgr 方法名
+     *
+     * 编码: entity:{entityKey}:{entityName}
+     * - true: 仅用于 $items 节点，entityName = item[keyProp]
+     * - string: 用于非 $items 节点（无 item 可取），硬编码实体动作名
+     *
+     * @example
+     * ```ts
+     * // $items 场景: 从子组件动态取值
+     * $items: { Button: { click: { entities: true } } }
+     *   // 若 entityKey='users', item.name='Save' → entity:users:Save
+     *
+     * // 普通节点: 硬编码动作名
+     * btn: { click: { entities: 'Save' } }
+     *   // 若 entityKey='users' → entity:users:Save
+     * ```
      */
     entities?: boolean | string;
 
     /**
      * 转发为路由事件（通过 RouteEventBus 解耦转发）
-     * - true: 配合 keyProp，运行时从 item 取 keyProp 值作为路由名
-     * - string: 显式指定路由名
+     *
+     * 编码: route:{routeKey}:{routeName}
+     * - true: 仅用于 $items 节点，routeName = item[keyProp]
+     * - string: 用于非 $items 节点（无 item 可取），硬编码路由名
+     *
+     * @example
+     * ```ts
+     * nav: { click: { router: 'Settings' } }
+     *   // 若 routeKey='main' → route:main:Settings
+     * ```
      */
     router?: boolean | string;
 
@@ -267,10 +288,18 @@ export interface DelegatedEventRule {
     /** 转发为桥接事件 */
     bridges?: string[];
 
-    /** 转发为实体操作 */
+    /**
+     * 转发为实体操作
+     * - true: $items 节点专用，entityName = item[keyProp]
+     * - string: 非 $items 节点，硬编码实体动作名
+     */
     entities?: boolean | string;
 
-    /** 转发为路由事件 */
+    /**
+     * 转发为路由事件
+     * - true: $items 节点专用，routeName = item[keyProp]
+     * - string: 非 $items 节点，硬编码路由名
+     */
     router?: boolean | string;
 
     /** 转发为系统事件 */

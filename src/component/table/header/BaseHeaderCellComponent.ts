@@ -22,65 +22,52 @@ export interface BaseHeaderCellProps {
     minWidth?: number;
 }
 
-export let BaseHeaderCellComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-header-cell',
-        children: [
-            {
-                tag: 'div',
-                name: 'content',
-                cls: 'q-header-cell__content',
-                children: [{ tag: 'span', name: 'title', cls: 'q-header-cell__title' }],
-            },
-            { tag: 'span', name: 'resizeHandle', cls: 'q-header-cell__resize' },
-        ],
-    },
-    body: {
-        type: 'BaseHeaderCell',
+class BaseHeaderCellComponent extends Component {
+    static type = 'BaseHeaderCell';
+    type = 'BaseHeaderCell';
 
-        onInitState() {
-            return {
-                _colName: '' as string,
-                _align: 'left' as ColumnAlign,
-                _minWidth: 50 as number,
-            };
-        },
+    onInitState() {
+        return {
+            _colName: '' as string,
+            _align: 'left' as ColumnAlign,
+            _minWidth: 50 as number,
+        };
+    }
 
-        onAfterInit(props?: BaseHeaderCellProps): void {
-            if (props?.colName) this._colName = props.colName;
-            if (props?.title) this.setNodeProp('text', props.title, 'title');
-            if (props?.align) this._align = props.align;
-            if (props?.minWidth !== undefined) this._minWidth = props.minWidth;
-            this._applyWidth();
-            this._applyAlign();
-        },
+    onAfterInit(props?: BaseHeaderCellProps): void {
+        if (props?.colName) this._colName = props.colName;
+        if (props?.title) this.setNodeProp('text', props.title, 'title');
+        if (props?.align) this._align = props.align;
+        if (props?.minWidth !== undefined) this._minWidth = props.minWidth;
+        this._applyWidth();
+        this._applyAlign();
+    }
 
-        _applyWidth(): void {
-            if (!this._colName) return;
-            this.el.style.width = `var(--q-table-col-${this._colName}-width)`;
-            this.el.style.minWidth = `var(--q-table-col-${this._colName}-min-width, ${this._minWidth}px)`;
-            this.el.style.flexShrink = '0';
-        },
+    _applyWidth(): void {
+        if (!this._colName) return;
+        this.el.style.width = `var(--q-table-col-${this._colName}-width)`;
+        this.el.style.minWidth = `var(--q-table-col-${this._colName}-min-width, ${this._minWidth}px)`;
+        this.el.style.flexShrink = '0';
+    }
 
-        _applyAlign(): void {
-            const content = this.nodeMap.content?.el;
-            if (content) {
-                content.style.justifyContent =
-                    this._align === 'center'
-                        ? 'center'
-                        : this._align === 'right'
-                          ? 'flex-end'
-                          : 'flex-start';
-            }
-        },
+    _applyAlign(): void {
+        const content = this.nodeMap.content?.el;
+        if (content) {
+            content.style.justifyContent =
+                this._align === 'center'
+                    ? 'center'
+                    : this._align === 'right'
+                      ? 'flex-end'
+                      : 'flex-start';
+        }
+    }
 
-        update(data: any): void {
-            if (data?.title !== undefined) {
-                this.setNodeProp('text', String(data.title), 'title');
-            }
-        },
-    },
-});
+    update(data: any): void {
+        if (data?.title !== undefined) {
+            this.setNodeProp('text', String(data.title), 'title');
+        }
+    }
+}
 
-export type BaseHeaderCellComponentType = InstanceType<typeof BaseHeaderCellComponent>;
+export { BaseHeaderCellComponent };
+export type BaseHeaderCellComponentInstance = InstanceType<typeof BaseHeaderCellComponent>;

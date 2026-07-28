@@ -44,6 +44,7 @@ import type {
 } from '../types/tpl-events';
 
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { debounce, throttle } from '@qimenjs/async';
 import type { EventContext, EventChainLink } from '@/context';
 import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
@@ -310,6 +311,39 @@ export class DelegatedEventEngine {
             }
         }
 
+        const dispatchers = new Map<string, (...args: any[]) => void>();
+
+        for (const rule of rules) {
+            if (!rule.needsBinding) continue;
+
+            const key = DelegatedEventEngine._ruleKey(rule);
+            const baseDispatch = (domEvt: any, itemInfo?: any) => {
+                DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+            };
+
+            let wrapped: (...args: any[]) => void = baseDispatch;
+
+            if (rule.debounce && rule.debounce > 0) {
+                wrapped = debounce(wrapped, rule.debounce);
+            } else if (rule.throttle && rule.throttle > 0) {
+                wrapped = throttle(wrapped, rule.throttle);
+            }
+
+            if (rule.once) {
+                let called = false;
+                const original = wrapped;
+                wrapped = (...args: any[]) => {
+                    if (called) return;
+                    called = true;
+                    return original(...args);
+                };
+            }
+
+            dispatchers.set(key, wrapped);
+        }
+
+        (instance as any)._delegatedDispatchers = dispatchers;
+
         for (const eventType of allEventTypes) {
             const useCapture = eventType === 'focus' || eventType === 'blur';
 
@@ -326,15 +360,9 @@ export class DelegatedEventEngine {
 
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
+            if (rule.nodeName !== '') continue;
 
-            let el: any;
-            if (rule.nodeName === '') {
-                el = instance.el;
-            } else {
-                const node = instance.nodeMap?.[rule.nodeName];
-                if (!node) continue;
-                el = node.component ? node.component.el : node.el;
-            }
+            let el: any = instance.el;
             if (!el) continue;
 
             const bindOptions: any = {};
@@ -354,6 +382,10 @@ export class DelegatedEventEngine {
                 instance.on(domEventKey, callback);
             }
         }
+    }
+
+    private static _ruleKey(rule: DelegatedEventRule): string {
+        return `${rule.nodeName}::${rule.event}::${rule.itemType ?? ''}`;
     }
 
     /**
@@ -384,10 +416,14 @@ export class DelegatedEventEngine {
         if (!target) return;
 
         const eventType = domEvt?.type as string;
+        const dispatchers: Map<string, (...args: any[]) => void> | undefined =
+            (instance as any)._delegatedDispatchers;
         let matchedNamedNode = false;
 
         for (const rule of rules) {
             if (rule.nodeName === '' || rule.event !== eventType) continue;
+
+            const dispatch = dispatchers?.get(DelegatedEventEngine._ruleKey(rule));
 
             if (rule.itemType) {
                 if (!instance.containsElement(rule.nodeName, target)) continue;
@@ -396,11 +432,19 @@ export class DelegatedEventEngine {
                 if (typeof container.getTargetItem !== 'function') continue;
                 const itemInfo = container.getTargetItem(target);
                 if (!itemInfo || itemInfo.type !== rule.itemType) continue;
-                DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+                if (dispatch) {
+                    dispatch(domEvt, itemInfo);
+                } else {
+                    DelegatedEventEngine._dispatchRule(instance, rule, domEvt, itemInfo);
+                }
                 matchedNamedNode = true;
             } else {
                 if (instance.containsElement(rule.nodeName, target)) {
-                    DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
+                    if (dispatch) {
+                        dispatch(domEvt);
+                    } else {
+                        DelegatedEventEngine._dispatchRule(instance, rule, domEvt);
+                    }
                     matchedNamedNode = true;
                 }
             }
@@ -529,7 +573,7 @@ export class DelegatedEventEngine {
 
         if (rule.entities && instance.entityKey) {
             let entityName: string | undefined;
-            if (typeof rule.entities === 'string' && rule.entities !== 'true') {
+            if (typeof rule.entities === 'string') {
                 entityName = rule.entities;
             }
             if (keyValue) entityName = keyValue;
@@ -547,7 +591,7 @@ export class DelegatedEventEngine {
 
         if (rule.router && instance.routeKey) {
             let routeName: string | undefined;
-            if (typeof rule.router === 'string' && rule.router !== 'true') {
+            if (typeof rule.router === 'string') {
                 routeName = rule.router;
             }
             if (keyValue) routeName = keyValue;
