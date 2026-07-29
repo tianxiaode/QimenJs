@@ -17,7 +17,6 @@ import { instantiateChildComponents } from './step-instantiate-child-components'
 import { bindListens } from './step-bind-listens';
 import { bindChildEvents } from './step-bind-child-events';
 import { bindDomEvents } from './step-bind-dom-events';
-import { bindNodeEventMeta } from './step-bind-node-event-meta';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error/codes';
 
@@ -38,22 +37,7 @@ export const INSTANTIATE_PHASE: Phase = {
 
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
-    steps: [bindListens, bindChildEvents, bindNodeEventMeta, bindDomEvents, onAfterInit],
-};
-
-export const FILL_PHASE: Phase = {
-    name: 'fill',
-    steps: [],
-};
-
-export const INSTANTIATE_PHASE: Phase = {
-    name: 'instantiate',
-    steps: [instantiateChildComponents],
-};
-
-export const FINALIZE_PHASE: Phase = {
-    name: 'finalize',
-    steps: [bindNodeEventMeta, bindDelegatedEvents, onAfterInit],
+    steps: [bindListens, bindChildEvents, bindDomEvents, onAfterInit],
 };
 
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, FILL_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];

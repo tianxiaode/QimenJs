@@ -131,30 +131,58 @@ export interface RouteListen {
 }
 
 /**
- * 子组件事件监听 — nodeMap 中子组件的 child.on() 订阅
+ * 子组件事件配置 — 与 domEvents eventConfig 对齐，支持转发
+ */
+export interface ChildEventConfig {
+    /** 本地监听：调用组件方法（自动推导 on${NodeName}${Event}） */
+    handler?: boolean;
+    /** 转发为组件事件 */
+    emits?: string[];
+    /** 转发为实体操作 */
+    entities?: string;
+    /** 转发为桥接事件 */
+    bridges?: string[];
+    /** 转发为路由事件 */
+    router?: string;
+    /** 转发为系统事件 */
+    system?: string[];
+    /** 只执行一次 */
+    once?: boolean;
+}
+
+/**
+ * 子组件事件订阅 — nodeMap 中子组件的 child.on() 订阅
  *
  * key = nodeName（nodeMap key，仅直接子组件）
- * value = 事件名数组，自动推导方法名 on${PascalCase(nodeName)}${PascalCase(event)}
+ * value 支持：
+ *   - string[] 简写：仅本地监听，方法名自动推导
+ *   - Record<string, ChildEventConfig> 详细：支持 handler / emits / entities 等转发
  *
  * 仅限直接子组件（FINALIZE 时已实例化），跨层走桥接。
- * 复杂逻辑仍推荐派生子组件。
  *
  * @example
  * ```ts
- * { childEvents: { toolbar: ['save', 'create'], grid: ['rowClick'] } }
- * // → nodeMap.toolbar.on('save', this.onToolbarSave)
- * // → nodeMap.toolbar.on('create', this.onToolbarCreate)
- * // → nodeMap.grid.on('rowClick', this.onGridRowClick)
+ * // 简写 — 仅本地监听
+ * { childEvents: { toolbar: ['save', 'create'] } }
+ *
+ * // 详细 — 支持转发
+ * { childEvents: {
+ *     toolbar: {
+ *         save:    { handler: true, emits: ['save'] },
+ *         create:  { emits: ['create'] },
+ *         delete:  { entities: 'remove' },
+ *     }
+ * } }
  * ```
  */
 export interface ChildEventsListen {
     /**
-     * 子组件事件监听映射
+     * 子组件事件映射
      *
-     * key = nodeName，value = 事件名数组
-     * 方法名自动推导：on${PascalCase(nodeName)}${PascalCase(event)}
+     * key = nodeName
+     * value = string[]（简写）或 Record<string, ChildEventConfig>（详细）
      */
-    childEvents: Record<string, string[]>;
+    childEvents: Record<string, string[] | Record<string, ChildEventConfig>>;
 }
 
 /**

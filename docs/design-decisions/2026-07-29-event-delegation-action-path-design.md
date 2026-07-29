@@ -1,7 +1,7 @@
 # 事件体系设计：domEvents / childEvents / listens
 
 > 日期：2026-07-29
-> 状态：设计确认，待实施
+> 状态：已实施
 
 ## 问题背景
 
@@ -129,6 +129,34 @@ listens: [
 - key = nodeName（仅直接子组件，FINALIZE 时已实例化）
 - value = 事件名数组，方法名推导 `on${PascalCase(nodeName)}${PascalCase(event)}`
 - 跨层不适用（子组件可能未实例化），跨层走桥接
+
+### childEvents 详细配置
+
+除简写 `string[]` 外，`childEvents` 支持详细配置，可声明转发：
+
+```ts
+listens: [
+    { childEvents: {
+        toolbar: {
+            save:    { handler: true, emits: ['save'] },
+            create:  { emits: ['create'] },
+            delete:  { entities: 'remove' },
+        },
+    } },
+]
+```
+
+| 配置 | 行为 |
+|------|------|
+| `handler: true` | 本地监听（方法名自动推导 `on${NodeName}${Event}`） |
+| `emits: ['save']` | 转发为组件事件 |
+| `bridges: ['xxx']` | 转发为桥接事件 |
+| `entities: 'xxx'` | 转发为实体操作 |
+| `router: 'xxx'` | 转发为路由事件 |
+| `system: ['xxx']` | 转发为系统事件 |
+| `once: true` | 只执行一次 |
+
+转发统一走 `EventForwarder.forward()`，EventContext 结构与 DomEventsEngine 一致。
 
 ### 复杂场景：派生子组件
 
@@ -326,3 +354,48 @@ listens: [
 ```
 
 无需 `_setupSemanticEvents`，无需 `data.name` 判断，三部分各司其职。
+
+---
+
+## 公共架构
+
+### EventForwarder — 转发公共逻辑
+
+三引擎的五路转发（emits/bridges/entities/router/system）统一由 `EventForwarder` 处理：
+
+- `EventForwarder.forward(instance, config, extraData?, domEvent?)` — 执行转发
+- `EventForwarder.buildContext(...)` — 构建 EventContext（含 chain/sourceType）
+- `EventForwarder.resolveKey(key)` — 解析 `string | { key, fixed? }` 格式
+- `EventForwarder.collectEventData(instance, extraData?)` — 收集事件数据
+
+### 事件数据收集
+
+组件通过两层机制提供事件数据：
+
+```ts
+class FormComponent extends Component {
+    // 类继承链 — getter + super 合并
+    get defaultEventData() {
+        return { ...super.defaultEventData, formId: this.formId };
+    }
+
+    // body 中定义 — 编译时挂原型
+    getCustomEventData() {
+        return { currentStep: this.step };
+    }
+}
+```
+
+转发时合并：`data = { ...defaultEventData, ...getCustomEventData(), ...extraData }`
+
+### onCleanup 自动解绑
+
+三个引擎不再维护 `_xxxOffs` 数组和 `unbindXxx` 方法。每个订阅注册时调用 `instance.onCleanup(offFn)`，dispose 时 ComposableBase 自动 LIFO 执行所有清理回调。
+
+### 删除的东西（补充）
+
+- ~~DelegatedEventEngine~~ — 拆分为三引擎 + EventForwarder
+- ~~step-bind-delegated-events~~ — 替换为 step-bind-dom-events
+- ~~step-bind-node-event-meta~~ — 替换为 step-bind-child-events + step-bind-listens
+- ~~unbindXxx 方法~~ — 改为 onCleanup 自动解绑
+- ~~_xxxOffs 数组~~ — 不再需要

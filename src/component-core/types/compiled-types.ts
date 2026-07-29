@@ -76,7 +76,7 @@ export interface NodeMetadata {
      * 节点事件映射 — 从 TplNode.emits 编译
      *
      * key = DOM 事件类型（click/hover/input 等），value = 组件事件名
-     * 运行时通过 bindNodeEventMeta 步骤绑定到 NODE_EVENT_META
+     * @deprecated 全委托模式下由 DomEventsEngine 处理，emits 仅做兼容
      */
     emits?: Record<string, string>;
 

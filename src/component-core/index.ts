@@ -22,8 +22,11 @@ export type { CompileResult } from './types/compile-engine-types';
 export { VOID_TAGS } from './constants/compile-constants';
 export { findByPath } from './engine/utils/dom-path';
 
-// 事件引擎
-export { DelegatedEventEngine } from './engine/DelegatedEventEngine';
+// 事件引擎（新三引擎 + EventForwarder）
+export { EventForwarder } from './engine/EventForwarder';
+export { DomEventsEngine } from './engine/DomEventsEngine';
+export { ChildEventsEngine } from './engine/ChildEventsEngine';
+export { ListensEngine } from './engine/ListensEngine';
 
 // 初始化管线
 export {

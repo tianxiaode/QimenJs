@@ -3,7 +3,8 @@ export * from './utils';
 export * from './ChildNodePropsEngine';
 export * from './CompileEngine';
 export * from './ComponentRegistrar';
-export * from './DelegatedEventEngine';
+
+export * from './EventForwarder';
 export * from './DomEventsEngine';
 export * from './ChildEventsEngine';
 export * from './ListensEngine';

@@ -6,11 +6,11 @@
  * Pipeline FINALIZE 阶段最后执行（bindDomEvents），
  * 因为需要 el + nodeMap + 子组件全部就绪。
  *
- * 新方案（全委托模式）：
+ * 全委托模式：
  *   domEvents 三层嵌套：{ [domEvent]: { [componentPath]: { [action]: eventConfig } } }
  *   在当前组件 el 上绑定 DOM 事件，事件触发时沿组件路径定位目标，el.contains 匹配。
  *
- * 旧方案（NODE_EVENT_META 遍历 + COMPONENT_ROOT 边界）已废弃。
+ * 解绑通过 instance.onCleanup() 自动完成，dispose 时 LIFO 执行。
  *
  * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  */
@@ -19,19 +19,12 @@ import type { DelegatedEventRule } from '../types/tpl-events';
 import type { DomEventsMap } from '../types/tpl-events';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { debounce, throttle } from '@qimenjs/async';
-import type { EventContext, EventChainLink } from '@/context';
-import { EventContextBuilder } from '@/context';
-import { globalEventBus } from '@/events';
-import { object } from '@/utils';
-
-type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
+import { EventForwarder } from './EventForwarder';
+import type { EventDataType } from './EventForwarder';
 
 export class DomEventsEngine {
     /**
      * 编译 domEvents 三层嵌套为 DelegatedEventRule[]
-     *
-     * @param domEvents - 三层嵌套声明
-     * @returns 扁平化委托规则数组
      */
     static compileDomEvents(domEvents: DomEventsMap): DelegatedEventRule[] {
         const rules: DelegatedEventRule[] = [];
@@ -67,9 +60,7 @@ export class DomEventsEngine {
      * 为组件实例绑定 DOM 委托事件
      *
      * 遍历 domEvents 第一层 key（DOM 事件名），在组件 el 上绑定一次。
-     * 事件触发时沿组件路径定位目标组件，el.contains 匹配后执行 eventConfig。
-     *
-     * @param instance - 组件实例
+     * 每个订阅注册 onCleanup 回调，dispose 时自动解绑。
      */
     static bindDomEvents(instance: any): void {
         const domEvents: DomEventsMap | undefined = instance.domEvents;
@@ -126,22 +117,14 @@ export class DomEventsEngine {
             });
 
             const domEventKey = `${DOM_EVENT_PREFIX}${eventType}`;
-            instance.on(domEventKey, (domEvt: any) => {
+            const handler = (domEvt: any) => {
                 DomEventsEngine.handleDelegatedEvent(instance, domEvt, rules);
+            };
+            instance.on(domEventKey, handler);
+
+            instance.onCleanup(() => {
+                instance.off(domEventKey, handler);
             });
-        }
-    }
-
-    /**
-     * 解绑所有 DOM 委托事件（dispose 时调用）
-     */
-    static unbindDomEvents(instance: any): void {
-        const domEvents: DomEventsMap | undefined = instance.domEvents;
-        if (!domEvents) return;
-
-        for (const eventType of Object.keys(domEvents)) {
-            const domEventKey = `${DOM_EVENT_PREFIX}${eventType}`;
-            instance.off(domEventKey);
         }
     }
 
@@ -151,13 +134,6 @@ export class DomEventsEngine {
 
     /**
      * 处理委托事件分发
-     *
-     * 新方案：遍历 rules，对每个 rule 沿 componentPath 定位目标组件，
-     * 检查 el.contains(event.target)，匹配则执行。
-     *
-     * @param instance - 组件实例
-     * @param domEvt - 原生 DOM 事件对象
-     * @param rules - 委托规则数组
      */
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
         const target = domEvt?.target as Element;
@@ -190,29 +166,16 @@ export class DomEventsEngine {
 
     /**
      * 沿组件路径定位目标组件，检查 el.contains(event.target)
-     *
-     * 'toolbar.Button' → nodeMap.toolbar → 找 Button → Button.el.contains(target)
-     *
-     * @returns 匹配的目标组件实例，或 null
      */
     private static _matchPath(instance: any, componentPath: string, target: Element): any {
         const segments = componentPath.split('.');
         let current: any = instance;
 
-        for (let i = 0; i < segments.length; i++) {
-            const segment = segments[i];
+        for (const segment of segments) {
             const nodeMap = current.nodeMap ?? current.nodeMapMgr?.getAll() ?? {};
-
-            if (i === 0) {
-                const child = nodeMap[segment];
-                if (!child) return null;
-                current = child.component ?? child;
-            } else {
-                const child = nodeMap[segment];
-                if (!child) return null;
-                current = child.component ?? child;
-            }
-
+            const child = nodeMap[segment];
+            if (!child) return null;
+            current = child.component ?? child;
             if (!current?.el) return null;
         }
 
@@ -220,9 +183,6 @@ export class DomEventsEngine {
         return current;
     }
 
-    /**
-     * 检查目标组件的 action 是否匹配
-     */
     private static _matchAction(targetComponent: any, action: string): boolean {
         if (!action) return true;
         return targetComponent.action === action;
@@ -230,73 +190,18 @@ export class DomEventsEngine {
 
     /**
      * 分发单个事件规则
+     *
+     * handler 本地调用 + EventForwarder 统一转发
      */
     static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         if (rule.handler) {
             DomEventsEngine._invokeHandler(instance, rule, domEvt);
         }
 
-        if (rule.emits?.length) {
-            const payload = DomEventsEngine._buildPayload(instance, rule, 'emit');
-            for (const emitName of rule.emits) {
-                const ctx = DomEventsEngine._buildForwardContext(
-                    instance, emitName, payload,
-                    DomEventsEngine._resolveKey(instance.bridgeKey) ?? '', 'emit'
-                );
-                if (domEvt) (ctx as any).domEvent = domEvt;
-                instance.emit(emitName, ctx);
-            }
-        }
-
-        if (rule.bridges?.length) {
-            const bridgeKey = DomEventsEngine._resolveKey(instance.bridgeKey);
-            if (bridgeKey) {
-                const payload = DomEventsEngine._buildPayload(instance, rule, 'bridge');
-                for (const bridge of rule.bridges) {
-                    const ctx = DomEventsEngine._buildForwardContext(
-                        instance, bridge, payload, bridgeKey, 'bridge'
-                    );
-                    instance.bridgeEmit(ctx);
-                }
-            }
-        }
-
-        if (rule.entities && instance.entityKey) {
-            const entityName = typeof rule.entities === 'string' ? rule.entities : undefined;
-            if (!entityName) return;
-            const payload = DomEventsEngine._buildPayload(instance, rule, 'entity');
-            const ctx = DomEventsEngine._buildForwardContext(
-                instance, entityName, payload, instance.entityKey, 'entity'
-            );
-            instance.entityEmit(ctx);
-        }
-
-        if (rule.router && instance.routeKey) {
-            const routeName = typeof rule.router === 'string' ? rule.router : undefined;
-            if (!routeName) return;
-            const payload = DomEventsEngine._buildPayload(instance, rule, 'router');
-            const ctx = DomEventsEngine._buildForwardContext(
-                instance, routeName, payload, instance.routeKey, 'router'
-            );
-            instance.routerEmit?.(ctx);
-        }
-
-        if (rule.system?.length) {
-            const payload = DomEventsEngine._buildPayload(instance, rule, 'system');
-            for (const sysEvent of rule.system) {
-                const ctx = DomEventsEngine._buildForwardContext(
-                    instance, sysEvent, payload, instance.constructor.name, 'system'
-                );
-                instance.systemEmit?.(ctx);
-            }
-        }
+        const extraData = DomEventsEngine._buildPayload(instance, rule);
+        EventForwarder.forward(instance, rule, extraData, domEvt);
     }
 
-    /**
-     * 调用组件本地 handler 方法
-     *
-     * 命名规则：on${PascalCase(componentPathLastPart)}${PascalCase(action)}${PascalCase(domEvent)}
-     */
     private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         const pathParts = rule.componentPath.split('.');
         const lastPart = pathParts[pathParts.length - 1];
@@ -311,97 +216,33 @@ export class DomEventsEngine {
         }
     }
 
-    private static _buildPayload(instance: any, rule: DelegatedEventRule, eventType: EventDataType): any {
-        const fields = DomEventsEngine._resolveDataFields(rule.data, eventType);
-        const extraData = fields ? DomEventsEngine._collectDataFields(instance, fields) : {};
+    private static _buildPayload(instance: any, rule: DelegatedEventRule): any {
         const actionData = rule.action ? { action: rule.action } : {};
 
-        const eventData = DomEventsEngine._collectEventData(
-            instance, rule.componentPath, rule.event, eventType
-        );
+        if (rule.data) {
+            const fields = Array.isArray(rule.data) ? rule.data : rule.data;
+            if (Array.isArray(fields)) {
+                const extraData = DomEventsEngine._collectDataFields(instance, fields);
+                return { ...actionData, ...extraData };
+            }
+        }
 
-        return DomEventsEngine._mergeEventData(eventData, { ...actionData, ...extraData });
-    }
-
-    private static _resolveDataFields(
-        dataDecl: string[] | Record<string, string[]> | undefined,
-        eventType: string
-    ): string[] | undefined {
-        if (!dataDecl) return undefined;
-        if (Array.isArray(dataDecl)) return dataDecl;
-        return dataDecl[eventType];
+        return actionData;
     }
 
     private static _collectDataFields(instance: any, fields: string[]): Record<string, any> {
         const result: Record<string, any> = {};
         for (const field of fields) {
-            if (field.startsWith('get') && field.length > 3 && typeof instance[field] === 'function') {
+            if (
+                field.startsWith('get') &&
+                field.length > 3 &&
+                typeof instance[field] === 'function'
+            ) {
                 Object.assign(result, instance[field]());
             } else if (field in instance) {
                 result[field] = instance[field];
             }
         }
         return result;
-    }
-
-    static _collectEventData(
-        instance: any,
-        componentPath: string,
-        eventName: string,
-        eventType: EventDataType
-    ): Record<string, any> | undefined {
-        if (typeof instance.getEventData === 'function') {
-            return instance.getEventData(componentPath, eventName, eventType);
-        }
-        return undefined;
-    }
-
-    static _buildForwardContext(
-        instance: any,
-        eventName: string,
-        data: any,
-        source: string,
-        eventType: EventDataType
-    ): EventContext {
-        const currentCtx = instance._currentEventContext as EventContext | undefined;
-        const chain: EventChainLink[] | undefined = currentCtx
-            ? [
-                ...(currentCtx.chain || []),
-                {
-                    event: currentCtx.event,
-                    type: currentCtx.type!,
-                    source: currentCtx.source,
-                    sourceType: currentCtx.sourceType!,
-                },
-            ]
-            : undefined;
-
-        const clonedData = data !== undefined ? object.clone(data) : undefined;
-
-        return EventContextBuilder.create()
-            .withEvent(eventName)
-            .withType(eventName)
-            .withSource(source)
-            .withSourceType(instance.constructor.name)
-            .withData(clonedData)
-            .withBusId(globalEventBus.getBusId())
-            .withChain(chain)
-            .build();
-    }
-
-    private static _resolveKey(key: any): string | undefined {
-        if (!key) return undefined;
-        if (typeof key === 'string') return key;
-        if (typeof key === 'object' && key.key) return key.key;
-        return undefined;
-    }
-
-    private static _mergeEventData(eventData: Record<string, any> | undefined, data: any): any {
-        if (eventData === undefined) return data;
-        if (data === undefined) return eventData;
-        if (typeof data === 'object' && typeof eventData === 'object') {
-            return { ...eventData, ...data };
-        }
-        return data;
     }
 }

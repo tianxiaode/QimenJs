@@ -47,6 +47,7 @@ import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 import type { NodeMetadata } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
 import type { ComponentProps } from './types/init-context';
+import type { DomEventsMap } from './types/tpl-events';
 import { createInitContext } from './types/init-context';
 
 import {
@@ -112,15 +113,39 @@ export interface Component
 // ══════════════════════════════════════════════════════════════
 
 export class Component extends ComposableBase {
-    static _nodeEventRules: any;
-    static withTemplate: any;
-    static replace: any;
-
     static get type(): string {
         return (this as any).name.replace(/Component$/, '');
     }
 
     type: string;
+
+    domEvents?: DomEventsMap;
+    bridgeKey?: string | { key: string; fixed?: boolean };
+    entityKey?: string | { key: string; fixed?: boolean };
+
+    /**
+     * 默认事件数据 — getter，子类 super 合并
+     *
+     * @example
+     * class FormComponent extends Component {
+     *     get defaultEventData() {
+     *         return { ...super.defaultEventData, formId: this.formId };
+     *     }
+     * }
+     */
+    get defaultEventData(): Record<string, any> {
+        return {};
+    }
+
+    /**
+     * 自定义事件数据 — body 中定义，编译时挂原型
+     *
+     * 与 defaultEventData 分离：defaultEventData 是类继承链，
+     * getCustomEventData 是组件实例级别的动态数据。
+     */
+    getCustomEventData(): Record<string, any> {
+        return {};
+    }
 
     el!: HTMLElement;
     meta: Record<string, any>;

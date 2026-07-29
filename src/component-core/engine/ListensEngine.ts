@@ -6,62 +6,56 @@
  * Pipeline FINALIZE 阶段最先执行（bindListens），
  * 因为这些订阅不依赖子组件实例，越早订阅越早能收到事件。
  *
- * 订阅来源：body.listens（ListenItem[]）
  * 四路分流：
  *   - source → EventBridge.on(bridgeKey, source, events)
  *   - entity → EntityEventBus.on(entityKey, entity, events)
  *   - system → SystemEventBus.on(events)
  *   - route  → RouteEventBus.on(route, events)
  *
- * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
+ * 解绑通过 instance.onCleanup() 自动完成。
  */
 
-import type { ListenItem, EventMapping, BridgeListen, EntityListen, SystemListen, RouteListen } from '../types/tpl-body';
+import type {
+    ListenItem,
+    EventMapping,
+    BridgeListen,
+    EntityListen,
+    SystemListen,
+    RouteListen,
+} from '../types/tpl-body';
+import { EventForwarder } from './EventForwarder';
 
-function isBridgeListen(item: ListenItem): item is BridgeListen { return 'source' in item; }
-function isEntityListen(item: ListenItem): item is EntityListen { return 'entity' in item; }
-function isSystemListen(item: ListenItem): item is SystemListen { return 'system' in item; }
-function isRouteListen(item: ListenItem): item is RouteListen { return 'route' in item; }
+function isBridgeListen(item: ListenItem): item is BridgeListen {
+    return 'source' in item;
+}
+function isEntityListen(item: ListenItem): item is EntityListen {
+    return 'entity' in item;
+}
+function isSystemListen(item: ListenItem): item is SystemListen {
+    return 'system' in item;
+}
+function isRouteListen(item: ListenItem): item is RouteListen {
+    return 'route' in item;
+}
 
 export class ListensEngine {
     /**
      * 为组件实例绑定 listens 声明的外部事件订阅
-     *
-     * @param instance - 组件实例
-     * @param listens - listens 声明数组
      */
     static bindListens(instance: any, listens: ListenItem[]): void {
         if (!listens?.length) return;
 
-        const offFns: (() => void)[] = [];
-
         for (const item of listens) {
             if (isBridgeListen(item)) {
-                const offs = ListensEngine._bindBridge(instance, item.source, item.events);
-                offFns.push(...offs);
+                ListensEngine._bindBridge(instance, item.source, item.events);
             } else if (isEntityListen(item)) {
-                const offs = ListensEngine._bindEntity(instance, item.entity, item.events);
-                offFns.push(...offs);
+                ListensEngine._bindEntity(instance, item.entity, item.events);
             } else if (isSystemListen(item)) {
-                const offs = ListensEngine._bindSystem(instance, item.events);
-                offFns.push(...offs);
+                ListensEngine._bindSystem(instance, item.events);
             } else if (isRouteListen(item)) {
-                const offs = ListensEngine._bindRoute(instance, item.route, item.events);
-                offFns.push(...offs);
+                ListensEngine._bindRoute(instance, item.route, item.events);
             }
         }
-
-        instance._listensOffs = offFns;
-    }
-
-    /**
-     * 解绑所有 listens 订阅（dispose 时调用）
-     */
-    static unbindListens(instance: any): void {
-        const offFns: (() => void)[] = instance._listensOffs;
-        if (!offFns?.length) return;
-        for (const off of offFns) off();
-        instance._listensOffs = [];
     }
 
     private static _resolveHandler(instance: any, mapping: EventMapping): (...args: any[]) => void {
@@ -78,13 +72,12 @@ export class ListensEngine {
         instance: any,
         source: string,
         events: Record<string, EventMapping>
-    ): (() => void)[] {
-        const bridgeKey = ListensEngine._resolveKey(instance.bridgeKey);
-        if (!bridgeKey) return [];
+    ): void {
+        const bridgeKey = EventForwarder.resolveKey(instance.bridgeKey);
+        if (!bridgeKey) return;
 
-        const offs: (() => void)[] = [];
         const eventBridge = ListensEngine._getEventBridge(instance);
-        if (!eventBridge) return [];
+        if (!eventBridge) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
@@ -95,22 +88,20 @@ export class ListensEngine {
             } else {
                 eventBridge.on(bridgeKey, source, eventName, handler);
             }
-            offs.push(() => eventBridge.off(bridgeKey, source, eventName, handler));
+            instance.onCleanup(() => eventBridge.off(bridgeKey, source, eventName, handler));
         }
-        return offs;
     }
 
     private static _bindEntity(
         instance: any,
         entity: string,
         events: Record<string, EventMapping>
-    ): (() => void)[] {
-        const entityKey = ListensEngine._resolveKey(instance.entityKey);
-        if (!entityKey) return [];
+    ): void {
+        const entityKey = EventForwarder.resolveKey(instance.entityKey);
+        if (!entityKey) return;
 
-        const offs: (() => void)[] = [];
         const entityEventBus = ListensEngine._getEntityEventBus(instance);
-        if (!entityEventBus) return [];
+        if (!entityEventBus) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
@@ -121,18 +112,13 @@ export class ListensEngine {
             } else {
                 entityEventBus.on(entityKey, entity, eventName, handler);
             }
-            offs.push(() => entityEventBus.off(entityKey, entity, eventName, handler));
+            instance.onCleanup(() => entityEventBus.off(entityKey, entity, eventName, handler));
         }
-        return offs;
     }
 
-    private static _bindSystem(
-        instance: any,
-        events: Record<string, EventMapping>
-    ): (() => void)[] {
-        const offs: (() => void)[] = [];
+    private static _bindSystem(instance: any, events: Record<string, EventMapping>): void {
         const systemEventBus = ListensEngine._getSystemEventBus(instance);
-        if (!systemEventBus) return [];
+        if (!systemEventBus) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
@@ -143,19 +129,17 @@ export class ListensEngine {
             } else {
                 systemEventBus.on(eventName, handler);
             }
-            offs.push(() => systemEventBus.off(eventName, handler));
+            instance.onCleanup(() => systemEventBus.off(eventName, handler));
         }
-        return offs;
     }
 
     private static _bindRoute(
         instance: any,
         route: string,
         events: Record<string, EventMapping>
-    ): (() => void)[] {
-        const offs: (() => void)[] = [];
+    ): void {
         const routeEventBus = ListensEngine._getRouteEventBus(instance);
-        if (!routeEventBus) return [];
+        if (!routeEventBus) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
@@ -166,35 +150,43 @@ export class ListensEngine {
             } else {
                 routeEventBus.on(route, eventName, handler);
             }
-            offs.push(() => routeEventBus.off(route, eventName, handler));
+            instance.onCleanup(() => routeEventBus.off(route, eventName, handler));
         }
-        return offs;
-    }
-
-    private static _resolveKey(key: any): string | undefined {
-        if (!key) return undefined;
-        if (typeof key === 'string') return key;
-        if (typeof key === 'object' && key.key) return key.key;
-        return undefined;
     }
 
     private static _getEventBridge(instance: any): any {
         if (typeof instance.getEventBridge === 'function') return instance.getEventBridge();
-        try { return require('@/events/EventBridge').eventBridge; } catch { return null; }
+        try {
+            return require('@/events/EventBridge').eventBridge;
+        } catch {
+            return null;
+        }
     }
 
     private static _getEntityEventBus(instance: any): any {
         if (typeof instance.getEntityEventBus === 'function') return instance.getEntityEventBus();
-        try { return require('@/events/EntityEventBus').entityEventBus; } catch { return null; }
+        try {
+            return require('@/events/EntityEventBus').entityEventBus;
+        } catch {
+            return null;
+        }
     }
 
     private static _getSystemEventBus(instance: any): any {
         if (typeof instance.getSystemEventBus === 'function') return instance.getSystemEventBus();
-        try { return require('@/events/SystemEventBus').systemEventBus; } catch { return null; }
+        try {
+            return require('@/events/SystemEventBus').systemEventBus;
+        } catch {
+            return null;
+        }
     }
 
     private static _getRouteEventBus(instance: any): any {
         if (typeof instance.getRouteEventBus === 'function') return instance.getRouteEventBus();
-        try { return require('@/events/RouteEventBus').routeEventBus; } catch { return null; }
+        try {
+            return require('@/events/RouteEventBus').routeEventBus;
+        } catch {
+            return null;
+        }
     }
 }

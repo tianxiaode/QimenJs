@@ -8,8 +8,7 @@ export { instantiateChildComponents } from './step-instantiate-child-components'
 export { bindListens } from './step-bind-listens';
 export { bindChildEvents } from './step-bind-child-events';
 export { bindDomEvents } from './step-bind-dom-events';
-export { bindNodeEventMeta } from './step-bind-node-event-meta';
-export { bindDelegatedEvents } from './step-bind-delegated-events';
+
 export type { Phase, InitStep } from './pipeline-types';
 export {
     MOUNT_PHASE,
