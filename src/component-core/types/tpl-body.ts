@@ -167,7 +167,7 @@ export interface HandlersListen {
  *       for (const item of this.listens) {
  *           if (item.handlers)  for (const [nodeName, events] of Object.entries(item.handlers))
  *                                                            this.nodeMap[nodeName].on(event, method);
- *           if (item.source)    EventBridge.on(this.eventKey, item.source, item.events);
+ *           if (item.source)    EventBridge.on(this.bridgeKey, item.source, item.events);
  *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
  *           if (item.system)    SystemEventBus.on(item.events);
  *           if (item.route)     RouteEventBus.on(item.route, item.events);
@@ -406,7 +406,7 @@ export interface LifecycleHooks {
  * body 只接受以下三类内容：
  *
  * 1. static 类（编译时设为类静态属性）：
- *    type / entityKey / eventKey / floatKey / dragKey / listens / forwards
+ *    type / entityKey / bridgeKey / floatKey / dragKey / listens / forwards
  *
  * 2. 函数（编译时挂到原型）：
  *    - 生命周期钩子：onBeforeInit / onAfterInit / onMounted / onResize / onUpdated / onBeforeUnmount / onBeforeDispose
@@ -464,7 +464,7 @@ export interface LifecycleHooks {
  * body: {
  *     type: 'myComponent',
  *     entityKey: 'users',
- *     eventKey: 'formKey',
+ *     bridgeKey: 'formKey',
  *     floatKey: 'myFloats',
  *     dragKey: 'myDrags',
  *     listens: [
@@ -578,14 +578,14 @@ export interface BodyDef extends LifecycleHooks {
     entityKey?: string | { key: string; fixed?: boolean };
 
     /**
-     * 桥接事件 key，TplNode events 中 bridges 引用
+     * 桥接事件 key，EventBridge 通道标识
      *
      * 父组件实例化子组件时向下传播：
      *   - 子组件有定义且 fixed → 保留子组件的值
      *   - 子组件有定义且非 fixed → 替换为父组件的值
      *   - 子组件无定义 → 不管
      */
-    eventKey?: string | { key: string; fixed?: boolean };
+    bridgeKey?: string | { key: string; fixed?: boolean };
 
     /** 浮动层 key */
     floatKey?: string;
