@@ -199,16 +199,28 @@ bridgeKey: { key: 'dialogEvents', fixed: true }  // → 运行时 = 'dialogEvent
 
 ## 运行时流程
 
-### Pipeline 阶段
+### 三引擎 + Pipeline 阶段
 
 ```
 MOUNT:     ensureNodeMap → selfMount → setupNodeProps → onInitState → onBeforeInit
 FILL:      （预留）
 INSTANTIATE: instantiateChildComponents
-FINALIZE:  bindNodeEventMeta → bindDelegatedEvents → onAfterInit
+FINALIZE:  bindListens → bindChildEvents → bindDomEvents → onAfterInit
+           ListensEngine  ChildEventsEngine  DomEventsEngine
 ```
 
-### 委托绑定
+| 引擎 | Pipeline 步骤 | 时机 | 依赖 | 职责 |
+|------|-------------|------|------|------|
+| `ListensEngine` | bindListens | FINALIZE 最先 | bridgeKey/entityKey（static） | 订阅桥接/实体/系统/路由事件 |
+| `ChildEventsEngine` | bindChildEvents | bindListens 之后 | nodeMap 子组件已实例化 | child.on() 订阅子组件事件 |
+| `DomEventsEngine` | bindDomEvents | bindChildEvents 之后 | el + nodeMap + 子组件 | DOM 事件委托绑定与分发 |
+
+执行顺序理由：
+- **ListensEngine 最先**：bridge/entity/system/route 不依赖子组件实例，越早订阅越早能收到事件
+- **ChildEventsEngine 其次**：子组件已实例化（INSTANTIATE 阶段完成），可安全 child.on()
+- **DomEventsEngine 最后**：DOM 委托需要所有前置条件就绪
+
+### DomEventsEngine — 委托绑定
 
 ```
 组件初始化
@@ -271,6 +283,8 @@ DOM 事件触发（如 click）
 - 前缀匹配 — prefix + eventName 组合事件名
 - bridgeKey/entityKey 向下传播 + `fixed` 标志
 - childEvents — nodeMap 子组件事件订阅，方法名自动推导
+- 三引擎拆分：DomEventsEngine / ChildEventsEngine / ListensEngine，各在 FINALIZE 不同步骤执行
+- ~~DelegatedEventEngine~~ — 拆分为三引擎
 
 ## EntityToolbar 示例
 
