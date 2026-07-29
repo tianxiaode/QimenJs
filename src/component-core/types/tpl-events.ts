@@ -1,22 +1,25 @@
 /**
- * 事件委托类型定义 — 全委托模式（三层嵌套 tplEvents）
+ * DOM 事件委托类型定义 — 全委托模式（三层嵌套 domEvents）
  *
  * ══════════════════════════════════════════════════════════════
  * 新方案：全委托模式 — { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
  * ══════════════════════════════════════════════════════════════
  *
+ * 事件体系三部分：
+ *   ① domEvents — DOM 委托事件与转发（本文件）
+ *   ② childEvents — nodeMap 子组件事件订阅（tpl-body.ts HandlersListen）
+ *   ③ listens — 事件监听（tpl-body.ts ListenItem[]）
+ *
  * 核心规则：
- *   1. tplEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
+ *   1. domEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
  *   2. 使用方在当前组件 el 上绑定 DOM 事件，委托匹配目标组件
  *   3. 组件路径沿 nodeMap 逐层定位，天然跨层穿透，无需层层 on 转发
- *   4. 按钮不需要定义 tplEvents，完全被动
- *   5. tplEvents 就是声明式监听：handler:true 本地监听，emits 转发，可共存
- *   6. listens 声明式组件事件订阅：child.on() 机制，不涉及 DOM 事件，与 tplEvents 互补
+ *   4. 按钮不需要定义 domEvents，完全被动
+ *   5. domEvents 就是声明式监听：handler:true 本地监听，emits 转发，可共存
  *
- * tplEvents 定义示例：
+ * domEvents 定义示例：
  *
- *   // 使用方 — 三层嵌套声明委托
- *   tplEvents = {
+ *   domEvents = {
  *       keypress: {
  *           'toolbar.Button': {
  *               'save':   { handler: true, emits: ['save'], entities: true },
@@ -38,7 +41,7 @@
  *
  * 运行时流程：
  *   在当前组件 el 上绑定 DOM 事件（如 click）
- *   → 事件触发 → 查 tplEvents[click]
+ *   → 事件触发 → 查 domEvents[click]
  *   → 遍历组件路径 → nodeMap 逐层定位（首段为 nodeName） → el.contains(event.target) 匹配
  *   → 找到目标组件 → 检查 action 匹配 → 执行 eventConfig
  *
@@ -62,7 +65,7 @@
 /**
  * 单条委托规则（运行时使用）
  *
- * 全委托模式下，从 tplEvents 三层嵌套编译生成。
+ * 全委托模式下，从 domEvents 三层嵌套编译生成。
  * 运行时匹配：当前组件 el 上 DOM 事件触发 → 组件路径定位 → el.contains → action 匹配
  */
 export interface DelegatedEventRule {
@@ -103,7 +106,7 @@ export interface DelegatedEventRule {
     /** 转发为系统事件 */
     system?: string[];
 
-    /** DOM 事件委托 → 调用组件本地方法（区别于 listens 的组件事件订阅） */
+    /** DOM 事件委托 → 调用组件本地方法 */
     handler?: boolean;
 
     /** 只执行一次 */
@@ -120,11 +123,11 @@ export interface DelegatedEventRule {
 }
 
 /**
- * tplEvents 三层嵌套类型
+ * domEvents 三层嵌套类型
  *
  * { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
  */
-export interface TplEventsMap {
+export interface DomEventsMap {
     [domEvent: string]: {
         [componentPath: string]: {
             [action: string]: Omit<
@@ -135,5 +138,7 @@ export interface TplEventsMap {
     };
 }
 
-// listens 声明式事件订阅定义在 tpl-body.ts 中（ListenItem[]，四路分流：source/entity/system/route）
-// 子组件事件监听：tplEvents handler:true（自监听）或派生子组件（外部监听）
+// 事件体系三部分：
+// ① domEvents — DOM 委托事件与转发（本文件 DomEventsMap）
+// ② childEvents — nodeMap 子组件事件订阅（tpl-body.ts ChildEventsListen）
+// ③ listens — 事件监听（tpl-body.ts ListenItem[]，四路分流：source/entity/system/route）

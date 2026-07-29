@@ -141,20 +141,20 @@ export interface RouteListen {
  *
  * @example
  * ```ts
- * { handlers: { toolbar: ['save', 'create'], grid: ['rowClick'] } }
+ * { childEvents: { toolbar: ['save', 'create'], grid: ['rowClick'] } }
  * // → nodeMap.toolbar.on('save', this.onToolbarSave)
  * // → nodeMap.toolbar.on('create', this.onToolbarCreate)
  * // → nodeMap.grid.on('rowClick', this.onGridRowClick)
  * ```
  */
-export interface HandlersListen {
+export interface ChildEventsListen {
     /**
      * 子组件事件监听映射
      *
      * key = nodeName，value = 事件名数组
      * 方法名自动推导：on${PascalCase(nodeName)}${PascalCase(event)}
      */
-    handlers: Record<string, string[]>;
+    childEvents: Record<string, string[]>;
 }
 
 /**
@@ -165,7 +165,7 @@ export interface HandlersListen {
  * 注册流程统一（五路分流，float/drag 已自动绑定）：
  *   _setupListens() {
  *       for (const item of this.listens) {
- *           if (item.handlers)  for (const [nodeName, events] of Object.entries(item.handlers))
+ *           if (item.childEvents)  for (const [nodeName, events] of Object.entries(item.childEvents))
  *                                                            this.nodeMap[nodeName].on(event, method);
  *           if (item.source)    EventBridge.on(this.bridgeKey, item.source, item.events);
  *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
@@ -177,7 +177,7 @@ export interface HandlersListen {
  * @example
  * ```ts
  * listens: [
- *     { handlers: { toolbar: ['save', 'create'] } },
+ *     { childEvents: { toolbar: ['save', 'create'] } },
  *     { source: 'formKey',    events: { save: 'onSave' } },
  *     { entity: 'users',     events: { listed: 'onUsersLoaded' } },
  *     { system: true,        events: { 'i18n:localeChange': 'onLocaleChange' } },
@@ -186,7 +186,7 @@ export interface HandlersListen {
  * ```
  */
 export type ListenItem =
-    | HandlersListen
+    | ChildEventsListen
     | BridgeListen
     | EntityListen
     | FloatListen

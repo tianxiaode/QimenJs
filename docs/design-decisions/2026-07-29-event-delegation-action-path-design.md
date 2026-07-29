@@ -1,4 +1,4 @@
-# 事件委托新方案：全委托模式（三层嵌套 tplEvents）
+# 事件体系设计：domEvents / childEvents / listens
 
 > 日期：2026-07-29
 > 状态：设计确认，待实施
@@ -15,17 +15,17 @@
 
 ## 事件体系三部分
 
-| 部分 | 机制 | 声明位置 | 说明 |
-|------|------|---------|------|
-| **① DOM 委托事件与转发** | tplEvents 三层嵌套 | 组件类 | DOM 事件 → 委托匹配 → handler/emits/entities |
-| **② nodeMap 组件事件与转发** | listens `handlers` / 派生子组件 | listens 或派生类 | child.on() 订阅子组件事件 |
-| **③ 事件监听** | listens 四路分流 | listens | bridge/entity/system/route |
+| 部分 | 名称 | 机制 | 声明位置 | 说明 |
+|------|------|------|---------|------|
+| ① | `domEvents` | DOM 事件委托与转发 | 组件类 | DOM 事件 → 委托匹配 → handler/emits/entities |
+| ② | `childEvents` | nodeMap 子组件事件订阅 | listens 内 | child.on() 订阅子组件事件 |
+| ③ | `listens` | 外部事件监听 | listens | bridge/entity/system/route |
 
 ---
 
-## ① DOM 委托事件与转发 — tplEvents
+## ① domEvents — DOM 委托事件与转发
 
-**全委托模式**——使用方在当前组件的 tplEvents 中声明一切，DOM 事件绑在当前组件 el 上，通过组件路径 + action 直接定位目标，天然跨层穿透。
+**全委托模式**——使用方在当前组件的 domEvents 中声明一切，DOM 事件绑在当前组件 el 上，通过组件路径 + action 直接定位目标，天然跨层穿透。
 
 ### 三层嵌套结构
 
@@ -42,7 +42,7 @@
 ### 完整示例
 
 ```ts
-tplEvents = {
+domEvents = {
     keypress: {
         'toolbar.Button': {
             'save':   { handler: true, emits: ['save'], entities: true },
@@ -62,8 +62,8 @@ tplEvents = {
 
 | 规则 | 说明 |
 |------|------|
-| **tplEvents 是声明式监听** | 声明即意图，`handler: true` 是本地监听，`emits` 是转发，两者可共存 |
-| **按钮不需要定义 tplEvents** | 按钮完全被动，使用方在当前组件定义即可 |
+| **domEvents 是声明式监听** | 声明即意图，`handler: true` 是本地监听，`emits` 是转发，两者可共存 |
+| **按钮不需要定义 domEvents** | 按钮完全被动，使用方在当前组件定义即可 |
 | **action 统一用于路径定位** | 不用 name。action 是语义标识，name 是结构标识 |
 | **跨层天然穿透** | `'toolbar.Button'` 直接穿透到目标，不需要层层 on 转发 |
 
@@ -111,15 +111,15 @@ class EntityToolbar extends ToolbarComponent {
 
 ---
 
-## ② nodeMap 组件事件与转发
+## ② childEvents — nodeMap 子组件事件订阅
 
-### 简单场景：listens handlers
+### 简单场景：listens childEvents
 
-`listens` 的 `handlers` 字段，直接订阅 nodeMap 子组件事件，方法名自动推导：
+`listens` 的 `childEvents` 字段，直接订阅 nodeMap 子组件事件，方法名自动推导：
 
 ```ts
 listens: [
-    { handlers: { toolbar: ['save', 'create'], grid: ['rowClick'] } },
+    { childEvents: { toolbar: ['save', 'create'], grid: ['rowClick'] } },
 ]
 // → nodeMap.toolbar.on('save', this.onToolbarSave)
 // → nodeMap.toolbar.on('create', this.onToolbarCreate)
@@ -149,7 +149,7 @@ tpl: [{ name: 'toolbar', type: MyToolbar }]
 
 ---
 
-## ③ 事件监听 — listens 四路分流
+## ③ listens — 外部事件监听（四路分流）
 
 ```ts
 listens: [
@@ -164,7 +164,7 @@ listens: [
 |------|------|------|
 | `source` | 桥接事件 EventBridge | `{ source: 'entityPage', events: { save: 'onSave' } }` |
 | `entity` | 实体事件 EntityEventBus | `{ entity: 'users', events: { listed: 'onUsersLoaded' } }` |
-| `system` | 系统事件 | `{ system: true, events: { 'i18n:localeChange': 'onLocaleChange' } }` |
+| `system` | 系统事件 | `{ system: true,1 events: { 'i18n:localeChange': 'onLocaleChange' } }` |
 | `route` | 路由事件 | `{ route: 'router', events: { change: 'onRouteChange' } }` |
 
 ### bridgeKey 向下传播
@@ -193,7 +193,7 @@ bridgeKey: { key: 'dialogEvents', fixed: true }  // → 运行时 = 'dialogEvent
 
 ### 同名容器同名 action 原则
 
-容器自己声明 tplEvents 转发为桥接事件，上层通过 `source` 路订阅（bridgeKey 统一），无需在上层 tplEvents 中区分。每层管自己能区分的，区分不了的往下推一层。
+容器自己声明 domEvents 转发为桥接事件，上层通过 `source` 路订阅（bridgeKey 统一），无需在上层 domEvents 中区分。每层管自己能区分的，区分不了的往下推一层。
 
 ---
 
@@ -212,7 +212,7 @@ FINALIZE:  bindNodeEventMeta → bindDelegatedEvents → onAfterInit
 
 ```
 组件初始化
-  → 遍历 tplEvents 的第一层 key（DOM 事件名）
+  → 遍历 domEvents 的第一层 key（DOM 事件名）
   → 在当前组件 el 上绑定对应 DOM 事件监听（如 click）
   → 一个 DOM 事件只绑定一次（多个路径共享同一个监听器）
 ```
@@ -221,11 +221,11 @@ FINALIZE:  bindNodeEventMeta → bindDelegatedEvents → onAfterInit
 
 ```
 DOM 事件触发（如 click）
-  → 查 tplEvents[click]
+  → 查 domEvents[click]
   → 遍历每个组件路径 key（如 'toolbar.Button'）
   → 路径解析：
       'toolbar' → 从 nodeMap 找 nodeName='toolbar' 的子组件
-      → toolbar.el.contains(event.target)? 否 → 跳过
+      → toolbar.el+el.contains(event.target)? 否 → 跳过
       → 是 → 在 Toolbar 的 nodeMap/items 中找 Button
       → Button.el.contains(event.target)? 否 → 跳过
       → 是 → 到达目标组件
@@ -244,32 +244,33 @@ DOM 事件触发（如 click）
 
 | 维度 | 旧方案 | 新方案 |
 |------|--------|--------|
-| tplEvents 结构 | 扁平路径式 `'toolbar.save'` | 三层嵌套 `{ domEvent → componentPath → action }` |
-| 事件定义位置 | TplNode 节点上 emits | tplEvents 统一声明 |
+| DOM 事件声明 | tplEvents 扁平路径式 | domEvents 三层嵌套 `{ domEvent → componentPath → action }` |
+| 事件定义位置 | TplNode 节点上 emits | domEvents 统一声明 |
 | action 角色 | 事件数据 | 路径定位 + 事件数据 |
 | 绑定方式 | 声明即绑定 | 当前组件 el 上绑定，委托匹配 |
 | 跨层 | COMPONENT_ROOT 阻断 | 组件路径直接穿透 |
 | 跨层转发 | 层层 on 转发 | 全委托 / 桥接 |
+| 子组件事件 | 无声明式机制 | childEvents 声明式订阅 |
 | eventKey | 静态，无传播 | bridgeKey 向下传播 + fixed |
 
 ## 删除的东西
 
-- ~~TplNode.emits~~ — 事件定义移到 tplEvents
-- ~~TplNode.action~~（作为事件驱动器）— action 在 tplEvents 第三层 key 中
+- ~~TplNode.emits~~ — 事件定义移到 domEvents
+- ~~TplNode.action~~（作为事件驱动器）— action 在 domEvents 第三层 key 中
 - ~~compileNodeEmits~~ — 改为按需编译
 - ~~NODE_EVENT_META 遍历匹配~~ — 改为 el.contains + 路径定位
-- ~~扁平路径式 tplEvents key~~ — 改为三层嵌套
+- ~~tplEvents~~ — 改为 domEvents
 - ~~eventKey~~ — 改为 bridgeKey
 
 ## 新增的东西
 
-- tplEvents 三层嵌套结构 — `{ [domEvent]: { [componentPath]: { [action]: eventConfig } } }`
+- domEvents 三层嵌套结构 — `{ [domEvent]: { [componentPath]: { [action]: eventConfig } } }`
 - 组件路径解析 — `'toolbar.Button'` → nodeMap 逐层查找（首段为 nodeName）
 - `static actions` — 组件事件能力声明
 - 当前组件 el 上绑定 DOM 事件 → 委托匹配目标组件
 - 前缀匹配 — prefix + eventName 组合事件名
 - bridgeKey/entityKey 向下传播 + `fixed` 标志
-- listens `handlers` — nodeMap 子组件事件订阅，方法名自动推导
+- childEvents — nodeMap 子组件事件订阅，方法名自动推导
 
 ## EntityToolbar 示例
 
@@ -282,7 +283,7 @@ class EntityToolbar extends ToolbarComponent {
 }
 
 // ① DOM 委托事件
-tplEvents = {
+domEvents = {
     click: {
         'toolbar.Button': {
             'create':  { emits: ['create'] },
@@ -298,9 +299,9 @@ tplEvents = {
     },
 }
 
-// ② nodeMap 组件事件
+// ② 子组件事件
 listens: [
-    { handlers: { toolbar: ['save', 'create'] } },
+    { childEvents: { toolbar: ['save', 'create'] } },
 ]
 
 // ③ 跨层桥接
