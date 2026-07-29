@@ -24,7 +24,6 @@ export interface ActionCellProps {
 }
 
 export let ActionCellComponent = BaseCellComponent.replace({
-    type: 'ActionCell',
 
     tplReplaces: {
         content: {
@@ -39,11 +38,7 @@ export let ActionCellComponent = BaseCellComponent.replace({
     },
 
     body: {
-        onInitState() {
-            return {
-                _actions: [] as Record<string, any>[],
-            };
-        },
+        _actions: [] as Record<string, any>[],
 
         onAfterInit(props?: ActionCellProps): void {},
 

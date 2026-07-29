@@ -20,10 +20,6 @@ export interface CardProps {
 }
 
 class CardComponent extends Component {
-    static type = 'Card';
-
-    type = 'Card';
-
     _initCard(props?: CardProps): void {
         if (props?.title) {
             this.headerTitle = props.title;

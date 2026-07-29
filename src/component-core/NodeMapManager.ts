@@ -214,6 +214,25 @@ export class NodeMapManager implements INodeMapManager {
     }
 
     /**
+     * 获取指定节点的子组件实例
+     *
+     * @param name - 节点名称
+     * @returns 子组件实例，如果节点不存在或无组件则返回 undefined
+     *
+     * @example
+     * ```typescript
+     * // 获取 header 节点的子组件
+     * const headerComp = manager.getComponent('header');
+     * if (headerComp) {
+     *   headerComp.title = 'New Title';
+     * }
+     * ```
+     */
+    getComponent(name: string): any | undefined {
+        return this._map[name]?.component;
+    }
+
+    /**
      * 获取所有节点元数据的映射表
      *
      * @returns 包含所有节点名到节点元数据映射的对象
@@ -291,9 +310,7 @@ export class NodeMapManager implements INodeMapManager {
             node.el.replaceWith(placeholder);
         } else if (node.parentNode) {
             const refNode =
-                node.nodeIndex !== undefined
-                    ? node.parentNode.childNodes[node.nodeIndex]
-                    : null;
+                node.nodeIndex !== undefined ? node.parentNode.childNodes[node.nodeIndex] : null;
             if (refNode) {
                 node.parentNode.insertBefore(placeholder, refNode);
             } else {

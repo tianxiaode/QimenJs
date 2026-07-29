@@ -20,9 +20,10 @@ export { CardComponent, type CardProps } from './card/CardComponent';
 export { cardCSS } from './card/card.css';
 export {
     IndicatorComponent,
-    type IndicatorType,
     type IndicatorProps,
+    type IndicatorMode,
 } from './indicator/IndicatorComponent';
+export { IndicatorDotComponent } from './indicator/IndicatorDotComponent';
 export { indicatorCSS } from './indicator/indicator.css';
 export { TabBarComponent, type TabBarProps } from './tab-bar/TabBarComponent';
 export { tabBarCSS } from './tab-bar/tab-bar.css';
@@ -43,8 +44,8 @@ export {
 export { buttonGroupCSS } from './button-group/button-group.css';
 export { BadgeComponent } from './badge/BadgeComponent';
 export { badgeCSS } from './badge/badge.css';
-export { TipsComponent, type TipsProps } from './tips/TipsComponent';
-export { tipsCSS } from './tips/tips.css';
+export { TooltipComponent, type TooltipProps } from './tooltip/TooltipComponent';
+export { tooltipCSS } from './tooltip/tooltip.css';
 export { AlertComponent, type AlertType, type AlertProps } from './alert/AlertComponent';
 export { alertCSS } from './alert/alert.css';
 export {

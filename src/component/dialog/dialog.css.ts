@@ -40,4 +40,11 @@ export const dialogCSS = `
     padding: 16px;
     overflow: auto;
 }
+
+/* 底部工具栏 */
+.q-dialog__footer {
+    padding: 12px 16px;
+    border-top: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
 `;

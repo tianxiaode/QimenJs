@@ -6,10 +6,6 @@
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 
 class ItemGroupStaticComponent extends ItemGroupBaseComponent {
-    static type = 'ItemGroupStatic';
-
-    type = 'ItemGroupStatic';
-
     setItems(datas: Record<string, any>[]): void {
         this.clear();
         for (const data of datas) {

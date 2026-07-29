@@ -19,7 +19,6 @@ export interface CheckboxCellProps {
 }
 
 export let CheckboxCellComponent = BaseCellComponent.replace({
-    type: 'CheckboxCell',
 
     tplReplaces: {
         content: {
@@ -30,12 +29,8 @@ export let CheckboxCellComponent = BaseCellComponent.replace({
     },
 
     body: {
-        onInitState() {
-            return {
-                _checked: false,
-                _disabled: false,
-            };
-        },
+        _checked: false,
+        _disabled: false,
 
         onAfterInit(props?: CheckboxCellProps): void {},
 

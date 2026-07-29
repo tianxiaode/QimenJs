@@ -408,6 +408,72 @@ describe('CommonPropsAbility', () => {
             });
         });
 
+        describe('containsCls', () => {
+            it('类名存在时返回 true', () => {
+                const el = document.createElement('div');
+                el.classList.add('active');
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+                };
+                expect(CommonPropsAbility.containsCls.call(instance, 'active')).toBe(true);
+            });
+
+            it('类名不存在时返回 false', () => {
+                const el = document.createElement('div');
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+                };
+                expect(CommonPropsAbility.containsCls.call(instance, 'active')).toBe(false);
+            });
+
+            it('委托子组件', () => {
+                const component = { containsCls: jest.fn().mockReturnValue(true) };
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el: undefined, component }),
+                };
+                expect(CommonPropsAbility.containsCls.call(instance, 'active')).toBe(true);
+                expect(component.containsCls).toHaveBeenCalledWith('active');
+            });
+
+            it('子组件有 el 时使用 component.el', () => {
+                const el = document.createElement('div');
+                el.classList.add('active');
+                const component = { el };
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el: undefined, component }),
+                };
+                expect(CommonPropsAbility.containsCls.call(instance, 'active')).toBe(true);
+            });
+
+            it('无 target 时返回 false', () => {
+                const instance = {
+                    _resolveNodeTarget: jest
+                        .fn()
+                        .mockReturnValue({ el: undefined, component: undefined }),
+                };
+                expect(CommonPropsAbility.containsCls.call(instance, 'active')).toBe(false);
+            });
+
+            it('指定 nodeName', () => {
+                const el = document.createElement('div');
+                el.classList.add('active');
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+                };
+                CommonPropsAbility.containsCls.call(instance, 'active', 'icon');
+                expect(instance._resolveNodeTarget).toHaveBeenCalledWith('icon');
+            });
+
+            it('nodeName 默认为 root', () => {
+                const el = document.createElement('div');
+                const instance = {
+                    _resolveNodeTarget: jest.fn().mockReturnValue({ el, component: undefined }),
+                };
+                CommonPropsAbility.containsCls.call(instance, 'active');
+                expect(instance._resolveNodeTarget).toHaveBeenCalledWith('root');
+            });
+        });
+
         describe('setAttr', () => {
             it('设置 HTML 属性', () => {
                 const el = document.createElement('div');

@@ -1,7 +1,6 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { BreadcrumbComponent } from './BreadcrumbComponent';
 import { BREADCRUMB_TPL } from './breadcrumb-tpl';
 
 export function registerBreadcrumbTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Breadcrumb', BREADCRUMB_TPL);
+    BreadcrumbComponent.register(BREADCRUMB_TPL);
 }

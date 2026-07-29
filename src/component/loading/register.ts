@@ -1,11 +1,6 @@
-/**
- * Loading 模板注册
- */
-
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { LoadingComponent } from './LoadingComponent';
 import { LOADING_TPL } from './loading-tpl';
 
 export function registerLoadingTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Loading', LOADING_TPL);
+    LoadingComponent.register(LOADING_TPL);
 }

@@ -44,10 +44,6 @@ export interface TabsProps {
 }
 
 class TabsComponent extends Component {
-    static type = 'Tabs';
-
-    type = 'Tabs';
-
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
     private _tabItems: TabItem[] = [];
     private _activeIndex: number = 0;

@@ -23,16 +23,9 @@ export interface BaseHeaderCellProps {
 }
 
 class BaseHeaderCellComponent extends Component {
-    static type = 'BaseHeaderCell';
-    type = 'BaseHeaderCell';
-
-    onInitState() {
-        return {
-            _colName: '' as string,
-            _align: 'left' as ColumnAlign,
-            _minWidth: 50 as number,
-        };
-    }
+    _colName: string = '';
+    _align: ColumnAlign = 'left';
+    _minWidth: number = 50;
 
     onAfterInit(props?: BaseHeaderCellProps): void {
         if (props?.colName) this._colName = props.colName;

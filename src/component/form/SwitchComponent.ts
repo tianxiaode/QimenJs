@@ -36,8 +36,6 @@ export interface SwitchProps extends FormFieldProps {
 }
 
 export let SwitchComponent = FormFieldComponent.replace({
-    type: 'Switch',
-
     body: {
         nodes: {
             root: { addCls: 'q-switch' },
@@ -46,16 +44,9 @@ export let SwitchComponent = FormFieldComponent.replace({
             },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _checked: false,
-                _activeText: '' as string,
-                _inactiveText: '' as string,
-            };
-        },
+        _checked: false,
+        _activeText: '' as string,
+        _inactiveText: '' as string,
 
         onAfterInit(props?: SwitchProps): void {
             const self = this as any;

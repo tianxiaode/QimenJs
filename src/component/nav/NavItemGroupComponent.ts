@@ -1,7 +1,19 @@
+/**
+ * NavItemGroupComponent 导航项组组件
+ *
+ * 从 ItemGroupPooledComponent 派生，通过 domEvents 集中处理子项事件，
+ * 委托 NavItemComponent.select() / showTooltip() / hideTooltip() 执行状态变更。
+ *
+ * domEvents 路径：
+ * - 'NavItem.content' → 点击导航项内容区域
+ * - 'NavItem'        → 鼠标进入/离开导航项（折叠提示反馈）
+ */
+
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { NavItemComponent } from './NavItemComponent';
 import type { NavOverlayOptions } from './NavItemComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 
 export interface NavItemGroupProps extends ItemGroupProps {
     activeIndex?: number;
@@ -12,8 +24,6 @@ export interface NavItemGroupProps extends ItemGroupProps {
 }
 
 export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
-    type: 'NavItemGroup',
-
     config: {
         defaultItemType: 'NavItem',
         direction: 'horizontal',
@@ -25,14 +35,55 @@ export let NavItemGroupComponent = ItemGroupPooledComponent.replace({
             itemContainer: { addCls: 'q-nav__items' },
         },
 
-        onInitState() {
-            return {
-                _activeIndex: -1,
-                _navMode: 'expanded' as 'expanded' | 'collapsed',
-                _maxDepth: 3,
-                _overlayOptions: undefined as NavOverlayOptions | undefined,
-                _overlayComponent: undefined as any,
-            };
+        _activeIndex: -1,
+        _navMode: 'expanded' as 'expanded' | 'collapsed',
+        _maxDepth: 3,
+        _overlayOptions: undefined as NavOverlayOptions | undefined,
+        _overlayComponent: undefined as any,
+
+        domEvents: {
+            click: {
+                'NavItem.content': {
+                    handler: '_onItemClick',
+                    emits: ['[action]'],
+                },
+            },
+            mouseenter: {
+                NavItem: {
+                    handler: '_onItemEnter',
+                },
+            },
+            mouseleave: {
+                NavItem: {
+                    handler: '_onItemLeave',
+                },
+            },
+        } as DomEventsMap | undefined,
+
+        _onItemClick(this: any, domEvt: any): void {
+            const target = this.getTargetItem(domEvt.target);
+            if (!target) return;
+
+            const item = target.component as NavItemComponent;
+            if (item.select()) {
+                this.selectAt(target.index);
+            }
+        },
+
+        _onItemEnter(this: any, domEvt: any): void {
+            const target = this.getTargetItem(domEvt.target);
+            if (!target) return;
+
+            const item = target.component as NavItemComponent;
+            item.showTooltip();
+        },
+
+        _onItemLeave(this: any, domEvt: any): void {
+            const target = this.getTargetItem(domEvt.target);
+            if (!target) return;
+
+            const item = target.component as NavItemComponent;
+            item.hideTooltip();
         },
 
         onAfterInit(props?: NavItemGroupProps): void {

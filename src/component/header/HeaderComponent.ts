@@ -36,8 +36,6 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import { ButtonComponent } from '../button/ButtonComponent';
 
 export interface HeaderProps {
     icon?: string;
@@ -49,10 +47,6 @@ export interface HeaderProps {
 }
 
 class HeaderComponent extends Component {
-    static type = 'Header';
-
-    type = 'Header';
-
     forwards = {
         action: 'action',
     };

@@ -9,8 +9,12 @@
  * 事件：
  * - click — 按钮（icon/text）点击时触发
  *
- * 浮动层：
- * - 由派生组件（如 DropdownComponent）通过 floats 声明驱动
+ * 浮动层快捷方式（由 Component 基类 floats 提供）：
+ * - badge: { text: '5' } → 自动挂载 Badge 浮层（trigger='always'）
+ * - tooltip: '提示文本' → 自动挂载 Tooltip 浮层（trigger='hover'）
+ * - badge: null / tooltip: null → 不触发浮层
+ *
+ * 派生组件（如 DropdownComponent）通过 popover 属性声明弹出浮层。
  *
  * 尺寸：
  * - 支持 sm/md/lg 三档尺寸，由 SizeAbility 提供
@@ -27,38 +31,6 @@ export interface ButtonProps {
 }
 
 class ButtonComponent extends Component {
-    type = 'Button';
-
-    tpl = {
-        tag: 'div',
-        cls: 'q-button',
-        children: [
-            {
-                tag: 'i',
-                name: 'icon',
-                cls: 'q-button__icon',
-            },
-            {
-                tag: 'span',
-                name: 'text',
-                cls: 'q-button__text',
-            },
-            {
-                tag: 'i',
-                name: 'dropIcon',
-                cls: 'q-expand-arrow q-expand-arrow--collapsed',
-                hidden: true,
-            },
-        ],
-    };
-
-    events = {
-        '': { click: { emits: ['click'] } },
-        dropIcon: { click: { emits: ['dropClick'] } },
-    };
-
-    use = [SizeAbility];
-
     onAfterInit(props?: ButtonProps): void {
         this.initSize();
         this.update(props);
@@ -75,5 +47,6 @@ class ButtonComponent extends Component {
     }
 }
 
+ButtonComponent.use(SizeAbility);
 export { ButtonComponent };
 export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

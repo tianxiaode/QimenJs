@@ -2,58 +2,38 @@
  * DOM 事件委托类型定义 — 全委托模式（三层嵌套 domEvents）
  *
  * ══════════════════════════════════════════════════════════════
- * 新方案：全委托模式 — { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
+ * 全委托模式 — { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
  * ══════════════════════════════════════════════════════════════
  *
  * 事件体系三部分：
  *   ① domEvents — DOM 委托事件与转发（本文件）
  *   ② childEvents — nodeMap 子组件事件订阅（tpl-body.ts HandlersListen）
- *   ③ listens — 事件监听（tpl-body.ts ListenItem[]）
+ *   ③ listens — 事件监听（tpl-body.ts ListenItem[]，四路分流：source/entity/system/route）
  *
  * 核心规则：
  *   1. domEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
  *   2. 使用方在当前组件 el 上绑定 DOM 事件，委托匹配目标组件
- *   3. 组件路径沿 nodeMap 逐层定位，天然跨层穿透，无需层层 on 转发
+ *   3. 组件路径首段为 nodeMap key（nodeName），直接定位；后续段为子组件类型
  *   4. 按钮不需要定义 domEvents，完全被动
  *   5. domEvents 就是声明式监听：handler:true 本地监听，emits 转发，可共存
- *
- * domEvents 定义示例：
- *
- *   domEvents = {
- *       keypress: {
- *           'toolbar.Button': {
- *               'save':   { handler: true, emits: ['save'], entities: true },
- *               'create': { handler: true, emits: ['create'] },
- *           },
- *       },
- *       click: {
- *           'toolbar.Button': {
- *               'save':   { emits: ['save'] },
- *               'create': { emits: ['create'] },
- *           },
- *       },
- *   }
  *
  * 三层结构：
  *   第一层 key = DOM 事件名（click / keypress / change 等）
  *   第二层 key = 组件路径（[nodeName].[componentName]...），首段为 nodeName（nodeMap key）
  *   第三层 key = action 名，区分同类型多实例
  *
+ * 方法名推导（基于 nodeName，即 componentPath 首段）：
+ *   on{NodeName}{Action}{Event}
+ *
+ *   - 无 action：onCloseBtnClick（路径 'closeBtn'）
+ *   - 有 action：onToolbarSaveClick（路径 'toolbar.Button'，action 'save'）
+ *   - 同节点多 action：onHeaderActionClick / onHeaderSaveClick（路径 'header.Button'）
+ *
  * 运行时流程：
  *   在当前组件 el 上绑定 DOM 事件（如 click）
  *   → 事件触发 → 查 domEvents[click]
- *   → 遍历组件路径 → nodeMap 逐层定位（首段为 nodeName） → el.contains(event.target) 匹配
- *   → 找到目标组件 → 检查 action 匹配 → 执行 eventConfig
- *
- * 前缀机制：
- *   组件定义时声明节点前缀（prefix: 'drop'），事件名 = prefix + eventName
- *   prefix:'' + click → 'click'
- *   prefix:'drop' + click → 'dropClick'
- *   前缀解决同一组件内多节点的同事件区分（root vs dropIcon）
- *
- * 组件事件能力声明：
- *   static actions = ['create', 'edit', 'delete', 'save']
- *   使用方据此知道能 on 什么，TypeScript 也可提示
+ *   → 取 componentPath 首段 → nodeMap[nodeName] 直接定位 → el.contains(event.target) 匹配
+ *   → 检查 action 匹配 → 执行 eventConfig
  *
  * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  */
@@ -66,7 +46,7 @@
  * 单条委托规则（运行时使用）
  *
  * 全委托模式下，从 domEvents 三层嵌套编译生成。
- * 运行时匹配：当前组件 el 上 DOM 事件触发 → 组件路径定位 → el.contains → action 匹配
+ * 运行时匹配：当前组件 el 上 DOM 事件触发 → nodeMap 定位 → el.contains → action 匹配
  */
 export interface DelegatedEventRule {
     /** DOM 事件名（第一层 key） */
@@ -75,16 +55,16 @@ export interface DelegatedEventRule {
     /** 组件路径（第二层 key，格式 [nodeName].[componentName]...，如 'toolbar.Button'） */
     componentPath: string;
 
-    /** action 名（第三层 key，如 'save'） */
+    /** action 名（第三层 key，如 'save'）。空字符串 '' 表示无 action 场景 */
     action: string;
 
     /**
-     * 节点事件前缀 — 事件名 = prefix + eventName（首字母大写）
+     * 是否为 action 通配符模式
      *
-     * prefix:'' + click → 'click'
-     * prefix:'drop' + click → 'dropClick'
+     * 当 emits 包含 '[action]' 占位符时自动标记为 true，
+     * 表示匹配任何 action 值，运行时用实际 action 替换 '[action]'。
      */
-    prefix?: string;
+    wildcardAction?: boolean;
 
     /**
      * 事件数据声明
@@ -106,8 +86,13 @@ export interface DelegatedEventRule {
     /** 转发为系统事件 */
     system?: string[];
 
-    /** DOM 事件委托 → 调用组件本地方法 */
-    handler?: boolean;
+    /**
+     * DOM 事件委托 → 调用组件本地方法
+     *
+     * - true：自动推导方法名（on{NodeName}{Action}{Event}）
+     * - string：使用自定义方法名
+     */
+    handler?: boolean | string;
 
     /** 只执行一次 */
     once?: boolean;
@@ -123,18 +108,48 @@ export interface DelegatedEventRule {
 }
 
 /**
- * domEvents 三层嵌套类型
+ * 单条事件配置（三层嵌套中的最内层对象）
  *
- * { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
+ * 不含 event / componentPath / action / needsBinding，
+ * 用于 domEvents 的第三层 value，也可用于其他场景（如 item events）。
+ */
+export type DomEventConfig = Omit<
+    DelegatedEventRule,
+    'event' | 'componentPath' | 'action' | 'needsBinding'
+>;
+
+/**
+ * 节点事件配置 — 单条 DOM 事件的监听与转发配置
+ *
+ * 等价于 DomEventConfig，用于 ItemGroup 等场景中为子节点声明事件。
+ *
+ * @example
+ * ```ts
+ * // ItemGroup 子节点的事件配置
+ * { click: { handler: true, emits: ['itemClick'] } }
+ * ```
+ */
+export type TplEventAction = DomEventConfig;
+
+/**
+ * domEvents 两层或三层嵌套类型
+ *
+ * 三层模式（显式 action）：
+ *   { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
+ *   示例：{ click: { 'header.action': { collapse: { handler: true, emits: ['collapse'] } } } }
+ *
+ * 两层模式（[action] 占位符自动匹配）：
+ *   { [domEvent]: { [componentPath]: eventConfig } }
+ *   示例：{ click: { 'header.action': { handler: true, emits: ['[action]'] } } }
+ *
+ * 两层模式下：
+ * - handler 方法名使用匹配组件的实际 action
+ * - emits 中的 '[action]' 被替换为实际 action
+ * - 支持逗号分隔多路径：'path1,path2': eventConfig
  */
 export interface DomEventsMap {
     [domEvent: string]: {
-        [componentPath: string]: {
-            [action: string]: Omit<
-                DelegatedEventRule,
-                'event' | 'componentPath' | 'action' | 'needsBinding'
-            >;
-        };
+        [componentPath: string]: DomEventConfig | { [action: string]: DomEventConfig };
     };
 }
 

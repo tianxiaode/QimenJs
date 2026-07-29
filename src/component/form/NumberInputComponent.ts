@@ -51,27 +51,18 @@ function toPrecision(v: number, precision?: number): number {
 }
 
 export let NumberInputComponent = InputComponent.replace({
-    type: 'NumberInput',
-
     body: {
         nodes: {
             root: { addCls: 'q-input--number' },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _numValue: NaN as number,
-                _min: undefined as number | undefined,
-                _max: undefined as number | undefined,
-                _step: 1 as number,
-                _precision: undefined as number | undefined,
-                _stepUpItem: null as any,
-                _stepDownItem: null as any,
-            };
-        },
+        _numValue: NaN as number,
+        _min: undefined as number | undefined,
+        _max: undefined as number | undefined,
+        _step: 1 as number,
+        _precision: undefined as number | undefined,
+        _stepUpItem: null as any,
+        _stepDownItem: null as any,
 
         onAfterInit(props?: NumberInputProps): void {
             const self = this as any;

@@ -29,14 +29,9 @@ export interface TextCellProps {
 }
 
 export let TextCellComponent = BaseCellComponent.replace({
-    type: 'TextCell',
 
     body: {
-        onInitState() {
-            return {
-                _format: undefined as ColumnFormat | undefined,
-            };
-        },
+        _format: undefined as ColumnFormat | undefined,
 
         onAfterInit(props?: TextCellProps): void {
             const self = this as any;

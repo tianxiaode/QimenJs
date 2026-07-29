@@ -40,9 +40,6 @@ export interface OverflowMenuProps {
 }
 
 class OverflowMenuComponent extends Component {
-    static type = 'OverflowMenu';
-    type = 'OverflowMenu';
-
     _anchor: HTMLElement | null = null;
     _direction: OverflowDirection = 'horizontal';
     _menuOffset: number = 0;
@@ -55,23 +52,6 @@ class OverflowMenuComponent extends Component {
     _mutationObserver: MutationObserver | null = null;
     _rafId: number = 0;
     _menuOverlayKey: string = '';
-
-    onInitState() {
-        return {
-            _anchor: null as HTMLElement | null,
-            _direction: 'horizontal' as OverflowDirection,
-            _menuOffset: 0,
-            _maxVisibleItems: 0,
-            _triggerBtn: null as HTMLElement | null,
-            _menuInstance: null as any,
-            _isMenuOpen: false,
-            _overflowItems: [] as OverflowMenuItem[],
-            _resizeObserver: null as ResizeObserver | null,
-            _mutationObserver: null as MutationObserver | null,
-            _rafId: 0,
-            _menuOverlayKey: '',
-        };
-    }
 
     _initOverflowMenu(props?: OverflowMenuProps): void {
         const anchor = props?.anchor;

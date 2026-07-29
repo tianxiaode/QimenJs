@@ -5,7 +5,7 @@
  * 支持图标、文本、快捷键、禁用状态、子菜单、分组选中。
  *
  * 模板节点：
- * - content — 整行可点击区域（事件：click → onClick）
+ * - content — 整行可点击区域
  * - icon — 图标（DOM 节点），分组模式下自动渲染选中指示符，与自定义 icon 互斥
  * - text — 文本
  * - shortcut — 快捷键文本
@@ -19,11 +19,12 @@
  * - 自定义 icon 与分组指示符互斥：有 group 时优先显示指示符
  *
  * 子菜单：通过 OverlayEventBus 通知调度中心打开/关闭子菜单浮层
+ *
+ * 事件处理由 MenuComponent 通过 domEvents 集中委托，
+ * 本组件只提供 select() / setExpandArrow() 等公开方法供父组件调用。
  */
 
 import { Component } from '@qimenjs/component-core';
-
-import { OverlayEventBus } from '@/events/OverlayEventBus';
 
 export type MenuItemGroupMode = 'radio' | 'checkbox';
 
@@ -36,28 +37,17 @@ export interface MenuItemProps {
     group?: string;
     groupMode?: MenuItemGroupMode;
     checked?: boolean;
-    onSelect?: (item: any) => void;
     submenuProps?: Record<string, any>;
 }
 
 class MenuItemComponent extends Component {
-    static type = 'MenuItem';
-
-    type = 'MenuItem';
-
-    onInitState() {
-        return {
-            _disabled: false,
-            _hasSubmenu: false,
-            _group: '',
-            _groupMode: 'radio' as MenuItemGroupMode,
-            _checked: false,
-            _userIcon: '',
-            onSelect: null as ((item: any) => void) | null,
-            submenuProps: null as Record<string, any> | null,
-            _submenuTimer: null as ReturnType<typeof setTimeout> | null,
-        };
-    }
+    _disabled: boolean = false;
+    _hasSubmenu: boolean = false;
+    _group: string = '';
+    _groupMode: MenuItemGroupMode = 'radio';
+    _checked: boolean = false;
+    _userIcon: string = '';
+    submenuProps: Record<string, any> | null = null;
 
     onAfterInit(props?: MenuItemProps & Record<string, any>): void {
         this._initMenuItem(props);
@@ -74,7 +64,6 @@ class MenuItemComponent extends Component {
         if (props?.group) this._group = props.group;
         if (props?.groupMode) this._groupMode = props.groupMode;
         if (props?.checked) this._checked = props.checked;
-        if (props?.onSelect) this.onSelect = props.onSelect;
         if (props?.submenuProps) this.submenuProps = props.submenuProps;
 
         this._applyState();
@@ -131,9 +120,14 @@ class MenuItemComponent extends Component {
         this._applyState();
     }
 
-    onClick(): void {
-        if (this._disabled) return;
-        if (this._hasSubmenu) return;
+    /**
+     * 选中/切换 — 由 MenuComponent domEvents 委托调用
+     *
+     * 处理分组 toggle 逻辑，返回 true 表示有效选中（非禁用、非子菜单项）
+     */
+    select(): boolean {
+        if (this._disabled) return false;
+        if (this._hasSubmenu) return false;
 
         if (this._group) {
             if (this._groupMode === 'checkbox') {
@@ -146,12 +140,20 @@ class MenuItemComponent extends Component {
             this._applyState();
         }
 
-        if (this.eventKey) {
-            this.emit('click', undefined, { source: this.eventKey });
-            this.emit('select', undefined, { source: this.eventKey });
-        }
+        return true;
+    }
 
-        this.onSelect?.(this);
+    /**
+     * 设置展开箭头状态 — 由 MenuComponent domEvents 委托调用
+     */
+    setExpandArrow(state: 'expanded' | 'collapsed'): void {
+        if (state === 'expanded') {
+            this.addCls('q-expand-arrow--expanded', 'expand');
+            this.removeCls('q-expand-arrow--collapsed', 'expand');
+        } else {
+            this.removeCls('q-expand-arrow--expanded', 'expand');
+            this.addCls('q-expand-arrow--collapsed', 'expand');
+        }
     }
 
     _applyState(): void {
@@ -198,39 +200,6 @@ class MenuItemComponent extends Component {
         this.icon = value;
     }
 
-    onRootEnter(): void {
-        this._clearSubmenuTimer();
-
-        if (this._hasSubmenu && !this._disabled) {
-            this._updateExpandArrow('expanded');
-        }
-    }
-
-    onRootLeave(): void {
-        this._clearSubmenuTimer();
-
-        if (this._hasSubmenu) {
-            this._updateExpandArrow('collapsed');
-        }
-    }
-
-    _clearSubmenuTimer(): void {
-        if (this._submenuTimer) {
-            clearTimeout(this._submenuTimer);
-            this._submenuTimer = null;
-        }
-    }
-
-    _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
-        if (state === 'expanded') {
-            this.addCls('q-expand-arrow--expanded', 'expand');
-            this.removeCls('q-expand-arrow--collapsed', 'expand');
-        } else {
-            this.removeCls('q-expand-arrow--expanded', 'expand');
-            this.addCls('q-expand-arrow--collapsed', 'expand');
-        }
-    }
-
     update(props?: Partial<MenuItemProps> & Record<string, any>): void {
         if (props?.text !== undefined) this.text = props.text;
         if (props?.icon !== undefined) this._userIcon = props.icon;
@@ -240,7 +209,6 @@ class MenuItemComponent extends Component {
         if (props?.group !== undefined) this.group = props.group;
         if (props?.groupMode !== undefined) this.groupMode = props.groupMode;
         if (props?.checked !== undefined) this.checked = props.checked;
-        if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
         if (props?.submenuProps !== undefined) this.submenuProps = props.submenuProps;
     }
 }

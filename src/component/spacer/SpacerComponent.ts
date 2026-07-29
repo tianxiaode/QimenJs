@@ -21,10 +21,6 @@ export interface SpacerProps {
 }
 
 class SpacerComponent extends Component {
-    static type = 'Spacer';
-
-    type = 'Spacer';
-
     onAfterInit(props?: SpacerProps): void {
         if (props?.size !== undefined) {
             this.width = props.size;

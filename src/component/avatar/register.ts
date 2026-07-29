@@ -1,11 +1,6 @@
-/**
- * Avatar 模板注册
- */
-
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { AvatarComponent } from './AvatarComponent';
 import { AVATAR_TPL } from './avatar-tpl';
 
 export function registerAvatarTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Avatar', AVATAR_TPL);
+    AvatarComponent.register(AVATAR_TPL);
 }

@@ -68,7 +68,6 @@ interface FieldEntry {
 const bus = EntityEventBus.getInstance();
 
 export let FormComponent = ItemGroupStaticComponent.replace({
-    type: 'Form',
     config: {
         direction: 'vertical',
         gap: '16px',
@@ -79,18 +78,15 @@ export let FormComponent = ItemGroupStaticComponent.replace({
             root: { addCls: 'q-form' },
             itemContainer: { addCls: 'q-form__fields' },
         },
-        onInitState() {
-            return {
-                _entityKey: '' as string,
-                _action: 'create' as FormAction,
-                _fieldMap: {} as Record<string, FieldEntry>,
-                _fieldOrder: [] as string[],
-                _initialData: null as Record<string, any> | null,
-                _editId: null as string | number | null,
-                _entityUnsubs: [] as (() => void)[],
-                _submitting: false,
-            };
-        },
+
+        _entityKey: '' as string,
+        _action: 'create' as FormAction,
+        _fieldMap: {} as Record<string, FieldEntry>,
+        _fieldOrder: [] as string[],
+        _initialData: null as Record<string, any> | null,
+        _editId: null as string | number | null,
+        _entityUnsubs: [] as (() => void)[],
+        _submitting: false,
 
         onAfterInit(props?: FormProps): void {
             const self = this as any;

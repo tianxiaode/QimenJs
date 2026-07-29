@@ -21,7 +21,7 @@ import type { FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
  * 字段与 TplNode 几乎一一对应，无需中间转换类型：
  * - i18n → i18nKey（唯一重命名）
  * - componentClass 从 TplNode.type 解析
- * - DOM 事件通过节点内联 emits 声明处理，不存入 NodeMetadata
+
  *
  * @example
  * ```ts
@@ -73,14 +73,7 @@ export interface NodeMetadata {
     // ─── event：事件声明（从 TplNode 编译） ───
 
     /**
-     * 节点事件映射 — 从 TplNode.emits 编译
-     *
-     * key = DOM 事件类型（click/hover/input 等），value = 组件事件名
-     * @deprecated 全委托模式下由 DomEventsEngine 处理，emits 仅做兼容
-     */
-    emits?: Record<string, string>;
 
-    /**
      * 语义动作名 — 从 TplNode.action 编译
      *
      * 节点声明的语义动作，事件触发时自动合并到事件数据中

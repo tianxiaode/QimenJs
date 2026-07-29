@@ -28,18 +28,12 @@ export interface ToggleProps {
     pressed?: boolean;
     disabled?: boolean;
     size?: 'sm' | 'md' | 'lg';
+    value?: any;
 }
 
 class ToggleComponent extends Component {
-    static type = 'Toggle';
-
-    type = 'Toggle';
-
-    onInitState() {
-        return {
-            _pressed: false,
-        };
-    }
+    _pressed: boolean = false;
+    _value: any = undefined;
 
     onAfterInit(props?: ToggleProps): void {
         this.initSize();
@@ -48,6 +42,7 @@ class ToggleComponent extends Component {
         if (props?.size) this.size = props.size;
         if (props?.text) this.text = props.text;
         if (props?.icon) this._setIcon(props.icon);
+        if (props?.value !== undefined) this._value = props.value;
         this._applyState();
     }
 
@@ -67,6 +62,13 @@ class ToggleComponent extends Component {
     set pressed(value: boolean) {
         this._pressed = value;
         this._applyState();
+    }
+
+    get value(): any {
+        return this._value;
+    }
+    set value(val: any) {
+        this._value = val;
     }
 
     _setIcon(value: string): void {
@@ -96,6 +98,7 @@ class ToggleComponent extends Component {
         if (props?.size !== undefined) this.size = props.size;
         if (props?.text !== undefined) this.text = props.text;
         if (props?.icon !== undefined) this._setIcon(props.icon);
+        if (props?.value !== undefined) this._value = props.value;
     }
 }
 

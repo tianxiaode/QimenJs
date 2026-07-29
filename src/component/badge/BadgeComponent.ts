@@ -11,10 +11,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class BadgeComponent extends Component {
-    static type = 'Badge';
-
-    type = 'Badge';
-
     onOverlayChange(data: any): void {
         if (!data) return;
         if (data.text !== undefined) {

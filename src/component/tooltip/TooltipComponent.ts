@@ -1,13 +1,13 @@
 /**
- * TipsComponent 提示浮层组件
+ * TooltipComponent 提示浮层组件
  *
  * 纯渲染组件，由 OverlayDispatchCenter 创建和管理生命周期。
  * 调度中心负责：定位计算、z-index 管理、OverlayRoot 挂载/卸载、clickOutside/escape 关闭。
- * TipsComponent 只负责：渲染内容、箭头指示器。
+ * TooltipComponent 只负责：渲染内容、箭头指示器。
  *
  * 使用方式：
- * - 组件通过 body.overlays 配置声明，调度中心自动创建
- * - 调度中心调用 new TipsComponent({ anchor, tooltip, ... })
+ * - 组件通过 body.floats 配置声明，调度中心自动创建
+ * - 调度中心调用 new TooltipComponent({ anchor, tooltip, ... })
  * - 显隐由调度中心通过 hidden 属性控制
  */
 
@@ -16,7 +16,7 @@ import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
 import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 
-export interface TipsProps {
+export interface TooltipProps {
     anchor?: HTMLElement;
     tooltip?: string;
     tooltipPlacement?: string;
@@ -26,19 +26,11 @@ export interface TipsProps {
     tooltipArrow?: boolean;
 }
 
-class TipsComponent extends Component {
-    static type = 'Tips';
+class TooltipComponent extends Component {
+    _anchor: HTMLElement | null = null;
+    _overlayOpen: boolean = false;
 
-    type = 'Tips';
-
-    onInitState() {
-        return {
-            _anchor: null as HTMLElement | null,
-            _overlayOpen: false,
-        };
-    }
-
-    _initTips(props?: TipsProps): void {
+    _initTooltip(props?: TooltipProps): void {
         const anchor = props?.anchor;
         if (!anchor) return;
 
@@ -101,7 +93,7 @@ class TipsComponent extends Component {
     }
 }
 
-TipsComponent.use([ArrowAbility]);
+TooltipComponent.use([ArrowAbility]);
 
-export { TipsComponent };
-export type TipsComponentInstance = InstanceType<typeof TipsComponent>;
+export { TooltipComponent };
+export type TooltipComponentInstance = InstanceType<typeof TooltipComponent>;

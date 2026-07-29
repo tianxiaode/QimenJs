@@ -10,7 +10,7 @@ export const INDICATOR_TPL: TplNode = {
             cls: 'q-indicator__arrow q-indicator__arrow--prev',
             hidden: true,
         },
-        { tag: 'div', name: 'items', cls: 'q-indicator__items' },
+        { tag: 'div', name: 'itemContainer', cls: 'q-indicator__items' },
         {
             tag: 'div',
             name: 'nextBtn',

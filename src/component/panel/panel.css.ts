@@ -39,4 +39,14 @@ export const panelCSS = `
 .q-panel--collapsed .q-panel__header .q-header {
     border-bottom-color: transparent;
 }
+
+/* 关闭态 — 整个面板隐藏 */
+.q-panel--closed {
+    display: none;
+}
+
+/* 关闭态 — header 无下边框 */
+.q-panel--closed .q-panel__header .q-header {
+    border-bottom-color: transparent;
+}
 `;

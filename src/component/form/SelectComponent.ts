@@ -53,28 +53,19 @@ function getFieldEl(cmp: any): HTMLInputElement | null {
 const DROPDOWN_ICON_ORDER = 30;
 
 export let SelectComponent = InputComponent.replace({
-    type: 'Select',
-
     body: {
         nodes: {
             root: { addCls: 'q-select' },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _options: [] as SelectOption[],
-                _selectedValue: undefined as string | number | (string | number)[] | undefined,
-                _multiple: false,
-                _filterable: false,
-                _dropdownOpen: false,
-                _dropdownIconItem: null as any,
-                _panelEl: null as HTMLElement | null,
-                _offOverlay: null as (() => void) | null,
-            };
-        },
+        _options: [] as SelectOption[],
+        _selectedValue: undefined as string | number | (string | number)[] | undefined,
+        _multiple: false,
+        _filterable: false,
+        _dropdownOpen: false,
+        _dropdownIconItem: null as any,
+        _panelEl: null as HTMLElement | null,
+        _offOverlay: null as (() => void) | null,
 
         onAfterInit(props?: SelectProps): void {
             const self = this as any;

@@ -30,17 +30,9 @@ export interface ToggleIconProps {
 }
 
 class ToggleIconComponent extends Component {
-    static type = 'ToggleIcon';
-
-    type = 'ToggleIcon';
-
-    onInitState() {
-        return {
-            _on: false,
-            _onIcon: '',
-            _offIcon: '',
-        };
-    }
+    _on: false = false;
+    _onIcon: string = '';
+    _offIcon: string = '';
 
     onAfterInit(props?: ToggleIconProps): void {
         this.initSize();
@@ -117,7 +109,7 @@ class ToggleIconComponent extends Component {
     }
 }
 
-ToggleIconComponent.use([SizeAbility]);
+ToggleIconComponent.use(SizeAbility);
 
 export { ToggleIconComponent };
 export type ToggleIconComponentInstance = InstanceType<typeof ToggleIconComponent>;

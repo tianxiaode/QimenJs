@@ -1,7 +1,7 @@
 /**
  * 组件 type 注册入口
  *
- * 提供 registerAllComponents() 方法，将所有基础组件注册到 TemplateRegistrar。
+ * 提供 registerAllComponents() 方法，将所有基础组件注册到 ComponentRegistrar。
  * 采用 ExtJS 模式——基础组件全量注册，扩展组件按需注册。
  *
  * @example
@@ -11,7 +11,6 @@
  * ```
  */
 
-import { TemplateRegistrar } from '@qimenjs/component-core';
 import { registerButtonTemplates } from './button/register';
 import { registerDividerTemplates } from './divider/register';
 import { registerSpacerTemplates } from './spacer/register';
@@ -31,7 +30,7 @@ import { registerLabelTemplates } from './label/register';
 import { registerIndicatorTemplates } from './indicator/register';
 import { registerBreadcrumbTemplates } from './breadcrumb/register';
 import { registerRatingTemplates } from './rating/register';
-import { registerTipsTemplates } from './tips/register';
+import { registerTooltipTemplates } from './tooltip/register';
 import { registerButtonGroupTemplates } from './button-group/register';
 import { registerFieldsetTemplates } from './fieldset/register';
 import { registerAccordionTemplates } from './accordion/register';
@@ -53,12 +52,7 @@ import { registerOverflowTemplates } from './overflow/register';
 import { registerOverflowScrollTemplates } from './overflow/register-scroll';
 import { registerOverflowMenuTemplates } from './overflow/register-menu';
 import { registerEntityToolbarTemplates } from './entity-toolbar/register';
-import { registerFormFieldTemplates } from './form/register';
-import { registerInputFieldBodyTemplates } from './form/register-input-field-body';
-import { registerRadioGroupFieldBodyTemplates } from './form/register-radio-group-field-body';
-import { registerCheckboxGroupFieldBodyTemplates } from './form/register-checkbox-group-field-body';
-import { registerSwitchFieldBodyTemplates } from './form/register-switch-field-body';
-import { registerTextareaFieldBodyTemplates } from './form/register-textarea-field-body';
+import { registerFormTemplates } from './form/register';
 import { registerDatePanelTemplates } from './date/register';
 import { registerBaseHeaderCellTemplates } from './table/header/register';
 import { registerBaseCellTemplates } from './table/cells/register';
@@ -84,7 +78,7 @@ export function registerAllComponents(): void {
     registerIndicatorTemplates();
     registerBreadcrumbTemplates();
     registerRatingTemplates();
-    registerTipsTemplates();
+    registerTooltipTemplates();
     registerButtonGroupTemplates();
     registerFieldsetTemplates();
     registerAccordionTemplates();
@@ -105,12 +99,7 @@ export function registerAllComponents(): void {
     registerOverflowScrollTemplates();
     registerOverflowMenuTemplates();
     registerEntityToolbarTemplates();
-    registerFormFieldTemplates();
-    registerInputFieldBodyTemplates();
-    registerRadioGroupFieldBodyTemplates();
-    registerCheckboxGroupFieldBodyTemplates();
-    registerSwitchFieldBodyTemplates();
-    registerTextareaFieldBodyTemplates();
+    registerFormTemplates();
     registerDatePanelTemplates();
     registerBaseHeaderCellTemplates();
     registerBaseCellTemplates();

@@ -37,17 +37,14 @@ const POSITION_LABELS: Record<DigitPosition, string> = {
 };
 
 class YearPanelComponent extends Component {
-    static type = 'YearPanel';
-
-    type = 'YearPanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-            _currentPosition: 'thousands' as DigitPosition,
-            _digits: { thousands: -1, hundreds: -1, tens: -1, ones: -1 },
-        };
-    }
+    _value: DateTimeValue | null = null;
+    _currentPosition: DigitPosition = 'thousands';
+    _digits: { thousands: number; hundreds: number; tens: number; ones: number } = {
+        thousands: -1,
+        hundreds: -1,
+        tens: -1,
+        ones: -1,
+    };
 
     onAfterInit(props?: YearPanelProps): void {
         this._value = props?.value ?? {

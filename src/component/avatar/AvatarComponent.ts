@@ -25,10 +25,6 @@ export interface AvatarProps {
 }
 
 class AvatarComponent extends Component {
-    static type = 'Avatar';
-
-    type = 'Avatar';
-
     onAfterInit(props?: AvatarProps): void {
         this.initSize();
         this.update(props);
@@ -52,7 +48,6 @@ class AvatarComponent extends Component {
     }
 }
 
-AvatarComponent.use([SizeAbility]);
-
+AvatarComponent.use(SizeAbility);
 export { AvatarComponent };
 export type AvatarComponentInstance = InstanceType<typeof AvatarComponent>;

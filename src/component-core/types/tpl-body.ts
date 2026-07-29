@@ -246,9 +246,9 @@ export type FloatTrigger = 'click' | 'hover' | 'focus' | 'manual' | 'always';
  *
  * 2. 组件级浮动：key 是语义名，必须指定 anchor
  *    floats: {
- *        tooltip: { type: 'Tips', anchor: 'self', trigger: 'hover' },
+ *        tooltip: { type: 'Tooltip', anchor: 'self', trigger: 'hover' },
  *        // anchor='self' → 锚定组件自身 el，悬停触发
- *        tooltip: { type: 'Tips', anchor: 'self', trigger: ['hover', 'click'] },
+ *        tooltip: { type: 'Tooltip', anchor: 'self', trigger: ['hover', 'click'] },
  *        // 悬停或点击都触发
  *        badge: { type: 'Badge', anchor: 'icon', trigger: 'always' },
  *        // anchor='icon' → 锚定 nodeMap.icon.el，始终显示
@@ -281,6 +281,27 @@ export interface FloatDecl {
      * - 数组：多种触发方式组合（如 ['hover', 'click']）
      */
     trigger?: FloatTrigger | FloatTrigger[];
+    /** 弹出方向 */
+    placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+    /** 与锚点的间距（像素） */
+    offset?: number;
+    /** 点击浮层外部是否关闭（默认 true） */
+    closeOnClickOutside?: boolean;
+    /** 按 Escape 是否关闭（默认 true） */
+    closeOnEscape?: boolean;
+    /** 遮罩配置：true=默认遮罩，string=自定义遮罩样式类 */
+    mask?: boolean | string;
+    /**
+     * 浮层事件转发：key=反馈事件名，value=转发到组件的事件名
+     *
+     * 反馈事件：shown（已显示）、hidden（已隐藏）、changed（数据已变更）
+     *
+     * @example
+     * emits: { shown: 'dropOpen', hidden: 'dropClose' }
+     * // 浮层打开时 → 组件 emit('dropOpen', data)
+     * // 浮层关闭时 → 组件 emit('dropClose', data)
+     */
+    emits?: Record<string, string>;
     /** 显示延迟（毫秒），trigger 为 hover 时生效 */
     showDelay?: number;
     /** 隐藏延迟（毫秒），trigger 为 hover 时生效 */
@@ -504,7 +525,7 @@ export interface LifecycleHooks {
  *     ],
  *     floats: {
  *         dropBtn: { type: 'DropPanel', align: 'bottom' },
- *         helpIcon: { type: 'Tips', placement: 'top' },
+ *         helpIcon: { type: 'Tooltip', placement: 'top' },
  *     },
  *     drags: {
  *         handle: { axis: 'y', bounds: 'parent' },

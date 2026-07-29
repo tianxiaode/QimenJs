@@ -18,8 +18,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class SwitchFieldBodyComponent extends Component {
-    static type = 'SwitchFieldBody';
-    type = 'SwitchFieldBody';
 }
 
 export { SwitchFieldBodyComponent };

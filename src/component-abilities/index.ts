@@ -33,3 +33,6 @@ export { resizeCSS } from './resize/resize.css';
 // 本地数据能力
 export { LocalDataAbility, type LocalDataChangeCallback } from './data';
 export { LocalDataManager, type LocalDataManagerConfig, type ILocalDataManager } from './data';
+
+// 指示器能力
+export { IndicatorAbility, type IndicatorType, type IndicatorConfig } from './indicator';

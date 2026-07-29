@@ -166,7 +166,7 @@ export class CompileEngine {
         nodeMetas['root'] = {
             name: 'root',
             tag: root.tag,
-            emits: root.emits,
+
             action: root.action,
             data: root.data,
             cls: root.cls,
@@ -274,7 +274,7 @@ export class CompileEngine {
             name,
             tag: node.tag,
             type: typeof node.type === 'string' ? node.type : undefined,
-            emits: node.emits,
+
             action: node.action,
             data: node.data,
             cls: appendCls(node.cls, SKELETON_CLS),
@@ -336,7 +336,7 @@ export class CompileEngine {
             const meta: NodeMetadata = {
                 name,
                 tag,
-                emits: node.emits,
+
                 action: node.action,
                 data: node.data,
                 contentMode: CompileEngine.inferContentMode(tag),

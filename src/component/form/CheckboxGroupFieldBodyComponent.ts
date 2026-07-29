@@ -18,8 +18,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class CheckboxGroupFieldBodyComponent extends Component {
-    static type = 'CheckboxGroupFieldBody';
-    type = 'CheckboxGroupFieldBody';
 }
 
 export { CheckboxGroupFieldBodyComponent };

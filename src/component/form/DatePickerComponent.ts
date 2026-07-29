@@ -52,30 +52,21 @@ function getFieldEl(cmp: any): HTMLInputElement | null {
 }
 
 export const DatePickerComponent = InputComponent.replace({
-    type: 'DatePicker',
-
     body: {
         nodes: {
             root: { addCls: 'q-datepicker' },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _dateValue: null as DateTimeValue | null,
-                _originalValue: null as DateTimeValue | null,
-                _showSeconds: true,
-                _startDayOfWeek: 0,
-                _dropdownOpen: false,
-                _currentField: null as DateTimeField | null,
-                _flowQueue: [] as DateTimeField[],
-                _panelEl: null as HTMLElement | null,
-                _panelCmp: null as any,
-                _previewEl: null as HTMLElement | null,
-            };
-        },
+        _dateValue: null as DateTimeValue | null,
+        _originalValue: null as DateTimeValue | null,
+        _showSeconds: true,
+        _startDayOfWeek: 0,
+        _dropdownOpen: false,
+        _currentField: null as DateTimeField | null,
+        _flowQueue: [] as DateTimeField[],
+        _panelEl: null as HTMLElement | null,
+        _panelCmp: null as any,
+        _previewEl: null as HTMLElement | null,
 
         onAfterInit(props?: DatePickerProps): void {
             const self = this as any;

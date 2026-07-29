@@ -16,310 +16,257 @@ import { EventContextBuilder } from '@qimenjs/context';
 import { ThemeRegistrar } from '@qimenjs/theme';
 import { getI18nManager } from '@qimenjs/i18n';
 import { SYSTEM_EVENTS } from '@qimenjs/events';
+import { AppFooterComponent } from './AppFooter';
 
-interface NavItem {
-    label: string;
-    path: string;
-    icon?: string;
-}
 
-const NAV_ITEMS: NavItem[] = [
-    { label: '首页', path: '/', icon: 'fa-solid fa-house' },
-    { label: '组件', path: '/components', icon: 'fa-solid fa-cubes' },
-    { label: '模板', path: '/templates', icon: 'fa-solid fa-layer-group' },
-];
 
-const LANGUAGE_OPTIONS = [
-    { value: 'zh-CN', label: '中文' },
-    { value: 'en-US', label: 'English' },
-];
+export class AppHeaderComponent extends Component {
+    _navItems = [] as NavItem[];
+    _activePath = '/';
+    _isDark = false;
+    _currentTheme = 'light';
+    _currentLang = 'zh-CN';
 
-const THEME_OPTIONS = [
-    { value: 'light', label: '亮色' },
-    { value: 'dark', label: '暗色' },
-];
+    onAfterInit(): void {
+        this._initNav();
+        this._initActions();
+        this._initDarkState();
+        this._initRouteListener();
+        this._initI18nListener();
+    }
 
-export let AppHeaderComponent = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-app-header',
-        flex: { direction: 'row', align: 'center', gap: '24px' },
-        children: [
-            {
-                tag: 'div',
-                name: 'logo',
-                cls: 'q-app-header__logo',
-                flex: { direction: 'row', align: 'center', gap: '8px' },
-                events: { click: { handler: true } },
-                children: [
-                    { tag: 'i', cls: 'fa-solid fa-qi' },
-                    { tag: 'span', name: 'logoText' },
-                ],
-            },
-            {
-                tag: 'div',
-                name: 'nav',
-                cls: 'q-app-header__nav',
-                flex: { direction: 'row', align: 'center', gap: '4px' },
-            },
-            {
-                tag: 'div',
-                name: 'actions',
-                cls: 'q-app-header__actions',
-                flex: { direction: 'row', align: 'center', gap: '8px' },
-            },
-        ],
-    },
-    body: {
-        type: 'AppHeader',
+    _initNav(): void {
+        const navEl = this.nodeMap.nav.el;
+        navEl.innerHTML = '';
 
-        onInitState() {
-            return {
-                _navItems: [] as NavItem[],
-                _activePath: '/',
-                _isDark: false,
-                _currentTheme: 'light',
-                _currentLang: 'zh-CN',
-            };
-        },
-
-        onAfterInit(): void {
-            this._initNav();
-            this._initActions();
-            this._initDarkState();
-            this._initRouteListener();
-            this._initI18nListener();
-        },
-
-        _initNav(): void {
-            const navEl = this.nodeMap.nav.el;
-            navEl.innerHTML = '';
-
-            for (const item of NAV_ITEMS) {
-                const btn = document.createElement('button');
-                btn.className = 'q-app-nav-item';
-                btn.style.cssText = [
-                    'padding: 6px 14px',
-                    'border: none',
-                    'background: transparent',
-                    'border-radius: 4px',
-                    'cursor: pointer',
-                    'font-size: 14px',
-                    'color: var(--q-demo-text-secondary)',
-                    'display: flex',
-                    'align-items: center',
-                    'gap: 6px',
-                    'transition: all 0.15s',
-                ].join(';');
-                btn.dataset.path = item.path;
-
-                if (item.icon) {
-                    const icon = document.createElement('i');
-                    icon.className = item.icon;
-                    icon.style.fontSize = '12px';
-                    btn.appendChild(icon);
-                }
-
-                const label = document.createElement('span');
-                label.textContent = item.label;
-                btn.appendChild(label);
-
-                btn.addEventListener('click', () => {
-                    this._navigateTo(item.path);
-                });
-
-                navEl.appendChild(btn);
-            }
-
-            this._updateNavHighlight(this._activePath);
-        },
-
-        _initActions(): void {
-            const actionsEl = this.nodeMap.actions.el;
-            actionsEl.innerHTML = '';
-
-            const darkBtn = this._createDarkToggle();
-            actionsEl.appendChild(darkBtn);
-
-            const themeSelect = this._createThemeSelect();
-            actionsEl.appendChild(themeSelect);
-
-            const langSelect = this._createLangSelect();
-            actionsEl.appendChild(langSelect);
-        },
-
-        _createDarkToggle(): HTMLElement {
+        for (const item of NAV_ITEMS) {
             const btn = document.createElement('button');
-            btn.className = 'q-app-dark-toggle';
+            btn.className = 'q-app-nav-item';
             btn.style.cssText = [
-                'width: 32px',
-                'height: 32px',
-                'border: 1px solid var(--q-demo-border)',
-                'border-radius: 4px',
+                'padding: 6px 14px',
+                'border: none',
                 'background: transparent',
+                'border-radius: 4px',
                 'cursor: pointer',
+                'font-size: 14px',
+                'color: var(--q-demo-text-secondary)',
                 'display: flex',
                 'align-items: center',
-                'justify-content: center',
+                'gap: 6px',
                 'transition: all 0.15s',
             ].join(';');
+            btn.dataset.path = item.path;
 
-            const icon = document.createElement('i');
-            icon.className = 'fa-solid fa-moon';
-            btn.appendChild(icon);
+            if (item.icon) {
+                const icon = document.createElement('i');
+                icon.className = item.icon;
+                icon.style.fontSize = '12px';
+                btn.appendChild(icon);
+            }
+
+            const label = document.createElement('span');
+            label.textContent = item.label;
+            btn.appendChild(label);
 
             btn.addEventListener('click', () => {
-                this._toggleDark();
+                this._navigateTo(item.path);
             });
 
-            return btn;
-        },
+            navEl.appendChild(btn);
+        }
 
-        _createThemeSelect(): HTMLElement {
-            const select = document.createElement('select');
-            select.className = 'q-app-header__select';
+        this._updateNavHighlight(this._activePath);
+    }
 
-            for (const t of THEME_OPTIONS) {
-                const opt = document.createElement('option');
-                opt.value = t.value;
-                opt.textContent = t.label;
-                if (t.value === this._currentTheme) opt.selected = true;
-                select.appendChild(opt);
-            }
+    _initActions(): void {
+        const actionsEl = this.nodeMap.actions.el;
+        actionsEl.innerHTML = '';
 
-            select.addEventListener('change', () => {
-                const theme = select.value;
-                this._applyTheme(theme);
-            });
+        const darkBtn = this._createDarkToggle();
+        actionsEl.appendChild(darkBtn);
 
-            return select;
-        },
+        const themeSelect = this._createThemeSelect();
+        actionsEl.appendChild(themeSelect);
 
-        _createLangSelect(): HTMLElement {
-            const select = document.createElement('select');
-            select.className = 'q-app-header__select';
+        const langSelect = this._createLangSelect();
+        actionsEl.appendChild(langSelect);
+    }
 
-            for (const l of LANGUAGE_OPTIONS) {
-                const opt = document.createElement('option');
-                opt.value = l.value;
-                opt.textContent = l.label;
-                if (l.value === this._currentLang) opt.selected = true;
-                select.appendChild(opt);
-            }
+    _createDarkToggle(): HTMLElement {
+        const btn = document.createElement('button');
+        btn.className = 'q-app-dark-toggle';
+        btn.style.cssText = [
+            'width: 32px',
+            'height: 32px',
+            'border: 1px solid var(--q-demo-border)',
+            'border-radius: 4px',
+            'background: transparent',
+            'cursor: pointer',
+            'display: flex',
+            'align-items: center',
+            'justify-content: center',
+            'transition: all 0.15s',
+        ].join(';');
 
-            select.addEventListener('change', () => {
-                const lang = select.value;
-                this._switchLanguage(lang);
-            });
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-moon';
+        btn.appendChild(icon);
 
-            return select;
-        },
+        btn.addEventListener('click', () => {
+            this._toggleDark();
+        });
 
-        _initDarkState(): void {
-            const saved = localStorage.getItem('qimenjs-theme');
-            if (saved === 'dark') {
-                this._isDark = true;
-                this._currentTheme = 'dark';
-                document.documentElement.classList.add('dark');
-            }
-        },
+        return btn;
+    }
 
-        _initRouteListener(): void {
-            const off = this.routeOn('router', 'change', (data: any) => {
-                const path = data?.path;
-                if (path !== undefined) {
-                    this._activePath = path;
-                    this._updateNavHighlight(path);
-                }
-            });
-            this.onCleanup(off);
-        },
+    _createThemeSelect(): HTMLElement {
+        const select = document.createElement('select');
+        select.className = 'q-app-header__select';
 
-        _initI18nListener(): void {
-            const off = this.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, (data: any) => {
-                if (data?.current) {
-                    this._currentLang = data.current;
-                    this._updateLangSelect();
-                }
-            });
-            this.onCleanup(off);
-        },
+        for (const t of THEME_OPTIONS) {
+            const opt = document.createElement('option');
+            opt.value = t.value;
+            opt.textContent = t.label;
+            if (t.value === this._currentTheme) opt.selected = true;
+            select.appendChild(opt);
+        }
 
-        _updateNavHighlight(path: string): void {
-            const navEl = this.nodeMap.nav.el;
-            const buttons = navEl.querySelectorAll('button');
-            buttons.forEach((btn: HTMLElement) => {
-                const isActive = (btn as HTMLButtonElement).dataset.path === path;
-                btn.style.backgroundColor = isActive ? 'var(--q-colors-primary, #1890ff)' : 'transparent';
-                btn.style.color = isActive ? '#fff' : 'var(--q-demo-text-secondary)';
-            });
-        },
-
-        _updateLangSelect(): void {
-            const actionsEl = this.nodeMap.actions.el;
-            const selects = actionsEl.querySelectorAll('select');
-            const langSelect = selects[1] as HTMLSelectElement | undefined;
-            if (langSelect) {
-                langSelect.value = this._currentLang;
-            }
-        },
-
-        _navigateTo(path: string): void {
-            this.routeEmit(
-                EventContextBuilder.create()
-                    .withEvent('switch')
-                    .withType('switch')
-                    .withSource('router')
-                    .withData({ path })
-                    .build()
-            );
-        },
-
-        _toggleDark(): void {
-            this._isDark = !this._isDark;
-            document.documentElement.classList.toggle('dark', this._isDark);
-            localStorage.setItem('qimenjs-theme', this._isDark ? 'dark' : 'light');
-
-            const theme = this._isDark ? 'dark' : 'light';
+        select.addEventListener('change', () => {
+            const theme = select.value;
             this._applyTheme(theme);
-        },
+        });
 
-        _applyTheme(theme: string): void {
-            this._currentTheme = theme;
-            const registrar = ThemeRegistrar.getInstance();
-            if (registrar.has(theme)) {
-                registrar.apply(theme);
+        return select;
+    }
+
+    _createLangSelect(): HTMLElement {
+        const select = document.createElement('select');
+        select.className = 'q-app-header__select';
+
+        for (const l of LANGUAGE_OPTIONS) {
+            const opt = document.createElement('option');
+            opt.value = l.value;
+            opt.textContent = l.label;
+            if (l.value === this._currentLang) opt.selected = true;
+            select.appendChild(opt);
+        }
+
+        select.addEventListener('change', () => {
+            const lang = select.value;
+            this._switchLanguage(lang);
+        });
+
+        return select;
+    }
+
+    _initDarkState(): void {
+        const saved = localStorage.getItem('qimenjs-theme');
+        if (saved === 'dark') {
+            this._isDark = true;
+            this._currentTheme = 'dark';
+            document.documentElement.classList.add('dark');
+        }
+    }
+
+    _initRouteListener(): void {
+        const off = this.routeOn('router', 'change', (data: any) => {
+            const path = data?.path;
+            if (path !== undefined) {
+                this._activePath = path;
+                this._updateNavHighlight(path);
             }
+        });
+        this.onCleanup(off);
+    }
 
-            const actionsEl = this.nodeMap.actions.el;
-            const selects = actionsEl.querySelectorAll('select');
-            const themeSelect = selects[0] as HTMLSelectElement | undefined;
-            if (themeSelect) {
-                themeSelect.value = theme;
+    _initI18nListener(): void {
+        const off = this.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, (data: any) => {
+            if (data?.current) {
+                this._currentLang = data.current;
+                this._updateLangSelect();
             }
+        });
+        this.onCleanup(off);
+    }
 
-            const darkBtn = this.nodeMap.actions.el.querySelector('button') as HTMLButtonElement | null;
-            if (darkBtn) {
-                const icon = darkBtn.querySelector('i');
-                if (icon) {
-                    icon.className = this._isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-                }
+    _updateNavHighlight(path: string): void {
+        const navEl = this.nodeMap.nav.el;
+        const buttons = navEl.querySelectorAll('button');
+        buttons.forEach((btn: HTMLElement) => {
+            const isActive = (btn as HTMLButtonElement).dataset.path === path;
+            btn.style.backgroundColor = isActive
+                ? 'var(--q-colors-primary, #1890ff)'
+                : 'transparent';
+            btn.style.color = isActive ? '#fff' : 'var(--q-demo-text-secondary)';
+        });
+    }
+
+    _updateLangSelect(): void {
+        const actionsEl = this.nodeMap.actions.el;
+        const selects = actionsEl.querySelectorAll('select');
+        const langSelect = selects[1] as HTMLSelectElement | undefined;
+        if (langSelect) {
+            langSelect.value = this._currentLang;
+        }
+    }
+
+    _navigateTo(path: string): void {
+        this.routeEmit(
+            EventContextBuilder.create()
+                .withEvent('switch')
+                .withType('switch')
+                .withSource('router')
+                .withData({ path })
+                .build()
+        );
+    }
+    _toggleDark(): void {
+        this._isDark = !this._isDark;
+        document.documentElement.classList.toggle('dark', this._isDark);
+        localStorage.setItem('qimenjs-theme', this._isDark ? 'dark' : 'light');
+
+        const theme = this._isDark ? 'dark' : 'light';
+        this._applyTheme(theme);
+    }
+
+    _applyTheme(theme: string): void {
+        this._currentTheme = theme;
+        const registrar = ThemeRegistrar.getInstance();
+        if (registrar.has(theme)) {
+            registrar.apply(theme);
+        }
+
+        const actionsEl = this.nodeMap.actions.el;
+        const selects = actionsEl.querySelectorAll('select');
+        const themeSelect = selects[0] as HTMLSelectElement | undefined;
+        if (themeSelect) {
+            themeSelect.value = theme;
+        }
+
+        const darkBtn = this.nodeMap.actions.el.querySelector('button') as HTMLButtonElement | null;
+        if (darkBtn) {
+            const icon = darkBtn.querySelector('i');
+            if (icon) {
+                icon.className = this._isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             }
-        },
+        }
+    }
 
-        _switchLanguage(lang: string): void {
-            this._currentLang = lang;
-            const i18n = getI18nManager();
-            if (i18n) {
-                i18n.locale = lang;
-            }
-            localStorage.setItem('qimenjs-locale', lang);
-        },
+    _switchLanguage(lang: string): void {
+        this._currentLang = lang;
+        const i18n = getI18nManager();
+        if (i18n) {
+            i18n.locale = lang;
+        }
+        localStorage.setItem('qimenjs-locale', lang);
+    }
 
-        onLogoClick(): void {
-            this._navigateTo('/');
-        },
-    },
-}).with([RouteEventBusAbility, SystemEventBusAbility]);
+    onLogoClick(): void {
+        this._navigateTo('/');
+    }
+}
 
-export type AppHeaderComponent = InstanceType<typeof AppHeaderComponent>;
+AppHeaderComponent.use([RouteEventBusAbility, SystemEventBusAbility]);
+
+export type AppHeaderComponentInstance = InstanceType<typeof AppHeaderComponent>;
+AppFooterComponent.register();

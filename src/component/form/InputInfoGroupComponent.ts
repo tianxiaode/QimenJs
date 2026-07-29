@@ -25,22 +25,13 @@ const ERROR_ORDER = 0;
 const HELP_ORDER = 10;
 
 export let InputInfoGroupComponent = ItemGroupStaticComponent.replace({
-    type: 'InputInfoGroup',
-
     body: {
         nodes: {
             root: { addCls: 'q-input__info' },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _errorItem: null as any,
-                _helpItem: null as any,
-            };
-        },
+        _errorItem: null as any,
+        _helpItem: null as any,
 
         onAfterInit(props?: any): void {
             const self = this as any;

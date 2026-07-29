@@ -24,31 +24,74 @@ import type { EventDataType } from './EventForwarder';
 
 export class DomEventsEngine {
     /**
-     * 编译 domEvents 三层嵌套为 DelegatedEventRule[]
+     * 编译 domEvents 为 DelegatedEventRule[]
+     *
+     * 支持两种语法：
+     * 1. 三层模式（显式 action）：path → { action: config }
+     * 2. 两层模式（[action] 占位符）：path → config（自动设 action='' 和 wildcardAction=true）
+     *
+     * 通用特性：
+     * - 逗号分隔多路径：'path1,path2,path3' → 生成多条规则
      */
     static compileDomEvents(domEvents: DomEventsMap): DelegatedEventRule[] {
         const rules: DelegatedEventRule[] = [];
 
         for (const [domEvent, pathMap] of Object.entries(domEvents)) {
-            for (const [componentPath, actionMap] of Object.entries(pathMap)) {
-                for (const [action, config] of Object.entries(actionMap)) {
-                    rules.push({
-                        event: domEvent,
-                        componentPath,
-                        action,
-                        prefix: config.prefix,
-                        data: config.data,
-                        emits: config.emits,
-                        bridges: config.bridges,
-                        entities: config.entities,
-                        router: config.router,
-                        system: config.system,
-                        handler: config.handler,
-                        once: config.once,
-                        debounce: config.debounce,
-                        throttle: config.throttle,
-                        needsBinding: true,
-                    });
+            for (const [componentPath, value] of Object.entries(pathMap)) {
+                // 解析逗号分隔的多路径
+                const paths = componentPath.split(',').map(p => p.trim());
+
+                // 判断是两层模式（DomEventConfig）还是三层模式（{ [action]: DomEventConfig }）
+                const isTwoLayer = DomEventsEngine._isDomEventConfig(value);
+
+                for (const path of paths) {
+                    if (isTwoLayer) {
+                        // 两层模式：value 直接是 DomEventConfig
+                        const config = value as any;
+                        const wildcardAction = config.emits?.includes('[action]') ?? false;
+
+                        rules.push({
+                            event: domEvent,
+                            componentPath: path,
+                            action: '',
+                            wildcardAction,
+                            data: config.data,
+                            emits: config.emits,
+                            bridges: config.bridges,
+                            entities: config.entities,
+                            router: config.router,
+                            system: config.system,
+                            handler: config.handler,
+                            once: config.once,
+                            debounce: config.debounce,
+                            throttle: config.throttle,
+                            needsBinding: true,
+                        });
+                    } else {
+                        // 三层模式：value 是 { [action]: DomEventConfig }
+                        const actionMap = value as Record<string, any>;
+                        for (const [action, config] of Object.entries(actionMap)) {
+                            const wildcardAction = config.emits?.includes('[action]') ?? false;
+
+                            rules.push({
+                                event: domEvent,
+                                componentPath: path,
+                                action,
+                                wildcardAction,
+                                data: config.data,
+                                emits: config.emits,
+                                bridges: config.bridges,
+                                entities: config.entities,
+                                router: config.router,
+                                system: config.system,
+                                handler: config.handler,
+                                once: config.once,
+                                debounce: config.debounce,
+                                throttle: config.throttle,
+                                needsBinding: true,
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -57,16 +100,99 @@ export class DomEventsEngine {
     }
 
     /**
+     * 判断 value 是否为 DomEventConfig（两层模式）
+     *
+     * DomEventConfig 包含 handler/emits/bridges/entities/router/system 等字段，
+     * 而三层模式的 value 是 { [action]: DomEventConfig }，keys 为 action 名。
+     */
+    private static _isDomEventConfig(value: any): boolean {
+        if (!value || typeof value !== 'object') return false;
+        const configKeys = ['handler', 'emits', 'bridges', 'entities', 'router', 'system', 'data', 'once', 'debounce', 'throttle'];
+        return configKeys.some(key => key in value);
+    }
+
+    /**
+     * 深度合并两个 DomEventsMap
+     *
+     * 支持两层和三层模式混合：
+     *   - 两层模式：path → DomEventConfig
+     *   - 三层模式：path → { action: DomEventConfig }
+     *
+     * dynamic 配置优先级高于 static。
+     */
+    private static _mergeDomEvents(
+        staticMap: DomEventsMap,
+        dynamicMap: DomEventsMap
+    ): DomEventsMap {
+        const result: DomEventsMap = { ...staticMap };
+
+        for (const [domEvent, pathMap] of Object.entries(dynamicMap)) {
+            if (!result[domEvent]) {
+                result[domEvent] = { ...pathMap };
+                continue;
+            }
+
+            const targetPathMap = result[domEvent];
+            for (const [componentPath, newValue] of Object.entries(pathMap)) {
+                const existingValue = targetPathMap[componentPath];
+
+                // 新值是两层模式（DomEventConfig），直接覆盖
+                if (DomEventsEngine._isDomEventConfig(newValue)) {
+                    targetPathMap[componentPath] = { ...newValue };
+                    continue;
+                }
+
+                // 现有值不存在，直接赋值
+                if (!existingValue) {
+                    targetPathMap[componentPath] = { ...newValue };
+                    continue;
+                }
+
+                // 现有值是两层模式，新值是三层模式 → 转换现有值为三层模式
+                if (DomEventsEngine._isDomEventConfig(existingValue)) {
+                    const converted: Record<string, any> = { '': { ...existingValue } };
+                    for (const [action, config] of Object.entries(newValue as Record<string, any>)) {
+                        converted[action] = { ...config };
+                    }
+                    targetPathMap[componentPath] = converted;
+                    continue;
+                }
+
+                // 都是三层模式，合并 action
+                const targetActionMap = existingValue as Record<string, any>;
+                for (const [action, config] of Object.entries(newValue as Record<string, any>)) {
+                    targetActionMap[action] = { ...config };
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * 为组件实例绑定 DOM 委托事件
      *
      * 遍历 domEvents 第一层 key（DOM 事件名），在组件 el 上绑定一次。
      * 每个订阅注册 onCleanup 回调，dispose 时自动解绑。
+     *
+     * 支持动态构建：若实例有 buildDomEvents(props) 方法，
+     * 则将其返回的 DomEventsMap 与静态 domEvents 深度合并后再编译。
      */
     static bindDomEvents(instance: any): void {
-        const domEvents: DomEventsMap | undefined = instance.domEvents;
-        if (!domEvents) return;
+        const staticDomEvents: DomEventsMap | undefined = instance.domEvents;
 
-        const rules = DomEventsEngine.compileDomEvents(domEvents);
+        let merged: DomEventsMap = staticDomEvents ? { ...staticDomEvents } : {};
+
+        if (typeof instance.buildDomEvents === 'function') {
+            const dynamic = instance.buildDomEvents(instance.props);
+            if (dynamic && typeof dynamic === 'object') {
+                merged = DomEventsEngine._mergeDomEvents(merged, dynamic);
+            }
+        }
+
+        if (!merged || Object.keys(merged).length === 0) return;
+
+        const rules = DomEventsEngine.compileDomEvents(merged);
         if (!rules.length) return;
 
         const ctor = instance.constructor;
@@ -77,14 +203,14 @@ export class DomEventsEngine {
             if (rule.needsBinding) allEventTypes.add(rule.event);
         }
 
-        const dispatchers = new Map<string, (...args: any[]) => void>();
+        const dispatchers = new Map<string, (domEvt: any, actualAction?: string) => void>();
 
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
 
             const key = DomEventsEngine._ruleKey(rule);
-            let wrapped: (...args: any[]) => void = (domEvt: any) => {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt);
+            let wrapped = (domEvt: any, actualAction?: string) => {
+                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction);
             };
 
             if (rule.debounce && rule.debounce > 0) {
@@ -96,10 +222,10 @@ export class DomEventsEngine {
             if (rule.once) {
                 let called = false;
                 const original = wrapped;
-                wrapped = (...args: any[]) => {
+                wrapped = (domEvt: any, actualAction?: string) => {
                     if (called) return;
                     called = true;
-                    return original(...args);
+                    return original(domEvt, actualAction);
                 };
             }
 
@@ -134,6 +260,10 @@ export class DomEventsEngine {
 
     /**
      * 处理委托事件分发
+     *
+     * 支持 [action] 占位符：
+     *   当 rule.action 为空字符串 '' 时，使用 matched 组件的 action 属性作为实际 action
+     *   用于替换 emits 中的 '[action]' 和生成方法名
      */
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
         const target = domEvt?.target as Element;
@@ -151,39 +281,142 @@ export class DomEventsEngine {
             const matched = DomEventsEngine._matchPath(instance, rule.componentPath, target);
             if (!matched) continue;
 
-            const actionMatched = DomEventsEngine._matchAction(matched, rule.action);
+            const actionMatched = DomEventsEngine._matchAction(matched, rule.action, rule.wildcardAction);
             if (!actionMatched) continue;
+
+            // 动态 action：当 wildcardAction 或 rule.action 为空时，使用 matched 组件的实际 action
+            const actualAction = (rule.wildcardAction || !rule.action) ? (matched.action || '') : rule.action;
 
             const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
             if (dispatch) {
-                dispatch(domEvt);
+                dispatch(domEvt, actualAction);
             } else {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt);
+                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction);
             }
             return;
         }
     }
 
     /**
-     * 沿组件路径定位目标组件，检查 el.contains(event.target)
+     * 通过 nodeMap 定位目标组件
+     *
+     * 路径每段语义互斥：
+     *   - 若在当前组件 nodeMap 中能找到 → 用 nodeMap 定位
+     *   - 若在 nodeMap 中找不到 → 按组件类型名查找（在子组件中找类型匹配的）
+     *
+     * 第一段也支持类型查找（在 isItemContainer 的 _items 中按类型定位）。
+     *
+     * 示例：
+     *   'header.action'         → header 在 nodeMap；action 在 header.nodeMap
+     *   'toolsLeft.Button'      → toolsLeft 在 nodeMap；Button 按类型查找
+     *   'Panel.header.action'   → Panel 按类型在 _items 中查找；header 在 Panel.nodeMap
+     *
+     * 定位完成后，仍会尝试深度查找最深层子组件
+     * （ItemGroup 等容器场景，使 _matchAction 能检查到具体子项的 action）
      */
     private static _matchPath(instance: any, componentPath: string, target: Element): any {
         const segments = componentPath.split('.');
-        let current: any = instance;
+        const nodeMap = instance.nodeMap ?? instance.nodeMapMgr?.getAll() ?? {};
+        const firstNode = nodeMap[segments[0]];
 
-        for (const segment of segments) {
-            const nodeMap = current.nodeMap ?? current.nodeMapMgr?.getAll() ?? {};
-            const child = nodeMap[segment];
-            if (!child) return null;
-            current = child.component ?? child;
-            if (!current?.el) return null;
+        let currentComponent: any;
+        if (firstNode) {
+            // 第一段在 nodeMap 中找到
+            currentComponent = firstNode.component ?? firstNode;
+        } else {
+            // 第一段在 nodeMap 中找不到 → 按类型名查找（支持 isItemContainer 的 _items）
+            currentComponent = DomEventsEngine._findByType(instance, segments[0], target);
+        }
+        if (!currentComponent?.el) return null;
+        if (!currentComponent.el.contains(target)) return null;
+
+        for (let i = 1; i < segments.length; i++) {
+            const seg = segments[i];
+            const nestedNodeMap = currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
+
+            // 先在 nodeMap 查找
+            const nestedNode = nestedNodeMap[seg];
+            if (nestedNode) {
+                const next = nestedNode.component ?? nestedNode;
+                if (!next?.el || !next.el.contains(target)) return null;
+                currentComponent = next;
+                continue;
+            }
+
+            // nodeMap 找不到 → 按类型名查找
+            const byType = DomEventsEngine._findByType(currentComponent, seg, target);
+            if (!byType) return null;
+            currentComponent = byType;
         }
 
-        if (!current.el.contains(target)) return null;
-        return current;
+        const deeperMatch = DomEventsEngine._findDeepestChild(currentComponent, target);
+        return deeperMatch ?? currentComponent;
     }
 
-    private static _matchAction(targetComponent: any, action: string): boolean {
+    /**
+     * 在子组件中按类型名查找
+     * - isItemContainer 组件：在 _items 数组中查找
+     * - 普通组件：在 nodeMap 中查找
+     * 匹配规则：component.constructor._type === type 或 类名去掉 Component 后缀
+     */
+    private static _findByType(component: any, type: string, target: Element): any {
+        const children = DomEventsEngine._getChildren(component);
+        for (const childComp of children) {
+            if (!childComp?.el) continue;
+            if (!childComp.el.contains(target)) continue;
+            const ctor = childComp.constructor;
+            const childType = ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
+            if (childType === type) return childComp;
+        }
+        return null;
+    }
+
+    /**
+     * 递归查找容器组件内最深层匹配的子组件
+     * - isItemContainer 组件：通过 getTargetItem 在 _items 中查找
+     * - 普通组件：在 nodeMap 中查找
+     */
+    private static _findDeepestChild(component: any, target: Element): any {
+        if (component.isItemContainer && typeof component.getTargetItem === 'function') {
+            const item = component.getTargetItem(target);
+            if (item?.component) {
+                const nested = DomEventsEngine._findDeepestChild(item.component, target);
+                return nested ?? item.component;
+            }
+            return null;
+        }
+
+        const nodeMap = component.nodeMap ?? component.nodeMapMgr?.getAll?.() ?? {};
+        if (!nodeMap) return null;
+
+        for (const node of Object.values(nodeMap)) {
+            const childComponent = (node as any).component ?? node;
+            if (!childComponent?.el) continue;
+            if (childComponent.el.contains(target)) {
+                const nested = DomEventsEngine._findDeepestChild(childComponent, target);
+                return nested ?? childComponent;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取组件的所有子组件
+     * - isItemContainer 组件：返回 _items 中的 component
+     * - 普通组件：返回 nodeMap 中的 component
+     */
+    private static _getChildren(component: any): any[] {
+        if (component.isItemContainer && Array.isArray(component._items)) {
+            return component._items.map((item: any) => item.component);
+        }
+        const nodeMap = component.nodeMap ?? component.nodeMapMgr?.getAll?.() ?? {};
+        return Object.values(nodeMap).map((node: any) => node?.component ?? node);
+    }
+
+    private static _matchAction(targetComponent: any, action: string, wildcardAction?: boolean): boolean {
+        // 通配符模式：匹配任何 action
+        if (wildcardAction) return true;
+        // 空 action：匹配无 action 的组件
         if (!action) return true;
         return targetComponent.action === action;
     }
@@ -193,31 +426,44 @@ export class DomEventsEngine {
      *
      * handler 本地调用 + EventForwarder 统一转发
      */
-    static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
+    static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any, actualAction?: string): void {
         if (rule.handler) {
-            DomEventsEngine._invokeHandler(instance, rule, domEvt);
+            DomEventsEngine._invokeHandler(instance, rule, domEvt, actualAction);
         }
 
-        const extraData = DomEventsEngine._buildPayload(instance, rule);
-        EventForwarder.forward(instance, rule, extraData, domEvt);
+        const extraData = DomEventsEngine._buildPayload(instance, rule, actualAction);
+        EventForwarder.forward(instance, rule, extraData, domEvt, actualAction);
     }
 
-    private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {
-        const pathParts = rule.componentPath.split('.');
-        const lastPart = pathParts[pathParts.length - 1];
-        const pascalLast = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
-        const pascalAction = rule.action.charAt(0).toUpperCase() + rule.action.slice(1);
-        const pascalEvent = rule.event.charAt(0).toUpperCase() + rule.event.slice(1);
+    private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any, actualAction?: string): void {
+        let methodName: string;
 
-        const methodName = `on${pascalLast}${pascalAction}${pascalEvent}`;
+        if (typeof rule.handler === 'string') {
+            // 自定义方法名
+            methodName = rule.handler;
+        } else {
+            // 自动推导方法名
+            const pathParts = rule.componentPath.split('.');
+            const pascalPath = pathParts
+                .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+                .join('');
+
+            const resolvedAction = actualAction ?? rule.action;
+            const pascalAction = resolvedAction ? resolvedAction.charAt(0).toUpperCase() + resolvedAction.slice(1) : '';
+            const pascalEvent = rule.event.charAt(0).toUpperCase() + rule.event.slice(1);
+
+            methodName = `on${pascalPath}${pascalAction}${pascalEvent}`;
+        }
+
         const method = instance[methodName];
         if (typeof method === 'function') {
             method.call(instance, domEvt);
         }
     }
 
-    private static _buildPayload(instance: any, rule: DelegatedEventRule): any {
-        const actionData = rule.action ? { action: rule.action } : {};
+    private static _buildPayload(instance: any, rule: DelegatedEventRule, actualAction?: string): any {
+        const resolvedAction = actualAction ?? rule.action;
+        const actionData = resolvedAction ? { action: resolvedAction } : {};
 
         if (rule.data) {
             const fields = Array.isArray(rule.data) ? rule.data : rule.data;

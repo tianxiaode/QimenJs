@@ -31,14 +31,7 @@ export interface BaseCellProps {
 }
 
 class BaseCellComponent extends Component {
-    static type = 'BaseCell';
-    type = 'BaseCell';
-
-    onInitState() {
-        return {
-            _align: 'left' as ColumnAlign,
-        };
-    }
+    _align: ColumnAlign = 'left';
 
     onAfterInit(props?: BaseCellProps): void {
         if (props?.align) this._align = props.align;

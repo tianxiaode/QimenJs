@@ -1,5 +1,6 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 
 export type AccordionMode = 'single' | 'multiple';
 
@@ -10,25 +11,51 @@ export interface AccordionProps extends ItemGroupProps {
 }
 
 class AccordionComponent extends ItemGroupPooledComponent {
-    static type = 'Accordion';
+    _mode: AccordionMode = 'single';
+    _expandedIndex: number = -1;
 
-    type = 'Accordion';
+    /**
+     * domEvents — 跨层委托 + 自定义方法名
+     *
+     * 'Panel.header.action' 路径：
+     *   第一段 Panel → 按 Panel 类型在 _items 中查找
+     *   第二段 header → 在 Panel.nodeMap 中定位 HeaderComponent
+     *   第三段 action → 在 Header.nodeMap 中定位 action 按钮
+     *
+     * handler 为字符串时直接作为方法名，避免冗长的自动推导名称。
+     */
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            'Panel.header.action': {
+                handler: '_onPanelAction',
+                emits: ['[action]'],
+            },
+        },
+    };
 
-    onInitState() {
-        return {
-            ...super.onInitState(),
-            _mode: 'single' as AccordionMode,
-            _expandedIndex: -1,
-        };
+    /**
+     * Panel 的 action 按钮点击（collapse/close 等）
+     * handler 字符串 'onPanelAction' 指定，方法名简洁。
+     */
+    _onPanelAction(domEvt: any): void {
+        const item = this.getTargetItem(domEvt.target);
+        if (!item) return;
+
+        const action = item.component?.action;
+        if (action === 'collapse') {
+            this.toggleAt(item.index);
+        } else if (action === 'close') {
+            this.removeAt(item.index);
+        }
     }
 
     onAfterInit(props?: AccordionProps): void {
         const self = this as any;
         self._mode = props?.mode ?? 'single';
-        self.el.classList.toggle('q-accordion--multiple', self._mode === 'multiple');
 
+        this.toggleCls('q-accordion--multiple', self._mode === 'multiple');
         this.addCls('q-accordion');
-        (this as any).itemContainer?.el?.classList.add('q-accordion__items');
+        this.addCls('q-accordion__items', 'itemContainer');
 
         super.onAfterInit({
             ...props,
@@ -36,8 +63,6 @@ class AccordionComponent extends ItemGroupPooledComponent {
             gap: props?.gap ?? '0',
             defaultItemType: 'Panel',
         });
-
-        self.on('click', (data: any) => self._onPanelClick(data));
 
         if (self._mode === 'single' && props?.expandedIndex !== undefined) {
             self.expandAt(props.expandedIndex, true);
@@ -97,47 +122,37 @@ class AccordionComponent extends ItemGroupPooledComponent {
         self._isExpanded(index) ? self.collapseAt(index, silent) : self.expandAt(index, silent);
     }
 
-    _onPanelClick(data: any): void {
-        const self = this as any;
-        const index = data?.index;
-        if (index !== undefined) self.toggleAt(index);
-    }
-
     _expandPanel(index: number): void {
         const self = this as any;
         const panel = self.getAt(index);
         if (!panel) return;
-        if (panel.nodeMap?.body?.el) panel.nodeMap.body.el.hidden = false;
-        if (panel.nodeMap?.expand?.el) {
-            panel.nodeMap.expand.el.classList.remove('q-expand-arrow--collapsed');
-            panel.nodeMap.expand.el.classList.add('q-expand-arrow--expanded');
-        }
-        panel.el.classList.remove('q-panel--collapsed');
+        panel.setNodeHidden(false, 'body');
+        panel.addCls('q-expand-arrow--expanded', 'expand');
+        panel.removeCls('q-expand-arrow--collapsed', 'expand');
+        panel.removeCls('q-panel--collapsed');
     }
 
     _collapsePanel(index: number): void {
         const self = this as any;
         const panel = self.getAt(index);
         if (!panel) return;
-        if (panel.nodeMap?.body?.el) panel.nodeMap.body.el.hidden = true;
-        if (panel.nodeMap?.expand?.el) {
-            panel.nodeMap.expand.el.classList.remove('q-expand-arrow--expanded');
-            panel.nodeMap.expand.el.classList.add('q-expand-arrow--collapsed');
-        }
-        panel.el.classList.add('q-panel--collapsed');
+        panel.setNodeHidden(true, 'body');
+        panel.addCls('q-expand-arrow--collapsed', 'expand');
+        panel.removeCls('q-expand-arrow--expanded', 'expand');
+        panel.addCls('q-panel--collapsed');
     }
 
     _isExpanded(index: number): boolean {
         const self = this as any;
         const panel = self.getAt(index);
-        return panel ? !panel.el.classList.contains('q-panel--collapsed') : false;
+        return panel ? !panel.containsCls('q-panel--collapsed') : false;
     }
 
     onUpdated(props?: Record<string, any>): void {
         const self = this as any;
         if (props?.mode !== undefined) {
             self._mode = props.mode;
-            self.el.classList.toggle('q-accordion--multiple', self._mode === 'multiple');
+            this.toggleCls('q-accordion--multiple', self._mode === 'multiple');
         }
         if (props?.expandedIndex !== undefined) self.expandAt(props.expandedIndex);
     }

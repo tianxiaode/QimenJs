@@ -44,7 +44,6 @@ export interface GroupChildConfig {
 }
 
 export let GroupHeaderCellComponent = BaseHeaderCellComponent.replace({
-    type: 'GroupHeaderCell',
 
     tplReplaces: {
         content: {
@@ -63,14 +62,10 @@ export let GroupHeaderCellComponent = BaseHeaderCellComponent.replace({
             resizeHandle: { axis: 'x', activeClass: 'q-header-cell__resize--active' },
         },
 
-        onInitState() {
-            return {
-                _childNames: [] as string[],
-                _childCells: [] as Array<{ component: any; el: HTMLElement }>,
-                _resizable: true as boolean,
-                _resizeStartWidth: 0 as number,
-            };
-        },
+        _childNames: [] as string[],
+        _childCells: [] as Array<{ component: any; el: HTMLElement }>,
+        _resizable: true as boolean,
+        _resizeStartWidth: 0 as number,
 
         onAfterInit(props?: GroupHeaderCellProps): void {
             const self = this as any;

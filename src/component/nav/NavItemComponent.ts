@@ -5,7 +5,7 @@
  * 支持图标、文本、激活状态、禁用状态、子级浮层弹出。
  *
  * 模板节点：
- * - content — 可点击区域（内部事件：click → onClick）
+ * - content — 可点击区域
  * - icon — 图标（DOM 节点）
  * - text — 文本
  * - expand — 展开箭头
@@ -13,6 +13,9 @@
  * 子级浮层：
  * - 有 children 时，点击展开箭头或导航项弹出浮层显示子导航项
  * - 浮层定位/动画等通过 overlayOptions 配置
+ *
+ * 事件处理由 NavItemGroupComponent 通过 domEvents 集中委托，
+ * 本组件只提供 select() / showTooltip() / hideTooltip() 等公开方法供父组件调用。
  */
 
 import { Component } from '@qimenjs/component-core';
@@ -54,7 +57,6 @@ export interface NavItemProps {
     overlayComponent?: any;
     depth?: number;
     maxDepth?: number;
-    onSelect?: (item: any) => void;
 }
 
 const DEFAULT_ENTER_ANIMATION: Keyframe[] = [
@@ -68,41 +70,35 @@ const DEFAULT_EXIT_ANIMATION: Keyframe[] = [
 ];
 
 class NavItemComponent extends Component {
-    static type = 'NavItem';
+    active: boolean = false;
+    disabled: boolean = false;
+    mode: 'expanded' | 'collapsed' = 'expanded';
+    children: Record<string, any>[] | undefined = undefined;
+    overlayOptions: NavOverlayOptions | undefined = undefined;
+    overlayComponent: any = undefined;
+    depth: number = 0;
+    maxDepth: number = 3;
+    _overlayEl: HTMLElement | null = null;
+    _overlayContent: any = null;
+    _overlayOpen: boolean = false;
+    _tooltipEl: HTMLElement | null = null;
+    _outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
-    type = 'NavItem';
-
-    onInitState() {
-        return {
-            active: false,
-            disabled: false,
-            mode: 'expanded' as 'expanded' | 'collapsed',
-            children: undefined as Record<string, any>[] | undefined,
-            overlayOptions: undefined as NavOverlayOptions | undefined,
-            overlayComponent: undefined as any,
-            depth: 0,
-            maxDepth: 3,
-            onSelect: undefined as ((item: any) => void) | undefined,
-            _overlayEl: null as HTMLElement | null,
-            _overlayContent: null as any,
-            _overlayOpen: false,
-            _tooltipTimer: null as ReturnType<typeof setTimeout> | null,
-            _tooltipEl: null as HTMLElement | null,
-
-            _outsideClickHandler: null as ((e: MouseEvent) => void) | null,
-        };
-    }
-
-    onClick(): void {
-        if (this.disabled) return;
+    /**
+     * 选中 — 由 NavItemGroupComponent domEvents 委托调用
+     *
+     * 有子级时切换浮层并返回 false（非叶子选中），
+     * 无子级时返回 true（有效选中，父组件可执行 selectAt）。
+     */
+    select(): boolean {
+        if (this.disabled) return false;
 
         if (this.children?.length) {
             this.toggleOverlay();
-            return;
+            return false;
         }
 
-        this.emit('click', { item: this, index: this.props?.index });
-        this.onSelect?.(this);
+        return true;
     }
 
     toggleOverlay(): void {
@@ -278,7 +274,8 @@ class NavItemComponent extends Component {
         }
     }
 
-    _showTooltip(): void {
+    /** 显示折叠提示 — 由 NavItemGroupComponent domEvents 委托调用 */
+    showTooltip(): void {
         if (this.mode !== 'collapsed' || !this.text) return;
         const tooltipEl = document.createElement('div');
         tooltipEl.className = 'q-nav-tooltip';
@@ -296,7 +293,8 @@ class NavItemComponent extends Component {
         this._tooltipEl = tooltipEl;
     }
 
-    _hideTooltip(): void {
+    /** 隐藏折叠提示 — 由 NavItemGroupComponent domEvents 委托调用 */
+    hideTooltip(): void {
         if (this._tooltipEl) {
             this._tooltipEl.remove();
             this._tooltipEl = null;
@@ -322,15 +320,6 @@ class NavItemComponent extends Component {
         this.ariaDisabled = this.disabled ? 'true' : false;
         if (this.active) this.setAttr('aria-current', 'page');
         else this.removeAttr('aria-current');
-    }
-
-    onRootEnter(): void {
-        if (this.mode === 'collapsed') this._showTooltip();
-        this._clearSubmenuTimer?.();
-    }
-
-    onRootLeave(): void {
-        if (this.mode === 'collapsed') this._hideTooltip();
     }
 
     _setIcon(value: string): void {
@@ -363,12 +352,11 @@ class NavItemComponent extends Component {
         if (props?.overlayOptions !== undefined) this.overlayOptions = props.overlayOptions;
         if (props?.overlayComponent !== undefined) this.overlayComponent = props.overlayComponent;
         if (props?.maxDepth !== undefined) this.maxDepth = props.maxDepth;
-        if (props?.onSelect !== undefined) this.onSelect = props.onSelect;
     }
 
     dispose(): void {
         if (this._overlayOpen) this.closeOverlay();
-        this._hideTooltip();
+        this.hideTooltip();
         this._unbindOutsideClick();
         super.dispose();
     }

@@ -37,17 +37,9 @@ export interface TimelineProps {
 }
 
 class TimelineComponent extends Component {
-    static type = 'Timeline';
-
-    type = 'Timeline';
-
-    onInitState() {
-        return {
-            _items: [] as TimelineItem[],
-            _pending: false,
-            _itemEls: [] as HTMLElement[],
-        };
-    }
+    _items: TimelineItem[] = [];
+    _pending: boolean = false;
+    _itemEls: HTMLElement[] = [];
 
     onAfterInit(props?: TimelineProps): void {
         this._initTimeline(props);

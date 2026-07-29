@@ -18,8 +18,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class RadioGroupFieldBodyComponent extends Component {
-    static type = 'RadioGroupFieldBody';
-    type = 'RadioGroupFieldBody';
 }
 
 export { RadioGroupFieldBodyComponent };

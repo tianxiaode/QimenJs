@@ -1,1 +1,5 @@
-export function registerButtonGroupTemplates(): void {}
+import { ButtonGroupComponent } from './ButtonGroupComponent';
+
+export function registerButtonGroupTemplates(): void {
+    ButtonGroupComponent.register();
+}

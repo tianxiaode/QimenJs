@@ -28,7 +28,8 @@ jest.mock('@/component-core/engine/ComponentRegistrar', () => {
     };
 });
 
-import { Component, COMPONENT_ABILITIES } from '@/component-core/Component';
+import { Component } from '@/component-core/Component';
+import { COMPONENT_ABILITIES } from '@/component-core/Component-abilities';
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import type { TplNode } from '@/component-core/types/tpl-node-types';
 
@@ -49,8 +50,94 @@ describe('Component 基类', () => {
             expect(COMPONENT_ABILITIES.length).toBeGreaterThan(0);
         });
 
-        it('Component.type 返回类名去掉 Component 后缀', () => {
+        it('Component.type 返回空字符串（基类无 type）', () => {
             expect(Component.type).toBe('');
+        });
+
+        it('COMPONENT_ABILITIES 为 readonly 元组类型', () => {
+            expect(COMPONENT_ABILITIES).toBeDefined();
+        });
+    });
+
+    describe('static register', () => {
+        let registry: ComponentRegistrar;
+
+        beforeEach(() => {
+            registry = getRegistry();
+        });
+
+        afterEach(() => {
+            registry.clear();
+        });
+
+        it('register(tpl) 将 _tpl 存储到类上', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            TestComp.register(tpl);
+
+            expect((TestComp as any)._tpl).toBe(tpl);
+        });
+
+        it('register() 无参数时不设置 _tpl', () => {
+            class TestComp extends Component {}
+            TestComp.register();
+
+            expect((TestComp as any)._tpl).toBeUndefined();
+        });
+
+        it('register(tpl) 同时注册到 ComponentRegistrar', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            TestComp.register(tpl);
+
+            expect(registry.has('TestComp')).toBe(true);
+        });
+
+        it('子类 register 通过 this 自动推导 type', () => {
+            class ButtonComponent extends Component {}
+            const tpl: TplNode = { tag: 'button' };
+            ButtonComponent.register(tpl);
+
+            expect(ButtonComponent.type).toBe('Button');
+            expect((ButtonComponent as any)._tpl).toBe(tpl);
+        });
+    });
+
+    describe('static inspectTpl', () => {
+        let registry: ComponentRegistrar;
+
+        beforeEach(() => {
+            registry = getRegistry();
+            jest.spyOn(console, 'log').mockImplementation(() => {});
+        });
+
+        afterEach(() => {
+            registry.clear();
+            jest.restoreAllMocks();
+        });
+
+        it('已注册模板时打印模板树', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'label' },
+                    { tag: 'div', name: 'content' },
+                ],
+            };
+            TestComp.register(tpl);
+
+            expect(() => TestComp.inspectTpl()).not.toThrow();
+            expect(console.log).toHaveBeenCalled();
+        });
+
+        it('未注册模板时输出警告', () => {
+            class NoTplComp extends Component {}
+            NoTplComp.inspectTpl();
+
+            expect(console.log).toHaveBeenCalledWith(
+                expect.stringContaining('未注册模板')
+            );
         });
     });
 

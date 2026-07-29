@@ -24,19 +24,8 @@ export interface ProgressProps {
 }
 
 class ProgressComponent extends Component {
-    static type = 'Progress';
-
-    type = 'Progress';
-
     _percent: number = 0;
     _progressType: ProgressType = 'default';
-
-    onInitState() {
-        return {
-            _percent: 0,
-            _progressType: 'default' as ProgressType,
-        };
-    }
 
     onAfterInit(props?: ProgressProps): void {
         this._initProgress(props);

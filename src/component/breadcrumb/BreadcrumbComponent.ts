@@ -5,7 +5,7 @@
  * 数据驱动：通过 items 属性设置面包屑项。
  *
  * 模板节点：
- * - items — 面包屑项容器
+ * - items — 面包屑项容器（纯 DOM，动态创建 li 子项）
  *
  * @example
  * ```ts
@@ -16,12 +16,12 @@
  *         { text: '详情', key: 'detail' },
  *     ]
  * })
- * breadcrumb.on('navigate', ({ key }) => { ... })
+ * breadcrumb.on('navigate', ({ key }) => { ... })  // 路由系统处理
  * ```
  */
 
 import { Component } from '@qimenjs/component-core';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { DomEventsMap } from '@qimenjs/component-core';
 
 export interface BreadcrumbItem {
     text: string;
@@ -34,18 +34,25 @@ export interface BreadcrumbProps {
 }
 
 class BreadcrumbComponent extends Component {
-    static type = 'Breadcrumb';
+    _items: BreadcrumbItem[] = [];
+    _separator: string = '/';
+    _itemEls: HTMLElement[] = [];
+    _pendingNavData: { key: string; index: number } | null = null;
 
-    type = 'Breadcrumb';
-
-    onInitState() {
-        return {
-            _items: [] as BreadcrumbItem[],
-            _separator: '/',
-            _itemEls: [] as HTMLElement[],
-            _clickBound: false,
-        };
-    }
+    /**
+     * domEvents — 委托模式
+     *
+     * items 容器内任意 li 点击 → _onItemClick 处理
+     * router 分支 → 路由系统监听处理
+     */
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            'items': {
+                handler: '_onItemClick',
+                router: 'navigate',
+            },
+        },
+    };
 
     onAfterInit(props?: BreadcrumbProps): void {
         this._initBreadcrumb(props);
@@ -57,25 +64,35 @@ class BreadcrumbComponent extends Component {
             this._items = props.items;
             this._renderItems();
         }
-        this._bindClick();
     }
 
-    _bindClick(): void {
-        if (this._clickBound) return;
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
+    /**
+     * 处理 item 点击
+     * 从 target DOM 元素向上查找 .q-breadcrumb__item，读取 data-key/data-index
+     * 存入 _pendingNavData，供 router 分支收集
+     */
+    _onItemClick(domEvt: any): void {
+        const target = domEvt?.target as HTMLElement | null;
+        if (!target) return;
 
-        this._clickBound = true;
-        this.bind(container, 'click');
-        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-            const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
-            const itemEl = target?.closest('.q-breadcrumb__item') as HTMLElement | null;
-            const key = itemEl?.dataset?.key;
-            const index = itemEl?.dataset?.index;
-            if (key !== undefined && index !== undefined) {
-                this.emit('navigate', { key, index: Number(index) });
-            }
-        });
+        const itemEl = target.closest('.q-breadcrumb__item') as HTMLElement | null;
+        if (!itemEl) return;
+
+        const key = itemEl.dataset.key;
+        const index = itemEl.dataset.index;
+        if (key !== undefined && index !== undefined) {
+            this._pendingNavData = { key, index: Number(index) };
+        }
+    }
+
+    /**
+     * 获取自定义事件数据
+     * 读取 _pendingNavData 并清空
+     */
+    getCustomEventData(): any {
+        const data = this._pendingNavData;
+        this._pendingNavData = null;
+        return data ?? {};
     }
 
     get items(): BreadcrumbItem[] {

@@ -1,134 +1,98 @@
 /**
  * IndicatorComponent 指示器浮层组件
  *
- * 轻量索引指示器，用于走马灯、步骤条、分页器、标签页等场景。
- * 作为浮层挂载到 OverlayRoot，通过 floats 声明使用。
- * 可选 prev/next 箭头切换，事件走 component.bind 委托。
+ * 从 ItemGroupStaticComponent 派生，指示项本身就是 ItemGroup。
+ * 作为浮层挂载到 OverlayRoot，和 Badge/Tooltip 同级。
+ *
+ * 通过 onOverlayChange 接收宿主的 activeIndex 变化，
+ * 通过 domEvents 声明式处理用户交互（点击指示项/箭头）。
+ *
+ * 通信链路：
+ *   宿主 → 浮层：updateIndicator({ activeIndex }) → overlayEmit CHANGE → onOverlayChange
+ *   浮层 → 宿主：用户点击指示项 → emits: ['change'] → FloatDecl.emits changed → 宿主 indicatorChange
  *
  * 模板节点：
- * - prevBtn — 上一项箭头按钮
- * - nextBtn — 下一项箭头按钮
- * - items   — 指示项容器
+ * - prevBtn   — 上一项箭头按钮
+ * - nextBtn   — 下一项箭头按钮
+ * - itemContainer — 指示项容器（继承自 ItemGroup）
  *
- * 使用方式（在父组件 floats 中声明）：
- * ```ts
- * floats: {
- *     indicator: { type: 'Indicator', trigger: 'always', placement: 'bottom', arrows: true }
- * }
- * ```
+ * 指示器模式（mode）：
+ * - dot    — 圆点（默认）
+ * - number — 数字列表（1, 2, 3...）
+ * - dash   — 横线
  *
- * 手动创建：
+ * 使用方式（在父组件 indicator 配置中声明）：
  * ```ts
- * new IndicatorComponent({ count: 5, activeIndex: 0, type: 'dot' })
- * indicator.on('change', ({ index }) => { ... })
+ * new ItemGroupPooledComponent({
+ *     items: [...],
+ *     indicator: { type: 'number', placement: 'bottom', arrows: true },
+ * })
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 
-export type IndicatorType = 'dot' | 'number' | 'dash' | string;
+export type IndicatorMode = 'dot' | 'number' | 'dash';
 
 export interface IndicatorProps {
     count?: number;
     activeIndex?: number;
-    type?: IndicatorType;
-    itemTpl?: (index: number) => HTMLElement;
     arrows?: boolean;
     anchor?: HTMLElement;
+    mode?: IndicatorMode;
 }
 
-class IndicatorComponent extends Component {
-    static type = 'Indicator';
+class IndicatorComponent extends ItemGroupStaticComponent {
+    _activeIndex: number = -1;
+    _arrows: boolean = false;
+    _mode: IndicatorMode = 'dot';
 
-    type = 'Indicator';
-
-    onInitState() {
-        return {
-            _count: 0,
-            _activeIndex: -1,
-            _indicatorType: 'dot' as IndicatorType,
-            _itemEls: [] as HTMLElement[],
-            _itemTpl: undefined as ((index: number) => HTMLElement) | undefined,
-            _clickBound: false,
-            _arrows: false,
-        };
-    }
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            prevBtn: {
+                handler: 'onPrevBtnClick',
+            },
+            nextBtn: {
+                handler: 'onNextBtnClick',
+            },
+        },
+    };
 
     onAfterInit(props?: IndicatorProps): void {
-        this._initIndicator(props);
+        this._initIndicatorOverlay(props);
     }
 
     onPrevBtnClick(): void {
-        this.prev();
+        if (this._activeIndex > 0) {
+            this.activeIndex = this._activeIndex - 1;
+            this.emit('change', { index: this._activeIndex });
+        }
     }
 
     onNextBtnClick(): void {
-        this.next();
+        if (this._activeIndex < this.count - 1) {
+            this.activeIndex = this._activeIndex + 1;
+            this.emit('change', { index: this._activeIndex });
+        }
     }
 
-    _initIndicator(props?: IndicatorProps): void {
-        if (props?.type) this._indicatorType = props.type;
-        if (props?.itemTpl) this._itemTpl = props.itemTpl;
-        if (props?.arrows) this._arrows = props.arrows;
-        if (props?.count) {
-            this._count = props.count;
-            this._renderItems();
+    _initIndicatorOverlay(props?: IndicatorProps): void {
+        if (props?.mode) {
+            this._mode = props.mode;
+        }
+        this.addCls('q-indicator');
+        this.addCls(`q-indicator--${this._mode}`);
+
+        if (props?.arrows) {
+            this._arrows = props.arrows;
+            this.setNodeHidden(false, 'prevBtn');
+            this.setNodeHidden(false, 'nextBtn');
+            this.addCls('q-indicator--arrows');
         }
         if (props?.activeIndex !== undefined) {
             this._activeIndex = props.activeIndex;
-            this._applyActive();
         }
-
-        this.addCls(`q-indicator--${this._indicatorType}`);
-        this._updateArrows();
-        this._bindItemClick();
-    }
-
-    _bindItemClick(): void {
-        if (this._clickBound) return;
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
-
-        this._clickBound = true;
-        this.bind(container, 'click');
-        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-            const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
-            const itemEl = target?.closest('.q-indicator__item') as HTMLElement | null;
-            const index = itemEl?.dataset?.index;
-            if (index !== undefined) {
-                this._activeIndex = Number(index);
-                this._applyActive();
-                this.emit('change', { index: this._activeIndex });
-            }
-        });
-    }
-
-    _updateArrows(): void {
-        if (!this._arrows) return;
-        this.setNodeHidden(false, 'prevBtn');
-        this.setNodeHidden(false, 'nextBtn');
-        this.addCls('q-indicator--arrows');
-    }
-
-    prev(): void {
-        if (this._activeIndex > 0) {
-            this.activeIndex = this._activeIndex - 1;
-        }
-    }
-
-    next(): void {
-        if (this._activeIndex < this._count - 1) {
-            this.activeIndex = this._activeIndex + 1;
-        }
-    }
-
-    get count(): number {
-        return this._count;
-    }
-    set count(value: number) {
-        this._count = value;
-        this._renderItems();
     }
 
     get activeIndex(): number {
@@ -139,77 +103,66 @@ class IndicatorComponent extends Component {
         this._applyActive();
     }
 
-    get indicatorType(): IndicatorType {
-        return this._indicatorType;
+    get mode(): IndicatorMode {
+        return this._mode;
     }
-    set indicatorType(value: IndicatorType) {
-        this.removeCls(`q-indicator--${this._indicatorType}`);
-        this._indicatorType = value;
-        this.addCls(`q-indicator--${this._indicatorType}`);
-        this._renderItems();
-    }
-
-    get itemTpl(): ((index: number) => HTMLElement) | undefined {
-        return this._itemTpl;
-    }
-    set itemTpl(value: ((index: number) => HTMLElement) | undefined) {
-        this._itemTpl = value;
-        this._renderItems();
-    }
-
-    _renderItems(): void {
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
-
-        container.innerHTML = '';
-        this._itemEls = [];
-
-        for (let i = 0; i < this._count; i++) {
-            const itemEl = this._itemTpl ? this._itemTpl(i) : this._createDefaultItem(i);
-
-            itemEl.classList.add('q-indicator__item');
-            itemEl.dataset.index = String(i);
-
-            container.appendChild(itemEl);
-            this._itemEls.push(itemEl);
-        }
-
-        this._applyActive();
-    }
-
-    _createDefaultItem(index: number): HTMLElement {
-        const el = document.createElement('span');
-        if (this._indicatorType === 'number') {
-            el.textContent = String(index + 1);
-        }
-        return el;
+    set mode(value: IndicatorMode) {
+        if (value === this._mode) return;
+        this.removeCls(`q-indicator--${this._mode}`);
+        this._mode = value;
+        this.addCls(`q-indicator--${this._mode}`);
+        this._applyModeToItems();
     }
 
     _applyActive(): void {
-        for (let i = 0; i < this._itemEls.length; i++) {
-            this._itemEls[i].classList.toggle('q-indicator__item--active', i === this._activeIndex);
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i);
+            if (item) {
+                item.toggleCls?.('q-indicator__item--active', i === this._activeIndex);
+            }
         }
+    }
+
+    _applyModeToItems(): void {
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i);
+            if (item?.update) {
+                item.update({ mode: this._mode });
+            }
+        }
+    }
+
+    override setItems(datas: Record<string, any>[]): void {
+        const enriched = datas.map((data, index) => ({
+            ...data,
+            mode: data.mode ?? this._mode,
+            index: data.index ?? index,
+        }));
+        super.setItems(enriched);
+        this._applyActive();
     }
 
     onOverlayChange(data: any): void {
         if (!data) return;
-        if (data.count !== undefined) this.count = data.count;
+        if (data.mode !== undefined) this.mode = data.mode;
         if (data.activeIndex !== undefined) this.activeIndex = data.activeIndex;
-        if (data.type !== undefined) this.indicatorType = data.type;
+        if (data.items) this.setItems(data.items);
         if (data.arrows !== undefined) {
             this._arrows = data.arrows;
-            this._updateArrows();
+            this.setNodeHidden(!data.arrows, 'prevBtn');
+            this.setNodeHidden(!data.arrows, 'nextBtn');
+            this.toggleCls('q-indicator--arrows', data.arrows);
         }
     }
 
     update(props?: Partial<IndicatorProps>): void {
-        if (props?.type !== undefined) this.indicatorType = props.type;
-        if (props?.count !== undefined) this.count = props.count;
+        if (props?.mode !== undefined) this.mode = props.mode;
         if (props?.activeIndex !== undefined) this.activeIndex = props.activeIndex;
-        if (props?.itemTpl !== undefined) this.itemTpl = props.itemTpl;
         if (props?.arrows !== undefined) {
             this._arrows = props.arrows;
-            this._updateArrows();
+            this.setNodeHidden(!props.arrows, 'prevBtn');
+            this.setNodeHidden(!props.arrows, 'nextBtn');
+            this.toggleCls('q-indicator--arrows', props.arrows);
         }
     }
 }

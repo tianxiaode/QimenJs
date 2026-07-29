@@ -1,7 +1,6 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { TimelineComponent } from './TimelineComponent';
 import { TIMELINE_TPL } from './timeline-tpl';
 
 export function registerTimelineTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Timeline', TIMELINE_TPL);
+    TimelineComponent.register(TIMELINE_TPL);
 }

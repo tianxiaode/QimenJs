@@ -23,18 +23,10 @@ export interface MinutePanelProps {
 }
 
 class MinutePanelComponent extends Component {
-    static type = 'MinutePanel';
-
-    type = 'MinutePanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-            _tensSelected: -1,
-            _onesSelected: -1,
-            _selectingTens: true,
-        };
-    }
+    _value: DateTimeValue | null = null;
+    _tensSelected: number = -1;
+    _onesSelected: number = -1;
+    _selectingTens: boolean = true;
 
     onAfterInit(props?: MinutePanelProps): void {
         this._value = props?.value ?? {

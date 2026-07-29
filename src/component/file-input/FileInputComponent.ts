@@ -91,29 +91,20 @@ function isFileTypeAllowed(file: File, accept: string): boolean {
 }
 
 export let FileInputComponent = ButtonComponent.replace({
-    type: 'FileInput',
-
     body: {
+        _entityKey: '' as string,
+        _transport: null as FileTransportConfig | null,
+        _accept: '' as string,
+        _multiple: false as boolean,
+        _maxSize: 0 as number,
+        _fileDisabled: false as boolean,
+        _autoUpload: true as boolean,
+        _fileItems: [] as FileItem[],
+        _inputEl: null as HTMLInputElement | null,
+        _entityUnsubs: [] as (() => void)[],
+
         nodes: {
             root: { addCls: 'q-file-input' },
-        },
-
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _entityKey: '' as string,
-                _transport: null as FileTransportConfig | null,
-                _accept: '' as string,
-                _multiple: false,
-                _maxSize: 0,
-                _fileDisabled: false,
-                _autoUpload: true,
-                _fileItems: [] as FileItem[],
-                _inputEl: null as HTMLInputElement | null,
-                _entityUnsubs: [] as (() => void)[],
-            };
         },
 
         onAfterInit(props?: FileInputProps): void {

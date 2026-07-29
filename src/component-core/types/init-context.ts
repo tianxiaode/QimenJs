@@ -57,6 +57,20 @@ import type { INodeMapManager } from './node-map-manager-types';
  * const button = new ButtonComponent(props);
  * ```
  */
+export interface BadgeQuickConfig {
+    text?: string | number;
+    visible?: boolean;
+    anchor?: string;
+}
+
+export interface TooltipQuickConfig {
+    tooltip?: string;
+    placement?: 'top' | 'bottom' | 'left' | 'right';
+    anchor?: string;
+    showDelay?: number;
+    hideDelay?: number;
+}
+
 export interface ComponentProps {
     /**
      * 组件唯一标识
@@ -97,6 +111,18 @@ export interface ComponentProps {
      * DomEventsEngine 第三层 key 匹配此值。
      */
     action?: string;
+
+    /** 角标浮层快捷配置，null 时不触发 */
+    badge?: BadgeQuickConfig | string | number | null;
+
+    /** 提示浮层快捷配置，null 时不触发 */
+    tooltip?: TooltipQuickConfig | string | null;
+
+    /** 桥接事件 key，EventBridge 通道标识 */
+    bridgeKey?: string | { key: string; fixed?: boolean };
+
+    /** 实体事件 key，EntityEventBus 通道标识 */
+    entityKey?: string | { key: string; fixed?: boolean };
 
     /**
      * 其他自定义属性

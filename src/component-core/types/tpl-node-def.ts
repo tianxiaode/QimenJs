@@ -117,16 +117,33 @@
  * ══════════════════════════════════════════════════════════════
  *
  * 浮动层和拖拽由 body 中的 floats/drags 配置驱动，
- * 触发方式由 FloatDecl.trigger 字段控制，不需要在 TplNode emits 中声明。
+ * 触发方式由 FloatDecl.trigger 字段控制。
  *
  * floats 配置（详见 tpl-body.ts FloatDecl）：
  *   body: {
  *       floats: {
- *           dropBtn:  { type: 'DropPanel', align: 'bottom', trigger: 'click' },
- *           tooltip:  { type: 'Tips', anchor: 'self', trigger: 'hover' },
+ *           dropBtn:  { type: 'DropPanel', placement: 'bottom', trigger: 'click' },
+ *           tooltip:  { type: 'Tooltip', anchor: 'self', trigger: 'hover' },
  *           badge:    { type: 'Badge', anchor: 'icon', trigger: 'always' },
  *       }
  *   }
+ *
+ * 浮层事件转发（FloatDecl.emits）：
+ *   body: {
+ *       floats: {
+ *           dropBtn: {
+ *               type: 'Menu', trigger: 'click', placement: 'bottom',
+ *               emits: { shown: 'dropOpen', hidden: 'dropClose' },
+ *           },
+ *       }
+ *   }
+ *   浮层打开时 → 组件 emit('dropOpen', data)
+ *   浮层关闭时 → 组件 emit('dropClose', data)
+ *
+ * 配置驱动原则：
+ *   组件自身不硬编码 floats，浮层类型/配置完全由使用方在 body.floats 中声明。
+ *   DropdownComponent 等语义组件只负责 UI 表现（如下拉箭头），
+ *   浮层由使用方配置，实现完全的配置驱动。
  *
  * drags 配置（详见 tpl-body.ts DragDecl）：
  *   body: {
@@ -279,7 +296,7 @@
  * ══════════════════════════════════════════════════════════════
  *
  * - identity:  节点标识（tag/type/name），编译时直接处理
- * - event:     事件声明（emits/action），内联到节点，编译时存入元数据
+ * - event:     事件声明（action/data），编译时存入元数据
  * - style:     样式（cls/style），运行时由 applyStyle 应用
  * - layout:    布局（flex/grid），互斥，运行时转为内联 CSS
  * - content:   内容（i18n），运行时由 getter/setter 处理
@@ -331,16 +348,15 @@
  *
  * 与 nodeOverrides / body.nodes 配合：
  * - 展开后的节点名带命名空间，nodeOverrides 或 body.nodes 用全名覆盖
- * - emits 覆盖为全量替换语义
  * ```ts
  * // 旧方案（nodeOverrides，仍兼容）
  * nodeOverrides: {
- *     'header:action': { hidden: false, emits: { click: 'close' } }
+ *     'header:action': { hidden: false }
  * }
  * // 新方案（body.nodes，推荐）
  * body: {
  *     nodes: {
- *         'header:action': { hidden: false, emits: { click: 'close' } }
+ *         'header:action': { hidden: false }
  *     }
  * }
  * ```
@@ -374,9 +390,8 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     { field: 'type', category: 'identity', toMeta: false, toRoot: false },
     { field: 'name', category: 'identity', toMeta: false, toRoot: false },
 
-    // ─── event: 事件声明（节点内联，详见上方事件机制章节） ───
+    // ─── event: 事件声明（domEvents 统一处理，详见上方事件机制章节） ───
 
-    { field: 'emits', category: 'event', toMeta: true, toRoot: false },
     { field: 'action', category: 'event', toMeta: true, toRoot: false },
     { field: 'data', category: 'event', toMeta: true, toRoot: false },
 

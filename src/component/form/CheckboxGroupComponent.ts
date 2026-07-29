@@ -48,8 +48,6 @@ export interface CheckboxGroupProps extends FormFieldProps {
 }
 
 export let CheckboxGroupComponent = FormFieldComponent.replace({
-    type: 'CheckboxGroup',
-
     body: {
         nodes: {
             root: { addCls: 'q-checkbox-group' },
@@ -58,17 +56,10 @@ export let CheckboxGroupComponent = FormFieldComponent.replace({
             },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _options: [] as CheckboxOption[],
-                _value: [] as (string | number)[],
-                _disabled: false,
-                _checkboxItems: [] as any[],
-            };
-        },
+        _options: [] as CheckboxOption[],
+        _value: [] as (string | number)[],
+        _disabled: false,
+        _checkboxItems: [] as any[],
 
         onAfterInit(props?: CheckboxGroupProps): void {
             const self = this as any;

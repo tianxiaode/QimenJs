@@ -3,7 +3,7 @@
  *
  * Layer 1 — root 属性 + 方法：
  *   属性：this.cls = 'xxx' / this.hidden = true
- *   方法：this.addCls('xxx') / this.removeCls('xxx') / this.toggleCls('xxx')
+ *   方法：this.addCls('xxx') / this.removeCls('xxx') / this.toggleCls('xxx') / this.containsCls('xxx')
  *
  * Layer 2 — 子节点（nodeName 在末尾，可选）：
  *   方法重载：this.addCls('xxx', 'expand') / this.removeCls('xxx', 'expand')
@@ -359,6 +359,33 @@ export const CommonPropsAbility: AbilityDefinition = {
         }
         const target = component?.el ?? el;
         if (target) target.classList.toggle(cls, actualForce);
+    },
+
+    /**
+     * 检查 CSS 类名是否存在
+     *
+     * 判断指定节点是否包含某个 CSS 类名。
+     * 如果目标节点是子组件且该子组件有 containsCls 方法，则委托给子组件处理。
+     *
+     * @param {string} cls - CSS 类名
+     * @param {string} [nodeName='root'] - 节点名称，默认为 'root'
+     * @returns {boolean} 类名是否存在
+     *
+     * @example
+     * // 检查 root 节点是否包含类名
+     * this.containsCls('active');
+     *
+     * @example
+     * // 检查子节点是否包含类名
+     * this.containsCls('active', 'icon');
+     */
+    containsCls(cls: string, nodeName?: string): boolean {
+        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
+        if (component && typeof component.containsCls === 'function') {
+            return component.containsCls(cls);
+        }
+        const target = component?.el ?? el;
+        return target ? target.classList.contains(cls) : false;
     },
 
     /**

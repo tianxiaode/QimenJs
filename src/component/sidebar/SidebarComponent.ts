@@ -44,21 +44,13 @@ export interface SidebarProps {
 }
 
 class SidebarComponent extends Component {
-    static type = 'Sidebar';
-
-    type = 'Sidebar';
-
-    onInitState() {
-        return {
-            _title: '' as string,
-            _items: [] as SidebarItem[],
-            _collapsed: false,
-            _width: '240px',
-            _collapsible: false,
-            _itemEls: [] as HTMLElement[],
-            _clickBound: false,
-        };
-    }
+    _title: string = '';
+    _items: SidebarItem[] = [];
+    _collapsed: boolean = false;
+    _width: string = '240px';
+    _collapsible: boolean = false;
+    _itemEls: HTMLElement[] = [];
+    _clickBound: boolean = false;
 
     onAfterInit(props?: SidebarProps): void {
         this._initSidebar(props);

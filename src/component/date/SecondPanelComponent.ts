@@ -23,17 +23,9 @@ export interface SecondPanelProps {
 }
 
 class SecondPanelComponent extends Component {
-    static type = 'SecondPanel';
-
-    type = 'SecondPanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-            _tensSelected: -1,
-            _onesSelected: -1,
-        };
-    }
+    _value: DateTimeValue | null = null;
+    _tensSelected: number = -1;
+    _onesSelected: number = -1;
 
     onAfterInit(props?: SecondPanelProps): void {
         this._value = props?.value ?? {

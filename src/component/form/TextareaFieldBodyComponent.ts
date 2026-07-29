@@ -18,8 +18,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class TextareaFieldBodyComponent extends Component {
-    static type = 'TextareaFieldBody';
-    type = 'TextareaFieldBody';
 }
 
 export { TextareaFieldBodyComponent };

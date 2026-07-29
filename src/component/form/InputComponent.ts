@@ -62,8 +62,6 @@ function getFieldEl(cmp: any): HTMLInputElement | null {
 const CLEAR_BTN_ORDER = 0;
 
 export let InputComponent = FormFieldComponent.replace({
-    type: 'Input',
-
     body: {
         nodes: {
             root: { addCls: 'q-input' },
@@ -71,17 +69,11 @@ export let InputComponent = FormFieldComponent.replace({
                 type: InputFieldBodyComponent,
             },
         },
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _value: '',
-                _focused: false,
-                _clearable: false,
-                _clearBtnItem: null as any,
-            };
-        },
+
+        _value: '',
+        _focused: false,
+        _clearable: false,
+        _clearBtnItem: null as any,
 
         onAfterInit(props?: InputProps): void {
             const self = this as any;

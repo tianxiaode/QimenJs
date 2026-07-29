@@ -14,7 +14,7 @@
  * new LabelComponent({ i18nText: 'user.name', role: 'column-header' })
  */
 
-import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 export interface LabelProps {
     text?: string;
@@ -28,17 +28,8 @@ export interface LabelProps {
 }
 
 class LabelComponent extends Component {
-    static type = 'Label';
-
-    type = 'Label';
-
-    onInitState() {
-        return {
-            _required: false,
-            _requiredMark: '*',
-            _requiredMarkPosition: 'after' as 'before' | 'after',
-        };
-    }
+    _requiredMark = '*';
+    _requiredMarkPosition = 'after';
 
     onAfterInit(props?: LabelProps): void {
         this._initLabel(props);
@@ -63,25 +54,24 @@ class LabelComponent extends Component {
     }
 
     _applyRequiredMark(): void {
-        const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
-        if (!markEl) return;
-        markEl.textContent = this._requiredMark;
-        markEl.classList.toggle(
+        this.setNodeProp('text', this._requiredMark, 'requiredMark');
+        this.toggleCls(
             'q-label__required-mark--before',
-            this._requiredMarkPosition === 'before'
+            this._requiredMarkPosition === 'before',
+            'requiredMark'
         );
-        markEl.classList.toggle(
+        this.toggleCls(
             'q-label__required-mark--after',
-            this._requiredMarkPosition === 'after'
+            this._requiredMarkPosition === 'after',
+            'requiredMark'
         );
     }
 
     get text(): string {
-        const contentEl = this.nodeMap?.content?.el as HTMLElement | null;
-        if (!contentEl) return '';
-        const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
-        if (!markEl) return contentEl.textContent ?? '';
-        return contentEl.textContent?.replace(markEl.textContent ?? '', '') ?? '';
+        const contentText = this._getNodeProp('content', 'text') ?? '';
+        const markText = this._getNodeProp('requiredMark', 'text') ?? '';
+        if (!markText) return contentText;
+        return contentText.replace(markText, '');
     }
     set text(v: string) {
         this.setNodeProp('text', v, 'content');
@@ -104,14 +94,13 @@ class LabelComponent extends Component {
     }
 
     get role(): string {
-        return this.nodeMap?.content?.el?.getAttribute('role') ?? '';
+        return this._getNodeProp('root', 'role') ?? '';
     }
     set role(v: string) {
         if (v) {
             this.setAttr('role', v);
         } else {
-            const el = this.nodeMap?.content?.el as HTMLElement | null;
-            el?.removeAttribute('role');
+            this.removeAttr('role');
         }
     }
 
@@ -141,8 +130,6 @@ class LabelComponent extends Component {
         if (props?.role !== undefined) this.role = props.role;
     }
 }
-
-LabelComponent.use([CommonPropsAbility]);
 
 export { LabelComponent };
 export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

@@ -4,6 +4,8 @@
 // ============================================
 
 import { Component, TemplateRegistrar } from '@qimenjs/component-core';
+import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
+import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 export type DefaultItemDef = Record<string, any>;
@@ -18,6 +20,7 @@ export interface ItemGroupConfig {
     defaultItem?: DefaultItemConfig;
     overflowMode?: OverflowMode;
     step?: number;
+    indicator?: IndicatorConfig;
 }
 
 export interface ItemGroupProps extends ItemGroupConfig {
@@ -26,25 +29,32 @@ export interface ItemGroupProps extends ItemGroupConfig {
 }
 
 class ItemGroupBaseComponent extends Component {
-    static type = 'ItemGroupBase';
+    _items: Array<{
+        data: Record<string, any>;
+        component: any;
+        el: HTMLElement;
+        events?: Record<string, TplEventAction>;
+    }> = [];
 
-    type = 'ItemGroupBase';
+    _direction: 'horizontal' | 'vertical' = 'horizontal';
+    _defaultItemType: string = '';
+    _gap: string = '';
+    _cols: number = 1;
+    _defaultItem: DefaultItemConfig = {};
+    _overflowMode: OverflowMode = 'none';
+    _step: number = 100;
 
-    onInitState() {
-        return {
-            _items: [] as Array<{
-                data: Record<string, any>;
-                component: any;
-                el: HTMLElement;
-            }>,
-            _direction: 'horizontal' as 'horizontal' | 'vertical',
-            _defaultItemType: '',
-            _gap: '',
-            _cols: 1 as number,
-            _defaultItem: {} as DefaultItemConfig,
-            _overflowMode: 'none' as OverflowMode,
-            _step: 100 as number,
-        };
+    get isItemContainer(): boolean {
+        return true;
+    }
+
+    get floats(): Record<string, FloatDecl> | undefined {
+        const parentFloats = super.floats ?? {};
+        if (typeof this.indicatorFloat === 'object') {
+            const merged = { ...parentFloats, ...this.indicatorFloat };
+            return Object.keys(merged).length > 0 ? merged : undefined;
+        }
+        return Object.keys(parentFloats).length > 0 ? parentFloats : undefined;
     }
 
     onAfterInit(props?: any): void {
@@ -59,6 +69,9 @@ class ItemGroupBaseComponent extends Component {
         if (props?.defaultItem) this.defaultItem = props.defaultItem;
         if (props?.overflowMode) this.overflowMode = props.overflowMode;
         if (props?.step) this.step = props.step;
+        if (props?.indicator && typeof this.initIndicator === 'function') {
+            this.initIndicator(props.indicator);
+        }
 
         if (props?.cls) this.addCls(props.cls);
         if (props?.items) this.setItems(props.items);
@@ -166,6 +179,7 @@ class ItemGroupBaseComponent extends Component {
 
         const props = { ...data };
         delete props.type;
+        const itemEvents = props.events;
         delete props.events;
 
         const instance = new ItemClass(props);
@@ -183,6 +197,7 @@ class ItemGroupBaseComponent extends Component {
             data,
             component: instance,
             el: instance.el,
+            events: itemEvents,
         };
 
         this.itemContainer?.el?.appendChild(instance.el);
@@ -292,5 +307,6 @@ class ItemGroupBaseComponent extends Component {
     }
 }
 
+ItemGroupBaseComponent.use(IndicatorAbility);
 export { ItemGroupBaseComponent };
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

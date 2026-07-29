@@ -5,7 +5,8 @@
  */
 
 // 组件基类
-export { Component, COMPONENT_ABILITIES } from './Component';
+export { Component } from './Component';
+export { COMPONENT_ABILITIES } from './Component-abilities';
 
 // 节点结构管理器
 export { NodeMapManager } from './NodeMapManager';
@@ -80,10 +81,16 @@ export type {
     ListenItem,
     LifecycleHooks,
 } from './types/tpl-body';
+export type { DomEventsMap } from './types/tpl-events';
 export type { BodyKeyDef } from './types/tpl-body-def';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
-export type { DelegatedEventRule } from './types/tpl-events';
-export type { ComponentProps, InitContext } from './types/init-context';
+export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/tpl-events';
+export type {
+    ComponentProps,
+    InitContext,
+    BadgeQuickConfig,
+    TooltipQuickConfig,
+} from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager-types';
 
 export type { Placement } from '@/overlay/dispatch/positionOverlay';

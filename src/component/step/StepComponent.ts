@@ -41,19 +41,11 @@ export interface StepProps {
 }
 
 class StepComponent extends Component {
-    static type = 'Step';
-
-    type = 'Step';
-
-    onInitState() {
-        return {
-            _items: [] as StepItem[],
-            _activeIndex: 0,
-            _direction: 'horizontal' as 'horizontal' | 'vertical',
-            _itemEls: [] as HTMLElement[],
-            _clickBound: false,
-        };
-    }
+    _items: StepItem[] = [];
+    _activeIndex: number = 0;
+    _direction: 'horizontal' | 'vertical' = 'horizontal';
+    _itemEls: HTMLElement[] = [];
+    _clickBound: boolean = false;
 
     onAfterInit(props?: StepProps): void {
         this._initStep(props);

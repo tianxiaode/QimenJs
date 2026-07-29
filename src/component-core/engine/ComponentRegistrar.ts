@@ -23,6 +23,7 @@
 
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { CompileEngine } from './CompileEngine';
+import { TplInspector } from './TplInspector';
 import { clone } from '@/utils/object/clone';
 import { NodeMapManager } from '../NodeMapManager';
 import type { TplNode } from '../types/tpl-node-types';
@@ -55,10 +56,19 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     register(componentClass: new (props?: Record<string, any>) => any, tpl?: TplNode): void {
         this.checkLock();
 
-        const type: string = (componentClass as any).type;
+        const type: string = (componentClass as any).type
+            ?? (componentClass as any).name?.replace(/Component$/, '');
         if (!type) {
             this.logger.warn(`Component class has no type getter, skipping registration`);
             return;
+        }
+
+        if (!(componentClass as any).type) {
+            Object.defineProperty(componentClass, 'type', {
+                value: type,
+                writable: true,
+                configurable: true,
+            });
         }
 
         const existing = this.storage.entries.get(type);
@@ -123,7 +133,8 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     ): string | undefined {
         let current = Object.getPrototypeOf(componentClass);
         while (current && current !== Function.prototype) {
-            const parentType = (current as any).type;
+            const parentType = (current as any).type
+                ?? (current as any).name?.replace(/Component$/, '');
             if (parentType && this.storage.entries.has(parentType)) {
                 return parentType;
             }
@@ -241,6 +252,9 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 console.log(`     compiled: (not yet)`);
             } else {
                 console.log(`     compiled: (inherited)`);
+            }
+            if (entry.tpl) {
+                TplInspector.printTree(entry.tpl, 2);
             }
         }
     }

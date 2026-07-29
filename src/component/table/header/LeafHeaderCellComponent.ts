@@ -23,7 +23,6 @@ export interface LeafHeaderCellProps {
 type SortState = 'none' | 'asc' | 'desc';
 
 export let LeafHeaderCellComponent = BaseHeaderCellComponent.replace({
-    type: 'LeafHeaderCell',
 
     tplReplaces: {
         content: {
@@ -42,14 +41,10 @@ export let LeafHeaderCellComponent = BaseHeaderCellComponent.replace({
             resizeHandle: { axis: 'x', activeClass: 'q-header-cell__resize--active' },
         },
 
-        onInitState() {
-            return {
-                _sortable: false as boolean,
-                _resizable: true as boolean,
-                _sortState: 'none' as SortState,
-                _resizeStartWidth: 0 as number,
-            };
-        },
+        _sortable: false as boolean,
+        _resizable: true as boolean,
+        _sortState: 'none' as SortState,
+        _resizeStartWidth: 0 as number,
 
         onAfterInit(props?: LeafHeaderCellProps): void {
             const self = this as any;

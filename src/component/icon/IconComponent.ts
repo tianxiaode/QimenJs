@@ -19,10 +19,6 @@ export interface IconProps {
 }
 
 class IconComponent extends Component {
-    static type = 'Icon';
-
-    type = 'Icon';
-
     onAfterInit(props?: IconProps): void {
         this.initSize();
         this.update(props);

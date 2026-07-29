@@ -20,16 +20,8 @@ export interface MonthPanelProps {
 const TOTAL_MONTHS = 12;
 
 class MonthPanelComponent extends Component {
-    static type = 'MonthPanel';
-
-    type = 'MonthPanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-            _cells: [] as HTMLElement[],
-        };
-    }
+    _value: DateTimeValue | null = null;
+    _cells: HTMLElement[] = [];
 
     onAfterInit(props?: MonthPanelProps): void {
         this._value = props?.value ?? {

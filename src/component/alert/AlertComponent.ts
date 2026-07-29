@@ -6,8 +6,9 @@
  *
  * 模板节点：
  * - icon    — 类型图标
+ * - title   — 标题（默认隐藏）
  * - text    — 提示内容
- * - closeBtn — 关闭按钮（可选）
+ * - closeBtn — 关闭按钮（默认隐藏）
  *
  * @example
  * ```ts
@@ -17,8 +18,8 @@
  * ```
  */
 
+import { DomEventsMap } from '@/component-core/types/tpl-events';
 import { Component } from '@qimenjs/component-core';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
 export type AlertType = 'info' | 'success' | 'warning' | 'error';
 
@@ -37,17 +38,12 @@ export interface AlertProps {
 }
 
 class AlertComponent extends Component {
-    static type = 'Alert';
-
-    type = 'Alert';
+    domEvents?: DomEventsMap | undefined = {
+        click: { closeBtn: { handler: true } },
+    };
 
     onAfterInit(props?: AlertProps): void {
         this._initAlert(props);
-    }
-
-    onCloseBtnClick(): void {
-        this.emit('close', {});
-        this.hidden = true;
     }
 
     _initAlert(props?: AlertProps): void {
@@ -64,9 +60,8 @@ class AlertComponent extends Component {
     }
 
     get alertType(): AlertType {
-        const el = this.el as HTMLElement;
         for (const t of ['info', 'success', 'warning', 'error']) {
-            if (el?.classList.contains(`q-alert--${t}`)) return t as AlertType;
+            if (this.contains(`q-alert--${t}`)) return t as AlertType;
         }
         return 'info';
     }
@@ -76,6 +71,9 @@ class AlertComponent extends Component {
         this.icon = TYPE_ICON_MAP[value];
     }
 
+    onCloseBtnClick() {
+        this.setNodeHidden(true, 'closeBtn');
+    }
     update(props?: Partial<AlertProps>): void {
         if (props?.type !== undefined) this.alertType = props.type;
         if (props?.title !== undefined) {

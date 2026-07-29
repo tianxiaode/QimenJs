@@ -9,8 +9,9 @@
  * - content — 内容区域
  * - toggleIcon — 折叠图标
  *
- * 事件：
- * - toggle — 折叠/展开时触发，数据 { collapsed }
+ * 事件（domEvents 声明式）：
+ * - legend click → handler: onLegendToggleClick + emits: ['toggle']
+ * - 事件数据由 defaultEventData 自动收集 { collapsed }
  *
  * @example
  * new FieldsetComponent({ legend: '基本信息' })
@@ -18,7 +19,7 @@
  * fieldset.on('toggle', ({ collapsed }) => { ... })
  */
 
-import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { Component, DomEventsMap } from '@qimenjs/component-core';
 
 export interface FieldsetProps {
     legend?: string;
@@ -29,16 +30,17 @@ export interface FieldsetProps {
 }
 
 class FieldsetComponent extends Component {
-    static type = 'Fieldset';
+    _collapsible: boolean = false;
+    _collapsed: boolean = false;
 
-    type = 'Fieldset';
-
-    onInitState() {
-        return {
-            _collapsible: false,
-            _collapsed: false,
-        };
-    }
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            legend: {
+                handler: 'onLegendToggleClick',
+                emits: ['toggle'],
+            },
+        },
+    };
 
     onAfterInit(props?: FieldsetProps): void {
         this._initFieldset(props);
@@ -61,10 +63,17 @@ class FieldsetComponent extends Component {
         if (props?.cls) this.addCls(props.cls);
     }
 
-    onLegendClick(): void {
+    onLegendToggleClick(): void {
         if (!this._collapsible) return;
         this._collapsed = !this._collapsed;
         this._applyCollapsed();
+    }
+
+    get defaultEventData(): Record<string, any> {
+        return {
+            ...super.defaultEventData,
+            collapsed: this._collapsed,
+        };
     }
 
     _applyCollapsed(): void {
@@ -105,10 +114,6 @@ class FieldsetComponent extends Component {
         this.setNodeProp('text', v, 'legendText');
     }
 
-    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-        return { collapsed: this._collapsed };
-    }
-
     update(props?: Partial<FieldsetProps>): void {
         if (props?.i18nLegend !== undefined) this.legendText = props.i18nLegend;
         else if (props?.legend !== undefined) this.legendText = props.legend;
@@ -117,8 +122,6 @@ class FieldsetComponent extends Component {
         if (props?.cls !== undefined) this.addCls(props.cls);
     }
 }
-
-FieldsetComponent.use([CommonPropsAbility]);
 
 export { FieldsetComponent };
 export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;

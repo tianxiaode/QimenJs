@@ -21,10 +21,6 @@ export interface DividerProps {
 }
 
 class DividerComponent extends Component {
-    static type = 'Divider';
-
-    type = 'Divider';
-
     onAfterInit(props?: DividerProps): void {
         this._initDivider(props);
     }

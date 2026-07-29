@@ -26,17 +26,9 @@ export interface DatePanelProps {
 }
 
 class DatePanelComponent extends Component {
-    static type = 'DatePanel';
-
-    type = 'DatePanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-            _viewYear: 2026,
-            _viewMonth: 1,
-        };
-    }
+    _value: DateTimeValue | null = null;
+    _viewYear: number = 2026;
+    _viewMonth: number = 1;
 
     onAfterInit(props?: DatePanelProps): void {
         this._value = props?.value ?? {

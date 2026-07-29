@@ -5,9 +5,6 @@
 
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 import type { TplEventAction } from '@qimenjs/component-core';
-import { Logger } from '@qimenjs/logger';
-
-const logger = Logger.for('ItemGroupPooled');
 
 export const AUX_ROLE_GROUP = 'group';
 export const AUX_ROLE_EXPAND = 'expand';
@@ -30,6 +27,7 @@ interface AuxPoolEntry {
     data: Record<string, any>;
     component: any;
     el: HTMLElement;
+    events?: Record<string, TplEventAction>;
 }
 
 interface AuxPool {
@@ -40,22 +38,14 @@ interface AuxPool {
 }
 
 class ItemGroupPooledComponent extends ItemGroupBaseComponent {
-    static type = 'ItemGroupPooled';
+    _hiddenItems: Array<{
+        data: Record<string, any>;
+        component: any;
+        el: HTMLElement;
+        events?: Record<string, TplEventAction>;
+    }> = [];
 
-    type = 'ItemGroupPooled';
-
-    onInitState() {
-        return {
-            ...super.onInitState(),
-            _hiddenItems: [] as Array<{
-                data: Record<string, any>;
-                component: any;
-                el: HTMLElement;
-                events?: Record<string, TplEventAction>;
-            }>,
-            _auxPools: new Map<string, AuxPool>(),
-        };
-    }
+    _auxPools: Map<string, AuxPool> = new Map();
 
     get poolSize(): number {
         return this._hiddenItems.length;
@@ -107,7 +97,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             if (typeof item.component.update === 'function') {
                 item.component.update(datas[i]);
             } else {
-                logger.warn(
+                this.logger.warn(
                     `item "${item.component.name || item.component.type || i}" missing update(), pooled data change will not reflect`
                 );
             }
@@ -204,6 +194,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             if (itemType === dataType) {
                 this._hiddenItems.splice(i, 1);
                 item.data = data;
+                item.events = data.events;
                 if (typeof item.component.update === 'function') {
                     item.component.update(data);
                 }
@@ -351,6 +342,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             if (itemType === dataType) {
                 pool.hiddenItems.splice(i, 1);
                 item.data = data;
+                item.events = data.events;
                 if (typeof item.component.update === 'function') {
                     item.component.update(data);
                 }
@@ -384,7 +376,9 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const step = this._step;
 
         for (let i = 0; i < this._items.length; i++) {
-            this._items[i].el.style.order = String((i + 1) * step);
+            const customOrder = this._items[i].data.order;
+            this._items[i].el.style.order =
+                customOrder !== undefined ? String(customOrder) : String((i + 1) * step);
         }
 
         for (const pool of this._auxPools.values()) {
@@ -396,13 +390,9 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
-        for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            if (item.component.containsElement('', target) || item.el.contains(target)) {
-                const type = item.component.constructor?._type || item.component.type || '';
-                return { component: item.component, type, index: i };
-            }
-        }
+        const base = super.getTargetItem(target);
+        if (base) return base;
+
         for (const pool of this._auxPools.values()) {
             for (let i = 0; i < pool.items.length; i++) {
                 const item = pool.items[i];

@@ -6,6 +6,7 @@ import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
 import { TemplateRegistrar } from '@qimenjs/component-core';
+import { throttle } from '@/async/throttle';
 
 export interface OverlayDefinition {
     type: string;
@@ -27,6 +28,9 @@ interface OverlayInstance {
     maskEl?: HTMLElement;
     clickOutsideHandler?: (e: MouseEvent) => void;
     escapeHandler?: (e: KeyboardEvent) => void;
+    resizeObserver?: ResizeObserver;
+    scrollHandler?: () => void;
+    resizeHandler?: () => void;
 }
 
 const OVERLAY_ACTION_LIST = Object.values(OVERLAY_ACTIONS);
@@ -162,13 +166,16 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 mask: def.mask,
             });
 
+            if (def.emits) {
+                this._bindFloatEmits(overlayKey, def.emits, component);
+            }
+
             const trigger = def.trigger ?? 'click';
             const triggers = Array.isArray(trigger) ? trigger : [trigger];
 
             for (const t of triggers) {
                 if (t === 'manual') continue;
 
-                // trigger: 'always' 注册后立即显示浮层
                 if (t === 'always') {
                     this.bus.overlayEmit(
                         EventContextBuilder.create()
@@ -244,6 +251,28 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                     });
                 }
             }
+        }
+    }
+
+    /**
+     * 订阅浮层反馈事件并转发到组件
+     *
+     * 根据 FloatDecl.emits 配置，自动订阅 OverlayEventBus 的
+     * shown/hidden/changed 反馈事件，转发为组件自身的 emit 事件。
+     *
+     * @param overlayKey - 浮层注册 key（如 "cmpId:dropIcon"）
+     * @param emits - 事件转发映射 { 反馈事件名 → 组件事件名 }
+     * @param component - 触发组件实例
+     */
+    private _bindFloatEmits(
+        overlayKey: string,
+        emits: Record<string, string>,
+        component: any
+    ): void {
+        for (const [feedbackEvent, componentEvent] of Object.entries(emits)) {
+            this.bus.overlayOn(overlayKey, feedbackEvent, (data: any) => {
+                component.emit?.(componentEvent, data);
+            });
         }
     }
 
@@ -329,6 +358,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         overlayInst.hidden = false;
 
+        this._bindReposition(instanceKey, inst);
+
         this.bus.overlayEmit(
             EventContextBuilder.create()
                 .withEvent(`overlay:${overlayKey}:shown`)
@@ -352,6 +383,45 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const placement = def?.placement ?? 'bottom';
         const offset = def?.offset ?? 4;
         positionOverlay(inst.el, inst.anchor, placement, offset, true);
+    }
+
+    /**
+     * 绑定浮层重定位观察器
+     *
+     * 监听锚点 ResizeObserver + window scroll/resize，
+     * 变化时 throttle(16ms) 节流调用 _reposition，约 60fps 跟随。
+     */
+    private _bindReposition(instanceKey: string, inst: OverlayInstance): void {
+        const reposition = throttle(() => {
+            this._reposition(instanceKey);
+        }, 16);
+
+        inst.resizeObserver = new ResizeObserver(reposition);
+        inst.resizeObserver.observe(inst.anchor);
+
+        inst.scrollHandler = reposition;
+        inst.resizeHandler = reposition;
+
+        window.addEventListener('scroll', inst.scrollHandler, true);
+        window.addEventListener('resize', inst.resizeHandler);
+    }
+
+    /**
+     * 解绑浮层重定位观察器
+     */
+    private _unbindReposition(inst: OverlayInstance): void {
+        if (inst.resizeObserver) {
+            inst.resizeObserver.disconnect();
+            inst.resizeObserver = undefined;
+        }
+        if (inst.scrollHandler) {
+            window.removeEventListener('scroll', inst.scrollHandler, true);
+            inst.scrollHandler = undefined;
+        }
+        if (inst.resizeHandler) {
+            window.removeEventListener('resize', inst.resizeHandler);
+            inst.resizeHandler = undefined;
+        }
     }
 
     private _changeOverlay(instanceKey: string, overlayKey: string, data: any): void {
@@ -384,6 +454,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     private _closeOverlay(instanceKey: string, overlayKey: string): void {
         const inst = this.instances.get(instanceKey);
         if (!inst) return;
+
+        this._unbindReposition(inst);
 
         if (inst.clickOutsideHandler) {
             document.removeEventListener('mousedown', inst.clickOutsideHandler);
@@ -426,6 +498,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     }
 
     private _cleanupInstance(inst: OverlayInstance): void {
+        this._unbindReposition(inst);
         if (inst.clickOutsideHandler) {
             document.removeEventListener('mousedown', inst.clickOutsideHandler);
         }

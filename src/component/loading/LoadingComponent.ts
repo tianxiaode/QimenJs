@@ -8,10 +8,6 @@
 import { Component } from '@qimenjs/component-core';
 
 class LoadingComponent extends Component {
-    static type = 'Loading';
-
-    type = 'Loading';
-
     _initLoading(props?: Record<string, any>): void {
         if (props?.text) {
             this.text = props.text;
@@ -20,10 +16,7 @@ class LoadingComponent extends Component {
         }
 
         if (props?.spinner) {
-            const spinnerEl = this.nodeMap?.spinner?.el;
-            if (spinnerEl) {
-                spinnerEl.className = `q-loading-spinner q-loading-spinner--${props.spinner}`;
-            }
+            this.setNodeCls(`q-loading-spinner q-loading-spinner--${props.spinner}`, 'spinner');
         }
     }
 

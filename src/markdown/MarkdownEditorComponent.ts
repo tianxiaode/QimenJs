@@ -180,30 +180,21 @@ const DEFAULT_SHORTCUTS: MarkdownShortcutAction[] = [
 ];
 
 export let MarkdownEditorComponent = FormFieldComponent.replace({
-    type: 'MarkdownEditor',
-
     body: {
+        _value: '' as string,
+        _focused: false as boolean,
+        _mode: 'edit' as MarkdownEditMode,
+        _autoSize: false as boolean | { minRows?: number; maxRows?: number },
+        _minRows: 1 as number,
+        _maxRows: Infinity as number,
+        _engine: new MarkdownEngine(),
+        _shortcuts: [...DEFAULT_SHORTCUTS] as MarkdownShortcutAction[],
+
         nodes: {
             root: { addCls: 'q-md-editor q-md-editor--edit' },
             fieldBody: {
                 type: MarkdownEditorFieldBodyComponent,
             },
-        },
-
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _value: '',
-                _focused: false,
-                _mode: 'edit' as MarkdownEditMode,
-                _autoSize: false as boolean | { minRows?: number; maxRows?: number },
-                _minRows: 1 as number,
-                _maxRows: Infinity as number,
-                _engine: new MarkdownEngine(),
-                _shortcuts: [...DEFAULT_SHORTCUTS] as MarkdownShortcutAction[],
-            };
         },
 
         onAfterInit(props?: MarkdownEditorProps): void {

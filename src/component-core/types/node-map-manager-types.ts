@@ -122,6 +122,22 @@ export interface INodeMapManager {
     get(name: string): NodeMetadata | undefined;
 
     /**
+     * 获取指定节点的子组件实例
+     *
+     * @param name - 节点名称
+     * @returns 子组件实例，不存在或无组件则返回 undefined
+     *
+     * @example
+     * ```ts
+     * const headerComp = nodeMapMgr.getComponent('header');
+     * if (headerComp) {
+     *     headerComp.title = 'New Title';
+     * }
+     * ```
+     */
+    getComponent(name: string): any | undefined;
+
+    /**
      * 获取所有节点元数据
      *
      * @returns 节点名称 → NodeMetadata 的映射对象

@@ -1,7 +1,10 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
+import { ItemGroupPooledComponent } from './ItemGroupPooledComponent';
+import { ItemGroupStaticComponent } from './ItemGroupStaticComponent';
 
 export function registerItemGroupTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('ItemGroupBase', ITEMGROUP_BASE_TPL);
+    ItemGroupBaseComponent.register(ITEMGROUP_BASE_TPL);
+    ItemGroupPooledComponent.register();
+    ItemGroupStaticComponent.register();
 }

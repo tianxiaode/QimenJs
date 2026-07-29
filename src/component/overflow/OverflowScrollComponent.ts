@@ -36,25 +36,17 @@ export interface OverflowScrollProps {
 }
 
 class OverflowScrollComponent extends Component {
-    static type = 'OverflowScroll';
-
-    type = 'OverflowScroll';
-
-    onInitState() {
-        return {
-            _anchor: null as HTMLElement | null,
-            _direction: 'horizontal' as OverflowDirection,
-            _scrollStep: 200,
-            _scrollArea: null as HTMLElement | null,
-            _resizeObserver: null as ResizeObserver | null,
-            _mutationObserver: null as MutationObserver | null,
-            _rafId: 0,
-            _dragStartScrollPos: 0,
-            _lastState: null as OverflowState | null,
-            _onOverflowChange: null as ((state: OverflowState) => void) | null,
-            _onScrollStateChange: null as ((state: OverflowState) => void) | null,
-        };
-    }
+    _anchor: HTMLElement | null = null;
+    _direction: OverflowDirection = 'horizontal';
+    _scrollStep: number = 200;
+    _scrollArea: HTMLElement | null = null;
+    _resizeObserver: ResizeObserver | null = null;
+    _mutationObserver: MutationObserver | null = null;
+    _rafId: number = 0;
+    _dragStartScrollPos: number = 0;
+    _lastState: OverflowState | null = null;
+    _onOverflowChange: ((state: OverflowState) => void) | null = null;
+    _onScrollStateChange: ((state: OverflowState) => void) | null = null;
 
     _initOverflowScroll(props?: OverflowScrollProps): void {
         const anchor = props?.anchor;

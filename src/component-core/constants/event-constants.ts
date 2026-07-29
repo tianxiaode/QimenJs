@@ -27,7 +27,7 @@ export const COMPONENT_ROOT: unique symbol = Symbol('COMPONENT_ROOT');
 export interface NodeEventMeta {
     /** 节点名称 */
     nodeName: string;
-    /** 事件类型集合 — 从 emits 字段提取的 DOM 事件类型 */
+    /** 事件类型集合 — 从 domEvents 声明提取的 DOM 事件类型 */
     eventTypes: Set<string>;
     /** 语义动作名 — 从 action 字段继承 */
     action?: string;

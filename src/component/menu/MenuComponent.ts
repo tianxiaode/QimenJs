@@ -1,6 +1,18 @@
+/**
+ * MenuComponent 菜单组件
+ *
+ * 从 ItemGroupStaticComponent 派生，通过 domEvents 集中处理子项事件，
+ * 委托 MenuItemComponent.select() / setExpandArrow() 执行状态变更。
+ *
+ * domEvents 路径：
+ * - 'MenuItem.content' → 点击菜单项内容区域
+ * - 'MenuItem'        → 鼠标进入/离开菜单项（子菜单箭头反馈）
+ */
+
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
+import { DomEventsMap } from '@qimenjs/component-core';
 
 export interface MenuProps extends ItemGroupProps {
     anchor?: HTMLElement;
@@ -9,16 +21,58 @@ export interface MenuProps extends ItemGroupProps {
 }
 
 class MenuComponent extends ItemGroupStaticComponent {
-    static type = 'Menu';
+    _anchor: HTMLElement | null = null;
+    _isOpen: boolean = false;
 
-    type = 'Menu';
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            'MenuItem.content': {
+                handler: '_onItemClick',
+                emits: ['[action]'],
+                bridges: ['[action]'],
+            },
+        },
+        mouseenter: {
+            MenuItem: {
+                handler: '_onItemEnter',
+            },
+        },
+        mouseleave: {
+            MenuItem: {
+                handler: '_onItemLeave',
+            },
+        },
+    };
 
-    onInitState() {
-        return {
-            ...super.onInitState?.(),
-            _anchor: null as HTMLElement | null,
-            _isOpen: false,
-        };
+    _onItemClick(domEvt: any): void {
+        const target = this.getTargetItem(domEvt.target);
+        if (!target) return;
+
+        const item = target.component;
+        if (!item.select()) return;
+
+        this.emit('select', { item, index: target.index });
+        (this as any).notifyGroupSelect(item);
+    }
+
+    _onItemEnter(domEvt: any): void {
+        const target = this.getTargetItem(domEvt.target);
+        if (!target) return;
+
+        const item = target.component;
+        if (item._hasSubmenu && !item._disabled) {
+            item.setExpandArrow('expanded');
+        }
+    }
+
+    _onItemLeave(domEvt: any): void {
+        const target = this.getTargetItem(domEvt.target);
+        if (!target) return;
+
+        const item = target.component;
+        if (item._hasSubmenu) {
+            item.setExpandArrow('collapsed');
+        }
     }
 
     onAfterInit(props?: MenuProps & Record<string, any>): void {
@@ -29,10 +83,6 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         self.initGroupSelect({ defaultMode: 'radio' });
         self.registerGroupItems([...self.items]);
-
-        self.on('select', (data: any) => {
-            self.notifyGroupSelect(data.item);
-        });
     }
 
     get itemGroup(): any {

@@ -58,23 +58,15 @@ const EYE_BTN_ORDER = 10;
 const STRENGTH_ORDER = 5;
 
 export let PasswordInputComponent = InputComponent.replace({
-    type: 'PasswordInput',
-
     body: {
         nodes: {
             root: { addCls: 'q-input--password' },
         },
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _visible: false,
-                _strength: 0 as PasswordStrength,
-                _eyeBtnItem: null as any,
-                _strengthItem: null as any,
-            };
-        },
+
+        _visible: false,
+        _strength: 0 as PasswordStrength,
+        _eyeBtnItem: null as any,
+        _strengthItem: null as any,
 
         onAfterInit(props?: PasswordInputProps): void {
             const self = this as any;

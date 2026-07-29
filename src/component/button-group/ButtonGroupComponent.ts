@@ -1,5 +1,6 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 
 export type ButtonGroupMode = 'single' | 'multiple';
 
@@ -10,34 +11,60 @@ export interface ButtonGroupProps extends ItemGroupProps {
 }
 
 class ButtonGroupComponent extends ItemGroupPooledComponent {
-    static type = 'ButtonGroup';
+    _mode: ButtonGroupMode = 'single';
+    _lastToggleIndex: number = -1;
 
-    type = 'ButtonGroup';
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            Toggle: {
+                handler: '_onToggleClick',
+                emits: ['select'],
+            },
+        },
+    };
 
-    onInitState() {
+    get defaultEventData(): Record<string, any> {
+        const self = this as any;
         return {
-            ...super.onInitState(),
-            _mode: 'single' as ButtonGroupMode,
+            ...super.defaultEventData,
+            selectedIndex: self.selectedIndex,
+            selectedIndices: self.selectedIndices,
+            selectedValues: self.selectedValues,
+            lastToggleIndex: self._lastToggleIndex,
         };
+    }
+
+    _onToggleClick(domEvt: any): void {
+        const item = this.getTargetItem(domEvt.target);
+        if (!item) return;
+
+        const self = this as any;
+        const index = item.index;
+        const toggle = item.component;
+        self._lastToggleIndex = index;
+
+        if (self._mode === 'single') {
+            if (!toggle.pressed) {
+                self.selectAt(index);
+            }
+        } else {
+            toggle.pressed = !toggle.pressed;
+        }
     }
 
     onAfterInit(props?: ButtonGroupProps): void {
         const self = this as any;
         self._mode = props?.mode ?? 'single';
-        self.el.classList.toggle('q-button-group--multiple', self._mode === 'multiple');
 
+        this.toggleCls('q-button-group--multiple', self._mode === 'multiple');
         this.addCls('q-button-group');
-        (this as any).itemContainer?.el?.classList.add('q-button-group__items');
+        this.addCls('q-button-group__items', 'itemContainer');
 
         super.onAfterInit({
             ...props,
             defaultItemType: 'Toggle',
             direction: props?.direction ?? 'horizontal',
             gap: props?.gap ?? '2px',
-        });
-
-        self.on('toggle', (data: any) => {
-            self._onItemToggle(data);
         });
 
         if (self._mode === 'single' && props?.selectedIndex !== undefined) {
@@ -72,7 +99,27 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         return indices;
     }
 
-    selectAt(index: number, silent: boolean = false): void {
+    get selectedValues(): any[] {
+        const self = this as any;
+        const values: any[] = [];
+        for (let i = 0; i < self.count; i++) {
+            const item = self.getAt(i);
+            if (item?.pressed && item.value !== undefined) values.push(item.value);
+        }
+        return values;
+    }
+
+    get unselectedValues(): any[] {
+        const self = this as any;
+        const values: any[] = [];
+        for (let i = 0; i < self.count; i++) {
+            const item = self.getAt(i);
+            if (!item?.pressed && item.value !== undefined) values.push(item.value);
+        }
+        return values;
+    }
+
+    selectAt(index: number): void {
         const self = this as any;
         if (index < 0 || index >= self.count) return;
 
@@ -87,38 +134,14 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         if (target && !target.pressed) {
             target.pressed = true;
         }
-
-        if (!silent) {
-            self.emit('select', { index, item: target });
-        }
     }
 
-    pressAt(index: number, pressed: boolean, silent: boolean = false): void {
+    pressAt(index: number, pressed: boolean): void {
         const self = this as any;
         if (index < 0 || index >= self.count) return;
         const item = self.getAt(index);
         if (item) {
             item.pressed = pressed;
-        }
-        if (!silent) {
-            self.emit('select', { index, pressed, item });
-        }
-    }
-
-    _onItemToggle(data: any): void {
-        const self = this as any;
-        const index = data?.index;
-        if (index === undefined) return;
-
-        const item = self.getAt(index);
-        if (!item) return;
-
-        if (self._mode === 'single') {
-            if (item.pressed) {
-                self.selectAt(index);
-            } else {
-                item.pressed = true;
-            }
         }
     }
 
@@ -126,7 +149,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         const self = this as any;
         if (props?.mode !== undefined) {
             self._mode = props.mode;
-            self.el.classList.toggle('q-button-group--multiple', self._mode === 'multiple');
+            this.toggleCls('q-button-group--multiple', self._mode === 'multiple');
         }
         if (props?.selectedIndex !== undefined) {
             self.selectAt(props.selectedIndex);

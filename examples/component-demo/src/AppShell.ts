@@ -10,7 +10,7 @@
  * - footer    — 底部区域 (AppFooterComponent)
  */
 
-import { Component } from '@qimenjs/component-core';
+import { Component, TplNode } from '@qimenjs/component-core';
 import { RouteContainerComponent } from '@qimenjs/component';
 
 import { AppHeaderComponent } from './components/AppHeader';
@@ -20,43 +20,38 @@ import { ComponentsPage } from './pages/ComponentsPage';
 import { TemplatesPage } from './pages/TemplatesPage';
 import { LoginPage } from './pages/LoginPage';
 
-const AppShellBase = Component.withTemplate({
-    tpl: {
-        tag: 'div',
-        cls: 'q-app-shell',
-        flex: { direction: 'column' },
-        children: [
-            {
-                name: 'header',
-                type: AppHeaderComponent,
-                cls: 'q-app-header',
-            },
-            {
-                name: 'content',
-                type: RouteContainerComponent,
-                cls: 'q-app-content',
-                initConfig: {
-                    routeMap: {
-                        '/': HomePage,
-                        '/components': ComponentsPage,
-                        '/templates': TemplatesPage,
-                        '/login': LoginPage,
-                    },
-                    defaultComponent: HomePage,
+export const APP_SHELL_TPL: TplNode = {
+    tag: 'div',
+    cls: 'q-app-shell',
+    flex: { direction: 'column' },
+    children: [
+        {
+            name: 'header',
+            type: AppHeaderComponent,
+            cls: 'q-app-header',
+        },
+        {
+            name: 'content',
+            type: RouteContainerComponent,
+            cls: 'q-app-content',
+            initConfig: {
+                routeMap: {
+                    '/': HomePage,
+                    '/components': ComponentsPage,
+                    '/templates': TemplatesPage,
+                    '/login': LoginPage,
                 },
+                defaultComponent: HomePage,
             },
-            {
-                name: 'footer',
-                type: AppFooterComponent,
-                cls: 'q-app-footer',
-            },
-        ],
-    },
-    body: {
-        type: 'AppShell',
-    },
-});
+        },
+        {
+            name: 'footer',
+            type: AppFooterComponent,
+            cls: 'q-app-footer',
+        },
+    ],
+};
 
-export let AppShell = AppShellBase;
+export class AppShellBase extends Component {}
 
-export type AppShell = InstanceType<typeof AppShellBase>;
+Component.register(AppShellBase, APP_SHELL_TPL);

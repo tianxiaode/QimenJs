@@ -24,10 +24,6 @@ export interface TextProps {
 }
 
 class TextComponent extends Component {
-    static type = 'Text';
-
-    type = 'Text';
-
     onAfterInit(props?: TextProps): void {
         this.update(props);
     }

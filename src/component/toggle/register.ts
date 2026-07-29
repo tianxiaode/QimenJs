@@ -1,7 +1,6 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { ToggleComponent } from './ToggleComponent';
 import { TOGGLE_TPL } from './toggle-tpl';
 
 export function registerToggleTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Toggle', TOGGLE_TPL);
+    ToggleComponent.register(TOGGLE_TPL);
 }

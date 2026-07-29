@@ -28,20 +28,12 @@ export interface RatingProps {
 }
 
 class RatingComponent extends Component {
-    static type = 'Rating';
-
-    type = 'Rating';
-
-    onInitState() {
-        return {
-            _value: 0,
-            _max: 5,
-            _allowHalf: false,
-            _readonly: false,
-            _disabled: false,
-            _hoverValue: -1,
-        };
-    }
+    _value = 0;
+    _max = 5;
+    _allowHalf = false;
+    _readonly = false;
+    _disabled = false;
+    _hoverValue = -1;
 
     onAfterInit(props?: RatingProps): void {
         this._initRating(props);

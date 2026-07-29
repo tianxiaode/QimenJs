@@ -122,17 +122,7 @@ export interface TplNode {
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;
 
-    // ─── event: 事件声明（全委托模式：统一在 tplEvents 三层嵌套中声明） ───
-
-    /**
-     * 节点事件映射（旧方案，逐步废弃）
-     *
-     * 全委托模式中事件委托统一在 tplEvents 三层嵌套中声明，不再在节点上写 emits。
-     * 保留此字段用于过渡期兼容。
-     *
-     * @deprecated 请使用 tplEvents 三层嵌套统一声明
-     */
-    emits?: Record<string, string>;
+    // ─── event: 事件声明（全委托模式：统一在 domEvents 三层嵌套中声明） ───
 
     /**
      * 语义动作名 — 用于 tplEvents 第三层 key 定位和事件数据

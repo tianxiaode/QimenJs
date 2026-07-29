@@ -1,7 +1,6 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { DialogComponent } from './DialogComponent';
 import { DIALOG_TPL } from './dialog-tpl';
 
 export function registerDialogTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Dialog', DIALOG_TPL);
+    DialogComponent.register(DIALOG_TPL);
 }

@@ -70,13 +70,14 @@ describe('ComponentRegistrar', () => {
             expect(registry.has('MyComp')).toBe(true);
         });
 
-        it('组件无 type getter 时跳过注册', () => {
+        it('组件无 type getter 时从类名自动派生', () => {
             const registry = createRegistry();
             class NoType {
                 constructor() {}
             }
             registry.register(NoType as any);
-            expect(registry.names()).toHaveLength(0);
+            expect(registry.has('NoType')).toBe(true);
+            expect((NoType as any).type).toBe('NoType');
         });
 
         it('重复注册覆盖旧条目', () => {

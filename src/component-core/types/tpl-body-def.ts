@@ -125,9 +125,8 @@
  * // Button 注册
  * registrar.register('Button', ButtonComponent, { defaultEventData: ['name', 'text'] })
  *
- * // 模板节点声明（新方案：节点级 data）
- * { tag: 'div', name: 'saveBtn', emits: { click: 'click' }, action: 'save',
- *   data: ['getFormData'] }
+ * // 模板节点声明（节点级 data + action）
+ * { tag: 'div', name: 'saveBtn', action: 'save', data: ['getFormData'] }
  *
  * // 编译后事件数据
  * // → { name: 'Save', text: '保存', action: 'save', formData: {...} }

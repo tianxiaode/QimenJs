@@ -36,23 +36,14 @@ function getInputs(self: any): HTMLInputElement[] {
 }
 
 export let OneTimePasswordComponent = FormFieldComponent.replace({
-    type: 'OneTimePassword',
-
     body: {
+        _length: 6 as number,
+        _otpType: 'number' as 'text' | 'number',
+        _otpDisabled: false as boolean,
+        _otpReadonly: false as boolean,
+
         nodes: {
             root: { addCls: 'q-otp' },
-        },
-
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _length: 6,
-                _otpType: 'number' as 'text' | 'number',
-                _otpDisabled: false,
-                _otpReadonly: false,
-            };
         },
 
         onAfterInit(props?: OneTimePasswordProps): void {

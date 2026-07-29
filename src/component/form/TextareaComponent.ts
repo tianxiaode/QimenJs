@@ -45,8 +45,6 @@ function getFieldEl(cmp: any): HTMLTextAreaElement | null {
 }
 
 export let TextareaComponent = FormFieldComponent.replace({
-    type: 'Textarea',
-
     body: {
         nodes: {
             root: { addCls: 'q-textarea' },
@@ -55,18 +53,11 @@ export let TextareaComponent = FormFieldComponent.replace({
             },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _value: '',
-                _focused: false,
-                _autoSize: false as boolean | { minRows?: number; maxRows?: number },
-                _minRows: 1 as number,
-                _maxRows: Infinity as number,
-            };
-        },
+        _value: '',
+        _focused: false,
+        _autoSize: false as boolean | { minRows?: number; maxRows?: number },
+        _minRows: 1 as number,
+        _maxRows: Infinity as number,
 
         onAfterInit(props?: TextareaProps): void {
             const self = this as any;

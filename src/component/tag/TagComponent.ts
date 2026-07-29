@@ -31,10 +31,6 @@ export interface TagProps {
 }
 
 class TagComponent extends Component {
-    static type = 'Tag';
-
-    type = 'Tag';
-
     onAfterInit(props?: TagProps): void {
         this.initSize();
         this._initTag(props);

@@ -2,7 +2,7 @@
  * RouteNavComponent — 路由导航组件
  *
  * 继承 NavItemGroupComponent + RouteEventBusAbility，
- * 导航点击通过 routeEmit 发送 switch 事件，
+ * 导航选中通过 select 事件触发 routeEmit switch，
  * 路由变化通过 routeOn 监听 change 事件自动切换高亮。
  */
 
@@ -38,25 +38,21 @@ export let RouteNavComponent = class extends RouteNavBase {
         if (props?.pathIndex) this._pathIndex = props.pathIndex;
         if (props?.indexPath) this._indexPath = props.indexPath;
 
+        this.on('select', (data: any) => {
+            this.onNavSelect(data);
+        });
+
         const off = this.routeOn('router', 'change', (data: any) => {
             this.onRouteChange(data);
         });
         this.onCleanup(off);
     }
 
-    protected onForwardEvent(event: string, data: Record<string, any>): void {
-        if (event === 'click') {
-            this.onNavClick(data);
-        } else {
-            super.onForwardEvent(event, data);
-        }
-    }
-
-    onNavClick(data: any): void {
+    onNavSelect(data: any): void {
         const index = data?.index ?? this.activeIndex;
         const path = this._indexPath[index];
         this.logger.debug(
-            '[RouteNav] onNavClick, index =',
+            '[RouteNav] onNavSelect, index =',
             index,
             'path =',
             path,

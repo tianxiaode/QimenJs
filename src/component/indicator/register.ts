@@ -1,7 +1,9 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { IndicatorComponent } from './IndicatorComponent';
 import { INDICATOR_TPL } from './indicator-tpl';
+import { IndicatorDotComponent } from './IndicatorDotComponent';
+import { INDICATOR_DOT_TPL } from './indicator-dot-tpl';
 
 export function registerIndicatorTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Indicator', INDICATOR_TPL);
+    IndicatorComponent.register(INDICATOR_TPL);
+    IndicatorDotComponent.register(INDICATOR_DOT_TPL);
 }

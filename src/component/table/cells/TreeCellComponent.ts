@@ -23,7 +23,6 @@ export interface TreeCellProps {
 const INDENT_UNIT = 20;
 
 export let TreeCellComponent = BaseCellComponent.replace({
-    type: 'TreeCell',
 
     tplReplaces: {
         content: {
@@ -37,13 +36,9 @@ export let TreeCellComponent = BaseCellComponent.replace({
     },
 
     body: {
-        onInitState() {
-            return {
-                _depth: 0,
-                _leaf: true,
-                _expanded: false,
-            };
-        },
+        _depth: 0,
+        _leaf: true,
+        _expanded: false,
 
         onAfterInit(props?: TreeCellProps): void {},
 

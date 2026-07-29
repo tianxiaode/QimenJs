@@ -48,8 +48,6 @@ export interface RadioGroupProps extends FormFieldProps {
 }
 
 export let RadioGroupComponent = FormFieldComponent.replace({
-    type: 'RadioGroup',
-
     body: {
         nodes: {
             root: { addCls: 'q-radio-group' },
@@ -58,17 +56,10 @@ export let RadioGroupComponent = FormFieldComponent.replace({
             },
         },
 
-        onInitState() {
-            const self = this as any;
-            const state = self._super.onInitState();
-            return {
-                ...state,
-                _options: [] as RadioOption[],
-                _value: undefined as string | number | undefined,
-                _disabled: false,
-                _radioItems: [] as any[],
-            };
-        },
+        _options: [] as RadioOption[],
+        _value: undefined as string | number | undefined,
+        _disabled: false,
+        _radioItems: [] as any[],
 
         onAfterInit(props?: RadioGroupProps): void {
             const self = this as any;

@@ -65,23 +65,15 @@ const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
 };
 
 class FormFieldComponent extends Component {
-    static type = 'FormField';
-
-    type = 'FormField';
-
-    onInitState() {
-        return {
-            _error: '',
-            _required: false,
-            _requiredMark: '',
-            _requiredMarkPosition: 'after' as 'before' | 'after',
-            _labelText: '',
-            _fieldName: '' as string,
-            _validation: null as boolean | ValidationRule | ValidationRule[] | null,
-            _validateTrigger: 'blur' as ValidateTrigger,
-            _initialValue: undefined as any,
-        };
-    }
+    _error: string = '';
+    _required: boolean = false;
+    _requiredMark: string = '';
+    _requiredMarkPosition: 'before' | 'after' = 'after';
+    _labelText: string = '';
+    _fieldName: string = '';
+    _validation: boolean | ValidationRule | ValidationRule[] | null = null;
+    _validateTrigger: ValidateTrigger = 'blur';
+    _initialValue: any = undefined;
 
     onAfterInit(props?: FormFieldProps): void {
         this._applyLabelPosition(props?.labelPosition);

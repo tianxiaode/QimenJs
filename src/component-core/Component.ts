@@ -20,34 +20,16 @@
  * ```
  */
 
-import {
-    ComposableBase,
-    withAbilities,
-    type AbilityDefinition,
-    type InferAbility,
-} from '@/composable';
-import {
-    EventAbility,
-    DomEventsAbility,
-    EventBridgeAbility,
-    EntityEventBusAbility,
-    OverlayEventBusAbility,
-    DragEventBusAbility,
-    SystemEventBusAbility,
-    SystemAbility,
-    DebounceAbility,
-} from '@/system-abilities';
+import { ComposableBase } from '@/composable';
+import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
-import { NodePropAbility } from './abilities/NodePropAbility';
-import { CommonPropsAbility } from './abilities/CommonPropsAbility';
-import { AnimationAbility } from './abilities';
-import { LifecycleAbility } from './abilities/LifecycleAbility';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { NodeMetadata } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
-import type { ComponentProps } from './types/init-context';
+import type { ComponentProps, BadgeQuickConfig, TooltipQuickConfig } from './types/init-context';
 import type { DomEventsMap } from './types/tpl-events';
+import type { FloatDecl } from './types/tpl-body';
 import { createInitContext } from './types/init-context';
 
 import {
@@ -58,59 +40,8 @@ import {
     runPhase,
 } from './engine/pipeline';
 import { getId } from '@/utils/string/id';
-
-// ══════════════════════════════════════════════════════════════
-
-export const COMPONENT_ABILITIES: readonly AbilityDefinition[] = [
-    EventAbility,
-    DomEventsAbility,
-    EventBridgeAbility,
-    EntityEventBusAbility,
-    OverlayEventBusAbility,
-    DragEventBusAbility,
-    SystemEventBusAbility,
-    SystemAbility,
-    DebounceAbility,
-
-    NodePropAbility,
-    CommonPropsAbility,
-    AnimationAbility,
-
-    LifecycleAbility,
-];
-
-// ══════════════════════════════════════════════════════════════
-// 类型声明合并
-// ══════════════════════════════════════════════════════════════
-
-export interface Component
-    extends
-        InferAbility<typeof EventAbility>,
-        InferAbility<typeof DomEventsAbility>,
-        InferAbility<typeof EventBridgeAbility>,
-        InferAbility<typeof EntityEventBusAbility>,
-        InferAbility<typeof OverlayEventBusAbility>,
-        InferAbility<typeof DragEventBusAbility>,
-        InferAbility<typeof SystemEventBusAbility>,
-        InferAbility<typeof SystemAbility>,
-        InferAbility<typeof DebounceAbility>,
-        InferAbility<typeof NodePropAbility>,
-        InferAbility<typeof CommonPropsAbility>,
-        InferAbility<typeof AnimationAbility>,
-        InferAbility<typeof LifecycleAbility> {
-    onBeforeUnmount?(): void;
-    onAfterInit?(props?: ComponentProps): void;
-    onBeforeInit?(props?: ComponentProps): void;
-    onMounted?(): void;
-    onUpdated?(data?: any): void;
-    onResize?(entry: ResizeObserverEntry): void;
-
-    onLocaleChange?(): void;
-}
-
-// ══════════════════════════════════════════════════════════════
-// Component 基类
-// ══════════════════════════════════════════════════════════════
+import { ComponentRegistrar, TplInspector } from './engine';
+import { TplNode } from './types';
 
 export class Component extends ComposableBase {
     static get type(): string {
@@ -118,6 +49,9 @@ export class Component extends ComposableBase {
     }
 
     type: string;
+
+    /** 实例唯一 ID */
+    id!: string;
 
     /**
      * 语义动作名 — 组件实例级属性
@@ -138,15 +72,70 @@ export class Component extends ComposableBase {
     /**
      * 默认事件数据 — getter，子类 super 合并
      *
+     * 基类自动包含：id、type、action。
+     * 子类可覆盖添加组件特定数据（如 fieldName、index 等）。
+     *
      * @example
      * class FormComponent extends Component {
      *     get defaultEventData() {
-     *         return { ...super.defaultEventData, formId: this.formId };
+     *         return { ...super.defaultEventData, fieldName: this.fieldName };
      *     }
      * }
      */
     get defaultEventData(): Record<string, any> {
-        return {};
+        return {
+            id: this.id,
+            type: this.type,
+            action: this.action,
+        };
+    }
+
+    /**
+     * 浮动层声明 — 子类可覆盖合并
+     *
+     * 基类从 props.badge / props.tooltip 自动生成 Badge/Tooltip 浮层。
+     * 子类覆盖时通过 super.floats 合并基类浮层。
+     *
+     * @example
+     * class DropdownComponent extends ButtonComponent {
+     *     get floats() {
+     *         const parent = super.floats ?? {};
+     *         return { ...parent, dropIcon: { type: 'Menu', ... } };
+     *     }
+     * }
+     */
+    get floats(): Record<string, FloatDecl> | undefined {
+        const props = this.props as ComponentProps;
+        const result: Record<string, FloatDecl> = {};
+
+        if (props.badge !== null && props.badge !== undefined) {
+            const badgeConfig: BadgeQuickConfig =
+                typeof props.badge === 'string' || typeof props.badge === 'number'
+                    ? { text: String(props.badge) }
+                    : props.badge;
+            result.badge = {
+                type: 'Badge',
+                trigger: 'always',
+                anchor: badgeConfig.anchor ?? 'self',
+                data: { text: badgeConfig.text, visible: badgeConfig.visible },
+            } as FloatDecl;
+        }
+
+        if (props.tooltip !== null && props.tooltip !== undefined) {
+            const tooltipConfig: TooltipQuickConfig =
+                typeof props.tooltip === 'string' ? { tooltip: props.tooltip } : props.tooltip;
+            result.tooltip = {
+                type: 'Tooltip',
+                trigger: 'hover',
+                anchor: tooltipConfig.anchor ?? 'self',
+                placement: tooltipConfig.placement ?? 'top',
+                showDelay: tooltipConfig.showDelay,
+                hideDelay: tooltipConfig.hideDelay,
+                data: { tooltip: tooltipConfig.tooltip },
+            } as FloatDecl;
+        }
+
+        return Object.keys(result).length > 0 ? result : undefined;
     }
 
     /**
@@ -184,6 +173,8 @@ export class Component extends ComposableBase {
         this.type = (this.constructor as any).name.replace(/Component$/, '');
         this.props = props ?? {};
         this.action = this.props.action ?? '';
+        this.bridgeKey = this.props.bridgeKey;
+        this.entityKey = this.props.entityKey;
         this.parent = this.props.parent;
         this.slotName = this.props.slotName;
         this.meta = {};
@@ -196,6 +187,25 @@ export class Component extends ComposableBase {
 
     get nodeMap(): Record<string, NodeMetadata> {
         return this.nodeMapMgr?.getAll() ?? {};
+    }
+
+    /**
+     * 获取指定节点的子组件实例
+     *
+     * @param name - 节点名称
+     * @returns 子组件实例，不存在或无组件则返回 undefined
+     *
+     * @example
+     * ```ts
+     * // 获取 header 节点的子组件
+     * const headerComp = this.getComponent('header');
+     * if (headerComp) {
+     *   headerComp.title = 'New Title';
+     * }
+     * ```
+     */
+    getComponent(name: string): any | undefined {
+        return this.nodeMapMgr?.getComponent(name);
     }
 
     get ready(): Promise<void> {
@@ -292,9 +302,32 @@ export class Component extends ComposableBase {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
     }
 
+    static register(tpl?: TplNode): void {
+        if (tpl) {
+            Object.defineProperty(this, '_tpl', {
+                value: tpl,
+                writable: true,
+                configurable: true,
+            });
+        }
+        ComponentRegistrar.getInstance().register(this, tpl);
+    }
+
+    static inspectTpl(): void {
+        const cls = this as any;
+        const tpl: TplNode | undefined = cls._tpl;
+        if (!tpl) {
+            console.log(`  ⚠ ${cls.name} 未注册模板（先调用 ${cls.name}.register(tpl)）`);
+            return;
+        }
+        TplInspector.inspect(tpl, cls.name);
+    }
+
     private _disposeChildComponents(): void {
         this.nodeMapMgr.disposeAll();
     }
 }
 
 Component.use(COMPONENT_ABILITIES);
+
+export interface Component extends IComponent {}

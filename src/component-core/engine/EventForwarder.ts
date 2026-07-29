@@ -33,16 +33,24 @@ export class EventForwarder {
      * @param config - 转发配置（emits/bridges/entities/router/system）
      * @param extraData - 额外事件数据（如 action、DOM event 字段等）
      * @param domEvent - 可选原始 DOM 事件（仅 DomEventsEngine 传入）
+     * @param actualAction - 实际匹配到的 action 值，用于替换 emits 中的 [action] 占位符
      */
-    static forward(instance: any, config: ForwardConfig, extraData?: any, domEvent?: any): void {
+    static forward(
+        instance: any,
+        config: ForwardConfig,
+        extraData?: any,
+        domEvent?: any,
+        actualAction?: string
+    ): void {
         const data = EventForwarder.collectEventData(instance, extraData);
 
         if (config.emits?.length) {
             const source = EventForwarder.resolveKey(instance.bridgeKey) ?? '';
             for (const emitName of config.emits) {
-                const ctx = EventForwarder.buildContext(instance, emitName, data, source, 'emit');
+                const resolvedName = emitName === '[action]' && actualAction ? actualAction : emitName;
+                const ctx = EventForwarder.buildContext(instance, resolvedName, data, source, 'emit');
                 if (domEvent) (ctx as any).domEvent = domEvent;
-                instance.emit(emitName, ctx);
+                instance.emit(resolvedName, ctx);
             }
         }
 

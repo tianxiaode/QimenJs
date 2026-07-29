@@ -15,15 +15,8 @@ export interface RouteContainerProps {
 }
 
 class RouteContainerComponent extends Component {
-    static type = 'RouteContainer';
-    type = 'RouteContainer';
-
-    onInitState() {
-        return {
-            _routeMap: {} as Record<string, new (props?: Record<string, any>) => any>,
-            _defaultComponent: null as (new (props?: Record<string, any>) => any) | null,
-        };
-    }
+    _routeMap: Record<string, new (props?: Record<string, any>) => any> = {};
+    _defaultComponent: (new (props?: Record<string, any>) => any) | null = null;
 
     onAfterInit(props?: RouteContainerProps): void {
         this.el.classList.add('q-route-container');

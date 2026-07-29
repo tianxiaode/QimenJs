@@ -19,15 +19,7 @@ export interface HourPanelProps {
 }
 
 class HourPanelComponent extends Component {
-    static type = 'HourPanel';
-
-    type = 'HourPanel';
-
-    onInitState() {
-        return {
-            _value: null as DateTimeValue | null,
-        };
-    }
+    _value: DateTimeValue | null = null;
 
     onAfterInit(props?: HourPanelProps): void {
         this._value = props?.value ?? {

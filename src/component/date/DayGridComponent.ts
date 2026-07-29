@@ -27,21 +27,13 @@ const TOTAL_DAY_CELLS = 42;
 const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
 
 class DayGridComponent extends Component {
-    static type = 'DayGrid';
-
-    type = 'DayGrid';
-
-    onInitState() {
-        return {
-            _year: 2026,
-            _month: 1,
-            _selectedDay: undefined as number | undefined,
-            _startDayOfWeek: 0,
-            _lastClickedDay: undefined as number | undefined,
-            _weekdayCells: [] as HTMLElement[],
-            _dayCells: [] as HTMLElement[],
-        };
-    }
+    _year: number = 2026;
+    _month: number = 1;
+    _selectedDay: number | undefined = undefined;
+    _startDayOfWeek: number = 0;
+    _lastClickedDay: number | undefined = undefined;
+    _weekdayCells: HTMLElement[] = [];
+    _dayCells: HTMLElement[] = [];
 
     onAfterInit(props?: DayGridProps): void {
         this._year = props?.year ?? 2026;

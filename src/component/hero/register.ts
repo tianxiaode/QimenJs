@@ -1,7 +1,6 @@
-import { TemplateRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import { HeroComponent } from './HeroComponent';
 import { HERO_TPL } from './hero-tpl';
 
 export function registerHeroTemplates(): void {
-    const registry = TemplateRegistrar.getInstance();
-    registry.register('Hero', HERO_TPL);
+    HeroComponent.register(HERO_TPL);
 }

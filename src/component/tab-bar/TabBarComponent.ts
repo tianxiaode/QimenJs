@@ -6,16 +6,7 @@ export interface TabBarProps extends ItemGroupProps {
 }
 
 class TabBarComponent extends ItemGroupPooledComponent {
-    static type = 'TabBar';
-
-    type = 'TabBar';
-
-    onInitState() {
-        return {
-            ...super.onInitState?.(),
-            _selectedIndex: -1,
-        };
-    }
+    _selectedIndex: number = -1;
 
     onAfterInit(props?: TabBarProps): void {
         const self = this as any;

@@ -10,6 +10,9 @@
  * - desc     — 描述文字（可选）
  * - actions  — 操作按钮区域（可选）
  *
+ * 事件（domEvents 声明式）：
+ * - actionBtn click → emits: ['action']
+ *
  * @example
  * ```ts
  * new HeroComponent({ title: '欢迎使用', subtitle: 'QimenJS 组件库' })
@@ -18,8 +21,7 @@
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { Component, DomEventsMap } from '@qimenjs/component-core';
 
 export interface HeroProps {
     title?: string;
@@ -29,16 +31,16 @@ export interface HeroProps {
 }
 
 class HeroComponent extends Component {
-    static type = 'Hero';
-
-    type = 'Hero';
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            actionBtn: {
+                emits: ['action'],
+            },
+        },
+    };
 
     onAfterInit(props?: HeroProps): void {
         this._initHero(props);
-    }
-
-    onActionBtnClick(): void {
-        this.emit('action', {});
     }
 
     _initHero(props?: HeroProps): void {
