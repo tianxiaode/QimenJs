@@ -104,7 +104,7 @@ export interface Component
     onMounted?(): void;
     onUpdated?(data?: any): void;
     onResize?(entry: ResizeObserverEntry): void;
-    onInitState?(): Record<string, any>;
+
     onLocaleChange?(): void;
 }
 
@@ -118,6 +118,18 @@ export class Component extends ComposableBase {
     }
 
     type: string;
+
+    /**
+     * 语义动作名 — 组件实例级属性
+     *
+     * 构造时可从 props 传入，运行时可通过 setter 更改。
+     * DomEventsEngine 第三层 key 匹配此值。
+     *
+     * @example
+     * new ButtonComponent({ action: 'save' });
+     * btn.action = 'create';  // 运行时更改
+     */
+    action: string;
 
     domEvents?: DomEventsMap;
     bridgeKey?: string | { key: string; fixed?: boolean };
@@ -171,6 +183,7 @@ export class Component extends ComposableBase {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
         this.props = props ?? {};
+        this.action = this.props.action ?? '';
         this.parent = this.props.parent;
         this.slotName = this.props.slotName;
         this.meta = {};

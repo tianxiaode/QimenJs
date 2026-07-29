@@ -10,7 +10,7 @@
  *
  * 组件实例化时执行初始化管线，管线分 4 Phase：
  *
- * Phase 1 MOUNT: ensureNodeMap → selfMount → setupNodeProps → onInitState → onBeforeInit
+ * Phase 1 MOUNT: ensureNodeMap → selfMount → setupNodeProps → onBeforeInit
  * Phase 2 FILL: (预留)
  * Phase 3 INSTANTIATE: instantiateChildComponents
  * Phase 4 FINALIZE: bindListens → bindChildEvents → bindDomEvents → onAfterInit
@@ -89,6 +89,14 @@ export interface ComponentProps {
      * 如 localDataKey: 'users'，则组件使用 localData.users 渲染。
      */
     localDataKey?: string;
+
+    /**
+     * 语义动作名
+     *
+     * 构造时传入，赋值到 component.action。
+     * DomEventsEngine 第三层 key 匹配此值。
+     */
+    action?: string;
 
     /**
      * 其他自定义属性

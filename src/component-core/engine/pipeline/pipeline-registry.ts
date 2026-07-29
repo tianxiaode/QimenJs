@@ -9,7 +9,6 @@ import type { Phase } from './pipeline-types';
 import type { InitContext } from '../../types/init-context';
 import { ensureNodeMap } from './step-ensure-node-map';
 import { selfMount } from './step-self-mount';
-import { onInitState } from './step-on-init-state';
 import { onBeforeInit } from './step-on-before-init';
 import { onAfterInit } from './step-on-after-init';
 import { setupNodeProps } from './step-setup-node-props';
@@ -22,7 +21,7 @@ import { KernelErrorCode } from '@/error/codes';
 
 export const MOUNT_PHASE: Phase = {
     name: 'mount',
-    steps: [ensureNodeMap, selfMount, setupNodeProps, onInitState, onBeforeInit],
+    steps: [ensureNodeMap, selfMount, setupNodeProps, onBeforeInit],
 };
 
 export const FILL_PHASE: Phase = {

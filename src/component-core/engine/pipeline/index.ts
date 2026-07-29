@@ -1,6 +1,6 @@
 export { ensureNodeMap } from './step-ensure-node-map';
 export { selfMount } from './step-self-mount';
-export { onInitState } from './step-on-init-state';
+
 export { onBeforeInit } from './step-on-before-init';
 export { onAfterInit } from './step-on-after-init';
 export { setupNodeProps } from './step-setup-node-props';

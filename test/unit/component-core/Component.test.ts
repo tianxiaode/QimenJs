@@ -249,18 +249,24 @@ describe('Component 基类', () => {
             expect(called).toBe(true);
         });
 
-        it('onInitState 合并到实例', async () => {
-            class TestComp extends Component {
-                onInitState() {
-                    return { myState: 42 };
-                }
-            }
+        it('action 从 props 传入', async () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp({ action: 'save' }) as any;
+            await inst.ready;
+            expect(inst.action).toBe('save');
+        });
+
+        it('action 默认为空字符串', async () => {
+            class TestComp extends Component {}
             const tpl: TplNode = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
             await inst.ready;
-            expect(inst.myState).toBe(42);
+            expect(inst.action).toBe('');
         });
     });
 

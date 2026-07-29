@@ -74,7 +74,7 @@
  *
  * 【实例化时】new InnerClass(props) → 组件实例
  *   管线分 4 Phase 顺序执行：
- *   Phase 1 MOUNT: ensureNodeMap → selfMount → setupNodeProps → onInitState → onBeforeInit
+ *   Phase 1 MOUNT: ensureNodeMap → selfMount → setupNodeProps → onBeforeInit
  *   Phase 2 FILL: (预留)
  *   Phase 3 INSTANTIATE: instantiateChildComponents
  *   Phase 4 FINALIZE: bindListens → bindChildEvents → bindDomEvents → onAfterInit

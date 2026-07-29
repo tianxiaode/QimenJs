@@ -14,8 +14,4 @@ describe('tpl-body-def', () => {
         expect(BODY_SPECIAL_KEYS.animation.category).toBe('init');
         expect(BODY_SPECIAL_KEYS.abilities.category).toBe('init');
     });
-
-    it('hook 类字段正确定义', () => {
-        expect(BODY_SPECIAL_KEYS.onInitState.category).toBe('hook');
-    });
 });
