@@ -42,13 +42,24 @@ export class EventForwarder {
         domEvent?: any,
         actualAction?: string
     ): void {
-        const data = EventForwarder.collectEventData(instance, extraData);
+        const customData =
+            typeof instance.getCustomEventData === 'function' ? instance.getCustomEventData() : {};
+        const hasCustomData =
+            customData && typeof customData === 'object' && Object.keys(customData).length > 0;
+        const data = EventForwarder.collectEventData(instance, extraData, customData);
 
         if (config.emits?.length) {
             const source = EventForwarder.resolveKey(instance.bridgeKey) ?? '';
             for (const emitName of config.emits) {
-                const resolvedName = emitName === '[action]' && actualAction ? actualAction : emitName;
-                const ctx = EventForwarder.buildContext(instance, resolvedName, data, source, 'emit');
+                const resolvedName =
+                    emitName === '[action]' && actualAction ? actualAction : emitName;
+                const ctx = EventForwarder.buildContext(
+                    instance,
+                    resolvedName,
+                    data,
+                    source,
+                    'emit'
+                );
                 if (domEvent) (ctx as any).domEvent = domEvent;
                 instance.emit(resolvedName, ctx);
             }
@@ -84,14 +95,14 @@ export class EventForwarder {
             }
         }
 
-        if (config.router && instance.routeKey) {
+        if (config.router) {
             const routeName = typeof config.router === 'string' ? config.router : undefined;
-            if (routeName) {
+            if (routeName && hasCustomData) {
                 const ctx = EventForwarder.buildContext(
                     instance,
                     routeName,
                     data,
-                    instance.routeKey,
+                    'router',
                     'router'
                 );
                 instance.routerEmit?.(ctx);
@@ -118,11 +129,15 @@ export class EventForwarder {
      * 合并顺序：defaultEventData → getCustomEventData() → extraData
      * defaultEventData 是 getter，子类 super 天然合并。
      */
-    static collectEventData(instance: any, extraData?: any): any {
+    static collectEventData(instance: any, extraData?: any, precomputedCustomData?: any): any {
         const defaultData =
             typeof instance.defaultEventData === 'object' ? instance.defaultEventData : {};
         const customData =
-            typeof instance.getCustomEventData === 'function' ? instance.getCustomEventData() : {};
+            precomputedCustomData !== undefined
+                ? precomputedCustomData
+                : typeof instance.getCustomEventData === 'function'
+                  ? instance.getCustomEventData()
+                  : {};
         const base = { ...defaultData, ...customData };
         if (!extraData) return base;
         if (typeof extraData === 'object') return { ...base, ...extraData };
@@ -137,7 +152,7 @@ export class EventForwarder {
         eventName: string,
         data: any,
         source: string,
-        eventType: EventDataType
+        _eventType: EventDataType
     ): EventContext {
         const currentCtx = instance._currentEventContext as EventContext | undefined;
         const chain: EventChainLink[] | undefined = currentCtx

@@ -124,9 +124,14 @@ export {
     type NavPlacement,
 } from './nav/NavItemComponent';
 export { NavItemGroupComponent, type NavItemGroupProps } from './nav/NavItemGroupComponent';
-export { RouteNavComponent, type RouteNavProps } from './nav/RouteNavComponent';
+
 export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';
 export { navCSS } from './nav/nav.css';
+
+// 树导航组件
+export { TreeNavComponent, type TreeNavProps } from './treenav/TreeNavComponent';
+export { TreeNavItemComponent, type TreeNavItemProps } from './treenav/TreeNavItemComponent';
+export { treeNavCSS } from './treenav/tree-nav.css';
 
 // 溢出组件
 export {

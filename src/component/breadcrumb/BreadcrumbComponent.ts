@@ -47,7 +47,7 @@ class BreadcrumbComponent extends Component {
      */
     domEvents?: DomEventsMap | undefined = {
         click: {
-            'items': {
+            items: {
                 handler: '_onItemClick',
                 router: 'navigate',
             },

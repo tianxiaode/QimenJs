@@ -16,7 +16,7 @@
  * - 浮层定位/动画等通过 overlayOptions 配置
  *
  * 事件处理由 NavItemGroupComponent 通过 domEvents 集中委托，
- * 本组件只提供 select() / showTooltip() / hideTooltip() 等公开方法供父组件调用。
+ * 本组件只提供 select() / setExpandArrow() / showTooltip() / hideTooltip() 等公开方法供父组件调用。
  */
 
 import { Component } from '@qimenjs/component-core';
@@ -48,6 +48,7 @@ export interface NavOverlayOptions {
 export interface NavItemProps {
     text?: string;
     icon?: string;
+    path?: string;
     active?: boolean;
     disabled?: boolean;
     mode?: 'expanded' | 'collapsed';
@@ -62,6 +63,7 @@ class NavItemComponent extends Component {
     active: boolean = false;
     disabled: boolean = false;
     mode: 'expanded' | 'collapsed' = 'expanded';
+    path: string | undefined = undefined;
     children: Record<string, any>[] | undefined = undefined;
     overlayOptions: NavOverlayOptions | undefined = undefined;
     overlayComponent: any = undefined;
@@ -80,7 +82,9 @@ class NavItemComponent extends Component {
     private _buildSubNavDecl(): FloatDecl {
         const options = this.overlayOptions ?? {};
         return {
-            type: this.overlayComponent ? (this.overlayComponent as any).type ?? 'NavOverlay' : 'NavOverlay',
+            type: this.overlayComponent
+                ? ((this.overlayComponent as any).type ?? 'NavOverlay')
+                : 'NavOverlay',
             anchor: 'self',
             trigger: 'manual',
             placement: (options.placement ?? 'right-start') as any,
@@ -119,7 +123,7 @@ class NavItemComponent extends Component {
 
         this.showFloat('subNav');
         this._overlayOpen = true;
-        this._updateExpandArrow('expanded');
+        this.setExpandArrow('expanded');
         this.emit('overlayOpen', { item: this });
     }
 
@@ -128,11 +132,11 @@ class NavItemComponent extends Component {
 
         this.hideFloat('subNav');
         this._overlayOpen = false;
-        this._updateExpandArrow('collapsed');
+        this.setExpandArrow('collapsed');
         this.emit('overlayClose', { item: this });
     }
 
-    _updateExpandArrow(state: 'expanded' | 'collapsed'): void {
+    setExpandArrow(state: 'expanded' | 'collapsed'): void {
         if (state === 'expanded') {
             this.addCls('q-nav-item__expand--expanded', 'expand');
             this.removeCls('q-nav-item__expand--collapsed', 'expand');
@@ -196,6 +200,7 @@ class NavItemComponent extends Component {
     update(props?: Partial<NavItemProps> & Record<string, any>): void {
         if (props?.text !== undefined) this.text = props.text;
         if (props?.icon !== undefined) this._setIcon(props.icon);
+        if (props?.path !== undefined) this.path = props.path;
         if (props?.active !== undefined) this.setActive(props.active);
         if (props?.disabled !== undefined) this.setDisabled(props.disabled);
         if (props?.mode !== undefined) this.setMode(props.mode);

@@ -50,6 +50,7 @@ export const navCSS = `
     gap: var(--q-nav-item-gap, 12px);
     width: 100%;
     padding: 10px 16px;
+
     color: var(--q-colors-text-secondary, #666);
     text-decoration: none;
     font-weight: 500;
@@ -103,6 +104,7 @@ export const navCSS = `
 .q-nav-item--collapsed .q-nav-item__content {
     justify-content: center;
     padding: 10px 0;
+
 }
 
 .q-nav-item--collapsed .q-nav-item__icon {
