@@ -2,7 +2,7 @@
  * NumberInputComponent 数字输入框组件
  *
  * 基于 InputComponent 通过 .replace() 派生，共享统一模板。
- * 通过 nodeOverrides 设置 field type 为 number，添加步进按钮到 actions。
+ * 通过 body.nodes 设置 field type 为 number，添加步进按钮到 actions。
  *
  * 特有功能：
  * - min/max/step 数值约束

@@ -2,7 +2,7 @@
  * RadioGroupComponent 单选框组组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 nodeOverrides 指定 fieldBody 为 RadioGroupFieldBodyComponent。
+ * 通过 body.nodes 指定 fieldBody 为 RadioGroupFieldBodyComponent。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator

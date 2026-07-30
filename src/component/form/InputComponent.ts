@@ -2,7 +2,7 @@
  * InputComponent 输入框组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 nodeOverrides 指定 fieldBody 为 InputFieldBodyComponent。
+ * 通过 body.nodes 指定 fieldBody 为 InputFieldBodyComponent。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
@@ -16,8 +16,8 @@
  * - actions 便捷方法
  *
  * 派生组件通过 replace() 实现：
- * - PasswordInputComponent: nodeOverrides 开启 suffix，addAction 添加 eyeBtn
- * - 下拉选择组件: nodeOverrides 开启 dropdownIcon + addAction 添加下拉图标
+ * - PasswordInputComponent: body.nodes 开启 suffix，addAction 添加 eyeBtn
+ * - 下拉选择组件: body.nodes 开启 dropdownIcon + addAction 添加下拉图标
  *
  * 事件：input / focus / blur / change / keydown / clear。
  *

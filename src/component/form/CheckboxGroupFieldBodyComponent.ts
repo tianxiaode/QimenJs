@@ -10,7 +10,7 @@
  * @example
  * ```ts
  * const CheckboxGroupComponent = FormFieldComponent.replace({
- *     nodeOverrides: { fieldBody: { type: CheckboxGroupFieldBodyComponent } },
+ *     body: { nodes: { fieldBody: { type: CheckboxGroupFieldBodyComponent } } },
  * });
  * ```
  */

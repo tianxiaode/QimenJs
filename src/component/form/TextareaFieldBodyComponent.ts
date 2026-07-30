@@ -10,7 +10,7 @@
  * @example
  * ```ts
  * const TextareaComponent = FormFieldComponent.replace({
- *     nodeOverrides: { fieldBody: { type: TextareaFieldBodyComponent } },
+ *     body: { nodes: { fieldBody: { type: TextareaFieldBodyComponent } } },
  * });
  * ```
  */

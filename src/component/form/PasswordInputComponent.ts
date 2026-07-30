@@ -2,7 +2,7 @@
  * PasswordInputComponent 密码输入框组件
  *
  * 基于 InputComponent 通过 .replace() 派生，共享统一模板。
- * 通过 nodeOverrides 开启 suffix，addAction 添加 eyeBtn，
+ * 通过 body.nodes 开启 suffix，addAction 添加 eyeBtn，
  * addInfo 添加密码强度指示器。
  *
  * 特有功能：

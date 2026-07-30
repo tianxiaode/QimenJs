@@ -10,7 +10,7 @@
  * @example
  * ```ts
  * const SwitchComponent = FormFieldComponent.replace({
- *     nodeOverrides: { fieldBody: { type: SwitchFieldBodyComponent } },
+ *     body: { nodes: { fieldBody: { type: SwitchFieldBodyComponent } } },
  * });
  * ```
  */

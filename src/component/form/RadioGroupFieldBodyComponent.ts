@@ -10,7 +10,7 @@
  * @example
  * ```ts
  * const RadioGroupComponent = FormFieldComponent.replace({
- *     nodeOverrides: { fieldBody: { type: RadioGroupFieldBodyComponent } },
+ *     body: { nodes: { fieldBody: { type: RadioGroupFieldBodyComponent } } },
  * });
  * ```
  */

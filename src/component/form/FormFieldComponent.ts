@@ -28,8 +28,7 @@
  * const InputComponent = FormFieldComponent.replace({
  *     type: 'Input',
  *     cls: 'q-input',
- *     nodeOverrides: { fieldBody: { type: InputFieldBodyComponent } },
- *     body: { ... }
+ *     body: { nodes: { fieldBody: { type: InputFieldBodyComponent } } },
  * });
  * ```
  */

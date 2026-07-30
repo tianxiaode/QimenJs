@@ -13,9 +13,9 @@
  *
  * @example
  * ```ts
- * // 通过 FormFieldComponent.replace() 的 nodeOverrides 使用：
+ * // 通过 FormFieldComponent.replace() 的 body.nodes 使用：
  * const InputComponent = FormFieldComponent.replace({
- *     nodeOverrides: { fieldBody: { type: 'InputFieldBody' } },
+ *     body: { nodes: { fieldBody: { type: 'InputFieldBody' } } },
  * });
  * ```
  */
