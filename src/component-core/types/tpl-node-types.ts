@@ -193,6 +193,55 @@ export interface TplNode {
     /** 子组件初始配置，传入构造函数 */
     initConfig?: Record<string, any>;
 
+    // ─── behavior: 行为配置（浮层/拖拽/动画） ───
+
+    /**
+     * 浮层标记 — 声明此节点是浮层锚点
+     *
+     * true 使用默认配置，或传入 FloatDecl 自定义。
+     * 运行时通过 attachFloat 挂载浮层组件。
+     *
+     * @example
+     * { name: 'dropBtn', type: 'Button', float: true }
+     * { name: 'helpIcon', type: 'Icon', float: { type: 'Tooltip', trigger: 'hover' } }
+     */
+    float?: boolean | FloatDecl;
+
+    /**
+     * 拖拽标记 — 声明此节点是拖拽手柄
+     *
+     * true 使用默认配置（axis='both', trigger='press'），或传入 DragDecl 自定义。
+     * 运行时通过 attachDrag 挂载拖拽手势。
+     *
+     * @example
+     * { name: 'handle', tag: 'div', drag: true }
+     * { name: 'resizeHandle', tag: 'div', drag: { axis: 'x' } }
+     */
+    drag?: boolean | DragDecl;
+
+    /**
+     * 放置区标记 — 声明此节点是放置目标
+     *
+     * true 使用默认配置，或传入 DropDecl 自定义。
+     * 运行时通过 DragDispatchCenter 绑定放置事件。
+     *
+     * @example
+     * { name: 'dropZone', tag: 'div', drop: true }
+     * { name: 'dropZone', tag: 'div', drop: { accept: ['card'], activeClass: 'drag-over' } }
+     */
+    drop?: boolean | DropDecl;
+
+    /**
+     * 动画配置 — 声明此节点的进入/离开动画
+     *
+     * 节点级配置：使用方为子组件节点配置动画，
+     * 组件自身无需声明，由使用方按需注入。
+     *
+     * @example
+     * { name: 'panel', type: 'Panel', animation: { enter: 'slideInUp', leave: 'slideOutDown', duration: 200 } }
+     */
+    animation?: Record<string, any>;
+
     // ─── children: 子节点 ───
 
     /** 子节点定义 */
@@ -210,4 +259,416 @@ export interface TplNode {
 
     /** 替换映射 — key=命名节点name, value=替换内容 */
     replaces?: Record<string, any>;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 事件监听类型（从 tpl-body 迁移）
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 事件映射值 — 字符串简写 或 带选项对象
+ *
+ * once 等选项在事件级别定义，避免多个事件全部 once。
+ *
+ * @example
+ * ```ts
+ * events: {
+ *     save: 'onSave',                              // 简写
+ *     cancel: { handler: 'onCancel', once: true }, // 带选项
+ * }
+ * ```
+ */
+export type EventMapping = string | { handler: string; once?: boolean };
+
+/**
+ * 桥接事件订阅
+ *
+ * @example
+ * ```ts
+ * { source: 'formKey', events: { save: 'onSave', cancel: { handler: 'onCancel', once: true } } }
+ * ```
+ */
+export interface BridgeListen {
+    /** 桥接事件源 key */
+    source: string;
+    /** 事件映射：源事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 实体事件订阅
+ *
+ * @example
+ * ```ts
+ * { entity: 'users', events: { listed: 'onUsersLoaded', created: { handler: 'onUserCreated', once: true } } }
+ * ```
+ */
+export interface EntityListen {
+    /** 实体 key */
+    entity: string;
+    /** 事件映射：实体事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 浮动层事件订阅
+ *
+ * @example
+ * ```ts
+ * { float: 'dropBtn', events: { close: 'onClose', open: { handler: 'onOpen', once: true } } }
+ * ```
+ */
+export interface FloatListen {
+    /** 浮动层节点 name */
+    float: string;
+    /** 事件映射：浮动层事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 拖拽事件订阅
+ *
+ * @example
+ * ```ts
+ * { drag: 'handle', events: { start: 'onDragStart', end: { handler: 'onDragEnd', once: true } } }
+ * ```
+ */
+export interface DragListen {
+    /** 拖拽节点 name */
+    drag: string;
+    /** 事件映射：拖拽事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 系统事件订阅
+ *
+ * @example
+ * ```ts
+ * { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } }
+ * { system: true, events: { 'window:resize': 'onWindowResize' } }
+ * ```
+ */
+export interface SystemListen {
+    /** 标识为系统事件订阅 */
+    system: true;
+    /** 事件映射：系统事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 路由事件订阅
+ *
+ * @example
+ * ```ts
+ * { route: 'router', events: { change: 'onRouteChange', 'change:users': 'onUsersRoute' } }
+ * ```
+ */
+export interface RouteListen {
+    /** 路由源 key（通常为 'router'） */
+    route: string;
+    /** 事件映射：路由事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
+ * 子组件事件配置 — 与 domEvents eventConfig 对齐，支持转发
+ */
+export interface ChildEventConfig {
+    /** 本地监听：调用组件方法（自动推导 on${NodeName}${Event}） */
+    handler?: boolean;
+    /** 转发为组件事件 */
+    emits?: string[];
+    /** 转发为实体操作 */
+    entities?: string;
+    /** 转发为桥接事件 */
+    bridges?: string[];
+    /** 转发为路由事件 */
+    router?: string;
+    /** 转发为系统事件 */
+    system?: string[];
+    /** 只执行一次 */
+    once?: boolean;
+}
+
+/**
+ * 子组件事件订阅 — nodeMap 中子组件的 child.on() 订阅
+ *
+ * key = nodeName（nodeMap key，仅直接子组件）
+ * value 支持：
+ *   - string[] 简写：仅本地监听，方法名自动推导
+ *   - Record<string, ChildEventConfig> 详细：支持 handler / emits / entities 等转发
+ *
+ * 仅限直接子组件（FINALIZE 时已实例化），跨层走桥接。
+ *
+ * @example
+ * ```ts
+ * // 简写 — 仅本地监听
+ * { childEvents: { toolbar: ['save', 'create'] } }
+ *
+ * // 详细 — 支持转发
+ * { childEvents: {
+ *     toolbar: {
+ *         save:    { handler: true, emits: ['save'] },
+ *         create:  { emits: ['create'] },
+ *         delete:  { entities: 'remove' },
+ *     }
+ * } }
+ * ```
+ */
+export interface ChildEventsListen {
+    /**
+     * 子组件事件映射
+     *
+     * key = nodeName
+     * value = string[]（简写）或 Record<string, ChildEventConfig>（详细）
+     */
+    childEvents: Record<string, string[] | Record<string, ChildEventConfig>>;
+}
+
+/**
+ * 统一事件订阅 — 数组格式，通过 key 名区分来源类型
+ *
+ * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
+ *
+ * 注册流程统一（五路分流，float/drag 已自动绑定）：
+ *   _setupListens() {
+ *       for (const item of this.listens) {
+ *           if (item.childEvents)  for (const [nodeName, events] of Object.entries(item.childEvents))
+ *                                                            this.nodeMap[nodeName].on(event, method);
+ *           if (item.source)    EventBridge.on(this.bridgeKey, item.source, item.events);
+ *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
+ *           if (item.system)    SystemEventBus.on(item.events);
+ *           if (item.route)     RouteEventBus.on(item.route, item.events);
+ *       }
+ *   }
+ *
+ * @example
+ * ```ts
+ * listens: [
+ *     { childEvents: { toolbar: ['save', 'create'] } },
+ *     { source: 'formKey',    events: { save: 'onSave' } },
+ *     { entity: 'users',     events: { listed: 'onUsersLoaded' } },
+ *     { system: true,        events: { 'i18n:localeChange': 'onLocaleChange' } },
+ *     { route: 'router',     events: { change: 'onRouteChange' } },
+ * ]
+ * ```
+ */
+export type ListenItem =
+    | ChildEventsListen
+    | BridgeListen
+    | EntityListen
+    | FloatListen
+    | DragListen
+    | SystemListen
+    | RouteListen;
+
+// ══════════════════════════════════════════════════════════════
+// 浮动层配置（从 tpl-body 迁移）
+// ══════════════════════════════════════════════════════════════
+
+/** 浮动层触发方式 */
+export type FloatTrigger = 'click' | 'hover' | 'focus' | 'manual' | 'always';
+
+/**
+ * 浮动层定义 — type 是唯一特殊字段，去掉 type 后直接作为组件构造参数
+ *
+ * 触发方式由 trigger 字段控制，不需要在 TplNode events 中声明：
+ * - 有 trigger → 系统自动在锚点元素上绑定对应事件
+ * - 无 trigger → 手动控制（代码调用 onFloat）
+ *
+ * 两种浮动模式：
+ *
+ * 1. 节点触发型：key 匹配节点 name，自动锚定该节点
+ *    floats: {
+ *        dropBtn: { type: 'DropPanel', align: 'bottom', trigger: 'click' },
+ *        // key='dropBtn' → 锚定 nodeMap.dropBtn.el，点击触发
+ *    }
+ *
+ * 2. 组件级浮动：key 是语义名，必须指定 anchor
+ *    floats: {
+ *        tooltip: { type: 'Tooltip', anchor: 'self', trigger: 'hover' },
+ *        // anchor='self' → 锚定组件自身 el，悬停触发
+ *        tooltip: { type: 'Tooltip', anchor: 'self', trigger: ['hover', 'click'] },
+ *        // 悬停或点击都触发
+ *        badge: { type: 'Badge', anchor: 'icon', trigger: 'always' },
+ *        // anchor='icon' → 锚定 nodeMap.icon.el，始终显示
+ *    }
+ *
+ * 处理流程：
+ *   1. 取出 type → 解析组件类
+ *   2. 删掉 type → 剩余配置
+ *   3. new Component(remainingConfig) → 直接传入构造函数
+ *
+ * 统一了所有浮动场景：下拉面板、菜单、提示框、徽章等。
+ */
+export interface FloatDecl {
+    /** 浮动层组件类型（唯一特殊字段，去掉后剩余配置直接作为构造参数） */
+    type: string;
+    /**
+     * 锚定目标：
+     * - 省略 → key 即为节点 name，自动锚定该节点
+     * - 'self' → 锚定组件自身 el
+     * - 节点 name → 锚定指定节点
+     */
+    anchor?: string | 'self';
+    /**
+     * 触发方式（有值则系统自动绑定，无值则手动控制）：
+     * - 'click': 点击触发
+     * - 'hover': 悬停触发
+     * - 'focus': 聚焦触发
+     * - 'manual': 手动控制
+     * - 'always': 始终显示（如 badge，初始化时显示一次）
+     * - 数组：多种触发方式组合（如 ['hover', 'click']）
+     */
+    trigger?: FloatTrigger | FloatTrigger[];
+    /** 弹出方向 */
+    placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+    /** 与锚点的间距（像素） */
+    offset?: number;
+    /** 点击浮层外部是否关闭（默认 true） */
+    closeOnClickOutside?: boolean;
+    /** 按 Escape 是否关闭（默认 true） */
+    closeOnEscape?: boolean;
+    /** 遮罩配置：true=默认遮罩，string=自定义遮罩样式类 */
+    mask?: boolean | string;
+    /**
+     * 浮层事件转发：key=反馈事件名，value=转发到组件的事件名
+     *
+     * 反馈事件：shown（已显示）、hidden（已隐藏）、changed（数据已变更）
+     *
+     * @example
+     * emits: { shown: 'dropOpen', hidden: 'dropClose' }
+     * // 浮层打开时 → 组件 emit('dropOpen', data)
+     * // 浮层关闭时 → 组件 emit('dropClose', data)
+     */
+    emits?: Record<string, string>;
+    /** 显示延迟（毫秒），trigger 为 hover 时生效 */
+    showDelay?: number;
+    /** 隐藏延迟（毫秒），trigger 为 hover 时生效 */
+    hideDelay?: number;
+    /** 组件构造参数（由具体组件类型决定） */
+    [key: string]: any;
+}
+
+export type FloatsConfig = Record<string, FloatDecl>;
+
+// ══════════════════════════════════════════════════════════════
+// 拖拽配置（从 tpl-body 迁移）
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 拖拽定义 — 行为配置 + 可选影子组件 + 回调
+ *
+ * key=节点name（触发源），触发方式由 trigger 字段控制。
+ *
+ * 与 floats 不同，drags 的配置分两部分：
+ * - 拖拽行为配置：axis、bounds 等 → 给 DragProcessor 用
+ * - 拖拽影子组件：ghost 字段 → 影子组件类型
+ *
+ * 拖拽回调通过 body 中定义方法实现（函数自动挂原型）：
+ *   body: {
+ *       drags: { handle: { axis: 'y' } },
+ *       onHandleDragStart(ctx) { ... },
+ *       onHandleDragEnd(ctx) { ... },
+ *   }
+ *
+ * @example
+ * ```ts
+ * drags: {
+ *     handle: { axis: 'y', bounds: 'parent' },
+ *     card:   { ghost: 'DragGhost', axis: 'both', bounds: { left: 0, top: 0 } },
+ * }
+ * ```
+ */
+export interface DragDecl {
+    /**
+     * 拖拽类型 — 覆盖默认的 component.type
+     *
+     * 默认使用组件的 type 属性（由类名自动派生，如 CardComponent → 'Card'）。
+     * 仅在需要将组件伪装成其他类型时使用。
+     *
+     * @example
+     * { axis: 'both' }  // type 自动使用 component.type
+     * { type: 'item', axis: 'both' }  // 强制伪装为 'item' 类型
+     */
+    type?: string;
+    /** 拖拽影子组件类型（可选） */
+    ghost?: string;
+    /** 拖拽轴向：'x' | 'y' | 'both' */
+    axis?: 'x' | 'y' | 'both';
+    /** 拖拽边界约束 */
+    bounds?:
+        | HTMLElement
+        | { left?: number; top?: number; right?: number; bottom?: number }
+        | string;
+    /** 拖拽时添加的 CSS 类 */
+    activeClass?: string;
+    /** 网格吸附步长 */
+    grid?: number;
+}
+
+/**
+ * 放置区配置 — 声明节点可以接收拖拽放置
+ *
+ * @example
+ * ```ts
+ * // 基本用法
+ * { name: 'dropZone', tag: 'div', drop: true }
+ * { name: 'dropZone', tag: 'div', drop: { accept: ['card', 'item'], activeClass: 'drag-over' } }
+ * ```
+ */
+export interface DropDecl {
+    /** 接受的拖拽类型列表（为空表示接受所有） */
+    accept?: string[];
+    /** 拖拽悬停时添加的 CSS 类 */
+    activeClass?: string;
+    /** 放置时的回调方法名 */
+    onDrop?: string;
+}
+
+export type DragsConfig = Record<string, DragDecl>;
+
+// ══════════════════════════════════════════════════════════════
+// 动画配置（从 tpl-body 迁移）
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 组件动画配置 — 声明式，自动触发
+ *
+ * 在 body 中声明，运行时自动在对应生命周期播放：
+ * - enter: 组件初始化完成后自动播放
+ * - leave: 组件销毁前自动播放
+ *
+ * 动画是组件行为，不是节点属性：
+ * - CSS transition 写在 TplNode 的 cls/style 里
+ * - 进入/退出动画在这里声明，由框架自动触发
+ * - 浮层组件（如 Menu）自己管自己的动画，触发组件（如 Button）只管 floats 声明
+ *
+ * @example
+ * ```ts
+ * body: {
+ *     animation: {
+ *         enter: 'slideInUp',
+ *         leave: 'slideOutDown',
+ *         duration: 200,
+ *     }
+ * }
+ * ```
+ */
+export interface AnimationDecl {
+    /** 进入动画预设名（如 fadeIn / slideInUp / scaleIn） */
+    enter?: string;
+    /** 进入动画自定义 Keyframe（与 enter 二选一） */
+    enterKeyframes?: Keyframe[];
+    /** 退出动画预设名（如 fadeOut / slideOutDown / scaleOut） */
+    leave?: string;
+    /** 退出动画自定义 Keyframe（与 leave 二选一） */
+    leaveKeyframes?: Keyframe[];
+    /** 动画时长（毫秒），默认 300 */
+    duration?: number;
+    /** 缓动函数，默认 'ease' */
+    easing?: string;
+    /** 是否启用动画，默认 true */
+    enabled?: boolean;
 }

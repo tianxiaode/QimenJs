@@ -175,6 +175,9 @@ export class CompileEngine {
             grid: root.grid,
             role: root.role,
             attrs: root.attrs,
+            float: root.float,
+            drag: root.drag,
+            drop: root.drop,
         };
 
         const children = root.children || [];
@@ -281,6 +284,9 @@ export class CompileEngine {
             contentMode: 'html',
             i18nKey: node.i18n,
             initConfig: node.initConfig,
+            float: node.float,
+            drag: node.drag,
+            drop: node.drop,
         };
 
         if (typeof node.type === 'function') {
@@ -349,6 +355,9 @@ export class CompileEngine {
                 hiddenMode: node.hiddenMode,
                 role: node.role,
                 attrs: node.attrs,
+                float: node.float,
+                drag: node.drag,
+                drop: node.drop,
             };
 
             ctx.nodeMetas[name] = meta;

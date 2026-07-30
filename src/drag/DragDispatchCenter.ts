@@ -6,6 +6,7 @@
  * - 用 component.bind(el, 'drag') 绑定（跨平台，走 DragProcessor）
  * - move 回调直接调 component 的 onXxxDragMove 方法（高频，不走总线）
  * - start/end/cancel 通过 DragEventBus 广播（低频，跨组件通信）
+ * - drop zones 通过 registerDropZone 绑定放置事件
  *
  * 组件完全不关心拖拽的事：不需要 DragAbility、不需要 addEventListener、
  * 不需要手动管理 _dragProcessors。
@@ -15,9 +16,10 @@ import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { DragEventBus } from '@/events/DragEventBus';
 import { DRAG_ACTIONS } from '@/events/drag-events';
 
-import type { DragDecl } from '@/component-core/types/tpl-body';
+import type { DragDecl, DropDecl } from '@/component-core/types/tpl-node-types';
 
 export interface DragDefinition extends DragDecl {}
+export interface DropDefinition extends DropDecl {}
 
 /** 拖拽实例内部结构 */
 interface DragInstance {
@@ -25,6 +27,18 @@ interface DragInstance {
     component: any;
     nodeName: string;
     config: DragDecl;
+}
+
+/** 放置区实例内部结构 */
+interface DropZoneInstance {
+    el: HTMLElement;
+    component: any;
+    nodeName: string;
+    config: DropDecl;
+    dragEnterHandler: (e: DragEvent) => void;
+    dragOverHandler: (e: DragEvent) => void;
+    dragLeaveHandler: (e: DragEvent) => void;
+    dropHandler: (e: DragEvent) => void;
 }
 
 /**
@@ -53,6 +67,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
     protected storage = new Map<string, DragDefinition>();
 
     private readonly instances = new Map<string, DragInstance>();
+    private readonly dropZones = new Map<string, DropZoneInstance>();
     private readonly bus: DragEventBus;
 
     constructor() {
@@ -108,6 +123,12 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
                 this.instances.delete(key);
             }
         }
+        for (const [key, inst] of this.dropZones) {
+            if (key.startsWith(prefix)) {
+                this._unbindDropZoneEvents(inst);
+                this.dropZones.delete(key);
+            }
+        }
         this.logger.debug?.(
             `[DragDispatchCenter] disposed all drags for componentId="${componentId}"`
         );
@@ -132,6 +153,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             const dragKey = encodeInstanceKey(componentId, nodeName);
 
             const config: DragDecl = {
+                type: def.type,
                 axis: def.axis,
                 bounds: def.bounds,
                 activeClass: def.activeClass,
@@ -157,6 +179,9 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         const { el, component, nodeName, config } = inst;
         const handlerName = capitalize(nodeName);
 
+        // 计算拖拽类型：默认使用 component.type，config.type 可覆盖
+        const dragType = config.type ?? component.type;
+
         component.bind(el, 'drag');
 
         const off = component.on('dom:drag', (gesture: any) => {
@@ -170,7 +195,6 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             const phase = gesture.phase;
 
             if (phase === 'start') {
-                const dragType = nodeName;
                 const dragData = config;
                 this.bus.dragStart(dragKey, {
                     dragType,
@@ -245,9 +269,11 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             instanceKey: key,
             nodeName: inst.nodeName,
         }));
+        const dropZoneCount = this.dropZones.size;
 
         console.log('Definitions:', definitions);
         console.log('Instances:', instances);
+        console.log('DropZones:', dropZoneCount);
     }
 
     /** 销毁所有拖拽实例并清理资源 */
@@ -256,7 +282,193 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             this._cleanupInstance(inst);
         }
         this.instances.clear();
+
+        for (const [key, inst] of this.dropZones) {
+            this._unbindDropZoneEvents(inst);
+        }
+        this.dropZones.clear();
+
         this.logger.debug?.('[DragDispatchCenter] all disposed');
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 放置区管理
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * 注册放置区
+     *
+     * @param dropKey 放置区键（通常为 componentId:nodeName）
+     * @param el 放置区 DOM 元素
+     * @param component 组件实例
+     * @param nodeName 节点名称
+     * @param config 放置区配置
+     */
+    registerDropZone(
+        dropKey: string,
+        el: HTMLElement,
+        component: any,
+        nodeName: string,
+        config: DropDecl = {}
+    ): void {
+        this.checkLock();
+
+        if (this.dropZones.has(dropKey)) {
+            this.unregisterDropZone(dropKey);
+        }
+
+        const inst: DropZoneInstance = {
+            el,
+            component,
+            nodeName,
+            config,
+            dragEnterHandler: () => {},
+            dragOverHandler: () => {},
+            dragLeaveHandler: () => {},
+            dropHandler: () => {},
+        };
+
+        this._bindDropZoneEvents(dropKey, inst);
+        this.dropZones.set(dropKey, inst);
+
+        this.logger.debug?.(`[DragDispatchCenter] registered drop zone "${dropKey}"`);
+    }
+
+    /**
+     * 注销放置区
+     *
+     * @param dropKey 放置区键
+     */
+    unregisterDropZone(dropKey: string): void {
+        const inst = this.dropZones.get(dropKey);
+        if (!inst) return;
+
+        this._unbindDropZoneEvents(inst);
+        this.dropZones.delete(dropKey);
+
+        this.logger.debug?.(`[DragDispatchCenter] unregistered drop zone "${dropKey}"`);
+    }
+
+    private _bindDropZoneEvents(dropKey: string, inst: DropZoneInstance): void {
+        const { el, component, nodeName, config } = inst;
+        const handlerName = capitalize(nodeName);
+
+        const dragEnterHandler = (e: DragEvent) => {
+            e.preventDefault();
+
+            const activeDrag = this.bus.getActiveDrag();
+            if (!activeDrag) return;
+
+            // 检查是否接受此拖拽类型
+            if (config.accept && config.accept.length > 0) {
+                if (!activeDrag.dragType || !config.accept.includes(activeDrag.dragType)) {
+                    return;
+                }
+            }
+
+            if (config.activeClass) el.classList.add(config.activeClass);
+
+            this.bus.dragEnter(activeDrag.dragKey, component, el);
+
+            const enterHandler = component[`on${handlerName}DragEnter`];
+            if (typeof enterHandler === 'function') {
+                enterHandler.call(component, {
+                    dragKey: activeDrag.dragKey,
+                    dragType: activeDrag.dragType,
+                    dragData: activeDrag.dragData,
+                    el,
+                    originalEvent: e,
+                });
+            }
+        };
+
+        const dragOverHandler = (e: DragEvent) => {
+            e.preventDefault();
+
+            const activeDrag = this.bus.getActiveDrag();
+            if (!activeDrag) return;
+
+            // 检查是否接受此拖拽类型
+            if (config.accept && config.accept.length > 0) {
+                if (!activeDrag.dragType || !config.accept.includes(activeDrag.dragType)) {
+                    return;
+                }
+            }
+        };
+
+        const dragLeaveHandler = (e: DragEvent) => {
+            const activeDrag = this.bus.getActiveDrag();
+            if (!activeDrag) return;
+
+            if (config.activeClass) el.classList.remove(config.activeClass);
+
+            this.bus.dragLeave(activeDrag.dragKey, component, el);
+
+            const leaveHandler = component[`on${handlerName}DragLeave`];
+            if (typeof leaveHandler === 'function') {
+                leaveHandler.call(component, {
+                    dragKey: activeDrag.dragKey,
+                    dragType: activeDrag.dragType,
+                    el,
+                    originalEvent: e,
+                });
+            }
+        };
+
+        const dropHandler = (e: DragEvent) => {
+            e.preventDefault();
+
+            const activeDrag = this.bus.getActiveDrag();
+            if (!activeDrag) return;
+
+            // 检查是否接受此拖拽类型
+            if (config.accept && config.accept.length > 0) {
+                if (!activeDrag.dragType || !config.accept.includes(activeDrag.dragType)) {
+                    return;
+                }
+            }
+
+            if (config.activeClass) el.classList.remove(config.activeClass);
+
+            this.bus.dragDrop(activeDrag.dragKey, component, el);
+
+            const onDropMethod = config.onDrop
+                ? component[config.onDrop]
+                : component[`on${handlerName}DragDrop`];
+
+            if (typeof onDropMethod === 'function') {
+                onDropMethod.call(component, {
+                    dragKey: activeDrag.dragKey,
+                    dragType: activeDrag.dragType,
+                    dragData: activeDrag.dragData,
+                    el,
+                    originalEvent: e,
+                });
+            }
+        };
+
+        inst.dragEnterHandler = dragEnterHandler;
+        inst.dragOverHandler = dragOverHandler;
+        inst.dragLeaveHandler = dragLeaveHandler;
+        inst.dropHandler = dropHandler;
+
+        el.addEventListener('dragenter', dragEnterHandler);
+        el.addEventListener('dragover', dragOverHandler);
+        el.addEventListener('dragleave', dragLeaveHandler);
+        el.addEventListener('drop', dropHandler);
+    }
+
+    private _unbindDropZoneEvents(inst: DropZoneInstance): void {
+        const { el, config } = inst;
+
+        if (config.activeClass) {
+            el.classList.remove(config.activeClass);
+        }
+
+        el.removeEventListener('dragenter', inst.dragEnterHandler);
+        el.removeEventListener('dragover', inst.dragOverHandler);
+        el.removeEventListener('dragleave', inst.dragLeaveHandler);
+        el.removeEventListener('drop', inst.dropHandler);
     }
 }
 

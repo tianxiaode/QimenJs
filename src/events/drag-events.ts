@@ -15,6 +15,10 @@
 export const DRAG_ACTIONS = {
     /** 初始化拖拽（组件实例+配置发送给调度中心） */
     INIT: 'init',
+    /** 开始拖拽会话（绑定手势监听） */
+    START: 'start',
+    /** 停止拖拽会话（解绑手势监听） */
+    STOP: 'stop',
     /** 销毁拖拽实例 */
     DISPOSE: 'dispose',
 } as const;

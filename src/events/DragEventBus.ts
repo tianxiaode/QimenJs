@@ -89,6 +89,20 @@ export class DragEventBus {
         return this.dragScope.getScopeId();
     }
 
+    /**
+     * 发送拖拽事件 — 供组件通过 dragEmit 调用
+     *
+     * 接收 EventContext，从 ctx.source 提取 dragKey，从 ctx.type 提取 action。
+     * 与 OverlayEventBus.overlayEmit 对称。
+     */
+    dragEmit(ctx: EventContext): void {
+        const event = ctx.event;
+        const action = ctx.type;
+        const dragKey = ctx.source;
+        this.logger.debug?.('[DragEventBus] dragEmit, dragKey =', dragKey, 'action =', action);
+        this.dragScope.emit(event, ctx);
+    }
+
     /** 获取当前活跃拖拽状态，无拖拽时返回 null */
     getActiveDrag(): DragState | null {
         return this.activeDrag;

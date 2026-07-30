@@ -6,7 +6,7 @@
  * 运行时浅复制 + 挂 el/component 构建 nodeMap。
  */
 
-import type { FlexConfig, GridConfig, HiddenMode } from './tpl-node-types';
+import type { FlexConfig, GridConfig, HiddenMode, FloatDecl, DragDecl, DropDecl } from './tpl-node-types';
 
 // ══════════════════════════════════════════════════════════════
 // 节点元数据 — 唯一运行时数据载体
@@ -127,6 +127,17 @@ export interface NodeMetadata {
     // ─── component：组件专属 ───
 
     initConfig?: Record<string, any>;
+
+    // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
+
+    /** 浮层标记 — 声明此节点是浮层锚点 */
+    float?: boolean | FloatDecl;
+
+    /** 拖拽标记 — 声明此节点是拖拽手柄 */
+    drag?: boolean | DragDecl;
+
+    /** 放置区标记 — 声明此节点是放置目标 */
+    drop?: boolean | DropDecl;
 }
 
 // ══════════════════════════════════════════════════════════════

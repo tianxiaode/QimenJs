@@ -29,7 +29,7 @@ import type { NodeMetadata } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
 import type { ComponentProps, BadgeQuickConfig, TooltipQuickConfig } from './types/init-context';
 import type { DomEventsMap } from './types/tpl-events';
-import type { FloatDecl } from './types/tpl-body';
+import type { FloatDecl, DragDecl, DropDecl } from './types/tpl-node-types';
 import { createInitContext } from './types/init-context';
 
 import {
@@ -42,6 +42,8 @@ import {
 import { getId } from '@/utils/string/id';
 import { ComponentRegistrar, TplInspector } from './engine';
 import { TplNode } from './types';
+import { EventContextBuilder } from '@/context';
+import { OVERLAY_ACTIONS } from '@/events/overlay-events';
 
 export class Component extends ComposableBase {
     static get type(): string {
@@ -70,6 +72,82 @@ export class Component extends ComposableBase {
     entityKey?: string | { key: string; fixed?: boolean };
 
     /**
+     * 拖拽开关 — 控制组件是否可拖拽
+     *
+     * 两种使用场景：
+     * 1. **Self-Drag（自身拖动）**：如 Dialog 窗口拖动
+     *    - drag: true → 启用，使用 dragHandle 或模板中的 drag 节点作为手柄
+     *    - drag: false → 禁用
+     *
+     * 2. **Drag & Drop（拖放交互）**：如卡片拖入容器
+     *    - drag: true → 启用，dragType 自动使用 component.type
+     *    - drag: { type: 'item' } → 启用，伪装为 'item' 类型
+     *
+     * @example
+     * class DialogComponent extends Component {
+     *   drag = true;                    // 启用拖拽
+     *   dragHandle = 'header';           // 手柄为 header 节点
+     *   // new DialogComponent({ drag: false }) → 禁用
+     * }
+     *
+     * class CardComponent extends Component {
+     *   drag = true;                    // 拖拽类型自动为 'Card'（类名派生）
+     *   // 拖到容器时，容器 accept: ['Card'] 即可匹配
+     * }
+     */
+    drag?: boolean | DragDecl;
+
+    /**
+     * 拖拽手柄节点 — 指定哪个节点作为拖拽触发区域
+     *
+     * 可选值：
+     * - 节点 name（如 'header'、'handle'）
+     * - 不设置时，自动查找模板中 drag: true 的节点
+     * - 若模板无 drag 节点，使用组件自身 el
+     *
+     * @example
+     * class DialogComponent extends Component {
+     *   drag = true;
+     *   dragHandle = 'header';  // header 节点为拖拽手柄
+     * }
+     */
+    dragHandle?: string;
+
+    /**
+     * 放置区开关 — 控制组件是否可接收拖放
+     *
+     * - `true`：启用，使用 dropZone 或模板中的 drop 节点作为放置区
+     * - `false`：禁用（覆盖模板中的 drop 声明）
+     * - `DropDecl`：启用并带配置（accept、activeClass 等）
+     * - `undefined`：使用模板中的默认声明
+     *
+     * @example
+     * class ContainerComponent extends Component {
+     *   drop = true;                     // 启用放置区
+     *   dropZone = 'content';             // content 节点为放置区
+     *   // 或在模板中声明：{ name: 'content', tag: 'div', drop: { accept: ['Card'] } }
+     *   // new ContainerComponent({ drop: false }) → 禁用
+     * }
+     */
+    drop?: boolean | DropDecl;
+
+    /**
+     * 放置区节点 — 指定哪个节点作为放置目标
+     *
+     * 可选值：
+     * - 节点 name（如 'content'、'dropZone'）
+     * - 不设置时，自动查找模板中 drop: true 的节点
+     * - 若模板无 drop 节点，使用组件自身 el
+     *
+     * @example
+     * class ContainerComponent extends Component {
+     *   drop = true;
+     *   dropZone = 'content';  // content 节点为放置区
+     * }
+     */
+    dropZone?: string;
+
+    /**
      * 默认事件数据 — getter，子类 super 合并
      *
      * 基类自动包含：id、type、action。
@@ -91,20 +169,52 @@ export class Component extends ComposableBase {
     }
 
     /**
-     * 浮动层声明 — 子类可覆盖合并
+     * 浮动层缓存 — setter 驱动的内部存储
      *
-     * 基类从 props.badge / props.tooltip 自动生成 Badge/Tooltip 浮层。
-     * 子类覆盖时通过 super.floats 合并基类浮层。
+     * 初始化阶段（_initializing=true）：setter 合并写入缓存，不驱动
+     * 运行时（_initializing=false）：setter 替换缓存并立即 diff + 驱动
+     */
+    _floatsCache: Record<string, FloatDecl> | undefined;
+
+    /**
+     * 浮动层声明 — getter 返回缓存，setter 统一调度
+     *
+     * getter：读取 _floatsCache
+     * setter：初始化阶段合并缓存，运行时替换缓存并 diff + 驱动
      *
      * @example
-     * class DropdownComponent extends ButtonComponent {
-     *     get floats() {
-     *         const parent = super.floats ?? {};
-     *         return { ...parent, dropIcon: { type: 'Menu', ... } };
-     *     }
-     * }
+     * // 初始化阶段：合并
+     * this.floats = { badge: { type: 'Badge', ... } };
+     * this.floats = { dropBtn: { type: 'Menu', ... } };
+     * // → _floatsCache = { badge, dropBtn }
+     *
+     * // 运行时：替换 + diff
+     * this.floats = { badge: { ... }, tooltip: { ... } };
+     * // → diff → DESTROY dropBtn + INIT tooltip
      */
     get floats(): Record<string, FloatDecl> | undefined {
+        return this._floatsCache;
+    }
+
+    set floats(val: Record<string, FloatDecl> | undefined) {
+        const prev = this._floatsCache;
+
+        if (this._initializing) {
+            this._floatsCache = val ? { ...prev, ...val } : prev;
+            return;
+        }
+
+        this._floatsCache = val;
+        this._syncFloats(prev, val);
+    }
+
+    /**
+     * 从 props.badge / props.tooltip 构建初始浮层配置
+     *
+     * 在构造函数中调用，通过 setter 写入缓存。
+     * 初始化阶段 setter 只缓存不驱动，由 _commitFloats 在 finally 中统一驱动。
+     */
+    _initFloatsFromProps(): void {
         const props = this.props as ComponentProps;
         const result: Record<string, FloatDecl> = {};
 
@@ -135,7 +245,80 @@ export class Component extends ComposableBase {
             } as FloatDecl;
         }
 
-        return Object.keys(result).length > 0 ? result : undefined;
+        if (Object.keys(result).length > 0) {
+            this.floats = result;
+        }
+    }
+
+    /**
+     * 提交初始化阶段缓存的浮层配置
+     *
+     * 在 init() finally 中调用，通过 setter 驱动首次 sync。
+     * 清空 _floatsCache 使 setter 内 prev=undefined，确保 INIT 所有浮层。
+     */
+    _commitFloats(): void {
+        if (!this._floatsCache) return;
+        const val = this._floatsCache;
+        this._floatsCache = undefined;
+        this.floats = val;
+    }
+
+    /**
+     * 同步浮层配置 — diff prev/next，对变更部分发送 INIT/DESTROY
+     */
+    _syncFloats(
+        prev: Record<string, FloatDecl> | undefined,
+        next: Record<string, FloatDecl> | undefined
+    ): void {
+        if (!this.id) {
+            this.id = this.props?.id || getId('cmp');
+        }
+
+        const prevKeys = prev ? Object.keys(prev) : [];
+        const nextKeys = next ? Object.keys(next) : [];
+
+        const removed = prevKeys.filter(k => !nextKeys.includes(k));
+        const added = nextKeys.filter(k => !prevKeys.includes(k));
+        const maybeChanged = nextKeys.filter(k => prevKeys.includes(k));
+
+        for (const key of removed) {
+            this._emitFloatAction(key, OVERLAY_ACTIONS.DISPOSE);
+        }
+
+        for (const key of added) {
+            this._emitFloatInit(key, next![key]);
+        }
+
+        for (const key of maybeChanged) {
+            if (JSON.stringify(prev![key]) !== JSON.stringify(next![key])) {
+                this._emitFloatAction(key, OVERLAY_ACTIONS.DISPOSE);
+                this._emitFloatInit(key, next![key]);
+            }
+        }
+    }
+
+    private _emitFloatInit(key: string, decl: FloatDecl): void {
+        const componentId = this.id;
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${componentId}:${OVERLAY_ACTIONS.INIT}`)
+                .withType(OVERLAY_ACTIONS.INIT)
+                .withSource(componentId)
+                .withData({ component: this, floats: { [key]: decl } })
+                .build()
+        );
+    }
+
+    private _emitFloatAction(key: string, action: string): void {
+        const overlayKey = `${this.id}:${key}`;
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:${action}`)
+                .withType(action)
+                .withSource(overlayKey)
+                .withData({ component: this })
+                .build()
+        );
     }
 
     /**
@@ -175,6 +358,10 @@ export class Component extends ComposableBase {
         this.action = this.props.action ?? '';
         this.bridgeKey = this.props.bridgeKey;
         this.entityKey = this.props.entityKey;
+        this.drag = (this.props as any).drag;
+        this.dragHandle = (this.props as any).dragHandle;
+        this.drop = (this.props as any).drop;
+        this.dropZone = (this.props as any).dropZone;
         this.parent = this.props.parent;
         this.slotName = this.props.slotName;
         this.meta = {};
@@ -182,6 +369,7 @@ export class Component extends ComposableBase {
         this.dirtySet = new Set();
         this._initializing = true;
         this._disposing = false;
+        this._initFloatsFromProps();
         this._ready = this.init();
     }
 
@@ -256,6 +444,9 @@ export class Component extends ComposableBase {
         } finally {
             this._initializing = false;
             this._flushNodeProps?.();
+            this._commitFloats();
+            this._commitDrags();
+            this._commitDrops?.();
         }
     }
 
