@@ -143,9 +143,7 @@ export interface TplNode {
     action?: string;
 
     /**
-     * 节点级事件数据声明（旧方案，逐步废弃）
-     *
-     * 新方案中事件数据通过 tplEvents 的 data 字段声明。
+     * 节点级事件数据声明
      *
      * @deprecated 请使用 tplEvents 三层嵌套中的 data 声明
      */
@@ -193,7 +191,7 @@ export interface TplNode {
     /** 子组件初始配置，传入构造函数 */
     initConfig?: Record<string, any>;
 
-    // ─── behavior: 行为配置（浮层/拖拽/动画） ───
+    // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
 
     /**
      * 浮层标记 — 声明此节点是浮层锚点
@@ -241,6 +239,88 @@ export interface TplNode {
      * { name: 'panel', type: 'Panel', animation: { enter: 'slideInUp', leave: 'slideOutDown', duration: 200 } }
      */
     animation?: Record<string, any>;
+
+    // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
+
+    /**
+     * 角标浮层快捷配置 — 节点级 badge 声明
+     *
+     * 等价于 float: { type: 'Badge', ... }
+     *
+     * @example
+     * { name: 'icon', badge: '3' }
+     * { name: 'icon', badge: { text: 'New', color: 'red' } }
+     */
+    badge?: BadgeQuickConfig | string | number | null;
+
+    /**
+     * 提示浮层快捷配置 — 节点级 tooltip 声明
+     *
+     * 等价于 float: { type: 'Tooltip', ... }
+     *
+     * @example
+     * { name: 'help', tooltip: '帮助说明' }
+     * { name: 'help', tooltip: { content: '详细内容', placement: 'top' } }
+     */
+    tooltip?: TooltipQuickConfig | string | null;
+
+    /**
+     * 对话框浮层快捷配置 — 节点级 dialog 声明
+     *
+     * 等价于 float: { type: 'Dialog', ... }
+     *
+     * @example
+     * { name: 'saveBtn', dialog: { type: 'Confirm', title: '确认保存？' } }
+     */
+    dialog?: DialogQuickConfig | null;
+
+    /**
+     * 弹出层浮层快捷配置 — 节点级 popover 声明
+     *
+     * 等价于 float: { type: 'Popover', ... }
+     *
+     * @example
+     * { name: 'info', popover: { title: '信息', content: '详情内容' } }
+     */
+    popover?: PopoverQuickConfig | null;
+
+    // ─── drag-drop-shorthand: 拖拽/放置快捷标记 ───
+
+    /**
+     * 拖拽手柄标记 — 声明此节点是组件的拖拽手柄
+     *
+     * true：此节点作为父组件的拖拽触发区域。
+     * 等价于组件级 dragHandle = nodeName。
+     *
+     * @example
+     * { name: 'header', dragHandle: true }
+     * // 等价于：在组件类写 dragHandle = 'header'
+     */
+    dragHandle?: boolean;
+
+    /**
+     * 放置区标记 — 声明此节点是组件的放置目标
+     *
+     * true：此节点作为父组件的放置区域。
+     * 等价于组件级 dropZone = nodeName。
+     *
+     * @example
+     * { name: 'content', dropZone: true }
+     * // 等价于：在组件类写 dropZone = 'content'
+     */
+    dropZone?: boolean;
+
+    // ─── itemgroup: ItemGroup 专属配置 ───
+
+    /**
+     * 指示器配置 — 仅 ItemGroup 类型组件可用
+     *
+     * 自动挂载 IndicatorComponent 浮层，实现 activeIndex 选中管理。
+     *
+     * @example
+     * { name: 'tabs', type: 'TabGroup', indicator: { type: 'tab', arrows: true } }
+     */
+    indicator?: IndicatorConfig | null;
 
     // ─── children: 子节点 ───
 
@@ -672,3 +752,15 @@ export interface AnimationDecl {
     /** 是否启用动画，默认 true */
     enabled?: boolean;
 }
+
+// ══════════════════════════════════════════════════════════════
+// 浮层快捷配置类型（从 init-context 复用）
+// ══════════════════════════════════════════════════════════════
+
+import type {
+    BadgeQuickConfig,
+    TooltipQuickConfig,
+    DialogQuickConfig,
+    PopoverQuickConfig,
+    IndicatorConfig,
+} from './init-context';

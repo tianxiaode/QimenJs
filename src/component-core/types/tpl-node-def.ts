@@ -79,8 +79,7 @@
  *   Phase 3 INSTANTIATE: instantiateChildComponents
  *   Phase 4 FINALIZE: bindListens → bindChildEvents → bindDomEvents → onAfterInit
  *
- * 旧的 RuntimeEngine 15 步管线已拆分为上述 4 Phase。
- *
+
  * ══════════════════════════════════════════════════════════════
  * 事件机制（全委托模式：三层嵌套 tplEvents）
  * ══════════════════════════════════════════════════════════════
@@ -346,14 +345,9 @@
  * - type: 创建组件实例，有组件边界，需要 forwards 透传
  * - fragment: 编译前展开，无组件边界，直接访问节点属性
  *
- * 与 nodeOverrides / body.nodes 配合：
- * - 展开后的节点名带命名空间，nodeOverrides 或 body.nodes 用全名覆盖
+ * 与 body.nodes 配合：
+ * - 展开后的节点名带命名空间，body.nodes 用全名覆盖
  * ```ts
- * // 旧方案（nodeOverrides，仍兼容）
- * nodeOverrides: {
- *     'header:action': { hidden: false }
- * }
- * // 新方案（body.nodes，推荐）
  * body: {
  *     nodes: {
  *         'header:action': { hidden: false }
@@ -429,6 +423,29 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
         metaKey: 'initConfig',
     },
 
+    // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
+
+    { field: 'float', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'drag', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'drop', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'animation', category: 'behavior', toMeta: true, toRoot: false },
+
+    // ─── drag-drop-shorthand: 拖拽/放置快捷标记 ───
+
+    { field: 'dragHandle', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'dropZone', category: 'behavior', toMeta: true, toRoot: false },
+
+    // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
+
+    { field: 'badge', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'tooltip', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'dialog', category: 'behavior', toMeta: true, toRoot: false },
+    { field: 'popover', category: 'behavior', toMeta: true, toRoot: false },
+
+    // ─── itemgroup: ItemGroup 专属配置 ───
+
+    { field: 'indicator', category: 'component', toMeta: true, toRoot: false },
+
     // ─── children: 子节点 ───
 
     { field: 'children', category: 'children', toMeta: false, toRoot: false },
@@ -438,10 +455,63 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     { field: 'fragment', category: 'children', toMeta: false, toRoot: false },
 ] as const;
 
-export const META_COPY_KEYS = TPL_NODE_FIELDS.filter(f => f.toMeta).map(
-    f => f.field
-) as readonly string[];
+// ══════════════════════════════════════════════════════════════
+// 自动拷贝工具：基于 TPL_NODE_FIELDS 定义元数据映射
+// ══════════════════════════════════════════════════════════════
 
-export const ROOT_COPY_KEYS = TPL_NODE_FIELDS.filter(f => f.toRoot).map(
-    f => f.field
-) as readonly string[];
+export interface FieldDef {
+    field: string;
+    category: string;
+    toMeta: boolean;
+    toRoot: boolean;
+    metaKey?: string;
+}
+
+const ALL_FIELDS = TPL_NODE_FIELDS as readonly FieldDef[];
+
+/** 所有需要拷贝到 NodeMetadata 的字段（含 metaKey 映射） */
+export const META_FIELDS = ALL_FIELDS.filter(f => f.toMeta);
+
+/** 所有需要拷贝到根节点的字段 */
+export const ROOT_FIELDS = ALL_FIELDS.filter(f => f.toRoot);
+
+/**
+ * 从 source 节点提取所有 meta 字段到目标对象
+ *
+ * 自动处理 metaKey 映射（如 i18n → i18nKey），
+ * 只拷贝 source 中有值的字段（跳过 undefined）。
+ *
+ * @param source TplNode 源
+ * @param target 目标对象（通常是 NodeMetadata 正在构建的对象）
+ * @returns 目标对象
+ */
+export function copyMetaFields(
+    source: Record<string, any>,
+    target: Record<string, any> = {}
+): Record<string, any> {
+    for (const def of META_FIELDS) {
+        const val = source[def.field];
+        if (val !== undefined) {
+            const key = def.metaKey ?? def.field;
+            target[key] = val;
+        }
+    }
+    return target;
+}
+
+/**
+ * 从 source 节点提取所有 root 级字段到目标对象
+ */
+export function copyRootFields(
+    source: Record<string, any>,
+    target: Record<string, any> = {}
+): Record<string, any> {
+    for (const def of ROOT_FIELDS) {
+        const val = source[def.field];
+        if (val !== undefined) {
+            const key = def.metaKey ?? def.field;
+            target[key] = val;
+        }
+    }
+    return target;
+}

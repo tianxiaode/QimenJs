@@ -6,7 +6,21 @@
  * 运行时浅复制 + 挂 el/component 构建 nodeMap。
  */
 
-import type { FlexConfig, GridConfig, HiddenMode, FloatDecl, DragDecl, DropDecl } from './tpl-node-types';
+import type {
+    FlexConfig,
+    GridConfig,
+    HiddenMode,
+    FloatDecl,
+    DragDecl,
+    DropDecl,
+} from './tpl-node-types';
+import type {
+    BadgeQuickConfig,
+    TooltipQuickConfig,
+    DialogQuickConfig,
+    PopoverQuickConfig,
+    IndicatorConfig,
+} from './init-context';
 
 // ══════════════════════════════════════════════════════════════
 // 节点元数据 — 唯一运行时数据载体
@@ -138,6 +152,36 @@ export interface NodeMetadata {
 
     /** 放置区标记 — 声明此节点是放置目标 */
     drop?: boolean | DropDecl;
+
+    /** 动画配置 — 声明此节点的进入/离开动画 */
+    animation?: Record<string, any>;
+
+    // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
+
+    /** 角标浮层快捷配置 */
+    badge?: BadgeQuickConfig | string | number | null;
+
+    /** 提示浮层快捷配置 */
+    tooltip?: TooltipQuickConfig | string | null;
+
+    /** 对话框浮层快捷配置 */
+    dialog?: DialogQuickConfig | null;
+
+    /** 弹出层浮层快捷配置 */
+    popover?: PopoverQuickConfig | null;
+
+    // ─── drag-drop-shorthand: 拖拽/放置快捷标记 ───
+
+    /** 拖拽手柄标记 — 声明此节点是组件的拖拽手柄 */
+    dragHandle?: boolean;
+
+    /** 放置区标记 — 声明此节点是组件的放置目标 */
+    dropZone?: boolean;
+
+    // ─── itemgroup: ItemGroup 专属配置 ───
+
+    /** 指示器配置 — 仅 ItemGroup 类型组件可用 */
+    indicator?: IndicatorConfig | null;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -220,7 +264,7 @@ export interface CompiledTemplateResult {
  * - i18nNodes: i18n 节点列表
  * - templateCache: HTMLTemplateElement 缓存（只读 cloneNode 源）
  *
- * nodeMetas 不属于此缓存，因为它会被 nodeOverrides/body 修改。
+ * nodeMetas 不属于此缓存，因为它会被 body 修改。
  * 多个组件实例可以共享同一个 CompiledTemplateCache，但各自维护独立的 nodeMetas。
  *
  * @example
