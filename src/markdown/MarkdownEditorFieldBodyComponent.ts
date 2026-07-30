@@ -14,11 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class MarkdownEditorFieldBodyComponent extends Component {
-    static type = 'MarkdownEditorFieldBody';
-
-    type = 'MarkdownEditorFieldBody';
-}
+class MarkdownEditorFieldBodyComponent extends Component {}
 
 export { MarkdownEditorFieldBodyComponent };
 export type MarkdownEditorFieldBodyComponentInstance = InstanceType<

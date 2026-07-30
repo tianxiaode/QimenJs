@@ -1,176 +1,110 @@
 /**
- * FloatAbility — 浮层动态管理能力
+ * FloatAbility — 浮层管理能力（薄 facade）
  *
- * 为组件提供浮层的结构变更与数据更新方法：
+ * 核心逻辑委托给 FloatEngine 单例（engine/FloatEngine.ts），
+ * 本文件只定义 AbilityDefinition 的接口，所有方法都是薄委托。
  *
- * 结构变更（通过 floats setter 驱动）：
- * - attachFloat(key, decl)  — 动态挂载浮层
- * - detachFloat(key)        — 动态卸载浮层
+ * 类型处理器（badge/tooltip/dialog）在 FloatEngine 中注册，
+ * 新增类型只需 registerHandler，不需改 FloatAbility。
  *
- * 控制操作（manual trigger 时手动开关）：
- * - showFloat(key)          — 显示浮层
- * - hideFloat(key)          — 隐藏浮层
- * - toggleFloat(key)        — 切换浮层
- *
- * 数据更新（不重建组件实例，仅发送 CHANGE 事件）：
- * - updateFloat(key, data)  — 通用数据更新
- * - updateBadge(data)       — Badge 浮层快捷更新
- * - updateTooltip(data)     — Tooltip 浮层快捷更新
- *
- * 与 floats setter 的关系：
- * - setter 管结构：有没有、长什么样（anchor/trigger/placement 等）
- * - updateFloat 管数据：显示什么内容（text/visible/tooltip 等）
- * - 两者不混用
+ * @see FloatEngine for core implementation
  */
 
 import type { AbilityDefinition } from '@/composable';
 import type { FloatDecl } from '../types/tpl-node-types';
-import { EventContextBuilder } from '@/context';
-import { OVERLAY_ACTIONS } from '@/events/overlay-events';
+import { FloatEngine } from '../engine/FloatEngine';
+
+const engine = FloatEngine.getInstance();
 
 export const FloatAbility: AbilityDefinition = {
-    /**
-     * 动态挂载浮层
-     *
-     * 运行时向 floats 追加一个浮层定义，触发 setter 驱动。
-     * 初始化阶段（_initializing=true）仅缓存，不驱动。
-     *
-     * @param key - 浮层 key（如 'dropBtn'、'subNav'）
-     * @param decl - 浮层定义
-     *
-     * @example
-     * this.attachFloat('subNav', { type: 'Menu', anchor: 'self', trigger: 'manual' });
-     */
+    // ══════════════════════════════════════════════════════════════
+    // 缓存管理
+    // ══════════════════════════════════════════════════════════════
+
+    get floats(): Record<string, FloatDecl> | undefined {
+        return engine.getFloats(this);
+    },
+
+    set floats(val: Record<string, FloatDecl> | undefined) {
+        engine.setFloats(this, val);
+    },
+
+    // ══════════════════════════════════════════════════════════════
+    // 初始化 & 提交
+    // ══════════════════════════════════════════════════════════════
+
+    _initFloatsFromProps(): void {
+        const result = engine.buildFromProps(this);
+        if (Object.keys(result).length > 0) {
+            this.floats = result;
+        }
+    },
+
+    _commitFloats(): void {
+        engine.commitFloats(this);
+    },
+
+    // ══════════════════════════════════════════════════════════════
+    // 结构变更方法
+    // ══════════════════════════════════════════════════════════════
+
     attachFloat(key: string, decl: FloatDecl): void {
-        const current = this._floatsCache ?? {};
-        this.floats = { ...current, [key]: decl };
+        engine.attachFloat(this, key, decl);
     },
 
-    /**
-     * 动态卸载浮层
-     *
-     * 从 floats 中移除指定 key，触发 setter 驱动。
-     *
-     * @param key - 要卸载的浮层 key
-     *
-     * @example
-     * this.detachFloat('subNav');
-     */
     detachFloat(key: string): void {
-        const current = this._floatsCache;
-        if (!current || !(key in current)) return;
-        const next = { ...current };
-        delete next[key];
-        this.floats = Object.keys(next).length > 0 ? next : undefined;
+        engine.detachFloat(this, key);
     },
 
-    /**
-     * 显示浮层（manual trigger 时手动调用）
-     *
-     * @param key - 浮层 key
-     *
-     * @example
-     * this.showFloat('subNav');
-     */
+    // ══════════════════════════════════════════════════════════════
+    // 控制操作方法
+    // ══════════════════════════════════════════════════════════════
+
     showFloat(key: string): void {
-        const overlayKey = `${this.id}:${key}`;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.SHOW}`)
-                .withType(OVERLAY_ACTIONS.SHOW)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
-        );
+        engine.showFloat(this, key);
     },
 
-    /**
-     * 隐藏浮层
-     *
-     * @param key - 浮层 key
-     *
-     * @example
-     * this.hideFloat('subNav');
-     */
     hideFloat(key: string): void {
-        const overlayKey = `${this.id}:${key}`;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
-                .withType(OVERLAY_ACTIONS.HIDE)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
-        );
+        engine.hideFloat(this, key);
     },
 
-    /**
-     * 切换浮层显示/隐藏
-     *
-     * @param key - 浮层 key
-     *
-     * @example
-     * this.toggleFloat('dropBtn');
-     */
     toggleFloat(key: string): void {
-        const overlayKey = `${this.id}:${key}`;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.TOGGLE}`)
-                .withType(OVERLAY_ACTIONS.TOGGLE)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
-        );
+        engine.toggleFloat(this, key);
     },
 
-    /**
-     * 更新浮层数据（不重建组件实例）
-     *
-     * 发送 CHANGE 事件，由浮层组件的 onOverlayChange 处理。
-     * 与 setter 分离：setter 管结构变更，updateFloat 管数据更新。
-     *
-     * @param key - 浮层 key
-     * @param data - 更新数据
-     *
-     * @example
-     * this.updateFloat('badge', { text: '5' });
-     */
+    // ══════════════════════════════════════════════════════════════
+    // 数据更新方法
+    // ══════════════════════════════════════════════════════════════
+
     updateFloat(key: string, data: Record<string, any>): void {
-        const overlayKey = `${this.id}:${key}`;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`)
-                .withType(OVERLAY_ACTIONS.CHANGE)
-                .withSource(overlayKey)
-                .withData({ component: { id: this.id }, data })
-                .build()
-        );
+        engine.updateFloat(this, key, data);
     },
 
-    /**
-     * 更新 Badge 浮层数据
-     *
-     * @param data - 更新数据（如 { text: '5', visible: true }）
-     *
-     * @example
-     * this.updateBadge({ text: '5' });
-     * this.updateBadge({ visible: false });
-     */
     updateBadge(data: Record<string, any>): void {
-        this.updateFloat('badge', data);
+        engine.updateBadge(this, data);
     },
 
-    /**
-     * 更新 Tooltip 浮层数据
-     *
-     * @param data - 更新数据（如 { tooltip: '提示文本' }）
-     *
-     * @example
-     * this.updateTooltip({ tooltip: '新提示' });
-     * this.updateTooltip({ visible: false });
-     */
     updateTooltip(data: Record<string, any>): void {
-        this.updateFloat('tooltip', data);
+        engine.updateTooltip(this, data);
+    },
+
+    // ══════════════════════════════════════════════════════════════
+    // Dialog 快捷方法
+    // ══════════════════════════════════════════════════════════════
+
+    showDialog(): void {
+        engine.showDialog(this);
+    },
+
+    hideDialog(): void {
+        engine.hideDialog(this);
+    },
+
+    toggleDialog(): void {
+        engine.toggleDialog(this);
+    },
+
+    updateDialog(data: Record<string, any>): void {
+        engine.updateDialog(this, data);
     },
 };

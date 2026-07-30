@@ -8,7 +8,6 @@ export { instantiateChildComponents } from './step-instantiate-child-components'
 export { bindListens } from './step-bind-listens';
 export { bindChildEvents } from './step-bind-child-events';
 export { bindDomEvents } from './step-bind-dom-events';
-export { initFloats } from './step-init-floats';
 
 export type { Phase, InitStep } from './pipeline-types';
 export {

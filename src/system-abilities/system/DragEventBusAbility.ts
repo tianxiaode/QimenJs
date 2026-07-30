@@ -12,8 +12,13 @@
 import type { AbilityDefinition } from '@/composable';
 import { DragEventBus } from '@/events';
 import type { DragState, DragAction } from '@/events';
+import type { EventContext } from '@/context';
 
-export const DragEventBusAbility= {
+export const DragEventBusAbility = {
+    dragEmit(ctx: EventContext): void {
+        DragEventBus.getInstance().dragEmit(ctx);
+    },
+
     dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
         DragEventBus.getInstance().dragStart(dragKey, state);
     },

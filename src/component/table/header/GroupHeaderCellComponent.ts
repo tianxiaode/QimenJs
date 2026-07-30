@@ -20,7 +20,7 @@
  */
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
-import { TemplateRegistrar } from '@qimenjs/component-core';
+import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 
 export interface GroupHeaderCellProps {
@@ -102,7 +102,7 @@ export let GroupHeaderCellComponent = BaseHeaderCellComponent.replace({
             for (const config of configs) {
                 const componentType =
                     config.type === 'group' ? 'GroupHeaderCell' : 'LeafHeaderCell';
-                const ChildClass = TemplateRegistrar.getInstance().get(componentType) as any;
+                const ChildClass = ComponentRegistrar.getInstance().get(componentType) as any;
                 if (!ChildClass) continue;
 
                 const childProps: any = {

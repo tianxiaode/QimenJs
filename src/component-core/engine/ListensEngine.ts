@@ -22,7 +22,7 @@ import type {
     EntityListen,
     SystemListen,
     RouteListen,
-} from '../types/tpl-body';
+} from '../types/tpl-node-types';
 import { EventForwarder } from './EventForwarder';
 
 function isBridgeListen(item: ListenItem): item is BridgeListen {

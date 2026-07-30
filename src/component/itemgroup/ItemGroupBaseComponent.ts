@@ -3,7 +3,7 @@
 // 提供：模板、工具方法、事件处理、defaultItem 合并
 // ============================================
 
-import { Component, TemplateRegistrar } from '@qimenjs/component-core';
+import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
 import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
 
@@ -48,17 +48,14 @@ class ItemGroupBaseComponent extends Component {
         return true;
     }
 
-    get floats(): Record<string, FloatDecl> | undefined {
-        const parentFloats = super.floats ?? {};
-        if (typeof this.indicatorFloat === 'object') {
-            const merged = { ...parentFloats, ...this.indicatorFloat };
-            return Object.keys(merged).length > 0 ? merged : undefined;
-        }
-        return Object.keys(parentFloats).length > 0 ? parentFloats : undefined;
-    }
-
     onAfterInit(props?: any): void {
         this._initItemGroupComponent(props);
+
+        if (typeof this.indicatorFloat === 'object') {
+            for (const [key, decl] of Object.entries(this.indicatorFloat)) {
+                this.attachFloat(key, decl as FloatDecl);
+            }
+        }
     }
 
     _initItemGroupComponent(props?: any): void {
@@ -174,7 +171,7 @@ class ItemGroupBaseComponent extends Component {
         const itemType = data.type ?? this._defaultItemType;
         if (!itemType) return null;
 
-        const ItemClass = TemplateRegistrar.getInstance().get(itemType) as any;
+        const ItemClass = ComponentRegistrar.getInstance().get(itemType) as any;
         if (!ItemClass) return null;
 
         const props = { ...data };

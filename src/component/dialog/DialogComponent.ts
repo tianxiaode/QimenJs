@@ -100,10 +100,6 @@ class DialogComponent extends Component {
         title: 'header.title',
     };
 
-    drags = {
-        header: { axis: 'both' as const },
-    };
-
     domEvents?: DomEventsMap | undefined = {
         click: {
             'header.action': {
@@ -130,6 +126,8 @@ class DialogComponent extends Component {
     }
 
     onAfterInit(props?: DialogProps): void {
+        this.attachDrag('header', { axis: 'both' as const });
+
         const headerComp = this.nodeMap?.header?.component;
         if (!headerComp) return;
 

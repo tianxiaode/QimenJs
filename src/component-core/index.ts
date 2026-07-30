@@ -6,6 +6,8 @@
 
 // 组件基类
 export { Component } from './Component';
+export { ItemContainer, itemsToTpl } from './ItemContainer';
+export type { ItemDecl, ItemContainerStaticConfig } from './ItemContainer';
 export { COMPONENT_ABILITIES } from './Component-abilities';
 
 // 节点结构管理器
@@ -63,26 +65,19 @@ export type {
     CompiledTemplateResult,
     CompiledTemplateCache,
 } from './types/compiled-types';
-export type { ComponentTemplate } from './types/component-template';
+export type { ComponentTemplate, BodyDef, LifecycleHooks } from './types/component-template';
 export type {
     TplNode,
     TplFragment,
     FlexConfig,
     GridConfig,
     HiddenMode,
-} from './types/tpl-node-types';
-export type {
-    BodyDef,
     AnimationDecl,
     FloatDecl,
     DragDecl,
-    FloatsConfig,
-    DragsConfig,
     ListenItem,
-    LifecycleHooks,
-} from './types/tpl-body';
+} from './types/tpl-node-types';
 export type { DomEventsMap } from './types/tpl-events';
-export type { BodyKeyDef } from './types/tpl-body-def';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
 export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/tpl-events';
 export type {
@@ -95,7 +90,7 @@ export type { INodeMapManager } from './types/node-map-manager-types';
 
 export type { Placement } from '@/overlay/dispatch/positionOverlay';
 
-// 初始化 TemplateRegistrar 到 RegistryHub
+// 初始化 ComponentRegistrar 到 RegistryHub
 import { ComponentRegistrar } from './engine';
 import { RegistryHub } from '@qimenjs/registry';
 RegistryHub.use(ComponentRegistrar.getInstance());

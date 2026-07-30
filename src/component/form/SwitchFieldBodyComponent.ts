@@ -17,8 +17,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class SwitchFieldBodyComponent extends Component {
-}
+class SwitchFieldBodyComponent extends Component {}
 
 export { SwitchFieldBodyComponent };
 export type SwitchFieldBodyComponentInstance = InstanceType<typeof SwitchFieldBodyComponent>;

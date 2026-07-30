@@ -13,7 +13,8 @@ import {
 import { NodePropAbility } from './abilities/NodePropAbility';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
-import { OverlayUpdateAbility } from './abilities/OverlayUpdateAbility';
+import { FloatAbility } from './abilities/FloatAbility';
+import { DragAbility } from './abilities/DragAbility';
 import { LifecycleAbility } from './abilities/LifecycleAbility';
 import type { ComponentProps } from './types/init-context';
 
@@ -31,7 +32,8 @@ export const COMPONENT_ABILITIES = [
     NodePropAbility,
     CommonPropsAbility,
     AnimationAbility,
-    OverlayUpdateAbility,
+    FloatAbility,
+    DragAbility,
 
     LifecycleAbility,
 ] as const satisfies readonly AbilityDefinition[];

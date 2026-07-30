@@ -17,8 +17,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class RadioGroupFieldBodyComponent extends Component {
-}
+class RadioGroupFieldBodyComponent extends Component {}
 
 export { RadioGroupFieldBodyComponent };
 export type RadioGroupFieldBodyComponentInstance = InstanceType<

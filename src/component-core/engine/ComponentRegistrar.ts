@@ -1,5 +1,5 @@
 /**
- * TemplateRegistrar — 组件注册器（统一管理组件类 + 模板）
+ * ComponentRegistrar — 组件注册器（统一管理组件类 + 模板）
  *
  * 核心职能：
  *   1. register(ComponentClass, tpl?) — 注册组件定义 + 可选模板
@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * const registry = TemplateRegistrar.getInstance();
+ * const registry = ComponentRegistrar.getInstance();
  * registry.register(ButtonComponent, BUTTON_TPL);  // 有模板
  * registry.register(TabBarComponent);               // 无模板，推导到父类
  *
@@ -54,10 +54,10 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      * ```
      */
     register(componentClass: new (props?: Record<string, any>) => any, tpl?: TplNode): void {
-        this.checkLock();
+        // 不检查 lock —— 运行时动态注册（RowEngine / ItemContainer）需要随时注册
 
-        const type: string = (componentClass as any).type
-            ?? (componentClass as any).name?.replace(/Component$/, '');
+        const type: string =
+            (componentClass as any).type ?? (componentClass as any).name?.replace(/Component$/, '');
         if (!type) {
             this.logger.warn(`Component class has no type getter, skipping registration`);
             return;
@@ -133,8 +133,8 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     ): string | undefined {
         let current = Object.getPrototypeOf(componentClass);
         while (current && current !== Function.prototype) {
-            const parentType = (current as any).type
-                ?? (current as any).name?.replace(/Component$/, '');
+            const parentType =
+                (current as any).type ?? (current as any).name?.replace(/Component$/, '');
             if (parentType && this.storage.entries.has(parentType)) {
                 return parentType;
             }
@@ -197,7 +197,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      * 注销
      */
     unregister(id: string): void {
-        this.checkLock();
+        // 不检查 lock —— 允许运行时动态注销
         this.storage.entries.delete(id);
     }
 
@@ -219,7 +219,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      * 清空所有注册
      */
     clear(): void {
-        this.checkLock();
+        // 不检查 lock —— 允许运行时清空
         this.storage.entries.clear();
     }
 

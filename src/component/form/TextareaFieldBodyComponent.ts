@@ -17,8 +17,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class TextareaFieldBodyComponent extends Component {
-}
+class TextareaFieldBodyComponent extends Component {}
 
 export { TextareaFieldBodyComponent };
 export type TextareaFieldBodyComponentInstance = InstanceType<typeof TextareaFieldBodyComponent>;

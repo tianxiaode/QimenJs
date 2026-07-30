@@ -20,7 +20,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { AnimationDecl } from '../types/tpl-body';
+import type { AnimationDecl } from '../types/tpl-node-types';
 import { ANIMATION_PRESETS } from '../constants/template-constants';
 
 export const AnimationAbility = {

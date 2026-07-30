@@ -2,7 +2,7 @@
  * init-context.ts — 初始化管线上下文
  *
  * 管线中所有 step 函数共享的上下文对象。
- * nodeMapMgr 由 ensureNodeMap 步骤直接从 TemplateRegistrar 获取并绑定。
+ * nodeMapMgr 由 ensureNodeMap 步骤直接从 ComponentRegistrar 获取并绑定。
  *
  * ══════════════════════════════════════════════════════════════
  * 初始化管线架构
@@ -71,6 +71,81 @@ export interface TooltipQuickConfig {
     hideDelay?: number;
 }
 
+/**
+ * Dialog 快捷配置
+ *
+ * 通过 props.dialog 声明式挂载对话框浮层，与 badge/tooltip 模式对称。
+ * float 选项（mask/closeOnEscape 等）提取到 FloatDecl，剩余作为 data 传给 DialogComponent。
+ *
+ * @example
+ * ```ts
+ * new ButtonComponent({
+ *     dialog: {
+ *         title: '确认删除',
+ *         confirm: true,
+ *         cancel: true,
+ *     }
+ * });
+ * // → 自动创建 { type: 'Dialog', trigger: 'manual', placement: 'center', mask: true, data: { title, confirm, cancel } }
+ * ```
+ */
+export interface DialogQuickConfig {
+    // ── 内容 ──
+    title?: string;
+    icon?: string;
+    subtitle?: string;
+    toolsLeft?: Record<string, any>;
+    toolsRight?: Record<string, any>;
+
+    // ── 底部按钮 ──
+    confirm?: boolean | { order?: number; text?: string };
+    cancel?: boolean | { order?: number; text?: string };
+    ok?: boolean | { order?: number; text?: string };
+    save?: boolean | { order?: number; text?: string };
+    close?: boolean | { order?: number; text?: string };
+    apply?: boolean | { order?: number; text?: string };
+    reset?: boolean | { order?: number; text?: string };
+    footerItems?: Record<string, any>[];
+
+    // ── 尺寸 ──
+    width?: string;
+    resizable?: boolean;
+
+    // ── Float 选项（提取到 FloatDecl，不进 data）──
+    mask?: boolean | string;
+    closeOnEscape?: boolean;
+    closeOnClickOutside?: boolean;
+    emits?: Record<string, string>;
+}
+
+export interface PopoverQuickConfig {
+    title?: string;
+    content?: string;
+    placement?: 'top' | 'bottom' | 'left' | 'right';
+    trigger?: 'click' | 'hover';
+    width?: number | string;
+    emits?: Record<string, string>;
+}
+
+export type IndicatorType = 'dot' | 'number' | 'dash' | 'button' | 'tab';
+
+export interface IndicatorConfig {
+    /** 指示器类型 */
+    type: IndicatorType;
+    /** 弹出方向，默认 'bottom' */
+    placement?: 'top' | 'bottom' | 'left' | 'right';
+    /** 触发方式，默认 'always'（始终显示） */
+    trigger?: 'always' | 'click' | 'hover';
+    /** 是否显示 prev/next 箭头 */
+    arrows?: boolean;
+    /** 初始选中索引 */
+    activeIndex?: number;
+    /** 指示器子项类型（默认由 type 推导） */
+    defaultItemType?: string;
+    /** 浮层事件转发 */
+    emits?: Record<string, string>;
+}
+
 export interface ComponentProps {
     /**
      * 组件唯一标识
@@ -117,6 +192,9 @@ export interface ComponentProps {
 
     /** 提示浮层快捷配置，null 时不触发 */
     tooltip?: TooltipQuickConfig | string | null;
+
+    /** 对话框浮层快捷配置，null 时不触发 */
+    dialog?: DialogQuickConfig | null;
 
     /** 桥接事件 key，EventBridge 通道标识 */
     bridgeKey?: string | { key: string; fixed?: boolean };

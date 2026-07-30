@@ -48,6 +48,7 @@
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
 import type { CompileResult } from '../types/compile-engine-types';
+import { copyMetaFields } from '../types/tpl-node-def';
 import { VOID_TAGS } from '../constants/compile-constants';
 import { SKELETON_CLS } from '../constants/compile-constants';
 import { Logger } from '@/logger';
@@ -163,22 +164,10 @@ export class CompileEngine {
         const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
         indexPath['root'] = [];
-        nodeMetas['root'] = {
+        nodeMetas['root'] = copyMetaFields(root, {
             name: 'root',
             tag: root.tag,
-
-            action: root.action,
-            data: root.data,
-            cls: root.cls,
-            style: root.style,
-            flex: root.flex,
-            grid: root.grid,
-            role: root.role,
-            attrs: root.attrs,
-            float: root.float,
-            drag: root.drag,
-            drop: root.drop,
-        };
+        });
 
         const children = root.children || [];
         const htmlParts: string[] = [];
@@ -273,21 +262,13 @@ export class CompileEngine {
 
         ctx.indexPath[name] = path;
 
-        const meta: NodeMetadata = {
+        const meta = copyMetaFields(node, {
             name,
             tag: node.tag,
             type: typeof node.type === 'string' ? node.type : undefined,
-
-            action: node.action,
-            data: node.data,
-            cls: appendCls(node.cls, SKELETON_CLS),
             contentMode: 'html',
-            i18nKey: node.i18n,
-            initConfig: node.initConfig,
-            float: node.float,
-            drag: node.drag,
-            drop: node.drop,
-        };
+        });
+        meta.cls = appendCls(node.cls, SKELETON_CLS);
 
         if (typeof node.type === 'function') {
             meta.componentClass = node.type as any;
@@ -339,26 +320,11 @@ export class CompileEngine {
 
             ctx.indexPath[name] = path;
 
-            const meta: NodeMetadata = {
+            const meta = copyMetaFields(node, {
                 name,
                 tag,
-
-                action: node.action,
-                data: node.data,
                 contentMode: CompileEngine.inferContentMode(tag),
-                i18nKey: node.i18n,
-                cls: node.cls,
-                style: node.style,
-                flex: node.flex,
-                grid: node.grid,
-                hidden: node.hidden,
-                hiddenMode: node.hiddenMode,
-                role: node.role,
-                attrs: node.attrs,
-                float: node.float,
-                drag: node.drag,
-                drop: node.drop,
-            };
+            });
 
             ctx.nodeMetas[name] = meta;
             ctx.exposeNames.push(name);

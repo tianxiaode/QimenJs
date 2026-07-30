@@ -27,9 +27,9 @@ import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { NodeMetadata } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
-import type { ComponentProps, BadgeQuickConfig, TooltipQuickConfig } from './types/init-context';
+import type { ComponentProps } from './types/init-context';
 import type { DomEventsMap } from './types/tpl-events';
-import type { FloatDecl, DragDecl, DropDecl } from './types/tpl-node-types';
+import type { DragDecl, DropDecl } from './types/tpl-node-types';
 import { createInitContext } from './types/init-context';
 
 import {
@@ -42,8 +42,6 @@ import {
 import { getId } from '@/utils/string/id';
 import { ComponentRegistrar, TplInspector } from './engine';
 import { TplNode } from './types';
-import { EventContextBuilder } from '@/context';
-import { OVERLAY_ACTIONS } from '@/events/overlay-events';
 
 export class Component extends ComposableBase {
     static get type(): string {
@@ -166,159 +164,6 @@ export class Component extends ComposableBase {
             type: this.type,
             action: this.action,
         };
-    }
-
-    /**
-     * 浮动层缓存 — setter 驱动的内部存储
-     *
-     * 初始化阶段（_initializing=true）：setter 合并写入缓存，不驱动
-     * 运行时（_initializing=false）：setter 替换缓存并立即 diff + 驱动
-     */
-    _floatsCache: Record<string, FloatDecl> | undefined;
-
-    /**
-     * 浮动层声明 — getter 返回缓存，setter 统一调度
-     *
-     * getter：读取 _floatsCache
-     * setter：初始化阶段合并缓存，运行时替换缓存并 diff + 驱动
-     *
-     * @example
-     * // 初始化阶段：合并
-     * this.floats = { badge: { type: 'Badge', ... } };
-     * this.floats = { dropBtn: { type: 'Menu', ... } };
-     * // → _floatsCache = { badge, dropBtn }
-     *
-     * // 运行时：替换 + diff
-     * this.floats = { badge: { ... }, tooltip: { ... } };
-     * // → diff → DESTROY dropBtn + INIT tooltip
-     */
-    get floats(): Record<string, FloatDecl> | undefined {
-        return this._floatsCache;
-    }
-
-    set floats(val: Record<string, FloatDecl> | undefined) {
-        const prev = this._floatsCache;
-
-        if (this._initializing) {
-            this._floatsCache = val ? { ...prev, ...val } : prev;
-            return;
-        }
-
-        this._floatsCache = val;
-        this._syncFloats(prev, val);
-    }
-
-    /**
-     * 从 props.badge / props.tooltip 构建初始浮层配置
-     *
-     * 在构造函数中调用，通过 setter 写入缓存。
-     * 初始化阶段 setter 只缓存不驱动，由 _commitFloats 在 finally 中统一驱动。
-     */
-    _initFloatsFromProps(): void {
-        const props = this.props as ComponentProps;
-        const result: Record<string, FloatDecl> = {};
-
-        if (props.badge !== null && props.badge !== undefined) {
-            const badgeConfig: BadgeQuickConfig =
-                typeof props.badge === 'string' || typeof props.badge === 'number'
-                    ? { text: String(props.badge) }
-                    : props.badge;
-            result.badge = {
-                type: 'Badge',
-                trigger: 'always',
-                anchor: badgeConfig.anchor ?? 'self',
-                data: { text: badgeConfig.text, visible: badgeConfig.visible },
-            } as FloatDecl;
-        }
-
-        if (props.tooltip !== null && props.tooltip !== undefined) {
-            const tooltipConfig: TooltipQuickConfig =
-                typeof props.tooltip === 'string' ? { tooltip: props.tooltip } : props.tooltip;
-            result.tooltip = {
-                type: 'Tooltip',
-                trigger: 'hover',
-                anchor: tooltipConfig.anchor ?? 'self',
-                placement: tooltipConfig.placement ?? 'top',
-                showDelay: tooltipConfig.showDelay,
-                hideDelay: tooltipConfig.hideDelay,
-                data: { tooltip: tooltipConfig.tooltip },
-            } as FloatDecl;
-        }
-
-        if (Object.keys(result).length > 0) {
-            this.floats = result;
-        }
-    }
-
-    /**
-     * 提交初始化阶段缓存的浮层配置
-     *
-     * 在 init() finally 中调用，通过 setter 驱动首次 sync。
-     * 清空 _floatsCache 使 setter 内 prev=undefined，确保 INIT 所有浮层。
-     */
-    _commitFloats(): void {
-        if (!this._floatsCache) return;
-        const val = this._floatsCache;
-        this._floatsCache = undefined;
-        this.floats = val;
-    }
-
-    /**
-     * 同步浮层配置 — diff prev/next，对变更部分发送 INIT/DESTROY
-     */
-    _syncFloats(
-        prev: Record<string, FloatDecl> | undefined,
-        next: Record<string, FloatDecl> | undefined
-    ): void {
-        if (!this.id) {
-            this.id = this.props?.id || getId('cmp');
-        }
-
-        const prevKeys = prev ? Object.keys(prev) : [];
-        const nextKeys = next ? Object.keys(next) : [];
-
-        const removed = prevKeys.filter(k => !nextKeys.includes(k));
-        const added = nextKeys.filter(k => !prevKeys.includes(k));
-        const maybeChanged = nextKeys.filter(k => prevKeys.includes(k));
-
-        for (const key of removed) {
-            this._emitFloatAction(key, OVERLAY_ACTIONS.DISPOSE);
-        }
-
-        for (const key of added) {
-            this._emitFloatInit(key, next![key]);
-        }
-
-        for (const key of maybeChanged) {
-            if (JSON.stringify(prev![key]) !== JSON.stringify(next![key])) {
-                this._emitFloatAction(key, OVERLAY_ACTIONS.DISPOSE);
-                this._emitFloatInit(key, next![key]);
-            }
-        }
-    }
-
-    private _emitFloatInit(key: string, decl: FloatDecl): void {
-        const componentId = this.id;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${componentId}:${OVERLAY_ACTIONS.INIT}`)
-                .withType(OVERLAY_ACTIONS.INIT)
-                .withSource(componentId)
-                .withData({ component: this, floats: { [key]: decl } })
-                .build()
-        );
-    }
-
-    private _emitFloatAction(key: string, action: string): void {
-        const overlayKey = `${this.id}:${key}`;
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${action}`)
-                .withType(action)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
-        );
     }
 
     /**

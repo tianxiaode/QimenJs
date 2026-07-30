@@ -23,26 +23,8 @@
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
-import type { FloatDecl } from '@/component-core/types/tpl-body';
-
-export type IndicatorType = 'dot' | 'number' | 'dash' | 'button' | 'tab';
-
-export interface IndicatorConfig {
-    /** 指示器类型 */
-    type: IndicatorType;
-    /** 弹出方向，默认 'bottom' */
-    placement?: 'top' | 'bottom' | 'left' | 'right';
-    /** 触发方式，默认 'always'（始终显示） */
-    trigger?: 'always' | 'click' | 'hover';
-    /** 是否显示 prev/next 箭头 */
-    arrows?: boolean;
-    /** 初始选中索引 */
-    activeIndex?: number;
-    /** 指示器子项类型（默认由 type 推导：dot→IndicatorDot, button→Button, tab→Tab） */
-    defaultItemType?: string;
-    /** 浮层事件转发 */
-    emits?: Record<string, string>;
-}
+import type { FloatDecl } from '@/component-core/types/tpl-node-types';
+import type { IndicatorConfig, IndicatorType } from '@/component-core/types/init-context';
 
 const INDICATOR_TYPE_MAP: Record<string, string> = {
     dot: 'IndicatorDot',
@@ -74,12 +56,6 @@ export const IndicatorAbility = {
         this.setAbilityState(STATE_KEY, {
             config,
             activeIndex: config.activeIndex ?? 0,
-        });
-
-        this.on('indicatorChange', (data: any) => {
-            if (data?.index !== undefined) {
-                this.activeIndex = data.index;
-            }
         });
     },
 

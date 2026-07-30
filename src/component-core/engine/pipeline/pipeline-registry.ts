@@ -16,7 +16,6 @@ import { instantiateChildComponents } from './step-instantiate-child-components'
 import { bindListens } from './step-bind-listens';
 import { bindChildEvents } from './step-bind-child-events';
 import { bindDomEvents } from './step-bind-dom-events';
-import { initFloats } from './step-init-floats';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error/codes';
 
@@ -37,7 +36,7 @@ export const INSTANTIATE_PHASE: Phase = {
 
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
-    steps: [bindListens, bindChildEvents, bindDomEvents, initFloats, onAfterInit],
+    steps: [bindListens, bindChildEvents, bindDomEvents, onAfterInit],
 };
 
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, FILL_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];

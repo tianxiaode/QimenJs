@@ -41,16 +41,21 @@ class DropdownComponent extends ButtonComponent {
         super.onAfterInit(props);
         this.addCls('q-dropdown');
         this.setNodeHidden(false, 'dropIcon');
+
+        const popover = (this.props as DropdownProps)?.popover;
+        if (popover?.type) {
+            this.attachFloat('dropIcon', { ...DEFAULT_POPOVER_FLOAT, ...popover } as FloatDecl);
+        }
     }
 
-    get floats(): Record<string, FloatDecl> | undefined {
-        const popover = (this.props as DropdownProps)?.popover;
-        if (!popover?.type) return super.floats;
-        const parentFloats = super.floats ?? {};
-        return {
-            ...parentFloats,
-            dropIcon: { ...DEFAULT_POPOVER_FLOAT, ...popover } as FloatDecl,
-        };
+    update(props?: Partial<DropdownProps> & Record<string, any>): void {
+        if (props?.popover?.type) {
+            this.attachFloat('dropIcon', {
+                ...DEFAULT_POPOVER_FLOAT,
+                ...props.popover,
+            } as FloatDecl);
+        }
+        super.update(props);
     }
 }
 

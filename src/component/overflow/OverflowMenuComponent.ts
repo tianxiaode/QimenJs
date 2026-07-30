@@ -19,7 +19,7 @@ import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { EventContextBuilder } from '@/context';
 import { positionOverlay, type Placement } from '@/overlay/dispatch';
 import { overlayDispatchCenter } from '@/overlay/dispatch';
-import { TemplateRegistrar } from '@qimenjs/component-core';
+import { ComponentRegistrar } from '@qimenjs/component-core';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 
@@ -259,7 +259,7 @@ class OverflowMenuComponent extends Component {
     _getOrCreateMenu(): any {
         if (this._menuInstance) return this._menuInstance;
 
-        const MenuClass = TemplateRegistrar.getInstance().get('Menu') as any;
+        const MenuClass = ComponentRegistrar.getInstance().get('Menu') as any;
         if (!MenuClass) return null;
 
         const placement: Placement = this._direction === 'horizontal' ? 'bottom' : 'right';

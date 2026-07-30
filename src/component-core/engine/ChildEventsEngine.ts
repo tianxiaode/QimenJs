@@ -22,7 +22,7 @@
  * 仅限直接子组件，跨层走桥接（ListensEngine）。
  */
 
-import type { ChildEventConfig, ChildEventsListen } from '../types/tpl-body';
+import type { ChildEventConfig, ChildEventsListen } from '../types/tpl-node-types';
 import { EventForwarder } from './EventForwarder';
 
 export class ChildEventsEngine {

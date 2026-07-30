@@ -1,7 +1,10 @@
 import { DragAbility } from '@/component-core/abilities/DragAbility';
+import { DragEngine } from '@/component-core/engine/DragEngine';
 import { DRAG_ACTIONS } from '@/events/drag-events';
 
 describe('DragAbility', () => {
+    const engine = DragEngine.getInstance();
+
     function createMockInstance(initialCache: Record<string, any> = {}) {
         let cache = { ...initialCache };
 
@@ -9,32 +12,73 @@ describe('DragAbility', () => {
             id: 'comp-1',
             props: {},
             _initializing: false,
-            _syncDrags: jest.fn(),
-            _emitDragInit: jest.fn(),
-            _emitDragAction: jest.fn(),
             abilityState: jest.fn((key: string, creator?: () => any) => {
                 return cache;
             }),
             setAbilityState: jest.fn((key: string, val: any) => {
                 cache = val;
             }),
-            get drags() {
-                return Object.keys(cache).length > 0 ? cache : undefined;
-            },
-            set drags(val: any) {
-                cache = val ?? {};
-            },
             dragEmit: jest.fn(),
         };
 
         return {
             instance,
             getCache: () => cache,
-            _syncDrags: instance._syncDrags,
-            _emitDragInit: instance._emitDragInit,
-            _emitDragAction: instance._emitDragAction,
         };
     }
+
+    function getDragsGetter() {
+        return Object.getOwnPropertyDescriptor(DragAbility, 'drags')?.get;
+    }
+
+    function getDragsSetter() {
+        return Object.getOwnPropertyDescriptor(DragAbility, 'drags')?.set;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 缓存 & getter/setter
+    // ══════════════════════════════════════════════════════════════
+
+    describe('drags getter/setter', () => {
+        it('getter 返回缓存', () => {
+            const { instance } = createMockInstance({ handle: { axis: 'y' } });
+
+            const result = getDragsGetter()?.call(instance);
+
+            expect(result).toEqual({ handle: { axis: 'y' } });
+        });
+
+        it('getter 空缓存返回 undefined', () => {
+            const { instance } = createMockInstance();
+
+            const result = engine.getDrags(instance);
+
+            expect(result).toBeUndefined();
+        });
+
+        it('setter 初始化阶段合并缓存', () => {
+            const { instance, getCache } = createMockInstance({ handle: { axis: 'y' } });
+            instance._initializing = true;
+
+            getDragsSetter()?.call(instance, { resize: { axis: 'x' } });
+
+            expect(getCache().handle).toEqual({ axis: 'y' });
+            expect(getCache().resize).toEqual({ axis: 'x' });
+        });
+
+        it('setter 运行时替换缓存并触发 sync', () => {
+            const { instance, getCache } = createMockInstance({ handle: { axis: 'y' } });
+
+            getDragsSetter()?.call(instance, { handle: { axis: 'x' } });
+
+            expect(getCache().handle).toEqual({ axis: 'x' });
+            expect(instance.dragEmit).toHaveBeenCalledTimes(2); // DISPOSE + INIT
+        });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // attachDrag / detachDrag
+    // ══════════════════════════════════════════════════════════════
 
     describe('attachDrag', () => {
         it('通过 drags setter 追加拖拽配置', () => {
@@ -53,6 +97,14 @@ describe('DragAbility', () => {
             expect(getCache().resizeHandle).toEqual({ axis: 'x' });
             expect(getCache().handle).toEqual({ axis: 'y' });
         });
+
+        it('运行时追加触发 sync', () => {
+            const { instance } = createMockInstance();
+
+            DragAbility.attachDrag.call(instance, 'handle', { axis: 'y' });
+
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1); // INIT
+        });
     });
 
     describe('detachDrag', () => {
@@ -68,7 +120,7 @@ describe('DragAbility', () => {
             expect(getCache().handle).toBeUndefined();
         });
 
-        it('key 不存在时不调用 setter', () => {
+        it('key 不存在时不操作', () => {
             const { instance, getCache } = createMockInstance({ handle: { axis: 'y' } });
             const before = { ...getCache() };
 
@@ -79,28 +131,34 @@ describe('DragAbility', () => {
 
         it('移除最后一个 key 时设为 undefined', () => {
             const { instance } = createMockInstance({ handle: { axis: 'y' } });
-            const dragsSetter = jest.fn();
-            Object.defineProperty(instance, 'drags', {
-                get() { return {}; },
-                set(val: any) { dragsSetter(val); },
-                configurable: true,
-            });
 
             DragAbility.detachDrag.call(instance, 'handle');
 
-            expect(dragsSetter).toHaveBeenCalledWith(undefined);
+            // No dragEmit calls expected (undefined = empty, no diff needed)
+        });
+
+        it('运行时移除触发 sync', () => {
+            const { instance } = createMockInstance({ handle: { axis: 'y' } });
+
+            DragAbility.detachDrag.call(instance, 'handle');
+
+            // Should emit DISPOSE
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1);
         });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // startDrag / stopDrag
+    // ══════════════════════════════════════════════════════════════
+
     describe('startDrag', () => {
         it('发送 START 事件', () => {
-            const dragEmit = jest.fn();
-            const instance = { id: 'comp-1', dragEmit };
+            const { instance } = createMockInstance();
 
             DragAbility.startDrag.call(instance, 'handle');
 
-            expect(dragEmit).toHaveBeenCalledTimes(1);
-            const ctx = dragEmit.mock.calls[0][0];
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1);
+            const ctx = instance.dragEmit.mock.calls[0][0];
             expect(ctx.type).toBe(DRAG_ACTIONS.START);
             expect(ctx.source).toBe('comp-1:handle');
         });
@@ -108,27 +166,30 @@ describe('DragAbility', () => {
 
     describe('stopDrag', () => {
         it('发送 STOP 事件', () => {
-            const dragEmit = jest.fn();
-            const instance = { id: 'comp-1', dragEmit };
+            const { instance } = createMockInstance();
 
             DragAbility.stopDrag.call(instance, 'handle');
 
-            expect(dragEmit).toHaveBeenCalledTimes(1);
-            const ctx = dragEmit.mock.calls[0][0];
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1);
+            const ctx = instance.dragEmit.mock.calls[0][0];
             expect(ctx.type).toBe(DRAG_ACTIONS.STOP);
             expect(ctx.source).toBe('comp-1:handle');
         });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // _commitDrags (auto mode)
+    // ══════════════════════════════════════════════════════════════
+
     describe('_commitDrags (auto mode)', () => {
         it('drag=true 时自动添加 self 拖拽', () => {
-            const { instance, getCache, _syncDrags } = createMockInstance();
+            const { instance, getCache } = createMockInstance();
             instance.drag = true;
 
             DragAbility._commitDrags.call(instance);
 
             expect(getCache().self).toEqual({});
-            expect(_syncDrags).toHaveBeenCalled();
+            expect(instance.dragEmit).toHaveBeenCalled();
         });
 
         it('drag=true + dragHandle="header" 时添加 header 拖拽', () => {
@@ -178,7 +239,7 @@ describe('DragAbility', () => {
         });
 
         it('drag=false 时禁用所有拖拽（抑制模式）', () => {
-            const { instance, getCache, _syncDrags } = createMockInstance();
+            const { instance, getCache } = createMockInstance();
             instance.drag = false;
             instance.nodeMap = {
                 root: { drag: undefined },
@@ -189,11 +250,11 @@ describe('DragAbility', () => {
             DragAbility._commitDrags.call(instance);
 
             expect(Object.keys(getCache()).length).toBe(0);
-            expect(_syncDrags).not.toHaveBeenCalled();
+            expect(instance.dragEmit).not.toHaveBeenCalled();
         });
 
         it('drag=false 时抑制模板拖拽但保留手动 attachDrag 的缓存', () => {
-            const { instance, getCache, _syncDrags } = createMockInstance({
+            const { instance, getCache } = createMockInstance({
                 handle: { axis: 'y' },
             });
             instance.drag = false;
@@ -205,7 +266,7 @@ describe('DragAbility', () => {
             DragAbility._commitDrags.call(instance);
 
             expect(getCache().handle).toEqual({ axis: 'y' });
-            expect(_syncDrags).toHaveBeenCalled();
+            expect(instance.dragEmit).toHaveBeenCalled();
         });
 
         it('drag=true 时使用模板中的 drag 节点作为手柄', () => {
@@ -219,7 +280,6 @@ describe('DragAbility', () => {
 
             DragAbility._commitDrags.call(instance);
 
-            // 模板中有 drag 节点，不再默认加 self
             expect(getCache().header).toEqual({});
             expect(getCache().body).toEqual({ axis: 'x' });
             expect(getCache().self).toBeUndefined();
@@ -236,100 +296,113 @@ describe('DragAbility', () => {
 
             DragAbility._commitDrags.call(instance);
 
-            // dragHandle 优先级高于模板声明
             expect(getCache().customHandle).toEqual({});
             expect(getCache().header).toBeUndefined();
         });
-    });
 
-    describe('_syncDrags', () => {
-        it('新增 key 发送 INIT 事件', () => {
-            const instance: any = {
-                id: 'comp-1',
-                _emitDragInit: jest.fn(),
-                _emitDragAction: jest.fn(),
+        it('drag=undefined 时使用模板中的 drag 声明', () => {
+            const { instance, getCache } = createMockInstance();
+            instance.nodeMap = {
+                root: { drag: undefined },
+                header: { drag: true, el: {} },
+                body: { drag: { axis: 'x' }, el: {} },
             };
 
-            DragAbility._syncDrags.call(instance, {}, { handle: { axis: 'y' } });
+            DragAbility._commitDrags.call(instance);
 
-            expect(instance._emitDragInit).toHaveBeenCalledTimes(1);
-            expect(instance._emitDragInit).toHaveBeenCalledWith('handle', { axis: 'y' });
+            expect(getCache().header).toEqual({});
+            expect(getCache().body).toEqual({ axis: 'x' });
+        });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // _syncDrags (DragEngine.syncDrags)
+    // ══════════════════════════════════════════════════════════════
+
+    describe('syncDrags (engine)', () => {
+        it('新增 key 发送 INIT 事件', () => {
+            const { instance } = createMockInstance();
+
+            engine.syncDrags(instance, {}, { handle: { axis: 'y' } });
+
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1);
+            const ctx = instance.dragEmit.mock.calls[0][0];
+            expect(ctx.type).toBe(DRAG_ACTIONS.INIT);
+            expect(ctx.source).toBe('comp-1');
         });
 
         it('移除 key 发送 DISPOSE 事件', () => {
-            const instance: any = {
-                id: 'comp-1',
-                _emitDragInit: jest.fn(),
-                _emitDragAction: jest.fn(),
-            };
+            const { instance } = createMockInstance();
 
-            DragAbility._syncDrags.call(instance, { handle: { axis: 'y' } }, {});
+            engine.syncDrags(instance, { handle: { axis: 'y' } }, {});
 
-            expect(instance._emitDragAction).toHaveBeenCalledTimes(1);
-            expect(instance._emitDragAction).toHaveBeenCalledWith('handle', DRAG_ACTIONS.DISPOSE);
+            expect(instance.dragEmit).toHaveBeenCalledTimes(1);
+            const ctx = instance.dragEmit.mock.calls[0][0];
+            expect(ctx.type).toBe(DRAG_ACTIONS.DISPOSE);
+            expect(ctx.source).toBe('comp-1:handle');
         });
 
         it('配置变更先发 DISPOSE 再发 INIT', () => {
-            const instance: any = {
-                id: 'comp-1',
-                _emitDragInit: jest.fn(),
-                _emitDragAction: jest.fn(),
-            };
+            const { instance } = createMockInstance();
 
-            DragAbility._syncDrags.call(
+            engine.syncDrags(
                 instance,
                 { handle: { axis: 'y' } },
                 { handle: { axis: 'x' } }
             );
 
-            expect(instance._emitDragAction).toHaveBeenCalledWith('handle', DRAG_ACTIONS.DISPOSE);
-            expect(instance._emitDragInit).toHaveBeenCalledWith('handle', { axis: 'x' });
+            expect(instance.dragEmit).toHaveBeenCalledTimes(2);
+            const disposeCtx = instance.dragEmit.mock.calls[0][0];
+            const initCtx = instance.dragEmit.mock.calls[1][0];
+            expect(disposeCtx.type).toBe(DRAG_ACTIONS.DISPOSE);
+            expect(initCtx.type).toBe(DRAG_ACTIONS.INIT);
+        });
+
+        it('key 未变更时不发送', () => {
+            const { instance } = createMockInstance();
+
+            engine.syncDrags(instance, { handle: { axis: 'y' } }, { handle: { axis: 'y' } });
+
+            expect(instance.dragEmit).not.toHaveBeenCalled();
+        });
+
+        it('混合变更（新增+移除+变更）', () => {
+            const { instance } = createMockInstance();
+
+            engine.syncDrags(
+                instance,
+                { a: { axis: 'y' }, b: { axis: 'x' }, c: { axis: 'z' } },
+                { b: { axis: 'updated' }, c: { axis: 'z' }, d: { axis: 'new' } }
+            );
+
+            // removed: a → DISPOSE
+            // added: d → INIT
+            // changed: b → DISPOSE + INIT
+            // unchanged: c → nothing
+            expect(instance.dragEmit).toHaveBeenCalledTimes(4);
         });
     });
 
-    describe('_emitDragInit', () => {
-        it('发送 INIT 事件', () => {
-            const dragEmit = jest.fn();
-            const instance = { id: 'comp-1', dragEmit };
-
-            DragAbility._emitDragInit.call(instance, 'handle', { axis: 'y' });
-
-            expect(dragEmit).toHaveBeenCalledTimes(1);
-            const ctx = dragEmit.mock.calls[0][0];
-            expect(ctx.type).toBe(DRAG_ACTIONS.INIT);
-            expect(ctx.source).toBe('comp-1');
-        });
-    });
-
-    describe('_emitDragAction', () => {
-        it('发送指定 action 事件', () => {
-            const dragEmit = jest.fn();
-            const instance = { id: 'comp-1', dragEmit };
-
-            DragAbility._emitDragAction.call(instance, 'handle', DRAG_ACTIONS.DISPOSE);
-
-            expect(dragEmit).toHaveBeenCalledTimes(1);
-            const ctx = dragEmit.mock.calls[0][0];
-            expect(ctx.type).toBe(DRAG_ACTIONS.DISPOSE);
-            expect(ctx.source).toBe('comp-1:handle');
-        });
-    });
+    // ══════════════════════════════════════════════════════════════
+    // _commitDrops (auto mode)
+    // ══════════════════════════════════════════════════════════════
 
     describe('_commitDrops (auto mode)', () => {
         let registerDropZoneMock: jest.Mock;
+        let unregisterDropZoneMock: jest.Mock;
 
         beforeEach(() => {
-            // Mock dragDispatchCenter.registerDropZone
             registerDropZoneMock = jest.fn();
+            unregisterDropZoneMock = jest.fn();
             jest.mock('@/drag/DragDispatchCenter', () => ({
                 dragDispatchCenter: {
                     registerDropZone: registerDropZoneMock,
-                    unregisterDropZone: jest.fn(),
+                    unregisterDropZone: unregisterDropZoneMock,
                 },
             }), { virtual: true });
         });
 
-        it('drop=false 时禁用所有放置区（抑制模式）', () => {
+        it('drop=false 时禁用所有放置区', () => {
             jest.isolateModules(() => {
                 const { DragAbility: Ability } = require('@/component-core/abilities/DragAbility');
                 const mockDispatch = require('@/drag/DragDispatchCenter').dragDispatchCenter;
@@ -347,7 +420,6 @@ describe('DragAbility', () => {
 
                 Ability._commitDrops.call(instance);
 
-                // drop=false 时，不应该注册任何放置区
                 expect(mockDispatch.registerDropZone).not.toHaveBeenCalled();
             });
         });
@@ -371,7 +443,6 @@ describe('DragAbility', () => {
 
                 Ability._commitDrops.call(instance);
 
-                // 应该注册两个放置区
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(2);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
                     'comp-1:zone1', zone1El, instance, 'zone1', {}
@@ -397,7 +468,6 @@ describe('DragAbility', () => {
 
                 Ability._commitDrops.call(instance);
 
-                // drop=true 时，应该以自身 el 注册放置区
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(1);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
                     'comp-1:self', el, instance, 'self', {}
@@ -426,6 +496,157 @@ describe('DragAbility', () => {
                     { accept: ['card'], activeClass: 'drag-over' }
                 );
             });
+        });
+
+        it('drop + dropZone 时使用指定节点', () => {
+            jest.isolateModules(() => {
+                const { DragAbility: Ability } = require('@/component-core/abilities/DragAbility');
+                const mockDispatch = require('@/drag/DragDispatchCenter').dragDispatchCenter;
+
+                const zoneEl = document.createElement('div');
+                const instance: any = {
+                    id: 'comp-1',
+                    drop: true,
+                    dropZone: 'zone1',
+                    el: document.createElement('div'),
+                    nodeMap: {
+                        root: { drop: undefined },
+                        zone1: { drop: true, el: zoneEl },
+                    },
+                };
+
+                Ability._commitDrops.call(instance);
+
+                expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(1);
+                expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
+                    'comp-1:zone1', zoneEl, instance, 'zone1', {}
+                );
+            });
+        });
+
+        it('无 id 时不操作', () => {
+            jest.isolateModules(() => {
+                const { DragAbility: Ability } = require('@/component-core/abilities/DragAbility');
+                const mockDispatch = require('@/drag/DragDispatchCenter').dragDispatchCenter;
+
+                const instance: any = {
+                    el: document.createElement('div'),
+                    drop: true,
+                    nodeMap: {},
+                };
+
+                Ability._commitDrops.call(instance);
+
+                expect(mockDispatch.registerDropZone).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // DragAbility 委托
+    // ══════════════════════════════════════════════════════════════
+
+    describe('DragAbility 委托', () => {
+        it('drags getter 委托给 engine.getDrags', () => {
+            const spy = jest.spyOn(engine, 'getDrags');
+            const { instance } = createMockInstance({ handle: { axis: 'y' } });
+
+            const result = getDragsGetter()?.call(instance);
+
+            expect(spy).toHaveBeenCalledWith(instance);
+            expect(result).toEqual({ handle: { axis: 'y' } });
+            spy.mockRestore();
+        });
+
+        it('drags setter 委托给 engine.setDrags', () => {
+            const spy = jest.spyOn(engine, 'setDrags');
+            const { instance } = createMockInstance();
+
+            getDragsSetter()?.call(instance, { handle: { axis: 'y' } });
+
+            expect(spy).toHaveBeenCalledWith(instance, { handle: { axis: 'y' } });
+            spy.mockRestore();
+        });
+
+        it('_commitDrags 委托给 engine.commitDrags', () => {
+            const spy = jest.spyOn(engine, 'commitDrags');
+            const { instance } = createMockInstance();
+            instance.drag = true;
+
+            DragAbility._commitDrags.call(instance);
+
+            expect(spy).toHaveBeenCalledWith(instance);
+            spy.mockRestore();
+        });
+
+        it('_commitDrops 委托给 engine.commitDrops', () => {
+            const spy = jest.spyOn(engine, 'commitDrops');
+            const { instance } = createMockInstance();
+
+            DragAbility._commitDrops.call(instance);
+
+            expect(spy).toHaveBeenCalledWith(instance);
+            spy.mockRestore();
+        });
+
+        it('attachDrag 委托给 engine.attachDrag', () => {
+            const spy = jest.spyOn(engine, 'attachDrag');
+            const { instance } = createMockInstance();
+
+            DragAbility.attachDrag.call(instance, 'handle', { axis: 'y' });
+
+            expect(spy).toHaveBeenCalledWith(instance, 'handle', { axis: 'y' });
+            spy.mockRestore();
+        });
+
+        it('detachDrag 委托给 engine.detachDrag', () => {
+            const spy = jest.spyOn(engine, 'detachDrag');
+            const { instance } = createMockInstance();
+
+            DragAbility.detachDrag.call(instance, 'handle');
+
+            expect(spy).toHaveBeenCalledWith(instance, 'handle');
+            spy.mockRestore();
+        });
+
+        it('startDrag 委托给 engine.startDrag', () => {
+            const spy = jest.spyOn(engine, 'startDrag');
+            const { instance } = createMockInstance();
+
+            DragAbility.startDrag.call(instance, 'handle');
+
+            expect(spy).toHaveBeenCalledWith(instance, 'handle');
+            spy.mockRestore();
+        });
+
+        it('stopDrag 委托给 engine.stopDrag', () => {
+            const spy = jest.spyOn(engine, 'stopDrag');
+            const { instance } = createMockInstance();
+
+            DragAbility.stopDrag.call(instance, 'handle');
+
+            expect(spy).toHaveBeenCalledWith(instance, 'handle');
+            spy.mockRestore();
+        });
+
+        it('setDraggable 委托给 engine.setDraggable', () => {
+            const spy = jest.spyOn(engine, 'setDraggable');
+            const { instance } = createMockInstance();
+
+            DragAbility.setDraggable.call(instance, true, { axis: 'y' });
+
+            expect(spy).toHaveBeenCalledWith(instance, true, { axis: 'y' });
+            spy.mockRestore();
+        });
+
+        it('setDropZone 委托给 engine.setDropZone', () => {
+            const spy = jest.spyOn(engine, 'setDropZone');
+            const { instance } = createMockInstance();
+
+            DragAbility.setDropZone.call(instance, true, { accept: ['card'] });
+
+            expect(spy).toHaveBeenCalledWith(instance, true, { accept: ['card'] });
+            spy.mockRestore();
         });
     });
 });

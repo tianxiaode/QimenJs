@@ -2,7 +2,7 @@
  * template-registrar.ts — 模板注册器类型
  *
  * 定义模板注册相关的类型，用于管理模板编译和缓存。
- * TemplateRegistrar 负责模板的注册、编译、缓存和实例化。
+ * ComponentRegistr 负责模板的注册、编译、缓存和实例化。
  */
 
 import type { TplNode } from './tpl-node-types';
@@ -88,7 +88,7 @@ export interface CompiledProduct {
  * };
  * ```
  *
- * @see TemplateRegistrar - 模板注册器
+ * @see ComponentRegistrar - 模板注册器
  */
 export interface ComponentEntry {
     name: string;

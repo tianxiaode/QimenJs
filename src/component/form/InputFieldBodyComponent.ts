@@ -22,8 +22,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class InputFieldBodyComponent extends Component {
-}
+class InputFieldBodyComponent extends Component {}
 
 export { InputFieldBodyComponent };
 export type InputFieldBodyComponentInstance = InstanceType<typeof InputFieldBodyComponent>;

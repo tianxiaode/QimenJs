@@ -89,13 +89,15 @@ describe('ComponentRegistrar', () => {
             expect(registry.get('Button')).toBe(Btn2);
         });
 
-        it('锁定后注册抛出异常', () => {
+        it('锁定后仍允许动态注册（RowEngine / ItemContainer 场景）', () => {
             const registry = createRegistry();
             const Btn = makeComponent('Button');
             registry.register(Btn, { tag: 'div' });
             registry.lock();
             const Btn2 = makeComponent('Button2');
-            expect(() => registry.register(Btn2, { tag: 'div' })).toThrow();
+            // lock 后仍可注册 —— 运行时动态注册需要
+            expect(() => registry.register(Btn2, { tag: 'div' })).not.toThrow();
+            expect(registry.get('Button2')).toBe(Btn2);
         });
 
         it('注册含命名节点的模板', () => {
@@ -370,12 +372,14 @@ describe('ComponentRegistrar', () => {
             expect(registry.get('ToRemove2')).toBeUndefined();
         });
 
-        it('锁定后注销抛出异常', () => {
+        it('锁定后仍允许动态注销（运行时场景）', () => {
             const registry = createRegistry();
             const Comp = makeComponent('LockRemove');
             registry.register(Comp, { tag: 'div' });
             registry.lock();
-            expect(() => registry.unregister('LockRemove')).toThrow();
+            // lock 后仍可注销 —— 运行时动态注册需要
+            expect(() => registry.unregister('LockRemove')).not.toThrow();
+            expect(registry.has('LockRemove')).toBe(false);
         });
     });
 
@@ -548,11 +552,13 @@ describe('ComponentRegistrar', () => {
     });
 
     describe('lock', () => {
-        it('锁定后不允许注册', () => {
+        it('锁定后仍允许动态注册（运行时编译场景）', () => {
             const registry = createRegistry();
             registry.lock();
             const Comp = makeComponent('Locked');
-            expect(() => registry.register(Comp, { tag: 'div' })).toThrow();
+            // lock 后仍可注册 —— RowEngine / ItemContainer 运行时动态注册需要
+            expect(() => registry.register(Comp, { tag: 'div' })).not.toThrow();
+            expect(registry.get('Locked')).toBe(Comp);
         });
     });
 });

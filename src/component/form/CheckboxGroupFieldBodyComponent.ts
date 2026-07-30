@@ -17,8 +17,7 @@
 
 import { Component } from '@qimenjs/component-core';
 
-class CheckboxGroupFieldBodyComponent extends Component {
-}
+class CheckboxGroupFieldBodyComponent extends Component {}
 
 export { CheckboxGroupFieldBodyComponent };
 export type CheckboxGroupFieldBodyComponentInstance = InstanceType<
