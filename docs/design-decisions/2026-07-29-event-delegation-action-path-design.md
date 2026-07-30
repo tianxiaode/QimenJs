@@ -361,12 +361,44 @@ listens: [
 
 ### EventForwarder — 转发公共逻辑
 
-三引擎的五路转发（emits/bridges/entities/router/system）统一由 `EventForwarder` 处理：
+三引擎的五路转发（emits/bridges/entities/router/system）统一由 `EventForwarder` 处理。
 
-- `EventForwarder.forward(instance, config, extraData?, domEvent?)` — 执行转发
+#### 路由表模式
+
+五路各自封装为 `{ key, canExecute, execute }` 条目，注册在 `FORWARD_ROUTES` 数组中。
+`forward()` 退化为纯调度循环，遍历路由表，两层过滤后执行：
+
+```
+for (const route of FORWARD_ROUTES) {
+    if (!route.canExecute(ctx)) continue;       // 静态守卫
+    if (allowed && !allowed.includes(route.key)) continue;  // 动态守卫
+    route.execute(ctx);                          // 纯执行，零分支
+}
+```
+
+- `canExecute` — 静态守卫：config 有配 + instance 有 key（如 `!!config.emits?.length`、`!!config.router && hasCustomData`）
+- `execute` — 纯执行，内部无 if 分支，canExecute 已保证前置条件
+- **扩展**：加路 = `FORWARD_ROUTES` push 一条，调度器不改
+
+#### getForwardFilter — 动态路由过滤
+
+组件可选实现 `getForwardFilter(domEvent?)` 方法，返回允许的 `ForwardRouteKey[]`（如 `['emit', 'router']`）。
+不实现则全路放行（向后兼容）。用于运行时按状态决定发哪些路：
+
+```ts
+class MyComponent extends Component {
+    getForwardFilter() {
+        return this.disabled ? [] : ['emit', 'router'];
+    }
+}
+```
+
+#### API
+
+- `EventForwarder.forward(instance, config, extraData?, domEvent?, actualAction?)` — 执行转发调度
 - `EventForwarder.buildContext(...)` — 构建 EventContext（含 chain/sourceType）
 - `EventForwarder.resolveKey(key)` — 解析 `string | { key, fixed? }` 格式
-- `EventForwarder.collectEventData(instance, extraData?)` — 收集事件数据
+- `EventForwarder.collectEventData(instance, extraData?, precomputedCustomData?)` — 收集事件数据
 
 ### 事件数据收集
 

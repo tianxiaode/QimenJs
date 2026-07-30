@@ -1,8 +1,15 @@
 /**
  * EventForwarder — 事件转发公共逻辑
  *
- * 统一处理五路转发（emits/bridges/entities/router/system），
- * 供 DomEventsEngine / ChildEventsEngine / ListensEngine 共用。
+ * 路由表模式：五路转发（emits/bridges/entities/router/system）各自封装为
+ * { key, canExecute, execute } 条目，forward 退化为纯调度循环。
+ *
+ * 两层过滤叠加：
+ *   canExecute — 静态守卫（config 有配 + instance 有 key）
+ *   getForwardFilter — 动态守卫（组件运行时决定允许哪些路）
+ * execute 内部零分支，只做纯执行。
+ *
+ * 扩展：加路 = FORWARD_ROUTES push 一条，调度器不改。
  *
  * 转发时自动收集事件数据：
  *   data = { ...instance.defaultEventData, ...instance.getCustomEventData?.(), ...extraData }
@@ -17,6 +24,8 @@ import { object } from '@/utils';
 
 export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
 
+export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system';
+
 export interface ForwardConfig {
     emits?: string[];
     bridges?: string[];
@@ -25,9 +34,122 @@ export interface ForwardConfig {
     system?: string[];
 }
 
+interface ForwardContext {
+    instance: any;
+    config: ForwardConfig;
+    data: any;
+    domEvent?: any;
+    actualAction?: string;
+    customData: any;
+    hasCustomData: boolean;
+}
+
+interface ForwardRoute {
+    key: ForwardRouteKey;
+    canExecute(ctx: ForwardContext): boolean;
+    execute(ctx: ForwardContext): void;
+}
+
+function _forwardEmits(ctx: ForwardContext): void {
+    const source = EventForwarder.resolveKey(ctx.instance.bridgeKey) ?? '';
+    for (const emitName of ctx.config.emits!) {
+        const resolvedName =
+            emitName === '[action]' && ctx.actualAction ? ctx.actualAction : emitName;
+        const eventCtx = EventForwarder.buildContext(
+            ctx.instance,
+            resolvedName,
+            ctx.data,
+            source,
+            'emit'
+        );
+        if (ctx.domEvent) (eventCtx as any).domEvent = ctx.domEvent;
+        ctx.instance.emit(resolvedName, eventCtx);
+    }
+}
+
+function _forwardBridges(ctx: ForwardContext): void {
+    const bridgeKey = EventForwarder.resolveKey(ctx.instance.bridgeKey)!;
+    for (const bridge of ctx.config.bridges!) {
+        const eventCtx = EventForwarder.buildContext(
+            ctx.instance,
+            bridge,
+            ctx.data,
+            bridgeKey,
+            'bridge'
+        );
+        ctx.instance.bridgeEmit(eventCtx);
+    }
+}
+
+function _forwardEntities(ctx: ForwardContext): void {
+    const eventCtx = EventForwarder.buildContext(
+        ctx.instance,
+        ctx.config.entities!,
+        ctx.data,
+        ctx.instance.entityKey,
+        'entity'
+    );
+    ctx.instance.entityEmit(eventCtx);
+}
+
+function _forwardRouter(ctx: ForwardContext): void {
+    const eventCtx = EventForwarder.buildContext(
+        ctx.instance,
+        ctx.config.router!,
+        ctx.data,
+        'router',
+        'router'
+    );
+    ctx.instance.routerEmit?.(eventCtx);
+}
+
+function _forwardSystem(ctx: ForwardContext): void {
+    for (const sysEvent of ctx.config.system!) {
+        const eventCtx = EventForwarder.buildContext(
+            ctx.instance,
+            sysEvent,
+            ctx.data,
+            ctx.instance.constructor.name,
+            'system'
+        );
+        ctx.instance.systemEmit?.(eventCtx);
+    }
+}
+
+const FORWARD_ROUTES: ForwardRoute[] = [
+    {
+        key: 'emit',
+        canExecute: ctx => !!ctx.config.emits?.length,
+        execute: _forwardEmits,
+    },
+    {
+        key: 'bridge',
+        canExecute: ctx =>
+            !!ctx.config.bridges?.length && !!EventForwarder.resolveKey(ctx.instance.bridgeKey),
+        execute: _forwardBridges,
+    },
+    {
+        key: 'entity',
+        canExecute: ctx => !!ctx.config.entities && !!ctx.instance.entityKey,
+        execute: _forwardEntities,
+    },
+    {
+        key: 'router',
+        canExecute: ctx => !!ctx.config.router && ctx.hasCustomData,
+        execute: _forwardRouter,
+    },
+    {
+        key: 'system',
+        canExecute: ctx => !!ctx.config.system?.length,
+        execute: _forwardSystem,
+    },
+];
+
 export class EventForwarder {
     /**
-     * 执行五路转发
+     * 执行转发调度
+     *
+     * 遍历 FORWARD_ROUTES，canExecute + getForwardFilter 两层过滤后执行。
      *
      * @param instance - 组件实例
      * @param config - 转发配置（emits/bridges/entities/router/system）
@@ -48,78 +170,25 @@ export class EventForwarder {
             customData && typeof customData === 'object' && Object.keys(customData).length > 0;
         const data = EventForwarder.collectEventData(instance, extraData, customData);
 
-        if (config.emits?.length) {
-            const source = EventForwarder.resolveKey(instance.bridgeKey) ?? '';
-            for (const emitName of config.emits) {
-                const resolvedName =
-                    emitName === '[action]' && actualAction ? actualAction : emitName;
-                const ctx = EventForwarder.buildContext(
-                    instance,
-                    resolvedName,
-                    data,
-                    source,
-                    'emit'
-                );
-                if (domEvent) (ctx as any).domEvent = domEvent;
-                instance.emit(resolvedName, ctx);
-            }
-        }
+        const ctx: ForwardContext = {
+            instance,
+            config,
+            data,
+            domEvent,
+            actualAction,
+            customData,
+            hasCustomData,
+        };
 
-        if (config.bridges?.length) {
-            const bridgeKey = EventForwarder.resolveKey(instance.bridgeKey);
-            if (bridgeKey) {
-                for (const bridge of config.bridges) {
-                    const ctx = EventForwarder.buildContext(
-                        instance,
-                        bridge,
-                        data,
-                        bridgeKey,
-                        'bridge'
-                    );
-                    instance.bridgeEmit(ctx);
-                }
-            }
-        }
+        const allowed =
+            typeof instance.getForwardFilter === 'function'
+                ? instance.getForwardFilter(domEvent)
+                : null;
 
-        if (config.entities && instance.entityKey) {
-            const entityName = typeof config.entities === 'string' ? config.entities : undefined;
-            if (entityName) {
-                const ctx = EventForwarder.buildContext(
-                    instance,
-                    entityName,
-                    data,
-                    instance.entityKey,
-                    'entity'
-                );
-                instance.entityEmit(ctx);
-            }
-        }
-
-        if (config.router) {
-            const routeName = typeof config.router === 'string' ? config.router : undefined;
-            if (routeName && hasCustomData) {
-                const ctx = EventForwarder.buildContext(
-                    instance,
-                    routeName,
-                    data,
-                    'router',
-                    'router'
-                );
-                instance.routerEmit?.(ctx);
-            }
-        }
-
-        if (config.system?.length) {
-            for (const sysEvent of config.system) {
-                const ctx = EventForwarder.buildContext(
-                    instance,
-                    sysEvent,
-                    data,
-                    instance.constructor.name,
-                    'system'
-                );
-                instance.systemEmit?.(ctx);
-            }
+        for (const route of FORWARD_ROUTES) {
+            if (!route.canExecute(ctx)) continue;
+            if (allowed && !allowed.includes(route.key)) continue;
+            route.execute(ctx);
         }
     }
 
