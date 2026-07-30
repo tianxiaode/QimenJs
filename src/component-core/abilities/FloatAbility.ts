@@ -107,4 +107,20 @@ export const FloatAbility: AbilityDefinition = {
     updateDialog(data: Record<string, any>): void {
         engine.updateDialog(this, data);
     },
+
+    // ══════════════════════════════════════════════════════════════
+    // Loading 快捷方法
+    // ══════════════════════════════════════════════════════════════
+
+    showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
+        engine.showLoading(this, text, maskMode);
+    },
+
+    hideLoading(): void {
+        engine.hideLoading(this);
+    },
+
+    updateLoading(data: Record<string, any>): void {
+        engine.updateLoading(this, data);
+    },
 };

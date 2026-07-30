@@ -118,6 +118,13 @@ export interface DialogQuickConfig {
     emits?: Record<string, string>;
 }
 
+export interface LoadingQuickConfig {
+    text?: string;
+    spinner?: string;
+    maskMode?: 'none' | 'scoped' | 'global';
+    mask?: boolean | string;
+}
+
 export interface PopoverQuickConfig {
     title?: string;
     content?: string;
@@ -195,6 +202,9 @@ export interface ComponentProps {
 
     /** 对话框浮层快捷配置，null 时不触发 */
     dialog?: DialogQuickConfig | null;
+
+    /** 加载浮层快捷配置，null 时不触发 */
+    loading?: LoadingQuickConfig | null;
 
     /** 桥接事件 key，EventBridge 通道标识 */
     bridgeKey?: string | { key: string; fixed?: boolean };

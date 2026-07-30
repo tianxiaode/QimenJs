@@ -603,7 +603,7 @@ export interface FloatDecl {
      */
     trigger?: FloatTrigger | FloatTrigger[];
     /** 弹出方向 */
-    placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+    placement?: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'anchor-center';
     /** 与锚点的间距（像素） */
     offset?: number;
     /** 点击浮层外部是否关闭（默认 true） */
@@ -612,6 +612,8 @@ export interface FloatDecl {
     closeOnEscape?: boolean;
     /** 遮罩配置：true=默认遮罩，string=自定义遮罩样式类 */
     mask?: boolean | string;
+    /** 遮罩模式：'scoped'=遮盖锚点组件el，'global'=全屏遮盖，'none'=无遮罩 */
+    maskMode?: 'none' | 'scoped' | 'global';
     /**
      * 浮层事件转发：key=反馈事件名，value=转发到组件的事件名
      *

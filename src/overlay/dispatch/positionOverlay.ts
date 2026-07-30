@@ -19,7 +19,7 @@ import { keepInside } from '@/utils/geometry/clamp';
 /**
  * 弹出方向
  */
-export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center';
+export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center' | 'anchor-center';
 
 /**
  * 将 HTMLElement 的 getBoundingClientRect 转换为 Rect
@@ -126,6 +126,14 @@ export function positionOverlay(
         overlayEl.style.left = '50%';
         overlayEl.style.transform = 'translate(-50%, -50%)';
         return 'center';
+    }
+
+    if (placement === 'anchor-center') {
+        overlayEl.style.position = 'fixed';
+        overlayEl.style.top = `${anchorRect.y + anchorRect.height / 2}px`;
+        overlayEl.style.left = `${anchorRect.x + anchorRect.width / 2}px`;
+        overlayEl.style.transform = 'translate(-50%, -50%)';
+        return 'anchor-center';
     }
 
     type AnchorPlacement = 'top' | 'bottom' | 'left' | 'right';

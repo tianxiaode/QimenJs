@@ -6,7 +6,7 @@
  * 架构分层：
  *   1. 缓存层 — abilityState 读写，屏蔽存储细节
  *   2. 引擎层 — diff/sync + 事件发射，驱动浮层生命周期
- *   3. 处理器层 — 类型处理器（badge/tooltip/dialog），将 props 转为 FloatDecl
+ *   3. 处理器层 — 类型处理器（badge/tooltip/dialog/loading），将 props 转为 FloatDecl
  *   4. API 层 — attach/detach/show/hide/toggle/update，对外暴露
  *
  * 类型处理器（Handlers）：
@@ -25,6 +25,7 @@ import type {
     BadgeQuickConfig,
     TooltipQuickConfig,
     DialogQuickConfig,
+    LoadingQuickConfig,
 } from '../types/init-context';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
@@ -96,6 +97,19 @@ export class FloatEngine {
                 closeOnClickOutside: closeOnClickOutside ?? false,
                 emits,
                 data: dialogData,
+            } as FloatDecl;
+        });
+
+        this.registerHandler('loading', (config: LoadingQuickConfig) => {
+            const { maskMode, mask, ...loadingData } = config;
+            return {
+                type: 'Loading',
+                trigger: 'manual',
+                anchor: 'self',
+                placement: 'anchor-center',
+                maskMode: maskMode ?? 'scoped',
+                mask: mask ?? true,
+                data: loadingData,
             } as FloatDecl;
         });
     }
@@ -320,5 +334,23 @@ export class FloatEngine {
 
     updateTooltip(self: any, data: Record<string, any>): void {
         this.updateFloat(self, 'tooltip', data);
+    }
+
+    showLoading(self: any, text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
+        if (text !== undefined || maskMode !== undefined) {
+            const data: Record<string, any> = {};
+            if (text !== undefined) data.text = text;
+            if (maskMode !== undefined) data.maskMode = maskMode;
+            this.updateFloat(self, 'loading', data);
+        }
+        this.showFloat(self, 'loading');
+    }
+
+    hideLoading(self: any): void {
+        this.hideFloat(self, 'loading');
+    }
+
+    updateLoading(self: any, data: Record<string, any>): void {
+        this.updateFloat(self, 'loading', data);
     }
 }

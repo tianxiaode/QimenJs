@@ -18,6 +18,7 @@ export interface OverlayDefinition {
     data?: Record<string, any> | (() => Record<string, any>);
     onOverlayChange?: (overlay: any, data: any) => void;
     mask?: boolean | string;
+    maskMode?: 'none' | 'scoped' | 'global';
 }
 
 interface OverlayInstance {
@@ -164,6 +165,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 closeOnClickOutside: def.closeOnClickOutside,
                 closeOnEscape: def.closeOnEscape,
                 mask: def.mask,
+                maskMode: def.maskMode,
             });
 
             if (def.emits) {
@@ -316,7 +318,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         overlayEl.style.display = 'none';
         overlayEl.style.pointerEvents = 'auto';
 
-        if (placement !== 'center') {
+        if (placement !== 'center' && placement !== 'anchor-center') {
             overlayEl.style.position = 'absolute';
         }
 
@@ -332,8 +334,12 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             component,
         };
 
-        if (def.mask) {
-            inst.maskEl = this._acquireMask(def.mask === true ? undefined : def.mask);
+        if (def.maskMode === 'scoped') {
+            const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
+            inst.maskEl = this._acquireScopedMask(anchorEl, maskColor);
+        } else if (def.maskMode !== 'none' && def.mask) {
+            const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
+            inst.maskEl = this._acquireMask(maskColor);
         }
 
         if (trigger !== 'always' && !def.mask && def.closeOnClickOutside !== false) {
@@ -383,6 +389,14 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const placement = def?.placement ?? 'bottom';
         const offset = def?.offset ?? 4;
         positionOverlay(inst.el, inst.anchor, placement, offset, true);
+
+        if (inst.maskEl?.classList.contains('q-overlay-mask--scoped')) {
+            const rect = inst.anchor.getBoundingClientRect();
+            inst.maskEl.style.top = `${rect.top}px`;
+            inst.maskEl.style.left = `${rect.left}px`;
+            inst.maskEl.style.width = `${rect.width}px`;
+            inst.maskEl.style.height = `${rect.height}px`;
+        }
     }
 
     /**
@@ -467,7 +481,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         inst.overlay.hidden = true;
 
         if (inst.maskEl) {
-            this._releaseMask(inst.maskEl);
+            this._releaseMask(inst.maskEl, overlayKey);
             inst.maskEl = undefined;
         }
 
@@ -490,7 +504,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         this._cleanupInstance(inst);
 
         if (inst.maskEl) {
-            this._releaseMask(inst.maskEl);
+            const overlayKey = instanceKey.split(':').pop()!;
+            this._releaseMask(inst.maskEl, overlayKey);
         }
 
         OverlayRoot.getInstance().unmountOverlay(inst.el);
@@ -508,6 +523,22 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         if (typeof inst.overlay.dispose === 'function') {
             inst.overlay.dispose();
         }
+    }
+
+    private _acquireScopedMask(anchorEl: HTMLElement, color?: string): HTMLElement {
+        const rect = anchorEl.getBoundingClientRect();
+        const mask = document.createElement('div');
+        mask.className = 'q-overlay-mask q-overlay-mask--scoped';
+        mask.style.position = 'fixed';
+        mask.style.top = `${rect.top}px`;
+        mask.style.left = `${rect.left}px`;
+        mask.style.width = `${rect.width}px`;
+        mask.style.height = `${rect.height}px`;
+        mask.style.backgroundColor = color ?? 'rgba(255, 255, 255, 0.7)';
+        mask.style.zIndex = String(nextZIndex(ZIndexLevel.mask));
+
+        OverlayRoot.getInstance().mountOverlay(mask);
+        return mask;
     }
 
     private _acquireMask(color?: string): HTMLElement {
@@ -532,7 +563,12 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         return this._activeMaskEl;
     }
 
-    private _releaseMask(maskEl: HTMLElement): void {
+    private _releaseMask(maskEl: HTMLElement, overlayKey?: string): void {
+        if (maskEl.classList.contains('q-overlay-mask--scoped')) {
+            OverlayRoot.getInstance().unmountOverlay(maskEl);
+            return;
+        }
+
         this._activeMaskCount--;
         if (this._activeMaskCount <= 0) {
             this._activeMaskCount = 0;
