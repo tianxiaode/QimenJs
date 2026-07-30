@@ -3,7 +3,7 @@ import { RouteContainerComponent } from './RouteContainerComponent';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
 
-export function registerNavItemTemplates(): void {
+export function registerNavItemTemplates(): void {    
     NavItemComponent.register(NAV_ITEM_TPL);
 }
 

@@ -28,7 +28,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         click: {
             'MenuItem.content': {
                 handler: '_onItemClick',
-                emits: ['[action]'],
+                emits: ['select', '[action]'],
                 bridges: ['[action]'],
             },
         },
@@ -44,6 +44,20 @@ class MenuComponent extends ItemGroupStaticComponent {
         },
     };
 
+    get defaultEventData(): Record<string, any> {
+        const self = this as any;
+        const groupNames: string[] = self.getGroupNames?.() ?? [];
+        const selected: Record<string, any> = {};
+        for (const name of groupNames) {
+            selected[name] = self.getGroupCheckedIndex?.(name);
+        }
+        return {
+            ...super.defaultEventData,
+            isOpen: self._isOpen,
+            selected,
+        };
+    }
+
     _onItemClick(domEvt: any): void {
         const target = this.getTargetItem(domEvt.target);
         if (!target) return;
@@ -51,7 +65,6 @@ class MenuComponent extends ItemGroupStaticComponent {
         const item = target.component;
         if (!item.select()) return;
 
-        this.emit('select', { item, index: target.index });
         (this as any).notifyGroupSelect(item);
     }
 
@@ -115,7 +128,7 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 }
 
-MenuComponent.use([GroupSelectAbility]);
+MenuComponent.use(GroupSelectAbility);
 
 export { MenuComponent };
 export type MenuComponentInstance = InstanceType<typeof MenuComponent>;
