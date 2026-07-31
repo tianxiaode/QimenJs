@@ -9,6 +9,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { BADGE_TPL } from './badge-tpl';
 
 class BadgeComponent extends Component {
     onOverlayChange(data: any): void {
@@ -23,5 +24,6 @@ class BadgeComponent extends Component {
     }
 }
 
+BadgeComponent.useTemplate(BADGE_TPL);
 export { BadgeComponent };
 export type BadgeComponentInstance = InstanceType<typeof BadgeComponent>;

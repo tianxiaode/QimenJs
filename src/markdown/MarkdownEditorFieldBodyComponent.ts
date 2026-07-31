@@ -13,8 +13,11 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { MARKDOWN_EDITOR_FIELD_BODY_TPL } from './markdown-editor-field-body-tpl';
 
 class MarkdownEditorFieldBodyComponent extends Component {}
+
+MarkdownEditorFieldBodyComponent.useTemplate(MARKDOWN_EDITOR_FIELD_BODY_TPL);
 
 export { MarkdownEditorFieldBodyComponent };
 export type MarkdownEditorFieldBodyComponentInstance = InstanceType<

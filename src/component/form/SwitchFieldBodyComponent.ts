@@ -19,5 +19,6 @@ import { Component } from '@qimenjs/component-core';
 
 class SwitchFieldBodyComponent extends Component {}
 
+SwitchFieldBodyComponent.useTemplate(SWITCH_FIELD_BODY_TPL);
 export { SwitchFieldBodyComponent };
 export type SwitchFieldBodyComponentInstance = InstanceType<typeof SwitchFieldBodyComponent>;

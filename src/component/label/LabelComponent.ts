@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { LABEL_TPL } from './label-tpl';
 
 export interface LabelProps {
     text?: string;
@@ -131,5 +132,6 @@ class LabelComponent extends Component {
     }
 }
 
+LabelComponent.useTemplate(LABEL_TPL);
 export { LabelComponent };
 export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

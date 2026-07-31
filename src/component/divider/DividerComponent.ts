@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { DIVIDER_TPL } from './divider-tpl';
 
 export interface DividerProps {
     vertical?: boolean;
@@ -44,5 +45,6 @@ class DividerComponent extends Component {
     }
 }
 
+DividerComponent.useTemplate(DIVIDER_TPL);
 export { DividerComponent };
 export type DividerComponentInstance = InstanceType<typeof DividerComponent>;

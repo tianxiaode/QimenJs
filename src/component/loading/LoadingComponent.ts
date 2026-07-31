@@ -32,5 +32,6 @@ class LoadingComponent extends Component {
     }
 }
 
+LoadingComponent.useTemplate(LOADING_TPL);
 export { LoadingComponent };
 export type LoadingComponentInstance = InstanceType<typeof LoadingComponent>;

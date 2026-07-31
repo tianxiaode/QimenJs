@@ -32,9 +32,9 @@ import type { DomEventsMap } from './types/tpl-events';
 import type { DragDecl, DropDecl } from './types/tpl-node-types';
 import { createInitContext } from './types/init-context';
 
+import { ComponentError, KernelErrorCode } from '@/error';
 import {
     MOUNT_PHASE,
-    FILL_PHASE,
     INSTANTIATE_PHASE,
     FINALIZE_PHASE,
     runPhase,
@@ -266,9 +266,8 @@ export class Component extends ComposableBase {
      * 异步初始化管线
      *
      * Phase 1: MOUNT — 同步（首个 await 前，el 立即可用）
-     * Phase 2: FILL — 同步
-     * Phase 3: INSTANTIATE — 异步（TaskQueue 队列化子组件渲染）
-     * Phase 4: FINALIZE — 同步
+     * Phase 2: INSTANTIATE — 异步（TaskQueue 队列化子组件渲染）
+     * Phase 3: FINALIZE — 同步
      */
     async init(): Promise<void> {
         const ctx = createInitContext(this, this.props);
@@ -277,15 +276,32 @@ export class Component extends ComposableBase {
             await runPhase(MOUNT_PHASE, ctx);
             if (!ctx.nodeMapMgr) return;
 
-            if (FILL_PHASE.steps.length > 0) {
-                await runPhase(FILL_PHASE, ctx);
-            }
-
             await runPhase(INSTANTIATE_PHASE, ctx);
 
             await runPhase(FINALIZE_PHASE, ctx);
 
             this.id = this.props.id || getId('cmp');
+        } catch (err) {
+            console.error(
+                `[Component] Pipeline initialization failed for ${this.type} (${this.id || 'unassigned'}):`,
+                err
+            );
+            try {
+                this.dispose();
+            } catch (cleanupErr) {
+                console.error(
+                    `[Component] Cleanup failed during pipeline error rollback:`,
+                    cleanupErr
+                );
+            }
+            if (err instanceof ComponentError) {
+                throw err;
+            }
+            throw new ComponentError(
+                `Component "${this.type}" initialization failed: ${err instanceof Error ? err.message : String(err)}`,
+                KernelErrorCode.COMPONENT_INIT_FAILED,
+                { type: this.type, cause: err }
+            );
         } finally {
             this._initializing = false;
             this._flushNodeProps?.();
@@ -338,14 +354,42 @@ export class Component extends ComposableBase {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
     }
 
-    static register(tpl?: TplNode): void {
-        if (tpl) {
-            Object.defineProperty(this, '_tpl', {
-                value: tpl,
-                writable: true,
-                configurable: true,
-            });
-        }
+    /**
+     * 注册组件（无模板）
+     *
+     * 将组件类注册到 ComponentRegistrar，不绑定独立模板，
+     * 沿原型链自动推导父类模板。适用于继承型组件（如 TabBarComponent → TabsComponent）。
+     *
+     * @example
+     * ```ts
+     * class TabBarComponent extends TabsComponent {}
+     * TabBarComponent.register();  // 自动继承 TabsComponent 的模板
+     * ```
+     */
+    static register(): void {
+        ComponentRegistrar.getInstance().register(this);
+    }
+
+    /**
+     * 注册组件并使用模板
+     *
+     * 将模板绑定到组件类并注册到 ComponentRegistrar。
+     * 多次使用同一模板对象的组件会自动共享编译产物，避免重复编译。
+     *
+     * @param tpl - 模板定义（TplNode）
+     *
+     * @example
+     * ```ts
+     * class ButtonComponent extends Component {}
+     * ButtonComponent.useTemplate(BUTTON_TPL);
+     * ```
+     */
+    static useTemplate(tpl: TplNode): void {
+        Object.defineProperty(this, '_tpl', {
+            value: tpl,
+            writable: true,
+            configurable: true,
+        });
         ComponentRegistrar.getInstance().register(this, tpl);
     }
 
@@ -353,7 +397,7 @@ export class Component extends ComposableBase {
         const cls = this as any;
         const tpl: TplNode | undefined = cls._tpl;
         if (!tpl) {
-            console.log(`  ⚠ ${cls.name} 未注册模板（先调用 ${cls.name}.register(tpl)）`);
+            console.log(`  ⚠ ${cls.name} 未注册模板（先调用 ${cls.name}.useTemplate(tpl)）`);
             return;
         }
         TplInspector.inspect(tpl, cls.name);

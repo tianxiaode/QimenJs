@@ -19,6 +19,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { TAG_TPL } from './tag-tpl';
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
@@ -76,6 +77,7 @@ class TagComponent extends Component {
 }
 
 TagComponent.use([SizeAbility]);
+TagComponent.useTemplate(TAG_TPL);
 
 export { TagComponent };
 export type TagComponentInstance = InstanceType<typeof TagComponent>;

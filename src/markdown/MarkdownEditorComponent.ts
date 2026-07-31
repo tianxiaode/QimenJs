@@ -29,6 +29,7 @@
 import { FormFieldComponent, type FormFieldProps } from '../component/form/FormFieldComponent';
 import { MarkdownEditorFieldBodyComponent } from './MarkdownEditorFieldBodyComponent';
 import { MarkdownEngine } from './engine';
+import { MARKDOWN_EDITOR_FIELD_BODY_TPL } from './markdown-editor-field-body-tpl';
 
 export type MarkdownEditMode = 'edit' | 'preview' | 'split';
 
@@ -490,5 +491,7 @@ export let MarkdownEditorComponent = FormFieldComponent.replace({
         },
     },
 });
+
+MarkdownEditorComponent.useTemplate(MARKDOWN_EDITOR_FIELD_BODY_TPL);
 
 export type MarkdownEditorComponent = InstanceType<typeof MarkdownEditorComponent>;

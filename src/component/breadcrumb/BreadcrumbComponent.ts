@@ -22,6 +22,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { BREADCRUMB_TPL } from './breadcrumb-tpl';
 
 export interface BreadcrumbItem {
     text: string;
@@ -156,5 +157,6 @@ class BreadcrumbComponent extends Component {
     }
 }
 
+BreadcrumbComponent.useTemplate(BREADCRUMB_TPL);
 export { BreadcrumbComponent };
 export type BreadcrumbComponentInstance = InstanceType<typeof BreadcrumbComponent>;

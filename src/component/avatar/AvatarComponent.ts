@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { AVATAR_TPL } from './avatar-tpl';
 
 export type AvatarMode = 'src' | 'text' | 'icon';
 
@@ -49,5 +50,6 @@ class AvatarComponent extends Component {
 }
 
 AvatarComponent.use(SizeAbility);
+AvatarComponent.useTemplate(AVATAR_TPL);
 export { AvatarComponent };
 export type AvatarComponentInstance = InstanceType<typeof AvatarComponent>;

@@ -35,6 +35,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { FORMFIELD_TPL } from './formfield-tpl';
 
 import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';
@@ -294,6 +295,6 @@ class FormFieldComponent extends Component {
 }
 
 FormFieldComponent.use([SizeAbility]);
-
+FormFieldComponent.useTemplate(FORMFIELD_TPL);
 export { FormFieldComponent };
 export type FormFieldComponentInstance = InstanceType<typeof FormFieldComponent>;

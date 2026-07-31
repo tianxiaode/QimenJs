@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { DATE_PANEL_TPL } from './date-panel-tpl';
 import { addDays } from '@/utils/date/calculation/days';
 import { addMonths } from '@/utils/date/calculation/months';
 import { addYears } from '@/utils/date/calculation/years';
@@ -190,5 +191,6 @@ class DatePanelComponent extends Component {
     }
 }
 
+DatePanelComponent.useTemplate(DATE_PANEL_TPL);
 export { DatePanelComponent };
 export type DatePanelComponentInstance = InstanceType<typeof DatePanelComponent>;

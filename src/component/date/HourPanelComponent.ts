@@ -10,6 +10,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import type { DateTimeValue } from '@/utils/date/datetime-picker';
 import './date-panel.css';
 
@@ -83,5 +84,6 @@ class HourPanelComponent extends Component {
     }
 }
 
+HourPanelComponent.useTemplate(HOUR_PANEL_TPL);
 export { HourPanelComponent };
 export type HourPanelComponentInstance = InstanceType<typeof HourPanelComponent>;

@@ -17,5 +17,6 @@ class ToolbarComponent extends ItemGroupStaticComponent {
     }
 }
 
+ToolbarComponent.register();
 export { ToolbarComponent };
 export type ToolbarComponentInstance = InstanceType<typeof ToolbarComponent>;

@@ -12,7 +12,6 @@ export { bindDomEvents } from './step-bind-dom-events';
 export type { Phase, InitStep } from './pipeline-types';
 export {
     MOUNT_PHASE,
-    FILL_PHASE,
     INSTANTIATE_PHASE,
     FINALIZE_PHASE,
     ALL_PHASES,

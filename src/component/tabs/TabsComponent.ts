@@ -27,6 +27,7 @@
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { TabBarComponent } from '../tab-bar/TabBarComponent';
+import { TABS_TPL } from './tabs-tpl';
 
 export interface TabItem {
     label: string;
@@ -269,5 +270,6 @@ class TabsComponent extends Component {
     }
 }
 
+TabsComponent.useTemplate(TABS_TPL);
 export { TabsComponent };
 export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

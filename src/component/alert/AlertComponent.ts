@@ -20,6 +20,7 @@
 
 import { DomEventsMap } from '@/component-core/types/tpl-events';
 import { Component } from '@qimenjs/component-core';
+import { ALERT_TPL } from './alert-tpl';
 
 export type AlertType = 'info' | 'success' | 'warning' | 'error';
 
@@ -85,5 +86,6 @@ class AlertComponent extends Component {
     }
 }
 
+AlertComponent.useTemplate(ALERT_TPL);
 export { AlertComponent };
 export type AlertComponentInstance = InstanceType<typeof AlertComponent>;

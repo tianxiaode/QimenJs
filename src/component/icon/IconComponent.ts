@@ -12,6 +12,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { ICON_TPL } from './icon-tpl';
 
 export interface IconProps {
     content?: string;
@@ -33,6 +34,7 @@ class IconComponent extends Component {
 }
 
 IconComponent.use([SizeAbility]);
+IconComponent.useTemplate(ICON_TPL);
 
 export { IconComponent };
 export type IconComponentInstance = InstanceType<typeof IconComponent>;

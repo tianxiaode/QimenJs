@@ -12,6 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date/calendar';
 import './date-panel.css';
 
@@ -154,5 +155,6 @@ class DayGridComponent extends Component {
     }
 }
 
+DayGridComponent.useTemplate(DAY_GRID_TPL);
 export { DayGridComponent };
 export type DayGridComponentInstance = InstanceType<typeof DayGridComponent>;

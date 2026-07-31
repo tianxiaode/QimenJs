@@ -32,6 +32,17 @@ import type { INodeMapManager } from '../types/node-map-manager-types';
 
 interface ComponentStorage {
     entries: Map<string, ComponentEntry>;
+    /**
+     * 模板引用表：模板对象 → 模板名（首次注册该模板的组件 type）
+     *
+     * 当多个组件共享同一个模板对象时，只有第一个组件存储 tpl + compiled，
+     * 后续组件只存 templateRef 指向模板名，从而避免重复编译。
+     *
+     * 两层结构：
+     *   tplRefs:  TplNode → type          （模板 → 模板名，O(1) 查找）
+     *   entries:  type → ComponentEntry    （模板名 → 编译产物，唯一存储）
+     */
+    tplRefs: Map<TplNode, string>;
 }
 
 export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
@@ -39,6 +50,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
 
     protected storage: ComponentStorage = {
         entries: new Map(),
+        tplRefs: new Map(),
     };
 
     /**
@@ -74,6 +86,31 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
         const existing = this.storage.entries.get(type);
 
         if (tpl) {
+            // 第一层查找：模板引用表（O(1)），避免同一模板重复编译
+            if (!tpl.replace) {
+                const sharedType = this.storage.tplRefs.get(tpl);
+                if (sharedType && sharedType !== type) {
+                    // 共享模板：新组件只存 templateRef，不存 tpl
+                    if (existing) {
+                        existing.componentClass = componentClass;
+                        delete existing.tpl;
+                        delete existing.compiled;
+                        existing.replaceFrom = undefined;
+                        existing.templateRef = sharedType;
+                    } else {
+                        this.storage.entries.set(type, {
+                            name: type,
+                            componentClass,
+                            templateRef: sharedType,
+                        });
+                    }
+                    this.logger.debug(
+                        `Component registered: ${type} (shared template → ${sharedType})`
+                    );
+                    return;
+                }
+            }
+
             let resolvedTpl = tpl;
 
             if (tpl.replace) {
@@ -87,11 +124,20 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 }
             }
 
+            // 第二层存储：注册模板引用 + 存储 tpl
             if (existing) {
+                // 清除旧模板的引用关系
+                if (existing.tpl) {
+                    const oldRef = this.storage.tplRefs.get(existing.tpl);
+                    if (oldRef === type) {
+                        this.storage.tplRefs.delete(existing.tpl);
+                    }
+                }
                 existing.tpl = resolvedTpl;
                 existing.componentClass = componentClass;
                 existing.replaceFrom = tpl.replace;
                 delete existing.templateRef;
+                delete existing.compiled;
             } else {
                 this.storage.entries.set(type, {
                     name: type,
@@ -99,6 +145,11 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                     componentClass,
                     replaceFrom: tpl.replace,
                 });
+            }
+
+            // 建立模板引用：模板 → 模板名（首次注册的 type）
+            if (!tpl.replace) {
+                this.storage.tplRefs.set(tpl, type);
             }
 
             this.logger.debug(
@@ -198,6 +249,14 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      */
     unregister(id: string): void {
         // 不检查 lock —— 允许运行时动态注销
+        const entry = this.storage.entries.get(id);
+        if (entry?.tpl) {
+            // 如果该组件是模板的主注册者，清理引用表
+            const refType = this.storage.tplRefs.get(entry.tpl);
+            if (refType === id) {
+                this.storage.tplRefs.delete(entry.tpl);
+            }
+        }
         this.storage.entries.delete(id);
     }
 
@@ -216,11 +275,23 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     }
 
     /**
+     * 获取模板引用表（模板对象 → 模板名）
+     *
+     * 用于调试和检查模板共享关系。
+     * 只有模板的首个注册者（👑）会在 tplRefs 中建立映射，
+     * 后续共享同一模板的组件通过 templateRef 指向首个注册者。
+     */
+    templateRefs(): Map<TplNode, string> {
+        return this.storage.tplRefs;
+    }
+
+    /**
      * 清空所有注册
      */
     clear(): void {
         // 不检查 lock —— 允许运行时清空
         this.storage.entries.clear();
+        this.storage.tplRefs.clear();
     }
 
     /**
@@ -236,12 +307,15 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
 
     protected doInspect(): void {
         const entries = Array.from(this.storage.entries.entries());
-        console.log(`  Components: ${entries.length}`);
+        const tplRefCount = this.storage.tplRefs.size;
+        console.log(`  Components: ${entries.length}, Template refs: ${tplRefCount}`);
         console.log('');
         for (const [name, entry] of entries) {
             const replaceInfo = entry.replaceFrom ? ` ← replace from ${entry.replaceFrom}` : '';
             const refInfo = entry.templateRef ? ` → ref ${entry.templateRef}` : '';
-            console.log(`  📄 ${name}${replaceInfo}${refInfo}`);
+            const isTplOwner = entry.tpl && this.storage.tplRefs.get(entry.tpl) === name;
+            const ownerTag = isTplOwner ? ' 👑' : '';
+            console.log(`  📄 ${name}${replaceInfo}${refInfo}${ownerTag}`);
             if (entry.componentClass) {
                 console.log(`     class: ${entry.componentClass.name}`);
             }

@@ -2,6 +2,7 @@ import { ToolbarComponent } from '../toolbar/ToolbarComponent';
 import type { ToolbarProps } from '../toolbar/ToolbarComponent';
 import { CRUD_EVENTS, PAGINATION_EVENTS } from '../../events/component-events';
 import { DomainAbility } from '../../system-abilities/system/DomainAbility';
+import { ENTITY_TOOLBAR_TPL } from './entity-toolbar-tpl';
 
 // ══════════════════════════════════════════════════════════════
 // 类型定义
@@ -516,6 +517,7 @@ class EntityToolbarComponent extends ToolbarComponent {
 }
 
 EntityToolbarComponent.use([DomainAbility]);
+EntityToolbarComponent.useTemplate(ENTITY_TOOLBAR_TPL);
 
 export { EntityToolbarComponent };
 export type EntityToolbarComponentInstance = InstanceType<typeof EntityToolbarComponent>;

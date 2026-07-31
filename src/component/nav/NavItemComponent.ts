@@ -21,6 +21,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { FloatDecl } from '@qimenjs/component-core';
+import { NAV_ITEM_TPL } from './nav-item-tpl';
 
 export type NavPlacement =
     | 'top'
@@ -224,5 +225,6 @@ class NavItemComponent extends Component {
     }
 }
 
+NavItemComponent.useTemplate(NAV_ITEM_TPL);
 export { NavItemComponent };
 export type NavItemComponentInstance = InstanceType<typeof NavItemComponent>;

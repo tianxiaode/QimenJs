@@ -92,5 +92,6 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     }
 }
 
+ItemGroupStaticComponent.register();
 export { ItemGroupStaticComponent };
 export type ItemGroupStaticComponentType = InstanceType<typeof ItemGroupStaticComponent>;

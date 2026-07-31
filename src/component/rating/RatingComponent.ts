@@ -17,6 +17,7 @@
  */
 
 import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { RATING_TPL } from './rating-tpl';
 
 export interface RatingProps {
     value?: number;
@@ -218,6 +219,7 @@ class RatingComponent extends Component {
 }
 
 RatingComponent.use([CommonPropsAbility]);
+RatingComponent.useTemplate(RATING_TPL);
 
 export { RatingComponent };
 export type RatingComponentInstance = InstanceType<typeof RatingComponent>;

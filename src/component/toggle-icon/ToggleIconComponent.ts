@@ -20,6 +20,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { TOGGLE_ICON_TPL } from './toggle-icon-tpl';
 
 export interface ToggleIconProps {
     onIcon?: string;
@@ -110,6 +111,7 @@ class ToggleIconComponent extends Component {
 }
 
 ToggleIconComponent.use(SizeAbility);
+ToggleIconComponent.useTemplate(TOGGLE_ICON_TPL);
 
 export { ToggleIconComponent };
 export type ToggleIconComponentInstance = InstanceType<typeof ToggleIconComponent>;

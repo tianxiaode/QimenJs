@@ -17,7 +17,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { NavItemGroupComponent } from '@/component/nav/NavItemGroupComponent';
+import { NavItemGroupComponent } from '@/component/nav/NavComponent';
 import { NavItemComponent } from '@/component/nav/NavItemComponent';
 import { ComponentRegistrar, TemplateComponent } from '@qimenjs/component-core';
 

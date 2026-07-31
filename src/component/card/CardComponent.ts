@@ -12,6 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { CARD_TPL } from './card-tpl';
 
 export interface CardProps {
     title?: string;
@@ -37,5 +38,6 @@ class CardComponent extends Component {
     }
 }
 
+CardComponent.useTemplate(CARD_TPL);
 export { CardComponent };
 export type CardComponentInstance = InstanceType<typeof CardComponent>;

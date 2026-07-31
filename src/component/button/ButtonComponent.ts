@@ -23,6 +23,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { BUTTON_TPL } from './button-tpl';
 
 export interface ButtonProps {
     icon?: string;
@@ -48,5 +49,6 @@ class ButtonComponent extends Component {
 }
 
 ButtonComponent.use(SizeAbility);
+ButtonComponent.useTemplate(BUTTON_TPL);
 export { ButtonComponent };
 export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

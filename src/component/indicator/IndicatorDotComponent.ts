@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { INDICATOR_DOT_TPL } from './indicator-dot-tpl';
 
 export interface IndicatorDotProps {
     index?: number;
@@ -37,5 +38,6 @@ class IndicatorDotComponent extends Component {
     }
 }
 
+IndicatorDotComponent.useTemplate(INDICATOR_DOT_TPL);
 export { IndicatorDotComponent };
 export type IndicatorDotComponentInstance = InstanceType<typeof IndicatorDotComponent>;

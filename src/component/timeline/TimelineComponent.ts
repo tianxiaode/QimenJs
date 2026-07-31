@@ -20,6 +20,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { TIMELINE_TPL } from './timeline-tpl';
 
 export type TimelineColor = 'default' | 'primary' | 'success' | 'warning' | 'error';
 
@@ -139,5 +140,6 @@ class TimelineComponent extends Component {
     }
 }
 
+TimelineComponent.useTemplate(TIMELINE_TPL);
 export { TimelineComponent };
 export type TimelineComponentInstance = InstanceType<typeof TimelineComponent>;

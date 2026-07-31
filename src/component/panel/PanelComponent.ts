@@ -117,6 +117,7 @@ class PanelComponent extends Component {
 }
 
 PanelComponent.use([ResizeAbility]);
+PanelComponent.useTemplate(PANEL_TPL);
 
 export { PanelComponent };
 export type PanelComponentInstance = InstanceType<typeof PanelComponent>;

@@ -21,6 +21,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { TOGGLE_TPL } from './toggle-tpl';
 
 export interface ToggleProps {
     text?: string;
@@ -103,6 +104,7 @@ class ToggleComponent extends Component {
 }
 
 ToggleComponent.use([SizeAbility]);
+ToggleComponent.useTemplate(TOGGLE_TPL);
 
 export { ToggleComponent };
 export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;

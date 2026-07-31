@@ -57,5 +57,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
     }
 }
 
+TabBarComponent.register();
 export { TabBarComponent };
 export type TabBarComponentInstance = InstanceType<typeof TabBarComponent>;

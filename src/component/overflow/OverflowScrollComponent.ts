@@ -19,6 +19,7 @@ import { OverlayRoot } from '@/overlay/OverlayRoot';
 import { positionOverlay, type Placement } from '@/overlay/dispatch';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { OVERFLOW_SCROLL_TPL } from './overflow-scroll-tpl';
 
 export type OverflowDirection = 'horizontal' | 'vertical';
 
@@ -336,5 +337,6 @@ class OverflowScrollComponent extends Component {
     }
 }
 
+OverflowScrollComponent.useTemplate(OVERFLOW_SCROLL_TPL);
 export { OverflowScrollComponent };
 export type OverflowScrollComponentInstance = InstanceType<typeof OverflowScrollComponent>;

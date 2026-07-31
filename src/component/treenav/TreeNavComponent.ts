@@ -192,5 +192,6 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     }
 }
 
+TreeNavComponent.register();
 export { TreeNavComponent };
 export type TreeNavComponentInstance = InstanceType<typeof TreeNavComponent>;

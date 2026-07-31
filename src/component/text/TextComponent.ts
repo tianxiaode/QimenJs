@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { TEXT_TPL } from './text-tpl';
 
 export interface TextProps {
     text?: string;
@@ -59,5 +60,6 @@ class TextComponent extends Component {
     }
 }
 
+TextComponent.useTemplate(TEXT_TPL);
 export { TextComponent };
 export type TextComponentInstance = InstanceType<typeof TextComponent>;

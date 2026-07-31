@@ -25,6 +25,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { MENU_ITEM_TPL } from './menu-item-tpl';
 
 export type MenuItemGroupMode = 'radio' | 'checkbox';
 
@@ -213,5 +214,5 @@ class MenuItemComponent extends Component {
     }
 }
 
+MenuItemComponent.useTemplate(MENU_ITEM_TPL);
 export { MenuItemComponent };
-export type MenuItemComponentInstance = InstanceType<typeof MenuItemComponent>;

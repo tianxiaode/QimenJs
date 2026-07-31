@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { SPACER_TPL } from './spacer-tpl';
 
 export interface SpacerProps {
     size?: number;
@@ -37,5 +38,6 @@ class SpacerComponent extends Component {
     }
 }
 
+SpacerComponent.useTemplate(SPACER_TPL);
 export { SpacerComponent };
 export type SpacerComponentInstance = InstanceType<typeof SpacerComponent>;

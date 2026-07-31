@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { PROGRESS_TPL } from './progress-tpl';
 
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 
@@ -73,5 +74,6 @@ class ProgressComponent extends Component {
     }
 }
 
+ProgressComponent.useTemplate(PROGRESS_TPL);
 export { ProgressComponent };
 export type ProgressComponentInstance = InstanceType<typeof ProgressComponent>;

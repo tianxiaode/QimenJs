@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
 
 export interface BaseHeaderCellProps {
     colName: string;
@@ -64,3 +65,5 @@ class BaseHeaderCellComponent extends Component {
 
 export { BaseHeaderCellComponent };
 export type BaseHeaderCellComponentInstance = InstanceType<typeof BaseHeaderCellComponent>;
+
+BaseHeaderCellComponent.useTemplate(BASE_HEADER_CELL_TPL);

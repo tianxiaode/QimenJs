@@ -6,6 +6,7 @@
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
 import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
+import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 export type DefaultItemDef = Record<string, any>;
@@ -305,5 +306,6 @@ class ItemGroupBaseComponent extends Component {
 }
 
 ItemGroupBaseComponent.use(IndicatorAbility);
+ItemGroupBaseComponent.useTemplate(ITEMGROUP_BASE_TPL);
 export { ItemGroupBaseComponent };
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

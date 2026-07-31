@@ -158,5 +158,6 @@ class AccordionComponent extends ItemGroupPooledComponent {
     }
 }
 
+AccordionComponent.register();
 export { AccordionComponent };
 export type AccordionComponentInstance = InstanceType<typeof AccordionComponent>;

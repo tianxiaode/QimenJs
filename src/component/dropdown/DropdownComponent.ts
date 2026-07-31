@@ -59,5 +59,6 @@ class DropdownComponent extends ButtonComponent {
     }
 }
 
+DropdownComponent.register();
 export { DropdownComponent };
 export type DropdownComponentInstance = InstanceType<typeof DropdownComponent>;

@@ -1,5 +1,1 @@
-import { ToolbarComponent } from './ToolbarComponent';
-
-export function registerToolbarTemplates(): void {
-    ToolbarComponent.register();
-}
+export function registerToolbarTemplates(): void {}

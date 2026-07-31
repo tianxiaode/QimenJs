@@ -24,6 +24,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { STEP_TPL } from './step-tpl';
 
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
 
@@ -206,5 +207,6 @@ class StepComponent extends Component {
     }
 }
 
+StepComponent.useTemplate(STEP_TPL);
 export { StepComponent };
 export type StepComponentInstance = InstanceType<typeof StepComponent>;

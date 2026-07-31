@@ -14,6 +14,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { YEAR_PANEL_TPL } from './year-panel-tpl';
 import {
     generateYearDigits,
     splitToDigits,
@@ -181,5 +182,6 @@ class YearPanelComponent extends Component {
     }
 }
 
+YearPanelComponent.useTemplate(YEAR_PANEL_TPL);
 export { YearPanelComponent };
 export type YearPanelComponentInstance = InstanceType<typeof YearPanelComponent>;

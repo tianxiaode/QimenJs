@@ -24,5 +24,6 @@ import { Component } from '@qimenjs/component-core';
 
 class InputFieldBodyComponent extends Component {}
 
+InputFieldBodyComponent.useTemplate(INPUT_FIELD_BODY_TPL);
 export { InputFieldBodyComponent };
 export type InputFieldBodyComponentInstance = InstanceType<typeof InputFieldBodyComponent>;

@@ -25,6 +25,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import { BASE_CELL_TPL } from './base-cell-tpl';
 
 export interface BaseCellProps {
     align?: ColumnAlign;
@@ -62,3 +63,5 @@ class BaseCellComponent extends Component {
 
 export { BaseCellComponent };
 export type BaseCellComponentInstance = InstanceType<typeof BaseCellComponent>;
+
+BaseCellComponent.useTemplate(BASE_CELL_TPL);

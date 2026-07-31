@@ -51,6 +51,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { resolveI18nValue } from '@qimenjs/i18n';
+import { DIALOG_TPL } from './dialog-tpl';
 
 type DialogActionKey = 'confirm' | 'cancel' | 'ok' | 'save' | 'close' | 'apply' | 'reset';
 
@@ -277,6 +278,7 @@ class DialogComponent extends Component {
 }
 
 DialogComponent.use([ResizeAbility]);
+DialogComponent.useTemplate(DIALOG_TPL);
 
 export { DialogComponent };
 export type DialogComponentInstance = InstanceType<typeof DialogComponent>;

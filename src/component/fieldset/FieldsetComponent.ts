@@ -20,6 +20,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import { FIELDSET_TPL } from './fieldset-tpl';
 
 export interface FieldsetProps {
     legend?: string;
@@ -123,5 +124,6 @@ class FieldsetComponent extends Component {
     }
 }
 
+FieldsetComponent.useTemplate(FIELDSET_TPL);
 export { FieldsetComponent };
 export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;

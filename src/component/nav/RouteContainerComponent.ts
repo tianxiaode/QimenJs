@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
 
 export interface RouteContainerProps {
     routeMap?: Record<string, new (props?: Record<string, any>) => any>;
@@ -56,5 +57,6 @@ class RouteContainerComponent extends Component {
     }
 }
 
+RouteContainerComponent.useTemplate(ROUTE_CONTAINER_TPL);
 export { RouteContainerComponent };
 export type RouteContainerComponentInstance = InstanceType<typeof RouteContainerComponent>;

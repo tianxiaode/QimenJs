@@ -14,6 +14,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
 import { generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date/datetime-picker';
 import './date-panel.css';
 
@@ -138,5 +139,6 @@ class MinutePanelComponent extends Component {
     }
 }
 
+MinutePanelComponent.useTemplate(MINUTE_PANEL_TPL);
 export { MinutePanelComponent };
 export type MinutePanelComponentInstance = InstanceType<typeof MinutePanelComponent>;

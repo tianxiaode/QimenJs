@@ -9,6 +9,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import type { DateTimeValue } from '@/utils/date/datetime-picker';
 import './date-panel.css';
 
@@ -106,5 +107,6 @@ class MonthPanelComponent extends Component {
     }
 }
 
+MonthPanelComponent.useTemplate(MONTH_PANEL_TPL);
 export { MonthPanelComponent };
 export type MonthPanelComponentInstance = InstanceType<typeof MonthPanelComponent>;

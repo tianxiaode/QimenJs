@@ -24,11 +24,6 @@ export const MOUNT_PHASE: Phase = {
     steps: [ensureNodeMap, selfMount, setupNodeProps, onBeforeInit],
 };
 
-export const FILL_PHASE: Phase = {
-    name: 'fill',
-    steps: [],
-};
-
 export const INSTANTIATE_PHASE: Phase = {
     name: 'instantiate',
     steps: [instantiateChildComponents],
@@ -39,7 +34,7 @@ export const FINALIZE_PHASE: Phase = {
     steps: [bindListens, bindChildEvents, bindDomEvents, onAfterInit],
 };
 
-export const ALL_PHASES: Phase[] = [MOUNT_PHASE, FILL_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];
+export const ALL_PHASES: Phase[] = [MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];
 
 export async function runPhase(phase: Phase, ctx: InitContext): Promise<void> {
     for (const step of phase.steps) {

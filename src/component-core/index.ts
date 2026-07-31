@@ -34,7 +34,6 @@ export { ListensEngine } from './engine/ListensEngine';
 // 初始化管线
 export {
     MOUNT_PHASE,
-    FILL_PHASE,
     INSTANTIATE_PHASE,
     FINALIZE_PHASE,
     runPhase,

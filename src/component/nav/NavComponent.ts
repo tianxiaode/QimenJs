@@ -36,7 +36,7 @@ export interface NavItemGroupProps extends ItemGroupProps {
     indexPath?: string[];
 }
 
-class NavItemGroupComponent extends ItemGroupPooledComponent {
+class NavComponent extends ItemGroupPooledComponent {
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
     _maxDepth: number = 3;
@@ -230,5 +230,6 @@ class NavItemGroupComponent extends ItemGroupPooledComponent {
     }
 }
 
-export { NavItemGroupComponent };
-export type NavItemGroupComponentInstance = InstanceType<typeof NavItemGroupComponent>;
+NavComponent.register();
+export { NavComponent };
+export type NavComponentInstance = InstanceType<typeof NavComponent>;

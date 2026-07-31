@@ -36,6 +36,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { HEADER_TPL } from './header-tpl';
 
 export interface HeaderProps {
     icon?: string;
@@ -87,5 +88,6 @@ class HeaderComponent extends Component {
     }
 }
 
+HeaderComponent.useTemplate(HEADER_TPL);
 export { HeaderComponent };
 export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

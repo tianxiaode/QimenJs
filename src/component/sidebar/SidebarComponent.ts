@@ -25,6 +25,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { SIDEBAR_TPL } from './sidebar-tpl';
 
 export interface SidebarItem {
     text: string;
@@ -223,5 +224,6 @@ class SidebarComponent extends Component {
     }
 }
 
+SidebarComponent.useTemplate(SIDEBAR_TPL);
 export { SidebarComponent };
 export type SidebarComponentInstance = InstanceType<typeof SidebarComponent>;

@@ -6,7 +6,6 @@ jest.mock('@qimenjs/task', () => ({
 
 import {
     MOUNT_PHASE,
-    FILL_PHASE,
     INSTANTIATE_PHASE,
     FINALIZE_PHASE,
     ALL_PHASES,
@@ -23,11 +22,6 @@ describe('pipeline-registry', () => {
             expect(MOUNT_PHASE.steps.length).toBeGreaterThan(0);
         });
 
-        it('FILL_PHASE 为空步骤', () => {
-            expect(FILL_PHASE.name).toBe('fill');
-            expect(FILL_PHASE.steps).toEqual([]);
-        });
-
         it('INSTANTIATE_PHASE 包含子组件实例化步骤', () => {
             expect(INSTANTIATE_PHASE.name).toBe('instantiate');
             expect(INSTANTIATE_PHASE.steps.length).toBeGreaterThan(0);
@@ -38,8 +32,8 @@ describe('pipeline-registry', () => {
             expect(FINALIZE_PHASE.steps.length).toBeGreaterThan(0);
         });
 
-        it('ALL_PHASES 包含四个阶段', () => {
-            expect(ALL_PHASES).toHaveLength(4);
+        it('ALL_PHASES 包含三个阶段', () => {
+            expect(ALL_PHASES).toHaveLength(3);
         });
     });
 

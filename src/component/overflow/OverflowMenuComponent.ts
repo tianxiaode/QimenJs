@@ -22,6 +22,7 @@ import { overlayDispatchCenter } from '@/overlay/dispatch';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import { ZIndexLevel, nextZIndex } from '@/component/z-index';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
+import { OVERFLOW_MENU_TPL } from './overflow-menu-tpl';
 
 export type OverflowDirection = 'horizontal' | 'vertical';
 
@@ -313,5 +314,6 @@ class OverflowMenuComponent extends Component {
     }
 }
 
+OverflowMenuComponent.useTemplate(OVERFLOW_MENU_TPL);
 export { OverflowMenuComponent };
 export type OverflowMenuComponentInstance = InstanceType<typeof OverflowMenuComponent>;
