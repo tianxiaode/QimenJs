@@ -33,12 +33,7 @@ import type { DragDecl, DropDecl } from './types/tpl-node-types';
 import { createInitContext } from './types/init-context';
 
 import { ComponentError, KernelErrorCode } from '@/error';
-import {
-    MOUNT_PHASE,
-    INSTANTIATE_PHASE,
-    FINALIZE_PHASE,
-    runPhase,
-} from './engine/pipeline';
+import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string/id';
 import { ComponentRegistrar, TplInspector } from './engine';
 import { TplNode } from './types';
@@ -214,6 +209,7 @@ export class Component extends ComposableBase {
         this.dirtySet = new Set();
         this._initializing = true;
         this._disposing = false;
+        this.id = this.props.id || getId('cmp');
         this._initFloatsFromProps();
         this._ready = this.init();
     }
@@ -279,28 +275,23 @@ export class Component extends ComposableBase {
             await runPhase(INSTANTIATE_PHASE, ctx);
 
             await runPhase(FINALIZE_PHASE, ctx);
-
-            this.id = this.props.id || getId('cmp');
         } catch (err) {
-            console.error(
-                `[Component] Pipeline initialization failed for ${this.type} (${this.id || 'unassigned'}):`,
-                err
+            this.logger?.error?.(
+                `[Component] Pipeline failed for ${this.type} (${this.id}) at step "${ctx.steps[ctx.steps.length - 1] ?? 'unknown'}"`,
+                {
+                    completedSteps: ctx.steps,
+                    nodeMapMgrReady: !!ctx.nodeMapMgr,
+                    error: err,
+                }
             );
-            try {
-                this.dispose();
-            } catch (cleanupErr) {
-                console.error(
-                    `[Component] Cleanup failed during pipeline error rollback:`,
-                    cleanupErr
-                );
-            }
+
             if (err instanceof ComponentError) {
                 throw err;
             }
             throw new ComponentError(
                 `Component "${this.type}" initialization failed: ${err instanceof Error ? err.message : String(err)}`,
                 KernelErrorCode.COMPONENT_INIT_FAILED,
-                { type: this.type, cause: err }
+                { type: this.type, completedSteps: ctx.steps, cause: err }
             );
         } finally {
             this._initializing = false;
@@ -404,7 +395,7 @@ export class Component extends ComposableBase {
     }
 
     private _disposeChildComponents(): void {
-        this.nodeMapMgr.disposeAll();
+        this.nodeMapMgr?.disposeAll();
     }
 }
 

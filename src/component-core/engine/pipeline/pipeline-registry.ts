@@ -38,14 +38,17 @@ export const ALL_PHASES: Phase[] = [MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHA
 
 export async function runPhase(phase: Phase, ctx: InitContext): Promise<void> {
     for (const step of phase.steps) {
+        const label = `${phase.name}:${step.name}`;
         try {
             await step(ctx);
+            ctx.steps.push(label);
         } catch (err) {
+            ctx.steps.push(`${label}(FAIL)`);
             if (err instanceof ComponentError) throw err;
             throw new ComponentError(
                 `Phase "${phase.name}" step "${step.name}" failed: ${err instanceof Error ? err.message : String(err)}`,
                 KernelErrorCode.PHASE_EXECUTION_FAILED,
-                { phase: phase.name, step: step.name, cause: err }
+                { phase: phase.name, step: step.name, completedSteps: ctx.steps, cause: err }
             );
         }
     }

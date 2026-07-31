@@ -59,7 +59,7 @@ describe('Component 基类', () => {
         });
     });
 
-    describe('static register', () => {
+    describe('static register / useTemplate', () => {
         let registry: ComponentRegistrar;
 
         beforeEach(() => {
@@ -70,10 +70,10 @@ describe('Component 基类', () => {
             registry.clear();
         });
 
-        it('register(tpl) 将 _tpl 存储到类上', () => {
+        it('useTemplate(tpl) 将 _tpl 存储到类上', () => {
             class TestComp extends Component {}
             const tpl: TplNode = { tag: 'div' };
-            TestComp.register(tpl);
+            TestComp.useTemplate(tpl);
 
             expect((TestComp as any)._tpl).toBe(tpl);
         });
@@ -85,18 +85,18 @@ describe('Component 基类', () => {
             expect((TestComp as any)._tpl).toBeUndefined();
         });
 
-        it('register(tpl) 同时注册到 ComponentRegistrar', () => {
+        it('useTemplate(tpl) 同时注册到 ComponentRegistrar', () => {
             class TestComp extends Component {}
             const tpl: TplNode = { tag: 'div' };
-            TestComp.register(tpl);
+            TestComp.useTemplate(tpl);
 
             expect(registry.has('TestComp')).toBe(true);
         });
 
-        it('子类 register 通过 this 自动推导 type', () => {
+        it('子类 useTemplate 通过 this 自动推导 type', () => {
             class ButtonComponent extends Component {}
             const tpl: TplNode = { tag: 'button' };
-            ButtonComponent.register(tpl);
+            ButtonComponent.useTemplate(tpl);
 
             expect(ButtonComponent.type).toBe('Button');
             expect((ButtonComponent as any)._tpl).toBe(tpl);
@@ -125,7 +125,7 @@ describe('Component 基类', () => {
                     { tag: 'div', name: 'content' },
                 ],
             };
-            TestComp.register(tpl);
+            TestComp.useTemplate(tpl);
 
             expect(() => TestComp.inspectTpl()).not.toThrow();
             expect(console.log).toHaveBeenCalled();
@@ -135,9 +135,7 @@ describe('Component 基类', () => {
             class NoTplComp extends Component {}
             NoTplComp.inspectTpl();
 
-            expect(console.log).toHaveBeenCalledWith(
-                expect.stringContaining('未注册模板')
-            );
+            expect(console.log).toHaveBeenCalledWith(expect.stringContaining('未注册模板'));
         });
     });
 
@@ -192,6 +190,36 @@ describe('Component 基类', () => {
             const inst = new TestComp({ parent, slotName: 'body' }) as any;
             expect(inst.parent).toBe(parent);
             expect(inst.slotName).toBe('body');
+        });
+
+        it('id 在构造函数立即可用（无需 await ready）', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp() as any;
+            expect(inst.id).toBeDefined();
+            expect(typeof inst.id).toBe('string');
+            expect(inst.id.length).toBeGreaterThan(0);
+        });
+
+        it('props.id 传入时实例 id 使用 props.id', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp({ id: 'custom-id' }) as any;
+            expect(inst.id).toBe('custom-id');
+        });
+
+        it('无 props.id 时自动生成唯一 id', () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst1 = new TestComp() as any;
+            const inst2 = new TestComp() as any;
+            expect(inst1.id).not.toBe(inst2.id);
         });
     });
 
@@ -704,6 +732,130 @@ describe('Component 基类', () => {
             inst.dispose();
             expect(container.contains(inst.el)).toBe(false);
             container.remove();
+        });
+    });
+
+    describe('init 错误处理', () => {
+        let registry: ComponentRegistrar;
+
+        beforeEach(() => {
+            registry = getRegistry();
+        });
+
+        afterEach(() => {
+            registry.clear();
+        });
+
+        it('pipeline 失败时使用 this.logger.error 记录而非 console.error', async () => {
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            class TestComp extends Component {
+                onBeforeInit() {
+                    throw new Error('init boom');
+                }
+            }
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp() as any;
+            await expect(inst.ready).rejects.toThrow();
+
+            expect(inst.logger.error).toHaveBeenCalled();
+            expect(consoleSpy).not.toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+        });
+
+        it('pipeline 失败时日志包含 type、id 和失败 step', async () => {
+            class TestComp extends Component {
+                onBeforeInit() {
+                    throw new Error('init boom');
+                }
+            }
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp({ id: 'trace-id' }) as any;
+            await expect(inst.ready).rejects.toThrow();
+
+            expect(inst.logger.error).toHaveBeenCalledWith(
+                expect.stringContaining('TestComp'),
+                expect.objectContaining({ error: expect.any(Error) })
+            );
+            const [msg] = (inst.logger.error as jest.Mock).mock.calls[0];
+            expect(msg).toContain('trace-id');
+            expect(msg).toContain('mount:onBeforeInit(FAIL)');
+        });
+
+        it('pipeline 失败时 ctx.steps 记录完整流程轨迹', async () => {
+            class TestComp extends Component {
+                onAfterInit() {
+                    throw new Error('after boom');
+                }
+            }
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp() as any;
+            await expect(inst.ready).rejects.toThrow();
+
+            const [, ctxInfo] = (inst.logger.error as jest.Mock).mock.calls[0];
+            expect(ctxInfo.completedSteps).toEqual([
+                'mount:ensureNodeMap',
+                'mount:selfMount',
+                'mount:setupNodeProps',
+                'mount:onBeforeInit',
+                'instantiate:instantiateChildComponents',
+                'finalize:bindListens',
+                'finalize:bindChildEvents',
+                'finalize:bindDomEvents',
+                'finalize:onAfterInit(FAIL)',
+            ]);
+            expect(ctxInfo.nodeMapMgrReady).toBe(true);
+        });
+
+        it('nodeMapMgr 未就绪时日志反映流程状态', async () => {
+            class TestComp extends Component {
+                onBeforeInit() {
+                    throw new Error('boom');
+                }
+            }
+            const inst = new TestComp() as any;
+            await expect(inst.ready).rejects.toThrow();
+
+            const [, ctxInfo] = (inst.logger.error as jest.Mock).mock.calls[0];
+            expect(ctxInfo.nodeMapMgrReady).toBe(false);
+        });
+
+        it('nodeMapMgr 未初始化时 dispose 不抛二次错误', async () => {
+            class TestComp extends Component {}
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp() as any;
+            await inst.ready;
+            inst.nodeMapMgr = undefined;
+            expect(() => inst.dispose()).not.toThrow();
+        });
+
+        it('pipeline 失败时不自动 dispose 回滚', async () => {
+            const disposeSpy = jest.fn();
+            class TestComp extends Component {
+                onBeforeInit() {
+                    throw new Error('init boom');
+                }
+                onBeforeDispose() {
+                    disposeSpy();
+                }
+            }
+            const tpl: TplNode = { tag: 'div' };
+            registry.register(TestComp, tpl);
+
+            const inst = new TestComp() as any;
+            await expect(inst.ready).rejects.toThrow();
+
+            expect(inst.logger.error).toHaveBeenCalledTimes(1);
+            expect(disposeSpy).not.toHaveBeenCalled();
         });
     });
 });
