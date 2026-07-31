@@ -11,6 +11,9 @@ export * from './types';
 export { ThemeRegistrar, ThemeRegistrarName, flattenTokens } from './ThemeRegistrar';
 export { AtomicCSS } from './AtomicCSS';
 
+// 框架运行时必须的全局样式
+export { skeletonCSS } from './skeleton.css';
+
 // 预设主题导出
 export { lightTheme, darkTheme } from './presets';
 

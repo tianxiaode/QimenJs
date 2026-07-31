@@ -1,7 +1,10 @@
 /**
- * Skeleton 骨架屏样式 — 纯 CSS 驱动
+ * Skeleton 骨架屏样式 — 框架运行时必须的全局 CSS
  *
- * 任意元素加 .q-skeleton 类即可显示 shimmer 占位效果。
+ * CompileEngine 对每个 type 节点产出 `<div class="q-skeleton"></div>` 骨架占位，
+ * 所有组件实例化前默认渲染骨架态，故此样式为框架级必须，由 theme 层统一提供。
+ *
+ * 任意元素加 .q-skeleton 类即显示 shimmer 占位效果。
  * 配合 SkeletonAbility 使用：component.skeleton = true 自动给 nodeMap 所有节点加此类。
  *
  * 原理：

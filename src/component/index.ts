@@ -75,6 +75,10 @@ export { spacerCSS } from './spacer/spacer.css';
 export { TagComponent, type TagType, type TagProps } from './tag/TagComponent';
 export { tagCSS } from './tag/tag.css';
 
+// Tags 标签组组件（从 ItemGroupPooledComponent 派生，maxCount 折叠 + close 代理）
+export { TagsComponent, type TagsProps } from './tags/TagsComponent';
+export { tagsCSS } from './tags/tags.css';
+
 // 表单组件
 export { InputComponent, type InputType, type InputProps } from './form/InputComponent';
 export { inputCSS } from './form/input.css';
@@ -139,21 +143,6 @@ export { TreeNavComponent, type TreeNavProps } from './treenav/TreeNavComponent'
 export { TreeNavItemComponent, type TreeNavItemProps } from './treenav/TreeNavItemComponent';
 export { treeNavCSS } from './treenav/tree-nav.css';
 
-// 溢出组件
-export {
-    OverflowMenuComponent,
-    type OverflowDirection as OverflowMenuDirection,
-    type OverflowMenuItem,
-    type OverflowMenuProps,
-} from './overflow/OverflowMenuComponent';
-export {
-    OverflowScrollComponent,
-    type OverflowDirection as OverflowScrollDirection,
-    type OverflowState,
-    type OverflowScrollProps,
-} from './overflow/OverflowScrollComponent';
-export { overflowCSS } from './overflow/overflow.css';
-
 // 加载组件
 export { LoadingComponent } from './loading/LoadingComponent';
 
@@ -171,9 +160,6 @@ export {
 export { MarkdownEditorFieldBodyComponent } from '../markdown/MarkdownEditorFieldBodyComponent';
 export { markdownEditorCSS } from '../markdown/markdown-editor.css';
 export { markdownViewerCSS } from '../markdown/markdown-viewer.css';
-
-// 动画
-export { animationsCSS } from './styles/animations';
 
 // Label 组件
 export { LabelComponent, type LabelProps } from './label/LabelComponent';
@@ -216,18 +202,16 @@ export {
 export { StepItemComponent } from './step/StepItemComponent';
 export { stepCSS } from './step/step.css';
 
-// Timeline 时间线组件
+// Timeline 时间线组件（从 ItemGroupPooledComponent 派生，纵向节点序列）
 export {
     TimelineComponent,
     type TimelineColor,
     type TimelineItem,
     type TimelineProps,
 } from './timeline/TimelineComponent';
+export { TimelineItemComponent, type TimelineItemProps } from './timeline/TimelineItemComponent';
 export { timelineCSS } from './timeline/timeline.css';
 
 // Navbar 顶部导航栏组件（从 ItemGroupStaticComponent 派生，横向布局）
 export { NavbarComponent, type NavbarProps } from './navbar/NavbarComponent';
 export { navbarCSS } from './navbar/navbar.css';
-
-// Skeleton 骨架屏样式（配合 SkeletonAbility 使用）
-export { skeletonCSS } from './skeleton/skeleton.css';

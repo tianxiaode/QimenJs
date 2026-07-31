@@ -1,11 +1,12 @@
 /**
  * TimelineComponent 时间线组件
  *
- * 垂直时间线，支持自定义节点颜色和内容。
- * 数据驱动：通过 items 属性设置时间线项。
+ * 从 ItemGroupPooledComponent 派生（池化、数据驱动、order 排序）。
+ * 与 StepComponent 同父兄弟 —— 共享"数据驱动节点序列"抽象，
+ * 但不含 Step 的 activeIndex 状态机，仅做 color 标记 + pending 虚线。
  *
- * 模板节点：
- * - items — 时间线项容器
+ * 子项默认类型：TimelineItem（title/description/timestamp/color/dot）。
+ * 方向固定纵向。
  *
  * @example
  * ```ts
@@ -15,54 +16,44 @@
  *         { title: '开发中', description: '2024-02-01' },
  *         { title: '发布上线', description: '2024-03-01', color: 'success' },
  *     ],
+ *     pending: true,
  * })
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
-import { TIMELINE_TPL } from './timeline-tpl';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
-export type TimelineColor = 'default' | 'primary' | 'success' | 'warning' | 'error';
+export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';
+export type TimelineItem = import('./TimelineItemComponent').TimelineItemProps;
 
-export interface TimelineItem {
-    title: string;
-    description?: string;
-    timestamp?: string;
-    color?: TimelineColor;
-    dot?: string;
-}
-
-export interface TimelineProps {
+export interface TimelineProps extends ItemGroupProps {
     items?: TimelineItem[];
+    /** 末项 pending 态（容器类驱动，最后一个 tail 显示虚线） */
     pending?: boolean;
 }
 
-class TimelineComponent extends Component {
-    _items: TimelineItem[] = [];
+class TimelineComponent extends ItemGroupPooledComponent {
     _pending: boolean = false;
-    _itemEls: HTMLElement[] = [];
 
     onAfterInit(props?: TimelineProps): void {
-        this._initTimeline(props);
-    }
+        this.addCls('q-timeline');
+        (this as any).itemContainer?.el?.classList.add('q-timeline__list');
 
-    _initTimeline(props?: TimelineProps): void {
-        if (props?.pending) {
-            this._pending = props.pending;
-            this.addCls('q-timeline--pending');
-        }
-        if (props?.items) {
-            this._items = props.items;
-            this._renderItems();
-        }
+        super.onAfterInit({
+            ...props,
+            defaultItemType: 'TimelineItem',
+            direction: 'vertical',
+        });
+
+        if (props?.pending !== undefined) this.pending = props.pending;
     }
 
     get items(): TimelineItem[] {
-        return this._items;
+        return this._items.map(item => item.data as TimelineItem);
     }
     set items(value: TimelineItem[]) {
-        this._items = value;
-        this._renderItems();
+        this.setItems(value);
     }
 
     get pending(): boolean {
@@ -73,73 +64,21 @@ class TimelineComponent extends Component {
         this.toggleCls('q-timeline--pending', value);
     }
 
-    _renderItems(): void {
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
-
-        container.innerHTML = '';
-        this._itemEls = [];
-
-        for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            const isLast = i === this._items.length - 1;
-
-            const li = document.createElement('li');
-            li.className = 'q-timeline__item';
-
-            if (item.color && item.color !== 'default') {
-                li.classList.add(`q-timeline__item--${item.color}`);
-            }
-
-            const tailEl = document.createElement('div');
-            tailEl.className = 'q-timeline__tail';
-            if (isLast && this._pending) {
-                tailEl.classList.add('q-timeline__tail--pending');
-            }
-            li.appendChild(tailEl);
-
-            const dotEl = document.createElement('div');
-            dotEl.className = 'q-timeline__dot';
-            if (item.dot) {
-                dotEl.textContent = item.dot;
-                dotEl.classList.add('q-timeline__dot--custom');
-            }
-            li.appendChild(dotEl);
-
-            const contentEl = document.createElement('div');
-            contentEl.className = 'q-timeline__content';
-
-            const titleEl = document.createElement('div');
-            titleEl.className = 'q-timeline__title';
-            titleEl.textContent = item.title;
-            contentEl.appendChild(titleEl);
-
-            if (item.description) {
-                const descEl = document.createElement('div');
-                descEl.className = 'q-timeline__description';
-                descEl.textContent = item.description;
-                contentEl.appendChild(descEl);
-            }
-
-            if (item.timestamp) {
-                const timeEl = document.createElement('div');
-                timeEl.className = 'q-timeline__timestamp';
-                timeEl.textContent = item.timestamp;
-                contentEl.appendChild(timeEl);
-            }
-
-            li.appendChild(contentEl);
-            container.appendChild(li);
-            this._itemEls.push(li);
-        }
+    get defaultEventData(): Record<string, any> {
+        return {
+            ...super.defaultEventData,
+            pending: this._pending,
+            itemCount: this.count,
+        };
     }
 
     update(props?: Partial<TimelineProps>): void {
-        if (props?.items !== undefined) this.items = props.items;
+        if (props?.items !== undefined) this.setItems(props.items);
         if (props?.pending !== undefined) this.pending = props.pending;
+        super.update(props);
     }
 }
 
-TimelineComponent.useTemplate(TIMELINE_TPL);
+TimelineComponent.register();
 export { TimelineComponent };
 export type TimelineComponentInstance = InstanceType<typeof TimelineComponent>;

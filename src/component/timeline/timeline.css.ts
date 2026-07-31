@@ -55,6 +55,18 @@ export const timelineCSS = `
     );
 }
 
+/* pending 态由容器 .q-timeline--pending 驱动：末项 tail 显示虚线 */
+.q-timeline--pending .q-timeline__item:last-child .q-timeline__tail {
+    display: block;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--q-colors-border, #dcdfe6) 0px,
+        var(--q-colors-border, #dcdfe6) 4px,
+        transparent 4px,
+        transparent 8px
+    );
+}
+
 /* 节点圆点 */
 .q-timeline__dot {
     width: 12px;

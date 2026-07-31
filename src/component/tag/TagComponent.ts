@@ -2,7 +2,8 @@
  * TagComponent 标签组件
  *
  * 紧凑标记，支持类型色、可关闭、图标。
- * 关闭时触发 close 事件。
+ * 单 tag 渲染单元，不负责 close 事件 emit —— close 语义由 TagsComponent
+ * 容器层统一代理（事件委托），避免 N 次绑定与职责下沉。
  *
  * 模板节点：
  * - icon — 图标（可选）
@@ -12,7 +13,6 @@
  * ```ts
  * new TagComponent({ text: '新功能' })
  * new TagComponent({ text: '可删除', closable: true })
- *   .on('close', () => { ... })
  * new TagComponent({ text: '警告', type: 'warning' })
  * ```
  */
@@ -32,15 +32,6 @@ export interface TagProps {
 }
 
 class TagComponent extends Component {
-    onAfterInit(props?: TagProps): void {
-        this.initSize();
-        this._initTag(props);
-    }
-
-    onCloseBtnClick(): void {
-        this.emit('close', {});
-    }
-
     _initTag(props?: TagProps): void {
         if (props?.type) this.addCls(`q-tag--${props.type}`);
         if (props?.icon) {
@@ -53,9 +44,8 @@ class TagComponent extends Component {
     }
 
     get tagType(): TagType {
-        const el = this.el as HTMLElement;
         for (const t of ['primary', 'success', 'warning', 'error', 'info']) {
-            if (el?.classList.contains(`q-tag--${t}`)) return t as TagType;
+            if (this.contains(`q-tag--${t}`)) return t as TagType;
         }
         return 'default';
     }
@@ -78,6 +68,7 @@ class TagComponent extends Component {
 
 TagComponent.use([SizeAbility]);
 TagComponent.useTemplate(TAG_TPL);
+TagComponent.register();
 
 export { TagComponent };
 export type TagComponentInstance = InstanceType<typeof TagComponent>;
