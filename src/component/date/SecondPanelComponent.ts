@@ -77,7 +77,7 @@ class SecondPanelComponent extends Component {
     }
 
     _renderTens(): void {
-        const row = this.nodeMap?.tensRow?.el as HTMLElement | null;
+        const row = this._resolveNodeEl('tensRow');
         if (!row) return;
         row.innerHTML = '';
 
@@ -100,7 +100,7 @@ class SecondPanelComponent extends Component {
     }
 
     _renderOnes(): void {
-        const grid = this.nodeMap?.onesGrid?.el as HTMLElement | null;
+        const grid = this._resolveNodeEl('onesGrid');
         if (!grid) return;
         grid.innerHTML = '';
 

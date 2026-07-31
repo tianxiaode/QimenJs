@@ -98,7 +98,7 @@ class YearPanelComponent extends Component {
     }
 
     _renderThousands(): void {
-        const container = this.nodeMap?.thousandsRow?.el as HTMLElement | null;
+        const container = this._resolveNodeEl('thousandsRow');
         if (!container) return;
         container.innerHTML = '';
 
@@ -121,7 +121,7 @@ class YearPanelComponent extends Component {
     }
 
     _renderDigitGroups(): void {
-        const container = this.nodeMap?.digitGroups?.el as HTMLElement | null;
+        const container = this._resolveNodeEl('digitGroups');
         if (!container) return;
         container.innerHTML = '';
 

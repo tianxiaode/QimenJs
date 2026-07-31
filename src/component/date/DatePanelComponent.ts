@@ -46,7 +46,7 @@ class DatePanelComponent extends Component {
         this._updateLabel();
         this._updateDayGrid();
 
-        const dayGridCmp = this.nodeMap?.dayGrid?.component;
+        const dayGridCmp = this.getNode('dayGrid');
         if (dayGridCmp) {
             dayGridCmp.on('daySelect', (data: any) => this._onDaySelect(data.day));
         }
@@ -144,20 +144,17 @@ class DatePanelComponent extends Component {
     }
 
     _updateLabel(): void {
-        const label = this.nodeMap?.dateLabel?.el as HTMLElement | null;
-        if (!label) return;
-
         const locale = this.i18nConfig();
         const months = locale?.months;
-        if (months && months.length === 12) {
-            label.textContent = `${this._viewYear} ${months[this._viewMonth - 1]}`;
-        } else {
-            label.textContent = `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
-        }
+        const text =
+            months && months.length === 12
+                ? `${this._viewYear} ${months[this._viewMonth - 1]}`
+                : `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
+        this.setNodeProp('text', text, 'dateLabel');
     }
 
     _updateDayGrid(): void {
-        const dayGridCmp = this.nodeMap?.dayGrid?.component;
+        const dayGridCmp = this.getNode('dayGrid');
         if (dayGridCmp) {
             dayGridCmp.update({
                 year: this._viewYear,

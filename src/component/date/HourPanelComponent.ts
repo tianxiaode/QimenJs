@@ -63,7 +63,7 @@ class HourPanelComponent extends Component {
     }
 
     _renderGrid(): void {
-        const grid = this.nodeMap?.grid?.el as HTMLElement | null;
+        const grid = this._resolveNodeEl('grid');
         if (!grid) return;
         grid.innerHTML = '';
 

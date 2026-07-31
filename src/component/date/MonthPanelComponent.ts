@@ -74,7 +74,7 @@ class MonthPanelComponent extends Component {
     }
 
     _createCells(): void {
-        const grid = this.nodeMap?.grid?.el as HTMLElement | null;
+        const grid = this._resolveNodeEl('grid');
         if (!grid) return;
 
         this._cells = [];
