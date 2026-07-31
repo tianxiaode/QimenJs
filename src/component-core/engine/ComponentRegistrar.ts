@@ -7,17 +7,21 @@
  *   3. getCompiled(type) — 返回编译产物（懒编译）
  *   4. createNodeMapManager(type, owner) — 创建节点映射管理器
  *
- * 无模板组件：沿原型链推导，templateRef 指向祖先类的 type，
- * 获取编译产物时解析 templateRef 链直到找到编译产物。
+ * 两层引用架构：
+ *   tplRefs:  TplNode → type          （模板 → 模板名，O(1) 查找）
+ *   entries:  type → ComponentEntry    （模板名 → 编译产物，唯一存储）
+ *
+ * 每个 entry 都有 tplName，指向真正存储 tpl + compiled 的 entry。
+ * getCompiled 直接用 tplName 查找，无需递归链。
  *
  * @example
  * ```ts
  * const registry = ComponentRegistrar.getInstance();
- * registry.register(ButtonComponent, BUTTON_TPL);  // 有模板
- * registry.register(TabBarComponent);               // 无模板，推导到父类
+ * registry.register(ButtonComponent, BUTTON_TPL);  // tplName = 'Button'
+ * registry.register(TabBarComponent);               // tplName = 'Tabs'（继承）
  *
- * const BtnClass = registry.get('Button');           // 获取组件类
- * const compiled = registry.getCompiled('Button');   // 获取编译产物
+ * const BtnClass = registry.get('Button');
+ * const compiled = registry.getCompiled('Button');
  * ```
  */
 
@@ -36,11 +40,7 @@ interface ComponentStorage {
      * 模板引用表：模板对象 → 模板名（首次注册该模板的组件 type）
      *
      * 当多个组件共享同一个模板对象时，只有第一个组件存储 tpl + compiled，
-     * 后续组件只存 templateRef 指向模板名，从而避免重复编译。
-     *
-     * 两层结构：
-     *   tplRefs:  TplNode → type          （模板 → 模板名，O(1) 查找）
-     *   entries:  type → ComponentEntry    （模板名 → 编译产物，唯一存储）
+     * 后续组件只存 tplName 指向模板名，从而避免重复编译。
      */
     tplRefs: Map<TplNode, string>;
 }
@@ -61,13 +61,11 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      *
      * @example
      * ```ts
-     * registry.register(ButtonComponent, BUTTON_TPL);  // 有独立模板
-     * registry.register(TabBarComponent);               // 继承父类模板
+     * registry.register(ButtonComponent, BUTTON_TPL);  // tplName = 'Button'
+     * registry.register(TabBarComponent);               // tplName = 'Tabs'
      * ```
      */
     register(componentClass: new (props?: Record<string, any>) => any, tpl?: TplNode): void {
-        // 不检查 lock —— 运行时动态注册（RowEngine / ItemContainer）需要随时注册
-
         const type: string =
             (componentClass as any).type ?? (componentClass as any).name?.replace(/Component$/, '');
         if (!type) {
@@ -90,18 +88,18 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
             if (!tpl.replace) {
                 const sharedType = this.storage.tplRefs.get(tpl);
                 if (sharedType && sharedType !== type) {
-                    // 共享模板：新组件只存 templateRef，不存 tpl
+                    // 共享模板：tplName 指向主注册者，不存 tpl
                     if (existing) {
                         existing.componentClass = componentClass;
                         delete existing.tpl;
                         delete existing.compiled;
                         existing.replaceFrom = undefined;
-                        existing.templateRef = sharedType;
+                        existing.tplName = sharedType;
                     } else {
                         this.storage.entries.set(type, {
                             name: type,
                             componentClass,
-                            templateRef: sharedType,
+                            tplName: sharedType,
                         });
                     }
                     this.logger.debug(
@@ -136,7 +134,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 existing.tpl = resolvedTpl;
                 existing.componentClass = componentClass;
                 existing.replaceFrom = tpl.replace;
-                delete existing.templateRef;
+                existing.tplName = type;
                 delete existing.compiled;
             } else {
                 this.storage.entries.set(type, {
@@ -144,6 +142,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                     tpl: resolvedTpl,
                     componentClass,
                     replaceFrom: tpl.replace,
+                    tplName: type,
                 });
             }
 
@@ -156,7 +155,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 `Component registered: ${type} (with template)${tpl.replace ? ` replace from ${tpl.replace}` : ''}`
             );
         } else {
-            const templateRef = this._deriveTemplateRef(componentClass);
+            const tplName = this._deriveTplName(componentClass);
 
             if (existing?.tpl) {
                 existing.componentClass = componentClass;
@@ -164,22 +163,23 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 this.storage.entries.set(type, {
                     name: type,
                     componentClass,
-                    templateRef,
+                    tplName,
                 });
             }
 
             this.logger.debug(
-                `Component registered: ${type} (no template${templateRef ? `, ref → ${templateRef}` : ''})`
+                `Component registered: ${type} (no template${tplName ? `, tplName → ${tplName}` : ''})`
             );
         }
     }
 
     /**
-     * 沿原型链推导模板引用
+     * 沿原型链推导模板名
      *
-     * 从 componentClass 的父类开始，逐级查找已注册的祖先类 type
+     * 从 componentClass 的父类开始，逐级查找已注册的祖先类 type，
+     * 返回其 tplName（或 type 本身）。
      */
-    private _deriveTemplateRef(
+    private _deriveTplName(
         componentClass: new (props?: Record<string, any>) => any
     ): string | undefined {
         let current = Object.getPrototypeOf(componentClass);
@@ -187,7 +187,9 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
             const parentType =
                 (current as any).type ?? (current as any).name?.replace(/Component$/, '');
             if (parentType && this.storage.entries.has(parentType)) {
-                return parentType;
+                // 返回父类的 tplName（如果父类是共享模板的组件，继续推导）
+                const parentEntry = this.storage.entries.get(parentType)!;
+                return parentEntry.tplName ?? parentType;
             }
             current = Object.getPrototypeOf(current);
         }
@@ -207,7 +209,8 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     /**
      * 获取编译产物
      *
-     * 解析 templateRef 链，直到找到有 tpl 的条目，懒编译并返回。
+     * 直接用 tplName 查找存储 tpl 的 entry，懒编译并返回。
+     * 无需递归链，O(1) 查找 + 首次编译。
      *
      * @param type - 组件类型标识
      * @returns 编译产物，未找到返回 undefined
@@ -216,16 +219,28 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
         const entry = this.storage.entries.get(type);
         if (!entry) return undefined;
 
+        // 已缓存 → 直接返回
         if (entry.compiled) return entry.compiled;
 
+        // 有自己的模板 → 编译并缓存
         if (entry.tpl) {
             const { cache, nodeMetas } = CompileEngine.compile(entry.tpl);
             entry.compiled = { cache, nodeMetas };
             return entry.compiled;
         }
 
-        if (entry.templateRef) {
-            return this.getCompiled(entry.templateRef);
+        // 共享/继承模板 → 用 tplName 查找
+        if (entry.tplName) {
+            const tplEntry = this.storage.entries.get(entry.tplName);
+            if (tplEntry?.tpl) {
+                if (!tplEntry.compiled) {
+                    const { cache, nodeMetas } = CompileEngine.compile(tplEntry.tpl);
+                    tplEntry.compiled = { cache, nodeMetas };
+                }
+                // 缓存到当前 entry，后续直接命中
+                entry.compiled = tplEntry.compiled;
+                return entry.compiled;
+            }
         }
 
         return undefined;
@@ -248,10 +263,8 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      * 注销
      */
     unregister(id: string): void {
-        // 不检查 lock —— 允许运行时动态注销
         const entry = this.storage.entries.get(id);
         if (entry?.tpl) {
-            // 如果该组件是模板的主注册者，清理引用表
             const refType = this.storage.tplRefs.get(entry.tpl);
             if (refType === id) {
                 this.storage.tplRefs.delete(entry.tpl);
@@ -276,10 +289,6 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
 
     /**
      * 获取模板引用表（模板对象 → 模板名）
-     *
-     * 用于调试和检查模板共享关系。
-     * 只有模板的首个注册者（👑）会在 tplRefs 中建立映射，
-     * 后续共享同一模板的组件通过 templateRef 指向首个注册者。
      */
     templateRefs(): Map<TplNode, string> {
         return this.storage.tplRefs;
@@ -289,7 +298,6 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      * 清空所有注册
      */
     clear(): void {
-        // 不检查 lock —— 允许运行时清空
         this.storage.entries.clear();
         this.storage.tplRefs.clear();
     }
@@ -312,10 +320,10 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
         console.log('');
         for (const [name, entry] of entries) {
             const replaceInfo = entry.replaceFrom ? ` ← replace from ${entry.replaceFrom}` : '';
-            const refInfo = entry.templateRef ? ` → ref ${entry.templateRef}` : '';
+            const tplNameInfo = entry.tplName && entry.tplName !== name ? ` → tplName ${entry.tplName}` : '';
             const isTplOwner = entry.tpl && this.storage.tplRefs.get(entry.tpl) === name;
             const ownerTag = isTplOwner ? ' 👑' : '';
-            console.log(`  📄 ${name}${replaceInfo}${refInfo}${ownerTag}`);
+            console.log(`  📄 ${name}${replaceInfo}${tplNameInfo}${ownerTag}`);
             if (entry.componentClass) {
                 console.log(`     class: ${entry.componentClass.name}`);
             }

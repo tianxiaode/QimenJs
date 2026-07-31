@@ -6,9 +6,10 @@
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
 import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
+import { OverflowAbility } from '@qimenjs/component-abilities';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
 
-export type OverflowMode = 'none' | 'scroll' | 'menu';
+export type { OverflowMode } from '@qimenjs/component-abilities';
 export type DefaultItemDef = Record<string, any>;
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
 
@@ -19,7 +20,7 @@ export interface ItemGroupConfig {
     gap?: string;
     cols?: number;
     defaultItem?: DefaultItemConfig;
-    overflowMode?: OverflowMode;
+    overflowMode?: import('@qimenjs/component-abilities').OverflowMode;
     step?: number;
     indicator?: IndicatorConfig;
 }
@@ -42,7 +43,7 @@ class ItemGroupBaseComponent extends Component {
     _gap: string = '';
     _cols: number = 1;
     _defaultItem: DefaultItemConfig = {};
-    _overflowMode: OverflowMode = 'none';
+    _overflowMode: import('@qimenjs/component-abilities').OverflowMode = 'none';
     _step: number = 100;
 
     get isItemContainer(): boolean {
@@ -65,7 +66,6 @@ class ItemGroupBaseComponent extends Component {
         if (props?.cols) this.cols = props.cols;
         if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
         if (props?.defaultItem) this.defaultItem = props.defaultItem;
-        if (props?.overflowMode) this.overflowMode = props.overflowMode;
         if (props?.step) this.step = props.step;
         if (props?.indicator && typeof this.initIndicator === 'function') {
             this.initIndicator(props.indicator);
@@ -73,6 +73,18 @@ class ItemGroupBaseComponent extends Component {
 
         if (props?.cls) this.addCls(props.cls);
         if (props?.items) this.setItems(props.items);
+
+        this._initOverflow(props);
+    }
+
+    _initOverflow(props?: any): void {
+        if (typeof this.initOverflow === 'function') {
+            this.initOverflow({
+                mode: props?.overflowMode ?? 'none',
+                direction: this._direction,
+                step: this._step,
+            });
+        }
     }
 
     get items(): readonly any[] {
@@ -120,12 +132,14 @@ class ItemGroupBaseComponent extends Component {
         this._defaultItem = value;
     }
 
-    get overflowMode(): OverflowMode {
+    get overflowMode(): import('@qimenjs/component-abilities').OverflowMode {
         return this._overflowMode;
     }
-    set overflowMode(value: OverflowMode) {
+    set overflowMode(value: import('@qimenjs/component-abilities').OverflowMode) {
         this._overflowMode = value;
-        this._applyOverflowMode();
+        if (typeof this._applyOverflowMode === 'function') {
+            this._applyOverflowMode();
+        }
     }
 
     get step(): number {
@@ -133,6 +147,9 @@ class ItemGroupBaseComponent extends Component {
     }
     set step(value: number) {
         this._step = value;
+        if (typeof this._onOverflowStepChange === 'function') {
+            this._onOverflowStepChange(value);
+        }
         this._applyOrders();
     }
 
@@ -166,6 +183,31 @@ class ItemGroupBaseComponent extends Component {
         if (typeof item.component.update === 'function') {
             item.component.update(data);
         }
+        this._emitItemUpdate(index, item.component, data);
+    }
+
+    // ============================================
+    // 事件辅助方法
+    // ============================================
+
+    /** 触发 itemadd 事件 */
+    _emitItemAdd(index: number, component: any, data: Record<string, any>): void {
+        this.emit('itemadd', { index, component, data });
+    }
+
+    /** 触发 itemremove 事件 */
+    _emitItemRemove(index: number, component: any, data: Record<string, any>): void {
+        this.emit('itemremove', { index, component, data });
+    }
+
+    /** 触发 itemupdate 事件 */
+    _emitItemUpdate(index: number, component: any, data: Record<string, any>): void {
+        this.emit('itemupdate', { index, component, data });
+    }
+
+    /** 触发 itemchange 事件（批量变化，如 setItems/clear） */
+    _emitItemsChange(type: 'set' | 'clear' | 'sort' | 'move', details?: Record<string, any>): void {
+        this.emit('itemchange', { type, ...details });
     }
 
     _createItem(data: Record<string, any>): any {
@@ -228,6 +270,9 @@ class ItemGroupBaseComponent extends Component {
     _applyDirection(): void {
         this.el.classList.remove('q-itemgroup--horizontal', 'q-itemgroup--vertical');
         this.el.classList.add(`q-itemgroup--${this._direction}`);
+        if (typeof this._onOverflowDirectionChange === 'function') {
+            this._onOverflowDirectionChange();
+        }
         this._applyOrders();
     }
 
@@ -246,18 +291,6 @@ class ItemGroupBaseComponent extends Component {
             container.style.removeProperty('--q-itemgroup-cols');
             container.classList.remove('q-itemgroup__items--cols');
         }
-    }
-
-    _applyOverflowMode(): void {
-        if (this._overflowMode === 'none') return;
-        this.overflowConfig = {
-            type: this._overflowMode as 'scroll' | 'menu',
-            direction: this._direction as 'horizontal' | 'vertical',
-        };
-    }
-
-    _cleanupOverflow(): void {
-        this.overflowConfig = undefined;
     }
 
     setItems(datas: Record<string, any>[]): void {
@@ -293,19 +326,20 @@ class ItemGroupBaseComponent extends Component {
             this.defaultItemType = props.defaultItemType;
         }
         if (props?.overflowMode !== undefined) {
-            this._overflowMode = props.overflowMode;
-            this._applyOverflowMode();
+            this.overflowMode = props.overflowMode;
         }
         if (typeof this.onUpdated === 'function') (this as any).onUpdated(props);
     }
 
     onBeforeDispose(): void {
-        this._cleanupOverflow();
+        if (typeof this._teardownOverflow === 'function') {
+            this._teardownOverflow();
+        }
         this.clear();
     }
 }
 
-ItemGroupBaseComponent.use(IndicatorAbility);
+ItemGroupBaseComponent.use([IndicatorAbility, OverflowAbility]);
 ItemGroupBaseComponent.useTemplate(ITEMGROUP_BASE_TPL);
 export { ItemGroupBaseComponent };
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

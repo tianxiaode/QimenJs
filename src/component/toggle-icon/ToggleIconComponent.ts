@@ -18,7 +18,7 @@
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
+import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_ICON_TPL } from './toggle-icon-tpl';
 
@@ -31,9 +31,13 @@ export interface ToggleIconProps {
 }
 
 class ToggleIconComponent extends Component {
-    _on: false = false;
+    _on: boolean = false;
     _onIcon: string = '';
     _offIcon: string = '';
+
+    domEvents?: DomEventsMap | undefined = {
+        click: { handler: 'onRootClick' },
+    };
 
     onAfterInit(props?: ToggleIconProps): void {
         this.initSize();
@@ -51,8 +55,11 @@ class ToggleIconComponent extends Component {
         this._applyState();
     }
 
-    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-        return { on: this._on };
+    override get defaultEventData() {
+        return {
+            ...super.defaultEventData,
+            on: this._on,
+        };
     }
 
     get isOn(): boolean {
@@ -85,16 +92,15 @@ class ToggleIconComponent extends Component {
             this.icon = iconValue;
         }
 
-        this.el.classList.toggle('q-toggle-icon--on', this._on);
-        this.el.classList.toggle('q-toggle-icon--off', !this._on);
-        this.el.classList.toggle('q-toggle-icon--disabled', this.disabled);
-
-        this.el.setAttribute('aria-pressed', String(this._on));
+        this.toogleCls('q-toggle-icon--on', this._on);
+        this.toogleCls('q-toggle-icon--off', !this._on);
+        this.toogleCls('q-toggle-icon--disabled', this.disabled);
+        this.setAttr('aria-pressed', String(this._on));
 
         if (this.disabled) {
-            this.el.setAttribute('aria-disabled', 'true');
+            this.setAttr('aria-disabled', 'true');
         } else {
-            this.el.removeAttribute('aria-disabled');
+            this.setAttr('aria-disabled');
         }
     }
 

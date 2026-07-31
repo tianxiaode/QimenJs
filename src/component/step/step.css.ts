@@ -39,6 +39,11 @@ export const stepCSS = `
     padding-bottom: 0;
 }
 
+/* 最后一个步骤项隐藏连接线 */
+.q-step__item:last-child .q-step__tail {
+    display: none;
+}
+
 /* 步骤头部（圆圈 + 连接线） */
 .q-step__head {
     display: flex;

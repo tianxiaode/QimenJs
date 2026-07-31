@@ -11,14 +11,13 @@
  */
 
 import { Component, TplNode } from '@qimenjs/component-core';
-import { RouteContainerComponent } from '@qimenjs/component';
+import { NavbarComponent, RouteContainerComponent } from '@qimenjs/component';
 
-import { AppHeaderComponent } from './components/AppHeader';
 import { AppFooterComponent } from './components/AppFooter';
 import { HomePage } from './pages/HomePage';
-import { ComponentsPage } from './pages/ComponentsPage';
-import { TemplatesPage } from './pages/TemplatesPage';
-import { LoginPage } from './pages/LoginPage';
+// import { ComponentsPage } from './pages/ComponentsPage';
+// import { TemplatesPage } from './pages/TemplatesPage';
+// import { LoginPage } from './pages/LoginPage';
 
 export const APP_SHELL_TPL: TplNode = {
     tag: 'div',
@@ -27,8 +26,26 @@ export const APP_SHELL_TPL: TplNode = {
     children: [
         {
             name: 'header',
-            type: AppHeaderComponent,
-            cls: 'q-app-header',
+            type: NavbarComponent,
+            initConfig: {
+                items: [
+                    { type: 'text', text: 'i18n:home', path: '/', icon: 'home' },
+                    {
+                        type: 'text',
+                        text: 'i18n:components',
+                        path: '/templates',
+                        icon: 'fa-solid fa-house',
+                    },
+                    {
+                        type: 'text',
+                        text: 'i18n:templates',
+                        path: '/teplates',
+                        icon: 'fa-solid fa-cubs',
+                    },
+                    { type: 'text', text: 'i18n:home', path: '/', icon: 'fa-solid fa-layer-group' },
+                    { type: 'space' },
+                ],
+            },
         },
         {
             name: 'content',
@@ -37,21 +54,21 @@ export const APP_SHELL_TPL: TplNode = {
             initConfig: {
                 routeMap: {
                     '/': HomePage,
-                    '/components': ComponentsPage,
-                    '/templates': TemplatesPage,
-                    '/login': LoginPage,
+                    // '/components': ComponentsPage,
+                    // '/templates': TemplatesPage,
+                    // '/login': LoginPage,
                 },
                 defaultComponent: HomePage,
             },
         },
-        {
-            name: 'footer',
-            type: AppFooterComponent,
-            cls: 'q-app-footer',
-        },
+        // {
+        //     name: 'footer',
+        //     type: AppFooterComponent,
+        //     cls: 'q-app-footer',
+        // },
     ],
 };
 
-export class AppShellBase extends Component {}
+class AppShellBase extends Component {}
 
-Component.register(AppShellBase, APP_SHELL_TPL);
+AppShellBase.useTemplate(APP_SHELL_TPL);

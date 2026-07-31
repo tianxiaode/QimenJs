@@ -8,11 +8,16 @@ import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     setItems(datas: Record<string, any>[]): void {
         this.clear();
-        for (const data of datas) {
+        for (let i = 0; i < datas.length; i++) {
+            const data = datas[i];
             const item = this._createItem(data);
-            if (item) this._items.push(item);
+            if (item) {
+                this._items.push(item);
+                this._emitItemAdd(i, item.component, data);
+            }
         }
         this.sort();
+        this._emitItemsChange('set', { count: datas.length });
     }
 
     add(data: Record<string, any>): any {
@@ -20,6 +25,7 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         if (item) {
             this._items.push(item);
             this.sort();
+            this._emitItemAdd(this._items.length - 1, item.component, data);
             return item.component;
         }
         return null;
@@ -48,6 +54,7 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         }
 
         this.sort();
+        this._emitItemAdd(clampedIndex, item.component, data);
         return item.component;
     }
 
@@ -55,15 +62,19 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         if (index < 0 || index >= this._items.length) return undefined;
         const [item] = this._items.splice(index, 1);
         this._destroyItem(item);
+        this._emitItemRemove(index, item.component, item.data);
         return item.component;
     }
 
     clear(): void {
-        for (const item of this._items) {
+        for (let i = 0; i < this._items.length; i++) {
+            const item = this._items[i];
+            this._emitItemRemove(i, item.component, item.data);
             this._destroyItem(item);
         }
         this._items = [];
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
+        this._emitItemsChange('clear');
     }
 
     sort(compareFn?: (a: any, b: any) => number): void {
@@ -77,6 +88,7 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
             });
         }
         this._reorderDOM();
+        this._emitItemsChange('sort');
     }
 
     move(fromIndex: number, toIndex: number): void {
@@ -89,6 +101,7 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         this._items[fromIndex].component.order = toOrder;
         this._items[toIndex].component.order = fromOrder;
         this.sort();
+        this._emitItemsChange('move', { from: fromIndex, to: toIndex });
     }
 }
 

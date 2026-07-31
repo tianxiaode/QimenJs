@@ -100,8 +100,11 @@ class IndicatorComponent extends ItemGroupStaticComponent {
         return this._activeIndex;
     }
     set activeIndex(value: number) {
+        if (value === this._activeIndex) return;
+        const prevIndex = this._activeIndex;
         this._activeIndex = value;
         this._applyActive();
+        this.emit('change', { index: value, prevIndex });
     }
 
     get mode(): IndicatorMode {

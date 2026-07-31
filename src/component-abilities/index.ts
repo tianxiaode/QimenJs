@@ -36,3 +36,11 @@ export { LocalDataManager, type LocalDataManagerConfig, type ILocalDataManager }
 
 // 指示器能力
 export { IndicatorAbility, type IndicatorType, type IndicatorConfig } from './indicator';
+
+// 溢出能力
+export {
+    OverflowAbility,
+    type OverflowMode,
+    type OverflowState,
+    type OverflowItem,
+} from './overflow';

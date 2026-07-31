@@ -174,10 +174,9 @@ describe('ComponentRegistrar', () => {
             expect(compiled.cache).toBeDefined();
         });
 
-        it('无模板组件沿 templateRef 链获取编译产物', () => {
+        it('无模板组件沿 tplName 获取编译产物', () => {
             const registry = createRegistry();
             const Parent = makeComponent('Parent');
-            const Child = makeComponent('Child');
 
             registry.register(Parent, {
                 tag: 'div',
@@ -199,11 +198,33 @@ describe('ComponentRegistrar', () => {
             expect(compiled!.nodeMetas.inner).toBeDefined();
         });
 
-        it('无模板且无 templateRef 返回 undefined', () => {
+        it('无模板且无 tplName 返回 undefined', () => {
             const registry = createRegistry();
             const Comp = makeComponent('NoTpl');
             registry.register(Comp);
             expect(registry.getCompiled('NoTpl')).toBeUndefined();
+        });
+
+        it('同一模板对象被多个组件使用时只编译一次', () => {
+            const registry = createRegistry();
+            const SHARED_TPL: TplNode = {
+                tag: 'div',
+                children: [{ tag: 'span', name: 'shared' }],
+            };
+
+            const Comp1 = makeComponent('Shared1');
+            const Comp2 = makeComponent('Shared2');
+
+            registry.register(Comp1, SHARED_TPL);
+            registry.register(Comp2, SHARED_TPL);  // 同一模板对象
+
+            const compiled1 = registry.getCompiled('Shared1');
+            const compiled2 = registry.getCompiled('Shared2');
+
+            expect(compiled1).toBeDefined();
+            expect(compiled2).toBeDefined();
+            // 两个组件共享同一编译产物
+            expect(compiled1).toBe(compiled2);
         });
     });
 

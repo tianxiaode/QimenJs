@@ -19,7 +19,7 @@
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
+import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
 
@@ -47,14 +47,18 @@ class ToggleComponent extends Component {
         this._applyState();
     }
 
+    domEvents?: DomEventsMap | undefined = {
+        click: { handler: 'onRootClick' },
+    };
+
     onRootClick(): void {
         if (this.disabled) return;
         this._pressed = !this._pressed;
         this._applyState();
     }
 
-    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-        return { pressed: this._pressed };
+    get defaultEventData() {
+        return { ...super.defaultEventData, pressed: this._pressed };
     }
 
     get pressed(): boolean {

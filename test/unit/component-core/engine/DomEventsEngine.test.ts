@@ -312,6 +312,119 @@ describe('DomEventsEngine', () => {
         it('空 domEvents 返回空数组', () => {
             expect(DomEventsEngine.compileDomEvents({})).toEqual([]);
         });
+
+        describe('隐式 root 简写（configKey + 基本类型值）', () => {
+            it('{ handler: "method" } 自动推断为 root 委托', () => {
+                const domEvents: DomEventsMap = {
+                    input: { handler: '_onInput' },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(1);
+                expect(rules[0].event).toBe('input');
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].action).toBe('');
+                expect(rules[0].handler).toBe('_onInput');
+                expect(rules[0].needsBinding).toBe(true);
+            });
+
+            it('{ handler: true } 自动推断为 root 委托', () => {
+                const domEvents: DomEventsMap = {
+                    click: { handler: true },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe(true);
+            });
+
+            it('{ emits: ["close"] } 自动推断为 root 委托', () => {
+                const domEvents: DomEventsMap = {
+                    click: { emits: ['close'] },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].emits).toEqual(['close']);
+            });
+
+            it('{ debounce: 300 } 自动推断为 root 委托', () => {
+                const domEvents: DomEventsMap = {
+                    input: { debounce: 300 },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].debounce).toBe(300);
+            });
+
+            it('多个隐式 root 事件类型各自编译为独立规则', () => {
+                const domEvents: DomEventsMap = {
+                    input: { handler: '_onInput' },
+                    keydown: { handler: '_onKeydown' },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(2);
+                expect(rules[0].event).toBe('input');
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe('_onInput');
+                expect(rules[1].event).toBe('keydown');
+                expect(rules[1].componentPath).toBe('root');
+                expect(rules[1].handler).toBe('_onKeydown');
+            });
+
+            it('与两层模式共存时互不干扰', () => {
+                const domEvents: DomEventsMap = {
+                    click: {
+                        handler: '_onRootClick',          // 隐式 root 简写
+                        closeBtn: { handler: true },     // 两层模式
+                    },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(2);
+
+                const rootRule = rules.find(r => r.componentPath === 'root');
+                const closeBtnRule = rules.find(r => r.componentPath === 'closeBtn');
+                expect(rootRule).toBeTruthy();
+                expect(rootRule.handler).toBe('_onRootClick');
+                expect(closeBtnRule).toBeTruthy();
+                expect(closeBtnRule.handler).toBe(true);
+            });
+
+            it('与三层模式共存时互不干扰', () => {
+                const domEvents: DomEventsMap = {
+                    click: {
+                        handler: '_onRootClick',                  // 隐式 root 简写
+                        toolbar: { save: { handler: true } },      // 三层模式
+                    },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                expect(rules).toHaveLength(2);
+
+                const rootRule = rules.find(r => r.componentPath === 'root');
+                const saveRule = rules.find(r => r.action === 'save');
+                expect(rootRule).toBeTruthy();
+                expect(rootRule.handler).toBe('_onRootClick');
+                expect(saveRule).toBeTruthy();
+                expect(saveRule.componentPath).toBe('toolbar');
+            });
+
+            it('非配置键的字符串路径不受影响', () => {
+                // 'closeBtn' 不是配置键，{ closeBtn: '_onClick' } 不应该被当作隐式 root
+                // 但实际上 _isDomEventConfig('_onClick') 返回 false（不是 object）
+                // 所以它会进入三层模式分支 — 这与改动前行为一致
+                const domEvents: DomEventsMap = {
+                    click: {
+                        closeBtn: '_onCloseClick',
+                    },
+                };
+                const rules = DomEventsEngine.compileDomEvents(domEvents);
+                // 行为与改动前一致：closeBtn 被当作 componentPath，值是字符串
+                // 进入三层模式，Object.entries('_onCloseClick') 产生多条规则
+                expect(rules.length).toBeGreaterThan(0);
+                // 验证至少有一条规则的 componentPath 是 'closeBtn'
+                expect(rules[0].componentPath).toBe('closeBtn');
+            });
+        });
     });
 
     describe('bindDomEvents', () => {
@@ -1366,6 +1479,109 @@ describe('DomEventsEngine', () => {
 
                 expect(instance._onPanelAction).toHaveBeenCalled();
                 expect(instance.onPanelHeaderActionCollapseClick).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('隐式 root 简写与 buildDomEvents 合并', () => {
+            it('静态隐式 root + 动态隐式 root 同 configKey 时动态优先', () => {
+                const staticEvents: DomEventsMap = {
+                    input: { handler: '_onInputV1' },
+                };
+                const { instance } = makeInstance(staticEvents);
+
+                instance.buildDomEvents = jest.fn(() => ({
+                    input: { handler: '_onInputV2' },
+                }));
+
+                DomEventsEngine.bindDomEvents(instance);
+                const rules = instance.constructor._domEventRules;
+
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe('_onInputV2');
+            });
+
+            it('静态隐式 root + 动态隐式 root 不同 configKey 时合并', () => {
+                const staticEvents: DomEventsMap = {
+                    input: { handler: '_onInput' },
+                };
+                const { instance } = makeInstance(staticEvents);
+
+                instance.buildDomEvents = jest.fn(() => ({
+                    input: { emits: ['inputChanged'] },
+                }));
+
+                DomEventsEngine.bindDomEvents(instance);
+                const rules = instance.constructor._domEventRules;
+
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe('_onInput');
+                expect(rules[0].emits).toEqual(['inputChanged']);
+            });
+
+            it('静态隐式 root + 动态显式 root 路径时正确合并', () => {
+                const staticEvents: DomEventsMap = {
+                    input: { handler: '_onInput' },
+                };
+                const { instance } = makeInstance(staticEvents);
+
+                instance.buildDomEvents = jest.fn(() => ({
+                    input: { root: { emits: ['inputEvent'] } },
+                }));
+
+                DomEventsEngine.bindDomEvents(instance);
+                const rules = instance.constructor._domEventRules;
+
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe('_onInput');
+                expect(rules[0].emits).toEqual(['inputEvent']);
+            });
+
+            it('静态两层模式 + 动态隐式 root 合并到同一 root', () => {
+                const staticEvents: DomEventsMap = {
+                    click: {
+                        root: { handler: true },
+                    },
+                };
+                const { instance } = makeInstance(staticEvents);
+
+                instance.buildDomEvents = jest.fn(() => ({
+                    click: { emits: ['submit'] },
+                }));
+
+                DomEventsEngine.bindDomEvents(instance);
+                const rules = instance.constructor._domEventRules;
+
+                expect(rules).toHaveLength(1);
+                expect(rules[0].componentPath).toBe('root');
+                expect(rules[0].handler).toBe(true);
+                expect(rules[0].emits).toEqual(['submit']);
+            });
+
+            it('隐式 root 简写事件通过 root 正确分发', () => {
+                const domEvents: DomEventsMap = {
+                    click: { handler: '_onRootClick' },
+                };
+                const rootEl = makeEl();
+                const { instance } = makeInstance(domEvents);
+                instance.el = rootEl;
+                instance.nodeMap.root = { component: instance, el: rootEl };
+
+                instance._onRootClick = jest.fn();
+
+                DomEventsEngine.bindDomEvents(instance);
+                const rules = instance.constructor._domEventRules;
+
+                // 模拟点击事件
+                DomEventsEngine.handleDelegatedEvent(
+                    instance,
+                    { type: 'click', target: rootEl },
+                    rules
+                );
+
+                expect(instance._onRootClick).toHaveBeenCalled();
             });
         });
     });

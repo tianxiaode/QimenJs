@@ -108,9 +108,13 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             const reused = this._reuseFromPool(datas[i]);
             if (reused) {
                 this._items.push(reused);
+                this._emitItemAdd(i, reused.component, datas[i]);
             } else {
                 const item = this._createItem(datas[i]);
-                if (item) this._items.push(item);
+                if (item) {
+                    this._items.push(item);
+                    this._emitItemAdd(i, item.component, datas[i]);
+                }
             }
         }
 
@@ -118,10 +122,12 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             const item = this._items[i];
             item.el.hidden = true;
             this._hiddenItems.push(item);
+            this._emitItemRemove(i, item.component, item.data);
         }
         this._items.length = newLength;
 
         this._applyOrders();
+        this._emitItemsChange('set', { count: newLength });
     }
 
     add(data: Record<string, any>): any {
@@ -129,6 +135,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (reused) {
             this._items.push(reused);
             this._applyOrders();
+            this._emitItemAdd(this._items.length - 1, reused.component, data);
             return reused.component;
         }
 
@@ -136,6 +143,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (item) {
             this._items.push(item);
             this._applyOrders();
+            this._emitItemAdd(this._items.length - 1, item.component, data);
             return item.component;
         }
         return null;
@@ -148,6 +156,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (reused) {
             this._items.splice(clampedIndex, 0, reused);
             this._applyOrders();
+            this._emitItemAdd(clampedIndex, reused.component, data);
             return reused.component;
         }
 
@@ -155,6 +164,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (item) {
             this._items.splice(clampedIndex, 0, item);
             this._applyOrders();
+            this._emitItemAdd(clampedIndex, item.component, data);
             return item.component;
         }
         return null;
@@ -166,13 +176,16 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         item.el.hidden = true;
         this._hiddenItems.push(item);
         this._applyOrders();
+        this._emitItemRemove(index, item.component, item.data);
         return item.component;
     }
 
     clear(): void {
-        for (const item of this._items) {
+        for (let i = 0; i < this._items.length; i++) {
+            const item = this._items[i];
             item.el.hidden = true;
             this._hiddenItems.push(item);
+            this._emitItemRemove(i, item.component, item.data);
         }
         this._items = [];
         for (const pool of this._auxPools.values()) {
@@ -183,6 +196,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             pool.items = [];
         }
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
+        this._emitItemsChange('clear');
     }
 
     _reuseFromPool(data: Record<string, any>): any {

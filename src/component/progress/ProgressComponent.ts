@@ -47,12 +47,9 @@ class ProgressComponent extends Component {
     }
     set percent(value: number) {
         this._percent = Math.max(0, Math.min(100, value));
-        const barEl = this.nodeMap?.bar?.el as HTMLElement | null;
-        if (barEl) {
-            barEl.style.width = `${this._percent}%`;
-        }
+        this.setNodeStyle({ width: `${this._percent}%` }, 'bar');
         this.setAttr('aria-valuenow', String(this._percent));
-        if (!this.nodeMap?.text?.el?.hidden) {
+        if (!this._getNodeProp('text', 'hidden')) {
             this.text = `${this._percent}%`;
         }
     }

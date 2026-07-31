@@ -1,3 +1,10 @@
+/**
+ * Tabs 标签页容器模板
+ *
+ * 结构：tabBar（标签栏） + content（内容区）
+ * 位置通过 position 属性控制（top/bottom/left/right）
+ */
+
 import type { TplNode } from '@/component-core/types/tpl-node-types';
 
 export const TABS_TPL: TplNode = {
@@ -5,6 +12,6 @@ export const TABS_TPL: TplNode = {
     cls: 'q-tabs',
     children: [
         { tag: 'div', name: 'tabBar', cls: 'q-tabs__bar' },
-        { tag: 'div', name: 'items', cls: 'q-tabs__content' },
+        { tag: 'div', name: 'content', cls: 'q-tabs__content' },
     ],
 };

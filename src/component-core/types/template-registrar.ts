@@ -91,10 +91,23 @@ export interface CompiledProduct {
  * @see ComponentRegistrar - 模板注册器
  */
 export interface ComponentEntry {
+    /** 组件 type */
     name: string;
+    /** 模板定义（只有模板的主注册者才存储） */
     tpl?: TplNode;
+    /** 编译产物（懒编译缓存） */
     compiled?: CompiledProduct;
+    /** 模板替换的源组件 type */
     replaceFrom?: string;
+    /** 组件类 */
     componentClass?: new (props?: Record<string, any>) => any;
-    templateRef?: string;
+    /**
+     * 模板名 — 指向真正存储 tpl 的 entry 的 name
+     *
+     * 所有共享/继承模板的组件都通过 tplName 找到模板定义和编译产物。
+     * - 有自己模板的组件：tplName = 自身 type
+     * - 共享模板的组件：tplName = 主注册者的 type
+     * - 继承模板的组件：tplName = 父类的 type
+     */
+    tplName?: string;
 }

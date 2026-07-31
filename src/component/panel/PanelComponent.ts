@@ -19,6 +19,7 @@
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
+import { PANEL_TPL } from './panel-tpl';
 
 export interface ToolGroupConfig {
     items: Record<string, any>[];
@@ -55,18 +56,18 @@ class PanelComponent extends Component {
     };
 
     onHeaderActionCollapseClick(): void {
-        const isCollapsed = this.el.classList.contains('q-panel--collapsed');
+        const isCollapsed = this.containsCls('q-panel--collapsed');
         if (isCollapsed) {
-            this.el.classList.remove('q-panel--collapsed');
+            this.removeCls('q-panel--collapsed');
             this.setNodeHidden(false, 'body');
         } else {
-            this.el.classList.add('q-panel--collapsed');
+            this.addCls('q-panel--collapsed');
             this.setNodeHidden(true, 'body');
         }
     }
 
     onHeaderActionCloseClick(): void {
-        this.el.classList.add('q-panel--closed');
+        this.addCls('q-panel--closed');
         this.setNodeHidden(true, 'body');
     }
 
@@ -116,7 +117,7 @@ class PanelComponent extends Component {
     }
 }
 
-PanelComponent.use([ResizeAbility]);
+PanelComponent.use(ResizeAbility);
 PanelComponent.useTemplate(PANEL_TPL);
 
 export { PanelComponent };

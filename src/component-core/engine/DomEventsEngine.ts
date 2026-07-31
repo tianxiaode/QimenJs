@@ -22,74 +22,73 @@ import { debounce, throttle } from '@qimenjs/async';
 import { EventForwarder } from './EventForwarder';
 import type { EventDataType } from './EventForwarder';
 
+/**
+ * DomEventConfig 合法的属性键集合
+ *
+ * 用于区分 DomEventConfig（两层模式）和 action→config 映射（三层模式），
+ * 以及检测隐式 root 简写：{ handler: '_onInput' } → root 委托。
+ */
+const CONFIG_KEYS = [
+    'handler', 'emits', 'bridges', 'entities', 'router', 'system',
+    'data', 'once', 'debounce', 'throttle',
+];
+
 export class DomEventsEngine {
     /**
      * 编译 domEvents 为 DelegatedEventRule[]
      *
-     * 支持两种语法：
+     * 支持三种语法：
      * 1. 三层模式（显式 action）：path → { action: config }
      * 2. 两层模式（[action] 占位符）：path → config（自动设 action='' 和 wildcardAction=true）
+     * 3. 隐式 root 简写：{ handler: '_onInput' } → root 委托，无需显式写 'root' 路径
      *
      * 通用特性：
      * - 逗号分隔多路径：'path1,path2,path3' → 生成多条规则
+     *
+     * @example
+     * ```ts
+     * // 隐式 root 简写 — 自动推断为 root 委托
+     * domEvents = {
+     *   input: { handler: '_onInput' },      // → root: { handler: '_onInput' }
+     *   click: { emits: ['close'] },          // → root: { emits: ['close'] }
+     * };
+     *
+     * // 显式路径 — 仍然支持
+     * domEvents = {
+     *   click: { closeBtn: { handler: true } },
+     * };
+     * ```
      */
     static compileDomEvents(domEvents: DomEventsMap): DelegatedEventRule[] {
         const rules: DelegatedEventRule[] = [];
 
         for (const [domEvent, pathMap] of Object.entries(domEvents)) {
             for (const [componentPath, value] of Object.entries(pathMap)) {
+                // 检测隐式 root 简写：componentPath 是已知配置键 + value 是基本类型
+                const isImplicitRoot = DomEventsEngine._isImplicitRoot(componentPath, value);
+                const isTwoLayer = !isImplicitRoot && DomEventsEngine._isDomEventConfig(value);
+
+                if (isImplicitRoot) {
+                    // 隐式 root 简写：{ handler: '_onInput' } → root 委托
+                    // value 是基本类型，componentPath 是配置键，直接构造 DomEventConfig
+                    const config: Record<string, any> = { [componentPath]: value };
+                    rules.push(DomEventsEngine._buildRule(domEvent, 'root', '', config));
+                    continue;
+                }
+
                 // 解析逗号分隔的多路径
                 const paths = componentPath.split(',').map(p => p.trim());
-
-                // 判断是两层模式（DomEventConfig）还是三层模式（{ [action]: DomEventConfig }）
-                const isTwoLayer = DomEventsEngine._isDomEventConfig(value);
 
                 for (const path of paths) {
                     if (isTwoLayer) {
                         // 两层模式：value 直接是 DomEventConfig
                         const config = value as any;
-                        const wildcardAction = config.emits?.includes('[action]') ?? false;
-
-                        rules.push({
-                            event: domEvent,
-                            componentPath: path,
-                            action: '',
-                            wildcardAction,
-                            data: config.data,
-                            emits: config.emits,
-                            bridges: config.bridges,
-                            entities: config.entities,
-                            router: config.router,
-                            system: config.system,
-                            handler: config.handler,
-                            once: config.once,
-                            debounce: config.debounce,
-                            throttle: config.throttle,
-                            needsBinding: true,
-                        });
+                        rules.push(DomEventsEngine._buildRule(domEvent, path, '', config));
                     } else {
                         // 三层模式：value 是 { [action]: DomEventConfig }
                         const actionMap = value as Record<string, any>;
                         for (const [action, config] of Object.entries(actionMap)) {
-                            const wildcardAction = config.emits?.includes('[action]') ?? false;
-
-                            rules.push({
-                                event: domEvent,
-                                componentPath: path,
-                                action,
-                                wildcardAction,
-                                data: config.data,
-                                emits: config.emits,
-                                bridges: config.bridges,
-                                entities: config.entities,
-                                router: config.router,
-                                system: config.system,
-                                handler: config.handler,
-                                once: config.once,
-                                debounce: config.debounce,
-                                throttle: config.throttle,
-                                needsBinding: true,
-                            });
+                            rules.push(DomEventsEngine._buildRule(domEvent, path, action, config));
                         }
                     }
                 }
@@ -100,6 +99,57 @@ export class DomEventsEngine {
     }
 
     /**
+     * 构建单条 DelegatedEventRule（统一提取，消除重复代码）
+     */
+    private static _buildRule(
+        domEvent: string,
+        componentPath: string,
+        action: string,
+        config: any
+    ): DelegatedEventRule {
+        const wildcardAction = config.emits?.includes('[action]') ?? false;
+        return {
+            event: domEvent,
+            componentPath,
+            action,
+            wildcardAction,
+            data: config.data,
+            emits: config.emits,
+            bridges: config.bridges,
+            entities: config.entities,
+            router: config.router,
+            system: config.system,
+            handler: config.handler,
+            once: config.once,
+            debounce: config.debounce,
+            throttle: config.throttle,
+            needsBinding: true,
+        };
+    }
+
+    /**
+     * 检测隐式 root 简写
+     *
+     * 当 componentPath 是已知 DomEventConfig 属性键（如 handler、emits），
+     * 且 value 为基本类型（string/boolean/number/array，非 plain object）时，视为 root 委托简写。
+     *
+     * @example
+     * ```ts
+     * _isImplicitRoot('handler', '_onInput')  // true
+     * _isImplicitRoot('emits', ['close'])     // true（数组也是隐式 root）
+     * _isImplicitRoot('closeBtn', true)       // false（'closeBtn' 不是配置键）
+     * _isImplicitRoot('handler', { handler: true })  // false（value 是 plain object，进入两层模式）
+     * ```
+     */
+    private static _isImplicitRoot(componentPath: string, value: any): boolean {
+        if (value === null) return false;
+        // Arrays and other non-plain-object primitives qualify as implicit root
+        // Only plain objects (DomEventConfig and action maps) should NOT qualify
+        if (typeof value === 'object' && !Array.isArray(value)) return false;
+        return CONFIG_KEYS.includes(componentPath);
+    }
+
+    /**
      * 判断 value 是否为 DomEventConfig（两层模式）
      *
      * DomEventConfig 包含 handler/emits/bridges/entities/router/system 等字段，
@@ -107,16 +157,19 @@ export class DomEventsEngine {
      */
     private static _isDomEventConfig(value: any): boolean {
         if (!value || typeof value !== 'object') return false;
-        const configKeys = ['handler', 'emits', 'bridges', 'entities', 'router', 'system', 'data', 'once', 'debounce', 'throttle'];
-        return configKeys.some(key => key in value);
+        return CONFIG_KEYS.some(key => key in value);
     }
 
     /**
      * 深度合并两个 DomEventsMap
      *
-     * 支持两层和三层模式混合：
+     * 支持两层、三层模式和隐式 root 简写混合：
      *   - 两层模式：path → DomEventConfig
      *   - 三层模式：path → { action: DomEventConfig }
+     *   - 隐式 root 简写：{ handler: 'method' } → root 委托
+     *
+     * 隐式 root 简写在合并时会被归一化为显式 root 条目，
+     * 多个简写条目（如 handler + emits）会合并到同一个 root 配置中。
      *
      * dynamic 配置优先级高于 static。
      */
@@ -124,11 +177,36 @@ export class DomEventsEngine {
         staticMap: DomEventsMap,
         dynamicMap: DomEventsMap
     ): DomEventsMap {
-        const result: DomEventsMap = { ...staticMap };
+        const result: DomEventsMap = {};
+
+        // 加载静态映射，同时归一化隐式 root 条目到 'root' key 下
+        for (const [domEvent, pathMap] of Object.entries(staticMap)) {
+            result[domEvent] = {};
+            for (const [componentPath, value] of Object.entries(pathMap)) {
+                if (DomEventsEngine._isImplicitRoot(componentPath, value)) {
+                    const rootConfig: Record<string, any> = { [componentPath]: value };
+                    const existingRoot = result[domEvent]['root'];
+                    if (existingRoot && DomEventsEngine._isDomEventConfig(existingRoot)) {
+                        result[domEvent]['root'] = { ...existingRoot, ...rootConfig };
+                    } else {
+                        result[domEvent]['root'] = rootConfig;
+                    }
+                } else {
+                    result[domEvent][componentPath] = value;
+                }
+            }
+        }
 
         for (const [domEvent, pathMap] of Object.entries(dynamicMap)) {
             if (!result[domEvent]) {
-                result[domEvent] = { ...pathMap };
+                result[domEvent] = {};
+                for (const [componentPath, value] of Object.entries(pathMap)) {
+                    if (DomEventsEngine._isImplicitRoot(componentPath, value)) {
+                        result[domEvent]['root'] = { [componentPath]: value };
+                    } else {
+                        result[domEvent][componentPath] = value;
+                    }
+                }
                 continue;
             }
 
@@ -136,9 +214,35 @@ export class DomEventsEngine {
             for (const [componentPath, newValue] of Object.entries(pathMap)) {
                 const existingValue = targetPathMap[componentPath];
 
-                // 新值是两层模式（DomEventConfig），直接覆盖
+                // 检测隐式 root 简写：configKey + 基本类型值
+                const newIsImplicit = DomEventsEngine._isImplicitRoot(componentPath, newValue);
+
+                if (newIsImplicit) {
+                    // 归一化隐式 root：存储到 'root' key 下，与现有 root 配置合并
+                    const rootConfig: Record<string, any> = { [componentPath]: newValue };
+                    const existingRoot = targetPathMap['root'];
+
+                    if (existingRoot && DomEventsEngine._isDomEventConfig(existingRoot)) {
+                        targetPathMap['root'] = { ...existingRoot, ...rootConfig };
+                    } else {
+                        targetPathMap['root'] = rootConfig;
+                    }
+
+                    // 清理原隐式 root 条目（如果与 root 不同）
+                    if (componentPath !== 'root') {
+                        delete targetPathMap[componentPath];
+                    }
+                    continue;
+                }
+
+                // 新值是两层模式（DomEventConfig）
                 if (DomEventsEngine._isDomEventConfig(newValue)) {
-                    targetPathMap[componentPath] = { ...newValue };
+                    // 若路径为 'root' 且已有 root 配置，则合并而非覆盖
+                    if (componentPath === 'root' && existingValue && DomEventsEngine._isDomEventConfig(existingValue)) {
+                        targetPathMap['root'] = { ...existingValue, ...newValue };
+                    } else {
+                        targetPathMap[componentPath] = { ...newValue };
+                    }
                     continue;
                 }
 
@@ -392,6 +496,7 @@ export class DomEventsEngine {
         for (const node of Object.values(nodeMap)) {
             const childComponent = (node as any).component ?? node;
             if (!childComponent?.el) continue;
+            if (childComponent === component) continue;
             if (childComponent.el.contains(target)) {
                 const nested = DomEventsEngine._findDeepestChild(childComponent, target);
                 return nested ?? childComponent;

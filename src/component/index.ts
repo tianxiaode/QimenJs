@@ -28,10 +28,13 @@ export {
 } from './indicator/IndicatorComponent';
 export { IndicatorDotComponent } from './indicator/IndicatorDotComponent';
 export { indicatorCSS } from './indicator/indicator.css';
-export { TabBarComponent, type TabBarProps } from './tab-bar/TabBarComponent';
-export { tabBarCSS } from './tab-bar/tab-bar.css';
-export { TabsComponent, type TabItem, type TabsProps } from './tabs/TabsComponent';
+
+// Tabs 标签页组件（Tab + TabBar + Tabs）
+export { TabComponent, type TabProps } from './tabs/TabComponent';
+export { TabBarComponent, type TabBarProps, type TabBarPosition } from './tabs/TabBarComponent';
+export { TabsComponent, type TabPaneItem, type TabsProps } from './tabs/TabsComponent';
 export { tabsCSS } from './tabs/tabs.css';
+
 export { ButtonComponent } from './button/ButtonComponent';
 export { buttonCSS } from './button/button.css';
 export { DropdownComponent } from './dropdown/DropdownComponent';
@@ -126,7 +129,7 @@ export {
     type NavOverlayOptions,
     type NavPlacement,
 } from './nav/NavItemComponent';
-export { NavItemGroupComponent, type NavProps as NavItemGroupProps } from './nav/NavComponent';
+export { NavComponent } from './nav/NavComponent';
 
 export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';
 export { navCSS } from './nav/nav.css';
@@ -187,8 +190,10 @@ export { fieldsetCSS } from './fieldset/fieldset.css';
 // OneTimePassword 组件
 export {
     OneTimePasswordComponent,
+    ONE_TIME_PASSWORD_TPL,
     type OneTimePasswordProps,
-} from './one-time-password/OneTimePasswordComponent';
+    type OneTimePasswordComponentInstance,
+} from './one-time-password';
 export { oneTimePasswordCSS } from './one-time-password/one-time-password.css';
 
 // FileInput 组件
@@ -201,13 +206,14 @@ export {
 } from './file-input/FileInputComponent';
 export { fileInputCSS } from './file-input/file-input.css';
 
-// Step 步骤条组件
+// Step 步骤条组件（池化 ItemGroup + StepItem 子项）
 export {
     StepComponent,
     type StepStatus,
-    type StepItem,
+    type StepItemProps,
     type StepProps,
 } from './step/StepComponent';
+export { StepItemComponent } from './step/StepItemComponent';
 export { stepCSS } from './step/step.css';
 
 // Timeline 时间线组件
@@ -219,9 +225,9 @@ export {
 } from './timeline/TimelineComponent';
 export { timelineCSS } from './timeline/timeline.css';
 
-// Sidebar 侧边栏组件
-export { SidebarComponent, type SidebarItem, type SidebarProps } from './sidebar/SidebarComponent';
-export { sidebarCSS } from './sidebar/sidebar.css';
+// Navbar 顶部导航栏组件（从 ItemGroupStaticComponent 派生，横向布局）
+export { NavbarComponent, type NavbarProps } from './navbar/NavbarComponent';
+export { navbarCSS } from './navbar/navbar.css';
 
 // Skeleton 骨架屏样式（配合 SkeletonAbility 使用）
 export { skeletonCSS } from './skeleton/skeleton.css';

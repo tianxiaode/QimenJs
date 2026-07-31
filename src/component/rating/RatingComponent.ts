@@ -54,9 +54,9 @@ class RatingComponent extends Component {
     }
 
     _renderStars(): void {
-        const container = this.nodeMap?.stars?.el as HTMLElement | null;
+        this.setNodeHtml('', 'stars');
+        const container = this._resolveNodeEl('stars');
         if (!container) return;
-        container.innerHTML = '';
 
         for (let i = 1; i <= this._max; i++) {
             const star = document.createElement('span');
@@ -83,7 +83,7 @@ class RatingComponent extends Component {
     }
 
     _bindEvents(): void {
-        const container = this.nodeMap?.stars?.el as HTMLElement | null;
+        const container = this._resolveNodeEl('stars');
         if (!container || this._readonly) return;
 
         container.addEventListener('mousemove', (e: MouseEvent) => {
@@ -138,7 +138,7 @@ class RatingComponent extends Component {
     }
 
     _applyVisual(value: number): void {
-        const container = this.nodeMap?.stars?.el as HTMLElement | null;
+        const container = this._resolveNodeEl('stars');
         if (!container) return;
 
         const stars = container.querySelectorAll<HTMLElement>('.q-rating__star');
@@ -200,8 +200,8 @@ class RatingComponent extends Component {
         this._applyState();
     }
 
-    getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-        return { value: this._value };
+    get defaultEventData(): Record<string, any> {
+        return { ...super.defaultEventData, value: this._value };
     }
 
     update(props?: Partial<RatingProps>): void {

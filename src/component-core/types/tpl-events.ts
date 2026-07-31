@@ -142,6 +142,10 @@ export type TplEventAction = DomEventConfig;
  *   { [domEvent]: { [componentPath]: eventConfig } }
  *   示例：{ click: { 'header.action': { handler: true, emits: ['[action]'] } } }
  *
+ * 隐式 root 简写（省略 root 直接写配置键）：
+ *   { [domEvent]: { [configKey]: value } }
+ *   示例：{ input: { handler: '_onInput' } } ← 等价于 { input: { root: { handler: '_onInput' } } }
+ *
  * 两层模式下：
  * - handler 方法名使用匹配组件的实际 action
  * - emits 中的 '[action]' 被替换为实际 action
@@ -149,7 +153,14 @@ export type TplEventAction = DomEventConfig;
  */
 export interface DomEventsMap {
     [domEvent: string]: {
-        [componentPath: string]: DomEventConfig | { [action: string]: DomEventConfig };
+        [componentPath: string]:
+            | DomEventConfig
+            | { [action: string]: DomEventConfig }
+            | boolean
+            | string
+            | number
+            | string[]
+            | Record<string, string[]>;
     };
 }
 

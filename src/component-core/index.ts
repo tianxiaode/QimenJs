@@ -6,8 +6,6 @@
 
 // 组件基类
 export { Component } from './Component';
-export { ItemContainer, itemsToTpl } from './ItemContainer';
-export type { ItemDecl, ItemContainerStaticConfig } from './ItemContainer';
 export { COMPONENT_ABILITIES } from './Component-abilities';
 
 // 节点结构管理器

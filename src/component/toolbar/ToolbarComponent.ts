@@ -4,7 +4,6 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 export interface ToolbarProps extends ItemGroupProps {}
 
 class ToolbarComponent extends ItemGroupStaticComponent {
-
     onAfterInit(props?: ToolbarProps): void {
         this.addCls('q-toolbar');
         (this as any).itemContainer?.el?.classList.add('q-toolbar__items');

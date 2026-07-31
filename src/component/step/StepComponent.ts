@@ -1,11 +1,11 @@
 /**
  * StepComponent 步骤条组件
  *
- * 水平/垂直步骤条，支持完成/进行中/等待/错误状态。
- * 数据驱动：通过 items 属性设置步骤项。
+ * 从 ItemGroupPooledComponent 派生（池化，状态频繁更新），
+ * 通过 domEvents 处理子项点击事件。
  *
- * 模板节点：
- * - items — 步骤项容器
+ * 子项默认类型：StepItem（包含 title/description/icon/status/index）。
+ * 状态同步：activeIndex 变化时，批量更新所有子项状态。
  *
  * @example
  * ```ts
@@ -22,191 +22,105 @@
  * ```
  */
 
-import { Component } from '@qimenjs/component-core';
-import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
-import { STEP_TPL } from './step-tpl';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import type { StepItemComponent } from './StepItemComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 
-export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
+export type { StepStatus } from './StepItemComponent';
+export type { StepItemProps } from './StepItemComponent';
 
-export interface StepItem {
-    title: string;
-    description?: string;
-    icon?: string;
-    status?: StepStatus;
-}
-
-export interface StepProps {
-    items?: StepItem[];
+export interface StepProps extends ItemGroupProps {
     activeIndex?: number;
     direction?: 'horizontal' | 'vertical';
 }
 
-class StepComponent extends Component {
-    _items: StepItem[] = [];
+class StepComponent extends ItemGroupPooledComponent {
     _activeIndex: number = 0;
-    _direction: 'horizontal' | 'vertical' = 'horizontal';
-    _itemEls: HTMLElement[] = [];
-    _clickBound: boolean = false;
 
-    onAfterInit(props?: StepProps): void {
-        this._initStep(props);
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            StepItem: {
+                handler: '_onStepItemClick',
+                emits: ['stepClick'],
+            },
+        },
+    };
+
+    _onStepItemClick(domEvt: any): void {
+        const target = this.getTargetItem(domEvt.target);
+        if (!target) return;
+
+        const item = target.component as StepItemComponent;
+        this.emit('stepClick', { index: item.index, status: item.status });
     }
 
-    _initStep(props?: StepProps): void {
-        if (props?.direction) {
-            this._direction = props.direction;
-            this.addCls(`q-step--${props.direction}`);
-        }
-        if (props?.items) {
-            this._items = props.items;
-            this._renderItems();
-        }
+    onAfterInit(props?: StepProps): void {
+        this.addCls('q-step');
+        const container = (this as any).itemContainer?.el as HTMLElement | undefined;
+        if (container) container.classList.add('q-step__items');
+
+        super.onAfterInit({
+            defaultItemType: 'StepItem',
+            direction: props?.direction ?? 'horizontal',
+            ...props,
+        });
+
         if (props?.activeIndex !== undefined) {
             this._activeIndex = props.activeIndex;
         }
-        this._applyStatus();
-        this._bindClick();
+
+        this._syncStepStatus();
     }
 
-    _bindClick(): void {
-        if (this._clickBound) return;
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
-
-        this._clickBound = true;
-        this.bind(container, 'click');
-        this.on(`${DOM_EVENT_PREFIX}click`, (ctx: any) => {
-            const target = ctx?.data?.originalEvent?.target as HTMLElement | null;
-            const itemEl = target?.closest('.q-step__item') as HTMLElement | null;
-            const index = itemEl?.dataset?.index;
-            if (index !== undefined) {
-                this.emit('stepClick', { index: Number(index) });
-            }
-        });
-    }
-
-    get items(): StepItem[] {
-        return this._items;
-    }
-    set items(value: StepItem[]) {
-        this._items = value;
-        this._renderItems();
-        this._applyStatus();
+    private _syncStepStatus(): void {
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i) as StepItemComponent;
+            item.setActiveIndex(i, this._activeIndex);
+        }
     }
 
     get activeIndex(): number {
         return this._activeIndex;
     }
-    set activeIndex(value: number) {
-        this._activeIndex = value;
-        this._applyStatus();
-    }
-
-    get direction(): 'horizontal' | 'vertical' {
-        return this._direction;
-    }
-    set direction(value: 'horizontal' | 'vertical') {
-        this.removeCls(`q-step--${this._direction}`);
-        this._direction = value;
-        this.addCls(`q-step--${value}`);
-    }
-
-    _getItemStatus(index: number): StepStatus {
-        const item = this._items[index];
-        if (item?.status) return item.status;
-        if (index < this._activeIndex) return 'finish';
-        if (index === this._activeIndex) return 'process';
-        return 'wait';
-    }
-
-    _renderItems(): void {
-        const container = this.nodeMap?.items?.el as HTMLElement | null;
-        if (!container) return;
-
-        container.innerHTML = '';
-        this._itemEls = [];
-
-        for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            const isLast = i === this._items.length - 1;
-
-            const itemEl = document.createElement('div');
-            itemEl.className = 'q-step__item';
-            itemEl.dataset.index = String(i);
-
-            const headEl = document.createElement('div');
-            headEl.className = 'q-step__head';
-
-            const circleEl = document.createElement('div');
-            circleEl.className = 'q-step__circle';
-            if (item.icon) {
-                circleEl.textContent = item.icon;
-            } else {
-                const numEl = document.createElement('span');
-                numEl.className = 'q-step__number';
-                numEl.textContent = String(i + 1);
-                circleEl.appendChild(numEl);
-            }
-            headEl.appendChild(circleEl);
-
-            if (!isLast) {
-                const tailEl = document.createElement('div');
-                tailEl.className = 'q-step__tail';
-                headEl.appendChild(tailEl);
-            }
-
-            const bodyEl = document.createElement('div');
-            bodyEl.className = 'q-step__body';
-
-            const titleEl = document.createElement('div');
-            titleEl.className = 'q-step__title';
-            titleEl.textContent = item.title;
-            bodyEl.appendChild(titleEl);
-
-            if (item.description) {
-                const descEl = document.createElement('div');
-                descEl.className = 'q-step__description';
-                descEl.textContent = item.description;
-                bodyEl.appendChild(descEl);
-            }
-
-            itemEl.appendChild(headEl);
-            itemEl.appendChild(bodyEl);
-            container.appendChild(itemEl);
-            this._itemEls.push(itemEl);
+    set activeIndex(v: number) {
+        const prevIndex = this._activeIndex;
+        this._activeIndex = v;
+        this._syncStepStatus();
+        if (prevIndex !== v) {
+            this.emit('select', { index: v, prevIndex });
         }
     }
 
-    _applyStatus(): void {
-        for (let i = 0; i < this._itemEls.length; i++) {
-            const itemEl = this._itemEls[i];
-            const status = this._getItemStatus(i);
+    /**
+     * 设置某个步骤为错误状态
+     */
+    setErrorAt(index: number): void {
+        if (index < 0 || index >= this.count) return;
+        const item = this.getAt(index) as StepItemComponent;
+        item.setError();
+    }
 
-            itemEl.classList.remove(
-                'q-step__item--wait',
-                'q-step__item--process',
-                'q-step__item--finish',
-                'q-step__item--error'
-            );
-            itemEl.classList.add(`q-step__item--${status}`);
-
-            const tailEl = itemEl.querySelector('.q-step__tail');
-            if (tailEl) {
-                (tailEl as HTMLElement).classList.toggle(
-                    'q-step__tail--finish',
-                    i < this._activeIndex
-                );
-            }
-        }
+    get defaultEventData(): Record<string, any> {
+        return {
+            ...super.defaultEventData,
+            activeIndex: this._activeIndex,
+            stepCount: this.count,
+        };
     }
 
     update(props?: Partial<StepProps>): void {
-        if (props?.items !== undefined) this.items = props.items;
+        if (props?.items !== undefined) {
+            super.update({ items: props.items });
+            this._syncStepStatus();
+        }
         if (props?.activeIndex !== undefined) this.activeIndex = props.activeIndex;
-        if (props?.direction !== undefined) this.direction = props.direction;
+        if (props?.direction !== undefined) {
+            super.update({ direction: props.direction });
+        }
     }
 }
 
-StepComponent.useTemplate(STEP_TPL);
+StepComponent.register();
 export { StepComponent };
 export type StepComponentInstance = InstanceType<typeof StepComponent>;

@@ -119,9 +119,11 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         return values;
     }
 
-    selectAt(index: number): void {
+    selectAt(index: number, silent: boolean = false): void {
         const self = this as any;
         if (index < 0 || index >= self.count) return;
+
+        const prevIndex = self.selectedIndex;
 
         for (let i = 0; i < self.count; i++) {
             const item = self.getAt(i);
@@ -133,6 +135,10 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         const target = self.getAt(index);
         if (target && !target.pressed) {
             target.pressed = true;
+        }
+
+        if (!silent && prevIndex !== index) {
+            self.emit('select', { index, prevIndex });
         }
     }
 
