@@ -34,4 +34,3 @@ export {
     type DatePanelComponentInstance,
 } from './DatePanelComponent';
 export { datePanelCSS } from './date-panel.css';
-export { registerDatePanelTemplates } from './register';

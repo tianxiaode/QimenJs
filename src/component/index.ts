@@ -8,8 +8,11 @@
 
 export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 
-// 组件 type 注册
-export { registerAllComponents } from './register';
+// 孤儿组件注册触发（无自然 import 链，显式 import 触发底部 register/useTemplate 副作用）
+import './text/TextComponent';
+import './date/DayGridComponent';
+import './table/header/BaseHeaderCellComponent';
+import './table/cells/BaseCellComponent';
 
 // 基础组件
 export { IconComponent } from './icon/IconComponent';

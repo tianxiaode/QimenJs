@@ -7,15 +7,13 @@
  * 3. 挂载 AppShell 到 #app
  */
 
-import { registerAllComponents } from '@qimenjs/component';
+import '@qimenjs/component';
 import { Router, type RouteMap } from '@qimenjs/router';
 import { systemEventBus, SYSTEM_EVENTS } from '@qimenjs/events';
 import { EventContextBuilder } from '@qimenjs/context';
 
 import './styles.css';
 import { AppShell } from './AppShell';
-
-registerAllComponents();
 
 const router = Router.getInstance();
 

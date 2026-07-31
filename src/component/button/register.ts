@@ -1,1 +1,0 @@
-export function registerButtonTemplates(): void {}

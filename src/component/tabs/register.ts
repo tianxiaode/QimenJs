@@ -1,1 +1,0 @@
-export function registerTabsTemplates(): void {}

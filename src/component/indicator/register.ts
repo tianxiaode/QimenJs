@@ -1,1 +1,0 @@
-export function registerIndicatorTemplates(): void {}
