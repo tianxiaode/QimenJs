@@ -335,8 +335,8 @@ class MarkdownEditorComponent extends FormFieldComponent {
         }
     }
 
-    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
-        return { value: this._value };
+    get defaultEventData(): Record<string, any> {
+        return { ...super.defaultEventData, value: this._value };
     }
 
     _autoResize(): void {
