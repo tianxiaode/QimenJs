@@ -452,6 +452,21 @@ export interface RouteListen {
 }
 
 /**
+ * 文件事件订阅
+ *
+ * @example
+ * ```ts
+ * { file: 'avatars', events: { uploaded: 'onFileUploaded', uploadProgress: 'onUploadProgress' } }
+ * ```
+ */
+export interface FileListen {
+    /** 文件通道 key（fileKey） */
+    file: string;
+    /** 事件映射：文件反馈事件名 → 处理方法名或带选项对象 */
+    events: Record<string, EventMapping>;
+}
+
+/**
  * 子组件事件配置 — 与 domEvents eventConfig 对齐，支持转发
  */
 export interface ChildEventConfig {
@@ -463,6 +478,8 @@ export interface ChildEventConfig {
     entities?: string;
     /** 转发为桥接事件 */
     bridges?: string[];
+    /** 转发为文件命令（值为 fileKey，action 取事件名） */
+    file?: string;
     /** 转发为路由事件 */
     router?: string;
     /** 转发为系统事件 */
@@ -511,7 +528,7 @@ export interface ChildEventsListen {
  *
  * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
  *
- * 注册流程统一（五路分流，float/drag 已自动绑定）：
+ * 注册流程统一（六路分流，float/drag 已自动绑定）：
  *   _setupListens() {
  *       for (const item of this.listens) {
  *           if (item.childEvents)  for (const [nodeName, events] of Object.entries(item.childEvents))
@@ -520,6 +537,7 @@ export interface ChildEventsListen {
  *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
  *           if (item.system)    SystemEventBus.on(item.events);
  *           if (item.route)     RouteEventBus.on(item.route, item.events);
+ *           if (item.file)      FileEventBus.fileOn(item.file, event, method);
  *       }
  *   }
  *
@@ -531,6 +549,7 @@ export interface ChildEventsListen {
  *     { entity: 'users',     events: { listed: 'onUsersLoaded' } },
  *     { system: true,        events: { 'i18n:localeChange': 'onLocaleChange' } },
  *     { route: 'router',     events: { change: 'onRouteChange' } },
+ *     { file: 'avatars',     events: { uploaded: 'onFileUploaded' } },
  * ]
  * ```
  */
@@ -541,7 +560,8 @@ export type ListenItem =
     | FloatListen
     | DragListen
     | SystemListen
-    | RouteListen;
+    | RouteListen
+    | FileListen;
 
 // ══════════════════════════════════════════════════════════════
 // 浮动层配置（从 tpl-body 迁移）

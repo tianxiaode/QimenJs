@@ -1,16 +1,17 @@
 /**
  * ListensEngine — 外部事件订阅引擎
  *
- * 事件体系 ③：桥接/实体/系统/路由事件订阅
+ * 事件体系 ③：桥接/实体/系统/路由/文件事件订阅
  *
  * Pipeline FINALIZE 阶段最先执行（bindListens），
  * 因为这些订阅不依赖子组件实例，越早订阅越早能收到事件。
  *
- * 四路分流：
+ * 五路分流：
  *   - source → EventBridge.on(bridgeKey, source, events)
  *   - entity → EntityEventBus.on(entityKey, entity, events)
  *   - system → SystemEventBus.on(events)
  *   - route  → RouteEventBus.on(route, events)
+ *   - file   → FileEventBus.fileOn(fileKey, action, handler)
  *
  * 解绑通过 instance.onCleanup() 自动完成。
  */
@@ -22,6 +23,7 @@ import type {
     EntityListen,
     SystemListen,
     RouteListen,
+    FileListen,
 } from '../types/tpl-node-types';
 import { EventForwarder } from './EventForwarder';
 
@@ -36,6 +38,9 @@ function isSystemListen(item: ListenItem): item is SystemListen {
 }
 function isRouteListen(item: ListenItem): item is RouteListen {
     return 'route' in item;
+}
+function isFileListen(item: ListenItem): item is FileListen {
+    return 'file' in item;
 }
 
 export class ListensEngine {
@@ -54,6 +59,8 @@ export class ListensEngine {
                 ListensEngine._bindSystem(instance, item.events);
             } else if (isRouteListen(item)) {
                 ListensEngine._bindRoute(instance, item.route, item.events);
+            } else if (isFileListen(item)) {
+                ListensEngine._bindFile(instance, item.file, item.events);
             }
         }
     }
@@ -154,6 +161,27 @@ export class ListensEngine {
         }
     }
 
+    private static _bindFile(
+        instance: any,
+        fileKey: string,
+        events: Record<string, EventMapping>
+    ): void {
+        const fileEventBus = ListensEngine._getFileEventBus(instance);
+        if (!fileEventBus) return;
+
+        for (const [eventName, mapping] of Object.entries(events)) {
+            const handler = ListensEngine._resolveHandler(instance, mapping);
+            const once = typeof mapping === 'object' ? mapping.once : false;
+
+            if (once) {
+                fileEventBus.fileOnce(fileKey, eventName, handler);
+            } else {
+                const off = fileEventBus.fileOn(fileKey, eventName, handler);
+                instance.onCleanup(off);
+            }
+        }
+    }
+
     private static _getEventBridge(instance: any): any {
         if (typeof instance.getEventBridge === 'function') return instance.getEventBridge();
         try {
@@ -185,6 +213,15 @@ export class ListensEngine {
         if (typeof instance.getRouteEventBus === 'function') return instance.getRouteEventBus();
         try {
             return require('@/events/RouteEventBus').routeEventBus;
+        } catch {
+            return null;
+        }
+    }
+
+    private static _getFileEventBus(instance: any): any {
+        if (typeof instance.getFileEventBus === 'function') return instance.getFileEventBus();
+        try {
+            return require('@/events/FileEventBus').fileEventBus;
         } catch {
             return null;
         }

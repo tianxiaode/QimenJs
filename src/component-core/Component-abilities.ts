@@ -7,6 +7,7 @@ import {
     OverlayEventBusAbility,
     DragEventBusAbility,
     SystemEventBusAbility,
+    FileEventBusAbility,
     SystemAbility,
     DebounceAbility,
 } from '@/system-abilities';
@@ -27,6 +28,7 @@ export const COMPONENT_ABILITIES = [
     OverlayEventBusAbility,
     DragEventBusAbility,
     SystemEventBusAbility,
+    FileEventBusAbility,
     SystemAbility,
     DebounceAbility,
 

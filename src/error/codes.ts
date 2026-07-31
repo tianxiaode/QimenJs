@@ -130,6 +130,11 @@ export enum KernelErrorCode {
      */
     FILE_TYPE_MISMATCH = 'FILE_TYPE_MISMATCH',
 
+    /**
+     * 文件下载失败
+     */
+    FILE_DOWNLOAD_FAILED = 'FILE_DOWNLOAD_FAILED',
+
     // ---- 组件初始化管线错误 ----
 
     COMPILE_PRODUCT_NOT_FOUND = 'INIT_COMPILE_PRODUCT_NOT_FOUND',

@@ -1,7 +1,7 @@
 /**
  * EventForwarder — 事件转发公共逻辑
  *
- * 路由表模式：五路转发（emits/bridges/entities/router/system）各自封装为
+ * 路由表模式：六路转发（emits/bridges/entities/file/router/system）各自封装为
  * { key, canExecute, execute } 条目，forward 退化为纯调度循环。
  *
  * 两层过滤叠加：
@@ -22,14 +22,16 @@ import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 
-export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system';
+export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system' | 'file';
 
-export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system';
+export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file';
 
 export interface ForwardConfig {
     emits?: string[];
     bridges?: string[];
     entities?: string;
+    /** 转发为文件命令（值为 fileKey，action 取 actualAction/事件名） */
+    file?: string;
     router?: string;
     system?: string[];
 }
@@ -120,6 +122,15 @@ function _forwardSystem(ctx: ForwardContext): void {
     }
 }
 
+function _forwardFiles(ctx: ForwardContext): void {
+    const fileKey = ctx.config.file!;
+    // action 取 actualAction（domEvents 匹配的 action 或 childEvents 的事件名）
+    const action = ctx.actualAction || '';
+    if (!action) return;
+    const eventCtx = EventForwarder.buildContext(ctx.instance, action, ctx.data, fileKey, 'file');
+    ctx.instance.fileEmit?.(eventCtx);
+}
+
 const FORWARD_ROUTES: ForwardRoute[] = [
     {
         key: 'emit',
@@ -146,6 +157,11 @@ const FORWARD_ROUTES: ForwardRoute[] = [
         key: 'system',
         canExecute: ctx => !!ctx.config.system?.length,
         execute: _forwardSystem,
+    },
+    {
+        key: 'file',
+        canExecute: ctx => !!ctx.config.file,
+        execute: _forwardFiles,
     },
 ];
 

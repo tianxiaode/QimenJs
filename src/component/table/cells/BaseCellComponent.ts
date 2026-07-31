@@ -61,7 +61,6 @@ class BaseCellComponent extends Component {
     }
 }
 
+BaseCellComponent.useTemplate(BASE_CELL_TPL);
 export { BaseCellComponent };
 export type BaseCellComponentInstance = InstanceType<typeof BaseCellComponent>;
-
-BaseCellComponent.useTemplate(BASE_CELL_TPL);

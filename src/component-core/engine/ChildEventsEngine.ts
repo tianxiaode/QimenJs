@@ -108,6 +108,7 @@ export class ChildEventsEngine {
      * 创建详细配置的事件处理器
      *
      * handler 本地调用 + EventForwarder 统一转发
+     * eventName 作为 actualAction 传入，供 file 路由等需要 action 的转发路径使用
      */
     private static _createDetailedHandler(
         instance: any,
@@ -126,7 +127,7 @@ export class ChildEventsEngine {
                 }
             }
 
-            EventForwarder.forward(instance, config, data);
+            EventForwarder.forward(instance, config, data, undefined, eventName);
         };
     }
 
