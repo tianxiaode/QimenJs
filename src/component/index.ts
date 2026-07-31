@@ -127,6 +127,20 @@ export { itemgroupCSS } from './itemgroup/itemgroup.css';
 export { ToolbarComponent, type ToolbarProps } from './toolbar/ToolbarComponent';
 export { toolbarCSS } from './toolbar/toolbar.css';
 
+// 实体工具栏组件（从 ToolbarComponent 派生，声明式 pagination/crud + 实体事件监听）
+export {
+    EntityToolbarComponent,
+    type EntityToolbarProps,
+    type EntityToolbarItemDef,
+    type EntityToolbarState,
+    type EntityToolbarItemState,
+    createPaginationItems,
+    createCrudItems,
+    PAGINATION_ITEM_NAMES,
+    CRUD_ITEM_NAMES,
+    type PaginationItemsOptions,
+} from './entity-toolbar';
+
 // 导航组件
 export {
     NavItemComponent,

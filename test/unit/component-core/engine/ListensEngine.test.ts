@@ -5,6 +5,8 @@ function makeBus() {
         on: jest.fn(),
         off: jest.fn(),
         once: jest.fn(),
+        entityOn: jest.fn(() => jest.fn()),
+        entityOnce: jest.fn(),
     };
 }
 
@@ -96,11 +98,10 @@ describe('ListensEngine', () => {
         it('绑定实体事件', () => {
             const { instance, entityEventBus } = makeInstance();
             ListensEngine.bindListens(instance, [
-                { entity: 'users', events: { listed: 'onSave' } },
+                { entity: true, events: { listed: 'onSave' } },
             ]);
-            expect(entityEventBus.on).toHaveBeenCalledWith(
+            expect(entityEventBus.entityOn).toHaveBeenCalledWith(
                 'testEntity',
-                'users',
                 'listed',
                 expect.any(Function)
             );
@@ -109,17 +110,17 @@ describe('ListensEngine', () => {
         it('entityKey 不存在时跳过', () => {
             const { instance, entityEventBus } = makeInstance({ entityKey: undefined });
             ListensEngine.bindListens(instance, [
-                { entity: 'users', events: { listed: 'onSave' } },
+                { entity: true, events: { listed: 'onSave' } },
             ]);
-            expect(entityEventBus.on).not.toHaveBeenCalled();
+            expect(entityEventBus.entityOn).not.toHaveBeenCalled();
         });
 
-        it('once 模式用 entityEventBus.once', () => {
+        it('once 模式用 entityEventBus.entityOnce', () => {
             const { instance, entityEventBus } = makeInstance();
             ListensEngine.bindListens(instance, [
-                { entity: 'users', events: { listed: { handler: 'onSave', once: true } } },
+                { entity: true, events: { listed: { handler: 'onSave', once: true } } },
             ]);
-            expect(entityEventBus.once).toHaveBeenCalled();
+            expect(entityEventBus.entityOnce).toHaveBeenCalled();
         });
     });
 

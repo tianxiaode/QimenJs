@@ -101,9 +101,10 @@ export class ListensEngine {
 
     private static _bindEntity(
         instance: any,
-        entity: string,
+        _entity: true,
         events: Record<string, EventMapping>
     ): void {
+        // entityKey 从 instance.entityKey 取（独立于 listens 声明，无需重复）
         const entityKey = EventForwarder.resolveKey(instance.entityKey);
         if (!entityKey) return;
 
@@ -115,11 +116,11 @@ export class ListensEngine {
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                entityEventBus.once(entityKey, entity, eventName, handler);
+                entityEventBus.entityOnce(entityKey, eventName, handler);
             } else {
-                entityEventBus.on(entityKey, entity, eventName, handler);
+                const off = entityEventBus.entityOn(entityKey, eventName, handler);
+                instance.onCleanup(off);
             }
-            instance.onCleanup(() => entityEventBus.off(entityKey, entity, eventName, handler));
         }
     }
 

@@ -378,14 +378,17 @@ export interface BridgeListen {
 /**
  * 实体事件订阅
  *
+ * entityKey 统一从 instance.entityKey 取（组件实例属性，独立于 listens 声明），
+ * `entity` 字段仅作类型标识，区分 entity 监听与其他监听类型，不再承担 entityKey 值。
+ *
  * @example
  * ```ts
- * { entity: 'users', events: { listed: 'onUsersLoaded', created: { handler: 'onUserCreated', once: true } } }
+ * { entity: true, events: { listed: 'onUsersLoaded', created: { handler: 'onUserCreated', once: true } } }
  * ```
  */
 export interface EntityListen {
-    /** 实体 key */
-    entity: string;
+    /** 类型标识：声明为实体事件监听（entityKey 取 instance.entityKey） */
+    entity: true;
     /** 事件映射：实体事件名 → 处理方法名或带选项对象 */
     events: Record<string, EventMapping>;
 }

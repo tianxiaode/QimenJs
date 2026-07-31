@@ -1,389 +1,325 @@
+/**
+ * EntityToolbarComponent 实体工具栏组件
+ *
+ * 继承 ToolbarComponent，为实体操作提供工具栏界面。
+ * 完整功能内聚于此组件（不拆独立能力），其他需要工具栏的场景直接用本组件即可。
+ *
+ * 两种 items 配置方式（可混用）：
+ *   1. 声明式（推荐）：传 props.pagination + props.crud 对象，
+ *      onAfterInit 中自动调用工厂函数生成 items。
+ *   2. 工厂函数展开：`items: [...createPaginationItems({...}), ...createCrudItems({...})]`
+ *
+ * 能力（类级 use() 一次）：
+ *   - DomainAbility：this.domainConfig 访问域配置（pageSize / pagesizes）
+ *   - EntityEventBusAbility（系统自动挂载）：this.entityOn 订阅实体事件
+ *
+ * 实体事件监听（有 entityKey 时自动启用）：
+ *   - list:loading（true/false）→ 加载中禁用 CRUD + 翻页按钮，加载完恢复
+ *   - list:success（RequestContext）→ 从 ctx.data.total 提取总数，更新 totalRecords/totalPages
+ *   - listed（items）→ 列表已刷新（可用于触发外部刷新，此处仅刷新分页显示）
+ *
+ * @example
+ * ```ts
+ * const toolbar = new EntityToolbarComponent({
+ *     domain: 'api',
+ *     entityKey: 'users',
+ *     pagination: { firstPage: true, prevPage: true, pageNum: true, pageTotal: true,
+ *                   nextPage: true, lastPage: true, pageSize: true, totalRecords: true },
+ *     crud: { create: true, edit: true, delete: true, refresh: true, save: true },
+ * });
+ *
+ * // 实体列表加载完成会自动通过 list:success 事件同步 totalRecords/totalPages。
+ * // 也可手动同步：
+ * toolbar.update({ page: 2, totalPages: 10, totalRecords: 95 });
+ * toolbar.setItemStates({ edit: false, delete: false, save: true });
+ * ```
+ */
+
 import { ToolbarComponent } from '../toolbar/ToolbarComponent';
 import type { ToolbarProps } from '../toolbar/ToolbarComponent';
+import { DomEventsMap } from '@qimenjs/component-core';
 import { CRUD_EVENTS, PAGINATION_EVENTS } from '../../events/component-events';
 import { DomainAbility } from '../../system-abilities/system/DomainAbility';
-import { ENTITY_TOOLBAR_TPL } from './entity-toolbar-tpl';
+import { PAGINATION_ITEM_NAMES, createPaginationItems } from './pagination-items';
+import { CRUD_ITEM_NAMES, createCrudItems } from './crud-items';
+import type {
+    EntityToolbarItemDef,
+    EntityToolbarState,
+    EntityToolbarItemState,
+} from './types';
+
+// ══════════════════════════════════════════════════════════════
+// 常量（兜底默认值，与 DomainPagingAbility 对齐）
+// ══════════════════════════════════════════════════════════════
+
+const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
 
 // ══════════════════════════════════════════════════════════════
 // 类型定义
 // ══════════════════════════════════════════════════════════════
 
-export interface EntityToolbarItemDef {
-    type?: string;
-    name?: string;
-    order?: number;
-    cls?: string;
-    iconCls?: string;
-    text?: string;
-    variant?: string;
-    [key: string]: any;
-}
-
-export type EntityToolbarItems = Record<string, boolean | EntityToolbarItemDef>;
-
 export interface EntityToolbarProps extends Omit<ToolbarProps, 'items'> {
-    items?: EntityToolbarItems;
+    /** 工具栏子项数组（与 pagination/crud 合并使用） */
+    items?: Record<string, any>[];
+
+    /**
+     * 声明式分页按钮配置。
+     * true/false：使用/跳过默认项；对象：覆盖属性；不传：全部默认启用。
+     * pageSize/pageSizes 自动从 this.pageSize / this.pageSizes 取（domainConfig 兜底）。
+     */
+    pagination?: Record<string, boolean | EntityToolbarItemDef>;
+
+    /** 声明式 CRUD 按钮配置。 */
+    crud?: Record<string, boolean | EntityToolbarItemDef>;
+
+    /** domain 名（DomainAbility 取域配置用） */
+    domain?: string;
+
+    /** 实体键：绑定后自动监听实体事件（list:loading/list:success/listed）同步按钮状态与分页 */
     entityKey?: string;
-    eventKey?: string;
 }
 
-// ══════════════════════════════════════════════════════════════
-// 内置 item 定义
-// ══════════════════════════════════════════════════════════════
-
-interface BuiltinItemDef {
-    name: string;
-    type: string;
-    order: number;
-    iconCls: string;
-    text: string;
-    variant: string;
-}
-
-const BUILTIN_DEFS: Record<string, BuiltinItemDef> = {
-    firstPage: {
-        name: 'firstPage',
-        type: 'Button',
-        order: 100,
-        iconCls: 'q-toolbar-btn-first-page',
-        text: 'i18n:toolbar.firstPage',
-        variant: 'default',
-    },
-    prevPage: {
-        name: 'prevPage',
-        type: 'Button',
-        order: 110,
-        iconCls: 'q-toolbar-btn-prev-page',
-        text: 'i18n:toolbar.prevPage',
-        variant: 'default',
-    },
-    pageNum: {
-        name: 'pageNum',
-        type: 'NumberInput',
-        order: 120,
-        iconCls: '',
-        text: '',
-        variant: '',
-    },
-    pageTotal: {
-        name: 'pageTotal',
-        type: 'Text',
-        order: 130,
-        iconCls: '',
-        text: '1/0',
-        variant: '',
-    },
-    nextPage: {
-        name: 'nextPage',
-        type: 'Button',
-        order: 140,
-        iconCls: 'q-toolbar-btn-next-page',
-        text: 'i18n:toolbar.nextPage',
-        variant: 'default',
-    },
-    lastPage: {
-        name: 'lastPage',
-        type: 'Button',
-        order: 150,
-        iconCls: 'q-toolbar-btn-last-page',
-        text: 'i18n:toolbar.lastPage',
-        variant: 'default',
-    },
-    pageSize: { name: 'pageSize', type: 'Select', order: 160, iconCls: '', text: '', variant: '' },
-    totalRecords: {
-        name: 'totalRecords',
-        type: 'Text',
-        order: 170,
-        iconCls: '',
-        text: '0',
-        variant: '',
-    },
-    search: {
-        name: 'search',
-        type: 'Input',
-        order: 180,
-        iconCls: 'q-toolbar-btn-search',
-        text: 'i18n:toolbar.search',
-        variant: '',
-    },
-    create: {
-        name: 'create',
-        type: 'Button',
-        order: 200,
-        iconCls: 'q-toolbar-btn-create',
-        text: 'i18n:toolbar.create',
-        variant: 'primary',
-    },
-    edit: {
-        name: 'edit',
-        type: 'Button',
-        order: 210,
-        iconCls: 'q-toolbar-btn-edit',
-        text: 'i18n:toolbar.edit',
-        variant: 'default',
-    },
-    delete: {
-        name: 'delete',
-        type: 'Button',
-        order: 220,
-        iconCls: 'q-toolbar-btn-delete',
-        text: 'i18n:toolbar.delete',
-        variant: 'warning',
-    },
-    refresh: {
-        name: 'refresh',
-        type: 'Button',
-        order: 230,
-        iconCls: 'q-toolbar-btn-refresh',
-        text: 'i18n:toolbar.refresh',
-        variant: 'default',
-    },
-    save: {
-        name: 'save',
-        type: 'Button',
-        order: 240,
-        iconCls: 'q-toolbar-btn-save',
-        text: 'i18n:toolbar.save',
-        variant: 'primary',
-    },
-    import: {
-        name: 'import',
-        type: 'Button',
-        order: 250,
-        iconCls: 'q-toolbar-btn-import',
-        text: 'i18n:toolbar.import',
-        variant: 'default',
-    },
-    export: {
-        name: 'export',
-        type: 'Button',
-        order: 260,
-        iconCls: 'q-toolbar-btn-export',
-        text: 'i18n:toolbar.export',
-        variant: 'default',
-    },
-    upload: {
-        name: 'upload',
-        type: 'Button',
-        order: 270,
-        iconCls: 'q-toolbar-btn-upload',
-        text: 'i18n:toolbar.upload',
-        variant: 'default',
-    },
-    download: {
-        name: 'download',
-        type: 'Button',
-        order: 280,
-        iconCls: 'q-toolbar-btn-download',
-        text: 'i18n:toolbar.download',
-        variant: 'default',
-    },
-    history: {
-        name: 'history',
-        type: 'Button',
-        order: 290,
-        iconCls: 'q-toolbar-btn-history',
-        text: 'i18n:toolbar.history',
-        variant: 'default',
-    },
-    help: {
-        name: 'help',
-        type: 'Button',
-        order: 300,
-        iconCls: 'q-toolbar-btn-help',
-        text: 'i18n:toolbar.help',
-        variant: 'default',
-    },
-};
-
-const PAGINATION_ACTION_NAMES = new Set(['firstPage', 'prevPage', 'nextPage', 'lastPage']);
-const CRUD_ACTION_NAMES = new Set([
-    'create',
-    'edit',
-    'delete',
-    'refresh',
-    'save',
-    'import',
-    'export',
-]);
+export type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
 
 // ══════════════════════════════════════════════════════════════
 // EntityToolbarComponent
 // ══════════════════════════════════════════════════════════════
 
 class EntityToolbarComponent extends ToolbarComponent {
-    static type = 'EntityToolbar';
-    type = 'EntityToolbar' as const;
+    _domain: string = '';
+    _currentPage: number = 1;
+    _totalPages: number = 0;
+    _totalRecords: number = 0;
+    _loading: boolean = false;
 
-    onInitState() {
-        return {
-            ...super.onInitState(),
-            _itemsConfig: {} as EntityToolbarItems,
-            _entityKey: '' as string,
-            _eventKey: '' as string,
-            _currentPage: 1 as number,
-            _totalPages: 0 as number,
-            _totalRecords: 0 as number,
-            _pageSize: 10 as number,
-        };
-    }
+    /**
+     * domEvents — 委托 Button 点击，按 action 转发实体事件
+     *
+     * 'Button' 路径：按 Button 类型在 _items 中定位点击的子项
+     * entities: '[action]' → 用 item.action 作为事件名，entityEmit 到 entityKey 对应实体
+     *            （create/edit/delete/refresh/save/import/export/firstPage/prevPage/nextPage/lastPage）
+     * handler: '_onButtonClick' → 本地分页状态更新 + emit 组件级事件（PAGINATION_EVENTS/CRUD_EVENTS）
+     *
+     * 参考 AccordionComponent 的 domEvents 委托模式。
+     */
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            Button: {
+                handler: '_onButtonClick',
+                entities: '[action]',
+            },
+        },
+    };
 
-    onAfterInit(props?: any): void {
+    /**
+     * listens — 声明式订阅实体事件，刷新分页状态与按钮状态
+     *
+     * entity: true 仅作类型标识，entityKey 统一取 instance.entityKey
+     * （构造函数已赋值，bindListens 在 FINALIZE 阶段执行时已就绪）。
+     * - list:loading（true/false）→ 加载中禁用按钮
+     * - list:success（RequestContext）→ 提取 total 更新 totalRecords/totalPages
+     * - listed（items）→ 刷新分页显示
+     */
+    listens = [
+        {
+            entity: true,
+            events: {
+                'list:loading': '_onListLoading',
+                'list:success': '_onListSuccess',
+                listed: '_onListed',
+            },
+        },
+    ];
+
+    onAfterInit(props?: EntityToolbarProps): void {
         const self = this as any;
         self.addCls('q-entity-toolbar');
         if (self.itemContainer) self.itemContainer.addCls('q-entity-toolbar__items');
+
+        if (props?.domain) self._domain = props.domain;
+
+        // 调 super 前把 pagination/crud + items 合并 → 父类只 setItems 一次
+        const mergedItems = this._resolveMergedItems(props);
+
         super.onAfterInit({
             direction: 'horizontal',
             defaultItemType: 'Button',
             gap: '4px',
             ...props,
+            items: mergedItems.length > 0 ? mergedItems : undefined,
         } as any);
+
         this._initEntityToolbar(props);
+    }
+
+    /**
+     * 合并声明式 pagination / crud 展开项与 props.items 自定义项。
+     * 顺序：pagination（order 100-170）→ 自定义 items → crud（order 200-260）。
+     * 最终位置由各 item 的 order 字段经 CSS flex order 决定。
+     */
+    _resolveMergedItems(props?: EntityToolbarProps): Record<string, any>[] {
+        const self = this as any;
+        const merged: Record<string, any>[] = [];
+
+        merged.push(...createPaginationItems(props?.pagination, {
+            defaultPageSize: self.pageSize,
+            pageSizes: self.pageSizes,
+        }));
+
+        if (props?.items && props.items.length > 0) merged.push(...props.items);
+
+        merged.push(...createCrudItems(props?.crud));
+
+        return merged;
     }
 
     _initEntityToolbar(props?: EntityToolbarProps): void {
         const self = this as any;
-        self._itemsConfig = props?.items ?? {};
-        self._entityKey = props?.entityKey ?? '';
-        self._eventKey = props?.eventKey ?? '';
-
-        const resolved = self._resolveItems(self._itemsConfig);
-        if (resolved.length > 0) self.setItems(resolved);
-        self._setupSemanticEvents();
+        self._setupFormEvents();
+        self._syncPageBtnStates();
     }
 
-    // ══════════════════════════════════════════════
-    // items 解析
-    // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
+    // domain / pageSize / pageSizes（domainConfig 兜底，首次读时固化）
+    // ══════════════════════════════════════════════════════════════
 
-    _resolveItems(config: EntityToolbarItems): Record<string, any>[] {
-        const self = this as any;
-        const items: Record<string, any>[] = [];
-
-        for (const [key, val] of Object.entries(config)) {
-            if (val === false) continue;
-
-            const builtin = BUILTIN_DEFS[key];
-            if (builtin) {
-                if (val === true) {
-                    items.push(self._buildBuiltinItem(builtin, {}));
-                } else {
-                    items.push(self._buildBuiltinItem(builtin, val as EntityToolbarItemDef));
-                }
-            } else {
-                items.push(self._buildCustomItem(key, val as EntityToolbarItemDef));
-            }
-        }
-
-        return items;
+    get domain(): string {
+        return (this as any)._domain;
+    }
+    set domain(v: string) {
+        (this as any)._domain = v ?? '';
     }
 
-    _buildBuiltinItem(def: BuiltinItemDef, override: EntityToolbarItemDef): Record<string, any> {
-        const self = this as any;
-        const name = override.name ?? def.name;
-        const order = override.order ?? def.order;
-        const iconCls = override.iconCls ?? def.iconCls;
-        const text = override.text ?? def.text;
-        const variant = override.variant ?? def.variant;
-
-        if (def.type === 'Button') {
-            const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
-            return {
-                type: 'Button',
-                name,
-                icon: iconCls,
-                text,
-                cls: `q-entity-toolbar__btn q-entity-toolbar__btn--${name}${variantCls}${override.cls ? ' ' + override.cls : ''}`,
-                order,
-            };
-        }
-
-        if (name === 'pageNum') {
-            return {
-                type: 'NumberInput',
-                name: 'pageNum',
-                value: 1,
-                min: 1,
-                cls: 'q-entity-toolbar__input q-entity-toolbar__input--page-num',
-                order,
-            };
-        }
-        if (name === 'pageSize') {
-            const defaultPageSize = self.domainConfig?.pageSize ?? 10;
-            const pageSizes: number[] = self.domainConfig?.pagesizes ?? [10, 20, 50, 100];
-            return {
-                type: 'Select',
-                name: 'pageSize',
-                value: defaultPageSize,
-                options: pageSizes.map((s: number) => ({ label: String(s), value: s })),
-                cls: 'q-entity-toolbar__select q-entity-toolbar__select--page-size',
-                order,
-            };
-        }
-        if (name === 'pageTotal') {
-            return {
-                type: 'Text',
-                name: 'pageTotal',
-                text: '1/0',
-                cls: 'q-entity-toolbar__text q-entity-toolbar__text--page-total',
-                order,
-            };
-        }
-        if (name === 'totalRecords') {
-            return {
-                type: 'Text',
-                name: 'totalRecords',
-                text: '0',
-                cls: 'q-entity-toolbar__text q-entity-toolbar__text--total-records',
-                order,
-            };
-        }
-        if (name === 'search') {
-            return {
-                type: 'Input',
-                name: 'search',
-                placeholder: 'i18n:toolbar.searchPlaceholder',
-                clearable: true,
-                cls: 'q-entity-toolbar__input q-entity-toolbar__input--search',
-                order,
-            };
-        }
-
-        return { type: def.type, name, text, order, ...override };
-    }
-
-    _buildCustomItem(key: string, def: EntityToolbarItemDef): Record<string, any> {
-        const type = def.type ?? 'Button';
-        const name = def.name ?? key;
-        const order = def.order ?? 150;
-        const item: Record<string, any> = { type, name, order, ...def };
-        delete item.type;
-        item.type = type;
-        return item;
-    }
-
-    // ══════════════════════════════════════════════
-    // 语义事件
-    // ══════════════════════════════════════════════
-
-    _setupSemanticEvents(): void {
-        const self = this as any;
-
-        self.on('action', (data: any) => {
-            const itemName = data?.name ?? data?.item?.name;
-            if (!itemName) return;
-
-            if (PAGINATION_ACTION_NAMES.has(itemName)) {
-                self.emit(PAGINATION_EVENTS.CHANGE, {
-                    action: itemName,
-                    page: self._currentPage,
-                    ...data,
-                });
-            }
-            if (CRUD_ACTION_NAMES.has(itemName)) {
-                self.emit(CRUD_EVENTS.ACTION, { action: itemName, ...data });
-            }
+    /**
+     * 每页条数：优先 domainConfig.pageSize，兜底 20。首次读时固化到实例。
+     */
+    get pageSize(): number {
+        const config = (this as any).domainConfig;
+        const value = config?.pageSize ?? DEFAULT_PAGE_SIZE;
+        Object.defineProperty(this, 'pageSize', {
+            value, writable: true, configurable: true, enumerable: true,
         });
+        return value;
+    }
+    set pageSize(v: number) {
+        Object.defineProperty(this, 'pageSize', {
+            value: v, writable: true, configurable: true, enumerable: true,
+        });
+        const item = (this as any)._findItemByName?.('pageSize');
+        if (item && typeof item.setValue === 'function') item.setValue(v);
+    }
+
+    /**
+     * 可选每页条数列表：优先 domainConfig.pagesizes，兜底 [10,20,50,100]。
+     */
+    get pageSizes(): number[] {
+        const config = (this as any).domainConfig;
+        const value = config?.pagesizes ?? DEFAULT_PAGE_SIZES;
+        Object.defineProperty(this, 'pageSizes', {
+            value, writable: true, configurable: true, enumerable: true,
+        });
+        return value;
+    }
+    set pageSizes(v: number[]) {
+        Object.defineProperty(this, 'pageSizes', {
+            value: v, writable: true, configurable: true, enumerable: true,
+        });
+        const item = (this as any)._findItemByName?.('pageSize');
+        if (item && typeof item.setOptions === 'function') {
+            item.setOptions(v.map(s => ({ label: String(s), value: s })));
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 实体事件处理（listens 声明式订阅，handler 由 ListensEngine 调用）
+    // ══════════════════════════════════════════════════════════════
+
+    /** list:loading（true/false）→ 加载中禁用按钮，加载完恢复 */
+    _onListLoading(loading: any): void {
+        const self = this as any;
+        self._loading = !!loading;
+        self._syncLoadingBtnStates();
+    }
+
+    /** list:success（RequestContext）→ 提取 total 更新 totalRecords/totalPages */
+    _onListSuccess(ctx: any): void {
+        const self = this as any;
+        const total = ctx?.data?.total ?? ctx?.total;
+        if (typeof total === 'number') {
+            self._totalRecords = total;
+            const size = self.pageSize || DEFAULT_PAGE_SIZE;
+            self._totalPages = Math.ceil(total / size) || 0;
+            self._updatePageDisplay();
+            self._updateTotalRecordsDisplay();
+            self._syncPageBtnStates();
+        }
+    }
+
+    /** listed（items）→ 列表刷新，同步分页显示（currentPage 已由翻页交互维护） */
+    _onListed(): void {
+        const self = this as any;
+        self._updatePageDisplay();
+        self._updateTotalRecordsDisplay();
+        self._syncPageBtnStates();
+    }
+
+    /**
+     * 加载中禁用所有 CRUD + 翻页按钮，加载完恢复（按当前分页状态决定首末翻页）。
+     */
+    _syncLoadingBtnStates(): void {
+        const self = this as any;
+        const loading = !!self._loading;
+        const names = [
+            ...Array.from(PAGINATION_ITEM_NAMES),
+            ...Array.from(CRUD_ITEM_NAMES),
+        ];
+        for (const name of names) {
+            const item = self._findItemByName(name);
+            if (item) item.disabled = loading;
+        }
+        if (!loading) self._syncPageBtnStates();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 按钮点击（domEvents click → Button 委托）
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Button 点击 handler（domEvents 委托触发）。
+     * entities: '[action]' 已自动把 action 转发为实体事件（entityEmit），
+     * 这里只负责本地分页状态更新 + emit 组件级事件供外部消费者监听。
+     */
+    _onButtonClick(domEvt: any): void {
+        const self = this as any;
+        const item = self.getTargetItem?.(domEvt?.target);
+        if (!item) return;
+
+        const action = item.component?.action;
+        if (!action) return;
+
+        if (PAGINATION_ITEM_NAMES.has(action)) {
+            // 翻页按钮：本地 currentPage 更新
+            if (action === 'firstPage') self.currentPage = 1;
+            else if (action === 'prevPage') self.currentPage = Math.max(1, self._currentPage - 1);
+            else if (action === 'nextPage') {
+                self.currentPage = self._totalPages
+                    ? Math.min(self._totalPages, self._currentPage + 1)
+                    : self._currentPage + 1;
+            } else if (action === 'lastPage') self.currentPage = self._totalPages || self._currentPage;
+
+            self.emit(PAGINATION_EVENTS.CHANGE, { action, page: self._currentPage });
+        } else if (CRUD_ITEM_NAMES.has(action)) {
+            self.emit(CRUD_EVENTS.ACTION, { action });
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 表单事件（pageNum 输入 / pageSize 选择）
+    // ══════════════════════════════════════════════════════════════
+
+    _setupFormEvents(): void {
+        const self = this as any;
 
         self.on('pageNumInputChange', (data: any) => {
             const page = parseInt(data?.formValue, 10);
@@ -399,9 +335,9 @@ class EntityToolbarComponent extends ToolbarComponent {
         });
     }
 
-    // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
     // 分页状态
-    // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
 
     get currentPage(): number {
         return (this as any)._currentPage;
@@ -410,6 +346,7 @@ class EntityToolbarComponent extends ToolbarComponent {
         const self = this as any;
         self._currentPage = v;
         self._updatePageDisplay();
+        self._syncPageBtnStates();
     }
 
     get totalPages(): number {
@@ -419,6 +356,7 @@ class EntityToolbarComponent extends ToolbarComponent {
         const self = this as any;
         self._totalPages = v;
         self._updatePageDisplay();
+        self._syncPageBtnStates();
     }
 
     get totalRecords(): number {
@@ -430,11 +368,23 @@ class EntityToolbarComponent extends ToolbarComponent {
         self._updateTotalRecordsDisplay();
     }
 
-    get pageSize(): number {
-        return (this as any)._pageSize;
+    get loading(): boolean {
+        return (this as any)._loading;
     }
-    set pageSize(v: number) {
-        (this as any)._pageSize = v;
+
+    /**
+     * 批量同步状态：{ page, totalPages, totalRecords, pageSize }。
+     * 刷新显示 + 按钮状态。不触发重渲染，仅同步分页状态。
+     */
+    syncState(state: EntityToolbarState): void {
+        const self = this as any;
+        if (state?.page !== undefined) self._currentPage = state.page;
+        if (state?.totalPages !== undefined) self._totalPages = state.totalPages;
+        if (state?.totalRecords !== undefined) self._totalRecords = state.totalRecords;
+        if (state?.pageSize !== undefined) self.pageSize = state.pageSize;
+        self._updatePageDisplay();
+        self._updateTotalRecordsDisplay();
+        self._syncPageBtnStates();
     }
 
     _updatePageDisplay(): void {
@@ -451,6 +401,29 @@ class EntityToolbarComponent extends ToolbarComponent {
         if (totalItem) totalItem.text = `${self._totalRecords}`;
     }
 
+    /**
+     * 根据当前页/总页禁用首尾翻页按钮。
+     */
+    _syncPageBtnStates(): void {
+        const self = this as any;
+        if (self._loading) return; // 加载中已全部禁用
+        const cur = self._currentPage ?? 1;
+        const total = self._totalPages ?? 0;
+
+        const atFirst = cur <= 1;
+        const atLast = total > 0 && cur >= total;
+
+        const first = self._findItemByName('firstPage');
+        const prev = self._findItemByName('prevPage');
+        const next = self._findItemByName('nextPage');
+        const last = self._findItemByName('lastPage');
+
+        first && (first.disabled = atFirst);
+        prev && (prev.disabled = atFirst);
+        next && (next.disabled = atLast);
+        last && (last.disabled = atLast);
+    }
+
     _findItemByName(name: string): any {
         const self = this as any;
         for (const item of self._items) {
@@ -459,17 +432,37 @@ class EntityToolbarComponent extends ToolbarComponent {
         return null;
     }
 
-    // ══════════════════════════════════════════════
-    // 便捷方法
-    // ══════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
+    // 按钮状态便捷方法
+    // ══════════════════════════════════════════════════════════════
 
-    setPageInfo(page: number, totalPages: number, totalRecords: number): void {
+    /**
+     * 批量更新多个按钮状态（enable/hidden/cls/iconCls）。
+     * @example
+     * toolbar.updateItemStates({ edit:{enabled:false}, delete:{hidden:true}, save:{cls:'s'} });
+     */
+    updateItemStates(states: Record<string, EntityToolbarItemState>): void {
         const self = this as any;
-        self._currentPage = page;
-        self._totalPages = totalPages;
-        self._totalRecords = totalRecords;
-        self._updatePageDisplay();
-        self._updateTotalRecordsDisplay();
+        for (const [name, s] of Object.entries(states ?? {})) {
+            const item = self._findItemByName(name);
+            if (!item) continue;
+            if (s.enabled !== undefined) item.disabled = !s.enabled;
+            if (s.hidden !== undefined) item.hidden = s.hidden;
+            if (s.cls !== undefined) typeof item.addCls === 'function' && item.addCls(s.cls);
+            if (s.iconCls !== undefined) item.icon = s.iconCls;
+        }
+    }
+
+    /**
+     * 批量设置按钮 enable 状态。
+     * @example toolbar.setItemStates({ edit:false, delete:false, save:true });
+     */
+    setItemStates(map: Record<string, boolean>): void {
+        const self = this as any;
+        for (const [name, enabled] of Object.entries(map ?? {})) {
+            const item = self._findItemByName(name);
+            if (item) item.disabled = !enabled;
+        }
     }
 
     setItemEnabled(name: string, enabled: boolean): void {
@@ -497,27 +490,35 @@ class EntityToolbarComponent extends ToolbarComponent {
         return searchItem?.value ?? '';
     }
 
-    // ══════════════════════════════════════════════
-    // update
-    // ══════════════════════════════════════════════
+    /** 批量设置分页信息并刷新显示（syncState 的便捷别名） */
+    setPageInfo(page: number, totalPages: number, totalRecords: number): void {
+        this.syncState({ page, totalPages, totalRecords });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 组件 update（props 变更，重写基类）
+    // ══════════════════════════════════════════════════════════════
 
     update(props?: Partial<EntityToolbarProps>): void {
         const self = this as any;
         super.update(props);
 
-        if (props?.items !== undefined) {
-            self._itemsConfig = props.items;
+        if (props?.pagination !== undefined || props?.crud !== undefined || props?.items !== undefined) {
+            const merged = this._resolveMergedItems({
+                ...(self._lastProps || {}), ...(props || {}),
+            } as EntityToolbarProps);
             self.clear();
-            const resolved = self._resolveItems(props.items);
-            if (resolved.length > 0) self.setItems(resolved);
+            if (merged.length > 0) self.setItems(merged);
         }
-        if (props?.entityKey !== undefined) self._entityKey = props.entityKey;
-        if (props?.eventKey !== undefined) self._eventKey = props.eventKey;
+        if (props?.domain !== undefined) self._domain = props.domain;
+        if (props?.entityKey !== undefined) self.entityKey = props.entityKey;
+        self._lastProps = { ...(self._lastProps || {}), ...(props || {}) };
     }
 }
 
+// 类级 use() 一次：DomainAbility 提供 this.domainConfig
+// EntityEventBusAbility 由系统自动挂载（COMPONENT_ABILITIES），无需 use
 EntityToolbarComponent.use([DomainAbility]);
-EntityToolbarComponent.useTemplate(ENTITY_TOOLBAR_TPL);
 
 export { EntityToolbarComponent };
 export type EntityToolbarComponentInstance = InstanceType<typeof EntityToolbarComponent>;
