@@ -10,6 +10,7 @@ export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
 
 // 孤儿组件注册触发（无自然 import 链，显式 import 触发底部 register/useTemplate 副作用）
 import './text/TextComponent';
+import './text/HrefComponent';
 import './date/DayGridComponent';
 import './table/header/BaseHeaderCellComponent';
 import './table/cells/BaseCellComponent';
@@ -215,3 +216,7 @@ export { timelineCSS } from './timeline/timeline.css';
 // Navbar 顶部导航栏组件（从 ItemGroupStaticComponent 派生，横向布局）
 export { NavbarComponent, type NavbarProps } from './navbar/NavbarComponent';
 export { navbarCSS } from './navbar/navbar.css';
+
+// Href 超链接文本组件（<a> 封装，navigate 事件 + router 转发）
+export { HrefComponent, type HrefTarget, type HrefProps } from './text/HrefComponent';
+export { hrefCSS } from './text/href.css';
