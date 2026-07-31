@@ -49,16 +49,20 @@ export class TableSummaryEngine {
                 },
 
                 onAfterInit(this: any): void {
-                    this.el.classList.add('q-table-row--table-summary');
+                    this.addCls('q-table-row--table-summary');
                     this._applyWidths();
                 },
 
                 _applyWidths(this: any): void {
                     for (const meta of this._columnMetas) {
-                        const node = this.nodeMap?.[meta.name]?.el as HTMLElement | null;
-                        if (node && meta.width) {
-                            node.style.width = `var(--q-table-col-${meta.name}-width)`;
-                            node.style.flexShrink = '0';
+                        if (meta.width) {
+                            this.setNodeStyle(
+                                {
+                                    width: `var(--q-table-col-${meta.name}-width)`,
+                                    flexShrink: '0',
+                                },
+                                meta.name
+                            );
                         }
                     }
                 },
@@ -66,7 +70,7 @@ export class TableSummaryEngine {
                 update(this: any, data: any): void {
                     if (!data) return;
                     for (const meta of this._columnMetas) {
-                        const cell = this.nodeMap?.[meta.name]?.component;
+                        const cell = this.getNode(meta.name);
                         if (cell && typeof cell.update === 'function') {
                             const value = data[meta.name];
                             if (value !== undefined) {

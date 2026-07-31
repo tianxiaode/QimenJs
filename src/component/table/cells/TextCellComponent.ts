@@ -3,6 +3,7 @@
  *
  * 在 BaseCell 基础上增加格式化支持。
  * format 通过 initConfig 编译时传入，运行时 update() 内应用。
+ * 继承父类模板（content 占位节点），仅扩展格式化逻辑。
  *
  * @example
  * ```ts
@@ -21,67 +22,62 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { ColumnAlign, ColumnFormat, TextCellData } from '../column-types';
+import type { BaseCellProps } from './BaseCellComponent';
+import type { ColumnFormat, TextCellData } from '../column-types';
 
-export interface TextCellProps {
-    align?: ColumnAlign;
+export interface TextCellProps extends BaseCellProps {
     format?: ColumnFormat;
 }
 
-export let TextCellComponent = BaseCellComponent.replace({
+class TextCellComponent extends BaseCellComponent {
+    _format: ColumnFormat | undefined = undefined;
 
-    body: {
-        _format: undefined as ColumnFormat | undefined,
+    onAfterInit(props?: TextCellProps): void {
+        super.onAfterInit(props);
+        if (props?.format) this._format = props.format;
+    }
 
-        onAfterInit(props?: TextCellProps): void {
-            const self = this as any;
-            if (props?.format) self._format = props.format;
-        },
+    get format(): ColumnFormat | undefined {
+        return this._format;
+    }
+    set format(v: ColumnFormat | undefined) {
+        this._format = v;
+    }
 
-        get format(): ColumnFormat | undefined {
-            const self = this as any;
-            return self._format;
-        },
-        set format(v: ColumnFormat | undefined) {
-            const self = this as any;
-            self._format = v;
-        },
+    update(data: TextCellData): void {
+        const raw = data.value;
+        const display = this._formatValue(raw);
+        this.setNodeProp('text', display, 'content');
+    }
 
-        update(data: TextCellData): void {
-            const self = this as any;
-            const raw = data.value;
-            const display = self._formatValue(raw);
-            self.setNodeProp('text', display, 'content');
-        },
+    _formatValue(value: any): string {
+        if (this._format === undefined) return String(value ?? '');
+        if (typeof this._format === 'function') return this._format(value, undefined);
+        return this._applyFormatPreset(value, this._format);
+    }
 
-        _formatValue(value: any): string {
-            const self = this as any;
-            if (self._format === undefined) return String(value ?? '');
-            if (typeof self._format === 'function') return self._format(value);
-            return self._applyFormatPreset(value, self._format);
-        },
+    _applyFormatPreset(value: any, preset: string): string {
+        if (value == null) return '';
+        switch (preset) {
+            case 'number':
+                return Number(value).toLocaleString();
+            case 'integer':
+                return Math.round(Number(value)).toLocaleString();
+            case 'currency':
+                return Number(value).toLocaleString(undefined, {
+                    style: 'currency',
+                    currency: 'CNY',
+                });
+            case 'percent':
+                return `${Number(value).toLocaleString()}%`;
+            case 'date':
+                return new Date(value).toLocaleDateString();
+            default:
+                return String(value);
+        }
+    }
+}
 
-        _applyFormatPreset(value: any, preset: string): string {
-            if (value == null) return '';
-            switch (preset) {
-                case 'number':
-                    return Number(value).toLocaleString();
-                case 'integer':
-                    return Math.round(Number(value)).toLocaleString();
-                case 'currency':
-                    return Number(value).toLocaleString(undefined, {
-                        style: 'currency',
-                        currency: 'CNY',
-                    });
-                case 'percent':
-                    return `${Number(value).toLocaleString()}%`;
-                case 'date':
-                    return new Date(value).toLocaleDateString();
-                default:
-                    return String(value);
-            }
-        },
-    },
-});
-
-export type TextCellComponent = InstanceType<typeof TextCellComponent>;
+TextCellComponent.register();
+export { TextCellComponent };
+export type TextCellComponentInstance = InstanceType<typeof TextCellComponent>;

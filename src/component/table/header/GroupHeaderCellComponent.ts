@@ -20,13 +20,12 @@
  */
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
+import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 
-export interface GroupHeaderCellProps {
-    colName: string;
-    title?: string;
-    align?: ColumnAlign;
+export interface GroupHeaderCellProps extends BaseHeaderCellProps {
     resizable?: boolean;
     childNames: string[];
     childConfigs: GroupChildConfig[];
@@ -43,125 +42,105 @@ export interface GroupChildConfig {
     children?: GroupChildConfig[];
 }
 
-export let GroupHeaderCellComponent = BaseHeaderCellComponent.replace({
+class GroupHeaderCellComponent extends BaseHeaderCellComponent {
+    _childNames: string[] = [];
+    _childCells: Array<{ component: any; el: HTMLElement }> = [];
+    _resizable: boolean = true;
+    _resizeStartWidth: number = 0;
 
-    tplReplaces: {
-        content: {
-            tag: 'div',
-            name: 'groupBody',
-            cls: 'q-header-cell__group-body',
-            children: [
-                { tag: 'span', name: 'title', cls: 'q-header-cell__title' },
-                { tag: 'div', name: 'children', cls: 'q-header-cell__children' },
-            ],
-        },
-    },
+    onAfterInit(props?: GroupHeaderCellProps): void {
+        super.onAfterInit(props);
+        this.addCls('q-header-cell--group');
+        this.removeCls('q-header-cell--leaf');
 
-    body: {
-        drags: {
-            resizeHandle: { axis: 'x', activeClass: 'q-header-cell__resize--active' },
-        },
+        if (props?.childNames) this._childNames = props.childNames;
+        if (props?.resizable !== undefined) this._resizable = props.resizable;
+        this.attachDrag('resizeHandle', {
+            axis: 'x' as const,
+            activeClass: 'q-header-cell__resize--active',
+        });
+        this._applyGroupWidth();
+        this._applyResizable();
+        if (props?.childConfigs) this._createChildren(props.childConfigs);
+    }
 
-        _childNames: [] as string[],
-        _childCells: [] as Array<{ component: any; el: HTMLElement }>,
-        _resizable: true as boolean,
-        _resizeStartWidth: 0 as number,
+    _applyGroupWidth(): void {
+        if (this._childNames.length === 0) return;
+        const parts = this._childNames.map((n: string) => `var(--q-table-col-${n}-width)`);
+        this.setNodeStyle({
+            width: `calc(${parts.join(' + ')})`,
+            flexShrink: '0',
+        });
+    }
 
-        onAfterInit(props?: GroupHeaderCellProps): void {
-            const self = this as any;
-            self.el.classList.add('q-header-cell--group');
-            self.el.classList.remove('q-header-cell--leaf');
+    _applyResizable(): void {
+        this.setNodeStyle({ display: this._resizable ? '' : 'none' }, 'resizeHandle');
+    }
 
-            if (props?.childNames) self._childNames = props.childNames;
-            if (props?.resizable !== undefined) self._resizable = props.resizable;
-            self._applyGroupWidth();
-            self._applyResizable();
-            if (props?.childConfigs) self._createChildren(props.childConfigs);
-        },
+    _createChildren(configs: GroupChildConfig[]): void {
+        const container = this._resolveNodeEl('children');
+        if (!container) return;
 
-        _applyGroupWidth(): void {
-            const self = this as any;
-            if (self._childNames.length === 0) return;
-            const parts = self._childNames.map((n: string) => `var(--q-table-col-${n}-width)`);
-            self.el.style.width = `calc(${parts.join(' + ')})`;
-            self.el.style.flexShrink = '0';
-        },
+        for (const config of configs) {
+            const componentType = config.type === 'group' ? 'GroupHeaderCell' : 'LeafHeaderCell';
+            const ChildClass = ComponentRegistrar.getInstance().get(componentType) as any;
+            if (!ChildClass) continue;
 
-        _applyResizable(): void {
-            const self = this as any;
-            const handle = self.nodeMap?.resizeHandle?.el as HTMLElement | null;
-            if (!handle) return;
-            handle.style.display = self._resizable ? '' : 'none';
-        },
+            const childProps: any = {
+                colName: config.colName,
+                title: config.title,
+                align: config.align,
+                minWidth: config.minWidth,
+            };
 
-        _createChildren(configs: GroupChildConfig[]): void {
-            const self = this as any;
-            const container = self.nodeMap?.children?.el as HTMLElement | null;
-            if (!container) return;
-
-            for (const config of configs) {
-                const componentType =
-                    config.type === 'group' ? 'GroupHeaderCell' : 'LeafHeaderCell';
-                const ChildClass = ComponentRegistrar.getInstance().get(componentType) as any;
-                if (!ChildClass) continue;
-
-                const childProps: any = {
-                    colName: config.colName,
-                    title: config.title,
-                    align: config.align,
-                    minWidth: config.minWidth,
-                };
-
-                if (config.type === 'leaf') {
-                    childProps.sortable = config.sortable;
-                    childProps.resizable = config.resizable;
-                } else if (config.type === 'group' && config.children) {
-                    childProps.childNames = config.children.map((c: GroupChildConfig) => c.colName);
-                    childProps.childConfigs = config.children;
-                }
-
-                const instance = new ChildClass(childProps);
-                self._childCells.push({ component: instance, el: instance.el });
-                container.appendChild(instance.el);
+            if (config.type === 'leaf') {
+                childProps.sortable = config.sortable;
+                childProps.resizable = config.resizable;
+            } else if (config.type === 'group' && config.children) {
+                childProps.childNames = config.children.map((c: GroupChildConfig) => c.colName);
+                childProps.childConfigs = config.children;
             }
-        },
 
-        onResizeHandleDragStart(ctx: {
-            dx: number;
-            dy: number;
-            el: HTMLElement;
-            originalEvent: Event;
-        }): void {
-            const self = this as any;
-            if (!self._resizable || self._childNames.length === 0) return;
-            self._resizeStartWidth = self.el.offsetWidth;
-        },
+            const instance = new ChildClass(childProps);
+            this._childCells.push({ component: instance, el: instance.el });
+            container.appendChild(instance.el);
+        }
+    }
 
-        onResizeHandleDragMove(ctx: {
-            dx: number;
-            dy: number;
-            el: HTMLElement;
-            originalEvent: Event;
-        }): void {
-            const self = this as any;
-            if (!self._resizable || self._childNames.length === 0) return;
-            const targetCol = self._childNames[self._childNames.length - 1];
-            const newWidth = Math.max(self._minWidth, self._resizeStartWidth + ctx.dx);
-            self.emit('resize', {
-                colName: targetCol,
-                width: newWidth,
-            });
-        },
+    onResizeHandleDragStart(_ctx: {
+        dx: number;
+        dy: number;
+        el: HTMLElement;
+        originalEvent: Event;
+    }): void {
+        if (!this._resizable || this._childNames.length === 0) return;
+        this._resizeStartWidth = this.el.offsetWidth;
+    }
 
-        onResizeHandleDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {},
+    onResizeHandleDragMove(ctx: {
+        dx: number;
+        dy: number;
+        el: HTMLElement;
+        originalEvent: Event;
+    }): void {
+        if (!this._resizable || this._childNames.length === 0) return;
+        const targetCol = this._childNames[this._childNames.length - 1];
+        const newWidth = Math.max(this._minWidth, this._resizeStartWidth + ctx.dx);
+        this.emit('resize', {
+            colName: targetCol,
+            width: newWidth,
+        });
+    }
 
-        update(data: any): void {
-            const self = this as any;
-            if (data?.title !== undefined) {
-                self.setNodeProp('text', String(data.title), 'title');
-            }
-        },
-    },
-});
+    onResizeHandleDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
 
-export type GroupHeaderCellComponentType = InstanceType<typeof GroupHeaderCellComponent>;
+    update(data: any): void {
+        if (data?.title !== undefined) {
+            this.setNodeProp('text', String(data.title), 'title');
+        }
+    }
+}
+
+GroupHeaderCellComponent.useTemplate(GROUP_HEADER_CELL_TPL);
+export { GroupHeaderCellComponent };
+export type GroupHeaderCellComponentInstance = InstanceType<typeof GroupHeaderCellComponent>;

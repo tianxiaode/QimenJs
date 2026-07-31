@@ -48,10 +48,10 @@ class BaseCellComponent extends Component {
     }
 
     _applyAlign(): void {
-        this.el.style.textAlign = this._align;
-        this.el.classList.toggle('q-cell--left', this._align === 'left');
-        this.el.classList.toggle('q-cell--center', this._align === 'center');
-        this.el.classList.toggle('q-cell--right', this._align === 'right');
+        this.setNodeStyle({ textAlign: this._align });
+        this.toggleCls('q-cell--left', this._align === 'left');
+        this.toggleCls('q-cell--center', this._align === 'center');
+        this.toggleCls('q-cell--right', this._align === 'right');
     }
 
     update(data: any): void {

@@ -87,31 +87,23 @@ export class EditOverlayEngine {
                 },
 
                 showError(this: any, message: string): void {
-                    const errorEl = this.nodeMap?.error?.el as HTMLElement | null;
-                    if (errorEl) {
-                        errorEl.textContent = message;
-                        errorEl.style.display = '';
-                    }
+                    this.setNodeProp('text', message, 'error');
+                    this.setNodeStyle({ display: '' }, 'error');
                 },
 
                 _hideAllSlots(this: any): void {
                     for (const meta of this._editableMetas) {
-                        const slot = this.nodeMap?.[`slot_${meta.name}`]?.el as HTMLElement | null;
-                        if (slot) slot.style.display = 'none';
+                        this.setNodeStyle({ display: 'none' }, `slot_${meta.name}`);
                     }
                 },
 
                 _showSlot(this: any, colName: string): void {
-                    const slot = this.nodeMap?.[`slot_${colName}`]?.el as HTMLElement | null;
-                    if (slot) slot.style.display = '';
+                    this.setNodeStyle({ display: '' }, `slot_${colName}`);
                 },
 
                 _clearError(this: any): void {
-                    const errorEl = this.nodeMap?.error?.el as HTMLElement | null;
-                    if (errorEl) {
-                        errorEl.textContent = '';
-                        errorEl.style.display = 'none';
-                    }
+                    this.setNodeProp('text', '', 'error');
+                    this.setNodeStyle({ display: 'none' }, 'error');
                 },
 
                 _setValue(this: any, colName: string, value?: any): void {
@@ -129,8 +121,7 @@ export class EditOverlayEngine {
                 },
 
                 _getInput(this: any, colName: string): HTMLInputElement | null {
-                    const inputNode = this.nodeMap?.[`input_${colName}`]?.el;
-                    return (inputNode as HTMLInputElement) || null;
+                    return (this._resolveNodeEl(`input_${colName}`) as HTMLInputElement) || null;
                 },
             },
         });

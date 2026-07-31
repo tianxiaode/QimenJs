@@ -1,7 +1,7 @@
 /**
  * ActionCellComponent 操作单元格组件
  *
- * 在 BaseCell 基础上通过 tplReplaces 替换 content 为 ButtonGroup。
+ * 在 BaseCell 基础上替换 content 为 ButtonGroup。
  * update({ actions }) 驱动按钮组内容。
  *
  * @example
@@ -17,53 +17,35 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { ColumnAlign, ActionCellData } from '../column-types';
+import type { BaseCellProps } from './BaseCellComponent';
+import type { ActionCellData } from '../column-types';
+import { ACTION_CELL_TPL } from './action-cell-tpl';
 
-export interface ActionCellProps {
-    align?: ColumnAlign;
+export type ActionCellProps = BaseCellProps;
+
+class ActionCellComponent extends BaseCellComponent {
+    _actions: Record<string, any>[] = [];
+
+    update(data: ActionCellData): void {
+        this._actions = data.actions ?? [];
+        this._renderActions();
+    }
+
+    _renderActions(): void {
+        const actionsCmp = this.getNode('actions');
+        if (!actionsCmp) return;
+
+        actionsCmp.clear();
+        for (const action of this._actions) {
+            actionsCmp.add(action);
+        }
+    }
+
+    get actions(): Record<string, any>[] {
+        return this._actions;
+    }
 }
 
-export let ActionCellComponent = BaseCellComponent.replace({
-
-    tplReplaces: {
-        content: {
-            type: 'ButtonGroup',
-            name: 'actions',
-            cls: 'q-cell__actions',
-            initConfig: {
-                direction: 'horizontal',
-                gap: '4px',
-            },
-        },
-    },
-
-    body: {
-        _actions: [] as Record<string, any>[],
-
-        onAfterInit(props?: ActionCellProps): void {},
-
-        update(data: ActionCellData): void {
-            const self = this as any;
-            self._actions = data.actions ?? [];
-            self._renderActions();
-        },
-
-        _renderActions(): void {
-            const self = this as any;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return;
-
-            actionsCmp.clear();
-            for (const action of self._actions) {
-                actionsCmp.add(action);
-            }
-        },
-
-        get actions(): Record<string, any>[] {
-            const self = this as any;
-            return self._actions;
-        },
-    },
-});
-
-export type ActionCellComponent = InstanceType<typeof ActionCellComponent>;
+ActionCellComponent.useTemplate(ACTION_CELL_TPL);
+export { ActionCellComponent };
+export type ActionCellComponentInstance = InstanceType<typeof ActionCellComponent>;

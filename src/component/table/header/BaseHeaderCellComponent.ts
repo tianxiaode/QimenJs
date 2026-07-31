@@ -39,21 +39,21 @@ class BaseHeaderCellComponent extends Component {
 
     _applyWidth(): void {
         if (!this._colName) return;
-        this.el.style.width = `var(--q-table-col-${this._colName}-width)`;
-        this.el.style.minWidth = `var(--q-table-col-${this._colName}-min-width, ${this._minWidth}px)`;
-        this.el.style.flexShrink = '0';
+        this.setNodeStyle({
+            width: `var(--q-table-col-${this._colName}-width)`,
+            minWidth: `var(--q-table-col-${this._colName}-min-width, ${this._minWidth}px)`,
+            flexShrink: '0',
+        });
     }
 
     _applyAlign(): void {
-        const content = this.nodeMap.content?.el;
-        if (content) {
-            content.style.justifyContent =
-                this._align === 'center'
-                    ? 'center'
-                    : this._align === 'right'
-                      ? 'flex-end'
-                      : 'flex-start';
-        }
+        const justifyContent =
+            this._align === 'center'
+                ? 'center'
+                : this._align === 'right'
+                  ? 'flex-end'
+                  : 'flex-start';
+        this.setNodeStyle({ justifyContent }, 'content');
     }
 
     update(data: any): void {

@@ -1,8 +1,8 @@
 /**
  * TreeCellComponent 树形单元格组件
  *
- * 在 BaseCell 基础上通过 tplReplaces 替换 content 为树形结构：
- * toggle（展开/折叠图标）+ indent（缩进占位）+ text（文本内容）
+ * 在 BaseCell 基础上替换 content 为树形结构：
+ * toggle（展开/折叠图标）+ text（文本内容）
  *
  * update({ value, depth, leaf, expanded? }) 驱动缩进和图标状态。
  *
@@ -14,87 +14,60 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { ColumnAlign, TreeCellData } from '../column-types';
+import type { BaseCellProps } from './BaseCellComponent';
+import type { TreeCellData } from '../column-types';
+import { TREE_CELL_TPL } from './tree-cell-tpl';
 
-export interface TreeCellProps {
-    align?: ColumnAlign;
-}
+export type TreeCellProps = BaseCellProps;
 
 const INDENT_UNIT = 20;
 
-export let TreeCellComponent = BaseCellComponent.replace({
+class TreeCellComponent extends BaseCellComponent {
+    _depth: number = 0;
+    _leaf: boolean = true;
+    _expanded: boolean = false;
 
-    tplReplaces: {
-        content: {
-            tag: 'div',
-            cls: 'q-cell__tree',
-            children: [
-                { tag: 'span', name: 'toggle', cls: 'q-cell__toggle' },
-                { tag: 'span', name: 'text', cls: 'q-cell__text' },
-            ],
-        },
-    },
+    update(data: TreeCellData): void {
+        this._depth = data.depth ?? 0;
+        this._leaf = data.leaf ?? true;
+        this._expanded = data.expanded ?? false;
 
-    body: {
-        _depth: 0,
-        _leaf: true,
-        _expanded: false,
+        this._applyIndent();
+        this._applyToggle();
+        this.setNodeProp('text', String(data.value ?? ''), 'text');
+    }
 
-        onAfterInit(props?: TreeCellProps): void {},
+    _applyIndent(): void {
+        this.setNodeStyle({ marginLeft: `${this._depth * INDENT_UNIT}px` }, 'toggle');
+    }
 
-        update(data: TreeCellData): void {
-            const self = this as any;
-            self._depth = data.depth ?? 0;
-            self._leaf = data.leaf ?? true;
-            self._expanded = data.expanded ?? false;
+    _applyToggle(): void {
+        if (this._leaf) {
+            this.addCls('q-cell__toggle--leaf', 'toggle');
+            this.removeCls('q-cell__toggle--expanded', 'toggle');
+        } else {
+            this.removeCls('q-cell__toggle--leaf', 'toggle');
+            this.toggleCls('q-cell__toggle--expanded', this._expanded, 'toggle');
+        }
+    }
 
-            self._applyIndent();
-            self._applyToggle();
-            self.setNodeProp('text', String(data.value ?? ''), 'text');
-        },
+    get depth(): number {
+        return this._depth;
+    }
 
-        _applyIndent(): void {
-            const self = this as any;
-            const toggleEl = self.nodeMap?.toggle?.el as HTMLElement | null;
-            if (toggleEl) {
-                toggleEl.style.marginLeft = `${self._depth * INDENT_UNIT}px`;
-            }
-        },
+    get leaf(): boolean {
+        return this._leaf;
+    }
 
-        _applyToggle(): void {
-            const self = this as any;
-            const toggleEl = self.nodeMap?.toggle?.el as HTMLElement | null;
-            if (!toggleEl) return;
+    get expanded(): boolean {
+        return this._expanded;
+    }
+    set expanded(v: boolean) {
+        this._expanded = v;
+        this._applyToggle();
+    }
+}
 
-            if (self._leaf) {
-                toggleEl.classList.add('q-cell__toggle--leaf');
-                toggleEl.classList.remove('q-cell__toggle--expanded');
-            } else {
-                toggleEl.classList.remove('q-cell__toggle--leaf');
-                toggleEl.classList.toggle('q-cell__toggle--expanded', self._expanded);
-            }
-        },
-
-        get depth(): number {
-            const self = this as any;
-            return self._depth;
-        },
-
-        get leaf(): boolean {
-            const self = this as any;
-            return self._leaf;
-        },
-
-        get expanded(): boolean {
-            const self = this as any;
-            return self._expanded;
-        },
-        set expanded(v: boolean) {
-            const self = this as any;
-            self._expanded = v;
-            self._applyToggle();
-        },
-    },
-});
-
-export type TreeCellComponent = InstanceType<typeof TreeCellComponent>;
+TreeCellComponent.useTemplate(TREE_CELL_TPL);
+export { TreeCellComponent };
+export type TreeCellComponentInstance = InstanceType<typeof TreeCellComponent>;

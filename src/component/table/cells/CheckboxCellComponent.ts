@@ -1,7 +1,7 @@
 /**
  * CheckboxCellComponent 复选框单元格组件
  *
- * 在 BaseCell 基础上通过 tplReplaces 替换 content 为复选框。
+ * 在 BaseCell 基础上替换 content 为复选框。
  * update({ checked, disabled? }) 驱动选中/禁用状态。
  *
  * @example
@@ -12,83 +12,60 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { ColumnAlign, CheckboxCellData } from '../column-types';
+import type { BaseCellProps } from './BaseCellComponent';
+import type { CheckboxCellData } from '../column-types';
+import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
 
-export interface CheckboxCellProps {
-    align?: ColumnAlign;
+export type CheckboxCellProps = BaseCellProps;
+
+class CheckboxCellComponent extends BaseCellComponent {
+    _checked: boolean = false;
+    _disabled: boolean = false;
+
+    update(data: CheckboxCellData): void {
+        this._checked = data.checked ?? false;
+        this._disabled = data.disabled ?? false;
+        this._applyState();
+    }
+
+    get checked(): boolean {
+        return this._checked;
+    }
+    set checked(v: boolean) {
+        this._checked = v;
+        this._applyState();
+    }
+
+    get disabled(): boolean {
+        return this._disabled;
+    }
+    set disabled(v: boolean) {
+        this._disabled = v;
+        this._applyState();
+    }
+
+    _applyState(): void {
+        this.toggleCls('q-cell__checkbox--checked', this._checked, 'box');
+        this.toggleCls('q-cell__checkbox--disabled', this._disabled, 'box');
+        this.setAttr('aria-checked', String(this._checked), 'box');
+        if (this._disabled) {
+            this.setAttr('aria-disabled', 'true', 'box');
+        } else {
+            this.removeAttr('aria-disabled', 'box');
+        }
+    }
+
+    onRootClick(): void {
+        if (this._disabled) return;
+        this._checked = !this._checked;
+        this._applyState();
+    }
+
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { checked: this._checked };
+    }
 }
 
-export let CheckboxCellComponent = BaseCellComponent.replace({
-
-    tplReplaces: {
-        content: {
-            tag: 'span',
-            name: 'box',
-            cls: 'q-cell__checkbox',
-        },
-    },
-
-    body: {
-        _checked: false,
-        _disabled: false,
-
-        onAfterInit(props?: CheckboxCellProps): void {},
-
-        update(data: CheckboxCellData): void {
-            const self = this as any;
-            self._checked = data.checked ?? false;
-            self._disabled = data.disabled ?? false;
-            self._applyState();
-        },
-
-        get checked(): boolean {
-            const self = this as any;
-            return self._checked;
-        },
-        set checked(v: boolean) {
-            const self = this as any;
-            self._checked = v;
-            self._applyState();
-        },
-
-        get disabled(): boolean {
-            const self = this as any;
-            return self._disabled;
-        },
-        set disabled(v: boolean) {
-            const self = this as any;
-            self._disabled = v;
-            self._applyState();
-        },
-
-        _applyState(): void {
-            const self = this as any;
-            const boxEl = self.nodeMap?.box?.el as HTMLElement | null;
-            if (!boxEl) return;
-
-            boxEl.classList.toggle('q-cell__checkbox--checked', self._checked);
-            boxEl.classList.toggle('q-cell__checkbox--disabled', self._disabled);
-            boxEl.setAttribute('aria-checked', String(self._checked));
-
-            if (self._disabled) {
-                boxEl.setAttribute('aria-disabled', 'true');
-            } else {
-                boxEl.removeAttribute('aria-disabled');
-            }
-        },
-
-        onRootClick(): void {
-            const self = this as any;
-            if (self._disabled) return;
-            self._checked = !self._checked;
-            self._applyState();
-        },
-
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            return { checked: self._checked };
-        },
-    },
-});
-
-export type CheckboxCellComponent = InstanceType<typeof CheckboxCellComponent>;
+CheckboxCellComponent.useTemplate(CHECKBOX_CELL_TPL);
+export { CheckboxCellComponent };
+export type CheckboxCellComponentInstance = InstanceType<typeof CheckboxCellComponent>;
