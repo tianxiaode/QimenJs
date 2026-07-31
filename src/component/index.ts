@@ -123,7 +123,7 @@ export {
     type NavOverlayOptions,
     type NavPlacement,
 } from './nav/NavItemComponent';
-export { NavItemGroupComponent, type NavItemGroupProps } from './nav/NavComponent';
+export { NavItemGroupComponent, type NavProps as NavItemGroupProps } from './nav/NavComponent';
 
 export { RouteContainerComponent, type RouteContainerProps } from './nav/RouteContainerComponent';
 export { navCSS } from './nav/nav.css';

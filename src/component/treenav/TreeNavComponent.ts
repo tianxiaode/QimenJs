@@ -11,6 +11,8 @@
  * 路由内化（声明式，参考 BreadcrumbComponent）：
  * - domEvents click 带 router: 'navigate'，EventForwarder 自动 routeEmit
  * - item 有 path 时触发路由导航；无 path 则纯 UI 选中
+ * - _isRouteNav flag 标识本次点击是否为路由导航，getForwardFilter 据此
+ *   动态放行 'router' 路由（无 path 时仅放行 'emit'/'bridge'，不触发路由事件）
  * - listens route change → onRouteChange 自动高亮
  *
  * getTargetItem 递归查找嵌套子项，命中最深的匹配项。
@@ -20,6 +22,7 @@ import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events/RouteEventBus';
 import type { EventContext } from '@/context';
 
@@ -36,6 +39,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     _pathIndex: Record<string, number> = {};
     _lastNavigatedPath: string | null = null;
     _pendingNavData: { path: string; item: any } | null = null;
+    _isRouteNav: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -68,8 +72,11 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         }
 
         if (item.path) {
+            this._isRouteNav = true;
             this._lastNavigatedPath = item.path;
             this._pendingNavData = { path: item.path, item };
+        } else {
+            this._isRouteNav = false;
         }
     }
 
@@ -77,6 +84,22 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         const data = this._pendingNavData;
         this._pendingNavData = null;
         return data ?? {};
+    }
+
+    /**
+     * 动态转发守卫
+     *
+     * 根据 _isRouteNav flag 决定是否放行 'router' 路由：
+     * - 有 path（路由导航）：放行 ['emit', 'bridge', 'router']
+     * - 无 path（纯 UI 选中）：仅放行 ['emit', 'bridge']，不触发路由事件
+     *
+     * 消费后复位 flag。
+     */
+    getForwardFilter(): ForwardRouteKey[] {
+        const keys: ForwardRouteKey[] = ['emit', 'bridge'];
+        if (this._isRouteNav) keys.push('router');
+        this._isRouteNav = false;
+        return keys;
     }
 
     onRouteChange(event: any): void {

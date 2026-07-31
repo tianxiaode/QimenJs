@@ -82,9 +82,13 @@ function _forwardBridges(ctx: ForwardContext): void {
 }
 
 function _forwardEntities(ctx: ForwardContext): void {
+    const resolvedName =
+        ctx.config.entities === '[action]' && ctx.actualAction
+            ? ctx.actualAction
+            : ctx.config.entities!;
     const eventCtx = EventForwarder.buildContext(
         ctx.instance,
-        ctx.config.entities!,
+        resolvedName,
         ctx.data,
         ctx.instance.entityKey,
         'entity'
@@ -135,7 +139,7 @@ const FORWARD_ROUTES: ForwardRoute[] = [
     },
     {
         key: 'router',
-        canExecute: ctx => !!ctx.config.router && ctx.hasCustomData,
+        canExecute: ctx => !!ctx.config.router,
         execute: _forwardRouter,
     },
     {

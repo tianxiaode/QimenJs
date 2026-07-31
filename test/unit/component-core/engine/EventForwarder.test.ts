@@ -54,21 +54,29 @@ describe('EventForwarder', () => {
     });
 
     describe('forward — entities', () => {
-        it('entities 转发为实体操作', () => {
+        it('entities 转发为实体操作（具体事件名）', () => {
             const instance = makeInstance();
             EventForwarder.forward(instance, { entities: 'delete' }, { id: 1 });
             expect(instance.entityEmit).toHaveBeenCalledWith(expect.anything());
+            expect(instance.entityEmit.mock.calls[0][0].event).toBe('delete');
+        });
+
+        it('entities 为 [action] 时用 actualAction 替换', () => {
+            const instance = makeInstance();
+            EventForwarder.forward(
+                instance,
+                { entities: '[action]' },
+                { id: 1 },
+                undefined,
+                'remove'
+            );
+            expect(instance.entityEmit).toHaveBeenCalledWith(expect.anything());
+            expect(instance.entityEmit.mock.calls[0][0].event).toBe('remove');
         });
 
         it('entityKey 不存在时不转发', () => {
             const instance = makeInstance({ entityKey: undefined });
             EventForwarder.forward(instance, { entities: 'delete' });
-            expect(instance.entityEmit).not.toHaveBeenCalled();
-        });
-
-        it('entities 非字符串时不转发', () => {
-            const instance = makeInstance();
-            EventForwarder.forward(instance, { entities: true as any });
             expect(instance.entityEmit).not.toHaveBeenCalled();
         });
     });
@@ -80,10 +88,22 @@ describe('EventForwarder', () => {
             expect(instance.routerEmit).toHaveBeenCalledWith(expect.anything());
         });
 
-        it('routeKey 不存在时不转发', () => {
-            const instance = makeInstance({ routeKey: undefined });
+        it('无 getForwardFilter 时全放行（含 router）', () => {
+            const instance = makeInstance();
             EventForwarder.forward(instance, { router: 'navigate' });
+            expect(instance.routerEmit).toHaveBeenCalledWith(expect.anything());
+        });
+
+        it('getForwardFilter 不含 router 时不转发', () => {
+            const instance = makeInstance({ getForwardFilter: () => ['emit'] });
+            EventForwarder.forward(instance, { router: 'navigate' }, { path: '/home' });
             expect(instance.routerEmit).not.toHaveBeenCalled();
+        });
+
+        it('getForwardFilter 含 router 时转发', () => {
+            const instance = makeInstance({ getForwardFilter: () => ['emit', 'router'] });
+            EventForwarder.forward(instance, { router: 'navigate' }, { path: '/home' });
+            expect(instance.routerEmit).toHaveBeenCalledWith(expect.anything());
         });
     });
 

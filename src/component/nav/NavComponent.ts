@@ -8,6 +8,8 @@
  * 路由内化（声明式，参考 BreadcrumbComponent）：
  * - domEvents click 带 router: 'navigate'，EventForwarder 自动 routeEmit
  * - item 有 path 时触发路由导航；无 path 则纯 UI 选中
+ * - _isRouteNav flag 标识本次点击是否为路由导航，getForwardFilter 据此
+ *   动态放行 'router' 路由（无 path 时仅放行 'emit'，不触发路由事件）
  * - listens route change → onRouteChange 自动高亮
  * - pathIndex 可显式传入，或从 items[].path 自动构建
  *
@@ -23,10 +25,11 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events/RouteEventBus';
 import type { EventContext } from '@/context';
 
-export interface NavItemGroupProps extends ItemGroupProps {
+export interface NavProps extends ItemGroupProps {
     activeIndex?: number;
     mode?: 'expanded' | 'collapsed';
     maxDepth?: number;
@@ -46,6 +49,7 @@ class NavComponent extends ItemGroupPooledComponent {
     _indexPath: string[] = [];
     _lastNavigatedPath: string | null = null;
     _pendingNavData: { path: string; index: number } | null = null;
+    _isRouteNav: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -65,10 +69,6 @@ class NavComponent extends ItemGroupPooledComponent {
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
-    routerEmit(ctx: EventContext): void {
-        RouteEventBus.getInstance().routeEmit(ctx);
-    }
-
     _onItemClick(domEvt: any): void {
         const target = this.getTargetItem(domEvt.target);
         if (!target) return;
@@ -79,8 +79,11 @@ class NavComponent extends ItemGroupPooledComponent {
         }
 
         if (item.path) {
+            this._isRouteNav = true;
             this._lastNavigatedPath = item.path;
             this._pendingNavData = { path: item.path, index: target.index };
+        } else {
+            this._isRouteNav = false;
         }
     }
 
@@ -106,6 +109,22 @@ class NavComponent extends ItemGroupPooledComponent {
         return data ?? {};
     }
 
+    /**
+     * 动态转发守卫
+     *
+     * 根据 _isRouteNav flag 决定是否放行 'router' 路由：
+     * - 有 path（路由导航）：放行 ['emit', 'router']
+     * - 无 path（纯 UI 选中）：仅放行 ['emit']，不触发路由事件
+     *
+     * 消费后复位 flag。
+     */
+    getForwardFilter(): ForwardRouteKey[] {
+        const keys: ForwardRouteKey[] = ['emit'];
+        if (this._isRouteNav) keys.push('router');
+        this._isRouteNav = false;
+        return keys;
+    }
+
     onRouteChange(event: any): void {
         const path = event?.path;
         if (!path) return;
@@ -117,7 +136,7 @@ class NavComponent extends ItemGroupPooledComponent {
         if (index !== undefined) this.selectAt(index);
     }
 
-    onAfterInit(props?: NavItemGroupProps & Record<string, any>): void {
+    onAfterInit(props?: NavProps & Record<string, any>): void {
         super.onAfterInit({ defaultItemType: 'NavItem', ...props });
 
         this.addCls('q-nav');

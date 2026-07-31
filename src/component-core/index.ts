@@ -27,17 +27,13 @@ export { findByPath } from './engine/utils/dom-path';
 
 // 事件引擎（新三引擎 + EventForwarder）
 export { EventForwarder } from './engine/EventForwarder';
+export type { ForwardRouteKey, ForwardConfig } from './engine/EventForwarder';
 export { DomEventsEngine } from './engine/DomEventsEngine';
 export { ChildEventsEngine } from './engine/ChildEventsEngine';
 export { ListensEngine } from './engine/ListensEngine';
 
 // 初始化管线
-export {
-    MOUNT_PHASE,
-    INSTANTIATE_PHASE,
-    FINALIZE_PHASE,
-    runPhase,
-} from './engine/pipeline';
+export { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 
 // 模板注册器
 export { ComponentRegistrar } from './engine';
