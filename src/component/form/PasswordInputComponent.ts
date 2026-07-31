@@ -1,9 +1,8 @@
 /**
  * PasswordInputComponent 密码输入框组件
  *
- * 基于 InputComponent 通过 .replace() 派生，共享统一模板。
- * 通过 body.nodes 开启 suffix，addAction 添加 eyeBtn，
- * addInfo 添加密码强度指示器。
+ * 从 InputComponent 派生，共享统一模板（继承父类模板，无需 useTemplate）。
+ * 开启 suffix 节点，addAction 添加 eyeBtn，addInfo 添加密码强度指示器。
  *
  * 特有功能：
  * - 密码可见性切换（眼睛图标，通过 addAction 添加到 actions）
@@ -18,17 +17,12 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
-import { getI18nManager } from '@qimenjs/i18n';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
 
 export interface PasswordInputProps extends InputProps {
     visible?: boolean;
     onStrengthChange?: (strength: PasswordStrength) => void;
-}
-
-function getFieldEl(cmp: any): HTMLInputElement | null {
-    return cmp.nodeMap?.field?.el as HTMLInputElement | null;
 }
 
 function calculateStrength(password: string): PasswordStrength {
@@ -57,140 +51,126 @@ function calculateStrength(password: string): PasswordStrength {
 const EYE_BTN_ORDER = 10;
 const STRENGTH_ORDER = 5;
 
-export let PasswordInputComponent = InputComponent.replace({
-    body: {
-        nodes: {
-            root: { addCls: 'q-input--password' },
-        },
+class PasswordInputComponent extends InputComponent {
+    _visible: boolean = false;
+    _strength: PasswordStrength = 0;
+    _eyeBtnItem: any = null;
+    _strengthItem: any = null;
 
-        _visible: false,
-        _strength: 0 as PasswordStrength,
-        _eyeBtnItem: null as any,
-        _strengthItem: null as any,
+    onAfterInit(props?: PasswordInputProps): void {
+        super.onAfterInit(props);
+        this.addCls('q-input--password');
 
-        onAfterInit(props?: PasswordInputProps): void {
-            const self = this as any;
-            self._visible = props?.visible ?? false;
-            self._strength = 0;
+        this._visible = props?.visible ?? false;
+        this._strength = 0;
 
-            self.setNodeHidden(false, 'suffix');
+        this.setNodeHidden(false, 'suffix');
 
-            const fieldEl = getFieldEl(self);
-            if (fieldEl && !props?.type) {
-                fieldEl.setAttribute('type', self._visible ? 'text' : 'password');
-            }
+        const fieldEl = this.field;
+        if (fieldEl && !props?.type) {
+            fieldEl.setAttribute('type', this._visible ? 'text' : 'password');
+        }
 
-            self._mountEyeToggle();
-            self._mountStrengthIndicator();
-            self._updateStrength();
-        },
+        this._mountEyeToggle();
+        this._mountStrengthIndicator();
+        this._updateStrength();
+    }
 
-        onFieldInput(): void {
-            const self = this as any;
-            self._super.onFieldInput();
-            self._updateStrength();
-        },
+    onFieldInput(): void {
+        super.onFieldInput();
+        this._updateStrength();
+    }
 
-        onFieldBlur(): void {
-            const self = this as any;
-            self._super.onFieldBlur();
-            self._updateStrength();
-        },
+    onFieldBlur(): void {
+        super.onFieldBlur();
+        this._updateStrength();
+    }
 
-        _mountEyeToggle(): void {
-            const self = this as any;
-            self.addAction({
-                type: 'Icon',
-                content: self._visible ? 'eye-off' : 'eye',
-                cls: 'q-password-toggle',
-                order: EYE_BTN_ORDER,
-            });
-            const actionsCmp = self.nodeMap?.actions?.component;
-            self._eyeBtnItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
-        },
+    _mountEyeToggle(): void {
+        this.addAction({
+            type: 'Icon',
+            content: this._visible ? 'eye-off' : 'eye',
+            cls: 'q-password-toggle',
+            order: EYE_BTN_ORDER,
+        });
+        const actionsCmp = this.nodeMap?.actions?.component;
+        this._eyeBtnItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
+    }
 
-        onFieldBodyActionClick(data: any): void {
-            const self = this as any;
-            const index = data?.index;
-            if (index === undefined) return;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return;
-            if (
-                self._clearBtnItem &&
-                self._itemsIndexOf(actionsCmp, self._clearBtnItem) === index
-            ) {
-                self.onClearBtnClick();
-            }
-            if (self._eyeBtnItem && self._itemsIndexOf(actionsCmp, self._eyeBtnItem) === index) {
-                self.toggleVisibility();
-            }
-        },
+    onFieldBodyActionClick(data: any): void {
+        const index = data?.index;
+        if (index === undefined) return;
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return;
+        if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
+            this.onClearBtnClick();
+        }
+        if (this._eyeBtnItem && this._itemsIndexOf(actionsCmp, this._eyeBtnItem) === index) {
+            this.toggleVisibility();
+        }
+    }
 
-        _mountStrengthIndicator(): void {
-            const self = this as any;
-            const infoCmp = self.nodeMap?.infoGroup?.component;
-            if (!infoCmp) return;
+    _mountStrengthIndicator(): void {
+        const infoCmp = this.nodeMap?.infoGroup?.component;
+        if (!infoCmp) return;
 
-            const strengthCmp = infoCmp.addInfo({
-                type: 'PasswordStrength',
-                order: STRENGTH_ORDER,
-            });
-            if (strengthCmp) {
-                self._strengthItem = infoCmp._items[infoCmp._items.length - 1] ?? null;
-            }
-        },
+        const strengthCmp = infoCmp.addInfo({
+            type: 'PasswordStrength',
+            order: STRENGTH_ORDER,
+        });
+        if (strengthCmp) {
+            this._strengthItem = infoCmp._items[infoCmp._items.length - 1] ?? null;
+        }
+    }
 
-        _updateStrength(): void {
-            const self = this as any;
-            const password = self._value || '';
-            const strength = calculateStrength(password);
-            const changed = strength !== self._strength;
-            self._strength = strength;
+    _updateStrength(): void {
+        const password = this._value || '';
+        const strength = calculateStrength(password);
+        const changed = strength !== this._strength;
+        this._strength = strength;
 
-            const strengthCmp = self._strengthItem?.component;
-            if (strengthCmp && typeof strengthCmp.update === 'function') {
-                strengthCmp.update({ strength, password });
-            }
+        const strengthCmp = this._strengthItem?.component;
+        if (strengthCmp && typeof strengthCmp.update === 'function') {
+            strengthCmp.update({ strength, password });
+        }
 
-            if (changed) {
-                self.emit('strengthChange', { strength, value: password });
-                const props = self._props as PasswordInputProps | undefined;
-                props?.onStrengthChange?.(strength);
-            }
-        },
+        if (changed) {
+            this.emit('strengthChange', { strength, value: password });
+            const props = (this as any)._props as PasswordInputProps | undefined;
+            props?.onStrengthChange?.(strength);
+        }
+    }
 
-        toggleVisibility(visible?: boolean): void {
-            const self = this as any;
-            const newVisible = visible !== undefined ? visible : !self._visible;
-            self._visible = newVisible;
+    toggleVisibility(visible?: boolean): void {
+        const newVisible = visible !== undefined ? visible : !this._visible;
+        this._visible = newVisible;
 
-            const fieldEl = getFieldEl(self);
-            if (fieldEl) {
-                fieldEl.setAttribute('type', newVisible ? 'text' : 'password');
-            }
+        const fieldEl = this.field;
+        if (fieldEl) {
+            fieldEl.setAttribute('type', newVisible ? 'text' : 'password');
+        }
 
-            const eyeCmp = self._eyeBtnItem?.component;
-            if (eyeCmp && typeof eyeCmp.update === 'function') {
-                eyeCmp.update({ content: newVisible ? 'eye-off' : 'eye' });
-            }
-        },
+        const eyeCmp = this._eyeBtnItem?.component;
+        if (eyeCmp && typeof eyeCmp.update === 'function') {
+            eyeCmp.update({ content: newVisible ? 'eye-off' : 'eye' });
+        }
+    }
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            if (eventName === 'strengthChange') {
-                return { strength: self._strength, value: self._value };
-            }
-            return { value: self._value };
-        },
+    getEventData(_nodeName: string, eventName: string, _eventType: string): Record<string, any> {
+        if (eventName === 'strengthChange') {
+            return { strength: this._strength, value: this._value };
+        }
+        return { value: this._value };
+    }
 
-        update(props?: Partial<PasswordInputProps>): void {
-            const self = this as any;
-            self._super.update(props);
-            if (props?.visible !== undefined) {
-                self.toggleVisibility(props.visible);
-            }
-        },
-    },
-});
+    update(props?: Partial<PasswordInputProps>): void {
+        super.update(props);
+        if (props?.visible !== undefined) {
+            this.toggleVisibility(props.visible);
+        }
+    }
+}
 
-export type PasswordInputComponent = InstanceType<typeof PasswordInputComponent>;
+PasswordInputComponent.register();
+export { PasswordInputComponent };
+export type PasswordInputComponentInstance = InstanceType<typeof PasswordInputComponent>;

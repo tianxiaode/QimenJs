@@ -2,7 +2,7 @@
  * TextareaComponent 多行文本组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 body.nodes 指定 fieldBody 为 TextareaFieldBodyComponent。
+ * fieldBody 子组件为 TextareaFieldBodyComponent（由 TEXTAREA_TPL 指定）。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
@@ -26,8 +26,7 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
-import { TextareaFieldBodyComponent } from './TextareaFieldBodyComponent';
-import type { ValidationRule } from '@qimenjs/schema';
+import { TEXTAREA_TPL } from './textarea-tpl';
 
 export interface TextareaProps extends FormFieldProps {
     value?: string;
@@ -40,234 +39,204 @@ export interface TextareaProps extends FormFieldProps {
     resize?: 'none' | 'both' | 'horizontal' | 'vertical';
 }
 
-function getFieldEl(cmp: any): HTMLTextAreaElement | null {
-    return cmp.nodeMap?.field?.el as HTMLTextAreaElement | null;
+class TextareaComponent extends FormFieldComponent {
+    _value: string = '';
+    _focused: boolean = false;
+    _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
+    _minRows: number = 1;
+    _maxRows: number = Infinity;
+
+    onAfterInit(props?: TextareaProps): void {
+        super.onAfterInit(props);
+        this.addCls('q-textarea');
+        this._initTextarea(props);
+    }
+
+    _initTextarea(props?: TextareaProps): void {
+        const fieldEl = this.field;
+
+        const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.on('input', () => this.onFieldInput());
+            fieldBodyCmp.on('focus', () => this.onFieldFocus());
+            fieldBodyCmp.on('blur', () => this.onFieldBlur());
+            fieldBodyCmp.on('change', () => this.onFieldChange());
+        }
+
+        if (props?.value !== undefined) {
+            this._value = props.value;
+            if (fieldEl) fieldEl.value = props.value;
+        }
+        if (props?.placeholder && fieldEl) {
+            fieldEl.setAttribute('placeholder', props.placeholder);
+        }
+        if (props?.rows !== undefined && fieldEl) {
+            fieldEl.setAttribute('rows', String(props.rows));
+        }
+        if (props?.maxLength !== undefined && fieldEl) {
+            fieldEl.setAttribute('maxlength', String(props.maxLength));
+        }
+        if (props?.resize && fieldEl) {
+            fieldEl.style.resize = props.resize;
+        }
+        if (props?.disabled) this.disabled = true;
+        if (props?.readonly) this.readonly = true;
+
+        if (props?.autoSize) {
+            this._autoSize = props.autoSize;
+            if (typeof props.autoSize === 'object') {
+                this._minRows = props.autoSize.minRows ?? 1;
+                this._maxRows = props.autoSize.maxRows ?? Infinity;
+            }
+            this._autoResize();
+        }
+
+        this._applyState();
+    }
+
+    onFieldInput(): void {
+        this._value = this.field?.value ?? '';
+        if (this._autoSize) this._autoResize();
+        if (this._shouldValidate('input')) this._doValidate();
+    }
+
+    onFieldFocus(): void {
+        this._focused = true;
+        this._applyState();
+    }
+
+    onFieldBlur(): void {
+        this._focused = false;
+        this._applyState();
+        if (this._shouldValidate('blur')) this._doValidate();
+    }
+
+    onFieldChange(): void {
+        this._value = this.field?.value ?? '';
+        if (this._shouldValidate('change')) this._doValidate();
+    }
+
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
+
+    _autoResize(): void {
+        const fieldEl = this.field;
+        if (!fieldEl) return;
+
+        fieldEl.style.height = 'auto';
+        const lineHeight = parseFloat(getComputedStyle(fieldEl).lineHeight) || 20;
+        const paddingTop = parseFloat(getComputedStyle(fieldEl).paddingTop) || 0;
+        const paddingBottom = parseFloat(getComputedStyle(fieldEl).paddingBottom) || 0;
+        const baseHeight = paddingTop + paddingBottom;
+
+        const minH = baseHeight + lineHeight * this._minRows;
+        const maxH =
+            this._maxRows === Infinity ? Infinity : baseHeight + lineHeight * this._maxRows;
+
+        const scrollH = fieldEl.scrollHeight;
+        const newH = Math.max(minH, Math.min(scrollH, maxH));
+
+        fieldEl.style.height = `${newH}px`;
+        fieldEl.style.overflow = scrollH > maxH ? 'auto' : 'hidden';
+    }
+
+    get value(): string {
+        return this._value;
+    }
+    set value(v: string) {
+        this._value = v;
+        const fieldEl = this.field;
+        if (fieldEl && fieldEl.value !== v) {
+            fieldEl.value = v;
+        }
+        if (this._autoSize) this._autoResize();
+    }
+
+    get disabled(): boolean {
+        return this.el.classList.contains('q-textarea--disabled');
+    }
+    set disabled(v: boolean) {
+        const fieldEl = this.field;
+        if (fieldEl) {
+            if (v) fieldEl.setAttribute('disabled', 'true');
+            else fieldEl.removeAttribute('disabled');
+        }
+        this.toggleCls('q-textarea--disabled', v);
+    }
+
+    get readonly(): boolean {
+        return this.el.classList.contains('q-textarea--readonly');
+    }
+    set readonly(v: boolean) {
+        const fieldEl = this.field;
+        if (fieldEl) {
+            if (v) fieldEl.setAttribute('readonly', 'true');
+            else fieldEl.removeAttribute('readonly');
+        }
+        this.toggleCls('q-textarea--readonly', v);
+    }
+
+    focus(): void {
+        this.field?.focus();
+    }
+
+    blur(): void {
+        this.field?.blur();
+    }
+
+    _applyState(): void {
+        this.toggleCls('q-textarea--focused', this._focused);
+        this.toggleCls('q-textarea--error', !!this._error);
+    }
+
+    getFormValue(): any {
+        return this._value;
+    }
+
+    setFormValue(v: any): void {
+        this.value = v;
+    }
+
+    getFormDisplayValue(): any {
+        return this._value;
+    }
+
+    formReset(defaultValue?: any): void {
+        this.value = defaultValue ?? '';
+        this.error = '';
+    }
+
+    update(props?: Partial<TextareaProps>): void {
+        super.update(props);
+        const fieldEl = this.field;
+
+        if (props?.value !== undefined) this.value = props.value;
+        if (props?.placeholder !== undefined && fieldEl) {
+            fieldEl.setAttribute('placeholder', props.placeholder);
+        }
+        if (props?.rows !== undefined && fieldEl) {
+            fieldEl.setAttribute('rows', String(props.rows));
+        }
+        if (props?.disabled !== undefined) this.disabled = props.disabled;
+        if (props?.readonly !== undefined) this.readonly = props.readonly;
+        if (props?.maxLength !== undefined && fieldEl) {
+            fieldEl.setAttribute('maxlength', String(props.maxLength));
+        }
+        if (props?.resize !== undefined && fieldEl) {
+            fieldEl.style.resize = props.resize;
+        }
+        if (props?.autoSize !== undefined) {
+            this._autoSize = props.autoSize;
+            if (typeof props.autoSize === 'object') {
+                this._minRows = props.autoSize.minRows ?? 1;
+                this._maxRows = props.autoSize.maxRows ?? Infinity;
+            }
+            this._autoResize();
+        }
+    }
 }
 
-export let TextareaComponent = FormFieldComponent.replace({
-    body: {
-        nodes: {
-            root: { addCls: 'q-textarea' },
-            fieldBody: {
-                type: TextareaFieldBodyComponent,
-            },
-        },
-
-        _value: '',
-        _focused: false,
-        _autoSize: false as boolean | { minRows?: number; maxRows?: number },
-        _minRows: 1 as number,
-        _maxRows: Infinity as number,
-
-        onAfterInit(props?: TextareaProps): void {
-            const self = this as any;
-            self._initTextarea(props);
-        },
-
-        _initTextarea(props?: TextareaProps): void {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-
-            const fieldBodyCmp = self.nodeMap?.fieldBody?.component;
-            if (fieldBodyCmp) {
-                fieldBodyCmp.on('input', () => self.onFieldInput());
-                fieldBodyCmp.on('focus', () => self.onFieldFocus());
-                fieldBodyCmp.on('blur', () => self.onFieldBlur());
-                fieldBodyCmp.on('change', () => self.onFieldChange());
-            }
-
-            if (props?.value !== undefined) {
-                self._value = props.value;
-                if (fieldEl) fieldEl.value = props.value;
-            }
-            if (props?.placeholder && fieldEl) {
-                fieldEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.rows !== undefined && fieldEl) {
-                fieldEl.setAttribute('rows', String(props.rows));
-            }
-            if (props?.maxLength !== undefined && fieldEl) {
-                fieldEl.setAttribute('maxlength', String(props.maxLength));
-            }
-            if (props?.resize && fieldEl) {
-                fieldEl.style.resize = props.resize;
-            }
-            if (props?.disabled) self.disabled = true;
-            if (props?.readonly) self.readonly = true;
-
-            if (props?.autoSize) {
-                self._autoSize = props.autoSize;
-                if (typeof props.autoSize === 'object') {
-                    self._minRows = props.autoSize.minRows ?? 1;
-                    self._maxRows = props.autoSize.maxRows ?? Infinity;
-                }
-                self._autoResize();
-            }
-
-            self._applyState();
-        },
-
-        onFieldInput(): void {
-            const self = this as any;
-            self._value = getFieldEl(self)?.value ?? '';
-            if (self._autoSize) self._autoResize();
-            if (self._shouldValidate('input')) self._doValidate();
-        },
-
-        onFieldFocus(): void {
-            const self = this as any;
-            self._focused = true;
-            self._applyState();
-        },
-
-        onFieldBlur(): void {
-            const self = this as any;
-            self._focused = false;
-            self._applyState();
-            if (self._shouldValidate('blur')) self._doValidate();
-        },
-
-        onFieldChange(): void {
-            const self = this as any;
-            self._value = getFieldEl(self)?.value ?? '';
-            if (self._shouldValidate('change')) self._doValidate();
-        },
-
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
-
-        _autoResize(): void {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-            if (!fieldEl) return;
-
-            fieldEl.style.height = 'auto';
-            const lineHeight = parseFloat(getComputedStyle(fieldEl).lineHeight) || 20;
-            const paddingTop = parseFloat(getComputedStyle(fieldEl).paddingTop) || 0;
-            const paddingBottom = parseFloat(getComputedStyle(fieldEl).paddingBottom) || 0;
-            const baseHeight = paddingTop + paddingBottom;
-
-            const minH = baseHeight + lineHeight * self._minRows;
-            const maxH =
-                self._maxRows === Infinity ? Infinity : baseHeight + lineHeight * self._maxRows;
-
-            const scrollH = fieldEl.scrollHeight;
-            const newH = Math.max(minH, Math.min(scrollH, maxH));
-
-            fieldEl.style.height = `${newH}px`;
-            fieldEl.style.overflow = scrollH > maxH ? 'auto' : 'hidden';
-        },
-
-        get value(): string {
-            const self = this as any;
-            return self._value;
-        },
-        set value(v: string) {
-            const self = this as any;
-            self._value = v;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl && fieldEl.value !== v) {
-                fieldEl.value = v;
-            }
-            if (self._autoSize) self._autoResize();
-        },
-
-        get disabled(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-textarea--disabled');
-        },
-        set disabled(v: boolean) {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl) {
-                if (v) fieldEl.setAttribute('disabled', 'true');
-                else fieldEl.removeAttribute('disabled');
-            }
-            self.toggleCls('q-textarea--disabled', v);
-        },
-
-        get readonly(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-textarea--readonly');
-        },
-        set readonly(v: boolean) {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl) {
-                if (v) fieldEl.setAttribute('readonly', 'true');
-                else fieldEl.removeAttribute('readonly');
-            }
-            self.toggleCls('q-textarea--readonly', v);
-        },
-
-        focus(): void {
-            getFieldEl(this)?.focus();
-        },
-
-        blur(): void {
-            getFieldEl(this)?.blur();
-        },
-
-        _applyState(): void {
-            const self = this as any;
-            self.toggleCls('q-textarea--focused', self._focused);
-            self.toggleCls('q-textarea--error', !!self._error);
-        },
-
-        getFormValue(): any {
-            const self = this as any;
-            return self._value;
-        },
-
-        setFormValue(v: any): void {
-            const self = this as any;
-            self.value = v;
-        },
-
-        getFormDisplayValue(): any {
-            const self = this as any;
-            return self._value;
-        },
-
-        formReset(defaultValue?: any): void {
-            const self = this as any;
-            self.value = defaultValue ?? '';
-            self.error = '';
-        },
-
-        update(props?: Partial<TextareaProps>): void {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-
-            self._super.update(props);
-
-            if (props?.value !== undefined) self.value = props.value;
-            if (props?.placeholder !== undefined && fieldEl) {
-                fieldEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.rows !== undefined && fieldEl) {
-                fieldEl.setAttribute('rows', String(props.rows));
-            }
-            if (props?.disabled !== undefined) self.disabled = props.disabled;
-            if (props?.readonly !== undefined) self.readonly = props.readonly;
-            if (props?.maxLength !== undefined && fieldEl) {
-                fieldEl.setAttribute('maxlength', String(props.maxLength));
-            }
-            if (props?.resize !== undefined && fieldEl) {
-                fieldEl.style.resize = props.resize;
-            }
-            if (props?.autoSize !== undefined) {
-                self._autoSize = props.autoSize;
-                if (typeof props.autoSize === 'object') {
-                    self._minRows = props.autoSize.minRows ?? 1;
-                    self._maxRows = props.autoSize.maxRows ?? Infinity;
-                }
-                self._autoResize();
-            }
-        },
-    },
-});
-
-export type TextareaComponent = InstanceType<typeof TextareaComponent>;
+TextareaComponent.useTemplate(TEXTAREA_TPL);
+export { TextareaComponent };
+export type TextareaComponentInstance = InstanceType<typeof TextareaComponent>;

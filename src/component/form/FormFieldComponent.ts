@@ -56,6 +56,7 @@ export interface FormFieldProps {
     fieldName?: string;
     validation?: boolean | ValidationRule | ValidationRule[];
     validateTrigger?: ValidateTrigger;
+    colSpan?: number;
 }
 
 const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
@@ -74,6 +75,7 @@ class FormFieldComponent extends Component {
     _validation: boolean | ValidationRule | ValidationRule[] | null = null;
     _validateTrigger: ValidateTrigger = 'blur';
     _initialValue: any = undefined;
+    _colSpan: number = 0;
 
     onAfterInit(props?: FormFieldProps): void {
         this._applyLabelPosition(props?.labelPosition);
@@ -81,6 +83,7 @@ class FormFieldComponent extends Component {
         this.initSize();
         this._initLabel(props);
         this._initValidation(props);
+        if (props?.colSpan) this.colSpan = props.colSpan;
     }
 
     onLocaleChange(): void {
@@ -164,6 +167,7 @@ class FormFieldComponent extends Component {
         const allErrors: any[] = [];
 
         for (const rule of rules) {
+            if (typeof rule === 'boolean') continue;
             const errors = await doValidate.validate(this.getFormValue(), rule);
             if (errors) allErrors.push(...errors);
         }
@@ -214,6 +218,18 @@ class FormFieldComponent extends Component {
     }
     set validation(v: boolean | ValidationRule | ValidationRule[] | null) {
         this._validation = v;
+    }
+
+    get field(): any {
+        return this.getNode('field');
+    }
+
+    get colSpan(): number {
+        return this._colSpan;
+    }
+    set colSpan(v: number) {
+        this._colSpan = v;
+        this.el.style.gridColumn = v > 1 ? `span ${v}` : '';
     }
 
     _applyState(): void {
@@ -291,10 +307,11 @@ class FormFieldComponent extends Component {
         if (props?.fieldName !== undefined) this._fieldName = props.fieldName;
         if (props?.validation !== undefined) this._validation = props.validation;
         if (props?.validateTrigger !== undefined) this._validateTrigger = props.validateTrigger;
+        if (props?.colSpan !== undefined) this.colSpan = props.colSpan;
     }
 }
 
-FormFieldComponent.use([SizeAbility]);
+FormFieldComponent.use(SizeAbility);
 FormFieldComponent.useTemplate(FORMFIELD_TPL);
 export { FormFieldComponent };
 export type FormFieldComponentInstance = InstanceType<typeof FormFieldComponent>;

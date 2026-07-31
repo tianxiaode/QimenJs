@@ -2,7 +2,7 @@
  * SwitchComponent 开关组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 body.nodes 指定 fieldBody 为 SwitchFieldBodyComponent。
+ * fieldBody 子组件为 SwitchFieldBodyComponent（由 SWITCH_TPL 指定）。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
@@ -25,8 +25,7 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
-import { SwitchFieldBodyComponent } from './SwitchFieldBodyComponent';
-import type { ValidationRule } from '@qimenjs/schema';
+import { SWITCH_TPL } from './switch-tpl';
 
 export interface SwitchProps extends FormFieldProps {
     checked?: boolean;
@@ -35,138 +34,118 @@ export interface SwitchProps extends FormFieldProps {
     inactiveText?: string;
 }
 
-export let SwitchComponent = FormFieldComponent.replace({
-    body: {
-        nodes: {
-            root: { addCls: 'q-switch' },
-            fieldBody: {
-                type: SwitchFieldBodyComponent,
-            },
-        },
+class SwitchComponent extends FormFieldComponent {
+    _checked: boolean = false;
+    _activeText: string = '';
+    _inactiveText: string = '';
 
-        _checked: false,
-        _activeText: '' as string,
-        _inactiveText: '' as string,
+    onAfterInit(props?: SwitchProps): void {
+        super.onAfterInit(props);
+        this.addCls('q-switch');
+        this._initSwitch(props);
+    }
 
-        onAfterInit(props?: SwitchProps): void {
-            const self = this as any;
-            self._initSwitch(props);
-        },
+    _initSwitch(props?: SwitchProps): void {
+        const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.on('switchToggle', () => this.onTrackClick());
+        }
 
-        _initSwitch(props?: SwitchProps): void {
-            const self = this as any;
+        if (props?.checked) this._checked = props.checked;
+        if (props?.activeText) this._activeText = props.activeText;
+        if (props?.inactiveText) this._inactiveText = props.inactiveText;
+        if (props?.disabled) this.disabled = props.disabled;
 
-            const fieldBodyCmp = self.nodeMap?.fieldBody?.component;
-            if (fieldBodyCmp) {
-                fieldBodyCmp.on('switchToggle', () => self.onTrackClick());
-            }
+        this._applyState();
+        this._updateText();
+    }
 
-            if (props?.checked) self._checked = props.checked;
-            if (props?.activeText) self._activeText = props.activeText;
-            if (props?.inactiveText) self._inactiveText = props.inactiveText;
-            if (props?.disabled) self.disabled = props.disabled;
+    onTrackClick(): void {
+        if (this.disabled) return;
+        this._checked = !this._checked;
+        this._applyState();
+        this._updateText();
+        this.emit('switch:change', { checked: this._checked });
+        if (this._shouldValidate('change')) this._doValidate();
+    }
 
-            self._applyState();
-            self._updateText();
-        },
+    _updateText(): void {
+        const trackEl = this.nodeMap?.track?.el as HTMLElement | null;
+        if (!trackEl) return;
 
-        onTrackClick(): void {
-            const self = this as any;
-            if (self.disabled) return;
-            self._checked = !self._checked;
-            self._applyState();
-            self._updateText();
-            self.emit('switch:change', { checked: self._checked });
-            if (self._shouldValidate('change')) self._doValidate();
-        },
+        const text = this._checked ? this._activeText : this._inactiveText;
+        if (text) {
+            trackEl.setAttribute('data-text', text);
+        } else {
+            trackEl.removeAttribute('data-text');
+        }
+    }
 
-        _updateText(): void {
-            const self = this as any;
-            const trackEl = self.nodeMap?.track?.el as HTMLElement | null;
-            if (!trackEl) return;
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { checked: this._checked };
+    }
 
-            const text = self._checked ? self._activeText : self._inactiveText;
-            if (text) {
-                trackEl.setAttribute('data-text', text);
-            } else {
-                trackEl.removeAttribute('data-text');
-            }
-        },
+    get checked(): boolean {
+        return this._checked;
+    }
+    set checked(v: boolean) {
+        this._checked = v;
+        this._applyState();
+        this._updateText();
+    }
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            return { checked: self._checked };
-        },
+    get disabled(): boolean {
+        return this.el.classList.contains('q-switch--disabled');
+    }
+    set disabled(v: boolean) {
+        this.toggleCls('q-switch--disabled', v);
+        const trackEl = this.nodeMap?.track?.el as HTMLElement | null;
+        if (trackEl) {
+            if (v) trackEl.setAttribute('aria-disabled', 'true');
+            else trackEl.removeAttribute('aria-disabled');
+        }
+    }
 
-        get checked(): boolean {
-            const self = this as any;
-            return self._checked;
-        },
-        set checked(v: boolean) {
-            const self = this as any;
-            self._checked = v;
-            self._applyState();
-            self._updateText();
-        },
+    _applyState(): void {
+        this.toggleCls('q-switch--checked', this._checked);
+        this.toggleCls('q-switch--error', !!this._error);
 
-        get disabled(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-switch--disabled');
-        },
-        set disabled(v: boolean) {
-            const self = this as any;
-            self.toggleCls('q-switch--disabled', v);
-            const trackEl = self.nodeMap?.track?.el as HTMLElement | null;
-            if (trackEl) {
-                if (v) trackEl.setAttribute('aria-disabled', 'true');
-                else trackEl.removeAttribute('aria-disabled');
-            }
-        },
+        const trackEl = this.nodeMap?.track?.el as HTMLElement | null;
+        if (trackEl) {
+            trackEl.setAttribute('aria-checked', String(this._checked));
+            trackEl.setAttribute('role', 'switch');
+        }
+    }
 
-        _applyState(): void {
-            const self = this as any;
-            self.toggleCls('q-switch--checked', self._checked);
-            self.toggleCls('q-switch--error', !!self._error);
+    getFormValue(): any {
+        return this._checked;
+    }
 
-            const trackEl = self.nodeMap?.track?.el as HTMLElement | null;
-            if (trackEl) {
-                trackEl.setAttribute('aria-checked', String(self._checked));
-                trackEl.setAttribute('role', 'switch');
-            }
-        },
+    setFormValue(v: any): void {
+        this.checked = !!v;
+    }
 
-        getFormValue(): any {
-            const self = this as any;
-            return self._checked;
-        },
+    formReset(defaultValue?: any): void {
+        this.checked = defaultValue ?? false;
+        this.error = '';
+    }
 
-        setFormValue(v: any): void {
-            const self = this as any;
-            self.checked = !!v;
-        },
+    update(props?: Partial<SwitchProps>): void {
+        super.update(props);
 
-        formReset(defaultValue?: any): void {
-            const self = this as any;
-            self.checked = defaultValue ?? false;
-            self.error = '';
-        },
+        if (props?.checked !== undefined) this.checked = props.checked;
+        if (props?.disabled !== undefined) this.disabled = props.disabled;
+        if (props?.activeText !== undefined) {
+            this._activeText = props.activeText;
+            this._updateText();
+        }
+        if (props?.inactiveText !== undefined) {
+            this._inactiveText = props.inactiveText;
+            this._updateText();
+        }
+    }
+}
 
-        update(props?: Partial<SwitchProps>): void {
-            const self = this as any;
-            self._super.update(props);
-
-            if (props?.checked !== undefined) self.checked = props.checked;
-            if (props?.disabled !== undefined) self.disabled = props.disabled;
-            if (props?.activeText !== undefined) {
-                self._activeText = props.activeText;
-                self._updateText();
-            }
-            if (props?.inactiveText !== undefined) {
-                self._inactiveText = props.inactiveText;
-                self._updateText();
-            }
-        },
-    },
-});
-
-export type SwitchComponent = InstanceType<typeof SwitchComponent>;
+SwitchComponent.useTemplate(SWITCH_TPL);
+export { SwitchComponent };
+export type SwitchComponentInstance = InstanceType<typeof SwitchComponent>;

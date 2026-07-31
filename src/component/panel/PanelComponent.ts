@@ -72,7 +72,7 @@ class PanelComponent extends Component {
     }
 
     onAfterInit(props?: PanelProps): void {
-        const headerComp = this.getComponent('header');
+        const headerComp = this.getNode('header');
         if (!headerComp) return;
 
         if (props?.title) {
@@ -81,7 +81,7 @@ class PanelComponent extends Component {
 
         if (props?.toolsLeft) {
             headerComp.setNodeHidden(false, 'toolsLeft');
-            const toolsLeftComp = headerComp.getComponent('toolsLeft');
+            const toolsLeftComp = headerComp.getNode('toolsLeft');
             if (toolsLeftComp) {
                 toolsLeftComp._initItemGroupComponent(props.toolsLeft);
             }
@@ -89,7 +89,7 @@ class PanelComponent extends Component {
 
         if (props?.toolsRight) {
             headerComp.setNodeHidden(false, 'toolsRight');
-            const toolsRightComp = headerComp.getComponent('toolsRight');
+            const toolsRightComp = headerComp.getNode('toolsRight');
             if (toolsRightComp) {
                 toolsRightComp._initItemGroupComponent(props.toolsRight);
             }
@@ -97,7 +97,7 @@ class PanelComponent extends Component {
 
         if (props?.expandable) {
             headerComp.setNodeHidden(false, 'action');
-            const actionComp = headerComp.getComponent('action');
+            const actionComp = headerComp.getNode('action');
             if (actionComp && typeof actionComp.update === 'function') {
                 actionComp.update({ icon: 'expand_more', action: 'collapse' });
             }
@@ -105,7 +105,7 @@ class PanelComponent extends Component {
 
         if (props?.closable) {
             headerComp.setNodeHidden(false, 'action');
-            const actionComp = headerComp.getComponent('action');
+            const actionComp = headerComp.getNode('action');
             if (actionComp && typeof actionComp.update === 'function') {
                 actionComp.update({ icon: 'close', action: 'close' });
             }

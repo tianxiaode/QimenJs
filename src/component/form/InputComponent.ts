@@ -2,7 +2,7 @@
  * InputComponent 输入框组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 body.nodes 指定 fieldBody 为 InputFieldBodyComponent。
+ * fieldBody 子组件为 InputFieldBodyComponent（由 FormFieldComponent 模板默认提供）。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
@@ -15,9 +15,7 @@
  * - field 事件处理（input/focus/blur/change/keydown）
  * - actions 便捷方法
  *
- * 派生组件通过 replace() 实现：
- * - PasswordInputComponent: body.nodes 开启 suffix，addAction 添加 eyeBtn
- * - 下拉选择组件: body.nodes 开启 dropdownIcon + addAction 添加下拉图标
+ * 派生组件（PasswordInput/NumberInput/Select/DatePicker）通过 addAction/节点显隐扩展。
  *
  * 事件：input / focus / blur / change / keydown / clear。
  *
@@ -30,9 +28,7 @@
  */
 
 import { FormFieldComponent } from './FormFieldComponent';
-import { InputFieldBodyComponent } from './InputFieldBodyComponent';
 import type { ValidationRule } from '@qimenjs/schema';
-import { validate as doValidate } from '@qimenjs/validation';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
 
@@ -55,296 +51,259 @@ export interface InputProps {
     validateTrigger?: 'blur' | 'change' | 'input';
 }
 
-function getFieldEl(cmp: any): HTMLInputElement | null {
-    return cmp.nodeMap?.field?.el as HTMLInputElement | null;
-}
-
 const CLEAR_BTN_ORDER = 0;
 
-export let InputComponent = FormFieldComponent.replace({
-    body: {
-        nodes: {
-            root: { addCls: 'q-input' },
-            fieldBody: {
-                type: InputFieldBodyComponent,
-            },
-        },
+class InputComponent extends FormFieldComponent {
+    _value: string = '';
+    _focused: boolean = false;
+    _clearable: boolean = false;
+    _clearBtnItem: any = null;
+    _offValidation: (() => void) | null = null;
 
-        _value: '',
-        _focused: false,
-        _clearable: false,
-        _clearBtnItem: null as any,
+    onAfterInit(props?: Record<string, any>): void {
+        super.onAfterInit(props);
+        this.addCls('q-input');
+        this._initInput(props as InputProps);
+    }
 
-        onAfterInit(props?: InputProps): void {
-            const self = this as any;
-            self._initInput(props);
-        },
+    onBeforeDispose(): void {
+        if (this._offValidation) {
+            this._offValidation();
+            this._offValidation = null;
+        }
+        super.onBeforeDispose();
+    }
 
-        onBeforeDispose(): void {
-            const self = this as any;
-            if (self._offValidation) {
-                self._offValidation();
-                self._offValidation = null;
-            }
-        },
+    _initInput(props?: InputProps): void {
+        const fieldEl = this.field;
 
-        _initInput(props?: InputProps): void {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
+        const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.on('actionClick', (data: any) => this.onFieldBodyActionClick(data));
+            fieldBodyCmp.on('input', () => this.onFieldInput());
+            fieldBodyCmp.on('focus', () => this.onFieldFocus());
+            fieldBodyCmp.on('blur', () => this.onFieldBlur());
+            fieldBodyCmp.on('change', () => this.onFieldChange());
+        }
 
-            const fieldBodyCmp = self.nodeMap?.fieldBody?.component;
-            if (fieldBodyCmp) {
-                fieldBodyCmp.on('actionClick', (data: any) => self.onFieldBodyActionClick(data));
-                fieldBodyCmp.on('input', () => self.onFieldInput());
-                fieldBodyCmp.on('focus', () => self.onFieldFocus());
-                fieldBodyCmp.on('blur', () => self.onFieldBlur());
-                fieldBodyCmp.on('change', () => self.onFieldChange());
-            }
+        if (props?.value !== undefined) {
+            this._value = props.value;
+            if (fieldEl) fieldEl.value = props.value;
+        }
+        if (props?.placeholder && fieldEl) {
+            fieldEl.setAttribute('placeholder', props.placeholder);
+        }
+        if (props?.type && fieldEl) {
+            fieldEl.setAttribute('type', props.type);
+        }
+        if (props?.maxLength !== undefined && fieldEl) {
+            fieldEl.setAttribute('maxlength', String(props.maxLength));
+        }
+        if (props?.disabled) this.disabled = true;
+        if (props?.readonly) this.readonly = true;
+        if (props?.clearable) {
+            this._clearable = true;
+            this.setNodeHidden(false, 'actions');
+            this._initClearBtn();
+            this._toggleClearBtn();
+        }
+        this._applyState();
+    }
 
-            if (props?.value !== undefined) {
-                self._value = props.value;
-                if (fieldEl) fieldEl.value = props.value;
-            }
-            if (props?.placeholder && fieldEl) {
-                fieldEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.type && fieldEl) {
-                fieldEl.setAttribute('type', props.type);
-            }
-            if (props?.maxLength !== undefined && fieldEl) {
-                fieldEl.setAttribute('maxlength', String(props.maxLength));
-            }
-            if (props?.disabled) self.disabled = true;
-            if (props?.readonly) self.readonly = true;
-            if (props?.clearable) {
-                self._clearable = true;
-                self.setNodeHidden(false, 'actions');
-                self._initClearBtn();
-                self._toggleClearBtn();
-            }
-            self._applyState();
-        },
+    onFieldBodyActionClick(data: any): void {
+        const index = data?.index;
+        if (index === undefined) return;
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return;
+        if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
+            this.onClearBtnClick();
+        }
+    }
 
-        onFieldBodyActionClick(data: any): void {
-            const self = this as any;
-            const index = data?.index;
-            if (index === undefined) return;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return;
-            if (
-                self._clearBtnItem &&
-                self._itemsIndexOf(actionsCmp, self._clearBtnItem) === index
-            ) {
-                self.onClearBtnClick();
-            }
-        },
+    _itemsIndexOf(group: any, item: any): number {
+        for (let i = 0; i < group._items.length; i++) {
+            if (group._items[i] === item) return i;
+        }
+        return -1;
+    }
 
-        _itemsIndexOf(group: any, item: any): number {
-            for (let i = 0; i < group._items.length; i++) {
-                if (group._items[i] === item) return i;
-            }
-            return -1;
-        },
+    _initClearBtn(): void {
+        if (this._clearBtnItem) return;
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return;
+        actionsCmp.add({
+            type: 'Text',
+            cls: 'q-input__clear-btn',
+            text: '×',
+            order: CLEAR_BTN_ORDER,
+        });
+        this._clearBtnItem = actionsCmp._items[actionsCmp._items.length - 1] ?? null;
+    }
 
-        _initClearBtn(): void {
-            const self = this as any;
-            if (self._clearBtnItem) return;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return;
-            actionsCmp.add({
-                type: 'Text',
-                cls: 'q-input__clear-btn',
-                text: '×',
-                order: CLEAR_BTN_ORDER,
-            });
-            self._clearBtnItem = actionsCmp._items[actionsCmp._items.length - 1] ?? null;
-        },
+    onClearBtnClick(): void {
+        this.value = '';
+        this.emit('input', { value: '' });
+        this._toggleClearBtn();
+        this.field?.focus();
+    }
 
-        onClearBtnClick(): void {
-            const self = this as any;
-            self.value = '';
-            self.emit('input', { value: '' });
-            self._toggleClearBtn();
-            getFieldEl(self)?.focus();
-        },
+    _toggleClearBtn(): void {
+        if (!this._clearable || !this._clearBtnItem) return;
+        const hasValue = !!this._value;
+        this._clearBtnItem.el.hidden = !hasValue;
+    }
 
-        _toggleClearBtn(): void {
-            const self = this as any;
-            if (!self._clearable || !self._clearBtnItem) return;
-            const hasValue = !!self._value;
-            self._clearBtnItem.el.hidden = !hasValue;
-        },
+    onFieldInput(): void {
+        this._value = this.field?.value ?? '';
+        this._toggleClearBtn();
+        if (this._shouldValidate('input')) this._doValidate();
+    }
 
-        onFieldInput(): void {
-            const self = this as any;
-            self._value = self.field;
-            self._toggleClearBtn();
-            if (self._shouldValidate('input')) self._doValidate();
-        },
+    onFieldFocus(): void {
+        this._focused = true;
+        this._applyState();
+    }
 
-        onFieldFocus(): void {
-            const self = this as any;
-            self._focused = true;
-            self._applyState();
-        },
+    onFieldBlur(): void {
+        this._focused = false;
+        this._applyState();
+        if (this._shouldValidate('blur')) this._doValidate();
+    }
 
-        onFieldBlur(): void {
-            const self = this as any;
-            self._focused = false;
-            self._applyState();
-            if (self._shouldValidate('blur')) self._doValidate();
-        },
+    onFieldChange(): void {
+        this._value = this.field?.value ?? '';
+        if (this._shouldValidate('change')) this._doValidate();
+    }
 
-        onFieldChange(): void {
-            const self = this as any;
-            self._value = self.field;
-            if (self._shouldValidate('change')) self._doValidate();
-        },
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
 
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
+    addAction(data: Record<string, any>): any {
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return null;
+        this.setNodeHidden(false, 'actions');
+        return actionsCmp.add(data);
+    }
 
-        addAction(data: Record<string, any>): any {
-            const self = this as any;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return null;
-            self.setNodeHidden(false, 'actions');
-            return actionsCmp.add(data);
-        },
+    removeAction(index: number): any {
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return undefined;
+        const result = actionsCmp.removeAt(index);
+        if (actionsCmp.count === 0) this.setNodeHidden(true, 'actions');
+        return result;
+    }
 
-        removeAction(index: number): any {
-            const self = this as any;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return undefined;
-            const result = actionsCmp.removeAt(index);
-            if (actionsCmp.count === 0) self.setNodeHidden(true, 'actions');
-            return result;
-        },
+    setActionHidden(index: number, hidden: boolean): void {
+        const actionsCmp = this.nodeMap?.actions?.component;
+        if (!actionsCmp) return;
+        const item = actionsCmp.getAt(index);
+        if (item?.el) item.el.hidden = hidden;
+    }
 
-        setActionHidden(index: number, hidden: boolean): void {
-            const self = this as any;
-            const actionsCmp = self.nodeMap?.actions?.component;
-            if (!actionsCmp) return;
-            const item = actionsCmp.getAt(index);
-            if (item?.el) item.el.hidden = hidden;
-        },
+    get value(): string {
+        return this._value;
+    }
+    set value(v: string) {
+        this._value = v;
+        const fieldEl = this.field;
+        if (fieldEl && fieldEl.value !== v) {
+            fieldEl.value = v;
+        }
+        this._toggleClearBtn();
+    }
 
-        get value(): string {
-            const self = this as any;
-            return self._value;
-        },
-        set value(v: string) {
-            const self = this as any;
-            self._value = v;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl && fieldEl.value !== v) {
-                fieldEl.value = v;
-            }
-            self._toggleClearBtn();
-        },
+    get disabled(): boolean {
+        return this.el.classList.contains('q-input--disabled');
+    }
+    set disabled(v: boolean) {
+        const fieldEl = this.field;
+        if (fieldEl) {
+            if (v) fieldEl.setAttribute('disabled', 'true');
+            else fieldEl.removeAttribute('disabled');
+        }
+        this.toggleCls('q-input--disabled', v);
+    }
 
-        get disabled(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-input--disabled');
-        },
-        set disabled(v: boolean) {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl) {
-                if (v) fieldEl.setAttribute('disabled', 'true');
-                else fieldEl.removeAttribute('disabled');
-            }
-            self.toggleCls('q-input--disabled', v);
-        },
+    get readonly(): boolean {
+        return this.el.classList.contains('q-input--readonly');
+    }
+    set readonly(v: boolean) {
+        const fieldEl = this.field;
+        if (fieldEl) {
+            if (v) fieldEl.setAttribute('readonly', 'true');
+            else fieldEl.removeAttribute('readonly');
+        }
+        this.toggleCls('q-input--readonly', v);
+    }
 
-        get readonly(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-input--readonly');
-        },
-        set readonly(v: boolean) {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-            if (fieldEl) {
-                if (v) fieldEl.setAttribute('readonly', 'true');
-                else fieldEl.removeAttribute('readonly');
-            }
-            self.toggleCls('q-input--readonly', v);
-        },
+    focus(): void {
+        this.field?.focus();
+    }
 
-        focus(): void {
-            getFieldEl(this)?.focus();
-        },
+    blur(): void {
+        this.field?.blur();
+    }
 
-        blur(): void {
-            getFieldEl(this)?.blur();
-        },
+    select(): void {
+        this.field?.select();
+    }
 
-        select(): void {
-            getFieldEl(this)?.select();
-        },
+    _applyState(): void {
+        this.toggleCls('q-input--focused', this._focused);
+        this.toggleCls('q-input--error', !!this._error);
+    }
 
-        _applyState(): void {
-            const self = this as any;
-            self.toggleCls('q-input--focused', self._focused);
-            self.toggleCls('q-input--error', !!self._error);
-        },
+    getFormValue(): any {
+        return this._value;
+    }
 
-        getFormValue(): any {
-            const self = this as any;
-            return self._value;
-        },
+    setFormValue(v: any): void {
+        this.value = v;
+    }
 
-        setFormValue(v: any): void {
-            const self = this as any;
-            self.value = v;
-        },
+    getFormDisplayValue(): any {
+        return this._value;
+    }
 
-        getFormDisplayValue(): any {
-            const self = this as any;
-            return self._value;
-        },
+    formReset(defaultValue?: any): void {
+        this.value = defaultValue ?? '';
+        this.error = '';
+    }
 
-        formReset(defaultValue?: any): void {
-            const self = this as any;
-            self.value = defaultValue ?? '';
-            self.error = '';
-        },
+    update(props?: Record<string, any>): void {
+        super.update(props);
+        const inputProps = props as Partial<InputProps>;
+        const fieldEl = this.field;
 
-        update(props?: Partial<InputProps>): void {
-            const self = this as any;
-            const fieldEl = getFieldEl(self);
-
-            self._super.update(props);
-
-            if (props?.value !== undefined) self.value = props.value;
-            if (props?.placeholder !== undefined && fieldEl) {
-                fieldEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.type !== undefined && fieldEl) {
-                fieldEl.setAttribute('type', props.type);
-            }
-            if (props?.disabled !== undefined) self.disabled = props.disabled;
-            if (props?.readonly !== undefined) self.readonly = props.readonly;
-            if (props?.maxLength !== undefined && fieldEl) {
-                fieldEl.setAttribute('maxlength', String(props.maxLength));
-            }
-            if (props?.clearable !== undefined) {
-                self._clearable = props.clearable;
-                if (props.clearable) {
-                    self.setNodeHidden(false, 'actions');
-                    self._initClearBtn();
-                    self._toggleClearBtn();
-                } else {
-                    if (self._clearBtnItem) {
-                        self._clearBtnItem.el.hidden = true;
-                    }
-                    self.setNodeHidden(true, 'actions');
+        if (inputProps?.value !== undefined) this.value = inputProps.value;
+        if (inputProps?.placeholder !== undefined && fieldEl) {
+            fieldEl.setAttribute('placeholder', inputProps.placeholder);
+        }
+        if (inputProps?.type !== undefined && fieldEl) {
+            fieldEl.setAttribute('type', inputProps.type);
+        }
+        if (inputProps?.disabled !== undefined) this.disabled = inputProps.disabled;
+        if (inputProps?.readonly !== undefined) this.readonly = inputProps.readonly;
+        if (inputProps?.maxLength !== undefined && fieldEl) {
+            fieldEl.setAttribute('maxlength', String(inputProps.maxLength));
+        }
+        if (inputProps?.clearable !== undefined) {
+            this._clearable = inputProps.clearable;
+            if (inputProps.clearable) {
+                this.setNodeHidden(false, 'actions');
+                this._initClearBtn();
+                this._toggleClearBtn();
+            } else {
+                if (this._clearBtnItem) {
+                    this._clearBtnItem.el.hidden = true;
                 }
+                this.setNodeHidden(true, 'actions');
             }
-        },
-    },
-});
+        }
+    }
+}
 
-export type InputComponent = InstanceType<typeof InputComponent>;
+InputComponent.register();
+export { InputComponent };
+export type InputComponentInstance = InstanceType<typeof InputComponent>;

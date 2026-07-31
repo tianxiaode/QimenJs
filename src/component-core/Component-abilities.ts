@@ -10,6 +10,7 @@ import {
     SystemAbility,
     DebounceAbility,
 } from '@/system-abilities';
+import { NodeQueryAbility } from './abilities/NodeQueryAbility';
 import { NodePropAbility } from './abilities/NodePropAbility';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
@@ -29,6 +30,7 @@ export const COMPONENT_ABILITIES = [
     SystemAbility,
     DebounceAbility,
 
+    NodeQueryAbility,
     NodePropAbility,
     CommonPropsAbility,
     AnimationAbility,

@@ -16,6 +16,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { SWITCH_FIELD_BODY_TPL } from './switch-field-body-tpl';
 
 class SwitchFieldBodyComponent extends Component {}
 

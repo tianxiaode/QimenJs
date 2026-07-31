@@ -1,3 +1,4 @@
+export * from './NodeQueryAbility';
 export * from './NodePropAbility';
 export * from './CommonPropsAbility';
 export * from './AnimationAbility';

@@ -31,52 +31,7 @@ import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 export const NodePropAbility: AbilityDefinition = {
     /**
-     * 解析节点的 DOM 元素
-     *
-     * 根据节点名称从 nodeMap 中获取对应的 DOM 元素。
-     * 如果节点是子组件，返回子组件的 el；否则返回节点的 el。
-     *
-     * @param {string} nodeName - 节点名称（如 'root', 'icon'）
-     * @returns {HTMLElement | undefined} DOM 元素，节点不存在时返回 undefined
-     *
-     * @example
-     * const el = this._resolveNodeEl('icon');
-     * if (el) {
-     *     el.style.color = 'red';
-     * }
-     */
-    _resolveNodeEl(this: any, nodeName: string): HTMLElement | undefined {
-        const node = this.nodeMap?.[nodeName];
-        if (!node) return undefined;
-        return node.component ? node.component.el : node.el;
-    },
 
-    /**
-     * 解析节点的目标信息
-     *
-     * 根据节点名称从 nodeMap 中获取节点的 el 和 component 信息。
-     * 用于确定操作目标是子组件还是 DOM 元素。
-     *
-     * @param {string} nodeName - 节点名称（如 'root', 'icon'）
-     * @returns {{ el?: HTMLElement; component?: any }} 节点目标信息
-     *
-     * @example
-     * const { el, component } = this._resolveNodeTarget('icon');
-     * if (component) {
-     *     // 委托给子组件
-     *     component.hidden = true;
-     * } else if (el) {
-     *     // 直接操作 DOM
-     *     el.hidden = true;
-     * }
-     */
-    _resolveNodeTarget(this: any, nodeName: string): { el?: HTMLElement; component?: any } {
-        const node = this.nodeMap?.[nodeName];
-        if (!node) return {};
-        return { el: node.el, component: node.component };
-    },
-
-    /**
      * 获取节点的属性值
      *
      * 读取指定节点的属性值。优先从脏追踪缓存中读取，其次从子组件属性读取，最后从 DOM 读取。

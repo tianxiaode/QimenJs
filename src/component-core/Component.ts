@@ -25,7 +25,6 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import type { NodeMetadata } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
 import type { ComponentProps } from './types/init-context';
 import type { DomEventsMap } from './types/tpl-events';
@@ -214,29 +213,6 @@ export class Component extends ComposableBase {
         this._ready = this.init();
     }
 
-    get nodeMap(): Record<string, NodeMetadata> {
-        return this.nodeMapMgr?.getAll() ?? {};
-    }
-
-    /**
-     * 获取指定节点的子组件实例
-     *
-     * @param name - 节点名称
-     * @returns 子组件实例，不存在或无组件则返回 undefined
-     *
-     * @example
-     * ```ts
-     * // 获取 header 节点的子组件
-     * const headerComp = this.getComponent('header');
-     * if (headerComp) {
-     *   headerComp.title = 'New Title';
-     * }
-     * ```
-     */
-    getComponent(name: string): any | undefined {
-        return this.nodeMapMgr?.getComponent(name);
-    }
-
     get ready(): Promise<void> {
         return this._ready;
     }
@@ -300,13 +276,6 @@ export class Component extends ComposableBase {
             this._commitDrags();
             this._commitDrops?.();
         }
-    }
-
-    containsElement(nodeName: string, target: Element): boolean {
-        const node = this.nodeMap[nodeName];
-        if (!node) return false;
-        const el = node.component ? node.component.el : node.el;
-        return el ? el.contains(target) : false;
     }
 
     override onBeforeDispose(): void {
