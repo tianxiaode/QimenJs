@@ -2,7 +2,7 @@
  * MarkdownEditorComponent Markdown 编辑器组件
  *
  * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * 通过 nodes.fieldBody 指定为 MarkdownEditorFieldBodyComponent。
+ * 通过独立模板将 fieldBody 指定为 MarkdownEditorFieldBodyComponent。
  *
  * 三封装结构（继承自 FormField）：
  * - labelGroup  标签封装：label + requiredMark + separator
@@ -27,9 +27,9 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from '../component/form/FormFieldComponent';
-import { MarkdownEditorFieldBodyComponent } from './MarkdownEditorFieldBodyComponent';
 import { MarkdownEngine } from './engine';
-import { MARKDOWN_EDITOR_FIELD_BODY_TPL } from './markdown-editor-field-body-tpl';
+import { MARKDOWN_EDITOR_TPL } from './markdown-editor-tpl';
+import './MarkdownEditorFieldBodyComponent';
 
 export type MarkdownEditMode = 'edit' | 'preview' | 'split';
 
@@ -62,14 +62,6 @@ const MODE_CLS_MAP: Record<MarkdownEditMode, string> = {
     preview: 'q-md-editor--preview',
     split: 'q-md-editor--split',
 };
-
-function getEditorEl(cmp: any): HTMLTextAreaElement | null {
-    return cmp.nodeMap?.editor?.el as HTMLTextAreaElement | null;
-}
-
-function getPreviewEl(cmp: any): HTMLElement | null {
-    return cmp.nodeMap?.preview?.el as HTMLElement | null;
-}
 
 function wrapSelection(
     el: HTMLTextAreaElement,
@@ -180,318 +172,293 @@ const DEFAULT_SHORTCUTS: MarkdownShortcutAction[] = [
     },
 ];
 
-export let MarkdownEditorComponent = FormFieldComponent.replace({
-    body: {
-        _value: '' as string,
-        _focused: false as boolean,
-        _mode: 'edit' as MarkdownEditMode,
-        _autoSize: false as boolean | { minRows?: number; maxRows?: number },
-        _minRows: 1 as number,
-        _maxRows: Infinity as number,
-        _engine: new MarkdownEngine(),
-        _shortcuts: [...DEFAULT_SHORTCUTS] as MarkdownShortcutAction[],
+class MarkdownEditorComponent extends FormFieldComponent {
+    _value: string = '';
+    _focused: boolean = false;
+    _mode: MarkdownEditMode = 'edit';
+    _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
+    _minRows: number = 1;
+    _maxRows: number = Infinity;
+    _engine: MarkdownEngine = new MarkdownEngine();
+    _shortcuts: MarkdownShortcutAction[] = [...DEFAULT_SHORTCUTS];
 
-        nodes: {
-            root: { addCls: 'q-md-editor q-md-editor--edit' },
-            fieldBody: {
-                type: MarkdownEditorFieldBodyComponent,
-            },
-        },
+    get editor(): HTMLTextAreaElement | undefined {
+        return this.getNode('editor') as HTMLTextAreaElement | undefined;
+    }
 
-        onAfterInit(props?: MarkdownEditorProps): void {
-            const self = this as any;
-            self._initMarkdownEditor(props);
-        },
+    get preview(): HTMLElement | undefined {
+        return this.getNode('preview') as HTMLElement | undefined;
+    }
 
-        _initMarkdownEditor(props?: MarkdownEditorProps): void {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
+    onAfterInit(props?: Record<string, any>): void {
+        super.onAfterInit(props);
+        this.addCls('q-md-editor q-md-editor--edit');
+        this._initMarkdownEditor(props);
+    }
 
-            const fieldBodyCmp = self.nodeMap?.fieldBody?.component;
-            if (fieldBodyCmp) {
-                fieldBodyCmp.on('input', () => self.onMdFieldInput());
-                fieldBodyCmp.on('focus', () => self.onMdFieldFocus());
-                fieldBodyCmp.on('blur', () => self.onMdFieldBlur());
-                fieldBodyCmp.on('change', () => self.onMdFieldChange());
-                fieldBodyCmp.on('keydown', (data: any) => self.onMdFieldKeydown(data));
+    _initMarkdownEditor(props?: Record<string, any>): void {
+        const editorEl = this.editor;
+
+        const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.on('input', () => this.onMdFieldInput());
+            fieldBodyCmp.on('focus', () => this.onMdFieldFocus());
+            fieldBodyCmp.on('blur', () => this.onMdFieldBlur());
+            fieldBodyCmp.on('change', () => this.onMdFieldChange());
+            fieldBodyCmp.on('keydown', (data: any) => this.onMdFieldKeydown(data));
+        }
+
+        if (props?.value !== undefined) {
+            this._value = props.value;
+            if (editorEl) editorEl.value = props.value;
+            this._updatePreview();
+        }
+        if (props?.placeholder && editorEl) {
+            editorEl.setAttribute('placeholder', props.placeholder);
+        }
+        if (props?.rows !== undefined && editorEl) {
+            editorEl.setAttribute('rows', String(props.rows));
+        }
+        if (props?.disabled) this.disabled = true;
+        if (props?.readonly) this.readonly = true;
+        if (props?.mode) this._applyMode(props.mode);
+
+        if (props?.autoSize) {
+            this._autoSize = props.autoSize;
+            if (typeof props.autoSize === 'object') {
+                this._minRows = props.autoSize.minRows ?? 1;
+                this._maxRows = props.autoSize.maxRows ?? Infinity;
             }
+            this._autoResize();
+        }
 
-            if (props?.value !== undefined) {
-                self._value = props.value;
-                if (editorEl) editorEl.value = props.value;
-                self._updatePreview();
+        this._applyState();
+    }
+
+    _applyMode(mode: MarkdownEditMode): void {
+        this._mode = mode;
+        for (const cls of Object.values(MODE_CLS_MAP)) {
+            this.toggleCls(cls, false);
+        }
+        this.toggleCls(MODE_CLS_MAP[mode], true);
+    }
+
+    _updatePreview(): void {
+        const previewEl = this.preview;
+        if (previewEl) {
+            previewEl.innerHTML = this._engine.render(this._value);
+        }
+    }
+
+    onMdFieldInput(): void {
+        this._value = this.editor?.value ?? '';
+        this._updatePreview();
+        if (this._autoSize) this._autoResize();
+        if (this._shouldValidate('input')) this._doValidate();
+    }
+
+    onMdFieldFocus(): void {
+        this._focused = true;
+        this._applyState();
+    }
+
+    onMdFieldBlur(): void {
+        this._focused = false;
+        this._applyState();
+        if (this._shouldValidate('blur')) this._doValidate();
+    }
+
+    onMdFieldChange(): void {
+        this._value = this.editor?.value ?? '';
+        if (this._shouldValidate('change')) this._doValidate();
+    }
+
+    onMdFieldKeydown(data: any): void {
+        const editorEl = this.editor;
+        if (!editorEl) return;
+
+        const e: KeyboardEvent = data?.originalEvent ?? data;
+        const key = e.key?.toLowerCase();
+
+        if (key === 'tab') {
+            e.preventDefault();
+            this._handleTab(editorEl, e.shiftKey);
+            this.onMdFieldInput();
+            return;
+        }
+
+        if (!e.ctrlKey && !e.metaKey) return;
+
+        const shortcut = this._shortcuts.find((s: MarkdownShortcutAction) => {
+            return (
+                s.key === key &&
+                !!s.ctrl === (e.ctrlKey || e.metaKey) &&
+                !!s.shift === e.shiftKey &&
+                !!s.alt === e.altKey
+            );
+        });
+
+        if (shortcut) {
+            e.preventDefault();
+            const ctx: ShortcutContext = {
+                editor: editorEl,
+                wrap(before, after, placeholder) {
+                    wrapSelection(editorEl, before, after, placeholder);
+                },
+                insertLine(prefix) {
+                    insertLinePrefix(editorEl, prefix);
+                },
+            };
+            shortcut.handler(ctx);
+            this.onMdFieldInput();
+        }
+    }
+
+    _handleTab(el: HTMLTextAreaElement, shift: boolean): void {
+        const start = el.selectionStart;
+        const end = el.selectionEnd;
+        const val = el.value;
+
+        if (shift) {
+            const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+            const linePrefix = val.substring(lineStart, lineStart + 4);
+            if (linePrefix === '    ' || linePrefix.startsWith('\t')) {
+                const removeLen = linePrefix === '    ' ? 4 : 1;
+                el.selectionStart = lineStart;
+                el.selectionEnd = lineStart + removeLen;
+                document.execCommand('delete');
             }
-            if (props?.placeholder && editorEl) {
-                editorEl.setAttribute('placeholder', props.placeholder);
+        } else {
+            el.selectionStart = start;
+            el.selectionEnd = end;
+            document.execCommand('insertText', false, '    ');
+        }
+    }
+
+    getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
+        return { value: this._value };
+    }
+
+    _autoResize(): void {
+        const editorEl = this.editor;
+        if (!editorEl) return;
+
+        editorEl.style.height = 'auto';
+        const lineHeight = parseFloat(getComputedStyle(editorEl).lineHeight) || 20;
+        const paddingTop = parseFloat(getComputedStyle(editorEl).paddingTop) || 0;
+        const paddingBottom = parseFloat(getComputedStyle(editorEl).paddingBottom) || 0;
+        const baseHeight = paddingTop + paddingBottom;
+
+        const minH = baseHeight + lineHeight * this._minRows;
+        const maxH =
+            this._maxRows === Infinity ? Infinity : baseHeight + lineHeight * this._maxRows;
+
+        const scrollH = editorEl.scrollHeight;
+        const newH = Math.max(minH, Math.min(scrollH, maxH));
+
+        editorEl.style.height = `${newH}px`;
+        editorEl.style.overflow = scrollH > maxH ? 'auto' : 'hidden';
+    }
+
+    get value(): string {
+        return this._value;
+    }
+    set value(v: string) {
+        this._value = v;
+        const editorEl = this.editor;
+        if (editorEl && editorEl.value !== v) {
+            editorEl.value = v;
+        }
+        this._updatePreview();
+        if (this._autoSize) this._autoResize();
+    }
+
+    get disabled(): boolean {
+        return this.el.classList.contains('q-md-editor--disabled');
+    }
+    set disabled(v: any) {
+        const editorEl = this.editor;
+        if (editorEl) {
+            if (v) editorEl.setAttribute('disabled', 'true');
+            else editorEl.removeAttribute('disabled');
+        }
+        this.toggleCls('q-md-editor--disabled', v);
+    }
+
+    get readonly(): boolean {
+        return this.el.classList.contains('q-md-editor--readonly');
+    }
+    set readonly(v: any) {
+        const editorEl = this.editor;
+        if (editorEl) {
+            if (v) editorEl.setAttribute('readonly', 'true');
+            else editorEl.removeAttribute('readonly');
+        }
+        this.toggleCls('q-md-editor--readonly', v);
+    }
+
+    get mode(): MarkdownEditMode {
+        return this._mode;
+    }
+    set mode(v: MarkdownEditMode) {
+        this._applyMode(v);
+    }
+
+    focus(): void {
+        this.editor?.focus();
+    }
+
+    blur(): void {
+        this.editor?.blur();
+    }
+
+    _applyState(): void {
+        this.toggleCls('q-md-editor--focused', this._focused);
+        this.toggleCls('q-md-editor--error', !!this._error);
+    }
+
+    getFormValue(): any {
+        return this._value;
+    }
+
+    setFormValue(v: any): void {
+        this.value = v;
+    }
+
+    getFormDisplayValue(): any {
+        return this._engine.render(this._value);
+    }
+
+    formReset(defaultValue?: any): void {
+        this.value = defaultValue ?? '';
+        this.error = '';
+    }
+
+    update(props?: Record<string, any>): void {
+        super.update(props);
+        const editorEl = this.editor;
+
+        if (props?.value !== undefined) this.value = props.value;
+        if (props?.placeholder !== undefined && editorEl) {
+            editorEl.setAttribute('placeholder', props.placeholder);
+        }
+        if (props?.rows !== undefined && editorEl) {
+            editorEl.setAttribute('rows', String(props.rows));
+        }
+        if (props?.disabled !== undefined) this.disabled = props.disabled;
+        if (props?.readonly !== undefined) this.readonly = props.readonly;
+        if (props?.mode !== undefined) this._applyMode(props.mode);
+        if (props?.autoSize !== undefined) {
+            this._autoSize = props.autoSize;
+            if (typeof props.autoSize === 'object') {
+                this._minRows = props.autoSize.minRows ?? 1;
+                this._maxRows = props.autoSize.maxRows ?? Infinity;
             }
-            if (props?.rows !== undefined && editorEl) {
-                editorEl.setAttribute('rows', String(props.rows));
-            }
-            if (props?.disabled) self.disabled = true;
-            if (props?.readonly) self.readonly = true;
-            if (props?.mode) self._applyMode(props.mode);
+            this._autoResize();
+        }
+    }
+}
 
-            if (props?.autoSize) {
-                self._autoSize = props.autoSize;
-                if (typeof props.autoSize === 'object') {
-                    self._minRows = props.autoSize.minRows ?? 1;
-                    self._maxRows = props.autoSize.maxRows ?? Infinity;
-                }
-                self._autoResize();
-            }
-
-            self._applyState();
-        },
-
-        _applyMode(mode: MarkdownEditMode): void {
-            const self = this as any;
-            self._mode = mode;
-            for (const cls of Object.values(MODE_CLS_MAP)) {
-                self.toggleCls(cls, false);
-            }
-            self.toggleCls(MODE_CLS_MAP[mode], true);
-        },
-
-        _updatePreview(): void {
-            const self = this as any;
-            const previewEl = getPreviewEl(self);
-            if (previewEl) {
-                previewEl.innerHTML = self._engine.render(self._value);
-            }
-        },
-
-        onMdFieldInput(): void {
-            const self = this as any;
-            self._value = getEditorEl(self)?.value ?? '';
-            self._updatePreview();
-            if (self._autoSize) self._autoResize();
-            if (self._shouldValidate('input')) self._doValidate();
-        },
-
-        onMdFieldFocus(): void {
-            const self = this as any;
-            self._focused = true;
-            self._applyState();
-        },
-
-        onMdFieldBlur(): void {
-            const self = this as any;
-            self._focused = false;
-            self._applyState();
-            if (self._shouldValidate('blur')) self._doValidate();
-        },
-
-        onMdFieldChange(): void {
-            const self = this as any;
-            self._value = getEditorEl(self)?.value ?? '';
-            if (self._shouldValidate('change')) self._doValidate();
-        },
-
-        onMdFieldKeydown(data: any): void {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
-            if (!editorEl) return;
-
-            const e: KeyboardEvent = data?.originalEvent ?? data;
-            const key = e.key?.toLowerCase();
-
-            if (key === 'tab') {
-                e.preventDefault();
-                self._handleTab(editorEl, e.shiftKey);
-                self.onMdFieldInput();
-                return;
-            }
-
-            if (!e.ctrlKey && !e.metaKey) return;
-
-            const shortcut = self._shortcuts.find((s: MarkdownShortcutAction) => {
-                return (
-                    s.key === key &&
-                    !!s.ctrl === (e.ctrlKey || e.metaKey) &&
-                    !!s.shift === e.shiftKey &&
-                    !!s.alt === e.altKey
-                );
-            });
-
-            if (shortcut) {
-                e.preventDefault();
-                const ctx: ShortcutContext = {
-                    editor: editorEl,
-                    wrap(before, after, placeholder) {
-                        wrapSelection(editorEl, before, after, placeholder);
-                    },
-                    insertLine(prefix) {
-                        insertLinePrefix(editorEl, prefix);
-                    },
-                };
-                shortcut.handler(ctx);
-                self.onMdFieldInput();
-            }
-        },
-
-        _handleTab(el: HTMLTextAreaElement, shift: boolean): void {
-            const start = el.selectionStart;
-            const end = el.selectionEnd;
-            const val = el.value;
-
-            if (shift) {
-                const lineStart = val.lastIndexOf('\n', start - 1) + 1;
-                const linePrefix = val.substring(lineStart, lineStart + 4);
-                if (linePrefix === '    ' || linePrefix.startsWith('\t')) {
-                    const removeLen = linePrefix === '    ' ? 4 : 1;
-                    el.selectionStart = lineStart;
-                    el.selectionEnd = lineStart + removeLen;
-                    document.execCommand('delete');
-                }
-            } else {
-                el.selectionStart = start;
-                el.selectionEnd = end;
-                document.execCommand('insertText', false, '    ');
-            }
-        },
-
-        getEventData(nodeName: string, eventName: string, eventType: string): Record<string, any> {
-            const self = this as any;
-            return { value: self._value };
-        },
-
-        _autoResize(): void {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
-            if (!editorEl) return;
-
-            editorEl.style.height = 'auto';
-            const lineHeight = parseFloat(getComputedStyle(editorEl).lineHeight) || 20;
-            const paddingTop = parseFloat(getComputedStyle(editorEl).paddingTop) || 0;
-            const paddingBottom = parseFloat(getComputedStyle(editorEl).paddingBottom) || 0;
-            const baseHeight = paddingTop + paddingBottom;
-
-            const minH = baseHeight + lineHeight * self._minRows;
-            const maxH =
-                self._maxRows === Infinity ? Infinity : baseHeight + lineHeight * self._maxRows;
-
-            const scrollH = editorEl.scrollHeight;
-            const newH = Math.max(minH, Math.min(scrollH, maxH));
-
-            editorEl.style.height = `${newH}px`;
-            editorEl.style.overflow = scrollH > maxH ? 'auto' : 'hidden';
-        },
-
-        get value(): string {
-            const self = this as any;
-            return self._value;
-        },
-        set value(v: string) {
-            const self = this as any;
-            self._value = v;
-            const editorEl = getEditorEl(self);
-            if (editorEl && editorEl.value !== v) {
-                editorEl.value = v;
-            }
-            self._updatePreview();
-            if (self._autoSize) self._autoResize();
-        },
-
-        get disabled(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-md-editor--disabled');
-        },
-        set disabled(v: boolean) {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
-            if (editorEl) {
-                if (v) editorEl.setAttribute('disabled', 'true');
-                else editorEl.removeAttribute('disabled');
-            }
-            self.toggleCls('q-md-editor--disabled', v);
-        },
-
-        get readonly(): boolean {
-            const self = this as any;
-            return self.el.classList.contains('q-md-editor--readonly');
-        },
-        set readonly(v: boolean) {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
-            if (editorEl) {
-                if (v) editorEl.setAttribute('readonly', 'true');
-                else editorEl.removeAttribute('readonly');
-            }
-            self.toggleCls('q-md-editor--readonly', v);
-        },
-
-        get mode(): MarkdownEditMode {
-            const self = this as any;
-            return self._mode;
-        },
-        set mode(v: MarkdownEditMode) {
-            const self = this as any;
-            self._applyMode(v);
-        },
-
-        focus(): void {
-            getEditorEl(this)?.focus();
-        },
-
-        blur(): void {
-            getEditorEl(this)?.blur();
-        },
-
-        _applyState(): void {
-            const self = this as any;
-            self.toggleCls('q-md-editor--focused', self._focused);
-            self.toggleCls('q-md-editor--error', !!self._error);
-        },
-
-        getFormValue(): any {
-            const self = this as any;
-            return self._value;
-        },
-
-        setFormValue(v: any): void {
-            const self = this as any;
-            self.value = v;
-        },
-
-        getFormDisplayValue(): any {
-            const self = this as any;
-            return self._engine.render(self._value);
-        },
-
-        formReset(defaultValue?: any): void {
-            const self = this as any;
-            self.value = defaultValue ?? '';
-            self.error = '';
-        },
-
-        update(props?: Partial<MarkdownEditorProps>): void {
-            const self = this as any;
-            const editorEl = getEditorEl(self);
-
-            self._super.update(props);
-
-            if (props?.value !== undefined) self.value = props.value;
-            if (props?.placeholder !== undefined && editorEl) {
-                editorEl.setAttribute('placeholder', props.placeholder);
-            }
-            if (props?.rows !== undefined && editorEl) {
-                editorEl.setAttribute('rows', String(props.rows));
-            }
-            if (props?.disabled !== undefined) self.disabled = props.disabled;
-            if (props?.readonly !== undefined) self.readonly = props.readonly;
-            if (props?.mode !== undefined) self._applyMode(props.mode);
-            if (props?.autoSize !== undefined) {
-                self._autoSize = props.autoSize;
-                if (typeof props.autoSize === 'object') {
-                    self._minRows = props.autoSize.minRows ?? 1;
-                    self._maxRows = props.autoSize.maxRows ?? Infinity;
-                }
-                self._autoResize();
-            }
-        },
-    },
-});
-
-MarkdownEditorComponent.useTemplate(MARKDOWN_EDITOR_FIELD_BODY_TPL);
-
-export type MarkdownEditorComponent = InstanceType<typeof MarkdownEditorComponent>;
+MarkdownEditorComponent.useTemplate(MARKDOWN_EDITOR_TPL);
+export { MarkdownEditorComponent };
+export type MarkdownEditorComponentInstance = InstanceType<typeof MarkdownEditorComponent>;
