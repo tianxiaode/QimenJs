@@ -1,46 +1,44 @@
 /**
  * YearPanelComponent 年份选择面板
  *
- * 千位3按钮（0/1/2）+ 百十个位6列×5行数字矩阵。
+ * 4列统一布局：千/百/十/个位各一列，列头显示当前选中数字（如 2 0 2 6）。
+ * 千位列3个按钮（0/1/2）纵向排列。
+ * 百/十/个位列拆为左右两子列：左0-5、右6-9，控制高度。
  * 依次点4个数字（千/百/十/个），点完第4个数字触发 yearSelect。
- * 千位按钮通过 data-value 标记，数字矩阵格子通过 data-group + data-value 标记。
- * thousandsRow / digitGroups 容器委托 click。
- * confirmBtn 用 emits 自动转发 confirm 事件。
- * yearSelect 因4次点击才触发，在 handler 中手动 emit。
+ * 所有格子通过 data-position + data-value 标记，digitColumns 容器委托 click。
  *
- * 导航栏：← 返回 | ↶ 上一步 | 选择年份 | 确认 ✓
+ * 导航栏：[◀上一面板] [▶下一面板] [预览...] [✓确认] [✕取消]
  *
- * 事件：yearSelect / back / prev / confirm
+ * 事件：yearSelect / prevField / nextField / confirm / cancel
  */
 
 import { Component } from '@qimenjs/component-core';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
 import {
+    createDateTimeValue,
     generateYearDigits,
     splitToDigits,
     type DateTimeValue,
 } from '@/utils/date/datetime-picker';
+import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
 export interface YearPanelProps {
     value: DateTimeValue;
-    showPrev?: boolean;
+    previewData?: PanelPreviewData;
+    showPrevField?: boolean;
+    showNextField?: boolean;
 }
 
 type DigitPosition = 'thousands' | 'hundreds' | 'tens' | 'ones';
 
 const POSITION_ORDER: DigitPosition[] = ['thousands', 'hundreds', 'tens', 'ones'];
-const POSITION_LABELS: Record<DigitPosition, string> = {
-    thousands: '千位',
-    hundreds: '百位',
-    tens: '十位',
-    ones: '个位',
-};
 
 class YearPanelComponent extends Component {
-    _value: DateTimeValue | null = null;
+    _value: DateTimeValue = createDateTimeValue();
+    _previewData: PanelPreviewData | null = null;
     _currentPosition: DigitPosition = 'thousands';
-    _digits: { thousands: number; hundreds: number; tens: number; ones: number } = {
+    _digits: Record<DigitPosition, number> = {
         thousands: -1,
         hundreds: -1,
         tens: -1,
@@ -48,110 +46,123 @@ class YearPanelComponent extends Component {
     };
 
     onAfterInit(props?: YearPanelProps): void {
-        this._value = props?.value ?? {
-            year: 2026,
-            month: 1,
-            day: 1,
-            hour: 0,
-            minute: 0,
-            second: 0,
-        };
+        this._value = props?.value ?? createDateTimeValue();
+        this._previewData = props?.previewData ?? null;
         const [th, h, t, o] = splitToDigits(this._value.year);
         this._digits = { thousands: th, hundreds: h, tens: t, ones: o };
         this._currentPosition = 'thousands';
 
-        if (!props?.showPrev) {
-            this.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+        if (!props?.showPrevField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
+        }
+        if (!props?.showNextField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
-        this._renderThousands();
-        this._renderDigitGroups();
+        this._renderPreview();
+        this._renderColumns();
     }
 
-    onBackBtnClick(): void {
-        this.emit('back', {});
+    onPrevFieldBtnClick(): void {
+        this.emit('prevField', {});
     }
 
-    onPrevBtnClick(): void {
-        this.emit('prev', {});
+    onNextFieldBtnClick(): void {
+        this.emit('nextField', {});
     }
 
-    onConfirmBtnClick(): void {}
+    onConfirmBtnClick(): void {
+        this.emit('confirm', { value: this._value });
+    }
+
+    onCancelBtnClick(): void {
+        this.emit('cancel', {});
+    }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { value: this._value };
     }
 
-    onThousandsRowClick(e: Event): void {
+    onDigitColumnsClick(e: Event): void {
         const target = e.target as HTMLElement;
+        const position = target.dataset.position as DigitPosition | undefined;
         const digit = target.dataset.value;
-        if (digit === undefined) return;
-        this._onDigitSelect('thousands', parseInt(digit));
+        if (!position || digit === undefined) return;
+        this._onDigitSelect(position, parseInt(digit));
     }
 
-    onDigitGroupsClick(e: Event): void {
-        const target = e.target as HTMLElement;
-        const group = target.dataset.group as DigitPosition | undefined;
-        const digit = target.dataset.value;
-        if (!group || digit === undefined) return;
-        this._onDigitSelect(group, parseInt(digit));
+    _renderPreview(): void {
+        if (!this._previewData) return;
+        const previewEl = this._resolveNodeEl('preview');
+        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
     }
 
-    _renderThousands(): void {
-        const container = this._resolveNodeEl('thousandsRow');
+    _renderColumns(): void {
+        const container = this._resolveNodeEl('digitColumns');
         if (!container) return;
         container.innerHTML = '';
 
         const digits = generateYearDigits(this._value.year);
-        const label = document.createElement('span');
-        label.className = 'q-dtpanel__digit-label';
-        label.textContent = POSITION_LABELS.thousands;
-        container.appendChild(label);
 
-        for (const d of digits.thousands) {
-            const btn = document.createElement('button');
-            btn.className = 'q-dtpanel__high-btn';
-            btn.textContent = String(d);
-            btn.dataset.value = String(d);
-            if (this._digits.thousands === d) {
-                btn.classList.add('q-dtpanel__high-btn--active');
-            }
-            container.appendChild(btn);
-        }
-    }
+        for (const pos of POSITION_ORDER) {
+            const col = document.createElement('div');
+            col.className = 'q-dtpanel__digit-col';
 
-    _renderDigitGroups(): void {
-        const container = this._resolveNodeEl('digitGroups');
-        if (!container) return;
-        container.innerHTML = '';
+            const header = document.createElement('div');
+            header.className = 'q-dtpanel__digit-header';
+            header.textContent = this._digits[pos] >= 0 ? String(this._digits[pos]) : '–';
+            col.appendChild(header);
 
-        const groups: DigitPosition[] = ['hundreds', 'tens', 'ones'];
-        const digits = generateYearDigits(this._value.year);
-
-        for (const group of groups) {
-            const groupEl = document.createElement('div');
-            groupEl.className = 'q-dtpanel__digit-group';
-
-            const label = document.createElement('div');
-            label.className = 'q-dtpanel__digit-label';
-            label.textContent = POSITION_LABELS[group];
-            groupEl.appendChild(label);
-
-            const nums = digits[group];
-            for (const d of nums) {
-                const cell = document.createElement('div');
-                cell.className = 'q-dtpanel__cell';
-                cell.textContent = String(d);
-                cell.dataset.group = group;
-                cell.dataset.value = String(d);
-                if (this._digits[group] === d) {
-                    cell.classList.add('q-dtpanel__cell--active');
+            if (pos === 'thousands') {
+                for (const d of digits.thousands) {
+                    col.appendChild(
+                        this._createCell(
+                            d,
+                            pos,
+                            'q-dtpanel__high-btn',
+                            'q-dtpanel__high-btn--active'
+                        )
+                    );
                 }
-                groupEl.appendChild(cell);
+            } else {
+                const nums = digits[pos];
+                const splitIdx = nums.findIndex(d => d >= 6);
+                const leftNums = splitIdx >= 0 ? nums.slice(0, splitIdx) : nums;
+                const rightNums = splitIdx >= 0 ? nums.slice(splitIdx) : [];
+
+                const body = document.createElement('div');
+                body.className = 'q-dtpanel__digit-split';
+
+                const leftCol = document.createElement('div');
+                leftCol.className = 'q-dtpanel__digit-subcol';
+                for (const d of leftNums) leftCol.appendChild(this._createCell(d, pos));
+
+                const rightCol = document.createElement('div');
+                rightCol.className = 'q-dtpanel__digit-subcol';
+                for (const d of rightNums) rightCol.appendChild(this._createCell(d, pos));
+
+                body.appendChild(leftCol);
+                body.appendChild(rightCol);
+                col.appendChild(body);
             }
 
-            container.appendChild(groupEl);
+            container.appendChild(col);
         }
+    }
+
+    _createCell(
+        d: number,
+        pos: DigitPosition,
+        baseCls = 'q-dtpanel__cell',
+        activeCls = 'q-dtpanel__cell--active'
+    ): HTMLElement {
+        const cell = document.createElement('div');
+        cell.className = baseCls;
+        cell.textContent = String(d);
+        cell.dataset.position = pos;
+        cell.dataset.value = String(d);
+        if (this._digits[pos] === d) cell.classList.add(activeCls);
+        return cell;
     }
 
     _onDigitSelect(position: DigitPosition, digit: number): void {
@@ -164,9 +175,7 @@ class YearPanelComponent extends Component {
             (this._digits.ones >= 0 ? this._digits.ones : 0);
 
         this._value = { ...this._value, year };
-
-        this._renderThousands();
-        this._renderDigitGroups();
+        this._renderColumns();
 
         const posIdx = POSITION_ORDER.indexOf(position);
         const nextPos = POSITION_ORDER[posIdx + 1];

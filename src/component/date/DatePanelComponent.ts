@@ -19,7 +19,7 @@ import { DATE_PANEL_TPL } from './date-panel-tpl';
 import { addDays } from '@/utils/date/calculation/days';
 import { addMonths } from '@/utils/date/calculation/months';
 import { addYears } from '@/utils/date/calculation/years';
-import { clampDay, type DateTimeValue } from '@/utils/date/datetime-picker';
+import { clampDay, createDateTimeValue, type DateTimeValue } from '@/utils/date/datetime-picker';
 import './date-panel.css';
 
 export interface DatePanelProps {
@@ -27,19 +27,12 @@ export interface DatePanelProps {
 }
 
 class DatePanelComponent extends Component {
-    _value: DateTimeValue | null = null;
+    _value: DateTimeValue = createDateTimeValue();
     _viewYear: number = 2026;
     _viewMonth: number = 1;
 
     onAfterInit(props?: DatePanelProps): void {
-        this._value = props?.value ?? {
-            year: 2026,
-            month: 1,
-            day: 1,
-            hour: 0,
-            minute: 0,
-            second: 0,
-        };
+        this._value = props?.value ?? createDateTimeValue();
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
 
@@ -56,11 +49,17 @@ class DatePanelComponent extends Component {
         this._updateLabel();
     }
 
-    onBackBtnClick(): void {
-        this.emit('back', {});
+    onPrevFieldBtnClick(): void {
+        this.emit('prevField', {});
     }
 
-    onConfirmBtnClick(): void {}
+    onConfirmBtnClick(): void {
+        this.emit('confirm', { value: this._value });
+    }
+
+    onCancelBtnClick(): void {
+        this.emit('cancel', {});
+    }
 
     onPrev10yClick(): void {
         this._navigate(-10, 0);

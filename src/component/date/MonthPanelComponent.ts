@@ -5,39 +5,43 @@
  * 初始化时创建 12 个固定 cell，update 时只更新内容和样式。
  * 月份标签从 i18nConfig() 获取 monthsShort，locale 切换自动刷新。
  *
- * 事件：monthSelect / back / prev / confirm
+ * 导航栏：[◀上一面板] [▶下一面板] [预览...] [✓确认] [✕取消]
+ *
+ * 事件：monthSelect / prevField / nextField / confirm / cancel
  */
 
 import { Component } from '@qimenjs/component-core';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
-import type { DateTimeValue } from '@/utils/date/datetime-picker';
+import { createDateTimeValue, type DateTimeValue } from '@/utils/date/datetime-picker';
+import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
 export interface MonthPanelProps {
     value: DateTimeValue;
-    showPrev?: boolean;
+    previewData?: PanelPreviewData;
+    showPrevField?: boolean;
+    showNextField?: boolean;
 }
 
 const TOTAL_MONTHS = 12;
 
 class MonthPanelComponent extends Component {
-    _value: DateTimeValue | null = null;
+    _value: DateTimeValue = createDateTimeValue();
+    _previewData: PanelPreviewData | null = null;
     _cells: HTMLElement[] = [];
 
     onAfterInit(props?: MonthPanelProps): void {
-        this._value = props?.value ?? {
-            year: 2026,
-            month: 1,
-            day: 1,
-            hour: 0,
-            minute: 0,
-            second: 0,
-        };
+        this._value = props?.value ?? createDateTimeValue();
+        this._previewData = props?.previewData ?? null;
 
-        if (!props?.showPrev) {
-            this.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+        if (!props?.showPrevField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
+        }
+        if (!props?.showNextField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
+        this._renderPreview();
         this._createCells();
         this._applyCells();
     }
@@ -46,15 +50,21 @@ class MonthPanelComponent extends Component {
         this._applyCells();
     }
 
-    onBackBtnClick(): void {
-        this.emit('back', {});
+    onPrevFieldBtnClick(): void {
+        this.emit('prevField', {});
     }
 
-    onPrevBtnClick(): void {
-        this.emit('prev', {});
+    onNextFieldBtnClick(): void {
+        this.emit('nextField', {});
     }
 
-    onConfirmBtnClick(): void {}
+    onConfirmBtnClick(): void {
+        this.emit('confirm', { value: this._value });
+    }
+
+    onCancelBtnClick(): void {
+        this.emit('cancel', {});
+    }
 
     onGridClick(e: Event): void {
         const target = e.target as HTMLElement;
@@ -67,6 +77,12 @@ class MonthPanelComponent extends Component {
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { value: this._value };
+    }
+
+    _renderPreview(): void {
+        if (!this._previewData) return;
+        const previewEl = this._resolveNodeEl('preview');
+        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
     }
 
     _getMonthsShort(): string[] | undefined {

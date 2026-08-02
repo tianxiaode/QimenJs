@@ -5,8 +5,8 @@
  * InputFieldBody 已预留 dropdownIcon 节点，DatePicker 开启该节点。
  * field 设为 readonly，通过下拉面板选择值。
  *
- * 预览栏显示完整日期时间，单击字段进入对应面板，选完自动流转。
- * 导航栏三按钮：← 返回（放弃修改）| ↶ 上一步 | 确认 ✓（保存+结束流转）
+ * 面板导航栏内嵌预览，单击字段进入对应面板，选完自动流转。
+ * 导航栏：[◀上一面板] [▶下一面板] [预览...] [✓确认] [✕取消]
  *
  * 面板组件在 date/ 目录下独立存在，可复用。
  * DatePicker 只负责：Input + 浮动层 + 面板切换 + 流转逻辑。
@@ -37,6 +37,7 @@ import {
     type DateTimeField,
     type DateTimeValue,
 } from '@/utils/date/datetime-picker';
+import type { PanelPreviewData } from '../date/panel-preview';
 import './datepicker.css';
 
 export interface DatePickerProps extends Omit<InputProps, 'value' | 'type'> {
@@ -57,7 +58,6 @@ class DatePickerComponent extends InputComponent {
     _flowQueue: DateTimeField[] = [];
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
-    _previewEl: HTMLElement | null = null;
 
     onAfterInit(props?: DatePickerProps): void {
         super.onAfterInit(props);
@@ -137,10 +137,6 @@ class DatePickerComponent extends InputComponent {
             this._panelEl.remove();
             this._panelEl = null;
         }
-        if (this._previewEl) {
-            this._previewEl.remove();
-            this._previewEl = null;
-        }
 
         this._currentField = null;
         this._flowQueue = [];
@@ -153,6 +149,14 @@ class DatePickerComponent extends InputComponent {
         this._renderPanel();
     }
 
+    _getPreviewData(): PanelPreviewData {
+        return {
+            value: this._dateValue!,
+            activeField: this._currentField!,
+            showSeconds: this._showSeconds,
+        };
+    }
+
     _renderPanel(): void {
         if (this._panelCmp) {
             this._panelCmp.el?.remove();
@@ -162,15 +166,9 @@ class DatePickerComponent extends InputComponent {
             this._panelEl.remove();
             this._panelEl = null;
         }
-        if (this._previewEl) {
-            this._previewEl.remove();
-            this._previewEl = null;
-        }
 
         const container = document.createElement('div');
         container.className = 'q-datepicker__dropdown';
-
-        this._renderPreview(container);
 
         const panelContainer = document.createElement('div');
         panelContainer.className = 'q-datepicker__panel-area';
@@ -178,17 +176,29 @@ class DatePickerComponent extends InputComponent {
         const field = this._currentField!;
         const value = this._dateValue!;
         const flowIdx = FIELD_ORDER.indexOf(field);
-        const showPrev = flowIdx > 0;
+        const showPrevField = flowIdx > 0;
+        const showNextField = flowIdx < FIELD_ORDER.length - 1;
+        const previewData = this._getPreviewData();
 
         let panelCmp: any = null;
 
         switch (field) {
             case 'year':
-                panelCmp = new YearPanelComponent({ value, showPrev });
+                panelCmp = new YearPanelComponent({
+                    value,
+                    previewData,
+                    showPrevField,
+                    showNextField,
+                });
                 panelCmp.on('yearSelect', (data: any) => this._onAutoNext(data.value));
                 break;
             case 'month':
-                panelCmp = new MonthPanelComponent({ value, showPrev });
+                panelCmp = new MonthPanelComponent({
+                    value,
+                    previewData,
+                    showPrevField,
+                    showNextField,
+                });
                 panelCmp.on('monthSelect', (data: any) => this._onAutoNext(data.value));
                 break;
             case 'day':
@@ -197,23 +207,40 @@ class DatePickerComponent extends InputComponent {
                 panelCmp.on('navigate', (_data: any) => this._switchPanel('month'));
                 break;
             case 'hour':
-                panelCmp = new HourPanelComponent({ value, showPrev });
+                panelCmp = new HourPanelComponent({
+                    value,
+                    previewData,
+                    showPrevField,
+                    showNextField,
+                });
                 panelCmp.on('hourSelect', (data: any) => this._onAutoNext(data.value));
                 break;
             case 'minute':
-                panelCmp = new MinutePanelComponent({ value, showPrev });
+                panelCmp = new MinutePanelComponent({
+                    value,
+                    previewData,
+                    showPrevField,
+                    showNextField,
+                });
                 panelCmp.on('minuteSelect', (data: any) => this._onAutoNext(data.value));
                 break;
             case 'second':
-                panelCmp = new SecondPanelComponent({ value, showPrev });
+                panelCmp = new SecondPanelComponent({
+                    value,
+                    previewData,
+                    showPrevField,
+                    showNextField,
+                });
                 panelCmp.on('secondSelect', (data: any) => this._onAutoNext(data.value));
                 break;
         }
 
         if (panelCmp) {
-            panelCmp.on('back', () => this._onBack());
-            panelCmp.on('prev', () => this._onPrev());
+            panelCmp.on('prevField', () => this._onPrevField());
+            panelCmp.on('nextField', () => this._onNextField());
             panelCmp.on('confirm', (data: any) => this._onConfirm(data.value));
+            panelCmp.on('cancel', () => this._onCancel());
+            panelCmp.on('navigate', (data: any) => this._switchPanel(data.field));
             panelContainer.appendChild(panelCmp.el);
             this._panelCmp = panelCmp;
         }
@@ -225,57 +252,6 @@ class DatePickerComponent extends InputComponent {
         if (wrapperEl) {
             wrapperEl.appendChild(container);
         }
-    }
-
-    _renderPreview(container: HTMLElement): void {
-        const preview = document.createElement('div');
-        preview.className = 'q-dtpanel__preview';
-
-        const value = this._dateValue!;
-        const fields: { key: DateTimeField; text: string }[] = [
-            { key: 'year', text: String(value.year).padStart(4, '0') },
-            { key: 'month', text: String(value.month).padStart(2, '0') },
-            { key: 'day', text: String(value.day).padStart(2, '0') },
-            { key: 'hour', text: String(value.hour).padStart(2, '0') },
-            { key: 'minute', text: String(value.minute).padStart(2, '0') },
-        ];
-        if (this._showSeconds) {
-            fields.push({ key: 'second', text: String(value.second).padStart(2, '0') });
-        }
-
-        const separators: Record<string, string> = {
-            year: '年',
-            month: '月',
-            day: '日',
-            hour: ':',
-            minute: ':',
-        };
-
-        for (let i = 0; i < fields.length; i++) {
-            const f = fields[i];
-            const span = document.createElement('span');
-            span.className = 'q-dtpanel__preview-field';
-            if (this._currentField === f.key) {
-                span.classList.add('q-dtpanel__preview-field--active');
-            }
-            span.textContent = f.text;
-            span.addEventListener('click', e => {
-                e.stopPropagation();
-                this._switchPanel(f.key);
-            });
-            preview.appendChild(span);
-
-            const sep = separators[f.key];
-            if (sep) {
-                const sepSpan = document.createElement('span');
-                sepSpan.className = 'q-dtpanel__preview-sep';
-                sepSpan.textContent = sep;
-                preview.appendChild(sepSpan);
-            }
-        }
-
-        container.appendChild(preview);
-        this._previewEl = preview;
     }
 
     _onAutoNext(newValue: DateTimeValue): void {
@@ -293,16 +269,17 @@ class DatePickerComponent extends InputComponent {
         }
     }
 
-    _onBack(): void {
-        this._dateValue = { ...this._originalValue! };
-        this._syncDisplayValue();
-        this._closeDropdown();
-    }
-
-    _onPrev(): void {
+    _onPrevField(): void {
         const idx = FIELD_ORDER.indexOf(this._currentField!);
         if (idx > 0) {
             this._switchPanel(FIELD_ORDER[idx - 1]);
+        }
+    }
+
+    _onNextField(): void {
+        const idx = FIELD_ORDER.indexOf(this._currentField!);
+        if (idx < FIELD_ORDER.length - 1) {
+            this._switchPanel(FIELD_ORDER[idx + 1]);
         }
     }
 
@@ -313,6 +290,12 @@ class DatePickerComponent extends InputComponent {
         this._syncDisplayValue();
         this._closeDropdown();
         this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
+    }
+
+    _onCancel(): void {
+        this._dateValue = { ...this._originalValue! };
+        this._syncDisplayValue();
+        this._closeDropdown();
     }
 
     _syncDisplayValue(): void {

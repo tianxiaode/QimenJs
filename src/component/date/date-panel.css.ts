@@ -6,6 +6,7 @@
  * - 导航栏（返回/上一步/标题/确认）
  * - 数字矩阵网格
  * - 高位按钮行（千位/十位）
+ * - 年份4列布局
  * - 预览栏
  * - 日期网格特有样式
  */
@@ -21,6 +22,17 @@ export const datePanelCSS = `
     --q-dtpanel-nav-height: 32px;
     --q-dtpanel-font-size: 14px;
     --q-dtpanel-title-font-size: 13px;
+    --q-dtpanel-max-height: 320px;
+
+    --q-dtpanel-icon-font: inherit;
+    --q-dtpanel-icon-weight: inherit;
+
+    --q-dtpanel-icon-prev: '◀';
+    --q-dtpanel-icon-next: '▶';
+    --q-dtpanel-icon-up: '▲';
+    --q-dtpanel-icon-down: '▼';
+    --q-dtpanel-icon-confirm: '✓';
+    --q-dtpanel-icon-cancel: '✕';
 }
 
 /* ═══════════════════════════════════════════════════
@@ -35,19 +47,21 @@ export const datePanelCSS = `
     box-sizing: border-box;
     padding: 4px 0;
     user-select: none;
+    max-height: var(--q-dtpanel-max-height);
+    overflow-y: auto;
 }
 
 /* ═══════════════════════════════════════════════════
- * 导航栏
+ * 导航栏 — 单行: [◀ prev] [▶ next] [preview...] [✓] [✕]
  * ═══════════════════════════════════════════════════ */
 
 .q-dtpanel__nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     height: var(--q-dtpanel-nav-height);
-    padding: 0 8px;
+    padding: 0 4px;
     border-bottom: 1px solid var(--q-colors-border-light, #e8e8e8);
+    gap: 2px;
 }
 
 .q-dtpanel__nav-btn {
@@ -56,7 +70,7 @@ export const datePanelCSS = `
     justify-content: center;
     min-width: 28px;
     height: 28px;
-    padding: 0 6px;
+    padding: 0 4px;
     border: none;
     background: transparent;
     color: var(--q-colors-text-secondary, #666);
@@ -64,6 +78,7 @@ export const datePanelCSS = `
     cursor: pointer;
     border-radius: 0;
     transition: background 0.1s, color 0.1s;
+    flex-shrink: 0;
 }
 
 .q-dtpanel__nav-btn:hover {
@@ -81,10 +96,33 @@ export const datePanelCSS = `
     color: var(--q-colors-text-disabled, #bfbfbf);
 }
 
-.q-dtpanel__nav-title {
+.q-dtpanel__nav-btn--prev::after { content: var(--q-dtpanel-icon-prev); }
+.q-dtpanel__nav-btn--next::after { content: var(--q-dtpanel-icon-next); }
+.q-dtpanel__nav-btn--up::after { content: var(--q-dtpanel-icon-up); }
+.q-dtpanel__nav-btn--down::after { content: var(--q-dtpanel-icon-down); }
+.q-dtpanel__nav-btn--confirm::after { content: var(--q-dtpanel-icon-confirm); }
+.q-dtpanel__nav-btn--cancel::after { content: var(--q-dtpanel-icon-cancel); }
+
+.q-dtpanel__nav-btn--prev::after,
+.q-dtpanel__nav-btn--next::after,
+.q-dtpanel__nav-btn--up::after,
+.q-dtpanel__nav-btn--down::after,
+.q-dtpanel__nav-btn--confirm::after,
+.q-dtpanel__nav-btn--cancel::after {
+    font-family: var(--q-dtpanel-icon-font);
+    font-weight: var(--q-dtpanel-icon-weight);
+}
+
+.q-dtpanel__nav-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    gap: 1px;
     font-size: var(--q-dtpanel-title-font-size);
-    font-weight: 600;
     color: var(--q-colors-text, #1a1a1a);
+    overflow: hidden;
 }
 
 .q-dtpanel__nav-confirm {
@@ -96,26 +134,24 @@ export const datePanelCSS = `
     color: var(--q-colors-primary-dark, #005a9e);
 }
 
-/* ═══════════════════════════════════════════════════
- * 预览栏
- * ═══════════════════════════════════════════════════ */
-
-.q-dtpanel__preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--q-dtpanel-nav-height);
-    font-size: var(--q-dtpanel-font-size);
-    color: var(--q-colors-text, #1a1a1a);
-    gap: 2px;
-    padding: 0 8px;
+.q-dtpanel__nav-cancel {
+    color: var(--q-colors-text-secondary, #666);
 }
+
+.q-dtpanel__nav-cancel:hover {
+    color: var(--q-colors-danger, #d13438);
+}
+
+/* ═══════════════════════════════════════════════════
+ * 导航栏内预览字段
+ * ═══════════════════════════════════════════════════ */
 
 .q-dtpanel__preview-field {
     cursor: pointer;
     padding: 0 2px;
     border-bottom: 2px solid transparent;
     transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
 }
 
 .q-dtpanel__preview-field:hover {
@@ -128,19 +164,9 @@ export const datePanelCSS = `
     border-bottom-color: var(--q-colors-primary, #0078d4);
 }
 
-.q-dtpanel__preview-field--corrected {
-    color: var(--q-colors-warning, #d48c06);
-    animation: q-dtpanel-flash 0.6s ease;
-}
-
-@keyframes q-dtpanel-flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
 .q-dtpanel__preview-sep {
     color: var(--q-colors-text-secondary, #666);
-    margin: 0 1px;
+    flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -229,31 +255,45 @@ export const datePanelCSS = `
 }
 
 /* ═══════════════════════════════════════════════════
- * 年份面板 — 百十个位分组
+ * 年份面板 — 4列统一布局（千/百/十/个位）
  * ═══════════════════════════════════════════════════ */
 
-.q-dtpanel__digit-groups {
+.q-dtpanel__digit-columns {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    padding: 4px 12px 8px;
+    gap: 8px;
+    padding: 8px 12px;
 }
 
-.q-dtpanel__digit-group {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
+.q-dtpanel__digit-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
-.q-dtpanel__digit-label {
+.q-dtpanel__digit-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 20px;
-    font-size: 11px;
-    color: var(--q-colors-text-secondary, #666);
-    grid-column: 1 / -1;
+    min-width: 56px;
+    height: 28px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--q-colors-primary, #0078d4);
+    border-bottom: 2px solid var(--q-colors-primary, #0078d4);
 }
+
+.q-dtpanel__digit-split {
+    display: flex;
+    gap: 2px;
+}
+
+.q-dtpanel__digit-subcol {
+    display: flex;
+    flex-direction: column;
+}
+
 
 /* ═══════════════════════════════════════════════════
  * 日期面板特有

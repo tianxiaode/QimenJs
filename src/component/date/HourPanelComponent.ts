@@ -1,53 +1,61 @@
 /**
  * HourPanelComponent 小时选择面板
  *
- * 6列×4行，直接显示0-23。点1个数字即选中，触发 autoNext。
+ * 4列×6行，直接显示0-23。点1个数字即选中，触发 autoNext。
  * 数字格子通过 data-value 标记，grid 容器委托 click。
  *
- * 导航栏：← 返回 | ↶ 上一步 | 选择小时 | 确认 ✓
+ * 导航栏：[◀上一面板] [▶下一面板] [预览...] [✓确认] [✕取消]
  *
- * 事件：hourSelect / back / prev / confirm
+ * 事件：hourSelect / prevField / nextField / confirm / cancel
  */
 
 import { Component } from '@qimenjs/component-core';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
-import type { DateTimeValue } from '@/utils/date/datetime-picker';
+import { createDateTimeValue, type DateTimeValue } from '@/utils/date/datetime-picker';
+import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
 export interface HourPanelProps {
     value: DateTimeValue;
-    showPrev?: boolean;
+    previewData?: PanelPreviewData;
+    showPrevField?: boolean;
+    showNextField?: boolean;
 }
 
 class HourPanelComponent extends Component {
-    _value: DateTimeValue | null = null;
+    _value: DateTimeValue = createDateTimeValue();
+    _previewData: PanelPreviewData | null = null;
 
     onAfterInit(props?: HourPanelProps): void {
-        this._value = props?.value ?? {
-            year: 2026,
-            month: 1,
-            day: 1,
-            hour: 0,
-            minute: 0,
-            second: 0,
-        };
+        this._value = props?.value ?? createDateTimeValue();
+        this._previewData = props?.previewData ?? null;
 
-        if (!props?.showPrev) {
-            this.addCls('q-dtpanel__nav-btn--disabled', 'prevBtn');
+        if (!props?.showPrevField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
+        }
+        if (!props?.showNextField) {
+            this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
+        this._renderPreview();
         this._renderGrid();
     }
 
-    onBackBtnClick(): void {
-        this.emit('back', {});
+    onPrevFieldBtnClick(): void {
+        this.emit('prevField', {});
     }
 
-    onPrevBtnClick(): void {
-        this.emit('prev', {});
+    onNextFieldBtnClick(): void {
+        this.emit('nextField', {});
     }
 
-    onConfirmBtnClick(): void {}
+    onConfirmBtnClick(): void {
+        this.emit('confirm', { value: this._value });
+    }
+
+    onCancelBtnClick(): void {
+        this.emit('cancel', {});
+    }
 
     onGridClick(e: Event): void {
         const target = e.target as HTMLElement;
@@ -60,6 +68,12 @@ class HourPanelComponent extends Component {
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { value: this._value };
+    }
+
+    _renderPreview(): void {
+        if (!this._previewData) return;
+        const previewEl = this._resolveNodeEl('preview');
+        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
     }
 
     _renderGrid(): void {

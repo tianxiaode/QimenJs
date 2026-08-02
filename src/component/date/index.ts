@@ -34,3 +34,4 @@ export {
     type DatePanelComponentInstance,
 } from './DatePanelComponent';
 export { datePanelCSS } from './date-panel.css';
+export { renderPreview, type PanelPreviewData } from './panel-preview';
