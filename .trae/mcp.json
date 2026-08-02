@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "qimen-src": {
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-server/bootstrap.js"],
+      "env": {
+        "START_MCP_TIMEOUT_MS": "30000",
+        "RUN_MCP_TIMEOUT_MS": "60000"
+      }
+    }
+  }
+}

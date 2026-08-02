@@ -31,7 +31,9 @@
     "dev": "tsc --watch",
     "generate:test": "node scripts/generate-tests.js",
     "generate:test:custom": "node scripts/generate-tests.js --src src --test test/unit",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "mcp": "node mcp-server/bootstrap.js",
+    "mcp:inspect": "npx -y @modelcontextprotocol/inspector npm run mcp"
   },
   "author": "Huang Dengqiao",
   "license": "MIT",
@@ -70,5 +72,9 @@
   },
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
   }
 }
