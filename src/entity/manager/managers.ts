@@ -1,7 +1,7 @@
 import { BaseEntityManager } from './BaseEntityManager';
 import { withAbilities } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '@/entity';
+import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '../types';
 import type { IEntity } from '@/schema';
 import {
     FlatLocalStateAbility,
@@ -28,7 +28,7 @@ import {
     TreeLifecycleAbility,
     TreeSearchAbility,
     TreeViewAbility,
-} from '@/entity';
+} from '../abilities';
 
 // ============================================
 // LocalReadonlyEntityManager
@@ -51,7 +51,7 @@ export abstract class LocalReadonlyEntityManager<
     search: TSearch = {} as TSearch;
 }
 
-withAbilities(LocalReadonlyEntityManager, LOCAL_READONLY_ABILITIES);
+BaseEntityManager.use(LOCAL_READONLY_ABILITIES);
 
 export interface LocalReadonlyEntityManager extends InferAbilities<
     typeof LOCAL_READONLY_ABILITIES
@@ -80,7 +80,7 @@ export abstract class LocalCrudEntityManager<
     search: TSearch = {} as TSearch;
 }
 
-withAbilities(LocalCrudEntityManager, LOCAL_CRUD_ABILITIES);
+LocalCrudEntityManager.use(LOCAL_CRUD_ABILITIES);
 
 export interface LocalCrudEntityManager extends InferAbilities<typeof LOCAL_CRUD_ABILITIES> {}
 
@@ -115,7 +115,7 @@ export abstract class RemoteReadonlyEntityManager<
     hasMore: boolean = false;
 }
 
-withAbilities(RemoteReadonlyEntityManager, REMOTE_READONLY_ABILITIES);
+RemoteReadonlyEntityManager.use(REMOTE_READONLY_ABILITIES);
 
 export interface RemoteReadonlyEntityManager extends InferAbilities<
     typeof REMOTE_READONLY_ABILITIES
@@ -156,7 +156,7 @@ export abstract class RemoteCrudEntityManager<
     hasMore: boolean = false;
 }
 
-withAbilities(RemoteCrudEntityManager, REMOTE_CRUD_ABILITIES);
+RemoteCrudEntityManager.use(REMOTE_CRUD_ABILITIES);
 
 export interface RemoteCrudEntityManager extends InferAbilities<typeof REMOTE_CRUD_ABILITIES> {}
 
@@ -194,6 +194,6 @@ export abstract class RemoteTreeEntityManager<
     expandedIds: Set<string | number> = new Set();
 }
 
-withAbilities(RemoteTreeEntityManager, REMOTE_TREE_ABILITIES);
+RemoteTreeEntityManager.use(REMOTE_TREE_ABILITIES);
 
 export interface RemoteTreeEntityManager extends InferAbilities<typeof REMOTE_TREE_ABILITIES> {}

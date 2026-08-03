@@ -90,6 +90,18 @@ export const ENTITY_VALIDATION_EVENTS = {
 } as const;
 
 // ============================================
+// 词典事件（DictionaryManager 触发）
+// ============================================
+export const DICTIONARY_EVENTS = {
+    /** 词典数据加载完成 */
+    LOADED: 'dictLoaded',
+    /** 词典数据过滤完成 */
+    FILTERED: 'dictFiltered',
+    /** 词典数据排序完成 */
+    SORTED: 'dictSorted',
+} as const;
+
+// ============================================
 // 请求状态事件（BaseEntityManager.fetch 触发）
 //
 // 格式为 {action}:{status}，action 来自 ENTITY_ACTION 枚举，

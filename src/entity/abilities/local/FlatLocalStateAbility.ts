@@ -1,5 +1,5 @@
 ﻿import type { AbilityDefinition } from '@/composable';
-import type { ILocalChangeSet, IDeletionPlan } from '@/entity';
+import type { ILocalChangeSet, IDeletionPlan } from '../../types';
 import { CacheFactory } from '@/cache';
 import type { ICacheProvider } from '@/cache';
 import { array } from '@qimenjs/utils';

@@ -5,12 +5,12 @@
  * 供 file 包和 component 包统一引用，消除硬编码字符串。
  *
  * 设计说明：
- * - 采用"命令事件 + 反馈事件"对称模式（参照 EntityDispatchCenter / EntityEventBusAbility）：
+ * - 采用"命令事件 + 反馈事件"对称模式（参照 DataDispatchCenter / EntityEventBusAbility）：
  *   组件通过 FileEventBusAbility 的 fileEmit 发送命令事件，
  *   中心监听命令执行后通过 FileEventBus 广播反馈事件，组件用 fileOn 接收。
  * - 通道生命周期（createChannel / connect / disconnect）仍为直接调用，
  *   因中心需按 fileKey 注册命令监听器（事件总线按精确 key 订阅），
- *   与 EntityDispatchCenter.register 为直接调用同理。
+ *   与 DataDispatchCenter.register 为直接调用同理。
  * - 多个组件订阅同一 fileKey 的反馈事件，可感知同一通道状态变化。
  */
 

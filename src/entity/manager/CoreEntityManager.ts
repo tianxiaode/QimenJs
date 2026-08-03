@@ -3,8 +3,8 @@ import type { InferAbilities } from '@/composable';
 import { EventAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
-import { SchemaAbility } from '@/entity';
-import type { ENTITY_ACTION } from '@/entity';
+import { SchemaAbility } from '../abilities/SchemaAbility';
+import type { ENTITY_ACTION } from '../types';
 import type { Schema, RegistrSchema } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http';
 import type { RequestContext } from '@/context';
@@ -16,6 +16,7 @@ import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission';
 import type { PermissionQuery } from '@/permission';
 import { EntityEventBus } from '@/events';
+import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
 export const CORE_ENTITY_ABILITIES = [
     EventAbility,
@@ -48,10 +49,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     static register(): void {
-        const { entityDispatchCenter } = require('../dispatch/EntityDispatchCenter') as {
-            entityDispatchCenter: import('../dispatch/EntityDispatchCenter').EntityDispatchCenter;
-        };
-        entityDispatchCenter.registerType(this.entityType, this as any);
+        dataDispatchCenter.registerType(this.entityType, this as any);
     }
 
     protected entityEmit(event: string, data?: any): void {
@@ -176,6 +174,6 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 }
 
-withAbilities(CoreEntityManager, CORE_ENTITY_ABILITIES);
+CoreEntityManager.use(CORE_ENTITY_ABILITIES);
 
 export interface CoreEntityManager extends InferAbilities<typeof CORE_ENTITY_ABILITIES> {}

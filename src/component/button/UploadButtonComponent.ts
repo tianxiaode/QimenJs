@@ -100,7 +100,7 @@ export let UploadButtonComponent = ButtonComponent.replace({
                 self._listClickBound = false;
             }
 
-            // 通道生命周期：直接调用（与 EntityDispatchCenter.connect 同理）
+            // 通道生命周期：直接调用（与 DataDispatchCenter.connect 同理）
             if (self._fileKey) {
                 fileDispatchCenter.disconnect(self._fileKey);
             }

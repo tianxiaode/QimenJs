@@ -1,8 +1,4 @@
-export {
-    EntityDispatchCenter,
-    entityDispatchCenter,
-    validateEntityEvent,
-} from './EntityDispatchCenter';
+export { DataDispatchCenter, dataDispatchCenter, validateEntityEvent } from './DataDispatchCenter';
 export type {
     EntityDefinitions,
     EntityDefinition,

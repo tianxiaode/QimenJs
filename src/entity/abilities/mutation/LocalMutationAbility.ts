@@ -1,5 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
-import type { IDeletionPlan, ILocalChangeSet } from '@/entity';
+import type { IDeletionPlan, ILocalChangeSet } from '../../types';
 
 /**
  * LocalMutationAbility - 本地变更集能力
