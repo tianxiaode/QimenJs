@@ -5,7 +5,7 @@
  * DatePicker 通过 props 传入 previewData，面板在 onAfterInit 中调用 renderPreview。
  */
 
-import type { DateTimeField, DateTimeValue } from '@/utils/date/datetime-picker';
+import type { DateTimeField, DateTimeValue } from '@/utils/date';
 
 export interface PanelPreviewData {
     value: DateTimeValue;

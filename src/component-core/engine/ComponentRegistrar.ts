@@ -28,7 +28,7 @@
 import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { CompileEngine } from './CompileEngine';
 import { TplInspector } from './TplInspector';
-import { clone } from '@/utils/object/clone';
+import { clone } from '@/utils/object';
 import { NodeMapManager } from '../NodeMapManager';
 import type { TplNode } from '../types/tpl-node-types';
 import type { ComponentEntry, CompiledProduct } from '../types/template-registrar';
@@ -320,7 +320,8 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
         console.log('');
         for (const [name, entry] of entries) {
             const replaceInfo = entry.replaceFrom ? ` ← replace from ${entry.replaceFrom}` : '';
-            const tplNameInfo = entry.tplName && entry.tplName !== name ? ` → tplName ${entry.tplName}` : '';
+            const tplNameInfo =
+                entry.tplName && entry.tplName !== name ? ` → tplName ${entry.tplName}` : '';
             const isTplOwner = entry.tpl && this.storage.tplRefs.get(entry.tpl) === name;
             const ownerTag = isTplOwner ? ' 👑' : '';
             console.log(`  📄 ${name}${replaceInfo}${tplNameInfo}${ownerTag}`);

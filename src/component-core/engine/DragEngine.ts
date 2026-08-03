@@ -20,7 +20,7 @@ import type { DragDecl, DropDecl } from '../types/tpl-node-types';
 import { EventContextBuilder } from '@/context';
 import { DRAG_ACTIONS } from '@/events/drag-events';
 import { dragDispatchCenter } from '@/drag/DragDispatchCenter';
-import { getId } from '@/utils/string/id';
+import { getId } from '@/utils/string';
 
 // ══════════════════════════════════════════════════════════════
 // DragEngine 单例类
@@ -91,11 +91,7 @@ export class DragEngine {
 
     // ── Diff & Sync ──
 
-    syncDrags(
-        self: any,
-        prev: Record<string, DragDecl>,
-        next: Record<string, DragDecl>
-    ): void {
+    syncDrags(self: any, prev: Record<string, DragDecl>, next: Record<string, DragDecl>): void {
         this.ensureComponentId(self);
 
         const prevKeys = Object.keys(prev);
@@ -195,9 +191,9 @@ export class DragEngine {
             }
             // 2c. 没有模板 drag 节点，默认 self
             if (!effectiveHandle) {
-                const hasTemplateDrag = nodeMap && Object.keys(nodeMap).some(
-                    (n: string) => n !== 'root' && nodeMap[n]?.drag
-                );
+                const hasTemplateDrag =
+                    nodeMap &&
+                    Object.keys(nodeMap).some((n: string) => n !== 'root' && nodeMap[n]?.drag);
                 if (!hasTemplateDrag) {
                     if (!cache['self']) {
                         cache['self'] = handleConfig as DragDecl;

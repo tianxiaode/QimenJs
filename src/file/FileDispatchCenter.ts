@@ -33,8 +33,8 @@ import { EventContextBuilder } from '@/context';
 import { HttpClient } from '@/http/HttpClient';
 import { KernelErrorCode } from '@/error';
 import { createHashTask } from '@/task/hash-task';
-import { triggerDownload } from '@/utils/download';
-import { getId } from '@/utils/string/id';
+import { triggerDownload } from '@/utils';
+import { getId } from '@/utils/string';
 import { MimeTypeRegistrar } from '@/mime';
 import { ILogger, Logger } from '@qimenjs/logger';
 import { isFileTypeAllowed } from './format';
@@ -389,9 +389,7 @@ export class FileDispatchCenter {
             contentType = context.data.type;
         }
 
-        const ext = contentType
-            ? MimeTypeRegistrar.getInstance().getByMime(contentType)
-            : '';
+        const ext = contentType ? MimeTypeRegistrar.getInstance().getByMime(contentType) : '';
         const extPart = ext || 'bin';
 
         return `File_${date}_${getId('dl')}.${extPart}`;
@@ -582,7 +580,11 @@ export class FileDispatchCenter {
 
         sub(FILE_ACTIONS.CLEAR, () => {
             this.clear(fileKey);
-            this._emit(fileKey, FILE_FEEDBACK_EVENTS.REMOVED, { item: null, index: -1, cleared: true });
+            this._emit(fileKey, FILE_FEEDBACK_EVENTS.REMOVED, {
+                item: null,
+                index: -1,
+                cleared: true,
+            });
         });
     }
 

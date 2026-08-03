@@ -5,7 +5,7 @@
  * 独立于 OverlayAbility，可单独测试和复用。
  */
 
-import type { Rect } from '@/utils/geometry/types';
+import type { Rect } from '@/utils/geometry';
 import {
     alignLeft,
     alignRight,
@@ -13,8 +13,8 @@ import {
     alignBottom,
     alignCenterX,
     alignCenterY,
-} from '@/utils/geometry/align';
-import { keepInside } from '@/utils/geometry/clamp';
+    keepInside,
+} from '@/utils/geometry';
 
 /**
  * 弹出方向

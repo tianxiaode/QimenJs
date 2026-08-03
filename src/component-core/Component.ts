@@ -33,7 +33,7 @@ import { createInitContext } from './types/init-context';
 
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
-import { getId } from '@/utils/string/id';
+import { getId } from '@/utils/string';
 import { ComponentRegistrar, TplInspector } from './engine';
 import { TplNode } from './types';
 

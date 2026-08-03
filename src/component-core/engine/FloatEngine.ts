@@ -29,7 +29,7 @@ import type {
 } from '../types/init-context';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
-import { getId } from '@/utils/string/id';
+import { getId } from '@/utils/string';
 
 // ══════════════════════════════════════════════════════════════
 // 类型定义

@@ -18,8 +18,8 @@
 
 import { Component } from '@qimenjs/component-core';
 import { PROPERTY_FIELD_TPL } from './property-field-tpl';
-import { formatNumber } from '@/utils/number/format';
-import { formatDate } from '@/utils/date/format';
+import { formatNumber } from '@/utils/number';
+import { formatDate } from '@/utils/date';
 import { resolveI18nValue } from '@qimenjs/i18n';
 
 export type PropertyFieldType = 'text' | 'number' | 'date' | 'boolean' | 'json' | 'array';

@@ -12,7 +12,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
-import { createDateTimeValue, type DateTimeValue } from '@/utils/date/datetime-picker';
+import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 

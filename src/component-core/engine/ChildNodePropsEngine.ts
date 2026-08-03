@@ -30,7 +30,7 @@
  */
 
 import type { NodeMetadata } from '../types/compiled-types';
-import { capitalize } from '@/utils/string/base';
+import { capitalize } from '@/utils/string';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { CONTENT_MODE_MAP, RESERVED_KEYS } from '../constants/template-constants';
 

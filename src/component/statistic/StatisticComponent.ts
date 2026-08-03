@@ -21,7 +21,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { STATISTIC_TPL } from './statistic-tpl';
-import { formatNumber } from '@/utils/number/format';
+import { formatNumber } from '@/utils/number';
 
 export type StatisticTrend = 'up' | 'down' | 'flat';
 

@@ -13,7 +13,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { DAY_GRID_TPL } from './day-grid-tpl';
-import { generateCalendarView, type CalendarDay } from '@/utils/date/calendar';
+import { generateCalendarView, type CalendarDay } from '@/utils/date';
 import './date-panel.css';
 
 export interface DayGridProps {

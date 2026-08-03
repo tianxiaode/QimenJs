@@ -13,11 +13,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
-import {
-    createDateTimeValue,
-    generateMinuteSecondDigits,
-    type DateTimeValue,
-} from '@/utils/date/datetime-picker';
+import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 

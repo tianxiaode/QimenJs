@@ -19,7 +19,7 @@ import {
     generateYearDigits,
     splitToDigits,
     type DateTimeValue,
-} from '@/utils/date/datetime-picker';
+} from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
