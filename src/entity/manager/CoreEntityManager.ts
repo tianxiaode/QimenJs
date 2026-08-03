@@ -13,6 +13,8 @@ import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-proce
 import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
+import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
+import type { PermissionQuery } from '@/permission/types';
 
 export const CORE_ENTITY_ABILITIES = [
     EventAbility,
@@ -31,6 +33,15 @@ export abstract class CoreEntityManager extends ComposableBase {
 
     abstract schema: RegistrSchema;
 
+    /**
+     * 权限映射 — 定义各操作对应的权限 action
+     *
+     * - true: 使用操作名作为 action（如 create → 'create'）
+     * - string: 使用自定义 action（如 create: 'add'）
+     * - 省略: 不检查该操作的权限
+     */
+    static permissions: Record<string, boolean | string> = {};
+
     get compiledSchema(): Schema {
         return this._getCompiledSchema().schema;
     }
@@ -45,6 +56,10 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     request(action: ENTITY_ACTION, options: HttpRequestOptions): HttpRequestTask {
+        if (!this.requirePermission(action as string)) {
+            return this.onPermissionDenied(action as string);
+        }
+
         const context = this.buildRequestContext(action, options);
 
         const execute = async (): Promise<RequestContext> => {
@@ -107,6 +122,23 @@ export abstract class CoreEntityManager extends ComposableBase {
             this.logger.debug(`Executing DataProcessor pipeline [${preset}-${stage}]`);
             await dataProcessorExecutor.execute(context, handlers, stage);
         }
+    }
+
+    protected requirePermission(action: string): boolean {
+        const permConfig = (this.constructor as any).permissions?.[action];
+        if (permConfig === undefined) return true;
+
+        const permAction = permConfig === true ? action : permConfig;
+
+        return PermissionRegistrar.getInstance().hasPermission({
+            action: permAction,
+            entityKey: this.entityName,
+            domain: this.domain,
+        });
+    }
+
+    protected onPermissionDenied(action: string): HttpRequestTask {
+        throw new Error(`Permission denied: [${action}] on entity [${this.entityName}] in domain [${this.domain}]`);
     }
 
     cancelAll(): void {
