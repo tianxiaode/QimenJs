@@ -5,7 +5,7 @@ import {
     type PermissionChangePayload,
     type PermissionEntry,
 } from './types';
-import type { GlobalEventBus } from '@/events/GlobalEventBus';
+import { SystemEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 
 /**
@@ -19,13 +19,12 @@ const PermissionRegistrarName = 'permission' as const;
  * 管理权限码的注册、存储和查询。权限码按域分组存储，
  * 格式为 域:权限码（如 system:user:create）。
  *
- * 权限数据变更时自动通过 GlobalEventBus 触发 permission:change 事件，
+ * 权限数据变更时自动通过 SystemEventBus 触发 permission:change 事件，
  * 组件的 PermissionAbility 监听此事件后自行判断权限状态。
  *
  * @example
  * ```ts
  * const registrar = PermissionRegistrar.getInstance();
- * registrar.initEventBus(globalEventBus);
  *
  * // 批量注册
  * registrar.registerBatch([
@@ -42,20 +41,6 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
     public readonly name = PermissionRegistrarName;
 
     protected storage = new Map<string, Set<string>>();
-
-    private eventBus?: GlobalEventBus;
-
-    /**
-     * 注入全局事件总线
-     *
-     * 必须在注册权限之前调用，否则权限变更不会触发事件。
-     * 由于 RegistrarBase 单例模式要求无参构造，EventBus 通过此方法注入。
-     *
-     * @param eventBus - 全局事件总线实例
-     */
-    initEventBus(eventBus: GlobalEventBus): void {
-        this.eventBus = eventBus;
-    }
 
     /**
      * 批量注册权限
@@ -243,7 +228,7 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
             .withSource('permission')
             .withData(payload)
             .build();
-        this.eventBus?.emit(PERMISSION_CHANGE_EVENT, ctx);
+        SystemEventBus.getInstance()._bridgeEmit(PERMISSION_CHANGE_EVENT, ctx);
     }
 
     /**

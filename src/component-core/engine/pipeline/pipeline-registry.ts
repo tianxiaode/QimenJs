@@ -16,6 +16,7 @@ import { instantiateChildComponents } from './step-instantiate-child-components'
 import { bindListens } from './step-bind-listens';
 import { bindChildEvents } from './step-bind-child-events';
 import { bindDomEvents } from './step-bind-dom-events';
+import { bindPermission } from './step-bind-permission';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error/codes';
 
@@ -31,7 +32,7 @@ export const INSTANTIATE_PHASE: Phase = {
 
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
-    steps: [bindListens, bindChildEvents, bindDomEvents, onAfterInit],
+    steps: [bindListens, bindChildEvents, bindDomEvents, bindPermission, onAfterInit],
 };
 
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];

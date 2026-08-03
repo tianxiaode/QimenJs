@@ -402,6 +402,13 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     // ─── content: 内容 ───
 
     { field: 'i18n', category: 'content', toMeta: true, toRoot: false, metaKey: 'i18nKey' },
+    {
+        field: 'permission',
+        category: 'content',
+        toMeta: true,
+        toRoot: false,
+        metaKey: 'permission',
+    },
 
     // ─── dom: DOM 属性 ───
 

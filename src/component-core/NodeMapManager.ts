@@ -108,6 +108,10 @@ export class NodeMapManager implements INodeMapManager {
         return this._cache.i18nNodes;
     }
 
+    get permissionNodes(): Array<{ name: string; permission: string }> {
+        return this._cache.permissionNodes;
+    }
+
     /**
      * 获取需要暴露的节点名列表
      *

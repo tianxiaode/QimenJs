@@ -8,6 +8,7 @@ export { instantiateChildComponents } from './step-instantiate-child-components'
 export { bindListens } from './step-bind-listens';
 export { bindChildEvents } from './step-bind-child-events';
 export { bindDomEvents } from './step-bind-dom-events';
+export { bindPermission } from './step-bind-permission';
 
 export type { Phase, InitStep } from './pipeline-types';
 export {

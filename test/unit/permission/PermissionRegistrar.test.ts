@@ -16,13 +16,12 @@
 
 import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
 import { PERMISSION_CHANGE_EVENT } from '@/permission/types';
-import { GlobalEventBus } from '@/events/GlobalEventBus';
+import { SystemEventBus } from '@/events';
 
 describe('PermissionRegistrar', () => {
     let registrar: PermissionRegistrar;
 
     beforeEach(() => {
-        // Use a fresh instance for each test by resetting the singleton
         (PermissionRegistrar as any).instances = new Map();
         registrar = new PermissionRegistrar();
     });
@@ -104,23 +103,19 @@ describe('PermissionRegistrar', () => {
         });
 
         it('空列表不应触发事件', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.registerBatch([]);
 
-            expect(emitSpy).not.toHaveBeenCalled();
+            expect(bridgeEmitSpy).not.toHaveBeenCalled();
         });
 
         it('有变更时应触发 permission:change 事件', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.registerBatch([{ domain: 'system', codes: ['user:create'] }]);
 
-            expect(emitSpy).toHaveBeenCalledWith(
+            expect(bridgeEmitSpy).toHaveBeenCalledWith(
                 PERMISSION_CHANGE_EVENT,
                 expect.objectContaining({
                     data: { domains: ['system'], type: 'register' },
@@ -162,26 +157,22 @@ describe('PermissionRegistrar', () => {
         });
 
         it('空列表不应触发事件', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.unregisterBatch([]);
 
-            expect(emitSpy).not.toHaveBeenCalled();
+            expect(bridgeEmitSpy).not.toHaveBeenCalled();
         });
 
         it('有变更时应触发 permission:change 事件（type=unregister）', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.register('system', 'user:create');
-            emitSpy.mockClear();
+            bridgeEmitSpy.mockClear();
 
             registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
 
-            expect(emitSpy).toHaveBeenCalledWith(
+            expect(bridgeEmitSpy).toHaveBeenCalledWith(
                 PERMISSION_CHANGE_EVENT,
                 expect.objectContaining({
                     data: { domains: ['system'], type: 'unregister' },
@@ -193,18 +184,16 @@ describe('PermissionRegistrar', () => {
 
     describe('clearDomain', () => {
         it('存在的域应被清除并触发事件', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.register('system', 'user:create');
-            emitSpy.mockClear();
+            bridgeEmitSpy.mockClear();
 
             registrar.clearDomain('system');
 
             expect(registrar.has('system:user:create')).toBe(false);
             expect(registrar.getDomains()).not.toContain('system');
-            expect(emitSpy).toHaveBeenCalledWith(
+            expect(bridgeEmitSpy).toHaveBeenCalledWith(
                 PERMISSION_CHANGE_EVENT,
                 expect.objectContaining({
                     data: { domains: ['system'], type: 'clear' },
@@ -214,13 +203,11 @@ describe('PermissionRegistrar', () => {
         });
 
         it('不存在的域不应触发事件', () => {
-            const eventBus = new GlobalEventBus();
-            const emitSpy = jest.spyOn(eventBus, 'emit');
-            registrar.initEventBus(eventBus);
+            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
 
             registrar.clearDomain('nonexistent');
 
-            expect(emitSpy).not.toHaveBeenCalled();
+            expect(bridgeEmitSpy).not.toHaveBeenCalled();
         });
     });
 
@@ -254,9 +241,8 @@ describe('PermissionRegistrar', () => {
         });
     });
 
-    describe('emitChange (无 eventBus)', () => {
-        it('没有 eventBus 时不应报错', () => {
-            // 不调用 initEventBus
+    describe('emitChange', () => {
+        it('通过 SystemEventBus 触发事件不应报错', () => {
             expect(() => {
                 registrar.register('system', 'user:create');
             }).not.toThrow();

@@ -51,4 +51,5 @@ export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES> {
     onResize?(entry: ResizeObserverEntry): void;
 
     onLocaleChange?(): void;
+    onPermissionChange?(data?: any): void;
 }

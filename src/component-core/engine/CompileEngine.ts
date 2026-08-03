@@ -87,6 +87,7 @@ export class CompileEngine {
             indexPath: result.indexPath,
             exposeNames: result.exposeNames,
             i18nNodes: result.i18nNodes,
+            permissionNodes: result.permissionNodes,
             templateCache: tplEl,
         };
 
@@ -162,6 +163,7 @@ export class CompileEngine {
         const nodeMetas: Record<string, NodeMetadata> = {};
         const exposeNames: string[] = [];
         const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
+        const permissionNodes: Array<{ name: string; permission: string }> = [];
 
         indexPath['root'] = [];
         nodeMetas['root'] = copyMetaFields(root, {
@@ -179,6 +181,7 @@ export class CompileEngine {
                     nodeMetas,
                     exposeNames,
                     i18nNodes,
+                    permissionNodes,
                     logger,
                 })
             );
@@ -190,6 +193,7 @@ export class CompileEngine {
             nodeMetas,
             exposeNames,
             i18nNodes,
+            permissionNodes,
         };
     }
 
@@ -283,6 +287,10 @@ export class CompileEngine {
             ctx.i18nNodes.push({ name, i18nKey: node.i18n });
         }
 
+        if (node.permission) {
+            ctx.permissionNodes.push({ name, permission: node.permission });
+        }
+
         return `<div class="${SKELETON_CLS}"></div>`;
     }
 
@@ -331,6 +339,10 @@ export class CompileEngine {
 
             if (node.i18n) {
                 ctx.i18nNodes.push({ name, i18nKey: node.i18n });
+            }
+
+            if (node.permission) {
+                ctx.permissionNodes.push({ name, permission: node.permission });
             }
         }
 

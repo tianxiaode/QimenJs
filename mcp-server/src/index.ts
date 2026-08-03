@@ -3,6 +3,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registerFileTools } from './tools/file-tools';
 import { registerSymbolTools } from './tools/symbol-tools';
 import { registerGraphTools } from './tools/graph-tools';
+import { registerDocsTools } from './tools/docs-tools';
+import { registerUtilsTools } from './tools/utils-tools';
 
 /**
  * QimenJs src MCP server (stdio transport).
@@ -22,6 +24,8 @@ const server = new McpServer({
 registerFileTools(server);
 registerSymbolTools(server);
 registerGraphTools(server);
+registerDocsTools(server);
+registerUtilsTools(server);
 
 const transport = new StdioServerTransport();
 
@@ -32,7 +36,9 @@ void (async () => {
     try {
         await server.connect(transport);
     } catch (e) {
-        process.stderr.write(`MCP server failed to start: ${e instanceof Error ? e.message : String(e)}\n`);
+        process.stderr.write(
+            `MCP server failed to start: ${e instanceof Error ? e.message : String(e)}\n`
+        );
         process.exit(1);
     }
 })();
