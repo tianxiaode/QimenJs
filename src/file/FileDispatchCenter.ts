@@ -31,7 +31,7 @@ import { FileEventBus, FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { HttpClient } from '@/http/HttpClient';
 import { KernelErrorCode } from '@/error';
-import { createHashTask } from '@/task/hash-task';
+import { createHashTask } from '@/task';
 import { triggerDownload } from '@/utils';
 import { getId } from '@/utils/string';
 import { MimeTypeRegistrar } from '@/mime';
