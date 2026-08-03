@@ -19,9 +19,18 @@ export interface EntityToolbarItemDef {
     order?: number;
     cls?: string;
     iconCls?: string;
-    text?: string;
+    hint?: string;
     variant?: string;
     [key: string]: any;
+}
+
+export interface BuiltinItemDef {
+    name: string;
+    type: string;
+    order: number;
+    iconCls: string;
+    hint: string;
+    variant: string;
 }
 
 /**

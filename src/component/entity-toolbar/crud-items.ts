@@ -42,7 +42,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 200,
         iconCls: 'q-toolbar-btn-create',
-        text: 'i18n:toolbar.create',
+        hint: 'i18n:toolbar.create',
         variant: 'primary',
     },
     edit: {
@@ -50,7 +50,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 210,
         iconCls: 'q-toolbar-btn-edit',
-        text: 'i18n:toolbar.edit',
+        hint: 'i18n:toolbar.edit',
         variant: 'default',
     },
     delete: {
@@ -58,7 +58,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 220,
         iconCls: 'q-toolbar-btn-delete',
-        text: 'i18n:toolbar.delete',
+        hint: 'i18n:toolbar.delete',
         variant: 'warning',
     },
     refresh: {
@@ -66,7 +66,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 230,
         iconCls: 'q-toolbar-btn-refresh',
-        text: 'i18n:toolbar.refresh',
+        hint: 'i18n:toolbar.refresh',
         variant: 'default',
     },
     save: {
@@ -74,7 +74,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 240,
         iconCls: 'q-toolbar-btn-save',
-        text: 'i18n:toolbar.save',
+        hint: 'i18n:toolbar.save',
         variant: 'primary',
     },
     import: {
@@ -82,7 +82,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 250,
         iconCls: 'q-toolbar-btn-import',
-        text: 'i18n:toolbar.import',
+        hint: 'i18n:toolbar.import',
         variant: 'default',
     },
     export: {
@@ -90,7 +90,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 260,
         iconCls: 'q-toolbar-btn-export',
-        text: 'i18n:toolbar.export',
+        hint: 'i18n:toolbar.export',
         variant: 'default',
     },
 };
@@ -139,16 +139,16 @@ function buildCrudItem(
     const name = override.name ?? def.name;
     const order = override.order ?? def.order;
     const iconCls = override.iconCls ?? def.iconCls;
-    const text = override.text ?? def.text;
+    const hint = override.hint ?? def.hint;
     const variant = override.variant ?? def.variant;
 
     const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
     return {
         type: 'Button',
         name,
-        action: name, // action 与 entities 联动：点击 → entityEmit(action)
+        action: name,
         icon: iconCls,
-        text,
+        hint,
         cls: `q-entity-toolbar__btn q-entity-toolbar__btn--${name}${variantCls}${override.cls ? ' ' + override.cls : ''}`,
         order,
     };

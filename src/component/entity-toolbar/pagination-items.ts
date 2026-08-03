@@ -42,7 +42,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 100,
         iconCls: 'q-toolbar-btn-first-page',
-        text: 'i18n:toolbar.firstPage',
+        hint: 'i18n:toolbar.firstPage',
         variant: 'default',
     },
     prevPage: {
@@ -50,7 +50,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 110,
         iconCls: 'q-toolbar-btn-prev-page',
-        text: 'i18n:toolbar.prevPage',
+        hint: 'i18n:toolbar.prevPage',
         variant: 'default',
     },
     pageNum: {
@@ -58,7 +58,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'NumberInput',
         order: 120,
         iconCls: '',
-        text: '',
+        hint: '',
         variant: '',
     },
     pageTotal: {
@@ -66,7 +66,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Text',
         order: 130,
         iconCls: '',
-        text: '1/0',
+        hint: '',
         variant: '',
     },
     nextPage: {
@@ -74,7 +74,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 140,
         iconCls: 'q-toolbar-btn-next-page',
-        text: 'i18n:toolbar.nextPage',
+        hint: 'i18n:toolbar.nextPage',
         variant: 'default',
     },
     lastPage: {
@@ -82,7 +82,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Button',
         order: 150,
         iconCls: 'q-toolbar-btn-last-page',
-        text: 'i18n:toolbar.lastPage',
+        hint: 'i18n:toolbar.lastPage',
         variant: 'default',
     },
     pageSize: {
@@ -90,7 +90,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Select',
         order: 160,
         iconCls: '',
-        text: '',
+        hint: '',
         variant: '',
     },
     totalRecords: {
@@ -98,7 +98,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: 'Text',
         order: 170,
         iconCls: '',
-        text: '0',
+        hint: '',
         variant: '',
     },
 };
@@ -164,7 +164,7 @@ function buildPaginationItem(
     const name = override.name ?? def.name;
     const order = override.order ?? def.order;
     const iconCls = override.iconCls ?? def.iconCls;
-    const text = override.text ?? def.text;
+    const hint = override.hint ?? def.hint;
     const variant = override.variant ?? def.variant;
 
     if (def.type === 'Button') {
@@ -172,9 +172,9 @@ function buildPaginationItem(
         return {
             type: 'Button',
             name,
-            action: name, // action 与 entities 联动：点击 → entityEmit(action)
+            action: name,
             icon: iconCls,
-            text,
+            hint,
             cls: `q-entity-toolbar__btn q-entity-toolbar__btn--${name}${variantCls}${override.cls ? ' ' + override.cls : ''}`,
             order,
         };
