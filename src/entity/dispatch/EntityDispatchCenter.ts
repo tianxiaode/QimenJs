@@ -2,7 +2,15 @@ import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
 import { Logger } from '@qimenjs/logger';
 import type { CoreEntityManager } from '../manager/CoreEntityManager';
 import type { EntityManagerConstructor } from './entity-definitions';
-import { ENTITY_EVENTS } from '@/events/component-events';
+import {
+    ENTITY_DATA_EVENTS,
+    ENTITY_CRUD_EVENTS,
+    ENTITY_LIST_EVENTS,
+    ENTITY_TREE_EVENTS,
+    ENTITY_SEARCH_EVENTS,
+    ENTITY_UPLOAD_EVENTS,
+    ENTITY_VALIDATION_EVENTS,
+} from '@/events/entity-events';
 
 interface EntityTypeEntry {
     mgrType: EntityManagerConstructor;
@@ -125,7 +133,15 @@ export class EntityDispatchCenter extends RegistrarBase<Map<string, EntityTypeEn
 
 export const entityDispatchCenter = EntityDispatchCenter.getInstance();
 
-const VALID_ENTITY_EVENTS: Set<string> = new Set(Object.values(ENTITY_EVENTS));
+const VALID_ENTITY_EVENTS: Set<string> = new Set([
+    ...Object.values(ENTITY_DATA_EVENTS),
+    ...Object.values(ENTITY_CRUD_EVENTS),
+    ...Object.values(ENTITY_LIST_EVENTS),
+    ...Object.values(ENTITY_TREE_EVENTS),
+    ...Object.values(ENTITY_SEARCH_EVENTS),
+    ...Object.values(ENTITY_UPLOAD_EVENTS),
+    ...Object.values(ENTITY_VALIDATION_EVENTS),
+]);
 
 export function validateEntityEvent(event: string): boolean {
     if (!VALID_ENTITY_EVENTS.has(event)) {

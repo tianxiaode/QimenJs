@@ -14,7 +14,7 @@
  */
 
 // ============================================
-// 从 events 包重新导出能力级事件（向后兼容）
+// 从 events 包重新导出能力级事件
 // ============================================
 export {
     PAGINATION_EVENTS,
@@ -25,7 +25,19 @@ export {
     CHILDREN_EVENTS,
     COLUMN_EVENTS,
     TOOLBAR_EVENTS,
-    ENTITY_EVENTS,
+} from '@qimenjs/events';
+
+// 实体事件从 entity-events 重新导出
+export {
+    ENTITY_DATA_EVENTS,
+    ENTITY_CRUD_EVENTS,
+    ENTITY_LIST_EVENTS,
+    ENTITY_TREE_EVENTS,
+    ENTITY_SEARCH_EVENTS,
+    ENTITY_UPLOAD_EVENTS,
+    ENTITY_VALIDATION_EVENTS,
+    ENTITY_REQUEST_STATUS,
+    buildRequestEvent,
 } from '@qimenjs/events';
 
 // ============================================

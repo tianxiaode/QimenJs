@@ -5,7 +5,7 @@
  * 与 entity-events.ts 同级，保持事件定义的集中管理。
  *
  * 分类：
- * - 组件生命周期事件：TemplateComponent 发射（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
+ * - 组件生命周期事件：TemplateComponent 发射
  * - 分页事件：PaginationAbility 发射
  * - CRUD 事件：CrudAbility 发射
  * - 选择事件：SelectableAbility / SelectionAbility 发射
@@ -13,7 +13,7 @@
  * - 列管理事件：ColumnManageAbility 发射
  * - 搜索事件：SearchAbility 发射
  * - 工具栏事件：ToolbarAbility 发射
- * - 实体转发事件：EntityEmitAbility 转发 EntityManager 事件
+ * - 实体事件：见 entity-events.ts（EntityManager 直发，不再桥接）
  */
 
 // ============================================
@@ -73,6 +73,8 @@ export const SELECTION_EVENTS = {
     CHANGE: 'selectionchange',
     /** 行选中/取消 */
     ROW_SELECT: 'rowselect',
+    /** 实体选择变更（SelectionAbility 在实体上下文中触发） */
+    ENTITY_CHANGE: 'entity:selectionchange',
 } as const;
 
 // ============================================
@@ -121,71 +123,3 @@ export const TOOLBAR_EVENTS = {
     SEARCH: 'toolbarsearch',
 } as const;
 
-// ============================================
-// 实体转发事件（EntityEmitAbility 转发 EntityManager 事件）
-//
-// 对应 events 包中的分类定义：
-// - ENTITY_DATA_EVENTS → 数据变更
-// - ENTITY_CRUD_EVENTS → CRUD 结果
-// - ENTITY_LIST_EVENTS → 列表加载
-// - ENTITY_REQUEST_STATUS → 请求状态
-// ============================================
-export const ENTITY_EVENTS = {
-    // ---- 数据变更 ----
-    /** 数据变更（对应 ENTITY_DATA_EVENTS.DATA_CHANGE） */
-    DATA_CHANGE: 'entity:datachange',
-
-    // ---- CRUD 结果 ----
-    /** 创建成功（对应 ENTITY_CRUD_EVENTS.CREATED） */
-    CREATED: 'entity:created',
-    /** 更新成功（对应 ENTITY_CRUD_EVENTS.UPDATED） */
-    UPDATED: 'entity:updated',
-    /** 删除成功（对应 ENTITY_CRUD_EVENTS.DELETED） */
-    DELETED: 'entity:deleted',
-    /** 保存成功（对应 ENTITY_CRUD_EVENTS.SAVED） */
-    SAVED: 'entity:saved',
-    /** 切换成功（对应 ENTITY_CRUD_EVENTS.TOGGLED） */
-    TOGGLED: 'entity:toggled',
-
-    // ---- 列表加载 ----
-    /** 列表加载完成（对应 ENTITY_LIST_EVENTS.LISTED） */
-    LISTED: 'entity:listed',
-    /** 单条获取完成（对应 ENTITY_LIST_EVENTS.GOT） */
-    GOT: 'entity:got',
-
-    // ---- 请求状态 ----
-    /** 加载中（对应 {action}:loading） */
-    LOADING: 'entity:loading',
-    /** 加载完成（对应 {action}:success） */
-    LOADED: 'entity:loaded',
-    /** 加载失败（对应 {action}:error） */
-    ERROR: 'entity:error',
-
-    // ---- 树操作（对应 ENTITY_TREE_EVENTS） ----
-    /** 节点展开（对应 ENTITY_TREE_EVENTS.EXPANDED） */
-    EXPANDED: 'entity:expanded',
-    /** 节点折叠（对应 ENTITY_TREE_EVENTS.COLLAPSED） */
-    COLLAPSED: 'entity:collapsed',
-    /** 节点移动（对应 ENTITY_TREE_EVENTS.MOVED） */
-    MOVED: 'entity:moved',
-    /** 子节点刷新完成（对应 ENTITY_TREE_EVENTS.CHILDREN_REFRESHED） */
-    CHILDREN_REFRESHED: 'entity:childrenrefreshed',
-
-    // ---- 搜索变更 ----
-    /** 搜索变更（对应 ENTITY_SEARCH_EVENTS.CHANGE） */
-    SEARCH_CHANGE: 'entity:searchchange',
-
-    // ---- UI 选择 ----
-    /** 选择变更（SelectionAbility 自身触发，非 EntityManager 事件） */
-    SELECTION_CHANGE: 'entity:selectionchange',
-
-    // ---- 验证 ----
-    /** 请求验证（对应 ENTITY_VALIDATION_EVENTS.VALIDATE） */
-    VALIDATE: 'entity:validate',
-    /** 验证结果（对应 ENTITY_VALIDATION_EVENTS.VALIDATION） */
-    VALIDATION: 'entity:validation',
-
-    // ---- 上传（对应 ENTITY_UPLOAD_EVENTS） ----
-    /** 上传进度（对应 ENTITY_UPLOAD_EVENTS.PROGRESS，需桥接以刷新 UI） */
-    UPLOAD_PROGRESS: 'entity:upload:progress',
-} as const;
