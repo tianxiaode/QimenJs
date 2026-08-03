@@ -81,7 +81,7 @@ export type {
 } from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager-types';
 
-export type { Placement } from '@/overlay/dispatch/positionOverlay';
+export type { Placement } from '@/overlay';
 
 // 初始化 ComponentRegistrar 到 RegistryHub
 import { ComponentRegistrar } from './engine';

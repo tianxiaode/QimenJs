@@ -8,8 +8,7 @@
  * overlayKey 自动生成：toast:{id}，也可通过 ToastOptions.overlayKey 自定义。
  */
 
-import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
-import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
+import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
 import { Toast } from './Toast';
 import type { ToastOptions, ToastHandle, ToastPosition } from './types';
 

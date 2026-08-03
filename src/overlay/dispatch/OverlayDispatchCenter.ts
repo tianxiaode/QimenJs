@@ -2,7 +2,7 @@ import { RegistrarBase } from '@/registry';
 import { OverlayEventBus, OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
-import { ZIndexLevel, nextZIndex } from '@/component/z-index';
+import { ZIndexLevel, nextZIndex } from '@/component';
 import { positionOverlay, type Placement } from './positionOverlay';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import { throttle } from '@/async';

@@ -21,11 +21,16 @@
  */
 
 import { ButtonComponent } from './ButtonComponent';
-import { fileDispatchCenter } from '@/file/FileDispatchCenter';
+import {
+    fileDispatchCenter,
+    formatFileSize,
+    formatFileStatus,
+    FileItemStatus,
+    type FileTransportConfig,
+    type FileItem,
+} from '@/file';
 import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
-import { formatFileSize, formatFileStatus } from '@/file/format';
-import { FileItemStatus, type FileTransportConfig, type FileItem } from '@/file/types';
 
 export type { FileItemStatus, FileTransportConfig, FileItem };
 

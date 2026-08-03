@@ -13,8 +13,8 @@
 
 import { Component } from '@qimenjs/component-core';
 import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
-import { OverlayRoot } from '@/overlay/OverlayRoot';
-import { ZIndexLevel, nextZIndex } from '@/component/z-index';
+import { OverlayRoot } from '@/overlay';
+import { ZIndexLevel, nextZIndex } from '@/component';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 
 export interface TooltipProps {
