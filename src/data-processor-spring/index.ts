@@ -22,6 +22,7 @@
  */
 
 export * from './types';
+export { transformSpringPermissions } from './permission-transformer';
 export { getSpringPreHandlers, createSpringPaginationHandler } from './pre';
 export {
     getSpringPostHandlers,

@@ -35,3 +35,21 @@ export interface PermissionChangePayload {
     /** 变更类型 */
     type: 'register' | 'unregister' | 'clear' | 'load';
 }
+
+/**
+ * 权限转换器 — 将后端原始权限码转为系统格式
+ *
+ * @param rawCodes - 后端返回的原始权限码列表
+ * @returns 可直接传给 registerBatch 的 PermissionEntry 数组
+ */
+export type PermissionTransformer = (rawCodes: string[]) => PermissionEntry[];
+
+/**
+ * 权限转换器选项
+ */
+export interface PermissionTransformerOptions {
+    /** 目标域，默认 'default' */
+    domain?: string;
+    /** 自定义回调：对无法按默认规则转换的权限码做自定义处理 */
+    onUnmatched?: (code: string) => PermissionEntry | undefined;
+}

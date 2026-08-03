@@ -22,6 +22,7 @@
  */
 
 export * from './types';
+export { transformAbpPermissions } from './permission-transformer';
 export { getAbpPreHandlers, createAbpPaginationHandler, createAbpTenantHeaderHandler } from './pre';
 export {
     getAbpPostHandlers,
