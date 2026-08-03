@@ -8,6 +8,7 @@
 // 渲染能力
 export { VirtualListAbility } from './render';
 export { AnimationAbility } from './render';
+export { TemplateCacheAbility } from './render';
 
 export { ArrowAbility, type ArrowConfig } from './render';
 export { arrowCSS } from './render';

@@ -14,6 +14,8 @@ export { ToastManager } from './ToastManager';
 export { Toast } from './Toast';
 export { MsgboxManager } from './MsgboxManager';
 export { Msgbox } from './Msgbox';
+export { MSGBOX_TEMPLATE } from './msgbox-tpl';
+export { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from './toast-tpl';
 export {
     TOAST_ACTIONS,
     TOAST_FEEDBACK_EVENTS,

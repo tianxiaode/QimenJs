@@ -13,16 +13,15 @@
  */
 
 import { ComposableBase } from '@/composable';
-import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
-import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
-import type { ViewportPosition } from '@/overlay/FloatingLayerAbility';
-import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { TemplateCacheAbility } from '@/component-abilities';
+import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
+import { OverlayEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
-import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from '@/component-core/template-presets';
+import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from './toast-tpl';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import type { ToastOptions, ToastHandle, ToastPosition, ToastType } from './types';
 
 const DEFAULT_DURATION = 3000;

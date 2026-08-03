@@ -68,6 +68,7 @@ export type {
     AnimationDecl,
     FloatDecl,
     DragDecl,
+    DropDecl,
     ListenItem,
 } from './types/tpl-node-types';
 export type { DomEventsMap } from './types/tpl-events';
@@ -78,6 +79,8 @@ export type {
     InitContext,
     BadgeQuickConfig,
     TooltipQuickConfig,
+    IndicatorType,
+    IndicatorConfig,
 } from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager-types';
 

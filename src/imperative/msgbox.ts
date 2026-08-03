@@ -13,15 +13,15 @@
  */
 
 import { ComposableBase } from '@/composable';
-import { TemplateCacheAbility } from '@/component-abilities/render/TemplateCacheAbility';
-import { FloatingLayerAbility } from '@/overlay/FloatingLayerAbility';
-import { OverlayEventBus } from '@/events/OverlayEventBus';
+import { TemplateCacheAbility } from '@/component-abilities';
+import { FloatingLayerAbility } from '@/overlay';
+import { OverlayEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
-import { MSGBOX_TEMPLATE } from '@/component-core/template-presets';
+import { MSGBOX_TEMPLATE } from './msgbox-tpl';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 
 const MsgboxBase = ComposableBase.use([TemplateCacheAbility, FloatingLayerAbility]);
