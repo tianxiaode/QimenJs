@@ -18,7 +18,7 @@ import { bindChildEvents } from './step-bind-child-events';
 import { bindDomEvents } from './step-bind-dom-events';
 import { bindPermission } from './step-bind-permission';
 import { ComponentError } from '@/error';
-import { KernelErrorCode } from '@/error/codes';
+import { KernelErrorCode } from '@/error';
 
 export const MOUNT_PHASE: Phase = {
     name: 'mount',

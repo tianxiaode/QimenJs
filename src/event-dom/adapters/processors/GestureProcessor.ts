@@ -16,8 +16,7 @@ import {
 } from '../../types';
 import { ILogger, LogLevel, Logger } from '@/logger';
 import { string, geometry } from '@/utils';
-import { GestureError } from '@/error/GestureError';
-import { KernelErrorCode } from '@/error/codes';
+import { GestureError, KernelErrorCode } from '@/error';
 
 /**
  * GestureProcessor抽象类
