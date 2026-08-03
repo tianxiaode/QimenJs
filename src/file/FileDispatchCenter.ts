@@ -29,7 +29,7 @@
 
 import { FileEventBus, FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
-import { HttpClient } from '@/http/HttpClient';
+import { HttpClient } from '@/http';
 import { KernelErrorCode } from '@/error';
 import { createHashTask } from '@/task';
 import { triggerDownload } from '@/utils';

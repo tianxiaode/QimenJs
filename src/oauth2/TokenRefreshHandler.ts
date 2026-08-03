@@ -9,7 +9,7 @@
 
 import type { RequestContext } from '@/context';
 import { oauth2 } from './OAuth2Manager';
-import { HttpExecutor } from '@/http/HttpExecutor';
+import { HttpExecutor } from '@/http';
 
 /**
  * Token 刷新处理器

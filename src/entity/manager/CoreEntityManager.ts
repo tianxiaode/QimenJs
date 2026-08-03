@@ -6,7 +6,7 @@ import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import type { ENTITY_ACTION } from '@/entity/types';
 import type { Schema, RegistrSchema } from '@/schema';
-import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
+import type { HttpRequestOptions, HttpRequestTask } from '@/http';
 import type { RequestContext } from '@/context';
 import { RequestContextBuilder, EventContextBuilder } from '@/context';
 import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-processor';
