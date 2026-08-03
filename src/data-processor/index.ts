@@ -41,6 +41,9 @@ export * from './errors';
 
 // 导出注册器
 import { DataProcessorRegistrar, DataProcessorRegistrarName } from './DataProcessorRegistrar';
+import { RegistryHub } from '@/registry';
+
+RegistryHub.use(DataProcessorRegistrar.getInstance());
 
 export { DataProcessorRegistrar, DataProcessorRegistrarName };
 

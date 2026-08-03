@@ -18,9 +18,7 @@ export * from './registrars';
 
 import { DomainRegistrar, SystemRegistrar } from './registrars';
 import { RegistryHub } from './RegistryHub';
-import { DataProcessorRegistrar } from '../data-processor';
 
 // 初始化默认注册器
 RegistryHub.use(SystemRegistrar.getInstance());
 RegistryHub.use(DomainRegistrar.getInstance());
-RegistryHub.use(DataProcessorRegistrar.getInstance());
