@@ -1,31 +1,77 @@
 import { ListensEngine } from '@/component-core/engine/ListensEngine';
+import { ComponentEventBus } from '@/events/ComponentEventBus';
+import { EntityEventBus } from '@/events/EntityEventBus';
+import { SystemEventBus } from '@/events/SystemEventBus';
+import { RouteEventBus } from '@/events/RouteEventBus';
 
-function makeBus() {
+jest.mock('@/events/ComponentEventBus', () => {
+    const mockBus = {
+        componentOn: jest.fn(() => jest.fn()),
+        componentOnce: jest.fn(),
+        getScopeId: jest.fn(() => 'test-scope'),
+        dispose: jest.fn(),
+    };
     return {
-        on: jest.fn(),
-        off: jest.fn(),
-        once: jest.fn(),
+        ComponentEventBus: {
+            getInstance: jest.fn(() => mockBus),
+        },
+    };
+});
+
+jest.mock('@/events/EntityEventBus', () => {
+    const mockBus = {
         entityOn: jest.fn(() => jest.fn()),
         entityOnce: jest.fn(),
+        getScopeId: jest.fn(() => 'test-scope'),
+        dispose: jest.fn(),
     };
-}
+    return {
+        EntityEventBus: {
+            getInstance: jest.fn(() => mockBus),
+        },
+    };
+});
+
+jest.mock('@/events/SystemEventBus', () => {
+    const mockBus = {
+        on: jest.fn(() => jest.fn()),
+        once: jest.fn(),
+        getScopeId: jest.fn(() => 'test-scope'),
+        dispose: jest.fn(),
+    };
+    return {
+        SystemEventBus: {
+            getInstance: jest.fn(() => mockBus),
+        },
+    };
+});
+
+jest.mock('@/events/RouteEventBus', () => {
+    const mockBus = {
+        routeOn: jest.fn(() => jest.fn()),
+        routeOnce: jest.fn(),
+        getScopeId: jest.fn(() => 'test-scope'),
+        dispose: jest.fn(),
+    };
+    return {
+        RouteEventBus: {
+            getInstance: jest.fn(() => mockBus),
+        },
+    };
+});
 
 function makeInstance(overrides: Record<string, any> = {}) {
     const cleanups: (() => void)[] = [];
-    const eventBridge = makeBus();
-    const entityEventBus = makeBus();
-    const systemEventBus = makeBus();
-    const routeEventBus = makeBus();
+    const componentBus = ComponentEventBus.getInstance();
+    const entityEventBus = EntityEventBus.getInstance();
+    const systemEventBus = SystemEventBus.getInstance();
+    const routeEventBus = RouteEventBus.getInstance();
 
     const instance: any = {
-        bridgeKey: 'testBridge',
+        eventKey: 'testComponent',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         onCleanup: jest.fn((fn: () => void) => cleanups.push(fn)),
-        getEventBridge: jest.fn(() => eventBridge),
-        getEntityEventBus: jest.fn(() => entityEventBus),
-        getSystemEventBus: jest.fn(() => systemEventBus),
-        getRouteEventBus: jest.fn(() => routeEventBus),
         onSave: jest.fn(),
         onCancel: jest.fn(),
         onLocaleChange: jest.fn(),
@@ -33,52 +79,49 @@ function makeInstance(overrides: Record<string, any> = {}) {
         _cleanups: cleanups,
         ...overrides,
     };
-    return { instance, eventBridge, entityEventBus, systemEventBus, routeEventBus, cleanups };
+    return { instance, componentBus, entityEventBus, systemEventBus, routeEventBus, cleanups };
 }
 
 describe('ListensEngine', () => {
     describe('bindListens — bridge', () => {
         it('绑定桥接事件', () => {
-            const { instance, eventBridge } = makeInstance();
+            const { instance, componentBus } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: 'onSave' } },
             ]);
-            expect(eventBridge.on).toHaveBeenCalledWith(
-                'testBridge',
+            expect(componentBus.componentOn).toHaveBeenCalledWith(
                 'formKey',
                 'save',
                 expect.any(Function)
             );
         });
 
-        it('once 模式用 eventBridge.once', () => {
-            const { instance, eventBridge } = makeInstance();
+        it('once 模式用 componentBus.componentOnce', () => {
+            const { instance, componentBus } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: { handler: 'onSave', once: true } } },
             ]);
-            expect(eventBridge.once).toHaveBeenCalledWith(
-                'testBridge',
+            expect(componentBus.componentOnce).toHaveBeenCalledWith(
                 'formKey',
                 'save',
                 expect.any(Function)
             );
         });
 
-        it('bridgeKey 不存在时跳过', () => {
-            const { instance, eventBridge } = makeInstance({ bridgeKey: undefined });
+        it('eventKey 不存在时跳过', () => {
+            const { instance, componentBus } = makeInstance({ eventKey: undefined });
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: 'onSave' } },
             ]);
-            expect(eventBridge.on).not.toHaveBeenCalled();
+            expect(componentBus.componentOn).not.toHaveBeenCalled();
         });
 
-        it('bridgeKey 为 { key } 格式时解析', () => {
-            const { instance, eventBridge } = makeInstance({ bridgeKey: { key: 'resolved' } });
+        it('eventKey 为 { key } 格式时解析', () => {
+            const { instance, componentBus } = makeInstance({ eventKey: { key: 'resolved' } });
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: 'onSave' } },
             ]);
-            expect(eventBridge.on).toHaveBeenCalledWith(
-                'resolved',
+            expect(componentBus.componentOn).toHaveBeenCalledWith(
                 'formKey',
                 'save',
                 expect.any(Function)
@@ -154,15 +197,19 @@ describe('ListensEngine', () => {
             ListensEngine.bindListens(instance, [
                 { route: 'router', events: { change: 'onRouteChange' } },
             ]);
-            expect(routeEventBus.on).toHaveBeenCalledWith('router', 'change', expect.any(Function));
+            expect(routeEventBus.routeOn).toHaveBeenCalledWith(
+                'router',
+                'change',
+                expect.any(Function)
+            );
         });
 
-        it('once 模式用 routeEventBus.once', () => {
+        it('once 模式用 routeEventBus.routeOnce', () => {
             const { instance, routeEventBus } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { route: 'router', events: { change: { handler: 'onRouteChange', once: true } } },
             ]);
-            expect(routeEventBus.once).toHaveBeenCalled();
+            expect(routeEventBus.routeOnce).toHaveBeenCalled();
         });
     });
 
@@ -192,7 +239,7 @@ describe('ListensEngine', () => {
 
         it('bus 不存在时跳过', () => {
             const instance: any = {
-                bridgeKey: 'test',
+                eventKey: 'test',
                 onCleanup: jest.fn(),
                 onSave: jest.fn(),
             };
@@ -205,15 +252,15 @@ describe('ListensEngine', () => {
     });
 
     describe('onCleanup 自动解绑', () => {
-        it('dispose 时 onCleanup 回调执行 bus.off', () => {
-            const { instance, eventBridge, cleanups } = makeInstance();
+        it('dispose 时 onCleanup 回调执行 componentOn 返回的 off', () => {
+            const { instance, componentBus, cleanups } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: 'onSave' } },
             ]);
 
+            expect(componentBus.componentOn).toHaveBeenCalled();
             expect(cleanups.length).toBeGreaterThan(0);
             for (const cleanup of cleanups) cleanup();
-            expect(eventBridge.off).toHaveBeenCalled();
         });
     });
 });

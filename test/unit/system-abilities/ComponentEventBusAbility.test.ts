@@ -1,8 +1,8 @@
 /**
- * EventBridgeAbility（系统能力）单元测试
+ * ComponentEventBusAbility（系统能力）单元测试
  *
- * 覆盖：bridgeEmit/bridgeOn/bridgeOnce 方法委托到 EventBridge 单例、
- *       bridgeOn 自动注册 onCleanup
+ * 覆盖：componentEmit/componentOn/componentOnce 方法委托到 ComponentEventBus 单例、
+ *       componentOn 自动注册 onCleanup
  */
 
 jest.mock('@/logger', () => {
@@ -21,22 +21,22 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { EventBridgeAbility } from '@/system-abilities/system/EventBridgeAbility';
-import { EventBridge } from '@/events/EventBridge';
+import { ComponentEventBusAbility } from '@/system-abilities/system/ComponentEventBusAbility';
+import { ComponentEventBus } from '@/events/ComponentEventBus';
 import { EventContextBuilder } from '@/context/EventContextBuilder';
 
-describe('EventBridgeAbility (system)', () => {
+describe('ComponentEventBusAbility (system)', () => {
     beforeEach(() => {
         // 重置单例
-        (EventBridge as any).instance = undefined;
+        (ComponentEventBus as any).instance = undefined;
     });
 
     afterEach(() => {
-        const instance = (EventBridge as any).instance as EventBridge | undefined;
+        const instance = (ComponentEventBus as any).instance as ComponentEventBus | undefined;
         if (instance) {
             instance.dispose();
         }
-        (EventBridge as any).instance = undefined;
+        (ComponentEventBus as any).instance = undefined;
     });
 
     // ============================================
@@ -45,22 +45,22 @@ describe('EventBridgeAbility (system)', () => {
 
     describe('AbilityDefinition 结构', () => {
         it('是有效的 AbilityDefinition 对象', () => {
-            expect(EventBridgeAbility).toBeDefined();
-            expect(typeof EventBridgeAbility).toBe('object');
-            expect(typeof EventBridgeAbility.bridgeEmit).toBe('function');
-            expect(typeof EventBridgeAbility.bridgeOn).toBe('function');
-            expect(typeof EventBridgeAbility.bridgeOnce).toBe('function');
+            expect(ComponentEventBusAbility).toBeDefined();
+            expect(typeof ComponentEventBusAbility).toBe('object');
+            expect(typeof ComponentEventBusAbility.componentEmit).toBe('function');
+            expect(typeof ComponentEventBusAbility.componentOn).toBe('function');
+            expect(typeof ComponentEventBusAbility.componentOnce).toBe('function');
         });
     });
 
     // ============================================
-    // bridgeEmit
+    // componentEmit
     // ============================================
 
-    describe('bridgeEmit', () => {
-        it('委托到 EventBridge 单例的 bridgeEmit', () => {
-            const bridge = EventBridge.getInstance();
-            const emitSpy = jest.spyOn(bridge, 'bridgeEmit');
+    describe('componentEmit', () => {
+        it('委托到 ComponentEventBus 单例的 componentEmit', () => {
+            const bridge = ComponentEventBus.getInstance();
+            const emitSpy = jest.spyOn(bridge, 'componentEmit');
 
             const ctx = EventContextBuilder.create()
                 .withEvent('click')
@@ -68,7 +68,7 @@ describe('EventBridgeAbility (system)', () => {
                 .withSource('src1')
                 .withData({ data: 1 })
                 .build();
-            EventBridgeAbility.bridgeEmit(ctx);
+            ComponentEventBusAbility.componentEmit(ctx);
 
             expect(emitSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -82,17 +82,17 @@ describe('EventBridgeAbility (system)', () => {
     });
 
     // ============================================
-    // bridgeOn
+    // componentOn
     // ============================================
 
-    describe('bridgeOn', () => {
-        it('委托到 EventBridge 单例的 bridgeOn', () => {
-            const bridge = EventBridge.getInstance();
-            const onSpy = jest.spyOn(bridge, 'bridgeOn');
+    describe('componentOn', () => {
+        it('委托到 ComponentEventBus 单例的 componentOn', () => {
+            const bridge = ComponentEventBus.getInstance();
+            const onSpy = jest.spyOn(bridge, 'componentOn');
 
             const mockThis = { onCleanup: jest.fn() } as any;
             const handler = jest.fn();
-            const off = EventBridgeAbility.bridgeOn.call(mockThis, 'src1', 'click', handler);
+            const off = ComponentEventBusAbility.componentOn.call(mockThis, 'src1', 'click', handler);
 
             expect(onSpy).toHaveBeenCalledWith('src1', 'click', handler);
             expect(typeof off).toBe('function');
@@ -103,7 +103,7 @@ describe('EventBridgeAbility (system)', () => {
             const mockThis = { onCleanup: jest.fn() } as any;
             const handler = jest.fn();
 
-            EventBridgeAbility.bridgeOn.call(mockThis, 'src1', 'click', handler);
+            ComponentEventBusAbility.componentOn.call(mockThis, 'src1', 'click', handler);
 
             expect(mockThis.onCleanup).toHaveBeenCalledTimes(1);
             expect(mockThis.onCleanup).toHaveBeenCalledWith(expect.any(Function));
@@ -113,7 +113,7 @@ describe('EventBridgeAbility (system)', () => {
             const mockThis = { onCleanup: jest.fn() } as any;
             const handler = jest.fn();
 
-            const off = EventBridgeAbility.bridgeOn.call(mockThis, 'src1', 'click', handler);
+            const off = ComponentEventBusAbility.componentOn.call(mockThis, 'src1', 'click', handler);
 
             const cleanupOff = mockThis.onCleanup.mock.calls[0][0];
             expect(cleanupOff).toBe(off);
@@ -121,16 +121,16 @@ describe('EventBridgeAbility (system)', () => {
     });
 
     // ============================================
-    // bridgeOnce
+    // componentOnce
     // ============================================
 
-    describe('bridgeOnce', () => {
-        it('委托到 EventBridge 单例的 bridgeOnce', () => {
-            const bridge = EventBridge.getInstance();
-            const onceSpy = jest.spyOn(bridge, 'bridgeOnce');
+    describe('componentOnce', () => {
+        it('委托到 ComponentEventBus 单例的 componentOnce', () => {
+            const bridge = ComponentEventBus.getInstance();
+            const onceSpy = jest.spyOn(bridge, 'componentOnce');
 
             const handler = jest.fn();
-            EventBridgeAbility.bridgeOnce('src1', 'click', handler);
+            ComponentEventBusAbility.componentOnce('src1', 'click', handler);
 
             expect(onceSpy).toHaveBeenCalledWith('src1', 'click', handler);
             onceSpy.mockRestore();
@@ -138,22 +138,22 @@ describe('EventBridgeAbility (system)', () => {
     });
 
     // ============================================
-    // 集成：bridgeEmit + bridgeOn 实际收发
+    // 集成：componentEmit + componentOn 实际收发
     // ============================================
 
     describe('集成测试', () => {
-        it('bridgeEmit 发出的事件 bridgeOn 能收到', () => {
+        it('componentEmit 发出的事件 componentOn 能收到', () => {
             const handler = jest.fn();
             const mockThis = { onCleanup: jest.fn() } as any;
 
-            EventBridgeAbility.bridgeOn.call(mockThis, 'myGrid', 'change', handler);
+            ComponentEventBusAbility.componentOn.call(mockThis, 'myGrid', 'change', handler);
             const ctx = EventContextBuilder.create()
                 .withEvent('change')
                 .withType('change')
                 .withSource('myGrid')
                 .withData({ page: 2 })
                 .build();
-            EventBridgeAbility.bridgeEmit(ctx);
+            ComponentEventBusAbility.componentEmit(ctx);
 
             expect(handler).toHaveBeenCalledWith({ page: 2 });
         });

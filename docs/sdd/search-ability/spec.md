@@ -24,7 +24,7 @@
 1. 不负责数据获取：搜索能力只发出事件，不直接调用 EntityManager 或 HTTP 接口
 2. 不负责搜索结果渲染：搜索能力只管理搜索 UI 元素和事件，不管理搜索结果展示
 3. 不负责搜索参数转换：后端搜索参数转换由 data-processor 层负责
-4. 不负责事件桥接配置：EventBridgeAbility 已有声明式桥接机制，搜索能力只提供桥接类型定义
+4. 不负责事件桥接配置：ComponentEventBusAbility 已有声明式桥接机制，搜索能力只提供桥接类型定义
 5. 不修改实体层 SearchAbility 的现有方法签名（toParams/filter/searchBy/matchKeyword/applySort/sort）
 
 # **2. 领域术语**
@@ -45,7 +45,7 @@
 : 对高频触发的输入事件进行延迟处理，在指定时间窗口内只执行最后一次。搜索输入框的 change 事件默认使用 300ms 防抖，避免每次按键都触发搜索。
 
 **搜索桥接（Search Bridge）**
-: EventBridgeAbility 中新增的内置桥接类型，用于声明式配置搜索事件从源组件到目标组件的自动转发。与 pagination、crud、selection 桥接同级。
+: ComponentEventBusAbility 中新增的内置桥接类型，用于声明式配置搜索事件从源组件到目标组件的自动转发。与 pagination、crud、selection 桥接同级。
 
 **组件层 SearchAbility**
 : 定义在 `src/component-abilities/` 中的搜索能力，为组件提供搜索 UI 和事件发射功能。当前仅有 keyword 和 onSearch 两个属性，需重构增强。
@@ -64,7 +64,7 @@
 ## **3.2 外部系统**
 
 - **EntityManager**：接收搜索指令（filter/searchBy），执行数据查询
-- **EventBridgeAbility**：声明式桥接搜索事件到消费组件
+- **ComponentEventBusAbility**：声明式桥接搜索事件到消费组件
 - **EntityListenAbility**：监听搜索事件并调用 EntityManager 方法
 - **EntityEmitAbility**：转发 EntityManager 搜索操作结果为组件事件
 - **ComposableBase**：提供 debounce() 方法，搜索能力复用宿主的防抖机制
@@ -94,7 +94,7 @@ package "实体管理层" {
 }
 
 package "事件桥接" {
-    [EventBridgeAbility] as EB
+    [ComponentEventBusAbility] as EB
 }
 
 package "事件常量" {
@@ -216,7 +216,7 @@ EL --> EL : 使用 SEARCH_EVENTS.CHANGE 监听事件
 actor 用户
 participant "搜索输入框" as Input
 participant "SearchEventsAbility" as Events
-participant "EventBridgeAbility" as Bridge
+participant "ComponentEventBusAbility" as Bridge
 participant "EntityListenAbility" as Listen
 participant "EntityManager" as EM
 
@@ -283,7 +283,7 @@ actor 开发人员
 participant "自定义筛选组件" as Filter
 participant "SearchButtonAbility" as Button
 participant "SearchEventsAbility" as Events
-participant "EventBridgeAbility" as Bridge
+participant "ComponentEventBusAbility" as Bridge
 participant "EntityListenAbility" as Listen
 participant "EntityManager" as EM
 
@@ -325,11 +325,11 @@ Listen -> EM : mgr.searchBy({keyword:'test', category:'B'})
 
 ### **5.4.1 业务规则**
 
-1. **搜索桥接类型规则**：EventBridgeAbility 必须新增 search 内置桥接类型，与 pagination/crud/selection 同级
+1. **搜索桥接类型规则**：ComponentEventBusAbility 必须新增 search 内置桥接类型，与 pagination/crud/selection 同级
    - 验收条件：[配置 eventBridge: { search: 'myToolbar' }] → [自动监听 myToolbar 的 searchchange 事件，调用宿主的 onSearchChange 方法]
 
 2. **搜索桥接配置接口规则**：新增 SearchBridgeConfig 接口，包含 source、enabled 字段
-   - 验收条件：[检查 EventBridgeAbility.ts] → [应包含 SearchBridgeConfig 接口定义，与 PaginationBridgeConfig 风格一致]
+   - 验收条件：[检查 ComponentEventBusAbility.ts] → [应包含 SearchBridgeConfig 接口定义，与 PaginationBridgeConfig 风格一致]
 
 3. **搜索桥接字符串简写规则**：搜索桥接支持字符串简写（source id）和完整配置对象两种形式
    - 验收条件：[eventBridge: { search: 'toolbar1' }] → [等价于 eventBridge: { search: { source: 'toolbar1' } }]
@@ -346,13 +346,13 @@ Listen -> EM : mgr.searchBy({keyword:'test', category:'B'})
 @startuml
 actor 开发人员
 participant "布局定义" as Layout
-participant "EventBridgeAbility" as Bridge
+participant "ComponentEventBusAbility" as Bridge
 participant "ToolbarComponent" as Toolbar
 participant "TableComponent" as Table
 
 开发人员 -> Layout : 配置 eventBridge: { search: 'toolbar1' }
 Layout -> Table : 初始化 eventBridge
-Table -> Bridge : initEventBridge()
+Table -> Bridge : initComponentEvents()
 Bridge -> Bridge : 识别 search 桥接类型
 Bridge -> Toolbar : 监听 searchchange 事件
 Toolbar -> Bridge : 发射 searchchange {keyword:"test"}
@@ -364,7 +364,7 @@ Bridge -> Table : 调用 onSearchChange({keyword:"test"})
 
 1. **源组件不存在**
    - 触发条件：搜索桥接配置的 source id 对应的组件尚未注册
-   - 系统行为：normalizeBridgeConfig 返回配置，但 _bridgeOn 中 get(source) 返回 null，不创建监听
+   - 系统行为：normalizeBridgeConfig 返回配置，但 _componentOn 中 get(source) 返回 null，不创建监听
    - 用户感知：搜索事件不被转发
 
 ## **5.5 EntityListenAbility 搜索监听修复**
@@ -509,7 +509,7 @@ Search -> Search : 仅渲染搜索按钮
 |---------|---------|
 | `src/events/component-events.ts` | 新增 SEARCH_EVENTS 常量、ENTITY_EVENTS 新增 SEARCH_CHANGE |
 | `src/events/entity-events.ts` | 新增 ENTITY_SEARCH_EVENTS 常量 |
-| `src/component-core/abilities/EventBridgeAbility.ts` | 新增 SearchBridgeConfig 接口、search 桥接逻辑、BUILTIN_BRIDGE_KEYS 新增 'search' |
+| `src/component-core/abilities/ComponentEventBusAbility.ts` | 新增 SearchBridgeConfig 接口、search 桥接逻辑、BUILTIN_BRIDGE_KEYS 新增 'search' |
 | `src/component-abilities/entity/EntityListenAbility.ts` | 替换硬编码 'searchchange' 为 SEARCH_EVENTS.CHANGE 常量 |
 | `src/component-abilities/entity/EntityEmitAbility.ts` | 新增搜索事件转发逻辑 |
 | `src/component-abilities/interaction/SearchAbility.ts` | 保留但标记为 @deprecated，引导使用 toolbar/SearchAbility |

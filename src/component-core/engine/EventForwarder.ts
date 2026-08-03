@@ -53,7 +53,7 @@ interface ForwardRoute {
 }
 
 function _forwardEmits(ctx: ForwardContext): void {
-    const source = EventForwarder.resolveKey(ctx.instance.bridgeKey) ?? '';
+    const source = EventForwarder.resolveKey(ctx.instance.eventKey) ?? '';
     for (const emitName of ctx.config.emits!) {
         const resolvedName =
             emitName === '[action]' && ctx.actualAction ? ctx.actualAction : emitName;
@@ -70,16 +70,16 @@ function _forwardEmits(ctx: ForwardContext): void {
 }
 
 function _forwardBridges(ctx: ForwardContext): void {
-    const bridgeKey = EventForwarder.resolveKey(ctx.instance.bridgeKey)!;
+    const eventKey = EventForwarder.resolveKey(ctx.instance.eventKey)!;
     for (const bridge of ctx.config.bridges!) {
         const eventCtx = EventForwarder.buildContext(
             ctx.instance,
             bridge,
             ctx.data,
-            bridgeKey,
+            eventKey,
             'bridge'
         );
-        ctx.instance.bridgeEmit(eventCtx);
+        ctx.instance.componentEmit(eventCtx);
     }
 }
 
@@ -140,7 +140,7 @@ const FORWARD_ROUTES: ForwardRoute[] = [
     {
         key: 'bridge',
         canExecute: ctx =>
-            !!ctx.config.bridges?.length && !!EventForwarder.resolveKey(ctx.instance.bridgeKey),
+            !!ctx.config.bridges?.length && !!EventForwarder.resolveKey(ctx.instance.eventKey),
         execute: _forwardBridges,
     },
     {
@@ -270,7 +270,7 @@ export class EventForwarder {
     }
 
     /**
-     * 解析 bridgeKey / entityKey
+     * 解析 eventKey / entityKey
      *
      * 支持 string | { key: string; fixed?: boolean } | undefined
      */

@@ -166,31 +166,31 @@ __initProps 参照 CrudAbility.__initProps 的模式。
 
 ---
 
-## 任务5：EventBridgeAbility 新增搜索桥接
+## 任务5：ComponentEventBusAbility 新增搜索桥接
 
-**描述**：在 EventBridgeAbility 中新增 SearchBridgeConfig 接口、search 桥接逻辑和 BUILTIN_BRIDGE_KEYS 更新，使搜索事件可通过声明式配置自动桥接。
+**描述**：在 ComponentEventBusAbility 中新增 SearchBridgeConfig 接口、search 桥接逻辑和 BUILTIN_BRIDGE_KEYS 更新，使搜索事件可通过声明式配置自动桥接。
 
 **输入**：
 - 任务1 产出的 SEARCH_EVENTS 常量
-- 现有 `src/component-core/abilities/EventBridgeAbility.ts`
-- design.md 第 1.3.8 节 EventBridgeAbility 修改设计
+- 现有 `src/component-core/abilities/ComponentEventBusAbility.ts`
+- design.md 第 1.3.8 节 ComponentEventBusAbility 修改设计
 
 **输出**：
-- `EventBridgeAbility.ts` - 新增 SearchBridgeConfig 接口、EventBridgeConfig.search 字段、search 桥接逻辑、BUILTIN_BRIDGE_KEYS 更新
+- `ComponentEventBusAbility.ts` - 新增 SearchBridgeConfig 接口、ComponentEventBusConfig.search 字段、search 桥接逻辑、BUILTIN_BRIDGE_KEYS 更新
 
 **验收标准**：
 1. 新增 `SearchBridgeConfig` 接口，包含 `source: string` 和 `enabled?: boolean`，与 PaginationBridgeConfig 风格一致
-2. `EventBridgeConfig` 接口新增 `search?: SearchBridgeConfig | string` 字段，位于 selection 之后
+2. `ComponentEventBusConfig` 接口新增 `search?: SearchBridgeConfig | string` 字段，位于 selection 之后
 3. `BUILTIN_BRIDGE_KEYS` 常量新增 `'search'`，变为 `new Set(['pagination', 'crud', 'selection', 'search'])`
-4. `initEventBridge()` 方法中，选择桥接之后、自定义桥接之前，新增搜索桥接逻辑：normalizeBridgeConfig → _bridgeOn(SEARCH_EVENTS.CHANGE → onSearchChange)
+4. `initComponentEvents()` 方法中，选择桥接之后、自定义桥接之前，新增搜索桥接逻辑：normalizeBridgeConfig → _componentOn(SEARCH_EVENTS.CHANGE → onSearchChange)
 5. 导入语句新增 `SEARCH_EVENTS`：`import { PAGINATION_EVENTS, CRUD_EVENTS, SELECTION_EVENTS, SEARCH_EVENTS } from '@qimenjs/events'`
-6. 搜索桥接逻辑与分页桥接逻辑结构一致（normalizeBridgeConfig + enabled 检查 + _bridgeOn）
+6. 搜索桥接逻辑与分页桥接逻辑结构一致（normalizeBridgeConfig + enabled 检查 + _componentOn）
 7. 现有 pagination/crud/selection 桥接行为不受影响
 8. TypeScript 编译无错误
 
 **代码生成提示**：
 ```
-参照 EventBridgeAbility.ts 中现有的分页桥接（paginationCfg）和选择桥接（selectionCfg）的实现模式。
+参照 ComponentEventBusAbility.ts 中现有的分页桥接（paginationCfg）和选择桥接（selectionCfg）的实现模式。
 SearchBridgeConfig 接口参照 PaginationBridgeConfig 接口定义。
 搜索桥接逻辑插入位置：选择桥接代码块之后、自定义桥接 for 循环之前。
 ```
@@ -270,7 +270,7 @@ collectPaginationContext 函数已存在，直接复用。
 - 集成验证结果（通过/不通过）
 
 **验收标准**：
-1. **简单搜索事件流**：ToolbarComponent 输入关键词 → 防抖后发射 searchchange → EventBridgeAbility 搜索桥接 → EntityListenAbility 监听 → EntityManager.filter() 被调用
+1. **简单搜索事件流**：ToolbarComponent 输入关键词 → 防抖后发射 searchchange → ComponentEventBusAbility 搜索桥接 → EntityListenAbility 监听 → EntityManager.filter() 被调用
 2. **搜索按钮事件流**：点击搜索按钮 → 发射 searchsubmit + searchchange → 同上桥接链路
 3. **复杂搜索事件流**：调用 emitSearch({status:'active'}) → 发射 searchchange {search:{status:'active'}} → EntityListenAbility 监听 → EntityManager.searchBy() 被调用
 4. **实体事件转发**：EntityManager 触发 searchChange → EntityEmitAbility 转发 entity:searchchange → 组件可监听

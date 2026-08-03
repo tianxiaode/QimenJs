@@ -2,7 +2,7 @@ import { type AbilityDefinition, type InferAbilities } from '@/composable';
 import {
     EventAbility,
     DomEventsAbility,
-    EventBridgeAbility,
+    ComponentEventBusAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
     DragEventBusAbility,
@@ -23,7 +23,7 @@ import type { ComponentProps } from './types/init-context';
 export const COMPONENT_ABILITIES = [
     EventAbility,
     DomEventsAbility,
-    EventBridgeAbility,
+    ComponentEventBusAbility,
     EntityEventBusAbility,
     OverlayEventBusAbility,
     DragEventBusAbility,

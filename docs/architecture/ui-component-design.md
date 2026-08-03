@@ -1784,8 +1784,8 @@ renderer → layout, component, theme, pipeline, registry
 | 单次事件 | EventListen.once 字段 | EventBus.once 原生支持，bindEventListen 自动选择 on/once |
 | 条件执行 | 不提供 should，handler 内部 if | should 省不了一行代码，但增加框架复杂度 |
 | 事件同步/异步 | emit 同步，handler 可异步 | Promise 检测处理引用计数，不提供 emitAsync |
-| EventBridge | 全局单例 + 统一 eventScope | 解决发送方/监听方 eventScope 不同导致事件无法路由的问题 |
-| 三类事件分离 | events/forwards/bridges | 内部事件、eventScope 转发、EventBridge 桥接三种通信机制分离 |
+| ComponentEventBus | 全局单例 + 统一 eventScope | 解决发送方/监听方 eventScope 不同导致事件无法路由的问题 |
+| 三类事件分离 | events/forwards/bridges | 内部事件、eventScope 转发、ComponentEventBus 组件间事件三种通信机制分离 |
 | 模板格式 | ComponentTemplate（新）+ JsonTemplateNode[]（旧） | 新格式 name/content 分离 + 三类事件 + body 定义，旧格式向后兼容 |
 | 事件修饰符 | ?once/?debounce=N/?throttle=N | 声明式事件修饰，debounce/throttle 仅限 events（DOM 事件层） |
 | events handler 推导 | 固定推导 click → onClick | 不支持 = 语法，需要自定义 handler 用 body 定义 |
@@ -3046,7 +3046,7 @@ interface TplNode {
     content?: string;       // 语义描述（title/text/icon/value）
     events?: EventDecl[];   // 内部事件 — 触发组件自身 handler
     forwards?: EventDecl[]; // 转发事件 — 通过 eventScope 转发给持有方
-    bridges?: EventDecl[];  // 桥接事件 — 通过 EventBridge 跨组件通信
+    bridges?: EventDecl[];  // 组件间事件 — 通过 ComponentEventBus 跨组件通信
     className?: string;     // CSS 类名
     style?: string | Record<string, any>;
     children?: TplNode[];
@@ -3075,7 +3075,7 @@ interface ComponentTemplate {
 |------|------|------|------|
 | events | `eventName[?modifier]` | `'click'`, `'input?debounce=300'` | 内部事件，handler 名自动推导（click → onClick） |
 | forwards | `eventName[=targetName][?modifier]` | `'click'`, `'click=save'` | eventScope 转发，同名或重命名 |
-| bridges | `eventName[=targetName][?modifier]` | `'click'`, `'click=click:save'` | EventBridge 桥接，同名或重命名 |
+| bridges | `eventName[=targetName][?modifier]` | `'click'`, `'click=click:save'` | ComponentEventBus 组件事件，同名或重命名 |
 
 **事件修饰符**：
 
@@ -3105,28 +3105,28 @@ TemplateComponent.withTemplate({
 })
 ```
 
-### 18.3 EventBridge 事件桥
+### 18.3 ComponentEventBus 组件事件总线
 
-EventBridge 是全局单例，解决组件间 eventScope 不同导致事件无法路由的问题。发送方和监听方的 eventScope 不同，但都通过 EventBridge 的统一 eventScope 中转。
+ComponentEventBus 是全局单例，解决组件间 eventScope 不同导致事件无法路由的问题。发送方和监听方的 eventScope 不同，但都通过 ComponentEventBus 的统一 eventScope 中转。
 
 **架构**：
 
 ```
-发送方组件                    EventBridge（单例）                监听方组件
-eventScope A  ─bridgeEmit→  bridgeScope  ─bridgeOn→  eventScope B
-                              bridge:${sourceId}:${eventName}
+发送方组件                    ComponentEventBus（单例）          监听方组件
+eventScope A  ─componentEmit→  busScope  ─componentOn→  eventScope B
+                              component:${sourceId}:${eventName}
 ```
 
-**系统能力**：`EventBridgeAbility`（`src/system-abilities/system/`）提供组件实例方法：
+**系统能力**：`ComponentEventBusAbility`（`src/system-abilities/system/`）提供组件实例方法：
 
 ```typescript
 // 组件实例可直接调用
-this.bridgeEmit(eventKey, eventName, data);
-this.bridgeOn(sourceId, eventName, handler);
-this.bridgeOnce(sourceId, eventName, handler);
+this.componentEmit(eventKey, eventName, data);
+this.componentOn(sourceId, eventName, handler);
+this.componentOnce(sourceId, eventName, handler);
 ```
 
-**配置能力**：`EventBridgeConfigAbility`（`src/component-core/abilities/`）提供声明式桥接配置：
+**配置能力**：`ComponentEventBusConfigAbility`（`src/component-core/abilities/`）提供声明式组件间事件配置：
 
 ```typescript
 // LayoutNode 中声明式配置
@@ -3141,7 +3141,7 @@ this.bridgeOnce(sourceId, eventName, handler);
 }
 ```
 
-**模板中声明桥接事件**：
+**模板中声明组件间事件**：
 
 ```typescript
 // 新版 ComponentTemplate
@@ -3153,7 +3153,7 @@ this.bridgeOnce(sourceId, eventName, handler);
         ]
     }
 }
-// → 点击按钮时 EventBridge.bridgeEmit(eventKey, 'click:save', data)
+// → 点击按钮时 ComponentEventBus.componentEmit(eventKey, 'click:save', data)
 ```
 
 ### 18.4 三类事件的设计原则
@@ -3162,7 +3162,7 @@ this.bridgeOnce(sourceId, eventName, handler);
 |------|------|---------|---------|------------|
 | events（内部事件） | 组件自身 | 组件内部 handler | `events: ['click']` | `data-event` |
 | forwards（转发事件） | 持有方 | 父组件 eventScope | `forwards: ['click=save']` | `data-emit` |
-| bridges（桥接事件） | 接收方 | EventBridge 全局 | `bridges: ['click=click:save']` | `data-bridge` |
+| bridges（组件间事件） | 接收方 | ComponentEventBus 全局 | `bridges: ['click=click:save']` | `data-bridge` |
 
 **选择原则**：
 - **events**：组件自身处理的事件（如 Input 的 input 事件 → 更新内部状态）
@@ -3308,7 +3308,7 @@ Router 继承 ComposableBase.with(EventAbility)，通过 emit 发布路由切换
 this.emit(eventName, event, { source: 'router' });
 ```
 
-监听方通过 EventBridgeAbility 监听 router 源事件实现刷新。
+监听方通过 ComponentEventBusAbility 监听 router 源事件实现刷新。
 
 ## 二十、emit 统一入口
 

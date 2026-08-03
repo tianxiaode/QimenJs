@@ -11,13 +11,13 @@
  *
  * 事件（保留向后兼容，订阅 FileEventBus 后转发）：
  * - select / uploadProgress / uploaded / uploadError / uploadComplete / remove
- * 通过 on(name, cb) 监听；若设置 eventKey，同时经 bridgeEmit 转发到 EventBridge。
+ * 通过 on(name, cb) 监听；若设置 eventKey，同时经 componentEmit 转发到 ComponentEventBus。
  *
  * @example
  * new UploadButtonComponent({ fileKey: 'avatars', transport: { url: '/api/upload', hashEnabled: true }, accept: 'image/*', multiple: true })
  * new UploadButtonComponent({ fileKey: 'docs', transport: { url: '/api/upload' }, eventKey: 'docUpload' })
  * uploadBtn.on('uploaded', ({ file, result }) => { ... })
- * bridge.bridgeOn('docUpload', 'uploaded', (data) => { ... })
+ * bus.componentOn('docUpload', 'uploaded', (data) => { ... })
  */
 
 import { ButtonComponent } from './ButtonComponent';
@@ -33,7 +33,7 @@ export interface UploadButtonProps {
     text?: string;
     /** 文件通道标识（必填），多个组件共享同一 fileKey 可观察同一队列 */
     fileKey: string;
-    /** 桥接事件 key，设置后反馈事件经 bridgeEmit 转发到 EventBridge */
+    /** 组件事件 key，设置后反馈事件经 componentEmit 转发到 ComponentEventBus */
     eventKey?: string;
     transport?: FileTransportConfig;
     accept?: string;
@@ -240,7 +240,7 @@ export let UploadButtonComponent = ButtonComponent.replace({
 
             self.emit(emitName, data);
 
-            if (self.eventKey && typeof self.bridgeEmit === 'function') {
+            if (self.eventKey && typeof self.componentEmit === 'function') {
                 const ctx = EventContextBuilder.create()
                     .withEvent(emitName)
                     .withType(emitName)
@@ -248,7 +248,7 @@ export let UploadButtonComponent = ButtonComponent.replace({
                     .withSourceType('UploadButton')
                     .withData(data)
                     .build();
-                self.bridgeEmit(ctx);
+                self.componentEmit(ctx);
             }
         },
 

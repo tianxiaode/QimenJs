@@ -1,4 +1,4 @@
-﻿# @qimenjs/events
+# @qimenjs/events
 
 **层级**: 第 1 层  
 **状态**: ✅ 完成  
@@ -14,7 +14,7 @@
 - **EventBus** - 按 scopeId 隔离的底层订阅/发布
 - **EventScope** - 事件作用域生命周期管理
 - **GlobalEventBus** - 全局事件总线单例
-- **EventBridge** - 桥接事件收发（bridgeScope 隔离）
+- **ComponentEventBus** - 组件间事件收发（componentScope 隔离）
 - **EntityEventBus** - 实体事件总线（entityScope 隔离）
 - **OverlayEventBus** - 浮层事件总线（overlayScope 隔离）
 - **DragEventBus** - 拖拽事件总线（dragScope 隔离）
@@ -31,7 +31,7 @@
 GlobalEventBus (单例)
   └── EventBus (底层，按 scopeId 隔离)
        ├── rootScope          → 全局事件
-       ├── bridgeScope        → EventBridge 桥接事件
+       ├── componentScope     → ComponentEventBus 组件事件
        ├── entityScope        → EntityEventBus 实体事件
        ├── overlayScope       → OverlayEventBus 浮层事件
        ├── dragScope          → DragEventBus 拖拽事件

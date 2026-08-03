@@ -1,4 +1,4 @@
-﻿# @qimenjs/system-abilities
+# @qimenjs/system-abilities
 
 **层级**: 第 3 层  
 **状态**: ✅ 完成  
@@ -13,7 +13,7 @@
 
 - **EventAbility** - 事件能力，提供事件监听和发射功能
 - **DomEventsAbility** - DOM 事件能力，提供手势事件处理功能
-- **EventBridgeAbility** - 事件桥能力，暴露 bridgeEmit/bridgeOn/bridgeOnce
+- **ComponentEventBusAbility - 组件事件能力，暴露 componentEmit/componentOn/componentOnce
 - **EntityEventBusAbility** - 实体事件总线能力，暴露 entityEmit/entityOn/entityOnce
 - **OverlayEventBusAbility** - 浮层事件总线能力，暴露 overlayEmit/overlayOn/overlayOnce
 - **DragEventBusAbility** - 拖拽事件总线能力，暴露拖拽相关方法

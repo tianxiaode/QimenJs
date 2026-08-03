@@ -50,7 +50,7 @@
 - ✅ ItemGroup 直挂模式设计决策
   - ItemGroup 子组件通过 appendChild 直接追加到 itemContainer，不走 slot 挂载（无 parent/slotName）
   - 骨架恢复的 `this.parent && this.slotName` 条件天然排除 ItemGroup 子组件，无需额外 isItemContainer flag
-  - 事件通信走 EventBridge + eventKey 注册机制（pub/sub），不依赖 parent 冒泡
+  - 事件通信走 ComponentEventBus + eventKey 注册机制（pub/sub），不依赖 parent 冒泡
   - 配置访问通过 defaultItem 事件转发 + 直接方法调用（getAt/indexOf/updateAt）解决
   - 决策：当前不加 parent 是正确选择，避免引入循环引用和不必要的 flag 维护成本
 - ✅ 初始化管线步骤拆分 + 异步化 + 子组件 self-mount + 委托事件绑定
@@ -209,7 +209,7 @@
   - AnimationAbility / EventForwardAbility / LifecycleAbility / NodePropAbility / CommonPropsAbility
   - 能力对象从 `satisfies AbilityDefinition` 改为 `as AbilityDefinition`
 - ✅ NodePropAbility 移除 _emitLifecycleEvent（已由 LifecycleAbility 提供）
-- ✅ LifecycleAbility bridgeEmit 改为传 EventContext 对象（不再传 globalEventBus.getBusId()）
+- ✅ LifecycleAbility componentEmit 改为传 EventContext 对象（不再传 globalEventBus.getBusId()）
 - ✅ CommonPropsAbility 新增 setNodeHtml 方法 + html 节点属性
 - ✅ contentMode 拆分：html → text(textContent) + html(innerHTML)
   - DEFAULT_NODE_PROP_MAP: text → textContent, 新增 html → innerHTML
@@ -271,7 +271,7 @@
 - ✅ LifecycleAbility 组件生命周期事件能力（mounted/updated/resize 事件发送）
 - ✅ COMPONENT_LIFECYCLE_EVENTS 常量（init/mounted/beforeunmount/dispose/updated/resize/hiddenchange）
 - ✅ 组件生命周期事件发送：初始化→init、挂载→mounted、卸载→beforeunmount、销毁→dispose、更新→updated、尺寸变化→resize、hidden变化→hiddenchange
-- ✅ 有 eventKey 时自动发送桥接事件（bridgeEmit）
+- ✅ 有 eventKey 时自动发送组件事件（componentEmit）
 - ✅ class-copy.ts copyPrototypeMethods 跳过目标已有方法
 - ✅ 包入口 index.ts 完全重写，只导出当前实际存在的模块
 - ✅ 14 个测试套件全部通过（69 tests）
@@ -309,7 +309,7 @@
 - ✅ 删除 12 个纯赋值能力（Position*/Style/Accessibility/Permission/Theme/ColorVariant）
 
 ### 2026-07-14
-- ✅ EventBridgeAbility 重命名为 EventBridgeConfigAbility
+- ✅ ComponentEventBusAbility（原 EventBridgeAbility → EventBridgeConfigAbility → ComponentEventBusAbility）
 - ✅ 新版模板格式 template-types.ts（TplNode/ComponentTemplate）
 - ✅ template-json.ts 新增 convertTemplate() 支持 ComponentTemplate → HTML
 - ✅ template-compiler.ts 新增 BridgeEventTemplate/parseBridgeEventAttr/data-bridge
@@ -336,7 +336,7 @@
 - ✅ DelegatedEventEngine — 委托事件引擎（compileTplEvents / containsElement / getTargetItem / handleDelegatedEvent / 嵌套组件 / _dispatchRule / _resolveHandlerName）
 - ✅ CommonPropsAbility — 通用属性
 - ✅ AnimationAbility — 声明式动画
-- ✅ LifecycleAbility — 生命周期事件（bridgeEmit 传 EventContext）
+- ✅ LifecycleAbility — 生命周期事件（componentEmit 传 EventContext）
 - ✅ tpl-body-def — Body 字段定义
 - ✅ common-props — 属性定义
 

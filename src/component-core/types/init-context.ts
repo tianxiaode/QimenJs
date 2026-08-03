@@ -206,8 +206,8 @@ export interface ComponentProps {
     /** 加载浮层快捷配置，null 时不触发 */
     loading?: LoadingQuickConfig | null;
 
-    /** 桥接事件 key，EventBridge 通道标识 */
-    bridgeKey?: string | { key: string; fixed?: boolean };
+    /** 组件事件 key，ComponentEventBus 通道标识 */
+    eventKey?: string | { key: string; fixed?: boolean };
 
     /** 实体事件 key，EntityEventBus 通道标识 */
     entityKey?: string | { key: string; fixed?: boolean };

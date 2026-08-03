@@ -1,4 +1,4 @@
-﻿# QimenJS 架构文档
+# QimenJS 架构文档
 
 本目录包含 QimenJS 的完整架构文档，包括架构原则、包说明等。
 
@@ -124,7 +124,7 @@ UI 层（8 个，依赖应用层及以下）
 3. **Pipeline 模式** - weight+offset 排序、熔断、追踪、计时、统计
 4. **Entity Manager 模式** - 5 种 Manager 通过 `extends + withAbilities + InferAbilities` 组合获得不同功能
 5. **Component 模式** - 双层架构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent），withTemplate 预编译 + 纯克隆实例化 + 多模板条件选择
-6. **EventBridge 单例模式** - 统一 eventScope 路由，解决跨作用域事件通信
+6. **ComponentEventBus 单例模式** - 统一 eventScope 路由，解决跨作用域事件通信
 7. **自动注册模式** - 模块导入时自动注册，"引入即注册"约定
 
 ### 架构关键设计详解
@@ -150,7 +150,7 @@ UI 层（8 个，依赖应用层及以下）
 - **预编译阶段**（类定义时执行一次）：
   - 提取节点数据（`data-content` 属性 → 内容属性映射）
   - 生成 `contentProperties` 配置
-  - 预编译事件模板（`data-event`/`data-emit`/`data-bridge` → InternalEventBinding/BridgeEventTemplate）
+  - 预编译事件模板（`data-event`/`data-emit`/`data-bridge` → InternalEventBinding/ComponentEventBusTemplate）
   - 创建模板 DOM 元素（`templateEl`）
 
 - **实例化阶段**（每次 `new Xxx()` 执行）：
@@ -165,7 +165,7 @@ UI 层（8 个，依赖应用层及以下）
 
 - **构造即完整**：`new Xxx()` 自动完成 initElement + 内容填充 + 事件绑定 + 注册，不需要 `initialize()`
 
-- **static 配置**：`static children` / `static bridges` 等类级别配置，所有实例共享，props 可覆盖
+- **static 配置**：`static children` / `static componentEventBuses` 等类级别配置，所有实例共享，props 可覆盖
 
 - **支持三种模板格式**：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate
 
@@ -179,14 +179,14 @@ UI 层（8 个，依赖应用层及以下）
   - 支持 `?debounce=N`/`?throttle=N` 修饰符
 
 - **外部事件**（`data-emit`），三种模式按优先级：
-  1. `bridges` 声明的 → 走事件桥 `emitUI` 发布
+  1. `componentEventBuses` 声明的 → 走组件事件 `emitUI` 发布
   2. 实例有 `onXxx` 方法 → emitKey 驼峰化自动绑定（`saveBtn:tap` → `onSaveBtnTap`）
-  3. 默认 → 走事件桥 `emitUI` 发布
+  3. 默认 → 走组件事件 `emitUI` 发布
 
-- **EventBridge 单例**：
-  - `src/events/EventBridge.ts` 统一 eventScope，解决发送方/监听方 eventScope 不同导致事件无法路由的问题
-  - `EventBridgeAbility`（system-abilities）提供组件实例方法 `this.bridgeEmit()`/`this.bridgeOn()`/`this.bridgeOnce()`
-  - `EventBridgeAbility`（component-core/abilities/）是配置能力，声明式事件桥接
+- **ComponentEventBus 单例**：
+  - `src/events/ComponentEventBus.ts` 统一 eventScope，解决发送方/监听方 eventScope 不同导致事件无法路由的问题
+  - `ComponentEventBusAbility`（system-abilities）提供组件实例方法 `this.componentEmit()`/`this.componentOn()`/`this.componentOnce()`
+  - `ComponentEventBusConfigAbility`（component-core/abilities/）是配置能力，声明式组件事件桥接
 
 #### 主题切换流程
 

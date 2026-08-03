@@ -1,14 +1,14 @@
 /**
  * ListensEngine — 外部事件订阅引擎
  *
- * 事件体系 ③：桥接/实体/系统/路由/文件事件订阅
+ * 事件体系 ③：组件/实体/系统/路由/文件事件订阅
  *
  * Pipeline FINALIZE 阶段最先执行（bindListens），
  * 因为这些订阅不依赖子组件实例，越早订阅越早能收到事件。
  *
  * 五路分流：
- *   - source → EventBridge.on(bridgeKey, source, events)
- *   - entity → EntityEventBus.on(entityKey, entity, events)
+ *   - source → ComponentEventBus.componentOn(eventKey, source, events)
+ *   - entity → EntityEventBus.entityOn(entityKey, entity, events)
  *   - system → SystemEventBus.on(events)
  *   - route  → RouteEventBus.on(route, events)
  *   - file   → FileEventBus.fileOn(fileKey, action, handler)
@@ -19,15 +19,20 @@
 import type {
     ListenItem,
     EventMapping,
-    BridgeListen,
+    ComponentListen,
     EntityListen,
     SystemListen,
     RouteListen,
     FileListen,
 } from '../types/tpl-node-types';
 import { EventForwarder } from './EventForwarder';
+import { ComponentEventBus } from '@/events/ComponentEventBus';
+import { EntityEventBus } from '@/events/EntityEventBus';
+import { SystemEventBus } from '@/events/SystemEventBus';
+import { RouteEventBus } from '@/events/RouteEventBus';
+import { FileEventBus } from '@/events/FileEventBus';
 
-function isBridgeListen(item: ListenItem): item is BridgeListen {
+function isComponentListen(item: ListenItem): item is ComponentListen {
     return 'source' in item;
 }
 function isEntityListen(item: ListenItem): item is EntityListen {
@@ -51,8 +56,8 @@ export class ListensEngine {
         if (!listens?.length) return;
 
         for (const item of listens) {
-            if (isBridgeListen(item)) {
-                ListensEngine._bindBridge(instance, item.source, item.events);
+            if (isComponentListen(item)) {
+                ListensEngine._bindComponent(instance, item.source, item.events);
             } else if (isEntityListen(item)) {
                 ListensEngine._bindEntity(instance, item.entity, item.events);
             } else if (isSystemListen(item)) {
@@ -75,27 +80,26 @@ export class ListensEngine {
         return method.bind(instance);
     }
 
-    private static _bindBridge(
+    private static _bindComponent(
         instance: any,
         source: string,
         events: Record<string, EventMapping>
     ): void {
-        const bridgeKey = EventForwarder.resolveKey(instance.bridgeKey);
-        if (!bridgeKey) return;
+        const eventKey = EventForwarder.resolveKey(instance.eventKey);
+        if (!eventKey) return;
 
-        const eventBridge = ListensEngine._getEventBridge(instance);
-        if (!eventBridge) return;
+        const bus = ComponentEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                eventBridge.once(bridgeKey, source, eventName, handler);
+                bus.componentOnce(source, eventName, handler);
             } else {
-                eventBridge.on(bridgeKey, source, eventName, handler);
+                const off = bus.componentOn(source, eventName, handler);
+                instance.onCleanup(off);
             }
-            instance.onCleanup(() => eventBridge.off(bridgeKey, source, eventName, handler));
         }
     }
 
@@ -108,36 +112,34 @@ export class ListensEngine {
         const entityKey = EventForwarder.resolveKey(instance.entityKey);
         if (!entityKey) return;
 
-        const entityEventBus = ListensEngine._getEntityEventBus(instance);
-        if (!entityEventBus) return;
+        const bus = EntityEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                entityEventBus.entityOnce(entityKey, eventName, handler);
+                bus.entityOnce(entityKey, eventName, handler);
             } else {
-                const off = entityEventBus.entityOn(entityKey, eventName, handler);
+                const off = bus.entityOn(entityKey, eventName, handler);
                 instance.onCleanup(off);
             }
         }
     }
 
     private static _bindSystem(instance: any, events: Record<string, EventMapping>): void {
-        const systemEventBus = ListensEngine._getSystemEventBus(instance);
-        if (!systemEventBus) return;
+        const bus = SystemEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                systemEventBus.once(eventName, handler);
+                bus.once(eventName, handler);
             } else {
-                systemEventBus.on(eventName, handler);
+                const off = bus.on(eventName, handler);
+                instance.onCleanup(off);
             }
-            instance.onCleanup(() => systemEventBus.off(eventName, handler));
         }
     }
 
@@ -146,19 +148,18 @@ export class ListensEngine {
         route: string,
         events: Record<string, EventMapping>
     ): void {
-        const routeEventBus = ListensEngine._getRouteEventBus(instance);
-        if (!routeEventBus) return;
+        const bus = RouteEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                routeEventBus.once(route, eventName, handler);
+                bus.routeOnce(route, eventName, handler);
             } else {
-                routeEventBus.on(route, eventName, handler);
+                const off = bus.routeOn(route, eventName, handler);
+                instance.onCleanup(off);
             }
-            instance.onCleanup(() => routeEventBus.off(route, eventName, handler));
         }
     }
 
@@ -167,64 +168,18 @@ export class ListensEngine {
         fileKey: string,
         events: Record<string, EventMapping>
     ): void {
-        const fileEventBus = ListensEngine._getFileEventBus(instance);
-        if (!fileEventBus) return;
+        const bus = FileEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._resolveHandler(instance, mapping);
             const once = typeof mapping === 'object' ? mapping.once : false;
 
             if (once) {
-                fileEventBus.fileOnce(fileKey, eventName, handler);
+                bus.fileOnce(fileKey, eventName, handler);
             } else {
-                const off = fileEventBus.fileOn(fileKey, eventName, handler);
+                const off = bus.fileOn(fileKey, eventName, handler);
                 instance.onCleanup(off);
             }
-        }
-    }
-
-    private static _getEventBridge(instance: any): any {
-        if (typeof instance.getEventBridge === 'function') return instance.getEventBridge();
-        try {
-            return require('@/events/EventBridge').eventBridge;
-        } catch {
-            return null;
-        }
-    }
-
-    private static _getEntityEventBus(instance: any): any {
-        if (typeof instance.getEntityEventBus === 'function') return instance.getEntityEventBus();
-        try {
-            return require('@/events/EntityEventBus').entityEventBus;
-        } catch {
-            return null;
-        }
-    }
-
-    private static _getSystemEventBus(instance: any): any {
-        if (typeof instance.getSystemEventBus === 'function') return instance.getSystemEventBus();
-        try {
-            return require('@/events/SystemEventBus').systemEventBus;
-        } catch {
-            return null;
-        }
-    }
-
-    private static _getRouteEventBus(instance: any): any {
-        if (typeof instance.getRouteEventBus === 'function') return instance.getRouteEventBus();
-        try {
-            return require('@/events/RouteEventBus').routeEventBus;
-        } catch {
-            return null;
-        }
-    }
-
-    private static _getFileEventBus(instance: any): any {
-        if (typeof instance.getFileEventBus === 'function') return instance.getFileEventBus();
-        try {
-            return require('@/events/FileEventBus').fileEventBus;
-        } catch {
-            return null;
         }
     }
 }

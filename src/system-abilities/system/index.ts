@@ -1,6 +1,6 @@
 export { EventAbility } from './EventAbility';
 export { DomEventsAbility } from './DomEventsAbility';
-export { EventBridgeAbility } from './EventBridgeAbility';
+export { ComponentEventBusAbility } from './ComponentEventBusAbility';
 export { EntityEventBusAbility } from './EntityEventBusAbility';
 export { OverlayEventBusAbility } from './OverlayEventBusAbility';
 export { DragEventBusAbility } from './DragEventBusAbility';

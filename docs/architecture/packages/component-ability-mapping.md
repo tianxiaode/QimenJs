@@ -10,7 +10,7 @@
 | **DomEventsAbility** | `@qimenjs/system-abilities` | bind() 手势事件（tap/drag/swipe/...） |
 | **ThemeAbility** | `component/abilities` | 主题感知，onThemeChange() |
 | **StyleAbility** | `component/abilities` | className/style、addClass/removeClass/toggleClass/hasClass/replaceClass、setStyle/getStyle/removeStyle、setAttribute/getAttribute/removeAttribute |
-| **EventBridgeAbility** | `component/abilities` | eventBridge 声明式事件桥接，自动绑定/自动销毁 |
+| **ComponentEventBusAbility** | `system/abilities` | eventBridge 声明式事件桥接，自动绑定/自动销毁 |
 
 ## 组件能力映射
 
@@ -89,7 +89,7 @@
 | **ToolbarAbility** | sortedChildren (getter), insertAt/insertBeforeItem/insertAfterItem/removeAtPosition/hideAtPosition/showAtPosition/getAtPosition/reorder | — | — |
 | **PaginationAbility** | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo (getter/setter), gotoPage/prevPage/nextPage/firstPage/lastPage/renderPagination, PAGINATION_POSITIONS 常量 | — | currentPage/totalPages/totalRecords/pageSize/showFirstLast/showPageInfo |
 | **CrudAbility** | crudButtons (getter), showButton/hideButton/toggleButton/isButtonVisible/renderCrud, CRUD_POSITIONS 常量 | — | show*/按钮配置 |
-| **EventBridgeAbility** | eventBridge (getter/setter), initEventBridge/destroyEventBridge, __initProps 自动延迟绑定 | — | eventBridge |
+| **ComponentEventBusAbility** | componentEvents (getter/setter), initComponentEvents/destroyComponentEvents, __initProps 自动延迟绑定 | — | componentEvents |
 
 ## 能力使用频次
 
@@ -375,7 +375,7 @@ class MyToolbar extends ComponentBase {
 }
 ```
 
-## 事件桥接（EventBridgeAbility）
+## 事件桥接（ComponentEventBusAbility）
 
 所有组件自动拥有此能力（BASE_ABILITIES）。声明式配置事件源，自动创建监听，组件 dispose 时通过 onCleanup 自动销毁。
 
@@ -387,7 +387,7 @@ Toolbar (发事件)  ──pagechange/crudaction──>  Table (声明 eventBrid
 
 - 工具栏：PaginationAbility 发 `pagechange`，CrudAbility 发 `crudaction`
 - 数据组件：声明 `eventBridge: { pagination: { source: 'toolbarId' }, crud: { source: 'toolbarId' } }`
-- EventBridgeAbility：自动查找源组件，创建事件监听，调用目标组件的 `onPageChange`/`onCreate`/`onDelete` 等方法
+- ComponentEventBusAbility：自动查找源组件，创建事件监听，调用目标组件的 `onPageChange`/`onCreate`/`onDelete` 等方法
 - 自动销毁：通过 `onCleanup` 注册 off 函数，组件 dispose 时自动解绑
 
 ### 布局定义
@@ -456,14 +456,14 @@ TableComponent 和 FormComponent 已内置默认处理方法：
   └── ComposableBase.dispose()
        ├── 1. cleanups 逆序执行
        │    ├── scope.dispose() → EventScope 自动解绑所有事件
-       │    ├── onCleanup(off) → EventBridge 注册的 off 函数自动调用
+       │    ├── onCleanup(off) → ComponentEventBus 注册的 off 函数自动调用
        │    └── ... 其他清理
        ├── 2. debounce cancel
        └── 3. abilityStates.clear()
 ```
 
-EventBridgeAbility 通过 `onCleanup(off)` 注册源组件的 off 函数，组件 dispose 时自动解绑，无需手动清理。
+ComponentEventBusAbility 通过 `onCleanup(off)` 注册源组件的 off 函数，组件 dispose 时自动解绑，无需手动清理。
 
 ### 时序保证
 
-EventBridgeAbility 使用 `queueMicrotask` 延迟绑定，确保同一轮 mount 的所有组件都注册到 ComponentManager 后再查找源组件。
+ComponentEventBusAbility 使用 `queueMicrotask` 延迟绑定，确保同一轮 mount 的所有组件都注册到 ComponentManager 后再查找源组件。

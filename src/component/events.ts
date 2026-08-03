@@ -1,7 +1,7 @@
 /**
  * UI 组件事件枚举
  *
- * 规范化事件名，配合 EventBridgeAbility 使用。
+ * 规范化事件名，配合 ComponentEventBusAbility 使用。
  * 所有组件事件统一在此定义，避免硬编码字符串。
  *
  * 命名规则：

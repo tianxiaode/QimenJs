@@ -10,7 +10,7 @@ QimenJs 的事件系统基于 **scopeId 隔离**：每个 EventScope 有唯一�
 |------|-----------|------------|---------|
 | 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
 | 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
-| 桥接事件 | EventBridge.bridgeScope | 桥接 scope 内 | `bridge.bridgeEmit(id, 'click')` |
+| 组件间事件 | ComponentEventBus.componentScope | 组件间通信 scope 内 | `this.componentEmit(ctx)` / `ComponentEventBus.getInstance().componentOn(...)` |
 | 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
 
 ### scopeId 隔离规则
@@ -26,11 +26,11 @@ on(event, handler, scopeId)        → handler 注册到 scopeId 下
 - **组件 B** `this.on('click', handler)` → handler 注册在组件 B scope 下
 - **ItemGroup** 通过 `navItem.on('click', handler)` → handler 注册在 navItem scope 下，所以 `navItem.emit('click')` 能触发
 - **GlobalEventBus** `emit('theme:change')` → 只触发 rootScope 下的 handler
-- **EventBridge** `bridgeEmit(id, 'click')` → 只触发 bridgeScope 下的 handler
+- **ComponentEventBus** `componentEmit(ctx)` → 只触发 componentScope 下的 handler
 
 ### 如何创建独立事件流
 
-如果需要新的独立事件流（类似 EventBridge），创建自己的 scope：
+如果需要新的独立事件流（类似 ComponentEventBus），创建自己的 scope：
 
 ```typescript
 import { globalEventBus } from '@qimenjs/event';
@@ -70,6 +70,13 @@ DOM 事件通过 `dom:` 前缀区分，但隔离靠的是 scopeId，不是前缀
 
 ## 概述
 
+> **命名迁移说明**：原 `EventBridge` 已重命名为 `ComponentEventBus`，原 `EventBridgeAbility` 已重命名为 `ComponentEventBusAbility`。为保持向后兼容，以下命名保留不变：
+> - 模板配置中的 `bridges` 字段名
+> - Layout 配置中的 `eventBridge` 属性名
+> - HTML 属性中的 `data-bridge`
+> 
+> 这些配置项在运行时都通过 `ComponentEventBus` 路由，仅命名保持不变。
+
 QimenJs 的事件系统分为三层，每层解决不同的问题：
 
 ### 组件事件通信三层模型
@@ -78,12 +85,12 @@ QimenJs 的事件系统分为三层，每层解决不同的问题：
 |------|------|-----------|---------|
 | tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { nodeName: { event: { ... } } }` |
 | emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `TplEventAction.emits` |
-| bridges | EventBridge | 跨组件解耦通信 | `TplEventAction.bridges` |
+| bridges | ComponentEventBus | 跨组件解耦通信 | `TplEventAction.bridges` |
 
 **关键规则**：
 - **tplEvents** — 组件内部，自己模板的 DOM 事件委托到 root el
 - **emits** — 组件对外，emit() 发布组件级事件，直接消费者 .on() 监听
-- **bridges** — 跨组件，bridgeEmit() 通过 EventBridge 解耦，任意层 listens 订阅
+- **bridges** — 跨组件，componentEmit() 通过 ComponentEventBus 解耦，任意层 listens 订阅
 - tplEvents 不跨组件边界做委托
 - ItemGroup 子组件事件走 tplEvents.$items 声明 + getTargetItem 匹配
 
@@ -154,7 +161,7 @@ $items: {
 |------|-----------|------------|---------|
 | 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
 | 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
-| 桥接事件 | EventBridge.bridgeScope | 桥接 scope 内 | `bridge.bridgeEmit(id, 'click')` |
+| 组件间事件 | ComponentEventBus.componentScope | 组件间通信 scope 内 | `this.componentEmit(ctx)` / `ComponentEventBus.getInstance().componentOn(...)` |
 | 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
 | 路由事件 | RouteEventBus | 路由 scope 内 | `TplEventAction.router` |
 | 系统事件 | SystemEventBus | 系统 scope 内 | `TplEventAction.system` |
@@ -222,9 +229,9 @@ const result = await Renderer.getInstance().render(layout, { handlers });
 
 ## 场景二：工具栏自定义按钮（复用，需组件间通信）
 
-当自定义按钮需要触发其他组件（如表格）的响应时，使用 `eventBridge`。
+当自定义按钮需要触发其他组件（如表格）的响应时，使用 `ComponentEventBus`。
 
-### 方式 A：使用内置 CRUD 桥接 + meta 注入能力
+### 方式 A：使用内置 CRUD 组件事件通道 + meta 注入能力
 
 不再需要定义派生类，直接在 Layout 中通过 `meta` 注入能力：
 
@@ -253,7 +260,7 @@ const layout = {
 };
 ```
 
-### 方式 B：使用自定义事件桥接 + meta 注入方法和能力
+### 方式 B：使用自定义组件事件通道 + meta 注入方法和能力
 
 ```typescript
 const layout = {
@@ -279,9 +286,9 @@ const layout = {
             eventBridge: {
                 pagination: 'exportBar',
                 crud: { source: 'exportBar', actions: ['create', 'delete'] },
-                // 自定义桥接：监听 exportBar 的 'export' 事件，调用 this.onExport
+                // 自定义事件映射：监听 exportBar 的 'export' 事件，调用 this.onExport
                 export: 'exportBar',
-                // 自定义桥接：监听 exportBar 的 'approve' 事件，调用 this.onApprove
+                // 自定义事件映射：监听 exportBar 的 'approve' 事件，调用 this.onApprove
                 approve: { source: 'exportBar', event: 'approve', handler: 'onApprove' },
             },
         },
@@ -289,7 +296,7 @@ const layout = {
 };
 ```
 
-### 自定义桥接的默认值规则
+### 自定义事件映射的默认值规则
 
 | 配置项 | 默认值 | 示例 |
 |--------|--------|------|
@@ -315,9 +322,9 @@ eventBridge: {
 
 ---
 
-## 场景三：扩展事件桥——类似实体能力的一组事件
+## 场景三：扩展组件事件通道——类似实体能力的一组事件
 
-当需要监听一组相关事件（如实体 CRUD 的 created/updated/deleted），`EventBridgeAbility` 的自定义 key 可以逐个声明，但如果事件组有统一的模式，更好的做法是创建一个专门的 Ability 来管理。
+当需要监听一组相关事件（如实体 CRUD 的 created/updated/deleted），`ComponentEventBusAbility` 的自定义 key 可以逐个声明，但如果事件组有统一的模式，更好的做法是创建一个专门的 Ability 来管理。
 
 ### 方案：创建 EntityBridgeAbility
 
@@ -343,7 +350,7 @@ export interface EntityBridgeConfig {
  * EntityBridgeAbility 实体事件桥接能力
  *
  * 监听源组件的 entity:* 事件，自动转发到目标组件。
- * 与 EventBridgeAbility 类似，但专门处理实体事件组。
+ * 与 ComponentEventBusAbility 类似，但专门处理实体事件组。
  */
 export const EntityBridgeAbility: AbilityDefinition = {
     entityBridge: {
@@ -433,13 +440,13 @@ const layout = {
 };
 ```
 
-### 与 EventBridgeAbility 的对比
+### 与 ComponentEventBusAbility 的对比
 
-| 维度 | EventBridgeAbility | EntityBridgeAbility |
+| 维度 | ComponentEventBusAbility | EntityBridgeAbility |
 |------|-------------------|-------------------|
 | 事件源 | 组件级事件（pagechange、crudaction） | 实体级事件（entity:created、entity:listed） |
 | 事件粒度 | 单个事件 → 单个方法 | 一组事件 → 统一命名规则的方法 |
-| 配置方式 | 按 key 声明桥接 | 按 source 声明，events 过滤 |
+| 配置方式 | 按 key 声明事件映射 | 按 source 声明，events 过滤 |
 | 典型场景 | Toolbar → Table | Table → StatusPanel/LogPanel |
 
 ---
@@ -511,7 +518,7 @@ const userPageLayout = {
             eventBridge: {
                 crud: { source: 'userToolbar', actions: ['create', 'delete'] },
                 pagination: 'userToolbar',
-                // 自定义桥接：导出
+                // 自定义事件映射：导出
                 export: 'userToolbar',
             },
             columns: [
@@ -531,7 +538,7 @@ const userPageLayout = {
 ```
 Toolbar.Button click
   → CrudAbility.emit('crudaction', { action: 'create' })
-  → EventBridgeAbility._bridgeOn('userToolbar', 'crudaction', handler)
+  → ComponentEventBus.getInstance().componentOn('userToolbar', 'crudaction', handler)
   → Table.onCreate(e)
   → EntityListenAbility._handleCrudAction(e)
   → mgr.create(data)
@@ -544,7 +551,7 @@ Toolbar.Button click
 ```
 Toolbar.Button click
   → handlers.handleExport(component, domEvent)
-  → 直接执行导出逻辑（不经过事件桥）
+  → 直接执行导出逻辑（不经过组件事件通道）
 ```
 
 **3. 翻页：**
@@ -552,7 +559,7 @@ Toolbar.Button click
 ```
 Toolbar.Pagination gotoPage(2)
   → PaginationAbility.emit('pagechange', { page: 2, pageSize: 20 })
-  → EventBridgeAbility._bridgeOn('userToolbar', 'pagechange', handler)
+  → ComponentEventBus.getInstance().componentOn('userToolbar', 'pagechange', handler)
   → Table.onPageChange(e)
   → EntityListenAbility._handlePageChange(e)
   → mgr.loadPage(2)
@@ -644,11 +651,11 @@ const layout = {
 │
 ├── 需要其他组件响应（Toolbar → Table）
 │   ├── 属于 CRUD/分页/选择
-│   │   └── 使用 EventBridgeAbility 内置桥接
+│   │   └── 使用 ComponentEventBusAbility 内置事件映射
 │   │       eventBridge: { crud: 'toolbarId', pagination: 'toolbarId' }
 │   │
 │   └── 自定义事件
-│       └── 使用 EventBridgeAbility 自定义 key
+│       └── 使用 ComponentEventBusAbility 自定义 key
 │           eventBridge: { export: 'toolbarId' }
 │
 └── 需要监听 EntityManager 的事件组

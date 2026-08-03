@@ -74,7 +74,7 @@ export interface DelegatedEventRule {
     /** 转发为组件事件 */
     emits?: string[];
 
-    /** 转发为桥接事件 */
+    /** 转发为组件事件（通过 ComponentEventBus） */
     bridges?: string[];
 
     /** 转发为实体操作 */

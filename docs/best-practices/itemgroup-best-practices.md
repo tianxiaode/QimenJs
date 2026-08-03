@@ -126,7 +126,7 @@ tplEvents: {
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `emits` | `string[]` | 转发为组件事件，emit `${keyProp}:${emitName}` 和 `${emitName}` |
-| `bridges` | `string[]` | 转发为桥接事件（通过 EventBridge 解耦转发） |
+| `bridges` | `string[]` | 转发为组件间事件（通过 ComponentEventBus 解耦转发） |
 | `entities` | `string \| true` | 转发为实体操作；`true` 时自动用 keyProp 解析 |
 | `router` | `string \| true` | 转发为路由事件；`true` 时自动用 keyProp 解析 |
 | `system` | `string \| string[]` | 转发为系统事件 |
@@ -249,7 +249,7 @@ ItemGroup 的事件通信遵循三层模型：
 |------|------|-----------|---------|
 | tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { ... }` |
 | emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `tplEvents.$items: { Type: { event: { emits: [...] } } }` |
-| bridges | EventBridge | 跨组件解耦通信 | `tplEvents.$items: { Type: { event: { bridges: [...] } } }` |
+| bridges | ComponentEventBus | 跨组件解耦通信 | `tplEvents.$items: { Type: { event: { bridges: [...] } } }` |
 
 **关键规则**：
 - tplEvents 不跨组件边界做委托
@@ -457,7 +457,7 @@ ItemGroup 子组件通过 `appendChild` 直接追加到 `itemContainer`，而非
    - ItemGroup 子组件没有 `parent`/`slotName`，条件为 false，自动跳过骨架恢复
    - `isItemContainer` getter 作为额外安全网：未来若 ItemGroup 子组件需要 parent，重写此 getter 返回 true 即可
 
-3. **事件通信不依赖 parent** — 事件通过 `EventBridge` + `eventKey` 注册机制（pub/sub 模式），而非父子链遍历：
+3. **事件通信不依赖 parent** — 事件通过 `ComponentEventBus` + `eventKey` 注册机制（pub/sub 模式），而非父子链遍历：
    - 每个组件有独立的 EventScope
    - 子组件事件通过 `tplEvents.$items` 声明 + `getTargetItem` 匹配
    - 父组件通过 `.on('item:event', handler)` 监听
@@ -476,4 +476,4 @@ ItemGroup 子组件通过 `appendChild` 直接追加到 `itemContainer`，而非
 | 骨架恢复 | 销毁时恢复占位符 | 销毁时直接移除 |
 | 销毁流程 | 先恢复骨架再 dispose | 直接 dispose |
 | 配置访问 | 通过 parent.nodeMapMgr | 通过 defaultItem + 直接方法 |
-| 事件冒泡 | 通过 EventBridge | 通过 tplEvents.$items + getTargetItem |
+| 事件冒泡 | 通过 ComponentEventBus | 通过 tplEvents.$items + getTargetItem |

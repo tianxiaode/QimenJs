@@ -63,11 +63,11 @@ function makeInstance(domEvents?: DomEventsMap) {
         bind: jest.fn(),
         onCleanup: jest.fn((fn: () => void) => cleanups.push(fn)),
         emit: jest.fn(),
-        bridgeEmit: jest.fn(),
+        componentEmit: jest.fn(),
         entityEmit: jest.fn(),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
-        bridgeKey: 'testBridge',
+        eventKey: 'testBridge',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         constructor: { name: 'TestComponent' },
@@ -159,11 +159,11 @@ function makePanelInstance(domEvents?: DomEventsMap) {
         bind: jest.fn(),
         onCleanup: jest.fn((fn: () => void) => cleanups.push(fn)),
         emit: jest.fn(),
-        bridgeEmit: jest.fn(),
+        componentEmit: jest.fn(),
         entityEmit: jest.fn(),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
-        bridgeKey: 'testBridge',
+        eventKey: 'testBridge',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         constructor: { name: 'PanelComponent' },
@@ -244,11 +244,11 @@ function makeAccordionInstance(domEvents?: DomEventsMap) {
         bind: jest.fn(),
         onCleanup: jest.fn((fn: () => void) => cleanups.push(fn)),
         emit: jest.fn(),
-        bridgeEmit: jest.fn(),
+        componentEmit: jest.fn(),
         entityEmit: jest.fn(),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
-        bridgeKey: 'testBridge',
+        eventKey: 'testBridge',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         constructor: { name: 'AccordionComponent' },
@@ -825,7 +825,7 @@ describe('DomEventsEngine', () => {
             };
 
             DomEventsEngine._dispatchRule(instance, rule, { type: 'click', target: makeEl() });
-            expect(instance.bridgeEmit).toHaveBeenCalled();
+            expect(instance.componentEmit).toHaveBeenCalled();
         });
 
         it('entities 转发通过 EventForwarder', () => {

@@ -13,7 +13,7 @@ export * from './EventScope';
 export * from './GlobalEventBus';
 export * from './EventSourceRegistrar';
 
-export { EventBridge } from './EventBridge';
+export { ComponentEventBus, componentEventBus } from './ComponentEventBus';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
 export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';
 export { DragEventBus, dragEventBus, type DragState, type DragAction } from './DragEventBus';

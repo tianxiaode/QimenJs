@@ -122,4 +122,3 @@ export const TOOLBAR_EVENTS = {
     /** 搜索提交 */
     SEARCH: 'toolbarsearch',
 } as const;
-

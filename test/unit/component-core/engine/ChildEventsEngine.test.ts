@@ -27,11 +27,11 @@ function makeInstance() {
         nodeMap: { toolbar: { component: child } },
         onCleanup: jest.fn((fn: () => void) => cleanups.push(fn)),
         emit: jest.fn(),
-        bridgeEmit: jest.fn(),
+        componentEmit: jest.fn(),
         entityEmit: jest.fn(),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
-        bridgeKey: 'testBridge',
+        eventKey: 'testBridge',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         constructor: { name: 'TestComponent' },
@@ -126,7 +126,7 @@ describe('ChildEventsEngine', () => {
             expect(instance.emit).toHaveBeenCalledWith('save', expect.anything());
         });
 
-        it('bridges 转发为桥接事件', () => {
+        it('bridges 转发为组件事件', () => {
             const { instance, child } = makeInstance();
 
             ChildEventsEngine.bindChildEvents(instance, {
@@ -134,7 +134,7 @@ describe('ChildEventsEngine', () => {
             });
 
             child.emit('save', { id: 1 });
-            expect(instance.bridgeEmit).toHaveBeenCalled();
+            expect(instance.componentEmit).toHaveBeenCalled();
         });
 
         it('entities 转发为实体操作', () => {
@@ -205,11 +205,11 @@ describe('ChildEventsEngine', () => {
                 onToolbarSave: jest.fn(),
                 onCleanup: jest.fn(),
                 emit: jest.fn(),
-                bridgeEmit: jest.fn(),
+                componentEmit: jest.fn(),
                 entityEmit: jest.fn(),
                 routerEmit: jest.fn(),
                 systemEmit: jest.fn(),
-                bridgeKey: 'test',
+                eventKey: 'test',
                 entityKey: 'test',
                 routeKey: 'test',
                 constructor: { name: 'Test' },

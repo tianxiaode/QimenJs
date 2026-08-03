@@ -371,8 +371,8 @@ export type EventMapping = string | { handler: string; once?: boolean };
  * { source: 'formKey', events: { save: 'onSave', cancel: { handler: 'onCancel', once: true } } }
  * ```
  */
-export interface BridgeListen {
-    /** 桥接事件源 key */
+export interface ComponentListen {
+    /** 组件事件源 key（源组件的 eventKey） */
     source: string;
     /** 事件映射：源事件名 → 处理方法名或带选项对象 */
     events: Record<string, EventMapping>;
@@ -482,7 +482,7 @@ export interface ChildEventConfig {
     emits?: string[];
     /** 转发为实体操作 */
     entities?: string;
-    /** 转发为桥接事件 */
+    /** 转发为组件事件（通过 ComponentEventBus，字段名保留 bridges 向后兼容） */
     bridges?: string[];
     /** 转发为文件命令（值为 fileKey，action 取事件名） */
     file?: string;
@@ -539,7 +539,7 @@ export interface ChildEventsListen {
  *       for (const item of this.listens) {
  *           if (item.childEvents)  for (const [nodeName, events] of Object.entries(item.childEvents))
  *                                                            this.nodeMap[nodeName].on(event, method);
- *           if (item.source)    EventBridge.on(this.bridgeKey, item.source, item.events);
+ *           if (item.source)    ComponentEventBus.componentOn(this.eventKey, item.source, item.events);
  *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
  *           if (item.system)    SystemEventBus.on(item.events);
  *           if (item.route)     RouteEventBus.on(item.route, item.events);
@@ -561,7 +561,7 @@ export interface ChildEventsListen {
  */
 export type ListenItem =
     | ChildEventsListen
-    | BridgeListen
+    | ComponentListen
     | EntityListen
     | FloatListen
     | DragListen

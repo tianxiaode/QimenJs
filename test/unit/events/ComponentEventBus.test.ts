@@ -1,7 +1,7 @@
 /**
- * EventBridge 单元测试
+ * ComponentEventBus 单元测试
  *
- * 覆盖：单例模式、bridgeEmit/bridgeOn/bridgeOnce 事件收发、
+ * 覆盖：单例模式、componentEmit/componentOn/componentOnce 事件收发、
  *       事件名编码规则、dispose、scopeId 统一性
  */
 
@@ -21,22 +21,22 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { EventBridge } from '@/events/EventBridge';
+import { ComponentEventBus } from '@/events/ComponentEventBus';
 import { EventContextBuilder } from '@/context';
 
-describe('EventBridge', () => {
+describe('ComponentEventBus', () => {
     beforeEach(() => {
         // 每次测试前重置单例，确保测试隔离
-        (EventBridge as any).instance = undefined;
+        (ComponentEventBus as any).instance = undefined;
     });
 
     afterEach(() => {
         // 清理单例
-        const instance = (EventBridge as any).instance as EventBridge | undefined;
+        const instance = (ComponentEventBus as any).instance as ComponentEventBus | undefined;
         if (instance) {
             instance.dispose();
         }
-        (EventBridge as any).instance = undefined;
+        (ComponentEventBus as any).instance = undefined;
     });
 
     // ============================================
@@ -45,14 +45,14 @@ describe('EventBridge', () => {
 
     describe('单例模式', () => {
         it('getInstance 返回同一实例', () => {
-            const a = EventBridge.getInstance();
-            const b = EventBridge.getInstance();
+            const a = ComponentEventBus.getInstance();
+            const b = ComponentEventBus.getInstance();
             expect(a).toBe(b);
         });
 
         it('不同时间调用 getInstance 返回同一实例', () => {
-            const a = EventBridge.getInstance();
-            const b = EventBridge.getInstance();
+            const a = ComponentEventBus.getInstance();
+            const b = ComponentEventBus.getInstance();
             expect(a).toBe(b);
         });
     });
@@ -63,26 +63,26 @@ describe('EventBridge', () => {
 
     describe('getScopeId', () => {
         it('返回非空字符串', () => {
-            const bridge = EventBridge.getInstance();
-            const scopeId = bridge.getScopeId();
+            const bus = ComponentEventBus.getInstance();
+            const scopeId = bus.getScopeId();
             expect(typeof scopeId).toBe('string');
             expect(scopeId.length).toBeGreaterThan(0);
         });
     });
 
     // ============================================
-    // bridgeEmit / bridgeOn
+    // componentEmit / componentOn
     // ============================================
 
-    describe('bridgeEmit / bridgeOn', () => {
+    describe('componentEmit / componentOn', () => {
         it('发送和监听同一 sourceId + eventName 的事件', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('myGrid', 'selectionchange', handler);
+            bus.componentOn('myGrid', 'selectionchange', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:myGrid:selectionchange')
+                    .withEvent('component:myGrid:selectionchange')
                     .withType('selectionchange')
                     .withSource('myGrid')
                     .withData({ selected: [1, 2] })
@@ -94,16 +94,16 @@ describe('EventBridge', () => {
         });
 
         it('不同 sourceId 的事件互不干扰', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler1 = jest.fn();
             const handler2 = jest.fn();
 
-            bridge.bridgeOn('grid1', 'change', handler1);
-            bridge.bridgeOn('grid2', 'change', handler2);
+            bus.componentOn('grid1', 'change', handler1);
+            bus.componentOn('grid2', 'change', handler2);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:grid1:change')
+                    .withEvent('component:grid1:change')
                     .withType('change')
                     .withSource('grid1')
                     .withData({ data: 'a' })
@@ -115,16 +115,16 @@ describe('EventBridge', () => {
         });
 
         it('相同 sourceId 不同 eventName 互不干扰', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler1 = jest.fn();
             const handler2 = jest.fn();
 
-            bridge.bridgeOn('myGrid', 'selectionchange', handler1);
-            bridge.bridgeOn('myGrid', 'pagechange', handler2);
+            bus.componentOn('myGrid', 'selectionchange', handler1);
+            bus.componentOn('myGrid', 'pagechange', handler2);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:myGrid:selectionchange')
+                    .withEvent('component:myGrid:selectionchange')
                     .withType('selectionchange')
                     .withSource('myGrid')
                     .withData({ page: 1 })
@@ -135,14 +135,14 @@ describe('EventBridge', () => {
             expect(handler2).not.toHaveBeenCalled();
         });
 
-        it('bridgeOn 返回 off 函数，调用后不再接收事件', () => {
-            const bridge = EventBridge.getInstance();
+        it('componentOn 返回 off 函数，调用后不再接收事件', () => {
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            const off = bridge.bridgeOn('myGrid', 'change', handler);
+            const off = bus.componentOn('myGrid', 'change', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:myGrid:change')
+                    .withEvent('component:myGrid:change')
                     .withType('change')
                     .withSource('myGrid')
                     .withData({ a: 1 })
@@ -152,9 +152,9 @@ describe('EventBridge', () => {
 
             off();
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:myGrid:change')
+                    .withEvent('component:myGrid:change')
                     .withType('change')
                     .withSource('myGrid')
                     .withData({ a: 2 })
@@ -164,16 +164,16 @@ describe('EventBridge', () => {
         });
 
         it('多个监听器独立工作', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler1 = jest.fn();
             const handler2 = jest.fn();
 
-            bridge.bridgeOn('src', 'click', handler1);
-            bridge.bridgeOn('src', 'click', handler2);
+            bus.componentOn('src', 'click', handler1);
+            bus.componentOn('src', 'click', handler2);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({})
@@ -185,18 +185,18 @@ describe('EventBridge', () => {
         });
 
         it('off 一个监听器不影响其他监听器', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler1 = jest.fn();
             const handler2 = jest.fn();
 
-            const off1 = bridge.bridgeOn('src', 'click', handler1);
-            bridge.bridgeOn('src', 'click', handler2);
+            const off1 = bus.componentOn('src', 'click', handler1);
+            bus.componentOn('src', 'click', handler2);
 
             off1();
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({})
@@ -207,14 +207,14 @@ describe('EventBridge', () => {
             expect(handler2).toHaveBeenCalledTimes(1);
         });
 
-        it('无 data 时 bridgeEmit 不报错', () => {
-            const bridge = EventBridge.getInstance();
+        it('无 data 时 componentEmit 不报错', () => {
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('src', 'click', handler);
+            bus.componentOn('src', 'click', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .build()
@@ -223,14 +223,14 @@ describe('EventBridge', () => {
             expect(handler).toHaveBeenCalledTimes(1);
         });
 
-        it('事件名编码规则 — 内部使用 bridge:sourceId:eventName', () => {
-            const bridge = EventBridge.getInstance();
+        it('事件名编码规则 — 内部使用 component:sourceId:eventName', () => {
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('router', 'change', handler);
+            bus.componentOn('router', 'change', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:router:change')
+                    .withEvent('component:router:change')
                     .withType('change')
                     .withSource('router')
                     .withData({ path: '/home' })
@@ -241,27 +241,27 @@ describe('EventBridge', () => {
     });
 
     // ============================================
-    // bridgeOnce
+    // componentOnce
     // ============================================
 
-    describe('bridgeOnce', () => {
+    describe('componentOnce', () => {
         it('只触发一次后自动取消', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
 
-            bridge.bridgeOnce('src', 'click', handler);
+            bus.componentOnce('src', 'click', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({ a: 1 })
                     .build()
             );
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({ a: 2 })
@@ -272,25 +272,25 @@ describe('EventBridge', () => {
             expect(handler).toHaveBeenCalledWith({ a: 1 });
         });
 
-        it('bridgeOnce 不影响 bridgeOn 监听器', () => {
-            const bridge = EventBridge.getInstance();
+        it('componentOnce 不影响 componentOn 监听器', () => {
+            const bus = ComponentEventBus.getInstance();
             const onceHandler = jest.fn();
             const onHandler = jest.fn();
 
-            bridge.bridgeOnce('src', 'click', onceHandler);
-            bridge.bridgeOn('src', 'click', onHandler);
+            bus.componentOnce('src', 'click', onceHandler);
+            bus.componentOn('src', 'click', onHandler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({})
                     .build()
             );
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({})
@@ -308,21 +308,21 @@ describe('EventBridge', () => {
 
     describe('dispose', () => {
         it('dispose 后不再接收事件', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('src', 'click', handler);
+            bus.componentOn('src', 'click', handler);
 
-            bridge.dispose();
+            bus.dispose();
 
             // dispose 后重新获取单例（因为旧实例已销毁）
-            (EventBridge as any).instance = undefined;
-            const newBridge = EventBridge.getInstance();
+            (ComponentEventBus as any).instance = undefined;
+            const newBus = ComponentEventBus.getInstance();
             const newHandler = jest.fn();
-            newBridge.bridgeOn('src', 'click', newHandler);
+            newBus.componentOn('src', 'click', newHandler);
 
-            newBridge.bridgeEmit(
+            newBus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData({})
@@ -333,7 +333,7 @@ describe('EventBridge', () => {
             expect(handler).toHaveBeenCalledTimes(0);
             expect(newHandler).toHaveBeenCalledTimes(1);
 
-            newBridge.dispose();
+            newBus.dispose();
         });
     });
 
@@ -343,13 +343,13 @@ describe('EventBridge', () => {
 
     describe('边界情况', () => {
         it('sourceId 包含特殊字符', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('my-grid_v2', 'change', handler);
+            bus.componentOn('my-grid_v2', 'change', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:my-grid_v2:change')
+                    .withEvent('component:my-grid_v2:change')
                     .withType('change')
                     .withSource('my-grid_v2')
                     .withData({ ok: true })
@@ -359,13 +359,13 @@ describe('EventBridge', () => {
         });
 
         it('eventName 包含冒号（如 click:save）', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('src', 'click:save', handler);
+            bus.componentOn('src', 'click:save', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click:save')
+                    .withEvent('component:src:click:save')
                     .withType('click:save')
                     .withSource('src')
                     .withData({})
@@ -375,13 +375,13 @@ describe('EventBridge', () => {
         });
 
         it('data 为 null', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('src', 'click', handler);
+            bus.componentOn('src', 'click', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData(null)
@@ -391,13 +391,13 @@ describe('EventBridge', () => {
         });
 
         it('data 为 undefined', () => {
-            const bridge = EventBridge.getInstance();
+            const bus = ComponentEventBus.getInstance();
             const handler = jest.fn();
-            bridge.bridgeOn('src', 'click', handler);
+            bus.componentOn('src', 'click', handler);
 
-            bridge.bridgeEmit(
+            bus.componentEmit(
                 EventContextBuilder.create()
-                    .withEvent('bridge:src:click')
+                    .withEvent('component:src:click')
                     .withType('click')
                     .withSource('src')
                     .withData(undefined)

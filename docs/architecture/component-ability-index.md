@@ -117,7 +117,7 @@ export interface TemplateComponent
 |------|------|------|
 | EventAbility | `src/system-abilities/system/EventAbility.ts` | 事件发布/订阅 |
 | DomEventsAbility | `src/system-abilities/dom/DomEventsAbility.ts` | DOM 事件适配（含 bind/onDom） |
-| EventBridgeAbility | `src/system-abilities/system/EventBridgeAbility.ts` | 事件桥接（bridgeOn/bridgeEmit/bridgeOnce） |
+| ComponentEventBusAbility | `src/system-abilities/system/ComponentEventBusAbility.ts` | 组件事件（componentOn/componentEmit/componentOnce） |
 | EntityEventBusAbility | `src/system-abilities/system/EntityEventBusAbility.ts` | 实体事件总线 |
 | OverlayEventBusAbility | `src/system-abilities/system/OverlayEventBusAbility.ts` | 浮层事件总线 |
 | DragEventBusAbility | `src/system-abilities/system/DragEventBusAbility.ts` | 拖拽事件总线 |
@@ -127,7 +127,7 @@ export interface TemplateComponent
 | CommonPropsAbility | `src/component-core/abilities/CommonPropsAbility.ts` | 组件根元素常用属性快捷方式 + setNodeHtml |
 | AnimationAbility | `src/component-core/abilities/AnimationAbility.ts` | 声明式动画（playEnter/playLeave） |
 | DragAbility | `src/component-abilities/drag/DragAbility.ts` | 声明式拖拽（move 本地，start/end 走 DragEventBus） |
-| LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + bridgeEmit 传 EventContext） |
+| LifecycleAbility | `src/component-core/abilities/LifecycleAbility.ts` | 生命周期事件（mounted/updated/resize + componentEmit 传 EventContext） |
 
 > 已移除的纯赋值能力（v2 由通用属性体系替代）：
 > PositionPxAbility / PositionRawAbility / PositionBoolAbility / PositionDirectAbility /
@@ -244,15 +244,15 @@ interface IThemeAbility {
 > IContentAbility 接口已删除。i18n 刷新功能由 NodeMapAbility 的 `refreshI18n()`/`getI18nKeys()` 提供，
 > 浮层管理由 OverlayAbility 的 `createOverlay()`/`initTooltipOverlay()` 提供。
 
-#### IEventBridgeAbility — 事件桥接能力
+#### IComponentEventBusAbility — 组件事件能力
 
 ```typescript
-interface IEventBridgeAbility {
-    /** 事件桥接配置 */
-    eventBridge: Record<string, any>;
+interface IComponentEventBusAbility {
+    /** 组件事件配置 */
+    componentEvents: Record<string, any>;
 
-    /** 初始化事件桥接 */
-    initEventBridge(): void;
+    /** 初始化组件事件 */
+    initComponentEvents(): void;
 }
 ```
 
@@ -342,12 +342,12 @@ LayoutNode.bridges（混合数组）
 
 #### 机制三：eventBridge（接收方声明，能力自动绑定）
 
-组件通过 props.eventBridge 配置声明监听哪个组件的什么事件，EventBridgeAbility 在 `__initProps` 中自动绑定。
+组件通过 props.eventBridge 配置声明监听哪个组件的什么事件，ComponentEventBusAbility 在 `__initProps` 中自动绑定。
 
 ```
 props.eventBridge
-  → EventBridgeAbility.__initProps() 解析
-  → queueMicrotask → initEventBridge()
+  → ComponentEventBusAbility.__initProps() 解析
+  → queueMicrotask → initComponentEvents()
   → ComponentManager.get(sourceId) 查找源组件
   → source.on(event, handler) 在源组件上注册监听
   → onCleanup 自动解绑
@@ -370,9 +370,9 @@ props.eventBridge
 |------|------|----------|--------|----------|
 | handlers | 发送方 | renderer bind-handler | DOM 事件 | 简单 UI 交互（click/input/submit） |
 | bridges.on | 接收方 | renderer mount | globalEventBus | 组件联动 + 数据联动 + 全局状态 |
-| eventBridge | 接收方 | EventBridgeAbility | 源组件的 on() | 声明式组件间事件桥接 |
+| eventBridge | 接收方 | ComponentEventBusAbility | 源组件的 on() | 声明式组件间事件桥接 |
 
-**底层统一**：handlers 最终走 onDom（addEventListener），bridges.on 和 eventBridge 最终走 globalEventBus.on（EventBus）。
+**底层统一**：handlers 最终走 onDom（addEventListener），bridges.on 和 eventBridge 最终走 globalEventBus.on（EventBus）。bridgeKey 已废弃，使用 ComponentEventBus 替代 EventBridge。
 
 ### 1.8 内部渲染模型
 
@@ -397,7 +397,7 @@ RootComponent.render()           // 递归渲染
     ├── 解析 children → 递归 render
     ├── 解析 handlers → onDom 绑定
     ├── 解析 bridges.on → globalEventBus 绑定
-    └── 解析 eventBridge → EventBridgeAbility 处理
+    └── 解析 eventBridge → ComponentEventBusAbility 处理
 ```
 
 #### 与旧模型的对比
@@ -417,7 +417,7 @@ RootComponent.render()           // 递归渲染
 | 解析 LayoutNode JSON | ChildrenAbility | 拆解 JSON，创建子组件，挂载到父 el |
 | handlers 绑定 | DomEventsAbility（onDom） | 组件创建后自行绑定 DOM 事件 |
 | bridges.on 绑定 | EventAbility（on） | 组件创建后自行绑定 EventBus 监听 |
-| eventBridge 绑定 | EventBridgeAbility | __initProps 中自动处理 |
+| eventBridge 绑定 | ComponentEventBusAbility | __initProps 中自动处理 |
 | props 初始化 | 各能力的 __initProps | mount 时统一调用 |
 
 #### RootComponent
@@ -624,7 +624,7 @@ interface ILocalDataManager {
 | CommonPropsAbility | `CommonPropsAbility.ts` | 组件根元素常用属性快捷方式（cls/style/hidden/disabled/width/height 等）+ setNodeHtml |
 | AnimationAbility | `AnimationAbility.ts` | 声明式动画（playEnter/playLeave，纯 getter 读 ctor._animation） |
 | DragAbility | `DragAbility.ts` | 声明式拖拽（move 本地处理，start/end 走 DragEventBus） |
-| LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，bridgeEmit 传 EventContext 对象） |
+| LifecycleAbility | `LifecycleAbility.ts` | 生命周期事件（_emitMounted/_emitUpdated/_emitResize，componentEmit 传 EventContext 对象） |
 
 ### 2.11.0 委托事件引擎 (`src/component-core/engine/DelegatedEventEngine.ts`)
 
@@ -752,7 +752,7 @@ v2 模式下 nodeMap 为一级结构 `nodeMap[name] = NodeMetadata`，不再使�
 | TABLE_EVENTS.SELECTION_CHANGE/ROW_SELECT | 表格选择 |
 | FORM_EVENTS.SAVE/CREATE/EDIT/DELETE/REFRESH | 表单操作 |
 
-### 3.5 事件桥接 (`src/component-core/abilities/EventBridgeAbility.ts`)
+### 3.5 组件事件桥接 (`src/system-abilities/system/ComponentEventBusAbility.ts`)
 
 内置桥接类型：
 
@@ -850,7 +850,7 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 用户操作 → PaginationEventsAbility.gotoPage/changeSize
          → 更新状态（PaginationStateAbility）
          → 发射 PAGINATION_EVENTS.CHANGE {page, pageSize}
-         → EventBridgeAbility 桥接
+         → ComponentEventBusAbility 桥接
          → EntityListenAbility 监听
          → EntityManager.jump/changeSize/loadPage
          → EntityEmitAbility 转发 entity:listed
@@ -916,13 +916,13 @@ PaginationAbility（聚合层，单个 AbilityDefinition）
 | 日期 | 变更内容 |
 |------|----------|
 | 2026-07-07 | 初始创建；记录分页能力拆分（PaginationAbility → 7 个子能力） |
-| 2026-07-08 | 搜索能力重构：新增 toolbar/SearchAbility（聚合层，含 SearchInputAbility/SearchButtonAbility/SearchEventsAbility）；新增 SEARCH_EVENTS/ENTITY_SEARCH_EVENTS 事件常量；EventBridgeAbility 新增 search 桥接；EntityListenAbility 替换硬编码 'searchchange'；EntityEmitAbility 新增搜索事件转发；interaction/SearchAbility 标记 @deprecated |
+| 2026-07-08 | 搜索能力重构：新增 toolbar/SearchAbility（聚合层，含 SearchInputAbility/SearchButtonAbility/SearchEventsAbility）；新增 SEARCH_EVENTS/ENTITY_SEARCH_EVENTS 事件常量；ComponentEventBusAbility（原 EventBridgeAbility）新增 search 桥接；EntityListenAbility 替换硬编码 'searchchange'；EntityEmitAbility 新增搜索事件转发；interaction/SearchAbility 标记 @deprecated |
 | 2026-07-08 | 搜索组合查询增强：SearchEventsAbility 事件数据类型从联合类型改为组合类型 `{ keyword?, search? }`；SearchButtonAbility 始终组装完整数据；SearchInputAbility 防抖事件携带 searchParams；EntityListenAbility if-else if 互斥分支改为两个独立 if；searchMode 语义调整为 UI 渲染模式 |
 | 2026-07-08 | toolbar 目录重组：9 个分页文件移入 pagination/ 子目录，5 个搜索文件移入 search/ 子目录，新建 pagination/index.ts 和 search/index.ts，更新 toolbar/index.ts 导出路径 |
 | 2026-07-08 | 新增 IconAbility + createContentManager：图标能力使用 ContentManager 模式管理多图标；TextAbility 重写支持 ContentManager 模式（兼容旧 data-ref 模式）；ButtonComponent 重写使用 IconAbility + TextAbility；删除 TemplateRegistry（统一使用 HtmlTemplateRegistrar）；新增 content/ 目录 |
 | 2026-07-08 | 工具栏重构：ToolbarAbility 新增外观声明（q-toolbar 类名 + role="toolbar" + 默认 gap=sm）和折叠切换（collapsed 属性 + toggleCollapsed 方法 + toolbarcollapsechange 事件）；ToolbarComponent 移除硬编码 PaginationAbility/CrudAbility/SearchAbility（改为 meta.abilities 按需注入），新增 direction 属性支持横/竖布局；新增 IconComponent（IconAbility + SizeAbility）和 TextComponent（TextAbility + SizeAbility）预置组件；新增 ComponentTypes.ICON/TEXT；新增 toolbarCSS 折叠样式 |
 | 2026-07-08 | 浮层能力：新增 ContentPrefix 常量（ICON/TEXT/TIPS/DROPDOWN/POPOVER）+ OVERLAY_PREFIXES 集合；新增 createOverlayManager 工厂方法（模板获取、DOM 创建、定位计算、生命周期管理）；新增 positionOverlay 定位工具函数（4方向定位、自动翻转、视口约束）；createContentManager 检测浮层前缀时自动调用 createOverlayManager；新增 Tips/Dropdown/Popover 模板；现有组件 contentSlots 迁移为 ContentPrefix 常量引用 |
-| 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IEventBridgeAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |
+| 2026-07-08 | ComponentBase 重构设计：新增能力接口定义（IRenderAbility/ILifecycleAbility/IStateAbility/IStyleAbility/IThemeAbility/IContentAbility/IComponentEventBusAbility）；BASE_ABILITIES 新增 RenderAbility + LifecycleAbility；StateAbility 为按需能力；ComponentBase 瘦身至身份属性 + 能力收集骨架 |
 | 2026-07-10 | ComponentBase 能力重构：InitAbility/NodeMapAbility/OverlayAbility 从 ComponentBase 拆分为 AbilityDefinition；AnimationAbility/EntityCoreAbility/PermissionAbility 从 AbilityBase 类模式改为 AbilityDefinition 对象模式；删除 AbilityBase（文件不存在）；删除 IContentAbility 接口（功能分散到 NodeMapAbility/OverlayAbility）；content 目录精简（createContentManager/createOverlayManager/positionOverlay/normalize 已迁移）；html-template 包重命名为 template（HtmlTemplateRegistrar → TemplateRegistrar，@qimenjs/html-template → @qimenjs/template，RegistryHub 键 'html' → 'template'） |
 | 2026-07-12 | Badge 角标能力：新增 BadgeAbility（initBadge/setBadgeText/setBadgeVisible，对齐 OverlayAbility 模式）；新增 BadgeComponent（withTemplate + ContentAbility，独立组件管定位和渲染）；新增 BadgeProps/BADGE_KEYS（LayoutNode 声明式配置，badge/badgeType/badgePlacement/badgeTypeOverride）；InitAbility 步骤6 驱动 initBadge + assignProps 赋值；BadgeComponent 放在 src/component/badge/ 目录（组件按目录分层） |
 | 2026-07-12 | 布局能力：新增 LayoutAbility（fit/hbox/vbox/grid/center 五种布局模式，自动为根元素添加布局 CSS 类）；布局类型值常量化（LAYOUT_FIT/LAYOUT_HBOX/LAYOUT_VBOX/LAYOUT_GRID/LAYOUT_CENTER）；合并到 TEMPLATE_COMPONENT_ABILITIES；TemplateComponent.flush() 新增 flushLayout() 调用 |

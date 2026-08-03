@@ -74,12 +74,12 @@ describe('LifecycleAbility', () => {
         );
     });
 
-    it('_emitLifecycleEvent 有 eventKey 时发送桥接事件', () => {
+    it('_emitLifecycleEvent 有 eventKey 时发送组件事件', () => {
         const emitSpy = jest.fn();
-        const bridgeEmitSpy = jest.fn();
+        const componentEmitSpy = jest.fn();
         const instance = makeInstance({
             emit: emitSpy,
-            bridgeEmit: bridgeEmitSpy,
+            componentEmit: componentEmitSpy,
             eventKey: 'formKey',
         });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'mounted');
@@ -87,33 +87,33 @@ describe('LifecycleAbility', () => {
             'mounted',
             expect.objectContaining({ data: undefined })
         );
-        expect(bridgeEmitSpy).toHaveBeenCalledWith(
+        expect(componentEmitSpy).toHaveBeenCalledWith(
             expect.objectContaining({ event: 'mounted', source: 'formKey' })
         );
     });
 
-    it('_emitLifecycleEvent 无 eventKey 时不发送桥接事件', () => {
+    it('_emitLifecycleEvent 无 eventKey 时不发送组件事件', () => {
         const emitSpy = jest.fn();
-        const bridgeEmitSpy = jest.fn();
-        const instance = makeInstance({ emit: emitSpy, bridgeEmit: bridgeEmitSpy });
+        const componentEmitSpy = jest.fn();
+        const instance = makeInstance({ emit: emitSpy, componentEmit: componentEmitSpy });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'mounted');
         expect(emitSpy).toHaveBeenCalledWith(
             'mounted',
             expect.objectContaining({ data: undefined })
         );
-        expect(bridgeEmitSpy).not.toHaveBeenCalled();
+        expect(componentEmitSpy).not.toHaveBeenCalled();
     });
 
     it('_emitLifecycleEvent 从 constructor.eventKey 读取', () => {
         const emitSpy = jest.fn();
-        const bridgeEmitSpy = jest.fn();
+        const componentEmitSpy = jest.fn();
         const instance = makeInstance({
             emit: emitSpy,
-            bridgeEmit: bridgeEmitSpy,
+            componentEmit: componentEmitSpy,
             constructor: { eventKey: 'tableKey', name: 'TestComp' },
         });
         LifecycleAbility._emitLifecycleEvent.call(instance, 'updated');
-        expect(bridgeEmitSpy).toHaveBeenCalledWith(
+        expect(componentEmitSpy).toHaveBeenCalledWith(
             expect.objectContaining({ event: 'updated', source: 'tableKey' })
         );
     });

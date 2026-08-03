@@ -33,6 +33,9 @@ const CONFIG_KEYS = [
     'data', 'once', 'debounce', 'throttle',
 ];
 
+// Note: 'bridges' is kept as the config key name for forwarding to ComponentEventBus
+// for backward compatibility. The runtime method is now componentEmit.
+
 export class DomEventsEngine {
     /**
      * 编译 domEvents 为 DelegatedEventRule[]

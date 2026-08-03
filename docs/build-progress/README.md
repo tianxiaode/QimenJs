@@ -1,4 +1,4 @@
-﻿# QimenJS 构建进度
+# QimenJS 构建进度
 
 本目录记录所有包的构建进度、测试状态、问题和遗留工作。
 
@@ -180,19 +180,19 @@ docs/build-progress/
 - template 模块已移除（迁移到 component-core），从文档中清理
 
 ### 2026-07-14
-- EventBridge 升级为单例模式：新建 `src/events/EventBridge.ts`，统一 eventScope 解决发送方/监听方 eventScope 不同导致事件无法路由的问题
-- EventBridge 系统能力：新建 `src/system-abilities/system/EventBridgeAbility.ts`，提供 `this.bridgeEmit()`/`this.bridgeOn()`/`this.bridgeOnce()` 组件实例方法
-- EventBridge 配置能力重命名：`EventBridgeAbility` → `EventBridgeConfigAbility`（component-core/abilities/），内部改用 `this.bridgeOn()`
+- ComponentEventBus 升级为单例模式：新建 `src/events/ComponentEventBus.ts`，统一 eventScope 解决发送方/监听方 eventScope 不同导致事件无法路由的问题
+- ComponentEventBus 系统能力：新建 `src/system-abilities/system/ComponentEventBusAbility.ts`，提供 `this.componentEmit()`/`this.componentOn()`/`this.componentOnce()` 组件实例方法
+- ComponentEventBus 配置能力重命名：`ComponentEventBusAbility` → `ComponentEventBusConfigAbility`（component-core/abilities/），内部改用 `this.componentOn()`
 - 新版模板格式：新建 `template-types.ts`（TplNode/ComponentTemplate），name/content 分离 + events/forwards/bridges 三类事件 + body 定义
 - 模板转换重写：`template-json.ts` 新增 `convertTemplate()` 支持 ComponentTemplate → HTML，`tpl` 根节点不生成 HTML（根元素由组件 tag 创建）
 - 预编译扩展：`template-compiler.ts` 新增 BridgeEventTemplate/parseBridgeEventAttr/data-bridge 支持，parseEventAttr 支持 `?debounce=N`/`?throttle=N` 修饰符
 - 类型扩展：`types.ts` NodeTemplateMeta 增加 bridgeAttr，InternalEventBinding 增加 debounce/throttle 字段
 - withTemplate 三格式支持：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate
-- TemplateAbility 新增 `bindBridgeEvents()` 方法，桥接事件通过 EventBridge 单例转发
+- TemplateAbility 新增 `bindComponentEvents()` 方法，桥接事件通过 ComponentEventBus 单例转发
 - InitAbility `bindInternalEvents` 传递 debounce/throttle 给 `this.bind()`
 - 模板预设全量迁移：`template-presets.ts` 从 JsonTemplateNode[] 迁移到 ComponentTemplate 格式
 - TemplateCacheAbility 支持新格式自动识别（有 tpl 字段 → convertTemplate，数组 → jsonTemplateToHtml）
-- 修复测试文件：`entity-permission-eventbridge.test.ts` EventBridgeAbility → EventBridgeConfigAbility
+- 修复测试文件：`entity-permission-eventbridge.test.ts` ComponentEventBusAbility → ComponentEventBusConfigAbility
 
 ### 2026-07-13
 - 导航组件：新增 NavItemComponent（withTemplate + eventKey 事件转发，text/icon/active/disabled）
@@ -256,7 +256,7 @@ docs/build-progress/
 - Toast/Msgbox 使用 ComposableBase.with() 组合能力，每个实例自带 eventScope/模板缓存/浮层能力
 - ToastManager 只管队列调度和堆叠定位，MsgboxManager 只管创建/销毁调度
 - api.ts 合并 toast()/msgbox 工厂函数
-- ToastOptions/MsgboxOptions 新增 eventKey 字段，支持 EventBridgeAbility 桥接监听
+- ToastOptions/MsgboxOptions 新增 eventKey 字段，支持 ComponentEventBusAbility 桥接监听
 - 新增 imperative 单元测试（19 个用例）
 
 ### 2026-07-12

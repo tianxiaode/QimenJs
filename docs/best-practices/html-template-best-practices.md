@@ -202,7 +202,7 @@ data-emit="event1[?modifier][, event2]"
 
 `ElementEventAbility` 自动 addEventListener，触发时 `this.emit('group:event', event)`。
 
-与 EventBridge/handlers 结合：有定义就绑定，没有就不处理。
+与 ComponentEventBus/handlers 结合：有定义就绑定，没有就不处理。
 
 ### 示例
 
@@ -218,9 +218,9 @@ data-emit="event1[?modifier][, event2]"
 
 ---
 
-## data-bridge — 桥接事件
+## data-bridge — 组件间事件
 
-**可选**。声明元素需要通过 EventBridge 跨组件通信的事件。
+**可选**。声明元素需要通过 ComponentEventBus 跨组件通信的事件。
 
 ### 格式
 
@@ -230,26 +230,26 @@ data-bridge="sourceEvent[=targetEvent][?modifier][, ...]"
 
 ### 工作方式
 
-`TemplateAbility.bindBridgeEvents()` 自动绑定，触发时 `EventBridge.bridgeEmit(eventKey, targetEvent, data)`。
+`TemplateAbility.bindComponentEvents()` 自动绑定，触发时 `ComponentEventBus.componentEmit(ctx)`。
 
 与 `data-emit` 的区别：
 
 | 特性 | `data-emit` | `data-bridge` |
 |------|-------------|---------------|
-| 通信范围 | 父组件 eventScope | EventBridge 全局 |
-| 事件路由 | 同一 eventScope 内 | 跨 eventScope，通过 EventBridge 单例中转 |
+| 通信范围 | 父组件 eventScope | ComponentEventBus 全局 |
+| 事件路由 | 同一 eventScope 内 | 跨 eventScope，通过 ComponentEventBus 单例中转 |
 | 适用场景 | 父子组件通信 | 任意组件间通信 |
 
 ### 示例
 
 ```html
-<!-- 桥接事件：点击按钮时 bridgeEmit(eventKey, 'click:save', data) -->
+<!-- 组件间事件：点击按钮时 componentEmit(ctx) -->
 <button data-content="btn:save" data-bridge="click=click:save">保存</button>
 
-<!-- 同名桥接：click → bridgeEmit(eventKey, 'click', data) -->
+<!-- 同名组件事件：click → componentEmit(ctx) -->
 <button data-content="btn:cancel" data-bridge="click">取消</button>
 
-<!-- 多个桥接事件 -->
+<!-- 多个组件间事件 -->
 <div data-content="form:container" data-bridge="submit=submit:form, reset=reset:form"></div>
 ```
 
@@ -630,7 +630,7 @@ dialog.dialogCloseHidden = true;  // 隐藏关闭按钮
 | `data-content` | 是 | `"group:name"` | 元素身份，nodeMap 入口 |
 | `data-event` | 否 | `"event[?mod][, event]"` | 内部事件，方法名自动推导 |
 | `data-emit` | 否 | `"event[?mod][, event]"` | 外部事件，emit 给监听者 |
-| `data-bridge` | 否 | `"event[=target][?mod][, ...]"` | 桥接事件，通过 EventBridge 跨组件通信 |
+| `data-bridge` | 否 | `"event[=target][?mod][, ...]"` | 组件间事件，通过 ComponentEventBus 跨组件通信 |
 | `data-target` | 否 | `".selector"` | 事件委托目标选择器 |
 | `data-json` | 否 | `"DefinitionId"` | JSON 子组件引用，Renderer 递归渲染 |
 | `data-json-mode` | 否 | `"child\|replace"` | JSON 渲染挂载模式（默认 replace） |

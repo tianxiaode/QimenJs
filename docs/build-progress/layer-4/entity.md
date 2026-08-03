@@ -1,4 +1,4 @@
-﻿# @qimenjs/entity
+# @qimenjs/entity
 
 **层级**: 第 4 层  
 **状态**: 完成  
@@ -106,7 +106,7 @@ src/entity/
   - `body.listens: [{ entityKey, events }]` → bindEventListen 走 EntityEventBus
 - **body.bridges → body.listens**：重命名监听配置
   - `ListensConfig = EventListen[]`，`EventListen` 新增 `entityKey` 字段
-  - `source` → EventBridge，`entityKey` → EntityEventBus
+  - `source` → ComponentEventBus，`entityKey` → EntityEventBus
 - **DomEventDecl.entities**：新增实体操作字段（string，直接指定 mgr 方法名）
 - **DomEventBinding**：新增 `entities?: string` 字段
 

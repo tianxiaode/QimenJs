@@ -568,7 +568,7 @@ class ButtonComponent extends TemplateComponent.withTemplate(BUTTON_TEMPLATE) { 
 |------|------|------|------|
 | `events` | 内部事件 | `['click']` | handler 名自动推导：click → onClick |
 | `forwards` | 转发事件 | `['click=save']` | 通过 eventScope 转发给持有方 |
-| `bridges` | 桥接事件 | `['click=click:save']` | 通过 EventBridge 跨组件通信 |
+| `bridges` | 组件间事件 | `['click=click:save']` | 通过 ComponentEventBus 跨组件通信 |
 
 **事件修饰符**：
 
@@ -584,9 +584,9 @@ events: ['click?once&debounce=300'], // 组合修饰符
 ```typescript
 forwards: ['click'],           // 同名转发：component.on('click', fn)
 forwards: ['click=save'],      // 重命名转发：component.on('save', fn)
-bridges: ['click'],            // 同名桥接：bridgeEmit(eventKey, 'click', data)
-bridges: ['click=save'],       // 重命名桥接：bridgeEmit(eventKey, 'save', data)
-bridges: ['click=click:save'], // 带命名空间桥接：bridgeEmit(eventKey, 'click:save', data)
+bridges: ['click'],            // 同名组件事件：componentEmit(ctx)
+bridges: ['click=save'],       // 重命名组件事件：componentEmit(ctx)
+bridges: ['click=click:save'], // 带命名空间组件事件：componentEmit(ctx)
 ```
 
 **body 定义**：

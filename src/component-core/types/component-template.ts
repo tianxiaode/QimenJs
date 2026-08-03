@@ -119,7 +119,7 @@ export type LocalDataConfig = Record<string, any[]>;
  * body 只接受以下三类内容：
  *
  * 1. static 类（编译时设为类静态属性）：
- *    type / entityKey / bridgeKey / floatKey / dragKey / listens / forwards
+ *     type / entityKey / eventKey / floatKey / dragKey / listens / forwards
  *
  * 2. 函数（编译时挂到原型）：
  *    - 生命周期钩子：onBeforeInit / onAfterInit / onMounted / onResize / onUpdated / onBeforeUnmount / onBeforeDispose
@@ -160,7 +160,7 @@ export type LocalDataConfig = Record<string, any[]>;
  * body: {
  *     type: 'myComponent',
  *     entityKey: 'users',
- *     bridgeKey: 'formKey',
+ *     eventKey: 'formKey',
  *     listens: [
  *         { source: 'formKey', events: { save: 'onSave' } },
  *         { entity: 'users', events: { listed: 'onUsersLoaded' } },
@@ -200,14 +200,14 @@ export interface BodyDef extends LifecycleHooks {
     entityKey?: string | { key: string; fixed?: boolean };
 
     /**
-     * 桥接事件 key，EventBridge 通道标识
+     * 组件事件 key，ComponentEventBus 通道标识
      *
      * 父组件实例化子组件时向下传播：
      *   - 子组件有定义且 fixed → 保留子组件的值
      *   - 子组件有定义且非 fixed → 替换为父组件的值
      *   - 子组件无定义 → 不管
      */
-    bridgeKey?: string | { key: string; fixed?: boolean };
+    eventKey?: string | { key: string; fixed?: boolean };
 
     /** 统一事件订阅数组 */
     listens?: ListenItem[];

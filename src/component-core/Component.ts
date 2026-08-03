@@ -60,7 +60,7 @@ export class Component extends ComposableBase {
     action: string;
 
     domEvents?: DomEventsMap;
-    bridgeKey?: string | { key: string; fixed?: boolean };
+    eventKey?: string | { key: string; fixed?: boolean };
     entityKey?: string | { key: string; fixed?: boolean };
 
     /**
@@ -195,7 +195,7 @@ export class Component extends ComposableBase {
         this.type = (this.constructor as any).name.replace(/Component$/, '');
         this.props = props ?? {};
         this.action = this.props.action ?? '';
-        this.bridgeKey = this.props.bridgeKey;
+        this.eventKey = this.props.eventKey;
         this.entityKey = this.props.entityKey;
         this.drag = (this.props as any).drag;
         this.dragHandle = (this.props as any).dragHandle;

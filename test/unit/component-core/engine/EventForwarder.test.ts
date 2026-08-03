@@ -3,11 +3,11 @@ import { EventForwarder } from '@/component-core/engine/EventForwarder';
 function makeInstance(overrides: Record<string, any> = {}) {
     return {
         emit: jest.fn(),
-        bridgeEmit: jest.fn(),
+        componentEmit: jest.fn(),
         entityEmit: jest.fn(),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
-        bridgeKey: 'testBridge',
+        eventKey: 'testComponent',
         entityKey: 'testEntity',
         routeKey: 'testRoute',
         constructor: { name: 'TestComponent' },
@@ -34,22 +34,22 @@ describe('EventForwarder', () => {
     });
 
     describe('forward — bridges', () => {
-        it('bridges 转发为桥接事件', () => {
+        it('bridges 转发为组件事件', () => {
             const instance = makeInstance();
             EventForwarder.forward(instance, { bridges: ['save'] }, { id: 1 });
-            expect(instance.bridgeEmit).toHaveBeenCalledWith(expect.anything());
+            expect(instance.componentEmit).toHaveBeenCalledWith(expect.anything());
         });
 
-        it('bridgeKey 不存在时不转发', () => {
-            const instance = makeInstance({ bridgeKey: undefined });
+        it('eventKey 不存在时不转发', () => {
+            const instance = makeInstance({ eventKey: undefined });
             EventForwarder.forward(instance, { bridges: ['save'] });
-            expect(instance.bridgeEmit).not.toHaveBeenCalled();
+            expect(instance.componentEmit).not.toHaveBeenCalled();
         });
 
-        it('bridgeKey 为 { key, fixed } 格式时解析', () => {
-            const instance = makeInstance({ bridgeKey: { key: 'fixed', fixed: true } });
+        it('eventKey 为 { key, fixed } 格式时解析', () => {
+            const instance = makeInstance({ eventKey: { key: 'fixed', fixed: true } });
             EventForwarder.forward(instance, { bridges: ['save'] });
-            expect(instance.bridgeEmit).toHaveBeenCalled();
+            expect(instance.componentEmit).toHaveBeenCalled();
         });
     });
 
@@ -126,7 +126,7 @@ describe('EventForwarder', () => {
             const instance = makeInstance();
             EventForwarder.forward(instance, {});
             expect(instance.emit).not.toHaveBeenCalled();
-            expect(instance.bridgeEmit).not.toHaveBeenCalled();
+            expect(instance.componentEmit).not.toHaveBeenCalled();
             expect(instance.entityEmit).not.toHaveBeenCalled();
             expect(instance.routerEmit).not.toHaveBeenCalled();
             expect(instance.systemEmit).not.toHaveBeenCalled();

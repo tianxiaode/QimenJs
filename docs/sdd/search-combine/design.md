@@ -31,7 +31,7 @@
            ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    事件桥接层                                 │
-│  EventBridgeAbility (search 桥接)                            │
+│  ComponentEventBusAbility (search 桥接)                            │
 │  → EntityListenAbility (SEARCH_EVENTS.CHANGE)               │
 │     改造后：两个独立 if，可同时执行 filter + searchBy          │
 │  → EntityManager (filter + searchBy)                         │
@@ -373,7 +373,7 @@ SearchEventsAbility: emitSearchChange({ keyword: "test", search: { status: "acti
     ├──▶ emit('searchchange', { keyword: "test", search: { status: "active" } })
     │       │
     │       ▼
-    │   EventBridgeAbility (search 桥接)
+    │   ComponentEventBusAbility (search 桥接)
     │       │
     │       ▼
     │   EntityListenAbility: _handleSearchChange({ keyword: "test", search: { status: "active" } })
@@ -569,5 +569,5 @@ toolbar/
 - `component-abilities/index.ts` — 顶层导出不变
 - `ToolbarAbility.ts` — 保留在根目录，逻辑不变
 - `CrudAbility.ts` — 保留在根目录，逻辑不变
-- `EventBridgeAbility.ts` — 桥接逻辑不变
+- `ComponentEventBusAbility.ts` — 桥接逻辑不变
 - `EntityEmitAbility.ts` — 转发逻辑不变

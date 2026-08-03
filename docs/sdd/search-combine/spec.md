@@ -22,7 +22,7 @@
 ## **1.4 职责边界**
 
 - 本组件不负责修改实体层 SearchAbility（filter/searchBy/matchKeyword 等方法）
-- 本组件不负责修改 EventBridgeAbility 的桥接配置
+- 本组件不负责修改 ComponentEventBusAbility 的桥接配置
 - 本组件不负责修改 SEARCH_EVENTS 事件常量定义
 - 本组件不负责修改 ToolbarAbility 和 CrudAbility 的核心逻辑
 - 本组件不负责修改 component-abilities/index.ts 的顶层导出（导出链路不变）
@@ -67,7 +67,7 @@
 
 - **EntityListenAbility**：消费搜索事件，调用 EntityManager 的 filter/searchBy 方法
 - **EntityManager**：底层实体管理器，filter() 和 searchBy() 已天然支持组合
-- **EventBridgeAbility**：声明式桥接搜索事件到消费组件
+- **ComponentEventBusAbility**：声明式桥接搜索事件到消费组件
 
 ## **3.3 交互上下文**
 

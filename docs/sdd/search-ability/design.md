@@ -38,7 +38,7 @@
            ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    事件桥接层                                 │
-│  EventBridgeAbility (search 桥接)                            │
+│  ComponentEventBusAbility (search 桥接)                            │
 │  → EntityListenAbility (SEARCH_EVENTS.CHANGE)               │
 │  → EntityManager (filter/searchBy)                           │
 │  → EntityEmitAbility (entity:searchchange 转发)              │
@@ -66,7 +66,7 @@ src/events/
 └── entity-events.ts            # 新增 ENTITY_SEARCH_EVENTS
 
 src/component-core/abilities/
-└── EventBridgeAbility.ts       # 新增 SearchBridgeConfig、search 桥接逻辑
+└── ComponentEventBusAbility.ts       # 新增 SearchBridgeConfig、search 桥接逻辑
 
 src/component-abilities/entity/
 ├── EntityListenAbility.ts      # 替换硬编码 'searchchange' → SEARCH_EVENTS.CHANGE
@@ -279,7 +279,7 @@ export const ENTITY_SEARCH_EVENTS = {
 } as const;
 ```
 
-### 1.3.8 EventBridgeAbility.ts 修改
+### 1.3.8 ComponentEventBusAbility.ts 修改
 
 **新增接口**：
 
@@ -295,10 +295,10 @@ export interface SearchBridgeConfig {
 }
 ```
 
-**EventBridgeConfig 接口新增**：
+**ComponentEventBusConfig 接口新增**：
 
 ```typescript
-export interface EventBridgeConfig {
+export interface ComponentEventBusConfig {
     /** 分页桥接 */
     pagination?: PaginationBridgeConfig | string;
     /** CRUD 桥接 */
@@ -318,13 +318,13 @@ export interface EventBridgeConfig {
 const BUILTIN_BRIDGE_KEYS = new Set(['pagination', 'crud', 'selection', 'search']);
 ```
 
-**initEventBridge 新增搜索桥接逻辑**：
+**initComponentEvents 新增搜索桥接逻辑**：
 
 ```typescript
 // 搜索桥接
 const searchCfg = normalizeBridgeConfig(config.search);
 if (searchCfg && searchCfg.enabled !== false) {
-    this._bridgeOn(searchCfg.source, SEARCH_EVENTS.CHANGE, (e: any) => {
+    this._componentOn(searchCfg.source, SEARCH_EVENTS.CHANGE, (e: any) => {
         if (typeof this.onSearchChange === 'function') {
             this.onSearchChange(e);
         }
@@ -479,12 +479,12 @@ export class ToolbarComponent extends ComponentBase {
 | SEARCH_POSITIONS.INPUT | 5 | 搜索输入框位置 |
 | SEARCH_POSITIONS.BUTTON | 8 | 搜索按钮位置 |
 
-### EventBridgeAbility 新增
+### ComponentEventBusAbility 新增
 
 | 属性/接口 | 类型 | 说明 |
 |-----------|------|------|
 | SearchBridgeConfig | interface | 搜索桥接配置（source, enabled） |
-| EventBridgeConfig.search | SearchBridgeConfig \| string | 搜索桥接配置项 |
+| ComponentEventBusConfig.search | SearchBridgeConfig \| string | 搜索桥接配置项 |
 
 ### 事件常量新增
 
@@ -512,7 +512,7 @@ SearchEventsAbility: emitSearchChange({ keyword: "test" })
     ├──▶ emit('searchchange', { keyword: "test" })
     │       │
     │       ▼
-    │   EventBridgeAbility (search 桥接)
+    │   ComponentEventBusAbility (search 桥接)
     │       │
     │       ▼
     │   EntityListenAbility: onSearchChange({ keyword: "test" })
@@ -555,7 +555,7 @@ SearchEventsAbility: emitSearchChange({ search: { status: 'active' } })
 emit('searchchange', { search: { status: 'active' } })
     │
     ▼
-EventBridgeAbility → EntityListenAbility → EntityManager.searchBy({ status: 'active' })
+ComponentEventBusAbility → EntityListenAbility → EntityManager.searchBy({ status: 'active' })
 ```
 
 # **4. 数据模型**
@@ -624,8 +624,8 @@ interface SearchBridgeConfig {
     enabled?: boolean;
 }
 
-/** EventBridgeConfig 新增 search 字段 */
-interface EventBridgeConfig {
+/** ComponentEventBusConfig 新增 search 字段 */
+interface ComponentEventBusConfig {
     // ... 现有字段
     search?: SearchBridgeConfig | string;
 }
@@ -641,7 +641,7 @@ SelectComponent 继续使用 `interaction/SearchAbility`，该文件保留不变
 
 `_bindSearchListener` 中将硬编码 `'searchchange'` 替换为 `SEARCH_EVENTS.CHANGE`，事件名字符串值仍为 `'searchchange'`，行为完全兼容。
 
-## **5.3 EventBridgeAbility 兼容**
+## **5.3 ComponentEventBusAbility 兼容**
 
 新增 search 桥接类型不影响现有 pagination/crud/selection 桥接。BUILTIN_BRIDGE_KEYS 新增 'search' 后，自定义桥接逻辑中 `search` key 不再走自定义路径，而是走内置搜索桥接路径。如果现有代码中有使用 `search` 作为自定义桥接 key 的情况，需要迁移到内置搜索桥接配置格式。
 

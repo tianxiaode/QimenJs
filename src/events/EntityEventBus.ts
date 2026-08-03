@@ -2,7 +2,7 @@
  * EntityEventBus 实体事件总线
  *
  * 统一管理所有实体事件的发送和监听，使用独立的 eventScope。
- * 类似 EventBridge 的设计，所有实体事件收发都经过同一个 scopeId。
+ * 类似 ComponentEventBus 的设计，所有实体事件收发都经过同一个 scopeId。
  *
  * 核心设计：
  * - 单例模式，全局唯一，拥有独立的 eventScope

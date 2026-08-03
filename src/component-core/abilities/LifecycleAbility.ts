@@ -8,9 +8,9 @@
  *
  * 事件发送规则：
  * 1. 本地事件：this.emit(event, data)
- * 2. 桥接事件：如果有 eventKey，this.bridgeEmit(ctx)
+ * 2. 组件事件：如果有 eventKey，this.componentEmit(ctx)
  *
- * bridgeEmit 走 EventBridge，busId 由 EventScope 自动填充，
+ * componentEmit 走 ComponentEventBus，busId 由 EventScope 自动填充，
  * 发送方不需要也不应该直接依赖 globalEventBus。
  */
 
@@ -57,8 +57,8 @@ export const LifecycleAbility = {
             this.emit(event, ctx);
         }
 
-        if (eventKey && typeof this.bridgeEmit === 'function') {
-            this.bridgeEmit(ctx);
+        if (eventKey && typeof this.componentEmit === 'function') {
+            this.componentEmit(ctx);
         }
     },
 } as AbilityDefinition;
