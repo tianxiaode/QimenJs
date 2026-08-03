@@ -33,17 +33,6 @@ export interface BuiltinItemDef {
     variant: string;
 }
 
-/**
- * 内置按钮定义（工厂函数内部使用）
- */
-export interface BuiltinItemDef {
-    name: string;
-    type: string;
-    order: number;
-    iconCls: string;
-    text: string;
-    variant: string;
-}
 
 // ── 状态能力共用 ──
 

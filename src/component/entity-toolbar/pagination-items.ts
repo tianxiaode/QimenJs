@@ -25,12 +25,7 @@ import type { EntityToolbarItemDef, BuiltinItemDef } from './types';
 // 分页按钮 name 集合（供事件路由判断用）
 // ══════════════════════════════════════════════════════════════
 
-export const PAGINATION_ITEM_NAMES = new Set([
-    'firstPage',
-    'prevPage',
-    'nextPage',
-    'lastPage',
-]);
+export const PAGINATION_ITEM_NAMES = new Set(['firstPage', 'prevPage', 'nextPage', 'lastPage']);
 
 // ══════════════════════════════════════════════════════════════
 // 内置定义
@@ -132,9 +127,7 @@ export function createPaginationItems(
     const items: Record<string, any>[] = [];
 
     // 无 config 时返回全部默认项
-    const entries = config ?? Object.fromEntries(
-        Object.keys(PAGINATION_DEFS).map(k => [k, true])
-    );
+    const entries = config ?? Object.fromEntries(Object.keys(PAGINATION_DEFS).map(k => [k, true]));
 
     const defaultPageSize = options?.defaultPageSize ?? 10;
     const pageSizes = options?.pageSizes ?? [10, 20, 50, 100];
@@ -222,5 +215,5 @@ function buildPaginationItem(
         };
     }
 
-    return { type: def.type, name, text, order, ...override };
+    return { type: def.type, name, hint, order, ...override };
 }
