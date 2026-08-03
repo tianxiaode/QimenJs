@@ -138,6 +138,14 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, DomainEntry>>
         return false;
     }
 
+    register(domain: string, config: DomainConfig): void {
+        this.registerDomain(domain, config);
+    }
+
+    get(domain: string): string[] {
+        return this.getByDomain(domain);
+    }
+
     /**
      * 清除指定域的所有权限
      */
@@ -193,7 +201,9 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, DomainEntry>>
             console.log('(empty)');
         } else {
             this.storage.forEach((entry, domain) => {
-                console.group(`Domain: ${domain} (${entry.permissions.size})${entry.validate ? ' [custom]' : ''}`);
+                console.group(
+                    `Domain: ${domain} (${entry.permissions.size})${entry.validate ? ' [custom]' : ''}`
+                );
                 console.table(Array.from(entry.permissions));
                 console.groupEnd();
             });

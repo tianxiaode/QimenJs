@@ -139,7 +139,7 @@ import { RequestContextBuilder } from '@qimenjs/context';
 
 const context = RequestContextBuilder
     .create()
-    .withIdentity({ domain: 'user', entityName: 'User', action: 'list' })
+    .withIdentity({ domain: 'user', entityKey: 'users', action: 'list' })
     .withParams({ page: 1, size: 10 })
     .withRequest({
         url: '/api/users',

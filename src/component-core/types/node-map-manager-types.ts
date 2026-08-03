@@ -83,6 +83,8 @@ export interface INodeMapManager {
      */
     readonly i18nNodes: Array<{ name: string; i18nKey: string }>;
 
+    readonly permissionNodes: Array<{ name: string; permission: boolean | string }>;
+
     /**
      * 暴露的属性名列表
      *

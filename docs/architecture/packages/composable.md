@@ -169,8 +169,9 @@ import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
 
 class CoreEntityManager extends ComposableBase {
+    static entityType: string;
     domain = 'default';
-    abstract entityName: string;
+    entityKey: string;
 }
 
 const CORE_ABILITIES = [EventAbility, DomainAbility, SystemAbility, SchemaAbility] as const;

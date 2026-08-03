@@ -371,6 +371,7 @@ export interface TplNodeFieldDef {
         | 'state'
         | 'dom'
         | 'component'
+        | 'behavior'
         | 'children';
     toMeta: boolean;
     toRoot: boolean;
@@ -492,33 +493,35 @@ export const ROOT_FIELDS = ALL_FIELDS.filter(f => f.toRoot);
  * @param target 目标对象（通常是 NodeMetadata 正在构建的对象）
  * @returns 目标对象
  */
-export function copyMetaFields(
+export function copyMetaFields<T extends Record<string, any>>(
     source: Record<string, any>,
-    target: Record<string, any> = {}
-): Record<string, any> {
+    target: T = {} as T
+): T {
+    const result = target as Record<string, any>;
     for (const def of META_FIELDS) {
         const val = source[def.field];
         if (val !== undefined) {
             const key = def.metaKey ?? def.field;
-            target[key] = val;
+            result[key] = val;
         }
     }
-    return target;
+    return result as T;
 }
 
 /**
  * 从 source 节点提取所有 root 级字段到目标对象
  */
-export function copyRootFields(
+export function copyRootFields<T extends Record<string, any>>(
     source: Record<string, any>,
-    target: Record<string, any> = {}
-): Record<string, any> {
+    target: T = {} as T
+): T {
+    const result = target as Record<string, any>;
     for (const def of ROOT_FIELDS) {
         const val = source[def.field];
         if (val !== undefined) {
             const key = def.metaKey ?? def.field;
-            target[key] = val;
+            result[key] = val;
         }
     }
-    return target;
+    return result as T;
 }

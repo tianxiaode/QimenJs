@@ -259,6 +259,9 @@ export interface CompiledTemplateResult {
     /** 权限节点列表 */
     permissionNodes: Array<{ name: string; permission: boolean | string }>;
 }
+
+/**
+ * 编译缓存 — 可共享的只读部分
  *
  * 包含编译产物中不可变、可安全跨类共享的部分：
  * - html: HTML 模板字符串

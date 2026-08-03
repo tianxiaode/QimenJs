@@ -8,13 +8,14 @@ import type { ENTITY_ACTION } from '@/entity/types';
 import type { Schema, RegistrSchema } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
-import { RequestContextBuilder } from '@/context';
+import { RequestContextBuilder, EventContextBuilder } from '@/context';
 import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-processor';
 import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
 import type { PermissionQuery } from '@/permission/types';
+import { EntityEventBus } from '@/events/EntityEventBus';
 
 export const CORE_ENTITY_ABILITIES = [
     EventAbility,
@@ -25,22 +26,44 @@ export const CORE_ENTITY_ABILITIES = [
 ] as const;
 
 export abstract class CoreEntityManager extends ComposableBase {
+    static entityType: string;
+
     domain: string = 'default';
-    abstract entityName: string;
+    entityKey: string;
     abstract url: string;
 
     cacheTTL: number = 300000;
 
     abstract schema: RegistrSchema;
 
-    /**
-     * 权限映射 — 定义各操作对应的权限 action
-     *
-     * - true: 使用操作名作为 action（如 create → 'create'）
-     * - string: 使用自定义 action（如 create: 'add'）
-     * - 省略: 不检查该操作的权限
-     */
     static permissions: Record<string, boolean | string> = {};
+
+    constructor(config?: Record<string, any>) {
+        super();
+        const ctor = this.constructor as typeof CoreEntityManager;
+        if (!ctor.entityType) {
+            throw new Error(`${ctor.name} must declare static entityType`);
+        }
+        this.entityKey = config?.entityKey ?? ctor.entityType;
+    }
+
+    static register(): void {
+        const { entityDispatchCenter } = require('../dispatch/EntityDispatchCenter') as {
+            entityDispatchCenter: import('../dispatch/EntityDispatchCenter').EntityDispatchCenter;
+        };
+        entityDispatchCenter.registerType(this.entityType, this as any);
+    }
+
+    protected entityEmit(event: string, data?: any): void {
+        EntityEventBus.getInstance().entityEmit(
+            EventContextBuilder.create()
+                .withEvent(event)
+                .withType(event)
+                .withSource(this.entityKey)
+                .withData(data)
+                .build()
+        );
+    }
 
     get compiledSchema(): Schema {
         return this._getCompiledSchema().schema;
@@ -64,7 +87,7 @@ export abstract class CoreEntityManager extends ComposableBase {
 
         const execute = async (): Promise<RequestContext> => {
             try {
-                this.logger.debug(`Executing Action [${action}] for Entity [${this.entityName}]`);
+                this.logger.debug(`Executing Action [${action}] for Entity [${this.entityKey}]`);
                 await this.executeDataProcessor('pre', context);
                 const executor = new HttpExecutor();
                 await executor.execute(context);
@@ -92,7 +115,7 @@ export abstract class CoreEntityManager extends ComposableBase {
         return RequestContextBuilder.create()
             .withIdentity({
                 domain: this.domain,
-                entityName: this.entityName,
+                entityName: this.entityKey,
                 action: action as string,
             })
             .withRequest({
@@ -132,21 +155,23 @@ export abstract class CoreEntityManager extends ComposableBase {
 
         return PermissionRegistrar.getInstance().hasPermission({
             action: permAction,
-            entityKey: this.entityName,
+            entityKey: this.entityKey,
             domain: this.domain,
         });
     }
 
     protected onPermissionDenied(action: string): HttpRequestTask {
-        throw new Error(`Permission denied: [${action}] on entity [${this.entityName}] in domain [${this.domain}]`);
+        throw new Error(
+            `Permission denied: [${action}] on entity [${this.entityKey}] in domain [${this.domain}]`
+        );
     }
 
     cancelAll(): void {
-        this.logger.warn(`Cancelling all requests for Entity [${this.entityName}]`);
+        this.logger.warn(`Cancelling all requests for Entity [${this.entityKey}]`);
     }
 
     override dispose(): void {
-        this.logger.debug(`CoreEntityManager [${this.entityName}] disposed.`);
+        this.logger.debug(`CoreEntityManager [${this.entityKey}] disposed.`);
         super.dispose();
     }
 }

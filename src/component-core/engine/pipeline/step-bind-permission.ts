@@ -64,8 +64,9 @@ function resolveQuery(
     domain?: string
 ): PermissionQuery {
     if (permission === true) {
-        const action = (instance as any).nodeMap?.[name]?.action
-            ?? name.replace(BTN_SUFFIXES, '').toLowerCase();
+        const action =
+            (instance as any).nodeMap?.[name]?.action ??
+            name.replace(BTN_SUFFIXES, '').toLowerCase();
         return { action, entityKey, domain };
     }
 

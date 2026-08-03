@@ -166,7 +166,7 @@ export class CompileEngine {
         const permissionNodes: Array<{ name: string; permission: boolean | string }> = [];
 
         indexPath['root'] = [];
-        nodeMetas['root'] = copyMetaFields(root, {
+        nodeMetas['root'] = copyMetaFields<NodeMetadata>(root, {
             name: 'root',
             tag: root.tag,
         });
@@ -266,7 +266,7 @@ export class CompileEngine {
 
         ctx.indexPath[name] = path;
 
-        const meta = copyMetaFields(node, {
+        const meta = copyMetaFields<NodeMetadata>(node, {
             name,
             tag: node.tag,
             type: typeof node.type === 'string' ? node.type : undefined,
@@ -328,7 +328,7 @@ export class CompileEngine {
 
             ctx.indexPath[name] = path;
 
-            const meta = copyMetaFields(node, {
+            const meta = copyMetaFields<NodeMetadata>(node, {
                 name,
                 tag,
                 contentMode: CompileEngine.inferContentMode(tag),

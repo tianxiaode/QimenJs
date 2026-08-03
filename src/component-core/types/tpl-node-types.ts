@@ -170,6 +170,9 @@ export interface TplNode {
     /** i18n 翻译 key */
     i18n?: string;
 
+    /** 权限声明（true=从 action 推导 / action / entity:action / domain:entity:action） */
+    permission?: boolean | string;
+
     // ─── dom: DOM 属性 ───
 
     /** ARIA role 属性 */

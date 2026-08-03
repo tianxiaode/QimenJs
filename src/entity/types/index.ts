@@ -172,7 +172,7 @@ export type EntityState<TSearch extends SearchParams = SearchParams> =
 /** 核心实体管理器接口 */
 export interface ICoreEntityManager extends IComposableBase {
     domain: string;
-    entityName: string;
+    entityKey: string;
     url: string;
     schema: RegistrSchema;
     readonly compiledSchema: Schema;

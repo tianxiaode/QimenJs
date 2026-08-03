@@ -40,8 +40,12 @@ describe('PermissionRegistrar', () => {
                 },
             });
 
-            expect(registrar.hasPermission({ action: 'create', entityKey: 'users', domain: 'abp' })).toBe(true);
-            expect(registrar.hasPermission({ action: 'delete', entityKey: 'users', domain: 'abp' })).toBe(true);
+            expect(
+                registrar.hasPermission({ action: 'create', entityKey: 'users', domain: 'abp' })
+            ).toBe(true);
+            expect(
+                registrar.hasPermission({ action: 'delete', entityKey: 'users', domain: 'abp' })
+            ).toBe(true);
         });
 
         it('未指定 domain 时遍历所有域', () => {
@@ -53,7 +57,9 @@ describe('PermissionRegistrar', () => {
         it('向已有域追加权限', () => {
             registrar.registerDomain('default', { permissions: ['users:create'] });
             registrar.registerDomain('default', { permissions: ['users:delete'] });
-            expect(registrar.getByDomain('default')).toEqual(expect.arrayContaining(['users:create', 'users:delete']));
+            expect(registrar.getByDomain('default')).toEqual(
+                expect.arrayContaining(['users:create', 'users:delete'])
+            );
         });
     });
 
