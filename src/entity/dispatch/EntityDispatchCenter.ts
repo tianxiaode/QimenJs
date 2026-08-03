@@ -1,4 +1,4 @@
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import { Logger } from '@qimenjs/logger';
 import type { CoreEntityManager } from '../manager/CoreEntityManager';
 import type { EntityManagerConstructor } from './entity-definitions';

@@ -9,7 +9,7 @@
  * @module data-processor/DataProcessorRegistrar
  */
 
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import type { DataProcessorHandler, DataProcessorKey, DataProcessorTag } from './types';
 import { getWeightName } from './weights';
 

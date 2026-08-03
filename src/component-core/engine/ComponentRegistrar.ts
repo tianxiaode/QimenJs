@@ -25,7 +25,7 @@
  * ```
  */
 
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import { CompileEngine } from './CompileEngine';
 import { TplInspector } from './TplInspector';
 import { clone } from '@/utils/object';

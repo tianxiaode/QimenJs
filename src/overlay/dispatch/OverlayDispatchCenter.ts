@@ -1,4 +1,4 @@
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import { OverlayEventBus } from '@/events/OverlayEventBus';
 import { OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events/overlay-events';
 import { EventContextBuilder } from '@/context';

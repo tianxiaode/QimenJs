@@ -1,4 +1,4 @@
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import {
     PERMISSION_CHANGE_EVENT,
     PERMISSION_SEPARATOR,

@@ -19,7 +19,7 @@ import type {
     OAuth2TokenResponse,
 } from './types';
 import { createTokenStorage, type ITokenStorage } from './TokenStorage';
-import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
+import { DomainRegistrar } from '@/registry';
 
 /**
  * OAuth2 核心管理器

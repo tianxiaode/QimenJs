@@ -12,7 +12,7 @@
  * 不需要手动管理 _dragProcessors。
  */
 
-import { RegistrarBase } from '@/registry/registrars/RegistrarBase';
+import { RegistrarBase } from '@/registry';
 import { DragEventBus } from '@/events/DragEventBus';
 import { DRAG_ACTIONS } from '@/events/drag-events';
 
