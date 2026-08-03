@@ -12,10 +12,10 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import { ArrowAbility, type ArrowConfig } from '@qimenjs/component-abilities';
-import { OverlayRoot } from '@/overlay';
+import { ArrowAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex } from '@/component';
 import { TOOLTIP_TPL } from './tooltip-tpl';
+import { InferAbility } from '@/composable';
 
 export interface TooltipProps {
     anchor?: HTMLElement;
@@ -27,7 +27,7 @@ export interface TooltipProps {
     tooltipArrow?: boolean;
 }
 
-class TooltipComponent extends Component {
+export class TooltipComponent extends Component {
     _anchor: HTMLElement | null = null;
     _overlayOpen: boolean = false;
 
@@ -94,8 +94,7 @@ class TooltipComponent extends Component {
     }
 }
 
-TooltipComponent.use([ArrowAbility]);
+TooltipComponent.use(ArrowAbility);
 TooltipComponent.useTemplate(TOOLTIP_TPL);
 
-export { TooltipComponent };
-export type TooltipComponentInstance = InstanceType<typeof TooltipComponent>;
+export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

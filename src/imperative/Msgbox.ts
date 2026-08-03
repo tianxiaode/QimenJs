@@ -5,29 +5,51 @@
  * 内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能。
  *
  * 通过 ComposableBase.with() 组合能力：
- * - TemplateCacheAbility：模板缓存 + 克隆 + nodeMap
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
  * - SystemEventBusAbility：系统事件收发（仅在 eventKey 存在时发送）
+ *
+ * 模板通过 ComponentRegistrar 注册，节点通过 NodeMapManager 管理。
  *
  * 事件通过 SystemEventBus 发送，编码：{eventKey}:{action}
  * 仅当 MsgboxOptions.eventKey 已定义时才发送，否则跳过。
  */
 
-import { ComposableBase } from '@/composable';
-import { TemplateCacheAbility } from '@/component-abilities';
+import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable';
 import { FloatingLayerAbility } from '@/overlay';
 import { EventContextBuilder } from '@/context';
+import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import type { INodeMapManager } from '@/component-core/types/node-map-manager-types';
 import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from './msgbox-tpl';
 import { resolveI18nValue, t } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
-import { DomEventsAbility, SystemEventBusAbility } from '@/system-abilities';
+import { SystemEventBusAbility } from '@/system-abilities';
+
+const MSGBOX_ABILITIES = [
+    FloatingLayerAbility,
+    SystemEventBusAbility,
+] as const satisfies readonly AbilityDefinition[];
+
+export interface IMsgbox extends InferAbilities<typeof MSGBOX_ABILITIES> {
+    el: HTMLElement;
+    maskEl: HTMLElement;
+    nodeMapMgr: INodeMapManager;
+    zIndex: number;
+    type: MsgboxType;
+    eventKey?: string;
+    inputEl: HTMLInputElement | null;
+    callback: (result: MsgboxResult) => void;
+    onClose: () => void;
+    close(): void;
+}
 
 export class Msgbox extends ComposableBase {
+    static type = 'Msgbox';
+
     el!: HTMLElement;
     maskEl!: HTMLElement;
-    nodeMap!: Record<string, HTMLElement>;
+    nodeMapMgr!: INodeMapManager;
     zIndex!: number;
     type!: MsgboxType;
     eventKey?: string;
@@ -41,46 +63,44 @@ export class Msgbox extends ComposableBase {
         callback: (result: MsgboxResult) => void
     ) {
         super();
-        const self = this as any;
 
         const type: MsgboxType = options.type;
         const confirmButtonText = options.confirmButtonText ?? t('msgbox.confirm');
         const cancelButtonText = options.cancelButtonText ?? t('msgbox.cancel');
         const inputPlaceholder = options.inputPlaceholder ?? '';
 
-        self.type = type;
-        self.eventKey = options.eventKey;
-        self.callback = callback;
+        this.type = type;
+        this.eventKey = options.eventKey;
+        this.callback = callback;
 
         // 1. 初始化能力
-        self._zIndexLevel = ZIndexLevel.modal;
-        self.initTemplateCache('msgbox', { tpl: MSGBOX_TEMPLATE });
+        this._zIndexLevel = ZIndexLevel.modal;
 
-        // 2. 从缓存克隆 DOM + 构建 nodeMap
-        const { root, nodeMap } = self.cloneFromCache('msgbox');
-        self.el = root;
-        self.nodeMap = nodeMap;
+        // 2. 通过 ComponentRegistrar 获取 NodeMapManager + 构建 DOM
+        const registry = ComponentRegistrar.getInstance();
+        this.nodeMapMgr = registry.createNodeMapManager('Msgbox', this)!;
+        this.el = this.nodeMapMgr.buildDOM();
 
         // 3. 创建遮罩
-        self.maskEl = document.createElement('div');
-        self.maskEl.classList.add('q-msgbox-mask');
-        self.maskEl.style.position = 'fixed';
-        self.maskEl.style.inset = '0';
-        self.maskEl.style.background = 'rgba(0,0,0,0.5)';
+        this.maskEl = document.createElement('div');
+        this.maskEl.classList.add('q-msgbox-mask');
+        this.maskEl.style.position = 'fixed';
+        this.maskEl.style.inset = '0';
+        this.maskEl.style.background = 'rgba(0,0,0,0.5)';
 
         // 4. 设置样式
-        self.el.classList.add('q-msgbox');
-        self.el.style.pointerEvents = 'auto';
+        this.el.classList.add('q-msgbox');
+        this.el.style.pointerEvents = 'auto';
 
         // 5. 设置内容
-        self.setText('msgbox:text', resolveI18nValue(options.title));
-        self.setText('msgbox:content', resolveI18nValue(options.content ?? ''));
+        this._setText('msgbox:text', resolveI18nValue(options.title));
+        this._setText('msgbox:content', resolveI18nValue(options.content ?? ''));
 
         // 6. 根据类型配置按钮区域
-        const cancelBtn = self.nodeMap['msgbox:cancel'];
-        const confirmBtn = self.nodeMap['msgbox:confirm'];
-        const inputEl = self.nodeMap['msgbox:field'] as HTMLInputElement | null;
-        self.inputEl = inputEl ?? null;
+        const cancelBtn = this.nodeMapMgr.get('msgbox:cancel')?.el;
+        const confirmBtn = this.nodeMapMgr.get('msgbox:confirm')?.el;
+        const inputEl = this.nodeMapMgr.get('msgbox:field')?.el as HTMLInputElement | null;
+        this.inputEl = inputEl ?? null;
 
         if (type === 'alert') {
             if (cancelBtn) cancelBtn.style.display = 'none';
@@ -97,57 +117,56 @@ export class Msgbox extends ComposableBase {
         if (cancelBtn) cancelBtn.textContent = resolveI18nValue(cancelButtonText);
 
         // 7. z-index
-        self.zIndex = self.acquireZIndex();
-        self.el.style.zIndex = String(self.zIndex);
-        self.maskEl.style.zIndex = String(self.zIndex);
+        this.zIndex = this.acquireZIndex();
+        this.el.style.zIndex = String(this.zIndex);
+        this.maskEl.style.zIndex = String(this.zIndex);
 
         // 8. 居中定位
-        self.setViewportPosition(self.el, 'center');
+        this.setViewportPosition(this.el, 'center');
 
         // 9. 挂载到 OverlayRoot
-        self.mountToOverlay(self.maskEl);
-        self.mountToOverlay(self.el);
+        this.mountToOverlay(this.maskEl);
+        this.mountToOverlay(this.el);
 
         // 10. 播放进入动画
-        self.playEnterAnimation(self.el, [
+        this.playEnterAnimation(this.el, [
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
         ]);
 
         // 11. 绑定按钮事件
         if (confirmBtn) {
-            self.bindDomEvent(confirmBtn, 'tap', () => {
-                self._doResolve({
+            this.bindDomEvent(confirmBtn, 'tap', () => {
+                this._doResolve({
                     action: 'confirm',
-                    value: type === 'prompt' && self.inputEl ? self.inputEl.value : '',
+                    value: type === 'prompt' && this.inputEl ? this.inputEl.value : '',
                 });
             });
         }
 
         if (cancelBtn) {
-            self.bindDomEvent(cancelBtn, 'tap', () => {
-                self._doResolve({ action: 'cancel', value: '' });
+            this.bindDomEvent(cancelBtn, 'tap', () => {
+                this._doResolve({ action: 'cancel', value: '' });
             });
         }
 
         // 12. 遮罩点击关闭（alert 类型）
         if (type === 'alert') {
-            self.bindDomEvent(self.maskEl, 'tap', () => {
-                self._doResolve({ action: 'cancel', value: '' });
+            this.bindDomEvent(this.maskEl, 'tap', () => {
+                this._doResolve({ action: 'cancel', value: '' });
             });
         }
     }
 
-    private setText(key: string, text: string): void {
-        const el = (this as any).nodeMap[key];
+    _setText(key: string, text: string): void {
+        const el = this.nodeMapMgr.get(key)?.el;
         if (el) el.textContent = text;
     }
 
-    private _emitEvent(action: string, data: Record<string, any>): void {
+    _emitEvent(action: string, data: Record<string, any>): void {
         if (!this.eventKey) return;
-        const self = this as any;
         const event = `${this.eventKey}:${action}`;
-        self.systemEmit(
+        this.systemEmit(
             event,
             EventContextBuilder.create()
                 .withEvent(event)
@@ -158,44 +177,48 @@ export class Msgbox extends ComposableBase {
         );
     }
 
-    private _doResolve(result: MsgboxResult): void {
+    _doResolve(result: MsgboxResult): void {
         if (this._resolved) return;
         this._resolved = true;
 
         const action = result.action === 'confirm' ? MSGBOX_ACTIONS.CONFIRM : MSGBOX_ACTIONS.CANCEL;
         this._emitEvent(action, { eventKey: this.eventKey, result });
 
-        (this as any).callback(result);
+        this.callback(result);
         this.close();
     }
 
     close(): void {
-        const self = this as any;
-
         if (!this._resolved) {
             this._resolved = true;
-            self.callback({ action: 'cancel', value: '' });
+            this.callback({ action: 'cancel', value: '' });
         }
 
-        const animation = self.playExitAnimation(self.el, [
+        const animation = this.playExitAnimation(this.el, [
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
         ]);
 
-        self.playExitAnimation(self.maskEl, [{ opacity: 1 }, { opacity: 0 }]);
+        this.playExitAnimation(this.maskEl, [{ opacity: 1 }, { opacity: 0 }]);
 
         animation.onfinish = () => {
-            self.unmountFromOverlay(self.el);
-            self.unmountFromOverlay(self.maskEl);
-            self.releaseZIndex();
+            this.unmountFromOverlay(this.el);
+            this.unmountFromOverlay(this.maskEl);
+            this.releaseZIndex();
 
             this._emitEvent(MSGBOX_FEEDBACK_EVENTS.CLOSED, { eventKey: this.eventKey });
 
-            self.dispose();
-            self.onClose?.();
+            this.nodeMapMgr.disposeAll();
+            this.dispose();
+            this.onClose?.();
         };
     }
 }
 
-Msgbox.use([TemplateCacheAbility, FloatingLayerAbility, DomEventsAbility, SystemEventBusAbility]);
-export type MsgboxInstance = InstanceType<typeof Msgbox>;
+// ─── 模板注册 ──────────────────────────────────────────────
+
+ComponentRegistrar.getInstance().register(Msgbox as any, MSGBOX_TEMPLATE);
+
+Msgbox.use(MSGBOX_ABILITIES);
+
+export interface Msgbox extends IMsgbox {}

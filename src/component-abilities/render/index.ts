@@ -1,6 +1,5 @@
 export { VirtualListAbility } from './VirtualListAbility';
 export { AnimationAbility } from './AnimationAbility';
-export { TemplateCacheAbility } from './TemplateCacheAbility';
 
 export { ArrowAbility, type ArrowConfig } from './ArrowAbility';
 export { arrowCSS } from './arrow.css';

@@ -8,7 +8,7 @@
  * eventKey 由 ToastOptions.eventKey 提供，不提供则不发系统事件。
  */
 
-import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
+import { type ViewportPosition } from '@/overlay';
 import { Toast } from './Toast';
 import type { ToastOptions, ToastHandle, ToastPosition } from './types';
 
@@ -55,12 +55,7 @@ export class ToastManager {
         let offset = 0;
 
         for (const toast of samePosition) {
-            (toast as any).setViewportPosition(
-                toast.el,
-                position as ViewportPosition,
-                offset,
-                MARGIN
-            );
+            toast.setViewportPosition(toast.el, position as ViewportPosition, offset, MARGIN);
             offset += toast.el.offsetHeight + GAP;
         }
     }

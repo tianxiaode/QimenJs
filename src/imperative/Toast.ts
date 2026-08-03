@@ -4,10 +4,11 @@
  * 独立的能力实例（ComposableBase.with 派生类），
  * 内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能。
  *
- * 通过 ComposableBase.with() 组合能力：
- * - TemplateCacheAbility：模板缓存 + 克隆 + nodeMap
+ * 通过 ComposableBase.use() 组合能力：
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
  * - SystemEventBusAbility：系统事件收发（仅在 eventKey 存在时发送）
+ *
+ * 模板通过 ComponentRegistrar 注册，节点通过 NodeMapManager 管理。
  *
  * 事件通过 SystemEventBus 发送，编码：{eventKey}:{action}
  * 仅当 ToastOptions.eventKey 已定义时才发送，否则跳过。
@@ -18,10 +19,11 @@
  * - CSS 变量：--q-toast-icon-info / --q-toast-icon-success / --q-toast-icon-warning / --q-toast-icon-error
  */
 
-import { ComposableBase } from '@/composable';
-import { TemplateCacheAbility } from '@/component-abilities';
+import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable';
 import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
 import { EventContextBuilder } from '@/context';
+import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
+import type { INodeMapManager } from '@/component-core/types/node-map-manager-types';
 import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from './toast-tpl';
 import { resolveI18nValue } from '@qimenjs/i18n';
@@ -30,6 +32,21 @@ import type { ToastOptions, ToastHandle, ToastPosition, ToastType } from './type
 import { SystemEventBusAbility } from '@/system-abilities';
 
 const DEFAULT_DURATION = 3000;
+const TOAST_ABILITIES = [
+    FloatingLayerAbility,
+    SystemEventBusAbility,
+] as const satisfies readonly AbilityDefinition[];
+
+export interface IToast extends InferAbilities<typeof TOAST_ABILITIES> {
+    el: HTMLElement;
+    nodeMapMgr: INodeMapManager;
+    zIndex: number;
+    position: ToastPosition;
+    eventKey?: string;
+    handle: ToastHandleImpl;
+    onClose: () => void;
+    close(): void;
+}
 
 // ─── ToastHandleImpl ────────────────────────────────────────
 
@@ -72,8 +89,10 @@ export class ToastHandleImpl implements ToastHandle {
 // ─── Toast ──────────────────────────────────────────────────
 
 export class Toast extends ComposableBase {
+    static type = 'Toast';
+
     el!: HTMLElement;
-    nodeMap!: Record<string, HTMLElement>;
+    nodeMapMgr!: INodeMapManager;
     zIndex!: number;
     position!: ToastPosition;
     eventKey?: string;
@@ -83,64 +102,64 @@ export class Toast extends ComposableBase {
 
     constructor(options: ToastOptions) {
         super();
-        const self = this as any;
 
         const type: ToastType = options.type ?? 'info';
         const duration: number = options.duration ?? DEFAULT_DURATION;
         const position: ToastPosition = options.position ?? 'top-right';
         const hasTitle = !!options.title;
 
-        self.position = position;
-        self.eventKey = options.eventKey;
+        this.position = position;
+        this.eventKey = options.eventKey;
 
         // 1. 初始化能力
-        self._zIndexLevel = ZIndexLevel.notification;
-        self.initTemplateCache('toast', { tpl: TOAST_TEMPLATE });
-        self.initTemplateCache('notification', { tpl: TOAST_NOTIFICATION_TEMPLATE });
+        this._zIndexLevel = ZIndexLevel.notification;
 
-        // 2. 从缓存克隆 DOM + 构建 nodeMap
-        const { root, nodeMap } = self.cloneFromCache(hasTitle ? 'notification' : 'toast');
-        self.el = root;
-        self.nodeMap = nodeMap;
+        // 2. 通过 ComponentRegistrar 获取 NodeMapManager + 构建 DOM
+        const registry = ComponentRegistrar.getInstance();
+        const tplType = hasTitle ? 'ToastNotification' : 'Toast';
+        this.nodeMapMgr = registry.createNodeMapManager(tplType, this)!;
+        this.el = this.nodeMapMgr.buildDOM();
 
         // 3. 设置样式类
-        self.el.classList.add('q-toast', `q-toast--${type}`);
+        this.el.classList.add('q-toast', `q-toast--${type}`);
         if (hasTitle) {
-            self.el.classList.add('q-toast--titled');
+            this.el.classList.add('q-toast--titled');
         }
-        self.el.style.pointerEvents = 'auto';
+        this.el.style.pointerEvents = 'auto';
 
         // 4. 设置内容
-        self.setText('toast:message', resolveI18nValue(options.message));
-        self.setIconType('toast:icon', type);
+        const msgEl = this.nodeMapMgr.get('toast:message')?.el;
+        if (msgEl) msgEl.textContent = resolveI18nValue(options.message);
+        this._applyIconType(this.nodeMapMgr.get('toast:icon')?.el, type);
         if (hasTitle) {
-            self.setText('toast:text', resolveI18nValue(options.title!));
+            const titleEl = this.nodeMapMgr.get('toast:text')?.el;
+            if (titleEl) titleEl.textContent = resolveI18nValue(options.title!);
         }
 
         // 5. z-index
-        self.zIndex = self.acquireZIndex();
-        self.el.style.zIndex = String(self.zIndex);
+        this.zIndex = this.acquireZIndex();
+        this.el.style.zIndex = String(this.zIndex);
 
         // 6. 初始定位（offset=0，Manager 会重新计算堆叠）
-        self.setViewportPosition(self.el, position as ViewportPosition, 0, 16);
+        this.setViewportPosition(this.el, position as ViewportPosition, 0, 16);
 
         // 7. 挂载到 OverlayRoot
-        self.mountToOverlay(self.el);
+        this.mountToOverlay(this.el);
 
         // 8. 创建 handle
-        self.handle = new ToastHandleImpl(self);
+        this.handle = new ToastHandleImpl(this);
 
         // 9. 绑定 closeBtn 事件
         if (hasTitle) {
-            const closeBtn = self.nodeMap['toast:close'];
+            const closeBtn = this.nodeMapMgr.get('toast:close')?.el;
             if (closeBtn) {
-                self.bindDomEvent(closeBtn, 'tap', () => self.handle.close());
+                this.bindDomEvent(closeBtn, 'tap', () => this.handle.close());
             }
         }
 
         // 10. 播放进入动画
-        self.playEnterAnimation(self.el, [
-            { opacity: 0, transform: this.getEnterTransform(position) },
+        this.playEnterAnimation(this.el, [
+            { opacity: 0, transform: this._getEnterTransform(position) },
             { opacity: 1, transform: 'translate(0, 0)' },
         ]);
 
@@ -154,13 +173,45 @@ export class Toast extends ComposableBase {
         }
     }
 
-    private setText(key: string, text: string): void {
-        const el = (this as any).nodeMap[key];
-        if (el) el.textContent = text;
+    close(): void {
+        if (this.timerId !== null) {
+            clearTimeout(this.timerId);
+            this.timerId = null;
+        }
+
+        this._emitToastEvent(TOAST_ACTIONS.CLOSE, { eventKey: this.eventKey });
+
+        const animation = this.playExitAnimation(this.el, [
+            { opacity: 1, transform: 'translate(0, 0)' },
+            { opacity: 0, transform: this._getExitTransform(this.position) },
+        ]);
+
+        animation.onfinish = () => {
+            this.unmountFromOverlay(this.el);
+            this.releaseZIndex();
+
+            this._emitToastEvent(TOAST_FEEDBACK_EVENTS.CLOSED, { eventKey: this.eventKey });
+
+            this.nodeMapMgr.disposeAll();
+            this.dispose();
+            this.handle._doResolve();
+            this.onClose();
+        };
     }
 
-    private setIconType(key: string, type: ToastType): void {
-        const el = (this as any).nodeMap[key];
+    _getEnterTransform(position: ToastPosition): string {
+        if (position.startsWith('top')) return 'translateY(-100%)';
+        if (position.startsWith('bottom')) return 'translateY(100%)';
+        return 'translateY(-100%)';
+    }
+
+    _getExitTransform(position: ToastPosition): string {
+        if (position.startsWith('top')) return 'translateY(-100%)';
+        if (position.startsWith('bottom')) return 'translateY(100%)';
+        return 'translateY(-100%)';
+    }
+
+    _applyIconType(el: HTMLElement | undefined, type: ToastType): void {
         if (!el) return;
         const prefix = el.classList.contains('q-notification__icon')
             ? 'q-notification__icon'
@@ -168,11 +219,10 @@ export class Toast extends ComposableBase {
         el.classList.add(`${prefix}--${type}`);
     }
 
-    private _emitEvent(action: string, data: Record<string, any>): void {
+    _emitToastEvent(action: string, data: Record<string, any>): void {
         if (!this.eventKey) return;
-        const self = this as any;
         const event = `${this.eventKey}:${action}`;
-        self.systemEmit(
+        this.systemEmit(
             event,
             EventContextBuilder.create()
                 .withEvent(event)
@@ -182,46 +232,18 @@ export class Toast extends ComposableBase {
                 .build()
         );
     }
-
-    private getEnterTransform(position: ToastPosition): string {
-        if (position.startsWith('top')) return 'translateY(-100%)';
-        if (position.startsWith('bottom')) return 'translateY(100%)';
-        return 'translateY(-100%)';
-    }
-
-    private getExitTransform(position: ToastPosition): string {
-        if (position.startsWith('top')) return 'translateY(-100%)';
-        if (position.startsWith('bottom')) return 'translateY(100%)';
-        return 'translateY(-100%)';
-    }
-
-    close(): void {
-        const self = this as any;
-
-        if (this.timerId !== null) {
-            clearTimeout(this.timerId);
-            this.timerId = null;
-        }
-
-        this._emitEvent(TOAST_ACTIONS.CLOSE, { eventKey: this.eventKey });
-
-        const animation = self.playExitAnimation(self.el, [
-            { opacity: 1, transform: 'translate(0, 0)' },
-            { opacity: 0, transform: this.getExitTransform(self.position) },
-        ]);
-
-        animation.onfinish = () => {
-            self.unmountFromOverlay(self.el);
-            self.releaseZIndex();
-
-            this._emitEvent(TOAST_FEEDBACK_EVENTS.CLOSED, { eventKey: this.eventKey });
-
-            self.dispose();
-            self.handle._doResolve();
-            self.onClose();
-        };
-    }
 }
 
-Toast.use([TemplateCacheAbility, FloatingLayerAbility, SystemEventBusAbility]);
-export type ToastInstance = InstanceType<typeof Toast>;
+// ─── 模板注册 ──────────────────────────────────────────────
+
+const registry = ComponentRegistrar.getInstance();
+registry.register(Toast as any, TOAST_TEMPLATE);
+
+Toast.use(TOAST_ABILITIES);
+
+export interface Toast extends IToast {}
+
+class ToastNotification {
+    static type = 'ToastNotification';
+}
+registry.register(ToastNotification, TOAST_NOTIFICATION_TEMPLATE);

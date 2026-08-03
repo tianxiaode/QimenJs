@@ -1,5 +1,5 @@
-import { ComposableBase, withAbilities } from '@/composable';
-import type { InferAbilities } from '@/composable';
+import { ComposableBase } from '@/composable';
+import type { InferAbility } from '@/composable';
 import { FlatLocalStateAbility } from '@/entity';
 import type { ILocalSearchParams } from '@/schema';
 
@@ -54,8 +54,6 @@ export interface ILocalDataManager {
     isEmpty: boolean;
     total: number;
 }
-
-const LOCAL_DATA_MANAGER_ABILITIES = [FlatLocalStateAbility] as const;
 
 /**
  * 本地数据管理器
@@ -112,6 +110,6 @@ export class LocalDataManager extends ComposableBase {
     }
 }
 
-withAbilities(LocalDataManager, LOCAL_DATA_MANAGER_ABILITIES);
+LocalDataManager.use(FlatLocalStateAbility);
 
-export interface LocalDataManager extends InferAbilities<typeof LOCAL_DATA_MANAGER_ABILITIES> {}
+export interface LocalDataManager extends InferAbility<typeof FlatLocalStateAbility> {}
