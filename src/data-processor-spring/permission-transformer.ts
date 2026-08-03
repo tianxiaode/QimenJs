@@ -1,4 +1,4 @@
-import type { PermissionEntry, PermissionTransformerOptions } from '@/permission/types';
+import type { PermissionTransformerOptions } from '@/permission/types';
 
 const PERMISSION_SEPARATOR = ':';
 const ROLE_PREFIX = 'ROLE_';
@@ -11,33 +11,22 @@ const ROLE_PREFIX = 'ROLE_';
  * - "ROLE_PRODUCT_ORDER_EXPORT" → "product:order:export"
  * - "ADMIN" → "admin"（无 ROLE_ 前缀视为全局权限）
  *
- * Spring 权限码使用 UPPER_SNAKE_CASE + ROLE_ 前缀，转换规则：
- * 1. 去除 ROLE_ 前缀
- * 2. 整体转小写
- * 3. 下划线替换为冒号
- *
  * @param rawCodes - Spring 返回的原始权限码列表
  * @param options - 转换选项
- * @returns 可直接传给 registerBatch 的 PermissionEntry 数组
+ * @returns 可直接传给 registerDomain 的 permissions 字段
  *
  * @example
  * ```typescript
- * const entries = transformSpringPermissions(['ROLE_USER_CREATE', 'ROLE_ADMIN'], {
- *     domain: 'spring',
- *     onUnmatched: (code) => {
- *         if (code === 'CUSTOM_ROLE') return { domain: 'spring', codes: ['custom'] };
- *     }
- * });
- * registrar.registerBatch(entries);
+ * const permissions = transformSpringPermissions(['ROLE_USER_CREATE', 'ROLE_ADMIN']);
+ * registrar.registerDomain('spring', { permissions });
  * ```
  */
 export function transformSpringPermissions(
     rawCodes: string[],
     options?: PermissionTransformerOptions
-): PermissionEntry[] {
-    const domain = options?.domain ?? 'default';
+): string[] {
     const onUnmatched = options?.onUnmatched;
-    const codes: string[] = [];
+    const result: string[] = [];
 
     for (const raw of rawCodes) {
         if (!raw) continue;
@@ -48,24 +37,16 @@ export function transformSpringPermissions(
         }
 
         if (code.includes('_')) {
-            codes.push(code.toLowerCase().replace(/_/g, PERMISSION_SEPARATOR));
-        } else if (onUnmatched && !code.includes('_')) {
-            const result = onUnmatched(raw);
-            if (result) {
-                const entries: PermissionEntry[] = [];
-                if (codes.length > 0) entries.push({ domain, codes });
-                entries.push(result);
-                return entries;
+            result.push(code.toLowerCase().replace(/_/g, PERMISSION_SEPARATOR));
+        } else if (onUnmatched) {
+            const transformed = onUnmatched(raw);
+            if (transformed) {
+                result.push(transformed);
             }
-            codes.push(code.toLowerCase());
         } else {
-            codes.push(code.toLowerCase());
+            result.push(code.toLowerCase());
         }
     }
 
-    const entries: PermissionEntry[] = [];
-    if (codes.length > 0) {
-        entries.push({ domain, codes });
-    }
-    return entries;
+    return result;
 }

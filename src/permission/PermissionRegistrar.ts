@@ -3,191 +3,143 @@ import {
     PERMISSION_CHANGE_EVENT,
     PERMISSION_SEPARATOR,
     type PermissionChangePayload,
-    type PermissionEntry,
+    type PermissionQuery,
+    type DomainConfig,
+    type DomainEntry,
 } from './types';
 import { SystemEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 
-/**
- * 权限注册器名称
- */
 const PermissionRegistrarName = 'permission' as const;
+
+/**
+ * 默认域验证器 — 标准 entityKey:action 匹配
+ */
+function defaultValidator(query: PermissionQuery, granted: Set<string>): boolean {
+    if (granted.has(query.action)) return true;
+
+    if (query.entityKey) {
+        if (granted.has(`${query.entityKey}${PERMISSION_SEPARATOR}${query.action}`)) return true;
+    }
+
+    return false;
+}
 
 /**
  * 权限注册器
  *
- * 管理权限码的注册、存储和查询。权限码按域分组存储，
- * 格式为 域:权限码（如 system:user:create）。
- *
- * 权限数据变更时自动通过 SystemEventBus 触发 permission:change 事件，
- * 组件的 PermissionAbility 监听此事件后自行判断权限状态。
+ * 每个域注册权限表 + 可选自定义验证函数。
+ * 查询通过 hasPermission 结构化参数，零字符串拼接。
  *
  * @example
  * ```ts
  * const registrar = PermissionRegistrar.getInstance();
  *
- * // 批量注册
- * registrar.registerBatch([
- *     { domain: 'system', codes: ['user:create', 'user:delete'] },
- *     { domain: 'business', codes: ['order:approve'] },
- * ]);
+ * // 默认域：标准匹配
+ * registrar.registerDomain('default', {
+ *     permissions: ['users:create', 'users:delete'],
+ * });
  *
- * // 查询
- * registrar.has('system:user:create'); // true
- * registrar.has('system:user:export'); // false
+ * // ABP 域：自定义验证
+ * registrar.registerDomain('abp', {
+ *     permissions: ['Users.Create', 'Products.Export', 'ADMIN'],
+ *     validate: (query, granted) => {
+ *         if (granted.has('ADMIN')) return true;
+ *         const key = capitalize(query.entityKey) + '.' + capitalize(query.action);
+ *         return granted.has(key);
+ *     }
+ * });
+ *
+ * // 结构化查询
+ * registrar.hasPermission({ action: 'create', entityKey: 'users' }); // true
+ * registrar.hasPermission({ action: 'create', entityKey: 'users', domain: 'abp' });
  * ```
  */
-export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>> {
+export class PermissionRegistrar extends RegistrarBase<Map<string, DomainEntry>> {
     public readonly name = PermissionRegistrarName;
 
-    protected storage = new Map<string, Set<string>>();
+    protected storage = new Map<string, DomainEntry>();
 
     /**
-     * 批量注册权限
-     *
-     * 一次性注册多个域的权限码，全部写入后只触发一次 permission:change 事件。
-     *
-     * @param entries - 权限注册项列表
-     */
-    registerBatch(entries: PermissionEntry[]): void {
-        this.checkLock();
-
-        const changedDomains: string[] = [];
-
-        for (const { domain, codes } of entries) {
-            let set = this.storage.get(domain);
-            if (!set) {
-                set = new Set();
-                this.storage.set(domain, set);
-            }
-            for (const code of codes) {
-                set.add(code);
-            }
-            changedDomains.push(domain);
-        }
-
-        if (changedDomains.length > 0) {
-            this.emitChange({ domains: changedDomains, type: 'register' });
-        }
-    }
-
-    /**
-     * 注册单个域的权限
+     * 注册域 — 权限表 + 可选自定义验证函数
      *
      * @param domain - 域名称
-     * @param codes - 权限码列表
+     * @param config - 域配置（permissions + validate）
      */
-    register(domain: string, ...codes: string[]): void {
-        this.registerBatch([{ domain, codes }]);
-    }
-
-    /**
-     * 批量注销权限
-     *
-     * 一次性注销多个域的权限码，全部删除后只触发一次 permission:change 事件。
-     *
-     * @param entries - 权限注销项列表
-     */
-    unregisterBatch(entries: PermissionEntry[]): void {
+    registerDomain(domain: string, config: DomainConfig): void {
         this.checkLock();
 
-        const changedDomains: string[] = [];
+        const existing = this.storage.get(domain);
+        const permissions = new Set(config.permissions);
 
-        for (const { domain, codes } of entries) {
-            const set = this.storage.get(domain);
-            if (!set) continue;
-
-            for (const code of codes) {
-                set.delete(code);
+        if (existing) {
+            for (const code of config.permissions) {
+                existing.permissions.add(code);
             }
-
-            // 域下无权限时移除整个域
-            if (set.size === 0) {
-                this.storage.delete(domain);
+            if (config.validate) {
+                existing.validate = config.validate;
             }
-
-            changedDomains.push(domain);
+        } else {
+            this.storage.set(domain, {
+                permissions,
+                validate: config.validate,
+            });
         }
 
-        if (changedDomains.length > 0) {
-            this.emitChange({ domains: changedDomains, type: 'unregister' });
-        }
+        this.emitChange({ domains: [domain], type: 'register' });
     }
 
     /**
-     * 注销单个域的权限
+     * 注销域的指定权限码
      *
      * @param domain - 域名称
      * @param codes - 要注销的权限码列表
      */
     unregister(domain: string, ...codes: string[]): void {
-        this.unregisterBatch([{ domain, codes }]);
+        this.checkLock();
+
+        const entry = this.storage.get(domain);
+        if (!entry) return;
+
+        for (const code of codes) {
+            entry.permissions.delete(code);
+        }
+
+        if (entry.permissions.size === 0) {
+            this.storage.delete(domain);
+        }
+
+        this.emitChange({ domains: [domain], type: 'unregister' });
     }
 
     /**
-     * 查询是否拥有指定权限
+     * 结构化权限查询 — 零字符串拼接
      *
-     * 权限码格式为 域:权限码，如 'system:user:create'。
-     * 自动按分隔符拆分域和权限码进行查询。
+     * 优先级：
+     * 1. 指定 domain → 使用该域的 validate 或默认验证器
+     * 2. 未指定 domain → 遍历所有域，任一匹配即通过
      *
-     * @param code - 完整权限码（域:权限码）
-     * @returns 是否拥有该权限
+     * @param query - 结构化查询参数
+     * @returns 是否拥有权限
      */
-    has(code: string): boolean {
-        const separatorIndex = code.indexOf(PERMISSION_SEPARATOR);
-        if (separatorIndex === -1) return false;
+    hasPermission(query: PermissionQuery): boolean {
+        if (query.domain) {
+            const entry = this.storage.get(query.domain);
+            if (!entry) return false;
+            const validator = entry.validate ?? defaultValidator;
+            return validator(query, entry.permissions);
+        }
 
-        const domain = code.substring(0, separatorIndex);
-        const permission = code.substring(separatorIndex + 1);
+        for (const entry of this.storage.values()) {
+            const validator = entry.validate ?? defaultValidator;
+            if (validator(query, entry.permissions)) return true;
+        }
 
-        return this.storage.get(domain)?.has(permission) ?? false;
-    }
-
-    /**
-     * 查询是否拥有全部指定权限
-     *
-     * @param codes - 权限码列表
-     * @returns 是否全部拥有
-     */
-    hasAll(codes: string[]): boolean {
-        return codes.every(code => this.has(code));
-    }
-
-    /**
-     * 查询是否拥有任一指定权限
-     *
-     * @param codes - 权限码列表
-     * @returns 是否拥有任一
-     */
-    hasAny(codes: string[]): boolean {
-        return codes.some(code => this.has(code));
-    }
-
-    /**
-     * 获取指定域的所有权限码
-     *
-     * @param domain - 域名称
-     * @returns 权限码数组，域不存在时返回空数组
-     */
-    get(domain: string): string[] {
-        return this.getByDomain(domain);
-    }
-
-    /**
-     * 获取指定域的所有权限码
-     *
-     * @param domain - 域名称
-     * @returns 权限码数组，域不存在时返回空数组
-     */
-    getByDomain(domain: string): string[] {
-        const set = this.storage.get(domain);
-        return set ? Array.from(set) : [];
+        return false;
     }
 
     /**
      * 清除指定域的所有权限
-     *
-     * @param domain - 域名称
      */
     clearDomain(domain: string): void {
         this.checkLock();
@@ -198,9 +150,15 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
     }
 
     /**
+     * 获取指定域的所有权限码
+     */
+    getByDomain(domain: string): string[] {
+        const entry = this.storage.get(domain);
+        return entry ? Array.from(entry.permissions) : [];
+    }
+
+    /**
      * 获取所有已注册的域名称
-     *
-     * @returns 域名称数组
      */
     getDomains(): string[] {
         return Array.from(this.storage.keys());
@@ -208,18 +166,13 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
 
     /**
      * 获取指定域的权限数量
-     *
-     * @param domain - 域名称
-     * @returns 权限数量
      */
     getDomainSize(domain: string): number {
-        return this.storage.get(domain)?.size ?? 0;
+        return this.storage.get(domain)?.permissions.size ?? 0;
     }
 
     /**
      * 触发权限变更事件
-     *
-     * @param payload - 事件载荷
      */
     private emitChange(payload: PermissionChangePayload): void {
         const ctx = EventContextBuilder.create()
@@ -239,9 +192,9 @@ export class PermissionRegistrar extends RegistrarBase<Map<string, Set<string>>>
         if (this.storage.size === 0) {
             console.log('(empty)');
         } else {
-            this.storage.forEach((codes, domain) => {
-                console.group(`Domain: ${domain} (${codes.size})`);
-                console.table(Array.from(codes));
+            this.storage.forEach((entry, domain) => {
+                console.group(`Domain: ${domain} (${entry.permissions.size})${entry.validate ? ' [custom]' : ''}`);
+                console.table(Array.from(entry.permissions));
                 console.groupEnd();
             });
         }

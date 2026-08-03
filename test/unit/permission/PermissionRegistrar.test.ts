@@ -1,19 +1,3 @@
-/**
- * PermissionRegistrar 单元测试
- *
- * 覆盖所有分支：
- * - has: 无分隔符 / 有分隔符但无权限 / 有权限
- * - hasAll: 全部有 / 部分有 / 全部无
- * - hasAny: 任一有 / 任一无
- * - clearDomain: 存在的域 / 不存在的域
- * - registerBatch: 新域 / 已有域 / 空列表
- * - unregisterBatch: 域存在 / 域不存在 / 域清空后移除
- * - getByDomain: 存在 / 不存在
- * - getDomainSize: 存在 / 不存在
- * - doInspect: 空 / 非空
- * - emitChange: 有 eventBus / 无 eventBus
- */
-
 import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
 import { PERMISSION_CHANGE_EVENT } from '@/permission/types';
 import { SystemEventBus } from '@/events';
@@ -26,177 +10,81 @@ describe('PermissionRegistrar', () => {
         registrar = new PermissionRegistrar();
     });
 
-    describe('register & has', () => {
-        it('has() 对无分隔符的权限码应返回 false', () => {
-            registrar.register('system', 'user:create');
-            expect(registrar.has('noseparator')).toBe(false);
+    describe('registerDomain & hasPermission', () => {
+        it('默认域：action 匹配', () => {
+            registrar.registerDomain('default', { permissions: ['users:create'] });
+            expect(registrar.hasPermission({ action: 'create', entityKey: 'users' })).toBe(true);
         });
 
-        it('has() 对有分隔符但未注册的权限应返回 false', () => {
-            expect(registrar.has('system:user:create')).toBe(false);
+        it('默认域：全局 action 匹配', () => {
+            registrar.registerDomain('default', { permissions: ['admin'] });
+            expect(registrar.hasPermission({ action: 'admin' })).toBe(true);
         });
 
-        it('has() 对已注册的权限应返回 true', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            expect(registrar.has('system:user:create')).toBe(true);
-            expect(registrar.has('system:user:delete')).toBe(true);
+        it('未注册权限应返回 false', () => {
+            expect(registrar.hasPermission({ action: 'create', entityKey: 'users' })).toBe(false);
         });
 
-        it('has() 对已注册域中不存在的权限码应返回 false', () => {
-            registrar.register('system', 'user:create');
-            expect(registrar.has('system:user:export')).toBe(false);
-        });
-    });
-
-    describe('hasAll', () => {
-        it('全部权限都有时返回 true', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            expect(registrar.hasAll(['system:user:create', 'system:user:delete'])).toBe(true);
+        it('指定 domain 查询', () => {
+            registrar.registerDomain('abp', { permissions: ['Users.Create'] });
+            expect(registrar.hasPermission({ action: 'create', domain: 'abp' })).toBe(false);
         });
 
-        it('部分权限缺失时返回 false', () => {
-            registrar.register('system', 'user:create');
-            expect(registrar.hasAll(['system:user:create', 'system:user:delete'])).toBe(false);
+        it('自定义验证函数', () => {
+            registrar.registerDomain('abp', {
+                permissions: ['Users.Create', 'ADMIN'],
+                validate: (query, granted) => {
+                    if (granted.has('ADMIN')) return true;
+                    const key = capitalize(query.entityKey) + '.' + capitalize(query.action);
+                    return granted.has(key);
+                },
+            });
+
+            expect(registrar.hasPermission({ action: 'create', entityKey: 'users', domain: 'abp' })).toBe(true);
+            expect(registrar.hasPermission({ action: 'delete', entityKey: 'users', domain: 'abp' })).toBe(true);
         });
 
-        it('全部权限都缺失时返回 false', () => {
-            expect(registrar.hasAll(['system:user:create', 'system:user:delete'])).toBe(false);
+        it('未指定 domain 时遍历所有域', () => {
+            registrar.registerDomain('default', { permissions: ['users:create'] });
+            registrar.registerDomain('abp', { permissions: ['ADMIN'] });
+            expect(registrar.hasPermission({ action: 'create', entityKey: 'users' })).toBe(true);
         });
 
-        it('空数组应返回 true', () => {
-            expect(registrar.hasAll([])).toBe(true);
-        });
-    });
-
-    describe('hasAny', () => {
-        it('任一权限有时返回 true', () => {
-            registrar.register('system', 'user:create');
-            expect(registrar.hasAny(['system:user:create', 'system:user:delete'])).toBe(true);
-        });
-
-        it('全部权限都无时返回 false', () => {
-            expect(registrar.hasAny(['system:user:create', 'system:user:delete'])).toBe(false);
-        });
-
-        it('空数组应返回 false', () => {
-            expect(registrar.hasAny([])).toBe(false);
+        it('向已有域追加权限', () => {
+            registrar.registerDomain('default', { permissions: ['users:create'] });
+            registrar.registerDomain('default', { permissions: ['users:delete'] });
+            expect(registrar.getByDomain('default')).toEqual(expect.arrayContaining(['users:create', 'users:delete']));
         });
     });
 
-    describe('registerBatch', () => {
-        it('应该批量注册多个域的权限', () => {
-            registrar.registerBatch([
-                { domain: 'system', codes: ['user:create'] },
-                { domain: 'business', codes: ['order:approve'] },
-            ]);
-
-            expect(registrar.has('system:user:create')).toBe(true);
-            expect(registrar.has('business:order:approve')).toBe(true);
+    describe('unregister', () => {
+        it('注销指定权限码', () => {
+            registrar.registerDomain('default', { permissions: ['users:create', 'users:delete'] });
+            registrar.unregister('default', 'users:create');
+            expect(registrar.hasPermission({ action: 'create', entityKey: 'users' })).toBe(false);
+            expect(registrar.hasPermission({ action: 'delete', entityKey: 'users' })).toBe(true);
         });
 
-        it('应该向已有域追加权限', () => {
-            registrar.register('system', 'user:create');
-            registrar.registerBatch([{ domain: 'system', codes: ['user:delete'] }]);
-
-            expect(registrar.has('system:user:create')).toBe(true);
-            expect(registrar.has('system:user:delete')).toBe(true);
-        });
-
-        it('空列表不应触发事件', () => {
-            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
-            registrar.registerBatch([]);
-
-            expect(bridgeEmitSpy).not.toHaveBeenCalled();
-        });
-
-        it('有变更时应触发 permission:change 事件', () => {
-            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
-            registrar.registerBatch([{ domain: 'system', codes: ['user:create'] }]);
-
-            expect(bridgeEmitSpy).toHaveBeenCalledWith(
-                PERMISSION_CHANGE_EVENT,
-                expect.objectContaining({
-                    data: { domains: ['system'], type: 'register' },
-                    source: 'permission',
-                })
-            );
-        });
-    });
-
-    describe('unregisterBatch', () => {
-        it('域不存在时应跳过（不报错）', () => {
-            registrar.register('system', 'user:create');
-            registrar.unregisterBatch([{ domain: 'nonexistent', codes: ['x'] }]);
-
-            expect(registrar.has('system:user:create')).toBe(true);
-        });
-
-        it('应该注销指定权限码', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
-
-            expect(registrar.has('system:user:create')).toBe(false);
-            expect(registrar.has('system:user:delete')).toBe(true);
-        });
-
-        it('域下无权限时应移除整个域', () => {
-            registrar.register('system', 'user:create');
-            registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
-
-            expect(registrar.getDomains()).not.toContain('system');
-        });
-
-        it('域下仍有权限时应保留域', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
-
-            expect(registrar.getDomains()).toContain('system');
-            expect(registrar.has('system:user:delete')).toBe(true);
-        });
-
-        it('空列表不应触发事件', () => {
-            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
-            registrar.unregisterBatch([]);
-
-            expect(bridgeEmitSpy).not.toHaveBeenCalled();
-        });
-
-        it('有变更时应触发 permission:change 事件（type=unregister）', () => {
-            const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
-            registrar.register('system', 'user:create');
-            bridgeEmitSpy.mockClear();
-
-            registrar.unregisterBatch([{ domain: 'system', codes: ['user:create'] }]);
-
-            expect(bridgeEmitSpy).toHaveBeenCalledWith(
-                PERMISSION_CHANGE_EVENT,
-                expect.objectContaining({
-                    data: { domains: ['system'], type: 'unregister' },
-                    source: 'permission',
-                })
-            );
+        it('域下无权限时移除整个域', () => {
+            registrar.registerDomain('default', { permissions: ['users:create'] });
+            registrar.unregister('default', 'users:create');
+            expect(registrar.getDomains()).not.toContain('default');
         });
     });
 
     describe('clearDomain', () => {
         it('存在的域应被清除并触发事件', () => {
             const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
-            registrar.register('system', 'user:create');
+            registrar.registerDomain('default', { permissions: ['users:create'] });
             bridgeEmitSpy.mockClear();
 
-            registrar.clearDomain('system');
+            registrar.clearDomain('default');
 
-            expect(registrar.has('system:user:create')).toBe(false);
-            expect(registrar.getDomains()).not.toContain('system');
+            expect(registrar.getDomains()).not.toContain('default');
             expect(bridgeEmitSpy).toHaveBeenCalledWith(
                 PERMISSION_CHANGE_EVENT,
                 expect.objectContaining({
-                    data: { domains: ['system'], type: 'clear' },
+                    data: { domains: ['default'], type: 'clear' },
                     source: 'permission',
                 })
             );
@@ -204,17 +92,15 @@ describe('PermissionRegistrar', () => {
 
         it('不存在的域不应触发事件', () => {
             const bridgeEmitSpy = jest.spyOn(SystemEventBus.getInstance(), '_bridgeEmit');
-
             registrar.clearDomain('nonexistent');
-
             expect(bridgeEmitSpy).not.toHaveBeenCalled();
         });
     });
 
     describe('getByDomain', () => {
         it('存在的域应返回权限码数组', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            expect(registrar.getByDomain('system')).toEqual(['user:create', 'user:delete']);
+            registrar.registerDomain('default', { permissions: ['users:create', 'users:delete'] });
+            expect(registrar.getByDomain('default')).toEqual(['users:create', 'users:delete']);
         });
 
         it('不存在的域应返回空数组', () => {
@@ -224,8 +110,8 @@ describe('PermissionRegistrar', () => {
 
     describe('getDomainSize', () => {
         it('存在的域应返回权限数量', () => {
-            registrar.register('system', 'user:create', 'user:delete');
-            expect(registrar.getDomainSize('system')).toBe(2);
+            registrar.registerDomain('default', { permissions: ['users:create', 'users:delete'] });
+            expect(registrar.getDomainSize('default')).toBe(2);
         });
 
         it('不存在的域应返回 0', () => {
@@ -235,16 +121,16 @@ describe('PermissionRegistrar', () => {
 
     describe('getDomains', () => {
         it('应返回所有已注册的域名称', () => {
-            registrar.register('system', 'user:create');
-            registrar.register('business', 'order:approve');
-            expect(registrar.getDomains()).toEqual(expect.arrayContaining(['system', 'business']));
+            registrar.registerDomain('default', { permissions: ['users:create'] });
+            registrar.registerDomain('abp', { permissions: ['Users.Create'] });
+            expect(registrar.getDomains()).toEqual(expect.arrayContaining(['default', 'abp']));
         });
     });
 
     describe('emitChange', () => {
         it('通过 SystemEventBus 触发事件不应报错', () => {
             expect(() => {
-                registrar.register('system', 'user:create');
+                registrar.registerDomain('default', { permissions: ['users:create'] });
             }).not.toThrow();
         });
     });
@@ -265,7 +151,7 @@ describe('PermissionRegistrar', () => {
         });
 
         it('非空存储时应输出域信息', () => {
-            registrar.register('system', 'user:create');
+            registrar.registerDomain('default', { permissions: ['users:create'] });
 
             const groupSpy = jest.spyOn(console, 'group').mockImplementation(() => {});
             const tableSpy = jest.spyOn(console, 'table').mockImplementation(() => {});
@@ -274,7 +160,7 @@ describe('PermissionRegistrar', () => {
             registrar.inspect();
 
             expect(groupSpy).toHaveBeenCalledWith('🔐 Permission Registry Status');
-            expect(groupSpy).toHaveBeenCalledWith('Domain: system (1)');
+            expect(groupSpy).toHaveBeenCalledWith('Domain: default (1)');
             expect(tableSpy).toHaveBeenCalled();
             groupSpy.mockRestore();
             tableSpy.mockRestore();
@@ -282,3 +168,8 @@ describe('PermissionRegistrar', () => {
         });
     });
 });
+
+function capitalize(s?: string): string {
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}

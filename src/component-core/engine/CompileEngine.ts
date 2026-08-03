@@ -163,7 +163,7 @@ export class CompileEngine {
         const nodeMetas: Record<string, NodeMetadata> = {};
         const exposeNames: string[] = [];
         const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
-        const permissionNodes: Array<{ name: string; permission: string }> = [];
+        const permissionNodes: Array<{ name: string; permission: boolean | string }> = [];
 
         indexPath['root'] = [];
         nodeMetas['root'] = copyMetaFields(root, {

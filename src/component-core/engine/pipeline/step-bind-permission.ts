@@ -1,8 +1,10 @@
 import type { InitContext } from '../../types/init-context';
 import { SystemEventBus, SYSTEM_EVENTS } from '@/events';
 import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
+import type { PermissionQuery } from '@/permission/types';
 
 const PERMISSION_SEPARATOR = ':';
+const BTN_SUFFIXES = /Btn|Button|Action$/;
 
 export function bindPermission(ctx: InitContext): void {
     const { instance, nodeMapMgr } = ctx;
@@ -31,14 +33,15 @@ export function bindPermission(ctx: InitContext): void {
 
 function applyPermission(
     instance: any,
-    permissionNodes: Array<{ name: string; permission: string }>,
+    permissionNodes: Array<{ name: string; permission: boolean | string }>,
     entityKey?: string,
     domain?: string
 ): void {
     const registrar = PermissionRegistrar.getInstance();
 
     for (const { name, permission } of permissionNodes) {
-        const granted = resolvePermission(registrar, permission, entityKey, domain);
+        const query = resolveQuery(permission, name, instance, entityKey, domain);
+        const granted = registrar.hasPermission(query);
         const node = instance.nodeMap?.[name];
         if (!node?.el) continue;
 
@@ -53,25 +56,29 @@ function applyPermission(
     }
 }
 
-function resolvePermission(
-    registrar: PermissionRegistrar,
-    permission: string,
+function resolveQuery(
+    permission: boolean | string,
+    name: string,
+    instance: any,
     entityKey?: string,
     domain?: string
-): boolean {
-    if (registrar.has(permission)) return true;
-
-    const colonCount = permission.split(PERMISSION_SEPARATOR).length - 1;
-
-    if (colonCount === 0 && entityKey) {
-        const merged = `${entityKey}${PERMISSION_SEPARATOR}${permission}`;
-        if (registrar.has(merged)) return true;
+): PermissionQuery {
+    if (permission === true) {
+        const action = (instance as any).nodeMap?.[name]?.action
+            ?? name.replace(BTN_SUFFIXES, '').toLowerCase();
+        return { action, entityKey, domain };
     }
 
-    if (colonCount === 1 && domain) {
-        const merged = `${domain}${PERMISSION_SEPARATOR}${permission}`;
-        if (registrar.has(merged)) return true;
-    }
+    const parts = (permission as string).split(PERMISSION_SEPARATOR);
 
-    return false;
+    switch (parts.length) {
+        case 1:
+            return { action: parts[0], entityKey, domain };
+        case 2:
+            return { action: parts[1], entityKey: parts[0], domain };
+        case 3:
+            return { action: parts[2], entityKey: parts[1], domain: parts[0] };
+        default:
+            return { action: permission as string, entityKey, domain };
+    }
 }

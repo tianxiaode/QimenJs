@@ -126,8 +126,8 @@ export interface NodeMetadata {
     /** i18n 翻译 key */
     i18nKey?: string;
 
-    /** 权限声明（action / entity:action / domain:entity:action） */
-    permission?: string;
+    /** 权限声明（true=从 action 推导 / action / entity:action / domain:entity:action） */
+    permission?: boolean | string;
 
     // ─── state：状态 ───
 
@@ -257,7 +257,7 @@ export interface CompiledTemplateResult {
     i18nNodes: Array<{ name: string; i18nKey: string }>;
 
     /** 权限节点列表 */
-    permissionNodes: Array<{ name: string; permission: string }>;
+    permissionNodes: Array<{ name: string; permission: boolean | string }>;
 }
  *
  * 包含编译产物中不可变、可安全跨类共享的部分：
@@ -288,7 +288,7 @@ export interface CompiledTemplateCache {
     indexPath: NodeIndexPath;
     exposeNames: string[];
     i18nNodes: Array<{ name: string; i18nKey: string }>;
-    permissionNodes: Array<{ name: string; permission: string }>;
+    permissionNodes: Array<{ name: string; permission: boolean | string }>;
     templateCache: HTMLTemplateElement;
 }
 

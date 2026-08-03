@@ -108,7 +108,7 @@ export class NodeMapManager implements INodeMapManager {
         return this._cache.i18nNodes;
     }
 
-    get permissionNodes(): Array<{ name: string; permission: string }> {
+    get permissionNodes(): Array<{ name: string; permission: boolean | string }> {
         return this._cache.permissionNodes;
     }
 

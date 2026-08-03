@@ -1,4 +1,4 @@
-import type { PermissionEntry, PermissionTransformerOptions } from '@/permission/types';
+import type { PermissionTransformerOptions } from '@/permission/types';
 
 const PERMISSION_SEPARATOR = ':';
 
@@ -9,51 +9,37 @@ const PERMISSION_SEPARATOR = ':';
  * - "Users.Create" → "users:create"
  * - "Products.Order.Export" → "products:order:export"
  *
- * ABP 权限码使用 PascalCase + 点号分隔，转换规则：
- * 1. 整体转小写
- * 2. 点号替换为冒号
- *
  * @param rawCodes - ABP 返回的原始权限码列表
  * @param options - 转换选项
- * @returns 可直接传给 registerBatch 的 PermissionEntry 数组
+ * @returns 可直接传给 registerDomain 的 permissions 字段
  *
  * @example
  * ```typescript
- * const entries = transformAbpPermissions(['Users.Create', 'Products.Export'], {
- *     domain: 'abp',
- *     onUnmatched: (code) => {
- *         if (code === 'SPECIAL_ADMIN') return { domain: 'abp', codes: ['admin'] };
- *     }
- * });
- * registrar.registerBatch(entries);
+ * const permissions = transformAbpPermissions(['Users.Create', 'Products.Export']);
+ * registrar.registerDomain('abp', { permissions });
  * ```
  */
 export function transformAbpPermissions(
     rawCodes: string[],
     options?: PermissionTransformerOptions
-): PermissionEntry[] {
-    const domain = options?.domain ?? 'default';
+): string[] {
     const onUnmatched = options?.onUnmatched;
-    const codes: string[] = [];
-    const unmatched: string[] = [];
+    const result: string[] = [];
 
     for (const raw of rawCodes) {
-        if (raw && raw.includes('.')) {
-            codes.push(raw.toLowerCase().replace(/\./g, PERMISSION_SEPARATOR));
-        } else if (raw && onUnmatched) {
-            const result = onUnmatched(raw);
-            if (result) {
-                return [{ domain, codes }, ...([result] as PermissionEntry[])];
+        if (!raw) continue;
+
+        if (raw.includes('.')) {
+            result.push(raw.toLowerCase().replace(/\./g, PERMISSION_SEPARATOR));
+        } else if (onUnmatched) {
+            const transformed = onUnmatched(raw);
+            if (transformed) {
+                result.push(transformed);
             }
-            unmatched.push(raw);
-        } else if (raw) {
-            codes.push(raw.toLowerCase());
+        } else {
+            result.push(raw.toLowerCase());
         }
     }
 
-    const entries: PermissionEntry[] = [];
-    if (codes.length > 0) {
-        entries.push({ domain, codes });
-    }
-    return entries;
+    return result;
 }
