@@ -111,9 +111,7 @@ export function createCrudItems(
     const items: Record<string, any>[] = [];
 
     // 无 config 时返回全部默认项
-    const entries = config ?? Object.fromEntries(
-        Object.keys(CRUD_DEFS).map(k => [k, true])
-    );
+    const entries = config ?? Object.fromEntries(Object.keys(CRUD_DEFS).map(k => [k, true]));
 
     for (const [key, val] of Object.entries(entries)) {
         if (val === false) continue;
@@ -132,10 +130,7 @@ export function createCrudItems(
 // 内部构建逻辑（CRUD 按钮全部为 Button 类型）
 // ══════════════════════════════════════════════════════════════
 
-function buildCrudItem(
-    def: BuiltinItemDef,
-    override: EntityToolbarItemDef
-): Record<string, any> {
+function buildCrudItem(def: BuiltinItemDef, override: EntityToolbarItemDef): Record<string, any> {
     const name = override.name ?? def.name;
     const order = override.order ?? def.order;
     const iconCls = override.iconCls ?? def.iconCls;

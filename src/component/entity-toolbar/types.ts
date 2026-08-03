@@ -33,7 +33,6 @@ export interface BuiltinItemDef {
     variant: string;
 }
 
-
 // ── 状态能力共用 ──
 
 /**
