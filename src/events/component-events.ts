@@ -122,3 +122,30 @@ export const TOOLBAR_EVENTS = {
     /** 搜索提交 */
     SEARCH: 'toolbarsearch',
 } as const;
+
+// ============================================
+// 表格事件（TableComponent 发射）
+// ============================================
+export const TABLE_EVENTS = {
+    PAGE_CHANGE: 'table:pagechange',
+    CREATE: 'table:create',
+    EDIT: 'table:edit',
+    DELETE: 'table:delete',
+    REFRESH: 'table:refresh',
+    IMPORT: 'table:import',
+    EXPORT: 'table:export',
+    SAVE: 'table:save',
+    SELECTION_CHANGE: 'table:selectionchange',
+    ROW_SELECT: 'table:rowselect',
+} as const;
+
+// ============================================
+// 表单事件（FormComponent 发射）
+// ============================================
+export const FORM_EVENTS = {
+    SAVE: 'form:save',
+    CREATE: 'form:create',
+    EDIT: 'form:edit',
+    DELETE: 'form:delete',
+    REFRESH: 'form:refresh',
+} as const;

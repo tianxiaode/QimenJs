@@ -162,7 +162,19 @@ export { treeNavCSS } from './treenav/tree-nav.css';
 export { LoadingComponent } from './loading/LoadingComponent';
 
 // 事件枚举
-export * from './events';
+export {
+    COMPONENT_LIFECYCLE_EVENTS,
+    PAGINATION_EVENTS,
+    CRUD_EVENTS,
+    CRUD_ACTIONS,
+    SELECTION_EVENTS,
+    CHILDREN_EVENTS,
+    COLUMN_EVENTS,
+    SEARCH_EVENTS,
+    TOOLBAR_EVENTS,
+    TABLE_EVENTS,
+    FORM_EVENTS,
+} from '@qimenjs/events';
 
 // Markdown 组件
 export {
