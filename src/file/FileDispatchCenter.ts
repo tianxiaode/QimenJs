@@ -27,8 +27,7 @@
  * center.disconnect('avatars');  // 引用计数到 0 时销毁通道
  */
 
-import { FileEventBus } from '@/events/FileEventBus';
-import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events/file-events';
+import { FileEventBus, FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { HttpClient } from '@/http/HttpClient';
 import { KernelErrorCode } from '@/error';

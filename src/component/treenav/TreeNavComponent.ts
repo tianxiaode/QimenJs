@@ -23,7 +23,7 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import type { ForwardRouteKey } from '@qimenjs/component-core';
-import { RouteEventBus } from '@/events/RouteEventBus';
+import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
 export interface TreeNavProps extends ItemGroupProps {

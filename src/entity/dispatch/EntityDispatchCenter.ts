@@ -10,7 +10,7 @@ import {
     ENTITY_SEARCH_EVENTS,
     ENTITY_UPLOAD_EVENTS,
     ENTITY_VALIDATION_EVENTS,
-} from '@/events/entity-events';
+} from '@/events';
 
 interface EntityTypeEntry {
     mgrType: EntityManagerConstructor;

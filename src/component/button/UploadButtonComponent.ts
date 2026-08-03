@@ -22,7 +22,7 @@
 
 import { ButtonComponent } from './ButtonComponent';
 import { fileDispatchCenter } from '@/file/FileDispatchCenter';
-import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events/file-events';
+import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { formatFileSize, formatFileStatus } from '@/file/format';
 import { FileItemStatus, type FileTransportConfig, type FileItem } from '@/file/types';
@@ -281,7 +281,10 @@ export let UploadButtonComponent = ButtonComponent.replace({
             const size = formatFileSize(item.size);
             const status = formatFileStatus(item);
 
-            if (item.status === FileItemStatus.UPLOADING || item.status === FileItemStatus.HASHING) {
+            if (
+                item.status === FileItemStatus.UPLOADING ||
+                item.status === FileItemStatus.HASHING
+            ) {
                 return (
                     `<div class="q-upload-btn__item ${statusCls}">` +
                     `<span class="q-upload-btn__name">${name}</span>` +
@@ -321,9 +324,7 @@ export let UploadButtonComponent = ButtonComponent.replace({
 
         get uploadedFiles(): FileItem[] {
             const map: Map<string, FileItem> | null = (this as any)._itemsMap;
-            return map
-                ? [...map.values()].filter(i => i.status === FileItemStatus.UPLOADED)
-                : [];
+            return map ? [...map.values()].filter(i => i.status === FileItemStatus.UPLOADED) : [];
         },
 
         /**

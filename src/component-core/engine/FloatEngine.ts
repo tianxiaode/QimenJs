@@ -28,7 +28,7 @@ import type {
     LoadingQuickConfig,
 } from '../types/init-context';
 import { EventContextBuilder } from '@/context';
-import { OVERLAY_ACTIONS } from '@/events/overlay-events';
+import { OVERLAY_ACTIONS } from '@/events';
 import { getId } from '@/utils/string';
 
 // ══════════════════════════════════════════════════════════════

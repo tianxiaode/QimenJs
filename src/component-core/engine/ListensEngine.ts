@@ -24,11 +24,13 @@ import type {
     FileListen,
 } from '../types/tpl-node-types';
 import { EventForwarder, type ForwardConfig } from './EventForwarder';
-import { ComponentEventBus } from '@/events/ComponentEventBus';
-import { EntityEventBus } from '@/events/EntityEventBus';
-import { SystemEventBus } from '@/events/SystemEventBus';
-import { RouteEventBus } from '@/events/RouteEventBus';
-import { FileEventBus } from '@/events/FileEventBus';
+import {
+    ComponentEventBus,
+    EntityEventBus,
+    SystemEventBus,
+    RouteEventBus,
+    FileEventBus,
+} from '@/events';
 
 function isNodeListen(item: ListenItem): item is NodeListen {
     return 'node' in item;
@@ -247,10 +249,7 @@ export class ListensEngine {
         }
     }
 
-    private static _bindEntity(
-        instance: any,
-        events: Record<string, EventMapping>
-    ): void {
+    private static _bindEntity(instance: any, events: Record<string, EventMapping>): void {
         const entityKey = EventForwarder.resolveKey(instance.entityKey);
         if (!entityKey) return;
 

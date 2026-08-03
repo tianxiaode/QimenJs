@@ -22,7 +22,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
-import { OVERLAY_ACTIONS } from '@/events/overlay-events';
+import { OVERLAY_ACTIONS } from '@/events';
 import type { FloatDecl } from '@/component-core/types/tpl-node-types';
 import type { IndicatorConfig, IndicatorType } from '@/component-core/types/init-context';
 

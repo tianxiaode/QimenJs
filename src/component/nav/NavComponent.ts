@@ -23,7 +23,7 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
-import { RouteEventBus } from '@/events/RouteEventBus';
+import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
 export interface NavItemGroupProps extends ItemGroupProps {

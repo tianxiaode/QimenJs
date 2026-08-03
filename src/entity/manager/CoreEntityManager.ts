@@ -15,7 +15,7 @@ import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
 import type { PermissionQuery } from '@/permission/types';
-import { EntityEventBus } from '@/events/EntityEventBus';
+import { EntityEventBus } from '@/events';
 
 export const CORE_ENTITY_ABILITIES = [
     EventAbility,

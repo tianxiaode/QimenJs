@@ -18,7 +18,7 @@
 
 import type { DragDecl, DropDecl } from '../types/tpl-node-types';
 import { EventContextBuilder } from '@/context';
-import { DRAG_ACTIONS } from '@/events/drag-events';
+import { DRAG_ACTIONS } from '@/events';
 import { dragDispatchCenter } from '@/drag/DragDispatchCenter';
 import { getId } from '@/utils/string';
 

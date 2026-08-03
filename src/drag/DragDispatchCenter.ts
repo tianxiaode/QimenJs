@@ -13,8 +13,7 @@
  */
 
 import { RegistrarBase } from '@/registry';
-import { DragEventBus } from '@/events/DragEventBus';
-import { DRAG_ACTIONS } from '@/events/drag-events';
+import { DragEventBus, DRAG_ACTIONS } from '@/events';
 
 import type { DragDecl, DropDecl } from '@/component-core/types/tpl-node-types';
 
