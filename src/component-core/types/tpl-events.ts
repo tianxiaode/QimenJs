@@ -7,8 +7,8 @@
  *
  * 事件体系三部分：
  *   ① domEvents — DOM 委托事件与转发（本文件）
- *   ② childEvents — nodeMap 子组件事件订阅（tpl-body.ts HandlersListen）
- *   ③ listens — 事件监听（tpl-body.ts ListenItem[]，四路分流：source/entity/system/route）
+ *   ② node 事件 — nodeMap 子组件事件订阅（listens: NodeListen）
+ *   ③ listens — 统一事件订阅（ListenItem[]，支持 node/source/entity/system/route/file/float/drag）
  *
  * 核心规则：
  *   1. domEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
@@ -166,5 +166,5 @@ export interface DomEventsMap {
 
 // 事件体系三部分：
 // ① domEvents — DOM 委托事件与转发（本文件 DomEventsMap）
-// ② childEvents — nodeMap 子组件事件订阅（tpl-body.ts ChildEventsListen）
-// ③ listens — 事件监听（tpl-body.ts ListenItem[]，四路分流：source/entity/system/route）
+// ② node 事件 — nodeMap 子组件事件订阅（listens: NodeListen）
+// ③ listens — 统一事件订阅（ListenItem[]，所有类型支持本地监听 + 六路转发）

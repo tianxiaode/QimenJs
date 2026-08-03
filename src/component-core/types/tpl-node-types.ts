@@ -349,19 +349,37 @@ export interface TplNode {
 // ══════════════════════════════════════════════════════════════
 
 /**
- * 事件映射值 — 字符串简写 或 带选项对象
+ * 事件映射值 — 统一支持本地监听 + 六路转发
  *
- * once 等选项在事件级别定义，避免多个事件全部 once。
+ * 三种简写：
+ *   string              — 纯本地监听，handler 方法名
+ *   true                — 纯本地监听，方法名自动推导（仅 node 类型）
+ *   ForwardConfig       — 转发（可含 handler 本地处理）
  *
  * @example
  * ```ts
  * events: {
- *     save: 'onSave',                              // 简写
- *     cancel: { handler: 'onCancel', once: true }, // 带选项
+ *     save: 'onSave',                                    // 纯本地
+ *     close: true,                                       // 纯本地，方法名自动推导（仅 node）
+ *     submit: { handler: 'onSubmit', once: true },       // 本地 + 选项
+ *     deleted: { bridges: ['removed'] },                 // 纯转发
+ *     updated: { handler: 'onUpdated', emits: ['ok'] },  // 本地 + 转发
  * }
  * ```
  */
-export type EventMapping = string | { handler: string; once?: boolean };
+export type EventMapping =
+    | string
+    | true
+    | {
+          handler?: string | true;
+          once?: boolean;
+          emits?: string[];
+          bridges?: string[];
+          entities?: string;
+          file?: string;
+          router?: string;
+          system?: string[];
+      };
 
 /**
  * 桥接事件订阅
@@ -473,60 +491,30 @@ export interface FileListen {
 }
 
 /**
- * 子组件事件配置 — 与 domEvents eventConfig 对齐，支持转发
- */
-export interface ChildEventConfig {
-    /** 本地监听：调用组件方法（自动推导 on${NodeName}${Event}） */
-    handler?: boolean;
-    /** 转发为组件事件 */
-    emits?: string[];
-    /** 转发为实体操作 */
-    entities?: string;
-    /** 转发为组件事件（通过 ComponentEventBus，字段名保留 bridges 向后兼容） */
-    bridges?: string[];
-    /** 转发为文件命令（值为 fileKey，action 取事件名） */
-    file?: string;
-    /** 转发为路由事件 */
-    router?: string;
-    /** 转发为系统事件 */
-    system?: string[];
-    /** 只执行一次 */
-    once?: boolean;
-}
-
-/**
  * 子组件事件订阅 — nodeMap 中子组件的 child.on() 订阅
  *
- * key = nodeName（nodeMap key，仅直接子组件）
- * value 支持：
- *   - string[] 简写：仅本地监听，方法名自动推导
- *   - Record<string, ChildEventConfig> 详细：支持 handler / emits / entities 等转发
+ * 扁平化结构，与其他 ListenItem 对齐：{ node: string, events: Record<string, EventMapping> }
  *
  * 仅限直接子组件（FINALIZE 时已实例化），跨层走桥接。
  *
  * @example
  * ```ts
- * // 简写 — 仅本地监听
- * { childEvents: { toolbar: ['save', 'create'] } }
+ * // 简写 — 仅本地监听（方法名自动推导：onToolbarSave）
+ * { node: 'toolbar', events: { save: true, create: true } }
  *
- * // 详细 — 支持转发
- * { childEvents: {
- *     toolbar: {
- *         save:    { handler: true, emits: ['save'] },
- *         create:  { emits: ['create'] },
- *         delete:  { entities: 'remove' },
- *     }
+ * // 带转发 — handler 处理 + EventForwarder 六路转发
+ * { node: 'toolbar', events: {
+ *     save:    { handler: 'onToolbarSave', emits: ['saved'] },
+ *     create:  { emits: ['created'] },
+ *     delete:  { entities: 'remove' },
  * } }
  * ```
  */
-export interface ChildEventsListen {
-    /**
-     * 子组件事件映射
-     *
-     * key = nodeName
-     * value = string[]（简写）或 Record<string, ChildEventConfig>（详细）
-     */
-    childEvents: Record<string, string[] | Record<string, ChildEventConfig>>;
+export interface NodeListen {
+    /** 子组件节点 name（nodeMap key） */
+    node: string;
+    /** 事件映射：事件名 → EventMapping */
+    events: Record<string, EventMapping>;
 }
 
 /**
@@ -534,33 +522,22 @@ export interface ChildEventsListen {
  *
  * TplNode events 是【发布端】，body listens 是【订阅端】。一出进，不应混谈。
  *
- * 注册流程统一（六路分流，float/drag 已自动绑定）：
- *   _setupListens() {
- *       for (const item of this.listens) {
- *           if (item.childEvents)  for (const [nodeName, events] of Object.entries(item.childEvents))
- *                                                            this.nodeMap[nodeName].on(event, method);
- *           if (item.source)    ComponentEventBus.componentOn(this.eventKey, item.source, item.events);
- *           if (item.entity)    EntityEventBus.on(this.entityKey, item.entity, item.events);
- *           if (item.system)    SystemEventBus.on(item.events);
- *           if (item.route)     RouteEventBus.on(item.route, item.events);
- *           if (item.file)      FileEventBus.fileOn(item.file, event, method);
- *       }
- *   }
+ * 所有类型统一支持本地监听 + 六路转发（handler 处理后自动走 EventForwarder）。
  *
  * @example
  * ```ts
  * listens: [
- *     { childEvents: { toolbar: ['save', 'create'] } },
- *     { source: 'formKey',    events: { save: 'onSave' } },
- *     { entity: 'users',     events: { listed: 'onUsersLoaded' } },
- *     { system: true,        events: { 'i18n:localeChange': 'onLocaleChange' } },
- *     { route: 'router',     events: { change: 'onRouteChange' } },
- *     { file: 'avatars',     events: { uploaded: 'onFileUploaded' } },
+ *     { node: 'toolbar', events: { save: true } },
+ *     { source: 'formKey', events: { save: 'onSave' } },
+ *     { entity: true, events: { listed: 'onUsersLoaded' } },
+ *     { system: true, events: { 'i18n:localeChange': 'onLocaleChange' } },
+ *     { route: 'router', events: { change: 'onRouteChange' } },
+ *     { file: 'avatars', events: { uploaded: 'onFileUploaded' } },
  * ]
  * ```
  */
 export type ListenItem =
-    | ChildEventsListen
+    | NodeListen
     | ComponentListen
     | EntityListen
     | FloatListen

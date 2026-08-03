@@ -4,14 +4,19 @@
 
 QimenJs 的事件系统基于 **scopeId 隔离**：每个 EventScope 有唯一的 scopeId，`emit` 只触发同一 scopeId 下的 handler，不广播到其他 scope。
 
-### 四种事件通道
+### 事件体系三部分
 
-| 通道 | scope 来源 | 事件流转范围 | 典型用法 |
-|------|-----------|------------|---------|
-| 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
-| 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
-| 组件间事件 | ComponentEventBus.componentScope | 组件间通信 scope 内 | `this.componentEmit(ctx)` / `ComponentEventBus.getInstance().componentOn(...)` |
-| 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
+| 体系 | 声明位置 | 方向 | 作用 | 配置方式 |
+|------|---------|------|------|---------|
+| ① domEvents | Component 类属性 | 发布端 | DOM 事件委托与转发 | `domEvents: DomEventsMap` |
+| ② node 事件 | body.listens 数组 | 订阅端 | 子组件事件订阅（扁平化） | `listens: [{ node: 'xxx', events: {...} }]` |
+| ③ 外部事件 | body.listens 数组 | 订阅端 | 跨组件/实体/系统事件订阅 | `listens: [{ source/entity/system/route/file }]` |
+
+**核心规则**：
+- **domEvents 是发布端**：在组件 root el 上绑定 DOM 事件，通过转发配置（emits/bridges/entities 等）将事件分发出去
+- **listens 是订阅端**：在 body 中声明，运行时绑定到对应的事件总线
+- **统一转发**：所有 listens 类型都支持 `handler` 本地处理 + `EventForwarder` 六路转发，handler 处理后自动走转发，无需手写代码
+- 一出进，不应混谈
 
 ### scopeId 隔离规则
 
@@ -24,648 +29,449 @@ on(event, handler, scopeId)        → handler 注册到 scopeId 下
 
 - **组件 A** `this.emit('click')` → 只触发组件 A scope 下的 `click` handler
 - **组件 B** `this.on('click', handler)` → handler 注册在组件 B scope 下
-- **ItemGroup** 通过 `navItem.on('click', handler)` → handler 注册在 navItem scope 下，所以 `navItem.emit('click')` 能触发
-- **GlobalEventBus** `emit('theme:change')` → 只触发 rootScope 下的 handler
-- **ComponentEventBus** `componentEmit(ctx)` → 只触发 componentScope 下的 handler
+- **ComponentEventBus** `componentEmit(ctx)` → 按 `component:sourceId:eventName` 路由
+- **EntityEventBus** `entityEmit(ctx)` → 按 `entity:entityKey:eventName` 路由
 
-### 如何创建独立事件流
+### 事件转发六路
 
-如果需要新的独立事件流（类似 ComponentEventBus），创建自己的 scope：
+`EventForwarder` 提供统一的六路转发调度，`domEvents` 和所有 `listens` 类型的事件配置都走这套机制：
 
-```typescript
-import { globalEventBus } from '@qimenjs/event';
-
-class MyEventChannel {
-    private readonly channelScope = globalEventBus.createEventScope();
-
-    emit(eventName: string, data?: any): void {
-        this.channelScope.emit(eventName, data);
-    }
-
-    on(eventName: string, handler: (data: any) => void): () => void {
-        return this.channelScope.on(eventName, (ctx: any) => {
-            handler(ctx.data);
-        });
-    }
-}
-```
-
-所有事件收发都在 `channelScope` 内，天然隔离，不会和其他 scope 互相干扰。
-
-### DOM 事件流
-
-```
-用户点击 → DomEventAdapter → scope.emit('dom:click') → EventBus
-                                                          ↓
-                                              只触发同一 scopeId 下的 handler
-                                                          ↓
-                                              _bindDomEvent 的 callback
-                                                          ↓
-                                              handler / emits / bridges
-```
-
-DOM 事件通过 `dom:` 前缀区分，但隔离靠的是 scopeId，不是前缀。3 个 NavItem 各自有不同的 scopeId，所以 `dom:click` 不会跨组件泄漏。
+| 转发类型 | 运行时方法 | 目标总线 |
+|---------|-----------|---------|
+| `emits` | `this.emit(name)` | 组件自己的 EventScope |
+| `bridges` | `this.componentEmit(ctx)` | ComponentEventBus |
+| `entities` | `this.entityEmit(ctx)` | EntityEventBus |
+| `router` | `this.routerEmit(ctx)` | RouteEventBus |
+| `system` | `this.systemEmit(ctx)` | SystemEventBus |
+| `file` | `this.fileEmit(ctx)` | FileEventBus |
 
 ---
 
-## 概述
+## 一、domEvents — DOM 事件委托与转发
 
-> **命名迁移说明**：原 `EventBridge` 已重命名为 `ComponentEventBus`，原 `EventBridgeAbility` 已重命名为 `ComponentEventBusAbility`。为保持向后兼容，以下命名保留不变：
-> - 模板配置中的 `bridges` 字段名
-> - Layout 配置中的 `eventBridge` 属性名
-> - HTML 属性中的 `data-bridge`
-> 
-> 这些配置项在运行时都通过 `ComponentEventBus` 路由，仅命名保持不变。
+`domEvents` 是组件模板级的 DOM 事件发布机制。在组件 root el 上绑定 DOM 事件，事件触发时通过路径匹配定位目标子组件，然后按 eventConfig 配置的转发类型执行。
 
-QimenJs 的事件系统分为三层，每层解决不同的问题：
-
-### 组件事件通信三层模型
-
-| 层级 | 机制 | 解决的问题 | 配置方式 |
-|------|------|-----------|---------|
-| tplEvents | DOM 委托 | 组件内部 DOM 事件 → 委托到 root el | `tplEvents: { nodeName: { event: { ... } } }` |
-| emits | 组件事件 | 组件对外 emit() → 消费者 .on() 监听 | `TplEventAction.emits` |
-| bridges | ComponentEventBus | 跨组件解耦通信 | `TplEventAction.bridges` |
-
-**关键规则**：
-- **tplEvents** — 组件内部，自己模板的 DOM 事件委托到 root el
-- **emits** — 组件对外，emit() 发布组件级事件，直接消费者 .on() 监听
-- **bridges** — 跨组件，componentEmit() 通过 ComponentEventBus 解耦，任意层 listens 订阅
-- tplEvents 不跨组件边界做委托
-- ItemGroup 子组件事件走 tplEvents.$items 声明 + getTargetItem 匹配
-
-### 根节点事件
-
-tplEvents 中根节点用空字符串 `''` 作为 key，handler 推导为 `on${capitalEvent}`（无 nodeName 前缀）：
+### 三层嵌套结构
 
 ```typescript
-tplEvents: {
-    '': { click: { emits: ['click'] } },           // 根节点 click → emit('click')
-    dropIcon: { click: { emits: ['dropClick'] } },  // dropIcon click → emit('dropClick')
-}
-```
-
-**排他性**：命名子节点匹配后不触发根节点 `''` 规则。
-
-### ItemGroup 子组件事件
-
-ItemGroup 通过 `tplEvents` 的 `$items` 声明子组件事件转发规则，`getTargetItem(target)` 自动匹配触发事件的 item 组件：
-
-```typescript
-Component.replace({
-    tplEvents: {
-        $items: {
-            keyProp: 'name',
-            Toggle: { toggle: { emits: ['toggle'] } },
-            MenuItem: { click: { emits: ['click'] }, select: { emits: ['select'] } },
-        },
-    },
-})
-```
-
-- **keyProp**：默认 `'name'`，从 item 组件取属性值作为事件名前缀
-- **handler: true + keyProp**：自动路由到 `on${KeyProp}${Event}` 方法，零分支
-- **entities: true / router: true**：支持 keyProp 动态解析
-- **data 声明**：支持属性取值和 get 方法引用，按事件类型区分
-- **defaultEventData**：组件注册时声明的基础数据字段，编译时自动合并到 data，tplEvents 中只需声明额外字段
-
-### defaultEventData 机制
-
-组件注册时通过 `ComponentRegistrar.register()` 第三个参数声明基础数据字段：
-
-```typescript
-registrar.register('Button', ButtonComponent, { defaultEventData: ['name'] });
-registrar.register('Input', InputComponent,  { defaultEventData: ['name', 'getFormValue'] });
-registrar.register('Select', SelectComponent, { defaultEventData: ['name', 'getFormValue'] });
-```
-
-编译时自动合并：`effectiveData = defaultEventData ∪ data`（去重）
-
-```typescript
-// 之前：每个使用处都要重复声明
-$items: {
-    Input: { input: { emits: ['inputChange'], keyProp: 'name', data: ['getFormValue'] } },
-}
-
-// 之后：基础数据自动带上，只需声明额外字段
-$items: {
-    Input: { input: { emits: ['inputChange'] } },
-}
-```
-
-运行时可通过 `ComponentRegistrar.getMeta(type)` 查询，`setMeta(type, meta)` 覆盖，插件/扩展可动态修改。
-
-### 应用层事件通道
-
-| 通道 | scope 来源 | 事件流转范围 | 典型用法 |
-|------|-----------|------------|---------|
-| 组件事件 | 组件自己的 EventScope | 组件 scope 内 | `this.on('click')` / `this.emit('click')` |
-| 全局事件 | GlobalEventBus.rootScope | 全局 scope 内 | `globalEventBus.on('theme:change')` |
-| 组件间事件 | ComponentEventBus.componentScope | 组件间通信 scope 内 | `this.componentEmit(ctx)` / `ComponentEventBus.getInstance().componentOn(...)` |
-| 实体事件 | EntityEventBus.entityScope | 实体 scope 内 | `this.entityEmit('users', 'listed')` / `this.entityOn('users', 'listed', fn)` |
-| 路由事件 | RouteEventBus | 路由 scope 内 | `TplEventAction.router` |
-| 系统事件 | SystemEventBus | 系统 scope 内 | `TplEventAction.system` |
-
----
-
-## 场景一：工具栏自定义按钮（不复用）
-
-当自定义按钮只在一个页面使用，不需要跨组件通信时，直接使用 `handlers`。
-
-### 方式 A：handlers 中直接写函数（推荐）
-
-```typescript
-const layout = {
-    type: ComponentTypes.TOOLBAR,
-    id: 'myToolbar',
-    items: [
-        { type: ComponentTypes.BUTTON, text: '新建', name: 'create' },
-        { type: ComponentTypes.BUTTON, text: '自定义导出', name: 'customExport' },
-    ],
-    handlers: {
-        // 直接写函数，this 指向触发事件的组件实例
-        click(component, domEvent) {
-            const data = table.getData();
-            downloadExcel(data);
-        },
-    },
-};
-```
-
-### 方式 B：handlers 中使用字符串映射
-
-```typescript
-const layout = {
-    type: ComponentTypes.TOOLBAR,
-    id: 'myToolbar',
-    items: [
-        { type: ComponentTypes.BUTTON, text: '新建', name: 'create' },
-        { type: ComponentTypes.BUTTON, text: '自定义导出', name: 'customExport' },
-    ],
-    handlers: {
-        // 字符串映射：从 render 时传入的 handlers 表中查找
-        click: 'handleCustomExport',
-    },
-};
-
-// 渲染时传入 handlers
-const handlers = {
-    handleCustomExport(component, domEvent) {
-        const data = table.getData();
-        downloadExcel(data);
-    },
-};
-
-const result = await Renderer.getInstance().render(layout, { handlers });
-```
-
-### 适用场景
-
-- 一次性操作，不需要其他组件响应
-- 操作逻辑简单，不需要经过 EntityManager
-- 处理函数由应用层提供，不涉及组件间协作
-
----
-
-## 场景二：工具栏自定义按钮（复用，需组件间通信）
-
-当自定义按钮需要触发其他组件（如表格）的响应时，使用 `ComponentEventBus`。
-
-### 方式 A：使用内置 CRUD 组件事件通道 + meta 注入能力
-
-不再需要定义派生类，直接在 Layout 中通过 `meta` 注入能力：
-
-```typescript
-const layout = {
-    type: ComponentTypes.VBOX,
-    children: [
-        {
-            type: ComponentTypes.TOOLBAR,
-            id: 'userToolbar',
-            // 通过 meta 注入 CrudAbility，无需定义 MyToolbar 派生类
-            meta: {
-                abilities: [CrudAbility],
-            },
-            // CrudAbility 的按钮会自动发射 crudaction 事件
-        },
-        {
-            type: ComponentTypes.TABLE,
-            id: 'userTable',
-            eventBridge: {
-                crud: 'userToolbar',           // 监听工具栏的 CRUD 事件
-                pagination: 'userToolbar',     // 监听工具栏的分页事件
-            },
-        },
-    ],
-};
-```
-
-### 方式 B：使用自定义组件事件通道 + meta 注入方法和能力
-
-```typescript
-const layout = {
-    type: ComponentTypes.VBOX,
-    children: [
-        {
-            type: ComponentTypes.TOOLBAR,
-            id: 'exportBar',
-            meta: {
-                abilities: [ClickAbility, TextAbility],
-                // 通过 meta 注入方法，this 指向组件实例
-                doExport() {
-                    this.emit('export', { format: 'excel', scope: 'all' });
-                },
-                doApprove() {
-                    this.emit('approve', { ids: this.getSelectedIds() });
-                },
-            },
-        },
-        {
-            type: ComponentTypes.TABLE,
-            id: 'userTable',
-            eventBridge: {
-                pagination: 'exportBar',
-                crud: { source: 'exportBar', actions: ['create', 'delete'] },
-                // 自定义事件映射：监听 exportBar 的 'export' 事件，调用 this.onExport
-                export: 'exportBar',
-                // 自定义事件映射：监听 exportBar 的 'approve' 事件，调用 this.onApprove
-                approve: { source: 'exportBar', event: 'approve', handler: 'onApprove' },
-            },
-        },
-    ],
-};
-```
-
-### 自定义事件映射的默认值规则
-
-| 配置项 | 默认值 | 示例 |
-|--------|--------|------|
-| `event` | 等于 key 名 | `export: 'bar'` → 监听 `'export'` 事件 |
-| `handler` | `'on'` + 首字母大写 key | `export: 'bar'` → 调用 `this.onExport` |
-
-完整配置形式：
-
-```typescript
-eventBridge: {
-    // 简写：source 为 'bar'，event 为 'export'，handler 为 'onExport'
-    export: 'bar',
-
-    // 完整配置
-    export: {
-        source: 'bar',        // 事件源组件 id
-        event: 'export',      // 监听的事件名
-        handler: 'onExport',  // 目标处理方法名
-        enabled: true,        // 是否启用
-    },
-}
-```
-
----
-
-## 场景三：扩展组件事件通道——类似实体能力的一组事件
-
-当需要监听一组相关事件（如实体 CRUD 的 created/updated/deleted），`ComponentEventBusAbility` 的自定义 key 可以逐个声明，但如果事件组有统一的模式，更好的做法是创建一个专门的 Ability 来管理。
-
-### 方案：创建 EntityBridgeAbility
-
-```typescript
-// src/component-abilities/entity/EntityBridgeAbility.ts
-import type { AbilityDefinition } from '@qimenjs/composable';
-import { ComponentManager } from '@qimenjs/component-core';
-import { ENTITY_EVENTS } from '@qimenjs/events';
-
-/**
- * 实体事件桥接配置
- */
-export interface EntityBridgeConfig {
-    /** 事件源组件 id（通常是拥有 EntityManager 的组件） */
-    source: string;
-    /** 需要监听的实体事件列表，不传则监听所有 */
-    events?: string[];
-    /** 是否启用 */
-    enabled?: boolean;
-}
-
-/**
- * EntityBridgeAbility 实体事件桥接能力
- *
- * 监听源组件的 entity:* 事件，自动转发到目标组件。
- * 与 ComponentEventBusAbility 类似，但专门处理实体事件组。
- */
-export const EntityBridgeAbility: AbilityDefinition = {
-    entityBridge: {
-        get(): Record<string, EntityBridgeConfig> {
-            return this.abilityState('EntityBridgeAbility:config', () => ({}));
-        },
-        set(value: Record<string, EntityBridgeConfig>): void {
-            this.setAbilityState('EntityBridgeAbility:config', value);
-        },
-    },
-
-    initEntityBridge(): void {
-        const config = this.entityBridge;
-        if (!config) return;
-
-        const mgr = ComponentManager.getInstance();
-
-        for (const [key, cfg] of Object.entries(config)) {
-            if (cfg.enabled === false) continue;
-
-            const source = mgr.get(cfg.source);
-            if (!source) continue;
-
-            // 监听源组件的所有 entity:* 事件
-            const eventsToListen = cfg.events || [
-                ENTITY_EVENTS.CREATED,
-                ENTITY_EVENTS.UPDATED,
-                ENTITY_EVENTS.DELETED,
-                ENTITY_EVENTS.LISTED,
-                ENTITY_EVENTS.DATA_CHANGE,
-            ];
-
-            for (const eventName of eventsToListen) {
-                const fullEventName = `${source.eventKey}:${eventName}`;
-                const off = source.on?.(fullEventName, (e: any) => {
-                    // 构造处理方法名：onEntity + 事件名首字母大写
-                    // entity:created → onEntityCreated
-                    // entity:datachange → onEntityDataChange
-                    const handlerName = `onEntity${string.capitalize(eventName.replace('entity:', ''))}`;
-                    if (typeof this[handlerName] === 'function') {
-                        this[handlerName](e);
-                    }
-                });
-
-                if (typeof off === 'function') {
-                    this.onCleanup(off);
-                }
-            }
+domEvents = {
+    [domEvent]: {                    // 第一层：DOM 事件名
+        [componentPath]: {           // 第二层：组件路径（nodeName 或 类型）
+            [action]: eventConfig    // 第三层：action 区分同类型多实例
         }
-    },
-
-    __initProps(props: Record<string, any>): void {
-        if (props.entityBridge) {
-            this.entityBridge = props.entityBridge;
-            queueMicrotask(() => {
-                if (!this.destroyed) {
-                    this.initEntityBridge();
-                }
-            });
-        }
-    },
-};
-```
-
-### 布局定义
-
-```typescript
-const layout = {
-    type: ComponentTypes.VBOX,
-    children: [
-        {
-            type: ComponentTypes.TABLE,
-            id: 'userTable',
-            // Table 拥有 EntityManager，通过 EntityEmitAbility 发射 entity:* 事件
-        },
-        {
-            type: 'StatusPanel',
-            // 监听 userTable 的实体事件
-            entityBridge: {
-                userTable: {
-                    source: 'userTable',
-                    events: ['entity:created', 'entity:deleted', 'entity:datachange'],
-                },
-            },
-        },
-    ],
-};
-```
-
-### 与 ComponentEventBusAbility 的对比
-
-| 维度 | ComponentEventBusAbility | EntityBridgeAbility |
-|------|-------------------|-------------------|
-| 事件源 | 组件级事件（pagechange、crudaction） | 实体级事件（entity:created、entity:listed） |
-| 事件粒度 | 单个事件 → 单个方法 | 一组事件 → 统一命名规则的方法 |
-| 配置方式 | 按 key 声明事件映射 | 按 source 声明，events 过滤 |
-| 典型场景 | Toolbar → Table | Table → StatusPanel/LogPanel |
-
----
-
-## 场景四：完整流程——从按钮点击到数据更新
-
-以"用户管理"页面为例，展示完整的事件流：
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│  Layout 定义（声明式配置）                                      │
-│                                                              │
-│  Toolbar (id: userToolbar)                                   │
-│    ├── [新建] ──click──> CrudAbility.emit('crudaction',       │
-│    │                       { action: 'create' })              │
-│    ├── [删除] ──click──> CrudAbility.emit('crudaction',       │
-│    │                       { action: 'delete' })              │
-│    └── [导出] ──click──> handlers.handleExport()              │
-│                                                              │
-│  Table (id: userTable)                                       │
-│    eventBridge:                                               │
-│      crud: 'userToolbar'        ← 监听 CRUD 事件              │
-│      pagination: 'userToolbar'  ← 监听分页事件                 │
-│      export: 'userToolbar'      ← 监听自定义导出事件           │
-│                                                              │
-│    EntityListenAbility:                                       │
-│      crudaction → onCreate/onEdit/onDelete → mgr.create/...  │
-│                                                              │
-│    EntityEmitAbility:                                        │
-│      mgr.on('created') → emit('entity:created')              │
-│      mgr.on('listed')  → emit('entity:listed')               │
-└──────────────────────────────────────────────────────────────┘
-```
-
-### 布局定义
-
-```typescript
-const userPageLayout = {
-    type: ComponentTypes.VBOX,
-    children: [
-        {
-            type: ComponentTypes.TOOLBAR,
-            id: 'userToolbar',
-            // 通过 meta 注入 CrudAbility 和 PaginationAbility
-            meta: {
-                abilities: [CrudAbility, PaginationAbility],
-                // 导出按钮的处理方法
-                onExport(e) {
-                    const table = ComponentManager.getInstance().get('userTable');
-                    if (table) {
-                        const data = table.mgr?.rawData;
-                        downloadExcel(data, 'users.xlsx');
-                    }
-                },
-            },
-            showCreate: true,
-            showDelete: true,
-            currentPage: 1,
-            totalPages: 10,
-        },
-        {
-            type: ComponentTypes.TABLE,
-            id: 'userTable',
-            entityConfig: {
-                domain: 'user',
-                schema: userSchema,
-                type: 'remoteCrud',
-            },
-            eventBridge: {
-                crud: { source: 'userToolbar', actions: ['create', 'delete'] },
-                pagination: 'userToolbar',
-                // 自定义事件映射：导出
-                export: 'userToolbar',
-            },
-            columns: [
-                { field: 'id', label: 'ID' },
-                { field: 'name', label: '姓名' },
-                { field: 'email', label: '邮箱' },
-            ],
-        },
-    ],
-};
-```
-
-### 事件流详解
-
-**1. 点击"新建"按钮：**
-
-```
-Toolbar.Button click
-  → CrudAbility.emit('crudaction', { action: 'create' })
-  → ComponentEventBus.getInstance().componentOn('userToolbar', 'crudaction', handler)
-  → Table.onCreate(e)
-  → EntityListenAbility._handleCrudAction(e)
-  → mgr.create(data)
-  → EntityEmitAbility._forwardEvent('created')
-  → Table.emit('entity:created', { item })
-```
-
-**2. 点击"导出"按钮：**
-
-```
-Toolbar.Button click
-  → handlers.handleExport(component, domEvent)
-  → 直接执行导出逻辑（不经过组件事件通道）
-```
-
-**3. 翻页：**
-
-```
-Toolbar.Pagination gotoPage(2)
-  → PaginationAbility.emit('pagechange', { page: 2, pageSize: 20 })
-  → ComponentEventBus.getInstance().componentOn('userToolbar', 'pagechange', handler)
-  → Table.onPageChange(e)
-  → EntityListenAbility._handlePageChange(e)
-  → mgr.loadPage(2)
-  → EntityEmitAbility._forwardEvent('listed')
-  → Table.emit('entity:listed', { items, total, page, pageSize })
-```
-
----
-
-## meta 字段详解
-
-`meta` 是 Layout 中的元数据字段，用于在 JS 对象字面量 Layout 中声明额外的能力、方法和自定义数据，渲染时自动注入到组件实例，无需定义派生类。
-
-### 注入规则
-
-| meta 中的值类型 | 注入方式 | 示例 |
-|---------------|---------|------|
-| `abilities` 数组 | 展开后逐个注入 | `abilities: [CrudAbility, PaginationAbility]` |
-| 函数 | bind 到组件实例后注入 | `onExport(e) { ... }` |
-| getter/setter 对象 | 直接作为 PropertyDescriptor 注入 | `count: { get() { ... }, set(v) { ... } }` |
-| 普通值 | 直接注入 | `customTitle: '我的工具栏'` |
-
-### 完整示例
-
-```typescript
-const layout = {
-    type: ComponentTypes.TOOLBAR,
-    id: 'userToolbar',
-    meta: {
-        // 注入能力
-        abilities: [CrudAbility, PaginationAbility],
-
-        // 注入方法（this 指向组件实例）
-        onEntityCreated(data) {
-            this.mgr.reload();
-        },
-        beforeList() {
-            console.log('loading...');
-        },
-
-        // 注入 getter/setter
-        filterKeyword: {
-            get() { return this.abilityState('filterKeyword', () => ''); },
-            set(v) { this.setAbilityState('filterKeyword', v); this.mgr?.filter(v); },
-        },
-
-        // 注入自定义数据
-        customTitle: '用户管理工具栏',
-        exportFormat: 'excel',
-    },
-    showCreate: true,
-    currentPage: 1,
-    totalPages: 10,
-};
-```
-
-### 与定义派生类的对比
-
-```typescript
-// 旧方式：需要定义派生类
-class UserToolbar extends ComponentBase {
-    static readonly abilities = [CrudAbility, PaginationAbility];
-
-    onEntityCreated(data) {
-        this.mgr.reload();
     }
 }
+```
 
-// 新方式：直接在 Layout 中声明，无需派生类
-const layout = {
-    type: ComponentTypes.TOOLBAR,
-    meta: {
-        abilities: [CrudAbility, PaginationAbility],
-        onEntityCreated(data) { this.mgr.reload(); },
+**方法名推导**（基于 componentPath 首段 nodeName）：
+- 无 action：`on{NodeName}{Event}` → `onCloseBtnClick`
+- 有 action：`on{NodeName}{Action}{Event}` → `onToolbarSaveClick`
+
+### 三种语法
+
+**1. 隐式 root 简写**（最常用）：
+
+```typescript
+domEvents = {
+    input: { handler: '_onInput' },          // → root 委托
+    click: { emits: ['close'] },              // → root 委托
+};
+```
+
+**2. 两层模式**（`[action]` 占位符自动匹配）：
+
+```typescript
+domEvents = {
+    click: {
+        'Button': {                           // 路径 = 'Button'
+            handler: '_onButtonClick',
+            entities: '[action]',              // action 替换 [action]
+        },
     },
 };
 ```
 
+**3. 三层模式**（显式 action）：
+
+```typescript
+domEvents = {
+    click: {
+        'toolbar.Button': {                   // 路径 = 'toolbar.Button'
+            save:   { handler: true, emits: ['save'] },
+            delete: { emits: ['delete'] },
+        },
+    },
+};
+```
+
+### eventConfig 配置项
+
+```typescript
+interface DomEventConfig {
+    // 本地监听
+    handler?: boolean | string;       // true 自动推导方法名，string 自定义方法名
+    once?: boolean;                    // 只执行一次
+    debounce?: number;                 // 防抖时间(ms)
+    throttle?: number;                 // 节流时间(ms)
+    data?: string[];                   // 事件数据声明
+
+    // 六路转发（可共存）
+    emits?: string[];                 // 转发为组件事件
+    bridges?: string[];               // 转发到 ComponentEventBus
+    entities?: string;                // 转发为实体操作
+    router?: string;                  // 转发为路由事件
+    system?: string[];                // 转发为系统事件
+    file?: string;                    // 转发为文件命令
+}
+```
+
+### 运行时流程
+
+```
+DOM 事件触发
+  → DomEventsEngine 查 domEvents[click]
+  → 取 componentPath 首段 → nodeMap[nodeName] 定位目标组件
+  → el.contains(event.target) 匹配
+  → 检查 action 匹配
+  → 执行 eventConfig:
+      - handler: 调用组件方法
+      - emits/bridges/entities/router/system/file: EventForwarder 六路转发
+```
+
+### 实际示例
+
+**EntityToolbarComponent — 委托 Button 点击**：
+
+```typescript
+domEvents = {
+    click: {
+        Button: {
+            handler: '_onButtonClick',
+            entities: '[action]',  // action 作为实体事件名
+        },
+    },
+};
+```
+
+```typescript
+_onButtonClick(domEvt: any): void {
+    const item = self.getTargetItem?.(domEvt?.target);
+    const action = item.component?.action;
+
+    if (PAGINATION_ITEM_NAMES.has(action)) {
+        self.emit(PAGINATION_EVENTS.CHANGE, { action, page: self._currentPage });
+    } else if (CRUD_ITEM_NAMES.has(action)) {
+        self.emit(CRUD_EVENTS.ACTION, { action });
+    }
+}
+```
+
 ---
 
-## 决策指南：选择哪种事件机制
+## 二、listens — 统一事件订阅
+
+`listens` 是 body 中的统一事件订阅数组，声明组件需要从各种事件总线接收事件。运行时在 Pipeline FINALIZE 阶段绑定。
+
+### 统一 EventMapping
+
+所有 listens 类型共用 `EventMapping`，支持本地监听 + 六路转发：
+
+```typescript
+type EventMapping =
+    | string                                          // 纯本地监听，handler 方法名
+    | true                                            // 纯本地监听，方法名自动推导（仅 node）
+    | {
+          handler?: string | true;                    // 本地处理方法
+          once?: boolean;                             // 只执行一次
+          emits?: string[];                          // 转发为组件事件
+          bridges?: string[];                        // 转发到 ComponentEventBus
+          entities?: string;                          // 转发为实体操作
+          file?: string;                              // 转发为文件命令
+          router?: string;                            // 转发为路由事件
+          system?: string[];                          // 转发为系统事件
+      };
+```
+
+**三种用法**：
+
+```typescript
+events: {
+    save: 'onSave',                                    // 纯本地
+    close: true,                                       // 纯本地，方法名自动推导（仅 node）
+    submit: { handler: 'onSubmit', once: true },       // 本地 + 选项
+    deleted: { bridges: ['removed'] },                 // 纯转发
+    updated: { handler: 'onUpdated', emits: ['ok'] },  // 本地 + 转发
+}
+```
+
+### 八种监听类型
+
+```typescript
+type ListenItem =
+    | NodeListen         // 子组件事件（nodeMap 子组件订阅）
+    | ComponentListen    // 组件间事件（ComponentEventBus）
+    | EntityListen       // 实体事件（EntityEventBus）
+    | FloatListen        // 浮动层事件
+    | DragListen         // 拖拽事件
+    | SystemListen       // 系统事件
+    | RouteListen        // 路由事件
+    | FileListen;        // 文件事件
+```
+
+### 各类型配置示例
+
+**1. node — 子组件事件订阅**：
+
+```typescript
+listens: [
+    // 简写：方法名自动推导（onToolbarSave）
+    { node: 'toolbar', events: { save: true, create: true } },
+
+    // 带转发：handler 处理 + EventForwarder 六路转发
+    { node: 'toolbar', events: {
+        save:   { handler: 'onToolbarSave', emits: ['saved'] },
+        create: { emits: ['created'] },
+        delete: { entities: 'remove' },
+    }},
+]
+```
+
+**2. source — ComponentEventBus 组件间事件**（支持转发）：
+
+```typescript
+listens: [
+    // 纯订阅
+    { source: 'formKey', events: { save: 'onSave', cancel: 'onCancel' } },
+
+    // 订阅 + 转发：收到 save 后转发到 ComponentEventBus
+    { source: 'formKey', events: {
+        save: { handler: 'onSave', bridges: ['confirmed'] },
+    }},
+]
+```
+
+运行时：
+- `ComponentEventBus.componentOn('formKey', 'save', onSave)` — 按 `component:formKey:save` 路由
+- handler 处理后自动 `EventForwarder.forward(instance, { bridges: ['confirmed'] }, data)`
+
+**3. entity — EntityEventBus 实体事件**（支持转发）：
+
+```typescript
+listens: [
+    { entity: true, events: {
+        listed: 'onUsersListed',
+        created: { handler: 'onUserCreated', emits: ['refreshed'] },
+    }},
+]
+```
+
+**4. system — SystemEventBus 系统事件**（支持转发）：
+
+```typescript
+listens: [
+    { system: true, events: {
+        'i18n:localeChange': { handler: 'onLocaleChange', emits: ['updated'] },
+    }},
+]
+```
+
+**5. route — RouteEventBus 路由事件**（支持转发）：
+
+```typescript
+listens: [
+    { route: 'router', events: { change: 'onRouteChange' } },
+]
+```
+
+**6. float — FloatEventBus 浮动层事件**：
+
+```typescript
+listens: [
+    { float: 'dropBtn', events: { close: 'onClose', open: 'onOpen' } },
+]
+```
+
+**7. drag — DragEventBus 拖拽事件**：
+
+```typescript
+listens: [
+    { drag: 'handle', events: { start: 'onDragStart', end: 'onDragEnd' } },
+]
+```
+
+**8. file — FileEventBus 文件事件**：
+
+```typescript
+listens: [
+    { file: 'avatars', events: { uploaded: 'onFileUploaded' } },
+]
+```
+
+### 转发数据传递
+
+handler 处理后，`EventForwarder.collectEventData()` 自动合并三路数据：
+
+```
+forwardedData = { ...defaultEventData, ...getCustomEventData(), ...receivedData }
+```
+
+| 数据 | 来源 | 说明 |
+|------|------|------|
+| `defaultEventData` | getter | 组件默认事件数据 |
+| `getCustomEventData()` | 方法 | 运行时收集的自定义数据 |
+| `receivedData` | 事件参数 | 事件触发时传入的原始数据 |
+
+`receivedData` 优先级最高，会覆盖前两者的同名字段。
+
+### 实际示例
+
+**EntityToolbarComponent — 监听实体事件**：
+
+```typescript
+listens = [
+    {
+        entity: true,
+        events: {
+            'list:loading': '_onListLoading',
+            'list:success': '_onListSuccess',
+            listed: '_onListed',
+        },
+    },
+];
+```
+
+**Table 组件 — 接收桥接事件 + 转发**：
+
+```typescript
+listens: [
+    // 接收 toolbar 的 crudaction，处理后再转发到 ComponentEventBus
+    { source: 'userToolbar', events: {
+        crudaction: { handler: 'onCrudAction', bridges: ['actionHandled'] },
+    }},
+
+    // 监听实体事件，刷新后 emit 组件事件
+    { entity: true, events: {
+        listed: { handler: 'onUsersListed', emits: ['dataRefreshed'] },
+    }},
+];
+```
+
+---
+
+## 三、ComponentEventBus — 组件间事件总线
+
+`ComponentEventBus` 是跨组件解耦通信的单例事件总线。发送方通过 `componentEmit` 发射事件，接收方通过 `listens: [{ source: ... }]` 订阅。
+
+### 核心 API
+
+```typescript
+// 发送方（在组件方法中）
+const ctx = EventContextBuilder.create()
+    .withEvent('crudaction')
+    .withType('crudaction')
+    .withSource('toolbarId')
+    .withSourceType('ToolbarComponent')
+    .withData({ action: 'create' })
+    .build();
+
+this.componentEmit(ctx);  // → 内部编码为 component:toolbarId:crudaction
+
+// 接收方（在 listens 中声明）
+listens: [
+    { source: 'toolbarId', events: { crudaction: 'onCrudAction' } },
+]
+```
+
+### 事件编码规则
+
+```
+内部事件名 = component:{sourceId}:{eventName}
+
+sourceId = this.eventKey  // 组件的 eventKey 属性
+eventName = 事件名         // 如 crudaction, pagechange
+```
+
+### 与 entityKey 对比
+
+| 维度 | ComponentEventBus | EntityEventBus |
+|------|-------------------|----------------|
+| 发送方标识 | `eventKey` | `entityKey` |
+| 接收方订阅 | `{ source: 'xxx' }` | `{ entity: true }` |
+| 典型场景 | Toolbar → Table（组件间联动） | Table → StatusPanel（实体事件同步） |
+| 事件粒度 | 单个事件（crudaction） | 一组事件（created/listed/deleted） |
+
+### LifecycleAbility 自动发射
+
+组件生命周期事件（mounted/unmounted）如果有 `eventKey`，会自动通过 `componentEmit` 发射：
+
+```typescript
+// LifecycleAbility 内部
+if (eventKey && typeof this.componentEmit === 'function') {
+    const ctx = EventContextBuilder.create()
+        .withEvent('lifecycle:mounted')
+        .withType('lifecycle:mounted')
+        .withSource(eventKey)
+        .withSourceType(this.constructor.name)
+        .build();
+    this.componentEmit(ctx);
+}
+```
+
+---
+
+## 四、决策指南：选择哪种事件机制
 
 ```
 用户操作需要触发什么？
 │
-├── 仅执行一次性逻辑（导出、跳转、弹窗）
-│   └── 使用 handlers
-│       handlers: { click: (component, event) => { ... } }
+├── 组件内部 DOM 事件处理
+│   └── 使用 domEvents（隐式 root 简写）
+│       domEvents: { click: { handler: '_onClick' } }
 │
-├── 需要其他组件响应（Toolbar → Table）
+├── 子组件事件（直接子组件 on()）
+│   └── 使用 listens.node
+│       listens: [{ node: 'toolbar', events: { save: true } }]
+│
+├── 跨组件通信（Toolbar → Table）
 │   ├── 属于 CRUD/分页/选择
-│   │   └── 使用 ComponentEventBusAbility 内置事件映射
-│   │       eventBridge: { crud: 'toolbarId', pagination: 'toolbarId' }
+│   │   └── domEvents 中用 bridges 转发
+│   │       domEvents: { click: { Button: { bridges: ['crudaction'] } } }
 │   │
 │   └── 自定义事件
-│       └── 使用 ComponentEventBusAbility 自定义 key
-│           eventBridge: { export: 'toolbarId' }
+│       └── ComponentEventBus + listens.source
+│           发送方: this.componentEmit(ctx)
+│           接收方: listens: [{ source: 'toolbarId', events: {...} }]
 │
-└── 需要监听 EntityManager 的事件组
-    └── 创建专门的 EntityBridgeAbility
-        entityBridge: { source: 'tableId', events: [...] }
+├── 需要 handler 处理后再转发
+│   └── EventMapping 直接支持，无需手写代码
+│       listens: [{ source: 'x', events: {
+│           event: { handler: 'onEvent', bridges: ['forwarded'] }
+│       }}]
+│
+├── 实体事件组（created/listed/deleted）
+│   └── listens.entity 订阅
+│       listens: [{ entity: true, events: { listed: 'onListed' } }]
+│
+├── 系统/路由/文件事件
+│   └── listens 对应类型
+│       listens: [{ system: true, events: {...} }]
 ```
+
+### 快速对比
+
+| 需求 | 机制 | 声明位置 | 示例 |
+|------|------|---------|------|
+| DOM 事件处理 | `domEvents` | 组件类属性 | `domEvents: { click: { handler: '_onClick' } }` |
+| 子组件事件 | `listens.node` | body | `listens: [{ node: 'toolbar', events: {...} }]` |
+| 组件间通信 | `listens.source` + `componentEmit` | body + 代码 | `listens: [{ source: 'toolbar' }]` |
+| 实体事件 | `listens.entity` | body | `listens: [{ entity: true, events: {...} }]` |
+| 系统事件 | `listens.system` | body | `listens: [{ system: true, events: {...} }]` |
+| 路由事件 | `listens.route` | body | `listens: [{ route: 'router' }]` |
+| handler + 转发 | `EventMapping` 扩展 | body | `{ handler: 'onX', bridges: ['y'] }` |
 
 ---
 
-## 事件常量定义规范
+## 五、事件常量定义规范
 
 当添加新的事件类型时，遵循以下规范：
 
@@ -674,17 +480,16 @@ const layout = {
 ```typescript
 // src/events/component-events.ts
 
-// 导出事件
-export const EXPORT_EVENTS = {
-    EXCEL: 'exportexcel',
-    PDF: 'exportpdf',
+export const PAGINATION_EVENTS = {
+    CHANGE: 'pagechange',
 } as const;
 
-// 审批事件
-export const APPROVAL_EVENTS = {
-    SUBMIT: 'approvesubmit',
-    APPROVE: 'approve',
-    REJECT: 'reject',
+export const CRUD_EVENTS = {
+    ACTION: 'crudaction',
+} as const;
+
+export const SELECTION_EVENTS = {
+    CHANGE: 'selectionchange',
 } as const;
 ```
 
@@ -693,20 +498,112 @@ export const APPROVAL_EVENTS = {
 | 事件类型 | 常量命名 | 事件名格式 | 示例 |
 |---------|---------|-----------|------|
 | 能力级事件 | `{CAPABILITY}_EVENTS` | 小写无分隔符 | `pagechange`、`crudaction` |
-| 实体转发事件 | `ENTITY_{CATEGORY}_EVENTS` | `entity:` + 小写无分隔符 | `entity:created` |
-| 组件级事件 | `{COMPONENT}_EVENTS` | `{组件名}:` + 小写无分隔符 | `table:create` |
-| 自定义事件 | `{DOMAIN}_EVENTS` | 小写无分隔符 | `exportexcel` |
+| 实体事件 | `ENTITY_EVENTS` | `entity:` + 小写 | `entity:created` |
+| 系统事件 | `SYSTEM_EVENTS` | 小写无分隔符 | `theme:change` |
 
 ### 3. 使用 `as const` 确保类型安全
 
 ```typescript
-// 正确：类型为 'pagechange'，不会被宽化为 string
 export const PAGINATION_EVENTS = {
     CHANGE: 'pagechange',
 } as const;
-
-// 错误：类型为 string，失去类型推断
-export const PAGINATION_EVENTS = {
-    CHANGE: 'pagechange',
-};
+// PAGINATION_EVENTS.CHANGE 类型为 'pagechange'，不会宽化为 string
 ```
+
+---
+
+## 六、完整事件流示例
+
+以"用户管理"页面的 Toolbar → Table 为例，展示完整的事件流：
+
+### 发送方：Toolbar 组件
+
+```typescript
+class EntityToolbarComponent extends ToolbarComponent {
+    // domEvents — 委托 Button 点击，转发实体事件 + emit 组件事件
+    domEvents = {
+        click: {
+            Button: {
+                handler: '_onButtonClick',
+                entities: '[action]',  // action → 实体事件名
+            },
+        },
+    };
+
+    _onButtonClick(domEvt: any) {
+        const item = this.getTargetItem?.(domEvt?.target);
+        const action = item.component?.action;
+
+        if (PAGINATION_ITEM_NAMES.has(action)) {
+            this.emit(PAGINATION_EVENTS.CHANGE, { action, page: this._currentPage });
+        } else if (CRUD_ITEM_NAMES.has(action)) {
+            this.emit(CRUD_EVENTS.ACTION, { action });
+        }
+    }
+}
+```
+
+### 接收方：Table 组件
+
+```typescript
+const UserTable = Component.withTemplate({
+    tpl: '...',
+    body: {
+        type: 'Table',
+        eventKey: 'userTable',
+        entityKey: 'users',
+
+        // 订阅 Toolbar 的分页 + CRUD 组件事件
+        listens: [
+            { source: 'userToolbar', events: { pagechange: 'onPageChange' } },
+            { source: 'userToolbar', events: { crudaction: 'onCrudAction' } },
+
+            // 订阅实体事件
+            { entity: true, events: { listed: 'onUsersListed' } },
+        ],
+
+        onPageChange(data: any) { /* 处理分页变更 */ },
+        onCrudAction(data: any) { /* 处理 CRUD 操作 */ },
+        onUsersListed(data: any) { /* 刷新列表 */ },
+    },
+});
+```
+
+### 事件流图
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│ 1. 用户点击 Toolbar 的"新建"按钮                                       │
+│                                                                       │
+│    DOM click                                                          │
+│      → DomEventsEngine 匹配 domEvents.click.Button                    │
+│      → eventConfig: handler + entities: '[action]'                    │
+│      → _onButtonClick(domEvt)                                         │
+│      → emit(CRUD_EVENTS.ACTION, { action: 'create' })                │
+│      → entityEmit('create', ...)                                      │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│ 2. Table 收到事件                                                     │
+│                                                                       │
+│    a) entityEmit('create') → EntityListenAbility._handleCrudAction    │
+│       → mgr.create(data)                                              │
+│       → EntityEmitAbility._forwardEvent('created')                   │
+│       → entityEmit('entity:created', { item })                       │
+│                                                                       │
+│    b) listens: [{ source: 'userToolbar' }]                           │
+│       → ComponentEventBus.componentOn('userTable', 'crudaction', ...) │
+│       → onCrudAction(data)                                            │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 七、向后兼容说明
+
+> **命名迁移说明**：原 `EventBridge` 已重命名为 `ComponentEventBus`，原 `EventBridgeAbility` 已重命名为 `ComponentEventBusAbility`。为保持向后兼容，以下命名保留不变：
+> - 事件配置中的 `bridges` 字段名（运行时调用 `componentEmit`）
+> - Layout 配置中的 `eventBridge` 属性名
+> - `ListensEngine` 中的 `source` 字段（等价于 `ComponentListen.source`）
+>
+> 这些配置项在运行时都通过 `ComponentEventBus` 路由，仅命名保持不变。

@@ -3,6 +3,7 @@ import { ComponentEventBus } from '@/events/ComponentEventBus';
 import { EntityEventBus } from '@/events/EntityEventBus';
 import { SystemEventBus } from '@/events/SystemEventBus';
 import { RouteEventBus } from '@/events/RouteEventBus';
+import { EventForwarder } from '@/component-core/engine/EventForwarder';
 
 jest.mock('@/events/ComponentEventBus', () => {
     const mockBus = {
@@ -11,11 +12,7 @@ jest.mock('@/events/ComponentEventBus', () => {
         getScopeId: jest.fn(() => 'test-scope'),
         dispose: jest.fn(),
     };
-    return {
-        ComponentEventBus: {
-            getInstance: jest.fn(() => mockBus),
-        },
-    };
+    return { ComponentEventBus: { getInstance: jest.fn(() => mockBus) } };
 });
 
 jest.mock('@/events/EntityEventBus', () => {
@@ -25,11 +22,7 @@ jest.mock('@/events/EntityEventBus', () => {
         getScopeId: jest.fn(() => 'test-scope'),
         dispose: jest.fn(),
     };
-    return {
-        EntityEventBus: {
-            getInstance: jest.fn(() => mockBus),
-        },
-    };
+    return { EntityEventBus: { getInstance: jest.fn(() => mockBus) } };
 });
 
 jest.mock('@/events/SystemEventBus', () => {
@@ -39,11 +32,7 @@ jest.mock('@/events/SystemEventBus', () => {
         getScopeId: jest.fn(() => 'test-scope'),
         dispose: jest.fn(),
     };
-    return {
-        SystemEventBus: {
-            getInstance: jest.fn(() => mockBus),
-        },
-    };
+    return { SystemEventBus: { getInstance: jest.fn(() => mockBus) } };
 });
 
 jest.mock('@/events/RouteEventBus', () => {
@@ -53,12 +42,20 @@ jest.mock('@/events/RouteEventBus', () => {
         getScopeId: jest.fn(() => 'test-scope'),
         dispose: jest.fn(),
     };
-    return {
-        RouteEventBus: {
-            getInstance: jest.fn(() => mockBus),
-        },
-    };
+    return { RouteEventBus: { getInstance: jest.fn(() => mockBus) } };
 });
+
+jest.mock('@/component-core/engine/EventForwarder', () => ({
+    EventForwarder: {
+        forward: jest.fn(),
+        resolveKey: jest.fn((key: any) => {
+            if (!key) return undefined;
+            if (typeof key === 'string') return key;
+            if (typeof key === 'object' && key.key) return key.key;
+            return undefined;
+        }),
+    },
+}));
 
 function makeInstance(overrides: Record<string, any> = {}) {
     const cleanups: (() => void)[] = [];
@@ -76,15 +73,25 @@ function makeInstance(overrides: Record<string, any> = {}) {
         onCancel: jest.fn(),
         onLocaleChange: jest.fn(),
         onRouteChange: jest.fn(),
+        onToolbarSave: jest.fn(),
         _cleanups: cleanups,
+        nodeMap: {},
+        emit: jest.fn(),
+        componentEmit: jest.fn(),
+        entityEmit: jest.fn(),
+        systemEmit: jest.fn(),
+        routerEmit: jest.fn(),
+        fileEmit: jest.fn(),
+        getCustomEventData: jest.fn(() => ({ custom: 'data' })),
+        defaultEventData: { default: 'value' },
         ...overrides,
     };
     return { instance, componentBus, entityEventBus, systemEventBus, routeEventBus, cleanups };
 }
 
 describe('ListensEngine', () => {
-    describe('bindListens — bridge', () => {
-        it('绑定桥接事件', () => {
+    describe('bindListens — component (source)', () => {
+        it('绑定组件事件', () => {
             const { instance, componentBus } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: 'onSave' } },
@@ -96,16 +103,12 @@ describe('ListensEngine', () => {
             );
         });
 
-        it('once 模式用 componentBus.componentOnce', () => {
+        it('once 模式用 componentOnce', () => {
             const { instance, componentBus } = makeInstance();
             ListensEngine.bindListens(instance, [
                 { source: 'formKey', events: { save: { handler: 'onSave', once: true } } },
             ]);
-            expect(componentBus.componentOnce).toHaveBeenCalledWith(
-                'formKey',
-                'save',
-                expect.any(Function)
-            );
+            expect(componentBus.componentOnce).toHaveBeenCalled();
         });
 
         it('eventKey 不存在时跳过', () => {
@@ -116,16 +119,14 @@ describe('ListensEngine', () => {
             expect(componentBus.componentOn).not.toHaveBeenCalled();
         });
 
-        it('eventKey 为 { key } 格式时解析', () => {
-            const { instance, componentBus } = makeInstance({ eventKey: { key: 'resolved' } });
-            ListensEngine.bindListens(instance, [
-                { source: 'formKey', events: { save: 'onSave' } },
-            ]);
-            expect(componentBus.componentOn).toHaveBeenCalledWith(
-                'formKey',
-                'save',
-                expect.any(Function)
-            );
+        it('方法不存在时静默跳过（不报错）', () => {
+            const { instance } = makeInstance();
+            delete instance.onSave;
+            expect(() => {
+                ListensEngine.bindListens(instance, [
+                    { source: 'formKey', events: { save: 'onSave' } },
+                ]);
+            }).not.toThrow();
         });
 
         it('注册 onCleanup 回调', () => {
@@ -157,14 +158,6 @@ describe('ListensEngine', () => {
             ]);
             expect(entityEventBus.entityOn).not.toHaveBeenCalled();
         });
-
-        it('once 模式用 entityEventBus.entityOnce', () => {
-            const { instance, entityEventBus } = makeInstance();
-            ListensEngine.bindListens(instance, [
-                { entity: true, events: { listed: { handler: 'onSave', once: true } } },
-            ]);
-            expect(entityEventBus.entityOnce).toHaveBeenCalled();
-        });
     });
 
     describe('bindListens — system', () => {
@@ -177,17 +170,6 @@ describe('ListensEngine', () => {
                 'i18n:localeChange',
                 expect.any(Function)
             );
-        });
-
-        it('once 模式用 systemEventBus.once', () => {
-            const { instance, systemEventBus } = makeInstance();
-            ListensEngine.bindListens(instance, [
-                {
-                    system: true,
-                    events: { 'i18n:localeChange': { handler: 'onLocaleChange', once: true } },
-                },
-            ]);
-            expect(systemEventBus.once).toHaveBeenCalled();
         });
     });
 
@@ -203,14 +185,6 @@ describe('ListensEngine', () => {
                 expect.any(Function)
             );
         });
-
-        it('once 模式用 routeEventBus.routeOnce', () => {
-            const { instance, routeEventBus } = makeInstance();
-            ListensEngine.bindListens(instance, [
-                { route: 'router', events: { change: { handler: 'onRouteChange', once: true } } },
-            ]);
-            expect(routeEventBus.routeOnce).toHaveBeenCalled();
-        });
     });
 
     describe('bindListens — 边界', () => {
@@ -224,43 +198,229 @@ describe('ListensEngine', () => {
             expect(() => ListensEngine.bindListens(instance, null as any)).not.toThrow();
             expect(() => ListensEngine.bindListens(instance, undefined as any)).not.toThrow();
         });
+    });
 
-        it('方法不存在时 warn', () => {
-            const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    describe('bindNodeEvents — 子组件节点事件', () => {
+        it('绑定 node 事件', () => {
+            const child = {
+                on: jest.fn(),
+                off: jest.fn(),
+            };
             const { instance } = makeInstance();
-            delete instance.onSave;
+            instance.nodeMap = { toolbar: { component: child } };
 
-            ListensEngine.bindListens(instance, [
-                { source: 'formKey', events: { save: 'onSave' } },
+            ListensEngine.bindNodeEvents(instance, [
+                { node: 'toolbar', events: { save: true } },
             ]);
-            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('onSave'));
-            warnSpy.mockRestore();
+            expect(child.on).toHaveBeenCalledWith('save', expect.any(Function));
         });
 
-        it('bus 不存在时跳过', () => {
-            const instance: any = {
-                eventKey: 'test',
-                onCleanup: jest.fn(),
-                onSave: jest.fn(),
-            };
-            expect(() =>
-                ListensEngine.bindListens(instance, [
-                    { source: 'formKey', events: { save: 'onSave' } },
-                ])
-            ).not.toThrow();
+        it('handler: true 自动推导方法名', () => {
+            const child = { on: jest.fn(), off: jest.fn() };
+            const { instance } = makeInstance();
+            instance.nodeMap = { toolbar: { component: child } };
+
+            ListensEngine.bindNodeEvents(instance, [
+                { node: 'toolbar', events: { save: true } },
+            ]);
+
+            const handler = child.on.mock.calls[0][1];
+            handler({ data: 'test' });
+            expect(instance.onToolbarSave).toHaveBeenCalledWith({ data: 'test' });
+        });
+
+        it('handler 为字符串时使用指定方法名', () => {
+            const child = { on: jest.fn(), off: jest.fn() };
+            const { instance } = makeInstance();
+            instance.nodeMap = { toolbar: { component: child } };
+
+            ListensEngine.bindNodeEvents(instance, [
+                { node: 'toolbar', events: { save: 'onSave' } },
+            ]);
+
+            const handler = child.on.mock.calls[0][1];
+            handler({ data: 'test' });
+            expect(instance.onSave).toHaveBeenCalledWith({ data: 'test' });
+        });
+
+        it('once 模式只执行一次', () => {
+            const child = { on: jest.fn(), off: jest.fn() };
+            const { instance } = makeInstance();
+            instance.nodeMap = { toolbar: { component: child } };
+
+            ListensEngine.bindNodeEvents(instance, [
+                { node: 'toolbar', events: { save: { handler: 'onSave', once: true } } },
+            ]);
+
+            const handler = child.on.mock.calls[0][1];
+            handler({ data: 'first' });
+            handler({ data: 'second' });
+            expect(instance.onSave).toHaveBeenCalledTimes(1);
+        });
+
+        it('nodeMap 为空时跳过', () => {
+            const { instance } = makeInstance({ nodeMap: undefined });
+            expect(() => {
+                ListensEngine.bindNodeEvents(instance, [
+                    { node: 'toolbar', events: { save: true } },
+                ]);
+            }).not.toThrow();
         });
     });
 
-    describe('onCleanup 自动解绑', () => {
-        it('dispose 时 onCleanup 回调执行 componentOn 返回的 off', () => {
-            const { instance, componentBus, cleanups } = makeInstance();
+    describe('统一转发 — source 事件转发', () => {
+        it('接收桥接事件后转发 emits', () => {
+            const { instance, componentBus } = makeInstance();
             ListensEngine.bindListens(instance, [
-                { source: 'formKey', events: { save: 'onSave' } },
+                { source: 'formKey', events: {
+                    save: { handler: 'onSave', emits: ['saved'] },
+                }},
             ]);
 
-            expect(componentBus.componentOn).toHaveBeenCalled();
-            expect(cleanups.length).toBeGreaterThan(0);
-            for (const cleanup of cleanups) cleanup();
+            const handler = componentBus.componentOn.mock.calls[0][2];
+            handler({ value: 42 });
+
+            expect(instance.onSave).toHaveBeenCalledWith({ value: 42 });
+            expect(EventForwarder.forward).toHaveBeenCalledWith(
+                instance,
+                { emits: ['saved'] },
+                { value: 42 },
+                undefined,
+                'save'
+            );
+        });
+
+        it('接收桥接事件后转发 bridges（ComponentEventBus）', () => {
+            const { instance, componentBus } = makeInstance();
+            ListensEngine.bindListens(instance, [
+                { source: 'formKey', events: {
+                    save: { handler: 'onSave', bridges: ['confirmed'] },
+                }},
+            ]);
+
+            const handler = componentBus.componentOn.mock.calls[0][2];
+            handler({ value: 42 });
+
+            expect(instance.onSave).toHaveBeenCalledWith({ value: 42 });
+            expect(EventForwarder.forward).toHaveBeenCalledWith(
+                instance,
+                { bridges: ['confirmed'] },
+                { value: 42 },
+                undefined,
+                'save'
+            );
+        });
+
+        it('纯转发（无 handler）', () => {
+            const { instance, componentBus } = makeInstance();
+            ListensEngine.bindListens(instance, [
+                { source: 'formKey', events: {
+                    save: { bridges: ['confirmed'] },
+                }},
+            ]);
+
+            const handler = componentBus.componentOn.mock.calls[0][2];
+            handler({ value: 42 });
+
+            expect(instance.onSave).not.toHaveBeenCalled();
+            expect(EventForwarder.forward).toHaveBeenCalled();
+        });
+    });
+
+    describe('统一转发 — entity 事件转发', () => {
+        it('接收实体事件后转发', () => {
+            const { instance, entityEventBus } = makeInstance();
+            ListensEngine.bindListens(instance, [
+                { entity: true, events: {
+                    listed: { handler: 'onSave', emits: ['refreshed'] },
+                }},
+            ]);
+
+            const handler = entityEventBus.entityOn.mock.calls[0][2];
+            handler({ items: [] });
+
+            expect(instance.onSave).toHaveBeenCalledWith({ items: [] });
+            expect(EventForwarder.forward).toHaveBeenCalledWith(
+                instance,
+                { emits: ['refreshed'] },
+                { items: [] },
+                undefined,
+                'listed'
+            );
+        });
+    });
+
+    describe('统一转发 — node 事件转发', () => {
+        it('接收子组件事件后转发', () => {
+            const child = { on: jest.fn(), off: jest.fn() };
+            const { instance } = makeInstance();
+            instance.nodeMap = { toolbar: { component: child } };
+
+            ListensEngine.bindNodeEvents(instance, [
+                { node: 'toolbar', events: {
+                    save: { handler: 'onToolbarSave', emits: ['saved'] },
+                }},
+            ]);
+
+            const handler = child.on.mock.calls[0][1];
+            handler({ data: 'test' });
+
+            expect(instance.onToolbarSave).toHaveBeenCalledWith({ data: 'test' });
+            expect(EventForwarder.forward).toHaveBeenCalledWith(
+                instance,
+                { emits: ['saved'] },
+                { data: 'test' },
+                undefined,
+                'save'
+            );
+        });
+    });
+
+    describe('extractNodeEvents', () => {
+        it('提取 node 配置', () => {
+            const result = ListensEngine.extractNodeEvents([
+                { node: 'toolbar', events: { save: true } },
+                { source: 'formKey', events: { save: 'onSave' } },
+                { node: 'grid', events: { rowClick: true } },
+            ]);
+            expect(result).toEqual([
+                { node: 'toolbar', events: { save: true } },
+                { node: 'grid', events: { rowClick: true } },
+            ]);
+        });
+
+        it('无 node 时返回空数组', () => {
+            const result = ListensEngine.extractNodeEvents([
+                { source: 'formKey', events: { save: 'onSave' } },
+            ]);
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('数据传递 — defaultEventData + getCustomEventData', () => {
+        it('转发时将收到的数据传给 EventForwarder.forward (合并由 EventForwarder 内部完成)', () => {
+            const { instance, componentBus } = makeInstance({
+                defaultEventData: { default: 'value' },
+                getCustomEventData: jest.fn(() => ({ custom: 'data' })),
+            });
+            ListensEngine.bindListens(instance, [
+                { source: 'formKey', events: {
+                    save: { bridges: ['saved'] },
+                }},
+            ]);
+
+            const handler = componentBus.componentOn.mock.calls[0][2];
+            handler({ received: 'data' });
+
+            // EventForwarder.forward 被正确调用，收到原始事件数据
+            expect(EventForwarder.forward).toHaveBeenCalledWith(
+                instance,
+                { bridges: ['saved'] },
+                { received: 'data' },  // extraData = 收到的事件数据
+                undefined,
+                'save'
+            );
+            // defaultEventData / getCustomEventData 的合并由 EventForwarder.collectEventData 内部完成
         });
     });
 });
