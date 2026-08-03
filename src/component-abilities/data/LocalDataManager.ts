@@ -1,6 +1,6 @@
 import { ComposableBase, withAbilities } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import { FlatLocalStateAbility } from '@/entity/abilities/local/FlatLocalStateAbility';
+import { FlatLocalStateAbility } from '@/entity';
 import type { ILocalSearchParams } from '@/schema';
 
 /** 本地数据管理器配置 */

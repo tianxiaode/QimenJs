@@ -1,5 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
-import type { IDeletionPlan, ILocalChangeSet } from '@/entity/types';
+import type { IDeletionPlan, ILocalChangeSet } from '@/entity';
 
 /**
  * LocalMutationAbility - 本地变更集能力
@@ -9,7 +9,7 @@ import type { IDeletionPlan, ILocalChangeSet } from '@/entity/types';
  * 私有状态 _changes/_deleteSnapshots 通过 abilityState 管理。
  * 防抖 refreshView 通过 this.debounce() 管理。
  */
-export const LocalMutationAbility= {
+export const LocalMutationAbility = {
     hasChanges: {
         get() {
             const changes = this.abilityState('StateLocalMutation:changes') as
