@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const PANEL_NAV_CHILDREN: TplNode['children'] = [
     { tag: 'button', name: 'prevFieldBtn', cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev' },

@@ -4,7 +4,7 @@
  * 通过 ComponentRegistrar 注册，编译产物缓存于注册表。
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const DIVIDER_TPL: TplNode = {
     tag: 'div',

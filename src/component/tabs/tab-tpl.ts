@@ -4,7 +4,7 @@
  * 结构：icon + label + close（可选）
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const TAB_TPL: TplNode = {
     tag: 'div',

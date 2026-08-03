@@ -5,7 +5,7 @@
  * mark 由 CSS ::before 渲染，status 驱动颜色，markForm 驱动形状
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const LIST_ITEM_TPL: TplNode = {
     tag: 'div',

@@ -2,7 +2,7 @@
  * Loading 模板定义 — 独立于组件类
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const LOADING_TPL: TplNode = {
     tag: 'div',

@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 import { HeaderComponent } from '../header/HeaderComponent';
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';

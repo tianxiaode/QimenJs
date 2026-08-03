@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 /**
  * 创建表单字段模板

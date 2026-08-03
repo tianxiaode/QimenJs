@@ -2,7 +2,7 @@
  * Card 模板定义 — 独立于组件类
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import { HeaderFragment } from '../header/HeaderFragment';
 
 export const CARD_TPL: TplNode = {

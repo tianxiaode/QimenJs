@@ -5,7 +5,7 @@
  * 编译产物缓存于注册表。
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const HREF_TPL: TplNode = {
     tag: 'a',

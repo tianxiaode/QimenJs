@@ -23,8 +23,7 @@
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events';
-import type { FloatDecl } from '@/component-core/types/tpl-node-types';
-import type { IndicatorConfig, IndicatorType } from '@/component-core/types/init-context';
+import type { FloatDecl, IndicatorConfig, IndicatorType } from '@/component-core';
 
 const INDICATOR_TYPE_MAP: Record<string, string> = {
     dot: 'IndicatorDot',

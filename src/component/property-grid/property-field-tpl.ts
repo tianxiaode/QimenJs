@@ -6,7 +6,7 @@
  * boolean 渲染为只读 checkbox，array 渲染为 chip 列表
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const PROPERTY_FIELD_TPL: TplNode = {
     tag: 'div',

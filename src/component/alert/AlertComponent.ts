@@ -18,7 +18,7 @@
  * ```
  */
 
-import { DomEventsMap } from '@/component-core/types/tpl-events';
+import { DomEventsMap } from '@/component-core';
 import { Component } from '@qimenjs/component-core';
 import { ALERT_TPL } from './alert-tpl';
 

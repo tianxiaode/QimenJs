@@ -10,10 +10,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { CompileEngine } from '@/component-core/engine/CompileEngine';
-import { findByPath } from '@/component-core/engine/utils/dom-path';
-import type { TplNode } from '@/component-core/types/tpl-node-types';
-import type { NodeIndexPath, NodeMetadata } from '@/component-core/types/index';
+import { CompileEngine, findByPath } from '@/component-core';
+import type { TplNode, NodeIndexPath, NodeMetadata } from '@/component-core';
 
 // ─── 模板缓存条目 ──────────────────────────────────────────
 

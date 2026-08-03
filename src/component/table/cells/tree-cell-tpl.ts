@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import { createCellTpl } from './base-cell-tpl';
 
 export const TREE_CELL_TPL: TplNode = createCellTpl({

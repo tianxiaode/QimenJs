@@ -5,7 +5,7 @@
  * value 显示在 thumb 上方或右侧
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const SLIDER_BODY_TPL: TplNode = {
     tag: 'div',

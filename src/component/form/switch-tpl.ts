@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import { createFormFieldTpl } from './formfield-tpl';
 
 export const SWITCH_TPL: TplNode = createFormFieldTpl('SwitchFieldBody');

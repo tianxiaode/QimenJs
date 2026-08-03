@@ -2,7 +2,7 @@
  * OneTimePassword 模板定义
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const ONE_TIME_PASSWORD_TPL: TplNode = {
     tag: 'div',

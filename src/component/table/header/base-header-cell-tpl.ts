@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export function createHeaderCellTpl(contentNode: TplNode): TplNode {
     return {

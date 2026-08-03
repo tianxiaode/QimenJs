@@ -5,7 +5,7 @@
  * 位置通过 position 属性控制（top/bottom/left/right）
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const TABS_TPL: TplNode = {
     tag: 'div',

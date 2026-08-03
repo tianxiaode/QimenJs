@@ -4,7 +4,7 @@
  * 结构：icon（可选） + content（title + valueGroup(prefix + value + suffix)）
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const STATISTIC_TPL: TplNode = {
     tag: 'div',

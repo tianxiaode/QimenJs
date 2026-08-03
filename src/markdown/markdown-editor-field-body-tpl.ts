@@ -2,7 +2,7 @@
  * MarkdownEditorFieldBody 模板定义
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const MARKDOWN_EDITOR_FIELD_BODY_TPL: TplNode = {
     tag: 'div',

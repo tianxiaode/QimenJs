@@ -12,7 +12,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { DragDecl, DropDecl } from '@/component-core/types/tpl-node-types';
+import type { DragDecl, DropDecl } from '@/component-core';
 import { DragEngine } from '../engine/DragEngine';
 
 const engine = DragEngine.getInstance();

@@ -5,7 +5,7 @@
  * tail 由 CSS :last-child 控制显示
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const STEP_ITEM_TPL: TplNode = {
     tag: 'div',

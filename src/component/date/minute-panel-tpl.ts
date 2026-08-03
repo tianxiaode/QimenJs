@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 import { PANEL_NAV_CHILDREN } from './panel-nav-tpl';
 
 export const MINUTE_PANEL_TPL: TplNode = {

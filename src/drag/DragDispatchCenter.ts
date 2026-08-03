@@ -15,7 +15,7 @@
 import { RegistrarBase } from '@/registry';
 import { DragEventBus, DRAG_ACTIONS } from '@/events';
 
-import type { DragDecl, DropDecl } from '@/component-core/types/tpl-node-types';
+import type { DragDecl, DropDecl } from '@/component-core';
 
 export interface DragDefinition extends DragDecl {}
 export interface DropDefinition extends DropDecl {}

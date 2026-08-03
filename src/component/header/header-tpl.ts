@@ -1,4 +1,4 @@
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';

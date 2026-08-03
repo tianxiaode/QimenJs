@@ -5,7 +5,7 @@
  * tail 由 CSS :last-child 控制隐藏，pending 态由容器 .q-timeline--pending 驱动显示虚线
  */
 
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplNode } from '@/component-core';
 
 export const TIMELINE_ITEM_TPL: TplNode = {
     tag: 'div',
