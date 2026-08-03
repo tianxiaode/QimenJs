@@ -5,7 +5,7 @@
  * Toast 类内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能，
  * ToastManager 只负责队列调度和堆叠定位。
  *
- * overlayKey 自动生成：toast:{id}，也可通过 ToastOptions.overlayKey 自定义。
+ * eventKey 由 ToastOptions.eventKey 提供，不提供则不发系统事件。
  */
 
 import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
@@ -34,9 +34,8 @@ export class ToastManager {
     create(options: ToastOptions): ToastHandle {
         const position: ToastPosition = options.position ?? 'top-right';
         const id = this.nextId++;
-        const overlayKey = options.overlayKey ?? `toast:${id}`;
 
-        const toast = new Toast({ ...options, overlayKey });
+        const toast = new Toast(options);
 
         toast.onClose = () => {
             this.instances.delete(id);
@@ -56,7 +55,12 @@ export class ToastManager {
         let offset = 0;
 
         for (const toast of samePosition) {
-            toast.setViewportPosition(toast.el, position as ViewportPosition, offset, MARGIN);
+            (toast as any).setViewportPosition(
+                toast.el,
+                position as ViewportPosition,
+                offset,
+                MARGIN
+            );
             offset += toast.el.offsetHeight + GAP;
         }
     }

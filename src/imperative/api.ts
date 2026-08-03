@@ -15,13 +15,9 @@ import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType
  * @param duration - 持续时间 ms，覆盖 options 中的值
  * @returns ToastHandle — 支持 close() 和 await
  */
-export function toast(
-    messageOrOptions: string | ToastOptions,
-    duration?: number,
-): ToastHandle {
-    const options: ToastOptions = typeof messageOrOptions === 'string'
-        ? { message: messageOrOptions }
-        : messageOrOptions;
+export function toast(messageOrOptions: string | ToastOptions, duration?: number): ToastHandle {
+    const options: ToastOptions =
+        typeof messageOrOptions === 'string' ? { message: messageOrOptions } : messageOrOptions;
 
     if (duration !== undefined) {
         options.duration = duration;
@@ -38,7 +34,7 @@ export function toast(
 function normalizeMsgboxArgs(
     titleOrOptions: string | MsgboxOptions,
     content?: string,
-    type: MsgboxType = 'alert',
+    type: MsgboxType = 'alert'
 ): MsgboxOptions & { type: MsgboxType } {
     if (typeof titleOrOptions === 'string') {
         return { title: titleOrOptions, content: content ?? '', type };
@@ -50,10 +46,7 @@ export const msgbox = {
     /**
      * alert 模态消息框 — 仅含确认按钮
      */
-    alert(
-        titleOrOptions: string | MsgboxOptions,
-        content?: string,
-    ): Promise<MsgboxResult> {
+    alert(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'alert');
         return MsgboxManager.getInstance().create(options);
     },
@@ -61,10 +54,7 @@ export const msgbox = {
     /**
      * confirm 模态消息框 — 含确认和取消按钮
      */
-    confirm(
-        titleOrOptions: string | MsgboxOptions,
-        content?: string,
-    ): Promise<MsgboxResult> {
+    confirm(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'confirm');
         return MsgboxManager.getInstance().create(options);
     },
@@ -72,10 +62,7 @@ export const msgbox = {
     /**
      * prompt 模态消息框 — 含输入框和确认/取消按钮
      */
-    prompt(
-        titleOrOptions: string | MsgboxOptions,
-        content?: string,
-    ): Promise<MsgboxResult> {
+    prompt(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'prompt');
         return MsgboxManager.getInstance().create(options);
     },

@@ -47,3 +47,36 @@ export function resolveI18nValue(value: string): string {
     }
     return value;
 }
+
+/**
+ * 直接翻译 i18n key
+ *
+ * 不需要 'i18n:' 前缀，直接调用 i18n.t(key) 翻译。
+ * 若 key 带 'i18n:' 前缀会自动去掉。
+ * 适用于已知是 key 的场景（如错误代码、枚举值），
+ * 不必手动拼接前缀。
+ *
+ * @param key - i18n key，如 'error.network.timeout' 或 'i18n:error.network.timeout'
+ * @param isError - 为 true 时自动从 kernel/validation/http 三个错误源查找翻译)，
+ *                   适用于原始错误码（如 ENTITY_NOT_FOUND、VALIDATION_REQUIRED、403）
+ * @returns 翻译后的文本，i18n 不可用或 key 未注册时返回 key 本身
+ */
+export function t(key: string, isError?: boolean): string {
+    const actualKey = key.startsWith(I18N_PREFIX) ? key.slice(I18N_PREFIX.length) : key;
+    const i18n = getI18nManager();
+
+    if (isError) {
+        const errorSources = ['kernel', 'validation', 'http'];
+        if (i18n) {
+            for (const source of errorSources) {
+                const fullKey = `${source}.${actualKey}`;
+                const result = i18n.t(fullKey);
+                if (result && result !== fullKey) return result;
+            }
+        }
+        return actualKey;
+    }
+
+    if (!i18n) return actualKey;
+    return i18n.t(actualKey) || actualKey;
+}

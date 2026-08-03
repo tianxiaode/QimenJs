@@ -30,4 +30,4 @@
 /// <reference path="./global.d.ts" />
 
 export * from './types';
-export { I18N_PREFIX, getI18nManager, resolveI18nValue } from './i18n-utils';
+export { I18N_PREFIX, getI18nManager, resolveI18nValue, t } from './i18n-utils';

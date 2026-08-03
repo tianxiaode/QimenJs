@@ -26,8 +26,8 @@ export interface ToastOptions {
     duration?: number;
     /** 显示位置，默认 'top-right' */
     position?: ToastPosition;
-    /** 浮层事件标识，用于 OverlayEventBus 监听，默认自动生成 toast:{id} */
-    overlayKey?: string;
+    /** 事件标识，提供时通过 SystemEventBus 发送事件，不提供则不发 */
+    eventKey?: string;
 }
 
 /**
@@ -62,8 +62,8 @@ export interface MsgboxOptions {
     cancelButtonText?: string;
     /** prompt 输入框占位文本，仅 prompt 模式，默认 '' */
     inputPlaceholder?: string;
-    /** 浮层事件标识，用于 OverlayEventBus 监听，默认自动生成 msgbox:{id} */
-    overlayKey?: string;
+    /** 事件标识，提供时通过 SystemEventBus 发送事件，不提供则不发 */
+    eventKey?: string;
 }
 
 /** msgbox 返回结果 */

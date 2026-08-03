@@ -7,114 +7,80 @@
  * 通过 ComposableBase.with() 组合能力：
  * - TemplateCacheAbility：模板缓存 + 克隆 + nodeMap
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
+ * - SystemEventBusAbility：系统事件收发（仅在 eventKey 存在时发送）
  *
- * 事件通过 OverlayEventBus 发送，编码：overlay:{overlayKey}:{action}
- * 外部可通过 overlayEventBus.overlayOn(overlayKey, action, handler) 监听。
+ * 事件通过 SystemEventBus 发送，编码：{eventKey}:{action}
+ * 仅当 MsgboxOptions.eventKey 已定义时才发送，否则跳过。
  */
 
 import { ComposableBase } from '@/composable';
 import { TemplateCacheAbility } from '@/component-abilities';
 import { FloatingLayerAbility } from '@/overlay';
-import { OverlayEventBus } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from './msgbox-tpl';
-import { resolveI18nValue } from '@qimenjs/i18n';
+import { resolveI18nValue, t } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
-import type { TplNode } from '@/component-core';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
+import { DomEventsAbility, SystemEventBusAbility } from '@/system-abilities';
 
-const MsgboxBase = ComposableBase.use([TemplateCacheAbility, FloatingLayerAbility]);
-
-export class Msgbox extends MsgboxBase {
-    // ─── TemplateCacheAbility 方法 ───
-    declare initTemplateCache: (name: string, template: TplNode) => void;
-    declare cloneFromCache: (name: string) => {
-        root: HTMLElement;
-        nodeMap: Record<string, HTMLElement>;
-    };
-
-    // ─── FloatingLayerAbility 方法 ───
-    declare _zIndexLevel: number;
-    declare acquireZIndex: (level?: number) => number;
-    declare releaseZIndex: () => void;
-    declare mountToOverlay: (el: HTMLElement) => void;
-    declare unmountFromOverlay: (el: HTMLElement) => void;
-    declare setViewportPosition: (
-        el: HTMLElement,
-        position: any,
-        offset?: number,
-        margin?: number
-    ) => void;
-    declare playEnterAnimation: (
-        el: HTMLElement,
-        keyframes: Keyframe[],
-        options?: any
-    ) => Animation;
-    declare playExitAnimation: (el: HTMLElement, keyframes: Keyframe[], options?: any) => Animation;
-    declare bindDomEvent: (
-        el: HTMLElement,
-        semantic: string,
-        handler: (e: Event) => void
-    ) => () => void;
-
+export class Msgbox extends ComposableBase {
     el!: HTMLElement;
     maskEl!: HTMLElement;
     nodeMap!: Record<string, HTMLElement>;
     zIndex!: number;
     type!: MsgboxType;
-    overlayKey!: string;
+    eventKey?: string;
     inputEl!: HTMLInputElement | null;
-    resolve!: (result: MsgboxResult) => void;
+    callback!: (result: MsgboxResult) => void;
     onClose!: () => void;
     private _resolved = false;
 
-    private readonly bus = OverlayEventBus.getInstance();
-
     constructor(
-        options: MsgboxOptions & { type: MsgboxType; overlayKey: string },
-        resolve: (result: MsgboxResult) => void
+        options: MsgboxOptions & { type: MsgboxType },
+        callback: (result: MsgboxResult) => void
     ) {
         super();
+        const self = this as any;
 
         const type: MsgboxType = options.type;
-        const confirmButtonText = options.confirmButtonText ?? '确定';
-        const cancelButtonText = options.cancelButtonText ?? '取消';
+        const confirmButtonText = options.confirmButtonText ?? t('msgbox.confirm');
+        const cancelButtonText = options.cancelButtonText ?? t('msgbox.cancel');
         const inputPlaceholder = options.inputPlaceholder ?? '';
 
-        this.type = type;
-        this.overlayKey = options.overlayKey;
-        this.resolve = resolve;
+        self.type = type;
+        self.eventKey = options.eventKey;
+        self.callback = callback;
 
         // 1. 初始化能力
-        this._zIndexLevel = ZIndexLevel.modal;
-        this.initTemplateCache('msgbox', { tpl: MSGBOX_TEMPLATE });
+        self._zIndexLevel = ZIndexLevel.modal;
+        self.initTemplateCache('msgbox', { tpl: MSGBOX_TEMPLATE });
 
         // 2. 从缓存克隆 DOM + 构建 nodeMap
-        const { root, nodeMap } = this.cloneFromCache('msgbox');
-        this.el = root;
-        this.nodeMap = nodeMap;
+        const { root, nodeMap } = self.cloneFromCache('msgbox');
+        self.el = root;
+        self.nodeMap = nodeMap;
 
         // 3. 创建遮罩
-        this.maskEl = document.createElement('div');
-        this.maskEl.classList.add('q-msgbox-mask');
-        this.maskEl.style.position = 'fixed';
-        this.maskEl.style.inset = '0';
-        this.maskEl.style.background = 'rgba(0,0,0,0.5)';
+        self.maskEl = document.createElement('div');
+        self.maskEl.classList.add('q-msgbox-mask');
+        self.maskEl.style.position = 'fixed';
+        self.maskEl.style.inset = '0';
+        self.maskEl.style.background = 'rgba(0,0,0,0.5)';
 
         // 4. 设置样式
-        this.el.classList.add('q-msgbox');
-        this.el.style.pointerEvents = 'auto';
+        self.el.classList.add('q-msgbox');
+        self.el.style.pointerEvents = 'auto';
 
         // 5. 设置内容
-        this.setText('msgbox:text', resolveI18nValue(options.title));
-        this.setText('msgbox:content', resolveI18nValue(options.content ?? ''));
+        self.setText('msgbox:text', resolveI18nValue(options.title));
+        self.setText('msgbox:content', resolveI18nValue(options.content ?? ''));
 
         // 6. 根据类型配置按钮区域
-        const cancelBtn = this.nodeMap['msgbox:cancel'];
-        const confirmBtn = this.nodeMap['msgbox:confirm'];
-        const inputEl = this.nodeMap['msgbox:field'] as HTMLInputElement | null;
-        this.inputEl = inputEl ?? null;
+        const cancelBtn = self.nodeMap['msgbox:cancel'];
+        const confirmBtn = self.nodeMap['msgbox:confirm'];
+        const inputEl = self.nodeMap['msgbox:field'] as HTMLInputElement | null;
+        self.inputEl = inputEl ?? null;
 
         if (type === 'alert') {
             if (cancelBtn) cancelBtn.style.display = 'none';
@@ -131,50 +97,65 @@ export class Msgbox extends MsgboxBase {
         if (cancelBtn) cancelBtn.textContent = resolveI18nValue(cancelButtonText);
 
         // 7. z-index
-        this.zIndex = this.acquireZIndex();
-        this.el.style.zIndex = String(this.zIndex);
-        this.maskEl.style.zIndex = String(this.zIndex);
+        self.zIndex = self.acquireZIndex();
+        self.el.style.zIndex = String(self.zIndex);
+        self.maskEl.style.zIndex = String(self.zIndex);
 
         // 8. 居中定位
-        this.setViewportPosition(this.el, 'center');
+        self.setViewportPosition(self.el, 'center');
 
         // 9. 挂载到 OverlayRoot
-        this.mountToOverlay(this.maskEl);
-        this.mountToOverlay(this.el);
+        self.mountToOverlay(self.maskEl);
+        self.mountToOverlay(self.el);
 
         // 10. 播放进入动画
-        this.playEnterAnimation(this.el, [
+        self.playEnterAnimation(self.el, [
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
         ]);
 
         // 11. 绑定按钮事件
         if (confirmBtn) {
-            this.bindDomEvent(confirmBtn, 'tap', () => {
-                this._doResolve({
+            self.bindDomEvent(confirmBtn, 'tap', () => {
+                self._doResolve({
                     action: 'confirm',
-                    value: type === 'prompt' && this.inputEl ? this.inputEl.value : '',
+                    value: type === 'prompt' && self.inputEl ? self.inputEl.value : '',
                 });
             });
         }
 
         if (cancelBtn) {
-            this.bindDomEvent(cancelBtn, 'tap', () => {
-                this._doResolve({ action: 'cancel', value: '' });
+            self.bindDomEvent(cancelBtn, 'tap', () => {
+                self._doResolve({ action: 'cancel', value: '' });
             });
         }
 
         // 12. 遮罩点击关闭（alert 类型）
         if (type === 'alert') {
-            this.bindDomEvent(this.maskEl, 'tap', () => {
-                this._doResolve({ action: 'cancel', value: '' });
+            self.bindDomEvent(self.maskEl, 'tap', () => {
+                self._doResolve({ action: 'cancel', value: '' });
             });
         }
     }
 
     private setText(key: string, text: string): void {
-        const el = this.nodeMap[key];
+        const el = (this as any).nodeMap[key];
         if (el) el.textContent = text;
+    }
+
+    private _emitEvent(action: string, data: Record<string, any>): void {
+        if (!this.eventKey) return;
+        const self = this as any;
+        const event = `${this.eventKey}:${action}`;
+        self.systemEmit(
+            event,
+            EventContextBuilder.create()
+                .withEvent(event)
+                .withType(action)
+                .withSource(this.eventKey)
+                .withData(data)
+                .build()
+        );
     }
 
     private _doResolve(result: MsgboxResult): void {
@@ -182,49 +163,39 @@ export class Msgbox extends MsgboxBase {
         this._resolved = true;
 
         const action = result.action === 'confirm' ? MSGBOX_ACTIONS.CONFIRM : MSGBOX_ACTIONS.CANCEL;
+        this._emitEvent(action, { eventKey: this.eventKey, result });
 
-        this.bus.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${this.overlayKey}:${action}`)
-                .withType(action)
-                .withSource(this.overlayKey)
-                .withData({ overlayKey: this.overlayKey, result })
-                .build()
-        );
-
-        this.resolve(result);
+        (this as any).callback(result);
         this.close();
     }
 
     close(): void {
+        const self = this as any;
+
         if (!this._resolved) {
             this._resolved = true;
-            this.resolve({ action: 'cancel', value: '' });
+            self.callback({ action: 'cancel', value: '' });
         }
 
-        const animation = this.playExitAnimation(this.el, [
+        const animation = self.playExitAnimation(self.el, [
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
         ]);
 
-        this.playExitAnimation(this.maskEl, [{ opacity: 1 }, { opacity: 0 }]);
+        self.playExitAnimation(self.maskEl, [{ opacity: 1 }, { opacity: 0 }]);
 
         animation.onfinish = () => {
-            this.unmountFromOverlay(this.el);
-            this.unmountFromOverlay(this.maskEl);
-            this.releaseZIndex();
+            self.unmountFromOverlay(self.el);
+            self.unmountFromOverlay(self.maskEl);
+            self.releaseZIndex();
 
-            this.bus.overlayEmit(
-                EventContextBuilder.create()
-                    .withEvent(`overlay:${this.overlayKey}:${MSGBOX_FEEDBACK_EVENTS.CLOSED}`)
-                    .withType(MSGBOX_FEEDBACK_EVENTS.CLOSED)
-                    .withSource(this.overlayKey)
-                    .withData({ overlayKey: this.overlayKey })
-                    .build()
-            );
+            this._emitEvent(MSGBOX_FEEDBACK_EVENTS.CLOSED, { eventKey: this.eventKey });
 
-            this.dispose();
-            this.onClose?.();
+            self.dispose();
+            self.onClose?.();
         };
     }
 }
+
+Msgbox.use([TemplateCacheAbility, FloatingLayerAbility, DomEventsAbility, SystemEventBusAbility]);
+export type MsgboxInstance = InstanceType<typeof Msgbox>;

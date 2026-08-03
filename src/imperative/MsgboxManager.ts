@@ -5,7 +5,7 @@
  * Msgbox 类内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能，
  * MsgboxManager 只负责创建/销毁调度。
  *
- * overlayKey 自动生成：msgbox:{id}，也可通过 MsgboxOptions.overlayKey 自定义。
+ * eventKey 由 MsgboxOptions.eventKey 提供，不提供则不发系统事件。
  */
 
 import { Msgbox } from './Msgbox';
@@ -15,7 +15,6 @@ export class MsgboxManager {
     private static instance: MsgboxManager;
 
     private instances = new Set<Msgbox>();
-    private nextId = 0;
 
     private constructor() {}
 
@@ -32,8 +31,7 @@ export class MsgboxManager {
             resolveFn = resolve;
         });
 
-        const overlayKey = options.overlayKey ?? `msgbox:${this.nextId++}`;
-        const instance = new Msgbox({ ...options, overlayKey }, resolveFn);
+        const instance = new Msgbox(options, resolveFn);
 
         instance.onClose = () => {
             this.instances.delete(instance);
