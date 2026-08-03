@@ -1,7 +1,7 @@
 import type { InitContext } from '../../types/init-context';
 import { SystemEventBus, SYSTEM_EVENTS } from '@/events';
-import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
-import type { PermissionQuery } from '@/permission/types';
+import { PermissionRegistrar } from '@/permission';
+import type { PermissionQuery } from '@/permission';
 
 const PERMISSION_SEPARATOR = ':';
 const BTN_SUFFIXES = /Btn|Button|Action$/;

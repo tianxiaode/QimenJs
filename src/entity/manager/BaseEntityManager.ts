@@ -1,5 +1,5 @@
 import type { ENTITY_ACTION, IBaseEntityManager, IEntity, SearchParams } from '@/entity/types';
-import type { FieldDefinition } from '@/schema/types/schema';
+import type { FieldDefinition } from '@/schema';
 import type { HttpRequestOptions } from '@/http/types/http-context';
 import type { RequestContext } from '@/context';
 

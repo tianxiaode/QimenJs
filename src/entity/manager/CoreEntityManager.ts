@@ -13,8 +13,8 @@ import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-proce
 import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
-import { PermissionRegistrar } from '@/permission/PermissionRegistrar';
-import type { PermissionQuery } from '@/permission/types';
+import { PermissionRegistrar } from '@/permission';
+import type { PermissionQuery } from '@/permission';
 import { EntityEventBus } from '@/events';
 
 export const CORE_ENTITY_ABILITIES = [

@@ -7,8 +7,8 @@
  */
 
 import type { RequestContext } from '@/context';
-import type { DataProcessorHandler } from '@/data-processor/types';
-import { DataProcessorWeight } from '@/data-processor/weights';
+import type { DataProcessorHandler } from '@/data-processor';
+import { DataProcessorWeight } from '@/data-processor';
 import type { SpringErrorResponse, SpringPage } from './types';
 
 /**
