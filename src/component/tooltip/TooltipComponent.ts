@@ -13,7 +13,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { ArrowAbility } from '@qimenjs/component-abilities';
-import { ZIndexLevel, nextZIndex } from '@/component';
+import { ZIndexLevel, nextZIndex } from '../';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 import { InferAbility } from '@/composable';
 

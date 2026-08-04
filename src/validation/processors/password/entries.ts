@@ -1,4 +1,4 @@
-import { ValidationWeight } from '@/validation/types';
+import { ValidationWeight } from '../../types';
 import { PasswordProcessor } from './password';
 
 export const PasswordProcessorEntry = {
