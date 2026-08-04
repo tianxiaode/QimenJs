@@ -39,6 +39,7 @@ function createRemoteHost() {
         pages = 0;
         hasMore = false;
         loading = false;
+        emitEvent = jest.fn();
     }
     withAbilities(RemoteHost, [FlatRemoteStateAbility, DirtyAbility]);
     return new RemoteHost() as any;

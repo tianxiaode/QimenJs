@@ -809,6 +809,7 @@ describe('Component 基类', () => {
                 'finalize:bindListens',
                 'finalize:bindChildEvents',
                 'finalize:bindDomEvents',
+                'finalize:bindPermission',
                 'finalize:onAfterInit(FAIL)',
             ]);
             expect(ctxInfo.nodeMapMgrReady).toBe(true);

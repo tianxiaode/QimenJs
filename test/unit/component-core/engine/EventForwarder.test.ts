@@ -5,6 +5,11 @@ function makeInstance(overrides: Record<string, any> = {}) {
         emit: jest.fn(),
         componentEmit: jest.fn(),
         entityEmit: jest.fn(),
+        entityOn: jest.fn().mockReturnValue(jest.fn()),
+        onEntityLoading: jest.fn(),
+        onEntityActionSuccess: jest.fn(),
+        onEntityError: jest.fn(),
+        logger: { warn: jest.fn() },
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
         eventKey: 'testComponent',
@@ -57,8 +62,9 @@ describe('EventForwarder', () => {
         it('entities 转发为实体操作（具体事件名）', () => {
             const instance = makeInstance();
             EventForwarder.forward(instance, { entities: 'delete' }, { id: 1 });
-            expect(instance.entityEmit).toHaveBeenCalledWith(expect.anything());
-            expect(instance.entityEmit.mock.calls[0][0].event).toBe('delete');
+            expect(instance.entityEmit).toHaveBeenCalledWith(
+                expect.objectContaining({ event: 'delete' })
+            );
         });
 
         it('entities 为 [action] 时用 actualAction 替换', () => {
@@ -68,10 +74,11 @@ describe('EventForwarder', () => {
                 { entities: '[action]' },
                 { id: 1 },
                 undefined,
-                'remove'
+                'delete'
             );
-            expect(instance.entityEmit).toHaveBeenCalledWith(expect.anything());
-            expect(instance.entityEmit.mock.calls[0][0].event).toBe('remove');
+            expect(instance.entityEmit).toHaveBeenCalledWith(
+                expect.objectContaining({ event: 'delete' })
+            );
         });
 
         it('entityKey 不存在时不转发', () => {

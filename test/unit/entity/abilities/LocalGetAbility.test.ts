@@ -32,7 +32,7 @@ function createGetHost(idField: string = 'id') {
         compiledSchema = { idField };
         sourceData = new Map<string, any>();
         item: any = null;
-        emit = jest.fn();
+        emitEvent = jest.fn();
     }
     withAbilities(GetHost, [LocalGetAbility]);
     return new GetHost() as any;
@@ -47,7 +47,7 @@ describe('LocalGetAbility', () => {
 
         expect(result).toEqual({ id: '1', name: 'test' });
         expect(host.item).toEqual({ id: '1', name: 'test' });
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, result);
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, result);
         host.dispose();
     });
 

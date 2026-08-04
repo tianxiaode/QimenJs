@@ -42,7 +42,7 @@ function createHost() {
         schema = { idField: 'id', idType: 'string', nameField: 'name', domain: 'test' };
         sourceData = new Map<string, any>();
         items: any[] = [];
-        emit = jest.fn();
+        emitEvent = jest.fn();
         fetch = jest.fn().mockResolvedValue(undefined);
         getDeletionPlan = jest.fn().mockReturnValue({ localOnly: [], persistent: [] });
         softDelete = jest.fn().mockResolvedValue(undefined);
@@ -73,7 +73,7 @@ describe('FlatLocalDeleteAbility', () => {
             const host = createHost();
             const ids = ['1'];
             await host.delete(ids);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.DELETED, ids);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.DELETED, ids);
         });
 
         it('调用 refreshView', async () => {

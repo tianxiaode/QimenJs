@@ -22,7 +22,7 @@ class TestToggleHost extends ComposableBase {
         this.item = item;
         this.items = [item];
     });
-    emit = jest.fn();
+    emitEvent = jest.fn();
 }
 withAbilities(TestToggleHost, [RemoteToggleAbility]);
 
@@ -49,10 +49,11 @@ describe('RemoteToggleAbility', () => {
             await (host as any)._internalToggle(item, 'enabled');
 
             expect(host.updateItem).toHaveBeenCalledWith(finalData);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
                 id: 1,
                 item: finalData,
                 field: 'enabled',
+                oldValue: false,
             });
         });
 
@@ -68,10 +69,11 @@ describe('RemoteToggleAbility', () => {
             // item.enabled should have been toggled to true
             expect(item.enabled).toBe(true);
             expect(host.updateItem).toHaveBeenCalledWith(item);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
                 id: 1,
                 item: item,
                 field: 'enabled',
+                oldValue: false,
             });
         });
 
@@ -118,7 +120,7 @@ describe('RemoteToggleAbility', () => {
 
             await (host as any)._internalToggle(item, 'enabled');
 
-            expect(host.emit).not.toHaveBeenCalledWith(
+            expect(host.emitEvent).not.toHaveBeenCalledWith(
                 ENTITY_CRUD_EVENTS.TOGGLED,
                 expect.anything()
             );

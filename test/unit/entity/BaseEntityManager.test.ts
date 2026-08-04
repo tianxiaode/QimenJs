@@ -50,9 +50,16 @@ jest.mock('@/registry', () => ({
 }));
 
 jest.mock('@/composable', () => {
+    const { EntityEventBus } = jest.requireMock('@/events');
     class ComposableBase {
         static use() {}
         logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        entityEmit(ctx: any) {
+            EntityEventBus.getInstance().entityEmit(ctx);
+        }
+        entityOn(entityKey: string, eventName: string, handler: any) {
+            return EntityEventBus.getInstance().entityOn(entityKey, eventName, handler);
+        }
         _getCompiledSchema() {
             return { schema: { name: 'TestEntity', idField: 'id', fields: [] } };
         }
@@ -64,12 +71,25 @@ jest.mock('@/composable', () => {
     return { ComposableBase, withAbilities: (cls: any) => cls, InferAbilities: () => ({}) };
 });
 
-jest.mock('@/system-abilities', () => ({
-    EventAbility: { __name__: 'EventAbility' },
-    DebounceAbility: { __name__: 'DebounceAbility' },
-    DomainAbility: { __name__: 'DomainAbility' },
-    SystemAbility: { __name__: 'SystemAbility' },
-}));
+jest.mock('@/system-abilities', () => {
+    const { EntityEventBus } = jest.requireMock('@/events');
+    return {
+        EntityEventBusAbility: {
+            entityEmit(ctx: any) {
+                EntityEventBus.getInstance().entityEmit(ctx);
+            },
+            entityOn(entityKey: string, eventName: string, handler: any) {
+                return EntityEventBus.getInstance().entityOn(entityKey, eventName, handler);
+            },
+            entityOnce(entityKey: string, eventName: string, handler: any) {
+                EntityEventBus.getInstance().entityOnce(entityKey, eventName, handler);
+            },
+        },
+        DebounceAbility: { __name__: 'DebounceAbility' },
+        DomainAbility: { __name__: 'DomainAbility' },
+        SystemAbility: { __name__: 'SystemAbility' },
+    };
+});
 
 jest.mock('@/entity/abilities/SchemaAbility', () => ({ __name__: 'SchemaAbility' }));
 
@@ -119,7 +139,7 @@ jest.mock('@/context', () => {
             };
         },
     };
-    const reqCtx: any = {};
+    const reqCtx: any = { metadata: {}, data: {} };
     const chain = {
         withIdentity(i: any) {
             reqCtx.identity = i;
@@ -216,13 +236,12 @@ describe('BaseEntityManager', () => {
             const mockHttpModule = jest.requireMock('@/http');
             const mockExecute = mockHttpModule.__mockExecute as jest.Mock;
 
-            // 模拟请求成功但 hasError 为 true
             mockExecute.mockImplementationOnce((ctx: any) => {
                 ctx.metadata.hasError = true;
                 ctx.error = new Error('Server error');
             });
 
-            const emitSpy = jest.spyOn(manager, 'entityEmit');
+            const emitSpy = jest.spyOn(manager, 'emitEvent');
 
             await expect(
                 manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any)
@@ -241,7 +260,7 @@ describe('BaseEntityManager', () => {
                 ctx.data = { list: [] };
             });
 
-            const emitSpy = jest.spyOn(manager, 'entityEmit');
+            const emitSpy = jest.spyOn(manager, 'emitEvent');
 
             await manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any);
 

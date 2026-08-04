@@ -53,7 +53,7 @@ function createHost() {
         refreshView = jest.fn();
         fetch = jest.fn().mockResolvedValue({ data: {}, metadata: { hasError: false } });
         buildOptions = jest.fn().mockResolvedValue({});
-        emit = jest.fn();
+        emitEvent = jest.fn();
         debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
     }
     withAbilities(TestHost, [FlatLocalStateAbility, FlatLocalMutationAbility]);
@@ -76,7 +76,7 @@ describe('FlatLocalMutationAbility', () => {
             const result = host.create(item);
             expect(result).toBe(item);
             expect(host.changes.added.length).toBe(1);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, item);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, item);
             host.dispose();
         });
     });
@@ -88,7 +88,7 @@ describe('FlatLocalMutationAbility', () => {
             const item = { id: '1', name: 'new' };
             const result = host.update(item);
             expect(result).toBe(item);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.UPDATED, item);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.UPDATED, item);
             host.dispose();
         });
     });
@@ -100,7 +100,7 @@ describe('FlatLocalMutationAbility', () => {
             const item = { id: '1', name: 'test', active: true };
             host.toggle(item, 'active');
             expect(item.active).toBe(false);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.TOGGLED, {
                 id: '1',
                 item,
                 field: 'active',
@@ -129,7 +129,7 @@ describe('FlatLocalMutationAbility', () => {
             await host._internalSave(true);
 
             expect(host.fetch).toHaveBeenCalledWith('batch-save', expect.anything());
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.SAVED);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.SAVED);
             host.dispose();
         });
 

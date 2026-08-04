@@ -227,6 +227,7 @@ describe('SchemaProxyAbility', () => {
     };
 
     class FlatManager extends RemoteCrudEntityManager {
+        static entityType = 'SchemaProxyFlat';
         domain = 'schema-proxy-test';
         entityName = 'SchemaProxyFlat';
         url = '/api/flat';
@@ -234,6 +235,7 @@ describe('SchemaProxyAbility', () => {
     }
 
     class TreeManager extends RemoteCrudEntityManager {
+        static entityType = 'SchemaProxyTree';
         domain = 'schema-proxy-test';
         entityName = 'SchemaProxyTree';
         url = '/api/tree';
@@ -367,6 +369,7 @@ describe('SchemaProxyAbility', () => {
             };
 
             class MinimalManager extends RemoteCrudEntityManager {
+                static entityType = 'SchemaProxyMinimal';
                 domain = 'schema-proxy-test';
                 entityName = 'SchemaProxyMinimal';
                 url = '/api/minimal';
@@ -397,7 +400,7 @@ describe('LocalGetAbility', () => {
         compiledSchema = { idField: 'id' };
         sourceData = new Map<string | number, any>();
         item = null as any;
-        emit = jest.fn();
+        emitEvent = jest.fn();
     }
     withAbilities(TestLocalGetHost, [LocalGetAbility]);
 
@@ -440,7 +443,7 @@ describe('LocalGetAbility', () => {
 
             (host as any).get('1');
 
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, user);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, user);
         });
 
         it('找不到时也应该发射 got 事件（值为 null）', () => {
@@ -448,7 +451,7 @@ describe('LocalGetAbility', () => {
 
             (host as any).get('999');
 
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, null);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.GOT, null);
         });
     });
 });
@@ -464,7 +467,7 @@ describe('RemoteCreateAbility', () => {
         updateItem = jest.fn();
         buildOptions = jest.fn().mockResolvedValue({});
         fetch = jest.fn();
-        emit = jest.fn();
+        emitEvent = jest.fn();
     }
     withAbilities(TestRemoteCreateHost, [RemoteCreateAbility]);
 
@@ -493,7 +496,7 @@ describe('RemoteCreateAbility', () => {
             expect(host.buildOptions).toHaveBeenCalledWith('create', {}, { name: 'New User' }, {});
             expect(host.fetch).toHaveBeenCalledWith('create', expect.anything());
             expect(host.updateItem).toHaveBeenCalledWith(createdItem);
-            expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, createdItem);
+            expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, createdItem);
             expect(result).toEqual(createdItem);
         });
 

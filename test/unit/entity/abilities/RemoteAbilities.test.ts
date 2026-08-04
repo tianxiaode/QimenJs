@@ -141,7 +141,10 @@ describe('RemoteCreateAbility', () => {
         await host.create({ name: 'new' });
         expect(host.fetch).toHaveBeenCalledWith('create', expect.any(Object));
         expect(host.updateItem).toHaveBeenCalledWith({ id: 1, name: 'new' });
-        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, { id: 1, name: 'new' });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, {
+            id: 1,
+            name: 'new',
+        });
     });
 
     test('create loading 中应抛出错误', async () => {
@@ -435,7 +438,10 @@ describe('TreeManagerAbility', () => {
         await host.move(1, 2);
         expect(host.fetch).toHaveBeenCalledWith('update', expect.any(Object));
         expect(host.moveNode).toHaveBeenCalledWith(1, 2);
-        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.MOVED, { id: 1, targetPid: 2 });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.MOVED, {
+            id: 1,
+            targetPid: 2,
+        });
     });
 
     test('refresh 应 debounce 调用 _refreshChildren', async () => {

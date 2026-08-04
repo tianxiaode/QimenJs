@@ -222,6 +222,7 @@ describe('Manager 域配置传播', () => {
             };
 
             class TestLocalReadonly extends LocalReadonlyEntityManager {
+                static entityType = 'LocalItem';
                 domain = 'domain-config-test';
                 entityName = 'LocalItem';
                 url = '/api/local-items';

@@ -42,11 +42,7 @@ import { CRUD_EVENTS, PAGINATION_EVENTS } from '../../events/component-events';
 import { DomainAbility } from '../../system-abilities/system/DomainAbility';
 import { PAGINATION_ITEM_NAMES, createPaginationItems } from './pagination-items';
 import { CRUD_ITEM_NAMES, createCrudItems } from './crud-items';
-import type {
-    EntityToolbarItemDef,
-    EntityToolbarState,
-    EntityToolbarItemState,
-} from './types';
+import type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
 
 // ══════════════════════════════════════════════════════════════
 // 常量（兜底默认值，与 DomainPagingAbility 对齐）
@@ -162,10 +158,12 @@ class EntityToolbarComponent extends ToolbarComponent {
         const self = this as any;
         const merged: Record<string, any>[] = [];
 
-        merged.push(...createPaginationItems(props?.pagination, {
-            defaultPageSize: self.pageSize,
-            pageSizes: self.pageSizes,
-        }));
+        merged.push(
+            ...createPaginationItems(props?.pagination, {
+                defaultPageSize: self.pageSize,
+                pageSizes: self.pageSizes,
+            })
+        );
 
         if (props?.items && props.items.length > 0) merged.push(...props.items);
 
@@ -198,13 +196,19 @@ class EntityToolbarComponent extends ToolbarComponent {
         const config = (this as any).domainConfig;
         const value = config?.pageSize ?? DEFAULT_PAGE_SIZE;
         Object.defineProperty(this, 'pageSize', {
-            value, writable: true, configurable: true, enumerable: true,
+            value,
+            writable: true,
+            configurable: true,
+            enumerable: true,
         });
         return value;
     }
     set pageSize(v: number) {
         Object.defineProperty(this, 'pageSize', {
-            value: v, writable: true, configurable: true, enumerable: true,
+            value: v,
+            writable: true,
+            configurable: true,
+            enumerable: true,
         });
         const item = (this as any)._findItemByName?.('pageSize');
         if (item && typeof item.setValue === 'function') item.setValue(v);
@@ -217,13 +221,19 @@ class EntityToolbarComponent extends ToolbarComponent {
         const config = (this as any).domainConfig;
         const value = config?.pagesizes ?? DEFAULT_PAGE_SIZES;
         Object.defineProperty(this, 'pageSizes', {
-            value, writable: true, configurable: true, enumerable: true,
+            value,
+            writable: true,
+            configurable: true,
+            enumerable: true,
         });
         return value;
     }
     set pageSizes(v: number[]) {
         Object.defineProperty(this, 'pageSizes', {
-            value: v, writable: true, configurable: true, enumerable: true,
+            value: v,
+            writable: true,
+            configurable: true,
+            enumerable: true,
         });
         const item = (this as any)._findItemByName?.('pageSize');
         if (item && typeof item.setOptions === 'function') {
@@ -270,10 +280,7 @@ class EntityToolbarComponent extends ToolbarComponent {
     _syncLoadingBtnStates(): void {
         const self = this as any;
         const loading = !!self._loading;
-        const names = [
-            ...Array.from(PAGINATION_ITEM_NAMES),
-            ...Array.from(CRUD_ITEM_NAMES),
-        ];
+        const names = [...Array.from(PAGINATION_ITEM_NAMES), ...Array.from(CRUD_ITEM_NAMES)];
         for (const name of names) {
             const item = self._findItemByName(name);
             if (item) item.disabled = loading;
@@ -306,7 +313,8 @@ class EntityToolbarComponent extends ToolbarComponent {
                 self.currentPage = self._totalPages
                     ? Math.min(self._totalPages, self._currentPage + 1)
                     : self._currentPage + 1;
-            } else if (action === 'lastPage') self.currentPage = self._totalPages || self._currentPage;
+            } else if (action === 'lastPage')
+                self.currentPage = self._totalPages || self._currentPage;
 
             self.emit(PAGINATION_EVENTS.CHANGE, { action, page: self._currentPage });
         } else if (CRUD_ITEM_NAMES.has(action)) {
@@ -503,9 +511,14 @@ class EntityToolbarComponent extends ToolbarComponent {
         const self = this as any;
         super.update(props);
 
-        if (props?.pagination !== undefined || props?.crud !== undefined || props?.items !== undefined) {
+        if (
+            props?.pagination !== undefined ||
+            props?.crud !== undefined ||
+            props?.items !== undefined
+        ) {
             const merged = this._resolveMergedItems({
-                ...(self._lastProps || {}), ...(props || {}),
+                ...(self._lastProps || {}),
+                ...(props || {}),
             } as EntityToolbarProps);
             self.clear();
             if (merged.length > 0) self.setItems(merged);

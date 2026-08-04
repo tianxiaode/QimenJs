@@ -55,7 +55,7 @@ export abstract class LocalReadonlyEntityManager<
     };
 }
 
-BaseEntityManager.use(LOCAL_READONLY_ABILITIES);
+LocalReadonlyEntityManager.use(LOCAL_READONLY_ABILITIES);
 
 export interface LocalReadonlyEntityManager extends InferAbilities<
     typeof LOCAL_READONLY_ABILITIES

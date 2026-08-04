@@ -50,7 +50,13 @@ jest.mock('@/composable', () => {
             error: jest.fn(),
         };
         _getCompiledSchema() {
-            return { schema: { name: 'TestEntity', idField: 'id', fields: [] } };
+            const { SchemaRegistrar } = jest.requireMock('@/schema');
+            const registrar = SchemaRegistrar.getInstance();
+            const key = this.schema?.name;
+            if (key && !registrar.has(key)) {
+                registrar.register(this.schema);
+            }
+            return registrar.getCompiled(key);
         }
         getSchema() {
             return this._getCompiledSchema().schema;
@@ -65,7 +71,7 @@ jest.mock('@/composable', () => {
 });
 
 jest.mock('@/system-abilities', () => ({
-    EventAbility: { __name__: 'EventAbility' },
+    EntityEventBusAbility: { __name__: 'EntityEventBusAbility' },
     DebounceAbility: { __name__: 'DebounceAbility' },
     DomainAbility: { __name__: 'DomainAbility' },
     SystemAbility: { __name__: 'SystemAbility' },

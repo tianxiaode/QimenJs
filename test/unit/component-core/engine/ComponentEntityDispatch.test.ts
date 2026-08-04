@@ -1,4 +1,7 @@
-import { ComponentEntityDispatch, ACTION_PAIRS } from '@/component-core/engine/ComponentEntityDispatch';
+import {
+    ComponentEntityDispatch,
+    ACTION_PAIRS,
+} from '@/component-core/engine/ComponentEntityDispatch';
 
 describe('ComponentEntityDispatch', () => {
     describe('ACTION_PAIRS', () => {
@@ -13,7 +16,21 @@ describe('ComponentEntityDispatch', () => {
         });
 
         test('列表类操作 success 为 listed', () => {
-            const listedActions = ['list', 'getAll', 'filter', 'sort', 'refresh', 'searchBy', 'reset', 'prev', 'next', 'jump', 'changeSize', 'expand', 'collapse'];
+            const listedActions = [
+                'list',
+                'getAll',
+                'filter',
+                'sort',
+                'refresh',
+                'searchBy',
+                'reset',
+                'prev',
+                'next',
+                'jump',
+                'changeSize',
+                'expand',
+                'collapse',
+            ];
             for (const action of listedActions) {
                 expect(ACTION_PAIRS[action].success).toBe('listed');
             }
@@ -37,7 +54,11 @@ describe('ComponentEntityDispatch', () => {
         beforeEach(() => {
             offFns = [jest.fn(), jest.fn(), jest.fn()];
             instance = {
-                entityOn: jest.fn().mockReturnValueOnce(offFns[0]).mockReturnValueOnce(offFns[1]).mockReturnValueOnce(offFns[2]),
+                entityOn: jest
+                    .fn()
+                    .mockReturnValueOnce(offFns[0])
+                    .mockReturnValueOnce(offFns[1])
+                    .mockReturnValueOnce(offFns[2]),
                 entityEmit: jest.fn(),
                 onEntityActionSuccess: jest.fn(),
                 onEntityError: jest.fn(),
@@ -56,9 +77,21 @@ describe('ComponentEntityDispatch', () => {
         test('应订阅 loading/success/error 三事件', () => {
             ComponentEntityDispatch.dispatch(instance, 'entity1', 'list', { q: 'test' });
             expect(instance.entityOn).toHaveBeenCalledTimes(3);
-            expect(instance.entityOn).toHaveBeenCalledWith('entity1', 'list:loading', expect.any(Function));
-            expect(instance.entityOn).toHaveBeenCalledWith('entity1', 'listed', expect.any(Function));
-            expect(instance.entityOn).toHaveBeenCalledWith('entity1', 'list:error', expect.any(Function));
+            expect(instance.entityOn).toHaveBeenCalledWith(
+                'entity1',
+                'list:loading',
+                expect.any(Function)
+            );
+            expect(instance.entityOn).toHaveBeenCalledWith(
+                'entity1',
+                'listed',
+                expect.any(Function)
+            );
+            expect(instance.entityOn).toHaveBeenCalledWith(
+                'entity1',
+                'list:error',
+                expect.any(Function)
+            );
         });
 
         test('应发射 entityEmit', () => {
@@ -86,7 +119,11 @@ describe('ComponentEntityDispatch', () => {
             expect(offFns[1]).toHaveBeenCalled();
             expect(offFns[2]).toHaveBeenCalled();
             expect(instance.onEntityLoading).toHaveBeenCalledWith('entity1', false);
-            expect(instance.onEntityActionSuccess).toHaveBeenCalledWith({ items: [] }, 'list', 'entity1');
+            expect(instance.onEntityActionSuccess).toHaveBeenCalledWith(
+                { items: [] },
+                'list',
+                'entity1'
+            );
         });
 
         test('error 回调应 cleanup + onEntityLoading(false) + onEntityError', () => {
