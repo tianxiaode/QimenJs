@@ -1,14 +1,13 @@
 /**
  * MsgboxManager 单元测试
  *
- * jsdom 环境下运行，和 BadgeComponent 测试同模式。
- *
  * 覆盖：
  * 1. 单例模式
  * 2. create() 返回 Promise
  * 3. alert / confirm / prompt 三种类型
  * 4. 带 eventKey 创建
  * 5. 自定义按钮文本
+ * 6. close 路径（onClose 回调、_doResolve、_emitEvent）
  */
 
 jest.mock('@/logger', () => {
@@ -37,6 +36,92 @@ jest.mock('crypto', () => ({
 }));
 
 jest.mock('@qimenjs/entity', () => ({}));
+jest.mock('@/overlay', () => ({}));
+jest.mock('@qimenjs/component', () => ({
+    ZIndexLevel: { OVERLAY: 2000, modal: 2000 },
+}));
+jest.mock('@/composable', () => {
+    class ComposableBase {
+        static use() {}
+        _zIndexLevel: any;
+        setViewportPosition() {}
+        mountToOverlay() {}
+        unmountFromOverlay() {}
+        playEnterAnimation() {}
+        playExitAnimation() {
+            const fake = { onfinish: null as (() => void) | null };
+            Promise.resolve().then(() => {
+                if (fake.onfinish) fake.onfinish();
+            });
+            return fake;
+        }
+        bindDomEvent() {}
+        acquireZIndex() {
+            return 2000;
+        }
+        releaseZIndex() {}
+        systemEmit() {}
+        dispose() {}
+    }
+    return {
+        ComposableBase,
+        AbilityDefinition: {},
+        InferAbilities: () => ({}),
+    };
+});
+jest.mock('@/context', () => {
+    const ctx = {
+        _event: '',
+        _type: '',
+        _source: '',
+        _data: {},
+        withEvent(e: string) {
+            ctx._event = e;
+            return ctx;
+        },
+        withType(t: string) {
+            ctx._type = t;
+            return ctx;
+        },
+        withSource(s: string) {
+            ctx._source = s;
+            return ctx;
+        },
+        withData(d: any) {
+            ctx._data = d;
+            return ctx;
+        },
+        build() {
+            return { event: ctx._event, type: ctx._type, source: ctx._source, data: ctx._data };
+        },
+    };
+    return {
+        EventContextBuilder: { create: () => ctx },
+    };
+});
+jest.mock('@/component-core/engine/ComponentRegistrar', () => {
+    const fakeEl = document.createElement('div');
+    const fakeNodeMapMgr = {
+        buildDOM: () => fakeEl,
+        get: () => ({ el: document.createElement('div') }),
+        disposeAll: jest.fn(),
+    };
+    return {
+        ComponentRegistrar: {
+            getInstance: () => ({
+                register: jest.fn(),
+                createNodeMapManager: () => fakeNodeMapMgr,
+            }),
+        },
+    };
+});
+jest.mock('@/system-abilities', () => ({
+    SystemEventBusAbility: { __name__: 'SystemEventBusAbility' },
+}));
+jest.mock('@qimenjs/i18n', () => ({
+    resolveI18nValue: (v: any) => v,
+    t: (k: string) => k,
+}));
 
 import { MsgboxManager } from '@/imperative/MsgboxManager';
 
@@ -104,5 +189,36 @@ describe('MsgboxManager', () => {
             content: '操作失败，请重试',
         });
         expect(result).toBeInstanceOf(Promise);
+    });
+
+    test('create 后 close 触发 onClose 回调，实例从集合移除', async () => {
+        const promise = manager.create({ type: 'alert', title: '关闭测试' });
+        const instances = (manager as any).instances as Set<any>;
+        expect(instances.size).toBe(1);
+        const msgbox = instances.values().next().value;
+        msgbox.close();
+        await Promise.resolve();
+        expect(instances.size).toBe(0);
+    });
+
+    test('create 带 eventKey 时 _emitEvent 被调用', () => {
+        const promise = manager.create({
+            type: 'confirm',
+            title: '确认？',
+            eventKey: 'test-key',
+        });
+        const instances = (manager as any).instances as Set<any>;
+        const msgbox = instances.values().next().value;
+        const emitSpy = jest.spyOn(msgbox, '_emitEvent');
+        msgbox._doResolve({ action: 'confirm', value: '' });
+        expect(emitSpy).toHaveBeenCalled();
+    });
+
+    test('close 未 resolve 时自动 cancel', () => {
+        manager.create({ type: 'confirm', title: '未resolve' });
+        const instances = (manager as any).instances as Set<any>;
+        const msgbox = instances.values().next().value;
+        msgbox.close();
+        expect(msgbox._resolved).toBe(true);
     });
 });
