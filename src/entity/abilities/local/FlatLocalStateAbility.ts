@@ -1,8 +1,9 @@
-﻿import type { AbilityDefinition } from '@/composable';
+import type { AbilityDefinition } from '@/composable';
 import type { ILocalChangeSet, IDeletionPlan } from '../../types';
 import { CacheFactory } from '@/cache';
 import type { ICacheProvider } from '@/cache';
 import { array } from '@qimenjs/utils';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 /**
  * 简单哈希函数
@@ -468,6 +469,7 @@ const searchMethods: AbilityDefinition = {
 
     filter(text: string) {
         (this.search as any).keyword = text;
+        this.refreshView();
     },
 
     searchBy(search: any) {
@@ -504,6 +506,7 @@ const searchMethods: AbilityDefinition = {
     sort(field: string, order: 'asc' | 'desc' = 'asc') {
         (this.search as any).sortBy = field;
         (this.search as any).sortOrder = order;
+        this.refreshView();
     },
 };
 
@@ -543,6 +546,7 @@ export const FlatLocalStateAbility = {
             const allData = Array.from(this.sourceData.values());
             const filtered = allData.filter((item: any) => this.matchKeyword(item));
             this.items = this.applySort(filtered);
+            this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
         } finally {
             this.loading = false;
         }

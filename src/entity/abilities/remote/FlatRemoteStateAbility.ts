@@ -1,4 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 /**
  * FlatRemoteStateAbility - 扁平远程状态能力
@@ -12,7 +13,7 @@ import type { AbilityDefinition } from '@/composable';
  *
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const FlatRemoteStateAbility= {
+export const FlatRemoteStateAbility = {
     // 计算属性（不与 Manager 数据字段同名）
     isEmpty: {
         get() {
@@ -68,6 +69,7 @@ export const FlatRemoteStateAbility= {
      */
     refreshView(): void {
         this.items = [...this.items];
+        this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
     },
 
     /**

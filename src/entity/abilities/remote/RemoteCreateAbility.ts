@@ -9,7 +9,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  * 它封装了发送创建请求、处理响应、同步本地状态以及事件发射的完整流程。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const RemoteCreateAbility= {
+export const RemoteCreateAbility = {
     /**
      * 创建一条新记录
      *
@@ -33,7 +33,7 @@ export const RemoteCreateAbility= {
         const context = await this.fetch('create', options);
         const item = context.data.item;
         this.updateItem(item);
-        this.emit(ENTITY_CRUD_EVENTS.CREATED, item);
+        this.emitEvent(ENTITY_CRUD_EVENTS.CREATED, item);
         return this.item!;
     },
 } satisfies AbilityDefinition;

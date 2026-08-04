@@ -42,6 +42,38 @@ export class Component extends ComposableBase {
         return (this as any).name.replace(/Component$/, '');
     }
 
+    static setDefaultHandler(opts?: {
+        error?: (ctx: any, domain: string) => void;
+        loading?: (entityKey: string, isLoading: boolean) => void;
+    }): void {
+        if (opts?.error) Component.prototype.defaultEntityErrorHandler = opts.error;
+        if (opts?.loading) Component.prototype.defaultEntityLoadingHandler = opts.loading;
+    }
+
+    defaultEntityErrorHandler(_ctx: any, _domain: string): void {}
+
+    defaultEntityLoadingHandler(_entityKey: string, isLoading: boolean): void {
+        if (isLoading) {
+            this.showLoading();
+        } else {
+            this.hideLoading();
+        }
+    }
+
+    onEntityActionSuccess(_result: any, _action: string, _entityKey: string) {}
+
+    onEntityError(ctx: any, domain: string) {
+        if (this.onBeforeEntityError?.() === false) return;
+        this.defaultEntityErrorHandler(ctx, domain);
+        this.onAfterEntityError?.();
+    }
+
+    onEntityLoading(entityKey: string, isLoading: boolean) {
+        if (this.onBeforeEntityLoading?.(entityKey, isLoading) === false) return;
+        this.defaultEntityLoadingHandler(entityKey, isLoading);
+        this.onAfterEntityLoading?.(entityKey, isLoading);
+    }
+
     type: string;
 
     /** 实例唯一 ID */

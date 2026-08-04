@@ -9,7 +9,7 @@ import { KernelError, KernelErrorCode } from '@/error';
  * 它封装了发送更新请求、处理响应、同步本地状态以及事件发射的完整流程。
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  */
-export const RemoteUpdateAbility= {
+export const RemoteUpdateAbility = {
     /**
      * 更新一条记录
      *
@@ -34,7 +34,7 @@ export const RemoteUpdateAbility= {
         const context = await this.fetch('update', options);
         const item = context.data.item;
         this.updateItem(item);
-        this.emit(ENTITY_CRUD_EVENTS.UPDATED, item);
+        this.emitEvent(ENTITY_CRUD_EVENTS.UPDATED, item);
         return this.item!;
     },
 } satisfies AbilityDefinition;

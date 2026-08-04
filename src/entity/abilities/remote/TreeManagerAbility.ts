@@ -14,7 +14,7 @@ import { ENTITY_TREE_EVENTS } from '@/events';
  * - moved: 节点移动后触发
  * - childrenRefreshed: 子节点刷新后触发
  */
-export const TreeManagerAbility= {
+export const TreeManagerAbility = {
     // 基础操作
     expand(id: string | number) {
         return this.debounce('expand', (i: string | number) => this._expand(i), 200, true)(id);
@@ -60,7 +60,7 @@ export const TreeManagerAbility= {
     _setExpandState(id: string | number, expanded: boolean): void {
         this.toggleExpand(id, expanded);
         this.refreshView();
-        this.emit(ENTITY_TREE_EVENTS.COLLAPSED, { id });
+        this.emitEvent(ENTITY_TREE_EVENTS.COLLAPSED, { id });
     },
 
     async _expand(id: string | number): Promise<void> {
@@ -71,7 +71,7 @@ export const TreeManagerAbility= {
             this.toggleExpand(id, true);
             this.refreshView();
         }
-        this.emit(ENTITY_TREE_EVENTS.EXPANDED, { id });
+        this.emitEvent(ENTITY_TREE_EVENTS.EXPANDED, { id });
     },
 
     async _refreshChildren(pid: string | number | null): Promise<void> {
@@ -85,7 +85,7 @@ export const TreeManagerAbility= {
             this.setLoaded(pid, true);
         }
         this.refreshView();
-        this.emit(ENTITY_TREE_EVENTS.CHILDREN_REFRESHED, { pid, items: context.data.list });
+        this.emitEvent(ENTITY_TREE_EVENTS.CHILDREN_REFRESHED, { pid, items: context.data.list });
     },
 
     async _moveNode(id: string | number, targetPid: string | number | null): Promise<void> {
@@ -99,6 +99,6 @@ export const TreeManagerAbility= {
         await this.fetch('update', options);
         this.moveNode(id, targetPid);
         this.refreshView();
-        this.emit(ENTITY_TREE_EVENTS.MOVED, { id, targetPid });
+        this.emitEvent(ENTITY_TREE_EVENTS.MOVED, { id, targetPid });
     },
 } satisfies AbilityDefinition;

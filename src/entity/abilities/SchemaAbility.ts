@@ -8,7 +8,7 @@ import type { TreeSchema } from '@/schema';
  * 通过 SchemaRegistrar 获取编译后的 Schema，提供便捷的属性访问接口。
  * this 指向宿主（ICoreEntityManager），this.schema 可直接访问。
  */
-export const SchemaAbility= {
+export const SchemaAbility = {
     /** 返回编译后的 Schema */
     getSchema() {
         return this._getCompiledSchema().schema;

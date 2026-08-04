@@ -21,6 +21,7 @@ import type { EventContext, EventChainLink } from '@/context';
 import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
 import { object } from '@/utils';
+import { ComponentEntityDispatch } from './ComponentEntityDispatch';
 
 export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system' | 'file';
 
@@ -88,14 +89,8 @@ function _forwardEntities(ctx: ForwardContext): void {
         ctx.config.entities === '[action]' && ctx.actualAction
             ? ctx.actualAction
             : ctx.config.entities!;
-    const eventCtx = EventForwarder.buildContext(
-        ctx.instance,
-        resolvedName,
-        ctx.data,
-        ctx.instance.entityKey,
-        'entity'
-    );
-    ctx.instance.entityEmit(eventCtx);
+    const entityKey = EventForwarder.resolveKey(ctx.instance.entityKey) ?? '';
+    ComponentEntityDispatch.dispatch(ctx.instance, entityKey, resolvedName, ctx.data);
 }
 
 function _forwardRouter(ctx: ForwardContext): void {

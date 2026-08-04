@@ -18,6 +18,7 @@ import { AnimationAbility } from './abilities';
 import { FloatAbility } from './abilities/FloatAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { LifecycleAbility } from './abilities/LifecycleAbility';
+
 import type { ComponentProps } from './types/init-context';
 
 export const COMPONENT_ABILITIES = [
@@ -40,6 +41,7 @@ export const COMPONENT_ABILITIES = [
     DragAbility,
 
     LifecycleAbility,
+
 ] as const satisfies readonly AbilityDefinition[];
 
 export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES> {

@@ -6,6 +6,8 @@
 
 import { ToastManager } from './ToastManager';
 import { MsgboxManager } from './MsgboxManager';
+import { Component } from '@/component-core';
+import { t } from '@/i18n/i18n-utils';
 import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 
 /**
@@ -43,27 +45,26 @@ function normalizeMsgboxArgs(
 }
 
 export const msgbox = {
-    /**
-     * alert 模态消息框 — 仅含确认按钮
-     */
     alert(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'alert');
         return MsgboxManager.getInstance().create(options);
     },
 
-    /**
-     * confirm 模态消息框 — 含确认和取消按钮
-     */
     confirm(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'confirm');
         return MsgboxManager.getInstance().create(options);
     },
 
-    /**
-     * prompt 模态消息框 — 含输入框和确认/取消按钮
-     */
     prompt(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'prompt');
         return MsgboxManager.getInstance().create(options);
     },
 };
+
+Component.setDefaultHandler({
+    error(ctx: any, _domain: string) {
+        const code = ctx?.error?.code || ctx?.code;
+        const message = code ? t(code, true) : ctx?.error?.message || ctx?.message || String(ctx);
+        toast({ message, type: 'error' });
+    },
+});

@@ -135,6 +135,13 @@ export enum KernelErrorCode {
      */
     FILE_DOWNLOAD_FAILED = 'FILE_DOWNLOAD_FAILED',
 
+    // ---- 实体权限错误 ----
+
+    /**
+     * 实体操作权限被拒绝
+     */
+    ENTITY_PERMISSION_DENIED = 'ENTITY_PERMISSION_DENIED',
+
     // ---- 组件初始化管线错误 ----
 
     COMPILE_PRODUCT_NOT_FOUND = 'INIT_COMPILE_PRODUCT_NOT_FOUND',
@@ -144,4 +151,3 @@ export enum KernelErrorCode {
     PHASE_EXECUTION_FAILED = 'INIT_PHASE_EXECUTION_FAILED',
     COMPONENT_INIT_FAILED = 'COMPONENT_INIT_FAILED',
 }
-

@@ -1,6 +1,6 @@
 import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import { EventAbility, DebounceAbility } from '@/system-abilities';
+import { EntityEventBusAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '../abilities/SchemaAbility';
@@ -14,11 +14,16 @@ import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission';
-import { EntityEventBus } from '@/events';
+import {
+    ENTITY_PERMISSION_EVENTS,
+    buildRequestEvent,
+    ENTITY_REQUEST_STATUS,
+} from '@/events/entity-events';
+import { KernelErrorCode } from '@/error';
 import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
 export const CORE_ENTITY_ABILITIES = [
-    EventAbility,
+    EntityEventBusAbility,
     DebounceAbility,
     DomainAbility,
     SystemAbility,
@@ -53,9 +58,8 @@ export abstract class CoreEntityManager extends ComposableBase {
         const map = (this as any).eventMap;
         if (!map) return;
 
-        const bus = EntityEventBus.getInstance();
         for (const [eventName, methodName] of Object.entries(map)) {
-            bus.entityOn(this.entityKey, eventName, (data: any) => {
+            this.entityOn(this.entityKey, eventName, (data: any) => {
                 const method = (this as any)[methodName as string];
                 if (typeof method === 'function') {
                     method.call(this, data);
@@ -68,8 +72,8 @@ export abstract class CoreEntityManager extends ComposableBase {
         dataDispatchCenter.registerType(this.entityType, this as any);
     }
 
-    protected entityEmit(event: string, data?: any): void {
-        EntityEventBus.getInstance().entityEmit(
+    protected emitEvent(event: string, data?: any): void {
+        this.entityEmit(
             EventContextBuilder.create()
                 .withEvent(event)
                 .withType(event)
@@ -174,10 +178,16 @@ export abstract class CoreEntityManager extends ComposableBase {
         });
     }
 
-    protected onPermissionDenied(action: string): HttpRequestTask {
-        throw new Error(
-            `Permission denied: [${action}] on entity [${this.entityKey}] in domain [${this.domain}]`
-        );
+    protected onPermissionDenied(action: string) {
+        const error = {
+            code: KernelErrorCode.ENTITY_PERMISSION_DENIED,
+            action,
+            entityKey: this.entityKey,
+            domain: this.domain,
+            message: `Permission denied: [${action}] on entity [${this.entityKey}] in domain [${this.domain}]`,
+        };
+        this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), { error });
+        return { context: {}, cancel: () => {} } as HttpRequestTask;
     }
 
     cancelAll(): void {

@@ -6,7 +6,7 @@ import type { AbilityDefinition } from '@/composable';
  * 为宿主提供 schema 相关属性的便捷访问。
  * this 指向宿主（Manager），this.schema 可直接访问。
  */
-export const SchemaProxyAbility= {
+export const SchemaProxyAbility = {
     idField: {
         get() {
             return this.schema?.idField || 'id';

@@ -90,18 +90,7 @@ export const ENTITY_VALIDATION_EVENTS = {
 } as const;
 
 // ============================================
-// 词典事件（DictionaryManager 触发）
-// ============================================
-export const DICTIONARY_EVENTS = {
-    /** 词典数据加载完成 */
-    LOADED: 'dictLoaded',
-    /** 词典数据过滤完成 */
-    FILTERED: 'dictFiltered',
-    /** 词典数据排序完成 */
-    SORTED: 'dictSorted',
-} as const;
 
-// ============================================
 // 生命周期事件（组件/能力 ↔ DataDispatchCenter）
 // ============================================
 export const ENTITY_LIFECYCLE_EVENTS = {
@@ -157,6 +146,14 @@ export const ENTITY_COMMAND_EVENTS = {
 
     // 词典命令
     LOAD_DICTIONARY: 'loadDictionary',
+} as const;
+
+// ============================================
+// 权限事件（CoreEntityManager 触发）
+// ============================================
+export const ENTITY_PERMISSION_EVENTS = {
+    /** 权限拒绝 */
+    PERMISSION_DENIED: 'permissionDenied',
 } as const;
 
 // ============================================

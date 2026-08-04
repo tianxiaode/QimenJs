@@ -10,16 +10,16 @@ import { ENTITY_CRUD_EVENTS } from '@/events';
  * this 指向宿主（Manager），数据字段直接在 this 上访问。
  * 防抖通过 this.debounce() 管理，宿主统一管理。
  */
-export const FlatLocalMutationAbility= {
+export const FlatLocalMutationAbility = {
     create(item: any) {
         this.addItem(item);
-        this.emit(ENTITY_CRUD_EVENTS.CREATED, item);
+        this.emitEvent(ENTITY_CRUD_EVENTS.CREATED, item);
         return item;
     },
 
     update(item: any) {
         this.updateItem(item);
-        this.emit(ENTITY_CRUD_EVENTS.UPDATED, item);
+        this.emitEvent(ENTITY_CRUD_EVENTS.UPDATED, item);
         return item;
     },
 
@@ -29,7 +29,7 @@ export const FlatLocalMutationAbility= {
         const oldValue = item[field];
         item[field] = !oldValue;
         this.updateItem(item);
-        this.emit(ENTITY_CRUD_EVENTS.TOGGLED, { id, item, field, oldValue });
+        this.emitEvent(ENTITY_CRUD_EVENTS.TOGGLED, { id, item, field, oldValue });
     },
 
     save(isBatch: boolean = false) {
@@ -57,6 +57,6 @@ export const FlatLocalMutationAbility= {
             }
         }
 
-        this.emit(ENTITY_CRUD_EVENTS.SAVED);
+        this.emitEvent(ENTITY_CRUD_EVENTS.SAVED);
     },
 } satisfies AbilityDefinition;

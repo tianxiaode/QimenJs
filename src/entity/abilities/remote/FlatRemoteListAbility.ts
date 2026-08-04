@@ -13,7 +13,7 @@ import { ENTITY_LIST_EVENTS } from '@/events';
  * 因此 list/refresh 直接调用 _internalList，
  * 防抖仅用于合并短时间内的重复调用（防止并发请求）。
  */
-export const FlatRemoteListAbility= {
+export const FlatRemoteListAbility = {
     /**
      * 普通查询
      */
@@ -33,7 +33,7 @@ export const FlatRemoteListAbility= {
             const cached = await this.tryGetCache();
             if (cached) {
                 this.updateData(cached.items, cached.total);
-                this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
+                this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
                 return this.items;
             }
         }
@@ -49,7 +49,7 @@ export const FlatRemoteListAbility= {
         const { list, total } = context.data;
         // 同步状态
         this.updateData(list, total);
-        this.emit(ENTITY_LIST_EVENTS.LISTED, this.items);
+        this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
         return this.items;
     },
 } satisfies AbilityDefinition;

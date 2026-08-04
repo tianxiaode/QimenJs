@@ -5,7 +5,7 @@ import type { DictionaryManagerConfig } from '../types';
 import { DICTIONARY_MANAGER_ENTITY_TYPE } from '../types';
 import type { IEntity, ILocalSearchParams } from '@/schema';
 import type { RegistrSchema } from '@/schema';
-import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
+import { ENTITY_COMMAND_EVENTS as CMD, ENTITY_LIST_EVENTS } from '@/events/entity-events';
 
 const DICTIONARY_ABILITIES = [FlatLocalStateAbility] as const;
 
@@ -24,6 +24,8 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
         [CMD.REFRESH_VIEW]: 'refreshView',
+        [CMD.REFRESH]: 'refreshView',
+        [CMD.LIST]: 'refreshView',
     };
 
     schema: RegistrSchema = {
@@ -61,6 +63,7 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
                 this.sourceData.set(id, item);
             }
         }
+        this.refreshView();
     }
 }
 

@@ -30,27 +30,31 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
         options: HttpRequestOptions
     ): Promise<RequestContext> {
         this.loading = true;
-        this.entityEmit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), true);
+        this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), true);
 
         try {
             const task = this.request(action as any, options);
             const ctx = (await task.context) as any as RequestContext;
 
+            if ((ctx.metadata as any).permissionDenied) {
+                return ctx;
+            }
+
             if (ctx.metadata.hasError) {
                 const error = ctx.error || ctx.metadata.error;
-                this.entityEmit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), ctx);
+                this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), ctx);
                 this.logger.error('Fetch failed: ', error);
                 throw error;
             }
 
             this.populateResponseData(ctx);
             await this.onAfterFetch(action as any, ctx);
-            this.entityEmit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.SUCCESS), ctx);
+            this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.SUCCESS), ctx);
             this.logger.debug('Fetch success');
             return ctx;
         } finally {
             this.loading = false;
-            this.entityEmit(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), false);
+            this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.LOADING), false);
         }
     }
 
