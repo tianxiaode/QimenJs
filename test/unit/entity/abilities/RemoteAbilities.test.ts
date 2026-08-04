@@ -9,6 +9,7 @@ function createBaseHost(overrides: Record<string, any> = {}) {
         updateItem: jest.fn(),
         deleteFromItems: jest.fn(),
         emit: jest.fn(),
+        emitEvent: jest.fn(),
         toParams: jest.fn().mockReturnValue({}),
         debounce: jest.fn((_key: string, fn: Function, _ms?: number, _leading?: boolean) => fn),
         items: [],
@@ -21,6 +22,7 @@ function createBaseHost(overrides: Record<string, any> = {}) {
         pageSizes: [10, 20, 50],
         idField: 'id',
         schemaKeys: { idField: 'id' },
+        schema: {},
         isValidPage: jest.fn().mockReturnValue(true),
         logger: { warn: jest.fn(), error: jest.fn(), info: jest.fn() },
         systemConfig: jest.fn().mockReturnValue('production'),
@@ -67,7 +69,7 @@ describe('FlatRemoteListAbility', () => {
         await host.list();
         expect(host.fetch).toHaveBeenCalledWith('list', expect.any(Object));
         expect(host.updateData).toHaveBeenCalledWith([{ id: 1 }], 1);
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
     });
 
     test('list 有缓存时应使用缓存不 fetch', async () => {
@@ -134,12 +136,12 @@ describe('RemoteCreateAbility', () => {
         bindAbility(host, ability);
     });
 
-    test('create 应 fetch 并 emit created', async () => {
+    test('create 应 fetch 并 emitEvent created', async () => {
         host.fetch.mockResolvedValue({ data: { item: { id: 1, name: 'new' } } });
         await host.create({ name: 'new' });
         expect(host.fetch).toHaveBeenCalledWith('create', expect.any(Object));
         expect(host.updateItem).toHaveBeenCalledWith({ id: 1, name: 'new' });
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, { id: 1, name: 'new' });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.CREATED, { id: 1, name: 'new' });
     });
 
     test('create loading 中应抛出错误', async () => {
@@ -159,12 +161,12 @@ describe('RemoteUpdateAbility', () => {
         bindAbility(host, ability);
     });
 
-    test('update 应 fetch 并 emit updated', async () => {
+    test('update 应 fetch 并 emitEvent updated', async () => {
         host.fetch.mockResolvedValue({ data: { item: { id: 1, name: 'updated' } } });
         await host.update({ id: 1, name: 'updated' });
         expect(host.fetch).toHaveBeenCalledWith('update', expect.any(Object));
         expect(host.updateItem).toHaveBeenCalledWith({ id: 1, name: 'updated' });
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.UPDATED, {
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_CRUD_EVENTS.UPDATED, {
             id: 1,
             name: 'updated',
         });
@@ -218,12 +220,12 @@ describe('RemoteToggleAbility', () => {
         bindAbility(host, ability);
     });
 
-    test('toggle 应 fetch 并 emit toggled', async () => {
+    test('toggle 应 fetch 并 emitEvent toggled', async () => {
         const item = { id: 1, active: false };
         host.fetch.mockResolvedValue({ data: { item: { id: 1, active: true } } });
         await host.toggle(item, 'active');
         expect(host.fetch).toHaveBeenCalledWith('toggle', expect.any(Object));
-        expect(host.emit).toHaveBeenCalledWith(
+        expect(host.emitEvent).toHaveBeenCalledWith(
             ENTITY_CRUD_EVENTS.TOGGLED,
             expect.objectContaining({ id: 1 })
         );
@@ -242,7 +244,7 @@ describe('FlatRemoteQueryAbility', () => {
     let host: any;
 
     beforeEach(() => {
-        host = createBaseHost();
+        host = createBaseHost({ schema: {} });
         const listAbility = jest.requireActual(
             '@/entity/abilities/remote/FlatRemoteListAbility'
         ).FlatRemoteListAbility;
@@ -251,6 +253,93 @@ describe('FlatRemoteQueryAbility', () => {
         ).FlatRemoteQueryAbility;
         bindAbility(host, listAbility);
         bindAbility(host, queryAbility);
+    });
+
+    test('filter 应设置 keyword 并调用 _internalList', async () => {
+        host.search = {};
+        await host.filter('test');
+        expect(host.search.keyword).toBe('test');
+        expect(host._internalList).toHaveBeenCalled();
+    });
+
+    test('searchBy 应合并搜索条件并调用 _internalList', async () => {
+        host.search = {};
+        await host.searchBy({ status: 'active' });
+        expect(host.search.status).toBe('active');
+        expect(host._internalList).toHaveBeenCalled();
+    });
+
+    test('sort 应设置排序条件并调用 _internalList', async () => {
+        host.search = {};
+        await host.sort('name', 'desc');
+        expect(host.search.sortBy).toBe('name');
+        expect(host.search.sortOrder).toBe('desc');
+        expect(host._internalList).toHaveBeenCalled();
+    });
+
+    test('sort null order 应清空 sortBy', async () => {
+        host.search = {};
+        await host.sort('name', null);
+        expect(host.search.sortBy).toBe('');
+        expect(host.search.sortOrder).toBe('asc');
+    });
+
+    test('reset 应清空搜索条件并调用 _internalList', async () => {
+        host.search = { keyword: 'old', sortBy: 'name' };
+        await host.reset();
+        expect(host.search).toEqual({});
+        expect(host.page).toBe(1);
+        expect(host._internalList).toHaveBeenCalled();
+    });
+
+    test('toParams 非 tree 应包含 page 和 pageSize', () => {
+        host.search = { keyword: 'test' };
+        host.page = 2;
+        host.pageSize = 20;
+        const params = host.toParams();
+        expect(params.keyword).toBe('test');
+        expect(params.page).toBe(2);
+        expect(params.pageSize).toBe(20);
+    });
+
+    test('toParams tree 应包含 parentId', () => {
+        host.schema = { isTree: true };
+        host.search = { keyword: 'test' };
+        host.root = 'root1';
+        const params = host.toParams();
+        expect(params.parentId).toBe('root1');
+        expect(params.page).toBeUndefined();
+    });
+
+    test('toParams 应跳过空值', () => {
+        host.search = { keyword: '', status: null, type: undefined, name: 'ok' };
+        const params = host.toParams();
+        expect(params.keyword).toBeUndefined();
+        expect(params.status).toBeUndefined();
+        expect(params.type).toBeUndefined();
+        expect(params.name).toBe('ok');
+    });
+
+    test('toParams 数组值应用逗号拼接', () => {
+        host.search = { ids: [1, 2, 3] };
+        const params = host.toParams();
+        expect(params.ids).toBe('1,2,3');
+    });
+});
+
+describe('RemotePagingAbility', () => {
+    let host: any;
+
+    beforeEach(() => {
+        host = createBaseHost();
+        const listAbility = jest.requireActual(
+            '@/entity/abilities/remote/FlatRemoteListAbility'
+        ).FlatRemoteListAbility;
+        const pagingAbility = jest.requireActual(
+            '@/entity/abilities/remote/RemotePagingAbility'
+        ).RemotePagingAbility;
+        bindAbility(host, listAbility);
+        bindAbility(host, pagingAbility);
     });
 
     test('prev 应减少 page 并调用 _internalList', async () => {
@@ -306,43 +395,6 @@ describe('FlatRemoteQueryAbility', () => {
         const result = await host.changeSize(999);
         expect(result).toEqual([]);
     });
-
-    test('filter 应设置 keyword 并调用 _internalList', async () => {
-        host.search = {};
-        await host.filter('test');
-        expect(host.search.keyword).toBe('test');
-        expect(host._internalList).toHaveBeenCalled();
-    });
-
-    test('searchBy 应合并搜索条件并调用 _internalList', async () => {
-        host.search = {};
-        await host.searchBy({ status: 'active' });
-        expect(host.search.status).toBe('active');
-        expect(host._internalList).toHaveBeenCalled();
-    });
-
-    test('sort 应设置排序条件并调用 _internalList', async () => {
-        host.search = {};
-        await host.sort('name', 'desc');
-        expect(host.search.sortBy).toBe('name');
-        expect(host.search.sortOrder).toBe('desc');
-        expect(host._internalList).toHaveBeenCalled();
-    });
-
-    test('sort null order 应清空 sortBy', async () => {
-        host.search = {};
-        await host.sort('name', null);
-        expect(host.search.sortBy).toBe('');
-        expect(host.search.sortOrder).toBe('asc');
-    });
-
-    test('reset 应清空搜索条件并调用 _internalList', async () => {
-        host.search = { keyword: 'old', sortBy: 'name' };
-        await host.reset();
-        expect(host.search).toEqual({});
-        expect(host.page).toBe(1);
-        expect(host._internalList).toHaveBeenCalled();
-    });
 });
 
 describe('TreeManagerAbility', () => {
@@ -356,11 +408,11 @@ describe('TreeManagerAbility', () => {
         bindAbility(host, ability);
     });
 
-    test('expand 已加载节点应 toggleExpand 并 emit', async () => {
+    test('expand 已加载节点应 toggleExpand 并 emitEvent', async () => {
         host.isLoaded.mockReturnValue(true);
         await host.expand('node1');
         expect(host.toggleExpand).toHaveBeenCalledWith('node1', true);
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.EXPANDED, { id: 'node1' });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.EXPANDED, { id: 'node1' });
     });
 
     test('expand 未加载节点应先 refreshChildren', async () => {
@@ -375,7 +427,7 @@ describe('TreeManagerAbility', () => {
         host.collapse('node1');
         expect(host.toggleExpand).toHaveBeenCalledWith('node1', false);
         expect(host.refreshView).toHaveBeenCalled();
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.COLLAPSED, { id: 'node1' });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.COLLAPSED, { id: 'node1' });
     });
 
     test('move 应 fetch 并 moveNode', async () => {
@@ -383,7 +435,7 @@ describe('TreeManagerAbility', () => {
         await host.move(1, 2);
         expect(host.fetch).toHaveBeenCalledWith('update', expect.any(Object));
         expect(host.moveNode).toHaveBeenCalledWith(1, 2);
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.MOVED, { id: 1, targetPid: 2 });
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_TREE_EVENTS.MOVED, { id: 1, targetPid: 2 });
     });
 
     test('refresh 应 debounce 调用 _refreshChildren', async () => {
@@ -420,10 +472,11 @@ describe('TreeRemoteStateAbility', () => {
         expect(host.total).toBe(2);
     });
 
-    test('refreshView 应浅拷贝 items', () => {
+    test('refreshView 应浅拷贝 items 并 emitEvent listed', () => {
         host.items = [{ id: 1 }];
         host.refreshView();
         expect(host.items).toEqual([{ id: 1 }]);
         expect(host.items).not.toBe([{ id: 1 }]);
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
     });
 });
