@@ -1,8 +1,7 @@
 import { BaseEntityManager } from './BaseEntityManager';
-import { withAbilities } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams } from '../types';
-import type { IEntity } from '@/schema';
+import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, IEntity } from '@/schema';
+import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
 import {
     FlatLocalStateAbility,
     LocalListAbility,
@@ -49,6 +48,14 @@ export abstract class LocalReadonlyEntityManager<
     items: IEntity[] = [];
     item: IEntity | null = null;
     search: TSearch = {} as TSearch;
+
+    eventMap: Record<string, string> = {
+        [CMD.LIST]: 'list',
+        [CMD.REFRESH]: 'refresh',
+        [CMD.FILTER]: 'filter',
+        [CMD.SORT]: 'sort',
+        [CMD.GET]: 'get',
+    };
 }
 
 BaseEntityManager.use(LOCAL_READONLY_ABILITIES);
@@ -78,6 +85,19 @@ export abstract class LocalCrudEntityManager<
     items: IEntity[] = [];
     item: IEntity | null = null;
     search: TSearch = {} as TSearch;
+
+    eventMap: Record<string, string> = {
+        [CMD.LIST]: 'list',
+        [CMD.REFRESH]: 'refresh',
+        [CMD.FILTER]: 'filter',
+        [CMD.SORT]: 'sort',
+        [CMD.GET]: 'get',
+        [CMD.CREATE]: 'create',
+        [CMD.UPDATE]: 'update',
+        [CMD.TOGGLE]: 'toggle',
+        [CMD.SAVE]: 'save',
+        [CMD.DELETE]: 'delete',
+    };
 }
 
 LocalCrudEntityManager.use(LOCAL_CRUD_ABILITIES);
@@ -113,6 +133,25 @@ export abstract class RemoteReadonlyEntityManager<
     page: number = 1;
     pages: number = 0;
     hasMore: boolean = false;
+
+    eventMap: Record<string, string> = {
+        [CMD.LIST]: 'list',
+        [CMD.REFRESH]: 'refresh',
+        [CMD.GET_ALL]: 'getAll',
+        [CMD.GET]: 'get',
+        [CMD.FILTER]: 'filter',
+        [CMD.SEARCH_BY]: 'searchBy',
+        [CMD.SORT]: 'sort',
+        [CMD.RESET]: 'reset',
+        [CMD.PREV]: 'prev',
+        [CMD.NEXT]: 'next',
+        [CMD.JUMP]: 'jump',
+        [CMD.CHANGE_SIZE]: 'changeSize',
+        [CMD.START_EDIT]: 'startEdit',
+        [CMD.SUBMIT_EDIT]: 'submitEdit',
+        [CMD.CANCEL_EDIT]: 'cancelEdit',
+        [CMD.ROLLBACK_ALL]: 'rollbackAll',
+    };
 }
 
 RemoteReadonlyEntityManager.use(REMOTE_READONLY_ABILITIES);
@@ -154,6 +193,29 @@ export abstract class RemoteCrudEntityManager<
     page: number = 1;
     pages: number = 0;
     hasMore: boolean = false;
+
+    eventMap: Record<string, string> = {
+        [CMD.LIST]: 'list',
+        [CMD.REFRESH]: 'refresh',
+        [CMD.GET_ALL]: 'getAll',
+        [CMD.GET]: 'get',
+        [CMD.FILTER]: 'filter',
+        [CMD.SEARCH_BY]: 'searchBy',
+        [CMD.SORT]: 'sort',
+        [CMD.RESET]: 'reset',
+        [CMD.PREV]: 'prev',
+        [CMD.NEXT]: 'next',
+        [CMD.JUMP]: 'jump',
+        [CMD.CHANGE_SIZE]: 'changeSize',
+        [CMD.CREATE]: 'create',
+        [CMD.UPDATE]: 'update',
+        [CMD.DELETE]: 'delete',
+        [CMD.TOGGLE]: 'toggle',
+        [CMD.START_EDIT]: 'startEdit',
+        [CMD.SUBMIT_EDIT]: 'submitEdit',
+        [CMD.CANCEL_EDIT]: 'cancelEdit',
+        [CMD.ROLLBACK_ALL]: 'rollbackAll',
+    };
 }
 
 RemoteCrudEntityManager.use(REMOTE_CRUD_ABILITIES);
@@ -192,6 +254,29 @@ export abstract class RemoteTreeEntityManager<
     search: TSearch = {} as ITreeSearchParams as TSearch;
     total: number = 0;
     expandedIds: Set<string | number> = new Set();
+
+    eventMap: Record<string, string> = {
+        [CMD.LIST]: 'list',
+        [CMD.REFRESH]: 'refresh',
+        [CMD.GET]: 'get',
+        [CMD.FILTER]: 'filter',
+        [CMD.SEARCH_BY]: 'searchBy',
+        [CMD.SORT]: 'sort',
+        [CMD.RESET]: 'reset',
+        [CMD.CREATE]: 'create',
+        [CMD.UPDATE]: 'update',
+        [CMD.DELETE]: 'delete',
+        [CMD.EXPAND]: 'toggleExpand',
+        [CMD.COLLAPSE]: 'toggleExpand',
+        [CMD.MOVE_NODE]: 'moveNode',
+        [CMD.REMOVE_NODE]: 'removeNode',
+        [CMD.SYNC_CHILDREN]: 'syncChildren',
+        [CMD.REFRESH_VIEW]: 'refreshView',
+        [CMD.START_EDIT]: 'startEdit',
+        [CMD.SUBMIT_EDIT]: 'submitEdit',
+        [CMD.CANCEL_EDIT]: 'cancelEdit',
+        [CMD.ROLLBACK_ALL]: 'rollbackAll',
+    };
 }
 
 RemoteTreeEntityManager.use(REMOTE_TREE_ABILITIES);

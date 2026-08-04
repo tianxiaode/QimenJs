@@ -53,6 +53,7 @@ const testSchema: FlatSchema = {
 // ============================================
 
 class TestCrudManager extends RemoteCrudEntityManager {
+    static entityType = 'DomainConfigItem';
     domain = 'domain-config-test';
     entityName = 'DomainConfigItem';
     url = '/api/items';
@@ -60,6 +61,7 @@ class TestCrudManager extends RemoteCrudEntityManager {
 }
 
 class TestReadonlyManager extends RemoteReadonlyEntityManager {
+    static entityType = 'DomainConfigItem';
     domain = 'domain-config-test';
     entityName = 'DomainConfigItem';
     url = '/api/items';

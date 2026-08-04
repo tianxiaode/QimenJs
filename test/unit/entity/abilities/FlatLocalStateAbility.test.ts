@@ -481,4 +481,308 @@ describe('FlatLocalStateAbility', () => {
             host.dispose();
         });
     });
+
+    // ========================================
+    // 5. schemaGetters 默认值分支
+    // ========================================
+
+    describe('schemaGetters - 默认值', () => {
+        function createNoSchemaHost() {
+            class FlatHost extends ComposableBase {
+                schema: any = {};
+                sourceData = new Map<string, any>();
+                isRemote = false;
+                items: any[] = [];
+                item: any = null;
+                search: any = {};
+                loading = false;
+                page = 1;
+                pageSize = 20;
+                cacheTTL = 300000;
+                debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
+            }
+            withAbilities(FlatHost, [FlatLocalStateAbility]);
+            return new FlatHost() as any;
+        }
+
+        it('defaultSort 无 schema.defaultSort 时应返回空字符串', () => {
+            const host = createNoSchemaHost();
+            expect(host.defaultSort).toBe('');
+            host.dispose();
+        });
+
+        it('defaultOrder 无 schema.defaultOrder 时应返回 asc', () => {
+            const host = createNoSchemaHost();
+            expect(host.defaultOrder).toBe('asc');
+            host.dispose();
+        });
+
+        it('idField 无 schema.idField 时应返回 id', () => {
+            const host = createNoSchemaHost();
+            expect(host.idField).toBe('id');
+            host.dispose();
+        });
+
+        it('idType 无 schema.idType 时应返回 number', () => {
+            const host = createNoSchemaHost();
+            expect(host.idType).toBe('number');
+            host.dispose();
+        });
+
+        it('nameField 无 schema.nameField 时应返回 name', () => {
+            const host = createNoSchemaHost();
+            expect(host.nameField).toBe('name');
+            host.dispose();
+        });
+
+        it('searchFields 无 schema.searchFields 时应返回空数组', () => {
+            const host = createNoSchemaHost();
+            expect(host.searchFields).toEqual([]);
+            host.dispose();
+        });
+    });
+
+    // ========================================
+    // 6. cacheKey getter
+    // ========================================
+
+    describe('cacheKey getter', () => {
+        it('应通过 _getCacheKey 返回缓存键', () => {
+            const host = createFlatHost({ isRemote: false });
+            expect(host.cacheKey).toBe('test-domain:TestEntity');
+            host.dispose();
+        });
+    });
+
+    // ========================================
+    // 7. dirtyMethods - submitEdit / cancelEdit / isDirty 深比较
+    // ========================================
+
+    describe('dirtyMethods - submitEdit / cancelEdit / 深比较', () => {
+        it('isDirty 对象值深比较相等时应返回 false', () => {
+            const host = createFlatHost();
+            const item = { id: '1', name: 'test', meta: { key: 'val' } };
+            host.startEdit(item);
+            item.meta = { key: 'val' };
+            expect(host.isDirty(item)).toBe(false);
+            host.dispose();
+        });
+
+        it('isDirty 对象值深比较不等时应返回 true', () => {
+            const host = createFlatHost();
+            const item = { id: '1', name: 'test', meta: { key: 'val' } };
+            host.startEdit(item);
+            item.meta = { key: 'changed' };
+            expect(host.isDirty(item)).toBe(true);
+            host.dispose();
+        });
+
+        it('submitEdit 应移除快照', () => {
+            const host = createFlatHost();
+            const item = { id: '1', name: 'test' };
+            host.startEdit(item);
+            item.name = 'changed';
+            host.submitEdit(item);
+            expect(host.isDirty(item)).toBe(false);
+            expect(host.isDirty()).toBe(false);
+            host.dispose();
+        });
+
+        it('cancelEdit 应恢复原始值并移除快照', () => {
+            const host = createFlatHost();
+            const item = { id: '1', name: 'test' };
+            host.startEdit(item);
+            item.name = 'changed';
+            host.cancelEdit(item);
+            expect(item.name).toBe('test');
+            expect(host.isDirty()).toBe(false);
+            host.dispose();
+        });
+
+        it('cancelEdit 无快照时不应报错', () => {
+            const host = createFlatHost();
+            const item = { id: '1', name: 'test' };
+            host.cancelEdit(item);
+            expect(item.name).toBe('test');
+            host.dispose();
+        });
+    });
+
+    // ========================================
+    // 8. mutationMethods
+    // ========================================
+
+    describe('mutationMethods - updateData', () => {
+        it('应重置 changes 并更新 sourceData', async () => {
+            const host = createFlatHost();
+            await host.addItem({ id: '1', name: 'a' });
+            expect(host.hasChanges).toBe(true);
+
+            await host.updateData([{ id: '2', name: 'b' }]);
+            expect(host.changes.added).toEqual([]);
+            expect(host.sourceData.get('2')).toEqual({ id: '2', name: 'b' });
+            host.dispose();
+        });
+
+        it('应清理 tempId 项', async () => {
+            const host = createFlatHost();
+            const item: any = { id: '1', name: 'temp' };
+            await host.addItem(item);
+            const tempId = item.tempId;
+            expect(host.sourceData.has(tempId)).toBe(true);
+
+            await host.updateData([{ id: '1', name: 'updated' }]);
+            expect(host.sourceData.has(tempId)).toBe(false);
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - softDelete', () => {
+        it('应保存快照并从 sourceData 删除', async () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'item' });
+            await host.softDelete({ localOnly: [], persistent: [{ id: '1', name: 'item' }] });
+            expect(host.changes.deleted).toContain('1');
+            expect(host.sourceData.has('1')).toBe(false);
+            host.dispose();
+        });
+
+        it('localOnly 项应从 added 移除并加入 deleted', async () => {
+            const host = createFlatHost();
+            await host.addItem({ id: 'local1', name: 'local item' });
+            await host.softDelete({
+                localOnly: [{ id: 'local1', name: 'local item' }],
+                persistent: [],
+            });
+            expect(host.changes.added.length).toBe(0);
+            expect(host.changes.deleted).toContain('local1');
+            host.dispose();
+        });
+
+        it('传入纯 ID（非对象）时应正确处理', async () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'item' });
+            await host.softDelete({ localOnly: [], persistent: ['1'] });
+            expect(host.changes.deleted).toContain('1');
+            expect(host.sourceData.has('1')).toBe(false);
+            host.dispose();
+        });
+
+        it('同时有 localOnly 和 persistent 项时', async () => {
+            const host = createFlatHost();
+            await host.addItem({ id: 'local1', name: 'local item' });
+            host.sourceData.set('persist1', { id: 'persist1', name: 'persist item' });
+            await host.softDelete({
+                localOnly: [{ id: 'local1', name: 'local item' }],
+                persistent: [{ id: 'persist1', name: 'persist item' }],
+            });
+            expect(host.changes.added.length).toBe(0);
+            expect(host.changes.deleted).toContain('local1');
+            expect(host.changes.deleted).toContain('persist1');
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - getDeletionPlan', () => {
+        it('应区分本地和持久化删除', async () => {
+            const host = createFlatHost();
+            await host.addItem({ id: 'temp1', name: 'new item' });
+            host.sourceData.set('persist1', { id: 'persist1', name: 'old item' });
+            const plan = host.getDeletionPlan(['temp1', 'persist1']);
+            expect(plan.localOnly).toContain('temp1');
+            expect(plan.persistent).toContain('persist1');
+            host.dispose();
+        });
+
+        it('无 changes 时所有 ID 应归入 persistent', () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'item' });
+            const plan = host.getDeletionPlan(['1']);
+            expect(plan.localOnly).toEqual([]);
+            expect(plan.persistent).toContain('1');
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - confirmDelete', () => {
+        it('应清除删除快照和 deleted 列表', async () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'item' });
+            await host.softDelete({ localOnly: [], persistent: [{ id: '1', name: 'item' }] });
+            await host.confirmDelete();
+            expect(host.changes.deleted).toEqual([]);
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - rollbackDelete', () => {
+        it('应恢复被删除的项', async () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'item' });
+            await host.softDelete({ localOnly: [], persistent: [{ id: '1', name: 'item' }] });
+            expect(host.sourceData.has('1')).toBe(false);
+            await host.rollbackDelete();
+            expect(host.sourceData.get('1')).toEqual({ id: '1', name: 'item' });
+            expect(host.changes.deleted).toEqual([]);
+            host.dispose();
+        });
+
+        it('无删除时不应报错', async () => {
+            const host = createFlatHost();
+            await host.rollbackDelete();
+            host.dispose();
+        });
+
+        it('无快照但有 changes.deleted 时应清空 deleted', async () => {
+            const host = createFlatHost();
+            const changes = host._getOrCreateChanges();
+            changes.deleted.push('manual1');
+            await host.rollbackDelete();
+            expect(host.changes.deleted).toEqual([]);
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - clearChanges', () => {
+        it('应重置所有变更', async () => {
+            const host = createFlatHost();
+            await host.addItem({ id: '1', name: 'a' });
+            expect(host.hasChanges).toBe(true);
+            host.clearChanges();
+            expect(host.hasChanges).toBe(false);
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - _getOrCreateDeleteSnapshots', () => {
+        it('首次调用应创建新 Map', () => {
+            const host = createFlatHost();
+            const snapshots = host._getOrCreateDeleteSnapshots();
+            expect(snapshots).toBeInstanceOf(Map);
+            expect(snapshots.size).toBe(0);
+            host.dispose();
+        });
+
+        it('重复调用应返回同一实例', () => {
+            const host = createFlatHost();
+            const s1 = host._getOrCreateDeleteSnapshots();
+            s1.set('1', { id: '1' });
+            const s2 = host._getOrCreateDeleteSnapshots();
+            expect(s2).toBe(s1);
+            expect(s2.size).toBe(1);
+            host.dispose();
+        });
+    });
+
+    describe('mutationMethods - _deleteFromSource', () => {
+        it('应从 sourceData 删除指定 ID', async () => {
+            const host = createFlatHost();
+            host.sourceData.set('1', { id: '1', name: 'a' });
+            host.sourceData.set('2', { id: '2', name: 'b' });
+            await host._deleteFromSource(['1']);
+            expect(host.sourceData.has('1')).toBe(false);
+            expect(host.sourceData.has('2')).toBe(true);
+            host.dispose();
+        });
+    });
 });

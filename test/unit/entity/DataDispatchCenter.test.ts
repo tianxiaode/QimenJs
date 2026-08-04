@@ -90,6 +90,8 @@ jest.mock('@/events', () => {
         EntityEventBus: {
             getInstance: jest.fn(() => ({
                 entityEmit: jest.fn(),
+                entityOn: jest.fn().mockReturnValue(jest.fn()),
+                entityOnce: jest.fn(),
                 getScopeId: jest.fn().mockReturnValue('test'),
             })),
         },
@@ -195,34 +197,70 @@ describe('DataDispatchCenter', () => {
     });
 
     describe('registerDict', () => {
+        class MockDictMgr {
+            static entityType = 'dictionary_manager';
+            entityKey = 'dictionary_manager';
+            sourceData = new Map();
+            schema: any = {
+                idField: 'value',
+                idType: 'string',
+                nameField: 'label',
+                searchFields: [],
+                defaultSort: '',
+                defaultOrder: 'asc',
+            };
+            dispose = jest.fn();
+            constructor(config?: Record<string, any>) {
+                if (config?.entityKey) this.entityKey = config.entityKey;
+                if (config?.valueField) this.schema.idField = config.valueField;
+                if (config?.labelField) this.schema.nameField = config.labelField;
+                if (config?.idType) this.schema.idType = config.idType;
+                if (config?.data) this.loadDictionary(config.data);
+            }
+            loadDictionary(data: any[]) {
+                const idField = this.schema.idField || 'id';
+                this.sourceData.clear();
+                for (const item of data) {
+                    const id = item[idField];
+                    if (id !== undefined && id !== null) this.sourceData.set(id, item);
+                }
+            }
+        }
+
+        beforeEach(() => {
+            center.registerType('dictionary_manager', MockDictMgr as any);
+        });
+
         it('应注册词典并可通过 connect 获取实例', () => {
-            const data = [
-                { value: 'a', label: 'A' },
-                { value: 'b', label: 'B' },
-            ];
-            center.registerDict('statusOptions', data);
+            center.registerDict('statusOptions', {
+                data: [
+                    { value: 'a', label: 'A' },
+                    { value: 'b', label: 'B' },
+                ],
+            });
             expect(center.has('statusOptions')).toBe(true);
             const mgr = center.connect('statusOptions');
             expect(mgr).toBeDefined();
         });
 
         it('注册的词典数据应注入到 Manager 的 sourceData', () => {
-            const data = [
-                { value: 'active', label: '启用' },
-                { value: 'disabled', label: '禁用' },
-            ];
-            center.registerDict('status', data);
+            center.registerDict('status', {
+                data: [
+                    { value: 'active', label: '启用' },
+                    { value: 'disabled', label: '禁用' },
+                ],
+            });
             const mgr = center.connect('status') as any;
             expect(mgr.sourceData.size).toBe(2);
             expect(mgr.sourceData.get('active')).toEqual({ value: 'active', label: '启用' });
         });
 
         it('dictConfig 应传递给 DictionaryManager', () => {
-            const data = [
-                { code: 1, text: '选项一' },
-                { code: 2, text: '选项二' },
-            ];
-            center.registerDict('priority', data, {
+            center.registerDict('priority', {
+                data: [
+                    { code: 1, text: '选项一' },
+                    { code: 2, text: '选项二' },
+                ],
                 valueField: 'code',
                 labelField: 'text',
                 idType: 'number',
@@ -235,7 +273,7 @@ describe('DataDispatchCenter', () => {
         });
 
         it('unregisterDict 应移除注册', () => {
-            center.registerDict('temp', [{ value: 'x', label: 'X' }]);
+            center.registerDict('temp', { data: [{ value: 'x', label: 'X' }] });
             expect(center.has('temp')).toBe(true);
             center.unregisterDict('temp');
             expect(center.has('temp')).toBe(false);

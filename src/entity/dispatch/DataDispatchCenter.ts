@@ -1,47 +1,34 @@
 import { RegistrarBase } from '@/registry';
-import { Logger } from '@qimenjs/logger';
-import type { CoreEntityManager } from '../manager/CoreEntityManager';
-import type { EntityManagerConstructor } from './entity-definitions';
-import { DictionaryManager } from '../manager/DictionaryManager';
-import type { DictionaryManagerConfig } from '../manager/DictionaryManager';
-import {
-    ENTITY_DATA_EVENTS,
-    ENTITY_CRUD_EVENTS,
-    ENTITY_LIST_EVENTS,
-    ENTITY_TREE_EVENTS,
-    ENTITY_SEARCH_EVENTS,
-    ENTITY_UPLOAD_EVENTS,
-    ENTITY_VALIDATION_EVENTS,
-    DICTIONARY_EVENTS,
-} from '@/events';
-
-interface EntityTypeEntry {
-    mgrType: EntityManagerConstructor;
-}
-
-interface EntityInstance {
-    mgr: CoreEntityManager;
-    refCount: number;
-}
-
-interface DictEntry {
-    data: any[];
-    config?: DictionaryManagerConfig;
-}
+import type { DictionaryManagerConfig, EntityInstance, EntityTypeEntry } from '../types';
+import { DICTIONARY_MANAGER_ENTITY_TYPE } from '../types';
+import { EntityEventBus, ENTITY_LIFECYCLE_EVENTS } from '@/events';
 
 export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntry>> {
     public readonly name = 'DataDispatchCenter';
     protected storage = new Map<string, EntityTypeEntry>();
 
     private readonly instances = new Map<string, EntityInstance>();
-    private readonly dictStore = new Map<string, DictEntry>();
+    private readonly dictStore = new Map<string, DictionaryManagerConfig>();
 
     constructor() {
         super();
         this.logger.debug?.('[DataDispatchCenter] initialized');
+        this._listenLifecycleEvents();
     }
 
-    registerType(entityType: string, mgrType: EntityManagerConstructor): void {
+    private _listenLifecycleEvents(): void {
+        const bus = EntityEventBus.getInstance();
+        bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.CONNECT, (data: any) => {
+            const entityKey = data?.entityKey;
+            if (entityKey) this.connect(entityKey);
+        });
+        bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.DISCONNECT, (data: any) => {
+            const entityKey = data?.entityKey;
+            if (entityKey) this.disconnect(entityKey);
+        });
+    }
+
+    registerType(entityType: string, mgrType: any): void {
         this.checkLock();
         this.storage.set(entityType, { mgrType });
         this.logger.debug?.(`[DataDispatchCenter] registered entityType="${entityType}"`);
@@ -65,12 +52,11 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         return this.storage.get(entityType);
     }
 
-    registerDict(name: string, data: any[], config?: DictionaryManagerConfig): void {
+    registerDict(name: string, config: DictionaryManagerConfig): void {
         this.checkLock();
-        this.storage.set(name, {
-            mgrType: DictionaryManager as unknown as EntityManagerConstructor,
-        });
-        this.dictStore.set(name, { data, config });
+        const entry = this.storage.get(DICTIONARY_MANAGER_ENTITY_TYPE)!;
+        this.storage.set(name, { ...entry });
+        this.dictStore.set(name, { ...config });
         this.logger.debug?.(`[DataDispatchCenter] registered dict="${name}"`);
     }
 
@@ -86,7 +72,7 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         return colonIdx === -1 ? entityKey : entityKey.substring(0, colonIdx);
     }
 
-    connect(entityKey: string): CoreEntityManager {
+    connect(entityKey: string): any {
         const existing = this.instances.get(entityKey);
         if (existing) {
             existing.refCount++;
@@ -106,12 +92,8 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         const dictEntry = this.dictStore.get(entityType);
         const mgr = new entry.mgrType({
             entityKey,
-            ...(dictEntry ? { dictConfig: dictEntry.config } : {}),
+            ...(dictEntry ? { ...dictEntry } : {}),
         });
-
-        if (dictEntry) {
-            (mgr as DictionaryManager).loadDictionary(dictEntry.data);
-        }
 
         this.instances.set(entityKey, { mgr, refCount: 1 });
         this.logger.debug?.(`[DataDispatchCenter] connect new entityKey="${entityKey}"`);
@@ -135,7 +117,7 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         }
     }
 
-    getManager(entityKey: string): CoreEntityManager | undefined {
+    getManager(entityKey: string): any {
         return this.instances.get(entityKey)?.mgr;
     }
 
@@ -165,25 +147,3 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
 }
 
 export const dataDispatchCenter = DataDispatchCenter.getInstance();
-
-const VALID_ENTITY_EVENTS: Set<string> = new Set([
-    ...Object.values(ENTITY_DATA_EVENTS),
-    ...Object.values(ENTITY_CRUD_EVENTS),
-    ...Object.values(ENTITY_LIST_EVENTS),
-    ...Object.values(ENTITY_TREE_EVENTS),
-    ...Object.values(ENTITY_SEARCH_EVENTS),
-    ...Object.values(ENTITY_UPLOAD_EVENTS),
-    ...Object.values(ENTITY_VALIDATION_EVENTS),
-    ...Object.values(DICTIONARY_EVENTS),
-]);
-
-export function validateEntityEvent(event: string): boolean {
-    if (!VALID_ENTITY_EVENTS.has(event)) {
-        const logger = Logger.for('entity-dispatch');
-        logger.warn?.(`[DataDispatchCenter] unknown entity event "${event}", valid events:`, [
-            ...VALID_ENTITY_EVENTS,
-        ]);
-        return false;
-    }
-    return true;
-}

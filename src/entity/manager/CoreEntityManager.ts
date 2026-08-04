@@ -1,4 +1,4 @@
-import { ComposableBase, withAbilities } from '@/composable';
+import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
 import { EventAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
@@ -14,7 +14,6 @@ import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission';
-import type { PermissionQuery } from '@/permission';
 import { EntityEventBus } from '@/events';
 import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
@@ -32,6 +31,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     domain: string = 'default';
     entityKey: string;
     abstract url: string;
+    eventMap: Record<string, string> = {};
 
     cacheTTL: number = 300000;
 
@@ -46,6 +46,22 @@ export abstract class CoreEntityManager extends ComposableBase {
             throw new Error(`${ctor.name} must declare static entityType`);
         }
         this.entityKey = config?.entityKey ?? ctor.entityType;
+        this._bindEventMap();
+    }
+
+    private _bindEventMap(): void {
+        const map = (this as any).eventMap;
+        if (!map) return;
+
+        const bus = EntityEventBus.getInstance();
+        for (const [eventName, methodName] of Object.entries(map)) {
+            bus.entityOn(this.entityKey, eventName, (data: any) => {
+                const method = (this as any)[methodName as string];
+                if (typeof method === 'function') {
+                    method.call(this, data);
+                }
+            });
+        }
     }
 
     static register(): void {

@@ -49,6 +49,117 @@ jest.mock('@/registry', () => ({
     },
 }));
 
+jest.mock('@/composable', () => {
+    class ComposableBase {
+        static use() {}
+        logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        _getCompiledSchema() {
+            return { schema: { name: 'TestEntity', idField: 'id', fields: [] } };
+        }
+        getSchema() {
+            return this._getCompiledSchema().schema;
+        }
+        dispose() {}
+    }
+    return { ComposableBase, withAbilities: (cls: any) => cls, InferAbilities: () => ({}) };
+});
+
+jest.mock('@/system-abilities', () => ({
+    EventAbility: { __name__: 'EventAbility' },
+    DebounceAbility: { __name__: 'DebounceAbility' },
+    DomainAbility: { __name__: 'DomainAbility' },
+    SystemAbility: { __name__: 'SystemAbility' },
+}));
+
+jest.mock('@/entity/abilities/SchemaAbility', () => ({ __name__: 'SchemaAbility' }));
+
+jest.mock('@/events', () => {
+    const actual = jest.requireActual('@/events');
+    return {
+        ...actual,
+        EntityEventBus: {
+            getInstance: jest.fn(() => ({
+                entityEmit: jest.fn(),
+                entityOn: jest.fn().mockReturnValue(jest.fn()),
+                entityOnce: jest.fn(),
+                getScopeId: jest.fn().mockReturnValue('test'),
+            })),
+        },
+    };
+});
+
+jest.mock('@/context', () => {
+    const eventCtx: any = {
+        _event: '',
+        _type: '',
+        _source: '',
+        _data: {},
+        withEvent(e: string) {
+            eventCtx._event = e;
+            return eventCtx;
+        },
+        withType(t: string) {
+            eventCtx._type = t;
+            return eventCtx;
+        },
+        withSource(s: string) {
+            eventCtx._source = s;
+            return eventCtx;
+        },
+        withData(d: any) {
+            eventCtx._data = d;
+            return eventCtx;
+        },
+        build() {
+            return {
+                event: eventCtx._event,
+                type: eventCtx._type,
+                source: eventCtx._source,
+                data: eventCtx._data,
+            };
+        },
+    };
+    const reqCtx: any = {};
+    const chain = {
+        withIdentity(i: any) {
+            reqCtx.identity = i;
+            return chain;
+        },
+        withRequest(r: any) {
+            reqCtx.request = r;
+            return chain;
+        },
+        withParams(p: any) {
+            reqCtx.params = p;
+            return chain;
+        },
+        withSchema(s: any) {
+            reqCtx.schema = s;
+            return chain;
+        },
+        build() {
+            return reqCtx;
+        },
+    };
+    return {
+        RequestContextBuilder: { create: () => chain },
+        EventContextBuilder: { create: () => eventCtx },
+    };
+});
+
+jest.mock('@/permission', () => ({
+    PermissionRegistrar: {
+        getInstance: () => ({
+            check: jest.fn().mockReturnValue(true),
+            hasPermission: jest.fn().mockReturnValue(true),
+        }),
+    },
+}));
+
+jest.mock('@/entity/dispatch/DataDispatchCenter', () => ({
+    dataDispatchCenter: { registerType: jest.fn() },
+}));
+
 jest.mock('@/schema', () => ({
     SchemaRegistrar: {
         getInstance: jest.fn(() => ({
@@ -73,6 +184,7 @@ import type { HttpRequestOptions } from '@/http/types/http-context';
 // ============================================
 
 class TestBaseEntityManager extends BaseEntityManager {
+    static entityType = 'TestBase';
     domain = 'test-domain';
     entityName = 'TestEntity';
     url = '/api/test';
@@ -110,7 +222,7 @@ describe('BaseEntityManager', () => {
                 ctx.error = new Error('Server error');
             });
 
-            const emitSpy = jest.spyOn(manager, 'emit');
+            const emitSpy = jest.spyOn(manager, 'entityEmit');
 
             await expect(
                 manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any)
@@ -129,7 +241,7 @@ describe('BaseEntityManager', () => {
                 ctx.data = { list: [] };
             });
 
-            const emitSpy = jest.spyOn(manager, 'emit');
+            const emitSpy = jest.spyOn(manager, 'entityEmit');
 
             await manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any);
 

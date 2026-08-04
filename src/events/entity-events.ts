@@ -102,6 +102,64 @@ export const DICTIONARY_EVENTS = {
 } as const;
 
 // ============================================
+// 生命周期事件（组件/能力 ↔ DataDispatchCenter）
+// ============================================
+export const ENTITY_LIFECYCLE_EVENTS = {
+    /** 连接实体（请求获取 EntityManager 实例） */
+    CONNECT: 'connect',
+    /** 断开实体（释放 EntityManager 实例引用） */
+    DISCONNECT: 'disconnect',
+} as const;
+
+// ============================================
+// 命令事件（组件 → Manager 触发操作）
+//
+// 与结果事件区分：命令事件是"请执行某操作"，
+// 结果事件是"某操作已完成"。
+// ============================================
+export const ENTITY_COMMAND_EVENTS = {
+    // 列表/查询命令
+    LIST: 'list',
+    REFRESH: 'refresh',
+    GET_ALL: 'getAll',
+    GET: 'get',
+    FILTER: 'filter',
+    SEARCH_BY: 'searchBy',
+    SORT: 'sort',
+    RESET: 'reset',
+
+    // 分页命令
+    PREV: 'prev',
+    NEXT: 'next',
+    JUMP: 'jump',
+    CHANGE_SIZE: 'changeSize',
+
+    // CRUD 命令
+    CREATE: 'create',
+    UPDATE: 'update',
+    DELETE: 'delete',
+    TOGGLE: 'toggle',
+    SAVE: 'save',
+
+    // 编辑状态命令
+    START_EDIT: 'startEdit',
+    SUBMIT_EDIT: 'submitEdit',
+    CANCEL_EDIT: 'cancelEdit',
+    ROLLBACK_ALL: 'rollbackAll',
+
+    // 树命令
+    EXPAND: 'expand',
+    COLLAPSE: 'collapse',
+    MOVE_NODE: 'moveNode',
+    REMOVE_NODE: 'removeNode',
+    SYNC_CHILDREN: 'syncChildren',
+    REFRESH_VIEW: 'refreshView',
+
+    // 词典命令
+    LOAD_DICTIONARY: 'loadDictionary',
+} as const;
+
+// ============================================
 // 请求状态事件（BaseEntityManager.fetch 触发）
 //
 // 格式为 {action}:{status}，action 来自 ENTITY_ACTION 枚举，
