@@ -141,8 +141,8 @@ class RatingComponent extends Component {
         const container = this._resolveNodeEl('stars');
         if (!container) return;
 
-        const stars = container.querySelectorAll<HTMLElement>('.q-rating__star');
-        stars.forEach((star, i) => {
+        const stars = container.querySelectorAll('.q-rating__star') as NodeListOf<HTMLElement>;
+        stars.forEach((star: HTMLElement, i: number) => {
             const idx = i + 1;
             star.classList.remove(
                 'q-rating__star--full',

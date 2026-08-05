@@ -208,21 +208,7 @@
             "dependencies": [],
             "packageName": "@qimen-lab/theme"
         },
-        "renderer": {
-            "entry": "src/renderer/index.ts",
-            "outDir": "dist/renderer",
-            "rootDir": "src/renderer",
-            "dependencies": [
-                "pipeline",
-                "registry",
-                "context",
-                "events",
-                "composable",
-                "theme",
-                "component-core"
-            ],
-            "packageName": "@qimen-lab/renderer"
-        },
+
         "component-core": {
             "entry": "src/component-core/index.ts",
             "outDir": "dist/component-core",
@@ -254,9 +240,7 @@
                 "events",
                 "context",
                 "pipeline",
-                "theme",
-
-                "renderer"
+                "theme"
             ],
             "packageName": "@qimen-lab/component"
         },

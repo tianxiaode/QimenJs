@@ -29,8 +29,16 @@ import type { EventDataType } from './EventForwarder';
  * 以及检测隐式 root 简写：{ handler: '_onInput' } → root 委托。
  */
 const CONFIG_KEYS = [
-    'handler', 'emits', 'bridges', 'entities', 'router', 'system',
-    'data', 'once', 'debounce', 'throttle',
+    'handler',
+    'emits',
+    'bridges',
+    'entities',
+    'router',
+    'system',
+    'data',
+    'once',
+    'debounce',
+    'throttle',
 ];
 
 // Note: 'bridges' is kept as the config key name for forwarding to ComponentEventBus
@@ -190,7 +198,10 @@ export class DomEventsEngine {
                     const rootConfig: Record<string, any> = { [componentPath]: value };
                     const existingRoot = result[domEvent]['root'];
                     if (existingRoot && DomEventsEngine._isDomEventConfig(existingRoot)) {
-                        result[domEvent]['root'] = { ...existingRoot, ...rootConfig };
+                        result[domEvent]['root'] = {
+                            ...(existingRoot as Record<string, any>),
+                            ...rootConfig,
+                        };
                     } else {
                         result[domEvent]['root'] = rootConfig;
                     }
@@ -226,7 +237,10 @@ export class DomEventsEngine {
                     const existingRoot = targetPathMap['root'];
 
                     if (existingRoot && DomEventsEngine._isDomEventConfig(existingRoot)) {
-                        targetPathMap['root'] = { ...existingRoot, ...rootConfig };
+                        targetPathMap['root'] = {
+                            ...(existingRoot as Record<string, any>),
+                            ...rootConfig,
+                        };
                     } else {
                         targetPathMap['root'] = rootConfig;
                     }
@@ -241,24 +255,35 @@ export class DomEventsEngine {
                 // 新值是两层模式（DomEventConfig）
                 if (DomEventsEngine._isDomEventConfig(newValue)) {
                     // 若路径为 'root' 且已有 root 配置，则合并而非覆盖
-                    if (componentPath === 'root' && existingValue && DomEventsEngine._isDomEventConfig(existingValue)) {
-                        targetPathMap['root'] = { ...existingValue, ...newValue };
+                    if (
+                        componentPath === 'root' &&
+                        existingValue &&
+                        DomEventsEngine._isDomEventConfig(existingValue)
+                    ) {
+                        targetPathMap['root'] = {
+                            ...(existingValue as Record<string, any>),
+                            ...(newValue as Record<string, any>),
+                        };
                     } else {
-                        targetPathMap[componentPath] = { ...newValue };
+                        targetPathMap[componentPath] = { ...(newValue as Record<string, any>) };
                     }
                     continue;
                 }
 
                 // 现有值不存在，直接赋值
                 if (!existingValue) {
-                    targetPathMap[componentPath] = { ...newValue };
+                    targetPathMap[componentPath] = { ...(newValue as Record<string, any>) };
                     continue;
                 }
 
                 // 现有值是两层模式，新值是三层模式 → 转换现有值为三层模式
                 if (DomEventsEngine._isDomEventConfig(existingValue)) {
-                    const converted: Record<string, any> = { '': { ...existingValue } };
-                    for (const [action, config] of Object.entries(newValue as Record<string, any>)) {
+                    const converted: Record<string, any> = {
+                        '': { ...(existingValue as Record<string, any>) },
+                    };
+                    for (const [action, config] of Object.entries(
+                        newValue as Record<string, any>
+                    )) {
                         converted[action] = { ...config };
                     }
                     targetPathMap[componentPath] = converted;
@@ -388,11 +413,16 @@ export class DomEventsEngine {
             const matched = DomEventsEngine._matchPath(instance, rule.componentPath, target);
             if (!matched) continue;
 
-            const actionMatched = DomEventsEngine._matchAction(matched, rule.action, rule.wildcardAction);
+            const actionMatched = DomEventsEngine._matchAction(
+                matched,
+                rule.action,
+                rule.wildcardAction
+            );
             if (!actionMatched) continue;
 
             // 动态 action：当 wildcardAction 或 rule.action 为空时，使用 matched 组件的实际 action
-            const actualAction = (rule.wildcardAction || !rule.action) ? (matched.action || '') : rule.action;
+            const actualAction =
+                rule.wildcardAction || !rule.action ? matched.action || '' : rule.action;
 
             const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
             if (dispatch) {
@@ -439,7 +469,8 @@ export class DomEventsEngine {
 
         for (let i = 1; i < segments.length; i++) {
             const seg = segments[i];
-            const nestedNodeMap = currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
+            const nestedNodeMap =
+                currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
 
             // 先在 nodeMap 查找
             const nestedNode = nestedNodeMap[seg];
@@ -472,7 +503,8 @@ export class DomEventsEngine {
             if (!childComp?.el) continue;
             if (!childComp.el.contains(target)) continue;
             const ctor = childComp.constructor;
-            const childType = ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
+            const childType =
+                ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
             if (childType === type) return childComp;
         }
         return null;
@@ -521,7 +553,11 @@ export class DomEventsEngine {
         return Object.values(nodeMap).map((node: any) => node?.component ?? node);
     }
 
-    private static _matchAction(targetComponent: any, action: string, wildcardAction?: boolean): boolean {
+    private static _matchAction(
+        targetComponent: any,
+        action: string,
+        wildcardAction?: boolean
+    ): boolean {
         // 通配符模式：匹配任何 action
         if (wildcardAction) return true;
         // 空 action：匹配无 action 的组件
@@ -534,7 +570,12 @@ export class DomEventsEngine {
      *
      * handler 本地调用 + EventForwarder 统一转发
      */
-    static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any, actualAction?: string): void {
+    static _dispatchRule(
+        instance: any,
+        rule: DelegatedEventRule,
+        domEvt: any,
+        actualAction?: string
+    ): void {
         if (rule.handler) {
             DomEventsEngine._invokeHandler(instance, rule, domEvt, actualAction);
         }
@@ -543,7 +584,12 @@ export class DomEventsEngine {
         EventForwarder.forward(instance, rule, extraData, domEvt, actualAction);
     }
 
-    private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any, actualAction?: string): void {
+    private static _invokeHandler(
+        instance: any,
+        rule: DelegatedEventRule,
+        domEvt: any,
+        actualAction?: string
+    ): void {
         let methodName: string;
 
         if (typeof rule.handler === 'string') {
@@ -552,12 +598,12 @@ export class DomEventsEngine {
         } else {
             // 自动推导方法名
             const pathParts = rule.componentPath.split('.');
-            const pascalPath = pathParts
-                .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-                .join('');
+            const pascalPath = pathParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
 
             const resolvedAction = actualAction ?? rule.action;
-            const pascalAction = resolvedAction ? resolvedAction.charAt(0).toUpperCase() + resolvedAction.slice(1) : '';
+            const pascalAction = resolvedAction
+                ? resolvedAction.charAt(0).toUpperCase() + resolvedAction.slice(1)
+                : '';
             const pascalEvent = rule.event.charAt(0).toUpperCase() + rule.event.slice(1);
 
             methodName = `on${pascalPath}${pascalAction}${pascalEvent}`;
@@ -569,7 +615,11 @@ export class DomEventsEngine {
         }
     }
 
-    private static _buildPayload(instance: any, rule: DelegatedEventRule, actualAction?: string): any {
+    private static _buildPayload(
+        instance: any,
+        rule: DelegatedEventRule,
+        actualAction?: string
+    ): any {
         const resolvedAction = actualAction ?? rule.action;
         const actionData = resolvedAction ? { action: resolvedAction } : {};
 

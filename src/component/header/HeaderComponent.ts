@@ -36,6 +36,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { ComponentProps } from '@qimenjs/component-core';
 import { HEADER_TPL } from './header-tpl';
 
 export interface HeaderProps {
@@ -52,37 +53,38 @@ class HeaderComponent extends Component {
         action: 'action',
     };
 
-    onAfterInit(props?: HeaderProps): void {
-        if (props?.icon !== undefined) {
+    onAfterInit(props?: ComponentProps): void {
+        const headerProps = props as HeaderProps | undefined;
+        if (headerProps?.icon !== undefined) {
             this.setNodeHidden(false, 'icon');
-            this.icon = props.icon;
+            this.icon = headerProps.icon;
         }
-        if (props?.title !== undefined) {
-            this.title = props.title;
+        if (headerProps?.title !== undefined) {
+            this.title = headerProps.title;
         }
-        if (props?.subtitle !== undefined) {
+        if (headerProps?.subtitle !== undefined) {
             this.setNodeHidden(false, 'subtitle');
-            this.subtitle = props.subtitle;
+            this.subtitle = headerProps.subtitle;
         }
-        if (props?.toolsLeft) {
+        if (headerProps?.toolsLeft) {
             this.setNodeHidden(false, 'toolsLeft');
             const toolsLeftComp = this.nodeMap?.toolsLeft?.component;
             if (toolsLeftComp) {
-                toolsLeftComp._initItemGroupComponent(props.toolsLeft);
+                toolsLeftComp._initItemGroupComponent(headerProps.toolsLeft);
             }
         }
-        if (props?.toolsRight) {
+        if (headerProps?.toolsRight) {
             this.setNodeHidden(false, 'toolsRight');
             const toolsRightComp = this.nodeMap?.toolsRight?.component;
             if (toolsRightComp) {
-                toolsRightComp._initItemGroupComponent(props.toolsRight);
+                toolsRightComp._initItemGroupComponent(headerProps.toolsRight);
             }
         }
-        if (props?.action) {
+        if (headerProps?.action) {
             this.setNodeHidden(false, 'action');
             const actionComp = this.nodeMap?.action?.component;
             if (actionComp && typeof actionComp.update === 'function') {
-                actionComp.update(props.action);
+                actionComp.update(headerProps.action);
             }
         }
     }

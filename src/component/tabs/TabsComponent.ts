@@ -27,7 +27,7 @@
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
-import type { TabItemProps } from './TabComponent';
+import type { TabProps as TabItemProps } from './TabComponent';
 import { TABS_TPL } from './tabs-tpl';
 
 export interface TabPaneItem {

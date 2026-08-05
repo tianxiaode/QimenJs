@@ -165,7 +165,7 @@ export class ListensEngine {
      * 如果 mapping 是对象且包含转发字段，返回 ForwardConfig；否则返回 undefined
      */
     private static _extractForwardConfig(mapping: EventMapping): ForwardConfig | undefined {
-        if (typeof mapping !== 'object' || mapping === true) return undefined;
+        if (mapping === true || typeof mapping !== 'object') return undefined;
         const config: ForwardConfig = {};
         if (mapping.emits) config.emits = mapping.emits;
         if (mapping.bridges) config.bridges = mapping.bridges;
@@ -189,7 +189,7 @@ export class ListensEngine {
      * 判断 once 选项
      */
     private static _isOnce(mapping: EventMapping): boolean {
-        return typeof mapping === 'object' && mapping !== true && mapping.once === true;
+        return mapping !== true && typeof mapping === 'object' && mapping.once === true;
     }
 
     // ─── 各类型绑定实现 ───
