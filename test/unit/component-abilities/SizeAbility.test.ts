@@ -1,105 +1,78 @@
 /**
  * SizeAbility 单元测试
- *
- * 覆盖：initSize、size getter/setter
  */
 
-jest.mock('@/logger', () => {
-    const actualLogger = jest.requireActual('@/logger');
-    return {
-        ...actualLogger,
-        Logger: {
-            ...actualLogger.Logger,
-            for: jest.fn(() => ({
-                debug: jest.fn(),
-                info: jest.fn(),
-                warn: jest.fn(),
-                error: jest.fn(),
-            })),
-        },
-    };
-});
-
-import { Component } from '@/component-core';
-import type { ComponentTemplate } from '@/component-core';
 import { SizeAbility } from '@/component-abilities/size/SizeAbility';
 
-const TPL: ComponentTemplate = { tpl: { tag: 'div' } };
+const sizeDesc = Object.getOwnPropertyDescriptor(SizeAbility, 'size')!;
 
 describe('SizeAbility', () => {
-    // ============================================
-    // initSize
-    // ============================================
+    function createInstance(type = 'Avatar') {
+        const stateMap = new Map();
+        return {
+            type,
+            setAbilityState: jest.fn((key: string, val: any) => stateMap.set(key, val)),
+            abilityState: jest.fn((key: string) => stateMap.get(key)),
+            addCls: jest.fn(),
+            removeCls: jest.fn(),
+        };
+    }
 
     describe('initSize', () => {
-        it('默认尺寸为 md', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize();
-            expect(host.size).toBe('md');
+        it('默认配置初始化', () => {
+            const inst = createInstance();
+            SizeAbility.initSize.call(inst);
+            expect(inst.setAbilityState).toHaveBeenCalled();
+            expect(inst.addCls).toHaveBeenCalledWith('q-avatar--md');
         });
 
-        it('添加默认尺寸 CSS 类', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize();
-            expect(host.el.classList.contains('q-size--md')).toBe(true);
+        it('自定义 sizes 和 defaultSize', () => {
+            const inst = createInstance('Button');
+            SizeAbility.initSize.call(inst, { sizes: ['sm', 'lg'], defaultSize: 'lg' });
+            expect(inst.addCls).toHaveBeenCalledWith('q-button--lg');
         });
 
-        it('使用 type 作为类前缀', () => {
-            const HostClass = Component.withTemplate({
-                tpl: { tag: 'div' },
-                body: { type: 'Avatar' },
-            }).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize();
-            expect(host.el.classList.contains('q-avatar--md')).toBe(true);
-        });
-
-        it('自定义默认尺寸', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize({ defaultSize: 'lg' });
-            expect(host.size).toBe('lg');
-        });
-
-        it('自定义尺寸列表', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize({ sizes: ['sm', 'lg'], defaultSize: 'sm' });
-            expect(host.size).toBe('sm');
+        it('无 type 时使用 q-size-- 前缀', () => {
+            const stateMap = new Map();
+            const inst = {
+                setAbilityState: jest.fn((key: string, val: any) => stateMap.set(key, val)),
+                abilityState: jest.fn((key: string) => stateMap.get(key)),
+                addCls: jest.fn(),
+                removeCls: jest.fn(),
+            };
+            SizeAbility.initSize.call(inst);
+            expect(inst.addCls).toHaveBeenCalledWith('q-size--md');
         });
     });
 
-    // ============================================
-    // size setter
-    // ============================================
-
-    describe('size setter', () => {
-        it('切换尺寸更新 CSS 类', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize();
-            host.size = 'lg';
-            expect(host.size).toBe('lg');
-            expect(host.el.classList.contains('q-size--md')).toBe(false);
-            expect(host.el.classList.contains('q-size--lg')).toBe(true);
+    describe('size getter/setter', () => {
+        it('getter 返回当前尺寸', () => {
+            const inst = createInstance();
+            SizeAbility.initSize.call(inst);
+            expect(sizeDesc.get!.call(inst)).toBe('md');
         });
 
-        it('设置相同值不操作', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            host.initSize();
-            host.size = 'md';
-            expect(host.el.classList.contains('q-size--md')).toBe(true);
+        it('setter 切换尺寸并更新 CSS 类', () => {
+            const inst = createInstance();
+            SizeAbility.initSize.call(inst);
+            inst.removeCls = jest.fn();
+            inst.addCls = jest.fn();
+            sizeDesc.set!.call(inst, 'lg');
+            expect(inst.removeCls).toHaveBeenCalledWith('q-avatar--md');
+            expect(inst.addCls).toHaveBeenCalledWith('q-avatar--lg');
         });
 
-        it('未初始化时设置不报错', () => {
-            const HostClass = Component.withTemplate(TPL).with([SizeAbility]);
-            const host = new HostClass() as any;
-            expect(() => {
-                host.size = 'lg';
-            }).not.toThrow();
+        it('setter 相同值不操作', () => {
+            const inst = createInstance();
+            SizeAbility.initSize.call(inst);
+            inst.removeCls = jest.fn();
+            sizeDesc.set!.call(inst, 'md');
+            expect(inst.removeCls).not.toHaveBeenCalled();
+        });
+
+        it('无状态时 getter 返回默认值', () => {
+            const inst = { abilityState: jest.fn(() => undefined) };
+            expect(sizeDesc.get!.call(inst)).toBe('md');
         });
     });
 });

@@ -208,25 +208,33 @@
             "dependencies": [],
             "packageName": "@qimen-lab/theme"
         },
-        "layout": {
-            "entry": "src/layout/index.ts",
-            "outDir": "dist/layout",
-            "rootDir": "src/layout",
-            "dependencies": [],
-            "packageName": "@qimen-lab/layout"
-        },
         "renderer": {
             "entry": "src/renderer/index.ts",
             "outDir": "dist/renderer",
             "rootDir": "src/renderer",
-            "dependencies": ["pipeline", "registry", "context", "events", "composable", "theme", "layout", "component-core"],
+            "dependencies": [
+                "pipeline",
+                "registry",
+                "context",
+                "events",
+                "composable",
+                "theme",
+                "component-core"
+            ],
             "packageName": "@qimen-lab/renderer"
         },
         "component-core": {
             "entry": "src/component-core/index.ts",
             "outDir": "dist/component-core",
             "rootDir": "src/component-core",
-            "dependencies": ["composable", "utils", "system-abilities", "registry", "events", "theme"],
+            "dependencies": [
+                "composable",
+                "utils",
+                "system-abilities",
+                "registry",
+                "events",
+                "theme"
+            ],
             "packageName": "@qimen-lab/component-core"
         },
         "component-abilities": {
@@ -240,7 +248,16 @@
             "entry": "src/component/index.ts",
             "outDir": "dist/component",
             "rootDir": "src/component",
-            "dependencies": ["component-core", "component-abilities", "events", "context", "pipeline", "theme", "layout", "renderer"],
+            "dependencies": [
+                "component-core",
+                "component-abilities",
+                "events",
+                "context",
+                "pipeline",
+                "theme",
+
+                "renderer"
+            ],
             "packageName": "@qimen-lab/component"
         },
         "imperative": {
@@ -254,7 +271,7 @@
             "entry": "src/router/index.ts",
             "outDir": "dist/router",
             "rootDir": "src/router",
-            "dependencies": ["events", "registry", "layout", "composable"],
+            "dependencies": ["events", "registry", "composable"],
             "packageName": "@qimen-lab/router"
         }
     },

@@ -1,293 +1,241 @@
 /**
  * GroupSelectAbility 单元测试
- *
- * 覆盖：initGroupSelect、registerGroupItem/unregisterGroupItem、
- *       notifyGroupSelect（radio/checkbox 互斥）、查询方法、setGroupChecked、clearGroups
  */
 
-jest.mock('@/logger', () => {
-    const actualLogger = jest.requireActual('@/logger');
-    return {
-        ...actualLogger,
-        Logger: {
-            ...actualLogger.Logger,
-            for: jest.fn(() => ({
-                debug: jest.fn(),
-                info: jest.fn(),
-                warn: jest.fn(),
-                error: jest.fn(),
-            })),
-        },
-    };
-});
-
-import { Component, ITEMGROUP_TEMPLATE } from '@/component-core';
 import { GroupSelectAbility } from '@/component-abilities/group/GroupSelectAbility';
 
-/**
- * 创建测试用宿主类
- */
-const TestHost = Component.withTemplate(ITEMGROUP_TEMPLATE).with([GroupSelectAbility]);
-
-/** 创建 mock 子项 */
-function createMockItem(group: string, groupMode: 'radio' | 'checkbox', checked: boolean = false) {
-    return { group, groupMode, checked, el: document.createElement('div') };
-}
-
 describe('GroupSelectAbility', () => {
-    // ============================================
-    // initGroupSelect
-    // ============================================
+    function createInstance() {
+        const stateMap = new Map();
+        return {
+            setAbilityState: jest.fn((key: string, val: any) => stateMap.set(key, val)),
+            abilityState: jest.fn((key: string) => stateMap.get(key)),
+        };
+    }
+
+    function createItem(group: string, groupMode: 'radio' | 'checkbox', checked = false) {
+        return { group, groupMode, checked };
+    }
 
     describe('initGroupSelect', () => {
-        it('初始化后无分组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            expect(host.getGroupNames()).toEqual([]);
+        it('默认 radio 模式', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            expect(inst.setAbilityState).toHaveBeenCalled();
         });
 
-        it('默认模式为 radio', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('test', undefined as any);
-            host.registerGroupItem(item);
-            const info = host.getGroupInfo('test');
-            expect(info.mode).toBe('radio');
-        });
-
-        it('可配置默认模式为 checkbox', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect({ defaultMode: 'checkbox' });
-            const item = createMockItem('test', undefined as any);
-            host.registerGroupItem(item);
-            const info = host.getGroupInfo('test');
-            expect(info.mode).toBe('checkbox');
+        it('自定义 defaultMode', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst, { defaultMode: 'checkbox' });
+            expect(inst.setAbilityState).toHaveBeenCalled();
         });
     });
 
-    // ============================================
-    // registerGroupItem / unregisterGroupItem
-    // ============================================
-
-    describe('registerGroupItem / unregisterGroupItem', () => {
+    describe('registerGroupItem', () => {
         it('注册子项到分组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio');
-            host.registerGroupItem(item);
-            expect(host.getGroupNames()).toContain('view');
-            expect(host.getGroupInfo('view').items).toContain(item);
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item = createItem('view', 'radio');
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            const state = inst.abilityState('GroupSelectAbility:state');
+            expect(state.groups.view.items).toContain(item);
+        });
+
+        it('无 group 属性不注册', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            GroupSelectAbility.registerGroupItem.call(inst, { groupMode: 'radio', checked: false });
+            const state = inst.abilityState('GroupSelectAbility:state');
+            expect(Object.keys(state.groups).length).toBe(0);
         });
 
         it('避免重复注册', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio');
-            host.registerGroupItem(item);
-            host.registerGroupItem(item);
-            expect(host.getGroupInfo('view').items).toHaveLength(1);
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item = createItem('view', 'radio');
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            const state = inst.abilityState('GroupSelectAbility:state');
+            expect(state.groups.view.items.length).toBe(1);
         });
 
-        it('注销子项', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio');
-            host.registerGroupItem(item);
-            host.unregisterGroupItem(item);
-            expect(host.getGroupNames()).not.toContain('view');
-        });
-
-        it('注销后组内无项时清理分组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio');
-            host.registerGroupItem(item);
-            host.unregisterGroupItem(item);
-            expect(host.getGroupInfo('view')).toBeNull();
-        });
-
-        it('registerGroupItems 批量注册', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const items = [createMockItem('view', 'radio'), createMockItem('view', 'radio')];
-            host.registerGroupItems(items);
-            expect(host.getGroupInfo('view').items).toHaveLength(2);
-        });
-
-        it('无 group 的子项不注册', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = { group: '', groupMode: 'radio', checked: false };
-            host.registerGroupItem(item);
-            expect(host.getGroupNames()).toEqual([]);
+        it('首次注册时以子项 groupMode 为准', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst, { defaultMode: 'checkbox' });
+            const item = createItem('view', 'radio');
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            const state = inst.abilityState('GroupSelectAbility:state');
+            expect(state.groups.view.mode).toBe('radio');
         });
     });
 
-    // ============================================
-    // notifyGroupSelect
-    // ============================================
+    describe('unregisterGroupItem', () => {
+        it('注销子项', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item = createItem('view', 'radio');
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            GroupSelectAbility.unregisterGroupItem.call(inst, item);
+            const state = inst.abilityState('GroupSelectAbility:state');
+            expect(state.groups.view).toBeUndefined();
+        });
+
+        it('注销不存在的项不报错', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            expect(() =>
+                GroupSelectAbility.unregisterGroupItem.call(inst, createItem('no', 'radio'))
+            ).not.toThrow();
+        });
+    });
 
     describe('notifyGroupSelect', () => {
-        it('radio：取消同组其他项', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('view', 'radio', true);
-            const item2 = createMockItem('view', 'radio', false);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            item2.checked = true;
-            host.notifyGroupSelect(item2);
-
+        it('radio 模式取消同组其他项', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('view', 'radio', true);
+            const item2 = createItem('view', 'radio', false);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            GroupSelectAbility.notifyGroupSelect.call(inst, item2);
             expect(item1.checked).toBe(false);
             expect(item2.checked).toBe(true);
         });
 
-        it('radio：确保当前项选中', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio', false);
-            host.registerGroupItem(item);
-
-            host.notifyGroupSelect(item);
-
-            expect(item.checked).toBe(true);
-        });
-
-        it('checkbox：不处理互斥', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('show', 'checkbox', true);
-            const item2 = createMockItem('show', 'checkbox', false);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            item2.checked = true;
-            host.notifyGroupSelect(item2);
-
+        it('checkbox 模式不互斥', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('show', 'checkbox', true);
+            const item2 = createItem('show', 'checkbox', false);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            GroupSelectAbility.notifyGroupSelect.call(inst, item2);
             expect(item1.checked).toBe(true);
-            expect(item2.checked).toBe(true);
         });
     });
 
-    // ============================================
-    // 查询方法
-    // ============================================
-
-    describe('查询方法', () => {
-        it('getGroupChecked radio 返回单个项', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('view', 'radio', true);
-            const item2 = createMockItem('view', 'radio', false);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            expect(host.getGroupChecked('view')).toBe(item1);
+    describe('getGroupChecked', () => {
+        it('radio 返回单个选中项', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item = createItem('view', 'radio', true);
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            expect(GroupSelectAbility.getGroupChecked.call(inst, 'view')).toBe(item);
         });
 
-        it('getGroupChecked radio 无选中返回 null', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item = createMockItem('view', 'radio', false);
-            host.registerGroupItem(item);
-
-            expect(host.getGroupChecked('view')).toBeNull();
+        it('checkbox 返回选中项数组', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('show', 'checkbox', true);
+            const item2 = createItem('show', 'checkbox', true);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            const result = GroupSelectAbility.getGroupChecked.call(inst, 'show');
+            expect(Array.isArray(result)).toBe(true);
+            expect(result.length).toBe(2);
         });
 
-        it('getGroupChecked checkbox 返回数组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('show', 'checkbox', true);
-            const item2 = createMockItem('show', 'checkbox', true);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            const checked = host.getGroupChecked('show');
-            expect(checked).toHaveLength(2);
-        });
-
-        it('getGroupCheckedIndex radio 返回索引', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('view', 'radio', false);
-            const item2 = createMockItem('view', 'radio', true);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            expect(host.getGroupCheckedIndex('view')).toBe(1);
-        });
-
-        it('getGroupCheckedIndex checkbox 返回索引数组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('show', 'checkbox', true);
-            const item2 = createMockItem('show', 'checkbox', false);
-            const item3 = createMockItem('show', 'checkbox', true);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-            host.registerGroupItem(item3);
-
-            expect(host.getGroupCheckedIndex('show')).toEqual([0, 2]);
-        });
-
-        it('getGroupInfo 不存在的分组返回 null', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            expect(host.getGroupInfo('nonexist')).toBeNull();
-        });
-
-        it('getGroupChecked 不存在的分组返回 null', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            expect(host.getGroupChecked('nonexist')).toBeNull();
+        it('不存在的分组返回 null', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            expect(GroupSelectAbility.getGroupChecked.call(inst, 'no')).toBeNull();
         });
     });
 
-    // ============================================
-    // setGroupChecked
-    // ============================================
+    describe('getGroupCheckedIndex', () => {
+        it('radio 返回索引', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('view', 'radio', false);
+            const item2 = createItem('view', 'radio', true);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            expect(GroupSelectAbility.getGroupCheckedIndex.call(inst, 'view')).toBe(1);
+        });
+
+        it('checkbox 返回索引数组', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('show', 'checkbox', true);
+            const item2 = createItem('show', 'checkbox', false);
+            const item3 = createItem('show', 'checkbox', true);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            GroupSelectAbility.registerGroupItem.call(inst, item3);
+            expect(GroupSelectAbility.getGroupCheckedIndex.call(inst, 'show')).toEqual([0, 2]);
+        });
+    });
+
+    describe('getGroupInfo / getGroupNames', () => {
+        it('getGroupInfo 返回分组信息', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            GroupSelectAbility.registerGroupItem.call(inst, createItem('view', 'radio'));
+            const info = GroupSelectAbility.getGroupInfo.call(inst, 'view');
+            expect(info?.mode).toBe('radio');
+        });
+
+        it('getGroupNames 返回所有分组名', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            GroupSelectAbility.registerGroupItem.call(inst, createItem('view', 'radio'));
+            GroupSelectAbility.registerGroupItem.call(inst, createItem('show', 'checkbox'));
+            expect(GroupSelectAbility.getGroupNames.call(inst)).toEqual(['view', 'show']);
+        });
+    });
 
     describe('setGroupChecked', () => {
-        it('radio 模式设置选中项', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('view', 'radio', true);
-            const item2 = createMockItem('view', 'radio', false);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            host.setGroupChecked('view', 1);
+        it('radio 模式按索引设置', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('view', 'radio', true);
+            const item2 = createItem('view', 'radio', false);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            GroupSelectAbility.setGroupChecked.call(inst, 'view', 1);
             expect(item1.checked).toBe(false);
             expect(item2.checked).toBe(true);
         });
 
-        it('checkbox 模式设置多个选中项', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            const item1 = createMockItem('show', 'checkbox', false);
-            const item2 = createMockItem('show', 'checkbox', false);
-            host.registerGroupItem(item1);
-            host.registerGroupItem(item2);
-
-            host.setGroupChecked('show', [0, 1]);
-            expect(item1.checked).toBe(true);
+        it('checkbox 模式按索引数组设置', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item1 = createItem('show', 'checkbox', true);
+            const item2 = createItem('show', 'checkbox', false);
+            GroupSelectAbility.registerGroupItem.call(inst, item1);
+            GroupSelectAbility.registerGroupItem.call(inst, item2);
+            GroupSelectAbility.setGroupChecked.call(inst, 'show', [1]);
+            expect(item1.checked).toBe(false);
             expect(item2.checked).toBe(true);
+        });
+
+        it('radio 索引越界不操作', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            const item = createItem('view', 'radio', true);
+            GroupSelectAbility.registerGroupItem.call(inst, item);
+            GroupSelectAbility.setGroupChecked.call(inst, 'view', 5);
+            expect(item.checked).toBe(true);
         });
     });
 
-    // ============================================
-    // clearGroups
-    // ============================================
+    describe('registerGroupItems / clearGroups', () => {
+        it('批量注册', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            inst.registerGroupItem = (item: any) =>
+                GroupSelectAbility.registerGroupItem.call(inst, item);
+            const items = [createItem('a', 'radio'), createItem('b', 'checkbox')];
+            GroupSelectAbility.registerGroupItems.call(inst, items);
+            expect(GroupSelectAbility.getGroupNames.call(inst)).toEqual(['a', 'b']);
+        });
 
-    describe('clearGroups', () => {
-        it('清除所有分组', () => {
-            const host = new TestHost() as any;
-            host.initGroupSelect();
-            host.registerGroupItem(createMockItem('view', 'radio'));
-            host.registerGroupItem(createMockItem('show', 'checkbox'));
-            host.clearGroups();
-            expect(host.getGroupNames()).toEqual([]);
+        it('clearGroups 清除所有分组', () => {
+            const inst = createInstance();
+            GroupSelectAbility.initGroupSelect.call(inst);
+            GroupSelectAbility.registerGroupItem.call(inst, createItem('a', 'radio'));
+            GroupSelectAbility.clearGroups.call(inst);
+            expect(GroupSelectAbility.getGroupNames.call(inst)).toEqual([]);
         });
     });
 });

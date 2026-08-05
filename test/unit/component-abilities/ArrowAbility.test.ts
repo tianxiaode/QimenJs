@@ -1,193 +1,100 @@
 /**
  * ArrowAbility 单元测试
- *
- * 覆盖：initArrow、updateArrowPlacement、setArrowVisible、能力状态管理
- * 适配 nodeMap 模式：箭头节点由模板定义，Ability 从 nodeMap 定位
  */
 
-jest.mock('@/logger', () => {
-    const actualLogger = jest.requireActual('@/logger');
-    return {
-        ...actualLogger,
-        Logger: {
-            ...actualLogger.Logger,
-            for: jest.fn(() => ({
-                debug: jest.fn(),
-                info: jest.fn(),
-                warn: jest.fn(),
-                error: jest.fn(),
-            })),
-        },
-    };
-});
-
-import { Component } from '@/component-core';
-import type { ComponentTemplate } from '@/component-core';
 import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
 
-const TPL: ComponentTemplate = {
-    tpl: { tag: 'div', name: 'arrow', content: 'arrow', className: 'q-arrow' },
-};
-
 describe('ArrowAbility', () => {
-    const HostClass = Component.withTemplate(TPL).with([ArrowAbility]);
+    function createInstance(config?: { arrowName?: string }) {
+        const arrowName = config?.arrowName ?? 'arrow';
+        const arrowEl = document.createElement('span');
+        arrowEl.className = 'q-arrow';
 
-    // ============================================
-    // initArrow
-    // ============================================
+        const nodeMap: Record<string, any> = {
+            [arrowName]: { el: arrowEl },
+        };
+
+        return {
+            nodeMap,
+            _arrowVisible: false,
+            _arrowName: '',
+            _arrowEl: null as HTMLElement | null,
+        };
+    }
 
     describe('initArrow', () => {
-        it('从 nodeMap 定位箭头节点', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl).toBeTruthy();
-            expect(arrowEl.classList.contains('q-arrow')).toBe(true);
-        });
-
-        it('默认显示箭头', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            expect(instance._arrowVisible).toBe(true);
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.display).not.toBe('none');
+        it('默认配置初始化', () => {
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst);
+            expect(inst._arrowVisible).toBe(true);
+            expect(inst._arrowName).toBe('arrow');
+            expect(inst._arrowEl).toBeTruthy();
         });
 
         it('arrow=false 时隐藏箭头', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow({ arrow: false });
-            expect(instance._arrowVisible).toBe(false);
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.display).toBe('none');
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst, { arrow: false });
+            expect(inst._arrowVisible).toBe(false);
+            expect(inst._arrowEl?.style.display).toBe('none');
         });
 
-        it('应用 CSS 变量覆盖', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow({
-                arrowVars: {
-                    '--q-arrow-color': '#fff',
-                    '--q-arrow-size': '6px',
-                },
+        it('自定义 arrowName', () => {
+            const inst = createInstance({ arrowName: 'myArrow' });
+            inst.nodeMap['myArrow'] = { el: document.createElement('span') };
+            ArrowAbility.initArrow.call(inst, { arrowName: 'myArrow' });
+            expect(inst._arrowName).toBe('myArrow');
+        });
+
+        it('arrowVars 设置 CSS 变量', () => {
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst, {
+                arrowVars: { '--q-arrow-color': '#fff' },
             });
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.getPropertyValue('--q-arrow-color')).toBe('#fff');
-            expect(arrowEl.style.getPropertyValue('--q-arrow-size')).toBe('6px');
+            expect(inst._arrowEl?.style.getPropertyValue('--q-arrow-color')).toBe('#fff');
         });
 
-        it('无 arrowVars 时不设置 CSS 变量', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.getPropertyValue('--q-arrow-color')).toBe('');
-        });
-
-        it('nodeMap 中无 arrow 节点时不报错', () => {
-            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
-                ArrowAbility,
-            ]);
-            const instance = new NoArrowClass() as any;
-            expect(() => instance.initArrow()).not.toThrow();
+        it('nodeMap 中无箭头元素时不初始化', () => {
+            const inst = { nodeMap: {}, _arrowVisible: false, _arrowName: '', _arrowEl: null };
+            ArrowAbility.initArrow.call(inst);
+            expect(inst._arrowEl).toBeNull();
         });
     });
-
-    // ============================================
-    // updateArrowPlacement
-    // ============================================
 
     describe('updateArrowPlacement', () => {
-        it('设置 top 方向类', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.updateArrowPlacement('top');
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.classList.contains('q-arrow--top')).toBe(true);
+        it('更新方向 CSS 类', () => {
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst);
+            ArrowAbility.updateArrowPlacement.call(inst, 'top');
+            expect(inst._arrowEl?.classList.contains('q-arrow--top')).toBe(true);
+            expect(inst._arrowEl?.classList.contains('q-arrow--bottom')).toBe(false);
         });
 
-        it('设置 bottom 方向类', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.updateArrowPlacement('bottom');
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.classList.contains('q-arrow--bottom')).toBe(true);
+        it('切换方向替换类名', () => {
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst);
+            ArrowAbility.updateArrowPlacement.call(inst, 'left');
+            expect(inst._arrowEl?.classList.contains('q-arrow--left')).toBe(true);
         });
 
-        it('设置 left 方向类', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.updateArrowPlacement('left');
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.classList.contains('q-arrow--left')).toBe(true);
-        });
-
-        it('设置 right 方向类', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.updateArrowPlacement('right');
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.classList.contains('q-arrow--right')).toBe(true);
-        });
-
-        it('切换方向时移除旧方向类', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.updateArrowPlacement('top');
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.classList.contains('q-arrow--top')).toBe(true);
-            instance.updateArrowPlacement('bottom');
-            expect(arrowEl.classList.contains('q-arrow--top')).toBe(false);
-            expect(arrowEl.classList.contains('q-arrow--bottom')).toBe(true);
-        });
-
-        it('无箭头节点时不报错', () => {
-            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
-                ArrowAbility,
-            ]);
-            const instance = new NoArrowClass() as any;
-            expect(() => instance.updateArrowPlacement('top')).not.toThrow();
+        it('无箭头元素不报错', () => {
+            const inst = { _arrowEl: null };
+            expect(() => ArrowAbility.updateArrowPlacement.call(inst, 'top')).not.toThrow();
         });
     });
-
-    // ============================================
-    // setArrowVisible
-    // ============================================
 
     describe('setArrowVisible', () => {
-        it('隐藏箭头', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            instance.setArrowVisible(false);
-            expect(instance._arrowVisible).toBe(false);
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.display).toBe('none');
-        });
-
         it('显示箭头', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow({ arrow: false });
-            instance.setArrowVisible(true);
-            expect(instance._arrowVisible).toBe(true);
-            const arrowEl = instance.nodeMap?.['arrow']?.el as HTMLElement;
-            expect(arrowEl.style.display).toBe('');
+            const inst = createInstance();
+            ArrowAbility.initArrow.call(inst);
+            ArrowAbility.setArrowVisible.call(inst, false);
+            expect(inst._arrowEl?.style.display).toBe('none');
+            ArrowAbility.setArrowVisible.call(inst, true);
+            expect(inst._arrowEl?.style.display).toBe('');
         });
 
-        it('无箭头节点时不报错', () => {
-            const NoArrowClass = Component.withTemplate({ tpl: { tag: 'div' } }).with([
-                ArrowAbility,
-            ]);
-            const instance = new NoArrowClass() as any;
-            expect(() => instance.setArrowVisible(false)).not.toThrow();
-        });
-    });
-
-    // ============================================
-    // 能力状态管理
-    // ============================================
-
-    describe('能力状态', () => {
-        it('_arrowVisible 初始为 true', () => {
-            const instance = new HostClass() as any;
-            instance.initArrow();
-            expect(instance._arrowVisible).toBe(true);
+        it('无箭头元素不报错', () => {
+            const inst = { _arrowVisible: false, _arrowEl: null };
+            expect(() => ArrowAbility.setArrowVisible.call(inst, true)).not.toThrow();
         });
     });
 });

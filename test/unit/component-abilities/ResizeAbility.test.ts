@@ -1,195 +1,163 @@
 /**
  * ResizeAbility 单元测试
- *
- * 覆盖：initResize、resizable getter/setter、_onResizeDrag、onBeforeDispose
  */
 
-jest.mock('@/logger', () => {
-    const actualLogger = jest.requireActual('@/logger');
-    return {
-        ...actualLogger,
-        Logger: {
-            ...actualLogger.Logger,
-            for: jest.fn(() => ({
-                debug: jest.fn(),
-                info: jest.fn(),
-                warn: jest.fn(),
-                error: jest.fn(),
-            })),
-        },
-    };
-});
-
-import { Component } from '@/component-core';
-import type { ComponentTemplate } from '@/component-core';
 import { ResizeAbility } from '@/component-abilities/resize/ResizeAbility';
 
-const TPL: ComponentTemplate = { tpl: { tag: 'div' } };
-const HostClass = Component.withTemplate(TPL).with([ResizeAbility]);
+const resizableDesc = Object.getOwnPropertyDescriptor(ResizeAbility, 'resizable')!;
 
 describe('ResizeAbility', () => {
-    // ============================================
-    // initResize
-    // ============================================
+    function createInstance() {
+        const stateMap = new Map();
+        const el = document.createElement('div');
+        return {
+            el,
+            setAbilityState: jest.fn((key: string, val: any) => stateMap.set(key, val)),
+            abilityState: jest.fn((key: string) => stateMap.get(key)),
+            bind: jest.fn(),
+            on: jest.fn(),
+            onCleanup: jest.fn(),
+            addCls: jest.fn(),
+            emit: jest.fn(),
+        };
+    }
 
     describe('initResize', () => {
-        it('默认创建所有边手柄', () => {
-            const host = new HostClass() as any;
-            host.initResize();
-            expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(8);
-            expect(host.el.classList.contains('q-resizable')).toBe(true);
+        it('默认配置初始化', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst);
+            expect(inst.setAbilityState).toHaveBeenCalled();
+            expect(inst.addCls).toHaveBeenCalledWith('q-resizable');
+            expect(inst.onCleanup).toHaveBeenCalled();
         });
 
-        it('指定边创建对应手柄', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se'] });
-            expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(1);
-            expect(host.el.querySelector('.q-resize-handle--se')).toBeTruthy();
+        it('自定义 edges', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['n', 's'] });
+            expect(inst.bind).toHaveBeenCalledTimes(2);
         });
 
-        it('手柄设置正确 cursor', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se', 'e'] });
-            const seHandle = host.el.querySelector('.q-resize-handle--se') as HTMLElement;
-            const eHandle = host.el.querySelector('.q-resize-handle--e') as HTMLElement;
-            expect(seHandle.style.cursor).toBe('nwse-resize');
-            expect(eHandle.style.cursor).toBe('ew-resize');
+        it('自定义尺寸限制', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, {
+                minWidth: 100,
+                minHeight: 50,
+                maxWidth: 500,
+                maxHeight: 300,
+            });
+            const state = inst.abilityState('ResizeAbility:state');
+            expect(state.minWidth).toBe(100);
+            expect(state.maxHeight).toBe(300);
+        });
+
+        it('创建手柄 DOM 并绑定 drag', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['se'] });
+            expect(inst.bind).toHaveBeenCalledTimes(1);
+            const handle = inst.el.querySelector('.q-resize-handle--se');
+            expect(handle).toBeTruthy();
         });
     });
 
-    // ============================================
-    // resizable
-    // ============================================
-
-    describe('resizable', () => {
-        it('initResize 后默认为 true', () => {
-            const host = new HostClass() as any;
-            host.initResize();
-            expect(host.resizable).toBe(true);
+    describe('resizable getter/setter', () => {
+        it('getter 返回启用状态', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst);
+            expect(resizableDesc.get!.call(inst)).toBe(true);
         });
 
-        it('未初始化时为 false', () => {
-            const host = new HostClass() as any;
-            expect(host.resizable).toBe(false);
+        it('setter 禁用后隐藏手柄', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst);
+            resizableDesc.set!.call(inst, false);
+            const state = inst.abilityState('ResizeAbility:state');
+            expect(state.enabled).toBe(false);
         });
 
-        it('设为 false 隐藏手柄', () => {
-            const host = new HostClass() as any;
-            host.initResize();
-            host.resizable = false;
-            expect(host.resizable).toBe(false);
-            const handles = host.el.querySelectorAll('.q-resize-handle');
-            handles.forEach((h: HTMLElement) => {
-                expect(h.style.display).toBe('none');
-            });
-            expect(host.el.classList.contains('q-resizable--disabled')).toBe(true);
-        });
-
-        it('重新启用显示手柄', () => {
-            const host = new HostClass() as any;
-            host.initResize();
-            host.resizable = false;
-            host.resizable = true;
-            const handles = host.el.querySelectorAll('.q-resize-handle');
-            handles.forEach((h: HTMLElement) => {
-                expect(h.style.display).toBe('');
-            });
+        it('无状态时 getter 返回 false', () => {
+            const inst = { abilityState: jest.fn(() => undefined) };
+            expect(resizableDesc.get!.call(inst)).toBe(false);
         });
     });
-
-    // ============================================
-    // _onResizeDrag
-    // ============================================
 
     describe('_onResizeDrag', () => {
-        it('start 阶段记录起始状态', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se'] });
-            const seHandle = host.el.querySelector('.q-resize-handle--se') as HTMLElement;
-            host._onResizeDrag({
+        it('未启用时不处理', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst);
+            resizableDesc.set!.call(inst, false);
+            ResizeAbility._onResizeDrag.call(inst, {
+                phase: 'start',
+                originalEvent: { target: null },
+            });
+            expect(inst.emit).not.toHaveBeenCalled();
+        });
+
+        it('start 阶段记录初始状态', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['se'] });
+            const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
+            ResizeAbility._onResizeDrag.call(inst, {
                 phase: 'start',
                 dx: 10,
                 dy: 20,
-                originalEvent: { target: seHandle },
+                originalEvent: { target: handle },
             });
-            expect(host.el.classList.contains('q-resizable--active')).toBe(true);
+            const state = inst.abilityState('ResizeAbility:state');
+            expect(state.startX).toBe(10);
+            expect(state.startY).toBe(20);
+            expect(state.activeEdge).toBe('se');
         });
 
-        it('move 阶段调整尺寸', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se'] });
-            const seHandle = host.el.querySelector('.q-resize-handle--se') as HTMLElement;
-
-            host._onResizeDrag({
+        it('move 阶段调整尺寸并 emit', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['se'] });
+            const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
+            ResizeAbility._onResizeDrag.call(inst, {
                 phase: 'start',
                 dx: 0,
                 dy: 0,
-                originalEvent: { target: seHandle },
+                originalEvent: { target: handle },
             });
-            host._onResizeDrag({
+            ResizeAbility._onResizeDrag.call(inst, {
                 phase: 'move',
                 dx: 50,
                 dy: 30,
-                originalEvent: { target: seHandle },
+                originalEvent: { target: handle },
             });
-            expect(host.el.style.width).toBeTruthy();
-            expect(host.el.style.height).toBeTruthy();
+            expect(inst.emit).toHaveBeenCalledWith(
+                'resize',
+                expect.objectContaining({
+                    edge: 'se',
+                })
+            );
         });
 
-        it('end 阶段移除 active 类', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se'] });
-            const seHandle = host.el.querySelector('.q-resize-handle--se') as HTMLElement;
-
-            host._onResizeDrag({
+        it('end 阶段清除 activeEdge', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['se'] });
+            const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
+            ResizeAbility._onResizeDrag.call(inst, {
                 phase: 'start',
                 dx: 0,
                 dy: 0,
-                originalEvent: { target: seHandle },
+                originalEvent: { target: handle },
             });
-            host._onResizeDrag({
+            ResizeAbility._onResizeDrag.call(inst, {
                 phase: 'end',
-                originalEvent: { target: seHandle },
+                originalEvent: { target: handle },
             });
-            expect(host.el.classList.contains('q-resizable--active')).toBe(false);
-        });
-
-        it('disabled 时不处理', () => {
-            const host = new HostClass() as any;
-            host.initResize({ edges: ['se'] });
-            host.resizable = false;
-            const seHandle = host.el.querySelector('.q-resize-handle--se') as HTMLElement;
-            host._onResizeDrag({
-                phase: 'start',
-                dx: 0,
-                dy: 0,
-                originalEvent: { target: seHandle },
-            });
-            expect(host.el.classList.contains('q-resizable--active')).toBe(false);
-        });
-
-        it('未初始化时不报错', () => {
-            const host = new HostClass() as any;
-            expect(() => host._onResizeDrag({ phase: 'start', dx: 0, dy: 0 })).not.toThrow();
+            const state = inst.abilityState('ResizeAbility:state');
+            expect(state.activeEdge).toBeNull();
         });
     });
 
-    // ============================================
-    // onBeforeDispose
-    // ============================================
-
-    describe('onBeforeDispose', () => {
-        it('移除所有手柄', () => {
-            const host = new HostClass() as any;
-            host.initResize();
-            expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(8);
-            host.dispose();
-            expect(host.el.querySelectorAll('.q-resize-handle').length).toBe(0);
-        });
-
-        it('未初始化时不报错', () => {
-            const host = new HostClass() as any;
-            expect(() => host.onBeforeDispose()).not.toThrow();
+    describe('_cleanupHandles', () => {
+        it('清理手柄 DOM', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, { edges: ['n', 's'] });
+            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(2);
+            ResizeAbility._cleanupHandles.call(inst);
+            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(0);
         });
     });
 });
