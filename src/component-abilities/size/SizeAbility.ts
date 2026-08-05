@@ -12,7 +12,9 @@
  *
  * @example
  * ```ts
- * const Avatar = TemplateComponent.withTemplate(TPL).with([SizeAbility]);
+ * const Avatar = class extends Component {};
+ * Avatar.useTemplate(TPL);
+ * Avatar.with([SizeAbility]);
  *
  * // body 中
  * onAfterInit(props) {

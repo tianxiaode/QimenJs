@@ -1,8 +1,7 @@
 /**
  * cell-tpl-helpers — 共享的单元格模板工具函数
  *
- * 各引擎（RowEngine、GroupSummaryEngine、TableSummaryEngine）
- * 复用这些函数生成 cell TplNode，避免重复逻辑。
+ * TableEngine 复用这些函数生成 cell TplNode，避免重复逻辑。
  */
 
 import type { TplNode } from '../../../component-core/types/tpl-node-types';

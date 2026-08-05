@@ -21,7 +21,9 @@
  * @example
  * ```js
  * // 混入能力
- * const MyContainer = TemplateComponent.withTemplate(TEMPLATE).with([GroupSelectAbility]);
+ * const MyContainer = class extends Component {};
+ * MyContainer.useTemplate(TEMPLATE);
+ * MyContainer.with([GroupSelectAbility]);
  *
  * // 初始化
  * this.initGroupSelect({ defaultMode: 'radio' });
@@ -72,7 +74,7 @@ interface GroupSelectState {
     defaultMode: GroupSelectMode;
 }
 
-export const GroupSelectAbility= {
+export const GroupSelectAbility = {
     // ─── 初始化 ───
 
     /**

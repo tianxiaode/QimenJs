@@ -10,12 +10,8 @@
  * - getEditable/getGroupable/getSummarizable: 懒缓存筛选
  * - dispose: 清理
  *
- * 各引擎统一接收 ColumnMetaManager，按需取用列信息：
- *   HeaderEngine.compile(mgr)
- *   RowEngine.compile(mgr)
- *   EditOverlayEngine.compile(mgr)
- *   GroupSummaryEngine.compile(mgr)
- *   TableSummaryEngine.compile(mgr)
+ * TableEngine 统一接收 ColumnMetaManager，按需取用列信息：
+ *   TableEngine.compile(mgr)
  */
 
 import type {

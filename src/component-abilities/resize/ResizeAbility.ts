@@ -13,7 +13,9 @@
  *
  * @example
  * ```ts
- * const Dialog = Component.withTemplate(TPL).with([ResizeAbility]);
+ * const Dialog = class extends Component {};
+ * Dialog.useTemplate(TPL);
+ * Dialog.with([ResizeAbility]);
  *
  * // body 中
  * onAfterInit(props) {

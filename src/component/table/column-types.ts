@@ -43,7 +43,7 @@
  * ];
  *
  * const result = ColumnCompiler.compile(columns);
- * // result.rowTpl → body 行的 TplNode（可直接传给 withTemplate）
+ * // result.rowTpl → body 行的 TplNode（传给 TableEngine.compile 产出组件类）
  * // result.headerCellConfigs → 表头单元格数据（传给 HeaderRow 的 setItems）
  * // result.columnMetas → 运行时列元数据（row.update() 消费）
  * ```
@@ -510,7 +510,7 @@ export interface ColumnDef {
     /**
      * 自定义编辑器组件类型 — editType 为 'custom' 时必填
      *
-     * 指向已注册的组件类型名，EditOverlayEngine 编译时嵌入该组件。
+     * 指向已注册的组件类型名，TableEngine 编译编辑浮层时嵌入该组件。
      */
     editComponent?: string;
 
@@ -541,7 +541,7 @@ export interface ColumnDef {
  *
  * ColumnMetaManager 管理此数据，提供按需查询。
  * row.update() 遍历 columnMetas，为每个 cell 构造 CellData 并调用 cell.update()。
- * EditOverlayEngine / GroupSummaryEngine / TableSummaryEngine 按需筛选。
+ * TableEngine 编译时按需筛选（editable / groupAggregator / tableAggregator）。
  */
 export interface ColumnMeta {
     /** 列名 — 唯一标识，也是 nodeMap key */
@@ -701,11 +701,9 @@ export type HeaderCellConfigOrGroup = HeaderCellConfig | GroupHeaderCellConfig;
  * ```ts
  * const result = ColumnCompiler.compile(columns);
  *
- * // 1. 用 rowTpl 创建行组件类
- * const BodyRowClass = Component.withTemplate({
- *     tpl: result.rowTpl,
- *     body: { type: 'TableRow', ... }
- * });
+ * // 1. 用 rowTpl 创建行组件类（由 TableEngine.compile 内部完成）
+ * //    const RowClass = class extends RowComponent { _columnMetas = visibleMetas; };
+ * //    RowClass.useTemplate(result.rowTpl);
  *
  * // 2. 用 headerCellConfigs 初始化表头
  * headerRow.setItems(result.headerCellConfigs);
@@ -720,7 +718,7 @@ export type HeaderCellConfigOrGroup = HeaderCellConfig | GroupHeaderCellConfig;
  * ```
  */
 export interface ColumnCompileResult {
-    /** body 行模板 — 可直接传给 Component.withTemplate() 的 tpl */
+    /** body 行模板 — 传给 TableEngine.compile 产出组件类的 tpl */
     rowTpl: TplNode;
 
     /** 表头单元格配置（支持多表头，递归结构） */
