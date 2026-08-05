@@ -6,7 +6,7 @@
  * 架构分层：
  *   1. 缓存层 — abilityState 读写，屏蔽存储细节
  *   2. 引擎层 — diff/sync + 事件发射，驱动浮层生命周期
- *   3. 处理器层 — 类型处理器（badge/tooltip/dialog/loading），将 props 转为 FloatDecl
+ *   3. 处理器层 — 类型处理器（tooltip/dialog/loading），将 props 转为 FloatDecl
  *   4. API 层 — attach/detach/show/hide/toggle/update，对外暴露
  *
  * 类型处理器（Handlers）：
@@ -15,14 +15,13 @@
  *
  * @example
  * const engine = FloatEngine.getInstance();
- * engine.registerHandler('badge', (config) => ({ type: 'Badge', trigger: 'always', ... }));
+
  * engine.attachFloat(component, 'dropIcon', { type: 'Menu', trigger: 'click' });
  * engine.showFloat(component, 'dialog');
  */
 
 import type { FloatDecl } from '../types/tpl-node-types';
 import type {
-    BadgeQuickConfig,
     TooltipQuickConfig,
     DialogQuickConfig,
     LoadingQuickConfig,
@@ -59,19 +58,6 @@ export class FloatEngine {
     // ── 内置类型处理器 ──
 
     private _registerBuiltinHandlers(): void {
-        this.registerHandler('badge', (config: BadgeQuickConfig | string | number) => {
-            const cfg: BadgeQuickConfig =
-                typeof config === 'string' || typeof config === 'number'
-                    ? { text: String(config) }
-                    : config;
-            return {
-                type: 'Badge',
-                trigger: 'always',
-                anchor: cfg.anchor ?? 'self',
-                data: { text: cfg.text, visible: cfg.visible },
-            } as FloatDecl;
-        });
-
         this.registerHandler('tooltip', (config: TooltipQuickConfig | string) => {
             const cfg: TooltipQuickConfig =
                 typeof config === 'string' ? { tooltip: config } : config;
@@ -326,10 +312,6 @@ export class FloatEngine {
 
     updateDialog(self: any, data: Record<string, any>): void {
         this.updateFloat(self, 'dialog', data);
-    }
-
-    updateBadge(self: any, data: Record<string, any>): void {
-        this.updateFloat(self, 'badge', data);
     }
 
     updateTooltip(self: any, data: Record<string, any>): void {

@@ -109,9 +109,13 @@
  *       floats: {
  *           dropBtn:  { type: 'DropPanel', placement: 'bottom', trigger: 'click' },
  *           tooltip:  { type: 'Tooltip', anchor: 'self', trigger: 'hover' },
- *           badge:    { type: 'Badge', anchor: 'icon', trigger: 'always' },
  *       }
  *   }
+ *
+ * badge 不走浮动引擎，而是在 buildDOM 后由 NodeMapManager 创建绝对定位 DOM，
+ * 注册为 `{nodeName}:badge` 节点，可通过 CommonPropsAbility 操作：
+ *   { name: 'icon', badge: '3' }
+ *   → nodeMap 中自动生成 'icon:badge' 节点
  *
  * 浮层事件转发（FloatDecl.emits）：
  *   body: {

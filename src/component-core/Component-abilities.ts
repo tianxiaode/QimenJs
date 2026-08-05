@@ -15,6 +15,7 @@ import { NodeQueryAbility } from './abilities/NodeQueryAbility';
 import { NodePropAbility } from './abilities/NodePropAbility';
 import { CommonPropsAbility } from './abilities/CommonPropsAbility';
 import { AnimationAbility } from './abilities';
+import { BadgeAbility } from './abilities/BadgeAbility';
 import { FloatAbility } from './abilities/FloatAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { LifecycleAbility } from './abilities/LifecycleAbility';
@@ -37,11 +38,11 @@ export const COMPONENT_ABILITIES = [
     NodePropAbility,
     CommonPropsAbility,
     AnimationAbility,
+    BadgeAbility,
     FloatAbility,
     DragAbility,
 
     LifecycleAbility,
-
 ] as const satisfies readonly AbilityDefinition[];
 
 export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES> {

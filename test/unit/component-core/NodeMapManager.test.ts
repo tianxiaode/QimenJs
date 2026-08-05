@@ -206,6 +206,148 @@ describe('NodeMapManager', () => {
     });
 
     // ══════════════════════════════════════════════════════════════
+    // _buildBadgeOverlays 测试
+    // ══════════════════════════════════════════════════════════════
+
+    describe('badge overlay 构建', () => {
+        function createBadgeCache() {
+            return createMockCache({
+                indexPath: { root: [], icon: [0, 0] },
+            });
+        }
+
+        function createBadgeTemplate() {
+            return createTemplateElement('<div><span>icon</span></div>');
+        }
+
+        it('应为声明 badge 的节点创建绝对定位 badge 元素', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: '3' }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            const badgeNode = manager.get('icon:badge');
+            expect(badgeNode).toBeDefined();
+            expect(badgeNode?.el).toBeDefined();
+            expect(badgeNode?.el?.className).toBe('q-badge');
+            expect(badgeNode?.el?.textContent).toBe('3');
+            expect(badgeNode?.el?.style.position).toBe('absolute');
+        });
+
+        it('badge 对象配置应正确设置文本', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: { text: 'New' } }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            const badgeNode = manager.get('icon:badge');
+            expect(badgeNode?.el?.textContent).toBe('New');
+        });
+
+        it('badge visible: false 时应隐藏 badge 元素', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({
+                    name: 'icon',
+                    tag: 'span',
+                    badge: { text: '5', visible: false },
+                }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            const badgeNode = manager.get('icon:badge');
+            expect(badgeNode?.el?.style.display).toBe('none');
+        });
+
+        it('badge 为 null 时不应创建 badge 节点', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: null }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            expect(manager.get('icon:badge')).toBeUndefined();
+        });
+
+        it('无 badge 声明时不应创建任何 badge 节点', () => {
+            const manager = new NodeMapManager(mockCache, mockNodeMetas, mockOwner);
+            manager.buildDOM();
+
+            const all = manager.getAll();
+            const badgeKeys = Object.keys(all).filter(k => k.endsWith(':badge'));
+            expect(badgeKeys).toHaveLength(0);
+        });
+
+        it('锚点元素 position 为 static 时应设为 relative', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: '3' }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            const el = manager.buildDOM();
+            document.body.appendChild(el);
+
+            try {
+                const iconNode = manager.get('icon');
+                expect(iconNode?.el?.style.position).toBe('relative');
+            } finally {
+                document.body.removeChild(el);
+            }
+        });
+
+        it('badge 数字类型应正确转为文本', () => {
+            const cache = createBadgeCache();
+            cache.templateCache = createBadgeTemplate();
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: 42 }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            const badgeNode = manager.get('icon:badge');
+            expect(badgeNode?.el?.textContent).toBe('42');
+        });
+
+        it('锚点节点不在 nodeMap 中时不应创建 badge', () => {
+            const cache = createMockCache();
+            cache.templateCache = createTemplateElement('<div>empty</div>');
+            cache.indexPath = { root: [] };
+            const nodeMetas = {
+                root: createNodeMeta({ name: 'root', tag: 'div' }),
+                icon: createNodeMeta({ name: 'icon', tag: 'span', badge: '3' }),
+            };
+
+            const manager = new NodeMapManager(cache, nodeMetas, mockOwner);
+            manager.buildDOM();
+
+            expect(manager.get('icon:badge')).toBeUndefined();
+        });
+    });
+
+    // ══════════════════════════════════════════════════════════════
     // get/getAll/set 测试
     // ══════════════════════════════════════════════════════════════
 
@@ -446,7 +588,7 @@ describe('NodeMapManager', () => {
             manager = new NodeMapManager(mockCache, mockNodeMetas, mockOwner);
             manager.buildDOM();
 
-            MockComponentClass = jest.fn().mockImplementation((props) => ({
+            MockComponentClass = jest.fn().mockImplementation(props => ({
                 el: document.createElement('div'),
                 props,
                 dispose: jest.fn(),
@@ -566,7 +708,10 @@ describe('NodeMapManager', () => {
             const node1 = manager.get('test');
             if (node1) node1.component = { dispose: dispose1 };
 
-            manager.set('node2', createNodeMeta({ name: 'node2', component: { dispose: dispose2 } }));
+            manager.set(
+                'node2',
+                createNodeMeta({ name: 'node2', component: { dispose: dispose2 } })
+            );
 
             manager.disposeAll();
 
@@ -963,9 +1108,7 @@ describe('NodeMapManager', () => {
                     level3: [0, 0, 0],
                 },
             });
-            cache.templateCache = createTemplateElement(
-                '<div><span><em>deep</em></span></div>'
-            );
+            cache.templateCache = createTemplateElement('<div><span><em>deep</em></span></div>');
 
             const nodeMetas = {
                 root: createNodeMeta({ name: 'root' }),

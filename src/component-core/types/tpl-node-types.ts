@@ -246,13 +246,14 @@ export interface TplNode {
     // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
 
     /**
-     * 角标浮层快捷配置 — 节点级 badge 声明
+     * 角标配置 — 节点级 badge 声明
      *
-     * 等价于 float: { type: 'Badge', ... }
+     * badge 不走浮动引擎，而是在 buildDOM 后由 NodeMapManager 创建绝对定位 DOM，
+     * 注册为 `{nodeName}:badge` 节点，可通过 CommonPropsAbility 操作。
      *
      * @example
      * { name: 'icon', badge: '3' }
-     * { name: 'icon', badge: { text: 'New', color: 'red' } }
+     * { name: 'icon', badge: { text: 'New', visible: false } }
      */
     badge?: BadgeQuickConfig | string | number | null;
 
@@ -574,16 +575,17 @@ export type FloatTrigger = 'click' | 'hover' | 'focus' | 'manual' | 'always';
  *        // anchor='self' → 锚定组件自身 el，悬停触发
  *        tooltip: { type: 'Tooltip', anchor: 'self', trigger: ['hover', 'click'] },
  *        // 悬停或点击都触发
- *        badge: { type: 'Badge', anchor: 'icon', trigger: 'always' },
- *        // anchor='icon' → 锚定 nodeMap.icon.el，始终显示
  *    }
+ *
+ * 注：badge 不走浮动引擎，而是在 buildDOM 后由 NodeMapManager 创建绝对定位 DOM，
+ * 注册为 `{nodeName}:badge` 节点，可通过 CommonPropsAbility 操作。
  *
  * 处理流程：
  *   1. 取出 type → 解析组件类
  *   2. 删掉 type → 剩余配置
  *   3. new Component(remainingConfig) → 直接传入构造函数
  *
- * 统一了所有浮动场景：下拉面板、菜单、提示框、徽章等。
+ * 统一了所有浮动场景：下拉面板、菜单、提示框等。
  */
 export interface FloatDecl {
     /** 浮动层组件类型（唯一特殊字段，去掉后剩余配置直接作为构造参数） */
@@ -601,7 +603,7 @@ export interface FloatDecl {
      * - 'hover': 悬停触发
      * - 'focus': 聚焦触发
      * - 'manual': 手动控制
-     * - 'always': 始终显示（如 badge，初始化时显示一次）
+     * - 'always': 始终显示（初始化时显示一次）
      * - 数组：多种触发方式组合（如 ['hover', 'click']）
      */
     trigger?: FloatTrigger | FloatTrigger[];

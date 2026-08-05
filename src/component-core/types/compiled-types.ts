@@ -161,7 +161,16 @@ export interface NodeMetadata {
 
     // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
 
-    /** 角标浮层快捷配置 */
+    /**
+     * 角标配置 — 节点级 badge 声明
+     *
+     * badge 不走浮动引擎，而是在 buildDOM 后由 NodeMapManager 创建绝对定位 DOM，
+     * 注册为 `{nodeName}:badge` 节点，可通过 CommonPropsAbility 操作。
+     *
+     * @example
+     * { name: 'icon', badge: '3' }
+     * { name: 'icon', badge: { text: 'New', visible: false } }
+     */
     badge?: BadgeQuickConfig | string | number | null;
 
     /** 提示浮层快捷配置 */

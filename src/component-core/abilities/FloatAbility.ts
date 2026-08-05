@@ -4,7 +4,7 @@
  * 核心逻辑委托给 FloatEngine 单例（engine/FloatEngine.ts），
  * 本文件只定义 AbilityDefinition 的接口，所有方法都是薄委托。
  *
- * 类型处理器（badge/tooltip/dialog）在 FloatEngine 中注册，
+ * 类型处理器（tooltip/dialog）在 FloatEngine 中注册，
  * 新增类型只需 registerHandler，不需改 FloatAbility。
  *
  * @see FloatEngine for core implementation
@@ -78,10 +78,6 @@ export const FloatAbility: AbilityDefinition = {
 
     updateFloat(key: string, data: Record<string, any>): void {
         engine.updateFloat(this, key, data);
-    },
-
-    updateBadge(data: Record<string, any>): void {
-        engine.updateBadge(this, data);
     },
 
     updateTooltip(data: Record<string, any>): void {

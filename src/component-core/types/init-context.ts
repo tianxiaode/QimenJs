@@ -74,7 +74,7 @@ export interface TooltipQuickConfig {
 /**
  * Dialog 快捷配置
  *
- * 通过 props.dialog 声明式挂载对话框浮层，与 badge/tooltip 模式对称。
+ * 通过 props.dialog 声明式挂载对话框浮层，与 tooltip 模式对称。
  * float 选项（mask/closeOnEscape 等）提取到 FloatDecl，剩余作为 data 传给 DialogComponent。
  *
  * @example
@@ -193,9 +193,6 @@ export interface ComponentProps {
      * DomEventsEngine 第三层 key 匹配此值。
      */
     action?: string;
-
-    /** 角标浮层快捷配置，null 时不触发 */
-    badge?: BadgeQuickConfig | string | number | null;
 
     /** 提示浮层快捷配置，null 时不触发 */
     tooltip?: TooltipQuickConfig | string | null;

@@ -54,24 +54,6 @@ describe('FloatAbility', () => {
     // ══════════════════════════════════════════════════════════════
 
     describe('buildFromProps', () => {
-        it('从 props.badge 构建浮层配置', () => {
-            const result = engine.buildFromProps({ props: { badge: '5' } });
-
-            expect(result.badge).toBeDefined();
-            expect(result.badge.type).toBe('Badge');
-            expect(result.badge.trigger).toBe('always');
-            expect(result.badge.data.text).toBe('5');
-        });
-
-        it('从 props.badge 对象构建', () => {
-            const result = engine.buildFromProps({
-                props: { badge: { text: '99+', visible: true } },
-            });
-
-            expect(result.badge.data.text).toBe('99+');
-            expect(result.badge.data.visible).toBe(true);
-        });
-
         it('从 props.tooltip 构建浮层配置', () => {
             const result = engine.buildFromProps({ props: { tooltip: '保存' } });
 
@@ -92,11 +74,13 @@ describe('FloatAbility', () => {
             expect(result.tooltip.data.tooltip).toBe('提示');
         });
 
-        it('badge 和 tooltip 同时存在', () => {
-            const result = engine.buildFromProps({ props: { badge: '3', tooltip: '删除' } });
+        it('tooltip 和 dialog 同时存在', () => {
+            const result = engine.buildFromProps({
+                props: { tooltip: '删除', dialog: { title: '确认' } },
+            });
 
-            expect(result.badge).toBeDefined();
             expect(result.tooltip).toBeDefined();
+            expect(result.dialog).toBeDefined();
         });
 
         it('从 props.dialog 构建浮层配置', () => {
@@ -150,12 +134,11 @@ describe('FloatAbility', () => {
             expect(result.dialog.data.emits).toBeUndefined();
         });
 
-        it('badge + tooltip + dialog 同时存在', () => {
+        it('tooltip + dialog 同时存在', () => {
             const result = engine.buildFromProps({
-                props: { badge: '3', tooltip: '删除', dialog: { title: '确认' } },
+                props: { tooltip: '删除', dialog: { title: '确认' } },
             });
 
-            expect(result.badge).toBeDefined();
             expect(result.tooltip).toBeDefined();
             expect(result.dialog).toBeDefined();
         });
@@ -166,18 +149,10 @@ describe('FloatAbility', () => {
             expect(result.dialog).toBeUndefined();
         });
 
-        it('无 badge/tooltip/dialog 时返回空', () => {
+        it('无 tooltip/dialog 时返回空', () => {
             const result = engine.buildFromProps({ props: {} });
 
             expect(Object.keys(result)).toHaveLength(0);
-        });
-
-        it('anchor 可自定义', () => {
-            const result = engine.buildFromProps({
-                props: { badge: { text: '5', anchor: 'header' } },
-            });
-
-            expect(result.badge.anchor).toBe('header');
         });
     });
 
@@ -480,17 +455,17 @@ describe('FloatAbility', () => {
         it('_initFloatsFromProps 委托给 buildFromProps + floats setter', () => {
             const { instance, getCache } = createMockInstance();
             instance._initializing = true;
-            instance.props = { badge: '5' };
+            instance.props = { tooltip: '保存' };
 
             FloatAbility._initFloatsFromProps.call(instance);
 
-            expect(getCache().badge).toBeDefined();
-            expect(getCache().badge.type).toBe('Badge');
+            expect(getCache().tooltip).toBeDefined();
+            expect(getCache().tooltip.type).toBe('Tooltip');
         });
 
         it('_commitFloats 委托给 commitFloats', () => {
             const { instance, getOverlayEmit } = createMockInstance({
-                badge: { type: 'Badge' },
+                tooltip: { type: 'Tooltip' },
             });
 
             FloatAbility._commitFloats.call(instance);
@@ -537,16 +512,6 @@ describe('FloatAbility', () => {
             expect(ctx.source).toBe('comp-1:dialog');
             expect(ctx.type).toBe(OVERLAY_ACTIONS.CHANGE);
             expect(ctx.data.data).toEqual({ title: '新标题' });
-        });
-
-        it('updateBadge 委托给 updateFloat', () => {
-            const { instance, getOverlayEmit } = createMockInstance();
-
-            FloatAbility.updateBadge.call(instance, { text: '5' });
-
-            const ctx = getOverlayEmit().mock.calls[0][0];
-            expect(ctx.source).toBe('comp-1:badge');
-            expect(ctx.type).toBe(OVERLAY_ACTIONS.CHANGE);
         });
 
         it('updateTooltip 委托给 updateFloat', () => {
@@ -665,12 +630,12 @@ describe('FloatAbility', () => {
                 existing: { type: 'Existing' },
             });
             instance._initializing = true;
-            instance.props = { badge: '5' };
+            instance.props = { tooltip: '保存' };
 
             FloatAbility._initFloatsFromProps.call(instance);
 
             expect(getCache().existing).toBeDefined();
-            expect(getCache().badge).toBeDefined();
+            expect(getCache().tooltip).toBeDefined();
             expect(getOverlayEmit()).not.toHaveBeenCalled();
         });
     });

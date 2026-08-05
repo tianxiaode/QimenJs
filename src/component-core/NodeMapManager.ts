@@ -14,6 +14,7 @@
 
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from './types/compiled-types';
 import type { INodeMapManager } from './types/node-map-manager-types';
+import type { BadgeQuickConfig } from './types/init-context';
 import { findByPath } from './engine/utils/dom-path';
 import { SKELETON_CLS } from './constants/compile-constants';
 
@@ -170,6 +171,7 @@ export class NodeMapManager implements INodeMapManager {
         const fragment = this._cache.templateCache.content.cloneNode(true);
         this._el.appendChild(fragment);
         this._buildNodeMap();
+        this._buildBadgeOverlays();
         return this._el;
     }
 
@@ -544,6 +546,60 @@ export class NodeMapManager implements INodeMapManager {
             if (!el) continue;
 
             this._map[name] = { ...meta, el };
+        }
+    }
+
+    /**
+     * 构建 badge 浮层节点
+     *
+     * 遍历 nodeMetas 中声明了 badge 的节点，为每个节点创建绝对定位的 badge DOM 元素，
+     * 挂载到锚点元素的父容器上，并注册进 nodeMap。
+     *
+     * badge 节点名格式为 `{anchorName}:badge`，可通过 CommonPropsAbility 操作：
+     *   this.setNodeHidden(true, 'icon:badge')
+     *   this.addCls('q-badge--dot', 'icon:badge')
+     *
+     * @remarks
+     * - 仅在 buildDOM() 内部调用，在 _buildNodeMap 之后
+     * - badge 元素使用绝对定位，不影响文档流和 indexPath
+     * - 锚点元素需要 position: relative 才能正确定位
+     */
+    private _buildBadgeOverlays(): void {
+        for (const [name, meta] of Object.entries(this._nodeMetas)) {
+            if (meta.badge == null) continue;
+
+            const anchorNode = this._map[name];
+            if (!anchorNode?.el) continue;
+
+            const cfg: BadgeQuickConfig =
+                typeof meta.badge === 'string' || typeof meta.badge === 'number'
+                    ? { text: String(meta.badge) }
+                    : meta.badge;
+
+            const badgeEl = document.createElement('span');
+            badgeEl.className = 'q-badge';
+            badgeEl.style.position = 'absolute';
+            badgeEl.style.top = '0';
+            badgeEl.style.right = '0';
+            badgeEl.style.transform = 'translate(50%, -50%)';
+
+            if (cfg.text != null) {
+                badgeEl.textContent = String(cfg.text);
+            }
+
+            if (cfg.visible === false) {
+                badgeEl.style.display = 'none';
+            }
+
+            const anchorEl = anchorNode.el as HTMLElement;
+            if (!anchorEl.style.position || anchorEl.style.position === 'static') {
+                anchorEl.style.position = 'relative';
+            }
+
+            anchorEl.appendChild(badgeEl);
+
+            const badgeName = `${name}:badge`;
+            this._map[badgeName] = { name: badgeName, tag: 'span', el: badgeEl };
         }
     }
 
