@@ -1,50 +1,34 @@
 # QimenJS 架构文档
 
-本目录包含 QimenJS 的完整架构文档，包括架构原则、包说明等。
+本目录包含 QimenJS 的完整架构文档，按核心概念组织。
 
-## 文档结构
+## 核心架构文档
 
-```
-docs/architecture/
-├── README.md                    # 本文件
-├── component-ability-index.md  # 组件能力索引（组件-能力映射、事件体系、分页设计等）
-├── render-pipeline.md          # 渲染流程设计（基于 LayoutNode 的创建/初始化/渲染流程）
-├── ui-component-design.md      # UI 组件层设计方案
-├── token-management.md         # Token 管理设计
-├── principles/                  # 架构原则
-│   ├── dependencies.md         # 依赖管理原则
-│   ├── imports.md              # 引用规范
-│   └── boundary-defense.md     # 边界与防御原则
-└── packages/                    # 包文档
-    ├── README.md               # 包汇总
-    ├── composable.md           # composable 包
-    ├── component-ability-mapping.md # 组件-能力映射
-    ├── context.md              # context 包
-    ├── data-processor.md       # data-processor 包
-    ├── error.md                # error 包
-    ├── event-dom.md            # event-dom 包
-    ├── i18n.md                 # i18n 包
-    ├── icon.md                 # icon 包
-    ├── markdown.md             # markdown 包（引擎 + 编辑器）
-    ├── oauth2.md               # oauth2 包
-    ├── permission.md           # permission 包
-    ├── schema.md               # schema 包
-    ├── system-abilities.md     # system-abilities 包
-    ├── theme.md                # theme 包
-    ├── utils.md                # utils 包
-    └── validation.md           # validation 包
-```
+| 文档 | 说明 |
+|------|------|
+| [ComposableBase 能力模式](./composable-ability-pattern.md) | 能力注入机制、use/with、abilityState、dispose 生命周期、InferAbilities 类型推导、内置能力一览 |
+| [注册表系统](./registry-system.md) | RegistryHub、DomainRegistrar（多平台对接核心）、SystemRegistrar、MimeTypeRegistrar、PatternRegistrar、锁定机制 |
+| [事件系统](./event-system.md) | 7 种事件总线、EventScope、domEvents/listens/childEvents、handler 命名规则、EventForwarder、ComponentEntityDispatch、ACTION_PAIRS |
+| [组件编译引擎与模板系统](./compile-engine-and-template.md) | 编译时预编译、实例化管线（3 Phase）、NodeMap、组件间通信、编译优化策略、useTemplate |
+| [HTTP 管道与平台适配](./http-pipeline.md) | HttpClient、4 阶段管道、DataProcessor、ABP/Spring 适配、preset 联动、自定义平台适配 |
+| [验证管道与 Schema](./validation-pipeline.md) | 验证管道模式、7 个验证阶段、ValidatorRegistrar、自定义验证器、Schema 协作、i18n 错误消息 |
+| [实体管理与权限系统](./entity-and-permission.md) | 5 种 EntityManager、实体事件协同、defaultEntityErrorHandler/LoadingHandler、PermissionRegistrar、权限事件驱动、组件自动应用权限 |
+| [i18n 国际化系统](./i18n-system.md) | 零依赖设计、模板节点自动翻译、系统总线语言切换、错误码多语言查找、resolveI18nValue |
+| [主题系统](./theme-system.md) | CSS 变量驱动、ThemeRegistrar、flattenTokens、themeAware、10 个中国传统色主题 |
+| [路由系统](./router-system.md) | Hash/History 双模式、RouteEventBus、路径参数匹配、路由守卫 |
+| [任务队列与 Worker](./task-queue-and-worker.md) | GlobalTaskQueue、优先级调度、WorkerManager、HashTask 子系统 |
+| [日志与错误处理](./logger-and-error.md) | Logger 层次、级别过滤、ErrorBase 体系、KernelErrorCode、错误码与 i18n 联动 |
+| [钩子函数体系](./lifecycle-hooks.md) | 完整钩子列表、初始化/运行时/销毁执行顺序、实体操作钩子 |
 
-## 快速导航
+## 其他文档
 
 ### 架构原则
 - [依赖管理原则](./principles/dependencies.md) - 包的依赖关系和层级
 - [引用规范](./principles/imports.md) - 如何正确引用其他包
 - [边界与防御原则](./principles/boundary-defense.md) - 输入校验和防御代码的职责划分
 
-### 组件层
-- [组件能力索引](./component-ability-index.md) - 组件-能力映射、事件体系、分页设计等（增量更新）
-- [渲染流程设计](./render-pipeline.md) - 基于 LayoutNode 的创建/初始化/渲染流程
+### 组件层参考
+- [组件能力索引](./component-ability-index.md) - 组件-能力映射、事件体系、分页设计等
 - [UI 组件层设计方案](./ui-component-design.md) - 组件层整体设计
 
 ### 包文档
@@ -103,7 +87,6 @@ UI 层（8 个，依赖应用层及以下）
 ├── @qimenjs/component-abilities
 ├── @qimenjs/component
 ├── @qimenjs/markdown
-├── @qimenjs/layout
 ├── @qimenjs/theme
 ├── @qimenjs/icon
 └── @qimenjs/imperative
@@ -119,114 +102,15 @@ UI 层（8 个，依赖应用层及以下）
 
 ### 关键架构模式
 
-1. **Ability/Composable 模式** - `ComposableBase` 基类 + `AbilityDefinition` 纯对象，通过 `withAbilities` 注入到类原型，`InferAbilities` 自动推导接口
-2. **Registry 模式** - `RegistrarBase<M>` 抽象基类 + `RegistryHub` 中央管理
-3. **Pipeline 模式** - weight+offset 排序、熔断、追踪、计时、统计
-4. **Entity Manager 模式** - 5 种 Manager 通过 `extends + withAbilities + InferAbilities` 组合获得不同功能
-5. **Component 模式** - 双层架构：闭包基类（ComponentFactory）+ 内部类基类（InnerComponent），withTemplate 预编译 + 纯克隆实例化 + 多模板条件选择
-6. **ComponentEventBus 单例模式** - 统一 eventScope 路由，解决跨作用域事件通信
+1. **Ability/Composable 模式** - `ComposableBase` 基类 + `AbilityDefinition` 纯对象，通过 `withAbilities` 注入到类原型，`InferAbilities` 自动推导接口 → [详见](./composable-ability-pattern.md)
+2. **Registry 模式** - `RegistrarBase<M>` 抽象基类 + `RegistryHub` 中央管理 → [详见](./registry-system.md)
+3. **Pipeline 模式** - weight+offset 排序、熔断、追踪、计时、统计 → [详见](./http-pipeline.md)
+4. **Entity Manager 模式** - 5 种 Manager 通过 `extends + withAbilities + InferAbilities` 组合获得不同功能 → [详见](./entity-and-permission.md)
+5. **Component 模式** - 编译时预编译 + 运行时纯克隆实例化 + 管道化初始化 → [详见](./compile-engine-and-template.md)
+6. **EventBus 模式** - 分层总线 + scopeId 隔离，7 种专用总线 → [详见](./event-system.md)
 7. **自动注册模式** - 模块导入时自动注册，"引入即注册"约定
-
-### 架构关键设计详解
-
-#### withTemplate 预编译架构（双层架构）
-
-组件系统采用双层架构，彻底解耦模板结构与组件逻辑：
-
-**闭包基类（ComponentFactory）** — 工厂层，纯闭包：
-- 不持有 el、nodeMap，不挂载能力
-- `withTemplate(templates)` → 编译模板 → 生成内部类 → 闭包保存
-- `replace()` → 基于已有内部类派生新内部类
-- 构造函数 / `create()` → 根据 `when` 条件选择内部类，返回内部类实例
-
-**内部类基类（InnerComponent）** — 实现层，完整组件：
-- 拥有完整初始化流程、能力（Ability）、el、nodeMap
-- 预编译产物直接挂在自己身上
-- 是真正被实例化的组件，外部拿到的就是这个实例
-- 不需要代理、不需要 forwards 转发 nodeMap
-
-`TemplateComponent.withTemplate(template)` 是组件创建的核心机制，实现了"类定义时预编译，实例化时纯克隆"的高效模式：
-
-- **预编译阶段**（类定义时执行一次）：
-  - 提取节点数据（`data-content` 属性 → 内容属性映射）
-  - 生成 `contentProperties` 配置
-  - 预编译事件模板（`data-event`/`data-emit`/`data-bridge` → InternalEventBinding/ComponentEventBusTemplate）
-  - 创建模板 DOM 元素（`templateEl`）
-
-- **实例化阶段**（每次 `new Xxx()` 执行）：
-  - 遍历 `_variants`，`when(props)` 首个为 true 的变体胜出
-  - `cloneNode(true)` 深克隆模板 DOM
-  - 填充 node 引用（`nodeMap`）
-  - 零字符串处理开销
-
-- **多模板支持**：`ComponentTemplate.tpl` 支持 `TplNode | TplVariant[]`
-  - 单模板（TplNode）→ 直接使用，无条件
-  - 多模板（TplVariant[]）→ 每个 `when(props)` 首个为 true 的胜出，省略 when 为兜底
-
-- **构造即完整**：`new Xxx()` 自动完成 initElement + 内容填充 + 事件绑定 + 注册，不需要 `initialize()`
-
-- **static 配置**：`static children` / `static componentEventBuses` 等类级别配置，所有实例共享，props 可覆盖
-
-- **支持三种模板格式**：HTML 字符串 / 旧版 JsonTemplateNode[] / 新版 ComponentTemplate
-
-#### 组件事件体系
-
-组件事件分为内部事件和外部事件，通过不同机制处理：
-
-- **内部事件**（`data-event`）：
-  - 通过 `this.bind` 统一绑定
-  - 使用 event-dom 事件规范命名（`tap`/`click`/`input`/`change`/`scroll` 等），跨平台兼容
-  - 支持 `?debounce=N`/`?throttle=N` 修饰符
-
-- **外部事件**（`data-emit`），三种模式按优先级：
-  1. `componentEventBuses` 声明的 → 走组件事件 `emitUI` 发布
-  2. 实例有 `onXxx` 方法 → emitKey 驼峰化自动绑定（`saveBtn:tap` → `onSaveBtnTap`）
-  3. 默认 → 走组件事件 `emitUI` 发布
-
-- **ComponentEventBus 单例**：
-  - `src/events/ComponentEventBus.ts` 统一 eventScope，解决发送方/监听方 eventScope 不同导致事件无法路由的问题
-  - `ComponentEventBusAbility`（system-abilities）提供组件实例方法 `this.componentEmit()`/`this.componentOn()`/`this.componentOnce()`
-  - `ComponentEventBusConfigAbility`（component-core/abilities/）是配置能力，声明式组件事件桥接
-
-#### 主题切换流程
-
-```
-ThemeRegistrar.apply('dark')
-  → flattenTokens(tokens) 扁平化 DesignTokens
-  → applyCSSVariables() 更新 :root CSS 变量（所有组件自动生效）
-  → GlobalEventBus.emit('theme:change', payload)
-  → ThemeAbility._initTheme() 中检查 static themeAware
-  → 声明了 themeAware 的组件调用 onThemeChange(event)
-```
-
-- CSS 变量自动生效：所有组件通过 CSS 变量引用主题色，切换主题时无需组件配合
-- JS 层面感知：组件声明 `static themeAware = true` 后，主题切换时触发 `onThemeChange(event)`
-- 7 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色）通过 `registerChineseThemes()` 按需注册
-
-#### 权限控制流程
-
-```
-PermissionRegistrar.registerBatch(entries)
-  → GlobalEventBus.emit('permission:change', payload)
-  → PermissionAbility setter 中 _listenPermissionChange()
-  → applyPermission() 根据 behavior 控制 UI
-```
-
-- 域范围权限码：`domain:code` 格式
-- `PermissionRegistrar` extends RegistrarBase，通过 GlobalEventBus 触发 `permission:change` 事件
-- `createDomainPermissions()` 域前缀权限码工厂
-- LayoutNode 声明 `permission` 字段后自动监听权限变化
-
-#### 能力锻造（forge.ts）
-
-`src/composable/forge.ts` 提供能力锻造工具函数，用于将多个 AbilityDefinition 合并到目标类：
-
-- `withAbilities(Class, abilities)` — 将能力列表中的属性/方法/getter/setter 复制到类原型，保留 instanceof
-- `withDefinitions(Class, definitions)` — 将非能力定义（body 方法、getter/setter、普通值）复制到类原型
-- 能力有特殊协议属性：`__propAliases`（属性别名映射）、`__initProps`（从 props 初始化）、`__init__`（初始化方法名）
-- `InferAbilities<typeof abilities>` — 从能力数组自动推导交叉类型，通过声明合并注入到类接口
 
 ## 相关文档
 
-- [构建进度](../build-progress/README.md) - 构建进度
-- [ComposableBase 最佳实践](../best-practices/composable-best-practices.md) - 能力系统最佳实践
+- [最佳实践](../best-practices/) - 各模块最佳实践
+- [设计决策](../design-decisions/README.md) - 重要的设计决策

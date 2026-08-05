@@ -39,6 +39,8 @@
 - [2026-07-26-toolbar-entity-toolbar-design.md](./2026-07-26-toolbar-entity-toolbar-design.md) - Toolbar + EntityToolbar 工具栏设计
 - [2026-07-27-compile-engine-refactoring.md](./2026-07-27-compile-engine-refactoring.md) - 编译引擎重构 + ComponentRegistrar 移除
 - [2026-07-27-direct-extends-component-pattern.md](./2026-07-27-direct-extends-component-pattern.md) - Direct Extends 组件模式重构
+- [2026-07-29-event-delegation-action-path-design.md](./2026-07-29-event-delegation-action-path-design.md) - 事件体系设计：domEvents / childEvents / listens
+- [2026-08-03-permission-system-design.md](./2026-08-03-permission-system-design.md) - 权限系统设计
 
 ### 部分过时
 

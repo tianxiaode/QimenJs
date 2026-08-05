@@ -151,6 +151,7 @@ npm run docs
 感谢以下 AI 工具的贡献：
 
 - **华为 CodeArts** — 完成了项目的大部分代码，是本项目的主力开发工具
+- **Trae CN** — 代码生成和架构辅助
 - ChatGPT — 架构设计和代码审查
 - DeepSeek — 代码生成和优化
 - Gemini — 文档和测试辅助
