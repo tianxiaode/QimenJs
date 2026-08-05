@@ -58,6 +58,7 @@ const crossCutSchema: FlatSchema = {
 // ============================================
 
 class TestCrossCutManager extends RemoteCrudEntityManager {
+    static entityType = 'CrossCutProduct';
     domain = 'crosscut-test';
     entityName = 'CrossCutProduct';
     url = '/api/products';
@@ -65,6 +66,7 @@ class TestCrossCutManager extends RemoteCrudEntityManager {
 }
 
 class TestReadonlyManager extends RemoteReadonlyEntityManager {
+    static entityType = 'CrossCutProduct';
     domain = 'crosscut-test';
     entityName = 'CrossCutProduct';
     url = '/api/products';
@@ -143,8 +145,8 @@ describe('RemoteAbility 跨切面集成测试', () => {
     });
 
     afterEach(() => {
-        manager.dispose();
-        readonlyManager.dispose();
+        manager?.dispose();
+        readonlyManager?.dispose();
         jest.restoreAllMocks();
     });
 
@@ -275,15 +277,13 @@ describe('RemoteAbility 跨切面集成测试', () => {
             mockFetchReturn({ list: products, total: 3 });
 
             const listedHandler = jest.fn();
-            manager.on('listed', listedHandler);
+            manager.entityOn(manager.entityKey, 'listed', listedHandler);
 
             await manager.list();
 
-            // 事件处理器接收 IEventContext: { event, data, source, ... }
             expect(listedHandler).toHaveBeenCalledTimes(1);
-            const ctx = listedHandler.mock.calls[0][0];
-            expect(ctx.event).toBe('listed');
-            expect(ctx.data).toHaveLength(3);
+            const data = listedHandler.mock.calls[0][0];
+            expect(data).toHaveLength(3);
         });
 
         it('create() 成功后应该发射 created 事件', async () => {
@@ -297,13 +297,11 @@ describe('RemoteAbility 跨切面集成测试', () => {
             mockFetchReturn({ item: newItem, list: [], total: 0 });
 
             const createdHandler = jest.fn();
-            manager.on('created', createdHandler);
+            manager.entityOn(manager.entityKey, 'created', createdHandler);
 
             await manager.create({ name: 'New Product', price: 100 });
 
             expect(createdHandler).toHaveBeenCalledTimes(1);
-            const ctx = createdHandler.mock.calls[0][0];
-            expect(ctx.event).toBe('created');
         });
 
         it('update() 成功后应该发射 updated 事件', async () => {
@@ -320,13 +318,11 @@ describe('RemoteAbility 跨切面集成测试', () => {
             mockFetchReturn({ item: updated, list: [], total: 0 });
 
             const updatedHandler = jest.fn();
-            manager.on('updated', updatedHandler);
+            manager.entityOn(manager.entityKey, 'updated', updatedHandler);
 
             await manager.update(updated);
 
             expect(updatedHandler).toHaveBeenCalledTimes(1);
-            const ctx = updatedHandler.mock.calls[0][0];
-            expect(ctx.event).toBe('updated');
         });
 
         it('toggle() 成功后应该发射 toggled 事件', async () => {
@@ -343,16 +339,14 @@ describe('RemoteAbility 跨切面集成测试', () => {
             mockFetchReturn({ item: toggledItem, list: [], total: 0 });
 
             const toggledHandler = jest.fn();
-            manager.on('toggled', toggledHandler);
+            manager.entityOn(manager.entityKey, 'toggled', toggledHandler);
 
             await manager.toggle(item, 'active');
 
-            // toggled 事件 data 是 { id, item, field }
             expect(toggledHandler).toHaveBeenCalledTimes(1);
-            const ctx = toggledHandler.mock.calls[0][0];
-            expect(ctx.event).toBe('toggled');
-            expect(ctx.data.field).toBe('active');
-            expect(ctx.data.item).toBeDefined();
+            const data = toggledHandler.mock.calls[0][0];
+            expect(data.field).toBe('active');
+            expect(data.item).toBeDefined();
         });
     });
 
@@ -424,8 +418,8 @@ describe('RemoteAbility 跨切面集成测试', () => {
 
             const loadingHandler = jest.fn();
             const successHandler = jest.fn();
-            manager.on('list:loading', loadingHandler);
-            manager.on('list:success', successHandler);
+            manager.entityOn(manager.entityKey, 'list:loading', loadingHandler);
+            manager.entityOn(manager.entityKey, 'list:success', successHandler);
 
             await manager.list();
 

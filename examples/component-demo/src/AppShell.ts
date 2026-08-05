@@ -12,8 +12,6 @@
 
 import { Component, TplNode } from '@qimenjs/component-core';
 import { NavbarComponent, RouteContainerComponent } from '@qimenjs/component';
-
-import { AppFooterComponent } from './components/AppFooter';
 import { HomePage } from './pages/HomePage';
 // import { ComponentsPage } from './pages/ComponentsPage';
 // import { TemplatesPage } from './pages/TemplatesPage';
@@ -69,6 +67,6 @@ export const APP_SHELL_TPL: TplNode = {
     ],
 };
 
-class AppShellBase extends Component {}
+export class AppShell extends Component {}
 
-AppShellBase.useTemplate(APP_SHELL_TPL);
+AppShell.useTemplate(APP_SHELL_TPL);

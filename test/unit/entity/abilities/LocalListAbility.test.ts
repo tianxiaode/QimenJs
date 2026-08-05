@@ -37,6 +37,7 @@ function createListHost() {
         updateData = jest.fn().mockResolvedValue(undefined);
         toParams = jest.fn().mockReturnValue({});
         emit = jest.fn();
+        emitEvent = jest.fn();
     }
     withAbilities(ListHost, [LocalListAbility]);
     return new ListHost() as any;
@@ -51,7 +52,7 @@ describe('LocalListAbility', () => {
         expect(host.buildOptions).toHaveBeenCalledWith('list', {}, null, {});
         expect(host.fetch).toHaveBeenCalledWith('list', {});
         expect(host.updateData).toHaveBeenCalledWith([{ id: '1', name: 'test' }]);
-        expect(host.emit).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
+        expect(host.emitEvent).toHaveBeenCalledWith(ENTITY_LIST_EVENTS.LISTED, host.items);
         expect(result).toBe(host.items);
         host.dispose();
     });
@@ -76,26 +77,28 @@ describe('LocalListAbility', () => {
         host.dispose();
     });
 
-    it('filter 应设置 search.keyword 并返回 items', () => {
+    it('filter 应设置 search.keyword 并调用 list', async () => {
         const host = createListHost();
         host.items = [{ id: '1', name: 'test' }];
+        const listSpy = jest.spyOn(host, 'list').mockResolvedValue(host.items);
 
-        const result = host.filter('keyword');
+        await host.filter('keyword');
 
         expect(host.search.keyword).toBe('keyword');
-        expect(result).toBe(host.items);
+        expect(listSpy).toHaveBeenCalled();
         host.dispose();
     });
 
-    it('sort 应设置 search.sortBy 和 sortOrder 并返回 items', () => {
+    it('sort 应设置 search.sortBy 和 sortOrder 并调用 list', async () => {
         const host = createListHost();
         host.items = [{ id: '1', name: 'test' }];
+        const listSpy = jest.spyOn(host, 'list').mockResolvedValue(host.items);
 
-        const result = host.sort('name', 'desc');
+        await host.sort('name', 'desc');
 
         expect(host.search.sortBy).toBe('name');
         expect(host.search.sortOrder).toBe('desc');
-        expect(result).toBe(host.items);
+        expect(listSpy).toHaveBeenCalled();
         host.dispose();
     });
 });

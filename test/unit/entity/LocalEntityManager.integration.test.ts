@@ -57,6 +57,7 @@ const localTestSchema: FlatSchema = {
 // ============================================
 
 class TestLocalTaskManager extends LocalCrudEntityManager {
+    static entityType: string = 'TestLocalTaskManager';
     domain = 'local-test';
     entityName = 'LocalTask';
     url = '/api/local-tasks';

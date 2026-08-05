@@ -54,6 +54,7 @@ const testSchema: FlatSchema = {
 // ============================================
 
 class TestUserManager extends RemoteCrudEntityManager {
+    static entityType: string = 'TestUserManager';
     domain = 'test-integration';
     entityName = 'TestUser';
     url = '/api/test-users';

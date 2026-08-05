@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { LOADING_TPL } from './loading-tpl';
 
 class LoadingComponent extends Component {
     _initLoading(props?: Record<string, any>): void {

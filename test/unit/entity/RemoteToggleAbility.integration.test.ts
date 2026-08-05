@@ -54,9 +54,7 @@ const toggleTestSchema: FlatSchema = {
 // ============================================
 
 class TestToggleManager extends RemoteCrudEntityManager {
-    // 按照任务要求，显式声明包含 RemoteToggleAbility
-    // 虽然 RemoteCrudEntityManager 已包含，但此处显式列出以明确测试意图
-
+    static entityType: string = 'TestToggleManager';
     domain = 'toggle-test';
     entityName = 'ToggleFeature';
     url = '/api/features';
@@ -173,7 +171,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             const finalItem = { ...item, enabled: true };
             mockFetchSuccess(finalItem);
 
-            const emitSpy = jest.spyOn(manager, 'emit');
+            const emitSpy = jest.spyOn(manager, 'emitEvent');
 
             await manager.toggle(item, 'enabled');
 
@@ -181,6 +179,7 @@ describe('RemoteToggleAbility 集成测试', () => {
                 id: item.id,
                 item: finalItem,
                 field: 'enabled',
+                oldValue: false,
             });
         });
 
@@ -245,7 +244,7 @@ describe('RemoteToggleAbility 集成测试', () => {
 
             mockFetchError(new Error('Network error'));
 
-            const emitSpy = jest.spyOn(manager, 'emit');
+            const emitSpy = jest.spyOn(manager, 'emitEvent');
 
             await manager.toggle(item, 'enabled');
 

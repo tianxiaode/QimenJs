@@ -144,6 +144,7 @@ describe('ComposableBase Ability injection and override', () => {
             schemaRegistrar.register(testSchema);
 
             class TestRenameManager extends RemoteCrudEntityManager {
+                static entityType = 'TestRenameUser';
                 domain = 'test-ability-rename';
                 entityName = 'TestRenameUser';
                 url = '/api/test-users';

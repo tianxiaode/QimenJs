@@ -119,6 +119,7 @@ const treeSchema: TreeSchema = {
 // ============================================
 
 class TestSchemaUserManager extends RemoteCrudEntityManager {
+    static entityType: string = 'TestSchemaUserManager';
     domain = 'schema-test';
     entityName = 'SchemaUser';
     url = '/api/schema-users';
@@ -126,6 +127,7 @@ class TestSchemaUserManager extends RemoteCrudEntityManager {
 }
 
 class TestOverrideUserManager extends RemoteCrudEntityManager {
+    static entityType: string = 'TestOverrideUserManager';
     domain = 'schema-test';
     entityName = 'OverrideUser';
     url = '/api/override-users';
@@ -133,6 +135,7 @@ class TestOverrideUserManager extends RemoteCrudEntityManager {
 }
 
 class TestMappingUserManager extends RemoteCrudEntityManager {
+    static entityType: string = 'TestMappingUserManager';
     domain = 'schema-test';
     entityName = 'MappingUser';
     url = '/api/mapping-users';

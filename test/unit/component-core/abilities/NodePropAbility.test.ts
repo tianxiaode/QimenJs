@@ -11,6 +11,7 @@ jest.mock('@/events', () => ({
 }));
 
 import { NodePropAbility } from '@/component-core/abilities/NodePropAbility';
+import { NodeQueryAbility } from '@/component-core/abilities/NodeQueryAbility';
 import { LifecycleAbility } from '@/component-core/abilities/LifecycleAbility';
 
 describe('NodePropAbility', () => {
@@ -21,15 +22,15 @@ describe('NodePropAbility', () => {
             expect(typeof NodePropAbility._updateNode).toBe('function');
             expect(typeof NodePropAbility._markNodeDirty).toBe('function');
             expect(typeof NodePropAbility._flushNodeProps).toBe('function');
-            expect(typeof NodePropAbility._resolveNodeEl).toBe('function');
-            expect(typeof NodePropAbility._resolveNodeTarget).toBe('function');
+            expect(typeof NodeQueryAbility._resolveNodeEl).toBe('function');
+            expect(typeof NodeQueryAbility._resolveNodeTarget).toBe('function');
         });
     });
 
     describe('_resolveNodeEl', () => {
         it('节点不存在时返回 undefined', () => {
             const instance = { nodeMap: {} };
-            const result = NodePropAbility._resolveNodeEl.call(instance, 'nonexistent');
+            const result = NodeQueryAbility._resolveNodeEl.call(instance, 'nonexistent');
             expect(result).toBeUndefined();
         });
 
@@ -37,14 +38,14 @@ describe('NodePropAbility', () => {
             const el = document.createElement('div');
             const component = { el };
             const instance = { nodeMap: { icon: { component } } };
-            const result = NodePropAbility._resolveNodeEl.call(instance, 'icon');
+            const result = NodeQueryAbility._resolveNodeEl.call(instance, 'icon');
             expect(result).toBe(el);
         });
 
         it('节点无 component 时返回 node.el', () => {
             const el = document.createElement('div');
             const instance = { nodeMap: { icon: { el } } };
-            const result = NodePropAbility._resolveNodeEl.call(instance, 'icon');
+            const result = NodeQueryAbility._resolveNodeEl.call(instance, 'icon');
             expect(result).toBe(el);
         });
     });
@@ -52,7 +53,7 @@ describe('NodePropAbility', () => {
     describe('_resolveNodeTarget', () => {
         it('节点不存在时返回空对象', () => {
             const instance = { nodeMap: {} };
-            const result = NodePropAbility._resolveNodeTarget.call(instance, 'nonexistent');
+            const result = NodeQueryAbility._resolveNodeTarget.call(instance, 'nonexistent');
             expect(result).toEqual({});
         });
 
@@ -60,7 +61,7 @@ describe('NodePropAbility', () => {
             const el = document.createElement('div');
             const component = { cls: 'test' };
             const instance = { nodeMap: { icon: { el, component } } };
-            const result = NodePropAbility._resolveNodeTarget.call(instance, 'icon');
+            const result = NodeQueryAbility._resolveNodeTarget.call(instance, 'icon');
             expect(result).toEqual({ el, component });
         });
     });

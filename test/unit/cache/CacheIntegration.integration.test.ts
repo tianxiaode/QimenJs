@@ -54,6 +54,7 @@ const cacheTestSchema: FlatSchema = {
 // ============================================
 
 class CacheTestManager extends RemoteCrudEntityManager {
+    static entityType: string = 'CacheTestManager';
     domain = 'cache-test';
     entityName = 'CacheTestEntity';
     url = '/api/cache-test';

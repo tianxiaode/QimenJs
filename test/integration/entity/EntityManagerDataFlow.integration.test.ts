@@ -61,6 +61,7 @@ const testUserSchema: FlatSchema = {
 // ============================================
 
 class TestDataFlowManager extends RemoteCrudEntityManager {
+    static entityType = 'TestDataFlowUser';
     domain = 'test-dataflow';
     entityName = 'TestDataFlowUser';
     url = '/api/test-users';

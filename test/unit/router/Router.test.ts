@@ -144,6 +144,26 @@ describe('Router', () => {
             router.navigate('/about');
             expect(router.getPath()).toBe('/about');
         });
+
+        it('navigate with replace in hash mode', () => {
+            router.register({ '/home': 'HomePage' });
+            router.navigate('/home', true);
+            expect(router.getPath()).toBe('/home');
+        });
+
+        it('navigate with replace in history mode', () => {
+            router.register({ '/home': 'HomePage' });
+            (router as any).hashMode = false;
+            router.navigate('/home', true);
+            expect(router.getPath()).toBe('/home');
+        });
+
+        it('navigate with push in history mode', () => {
+            router.register({ '/home': 'HomePage' });
+            (router as any).hashMode = false;
+            router.navigate('/home', false);
+            expect(router.getPath()).toBe('/home');
+        });
     });
 
     describe('RouteEventBus', () => {

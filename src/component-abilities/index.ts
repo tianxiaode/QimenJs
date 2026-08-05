@@ -6,14 +6,7 @@
  */
 
 // 渲染能力
-export { VirtualListAbility } from './render';
-export { AnimationAbility } from './render';
-
 export { ArrowAbility, type ArrowConfig } from './render';
-export { arrowCSS } from './render';
-
-// 菜单能力
-export { MenuItemManageAbility, type MenuItemConfig } from './menu';
 
 // 分组选择能力
 export {
@@ -28,7 +21,6 @@ export { SizeAbility, type SizeConfig } from './size';
 
 // 调整大小能力
 export { ResizeAbility, type ResizeConfig, type ResizeEdge } from './resize';
-export { resizeCSS } from './resize/resize.css';
 
 // 指示器能力
 export { IndicatorAbility, type IndicatorType, type IndicatorConfig } from './indicator';

@@ -209,14 +209,8 @@ export {
 } from './one-time-password';
 export { oneTimePasswordCSS } from './one-time-password/one-time-password.css';
 
-// UploadButton 上传按钮组件（从 ButtonComponent 派生，文件选择与上传）
-export {
-    UploadButtonComponent,
-    FileItemStatus,
-    type UploadButtonProps,
-    type FileTransportConfig,
-    type FileItem,
-} from './button/UploadButtonComponent';
+// UploadButton 上传按钮组件（文件选择与上传）
+export * from './button/UploadButtonComponent';
 export { uploadButtonCSS } from './button/upload-button.css';
 
 // Step 步骤条组件（池化 ItemGroup + StepItem 子项）

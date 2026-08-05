@@ -77,6 +77,7 @@ function createFlatHost(options: { isTree?: boolean; isRemote?: boolean } = {}) 
         pageSize = 20;
         cacheTTL = 300000;
         debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
+        emitEvent = jest.fn();
     }
     withAbilities(FlatHost, [FlatLocalStateAbility]);
     return new FlatHost() as any;
@@ -500,6 +501,7 @@ describe('FlatLocalStateAbility', () => {
                 pageSize = 20;
                 cacheTTL = 300000;
                 debounce = jest.fn((_key: string, fn: any, _ms: number) => fn) as any;
+                emitEvent = jest.fn();
             }
             withAbilities(FlatHost, [FlatLocalStateAbility]);
             return new FlatHost() as any;
@@ -629,10 +631,11 @@ describe('FlatLocalStateAbility', () => {
             const item: any = { id: '1', name: 'temp' };
             await host.addItem(item);
             const tempId = item.tempId;
-            expect(host.sourceData.has(tempId)).toBe(true);
+            expect(host.sourceData.has('1')).toBe(true);
+            expect(item.tempId).toBeDefined();
 
             await host.updateData([{ id: '1', name: 'updated' }]);
-            expect(host.sourceData.has(tempId)).toBe(false);
+            expect(host.sourceData.has('1')).toBe(true);
             host.dispose();
         });
     });

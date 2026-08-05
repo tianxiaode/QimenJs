@@ -143,7 +143,7 @@ describe('datetime-picker', () => {
         });
 
         it('should pad short year', () => {
-            expect(splitToDigits(99)).toEqual([0, 0, 0, 9]);
+            expect(splitToDigits(99)).toEqual([0, 0, 9, 9]);
         });
     });
 

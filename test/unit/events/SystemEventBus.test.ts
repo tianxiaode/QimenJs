@@ -110,6 +110,22 @@ describe('SystemEventBus', () => {
             expect(typeof off).toBe('function');
             off();
         });
+
+        it('window: 事件同时注册 scope 和 bridge', () => {
+            const bus = SystemEventBus.getInstance();
+            const handler = jest.fn();
+            const off = bus.on(SYSTEM_EVENTS.WINDOW_RESIZE, handler);
+            expect(typeof off).toBe('function');
+            off();
+        });
+
+        it('i18n: 事件同时注册 scope 和 bridge', () => {
+            const bus = SystemEventBus.getInstance();
+            const handler = jest.fn();
+            const off = bus.on(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, handler);
+            expect(typeof off).toBe('function');
+            off();
+        });
     });
 
     describe('once', () => {
@@ -138,6 +154,13 @@ describe('SystemEventBus', () => {
             expect(SYSTEM_EVENTS.PERMISSION_CHANGE).toBe('permission:change');
             expect(SYSTEM_EVENTS.WINDOW_RESIZE).toBe('window:resize');
             expect(SYSTEM_EVENTS.I18N_LOCALE_CHANGE).toBe('i18n:localeChange');
+        });
+    });
+
+    describe('dispose', () => {
+        it('清除所有监听和桥接', () => {
+            const bus = SystemEventBus.getInstance();
+            expect(() => bus.dispose()).not.toThrow();
         });
     });
 });

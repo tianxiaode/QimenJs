@@ -1,7 +1,7 @@
 /**
  * UploadButtonComponent 上传按钮组件
  *
- * 从 ButtonComponent 派生，点击按钮触发文件选择。薄组件，仅负责：
+ * 点击按钮触发文件选择。薄组件，仅负责：
  * - 隐藏 input 与点击交互
  * - 文件列表渲染（setNodeHtml + 事件委托，符合 CommonPropsAbility 约定）
  * - 订阅 FileEventBus 反馈并转发到组件/桥接通道
@@ -9,7 +9,7 @@
  * 上传/下载/校验/哈希/状态管理全部委托给 FileDispatchCenter（单例，按 fileKey 持有队列）。
  * 多个组件共享同一 fileKey 可观察同一队列（如拖拽上传区 + 文件列表）。
  *
- * 事件（保留向后兼容，订阅 FileEventBus 后转发）：
+ * 事件（订阅 FileEventBus 后转发）：
  * - select / uploadProgress / uploaded / uploadError / uploadComplete / remove
  * 通过 on(name, cb) 监听；若设置 eventKey，同时经 componentEmit 转发到 ComponentEventBus。
  *
@@ -20,7 +20,8 @@
  * bus.componentOn('docUpload', 'uploaded', (data) => { ... })
  */
 
-import { ButtonComponent } from './ButtonComponent';
+import { Component } from '@qimenjs/component-core';
+import { SizeAbility } from '@qimenjs/component-abilities';
 import {
     fileDispatchCenter,
     formatFileSize,
@@ -29,10 +30,10 @@ import {
     type FileTransportConfig,
     type FileItem,
 } from '@/file';
+
 import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
-
-export type { FileItemStatus, FileTransportConfig, FileItem };
+import { UPLOAD_BUTTON_TPL } from './upload-button-tpl';
 
 export interface UploadButtonProps {
     text?: string;
@@ -49,7 +50,7 @@ export interface UploadButtonProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-/** 反馈事件 → 组件 emit 事件名 映射（保留向后兼容） */
+/** 反馈事件 → 组件 emit 事件名 映射 */
 const FEEDBACK_TO_EMIT: Record<string, string> = {
     [FILE_FEEDBACK_EVENTS.SELECTED]: 'select',
     [FILE_FEEDBACK_EVENTS.UPLOAD_PROGRESS]: 'uploadProgress',
@@ -59,374 +60,318 @@ const FEEDBACK_TO_EMIT: Record<string, string> = {
     [FILE_FEEDBACK_EVENTS.REMOVED]: 'remove',
 };
 
-export let UploadButtonComponent = ButtonComponent.replace({
-    tplReplaces: {
-        // 复用按钮模板中未使用的 dropIcon 槽位，替换为文件列表容器
-        dropIcon: {
-            tag: 'div',
-            name: 'list',
-            cls: 'q-upload-btn__list',
-        },
-    },
+class UploadButtonComponent extends Component {
+    _fileKey: string = '';
+    _transport: FileTransportConfig | null = null;
+    _accept: string = '';
+    _multiple: boolean = false;
+    _maxSize: number = 0;
+    _fileDisabled: boolean = false;
+    _autoUpload: boolean = true;
+    _inputEl: HTMLInputElement | null = null;
+    _itemsMap: Map<string, FileItem> | null = null;
+    _listClickBound: boolean = false;
+    _boundListClick: ((e: Event) => void) | null = null;
 
-    body: {
-        _fileKey: '' as string,
-        _transport: null as FileTransportConfig | null,
-        _accept: '' as string,
-        _multiple: false as boolean,
-        _maxSize: 0 as number,
-        _fileDisabled: false as boolean,
-        _autoUpload: true as boolean,
-        _inputEl: null as HTMLInputElement | null,
-        _itemsMap: null as Map<string, FileItem> | null,
-        _listClickBound: false as boolean,
+    onAfterInit(props?: UploadButtonProps): void {
+        this.initSize();
+        this._initUploadButton(props);
+    }
 
-        nodes: {
-            root: { addCls: 'q-upload-btn' },
-        },
+    onBeforeDispose(): void {
+        if (this._listClickBound) {
+            const listEl = this._resolveNodeEl('list');
+            if (listEl && this._boundListClick)
+                listEl.removeEventListener('click', this._boundListClick);
+            this._listClickBound = false;
+        }
 
-        onAfterInit(props?: UploadButtonProps): void {
-            const self = this as any;
-            self._initUploadButton(props);
-        },
+        if (this._fileKey) {
+            fileDispatchCenter.disconnect(this._fileKey);
+        }
+    }
 
-        onBeforeDispose(): void {
-            const self = this as any;
-            // 反馈事件订阅由 FileEventBusAbility 的 onCleanup 自动清理，无需手动 unsub
+    _initUploadButton(props?: UploadButtonProps): void {
+        if (props?.fileKey) this._fileKey = props.fileKey;
+        if (props?.eventKey) this.eventKey = props.eventKey;
+        if (props?.transport) this._transport = props.transport;
+        if (props?.accept) this._accept = props.accept;
+        if (props?.multiple) this._multiple = true;
+        if (props?.maxSize) this._maxSize = props.maxSize;
+        if (props?.disabled) this._fileDisabled = true;
+        if (props?.autoUpload !== undefined) this._autoUpload = props.autoUpload;
 
-            if (self._listClickBound) {
-                const listEl = self._resolveNodeEl?.('list');
-                if (listEl) listEl.removeEventListener('click', self._onListClick);
-                self._listClickBound = false;
-            }
+        this._createFileInput();
 
-            // 通道生命周期：直接调用（与 DataDispatchCenter.connect 同理）
-            if (self._fileKey) {
-                fileDispatchCenter.disconnect(self._fileKey);
-            }
-        },
+        this._itemsMap = new Map();
 
-        _initUploadButton(props?: UploadButtonProps): void {
-            const self = this as any;
+        fileDispatchCenter.createChannel(this._fileKey, {
+            transport: this._transport ?? undefined,
+            accept: this._accept || undefined,
+            multiple: this._multiple,
+            maxSize: this._maxSize || undefined,
+            autoUpload: this._autoUpload,
+        });
+        fileDispatchCenter.connect(this._fileKey);
 
-            if (props?.fileKey) self._fileKey = props.fileKey;
-            if (props?.eventKey) self.eventKey = props.eventKey;
-            if (props?.transport) self._transport = props.transport;
-            if (props?.accept) self._accept = props.accept;
-            if (props?.multiple) self._multiple = true;
-            if (props?.maxSize) self._maxSize = props.maxSize;
-            if (props?.disabled) self._fileDisabled = true;
-            if (props?.autoUpload !== undefined) self._autoUpload = props.autoUpload;
+        this._subscribeFeedback();
 
-            self._createFileInput();
+        this._boundListClick = this._handleListClick.bind(this);
+        const listEl = this._resolveNodeEl('list');
+        if (listEl) {
+            listEl.addEventListener('click', this._boundListClick);
+            this._listClickBound = true;
+        }
 
-            // 本地状态镜像（由反馈事件维护，组件不直接读调度中心）
-            self._itemsMap = new Map();
+        this._applyFileState();
+        this._renderList();
+    }
 
-            // 通道生命周期：直接调用（createChannel 时中心注册命令监听）
-            fileDispatchCenter.createChannel(self._fileKey, {
-                transport: self._transport ?? undefined,
-                accept: self._accept || undefined,
-                multiple: self._multiple,
-                maxSize: self._maxSize || undefined,
-                autoUpload: self._autoUpload,
+    _createFileInput(): void {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.style.display = 'none';
+        if (this._accept) input.accept = this._accept;
+        if (this._multiple) input.multiple = true;
+        if (this._fileDisabled) input.disabled = true;
+        this._inputEl = input;
+        this.el.appendChild(input);
+
+        input.addEventListener('change', () => {
+            const files = input.files;
+            if (!files || files.length === 0) return;
+            this._fileCmd(FILE_ACTIONS.SELECT, { files: Array.from(files) });
+            input.value = '';
+        });
+    }
+
+    onBtnClick(): void {
+        if (this._fileDisabled) return;
+        this._inputEl?.click();
+    }
+
+    /** 构建并发送文件命令事件（经 FileEventBusAbility） */
+    _fileCmd(action: string, data: any): void {
+        this.fileEmit(
+            EventContextBuilder.create()
+                .withEvent(`file:${this._fileKey}:${action}`)
+                .withType(action)
+                .withSource(this._fileKey)
+                .withSourceType('UploadButton')
+                .withData(data)
+                .build()
+        );
+    }
+
+    /** 订阅 FileEventBus 反馈事件（经 FileEventBusAbility，onCleanup 自动清理） */
+    _subscribeFeedback(): void {
+        const key = this._fileKey;
+        const events = [
+            FILE_FEEDBACK_EVENTS.SELECTED,
+            FILE_FEEDBACK_EVENTS.HASH_START,
+            FILE_FEEDBACK_EVENTS.HASH_PROGRESS,
+            FILE_FEEDBACK_EVENTS.HASH_COMPLETE,
+            FILE_FEEDBACK_EVENTS.UPLOAD_START,
+            FILE_FEEDBACK_EVENTS.UPLOAD_PROGRESS,
+            FILE_FEEDBACK_EVENTS.UPLOADED,
+            FILE_FEEDBACK_EVENTS.UPLOAD_ERROR,
+            FILE_FEEDBACK_EVENTS.UPLOAD_COMPLETE,
+            FILE_FEEDBACK_EVENTS.REMOVED,
+            FILE_FEEDBACK_EVENTS.CANCELLED,
+        ];
+
+        for (const action of events) {
+            this.fileOn(key, action, (data: any) => {
+                this._applyFeedback(action, data);
+                this._renderList();
+                this._forward(action, data);
             });
-            fileDispatchCenter.connect(self._fileKey);
+        }
+    }
 
-            // 订阅反馈事件（经 FileEventBusAbility，onCleanup 自动清理）
-            self._subscribeFeedback();
+    /** 根据反馈事件更新本地状态镜像 _itemsMap */
+    _applyFeedback(action: string, data: any): void {
+        const map = this._itemsMap;
+        if (!map) return;
 
-            // 事件委托：list 上的 remove 按钮
-            self._onListClick = self._onListClick.bind(self);
-            const listEl = self._resolveNodeEl('list');
-            if (listEl) {
-                listEl.addEventListener('click', self._onListClick);
-                self._listClickBound = true;
-            }
-
-            self._applyFileState();
-            self._renderList();
-        },
-
-        _createFileInput(): void {
-            const self = this as any;
-            // 隐藏 input 是功能性元素，需 programmatic click()，保留 createElement
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.style.display = 'none';
-            if (self._accept) input.accept = self._accept;
-            if (self._multiple) input.multiple = true;
-            if (self._fileDisabled) input.disabled = true;
-            self._inputEl = input;
-            self.el.appendChild(input);
-
-            input.addEventListener('change', () => {
-                const files = input.files;
-                if (!files || files.length === 0) return;
-                // 命令经 FileEventBusAbility 发送：中心监听 SELECT 校验并入队
-                self._fileCmd(FILE_ACTIONS.SELECT, { files: Array.from(files) });
-                input.value = '';
-            });
-        },
-
-        onBtnClick(): void {
-            const self = this as any;
-            if (self._fileDisabled) return;
-            self._inputEl?.click();
-        },
-
-        /** 构建并发送文件命令事件（经 FileEventBusAbility） */
-        _fileCmd(action: string, data: any): void {
-            const self = this as any;
-            self.fileEmit(
-                EventContextBuilder.create()
-                    .withEvent(`file:${self._fileKey}:${action}`)
-                    .withType(action)
-                    .withSource(self._fileKey)
-                    .withSourceType('UploadButton')
-                    .withData(data)
-                    .build()
-            );
-        },
-
-        /** 订阅 FileEventBus 反馈事件（经 FileEventBusAbility，onCleanup 自动清理） */
-        _subscribeFeedback(): void {
-            const self = this as any;
-            const key = self._fileKey;
-            const events = [
-                FILE_FEEDBACK_EVENTS.SELECTED,
-                FILE_FEEDBACK_EVENTS.HASH_START,
-                FILE_FEEDBACK_EVENTS.HASH_PROGRESS,
-                FILE_FEEDBACK_EVENTS.HASH_COMPLETE,
-                FILE_FEEDBACK_EVENTS.UPLOAD_START,
-                FILE_FEEDBACK_EVENTS.UPLOAD_PROGRESS,
-                FILE_FEEDBACK_EVENTS.UPLOADED,
-                FILE_FEEDBACK_EVENTS.UPLOAD_ERROR,
-                FILE_FEEDBACK_EVENTS.UPLOAD_COMPLETE,
-                FILE_FEEDBACK_EVENTS.REMOVED,
-                FILE_FEEDBACK_EVENTS.CANCELLED,
-            ];
-
-            for (const action of events) {
-                // self.fileOn 来自 FileEventBusAbility，返回的 off 经 onCleanup 自动注册
-                self.fileOn(key, action, (data: any) => {
-                    self._applyFeedback(action, data);
-                    self._renderList();
-                    self._forward(action, data);
-                });
-            }
-        },
-
-        /** 根据反馈事件更新本地状态镜像 _itemsMap */
-        _applyFeedback(action: string, data: any): void {
-            const self = this as any;
-            const map: Map<string, FileItem> = self._itemsMap;
-            if (!map) return;
-
-            if (action === FILE_FEEDBACK_EVENTS.SELECTED && Array.isArray(data?.items)) {
-                for (const it of data.items) map.set(it.id, it);
-            } else if (action === FILE_FEEDBACK_EVENTS.REMOVED) {
-                if (data?.cleared) {
-                    map.clear();
-                } else if (data?.item?.id) {
-                    map.delete(data.item.id);
-                }
+        if (action === FILE_FEEDBACK_EVENTS.SELECTED && Array.isArray(data?.items)) {
+            for (const it of data.items) map.set(it.id, it);
+        } else if (action === FILE_FEEDBACK_EVENTS.REMOVED) {
+            if (data?.cleared) {
+                map.clear();
             } else if (data?.item?.id) {
-                // HASH_* / UPLOAD_* / UPLOADED / CANCELLED 等单项状态变更
-                map.set(data.item.id, data.item);
+                map.delete(data.item.id);
             }
-        },
+        } else if (data?.item?.id) {
+            map.set(data.item.id, data.item);
+        }
+    }
 
-        /** 转发反馈到组件 emit + 桥接通道（保留向后兼容） */
-        _forward(action: string, data: any): void {
-            const self = this as any;
-            const emitName = FEEDBACK_TO_EMIT[action];
-            if (!emitName) return;
+    /** 转发反馈到组件 emit + 桥接通道 */
+    _forward(action: string, data: any): void {
+        const emitName = FEEDBACK_TO_EMIT[action];
+        if (!emitName) return;
 
-            self.emit(emitName, data);
+        this.emit(emitName, data);
 
-            if (self.eventKey && typeof self.componentEmit === 'function') {
-                const ctx = EventContextBuilder.create()
-                    .withEvent(emitName)
-                    .withType(emitName)
-                    .withSource(self.eventKey)
-                    .withSourceType('UploadButton')
-                    .withData(data)
-                    .build();
-                self.componentEmit(ctx);
-            }
-        },
+        if (this.eventKey && typeof this.componentEmit === 'function') {
+            const ctx = EventContextBuilder.create()
+                .withEvent(emitName)
+                .withType(emitName)
+                .withSource(this.eventKey as string)
+                .withSourceType('UploadButton')
+                .withData(data)
+                .build();
+            this.componentEmit(ctx);
+        }
+    }
 
-        /** list 上的点击委托：移除按钮 → 发送 REMOVE 命令事件 */
-        _onListClick(e: Event): void {
-            const self = this as any;
-            const target = e.target as HTMLElement | null;
-            const removeEl = target?.closest('.q-upload-btn__remove') as HTMLElement | null;
-            if (!removeEl) return;
-            e.stopPropagation();
-            const itemId = removeEl.dataset.itemId;
-            if (itemId) {
-                self._fileCmd(FILE_ACTIONS.REMOVE, { itemId });
-            }
-        },
+    /** list 上的点击委托：移除按钮 → 发送 REMOVE 命令事件 */
+    _handleListClick(e: Event): void {
+        const target = e.target as HTMLElement | null;
+        const removeEl = target?.closest('.q-upload-btn__remove') as HTMLElement | null;
+        if (!removeEl) return;
+        e.stopPropagation();
+        const itemId = removeEl.dataset.itemId;
+        if (itemId) {
+            this._fileCmd(FILE_ACTIONS.REMOVE, { itemId });
+        }
+    }
 
-        /** 渲染文件列表（setNodeHtml，符合 CommonPropsAbility 约定；数据来自本地镜像） */
-        _renderList(): void {
-            const self = this as any;
-            const map: Map<string, FileItem> = self._itemsMap;
-            if (!map) return;
-            const items = [...map.values()];
-            const html = items.map(item => self._renderItem(item)).join('');
-            self.setNodeHtml(html, 'list');
-        },
+    /** 渲染文件列表（setNodeHtml，符合 CommonPropsAbility 约定；数据来自本地镜像） */
+    _renderList(): void {
+        const map = this._itemsMap;
+        if (!map) return;
+        const items = [...map.values()];
+        const html = items.map(item => this._renderItem(item)).join('');
+        this.setNodeHtml(html, 'list');
+    }
 
-        _renderItem(item: FileItem): string {
-            const statusCls = `q-upload-btn__item--${item.status}`;
-            const name = escapeHtml(item.name);
-            const size = formatFileSize(item.size);
-            const status = formatFileStatus(item);
+    _renderItem(item: FileItem): string {
+        const statusCls = `q-upload-btn__item--${item.status}`;
+        const name = escapeHtml(item.name);
+        const size = formatFileSize(item.size);
+        const status = formatFileStatus(item);
 
-            if (
-                item.status === FileItemStatus.UPLOADING ||
-                item.status === FileItemStatus.HASHING
-            ) {
-                return (
-                    `<div class="q-upload-btn__item ${statusCls}">` +
-                    `<span class="q-upload-btn__name">${name}</span>` +
-                    `<span class="q-upload-btn__size">${size}</span>` +
-                    `<span class="q-upload-btn__status">${escapeHtml(status)}</span>` +
-                    `<div class="q-upload-btn__progress">` +
-                    `<div class="q-upload-btn__progress-bar" style="width:${item.percent}%"></div>` +
-                    `</div>` +
-                    `</div>`
-                );
-            }
-
-            const removeHtml =
-                item.status === FileItemStatus.UPLOADED || item.status === FileItemStatus.SELECTED
-                    ? `<span class="q-upload-btn__remove" data-item-id="${item.id}">×</span>`
-                    : '';
-
+        if (item.status === FileItemStatus.UPLOADING || item.status === FileItemStatus.HASHING) {
             return (
                 `<div class="q-upload-btn__item ${statusCls}">` +
                 `<span class="q-upload-btn__name">${name}</span>` +
                 `<span class="q-upload-btn__size">${size}</span>` +
                 `<span class="q-upload-btn__status">${escapeHtml(status)}</span>` +
-                removeHtml +
+                `<div class="q-upload-btn__progress">` +
+                `<div class="q-upload-btn__progress-bar" style="width:${item.percent}%"></div>` +
+                `</div>` +
                 `</div>`
             );
-        },
+        }
 
-        _applyFileState(): void {
-            const self = this as any;
-            self.toggleCls('q-upload-btn--disabled', self._fileDisabled);
-        },
+        const removeHtml =
+            item.status === FileItemStatus.UPLOADED || item.status === FileItemStatus.SELECTED
+                ? `<span class="q-upload-btn__remove" data-item-id="${item.id}">×</span>`
+                : '';
 
-        get files(): FileItem[] {
-            const map: Map<string, FileItem> | null = (this as any)._itemsMap;
-            return map ? [...map.values()] : [];
-        },
+        return (
+            `<div class="q-upload-btn__item ${statusCls}">` +
+            `<span class="q-upload-btn__name">${name}</span>` +
+            `<span class="q-upload-btn__size">${size}</span>` +
+            `<span class="q-upload-btn__status">${escapeHtml(status)}</span>` +
+            removeHtml +
+            `</div>`
+        );
+    }
 
-        get uploadedFiles(): FileItem[] {
-            const map: Map<string, FileItem> | null = (this as any)._itemsMap;
-            return map ? [...map.values()].filter(i => i.status === FileItemStatus.UPLOADED) : [];
-        },
+    _applyFileState(): void {
+        this.toggleCls('q-upload-btn--disabled', this._fileDisabled);
+    }
 
-        /**
-         * 默认事件数据 — getter，replace 模式下 super 不可用，
-         * 沿原型链查找父类 defaultEventData getter 并合并
-         */
-        get defaultEventData(): Record<string, any> {
-            const self = this as any;
-            const map: Map<string, FileItem> = self._itemsMap;
-            // replace 模式下 super 不可用，沿原型链查找父类 defaultEventData getter
-            let proto = Object.getPrototypeOf(Object.getPrototypeOf(self));
-            let base: Record<string, any> = {};
-            while (proto) {
-                const desc = Object.getOwnPropertyDescriptor(proto, 'defaultEventData');
-                if (desc?.get) {
-                    base = desc.get.call(self);
-                    break;
-                }
-                proto = Object.getPrototypeOf(proto);
-            }
-            return { ...base, files: map ? [...map.values()] : [] };
-        },
+    get files(): FileItem[] {
+        const map = this._itemsMap;
+        return map ? [...map.values()] : [];
+    }
 
-        getFormValue(): any {
-            const self = this as any;
-            const map: Map<string, FileItem> = self._itemsMap;
-            if (!map) return [];
-            return [...map.values()]
-                .filter(i => i.status === FileItemStatus.UPLOADED)
-                .map(i => i.result);
-        },
+    get uploadedFiles(): FileItem[] {
+        const map = this._itemsMap;
+        return map ? [...map.values()].filter(i => i.status === FileItemStatus.UPLOADED) : [];
+    }
 
-        setFormValue(v: any): void {
-            if (!Array.isArray(v)) return;
-            const self = this as any;
-            const items: FileItem[] = v.map((item: any) => ({
-                id: item.id ?? `formval-${Math.random().toString(36).slice(2)}`,
-                file: null,
-                name: item.name ?? '',
-                size: item.size ?? 0,
-                status: FileItemStatus.UPLOADED,
-                percent: 100,
-                result: item,
-            }));
-            // 经命令事件回填：中心 SET_ITEMS 后会发 SELECTED 反馈，_itemsMap 据此更新
-            self._fileCmd(FILE_ACTIONS.SET_ITEMS, { items });
-            // 同步本地镜像（反馈事件可能异步到达，先本地落位保证即时渲染）
-            if (self._itemsMap) {
-                self._itemsMap.clear();
-                for (const it of items) self._itemsMap.set(it.id, it);
-            }
-            self._renderList();
-        },
+    get defaultEventData(): Record<string, any> {
+        return { files: this._itemsMap ? [...this._itemsMap.values()] : [] };
+    }
 
-        formReset(): void {
-            const self = this as any;
-            // 经命令事件清空：中心 CLEAR 后会发 REMOVED(cleared) 反馈
-            self._fileCmd(FILE_ACTIONS.CLEAR, {});
-            if (self._itemsMap) self._itemsMap.clear();
-            self._renderList();
-        },
+    getFormValue(): any {
+        const map = this._itemsMap;
+        if (!map) return [];
+        return [...map.values()]
+            .filter(i => i.status === FileItemStatus.UPLOADED)
+            .map(i => i.result);
+    }
 
-        update(props?: Partial<UploadButtonProps>): void {
-            const self = this as any;
-            self._super.update(props);
+    setFormValue(v: any): void {
+        if (!Array.isArray(v)) return;
+        const items: FileItem[] = v.map((item: any) => ({
+            id: item.id ?? `formval-${Math.random().toString(36).slice(2)}`,
+            file: null,
+            name: item.name ?? '',
+            size: item.size ?? 0,
+            status: FileItemStatus.UPLOADED,
+            percent: 100,
+            result: item,
+        }));
+        this._fileCmd(FILE_ACTIONS.SET_ITEMS, { items });
+        if (this._itemsMap) {
+            this._itemsMap.clear();
+            for (const it of items) this._itemsMap.set(it.id, it);
+        }
+        this._renderList();
+    }
 
-            if (props?.accept !== undefined) {
-                self._accept = props.accept;
-                if (self._inputEl) self._inputEl.accept = props.accept;
-            }
-            if (props?.multiple !== undefined) {
-                self._multiple = props.multiple;
-                if (self._inputEl) self._inputEl.multiple = props.multiple;
-            }
-            if (props?.disabled !== undefined) {
-                self._fileDisabled = props.disabled;
-                self._applyFileState();
-                if (self._inputEl) self._inputEl.disabled = props.disabled;
-            }
-            if (props?.maxSize !== undefined) self._maxSize = props.maxSize;
-            if (props?.autoUpload !== undefined) self._autoUpload = props.autoUpload;
-            if (props?.transport !== undefined) self._transport = props.transport;
-            if (props?.eventKey !== undefined) self.eventKey = props.eventKey;
+    formReset(): void {
+        this._fileCmd(FILE_ACTIONS.CLEAR, {});
+        if (this._itemsMap) this._itemsMap.clear();
+        this._renderList();
+    }
 
-            // 配置变更，幂等更新通道配置
-            if (self._fileKey) {
-                fileDispatchCenter.createChannel(self._fileKey, {
-                    transport: self._transport ?? undefined,
-                    accept: self._accept || undefined,
-                    multiple: self._multiple,
-                    maxSize: self._maxSize || undefined,
-                    autoUpload: self._autoUpload,
-                });
-            }
-        },
-    },
-});
+    update(props?: Partial<UploadButtonProps>): void {
+        if (props?.text !== undefined) {
+            this.text = props.text;
+        }
+        this.size = props?.size || 'md';
+
+        if (props?.accept !== undefined) {
+            this._accept = props.accept;
+            if (this._inputEl) this._inputEl.accept = props.accept;
+        }
+        if (props?.multiple !== undefined) {
+            this._multiple = props.multiple;
+            if (this._inputEl) this._inputEl.multiple = props.multiple;
+        }
+        if (props?.disabled !== undefined) {
+            this._fileDisabled = props.disabled;
+            this._applyFileState();
+            if (this._inputEl) this._inputEl.disabled = props.disabled;
+        }
+        if (props?.maxSize !== undefined) this._maxSize = props.maxSize;
+        if (props?.autoUpload !== undefined) this._autoUpload = props.autoUpload;
+        if (props?.transport !== undefined) this._transport = props.transport;
+        if (props?.eventKey !== undefined) this.eventKey = props.eventKey;
+
+        if (this._fileKey) {
+            fileDispatchCenter.createChannel(this._fileKey, {
+                transport: this._transport ?? undefined,
+                accept: this._accept || undefined,
+                multiple: this._multiple,
+                maxSize: this._maxSize || undefined,
+                autoUpload: this._autoUpload,
+            });
+        }
+    }
+}
+
+UploadButtonComponent.use(SizeAbility);
+UploadButtonComponent.useTemplate(UPLOAD_BUTTON_TPL);
+export { UploadButtonComponent };
+export type UploadButtonComponentInstance = InstanceType<typeof UploadButtonComponent>;
 
 /** 转义 HTML 防注入 */
 function escapeHtml(str: string): string {
@@ -437,5 +382,3 @@ function escapeHtml(str: string): string {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
-
-export type UploadButtonComponent = InstanceType<typeof UploadButtonComponent>;

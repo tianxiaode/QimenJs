@@ -65,6 +65,7 @@ function makeInstance(domEvents?: DomEventsMap) {
         emit: jest.fn(),
         componentEmit: jest.fn(),
         entityEmit: jest.fn(),
+        entityOn: jest.fn(() => jest.fn()),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
         eventKey: 'testBridge',
@@ -161,6 +162,7 @@ function makePanelInstance(domEvents?: DomEventsMap) {
         emit: jest.fn(),
         componentEmit: jest.fn(),
         entityEmit: jest.fn(),
+        entityOn: jest.fn(() => jest.fn()),
         routerEmit: jest.fn(),
         systemEmit: jest.fn(),
         eventKey: 'testBridge',
@@ -375,8 +377,8 @@ describe('DomEventsEngine', () => {
             it('与两层模式共存时互不干扰', () => {
                 const domEvents: DomEventsMap = {
                     click: {
-                        handler: '_onRootClick',          // 隐式 root 简写
-                        closeBtn: { handler: true },     // 两层模式
+                        handler: '_onRootClick', // 隐式 root 简写
+                        closeBtn: { handler: true }, // 两层模式
                     },
                 };
                 const rules = DomEventsEngine.compileDomEvents(domEvents);
@@ -393,8 +395,8 @@ describe('DomEventsEngine', () => {
             it('与三层模式共存时互不干扰', () => {
                 const domEvents: DomEventsMap = {
                     click: {
-                        handler: '_onRootClick',                  // 隐式 root 简写
-                        toolbar: { save: { handler: true } },      // 三层模式
+                        handler: '_onRootClick', // 隐式 root 简写
+                        toolbar: { save: { handler: true } }, // 三层模式
                     },
                 };
                 const rules = DomEventsEngine.compileDomEvents(domEvents);
@@ -610,7 +612,11 @@ describe('DomEventsEngine', () => {
 
             it('中间段 nodeMap 找不到且类型也不匹配返回 null', () => {
                 const { instance, actionBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.nonExistent', actionBtnEl);
+                const result = DomEventsEngine._matchPath(
+                    instance,
+                    'header.nonExistent',
+                    actionBtnEl
+                );
                 expect(result).toBeNull();
             });
 
@@ -625,7 +631,11 @@ describe('DomEventsEngine', () => {
         describe('按类型名查找（nodeMap 找不到时 fallback）', () => {
             it('"header.toolsLeft.Button" 按类型找到 ItemGroup 内的 Button', () => {
                 const { instance, saveBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.toolsLeft.Button', saveBtnEl);
+                const result = DomEventsEngine._matchPath(
+                    instance,
+                    'header.toolsLeft.Button',
+                    saveBtnEl
+                );
                 expect(result).not.toBeNull();
                 expect(result.el).toBe(saveBtnEl);
                 expect(result.action).toBe('save');
@@ -633,7 +643,11 @@ describe('DomEventsEngine', () => {
 
             it('类型不匹配返回 null', () => {
                 const { instance, saveBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.toolsLeft.NonExistentType', saveBtnEl);
+                const result = DomEventsEngine._matchPath(
+                    instance,
+                    'header.toolsLeft.NonExistentType',
+                    saveBtnEl
+                );
                 expect(result).toBeNull();
             });
         });
@@ -657,7 +671,11 @@ describe('DomEventsEngine', () => {
 
             it('target 是容器本身时返回容器', () => {
                 const { instance, toolsLeftEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.toolsLeft', toolsLeftEl);
+                const result = DomEventsEngine._matchPath(
+                    instance,
+                    'header.toolsLeft',
+                    toolsLeftEl
+                );
                 expect(result).not.toBeNull();
                 expect(result.el).toBe(toolsLeftEl);
             });
@@ -745,59 +763,81 @@ describe('DomEventsEngine', () => {
         it('单段路径 + action → on{NodeName}{Action}{Event}', () => {
             const { instance } = makeInstance();
             instance.onToolbarSaveClick = jest.fn();
-            DomEventsEngine._invokeHandler(instance, {
-                event: 'click',
-                componentPath: 'toolbar',
-                action: 'save',
-                needsBinding: true,
-            }, { type: 'click' });
+            DomEventsEngine._invokeHandler(
+                instance,
+                {
+                    event: 'click',
+                    componentPath: 'toolbar',
+                    action: 'save',
+                    needsBinding: true,
+                },
+                { type: 'click' }
+            );
             expect(instance.onToolbarSaveClick).toHaveBeenCalled();
         });
 
         it('多段路径 → on{Path}{Action}{Event}（完整路径 pascalCase）', () => {
             const { instance } = makeInstance();
             instance.onHeaderActionClick = jest.fn();
-            DomEventsEngine._invokeHandler(instance, {
-                event: 'click',
-                componentPath: 'header.action',
-                action: '',
-                needsBinding: true,
-            }, { type: 'click' });
+            DomEventsEngine._invokeHandler(
+                instance,
+                {
+                    event: 'click',
+                    componentPath: 'header.action',
+                    action: '',
+                    needsBinding: true,
+                },
+                { type: 'click' }
+            );
             expect(instance.onHeaderActionClick).toHaveBeenCalled();
         });
 
         it('多段路径 + action → on{Path}{Action}{Event}', () => {
             const { instance } = makeInstance();
             instance.onHeaderToolsLeftSaveClick = jest.fn();
-            DomEventsEngine._invokeHandler(instance, {
-                event: 'click',
-                componentPath: 'header.toolsLeft',
-                action: 'save',
-                needsBinding: true,
-            }, { type: 'click' });
+            DomEventsEngine._invokeHandler(
+                instance,
+                {
+                    event: 'click',
+                    componentPath: 'header.toolsLeft',
+                    action: 'save',
+                    needsBinding: true,
+                },
+                { type: 'click' }
+            );
             expect(instance.onHeaderToolsLeftSaveClick).toHaveBeenCalled();
         });
 
         it('无 action → on{Path}{Event}', () => {
             const { instance } = makeInstance();
             instance.onHeaderButtonClick = jest.fn();
-            DomEventsEngine._invokeHandler(instance, {
-                event: 'click',
-                componentPath: 'header.Button',
-                action: '',
-                needsBinding: true,
-            }, { type: 'click' });
+            DomEventsEngine._invokeHandler(
+                instance,
+                {
+                    event: 'click',
+                    componentPath: 'header.Button',
+                    action: '',
+                    needsBinding: true,
+                },
+                { type: 'click' }
+            );
             expect(instance.onHeaderButtonClick).toHaveBeenCalled();
         });
 
         it('方法不存在时不抛异常', () => {
             const { instance } = makeInstance();
-            expect(() => DomEventsEngine._invokeHandler(instance, {
-                event: 'click',
-                componentPath: 'noSuchNode',
-                action: '',
-                needsBinding: true,
-            }, { type: 'click' })).not.toThrow();
+            expect(() =>
+                DomEventsEngine._invokeHandler(
+                    instance,
+                    {
+                        event: 'click',
+                        componentPath: 'noSuchNode',
+                        action: '',
+                        needsBinding: true,
+                    },
+                    { type: 'click' }
+                )
+            ).not.toThrow();
         });
     });
 
@@ -1040,13 +1080,21 @@ describe('DomEventsEngine', () => {
             const rules = instance.constructor._domEventRules;
 
             // 点击 save 按钮
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: saveBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: saveBtnEl },
+                rules
+            );
             expect(instance.onHeaderToolsLeftSaveClick).toHaveBeenCalled();
             expect(instance.onHeaderToolsLeftEditClick).not.toHaveBeenCalled();
 
             // 点击 edit 按钮
             instance.onHeaderToolsLeftSaveClick.mockClear();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: editBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: editBtnEl },
+                rules
+            );
             expect(instance.onHeaderToolsLeftEditClick).toHaveBeenCalled();
             expect(instance.onHeaderToolsLeftSaveClick).not.toHaveBeenCalled();
         });
@@ -1071,13 +1119,21 @@ describe('DomEventsEngine', () => {
 
             // 点击 save 按钮 → 应 emit 'save'
             instance.onHeaderToolsLeftSaveClick = jest.fn();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: saveBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: saveBtnEl },
+                rules
+            );
             expect(instance.onHeaderToolsLeftSaveClick).toHaveBeenCalled();
             expect(instance.emit).toHaveBeenCalledWith('save', expect.anything());
 
             // 点击 edit 按钮 → 应 emit 'edit'
             instance.onHeaderToolsLeftEditClick = jest.fn();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: editBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: editBtnEl },
+                rules
+            );
             expect(instance.onHeaderToolsLeftEditClick).toHaveBeenCalled();
             expect(instance.emit).toHaveBeenCalledWith('edit', expect.anything());
         });
@@ -1099,7 +1155,11 @@ describe('DomEventsEngine', () => {
             instance.onHeaderToolsLeftSaveClick = jest.fn();
             instance.onHeaderToolsLeftClick = jest.fn();
 
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: saveBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: saveBtnEl },
+                rules
+            );
 
             expect(instance.onHeaderToolsLeftSaveClick).toHaveBeenCalled();
             expect(instance.onHeaderToolsLeftClick).not.toHaveBeenCalled();
@@ -1180,7 +1240,11 @@ describe('DomEventsEngine', () => {
 
             // 点击 save 按钮（在 toolsLeft 中）
             instance.emit = jest.fn();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: saveBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: saveBtnEl },
+                rules
+            );
 
             // 应匹配到 save 按钮，emit 'save'
             expect(instance.emit).toHaveBeenCalledWith('save', expect.anything());
@@ -1201,12 +1265,20 @@ describe('DomEventsEngine', () => {
 
             // 点击 save 按钮
             instance.emit = jest.fn();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: saveBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: saveBtnEl },
+                rules
+            );
             expect(instance.emit).toHaveBeenCalledWith('save', expect.anything());
 
             // 点击 edit 按钮
             instance.emit.mockClear();
-            DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: editBtnEl }, rules);
+            DomEventsEngine.handleDelegatedEvent(
+                instance,
+                { type: 'click', target: editBtnEl },
+                rules
+            );
             expect(instance.emit).toHaveBeenCalledWith('edit', expect.anything());
         });
 
@@ -1215,7 +1287,8 @@ describe('DomEventsEngine', () => {
                 const domEvents: DomEventsMap = {
                     click: {
                         'header.action': {
-                            handler: true, emits: ['[action]'],
+                            handler: true,
+                            emits: ['[action]'],
                         },
                     },
                 };
@@ -1246,7 +1319,8 @@ describe('DomEventsEngine', () => {
                 const domEvents: DomEventsMap = {
                     click: {
                         'header.action': {
-                            handler: true, emits: ['[action]'],
+                            handler: true,
+                            emits: ['[action]'],
                         },
                     },
                 };
@@ -1264,7 +1338,11 @@ describe('DomEventsEngine', () => {
                 const rules = instance.constructor._domEventRules;
 
                 instance.onHeaderActionCollapseClick = jest.fn();
-                DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: actionBtnEl }, rules);
+                DomEventsEngine.handleDelegatedEvent(
+                    instance,
+                    { type: 'click', target: actionBtnEl },
+                    rules
+                );
 
                 expect(instance.onHeaderActionCollapseClick).toHaveBeenCalled();
             });
@@ -1288,20 +1366,29 @@ describe('DomEventsEngine', () => {
                 const rules = instance.constructor._domEventRules;
 
                 instance.emit = jest.fn();
-                DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: actionBtnEl }, rules);
+                DomEventsEngine.handleDelegatedEvent(
+                    instance,
+                    { type: 'click', target: actionBtnEl },
+                    rules
+                );
                 expect(instance.emit).toHaveBeenCalledWith('collapse', expect.anything());
 
                 // 测试 close
                 actionComp.action = 'close';
-                DomEventsEngine.handleDelegatedEvent(instance, { type: 'click', target: actionBtnEl }, rules);
+                DomEventsEngine.handleDelegatedEvent(
+                    instance,
+                    { type: 'click', target: actionBtnEl },
+                    rules
+                );
                 expect(instance.emit).toHaveBeenCalledWith('close', expect.anything());
             });
 
             it('两层模式：非 [action] 的 emits 不标记 wildcardAction', () => {
                 const domEvents: DomEventsMap = {
                     click: {
-                        'node1': {
-                            handler: true, emits: ['customEvent'],
+                        node1: {
+                            handler: true,
+                            emits: ['customEvent'],
                         },
                     },
                 };
@@ -1314,7 +1401,7 @@ describe('DomEventsEngine', () => {
             it('三层模式仍然正常工作', () => {
                 const domEvents: DomEventsMap = {
                     click: {
-                        'toolbar': {
+                        toolbar: {
                             save: { handler: true, emits: ['saved'] },
                         },
                     },
@@ -1331,7 +1418,8 @@ describe('DomEventsEngine', () => {
                 const domEvents: DomEventsMap = {
                     click: {
                         'Panel.header.action': {
-                            handler: true, emits: ['[action]'],
+                            handler: true,
+                            emits: ['[action]'],
                         },
                     },
                 };
@@ -1355,7 +1443,8 @@ describe('DomEventsEngine', () => {
                 const domEvents: DomEventsMap = {
                     click: {
                         'Panel.header.action': {
-                            handler: true, emits: ['[action]'],
+                            handler: true,
+                            emits: ['[action]'],
                         },
                     },
                 };
@@ -1385,7 +1474,8 @@ describe('DomEventsEngine', () => {
                 const domEvents: DomEventsMap = {
                     click: {
                         'Dialog.header.action': {
-                            handler: true, emits: ['[action]'],
+                            handler: true,
+                            emits: ['[action]'],
                         },
                     },
                 };
@@ -1433,7 +1523,7 @@ describe('DomEventsEngine', () => {
             it('自定义方法名优先于自动推导', () => {
                 const domEvents: DomEventsMap = {
                     click: {
-                        'toolbar': {
+                        toolbar: {
                             save: { handler: 'onSaveHandler', emits: ['saved'] },
                         },
                     },

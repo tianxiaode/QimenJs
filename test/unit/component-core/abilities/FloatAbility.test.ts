@@ -39,7 +39,7 @@ describe('FloatAbility', () => {
 
     describe('类型处理器', () => {
         it('注册新类型处理器', () => {
-            const handler = jest.fn(() => ({ type: 'Custom' } as FloatDecl));
+            const handler = jest.fn(() => ({ type: 'Custom' }) as FloatDecl);
             engine.registerHandler('customType', handler);
 
             const result = engine.buildFromProps({ props: { customType: { foo: 'bar' } } });
@@ -64,7 +64,9 @@ describe('FloatAbility', () => {
         });
 
         it('从 props.badge 对象构建', () => {
-            const result = engine.buildFromProps({ props: { badge: { text: '99+', visible: true } } });
+            const result = engine.buildFromProps({
+                props: { badge: { text: '99+', visible: true } },
+            });
 
             expect(result.badge.data.text).toBe('99+');
             expect(result.badge.data.visible).toBe(true);
@@ -137,7 +139,10 @@ describe('FloatAbility', () => {
         it('props.dialog 带 emits 事件转发', () => {
             const result = engine.buildFromProps({
                 props: {
-                    dialog: { title: '保存', emits: { shown: 'dialogOpen', hidden: 'dialogClose' } },
+                    dialog: {
+                        title: '保存',
+                        emits: { shown: 'dialogOpen', hidden: 'dialogClose' },
+                    },
                 },
             });
 
@@ -168,7 +173,9 @@ describe('FloatAbility', () => {
         });
 
         it('anchor 可自定义', () => {
-            const result = engine.buildFromProps({ props: { badge: { text: '5', anchor: 'header' } } });
+            const result = engine.buildFromProps({
+                props: { badge: { text: '5', anchor: 'header' } },
+            });
 
             expect(result.badge.anchor).toBe('header');
         });
@@ -259,7 +266,10 @@ describe('FloatAbility', () => {
             const { instance, getCache } = createMockInstance();
             instance._initializing = true;
 
-            engine.attachFloat(instance, 'dropBtn', { type: 'Menu', trigger: 'click' } as FloatDecl);
+            engine.attachFloat(instance, 'dropBtn', {
+                type: 'Menu',
+                trigger: 'click',
+            } as FloatDecl);
 
             expect(getCache().dropBtn).toEqual({ type: 'Menu', trigger: 'click' });
         });
@@ -370,11 +380,15 @@ describe('FloatAbility', () => {
         it('key 变更时先 DISPOSE 再 INIT', () => {
             const { instance, getOverlayEmit } = createMockInstance();
 
-            engine.syncFloats(instance, {
-                badge: { type: 'Badge', data: { text: '1' } },
-            }, {
-                badge: { type: 'Badge', data: { text: '2' } },
-            });
+            engine.syncFloats(
+                instance,
+                {
+                    badge: { type: 'Badge', data: { text: '1' } },
+                },
+                {
+                    badge: { type: 'Badge', data: { text: '2' } },
+                }
+            );
 
             const emits = getOverlayEmit();
             expect(emits).toHaveBeenCalledTimes(2);
@@ -394,13 +408,17 @@ describe('FloatAbility', () => {
         it('混合变更（新增+移除+变更）', () => {
             const { instance, getOverlayEmit } = createMockInstance();
 
-            engine.syncFloats(instance, {
-                badge: { type: 'Badge', data: { text: '1' } },
-                oldItem: { type: 'Menu' },
-            }, {
-                badge: { type: 'Badge', data: { text: '2' } },
-                newItem: { type: 'Tooltip' },
-            });
+            engine.syncFloats(
+                instance,
+                {
+                    badge: { type: 'Badge', data: { text: '1' } },
+                    oldItem: { type: 'Menu' },
+                },
+                {
+                    badge: { type: 'Badge', data: { text: '2' } },
+                    newItem: { type: 'Tooltip' },
+                }
+            );
 
             const emits = getOverlayEmit();
             expect(emits).toHaveBeenCalledTimes(4);
@@ -538,6 +556,107 @@ describe('FloatAbility', () => {
 
             const ctx = getOverlayEmit().mock.calls[0][0];
             expect(ctx.source).toBe('comp-1:tooltip');
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.CHANGE);
+        });
+
+        it('floats getter returns engine cache', () => {
+            const { instance, getCache } = createMockInstance();
+            engine.setCache(instance, { badge: { type: 'Badge' } } as any);
+
+            expect(instance.floats).toEqual(getCache());
+        });
+
+        it('floats setter delegates to engine', () => {
+            const { instance, getCache } = createMockInstance();
+            instance._initializing = true;
+
+            instance.floats = { tooltip: { type: 'Tooltip' } } as any;
+
+            expect(getCache().tooltip).toBeDefined();
+        });
+
+        it('attachFloat delegates to engine', () => {
+            const { instance, getCache } = createMockInstance();
+            instance._initializing = true;
+
+            FloatAbility.attachFloat.call(instance, 'dropBtn', { type: 'Menu' } as any);
+
+            expect(getCache().dropBtn).toBeDefined();
+        });
+
+        it('detachFloat delegates to engine', () => {
+            const { instance, getCache } = createMockInstance({
+                badge: { type: 'Badge' },
+            });
+            instance._initializing = true;
+
+            FloatAbility.detachFloat.call(instance, 'badge');
+
+            expect(getCache().badge).toBeUndefined();
+        });
+
+        it('showFloat delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.showFloat.call(instance, 'dropBtn');
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.SHOW);
+        });
+
+        it('hideFloat delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.hideFloat.call(instance, 'dropBtn');
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.HIDE);
+        });
+
+        it('toggleFloat delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.toggleFloat.call(instance, 'dropBtn');
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.TOGGLE);
+        });
+
+        it('updateFloat delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.updateFloat.call(instance, 'badge', { text: '5' });
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.CHANGE);
+        });
+
+        it('showLoading delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.showLoading.call(instance, '加载中', 'scoped');
+
+            const calls = getOverlayEmit().mock.calls;
+            const lastCtx = calls[calls.length - 1][0];
+            expect(lastCtx.type).toBe(OVERLAY_ACTIONS.SHOW);
+            expect(lastCtx.source).toBe('comp-1:loading');
+        });
+
+        it('hideLoading delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.hideLoading.call(instance);
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
+            expect(ctx.type).toBe(OVERLAY_ACTIONS.HIDE);
+        });
+
+        it('updateLoading delegates to engine', () => {
+            const { instance, getOverlayEmit } = createMockInstance();
+
+            FloatAbility.updateLoading.call(instance, { text: '更新中' });
+
+            const ctx = getOverlayEmit().mock.calls[0][0];
             expect(ctx.type).toBe(OVERLAY_ACTIONS.CHANGE);
         });
 

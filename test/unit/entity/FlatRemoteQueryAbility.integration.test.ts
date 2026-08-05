@@ -57,6 +57,7 @@ const queryTestSchema: FlatSchema = {
 // ============================================
 
 class TestQueryManager extends RemoteCrudEntityManager {
+    static entityType: string = 'TestQueryManager';
     domain = 'query-test';
     entityName = 'QueryProduct';
     url = '/api/products';
