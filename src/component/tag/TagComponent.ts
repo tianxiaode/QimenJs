@@ -21,8 +21,10 @@ import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TAG_TPL } from './tag-tpl';
 
+/** 标签类型 */
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
+/** 标签属性接口 */
 export interface TagProps {
     text?: string;
     type?: TagType;
@@ -71,4 +73,5 @@ TagComponent.useTemplate(TAG_TPL);
 TagComponent.register();
 
 export { TagComponent };
+/** 标签实例类型 */
 export type TagComponentInstance = InstanceType<typeof TagComponent>;

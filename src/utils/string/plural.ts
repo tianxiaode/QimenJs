@@ -1,3 +1,4 @@
+/** 复数规则接口，定义匹配测试和转换逻辑 */
 export interface PluralRule {
     test: (word: string) => boolean;
     apply: (word: string) => string;
@@ -52,6 +53,7 @@ const DEFAULT_RULES: PluralRule[] = [
     },
 ];
 
+/** 将英文单词转换为复数形式，支持不规则变化和自定义规则 */
 export function pluralize(
     word: string,
     options?: {
@@ -74,10 +76,12 @@ export function pluralize(
     return word + 's';
 }
 
+/** 根据数量选择单数或复数形式 */
 export function plural(count: number, singular: string, pluralForm: string): string {
     return count === 1 ? singular : pluralForm;
 }
 
+/** 根据数量选择单数或复数形式，并附带数量前缀 */
 export function pluralWithCount(count: number, singular: string, pluralForm: string): string {
     return `${count} ${plural(count, singular, pluralForm)}`;
 }

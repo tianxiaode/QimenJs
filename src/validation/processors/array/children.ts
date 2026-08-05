@@ -2,6 +2,7 @@ import { ValidationErrorBuilder } from '../../errors';
 import { doValidate } from '../../core';
 import { ValidationProcessorHandler } from '../../types';
 
+/** 数组子项验证处理器 */
 export const ArrayChildrenProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
     if (!rule.itemRule || !Array.isArray(value)) return;

@@ -19,6 +19,7 @@
 import { Component, CommonPropsAbility } from '@qimenjs/component-core';
 import { RATING_TPL } from './rating-tpl';
 
+/** 评分属性接口 */
 export interface RatingProps {
     value?: number;
     max?: number;
@@ -222,4 +223,5 @@ RatingComponent.use([CommonPropsAbility]);
 RatingComponent.useTemplate(RATING_TPL);
 
 export { RatingComponent };
+/** 评分实例类型 */
 export type RatingComponentInstance = InstanceType<typeof RatingComponent>;

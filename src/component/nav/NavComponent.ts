@@ -26,6 +26,7 @@ import { DomEventsMap } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
+/** 导航项组属性接口 */
 export interface NavItemGroupProps extends ItemGroupProps {
     activeIndex?: number;
     mode?: 'expanded' | 'collapsed';
@@ -36,6 +37,7 @@ export interface NavItemGroupProps extends ItemGroupProps {
     indexPath?: string[];
 }
 
+/** 导航组件 */
 class NavComponent extends ItemGroupPooledComponent {
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
@@ -235,5 +237,6 @@ class NavComponent extends ItemGroupPooledComponent {
 }
 
 export { NavComponent };
+/** 导航实例类型 */
 export type NavComponentInstance = InstanceType<typeof NavComponent>;
 NavComponent.register();

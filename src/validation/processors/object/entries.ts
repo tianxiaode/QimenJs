@@ -3,7 +3,7 @@ import { ObjectTypeProcessor } from './type';
 import { ObjectRequiredFieldsProcessor } from './required-fields';
 import { ObjectPropertiesProcessor } from './properties';
 
-// 注册对象类型验证处理器
+/** 对象类型验证处理器注册条目 */
 export const ObjectTypeEntry = {
     name: 'object-type',
     tags: ['object'],
@@ -12,7 +12,7 @@ export const ObjectTypeEntry = {
     execute: ObjectTypeProcessor,
 };
 
-// 注册对象必填字段验证处理器
+/** 对象必填字段验证处理器注册条目 */
 export const ObjectRequiredFieldsEntry = {
     name: 'object-required-fields',
     tags: ['object'],
@@ -21,7 +21,7 @@ export const ObjectRequiredFieldsEntry = {
     execute: ObjectRequiredFieldsProcessor,
 };
 
-// 注册对象属性验证处理器
+/** 对象属性验证处理器注册条目 */
 export const ObjectPropertiesEntry = {
     name: 'object-properties',
     tags: ['object'],

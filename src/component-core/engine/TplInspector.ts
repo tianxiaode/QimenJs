@@ -1,5 +1,6 @@
 import type { TplNode } from '../types';
 
+/** 模板检查器，提供模板树打印、节点路径收集与检查功能 */
 export class TplInspector {
     static printTree(node: TplNode, indent: number = 0): void {
         const prefix = ' '.repeat(indent);
@@ -29,7 +30,7 @@ export class TplInspector {
                 const typeName =
                     typeof node.type === 'string'
                         ? node.type
-                        : (node.type as any).name?.replace(/Component$/, '') ?? '';
+                        : ((node.type as any).name?.replace(/Component$/, '') ?? '');
                 result.push(`${fullPath}.${typeName}`);
             }
         }

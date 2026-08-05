@@ -6,6 +6,7 @@
  * EntityActionAbility 的便捷方法也通过 dispatch 实现。
  */
 
+/** 实体操作动作-事件映射表，定义每个操作对应的 success/error/loading 事件名 */
 export const ACTION_PAIRS: Record<string, { success: string; error: string; loading: string }> = {
     connect: { success: 'connected', error: 'connect:error', loading: 'connect:loading' },
     list: { success: 'listed', error: 'list:error', loading: 'list:loading' },
@@ -30,6 +31,7 @@ export const ACTION_PAIRS: Record<string, { success: string; error: string; load
     collapse: { success: 'listed', error: 'collapse:error', loading: 'collapse:loading' },
 };
 
+/** 组件实体调度中心，封装实体事件的发射+订阅完整流程 */
 export class ComponentEntityDispatch {
     static dispatch(instance: any, entityKey: string, action: string, data?: any): void {
         const pair = ACTION_PAIRS[action];

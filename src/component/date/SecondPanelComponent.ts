@@ -18,6 +18,7 @@ import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } f
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
+/** 秒面板属性接口 */
 export interface SecondPanelProps {
     value: DateTimeValue;
     previewData?: PanelPreviewData;
@@ -170,4 +171,5 @@ class SecondPanelComponent extends Component {
 
 SecondPanelComponent.useTemplate(SECOND_PANEL_TPL);
 export { SecondPanelComponent };
+/** 秒面板实例类型 */
 export type SecondPanelComponentInstance = InstanceType<typeof SecondPanelComponent>;

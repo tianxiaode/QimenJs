@@ -57,12 +57,14 @@ import type { INodeMapManager } from './node-map-manager-types';
  * const button = new ButtonComponent(props);
  * ```
  */
+/** Badge 快捷配置，用于声明式创建角标浮层 */
 export interface BadgeQuickConfig {
     text?: string | number;
     visible?: boolean;
     anchor?: string;
 }
 
+/** Tooltip 快捷配置，用于声明式创建提示浮层 */
 export interface TooltipQuickConfig {
     tooltip?: string;
     placement?: 'top' | 'bottom' | 'left' | 'right';
@@ -118,6 +120,7 @@ export interface DialogQuickConfig {
     emits?: Record<string, string>;
 }
 
+/** Loading 快捷配置，用于声明式创建加载浮层 */
 export interface LoadingQuickConfig {
     text?: string;
     spinner?: string;
@@ -125,6 +128,7 @@ export interface LoadingQuickConfig {
     mask?: boolean | string;
 }
 
+/** Popover 快捷配置，用于声明式创建弹出框浮层 */
 export interface PopoverQuickConfig {
     title?: string;
     content?: string;
@@ -134,6 +138,7 @@ export interface PopoverQuickConfig {
     emits?: Record<string, string>;
 }
 
+/** 指示器类型：圆点/数字/短划线/按钮/标签页 */
 export type IndicatorType = 'dot' | 'number' | 'dash' | 'button' | 'tab';
 
 export interface IndicatorConfig {
@@ -153,6 +158,7 @@ export interface IndicatorConfig {
     emits?: Record<string, string>;
 }
 
+/** 组件属性接口，定义组件初始化时可传入的所有属性 */
 export interface ComponentProps {
     /**
      * 组件唯一标识

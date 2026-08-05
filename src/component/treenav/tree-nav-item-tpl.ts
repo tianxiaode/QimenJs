@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 树导航项模板定义 */
 export const TREE_NAV_ITEM_TPL: TplNode = {
     tag: 'div',
     cls: 'q-tree-nav-item',

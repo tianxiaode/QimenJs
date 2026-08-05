@@ -44,6 +44,7 @@ const CONFIG_KEYS = [
 // Note: 'bridges' is kept as the config key name for forwarding to ComponentEventBus
 // for backward compatibility. The runtime method is now componentEmit.
 
+/** DOM 事件委托引擎，在组件 el 上绑定 DOM 事件并沿组件路径分发 */
 export class DomEventsEngine {
     /**
      * 编译 domEvents 为 DelegatedEventRule[]

@@ -2,6 +2,7 @@
 import { ValidationContext, ValidationPatternType, ValidationProcessorHandler } from '../../types';
 import { PatternRegistrar } from '@qimenjs/pattern';
 
+/** 密码验证处理器 */
 export const PasswordProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
 

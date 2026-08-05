@@ -16,6 +16,7 @@ function isSameArray(a: any[], b: any[]): boolean {
     return a.every((v, i) => v === b[i]);
 }
 
+/** 数组包含值验证处理器 */
 export const ArrayIncludesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

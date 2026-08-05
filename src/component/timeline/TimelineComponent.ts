@@ -25,8 +25,10 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';
+/** 时间线项 */
 export type TimelineItem = import('./TimelineItemComponent').TimelineItemProps;
 
+/** 时间线属性接口 */
 export interface TimelineProps extends ItemGroupProps {
     items?: TimelineItem[];
     /** 末项 pending 态（容器类驱动，最后一个 tail 显示虚线） */
@@ -81,4 +83,5 @@ class TimelineComponent extends ItemGroupPooledComponent {
 
 TimelineComponent.register();
 export { TimelineComponent };
+/** 时间线实例类型 */
 export type TimelineComponentInstance = InstanceType<typeof TimelineComponent>;

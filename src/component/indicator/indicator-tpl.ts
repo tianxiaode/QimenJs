@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 指示器模板定义 */
 export const INDICATOR_TPL: TplNode = {
     tag: 'div',
     cls: 'q-indicator',

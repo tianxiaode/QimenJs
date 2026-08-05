@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 日期面板模板定义 */
 export const DATE_PANEL_TPL: TplNode = {
     tag: 'div',
     cls: 'q-dtpanel',

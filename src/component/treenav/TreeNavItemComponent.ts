@@ -19,6 +19,7 @@
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 
+/** 树导航项属性接口 */
 export interface TreeNavItemProps {
     text?: string;
     icon?: string;
@@ -193,4 +194,5 @@ class TreeNavItemComponent extends Component {
 
 TreeNavItemComponent.useTemplate(TREE_NAV_ITEM_TPL);
 export { TreeNavItemComponent };
+/** 树导航项实例类型 */
 export type TreeNavItemComponentInstance = InstanceType<typeof TreeNavItemComponent>;

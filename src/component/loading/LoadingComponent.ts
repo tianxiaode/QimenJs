@@ -8,6 +8,7 @@
 import { Component } from '@qimenjs/component-core';
 import { LOADING_TPL } from './loading-tpl';
 
+/** 加载组件 */
 class LoadingComponent extends Component {
     _initLoading(props?: Record<string, any>): void {
         if (props?.text) {
@@ -35,4 +36,5 @@ class LoadingComponent extends Component {
 
 LoadingComponent.useTemplate(LOADING_TPL);
 export { LoadingComponent };
+/** 加载实例类型 */
 export type LoadingComponentInstance = InstanceType<typeof LoadingComponent>;

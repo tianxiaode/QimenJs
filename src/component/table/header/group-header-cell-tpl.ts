@@ -1,6 +1,7 @@
 import type { TplNode } from '@/component-core';
 import { createHeaderCellTpl } from './base-header-cell-tpl';
 
+/** 分组表头单元格模板定义 */
 export const GROUP_HEADER_CELL_TPL: TplNode = createHeaderCellTpl({
     tag: 'div',
     name: 'groupBody',

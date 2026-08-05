@@ -18,6 +18,7 @@ import type { BaseCellProps } from './BaseCellComponent';
 import type { TreeCellData } from '../column-types';
 import { TREE_CELL_TPL } from './tree-cell-tpl';
 
+/** 树形单元格属性接口 */
 export type TreeCellProps = BaseCellProps;
 
 const INDENT_UNIT = 20;
@@ -70,4 +71,5 @@ class TreeCellComponent extends BaseCellComponent {
 
 TreeCellComponent.useTemplate(TREE_CELL_TPL);
 export { TreeCellComponent };
+/** 树形单元格实例类型 */
 export type TreeCellComponentInstance = InstanceType<typeof TreeCellComponent>;

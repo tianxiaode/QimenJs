@@ -8,11 +8,13 @@
 import { Component } from '@qimenjs/component-core';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
 
+/** 路由容器属性接口 */
 export interface RouteContainerProps {
     routeMap?: Record<string, new (props?: Record<string, any>) => any>;
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
+/** 路由容器组件 */
 class RouteContainerComponent extends Component {
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
@@ -59,4 +61,5 @@ class RouteContainerComponent extends Component {
 
 RouteContainerComponent.useTemplate(ROUTE_CONTAINER_TPL);
 export { RouteContainerComponent };
+/** 路由容器实例类型 */
 export type RouteContainerComponentInstance = InstanceType<typeof RouteContainerComponent>;

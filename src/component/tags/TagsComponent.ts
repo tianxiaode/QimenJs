@@ -35,6 +35,7 @@ import { TagComponent } from '../tag/TagComponent';
 import type { TagType, TagProps, TagComponentInstance } from '../tag/TagComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
 
+/** 标签集属性接口 */
 export interface TagsProps extends ItemGroupProps {
     /** 最大显示数量，超出折叠为 "+N" tag；0 表示不限制 */
     maxCount?: number;
@@ -298,4 +299,5 @@ class TagsComponent extends ItemGroupPooledComponent {
 
 TagsComponent.register();
 export { TagsComponent };
+/** 标签集实例类型 */
 export type TagsComponentInstance = InstanceType<typeof TagsComponent>;

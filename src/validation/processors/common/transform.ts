@@ -1,5 +1,6 @@
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 值转换验证处理器 */
 export const TransformProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

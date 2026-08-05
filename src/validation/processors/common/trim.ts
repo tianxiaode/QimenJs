@@ -1,5 +1,6 @@
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 去空格验证处理器 */
 export const TrimProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     let { value, rule } = context;
 

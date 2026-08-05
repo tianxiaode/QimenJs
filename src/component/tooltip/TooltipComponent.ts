@@ -17,6 +17,7 @@ import { ZIndexLevel, nextZIndex } from '../';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 import { InferAbility } from '@/composable';
 
+/** 提示框属性接口 */
 export interface TooltipProps {
     anchor?: HTMLElement;
     tooltip?: string;
@@ -97,4 +98,5 @@ export class TooltipComponent extends Component {
 TooltipComponent.use(ArrowAbility);
 TooltipComponent.useTemplate(TOOLTIP_TPL);
 
+/** 提示框组件 */
 export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

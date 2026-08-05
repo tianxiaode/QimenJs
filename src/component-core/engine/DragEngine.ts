@@ -26,6 +26,7 @@ import { getId } from '@/utils/string';
 // DragEngine 单例类
 // ══════════════════════════════════════════════════════════════
 
+/** 拖拽引擎（单例），提供拖拽完整生命周期管理，含缓存层/引擎层/解析层/API层 */
 export class DragEngine {
     private static instance: DragEngine;
 

@@ -7,6 +7,7 @@
 
 import type { DateTimeField, DateTimeValue } from '@/utils/date';
 
+/** 面板预览数据 */
 export interface PanelPreviewData {
     value: DateTimeValue;
     activeField: DateTimeField;
@@ -31,6 +32,7 @@ const FIELD_TEXT: Record<DateTimeField, (v: DateTimeValue) => string> = {
     second: v => String(v.second).padStart(2, '0'),
 };
 
+/** 渲染面板导航栏预览区域 */
 export function renderPreview(
     previewEl: HTMLElement | null,
     data: PanelPreviewData,

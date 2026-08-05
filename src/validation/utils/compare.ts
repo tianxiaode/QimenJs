@@ -1,10 +1,10 @@
-// 定义比较结果类型：-1表示小于，0表示等于，1表示大于，NaN表示无法比较
+/** 比较结果类型 */
 export type CompareResult = -1 | 0 | 1 | number;
 
 // 可比较的数据类型定义
 type Comparable = number | string | boolean | Date;
 
-// 比较规则接口定义
+/** 比较规则接口 */
 export interface CompareRule {
     // 判断条件函数：确定两个值是否适用此规则
     when(a: unknown, b: unknown): boolean;

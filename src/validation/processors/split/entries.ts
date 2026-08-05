@@ -1,7 +1,7 @@
 import { ValidationWeight } from '../../types';
 import { SplitProcessor } from './split';
 
-// 注册字符串类型验证处理器
+/** 拆分验证处理器注册条目 */
 export const SplitProcessorEntry = {
     name: 'string-split',
     tags: ['split'],

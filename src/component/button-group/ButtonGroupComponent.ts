@@ -2,14 +2,17 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 
+/** 按钮组模式类型 */
 export type ButtonGroupMode = 'single' | 'multiple';
 
+/** 按钮组属性接口 */
 export interface ButtonGroupProps extends ItemGroupProps {
     mode?: ButtonGroupMode;
     selectedIndex?: number;
     selectedIndices?: number[];
 }
 
+/** 按钮组组件 */
 class ButtonGroupComponent extends ItemGroupPooledComponent {
     _mode: ButtonGroupMode = 'single';
     _lastToggleIndex: number = -1;
@@ -164,6 +167,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 }
 
 export { ButtonGroupComponent };
+/** 按钮组实例类型 */
 export type ButtonGroupComponentInstance = InstanceType<typeof ButtonGroupComponent>;
 
 ButtonGroupComponent.register();

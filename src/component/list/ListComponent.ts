@@ -21,8 +21,10 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
 export type { ListStatus, MarkForm, ListItemProps } from './ListItemComponent';
+/** 列表项 */
 export type ListItem = import('./ListItemComponent').ListItemProps;
 
+/** 列表属性接口 */
 export interface ListProps extends ItemGroupProps {
     items?: ListItem[];
 }
@@ -61,4 +63,5 @@ class ListComponent extends ItemGroupPooledComponent {
 
 ListComponent.register();
 export { ListComponent };
+/** 列表实例类型 */
 export type ListComponentInstance = InstanceType<typeof ListComponent>;

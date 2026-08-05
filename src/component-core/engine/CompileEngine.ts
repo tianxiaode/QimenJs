@@ -53,6 +53,7 @@ import { VOID_TAGS } from '../constants/compile-constants';
 import { SKELETON_CLS } from '../constants/compile-constants';
 import { Logger } from '@/logger';
 
+/** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
     /**
      * 编译模板 — 主入口

@@ -22,6 +22,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { FIELDSET_TPL } from './fieldset-tpl';
 
+/** 字段集属性接口 */
 export interface FieldsetProps {
     legend?: string;
     i18nLegend?: string;
@@ -126,4 +127,5 @@ class FieldsetComponent extends Component {
 
 FieldsetComponent.useTemplate(FIELDSET_TPL);
 export { FieldsetComponent };
+/** 字段集实例类型 */
 export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;

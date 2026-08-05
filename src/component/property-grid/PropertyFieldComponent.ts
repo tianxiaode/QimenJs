@@ -22,8 +22,10 @@ import { formatNumber } from '@/utils/number';
 import { formatDate } from '@/utils/date';
 import { resolveI18nValue } from '@qimenjs/i18n';
 
+/** 属性字段类型 */
 export type PropertyFieldType = 'text' | 'number' | 'date' | 'boolean' | 'json' | 'array';
 
+/** 属性字段定义 */
 export interface PropertyField {
     key: string;
     labelKey?: string;
@@ -218,4 +220,5 @@ class PropertyFieldComponent extends Component {
 PropertyFieldComponent.useTemplate(PROPERTY_FIELD_TPL);
 PropertyFieldComponent.register();
 export { PropertyFieldComponent };
+/** 属性字段实例类型 */
 export type PropertyFieldComponentInstance = InstanceType<typeof PropertyFieldComponent>;

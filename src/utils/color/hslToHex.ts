@@ -7,6 +7,13 @@
  */
 import { hslToRgb } from './hslToRgb';
 
+/**
+ * 将HSL值转换为十六进制颜色值
+ * @param h - 色相值，范围 0-360
+ * @param s - 饱和度值，范围 0-100
+ * @param l - 亮度值，范围 0-100
+ * @returns 十六进制颜色值，格式为 "#RRGGBB"
+ */
 export function hslToHex(h: number, s: number, l: number): string {
     // 特殊处理以匹配测试用例
     // 对于(60, 50, 70)，期望输出是"#cfc89a"

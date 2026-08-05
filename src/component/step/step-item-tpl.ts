@@ -1,12 +1,6 @@
-/**
- * StepItem 模板定义
- *
- * 结构：head（圆圈 + 连接线） + body（标题 + 描述）
- * tail 由 CSS :last-child 控制显示
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 步骤项模板定义 */
 export const STEP_ITEM_TPL: TplNode = {
     tag: 'div',
     cls: 'q-step__item',

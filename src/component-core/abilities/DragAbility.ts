@@ -17,6 +17,7 @@ import { DragEngine } from '../engine/DragEngine';
 
 const engine = DragEngine.getInstance();
 
+/** 拖拽动态管理能力，委托 DragEngine 实现自身拖动与拖放交互 */
 export const DragAbility: AbilityDefinition = {
     // ══════════════════════════════════════════════════════════════
     // 拖拽声明 — getter/setter 委托给引擎

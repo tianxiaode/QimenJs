@@ -23,8 +23,10 @@ import { Component } from '@qimenjs/component-core';
 import { STATISTIC_TPL } from './statistic-tpl';
 import { formatNumber } from '@/utils/number';
 
+/** 统计数值趋势类型 */
 export type StatisticTrend = 'up' | 'down' | 'flat';
 
+/** 统计数值属性接口 */
 export interface StatisticProps {
     title?: string;
     value?: number | string;
@@ -189,4 +191,5 @@ class StatisticComponent extends Component {
 StatisticComponent.useTemplate(STATISTIC_TPL);
 StatisticComponent.register();
 export { StatisticComponent };
+/** 统计数值实例类型 */
 export type StatisticComponentInstance = InstanceType<typeof StatisticComponent>;

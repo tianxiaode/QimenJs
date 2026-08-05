@@ -1,5 +1,6 @@
 import { OrderCondition, orderBy } from './sort';
 
+/** 树形结构转换选项 */
 export interface TreeOptions<T> {
     idField?: keyof T;
     parentField?: keyof T;

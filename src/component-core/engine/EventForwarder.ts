@@ -23,10 +23,13 @@ import { globalEventBus } from '@/events';
 import { object } from '@/utils';
 import { ComponentEntityDispatch } from './ComponentEntityDispatch';
 
+/** 事件转发数据类型：emit/bridge/entity/float/router/system/file */
 export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 'system' | 'file';
 
+/** 转发路由键名 */
 export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file';
 
+/** 事件转发配置，定义六路转发的目标 */
 export interface ForwardConfig {
     emits?: string[];
     bridges?: string[];
@@ -160,6 +163,7 @@ const FORWARD_ROUTES: ForwardRoute[] = [
     },
 ];
 
+/** 事件转发器，基于路由表模式实现六路转发（emits/bridges/entities/router/system/file） */
 export class EventForwarder {
     /**
      * 执行转发调度

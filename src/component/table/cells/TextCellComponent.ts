@@ -25,6 +25,7 @@ import { BaseCellComponent } from './BaseCellComponent';
 import type { BaseCellProps } from './BaseCellComponent';
 import type { ColumnFormat, TextCellData } from '../column-types';
 
+/** 文本单元格属性接口 */
 export interface TextCellProps extends BaseCellProps {
     format?: ColumnFormat;
 }
@@ -80,4 +81,5 @@ class TextCellComponent extends BaseCellComponent {
 
 TextCellComponent.register();
 export { TextCellComponent };
+/** 文本单元格实例类型 */
 export type TextCellComponentInstance = InstanceType<typeof TextCellComponent>;

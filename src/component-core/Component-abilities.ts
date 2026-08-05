@@ -22,6 +22,7 @@ import { LifecycleAbility } from './abilities/LifecycleAbility';
 
 import type { ComponentProps } from './types/init-context';
 
+/** 组件能力注册表，包含所有组件共享的系统能力与组件核心能力 */
 export const COMPONENT_ABILITIES = [
     EventAbility,
     DomEventsAbility,
@@ -45,6 +46,7 @@ export const COMPONENT_ABILITIES = [
     LifecycleAbility,
 ] as const satisfies readonly AbilityDefinition[];
 
+/** 组件实例接口，由能力注册表推断能力方法，并扩展生命周期钩子 */
 export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES> {
     onBeforeUnmount?(): void;
     onAfterInit?(props?: ComponentProps): void;

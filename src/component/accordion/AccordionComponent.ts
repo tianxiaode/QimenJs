@@ -2,14 +2,17 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 
+/** 手风琴模式类型 */
 export type AccordionMode = 'single' | 'multiple';
 
+/** 手风琴属性接口 */
 export interface AccordionProps extends ItemGroupProps {
     mode?: AccordionMode;
     expandedIndex?: number;
     expandedIndices?: number[];
 }
 
+/** 手风琴组件 */
 class AccordionComponent extends ItemGroupPooledComponent {
     _mode: AccordionMode = 'single';
     _expandedIndex: number = -1;
@@ -160,4 +163,5 @@ class AccordionComponent extends ItemGroupPooledComponent {
 
 AccordionComponent.register();
 export { AccordionComponent };
+/** 手风琴实例类型 */
 export type AccordionComponentInstance = InstanceType<typeof AccordionComponent>;

@@ -37,6 +37,7 @@ import { getId } from '@/utils/string';
 import { ComponentRegistrar, TplInspector } from './engine';
 import { TplNode } from './types';
 
+/** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
     static get type(): string {
         return (this as any).name.replace(/Component$/, '');
@@ -402,4 +403,5 @@ export class Component extends ComposableBase {
 
 Component.use(COMPONENT_ABILITIES);
 
+/** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}

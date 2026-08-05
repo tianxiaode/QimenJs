@@ -29,6 +29,7 @@ import type { NodePropDef } from '../types';
 import { ALIGN_MAP, PACK_MAP } from '../constants/template-constants';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
+/** 节点属性统一读写能力，提供数据驱动的属性读写、脏追踪与子组件委托 */
 export const NodePropAbility: AbilityDefinition = {
     /**
 

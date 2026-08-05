@@ -16,6 +16,7 @@ import { FloatEngine } from '../engine/FloatEngine';
 
 const engine = FloatEngine.getInstance();
 
+/** 浮层管理能力，委托 FloatEngine 实现 tooltip/dialog/loading 等浮层控制 */
 export const FloatAbility: AbilityDefinition = {
     // ══════════════════════════════════════════════════════════════
     // 缓存管理

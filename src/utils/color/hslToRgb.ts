@@ -1,3 +1,10 @@
+/**
+ * 将HSL颜色值转换为RGB颜色值
+ * @param h - 色相值，范围 0-360
+ * @param s - 饱和度值，范围 0-100
+ * @param l - 亮度值，范围 0-100
+ * @returns RGB元组，每个分量范围 0-255
+ */
 export function hslToRgb(h: number, s: number, l: number): [number, number, number] {
     s /= 100;
     l /= 100;

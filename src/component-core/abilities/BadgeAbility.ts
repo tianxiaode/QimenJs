@@ -35,6 +35,7 @@ function findBadgeName(self: any): string | undefined {
     return undefined;
 }
 
+/** 角标节点操作能力，提供 badge 文本更新、显示/隐藏与切换 */
 export const BadgeAbility: AbilityDefinition = {
     /**
      * 更新 badge 文本内容

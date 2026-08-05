@@ -1,11 +1,6 @@
-/**
- * UploadButton 模板定义 — 独立于组件类
- *
- * 基于 Button 模板，将 dropIcon 替换为文件列表容器 list
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 上传按钮模板定义 */
 export const UPLOAD_BUTTON_TPL: TplNode = {
     tag: 'div',
     cls: 'q-button q-upload-btn',

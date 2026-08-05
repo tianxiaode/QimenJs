@@ -1,5 +1,6 @@
 import { LengthUnit } from './types';
 
+/** 解析后的长度值，包含数值和单位 */
 export interface LengthValue {
     value: number;
     unit: LengthUnit;

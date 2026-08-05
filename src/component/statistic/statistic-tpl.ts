@@ -1,11 +1,6 @@
-/**
- * Statistic 模板定义
- *
- * 结构：icon（可选） + content（title + valueGroup(prefix + value + suffix)）
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 统计数值模板定义 */
 export const STATISTIC_TPL: TplNode = {
     tag: 'div',
     cls: 'q-statistic',

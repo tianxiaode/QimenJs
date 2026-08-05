@@ -20,6 +20,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { TAB_TPL } from './tab-tpl';
 
+/** 标签页属性接口 */
 export interface TabProps {
     label?: string;
     icon?: string;
@@ -137,4 +138,5 @@ class TabComponent extends Component {
 TabComponent.useTemplate(TAB_TPL);
 TabComponent.register();
 export { TabComponent };
+/** 标签页实例类型 */
 export type TabComponentInstance = InstanceType<typeof TabComponent>;

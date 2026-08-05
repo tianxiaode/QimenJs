@@ -27,8 +27,10 @@
 import { Component } from '@qimenjs/component-core';
 import { MENU_ITEM_TPL } from './menu-item-tpl';
 
+/** 菜单项分组模式类型 */
 export type MenuItemGroupMode = 'radio' | 'checkbox';
 
+/** 菜单项属性接口 */
 export interface MenuItemProps {
     text?: string;
     icon?: string;

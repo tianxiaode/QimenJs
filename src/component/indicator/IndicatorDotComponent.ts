@@ -8,6 +8,7 @@
 import { Component } from '@qimenjs/component-core';
 import { INDICATOR_DOT_TPL } from './indicator-dot-tpl';
 
+/** 指示器圆点属性接口 */
 export interface IndicatorDotProps {
     index?: number;
     mode?: 'dot' | 'number' | 'dash';
@@ -40,4 +41,5 @@ class IndicatorDotComponent extends Component {
 
 IndicatorDotComponent.useTemplate(INDICATOR_DOT_TPL);
 export { IndicatorDotComponent };
+/** 指示器圆点实例类型 */
 export type IndicatorDotComponentInstance = InstanceType<typeof IndicatorDotComponent>;

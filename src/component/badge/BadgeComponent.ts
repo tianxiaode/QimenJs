@@ -11,6 +11,7 @@
 import { Component } from '@qimenjs/component-core';
 import { BADGE_TPL } from './badge-tpl';
 
+/** 徽标组件 */
 class BadgeComponent extends Component {
     onOverlayChange(data: any): void {
         if (!data) return;
@@ -26,4 +27,5 @@ class BadgeComponent extends Component {
 
 BadgeComponent.useTemplate(BADGE_TPL);
 export { BadgeComponent };
+/** 徽标实例类型 */
 export type BadgeComponentInstance = InstanceType<typeof BadgeComponent>;

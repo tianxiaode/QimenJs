@@ -7,6 +7,7 @@ import { ArrayTypeProcessor } from './type';
 import { ArrayUniqueProcessor } from './unique';
 import { ArrayUniqueByProcessor } from './uniqueBy';
 
+/** 数组类型验证处理器注册条目 */
 export const arrayTypeProcessorEntry = {
     name: 'array-type',
     tags: ['array'],
@@ -15,6 +16,7 @@ export const arrayTypeProcessorEntry = {
     execute: ArrayTypeProcessor,
 };
 
+/** 数组长度验证处理器注册条目 */
 export const arrayLengthProcessorEntry = {
     name: 'array-length',
     tags: ['array'],
@@ -23,6 +25,7 @@ export const arrayLengthProcessorEntry = {
     offset: 50,
 };
 
+/** 数组包含值验证处理器注册条目 */
 export const arrayIncludesProcessorEntry = {
     name: 'array-includes',
     tags: ['array'],
@@ -31,6 +34,7 @@ export const arrayIncludesProcessorEntry = {
     execute: ArrayIncludesProcessor,
 };
 
+/** 数组排除值验证处理器注册条目 */
 export const arrayExcludesProcessorEntry = {
     name: 'array-excludes',
     tags: ['array'],
@@ -39,6 +43,7 @@ export const arrayExcludesProcessorEntry = {
     execute: ArrayExcludesProcessor,
 };
 
+/** 数组子项验证处理器注册条目 */
 export const arrayChildrenProcessorEntry = {
     name: 'array-children',
     tags: ['array'],
@@ -47,6 +52,7 @@ export const arrayChildrenProcessorEntry = {
     execute: ArrayChildrenProcessor,
 };
 
+/** 数组唯一性验证处理器注册条目 */
 export const arrayUniqueProcessorEntry = {
     name: 'array-unique',
     tags: ['array'],
@@ -55,6 +61,7 @@ export const arrayUniqueProcessorEntry = {
     offset: 150,
 };
 
+/** 数组按字段唯一性验证处理器注册条目 */
 export const arrayUniqueByProcessorEntry = {
     name: 'array-unique-by',
     tags: ['array'],

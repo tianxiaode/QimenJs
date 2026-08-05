@@ -15,6 +15,7 @@
 import type { AbilityDefinition } from '@/composable';
 import type { NodeMetadata } from '../types/compiled-types';
 
+/** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
 export const NodeQueryAbility: AbilityDefinition = {
     /**
      * 所有节点的元数据映射表

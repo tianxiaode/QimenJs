@@ -30,6 +30,7 @@ import { DomEventsMap } from '@qimenjs/component-core';
 export type { StepStatus } from './StepItemComponent';
 export type { StepItemProps } from './StepItemComponent';
 
+/** 步骤条属性接口 */
 export interface StepProps extends ItemGroupProps {
     activeIndex?: number;
     direction?: 'horizontal' | 'vertical';
@@ -123,4 +124,5 @@ class StepComponent extends ItemGroupPooledComponent {
 
 StepComponent.register();
 export { StepComponent };
+/** 步骤条实例类型 */
 export type StepComponentInstance = InstanceType<typeof StepComponent>;

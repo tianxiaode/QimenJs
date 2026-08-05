@@ -16,6 +16,7 @@ import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
+/** 月份面板属性接口 */
 export interface MonthPanelProps {
     value: DateTimeValue;
     previewData?: PanelPreviewData;
@@ -125,4 +126,5 @@ class MonthPanelComponent extends Component {
 
 MonthPanelComponent.useTemplate(MONTH_PANEL_TPL);
 export { MonthPanelComponent };
+/** 月份面板实例类型 */
 export type MonthPanelComponentInstance = InstanceType<typeof MonthPanelComponent>;

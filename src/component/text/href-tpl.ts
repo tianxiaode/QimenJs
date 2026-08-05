@@ -7,6 +7,7 @@
 
 import type { TplNode } from '@/component-core';
 
+/** 链接模板定义 */
 export const HREF_TPL: TplNode = {
     tag: 'a',
     cls: 'q-href',

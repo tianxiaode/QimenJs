@@ -15,9 +15,12 @@
 import { Component } from '@qimenjs/component-core';
 import { LIST_ITEM_TPL } from './list-item-tpl';
 
+/** 列表状态类型 */
 export type ListStatus = 'default' | 'primary' | 'success' | 'warning' | 'error';
+/** 列表标记形式类型 */
 export type MarkForm = 'dot' | 'dash' | 'ring';
 
+/** 列表项属性接口 */
 export interface ListItemProps {
     label?: string;
     description?: string;
@@ -119,4 +122,5 @@ class ListItemComponent extends Component {
 ListItemComponent.useTemplate(LIST_ITEM_TPL);
 ListItemComponent.register();
 export { ListItemComponent };
+/** 列表项实例类型 */
 export type ListItemComponentInstance = InstanceType<typeof ListItemComponent>;

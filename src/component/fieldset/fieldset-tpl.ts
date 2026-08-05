@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 字段集模板定义 */
 export const FIELDSET_TPL: TplNode = {
     tag: 'fieldset',
     cls: 'q-fieldset',

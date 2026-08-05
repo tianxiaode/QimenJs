@@ -17,6 +17,7 @@
 import { Component } from '@qimenjs/component-core';
 import { LABEL_TPL } from './label-tpl';
 
+/** 标签属性接口 */
 export interface LabelProps {
     text?: string;
     i18nText?: string;
@@ -134,4 +135,5 @@ class LabelComponent extends Component {
 
 LabelComponent.useTemplate(LABEL_TPL);
 export { LabelComponent };
+/** 标签实例类型 */
 export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

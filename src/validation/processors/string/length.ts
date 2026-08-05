@@ -1,6 +1,7 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 字符串长度验证处理器 */
 export const StringLengthProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

@@ -3,6 +3,7 @@ import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler } from '../../types';
 import { validatePattern } from '../../utils';
 
+/** 格式验证处理器 */
 export const FormatProcessor: ValidationProcessorHandler = async context => {
     const { value, rule } = context;
 

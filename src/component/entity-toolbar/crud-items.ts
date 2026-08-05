@@ -22,6 +22,7 @@ import type { EntityToolbarItemDef, BuiltinItemDef } from './types';
 // CRUD 按钮 name 集合（供事件路由判断用）
 // ══════════════════════════════════════════════════════════════
 
+/** CRUD按钮名称集合 */
 export const CRUD_ITEM_NAMES = new Set([
     'create',
     'edit',

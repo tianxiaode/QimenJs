@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 导航项模板定义 */
 export const NAV_ITEM_TPL: TplNode = {
     tag: 'div',
     cls: 'q-nav-item',

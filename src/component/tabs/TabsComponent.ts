@@ -30,6 +30,7 @@ import { TabBarComponent } from './TabBarComponent';
 import type { TabProps as TabItemProps } from './TabComponent';
 import { TABS_TPL } from './tabs-tpl';
 
+/** 标签页项 */
 export interface TabPaneItem {
     label: string;
     icon?: string;
@@ -39,6 +40,7 @@ export interface TabPaneItem {
     disabled?: boolean;
 }
 
+/** 标签页集属性接口 */
 export interface TabsProps {
     items?: TabPaneItem[];
     selectedIndex?: number;
@@ -247,4 +249,5 @@ class TabsComponent extends Component {
 TabsComponent.useTemplate(TABS_TPL);
 TabsComponent.register();
 export { TabsComponent };
+/** 标签页集实例类型 */
 export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

@@ -55,6 +55,7 @@ const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
 // 类型定义
 // ══════════════════════════════════════════════════════════════
 
+/** 实体工具栏属性接口 */
 export interface EntityToolbarProps extends Omit<ToolbarProps, 'items'> {
     /** 工具栏子项数组（与 pagination/crud 合并使用） */
     items?: Record<string, any>[];

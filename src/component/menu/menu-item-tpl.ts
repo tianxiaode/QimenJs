@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 菜单项模板定义 */
 export const MENU_ITEM_TPL: TplNode = {
     tag: 'div',
     children: [

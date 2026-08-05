@@ -1,4 +1,4 @@
-// 从ValidationRule联合类型中提取所有可能的type值作为ValidationTag
+/** 验证类型标签 */
 export type ValidationTag =
     | 'string'
     | 'number'
@@ -29,6 +29,7 @@ export const allValidateTypes: ValidationTag[] = [
     'format',
 ] as const;
 
+/** 格式验证类型列表 */
 export const formatTypes = [
     'email',
     'url',

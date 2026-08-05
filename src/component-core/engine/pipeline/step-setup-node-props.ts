@@ -10,6 +10,7 @@
 import type { InitContext } from '../../types/init-context';
 import { ChildNodePropsEngine } from '../ChildNodePropsEngine';
 
+/** 管线步骤：安装子节点内容属性描述符到构造函数原型 */
 export function setupNodeProps(ctx: InitContext): void {
     const { ctor, nodeMapMgr } = ctx;
     if (!nodeMapMgr) return;

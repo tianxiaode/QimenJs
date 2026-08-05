@@ -1,9 +1,6 @@
-/**
- * Avatar 模板定义 — 独立于组件类
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 头像模板定义 */
 export const AVATAR_TPL: TplNode = {
     tag: 'div',
     cls: 'q-avatar',

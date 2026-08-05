@@ -21,6 +21,7 @@
 import type { TplFragment } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 
+/** 头部片段 */
 export const HeaderFragment: TplFragment = {
     name: 'header',
     children: [

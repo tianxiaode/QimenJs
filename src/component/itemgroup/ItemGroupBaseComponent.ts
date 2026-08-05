@@ -10,9 +10,12 @@ import { OverflowAbility } from '@qimenjs/component-abilities';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
 
 export type { OverflowMode } from '@qimenjs/component-abilities';
+/** 默认项定义 */
 export type DefaultItemDef = Record<string, any>;
+/** 默认项配置 */
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
 
+/** 项组配置 */
 export interface ItemGroupConfig {
     direction?: 'horizontal' | 'vertical';
     defaultItemType?: string;
@@ -25,11 +28,13 @@ export interface ItemGroupConfig {
     indicator?: IndicatorConfig;
 }
 
+/** 项组属性接口 */
 export interface ItemGroupProps extends ItemGroupConfig {
     cls?: string;
     itemsCls?: string;
 }
 
+/** 项组基类组件 */
 class ItemGroupBaseComponent extends Component {
     _items: Array<{
         data: Record<string, any>;
@@ -342,4 +347,5 @@ class ItemGroupBaseComponent extends Component {
 ItemGroupBaseComponent.use([IndicatorAbility, OverflowAbility]);
 ItemGroupBaseComponent.useTemplate(ITEMGROUP_BASE_TPL);
 export { ItemGroupBaseComponent };
+/** 项组基类实例类型 */
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

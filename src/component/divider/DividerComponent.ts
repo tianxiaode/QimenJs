@@ -15,6 +15,7 @@
 import { Component } from '@qimenjs/component-core';
 import { DIVIDER_TPL } from './divider-tpl';
 
+/** 分割线属性接口 */
 export interface DividerProps {
     vertical?: boolean;
     dashed?: boolean;
@@ -47,4 +48,5 @@ class DividerComponent extends Component {
 
 DividerComponent.useTemplate(DIVIDER_TPL);
 export { DividerComponent };
+/** 分割线实例类型 */
 export type DividerComponentInstance = InstanceType<typeof DividerComponent>;

@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 项组基础模板定义 */
 export const ITEMGROUP_BASE_TPL: TplNode = {
     tag: 'div',
     cls: 'q-itemgroup',

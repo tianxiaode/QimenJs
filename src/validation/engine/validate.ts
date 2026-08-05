@@ -107,6 +107,7 @@ Object.keys(SCHEMA_MAP).forEach(tag => {
     assertRaw[tag] = async (v: any, r: any = {}) => await doValidateWithThrow(v, factory(r), true);
 });
 
+/** 验证函数集合，按类型提供语法糖 */
 export const validate = validateRaw as {
     readonly [K in keyof RuleRegistry]: ValidatorSugar<RuleRegistry[K]>;
 } & {
@@ -114,12 +115,14 @@ export const validate = validateRaw as {
     validate: (value: any, rule: ValidationRule) => Promise<ValidateResult>;
 };
 
+/** 断言式验证函数集合，验证失败时抛出异常 */
 export const assert = assertRaw as {
     readonly [K in keyof RuleRegistry]: ValidatorSugar<RuleRegistry[K]>;
 } & {
     validate: (value: any, rule: ValidationRule) => Promise<void>;
 };
 
+/** 规范化函数集合，验证失败时返回默认值 */
 export const normalize = normalizeRaw as {
     readonly [K in keyof RuleRegistry]: NormalizerSugar<RuleRegistry[K]>;
 };

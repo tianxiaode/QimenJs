@@ -45,6 +45,7 @@ interface ComponentStorage {
     tplRefs: Map<TplNode, string>;
 }
 
+/** 组件注册器，统一管理组件类与模板的注册、查找、懒编译 */
 export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
     public readonly name = 'component';
 

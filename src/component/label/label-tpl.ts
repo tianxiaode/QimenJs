@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 标签模板定义 */
 export const LABEL_TPL: TplNode = {
     tag: 'label',
     name: 'content',

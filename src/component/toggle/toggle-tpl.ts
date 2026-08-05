@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 切换模板定义 */
 export const TOGGLE_TPL: TplNode = {
     tag: 'div',
     cls: 'q-toggle',

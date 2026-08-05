@@ -20,6 +20,7 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 
+/** 导航栏属性接口 */
 export interface NavbarProps extends ItemGroupProps {
     /** 公司名称（默认 companyName 项的 text） */
     companyName?: string;
@@ -27,6 +28,7 @@ export interface NavbarProps extends ItemGroupProps {
     logo?: string;
 }
 
+/** 导航栏组件 */
 class NavbarComponent extends ItemGroupStaticComponent {
     onAfterInit(props?: NavbarProps): void {
         // 1. 基础外观（横向、间距）
@@ -63,4 +65,5 @@ class NavbarComponent extends ItemGroupStaticComponent {
 
 NavbarComponent.register();
 export { NavbarComponent };
+/** 导航栏实例类型 */
 export type NavbarComponentInstance = InstanceType<typeof NavbarComponent>;

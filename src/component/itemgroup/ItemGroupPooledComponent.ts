@@ -6,9 +6,13 @@
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 import type { TplEventAction } from '@qimenjs/component-core';
 
+/** 辅助池角色-分组 */
 export const AUX_ROLE_GROUP = 'group';
+/** 辅助池角色-展开行 */
 export const AUX_ROLE_EXPAND = 'expand';
+/** 辅助池角色-分组汇总 */
 export const AUX_ROLE_GROUP_SUMMARY = 'groupSummary';
+/** 辅助池角色-表格汇总 */
 export const AUX_ROLE_TABLE_SUMMARY = 'tableSummary';
 
 const ROLE_OFFSETS: Record<string, number> = {
@@ -18,6 +22,7 @@ const ROLE_OFFSETS: Record<string, number> = {
     [AUX_ROLE_TABLE_SUMMARY]: 0.9,
 };
 
+/** 辅助池配置 */
 export interface AuxPoolConfig {
     itemType: string;
     offset: number;
@@ -37,6 +42,7 @@ interface AuxPool {
     offset: number;
 }
 
+/** 池化项组组件 */
 class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     _hiddenItems: Array<{
         data: Record<string, any>;
@@ -422,4 +428,5 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
 ItemGroupPooledComponent.register();
 export { ItemGroupPooledComponent };
+/** 池化项组实例类型 */
 export type ItemGroupPooledComponentType = InstanceType<typeof ItemGroupPooledComponent>;

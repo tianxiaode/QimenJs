@@ -18,6 +18,7 @@ import type { AbilityDefinition } from '@/composable';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 
+/** 组件生命周期事件能力，统一管理 mounted/updated/resize 钩子调用与事件发送 */
 export const LifecycleAbility = {
     _emitMounted(this: any): void {
         if (typeof this.onMounted === 'function') {

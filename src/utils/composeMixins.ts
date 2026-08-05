@@ -1,4 +1,4 @@
-// 定义一个可释放资源的基础类
+/** 可释放资源的基础类，提供 dispose 生命周期方法 */
 export class DisposableBase {
     /**
      * 释放资源的方法，子类可以重写此方法来实现具体的资源清理逻辑
@@ -12,6 +12,7 @@ export class DisposableBase {
  */
 export type DisposableConstructor = new (...args: any[]) => DisposableBase;
 
+/** Mixin 函数类型，接收基类构造函数并返回增强后的构造函数 */
 export type Mixin = (Base: DisposableConstructor) => DisposableConstructor;
 /**
  * 组合多个 Mixin 的函数，将它们依次应用到基类上

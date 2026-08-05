@@ -34,12 +34,14 @@ import { getId } from '@/utils/string';
 // 类型定义
 // ══════════════════════════════════════════════════════════════
 
+/** 浮层类型处理器，将 props 配置转为 FloatDecl */
 export type FloatHandler = (config: any) => FloatDecl;
 
 // ══════════════════════════════════════════════════════════════
 // FloatEngine 单例类
 // ══════════════════════════════════════════════════════════════
 
+/** 浮层引擎（单例），提供浮层完整生命周期管理，含缓存层/引擎层/处理器层/API层 */
 export class FloatEngine {
     private static instance: FloatEngine;
     private handlers: Map<string, FloatHandler> = new Map();

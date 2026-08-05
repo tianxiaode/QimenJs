@@ -19,6 +19,7 @@ import type { DomEventsMap } from '@qimenjs/component-core';
 import { ONE_TIME_PASSWORD_TPL } from './one-time-password-tpl';
 import './one-time-password.css';
 
+/** 一次性密码属性接口 */
 export interface OneTimePasswordProps {
     value?: string;
     length?: number;
@@ -231,4 +232,5 @@ class OneTimePasswordComponent extends Component {
 OneTimePasswordComponent.useTemplate(ONE_TIME_PASSWORD_TPL);
 
 export { OneTimePasswordComponent };
+/** 一次性密码实例类型 */
 export type OneTimePasswordComponentInstance = InstanceType<typeof OneTimePasswordComponent>;

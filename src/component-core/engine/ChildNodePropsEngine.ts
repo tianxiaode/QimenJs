@@ -34,6 +34,7 @@ import { capitalize } from '@/utils/string';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { CONTENT_MODE_MAP, RESERVED_KEYS } from '../constants/template-constants';
 
+/** 子节点内容属性引擎，编译时根据 contentMode 自动生成内容属性 getter/setter */
 export class ChildNodePropsEngine {
     /**
      * 将子节点内容属性描述符安装到组件构造函数的原型上

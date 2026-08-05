@@ -93,6 +93,7 @@ export interface NodeConfig {
     [key: string]: any;
 }
 
+/** 节点配置映射表，将节点名映射到节点配置 */
 export type NodesConfig = Record<string, NodeConfig>;
 
 // ══════════════════════════════════════════════════════════════

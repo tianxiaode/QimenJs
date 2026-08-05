@@ -31,6 +31,7 @@ import { BUTTON_TPL } from './button-tpl';
 
 const I18N_PREFIX = 'i18n:';
 
+/** 按钮属性接口 */
 export interface ButtonProps {
     icon?: string;
     text?: string;
@@ -84,4 +85,5 @@ class ButtonComponent extends Component {
 ButtonComponent.use(SizeAbility);
 ButtonComponent.useTemplate(BUTTON_TPL);
 export { ButtonComponent };
+/** 按钮实例类型 */
 export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

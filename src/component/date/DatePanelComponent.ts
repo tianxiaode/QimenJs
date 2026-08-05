@@ -26,6 +26,7 @@ import {
 } from '@/utils/date';
 import './date-panel.css';
 
+/** 日期面板属性接口 */
 export interface DatePanelProps {
     value: DateTimeValue;
 }
@@ -193,4 +194,5 @@ class DatePanelComponent extends Component {
 
 DatePanelComponent.useTemplate(DATE_PANEL_TPL);
 export { DatePanelComponent };
+/** 日期面板实例类型 */
 export type DatePanelComponentInstance = InstanceType<typeof DatePanelComponent>;

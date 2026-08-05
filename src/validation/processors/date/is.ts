@@ -55,6 +55,7 @@ const dateIsPredicates: Record<string, DateIsPredicate> = {
     },
 };
 
+/** 日期条件判断验证处理器 */
 export const DateIsProcessor: ValidationProcessorHandler = async context => {
     const { value, rule } = context;
     //不要做任何防御，要相信上一处理器

@@ -17,6 +17,7 @@ import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } f
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
+/** 分钟面板属性接口 */
 export interface MinutePanelProps {
     value: DateTimeValue;
     previewData?: PanelPreviewData;
@@ -172,4 +173,5 @@ class MinutePanelComponent extends Component {
 
 MinutePanelComponent.useTemplate(MINUTE_PANEL_TPL);
 export { MinutePanelComponent };
+/** 分钟面板实例类型 */
 export type MinutePanelComponentInstance = InstanceType<typeof MinutePanelComponent>;

@@ -638,6 +638,7 @@ export interface FloatDecl {
     [key: string]: any;
 }
 
+/** 浮层配置映射表，将浮层名映射到浮层声明 */
 export type FloatsConfig = Record<string, FloatDecl>;
 
 // ══════════════════════════════════════════════════════════════
@@ -714,6 +715,7 @@ export interface DropDecl {
     onDrop?: string;
 }
 
+/** 拖拽配置映射表，将拖拽名映射到拖拽声明 */
 export type DragsConfig = Record<string, DragDecl>;
 
 // ══════════════════════════════════════════════════════════════

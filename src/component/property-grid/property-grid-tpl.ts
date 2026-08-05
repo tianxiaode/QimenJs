@@ -1,12 +1,6 @@
-/**
- * PropertyGrid 模板定义
- *
- * 结构：grid 容器（CSS Grid 驱动行列布局）
- * 字段行由 PropertyFieldComponent 动态创建
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 属性网格模板定义 */
 export const PROPERTY_GRID_TPL: TplNode = {
     tag: 'div',
     cls: 'q-pgrid',

@@ -18,6 +18,7 @@ import type { BadgeQuickConfig } from './types/init-context';
 import { findByPath } from './engine/utils/dom-path';
 import { SKELETON_CLS } from './constants/compile-constants';
 
+/** 运行时 DOM 管理器，负责模板克隆、节点映射构建、子组件挂载与动态替换 */
 export class NodeMapManager implements INodeMapManager {
     private _cache: CompiledTemplateCache;
     private _nodeMetas: Record<string, NodeMetadata>;

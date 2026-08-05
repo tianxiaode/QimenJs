@@ -14,6 +14,7 @@ const CELL_TYPE_COMPONENT_MAP: Record<CellType, string> = {
     action: 'ActionCell',
 };
 
+/** 创建单元格模板 */
 export function createCellTpl(meta: ColumnMeta): TplNode {
     if (meta.cellTpl) return meta.cellTpl;
 
@@ -28,6 +29,7 @@ export function createCellTpl(meta: ColumnMeta): TplNode {
     };
 }
 
+/** 创建文本单元格模板 */
 export function createTextCellTpl(meta: ColumnMeta): TplNode {
     return {
         type: 'TextCell',
@@ -39,6 +41,7 @@ export function createTextCellTpl(meta: ColumnMeta): TplNode {
     };
 }
 
+/** 创建行模板 */
 export function createRowTpl(
     metas: ColumnMeta[],
     cellTplFn: (m: ColumnMeta) => TplNode = createCellTpl

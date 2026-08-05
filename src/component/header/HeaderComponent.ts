@@ -39,6 +39,7 @@ import { Component } from '@qimenjs/component-core';
 import type { ComponentProps } from '@qimenjs/component-core';
 import { HEADER_TPL } from './header-tpl';
 
+/** 头部属性接口 */
 export interface HeaderProps {
     icon?: string;
     title?: string;
@@ -92,4 +93,5 @@ class HeaderComponent extends Component {
 
 HeaderComponent.useTemplate(HEADER_TPL);
 export { HeaderComponent };
+/** 头部实例类型 */
 export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

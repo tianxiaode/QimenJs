@@ -77,6 +77,7 @@ const DIALOG_ACTION_DEFS: Record<DialogActionKey, DialogActionDef> = {
     close: { text: 'i18n:dialog.close', action: 'close', order: 300 },
 };
 
+/** 对话框属性接口 */
 export interface DialogProps {
     title?: string;
     icon?: string;
@@ -281,4 +282,5 @@ DialogComponent.use([ResizeAbility]);
 DialogComponent.useTemplate(DIALOG_TPL);
 
 export { DialogComponent };
+/** 对话框实例类型 */
 export type DialogComponentInstance = InstanceType<typeof DialogComponent>;

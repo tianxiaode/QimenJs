@@ -2,6 +2,7 @@ import { doValidate } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationProcessorHandler, ValidationRule } from '../../types';
 
+/** 拆分验证处理器 */
 export const SplitProcessor: ValidationProcessorHandler = async context => {
     const { value, rule, path } = context;
 

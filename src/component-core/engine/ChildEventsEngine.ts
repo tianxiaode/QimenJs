@@ -8,6 +8,7 @@
 import type { EventMapping, ListenItem } from '../types/tpl-node-types';
 import { ListensEngine } from './ListensEngine';
 
+/** 子组件事件订阅引擎（已委托给 ListensEngine） */
 export class ChildEventsEngine {
     /**
      * @deprecated 使用 ListensEngine.bindNodeEvents() 代替

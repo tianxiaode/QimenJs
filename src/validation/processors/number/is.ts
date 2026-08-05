@@ -9,6 +9,7 @@ const numberIsPredicates: Record<string, (v: number) => boolean> = {
     odd: v => Number.isInteger(v) && v % 2 !== 0,
 };
 
+/** 数字语义验证处理器 */
 export const NumberIsProcessor: ValidationProcessorHandler = async context => {
     const { value, rule } = context;
 

@@ -15,8 +15,10 @@
 import { Component } from '@qimenjs/component-core';
 import { PROGRESS_TPL } from './progress-tpl';
 
+/** 进度条类型 */
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 
+/** 进度条属性接口 */
 export interface ProgressProps {
     percent?: number;
     type?: ProgressType;
@@ -73,4 +75,5 @@ class ProgressComponent extends Component {
 
 ProgressComponent.useTemplate(PROGRESS_TPL);
 export { ProgressComponent };
+/** 进度条实例类型 */
 export type ProgressComponentInstance = InstanceType<typeof ProgressComponent>;

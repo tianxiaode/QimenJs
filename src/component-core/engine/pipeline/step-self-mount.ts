@@ -7,6 +7,7 @@
 
 import type { InitContext } from '../../types/init-context';
 
+/** 管线步骤：将子组件挂载到父组件的占位节点 */
 export function selfMount(ctx: InitContext): void {
     const { instance, nodeMapMgr } = ctx;
     if (!nodeMapMgr || !instance.parent) return;

@@ -31,6 +31,7 @@ const DEFAULT_POPOVER_FLOAT = {
     placement: 'bottom' as const,
 };
 
+/** 下拉菜单属性接口 */
 export interface DropdownProps extends ButtonProps {
     /** dropIcon 弹出浮层配置，与默认值合并（默认 trigger='click', placement='bottom'） */
     popover?: Partial<FloatDecl>;
@@ -61,4 +62,5 @@ class DropdownComponent extends ButtonComponent {
 
 DropdownComponent.register();
 export { DropdownComponent };
+/** 下拉菜单实例类型 */
 export type DropdownComponentInstance = InstanceType<typeof DropdownComponent>;

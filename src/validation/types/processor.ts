@@ -1,6 +1,7 @@
 import { ValidationContext } from './context';
 import { ValidationTag } from './base';
 
+/** 验证处理器执行函数类型 */
 export type ValidationProcessorHandler = (ctx: ValidationContext) => Promise<void>;
 
 /**
@@ -31,6 +32,7 @@ export enum ValidationWeight {
     STRUCTURAL = 5000,
 }
 
+/** 验证处理器注册条目接口 */
 export interface ValidationProcessorEntry {
     /** 处理器名称，对应 ValidationRule 中的 Key */
     name: string;

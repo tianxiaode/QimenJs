@@ -6,8 +6,10 @@
  * @module utils/string/css
  */
 
+/** CSS 单位值类型，支持字符串、数字、null 或 undefined */
 export type CssUnitType = string | number | null | undefined;
 
+/** 边距/内边距配置，支持四个方向及水平/垂直简写 */
 export interface MarginPadding {
     top?: number | string;
     right?: number | string;
@@ -17,12 +19,14 @@ export interface MarginPadding {
     vertical?: number | string;
 }
 
+/** 单侧边框配置 */
 export interface BorderSide {
     width?: number | string;
     style?: string;
     color?: string;
 }
 
+/** 边框配置，支持统一设置或四边独立设置 */
 export interface Border {
     width?: number | string;
     style?: string;
@@ -105,6 +109,7 @@ export function resolveBorder(v: number | string | Border): string {
     return c ? `${w} ${s} ${c}` : `${w} ${s}`;
 }
 
+/** 缩进样式配置选项 */
 export interface IndentStyleOptions {
     depth: number;
     prefix?: string;

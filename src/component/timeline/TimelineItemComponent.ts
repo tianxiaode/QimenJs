@@ -17,8 +17,10 @@
 import { Component } from '@qimenjs/component-core';
 import { TIMELINE_ITEM_TPL } from './timeline-item-tpl';
 
+/** 时间线颜色 */
 export type TimelineColor = 'default' | 'primary' | 'success' | 'warning' | 'error';
 
+/** 时间线项属性接口 */
 export interface TimelineItemProps {
     title?: string;
     description?: string;
@@ -127,4 +129,5 @@ class TimelineItemComponent extends Component {
 TimelineItemComponent.useTemplate(TIMELINE_ITEM_TPL);
 TimelineItemComponent.register();
 export { TimelineItemComponent };
+/** 时间线项实例类型 */
 export type TimelineItemComponentInstance = InstanceType<typeof TimelineItemComponent>;

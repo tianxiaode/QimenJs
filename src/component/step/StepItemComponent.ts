@@ -22,8 +22,10 @@
 import { Component } from '@qimenjs/component-core';
 import { STEP_ITEM_TPL } from './step-item-tpl';
 
+/** 步骤状态类型 */
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
 
+/** 步骤项属性接口 */
 export interface StepItemProps {
     title?: string;
     description?: string;
@@ -164,4 +166,5 @@ class StepItemComponent extends Component {
 StepItemComponent.useTemplate(STEP_ITEM_TPL);
 StepItemComponent.register();
 export { StepItemComponent };
+/** 步骤项实例类型 */
 export type StepItemComponentInstance = InstanceType<typeof StepItemComponent>;

@@ -1,10 +1,7 @@
-/**
- * Card 模板定义 — 独立于组件类
- */
-
 import type { TplNode } from '@/component-core';
 import { HeaderFragment } from '../header/HeaderFragment';
 
+/** 卡片模板定义 */
 export const CARD_TPL: TplNode = {
     tag: 'div',
     cls: 'q-card',

@@ -1,6 +1,7 @@
 import type { TplNode } from '@/component-core';
 import { PANEL_NAV_CHILDREN } from './panel-nav-tpl';
 
+/** 月份面板模板定义 */
 export const MONTH_PANEL_TPL: TplNode = {
     tag: 'div',
     cls: 'q-dtpanel',

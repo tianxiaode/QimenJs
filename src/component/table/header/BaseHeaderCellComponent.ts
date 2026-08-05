@@ -16,6 +16,7 @@ import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
 
+/** 基础表头单元格属性接口 */
 export interface BaseHeaderCellProps {
     colName: string;
     title?: string;
@@ -64,6 +65,7 @@ class BaseHeaderCellComponent extends Component {
 }
 
 export { BaseHeaderCellComponent };
+/** 基础表头单元格实例类型 */
 export type BaseHeaderCellComponentInstance = InstanceType<typeof BaseHeaderCellComponent>;
 
 BaseHeaderCellComponent.useTemplate(BASE_HEADER_CELL_TPL);

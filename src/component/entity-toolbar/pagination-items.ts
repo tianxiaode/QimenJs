@@ -25,6 +25,7 @@ import type { EntityToolbarItemDef, BuiltinItemDef } from './types';
 // 分页按钮 name 集合（供事件路由判断用）
 // ══════════════════════════════════════════════════════════════
 
+/** 分页按钮名称集合 */
 export const PAGINATION_ITEM_NAMES = new Set(['firstPage', 'prevPage', 'nextPage', 'lastPage']);
 
 // ══════════════════════════════════════════════════════════════
@@ -102,6 +103,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
 // 选项
 // ══════════════════════════════════════════════════════════════
 
+/** 分页项配置选项 */
 export interface PaginationItemsOptions {
     /** 默认每页条数（pageSize 下拉用），默认 10 */
     defaultPageSize?: number;

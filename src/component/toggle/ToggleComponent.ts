@@ -23,6 +23,7 @@ import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
 
+/** 切换属性接口 */
 export interface ToggleProps {
     text?: string;
     icon?: string;
@@ -111,4 +112,5 @@ ToggleComponent.use([SizeAbility]);
 ToggleComponent.useTemplate(TOGGLE_TPL);
 
 export { ToggleComponent };
+/** 切换实例类型 */
 export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;

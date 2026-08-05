@@ -25,8 +25,10 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TabComponent } from './TabComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 
+/** 标签栏位置 */
 export type TabBarPosition = 'top' | 'bottom' | 'left' | 'right';
 
+/** 标签栏属性接口 */
 export interface TabBarProps extends ItemGroupProps {
     selectedIndex?: number;
     position?: TabBarPosition;
@@ -141,4 +143,5 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
 TabBarComponent.register();
 export { TabBarComponent };
+/** 标签栏实例类型 */
 export type TabBarComponentInstance = InstanceType<typeof TabBarComponent>;

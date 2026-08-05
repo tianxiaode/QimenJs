@@ -15,6 +15,7 @@ import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
+/** 小时面板属性接口 */
 export interface HourPanelProps {
     value: DateTimeValue;
     previewData?: PanelPreviewData;
@@ -100,4 +101,5 @@ class HourPanelComponent extends Component {
 
 HourPanelComponent.useTemplate(HOUR_PANEL_TPL);
 export { HourPanelComponent };
+/** 小时面板实例类型 */
 export type HourPanelComponentInstance = InstanceType<typeof HourPanelComponent>;

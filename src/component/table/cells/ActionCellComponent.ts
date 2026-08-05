@@ -21,6 +21,7 @@ import type { BaseCellProps } from './BaseCellComponent';
 import type { ActionCellData } from '../column-types';
 import { ACTION_CELL_TPL } from './action-cell-tpl';
 
+/** 操作单元格属性接口 */
 export type ActionCellProps = BaseCellProps;
 
 class ActionCellComponent extends BaseCellComponent {
@@ -48,4 +49,5 @@ class ActionCellComponent extends BaseCellComponent {
 
 ActionCellComponent.useTemplate(ACTION_CELL_TPL);
 export { ActionCellComponent };
+/** 操作单元格实例类型 */
 export type ActionCellComponentInstance = InstanceType<typeof ActionCellComponent>;

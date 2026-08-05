@@ -2,6 +2,7 @@ import { doValidate } from '../../core';
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 对象属性验证处理器 */
 export const ObjectPropertiesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

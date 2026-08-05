@@ -14,6 +14,7 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import { DomEventsMap } from '@qimenjs/component-core';
 
+/** 菜单属性接口 */
 export interface MenuProps extends ItemGroupProps {
     anchor?: HTMLElement;
     placement?: string;
@@ -132,4 +133,5 @@ MenuComponent.register();
 MenuComponent.use(GroupSelectAbility);
 
 export { MenuComponent };
+/** 菜单实例类型 */
 export type MenuComponentInstance = InstanceType<typeof MenuComponent>;

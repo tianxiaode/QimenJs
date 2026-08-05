@@ -6,6 +6,7 @@
 
 import type { TplNode } from '@/component-core';
 
+/** 标签页模板定义 */
 export const TAB_TPL: TplNode = {
     tag: 'div',
     cls: 'q-tab',

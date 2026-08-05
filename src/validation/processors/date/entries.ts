@@ -6,6 +6,7 @@ import { DateExcludesProcessor } from './excludes';
 
 import { ValidationWeight } from '../../types';
 
+/** 日期类型验证处理器注册条目 */
 export const dateTypeProcessorEntry = {
     name: 'date.type',
     tags: ['date'],
@@ -14,6 +15,7 @@ export const dateTypeProcessorEntry = {
     execute: DateTypeProcessor,
 };
 
+/** 日期条件判断验证处理器注册条目 */
 export const dateIsProcessorEntry = {
     name: 'date-is',
     tags: ['date'],
@@ -22,6 +24,7 @@ export const dateIsProcessorEntry = {
     execute: DateIsProcessor,
 };
 
+/** 日期周末验证处理器注册条目 */
 export const dateWeekendProcessorEntry = {
     name: 'date.weekend',
     tags: ['date'],
@@ -30,6 +33,7 @@ export const dateWeekendProcessorEntry = {
     execute: DateWeenendProcessor,
 };
 
+/** 日期包含值验证处理器注册条目 */
 export const dateIncludesProcessorEntry = {
     name: 'date-includes',
     tags: ['date'],
@@ -38,6 +42,7 @@ export const dateIncludesProcessorEntry = {
     execute: DateIncludesProcessor,
 };
 
+/** 日期排除值验证处理器注册条目 */
 export const dateExcludesProcessorEntry = {
     name: 'date-excludes',
     tags: ['date'],

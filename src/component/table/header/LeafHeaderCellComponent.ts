@@ -13,6 +13,7 @@ import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
 
+/** 叶子表头单元格属性接口 */
 export interface LeafHeaderCellProps extends BaseHeaderCellProps {
     sortable?: boolean;
     resizable?: boolean;
@@ -123,4 +124,5 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
 LeafHeaderCellComponent.useTemplate(LEAF_HEADER_CELL_TPL);
 export { LeafHeaderCellComponent };
+/** 叶子表头单元格实例类型 */
 export type LeafHeaderCellComponentInstance = InstanceType<typeof LeafHeaderCellComponent>;

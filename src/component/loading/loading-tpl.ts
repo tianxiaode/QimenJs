@@ -1,9 +1,6 @@
-/**
- * Loading 模板定义 — 独立于组件类
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 加载模板定义 */
 export const LOADING_TPL: TplNode = {
     tag: 'div',
     cls: 'q-loading',

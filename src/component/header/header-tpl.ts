@@ -3,6 +3,7 @@ import type { TplNode } from '@/component-core';
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
+/** 头部模板定义 */
 export const HEADER_TPL: TplNode = {
     tag: 'div',
     cls: 'q-header',

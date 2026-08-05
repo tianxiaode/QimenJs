@@ -8,6 +8,7 @@
 import type { InitContext } from '../../types/init-context';
 import { ComponentRegistrar } from '../ComponentRegistrar';
 
+/** 管线步骤：从 ComponentRegistrar 获取编译产物，构建 NodeMapManager */
 export function ensureNodeMap(ctx: InitContext): void {
     const ctor = ctx.ctor;
     const templateName = ctor.type;

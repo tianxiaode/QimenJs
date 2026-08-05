@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 面板导航子节点模板 */
 export const PANEL_NAV_CHILDREN: TplNode['children'] = [
     { tag: 'button', name: 'prevFieldBtn', cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev' },
     { tag: 'button', name: 'nextFieldBtn', cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next' },

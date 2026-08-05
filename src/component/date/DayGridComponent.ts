@@ -16,6 +16,7 @@ import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
 import './date-panel.css';
 
+/** 日网格属性接口 */
 export interface DayGridProps {
     year: number;
     month: number;
@@ -157,4 +158,5 @@ class DayGridComponent extends Component {
 
 DayGridComponent.useTemplate(DAY_GRID_TPL);
 export { DayGridComponent };
+/** 日网格实例类型 */
 export type DayGridComponentInstance = InstanceType<typeof DayGridComponent>;

@@ -37,6 +37,7 @@ export interface NodePropDef {
  */
 export type NodePropMap = Record<string, NodePropDef>;
 
+/** 默认节点属性映射表，定义属性名到 DOM 操作方式的映射 */
 export const DEFAULT_NODE_PROP_MAP: NodePropMap = {
     cls: { domAttr: 'className' },
     style: { domAttr: 'style' },

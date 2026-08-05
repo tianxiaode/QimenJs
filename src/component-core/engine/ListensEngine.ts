@@ -51,6 +51,7 @@ function isFileListen(item: ListenItem): item is FileListen {
     return 'file' in item;
 }
 
+/** 统一事件订阅引擎，处理子组件事件订阅与外部事件订阅，支持本地监听+六路转发 */
 export class ListensEngine {
     /**
      * 绑定外部事件订阅（不依赖子组件实例，FINALIZE 早期调用）

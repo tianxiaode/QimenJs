@@ -31,6 +31,7 @@ import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent'
 
 export type { PropertyField, PropertyFieldType };
 
+/** 属性网格属性接口 */
 export interface PropertyGridProps {
     fields: PropertyField[];
     data?: Record<string, any>;
@@ -171,4 +172,5 @@ class PropertyGridComponent extends Component {
 PropertyGridComponent.useTemplate(PROPERTY_GRID_TPL);
 PropertyGridComponent.register();
 export { PropertyGridComponent };
+/** 属性网格实例类型 */
 export type PropertyGridComponentInstance = InstanceType<typeof PropertyGridComponent>;

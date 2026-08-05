@@ -1,6 +1,7 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 数组按字段唯一性验证处理器 */
 export const ArrayUniqueByProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

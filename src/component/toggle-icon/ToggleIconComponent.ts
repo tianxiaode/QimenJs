@@ -22,6 +22,7 @@ import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_ICON_TPL } from './toggle-icon-tpl';
 
+/** 切换图标属性接口 */
 export interface ToggleIconProps {
     onIcon?: string;
     offIcon?: string;
@@ -120,4 +121,5 @@ ToggleIconComponent.use(SizeAbility);
 ToggleIconComponent.useTemplate(TOGGLE_ICON_TPL);
 
 export { ToggleIconComponent };
+/** 切换图标实例类型 */
 export type ToggleIconComponentInstance = InstanceType<typeof ToggleIconComponent>;

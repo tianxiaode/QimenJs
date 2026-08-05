@@ -24,6 +24,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { HERO_TPL } from './hero-tpl';
 
+/** 英雄区属性接口 */
 export interface HeroProps {
     title?: string;
     subtitle?: string;
@@ -79,4 +80,5 @@ class HeroComponent extends Component {
 
 HeroComponent.useTemplate(HERO_TPL);
 export { HeroComponent };
+/** 英雄区实例类型 */
 export type HeroComponentInstance = InstanceType<typeof HeroComponent>;

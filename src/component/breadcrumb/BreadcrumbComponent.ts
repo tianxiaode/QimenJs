@@ -24,16 +24,19 @@ import { Component } from '@qimenjs/component-core';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { BREADCRUMB_TPL } from './breadcrumb-tpl';
 
+/** 面包屑项 */
 export interface BreadcrumbItem {
     text: string;
     key: string;
 }
 
+/** 面包屑属性接口 */
 export interface BreadcrumbProps {
     items?: BreadcrumbItem[];
     separator?: string;
 }
 
+/** 面包屑组件 */
 class BreadcrumbComponent extends Component {
     _items: BreadcrumbItem[] = [];
     _separator: string = '/';
@@ -159,4 +162,5 @@ class BreadcrumbComponent extends Component {
 
 BreadcrumbComponent.useTemplate(BREADCRUMB_TPL);
 export { BreadcrumbComponent };
+/** 面包屑实例类型 */
 export type BreadcrumbComponentInstance = InstanceType<typeof BreadcrumbComponent>;

@@ -21,6 +21,7 @@ import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { PANEL_TPL } from './panel-tpl';
 
+/** 工具组配置 */
 export interface ToolGroupConfig {
     items: Record<string, any>[];
     itemType?: string;
@@ -28,6 +29,7 @@ export interface ToolGroupConfig {
     defaultItem?: Record<string, any>;
 }
 
+/** 面板属性接口 */
 export interface PanelProps {
     title?: string;
     expandable?: boolean;
@@ -121,4 +123,5 @@ PanelComponent.use(ResizeAbility);
 PanelComponent.useTemplate(PANEL_TPL);
 
 export { PanelComponent };
+/** 面板实例类型 */
 export type PanelComponentInstance = InstanceType<typeof PanelComponent>;

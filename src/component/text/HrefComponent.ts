@@ -26,8 +26,10 @@ import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap } from '@qimenjs/component-core';
 import { HREF_TPL } from './href-tpl';
 
+/** 链接目标 */
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';
 
+/** 链接属性接口 */
 export interface HrefProps {
     text?: string;
     href?: string;
@@ -146,4 +148,5 @@ class HrefComponent extends Component {
 
 HrefComponent.useTemplate(HREF_TPL);
 export { HrefComponent };
+/** 链接实例类型 */
 export type HrefComponentInstance = InstanceType<typeof HrefComponent>;

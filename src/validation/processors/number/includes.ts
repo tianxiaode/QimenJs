@@ -1,6 +1,7 @@
 import { ValidationErrorBuilder } from '../../errors';
 import { ValidationContext, ValidationProcessorHandler } from '../../types';
 
+/** 数字包含值验证处理器 */
 export const NumberIncludesProcessor: ValidationProcessorHandler = async (
     context: ValidationContext
 ) => {

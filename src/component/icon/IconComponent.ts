@@ -14,6 +14,7 @@ import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { ICON_TPL } from './icon-tpl';
 
+/** 图标属性接口 */
 export interface IconProps {
     content?: string;
     size?: 'sm' | 'md' | 'lg';
@@ -37,4 +38,5 @@ IconComponent.use([SizeAbility]);
 IconComponent.useTemplate(ICON_TPL);
 
 export { IconComponent };
+/** 图标实例类型 */
 export type IconComponentInstance = InstanceType<typeof IconComponent>;

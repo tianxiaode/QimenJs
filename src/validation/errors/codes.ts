@@ -1,5 +1,6 @@
 // 精简到15个核心错误代码，但保持详细的参数接口
 
+/** 验证错误代码常量映射 */
 export const ValidationErrorCode = {
     // === 基础验证 (4个) ===
     REQUIRED: 'VALIDATION_REQUIRED', // 必填
@@ -32,4 +33,5 @@ export const ValidationErrorCode = {
     PASSWORD_MISSING_SPECIAL: 'VALIDATION_PASSWORD_MISSING_SPECIAL', // 缺少特殊字符
 } as const;
 
+/** 验证错误代码类型 */
 export type ValidationErrorCode = (typeof ValidationErrorCode)[keyof typeof ValidationErrorCode];

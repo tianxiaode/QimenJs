@@ -20,21 +20,25 @@ import { bindPermission } from './step-bind-permission';
 import { ComponentError } from '@/error';
 import { KernelErrorCode } from '@/error';
 
+/** 挂载阶段，执行节点映射构建、自身挂载、节点属性设置与初始化前钩子 */
 export const MOUNT_PHASE: Phase = {
     name: 'mount',
     steps: [ensureNodeMap, selfMount, setupNodeProps, onBeforeInit],
 };
 
+/** 实例化阶段，执行子组件实例化 */
 export const INSTANTIATE_PHASE: Phase = {
     name: 'instantiate',
     steps: [instantiateChildComponents],
 };
 
+/** 收尾阶段，执行事件绑定、权限绑定与初始化后钩子 */
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
     steps: [bindListens, bindChildEvents, bindDomEvents, bindPermission, onAfterInit],
 };
 
+/** 所有管线阶段，按顺序执行 mount → instantiate → finalize */
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];
 
 export async function runPhase(phase: Phase, ctx: InitContext): Promise<void> {

@@ -350,6 +350,7 @@
  * metaKey: 复制到 meta 时使用的替代 key 名
  */
 
+/** 模板节点字段定义，描述字段类别、是否复制到元数据/根属性 */
 export interface TplNodeFieldDef {
     field: string;
     category:
@@ -368,6 +369,7 @@ export interface TplNodeFieldDef {
     metaKey?: string;
 }
 
+/** 模板节点字段定义表，定义所有 TplNode 字段的分类与复制规则 */
 export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
     // ─── identity: 节点标识 ───
 
@@ -457,6 +459,7 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
 // 自动拷贝工具：基于 TPL_NODE_FIELDS 定义元数据映射
 // ══════════════════════════════════════════════════════════════
 
+/** 字段定义接口，用于自动拷贝工具的元数据映射 */
 export interface FieldDef {
     field: string;
     category: string;

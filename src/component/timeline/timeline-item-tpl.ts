@@ -7,6 +7,7 @@
 
 import type { TplNode } from '@/component-core';
 
+/** 时间线项模板定义 */
 export const TIMELINE_ITEM_TPL: TplNode = {
     tag: 'div',
     cls: 'q-timeline__item',

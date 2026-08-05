@@ -24,6 +24,7 @@ export interface EntityToolbarItemDef {
     [key: string]: any;
 }
 
+/** 内置项定义 */
 export interface BuiltinItemDef {
     name: string;
     type: string;

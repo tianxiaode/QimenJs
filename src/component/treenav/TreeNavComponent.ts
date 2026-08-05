@@ -26,6 +26,7 @@ import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
+/** 树导航属性接口 */
 export interface TreeNavProps extends ItemGroupProps {
     activeIndex?: number;
     maxDepth?: number;
@@ -217,4 +218,5 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
 TreeNavComponent.register();
 export { TreeNavComponent };
+/** 树导航实例类型 */
 export type TreeNavComponentInstance = InstanceType<typeof TreeNavComponent>;

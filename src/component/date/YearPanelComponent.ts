@@ -23,6 +23,7 @@ import {
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
 
+/** 年份面板属性接口 */
 export interface YearPanelProps {
     value: DateTimeValue;
     previewData?: PanelPreviewData;
@@ -193,4 +194,5 @@ class YearPanelComponent extends Component {
 
 YearPanelComponent.useTemplate(YEAR_PANEL_TPL);
 export { YearPanelComponent };
+/** 年份面板实例类型 */
 export type YearPanelComponentInstance = InstanceType<typeof YearPanelComponent>;

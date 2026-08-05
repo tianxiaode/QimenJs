@@ -17,6 +17,7 @@
 import { Component } from '@qimenjs/component-core';
 import { SPACER_TPL } from './spacer-tpl';
 
+/** 间距属性接口 */
 export interface SpacerProps {
     size?: number;
 }
@@ -40,4 +41,5 @@ class SpacerComponent extends Component {
 
 SpacerComponent.useTemplate(SPACER_TPL);
 export { SpacerComponent };
+/** 间距实例类型 */
 export type SpacerComponentInstance = InstanceType<typeof SpacerComponent>;

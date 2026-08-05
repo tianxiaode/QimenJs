@@ -23,6 +23,7 @@ import { Component } from '@qimenjs/component-core';
 import type { FloatDecl } from '@qimenjs/component-core';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 
+/** 导航项位置类型 */
 export type NavPlacement =
     | 'top'
     | 'bottom'
@@ -37,6 +38,7 @@ export type NavPlacement =
     | 'right-start'
     | 'right-end';
 
+/** 导航浮层选项 */
 export interface NavOverlayOptions {
     placement?: NavPlacement;
     offset?: number;
@@ -46,6 +48,7 @@ export interface NavOverlayOptions {
     animationDuration?: number;
 }
 
+/** 导航项属性接口 */
 export interface NavItemProps {
     text?: string;
     icon?: string;
@@ -227,4 +230,5 @@ class NavItemComponent extends Component {
 
 NavItemComponent.useTemplate(NAV_ITEM_TPL);
 export { NavItemComponent };
+/** 导航项实例类型 */
 export type NavItemComponentInstance = InstanceType<typeof NavItemComponent>;

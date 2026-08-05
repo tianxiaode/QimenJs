@@ -23,6 +23,7 @@ import type { AbilityDefinition } from '@/composable';
 import type { AnimationDecl } from '../types/tpl-node-types';
 import { ANIMATION_PRESETS } from '../constants/template-constants';
 
+/** 组件动画能力，支持声明式入场/离场动画配置与手动播放 */
 export const AnimationAbility = {
     /**
      * 获取动画配置声明

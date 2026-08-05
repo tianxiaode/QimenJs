@@ -22,6 +22,7 @@ import { DomEventsMap } from '@/component-core';
 import { Component } from '@qimenjs/component-core';
 import { ALERT_TPL } from './alert-tpl';
 
+/** 警告提示类型 */
 export type AlertType = 'info' | 'success' | 'warning' | 'error';
 
 const TYPE_ICON_MAP: Record<AlertType, string> = {
@@ -31,6 +32,7 @@ const TYPE_ICON_MAP: Record<AlertType, string> = {
     error: '✕',
 };
 
+/** 警告提示属性接口 */
 export interface AlertProps {
     text?: string;
     title?: string;
@@ -88,4 +90,5 @@ class AlertComponent extends Component {
 
 AlertComponent.useTemplate(ALERT_TPL);
 export { AlertComponent };
+/** 警告提示实例类型 */
 export type AlertComponentInstance = InstanceType<typeof AlertComponent>;

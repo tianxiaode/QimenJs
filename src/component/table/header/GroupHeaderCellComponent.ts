@@ -25,12 +25,14 @@ import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 
+/** 分组表头单元格属性接口 */
 export interface GroupHeaderCellProps extends BaseHeaderCellProps {
     resizable?: boolean;
     childNames: string[];
     childConfigs: GroupChildConfig[];
 }
 
+/** 分组表头子项配置 */
 export interface GroupChildConfig {
     type: 'leaf' | 'group';
     colName: string;
@@ -143,4 +145,5 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
 
 GroupHeaderCellComponent.useTemplate(GROUP_HEADER_CELL_TPL);
 export { GroupHeaderCellComponent };
+/** 分组表头单元格实例类型 */
 export type GroupHeaderCellComponentInstance = InstanceType<typeof GroupHeaderCellComponent>;

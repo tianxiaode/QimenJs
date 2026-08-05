@@ -6,6 +6,7 @@
 
 import type { TplNode } from '@/component-core';
 
+/** 文本模板定义 */
 export const TEXT_TPL: TplNode = {
     tag: 'span',
     name: 'content',

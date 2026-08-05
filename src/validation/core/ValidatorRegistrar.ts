@@ -2,6 +2,7 @@
 import { ValidationProcessorEntry } from '../types';
 import { ValidatorRegistrarName } from '../types/validate';
 
+/** 验证器注册器，管理验证处理器的注册、查找与排序 */
 export class ValidatorRegistrar extends RegistrarBase<ValidationProcessorEntry[]> {
     // 静态存储，确保 Presets 可以在加载时直接注入
     private static chainCache = new Map<string, ValidationProcessorEntry[]>();

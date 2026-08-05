@@ -55,6 +55,7 @@ const FILE_CHECKS: FileItemValidator[] = [
             ValidationErrorBuilder.invalid_value(f, { ...ctx, expected: r.allowedTypes.join(',') }),
     },
 ];
+/** 文件验证处理器 */
 export const FileProcessor: ValidationProcessorHandler = async (context: ValidationContext) => {
     const { value, rule } = context;
     const { allErrors = false, path = '' } = rule;

@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 英雄区模板定义 */
 export const HERO_TPL: TplNode = {
     tag: 'div',
     cls: 'q-hero',

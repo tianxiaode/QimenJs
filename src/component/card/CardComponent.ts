@@ -14,6 +14,7 @@
 import { Component } from '@qimenjs/component-core';
 import { CARD_TPL } from './card-tpl';
 
+/** 卡片属性接口 */
 export interface CardProps {
     title?: string;
     icon?: string;
@@ -40,4 +41,5 @@ class CardComponent extends Component {
 
 CardComponent.useTemplate(CARD_TPL);
 export { CardComponent };
+/** 卡片实例类型 */
 export type CardComponentInstance = InstanceType<typeof CardComponent>;

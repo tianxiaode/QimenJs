@@ -39,6 +39,7 @@ function splitClasses(value: string): string[] {
     return value.split(/\s+/).filter(Boolean);
 }
 
+/** 两层节点属性能力，提供 root 及子节点的 cls/style/hidden/aria 等属性操作 */
 export const CommonPropsAbility: AbilityDefinition = {
     // ── Layer 1: root 属性（getter/setter）──
 

@@ -6,6 +6,7 @@
 
 import type { TplNode } from '@/component-core';
 
+/** 标签模板定义 */
 export const TAG_TPL: TplNode = {
     tag: 'span',
     cls: 'q-tag',

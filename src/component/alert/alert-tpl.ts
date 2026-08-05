@@ -1,5 +1,6 @@
 import type { TplNode } from '@/component-core';
 
+/** 警告提示模板定义 */
 export const ALERT_TPL: TplNode = {
     tag: 'div',
     cls: 'q-alert',

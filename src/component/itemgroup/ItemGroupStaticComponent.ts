@@ -5,6 +5,7 @@
 
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 
+/** 静态项组组件 */
 class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     setItems(datas: Record<string, any>[]): void {
         this.clear();
@@ -107,4 +108,5 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
 
 ItemGroupStaticComponent.register();
 export { ItemGroupStaticComponent };
+/** 静态项组实例类型 */
 export type ItemGroupStaticComponentType = InstanceType<typeof ItemGroupStaticComponent>;

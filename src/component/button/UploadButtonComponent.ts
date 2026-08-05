@@ -35,6 +35,7 @@ import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { UPLOAD_BUTTON_TPL } from './upload-button-tpl';
 
+/** 上传按钮属性接口 */
 export interface UploadButtonProps {
     text?: string;
     /** 文件通道标识（必填），多个组件共享同一 fileKey 可观察同一队列 */
@@ -371,6 +372,7 @@ class UploadButtonComponent extends Component {
 UploadButtonComponent.use(SizeAbility);
 UploadButtonComponent.useTemplate(UPLOAD_BUTTON_TPL);
 export { UploadButtonComponent };
+/** 上传按钮实例类型 */
 export type UploadButtonComponentInstance = InstanceType<typeof UploadButtonComponent>;
 
 /** 转义 HTML 防注入 */

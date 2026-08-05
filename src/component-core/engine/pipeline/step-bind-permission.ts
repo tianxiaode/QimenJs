@@ -6,6 +6,7 @@ import type { PermissionQuery } from '@/permission';
 const PERMISSION_SEPARATOR = ':';
 const BTN_SUFFIXES = /Btn|Button|Action$/;
 
+/** 管线步骤：绑定权限控制，根据权限状态禁用/隐藏节点 */
 export function bindPermission(ctx: InitContext): void {
     const { instance, nodeMapMgr } = ctx;
     if (!nodeMapMgr) return;

@@ -6,6 +6,7 @@ import { PresenceProcessor } from './presence';
 
 import { ValidationWeight, allValidateTypes } from '../../types';
 
+/** 规则对齐验证处理器注册条目 */
 export const ruleAlignmentProcessorEntry = {
     name: 'common-rule-align',
     tags: allValidateTypes,
@@ -14,6 +15,7 @@ export const ruleAlignmentProcessorEntry = {
     execute: RuleAlignmentProcessor,
 };
 
+/** 值转换验证处理器注册条目 */
 export const transformProcessorEntry = {
     name: 'common-transform',
     tags: allValidateTypes,
@@ -22,6 +24,7 @@ export const transformProcessorEntry = {
     execute: TransformProcessor,
 };
 
+/** 去空格验证处理器注册条目 */
 export const trimProcessorEntry = {
     name: 'Trim',
     tags: allValidateTypes,
@@ -30,6 +33,7 @@ export const trimProcessorEntry = {
     execute: TrimProcessor,
 };
 
+/** 上下文状态刷新验证处理器注册条目 */
 export const refreshContextStatusProcessorEntry = {
     name: 'common-refrence-context-status',
     tags: allValidateTypes,
@@ -38,6 +42,7 @@ export const refreshContextStatusProcessorEntry = {
     execute: RefreshContextStatusProcessor,
 };
 
+/** 存在性检查验证处理器注册条目 */
 export const presenceProcessorEntry = {
     name: 'common-presence',
     tags: allValidateTypes,

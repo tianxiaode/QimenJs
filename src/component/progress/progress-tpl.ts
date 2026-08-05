@@ -1,9 +1,6 @@
-/**
- * Progress 模板定义 — 独立于组件类
- */
-
 import type { TplNode } from '@/component-core';
 
+/** 进度条模板定义 */
 export const PROGRESS_TPL: TplNode = {
     tag: 'div',
     cls: 'q-progress',

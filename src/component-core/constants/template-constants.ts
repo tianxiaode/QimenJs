@@ -4,6 +4,7 @@
 
 import type { ContentPropDef } from '../types/template-constants';
 
+/** flex align-items 映射表，将简写名映射为 CSS 值 */
 export const ALIGN_MAP: Record<string, string> = {
     start: 'flex-start',
     center: 'center',
@@ -19,6 +20,7 @@ export const PACK_MAP: Record<string, string> = {
     around: 'space-around',
 };
 
+/** 内容模式映射表，将模式名映射为节点属性定义数组 */
 export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
     text: [{ nodeProp: 'text' }],
     html: [{ nodeProp: 'html' }],
@@ -27,6 +29,7 @@ export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
     link: [{ nodeProp: 'text' }, { nodeProp: 'href' }],
 };
 
+/** 通用节点属性名列表，所有节点均可使用的属性 */
 export const COMMON_NODE_PROPS = [
     'cls',
     'style',
@@ -43,6 +46,7 @@ export const COMMON_NODE_PROPS = [
     'border',
 ] as const;
 
+/** 模板解析保留键集合，这些键名不允许作为节点属性名 */
 export const RESERVED_KEYS = new Set([
     'constructor',
     'dispose',
@@ -61,6 +65,7 @@ export const RESERVED_KEYS = new Set([
     'parent',
 ]);
 
+/** 动画预设关键帧映射表，提供 fadeIn/fadeOut/slideInUp 等常用动画 */
 export const ANIMATION_PRESETS: Record<string, Keyframe[]> = {
     fadeIn: [{ opacity: 0 }, { opacity: 1 }],
     fadeOut: [{ opacity: 1 }, { opacity: 0 }],
