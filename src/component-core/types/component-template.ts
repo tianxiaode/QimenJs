@@ -2,7 +2,7 @@
  * component-template.ts — 组件模板定义
  *
  * ComponentTemplate = tpl（DOM 骨架）+ body（行为配置），
- * 是 withTemplate 的输入类型。
+ * 是 useTemplate 的输入类型。
  *
  * 直接类模式：只有单模板，不再支持多模板 when 条件选择。
  * 变体派生统一通过 .replace() 实现。
@@ -242,7 +242,7 @@ export interface BodyDef extends LifecycleHooks {
  * 1. tpl - DOM 骨架结构
  * 2. body - 组件行为和配置
  *
- * @see withTemplate - 创建组件的工厂函数
+ * @see useTemplate - 组件注册模板的静态方法
  * @see TplNode - 模板节点定义
  * @see BodyDef - 组件行为定义
  */

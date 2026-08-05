@@ -18,9 +18,9 @@
  *
  * 组件系统采用双层架构，彻底解耦模板结构与组件逻辑：
  *
- * 【闭包基类】ComponentFactory — 工厂层，纯闭包
+ * 【闭包基类】Component — 工厂层，纯闭包
  *   - 不持有 el、nodeMap，不挂载能力
- *   - withTemplate(templates) → 编译模板 → 生成内部类 → 闭包保存
+ *   - useTemplate(tpl) → 编译模板 → 生成内部类 → 闭包保存
  *   - replace() → 基于已有内部类派生新内部类
  *   - 构造函数 / create() → 根据 when 条件选择内部类，返回内部类实例
  *   - new OuterClass({ labelPosition: 'top' }) 直接返回内部类实例（JS 规范支持）
@@ -40,32 +40,18 @@
  *
  * @example
  * ```ts
- * // 定义：闭包类关联多套模板（条件选择）
- * const InputComponent = ComponentFactory.withTemplate({
- *     tpl: [
- *         { tpl: INPUT_TOP_TEMPLATE, when: (cfg) => cfg.labelPosition === 'top' },
- *         { tpl: INPUT_LEFT_TEMPLATE, when: (cfg) => cfg.labelPosition === 'left' },
- *         { tpl: INPUT_DEFAULT_TEMPLATE },  // 兜底
- *     ],
- *     body: { type: 'input' },
- * });
+ * // 定义：组件类关联模板
+ * ButtonComponent.useTemplate(BUTTON_TPL);
  *
- * // 使用：按配置自动选择模板
- * const input = new InputComponent({ labelPosition: 'top' });
- * // → when 条件匹配 INPUT_TOP_TEMPLATE，返回对应内部类实例
- *
- * // 运行时切换模板
- * const state = { value: input.value };
- * input.dispose();
- * const newInput = new InputComponent({ labelPosition: 'left', ...state });
- * parentEl.appendChild(newInput.el);
+ * // 使用：直接实例化
+ * const btn = new ButtonComponent({ label: '保存' });
  * ```
  *
  * ══════════════════════════════════════════════════════════════
  * 组件构建流程（新架构）
  * ══════════════════════════════════════════════════════════════
  *
- * 【定义时】withTemplate(templates) → 内部类
+ * 【定义时】useTemplate(tpl) → 内部类
  *   1. templates.tpl 为 TplNode，单模板模式
  *   2. compileTemplate(template) → 生成 HTML + indexPath + nodeMetas
  *   3. 创建 <template> 元素缓存 HTML 片段
