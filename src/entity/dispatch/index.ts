@@ -1,1 +1,1 @@
-export { DataDispatchCenter, dataDispatchCenter, validateEntityEvent } from './DataDispatchCenter';
+export { DataDispatchCenter, dataDispatchCenter } from './DataDispatchCenter';
