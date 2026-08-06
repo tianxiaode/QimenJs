@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- 铜锣/警告 -->
-  <path d="M 12 3 L 2 20 L 22 20 Z"/>
-  <line x1="12" y1="10" x2="12" y2="14"/>
-  <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
-</svg>

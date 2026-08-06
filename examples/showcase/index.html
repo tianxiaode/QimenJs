@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>QimenJS Showcase</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        />
+        <script src="/qimen-i18n.js"></script>
+        <script>
+            var locale = localStorage.getItem('qimenjs-locale') || navigator.language || 'zh-CN';
+            if (locale !== 'zh-CN' && locale !== 'en-US') locale = 'zh-CN';
+            document.documentElement.lang = locale;
+        </script>
+        <script src="/locales/zh-CN.js"></script>
+        <script src="/locales/en-US.js"></script>
+    </head>
+    <body>
+        <div id="app"></div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- 团扇 + 流苏 -->
-  <circle cx="10" cy="10" r="7"/>
-  <line x1="15" y1="15" x2="20" y2="20"/>
-  <path d="M 20 20 L 20 23"/>
-  <path d="M 18 22 L 20 23 L 22 22"/>
-</svg>

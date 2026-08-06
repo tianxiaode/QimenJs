@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- 卷轴/PDF -->
-  <path d="M 6 2 L 14 2 L 20 8 L 20 22 L 6 22 Q 5 22 5 21 L 5 3 Q 5 2 6 2 Z"/>
-  <path d="M 14 2 L 14 8 L 20 8"/>
-  <path d="M 9 12 Q 9 10 11 10 L 12 10 Q 14 10 14 12 Q 14 14 12 14 L 11 14 Q 9 14 9 16 L 9 18"/>
-</svg>

@@ -1,5 +1,5 @@
 jest.mock('@qimenjs/i18n', () => ({
-    resolveI18nValue: (v: string) => v.startsWith('i18n:') ? v.slice(5).toUpperCase() : v,
+    resolveI18nValue: (v: string) => (v.startsWith('i18n:') ? v.slice(5).toUpperCase() : v),
 }));
 
 import { applyConfig } from '@/component-core/engine/pipeline/step-apply-config';
@@ -98,6 +98,9 @@ describe('step-apply-config', () => {
         applyConfig(ctx);
         expect(addClsSpy).toHaveBeenCalledWith('a b');
         expect(updateNodeSpy).toHaveBeenCalledWith('root', { hidden: true });
-        expect(updateNodeSpy).not.toHaveBeenCalledWith('root', expect.objectContaining({ cls: expect.anything() }));
+        expect(updateNodeSpy).not.toHaveBeenCalledWith(
+            'root',
+            expect.objectContaining({ cls: expect.anything() })
+        );
     });
 });

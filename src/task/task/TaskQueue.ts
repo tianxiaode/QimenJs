@@ -197,11 +197,13 @@ export class GlobalTaskQueue {
         }
         this.isRunning = true;
 
-        const sortedQueue = this.getSortedQueue();
-        const tasksToRun = sortedQueue.splice(0, this.maxConcurrentTasks);
-        this.logger.info(`Running ${tasksToRun.length} tasks concurrently`);
+        while (this.taskQueue.length > 0) {
+            const sortedQueue = this.getSortedQueue();
+            const tasksToRun = sortedQueue.splice(0, this.maxConcurrentTasks);
+            this.logger.info(`Running ${tasksToRun.length} tasks concurrently`);
 
-        await Promise.all(tasksToRun.map(task => this.runTask(task)));
+            await Promise.all(tasksToRun.map(task => this.runTask(task)));
+        }
 
         this.isRunning = false;
         this.logger.debug('Task queue execution completed');

@@ -1,0 +1,144 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "module": "ESNext",
+        "lib": [
+            "ES2021",
+            "DOM"
+        ],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "baseUrl": ".",
+        "paths": {
+            "@qimenjs/async": [
+                "../../src/async"
+            ],
+            "@qimenjs/error": [
+                "../../src/error"
+            ],
+            "@qimenjs/logger": [
+                "../../src/logger"
+            ],
+            "@qimenjs/runtime": [
+                "../../src/runtime"
+            ],
+            "@qimenjs/events": [
+                "../../src/events"
+            ],
+            "@qimenjs/event-dom": [
+                "../../src/event-dom"
+            ],
+            "@qimenjs/utils": [
+                "../../src/utils"
+            ],
+            "@qimenjs/validation": [
+                "../../src/validation"
+            ],
+            "@qimenjs/task": [
+                "../../src/task"
+            ],
+            "@qimenjs/crypto": [
+                "../../src/crypto"
+            ],
+            "@qimenjs/registry": [
+                "../../src/registry"
+            ],
+            "@qimenjs/schema": [
+                "../../src/schema"
+            ],
+            "@qimenjs/context": [
+                "../../src/context"
+            ],
+            "@qimenjs/cache": [
+                "../../src/cache"
+            ],
+            "@qimenjs/pipeline": [
+                "../../src/pipeline"
+            ],
+            "@qimenjs/composable": [
+                "../../src/composable"
+            ],
+            "@qimenjs/data-processor": [
+                "../../src/data-processor"
+            ],
+            "@qimenjs/http": [
+                "../../src/http"
+            ],
+            "@qimenjs/system-abilities": [
+                "../../src/system-abilities"
+            ],
+            "@qimenjs/entity": [
+                "../../src/entity"
+            ],
+            "@qimenjs/i18n": [
+                "../../src/i18n"
+            ],
+            "@qimenjs/mime": [
+                "../../src/mime"
+            ],
+            "@qimenjs/pattern": [
+                "../../src/pattern"
+            ],
+            "@qimenjs/data-processor-abp": [
+                "../../src/data-processor-abp"
+            ],
+            "@qimenjs/data-processor-spring": [
+                "../../src/data-processor-spring"
+            ],
+            "@qimenjs/oauth2": [
+                "../../src/oauth2"
+            ],
+            "@qimenjs/types": [
+                "../../src/types"
+            ],
+            "@qimenjs/theme": [
+                "../../src/theme"
+            ],
+            "@qimenjs/component-abilities": [
+                "../../src/component-abilities"
+            ],
+            "@qimenjs/component-core": [
+                "../../src/component-core"
+            ],
+            "@qimenjs/component": [
+                "../../src/component"
+            ],
+            "@qimenjs/markdown": [
+                "../../src/markdown"
+            ],
+            "@qimenjs/imperative": [
+                "../../src/imperative"
+            ],
+            "@qimenjs/router": [
+                "../../src/router"
+            ],
+            "@qimenjs/drag": [
+                "../../src/drag"
+            ],
+            "@qimenjs/file": [
+                "../../src/file"
+            ],
+            "@qimenjs/permission": [
+                "../../src/permission"
+            ],
+            "@/*": [
+                "../../src/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "../../src"
+    ]
+}

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- 旋纹/重做 -->
-  <path d="M 21 10 L 17 6 L 17 14 Z"/>
-  <path d="M 17 10 Q 17 4 11 4 Q 5 4 5 10 Q 5 16 11 16"/>
-  <path d="M 11 16 L 13 14 L 11 12"/>
-</svg>

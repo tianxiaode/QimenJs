@@ -14,6 +14,9 @@ import { HashWorkerMessage, HashWorkerResponse } from './HashWorkerProtocol';
  * ✔ 支持大文件（多次 update）
  * ✔ 可被 reset / 重用
  * ✔ 出错可恢复
+ *
+ * ⚠️ 此文件仅在 Node.js Worker 线程中运行，不应被主线程代码直接导入。
+ * 浏览器环境下由 BrowserWorkerHandle 使用 Web Crypto API 替代。
  */
 if (!parentPort) {
     throw new Error('hash.worker must be run in a Worker thread');
