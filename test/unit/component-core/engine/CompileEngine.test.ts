@@ -322,6 +322,39 @@ describe('CompileEngine', () => {
 
             expect(result.nodeMetas['w'].initConfig).toEqual({ a: 1 });
         });
+
+        it('text 属性编译时写入 HTML', () => {
+            const tpl = {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'label', text: 'Hello' },
+                    { tag: 'p', name: 'desc', text: '<b>bold</b>' },
+                ],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('Hello');
+            expect(result.html).toContain('&lt;b&gt;bold&lt;/b&gt;');
+            expect(result.nodeMetas['label'].text).toBe('Hello');
+        });
+
+        it('text 与 children 共存时 text 在前', () => {
+            const tpl = {
+                tag: 'div',
+                children: [
+                    {
+                        tag: 'span',
+                        name: 'mixed',
+                        text: 'prefix',
+                        children: [{ tag: 'i', name: 'icon' }],
+                    },
+                ],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('prefix');
+            expect(result.html).toContain('<i></i>');
+        });
     });
 });
 

@@ -93,9 +93,9 @@ class ToggleIconComponent extends Component {
             this.icon = iconValue;
         }
 
-        this.toogleCls('q-toggle-icon--on', this._on);
-        this.toogleCls('q-toggle-icon--off', !this._on);
-        this.toogleCls('q-toggle-icon--disabled', this.disabled);
+        this.toggleCls('q-toggle-icon--on', this._on);
+        this.toggleCls('q-toggle-icon--off', !this._on);
+        this.toggleCls('q-toggle-icon--disabled', this.disabled);
         this.setAttr('aria-pressed', String(this._on));
 
         if (this.disabled) {

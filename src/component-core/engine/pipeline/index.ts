@@ -5,6 +5,7 @@ export { onBeforeInit } from './step-on-before-init';
 export { onAfterInit } from './step-on-after-init';
 export { setupNodeProps } from './step-setup-node-props';
 export { instantiateChildComponents } from './step-instantiate-child-components';
+export { applyConfig } from './step-apply-config';
 export { bindListens } from './step-bind-listens';
 export { bindChildEvents } from './step-bind-child-events';
 export { bindDomEvents } from './step-bind-dom-events';

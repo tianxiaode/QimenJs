@@ -394,6 +394,7 @@ export const TPL_NODE_FIELDS: readonly TplNodeFieldDef[] = [
 
     // ─── content: 内容 ───
 
+    { field: 'text', category: 'content', toMeta: true, toRoot: false },
     { field: 'i18n', category: 'content', toMeta: true, toRoot: false, metaKey: 'i18nKey' },
     {
         field: 'permission',
@@ -517,4 +518,34 @@ export function copyRootFields<T extends Record<string, any>>(
         }
     }
     return result as T;
+}
+
+/** TPL_NODE_FIELDS 已知字段名集合，用于识别剩余字段 */
+const KNOWN_FIELD_SET = new Set(ALL_FIELDS.map(f => f.field));
+
+/**
+ * 收集 source 中不属于 TPL_NODE_FIELDS 的剩余字段
+ *
+ * 用于扁平化 props 方案：编译引擎提取框架字段后，
+ * 剩余字段按节点类型分派：
+ * - tag 节点：按 DEFAULT_NODE_PROP_MAP 分为 htmlProps 和 attrs
+ * - type 节点：全部存入 meta.props
+ *
+ * @param source TplNode 源
+ * @returns 剩余字段的键值对
+ */
+export function collectExtraFields(source: Record<string, any>): Record<string, any> {
+    const result: Record<string, any> = {};
+    for (const [key, val] of Object.entries(source)) {
+        if (KNOWN_FIELD_SET.has(key)) continue;
+        if (val !== undefined) result[key] = val;
+    }
+    return result;
+}
+
+/**
+ * 检查字段名是否为 TPL_NODE_FIELDS 已知字段
+ */
+export function isKnownField(field: string): boolean {
+    return KNOWN_FIELD_SET.has(field);
 }

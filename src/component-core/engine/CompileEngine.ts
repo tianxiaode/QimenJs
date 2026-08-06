@@ -48,10 +48,13 @@
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
 import type { CompileResult } from '../types/compile-engine-types';
-import { copyMetaFields } from '../types/tpl-node-def';
+import { copyMetaFields, collectExtraFields } from '../types/tpl-node-def';
+import { DEFAULT_NODE_PROP_MAP } from '../types/common-props';
 import { VOID_TAGS } from '../constants/compile-constants';
 import { SKELETON_CLS } from '../constants/compile-constants';
 import { Logger } from '@/logger';
+
+const I18N_PREFIX = 'i18n:';
 
 /** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
@@ -78,7 +81,9 @@ export class CompileEngine {
      */
     static compile(tpl: TplNode, owner?: any): CompileResult {
         const expandedTpl = CompileEngine.expandFragments(tpl);
-        const result = CompileEngine.compileTemplate(expandedTpl, Logger.for(owner?.constructor));
+        const loggerOwner = owner?.constructor ?? undefined;
+        const logger = loggerOwner ? Logger.for(loggerOwner) : Logger.for('CompileEngine');
+        const result = CompileEngine.compileTemplate(expandedTpl, logger);
 
         const tplEl = document.createElement('template');
         tplEl.innerHTML = result.html;
@@ -163,14 +168,19 @@ export class CompileEngine {
         const indexPath: NodeIndexPath = {};
         const nodeMetas: Record<string, NodeMetadata> = {};
         const exposeNames: string[] = [];
-        const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
+        const i18nNodes: Array<{ name: string; field?: string; i18nKey: string }> = [];
         const permissionNodes: Array<{ name: string; permission: boolean | string }> = [];
 
         indexPath['root'] = [];
-        nodeMetas['root'] = copyMetaFields<NodeMetadata>(root, {
+        const rootMeta = copyMetaFields<NodeMetadata>(root, {
             name: 'root',
             tag: root.tag,
         });
+        CompileEngine._collectExtraFields(root, 'root', rootMeta, i18nNodes);
+        if (rootMeta.i18nKey) {
+            i18nNodes.push({ name: 'root', i18nKey: rootMeta.i18nKey });
+        }
+        nodeMetas['root'] = rootMeta;
 
         const children = root.children || [];
         const htmlParts: string[] = [];
@@ -281,12 +291,14 @@ export class CompileEngine {
             meta.componentClass = (window as any)[node.type];
         }
 
+        CompileEngine._collectExtraFields(node, name, meta, ctx.i18nNodes);
+
+        if (meta.i18nKey) {
+            ctx.i18nNodes.push({ name, i18nKey: meta.i18nKey });
+        }
+
         ctx.nodeMetas[name] = meta;
         ctx.exposeNames.push(name);
-
-        if (node.i18n) {
-            ctx.i18nNodes.push({ name, i18nKey: node.i18n });
-        }
 
         if (node.permission) {
             ctx.permissionNodes.push({ name, permission: node.permission });
@@ -335,12 +347,14 @@ export class CompileEngine {
                 contentMode: CompileEngine.inferContentMode(tag),
             });
 
+            CompileEngine._collectExtraFields(node, name, meta, ctx.i18nNodes);
+
+            if (meta.i18nKey) {
+                ctx.i18nNodes.push({ name, i18nKey: meta.i18nKey });
+            }
+
             ctx.nodeMetas[name] = meta;
             ctx.exposeNames.push(name);
-
-            if (node.i18n) {
-                ctx.i18nNodes.push({ name, i18nKey: node.i18n });
-            }
 
             if (node.permission) {
                 ctx.permissionNodes.push({ name, permission: node.permission });
@@ -379,12 +393,58 @@ export class CompileEngine {
         if (VOID_TAGS.has(tag)) return `<${tag} />`;
 
         const inner: string[] = [];
+        if (node.text) {
+            inner.push(escapeHtml(node.text));
+        }
         if (node.children) {
             for (let i = 0; i < node.children.length; i++) {
                 inner.push(CompileEngine.compileNode(node.children[i], [...path, i], ctx));
             }
         }
         return `<${tag}>${inner.join('')}</${tag}>`;
+    }
+
+    /**
+     * 收集剩余字段并分类存入 meta
+     *
+     * tag 节点：按 DEFAULT_NODE_PROP_MAP 分为 htmlProps 和 attrs
+     * type 节点：全部存入 meta.props
+     * 同时扫描 i18n: 前缀的值，收录到 i18nNodes
+     */
+    private static _collectExtraFields(
+        node: TplNode,
+        name: string,
+        meta: NodeMetadata,
+        i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>
+    ): void {
+        const extra = collectExtraFields(node as Record<string, any>);
+        if (Object.keys(extra).length === 0) return;
+
+        const isComponent = !!node.type;
+
+        if (isComponent) {
+            meta.props = extra;
+            for (const [key, val] of Object.entries(extra)) {
+                if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
+                    i18nNodes.push({ name, field: key, i18nKey: val.slice(I18N_PREFIX.length) });
+                }
+            }
+        } else {
+            const htmlProps: Record<string, any> = {};
+            const attrs: Record<string, any> = {};
+            for (const [key, val] of Object.entries(extra)) {
+                if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
+                    i18nNodes.push({ name, field: key, i18nKey: val.slice(I18N_PREFIX.length) });
+                }
+                if (DEFAULT_NODE_PROP_MAP[key]) {
+                    htmlProps[key] = val;
+                } else {
+                    attrs[key] = val;
+                }
+            }
+            if (Object.keys(htmlProps).length > 0) meta.htmlProps = htmlProps;
+            if (Object.keys(attrs).length > 0) meta.attrs = { ...meta.attrs, ...attrs };
+        }
     }
 
     /**
@@ -424,4 +484,19 @@ export class CompileEngine {
 
 function appendCls(cls: string | undefined, extra: string): string {
     return cls ? `${cls} ${extra}` : extra;
+}
+
+/**
+ * HTML 转义 — 防止 text 内容中的特殊字符破坏 HTML 结构
+ *
+ * @param str - 原始字符串
+ * @returns 转义后的安全 HTML 字符串
+ */
+function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }

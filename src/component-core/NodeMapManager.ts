@@ -106,7 +106,7 @@ export class NodeMapManager implements INodeMapManager {
      * });
      * ```
      */
-    get i18nNodes(): Array<{ name: string; i18nKey: string }> {
+    get i18nNodes(): Array<{ name: string; field?: string; i18nKey: string }> {
         return this._cache.i18nNodes;
     }
 

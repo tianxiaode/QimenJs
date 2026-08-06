@@ -28,6 +28,7 @@ import { DEFAULT_NODE_PROP_MAP } from '../types';
 import type { NodePropDef } from '../types';
 import { ALIGN_MAP, PACK_MAP } from '../constants/template-constants';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
+import { resolveI18nValue } from '@qimenjs/i18n';
 
 /** 节点属性统一读写能力，提供数据驱动的属性读写、脏追踪与子组件委托 */
 export const NodePropAbility: AbilityDefinition = {
@@ -229,6 +230,41 @@ export const NodePropAbility: AbilityDefinition = {
             this._updateNode(nodeName, props as Record<string, any>);
         }
     },
+
+    /**
+     * 内置 i18n 自动刷新
+     *
+     * locale 切换时由管线自动调用，刷新两路 i18n 内容：
+     * 1. i18nNodes — 子节点内容属性的 i18n（编译时收集）
+     * 2. _i18nFields — 父组件传入 props 的 i18n（applyConfig 收集）
+     *
+     * 组件自定义的特殊 i18n 逻辑应放在 onLocaleChange 中，
+     * _refreshI18n 在 onLocaleChange 之前执行。
+     */
+    _refreshI18n(this: any): void {
+        const mgr = this.nodeMapMgr;
+        if (mgr) {
+            for (const { name, i18nKey } of mgr.i18nNodes) {
+                const node = this.nodeMap?.[name];
+                if (!node) continue;
+                const meta = mgr.nodeMetas[name];
+                const mode = meta?.contentMode ?? 'html';
+                const prop = mode === 'value' ? 'value' : mode === 'src' ? 'src' : 'text';
+                this._updateNode(name, { [prop]: resolveI18nValue(`i18n:${i18nKey}`) });
+            }
+        }
+
+        if (this._i18nFields) {
+            for (const [key, i18nKey] of Object.entries(this._i18nFields)) {
+                const resolved = resolveI18nValue(`i18n:${i18nKey}`);
+                if (key in this) {
+                    this[key] = resolved;
+                } else {
+                    this._updateNode('root', { [key]: resolved });
+                }
+            }
+        }
+    },
 };
 
 /**
@@ -310,6 +346,26 @@ function applyFlexGrid(el: HTMLElement, prop: string, value: any): void {
             if (value.align) el.style.alignItems = ALIGN_MAP[value.align] ?? value.align;
             if (value.pack) el.style.justifyContent = PACK_MAP[value.pack] ?? value.pack;
             if (value.wrap !== undefined) el.style.flexWrap = value.wrap ? 'wrap' : 'nowrap';
+            if (value.flex !== undefined)
+                el.style.flex = typeof value.flex === 'number' ? String(value.flex) : value.flex;
+            if (value.minHeight !== undefined)
+                el.style.minHeight =
+                    typeof value.minHeight === 'number' ? `${value.minHeight}px` : value.minHeight;
+            if (value.maxHeight !== undefined)
+                el.style.maxHeight =
+                    typeof value.maxHeight === 'number' ? `${value.maxHeight}px` : value.maxHeight;
+            if (value.minWidth !== undefined)
+                el.style.minWidth =
+                    typeof value.minWidth === 'number' ? `${value.minWidth}px` : value.minWidth;
+            if (value.maxWidth !== undefined)
+                el.style.maxWidth =
+                    typeof value.maxWidth === 'number' ? `${value.maxWidth}px` : value.maxWidth;
+            if (value.height !== undefined)
+                el.style.height =
+                    typeof value.height === 'number' ? `${value.height}px` : value.height;
+            if (value.width !== undefined)
+                el.style.width = typeof value.width === 'number' ? `${value.width}px` : value.width;
+            if (value.overflow !== undefined) el.style.overflow = value.overflow;
         } else {
             el.style.flexDirection = 'row';
         }

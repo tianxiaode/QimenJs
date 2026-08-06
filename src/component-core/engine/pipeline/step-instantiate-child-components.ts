@@ -1,8 +1,8 @@
 /**
- * step-instantiate-child-components.ts — INSTANTIATE 阶段：队列化子组件创建
+ * step-instantiate-child-components.ts — INSTANTIATE 阶段：子组件创建
  *
- * 从 nodeMetas 过滤出 componentClass 节点，
- * 通过 GlobalTaskQueue 逐个入队创建子组件实例。
+ * 从 nodeMetas 过滤出 componentClass 节点，直接创建子组件实例。
+ * 子组件构造函数同步返回，init() 异步在后台执行（this._ready）。
  * 子组件通过 selfMount 步骤自行挂载到父占位符，骨架立即可见。
  *
  * eventKey / entityKey 向下传播规则：
@@ -12,7 +12,6 @@
  */
 
 import type { InitContext } from '../../types/init-context';
-import { globalTaskQueue } from '@qimenjs/task';
 
 type KeyDecl = string | { key: string; fixed?: boolean } | undefined;
 
@@ -33,42 +32,33 @@ export async function instantiateChildComponents(ctx: InitContext): Promise<void
     const nodeMetas = nodeMapMgr.nodeMetas;
     const componentSlots = Object.entries(nodeMetas)
         .filter(([, meta]) => meta.componentClass)
-        .map(([name, meta]) => ({ name, componentClass: meta.componentClass! }));
+        .map(([name, meta]) => ({
+            name,
+            componentClass: meta.componentClass!,
+            props: meta.props ?? meta.initConfig,
+        }));
 
     if (componentSlots.length === 0) return;
 
-    const tasks: Promise<void>[] = [];
+    for (const { name, componentClass, props } of componentSlots) {
+        const ctor = componentClass as any;
+        const propagatedEventKey = propagateKey(instance.eventKey, ctor.eventKey);
+        const propagatedEntityKey = propagateKey(instance.entityKey, ctor.entityKey);
 
-    for (const { name, componentClass } of componentSlots) {
-        const taskPromise = new Promise<void>((resolve, reject) => {
-            globalTaskQueue.addTask(async () => {
-                try {
-                    const ctor = componentClass as any;
-                    const propagatedEventKey = propagateKey(instance.eventKey, ctor.eventKey);
-                    const propagatedEntityKey = propagateKey(instance.entityKey, ctor.entityKey);
+        const extraProps: Record<string, any> = {};
+        if (propagatedEventKey !== undefined) {
+            extraProps.eventKey = propagatedEventKey;
+        }
+        if (propagatedEntityKey !== undefined) {
+            extraProps.entityKey = propagatedEntityKey;
+        }
 
-                    const extraProps: Record<string, any> = {};
-                    if (propagatedEventKey !== undefined) {
-                        extraProps.eventKey = propagatedEventKey;
-                    }
-                    if (propagatedEntityKey !== undefined) {
-                        extraProps.entityKey = propagatedEntityKey;
-                    }
-
-                    new componentClass({
-                        ...instance.props?.[name],
-                        parent: instance,
-                        slotName: name,
-                        ...extraProps,
-                    });
-                    resolve();
-                } catch (err) {
-                    reject(err);
-                }
-            }, 'NORMAL');
+        new componentClass({
+            ...props,
+            ...instance.props?.[name],
+            parent: instance,
+            slotName: name,
+            ...extraProps,
         });
-        tasks.push(taskPromise);
     }
-
-    await Promise.all(tasks);
 }

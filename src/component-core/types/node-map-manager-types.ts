@@ -81,7 +81,7 @@ export interface INodeMapManager {
      *
      * 需要国际化翻译的节点列表，包含节点 name 和 i18nKey。
      */
-    readonly i18nNodes: Array<{ name: string; i18nKey: string }>;
+    readonly i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
 
     readonly permissionNodes: Array<{ name: string; permission: boolean | string }>;
 

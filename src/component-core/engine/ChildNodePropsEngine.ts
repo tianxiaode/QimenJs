@@ -64,7 +64,7 @@ export class ChildNodePropsEngine {
     static apply(
         ctor: any,
         nodeMetas: Record<string, NodeMetadata>,
-        i18nNodes: Array<{ name: string; i18nKey: string }>
+        i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>
     ): void {
         const proto = ctor.prototype;
         const descs = ChildNodePropsEngine.buildDescs(nodeMetas, i18nNodes);
@@ -103,7 +103,7 @@ export class ChildNodePropsEngine {
      */
     static buildDescs(
         nodeMetas: Record<string, NodeMetadata>,
-        i18nNodes: Array<{ name: string; i18nKey: string }>
+        i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>
     ): Record<string, PropertyDescriptor> {
         const descs: Record<string, PropertyDescriptor> = {};
         const i18nSet = new Set(i18nNodes.map(n => n.name));

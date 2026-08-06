@@ -217,6 +217,8 @@ export class Component extends ComposableBase {
 
     _initializing: boolean;
     _templateInitialized: boolean = false;
+    _rawProps: Record<string, any> = {};
+    _i18nFields: Record<string, string> = {};
     _dirtyNodes: Record<string, Record<string, any>>;
     _disposing: boolean;
     dirtySet!: Set<string>;
@@ -236,6 +238,7 @@ export class Component extends ComposableBase {
         this.dropZone = (this.props as any).dropZone;
         this.parent = this.props.parent;
         this.slotName = this.props.slotName;
+        this._rawProps = extractRawProps(this.props);
         this.meta = {};
         this._dirtyNodes = {};
         this.dirtySet = new Set();
@@ -308,6 +311,7 @@ export class Component extends ComposableBase {
             this._commitFloats();
             this._commitDrags();
             this._commitDrops?.();
+            this._removeSkeletonCls();
         }
     }
 
@@ -399,9 +403,51 @@ export class Component extends ComposableBase {
     private _disposeChildComponents(): void {
         this.nodeMapMgr?.disposeAll();
     }
+
+    /** 组件初始化完成后移除骨架类，使内容可见 */
+    private _removeSkeletonCls(): void {
+        if (!this.el) return;
+        this.el.classList.remove('q-skeleton');
+        const children = this.el.querySelectorAll('.q-skeleton');
+        children.forEach((el: Element) => el.classList.remove('q-skeleton'));
+    }
 }
 
 Component.use(COMPONENT_ABILITIES);
 
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}
+
+/** 构造函数 props 中的框架字段名集合 */
+const FRAMEWORK_PROP_KEYS = new Set([
+    'id',
+    'localData',
+    'localDataKey',
+    'action',
+    'tooltip',
+    'dialog',
+    'loading',
+    'eventKey',
+    'entityKey',
+    'parent',
+    'slotName',
+    'drag',
+    'dragHandle',
+    'drop',
+    'dropZone',
+]);
+
+/**
+ * 从构造函数 props 中提取自定义属性（排除框架字段）
+ *
+ * 框架字段（parent/slotName/eventKey 等）由构造函数直接消费，
+ * 剩余字段存入 _rawProps，由 applyConfig 管线步骤处理。
+ */
+function extractRawProps(props: Record<string, any>): Record<string, any> {
+    const result: Record<string, any> = {};
+    for (const [key, val] of Object.entries(props)) {
+        if (FRAMEWORK_PROP_KEYS.has(key)) continue;
+        if (val !== undefined) result[key] = val;
+    }
+    return result;
+}

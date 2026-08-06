@@ -43,6 +43,22 @@ export interface FlexConfig {
     pack?: 'start' | 'center' | 'end' | 'between' | 'around';
     /** 是否换行 */
     wrap?: boolean;
+    /** flex 缩放因子，如 '1'、'0 0 200px'，数字自动转字符串 */
+    flex?: number | string;
+    /** 最小高度，数字自动加 px */
+    minHeight?: number | string;
+    /** 最大高度，数字自动加 px */
+    maxHeight?: number | string;
+    /** 最小宽度，数字自动加 px */
+    minWidth?: number | string;
+    /** 最大宽度，数字自动加 px */
+    maxWidth?: number | string;
+    /** 高度，数字自动加 px */
+    height?: number | string;
+    /** 宽度，数字自动加 px */
+    width?: number | string;
+    /** 溢出处理 */
+    overflow?: 'visible' | 'hidden' | 'scroll' | 'auto';
 }
 
 /** grid 布局配置 */
@@ -166,6 +182,9 @@ export interface TplNode {
     grid?: boolean | GridConfig;
 
     // ─── content: 内容 ───
+
+    /** 静态文本内容，编译时直接写入 HTML */
+    text?: string;
 
     /** i18n 翻译 key */
     i18n?: string;

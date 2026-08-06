@@ -30,6 +30,7 @@ describe('pipeline-registry', () => {
         it('FINALIZE_PHASE 包含收尾步骤', () => {
             expect(FINALIZE_PHASE.name).toBe('finalize');
             expect(FINALIZE_PHASE.steps.length).toBeGreaterThan(0);
+            expect(FINALIZE_PHASE.steps[0].name).toBe('applyConfig');
         });
 
         it('ALL_PHASES 包含三个阶段', () => {

@@ -806,6 +806,7 @@ describe('Component 基类', () => {
                 'mount:setupNodeProps',
                 'mount:onBeforeInit',
                 'instantiate:instantiateChildComponents',
+                'finalize:applyConfig',
                 'finalize:bindListens',
                 'finalize:bindChildEvents',
                 'finalize:bindDomEvents',

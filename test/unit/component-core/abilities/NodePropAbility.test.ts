@@ -466,6 +466,48 @@ describe('NodePropAbility', () => {
             expect(el.style.flexWrap).toBe('wrap');
         });
 
+        it('应用 flex 扩展属性（flex/minH/maxH/minW/maxW/height/width/overflow）', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', {
+                flex: {
+                    direction: 'column',
+                    flex: 1,
+                    minHeight: 100,
+                    maxHeight: '50vh',
+                    minWidth: 200,
+                    maxWidth: '80%',
+                    height: 300,
+                    width: '400px',
+                    overflow: 'auto',
+                },
+            });
+            expect(el.style.flex).toContain('1');
+            expect(el.style.minHeight).toBe('100px');
+            expect(el.style.maxHeight).toBe('50vh');
+            expect(el.style.minWidth).toBe('200px');
+            expect(el.style.maxWidth).toBe('80%');
+            expect(el.style.height).toBe('300px');
+            expect(el.style.width).toBe('400px');
+            expect(el.style.overflow).toBe('auto');
+        });
+
+        it('flex 扩展属性数字自动加 px', () => {
+            const el = document.createElement('div');
+            const instance = {
+                _resolveNodeTarget: () => ({ el, component: undefined }),
+                nodeMap: { root: { _state: {} } },
+            };
+            NodePropAbility._updateNode.call(instance, 'root', {
+                flex: { flex: '0 0 200px', height: 500 },
+            });
+            expect(el.style.flex).toBe('0 0 200px');
+            expect(el.style.height).toBe('500px');
+        });
+
         it('子组件 value 为 undefined 时跳过', () => {
             const componentEl = document.createElement('div');
             const component = { el: componentEl, cls: '' };

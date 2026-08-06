@@ -13,6 +13,7 @@ import { onBeforeInit } from './step-on-before-init';
 import { onAfterInit } from './step-on-after-init';
 import { setupNodeProps } from './step-setup-node-props';
 import { instantiateChildComponents } from './step-instantiate-child-components';
+import { applyConfig } from './step-apply-config';
 import { bindListens } from './step-bind-listens';
 import { bindChildEvents } from './step-bind-child-events';
 import { bindDomEvents } from './step-bind-dom-events';
@@ -32,10 +33,10 @@ export const INSTANTIATE_PHASE: Phase = {
     steps: [instantiateChildComponents],
 };
 
-/** 收尾阶段，执行事件绑定、权限绑定与初始化后钩子 */
+/** 收尾阶段，执行 props 应用、事件绑定、权限绑定与初始化后钩子 */
 export const FINALIZE_PHASE: Phase = {
     name: 'finalize',
-    steps: [bindListens, bindChildEvents, bindDomEvents, bindPermission, onAfterInit],
+    steps: [applyConfig, bindListens, bindChildEvents, bindDomEvents, bindPermission, onAfterInit],
 };
 
 /** 所有管线阶段，按顺序执行 mount → instantiate → finalize */

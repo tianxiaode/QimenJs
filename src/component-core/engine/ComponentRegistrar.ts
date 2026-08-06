@@ -225,20 +225,22 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
 
         // 有自己的模板 → 编译并缓存
         if (entry.tpl) {
-            const { cache, nodeMetas } = CompileEngine.compile(entry.tpl);
+            const { cache, nodeMetas } = CompileEngine.compile(entry.tpl, entry.componentClass);
             entry.compiled = { cache, nodeMetas };
             return entry.compiled;
         }
 
-        // 共享/继承模板 → 用 tplName 查找
         if (entry.tplName) {
             const tplEntry = this.storage.entries.get(entry.tplName);
             if (tplEntry?.tpl) {
                 if (!tplEntry.compiled) {
-                    const { cache, nodeMetas } = CompileEngine.compile(tplEntry.tpl);
+                    const { cache, nodeMetas } = CompileEngine.compile(
+                        tplEntry.tpl,
+                        tplEntry.componentClass
+                    );
                     tplEntry.compiled = { cache, nodeMetas };
                 }
-                // 缓存到当前 entry，后续直接命中
+
                 entry.compiled = tplEntry.compiled;
                 return entry.compiled;
             }

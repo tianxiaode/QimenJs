@@ -139,11 +139,42 @@ export interface NodeMetadata {
 
     role?: string;
 
-    attrs?: Record<string, string>;
+    /**
+     * DOM 原生属性
+     *
+     * 双重来源：
+     * 1. TplNode.attrs — 编译时 copyMetaFields 直接带入（Record<string, string>）
+     * 2. 编译引擎分类 — 剩余字段中不在 DEFAULT_NODE_PROP_MAP 的（Record<string, any>）
+     *
+     * 运行时通过 setAttribute 应用到 DOM 元素。
+     */
+    attrs?: Record<string, any>;
 
     // ─── component：组件专属 ───
 
+    /** @deprecated 使用 props 替代 */
     initConfig?: Record<string, any>;
+
+    /**
+     * 子组件自定义属性 — 父组件在 TplNode 上写的非框架字段
+     *
+     * 编译时从 TplNode 剩余字段收集（排除 TPL_NODE_FIELDS 已知字段），
+     * 运行时由 applyConfig 管线步骤处理：按 DEFAULT_NODE_PROP_MAP 分类为
+     * htmlProps（应用到 DOM）和 customProps（触发组件 setter）。
+     *
+     * 仅 type 节点有此字段，tag 节点使用 htmlProps/attrs。
+     */
+    props?: Record<string, any>;
+
+    /**
+     * DOM 节点 HTML 属性 — 在 DEFAULT_NODE_PROP_MAP 中有映射的字段
+     *
+     * 编译时从 TplNode 剩余字段中按 DEFAULT_NODE_PROP_MAP 分类提取，
+     * 运行时自动通过 _updateNode 应用到 DOM 元素。
+     *
+     * 仅 tag 节点有此字段，type 节点使用 props。
+     */
+    htmlProps?: Record<string, any>;
 
     // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
 
@@ -262,8 +293,8 @@ export interface CompiledTemplateResult {
     /** 暴露的属性名列表（用于生成 getter/setter） */
     exposeNames: string[];
 
-    /** i18n 节点列表 */
-    i18nNodes: Array<{ name: string; i18nKey: string }>;
+    /** i18n 节点列表（含字段名，用于 locale change 时精确刷新） */
+    i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
 
     /** 权限节点列表 */
     permissionNodes: Array<{ name: string; permission: boolean | string }>;
@@ -299,7 +330,7 @@ export interface CompiledTemplateCache {
     html: string;
     indexPath: NodeIndexPath;
     exposeNames: string[];
-    i18nNodes: Array<{ name: string; i18nKey: string }>;
+    i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
     permissionNodes: Array<{ name: string; permission: boolean | string }>;
     templateCache: HTMLTemplateElement;
 }
