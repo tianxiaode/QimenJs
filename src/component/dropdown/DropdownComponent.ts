@@ -25,7 +25,6 @@
 import { ButtonComponent } from '../button/ButtonComponent';
 import type { ButtonProps } from '../button/ButtonComponent';
 import type { FloatDecl } from '@qimenjs/component-core';
-import './dropdown.css.ts';
 import './dropdown.css';
 
 const DEFAULT_POPOVER_FLOAT = {

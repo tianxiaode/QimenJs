@@ -30,7 +30,7 @@
  */
 
 import type { Plugin, ResolvedConfig } from 'vite';
-import { resolve, relative, dirname, basename } from 'path';
+import { resolve, relative, dirname, basename, isAbsolute } from 'path';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 
 interface ComponentInfo {
@@ -114,15 +114,27 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
         buildStart() {
             const root = config.root;
 
+            const absoluteComponentRoot = isAbsolute(componentRoot)
+                ? componentRoot
+                : resolve(root, componentRoot);
+
             log('扫描组件目录...');
-            scanComponentDirectory(resolve(root, componentRoot), componentMap);
+            scanComponentDirectory(absoluteComponentRoot, componentMap);
             log(`发现 ${componentMap.size} 个组件`);
+
+            if (debug && componentMap.size > 0) {
+                const keys = Array.from(componentMap.keys()).slice(0, 3);
+                console.log('[qimen-css]   示例组件路径:');
+                keys.forEach(k => console.log(`    ${k}`));
+            }
 
             log('分析入口文件...');
             for (const pattern of entryPoints) {
                 const files = globSync(pattern, { cwd: root });
+                log(`  pattern: ${pattern}, files: ${files.length}`);
                 for (const file of files) {
                     const fullPath = resolve(root, file);
+                    log(`    分析: ${file}`);
                     collectComponentDependencies(fullPath, componentMap, collectedComponents);
                 }
             }
@@ -227,7 +239,7 @@ function extractStylePaths(code: string, componentPath: string): string[] {
         }
     }
 
-    const cssImportRegex = /import\s+.*?\s+from\s+['"]([^'"]+\.css(?:\.ts)?)['"]/g;
+    const cssImportRegex = /import\s+['"]([^'"]+\.css(?:\.ts)?)['"]/g;
     let match;
     while ((match = cssImportRegex.exec(code)) !== null) {
         const importPath = match[1];
@@ -238,6 +250,30 @@ function extractStylePaths(code: string, componentPath: string): string[] {
     }
 
     return paths;
+}
+
+/**
+ * 查找项目根目录（包含package.json的目录）
+ */
+function findProjectRoot(startPath: string): string {
+    let current = dirname(startPath);
+
+    while (current !== dirname(current)) {
+        const pkgPath = resolve(current, 'package.json');
+        if (existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+                if (pkg.name === 'qimenjs') {
+                    return current;
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+        current = dirname(current);
+    }
+
+    return process.cwd();
 }
 
 /**
@@ -256,6 +292,8 @@ function collectComponentDependencies(
 
     const content = readFileSync(filePath, 'utf-8');
 
+    const projectRoot = findProjectRoot(filePath);
+
     const importRegex = /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
     let match;
 
@@ -265,17 +303,25 @@ function collectComponentDependencies(
         let resolvedPath: string | null = null;
 
         if (importPath.startsWith('@/')) {
-            resolvedPath = resolve(process.cwd(), 'src', importPath.slice('@/'.length));
+            resolvedPath = resolve(projectRoot, 'src', importPath.slice('@/'.length));
+        } else if (importPath.startsWith('@qimenjs/component')) {
+            const moduleName = importPath.slice('@qimenjs/'.length);
+            const parts = moduleName.split('/');
+            if (parts.length === 1) {
+                resolvedPath = resolve(projectRoot, 'src', moduleName, 'index.ts');
+            } else {
+                resolvedPath = resolve(projectRoot, 'src', moduleName + '.ts');
+            }
         } else if (importPath.startsWith('@qimenjs/')) {
             const moduleName = importPath.slice('@qimenjs/'.length);
-            resolvedPath = resolve(process.cwd(), 'src', moduleName);
+            resolvedPath = resolve(projectRoot, 'src', moduleName, 'index.ts');
         } else if (importPath.startsWith('./') || importPath.startsWith('../')) {
             resolvedPath = resolve(dirname(filePath), importPath);
         }
 
         if (!resolvedPath) continue;
 
-        if (!resolvedPath.endsWith('.ts')) {
+        if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.js')) {
             resolvedPath += '.ts';
         }
 
@@ -291,28 +337,39 @@ function collectComponentDependencies(
 
 function globSync(pattern: string, options: { cwd: string }): string[] {
     const results: string[] = [];
+    const { cwd } = options;
+
+    if (!pattern.includes('*')) {
+        const fullPath = resolve(cwd, pattern);
+        if (existsSync(fullPath)) {
+            results.push(pattern);
+        }
+        return results;
+    }
 
     function walk(dir: string, base: string) {
         const entries = readdirSync(dir, { withFileTypes: true });
         for (const entry of entries) {
             const fullPath = resolve(dir, entry.name);
-            const relPath = relative(base, fullPath);
+            const relPath = relative(base, fullPath).replace(/\\/g, '/');
 
             if (entry.isDirectory()) {
                 walk(fullPath, base);
-            } else if (pattern.includes('**')) {
-                const regex = new RegExp(
-                    '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
-                );
-                if (regex.test(relPath.replace(/\\/g, '/'))) {
+            } else {
+                let regexPattern = pattern
+                    .replace(/\./g, '\\.')
+                    .replace(/\*\*/g, '{{DOUBLE_STAR}}')
+                    .replace(/\*/g, '[^/]*')
+                    .replace(/{{DOUBLE_STAR}}/g, '.*');
+                const regex = new RegExp('^' + regexPattern + '$');
+
+                if (regex.test(relPath)) {
                     results.push(relPath);
                 }
-            } else if (relPath === pattern) {
-                results.push(relPath);
             }
         }
     }
 
-    walk(options.cwd, options.cwd);
+    walk(cwd, cwd);
     return results;
 }

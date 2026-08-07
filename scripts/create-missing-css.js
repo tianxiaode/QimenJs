@@ -15,10 +15,10 @@ const results = {
 
 function walk(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
-        
+
         if (entry.isDirectory()) {
             walk(fullPath);
         } else if (entry.name.endsWith('Component.ts')) {
@@ -32,19 +32,19 @@ function processComponent(componentPath) {
     const componentName = path.basename(componentPath, '.ts');
     const cssFileName = componentName.replace('Component', '').toLowerCase() + '.css.ts';
     const cssPath = path.join(dir, cssFileName);
-    
+
     let content = fs.readFileSync(componentPath, 'utf-8');
-    
+
     const hasAddCls = content.includes("addCls('q-") || content.includes('addCls("q-');
     const hasRemoveCls = content.includes("removeCls('q-") || content.includes('removeCls("q-');
     const hasClsInTemplate = content.includes("cls: 'q-") || content.includes('cls: "q-');
-    
+
     const usesStyles = hasAddCls || hasRemoveCls || hasClsInTemplate;
-    
+
     if (!usesStyles) {
         return;
     }
-    
+
     if (fs.existsSync(cssPath)) {
         if (!content.includes(`import './${cssFileName}'`)) {
             addImport(componentPath, cssFileName);
@@ -52,16 +52,16 @@ function processComponent(componentPath) {
         }
         return;
     }
-    
+
     const className = extractClassName(content, componentName);
     if (!className) {
         results.skipped.push(componentName);
         return;
     }
-    
+
     createCSSFile(cssPath, componentName, className);
     addImport(componentPath, cssFileName);
-    
+
     results.created.push(componentName);
     console.log(`✓ ${componentName} -> ${cssFileName} (${className})`);
 }
@@ -69,25 +69,25 @@ function processComponent(componentPath) {
 function extractClassName(content, componentName) {
     const addClsMatches = content.matchAll(/addCls\(['"]([^'"]+)['"]/g);
     const clsMatches = content.matchAll(/cls:\s*['"]([^'"]+)['"]/g);
-    
+
     const classes = new Set();
-    
+
     for (const match of addClsMatches) {
         classes.add(match[1]);
     }
-    
+
     for (const match of clsMatches) {
         classes.add(match[1]);
     }
-    
+
     if (classes.size === 0) return null;
-    
+
     return Array.from(classes).find(cls => cls.startsWith('q-')) || Array.from(classes)[0];
 }
 
 function createCSSFile(cssPath, componentName, className) {
     const name = componentName.replace('Component', '');
-    
+
     const content = `/**
  * ${name} 组件样式 — Metro 风格
  */
@@ -99,20 +99,20 @@ export const ${name.toLowerCase()}CSS = \`
 }
 \`;
 `;
-    
+
     fs.writeFileSync(cssPath, content, 'utf-8');
 }
 
 function addImport(componentPath, cssFileName) {
     let content = fs.readFileSync(componentPath, 'utf-8');
-    
+
     if (content.includes(`import './${cssFileName}'`)) {
         return;
     }
-    
+
     const lines = content.split('\n');
     let insertIndex = 0;
-    
+
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].match(/^import\s+.*from\s+['"]/)) {
             insertIndex = i + 1;
@@ -120,10 +120,10 @@ function addImport(componentPath, cssFileName) {
             break;
         }
     }
-    
+
     const importStatement = `import './${cssFileName}';`;
     lines.splice(insertIndex, 0, importStatement);
-    
+
     fs.writeFileSync(componentPath, lines.join('\n'), 'utf-8');
 }
 
