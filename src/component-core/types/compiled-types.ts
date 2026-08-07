@@ -94,50 +94,8 @@ export interface NodeMetadata {
      */
     action?: string;
 
-    /**
-     * 节点级事件数据声明 — 从 TplNode.data 编译
-     *
-     * 节点声明的额外数据字段，事件触发时自动收集并合并到事件数据中。
-     * 支持数组形式（所有事件共享）和对象形式（按事件类型区分）。
-     *
-     * @example
-     * // 数组形式: ['name', 'getFormData']
-     * // 对象形式: { emit: ['name'], entity: ['getEntityData'] }
-     */
-    data?: string[] | Record<string, string[]>;
-
-    // ─── layout：布局 ───
-
-    flex?: boolean | FlexConfig;
-
-    grid?: boolean | GridConfig;
-
-    // ─── style：样式 ───
-
-    cls?: string;
-
-    style?: string | Record<string, any>;
-
-    // ─── content：内容 ───
-
     /** 内容操作模式（按 tag 自动推导：div→html, input→value, img→src, a→link） */
     contentMode?: 'value' | 'src' | 'html' | 'link';
-
-    /** i18n 翻译 key */
-    i18nKey?: string;
-
-    /** 权限声明（true=从 action 推导 / action / entity:action / domain:entity:action） */
-    permission?: boolean | string;
-
-    // ─── state：状态 ───
-
-    hidden?: boolean;
-
-    hiddenMode?: HiddenMode;
-
-    // ─── dom：DOM 属性 ───
-
-    role?: string;
 
     /**
      * DOM 原生属性
@@ -153,18 +111,7 @@ export interface NodeMetadata {
     // ─── component：组件专属 ───
 
     /** @deprecated 使用 props 替代 */
-    initConfig?: Record<string, any>;
-
-    /**
-     * 子组件自定义属性 — 父组件在 TplNode 上写的非框架字段
-     *
-     * 编译时从 TplNode 剩余字段收集（排除 TPL_NODE_FIELDS 已知字段），
-     * 运行时由 applyConfig 管线步骤处理：按 DEFAULT_NODE_PROP_MAP 分类为
-     * htmlProps（应用到 DOM）和 customProps（触发组件 setter）。
-     *
-     * 仅 type 节点有此字段，tag 节点使用 htmlProps/attrs。
-     */
-    props?: Record<string, any>;
+    config?: Record<string, any>;
 
     /**
      * DOM 节点 HTML 属性 — 在 DEFAULT_NODE_PROP_MAP 中有映射的字段
@@ -174,57 +121,7 @@ export interface NodeMetadata {
      *
      * 仅 tag 节点有此字段，type 节点使用 props。
      */
-    htmlProps?: Record<string, any>;
-
-    // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
-
-    /** 浮层标记 — 声明此节点是浮层锚点 */
-    float?: boolean | FloatDecl;
-
-    /** 拖拽标记 — 声明此节点是拖拽手柄 */
-    drag?: boolean | DragDecl;
-
-    /** 放置区标记 — 声明此节点是放置目标 */
-    drop?: boolean | DropDecl;
-
-    /** 动画配置 — 声明此节点的进入/离开动画 */
-    animation?: Record<string, any>;
-
-    // ─── float-shorthand: 浮层快捷配置（float 的语法糖） ───
-
-    /**
-     * 角标配置 — 节点级 badge 声明
-     *
-     * badge 不走浮动引擎，而是在 buildDOM 后由 NodeMapManager 创建绝对定位 DOM，
-     * 注册为 `{nodeName}:badge` 节点，可通过 CommonPropsAbility 操作。
-     *
-     * @example
-     * { name: 'icon', badge: '3' }
-     * { name: 'icon', badge: { text: 'New', visible: false } }
-     */
-    badge?: BadgeQuickConfig | string | number | null;
-
-    /** 提示浮层快捷配置 */
-    tooltip?: TooltipQuickConfig | string | null;
-
-    /** 对话框浮层快捷配置 */
-    dialog?: DialogQuickConfig | null;
-
-    /** 弹出层浮层快捷配置 */
-    popover?: PopoverQuickConfig | null;
-
-    // ─── drag-drop-shorthand: 拖拽/放置快捷标记 ───
-
-    /** 拖拽手柄标记 — 声明此节点是组件的拖拽手柄 */
-    dragHandle?: boolean;
-
-    /** 放置区标记 — 声明此节点是组件的放置目标 */
-    dropZone?: boolean;
-
-    // ─── itemgroup: ItemGroup 专属配置 ───
-
-    /** 指示器配置 — 仅 ItemGroup 类型组件可用 */
-    indicator?: IndicatorConfig | null;
+    props?: Record<string, any>;
 }
 
 // ══════════════════════════════════════════════════════════════

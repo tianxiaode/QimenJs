@@ -105,30 +105,6 @@ const HTML_PROPS_SET = new Set([
     'summary',
 ]);
 
-/** 特性名称集合（组件特性，不作为普通属性） */
-const FEATURE_SET = new Set([
-    // 布局特性
-    'flex',
-    'grid',
-    // 拖拽特性
-    'drag',
-    'drop',
-    'dragHandle',
-    'dropZone',
-    // 浮层特性
-    'float',
-    'badge',
-    'tooltip',
-    'dialog',
-    'popover',
-    // 动画特性
-    'animation',
-    // 其他特性
-    'indicator',
-    'permission',
-    'initConfig',
-]);
-
 /** 拆解结果 */
 export interface DecomposeResult {
     meta: NodeMetadata;
@@ -154,6 +130,9 @@ export class DecomposeEngine {
         // 2. 提取 tag/name/type 到 meta
         const meta: NodeMetadata = {
             name: name || '',
+            props: {},
+            attrs: {},
+            config: {},
         };
 
         if (clone.tag) {
