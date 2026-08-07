@@ -103,6 +103,51 @@ export class CompileEngine {
     }
 
     /**
+     * 收集模板中的组件依赖 — 用于CSS按需打包
+     *
+     * 遍历模板树，收集所有 type 字段引用的组件类，
+     * 并递归收集子组件模板中的依赖。
+     *
+     * @param tpl - 模板节点
+     * @returns 组件类集合
+     *
+     * @example
+     * ```ts
+     * const deps = CompileEngine.collectDependencies(tpl);
+     * // deps: Set<Function> { ButtonComponent, IconComponent }
+     * ```
+     */
+    static collectDependencies(tpl: TplNode): Set<Function> {
+        const deps = new Set<Function>();
+        this._collectDeps(tpl, deps);
+        return deps;
+    }
+
+    private static _collectDeps(node: TplNode, deps: Set<Function>): void {
+        if (node.type && typeof node.type !== 'string') {
+            const componentClass = node.type as Function;
+            deps.add(componentClass);
+
+            const childTpl = (componentClass as any).template || (componentClass as any).tpl;
+            if (childTpl) {
+                this._collectDeps(childTpl, deps);
+            }
+        }
+
+        if (node.children) {
+            for (const child of node.children) {
+                this._collectDeps(child, deps);
+            }
+        }
+
+        if (node.fragment?.children) {
+            for (const child of node.fragment.children) {
+                this._collectDeps(child, deps);
+            }
+        }
+    }
+
+    /**
      * 展开 fragment — 预处理步骤
      *
      * 将 TplNode 中的 fragment 递归展开为普通 children，

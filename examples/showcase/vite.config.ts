@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve } from 'path';
+import { qimenCssPlugin } from '../../build-tools/vite-plugin-qimen-css';
 
 /** 将 Node.js 专用模块替换为 Proxy 空壳，避免浏览器环境报错 */
 function browserExternalPlugin(): Plugin {
@@ -36,7 +37,17 @@ export const parentPort = null;
 }
 
 export default defineConfig({
-    plugins: [browserExternalPlugin()],
+    plugins: [
+        browserExternalPlugin(),
+        qimenCssPlugin({
+            entryPoints: ['src/main.ts', 'src/pages/**/*.ts'],
+            componentRoot: '../../src/component',
+            emitFile: true,
+            outputFileName: 'qimen-components.css',
+            injectInDev: true,
+            debug: true,
+        }),
+    ],
     resolve: {
         alias: [
             { find: /^@\/(.+)/, replacement: resolve(__dirname, '../../src/$1') },
