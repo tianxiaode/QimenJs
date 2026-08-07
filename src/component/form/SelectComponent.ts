@@ -28,6 +28,7 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
+import './select.css.ts';
 
 export interface SelectOption {
     label: string;

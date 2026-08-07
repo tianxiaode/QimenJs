@@ -16,6 +16,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { LABEL_TPL } from './label-tpl';
+import './label.css.ts';
 
 /** 标签属性接口 */
 export interface LabelProps {

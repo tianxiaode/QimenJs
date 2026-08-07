@@ -22,6 +22,7 @@
 import { Component } from '@qimenjs/component-core';
 import { STATISTIC_TPL } from './statistic-tpl';
 import { formatNumber } from '@/utils/number';
+import './statistic.css.ts';
 
 /** 统计数值趋势类型 */
 export type StatisticTrend = 'up' | 'down' | 'flat';

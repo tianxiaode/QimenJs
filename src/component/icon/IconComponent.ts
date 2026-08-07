@@ -13,6 +13,7 @@
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { ICON_TPL } from './icon-tpl';
+import './icon.css.ts';
 
 /** 图标属性接口 */
 export interface IconProps {

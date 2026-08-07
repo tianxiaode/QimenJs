@@ -30,6 +30,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { HERO_TPL } from './hero-tpl';
+import './hero.css.ts';
 
 const I18N_PREFIX = 'i18n:';
 

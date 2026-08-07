@@ -136,6 +136,11 @@ export const buttonCSS = `
     padding-right: 8px;
 }
 
+/* Dropdown组件样式 */
+.q-dropdown {
+    padding-right: 8px;
+}
+
 /* 幽灵模式（无边框，与背景融合） */
 .q-button--ghost {
     border-color: transparent;

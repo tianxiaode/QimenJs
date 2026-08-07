@@ -38,6 +38,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { ComponentProps } from '@qimenjs/component-core';
 import { HEADER_TPL } from './header-tpl';
+import './header.css.ts';
 
 /** 头部属性接口 */
 export interface HeaderProps {

@@ -31,6 +31,7 @@ import { Component } from '@qimenjs/component-core';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { BUTTON_TPL } from './button-tpl';
+import './button.css';
 
 const I18N_PREFIX = 'i18n:';
 

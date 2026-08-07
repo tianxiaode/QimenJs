@@ -25,6 +25,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap } from '@qimenjs/component-core';
 import { HREF_TPL } from './href-tpl';
+import './href.css.ts';
 
 /** 链接目标 */
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';

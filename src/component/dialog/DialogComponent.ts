@@ -52,6 +52,7 @@ import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { DIALOG_TPL } from './dialog-tpl';
+import './dialog.css.ts';
 
 type DialogActionKey = 'confirm' | 'cancel' | 'ok' | 'save' | 'close' | 'apply' | 'reset';
 

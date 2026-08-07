@@ -39,6 +39,7 @@ import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { EntityEventBus, ENTITY_CRUD_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
+import './form.css.ts';
 
 export type FormAction = 'create' | 'update';
 

@@ -10,6 +10,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { BADGE_TPL } from './badge-tpl';
+import './badge.css.ts';
 
 /** 徽标组件 */
 class BadgeComponent extends Component {

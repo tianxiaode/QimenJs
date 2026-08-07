@@ -29,6 +29,7 @@
 
 import { FormFieldComponent } from './FormFieldComponent';
 import type { ValidationRule } from '@qimenjs/schema';
+import './input.css.ts';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
 

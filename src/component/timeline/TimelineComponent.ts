@@ -23,6 +23,7 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import './timeline.css.ts';
 
 export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';
 /** 时间线项 */

@@ -22,6 +22,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
+import './toggle.css.ts';
 
 /** 切换属性接口 */
 export interface ToggleProps {

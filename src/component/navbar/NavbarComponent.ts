@@ -19,6 +19,7 @@
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import './navbar.css.ts';
 
 /** 导航栏属性接口 */
 export interface NavbarProps extends ItemGroupProps {

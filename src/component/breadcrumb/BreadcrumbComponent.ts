@@ -23,6 +23,7 @@
 import { Component } from '@qimenjs/component-core';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { BREADCRUMB_TPL } from './breadcrumb-tpl';
+import './breadcrumb.css.ts';
 
 /** 面包屑项 */
 export interface BreadcrumbItem {

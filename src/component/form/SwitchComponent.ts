@@ -26,6 +26,7 @@
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { SWITCH_TPL } from './switch-tpl';
+import './switch.css.ts';
 
 export interface SwitchProps extends FormFieldProps {
     checked?: boolean;

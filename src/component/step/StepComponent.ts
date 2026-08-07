@@ -26,6 +26,7 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { StepItemComponent } from './StepItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import './step.css.ts';
 
 export type { StepStatus } from './StepItemComponent';
 export type { StepItemProps } from './StepItemComponent';

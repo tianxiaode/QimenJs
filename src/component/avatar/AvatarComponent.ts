@@ -15,6 +15,7 @@
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { AVATAR_TPL } from './avatar-tpl';
+import './avatar.css.ts';
 
 /** 头像模式类型 */
 export type AvatarMode = 'src' | 'text' | 'icon';

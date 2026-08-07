@@ -21,6 +21,7 @@
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { FIELDSET_TPL } from './fieldset-tpl';
+import './fieldset.css.ts';
 
 /** 字段集属性接口 */
 export interface FieldsetProps {

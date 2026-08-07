@@ -1,5 +1,6 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import './toolbar.css.ts';
 
 /** 工具栏属性接口 */
 export interface ToolbarProps extends ItemGroupProps {}

@@ -16,6 +16,7 @@ import { ArrowAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex } from '../';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 import { InferAbility } from '@/composable';
+import './tooltip.css.ts';
 
 /** 提示框属性接口 */
 export interface TooltipProps {

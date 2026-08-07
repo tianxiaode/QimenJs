@@ -29,6 +29,7 @@ import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
 import type { TabProps as TabItemProps } from './TabComponent';
 import { TABS_TPL } from './tabs-tpl';
+import './tabs.css.ts';
 
 /** 标签页项 */
 export interface TabPaneItem {

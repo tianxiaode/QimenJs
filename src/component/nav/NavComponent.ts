@@ -25,6 +25,7 @@ import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
+import './nav.css.ts';
 
 /** 导航项组属性接口 */
 export interface NavItemGroupProps extends ItemGroupProps {

@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { PROGRESS_TPL } from './progress-tpl';
+import './progress.css.ts';
 
 /** 进度条类型 */
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';

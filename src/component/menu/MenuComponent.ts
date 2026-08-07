@@ -13,6 +13,7 @@ import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import { DomEventsMap } from '@qimenjs/component-core';
+import './menu.css.ts';
 
 /** 菜单属性接口 */
 export interface MenuProps extends ItemGroupProps {

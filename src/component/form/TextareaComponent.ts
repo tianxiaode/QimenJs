@@ -27,6 +27,7 @@
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { TEXTAREA_TPL } from './textarea-tpl';
+import './textarea.css.ts';
 
 export interface TextareaProps extends FormFieldProps {
     value?: string;

@@ -16,6 +16,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { SPACER_TPL } from './spacer-tpl';
+import './spacer.css.ts';
 
 /** 间距属性接口 */
 export interface SpacerProps {

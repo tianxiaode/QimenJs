@@ -18,6 +18,7 @@
 
 import { Component, CommonPropsAbility } from '@qimenjs/component-core';
 import { RATING_TPL } from './rating-tpl';
+import './rating.css.ts';
 
 /** 评分属性接口 */
 export interface RatingProps {

@@ -33,6 +33,7 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { INDICATOR_TPL } from './indicator-tpl';
+import './indicator.css.ts';
 
 /** 指示器模式类型 */
 export type IndicatorMode = 'dot' | 'number' | 'dash';

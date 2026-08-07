@@ -17,6 +17,7 @@
 
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
+import './row.css.ts';
 
 export class RowComponent extends Component {
     _columnMetas: ColumnMeta[] = [];

@@ -21,6 +21,7 @@
 import { DomEventsMap } from '@/component-core';
 import { Component } from '@qimenjs/component-core';
 import { ALERT_TPL } from './alert-tpl';
+import './alert.css.ts';
 
 /** 警告提示类型 */
 export type AlertType = 'info' | 'success' | 'warning' | 'error';

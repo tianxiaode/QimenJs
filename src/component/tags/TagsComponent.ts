@@ -34,6 +34,7 @@ import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { TagComponent } from '../tag/TagComponent';
 import type { TagType, TagProps, TagComponentInstance } from '../tag/TagComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
+import './tags.css.ts';
 
 /** 标签集属性接口 */
 export interface TagsProps extends ItemGroupProps {

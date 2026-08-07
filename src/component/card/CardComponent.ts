@@ -13,6 +13,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { CARD_TPL } from './card-tpl';
+import './card.css.ts';
 
 /** 卡片属性接口 */
 export interface CardProps {

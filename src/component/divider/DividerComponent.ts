@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { DIVIDER_TPL } from './divider-tpl';
+import './divider.css.ts';
 
 /** 分割线属性接口 */
 export interface DividerProps {

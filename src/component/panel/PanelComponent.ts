@@ -20,6 +20,7 @@
 import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { PANEL_TPL } from './panel-tpl';
+import './panel.css.ts';
 
 /** 工具组配置 */
 export interface ToolGroupConfig {

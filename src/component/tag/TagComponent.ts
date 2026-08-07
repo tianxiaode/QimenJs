@@ -20,6 +20,7 @@
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TAG_TPL } from './tag-tpl';
+import './tag.css.ts';
 
 /** 标签类型 */
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';

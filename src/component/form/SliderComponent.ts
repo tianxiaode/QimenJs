@@ -26,6 +26,7 @@
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { SliderFieldBodyComponent } from './SliderFieldBodyComponent';
+import './slider.css.ts';
 
 export interface SliderProps extends FormFieldProps {
     value?: number;

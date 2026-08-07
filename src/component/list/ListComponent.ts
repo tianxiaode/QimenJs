@@ -19,6 +19,7 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import './list.css.ts';
 
 export type { ListStatus, MarkForm, ListItemProps } from './ListItemComponent';
 /** 列表项 */
