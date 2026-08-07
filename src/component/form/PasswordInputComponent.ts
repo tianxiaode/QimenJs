@@ -17,6 +17,7 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
+import { IconComponent } from '../icon/IconComponent';
 import './passwordinput.css.ts';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
@@ -89,7 +90,7 @@ class PasswordInputComponent extends InputComponent {
 
     _mountEyeToggle(): void {
         this.addAction({
-            type: 'Icon',
+            type: IconComponent,
             content: this._visible ? 'eye-off' : 'eye',
             cls: 'q-password-toggle',
             order: EYE_BTN_ORDER,

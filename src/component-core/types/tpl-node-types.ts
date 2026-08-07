@@ -132,8 +132,8 @@ export interface TplNode {
     /** DOM 标签名（如 div、span、input），与 type 互斥 */
     tag?: string;
 
-    /** 组件类型名（如 ButtonComponent），与 tag 互斥 */
-    type?: string | (new (...args: any[]) => any);
+    /** 组件类引用（如 ButtonComponent），与 tag 互斥，不支持字符串 */
+    type?: new (...args: any[]) => any;
 
     /** 节点名称 — nodeMap 索引键 + 自动属性生成 */
     name?: string;

@@ -1,4 +1,5 @@
 import type { TplNode } from '@/component-core';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
 export const INPUT_FIELD_BODY_TPL: TplNode = {
     tag: 'div',
@@ -17,7 +18,7 @@ export const INPUT_FIELD_BODY_TPL: TplNode = {
         },
         {
             name: 'actions',
-            type: 'ItemGroupStatic',
+            type: ItemGroupStaticComponent,
             cls: 'q-input__actions',
             hidden: true,
             initConfig: {

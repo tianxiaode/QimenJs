@@ -29,6 +29,7 @@
 
 import { FormFieldComponent } from './FormFieldComponent';
 import type { ValidationRule } from '@qimenjs/schema';
+import { TextComponent } from '../text/TextComponent';
 import './input.css.ts';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
@@ -133,7 +134,7 @@ class InputComponent extends FormFieldComponent {
         const actionsCmp = this.nodeMap?.actions?.component;
         if (!actionsCmp) return;
         actionsCmp.add({
-            type: 'Text',
+            type: TextComponent,
             cls: 'q-input__clear-btn',
             text: '×',
             order: CLEAR_BTN_ORDER,

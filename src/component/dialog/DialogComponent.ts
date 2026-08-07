@@ -52,6 +52,7 @@ import { Component, DomEventsMap } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { DIALOG_TPL } from './dialog-tpl';
+import { ButtonComponent } from '../button/ButtonComponent';
 import './dialog.css.ts';
 
 type DialogActionKey = 'confirm' | 'cancel' | 'ok' | 'save' | 'close' | 'apply' | 'reset';
@@ -205,7 +206,7 @@ class DialogComponent extends Component {
             const def = DIALOG_ACTION_DEFS[key];
             const cfg = val === true ? {} : val;
             items.push({
-                type: 'Button',
+                type: ButtonComponent,
                 text: resolveI18nValue(cfg.text ?? def.text),
                 action: def.action,
                 cls: def.cls,

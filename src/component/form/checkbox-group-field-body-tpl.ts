@@ -1,4 +1,5 @@
 import type { TplNode } from '@/component-core';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
 export const CHECKBOX_GROUP_FIELD_BODY_TPL: TplNode = {
     tag: 'div',
@@ -6,7 +7,7 @@ export const CHECKBOX_GROUP_FIELD_BODY_TPL: TplNode = {
     children: [
         {
             name: 'options',
-            type: 'ItemGroupStatic',
+            type: ItemGroupStaticComponent,
             cls: 'q-checkbox-group__options',
             initConfig: {
                 direction: 'vertical',

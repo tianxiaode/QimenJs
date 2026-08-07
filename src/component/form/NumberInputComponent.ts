@@ -20,6 +20,7 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
+import { TextComponent } from '../text/TextComponent';
 import './numberinput.css.ts';
 
 export interface NumberInputProps extends Omit<InputProps, 'value'> {
@@ -96,7 +97,7 @@ class NumberInputComponent extends InputComponent {
         this.setNodeHidden(false, 'actions');
 
         this.addAction({
-            type: 'Text',
+            type: TextComponent,
             cls: 'q-number-input__step q-number-input__step-up',
             text: '▲',
             order: STEP_UP_ORDER,
@@ -106,7 +107,7 @@ class NumberInputComponent extends InputComponent {
         this._stepUpItem = items[items.length - 1] ?? null;
 
         this.addAction({
-            type: 'Text',
+            type: TextComponent,
             cls: 'q-number-input__step q-number-input__step-down',
             text: '▼',
             order: STEP_DOWN_ORDER,

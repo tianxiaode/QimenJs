@@ -20,6 +20,7 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { TextComponent } from '../text/TextComponent';
 import './inputinfogroup.css.ts';
 
 const ERROR_ORDER = 0;
@@ -44,7 +45,7 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
             return this._errorItem.component;
         }
         const component = this.add({
-            type: 'Text',
+            type: TextComponent,
             cls: 'q-input__error',
             text,
             role: 'alert',
@@ -71,7 +72,7 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
             return this._helpItem.component;
         }
         const component = this.add({
-            type: 'Text',
+            type: TextComponent,
             cls: 'q-input__help',
             text,
             order: HELP_ORDER,

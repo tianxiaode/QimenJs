@@ -17,6 +17,7 @@
  */
 
 import type { EntityToolbarItemDef, BuiltinItemDef } from './types';
+import { ButtonComponent } from '../button/ButtonComponent';
 
 // ══════════════════════════════════════════════════════════════
 // CRUD 按钮 name 集合（供事件路由判断用）
@@ -40,7 +41,7 @@ export const CRUD_ITEM_NAMES = new Set([
 const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     create: {
         name: 'create',
-        type: 'Button',
+        type: ButtonComponent,
         order: 200,
         iconCls: 'q-toolbar-btn-create',
         hint: 'i18n:toolbar.create',
@@ -48,7 +49,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     edit: {
         name: 'edit',
-        type: 'Button',
+        type: ButtonComponent,
         order: 210,
         iconCls: 'q-toolbar-btn-edit',
         hint: 'i18n:toolbar.edit',
@@ -56,7 +57,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     delete: {
         name: 'delete',
-        type: 'Button',
+        type: ButtonComponent,
         order: 220,
         iconCls: 'q-toolbar-btn-delete',
         hint: 'i18n:toolbar.delete',
@@ -64,7 +65,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     refresh: {
         name: 'refresh',
-        type: 'Button',
+        type: ButtonComponent,
         order: 230,
         iconCls: 'q-toolbar-btn-refresh',
         hint: 'i18n:toolbar.refresh',
@@ -72,7 +73,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     save: {
         name: 'save',
-        type: 'Button',
+        type: ButtonComponent,
         order: 240,
         iconCls: 'q-toolbar-btn-save',
         hint: 'i18n:toolbar.save',
@@ -80,7 +81,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     import: {
         name: 'import',
-        type: 'Button',
+        type: ButtonComponent,
         order: 250,
         iconCls: 'q-toolbar-btn-import',
         hint: 'i18n:toolbar.import',
@@ -88,7 +89,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
     },
     export: {
         name: 'export',
-        type: 'Button',
+        type: ButtonComponent,
         order: 260,
         iconCls: 'q-toolbar-btn-export',
         hint: 'i18n:toolbar.export',
@@ -140,7 +141,7 @@ function buildCrudItem(def: BuiltinItemDef, override: EntityToolbarItemDef): Rec
 
     const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
     return {
-        type: 'Button',
+        type: ButtonComponent,
         name,
         action: name,
         icon: iconCls,

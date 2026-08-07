@@ -20,6 +20,10 @@
  */
 
 import type { EntityToolbarItemDef, BuiltinItemDef } from './types';
+import { ButtonComponent } from '../button/ButtonComponent';
+import { NumberInputComponent } from '../form/NumberInputComponent';
+import { SelectComponent } from '../form/SelectComponent';
+import { TextComponent } from '../text/TextComponent';
 
 // ══════════════════════════════════════════════════════════════
 // 分页按钮 name 集合（供事件路由判断用）
@@ -162,10 +166,10 @@ function buildPaginationItem(
     const hint = override.hint ?? def.hint;
     const variant = override.variant ?? def.variant;
 
-    if (def.type === 'Button') {
+    if (def.type === ButtonComponent) {
         const variantCls = variant && variant !== 'default' ? ` q-button--${variant}` : '';
         return {
-            type: 'Button',
+            type: ButtonComponent,
             name,
             action: name,
             icon: iconCls,
@@ -177,7 +181,7 @@ function buildPaginationItem(
 
     if (name === 'pageNum') {
         return {
-            type: 'NumberInput',
+            type: NumberInputComponent,
             name: 'pageNum',
             value: 1,
             min: 1,
@@ -188,7 +192,7 @@ function buildPaginationItem(
 
     if (name === 'pageSize') {
         return {
-            type: 'Select',
+            type: SelectComponent,
             name: 'pageSize',
             value: opts.defaultPageSize,
             options: opts.pageSizes.map(s => ({ label: String(s), value: s })),
@@ -199,7 +203,7 @@ function buildPaginationItem(
 
     if (name === 'pageTotal') {
         return {
-            type: 'Text',
+            type: TextComponent,
             name: 'pageTotal',
             text: '1/0',
             cls: 'q-entity-toolbar__text q-entity-toolbar__text--page-total',
@@ -209,7 +213,7 @@ function buildPaginationItem(
 
     if (name === 'totalRecords') {
         return {
-            type: 'Text',
+            type: TextComponent,
             name: 'totalRecords',
             text: '0',
             cls: 'q-entity-toolbar__text q-entity-toolbar__text--total-records',

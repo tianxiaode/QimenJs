@@ -30,6 +30,8 @@
  * ```
  */
 
+import { TextComponent } from '../text/TextComponent';
+
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
 import './checkboxgroup.css.ts';
@@ -86,7 +88,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
         for (const opt of this._options) {
             const checked = this._value.includes(opt.value);
             optionsCmp.add({
-                type: 'Text',
+                type: TextComponent,
                 cls: 'q-checkbox-group__item',
                 text: opt.label,
                 order: 0,

@@ -1,4 +1,5 @@
 import type { TplNode } from '@/component-core';
+import { DayGridComponent } from './DayGridComponent';
 
 /** 日期面板模板定义 */
 export const DATE_PANEL_TPL: TplNode = {
@@ -67,7 +68,7 @@ export const DATE_PANEL_TPL: TplNode = {
         },
         {
             name: 'dayGrid',
-            type: 'DayGrid',
+            type: DayGridComponent,
         },
         {
             tag: 'div',
