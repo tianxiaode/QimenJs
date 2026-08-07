@@ -483,17 +483,24 @@
 | errors/index.ts | 错误导出 |
 | index.ts | 统一导出 |
 
-## src/theme — 主题系统（10文件）
+## src/theme — 主题系统（20文件）
 
 | 文件 | 用途 |
 |------|------|
-| ThemeRegistrar.ts | 主题注册器（extends RegistrarBase） |
-| AtomicCSS.ts | 原子化CSS生成 |
-| register.ts | 自动注册入口 |
-| presets/light.ts | 亮色主题 |
-| presets/dark.ts | 暗色主题 |
+| utils.ts | 工具函数（flattenTokens, tokensToCSSVariables） |
+| skeleton.css.ts | 骨架屏样式（框架必须） |
+| presets/light.ts | 亮色主题（宣纸） |
+| presets/dark.ts | 暗色主题（玄色） |
+| presets/celadon.ts | 青瓷主题 |
+| presets/cinnabar.ts | 朱砂主题 |
+| presets/indigo.ts | 靛蓝主题 |
+| presets/yellow.ts | 鹅黄主题 |
+| presets/rosewood.ts | 紫檀主题 |
+| presets/ink.ts | 墨色主题 |
+| presets/dai.ts | 黛色主题 |
+| presets/huaqing.ts | 华清主题 |
+| presets/shared.ts | 共享常量 |
 | presets/atomic-rules.ts | 原子CSS规则（~185条） |
-| presets/chinese-themes.ts | 7个中国传统色主题 |
 | presets/index.ts | 预设导出 |
 | types/ | 类型定义 |
 | index.ts | 统一导出 |

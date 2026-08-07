@@ -43,7 +43,7 @@ __qimen_i18n_register__('zh-CN', {
         richComponents: '丰富组件库',
         richComponentsDesc: '50+ 开箱即用组件：Button、Card、Table、Form、Dialog、Tabs…',
         themeSystem: '主题系统',
-        themeSystemDesc: 'ThemeRegistrar 主题注册器，运行时动态切换亮色/暗色/自定义主题',
+        themeSystemDesc: 'CSS 变量驱动，零 JS 开销切换亮色/暗色/自定义主题，按需打包',
         i18nSupport: '国际化',
         i18nSupportDesc: 'I18nManager 内置多语言支持，i18n: 前缀自动翻译，事件驱动的语言切换',
     },

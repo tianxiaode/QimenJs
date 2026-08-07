@@ -130,7 +130,7 @@ export const THEME_CHANGE_EVENT = 'theme:change' as const;
  * 主题本质是设计令牌的集合，用 JSON 定义
  */
 export interface ThemeDefinition {
-    /** 主题名称，同一 ThemeRegistrar 内唯一 */
+    /** 主题名称 */
     name: string;
     /** 主题显示名称 */
     displayName?: string;

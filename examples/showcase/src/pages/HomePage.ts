@@ -32,8 +32,8 @@ const FEATURES = [
     },
     {
         title: '主题系统',
-        desc: 'ThemeRegistrar 主题注册器，运行时动态切换亮色/暗色/自定义主题',
-        tags: ['ThemeRegistrar', 'CSS Variables'],
+        desc: 'CSS 变量驱动，零 JS 开销切换亮色/暗色/自定义主题，按需打包',
+        tags: ['Design Tokens', 'CSS Variables'],
     },
     {
         title: '国际化',

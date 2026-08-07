@@ -396,13 +396,14 @@ JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, childre
 
 #### `src/theme/` — 主题系统 `@qimenjs/theme`
 ```
-ThemeRegistrar.ts, AtomicCSS.ts, register.ts
-presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/chinese-themes.ts, presets/index.ts
+utils.ts, skeleton.css.ts
+presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/shared.ts, presets/index.ts
+presets/celadon.ts, presets/cinnabar.ts, presets/indigo.ts, presets/yellow.ts, presets/rosewood.ts, presets/ink.ts, presets/dai.ts, presets/huaqing.ts
 types/, index.ts
 ```
-主题注册器（extends RegistrarBase）+ CSS 变量输出 + 原子 CSS。`ThemeRegistrar` 通过 GlobalEventBus 触发 `theme:change` 事件，组件通过 `static themeAware = true` 声明 JS 层面感知。引入即自动注册预设主题 + 注册到 RegistryHub（键 `'theme'`）。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
+CSS 变量驱动的主题系统，零运行时依赖。主题文件导出 `ThemeDefinition` 和 CSS 变量字符串（通过 `tokensToCSSVariables` 生成）。构建工具自动收集被 import 的 `.css.ts` 文件并打包。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
 
-7 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色）通过 `registerChineseThemes()` 按需注册，不会自动加载。`AtomicCSS` 按需生成原子化 CSS 规则（~185 条预定义规则）。
+8 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色/华清）按需 import 使用。`skeleton.css.ts` 提供框架运行时必须的骨架屏样式。
 
 #### `src/icon/` — 中国风图标库 `@qimenjs/icon`
 ```
@@ -470,12 +471,9 @@ ChildrenAbility.add(layoutNode)
 
 ### 主题切换流程
 ```
-ThemeRegistrar.apply('dark')
-  → flattenTokens(tokens) 扁平化 DesignTokens
-  → applyCSSVariables() 更新 :root CSS 变量（所有组件自动生效）
-  → GlobalEventBus.emit('theme:change', payload)
-  → ThemeAbility._initTheme() 中检查 static themeAware
-  → 声明了 themeAware 的组件调用 onThemeChange(event)
+document.documentElement.classList.add('dark')
+  → CSS 选择器 :root.dark 生效
+  → CSS 变量自动更新（所有组件自动生效）
 ```
 
 ### 权限控制流程
@@ -500,7 +498,7 @@ PermissionRegistrar.registerBatch(entries)
 
 6. **零运行时依赖**：项目没有任何 runtime dependencies，所有依赖都是 devDependencies。
 
-7. **ThemeManager 已替换**：`ThemeManager` 已替换为 `ThemeRegistrar`（extends RegistrarBase），通过 GlobalEventBus 触发事件，不再自维护 listeners。主题代码已从 `src/imperative/` 迁移到独立的 `src/theme/` 包。
+7. **主题系统已重构**：`ThemeRegistrar` 和 `AtomicCSS` 已移除，主题系统改为纯 CSS 变量驱动。主题文件导出 CSS 变量字符串，构建工具自动收集并打包。切换主题通过 CSS 类或媒体查询实现，零 JS 开销。
 
 8. **`src/icon/` 不参与 TypeScript 构建**：图标库是纯静态资源目录（CSS + SVG + 字体文件），没有 `index.ts` 入口，不在 `tsconfig.json` 和 `build-config.json` 中配置。字体文件通过 `node scripts/build-icon-font.js` 手动构建。
 

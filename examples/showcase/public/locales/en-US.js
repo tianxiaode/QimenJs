@@ -43,7 +43,7 @@ __qimen_i18n_register__('en-US', {
         richComponents: 'Rich Components',
         richComponentsDesc: '50+ ready-to-use components: Button, Card, Table, Form, Dialog, Tabs...',
         themeSystem: 'Theme System',
-        themeSystemDesc: 'ThemeRegistrar for runtime dynamic switching of light/dark/custom themes',
+        themeSystemDesc: 'CSS variables driven, zero JS overhead for light/dark/custom theme switching, on-demand bundling',
         i18nSupport: 'Internationalization',
         i18nSupportDesc: 'Built-in I18nManager, i18n: prefix auto-translation, event-driven locale switching',
     },
