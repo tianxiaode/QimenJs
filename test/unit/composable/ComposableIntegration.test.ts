@@ -28,7 +28,8 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
+import { ComposableBase } from '@/composable/ComposableBase';
+import type { AbilityDefinition } from '@/composable/types/ability';
 
 // ============================================
 // 测试
@@ -42,11 +43,11 @@ describe('ComposableBase 集成测试', () => {
     describe('getter/setter 多实例隔离', () => {
         const GetterSetterDef: AbilityDefinition = {
             computedLabel: {
-                get() {
-                    return `[${this.label}]`;
+                get(): string {
+                    return `[${(this as any).label}]`;
                 },
                 set(v: string) {
-                    this.label = v;
+                    (this as any).label = v;
                 },
             },
         };
@@ -95,8 +96,8 @@ describe('ComposableBase 集成测试', () => {
 
     describe('方法 bind 到宿主', () => {
         const MethodDef: AbilityDefinition = {
-            greet() {
-                return `Hello from ${this.name}`;
+            greet(): string {
+                return `Hello from ${(this as any).name}`;
             },
         };
 
@@ -155,12 +156,12 @@ describe('ComposableBase 集成测试', () => {
 
             const CleanupDef1: AbilityDefinition = {
                 _init1() {
-                    this.onCleanup(() => cleanupOrder.push(1));
+                    (this as any).onCleanup(() => cleanupOrder.push(1));
                 },
             };
             const CleanupDef2: AbilityDefinition = {
                 _init2() {
-                    this.onCleanup(() => cleanupOrder.push(2));
+                    (this as any).onCleanup(() => cleanupOrder.push(2));
                 },
             };
 
@@ -182,7 +183,7 @@ describe('ComposableBase 集成测试', () => {
     describe('dispose 清理 cancelable 状态', () => {
         const TestCancelableDef: AbilityDefinition = {
             setupCancelable() {
-                this.setAbilityState('test:cancelable', { cancel: () => {} });
+                (this as any).setAbilityState('test:cancelable', { cancel: () => {} });
             },
         };
 
@@ -271,13 +272,15 @@ describe('ComposableBase 集成测试', () => {
     describe('abilityState Per-Host State', () => {
         const CounterDef: AbilityDefinition = {
             count: {
-                get() {
-                    const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+                get(): number {
+                    const state = (this as any).abilityState('Counter:state', () => ({
+                        count: 0,
+                    }))!;
                     return state.count;
                 },
             },
             increment() {
-                const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+                const state = (this as any).abilityState('Counter:state', () => ({ count: 0 }))!;
                 state.count++;
             },
         };
@@ -328,9 +331,9 @@ describe('ComposableBase 集成测试', () => {
             const events: string[] = [];
 
             const LifecycleDef: AbilityDefinition = {
-                lifecycleAction() {
+                lifecycleAction(): string {
                     events.push('action');
-                    return this.name;
+                    return (this as any).name;
                 },
             };
 

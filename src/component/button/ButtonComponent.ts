@@ -28,8 +28,11 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { resolveI18nValue } from '@qimenjs/i18n';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { BUTTON_TPL } from './button-tpl';
+
+const I18N_PREFIX = 'i18n:';
 
 /** 按钮属性接口 */
 export interface ButtonProps {
@@ -43,9 +46,17 @@ class ButtonComponent extends Component {
     onAfterInit(): void {
         this.initSize();
         const { icon, text, size } = this._rawProps;
-        if (icon !== undefined) this.icon = icon;
-        if (text !== undefined) this.text = text;
+
+        if (icon !== undefined) this.icon = this._resolveVal(icon);
+        if (text !== undefined) this.text = this._resolveVal(text);
         this.size = size || 'md';
+    }
+
+    private _resolveVal(val: any): any {
+        if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
+            return resolveI18nValue(val);
+        }
+        return val;
     }
 
     update(props?: Partial<ButtonProps>): void {

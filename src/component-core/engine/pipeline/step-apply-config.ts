@@ -43,9 +43,47 @@ export function applyConfig(ctx: InitContext): void {
 function applyProp(instance: any, key: string, value: any): void {
     if (key === 'cls') {
         instance.addCls(value);
+    } else if (hasSetter(instance, key)) {
+        instance[key] = value;
     } else if (DEFAULT_NODE_PROP_MAP[key]) {
         instance._updateNode('root', { [key]: value });
-    } else if (key in instance) {
+    } else if (isWritable(instance, key)) {
         instance[key] = value;
     }
+}
+
+/**
+ * 检查原型链上是否有 setter（由 ChildNodePropsEngine 安装的内容属性描述符）
+ *
+ * 组件有同名 setter 时，优先走 setter（操作子节点内容），
+ * 而非 DEFAULT_NODE_PROP_MAP（操作 root 元素 DOM 属性）。
+ * 避免 text 等字段被错误设置到 root.textContent 破坏组件 DOM 结构。
+ */
+function hasSetter(instance: any, key: string): boolean {
+    let proto = instance;
+    while (proto && proto !== Object.prototype) {
+        const desc = Object.getOwnPropertyDescriptor(proto, key);
+        if (desc) {
+            return !!desc.set;
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+    return false;
+}
+
+/**
+ * 检查属性是否可写（有 setter 或是普通数据属性，排除只读 getter）
+ */
+function isWritable(instance: any, key: string): boolean {
+    let proto = instance;
+    while (proto && proto !== Object.prototype) {
+        const desc = Object.getOwnPropertyDescriptor(proto, key);
+        if (desc) {
+            if (desc.set) return true;
+            if ('writable' in desc) return desc.writable !== false;
+            return false;
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+    return key in instance;
 }

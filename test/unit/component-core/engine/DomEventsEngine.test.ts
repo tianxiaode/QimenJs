@@ -387,9 +387,9 @@ describe('DomEventsEngine', () => {
                 const rootRule = rules.find(r => r.componentPath === 'root');
                 const closeBtnRule = rules.find(r => r.componentPath === 'closeBtn');
                 expect(rootRule).toBeTruthy();
-                expect(rootRule.handler).toBe('_onRootClick');
+                expect(rootRule!.handler).toBe('_onRootClick');
                 expect(closeBtnRule).toBeTruthy();
-                expect(closeBtnRule.handler).toBe(true);
+                expect(closeBtnRule!.handler).toBe(true);
             });
 
             it('与三层模式共存时互不干扰', () => {
@@ -405,9 +405,9 @@ describe('DomEventsEngine', () => {
                 const rootRule = rules.find(r => r.componentPath === 'root');
                 const saveRule = rules.find(r => r.action === 'save');
                 expect(rootRule).toBeTruthy();
-                expect(rootRule.handler).toBe('_onRootClick');
+                expect(rootRule!.handler).toBe('_onRootClick');
                 expect(saveRule).toBeTruthy();
-                expect(saveRule.componentPath).toBe('toolbar');
+                expect(saveRule!.componentPath).toBe('toolbar');
             });
 
             it('非配置键的字符串路径不受影响', () => {
@@ -584,35 +584,39 @@ describe('DomEventsEngine', () => {
     describe('_matchPath', () => {
         it('单段路径用 nodeMap 首段定位', () => {
             const { instance, btnEl } = makeInstance();
-            const result = DomEventsEngine._matchPath(instance, 'toolbar', btnEl);
+            const result = (DomEventsEngine as any)._matchPath(instance, 'toolbar', btnEl);
             expect(result).not.toBeNull();
             expect(result.el).toBe(btnEl);
         });
 
         it('首段不在 nodeMap 中返回 null', () => {
             const { instance, btnEl } = makeInstance();
-            const result = DomEventsEngine._matchPath(instance, 'nonExistent', btnEl);
+            const result = (DomEventsEngine as any)._matchPath(instance, 'nonExistent', btnEl);
             expect(result).toBeNull();
         });
 
         it('target 不在组件 el 内返回 null', () => {
             const { instance } = makeInstance();
             const otherEl = makeEl();
-            const result = DomEventsEngine._matchPath(instance, 'toolbar', otherEl);
+            const result = (DomEventsEngine as any)._matchPath(instance, 'toolbar', otherEl);
             expect(result).toBeNull();
         });
 
         describe('多段路径跨组件遍历（Panel → Header → action Button）', () => {
             it('"header.action" 逐段 nodeMap 定位到嵌套按钮', () => {
                 const { instance, actionBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.action', actionBtnEl);
+                const result = (DomEventsEngine as any)._matchPath(
+                    instance,
+                    'header.action',
+                    actionBtnEl
+                );
                 expect(result).not.toBeNull();
                 expect(result.el).toBe(actionBtnEl);
             });
 
             it('中间段 nodeMap 找不到且类型也不匹配返回 null', () => {
                 const { instance, actionBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(
+                const result = (DomEventsEngine as any)._matchPath(
                     instance,
                     'header.nonExistent',
                     actionBtnEl
@@ -623,7 +627,11 @@ describe('DomEventsEngine', () => {
             it('末段 target 不在 el 内返回 null', () => {
                 const { instance } = makePanelInstance();
                 const otherEl = makeEl();
-                const result = DomEventsEngine._matchPath(instance, 'header.action', otherEl);
+                const result = (DomEventsEngine as any)._matchPath(
+                    instance,
+                    'header.action',
+                    otherEl
+                );
                 expect(result).toBeNull();
             });
         });
@@ -631,7 +639,7 @@ describe('DomEventsEngine', () => {
         describe('按类型名查找（nodeMap 找不到时 fallback）', () => {
             it('"header.toolsLeft.Button" 按类型找到 ItemGroup 内的 Button', () => {
                 const { instance, saveBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(
+                const result = (DomEventsEngine as any)._matchPath(
                     instance,
                     'header.toolsLeft.Button',
                     saveBtnEl
@@ -643,7 +651,7 @@ describe('DomEventsEngine', () => {
 
             it('类型不匹配返回 null', () => {
                 const { instance, saveBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(
+                const result = (DomEventsEngine as any)._matchPath(
                     instance,
                     'header.toolsLeft.NonExistentType',
                     saveBtnEl
@@ -655,7 +663,11 @@ describe('DomEventsEngine', () => {
         describe('单段路径深入查找容器（ItemGroup 子按钮）', () => {
             it('"header.toolsLeft" 深入查找到 save 按钮', () => {
                 const { instance, saveBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.toolsLeft', saveBtnEl);
+                const result = (DomEventsEngine as any)._matchPath(
+                    instance,
+                    'header.toolsLeft',
+                    saveBtnEl
+                );
                 expect(result).not.toBeNull();
                 expect(result.el).toBe(saveBtnEl);
                 expect(result.action).toBe('save');
@@ -663,7 +675,11 @@ describe('DomEventsEngine', () => {
 
             it('"header.toolsLeft" 深入查找到 edit 按钮', () => {
                 const { instance, editBtnEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(instance, 'header.toolsLeft', editBtnEl);
+                const result = (DomEventsEngine as any)._matchPath(
+                    instance,
+                    'header.toolsLeft',
+                    editBtnEl
+                );
                 expect(result).not.toBeNull();
                 expect(result.el).toBe(editBtnEl);
                 expect(result.action).toBe('edit');
@@ -671,7 +687,7 @@ describe('DomEventsEngine', () => {
 
             it('target 是容器本身时返回容器', () => {
                 const { instance, toolsLeftEl } = makePanelInstance();
-                const result = DomEventsEngine._matchPath(
+                const result = (DomEventsEngine as any)._matchPath(
                     instance,
                     'header.toolsLeft',
                     toolsLeftEl
@@ -763,7 +779,7 @@ describe('DomEventsEngine', () => {
         it('单段路径 + action → on{NodeName}{Action}{Event}', () => {
             const { instance } = makeInstance();
             instance.onToolbarSaveClick = jest.fn();
-            DomEventsEngine._invokeHandler(
+            (DomEventsEngine as any)._invokeHandler(
                 instance,
                 {
                     event: 'click',
@@ -779,7 +795,7 @@ describe('DomEventsEngine', () => {
         it('多段路径 → on{Path}{Action}{Event}（完整路径 pascalCase）', () => {
             const { instance } = makeInstance();
             instance.onHeaderActionClick = jest.fn();
-            DomEventsEngine._invokeHandler(
+            (DomEventsEngine as any)._invokeHandler(
                 instance,
                 {
                     event: 'click',
@@ -795,7 +811,7 @@ describe('DomEventsEngine', () => {
         it('多段路径 + action → on{Path}{Action}{Event}', () => {
             const { instance } = makeInstance();
             instance.onHeaderToolsLeftSaveClick = jest.fn();
-            DomEventsEngine._invokeHandler(
+            (DomEventsEngine as any)._invokeHandler(
                 instance,
                 {
                     event: 'click',
@@ -811,7 +827,7 @@ describe('DomEventsEngine', () => {
         it('无 action → on{Path}{Event}', () => {
             const { instance } = makeInstance();
             instance.onHeaderButtonClick = jest.fn();
-            DomEventsEngine._invokeHandler(
+            (DomEventsEngine as any)._invokeHandler(
                 instance,
                 {
                     event: 'click',
@@ -827,7 +843,7 @@ describe('DomEventsEngine', () => {
         it('方法不存在时不抛异常', () => {
             const { instance } = makeInstance();
             expect(() =>
-                DomEventsEngine._invokeHandler(
+                (DomEventsEngine as any)._invokeHandler(
                     instance,
                     {
                         event: 'click',

@@ -6,7 +6,10 @@
  * 此处仅验证 HashWorkerProtocol 的结构完整性。
  */
 
-import { HashWorkerProtocol } from '@/task/hash-task/worker/HashWorkerProtocol';
+import type {
+    HashWorkerMessage,
+    HashWorkerResponse,
+} from '@/task/hash-task/worker/HashWorkerProtocol';
 
 describe('HashWorker', () => {
     it('HashWorker 不应从 worker/index.ts 导出', () => {

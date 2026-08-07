@@ -171,7 +171,7 @@ describe('RemoteToggleAbility 集成测试', () => {
             const finalItem = { ...item, enabled: true };
             mockFetchSuccess(finalItem);
 
-            const emitSpy = jest.spyOn(manager, 'emitEvent');
+            const emitSpy = jest.spyOn(manager as any, 'emitEvent');
 
             await manager.toggle(item, 'enabled');
 
@@ -244,7 +244,7 @@ describe('RemoteToggleAbility 集成测试', () => {
 
             mockFetchError(new Error('Network error'));
 
-            const emitSpy = jest.spyOn(manager, 'emitEvent');
+            const emitSpy = jest.spyOn(manager as any, 'emitEvent');
 
             await manager.toggle(item, 'enabled');
 

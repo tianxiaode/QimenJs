@@ -43,6 +43,7 @@ jest.mock('@/data-processor', () => ({
 jest.mock('@/composable', () => {
     class ComposableBase {
         static use() {}
+        schema: any;
         logger = {
             debug: jest.fn(),
             info: jest.fn(),
@@ -52,9 +53,9 @@ jest.mock('@/composable', () => {
         _getCompiledSchema() {
             const { SchemaRegistrar } = jest.requireMock('@/schema');
             const registrar = SchemaRegistrar.getInstance();
-            const key = this.schema?.name;
+            const key = (this as any).schema?.name;
             if (key && !registrar.has(key)) {
-                registrar.register(this.schema);
+                registrar.register((this as any).schema);
             }
             return registrar.getCompiled(key);
         }

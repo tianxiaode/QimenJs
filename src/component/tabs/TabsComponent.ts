@@ -247,7 +247,6 @@ class TabsComponent extends Component {
 }
 
 TabsComponent.useTemplate(TABS_TPL);
-TabsComponent.register();
 export { TabsComponent };
 /** 标签页集实例类型 */
 export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

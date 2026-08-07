@@ -120,7 +120,6 @@ class ListItemComponent extends Component {
 }
 
 ListItemComponent.useTemplate(LIST_ITEM_TPL);
-ListItemComponent.register();
 export { ListItemComponent };
 /** 列表项实例类型 */
 export type ListItemComponentInstance = InstanceType<typeof ListItemComponent>;

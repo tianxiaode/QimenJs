@@ -160,7 +160,7 @@ describe('UploadButtonComponent', () => {
                 .mockImplementation(() => {});
             instance._fileCmd(FILE_ACTIONS.SELECT, { files: [] });
             expect(fileEmitSpy).toHaveBeenCalledTimes(1);
-            const ctx = fileEmitSpy.mock.calls[0][0];
+            const ctx = fileEmitSpy.mock.calls[0][0] as any;
             expect(ctx.event).toBe('file:test-channel:select');
             expect(ctx.type).toBe('select');
             expect(ctx.source).toBe('test-channel');
@@ -237,7 +237,7 @@ describe('UploadButtonComponent', () => {
             jest.spyOn(instance as any, 'emit').mockImplementation(() => {});
             instance._forward(FILE_FEEDBACK_EVENTS.UPLOADED, {});
             expect(componentEmitSpy).toHaveBeenCalledTimes(1);
-            const ctx = componentEmitSpy.mock.calls[0][0];
+            const ctx = componentEmitSpy.mock.calls[0][0] as any;
             expect(ctx.source).toBe('docUpload');
         });
     });

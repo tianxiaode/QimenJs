@@ -68,7 +68,7 @@ describe('NodePropAbility', () => {
 
     describe('_getNodeProp', () => {
         it('优先从脏追踪缓存读取', () => {
-            const instance = {
+            const instance: any = {
                 _dirtyNodes: { root: { hidden: true } },
                 _resolveNodeTarget: jest.fn(),
             };
@@ -579,7 +579,7 @@ describe('NodePropAbility', () => {
     describe('_markNodeDirty', () => {
         it('初始化 _dirtyNodes', () => {
             const debounceSpy = jest.fn(() => () => {});
-            const instance = { debounce: debounceSpy };
+            const instance: any = { debounce: debounceSpy };
             NodePropAbility._markNodeDirty.call(instance, 'root', { hidden: true });
             expect(instance._dirtyNodes).toEqual({ root: { hidden: true } });
             expect(debounceSpy).toHaveBeenCalled();
@@ -587,7 +587,10 @@ describe('NodePropAbility', () => {
 
         it('合并多个脏属性', () => {
             const debounceSpy = jest.fn(() => () => {});
-            const instance = { debounce: debounceSpy, _dirtyNodes: { root: { hidden: true } } };
+            const instance: any = {
+                debounce: debounceSpy,
+                _dirtyNodes: { root: { hidden: true } },
+            };
             NodePropAbility._markNodeDirty.call(instance, 'root', { cls: 'active' });
             expect(instance._dirtyNodes.root).toEqual({ hidden: true, cls: 'active' });
         });

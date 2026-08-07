@@ -129,7 +129,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 }
 
-MenuComponent.register();
 MenuComponent.use(GroupSelectAbility);
 
 export { MenuComponent };

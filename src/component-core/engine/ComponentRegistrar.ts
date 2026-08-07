@@ -218,6 +218,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
      */
     getCompiled(type: string): CompiledProduct | undefined {
         const entry = this.storage.entries.get(type);
+        this.logger.info('getCompiled', type, entry);
         if (!entry) return undefined;
 
         // 已缓存 → 直接返回
@@ -232,6 +233,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
 
         if (entry.tplName) {
             const tplEntry = this.storage.entries.get(entry.tplName);
+            this.logger.info('tplName', tplEntry);
             if (tplEntry?.tpl) {
                 if (!tplEntry.compiled) {
                     const { cache, nodeMetas } = CompileEngine.compile(
@@ -242,6 +244,7 @@ export class ComponentRegistrar extends RegistrarBase<ComponentStorage> {
                 }
 
                 entry.compiled = tplEntry.compiled;
+                this.logger.info('compiled', entry.compiled);
                 return entry.compiled;
             }
         }

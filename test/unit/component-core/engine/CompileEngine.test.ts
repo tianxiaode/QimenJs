@@ -123,7 +123,7 @@ describe('CompileEngine', () => {
             };
             const result = CompileEngine.compileTemplate(tpl, noopLogger);
 
-            expect(result.html).toBe('<span></span>');
+            expect(result.html).toBe('<span class="q-btn__text"></span>');
             expect(result.indexPath['root']).toEqual([]);
             expect(result.indexPath['text']).toEqual([0]);
             expect(result.nodeMetas['root'].tag).toBe('div');
@@ -131,6 +131,53 @@ describe('CompileEngine', () => {
             expect(result.nodeMetas['text'].tag).toBe('span');
             expect(result.nodeMetas['text'].cls).toBe('q-btn__text');
             expect(result.exposeNames).toContain('text');
+        });
+
+        it('cls 渲染为 class 属性', () => {
+            const tpl = {
+                tag: 'div',
+                children: [
+                    { tag: 'h1', name: 'title', cls: 'q-hero__title' },
+                    { tag: 'button', name: 'btn', cls: 'q-button q-button--primary' },
+                ],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('<h1 class="q-hero__title">');
+            expect(result.html).toContain('<button class="q-button q-button--primary">');
+        });
+
+        it('hidden 渲染为 hidden 属性', () => {
+            const tpl = {
+                tag: 'div',
+                children: [{ tag: 'span', name: 'x', hidden: true }],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('<span hidden');
+        });
+
+        it('attrs 渲染为 HTML 属性', () => {
+            const tpl = {
+                tag: 'div',
+                children: [
+                    { tag: 'span', name: 'x', attrs: { 'aria-label': 'test', 'data-id': '123' } },
+                ],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('aria-label="test"');
+            expect(result.html).toContain('data-id="123"');
+        });
+
+        it('role 渲染为 role 属性', () => {
+            const tpl = {
+                tag: 'div',
+                children: [{ tag: 'span', name: 'x', role: 'button' }],
+            };
+            const result = CompileEngine.compileTemplate(tpl, noopLogger);
+
+            expect(result.html).toContain('role="button"');
         });
 
         it('void 标签生成自闭合 html', () => {
@@ -274,7 +321,7 @@ describe('CompileEngine', () => {
                         tag: 'span',
                         name: 'x',
                         hidden: true,
-                        hiddenMode: 'display',
+                        hiddenMode: 'display' as const,
                         role: 'button',
                         attrs: { 'aria-label': 'test' },
                     },
@@ -335,7 +382,7 @@ describe('CompileEngine', () => {
 
             expect(result.html).toContain('Hello');
             expect(result.html).toContain('&lt;b&gt;bold&lt;/b&gt;');
-            expect(result.nodeMetas['label'].text).toBe('Hello');
+            expect((result.nodeMetas['label'] as any).text).toBe('Hello');
         });
 
         it('text 与 children 共存时 text 在前', () => {

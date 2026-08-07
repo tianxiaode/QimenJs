@@ -25,7 +25,8 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
+import { ComposableBase } from '@/composable/ComposableBase';
+import type { AbilityDefinition } from '@/composable/types/ability';
 import { EventAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
@@ -107,9 +108,9 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     describe('EventAbility 集成', () => {
         it('on/emit 应该正常工作', () => {
             const listener = jest.fn();
-            manager.on('test-event', listener);
+            (manager as any).on('test-event', listener);
 
-            manager.emit(
+            (manager as any).emit(
                 'test-event',
                 EventContextBuilder.create().withEvent('test-event').withData({ data: 42 }).build()
             );
@@ -121,13 +122,13 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
 
         it('once 应该只触发一次', () => {
             const listener = jest.fn();
-            manager.once('test-event', listener);
+            (manager as any).once('test-event', listener);
 
-            manager.emit(
+            (manager as any).emit(
                 'test-event',
                 EventContextBuilder.create().withEvent('test-event').build()
             );
-            manager.emit(
+            (manager as any).emit(
                 'test-event',
                 EventContextBuilder.create().withEvent('test-event').build()
             );
@@ -139,10 +140,13 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
             const listener1 = jest.fn();
             const listener2 = jest.fn();
 
-            manager.on('event1', listener1);
-            manager.on('event2', listener2);
+            (manager as any).on('event1', listener1);
+            (manager as any).on('event2', listener2);
 
-            manager.emit('event1', EventContextBuilder.create().withEvent('event1').build());
+            (manager as any).emit(
+                'event1',
+                EventContextBuilder.create().withEvent('event1').build()
+            );
 
             expect(listener1).toHaveBeenCalled();
             expect(listener2).not.toHaveBeenCalled();
@@ -203,10 +207,10 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     describe('多 Ability 交互', () => {
         it('EventAbility + DomainAbility 应该可以同时使用', () => {
             const listener = jest.fn();
-            manager.on('domain-loaded', listener);
+            (manager as any).on('domain-loaded', listener);
 
             const config = (manager as any).domainConfig;
-            manager.emit(
+            (manager as any).emit(
                 'domain-loaded',
                 EventContextBuilder.create().withEvent('domain-loaded').withData(config).build()
             );
@@ -229,9 +233,9 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
         });
 
         it('三个 Ability 同时注入后宿主应该有所有方法', () => {
-            expect(typeof manager.on).toBe('function');
-            expect(typeof manager.emit).toBe('function');
-            expect(typeof manager.once).toBe('function');
+            expect(typeof (manager as any).on).toBe('function');
+            expect(typeof (manager as any).emit).toBe('function');
+            expect(typeof (manager as any).once).toBe('function');
             expect(typeof (manager as any).domainConfig).toBeDefined();
             expect(typeof (manager as any).getSchema).toBe('function');
             expect(typeof (manager as any).schemaKeys).toBeDefined();
@@ -346,18 +350,18 @@ describe('ComposableBase 多 Ability 交互集成测试', () => {
     describe('dispose 清理多 Ability 状态', () => {
         it('dispose 应该清理所有 Ability 的状态', () => {
             const listener = jest.fn();
-            manager.on('test', listener);
+            (manager as any).on('test', listener);
 
             manager.dispose();
 
-            manager.emit('test', EventContextBuilder.create().withEvent('test').build());
+            (manager as any).emit('test', EventContextBuilder.create().withEvent('test').build());
             expect(listener).not.toHaveBeenCalled();
         });
 
         it('dispose 后 abilityState 应该被清理', () => {
             const StateAbility: AbilityDefinition = {
                 getState() {
-                    return this.abilityState('test', () => ({ value: 42 }));
+                    return (this as any).abilityState('test', () => ({ value: 42 }));
                 },
             };
 

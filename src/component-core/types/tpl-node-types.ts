@@ -362,6 +362,24 @@ export interface TplNode {
 
     /** 替换映射 — key=命名节点name, value=替换内容 */
     replaces?: Record<string, any>;
+
+    // ─── custom props: 自定义属性（ExtJS 风格声明式 Props）───
+
+    /**
+     * 自定义属性 — 父组件在 TplNode 上写的非框架字段
+     *
+     * 编译时由 collectExtraFields 收集（排除 KNOWN_FIELD_SET），
+     * 存入 nodeMetas[name].props，运行时通过 instantiateChildComponents
+     * 传入子组件构造函数，由 applyConfig 管线步骤处理。
+     *
+     * 支持 i18n: 前缀，运行时自动 resolve。
+     *
+     * @example
+     * ```ts
+     * { name: 'hero', type: HeroComponent, title: 'i18n:hero.title', subtitle: '欢迎使用' }
+     * ```
+     */
+    [key: string]: any;
 }
 
 // ══════════════════════════════════════════════════════════════

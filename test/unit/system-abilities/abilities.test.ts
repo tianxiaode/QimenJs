@@ -55,13 +55,13 @@ describe('EventAbility', () => {
     });
 
     it('should expose eventScope getter', () => {
-        expect(host.eventScope).toBeDefined();
+        expect((host as any).eventScope).toBeDefined();
     });
 
     it('should expose on method and listen to events', () => {
         const handler = jest.fn();
-        host.on('test-event', handler);
-        host.emit('test-event', { data: 1 });
+        (host as any).on('test-event', handler);
+        (host as any).emit('test-event', { data: 1 });
         expect(handler).toHaveBeenCalledTimes(1);
         const callArg = handler.mock.calls[0][0];
         expect(callArg.data).toEqual({ data: 1 });
@@ -70,16 +70,16 @@ describe('EventAbility', () => {
 
     it('should expose once method and listen once', () => {
         const handler = jest.fn();
-        host.once('test-once', handler);
-        host.emit('test-once', {});
-        host.emit('test-once', {});
+        (host as any).once('test-once', handler);
+        (host as any).emit('test-once', {});
+        (host as any).emit('test-once', {});
         expect(handler).toHaveBeenCalledTimes(1);
     });
 
     it('should expose emit method', () => {
         const handler = jest.fn();
-        host.on('emit-test', handler);
-        host.emit('emit-test', 'payload');
+        (host as any).on('emit-test', handler);
+        (host as any).emit('emit-test', 'payload');
         expect(handler).toHaveBeenCalledTimes(1);
         const callArg = handler.mock.calls[0][0];
         expect(callArg.data).toBe('payload');
@@ -117,25 +117,25 @@ describe('DomEventsAbility', () => {
     });
 
     it('should expose bind method', () => {
-        expect(typeof host.bind).toBe('function');
+        expect(typeof (host as any).bind).toBe('function');
     });
 
     it('should call adapter.bind when bind is called', () => {
         const target = document.createElement('div');
-        const result = host.bind(target, 'tap');
+        const result = (host as any).bind(target, 'tap');
         expect(result).toBeDefined();
     });
 
     it('should reuse adapter on subsequent calls', () => {
         const target1 = document.createElement('div');
         const target2 = document.createElement('div');
-        host.bind(target1, 'tap');
-        host.bind(target2, 'swipeleft');
+        (host as any).bind(target1, 'tap');
+        (host as any).bind(target2, 'swipeleft');
     });
 
     it('should clean up adapter on dispose', () => {
         const target = document.createElement('div');
-        host.bind(target, 'tap');
+        (host as any).bind(target, 'tap');
         host.dispose();
     });
 });
@@ -164,7 +164,7 @@ describe('DomainAbility', () => {
         }
 
         const host = new TestDomainHost();
-        const config = host.domainConfig;
+        const config = (host as any).domainConfig;
         expect(config).toBeDefined();
         expect(config.name).toBe('test-domain');
         host.dispose();
@@ -178,8 +178,8 @@ describe('DomainAbility', () => {
         }
 
         const host = new TestDomainHost();
-        const config1 = host.domainConfig;
-        const config2 = host.domainConfig;
+        const config1 = (host as any).domainConfig;
+        const config2 = (host as any).domainConfig;
         expect(config1).toBe(config2);
         host.dispose();
     });
@@ -190,7 +190,7 @@ describe('DomainAbility', () => {
         }
 
         const host = new TestDomainHost();
-        const config = host.domainConfig;
+        const config = (host as any).domainConfig;
         expect(config).toBeUndefined();
         host.dispose();
     });
@@ -201,7 +201,7 @@ describe('DomainAbility', () => {
         }
 
         const host = new TestDomainHost();
-        const config = host.domainConfig;
+        const config = (host as any).domainConfig;
         expect(config).toBeUndefined();
         host.dispose();
     });
@@ -214,7 +214,7 @@ describe('DomainAbility', () => {
         }
 
         const host = new TestDomainHost();
-        expect(() => host.domainConfig).not.toThrow();
+        expect(() => (host as any).domainConfig).not.toThrow();
         host.dispose();
     });
 });

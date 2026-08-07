@@ -390,7 +390,9 @@ export class CompileEngine {
      * - void 标签包括：area, base, br, col, embed, hr, img, input, link, meta, param, source, track, wbr
      */
     private static buildTagHtml(tag: string, node: TplNode, path: number[], ctx: any): string {
-        if (VOID_TAGS.has(tag)) return `<${tag} />`;
+        const attrStr = CompileEngine._buildStaticAttrs(node);
+
+        if (VOID_TAGS.has(tag)) return attrStr ? `<${tag} ${attrStr} />` : `<${tag} />`;
 
         const inner: string[] = [];
         if (node.text) {
@@ -401,7 +403,46 @@ export class CompileEngine {
                 inner.push(CompileEngine.compileNode(node.children[i], [...path, i], ctx));
             }
         }
-        return `<${tag}>${inner.join('')}</${tag}>`;
+        return attrStr
+            ? `<${tag} ${attrStr}>${inner.join('')}</${tag}>`
+            : `<${tag}>${inner.join('')}</${tag}>`;
+    }
+
+    /**
+     * 构建节点的静态 HTML 属性字符串
+     *
+     * 将模板中声明的 cls、hidden、attrs 等属性渲染为 HTML 属性，
+     * 确保编译产物包含这些静态属性，无需运行时二次应用。
+     *
+     * @param node - 模板节点
+     * @returns HTML 属性字符串（如 'class="q-hero__title" hidden'），无属性时返回空字符串
+     */
+    private static _buildStaticAttrs(node: TplNode): string {
+        const parts: string[] = [];
+
+        if (node.cls) {
+            parts.push(`class="${escapeHtml(node.cls)}"`);
+        }
+
+        if (node.hidden) {
+            parts.push('hidden');
+        }
+
+        if (node.attrs && typeof node.attrs === 'object') {
+            for (const [key, val] of Object.entries(node.attrs as Record<string, any>)) {
+                if (val === true) {
+                    parts.push(escapeHtml(key));
+                } else if (val !== false && val != null) {
+                    parts.push(`${escapeHtml(key)}="${escapeHtml(String(val))}"`);
+                }
+            }
+        }
+
+        if (node.role) {
+            parts.push(`role="${escapeHtml(node.role)}"`);
+        }
+
+        return parts.join(' ');
     }
 
     /**

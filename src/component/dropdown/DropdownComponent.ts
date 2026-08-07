@@ -38,8 +38,8 @@ export interface DropdownProps extends ButtonProps {
 }
 
 class DropdownComponent extends ButtonComponent {
-    onAfterInit(props?: DropdownProps): void {
-        super.onAfterInit(props);
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-dropdown');
         this.setNodeHidden(false, 'dropIcon');
 

@@ -22,7 +22,7 @@ jest.mock('@/logger', () => {
 });
 
 jest.mock('@/events/DragEventBus', () => {
-    const bus = {
+    const instance = {
         dragStart: jest.fn(),
         dragEnd: jest.fn(),
         dragCancel: jest.fn(),
@@ -30,23 +30,40 @@ jest.mock('@/events/DragEventBus', () => {
         dragLeave: jest.fn(),
         dragDrop: jest.fn(),
         getActiveDrag: jest.fn(() => null),
-        getInstance: jest.fn(),
     };
-    bus.getInstance = jest.fn(() => bus);
-    return { DragEventBus: bus, DRAG_ACTIONS: { INIT: 'init' } };
+    return {
+        DragEventBus: {
+            getInstance: jest.fn(() => instance),
+        },
+        DRAG_ACTIONS: { INIT: 'init' },
+    };
 });
 
 import { DragDispatchCenter } from '@/drag/DragDispatchCenter';
 import { DragEventBus } from '@/events/DragEventBus';
 
+type MockBusInstance = {
+    dragStart: jest.Mock;
+    dragEnd: jest.Mock;
+    dragCancel: jest.Mock;
+    dragEnter: jest.Mock;
+    dragLeave: jest.Mock;
+    dragDrop: jest.Mock;
+    getActiveDrag: jest.Mock;
+};
+
+function getBusInstance(): MockBusInstance {
+    return (DragEventBus.getInstance as jest.Mock)();
+}
+
 /** 创建 mock 组件 */
-function makeComponent(overrides: Record<string, any> = {}) {
+function makeComponent(overrides: Record<string, any> = {}): Record<string, any> {
     const el = document.createElement('div');
     const nodeMapEl = document.createElement('div');
     return {
         el,
         type: 'Test',
-        nodeMap: { body: { el: nodeMapEl } },
+        nodeMap: { body: { el: nodeMapEl } } as Record<string, { el: HTMLElement }>,
         onCleanup: jest.fn(),
         bind: jest.fn(),
         on: jest.fn().mockReturnValue(jest.fn()),
@@ -200,7 +217,7 @@ describe('DragDispatchCenter', () => {
 
         it('start 阶段调用 bus.dragStart', () => {
             dragHandler!(makeGesture('start', dragEl));
-            expect(DragEventBus.dragStart).toHaveBeenCalledWith(
+            expect(getBusInstance().dragStart).toHaveBeenCalledWith(
                 'comp1:body',
                 expect.objectContaining({ dragType: 'Test' })
             );
@@ -228,7 +245,7 @@ describe('DragDispatchCenter', () => {
             });
             const handler = captureDragHandler(customComponent);
             handler!(makeGesture('start', customComponent.nodeMap.body.el));
-            expect(DragEventBus.dragStart).toHaveBeenCalledWith(
+            expect(getBusInstance().dragStart).toHaveBeenCalledWith(
                 'comp2:body',
                 expect.objectContaining({ dragType: 'Custom' })
             );
@@ -244,12 +261,12 @@ describe('DragDispatchCenter', () => {
 
         it('move 阶段不调用 bus 方法', () => {
             dragHandler!(makeGesture('move', dragEl));
-            expect(DragEventBus.dragEnd).not.toHaveBeenCalled();
+            expect(getBusInstance().dragEnd).not.toHaveBeenCalled();
         });
 
         it('end 阶段调用 bus.dragEnd', () => {
             dragHandler!(makeGesture('end', dragEl));
-            expect(DragEventBus.dragEnd).toHaveBeenCalledWith('comp1:body');
+            expect(getBusInstance().dragEnd).toHaveBeenCalledWith('comp1:body');
         });
 
         it('end 阶段移除 activeClass', () => {
@@ -268,7 +285,7 @@ describe('DragDispatchCenter', () => {
 
         it('cancel 阶段调用 bus.dragCancel', () => {
             dragHandler!(makeGesture('cancel', dragEl));
-            expect(DragEventBus.dragCancel).toHaveBeenCalledWith('comp1:body');
+            expect(getBusInstance().dragCancel).toHaveBeenCalledWith('comp1:body');
         });
 
         it('cancel 阶段移除 activeClass', () => {
@@ -305,7 +322,7 @@ describe('DragDispatchCenter', () => {
                 makeGesture('start', undefined, { originalEvent: { target: outsideTarget } })
             );
             expect(component.onBodyDragStart).not.toHaveBeenCalled();
-            expect(DragEventBus.dragStart).not.toHaveBeenCalled();
+            expect(getBusInstance().dragStart).not.toHaveBeenCalled();
         });
 
         it('无对应 handler 时不报错', () => {
@@ -372,24 +389,28 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container');
 
             const event = new Event('dragenter', { bubbles: true });
             dropEl.dispatchEvent(event);
 
-            expect(DragEventBus.dragEnter).toHaveBeenCalledWith('src:handle', component, dropEl);
+            expect(getBusInstance().dragEnter).toHaveBeenCalledWith(
+                'src:handle',
+                component,
+                dropEl
+            );
             expect(component.onContainerDragEnter).toHaveBeenCalled();
         });
 
         it('dragenter 无活跃拖拽时不触发', () => {
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(null);
+            getBusInstance().getActiveDrag.mockReturnValue(null);
             center.registerDropZone('comp1:container', dropEl, component, 'container');
 
             dropEl.dispatchEvent(new Event('dragenter'));
 
-            expect(DragEventBus.dragEnter).not.toHaveBeenCalled();
+            expect(getBusInstance().dragEnter).not.toHaveBeenCalled();
             expect(component.onContainerDragEnter).not.toHaveBeenCalled();
         });
 
@@ -401,7 +422,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 accept: ['Image'],
@@ -409,7 +430,7 @@ describe('DragDispatchCenter', () => {
 
             dropEl.dispatchEvent(new Event('dragenter'));
 
-            expect(DragEventBus.dragEnter).not.toHaveBeenCalled();
+            expect(getBusInstance().dragEnter).not.toHaveBeenCalled();
         });
 
         it('dragenter accept 匹配时触发', () => {
@@ -420,7 +441,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 accept: ['Image', 'File'],
@@ -428,7 +449,7 @@ describe('DragDispatchCenter', () => {
 
             dropEl.dispatchEvent(new Event('dragenter'));
 
-            expect(DragEventBus.dragEnter).toHaveBeenCalled();
+            expect(getBusInstance().dragEnter).toHaveBeenCalled();
         });
 
         it('dragenter 添加 activeClass', () => {
@@ -439,7 +460,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 activeClass: 'drop-active',
@@ -458,7 +479,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 activeClass: 'drop-active',
@@ -467,7 +488,11 @@ describe('DragDispatchCenter', () => {
             dropEl.dispatchEvent(new Event('dragenter'));
             dropEl.dispatchEvent(new Event('dragleave'));
 
-            expect(DragEventBus.dragLeave).toHaveBeenCalledWith('src:handle', component, dropEl);
+            expect(getBusInstance().dragLeave).toHaveBeenCalledWith(
+                'src:handle',
+                component,
+                dropEl
+            );
             expect(dropEl.classList.contains('drop-active')).toBe(false);
         });
 
@@ -479,7 +504,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container');
 
@@ -496,13 +521,13 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container');
 
             dropEl.dispatchEvent(new Event('drop'));
 
-            expect(DragEventBus.dragDrop).toHaveBeenCalledWith('src:handle', component, dropEl);
+            expect(getBusInstance().dragDrop).toHaveBeenCalledWith('src:handle', component, dropEl);
             expect(component.onContainerDragDrop).toHaveBeenCalledWith(
                 expect.objectContaining({ dragData: { id: 1 } })
             );
@@ -516,7 +541,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             component.handleDrop = jest.fn();
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
@@ -536,7 +561,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 accept: ['Image'],
@@ -544,7 +569,7 @@ describe('DragDispatchCenter', () => {
 
             dropEl.dispatchEvent(new Event('drop'));
 
-            expect(DragEventBus.dragDrop).not.toHaveBeenCalled();
+            expect(getBusInstance().dragDrop).not.toHaveBeenCalled();
             expect(component.onContainerDragDrop).not.toHaveBeenCalled();
         });
 
@@ -556,7 +581,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 activeClass: 'drop-active',
@@ -569,7 +594,7 @@ describe('DragDispatchCenter', () => {
         });
 
         it('dragover 无活跃拖拽时不触发', () => {
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(null);
+            getBusInstance().getActiveDrag.mockReturnValue(null);
             center.registerDropZone('comp1:container', dropEl, component, 'container');
 
             dropEl.dispatchEvent(new Event('dragover'));
@@ -583,7 +608,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 accept: ['Image'],
@@ -600,7 +625,7 @@ describe('DragDispatchCenter', () => {
                 dragEl: null,
                 dragSource: null,
             };
-            (DragEventBus.getActiveDrag as jest.Mock).mockReturnValue(activeDrag);
+            getBusInstance().getActiveDrag.mockReturnValue(activeDrag);
 
             center.registerDropZone('comp1:container', dropEl, component, 'container', {
                 activeClass: 'drop-active',

@@ -52,7 +52,7 @@ describe('step-apply-config', () => {
 
     it('i18n: 前缀值 resolve 后赋值并记录 _i18nFields', () => {
         const updateNodeSpy = jest.fn();
-        const instance = {
+        const instance: any = {
             _rawProps: { hint: 'i18n:button.hint' },
             _updateNode: updateNodeSpy,
         };
@@ -63,7 +63,7 @@ describe('step-apply-config', () => {
     });
 
     it('i18n: 前缀值走组件 setter', () => {
-        const instance = {
+        const instance: any = {
             _rawProps: { title: 'i18n:dialog.title' },
             title: '',
         };

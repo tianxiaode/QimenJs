@@ -7,7 +7,6 @@
 
 import { Component, type TplNode } from '@qimenjs/component-core';
 import { HeroComponent, CardComponent, TagComponent } from '@qimenjs/component';
-import { t } from '@qimenjs/i18n';
 
 /** 特性数据 */
 const FEATURES = [
@@ -53,6 +52,10 @@ const HOME_TPL: TplNode = {
             name: 'hero',
             type: HeroComponent,
             cls: 'q-home-page__hero',
+            title: 'i18n:hero.title',
+            subtitle: 'i18n:hero.subtitle',
+            desc: 'i18n:hero.desc',
+            actionText: 'i18n:hero.action',
         },
         {
             tag: 'section',
@@ -68,9 +71,9 @@ const HOME_TPL: TplNode = {
                         tag: 'div',
                         cls: 'q-home-page__feature-tags',
                         flex: { direction: 'row', gap: '6px', wrap: true },
-                        children: f.tags.map(t => ({
+                        children: f.tags.map(tag => ({
                             type: TagComponent,
-                            text: t,
+                            text: tag,
                             cls: 'q-home-page__feature-tag',
                         })),
                     },
@@ -85,13 +88,6 @@ export class HomePage extends Component {
     onAfterInit(): void {
         const hero = this.nodeMap.hero?.component;
         if (!hero) return;
-
-        hero.update({
-            title: t('hero.title', undefined, 'QimenJS'),
-            subtitle: t('hero.subtitle'),
-            desc: t('hero.desc'),
-            actionText: t('hero.action'),
-        });
 
         hero.on('action', () => {
             window.location.hash = '#/components';

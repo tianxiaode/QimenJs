@@ -22,7 +22,7 @@ describe('ChildNodePropsEngine', () => {
         it('应将属性描述符安装到构造函数原型上', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
                 input: { name: 'input', contentMode: 'value' },
             };
             const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
@@ -41,7 +41,7 @@ describe('ChildNodePropsEngine', () => {
             }
 
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
@@ -57,13 +57,15 @@ describe('ChildNodePropsEngine', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
                 root: { name: 'root', tag: 'div' },
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes: Array<{ name: string; i18nKey: string }> = [];
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, i18nNodes);
 
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'root')).toBeUndefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'root')
+            ).toBeUndefined();
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'title')).toBeDefined();
         });
 
@@ -89,7 +91,7 @@ describe('ChildNodePropsEngine', () => {
         it('应跳过 root 节点', () => {
             const nodeMetas: Record<string, NodeMetadata> = {
                 root: { name: 'root', tag: 'div' },
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             const descs = ChildNodePropsEngine.buildDescs(nodeMetas, []);
@@ -100,7 +102,7 @@ describe('ChildNodePropsEngine', () => {
 
         it('应为不同 contentMode 生成对应属性', () => {
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
                 input: { name: 'input', contentMode: 'value' },
                 image: { name: 'image', contentMode: 'src' },
                 content: { name: 'content', contentMode: 'html' },
@@ -137,7 +139,7 @@ describe('ChildNodePropsEngine', () => {
 
         it('应为 i18n 节点生成特殊的 getter/setter', () => {
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes = [{ name: 'title', i18nKey: 'i18n:title.default' }];
 
@@ -167,7 +169,7 @@ describe('ChildNodePropsEngine', () => {
 
         it('不应重复添加相同属性的描述符', () => {
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             const descs = ChildNodePropsEngine.buildDescs(nodeMetas, []);
@@ -183,7 +185,7 @@ describe('ChildNodePropsEngine', () => {
         it('普通节点的 getter 应调用 _getNodeProp', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -202,7 +204,7 @@ describe('ChildNodePropsEngine', () => {
         it('普通节点的 setter 应调用 _markNodeDirty', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -220,7 +222,7 @@ describe('ChildNodePropsEngine', () => {
         it('i18n 节点的 getter 应返回 i18nKey', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes = [{ name: 'title', i18nKey: 'i18n:title.default' }];
 
@@ -241,7 +243,7 @@ describe('ChildNodePropsEngine', () => {
         it('i18n 节点的 setter 应设置 i18nKey 并调用 _markNodeDirty', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes = [{ name: 'title', i18nKey: 'i18n:title.default' }];
 
@@ -263,7 +265,7 @@ describe('ChildNodePropsEngine', () => {
         it('i18n 节点 setter 在节点不存在时应直接返回', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
             const i18nNodes = [{ name: 'title', i18nKey: 'i18n:title.default' }];
 
@@ -327,21 +329,25 @@ describe('ChildNodePropsEngine', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
                 // constructor 是保留关键字
-                constructor: { name: 'constructor', contentMode: 'text' },
+                constructor: { name: 'constructor', contentMode: 'html' as const },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
 
             // 应生成 constructor_ 而不是 constructor
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'constructor_')).toBeDefined();
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'constructor')).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'constructor_')
+            ).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'constructor')
+            ).toBeDefined();
             // 原有的 constructor 属性保持不变（它是原型链上的默认属性）
         });
 
         it('节点名 emit 是保留关键字时应添加 _ 后缀', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                emit: { name: 'emit', contentMode: 'text' },
+                emit: { name: 'emit', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -352,7 +358,7 @@ describe('ChildNodePropsEngine', () => {
         it('节点名 on 是保留关键字时应添加 _ 后缀', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                on: { name: 'on', contentMode: 'text' },
+                on: { name: 'on', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -371,7 +377,9 @@ describe('ChildNodePropsEngine', () => {
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
 
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'link')).toBeDefined();
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'linkHref')).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'linkHref')
+            ).toBeDefined();
         });
 
         it('link 模式的 text 属性应使用 _getNodeProp', () => {
@@ -422,7 +430,9 @@ describe('ChildNodePropsEngine', () => {
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
 
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'contentHtml')).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'contentHtml')
+            ).toBeDefined();
         });
 
         it('html 模式的属性应使用 _getNodeProp', () => {
@@ -449,7 +459,7 @@ describe('ChildNodePropsEngine', () => {
         it('所有描述符应设置 configurable: true', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -461,7 +471,7 @@ describe('ChildNodePropsEngine', () => {
         it('所有描述符应设置 enumerable: true', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -486,7 +496,7 @@ describe('ChildNodePropsEngine', () => {
         it('空 i18nNodes 应正常处理', () => {
             class TestComponent {}
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
             };
 
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
@@ -503,7 +513,9 @@ describe('ChildNodePropsEngine', () => {
             ChildNodePropsEngine.apply(TestComponent, nodeMetas, []);
 
             // contentMode 不在映射表中，不应生成属性
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'title')).toBeUndefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'title')
+            ).toBeUndefined();
         });
 
         it('value 属性名不是保留关键字', () => {
@@ -537,7 +549,7 @@ describe('ChildNodePropsEngine', () => {
             class IconComponent {}
 
             const nodeMetas: Record<string, NodeMetadata> = {
-                title: { name: 'title', contentMode: 'text' },
+                title: { name: 'title', contentMode: 'html' },
                 input: { name: 'input', contentMode: 'value' },
                 image: { name: 'image', contentMode: 'src' },
                 content: { name: 'content', contentMode: 'html' },
@@ -552,9 +564,13 @@ describe('ChildNodePropsEngine', () => {
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'title')).toBeDefined();
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'input')).toBeDefined();
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'image')).toBeDefined();
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'contentHtml')).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'contentHtml')
+            ).toBeDefined();
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'link')).toBeDefined();
-            expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, 'linkHref')).toBeDefined();
+            expect(
+                Object.getOwnPropertyDescriptor(TestComponent.prototype, 'linkHref')
+            ).toBeDefined();
             expect(Object.getOwnPropertyDescriptor(TestComponent.prototype, '$icon')).toBeDefined();
         });
     });

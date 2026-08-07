@@ -170,7 +170,6 @@ class PropertyGridComponent extends Component {
 }
 
 PropertyGridComponent.useTemplate(PROPERTY_GRID_TPL);
-PropertyGridComponent.register();
 export { PropertyGridComponent };
 /** 属性网格实例类型 */
 export type PropertyGridComponentInstance = InstanceType<typeof PropertyGridComponent>;

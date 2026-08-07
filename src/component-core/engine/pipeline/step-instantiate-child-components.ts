@@ -25,7 +25,7 @@ function propagateKey(parentKey: KeyDecl, childDeclaredKey: KeyDecl): KeyDecl {
     return parentKey;
 }
 
-export async function instantiateChildComponents(ctx: InitContext): Promise<void> {
+export function instantiateChildComponents(ctx: InitContext) {
     const { instance, nodeMapMgr } = ctx;
     if (!nodeMapMgr) return;
 
@@ -41,6 +41,9 @@ export async function instantiateChildComponents(ctx: InitContext): Promise<void
     if (componentSlots.length === 0) return;
 
     for (const { name, componentClass, props } of componentSlots) {
+        console.log(
+            `[instantiate] name=${name}, props keys=[${Object.keys(props || {}).join(',')}]`
+        );
         const ctor = componentClass as any;
         const propagatedEventKey = propagateKey(instance.eventKey, ctor.eventKey);
         const propagatedEntityKey = propagateKey(instance.entityKey, ctor.entityKey);

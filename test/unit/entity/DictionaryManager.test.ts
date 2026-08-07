@@ -111,7 +111,6 @@ jest.mock('@/schema', () => ({
 }));
 
 import { DictionaryManager } from '@/entity/manager/DictionaryManager';
-import type { DictionaryManagerConfig } from '@/entity/manager/DictionaryManager';
 
 describe('DictionaryManager', () => {
     let mgr: DictionaryManager;

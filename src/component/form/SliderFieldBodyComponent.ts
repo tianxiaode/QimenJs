@@ -158,6 +158,5 @@ class SliderFieldBodyComponent extends Component {
 }
 
 SliderFieldBodyComponent.useTemplate(SLIDER_BODY_TPL);
-SliderFieldBodyComponent.register();
 export { SliderFieldBodyComponent };
 export type SliderFieldBodyComponentInstance = InstanceType<typeof SliderFieldBodyComponent>;

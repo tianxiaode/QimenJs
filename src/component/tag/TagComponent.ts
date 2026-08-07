@@ -70,7 +70,6 @@ class TagComponent extends Component {
 
 TagComponent.use([SizeAbility]);
 TagComponent.useTemplate(TAG_TPL);
-TagComponent.register();
 
 export { TagComponent };
 /** 标签实例类型 */

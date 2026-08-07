@@ -30,12 +30,9 @@ describe('ChildEventsEngine', () => {
 
             ChildEventsEngine.bindChildEvents(instance, { toolbar: ['save', 'create'] });
 
-            expect(ListensEngine.bindNodeEvents).toHaveBeenCalledWith(
-                instance,
-                [
-                    { node: 'toolbar', events: { save: true, create: true } },
-                ]
-            );
+            expect(ListensEngine.bindNodeEvents).toHaveBeenCalledWith(instance, [
+                { node: 'toolbar', events: { save: true, create: true } },
+            ]);
         });
 
         it('将详细配置转换为新格式并委托', () => {
@@ -48,12 +45,9 @@ describe('ChildEventsEngine', () => {
                 toolbar: { save: { handler: true, emits: ['saved'] } },
             });
 
-            expect(ListensEngine.bindNodeEvents).toHaveBeenCalledWith(
-                instance,
-                [
-                    { node: 'toolbar', events: { save: { handler: true, emits: ['saved'] } } },
-                ]
-            );
+            expect(ListensEngine.bindNodeEvents).toHaveBeenCalledWith(instance, [
+                { node: 'toolbar', events: { save: { handler: true, emits: ['saved'] } } },
+            ]);
         });
 
         it('空 childEvents 对象仍然委托（交给 ListensEngine 处理）', () => {
@@ -65,7 +59,7 @@ describe('ChildEventsEngine', () => {
 
     describe('extractChildEvents — 向后兼容', () => {
         it('从 listens 数组提取 node 配置', () => {
-            ListensEngine.extractNodeEvents.mockReturnValueOnce([
+            (ListensEngine.extractNodeEvents as any).mockReturnValueOnce([
                 { node: 'toolbar', events: { save: true } },
             ]);
 
@@ -76,12 +70,12 @@ describe('ChildEventsEngine', () => {
         });
 
         it('无 node 时返回 null', () => {
-            ListensEngine.extractNodeEvents.mockReturnValueOnce([]);
+            (ListensEngine.extractNodeEvents as any).mockReturnValueOnce([]);
             expect(ChildEventsEngine.extractChildEvents([{ source: 'x', events: {} }])).toBeNull();
         });
 
         it('空数组返回 null', () => {
-            ListensEngine.extractNodeEvents.mockReturnValueOnce([]);
+            (ListensEngine.extractNodeEvents as any).mockReturnValueOnce([]);
             expect(ChildEventsEngine.extractChildEvents([])).toBeNull();
         });
     });

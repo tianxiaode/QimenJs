@@ -241,7 +241,7 @@ describe('BaseEntityManager', () => {
                 ctx.error = new Error('Server error');
             });
 
-            const emitSpy = jest.spyOn(manager, 'emitEvent');
+            const emitSpy = jest.spyOn(manager as any, 'emitEvent');
 
             await expect(
                 manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any)
@@ -260,7 +260,7 @@ describe('BaseEntityManager', () => {
                 ctx.data = { list: [] };
             });
 
-            const emitSpy = jest.spyOn(manager, 'emitEvent');
+            const emitSpy = jest.spyOn(manager as any, 'emitEvent');
 
             await manager.fetch('list' as any, { url: '/api/test', method: 'GET' } as any);
 

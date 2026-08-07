@@ -164,7 +164,6 @@ class StepItemComponent extends Component {
 }
 
 StepItemComponent.useTemplate(STEP_ITEM_TPL);
-StepItemComponent.register();
 export { StepItemComponent };
 /** 步骤项实例类型 */
 export type StepItemComponentInstance = InstanceType<typeof StepItemComponent>;

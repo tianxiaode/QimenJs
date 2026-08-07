@@ -223,7 +223,7 @@ describe('GroupSelectAbility', () => {
         it('批量注册', () => {
             const inst = createInstance();
             GroupSelectAbility.initGroupSelect.call(inst);
-            inst.registerGroupItem = (item: any) =>
+            (inst as any).registerGroupItem = (item: any) =>
                 GroupSelectAbility.registerGroupItem.call(inst, item);
             const items = [createItem('a', 'radio'), createItem('b', 'checkbox')];
             GroupSelectAbility.registerGroupItems.call(inst, items);

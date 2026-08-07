@@ -246,7 +246,7 @@ export class Component extends ComposableBase {
         this._disposing = false;
         this.id = this.props.id || getId('cmp');
         this._initFloatsFromProps();
-        this._ready = this.init();
+        this.init();
     }
 
     get ready(): Promise<void> {
@@ -277,16 +277,16 @@ export class Component extends ComposableBase {
      * Phase 2: INSTANTIATE — 异步（TaskQueue 队列化子组件渲染）
      * Phase 3: FINALIZE — 同步
      */
-    async init(): Promise<void> {
+    init() {
         const ctx = createInitContext(this, this.props);
 
         try {
-            await runPhase(MOUNT_PHASE, ctx);
+            runPhase(MOUNT_PHASE, ctx);
             if (!ctx.nodeMapMgr) return;
 
-            await runPhase(INSTANTIATE_PHASE, ctx);
+            runPhase(INSTANTIATE_PHASE, ctx);
 
-            await runPhase(FINALIZE_PHASE, ctx);
+            runPhase(FINALIZE_PHASE, ctx);
         } catch (err) {
             this.logger?.error?.(
                 `[Component] Pipeline failed for ${this.type} (${this.id}) at step "${ctx.steps[ctx.steps.length - 1] ?? 'unknown'}"`,

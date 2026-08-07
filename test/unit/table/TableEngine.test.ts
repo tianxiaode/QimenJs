@@ -75,6 +75,7 @@ function createMockMeta(name: string, overrides?: Partial<ColumnMeta>): ColumnMe
         cellType: 'text',
         hidden: false,
         editable: false,
+        editType: 'text',
         sortable: false,
         resizable: false,
         align: 'left',
@@ -257,7 +258,7 @@ describe('TableEngine', () => {
                 getAll: jest.fn(() => [createMockMeta('name'), createMockMeta('age')]),
                 get: jest.fn((name: string) => createMockMeta(name)),
             });
-            mgr.rawColumns = groupColumns;
+            (mgr as any).rawColumns = groupColumns;
 
             const configs = TableEngine._buildHeaderConfigs(groupColumns, mgr);
             expect(configs.length).toBe(1);
@@ -273,7 +274,7 @@ describe('TableEngine', () => {
             });
 
             const container = document.createElement('div');
-            TableEngine._renderHeaderCells([{ name: 'test', title: 'Test' }], container, {});
+            TableEngine._renderHeaderCells([{ name: 'test', title: 'Test' }] as any, container, {});
             expect(container.children.length).toBe(0);
         });
     });
@@ -354,10 +355,10 @@ describe('RowComponent', () => {
     it('_getCellData — 默认 text 类型', () => {
         const row = createRowInstance();
         const result = row._getCellData(
-            createMockMeta('name', { cellType: 'text', field: 'name', format: 'upper' }),
+            createMockMeta('name', { cellType: 'text', field: 'name', format: 'number' }),
             { name: 'hello' }
         );
-        expect(result).toEqual({ value: 'hello', format: 'upper' });
+        expect(result).toEqual({ value: 'hello', format: 'number' });
     });
 
     it('_getFieldValue — 点分隔路径', () => {
@@ -378,7 +379,7 @@ describe('RowComponent', () => {
     it('_applyWidths — 应设置宽度变量', () => {
         const row = createRowInstance();
         const mockEl = { style: { width: '', flexShrink: '' } };
-        row._columnMetas = [createMockMeta('name', { width: 100 })];
+        row._columnMetas = [createMockMeta('name', { width: '100px' })];
         row.nodeMap['name'] = { el: mockEl };
 
         row._applyWidths();
@@ -459,7 +460,7 @@ describe('GroupSummaryRowComponent', () => {
     it('_applyWidths — 应设置宽度', () => {
         const comp = createGroupSummaryInstance();
         jest.spyOn(comp, 'setNodeStyle').mockImplementation(() => {});
-        comp._columnMetas = [createMockMeta('name', { width: 100 })];
+        comp._columnMetas = [createMockMeta('name', { width: '100px' })];
 
         comp._applyWidths();
         expect(comp.setNodeStyle).toHaveBeenCalledWith(
@@ -512,7 +513,7 @@ describe('TableSummaryRowComponent', () => {
     it('_applyWidths — 应设置宽度', () => {
         const comp = createTableSummaryInstance();
         jest.spyOn(comp, 'setNodeStyle').mockImplementation(() => {});
-        comp._columnMetas = [createMockMeta('name', { width: 100 })];
+        comp._columnMetas = [createMockMeta('name', { width: '100px' })];
 
         comp._applyWidths();
         expect(comp.setNodeStyle).toHaveBeenCalledWith(

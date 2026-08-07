@@ -37,18 +37,19 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { ComposableBase, type AbilityDefinition } from '@/composable/ComposableBase';
+import { ComposableBase } from '@/composable/ComposableBase';
+import type { AbilityDefinition } from '@/composable/types/ability';
 
 const TestAbility: AbilityDefinition = {
     testMethod() {
         return 'test-result';
     },
     testProperty: {
-        get() {
-            return this._testValue || 'test-value';
+        get(): string {
+            return (this as any)._testValue || 'test-value';
         },
         set(v: string) {
-            this._testValue = v;
+            (this as any)._testValue = v;
         },
     },
 };
@@ -61,13 +62,13 @@ const AnotherAbility: AbilityDefinition = {
 
 const CounterAbility: AbilityDefinition = {
     count: {
-        get() {
-            const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+        get(): number {
+            const state = (this as any).abilityState('Counter:state', () => ({ count: 0 }))!;
             return state.count;
         },
     },
     increment() {
-        const state = this.abilityState('Counter:state', () => ({ count: 0 }))!;
+        const state = (this as any).abilityState('Counter:state', () => ({ count: 0 }))!;
         state.count++;
     },
 };
@@ -75,11 +76,11 @@ const CounterAbility: AbilityDefinition = {
 const InitAbility: AbilityDefinition = {
     __init__: '_initTest',
     _initTest() {
-        this.setAbilityState('InitAbility:initialized', true);
+        (this as any).setAbilityState('InitAbility:initialized', true);
     },
     _testInitialized: {
-        get() {
-            return this.abilityState('InitAbility:initialized', () => false);
+        get(): boolean {
+            return (this as any).abilityState('InitAbility:initialized', () => false);
         },
     },
 };
@@ -213,8 +214,8 @@ describe('ComposableBase', () => {
     describe('方法注入与 this 指向', () => {
         it('use() 注入的方法 this 应该指向宿主实例', () => {
             const MethodDef: AbilityDefinition = {
-                greet() {
-                    return `Hello from ${this.name}`;
+                greet(): string {
+                    return `Hello from ${(this as any).name}`;
                 },
             };
 

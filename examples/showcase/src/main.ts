@@ -106,16 +106,16 @@ for (const css of cssList) {
         cssCount++;
     }
 }
+
 console.log(`[Showcase] Injected ${cssCount} component CSS files`);
 
 const app = document.getElementById('app')!;
 const shell = new ShowcaseApp();
 app.appendChild(shell.el);
-
-shell.ready
-    .then(() => {
-        console.log('[Showcase] ShowcaseApp ready');
-    })
-    .catch((err: any) => {
-        console.error('[Showcase] ShowcaseApp failed:', err);
-    });
+// shell.ready
+//     .then(() => {
+//         console.log('[Showcase] ShowcaseApp ready');
+//     })
+//     .catch((err: any) => {
+//         console.error('[Showcase] ShowcaseApp failed:', err);
+//     });

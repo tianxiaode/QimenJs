@@ -31,6 +31,15 @@ export interface NavbarProps extends ItemGroupProps {
 /** 导航栏组件 */
 class NavbarComponent extends ItemGroupStaticComponent {
     onAfterInit(props?: NavbarProps): void {
+        console.log(
+            '[Navbar] onAfterInit props:',
+            JSON.stringify({
+                hasItems: !!props?.items,
+                itemsLen: props?.items?.length,
+                companyName: props?.companyName,
+                logo: props?.logo,
+            })
+        );
         // 1. 基础外观（横向、间距）
         this.addCls('q-navbar');
         (this as any).itemContainer?.el?.classList.add('q-navbar__items');

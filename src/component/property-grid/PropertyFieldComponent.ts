@@ -218,7 +218,6 @@ class PropertyFieldComponent extends Component {
 }
 
 PropertyFieldComponent.useTemplate(PROPERTY_FIELD_TPL);
-PropertyFieldComponent.register();
 export { PropertyFieldComponent };
 /** 属性字段实例类型 */
 export type PropertyFieldComponentInstance = InstanceType<typeof PropertyFieldComponent>;

@@ -42,11 +42,11 @@ export const FINALIZE_PHASE: Phase = {
 /** 所有管线阶段，按顺序执行 mount → instantiate → finalize */
 export const ALL_PHASES: Phase[] = [MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE];
 
-export async function runPhase(phase: Phase, ctx: InitContext): Promise<void> {
+export function runPhase(phase: Phase, ctx: InitContext) {
     for (const step of phase.steps) {
         const label = `${phase.name}:${step.name}`;
         try {
-            await step(ctx);
+            step(ctx);
             ctx.steps.push(label);
         } catch (err) {
             ctx.steps.push(`${label}(FAIL)`);

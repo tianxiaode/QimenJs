@@ -35,6 +35,7 @@ function createMockCache(overrides?: Partial<CompiledTemplateCache>): CompiledTe
         indexPath: { test: [0, 0], root: [] },
         exposeNames: [],
         i18nNodes: [],
+        permissionNodes: [],
         templateCache: template,
         ...overrides,
     };
@@ -461,7 +462,7 @@ describe('NodeMapManager', () => {
 
             const restoredNode = manager.get('testNode');
             expect(restoredNode?.el?.classList.contains(SKELETON_CLS)).toBe(true);
-            expect(parentNode.contains(restoredNode?.el)).toBe(true);
+            expect(parentNode.contains(restoredNode?.el as any)).toBe(true);
         });
 
         it('应在 refNode 不存在时使用 appendChild', () => {
@@ -479,7 +480,7 @@ describe('NodeMapManager', () => {
 
             const restoredNode = manager.get('testNode');
             expect(restoredNode?.el?.classList.contains(SKELETON_CLS)).toBe(true);
-            expect(parentNode.contains(restoredNode?.el)).toBe(true);
+            expect(parentNode.contains(restoredNode?.el as any)).toBe(true);
         });
 
         it('应在无 el 和 parentNode 时不执行任何操作', () => {
@@ -632,7 +633,7 @@ describe('NodeMapManager', () => {
         it('应设置 parent 引用', () => {
             const instance = manager.replace('test', MockComponentClass);
 
-            expect(instance.parent).toBe(mockOwner);
+            expect((instance as any).parent).toBe(mockOwner);
         });
 
         it('应合并 nodeMap 到 owner', () => {
@@ -664,7 +665,7 @@ describe('NodeMapManager', () => {
 
             const newNode = manager.get('test');
             expect(newNode?.el).not.toBe(oldEl);
-            expect(parentEl?.contains(newNode?.el)).toBe(true);
+            expect(parentEl?.contains(newNode?.el as any)).toBe(true);
         });
 
         it('应更新 componentClass 引用', () => {
@@ -766,7 +767,7 @@ describe('NodeMapManager', () => {
 
             expect(node.el).toBe(childEl);
             expect(node.component).toBe(child);
-            expect(child.parent).toBe(mockOwner);
+            expect((child as any).parent).toBe(mockOwner);
             expect(parentNode.contains(childEl)).toBe(true);
         });
 
@@ -929,7 +930,7 @@ describe('NodeMapManager', () => {
             manager.replace('test', MockComponentClass);
 
             const newNode = manager.get('test');
-            expect(parentEl?.contains(newNode?.el)).toBe(true);
+            expect(parentEl?.contains(newNode?.el as any)).toBe(true);
         });
 
         it('应在无 el.parentNode 但有 parentNode 和 nodeIndex 时使用 insertBefore', () => {
@@ -953,7 +954,7 @@ describe('NodeMapManager', () => {
 
             testManager.replace('testNode', MockComponentClass);
 
-            expect(parentNode.contains(testManager.get('testNode')?.el)).toBe(true);
+            expect(parentNode.contains(testManager.get('testNode')?.el as any)).toBe(true);
         });
     });
 

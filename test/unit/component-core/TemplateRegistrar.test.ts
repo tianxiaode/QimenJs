@@ -216,7 +216,7 @@ describe('ComponentRegistrar', () => {
             const Comp2 = makeComponent('Shared2');
 
             registry.register(Comp1, SHARED_TPL);
-            registry.register(Comp2, SHARED_TPL);  // 同一模板对象
+            registry.register(Comp2, SHARED_TPL); // 同一模板对象
 
             const compiled1 = registry.getCompiled('Shared1');
             const compiled2 = registry.getCompiled('Shared2');
@@ -525,8 +525,8 @@ describe('ComponentRegistrar', () => {
 
             const el1 = document.createElement('span');
             const el2 = document.createElement('span');
-            manager!.set('node1', el1);
-            manager!.set('node2', el2);
+            manager!.set('node1', el1 as any);
+            manager!.set('node2', el2 as any);
             expect(manager!.get('node1')).toBeDefined();
             expect(manager!.get('node2')).toBeDefined();
         });

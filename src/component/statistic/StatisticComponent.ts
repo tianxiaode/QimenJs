@@ -189,7 +189,6 @@ class StatisticComponent extends Component {
 }
 
 StatisticComponent.useTemplate(STATISTIC_TPL);
-StatisticComponent.register();
 export { StatisticComponent };
 /** 统计数值实例类型 */
 export type StatisticComponentInstance = InstanceType<typeof StatisticComponent>;

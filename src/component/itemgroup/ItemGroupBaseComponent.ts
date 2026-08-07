@@ -220,7 +220,10 @@ class ItemGroupBaseComponent extends Component {
         if (!itemType) return null;
 
         const ItemClass = ComponentRegistrar.getInstance().get(itemType) as any;
-        if (!ItemClass) return null;
+        if (!ItemClass) {
+            console.warn(`[_createItem] type "${itemType}" not found in ComponentRegistrar`);
+            return null;
+        }
 
         const props = { ...data };
         delete props.type;

@@ -23,7 +23,7 @@ export const PACK_MAP: Record<string, string> = {
 /** 内容模式映射表，将模式名映射为节点属性定义数组 */
 export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
     text: [{ nodeProp: 'text' }],
-    html: [{ nodeProp: 'html' }],
+    html: [{ nodeProp: 'text' }, { nodeProp: 'html' }],
     value: [{ nodeProp: 'value' }],
     src: [{ nodeProp: 'src' }],
     link: [{ nodeProp: 'text' }, { nodeProp: 'href' }],

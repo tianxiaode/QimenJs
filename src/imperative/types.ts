@@ -40,6 +40,8 @@ export interface ToastOptions {
 export interface ToastHandle {
     /** 手动关闭 toast */
     close(): void;
+    /** 是否已关闭 */
+    readonly isClosed: boolean;
     /** Promise then — 支持 await */
     then<TResult1 = void, TResult2 = never>(
         onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,

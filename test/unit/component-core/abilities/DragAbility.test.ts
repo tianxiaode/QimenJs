@@ -345,11 +345,7 @@ describe('DragAbility', () => {
         it('配置变更先发 DISPOSE 再发 INIT', () => {
             const { instance } = createMockInstance();
 
-            engine.syncDrags(
-                instance,
-                { handle: { axis: 'y' } },
-                { handle: { axis: 'x' } }
-            );
+            engine.syncDrags(instance, { handle: { axis: 'y' } }, { handle: { axis: 'x' } });
 
             expect(instance.dragEmit).toHaveBeenCalledTimes(2);
             const disposeCtx = instance.dragEmit.mock.calls[0][0];
@@ -371,8 +367,8 @@ describe('DragAbility', () => {
 
             engine.syncDrags(
                 instance,
-                { a: { axis: 'y' }, b: { axis: 'x' }, c: { axis: 'z' } },
-                { b: { axis: 'updated' }, c: { axis: 'z' }, d: { axis: 'new' } }
+                { a: { axis: 'y' }, b: { axis: 'x' }, c: { axis: 'both' } },
+                { b: { axis: 'x' } as any, c: { axis: 'both' }, d: { axis: 'y' } }
             );
 
             // removed: a → DISPOSE
@@ -394,12 +390,16 @@ describe('DragAbility', () => {
         beforeEach(() => {
             registerDropZoneMock = jest.fn();
             unregisterDropZoneMock = jest.fn();
-            jest.mock('@/drag/DragDispatchCenter', () => ({
-                dragDispatchCenter: {
-                    registerDropZone: registerDropZoneMock,
-                    unregisterDropZone: unregisterDropZoneMock,
-                },
-            }), { virtual: true });
+            jest.mock(
+                '@/drag/DragDispatchCenter',
+                () => ({
+                    dragDispatchCenter: {
+                        registerDropZone: registerDropZoneMock,
+                        unregisterDropZone: unregisterDropZoneMock,
+                    },
+                }),
+                { virtual: true }
+            );
         });
 
         it('drop=false 时禁用所有放置区', () => {
@@ -445,10 +445,18 @@ describe('DragAbility', () => {
 
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(2);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
-                    'comp-1:zone1', zone1El, instance, 'zone1', {}
+                    'comp-1:zone1',
+                    zone1El,
+                    instance,
+                    'zone1',
+                    {}
                 );
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
-                    'comp-1:zone2', zone2El, instance, 'zone2', { accept: ['card'] }
+                    'comp-1:zone2',
+                    zone2El,
+                    instance,
+                    'zone2',
+                    { accept: ['card'] }
                 );
             });
         });
@@ -470,7 +478,11 @@ describe('DragAbility', () => {
 
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(1);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
-                    'comp-1:self', el, instance, 'self', {}
+                    'comp-1:self',
+                    el,
+                    instance,
+                    'self',
+                    {}
                 );
             });
         });
@@ -492,7 +504,10 @@ describe('DragAbility', () => {
 
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(1);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
-                    'comp-1:self', el, instance, 'self',
+                    'comp-1:self',
+                    el,
+                    instance,
+                    'self',
                     { accept: ['card'], activeClass: 'drag-over' }
                 );
             });
@@ -519,7 +534,11 @@ describe('DragAbility', () => {
 
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledTimes(1);
                 expect(mockDispatch.registerDropZone).toHaveBeenCalledWith(
-                    'comp-1:zone1', zoneEl, instance, 'zone1', {}
+                    'comp-1:zone1',
+                    zoneEl,
+                    instance,
+                    'zone1',
+                    {}
                 );
             });
         });

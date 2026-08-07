@@ -127,7 +127,6 @@ class TimelineItemComponent extends Component {
 }
 
 TimelineItemComponent.useTemplate(TIMELINE_ITEM_TPL);
-TimelineItemComponent.register();
 export { TimelineItemComponent };
 /** 时间线项实例类型 */
 export type TimelineItemComponentInstance = InstanceType<typeof TimelineItemComponent>;
