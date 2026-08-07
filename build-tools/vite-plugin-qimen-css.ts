@@ -1,25 +1,13 @@
 /**
- * Vite插件：QimenJS CSS按需打包
+ * Vite插件：QimenJS CSS按需打包（简化版）
  *
- * 核心功能：
- * 1. 组件代码中声明CSS依赖（import或static styles）
- * 2. 分析入口文件，收集组件依赖（递归）
+ * 核心逻辑：
+ * 1. 从入口文件开始，递归分析import链
+ * 2. 收集所有 import './xxx.css' 语句
  * 3. 合并输出CSS
  *
  * 使用方式：
  * ```ts
- * // 方式1：import CSS
- * import './button.css';
- * class ButtonComponent extends Component { }
- *
- * // 方式2：static styles数组
- * class TabsComponent extends Component {
- *     static styles = [
- *         './tabs.css',
- *         '../tabbar/tabbar.css'
- *     ];
- * }
- *
  * // vite.config.ts
  * import { qimenCssPlugin } from './build-tools/vite-plugin-qimen-css';
  *
@@ -30,27 +18,15 @@
  */
 
 import type { Plugin, ResolvedConfig } from 'vite';
-import { resolve, relative, dirname, basename, isAbsolute } from 'path';
-import { existsSync, readFileSync, readdirSync } from 'fs';
-
-interface ComponentInfo {
-    componentName: string;
-    componentPath: string;
-    stylePaths: string[];
-}
+import { resolve, dirname, basename } from 'path';
+import { existsSync, readFileSync } from 'fs';
 
 export interface QimenCssPluginOptions {
     /**
-     * 入口文件（支持glob模式）
+     * 入口文件
      * @default ['src/main.ts']
      */
     entryPoints?: string[];
-
-    /**
-     * 组件根目录
-     * @default 'src/component'
-     */
-    componentRoot?: string;
 
     /**
      * 是否生成独立的CSS文件
@@ -65,12 +41,6 @@ export interface QimenCssPluginOptions {
     outputFileName?: string;
 
     /**
-     * 是否在开发模式下注入CSS
-     * @default true
-     */
-    injectInDev?: boolean;
-
-    /**
      * 是否打印调试信息
      * @default false
      */
@@ -80,18 +50,12 @@ export interface QimenCssPluginOptions {
 export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
     const {
         entryPoints = ['src/main.ts'],
-        componentRoot = 'src/component',
         emitFile = true,
         outputFileName = 'qimen-components.css',
-        injectInDev = true,
         debug = false,
     } = options;
 
     let config: ResolvedConfig;
-    let isDev = false;
-
-    const componentMap = new Map<string, ComponentInfo>();
-    const collectedComponents = new Set<string>();
     const collectedCssFiles = new Set<string>();
 
     function log(...args: any[]) {
@@ -103,59 +67,26 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
 
         configResolved(resolvedConfig) {
             config = resolvedConfig;
-            isDev = config.command === 'serve';
         },
 
-        /**
-         * 构建开始时：
-         * 1. 扫描组件目录，建立组件映射
-         * 2. 分析入口文件，收集依赖
-         */
         buildStart() {
             const root = config.root;
-
-            const absoluteComponentRoot = isAbsolute(componentRoot)
-                ? componentRoot
-                : resolve(root, componentRoot);
-
-            log('扫描组件目录...');
-            scanComponentDirectory(absoluteComponentRoot, componentMap);
-            log(`发现 ${componentMap.size} 个组件`);
-
-            if (debug && componentMap.size > 0) {
-                const keys = Array.from(componentMap.keys()).slice(0, 3);
-                console.log('[qimen-css]   示例组件路径:');
-                keys.forEach(k => console.log(`    ${k}`));
-            }
+            const visited = new Set<string>();
 
             log('分析入口文件...');
-            for (const pattern of entryPoints) {
-                const files = globSync(pattern, { cwd: root });
-                log(`  pattern: ${pattern}, files: ${files.length}`);
-                for (const file of files) {
-                    const fullPath = resolve(root, file);
-                    log(`    分析: ${file}`);
-                    collectComponentDependencies(fullPath, componentMap, collectedComponents);
+
+            for (const entry of entryPoints) {
+                const entryPath = resolve(root, entry);
+                if (existsSync(entryPath)) {
+                    collectCSSImports(entryPath, collectedCssFiles, visited);
                 }
             }
 
-            log(`收集到 ${collectedComponents.size} 个组件`);
-
-            collectedComponents.forEach(compPath => {
-                const info = componentMap.get(compPath);
-                if (info) {
-                    info.stylePaths.forEach(cssPath => collectedCssFiles.add(cssPath));
-                }
-            });
-
-            log(`需要打包 ${collectedCssFiles.size} 个CSS文件`);
+            log(`收集到 ${collectedCssFiles.size} 个CSS文件`);
         },
 
-        /**
-         * 生成最终CSS文件
-         */
         generateBundle(_options, bundle) {
-            if (!emitFile || isDev) return;
+            if (!emitFile) return;
             if (collectedCssFiles.size === 0) return;
 
             const cssContents: string[] = [];
@@ -192,184 +123,47 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
 }
 
 /**
- * 扫描组件目录，建立组件映射
+ * 递归收集CSS import
  */
-function scanComponentDirectory(dir: string, map: Map<string, ComponentInfo>): void {
-    const entries = readdirSync(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-        const fullPath = resolve(dir, entry.name);
-
-        if (entry.isDirectory()) {
-            scanComponentDirectory(fullPath, map);
-        } else if (entry.name.endsWith('Component.ts')) {
-            const componentName = basename(entry.name, '.ts');
-            const content = readFileSync(fullPath, 'utf-8');
-
-            const stylePaths = extractStylePaths(content, fullPath);
-
-            if (stylePaths.length > 0) {
-                map.set(fullPath, {
-                    componentName,
-                    componentPath: fullPath,
-                    stylePaths,
-                });
-            }
-        }
-    }
-}
-
-/**
- * 从组件代码中提取样式路径
- */
-function extractStylePaths(code: string, componentPath: string): string[] {
-    const paths: string[] = [];
-    const componentDir = dirname(componentPath);
-
-    const staticStylesMatch = code.match(/static\s+styles\s*=\s*\[([\s\S]*?)\]/);
-    if (staticStylesMatch) {
-        const arrayContent = staticStylesMatch[1];
-        const stringMatches = arrayContent.matchAll(/['"]([^'"]+)['"]/g);
-        for (const match of stringMatches) {
-            const stylePath = match[1];
-            const resolvedPath = resolve(componentDir, stylePath);
-            if (existsSync(resolvedPath)) {
-                paths.push(resolvedPath);
-            }
-        }
-    }
-
-    const cssImportRegex = /import\s+['"]([^'"]+\.css(?:\.ts)?)['"]/g;
-    let match;
-    while ((match = cssImportRegex.exec(code)) !== null) {
-        const importPath = match[1];
-        const resolvedPath = resolve(componentDir, importPath);
-        if (existsSync(resolvedPath)) {
-            paths.push(resolvedPath);
-        }
-    }
-
-    return paths;
-}
-
-/**
- * 查找项目根目录（包含package.json的目录）
- */
-function findProjectRoot(startPath: string): string {
-    let current = dirname(startPath);
-
-    while (current !== dirname(current)) {
-        const pkgPath = resolve(current, 'package.json');
-        if (existsSync(pkgPath)) {
-            try {
-                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-                if (pkg.name === 'qimenjs') {
-                    return current;
-                }
-            } catch (e) {
-                // ignore
-            }
-        }
-        current = dirname(current);
-    }
-
-    return process.cwd();
-}
-
-/**
- * 从文件收集组件依赖（递归）
- */
-function collectComponentDependencies(
-    filePath: string,
-    componentMap: Map<string, ComponentInfo>,
-    collected: Set<string>,
-    visited: Set<string> = new Set()
-): void {
+function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set<string>): void {
     if (visited.has(filePath)) return;
     visited.add(filePath);
 
     if (!existsSync(filePath)) return;
+    if (!filePath.endsWith('.ts') && !filePath.endsWith('.js')) return;
 
     const content = readFileSync(filePath, 'utf-8');
+    const dir = dirname(filePath);
 
-    const projectRoot = findProjectRoot(filePath);
-
-    const importRegex = /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
+    // 提取所有import语句
+    const importRegex = /import\s+['"]([^'"]+)['"]/g;
     let match;
 
     while ((match = importRegex.exec(content)) !== null) {
         const importPath = match[1];
 
-        let resolvedPath: string | null = null;
-
-        if (importPath.startsWith('@/')) {
-            resolvedPath = resolve(projectRoot, 'src', importPath.slice('@/'.length));
-        } else if (importPath.startsWith('@qimenjs/component')) {
-            const moduleName = importPath.slice('@qimenjs/'.length);
-            const parts = moduleName.split('/');
-            if (parts.length === 1) {
-                resolvedPath = resolve(projectRoot, 'src', moduleName, 'index.ts');
-            } else {
-                resolvedPath = resolve(projectRoot, 'src', moduleName + '.ts');
+        // CSS import
+        if (importPath.endsWith('.css') || importPath.endsWith('.css.ts')) {
+            const cssPath = resolve(dir, importPath);
+            if (existsSync(cssPath)) {
+                cssFiles.add(cssPath);
             }
-        } else if (importPath.startsWith('@qimenjs/')) {
-            const moduleName = importPath.slice('@qimenjs/'.length);
-            resolvedPath = resolve(projectRoot, 'src', moduleName, 'index.ts');
-        } else if (importPath.startsWith('./') || importPath.startsWith('../')) {
-            resolvedPath = resolve(dirname(filePath), importPath);
         }
+        // TS/JS import - 递归分析
+        else if (
+            importPath.endsWith('.ts') ||
+            importPath.endsWith('.js') ||
+            (!importPath.includes('!') && !importPath.startsWith('data:'))
+        ) {
+            let resolvedPath = resolve(dir, importPath);
 
-        if (!resolvedPath) continue;
+            if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.js')) {
+                resolvedPath += '.ts';
+            }
 
-        if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.js')) {
-            resolvedPath += '.ts';
-        }
-
-        if (componentMap.has(resolvedPath)) {
-            collected.add(resolvedPath);
-        }
-
-        if (existsSync(resolvedPath)) {
-            collectComponentDependencies(resolvedPath, componentMap, collected, visited);
-        }
-    }
-}
-
-function globSync(pattern: string, options: { cwd: string }): string[] {
-    const results: string[] = [];
-    const { cwd } = options;
-
-    if (!pattern.includes('*')) {
-        const fullPath = resolve(cwd, pattern);
-        if (existsSync(fullPath)) {
-            results.push(pattern);
-        }
-        return results;
-    }
-
-    function walk(dir: string, base: string) {
-        const entries = readdirSync(dir, { withFileTypes: true });
-        for (const entry of entries) {
-            const fullPath = resolve(dir, entry.name);
-            const relPath = relative(base, fullPath).replace(/\\/g, '/');
-
-            if (entry.isDirectory()) {
-                walk(fullPath, base);
-            } else {
-                let regexPattern = pattern
-                    .replace(/\./g, '\\.')
-                    .replace(/\*\*/g, '{{DOUBLE_STAR}}')
-                    .replace(/\*/g, '[^/]*')
-                    .replace(/{{DOUBLE_STAR}}/g, '.*');
-                const regex = new RegExp('^' + regexPattern + '$');
-
-                if (regex.test(relPath)) {
-                    results.push(relPath);
-                }
+            if (existsSync(resolvedPath)) {
+                collectCSSImports(resolvedPath, cssFiles, visited);
             }
         }
     }
-
-    walk(cwd, cwd);
-    return results;
 }

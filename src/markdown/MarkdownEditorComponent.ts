@@ -30,6 +30,7 @@ import { FormFieldComponent, type FormFieldProps } from '../component/form/FormF
 import { MarkdownEngine } from './engine';
 import { MARKDOWN_EDITOR_TPL } from './markdown-editor-tpl';
 import './MarkdownEditorFieldBodyComponent';
+import './markdown-editor.css';
 
 export type MarkdownEditMode = 'edit' | 'preview' | 'split';
 

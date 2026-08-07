@@ -40,11 +40,9 @@ export default defineConfig({
     plugins: [
         browserExternalPlugin(),
         qimenCssPlugin({
-            entryPoints: ['src/main.ts', 'src/pages/**/*.ts'],
-            componentRoot: resolve(__dirname, '../../src/component'),
+            entryPoints: ['src/main.ts'],
             emitFile: true,
             outputFileName: 'qimen-components.css',
-            injectInDev: true,
             debug: true,
         }),
     ],

@@ -30,6 +30,7 @@ import { resolveI18nValue } from '@qimenjs/i18n';
 import { ZIndexLevel } from '@qimenjs/component';
 import type { ToastOptions, ToastHandle, ToastPosition, ToastType } from './types';
 import { SystemEventBusAbility } from '@/system-abilities';
+import './toast.css';
 
 const DEFAULT_DURATION = 3000;
 const TOAST_ABILITIES = [
