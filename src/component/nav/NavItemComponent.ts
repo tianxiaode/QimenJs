@@ -22,6 +22,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { FloatDecl } from '@qimenjs/component-core';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
+import './navitem.css.ts';
 
 /** 导航项位置类型 */
 export type NavPlacement =

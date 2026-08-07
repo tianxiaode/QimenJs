@@ -1,6 +1,7 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import './buttongroup.css.ts';
 
 /** 按钮组模式类型 */
 export type ButtonGroupMode = 'single' | 'multiple';

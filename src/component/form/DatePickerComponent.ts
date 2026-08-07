@@ -27,6 +27,7 @@ import { DatePanelComponent } from '../date/DatePanelComponent';
 import { HourPanelComponent } from '../date/HourPanelComponent';
 import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
+import './datepicker.css.ts';
 import {
     createDateTimeValue,
     dateTimeValueToDate,

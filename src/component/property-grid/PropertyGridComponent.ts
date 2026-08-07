@@ -28,6 +28,7 @@
 import { Component } from '@qimenjs/component-core';
 import { PROPERTY_GRID_TPL } from './property-grid-tpl';
 import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';
+import './propertygrid.css.ts';
 
 export type { PropertyField, PropertyFieldType };
 

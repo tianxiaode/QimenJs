@@ -14,6 +14,7 @@ import { Component } from '@qimenjs/component-core';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
+import './monthpanel.css.ts';
 import './date-panel.css';
 
 /** 月份面板属性接口 */

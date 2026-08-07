@@ -36,6 +36,7 @@
 import { Component } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { FORMFIELD_TPL } from './formfield-tpl';
+import './formfield.css.ts';
 
 import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';

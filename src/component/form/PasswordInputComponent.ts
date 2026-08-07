@@ -17,6 +17,7 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
+import './passwordinput.css.ts';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
 

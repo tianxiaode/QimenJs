@@ -7,6 +7,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
+import './routecontainer.css.ts';
 
 /** 路由容器属性接口 */
 export interface RouteContainerProps {

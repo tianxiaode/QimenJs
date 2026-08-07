@@ -16,6 +16,7 @@ import { Component } from '@qimenjs/component-core';
 import { SECOND_PANEL_TPL } from './second-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
+import './secondpanel.css.ts';
 import './date-panel.css';
 
 /** 秒面板属性接口 */

@@ -32,6 +32,7 @@
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { RADIO_GROUP_TPL } from './radio-group-tpl';
+import './radiogroup.css.ts';
 
 export interface RadioOption {
     label: string;

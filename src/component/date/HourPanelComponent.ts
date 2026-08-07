@@ -13,6 +13,7 @@ import { Component } from '@qimenjs/component-core';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
+import './hourpanel.css.ts';
 import './date-panel.css';
 
 /** 小时面板属性接口 */

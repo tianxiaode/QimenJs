@@ -25,6 +25,7 @@ import { DomEventsMap } from '@qimenjs/component-core';
 import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
+import './treenav.css.ts';
 
 /** 树导航属性接口 */
 export interface TreeNavProps extends ItemGroupProps {

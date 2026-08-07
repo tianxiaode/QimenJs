@@ -17,6 +17,7 @@
 
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
+import './tablesummaryrow.css.ts';
 
 export class TableSummaryRowComponent extends Component {
     _columnMetas: ColumnMeta[] = [];

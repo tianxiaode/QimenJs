@@ -7,6 +7,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { INDICATOR_DOT_TPL } from './indicator-dot-tpl';
+import './indicatordot.css.ts';
 
 /** 指示器圆点属性接口 */
 export interface IndicatorDotProps {

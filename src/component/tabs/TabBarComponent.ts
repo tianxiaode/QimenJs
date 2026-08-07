@@ -24,6 +24,7 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TabComponent } from './TabComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import './tabbar.css.ts';
 
 /** 标签栏位置 */
 export type TabBarPosition = 'top' | 'bottom' | 'left' | 'right';

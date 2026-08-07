@@ -15,6 +15,7 @@ import { Component } from '@qimenjs/component-core';
 import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
+import './minutepanel.css.ts';
 import './date-panel.css';
 
 /** 分钟面板属性接口 */

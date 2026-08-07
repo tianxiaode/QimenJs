@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
+import './yearpanel.css.ts';
 import {
     createDateTimeValue,
     generateYearDigits,

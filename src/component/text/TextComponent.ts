@@ -16,6 +16,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { TEXT_TPL } from './text-tpl';
+import './text.css.ts';
 
 /** 文本属性接口 */
 export interface TextProps {

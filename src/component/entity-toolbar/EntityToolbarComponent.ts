@@ -43,6 +43,7 @@ import { DomainAbility } from '../../system-abilities/system/DomainAbility';
 import { PAGINATION_ITEM_NAMES, createPaginationItems } from './pagination-items';
 import { CRUD_ITEM_NAMES, createCrudItems } from './crud-items';
 import type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
+import './entitytoolbar.css.ts';
 
 // ══════════════════════════════════════════════════════════════
 // 常量（兜底默认值，与 DomainPagingAbility 对齐）

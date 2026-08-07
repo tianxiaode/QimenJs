@@ -16,6 +16,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import { TIMELINE_ITEM_TPL } from './timeline-item-tpl';
+import './timelineitem.css.ts';
 
 /** 时间线颜色 */
 export type TimelineColor = 'default' | 'primary' | 'success' | 'warning' | 'error';

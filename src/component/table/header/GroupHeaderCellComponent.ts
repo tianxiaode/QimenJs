@@ -24,6 +24,7 @@ import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
+import './groupheadercell.css.ts';
 
 /** 分组表头单元格属性接口 */
 export interface GroupHeaderCellProps extends BaseHeaderCellProps {

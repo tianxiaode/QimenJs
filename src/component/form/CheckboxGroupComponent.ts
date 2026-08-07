@@ -32,6 +32,7 @@
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
 import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
+import './checkboxgroup.css.ts';
 
 export interface CheckboxOption {
     label: string;

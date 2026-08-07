@@ -20,6 +20,7 @@
  */
 
 import { InputComponent, type InputProps } from './InputComponent';
+import './numberinput.css.ts';
 
 export interface NumberInputProps extends Omit<InputProps, 'value'> {
     value?: number;

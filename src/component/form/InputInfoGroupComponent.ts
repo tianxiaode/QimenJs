@@ -20,6 +20,7 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import './inputinfogroup.css.ts';
 
 const ERROR_ORDER = 0;
 const HELP_ORDER = 10;

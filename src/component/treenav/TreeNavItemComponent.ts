@@ -18,6 +18,7 @@
 
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
+import './treenavitem.css.ts';
 
 /** 树导航项属性接口 */
 export interface TreeNavItemProps {
