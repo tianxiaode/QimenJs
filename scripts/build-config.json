@@ -77,13 +77,7 @@
             "dependencies": ["logger", "utils", "error", "runtime"],
             "packageName": "@qimen-lab/task"
         },
-        "types": {
-            "entry": "src/types/index.ts",
-            "outDir": "dist/types",
-            "rootDir": "src/types",
-            "dependencies": [],
-            "packageName": "@qimen-lab/types"
-        },
+
         "context": {
             "entry": "src/context/index.ts",
             "outDir": "dist/context",
@@ -243,6 +237,20 @@
                 "theme"
             ],
             "packageName": "@qimen-lab/component"
+        },
+        "component-advanced": {
+            "entry": "src/component-advanced/index.ts",
+            "outDir": "dist/component-advanced",
+            "rootDir": "src/component-advanced",
+            "dependencies": [
+                "component-core",
+                "component-abilities",
+                "events",
+                "context",
+                "pipeline",
+                "theme"
+            ],
+            "packageName": "@qimen-lab/component-advanced"
         },
         "imperative": {
             "entry": "src/imperative/index.ts",

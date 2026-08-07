@@ -39,7 +39,7 @@ export const PAGINATION_ITEM_NAMES = new Set(['firstPage', 'prevPage', 'nextPage
 const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     firstPage: {
         name: 'firstPage',
-        type: 'Button',
+        type: ButtonComponent,
         order: 100,
         iconCls: 'q-toolbar-btn-first-page',
         hint: 'i18n:toolbar.firstPage',
@@ -47,7 +47,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     prevPage: {
         name: 'prevPage',
-        type: 'Button',
+        type: ButtonComponent,
         order: 110,
         iconCls: 'q-toolbar-btn-prev-page',
         hint: 'i18n:toolbar.prevPage',
@@ -55,7 +55,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     pageNum: {
         name: 'pageNum',
-        type: 'NumberInput',
+        type: NumberInputComponent,
         order: 120,
         iconCls: '',
         hint: '',
@@ -63,7 +63,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     pageTotal: {
         name: 'pageTotal',
-        type: 'Text',
+        type: TextComponent,
         order: 130,
         iconCls: '',
         hint: '',
@@ -71,7 +71,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     nextPage: {
         name: 'nextPage',
-        type: 'Button',
+        type: ButtonComponent,
         order: 140,
         iconCls: 'q-toolbar-btn-next-page',
         hint: 'i18n:toolbar.nextPage',
@@ -79,7 +79,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     lastPage: {
         name: 'lastPage',
-        type: 'Button',
+        type: ButtonComponent,
         order: 150,
         iconCls: 'q-toolbar-btn-last-page',
         hint: 'i18n:toolbar.lastPage',
@@ -87,7 +87,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     pageSize: {
         name: 'pageSize',
-        type: 'Select',
+        type: SelectComponent,
         order: 160,
         iconCls: '',
         hint: '',
@@ -95,7 +95,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
     },
     totalRecords: {
         name: 'totalRecords',
-        type: 'Text',
+        type: TextComponent,
         order: 170,
         iconCls: '',
         hint: '',

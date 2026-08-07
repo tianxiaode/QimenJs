@@ -22,8 +22,8 @@
  * ```
  */
 
-import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import { ItemGroupPooledComponent } from '@qimenjs/component';
+import type { ItemGroupProps } from '@qimenjs/component';
 import type { StepItemComponent } from './StepItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import './step.css.ts';

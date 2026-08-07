@@ -21,8 +21,8 @@
  * ```
  */
 
-import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
+import { ItemGroupPooledComponent } from '@qimenjs/component';
+import type { ItemGroupProps } from '@qimenjs/component';
 import './timeline.css.ts';
 
 export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';

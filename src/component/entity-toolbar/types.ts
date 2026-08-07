@@ -14,7 +14,7 @@
  *   - EntityToolbarProps.pagination / crud 声明式字段
  */
 export interface EntityToolbarItemDef {
-    type?: string;
+    type?: new (...args: any[]) => any;
     name?: string;
     order?: number;
     cls?: string;
@@ -27,7 +27,7 @@ export interface EntityToolbarItemDef {
 /** 内置项定义 */
 export interface BuiltinItemDef {
     name: string;
-    type: string;
+    type: new (...args: any[]) => any;
     order: number;
     iconCls: string;
     hint: string;

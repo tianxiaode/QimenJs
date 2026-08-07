@@ -196,46 +196,13 @@ export { markdownViewerCSS } from '../markdown/markdown-viewer.css';
 export { LabelComponent, type LabelProps } from './label/LabelComponent';
 export { labelCSS } from './label/label.css';
 
-// Rating 组件
-export { RatingComponent, type RatingProps } from './rating/RatingComponent';
-export { ratingCSS } from './rating/rating.css';
-
 // Fieldset 组件
 export { FieldsetComponent, type FieldsetProps } from './fieldset/FieldsetComponent';
 export { fieldsetCSS } from './fieldset/fieldset.css';
 
-// OneTimePassword 组件
-export {
-    OneTimePasswordComponent,
-    ONE_TIME_PASSWORD_TPL,
-    type OneTimePasswordProps,
-    type OneTimePasswordComponentInstance,
-} from './one-time-password';
-export { oneTimePasswordCSS } from './one-time-password/one-time-password.css';
-
 // UploadButton 上传按钮组件（文件选择与上传）
 export * from './button/UploadButtonComponent';
 export { uploadButtonCSS } from './button/upload-button.css';
-
-// Step 步骤条组件（池化 ItemGroup + StepItem 子项）
-export {
-    StepComponent,
-    type StepStatus,
-    type StepItemProps,
-    type StepProps,
-} from './step/StepComponent';
-export { StepItemComponent } from './step/StepItemComponent';
-export { stepCSS } from './step/step.css';
-
-// Timeline 时间线组件（从 ItemGroupPooledComponent 派生，纵向节点序列）
-export {
-    TimelineComponent,
-    type TimelineColor,
-    type TimelineItem,
-    type TimelineProps,
-} from './timeline/TimelineComponent';
-export { TimelineItemComponent, type TimelineItemProps } from './timeline/TimelineItemComponent';
-export { timelineCSS } from './timeline/timeline.css';
 
 // Navbar 顶部导航栏组件（从 ItemGroupStaticComponent 派生，横向布局）
 export { NavbarComponent, type NavbarProps } from './navbar/NavbarComponent';
