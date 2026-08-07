@@ -6,6 +6,10 @@ export {
     type PasswordStrength,
     type PasswordInputProps,
 } from './PasswordInputComponent';
+export {
+    PasswordStrengthComponent,
+    type PasswordStrengthComponentInstance,
+} from './PasswordStrengthComponent';
 export { passwordCSS } from './password.css';
 export { InputInfoGroupComponent } from './InputInfoGroupComponent';
 export {

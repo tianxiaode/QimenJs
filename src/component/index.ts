@@ -90,6 +90,10 @@ export {
     type PasswordStrength,
     type PasswordInputProps,
 } from './form/PasswordInputComponent';
+export {
+    PasswordStrengthComponent,
+    type PasswordStrengthComponentInstance,
+} from './form/PasswordStrengthComponent';
 export { passwordCSS } from './form/password.css';
 
 // 菜单组件

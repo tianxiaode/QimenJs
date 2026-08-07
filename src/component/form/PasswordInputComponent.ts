@@ -18,6 +18,7 @@
 
 import { InputComponent, type InputProps } from './InputComponent';
 import { IconComponent } from '../icon/IconComponent';
+import { PasswordStrengthComponent } from './PasswordStrengthComponent';
 import './passwordinput.css.ts';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
@@ -117,7 +118,7 @@ class PasswordInputComponent extends InputComponent {
         if (!infoCmp) return;
 
         const strengthCmp = infoCmp.addInfo({
-            type: 'PasswordStrength',
+            type: PasswordStrengthComponent,
             order: STRENGTH_ORDER,
         });
         if (strengthCmp) {
