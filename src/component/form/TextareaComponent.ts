@@ -26,6 +26,7 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import type { TplNode } from '@qimenjs/component-core';
 import { TEXTAREA_TPL } from './textarea-tpl';
 import './textarea.css.ts';
 
@@ -41,6 +42,10 @@ export interface TextareaProps extends FormFieldProps {
 }
 
 class TextareaComponent extends FormFieldComponent {
+    get tpl(): TplNode {
+        return TEXTAREA_TPL;
+    }
+
     _value: string = '';
     _focused: boolean = false;
     _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
@@ -238,6 +243,5 @@ class TextareaComponent extends FormFieldComponent {
     }
 }
 
-TextareaComponent.useTemplate(TEXTAREA_TPL);
 export { TextareaComponent };
 export type TextareaComponentInstance = InstanceType<typeof TextareaComponent>;

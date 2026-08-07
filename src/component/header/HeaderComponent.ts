@@ -37,6 +37,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { ComponentProps } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { HEADER_TPL } from './header-tpl';
 import './header.css.ts';
 
@@ -51,6 +52,10 @@ export interface HeaderProps {
 }
 
 class HeaderComponent extends Component {
+    get tpl(): TplNode {
+        return HEADER_TPL;
+    }
+
     forwards = {
         action: 'action',
     };
@@ -92,7 +97,6 @@ class HeaderComponent extends Component {
     }
 }
 
-HeaderComponent.useTemplate(HEADER_TPL);
 export { HeaderComponent };
 /** 头部实例类型 */
 export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

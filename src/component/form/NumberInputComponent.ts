@@ -228,6 +228,5 @@ class NumberInputComponent extends InputComponent {
     }
 }
 
-NumberInputComponent.register();
 export { NumberInputComponent };
 export type NumberInputComponentInstance = InstanceType<typeof NumberInputComponent>;

@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { INDICATOR_DOT_TPL } from './indicator-dot-tpl';
 import './indicatordot.css.ts';
 
@@ -16,6 +17,10 @@ export interface IndicatorDotProps {
 }
 
 class IndicatorDotComponent extends Component {
+    get tpl(): TplNode {
+        return INDICATOR_DOT_TPL;
+    }
+
     _index: number = 0;
     _mode: 'dot' | 'number' | 'dash' = 'dot';
 
@@ -40,7 +45,6 @@ class IndicatorDotComponent extends Component {
     }
 }
 
-IndicatorDotComponent.useTemplate(INDICATOR_DOT_TPL);
 export { IndicatorDotComponent };
 /** 指示器圆点实例类型 */
 export type IndicatorDotComponentInstance = InstanceType<typeof IndicatorDotComponent>;

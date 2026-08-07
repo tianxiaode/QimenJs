@@ -3,17 +3,43 @@
 // 提供：模板、工具方法、事件处理、defaultItem 合并
 // ============================================
 
-import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component, TplNode } from '@qimenjs/component-core';
 import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
 import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
 import { OverflowAbility } from '@qimenjs/component-abilities';
-import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
 
 export type { OverflowMode } from '@qimenjs/component-abilities';
 /** 默认项定义 */
 export type DefaultItemDef = Record<string, any>;
 /** 默认项配置 */
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
+
+/** 项组基础模板定义 */
+const ITEMGROUP_BASE_TPL: TplNode = {
+    tag: 'div',
+    cls: 'q-itemgroup',
+    children: [
+        {
+            tag: 'div',
+            name: 'overflowPrev',
+            cls: 'q-itemgroup__overflow-prev',
+            hidden: true,
+        },
+        { tag: 'div', name: 'itemContainer', cls: 'q-itemgroup__items' },
+        {
+            tag: 'div',
+            name: 'overflowNext',
+            cls: 'q-itemgroup__overflow-next',
+            hidden: true,
+        },
+        {
+            tag: 'div',
+            name: 'overflowMore',
+            cls: 'q-itemgroup__overflow-more',
+            hidden: true,
+        },
+    ],
+};
 
 /** 项组配置 */
 export interface ItemGroupConfig {
@@ -36,6 +62,10 @@ export interface ItemGroupProps extends ItemGroupConfig {
 
 /** 项组基类组件 */
 class ItemGroupBaseComponent extends Component {
+    get tpl(): TplNode {
+        return ITEMGROUP_BASE_TPL;
+    }
+
     _items: Array<{
         data: Record<string, any>;
         component: any;
@@ -219,9 +249,18 @@ class ItemGroupBaseComponent extends Component {
         const itemType = data.type ?? this._defaultItemType;
         if (!itemType) return null;
 
-        const ItemClass = ComponentRegistrar.getInstance().get(itemType) as any;
-        if (!ItemClass) {
-            console.warn(`[_createItem] type "${itemType}" not found in ComponentRegistrar`);
+        // 支持组件类直接引用或字符串类型名
+        let ItemClass: any;
+        if (typeof itemType === 'function') {
+            ItemClass = itemType;
+        } else if (typeof itemType === 'string') {
+            ItemClass = CompileEngine.get(itemType);
+            if (!ItemClass) {
+                console.warn(`[_createItem] type "${itemType}" not found`);
+                return null;
+            }
+        } else {
+            console.warn(`[_createItem] invalid type: ${itemType}`);
             return null;
         }
 
@@ -348,7 +387,7 @@ class ItemGroupBaseComponent extends Component {
 }
 
 ItemGroupBaseComponent.use([IndicatorAbility, OverflowAbility]);
-ItemGroupBaseComponent.useTemplate(ITEMGROUP_BASE_TPL);
+
 export { ItemGroupBaseComponent };
 /** 项组基类实例类型 */
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

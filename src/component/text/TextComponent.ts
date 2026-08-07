@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { TEXT_TPL } from './text-tpl';
 import './text.css.ts';
 
@@ -27,6 +28,10 @@ export interface TextProps {
 }
 
 class TextComponent extends Component {
+    get tpl(): TplNode {
+        return TEXT_TPL;
+    }
+
     onAfterInit(props?: TextProps): void {
         this.update(props);
     }
@@ -62,7 +67,6 @@ class TextComponent extends Component {
     }
 }
 
-TextComponent.useTemplate(TEXT_TPL);
 export { TextComponent };
 /** 文本实例类型 */
 export type TextComponentInstance = InstanceType<typeof TextComponent>;

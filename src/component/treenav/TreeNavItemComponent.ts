@@ -17,6 +17,7 @@
  */
 
 import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import './treenavitem.css.ts';
 
@@ -34,6 +35,10 @@ export interface TreeNavItemProps {
 }
 
 class TreeNavItemComponent extends Component {
+    get tpl(): TplNode {
+        return TREE_NAV_ITEM_TPL;
+    }
+
     active: boolean = false;
     disabled: boolean = false;
     expanded: boolean = false;
@@ -193,7 +198,6 @@ class TreeNavItemComponent extends Component {
     }
 }
 
-TreeNavItemComponent.useTemplate(TREE_NAV_ITEM_TPL);
 export { TreeNavItemComponent };
 /** 树导航项实例类型 */
 export type TreeNavItemComponentInstance = InstanceType<typeof TreeNavItemComponent>;

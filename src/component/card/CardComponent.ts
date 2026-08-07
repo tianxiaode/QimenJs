@@ -12,6 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { CARD_TPL } from './card-tpl';
 import './card.css.ts';
 
@@ -23,6 +24,10 @@ export interface CardProps {
 }
 
 class CardComponent extends Component {
+    get tpl(): TplNode {
+        return CARD_TPL;
+    }
+
     _initCard(props?: CardProps): void {
         if (props?.title) {
             this.headerTitle = props.title;
@@ -40,7 +45,6 @@ class CardComponent extends Component {
     }
 }
 
-CardComponent.useTemplate(CARD_TPL);
 export { CardComponent };
 /** 卡片实例类型 */
 export type CardComponentInstance = InstanceType<typeof CardComponent>;

@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
 
 /** 基础表头单元格属性接口 */
@@ -25,6 +26,10 @@ export interface BaseHeaderCellProps {
 }
 
 class BaseHeaderCellComponent extends Component {
+    get tpl(): TplNode {
+        return BASE_HEADER_CELL_TPL;
+    }
+
     _colName: string = '';
     _align: ColumnAlign = 'left';
     _minWidth: number = 50;
@@ -67,5 +72,3 @@ class BaseHeaderCellComponent extends Component {
 export { BaseHeaderCellComponent };
 /** 基础表头单元格实例类型 */
 export type BaseHeaderCellComponentInstance = InstanceType<typeof BaseHeaderCellComponent>;
-
-BaseHeaderCellComponent.useTemplate(BASE_HEADER_CELL_TPL);

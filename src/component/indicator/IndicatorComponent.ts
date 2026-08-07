@@ -32,6 +32,7 @@
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { INDICATOR_TPL } from './indicator-tpl';
 import './indicator.css.ts';
 
@@ -48,6 +49,10 @@ export interface IndicatorProps {
 }
 
 class IndicatorComponent extends ItemGroupStaticComponent {
+    get tpl(): TplNode {
+        return INDICATOR_TPL;
+    }
+
     _activeIndex: number = -1;
     _arrows: boolean = false;
     _mode: IndicatorMode = 'dot';
@@ -174,7 +179,6 @@ class IndicatorComponent extends ItemGroupStaticComponent {
     }
 }
 
-IndicatorComponent.useTemplate(INDICATOR_TPL);
 export { IndicatorComponent };
 /** 指示器实例类型 */
 export type IndicatorComponentInstance = InstanceType<typeof IndicatorComponent>;

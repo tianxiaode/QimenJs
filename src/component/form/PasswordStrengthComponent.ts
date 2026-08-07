@@ -55,6 +55,5 @@ class PasswordStrengthComponent extends Component {
     }
 }
 
-PasswordStrengthComponent.register();
 export { PasswordStrengthComponent };
 export type PasswordStrengthComponentInstance = InstanceType<typeof PasswordStrengthComponent>;

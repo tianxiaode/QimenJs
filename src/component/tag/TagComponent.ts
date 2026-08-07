@@ -18,6 +18,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TAG_TPL } from './tag-tpl';
 import './tag.css.ts';
@@ -35,6 +36,10 @@ export interface TagProps {
 }
 
 class TagComponent extends Component {
+    get tpl(): TplNode {
+        return TAG_TPL;
+    }
+
     _initTag(props?: TagProps): void {
         if (props?.type) this.addCls(`q-tag--${props.type}`);
         if (props?.icon) {
@@ -70,7 +75,6 @@ class TagComponent extends Component {
 }
 
 TagComponent.use([SizeAbility]);
-TagComponent.useTemplate(TAG_TPL);
 
 export { TagComponent };
 /** 标签实例类型 */

@@ -6,10 +6,15 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { LOADING_TPL } from './loading-tpl';
 
 /** 加载组件 */
 class LoadingComponent extends Component {
+    get tpl(): TplNode {
+        return LOADING_TPL;
+    }
+
     _initLoading(props?: Record<string, any>): void {
         if (props?.text) {
             this.text = props.text;
@@ -34,7 +39,6 @@ class LoadingComponent extends Component {
     }
 }
 
-LoadingComponent.useTemplate(LOADING_TPL);
 export { LoadingComponent };
 /** 加载实例类型 */
 export type LoadingComponentInstance = InstanceType<typeof LoadingComponent>;

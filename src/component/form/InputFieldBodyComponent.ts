@@ -21,10 +21,14 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { INPUT_FIELD_BODY_TPL } from './input-field-body-tpl';
 
-class InputFieldBodyComponent extends Component {}
+class InputFieldBodyComponent extends Component {
+    get tpl(): TplNode {
+        return INPUT_FIELD_BODY_TPL;
+    }
+}
 
-InputFieldBodyComponent.useTemplate(INPUT_FIELD_BODY_TPL);
 export { InputFieldBodyComponent };
 export type InputFieldBodyComponentInstance = InstanceType<typeof InputFieldBodyComponent>;

@@ -426,7 +426,6 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 }
 
-ItemGroupPooledComponent.register();
 export { ItemGroupPooledComponent };
 /** 池化项组实例类型 */
 export type ItemGroupPooledComponentType = InstanceType<typeof ItemGroupPooledComponent>;

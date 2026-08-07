@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { LABEL_TPL } from './label-tpl';
 import './label.css.ts';
 
@@ -31,6 +32,10 @@ export interface LabelProps {
 }
 
 class LabelComponent extends Component {
+    get tpl(): TplNode {
+        return LABEL_TPL;
+    }
+
     _requiredMark = '*';
     _requiredMarkPosition = 'after';
 
@@ -134,7 +139,6 @@ class LabelComponent extends Component {
     }
 }
 
-LabelComponent.useTemplate(LABEL_TPL);
 export { LabelComponent };
 /** 标签实例类型 */
 export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

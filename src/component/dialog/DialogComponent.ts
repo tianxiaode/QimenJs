@@ -49,6 +49,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { DIALOG_TPL } from './dialog-tpl';
@@ -100,6 +101,10 @@ export interface DialogProps {
 }
 
 class DialogComponent extends Component {
+    get tpl(): TplNode {
+        return DIALOG_TPL;
+    }
+
     forwards = {
         title: 'header.title',
     };
@@ -281,7 +286,6 @@ class DialogComponent extends Component {
 }
 
 DialogComponent.use([ResizeAbility]);
-DialogComponent.useTemplate(DIALOG_TPL);
 
 export { DialogComponent };
 /** 对话框实例类型 */

@@ -21,6 +21,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { FloatDecl } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 import './navitem.css.ts';
 
@@ -65,6 +66,9 @@ export interface NavItemProps {
 }
 
 class NavItemComponent extends Component {
+    get tpl(): TplNode {
+        return NAV_ITEM_TPL;
+    }
     active: boolean = false;
     disabled: boolean = false;
     mode: 'expanded' | 'collapsed' = 'expanded';
@@ -229,7 +233,6 @@ class NavItemComponent extends Component {
     }
 }
 
-NavItemComponent.useTemplate(NAV_ITEM_TPL);
 export { NavItemComponent };
 /** 导航项实例类型 */
 export type NavItemComponentInstance = InstanceType<typeof NavItemComponent>;

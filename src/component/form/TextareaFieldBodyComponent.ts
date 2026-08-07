@@ -16,10 +16,14 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { TEXTAREA_FIELD_BODY_TPL } from './textarea-field-body-tpl';
 
-class TextareaFieldBodyComponent extends Component {}
+class TextareaFieldBodyComponent extends Component {
+    get tpl(): TplNode {
+        return TEXTAREA_FIELD_BODY_TPL;
+    }
+}
 
-TextareaFieldBodyComponent.useTemplate(TEXTAREA_FIELD_BODY_TPL);
 export { TextareaFieldBodyComponent };
 export type TextareaFieldBodyComponentInstance = InstanceType<typeof TextareaFieldBodyComponent>;

@@ -28,6 +28,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@/component-core';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { BUTTON_TPL } from './button-tpl';
@@ -44,6 +45,10 @@ export interface ButtonProps {
 }
 
 class ButtonComponent extends Component {
+    get tpl(): TplNode {
+        return BUTTON_TPL;
+    }
+
     onAfterInit(): void {
         this.initSize();
         const { icon, text, size } = this._rawProps;
@@ -69,7 +74,6 @@ class ButtonComponent extends Component {
 }
 
 ButtonComponent.use(SizeAbility);
-ButtonComponent.useTemplate(BUTTON_TPL);
 export { ButtonComponent };
 /** 按钮实例类型 */
 export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

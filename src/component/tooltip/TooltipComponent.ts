@@ -97,7 +97,6 @@ export class TooltipComponent extends Component {
 }
 
 TooltipComponent.use(ArrowAbility);
-TooltipComponent.useTemplate(TOOLTIP_TPL);
 
 /** 提示框组件 */
 export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

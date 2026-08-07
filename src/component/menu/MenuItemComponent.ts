@@ -25,6 +25,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { MENU_ITEM_TPL } from './menu-item-tpl';
 import './menuitem.css.ts';
 
@@ -45,6 +46,10 @@ export interface MenuItemProps {
 }
 
 class MenuItemComponent extends Component {
+    get tpl(): TplNode {
+        return MENU_ITEM_TPL;
+    }
+
     _disabled: boolean = false;
     _hasSubmenu: boolean = false;
     _group: string = '';
@@ -217,5 +222,4 @@ class MenuItemComponent extends Component {
     }
 }
 
-MenuItemComponent.useTemplate(MENU_ITEM_TPL);
 export { MenuItemComponent };

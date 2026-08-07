@@ -18,9 +18,8 @@
  * ```
  */
 
-import { DomEventsMap } from '@/component-core';
+import { DomEventsMap, TplNode } from '@/component-core';
 import { Component } from '@qimenjs/component-core';
-import { ALERT_TPL } from './alert-tpl';
 import './alert.css.ts';
 
 /** 警告提示类型 */
@@ -33,6 +32,30 @@ const TYPE_ICON_MAP: Record<AlertType, string> = {
     error: '✕',
 };
 
+/** 警告提示模板定义 */
+const ALERT_TPL: TplNode = {
+    tag: 'div',
+    cls: 'q-alert',
+    attrs: { role: 'alert' },
+    children: [
+        { tag: 'i', name: 'icon', cls: 'q-alert__icon' },
+        {
+            tag: 'div',
+            cls: 'q-alert__body',
+            children: [
+                { tag: 'div', name: 'title', cls: 'q-alert__title', hidden: true },
+                { tag: 'div', name: 'text', cls: 'q-alert__text' },
+            ],
+        },
+        {
+            tag: 'span',
+            name: 'closeBtn',
+            cls: 'q-alert__close',
+            hidden: true,
+        },
+    ],
+};
+
 /** 警告提示属性接口 */
 export interface AlertProps {
     text?: string;
@@ -42,6 +65,10 @@ export interface AlertProps {
 }
 
 class AlertComponent extends Component {
+    get tpl(): TplNode {
+        return ALERT_TPL;
+    }
+
     domEvents?: DomEventsMap | undefined = {
         click: { closeBtn: { handler: true } },
     };
@@ -89,7 +116,6 @@ class AlertComponent extends Component {
     }
 }
 
-AlertComponent.useTemplate(ALERT_TPL);
 export { AlertComponent };
 /** 警告提示实例类型 */
 export type AlertComponentInstance = InstanceType<typeof AlertComponent>;

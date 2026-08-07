@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { AVATAR_TPL } from './avatar-tpl';
 import './avatar.css.ts';
@@ -29,6 +30,10 @@ export interface AvatarProps {
 }
 
 class AvatarComponent extends Component {
+    get tpl(): TplNode {
+        return AVATAR_TPL;
+    }
+
     onAfterInit(props?: AvatarProps): void {
         this.initSize();
         this.update(props);
@@ -53,7 +58,7 @@ class AvatarComponent extends Component {
 }
 
 AvatarComponent.use(SizeAbility);
-AvatarComponent.useTemplate(AVATAR_TPL);
+
 export { AvatarComponent };
 /** 头像实例类型 */
 export type AvatarComponentInstance = InstanceType<typeof AvatarComponent>;

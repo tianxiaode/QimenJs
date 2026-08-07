@@ -162,7 +162,6 @@ class AccordionComponent extends ItemGroupPooledComponent {
     }
 }
 
-AccordionComponent.register();
 export { AccordionComponent };
 /** 手风琴实例类型 */
 export type AccordionComponentInstance = InstanceType<typeof AccordionComponent>;

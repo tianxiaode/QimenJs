@@ -79,7 +79,6 @@ class TextCellComponent extends BaseCellComponent {
     }
 }
 
-TextCellComponent.register();
 export { TextCellComponent };
 /** 文本单元格实例类型 */
 export type TextCellComponentInstance = InstanceType<typeof TextCellComponent>;

@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { DIVIDER_TPL } from './divider-tpl';
 import './divider.css.ts';
 
@@ -24,6 +25,10 @@ export interface DividerProps {
 }
 
 class DividerComponent extends Component {
+    get tpl(): TplNode {
+        return DIVIDER_TPL;
+    }
+
     onAfterInit(props?: DividerProps): void {
         this._initDivider(props);
     }
@@ -47,7 +52,6 @@ class DividerComponent extends Component {
     }
 }
 
-DividerComponent.useTemplate(DIVIDER_TPL);
 export { DividerComponent };
 /** 分割线实例类型 */
 export type DividerComponentInstance = InstanceType<typeof DividerComponent>;

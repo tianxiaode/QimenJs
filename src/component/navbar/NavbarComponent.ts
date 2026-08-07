@@ -73,7 +73,6 @@ class NavbarComponent extends ItemGroupStaticComponent {
     }
 }
 
-NavbarComponent.register();
 export { NavbarComponent };
 /** 导航栏实例类型 */
 export type NavbarComponentInstance = InstanceType<typeof NavbarComponent>;

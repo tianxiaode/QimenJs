@@ -142,7 +142,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
     }
 }
 
-TabBarComponent.register();
 export { TabBarComponent };
 /** 标签栏实例类型 */
 export type TabBarComponentInstance = InstanceType<typeof TabBarComponent>;

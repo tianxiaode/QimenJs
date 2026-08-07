@@ -20,6 +20,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
 import './toggle.css.ts';
@@ -35,6 +36,10 @@ export interface ToggleProps {
 }
 
 class ToggleComponent extends Component {
+    get tpl(): TplNode {
+        return TOGGLE_TPL;
+    }
+
     _pressed: boolean = false;
     _value: any = undefined;
 
@@ -110,7 +115,6 @@ class ToggleComponent extends Component {
 }
 
 ToggleComponent.use([SizeAbility]);
-ToggleComponent.useTemplate(TOGGLE_TPL);
 
 export { ToggleComponent };
 /** 切换实例类型 */

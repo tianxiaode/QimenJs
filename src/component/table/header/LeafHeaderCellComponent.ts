@@ -11,6 +11,7 @@
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
 
 /** 叶子表头单元格属性接口 */
@@ -22,6 +23,10 @@ export interface LeafHeaderCellProps extends BaseHeaderCellProps {
 type SortState = 'none' | 'asc' | 'desc';
 
 class LeafHeaderCellComponent extends BaseHeaderCellComponent {
+    get tpl(): TplNode {
+        return LEAF_HEADER_CELL_TPL;
+    }
+
     _sortable: boolean = false;
     _resizable: boolean = true;
     _sortState: SortState = 'none';
@@ -122,7 +127,6 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     }
 }
 
-LeafHeaderCellComponent.useTemplate(LEAF_HEADER_CELL_TPL);
 export { LeafHeaderCellComponent };
 /** 叶子表头单元格实例类型 */
 export type LeafHeaderCellComponentInstance = InstanceType<typeof LeafHeaderCellComponent>;

@@ -24,6 +24,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { HREF_TPL } from './href-tpl';
 import './href.css.ts';
 
@@ -41,6 +42,10 @@ export interface HrefProps {
 }
 
 class HrefComponent extends Component {
+    get tpl(): TplNode {
+        return HREF_TPL;
+    }
+
     _href: string = '';
     _disabled: boolean = false;
     _pendingNavData: { href: string } | null = null;
@@ -147,7 +152,6 @@ class HrefComponent extends Component {
     }
 }
 
-HrefComponent.useTemplate(HREF_TPL);
 export { HrefComponent };
 /** 链接实例类型 */
 export type HrefComponentInstance = InstanceType<typeof HrefComponent>;

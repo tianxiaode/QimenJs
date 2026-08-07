@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { PROGRESS_TPL } from './progress-tpl';
 import './progress.css.ts';
 
@@ -28,6 +29,10 @@ export interface ProgressProps {
 }
 
 class ProgressComponent extends Component {
+    get tpl(): TplNode {
+        return PROGRESS_TPL;
+    }
+
     _percent: number = 0;
     _progressType: ProgressType = 'default';
 
@@ -74,7 +79,6 @@ class ProgressComponent extends Component {
     }
 }
 
-ProgressComponent.useTemplate(PROGRESS_TPL);
 export { ProgressComponent };
 /** 进度条实例类型 */
 export type ProgressComponentInstance = InstanceType<typeof ProgressComponent>;

@@ -20,6 +20,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { STATISTIC_TPL } from './statistic-tpl';
 import { formatNumber } from '@/utils/number';
 import './statistic.css.ts';
@@ -42,6 +43,10 @@ export interface StatisticProps {
 }
 
 class StatisticComponent extends Component {
+    get tpl(): TplNode {
+        return STATISTIC_TPL;
+    }
+
     _title: string = '';
     _value: number | string = '';
     _prefix: string = '';
@@ -189,7 +194,6 @@ class StatisticComponent extends Component {
     }
 }
 
-StatisticComponent.useTemplate(STATISTIC_TPL);
 export { StatisticComponent };
 /** 统计数值实例类型 */
 export type StatisticComponentInstance = InstanceType<typeof StatisticComponent>;

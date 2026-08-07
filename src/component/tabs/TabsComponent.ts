@@ -28,6 +28,7 @@ import { Component, ComponentRegistrar } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
 import type { TabProps as TabItemProps } from './TabComponent';
+import type { TplNode } from '@qimenjs/component-core';
 import { TABS_TPL } from './tabs-tpl';
 import './tabs.css.ts';
 
@@ -49,6 +50,9 @@ export interface TabsProps {
 }
 
 class TabsComponent extends Component {
+    get tpl(): TplNode {
+        return TABS_TPL;
+    }
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
     private _items: TabPaneItem[] = [];
     private _selectedIndex: number = 0;
@@ -247,7 +251,6 @@ class TabsComponent extends Component {
     }
 }
 
-TabsComponent.useTemplate(TABS_TPL);
 export { TabsComponent };
 /** 标签页集实例类型 */
 export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

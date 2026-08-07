@@ -170,5 +170,3 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 export { ButtonGroupComponent };
 /** 按钮组实例类型 */
 export type ButtonGroupComponentInstance = InstanceType<typeof ButtonGroupComponent>;
-
-ButtonGroupComponent.register();

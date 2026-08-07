@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SPACER_TPL } from './spacer-tpl';
 import './spacer.css.ts';
 
@@ -24,6 +25,10 @@ export interface SpacerProps {
 }
 
 class SpacerComponent extends Component {
+    get tpl(): TplNode {
+        return SPACER_TPL;
+    }
+
     onAfterInit(props?: SpacerProps): void {
         if (props?.size !== undefined) {
             this.width = props.size;
@@ -40,7 +45,6 @@ class SpacerComponent extends Component {
     }
 }
 
-SpacerComponent.useTemplate(SPACER_TPL);
 export { SpacerComponent };
 /** 间距实例类型 */
 export type SpacerComponentInstance = InstanceType<typeof SpacerComponent>;

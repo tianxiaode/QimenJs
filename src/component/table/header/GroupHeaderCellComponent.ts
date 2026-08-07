@@ -23,6 +23,7 @@ import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 import './groupheadercell.css.ts';
 
@@ -46,6 +47,10 @@ export interface GroupChildConfig {
 }
 
 class GroupHeaderCellComponent extends BaseHeaderCellComponent {
+    get tpl(): TplNode {
+        return GROUP_HEADER_CELL_TPL;
+    }
+
     _childNames: string[] = [];
     _childCells: Array<{ component: any; el: HTMLElement }> = [];
     _resizable: boolean = true;
@@ -144,7 +149,6 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     }
 }
 
-GroupHeaderCellComponent.useTemplate(GROUP_HEADER_CELL_TPL);
 export { GroupHeaderCellComponent };
 /** 分组表头单元格实例类型 */
 export type GroupHeaderCellComponentInstance = InstanceType<typeof GroupHeaderCellComponent>;

@@ -97,6 +97,5 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
     }
 }
 
-InputInfoGroupComponent.register();
 export { InputInfoGroupComponent };
 export type InputInfoGroupComponentInstance = InstanceType<typeof InputInfoGroupComponent>;

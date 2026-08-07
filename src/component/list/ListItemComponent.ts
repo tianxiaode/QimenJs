@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { LIST_ITEM_TPL } from './list-item-tpl';
 
 /** 列表状态类型 */
@@ -43,6 +44,10 @@ const MARK_FORM_CLASSES: Record<MarkForm, string> = {
 };
 
 class ListItemComponent extends Component {
+    get tpl(): TplNode {
+        return LIST_ITEM_TPL;
+    }
+
     _label: string = '';
     _description: string = '';
     _status: ListStatus = 'default';
@@ -119,7 +124,6 @@ class ListItemComponent extends Component {
     }
 }
 
-ListItemComponent.useTemplate(LIST_ITEM_TPL);
 export { ListItemComponent };
 /** 列表项实例类型 */
 export type ListItemComponentInstance = InstanceType<typeof ListItemComponent>;

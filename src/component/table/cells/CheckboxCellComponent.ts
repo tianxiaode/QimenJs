@@ -14,12 +14,17 @@
 import { BaseCellComponent } from './BaseCellComponent';
 import type { BaseCellProps } from './BaseCellComponent';
 import type { CheckboxCellData } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
 
 /** 复选框单元格属性接口 */
 export type CheckboxCellProps = BaseCellProps;
 
 class CheckboxCellComponent extends BaseCellComponent {
+    get tpl(): TplNode {
+        return CHECKBOX_CELL_TPL;
+    }
+
     _checked: boolean = false;
     _disabled: boolean = false;
 
@@ -67,7 +72,6 @@ class CheckboxCellComponent extends BaseCellComponent {
     }
 }
 
-CheckboxCellComponent.useTemplate(CHECKBOX_CELL_TPL);
 export { CheckboxCellComponent };
 /** 复选框单元格实例类型 */
 export type CheckboxCellComponentInstance = InstanceType<typeof CheckboxCellComponent>;

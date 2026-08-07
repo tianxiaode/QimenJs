@@ -12,6 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
 import './date-panel.css';
@@ -29,6 +30,10 @@ const TOTAL_DAY_CELLS = 42;
 const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
 
 class DayGridComponent extends Component {
+    get tpl(): TplNode {
+        return DAY_GRID_TPL;
+    }
+
     _year: number = 2026;
     _month: number = 1;
     _selectedDay: number | undefined = undefined;
@@ -156,7 +161,6 @@ class DayGridComponent extends Component {
     }
 }
 
-DayGridComponent.useTemplate(DAY_GRID_TPL);
 export { DayGridComponent };
 /** 日网格实例类型 */
 export type DayGridComponentInstance = InstanceType<typeof DayGridComponent>;

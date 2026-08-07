@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
 import './yearpanel.css.ts';
 import {
@@ -37,6 +38,10 @@ type DigitPosition = 'thousands' | 'hundreds' | 'tens' | 'ones';
 const POSITION_ORDER: DigitPosition[] = ['thousands', 'hundreds', 'tens', 'ones'];
 
 class YearPanelComponent extends Component {
+    get tpl(): TplNode {
+        return YEAR_PANEL_TPL;
+    }
+
     _value: DateTimeValue = createDateTimeValue();
     _previewData: PanelPreviewData | null = null;
     _currentPosition: DigitPosition = 'thousands';
@@ -193,7 +198,6 @@ class YearPanelComponent extends Component {
     }
 }
 
-YearPanelComponent.useTemplate(YEAR_PANEL_TPL);
 export { YearPanelComponent };
 /** 年份面板实例类型 */
 export type YearPanelComponentInstance = InstanceType<typeof YearPanelComponent>;

@@ -16,10 +16,14 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SWITCH_FIELD_BODY_TPL } from './switch-field-body-tpl';
 
-class SwitchFieldBodyComponent extends Component {}
+class SwitchFieldBodyComponent extends Component {
+    get tpl(): TplNode {
+        return SWITCH_FIELD_BODY_TPL;
+    }
+}
 
-SwitchFieldBodyComponent.useTemplate(SWITCH_FIELD_BODY_TPL);
 export { SwitchFieldBodyComponent };
 export type SwitchFieldBodyComponentInstance = InstanceType<typeof SwitchFieldBodyComponent>;

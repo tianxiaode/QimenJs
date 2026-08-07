@@ -33,6 +33,7 @@
 import { TextComponent } from '../text/TextComponent';
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import type { TplNode } from '@qimenjs/component-core';
 import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
 import './checkboxgroup.css.ts';
 
@@ -50,6 +51,10 @@ export interface CheckboxGroupProps extends FormFieldProps {
 }
 
 class CheckboxGroupComponent extends FormFieldComponent {
+    get tpl(): TplNode {
+        return CHECKBOX_GROUP_TPL;
+    }
+
     _options: CheckboxOption[] = [];
     _value: (string | number)[] = [];
     _disabled: boolean = false;
@@ -213,6 +218,5 @@ class CheckboxGroupComponent extends FormFieldComponent {
     }
 }
 
-CheckboxGroupComponent.useTemplate(CHECKBOX_GROUP_TPL);
 export { CheckboxGroupComponent };
 export type CheckboxGroupComponentInstance = InstanceType<typeof CheckboxGroupComponent>;

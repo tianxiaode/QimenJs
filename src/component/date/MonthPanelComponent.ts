@@ -11,6 +11,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
@@ -28,6 +29,10 @@ export interface MonthPanelProps {
 const TOTAL_MONTHS = 12;
 
 class MonthPanelComponent extends Component {
+    get tpl(): TplNode {
+        return MONTH_PANEL_TPL;
+    }
+
     _value: DateTimeValue = createDateTimeValue();
     _previewData: PanelPreviewData | null = null;
     _cells: HTMLElement[] = [];
@@ -125,7 +130,6 @@ class MonthPanelComponent extends Component {
     }
 }
 
-MonthPanelComponent.useTemplate(MONTH_PANEL_TPL);
 export { MonthPanelComponent };
 /** 月份面板实例类型 */
 export type MonthPanelComponentInstance = InstanceType<typeof MonthPanelComponent>;

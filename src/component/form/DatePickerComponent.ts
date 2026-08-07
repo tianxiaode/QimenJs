@@ -358,6 +358,5 @@ class DatePickerComponent extends InputComponent {
     }
 }
 
-DatePickerComponent.register();
 export { DatePickerComponent };
 export type DatePickerComponentInstance = InstanceType<typeof DatePickerComponent>;

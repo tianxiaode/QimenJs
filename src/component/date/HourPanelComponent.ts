@@ -10,6 +10,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
@@ -25,6 +26,10 @@ export interface HourPanelProps {
 }
 
 class HourPanelComponent extends Component {
+    get tpl(): TplNode {
+        return HOUR_PANEL_TPL;
+    }
+
     _value: DateTimeValue = createDateTimeValue();
     _previewData: PanelPreviewData | null = null;
 
@@ -100,7 +105,6 @@ class HourPanelComponent extends Component {
     }
 }
 
-HourPanelComponent.useTemplate(HOUR_PANEL_TPL);
 export { HourPanelComponent };
 /** 小时面板实例类型 */
 export type HourPanelComponentInstance = InstanceType<typeof HourPanelComponent>;

@@ -20,6 +20,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { FIELDSET_TPL } from './fieldset-tpl';
 import './fieldset.css.ts';
 
@@ -33,6 +34,10 @@ export interface FieldsetProps {
 }
 
 class FieldsetComponent extends Component {
+    get tpl(): TplNode {
+        return FIELDSET_TPL;
+    }
+
     _collapsible: boolean = false;
     _collapsed: boolean = false;
 
@@ -126,7 +131,6 @@ class FieldsetComponent extends Component {
     }
 }
 
-FieldsetComponent.useTemplate(FIELDSET_TPL);
 export { FieldsetComponent };
 /** 字段集实例类型 */
 export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;

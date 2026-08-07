@@ -306,6 +306,5 @@ class InputComponent extends FormFieldComponent {
     }
 }
 
-InputComponent.register();
 export { InputComponent };
 export type InputComponentInstance = InstanceType<typeof InputComponent>;

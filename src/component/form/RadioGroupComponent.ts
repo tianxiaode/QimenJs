@@ -31,6 +31,7 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import type { TplNode } from '@qimenjs/component-core';
 import { RADIO_GROUP_TPL } from './radio-group-tpl';
 import './radiogroup.css.ts';
 
@@ -48,6 +49,10 @@ export interface RadioGroupProps extends FormFieldProps {
 }
 
 class RadioGroupComponent extends FormFieldComponent {
+    get tpl(): TplNode {
+        return RADIO_GROUP_TPL;
+    }
+
     _options: RadioOption[] = [];
     _value: string | number | undefined = undefined;
     _disabled: boolean = false;
@@ -207,6 +212,5 @@ class RadioGroupComponent extends FormFieldComponent {
     }
 }
 
-RadioGroupComponent.useTemplate(RADIO_GROUP_TPL);
 export { RadioGroupComponent };
 export type RadioGroupComponentInstance = InstanceType<typeof RadioGroupComponent>;

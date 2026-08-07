@@ -34,6 +34,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './formfield.css.ts';
@@ -67,6 +68,10 @@ const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
 };
 
 class FormFieldComponent extends Component {
+    get tpl(): TplNode {
+        return FORMFIELD_TPL;
+    }
+
     _error: string = '';
     _required: boolean = false;
     _requiredMark: string = '';
@@ -313,6 +318,6 @@ class FormFieldComponent extends Component {
 }
 
 FormFieldComponent.use(SizeAbility);
-FormFieldComponent.useTemplate(FORMFIELD_TPL);
+
 export { FormFieldComponent };
 export type FormFieldComponentInstance = InstanceType<typeof FormFieldComponent>;

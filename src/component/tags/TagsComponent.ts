@@ -298,7 +298,6 @@ class TagsComponent extends ItemGroupPooledComponent {
     }
 }
 
-TagsComponent.register();
 export { TagsComponent };
 /** 标签集实例类型 */
 export type TagsComponentInstance = InstanceType<typeof TagsComponent>;

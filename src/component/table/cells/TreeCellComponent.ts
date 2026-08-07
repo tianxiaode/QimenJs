@@ -16,6 +16,7 @@
 import { BaseCellComponent } from './BaseCellComponent';
 import type { BaseCellProps } from './BaseCellComponent';
 import type { TreeCellData } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { TREE_CELL_TPL } from './tree-cell-tpl';
 import './treecell.css.ts';
 
@@ -25,6 +26,10 @@ export type TreeCellProps = BaseCellProps;
 const INDENT_UNIT = 20;
 
 class TreeCellComponent extends BaseCellComponent {
+    get tpl(): TplNode {
+        return TREE_CELL_TPL;
+    }
+
     _depth: number = 0;
     _leaf: boolean = true;
     _expanded: boolean = false;
@@ -70,7 +75,6 @@ class TreeCellComponent extends BaseCellComponent {
     }
 }
 
-TreeCellComponent.useTemplate(TREE_CELL_TPL);
 export { TreeCellComponent };
 /** 树形单元格实例类型 */
 export type TreeCellComponentInstance = InstanceType<typeof TreeCellComponent>;

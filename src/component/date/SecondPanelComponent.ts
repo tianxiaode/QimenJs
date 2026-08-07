@@ -13,6 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SECOND_PANEL_TPL } from './second-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
@@ -30,6 +31,10 @@ export interface SecondPanelProps {
 type DigitPart = 'tens' | 'ones';
 
 class SecondPanelComponent extends Component {
+    get tpl(): TplNode {
+        return SECOND_PANEL_TPL;
+    }
+
     _value: DateTimeValue = createDateTimeValue();
     _previewData: PanelPreviewData | null = null;
     _tensSelected: number = -1;
@@ -170,7 +175,6 @@ class SecondPanelComponent extends Component {
     }
 }
 
-SecondPanelComponent.useTemplate(SECOND_PANEL_TPL);
 export { SecondPanelComponent };
 /** 秒面板实例类型 */
 export type SecondPanelComponentInstance = InstanceType<typeof SecondPanelComponent>;

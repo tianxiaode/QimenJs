@@ -28,6 +28,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { HERO_TPL } from './hero-tpl';
 import './hero.css.ts';
@@ -43,6 +44,10 @@ export interface HeroProps {
 }
 
 class HeroComponent extends Component {
+    get tpl(): TplNode {
+        return HERO_TPL;
+    }
+
     domEvents?: DomEventsMap | undefined = {
         click: {
             actionBtn: {
@@ -112,7 +117,6 @@ class HeroComponent extends Component {
     }
 }
 
-HeroComponent.useTemplate(HERO_TPL);
 export { HeroComponent };
 /** 英雄区实例类型 */
 export type HeroComponentInstance = InstanceType<typeof HeroComponent>;

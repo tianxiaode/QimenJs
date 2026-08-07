@@ -25,6 +25,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
+import type { TplNode } from '@qimenjs/component-core';
 import { BASE_CELL_TPL } from './base-cell-tpl';
 
 /** 基础单元格属性接口 */
@@ -33,6 +34,10 @@ export interface BaseCellProps {
 }
 
 class BaseCellComponent extends Component {
+    get tpl(): TplNode {
+        return BASE_CELL_TPL;
+    }
+
     _align: ColumnAlign = 'left';
 
     onAfterInit(props?: BaseCellProps): void {
@@ -62,7 +67,6 @@ class BaseCellComponent extends Component {
     }
 }
 
-BaseCellComponent.useTemplate(BASE_CELL_TPL);
 export { BaseCellComponent };
 /** 基础单元格实例类型 */
 export type BaseCellComponentInstance = InstanceType<typeof BaseCellComponent>;

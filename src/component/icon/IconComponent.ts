@@ -11,6 +11,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { ICON_TPL } from './icon-tpl';
 import './icon.css.ts';
@@ -22,6 +23,10 @@ export interface IconProps {
 }
 
 class IconComponent extends Component {
+    get tpl(): TplNode {
+        return ICON_TPL;
+    }
+
     onAfterInit(props?: IconProps): void {
         this.initSize();
         this.update(props);
@@ -36,7 +41,6 @@ class IconComponent extends Component {
 }
 
 IconComponent.use([SizeAbility]);
-IconComponent.useTemplate(ICON_TPL);
 
 export { IconComponent };
 /** 图标实例类型 */

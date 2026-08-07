@@ -15,6 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { DATE_PANEL_TPL } from './date-panel-tpl';
 import {
     addDays,
@@ -32,6 +33,10 @@ export interface DatePanelProps {
 }
 
 class DatePanelComponent extends Component {
+    get tpl(): TplNode {
+        return DATE_PANEL_TPL;
+    }
+
     _value: DateTimeValue = createDateTimeValue();
     _viewYear: number = 2026;
     _viewMonth: number = 1;
@@ -192,7 +197,6 @@ class DatePanelComponent extends Component {
     }
 }
 
-DatePanelComponent.useTemplate(DATE_PANEL_TPL);
 export { DatePanelComponent };
 /** 日期面板实例类型 */
 export type DatePanelComponentInstance = InstanceType<typeof DatePanelComponent>;

@@ -25,6 +25,7 @@
  */
 
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import type { TplNode } from '@qimenjs/component-core';
 import { SWITCH_TPL } from './switch-tpl';
 import './switch.css.ts';
 
@@ -36,6 +37,10 @@ export interface SwitchProps extends FormFieldProps {
 }
 
 class SwitchComponent extends FormFieldComponent {
+    get tpl(): TplNode {
+        return SWITCH_TPL;
+    }
+
     _checked: boolean = false;
     _activeText: string = '';
     _inactiveText: string = '';
@@ -147,6 +152,5 @@ class SwitchComponent extends FormFieldComponent {
     }
 }
 
-SwitchComponent.useTemplate(SWITCH_TPL);
 export { SwitchComponent };
 export type SwitchComponentInstance = InstanceType<typeof SwitchComponent>;

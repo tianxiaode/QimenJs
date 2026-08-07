@@ -8,6 +8,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SLIDER_BODY_TPL } from './slider-body-tpl';
 
 export interface SliderBodyProps {
@@ -30,6 +31,10 @@ function toStep(v: number, step: number, min: number): number {
 }
 
 class SliderFieldBodyComponent extends Component {
+    get tpl(): TplNode {
+        return SLIDER_BODY_TPL;
+    }
+
     _value: number = 0;
     _min: number = 0;
     _max: number = 100;
@@ -157,6 +162,5 @@ class SliderFieldBodyComponent extends Component {
     }
 }
 
-SliderFieldBodyComponent.useTemplate(SLIDER_BODY_TPL);
 export { SliderFieldBodyComponent };
 export type SliderFieldBodyComponentInstance = InstanceType<typeof SliderFieldBodyComponent>;

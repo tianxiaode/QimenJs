@@ -21,6 +21,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import {
     fileDispatchCenter,
@@ -62,6 +63,10 @@ const FEEDBACK_TO_EMIT: Record<string, string> = {
 };
 
 class UploadButtonComponent extends Component {
+    get tpl(): TplNode {
+        return UPLOAD_BUTTON_TPL;
+    }
+
     _fileKey: string = '';
     _transport: FileTransportConfig | null = null;
     _accept: string = '';
@@ -370,7 +375,7 @@ class UploadButtonComponent extends Component {
 }
 
 UploadButtonComponent.use(SizeAbility);
-UploadButtonComponent.useTemplate(UPLOAD_BUTTON_TPL);
+
 export { UploadButtonComponent };
 /** 上传按钮实例类型 */
 export type UploadButtonComponentInstance = InstanceType<typeof UploadButtonComponent>;

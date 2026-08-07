@@ -18,6 +18,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { PANEL_TPL } from './panel-tpl';
 import './panel.css.ts';
@@ -41,6 +42,10 @@ export interface PanelProps {
 }
 
 class PanelComponent extends Component {
+    get tpl(): TplNode {
+        return PANEL_TPL;
+    }
+
     forwards = {
         title: 'header.title',
     };
@@ -121,7 +126,6 @@ class PanelComponent extends Component {
 }
 
 PanelComponent.use(ResizeAbility);
-PanelComponent.useTemplate(PANEL_TPL);
 
 export { PanelComponent };
 /** 面板实例类型 */

@@ -240,4 +240,3 @@ class NavComponent extends ItemGroupPooledComponent {
 export { NavComponent };
 /** 导航实例类型 */
 export type NavComponentInstance = InstanceType<typeof NavComponent>;
-NavComponent.register();

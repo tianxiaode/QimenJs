@@ -18,6 +18,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
+import type { TplNode } from '@qimenjs/component-core';
 import { TAB_TPL } from './tab-tpl';
 
 /** 标签页属性接口 */
@@ -31,6 +32,10 @@ export interface TabProps {
 }
 
 class TabComponent extends Component {
+    get tpl(): TplNode {
+        return TAB_TPL;
+    }
+
     _label: string = '';
     _icon: string = '';
     _closable: boolean = false;
@@ -135,7 +140,6 @@ class TabComponent extends Component {
     }
 }
 
-TabComponent.useTemplate(TAB_TPL);
 export { TabComponent };
 /** 标签页实例类型 */
 export type TabComponentInstance = InstanceType<typeof TabComponent>;

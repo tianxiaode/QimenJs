@@ -345,6 +345,5 @@ class FormComponent extends ItemGroupStaticComponent {
     }
 }
 
-FormComponent.register();
 export { FormComponent };
 export type FormComponentInstance = InstanceType<typeof FormComponent>;

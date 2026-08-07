@@ -174,6 +174,5 @@ class PasswordInputComponent extends InputComponent {
     }
 }
 
-PasswordInputComponent.register();
 export { PasswordInputComponent };
 export type PasswordInputComponentInstance = InstanceType<typeof PasswordInputComponent>;

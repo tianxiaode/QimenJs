@@ -61,7 +61,6 @@ class DropdownComponent extends ButtonComponent {
     }
 }
 
-DropdownComponent.register();
 export { DropdownComponent };
 /** 下拉菜单实例类型 */
 export type DropdownComponentInstance = InstanceType<typeof DropdownComponent>;

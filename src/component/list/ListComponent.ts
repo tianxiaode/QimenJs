@@ -62,7 +62,6 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 }
 
-ListComponent.register();
 export { ListComponent };
 /** 列表实例类型 */
 export type ListComponentInstance = InstanceType<typeof ListComponent>;

@@ -309,6 +309,5 @@ class SelectComponent extends InputComponent {
     }
 }
 
-SelectComponent.register();
 export { SelectComponent };
 export type SelectComponentInstance = InstanceType<typeof SelectComponent>;

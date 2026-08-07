@@ -9,11 +9,21 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import { BADGE_TPL } from './badge-tpl';
+import type { TplNode } from '@/component-core';
 import './badge.css.ts';
+
+/** 徽标模板定义 */
+const BADGE_TPL: TplNode = {
+    tag: 'div',
+    children: [{ tag: 'span', name: 'text', cls: 'q-badge__content' }],
+};
 
 /** 徽标组件 */
 class BadgeComponent extends Component {
+    get tpl(): TplNode {
+        return BADGE_TPL;
+    }
+
     onOverlayChange(data: any): void {
         if (!data) return;
         if (data.text !== undefined) {
@@ -26,7 +36,6 @@ class BadgeComponent extends Component {
     }
 }
 
-BadgeComponent.useTemplate(BADGE_TPL);
 export { BadgeComponent };
 /** 徽标实例类型 */
 export type BadgeComponentInstance = InstanceType<typeof BadgeComponent>;
