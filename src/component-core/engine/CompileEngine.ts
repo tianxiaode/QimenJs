@@ -53,7 +53,7 @@
 import type { TplNode } from '../types/tpl-node-types';
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
 import type { CompileResult } from '../types/compile-engine-types';
-import { copyMetaFields, collectExtraFields } from '../types/tpl-node-def';
+import { META_FIELDS, KNOWN_FIELD_SET } from '../types/tpl-node-def';
 import { DEFAULT_NODE_PROP_MAP } from '../types/common-props';
 import { VOID_TAGS } from '../constants/compile-constants';
 import { SKELETON_CLS } from '../constants/compile-constants';
@@ -251,14 +251,11 @@ export class CompileEngine {
         const permissionNodes: Array<{ name: string; permission: boolean | string }> = [];
 
         indexPath['root'] = [];
-        const rootMeta = copyMetaFields<NodeMetadata>(root, {
+        const rootMeta: NodeMetadata = {
             name: 'root',
             tag: root.tag,
-        });
-        CompileEngine._collectExtraFields(root, 'root', rootMeta, i18nNodes);
-        if (rootMeta.i18nKey) {
-            i18nNodes.push({ name: 'root', i18nKey: rootMeta.i18nKey });
-        }
+        };
+        CompileEngine._extractNodeFields(root, 'root', rootMeta);
         nodeMetas['root'] = rootMeta;
 
         const children = root.children || [];
@@ -356,13 +353,13 @@ export class CompileEngine {
 
         ctx.indexPath[name] = path;
 
-        const meta = copyMetaFields<NodeMetadata>(node, {
+        const meta: NodeMetadata = {
             name,
             tag: node.tag,
             type: typeof node.type === 'string' ? node.type : undefined,
             contentMode: 'html',
-        });
-        meta.cls = appendCls(node.cls, SKELETON_CLS);
+            cls: node.cls ? `${node.cls} ${SKELETON_CLS}` : SKELETON_CLS,
+        };
 
         if (typeof node.type === 'function') {
             meta.componentClass = node.type as any;
@@ -370,18 +367,10 @@ export class CompileEngine {
             meta.componentClass = (window as any)[node.type];
         }
 
-        CompileEngine._collectExtraFields(node, name, meta, ctx.i18nNodes);
-
-        if (meta.i18nKey) {
-            ctx.i18nNodes.push({ name, i18nKey: meta.i18nKey });
-        }
+        CompileEngine._extractNodeFields(node, name, meta);
 
         ctx.nodeMetas[name] = meta;
         ctx.exposeNames.push(name);
-
-        if (node.permission) {
-            ctx.permissionNodes.push({ name, permission: node.permission });
-        }
 
         return `<div class="${SKELETON_CLS}"></div>`;
     }
@@ -420,24 +409,16 @@ export class CompileEngine {
 
             ctx.indexPath[name] = path;
 
-            const meta = copyMetaFields<NodeMetadata>(node, {
+            const meta: NodeMetadata = {
                 name,
                 tag,
                 contentMode: CompileEngine.inferContentMode(tag),
-            });
+            };
 
-            CompileEngine._collectExtraFields(node, name, meta, ctx.i18nNodes);
-
-            if (meta.i18nKey) {
-                ctx.i18nNodes.push({ name, i18nKey: meta.i18nKey });
-            }
+            CompileEngine._extractNodeFields(node, name, meta);
 
             ctx.nodeMetas[name] = meta;
             ctx.exposeNames.push(name);
-
-            if (node.permission) {
-                ctx.permissionNodes.push({ name, permission: node.permission });
-            }
         }
 
         return CompileEngine.buildTagHtml(tag, node, path, ctx);
@@ -525,45 +506,151 @@ export class CompileEngine {
     }
 
     /**
-     * 收集剩余字段并分类存入 meta
-     *
-     * tag 节点：按 DEFAULT_NODE_PROP_MAP 分为 htmlProps 和 attrs
-     * type 节点：全部存入 meta.props
-     * 同时扫描 i18n: 前缀的值，收录到 i18nNodes
+     * 统一提取节点字段 — 新规则
+     * 
+     * 设计理念：子组件自己处理配置，父组件只管 tag 节点
+     * 
+     * **tag 节点：**
+     * - tag/name → meta
+     * - cls → props.className
+     * - style/text/hidden/hiddenMode → props
+     * - role/attrs → attrs
+     * - x/y/width/height 等布局属性 → attrs
+     * - 其他 → attrs
+     * 
+     * **type 节点（组件）：**
+     * - type/name → meta
+     * - 其他所有字段 → config（传给子组件）
+     * 
+     * @param node - 模板节点
+     * @param name - 节点名称
+     * @param meta - 元数据对象（输出）
      */
-    private static _collectExtraFields(
+    private static _extractNodeFields(
         node: TplNode,
         name: string,
-        meta: NodeMetadata,
-        i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>
+        meta: NodeMetadata
     ): void {
-        const extra = collectExtraFields(node as Record<string, any>);
-        if (Object.keys(extra).length === 0) return;
-
         const isComponent = !!node.type;
-
-        if (isComponent) {
-            meta.props = extra;
-            for (const [key, val] of Object.entries(extra)) {
-                if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
-                    i18nNodes.push({ name, field: key, i18nKey: val.slice(I18N_PREFIX.length) });
+        const props: Record<string, any> = {};
+        const attrs: Record<string, any> = {};
+        const config: Record<string, any> = {};
+        
+        // 一次遍历所有字段
+        for (const [key, val] of Object.entries(node as Record<string, any>)) {
+            if (val === undefined) continue;
+            
+            // 特殊字段处理
+            if (key === 'tag' || key === 'type' || key === 'name') {
+                // 已经在调用处处理，跳过
+                continue;
+            }
+            
+            if (key === 'children' || key === 'fragment') {
+                // 子节点单独处理，跳过
+                continue;
+            }
+            
+            if (isComponent) {
+                // type 节点：所有字段 → config（传给子组件）
+                config[key] = val;
+            } else {
+                // tag 节点：按字段类型分类
+                switch (key) {
+                    case 'cls':
+                        props.className = val;
+                        break;
+                    case 'style':
+                    case 'text':
+                    case 'hidden':
+                    case 'hiddenMode':
+                        props[key] = val;
+                        break;
+                    case 'role':
+                        attrs.role = val;
+                        break;
+                    case 'attrs':
+                        // attrs 字段是对象，合并到 attrs
+                        if (typeof val === 'object' && val !== null) {
+                            Object.assign(attrs, val);
+                        }
+                        break;
+                    default:
+                        // 其他所有字段 → attrs（包括 x、y、width、height 等）
+                        attrs[key] = val;
+                        break;
                 }
+            }
+        }
+        
+        // 设置分类后的字段
+        if (isComponent) {
+            // type 节点：config 传给子组件
+            if (Object.keys(config).length > 0) {
+                meta.config = config;
             }
         } else {
-            const htmlProps: Record<string, any> = {};
-            const attrs: Record<string, any> = {};
-            for (const [key, val] of Object.entries(extra)) {
-                if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
-                    i18nNodes.push({ name, field: key, i18nKey: val.slice(I18N_PREFIX.length) });
-                }
-                if (DEFAULT_NODE_PROP_MAP[key]) {
-                    htmlProps[key] = val;
-                } else {
-                    attrs[key] = val;
+            // tag 节点：props 和 attrs
+            if (Object.keys(props).length > 0) {
+                meta.props = props;
+            }
+            if (Object.keys(attrs).length > 0) {
+                meta.attrs = attrs;
+            }
+        }
+    }
+
+            if (key === 'children' || key === 'fragment') {
+                // 子节点单独处理，跳过
+                continue;
+            }
+
+            if (isComponent) {
+                // type 节点：所有字段 → config
+                config[key] = val;
+            } else {
+                // tag 节点：按字段类型分类
+                switch (key) {
+                    case 'cls':
+                        props.className = val;
+                        break;
+                    case 'style':
+                    case 'text':
+                    case 'hidden':
+                    case 'hiddenMode':
+                        props[key] = val;
+                        break;
+                    case 'role':
+                    case 'attrs':
+                        // attrs 可能是对象，需要合并
+                        if (typeof val === 'object' && val !== null) {
+                            Object.assign(attrs, val);
+                        } else {
+                            attrs[key] = val;
+                        }
+                        break;
+                    default:
+                        // 其他字段 → attrs
+                        attrs[key] = val;
+                        break;
                 }
             }
-            if (Object.keys(htmlProps).length > 0) meta.htmlProps = htmlProps;
-            if (Object.keys(attrs).length > 0) meta.attrs = { ...meta.attrs, ...attrs };
+        }
+
+        // 设置分类后的字段
+        if (isComponent) {
+            // type 节点：config 传给子组件
+            if (Object.keys(config).length > 0) {
+                meta.config = config;
+            }
+        } else {
+            // tag 节点：props 和 attrs
+            if (Object.keys(props).length > 0) {
+                meta.props = props;
+            }
+            if (Object.keys(attrs).length > 0) {
+                meta.attrs = attrs;
+            }
         }
     }
 
@@ -600,10 +687,6 @@ export class CompileEngine {
         if (t === 'a') return 'link';
         return 'html';
     }
-}
-
-function appendCls(cls: string | undefined, extra: string): string {
-    return cls ? `${cls} ${extra}` : extra;
 }
 
 /**

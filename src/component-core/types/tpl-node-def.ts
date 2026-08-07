@@ -477,6 +477,9 @@ export const META_FIELDS = ALL_FIELDS.filter(f => f.toMeta);
 /** 所有需要拷贝到根节点的字段 */
 export const ROOT_FIELDS = ALL_FIELDS.filter(f => f.toRoot);
 
+/** TPL_NODE_FIELDS 已知字段名集合，用于识别剩余字段 */
+export const KNOWN_FIELD_SET = new Set(ALL_FIELDS.map(f => f.field));
+
 /**
  * 从 source 节点提取所有 meta 字段到目标对象
  *
