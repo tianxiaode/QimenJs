@@ -34,7 +34,7 @@ import { createInitContext } from './types/init-context';
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentRegistrar, TplInspector } from './engine';
+import { CompileEngine, TplInspector } from './engine';
 import { TplNode } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
@@ -79,6 +79,24 @@ export class Component extends ComposableBase {
 
     /** 实例唯一 ID */
     id!: string;
+
+    /**
+     * 组件模板 — getter 方式
+     *
+     * 子类通过重写 getter 返回模板定义，CompileEngine 会自动缓存编译产物。
+     *
+     * @example
+     * ```ts
+     * class ButtonComponent extends Component {
+     *     get tpl() {
+     *         return { tag: 'button', name: 'root' };
+     *     }
+     * }
+     * ```
+     */
+    get tpl(): TplNode | undefined {
+        return undefined;
+    }
 
     /**
      * 语义动作名 — 组件实例级属性
@@ -349,55 +367,6 @@ export class Component extends ComposableBase {
 
     override onDisposed(): void {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
-    }
-
-    /**
-     * 注册组件（无模板）
-     *
-     * 将组件类注册到 ComponentRegistrar，不绑定独立模板，
-     * 沿原型链自动推导父类模板。适用于继承型组件（如 TabBarComponent → TabsComponent）。
-     *
-     * @example
-     * ```ts
-     * class TabBarComponent extends TabsComponent {}
-     * TabBarComponent.register();  // 自动继承 TabsComponent 的模板
-     * ```
-     */
-    static register(): void {
-        ComponentRegistrar.getInstance().register(this);
-    }
-
-    /**
-     * 注册组件并使用模板
-     *
-     * 将模板绑定到组件类并注册到 ComponentRegistrar。
-     * 多次使用同一模板对象的组件会自动共享编译产物，避免重复编译。
-     *
-     * @param tpl - 模板定义（TplNode）
-     *
-     * @example
-     * ```ts
-     * class ButtonComponent extends Component {}
-     * ButtonComponent.useTemplate(BUTTON_TPL);
-     * ```
-     */
-    static useTemplate(tpl: TplNode): void {
-        Object.defineProperty(this, '_tpl', {
-            value: tpl,
-            writable: true,
-            configurable: true,
-        });
-        ComponentRegistrar.getInstance().register(this, tpl);
-    }
-
-    static inspectTpl(): void {
-        const cls = this as any;
-        const tpl: TplNode | undefined = cls._tpl;
-        if (!tpl) {
-            console.log(`  ⚠ ${cls.name} 未注册模板（先调用 ${cls.name}.useTemplate(tpl)）`);
-            return;
-        }
-        TplInspector.inspect(tpl, cls.name);
     }
 
     private _disposeChildComponents(): void {
