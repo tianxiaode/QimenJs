@@ -10,7 +10,7 @@
  * 职责边界：
  *   - 编译：TplNode → HTML + indexPath + nodeMetas + exposeNames + i18nNodes
  *   - 预处理：expandFragments 将 fragment 展开为普通 children
- *   - 模板注册：管理组件类与模板的映射关系
+ *   - 缓存：通过模板对象引用缓存编译产物
  *   - 不负责：DOM 路径查找（→ utils/dom-path）
  *
  * @module CompileEngine
@@ -27,29 +27,27 @@
  *   ]
  * };
  *
- * const { cache, nodeMetas } = CompileEngine.compile(tpl);
- *
- * // cache.html: '<h1></h1><p></p>'
- * // cache.indexPath: { root: [], title: [0], content: [1] }
- * // nodeMetas: { root: {...}, title: {...}, content: {...} }
+ * const mgr = CompileEngine.createNodeMapManagerByTpl(component, tpl);
+ * // 自动缓存编译产物，相同模板对象共享缓存
  * ```
  *
  * @remarks
  * ## 编译流程
- * 1. **展开 Fragment**：将 fragment 节点展开为普通 children
- * 2. **生成 HTML**：递归遍历节点树生成 HTML 字符串
- * 3. **收集元数据**：为每个命名节点生成 NodeMetadata
- * 4. **构建缓存**：创建可复用的 CompiledTemplateCache
+ * 1. **查找缓存**：通过模板对象引用查找已编译产物
+ * 2. **展开 Fragment**：将 fragment 节点展开为普通 children
+ * 3. **生成 HTML**：递归遍历节点树生成 HTML 字符串
+ * 4. **收集元数据**：为每个命名节点生成 NodeMetadata
+ * 5. **构建缓存**：创建可复用的 CompiledTemplateCache
+ * 6. **缓存产物**：将编译产物与模板对象绑定
  *
  * ## 节点类型
  * - **type 节点**：组件类型节点，生成骨架占位 HTML
  * - **tag 节点**：原生标签节点，直接生成 HTML
  *
- * ## 模板注册
- * - `register(componentClass, tpl?)` - 注册组件类与模板的映射
- * - `getCompiled(type)` - 获取编译产物（懒编译）
- * - `createNodeMapManager(type, owner)` - 创建节点映射管理器
- * - 支持模板共享，避免重复编译
+ * ## 属性分类
+ * - **htmlProps**：DEFAULT_NODE_PROP_MAP 中定义的属性
+ * - **attrs**：其他自定义属性
+ * - **config**：节点配置属性（name、tag、cls等）
  */
 
 import type { TplNode } from '../types/tpl-node-types';
@@ -64,29 +62,10 @@ import { clone } from '@/utils/object';
 import { NodeMapManager } from '../NodeMapManager';
 import type { INodeMapManager } from '../types/node-map-manager-types';
 
-interface CompiledEntry {
-    name: string;
-    componentClass: new (props?: Record<string, any>) => any;
-    tpl?: TplNode;
-    compiled?: CompileResult;
-    tplName?: string;
-    replaceFrom?: string;
-}
-
-interface CompileStorage {
-    entries: Map<string, CompiledEntry>;
-    tplRefs: Map<TplNode, string>;
-}
-
 const I18N_PREFIX = 'i18n:';
 
-/** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas）+ 管理组件模板注册 */
+/** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
-    private static storage: CompileStorage = {
-        entries: new Map(),
-        tplRefs: new Map(),
-    };
-
     /** 模板编译产物缓存（通过模板对象引用） */
     private static tplCache = new Map<TplNode, CompileResult>();
 
@@ -180,163 +159,6 @@ export class CompileEngine {
     }
 
     /**
-     * 注册组件类与模板的映射
-     *
-     * @param componentClass - 组件类
-     * @param tpl - 可选模板定义，不提供则沿原型链推导
-     *
-     * @example
-     * ```ts
-     * CompileEngine.register(ButtonComponent, BUTTON_TPL);
-     * CompileEngine.register(TabBarComponent);
-     * ```
-     */
-    static register(componentClass: new (props?: Record<string, any>) => any, tpl?: TplNode): void {
-        const type: string =
-            (componentClass as any).type ?? (componentClass as any).name?.replace(/Component$/, '');
-        if (!type) {
-            return;
-        }
-
-        if (!(componentClass as any).type) {
-            Object.defineProperty(componentClass, 'type', {
-                value: type,
-                writable: true,
-                configurable: true,
-            });
-        }
-
-        const existing = this.storage.entries.get(type);
-
-        if (tpl) {
-            if (!tpl.replace) {
-                const sharedType = this.storage.tplRefs.get(tpl);
-                if (sharedType && sharedType !== type) {
-                    if (existing) {
-                        existing.componentClass = componentClass;
-                        delete existing.tpl;
-                        delete existing.compiled;
-                        existing.replaceFrom = undefined;
-                        existing.tplName = sharedType;
-                    } else {
-                        this.storage.entries.set(type, {
-                            name: type,
-                            componentClass,
-                            tplName: sharedType,
-                        });
-                    }
-                    return;
-                }
-            }
-
-            let resolvedTpl = tpl;
-
-            if (tpl.replace) {
-                const parentEntry = this.storage.entries.get(tpl.replace);
-                if (parentEntry?.tpl) {
-                    resolvedTpl = this.applyReplaces(parentEntry.tpl, tpl.replaces ?? {});
-                }
-            }
-
-            if (existing) {
-                if (existing.tpl) {
-                    const oldRef = this.storage.tplRefs.get(existing.tpl);
-                    if (oldRef === type) {
-                        this.storage.tplRefs.delete(existing.tpl);
-                    }
-                }
-                existing.tpl = resolvedTpl;
-                existing.componentClass = componentClass;
-                existing.replaceFrom = tpl.replace;
-                existing.tplName = type;
-                delete existing.compiled;
-            } else {
-                this.storage.entries.set(type, {
-                    name: type,
-                    tpl: resolvedTpl,
-                    componentClass,
-                    replaceFrom: tpl.replace,
-                    tplName: type,
-                });
-            }
-
-            if (!tpl.replace) {
-                this.storage.tplRefs.set(tpl, type);
-            }
-        } else {
-            const tplName = this._deriveTplName(componentClass);
-
-            if (existing?.tpl) {
-                existing.componentClass = componentClass;
-            } else {
-                this.storage.entries.set(type, {
-                    name: type,
-                    componentClass,
-                    tplName,
-                });
-            }
-        }
-    }
-
-    /**
-     * 沿原型链推导模板名
-     */
-    private static _deriveTplName(
-        componentClass: new (props?: Record<string, any>) => any
-    ): string | undefined {
-        let current = Object.getPrototypeOf(componentClass);
-        while (current && current !== Function.prototype) {
-            const parentType =
-                (current as any).type ?? (current as any).name?.replace(/Component$/, '');
-            if (parentType && this.storage.entries.has(parentType)) {
-                const parentEntry = this.storage.entries.get(parentType)!;
-                return parentEntry.tplName ?? parentType;
-            }
-            current = Object.getPrototypeOf(current);
-        }
-        return undefined;
-    }
-
-    /**
-     * 获取组件类
-     */
-    static get(type: string): (new (props?: Record<string, any>) => any) | undefined {
-        return this.storage.entries.get(type)?.componentClass;
-    }
-
-    /**
-     * 获取编译产物（懒编译）
-     */
-    static getCompiled(type: string): CompileResult | undefined {
-        const entry = this.storage.entries.get(type);
-        if (!entry) return undefined;
-
-        if (entry.compiled) return entry.compiled;
-
-        if (entry.tpl) {
-            const compiled = CompileEngine.compile(entry.tpl, entry.componentClass);
-            entry.compiled = compiled;
-            return compiled;
-        }
-
-        if (entry.tplName) {
-            const tplEntry = this.storage.entries.get(entry.tplName);
-            if (tplEntry?.tpl) {
-                if (!tplEntry.compiled) {
-                    tplEntry.compiled = CompileEngine.compile(
-                        tplEntry.tpl,
-                        tplEntry.componentClass
-                    );
-                }
-                entry.compiled = tplEntry.compiled;
-                return entry.compiled;
-            }
-        }
-
-        return undefined;
-    }
-
-    /**
      * 创建节点映射管理器（通过模板对象）
      *
      * @param component - 组件实例
@@ -346,7 +168,7 @@ export class CompileEngine {
      * @example
      * ```ts
      * const tpl = { tag: 'div', name: 'root' };
-     * const mgr = CompileEngine.createNodeMapManager(component, tpl);
+     * const mgr = CompileEngine.createNodeMapManagerByTpl(component, tpl);
      * ```
      */
     static createNodeMapManagerByTpl(component: any, tpl: TplNode): INodeMapManager {
@@ -358,48 +180,6 @@ export class CompileEngine {
         }
 
         return new NodeMapManager(compiled.cache, compiled.nodeMetas, component);
-    }
-
-    /**
-     * 创建节点映射管理器（通过组件类型名）
-     * @deprecated 使用 createNodeMapManagerByTpl 替代
-     */
-    static createNodeMapManager(type: string, owner?: any): INodeMapManager | undefined {
-        const compiled = this.getCompiled(type);
-        if (!compiled) return undefined;
-        return new NodeMapManager(compiled.cache, compiled.nodeMetas, owner);
-    }
-
-    /**
-     * 清空所有注册
-     */
-    static clear(): void {
-        this.storage.entries.clear();
-        this.storage.tplRefs.clear();
-    }
-
-    private static walkAndApply(node: TplNode, targetName: string, replacement: any): void {
-        if (!node.children) return;
-        for (let i = 0; i < node.children.length; i++) {
-            const child = node.children[i];
-            if (child.name === targetName) {
-                if (replacement.tag || replacement.children) {
-                    node.children[i] = replacement;
-                } else {
-                    Object.assign(child, replacement);
-                }
-            } else {
-                this.walkAndApply(child, targetName, replacement);
-            }
-        }
-    }
-
-    private static applyReplaces(parentTpl: TplNode, replaces: Record<string, any>): TplNode {
-        const cloned = clone(parentTpl);
-        for (const [name, replacement] of Object.entries(replaces)) {
-            this.walkAndApply(cloned, name, replacement);
-        }
-        return cloned;
     }
 
     /**
