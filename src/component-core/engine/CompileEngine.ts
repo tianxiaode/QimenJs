@@ -58,7 +58,6 @@ import { DEFAULT_NODE_PROP_MAP } from '../types/common-props';
 import { VOID_TAGS } from '../constants/compile-constants';
 import { SKELETON_CLS } from '../constants/compile-constants';
 import { Logger } from '@/logger';
-import { clone } from '@/utils/object';
 import { NodeMapManager } from '../NodeMapManager';
 import type { INodeMapManager } from '../types/node-map-manager-types';
 
