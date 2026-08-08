@@ -83,40 +83,6 @@ export interface GridConfig {
 export type HiddenMode = 'display' | 'visibility' | 'opacity';
 
 // ══════════════════════════════════════════════════════════════
-// 模板片段
-// ══════════════════════════════════════════════════════════════
-
-/**
- * 模板片段 — 可复用的节点定义集合
- *
- * 编译时内联展开为父节点的 children，不创建组件边界。
- * fragment.name 作为命名空间前缀，自动加到子节点 name 上，
- * 避免与父模板中的同名节点冲突。
- *
- * @example
- * ```ts
- * const HeaderFragment: TplFragment = {
- *     name: 'header',
- *     children: [
- *         { tag: 'i', name: 'icon', cls: 'q-header__icon', hidden: true },
- *         { tag: 'div', name: 'title', cls: 'q-header__title' },
- *         { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
- *     ],
- * };
- *
- * // 使用：fragment 的 children 展开到 div 内，name 自动变为 header:icon / header:title / header:action
- * { tag: 'div', cls: 'q-card__header', fragment: HeaderFragment }
- * ```
- */
-export interface TplFragment {
-    /** 片段名称，作为子节点 name 的命名空间前缀 */
-    name: string;
-
-    /** 子节点定义 */
-    children: TplNode[];
-}
-
-// ══════════════════════════════════════════════════════════════
 // 模板节点定义
 // ══════════════════════════════════════════════════════════════
 
@@ -173,6 +139,9 @@ export interface TplNode {
     /** 内联样式（字符串或对象） */
     style?: string | Record<string, any>;
 
+    /** 自定义 CSS 变量声明 — 结构化定义，编译时合并到 style 属性前部 */
+    cssVars?: Record<string, string>;
+
     // ─── layout: 布局（flex/grid 互斥） ───
 
     /** flex 布局，true 使用默认 row */
@@ -190,7 +159,7 @@ export interface TplNode {
     i18n?: string;
 
     /** 权限声明（true=从 action 推导 / action / entity:action / domain:entity:action） */
-    permission?: boolean | string;
+    permission?: boolean;
 
     // ─── dom: DOM 属性 ───
 
@@ -209,9 +178,6 @@ export interface TplNode {
     hiddenMode?: HiddenMode;
 
     // ─── component: 组件专属 ───
-
-    /** 子组件初始配置，传入构造函数 */
-    initConfig?: Record<string, any>;
 
     // ─── behavior: 行为配置（浮层/拖拽/放置/动画） ───
 
@@ -349,16 +315,7 @@ export interface TplNode {
 
     /** 子节点定义 */
     children?: TplNode[];
-
-    // ─── fragment: 模板片段 ───
-
-    /** 模板片段引用，编译时内联展开为 children，自动命名空间 */
-    fragment?: TplFragment;
-
     // ─── template-level: 模板级声明（仅根节点使用）───
-
-    /** 替换来源 — 声明本模板基于哪个已注册模板做替换 */
-    replace?: string;
 
     /** 替换映射 — key=命名节点name, value=替换内容 */
     replaces?: Record<string, any>;

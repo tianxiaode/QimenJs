@@ -9,15 +9,14 @@
  *
  * 职责边界：
  *   - 编译：TplNode → HTML + indexPath + nodeMetas + exposeNames + i18nNodes
- *   - 预处理：expandFragments 将 fragment 展开为普通 children
  *   - 缓存：通过模板对象引用缓存编译产物
- *   - 不负责：DOM 路径查找（→ utils/dom-path）
+ *   - 节点分解委托给 DecomposeEngine
+ *   - fragment 展开在递归编译中内联处理（无需预处理）
  *
  * @module CompileEngine
  *
  * @example
  * ```ts
- * // 编译简单模板
  * const tpl = {
  *   tag: 'div',
  *   name: 'root',
@@ -28,40 +27,29 @@
  * };
  *
  * const mgr = CompileEngine.createNodeMapManagerByTpl(component, tpl);
- * // 自动缓存编译产物，相同模板对象共享缓存
  * ```
  *
  * @remarks
- * ## 编译流程
+ * ## 编译流程（单次递归遍历）
  * 1. **查找缓存**：通过模板对象引用查找已编译产物
- * 2. **展开 Fragment**：将 fragment 节点展开为普通 children
- * 3. **生成 HTML**：递归遍历节点树生成 HTML 字符串
- * 4. **收集元数据**：为每个命名节点生成 NodeMetadata
- * 5. **构建缓存**：创建可复用的 CompiledTemplateCache
- * 6. **缓存产物**：将编译产物与模板对象绑定
- *
- * ## 节点类型
- * - **type 节点**：组件类型节点，生成骨架占位 HTML
- * - **tag 节点**：原生标签节点，直接生成 HTML
- *
- * ## 属性分类
- * - **htmlProps**：DEFAULT_NODE_PROP_MAP 中定义的属性
- * - **attrs**：其他自定义属性
- * - **config**：节点配置属性（name、tag、cls等）
+ * 2. **递归编译**：调用 DecomposeEngine.decompose 分解每个节点
+ *    - fragment 在递归中内联展开为 children（无需预处理）
+ *    - 有 name 的节点注册到 nodeMetas
+ *    - 各节点 HTML 通过占位符 `<!--q-children-->` 组合为整体模板
+ * 3. **预编译缓存**：创建 HTMLTemplateElement 并缓存产物
  */
 
 import type { TplNode } from '../types/tpl-node-types';
-import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled-types';
+import type {
+    CompiledTemplateCache,
+    CompiledTemplateResult,
+    CompileContext,
+} from '../types/compiled-types';
 import type { CompileResult } from '../types/compile-engine-types';
-import { META_FIELDS, KNOWN_FIELD_SET } from '../types/tpl-node-def';
-import { DEFAULT_NODE_PROP_MAP } from '../types/common-props';
-import { VOID_TAGS } from '../constants/compile-constants';
-import { SKELETON_CLS } from '../constants/compile-constants';
-import { Logger } from '@/logger';
-import { NodeMapManager } from '../NodeMapManager';
-import type { INodeMapManager } from '../types/node-map-manager-types';
+import { DecomposeEngine } from './DecomposeEngine';
 
-const I18N_PREFIX = 'i18n:';
+/** 子节点占位符 — DecomposeEngine 在有 children 时预留，CompileEngine 递归后替换 */
+const CHILDREN_PLACEHOLDER = '<!--q-children-->';
 
 /** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
@@ -71,32 +59,23 @@ export class CompileEngine {
     /**
      * 编译模板 — 主入口
      *
-     * 完整编译管线：expandFragments → compileTemplate → 构建 CompileResult
+     * 完整编译管线：compileTemplate → 构建 CompileResult
      *
      * @param tpl - 原始模板节点（可含 fragment）
-     * @param owner - 可选宿主对象，用于 Logger 上下文
      * @returns CompileResult { cache, nodeMetas }
      *
      * @example
      * ```ts
-     * const { cache, nodeMetas } = CompileEngine.compile(tpl, this);
+     * const { cache, nodeMetas } = CompileEngine.compile(tpl);
      * // cache: 只读可共享（html, indexPath, exposeNames, i18nNodes, templateCache）
      * // nodeMetas: 每类独立（运行时附加 el/component）
      * ```
-     *
-     * @remarks
-     * - cache.html 可用于多次创建 DOM 元素
-     * - cache.templateCache 是预解析的 template 元素
-     * - nodeMetas 在运行时会被附加 el 和 component 引用
      */
-    static compile(tpl: TplNode, owner?: any): CompileResult {
-        const expandedTpl = CompileEngine.expandFragments(tpl);
-        const loggerOwner = owner?.constructor ?? undefined;
-        const logger = loggerOwner ? Logger.for(loggerOwner) : Logger.for('CompileEngine');
-        const result = CompileEngine.compileTemplate(expandedTpl, logger);
+    static compile(tpl: TplNode): CompileResult {
+        const cached = this.tplCache.get(tpl);
+        if (cached) return cached;
 
-        const tplEl = document.createElement('template');
-        tplEl.innerHTML = result.html;
+        const result = this.compileTemplate(tpl);
 
         const cache: CompiledTemplateCache = {
             html: result.html,
@@ -104,602 +83,173 @@ export class CompileEngine {
             exposeNames: result.exposeNames,
             i18nNodes: result.i18nNodes,
             permissionNodes: result.permissionNodes,
-            templateCache: tplEl,
+            templateCache: this.createTemplateElement(result.html),
         };
 
-        const nodeMetas = result.nodeMetas;
-
-        return { cache, nodeMetas };
+        const compileResult = { cache, nodeMetas: result.nodeMetas };
+        this.tplCache.set(tpl, compileResult);
+        return compileResult;
     }
 
     /**
-     * 收集模板中的组件依赖 — 用于CSS按需打包
+     * 编译模板 — 核心编译（单次递归遍历）
      *
-     * 遍历模板树，收集所有 type 字段引用的组件类，
-     * 并递归收集子组件模板中的依赖。
+     * 递归遍历节点树，调用 DecomposeEngine.decompose 分解每个节点，
+     * fragment 在递归中内联展开，有 name 的节点注册到 nodeMetas，
+     * 各节点 HTML 通过占位符组合为整体模板。
      *
-     * @param tpl - 模板节点
-     * @returns 组件类集合
-     *
-     * @example
-     * ```ts
-     * const deps = CompileEngine.collectDependencies(tpl);
-     * // deps: Set<Function> { ButtonComponent, IconComponent }
-     * ```
-     */
-    static collectDependencies(tpl: TplNode): Set<Function> {
-        const deps = new Set<Function>();
-        this._collectDeps(tpl, deps);
-        return deps;
-    }
-
-    private static _collectDeps(node: TplNode, deps: Set<Function>): void {
-        if (node.type && typeof node.type !== 'string') {
-            const componentClass = node.type as Function;
-            deps.add(componentClass);
-
-            const childTpl = (componentClass as any).template || (componentClass as any).tpl;
-            if (childTpl) {
-                this._collectDeps(childTpl, deps);
-            }
-        }
-
-        if (node.children) {
-            for (const child of node.children) {
-                this._collectDeps(child, deps);
-            }
-        }
-
-        if (node.fragment?.children) {
-            for (const child of node.fragment.children) {
-                this._collectDeps(child, deps);
-            }
-        }
-    }
-
-    /**
-     * 创建节点映射管理器（通过模板对象）
-     *
-     * @param component - 组件实例
-     * @param tpl - 模板定义
-     * @returns NodeMapManager 实例
-     *
-     * @example
-     * ```ts
-     * const tpl = { tag: 'div', name: 'root' };
-     * const mgr = CompileEngine.createNodeMapManagerByTpl(component, tpl);
-     * ```
-     */
-    static createNodeMapManagerByTpl(component: any, tpl: TplNode): INodeMapManager {
-        let compiled = this.tplCache.get(tpl);
-
-        if (!compiled) {
-            compiled = CompileEngine.compile(tpl, component?.constructor);
-            this.tplCache.set(tpl, compiled);
-        }
-
-        return new NodeMapManager(compiled.cache, compiled.nodeMetas, component);
-    }
-
-    /**
-     * 展开 fragment — 预处理步骤
-     *
-     * 将 TplNode 中的 fragment 递归展开为普通 children，
-     * fragment.name 作为命名空间前缀追加到子节点 name 上。
-     *
-     * @param node - 模板节点（可含 fragment）
-     * @param ns - 命名空间前缀（递归内部使用）
-     * @returns 展开后的 TplNode（不含 fragment）
-     *
-     * @example
-     * ```ts
-     * // { fragment: { name: 'btn', children: [{ name: 'icon' }] } }
-     * // → { children: [{ name: 'btn:icon' }] }
-     * ```
-     */
-    static expandFragments(node: TplNode, ns?: string): TplNode {
-        let result = { ...node };
-
-        if (ns && result.name) {
-            result.name = `${ns}:${result.name}`;
-        }
-
-        if (result.fragment) {
-            const fragmentNs = result.fragment.name;
-            result.children = result.fragment.children.map(child =>
-                CompileEngine.expandFragments(child, fragmentNs)
-            );
-            delete result.fragment;
-        }
-
-        if (result.children) {
-            result.children = result.children.map(child =>
-                CompileEngine.expandFragments(child, ns)
-            );
-        }
-
-        return result;
-    }
-
-    /**
-     * 编译模板 — 核心编译
-     *
-     * 将根 TplNode 编译为 HTML 字符串 + 节点元数据集合。
-     * 根节点自动注册为 'root'，子节点按序编译。
-     *
-     * @param root - 已展开的模板根节点（无 fragment）
-     * @param logger - 日志器，用于嵌套深度警告
-     * @returns 编译中间产物 { html, indexPath, nodeMetas, exposeNames, i18nNodes }
-     *
-     * @example
-     * ```ts
-     * const result = CompileEngine.compileTemplate(expandedTpl, logger);
-     * // result.html: '<div class="title">...</div>'
-     * // result.indexPath: { root: [], title: [0] }
-     * // result.nodeMetas: { root: {...}, title: {...} }
-     * ```
+     * @param root - 模板根节点（可含 fragment）
+     * @returns 编译产物 { html, indexPath, nodeMetas, exposeNames, i18nNodes, permissionNodes }
      *
      * @remarks
-     * - 根节点会被注册为 'root'，indexPath 为空数组 []
+     * - 根节点强制注册为 'root'，indexPath 为空数组 []
      * - 子节点按 children 数组索引注册路径
+     * - fragment.children 替代 node.children，fragment.name 作为命名空间前缀
      */
-    static compileTemplate(root: TplNode, logger: any) {
-        const indexPath: NodeIndexPath = {};
-        const nodeMetas: Record<string, NodeMetadata> = {};
-        const exposeNames: string[] = [];
-        const i18nNodes: Array<{ name: string; field?: string; i18nKey: string }> = [];
-        const permissionNodes: Array<{ name: string; permission: boolean | string }> = [];
-
-        indexPath['root'] = [];
-        const rootMeta: NodeMetadata = {
-            name: 'root',
-            tag: root.tag,
+    static compileTemplate(root: TplNode): CompiledTemplateResult {
+        const ctx: CompileContext = {
+            indexPath: {},
+            nodeMetas: {},
+            exposeNames: [],
+            i18nNodes: [],
+            permissionNodes: [],
         };
-        CompileEngine._extractNodeFields(root, 'root', rootMeta);
-        nodeMetas['root'] = rootMeta;
 
-        const children = root.children || [];
-        const htmlParts: string[] = [];
+        // 根节点注册为 'root'
+        ctx.indexPath['root'] = [];
+        const rootResult = DecomposeEngine.decompose(root);
+        rootResult.meta.name = 'root';
+        ctx.nodeMetas['root'] = rootResult.meta;
 
-        for (let i = 0; i < children.length; i++) {
-            htmlParts.push(
-                CompileEngine.compileNode(children[i], [i], {
-                    indexPath,
-                    nodeMetas,
-                    exposeNames,
-                    i18nNodes,
-                    permissionNodes,
-                    logger,
-                })
-            );
+        // 收集根节点权限
+        if (rootResult.hasPermission) {
+            ctx.permissionNodes.push('root');
         }
 
+        // 确定 children（fragment 内联展开）
+        const { children, childNs } = CompileEngine.resolveChildren(root, undefined);
+
+        // 递归编译 children
+        const childHtmls: string[] = [];
+        for (let i = 0; i < children.length; i++) {
+            childHtmls.push(CompileEngine.compileNode(children[i], [i], ctx, childNs));
+        }
+
+        // 替换占位符
+        const html = rootResult.html.replace(CHILDREN_PLACEHOLDER, childHtmls.join(''));
+
         return {
-            html: htmlParts.join(''),
-            indexPath,
-            nodeMetas,
-            exposeNames,
-            i18nNodes,
-            permissionNodes,
+            html,
+            indexPath: ctx.indexPath,
+            nodeMetas: ctx.nodeMetas,
+            exposeNames: ctx.exposeNames,
+            i18nNodes: ctx.i18nNodes,
+            permissionNodes: ctx.permissionNodes,
         };
     }
 
     /**
-     * 编译单节点 — 内部分派
+     * 编译单节点 — 递归核心
      *
-     * 根据 node.type 存在与否分派到 compileTypeNode 或 compileTagNode。
-     * 嵌套超过 3 层时发出警告（建议拆分子组件）。
+     * 调用 DecomposeEngine.decompose 分解节点，注册元数据，
+     * fragment 内联展开，递归 children 并通过占位符组合 HTML。
      *
      * @param node - 当前编译的节点
      * @param path - 节点在树中的路径（索引数组）
-     * @param ctx - 编译上下文，包含 indexPath、nodeMetas、exposeNames 等
-     * @returns 生成的 HTML 字符串
-     *
-     * @example
-     * ```ts
-     * // type 节点
-     * const html = compileNode({ name: 'icon', type: IconComponent }, [0], ctx);
-     * // 返回: '<div class="q-skeleton"></div>'
-     *
-     * // tag 节点
-     * const html = compileNode({ name: 'title', tag: 'h1' }, [1], ctx);
-     * // 返回: '<h1></h1>'
-     * ```
-     *
-     * @remarks
-     * - 嵌套超过 3 层会输出警告，建议拆分子组件
-     */
-    private static compileNode(node: TplNode, path: number[], ctx: any): string {
-        if (path.length > 3) {
-            ctx.logger.warn?.(
-                `嵌套超过3层: ${node.name || node.tag}，路径 [${path}]，建议拆分为子组件`
-            );
-        }
-        return node.type
-            ? CompileEngine.compileTypeNode(node, path, ctx)
-            : CompileEngine.compileTagNode(node, path, ctx);
-    }
-
-    /**
-     * 编译组件类型节点 — type 节点
-     *
-     * 产出骨架占位 HTML（`<div class="q-skeleton"></div>`），
-     * 将组件类引用存入 nodeMetas.componentClass。
-     * type 为函数时直接引用，为字符串时从 window 解析。
-     *
-     * @param node - 包含 type 属性的节点
-     * @param path - 节点路径
      * @param ctx - 编译上下文
-     * @returns 骨架占位 HTML 字符串
-     *
-     * @example
-     * ```ts
-     * // 函数引用
-     * compileTypeNode({ name: 'icon', type: IconComponent }, [0], ctx);
-     * // 返回: '<div class="q-skeleton"></div>'
-     * // nodeMetas.icon.componentClass = IconComponent
-     *
-     * // 字符串引用
-     * compileTypeNode({ name: 'icon', type: 'IconComponent' }, [0], ctx);
-     * // 从 window.IconComponent 解析组件类
-     * ```
-     *
-     * @remarks
-     * - 生成的骨架 HTML 用于运行时定位和替换
-     * - 组件实例化后会替换骨架元素
-     */
-    private static compileTypeNode(node: TplNode, path: number[], ctx: any): string {
-        const name = node.name!;
-
-        ctx.indexPath[name] = path;
-
-        const meta: NodeMetadata = {
-            name,
-            tag: node.tag,
-            type: typeof node.type === 'string' ? node.type : undefined,
-            contentMode: 'html',
-            cls: node.cls ? `${node.cls} ${SKELETON_CLS}` : SKELETON_CLS,
-        };
-
-        if (typeof node.type === 'function') {
-            meta.componentClass = node.type as any;
-        } else if (typeof node.type === 'string') {
-            meta.componentClass = (window as any)[node.type];
-        }
-
-        CompileEngine._extractNodeFields(node, name, meta);
-
-        ctx.nodeMetas[name] = meta;
-        ctx.exposeNames.push(name);
-
-        return `<div class="${SKELETON_CLS}"></div>`;
-    }
-
-    /**
-     * 编译标签节点 — tag 节点
-     *
-     * 根据 tag 推导 contentMode，收集节点元数据，
-     * 委托 buildTagHtml 生成 HTML。
-     *
-     * @param node - 包含 tag 属性的节点
-     * @param path - 节点路径
-     * @param ctx - 编译上下文
+     * @param ns - 命名空间前缀（来自 fragment.name，递归内部使用）
      * @returns 生成的 HTML 字符串
-     *
-     * @example
-     * ```ts
-     * compileTagNode({ name: 'title', tag: 'h1' }, [0], ctx);
-     * // 返回: '<h1></h1>'
-     * // nodeMetas.title.contentMode = 'html'
-     *
-     * compileTagNode({ name: 'input', tag: 'input' }, [1], ctx);
-     * // 返回: '<input />'
-     * // nodeMetas.input.contentMode = 'value'
-     * ```
-     *
-     * @remarks
-     * - 自动推导 contentMode：input/value/select → 'value', img → 'src', a → 'link'
-     * - 无 name 的节点不会注册到 nodeMetas
      */
-    private static compileTagNode(node: TplNode, path: number[], ctx: any): string {
-        const tag = node.tag || 'div';
-
-        if (node.name) {
-            const name = node.name;
-
-            ctx.indexPath[name] = path;
-
-            const meta: NodeMetadata = {
-                name,
-                tag,
-                contentMode: CompileEngine.inferContentMode(tag),
-            };
-
-            CompileEngine._extractNodeFields(node, name, meta);
-
-            ctx.nodeMetas[name] = meta;
-            ctx.exposeNames.push(name);
-        }
-
-        return CompileEngine.buildTagHtml(tag, node, path, ctx);
-    }
-
-    /**
-     * 构建标签 HTML
-     *
-     * void 标签生成自闭合 `<tag />`，其余递归编译 children 后包裹开闭标签。
-     *
-     * @param tag - 标签名
-     * @param node - 节点对象
-     * @param path - 节点路径
-     * @param ctx - 编译上下文
-     * @returns 生成的 HTML 字符串
-     *
-     * @example
-     * ```ts
-     * // void 标签
-     * buildTagHtml('input', { tag: 'input' }, [0], ctx);
-     * // 返回: '<input />'
-     *
-     * // 带子节点的标签
-     * buildTagHtml('div', { tag: 'div', children: [...] }, [1], ctx);
-     * // 返回: '<div>...</div>'
-     * ```
-     *
-     * @remarks
-     * - void 标签包括：area, base, br, col, embed, hr, img, input, link, meta, param, source, track, wbr
-     */
-    private static buildTagHtml(tag: string, node: TplNode, path: number[], ctx: any): string {
-        const attrStr = CompileEngine._buildStaticAttrs(node);
-
-        if (VOID_TAGS.has(tag)) return attrStr ? `<${tag} ${attrStr} />` : `<${tag} />`;
-
-        const inner: string[] = [];
-        if (node.text) {
-            inner.push(escapeHtml(node.text));
-        }
-        if (node.children) {
-            for (let i = 0; i < node.children.length; i++) {
-                inner.push(CompileEngine.compileNode(node.children[i], [...path, i], ctx));
-            }
-        }
-        return attrStr
-            ? `<${tag} ${attrStr}>${inner.join('')}</${tag}>`
-            : `<${tag}>${inner.join('')}</${tag}>`;
-    }
-
-    /**
-     * 构建节点的静态 HTML 属性字符串
-     *
-     * 将模板中声明的 cls、hidden、attrs 等属性渲染为 HTML 属性，
-     * 确保编译产物包含这些静态属性，无需运行时二次应用。
-     *
-     * @param node - 模板节点
-     * @returns HTML 属性字符串（如 'class="q-hero__title" hidden'），无属性时返回空字符串
-     */
-    private static _buildStaticAttrs(node: TplNode): string {
-        const parts: string[] = [];
-
-        if (node.cls) {
-            parts.push(`class="${escapeHtml(node.cls)}"`);
-        }
-
-        if (node.hidden) {
-            parts.push('hidden');
-        }
-
-        if (node.attrs && typeof node.attrs === 'object') {
-            for (const [key, val] of Object.entries(node.attrs as Record<string, any>)) {
-                if (val === true) {
-                    parts.push(escapeHtml(key));
-                } else if (val !== false && val != null) {
-                    parts.push(`${escapeHtml(key)}="${escapeHtml(String(val))}"`);
-                }
-            }
-        }
-
-        if (node.role) {
-            parts.push(`role="${escapeHtml(node.role)}"`);
-        }
-
-        return parts.join(' ');
-    }
-
-    /**
-     * 统一提取节点字段 — 新规则
-     * 
-     * 设计理念：子组件自己处理配置，父组件只管 tag 节点
-     * 
-     * **tag 节点：**
-     * - tag/name → meta
-     * - cls → props.className
-     * - style/text/hidden/hiddenMode → props
-     * - role/attrs → attrs
-     * - x/y/width/height 等布局属性 → attrs
-     * - 其他 → attrs
-     * 
-     * **type 节点（组件）：**
-     * - type/name → meta
-     * - 其他所有字段 → config（传给子组件）
-     * 
-     * @param node - 模板节点
-     * @param name - 节点名称
-     * @param meta - 元数据对象（输出）
-     */
-    private static _extractNodeFields(
+    private static compileNode(
         node: TplNode,
-        name: string,
-        meta: NodeMetadata
-    ): void {
-        const isComponent = !!node.type;
-        const props: Record<string, any> = {};
-        const attrs: Record<string, any> = {};
-        const config: Record<string, any> = {};
-        
-        // 一次遍历所有字段
-        for (const [key, val] of Object.entries(node as Record<string, any>)) {
-            if (val === undefined) continue;
-            
-            // 特殊字段处理
-            if (key === 'tag' || key === 'type' || key === 'name') {
-                // 已经在调用处处理，跳过
-                continue;
-            }
-            
-            if (key === 'children' || key === 'fragment') {
-                // 子节点单独处理，跳过
-                continue;
-            }
-            
-            if (isComponent) {
-                // type 节点：所有字段 → config（传给子组件）
-                config[key] = val;
-            } else {
-                // tag 节点：按字段类型分类
-                switch (key) {
-                    case 'cls':
-                        props.className = val;
-                        break;
-                    case 'style':
-                    case 'text':
-                    case 'hidden':
-                    case 'hiddenMode':
-                        props[key] = val;
-                        break;
-                    case 'role':
-                        attrs.role = val;
-                        break;
-                    case 'attrs':
-                        // attrs 字段是对象，合并到 attrs
-                        if (typeof val === 'object' && val !== null) {
-                            Object.assign(attrs, val);
-                        }
-                        break;
-                    default:
-                        // 其他所有字段 → attrs（包括 x、y、width、height 等）
-                        attrs[key] = val;
-                        break;
-                }
-            }
-        }
-        
-        // 设置分类后的字段
-        if (isComponent) {
-            // type 节点：config 传给子组件
-            if (Object.keys(config).length > 0) {
-                meta.config = config;
-            }
-        } else {
-            // tag 节点：props 和 attrs
-            if (Object.keys(props).length > 0) {
-                meta.props = props;
-            }
-            if (Object.keys(attrs).length > 0) {
-                meta.attrs = attrs;
-            }
-        }
-    }
+        path: number[],
+        ctx: CompileContext,
+        ns?: string
+    ): string {
+        // 1. 应用命名空间前缀
+        const effectiveNode = ns && node.name ? { ...node, name: `${ns}:${node.name}` } : node;
 
-            if (key === 'children' || key === 'fragment') {
-                // 子节点单独处理，跳过
-                continue;
-            }
+        // 2. 调用 DecomposeEngine 分解节点
+        const result = DecomposeEngine.decompose(effectiveNode);
 
-            if (isComponent) {
-                // type 节点：所有字段 → config
-                config[key] = val;
-            } else {
-                // tag 节点：按字段类型分类
-                switch (key) {
-                    case 'cls':
-                        props.className = val;
-                        break;
-                    case 'style':
-                    case 'text':
-                    case 'hidden':
-                    case 'hiddenMode':
-                        props[key] = val;
-                        break;
-                    case 'role':
-                    case 'attrs':
-                        // attrs 可能是对象，需要合并
-                        if (typeof val === 'object' && val !== null) {
-                            Object.assign(attrs, val);
-                        } else {
-                            attrs[key] = val;
-                        }
-                        break;
-                    default:
-                        // 其他字段 → attrs
-                        attrs[key] = val;
-                        break;
-                }
+        // 3. 有 name → 注册到 nodeMap
+        if (result.hasName && result.name) {
+            ctx.indexPath[result.name] = path;
+            ctx.nodeMetas[result.name] = result.meta;
+            ctx.exposeNames.push(result.name);
+        }
+
+        // 4. 收集 i18n 节点
+        if (result.i18nKeys.length > 0 && result.name) {
+            for (const key of result.i18nKeys) {
+                ctx.i18nNodes.push({ name: result.name, ...key });
             }
         }
 
-        // 设置分类后的字段
-        if (isComponent) {
-            // type 节点：config 传给子组件
-            if (Object.keys(config).length > 0) {
-                meta.config = config;
-            }
-        } else {
-            // tag 节点：props 和 attrs
-            if (Object.keys(props).length > 0) {
-                meta.props = props;
-            }
-            if (Object.keys(attrs).length > 0) {
-                meta.attrs = attrs;
-            }
+        // 5. 收集权限节点（只收集名称，运行时由钩子函数决定 disabled/hidden）
+        if (result.hasPermission && result.name) {
+            ctx.permissionNodes.push(result.name);
         }
+
+        // 6. 组件节点返回骨架占位，不递归 children
+        if (result.isComponent) {
+            return result.html;
+        }
+
+        // 7. 确定 children（fragment 内联展开）
+        const { children, childNs } = CompileEngine.resolveChildren(node, ns);
+
+        // 8. 递归 children 并替换占位符
+        if (children.length > 0) {
+            const childHtmls: string[] = [];
+            for (let i = 0; i < children.length; i++) {
+                childHtmls.push(CompileEngine.compileNode(children[i], [...path, i], ctx, childNs));
+            }
+            return result.html.replace(CHILDREN_PLACEHOLDER, childHtmls.join(''));
+        }
+
+        return result.html;
     }
 
     /**
-     * 推导内容操作模式
+     * 解析节点的 children — fragment 内联展开
      *
-     * 根据 tag 名推导节点的内容操作方式：
-     * - input/select/textarea → 'value'（读写 value 属性）
-     * - img → 'src'（读写 src 属性）
-     * - a → 'link'（读写 text + href）
-     * - 其余 → 'html'（读写 innerHTML）
+     * 如果节点有 fragment，将 fragment.children 作为 children，
+     * fragment.name 作为子节点的命名空间前缀。
+     * 否则使用 node.children，继承父级的命名空间。
      *
-     * @param tag - 标签名（可选）
-     * @returns 内容操作模式
-     *
-     * @example
-     * ```ts
-     * inferContentMode('input');   // 'value'
-     * inferContentMode('img');     // 'src'
-     * inferContentMode('a');       // 'link'
-     * inferContentMode('div');     // 'html'
-     * inferContentMode();          // 'html'
-     * ```
-     *
-     * @remarks
-     * - 返回值决定 ChildNodePropsEngine 生成的属性类型
-     * - 'link' 模式会生成 text 和 href 两个属性
+     * @param node - 模板节点
+     * @param parentNs - 父级命名空间前缀
+     * @returns children 数组和子节点命名空间前缀
      */
-    private static inferContentMode(tag?: string): 'value' | 'src' | 'html' | 'link' {
-        if (!tag) return 'html';
-        const t = tag.toLowerCase();
-        if (t === 'input' || t === 'select' || t === 'textarea') return 'value';
-        if (t === 'img') return 'src';
-        if (t === 'a') return 'link';
-        return 'html';
+    private static resolveChildren(
+        node: TplNode,
+        parentNs?: string
+    ): {
+        children: TplNode[];
+        childNs?: string;
+    } {
+        if (node.fragment) {
+            return {
+                children: node.fragment.children,
+                childNs: node.fragment.name,
+            };
+        }
+        return {
+            children: node.children || [],
+            childNs: parentNs,
+        };
     }
-}
 
-/**
- * HTML 转义 — 防止 text 内容中的特殊字符破坏 HTML 结构
- *
- * @param str - 原始字符串
- * @returns 转义后的安全 HTML 字符串
- */
-function escapeHtml(str: string): string {
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    /**
+     * 创建模板元素 — 预编译 HTML 到 HTMLTemplateElement
+     *
+     * @param html - HTML 字符串
+     * @returns 预编译的模板元素（可 cloneNode 复用）
+     */
+    private static createTemplateElement(html: string): HTMLTemplateElement {
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        return template;
+    }
 }

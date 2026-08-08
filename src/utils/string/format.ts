@@ -104,3 +104,12 @@ export function splitWithEscaping(str: string, separator: string): string[] {
     // 将临时标记替换回实际的分隔符字符
     return parts.map(part => part.replace(new RegExp(tempMarker, 'g'), separator));
 }
+
+export function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}

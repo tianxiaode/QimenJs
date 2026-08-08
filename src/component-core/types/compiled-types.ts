@@ -1,27 +1,3 @@
-/**
- * compiled-types.ts — 模板编译产物类型
- *
- * 核心结构：NodeMetadata — 节点级唯一运行时数据载体
- * 编译时产出 nodeMetas（TplNode 字段直接带入），
- * 运行时浅复制 + 挂 el/component 构建 nodeMap。
- */
-
-import type {
-    FlexConfig,
-    GridConfig,
-    HiddenMode,
-    FloatDecl,
-    DragDecl,
-    DropDecl,
-} from './tpl-node-types';
-import type {
-    BadgeQuickConfig,
-    TooltipQuickConfig,
-    DialogQuickConfig,
-    PopoverQuickConfig,
-    IndicatorConfig,
-} from './init-context';
-
 // ══════════════════════════════════════════════════════════════
 // 节点元数据 — 唯一运行时数据载体
 // ══════════════════════════════════════════════════════════════
@@ -84,6 +60,9 @@ export interface NodeMetadata {
     /** 组件类型名 */
     type?: string;
 
+    /** 节点内容 */
+    text?: string;
+
     // ─── event：事件声明（从 TplNode 编译） ───
 
     /**
@@ -110,7 +89,9 @@ export interface NodeMetadata {
 
     // ─── component：组件专属 ───
 
-    /** @deprecated 使用 props 替代 */
+    /**
+     * 子组件配置，在子组件实例化的时候传递给子组件
+     */
     config?: Record<string, any>;
 
     /**
@@ -155,7 +136,6 @@ export interface NodeMetadata {
  * ```
  */
 export type NodeIndexPath = Record<string, number[]>;
-
 /**
  * 编译产物 — compileTemplate() 的返回值
  *
@@ -194,7 +174,7 @@ export interface CompiledTemplateResult {
     i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
 
     /** 权限节点列表 */
-    permissionNodes: Array<{ name: string; permission: boolean | string }>;
+    permissionNodes: string[];
 }
 
 /**
@@ -228,19 +208,20 @@ export interface CompiledTemplateCache {
     indexPath: NodeIndexPath;
     exposeNames: string[];
     i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
-    permissionNodes: Array<{ name: string; permission: boolean | string }>;
+    permissionNodes: string[];
     templateCache: HTMLTemplateElement;
 }
 
-/**
- * 编译后的组件模板 — 保留兼容，内部使用 CompiledTemplateCache
- *
- * @deprecated 直接使用 CompiledTemplateCache + 独立的 nodeMetas
- */
-export interface CompiledComponentTemplate extends CompiledTemplateResult {
-    /** HTMLTemplateElement 缓存，用于 cloneNode */
-    templateCache: HTMLTemplateElement;
-
-    /** 原始 body 定义 */
-    body?: Record<string, any>;
+/** 编译上下文 — 递归编译过程中共享的可变状态 */
+export interface CompileContext {
+    /** 命名节点的 DOM 位置索引 */
+    indexPath: NodeIndexPath;
+    /** 节点元数据集合 */
+    nodeMetas: Record<string, NodeMetadata>;
+    /** 暴露的属性名列表 */
+    exposeNames: string[];
+    /** i18n 节点列表 */
+    i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
+    /** 权限节点列表 */
+    permissionNodes: string[];
 }

@@ -5,7 +5,7 @@
  * Phase: 命名步骤集合，按顺序执行。
  */
 
-import type { InitContext } from '../../types/init-context';
+import type { InitContext } from './init-context';
 
 /** 初始化步骤函数类型，接收上下文，支持同步/异步返回 */
 export type InitStep = (ctx: InitContext) => void | Promise<void>;

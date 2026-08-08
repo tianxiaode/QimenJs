@@ -19,8 +19,7 @@ import { BadgeAbility } from './abilities/BadgeAbility';
 import { FloatAbility } from './abilities/FloatAbility';
 import { DragAbility } from './abilities/DragAbility';
 import { LifecycleAbility } from './abilities/LifecycleAbility';
-
-import type { ComponentProps } from './types/init-context';
+import { IComponentBase } from './types';
 
 /** 组件能力注册表，包含所有组件共享的系统能力与组件核心能力 */
 export const COMPONENT_ABILITIES = [
@@ -47,10 +46,10 @@ export const COMPONENT_ABILITIES = [
 ] as const satisfies readonly AbilityDefinition[];
 
 /** 组件实例接口，由能力注册表推断能力方法，并扩展生命周期钩子 */
-export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES> {
+export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES>, IComponentBase {
     onBeforeUnmount?(): void;
-    onAfterInit?(props?: ComponentProps): void;
-    onBeforeInit?(props?: ComponentProps): void;
+    onAfterInit?(): void;
+    onBeforeInit?(): void;
     onMounted?(): void;
     onUpdated?(data?: any): void;
     onResize?(entry: ResizeObserverEntry): void;

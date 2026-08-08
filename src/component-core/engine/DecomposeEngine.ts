@@ -1,5 +1,5 @@
 /**
- * DecomposeEngine — 拆解引擎
+ * DecomposeEngine — 拆解引擎（管线提取模式）
  *
  * 专门处理模板节点的字段拆解和分类
  *
@@ -9,332 +9,256 @@
  * - 有 name 节点：props 和 attrs 保存到 meta
  * - 组件字段也拆分为 props、attrs、config
  *
+ * 采用管线提取模式，将拆解过程分解为多个独立步骤
+ *
  * @module DecomposeEngine
  */
 
 import type { TplNode } from '../types/tpl-node-types';
-import type { NodeMetadata } from '../types/compiled-types';
+import { HTML_PROPS_SET } from '../constants/html-props-constants';
+import { ARIA_PROPS_SET } from '../constants/aria-props-constants';
+import { VOID_TAGS } from '../constants';
+import { string } from '@qimenjs/utils';
+import { DecomposeContext, DecomposeStep } from '../types';
 
 const I18N_PREFIX = 'i18n:';
 
-/** HTML 标准属性集合 */
-const HTML_PROPS_SET = new Set([
-    // 通用属性
-    'id',
-    'class',
-    'style',
-    'title',
-    'lang',
-    'dir',
-    'hidden',
-    'tabindex',
-    'accesskey',
-    'contenteditable',
-    'draggable',
-    'spellcheck',
-    'translate',
-    // 表单属性
-    'name',
-    'value',
-    'placeholder',
-    'disabled',
-    'readonly',
-    'required',
-    'checked',
-    'selected',
-    'multiple',
-    'maxlength',
-    'minlength',
-    'pattern',
-    'autocomplete',
-    'autofocus',
-    'form',
-    'formaction',
-    'formenctype',
-    'formmethod',
-    'formnovalidate',
-    'formtarget',
-    'list',
-    'step',
-    'min',
-    'max',
-    // 链接和图像属性
-    'href',
-    'target',
-    'rel',
-    'download',
-    'src',
-    'alt',
-    'width',
-    'height',
-    'loading',
-    'decoding',
-    'srcset',
-    'sizes',
-    'usemap',
-    'ismap',
-    // 音视频属性
-    'autoplay',
-    'controls',
-    'loop',
-    'muted',
-    'preload',
-    'poster',
-    'playsinline',
-    // 其他
-    'colspan',
-    'rowspan',
-    'headers',
-    'scope',
-    'datetime',
-    'cite',
-    'data',
-    'label',
-    'open',
-    'reversed',
-    'start',
-    'wrap',
-    'accept',
-    'accept-charset',
-    'action',
-    'enctype',
-    'method',
-    'novalidate',
-    'for',
-    'span',
-    'summary',
-]);
-
-/** 拆解结果 */
-export interface DecomposeResult {
-    meta: NodeMetadata;
-    html: string; // HTML 代码（无论有无 name）
-    i18nKeys?: Array<{ field?: string; i18nKey: string }>;
+/**
+ * 步骤1：提取 tag
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_tag(ctx: DecomposeContext): void {
+    ctx.meta.tag = ctx.clone.tag;
+    delete ctx.clone.tag;
 }
+
+/**
+ * 步骤2：提取 type（组件类型）
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_type(ctx: DecomposeContext): void {
+    ctx.meta.type = ctx.clone.type;
+    ctx.isComponent = !!ctx.meta.type;
+    delete ctx.clone.type;
+}
+
+/**
+ * 步骤3：提取 contentMode
+ *
+ *  @param ctx - 拆解上下文
+ */
+
+function _extract_contentMode(ctx: DecomposeContext): void {
+    ctx.meta.contentMode = ctx.clone.contentMode;
+    delete ctx.clone.contentMode;
+}
+
+/**
+ * 步骤4：提取 style
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_style(ctx: DecomposeContext): void {
+    ctx.meta.props!.style = ctx.clone.style;
+    delete ctx.clone.style;
+}
+
+/**
+ * 步骤4.5：提取 cssVars（自定义 CSS 变量）
+ *
+ * 将 cssVars 对象转为 CSS 变量声明，合并到 style 前部
+ * （变量声明在前，后续样式可引用）。在 _extract_style 之后执行。
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_cssVars(ctx: DecomposeContext): void {
+    const cssVars = ctx.clone.cssVars;
+    if (!cssVars) return;
+    const varsStr = Object.entries(cssVars)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('; ');
+    const existing = ctx.meta.props!.style;
+    ctx.meta.props!.style =
+        typeof existing === 'string' && existing ? `${varsStr}; ${existing}` : varsStr;
+    delete ctx.clone.cssVars;
+}
+/**
+ * 步骤5：提取 hidden 和 hiddenMode
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_hidden(ctx: DecomposeContext): void {
+    ctx.meta.props!.hidden = ctx.clone.hidden;
+    ctx.meta.props!.hiddenMode = ctx.clone.hiddenMode;
+    delete ctx.clone.hidden;
+    delete ctx.clone.hiddenMode;
+}
+
+/**
+ * 步骤6：提取 hint（提示文本，支持 i18n）
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_hint(ctx: DecomposeContext) {
+    const hint = ctx.clone.hint;
+    //给节点初始值
+    ctx.meta.props!.title = hint ?? undefined;
+    //检查是否需要国际化
+    if (typeof hint === 'string' && hint.startsWith(I18N_PREFIX)) {
+        ctx.i18nKeys.push({ field: 'hint', i18nKey: hint.slice(I18N_PREFIX.length) });
+    }
+    delete ctx.clone.hint;
+}
+
+/**
+ * 步骤7：提取 cls（类名）
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_cls(ctx: DecomposeContext): void {
+    ctx.meta.props!.className = ctx.clone.cls;
+    delete ctx.clone.cls;
+}
+
+/**
+ * 步骤8：提取 text（特殊处理 i18n）
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_text(ctx: DecomposeContext): void {
+    const text = ctx.clone.text;
+    ctx.meta.text = text;
+
+    // 检查 i18n 前缀
+    if (typeof text === 'string' && text.startsWith(I18N_PREFIX)) {
+        ctx.i18nKeys.push({ field: 'text', i18nKey: text.slice(I18N_PREFIX.length) });
+    }
+
+    delete ctx.clone.text;
+}
+
+/**
+ * 步骤8：分类剩余字段
+ *
+ * @param ctx - 拆解上下文
+ */
+function _classify_remaining_fields(ctx: DecomposeContext): void {
+    for (const [key, val] of Object.entries(ctx.clone)) {
+        if (HTML_PROPS_SET.has(key)) {
+            ctx.meta.props![key] = val;
+            continue;
+        }
+
+        if (ARIA_PROPS_SET.has(key) || key.startsWith('data_')) {
+            ctx.meta.attrs![key.replace('_', '-')] = val;
+        }
+
+        ctx.meta.config![key] = val;
+        // 检查 i18n 前缀
+        if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
+            ctx.i18nKeys.push({ field: key, i18nKey: val.slice(I18N_PREFIX.length) });
+        }
+    }
+}
+
+/**
+ * 步骤9：构建 构建HTML
+ *
+ * @param ctx - 拆解上下文
+ */
+function _build_html(ctx: DecomposeContext): void {
+    const tag = ctx.meta.tag ?? 'div';
+    const meta = ctx.meta;
+
+    if (ctx.isComponent) {
+        ctx.html = `<cmp class="q-skeleton"></cmp>`;
+        return;
+    }
+
+    const hasChildren = !!(ctx.node.children && ctx.node.children.length > 0);
+    const placeholder = hasChildren ? '<!--q-children-->' : '';
+
+    if (ctx.hasName) {
+        ctx.html = `<${tag}>${placeholder}</${tag}>`;
+        return;
+    }
+
+    const props = meta.props ?? {};
+    const attrs = meta.attrs ?? {};
+    const attrParts: string[] = [];
+
+    if (props.className) {
+        attrParts.push(`class="${string.escapeHtml(props.className)}"`);
+    }
+
+    if (props.style) {
+        attrParts.push(`style="${string.escapeHtml(props.style)}"`);
+    }
+
+    if (props.hidden) {
+        attrParts.push('hidden');
+    }
+
+    for (const [key, val] of Object.entries(attrs)) {
+        if (val === true) {
+            attrParts.push(string.escapeHtml(key));
+        } else if (val !== false && val != null) {
+            attrParts.push(`${string.escapeHtml(key)}="${string.escapeHtml(String(val))}"`);
+        }
+    }
+
+    const attrStr = attrParts.length > 0 ? ' ' + attrParts.join(' ') : '';
+    const text = meta.text ? string.escapeHtml(meta.text) : '';
+    const inner = text + placeholder;
+
+    ctx.html = VOID_TAGS.has(tag.toLowerCase())
+        ? `<${tag}${attrStr} />`
+        : `<${tag}${attrStr}>${inner}</${tag}>`;
+}
+
+/** 拆解管线步骤列表 */
+const DECOMPOSE_STEPS: DecomposeStep[] = [
+    _extract_tag,
+    _extract_type,
+    _extract_contentMode,
+    _extract_style,
+    _extract_cssVars,
+    _extract_hidden,
+    _extract_hint,
+    _extract_cls,
+    _extract_text,
+    _classify_remaining_fields,
+    _build_html,
+];
 
 /**
  * 拆解引擎
  */
+// DecomposeEngine.ts
 export class DecomposeEngine {
-    /**
-     * 拆解节点字段
-     *
-     * @param node - 原始模板节点
-     * @param name - 节点名称（可选）
-     * @returns 拆解结果
-     */
-    static decompose(node: TplNode, name?: string): DecomposeResult {
-        // 1. 浅克隆原始配置
-        const clone = { ...node } as Record<string, any>;
-
-        // 2. 提取 tag/name/type 到 meta
-        const meta: NodeMetadata = {
-            name: name || '',
-            props: {},
-            attrs: {},
-            config: {},
+    static decompose(node: TplNode): DecomposeContext {
+        const clone = { ...node };
+        const name = clone.name ?? '';
+        const ctx: DecomposeContext = {
+            node,
+            name,
+            clone: clone,
+            meta: { name, props: {}, attrs: {}, config: {}, action: clone.action },
+            html: '',
+            i18nKeys: [],
+            hasPermission: !!name && !!clone.permission,
+            hasName: !!clone.name,
+            isComponent: false,
         };
-
-        if (clone.tag) {
-            meta.tag = clone.tag;
-            delete clone.tag;
-        }
-
-        if (clone.type) {
-            meta.type = typeof clone.type === 'string' ? clone.type : undefined;
-            if (typeof clone.type === 'function') {
-                meta.componentClass = clone.type;
-            } else if (typeof clone.type === 'string') {
-                meta.componentClass = (window as any)[clone.type];
-            }
-            delete clone.type;
-        }
-
         delete clone.name;
-
-        // 3. 判断是否是无 name 节点
-        const hasName = !!name;
-        const isComponent = !!meta.componentClass || !!meta.type;
-
-        // 4. 提取 style
-        if (clone.style !== undefined) {
-            meta.props = meta.props || {};
-            meta.props.style = clone.style;
-            delete clone.style;
+        delete clone.permission;
+        delete clone.action;
+        for (const step of DECOMPOSE_STEPS) {
+            step(ctx);
         }
 
-        // 5. 提取 attrs
-        if (clone.attrs !== undefined && typeof clone.attrs === 'object') {
-            meta.attrs = { ...clone.attrs };
-            delete clone.attrs;
-        }
-
-        // 6. 提取 hidden 和 hiddenMode
-        if (clone.hidden !== undefined) {
-            meta.props = meta.props || {};
-            meta.props.hidden = clone.hidden;
-            delete clone.hidden;
-        }
-
-        if (clone.hiddenMode !== undefined) {
-            meta.props = meta.props || {};
-            meta.props.hiddenMode = clone.hiddenMode;
-            delete clone.hiddenMode;
-        }
-
-        // 7. 提取 cls
-        if (clone.cls !== undefined) {
-            meta.props = meta.props || {};
-            meta.props.className = clone.cls;
-            delete clone.cls;
-        }
-
-        // 8. 提取 text（特殊处理 i18n）
-        const i18nKeys: Array<{ field?: string; i18nKey: string }> = [];
-        if (clone.text !== undefined) {
-            if (isComponent) {
-                // 组件：text → config
-                meta.config = meta.config || {};
-                meta.config.text = clone.text;
-            } else {
-                // tag：text → meta.text
-                meta.text = clone.text;
-            }
-
-            // 检查 i18n 前缀
-            if (typeof clone.text === 'string' && clone.text.startsWith(I18N_PREFIX)) {
-                i18nKeys.push({ field: 'text', i18nKey: clone.text.slice(I18N_PREFIX.length) });
-            }
-
-            delete clone.text;
-        }
-
-        // 9. 循环遍历剩余字段
-        for (const [key, val] of Object.entries(clone)) {
-            if (val === undefined) continue;
-            if (key === 'children' || key === 'fragment') continue;
-
-            if (isComponent) {
-                // 组件：所有字段 → config
-                meta.config = meta.config || {};
-                meta.config[key] = val;
-            } else {
-                // tag：按字段类型分类
-                if (DEFAULT_NODE_PROP_MAP[key]) {
-                    // htmlProps → props
-                    meta.props = meta.props || {};
-                    meta.props[key] = val;
-                } else if (key === 'role') {
-                    // role → attrs
-                    meta.attrs = meta.attrs || {};
-                    meta.attrs.role = val;
-                } else {
-                    // 其他字段 → attrs
-                    meta.attrs = meta.attrs || {};
-                    meta.attrs[key] = val;
-                }
-            }
-
-            // 检查 i18n 前缀
-            if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
-                i18nKeys.push({ field: key, i18nKey: val.slice(I18N_PREFIX.length) });
-            }
-        }
-
-        // 10. 构建结果
-        const result: DecomposeResult = { meta };
-
-        if (i18nKeys.length > 0) {
-            result.i18nKeys = i18nKeys;
-        }
-
-        // 无 name 节点：构建完整 HTML
-        if (!hasName) {
-            result.html = DecomposeEngine.buildHTML(meta);
-        }
-
-        return result;
+        return ctx;
     }
-
-    /**
-     * 构建无 name 节点的 HTML
-     *
-     * @param meta - 节点元数据
-     * @returns HTML 字符串
-     */
-    private static buildHTML(meta: NodeMetadata): string {
-        if (meta.componentClass || meta.type) {
-            // 组件：生成占位符
-            return '<cmp class="q-skeleton"></cmp>';
-        }
-
-        const tag = meta.tag || 'div';
-        const attrs: string[] = [];
-
-        // 添加 className
-        if (meta.props?.className) {
-            attrs.push(`class="${escapeHtml(meta.props.className)}"`);
-        }
-
-        // 添加 style
-        if (meta.props?.style) {
-            attrs.push(`style="${escapeHtml(meta.props.style)}"`);
-        }
-
-        // 添加 hidden
-        if (meta.props?.hidden) {
-            attrs.push('hidden');
-        }
-
-        // 添加其他 attrs
-        if (meta.attrs) {
-            for (const [key, val] of Object.entries(meta.attrs)) {
-                if (val === true) {
-                    attrs.push(escapeHtml(key));
-                } else if (val !== false && val != null) {
-                    attrs.push(`${escapeHtml(key)}="${escapeHtml(String(val))}"`);
-                }
-            }
-        }
-
-        const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
-
-        // 处理 text 内容
-        const text = meta.text ? escapeHtml(meta.text) : '';
-
-        // 自闭合标签
-        const voidTags = new Set([
-            'area',
-            'base',
-            'br',
-            'col',
-            'embed',
-            'hr',
-            'img',
-            'input',
-            'link',
-            'meta',
-            'param',
-            'source',
-            'track',
-            'wbr',
-        ]);
-        if (voidTags.has(tag.toLowerCase())) {
-            return `<${tag}${attrStr} />`;
-        }
-
-        return `<${tag}${attrStr}>${text}</${tag}>`;
-    }
-}
-
-/**
- * HTML 转义
- */
-function escapeHtml(str: string): string {
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }

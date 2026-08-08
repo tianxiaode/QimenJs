@@ -34,8 +34,7 @@ import { createInitContext } from './types/init-context';
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { CompileEngine, TplInspector } from './engine';
-import { TplNode } from './types';
+import { ComponentOptions, TplNode } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -109,6 +108,9 @@ export class Component extends ComposableBase {
      * btn.action = 'create';  // 运行时更改
      */
     action: string;
+    options: ComponentOptions;
+
+    /** 组件实例化上下文 */
 
     domEvents?: DomEventsMap;
     eventKey?: string | { key: string; fixed?: boolean };
@@ -243,26 +245,16 @@ export class Component extends ComposableBase {
 
     private _ready: Promise<void> = Promise.resolve();
 
-    constructor(props?: ComponentProps) {
+    constructor(options?: ComponentOptions) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.props = props ?? {};
+        this.options = options ?? {};
         this.action = this.props.action ?? '';
-        this.eventKey = this.props.eventKey;
-        this.entityKey = this.props.entityKey;
-        this.drag = (this.props as any).drag;
-        this.dragHandle = (this.props as any).dragHandle;
-        this.drop = (this.props as any).drop;
-        this.dropZone = (this.props as any).dropZone;
-        this.parent = this.props.parent;
-        this.slotName = this.props.slotName;
-        this._rawProps = extractRawProps(this.props);
-        this.meta = {};
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;
         this._disposing = false;
-        this.id = this.props.id || getId('cmp');
+        this.id = this.options.config?.id || getId('cmp');
         this._initFloatsFromProps();
         this.init();
     }
@@ -387,36 +379,36 @@ Component.use(COMPONENT_ABILITIES);
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}
 
-/** 构造函数 props 中的框架字段名集合 */
-const FRAMEWORK_PROP_KEYS = new Set([
-    'id',
-    'localData',
-    'localDataKey',
-    'action',
-    'tooltip',
-    'dialog',
-    'loading',
-    'eventKey',
-    'entityKey',
-    'parent',
-    'slotName',
-    'drag',
-    'dragHandle',
-    'drop',
-    'dropZone',
-]);
+// /** 构造函数 props 中的框架字段名集合 */
+// const FRAMEWORK_PROP_KEYS = new Set([
+//     'id',
+//     'localData',
+//     'localDataKey',
+//     'action',
+//     'tooltip',
+//     'dialog',
+//     'loading',
+//     'eventKey',
+//     'entityKey',
+//     'parent',
+//     'slotName',
+//     'drag',
+//     'dragHandle',
+//     'drop',
+//     'dropZone',
+// ]);
 
-/**
- * 从构造函数 props 中提取自定义属性（排除框架字段）
- *
- * 框架字段（parent/slotName/eventKey 等）由构造函数直接消费，
- * 剩余字段存入 _rawProps，由 applyConfig 管线步骤处理。
- */
-function extractRawProps(props: Record<string, any>): Record<string, any> {
-    const result: Record<string, any> = {};
-    for (const [key, val] of Object.entries(props)) {
-        if (FRAMEWORK_PROP_KEYS.has(key)) continue;
-        if (val !== undefined) result[key] = val;
-    }
-    return result;
-}
+// /**
+//  * 从构造函数 props 中提取自定义属性（排除框架字段）
+//  *
+//  * 框架字段（parent/slotName/eventKey 等）由构造函数直接消费，
+//  * 剩余字段存入 _rawProps，由 applyConfig 管线步骤处理。
+//  */
+// function extractRawProps(props: Record<string, any>): Record<string, any> {
+//     const result: Record<string, any> = {};
+//     for (const [key, val] of Object.entries(props)) {
+//         if (FRAMEWORK_PROP_KEYS.has(key)) continue;
+//         if (val !== undefined) result[key] = val;
+//     }
+//     return result;
+// }

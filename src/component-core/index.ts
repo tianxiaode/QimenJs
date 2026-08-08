@@ -58,7 +58,7 @@ export type {
     CompiledTemplateResult,
     CompiledTemplateCache,
 } from './types/compiled-types';
-export type { ComponentTemplate, BodyDef, LifecycleHooks } from './types/component-template';
+export type { ComponentTemplate, BodyDef, LifecycleHooks } from './types/component-types';
 export type {
     TplNode,
     TplFragment,

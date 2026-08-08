@@ -1,0 +1,62 @@
+// theme/layout.css.ts
+
+/** 布局工具类 - 主题提供 */
+export const layoutCSS = `
+/* ===== Flex 布局 ===== */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+
+/* 方向 */
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+.flex-row-reverse { flex-direction: row-reverse; }
+.flex-col-reverse { flex-direction: column-reverse; }
+
+/* 对齐 */
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.items-stretch { align-items: stretch; }
+
+/* 主轴对齐 */
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
+
+/* 换行 */
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+
+/* 伸缩 */
+.flex-1 { flex: 1; }
+.flex-auto { flex: auto; }
+.flex-none { flex: none; }
+
+/* ===== Gap 间距（引用主题 spacing token） ===== */
+.gap-0 { gap: 0; }
+.gap-xs { gap: var(--q-spacing-xs); }
+.gap-sm { gap: var(--q-spacing-sm); }
+.gap-md { gap: var(--q-spacing-md); }
+.gap-lg { gap: var(--q-spacing-lg); }
+.gap-xl { gap: var(--q-spacing-xl); }
+
+/* 行/列独立间距 */
+.gap-x-sm { column-gap: var(--q-spacing-sm); }
+.gap-y-sm { row-gap: var(--q-spacing-sm); }
+
+/* ===== Grid 布局 ===== */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ===== 尺寸 ===== */
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.w-screen { width: 100vw; }
+.h-screen { height: 100vh; }
+`;

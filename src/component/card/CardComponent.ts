@@ -2,7 +2,6 @@
  * CardComponent 卡片组件
  *
  * 通用内容容器，由 header + body + footer 三区组成。
- * header 通过 HeaderFragment 模板片段内联，无组件边界。
  *
  * @example
  * ```ts

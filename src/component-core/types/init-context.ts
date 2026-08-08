@@ -158,72 +158,6 @@ export interface IndicatorConfig {
     emits?: Record<string, string>;
 }
 
-/** 组件属性接口，定义组件初始化时可传入的所有属性 */
-export interface ComponentProps {
-    /**
-     * 组件唯一标识
-     *
-     * 用于在组件树中定位和引用组件。
-     * 可通过 component.id 访问。
-     */
-    id?: string;
-
-    /**
-     * 本地数据源
-     *
-     * key 为数据源名称，value 为数据数组。
-     * 与 localDataKey 配合使用，指定组件渲染使用的数据源。
-     *
-     * @example
-     * ```ts
-     * localData: {
-     *     users: [{ id: 1, name: 'Alice' }],
-     *     roles: [{ id: 1, name: 'Admin' }]
-     * }
-     * ```
-     */
-    localData?: Record<string, any[]>;
-
-    /**
-     * 本地数据激活 key
-     *
-     * 声明组件渲染使用的数据源，对应 localData 中的 key。
-     * 如 localDataKey: 'users'，则组件使用 localData.users 渲染。
-     */
-    localDataKey?: string;
-
-    /**
-     * 语义动作名
-     *
-     * 构造时传入，赋值到 component.action。
-     * DomEventsEngine 第三层 key 匹配此值。
-     */
-    action?: string;
-
-    /** 提示浮层快捷配置，null 时不触发 */
-    tooltip?: TooltipQuickConfig | string | null;
-
-    /** 对话框浮层快捷配置，null 时不触发 */
-    dialog?: DialogQuickConfig | null;
-
-    /** 加载浮层快捷配置，null 时不触发 */
-    loading?: LoadingQuickConfig | null;
-
-    /** 组件事件 key，ComponentEventBus 通道标识 */
-    eventKey?: string | { key: string; fixed?: boolean };
-
-    /** 实体事件 key，EntityEventBus 通道标识 */
-    entityKey?: string | { key: string; fixed?: boolean };
-
-    /**
-     * 其他自定义属性
-     *
-     * 传递给组件的任意属性，如 title、disabled、onClick 等。
-     * 会自动映射到组件实例的对应属性。
-     */
-    [key: string]: any;
-}
-
 /**
  * InitContext — 管线上下文
  *
@@ -261,13 +195,6 @@ export interface InitContext {
     instance: any;
 
     /**
-     * 传入参数
-     *
-     * 组件实例化时接收的参数，包含 id、localData 等。
-     */
-    props: ComponentProps;
-
-    /**
      * 组件类
      *
      * 组件的构造函数，可访问静态属性（如 _templateRegistrar）。
@@ -297,35 +224,35 @@ export interface InitContext {
     steps: string[];
 }
 
-/**
- * 创建初始上下文
- *
- * 初始化管线的入口，创建 InitContext 对象。
- * nodeMapMgr 初始为 null，由 ensureNodeMap 步骤填充。
- *
- * @param instance - 组件实例
- * @param props - 传入参数
- * @returns 初始化上下文对象
- *
- * @example
- * ```ts
- * class MyComponent extends TemplateComponent {
- *     constructor(props: ComponentProps) {
- *         super();
- *         const ctx = createInitContext(this, props);
- *         runInitPipeline(ctx);
- *     }
- * }
- * ```
- */
-export function createInitContext(instance: any, props: ComponentProps): InitContext {
-    const ctor = instance.constructor as any;
-    return {
-        instance,
-        props,
-        ctor,
-        nodeMapMgr: null,
-        debug: ctor.__runtimeDebug === true,
-        steps: [],
-    };
-}
+// /**
+//  * 创建初始上下文
+//  *
+//  * 初始化管线的入口，创建 InitContext 对象。
+//  * nodeMapMgr 初始为 null，由 ensureNodeMap 步骤填充。
+//  *
+//  * @param instance - 组件实例
+//  * @param props - 传入参数
+//  * @returns 初始化上下文对象
+//  *
+//  * @example
+//  * ```ts
+//  * class MyComponent extends TemplateComponent {
+//  *     constructor(props: ComponentProps) {
+//  *         super();
+//  *         const ctx = createInitContext(this, props);
+//  *         runInitPipeline(ctx);
+//  *     }
+//  * }
+//  * ```
+//  */
+// export function createInitContext(instance: any, props: ComponentProps): InitContext {
+//     const ctor = instance.constructor as any;
+//     return {
+//         instance,
+//         props,
+//         ctor,
+//         nodeMapMgr: null,
+//         debug: ctor.__runtimeDebug === true,
+//         steps: [],
+//     };
+// }

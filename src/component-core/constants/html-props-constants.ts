@@ -89,33 +89,3 @@ export const HTML_PROPS_SET = new Set([
     'span',
     'summary',
 ]);
-
-/** 字段名映射（hint → title） */
-export const FIELD_ALIAS_MAP: Record<string, string> = {
-    hint: 'title', // hint 映射为 title
-};
-
-/** 特性名称集合（组件特性，不作为普通属性） */
-export const FEATURE_SET = new Set([
-    // 布局特性
-    'flex',
-    'grid',
-    // 拖拽特性
-    'drag',
-    'drop',
-    'dragHandle',
-    'dropZone',
-    // 浮层特性
-    'float',
-    'badge',
-    'tooltip',
-    'dialog',
-    'popover',
-    // 动画特性
-    'animation',
-    // 其他特性
-    'indicator',
-]);
-
-/** 权限相关字段 */
-export const PERMISSION_FIELDS = new Set(['permission']);
