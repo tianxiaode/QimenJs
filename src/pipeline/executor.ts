@@ -8,14 +8,13 @@
  */
 
 import { Logger } from '@/logger';
+import { ExecutionStep, BaseContext } from '@/context';
 import type {
     Processor,
-    ExecutionStep,
     PipelineOptions,
     PipelineResult,
     PipelineStats,
     IPipelineExecutor,
-    IExecutableContext,
 } from './types';
 
 /**
@@ -201,14 +200,14 @@ export class Pipeline implements IPipelineExecutor {
      * 检查是否已熔断
      */
     private isTerminated<T>(context: T): boolean {
-        return (context as IExecutableContext).metadata?.terminate === true;
+        return (context as BaseContext).metadata?.terminate === true;
     }
 
     /**
      * 设置错误状态
      */
     private setError<T>(context: T, error: any): void {
-        const ctx = context as IExecutableContext;
+        const ctx = context as BaseContext;
         ctx.error = error;
         if (!ctx.metadata) {
             ctx.metadata = {};

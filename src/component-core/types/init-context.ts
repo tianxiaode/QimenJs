@@ -24,7 +24,7 @@
  * - steps: 已执行的步骤列表
  */
 
-import type { INodeMapManager } from './node-map-manager-types';
+import { IComponentBase } from './component-types';
 
 /**
  * ComponentProps — 组件运行时传入参数
@@ -192,22 +192,7 @@ export interface InitContext {
      *
      * 正在初始化的组件实例，step 函数可对其进行操作。
      */
-    instance: any;
-
-    /**
-     * 组件类
-     *
-     * 组件的构造函数，可访问静态属性（如 _templateRegistrar）。
-     */
-    ctor: any;
-
-    /**
-     * 节点映射管理器
-     *
-     * 管理组件的 nodeMap，提供 get/set/remove 等方法。
-     * 由 ensureNodeMap 步骤填充。
-     */
-    nodeMapMgr: INodeMapManager | null;
+    instance: IComponentBase;
 
     /**
      * 调试模式
@@ -215,44 +200,6 @@ export interface InitContext {
      * 从 ctor.__runtimeDebug 读取，用于控制调试输出。
      */
     debug: boolean;
-
-    /**
-     * 已执行的步骤列表
-     *
-     * 记录管线执行过程，用于调试和追踪。
-     */
-    steps: string[];
 }
 
-// /**
-//  * 创建初始上下文
-//  *
-//  * 初始化管线的入口，创建 InitContext 对象。
-//  * nodeMapMgr 初始为 null，由 ensureNodeMap 步骤填充。
-//  *
-//  * @param instance - 组件实例
-//  * @param props - 传入参数
-//  * @returns 初始化上下文对象
-//  *
-//  * @example
-//  * ```ts
-//  * class MyComponent extends TemplateComponent {
-//  *     constructor(props: ComponentProps) {
-//  *         super();
-//  *         const ctx = createInitContext(this, props);
-//  *         runInitPipeline(ctx);
-//  *     }
-//  * }
-//  * ```
-//  */
-// export function createInitContext(instance: any, props: ComponentProps): InitContext {
-//     const ctor = instance.constructor as any;
-//     return {
-//         instance,
-//         props,
-//         ctor,
-//         nodeMapMgr: null,
-//         debug: ctor.__runtimeDebug === true,
-//         steps: [],
-//     };
-// }
+export type InitStep = (ctx: InitContext) => void;

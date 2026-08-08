@@ -6,13 +6,8 @@
  *
  * @module context/RequestContextBuilder
  */
-
-import type {
-    RequestContext,
-    ExecutionStep,
-    HttpMethod,
-    HttpResponseType,
-} from './types/request-context';
+import { ExecutionStep } from './base';
+import type { RequestContext, HttpMethod } from './types';
 import { Registry } from '@qimenjs/registry';
 
 /**

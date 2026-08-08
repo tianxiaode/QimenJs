@@ -1,4 +1,6 @@
+import { ILogger } from '@/logger';
 import type { TplNode } from './tpl-node-types';
+import { INodeMapManager } from './node-map-manager-types';
 
 // ══════════════════════════════════════════════════════════════
 // 生命周期钩子
@@ -28,19 +30,78 @@ export interface LifecycleHooks {
     onBeforeUnmount?: () => void;
     /** 销毁前（组件清理的唯一入口，框架销毁不可覆写） */
     onBeforeDispose?: () => void;
+    /** 语言变化 */
+    onLocaleChange?(): void;
+    /** 权限变化 */
+    onPermissionChange?(data?: any): void;
 }
 
-/** 组件属性接口，定义组件初始化时可传入的所有属性 */
+/**
+ * 标准化选项（内部使用）
+ *
+ * 系统保留字段用 $ 前缀
+ */
+export interface StructuredOptions {
+    /** 父组件引用 */
+    parent?: IComponentBase;
+    /** 要挂载的容器节点 */
+    container?: HTMLElement;
+    /** 标准化后的 props */
+    $props: Record<string, any>;
+    /** 标准化后的 attrs */
+    $attrs: Record<string, any>;
+    /** 标准化后的 config */
+    $config: Record<string, any>;
+    /** 父组件插槽名称 */
+    slotName: string;
+    /** 业务字段（用户自定义） */
+    [key: string]: any;
+}
+
+/**
+ * 组件选项（平铺模式）
+ *
+ * 开发者直接 new 组件时使用
+ */
 export interface ComponentOptions {
-    /** 父传入的根节点属性 */
-    props?: Record<string, any>;
-    /** 父传入的根节点 attrs */
+    /** 组件 ID */
+    id?: string;
+    /** 父组件引用 */
+    parent?: IComponentBase;
+    /** 父组件插槽名称 */
+    slotName?: string;
+    /** 要挂载的容器节点 */
+    container?: HTMLElement;
+    /** 类名 */
+    cls?: string;
+    /** 样式 */
+    style?: Record<string, any>;
+    /** 语义动作 */
+    action?: string;
+    /** DOM 属性（data-*、aria-* 等） */
     attrs?: Record<string, any>;
-    /** 父传入的组件初始配置 */
-    config?: Record<string, any>;
+    /** 组件属性（disabled、value 等） */
+    props?: Record<string, any>;
+    /** 其他自定义字段 */
+    [key: string]: any;
 }
 
-export interface IComponentBase {
+/**
+ * 组件选项（联合类型）
+ */
+export type ComponentOptionsUnion = ComponentOptions | StructuredOptions;
+
+export interface IComponentBase extends LifecycleHooks {
+    /** 组件 ID */
+    id: string;
+    /** 组件日志接口 */
+    logger: ILogger;
+    /** 组件类型 */
+    type: string;
+    /** 组件根节点 */
+    el?: HTMLElement;
+    /** 组件节点管理器 */
+    nodeMapMgr: INodeMapManager;
     /**
      * 模板根节点定义
      *
@@ -50,5 +111,7 @@ export interface IComponentBase {
     get tpl(): TplNode;
 
     /** 组件初始化选项（外部传入） */
-    options: ComponentOptions;
+    options: ComponentOptionsUnion;
+
+    mountChild(el: HTMLElement, slotName: string): void;
 }

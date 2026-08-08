@@ -9,9 +9,6 @@
 
 import type { ExecutionStep } from '../base';
 
-// 重新导出 ExecutionStep
-export type { ExecutionStep };
-
 /**
  * HTTP 方法类型
  */

@@ -92,7 +92,7 @@ export interface NodeMetadata {
     /**
      * 子组件配置，在子组件实例化的时候传递给子组件
      */
-    config?: Record<string, any>;
+    options?: Record<string, any>;
 
     /**
      * DOM 节点 HTML 属性 — 在 DEFAULT_NODE_PROP_MAP 中有映射的字段

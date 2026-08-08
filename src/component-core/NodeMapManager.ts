@@ -13,9 +13,7 @@
  */
 
 import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from './types/compiled-types';
-import type { INodeMapManager } from './types/node-map-manager-types';
-import type { BadgeQuickConfig } from './types/init-context';
-import { findByPath } from './engine/utils/dom-path';
+import type { INodeMapManager, BadgeQuickConfig } from './types';
 import { SKELETON_CLS } from './constants/compile-constants';
 
 /** 运行时 DOM 管理器，负责模板克隆、节点映射构建、子组件挂载与动态替换 */
@@ -110,7 +108,7 @@ export class NodeMapManager implements INodeMapManager {
         return this._cache.i18nNodes;
     }
 
-    get permissionNodes(): Array<{ name: string; permission: boolean | string }> {
+    get permissionNodes(): string[] {
         return this._cache.permissionNodes;
     }
 
@@ -543,7 +541,7 @@ export class NodeMapManager implements INodeMapManager {
             const meta = nodeMetas[name];
             if (!meta) continue;
 
-            const el = findByPath(this._el, path);
+            const el = this.findByPath(this._el, path);
             if (!el) continue;
 
             this._map[name] = { ...meta, el };
@@ -681,5 +679,27 @@ export class NodeMapManager implements INodeMapManager {
         for (const [name, meta] of Object.entries(childMap)) {
             this._map[name] = meta;
         }
+    }
+
+    /**
+     * 按子节点索引路径定位 DOM 元素
+     *
+     * @param root - 搜索起点元素
+     * @param path - 子节点索引路径（由编译时 indexPath 产出）
+     * @returns 定位到的 HTMLElement，路径不存在时返回 null
+     *
+     * @example
+     * ```ts
+     * // 编译时产出: indexPath['text'] = [0, 1]
+     * // 运行时定位: const el = findByPath(rootEl, [0, 1])
+     * ```
+     */
+    private findByPath(root: HTMLElement, path: number[]): HTMLElement | null {
+        let current: Element = root;
+        for (const idx of path) {
+            if (!current.children[idx]) return null;
+            current = current.children[idx];
+        }
+        return current as HTMLElement;
     }
 }

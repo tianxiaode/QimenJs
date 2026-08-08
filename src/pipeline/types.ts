@@ -4,11 +4,7 @@
  * @module pipeline/types
  */
 
-import type { ILogger } from '@/logger';
-import type { ExecutionStep, BaseContext, BaseMetadata } from '@/context';
-
-// 重新导出 ExecutionStep 以保持向后兼容
-export type { ExecutionStep };
+import type { ExecutionStep } from '@/context';
 
 /**
  * 处理器接口
@@ -169,13 +165,3 @@ export interface PipelineStats {
      */
     minDuration: number;
 }
-
-/**
- * 可执行管道接口
- *
- * @description 上下文对象应该实现此接口
- * 以支持管道执行和监控
- *
- * @deprecated 使用 BaseContext 代替
- */
-export type IExecutableContext = BaseContext;

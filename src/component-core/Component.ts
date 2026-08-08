@@ -26,15 +26,13 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { INodeMapManager } from './types/node-map-manager-types';
-import type { ComponentProps } from './types/init-context';
 import type { DomEventsMap } from './types/tpl-events';
 import type { DragDecl, DropDecl } from './types/tpl-node-types';
-import { createInitContext } from './types/init-context';
 
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentOptions, TplNode } from './types';
+import { ComponentOptionsUnion, TplNode } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -93,8 +91,8 @@ export class Component extends ComposableBase {
      * }
      * ```
      */
-    get tpl(): TplNode | undefined {
-        return undefined;
+    get tpl(): TplNode {
+        return {};
     }
 
     /**
@@ -107,8 +105,7 @@ export class Component extends ComposableBase {
      * new ButtonComponent({ action: 'save' });
      * btn.action = 'create';  // 运行时更改
      */
-    action: string;
-    options: ComponentOptions;
+    options: ComponentOptionsUnion;
 
     /** 组件实例化上下文 */
 
@@ -224,8 +221,6 @@ export class Component extends ComposableBase {
     }
 
     el!: HTMLElement;
-    meta: Record<string, any>;
-    props: ComponentProps;
     nodeMapMgr!: INodeMapManager;
 
     get isItemContainer(): boolean {
@@ -245,16 +240,15 @@ export class Component extends ComposableBase {
 
     private _ready: Promise<void> = Promise.resolve();
 
-    constructor(options?: ComponentOptions) {
+    constructor(options?: ComponentOptionsUnion) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.options = options ?? {};
-        this.action = this.props.action ?? '';
+        this.options = { ...options };
+        this.id = this.options?.id || getId('cmp');
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;
         this._disposing = false;
-        this.id = this.options.config?.id || getId('cmp');
         this._initFloatsFromProps();
         this.init();
     }

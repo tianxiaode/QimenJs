@@ -21,7 +21,6 @@ export { LifecycleAbility } from './abilities/LifecycleAbility';
 export { CompileEngine } from './engine/CompileEngine';
 export type { CompileResult } from './types/compile-engine-types';
 export { VOID_TAGS } from './constants/compile-constants';
-export { findByPath } from './engine/utils/dom-path';
 
 // 事件引擎（新三引擎 + EventForwarder）
 export { EventForwarder } from './engine/EventForwarder';
@@ -33,8 +32,6 @@ export { ListensEngine } from './engine/ListensEngine';
 // 初始化管线
 export { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 
-// 模板注册器
-export { ComponentRegistrar } from './engine';
 export type { ComponentEntry as TemplateEntry, CompiledProduct } from './types/template-registrar';
 
 // 节点属性引擎
@@ -58,10 +55,9 @@ export type {
     CompiledTemplateResult,
     CompiledTemplateCache,
 } from './types/compiled-types';
-export type { ComponentTemplate, BodyDef, LifecycleHooks } from './types/component-types';
+export type { LifecycleHooks } from './types/component-types';
 export type {
     TplNode,
-    TplFragment,
     FlexConfig,
     GridConfig,
     HiddenMode,
@@ -75,7 +71,6 @@ export type { DomEventsMap } from './types/tpl-events';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
 export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/tpl-events';
 export type {
-    ComponentProps,
     InitContext,
     BadgeQuickConfig,
     TooltipQuickConfig,
@@ -85,8 +80,3 @@ export type {
 export type { INodeMapManager } from './types/node-map-manager-types';
 
 export type { Placement } from '@/overlay';
-
-// 初始化 ComponentRegistrar 到 RegistryHub
-import { ComponentRegistrar } from './engine';
-import { RegistryHub } from '@qimenjs/registry';
-RegistryHub.use(ComponentRegistrar.getInstance());

@@ -15,11 +15,10 @@
  */
 
 import type { TplNode } from '../types/tpl-node-types';
-import { HTML_PROPS_SET } from '../constants/html-props-constants';
-import { ARIA_PROPS_SET } from '../constants/aria-props-constants';
 import { VOID_TAGS } from '../constants';
 import { string } from '@qimenjs/utils';
 import { DecomposeContext, DecomposeStep } from '../types';
+import { splitOptions } from './utils';
 
 const I18N_PREFIX = 'i18n:';
 
@@ -145,22 +144,11 @@ function _extract_text(ctx: DecomposeContext): void {
  * @param ctx - 拆解上下文
  */
 function _classify_remaining_fields(ctx: DecomposeContext): void {
-    for (const [key, val] of Object.entries(ctx.clone)) {
-        if (HTML_PROPS_SET.has(key)) {
-            ctx.meta.props![key] = val;
-            continue;
-        }
-
-        if (ARIA_PROPS_SET.has(key) || key.startsWith('data_')) {
-            ctx.meta.attrs![key.replace('_', '-')] = val;
-        }
-
-        ctx.meta.config![key] = val;
-        // 检查 i18n 前缀
-        if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
-            ctx.i18nKeys.push({ field: key, i18nKey: val.slice(I18N_PREFIX.length) });
-        }
-    }
+    const result = splitOptions(ctx.clone);
+    ctx.meta.props = { ...ctx.meta.props, ...result.props };
+    ctx.meta.attrs = { ...ctx.meta.attrs, ...result.attrs };
+    ctx.meta.options = { ...ctx.meta.options, ...result.options };
+    ctx.i18nKeys.push(...result.i18nKeys);
 }
 
 /**
@@ -245,7 +233,7 @@ export class DecomposeEngine {
             node,
             name,
             clone: clone,
-            meta: { name, props: {}, attrs: {}, config: {}, action: clone.action },
+            meta: { name, props: {}, attrs: {}, options: {} },
             html: '',
             i18nKeys: [],
             hasPermission: !!name && !!clone.permission,

@@ -9,4 +9,3 @@ export * from './template-constants';
 export * from './init-context';
 export * from './node-map-manager-types';
 export * from './decompose-types';
-export * from './pipeline-types';

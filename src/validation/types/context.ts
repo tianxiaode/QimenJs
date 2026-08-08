@@ -1,8 +1,5 @@
 ﻿import type { ValidationRule } from '@qimenjs/schema';
-import type { BaseContext, ExecutionStep } from '@qimenjs/context';
-
-// 重新导出 ExecutionStep 以保持向后兼容
-export { ExecutionStep };
+import type { BaseContext } from '@qimenjs/context';
 
 /**
  * 验证错误信息接口

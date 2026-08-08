@@ -16,12 +16,12 @@
  * ```
  */
 
-import { Logger } from '@/logger';
+import { ILogger, Logger } from '@/logger';
 import { ABILITY_STATES_KEY, CLEANUPS_KEY, withAbilities, withDefinitions } from './forge';
 import type { AbilityDefinition } from './types/ability';
 
 export class ComposableBase {
-    logger: any;
+    logger: ILogger;
 
     constructor() {
         this.logger = Logger.for(this.constructor.name);
