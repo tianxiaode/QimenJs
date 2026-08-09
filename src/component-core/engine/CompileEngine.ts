@@ -44,7 +44,7 @@ import type {
     CompiledTemplateCache,
     CompiledTemplateResult,
     CompileContext,
-} from '../types/compiled-types';
+} from '../types/compiled';
 import type { CompileResult } from '../types/compile-engine-types';
 import { DecomposeEngine } from './DecomposeEngine';
 
@@ -77,18 +77,8 @@ export class CompileEngine {
 
         const result = this.compileTemplate(tpl);
 
-        const cache: CompiledTemplateCache = {
-            html: result.html,
-            indexPath: result.indexPath,
-            exposeNames: result.exposeNames,
-            i18nNodes: result.i18nNodes,
-            permissionNodes: result.permissionNodes,
-            templateCache: this.createTemplateElement(result.html),
-        };
-
-        const compileResult = { cache, nodeMetas: result.nodeMetas };
-        this.tplCache.set(tpl, compileResult);
-        return compileResult;
+        this.tplCache.set(tpl, result);
+        return result;
     }
 
     /**
@@ -106,13 +96,15 @@ export class CompileEngine {
      * - 子节点按 children 数组索引注册路径
      * - fragment.children 替代 node.children，fragment.name 作为命名空间前缀
      */
-    static compileTemplate(root: TplNode): CompiledTemplateResult {
+    static compileTemplate(root: TplNode): CompiledResult {
         const ctx: CompileContext = {
             indexPath: {},
             nodeMetas: {},
             exposeNames: [],
-            i18nNodes: [],
-            permissionNodes: [],
+            i18nNodes: {},
+            permissionNodes: {},
+            nodeAttributesMap: {},
+            options: {},
         };
 
         // 根节点注册为 'root'
@@ -120,10 +112,13 @@ export class CompileEngine {
         const rootResult = DecomposeEngine.decompose(root);
         rootResult.meta.name = 'root';
         ctx.nodeMetas['root'] = rootResult.meta;
-
+        ctx.nodeAttributesMap['root'] = rootResult.nodeAttributes;
+        if (rootResult.i18n) {
+            ctx.i18nNodes['root'] = rootResult.i18n;
+        }
         // 收集根节点权限
-        if (rootResult.hasPermission) {
-            ctx.permissionNodes.push('root');
+        if (rootResult.permission) {
+            ctx.permissionNodes['root'] = rootResult.permission;
         }
 
         // 确定 children（fragment 内联展开）
@@ -145,6 +140,7 @@ export class CompileEngine {
             exposeNames: ctx.exposeNames,
             i18nNodes: ctx.i18nNodes,
             permissionNodes: ctx.permissionNodes,
+            nodeAttributesMap: ctx.nodeAttributesMap,
         };
     }
 
@@ -177,21 +173,15 @@ export class CompileEngine {
             ctx.indexPath[result.name] = path;
             ctx.nodeMetas[result.name] = result.meta;
             ctx.exposeNames.push(result.name);
-        }
-
-        // 4. 收集 i18n 节点
-        if (result.i18nKeys.length > 0 && result.name) {
-            for (const key of result.i18nKeys) {
-                ctx.i18nNodes.push({ name: result.name, ...key });
+            if (result.i18n) {
+                ctx.i18nNodes[result.name] = result.i18n;
+            }
+            if (result.permission) {
+                ctx.permissionNodes[result.name] = result.permission;
             }
         }
 
-        // 5. 收集权限节点（只收集名称，运行时由钩子函数决定 disabled/hidden）
-        if (result.hasPermission && result.name) {
-            ctx.permissionNodes.push(result.name);
-        }
-
-        // 6. 组件节点返回骨架占位，不递归 children
+        // 4. 组件节点返回骨架占位，不递归 children
         if (result.isComponent) {
             return result.html;
         }

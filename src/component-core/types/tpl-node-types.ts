@@ -156,10 +156,10 @@ export interface TplNode {
     text?: string;
 
     /** i18n 翻译 key */
-    i18n?: string;
+    i18n?: NodeI18nConfig;
 
     /** 权限声明（true=从 action 推导 / action / entity:action / domain:entity:action） */
-    permission?: boolean;
+    permission?: PermissionDef;
 
     // ─── dom: DOM 属性 ───
 
@@ -756,6 +756,7 @@ export interface AnimationDecl {
     enabled?: boolean;
 }
 
+import { NodeI18nConfig } from './i18n';
 // ══════════════════════════════════════════════════════════════
 // 浮层快捷配置类型（从 init-context 复用）
 // ══════════════════════════════════════════════════════════════
@@ -767,3 +768,4 @@ import type {
     PopoverQuickConfig,
     IndicatorConfig,
 } from './init-context';
+import { PermissionDef } from './permission';

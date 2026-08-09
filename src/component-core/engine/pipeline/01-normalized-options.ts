@@ -1,5 +1,5 @@
 import { ComponentOptions, InitContext, StructuredOptions } from '../../types';
-import { splitOptions } from '../utils';
+import { DecomposeEngine } from '../DecomposeEngine';
 
 // steps/normalize-options.ts
 
@@ -34,15 +34,14 @@ export function normalizeOptions(ctx: InitContext): void {
     delete (options as ComponentOptions).slotName;
 
     // 拆分平铺配置
-    const { props, attrs, options: config } = splitOptions(options);
+    const { nodeAttributes, options: config } = DecomposeEngine.decomposeOptions(options);
 
     // 替换为结构化配置
     instance.options = {
         parent,
         slotName,
         container,
-        $props: props,
-        $attrs: attrs,
+        $attrs: nodeAttributes,
         $options: config,
     };
 

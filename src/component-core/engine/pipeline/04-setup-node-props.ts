@@ -9,9 +9,9 @@
  * DOM 属性应用是实例级操作，每次实例化都执行。
  */
 
-import type { InitContext } from '../../types/init-context';
+import type { InitContext } from '../../types';
 import { ChildNodePropsEngine } from '../ChildNodePropsEngine';
-import { DEFAULT_NODE_PROP_MAP } from '../../types/common-props';
+import { DEFAULT_NODE_PROP_MAP } from '../../types';
 
 /** 管线步骤：安装子节点内容属性描述符 + 应用 DOM 节点初始属性 */
 export function setupNodeProps(ctx: InitContext): void {

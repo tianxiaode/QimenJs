@@ -23,7 +23,7 @@ import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable'
 import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
 import { EventContextBuilder } from '@/context';
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { INodeMapManager } from '@/component-core/types/node-map-manager-types';
+import type { INodeMapManager } from '@/component-core/types/node-map-manager';
 import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from './toast-tpl';
 import { resolveI18nValue } from '@qimenjs/i18n';

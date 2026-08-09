@@ -3,8 +3,8 @@
  * 目标覆盖率：80%+
  */
 
-import { NodeMapManager } from '@/component-core/NodeMapManager';
-import type { CompiledTemplateCache, NodeMetadata } from '@/component-core/types/compiled-types';
+import { NodeMapManager } from '@/component-core/engine/NodeMapManager';
+import type { CompiledTemplateCache, NodeMetadata } from '@/component-core/types/compiled';
 import { SKELETON_CLS } from '@/component-core/constants/compile-constants';
 
 // Mock findByPath

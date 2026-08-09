@@ -9,7 +9,7 @@ export { Component } from './Component';
 export { COMPONENT_ABILITIES } from './Component-abilities';
 
 // 节点结构管理器
-export { NodeMapManager } from './NodeMapManager';
+export { NodeMapManager } from './engine/NodeMapManager';
 
 // 基础能力
 export { NodePropAbility } from './abilities/NodePropAbility';
@@ -54,8 +54,8 @@ export type {
     NodeIndexPath,
     CompiledTemplateResult,
     CompiledTemplateCache,
-} from './types/compiled-types';
-export type { LifecycleHooks } from './types/component-types';
+} from './types/compiled';
+export type { LifecycleHooks } from './types/component';
 export type {
     TplNode,
     FlexConfig,
@@ -77,6 +77,6 @@ export type {
     IndicatorType,
     IndicatorConfig,
 } from './types/init-context';
-export type { INodeMapManager } from './types/node-map-manager-types';
+export type { INodeMapManager } from './types/node-map-manager';
 
 export type { Placement } from '@/overlay';

@@ -4,7 +4,7 @@ jest.mock('@/component-core/engine/ChildNodePropsEngine', () => ({
     },
 }));
 
-import { setupNodeProps } from '@/component-core/engine/pipeline/step-setup-node-props';
+import { setupNodeProps } from '@/component-core/engine/pipeline/04-setup-node-props';
 import { ChildNodePropsEngine } from '@/component-core/engine/ChildNodePropsEngine';
 
 describe('step-setup-node-props', () => {

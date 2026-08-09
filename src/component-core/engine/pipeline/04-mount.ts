@@ -28,7 +28,7 @@ export function mount(ctx: InitContext): void {
             return;
         }
 
-        parent.mountChild(el, slotName);
+        parent.nodeMapMgr.mountChildComponent(el, slotName);
         logger.debug(`[mount][${instance.id}]`, `挂载到父组件插槽: ${slotName}`);
         return;
     }

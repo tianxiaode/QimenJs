@@ -3,7 +3,7 @@
  */
 
 import { ChildNodePropsEngine } from '@/component-core/engine/ChildNodePropsEngine';
-import type { NodeMetadata } from '@/component-core/types/compiled-types';
+import type { NodeMetadata } from '@/component-core/types/compiled';
 
 // Mock resolveI18nValue
 jest.mock('@qimenjs/i18n', () => ({

@@ -1,6 +1,7 @@
 import { ILogger } from '@/logger';
 import type { TplNode } from './tpl-node-types';
-import { INodeMapManager } from './node-map-manager-types';
+import { INodeMapManager } from './node-map-manager';
+import { NodeAttributes } from './node';
 
 // ══════════════════════════════════════════════════════════════
 // 生命周期钩子
@@ -46,12 +47,10 @@ export interface StructuredOptions {
     parent?: IComponentBase;
     /** 要挂载的容器节点 */
     container?: HTMLElement;
-    /** 标准化后的 props */
-    $props: Record<string, any>;
     /** 标准化后的 attrs */
-    $attrs: Record<string, any>;
+    $attrs: NodeAttributes;
     /** 标准化后的 config */
-    $config: Record<string, any>;
+    $options: Record<string, any>;
     /** 父组件插槽名称 */
     slotName: string;
     /** 业务字段（用户自定义） */
@@ -79,10 +78,6 @@ export interface ComponentOptions {
     /** 语义动作 */
     action?: string;
     /** DOM 属性（data-*、aria-* 等） */
-    attrs?: Record<string, any>;
-    /** 组件属性（disabled、value 等） */
-    props?: Record<string, any>;
-    /** 其他自定义字段 */
     [key: string]: any;
 }
 
@@ -112,6 +107,4 @@ export interface IComponentBase extends LifecycleHooks {
 
     /** 组件初始化选项（外部传入） */
     options: ComponentOptionsUnion;
-
-    mountChild(el: HTMLElement, slotName: string): void;
 }

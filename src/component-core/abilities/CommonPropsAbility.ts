@@ -22,6 +22,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
+import { CURSOR_TYPE } from '../types';
 
 /**
  * 分割 CSS 类名字符串
@@ -143,97 +144,16 @@ export const CommonPropsAbility: AbilityDefinition = {
         get() {
             return this._getNodeProp('root', 'hint');
         },
-        set(v: any) {
-            this._markNodeDirty('root', { hint: v });
-        },
-    },
-
-    width: {
-        get() {
-            return this._getNodeProp('root', 'width');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { width: v });
-        },
-    },
-    height: {
-        get() {
-            return this._getNodeProp('root', 'height');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { height: v });
-        },
-    },
-    x: {
-        get() {
-            return this._getNodeProp('root', 'x');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { x: v });
-        },
-    },
-    y: {
-        get() {
-            return this._getNodeProp('root', 'y');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { y: v });
-        },
-    },
-    margin: {
-        get() {
-            return this._getNodeProp('root', 'margin');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { margin: v });
-        },
-    },
-    padding: {
-        get() {
-            return this._getNodeProp('root', 'padding');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { padding: v });
-        },
-    },
-    fontSize: {
-        get() {
-            return this._getNodeProp('root', 'fontSize');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { fontSize: v });
-        },
-    },
-    color: {
-        get() {
-            return this._getNodeProp('root', 'color');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { color: v });
-        },
-    },
-    bg: {
-        get() {
-            return this._getNodeProp('root', 'bg');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { bg: v });
+        set(v: string) {
+            this._markNodeDirty('root', { title: v });
         },
     },
     cursor: {
         get() {
             return this._getNodeProp('root', 'cursor');
         },
-        set(v: any) {
+        set(v: CURSOR_TYPE) {
             this._markNodeDirty('root', { cursor: v });
-        },
-    },
-    border: {
-        get() {
-            return this._getNodeProp('root', 'border');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { border: v });
         },
     },
 
@@ -559,50 +479,9 @@ export const CommonPropsAbility: AbilityDefinition = {
         this._markNodeDirty(nodeName ?? 'root', { hint: value });
     },
 
-    setNodeWidth(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { width: value });
-    },
-
-    setNodeHeight(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { height: value });
-    },
-
-    setNodeX(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { x: value });
-    },
-
-    setNodeY(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { y: value });
-    },
-
-    setNodeMargin(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { margin: value });
-    },
-
-    setNodePadding(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { padding: value });
-    },
-
-    setNodeFontSize(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { fontSize: value });
-    },
-
-    setNodeColor(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { color: value });
-    },
-
-    setNodeBg(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { bg: value });
-    },
-
     setNodeCursor(value: any, nodeName?: string): void {
         this._markNodeDirty(nodeName ?? 'root', { cursor: value });
     },
-
-    setNodeBorder(value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { border: value });
-    },
-
     setNodeHtml(value: any, nodeName?: string): void {
         this._markNodeDirty(nodeName ?? 'root', { html: value });
     },

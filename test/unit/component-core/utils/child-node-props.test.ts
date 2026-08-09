@@ -1,5 +1,5 @@
 import { ChildNodePropsEngine } from '@/component-core/engine/ChildNodePropsEngine';
-import type { NodeMetadata } from '@/component-core/types/compiled-types';
+import type { NodeMetadata } from '@/component-core/types/compiled';
 
 describe('child-node-props', () => {
     const makeNodeMetas = (

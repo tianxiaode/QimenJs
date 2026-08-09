@@ -49,6 +49,10 @@ export const DEFAULT_NODE_PROP_MAP: NodePropMap = {
     href: { domAttr: 'href' },
     width: { domAttr: 'style', cssProp: 'width', autoPx: true },
     height: { domAttr: 'style', cssProp: 'height', autoPx: true },
+    minWidth: { domAttr: 'style', cssProp: 'minWidth', autoPx: true },
+    minHeight: { domAttr: 'style', cssProp: 'minHeight', autoPx: true },
+    maxWidth: { domAttr: 'style', cssProp: 'maxWidth', autoPx: true },
+    maxHeight: { domAttr: 'style', cssProp: 'maxHeight', autoPx: true },
     x: { domAttr: 'style', cssProp: 'left', autoPx: true },
     y: { domAttr: 'style', cssProp: 'top', autoPx: true },
     margin: { domAttr: 'style', cssProp: 'margin' },
@@ -241,3 +245,18 @@ export interface CommonPropDef {
     /** 值转换器函数名（如 resolvePx、resolveMarginPadding） */
     resolver: string;
 }
+
+/** cursor 类型值 */
+export type CURSOR_TYPE =
+    | 'auto'
+    | 'default'
+    | 'pointer'
+    | 'wait'
+    | 'text'
+    | 'move'
+    | 'help'
+    | 'not-allowed'
+    | 'grab'
+    | 'grabbing'
+    | 'zoom-in'
+    | 'zoom-out';

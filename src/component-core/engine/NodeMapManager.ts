@@ -12,9 +12,9 @@
  * 实例级：每个组件实例创建自己的 NodeMapManager，不跨类共享
  */
 
-import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from './types/compiled-types';
-import type { INodeMapManager, BadgeQuickConfig } from './types';
-import { SKELETON_CLS } from './constants/compile-constants';
+import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled';
+import type { INodeMapManager, I18nNodes, PermissionNodes } from '../types';
+import { SKELETON_CLS } from '../constants';
 
 /** 运行时 DOM 管理器，负责模板克隆、节点映射构建、子组件挂载与动态替换 */
 export class NodeMapManager implements INodeMapManager {
@@ -104,11 +104,11 @@ export class NodeMapManager implements INodeMapManager {
      * });
      * ```
      */
-    get i18nNodes(): Array<{ name: string; field?: string; i18nKey: string }> {
+    get i18nNodes(): I18nNodes {
         return this._cache.i18nNodes;
     }
 
-    get permissionNodes(): string[] {
+    get permissionNodes(): PermissionNodes {
         return this._cache.permissionNodes;
     }
 
@@ -165,13 +165,10 @@ export class NodeMapManager implements INodeMapManager {
      * - 调用后会自动构建节点映射表 (_buildNodeMap)
      * - 只应在组件初始化时调用一次
      */
-    buildDOM(): HTMLElement {
+    buildDOM() {
         this._el = document.createElement(this.rootTag);
         const fragment = this._cache.templateCache.content.cloneNode(true);
         this._el.appendChild(fragment);
-        this._buildNodeMap();
-        this._buildBadgeOverlays();
-        return this._el;
     }
 
     /**
@@ -426,12 +423,6 @@ export class NodeMapManager implements INodeMapManager {
         old.component = newChild;
         old.componentClass = ComponentClass;
 
-        if (newChild.nodeMap && this._owner) {
-            Object.assign(this._owner.nodeMap, newChild.nodeMap);
-        } else if ((newChild as any).nodeMapMgr) {
-            this._mergeChildNodeMap((newChild as any).nodeMapMgr);
-        }
-
         return newChild;
     }
 
@@ -494,112 +485,23 @@ export class NodeMapManager implements INodeMapManager {
      * - 会合并子组件的 nodeMap 到父组件
      * - 会记录节点的 parentNode 和 nodeIndex 用于后续恢复
      */
-    mountChildComponent(node: NodeMetadata, child: any): void {
+    mountChildComponent(child: HTMLElement, slotName: string): void {
+        const node = this.get(slotName);
+        if (!node) {
+            this._owner?.log.warn(
+                `[${this._owner.id}][NodeMapManager] Slot "${slotName}" not found`
+            );
+            return;
+        }
         const placeholder = node.el!;
         const parentEl = placeholder.parentElement;
         if (parentEl) {
             node.parentNode = parentEl;
             node.nodeIndex = Array.from(parentEl.childNodes).indexOf(placeholder as ChildNode);
         }
-        placeholder.replaceWith(child.el);
-        node.el = child.el;
+        placeholder.replaceWith(child);
+        node.el = child;
         node.component = child;
-        child.parent = this._owner;
-
-        if (node.cls && child.el) {
-            const classes = node.cls.split(/\s+/).filter(Boolean);
-            if (classes.length) child.el.classList.add(...classes);
-        }
-
-        if (child.nodeMapMgr) {
-            this._mergeChildNodeMap(child.nodeMapMgr);
-        } else if (child.nodeMap) {
-            for (const [name, meta] of Object.entries(
-                child.nodeMap as Record<string, NodeMetadata>
-            )) {
-                this._map[name] = meta;
-            }
-        }
-    }
-
-    /**
-     * 构建节点映射表
-     *
-     * 遍历 indexPath 中的所有节点路径，根据路径查找对应的 DOM 元素，
-     * 并将元数据与 DOM 元素关联后存入内部映射表。
-     *
-     * @remarks
-     * - 仅在 buildDOM() 内部调用
-     * - 使用 findByPath 根据索引路径定位元素
-     * - 会跳过没有元数据或无法找到元素的节点
-     */
-    private _buildNodeMap(): void {
-        const indexPath = this._cache.indexPath;
-        const nodeMetas = this._nodeMetas;
-
-        for (const [name, path] of Object.entries(indexPath)) {
-            const meta = nodeMetas[name];
-            if (!meta) continue;
-
-            const el = this.findByPath(this._el, path);
-            if (!el) continue;
-
-            this._map[name] = { ...meta, el };
-        }
-    }
-
-    /**
-     * 构建 badge 浮层节点
-     *
-     * 遍历 nodeMetas 中声明了 badge 的节点，为每个节点创建绝对定位的 badge DOM 元素，
-     * 挂载到锚点元素的父容器上，并注册进 nodeMap。
-     *
-     * badge 节点名格式为 `{anchorName}:badge`，可通过 CommonPropsAbility 操作：
-     *   this.setNodeHidden(true, 'icon:badge')
-     *   this.addCls('q-badge--dot', 'icon:badge')
-     *
-     * @remarks
-     * - 仅在 buildDOM() 内部调用，在 _buildNodeMap 之后
-     * - badge 元素使用绝对定位，不影响文档流和 indexPath
-     * - 锚点元素需要 position: relative 才能正确定位
-     */
-    private _buildBadgeOverlays(): void {
-        for (const [name, meta] of Object.entries(this._nodeMetas)) {
-            if (meta.badge == null) continue;
-
-            const anchorNode = this._map[name];
-            if (!anchorNode?.el) continue;
-
-            const cfg: BadgeQuickConfig =
-                typeof meta.badge === 'string' || typeof meta.badge === 'number'
-                    ? { text: String(meta.badge) }
-                    : meta.badge;
-
-            const badgeEl = document.createElement('span');
-            badgeEl.className = 'q-badge';
-            badgeEl.style.position = 'absolute';
-            badgeEl.style.top = '0';
-            badgeEl.style.right = '0';
-            badgeEl.style.transform = 'translate(50%, -50%)';
-
-            if (cfg.text != null) {
-                badgeEl.textContent = String(cfg.text);
-            }
-
-            if (cfg.visible === false) {
-                badgeEl.style.display = 'none';
-            }
-
-            const anchorEl = anchorNode.el as HTMLElement;
-            if (!anchorEl.style.position || anchorEl.style.position === 'static') {
-                anchorEl.style.position = 'relative';
-            }
-
-            anchorEl.appendChild(badgeEl);
-
-            const badgeName = `${name}:badge`;
-            this._map[badgeName] = { name: badgeName, tag: 'span', el: badgeEl };
-        }
     }
 
     /**
@@ -663,25 +565,6 @@ export class NodeMapManager implements INodeMapManager {
     }
 
     /**
-     * 合并子组件的节点映射表
-     *
-     * 将子组件管理器中的所有节点元数据合并到当前管理器的映射表中。
-     * 确保父组件可以通过 nodeMap 访问到子组件的所有节点。
-     *
-     * @param childMgr - 子组件的 NodeMapManager 实例
-     *
-     * @remarks
-     * - 直接引用合并，不进行深拷贝
-     * - 如果节点名冲突，子组件的节点会覆盖现有条目
-     */
-    private _mergeChildNodeMap(childMgr: NodeMapManager): void {
-        const childMap = childMgr.getAll();
-        for (const [name, meta] of Object.entries(childMap)) {
-            this._map[name] = meta;
-        }
-    }
-
-    /**
      * 按子节点索引路径定位 DOM 元素
      *
      * @param root - 搜索起点元素
@@ -694,8 +577,8 @@ export class NodeMapManager implements INodeMapManager {
      * // 运行时定位: const el = findByPath(rootEl, [0, 1])
      * ```
      */
-    private findByPath(root: HTMLElement, path: number[]): HTMLElement | null {
-        let current: Element = root;
+    findByPath(path: number[]): HTMLElement | null {
+        let current: Element = this._el;
         for (const idx of path) {
             if (!current.children[idx]) return null;
             current = current.children[idx];

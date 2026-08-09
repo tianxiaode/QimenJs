@@ -11,7 +11,7 @@ import { ensureNodeMap } from './step-ensure-node-map';
 import { selfMount } from './step-self-mount';
 import { onBeforeInit } from './step-on-before-init';
 import { onAfterInit } from './step-on-after-init';
-import { setupNodeProps } from './step-setup-node-props';
+import { setupNodeProps } from './04-setup-node-props';
 import { instantiateChildComponents } from './step-instantiate-child-components';
 import { applyConfig } from './step-apply-config';
 import { bindListens } from './step-bind-listens';

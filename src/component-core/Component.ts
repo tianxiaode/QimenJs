@@ -25,7 +25,7 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import type { INodeMapManager } from './types/node-map-manager-types';
+import type { INodeMapManager } from './types/node-map-manager';
 import type { DomEventsMap } from './types/tpl-events';
 import type { DragDecl, DropDecl } from './types/tpl-node-types';
 
@@ -243,7 +243,7 @@ export class Component extends ComposableBase {
     constructor(options?: ComponentOptionsUnion) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.options = { ...options };
+        this.options = options || {};
         this.id = this.options?.id || getId('cmp');
         this._dirtyNodes = {};
         this.dirtySet = new Set();

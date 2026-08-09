@@ -4,22 +4,6 @@
 
 import type { ContentPropDef } from '../types/template-constants';
 
-/** flex align-items 映射表，将简写名映射为 CSS 值 */
-export const ALIGN_MAP: Record<string, string> = {
-    start: 'flex-start',
-    center: 'center',
-    end: 'flex-end',
-    stretch: 'stretch',
-};
-
-export const PACK_MAP: Record<string, string> = {
-    start: 'flex-start',
-    center: 'center',
-    end: 'flex-end',
-    between: 'space-between',
-    around: 'space-around',
-};
-
 /** 内容模式映射表，将模式名映射为节点属性定义数组 */
 export const CONTENT_MODE_MAP: Record<string, ContentPropDef[]> = {
     text: [{ nodeProp: 'text' }],

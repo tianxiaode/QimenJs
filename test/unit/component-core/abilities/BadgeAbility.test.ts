@@ -4,7 +4,7 @@
  */
 
 import { BadgeAbility } from '@/component-core/abilities/BadgeAbility';
-import type { NodeMetadata } from '@/component-core/types/compiled-types';
+import type { NodeMetadata } from '@/component-core/types/compiled';
 
 function createMockInstance(badgeName?: string) {
     const map: Record<string, NodeMetadata> = {};

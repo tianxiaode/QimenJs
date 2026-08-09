@@ -24,7 +24,7 @@
  * - steps: 已执行的步骤列表
  */
 
-import { IComponentBase } from './component-types';
+import { IComponentBase } from './component';
 
 /**
  * ComponentProps — 组件运行时传入参数

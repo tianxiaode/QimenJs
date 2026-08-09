@@ -14,13 +14,16 @@
  * @module DecomposeEngine
  */
 
-import type { TplNode } from '../types/tpl-node-types';
-import { VOID_TAGS } from '../constants';
+import { STYLE_PROPS, VOID_TAGS } from '../constants';
 import { string } from '@qimenjs/utils';
-import { DecomposeContext, DecomposeStep } from '../types';
-import { splitOptions } from './utils';
-
-const I18N_PREFIX = 'i18n:';
+import {
+    ComponentOptions,
+    DecomposeContext,
+    DecomposeStep,
+    TplNode,
+    NodeAttributes,
+} from '../types';
+import { styleToString } from './utils';
 
 /**
  * 步骤1：提取 tag
@@ -60,12 +63,12 @@ function _extract_contentMode(ctx: DecomposeContext): void {
  * @param ctx - 拆解上下文
  */
 function _extract_style(ctx: DecomposeContext): void {
-    ctx.meta.props!.style = ctx.clone.style;
+    ctx.nodeAttributes.style = ctx.clone.style;
     delete ctx.clone.style;
 }
 
 /**
- * 步骤4.5：提取 cssVars（自定义 CSS 变量）
+ * 步骤5：提取 cssVars（自定义 CSS 变量）
  *
  * 将 cssVars 对象转为 CSS 变量声明，合并到 style 前部
  * （变量声明在前，后续样式可引用）。在 _extract_style 之后执行。
@@ -75,54 +78,49 @@ function _extract_style(ctx: DecomposeContext): void {
 function _extract_cssVars(ctx: DecomposeContext): void {
     const cssVars = ctx.clone.cssVars;
     if (!cssVars) return;
-    const varsStr = Object.entries(cssVars)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join('; ');
-    const existing = ctx.meta.props!.style;
-    ctx.meta.props!.style =
-        typeof existing === 'string' && existing ? `${varsStr}; ${existing}` : varsStr;
+    Object.assign(ctx.nodeAttributes.style!, cssVars);
     delete ctx.clone.cssVars;
 }
 /**
- * 步骤5：提取 hidden 和 hiddenMode
+ * 步骤6：提取 hidden 和 hiddenMode
  *
  * @param ctx - 拆解上下文
  */
 function _extract_hidden(ctx: DecomposeContext): void {
-    ctx.meta.props!.hidden = ctx.clone.hidden;
-    ctx.meta.props!.hiddenMode = ctx.clone.hiddenMode;
+    ctx.meta.hidden = ctx.clone.hidden;
+    ctx.meta.hiddenMode = ctx.clone.hiddenMode;
     delete ctx.clone.hidden;
     delete ctx.clone.hiddenMode;
 }
 
 /**
- * 步骤6：提取 hint（提示文本，支持 i18n）
+ * 步骤7：提取 hint（提示文本，支持 i18n）
  *
  * @param ctx - 拆解上下文
  */
 function _extract_hint(ctx: DecomposeContext) {
     const hint = ctx.clone.hint;
     //给节点初始值
-    ctx.meta.props!.title = hint ?? undefined;
-    //检查是否需要国际化
-    if (typeof hint === 'string' && hint.startsWith(I18N_PREFIX)) {
-        ctx.i18nKeys.push({ field: 'hint', i18nKey: hint.slice(I18N_PREFIX.length) });
+    if (ctx.meta.tag === 'img') {
+        ctx.nodeAttributes.alt = hint;
+    } else {
+        ctx.nodeAttributes.title = hint;
     }
     delete ctx.clone.hint;
 }
 
 /**
- * 步骤7：提取 cls（类名）
+ * 步骤8：提取 cls（类名）
  *
  * @param ctx - 拆解上下文
  */
 function _extract_cls(ctx: DecomposeContext): void {
-    ctx.meta.props!.className = ctx.clone.cls;
+    ctx.nodeAttributes.className = ctx.clone.cls;
     delete ctx.clone.cls;
 }
 
 /**
- * 步骤8：提取 text（特殊处理 i18n）
+ * 步骤9：提取 text
  *
  * @param ctx - 拆解上下文
  */
@@ -130,29 +128,60 @@ function _extract_text(ctx: DecomposeContext): void {
     const text = ctx.clone.text;
     ctx.meta.text = text;
 
-    // 检查 i18n 前缀
-    if (typeof text === 'string' && text.startsWith(I18N_PREFIX)) {
-        ctx.i18nKeys.push({ field: 'text', i18nKey: text.slice(I18N_PREFIX.length) });
-    }
-
     delete ctx.clone.text;
 }
 
 /**
- * 步骤8：分类剩余字段
+ * 步骤10：提取 i18n
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_i18n(ctx: DecomposeContext): void {
+    const i18n = ctx.clone.i18n;
+    if (!i18n) return;
+
+    ctx.i18n = i18n;
+
+    delete ctx.clone.i18n;
+}
+
+/**
+ * 步骤11：提取权限
+ *
+ * @param ctx - 拆解上下文
+ */
+function _extract_permission(ctx: DecomposeContext): void {
+    const permission = ctx.clone.permission;
+    if (!permission) return;
+
+    ctx.permission = permission;
+
+    delete ctx.clone.permission;
+}
+
+/**
+ * 步骤12：分类剩余字段
  *
  * @param ctx - 拆解上下文
  */
 function _classify_remaining_fields(ctx: DecomposeContext): void {
-    const result = splitOptions(ctx.clone);
-    ctx.meta.props = { ...ctx.meta.props, ...result.props };
-    ctx.meta.attrs = { ...ctx.meta.attrs, ...result.attrs };
-    ctx.meta.options = { ...ctx.meta.options, ...result.options };
-    ctx.i18nKeys.push(...result.i18nKeys);
+    for (const [key, val] of Object.entries(ctx.clone)) {
+        if (STYLE_PROPS.has(key)) {
+            ctx.nodeAttributes.style![key] = val;
+            continue;
+        }
+
+        if (key.startsWith('data_') || key.startsWith('aria_')) {
+            ctx.nodeAttributes[key.replace('_', '-')] = val;
+            continue;
+        }
+
+        ctx.options[key] = val;
+    }
 }
 
 /**
- * 步骤9：构建 构建HTML
+ * 步骤12：构建 构建HTML
  *
  * @param ctx - 拆解上下文
  */
@@ -165,7 +194,7 @@ function _build_html(ctx: DecomposeContext): void {
         return;
     }
 
-    const hasChildren = !!(ctx.node.children && ctx.node.children.length > 0);
+    const hasChildren = !!(ctx.node!.children && ctx.node!.children.length > 0);
     const placeholder = hasChildren ? '<!--q-children-->' : '';
 
     if (ctx.hasName) {
@@ -173,23 +202,26 @@ function _build_html(ctx: DecomposeContext): void {
         return;
     }
 
-    const props = meta.props ?? {};
-    const attrs = meta.attrs ?? {};
+    const attrs = ctx.nodeAttributes;
     const attrParts: string[] = [];
 
-    if (props.className) {
-        attrParts.push(`class="${string.escapeHtml(props.className)}"`);
+    if (attrs.className) {
+        attrParts.push(`class="${string.escapeHtml(attrs.className)}"`);
     }
 
-    if (props.style) {
-        attrParts.push(`style="${string.escapeHtml(props.style)}"`);
+    if (attrs.style) {
+        const styleStr = typeof attrs.style === 'string' ? attrs.style : styleToString(attrs.style);
+        if (styleStr) {
+            attrParts.push(`style="${string.escapeHtml(styleStr)}"`);
+        }
     }
 
-    if (props.hidden) {
+    if (attrs.hidden) {
         attrParts.push('hidden');
     }
 
     for (const [key, val] of Object.entries(attrs)) {
+        if (key === 'className' || key === 'style') continue;
         if (val === true) {
             attrParts.push(string.escapeHtml(key));
         } else if (val !== false && val != null) {
@@ -207,7 +239,7 @@ function _build_html(ctx: DecomposeContext): void {
 }
 
 /** 拆解管线步骤列表 */
-const DECOMPOSE_STEPS: DecomposeStep[] = [
+const DECOMPOSE_NODE_STEPS: DecomposeStep[] = [
     _extract_tag,
     _extract_type,
     _extract_contentMode,
@@ -217,33 +249,89 @@ const DECOMPOSE_STEPS: DecomposeStep[] = [
     _extract_hint,
     _extract_cls,
     _extract_text,
+    _extract_i18n,
+    _extract_permission,
     _classify_remaining_fields,
     _build_html,
 ];
 
+export const DECOMPOSE_OPTIONS_STEPS: DecomposeStep[] = [
+    _extract_style,
+    _extract_cssVars,
+    _extract_hidden,
+    _extract_hint,
+    _extract_cls,
+    _extract_text,
+    _extract_i18n,
+    _extract_permission,
+    _classify_remaining_fields,
+];
+
+// DecomposeEngine.ts
+
 /**
  * 拆解引擎
+ *
+ * 支持两种输入：
+ * 1. TplNode - 模板节点（编译时）
+ * 2. ComponentOptions - 组件选项（运行时）
  */
-// DecomposeEngine.ts
 export class DecomposeEngine {
+    /**
+     * 从 TplNode 拆解
+     */
     static decompose(node: TplNode): DecomposeContext {
         const clone = { ...node };
         const name = clone.name ?? '';
         const ctx: DecomposeContext = {
-            node,
             name,
+            node, // 保存原始节点引用
             clone: clone,
-            meta: { name, props: {}, attrs: {}, options: {} },
+            meta: { name },
             html: '',
-            i18nKeys: [],
-            hasPermission: !!name && !!clone.permission,
             hasName: !!clone.name,
             isComponent: false,
+            nodeAttributes: { style: {} } as NodeAttributes,
+            options: {},
         };
+
+        // 删除已提取的字段
         delete clone.name;
         delete clone.permission;
         delete clone.action;
-        for (const step of DECOMPOSE_STEPS) {
+
+        // 执行拆解管线
+        for (const step of DECOMPOSE_NODE_STEPS) {
+            step(ctx);
+        }
+
+        return ctx;
+    }
+
+    /**
+     * 从 ComponentOptions 拆解（运行时）
+     */
+    static decomposeOptions(options: ComponentOptions): DecomposeContext {
+        const clone = { ...options };
+        const name = clone.name ?? '';
+        const ctx: DecomposeContext = {
+            name,
+            clone: clone,
+            meta: { name },
+            html: '',
+            hasName: !!clone.name,
+            isComponent: false,
+            nodeAttributes: { style: {} } as NodeAttributes,
+            options: { ...options }, // 保存原始选项
+        };
+
+        // 删除已提取的字段
+        delete clone.name;
+        delete clone.permission;
+        delete clone.action;
+
+        // 执行拆解管线
+        for (const step of DECOMPOSE_OPTIONS_STEPS) {
             step(ctx);
         }
 

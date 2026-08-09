@@ -24,7 +24,10 @@
  * @see CompiledTemplateCache - 编译缓存定义
  */
 
-import type { NodeMetadata, NodeIndexPath } from './compiled-types';
+import type { NodeIndexPath } from './compiled';
+import { I18nNodes } from './i18n';
+import { NodeMetadata } from './node';
+import { PermissionNodes } from './permission';
 
 /**
  * INodeMapManager — NodeMapManager 接口
@@ -81,9 +84,9 @@ export interface INodeMapManager {
      *
      * 需要国际化翻译的节点列表，包含节点 name 和 i18nKey。
      */
-    readonly i18nNodes: Array<{ name: string; field?: string; i18nKey: string }>;
+    readonly i18nNodes: I18nNodes;
 
-    readonly permissionNodes: string[];
+    readonly permissionNodes: PermissionNodes;
 
     /**
      * 暴露的属性名列表
@@ -264,7 +267,7 @@ export interface INodeMapManager {
      * nodeMapMgr.mountChildComponent(slotNode, childComponent);
      * ```
      */
-    mountChildComponent(node: NodeMetadata, child: any): void;
+    mountChildComponent(child: HTMLElement, slotName: string): void;
 
     /**
      * 构建 DOM 元素
@@ -279,5 +282,6 @@ export interface INodeMapManager {
      * document.body.appendChild(el);
      * ```
      */
-    buildDOM(): HTMLElement;
+    buildDOM(): void;
+    findByPath(path: number[]): HTMLElement | null;
 }
