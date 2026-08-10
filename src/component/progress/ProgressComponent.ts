@@ -23,7 +23,7 @@ export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 /** 进度条属性接口 */
 export interface ProgressProps {
     percent?: number;
-    type?: ProgressType;
+    progresstype?: ProgressType;
     striped?: boolean;
     showText?: boolean;
 }
@@ -41,9 +41,9 @@ class ProgressComponent extends Component {
     }
 
     _initProgress(props?: ProgressProps): void {
-        if (props?.type) {
-            this._progressType = props.type;
-            this.addCls(`q-progress--${props.type}`);
+        if (props?.progresstype) {
+            this._progressType = props.progresstype;
+            this.addCls(`q-progress--${props.progresstype}`);
         }
         if (props?.striped) this.addCls('q-progress--striped');
         if (props?.showText) this.setNodeHidden(false, 'text');
@@ -73,7 +73,7 @@ class ProgressComponent extends Component {
 
     update(props?: Partial<ProgressProps>): void {
         if (props?.percent !== undefined) this.percent = props.percent;
-        if (props?.type !== undefined) this.progressType = props.type;
+        if (props?.progresstype !== undefined) this.progressType = props.progresstype;
         if (props?.striped !== undefined) this.toggleCls('q-progress--striped', props.striped);
         if (props?.showText !== undefined) this.setNodeHidden(!props.showText, 'text');
     }

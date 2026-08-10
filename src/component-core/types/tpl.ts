@@ -1,11 +1,11 @@
-import { IComponentCore } from './core';
+import { ComponentClass } from './core';
 import {
     AnimationDecl,
     AttrDecl,
     BadgeDecl,
     DragDecl,
     DropDecl,
-    ExtensionDecl,
+    BasePropertyDecl,
     HiddenDecl,
     I18nDecl,
     LoadingDecl,
@@ -19,10 +19,10 @@ import { IDialog, IIndicator, IPopover } from './interfaces';
  *
  * 所有功能模块通过泛型参数注入，保持核心定义干净
  */
-export interface TplDecl extends AttrDecl, HiddenDecl, ExtensionDecl {
+export interface TplDecl extends AttrDecl, HiddenDecl, BasePropertyDecl {
     // ─── 标识 ───
     tag?: string;
-    type?: IComponentCore;
+    type?: ComponentClass;
     name?: string;
 
     // ─── 内容 ───

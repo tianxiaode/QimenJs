@@ -4,6 +4,19 @@ import { ILogger } from '@/logger';
 // 生命周期钩子
 // ══════════════════════════════════════════════════════════════
 
+export interface ComponentCoreOptions {
+    /** 组件 ID */
+    id?: string;
+    /** 父组件引用 */
+    parent?: IComponentCore;
+    /** 父组件插槽名称 */
+    slotName?: string;
+    /** 要挂载的容器节点 */
+    container?: HTMLElement;
+    /** DOM 属性（data-*、aria-* 等） */
+    [key: string]: any;
+}
+
 /**
  * 组件生命周期钩子 — 在 body 中定义，函数自动挂原型
  *
@@ -48,8 +61,18 @@ export interface IComponentCore extends LifecycleHooks {
     logger: ILogger;
     /** 根 DOM 元素 */
     el?: HTMLElement;
+    update?: (...args: any[]) => void;
     /** 挂载 */
     mount(): Promise<void>;
-    /** 销毁 */
-    dispose(): void;
+    /** 销毁后钩子 */
+    onDisposed(): void;
 }
+
+/**
+ * 组件构造函数类型
+ *
+ * 任何实现了 IComponentCore 的类都可以用这个类型
+ */
+export type ComponentClass<T extends IComponentCore = IComponentCore> = new (
+    options?: Partial<ComponentCoreOptions>
+) => T;

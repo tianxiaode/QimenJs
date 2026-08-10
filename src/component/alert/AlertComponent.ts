@@ -60,7 +60,7 @@ const ALERT_TPL: TplNode = {
 export interface AlertProps {
     text?: string;
     title?: string;
-    type?: AlertType;
+    alertType?: AlertType;
     closable?: boolean;
 }
 
@@ -78,7 +78,7 @@ class AlertComponent extends Component {
     }
 
     _initAlert(props?: AlertProps): void {
-        const type: AlertType = props?.type ?? 'info';
+        const type: AlertType = props?.alertType ?? 'info';
         this.addCls(`q-alert--${type}`);
         this.icon = TYPE_ICON_MAP[type];
 
@@ -106,7 +106,7 @@ class AlertComponent extends Component {
         this.setNodeHidden(true, 'closeBtn');
     }
     update(props?: Partial<AlertProps>): void {
-        if (props?.type !== undefined) this.alertType = props.type;
+        if (props?.alertType !== undefined) this.alertType = props.alertType;
         if (props?.title !== undefined) {
             this.title = props.title;
             this.setNodeHidden(!props.title, 'title');

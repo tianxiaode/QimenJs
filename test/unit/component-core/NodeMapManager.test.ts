@@ -5,7 +5,7 @@
 
 import { NodeMapManager } from '@/component-core/engine/NodeMapManager';
 import type { CompiledTemplateCache, NodeMetadata } from '@/component-core/types/compiled';
-import { SKELETON_CLS } from '@/component-core/constants/compile-constants';
+import { SKELETON_CLS } from '@/component-core/constants/compile';
 
 // Mock findByPath
 jest.mock('@/component-core/engine/utils/dom-path', () => ({

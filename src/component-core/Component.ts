@@ -243,8 +243,8 @@ export class Component extends ComposableBase {
     constructor(options?: ComponentOptionsUnion) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.options = options || {};
         this.id = this.options?.id || getId('cmp');
+        this.options = options || {};
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;

@@ -150,10 +150,34 @@ export interface LoadingDecl {
     mask?: boolean | string;
 }
 
-export interface ExtensionDecl {
+export interface TplCoreDecl extends HiddenDecl {
+    /** 节点名称（可选） */
+    name?: string;
+    /** 节点标签 */
+    tag?: string;
+    /* 子组件类型 */
+    type?: IComponentCore;
+    /** 节点文本 */
     text?: string;
     contentMode?: 'value' | 'src' | 'html' | 'link';
     action?: string;
+    i18n?: I18nDecl;
+    permission?: PermissionDecl;
+    disabled?: boolean;
+    readonly?: boolean;
+    placeholder?: string;
+    required?: boolean;
+    title?: string;
+    src?: string;
+    value?: any;
+    accept?: string[];
+    multiple?: boolean;
+    checked?: boolean;
+    selected?: boolean | any[];
+    for?: string;
+    order?: number;
+    zIndex?: number;
+    role?: string;
 }
 
 /** 扩展字段定义 */

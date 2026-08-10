@@ -21,7 +21,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { AnimationDecl } from '../types/tpl';
-import { ANIMATION_PRESETS } from '../constants/template-constants';
+import { ANIMATION_PRESETS } from '../constants/template';
 
 /** 组件动画能力，支持声明式入场/离场动画配置与手动播放 */
 export const AnimationAbility = {

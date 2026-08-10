@@ -6,7 +6,6 @@ export * from './meta';
 export * from './init-context';
 export * from './node-map-manager';
 export * from './decompose';
-export * from './node';
 export * from './declarations';
 export * from './core';
 export * from './interfaces';

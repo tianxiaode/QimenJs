@@ -1,4 +1,4 @@
-import { IComponentCore } from './core';
+import { ComponentClass, IComponentCore } from './core';
 import { HiddenDecl, NodeOptionsDecl } from './declarations';
 
 /**
@@ -37,7 +37,7 @@ export interface MetaDecl extends HiddenDecl {
     instance?: IComponentCore;
 
     /** 子组件类引用（编译时从 TplNode.type 解析） */
-    ctor?: IComponentCore;
+    ctor?: ComponentClass;
 
     /** 父元素引用（replace 模式定位用） */
     parentNode?: HTMLElement | null;

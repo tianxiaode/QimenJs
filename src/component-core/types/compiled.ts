@@ -2,7 +2,7 @@
 // 节点元数据 — 唯一运行时数据载体
 // ══════════════════════════════════════════════════════════════
 
-import { I18nDeclMap, PermissionDeclMap } from './declarations';
+import { AttrDeclMap, I18nDeclMap, PermissionDeclMap } from './declarations';
 import { MetaDeclMap } from './meta';
 
 // ══════════════════════════════════════════════════════════════
@@ -76,4 +76,6 @@ export interface CompiledResult {
     templateCache: HTMLTemplateElement;
     /** 权限节点列表 */
     permissionDeclMap: PermissionDeclMap;
+    /** 属性声明列表 */
+    attrDeclMap: AttrDeclMap;
 }

@@ -100,6 +100,7 @@ export class CompileEngine {
             i18nDeclMap: {},
             templateCache: null as any,
             permissionDeclMap: {},
+            attrDeclMap: {},
         };
 
         const rootResult = DecomposeEngine.decompose(root);
@@ -225,6 +226,7 @@ export class CompileEngine {
         if (!name) return;
         compiledResult.indexPath[name] = indexPath;
         compiledResult.metaDeclMap[name] = decomposeResult.meta;
+        compiledResult.attrDeclMap[name] = decomposeResult.attrDecl;
         if (name !== 'root') {
             compiledResult.exposeNames.push(name);
         }

@@ -29,7 +29,7 @@ export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 
 /** 标签属性接口 */
 export interface TagProps {
     text?: string;
-    type?: TagType;
+    tagType?: TagType;
     icon?: string;
     closable?: boolean;
     size?: 'sm' | 'md' | 'lg';
@@ -41,7 +41,7 @@ class TagComponent extends Component {
     }
 
     _initTag(props?: TagProps): void {
-        if (props?.type) this.addCls(`q-tag--${props.type}`);
+        if (props?.tagType) this.addCls(`q-tag--${props.tagType}`);
         if (props?.icon) {
             this.icon = props.icon;
             this.setNodeHidden(false, 'icon');
@@ -63,7 +63,7 @@ class TagComponent extends Component {
     }
 
     update(props?: Partial<TagProps>): void {
-        if (props?.type !== undefined) this.tagType = props.type;
+        if (props?.tagType !== undefined) this.tagType = props.tagType;
         if (props?.icon !== undefined) {
             this.icon = props.icon;
             this.setNodeHidden(!props.icon, 'icon');

@@ -12,15 +12,24 @@
  * 实例级：每个组件实例创建自己的 NodeMapManager，不跨类共享
  */
 
-import type { NodeMetadata, NodeIndexPath, CompiledTemplateCache } from '../types/compiled';
-import type { INodeMapManager, I18nNodes, PermissionNodes } from '../types';
+import type {
+    NodeIndexPath,
+    CompiledResult,
+    INodeMapManager,
+    MetaDeclMap,
+    I18nDeclMap,
+    PermissionDeclMap,
+    MetaDecl,
+    IComponentCore,
+    ComponentClass,
+} from '../types';
 import { SKELETON_CLS } from '../constants';
 
 /** 运行时 DOM 管理器，负责模板克隆、节点映射构建、子组件挂载与动态替换 */
 export class NodeMapManager implements INodeMapManager {
-    private _cache: CompiledTemplateCache;
-    private _nodeMetas: Record<string, NodeMetadata>;
-    private _map: Record<string, NodeMetadata> = {};
+    private _cache: CompiledResult;
+    private _nodeMetas: MetaDeclMap;
+    private _map: Record<string, MetaDecl> = {};
     private _el!: HTMLElement;
     private _owner: any;
 
@@ -50,13 +59,9 @@ export class NodeMapManager implements INodeMapManager {
      * - 每个组件实例应创建自己的 NodeMapManager
      * - 不应在多个组件间共享同一个 NodeMapManager 实例
      */
-    constructor(
-        cache: CompiledTemplateCache,
-        nodeMetas?: Record<string, NodeMetadata>,
-        owner?: any
-    ) {
+    constructor(cache: CompiledResult, owner?: any) {
         this._cache = cache;
-        this._nodeMetas = nodeMetas || {};
+        this._nodeMetas = cache.metaDeclMap || {};
         this._owner = owner;
     }
 
@@ -87,7 +92,7 @@ export class NodeMapManager implements INodeMapManager {
      * console.log(nodeMetas['root'].tag); // 'div'
      * ```
      */
-    get nodeMetas(): Record<string, NodeMetadata> {
+    get nodeMetas(): MetaDeclMap {
         return this._nodeMetas;
     }
 
@@ -104,12 +109,12 @@ export class NodeMapManager implements INodeMapManager {
      * });
      * ```
      */
-    get i18nNodes(): I18nNodes {
-        return this._cache.i18nNodes;
+    get i18nNodes(): I18nDeclMap {
+        return this._cache.i18nDeclMap;
     }
 
-    get permissionNodes(): PermissionNodes {
-        return this._cache.permissionNodes;
+    get permissionNodes(): PermissionDeclMap {
+        return this._cache.permissionDeclMap;
     }
 
     /**
@@ -211,7 +216,7 @@ export class NodeMapManager implements INodeMapManager {
      * - 返回的对象包含运行时的 DOM 元素引用和组件实例
      * - 节点名区分大小写
      */
-    get(name: string): NodeMetadata | undefined {
+    get(name: string): MetaDecl | undefined {
         return this._map[name];
     }
 
@@ -230,8 +235,8 @@ export class NodeMapManager implements INodeMapManager {
      * }
      * ```
      */
-    getComponent(name: string): any | undefined {
-        return this._map[name]?.component;
+    getComponent(name: string): IComponentCore | undefined {
+        return this._map[name]?.instance;
     }
 
     /**
@@ -251,7 +256,7 @@ export class NodeMapManager implements INodeMapManager {
      * - 返回的是内部映射表的引用，修改会影响管理器状态
      * - 包含 buildDOM() 后构建的所有节点信息
      */
-    getAll(): Record<string, NodeMetadata> {
+    getAll(): Record<string, MetaDecl> {
         return this._map;
     }
 
@@ -274,7 +279,7 @@ export class NodeMapManager implements INodeMapManager {
      * - 如果节点名已存在，会覆盖原有元数据
      * - 不会自动处理 DOM 操作，需要手动确保 DOM 同步
      */
-    set(name: string, meta: NodeMetadata): void {
+    set(name: string, meta: MetaDecl): void {
         this._map[name] = meta;
     }
 
@@ -321,7 +326,7 @@ export class NodeMapManager implements INodeMapManager {
         }
 
         node.el = placeholder;
-        node.component = undefined;
+        node.instance = undefined;
     }
 
     /**
@@ -358,8 +363,8 @@ export class NodeMapManager implements INodeMapManager {
 
         this._removeChildEntries(name);
 
-        if (node.component && typeof node.component.dispose === 'function') {
-            node.component.dispose();
+        if (node.instance && typeof node.instance.dispose === 'function') {
+            node.instance.dispose();
         }
 
         if (node.el) {
@@ -377,7 +382,7 @@ export class NodeMapManager implements INodeMapManager {
      *
      * @param name - 目标节点名称
      * @param ComponentClass - 新的组件类构造函数
-     * @param props - 传递给新组件的属性对象，可选
+     * @param options - 传递给新组件的属性对象，可选
      * @returns 新创建的组件实例，如果节点未找到则返回 null
      *
      * @example
@@ -402,26 +407,26 @@ export class NodeMapManager implements INodeMapManager {
      */
     replace(
         name: string,
-        ComponentClass: new (props?: Record<string, any>) => any,
-        props?: Record<string, any>
+        componentClass: ComponentClass,
+        options?: Record<string, any>
     ): any | null {
         const old = this._map[name];
         if (!old) return null;
 
         this._removeChildEntries(name);
 
-        if (old.component && typeof old.component.dispose === 'function') {
-            old.component.dispose();
+        if (old.instance && typeof old.instance.dispose === 'function') {
+            old.instance.dispose();
         }
 
-        const newChild = new ComponentClass(props);
+        const newChild = new componentClass(options);
         if (this._owner) (newChild as any).parent = this._owner;
 
-        this._replaceDOM(old, newChild.el);
+        this._replaceDOM(old, newChild.el!);
 
         old.el = newChild.el;
-        old.component = newChild;
-        old.componentClass = ComponentClass;
+        old.instance = newChild;
+        old.ctor = componentClass;
 
         return newChild;
     }
@@ -450,8 +455,8 @@ export class NodeMapManager implements INodeMapManager {
      */
     disposeAll(): void {
         for (const node of Object.values(this._map)) {
-            if (node.component && typeof node.component.dispose === 'function') {
-                node.component.dispose();
+            if (node.instance && typeof node.instance.dispose === 'function') {
+                node.instance.dispose();
             }
         }
         this._map = {};
@@ -485,7 +490,7 @@ export class NodeMapManager implements INodeMapManager {
      * - 会合并子组件的 nodeMap 到父组件
      * - 会记录节点的 parentNode 和 nodeIndex 用于后续恢复
      */
-    mountChildComponent(child: HTMLElement, slotName: string): void {
+    mountChildComponent(child: IComponentCore, slotName: string): void {
         const node = this.get(slotName);
         if (!node) {
             this._owner?.log.warn(
@@ -499,9 +504,9 @@ export class NodeMapManager implements INodeMapManager {
             node.parentNode = parentEl;
             node.nodeIndex = Array.from(parentEl.childNodes).indexOf(placeholder as ChildNode);
         }
-        placeholder.replaceWith(child);
-        node.el = child;
-        node.component = child;
+        placeholder.replaceWith(child.el!);
+        node.el = child.el;
+        node.instance = child;
     }
 
     /**
@@ -528,8 +533,8 @@ export class NodeMapManager implements INodeMapManager {
                 path.slice(0, parentPath.length).every((v, i) => v === parentPath[i])
             ) {
                 const node = this._map[name];
-                if (node?.component && typeof node.component.dispose === 'function') {
-                    node.component.dispose();
+                if (node?.instance && typeof node.instance.dispose === 'function') {
+                    node.instance.dispose();
                 }
                 delete this._map[name];
             }
@@ -551,7 +556,7 @@ export class NodeMapManager implements INodeMapManager {
      * - 备用方案使用 insertBefore 确保位置正确
      * - 最后手段使用 appendChild 添加到末尾
      */
-    private _replaceDOM(old: NodeMetadata, newEl: HTMLElement): void {
+    private _replaceDOM(old: MetaDecl, newEl: HTMLElement): void {
         if (old.el?.parentNode) {
             old.el.replaceWith(newEl);
         } else if (old.parentNode && old.nodeIndex !== undefined) {

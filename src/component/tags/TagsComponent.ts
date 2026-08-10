@@ -273,7 +273,7 @@ class TagsComponent extends ItemGroupPooledComponent {
                 this._overflowTag.el.addEventListener('click', () => this._onOverflowClick());
                 container.appendChild(this._overflowTag.el);
             } else {
-                this._overflowTag.update({ text, type: this._overflowTagType });
+                this._overflowTag.update({ text, tagType: this._overflowTagType });
             }
             this._overflowTag.el.hidden = false;
         } else if (this._overflowTag) {

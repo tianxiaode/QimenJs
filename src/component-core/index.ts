@@ -20,7 +20,7 @@ export { LifecycleAbility } from './abilities/LifecycleAbility';
 // 编译引擎
 export { CompileEngine } from './engine/CompileEngine';
 export type { CompileResult } from './types/compile-engine-types';
-export { VOID_TAGS } from './constants/compile-constants';
+export { VOID_TAGS } from './constants/compile';
 
 // 事件引擎（新三引擎 + EventForwarder）
 export { EventForwarder } from './engine/EventForwarder';
@@ -45,7 +45,7 @@ export {
     COMMON_NODE_PROPS,
     RESERVED_KEYS,
     ANIMATION_PRESETS,
-} from './constants/template-constants';
+} from './constants/template';
 export type { ContentPropDef, AnimationOptions } from './types/template-constants';
 
 // 类型

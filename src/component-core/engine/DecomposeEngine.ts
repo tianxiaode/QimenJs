@@ -14,24 +14,18 @@
  * @module DecomposeEngine
  */
 
-import { STYLE_PROPS, VOID_TAGS } from '../constants';
+import { STYLE_PROPS, TPL_CORE_KEYS, VOID_TAGS } from '../constants';
 import { string } from '@qimenjs/utils';
-import { DecomposeContext, DecomposeStep, TplDecl } from '../types';
+import {
+    DecomposeComponentOptionsResult,
+    DecomposeContext,
+    DecomposeStep,
+    TplDecl,
+} from '../types';
 import { styleToString } from './utils';
 
 /**
- * 步骤1：提取 contentMode
- *
- *  @param ctx - 拆解上下文
- */
-
-function _extract_contentMode(ctx: DecomposeContext): void {
-    ctx.meta.contentMode = ctx.clone.contentMode;
-    delete ctx.clone.contentMode;
-}
-
-/**
- * 步骤2：提取 style
+ * 步骤1：提取 style
  *
  * @param ctx - 拆解上下文
  */
@@ -41,26 +35,14 @@ function _extract_style(ctx: DecomposeContext): void {
 }
 
 /**
- * 步骤3：提取 hidden 和 hiddenMode
- *
- * @param ctx - 拆解上下文
- */
-function _extract_hidden(ctx: DecomposeContext): void {
-    ctx.meta.hidden = ctx.clone.hidden;
-    ctx.meta.hiddenMode = ctx.clone.hiddenMode;
-    delete ctx.clone.hidden;
-    delete ctx.clone.hiddenMode;
-}
-
-/**
- * 步骤4：提取 hint（提示文本，支持 i18n）
+ * 步骤2：提取 hint（提示文本，支持 i18n）
  *
  * @param ctx - 拆解上下文
  */
 function _extract_hint(ctx: DecomposeContext) {
     const hint = ctx.clone.hint;
     //给节点初始值
-    if (ctx.meta.tag === 'img') {
+    if (ctx.tag === 'img') {
         ctx.attrDecl.alt = hint;
     } else {
         ctx.attrDecl.title = hint;
@@ -69,7 +51,7 @@ function _extract_hint(ctx: DecomposeContext) {
 }
 
 /**
- * 步骤5：提取 cls（类名）
+ * 步骤3：提取 cls（类名）
  *
  * @param ctx - 拆解上下文
  */
@@ -80,18 +62,7 @@ function _extract_cls(ctx: DecomposeContext): void {
 }
 
 /**
- * 步骤6：提取 text
- *
- * @param ctx - 拆解上下文
- */
-function _extract_text(ctx: DecomposeContext): void {
-    ctx.meta.text = ctx.clone.text;
-
-    delete ctx.clone.text;
-}
-
-/**
- * 步骤7：提取 i18n
+ * 步骤4：提取 i18n
  *
  * @param ctx - 拆解上下文
  */
@@ -105,7 +76,7 @@ function _extract_i18n(ctx: DecomposeContext): void {
 }
 
 /**
- * 步骤8：提取权限
+ * 步骤5：提取权限
  *
  * @param ctx - 拆解上下文
  */
@@ -119,7 +90,7 @@ function _extract_permission(ctx: DecomposeContext): void {
 }
 
 /**
- * 步骤9：分类剩余字段
+ * 步骤6：分类剩余字段
  *
  * @param ctx - 拆解上下文
  */
@@ -134,24 +105,17 @@ function _classify_remaining_fields(ctx: DecomposeContext): void {
             ctx.attrDecl[key.replace('_', '-')] = val;
             continue;
         }
-
-        ctx.meta.nodeOptions![key] = val;
+        ctx.nodeOptions![key] = val;
     }
 }
 
 /**
- * 步骤10：构建 构建HTML
+ * 步骤7：构建 构建HTML
  *
  * @param ctx - 拆解上下文
  */
 function _build_html(ctx: DecomposeContext): void {
-    const tag = ctx.meta.tag ?? 'div';
-    const meta = ctx.meta;
-
-    if (ctx.isComponent) {
-        ctx.html = `<cmp class="q-skeleton"></cmp>`;
-        return;
-    }
+    const tag = ctx.tag ?? 'div';
 
     const hasChildren = !!(ctx.node!.children && ctx.node!.children.length > 0);
     const placeholder = hasChildren ? '<!--q-children-->' : '';
@@ -189,7 +153,7 @@ function _build_html(ctx: DecomposeContext): void {
     }
 
     const attrStr = attrParts.length > 0 ? ' ' + attrParts.join(' ') : '';
-    const text = meta.text ? string.escapeHtml(meta.text) : '';
+    const text = ctx.text ? string.escapeHtml(ctx.text) : '';
     const inner = text + placeholder;
 
     ctx.html = VOID_TAGS.has(tag.toLowerCase())
@@ -199,20 +163,23 @@ function _build_html(ctx: DecomposeContext): void {
 
 /** 拆解管线步骤列表 */
 const DECOMPOSE_NODE_STEPS: DecomposeStep[] = [
-    _extract_contentMode,
     _extract_style,
-    _extract_hidden,
     _extract_hint,
     _extract_cls,
-    _extract_text,
     _extract_i18n,
     _extract_permission,
     _classify_remaining_fields,
     _build_html,
 ];
 
-// DecomposeEngine.ts
-
+const DECOMPOSE_OPTIONS_STEPS: DecomposeStep[] = [
+    _extract_style,
+    _extract_hint,
+    _extract_cls,
+    _extract_i18n,
+    _extract_permission,
+    _classify_remaining_fields,
+];
 /**
  * 拆解引擎
  *
@@ -225,24 +192,8 @@ export class DecomposeEngine {
      * 从 TplDecl 拆解
      */
     static decompose(node: TplDecl): DecomposeContext {
-        const clone = { ...node };
-        const name = clone.name ?? '';
-        const type = clone.type;
-        const ctx: DecomposeContext = {
-            name,
-            node, // 保存原始节点引用
-            clone: clone,
-            meta: { name, tag: clone.tag, type, action: clone.action, nodeOptions: {} },
-            html: '',
-            hasName: !!clone.name,
-            isComponent: !!type,
-            attrDecl: { style: {} },
-        };
-        delete clone.name;
-        delete clone.type;
-        delete clone.tag;
-        delete clone.action;
-
+        const ctx = this.initContext(node);
+        const clone = ctx.clone;
         // 2. 如果是组件节点，特殊处理
         if (ctx.isComponent) {
             // 移除不需要的字段
@@ -257,7 +208,7 @@ export class DecomposeEngine {
             delete clone.i18n;
 
             // 剩余所有字段作为 nodeOptions 传给子组件
-            ctx.meta.nodeOptions = { ...clone };
+            ctx.nodeOptions = { ...clone };
 
             // 组件节点用骨架占位
             ctx.html = `<div class="q-skeleton"></div>`;
@@ -269,6 +220,52 @@ export class DecomposeEngine {
             step(ctx);
         }
 
+        return ctx;
+    }
+
+    static decomposeComponentOptions(opts: Record<string, any>): DecomposeComponentOptionsResult {
+        const clone = { ...opts };
+        delete clone.name;
+        delete clone.id;
+        const ctx: DecomposeContext = {
+            html: '',
+            hasName: false,
+            isComponent: false,
+            clone,
+            attrDecl: {},
+            nodeOptions: {},
+        };
+        for (const step of DECOMPOSE_OPTIONS_STEPS) {
+            step(ctx);
+        }
+
+        const options = {
+            action: ctx.action,
+            text: ctx.text,
+            hidden: ctx.hidden,
+            hideenMode: ctx.hiddenMode,
+            ...ctx.nodeOptions,
+        };
+
+        return { attrDecl: ctx.attrDecl, options } as DecomposeComponentOptionsResult;
+    }
+
+    private static initContext(node: TplDecl): DecomposeContext {
+        const ctx: DecomposeContext = {
+            node,
+            clone: { ...node },
+            html: '',
+            attrDecl: {},
+            nodeOptions: {},
+            hasName: false,
+            isComponent: false,
+        };
+        for (const key in TPL_CORE_KEYS) {
+            (ctx as Record<string, any>)[key] = ctx.clone[key];
+            delete ctx.clone[key];
+        }
+        ctx.hasName = !!ctx.name;
+        ctx.isComponent = !!ctx.name;
         return ctx;
     }
 }

@@ -11,7 +11,7 @@ jest.mock('@/logger', () => ({
 
 import { CompileEngine } from '@/component-core/engine/CompileEngine';
 import type { CompileResult } from '@/component-core/types/compile-engine-types';
-import { VOID_TAGS } from '@/component-core/constants/compile-constants';
+import { VOID_TAGS } from '@/component-core/constants/compile';
 import { findByPath } from '@/component-core/engine/utils/dom-path';
 
 const noopLogger = { warn: () => {} };
