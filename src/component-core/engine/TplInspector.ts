@@ -1,8 +1,8 @@
-import type { TplNode } from '../types';
+import type { TplDecl } from '../types';
 
 /** 模板检查器，提供模板树打印、节点路径收集与检查功能 */
 export class TplInspector {
-    static printTree(node: TplNode, indent: number = 0): void {
+    static printTree(node: TplDecl, indent: number = 0): void {
         const prefix = ' '.repeat(indent);
         const name = node.name ?? '(匿名)';
         const typeInfo = node.type
@@ -20,7 +20,7 @@ export class TplInspector {
         }
     }
 
-    static collectPaths(node: TplNode, parentPath: string = '', result: string[] = []): string[] {
+    static collectPaths(node: TplDecl, parentPath: string = '', result: string[] = []): string[] {
         const name = node.name;
         if (name) {
             const fullPath = parentPath ? `${parentPath}.${name}` : name;
@@ -44,7 +44,7 @@ export class TplInspector {
         return result;
     }
 
-    static inspect(node: TplNode, title?: string): void {
+    static inspect(node: TplDecl, title?: string): void {
         if (title) {
             console.log(`  📄 ${title}`);
         }

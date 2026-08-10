@@ -1,7 +1,7 @@
 import { FloatAbility } from '@/component-core/abilities/FloatAbility';
 import { FloatEngine } from '@/component-core/engine/FloatEngine';
 import { OVERLAY_ACTIONS } from '@/events/overlay-events';
-import type { FloatDecl } from '@/component-core/types/tpl-node-types';
+import type { FloatDecl } from '@/component-core/types/tpl';
 
 describe('FloatAbility', () => {
     const engine = FloatEngine.getInstance();

@@ -16,7 +16,7 @@ import {
     TOAST_ACTIONS,
     TOAST_FEEDBACK_EVENTS,
     encodeEventKey,
-} from '@/imperative/imperative-events';
+} from '@/component-core/imperative/imperative-events';
 
 describe('imperative-events', () => {
     describe('事件前缀', () => {

@@ -107,7 +107,7 @@
  * resize 时只需更新 table root 上的变量值即可全局同步。
  */
 
-import type { TplNode } from '../../component-core/types/tpl-node-types';
+import type { TplDecl } from '../../component-core/types/tpl';
 
 // ══════════════════════════════════════════════════════════════
 // 单元格类型
@@ -448,7 +448,7 @@ export interface ColumnDef {
      * }
      * ```
      */
-    cellTpl?: TplNode;
+    cellTpl?: TplDecl;
 
     /**
      * 自定义表头单元格模板 — 完全替换默认生成的表头节点
@@ -456,7 +456,7 @@ export interface ColumnDef {
      * 提供时忽略默认的 title + sortIcon + resizeHandle 结构，
      * 直接使用此 TplNode 作为表头单元格节点。
      */
-    headerTpl?: TplNode;
+    headerTpl?: TplDecl;
 
     // ─── state: 列状态 ───
 
@@ -599,10 +599,10 @@ export interface ColumnMeta {
     tableAggregator?: AggregatorType;
 
     /** 自定义单元格模板 */
-    cellTpl?: TplNode;
+    cellTpl?: TplDecl;
 
     /** 自定义表头单元格模板 */
-    headerTpl?: TplNode;
+    headerTpl?: TplDecl;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -663,7 +663,7 @@ export interface HeaderCellConfig {
     align: ColumnAlign;
 
     /** 自定义表头模板 */
-    headerTpl?: TplNode;
+    headerTpl?: TplDecl;
 }
 
 /**
@@ -719,7 +719,7 @@ export type HeaderCellConfigOrGroup = HeaderCellConfig | GroupHeaderCellConfig;
  */
 export interface ColumnCompileResult {
     /** body 行模板 — 传给 TableEngine.compile 产出组件类的 tpl */
-    rowTpl: TplNode;
+    rowTpl: TplDecl;
 
     /** 表头单元格配置（支持多表头，递归结构） */
     headerCellConfigs: HeaderCellConfigOrGroup[];

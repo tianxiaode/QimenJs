@@ -123,7 +123,7 @@ jest.mock('@qimenjs/i18n', () => ({
     t: (k: string) => k,
 }));
 
-import { MsgboxManager } from '@/imperative/MsgboxManager';
+import { MsgboxManager } from '@/component-core/imperative/MsgboxManager';
 
 describe('MsgboxManager', () => {
     let manager: MsgboxManager;

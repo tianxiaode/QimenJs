@@ -20,7 +20,7 @@ import {
     ComponentOptions,
     DecomposeContext,
     DecomposeStep,
-    TplNode,
+    TplDecl,
     NodeAttributes,
 } from '../types';
 import { styleToString } from './utils';
@@ -280,7 +280,7 @@ export class DecomposeEngine {
     /**
      * 从 TplNode 拆解
      */
-    static decompose(node: TplNode): DecomposeContext {
+    static decompose(node: TplDecl): DecomposeContext {
         const clone = { ...node };
         const name = clone.name ?? '';
         const ctx: DecomposeContext = {

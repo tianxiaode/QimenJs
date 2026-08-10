@@ -128,7 +128,7 @@
                 "src/markdown"
             ],
             "@qimenjs/imperative": [
-                "src/imperative"
+                "src/component-core/imperative"
             ],
             "@qimenjs/router": [
                 "src/router"

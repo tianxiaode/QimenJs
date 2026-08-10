@@ -27,12 +27,12 @@ import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { INodeMapManager } from './types/node-map-manager';
 import type { DomEventsMap } from './types/tpl-events';
-import type { DragDecl, DropDecl } from './types/tpl-node-types';
+import type { DragDecl, DropDecl } from './types/tpl';
 
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentOptionsUnion, TplNode } from './types';
+import { ComponentOptionsUnion, TplDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -91,7 +91,7 @@ export class Component extends ComposableBase {
      * }
      * ```
      */
-    get tpl(): TplNode {
+    get tpl(): TplDecl {
         return {};
     }
 

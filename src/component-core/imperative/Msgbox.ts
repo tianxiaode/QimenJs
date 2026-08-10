@@ -15,7 +15,7 @@
  */
 
 import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable';
-import { FloatingLayerAbility } from '@/overlay';
+import { FloatingLayerAbility } from '@/component-core/overlay';
 import { EventContextBuilder } from '@/context';
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import type { INodeMapManager } from '@/component-core/types/node-map-manager';

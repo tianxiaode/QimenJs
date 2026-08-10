@@ -11,7 +11,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../types/tpl-node-types';
+import type { FloatDecl } from '../types/tpl';
 import { FloatEngine } from '../engine/FloatEngine';
 
 const engine = FloatEngine.getInstance();

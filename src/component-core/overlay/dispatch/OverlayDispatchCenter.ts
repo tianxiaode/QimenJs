@@ -4,7 +4,6 @@ import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
 import { ZIndexLevel, nextZIndex } from '@/component';
 import { positionOverlay, type Placement } from './positionOverlay';
-import { ComponentRegistrar } from '@qimenjs/component-core';
 import { throttle } from '@/async';
 
 export interface OverlayDefinition {

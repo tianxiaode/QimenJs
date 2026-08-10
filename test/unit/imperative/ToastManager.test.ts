@@ -126,8 +126,8 @@ jest.mock('@qimenjs/i18n', () => ({
     resolveI18nValue: (v: any) => v,
 }));
 
-import { ToastManager } from '@/imperative/ToastManager';
-import type { ToastHandle } from '@/imperative/types';
+import { ToastManager } from '@/component-core/imperative/ToastManager';
+import type { ToastHandle } from '@/component-core/imperative/types';
 
 describe('ToastManager', () => {
     let manager: ToastManager;

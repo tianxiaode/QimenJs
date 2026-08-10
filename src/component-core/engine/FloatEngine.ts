@@ -20,7 +20,7 @@
  * engine.showFloat(component, 'dialog');
  */
 
-import type { FloatDecl } from '../types/tpl-node-types';
+import type { FloatDecl } from '../types/tpl';
 import type {
     TooltipQuickConfig,
     DialogQuickConfig,

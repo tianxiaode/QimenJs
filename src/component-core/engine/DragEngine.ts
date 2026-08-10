@@ -16,10 +16,10 @@
  * @see DragAbility for facade
  */
 
-import type { DragDecl, DropDecl } from '../types/tpl-node-types';
+import type { DragDecl, DropDecl } from '../types/tpl';
 import { EventContextBuilder } from '@/context';
 import { DRAG_ACTIONS } from '@/events';
-import { dragDispatchCenter } from '@/drag';
+import { dragDispatchCenter } from '@/component-core/drag';
 import { getId } from '@/utils/string';
 
 // ══════════════════════════════════════════════════════════════

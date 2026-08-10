@@ -5,7 +5,7 @@
  * 新代码请使用 listens: [{ node: 'toolbar', events: {...} }] 格式。
  */
 
-import type { EventMapping, ListenItem } from '../types/tpl-node-types';
+import type { EventMapping, ListenItem } from '../types/tpl';
 import { ListensEngine } from './ListensEngine';
 
 /** 子组件事件订阅引擎（已委托给 ListensEngine） */

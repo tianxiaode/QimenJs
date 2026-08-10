@@ -39,7 +39,7 @@ jest.mock('@/events/DragEventBus', () => {
     };
 });
 
-import { DragDispatchCenter } from '@/drag/DragDispatchCenter';
+import { DragDispatchCenter } from '@/component-core/drag/DragDispatchCenter';
 import { DragEventBus } from '@/events/DragEventBus';
 
 type MockBusInstance = {

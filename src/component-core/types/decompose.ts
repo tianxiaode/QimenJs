@@ -1,12 +1,12 @@
-import { NodeI18nConfig } from './i18n';
+import { I18nDecl } from './i18n';
 import { NodeAttributes, NodeMetadata } from './node';
 import { PermissionDef } from './permission';
-import { TplNode } from './tpl-node-types';
+import { TplDecl } from './tpl';
 
 /** 拆解管线上下文 */
 export interface DecomposeContext {
     /** 原始模板节点 */
-    node?: TplNode;
+    node?: TplDecl;
     /** 节点名称（可选） */
     name?: string;
     /** 浅克隆的节点配置 */
@@ -22,7 +22,7 @@ export interface DecomposeContext {
     /** 是否是组件节点 */
     isComponent: boolean;
     /** i18n 配置集合 */
-    i18n?: NodeI18nConfig;
+    i18n?: I18nDecl;
     /** 节点属性元数据 */
     nodeAttributes: NodeAttributes;
     /** 子组件属性集合 */

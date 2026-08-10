@@ -19,7 +19,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplDecl } from '@/component-core/types/tpl';
 
 function resetSingleton(): void {
     const base = Object.getPrototypeOf(ComponentRegistrar);
@@ -58,7 +58,7 @@ describe('ComponentRegistrar', () => {
         it('注册带模板的组件', () => {
             const registry = createRegistry();
             const Btn = makeComponent('Button');
-            const tpl: TplNode = { tag: 'div', cls: 'q-btn' };
+            const tpl: TplDecl = { tag: 'div', cls: 'q-btn' };
             registry.register(Btn, tpl);
             expect(registry.has('Button')).toBe(true);
         });
@@ -103,7 +103,7 @@ describe('ComponentRegistrar', () => {
         it('注册含命名节点的模板', () => {
             const registry = createRegistry();
             const Comp = makeComponent('WithNodes');
-            const tpl: TplNode = {
+            const tpl: TplDecl = {
                 tag: 'div',
                 children: [{ tag: 'span', name: 'label', cls: 'q-label' }],
             };
@@ -207,7 +207,7 @@ describe('ComponentRegistrar', () => {
 
         it('同一模板对象被多个组件使用时只编译一次', () => {
             const registry = createRegistry();
-            const SHARED_TPL: TplNode = {
+            const SHARED_TPL: TplDecl = {
                 tag: 'div',
                 children: [{ tag: 'span', name: 'shared' }],
             };
@@ -252,7 +252,7 @@ describe('ComponentRegistrar', () => {
                         cls: 'q-input',
                     },
                 },
-            } as TplNode);
+            } as TplDecl);
 
             const compiled = registry.getCompiled('InputForm');
             expect(compiled).toBeDefined();
@@ -283,7 +283,7 @@ describe('ComponentRegistrar', () => {
                         ],
                     },
                 },
-            } as TplNode);
+            } as TplDecl);
 
             const compiled = registry.getCompiled('ReplaceDerived')!;
             expect(compiled.nodeMetas.icon).toBeDefined();
@@ -305,7 +305,7 @@ describe('ComponentRegistrar', () => {
                 replaces: {
                     title: { hidden: true },
                 },
-            } as TplNode);
+            } as TplDecl);
 
             const compiled = registry.getCompiled('AttrDerived')!;
             expect(compiled.nodeMetas.title).toBeDefined();
@@ -314,7 +314,7 @@ describe('ComponentRegistrar', () => {
         it('replace 来源不存在时 warn 并使用原 tpl', () => {
             const registry = createRegistry();
             const Comp = makeComponent('Fallback');
-            const tpl: TplNode = {
+            const tpl: TplDecl = {
                 tag: 'div',
                 cls: 'q-fallback',
                 replace: 'NotExist',
@@ -337,7 +337,7 @@ describe('ComponentRegistrar', () => {
 
             registry.register(Derived, {
                 replace: 'NoReplacesBase',
-            } as TplNode);
+            } as TplDecl);
 
             const compiled = registry.getCompiled('NoReplacesDerived');
             expect(compiled).toBeDefined();
@@ -411,7 +411,7 @@ describe('ComponentRegistrar', () => {
             registry.register(makeComponent('Derived'), {
                 replace: 'Base',
                 replaces: {},
-            } as TplNode);
+            } as TplDecl);
             registry.register(makeComponent('Standalone'), { tag: 'span' });
 
             const graph = registry.replaceGraph();
@@ -451,7 +451,7 @@ describe('ComponentRegistrar', () => {
             registry.register(makeComponent('InspectDerived'), {
                 replace: 'InspectBase',
                 replaces: {},
-            } as TplNode);
+            } as TplDecl);
             expect(() => registry.inspect()).not.toThrow();
         });
 
@@ -552,7 +552,7 @@ describe('ComponentRegistrar', () => {
                         ],
                     },
                 },
-            } as TplNode);
+            } as TplDecl);
 
             const manager = registry.createNodeMapManager('DerivedTpl');
             expect(manager).toBeDefined();

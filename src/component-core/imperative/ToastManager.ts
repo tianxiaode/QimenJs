@@ -8,7 +8,7 @@
  * eventKey 由 ToastOptions.eventKey 提供，不提供则不发系统事件。
  */
 
-import { type ViewportPosition } from '@/overlay';
+import { type ViewportPosition } from '@/component-core/overlay';
 import { Toast } from './Toast';
 import type { ToastOptions, ToastHandle, ToastPosition } from './types';
 

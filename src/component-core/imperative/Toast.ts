@@ -20,9 +20,8 @@
  */
 
 import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable';
-import { FloatingLayerAbility, type ViewportPosition } from '@/overlay';
+import { FloatingLayerAbility, type ViewportPosition } from '@/component-core/overlay';
 import { EventContextBuilder } from '@/context';
-import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
 import type { INodeMapManager } from '@/component-core/types/node-map-manager';
 import { TOAST_ACTIONS, TOAST_FEEDBACK_EVENTS } from './imperative-events';
 import { TOAST_TEMPLATE, TOAST_NOTIFICATION_TEMPLATE } from './toast-tpl';

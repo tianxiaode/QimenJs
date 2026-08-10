@@ -4,7 +4,7 @@
  * TableEngine 复用这些函数生成 cell TplNode，避免重复逻辑。
  */
 
-import type { TplNode } from '../../../component-core/types/tpl-node-types';
+import type { TplDecl } from '../../../component-core/types/tpl';
 import type { ColumnMeta, CellType } from '../column-types';
 
 const CELL_TYPE_COMPONENT_MAP: Record<CellType, string> = {
@@ -15,7 +15,7 @@ const CELL_TYPE_COMPONENT_MAP: Record<CellType, string> = {
 };
 
 /** 创建单元格模板 */
-export function createCellTpl(meta: ColumnMeta): TplNode {
+export function createCellTpl(meta: ColumnMeta): TplDecl {
     if (meta.cellTpl) return meta.cellTpl;
 
     const componentType = CELL_TYPE_COMPONENT_MAP[meta.cellType];
@@ -30,7 +30,7 @@ export function createCellTpl(meta: ColumnMeta): TplNode {
 }
 
 /** 创建文本单元格模板 */
-export function createTextCellTpl(meta: ColumnMeta): TplNode {
+export function createTextCellTpl(meta: ColumnMeta): TplDecl {
     return {
         type: 'TextCell',
         name: meta.name,
@@ -44,8 +44,8 @@ export function createTextCellTpl(meta: ColumnMeta): TplNode {
 /** 创建行模板 */
 export function createRowTpl(
     metas: ColumnMeta[],
-    cellTplFn: (m: ColumnMeta) => TplNode = createCellTpl
-): TplNode {
+    cellTplFn: (m: ColumnMeta) => TplDecl = createCellTpl
+): TplDecl {
     return {
         tag: 'div',
         cls: 'q-table-row',

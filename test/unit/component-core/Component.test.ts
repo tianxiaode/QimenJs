@@ -31,7 +31,7 @@ jest.mock('@/component-core/engine/ComponentRegistrar', () => {
 import { Component } from '@/component-core/Component';
 import { COMPONENT_ABILITIES } from '@/component-core/Component-abilities';
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { TplNode } from '@/component-core/types/tpl-node-types';
+import type { TplDecl } from '@/component-core/types/tpl';
 
 function resetSingleton(): void {
     const base = Object.getPrototypeOf(ComponentRegistrar);
@@ -72,7 +72,7 @@ describe('Component 基类', () => {
 
         it('useTemplate(tpl) 将 _tpl 存储到类上', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             TestComp.useTemplate(tpl);
 
             expect((TestComp as any)._tpl).toBe(tpl);
@@ -87,7 +87,7 @@ describe('Component 基类', () => {
 
         it('useTemplate(tpl) 同时注册到 ComponentRegistrar', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             TestComp.useTemplate(tpl);
 
             expect(registry.has('TestComp')).toBe(true);
@@ -95,7 +95,7 @@ describe('Component 基类', () => {
 
         it('子类 useTemplate 通过 this 自动推导 type', () => {
             class ButtonComponent extends Component {}
-            const tpl: TplNode = { tag: 'button' };
+            const tpl: TplDecl = { tag: 'button' };
             ButtonComponent.useTemplate(tpl);
 
             expect(ButtonComponent.type).toBe('Button');
@@ -118,7 +118,7 @@ describe('Component 基类', () => {
 
         it('已注册模板时打印模板树', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = {
+            const tpl: TplDecl = {
                 tag: 'div',
                 children: [
                     { tag: 'span', name: 'label' },
@@ -152,7 +152,7 @@ describe('Component 基类', () => {
 
         it('创建实例并设置基本属性', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -165,7 +165,7 @@ describe('Component 基类', () => {
 
         it('props 传入并保存', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ myProp: 'hello' }) as any;
@@ -174,7 +174,7 @@ describe('Component 基类', () => {
 
         it('props.id 保存', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ id: 'test-id' }) as any;
@@ -183,7 +183,7 @@ describe('Component 基类', () => {
 
         it('props.parent 和 slotName 保存', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const parent = {};
@@ -194,7 +194,7 @@ describe('Component 基类', () => {
 
         it('id 在构造函数立即可用（无需 await ready）', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -205,7 +205,7 @@ describe('Component 基类', () => {
 
         it('props.id 传入时实例 id 使用 props.id', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ id: 'custom-id' }) as any;
@@ -214,7 +214,7 @@ describe('Component 基类', () => {
 
         it('无 props.id 时自动生成唯一 id', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst1 = new TestComp() as any;
@@ -248,7 +248,7 @@ describe('Component 基类', () => {
 
         it('nodeMap 返回 nodeMapMgr.getAll() 或空对象', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = {
+            const tpl: TplDecl = {
                 tag: 'div',
                 children: [{ tag: 'span', name: 'label' }],
             };
@@ -273,7 +273,7 @@ describe('Component 基类', () => {
 
         it('初始化后 el 为 HTMLElement', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = {
+            const tpl: TplDecl = {
                 tag: 'div',
                 cls: 'q-test',
                 children: [{ tag: 'span', name: 'label', cls: 'q-test__label' }],
@@ -300,7 +300,7 @@ describe('Component 基类', () => {
 
         it('节点不存在时返回 false', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -330,7 +330,7 @@ describe('Component 基类', () => {
 
         it('ready 是 Promise', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -356,7 +356,7 @@ describe('Component 基类', () => {
                     called = true;
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             new TestComp();
@@ -366,7 +366,7 @@ describe('Component 基类', () => {
 
         it('action 从 props 传入', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ action: 'save' }) as any;
@@ -376,7 +376,7 @@ describe('Component 基类', () => {
 
         it('action 默认为空字符串', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -405,7 +405,7 @@ describe('Component 基类', () => {
 
         it('子组件有 readyAll 时递归等待', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -421,7 +421,7 @@ describe('Component 基类', () => {
 
         it('子组件只有 ready 时等待 ready', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -449,7 +449,7 @@ describe('Component 基类', () => {
 
         it('节点不存在时返回 false', () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -459,7 +459,7 @@ describe('Component 基类', () => {
 
         it('节点有 component 时使用 component.el', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -477,7 +477,7 @@ describe('Component 基类', () => {
 
         it('节点有 component 但 el 不存在时返回 false', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -493,7 +493,7 @@ describe('Component 基类', () => {
 
         it('节点无 component 时使用 node.el', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -511,7 +511,7 @@ describe('Component 基类', () => {
 
         it('node.el 不存在时返回 false', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -544,7 +544,7 @@ describe('Component 基类', () => {
                     unmounted = true;
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -555,7 +555,7 @@ describe('Component 基类', () => {
 
         it('有 parent + slotName 且 parent 未 disposing 时恢复骨架', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -575,7 +575,7 @@ describe('Component 基类', () => {
 
         it('parent._disposing 为 true 时不恢复骨架', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -599,7 +599,7 @@ describe('Component 基类', () => {
                     return true;
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -619,7 +619,7 @@ describe('Component 基类', () => {
 
         it('node.component !== this 时不恢复骨架', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -639,7 +639,7 @@ describe('Component 基类', () => {
 
         it('parentNodeMapMgr 不存在时不恢复骨架', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -651,7 +651,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 _dirtyNodes 被清空', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -663,7 +663,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 _initializing 为 false', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -686,7 +686,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 _disposing 为 true', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -697,7 +697,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 meta 被清空', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -709,7 +709,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 props 被清空', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ myProp: 'hello' }) as any;
@@ -720,7 +720,7 @@ describe('Component 基类', () => {
 
         it('dispose 后 el 被移除', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const container = document.createElement('div');
@@ -754,7 +754,7 @@ describe('Component 基类', () => {
                     throw new Error('init boom');
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -772,7 +772,7 @@ describe('Component 基类', () => {
                     throw new Error('init boom');
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp({ id: 'trace-id' }) as any;
@@ -793,7 +793,7 @@ describe('Component 基类', () => {
                     throw new Error('after boom');
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -831,7 +831,7 @@ describe('Component 基类', () => {
 
         it('nodeMapMgr 未初始化时 dispose 不抛二次错误', async () => {
             class TestComp extends Component {}
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;
@@ -850,7 +850,7 @@ describe('Component 基类', () => {
                     disposeSpy();
                 }
             }
-            const tpl: TplNode = { tag: 'div' };
+            const tpl: TplDecl = { tag: 'div' };
             registry.register(TestComp, tpl);
 
             const inst = new TestComp() as any;

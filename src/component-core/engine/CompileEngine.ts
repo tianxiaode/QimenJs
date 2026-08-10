@@ -39,7 +39,7 @@
  * 3. **预编译缓存**：创建 HTMLTemplateElement 并缓存产物
  */
 
-import type { TplNode } from '../types/tpl-node-types';
+import type { TplDecl } from '../types/tpl';
 import type {
     CompiledTemplateCache,
     CompiledTemplateResult,
@@ -54,7 +54,7 @@ const CHILDREN_PLACEHOLDER = '<!--q-children-->';
 /** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
     /** 模板编译产物缓存（通过模板对象引用） */
-    private static tplCache = new Map<TplNode, CompileResult>();
+    private static tplCache = new Map<TplDecl, CompileResult>();
 
     /**
      * 编译模板 — 主入口
@@ -71,7 +71,7 @@ export class CompileEngine {
      * // nodeMetas: 每类独立（运行时附加 el/component）
      * ```
      */
-    static compile(tpl: TplNode): CompileResult {
+    static compile(tpl: TplDecl): CompileResult {
         const cached = this.tplCache.get(tpl);
         if (cached) return cached;
 
@@ -96,7 +96,7 @@ export class CompileEngine {
      * - 子节点按 children 数组索引注册路径
      * - fragment.children 替代 node.children，fragment.name 作为命名空间前缀
      */
-    static compileTemplate(root: TplNode): CompiledResult {
+    static compileTemplate(root: TplDecl): CompiledResult {
         const ctx: CompileContext = {
             indexPath: {},
             nodeMetas: {},
@@ -140,7 +140,8 @@ export class CompileEngine {
             exposeNames: ctx.exposeNames,
             i18nNodes: ctx.i18nNodes,
             permissionNodes: ctx.permissionNodes,
-            nodeAttributesMap: ctx.nodeAttributesMap,
+            nodeAttributesMap: ctx.nodeAttributesMap
+            options:,
         };
     }
 
@@ -157,7 +158,7 @@ export class CompileEngine {
      * @returns 生成的 HTML 字符串
      */
     private static compileNode(
-        node: TplNode,
+        node: TplDecl,
         path: number[],
         ctx: CompileContext,
         ns?: string
@@ -213,10 +214,10 @@ export class CompileEngine {
      * @returns children 数组和子节点命名空间前缀
      */
     private static resolveChildren(
-        node: TplNode,
+        node: TplDecl,
         parentNs?: string
     ): {
-        children: TplNode[];
+        children: TplDecl[];
         childNs?: string;
     } {
         if (node.fragment) {

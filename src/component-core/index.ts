@@ -57,7 +57,7 @@ export type {
 } from './types/compiled';
 export type { LifecycleHooks } from './types/component';
 export type {
-    TplNode,
+    TplDecl as TplNode,
     FlexConfig,
     GridConfig,
     HiddenMode,
@@ -66,7 +66,7 @@ export type {
     DragDecl,
     DropDecl,
     ListenItem,
-} from './types/tpl-node-types';
+} from './types/tpl';
 export type { DomEventsMap } from './types/tpl-events';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
 export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/tpl-events';
@@ -79,4 +79,4 @@ export type {
 } from './types/init-context';
 export type { INodeMapManager } from './types/node-map-manager';
 
-export type { Placement } from '@/overlay';
+export type { Placement } from '@/component-core/overlay';

@@ -22,7 +22,7 @@ import type {
     SystemListen,
     RouteListen,
     FileListen,
-} from '../types/tpl-node-types';
+} from '../types/tpl';
 import { EventForwarder, type ForwardConfig } from './EventForwarder';
 import {
     ComponentEventBus,

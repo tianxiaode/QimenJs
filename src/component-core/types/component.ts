@@ -1,7 +1,6 @@
 import { ILogger } from '@/logger';
-import type { TplNode } from './tpl-node-types';
+import type { TplDecl } from './tpl';
 import { INodeMapManager } from './node-map-manager';
-import { NodeAttributes } from './node';
 
 // ══════════════════════════════════════════════════════════════
 // 生命周期钩子
@@ -103,7 +102,7 @@ export interface IComponentBase extends LifecycleHooks {
      * 定义组件的 DOM 骨架结构，包括标签、类名、子节点等。
      * 编译时递归遍历生成 HTML，运行时克隆模板构建 nodeMap。
      */
-    get tpl(): TplNode;
+    get tpl(): TplDecl;
 
     /** 组件初始化选项（外部传入） */
     options: ComponentOptionsUnion;

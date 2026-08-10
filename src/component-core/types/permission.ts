@@ -5,9 +5,9 @@
  * - 'users:delete' → 权限标识
  * - ['role:admin', 'role:editor'] → 任一
  */
-export type PermissionDef = string | string[];
+export type PermissionDecl = string | string[];
 
 /**
  * 权限节点集合
  */
-export type PermissionNodes = Record<string, PermissionDef>;
+export type PermissionDeclMap = Record<string, PermissionDecl>;

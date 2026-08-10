@@ -12,7 +12,7 @@ import type {
     MsgboxType,
     MsgboxOptions,
     MsgboxResult,
-} from '@/imperative/types';
+} from '@/component-core/imperative/types';
 
 describe('imperative types', () => {
     describe('ToastType', () => {
