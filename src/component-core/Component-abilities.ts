@@ -46,14 +46,4 @@ export const COMPONENT_ABILITIES = [
 ] as const satisfies readonly AbilityDefinition[];
 
 /** 组件实例接口，由能力注册表推断能力方法，并扩展生命周期钩子 */
-export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES>, IComponentBase {
-    onBeforeUnmount?(): void;
-    onAfterInit?(): void;
-    onBeforeInit?(): void;
-    onMounted?(): void;
-    onUpdated?(data?: any): void;
-    onResize?(entry: ResizeObserverEntry): void;
-
-    onLocaleChange?(): void;
-    onPermissionChange?(data?: any): void;
-}
+export interface IComponent extends InferAbilities<typeof COMPONENT_ABILITIES>, IComponentBase {}

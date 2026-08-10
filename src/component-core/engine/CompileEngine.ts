@@ -39,14 +39,9 @@
  * 3. **预编译缓存**：创建 HTMLTemplateElement 并缓存产物
  */
 
-import type { TplDecl } from '../types/tpl';
-import type {
-    CompiledTemplateCache,
-    CompiledTemplateResult,
-    CompileContext,
-} from '../types/compiled';
-import type { CompileResult } from '../types/compile-engine-types';
+import type { TplDecl, CompiledResult } from '../types';
 import { DecomposeEngine } from './DecomposeEngine';
+import { DecomposeContext } from '../types';
 
 /** 子节点占位符 — DecomposeEngine 在有 children 时预留，CompileEngine 递归后替换 */
 const CHILDREN_PLACEHOLDER = '<!--q-children-->';
@@ -54,7 +49,7 @@ const CHILDREN_PLACEHOLDER = '<!--q-children-->';
 /** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
     /** 模板编译产物缓存（通过模板对象引用） */
-    private static tplCache = new Map<TplDecl, CompileResult>();
+    private static tplCache = new Map<TplDecl, CompiledResult>();
 
     /**
      * 编译模板 — 主入口
@@ -71,7 +66,7 @@ export class CompileEngine {
      * // nodeMetas: 每类独立（运行时附加 el/component）
      * ```
      */
-    static compile(tpl: TplDecl): CompileResult {
+    static compile(tpl: TplDecl): CompiledResult {
         const cached = this.tplCache.get(tpl);
         if (cached) return cached;
 
@@ -97,29 +92,19 @@ export class CompileEngine {
      * - fragment.children 替代 node.children，fragment.name 作为命名空间前缀
      */
     static compileTemplate(root: TplDecl): CompiledResult {
-        const ctx: CompileContext = {
+        const ctx: CompiledResult = {
+            html: '',
             indexPath: {},
-            nodeMetas: {},
+            metaDeclMap: {},
             exposeNames: [],
-            i18nNodes: {},
-            permissionNodes: {},
-            nodeAttributesMap: {},
-            options: {},
+            i18nDeclMap: {},
+            templateCache: null as any,
+            permissionDeclMap: {},
         };
 
-        // 根节点注册为 'root'
-        ctx.indexPath['root'] = [];
         const rootResult = DecomposeEngine.decompose(root);
         rootResult.meta.name = 'root';
-        ctx.nodeMetas['root'] = rootResult.meta;
-        ctx.nodeAttributesMap['root'] = rootResult.nodeAttributes;
-        if (rootResult.i18n) {
-            ctx.i18nNodes['root'] = rootResult.i18n;
-        }
-        // 收集根节点权限
-        if (rootResult.permission) {
-            ctx.permissionNodes['root'] = rootResult.permission;
-        }
+        this.applyDecomposeResult(ctx, rootResult, []);
 
         // 确定 children（fragment 内联展开）
         const { children, childNs } = CompileEngine.resolveChildren(root, undefined);
@@ -132,16 +117,11 @@ export class CompileEngine {
 
         // 替换占位符
         const html = rootResult.html.replace(CHILDREN_PLACEHOLDER, childHtmls.join(''));
-
+        const templateCache = this.createTemplateElement(html);
         return {
+            ...ctx,
             html,
-            indexPath: ctx.indexPath,
-            nodeMetas: ctx.nodeMetas,
-            exposeNames: ctx.exposeNames,
-            i18nNodes: ctx.i18nNodes,
-            permissionNodes: ctx.permissionNodes,
-            nodeAttributesMap: ctx.nodeAttributesMap
-            options:,
+            templateCache,
         };
     }
 
@@ -160,7 +140,7 @@ export class CompileEngine {
     private static compileNode(
         node: TplDecl,
         path: number[],
-        ctx: CompileContext,
+        ctx: CompiledResult,
         ns?: string
     ): string {
         // 1. 应用命名空间前缀
@@ -171,15 +151,7 @@ export class CompileEngine {
 
         // 3. 有 name → 注册到 nodeMap
         if (result.hasName && result.name) {
-            ctx.indexPath[result.name] = path;
-            ctx.nodeMetas[result.name] = result.meta;
-            ctx.exposeNames.push(result.name);
-            if (result.i18n) {
-                ctx.i18nNodes[result.name] = result.i18n;
-            }
-            if (result.permission) {
-                ctx.permissionNodes[result.name] = result.permission;
-            }
+            this.applyDecomposeResult(ctx, result, path);
         }
 
         // 4. 组件节点返回骨架占位，不递归 children
@@ -242,5 +214,25 @@ export class CompileEngine {
         const template = document.createElement('template');
         template.innerHTML = html;
         return template;
+    }
+
+    private static applyDecomposeResult(
+        compiledResult: CompiledResult,
+        decomposeResult: DecomposeContext,
+        indexPath: number[]
+    ) {
+        const name = decomposeResult.name;
+        if (!name) return;
+        compiledResult.indexPath[name] = indexPath;
+        compiledResult.metaDeclMap[name] = decomposeResult.meta;
+        if (name !== 'root') {
+            compiledResult.exposeNames.push(name);
+        }
+        if (decomposeResult.i18n) {
+            compiledResult.i18nDeclMap[name] = decomposeResult.i18n;
+        }
+        if (decomposeResult.permission) {
+            compiledResult.permissionDeclMap[name] = decomposeResult.permission;
+        }
     }
 }

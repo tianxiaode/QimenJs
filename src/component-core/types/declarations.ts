@@ -1,10 +1,9 @@
-// types/declarations.ts
-
-import { Extension } from 'typescript';
-
 // ============================================
 // 基础声明（无泛型依赖）
 // ============================================
+
+import { IComponentCore } from './core';
+import { IDragGhost } from './interfaces';
 
 /**
  * 样式声明
@@ -21,6 +20,8 @@ export interface AttrDecl {
     style?: StyleDecl;
     [key: string]: any;
 }
+
+export type AttrDeclMap = Record<string, AttrDecl>;
 
 /**
  * 隐藏模式 — 控制 hidden 时的 DOM 表现
@@ -42,7 +43,7 @@ export interface HiddenDecl {
 /**
  * 拖拽声明
  */
-export interface DragDecl<TDrag = any, TGhost = any> {
+export interface DragDecl {
     /**
      * 拖拽类型
      *
@@ -52,9 +53,9 @@ export interface DragDecl<TDrag = any, TGhost = any> {
      * { axis: 'both' }  // type 自动使用 component.type
      * { type: 'item', axis: 'both' }  // 强制伪装为 'item' 类型
      */
-    type?: TDrag | TDrag[];
+    type?: IComponentCore | IComponentCore[];
     /** 拖拽影子组件类型（可选） */
-    ghost?: TGhost;
+    ghost?: IDragGhost;
     /** 拖拽轴向：'x' | 'y' | 'both' */
     axis?: 'x' | 'y' | 'both';
     /** 拖拽边界约束 */
@@ -122,38 +123,6 @@ export interface TooltipDecl {
 }
 
 /**
- * 对话框声明
- */
-export interface MsgboxDecl {
-    type?: 'confirm' | 'alert' | 'prompt';
-    title?: string;
-    content?: string;
-    confirmText?: string;
-    cancelText?: string;
-    onConfirm?: string;
-    onCancel?: string;
-}
-
-/**
- * 指示器声明
- */
-export interface IndicatorDecl<TIndicator = any> {
-    type?: TIndicator;
-    /** 弹出方向，默认 'bottom' */
-    placement?: 'top' | 'bottom' | 'left' | 'right';
-    /** 触发方式，默认 'always'（始终显示） */
-    trigger?: 'always' | 'click' | 'hover';
-    /** 是否显示 prev/next 箭头 */
-    arrows?: boolean;
-    /** 初始选中索引 */
-    activeIndex?: number;
-    /** 指示器子项类型（默认由 type 推导） */
-    defaultItemType?: string;
-    /** 浮层事件转发 */
-    emits?: Record<string, string>;
-}
-
-/**
  * i18n 声明
  */
 export interface I18nDecl {
@@ -164,92 +133,30 @@ export interface I18nDecl {
     [field: string]: string | undefined;
 }
 
+export type I18nDeclMap = Record<string, I18nDecl>;
+
 /**
  * 权限声明
  */
 export type PermissionDecl = string | string[];
 
-/**
- * 节点扩展（所有功能模块）
- *
- * 通过组合模式，按需使用
- */
-export interface TplExtensions<TDialog = any, TPopover = any> {
-    /** i18n 配置 */
-    i18n?: I18nDecl;
+export type PermissionDeclMap = Record<string, PermissionDecl>;
 
-    /** 权限配置 */
-    permission?: PermissionDecl;
-
-    /** 拖拽配置（拖拽手柄） */
-    drag?: DragDecl | boolean;
-
-    /** 放置配置（放置目标） */
-    drop?: DropDecl | boolean;
-
-    /** 动画配置 */
-    animation?: AnimationDecl;
-
-    /** 角标配置 */
-    badge?: BadgeDecl | string | number | null;
-
-    /** 提示浮层 */
-    tooltip?: TooltipDecl | string | null;
-
-    /** 信息对话框 */
-    msgbox?: MsgboxDecl | null;
-
-    /** 对话框 */
-    dialog?: TDialog | null;
-
-    /** 弹出层 */
-    popover?: TPopover | null;
-
-    /** 指示器 */
-    indicator?: IndicatorDecl | null;
-
-    /**
-     * 拖拽手柄标记（组件级快捷方式）
-     *
-     * 等价于在组件类声明 dragHandle = nodeName
-     * 实际使用中，此字段会被编译到组件的 dragHandle 配置中
-     */
-    dragHandle?: boolean;
-
-    /**
-     * 放置区标记（组件级快捷方式）
-     *
-     * 等价于在组件类声明 dropZone = nodeName
-     * 实际使用中，此字段会被编译到组件的 dropZone 配置中
-     */
-    dropZone?: boolean;
+/** Loading 快捷配置，用于声明式创建加载浮层 */
+export interface LoadingDecl {
+    text?: string;
+    spinner?: string;
+    maskMode?: 'none' | 'scoped' | 'global';
+    mask?: boolean | string;
 }
 
-// ============================================
-// 核心声明（使用扩展模式）
-// ============================================
-
-/**
- * 节点声明（核心）
- *
- * 所有功能通过扩展接口组合
- */
-export interface TplDecl<TComponent = any, TDialog = any, TPopover = any>
-    extends AttrDecl, HiddenDecl, TplExtensions<TDialog, TPopover> {
-    // ─── 标识 ───
-    name?: string;
-    tag?: string;
-    type?: TComponent;
-
-    // ─── 内容 ───
+export interface ExtensionDecl {
     text?: string;
-
-    // ─── 事件 ───
+    contentMode?: 'value' | 'src' | 'html' | 'link';
     action?: string;
+}
 
-    // ─── 子节点 ───
-    children?: TplDecl[];
-
-    // ─── 自定义 ───
+/** 扩展字段定义 */
+export interface NodeOptionsDecl {
     [key: string]: any;
 }

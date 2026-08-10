@@ -2,10 +2,8 @@
 // 节点元数据 — 唯一运行时数据载体
 // ══════════════════════════════════════════════════════════════
 
-import { IComponentBase } from './component';
-import { I18nNodes } from './i18n';
-import { NodeAttributesMap, NodeMetadata, NodePropsMetas } from './node.ts';
-import { PermissionNodes } from './permission';
+import { I18nDeclMap, PermissionDeclMap } from './declarations';
+import { MetaDeclMap } from './meta';
 
 // ══════════════════════════════════════════════════════════════
 // 编译产物
@@ -67,37 +65,15 @@ export interface CompiledResult {
     indexPath: NodeIndexPath;
 
     /** 节点元数据（编译时产出，运行时附加 el/component） */
-    nodeMetas: Record<string, NodeMetadata>;
+    metaDeclMap: MetaDeclMap;
 
     /** 暴露的属性名列表（用于生成 getter/setter） */
     exposeNames: string[];
 
     /** i18n 节点列表（含字段名，用于 locale change 时精确刷新） */
-    i18nNodes: I18nNodes;
+    i18nDeclMap: I18nDeclMap;
     /** 模板缓存 */
     templateCache: HTMLTemplateElement;
     /** 权限节点列表 */
-    permissionNodes: PermissionNodes;
-    /** 节点属性集合 */
-    nodeAttributesMap: NodeAttributesMap;
-    /**子组件配置 */
-    options: Record<string, any>;
-}
-
-/** 编译上下文 — 递归编译过程中共享的可变状态 */
-export interface CompileContext {
-    /** 命名节点的 DOM 位置索引 */
-    indexPath: NodeIndexPath;
-    /** 节点元数据集合 */
-    nodeMetas: Record<string, NodeMetadata>;
-    /** 暴露的属性名列表 */
-    exposeNames: string[];
-    /** i18n 节点列表 */
-    i18nNodes: I18nNodes;
-    /** 权限节点列表 */
-    permissionNodes: PermissionNodes;
-    /** 节点属性集合 */
-    nodeAttributesMap: NodeAttributesMap;
-    /**子组件配置 */
-    options: Record<string, any>;
+    permissionDeclMap: PermissionDeclMap;
 }

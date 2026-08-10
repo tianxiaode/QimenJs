@@ -1,5 +1,5 @@
-import { IComponentBase } from './component';
-import { HiddenMode } from './hidden';
+import { IComponentCore } from './core';
+import { HiddenDecl, NodeOptionsDecl } from './declarations';
 
 /**
  * NodeMetadata — 节点级唯一运行时数据载体
@@ -27,17 +27,17 @@ import { HiddenMode } from './hidden';
  * nodeMetas.icon.component = iconComponent;  // 如果 icon 是组件节点
  * ```
  */
-export interface MetaDecl {
+export interface MetaDecl extends HiddenDecl {
     // ─── runtime：运行时附加 ───
 
     /** DOM 元素引用 */
     el?: HTMLElement;
 
     /** 子组件实例（渲染后填充） */
-    instance?: IComponentBase;
+    instance?: IComponentCore;
 
     /** 子组件类引用（编译时从 TplNode.type 解析） */
-    ctor?: IComponentBase;
+    ctor?: IComponentCore;
 
     /** 父元素引用（replace 模式定位用） */
     parentNode?: HTMLElement | null;
@@ -57,12 +57,10 @@ export interface MetaDecl {
     tag?: string;
 
     /** 组件类型名 */
-    type?: string;
+    type?: IComponentCore;
 
     /** 节点内容 */
     text?: string;
-
-    // ─── event：事件声明（从 TplNode 编译） ───
 
     /**
 
@@ -74,10 +72,11 @@ export interface MetaDecl {
 
     /** 内容操作模式（按 tag 自动推导：div→html, input→value, img→src, a→link） */
     contentMode?: 'value' | 'src' | 'html' | 'link';
-
-    /** 初始隐藏状态 */
-    hidden?: boolean;
-
-    /** 隐藏模式：'display' | 'visibility' | 'opacity' */
-    hiddenMode?: HiddenMode;
+    /**
+     * 根节点：剔除html属性后的配置
+     * 子组件：剔除父组件所需属性后的包含html属性的配置
+     */
+    nodeOptions?: NodeOptionsDecl;
 }
+
+export type MetaDeclMap = Record<string, MetaDecl>;

@@ -1,6 +1,5 @@
-import { I18nDecl } from './i18n';
-import { NodeAttributes, NodeMetadata } from './node';
-import { PermissionDef } from './permission';
+import { AttrDecl, I18nDecl, PermissionDecl } from './declarations';
+import { MetaDecl } from './meta';
 import { TplDecl } from './tpl';
 
 /** 拆解管线上下文 */
@@ -12,11 +11,11 @@ export interface DecomposeContext {
     /** 浅克隆的节点配置 */
     clone: Record<string, any>;
     /** 节点元数据 */
-    meta: NodeMetadata;
+    meta: MetaDecl;
     /** 节点html */
     html: string;
     /** 是否需要权限 */
-    permission?: PermissionDef;
+    permission?: PermissionDecl;
     /** 是否是有 name 节点 */
     hasName: boolean;
     /** 是否是组件节点 */
@@ -24,9 +23,7 @@ export interface DecomposeContext {
     /** i18n 配置集合 */
     i18n?: I18nDecl;
     /** 节点属性元数据 */
-    nodeAttributes: NodeAttributes;
-    /** 子组件属性集合 */
-    options: Record<string, any>;
+    attrDecl: AttrDecl;
 }
 
 /** 拆解步骤函数类型 */
