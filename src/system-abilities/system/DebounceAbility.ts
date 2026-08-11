@@ -15,7 +15,7 @@
 import { debounce as debounceFn } from '@qimenjs/async';
 import type { AbilityDefinition } from '@/composable';
 
-export const DebounceAbility= {
+export const DebounceAbility = {
     __name__: 'DebounceAbility',
 
     debounce<A extends (...args: any[]) => any>(

@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════
 
 import { AttrDeclMap, I18nDeclMap, PermissionDeclMap } from './declarations';
-import { MetaDeclMap } from './meta';
+import { DecomposeResultMap } from './decompose';
 
 // ══════════════════════════════════════════════════════════════
 // 编译产物
@@ -65,7 +65,7 @@ export interface CompiledResult {
     indexPath: NodeIndexPath;
 
     /** 节点元数据（编译时产出，运行时附加 el/component） */
-    metaDeclMap: MetaDeclMap;
+    decomposeResultMap: DecomposeResultMap;
 
     /** 暴露的属性名列表（用于生成 getter/setter） */
     exposeNames: string[];

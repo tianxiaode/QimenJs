@@ -13,6 +13,7 @@ export { flattenTokens, tokensToCSSVariables } from './utils';
 // 框架运行时必须的全局样式
 export { skeletonCSS } from './skeleton.css';
 export { layoutCSS } from './layout.css';
+export { utilityCSS } from './utility.css';
 // 预设主题导出
 export { lightTheme, lightThemeCSS } from './presets/light';
 export { darkTheme, darkThemeCSS } from './presets/dark';

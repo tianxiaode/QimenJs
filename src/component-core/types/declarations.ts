@@ -159,25 +159,14 @@ export interface TplCoreDecl extends HiddenDecl {
     type?: IComponentCore;
     /** 节点文本 */
     text?: string;
+    /** 节点文本模式 */
     contentMode?: 'value' | 'src' | 'html' | 'link';
+    /** 节点行为 */
     action?: string;
+    /** i18n 配置集合 */
     i18n?: I18nDecl;
+    /** 是否需要权限 */
     permission?: PermissionDecl;
-    disabled?: boolean;
-    readonly?: boolean;
-    placeholder?: string;
-    required?: boolean;
-    title?: string;
-    src?: string;
-    value?: any;
-    accept?: string[];
-    multiple?: boolean;
-    checked?: boolean;
-    selected?: boolean | any[];
-    for?: string;
-    order?: number;
-    zIndex?: number;
-    role?: string;
 }
 
 /** 扩展字段定义 */

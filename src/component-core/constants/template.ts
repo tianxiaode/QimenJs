@@ -104,3 +104,9 @@ export const TPL_CORE_KEYS = [
     'zIndex',
     'role',
 ];
+
+export const HIDDEN_MODE_CSS_MAP: Record<string, string> = {
+    display: 'hidden',
+    visibility: 'invisible',
+    opacity: 'transparent',
+};

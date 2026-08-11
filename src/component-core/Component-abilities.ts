@@ -11,14 +11,17 @@ import {
     SystemAbility,
     DebounceAbility,
 } from '@/system-abilities';
-import { NodeQueryAbility } from './abilities/NodeQueryAbility';
-import { NodePropAbility } from './abilities/NodePropAbility';
-import { CommonPropsAbility } from './abilities/CommonPropsAbility';
-import { AnimationAbility } from './abilities';
-import { BadgeAbility } from './abilities/BadgeAbility';
-import { FloatAbility } from './abilities/FloatAbility';
-import { DragAbility } from './abilities/DragAbility';
-import { LifecycleAbility } from './abilities/LifecycleAbility';
+import {
+    AnimationAbility,
+    BadgeAbility,
+    FloatAbility,
+    DragAbility,
+    LifecycleAbility,
+    OptionsAbility,
+    NodeQueryAbility,
+    NodePropAbility,
+    CommonPropsAbility,
+} from './abilities';
 import { IComponentBase } from './types';
 
 /** 组件能力注册表，包含所有组件共享的系统能力与组件核心能力 */
@@ -33,6 +36,8 @@ export const COMPONENT_ABILITIES = [
     FileEventBusAbility,
     SystemAbility,
     DebounceAbility,
+
+    OptionsAbility,
 
     NodeQueryAbility,
     NodePropAbility,

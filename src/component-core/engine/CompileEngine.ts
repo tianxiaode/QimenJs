@@ -39,12 +39,10 @@
  * 3. **预编译缓存**：创建 HTMLTemplateElement 并缓存产物
  */
 
-import type { TplDecl, CompiledResult } from '../types';
+import type { TplDecl, CompiledResult, DecomposeResult } from '../types';
 import { DecomposeEngine } from './DecomposeEngine';
-import { DecomposeContext } from '../types';
-
+import { CHILDREN_PLACEHOLDER } from '../constants';
 /** 子节点占位符 — DecomposeEngine 在有 children 时预留，CompileEngine 递归后替换 */
-const CHILDREN_PLACEHOLDER = '<!--q-children-->';
 
 /** 编译引擎，将 TplNode 编译为编译产物（cache + nodeMetas） */
 export class CompileEngine {
@@ -95,7 +93,7 @@ export class CompileEngine {
         const ctx: CompiledResult = {
             html: '',
             indexPath: {},
-            metaDeclMap: {},
+            decomposeResultMap: {},
             exposeNames: [],
             i18nDeclMap: {},
             templateCache: null as any,
@@ -104,7 +102,6 @@ export class CompileEngine {
         };
 
         const rootResult = DecomposeEngine.decompose(root);
-        rootResult.meta.name = 'root';
         this.applyDecomposeResult(ctx, rootResult, []);
 
         // 确定 children（fragment 内联展开）
@@ -219,13 +216,13 @@ export class CompileEngine {
 
     private static applyDecomposeResult(
         compiledResult: CompiledResult,
-        decomposeResult: DecomposeContext,
+        decomposeResult: DecomposeResult,
         indexPath: number[]
     ) {
         const name = decomposeResult.name;
         if (!name) return;
         compiledResult.indexPath[name] = indexPath;
-        compiledResult.metaDeclMap[name] = decomposeResult.meta;
+        compiledResult.decomposeResultMap[name] = decomposeResult;
         compiledResult.attrDeclMap[name] = decomposeResult.attrDecl;
         if (name !== 'root') {
             compiledResult.exposeNames.push(name);
@@ -236,5 +233,8 @@ export class CompileEngine {
         if (decomposeResult.permission) {
             compiledResult.permissionDeclMap[name] = decomposeResult.permission;
         }
+        decomposeResult.attrDecl = undefined as any;
+        decomposeResult.i18n = undefined;
+        decomposeResult.permission = undefined;
     }
 }

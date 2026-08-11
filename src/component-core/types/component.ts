@@ -1,6 +1,7 @@
 import type { TplDecl } from './tpl';
 import { INodeMapManager } from './node-map-manager';
 import { ComponentCoreOptions, IComponentCore } from './core';
+import { INodeAttrManager } from './node-attr_mananger';
 
 /**
  * 组件选项（平铺模式）
@@ -12,6 +13,8 @@ export interface ComponentOptions extends ComponentCoreOptions, Partial<TplDecl>
 export interface IComponentBase extends IComponentCore {
     /** 组件节点管理器 */
     nodeMapMgr: INodeMapManager;
+    /** 组件html属性管理器 */
+    nodeAttrMgr: INodeAttrManager;
     /**
      * 模板根节点定义
      *

@@ -1,4 +1,6 @@
 import { ILogger } from '@/logger';
+import { INodeMapManager } from './node-map-manager';
+import { INodeAttrManager } from './node-attr_mananger';
 
 // ══════════════════════════════════════════════════════════════
 // 生命周期钩子
@@ -39,8 +41,6 @@ export interface LifecycleHooks {
     onUpdated?: () => void;
     /** 卸载前（组件即将从 DOM 移除） */
     onBeforeUnmount?: () => void;
-    /** 销毁前（组件清理的唯一入口，框架销毁不可覆写） */
-    onBeforeDispose?: () => void;
     /** 语言变化 */
     onLocaleChange?(): void;
     /** 权限变化 */
@@ -53,6 +53,8 @@ export interface LifecycleHooks {
  * 不依赖任何其他类型，只定义组件最基本的身份和生命周期
  */
 export interface IComponentCore extends LifecycleHooks {
+    /** 组件原始配置 */
+    _options: ComponentCoreOptions;
     /** 组件 ID */
     id: string;
     /** 组件类型名 */
@@ -61,11 +63,21 @@ export interface IComponentCore extends LifecycleHooks {
     logger: ILogger;
     /** 根 DOM 元素 */
     el?: HTMLElement;
+    /** 禁用css */
+    disabledCls: string;
+    /** 节点配置key */
+    get optionKeys(): string[];
+    get nodeMapManager(): INodeMapManager;
+    get nodeAttrManager(): INodeAttrManager;
+    /** 更新方法 */
     update?: (...args: any[]) => void;
     /** 挂载 */
     mount(): Promise<void>;
-    /** 销毁后钩子 */
-    onDisposed(): void;
+    /** 检查是否是组件 */
+    isComponent(name: string): boolean;
+    /** 卸载 */
+    dispose(): void;
+    getNode(name: string): HTMLElement | IComponentCore | undefined;
 }
 
 /**

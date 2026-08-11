@@ -19,8 +19,9 @@
 import { ILogger, Logger } from '@/logger';
 import { ABILITY_STATES_KEY, CLEANUPS_KEY, withAbilities, withDefinitions } from './forge';
 import type { AbilityDefinition } from './types/ability';
+import { IComposableBase } from './types/composable';
 
-export class ComposableBase {
+export class ComposableBase implements IComposableBase {
     logger: ILogger;
 
     constructor() {

@@ -22,142 +22,107 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { CURSOR_TYPE } from '../types';
-
-/**
- * 分割 CSS 类名字符串
- *
- * 将用空格分隔的类名字符串转换为数组，自动过滤空值。
- *
- * @param {string} value - CSS 类名字符串（如 'active hover focus'）
- * @returns {string[]} 类名数组（如 ['active', 'hover', 'focus']）
- *
- * @example
- * splitClasses('a b c'); // ['a', 'b', 'c']
- * splitClasses('  a   b  '); // ['a', 'b']
- */
-function splitClasses(value: string): string[] {
-    return value.split(/\s+/).filter(Boolean);
-}
+import { CURSOR_TYPE, HiddenMode } from '../types';
+import { HIDDEN_MODE_CSS_MAP } from '../constants';
 
 /** 两层节点属性能力，提供 root 及子节点的 cls/style/hidden/aria 等属性操作 */
 export const CommonPropsAbility: AbilityDefinition = {
     // ── Layer 1: root 属性（getter/setter）──
 
     cls: {
-        get() {
-            return this._getNodeProp('root', 'cls');
+        get(): DOMTokenList {
+            return this.getCls('class');
         },
         set(v: any) {
-            this._markNodeDirty('root', { cls: v });
+            this.setNodeProp('root', { class: v });
         },
     },
     style: {
         get() {
-            return this._getNodeProp('root', 'style');
+            return this.getNodeProp('root', 'style');
         },
         set(v: any) {
-            this._markNodeDirty('root', { style: v });
+            this.setNodeProp('root', { style: v });
         },
     },
     hidden: {
         get() {
-            return this._getNodeProp('root', 'hidden');
+            return this.getNodeProp('root', 'hidden');
         },
-        set(v: any) {
-            this._markNodeDirty('root', { hidden: v });
+        set(v: boolean) {
+            const css = HIDDEN_MODE_CSS_MAP[this.hiddenMode];
+            this.setOption('hidden', v);
+            if (v) {
+                this.addCls(css);
+                this.setAttr('aria-hidden', 'true', 'root');
+            } else {
+                this.removeCls(css);
+                this.removeAttr('aria-hidden', 'root');
+            }
+        },
+    },
+    hiddenMode: {
+        get(): string {
+            return this.getOption('hiddenMode');
+        },
+        set(v: HiddenMode) {
+            this.setOption('hiddenMode', v);
         },
     },
     disabled: {
         get() {
-            return this._getNodeProp('root', 'disabled');
+            return this.getOption('disabled') ?? false;
         },
-        set(v: any) {
-            this._markNodeDirty('root', { disabled: v });
+        set(v: boolean) {
+            this.setOption('disabled', v);
+            if (v) {
+                this.addCls(this.disabledCls);
+                this.setAttr('aria-disabled', 'true', 'root');
+            } else {
+                this.removeCls(this.disabledCls);
+                this.removeAttr('aria-disabled', 'root');
+            }
         },
     },
     order: {
         get() {
-            return this._getNodeProp('root', 'order') ?? 0;
+            return this.getOption('order') ?? 0;
         },
         set(v: any) {
-            this._markNodeDirty('root', { order: v });
+            this.setOption('order', v);
+            this.setNodeProp('root', { order: v });
         },
     },
     role: {
         get() {
-            return this._getNodeProp('root', 'role');
+            return this.getNodeProp('root', 'aria-role');
         },
         set(v: any) {
-            this._markNodeDirty('root', { role: v });
-        },
-    },
-    ariaLabel: {
-        get() {
-            return this._getNodeProp('root', 'ariaLabel');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaLabel: v });
-        },
-    },
-    ariaChecked: {
-        get() {
-            return this._getNodeProp('root', 'ariaChecked');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaChecked: v });
-        },
-    },
-    ariaDisabled: {
-        get() {
-            return this._getNodeProp('root', 'ariaDisabled');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaDisabled: v });
-        },
-    },
-    ariaExpanded: {
-        get() {
-            return this._getNodeProp('root', 'ariaExpanded');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaExpanded: v });
-        },
-    },
-    ariaSelected: {
-        get() {
-            return this._getNodeProp('root', 'ariaSelected');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaSelected: v });
-        },
-    },
-    ariaHidden: {
-        get() {
-            return this._getNodeProp('root', 'ariaHidden');
-        },
-        set(v: any) {
-            this._markNodeDirty('root', { ariaHidden: v });
+            this.setNodeProp('root', { 'aria-role': v });
         },
     },
     hint: {
         get() {
-            return this._getNodeProp('root', 'hint');
+            return this.getNodeProp('root', 'title');
         },
         set(v: string) {
-            this._markNodeDirty('root', { title: v });
+            this.setNodeProp('root', { title: v });
         },
     },
     cursor: {
         get() {
-            return this._getNodeProp('root', 'cursor');
+            return this.getNodeProp('root', 'cursor');
         },
         set(v: CURSOR_TYPE) {
-            this._markNodeDirty('root', { cursor: v });
+            this.setNodeProp('root', { cursor: v });
         },
     },
 
     // ── Layer 1+2: 方法（nodeName 在末尾，可选）──
+
+    getCls(nodeName?: string): DOMTokenList {
+        return this.getNodeProp('class', nodeName ?? 'root') as DOMTokenList;
+    },
 
     /**
      * 添加 CSS 类名
@@ -182,16 +147,13 @@ export const CommonPropsAbility: AbilityDefinition = {
      * this.addCls('active', 'icon');
      */
     addCls(value: string, nodeName?: string): void {
-        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
-        if (component && typeof component.addCls === 'function') {
-            component.addCls(value);
+        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
+        if (!cls) {
+            this.setNodeProp('root', { class: cls });
             return;
         }
-        const target = component?.el ?? el;
-        if (target) {
-            const c = splitClasses(value);
-            if (c.length) target.classList.add(...c);
-        }
+        cls.add(...value.split(/\s+/).filter(Boolean));
+        this.setNodeProp('root', { class: cls });
     },
 
     /**
@@ -217,16 +179,11 @@ export const CommonPropsAbility: AbilityDefinition = {
      * this.removeCls('active', 'icon');
      */
     removeCls(value: string, nodeName?: string): void {
-        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
-        if (component && typeof component.removeCls === 'function') {
-            component.removeCls(value);
-            return;
-        }
-        const target = component?.el ?? el;
-        if (target) {
-            const c = splitClasses(value);
-            if (c.length) target.classList.remove(...c);
-        }
+        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
+        if (!cls) return;
+        const removeCls = value.split(/\s+/).filter(Boolean);
+        cls.remove(...removeCls);
+        this.setNodeProp('root', { class: cls });
     },
 
     /**
@@ -263,23 +220,15 @@ export const CommonPropsAbility: AbilityDefinition = {
      * // 为子节点强制添加类名
      * this.toggleCls('active', true, 'icon');
      */
-    toggleCls(cls: string, force?: boolean | string, nodeName?: string): void {
-        let actualForce: boolean | undefined;
-        let actualNode: string;
-        if (typeof force === 'string') {
-            actualForce = undefined;
-            actualNode = force;
+    toggleCls(value: string, force?: boolean | string, nodeName?: string): void {
+        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
+        if (!cls) return;
+        if (force) {
+            cls.add(value);
         } else {
-            actualForce = force;
-            actualNode = nodeName ?? 'root';
+            cls.toggle(value);
         }
-        const { el, component } = this._resolveNodeTarget(actualNode);
-        if (component && typeof component.toggleCls === 'function') {
-            component.toggleCls(cls, actualForce);
-            return;
-        }
-        const target = component?.el ?? el;
-        if (target) target.classList.toggle(cls, actualForce);
+        this.setNodeProp('root', { class: cls });
     },
 
     /**
@@ -300,13 +249,9 @@ export const CommonPropsAbility: AbilityDefinition = {
      * // 检查子节点是否包含类名
      * this.containsCls('active', 'icon');
      */
-    containsCls(cls: string, nodeName?: string): boolean {
-        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
-        if (component && typeof component.containsCls === 'function') {
-            return component.containsCls(cls);
-        }
-        const target = component?.el ?? el;
-        return target ? target.classList.contains(cls) : false;
+    containsCls(value: string, nodeName?: string): boolean {
+        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
+        return cls ? cls.contains(value) : false;
     },
 
     /**
@@ -329,13 +274,7 @@ export const CommonPropsAbility: AbilityDefinition = {
      * this.setAttr('data-id', '123', 'icon');
      */
     setAttr(key: string, value: string, nodeName?: string): void {
-        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
-        if (component && typeof component.setAttr === 'function') {
-            component.setAttr(key, value);
-            return;
-        }
-        const target = component?.el ?? el;
-        if (target) target.setAttribute(key, value);
+        this.setNodeProp(key, value, nodeName ?? 'root');
     },
 
     /**
@@ -357,37 +296,7 @@ export const CommonPropsAbility: AbilityDefinition = {
      * this.removeAttr('data-id', 'icon');
      */
     removeAttr(key: string, nodeName?: string): void {
-        const { el, component } = this._resolveNodeTarget(nodeName ?? 'root');
-        if (component && typeof component.removeAttr === 'function') {
-            component.removeAttr(key);
-            return;
-        }
-        const target = component?.el ?? el;
-        if (target) target.removeAttribute(key);
-    },
-
-    // ── Layer 2: 子节点属性方法（nodeName 在末尾，委托 _markNodeDirty）──
-
-    /**
-     * 设置节点属性（通用方法）
-     *
-     * 为指定节点设置任意属性的通用方法。内部调用 _markNodeDirty 进行脏追踪。
-     *
-     * @param {string} prop - 属性名
-     * @param {any} value - 属性值
-     * @param {string} [nodeName='root'] - 节点名称，默认为 'root'
-     * @returns {void}
-     *
-     * @example
-     * // 设置 root 节点的 tabIndex
-     * this.setNodeProp('tabIndex', 0);
-     *
-     * @example
-     * // 设置子节点的自定义属性
-     * this.setNodeProp('customAttr', 'value', 'icon');
-     */
-    setNodeProp(prop: string, value: any, nodeName?: string): void {
-        this._markNodeDirty(nodeName ?? 'root', { [prop]: value });
+        this.setNodeProp(key, undefined, nodeName ?? 'root');
     },
 
     /**

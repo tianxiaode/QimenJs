@@ -22,6 +22,7 @@ import type {
     MetaDecl,
     IComponentCore,
     ComponentClass,
+    IComponentBase,
 } from '../types';
 import { SKELETON_CLS } from '../constants';
 
@@ -31,7 +32,7 @@ export class NodeMapManager implements INodeMapManager {
     private _nodeMetas: MetaDeclMap;
     private _map: Record<string, MetaDecl> = {};
     private _el!: HTMLElement;
-    private _owner: any;
+    private _owner: IComponentBase;
 
     /**
      * 创建 NodeMapManager 实例
@@ -59,10 +60,10 @@ export class NodeMapManager implements INodeMapManager {
      * - 每个组件实例应创建自己的 NodeMapManager
      * - 不应在多个组件间共享同一个 NodeMapManager 实例
      */
-    constructor(cache: CompiledResult, owner?: any) {
+    constructor(cache: CompiledResult, owner: IComponentBase) {
         this._cache = cache;
-        this._nodeMetas = cache.metaDeclMap || {};
         this._owner = owner;
+        this._nodeMetas = {};
     }
 
     /**
@@ -94,6 +95,10 @@ export class NodeMapManager implements INodeMapManager {
      */
     get nodeMetas(): MetaDeclMap {
         return this._nodeMetas;
+    }
+
+    set nodeMetas(nodeMetas: MetaDeclMap) {
+        this._nodeMetas = nodeMetas;
     }
 
     /**
@@ -493,7 +498,7 @@ export class NodeMapManager implements INodeMapManager {
     mountChildComponent(child: IComponentCore, slotName: string): void {
         const node = this.get(slotName);
         if (!node) {
-            this._owner?.log.warn(
+            this._owner?.logger.warn(
                 `[${this._owner.id}][NodeMapManager] Slot "${slotName}" not found`
             );
             return;

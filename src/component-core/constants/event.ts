@@ -34,3 +34,5 @@ export interface NodeEventMeta {
     /** 额外事件数据字段声明 — 从 data 字段继承 */
     data?: string[] | Record<string, string[]>;
 }
+
+export const CHILDREN_PLACEHOLDER = '<!--q-children-->';

@@ -24,98 +24,56 @@ export const SPECIAL_ATTRS = new Set([
     'html', // innerHTML
 ]);
 
-// constants/style-props.ts
+// types/attribute-sets.ts
 
 /**
- * 样式属性（应该放在 style 中）
- *
- * 这些是 CSS 样式属性，通过 el.style 设置
- * 不应该作为 DOM 属性直接赋值
+ * 类名属性（特殊处理）
+ */
+export const CLASS_PROPS = new Set(['className', 'class', 'cls']);
+
+/**
+ * 样式属性（特殊处理）
  */
 export const STYLE_PROPS = new Set([
-    // 尺寸
+    'color',
+    'fontSize',
+    'order',
     'width',
     'height',
-    'minWidth',
-    'minHeight',
-    'maxWidth',
-    'maxHeight',
-    // 间距
-    'margin',
-    'marginTop',
-    'marginRight',
-    'marginBottom',
-    'marginLeft',
     'padding',
-    'paddingTop',
-    'paddingRight',
-    'paddingBottom',
-    'paddingLeft',
-    // 定位
-    'x',
-    'y', // 通常是 left/top 的别名
-    'top',
-    'right',
-    'bottom',
-    'left',
-    'position',
-    'zIndex',
-    // 排版
-    'fontSize',
-    'fontFamily',
-    'fontWeight',
-    'lineHeight',
-    'color',
-    'backgroundColor',
-    'background',
-    'textAlign',
-    'textDecoration',
-    'textTransform',
-    // 边框
-    'border',
-    'borderRadius',
-    'borderColor',
-    'borderWidth',
-    // 显示
+    'margin',
     'display',
-    'opacity',
-    'visibility',
-    // 其他
-    'cursor',
-    'overflow',
+    'position',
+    'top',
+    'left',
     'flex',
     'flexDirection',
     'justifyContent',
     'alignItems',
     'gap',
     'grid',
-    'gridTemplateColumns',
+    'opacity',
+    'visibility',
+    'cursor',
+    'backgroundColor',
+    'background',
+    'border',
+    'borderRadius',
+    'transform',
+    'transition',
+    'boxShadow',
+    'zIndex',
 ]);
 
 /**
- * HTML 标准属性（可以直接赋值）
+ * HTML 属性（统一用 setAttribute 或 el[prop]）
  *
- * 这些属性可以直接用 el[prop] 赋值
- * 不是所有属性都需要列举，只列举需要特殊处理的
+ * 包括：data-*、aria-*、href、src、disabled 等
  */
-// constants/html-direct-props.ts
-
-/**
- * HTML 直接属性（可直接赋值）
- *
- * 这些属性可以直接用 el[prop] = value
- * 不包含样式属性（样式属性放 style）
- */
-export const HTML_DIRECT_PROPS = new Set([
-    // 通用
-    'lang',
-    'dir',
-    'hidden',
-    'tabIndex',
-    'accessKey',
-    'draggable',
-    'spellCheck',
-    // 表单
+export const HTML_PROPS = new Set([
+    // data-* 和 aria-* 在运行时通过 startsWith 判断
+    // 这里列出标准 HTML 属性
+    'id',
     'name',
     'value',
     'placeholder',
@@ -124,53 +82,28 @@ export const HTML_DIRECT_PROPS = new Set([
     'required',
     'checked',
     'selected',
+    'href',
+    'target',
+    'src',
+    'alt',
+    'title',
+    'tabIndex',
+    'hidden',
+    'autofocus',
     'multiple',
     'maxLength',
     'minLength',
     'pattern',
-    'autoComplete',
-    'autoFocus',
     'step',
     'min',
     'max',
-    // 链接/图片（但不是尺寸）
-    'href',
-    'target',
-    'rel',
-    'download',
-    'src',
-    'alt',
-    // ❌ 移除 width, height（用 style）
-    // 音视频
     'autoplay',
     'controls',
     'loop',
     'muted',
     'preload',
-    'poster',
-    // 其他
     'colSpan',
     'rowSpan',
-    'open',
-    'reversed',
-    'start',
-    'wrap',
-    'accept',
-    'enctype',
-    'method',
-    'noValidate',
     'htmlFor',
+    'role',
 ]);
-// /**
-//  * 判断是否需要用 setAttribute
-//  */
-// export function shouldUseSetAttribute(key: string): boolean {
-//     return key.startsWith('data-') || key.startsWith('aria-');
-// }
-
-// /**
-//  * 获取 DOM 属性名
-//  */
-// export function getDomPropKey(key: string): string {
-//     return ATTR_PROP_MAP[key] || key;
-// }

@@ -25,9 +25,9 @@
  */
 
 import type { NodeIndexPath } from './compiled';
-import { I18nNodes } from './i18n';
-import { NodeMetadata } from './node';
-import { PermissionNodes } from './permission';
+import { IComponentCore } from './core';
+import { I18nDeclMap, PermissionDeclMap } from './declarations';
+import { MetaDecl } from './meta';
 
 /**
  * INodeMapManager — NodeMapManager 接口
@@ -77,16 +77,16 @@ export interface INodeMapManager {
      * key 为节点 name，value 为 NodeMetadata。
      * 包含节点的所有运行时数据（el、component、componentClass 等）。
      */
-    readonly nodeMetas: Record<string, NodeMetadata>;
+    readonly nodeMetas: Record<string, MetaDecl>;
 
     /**
      * i18n 节点列表
      *
      * 需要国际化翻译的节点列表，包含节点 name 和 i18nKey。
      */
-    readonly i18nNodes: I18nNodes;
+    readonly i18nNodes: I18nDeclMap;
 
-    readonly permissionNodes: PermissionNodes;
+    readonly permissionNodes: PermissionDeclMap;
 
     /**
      * 暴露的属性名列表
@@ -124,7 +124,7 @@ export interface INodeMapManager {
      * }
      * ```
      */
-    get(name: string): NodeMetadata | undefined;
+    get(name: string): MetaDecl | undefined;
 
     /**
      * 获取指定节点的子组件实例
@@ -155,7 +155,7 @@ export interface INodeMapManager {
      * });
      * ```
      */
-    getAll(): Record<string, NodeMetadata>;
+    getAll(): Record<string, MetaDecl>;
 
     /**
      * 设置节点元数据
@@ -170,7 +170,7 @@ export interface INodeMapManager {
      * nodeMapMgr.set('icon', node);
      * ```
      */
-    set(name: string, meta: NodeMetadata): void;
+    set(name: string, meta: MetaDecl): void;
 
     /**
      * 移除节点元数据
@@ -267,7 +267,7 @@ export interface INodeMapManager {
      * nodeMapMgr.mountChildComponent(slotNode, childComponent);
      * ```
      */
-    mountChildComponent(child: HTMLElement, slotName: string): void;
+    mountChildComponent(child: IComponentCore, slotName: string): void;
 
     /**
      * 构建 DOM 元素

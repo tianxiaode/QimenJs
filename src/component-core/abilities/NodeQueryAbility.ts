@@ -13,7 +13,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { NodeMetadata } from '../types/compiled';
+import { IComponentCore, MetaDecl } from '../types';
 
 /** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
 export const NodeQueryAbility: AbilityDefinition = {
@@ -23,7 +23,7 @@ export const NodeQueryAbility: AbilityDefinition = {
      * @returns 节点名到节点元数据的映射对象
      */
     nodeMap: {
-        get(this: any): Record<string, NodeMetadata> {
+        get(): Record<string, MetaDecl> {
             return this.nodeMapMgr?.getAll() ?? {};
         },
     },
@@ -44,7 +44,7 @@ export const NodeQueryAbility: AbilityDefinition = {
      * }
      * ```
      */
-    getNode(this: any, name: string): any | undefined {
+    getNode(name: string): HTMLElement | IComponentCore | undefined {
         const node = this.nodeMap?.[name];
         if (!node) return undefined;
         return node.component ?? node.el;
@@ -57,11 +57,16 @@ export const NodeQueryAbility: AbilityDefinition = {
      * @param target - 待判定的目标元素
      * @returns 是否包含
      */
-    containsElement(this: any, nodeName: string, target: Element): boolean {
+    containsElement(nodeName: string, target: Element): boolean {
         const node = this.nodeMap?.[nodeName];
         if (!node) return false;
         const el = node.component ? node.component.el : node.el;
         return el ? el.contains(target) : false;
+    },
+
+    isComponent(name: string): boolean {
+        const node = this.nodeMap?.[name];
+        return !!node?.type;
     },
 
     /**
@@ -79,7 +84,7 @@ export const NodeQueryAbility: AbilityDefinition = {
      *     el.style.color = 'red';
      * }
      */
-    _resolveNodeEl(this: any, nodeName: string): HTMLElement | undefined {
+    _resolveNodeEl(nodeName: string): HTMLElement | undefined {
         const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;
         return node.component ? node.component.el : node.el;
@@ -102,7 +107,7 @@ export const NodeQueryAbility: AbilityDefinition = {
      *     el.hidden = true;
      * }
      */
-    _resolveNodeTarget(this: any, nodeName: string): { el?: HTMLElement; component?: any } {
+    _resolveNodeTarget(nodeName: string): { el?: HTMLElement; component?: any } {
         const node = this.nodeMap?.[nodeName];
         if (!node) return {};
         return { el: node.el, component: node.component };

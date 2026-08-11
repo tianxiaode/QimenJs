@@ -14,23 +14,33 @@
  * @module DecomposeEngine
  */
 
-import { STYLE_PROPS, TPL_CORE_KEYS, VOID_TAGS } from '../constants';
+import { HTML_PROPS, STYLE_PROPS, VOID_TAGS } from '../constants';
 import { string } from '@qimenjs/utils';
 import {
     DecomposeComponentOptionsResult,
     DecomposeContext,
+    DecomposeResult,
     DecomposeStep,
     TplDecl,
 } from '../types';
-import { styleToString } from './utils';
+import { StyleHelper } from './StyleHelper';
 
 /**
  * 步骤1：提取 style
  *
  * @param ctx - 拆解上下文
  */
+/**
+ * 步骤1：提取 style（扁平化）
+ */
 function _extract_style(ctx: DecomposeContext): void {
-    Object.assign(ctx.attrDecl.style!, ctx.clone.style);
+    const style = ctx.clone.style;
+    if (!style) {
+        delete ctx.clone.style;
+        return;
+    }
+
+    StyleHelper.expand(style, ctx.attrDecl);
     delete ctx.clone.style;
 }
 
@@ -56,48 +66,27 @@ function _extract_hint(ctx: DecomposeContext) {
  * @param ctx - 拆解上下文
  */
 function _extract_cls(ctx: DecomposeContext): void {
-    ctx.attrDecl.className = ctx.clone.className || ctx.clone.cls;
+    ctx.attrDecl.className = ctx.clone.className ?? ctx.clone.cls ?? ctx.clone.class;
     delete ctx.clone.cls;
     delete ctx.clone.className;
+    delete ctx.clone.class;
 }
 
 /**
- * 步骤4：提取 i18n
- *
- * @param ctx - 拆解上下文
- */
-function _extract_i18n(ctx: DecomposeContext): void {
-    const i18n = ctx.clone.i18n;
-    if (!i18n) return;
-
-    ctx.i18n = i18n;
-
-    delete ctx.clone.i18n;
-}
-
-/**
- * 步骤5：提取权限
- *
- * @param ctx - 拆解上下文
- */
-function _extract_permission(ctx: DecomposeContext): void {
-    const permission = ctx.clone.permission;
-    if (!permission) return;
-
-    ctx.permission = permission;
-
-    delete ctx.clone.permission;
-}
-
-/**
- * 步骤6：分类剩余字段
+ * 步骤4：分类剩余字段
  *
  * @param ctx - 拆解上下文
  */
 function _classify_remaining_fields(ctx: DecomposeContext): void {
+    const coreKeys = ctx.coreKeys;
     for (const [key, val] of Object.entries(ctx.clone)) {
-        if (STYLE_PROPS.has(key)) {
-            ctx.attrDecl.style![key] = val;
+        if (coreKeys && coreKeys.has(key)) {
+            ctx.nodeOptions![key] = val;
+            continue;
+        }
+
+        if (STYLE_PROPS.has(key) || HTML_PROPS.has(key)) {
+            ctx.attrDecl[key] = val;
             continue;
         }
 
@@ -110,9 +99,15 @@ function _classify_remaining_fields(ctx: DecomposeContext): void {
 }
 
 /**
- * 步骤7：构建 构建HTML
+ * 步骤5：构建 构建HTML
  *
  * @param ctx - 拆解上下文
+ */
+/**
+ * 步骤5：构建 HTML
+ */
+/**
+ * 步骤5：构建 HTML
  */
 function _build_html(ctx: DecomposeContext): void {
     const tag = ctx.tag ?? 'div';
@@ -127,29 +122,46 @@ function _build_html(ctx: DecomposeContext): void {
 
     const attrs = ctx.attrDecl;
     const attrParts: string[] = [];
-
-    if (attrs.className) {
-        attrParts.push(`class="${string.escapeHtml(attrs.className)}"`);
-    }
-
-    if (attrs.style) {
-        const styleStr = typeof attrs.style === 'string' ? attrs.style : styleToString(attrs.style);
-        if (styleStr) {
-            attrParts.push(`style="${string.escapeHtml(styleStr)}"`);
-        }
-    }
-
-    if (attrs.hidden) {
-        attrParts.push('hidden');
-    }
+    const styleParts: string[] = [];
 
     for (const [key, val] of Object.entries(attrs)) {
-        if (key === 'className' || key === 'style') continue;
+        // 跳过 undefined/null
+        if (val === undefined || val === null) continue;
+
+        // 1. className
+        if (key === 'className' || key === 'class') {
+            attrParts.push(`class="${string.escapeHtml(val)}"`);
+            continue;
+        }
+
+        // 2. 样式属性 → 收集到 styleParts
+        if (STYLE_PROPS.has(key)) {
+            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+            const cssVal =
+                typeof val === 'number' && !['zIndex', 'opacity', 'flex'].includes(key)
+                    ? `${val}px`
+                    : val;
+            styleParts.push(`${cssKey}: ${cssVal}`);
+            continue;
+        }
+
+        // 3. hidden
+        if (key === 'hidden' && val === true) {
+            attrParts.push('hidden');
+            continue;
+        }
+
+        // 4. 其他属性
         if (val === true) {
             attrParts.push(string.escapeHtml(key));
-        } else if (val !== false && val != null) {
+        } else if (val !== false && val !== null) {
             attrParts.push(`${string.escapeHtml(key)}="${string.escapeHtml(String(val))}"`);
         }
+    }
+
+    // 添加 style
+    if (styleParts.length > 0) {
+        attrParts.push(`style="${string.escapeHtml(styleParts.join('; '))}"`);
     }
 
     const attrStr = attrParts.length > 0 ? ' ' + attrParts.join(' ') : '';
@@ -166,49 +178,38 @@ const DECOMPOSE_NODE_STEPS: DecomposeStep[] = [
     _extract_style,
     _extract_hint,
     _extract_cls,
-    _extract_i18n,
-    _extract_permission,
     _classify_remaining_fields,
-    _build_html,
 ];
 
-const DECOMPOSE_OPTIONS_STEPS: DecomposeStep[] = [
-    _extract_style,
-    _extract_hint,
-    _extract_cls,
-    _extract_i18n,
-    _extract_permission,
-    _classify_remaining_fields,
-];
 /**
  * 拆解引擎
  *
- * 支持两种输入：
- * 1. TplNode - 模板节点（编译时）
- * 2. ComponentOptions - 组件选项（运行时）
+ * 两个入口：
+ * 1. decompose(node) - 编译时拆解 TplDecl，生成 HTML
+ * 2. decomposeComponentOptions(options, coreKeys) - 运行时拆解组件选项
  */
 export class DecomposeEngine {
     /**
-     * 从 TplDecl 拆解
+     * 从 TplDecl 拆解（编译时）
+     *
+     * 生成 HTML + 分类属性
      */
-    static decompose(node: TplDecl): DecomposeContext {
+    static decompose(node: TplDecl): DecomposeResult {
         const ctx = this.initContext(node);
-        const clone = ctx.clone;
         // 2. 如果是组件节点，特殊处理
         if (ctx.isComponent) {
             // 移除不需要的字段
-            delete clone.children;
-
-            // 提取权限（组件需要）
-            _extract_permission(ctx);
-            delete clone.permission;
-
-            // 提取 i18n（组件需要）
-            _extract_i18n(ctx);
-            delete clone.i18n;
+            delete ctx.clone.children;
 
             // 剩余所有字段作为 nodeOptions 传给子组件
-            ctx.nodeOptions = { ...clone };
+            ctx.nodeOptions = {
+                ...ctx.clone,
+                text: ctx.text,
+                hidden: ctx.hidden,
+                hiddenMode: ctx.hiddenMode,
+                contentMode: ctx.contentMode,
+                action: ctx.action,
+            };
 
             // 组件节点用骨架占位
             ctx.html = `<div class="q-skeleton"></div>`;
@@ -216,18 +217,45 @@ export class DecomposeEngine {
             return ctx;
         }
 
-        for (const step of DECOMPOSE_NODE_STEPS) {
-            step(ctx);
-        }
-
-        return ctx;
+        this.runStep(ctx);
+        _build_html(ctx);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { node: nodeTep, clone, coreKeys, ...result } = ctx;
+        return result;
     }
 
-    static decomposeComponentOptions(opts: Record<string, any>): DecomposeComponentOptionsResult {
-        const clone = { ...opts };
-        delete clone.name;
-        delete clone.id;
+    /**
+     * 从 ComponentOptions 拆解（运行时）
+     *
+     * 只分类属性，不生成 HTML
+     */
+    static decomposeComponentOptions(
+        node: Record<string, any>,
+        coreKeys?: string[]
+    ): DecomposeComponentOptionsResult {
+        const ctx = this.initContext(node);
+        if (coreKeys) {
+            ctx.coreKeys = new Set(coreKeys);
+        }
+
+        this.runStep(ctx);
+
+        ctx.nodeOptions.text = ctx.text;
+        ctx.nodeOptions.hidden = ctx.hidden;
+        ctx.nodeOptions.hiddenMode = ctx.hiddenMode;
+        ctx.nodeOptions.contentMode = ctx.contentMode;
+        ctx.nodeOptions.action = ctx.action;
+
+        return { attrDecl: ctx.attrDecl, options: ctx.attrDecl } as DecomposeComponentOptionsResult;
+    }
+
+    /**
+     * 初始化上下文
+     */
+    private static initContext(node: TplDecl): DecomposeContext {
+        const clone = { ...node };
         const ctx: DecomposeContext = {
+            node,
             html: '',
             hasName: false,
             isComponent: false,
@@ -235,37 +263,37 @@ export class DecomposeEngine {
             attrDecl: {},
             nodeOptions: {},
         };
-        for (const step of DECOMPOSE_OPTIONS_STEPS) {
-            step(ctx);
-        }
-
-        const options = {
-            action: ctx.action,
-            text: ctx.text,
-            hidden: ctx.hidden,
-            hideenMode: ctx.hiddenMode,
-            ...ctx.nodeOptions,
-        };
-
-        return { attrDecl: ctx.attrDecl, options } as DecomposeComponentOptionsResult;
+        const name = ctx.clone.name;
+        ctx.name = name;
+        ctx.hasName = !!name;
+        ctx.tag = ctx.clone.tag;
+        ctx.type = ctx.clone.type;
+        ctx.hidden = ctx.clone.hidden;
+        ctx.hiddenMode = ctx.clone.hiddenMode;
+        ctx.contentMode = ctx.clone.contentMode;
+        ctx.action = ctx.clone.action;
+        ctx.i18n = ctx.clone.i18n;
+        ctx.permission = ctx.clone.permission;
+        ctx.text = ctx.clone.text;
+        delete ctx.clone.name;
+        delete ctx.clone.tag;
+        delete ctx.clone.type;
+        delete ctx.clone.hidden;
+        delete ctx.clone.hiddenMode;
+        delete ctx.clone.contentMode;
+        delete ctx.clone.action;
+        delete ctx.clone.i18n;
+        delete ctx.clone.permission;
+        delete ctx.clone.text;
+        return ctx;
     }
 
-    private static initContext(node: TplDecl): DecomposeContext {
-        const ctx: DecomposeContext = {
-            node,
-            clone: { ...node },
-            html: '',
-            attrDecl: {},
-            nodeOptions: {},
-            hasName: false,
-            isComponent: false,
-        };
-        for (const key in TPL_CORE_KEYS) {
-            (ctx as Record<string, any>)[key] = ctx.clone[key];
-            delete ctx.clone[key];
+    /**
+     * 执行拆解步骤
+     */
+    private static runStep(ctx: DecomposeContext) {
+        for (const step of DECOMPOSE_NODE_STEPS) {
+            step(ctx);
         }
-        ctx.hasName = !!ctx.name;
-        ctx.isComponent = !!ctx.name;
-        return ctx;
     }
 }

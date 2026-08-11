@@ -27,12 +27,11 @@ import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import type { INodeMapManager } from './types/node-map-manager';
 import type { DomEventsMap } from './types/tpl-events';
-import type { DragDecl, DropDecl } from './types/tpl';
 
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentOptionsUnion, TplDecl } from './types';
+import { DragDecl, TplDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -95,6 +94,10 @@ export class Component extends ComposableBase {
         return {};
     }
 
+    get optionKeys() {
+        return ['disabled', 'order', 'role'];
+    }
+
     /**
      * 语义动作名 — 组件实例级属性
      *
@@ -105,8 +108,7 @@ export class Component extends ComposableBase {
      * new ButtonComponent({ action: 'save' });
      * btn.action = 'create';  // 运行时更改
      */
-    options: ComponentOptionsUnion;
-
+    _options!: Record<string, any>;
     /** 组件实例化上下文 */
 
     domEvents?: DomEventsMap;
@@ -240,11 +242,12 @@ export class Component extends ComposableBase {
 
     private _ready: Promise<void> = Promise.resolve();
 
-    constructor(options?: ComponentOptionsUnion) {
+    constructor(options?: Record<string, any>) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.id = this.options?.id || getId('cmp');
-        this.options = options || {};
+        this.id = options?.id ?? this.options?.id ?? getId(`cmp-${this.type}`);
+        delete options?.id;
+        this._options = options || {};
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;
