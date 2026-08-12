@@ -13,6 +13,12 @@ import {
     CHINESE_LINE_HEIGHT,
     CHINESE_TRANSITION,
     CHINESE_BREAKPOINT,
+    CHINESE_BORDER,
+    CHINESE_Z_INDEX,
+    CHINESE_OPACITY,
+    CHINESE_ANIMATION,
+    CHINESE_CURSOR,
+    CHINESE_OVERFLOW,
 } from './shared';
 import { tokensToCSSVariables } from '../utils';
 
@@ -75,6 +81,14 @@ export const lightTheme: ThemeDefinition = {
             'text-secondary': xuanPaper['paper-600'],
             border: xuanPaper['paper-300'],
             'border-light': xuanPaper['paper-100'],
+            'border-strong': xuanPaper['paper-500'],
+            'border-dashed': `1px dashed ${xuanPaper['paper-400']}`,
+            'border-dotted': `1px dotted ${xuanPaper['paper-400']}`,
+            'border-double': `3px double ${xuanPaper['paper-400']}`,
+            'border-radius-sm': `2px ${CHINESE_RADIUS.sm}`,
+            'border-radius-md': `4px ${CHINESE_RADIUS.md}`,
+            'border-radius-lg': `8px ${CHINESE_RADIUS.lg}`,
+            'border-radius-full': '9999px',
             overlay: 'rgba(48, 42, 35, 0.45)',
         },
 
@@ -97,6 +111,12 @@ export const lightTheme: ThemeDefinition = {
 
         transition: CHINESE_TRANSITION,
         breakpoint: CHINESE_BREAKPOINT,
+        border: CHINESE_BORDER,
+        zIndex: CHINESE_Z_INDEX,
+        opacity: CHINESE_OPACITY,
+        animation: CHINESE_ANIMATION,
+        cursor: CHINESE_CURSOR,
+        overflow: CHINESE_OVERFLOW,
     },
 };
 
