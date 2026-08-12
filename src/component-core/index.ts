@@ -9,7 +9,7 @@ export { Component } from './Component';
 export { COMPONENT_ABILITIES } from './Component-abilities';
 
 // 节点结构管理器
-export { NodeMapManager } from './engine/NodeMapManager';
+export { NodeMapManager } from './engine/NodeManager';
 
 // 基础能力
 export { NodePropAbility } from './abilities/NodePropAbility';
@@ -54,7 +54,7 @@ export type {
     NodeIndexPath,
     CompiledTemplateResult,
     CompiledTemplateCache,
-} from './types/compiled';
+} from './types/template';
 export type { LifecycleHooks } from './types/component';
 export type {
     TplDecl as TplNode,
@@ -67,9 +67,9 @@ export type {
     DropDecl,
     ListenItem,
 } from './types/tpl';
-export type { DomEventsMap } from './types/tpl-events';
+export type { DomEventsMap } from './types/events';
 export type { NodePropDef, NodePropMap, DEFAULT_NODE_PROP_MAP } from './types/common-props';
-export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/tpl-events';
+export type { DelegatedEventRule, DomEventConfig, TplEventAction } from './types/events';
 export type {
     InitContext,
     BadgeQuickConfig,
@@ -77,6 +77,6 @@ export type {
     IndicatorType,
     IndicatorConfig,
 } from './types/init-context';
-export type { INodeMapManager } from './types/node-map-manager';
+export type { INodeMapManager } from './types/node-manager';
 
 export type { Placement } from '@/component-core/overlay';

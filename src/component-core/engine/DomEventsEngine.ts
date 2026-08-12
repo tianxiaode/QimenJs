@@ -15,8 +15,8 @@
  * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
  */
 
-import type { DelegatedEventRule } from '../types/tpl-events';
-import type { DomEventsMap } from '../types/tpl-events';
+import type { DelegatedEventRule } from '../types/events';
+import type { DomEventsMap } from '../types/events';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { debounce, throttle } from '@qimenjs/async';
 import { EventForwarder } from './EventForwarder';

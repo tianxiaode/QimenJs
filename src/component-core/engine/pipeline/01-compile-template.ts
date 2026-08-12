@@ -1,25 +1,18 @@
-import { NodeMapManager } from '@/component-core/engine/NodeMapManager';
+import { NodeMapManager } from '@/component-core/engine/NodeManager';
 import { InitContext } from '../../types';
-import { CompileEngine } from '../CompileEngine';
 import { object } from '@qimenjs/utils';
-import { DecomposeEngine } from '../DecomposeEngine';
+import { TemplateManager } from '../TemplateManager';
 
 export function compileTemplate(ctx: InitContext): void {
     const instance = ctx.instance;
-    const compileResult = CompileEngine.compile(instance.tpl);
+    const cache = TemplateManager.get(instance.tpl);
     //拆解父组件传递过来的配置
-    const decomposeOptions = DecomposeEngine.decomposeComponentOptions(
-        instance._options,
-        instance.optionKeys
-    );
+    const splits = TemplateManager.splitOptions(instance._options, instance.coreKeys);
     //将原始配置修改为剔除html属性后的配置
-    instance._options = decomposeOptions.options;
-    object.deepMerge(
-        instance._options,
-        compileResult.decomposeResultMap['root']?.nodeOptions || {}
-    );
+    instance._options = splits.options;
+    object.deepMerge(instance._options, cache.nodeMetaMap?.root.options || {});
     // 合并父组件传递过来的html属性
-    object.deepMerge(compileResult.attrDeclMap['root'] ?? {}, decomposeOptions.attrDecl);
-    instance.nodeMapMgr = new NodeMapManager(compileResult, instance);
+    object.deepMerge(cache.atttributesMap.root ?? {}, splits.attributes);
+    instance.nodeMapMgr = new NodeMapManager(cache, instance);
     instance.logger.debug(`[prepare:compile template]`, `[${instance.type}]:[${instance.id}]`);
 }

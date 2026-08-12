@@ -11,12 +11,12 @@
  *
  * data-* 和 aria-* 必须用 setAttribute
  */
-export const ATTR_PREFIXES = ['data-', 'aria-'];
+export const ATTR_PREFIXES_KEYS = new Set(['data-', 'aria-', 'data_', 'aria_']);
 
 /**
  * 特殊属性（不直接赋值到 DOM）
  */
-export const SPECIAL_ATTRS = new Set([
+export const SPECIAL_KEYS = new Set([
     'style', // 特殊处理
     'cls', // 特殊处理
     'hint', // 特殊处理
@@ -24,17 +24,15 @@ export const SPECIAL_ATTRS = new Set([
     'html', // innerHTML
 ]);
 
-// types/attribute-sets.ts
-
 /**
  * 类名属性（特殊处理）
  */
-export const CLASS_PROPS = new Set(['className', 'class', 'cls']);
+export const CLASS_KEYS = new Set(['className', 'class', 'cls']);
 
 /**
  * 样式属性（特殊处理）
  */
-export const STYLE_PROPS = new Set([
+export const STYLE_KEYS = new Set([
     'color',
     'fontSize',
     'order',
@@ -70,7 +68,7 @@ export const STYLE_PROPS = new Set([
  *
  * 包括：data-*、aria-*、href、src、disabled 等
  */
-export const HTML_PROPS = new Set([
+export const HTML_KEYS = new Set([
     // data-* 和 aria-* 在运行时通过 startsWith 判断
     // 这里列出标准 HTML 属性
     'id',
@@ -106,4 +104,13 @@ export const HTML_PROPS = new Set([
     'rowSpan',
     'htmlFor',
     'role',
+]);
+
+export const SPLIT_OPTIONS_IGNORE_KEYS = new Set([
+    'children',
+    'i18n',
+    'permission',
+    'name',
+    'tag',
+    'type',
 ]);

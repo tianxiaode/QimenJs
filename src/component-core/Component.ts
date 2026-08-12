@@ -25,13 +25,13 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import type { INodeMapManager } from './types/node-map-manager';
-import type { DomEventsMap } from './types/tpl-events';
+import type { INodeMapManager } from './types/node-manager';
+import type { DomEventsMap } from './types/events';
 
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { DragDecl, TplDecl } from './types';
+import { DragOptionsBase, TemplateDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -90,7 +90,7 @@ export class Component extends ComposableBase {
      * }
      * ```
      */
-    get tpl(): TplDecl {
+    get tpl(): TemplateDecl {
         return {};
     }
 
@@ -139,7 +139,7 @@ export class Component extends ComposableBase {
      *   // 拖到容器时，容器 accept: ['Card'] 即可匹配
      * }
      */
-    drag?: boolean | DragDecl;
+    drag?: boolean | DragOptionsBase;
 
     /**
      * 拖拽手柄节点 — 指定哪个节点作为拖拽触发区域

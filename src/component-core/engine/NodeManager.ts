@@ -17,8 +17,8 @@ import type {
     CompiledResult,
     INodeMapManager,
     MetaDeclMap,
-    I18nDeclMap,
-    PermissionDeclMap,
+    I18nOptionsMap,
+    PermissionOptionsMap,
     MetaDecl,
     IComponentCore,
     ComponentClass,
@@ -114,11 +114,11 @@ export class NodeMapManager implements INodeMapManager {
      * });
      * ```
      */
-    get i18nNodes(): I18nDeclMap {
+    get i18nNodes(): I18nOptionsMap {
         return this._cache.i18nDeclMap;
     }
 
-    get permissionNodes(): PermissionDeclMap {
+    get permissionNodes(): PermissionOptionsMap {
         return this._cache.permissionDeclMap;
     }
 

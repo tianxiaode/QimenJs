@@ -33,7 +33,7 @@ export const NodeQueryAbility: AbilityDefinition = {
      *
      * 节点有子组件时返回组件实例，否则返回节点的 DOM 元素。
      *
-     * @param name - 节点名称
+     * @param nodeName - 节点名称
      * @returns 组件实例或 DOM 元素，节点不存在时返回 undefined
      *
      * @example
@@ -44,10 +44,15 @@ export const NodeQueryAbility: AbilityDefinition = {
      * }
      * ```
      */
-    getNode(name: string): HTMLElement | IComponentCore | undefined {
-        const node = this.nodeMap?.[name];
+    getNode(nodeName: string): HTMLElement | IComponentCore | undefined {
+        const node = this.nodeMap?.[nodeName];
         if (!node) return undefined;
         return node.component ?? node.el;
+    },
+
+    getNodeEl(nodeName: string): HTMLElement | undefined {
+        const node = this.getNode(nodeName);
+        return node instanceof HTMLElement ? node : (node?.el ?? undefined);
     },
 
     /**
@@ -58,14 +63,12 @@ export const NodeQueryAbility: AbilityDefinition = {
      * @returns 是否包含
      */
     containsElement(nodeName: string, target: Element): boolean {
-        const node = this.nodeMap?.[nodeName];
-        if (!node) return false;
-        const el = node.component ? node.component.el : node.el;
+        const el = this.getNodeEl(nodeName);
         return el ? el.contains(target) : false;
     },
 
-    isComponent(name: string): boolean {
-        const node = this.nodeMap?.[name];
+    isComponent(nodeName: string): boolean {
+        const node = this.getNode(nodeName);
         return !!node?.type;
     },
 

@@ -1,5 +1,5 @@
 import { DomEventsEngine } from '@/component-core/engine/DomEventsEngine';
-import type { DomEventsMap } from '@/component-core/types/tpl-events';
+import type { DomEventsMap } from '@/component-core/types/events';
 
 function makeEl() {
     return document.createElement('div');

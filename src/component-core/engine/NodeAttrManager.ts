@@ -1,7 +1,7 @@
 import { ComposableBase, InferAbility } from '@/composable';
-import { IComponentBase, INodeAttrManager } from '../types';
+import { IComponentBase, INodeAttributeManager } from '../types';
 import { DebounceAbility } from '@/system-abilities';
-import { CLASS_PROPS, HTML_PROPS, STYLE_PROPS } from '../constants';
+import { CLASS_KEYS, HTML_KEYS, STYLE_KEYS } from '../constants';
 import { StyleHelper } from './StyleHelper';
 
 /**
@@ -12,7 +12,7 @@ import { StyleHelper } from './StyleHelper';
  * 2. 脏追踪（批量更新）
  * 3. 应用属性到 DOM
  */
-export class NodeAttrManager extends ComposableBase implements INodeAttrManager {
+export class NodeAttrManager extends ComposableBase implements INodeAttributeManager {
     _owner: IComponentBase;
 
     /** 节点状态（完整状态，始终反映当前 DOM 状态） */
@@ -194,11 +194,11 @@ export class NodeAttrManager extends ComposableBase implements INodeAttrManager 
     }
 
     private getAttrType(key: string): 'class' | 'style' | 'html' {
-        if (CLASS_PROPS.has(key)) return 'class';
-        if (STYLE_PROPS.has(key)) return 'style';
+        if (CLASS_KEYS.has(key)) return 'class';
+        if (STYLE_KEYS.has(key)) return 'style';
         // data-* / aria-* 都算 html
         if (key.startsWith('data-') || key.startsWith('aria-')) return 'html';
-        if (HTML_PROPS.has(key)) return 'html';
+        if (HTML_KEYS.has(key)) return 'html';
         return 'html'; // 默认 html
     }
 

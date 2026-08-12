@@ -1,17 +1,101 @@
 // utils/StyleHelper.ts
 
+import { string } from '@qimenjs/utils';
+
 /**
  * StyleHelper — 样式工具静态类
  *
  * 统一处理 style 对象和字符串的转换、解析、展开
+ * 底层使用 css.ts 的工具函数
  */
+
 export class StyleHelper {
     /**
-     * 解析 style 字符串为对象
+     * 添加样式到已有样式字符串
+     *
+     * @param key - 样式属性名
+     * @param val - 样式值
+     * @param existing - 已有的样式字符串
+     * @returns 合并后的样式字符串
      *
      * @example
-     * StyleHelper.parse('color: red; font-size: 16px')
-     * // → { color: 'red', fontSize: '16px' }
+     * StyleHelper.addStyle('color', 'red', 'font-size: 16px')
+     * // → 'font-size: 16px; color: red'
+     *
+     * StyleHelper.addStyle('style', { color: 'red', fontSize: 16 }, '')
+     * // → 'color: red; font-size: 16px'
+     *
+     * StyleHelper.addStyle('margin', { top: 10, horizontal: 20 }, '')
+     * // → 'margin: 10px 20px 0px 20px'
+     */
+    static addStyle(key: string, val: any, existing: string = ''): string {
+        // 1. 如果是 'style' key，展开对象或字符串
+        if (key === 'style') {
+            const parts: string[] = [];
+
+            if (typeof val === 'string') {
+                // 解析字符串，逐个添加
+                const parsed = this.parse(val);
+                for (const [k, v] of Object.entries(parsed)) {
+                    if (v !== undefined && v !== null) {
+                        parts.push(this._keyValueToString(k, v));
+                    }
+                }
+            } else if (typeof val === 'object' && val !== null) {
+                for (const [k, v] of Object.entries(val)) {
+                    if (v !== undefined && v !== null) {
+                        parts.push(this._keyValueToString(k, v));
+                    }
+                }
+            }
+
+            return this._mergeStyles(existing, parts.join('; '));
+        }
+
+        // 2. 单个样式属性
+        return this._mergeStyles(existing, this._keyValueToString(key, val));
+    }
+
+    /**
+     * 合并两个样式字符串
+     */
+    private static _mergeStyles(existing: string, newStyle: string): string {
+        if (!newStyle) return existing;
+        if (!existing) return newStyle;
+        return existing + '; ' + newStyle;
+    }
+
+    /**
+     * 将 key-value 转为 CSS 声明
+     */
+    private static _keyValueToString(key: string, val: any): string {
+        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        const cssVal = this._valueToString(val);
+        return `${cssKey}: ${cssVal}`;
+    }
+
+    /**
+     * 将值转为 CSS 值
+     */
+    private static _valueToString(val: any): string {
+        if (typeof val === 'string') return val;
+        if (typeof val === 'number') return string.normalizeCssUnit(val);
+        if (typeof val === 'object' && val !== null) {
+            // margin/padding
+            if ('top' in val || 'horizontal' in val || 'vertical' in val) {
+                return string.resolveMarginPadding(val);
+            }
+            // border
+            if ('width' in val || 'style' in val || 'color' in val) {
+                return string.resolveBorder(val);
+            }
+            return String(val);
+        }
+        return String(val);
+    }
+
+    /**
+     * 解析 style 字符串为对象
      */
     static parse(styleStr: string): Record<string, any> {
         const result: Record<string, any> = {};

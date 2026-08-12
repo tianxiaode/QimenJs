@@ -103,9 +103,77 @@ export interface BreakpointTokens {
 }
 
 /**
+ * 边框令牌
+ */
+export interface BorderTokens {
+    none: string;
+    thin: string;
+    normal: string;
+    thick: string;
+}
+
+/**
+ * 层级令牌
+ */
+export interface ZIndexTokens {
+    dropdown: number;
+    sticky: number;
+    fixed: number;
+    modalBackdrop: number;
+    modal: number;
+    popover: number;
+    tooltip: number;
+}
+
+/**
+ * 透明度令牌
+ */
+export interface OpacityTokens {
+    disabled: number;
+    hover: number;
+    focus: number;
+    selected: number;
+    activated: number;
+    pressed: number;
+    drag: number;
+}
+
+/**
+ * 动画令牌
+ */
+export interface AnimationTokens {
+    fast: string;
+    normal: string;
+    slow: string;
+}
+
+/**
+ * 光标令牌
+ */
+export interface CursorTokens {
+    default: string;
+    pointer: string;
+    move: string;
+    text: string;
+    notAllowed: string;
+    grab: string;
+    grabbing: string;
+}
+
+/**
+ * 溢出令牌
+ */
+export interface OverflowTokens {
+    visible: string;
+    hidden: string;
+    scroll: string;
+    auto: string;
+}
+
+/**
  * 设计令牌集合
  *
- * 包含七大类视觉变量，运行时通过 CSS 变量输出
+ * 包含十三类视觉变量，运行时通过 CSS 变量输出
  */
 export interface DesignTokens {
     colors: ColorTokens;
@@ -115,6 +183,12 @@ export interface DesignTokens {
     shadow: ShadowTokens;
     transition: TransitionTokens;
     breakpoint: BreakpointTokens;
+    border: BorderTokens;
+    zIndex: ZIndexTokens;
+    opacity: OpacityTokens;
+    animation: AnimationTokens;
+    cursor: CursorTokens;
+    overflow: OverflowTokens;
 }
 
 export type ThemeTokens = DesignTokens;

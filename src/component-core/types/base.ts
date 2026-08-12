@@ -2,26 +2,43 @@
 // 基础声明（无泛型依赖）
 // ============================================
 
-import { IComponentCore } from './core';
-import { IDragGhost } from './interfaces';
-
 /**
- * 样式声明
+ * 节点位置索引 — 记录命名节点在模板 DOM 树中的位置路径
+ *
+ * key 为节点 name，value 为从根节点到该节点的子节点索引路径。
+ * 用于运行时快速定位节点元素，避免每次查询。
+ *
+ * @example
+ * ```ts
+ * const indexPath: NodeIndexPath = {
+ *     'root': [],                    // 根节点，路径为空
+ *     'header': [0],                 // 第一个子节点
+ *     'title': [0, 1],               // header 的第二个子节点
+ *     'content': [1],                // 第二个子节点
+ *     'footer': [2, 0, 1]            // footer 的第一个子节点的第二个子节点
+ * };
+ *
+ * // 使用 indexPath 定位节点
+ * function locateNode(template: HTMLTemplateElement, indexPath: number[]): HTMLElement {
+ *     let current = template.content.firstChild;
+ *     for (const index of indexPath) {
+ *         current = current.childNodes[index];
+ *     }
+ *     return current as HTMLElement;
+ * }
+ * ```
  */
-export interface StyleDecl {
-    [key: string]: string | number | undefined;
-}
+export type NodeIndexPath = Record<string, number[]>;
 
 /**
  * 属性声明
  */
-export interface AttrDecl {
-    className?: string;
-    style?: StyleDecl;
+export interface Attributes {
+    class?: string;
     [key: string]: any;
 }
 
-export type AttrDeclMap = Record<string, AttrDecl>;
+export type AttributesMap = Record<string, Attributes>;
 
 /**
  * 隐藏模式 — 控制 hidden 时的 DOM 表现
@@ -35,7 +52,7 @@ export type HiddenMode = 'display' | 'visibility' | 'opacity';
 /**
  * 隐藏声明
  */
-export interface HiddenDecl {
+export interface HiddenOptions {
     hidden?: boolean;
     hiddenMode?: HiddenMode;
 }
@@ -43,7 +60,7 @@ export interface HiddenDecl {
 /**
  * 拖拽声明
  */
-export interface DragDecl {
+export interface DragOptionsBase {
     /**
      * 拖拽类型
      *
@@ -53,9 +70,10 @@ export interface DragDecl {
      * { axis: 'both' }  // type 自动使用 component.type
      * { type: 'item', axis: 'both' }  // 强制伪装为 'item' 类型
      */
-    type?: IComponentCore | IComponentCore[];
     /** 拖拽影子组件类型（可选） */
-    ghost?: IDragGhost;
+    //type?: string;
+    /** 拖拽影子组件类型（可选） */
+    //ghost?: IDragGhost;
     /** 拖拽轴向：'x' | 'y' | 'both' */
     axis?: 'x' | 'y' | 'both';
     /** 拖拽边界约束 */
@@ -72,7 +90,7 @@ export interface DragDecl {
 /**
  * 放置声明
  */
-export interface DropDecl {
+export interface DropOptions {
     /** 接受的拖拽类型列表（为空表示接受所有） */
     accept?: string[];
     /** 拖拽悬停时添加的 CSS 类 */
@@ -84,7 +102,7 @@ export interface DropDecl {
 /**
  * 动画声明
  */
-export interface AnimationDecl {
+export interface AnimationOptions {
     /** 进入动画预设名（如 fadeIn / slideInUp / scaleIn） */
     enter?: string;
     /** 进入动画自定义 Keyframe（与 enter 二选一） */
@@ -104,7 +122,7 @@ export interface AnimationDecl {
 /**
  * 角标声明
  */
-export interface BadgeDecl {
+export interface BadgeOptions {
     text: string | number;
     visible?: boolean;
     color?: string;
@@ -115,7 +133,7 @@ export interface BadgeDecl {
 /**
  * 提示声明
  */
-export interface TooltipDecl {
+export interface Tooltiptoptions {
     content: string;
     placement?: 'top' | 'bottom' | 'left' | 'right';
     delay?: number;
@@ -125,7 +143,7 @@ export interface TooltipDecl {
 /**
  * i18n 声明
  */
-export interface I18nDecl {
+export interface I18nOptions {
     text?: string;
     hint?: string;
     placeholder?: string;
@@ -133,43 +151,50 @@ export interface I18nDecl {
     [field: string]: string | undefined;
 }
 
-export type I18nDeclMap = Record<string, I18nDecl>;
+export type I18nOptionsMap = Record<string, I18nOptions>;
 
 /**
  * 权限声明
  */
-export type PermissionDecl = string | string[];
+export type PermissionOptions = string | string[];
 
-export type PermissionDeclMap = Record<string, PermissionDecl>;
+export type PermissionOptionsMap = Record<string, PermissionOptions>;
 
 /** Loading 快捷配置，用于声明式创建加载浮层 */
-export interface LoadingDecl {
+export interface LoadingOptions {
     text?: string;
     spinner?: string;
     maskMode?: 'none' | 'scoped' | 'global';
     mask?: boolean | string;
 }
 
-export interface TplCoreDecl extends HiddenDecl {
+/** 组件配置 */
+export interface NodeOptionsBase extends HiddenOptions {
+    /** 放置配置 */
+    drop?: true | DropOptions;
+    /** 动画配置 */
+    animation?: AnimationOptions;
+    /** 角标配置 */
+    bager?: BadgeOptions;
+    /** 提示配置 */
+    tooltip?: Tooltiptoptions;
+    /** 加载配置 */
+    loading?: LoadingOptions;
+
+    [key: string]: any;
+}
+
+export interface NodeMetaBase {
     /** 节点名称（可选） */
     name?: string;
     /** 节点标签 */
     tag?: string;
-    /* 子组件类型 */
-    type?: IComponentCore;
     /** 节点文本 */
     text?: string;
     /** 节点文本模式 */
     contentMode?: 'value' | 'src' | 'html' | 'link';
     /** 节点行为 */
     action?: string;
-    /** i18n 配置集合 */
-    i18n?: I18nDecl;
-    /** 是否需要权限 */
-    permission?: PermissionDecl;
-}
-
-/** 扩展字段定义 */
-export interface NodeOptionsDecl {
-    [key: string]: any;
+    /** 节点DOM属性 */
+    attributes?: Attributes;
 }

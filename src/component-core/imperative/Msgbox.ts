@@ -18,7 +18,7 @@ import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable'
 import { FloatingLayerAbility } from '@/component-core/overlay';
 import { EventContextBuilder } from '@/context';
 import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { INodeMapManager } from '@/component-core/types/node-map-manager';
+import type { INodeMapManager } from '@/component-core/types/node-manager';
 import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from './msgbox-tpl';
 import { resolveI18nValue, t } from '@qimenjs/i18n';

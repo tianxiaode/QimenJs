@@ -66,6 +66,62 @@ export const CHINESE_BREAKPOINT = {
     xl: 1200,
 } as const;
 
+// ============ 通用边框 ============
+export const CHINESE_BORDER = {
+    none: 'none',
+    thin: '1px solid var(--q-colors-border)',
+    normal: '1px solid var(--q-colors-border)',
+    thick: '2px solid var(--q-colors-border)',
+} as const;
+
+// ============ 通用层级 ============
+export const CHINESE_Z_INDEX = {
+    dropdown: 1000,
+    sticky: 1020,
+    fixed: 1030,
+    modalBackdrop: 1040,
+    modal: 1050,
+    popover: 1060,
+    tooltip: 1070,
+} as const;
+
+// ============ 通用透明度 ============
+export const CHINESE_OPACITY = {
+    disabled: 0.38,
+    hover: 0.04,
+    focus: 0.12,
+    selected: 0.08,
+    activated: 0.12,
+    pressed: 0.12,
+    drag: 0.4,
+} as const;
+
+// ============ 通用动画 ============
+export const CHINESE_ANIMATION = {
+    fast: '150ms ease-out',
+    normal: '250ms ease-out',
+    slow: '350ms ease-out',
+} as const;
+
+// ============ 通用光标 ============
+export const CHINESE_CURSOR = {
+    default: 'default',
+    pointer: 'pointer',
+    move: 'move',
+    text: 'text',
+    notAllowed: 'not-allowed',
+    grab: 'grab',
+    grabbing: 'grabbing',
+} as const;
+
+// ============ 通用溢出 ============
+export const CHINESE_OVERFLOW = {
+    visible: 'visible',
+    hidden: 'hidden',
+    scroll: 'scroll',
+    auto: 'auto',
+} as const;
+
 // ============ 构建主题的辅助函数 ============
 import type { ThemeTokens } from '../types';
 
@@ -97,6 +153,12 @@ export function buildChineseTheme(
             },
             transition: CHINESE_TRANSITION,
             breakpoint: CHINESE_BREAKPOINT,
+            border: CHINESE_BORDER,
+            zIndex: CHINESE_Z_INDEX,
+            opacity: CHINESE_OPACITY,
+            animation: CHINESE_ANIMATION,
+            cursor: CHINESE_CURSOR,
+            overflow: CHINESE_OVERFLOW,
         },
     };
 }
