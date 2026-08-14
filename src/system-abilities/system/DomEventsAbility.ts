@@ -1,4 +1,4 @@
-import type { IEventAdapter, BindOptions, GestureSemantic } from '../types/abilities';
+import type { BindOptions, GestureSemantic } from '../types/abilities';
 import type { InputSignal } from '@qimenjs/event-dom';
 import type { AbilityDefinition } from '@/composable';
 import { createEventAdapter } from '@qimenjs/event-dom';
@@ -13,7 +13,7 @@ import { createEventAdapter } from '@qimenjs/event-dom';
  *
  * this 指向宿主（ComposableBase），this.eventScope 可直接访问。
  */
-export const DomEventsAbility= {
+export const DomEventsAbility = {
     /**
      * 绑定DOM事件到目标元素
      *
@@ -22,7 +22,14 @@ export const DomEventsAbility= {
      * @param options 绑定选项
      */
     bind(target: EventTarget, semantic: GestureSemantic | InputSignal, options?: BindOptions) {
-        this.logger?.debug?.('[DomEvents] bind, semantic =', semantic, 'scopeType =', this.eventScope?.constructor?.name, 'scopeId =', this.eventScope?.getScopeId?.());
+        this.logger?.debug?.(
+            '[DomEvents] bind, semantic =',
+            semantic,
+            'scopeType =',
+            this.eventScope?.constructor?.name,
+            'scopeId =',
+            this.eventScope?.getScopeId?.()
+        );
         const adapter = this.abilityState('DomEventsAbility:adapter', () => createEventAdapter());
         return adapter.bind(target, semantic, this.eventScope, options, this);
     },

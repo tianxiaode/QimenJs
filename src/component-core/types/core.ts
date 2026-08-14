@@ -22,8 +22,6 @@ export interface INodeManager {
     get i18ns(): I18nOptionsMap;
     /** 获取节点权限配置映射 */
     get permissions(): PermissionOptionsMap;
-    /**获取需要暴露的节点名列表 */
-    get exposeNames(): string[];
     /** 获取根节点标签名 */
     get rootTag(): string;
     /** 获取组件el */
@@ -36,17 +34,19 @@ export interface INodeManager {
     /** 更新节点元数据 */
     update(nodeName: string, meta: Partial<NodeMeta>): void;
     /** 获取节点元素 */
-    getNodeEl(nodeName: string): HTMLElement;
+    getNodeEl(nodeName: string): HTMLElement | undefined;
     /** 获取节点组件实例 */
-    getComponent(): IComponentCore;
+    getComponent(nodeName: string): IComponentCore | undefined;
     /** 获取节点配置 */
-    getOptions(nodeName?: string): Record<string, NodeOptions> | NodeOptions;
+    getOptions(nodeName: string): NodeOptions | undefined;
     /** 判断节点是否组件 */
     isComponent(nodeName: string): boolean;
+    /** 获取组件节点 */
+    getComponentNodes(): string[];
     /** 构建组件的 DOM 结构 */
     buildDOM(): void;
-    /** 移除节点 */
-    remove(nodeName: string): void;
+    /** 恢复骨架 */
+    restoreSkeleton(nodeName: string): void;
     /** 替换组件节点 */
     replace(
         nodeName: string,
@@ -54,7 +54,7 @@ export interface INodeManager {
         options?: Partial<ComponentCoreOptions>
     ): void;
     /** 销毁 */
-    disposeAll(): void;
+    dispose(): void;
     /** 在指定节点挂载子组件 */
     mountChildComponent(nodeName: string, child: IComponentCore): void;
 }
@@ -73,6 +73,8 @@ export interface IAttributeManager {
     removeAttribute(nodeName: string, attributeName: string): void;
     /** 移除多个节点HTML特性 */
     removeAttributes(nodeName: string, attributes: string[]): void;
+    /** 获取节点class列表 */
+    getCls(nodeName: string): DOMTokenList;
     /** 节点是否包含某个class */
     hasCls(nodeName: string, cls: string): boolean;
     /** 添加class */
@@ -194,10 +196,8 @@ export interface NodeMeta extends NodeMetaBase {
 export type NodeMetaMap = Record<string, NodeMeta>;
 
 export interface ComponentCoreOptions extends NodeOptions {
-    /** 父组件引用 */
-    parent?: IComponentCore;
-    /** 父组件插槽名称 */
-    slotName?: string;
+    /** 是否有父 */
+    hasParent?: boolean;
     /** 要挂载的容器节点 */
     container?: HTMLElement;
     /** DOM 属性（data-*、aria-* 等） */
@@ -209,8 +209,8 @@ export interface TemplateDecl extends NodeOptions, Attributes {
     tag?: string;
     /** 组件类型 */
     type?: IComponentCore;
-    i18n: I18nOptions;
-    permission: PermissionOptions;
+    i18n?: I18nOptions;
+    permission?: PermissionOptions;
     children?: TemplateDecl[];
 }
 

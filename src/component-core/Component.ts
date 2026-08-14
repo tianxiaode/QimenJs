@@ -31,7 +31,7 @@ import type { DomEventsMap } from './types/events';
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { DragOptionsBase, TemplateDecl } from './types';
+import { ComponentCoreOptions, DragOptionsBase, TemplateDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -95,7 +95,7 @@ export class Component extends ComposableBase {
     }
 
     get optionKeys() {
-        return ['disabled', 'order', 'role'];
+        return ['disabled', 'order', 'role', 'hidden', 'hiddenMode'];
     }
 
     /**
@@ -108,7 +108,7 @@ export class Component extends ComposableBase {
      * new ButtonComponent({ action: 'save' });
      * btn.action = 'create';  // 运行时更改
      */
-    _options!: Record<string, any>;
+    _options!: Partial<ComponentCoreOptions>;
     /** 组件实例化上下文 */
 
     domEvents?: DomEventsMap;
@@ -222,7 +222,6 @@ export class Component extends ComposableBase {
         return {};
     }
 
-    el!: HTMLElement;
     nodeMapMgr!: INodeMapManager;
 
     get isItemContainer(): boolean {

@@ -12,7 +12,7 @@ export { COMPONENT_ABILITIES } from './Component-abilities';
 export { NodeMapManager } from './engine/NodeManager';
 
 // 基础能力
-export { NodePropAbility } from './abilities/NodePropAbility';
+export { NodePropAbility } from './abilities/NodeAbility';
 export { CommonPropsAbility } from './abilities/CommonPropsAbility';
 export { AnimationAbility } from './abilities';
 export { LifecycleAbility } from './abilities/LifecycleAbility';

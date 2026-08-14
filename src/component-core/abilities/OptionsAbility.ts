@@ -1,5 +1,4 @@
 import type { AbilityDefinition } from '@/composable';
-import { IComponentBase } from '../types';
 import { string } from '@/utils';
 
 export const OptionsAbility: AbilityDefinition = {
@@ -17,16 +16,16 @@ export const OptionsAbility: AbilityDefinition = {
         this._options[name] = value;
     },
 
-    get parent(): IComponentBase {
-        return this._options['parent'];
+    hasParent: {
+        get(): boolean {
+            return this._options.hasParent;
+        },
     },
 
-    get slotName(): string {
-        return this._options['slotName'];
-    },
-
-    get container(): HTMLElement {
-        return this._options['container'];
+    container: {
+        get(): HTMLElement | undefined {
+            return this._options.container;
+        },
     },
 
     /**
@@ -65,4 +64,4 @@ export const OptionsAbility: AbilityDefinition = {
             }
         }
     },
-} as AbilityDefinition;
+} satisfies AbilityDefinition;

@@ -13,7 +13,7 @@ import type { AbilityDefinition } from '@/composable';
 import { EntityEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
-export const EntityEventBusAbility= {
+export const EntityEventBusAbility = {
     entityEmit(ctx: EventContext): void {
         EntityEventBus.getInstance().entityEmit(ctx);
     },

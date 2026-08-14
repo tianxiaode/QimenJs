@@ -10,8 +10,8 @@ jest.mock('@/events', () => ({
     },
 }));
 
-import { NodePropAbility } from '@/component-core/abilities/NodePropAbility';
-import { NodeQueryAbility } from '@/component-core/abilities/NodeQueryAbility';
+import { NodePropAbility } from '@/component-core/abilities/NodeAbility';
+import { NodeQueryAbility } from '@/component-core/abilities/NodeAbility';
 import { LifecycleAbility } from '@/component-core/abilities/LifecycleAbility';
 
 describe('NodePropAbility', () => {

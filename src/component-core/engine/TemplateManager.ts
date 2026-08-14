@@ -40,6 +40,7 @@ export class TemplateManager {
             permissionMap: {},
             nodeMetaMap: {},
             atttributesMap: {},
+            components: [],
         };
         //先处理根节点
         const html = this.resolveNode(tpl, cache, [], true);
@@ -60,6 +61,7 @@ export class TemplateManager {
         const hasChildren = (tpl.children && tpl.children.length > 0) || false;
         if (name) {
             const meta = this.createNodeMeta(tpl, options);
+            meta.nodeIndex = indexPath;
             cache.nodeMetaMap[name] = meta;
             if (tpl.i18n) {
                 cache.i18nMap[name] = tpl.i18n;
@@ -67,12 +69,10 @@ export class TemplateManager {
             if (tpl.permission) {
                 cache.permissionMap[name] = tpl.permission;
             }
-            if (!isRoot) {
-                cache.exposeNames.push(name);
-            }
             cache.atttributesMap[name] = attributes;
             cache.indexPath[name] = indexPath;
             if (meta.isComponent) {
+                cache.components.push(name);
                 return `<div class="${SKELETON_CLS}"></div>`;
             }
             html = this.buildNamedNodeHtml(meta.tag || 'div', hasChildren);

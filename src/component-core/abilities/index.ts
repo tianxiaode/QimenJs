@@ -1,5 +1,5 @@
-export * from './NodeQueryAbility';
-export * from './NodePropAbility';
+export * from './NodeAbility';
+export * from './NodeAbility';
 export * from './CommonPropsAbility';
 export * from './AnimationAbility';
 export * from './BadgeAbility';
@@ -7,3 +7,5 @@ export * from './FloatAbility';
 export * from './DragAbility';
 export * from './LifecycleAbility';
 export * from './OptionsAbility';
+export * from './ChildrenAbility';
+export * from './InitAbility';

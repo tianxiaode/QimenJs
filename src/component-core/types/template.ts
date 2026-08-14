@@ -27,4 +27,5 @@ export interface TemplateCache {
     permissionMap: PermissionOptionsMap;
     nodeMetaMap: NodeMetaMap;
     atttributesMap: AttributesMap;
+    components: string[];
 }

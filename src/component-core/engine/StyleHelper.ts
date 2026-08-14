@@ -1,5 +1,3 @@
-// utils/StyleHelper.ts
-
 import { string } from '@qimenjs/utils';
 
 /**
@@ -69,17 +67,41 @@ export class StyleHelper {
      * 将 key-value 转为 CSS 声明
      */
     private static _keyValueToString(key: string, val: any): string {
-        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        const cssVal = this._valueToString(val);
+        const cssKey = this._toCssKey(key);
+        const cssVal = this._toCssValue(key, val);
         return `${cssKey}: ${cssVal}`;
     }
 
     /**
-     * 将值转为 CSS 值
+     * 将 camelCase 转为 kebab-case
      */
-    private static _valueToString(val: any): string {
+    private static _toCssKey(key: string): string {
+        return key.replace(/([A-Z])/g, '-$1').toLowerCase();
+    }
+
+    /**
+     * 将值转为 CSS 值（统一处理单位）
+     */
+    private static _toCssValue(key: string, val: any): string {
         if (typeof val === 'string') return val;
-        if (typeof val === 'number') return string.normalizeCssUnit(val);
+
+        if (typeof val === 'number') {
+            // 特殊属性不需要单位
+            const noUnitProps = new Set([
+                'zIndex',
+                'opacity',
+                'flex',
+                'order',
+                'flexGrow',
+                'flexShrink',
+                'aspectRatio',
+            ]);
+            if (noUnitProps.has(key)) {
+                return String(val);
+            }
+            return string.normalizeCssUnit(val);
+        }
+
         if (typeof val === 'object' && val !== null) {
             // margin/padding
             if ('top' in val || 'horizontal' in val || 'vertical' in val) {
@@ -91,6 +113,7 @@ export class StyleHelper {
             }
             return String(val);
         }
+
         return String(val);
     }
 
@@ -105,10 +128,31 @@ export class StyleHelper {
             const parts = decl.split(':').map(s => s.trim());
             if (parts.length === 2 && parts[0]) {
                 const key = parts[0].replace(/-([a-z])/g, (_, l) => l.toUpperCase());
-                result[key] = parts[1];
+                // 尝试解析数值
+                const value = this._parseValue(parts[1]);
+                result[key] = value;
             }
         });
         return result;
+    }
+
+    /**
+     * 解析字符串值（尝试转为数字）
+     */
+    private static _parseValue(value: string): string | number {
+        // 尝试提取数值
+        const numMatch = value.match(/^([\d.]+)(px|%|em|rem|vh|vw|vmin|vmax)?$/);
+        if (numMatch) {
+            const num = parseFloat(numMatch[1]);
+            const unit = numMatch[2];
+            // 如果没有单位或者是 px，转为数字（px 可以安全转为数字）
+            if (!unit || unit === 'px') {
+                return num;
+            }
+            // 其他单位保留字符串
+            return value;
+        }
+        return value;
     }
 
     /**
@@ -122,11 +166,8 @@ export class StyleHelper {
         const parts: string[] = [];
         for (const [key, val] of Object.entries(style)) {
             if (val === undefined || val === null) continue;
-            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-            const cssVal =
-                typeof val === 'number' && !['zIndex', 'opacity', 'flex'].includes(key)
-                    ? `${val}px`
-                    : val;
+            const cssKey = this._toCssKey(key);
+            const cssVal = this._toCssValue(key, val);
             parts.push(`${cssKey}: ${cssVal}`);
         }
         return parts.join('; ');
@@ -154,7 +195,13 @@ export class StyleHelper {
         if (typeof style === 'object' && !Array.isArray(style)) {
             for (const [key, value] of Object.entries(style)) {
                 if (value !== undefined && value !== null) {
-                    target[key] = value;
+                    // 处理对象类型的值（如 margin/padding）
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                        // 对于 margin/padding 等，使用 _toCssValue 转换
+                        target[key] = this._toCssValue(key, value);
+                    } else {
+                        target[key] = value;
+                    }
                 }
             }
             return;
