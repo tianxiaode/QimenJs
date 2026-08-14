@@ -31,7 +31,7 @@ import type { DomEventsMap } from './types/events';
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentCoreOptions, DragOptionsBase, TemplateDecl } from './types';
+import { ComponentCoreOptions, ComponentState, DragOptionsBase, TemplateDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
@@ -108,7 +108,7 @@ export class Component extends ComposableBase {
      * new ButtonComponent({ action: 'save' });
      * btn.action = 'create';  // 运行时更改
      */
-    _options!: Partial<ComponentCoreOptions>;
+    state!: Partial<ComponentState>;
     /** 组件实例化上下文 */
 
     domEvents?: DomEventsMap;
@@ -246,7 +246,7 @@ export class Component extends ComposableBase {
         this.type = (this.constructor as any).name.replace(/Component$/, '');
         this.id = options?.id ?? this.options?.id ?? getId(`cmp-${this.type}`);
         delete options?.id;
-        this._options = options || {};
+        this.buildDOM(options);
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;

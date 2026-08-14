@@ -14,3 +14,5 @@ export * from './id';
 
 // 复数形式处理
 export * from './plural';
+
+export * from './hash';

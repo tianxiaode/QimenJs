@@ -2,20 +2,8 @@ import type { AbilityDefinition } from '@/composable';
 import type { ILocalChangeSet, IDeletionPlan } from '../../types';
 import { CacheFactory } from '@/cache';
 import type { ICacheProvider } from '@/cache';
-import { array } from '@qimenjs/utils';
+import { array, string } from '@qimenjs/utils';
 import { ENTITY_LIST_EVENTS } from '@/events';
-
-/**
- * 简单哈希函数
- */
-function _simpleHash(str: string): string {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0;
-    }
-    return Math.abs(hash).toString(36);
-}
 
 /**
  * FlatLocalStateAbility - 平铺本地状态能力（合并版）
@@ -158,7 +146,7 @@ const cacheMethods: AbilityDefinition = {
             .map(key => `${key}=${params[key]}`)
             .join('&');
 
-        return `${base}:q:${_simpleHash(queryStr)}`;
+        return `${base}:q:${string.simpleHash(queryStr)}`;
     },
 
     async _getCacheProvider(): Promise<ICacheProvider> {

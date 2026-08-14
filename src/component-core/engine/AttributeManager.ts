@@ -135,8 +135,15 @@ export class AttributeManager extends ComposableBase implements IAttributeManage
     /**
      * 立即刷新所有脏节点
      */
-    flush(): void {
+    flush(nodeName?: string): void {
         const dirty = this._dirtyNodes ?? {};
+
+        if (nodeName) {
+            this._dirtyNodes[nodeName] = {};
+            this._applyProps(nodeName, dirty[nodeName] ?? {});
+            return;
+        }
+
         this._dirtyNodes = {};
 
         for (const [name, attributes] of Object.entries(dirty)) {

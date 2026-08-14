@@ -12,7 +12,7 @@ import type { AbilityDefinition } from '@/composable';
 import { OverlayEventBus } from '@/events';
 import type { EventContext } from '@/context';
 
-export const OverlayEventBusAbility= {
+export const OverlayEventBusAbility = {
     overlayEmit(ctx: EventContext): void {
         OverlayEventBus.getInstance().overlayEmit(ctx);
     },

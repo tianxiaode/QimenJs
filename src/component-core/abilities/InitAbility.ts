@@ -20,7 +20,7 @@ import { object, string } from '@/utils';
 import { NodeMapManager } from '../engine/NodeManager';
 import { AttributeManager } from '../engine';
 import { CONTENT_MODE_MAP } from '../constants';
-import { IComponentCore, NodeMeta, NodeMetaMap } from '../types';
+import { ComponentCoreOptions, ComponentState, IComponentCore } from '../types';
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -28,14 +28,21 @@ export const InitAbility = {
      *
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
-    buildDOM(): void {
+    buildDOM(options: ComponentCoreOptions): void {
         const cache = TemplateManager.get(this.tpl);
-        const splits = TemplateManager.splitOptions(this._options, this.optionKeys);
-        this._options = splits.options;
-        object.deepMerge(this._options, cache.nodeMetaMap?.root.options || {});
-        object.deepMerge(cache.atttributesMap.root ?? {}, splits.attributes);
-        this.nodeManager = new NodeMapManager(cache, this as any);
-        this.AttributeManager = new AttributeManager(cache.atttributesMap, this as any);
+        const splits = TemplateManager.splitOptions(options, this.optionKeys);
+        //将cache作为原始值，不能改变
+        //将传递过来的options拆解为修改值
+        this.state = {
+            ...cache,
+            elementMap: {},
+            dirty: {
+                attributes: splits.attributes,
+                style: splits.style,
+                options: splits.options,
+                class: splits.classname,
+            },
+        };
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
 
         this.nodeMapMgr.buildDOM();

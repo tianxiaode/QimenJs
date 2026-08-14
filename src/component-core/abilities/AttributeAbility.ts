@@ -1,54 +1,55 @@
 // abilities/NodeAttrAbility.ts
 
 import { AbilityDefinition } from '@/composable';
+import { AttributesMap } from '../types';
 
 /**
  * 节点属性操作（走脏追踪）
  *
  * 所有属性变更都通过 _markNodeDirty 触发脏追踪
  */
-export const NodeAttrAbility = {
-    /**
-     * 设置节点属性（走脏追踪）
-     */
-    setNodeProp(nodeName: string, prop: string, value: any): void {
-        (this as any)._markNodeDirty(nodeName, { [prop]: value });
+export const AttributeAbility: AbilityDefinition = {
+    getAttribute(nodeName: string, attributeName: string): any {
+        return this.attributeManager.getAttribute(nodeName, attributeName);
     },
 
-    /**
-     * 批量设置节点属性（走脏追踪）
-     */
-    updateNode(instance: any, nodeName: string, props: Record<string, any>): void {
-        (this as any)._markNodeDirty(nodeName, props);
+    setAttribute(nodeName: string, attributeName: string, value: any): void {
+        this.attributeManager.setAttribute(nodeName, attributeName, value);
     },
 
-    /**
-     * 设置类名（走脏追踪）
-     */
-    setNodeCls(instance: any, nodeName: string, value: string): void {
-        (this as any)._markNodeDirty(nodeName, { cls: value });
+    setAttributes(nodeName: string, attributes: Partial<AttributesMap>): void {
+        this.attributeManager.setAttributes(nodeName, attributes);
     },
 
-    /**
-     * 设置样式（走脏追踪）
-     */
-    setNodeStyle(instance: any, nodeName: string, value: any): void {
-        (this as any)._markNodeDirty(nodeName, { style: value });
+    removeAttribute(nodeName: string, attribute: string): void {
+        this.attributeManager.removeAttribute(nodeName, attribute);
     },
 
-    /**
-     * 设置隐藏（走脏追踪）
-     */
-    setNodeHidden(instance: any, nodeName: string, value: boolean): void {
-        (this as any)._markNodeDirty(nodeName, { hidden: value });
+    removeAttributes(nodeName: string, attributes: string[]): void {
+        this.attributeManager.removeAttributes(nodeName, attributes);
     },
 
-    /**
-     * 设置禁用（走脏追踪）
-     */
-    setNodeDisabled(instance: any, nodeName: string, value: boolean): void {
-        (this as any)._markNodeDirty(nodeName, { disabled: value });
+    getCls(nodeName: string): DOMTokenList {
+        return this.attributeManager.getCls(nodeName);
     },
 
-    // ... 其他 setNodeXxx 方法都走 _markNodeDirty
-} as AbilityDefinition;
+    hasCls(nodeName: string, cls: string): boolean {
+        return this.attributeManager.hasCls(nodeName, cls);
+    },
+
+    addCls(nodeName: string, cls: string): void {
+        this.attributeManager.addCls(nodeName, cls);
+    },
+
+    removeCls(nodeName: string, cls: string): void {
+        this.attributeManager.removeCls(nodeName, cls);
+    },
+
+    toggleCls(nodeName: string, cls: string): void {
+        this.attributeManager.toggleCls(nodeName, cls);
+    },
+
+    flushAttributes(nodeName?: string): void {
+        this.attributeManager.flush(nodeName);
+    },
+} satisfies AbilityDefinition;

@@ -31,10 +31,10 @@ export const CommonPropsAbility: AbilityDefinition = {
 
     cls: {
         get(): DOMTokenList {
-            return this.getCls('class');
+            return this.getCls('root');
         },
         set(v: any) {
-            this.setNodeProp('root', { class: v });
+            this.addCls('root', v);
         },
     },
     style: {
@@ -119,72 +119,6 @@ export const CommonPropsAbility: AbilityDefinition = {
     },
 
     // ── Layer 1+2: 方法（nodeName 在末尾，可选）──
-
-    getCls(nodeName?: string): DOMTokenList {
-        return this.getNodeProp('class', nodeName ?? 'root') as DOMTokenList;
-    },
-
-    /**
-     * 添加 CSS 类名
-     *
-     * 为指定节点添加 CSS 类名。支持同时添加多个类名（用空格分隔）。
-     * 如果目标节点是子组件且该子组件有 addCls 方法，则委托给子组件处理。
-     *
-     * @param {string} value - CSS 类名（多个类名用空格分隔，如 'active hover'）
-     * @param {string} [nodeName='root'] - 节点名称，默认为 'root'
-     * @returns {void}
-     *
-     * @example
-     * // 添加单个类名
-     * this.addCls('active');
-     *
-     * @example
-     * // 添加多个类名
-     * this.addCls('active hover');
-     *
-     * @example
-     * // 为子节点添加类名
-     * this.addCls('active', 'icon');
-     */
-    addCls(value: string, nodeName?: string): void {
-        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
-        if (!cls) {
-            this.setNodeProp('root', { class: cls });
-            return;
-        }
-        cls.add(...value.split(/\s+/).filter(Boolean));
-        this.setNodeProp('root', { class: cls });
-    },
-
-    /**
-     * 移除 CSS 类名
-     *
-     * 从指定节点移除 CSS 类名。支持同时移除多个类名（用空格分隔）。
-     * 如果目标节点是子组件且该子组件有 removeCls 方法，则委托给子组件处理。
-     *
-     * @param {string} value - CSS 类名（多个类名用空格分隔，如 'active hover'）
-     * @param {string} [nodeName='root'] - 节点名称，默认为 'root'
-     * @returns {void}
-     *
-     * @example
-     * // 移除单个类名
-     * this.removeCls('active');
-     *
-     * @example
-     * // 移除多个类名
-     * this.removeCls('active hover');
-     *
-     * @example
-     * // 为子节点移除类名
-     * this.removeCls('active', 'icon');
-     */
-    removeCls(value: string, nodeName?: string): void {
-        const cls = this.getCls(nodeName ?? 'root') as DOMTokenList;
-        if (!cls) return;
-        const removeCls = value.split(/\s+/).filter(Boolean);
-        cls.remove(...removeCls);
-        this.setNodeProp('root', { class: cls });
-    },
 
     /**
      * 切换 CSS 类名

@@ -9,12 +9,13 @@ import {
     VOID_TAGS,
 } from '../constants';
 import {
-    Attributes,
-    NodeMeta,
-    NodeOptions,
-    SplitOptionsResult,
-    TemplateDecl,
+    NodeAttributes,
     TemplateCache,
+    NodeOptions,
+    TemplateDecl,
+    SplitOptionsResult,
+    NodeStyle,
+    NodeHTMLClass,
 } from '../types';
 import { StyleHelper } from './StyleHelper';
 import { string } from '@qimenjs/utils';
@@ -34,13 +35,16 @@ export class TemplateManager {
     static compileTemplate(tpl: TemplateDecl): TemplateCache {
         const cache: TemplateCache = {
             html: '',
-            indexPath: {},
-            exposeNames: [],
+            tagMap: {},
+            typeMap: {},
+            indexPathMap: {},
             i18nMap: {},
             permissionMap: {},
-            nodeMetaMap: {},
-            atttributesMap: {},
-            components: [],
+            attributesMap: {},
+            styleMap: {},
+            classMap: {},
+            optionsMap: {},
+            childComponents: [],
         };
         //先处理根节点
         const html = this.resolveNode(tpl, cache, [], true);
@@ -56,26 +60,24 @@ export class TemplateManager {
         isRoot: boolean = false
     ): string {
         const name = isRoot ? 'root' : tpl.name;
-        const { attributes, options } = this.splitOptions(tpl);
         let html = '';
         const hasChildren = (tpl.children && tpl.children.length > 0) || false;
+        const isComponent = !!tpl.type;
         if (name) {
-            const meta = this.createNodeMeta(tpl, options);
-            meta.nodeIndex = indexPath;
-            cache.nodeMetaMap[name] = meta;
-            if (tpl.i18n) {
-                cache.i18nMap[name] = tpl.i18n;
-            }
-            if (tpl.permission) {
-                cache.permissionMap[name] = tpl.permission;
-            }
-            cache.atttributesMap[name] = attributes;
-            cache.indexPath[name] = indexPath;
-            if (meta.isComponent) {
-                cache.components.push(name);
+            this.splitMetaData(name, tpl, cache);
+            cache.indexPathMap[name] = indexPath;
+            if (isComponent) {
+                const opts = { ...tpl };
+                SPLIT_OPTIONS_IGNORE_KEYS.forEach(key => delete opts[key]);
+                cache.optionsMap[name] = opts;
                 return `<div class="${SKELETON_CLS}"></div>`;
             }
-            html = this.buildNamedNodeHtml(meta.tag || 'div', hasChildren);
+            const { attributes, options, style, classname } = this.splitOptions(tpl);
+            cache.attributesMap[name] = attributes;
+            cache.styleMap[name] = style;
+            cache.classMap[name] = classname;
+            cache.optionsMap[name] = options;
+            html = this.buildNamedNodeHtml(tpl.tag || 'div', hasChildren);
         } else {
             html = this.buildHtml(tpl, hasChildren);
         }
@@ -91,22 +93,27 @@ export class TemplateManager {
         return html;
     }
 
-    static createNodeMeta(tpl: TemplateDecl, options: NodeOptions): NodeMeta {
-        return {
-            name: tpl.name,
-            tag: tpl.tag,
-            text: tpl.text,
-            contentMode: tpl.contentMode,
-            action: tpl.action,
-            type: tpl.type,
-            isComponent: !!tpl.type,
-            options,
-        };
+    static splitMetaData(nodeName: string, tpl: TemplateDecl, cache: TemplateCache): void {
+        if (tpl.tag) {
+            cache.tagMap[nodeName] = tpl.tag;
+        }
+        if (tpl.type) {
+            cache.typeMap[nodeName] = tpl.type;
+            cache.childComponents.push(nodeName);
+        }
+        if (tpl.i18n) {
+            cache.i18nMap[nodeName] = tpl.i18n;
+        }
+        if (tpl.permission) {
+            cache.permissionMap[nodeName] = tpl.permission;
+        }
     }
 
     static splitOptions(tpl: TemplateDecl, coreKeys?: Set<string>): SplitOptionsResult {
-        const attributes: Attributes = {};
+        const attributes: NodeAttributes = {};
         const options: NodeOptions = {};
+        const style: NodeStyle = {};
+        const classname: NodeHTMLClass = [];
         const tag = tpl.tag;
         for (const [key, val] of Object.entries(tpl)) {
             if (SPLIT_OPTIONS_IGNORE_KEYS.has(key)) continue;
@@ -131,10 +138,10 @@ export class TemplateManager {
             //其他属性，根据类型做不同处理
             switch (type) {
                 case 'class':
-                    attributes.class += val + ' ';
+                    classname.push(val);
                     break;
                 case 'style':
-                    StyleHelper.expand(val, attributes);
+                    StyleHelper.expand(val, style);
                     break;
                 case 'attribute':
                     attributes[key] = val;
@@ -144,13 +151,13 @@ export class TemplateManager {
                     break;
             }
         }
-        return { attributes, options };
+        return { attributes, options, style, classname };
     }
 
     static getOptionType(key: string) {
         if (CLASS_KEYS.has(key)) return 'class';
         if (key === 'style') return 'style';
-        if (STYLE_KEYS.has(key)) return 'attribute';
+        if (STYLE_KEYS.has(key)) return 'style';
         // data-* / aria-* 都算 html
         if (ATTR_PREFIXES_KEYS.has(key)) return 'attribute';
         if (HTML_KEYS.has(key)) return 'attribute';

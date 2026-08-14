@@ -90,7 +90,14 @@ function applyAbilities(proto: any, merged: Map<string | symbol, any>): void {
         }
 
         if (typeof value === 'function') {
-            proto[key] = value;
+            const isInternal = typeof key === 'string' && key.startsWith('_');
+            Object.defineProperty(proto, key, {
+                value,
+                enumerable: !isInternal,
+                configurable: true,
+                writable: true,
+            });
+            continue;
         }
     }
 }
