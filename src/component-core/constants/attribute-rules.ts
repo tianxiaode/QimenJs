@@ -1,5 +1,3 @@
-// constants/attribute-rules.ts
-
 /**
  * 属性规则常量
  *

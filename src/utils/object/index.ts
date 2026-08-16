@@ -2,3 +2,4 @@
 export * from './clone';
 export * from './properties';
 export * from './iterate';
+export * from './setter';

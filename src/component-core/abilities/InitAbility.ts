@@ -16,11 +16,8 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { TemplateManager } from '../engine/TemplateManager';
-import { object, string } from '@/utils';
-import { NodeMapManager } from '../engine/NodeManager';
-import { AttributeManager } from '../engine';
-import { CONTENT_MODE_MAP } from '../constants';
-import { ComponentCoreOptions, ComponentState, IComponentCore } from '../types';
+import { CONTENT_MODE_MAP, SKELETON_CLS } from '../constants';
+import { ComponentCoreOptions, IComponentCore } from '../types';
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -28,25 +25,26 @@ export const InitAbility = {
      *
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
-    buildDOM(options: ComponentCoreOptions): void {
+    _buildDOM(options: ComponentCoreOptions): void {
         const cache = TemplateManager.get(this.tpl);
         const splits = TemplateManager.splitOptions(options, this.optionKeys);
         //将cache作为原始值，不能改变
         //将传递过来的options拆解为修改值
         this.state = {
             ...cache,
-            elementMap: {},
-            dirty: {
-                attributes: splits.attributes,
-                style: splits.style,
-                options: splits.options,
-                class: splits.classname,
+            elements: {},
+            instances: {},
+            states: {
+                ...splits,
             },
+            dirty: {},
         };
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
+        const el = document.createElement(this.rootTag);
+        this._setNodeEl(el);
+        const fragment = this._cache.templateCache!.content.cloneNode(true);
+        el.appendChild(fragment);
 
-        this.nodeMapMgr.buildDOM();
-        this._applyNodeMeta(cache.nodeMetaMap);
         if (!this.hasParent) {
             if (this.container) {
                 this.container.appendChild(this.el);
@@ -216,5 +214,105 @@ export const InitAbility = {
 
     _onChildReady(nodeName: string) {
         this.logger.debug(`[_onChildReady][${this.id}]`, `子组件${nodeName}准备完成`);
+    },
+
+    /**
+     * 将指定节点恢复为骨架占位符
+     *
+     * 用骨架占位符替换当前节点的 DOM 元素，清除组件引用。
+     * 通常用于组件卸载后恢复占位状态，以便后续重新挂载组件。
+     *
+     * @param nodeName - 节点名称
+     *
+     * @example
+     * ```typescript
+     * // 先挂载一个组件
+     * manager.mountChildComponent(nodeMeta, childComponent);
+     * // 后续需要卸载并恢复骨架
+     * manager.restoreSkeleton('childSlot');
+     * // 骨架占位符现在替代了原来的组件元素
+     * ```
+     *
+     * @remarks
+     * - 如果节点不存在，方法会静默返回
+     * - 会清除节点的 component 引用
+     * - 占位符会继承 SKELETON_CLS 样式类
+     * - 保持节点在父容器中的位置信息
+     */
+    _restoreSkeleton(nodeName: string): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+
+        const placeholder = document.createElement('div');
+        placeholder.className = SKELETON_CLS;
+
+        el.replaceWith(placeholder);
+        const node = this.get(nodeName);
+        if (!node) return;
+        node.el = placeholder;
+        node.instance = undefined;
+    },
+
+    /**
+     * 将已创建的子组件实例挂载到指定节点的占位元素上
+     *
+     * 用占位元素替换为子组件的 el，合并 nodeMap。
+     * 与 replace() 不同，此方法不处理旧组件销毁，也不创建新实例。
+     *
+     * @param node - 目标节点元数据，必须包含占位元素 el
+     * @param child - 已创建的子组件实例，必须包含 el 属性
+     *
+     * @example
+     * ```typescript
+     * // 创建子组件实例
+     * const childComponent = new ChildComponent({ text: 'Hello' });
+     *
+     * // 获取占位节点
+     * const nodeMeta = manager.get('childSlot');
+     * if (nodeMeta) {
+     *   // 挂载子组件
+     *   manager.mountChildComponent(nodeMeta, childComponent);
+     * }
+     * ```
+     *
+     * @remarks
+     * - 会设置子组件的 parent 为当前管理器的 owner
+     * - 如果节点定义了 cls，会自动添加到子组件元素上
+     * - 会合并子组件的 nodeMap 到父组件
+     * - 会记录节点的 parentNode 和 nodeIndex 用于后续恢复
+     */
+    _mountChildComponent(nodeName: string, child: IComponentCore): void {
+        const node = this.get(nodeName);
+        if (!node) {
+            this._owner?.logger.warn(`[${this._owner.id}] Slot "${nodeName}" not found`);
+            return;
+        }
+        const placeholder = node.el! ?? this.findByPath(node.nodeIndex!);
+        if (!placeholder) return;
+        placeholder.replaceWith(child.el!);
+        node.el = child.el;
+        node.instance = child;
+    },
+
+    /**
+     * 按子节点索引路径定位 DOM 元素
+     *
+     * @param root - 搜索起点元素
+     * @param path - 子节点索引路径（由编译时 indexPath 产出）
+     * @returns 定位到的 HTMLElement，路径不存在时返回 null
+     *
+     * @example
+     * ```ts
+     * // 编译时产出: indexPath['text'] = [0, 1]
+     * // 运行时定位: const el = findByPath(rootEl, [0, 1])
+     * ```
+     */
+    _findByPath(path: number[]): HTMLElement | null {
+        let current: Element = this._el;
+        for (const idx of path) {
+            if (!current.children[idx]) return null;
+            current = current.children[idx];
+        }
+        return current as HTMLElement;
     },
 } as AbilityDefinition;

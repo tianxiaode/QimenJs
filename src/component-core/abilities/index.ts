@@ -6,6 +6,6 @@ export * from './BadgeAbility';
 export * from './FloatAbility';
 export * from './DragAbility';
 export * from './LifecycleAbility';
-export * from './OptionsAbility';
+export * from './OptionAbility';
 export * from './ChildrenAbility';
 export * from './InitAbility';

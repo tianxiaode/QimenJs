@@ -1,16 +1,13 @@
-import { ComponentState, NodeOptions } from './component';
-import { NodeAttributes, NodeHTMLClass, NodeStyle } from './html';
+import { ComponentState, NodeMeta } from './component';
 
-export interface SplitOptionsResult {
-    attributes: NodeAttributes;
-    style: NodeStyle;
-    options: NodeOptions;
-    classname: NodeHTMLClass;
-}
+export interface SplitOptionsResult extends Omit<
+    NodeMeta,
+    'tag' | 'type' | 'i18n' | 'permission' | 'isComponent'
+> {}
 
 export interface TemplateCache extends Omit<
     ComponentState,
-    'elementMap' | 'dirty' | 'instanceMap'
+    'states' | 'dirty' | 'instances' | 'elements'
 > {
     /** 生成的 HTML 字符串 */
     html?: string;

@@ -13,31 +13,33 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { NodeMeta } from '../types';
+import { IComponentCore, NodeMeta, NodeOptions } from '../types';
+import { _set } from 'zod/v4/core';
 
 /** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
 export const NodeQueryAbility: AbilityDefinition = {
-    i18ns: {
-        get() {
-            return this.nodeManager.i18ns;
-        },
-    },
-
     permissions: {
         get() {
-            return this.nodeManager.permissions;
+            const names = this.state.permissions;
+            const result = [];
+            for (const name of names) {
+                const node = this.getNode(name);
+                if (node) {
+                    result.push({ name, permissions: node.ermission });
+                }
+            }
         },
     },
 
     el: {
         get() {
-            return this.nodeManager.el;
+            return this.getNodeEl('root');
         },
     },
 
-    nodeMap: {
+    rootTag: {
         get() {
-            return this.nodeManager.map;
+            return this.getNodeEl('root').tag || 'div';
         },
     },
 
@@ -58,31 +60,27 @@ export const NodeQueryAbility: AbilityDefinition = {
      * ```
      */
     getNode(nodeName: string): NodeMeta | undefined {
-        return this.nodeManager.get(nodeName);
-    },
-
-    setNode(nodeName: string, node: NodeMeta) {
-        this.nodeManager.set(nodeName, node);
-    },
-
-    updateNode(nodeName: string, node: Partial<NodeMeta>) {
-        this.nodeManager.update(nodeName, node);
+        return this.state.nodes[nodeName];
     },
 
     getNodeEl(nodeName: string): HTMLElement | undefined {
-        return this.nodeManager.getNodeEl(nodeName);
+        return this.state.elements(nodeName);
     },
 
-    getComponent(nodeName: string): any {
-        return this.nodeManager.getComponent(nodeName);
+    _setNodeEl(nodeName: string, el: HTMLElement): void {
+        this.state.elements[nodeName] = el;
     },
 
-    getNodeOptions(nodeName: string): any {
-        return this.nodeManager.getOptions(nodeName);
+    getComponent(nodeName: string): IComponentCore {
+        return this.instances(nodeName);
+    },
+
+    getNodeOptions(nodeName: string): NodeOptions | undefined {
+        return this.getNode(nodeName)?.options;
     },
 
     isComponent(nodeName: string): boolean {
-        return this.nodeManager.isComponent(nodeName);
+        return this.getNode(nodeName)?.isComponent || false;
     },
 
     /**
@@ -95,5 +93,13 @@ export const NodeQueryAbility: AbilityDefinition = {
     containsElement(nodeName: string, target: Element): boolean {
         const el = this.getNodeEl(nodeName);
         return el ? el.contains(target) : false;
+    },
+
+    _getState(nodeName: string) {
+        return this.state.states[nodeName];
+    },
+
+    _getDirty(nodeName: string) {
+        return this.state.dirties[nodeName];
     },
 } satisfies AbilityDefinition;

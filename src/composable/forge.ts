@@ -7,63 +7,10 @@
  */
 
 import { Logger } from '@/logger';
-import type { AbilityDefinition } from './types/ability';
+import type { AbilityDefinition, PropertyDefinition } from './types';
 
 export const ABILITY_STATES_KEY = Symbol('__abilityStates__');
 export const CLEANUPS_KEY = Symbol('__cleanups__');
-
-function flattenWithArgs(args: readonly AbilityDefinition[]): readonly AbilityDefinition[] {
-    if (args.length === 1 && Array.isArray(args[0])) {
-        return args[0] as readonly AbilityDefinition[];
-    }
-    return args;
-}
-
-function flattenAbilities(abilities: readonly AbilityDefinition[]): Map<string | symbol, any> {
-    const merged = new Map<string | symbol, any>();
-
-    for (const ability of abilities) {
-        const abilityName = (ability as any).__name__ || '(anonymous)';
-
-        const descs = Object.getOwnPropertyDescriptors(ability);
-        for (const key of Object.keys(descs)) {
-            if (key.startsWith('__')) continue;
-
-            const desc = descs[key];
-            if (desc.get || desc.set) {
-                merged.set(key, { get: desc.get, set: desc.set });
-                continue;
-            }
-
-            const isAccessorDef =
-                desc.value &&
-                typeof desc.value === 'object' &&
-                ('get' in desc.value || 'set' in desc.value);
-            if (typeof desc.value !== 'function' && !isAccessorDef) continue;
-
-            if (merged.has(key)) {
-                Logger.for('Forge').warn(
-                    `Ability "${abilityName}" overrides existing key "${String(key)}"`
-                );
-            }
-            merged.set(key, desc.value);
-        }
-
-        for (const key of Object.getOwnPropertySymbols(ability)) {
-            const value = ability[key as any];
-            if (typeof value === 'function') {
-                if (merged.has(key)) {
-                    Logger.for('Forge').warn(
-                        `Ability "${abilityName}" overrides symbol key "${String(key)}"`
-                    );
-                }
-                merged.set(key, value);
-            }
-        }
-    }
-
-    return merged;
-}
 
 const BUILTIN_KEYS = new Set([
     'abilityState',
@@ -74,9 +21,13 @@ const BUILTIN_KEYS = new Set([
     'dispose',
 ]);
 
-function applyAbilities(proto: any, merged: Map<string | symbol, any>): void {
-    for (const [key, value] of merged) {
+function applyAbilitie(proto: any, ability: AbilityDefinition): void {
+    for (const [key, value] of Object.entries(ability)) {
         if (typeof key === 'string' && BUILTIN_KEYS.has(key)) continue;
+
+        if (proto[key]) {
+            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}`);
+        }
 
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
             const descriptor: PropertyDescriptor = {
@@ -118,10 +69,14 @@ function applyAbilities(proto: any, merged: Map<string | symbol, any>): void {
  * ```
  */
 export function withAbilities(target: any, abilities: readonly AbilityDefinition[]): void {
-    const flat = flattenWithArgs(abilities);
-    const merged = flattenAbilities(flat);
-    applyAbilities(target.prototype, merged);
-    target.abilities = [...(target.abilities || []), ...flat];
+    const proto = target.prototype;
+    for (const ability of abilities) {
+        if (ability.isProperty) {
+            injectProperties(proto, ability as PropertyDefinition);
+            continue;
+        }
+        applyAbilitie(proto, ability);
+    }
 }
 
 /**
@@ -159,4 +114,77 @@ export function withDefinitions(target: any, definitions: Record<string, any>): 
             proto[key] = desc.value;
         }
     }
+}
+
+export function injectProperties(proto: any, propertyDefs: PropertyDefinition): void {
+    const map = {} as any;
+    const keys = [] as string[];
+    let length = 0;
+    for (const [key, def] of Object.entries(propertyDefs)) {
+        if (key === '__name__' || key === 'isProperty') continue;
+        const storeKey = `_${key}`;
+        const defaultValue = (def as any)?.default;
+        map[key] = def;
+        keys.push(key);
+        length++;
+
+        // ✅ 直接定义初始值（不经过 setter）
+        Object.defineProperty(proto, storeKey, {
+            value: defaultValue,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+        });
+
+        // getter/setter
+        Object.defineProperty(proto, key, {
+            get: function () {
+                return this[storeKey];
+            },
+            set: function (value: any) {
+                const oldValue = this[storeKey];
+                this[storeKey] = value;
+
+                // ✅ 触发变化通知
+                if (typeof this._onPropertyChange === 'function') {
+                    this._onPropertyChange(key, value, oldValue, def);
+                }
+            },
+            enumerable: true,
+            configurable: true,
+        });
+    }
+
+    if (length === 0) return;
+    const ctor = proto.constructor;
+    ctor._propertyMap = map;
+    ctor._propertyKeys = keys;
+
+    // ============================================================
+    // ✅ 1. 工具方法
+    // ============================================================
+    Object.defineProperty(proto, 'getPropertyMap', {
+        value: function () {
+            return (this.constructor as any)._propertyMap || {};
+        },
+        enumerable: false,
+        configurable: true,
+    });
+
+    Object.defineProperty(proto, 'getPropertyKeys', {
+        value: function () {
+            return (this.constructor as any)._propertyKeys || [];
+        },
+        enumerable: false,
+        configurable: true,
+    });
+
+    Object.defineProperty(proto, 'getPropertyDef', {
+        value: function (key: string) {
+            const _map = (this.constructor as any)._propertyMap;
+            return _map[key];
+        },
+        enumerable: false,
+        configurable: true,
+    });
 }

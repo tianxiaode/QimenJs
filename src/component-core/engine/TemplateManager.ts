@@ -16,6 +16,7 @@ import {
     SplitOptionsResult,
     NodeStyle,
     NodeHTMLClass,
+    NodeMeta,
 } from '../types';
 import { StyleHelper } from './StyleHelper';
 import { string } from '@qimenjs/utils';
@@ -35,16 +36,12 @@ export class TemplateManager {
     static compileTemplate(tpl: TemplateDecl): TemplateCache {
         const cache: TemplateCache = {
             html: '',
-            tagMap: {},
-            typeMap: {},
-            indexPathMap: {},
-            i18nMap: {},
-            permissionMap: {},
-            attributesMap: {},
-            styleMap: {},
-            classMap: {},
-            optionsMap: {},
+            names: [],
             childComponents: [],
+            i18ns: [],
+            permissions: [],
+            indexs: {},
+            nodes: {},
         };
         //先处理根节点
         const html = this.resolveNode(tpl, cache, [], true);
@@ -64,19 +61,22 @@ export class TemplateManager {
         const hasChildren = (tpl.children && tpl.children.length > 0) || false;
         const isComponent = !!tpl.type;
         if (name) {
-            this.splitMetaData(name, tpl, cache);
-            cache.indexPathMap[name] = indexPath;
+            const meta = this.CreateNodeMeta(tpl);
+            cache.names.push(name);
+            cache.indexs[name] = indexPath;
+            cache.nodes[name] = meta;
             if (isComponent) {
                 const opts = { ...tpl };
                 SPLIT_OPTIONS_IGNORE_KEYS.forEach(key => delete opts[key]);
-                cache.optionsMap[name] = opts;
+                cache.childComponents.push(name);
+                meta.options = opts;
                 return `<div class="${SKELETON_CLS}"></div>`;
             }
-            const { attributes, options, style, classname } = this.splitOptions(tpl);
-            cache.attributesMap[name] = attributes;
-            cache.styleMap[name] = style;
-            cache.classMap[name] = classname;
-            cache.optionsMap[name] = options;
+            const { attributes, options, style, classes } = this.splitOptions(tpl);
+            meta.attributes = attributes;
+            meta.style = style;
+            meta.classes = classes;
+            meta.options = options;
             html = this.buildNamedNodeHtml(tpl.tag || 'div', hasChildren);
         } else {
             html = this.buildHtml(tpl, hasChildren);
@@ -93,27 +93,34 @@ export class TemplateManager {
         return html;
     }
 
-    static splitMetaData(nodeName: string, tpl: TemplateDecl, cache: TemplateCache): void {
-        if (tpl.tag) {
-            cache.tagMap[nodeName] = tpl.tag;
-        }
-        if (tpl.type) {
-            cache.typeMap[nodeName] = tpl.type;
-            cache.childComponents.push(nodeName);
-        }
-        if (tpl.i18n) {
-            cache.i18nMap[nodeName] = tpl.i18n;
-        }
-        if (tpl.permission) {
-            cache.permissionMap[nodeName] = tpl.permission;
-        }
+    /**
+     * 创建节点元数据的静态方法
+     * @param tpl 模板声明对象，包含节点的各种配置信息
+     * @returns 返回一个包含节点元数据的对象
+     */
+    static CreateNodeMeta(tpl: TemplateDecl): NodeMeta {
+        // 获取模板的类型
+        const type = tpl.type;
+        // 返回节点元数据对象，包含以下属性：
+        return {
+            // 节点的标签名
+            tag: tpl.tag,
+            // 节点的类型
+            type: type,
+            // 国际化配置
+            i18n: tpl.i18n,
+            // 权限配置
+            permission: tpl.permission,
+            // 是否为组件的标志，通过双重否定将type转换为布尔值
+            isComponent: !!type,
+        };
     }
 
     static splitOptions(tpl: TemplateDecl, coreKeys?: Set<string>): SplitOptionsResult {
         const attributes: NodeAttributes = {};
         const options: NodeOptions = {};
         const style: NodeStyle = {};
-        const classname: NodeHTMLClass = [];
+        const classes: NodeHTMLClass = [];
         const tag = tpl.tag;
         for (const [key, val] of Object.entries(tpl)) {
             if (SPLIT_OPTIONS_IGNORE_KEYS.has(key)) continue;
@@ -138,7 +145,7 @@ export class TemplateManager {
             //其他属性，根据类型做不同处理
             switch (type) {
                 case 'class':
-                    classname.push(val);
+                    classes.push(val);
                     break;
                 case 'style':
                     StyleHelper.expand(val, style);
@@ -151,12 +158,20 @@ export class TemplateManager {
                     break;
             }
         }
-        return { attributes, options, style, classname };
+        return { attributes, options, style, classes };
     }
 
+    /**
+     * 根据键名获取选项类型
+     * @param key - 需要检查的键名
+     * @return 返回选项类型，可以是'class'、'style'、'attribute'或'option'
+     */
     static getOptionType(key: string) {
+        // 检查是否为类相关的键
         if (CLASS_KEYS.has(key)) return 'class';
+        // 检查是否为style键
         if (key === 'style') return 'style';
+        // 检查是否为样式相关的键
         if (STYLE_KEYS.has(key)) return 'style';
         // data-* / aria-* 都算 html
         if (ATTR_PREFIXES_KEYS.has(key)) return 'attribute';
@@ -179,7 +194,11 @@ export class TemplateManager {
             if (val === undefined || val === null) continue;
 
             if (CLASS_KEYS.has(key)) {
-                cls += val + ' ';
+                if (typeof val === 'string') {
+                    cls += typeof val === '' + ' ';
+                } else {
+                    cls += val.join(' ') + ' ';
+                }
                 continue;
             }
 

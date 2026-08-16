@@ -1,3 +1,5 @@
+import { IComponentCore } from './component';
+
 /**
  * 隐藏模式 — 控制 hidden 时的 DOM 表现
  *
@@ -106,6 +108,8 @@ export interface LoadingOptions {
     mask?: boolean | string;
 }
 
+export type I18nCustomOption = (target: HTMLElement | IComponentCore, t: any) => void;
+
 /**
  * i18n 声明
  */
@@ -114,17 +118,16 @@ export interface I18nOptions {
     hint?: string;
     placeholder?: string;
     value?: string;
-    [field: string]: string | undefined;
+    title?: string;
+    label?: string;
+    description?: string;
+    custom?: I18nCustomOption;
 }
-
-export type I18nOptionsMap = Record<string, I18nOptions>;
 
 /**
  * 权限声明
  */
 export type PermissionOptions = string | string[];
-
-export type PermissionOptionsMap = Record<string, PermissionOptions>;
 
 /** 组件配置 */
 export interface NodeOptionsBase extends HiddenOptions {

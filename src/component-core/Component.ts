@@ -25,20 +25,13 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import type { INodeMapManager } from './types/node-manager';
-import type { DomEventsMap } from './types/events';
-
 import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
-import { ComponentCoreOptions, ComponentState, DragOptionsBase, TemplateDecl } from './types';
+import { ComponentCoreOptions, TemplateDecl } from './types';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
-    static get type(): string {
-        return (this as any).name.replace(/Component$/, '');
-    }
-
     static setDefaultHandler(opts?: {
         error?: (ctx: any, domain: string) => void;
         loading?: (entityKey: string, isLoading: boolean) => void;
@@ -71,11 +64,6 @@ export class Component extends ComposableBase {
         this.onAfterEntityLoading?.(entityKey, isLoading);
     }
 
-    type: string;
-
-    /** 实例唯一 ID */
-    id!: string;
-
     /**
      * 组件模板 — getter 方式
      *
@@ -93,103 +81,6 @@ export class Component extends ComposableBase {
     get tpl(): TemplateDecl {
         return {};
     }
-
-    get optionKeys() {
-        return ['disabled', 'order', 'role', 'hidden', 'hiddenMode'];
-    }
-
-    /**
-     * 语义动作名 — 组件实例级属性
-     *
-     * 构造时可从 props 传入，运行时可通过 setter 更改。
-     * DomEventsEngine 第三层 key 匹配此值。
-     *
-     * @example
-     * new ButtonComponent({ action: 'save' });
-     * btn.action = 'create';  // 运行时更改
-     */
-    state!: Partial<ComponentState>;
-    /** 组件实例化上下文 */
-
-    domEvents?: DomEventsMap;
-    eventKey?: string | { key: string; fixed?: boolean };
-    entityKey?: string | { key: string; fixed?: boolean };
-
-    /**
-     * 拖拽开关 — 控制组件是否可拖拽
-     *
-     * 两种使用场景：
-     * 1. **Self-Drag（自身拖动）**：如 Dialog 窗口拖动
-     *    - drag: true → 启用，使用 dragHandle 或模板中的 drag 节点作为手柄
-     *    - drag: false → 禁用
-     *
-     * 2. **Drag & Drop（拖放交互）**：如卡片拖入容器
-     *    - drag: true → 启用，dragType 自动使用 component.type
-     *    - drag: { type: 'item' } → 启用，伪装为 'item' 类型
-     *
-     * @example
-     * class DialogComponent extends Component {
-     *   drag = true;                    // 启用拖拽
-     *   dragHandle = 'header';           // 手柄为 header 节点
-     *   // new DialogComponent({ drag: false }) → 禁用
-     * }
-     *
-     * class CardComponent extends Component {
-     *   drag = true;                    // 拖拽类型自动为 'Card'（类名派生）
-     *   // 拖到容器时，容器 accept: ['Card'] 即可匹配
-     * }
-     */
-    drag?: boolean | DragOptionsBase;
-
-    /**
-     * 拖拽手柄节点 — 指定哪个节点作为拖拽触发区域
-     *
-     * 可选值：
-     * - 节点 name（如 'header'、'handle'）
-     * - 不设置时，自动查找模板中 drag: true 的节点
-     * - 若模板无 drag 节点，使用组件自身 el
-     *
-     * @example
-     * class DialogComponent extends Component {
-     *   drag = true;
-     *   dragHandle = 'header';  // header 节点为拖拽手柄
-     * }
-     */
-    dragHandle?: string;
-
-    /**
-     * 放置区开关 — 控制组件是否可接收拖放
-     *
-     * - `true`：启用，使用 dropZone 或模板中的 drop 节点作为放置区
-     * - `false`：禁用（覆盖模板中的 drop 声明）
-     * - `DropDecl`：启用并带配置（accept、activeClass 等）
-     * - `undefined`：使用模板中的默认声明
-     *
-     * @example
-     * class ContainerComponent extends Component {
-     *   drop = true;                     // 启用放置区
-     *   dropZone = 'content';             // content 节点为放置区
-     *   // 或在模板中声明：{ name: 'content', tag: 'div', drop: { accept: ['Card'] } }
-     *   // new ContainerComponent({ drop: false }) → 禁用
-     * }
-     */
-    drop?: boolean | DropDecl;
-
-    /**
-     * 放置区节点 — 指定哪个节点作为放置目标
-     *
-     * 可选值：
-     * - 节点 name（如 'content'、'dropZone'）
-     * - 不设置时，自动查找模板中 drop: true 的节点
-     * - 若模板无 drop 节点，使用组件自身 el
-     *
-     * @example
-     * class ContainerComponent extends Component {
-     *   drop = true;
-     *   dropZone = 'content';  // content 节点为放置区
-     * }
-     */
-    dropZone?: string;
 
     /**
      * 默认事件数据 — getter，子类 super 合并
@@ -222,31 +113,12 @@ export class Component extends ComposableBase {
         return {};
     }
 
-    nodeMapMgr!: INodeMapManager;
-
-    get isItemContainer(): boolean {
-        return false;
-    }
-
-    parent?: any;
-    slotName?: string;
-
-    _initializing: boolean;
-    _templateInitialized: boolean = false;
-    _rawProps: Record<string, any> = {};
-    _i18nFields: Record<string, string> = {};
-    _dirtyNodes: Record<string, Record<string, any>>;
-    _disposing: boolean;
-    dirtySet!: Set<string>;
-
-    private _ready: Promise<void> = Promise.resolve();
-
-    constructor(options?: Record<string, any>) {
+    constructor(options?: ComponentCoreOptions) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.id = options?.id ?? this.options?.id ?? getId(`cmp-${this.type}`);
+        this.id = this.id ?? options?.id ?? getId(`cmp-${this.type}`);
         delete options?.id;
-        this.buildDOM(options);
+        this._buildDOM(options);
         this._dirtyNodes = {};
         this.dirtySet = new Set();
         this._initializing = true;
@@ -355,10 +227,6 @@ export class Component extends ComposableBase {
 
     override onDisposed(): void {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
-    }
-
-    private _disposeChildComponents(): void {
-        this.nodeMapMgr?.disposeAll();
     }
 
     /** 组件初始化完成后移除骨架类，使内容可见 */

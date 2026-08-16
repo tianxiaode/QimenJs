@@ -18,8 +18,7 @@
 
 import { ILogger, Logger } from '@/logger';
 import { ABILITY_STATES_KEY, CLEANUPS_KEY, withAbilities, withDefinitions } from './forge';
-import type { AbilityDefinition } from './types/ability';
-import { IComposableBase } from './types/composable';
+import type { AbilityDefinition, IComposableBase } from './types';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
@@ -59,17 +58,10 @@ export class ComposableBase implements IComposableBase {
      * new MyManager() instanceof ComposableBase // true
      * ```
      */
-    static use(abilities: AbilityDefinition | AbilityDefinition[]): typeof ComposableBase {
+    static use(...abilities: AbilityDefinition[]): typeof ComposableBase {
         const arr = Array.isArray(abilities) ? abilities : [abilities];
         withAbilities(this, arr);
         return this;
-    }
-
-    static with(abilities: AbilityDefinition | AbilityDefinition[]): typeof ComposableBase {
-        const Derived = class extends (this as any) {};
-        const arr = Array.isArray(abilities) ? abilities : [abilities];
-        withAbilities(Derived, arr);
-        return Derived as typeof ComposableBase;
     }
 
     /**
@@ -147,30 +139,42 @@ export class ComposableBase implements IComposableBase {
      * 执行顺序：onBeforeDispose → onCleanup(LIFO) → 清理 abilityState → onDisposed
      */
     dispose(): void {
-        this.onBeforeDispose();
+        const self = this as any;
+        self.onBeforeDispose();
 
-        const cleanups = (this as any)[CLEANUPS_KEY] as (() => void)[];
+        // ✅ 清理属性（如果有）
+        if (typeof self.getPropertyKeys === 'function') {
+            const keys = self.getPropertyKeys();
+            for (const key of keys) {
+                const storeKey = `_${key}`;
+                if (storeKey in self) {
+                    delete self[storeKey];
+                }
+            }
+        }
+
+        const cleanups = self[CLEANUPS_KEY] as (() => void)[];
         for (let i = cleanups.length - 1; i >= 0; i--) {
             try {
                 cleanups[i]();
             } catch (e) {
-                this.logger?.error?.(`Cleanup error:`, e);
+                self.logger?.error?.(`Cleanup error:`, e);
             }
         }
         cleanups.length = 0;
 
-        const states = (this as any)[ABILITY_STATES_KEY] as Map<string, any>;
+        const states = self[ABILITY_STATES_KEY] as Map<string, any>;
         states.forEach(value => {
             if (value && typeof value === 'object' && typeof value.cancel === 'function') {
                 try {
                     value.cancel();
                 } catch (e) {
-                    this.logger?.error?.(`Debounce cancel error:`, e);
+                    self.logger?.error?.(`Debounce cancel error:`, e);
                 }
             }
         });
         states.clear();
 
-        this.onDisposed();
+        self.onDisposed();
     }
 }

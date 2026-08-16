@@ -40,12 +40,15 @@ export interface ForgedConstructor<T, A extends readonly AbilityDefinition[] = a
 export type InferAbility<T> =
     // 方法
     {
+        // eslint-disable-next-line @typescript-eslint/ban-types
         [K in keyof T as T[K] extends Function ? K : never]: T[K];
-    } & { // getter 属性
+    } & {
+        // getter 属性
         [K in keyof T as T[K] extends { get: any } ? K : never]: T[K] extends { get: () => infer R }
             ? R
             : never;
-    } & { // setter 属性
+    } & {
+        // setter 属性
         [K in keyof T as T[K] extends { set: any } ? K : never]: T[K] extends {
             set: (v: infer V) => any;
         }

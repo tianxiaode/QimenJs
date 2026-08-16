@@ -110,3 +110,5 @@ export const HIDDEN_MODE_CSS_MAP: Record<string, string> = {
     visibility: 'invisible',
     opacity: 'transparent',
 };
+
+export const HiddenMode = Object.keys(HIDDEN_MODE_CSS_MAP);

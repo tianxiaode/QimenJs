@@ -1,14 +1,7 @@
 import { ILogger } from '@/logger';
 import { ComponentListen, ListenItem } from './events';
-import {
-    DragOptionsBase,
-    I18nOptions,
-    I18nOptionsMap,
-    NodeOptionsBase,
-    PermissionOptions,
-    PermissionOptionsMap,
-} from './options';
-import { NodeAttributes, NodeAttributesMap, NodeHTMLClassMap, NodeSytleMap } from './html';
+import { DragOptionsBase, I18nOptions, NodeOptionsBase, PermissionOptions } from './options';
+import { NodeAttributes, NodeHTMLClass, NodeStyle } from './html';
 import { NodeIndexPathMap } from './index-path';
 
 /**
@@ -89,40 +82,53 @@ export interface ComponentCoreOptions extends NodeOptions {
     [key: string]: any;
 }
 
-export type NodeElMap = Record<string, HTMLElement>;
-export type NodeInstanceMap = Record<string, IComponentCore>;
-export type NodeTagMap = Record<string, string>;
-export type NodeTypeMap = Record<string, IComponentCore>;
-
-export interface ComponentState {
-    elementMap: NodeElMap;
-    /** 命名节点的 DOM 位置索引 */
-    indexPathMap: NodeIndexPathMap;
-    instanceMap: NodeInstanceMap;
-    tagMap: NodeTagMap;
-    typeMap: NodeTypeMap;
-    childComponents: string[];
-    attributesMap: NodeAttributesMap;
-    styleMap: NodeSytleMap;
-    classMap: NodeHTMLClassMap;
-    optionsMap: NodeOptionsMap;
-    i18nMap: I18nOptionsMap;
-    permissionMap: PermissionOptionsMap;
-    dirty: {
-        attributes: NodeAttributesMap;
-        style: NodeSytleMap;
-        options: NodeOptions;
-        class: NodeHTMLClass;
-    };
+export interface NodeMeta {
+    tag?: string;
+    type?: IComponentCore;
+    options?: NodeOptions;
+    attributes?: NodeAttributes;
+    i18n?: I18nOptions;
+    permission?: PermissionOptions;
+    classes?: NodeHTMLClass;
+    style?: NodeStyle;
+    isComponent: boolean;
 }
 
-export interface TemplateDecl extends NodeOptions, NodeAttributes {
+export type NodeState = Omit<NodeMeta, 'tag' | 'type' | 'classes' | 'options'>;
+
+export interface ComponentState {
+    /** 节点名称列表 */
+    names: string[];
+    /** 子组件名称列表  */
+    childComponents: string[];
+    /** i18n节点名称列表 */
+    i18ns: string[];
+    /** 权限节点名称列表 */
+    permissions: string[];
+    /** 节点对应元素的路径映射表 */
+    indexs: NodeIndexPathMap;
+    /** 节点el */
+    elements: Record<string, HTMLElement>;
+    /** 子组件实例 */
+    instances: Record<string, IComponentCore>;
+    /** 节点元数据 */
+    nodes: Record<string, NodeMeta>;
+    /** 节点状态 */
+    states: Record<string, Partial<NodeState>>;
+    /** 节点脏数据 */
+    dirty: Record<string, Partial<NodeState>>;
+}
+
+export interface TemplateDecl extends NodeOptions, NodeAttributes, NodeStyle {
     /** 节点标签 */
     tag?: string;
     /** 组件类型 */
     type?: IComponentCore;
+    /** 本地化设置 */
     i18n?: I18nOptions;
+    /** 权限设置 */
     permission?: PermissionOptions;
+    /** 子节点 */
     children?: TemplateDecl[];
 }
 
