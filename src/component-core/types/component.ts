@@ -170,8 +170,6 @@ export interface LifecycleHooks {
  * 不依赖任何其他类型，只定义组件最基本的身份和生命周期
  */
 export interface IComponentCore extends LifecycleHooks {
-    /** 组件原始配置 */
-    _options: ComponentCoreOptions;
     /** 组件 ID */
     id: string;
     /** 组件类型名 */
@@ -184,11 +182,8 @@ export interface IComponentCore extends LifecycleHooks {
     domEvents?: ComponentListen;
     /** 事件监听 */
     listens?: ListenItem[];
-    state: ComponentState;
     /** 根 DOM 元素 */
     get el(): HTMLElement;
-    /** 节点配置key */
-    get optionKeys(): string[];
     /** 模板声明 */
     get tpl(): TemplateDecl;
     /** 更新方法 */

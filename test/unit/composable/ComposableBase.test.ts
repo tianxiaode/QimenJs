@@ -1,24 +1,22 @@
 /**
  * ComposableBase 单元测试
  *
- * 完整覆盖：
- * 1. use() 能力注入 — 核心注入机制
+ * 完整覆盖:
+ * 1. use() 能力注入
  * 2. use() 链式调用
- * 3. use() 继承后子类再 use()
- * 4. use() 单个能力参数
- * 5. getter/setter 注入与多实例隔离
- * 6. 方法注入与 this 指向
- * 7. __init__ 协议属性跳过
- * 8. 同名属性覆盖规则
- * 9. abilityState / setAbilityState
- * 10. onCleanup / dispose
- * 11. 基类方法保留（use() 不丢失基类方法）
- * 12. Symbol 键支持
- * 13. define() 非能力定义注入
- * 14. define() getter/setter 支持
- * 15. define() 链式调用
- * 16. dispose 错误处理
- * 17. onBeforeDispose / onDisposed 钩子
+ * 3. use() + extends 继承
+ * 4. getter/setter 多实例隔离
+ * 5. 方法注入与 this 指向
+ * 6. __init__ 协议属性
+ * 7. 同名属性覆盖规则
+ * 8. abilityState / setAbilityState
+ * 9. onCleanup / dispose
+ * 10. onBeforeDispose / onDisposed 钩子
+ * 11. Symbol 键支持
+ * 12. define() 非能力定义注入
+ * 13. define() options 注入
+ * 14. define() property 注入
+ * 15. 派生类 _xxx 自定义初始属性值
  */
 
 jest.mock('@/logger', () => {
@@ -89,7 +87,7 @@ describe('ComposableBase', () => {
     describe('use() 能力注入', () => {
         it('use() 返回 this，修改自身原型', () => {
             class MyHost extends ComposableBase {}
-            const result = MyHost.use([TestAbility]);
+            const result = MyHost.use(TestAbility);
             expect(result).toBe(MyHost);
             const instance = new MyHost();
             expect(instance).toBeInstanceOf(ComposableBase);
@@ -97,29 +95,29 @@ describe('ComposableBase', () => {
 
         it('use() 注入的方法应该可通过实例调用', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost() as any;
             expect(instance.testMethod()).toBe('test-result');
         });
 
         it('use() 注入的 getter 应该可访问', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost() as any;
             expect(instance.testProperty).toBe('test-value');
         });
 
         it('use() 注入的 setter 应该可写入', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost() as any;
             instance.testProperty = 'new-value';
             expect(instance.testProperty).toBe('new-value');
         });
 
-        it('use() 注入多个能力（数组参数）', () => {
+        it('use() 注入多个能力（展开参数）', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility, AnotherAbility]);
+            MyHost.use(TestAbility, AnotherAbility);
             const instance = new MyHost() as any;
             expect(instance.testMethod()).toBe('test-result');
             expect(instance.anotherMethod()).toBe('another-result');
@@ -136,7 +134,7 @@ describe('ComposableBase', () => {
     describe('use() 链式调用', () => {
         it('链式 use() 应该累积能力', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]).use([AnotherAbility]);
+            MyHost.use(TestAbility).use(AnotherAbility);
             const instance = new MyHost() as any;
             expect(instance.testMethod()).toBe('test-result');
             expect(instance.anotherMethod()).toBe('another-result');
@@ -144,7 +142,7 @@ describe('ComposableBase', () => {
 
         it('链式 use() 后的类仍然继承 ComposableBase', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]).use([AnotherAbility]);
+            MyHost.use(TestAbility).use(AnotherAbility);
             const instance = new MyHost();
             expect(instance).toBeInstanceOf(ComposableBase);
         });
@@ -153,7 +151,7 @@ describe('ComposableBase', () => {
     describe('use() + extends 继承', () => {
         it('extends 后子类应该拥有父类能力', () => {
             class BaseHost extends ComposableBase {}
-            BaseHost.use([TestAbility]);
+            BaseHost.use(TestAbility);
 
             class ChildClass extends BaseHost {
                 childMethod() {
@@ -168,10 +166,10 @@ describe('ComposableBase', () => {
 
         it('子类再 use() 应该同时拥有父类和新能力', () => {
             class BaseHost extends ComposableBase {}
-            BaseHost.use([TestAbility]);
+            BaseHost.use(TestAbility);
 
             class ChildHost extends BaseHost {}
-            ChildHost.use([AnotherAbility]);
+            ChildHost.use(AnotherAbility);
 
             const instance = new ChildHost() as any;
             expect(instance.testMethod()).toBe('test-result');
@@ -182,7 +180,7 @@ describe('ComposableBase', () => {
     describe('getter/setter 多实例隔离', () => {
         it('多个实例的 getter 应该各自返回自己的值', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const host1 = new MyHost() as any;
             const host2 = new MyHost() as any;
 
@@ -195,7 +193,7 @@ describe('ComposableBase', () => {
 
         it('abilityState 应该在实例间隔离', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([CounterAbility]);
+            MyHost.use(CounterAbility);
             const host1 = new MyHost() as any;
             const host2 = new MyHost() as any;
 
@@ -220,7 +218,7 @@ describe('ComposableBase', () => {
             };
 
             class MyHost extends ComposableBase {}
-            MyHost.use([MethodDef]);
+            MyHost.use(MethodDef);
 
             class NamedHost extends MyHost {
                 name = 'MyHost';
@@ -234,7 +232,7 @@ describe('ComposableBase', () => {
     describe('__init__ 协议属性', () => {
         it('以 __ 开头的属性不应该被注入到原型上', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([InitAbility]);
+            MyHost.use(InitAbility);
             const instance = new MyHost() as any;
 
             expect(instance.__init__).toBeUndefined();
@@ -242,7 +240,7 @@ describe('ComposableBase', () => {
 
         it('__init__ 关联的方法应该可手动调用', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([InitAbility]);
+            MyHost.use(InitAbility);
             const instance = new MyHost() as any;
 
             expect(typeof instance._initTest).toBe('function');
@@ -262,7 +260,7 @@ describe('ComposableBase', () => {
             };
 
             class MyHost extends ComposableBase {}
-            MyHost.use([AbilityA, AbilityB]);
+            MyHost.use(AbilityA, AbilityB);
             const instance = new MyHost() as any;
             expect(instance.sharedMethod()).toBe('method-B');
         });
@@ -309,7 +307,9 @@ describe('ComposableBase', () => {
     describe('onCleanup / dispose', () => {
         it('onCleanup 注册的回调应该在 dispose 时执行', () => {
             const cleanupOrder: number[] = [];
-            const instance = new ComposableBase();
+            class MyHost extends ComposableBase {}
+            MyHost.define({});
+            const instance = new MyHost();
             instance.onCleanup(() => cleanupOrder.push(1));
             instance.onCleanup(() => cleanupOrder.push(2));
             instance.dispose();
@@ -318,7 +318,8 @@ describe('ComposableBase', () => {
 
         it('dispose 应该清理 abilityState', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([CounterAbility]);
+            MyHost.use(CounterAbility);
+            MyHost.define({});
             const instance = new MyHost() as any;
             instance.increment();
             expect(instance.count).toBe(1);
@@ -327,7 +328,9 @@ describe('ComposableBase', () => {
         });
 
         it('dispose 应该取消 cancelable 状态', () => {
-            const instance = new ComposableBase();
+            class MyHost extends ComposableBase {}
+            MyHost.define({});
+            const instance = new MyHost();
             const cancel = jest.fn();
             instance.setAbilityState('test:cancelable', { cancel });
             instance.dispose();
@@ -335,7 +338,9 @@ describe('ComposableBase', () => {
         });
 
         it('dispose 时 cleanup 回调抛错不应中断后续清理', () => {
-            const instance = new ComposableBase();
+            class MyHost extends ComposableBase {}
+            MyHost.define({});
+            const instance = new MyHost();
             instance.onCleanup(() => {
                 throw new Error('cleanup error');
             });
@@ -344,7 +349,9 @@ describe('ComposableBase', () => {
         });
 
         it('dispose 时 cancelable cancel 抛错不应中断', () => {
-            const instance = new ComposableBase();
+            class MyHost extends ComposableBase {}
+            MyHost.define({});
+            const instance = new MyHost();
             instance.setAbilityState('test', {
                 cancel() {
                     throw new Error('cancel error');
@@ -365,6 +372,7 @@ describe('ComposableBase', () => {
                     order.push('disposed');
                 }
             }
+            MyHost.define({});
             const instance = new MyHost();
             instance.onCleanup(() => order.push('cleanup'));
             instance.dispose();
@@ -372,7 +380,9 @@ describe('ComposableBase', () => {
         });
 
         it('onBeforeDispose 和 onDisposed 默认为空操作', () => {
-            const instance = new ComposableBase();
+            class MyHost extends ComposableBase {}
+            MyHost.define({});
+            const instance = new MyHost();
             expect(() => instance.dispose()).not.toThrow();
         });
     });
@@ -380,7 +390,7 @@ describe('ComposableBase', () => {
     describe('use() 不丢失基类方法', () => {
         it('use() 后基类方法应该仍然可用', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost();
 
             expect(typeof instance.abilityState).toBe('function');
@@ -391,14 +401,14 @@ describe('ComposableBase', () => {
 
         it('use() 后基类 getter 应该仍然可用', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost();
             expect(instance.logger).toBeDefined();
         });
 
         it('链式 use() 后基类方法应该仍然可用', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]).use([AnotherAbility]);
+            MyHost.use(TestAbility).use(AnotherAbility);
             const instance = new MyHost();
 
             expect(typeof instance.abilityState).toBe('function');
@@ -407,7 +417,7 @@ describe('ComposableBase', () => {
 
         it('extends 后基类方法应该仍然可用', () => {
             class BaseHost extends ComposableBase {}
-            BaseHost.use([TestAbility]);
+            BaseHost.use(TestAbility);
 
             class ChildClass extends BaseHost {
                 childMethod() {
@@ -431,7 +441,7 @@ describe('ComposableBase', () => {
 
         it('use() 后创建的实例也应该初始化 logger', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
+            MyHost.use(TestAbility);
             const instance = new MyHost();
             expect(instance.logger).toBeDefined();
         });
@@ -440,28 +450,18 @@ describe('ComposableBase', () => {
     describe('Symbol 键支持', () => {
         it('use() 应该注入 Symbol 键的方法', () => {
             const sym = Symbol('testSymbol');
-            const SymbolAbility: AbilityDefinition = {
-                [sym]() {
-                    return 'symbol-result';
-                },
-            };
+            const SymbolAbility: AbilityDefinition = {};
+            Object.defineProperty(SymbolAbility, sym, {
+                value: function() { return 'symbol-result'; },
+                enumerable: true,
+                configurable: true,
+            });
 
             class MyHost extends ComposableBase {}
-            MyHost.use([SymbolAbility]);
+            MyHost.use(SymbolAbility);
             const instance = new MyHost() as any;
             expect(typeof instance[sym]).toBe('function');
             expect(instance[sym]()).toBe('symbol-result');
-        });
-    });
-
-    describe('use() 数组参数兼容', () => {
-        it('use(array) 应该正常工作', () => {
-            const abilities = [TestAbility, AnotherAbility];
-            class MyHost extends ComposableBase {}
-            MyHost.use(abilities);
-            const instance = new MyHost() as any;
-            expect(instance.testMethod()).toBe('test-result');
-            expect(instance.anotherMethod()).toBe('another-result');
         });
     });
 
@@ -475,17 +475,6 @@ describe('ComposableBase', () => {
             });
             const instance = new MyHost() as any;
             expect(instance.customMethod()).toBe('custom-result');
-        });
-
-        it('define() 应该注入普通值到原型', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                type: 'MyHost',
-                count: 42,
-            });
-            const instance = new MyHost() as any;
-            expect(instance.type).toBe('MyHost');
-            expect(instance.count).toBe(42);
         });
 
         it('define() 应该注入原生 getter/setter', () => {
@@ -527,50 +516,234 @@ describe('ComposableBase', () => {
 
         it('define() 返回 this 支持链式调用', () => {
             class MyHost extends ComposableBase {}
-            const result = MyHost.define({ a: 1 });
+            const result = MyHost.define({});
             expect(result).toBe(MyHost);
-        });
-
-        it('define() 不跳过 __ 前缀 key', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                __internal: 'internal-value',
-            });
-            const instance = new MyHost() as any;
-            expect(instance.__internal).toBe('internal-value');
         });
 
         it('define() + use() 链式组合', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]).define({ type: 'MyHost' });
+            MyHost.use(TestAbility).define({
+                myMethod() {
+                    return 'ok';
+                },
+            });
             const instance = new MyHost() as any;
             expect(instance.testMethod()).toBe('test-result');
-            expect(instance.type).toBe('MyHost');
+            expect(instance.myMethod()).toBe('ok');
         });
     });
 
-    describe('use() 维护 abilities 数组', () => {
-        it('use() 应该在类上累积 abilities', () => {
+    describe('define() options', () => {
+        it('define() options 注入 getter/setter', () => {
             class MyHost extends ComposableBase {}
-            MyHost.use([TestAbility]);
-            expect((MyHost as any).abilities).toContain(TestAbility);
+            MyHost.define({
+                options: {
+                    label: 'default-label',
+                    count: 0,
+                },
+            });
+            const instance = new MyHost() as any;
+            expect(instance.label).toBe('default-label');
+            expect(instance.count).toBe(0);
+        });
 
-            MyHost.use([AnotherAbility]);
-            expect((MyHost as any).abilities).toContain(TestAbility);
-            expect((MyHost as any).abilities).toContain(AnotherAbility);
+        it('define() options setter 可修改值', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    label: 'default',
+                },
+            });
+            const instance = new MyHost() as any;
+            instance.label = 'new-label';
+            expect(instance.label).toBe('new-label');
+        });
+
+        it('define() options 支持对象默认值', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    config: { default: { key: 'value' } },
+                    simple: 'hello',
+                },
+            });
+            const instance = new MyHost() as any;
+            expect(instance.config).toEqual({ key: 'value' });
+            expect(instance.simple).toBe('hello');
+        });
+
+        it('define() options 多个实例值隔离', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    name: 'unnamed',
+                },
+            });
+            const host1 = new MyHost() as any;
+            const host2 = new MyHost() as any;
+            host1.name = 'instance-A';
+            host2.name = 'instance-B';
+            expect(host1.name).toBe('instance-A');
+            expect(host2.name).toBe('instance-B');
+        });
+
+        it('define() options 提供 getOptionMap/getOptionKeys/getOptionValue 工具方法', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    label: 'hi',
+                    count: 42,
+                },
+            });
+            const instance = new MyHost() as any;
+            const map = instance.getOptionMap();
+            expect(map.has('label')).toBe(true);
+            expect(map.has('count')).toBe(true);
+            expect(instance.getOptionKeys()).toContain('label');
+            expect(instance.getOptionKeys()).toContain('count');
+            expect(instance.getOptionValue('label')).toBe('hi');
+        });
+    });
+
+    describe('define() property', () => {
+        it('define() property 注入默认属性到原型', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                property: {
+                    status: 'idle',
+                    count: 0,
+                },
+            });
+            const instance = new MyHost() as any;
+            expect(instance.status).toBe('idle');
+            expect(instance.count).toBe(0);
+        });
+
+        it('define() property 可被实例覆盖', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                property: {
+                    status: 'idle',
+                },
+            });
+            const instance = new MyHost() as any;
+            instance.status = 'active';
+            expect(instance.status).toBe('active');
+        });
+
+        it('define() property 在 dispose 时被清理', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                property: {
+                    status: 'idle',
+                },
+            });
+            const instance = new MyHost() as any;
+            instance.status = 'active';
+            instance.dispose();
+            expect(instance.status).toBeUndefined();
+        });
+    });
+
+    describe('派生类 _xxx 自定义初始属性值', () => {
+        it('派生类通过 _optionName 设置自定义默认值', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    label: 'default',
+                },
+            });
+            class DerivedHost extends MyHost {
+                _label = 'custom-label';
+            }
+            const instance = new DerivedHost() as any;
+            expect(instance.label).toBe('custom-label');
+        });
+
+        it('派生类 _xxx 默认值支持多个 option', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    label: 'default',
+                    count: 0,
+                    enabled: false,
+                },
+            });
+            class DerivedHost extends MyHost {
+                _label = 'override';
+                _count = 99;
+                _enabled = true;
+            }
+            const instance = new DerivedHost() as any;
+            expect(instance.label).toBe('override');
+            expect(instance.count).toBe(99);
+            expect(instance.enabled).toBe(true);
+        });
+
+        it('派生类只对部分 _xxx 设置自定义值，其他使用默认值', () => {
+            class MyHost extends ComposableBase {}
+            MyHost.define({
+                options: {
+                    label: 'default',
+                    count: 0,
+                },
+            });
+            class DerivedHost extends MyHost {
+                _label = 'overridden';
+            }
+            const instance = new DerivedHost() as any;
+            expect(instance.label).toBe('overridden');
+            expect(instance.count).toBe(0);
+        });
+
+        it('派生类多层继承 _xxx 自定义值', () => {
+            class BaseHost extends ComposableBase {}
+            BaseHost.define({
+                options: {
+                    label: 'base-default',
+                    count: 0,
+                },
+            });
+            class DerivedHost extends BaseHost {
+                _label = 'derived-label';
+            }
+            class GrandChildHost extends DerivedHost {
+                _count = 42;
+            }
+            const base = new BaseHost() as any;
+            const derived = new DerivedHost() as any;
+            const grandChild = new GrandChildHost() as any;
+            expect(base.label).toBe('base-default');
+            expect(base.count).toBe(0);
+            expect(derived.label).toBe('derived-label');
+            expect(derived.count).toBe(0);
+            expect(grandChild.label).toBe('derived-label');
+            expect(grandChild.count).toBe(42);
+        });
+
+        it('派生类 _xxx 修改后触发 _onOptionChange 通知', () => {
+            const changes: Array<{key: string, value: any}> = [];
+            class MyHost extends ComposableBase {
+                _onOptionChange(key: string, value: any) {
+                    changes.push({ key, value });
+                }
+            }
+            MyHost.define({
+                options: {
+                    label: 'default',
+                },
+            });
+            class DerivedHost extends MyHost {
+                _label = 'custom';
+            }
+            const instance = new DerivedHost() as any;
+            expect(instance.label).toBe('custom');
+            instance.label = 'changed';
+            expect(changes.some(c => c.key === 'label' && c.value === 'changed')).toBe(true);
         });
     });
 
     describe('forge 内部分支覆盖', () => {
-        it('use() 嵌套数组参数应自动展平', () => {
-            const nested = [TestAbility, AnotherAbility];
-            class MyHost extends ComposableBase {}
-            MyHost.use(nested as any);
-            const instance = new MyHost() as any;
-            expect(instance.testMethod()).toBe('test-result');
-            expect(instance.anotherMethod()).toBe('another-result');
-        });
-
         it('能力对象上的原生 getter/setter 应被注入', () => {
             const NativeAccessorAbility: AbilityDefinition = {};
             Object.defineProperty(NativeAccessorAbility, 'nativeProp', {
@@ -582,7 +755,7 @@ describe('ComposableBase', () => {
             });
 
             class MyHost extends ComposableBase {}
-            MyHost.use([NativeAccessorAbility]);
+            MyHost.use(NativeAccessorAbility);
             const instance = new MyHost() as any;
             expect(instance.nativeProp).toBe('native-value');
         });
@@ -601,7 +774,7 @@ describe('ComposableBase', () => {
             };
 
             class MyHost extends ComposableBase {}
-            MyHost.use([AbilityA, AbilityB]);
+            MyHost.use(AbilityA, AbilityB);
             const instance = new MyHost() as any;
             expect(instance[sym]()).toBe('B');
         });

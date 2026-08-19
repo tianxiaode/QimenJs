@@ -1,3 +1,4 @@
+jest.mock('@/i18n', () => ({}));
 jest.mock('@/logger', () => {
     const actualLogger = jest.requireActual('@/logger');
     return {
@@ -232,6 +233,86 @@ describe('Component 基类', () => {
         it('无 Component 后缀时 type 为完整类名', () => {
             class MyWidget extends Component {}
             expect(MyWidget.type).toBe('MyWidget');
+        });
+    });
+
+    describe('派生类 _xxx 默认值覆盖', () => {
+        let registry: ComponentRegistrar;
+
+        beforeEach(() => {
+            registry = getRegistry();
+        });
+
+        afterEach(() => {
+            registry.clear();
+        });
+
+        /**
+         * 验证派生类可通过 _xxx 字段覆盖父类选项的默认值。
+         * _xxx 是选项的存储 key，派生类声明同名字段即可改变默认值。
+         */
+        it('派生类 _xxx 覆盖父类选项默认值', () => {
+            class CustomComp extends Component {
+                _hidden = true;
+                _order = 42;
+                _drag = { handle: 'header' };
+            }
+            const tpl: TplDecl = { tag: 'div' };
+            registry.register(CustomComp, tpl);
+
+            const inst = new CustomComp() as any;
+            expect(inst._hidden).toBe(true);
+            expect(inst.hidden).toBe(true);
+            expect(inst._order).toBe(42);
+            expect(inst.order).toBe(42);
+            expect(inst._drag).toEqual({ handle: 'header' });
+            expect(inst.drag).toEqual({ handle: 'header' });
+        });
+
+        /**
+         * 验证派生类 _xxx 覆盖的默认值，在构造函数传入选项时仍能被覆盖。
+         * 即：构造函数选项 > 派生类 _xxx 默认值 > 父类原型默认值
+         */
+        it('构造函数选项优先于 _xxx 默认值', () => {
+            class CustomComp extends Component {
+                _hidden = true;
+                _order = 42;
+            }
+            const tpl: TplDecl = { tag: 'div' };
+            registry.register(CustomComp, tpl);
+
+            const inst = new CustomComp({ hidden: false, order: 99 } as any) as any;
+            expect(inst.hidden).toBe(false);
+            expect(inst.order).toBe(99);
+        });
+
+        /**
+         * 验证派生类不设置 _xxx 时，仍使用父类原型默认值。
+         */
+        it('未覆盖 _xxx 时使用父类原型默认值', () => {
+            class CustomComp extends Component {}
+            const tpl: TplDecl = { tag: 'div' };
+            registry.register(CustomComp, tpl);
+
+            const inst = new CustomComp() as any;
+            expect(inst.hidden).toBe(false);
+            expect(inst.order).toBe(0);
+        });
+
+        /**
+         * 验证派生类 _xxx 覆盖后，实例间不互相影响。
+         */
+        it('每个实例独立持有 _xxx 默认值', () => {
+            class CustomComp extends Component {
+                _order = 10;
+            }
+            const tpl: TplDecl = { tag: 'div' };
+            registry.register(CustomComp, tpl);
+
+            const inst1 = new CustomComp({ order: 20 } as any) as any;
+            const inst2 = new CustomComp() as any;
+            expect(inst1.order).toBe(20);
+            expect(inst2.order).toBe(10);
         });
     });
 

@@ -29,15 +29,16 @@ import { ComponentError, KernelErrorCode } from '@/error';
 import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
 import { getId } from '@/utils/string';
 import { ComponentCoreOptions, TemplateDecl } from './types';
+import { ComponentDefs } from './ComponentDefs';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
-    static setDefaultHandler(opts?: {
-        error?: (ctx: any, domain: string) => void;
-        loading?: (entityKey: string, isLoading: boolean) => void;
-    }): void {
-        if (opts?.error) Component.prototype.defaultEntityErrorHandler = opts.error;
-        if (opts?.loading) Component.prototype.defaultEntityLoadingHandler = opts.loading;
+    static setDefaultHandler(
+        error?: (ctx: any, domain: string) => void,
+        loading?: (entityKey: string, isLoading: boolean) => void
+    ): void {
+        if (error) Component.prototype.defaultEntityErrorHandler = error;
+        if (loading) Component.prototype.defaultEntityLoadingHandler = loading;
     }
 
     defaultEntityErrorHandler(_ctx: any, _domain: string): void {}
@@ -156,41 +157,12 @@ export class Component extends ComposableBase {
      * Phase 3: FINALIZE — 同步
      */
     init() {
-        const ctx = createInitContext(this, this.props);
-
-        try {
-            runPhase(MOUNT_PHASE, ctx);
-            if (!ctx.nodeMapMgr) return;
-
-            runPhase(INSTANTIATE_PHASE, ctx);
-
-            runPhase(FINALIZE_PHASE, ctx);
-        } catch (err) {
-            this.logger?.error?.(
-                `[Component] Pipeline failed for ${this.type} (${this.id}) at step "${ctx.steps[ctx.steps.length - 1] ?? 'unknown'}"`,
-                {
-                    completedSteps: ctx.steps,
-                    nodeMapMgrReady: !!ctx.nodeMapMgr,
-                    error: err,
-                }
-            );
-
-            if (err instanceof ComponentError) {
-                throw err;
-            }
-            throw new ComponentError(
-                `Component "${this.type}" initialization failed: ${err instanceof Error ? err.message : String(err)}`,
-                KernelErrorCode.COMPONENT_INIT_FAILED,
-                { type: this.type, completedSteps: ctx.steps, cause: err }
-            );
-        } finally {
-            this._initializing = false;
-            this._flushNodeProps?.();
-            this._commitFloats();
-            this._commitDrags();
-            this._commitDrops?.();
-            this._removeSkeletonCls();
-        }
+        this._initializing = false;
+        this._flushNodeProps?.();
+        this._commitFloats();
+        this._commitDrags();
+        this._commitDrops?.();
+        this._removeSkeletonCls();
     }
 
     override onBeforeDispose(): void {
@@ -239,40 +211,10 @@ export class Component extends ComposableBase {
 }
 
 Component.use(COMPONENT_ABILITIES);
+Component.define(ComponentDefs);
 
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}
 
-// /** 构造函数 props 中的框架字段名集合 */
-// const FRAMEWORK_PROP_KEYS = new Set([
-//     'id',
-//     'localData',
-//     'localDataKey',
-//     'action',
-//     'tooltip',
-//     'dialog',
-//     'loading',
-//     'eventKey',
-//     'entityKey',
-//     'parent',
-//     'slotName',
-//     'drag',
-//     'dragHandle',
-//     'drop',
-//     'dropZone',
-// ]);
-
-// /**
-//  * 从构造函数 props 中提取自定义属性（排除框架字段）
-//  *
-//  * 框架字段（parent/slotName/eventKey 等）由构造函数直接消费，
-//  * 剩余字段存入 _rawProps，由 applyConfig 管线步骤处理。
-//  */
-// function extractRawProps(props: Record<string, any>): Record<string, any> {
-//     const result: Record<string, any> = {};
-//     for (const [key, val] of Object.entries(props)) {
-//         if (FRAMEWORK_PROP_KEYS.has(key)) continue;
-//         if (val !== undefined) result[key] = val;
-//     }
-//     return result;
-// }
+const c = new Component();
+c.disabledCls;

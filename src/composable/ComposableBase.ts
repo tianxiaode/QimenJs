@@ -17,26 +17,16 @@
  */
 
 import { ILogger, Logger } from '@/logger';
-import { ABILITY_STATES_KEY, CLEANUPS_KEY, withAbilities, withDefinitions } from './forge';
-import type { AbilityDefinition, IComposableBase } from './types';
+import { withAbilities, withDefinitions } from './forge';
+import type { AbilityDefinition, Definitions, IComposableBase } from './types';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
+    private abilityStatesMap: Map<string, any> = new Map();
+    private cleanups: (() => void)[] = [];
 
     constructor() {
         this.logger = Logger.for(this.constructor.name);
-
-        Object.defineProperty(this, ABILITY_STATES_KEY, {
-            value: new Map<string, any>(),
-            enumerable: false,
-            configurable: true,
-        });
-
-        Object.defineProperty(this, CLEANUPS_KEY, {
-            value: [] as (() => void)[],
-            enumerable: false,
-            configurable: true,
-        });
     }
 
     /**
@@ -67,7 +57,7 @@ export class ComposableBase implements IComposableBase {
     /**
      * 向自身注入非能力定义（原地修改 this 原型）
      *
-     * 用于注入 body 定义（方法、getter/setter、普通值属性），
+     * 用于注入定义（方法、getter/setter、普通值属性），
      * 与 use 的区别：
      *   - 不跳过 __ 前缀 key
      *   - 不过滤非函数/非 accessor 值（普通值也复制到原型）
@@ -86,7 +76,7 @@ export class ComposableBase implements IComposableBase {
      * });
      * ```
      */
-    static define(definitions: Record<string, any>): typeof ComposableBase {
+    static define(definitions: Definitions) {
         withDefinitions(this, definitions);
         return this;
     }
@@ -99,7 +89,7 @@ export class ComposableBase implements IComposableBase {
      * @returns 状态值，或 undefined（未创建时）
      */
     abilityState(key: string, creator?: () => any): any | undefined {
-        const states = (this as any)[ABILITY_STATES_KEY] as Map<string, any>;
+        const states = this.abilityStatesMap;
         if (!states.has(key) && creator) {
             states.set(key, creator());
         }
@@ -113,7 +103,7 @@ export class ComposableBase implements IComposableBase {
      * @param value - 状态值
      */
     setAbilityState(key: string, value: any): void {
-        const states = (this as any)[ABILITY_STATES_KEY] as Map<string, any>;
+        const states = this.abilityStatesMap;
         states.set(key, value);
     }
 
@@ -123,7 +113,7 @@ export class ComposableBase implements IComposableBase {
      * @param callback - 清理回调函数
      */
     onCleanup(callback: () => void): void {
-        const cleanups = (this as any)[CLEANUPS_KEY] as (() => void)[];
+        const cleanups = this.cleanups;
         cleanups.push(callback);
     }
 
@@ -139,42 +129,45 @@ export class ComposableBase implements IComposableBase {
      * 执行顺序：onBeforeDispose → onCleanup(LIFO) → 清理 abilityState → onDisposed
      */
     dispose(): void {
-        const self = this as any;
-        self.onBeforeDispose();
+        this.onBeforeDispose();
 
-        // ✅ 清理属性（如果有）
-        if (typeof self.getPropertyKeys === 'function') {
-            const keys = self.getPropertyKeys();
-            for (const key of keys) {
-                const storeKey = `_${key}`;
-                if (storeKey in self) {
-                    delete self[storeKey];
-                }
-            }
-        }
-
-        const cleanups = self[CLEANUPS_KEY] as (() => void)[];
+        const cleanups = this.cleanups;
         for (let i = cleanups.length - 1; i >= 0; i--) {
             try {
                 cleanups[i]();
             } catch (e) {
-                self.logger?.error?.(`Cleanup error:`, e);
+                this.logger?.error?.(`Cleanup error:`, e);
             }
         }
         cleanups.length = 0;
 
-        const states = self[ABILITY_STATES_KEY] as Map<string, any>;
+        this.ClearProperties();
+        this.clearStates();
+        this.onDisposed();
+    }
+
+    private ClearProperties(): void {
+        const self = this as any;
+        const ctor = self.constructor as any;
+        const set = ctor._clearPropertyKeys;
+        for (const key of set.values()) {
+            if (key in self) {
+                delete self[key];
+            }
+        }
+    }
+
+    private clearStates(): void {
+        const states = this.abilityStatesMap;
         states.forEach(value => {
-            if (value && typeof value === 'object' && typeof value.cancel === 'function') {
+            if (typeof value === 'object' && typeof value.cancel === 'function') {
                 try {
                     value.cancel();
                 } catch (e) {
-                    self.logger?.error?.(`Debounce cancel error:`, e);
+                    this.logger?.error?.(`Debounce cancel error:`, e);
                 }
             }
         });
         states.clear();
-
-        self.onDisposed();
     }
 }

@@ -7,12 +7,13 @@
  */
 
 import { Logger } from '@/logger';
-import type { AbilityDefinition, PropertyDefinition } from './types';
-
-export const ABILITY_STATES_KEY = Symbol('__abilityStates__');
-export const CLEANUPS_KEY = Symbol('__cleanups__');
+import type { AbilityDefinition, Definitions, OptionDefinition } from './types';
 
 const BUILTIN_KEYS = new Set([
+    'logger',
+    'abilityStatesMap',
+    'cleanups',
+    '_optionsMap',
     'abilityState',
     'setAbilityState',
     'onCleanup',
@@ -71,10 +72,6 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
 export function withAbilities(target: any, abilities: readonly AbilityDefinition[]): void {
     const proto = target.prototype;
     for (const ability of abilities) {
-        if (ability.isProperty) {
-            injectProperties(proto, ability as PropertyDefinition);
-            continue;
-        }
         applyAbilitie(proto, ability);
     }
 }
@@ -95,38 +92,95 @@ export function withAbilities(target: any, abilities: readonly AbilityDefinition
  * withDefinitions(MyComponent, bodyDef);
  * ```
  */
-export function withDefinitions(target: any, definitions: Record<string, any>): void {
+// ============================================================
+// forge.ts - withDefinitions 增强
+// ============================================================
+
+export function withDefinitions(target: any, definitions: Definitions): void {
     const proto = target.prototype;
-    const descs = Object.getOwnPropertyDescriptors(definitions);
-    for (const [key, desc] of Object.entries(descs)) {
-        if (key === 'constructor') continue;
 
-        if (typeof key === 'string' && BUILTIN_KEYS.has(key)) continue;
+    const { clearKeys, optionsMap } = initConstructorProperties(proto);
 
-        if (desc.get || desc.set) {
+    // ============================================================
+    // 1. 处理 options → 生成 getter/setter
+    // ============================================================
+    if (definitions.options) {
+        injectOptions(proto, clearKeys, optionsMap, definitions.options); // 1. 处理 options → 生成 getter/setter
+    }
+
+    // ============================================================
+    // 2. 处理 property → 直接复制到组件实例
+    // ============================================================
+    if (definitions.property) {
+        const props = definitions.property;
+        for (const [key, value] of Object.entries(props)) {
+            // 在原型上定义默认值
             Object.defineProperty(proto, key, {
+                value: value,
+                enumerable: true,
                 configurable: true,
-                enumerable: desc.enumerable ?? true,
-                get: desc.get,
-                set: desc.set,
+                writable: true,
             });
-        } else {
-            proto[key] = desc.value;
+            clearKeys.add(key); // 2. 添加到 clearKeys
+        }
+    }
+
+    // ============================================================
+    // 3. 处理方法 → 直接复制到原型
+    // ============================================================
+    for (const [key, value] of Object.entries(definitions)) {
+        if (key === 'options' || key === 'property') continue;
+        if (key === 'constructor') continue;
+        if (BUILTIN_KEYS.has(key)) continue;
+
+        if (typeof value === 'function') {
+            Object.defineProperty(proto, key, {
+                value,
+                enumerable: true,
+                configurable: true,
+                writable: true,
+            });
         }
     }
 }
 
-export function injectProperties(proto: any, propertyDefs: PropertyDefinition): void {
-    const map = {} as any;
-    const keys = [] as string[];
-    let length = 0;
-    for (const [key, def] of Object.entries(propertyDefs)) {
+function initConstructorProperties(proto: any) {
+    const ctor = proto.constructor;
+    const parent = Object.getPrototypeOf(ctor);
+    if (!ctor._clearPropertyKeys) {
+        ctor._clearPropertyKeys = new Set<string>();
+        if (parent.constructor._clearPropertyKeys) {
+            ctor._clearPropertyKeys = new Set(parent.constructor._clearPropertyKeys);
+        }
+    }
+
+    if (!ctor._optionMap) {
+        ctor._optionMap = new Map<string, any>();
+        // 继承父类的 optionMap
+        if (parent && parent._optionMap) {
+            for (const [key, def] of parent._optionMap) {
+                ctor._optionMap.set(key, def);
+            }
+        }
+    }
+    return { clearKeys: ctor._clearPropertyKeys, optionsMap: ctor._optionMap };
+}
+
+export function injectOptions(
+    proto: any,
+    clearKeys: Set<string>,
+    optionMap: Map<string, any>,
+    optionDefs: OptionDefinition
+): void {
+    for (const [key, def] of Object.entries(optionDefs)) {
         if (key === '__name__' || key === 'isProperty') continue;
+        optionMap.set(key, def);
         const storeKey = `_${key}`;
-        const defaultValue = (def as any)?.default;
-        map[key] = def;
-        keys.push(key);
-        length++;
+        clearKeys.add(storeKey);
+        let defaultValue = def;
+        if (typeof def === 'object') {
+            defaultValue = def?.default;
+        }
 
         // ✅ 直接定义初始值（不经过 setter）
         Object.defineProperty(proto, storeKey, {
@@ -146,8 +200,8 @@ export function injectProperties(proto: any, propertyDefs: PropertyDefinition): 
                 this[storeKey] = value;
 
                 // ✅ 触发变化通知
-                if (typeof this._onPropertyChange === 'function') {
-                    this._onPropertyChange(key, value, oldValue, def);
+                if (typeof this._onOptionChange === 'function') {
+                    this._onOptionChange(key, value, oldValue, def);
                 }
             },
             enumerable: true,
@@ -155,34 +209,30 @@ export function injectProperties(proto: any, propertyDefs: PropertyDefinition): 
         });
     }
 
-    if (length === 0) return;
-    const ctor = proto.constructor;
-    ctor._propertyMap = map;
-    ctor._propertyKeys = keys;
-
     // ============================================================
     // ✅ 1. 工具方法
     // ============================================================
-    Object.defineProperty(proto, 'getPropertyMap', {
+    Object.defineProperty(proto, 'getOptionMap', {
         value: function () {
-            return (this.constructor as any)._propertyMap || {};
+            return (this.constructor as any)._optionMap || new Map();
         },
         enumerable: false,
         configurable: true,
     });
 
-    Object.defineProperty(proto, 'getPropertyKeys', {
+    Object.defineProperty(proto, 'getOptionKeys', {
         value: function () {
-            return (this.constructor as any)._propertyKeys || [];
+            const map = this.getOptionMap();
+            return Array.from(map.keys());
         },
         enumerable: false,
         configurable: true,
     });
 
-    Object.defineProperty(proto, 'getPropertyDef', {
+    Object.defineProperty(proto, 'getOptionValue', {
         value: function (key: string) {
-            const _map = (this.constructor as any)._propertyMap;
-            return _map[key];
+            const map = this.getOptionMap();
+            return map.get(key);
         },
         enumerable: false,
         configurable: true,

@@ -14,19 +14,34 @@ import type { ILogger } from '@qimenjs/logger';
  * 工厂函数内置方法签名，所有强类实例均满足此接口。
  */
 export interface IComposableBase {
-    logger: ILogger;
-
-    abilityState<T>(key: string, creator?: () => T): T | undefined;
-
-    setAbilityState<T>(key: string, value: T): void;
-
-    onCleanup(callback: () => void): void;
-
-    onBeforeDispose(): void;
-
     /**
-     * 释放后置钩子（可覆写，dispose 最后调用）
+     * 日志记录器
+     * */
+    logger: ILogger;
+    /**
+     * 获取能力状态，不存在时可用 creator 惰性创建
+     *
+     * @param key - 状态键，建议使用 `AbilityName:stateName` 格式避免冲突
+     * @param creator - 惰性创建函数，仅在状态不存在时调用
+     * @returns 状态值，或 undefined（未创建时）
      */
+    abilityState<T>(key: string, creator?: () => T): T | undefined;
+    /**
+     * 设置能力状态
+     *
+     * @param key - 状态键
+     * @param value - 状态值
+     */
+    setAbilityState<T>(key: string, value: T): void;
+    /**
+     * 注册清理回调，dispose 时逆序执行
+     *
+     * @param callback - 清理回调函数
+     */
+    onCleanup(callback: () => void): void;
+    /** 释放前置钩子（可覆写，dispose 最先调用） */
+    onBeforeDispose(): void;
+    /** 释放后置钩子（可覆写，dispose 最后调用） */
     onDisposed(): void;
 
     /**
@@ -40,33 +55,4 @@ export interface IComposableBase {
      * 动态属性
      */
     [key: string]: any;
-}
-
-// ============================================
-// 暴露结果类型
-// ============================================
-
-/**
- * Ability 暴露给 Host 的属性描述符扩展
- */
-export type ExposeValue = PropertyDescriptor | any;
-
-/**
- * 暴露清单接口
- */
-export interface IExposeResult {
-    [key: string | symbol]: ExposeValue;
-}
-
-// ============================================
-// 兼容类型（旧版迁移过渡期保留）
-// ============================================
-
-/**
- * 可组合接口
- * @deprecated 旧版接口，新架构不再使用
- */
-export interface IComposable {
-    attach: (host: any) => void;
-    dispose?: () => void;
 }

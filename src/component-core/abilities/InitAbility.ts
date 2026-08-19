@@ -28,17 +28,7 @@ export const InitAbility = {
     _buildDOM(options: ComponentCoreOptions): void {
         const cache = TemplateManager.get(this.tpl);
         const splits = TemplateManager.splitOptions(options, this.optionKeys);
-        //将cache作为原始值，不能改变
-        //将传递过来的options拆解为修改值
-        this.state = {
-            ...cache,
-            elements: {},
-            instances: {},
-            states: {
-                ...splits,
-            },
-            dirty: {},
-        };
+
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         const el = document.createElement(this.rootTag);
         this._setNodeEl(el);
