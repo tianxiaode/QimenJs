@@ -8,6 +8,7 @@
 
 import { Logger } from '@/logger';
 import type { AbilityDefinition, Definitions, OptionDefinition } from './types';
+import { string } from '@/utils';
 
 const BUILTIN_KEYS = new Set([
     'logger',
@@ -42,14 +43,7 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
         }
 
         if (typeof value === 'function') {
-            const isInternal = typeof key === 'string' && key.startsWith('_');
-            Object.defineProperty(proto, key, {
-                value,
-                enumerable: !isInternal,
-                configurable: true,
-                writable: true,
-            });
-            continue;
+            applyFunction(key, value, proto);
         }
     }
 }
@@ -134,14 +128,19 @@ export function withDefinitions(target: any, definitions: Definitions): void {
         if (BUILTIN_KEYS.has(key)) continue;
 
         if (typeof value === 'function') {
-            Object.defineProperty(proto, key, {
-                value,
-                enumerable: true,
-                configurable: true,
-                writable: true,
-            });
+            applyFunction(key, value, proto); // 3. 处理方法 → 直接复制到原型
         }
     }
+}
+
+function applyFunction(key: string, value: any, proto: any) {
+    const isInternal = typeof key === 'string' && key.startsWith('_');
+    Object.defineProperty(proto, key, {
+        value,
+        enumerable: !isInternal,
+        configurable: true,
+        writable: true,
+    });
 }
 
 function initConstructorProperties(proto: any) {
@@ -197,10 +196,16 @@ export function injectOptions(
             },
             set: function (value: any) {
                 const oldValue = this[storeKey];
+                const changeKey = `_on${string.capitalize(key)}Change`;
                 this[storeKey] = value;
 
-                // ✅ 触发变化通知
-                if (typeof this._onOptionChange === 'function') {
+                if (typeof this[changeKey] === 'function') {
+                    // ✅ 触发变化通知
+                    this[changeKey](value, oldValue, def);
+                }
+
+                if (typeof this._markOptionChange === 'function') {
+                    // ✅ 触发变化通知
                     this._onOptionChange(key, value, oldValue, def);
                 }
             },

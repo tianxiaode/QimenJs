@@ -122,12 +122,13 @@ export class TemplateManager {
         const style: NodeStyle = {};
         const classes: NodeHTMLClass = [];
         const tag = tpl.tag;
+        const coreOptions = {} as any;
         for (const [key, val] of Object.entries(tpl)) {
             if (SPLIT_OPTIONS_IGNORE_KEYS.has(key)) continue;
 
             //先提取组件核心属性
             if (coreKeys && coreKeys.has(key)) {
-                options[key] = val;
+                coreOptions[key] = val;
                 continue;
             }
 
@@ -158,7 +159,9 @@ export class TemplateManager {
                     break;
             }
         }
-        return { attributes, options, style, classes };
+        const result = { attributes, options, style, classes } as any;
+        if (coreKeys) result.coreOptions = coreOptions; //保留组件核心属性
+        return result;
     }
 
     /**

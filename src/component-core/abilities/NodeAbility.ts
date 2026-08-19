@@ -13,33 +13,13 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { IComponentCore, NodeMeta, NodeOptions } from '../types';
-import { _set } from 'zod/v4/core';
+import { IComponentCore, NodeMeta } from '../types';
 
 /** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
 export const NodeQueryAbility: AbilityDefinition = {
-    permissions: {
-        get() {
-            const names = this.state.permissions;
-            const result = [];
-            for (const name of names) {
-                const node = this.getNode(name);
-                if (node) {
-                    result.push({ name, permissions: node.ermission });
-                }
-            }
-        },
-    },
-
-    el: {
-        get() {
-            return this.getNodeEl('root');
-        },
-    },
-
     rootTag: {
         get() {
-            return this.getNodeEl('root').tag || 'div';
+            return this.getNode('root').tag || 'div';
         },
     },
 
@@ -60,27 +40,44 @@ export const NodeQueryAbility: AbilityDefinition = {
      * ```
      */
     getNode(nodeName: string): NodeMeta | undefined {
-        return this.state.nodes[nodeName];
+        return this._tplCache.nodes[nodeName];
     },
 
     getNodeEl(nodeName: string): HTMLElement | undefined {
-        return this.state.elements(nodeName);
+        let el = this.nodeElements[nodeName];
+        if (el) return el;
+        const index = this._getNodeIndex(nodeName);
+        el = this._findByPath(index);
+        this._setNodeEl(nodeName, el); // 缓存 DOM 元素
+        return el;
     },
 
     _setNodeEl(nodeName: string, el: HTMLElement): void {
-        this.state.elements[nodeName] = el;
+        this.nodeElements[nodeName] = el;
     },
 
     getComponent(nodeName: string): IComponentCore {
-        return this.instances(nodeName);
+        return this.nodeInstances(nodeName);
     },
 
-    getNodeOptions(nodeName: string): NodeOptions | undefined {
-        return this.getNode(nodeName)?.options;
+    _setComponent(nodeName: string, component: IComponentCore): void {
+        this.nodeInstances[nodeName] = component;
     },
 
     isComponent(nodeName: string): boolean {
         return this.getNode(nodeName)?.isComponent || false;
+    },
+
+    _getNodeIndex(nodeName: string): number[] {
+        return this._tplCache.indexs[nodeName] || [];
+    },
+
+    getNodeNames(): string[] {
+        return this._tplCache.names;
+    },
+
+    getChildComponentNames(): string[] {
+        return this._tplCache.childComponentNames;
     },
 
     /**
@@ -95,11 +92,25 @@ export const NodeQueryAbility: AbilityDefinition = {
         return el ? el.contains(target) : false;
     },
 
-    _getState(nodeName: string) {
-        return this.state.states[nodeName];
-    },
-
-    _getDirty(nodeName: string) {
-        return this.state.dirties[nodeName];
+    /**
+     * 按子节点索引路径定位 DOM 元素
+     *
+     * @param root - 搜索起点元素
+     * @param path - 子节点索引路径（由编译时 indexPath 产出）
+     * @returns 定位到的 HTMLElement，路径不存在时返回 null
+     *
+     * @example
+     * ```ts
+     * // 编译时产出: indexPath['text'] = [0, 1]
+     * // 运行时定位: const el = findByPath(rootEl, [0, 1])
+     * ```
+     */
+    _findByPath(path: number[]): HTMLElement | null {
+        let current: Element = this.el;
+        for (const idx of path) {
+            if (!current.children[idx]) return null;
+            current = current.children[idx];
+        }
+        return current as HTMLElement;
     },
 } satisfies AbilityDefinition;

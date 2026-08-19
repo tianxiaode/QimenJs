@@ -112,9 +112,3 @@ export const SPLIT_OPTIONS_IGNORE_KEYS = new Set([
     'tag',
     'type',
 ]);
-
-export const HIDDEN_MODE = {
-    display: 'display',
-    visibility: 'visibility',
-    opacity: 'opacity',
-};

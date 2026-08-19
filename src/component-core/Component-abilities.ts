@@ -1,9 +1,4 @@
-import {
-    InferAbility,
-    InferDefinitions,
-    type AbilityDefinition,
-    type InferAbilities,
-} from '@/composable';
+import { InferDefinitions, type AbilityDefinition, type InferAbilities } from '@/composable';
 import {
     EventAbility,
     DomEventsAbility,

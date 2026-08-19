@@ -25,9 +25,7 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import { ComponentError, KernelErrorCode } from '@/error';
-import { MOUNT_PHASE, INSTANTIATE_PHASE, FINALIZE_PHASE, runPhase } from './engine/pipeline';
-import { getId } from '@/utils/string';
+import { string } from '@/utils';
 import { ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 
@@ -117,52 +115,10 @@ export class Component extends ComposableBase {
     constructor(options?: ComponentCoreOptions) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.id = this.id ?? options?.id ?? getId(`cmp-${this.type}`);
+        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
         delete options?.id;
-        this._buildDOM(options);
-        this._dirtyNodes = {};
-        this.dirtySet = new Set();
         this._initializing = true;
-        this._disposing = false;
-        this._initFloatsFromProps();
-        this.init();
-    }
-
-    get ready(): Promise<void> {
-        return this._ready;
-    }
-
-    get readyAll(): Promise<void> {
-        return this._readyAll();
-    }
-
-    private async _readyAll(): Promise<void> {
-        await this._ready;
-        const mgr = this.nodeMapMgr;
-        if (!mgr) return;
-        for (const node of Object.values(mgr.getAll())) {
-            if (node.component && typeof (node.component as any).readyAll === 'function') {
-                await (node.component as any).readyAll;
-            } else if (node.component && (node.component as any).ready) {
-                await (node.component as any).ready;
-            }
-        }
-    }
-
-    /**
-     * 异步初始化管线
-     *
-     * Phase 1: MOUNT — 同步（首个 await 前，el 立即可用）
-     * Phase 2: INSTANTIATE — 异步（TaskQueue 队列化子组件渲染）
-     * Phase 3: FINALIZE — 同步
-     */
-    init() {
-        this._initializing = false;
-        this._flushNodeProps?.();
-        this._commitFloats();
-        this._commitDrags();
-        this._commitDrops?.();
-        this._removeSkeletonCls();
+        this._buildDOM(options);
     }
 
     override onBeforeDispose(): void {
@@ -200,14 +156,6 @@ export class Component extends ComposableBase {
     override onDisposed(): void {
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
     }
-
-    /** 组件初始化完成后移除骨架类，使内容可见 */
-    private _removeSkeletonCls(): void {
-        if (!this.el) return;
-        this.el.classList.remove('q-skeleton');
-        const children = this.el.querySelectorAll('.q-skeleton');
-        children.forEach((el: Element) => el.classList.remove('q-skeleton'));
-    }
 }
 
 Component.use(COMPONENT_ABILITIES);
@@ -215,6 +163,3 @@ Component.define(ComponentDefs);
 
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}
-
-const c = new Component();
-c.disabledCls;

@@ -20,21 +20,21 @@ import { EventContextBuilder } from '@/context';
 
 /** 组件生命周期事件能力，统一管理 mounted/updated/resize 钩子调用与事件发送 */
 export const LifecycleAbility = {
-    _emitMounted(this: any): void {
+    _emitMounted(): void {
         if (typeof this.onMounted === 'function') {
             this.onMounted();
         }
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.MOUNTED);
     },
 
-    _emitUpdated(this: any, data?: any): void {
+    _emitUpdated(data?: any): void {
         if (typeof this.onUpdated === 'function') {
             this.onUpdated();
         }
         this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.UPDATED, data);
     },
 
-    _emitResize(this: any, entry: ResizeObserverEntry): void {
+    _emitResize(entry: ResizeObserverEntry): void {
         if (typeof this.onResize === 'function') {
             this.onResize(entry);
         }
@@ -44,7 +44,7 @@ export const LifecycleAbility = {
         });
     },
 
-    _emitLifecycleEvent(this: any, event: string, data?: any): void {
+    _emitLifecycleEvent(event: string, data?: any): void {
         const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
         const ctx = EventContextBuilder.create()
             .withEvent(event)

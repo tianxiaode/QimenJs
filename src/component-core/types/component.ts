@@ -2,7 +2,6 @@ import { ILogger } from '@/logger';
 import { ComponentListen, ListenItem } from './events';
 import { DragOptionsBase, I18nOptions, NodeOptionsBase, PermissionOptions } from './options';
 import { NodeAttributes, NodeHTMLClass, NodeStyle } from './html';
-import { NodeIndexPathMap } from './index-path';
 
 /**
  * 指示器接口（从 IComponentCore 派生）
@@ -95,29 +94,6 @@ export interface NodeMeta {
 }
 
 export type NodeState = Omit<NodeMeta, 'tag' | 'type' | 'classes' | 'options'>;
-
-export interface ComponentState {
-    /** 节点名称列表 */
-    names: string[];
-    /** 子组件名称列表  */
-    childComponents: string[];
-    /** i18n节点名称列表 */
-    i18ns: string[];
-    /** 权限节点名称列表 */
-    permissions: string[];
-    /** 节点对应元素的路径映射表 */
-    indexs: NodeIndexPathMap;
-    /** 节点el */
-    elements: Record<string, HTMLElement>;
-    /** 子组件实例 */
-    instances: Record<string, IComponentCore>;
-    /** 节点元数据 */
-    nodes: Record<string, NodeMeta>;
-    /** 节点状态 */
-    states: Record<string, Partial<NodeState>>;
-    /** 节点脏数据 */
-    dirty: Record<string, Partial<NodeState>>;
-}
 
 export interface TemplateDecl extends NodeOptions, NodeAttributes, NodeStyle {
     /** 节点标签 */

@@ -16,8 +16,9 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { TemplateManager } from '../engine/TemplateManager';
-import { CONTENT_MODE_MAP, SKELETON_CLS } from '../constants';
-import { ComponentCoreOptions, IComponentCore } from '../types';
+import { COMPONENT_CORE_READONLY_OPTIONS_KEYS, SKELETON_CLS } from '../constants';
+import { ComponentCoreOptions, IComponentCore, SplitOptionsResult } from '../types';
+import { object } from '@/utils';
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -26,14 +27,16 @@ export const InitAbility = {
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
     _buildDOM(options: ComponentCoreOptions): void {
-        const cache = TemplateManager.get(this.tpl);
-        const splits = TemplateManager.splitOptions(options, this.optionKeys);
-
+        this._tplCache = TemplateManager.get(this.tpl);
+        const splits = TemplateManager.splitOptions(options, this.getOptionKeys());
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         const el = document.createElement(this.rootTag);
-        this._setNodeEl(el);
+        this.el = el as HTMLElement;
+        this._setNodeEl('root', el);
         const fragment = this._cache.templateCache!.content.cloneNode(true);
         el.appendChild(fragment);
+        this.logger.debug(`[prepare:build html]`, `[${this.type}]:[${this.id}]`);
+        this._applyNodeMeta(splits);
 
         if (!this.hasParent) {
             if (this.container) {
@@ -41,123 +44,35 @@ export const InitAbility = {
             }
             this.createChildren();
         }
+        this._templateInitialized = true;
     },
 
-    _applyNodeMeta(metaMap: NodeMetaMap): void {
-        for (const [name, meta] of Object.entries(metaMap)) {
-            if (!meta.contentMode || name === 'root') continue;
-
-            const contentDefs = CONTENT_MODE_MAP[meta.contentMode];
-            if (contentDefs === undefined) {
-                this.logger.warn(
-                    `[build:dom]`,
-                    `[${this.type}]:[${this.id}]`,
-                    `节点 ${name} 的 contentMode ${meta.contentMode} 不存在`
-                );
-                continue;
+    _applyNodeMeta(splits: SplitOptionsResult): void {
+        const names = this._tplCache.names;
+        for (const name of names) {
+            const nodeMeta = this.getNode(name);
+            if (nodeMeta.isComponent) continue;
+            if (!nodeMeta) continue;
+            const { attributes, style, classes } = nodeMeta;
+            this.setAttributes(name, attributes);
+            this.setStyle(name, style);
+            this.addCls(name, classes);
+        }
+        this.logger.debug(`[prepare:setup node props]`, `[${this.type}]:[${this.id}]`);
+        const { attributes, style, classes, coreOptions, options } = splits as any;
+        this.setAttributes('root', attributes);
+        this.setStyle('root', style);
+        this.addCls('root', classes);
+        //将hidden等属性设置到组件实例上
+        for (const [key, value] of coreOptions) {
+            object.setProperty(this, key, value);
+        }
+        //将badge等属性设置到组件实例上
+        for (const key of COMPONENT_CORE_READONLY_OPTIONS_KEYS) {
+            if (options[key]) {
+                this[key] = options[key]; // 设置组件属性
             }
-
-            const optionsKeys = this.optionKeys;
-            for (const def of contentDefs) {
-                if (!optionsKeys.includes(def)) continue;
-                if (!Object.prototype.hasOwnProperty.call(this, def)) {
-                    Object.defineProperty(this, def, {
-                        get: () => this._getContent(name, def),
-                        set: v => this._setContent(name, def, v),
-                        configurable: true,
-                        enumerable: true,
-                    });
-                }
-            }
         }
-
-        this.logger.debug(
-            `[build:dom]`,
-            `[${this.type}]:[${this.id}]`,
-            `DOM 构建完成，${Object.keys(metaMap).length} 个节点`
-        );
-    },
-
-    /**
-     * 获取节点属性
-     */
-    _getContent(nodeName: string, contentName: string): any {
-        const node: NodeMeta = this.getNode(nodeName);
-        if (!node) return undefined;
-
-        // 1. 组件节点
-        if (node.isComponent) {
-            const instance = node.instance as any;
-            const method = this._getComponentMethod(instance, contentName);
-            if (typeof method === 'function') return method.call(instance);
-            return undefined;
-        }
-
-        // 2. 从 DOM 元素获取
-        const el = this.getNodeEl(nodeName);
-        if (!el) return undefined;
-
-        return this._getDomContent(el, contentName);
-    },
-
-    /**
-     * 设置节点属性
-     */
-    _setContent(nodeName: string, contentName: string, value: any): void {
-        const node = this.getNode(nodeName);
-        if (!node) return;
-
-        // 1. 组件节点：设置到实例
-        if (node.isComponent && node.instance) {
-            node.instance[contentName] = value;
-            return;
-        }
-
-        // 2. DOM 元素：设置到元素
-        const el = this.getNodeEl(nodeName);
-        if (!el) return;
-
-        this._setDomProperty(el, contentName, value);
-        this._markNodeDirty(nodeName, { [contentName]: value });
-    },
-
-    /**
-     * 从 DOM 元素获取属性值
-     */
-    _getDomContent(el: HTMLElement, contentName: string): any {
-        switch (contentName) {
-            case 'text':
-                return el.textContent;
-                break;
-            case 'html':
-                return el.innerHTML;
-                break;
-            default:
-                return el.getAttribute(contentName);
-                break;
-        }
-    },
-
-    /**
-     * 设置 DOM 元素属性值
-     */
-    _setDomContent(el: HTMLElement, contentName: string, value: any): void {
-        switch (contentName) {
-            case 'text':
-                el.textContent = value;
-                break;
-            case 'html':
-                el.innerHTML = value;
-                break;
-            default:
-                el.setAttribute(contentName, value);
-                break;
-        }
-    },
-
-    _getComponentMethod(instance: any, methodName: string): any {
-        const method = instance[methodName] ?? instance[`get${string.capitalize(methodName)}`];
-        return method;
     },
 
     createChildren(childReady?: () => void): void {
@@ -174,10 +89,15 @@ export const InitAbility = {
             const node = this.getNode(name);
             if (!node) continue;
             const options = node.options;
-            const child = new (node.ctor as any)({ hasParent: true, ...options });
-            this.nodeManager.mountChildComponent(name, child);
+            const child = new (node.type as any)({ hasParent: true, ...options });
+            const placeholder = this.getNodeEl(name);
+            if (!placeholder) continue;
+            placeholder.replaceWith(child.el!);
+            this._setNodeEl(name, child.el!);
+            this._setComponent(name, child);
             this._onChildMounted(name, child);
         }
+        this._emitMounted();
 
         setTimeout(() => {
             this._continueInit(childReady);
@@ -200,6 +120,7 @@ export const InitAbility = {
         if (childReady) {
             childReady();
         }
+        this._initializing = false;
     },
 
     _onChildReady(nodeName: string) {
@@ -241,47 +162,6 @@ export const InitAbility = {
         if (!node) return;
         node.el = placeholder;
         node.instance = undefined;
-    },
-
-    /**
-     * 将已创建的子组件实例挂载到指定节点的占位元素上
-     *
-     * 用占位元素替换为子组件的 el，合并 nodeMap。
-     * 与 replace() 不同，此方法不处理旧组件销毁，也不创建新实例。
-     *
-     * @param node - 目标节点元数据，必须包含占位元素 el
-     * @param child - 已创建的子组件实例，必须包含 el 属性
-     *
-     * @example
-     * ```typescript
-     * // 创建子组件实例
-     * const childComponent = new ChildComponent({ text: 'Hello' });
-     *
-     * // 获取占位节点
-     * const nodeMeta = manager.get('childSlot');
-     * if (nodeMeta) {
-     *   // 挂载子组件
-     *   manager.mountChildComponent(nodeMeta, childComponent);
-     * }
-     * ```
-     *
-     * @remarks
-     * - 会设置子组件的 parent 为当前管理器的 owner
-     * - 如果节点定义了 cls，会自动添加到子组件元素上
-     * - 会合并子组件的 nodeMap 到父组件
-     * - 会记录节点的 parentNode 和 nodeIndex 用于后续恢复
-     */
-    _mountChildComponent(nodeName: string, child: IComponentCore): void {
-        const node = this.get(nodeName);
-        if (!node) {
-            this._owner?.logger.warn(`[${this._owner.id}] Slot "${nodeName}" not found`);
-            return;
-        }
-        const placeholder = node.el! ?? this.findByPath(node.nodeIndex!);
-        if (!placeholder) return;
-        placeholder.replaceWith(child.el!);
-        node.el = child.el;
-        node.instance = child;
     },
 
     /**
