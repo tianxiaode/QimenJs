@@ -3,7 +3,9 @@ import {
     COMPONENT_CORE_OPTIONS,
     COMPONENT_CORE_READONLY_OPTIONS,
     HIDDEN_MODE_CSS_MAP,
+    OPTION_HANDLER_KEY_TARGET_TO,
 } from './constants';
+import { OptionHandlerRegistrar } from './engine';
 
 export const ComponentDefs: Definitions = {
     options: { ...COMPONENT_CORE_OPTIONS },
@@ -35,54 +37,23 @@ export const ComponentDefs: Definitions = {
         ...COMPONENT_CORE_READONLY_OPTIONS,
     },
 
-    _onHintChange(value: any, old: any) {
-        if (value === old) return;
-        this.setAttribute('root', 'title', value);
-    },
-
-    _onHiddenChange(value: any, old: any) {
-        if (value === old) return;
-        const hiddenMode = this.hiddenMode;
-        const css = (HIDDEN_MODE_CSS_MAP as any)[hiddenMode]; // 获取对应的css样式
-        value ? this.addCls('root', css) : this.removeCls('root', css);
-    },
-
-    _onDisabledChange(value: any, old: any) {
-        if (value === old) return;
-        value ? this.addCls('root', 'disabled') : this.removeCls('root', 'disabled');
-    },
-
     _onOptionChange(key: string, value: any, old: any, definition: OptionDefinition | any) {
         if (old === value) return;
-        //包含节点映射，特殊处理
-        if (definition && definition.target) {
+        if (
+            this._beforeOptionChange &&
+            this._beforeOptionChange(key, value, old, definition) === false
+        )
+            return;
+        const name = definition ? OPTION_HANDLER_KEY_TARGET_TO : key;
+        const handler = OptionHandlerRegistrar.getInstance().get(name);
+        if (!handler) {
+            this.logger.warn('handler not found:', name, key, value, old, definition);
             return;
         }
-
-        if (key === 'attribute') {
-            this.setAttributes('root', value);
-        }
-
-        if (key === 'style') {
-            this.setStyles('root', value);
-        }
-
-        if (key === 'cls') {
-            this.addCls('root', value);
-        }
-
-        if (key === 'orle') {
-            this.setAttribute('root', 'role', value); // 设置节点属性
-        }
-
-        if (key === 'order') {
-            value === 0
-                ? this.setAttribute('root', 'order', undefined)
-                : this.setAttribute('root', 'order', value.toString()); // 设置节点属性
-        }
-
-        if (key === 'cursor') {
-            this.setStyle('root', 'cursor', value); // 设置节点属性
+        const result = handler.handler(value, this as any, definition);
+        this.logger.info('[_onOptionChange]', name, key, value, old, definition, result);
+        if (this._afterOptionChange) {
+            this._afterOptionChange(name, result, key, value, old, definition);
         }
     },
 } satisfies OptionDefinition;

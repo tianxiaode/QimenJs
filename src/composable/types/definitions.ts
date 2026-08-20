@@ -1,10 +1,19 @@
-// ============================================================
-// types/definitions.ts
-// ============================================================
+export const OPTION_TARGET_TO_KEYS = {
+    text: 'textContent',
+    src: 'src',
+    html: 'html',
+    href: 'href',
+    value: 'value',
+    title: 'title',
+    alt: 'alt',
+};
 
 export interface OptionDecl {
+    /** 目标节点 */
     target?: string;
-    targetProp?: string;
+    /** 映射到目标的属性，如value, text,src, link,href等 */
+    to?: keyof typeof OPTION_TARGET_TO_KEYS;
+
     default?: any;
 }
 

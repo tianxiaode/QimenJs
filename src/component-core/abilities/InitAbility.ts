@@ -115,6 +115,11 @@ export const InitAbility = {
 
     _continueInit(childReady?: () => void) {
         //组件后续初始化任务
+        //初始化角标
+        this._initBadge();
+        //初始化事件
+        this._initEvents();
+
 
         // 子组件创建完成
         if (childReady) {
@@ -126,6 +131,10 @@ export const InitAbility = {
     _onChildReady(nodeName: string) {
         this.logger.debug(`[_onChildReady][${this.id}]`, `子组件${nodeName}准备完成`);
     },
+
+    _initEvent(){
+        
+    }
 
     /**
      * 将指定节点恢复为骨架占位符

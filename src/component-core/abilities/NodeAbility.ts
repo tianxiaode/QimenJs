@@ -16,7 +16,7 @@ import type { AbilityDefinition } from '@/composable';
 import { IComponentCore, NodeMeta } from '../types';
 
 /** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
-export const NodeQueryAbility: AbilityDefinition = {
+export const NodeAbility: AbilityDefinition = {
     rootTag: {
         get() {
             return this.getNode('root').tag || 'div';
@@ -112,5 +112,49 @@ export const NodeQueryAbility: AbilityDefinition = {
             current = current.children[idx];
         }
         return current as HTMLElement;
+    },
+
+    /**
+     * 运行时动态替换指定节点的子组件
+     *
+     * 销毁旧组件及其子条目 → 创建新组件实例 → DOM 原位替换 → 合并 nodeMap。
+     * 与模板编译期的 Component.replace() 不同，这是运行时操作。
+     *
+     * @param nodeName - 目标节点名称
+     * @param ComponentClass - 新的组件类构造函数
+     * @param options - 传递给新组件的属性对象，可选
+     * @returns 新创建的组件实例，如果节点未找到则返回 null
+     *
+     * @example
+     * ```typescript
+     * // 替换为新的组件实例
+     * const newHeader = manager.replace('header', HeaderComponent, { title: 'New Title' });
+     *
+     * // 不带 props 的替换
+     * const newFooter = manager.replace('footer', FooterComponent);
+     *
+     * // 检查是否成功
+     * if (!newHeader) {
+     *   console.error('Header node not found');
+     * }
+     * ```
+     *
+     * @remarks
+     * - 会先销毁旧组件及其所有子节点
+     * - 新组件的 parent 会自动设置为当前管理器的 owner
+     * - 会合并新组件的 nodeMap 到父组件
+     * - 如果节点不存在，返回 null
+     */
+    replace(nodeName: string, componentClass: any, options?: Record<string, any>): any | null {
+        const old = this.getNodeEl(nodeName);
+        if (!old) return null;
+
+        const newChild = new componentClass(options);
+
+        old?.replaceWith(newChild.el!);
+        this._setNodeEl(nodeName, newChild.el);
+        this._setComponent(nodeName, newChild);
+
+        return newChild;
     },
 } satisfies AbilityDefinition;

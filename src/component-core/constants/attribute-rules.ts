@@ -103,12 +103,3 @@ export const HTML_KEYS = new Set([
     'htmlFor',
     'role',
 ]);
-
-export const SPLIT_OPTIONS_IGNORE_KEYS = new Set([
-    'children',
-    'i18n',
-    'permission',
-    'name',
-    'tag',
-    'type',
-]);

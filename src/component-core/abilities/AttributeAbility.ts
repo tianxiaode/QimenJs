@@ -89,6 +89,7 @@ export const AttributeAbility: AbilityDefinition = {
         for (const [key, value] of Object.entries(attributes)) {
             dirtyAttributes[nodeName][key] = value;
         }
+        this.debounce('attributeAbility:_flushNodes', this._flushNodes, 100);
     },
 
     _markNodeStyleDirty(nodeName: string, styles: Record<string, any>): void {
@@ -100,6 +101,7 @@ export const AttributeAbility: AbilityDefinition = {
         for (const [key, value] of Object.entries(styles)) {
             dirtyStyles[nodeName][key] = value;
         }
+        this.debounce('attributeAbility:_flushNodes', this._flushNodes, 100);
     },
 
     _getNodeAttribute(nodeName: string, attrubuteName: string): Record<string, any> {

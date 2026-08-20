@@ -13,19 +13,18 @@
  */
 
 import { RegistrarBase } from '@/registry';
-import { DragEventBus, DRAG_ACTIONS } from '@/events';
+import { DragEventBus } from '@/events';
+import { DragOptions, DropOptions } from '../types';
 
-import type { DragDecl, DropDecl } from '@/component-core';
-
-export interface DragDefinition extends DragDecl {}
-export interface DropDefinition extends DropDecl {}
+export interface DragDefinition extends DragOptions {}
+export interface DropDefinition extends DropOptions {}
 
 /** 拖拽实例内部结构 */
 interface DragInstance {
     el: HTMLElement;
     component: any;
     nodeName: string;
-    config: DragDecl;
+    config: DragOptions;
 }
 
 /** 放置区实例内部结构 */
@@ -33,7 +32,7 @@ interface DropZoneInstance {
     el: HTMLElement;
     component: any;
     nodeName: string;
-    config: DropDecl;
+    config: DropOptions;
     dragEnterHandler: (e: DragEvent) => void;
     dragOverHandler: (e: DragEvent) => void;
     dragLeaveHandler: (e: DragEvent) => void;
@@ -151,7 +150,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             const el = component.nodeMap?.[nodeName]?.el ?? component.el;
             const dragKey = encodeInstanceKey(componentId, nodeName);
 
-            const config: DragDecl = {
+            const config: DragOptions = {
                 type: def.type,
                 axis: def.axis,
                 bounds: def.bounds,
@@ -308,7 +307,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         el: HTMLElement,
         component: any,
         nodeName: string,
-        config: DropDecl = {}
+        config: DropOptions = {}
     ): void {
         this.checkLock();
 

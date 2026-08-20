@@ -17,7 +17,6 @@ import type { AbilityDefinition } from '@/composable';
 
 export const DebounceAbility = {
     debounce<A extends (...args: any[]) => any>(
-        this: any,
         key: string,
         fn: A,
         wait: number = 0,

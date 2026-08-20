@@ -56,12 +56,22 @@ export const COMPONENT_CORE_READONLY_OPTIONS = {
      * 组件实体key — 用于与实体通信时订阅和发送实体事件的唯一标识符
      */
     entityKey: null,
+    /** 组件动画配置 */
+    animation: null,
     /** 定义组件角标，可参考BadgeOptions的定义  */
     badge: null,
     /**
      * 组件提示信息 — 控制组件的提示信息
      */
     tooltip: null,
+    /** 对话框 */
+    dialog: null,
+    /** 弹出层 */
+    popover: null,
+    /** 指示器配置 */
+    indicator: null,
+    /** 加载配置 */
+    loading: null,
     /**
      * 拖拽开关 — 控制组件是否可拖拽
      *
@@ -108,3 +118,10 @@ export const COMPONENT_CORE_READONLY_OPTIONS = {
 };
 
 export const COMPONENT_CORE_READONLY_OPTIONS_KEYS = Object.keys(COMPONENT_CORE_READONLY_OPTIONS);
+
+/**
+ * 特殊 key：用于标识带有 target/to 定义的选项
+ *
+ * 当选项定义中包含 target 和 to 属性时，使用此 key 进行路由
+ */
+export const OPTION_HANDLER_KEY_TARGET_TO = 'target-to';

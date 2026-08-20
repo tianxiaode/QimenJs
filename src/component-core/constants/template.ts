@@ -1,7 +1,3 @@
-/**
- * template-constants.ts — 模板相关常量
- */
-
 /** 内容模式映射表，将模式名映射为节点属性定义数组 */
 export const CONTENT_MODE_MAP: Record<string, string[]> = {
     text: ['text'],
@@ -76,31 +72,3 @@ export const ANIMATION_PRESETS: Record<string, Keyframe[]> = {
         { transform: 'scale(0.9)', opacity: 0 },
     ],
 };
-
-export const TPL_CORE_KEYS = [
-    'name',
-    'type',
-    'tag',
-    'text',
-    'contentMode',
-    'action',
-    'hidden',
-    'hiddenMode',
-    'i18n',
-    'permission',
-    'disabled',
-    'readonly',
-    'placeholder',
-    'required',
-    'title',
-    'src',
-    'value',
-    'accept',
-    'multiple',
-    'checked',
-    'selected',
-    'for',
-    'order',
-    'zIndex',
-    'role',
-];

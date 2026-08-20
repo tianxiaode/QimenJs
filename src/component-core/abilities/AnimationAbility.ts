@@ -20,40 +20,10 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { AnimationDecl } from '../types/tpl';
-import { ANIMATION_PRESETS } from '../constants/template';
+import { ANIMATION_PRESETS } from '../constants';
 
 /** 组件动画能力，支持声明式入场/离场动画配置与手动播放 */
 export const AnimationAbility = {
-    /**
-     * 获取动画配置声明
-     *
-     * 从组件构造函数的 _animation 静态属性中读取动画配置。
-     * 该属性通常在组件定义时通过 body.animation 配置自动注入。
-     *
-     * @returns {AnimationDecl | undefined} 动画配置对象，如果未配置则返回 undefined
-     *
-     * @example
-     * // 组件定义时配置动画
-     * class MyComponent extends Component {
-     *     static _animation = {
-     *         enter: 'fadeIn',
-     *         leave: 'fadeOut',
-     *         duration: 300
-     *     };
-     * }
-     *
-     * // 运行时获取配置
-     * const decl = this._animDecl;
-     * if (decl) {
-     *     console.log('动画时长:', decl.duration);
-     * }
-     */
-    get _animDecl(): AnimationDecl | undefined {
-        const ctor = (this as any).constructor as any;
-        return ctor._animation ?? undefined;
-    },
-
     /**
      * 播放入场动画
      *
@@ -91,15 +61,15 @@ export const AnimationAbility = {
      * };
      */
     playEnter(this: any): void {
-        const decl = this._animDecl;
-        if (!decl || decl.enabled === false) return;
+        const animation = this.animation;
+        if (!animation || animation.enabled === false) return;
 
-        const keyframes = resolveKeyframes(decl.enter, decl.enterKeyframes);
+        const keyframes = this._resolveKeyframes(animation.enter, animation.enterKeyframes);
         if (!keyframes) return;
 
         this.el?.animate(keyframes, {
-            duration: decl.duration ?? 300,
-            easing: decl.easing ?? 'ease',
+            duration: animation.duration ?? 300,
+            easing: animation.easing ?? 'ease',
             fill: 'forwards',
         });
     },
@@ -140,48 +110,48 @@ export const AnimationAbility = {
      * };
      */
     playLeave(this: any): Promise<void> {
-        const decl = this._animDecl;
-        if (!decl || decl.enabled === false) return Promise.resolve();
+        const animation = this.animation;
+        if (!animation || animation.enabled === false) return Promise.resolve();
 
-        const keyframes = resolveKeyframes(decl.leave, decl.leaveKeyframes);
+        const keyframes = this._resolveKeyframes(animation.leave, animation.leaveKeyframes);
         if (!keyframes) return Promise.resolve();
 
         const anim = this.el?.animate(keyframes, {
-            duration: decl.duration ?? 300,
-            easing: decl.easing ?? 'ease',
+            duration: animation.duration ?? 300,
+            easing: animation.easing ?? 'ease',
             fill: 'forwards',
         });
 
         return anim ? anim.finished.then(() => {}) : Promise.resolve();
     },
-} as AbilityDefinition;
 
-/**
- * 解析动画关键帧
- *
- * 根据配置解析出动画关键帧数据。优先使用自定义关键帧，其次使用预设动画名称。
- *
- * @param {string} [name] - 预设动画名称（如 'fadeIn', 'slideInUp'）
- * @param {Keyframe[]} [custom] - 自定义关键帧数组
- * @returns {Keyframe[] | null} 关键帧数组，无法解析时返回 null
- *
- * @example
- * // 使用自定义关键帧（优先）
- * const keyframes = resolveKeyframes('fadeIn', [{ opacity: 0 }, { opacity: 1 }]);
- * // 返回: [{ opacity: 0 }, { opacity: 1 }]
- *
- * @example
- * // 使用预设动画
- * const keyframes = resolveKeyframes('fadeIn', undefined);
- * // 返回: ANIMATION_PRESETS['fadeIn']
- *
- * @example
- * // 无配置
- * const keyframes = resolveKeyframes(undefined, undefined);
- * // 返回: null
- */
-function resolveKeyframes(name?: string, custom?: Keyframe[]): Keyframe[] | null {
-    if (custom) return custom;
-    if (name) return ANIMATION_PRESETS[name] ?? null;
-    return null;
-}
+    /**
+     * 解析动画关键帧
+     *
+     * 根据配置解析出动画关键帧数据。优先使用自定义关键帧，其次使用预设动画名称。
+     *
+     * @param {string} [name] - 预设动画名称（如 'fadeIn', 'slideInUp'）
+     * @param {Keyframe[]} [custom] - 自定义关键帧数组
+     * @returns {Keyframe[] | null} 关键帧数组，无法解析时返回 null
+     *
+     * @example
+     * // 使用自定义关键帧（优先）
+     * const keyframes = resolveKeyframes('fadeIn', [{ opacity: 0 }, { opacity: 1 }]);
+     * // 返回: [{ opacity: 0 }, { opacity: 1 }]
+     *
+     * @example
+     * // 使用预设动画
+     * const keyframes = resolveKeyframes('fadeIn', undefined);
+     * // 返回: ANIMATION_PRESETS['fadeIn']
+     *
+     * @example
+     * // 无配置
+     * const keyframes = resolveKeyframes(undefined, undefined);
+     * // 返回: null
+     */
+    _resolveKeyframes(name?: string, custom?: Keyframe[]): Keyframe[] | null {
+        if (custom) return custom;
+        if (name) return ANIMATION_PRESETS[name] ?? null;
+        return null;
+    },
+} as AbilityDefinition;

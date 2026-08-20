@@ -146,7 +146,7 @@ export interface NodeOptionsBase extends HiddenOptions {
     /** 动画配置 */
     animation?: AnimationOptions;
     /** 角标配置 */
-    bager?: BadgeOptions;
+    badge?: BadgeOptions | boolean;
     /** 提示配置 */
     tooltip?: Tooltiptoptions;
     /** 加载配置 */
