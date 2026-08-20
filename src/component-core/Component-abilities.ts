@@ -15,12 +15,19 @@ import {
     AnimationAbility,
     BadgeAbility,
     FloatAbility,
+    TooltipAbility,
+    DialogAbility,
+    PopoverAbility,
+    IndicatorAbility,
+    LoadingAbility,
     DragAbility,
+    DropAbility,
+    DomEventDelegateAbility,
+    ListensAbility,
     LifecycleAbility,
-    //OptionsAbility,
-    CommonPropsAbility,
-    ChildrenAbility,
     InitAbility,
+    OptionAbility,
+    NodeAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
@@ -38,17 +45,24 @@ export const COMPONENT_ABILITIES = [
     SystemAbility,
     DebounceAbility,
 
-    //OptionsAbility,
+    InitAbility,
+    OptionAbility,
+    LifecycleAbility,
+    NodeAbility,
+    BadgeAbility,
+    FloatAbility,
+    TooltipAbility,
+    DialogAbility,
+    PopoverAbility,
+    IndicatorAbility,
+    LoadingAbility,
+    DragAbility,
+    DropAbility,
+    DomEventDelegateAbility,
+    ListensAbility,
+    AnimationAbility,
 
-    // CommonPropsAbility,
-    // AnimationAbility,
-    // BadgeAbility,
-    // FloatAbility,
-    // DragAbility,
-
-    // LifecycleAbility,
     // ChildrenAbility,
-    // InitAbility,
 ] as const satisfies readonly AbilityDefinition[];
 
 /** 组件实例接口，由能力注册表推断能力方法，并扩展生命周期钩子 */

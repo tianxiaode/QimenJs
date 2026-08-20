@@ -1,123 +1,212 @@
 /**
- * FloatAbility — 浮层管理能力（薄 facade）
+ * FloatAbility — 浮层管理能力
  *
- * 核心逻辑委托给 FloatEngine 单例（engine/FloatEngine.ts），
- * 本文件只定义 AbilityDefinition 的接口，所有方法都是薄委托。
+ * 提供浮层的完整生命周期管理，包括缓存管理、事件发射、diff/sync，
+ * 以及通用的 show/hide/toggle/update/attach/detach API。
+ * 各浮层类型（tooltip/dialog/popover/indicator/loading）的快捷方法
+ * 由对应的独立能力提供。
  *
- * 类型处理器（tooltip/dialog）在 FloatEngine 中注册，
- * 新增类型只需 registerHandler，不需改 FloatAbility。
+ * 通信链路：
+ *   能力 → overlayEmit → OverlayDispatchCenter → 创建/管理浮层组件
  *
- * @see FloatEngine for core implementation
+ * @see TooltipAbility 提示浮层能力
+ * @see DialogAbility 对话框浮层能力
+ * @see PopoverAbility 弹出层能力
+ * @see IndicatorAbility 指示器浮层能力
+ * @see LoadingAbility 加载浮层能力
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../types/tpl';
-import { FloatEngine } from '../engine/FloatEngine';
+import { EventContextBuilder } from '@/context';
+import { OVERLAY_ACTIONS } from '@/events';
+import { getId } from '@/utils/string';
+import { FLOAT_CACHE_KEY, FLOAT_AUTO_KEYS } from '../constants/float';
+import type { FloatDecl } from '../types';
 
-const engine = FloatEngine.getInstance();
-
-/** 浮层管理能力，委托 FloatEngine 实现 tooltip/dialog/loading 等浮层控制 */
+/** 浮层管理能力，提供 show/hide/toggle/update/attach/detach 等通用 API */
 export const FloatAbility: AbilityDefinition = {
-    // ══════════════════════════════════════════════════════════════
-    // 缓存管理
-    // ══════════════════════════════════════════════════════════════
+    // ── 缓存管理 ──
 
     get floats(): Record<string, FloatDecl> | undefined {
-        return engine.getFloats(this);
+        const cache = this.abilityState(FLOAT_CACHE_KEY, () => ({})) ?? {};
+        return Object.keys(cache).length > 0 ? cache : undefined;
     },
 
     set floats(val: Record<string, FloatDecl> | undefined) {
-        engine.setFloats(this, val);
+        const prev = this.abilityState(FLOAT_CACHE_KEY) ?? {};
+        if (this._initializing) {
+            const merged = val ? { ...prev, ...val } : prev;
+            this.setAbilityState(FLOAT_CACHE_KEY, merged);
+            return;
+        }
+        const next = val ?? {};
+        this.setAbilityState(FLOAT_CACHE_KEY, next);
+        this._syncFloats(prev, next);
     },
 
-    // ══════════════════════════════════════════════════════════════
-    // 初始化 & 提交
-    // ══════════════════════════════════════════════════════════════
+    // ── 事件发射 ──
 
-    _initFloatsFromProps(): void {
-        const result = engine.buildFromProps(this);
-        if (Object.keys(result).length > 0) {
-            this.floats = result;
+    _ensureComponentId(): string {
+        if (!this.id) {
+            this.id = this.props?.id || getId('cmp');
+        }
+        return this.id;
+    },
+
+    _emitInit(key: string, decl: FloatDecl): void {
+        const componentId = this._ensureComponentId();
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${componentId}:${OVERLAY_ACTIONS.INIT}`)
+                .withType(OVERLAY_ACTIONS.INIT)
+                .withSource(componentId)
+                .withData({ component: this, floats: { [key]: decl } })
+                .build()
+        );
+    },
+
+    _emitAction(key: string, action: string): void {
+        const overlayKey = `${this.id}:${key}`;
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:${action}`)
+                .withType(action)
+                .withSource(overlayKey)
+                .withData({ component: this })
+                .build()
+        );
+    },
+
+    _emitControl(action: string, key: string): void {
+        const overlayKey = `${this.id}:${key}`;
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:${action}`)
+                .withType(action)
+                .withSource(overlayKey)
+                .withData({ component: this })
+                .build()
+        );
+    },
+
+    _emitChange(key: string, data: Record<string, any>): void {
+        const overlayKey = `${this.id}:${key}`;
+        this.overlayEmit(
+            EventContextBuilder.create()
+                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`)
+                .withType(OVERLAY_ACTIONS.CHANGE)
+                .withSource(overlayKey)
+                .withData({ component: { id: this.id }, data })
+                .build()
+        );
+    },
+
+    // ── Diff & Sync ──
+
+    _syncFloats(prev: Record<string, FloatDecl>, next: Record<string, FloatDecl>): void {
+        this._ensureComponentId();
+
+        const prevKeys = Object.keys(prev);
+        const nextKeys = Object.keys(next);
+
+        const removed = prevKeys.filter(k => !nextKeys.includes(k));
+        const added = nextKeys.filter(k => !prevKeys.includes(k));
+        const changed = nextKeys.filter(
+            k => prevKeys.includes(k) && JSON.stringify(prev[k]) !== JSON.stringify(next[k])
+        );
+
+        for (const key of removed) {
+            this._emitAction(key, OVERLAY_ACTIONS.DISPOSE);
+        }
+        for (const key of added) {
+            this._emitInit(key, next[key]);
+        }
+        for (const key of changed) {
+            this._emitAction(key, OVERLAY_ACTIONS.DISPOSE);
+            this._emitInit(key, next[key]);
         }
     },
 
+    // ── 提交 ──
+
     _commitFloats(): void {
-        engine.commitFloats(this);
+        for (const key of FLOAT_AUTO_KEYS) {
+            const getter = `_get${key.charAt(0).toUpperCase() + key.slice(1)}FloatDecl`;
+            const fn = (this as any)[getter];
+            if (typeof fn === 'function') {
+                const decl = fn.call(this) as FloatDecl | undefined;
+                if (decl) this.attachFloat(key, decl);
+            }
+        }
+
+        const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
+        if (Object.keys(cache).length === 0) return;
+        this._syncFloats({}, cache);
     },
 
-    // ══════════════════════════════════════════════════════════════
-    // 结构变更方法
-    // ══════════════════════════════════════════════════════════════
+    // ── 结构变更方法 ──
 
     attachFloat(key: string, decl: FloatDecl): void {
-        engine.attachFloat(this, key, decl);
+        const current = this.abilityState(FLOAT_CACHE_KEY) ?? {};
+        const merged = { ...current, [key]: decl };
+
+        if (this._initializing) {
+            this.setAbilityState(FLOAT_CACHE_KEY, merged);
+        } else {
+            this.setAbilityState(FLOAT_CACHE_KEY, merged);
+            this._syncFloats(current, merged);
+        }
     },
 
     detachFloat(key: string): void {
-        engine.detachFloat(this, key);
+        const current = this.abilityState(FLOAT_CACHE_KEY) ?? {};
+        if (!(key in current)) return;
+
+        const next = { ...current };
+        delete next[key];
+        const nextVal = Object.keys(next).length > 0 ? next : {};
+
+        if (this._initializing) {
+            this.setAbilityState(FLOAT_CACHE_KEY, nextVal);
+        } else {
+            this.setAbilityState(FLOAT_CACHE_KEY, nextVal);
+            this._syncFloats(current, nextVal);
+        }
     },
 
-    // ══════════════════════════════════════════════════════════════
-    // 控制操作方法
-    // ══════════════════════════════════════════════════════════════
+    // ── 懒加载辅助 ──
+
+    /**
+     * 确保浮层已注册，未注册则立即注册
+     *
+     * 供懒加载能力（tooltip/dialog/popover/loading）在 show 时调用。
+     *
+     * @param key - 浮层 key
+     * @param decl - 浮层声明（未注册时使用）
+     */
+    _ensureFloat(key: string, decl: FloatDecl): void {
+        const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
+        if (key in cache) return;
+        this.attachFloat(key, decl);
+    },
+
+    // ── 控制操作 ──
 
     showFloat(key: string): void {
-        engine.showFloat(this, key);
+        this._emitControl(OVERLAY_ACTIONS.SHOW, key);
     },
 
     hideFloat(key: string): void {
-        engine.hideFloat(this, key);
+        this._emitControl(OVERLAY_ACTIONS.HIDE, key);
     },
 
     toggleFloat(key: string): void {
-        engine.toggleFloat(this, key);
+        this._emitControl(OVERLAY_ACTIONS.TOGGLE, key);
     },
 
-    // ══════════════════════════════════════════════════════════════
-    // 数据更新方法
-    // ══════════════════════════════════════════════════════════════
+    // ── 数据更新 ──
 
     updateFloat(key: string, data: Record<string, any>): void {
-        engine.updateFloat(this, key, data);
-    },
-
-    updateTooltip(data: Record<string, any>): void {
-        engine.updateTooltip(this, data);
-    },
-
-    // ══════════════════════════════════════════════════════════════
-    // Dialog 快捷方法
-    // ══════════════════════════════════════════════════════════════
-
-    showDialog(): void {
-        engine.showDialog(this);
-    },
-
-    hideDialog(): void {
-        engine.hideDialog(this);
-    },
-
-    toggleDialog(): void {
-        engine.toggleDialog(this);
-    },
-
-    updateDialog(data: Record<string, any>): void {
-        engine.updateDialog(this, data);
-    },
-
-    // ══════════════════════════════════════════════════════════════
-    // Loading 快捷方法
-    // ══════════════════════════════════════════════════════════════
-
-    showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
-        engine.showLoading(this, text, maskMode);
-    },
-
-    hideLoading(): void {
-        engine.hideLoading(this);
-    },
-
-    updateLoading(data: Record<string, any>): void {
-        engine.updateLoading(this, data);
+        this._emitChange(key, data);
     },
 };
