@@ -17,19 +17,33 @@ if (typeof MutationObserver === 'undefined') {
     (global as any).MutationObserver = class MutationObserver {
         observe() {}
         disconnect() {}
-        takeRecords() { return []; }
+        takeRecords() {
+            return [];
+        }
     };
 }
 
 // Polyfill: Element.scrollBy / scrollTo (jsdom 不提供)
 if (typeof HTMLElement !== 'undefined') {
     if (!HTMLElement.prototype.scrollBy) {
-        (HTMLElement.prototype as any).scrollBy = function() {};
+        (HTMLElement.prototype as any).scrollBy = function () {};
     }
     if (!HTMLElement.prototype.scrollTo) {
-        (HTMLElement.prototype as any).scrollTo = function() {};
+        (HTMLElement.prototype as any).scrollTo = function () {};
     }
 }
+
+// Polyfill: URL.createObjectURL / revokeObjectURL (jsdom 不提供)
+const blobUrlMap = new Map<string, Blob>();
+let blobUrlCounter = 0;
+(global as any).URL.createObjectURL = function (blob: Blob): string {
+    const url = `blob:${location.origin}/${++blobUrlCounter}`;
+    blobUrlMap.set(url, blob);
+    return url;
+};
+(global as any).URL.revokeObjectURL = function (url: string): void {
+    blobUrlMap.delete(url);
+};
 
 // Polyfill: TextEncoder / TextDecoder (jsdom 可能缺失)
 if (typeof TextEncoder === 'undefined') {

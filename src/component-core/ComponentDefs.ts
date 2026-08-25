@@ -2,7 +2,6 @@ import { Definitions, OptionDefinition } from '@/composable/types';
 import {
     COMPONENT_CORE_OPTIONS,
     COMPONENT_CORE_READONLY_OPTIONS,
-    HIDDEN_MODE_CSS_MAP,
     OPTION_HANDLER_KEY_TARGET_TO,
 } from './constants';
 import { OptionHandlerRegistrar } from './engine';
@@ -15,6 +14,7 @@ export const ComponentDefs: Definitions = {
         _tplCache: null,
         _dirtyAttributes: null,
         _dirtyStyle: null,
+        _dirtyI18n: null,
         _initializing: false,
         _templateInitialized: false,
         _disposing: false,

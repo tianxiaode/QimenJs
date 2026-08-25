@@ -43,6 +43,7 @@ export const COMPONENT_ABILITIES = [
     SystemEventBusAbility,
     FileEventBusAbility,
     SystemAbility,
+    SystemEventBusAbility,
     DebounceAbility,
 
     InitAbility,

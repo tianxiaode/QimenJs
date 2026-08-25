@@ -22,19 +22,28 @@ export enum FileItemStatus {
 }
 
 /**
- * 文件传输配置（直传模式）
+ * 文件传输配置
  *
- * 配置 FileDispatchCenter 通过 HttpClient 直接上传到指定 URL。
+ * 配置 FileDispatchCenter 通过 HttpClient 上传到指定 URL。
+ * 支持直传、秒传（hash 校验）、分片断点续传三种模式。
  */
 export interface FileTransportConfig {
     /** 域名（传给 HttpClient） */
     domain?: string;
     /** 上传目标 URL */
     url: string;
-    /** 是否启用哈希计算（秒传/断点续传） */
+    /** 是否启用哈希计算（秒传校验） */
     hashEnabled?: boolean;
     /** 哈希算法，默认 'sha256' */
     hashAlgorithm?: string;
+    /** 秒传校验 URL（hashEnabled 时，先发 hash 到该地址检查文件是否存在） */
+    instantCheckUrl?: string;
+    /** 是否启用分片上传（断点续传），大文件建议开启 */
+    chunked?: boolean;
+    /** 分片大小（字节），默认 2MB */
+    chunkSize?: number;
+    /** 分片上传合并接口 URL */
+    mergeUrl?: string;
     /** 自定义请求头 */
     headers?: Record<string, string>;
 }

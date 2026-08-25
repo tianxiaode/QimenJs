@@ -31,12 +31,13 @@ import { FileEventBus, FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { HttpClient } from '@/http';
 import { KernelErrorCode } from '@/error';
-import { createHashTask } from '@/task';
-import { triggerDownload } from '@/utils';
+import { createFileHashTask } from './hash';
+import { triggerDownload } from './download';
 import { getId } from '@/utils/string';
 import { MimeTypeRegistrar } from '@/mime';
 import { ILogger, Logger } from '@qimenjs/logger';
 import { isFileTypeAllowed } from './format';
+import { ChunkedUploader } from './chunked-upload';
 import {
     FileItemStatus,
     type FileChannelConfig,
@@ -404,14 +405,14 @@ export class FileDispatchCenter {
         const { transport } = channel.config;
         if (!transport || !item.file) return;
 
-        // 1. 哈希计算（可选）
+        // 1. 哈希计算（可选，用于秒传校验和文件标识）
         if (transport.hashEnabled) {
             item.status = FileItemStatus.HASHING;
             item.percent = 0;
             this._emit(fileKey, FILE_FEEDBACK_EVENTS.HASH_START, { item });
 
             try {
-                const hashTask = createHashTask(item.file, transport.hashAlgorithm ?? 'sha256');
+                const hashTask = createFileHashTask(item.file, transport.hashAlgorithm ?? 'md5');
                 hashTask.onProgress(snapshot => {
                     item.percent = Math.round((snapshot.progress ?? 0) * 50);
                     this._emit(fileKey, FILE_FEEDBACK_EVENTS.HASH_PROGRESS, {
@@ -436,7 +437,87 @@ export class FileDispatchCenter {
             }
         }
 
-        // 2. 上传
+        // 2. 秒传校验（hash 存在且有 instantCheckUrl 时，询问服务器是否已存在）
+        if (item.hash && transport.instantCheckUrl) {
+            try {
+                const client = new HttpClient(transport.domain);
+                const checkTask = client.post(
+                    transport.instantCheckUrl,
+                    {
+                        hash: item.hash,
+                        fileName: item.name,
+                        size: item.size,
+                    },
+                    { headers: transport.headers }
+                );
+                const checkCtx = await checkTask.context;
+                if (checkCtx.data?.exists === true) {
+                    item.status = FileItemStatus.UPLOADED;
+                    item.result = checkCtx.data.result;
+                    item.percent = 100;
+                    this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOADED, {
+                        item,
+                        result: item.result,
+                    });
+                    this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOAD_PROGRESS, {
+                        item,
+                        percent: 100,
+                    });
+                    return;
+                }
+            } catch {
+                // 秒传校验失败，降级为普通上传
+            }
+        }
+
+        // 3. 分片上传（断点续传）
+        if (transport.chunked && item.file) {
+            item.status = FileItemStatus.UPLOADING;
+            item.percent = 0;
+            this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOAD_START, { item });
+
+            try {
+                const uploader = new ChunkedUploader(item.file, {
+                    url: transport.url,
+                    chunkSize: transport.chunkSize,
+                    mergeUrl: transport.mergeUrl,
+                    headers: transport.headers,
+                    domain: transport.domain,
+                });
+
+                uploader.onProgress(progress => {
+                    item.percent = progress.percent;
+                    this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOAD_PROGRESS, {
+                        item,
+                        percent: item.percent,
+                        chunked: true,
+                        uploadedChunks: progress.uploadedChunks,
+                        totalChunks: progress.totalChunks,
+                    });
+                });
+
+                channel.activeTasks.set(item.id, { cancel: () => uploader.abort() });
+
+                const result = await uploader.start();
+                item.status = FileItemStatus.UPLOADED;
+                item.result = result;
+                item.percent = 100;
+                this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOADED, { item, result });
+            } catch (err: any) {
+                item.status = FileItemStatus.ERROR;
+                item.error = KernelErrorCode.FILE_UPLOAD_FAILED;
+                this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOAD_ERROR, {
+                    item,
+                    error: item.error,
+                    cause: err,
+                });
+            } finally {
+                channel.activeTasks.delete(item.id);
+            }
+            return;
+        }
+
+        // 4. 直传（单文件 FormData 上传）
         item.status = FileItemStatus.UPLOADING;
         item.percent = 0;
         this._emit(fileKey, FILE_FEEDBACK_EVENTS.UPLOAD_START, { item });

@@ -120,7 +120,6 @@ export const InitAbility = {
         //初始化事件
         this._initEvents();
 
-
         // 子组件创建完成
         if (childReady) {
             childReady();
@@ -132,9 +131,9 @@ export const InitAbility = {
         this.logger.debug(`[_onChildReady][${this.id}]`, `子组件${nodeName}准备完成`);
     },
 
-    _initEvent(){
-        
-    }
+    _initEvent() {
+        this._initI18n();
+    },
 
     /**
      * 将指定节点恢复为骨架占位符
