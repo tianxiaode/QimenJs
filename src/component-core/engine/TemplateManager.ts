@@ -57,19 +57,11 @@ export class TemplateManager {
 
             if (isComponent) {
                 cache.childComponents.push(name);
-                meta.options = tpl.options;
                 return `<div class="${SKELETON_CLS}"></div>`;
             }
-
-            meta.attrs = tpl.attrs;
-            const { attributes, style, classes } = this.splitAttrs(tpl.attrs);
-            meta.attributes = attributes;
-            meta.style = style;
-            meta.classes = classes;
-            meta.options = tpl.options;
         }
 
-        let html = this.buildHtml(tpl.attrs, tpl.tag || 'div', hasChildren, tpl.text);
+        let html = this.buildHtml(tpl, tpl.tag || 'div', hasChildren);
 
         if (tpl.children) {
             const childHtmls: string[] = [];
@@ -120,40 +112,31 @@ export class TemplateManager {
     /**
      * 构建节点 HTML
      */
-    static buildHtml(
-        attrs: NodeAttributes | undefined,
-        tag: string,
-        hasChildren: boolean,
-        text?: string
-    ): string {
+    static buildHtml(tpl: TemplateDecl, tag: string, hasChildren: boolean): string {
         const placeholder = hasChildren ? CHILDREN_PLACEHOLDER : '';
-        let style = '';
-        let cls = '';
         const htmlAttrs: string[] = [];
 
-        if (attrs) {
-            for (const [key, val] of Object.entries(attrs)) {
+        if (tpl.attributes) {
+            for (const [key, val] of Object.entries(tpl.attributes)) {
                 if (val === undefined || val === null) continue;
-
-                if (key === 'style' && typeof val === 'object' && !Array.isArray(val)) {
-                    style = StyleHelper.stringify(val);
-                    continue;
-                }
-
-                if (key === 'class' || key === 'cls') {
-                    cls = Array.isArray(val) ? val.join(' ') : String(val);
-                    continue;
-                }
 
                 htmlAttrs.push(`${key}="${string.escapeHtml(String(val))}"`);
             }
         }
 
-        if (style) htmlAttrs.push(`style="${style}"`);
-        if (cls) htmlAttrs.push(`class="${cls}"`);
+        if (tpl.style) {
+            const style = StyleHelper.stringify(tpl.style);
+            htmlAttrs.push(`style="${style}"`);
+        }
+        if (tpl.classes) {
+            htmlAttrs.push(
+                `class="${Array.isArray(tpl.classes) ? tpl.classes.join(' ') : tpl.classes}"`
+            );
+        }
 
         const attrStr = htmlAttrs.length > 0 ? ' ' + htmlAttrs.join(' ') : '';
-        const inner = text ? string.escapeHtml(text) + placeholder : placeholder;
+        const text = tpl.options?.text ? string.escapeHtml(tpl.options.text) : ''; // 文本内容
+        const inner = text ? text + placeholder : placeholder;
 
         return VOID_TAGS.has(tag.toLowerCase())
             ? `<${tag}${attrStr} />`
@@ -170,6 +153,10 @@ export class TemplateManager {
             i18n: tpl.i18n,
             permission: tpl.permission,
             isComponent: !!tpl.type,
+            options: tpl.options,
+            attributes: tpl.attributes,
+            style: tpl.style,
+            classes: tpl.classes,
         };
     }
 

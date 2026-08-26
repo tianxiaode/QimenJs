@@ -5,7 +5,7 @@ export const OptionAbility: AbilityDefinition = {
      * 获取选项值
      */
     _getOptions(nodeName: string) {
-        return this.getNode(nodeName).options;
+        return this.getNode(nodeName).options ?? {};
     },
 
     /**
@@ -17,7 +17,7 @@ export const OptionAbility: AbilityDefinition = {
 
     hasParent: {
         get(): boolean {
-            return this._getOption('root', 'hasParent');
+            return this._hasParent ?? this._getOption('root', 'hasParent');
         },
     },
 

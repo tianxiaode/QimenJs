@@ -1,6 +1,15 @@
 import { ILogger } from '@/logger';
 import { ComponentListen, ListenItem } from './events';
-import { DragOptionsBase, I18nOptions, NodeOptionsBase, PermissionOptions } from './options';
+import {
+    AnimationOptions,
+    BadgeOptions,
+    DragOptionsBase,
+    DropOptions,
+    I18nOptions,
+    LoadingOptions,
+    PermissionOptions,
+    Tooltiptoptions,
+} from './options';
 import { NodeAttributes, NodeHTMLClass, NodeStyle } from './html';
 
 /**
@@ -57,7 +66,7 @@ export interface DragOptions extends DragOptionsBase {
     ghost?: IDragGhost;
 }
 
-export interface NodeOptions extends NodeOptionsBase {
+export interface NodeOptions {
     /** 节点 ID */
     id?: string;
     /** 拖拽配置 */
@@ -68,16 +77,36 @@ export interface NodeOptions extends NodeOptionsBase {
     dialog?: IDialog;
     /** 弹出层配置 */
     popover?: IPopover;
+    /** 节点文本 */
+    action?: string;
+    /** 放置配置 */
+    drop?: true | DropOptions;
+    /** 动画配置 */
+    animation?: AnimationOptions;
+    /** 角标配置 */
+    badge?: BadgeOptions | boolean;
+    /** 提示配置 */
+    tooltip?: Tooltiptoptions;
+    /** 加载配置 */
+    loading?: LoadingOptions;
+    [key: string]: any;
 }
 
 export type NodeOptionsMap = Record<string, NodeOptions>;
 
-export interface ComponentCoreOptions extends NodeOptions {
+export interface ComponentCoreOptions {
+    options?: NodeOptions;
     /** 是否有父 */
     hasParent?: boolean;
     /** 要挂载的容器节点 */
     container?: HTMLElement;
     /** DOM 属性（data-*、aria-* 等） */
+    attributes?: NodeAttributes;
+    /** DOM 样式 */
+    style?: NodeStyle;
+    /** DOM 类 */
+    classes?: NodeHTMLClass;
+    /** DOM 样式 */
     [key: string]: any;
 }
 
@@ -85,7 +114,6 @@ export interface NodeMeta {
     tag?: string;
     type?: IComponentCore;
     options?: NodeOptions;
-    attrs?: NodeAttributes;
     attributes?: NodeAttributes;
     i18n?: I18nOptions;
     permission?: PermissionOptions;
@@ -103,12 +131,14 @@ export interface TemplateDecl {
     type?: IComponentCore;
     /** 节点名称 */
     name?: string;
-    /** 节点文本内容 */
-    text?: string;
     /** 子组件选项（仅 type 时有效） */
     options?: NodeOptions;
-    /** DOM 属性（style、class 等） */
-    attrs?: NodeAttributes;
+    /** DOM的attribute 属性 */
+    attributes?: NodeAttributes;
+    /** DOM的sytle 属性 */
+    style?: NodeStyle;
+    /** DOM的class 属性 */
+    classes?: NodeHTMLClass;
     /** 本地化设置 */
     i18n?: I18nOptions;
     /** 权限设置 */

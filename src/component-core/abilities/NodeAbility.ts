@@ -47,6 +47,7 @@ export const NodeAbility: AbilityDefinition = {
         let el = this.nodeElements[nodeName];
         if (el) return el;
         const index = this._getNodeIndex(nodeName);
+        if (!index || index.length === 0) return undefined;
         el = this._findByPath(index);
         this._setNodeEl(nodeName, el); // 缓存 DOM 元素
         return el;
@@ -57,7 +58,7 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     getComponent(nodeName: string): IComponentCore {
-        return this.nodeInstances(nodeName);
+        return this.nodeInstances[nodeName];
     },
 
     _setComponent(nodeName: string, component: IComponentCore): void {
@@ -77,7 +78,7 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     getChildComponentNames(): string[] {
-        return this._tplCache.childComponentNames;
+        return this._tplCache.childComponents || [];
     },
 
     /**

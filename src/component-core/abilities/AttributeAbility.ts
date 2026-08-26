@@ -63,7 +63,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     addCls(nodeName: string, cls: string): void {
-        const clsList = this.getCls(nodeName);
+        const clsList: DOMTokenList = this.getCls(nodeName);
         clsList.add(cls);
     },
 
@@ -81,10 +81,14 @@ export const AttributeAbility: AbilityDefinition = {
      * 标记节点为脏（自动分类）
      */
     _markNodeAttributeDirty(nodeName: string, attributes: Record<string, any>): void {
+        if (!attributes) return;
         let dirtyAttributes = this._dirtyAttributes;
         if (!dirtyAttributes) {
-            dirtyAttributes = { [nodeName]: {} };
+            dirtyAttributes = {};
             this._dirtyAttributes = dirtyAttributes;
+        }
+        if (!dirtyAttributes[nodeName]) {
+            dirtyAttributes[nodeName] = {};
         }
         for (const [key, value] of Object.entries(attributes)) {
             dirtyAttributes[nodeName][key] = value;
@@ -95,8 +99,11 @@ export const AttributeAbility: AbilityDefinition = {
     _markNodeStyleDirty(nodeName: string, styles: Record<string, any>): void {
         let dirtyStyles = this._dirtyStyles;
         if (!dirtyStyles) {
-            dirtyStyles = { [nodeName]: {} };
+            dirtyStyles = {};
             this._dirtyStyles = dirtyStyles;
+        }
+        if (!dirtyStyles[nodeName]) {
+            dirtyStyles[nodeName] = {};
         }
         for (const [key, value] of Object.entries(styles)) {
             dirtyStyles[nodeName][key] = value;
@@ -105,7 +112,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     _getNodeAttribute(nodeName: string, attrubuteName: string): Record<string, any> {
-        const dirtyAttributes = this.dirtyAttributes;
+        const dirtyAttributes = this._dirtyAttributes;
         if (
             dirtyAttributes &&
             dirtyAttributes[nodeName] &&
@@ -117,7 +124,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     _getNodeStyle(nodeName: string, styleName: string): Record<string, any> {
-        const dirtyStyles = this.dirtyStyles;
+        const dirtyStyles = this._dirtyStyles;
         if (
             dirtyStyles &&
             dirtyStyles[nodeName] &&
@@ -129,7 +136,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     _flushNodeAttribute(nodeName: string, el: HTMLElement): void {
-        const dirtyAttributes = this.dirtyAttributes;
+        const dirtyAttributes = this._dirtyAttributes;
         if (dirtyAttributes && dirtyAttributes[nodeName]) {
             for (const [key, value] of Object.entries(dirtyAttributes[nodeName])) {
                 el.setAttribute(key, value as string);
@@ -139,7 +146,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     _flushNodeStyle(nodeName: string, el: HTMLElement): void {
-        const dirtyStyles = this.dirtyStyles;
+        const dirtyStyles = this._dirtyStyles;
         if (dirtyStyles && dirtyStyles[nodeName]) {
             const style = el.style as any;
             if (!style) return;
@@ -154,7 +161,7 @@ export const AttributeAbility: AbilityDefinition = {
         const names = this.getNodeNames();
         for (const name of names) {
             const el = this.getNodeEl(name);
-            if (!el) return;
+            if (!el) continue;
             this._flushNodeAttribute(name, el);
             this._flushNodeStyle(name, el);
         }

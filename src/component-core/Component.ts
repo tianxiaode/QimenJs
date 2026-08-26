@@ -115,9 +115,12 @@ export class Component extends ComposableBase {
     constructor(options?: ComponentCoreOptions) {
         super();
         this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
+        this.id = this.id ?? options?.options?.id ?? string.getId(`cmp-${this.type}`);
+        this._hasParent = options?.hasParent ?? false;
         delete options?.id;
         this._initializing = true;
+        this.ready = new Promise(resolve => (this._readyResolve = resolve));
+        this.onBeforeInit?.();
         this._buildDOM(options);
     }
 
@@ -140,7 +143,9 @@ export class Component extends ComposableBase {
             }
         }
 
-        this._disposeChildComponents();
+        if (typeof this._disposeChildComponents === 'function') {
+            this._disposeChildComponents();
+        }
 
         if (this.el?.parentElement) {
             this.el.remove();

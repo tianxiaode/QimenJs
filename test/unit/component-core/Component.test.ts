@@ -1,10 +1,16 @@
+/**
+ * Component 基类测试
+ *
+ * 覆盖：模板编译、DOM 构建、节点元数据、生命周期、初始化链
+ */
+
 jest.mock('@/i18n', () => ({}));
 jest.mock('@/logger', () => {
-    const actualLogger = jest.requireActual('@/logger');
+    const actual = jest.requireActual('@/logger');
     return {
-        ...actualLogger,
+        ...actual,
         Logger: {
-            ...actualLogger.Logger,
+            ...actual.Logger,
             for: jest.fn(() => ({
                 debug: jest.fn(),
                 info: jest.fn(),
@@ -15,930 +21,523 @@ jest.mock('@/logger', () => {
     };
 });
 
-jest.mock('@qimenjs/task', () => ({
-    globalTaskQueue: {
-        addTask: jest.fn((fn: () => any) => fn()),
-    },
-}));
+import { Component } from '@/component-core/Component';
+import { TemplateManager } from '@/component-core/engine/TemplateManager';
+import type { TemplateDecl } from '@/component-core/types';
 
-jest.mock('@/component-core/engine/ComponentRegistrar', () => {
-    const actual = jest.requireActual('@/component-core/engine/ComponentRegistrar');
-    return {
-        ...actual,
-        TemplateRegistrar: actual.ComponentRegistrar,
-    };
+// ──────────────────────────────────────────────────
+// 第一部分：TemplateManager 编译
+// ──────────────────────────────────────────────────
+describe('TemplateManager 编译', () => {
+    it('编译基本模板', () => {
+        const tpl: TemplateDecl = { tag: 'div', name: 'root' };
+        const cache = TemplateManager.get(tpl);
+        expect(cache.names).toEqual(['root']);
+        expect(cache.nodes.root).toBeDefined();
+        expect(cache.nodes.root.tag).toBe('div');
+        expect(cache.html).toContain('<div>');
+    });
+
+    it('编译带 attributes/style/classes 的模板', () => {
+        const tpl: TemplateDecl = {
+            tag: 'div',
+            name: 'root',
+            attributes: { disabled: true, 'data-test': 'val' },
+            style: { color: 'red' },
+            classes: 'wrapper',
+        };
+        const cache = TemplateManager.get(tpl);
+        const meta = cache.nodes.root;
+        expect(meta.attributes).toEqual({ disabled: true, 'data-test': 'val' });
+        expect(meta.style).toEqual({ color: 'red' });
+        expect(meta.classes).toBe('wrapper');
+        expect(cache.html).toContain('disabled="true"');
+        expect(cache.html).toContain('data-test="val"');
+        expect(cache.html).toContain('style="color: red"');
+        expect(cache.html).toContain('class="wrapper"');
+    });
+
+    it('编译带 options 的节点', () => {
+        const tpl: TemplateDecl = {
+            tag: 'div',
+            name: 'root',
+            options: { drag: true, hidden: false },
+        };
+        const cache = TemplateManager.get(tpl);
+        const meta = cache.nodes.root;
+        expect(meta.options).toEqual({ drag: true, hidden: false });
+    });
+
+    it('编译带子节点的模板', () => {
+        const tpl: TemplateDecl = {
+            tag: 'div',
+            name: 'root',
+            children: [
+                { tag: 'span', name: 'label', options: { text: 'Hello' } },
+                { tag: 'button', name: 'btn', options: { text: 'Click' } },
+            ],
+        };
+        const cache = TemplateManager.get(tpl);
+        expect(cache.names).toEqual(['root', 'label', 'btn']);
+        expect(cache.html).toContain('<span>Hello</span>');
+        expect(cache.html).toContain('<button>Click</button>');
+    });
+
+    it('编译 i18n / permission 节点', () => {
+        const tpl: TemplateDecl = {
+            tag: 'div',
+            name: 'root',
+            i18n: { text: 'hello' },
+            permission: 'edit',
+        };
+        const cache = TemplateManager.get(tpl);
+        const meta = cache.nodes.root;
+        expect(meta.i18n).toEqual({ text: 'hello' });
+        expect(meta.permission).toBe('edit');
+    });
+
+    it('splitAttrs 拆分 style/class 和普通属性', () => {
+        const result = TemplateManager.splitAttrs({
+            style: { color: 'red', fontSize: 14 },
+            class: 'btn primary',
+            disabled: true,
+            href: '/path',
+        });
+        expect(result.attributes).toEqual({ disabled: true, href: '/path' });
+        expect(result.style).toEqual({ color: 'red', fontSize: 14 });
+        expect(result.classes).toBe('btn primary');
+    });
+
+    it('splitAttrs 处理空对象', () => {
+        const result = TemplateManager.splitAttrs({});
+        expect(result.attributes).toEqual({});
+        expect(result.style).toEqual({});
+        expect(result.classes).toEqual([]);
+    });
+
+    it('splitAttrs 处理 undefined', () => {
+        const result = TemplateManager.splitAttrs(undefined);
+        expect(result.attributes).toEqual({});
+        expect(result.style).toEqual({});
+        expect(result.classes).toEqual([]);
+    });
 });
 
-import { Component } from '@/component-core/Component';
-import { COMPONENT_ABILITIES } from '@/component-core/Component-abilities';
-import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { TplDecl } from '@/component-core/types/tpl';
-
-function resetSingleton(): void {
-    const base = Object.getPrototypeOf(ComponentRegistrar);
-    (base as any).instances = new Map();
-}
-
-function getRegistry(): ComponentRegistrar {
-    resetSingleton();
-    return ComponentRegistrar.getInstance();
-}
-
-describe('Component 基类', () => {
-    describe('静态属性', () => {
-        it('COMPONENT_ABILITIES 为数组', () => {
-            expect(Array.isArray(COMPONENT_ABILITIES)).toBe(true);
-            expect(COMPONENT_ABILITIES.length).toBeGreaterThan(0);
-        });
-
-        it('Component.type 返回空字符串（基类无 type）', () => {
-            expect(Component.type).toBe('');
-        });
-
-        it('COMPONENT_ABILITIES 为 readonly 元组类型', () => {
-            expect(COMPONENT_ABILITIES).toBeDefined();
-        });
+// ──────────────────────────────────────────────────
+// 第二部分：Component 构造函数
+// ──────────────────────────────────────────────────
+describe('Component 构造函数', () => {
+    it('实例化时设置 type、id', () => {
+        class TestComp extends Component {}
+        const inst = new TestComp() as any;
+        expect(inst.type).toBe('TestComp');
+        expect(inst.id).toBeDefined();
+        expect(typeof inst.id).toBe('string');
     });
 
-    describe('static register / useTemplate', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('useTemplate(tpl) 将 _tpl 存储到类上', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            TestComp.useTemplate(tpl);
-
-            expect((TestComp as any)._tpl).toBe(tpl);
-        });
-
-        it('register() 无参数时不设置 _tpl', () => {
-            class TestComp extends Component {}
-            TestComp.register();
-
-            expect((TestComp as any)._tpl).toBeUndefined();
-        });
-
-        it('useTemplate(tpl) 同时注册到 ComponentRegistrar', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            TestComp.useTemplate(tpl);
-
-            expect(registry.has('TestComp')).toBe(true);
-        });
-
-        it('子类 useTemplate 通过 this 自动推导 type', () => {
-            class ButtonComponent extends Component {}
-            const tpl: TplDecl = { tag: 'button' };
-            ButtonComponent.useTemplate(tpl);
-
-            expect(ButtonComponent.type).toBe('Button');
-            expect((ButtonComponent as any)._tpl).toBe(tpl);
-        });
+    it('id 可传入', () => {
+        class TestComp extends Component {}
+        const inst = new TestComp({ options: { id: 'custom-id' } } as any) as any;
+        expect(inst.id).toBe('custom-id');
     });
 
-    describe('static inspectTpl', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-            jest.spyOn(console, 'log').mockImplementation(() => {});
-        });
-
-        afterEach(() => {
-            registry.clear();
-            jest.restoreAllMocks();
-        });
-
-        it('已注册模板时打印模板树', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = {
-                tag: 'div',
-                children: [
-                    { tag: 'span', name: 'label' },
-                    { tag: 'div', name: 'content' },
-                ],
-            };
-            TestComp.useTemplate(tpl);
-
-            expect(() => TestComp.inspectTpl()).not.toThrow();
-            expect(console.log).toHaveBeenCalled();
-        });
-
-        it('未注册模板时输出警告', () => {
-            class NoTplComp extends Component {}
-            NoTplComp.inspectTpl();
-
-            expect(console.log).toHaveBeenCalledWith(expect.stringContaining('未注册模板'));
-        });
+    it('type 从类名推导（去掉 Component 后缀）', () => {
+        class ButtonComponent extends Component {}
+        const inst = new ButtonComponent() as any;
+        expect(inst.type).toBe('Button');
     });
 
-    describe('构造函数', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('创建实例并设置基本属性', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            expect(inst.type).toBe('TestComp');
-            expect(inst.props).toEqual({});
-            expect(inst.meta).toEqual({});
-            await inst.ready;
-            expect(inst._initializing).toBe(false);
-        });
-
-        it('props 传入并保存', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp({ myProp: 'hello' }) as any;
-            expect(inst.props.myProp).toBe('hello');
-        });
-
-        it('props.id 保存', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp({ id: 'test-id' }) as any;
-            expect(inst.props.id).toBe('test-id');
-        });
-
-        it('props.parent 和 slotName 保存', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const parent = {};
-            const inst = new TestComp({ parent, slotName: 'body' }) as any;
-            expect(inst.parent).toBe(parent);
-            expect(inst.slotName).toBe('body');
-        });
-
-        it('id 在构造函数立即可用（无需 await ready）', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            expect(inst.id).toBeDefined();
-            expect(typeof inst.id).toBe('string');
-            expect(inst.id.length).toBeGreaterThan(0);
-        });
-
-        it('props.id 传入时实例 id 使用 props.id', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp({ id: 'custom-id' }) as any;
-            expect(inst.id).toBe('custom-id');
-        });
-
-        it('无 props.id 时自动生成唯一 id', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst1 = new TestComp() as any;
-            const inst2 = new TestComp() as any;
-            expect(inst1.id).not.toBe(inst2.id);
-        });
+    it('无 Component 后缀时 type 为完整类名', () => {
+        class MyWidget extends Component {}
+        const inst = new MyWidget() as any;
+        expect(inst.type).toBe('MyWidget');
     });
 
-    describe('type 推导', () => {
-        it('子类 type 从类名推导（去掉 Component 后缀）', () => {
-            class ButtonComponent extends Component {}
-            expect(ButtonComponent.type).toBe('Button');
-        });
-
-        it('无 Component 后缀时 type 为完整类名', () => {
-            class MyWidget extends Component {}
-            expect(MyWidget.type).toBe('MyWidget');
-        });
+    it('ready 是 Promise', () => {
+        class TestComp extends Component {}
+        const inst = new TestComp() as any;
+        expect(inst.ready).toBeInstanceOf(Promise);
     });
+});
 
-    describe('派生类 _xxx 默认值覆盖', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        /**
-         * 验证派生类可通过 _xxx 字段覆盖父类选项的默认值。
-         * _xxx 是选项的存储 key，派生类声明同名字段即可改变默认值。
-         */
-        it('派生类 _xxx 覆盖父类选项默认值', () => {
-            class CustomComp extends Component {
-                _hidden = true;
-                _order = 42;
-                _drag = { handle: 'header' };
+// ──────────────────────────────────────────────────
+// 第三部分：DOM 构建
+// ──────────────────────────────────────────────────
+describe('DOM 构建', () => {
+    it('基础模板生成 el', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root' } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(CustomComp, tpl);
+        }
+        const inst = new TestComp() as any;
+        expect(inst.el).toBeInstanceOf(HTMLElement);
+        expect(inst.el.tagName).toBe('DIV');
+    });
 
-            const inst = new CustomComp() as any;
-            expect(inst._hidden).toBe(true);
-            expect(inst.hidden).toBe(true);
-            expect(inst._order).toBe(42);
-            expect(inst.order).toBe(42);
-            expect(inst._drag).toEqual({ handle: 'header' });
-            expect(inst.drag).toEqual({ handle: 'header' });
-        });
-
-        /**
-         * 验证派生类 _xxx 覆盖的默认值，在构造函数传入选项时仍能被覆盖。
-         * 即：构造函数选项 > 派生类 _xxx 默认值 > 父类原型默认值
-         */
-        it('构造函数选项优先于 _xxx 默认值', () => {
-            class CustomComp extends Component {
-                _hidden = true;
-                _order = 42;
+    it('attributes 应用到根元素', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    attributes: { disabled: true, 'data-test': 'value' },
+                } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(CustomComp, tpl);
+        }
+        const inst = new TestComp() as any;
+        expect(inst.el.getAttribute('disabled')).toBe('true');
+        expect(inst.el.getAttribute('data-test')).toBe('value');
+    });
 
-            const inst = new CustomComp({ hidden: false, order: 99 } as any) as any;
-            expect(inst.hidden).toBe(false);
-            expect(inst.order).toBe(99);
-        });
-
-        /**
-         * 验证派生类不设置 _xxx 时，仍使用父类原型默认值。
-         */
-        it('未覆盖 _xxx 时使用父类原型默认值', () => {
-            class CustomComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(CustomComp, tpl);
-
-            const inst = new CustomComp() as any;
-            expect(inst.hidden).toBe(false);
-            expect(inst.order).toBe(0);
-        });
-
-        /**
-         * 验证派生类 _xxx 覆盖后，实例间不互相影响。
-         */
-        it('每个实例独立持有 _xxx 默认值', () => {
-            class CustomComp extends Component {
-                _order = 10;
+    it('style 应用到根元素', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    style: { color: 'red', fontSize: '14px' },
+                } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(CustomComp, tpl);
-
-            const inst1 = new CustomComp({ order: 20 } as any) as any;
-            const inst2 = new CustomComp() as any;
-            expect(inst1.order).toBe(20);
-            expect(inst2.order).toBe(10);
-        });
+        }
+        const inst = new TestComp() as any;
+        expect(inst.el.style.color).toBe('red');
+        expect(inst.el.style.fontSize).toBe('14px');
     });
 
-    describe('nodeMap', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('nodeMap 返回 nodeMapMgr.getAll() 或空对象', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = {
-                tag: 'div',
-                children: [{ tag: 'span', name: 'label' }],
-            };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            expect(typeof inst.nodeMap).toBe('object');
-        });
-    });
-
-    describe('el', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('初始化后 el 为 HTMLElement', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = {
-                tag: 'div',
-                cls: 'q-test',
-                children: [{ tag: 'span', name: 'label', cls: 'q-test__label' }],
-            };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            expect(inst.el).toBeInstanceOf(HTMLElement);
-            expect(inst.el.tagName).toBe('DIV');
-        });
-    });
-
-    describe('containsElement', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('节点不存在时返回 false', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            const target = document.createElement('div');
-            expect(inst.containsElement('nonExist', target)).toBe(false);
-        });
-    });
-
-    describe('isItemContainer', () => {
-        it('默认返回 false', () => {
-            class TestComp extends Component {}
-            const inst = new TestComp() as any;
-            expect(inst.isItemContainer).toBe(false);
-        });
-    });
-
-    describe('ready', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('ready 是 Promise', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            expect(inst.ready).toBeInstanceOf(Promise);
-        });
-    });
-
-    describe('生命周期', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('onAfterInit 被调用', async () => {
-            let called = false;
-            class TestComp extends Component {
-                onAfterInit() {
-                    called = true;
-                }
+    it('子节点存在 DOM 中', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [
+                        { tag: 'span', name: 'label', options: { text: 'Hello' } },
+                        { tag: 'button', name: 'btn', options: { text: 'Click' } },
+                    ],
+                } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            new TestComp();
-            await new Promise(resolve => setTimeout(resolve, 0));
-            expect(called).toBe(true);
-        });
-
-        it('action 从 props 传入', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp({ action: 'save' }) as any;
-            await inst.ready;
-            expect(inst.action).toBe('save');
-        });
-
-        it('action 默认为空字符串', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            expect(inst.action).toBe('');
-        });
+        }
+        const inst = new TestComp() as any;
+        const label = inst.getNodeEl('label');
+        const btn = inst.getNodeEl('btn');
+        expect(label).toBeTruthy();
+        expect(label.textContent).toBe('Hello');
+        expect(label.tagName).toBe('SPAN');
+        expect(btn).toBeTruthy();
+        expect(btn.textContent).toBe('Click');
+        expect(btn.tagName).toBe('BUTTON');
     });
 
-    describe('readyAll', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('无 nodeMapMgr 时直接完成', async () => {
-            class TestComp extends Component {}
-            const inst = new TestComp() as any;
-            inst.nodeMapMgr = undefined;
-            await expect(inst.readyAll).resolves.toBeUndefined();
-        });
-
-        it('子组件有 readyAll 时递归等待', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const childReadyAll = Promise.resolve();
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    child: { component: { readyAll: childReadyAll } },
-                }),
-            };
-            await expect(inst.readyAll).resolves.toBeUndefined();
-        });
-
-        it('子组件只有 ready 时等待 ready', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const childReady = Promise.resolve();
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    child: { component: { ready: childReady } },
-                }),
-            };
-            await expect(inst.readyAll).resolves.toBeUndefined();
-        });
+    it('子节点 attributes/style 正确应用', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [
+                        {
+                            tag: 'span',
+                            name: 'label',
+                            options: { text: 'Hi' },
+                            style: { fontWeight: 'bold' },
+                        },
+                    ],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        const label = inst.getNodeEl('label');
+        expect(label.style.fontWeight).toBe('bold');
     });
 
-    describe('containsElement', () => {
-        let registry: ComponentRegistrar;
+    it('options.text 内容正确', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root', options: { text: 'Hello World' } } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.el.textContent).toBe('Hello World');
+    });
+});
 
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('节点不存在时返回 false', () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            const target = document.createElement('div');
-            expect(inst.containsElement('nonExist', target)).toBe(false);
-        });
-
-        it('节点有 component 时使用 component.el', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const childEl = document.createElement('span');
-            const innerEl = document.createElement('b');
-            childEl.appendChild(innerEl);
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    icon: { component: { el: childEl } },
-                }),
-            };
-            expect(inst.containsElement('icon', innerEl)).toBe(true);
-        });
-
-        it('节点有 component 但 el 不存在时返回 false', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    icon: { component: { el: undefined } },
-                }),
-            };
-            const target = document.createElement('div');
-            expect(inst.containsElement('icon', target)).toBe(false);
-        });
-
-        it('节点无 component 时使用 node.el', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const nodeEl = document.createElement('span');
-            const innerEl = document.createElement('b');
-            nodeEl.appendChild(innerEl);
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    label: { el: nodeEl },
-                }),
-            };
-            expect(inst.containsElement('label', innerEl)).toBe(true);
-        });
-
-        it('node.el 不存在时返回 false', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.nodeMapMgr = {
-                getAll: () => ({
-                    label: { el: undefined },
-                }),
-            };
-            const target = document.createElement('div');
-            expect(inst.containsElement('label', target)).toBe(false);
-        });
+// ──────────────────────────────────────────────────
+// 第四部分：NodeMeta 缓存
+// ──────────────────────────────────────────────────
+describe('NodeMeta 缓存', () => {
+    it('getNode 返回节点元数据', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [{ tag: 'span', name: 'label' }],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        const root = inst.getNode('root');
+        const label = inst.getNode('label');
+        expect(root).toBeDefined();
+        expect(root.tag).toBe('div');
+        expect(label).toBeDefined();
+        expect(label.tag).toBe('span');
     });
 
-    describe('onBeforeDispose', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('onBeforeUnmount 被调用', async () => {
-            let unmounted = false;
-            class TestComp extends Component {
-                onBeforeUnmount() {
-                    unmounted = true;
-                }
+    it('getNode 含完整 attributes/style/classes', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    attributes: { id: 'main' },
+                    style: { color: 'blue' },
+                    classes: 'box',
+                } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.dispose();
-            expect(unmounted).toBe(true);
-        });
-
-        it('有 parent + slotName 且 parent 未 disposing 时恢复骨架', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const restoreSkeleton = jest.fn();
-            inst.parent = {
-                _disposing: false,
-                nodeMapMgr: {
-                    get: () => ({ component: inst }),
-                    restoreSkeleton,
-                },
-            };
-            inst.slotName = 'body';
-            inst.dispose();
-            expect(restoreSkeleton).toHaveBeenCalledWith('body');
-        });
-
-        it('parent._disposing 为 true 时不恢复骨架', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const restoreSkeleton = jest.fn();
-            inst.parent = {
-                _disposing: true,
-                nodeMapMgr: {
-                    get: () => ({ component: inst }),
-                    restoreSkeleton,
-                },
-            };
-            inst.slotName = 'body';
-            inst.dispose();
-            expect(restoreSkeleton).not.toHaveBeenCalled();
-        });
-
-        it('isItemContainer 为 true 时不恢复骨架', async () => {
-            class TestComp extends Component {
-                get isItemContainer() {
-                    return true;
-                }
-            }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const restoreSkeleton = jest.fn();
-            inst.parent = {
-                _disposing: false,
-                nodeMapMgr: {
-                    get: () => ({ component: inst }),
-                    restoreSkeleton,
-                },
-            };
-            inst.slotName = 'body';
-            inst.dispose();
-            expect(restoreSkeleton).not.toHaveBeenCalled();
-        });
-
-        it('node.component !== this 时不恢复骨架', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            const restoreSkeleton = jest.fn();
-            inst.parent = {
-                _disposing: false,
-                nodeMapMgr: {
-                    get: () => ({ component: {} }),
-                    restoreSkeleton,
-                },
-            };
-            inst.slotName = 'body';
-            inst.dispose();
-            expect(restoreSkeleton).not.toHaveBeenCalled();
-        });
-
-        it('parentNodeMapMgr 不存在时不恢复骨架', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.parent = { _disposing: false };
-            inst.slotName = 'body';
-            inst.dispose();
-        });
-
-        it('dispose 后 _dirtyNodes 被清空', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst._dirtyNodes = { root: { cls: 'test' } };
-            inst.dispose();
-            expect(inst._dirtyNodes).toEqual({});
-        });
-
-        it('dispose 后 _initializing 为 false', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.dispose();
-            expect(inst._initializing).toBe(false);
-        });
+        }
+        const inst = new TestComp() as any;
+        const meta = inst.getNode('root');
+        expect(meta.attributes).toEqual({ id: 'main' });
+        expect(meta.style).toEqual({ color: 'blue' });
+        expect(meta.classes).toBe('box');
     });
 
-    describe('dispose', () => {
-        let registry: ComponentRegistrar;
+    it('isComponent 判断正确', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [
+                        { tag: 'span', name: 'label' },
+                        { tag: 'div', name: 'skeleton' },
+                    ],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        const root = inst.getNode('root');
+        expect(root.isComponent).toBe(false);
+    });
+});
 
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('dispose 后 _disposing 为 true', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.dispose();
-            expect(inst._disposing).toBe(true);
-        });
-
-        it('dispose 后 meta 被清空', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.meta = { foo: 'bar' };
-            inst.dispose();
-            expect(inst.meta).toEqual({});
-        });
-
-        it('dispose 后 props 被清空', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp({ myProp: 'hello' }) as any;
-            await inst.ready;
-            inst.dispose();
-            expect(inst.props).toEqual({});
-        });
-
-        it('dispose 后 el 被移除', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const container = document.createElement('div');
-            document.body.appendChild(container);
-            const inst = new TestComp() as any;
-            await inst.ready;
-            container.appendChild(inst.el);
-            expect(container.contains(inst.el)).toBe(true);
-            inst.dispose();
-            expect(container.contains(inst.el)).toBe(false);
-            container.remove();
-        });
+// ──────────────────────────────────────────────────
+// 第五部分：生命周期
+// ──────────────────────────────────────────────────
+describe('生命周期', () => {
+    it('onAfterInit 被调用', async () => {
+        let called = false;
+        class TestComp extends Component {
+            onAfterInit() {
+                called = true;
+            }
+        }
+        new TestComp();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(called).toBe(true);
     });
 
-    describe('init 错误处理', () => {
-        let registry: ComponentRegistrar;
-
-        beforeEach(() => {
-            registry = getRegistry();
-        });
-
-        afterEach(() => {
-            registry.clear();
-        });
-
-        it('pipeline 失败时使用 this.logger.error 记录而非 console.error', async () => {
-            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-            class TestComp extends Component {
-                onBeforeInit() {
-                    throw new Error('init boom');
-                }
+    it('onMounted 被调用', async () => {
+        let called = false;
+        class TestComp extends Component {
+            onMounted() {
+                called = true;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
+        }
+        new TestComp();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(called).toBe(true);
+    });
 
-            const inst = new TestComp() as any;
-            await expect(inst.ready).rejects.toThrow();
-
-            expect(inst.logger.error).toHaveBeenCalled();
-            expect(consoleSpy).not.toHaveBeenCalled();
-
-            consoleSpy.mockRestore();
-        });
-
-        it('pipeline 失败时日志包含 type、id 和失败 step', async () => {
-            class TestComp extends Component {
-                onBeforeInit() {
-                    throw new Error('init boom');
-                }
+    it('onBeforeUnmount 被调用', async () => {
+        let called = false;
+        class TestComp extends Component {
+            onBeforeUnmount() {
+                called = true;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
+        }
+        const inst = new TestComp();
+        await (inst as any).ready;
+        inst.dispose();
+        expect(called).toBe(true);
+    });
 
-            const inst = new TestComp({ id: 'trace-id' }) as any;
-            await expect(inst.ready).rejects.toThrow();
+    it('ready 在初始化完成后 resolve', async () => {
+        class TestComp extends Component {}
+        const inst = new TestComp() as any;
+        await expect(inst.ready).resolves.toBeUndefined();
+        expect(inst._initializing).toBe(false);
+    });
+});
 
-            expect(inst.logger.error).toHaveBeenCalledWith(
-                expect.stringContaining('TestComp'),
-                expect.objectContaining({ error: expect.any(Error) })
-            );
-            const [msg] = (inst.logger.error as jest.Mock).mock.calls[0];
-            expect(msg).toContain('trace-id');
-            expect(msg).toContain('mount:onBeforeInit(FAIL)');
-        });
+// ──────────────────────────────────────────────────
+// 第六部分：构造函数选项
+// ──────────────────────────────────────────────────
+describe('构造函数选项', () => {
+    it('action 传入并生效', async () => {
+        class TestComp extends Component {}
+        const inst = new TestComp({ options: { action: 'save' } } as any) as any;
+        await inst.ready;
+        expect(inst.action).toBe('save');
+    });
 
-        it('pipeline 失败时 ctx.steps 记录完整流程轨迹', async () => {
-            class TestComp extends Component {
-                onAfterInit() {
-                    throw new Error('after boom');
-                }
+    it('hidden 传入并生效', async () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root' } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
+        }
+        const inst = new TestComp({ options: { hidden: true } } as any) as any;
+        await inst.ready;
+        expect(inst.hidden).toBe(true);
+    });
 
-            const inst = new TestComp() as any;
-            await expect(inst.ready).rejects.toThrow();
-
-            const [, ctxInfo] = (inst.logger.error as jest.Mock).mock.calls[0];
-            expect(ctxInfo.completedSteps).toEqual([
-                'mount:ensureNodeMap',
-                'mount:selfMount',
-                'mount:setupNodeProps',
-                'mount:onBeforeInit',
-                'instantiate:instantiateChildComponents',
-                'finalize:applyConfig',
-                'finalize:bindListens',
-                'finalize:bindChildEvents',
-                'finalize:bindDomEvents',
-                'finalize:bindPermission',
-                'finalize:onAfterInit(FAIL)',
-            ]);
-            expect(ctxInfo.nodeMapMgrReady).toBe(true);
-        });
-
-        it('nodeMapMgr 未就绪时日志反映流程状态', async () => {
-            class TestComp extends Component {
-                onBeforeInit() {
-                    throw new Error('boom');
-                }
+    it('style 传入应用到根元素', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root' } as TemplateDecl;
             }
-            const inst = new TestComp() as any;
-            await expect(inst.ready).rejects.toThrow();
+        }
+        const inst = new TestComp({ style: { color: 'red', fontSize: '14px' } } as any) as any;
+        expect(inst.el.style.color).toBe('red');
+        expect(inst.el.style.fontSize).toBe('14px');
+    });
 
-            const [, ctxInfo] = (inst.logger.error as jest.Mock).mock.calls[0];
-            expect(ctxInfo.nodeMapMgrReady).toBe(false);
-        });
-
-        it('nodeMapMgr 未初始化时 dispose 不抛二次错误', async () => {
-            class TestComp extends Component {}
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
-
-            const inst = new TestComp() as any;
-            await inst.ready;
-            inst.nodeMapMgr = undefined;
-            expect(() => inst.dispose()).not.toThrow();
-        });
-
-        it('pipeline 失败时不自动 dispose 回滚', async () => {
-            const disposeSpy = jest.fn();
-            class TestComp extends Component {
-                onBeforeInit() {
-                    throw new Error('init boom');
-                }
-                onBeforeDispose() {
-                    disposeSpy();
-                }
+    it('classes 传入添加到根元素', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root' } as TemplateDecl;
             }
-            const tpl: TplDecl = { tag: 'div' };
-            registry.register(TestComp, tpl);
+        }
+        const inst = new TestComp({ classes: 'custom-cls' } as any) as any;
+        expect(inst.el.classList.contains('custom-cls')).toBe(true);
+    });
+});
 
-            const inst = new TestComp() as any;
-            await expect(inst.ready).rejects.toThrow();
+// ──────────────────────────────────────────────────
+// 第七部分：模板编译缓存
+// ──────────────────────────────────────────────────
+describe('模板编译缓存', () => {
+    it('相同模板引用返回同一缓存', () => {
+        const tpl: TemplateDecl = { tag: 'div', name: 'root' };
+        const cache1 = TemplateManager.get(tpl);
+        const cache2 = TemplateManager.get(tpl);
+        expect(cache1).toBe(cache2);
+    });
 
-            expect(inst.logger.error).toHaveBeenCalledTimes(1);
-            expect(disposeSpy).not.toHaveBeenCalled();
-        });
+    it('不同模板返回不同缓存', () => {
+        const tpl1: TemplateDecl = { tag: 'div', name: 'root' };
+        const tpl2: TemplateDecl = { tag: 'span', name: 'root' };
+        const cache1 = TemplateManager.get(tpl1);
+        const cache2 = TemplateManager.get(tpl2);
+        expect(cache1).not.toBe(cache2);
+        expect(cache1.nodes.root.tag).toBe('div');
+        expect(cache2.nodes.root.tag).toBe('span');
+    });
+});
+
+// ──────────────────────────────────────────────────
+// 第八部分：实例方法
+// ──────────────────────────────────────────────────
+describe('实例方法', () => {
+    it('getNode 返回 meta', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [{ tag: 'span', name: 'label' }],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.getNode('root')).toBeDefined();
+        expect(inst.getNode('label')).toBeDefined();
+        expect(inst.getNode('nonexist')).toBeUndefined();
+    });
+
+    it('getNodeEl 返回 DOM 元素', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [{ tag: 'span', name: 'label' }],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.getNodeEl('root')).toBeInstanceOf(HTMLElement);
+        expect(inst.getNodeEl('label')).toBeInstanceOf(HTMLElement);
+        expect(inst.getNodeEl('nonexist')).toBeUndefined();
+    });
+
+    it('getNodeNames 返回节点名列表', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                    children: [{ tag: 'span', name: 'label' }],
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.getNodeNames()).toEqual(['root', 'label']);
+    });
+
+    it('isComponent 判断', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return {
+                    tag: 'div',
+                    name: 'root',
+                } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.isComponent('root')).toBe(false);
+    });
+});
+
+// ──────────────────────────────────────────────────
+// 第九部分：边缘情况
+// ──────────────────────────────────────────────────
+describe('边缘情况', () => {
+    it('无模板可正常实例化', () => {
+        class TestComp extends Component {}
+        const inst = new TestComp() as any;
+        expect(inst.el).toBeInstanceOf(HTMLElement);
+        expect(inst.el.tagName).toBe('DIV');
+    });
+
+    it('无 attributes/style/classes 不会报错', () => {
+        class TestComp extends Component {
+            get tpl() {
+                return { tag: 'div', name: 'root' } as TemplateDecl;
+            }
+        }
+        const inst = new TestComp() as any;
+        expect(inst.el).toBeInstanceOf(HTMLElement);
+    });
+
+    it('根节点无 name 时默认命名为 root', () => {
+        const tpl: TemplateDecl = {
+            tag: 'div',
+            children: [{ tag: 'span', options: { text: 'no name' } }],
+        };
+        const cache = TemplateManager.get(tpl);
+        expect(cache.names).toEqual(['root']);
+    });
+
+    it('多次 dispose 安全', () => {
+        class TestComp extends Component {}
+        const inst = new TestComp() as any;
+        expect(() => {
+            inst.dispose();
+            inst.dispose();
+        }).not.toThrow();
     });
 });

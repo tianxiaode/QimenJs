@@ -180,17 +180,9 @@ export {
     FORM_EVENTS,
 } from '@qimenjs/events';
 
-// Markdown 组件
-export {
-    MarkdownEditorComponent,
-    type MarkdownEditorProps,
-    type MarkdownEditMode,
-    type MarkdownShortcutAction,
-    type ShortcutContext,
-} from '../markdown/MarkdownEditorComponent';
-export { MarkdownEditorFieldBodyComponent } from '../markdown/MarkdownEditorFieldBodyComponent';
-export { markdownEditorCSS } from '../markdown/markdown-editor.css';
-export { markdownViewerCSS } from '../markdown/markdown-viewer.css';
+// Markdown 组件（暂不导出，useTemplate 重构中）
+// export { MarkdownEditorComponent } from '../markdown/MarkdownEditorComponent';
+// export { MarkdownEditorFieldBodyComponent } from '../markdown/MarkdownEditorFieldBodyComponent';
 
 // Label 组件
 export { LabelComponent, type LabelProps } from './label/LabelComponent';

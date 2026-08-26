@@ -24,22 +24,36 @@ const BUILTIN_KEYS = new Set([
 ]);
 
 function applyAbilitie(proto: any, ability: AbilityDefinition): void {
-    for (const [key, value] of Object.entries(ability)) {
-        if (typeof key === 'string' && BUILTIN_KEYS.has(key)) continue;
+    for (const key of Object.getOwnPropertyNames(ability)) {
+        if (BUILTIN_KEYS.has(key)) continue;
 
-        if (proto[key]) {
-            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}`);
+        const descriptor = Object.getOwnPropertyDescriptor(ability, key)!;
+
+        if (descriptor.get || descriptor.set) {
+            Object.defineProperty(proto, key, {
+                configurable: true,
+                enumerable: descriptor.enumerable ?? true,
+                get: descriptor.get,
+                set: descriptor.set,
+            });
+            continue;
         }
 
+        const value = descriptor.value;
+
         if (value && typeof value === 'object' && ('get' in value || 'set' in value)) {
-            const descriptor: PropertyDescriptor = {
+            const accessor: PropertyDescriptor = {
                 configurable: true,
                 enumerable: value.enumerable ?? true,
             };
-            if ('get' in value) descriptor.get = value.get;
-            if ('set' in value) descriptor.set = value.set;
-            Object.defineProperty(proto, key, descriptor);
+            if ('get' in value) accessor.get = value.get;
+            if ('set' in value) accessor.set = value.set;
+            Object.defineProperty(proto, key, accessor);
             continue;
+        }
+
+        if (proto[key]) {
+            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}`);
         }
 
         if (typeof value === 'function') {

@@ -12,11 +12,18 @@
  * 2. setupNodeProps() - 同步
  * 3. mount() - 同步
  * 4. createChildren() - 异步派发（根据hasParent判断）
+ * 5. _continueInit() - 异步串联后续初始化
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { TemplateManager } from '../engine/TemplateManager';
-import { COMPONENT_CORE_OPTIONS_KEYS, COMPONENT_CORE_READONLY_OPTIONS_KEYS, SKELETON_CLS } from '../constants';
+import { ListensEngine } from '../engine/ListensEngine';
+import { DomEventsEngine } from '../engine/DomEventsEngine';
+import {
+    COMPONENT_CORE_OPTIONS_KEYS,
+    COMPONENT_CORE_READONLY_OPTIONS_KEYS,
+    SKELETON_CLS,
+} from '../constants';
 import { ComponentCoreOptions, IComponentCore } from '../types';
 import { object } from '@/utils';
 
@@ -30,13 +37,15 @@ export const InitAbility = {
     _buildDOM(options: ComponentCoreOptions): void {
         this._tplCache = TemplateManager.get(this.tpl);
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
-        const el = document.createElement(this.rootTag);
-        this.el = el as HTMLElement;
+        this.nodeElements = {};
+        this.nodeInstances = {};
+        const fragment = this._tplCache.templateCache!.content.cloneNode(true);
+        const el = (fragment.firstElementChild as HTMLElement) ?? document.createElement('div');
+        this.el = el;
         this._setNodeEl('root', el);
-        const fragment = this._cache.templateCache!.content.cloneNode(true);
-        el.appendChild(fragment);
         this.logger.debug(`[prepare:build html]`, `[${this.type}]:[${this.id}]`);
         this._applyNodeMeta(options);
+        this._flushNodes();
 
         if (!this.hasParent) {
             if (this.container) {
@@ -54,31 +63,38 @@ export const InitAbility = {
             if (!nodeMeta || nodeMeta.isComponent) continue;
             const { attributes, style, classes } = nodeMeta;
             this.setAttributes(name, attributes);
-            this.setStyle(name, style);
-            this.addCls(name, classes);
-        }
-        // 将构造函数选项应用到组件实例
-        for (const [key, value] of Object.entries(options)) {
-            if (value === undefined || value === null) continue;
-            if (COMPONENT_CORE_OPTIONS_KEYS.includes(key)) {
-                object.setProperty(this, key, value);
-            } else if (COMPONENT_CORE_READONLY_OPTIONS_KEYS.includes(key)) {
-                this[key] = value;
-            } else if (key === 'style' && typeof value === 'object') {
-                this.setStyle('root', value);
-            } else if (key === 'cls' || key === 'class') {
-                this.addCls('root', value);
-            } else if (key === 'hasParent' || key === 'container') {
-                // 内部键，跳过
-            } else {
-                this.setAttribute('root', key, value);
+            if (style && Object.keys(style).length > 0) {
+                this.setStyles(name, style);
             }
+            if (classes) {
+                this.addCls(name, classes);
+            }
+        }
+        if (!options) return;
+        // 将构造函数选项应用到组件实例
+        if (options.options) {
+            for (const [key, value] of Object.entries(options.options)) {
+                if (COMPONENT_CORE_OPTIONS_KEYS.includes(key)) {
+                    object.setProperty(this, key, value);
+                } else if (COMPONENT_CORE_READONLY_OPTIONS_KEYS.includes(key)) {
+                    this[key] = value;
+                }
+            }
+        }
+        if (options.attributes) {
+            this.setAttributes('root', options.attributes);
+        }
+        if (options.style) {
+            this.setStyles('root', options.style);
+        }
+        if (options.classes) {
+            this.addCls('root', options.classes);
         }
     },
 
     createChildren(childReady?: () => void): void {
         this.logger.debug(`[createChildren][${this.id}]`, '开始创建子组件');
-        const components = this.nodeManager.getComponentNodes();
+        const components = this._tplCache?.childComponents || [];
         if (components.length === 0) {
             this.logger.debug(`[createChildren][${this.id}]`, '没有子组件');
             setTimeout(() => {
@@ -90,7 +106,13 @@ export const InitAbility = {
             const node = this.getNode(name);
             if (!node) continue;
             const options = node.options;
-            const child = new (node.type as any)({ hasParent: true, ...options });
+            const child = new (node.type as any)({
+                hasParent: true,
+                options,
+                attributes: node.attributes,
+                style: node.style,
+                classes: node.classes,
+            });
             const placeholder = this.getNodeEl(name);
             if (!placeholder) continue;
             placeholder.replaceWith(child.el!);
@@ -114,17 +136,28 @@ export const InitAbility = {
         this.logger.debug(`[_onChildMounted][${this.id}]`, '子组件创建完成');
     },
 
+    /**
+     * 串联后续初始化
+     *
+     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 动画播放
+     */
     _continueInit(childReady?: () => void) {
-        //组件后续初始化任务
-        //初始化角标
         this._initBadge();
-        //初始化事件
-        this._initEvents();
+        this._initI18n();
+        this._initPermission();
+        this._initListensEvents();
+        this._initDomEvents();
+        this.playEnter();
 
-        // 子组件创建完成
+        if (typeof this.onAfterInit === 'function') {
+            this.onAfterInit();
+        }
+        this._emitMounted();
+
         if (childReady) {
             childReady();
         }
+        this._readyResolve?.();
         this._initializing = false;
     },
 
@@ -132,8 +165,17 @@ export const InitAbility = {
         this.logger.debug(`[_onChildReady][${this.id}]`, `子组件${nodeName}准备完成`);
     },
 
-    _initEvent() {
-        this._initI18n();
+    /** 初始化 listens 事件订阅 */
+    _initListensEvents(): void {
+        const listens = this.listens;
+        if (!listens?.length) return;
+        ListensEngine.bindListens(this, listens);
+        ListensEngine.bindNodeEvents(this, listens);
+    },
+
+    /** 初始化 DOM 事件委托 */
+    _initDomEvents(): void {
+        DomEventsEngine.bindDomEvents(this);
     },
 
     /**

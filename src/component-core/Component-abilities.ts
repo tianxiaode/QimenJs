@@ -14,8 +14,10 @@ import {
 } from '@/system-abilities';
 import {
     AnimationAbility,
+    AttributeAbility,
     BadgeAbility,
     FloatAbility,
+    I18nAbility,
     TooltipAbility,
     DialogAbility,
     PopoverAbility,
@@ -23,8 +25,6 @@ import {
     LoadingAbility,
     DragAbility,
     DropAbility,
-    DomEventDelegateAbility,
-    ListensAbility,
     LifecycleAbility,
     InitAbility,
     OptionAbility,
@@ -52,6 +52,8 @@ export const COMPONENT_ABILITIES = [
     OptionAbility,
     LifecycleAbility,
     NodeAbility,
+    AttributeAbility,
+    I18nAbility,
     BadgeAbility,
     FloatAbility,
     TooltipAbility,
@@ -61,8 +63,6 @@ export const COMPONENT_ABILITIES = [
     LoadingAbility,
     DragAbility,
     DropAbility,
-    DomEventDelegateAbility,
-    ListensAbility,
     AnimationAbility,
     PermissionAbility,
 

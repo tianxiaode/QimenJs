@@ -1,5 +1,3 @@
-export * from './pipeline';
-
 export * from './OptionHandlerRegistrar';
 export * from './option-handlers';
 export * from './EventForwarder';

@@ -24,9 +24,9 @@ export const ComponentDefs: Definitions = {
         type: null,
         el: null,
         /** 组件dom元素，用于管理组件的生命周期和状态管理  */
-        nodeElements: null,
+        nodeElements: {},
         /** 子组件实例对象映射表，用于管理子组件的生命周期和状态管理  */
-        nodeInstances: null,
+        nodeInstances: {},
         /** 组件是否为子组件容器 — 控制组件是否可容纳其他组件 */
         isItemContainer: false,
         /** 组件委托事件定义 */

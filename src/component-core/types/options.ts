@@ -128,29 +128,3 @@ export interface I18nOptions {
  * 权限声明
  */
 export type PermissionOptions = string | string[];
-
-/** 组件配置 */
-export interface NodeOptionsBase extends HiddenOptions {
-    /** 节点名称（可选） */
-    name?: string;
-    /** 节点标签 */
-    tag?: string;
-    /** 节点文本 */
-    text?: string;
-    /** 节点文本模式 */
-    contentMode?: 'value' | 'src' | 'html' | 'link';
-    /** 节点行为 */
-    action?: string;
-    /** 放置配置 */
-    drop?: true | DropOptions;
-    /** 动画配置 */
-    animation?: AnimationOptions;
-    /** 角标配置 */
-    badge?: BadgeOptions | boolean;
-    /** 提示配置 */
-    tooltip?: Tooltiptoptions;
-    /** 加载配置 */
-    loading?: LoadingOptions;
-
-    [key: string]: any;
-}

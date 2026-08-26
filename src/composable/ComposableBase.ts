@@ -49,7 +49,7 @@ export class ComposableBase implements IComposableBase {
      * ```
      */
     static use(...abilities: AbilityDefinition[]): typeof ComposableBase {
-        const arr = Array.isArray(abilities) ? abilities : [abilities];
+        const arr = abilities.flat();
         withAbilities(this, arr);
         return this;
     }
