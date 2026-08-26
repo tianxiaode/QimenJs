@@ -1,25 +1,22 @@
 /**
- * PermissionAbility — 权限能力
+ * PermissionAbility — 组件权限能力
  *
  * 提供节点权限的只读查询与可见性控制：
  *   getPermission(name) → 获取节点的权限配置（只读）
- *   hasPermission(name) → 检查当前用户是否有权限
+ *   hasPermission(name) → 检查当前用户是否有权限（委托到全局 checkPermission）
  *   show(name) / hide(name) → 根据权限控制隐藏/显示
  *
  * 权限配置来自模板编译期缓存的 _tplCache.nodes[name].permission，
  * 不支持动态修改，仅通过 hide/show 控制 DOM 可见性。
+ * 权限校验委托给系统级 PermissionAbility.checkPermission()。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { PermissionRegistrar } from '@/permission';
 import type { PermissionOptions } from '../types';
 import { SYSTEM_EVENTS } from '@/events';
 
 const PERMISSION_SEPARATOR = ':';
 
-/**
- * 权限能力
- */
 export const PermissionAbility: AbilityDefinition = {
     /**
      * 获取节点的权限配置（只读）
@@ -42,17 +39,16 @@ export const PermissionAbility: AbilityDefinition = {
 
         const entityKey = this.entityKey as string | undefined;
         const domain = this.domain as string | undefined;
-        const registrar = PermissionRegistrar.getInstance();
 
         const permissions = Array.isArray(permission) ? permission : [permission];
         return permissions.some(p => {
             const query = this._resolvePermissionQuery(p, entityKey, domain);
-            return registrar.hasPermission(query);
+            return this.checkPermission(query);
         });
     },
 
     /**
-     * 隐藏节点（无权限时调用）
+     * 隐藏节点
      * @param nodeName - 节点名称
      */
     hide(nodeName: string): void {
@@ -62,7 +58,7 @@ export const PermissionAbility: AbilityDefinition = {
     },
 
     /**
-     * 显示节点（有权限时调用）
+     * 显示节点
      * @param nodeName - 节点名称
      */
     show(nodeName: string): void {
@@ -91,16 +87,12 @@ export const PermissionAbility: AbilityDefinition = {
     _initPermission(): void {
         const names = this._tplCache.permissions || [];
         if (names.length === 0) return;
-        const this.systemOn(SYSTEM_EVENTS.PERMISSION_CHANGE, () => this._applyPermission());
+        this.systemOn(SYSTEM_EVENTS.PERMISSION_CHANGE, () => this._applyPermission());
         this._applyPermission();
     },
 
     /**
      * 将权限配置解析为结构化查询参数
-     * @param permission - 权限配置
-     * @param entityKey - 实体键
-     * @param domain - 域
-     * @returns 结构化查询参数
      */
     _resolvePermissionQuery(permission: string, entityKey?: string, domain?: string) {
         const parts = permission.split(PERMISSION_SEPARATOR);

@@ -14,3 +14,4 @@ export * from './ListensAbility';
 export * from './LifecycleAbility';
 export * from './OptionAbility';
 export * from './InitAbility';
+export * from './PermissionAbility';

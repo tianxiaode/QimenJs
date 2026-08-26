@@ -10,6 +10,7 @@ import {
     FileEventBusAbility,
     SystemAbility,
     DebounceAbility,
+    PermissionAbility as SystemPermissionAbility,
 } from '@/system-abilities';
 import {
     AnimationAbility,
@@ -28,6 +29,7 @@ import {
     InitAbility,
     OptionAbility,
     NodeAbility,
+    PermissionAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
@@ -43,7 +45,7 @@ export const COMPONENT_ABILITIES = [
     SystemEventBusAbility,
     FileEventBusAbility,
     SystemAbility,
-    SystemEventBusAbility,
+    SystemPermissionAbility,
     DebounceAbility,
 
     InitAbility,
@@ -62,6 +64,7 @@ export const COMPONENT_ABILITIES = [
     DomEventDelegateAbility,
     ListensAbility,
     AnimationAbility,
+    PermissionAbility,
 
     // ChildrenAbility,
 ] as const satisfies readonly AbilityDefinition[];

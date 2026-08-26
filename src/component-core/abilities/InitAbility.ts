@@ -16,9 +16,10 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { TemplateManager } from '../engine/TemplateManager';
-import { COMPONENT_CORE_READONLY_OPTIONS_KEYS, SKELETON_CLS } from '../constants';
-import { ComponentCoreOptions, IComponentCore, SplitOptionsResult } from '../types';
+import { COMPONENT_CORE_OPTIONS_KEYS, COMPONENT_CORE_READONLY_OPTIONS_KEYS, SKELETON_CLS } from '../constants';
+import { ComponentCoreOptions, IComponentCore } from '../types';
 import { object } from '@/utils';
+
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -28,7 +29,6 @@ export const InitAbility = {
      */
     _buildDOM(options: ComponentCoreOptions): void {
         this._tplCache = TemplateManager.get(this.tpl);
-        const splits = TemplateManager.splitOptions(options, this.getOptionKeys());
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         const el = document.createElement(this.rootTag);
         this.el = el as HTMLElement;
@@ -36,7 +36,7 @@ export const InitAbility = {
         const fragment = this._cache.templateCache!.content.cloneNode(true);
         el.appendChild(fragment);
         this.logger.debug(`[prepare:build html]`, `[${this.type}]:[${this.id}]`);
-        this._applyNodeMeta(splits);
+        this._applyNodeMeta(options);
 
         if (!this.hasParent) {
             if (this.container) {
@@ -47,30 +47,31 @@ export const InitAbility = {
         this._templateInitialized = true;
     },
 
-    _applyNodeMeta(splits: SplitOptionsResult): void {
+    _applyNodeMeta(options: ComponentCoreOptions): void {
         const names = this._tplCache.names;
         for (const name of names) {
             const nodeMeta = this.getNode(name);
-            if (nodeMeta.isComponent) continue;
-            if (!nodeMeta) continue;
+            if (!nodeMeta || nodeMeta.isComponent) continue;
             const { attributes, style, classes } = nodeMeta;
             this.setAttributes(name, attributes);
             this.setStyle(name, style);
             this.addCls(name, classes);
         }
-        this.logger.debug(`[prepare:setup node props]`, `[${this.type}]:[${this.id}]`);
-        const { attributes, style, classes, coreOptions, options } = splits as any;
-        this.setAttributes('root', attributes);
-        this.setStyle('root', style);
-        this.addCls('root', classes);
-        //将hidden等属性设置到组件实例上
-        for (const [key, value] of coreOptions) {
-            object.setProperty(this, key, value);
-        }
-        //将badge等属性设置到组件实例上
-        for (const key of COMPONENT_CORE_READONLY_OPTIONS_KEYS) {
-            if (options[key]) {
-                this[key] = options[key]; // 设置组件属性
+        // 将构造函数选项应用到组件实例
+        for (const [key, value] of Object.entries(options)) {
+            if (value === undefined || value === null) continue;
+            if (COMPONENT_CORE_OPTIONS_KEYS.includes(key)) {
+                object.setProperty(this, key, value);
+            } else if (COMPONENT_CORE_READONLY_OPTIONS_KEYS.includes(key)) {
+                this[key] = value;
+            } else if (key === 'style' && typeof value === 'object') {
+                this.setStyle('root', value);
+            } else if (key === 'cls' || key === 'class') {
+                this.addCls('root', value);
+            } else if (key === 'hasParent' || key === 'container') {
+                // 内部键，跳过
+            } else {
+                this.setAttribute('root', key, value);
             }
         }
     },

@@ -85,6 +85,7 @@ export interface NodeMeta {
     tag?: string;
     type?: IComponentCore;
     options?: NodeOptions;
+    attrs?: NodeAttributes;
     attributes?: NodeAttributes;
     i18n?: I18nOptions;
     permission?: PermissionOptions;
@@ -95,11 +96,19 @@ export interface NodeMeta {
 
 export type NodeState = Omit<NodeMeta, 'tag' | 'type' | 'classes' | 'options'>;
 
-export interface TemplateDecl extends NodeOptions, NodeAttributes, NodeStyle {
+export interface TemplateDecl {
     /** 节点标签 */
     tag?: string;
     /** 组件类型 */
     type?: IComponentCore;
+    /** 节点名称 */
+    name?: string;
+    /** 节点文本内容 */
+    text?: string;
+    /** 子组件选项（仅 type 时有效） */
+    options?: NodeOptions;
+    /** DOM 属性（style、class 等） */
+    attrs?: NodeAttributes;
     /** 本地化设置 */
     i18n?: I18nOptions;
     /** 权限设置 */

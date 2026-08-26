@@ -1,33 +1,23 @@
-import {
-    ATTR_PREFIXES_KEYS,
-    CHILDREN_PLACEHOLDER,
-    CLASS_KEYS,
-    HTML_KEYS,
-    SKELETON_CLS,
-    SPLIT_OPTIONS_IGNORE_KEYS,
-    STYLE_KEYS,
-    VOID_TAGS,
-} from '../constants';
-import {
-    NodeAttributes,
-    TemplateCache,
-    NodeOptions,
-    TemplateDecl,
-    SplitOptionsResult,
-    NodeStyle,
-    NodeHTMLClass,
-    NodeMeta,
-} from '../types';
+/**
+ * TemplateManager — 模板编译器
+ *
+ * 将结构化的 TemplateDecl（含 options / attrs 分离）编译为 TemplateCache，
+ * 供运行时克隆 DOM 和查询节点元数据。
+ *
+ * 核心变化：不再需要 splitOptions 运行时分类，options 和 attrs 在定义时已分离。
+ */
+
+import { CHILDREN_PLACEHOLDER, SKELETON_CLS, VOID_TAGS } from '../constants';
+import { TemplateCache, TemplateDecl, NodeAttributes, NodeMeta } from '../types';
 import { StyleHelper } from './StyleHelper';
 import { string } from '@qimenjs/utils';
 
 export class TemplateManager {
     private static tplCache = new Map<TemplateDecl, TemplateCache>();
+
     static get(tpl: TemplateDecl): TemplateCache {
         const cached = this.tplCache.get(tpl);
-        if (cached) {
-            return cached;
-        }
+        if (cached) return cached;
         const newCached = this.compileTemplate(tpl);
         this.tplCache.set(tpl, newCached);
         return newCached;
@@ -43,7 +33,6 @@ export class TemplateManager {
             indexs: {},
             nodes: {},
         };
-        //先处理根节点
         const html = this.resolveNode(tpl, cache, [], true);
         cache.html = html;
         cache.templateCache = this.createTemplateElement(html);
@@ -57,32 +46,33 @@ export class TemplateManager {
         isRoot: boolean = false
     ): string {
         const name = isRoot ? 'root' : tpl.name;
-        let html = '';
         const hasChildren = (tpl.children && tpl.children.length > 0) || false;
         const isComponent = !!tpl.type;
+
         if (name) {
             const meta = this.CreateNodeMeta(tpl);
             cache.names.push(name);
             cache.indexs[name] = indexPath;
             cache.nodes[name] = meta;
+
             if (isComponent) {
-                const opts = { ...tpl };
-                SPLIT_OPTIONS_IGNORE_KEYS.forEach(key => delete opts[key]);
                 cache.childComponents.push(name);
-                meta.options = opts;
+                meta.options = tpl.options;
                 return `<div class="${SKELETON_CLS}"></div>`;
             }
-            const { attributes, options, style, classes } = this.splitOptions(tpl);
+
+            meta.attrs = tpl.attrs;
+            const { attributes, style, classes } = this.splitAttrs(tpl.attrs);
             meta.attributes = attributes;
             meta.style = style;
             meta.classes = classes;
-            meta.options = options;
-            html = this.buildNamedNodeHtml(tpl.tag || 'div', hasChildren);
-        } else {
-            html = this.buildHtml(tpl, hasChildren);
+            meta.options = tpl.options;
         }
+
+        let html = this.buildHtml(tpl.attrs, tpl.tag || 'div', hasChildren, tpl.text);
+
         if (tpl.children) {
-            const childHtmls = [];
+            const childHtmls: string[] = [];
             for (let i = 0; i < tpl.children.length; i++) {
                 const child = tpl.children[i];
                 const newIndexPath = [...indexPath, i];
@@ -90,147 +80,80 @@ export class TemplateManager {
             }
             html = html.replace(CHILDREN_PLACEHOLDER, childHtmls.join(''));
         }
+
         return html;
     }
 
     /**
-     * 创建节点元数据的静态方法
-     * @param tpl 模板声明对象，包含节点的各种配置信息
-     * @returns 返回一个包含节点元数据的对象
+     * 将 attrs 拆分为 attributes、style、classes（兼容 NodeMeta 现有字段）
      */
-    static CreateNodeMeta(tpl: TemplateDecl): NodeMeta {
-        // 获取模板的类型
-        const type = tpl.type;
-        // 返回节点元数据对象，包含以下属性：
-        return {
-            // 节点的标签名
-            tag: tpl.tag,
-            // 节点的类型
-            type: type,
-            // 国际化配置
-            i18n: tpl.i18n,
-            // 权限配置
-            permission: tpl.permission,
-            // 是否为组件的标志，通过双重否定将type转换为布尔值
-            isComponent: !!type,
-        };
-    }
-
-    static splitOptions(tpl: TemplateDecl, coreKeys?: Set<string>): SplitOptionsResult {
+    static splitAttrs(attrs: NodeAttributes | undefined): {
+        attributes: NodeAttributes;
+        style: Record<string, any>;
+        classes: string | string[];
+    } {
         const attributes: NodeAttributes = {};
-        const options: NodeOptions = {};
-        const style: NodeStyle = {};
-        const classes: NodeHTMLClass = [];
-        const tag = tpl.tag;
-        const coreOptions = {} as any;
-        for (const [key, val] of Object.entries(tpl)) {
-            if (SPLIT_OPTIONS_IGNORE_KEYS.has(key)) continue;
+        let style: Record<string, any> = {};
+        let classes: string | string[] = [];
 
-            //先提取组件核心属性
-            if (coreKeys && coreKeys.has(key)) {
-                coreOptions[key] = val;
+        if (!attrs) return { attributes, style, classes };
+
+        for (const [key, val] of Object.entries(attrs)) {
+            if (val === undefined || val === null) continue;
+
+            if (key === 'style' && typeof val === 'object' && !Array.isArray(val)) {
+                style = { ...val };
                 continue;
             }
 
-            //对于hint，如果是dom节点，做特殊处理
-            if (key === 'hint' && tag) {
-                if (tag === 'img') {
-                    attributes.alt = val;
-                } else {
-                    attributes.title = val;
-                }
+            if (key === 'class' || key === 'cls') {
+                classes = val;
                 continue;
             }
 
-            const type = TemplateManager.getOptionType(key);
-            //其他属性，根据类型做不同处理
-            switch (type) {
-                case 'class':
-                    classes.push(val);
-                    break;
-                case 'style':
-                    StyleHelper.expand(val, style);
-                    break;
-                case 'attribute':
-                    attributes[key] = val;
-                    break;
-                default:
-                    options[key] = val;
-                    break;
-            }
+            attributes[key] = val;
         }
-        const result = { attributes, options, style, classes } as any;
-        if (coreKeys) result.coreOptions = coreOptions; //保留组件核心属性
-        return result;
+
+        return { attributes, style, classes };
     }
 
     /**
-     * 根据键名获取选项类型
-     * @param key - 需要检查的键名
-     * @return 返回选项类型，可以是'class'、'style'、'attribute'或'option'
+     * 构建节点 HTML
      */
-    static getOptionType(key: string) {
-        // 检查是否为类相关的键
-        if (CLASS_KEYS.has(key)) return 'class';
-        // 检查是否为style键
-        if (key === 'style') return 'style';
-        // 检查是否为样式相关的键
-        if (STYLE_KEYS.has(key)) return 'style';
-        // data-* / aria-* 都算 html
-        if (ATTR_PREFIXES_KEYS.has(key)) return 'attribute';
-        if (HTML_KEYS.has(key)) return 'attribute';
-        return 'option';
-    }
-
-    static buildNamedNodeHtml(tag: string, hasChildren: boolean): string {
+    static buildHtml(
+        attrs: NodeAttributes | undefined,
+        tag: string,
+        hasChildren: boolean,
+        text?: string
+    ): string {
         const placeholder = hasChildren ? CHILDREN_PLACEHOLDER : '';
-        return `<${tag}>${placeholder}</${tag}>`;
-    }
-
-    static buildHtml(tpl: TemplateDecl, hasChildren: boolean): string {
-        const placeholder = hasChildren ? CHILDREN_PLACEHOLDER : '';
-        const tag = tpl.tag ?? 'div';
         let style = '';
         let cls = '';
-        const attrs = [];
-        for (const [key, val] of Object.entries(tpl)) {
-            if (val === undefined || val === null) continue;
+        const htmlAttrs: string[] = [];
 
-            if (CLASS_KEYS.has(key)) {
-                if (typeof val === 'string') {
-                    cls += typeof val === '' + ' ';
-                } else {
-                    cls += val.join(' ') + ' ';
+        if (attrs) {
+            for (const [key, val] of Object.entries(attrs)) {
+                if (val === undefined || val === null) continue;
+
+                if (key === 'style' && typeof val === 'object' && !Array.isArray(val)) {
+                    style = StyleHelper.stringify(val);
+                    continue;
                 }
-                continue;
-            }
 
-            if (key === 'style' || STYLE_KEYS.has(key)) {
-                // ✅ 一行搞定
-                style = StyleHelper.addStyle(key, val, style);
-                continue;
-            }
-
-            if (key === 'hint' && tag) {
-                if (tag === 'img') {
-                    attrs.push(`alt="${val}"`);
-                } else {
-                    attrs.push(`title="${val}"`);
+                if (key === 'class' || key === 'cls') {
+                    cls = Array.isArray(val) ? val.join(' ') : String(val);
+                    continue;
                 }
-                continue;
-            }
 
-            attrs.push(`${key}="${string.escapeHtml(val)}"`);
+                htmlAttrs.push(`${key}="${string.escapeHtml(String(val))}"`);
+            }
         }
-        if (style.length > 0) {
-            attrs.push(`style="${style}"`);
-        }
-        if (cls.length > 0) {
-            attrs.push(`class="${cls.trim()}"`);
-        }
-        const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
-        const text = tpl.text ? string.escapeHtml(tpl.text) : '';
-        const inner = text + placeholder;
+
+        if (style) htmlAttrs.push(`style="${style}"`);
+        if (cls) htmlAttrs.push(`class="${cls}"`);
+
+        const attrStr = htmlAttrs.length > 0 ? ' ' + htmlAttrs.join(' ') : '';
+        const inner = text ? string.escapeHtml(text) + placeholder : placeholder;
 
         return VOID_TAGS.has(tag.toLowerCase())
             ? `<${tag}${attrStr} />`
@@ -238,11 +161,18 @@ export class TemplateManager {
     }
 
     /**
-     * 创建模板元素 — 预编译 HTML 到 HTMLTemplateElement
-     *
-     * @param html - HTML 字符串
-     * @returns 预编译的模板元素（可 cloneNode 复用）
+     * 创建节点元数据
      */
+    static CreateNodeMeta(tpl: TemplateDecl): NodeMeta {
+        return {
+            tag: tpl.tag,
+            type: tpl.type,
+            i18n: tpl.i18n,
+            permission: tpl.permission,
+            isComponent: !!tpl.type,
+        };
+    }
+
     private static createTemplateElement(html: string): HTMLTemplateElement {
         const template = document.createElement('template');
         template.innerHTML = html;

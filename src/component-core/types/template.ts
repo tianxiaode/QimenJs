@@ -1,13 +1,6 @@
 import { NodeMeta } from './component';
 import { NodeIndexPathMap } from './index-path';
 
-export interface SplitOptionsResult extends Omit<
-    NodeMeta,
-    'tag' | 'type' | 'i18n' | 'permission' | 'isComponent'
-> {
-    coreOptions?: Record<string, any>;
-}
-
 export interface TemplateCache {
     /** 生成的 HTML 字符串 */
     html?: string;

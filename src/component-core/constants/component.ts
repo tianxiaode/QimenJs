@@ -1,12 +1,3 @@
-export const SPLIT_OPTIONS_IGNORE_KEYS = new Set([
-    'children',
-    'i18n',
-    'permission',
-    'name',
-    'tag',
-    'type',
-]);
-
 export const HIDDEN_MODE_CSS_MAP = {
     display: 'hidden',
     visibility: 'invisible',

@@ -1,4 +1,6 @@
 export interface NodeAttributes {
+    class?: string | string[];
+    cls?: string | string[];
     href?: string;
     target?: string;
     src?: string;
