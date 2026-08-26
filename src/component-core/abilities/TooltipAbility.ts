@@ -19,19 +19,14 @@ import type { FloatDecl } from '../types';
 
 /** 提示浮层能力，提供 updateTooltip 快捷方法 */
 export const TooltipAbility: AbilityDefinition = {
-    /**
-     * 获取 tooltip 浮层声明
-     *
-     * 供 FloatAbility._commitFloats 在初始化时自动注册。
-     *
-     * @returns FloatDecl 或 undefined（无配置时）
-     */
     _getTooltipFloatDecl(): FloatDecl | undefined {
         const cfg: Tooltiptoptions | undefined = this.tooltip;
         if (!cfg) return;
 
+        const { TooltipComponent } = require('../tooltip/TooltipComponent');
+
         return {
-            type: 'Tooltip',
+            type: TooltipComponent,
             trigger: 'hover',
             placement: cfg.placement ?? 'top',
             showDelay: cfg.delay,
@@ -39,14 +34,6 @@ export const TooltipAbility: AbilityDefinition = {
         };
     },
 
-    /**
-     * 更新 tooltip 浮层数据
-     *
-     * @param data - 更新数据
-     *
-     * @example
-     * this.updateTooltip({ content: '新提示' });
-     */
     updateTooltip(data: Record<string, any>): void {
         this.updateFloat('tooltip', data);
     },

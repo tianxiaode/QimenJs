@@ -21,10 +21,10 @@
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
-import { ComponentRegistrar } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
+import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
 import './groupheadercell.css.ts';
 
 /** 分组表头单元格属性接口 */
@@ -90,9 +90,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         if (!container) return;
 
         for (const config of configs) {
-            const componentType = config.type === 'group' ? 'GroupHeaderCell' : 'LeafHeaderCell';
-            const ChildClass = ComponentRegistrar.getInstance().get(componentType) as any;
-            if (!ChildClass) continue;
+            const ChildClass = config.type === 'group' ? GroupHeaderCellComponent : LeafHeaderCellComponent;
 
             const childProps: any = {
                 colName: config.colName,

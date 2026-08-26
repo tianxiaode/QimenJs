@@ -24,6 +24,24 @@ export interface IIndicator extends IComponentCore {
 }
 
 /**
+ * 指示器类型
+ */
+export type IndicatorType = 'dot' | 'number' | 'dash' | 'button' | 'tab';
+
+/**
+ * 指示器配置
+ */
+export interface IndicatorConfig {
+    type: IndicatorType;
+    placement?: string;
+    trigger?: string;
+    activeIndex?: number;
+    emits?: Record<string, string>;
+    arrows?: boolean;
+    defaultItemType?: string;
+}
+
+/**
  * 拖拽影子接口（从 IComponentCore 派生）
  */
 export interface IDragGhost extends IComponentCore {
@@ -112,7 +130,7 @@ export interface ComponentCoreOptions {
 
 export interface NodeMeta {
     tag?: string;
-    type?: IComponentCore;
+    type?: IComponentCore | string;
     options?: NodeOptions;
     attributes?: NodeAttributes;
     i18n?: I18nOptions;
@@ -128,7 +146,7 @@ export interface TemplateDecl {
     /** 节点标签 */
     tag?: string;
     /** 组件类型 */
-    type?: IComponentCore;
+    type?: IComponentCore | string;
     /** 节点名称 */
     name?: string;
     /** 子组件选项（仅 type 时有效） */

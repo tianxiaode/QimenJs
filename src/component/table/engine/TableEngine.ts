@@ -38,6 +38,8 @@ import { HeaderComponent } from '../header/HeaderComponent';
 import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
 import { GroupSummaryRowComponent } from '../group-summary/GroupSummaryRowComponent';
 import { TableSummaryRowComponent } from '../table-summary/TableSummaryRowComponent';
+import { GroupHeaderCellComponent } from '../header/GroupHeaderCellComponent';
+import { LeafHeaderCellComponent } from '../header/LeafHeaderCellComponent';
 
 const EDIT_TYPE_INPUT_MAP: Record<EditType, string> = {
     text: 'text',
@@ -231,8 +233,7 @@ export class TableEngine {
         for (const config of configs) {
             const isGroup = 'childNames' in config;
             const cellType = isGroup ? 'GroupHeaderCell' : 'LeafHeaderCell';
-            const { ComponentRegistrar } = require('../../../component-core');
-            const CellClass = ComponentRegistrar.getInstance().get(cellType);
+            const CellClass = isGroup ? GroupHeaderCellComponent : LeafHeaderCellComponent;
             if (!CellClass) continue;
             const instance = new CellClass(config);
             container.appendChild(instance.el);

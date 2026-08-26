@@ -79,6 +79,7 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
  */
 export function withAbilities(target: any, abilities: readonly AbilityDefinition[]): void {
     const proto = target.prototype;
+    initConstructorProperties(proto);
     for (const ability of abilities) {
         applyAbilitie(proto, ability);
     }
@@ -134,15 +135,43 @@ export function withDefinitions(target: any, definitions: Definitions): void {
     }
 
     // ============================================================
-    // 3. 处理方法 → 直接复制到原型
+    // 3. 处理 readonly → 直接复制到组件实例 + 记录到 _readonlyKeys
+    // ============================================================
+    if (definitions.readonly) {
+        const roKeys = ctor._readonlyKeys;
+        for (const [key, value] of Object.entries(definitions.readonly)) {
+            Object.defineProperty(proto, key, {
+                value: value,
+                enumerable: true,
+                configurable: true,
+                writable: true,
+            });
+            clearKeys.add(key);
+            roKeys.add(key);
+        }
+    }
+
+    // ============================================================
+    // 4. 工具方法：getReadonlyOptionKeys()
+    // ============================================================
+    Object.defineProperty(proto, 'getReadonlyOptionKeys', {
+        value: function () {
+            return Array.from((this.constructor as any)._readonlyKeys || []);
+        },
+        enumerable: false,
+        configurable: true,
+    });
+
+    // ============================================================
+    // 5. 处理方法 → 直接复制到原型
     // ============================================================
     for (const [key, value] of Object.entries(definitions)) {
-        if (key === 'options' || key === 'property') continue;
+        if (key === 'options' || key === 'property' || key === 'readonly') continue;
         if (key === 'constructor') continue;
         if (BUILTIN_KEYS.has(key)) continue;
 
         if (typeof value === 'function') {
-            applyFunction(key, value, proto); // 3. 处理方法 → 直接复制到原型
+            applyFunction(key, value, proto); // 5. 处理方法 → 直接复制到原型
         }
     }
 }
@@ -169,10 +198,18 @@ function initConstructorProperties(proto: any) {
 
     if (!ctor._optionMap) {
         ctor._optionMap = new Map<string, any>();
-        // 继承父类的 optionMap
         if (parent && parent._optionMap) {
             for (const [key, def] of parent._optionMap) {
                 ctor._optionMap.set(key, def);
+            }
+        }
+    }
+
+    if (!ctor._readonlyKeys) {
+        ctor._readonlyKeys = new Set<string>();
+        if (parent && parent._readonlyKeys) {
+            for (const key of parent._readonlyKeys) {
+                ctor._readonlyKeys.add(key);
             }
         }
     }

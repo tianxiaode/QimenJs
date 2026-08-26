@@ -16,7 +16,7 @@
  * - children — 子级容器（内联展开）
  */
 
-import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import './treenavitem.css.ts';
@@ -107,7 +107,7 @@ class TreeNavItemComponent extends Component {
         const container = (this as any).nodeMap?.children?.el as HTMLElement | undefined;
         if (!container || !this.children?.length) return;
 
-        const ItemClass = ComponentRegistrar.getInstance().get('TreeNavItem') as any;
+        const ItemClass = TreeNavItemComponent;
         if (!ItemClass) return;
 
         for (const childData of this.children) {

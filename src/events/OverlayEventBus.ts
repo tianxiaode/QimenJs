@@ -36,6 +36,7 @@ export class OverlayEventBus {
 
     private readonly overlayScope: IEventScope;
     private readonly logger: ILogger;
+    private readonly initHandlers: Array<(component: any, floats: Record<string, any>) => void> = [];
 
     private constructor() {
         this.overlayScope = globalEventBus.createEventScope();
@@ -44,6 +45,16 @@ export class OverlayEventBus {
             '[OverlayEventBus] initialized, scopeId =',
             this.overlayScope.getScopeId()
         );
+    }
+
+    onInit(handler: (component: any, floats: Record<string, any>) => void): void {
+        this.initHandlers.push(handler);
+    }
+
+    emitInit(component: any, floats: Record<string, any>): void {
+        for (const handler of this.initHandlers) {
+            handler(component, floats);
+        }
     }
 
     static getInstance(): OverlayEventBus {

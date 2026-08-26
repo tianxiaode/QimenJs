@@ -13,6 +13,12 @@ import {
     CHINESE_LINE_HEIGHT,
     CHINESE_TRANSITION,
     CHINESE_BREAKPOINT,
+    CHINESE_BORDER,
+    CHINESE_Z_INDEX,
+    CHINESE_OPACITY,
+    CHINESE_ANIMATION,
+    CHINESE_CURSOR,
+    CHINESE_OVERFLOW,
 } from './shared';
 
 // ============ 鹅黄色板 ============
@@ -82,5 +88,11 @@ export const yellowTheme: ThemeDefinition = {
 
         transition: CHINESE_TRANSITION,
         breakpoint: CHINESE_BREAKPOINT,
+        border: CHINESE_BORDER,
+        zIndex: CHINESE_Z_INDEX,
+        opacity: CHINESE_OPACITY,
+        animation: CHINESE_ANIMATION,
+        cursor: CHINESE_CURSOR,
+        overflow: CHINESE_OVERFLOW,
     },
 };

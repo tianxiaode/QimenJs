@@ -123,7 +123,6 @@ class StepComponent extends ItemGroupPooledComponent {
     }
 }
 
-StepComponent.register();
 export { StepComponent };
 /** 步骤条实例类型 */
 export type StepComponentInstance = InstanceType<typeof StepComponent>;

@@ -128,10 +128,20 @@ export class TemplateManager {
             const style = StyleHelper.stringify(tpl.style);
             htmlAttrs.push(`style="${style}"`);
         }
-        if (tpl.classes) {
-            htmlAttrs.push(
-                `class="${Array.isArray(tpl.classes) ? tpl.classes.join(' ') : tpl.classes}"`
-            );
+        const cls = (tpl as any).cls;
+        const classes = tpl.classes;
+        let classStr: string | undefined;
+        if (cls && classes) {
+            const parts = Array.isArray(classes) ? [...classes] : [classes];
+            parts.push(cls);
+            classStr = parts.join(' ');
+        } else if (cls) {
+            classStr = cls;
+        } else if (classes) {
+            classStr = Array.isArray(classes) ? classes.join(' ') : classes;
+        }
+        if (classStr) {
+            htmlAttrs.push(`class="${classStr}"`);
         }
 
         const attrStr = htmlAttrs.length > 0 ? ' ' + htmlAttrs.join(' ') : '';

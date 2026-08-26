@@ -49,6 +49,17 @@ export const targetToHandler: IOptionHandler = {
 
         if (to === OPTION_TARGET_TO_KEYS.alt) {
             el.alt = value;
+            return true;
+        }
+
+        if (to === OPTION_TARGET_TO_KEYS.attribute) {
+            el.setAttribute(target, String(value));
+            return true;
+        }
+
+        if (to === OPTION_TARGET_TO_KEYS.style) {
+            el.style.setProperty(target, value);
+            return true;
         }
 
         return false;

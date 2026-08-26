@@ -24,7 +24,7 @@
  * ```
  */
 
-import { Component, ComponentRegistrar } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
 import type { TabProps as TabItemProps } from './TabComponent';
@@ -161,14 +161,6 @@ class TabsComponent extends Component {
                 if (typeof item.content === 'string') {
                     if (item.content.startsWith('<')) {
                         pane.innerHTML = item.content;
-                    } else {
-                        // 组件类型名（字符串）
-                        const CompClass = ComponentRegistrar.getInstance().get(item.content) as any;
-                        if (CompClass) {
-                            const instance = new CompClass();
-                            pane.appendChild(instance.el);
-                            this._contentInstances.push(instance);
-                        }
                     }
                 } else {
                     // 组件类

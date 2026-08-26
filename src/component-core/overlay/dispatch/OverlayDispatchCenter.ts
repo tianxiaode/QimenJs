@@ -2,12 +2,13 @@ import { RegistrarBase } from '@/registry';
 import { OverlayEventBus, OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
-import { ZIndexLevel, nextZIndex } from '@/component';
+import { ZIndexLevel, nextZIndex } from '../../z-index';
 import { positionOverlay, type Placement } from './positionOverlay';
 import { throttle } from '@/async';
+import type { ComponentClass } from '../../types';
 
 export interface OverlayDefinition {
-    type: string;
+    type: { new (...args: any[]): any };
     trigger?: string;
     placement?: Placement;
     offset?: number;
@@ -21,6 +22,7 @@ export interface OverlayDefinition {
 
 interface OverlayInstance {
     overlay: any;
+    overlayKey: string;
     el: HTMLElement;
     anchor: HTMLElement;
     component: any;
@@ -50,6 +52,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     constructor() {
         super();
         this.bus = OverlayEventBus.getInstance();
+        this.bus.onInit((component, floats) => this._handleInit(component.id, { component, floats }));
         this.logger.debug?.('[OverlayDispatchCenter] initialized');
     }
 
@@ -128,6 +131,18 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 return;
             }
             if (existing && action === OVERLAY_ACTIONS.SHOW) {
+                existing.overlay.hidden = false;
+                OverlayRoot.getInstance().mountOverlay(existing.el);
+                if (!existing.maskEl) {
+                    const def = this.storage.get(overlayKey);
+                    if (def?.maskMode === 'scoped') {
+                        const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
+                        existing.maskEl = this._acquireScopedMask(existing.anchor, maskColor);
+                    } else if (def?.maskMode !== 'none' && def?.mask) {
+                        const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
+                        existing.maskEl = this._acquireMask(maskColor);
+                    }
+                }
                 this._reposition(instanceKey);
                 return;
             }
@@ -143,20 +158,30 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
     }
 
-    private _handleInit(componentId: string, data: any): void {
+    private _handleInit(_componentId: string, data: any): void {
         const component = data?.component;
         const floats = data?.floats;
         if (!component || !floats) return;
 
-        component.onCleanup(() => this.disposeByComponent(componentId));
+        const cid = component.id;
+        component.onCleanup(() => this.disposeByComponent(cid));
 
         for (const [nodeName, floatDef] of Object.entries(floats)) {
             const def = floatDef as Record<string, any>;
-            const anchor = component.nodeMap?.[nodeName]?.el ?? component.el;
-            const overlayKey = `${componentId}:${nodeName}`;
+            const anchor = component.nodeMap?.[nodeName]?.el ?? component.nodeElements?.[nodeName] ?? component.el;
+            const overlayKey = `${cid}:${nodeName}`;
+
+            const ctor: ComponentClass | undefined = typeof def.type === 'function'
+                ? def.type
+                : undefined;
+
+            if (!ctor) {
+                this.logger.warn?.(`[OverlayDispatchCenter] overlayKey="${overlayKey}" has no constructor`);
+                continue;
+            }
 
             this.register(overlayKey, {
-                type: def.type,
+                type: ctor,
                 trigger: def.trigger,
                 placement: def.placement,
                 offset: def.offset,
@@ -164,6 +189,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 closeOnEscape: def.closeOnEscape,
                 mask: def.mask,
                 maskMode: def.maskMode,
+                data: def.data,
             });
 
             if (def.emits) {
@@ -204,8 +230,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                         );
                     });
                 } else if (t === 'hover') {
-                    component.bind(anchor, 'mouseenter');
-                    component.on('dom:mouseenter', () => {
+                    component.bind(anchor, 'enter');
+                    component.on('dom:enter', () => {
                         this.bus.overlayEmit(
                             EventContextBuilder.create()
                                 .withEvent(`overlay:${overlayKey}:${showAction}`)
@@ -215,8 +241,8 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                                 .build()
                         );
                     });
-                    component.bind(anchor, 'mouseleave');
-                    component.on('dom:mouseleave', () => {
+                    component.bind(anchor, 'leave');
+                    component.on('dom:leave', () => {
                         this.bus.overlayEmit(
                             EventContextBuilder.create()
                                 .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.HIDE}`)
@@ -280,7 +306,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
      * 挂载并显示浮层
      *
      * 优先使用 data.overlay（调用方提供的实例）；
-     * 若未提供，则从 def.type 通过 ComponentRegistrar 自动创建实例。
+     * 若未提供，则从 def.type 直接创建实例。
      * trigger: 'always' 的浮层在 _handleInit 中自动触发 SHOW，无需手动调用。
      */
     private _mountAndShow(instanceKey: string, overlayKey: string, data: any): void {
@@ -293,15 +319,9 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const { component, anchor, overlay } = data || {};
         let overlayInst = overlay;
         if (!overlayInst) {
-            const OverlayClass = ComponentRegistrar.getInstance().get(def.type);
-            if (!OverlayClass) {
-                this.logger.warn?.(
-                    `[OverlayDispatchCenter] overlayKey="${overlayKey}" type="${def.type}" not registered in ComponentRegistrar`
-                );
-                return;
-            }
+            const OverlayClass = def.type;
             const overlayData = typeof def.data === 'function' ? def.data() : def.data;
-            overlayInst = new OverlayClass({ anchor, ...overlayData });
+            overlayInst = new OverlayClass({ options: { ...overlayData } });
         }
 
         const overlayEl = overlayInst.el;
@@ -327,6 +347,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         const inst: OverlayInstance = {
             overlay: overlayInst,
+            overlayKey,
             el: overlayEl,
             anchor: anchorEl,
             component,
@@ -383,7 +404,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
-        const def = this.storage.get(instanceKey.split(':').pop()!);
+        const def = this.storage.get(inst.overlayKey);
         const placement = def?.placement ?? 'bottom';
         const offset = def?.offset ?? 4;
         positionOverlay(inst.el, inst.anchor, placement, offset, true);
@@ -502,8 +523,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         this._cleanupInstance(inst);
 
         if (inst.maskEl) {
-            const overlayKey = instanceKey.split(':').pop()!;
-            this._releaseMask(inst.maskEl, overlayKey);
+            this._releaseMask(inst.maskEl, inst.overlayKey);
         }
 
         OverlayRoot.getInstance().unmountOverlay(inst.el);

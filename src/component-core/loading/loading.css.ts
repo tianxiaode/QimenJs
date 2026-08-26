@@ -1,0 +1,32 @@
+export const loadingCSS = `
+.q-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+}
+
+.q-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: q-spin 0.8s linear infinite;
+}
+
+@keyframes q-spin {
+    to { transform: rotate(360deg); }
+}
+
+.q-loading-text {
+    font-size: 14px;
+    color: #64748b;
+}
+`;

@@ -9,7 +9,6 @@
  * - dropdown：click 触发，菜单列表
  * - popover：click/hover 触发，富内容弹窗
  * - contextmenu：contextmenu 触发，右键菜单
- * - badge：always 触发，角标指示器（通过 change 更新数据）
  */
 
 export type OverlayTrigger = 'hover' | 'click' | 'focus' | 'contextmenu' | 'manual' | 'always';

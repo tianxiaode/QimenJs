@@ -14,7 +14,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { OverlayRoot } from './OverlayRoot';
-import { ZIndexLevel, nextZIndex, releaseZIndex } from '@/component';
+import { ZIndexLevel, nextZIndex, releaseZIndex } from '../z-index';
 
 // ─── 视口定位类型 ──────────────────────────────────────────
 

@@ -17,9 +17,11 @@
  * ```
  */
 
-import type { Plugin, ResolvedConfig } from 'vite';
+import type { Plugin, ResolvedConfig, Alias } from 'vite';
 import { resolve, dirname, basename } from 'path';
 import { existsSync, readFileSync } from 'fs';
+
+const CSS_VIRTUAL_PREFIX = '\0qimen-css:';
 
 export interface QimenCssPluginOptions {
     /**
@@ -56,6 +58,7 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
     } = options;
 
     let config: ResolvedConfig;
+    let aliases: Alias[] = [];
     const collectedCssFiles = new Set<string>();
 
     function log(...args: any[]) {
@@ -69,16 +72,65 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
             config = resolvedConfig;
         },
 
+        transform(code, id) {
+            if (id.includes('node_modules')) return;
+            if (!id.endsWith('.ts') && !id.endsWith('.tsx') && !id.endsWith('.js') && !id.endsWith('.jsx')) return;
+            if (id.includes('.css')) return;
+            if (!code.includes('.css') && !code.includes('.css.ts')) return;
+            const transformed = code.replace(
+                /(?:import\s+(?:[\w*\s{},]*\s+from\s+)?|export\s+(?:\*|[\w{} ,]*)\s+from\s+)['"]([^'"]+\.css(?:\.ts)?)['"]/g,
+                (match, path) => {
+                    const dir = dirname(id);
+                    const resolved = resolve(dir, path);
+                    const tsPath = resolved.endsWith('.ts') ? resolved : resolved + '.ts';
+                    if (existsSync(tsPath)) {
+                        return match.replace(path, CSS_VIRTUAL_PREFIX + tsPath.replace(/\\/g, '/'));
+                    }
+                    return match;
+                }
+            );
+            if (transformed !== code) {
+                return { code: transformed, map: null };
+            }
+        },
+
+        resolveId(source) {
+            if (source.startsWith(CSS_VIRTUAL_PREFIX)) {
+                return source;
+            }
+        },
+
+        load(id) {
+            if (id.startsWith(CSS_VIRTUAL_PREFIX)) {
+                const tsPath = id.slice(CSS_VIRTUAL_PREFIX.length);
+                const content = readFileSync(tsPath, 'utf-8');
+                const cssMatch = content.match(
+                    /export\s+(?:const|let|var)\s+(\w+)\s*=\s*`([\s\S]*?)`/
+                );
+                if (cssMatch) {
+                    const varName = cssMatch[1];
+                    const css = cssMatch[2].replace(/`/g, '\\`').replace(/\${/g, '\\${');
+                    return `const ${varName} = \`${css}\`;
+const style = document.createElement('style');
+style.textContent = ${varName};
+document.head.appendChild(style);
+export { ${varName} };
+export default ${varName};`;
+                }
+            }
+        },
+
         buildStart() {
             const root = config.root;
             const visited = new Set<string>();
+            aliases = (config.resolve?.alias as Alias[]) || [];
 
             log('分析入口文件...');
 
             for (const entry of entryPoints) {
                 const entryPath = resolve(root, entry);
                 if (existsSync(entryPath)) {
-                    collectCSSImports(entryPath, collectedCssFiles, visited);
+                    collectCSSImports(entryPath, collectedCssFiles, visited, root, aliases);
                 }
             }
 
@@ -123,9 +175,31 @@ export function qimenCssPlugin(options: QimenCssPluginOptions = {}): Plugin {
 }
 
 /**
+ * 通过 Vite 别名解析模块路径
+ */
+function resolveAlias(importPath: string, aliases: Alias[], root: string): string | null {
+    for (const alias of aliases) {
+        const { find, replacement } = alias;
+        if (typeof find === 'string') {
+            if (importPath === find || importPath.startsWith(find + '/')) {
+                const suffix = importPath === find ? '' : importPath.slice(find.length);
+                return resolve(root, replacement + suffix);
+            }
+        } else if (find instanceof RegExp) {
+            const match = importPath.match(find);
+            if (match) {
+                const rel = replacement.replace(/\$(\d+)/g, (_, n) => match[Number(n)] || '');
+                return resolve(root, rel);
+            }
+        }
+    }
+    return null;
+}
+
+/**
  * 递归收集CSS import
  */
-function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set<string>): void {
+function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set<string>, root: string, aliases: Alias[]): void {
     if (visited.has(filePath)) return;
     visited.add(filePath);
 
@@ -135,8 +209,8 @@ function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set
     const content = readFileSync(filePath, 'utf-8');
     const dir = dirname(filePath);
 
-    // 提取所有import语句
-    const importRegex = /import\s+['"]([^'"]+)['"]/g;
+    // 提取所有 import/export 语句
+    const importRegex = /(?:import\s+(?:[\w*\s{},]*\s+from\s+)?|export\s+(?:\*|[\w{} ,]*)\s+from\s+)['"]([^'"]+)['"]/g;
     let match;
 
     while ((match = importRegex.exec(content)) !== null) {
@@ -144,7 +218,10 @@ function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set
 
         // CSS import
         if (importPath.endsWith('.css') || importPath.endsWith('.css.ts')) {
-            const cssPath = resolve(dir, importPath);
+            let cssPath = resolve(dir, importPath);
+            if (!existsSync(cssPath) && importPath.endsWith('.css') && !importPath.endsWith('.css.ts')) {
+                cssPath += '.ts';
+            }
             if (existsSync(cssPath)) {
                 cssFiles.add(cssPath);
             }
@@ -155,14 +232,23 @@ function collectCSSImports(filePath: string, cssFiles: Set<string>, visited: Set
             importPath.endsWith('.js') ||
             (!importPath.includes('!') && !importPath.startsWith('data:'))
         ) {
-            let resolvedPath = resolve(dir, importPath);
+            let resolvedPath = resolveAlias(importPath, aliases, root);
+            if (!resolvedPath) {
+                resolvedPath = resolve(dir, importPath);
+            }
 
             if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.js')) {
-                resolvedPath += '.ts';
+                const candidates = [resolvedPath + '.ts', resolvedPath + '.js', resolvedPath + '/index.ts', resolvedPath + '/index.js'];
+                for (const c of candidates) {
+                    if (existsSync(c)) {
+                        resolvedPath = c;
+                        break;
+                    }
+                }
             }
 
             if (existsSync(resolvedPath)) {
-                collectCSSImports(resolvedPath, cssFiles, visited);
+                collectCSSImports(resolvedPath, cssFiles, visited, root, aliases);
             }
         }
     }

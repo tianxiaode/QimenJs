@@ -1,6 +1,5 @@
-import type { TplNode } from '@/component-core';
+import type { TplNode } from '../types';
 
-/** 提示框模板定义 */
 export const TOOLTIP_TPL: TplNode = {
     tag: 'div',
     children: [

@@ -1,14 +1,14 @@
 /**
  * Msgbox — msgbox 实例
  *
- * 独立的能力实例（ComposableBase.with 派生类），
+ * 独立的能力实例（ComposableBase 派生类），
  * 内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能。
  *
- * 通过 ComposableBase.with() 组合能力：
+ * 通过 ComposableBase.use() 组合能力：
  * - FloatingLayerAbility：OverlayRoot 挂载 + z-index + 动画 + 视口定位 + bindDomEvent
  * - SystemEventBusAbility：系统事件收发（仅在 eventKey 存在时发送）
  *
- * 模板通过 ComponentRegistrar 注册，节点通过 NodeMapManager 管理。
+ * 模板通过 TemplateManager 编译，节点通过手动映射管理。
  *
  * 事件通过 SystemEventBus 发送，编码：{eventKey}:{action}
  * 仅当 MsgboxOptions.eventKey 已定义时才发送，否则跳过。
@@ -17,14 +17,14 @@
 import { AbilityDefinition, ComposableBase, InferAbilities } from '@/composable';
 import { FloatingLayerAbility } from '@/component-core/overlay';
 import { EventContextBuilder } from '@/context';
-import { ComponentRegistrar } from '@/component-core/engine/ComponentRegistrar';
-import type { INodeMapManager } from '@/component-core/types/node-manager';
+import { TemplateManager } from '@/component-core/engine/TemplateManager';
 import { MSGBOX_ACTIONS, MSGBOX_FEEDBACK_EVENTS } from './imperative-events';
 import { MSGBOX_TEMPLATE } from './msgbox-tpl';
 import { resolveI18nValue, t } from '@qimenjs/i18n';
-import { ZIndexLevel } from '@qimenjs/component';
+import { ZIndexLevel } from '../z-index';
 import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
 import { SystemEventBusAbility } from '@/system-abilities';
+import './msgbox.css';
 
 const MSGBOX_ABILITIES = [
     FloatingLayerAbility,
@@ -34,7 +34,7 @@ const MSGBOX_ABILITIES = [
 export interface IMsgbox extends InferAbilities<typeof MSGBOX_ABILITIES> {
     el: HTMLElement;
     maskEl: HTMLElement;
-    nodeMapMgr: INodeMapManager;
+    _nodeEls: Record<string, HTMLElement>;
     zIndex: number;
     type: MsgboxType;
     eventKey?: string;
@@ -49,7 +49,7 @@ export class Msgbox extends ComposableBase {
 
     el!: HTMLElement;
     maskEl!: HTMLElement;
-    nodeMapMgr!: INodeMapManager;
+    _nodeEls!: Record<string, HTMLElement>;
     zIndex!: number;
     type!: MsgboxType;
     eventKey?: string;
@@ -76,10 +76,22 @@ export class Msgbox extends ComposableBase {
         // 1. 初始化能力
         this._zIndexLevel = ZIndexLevel.modal;
 
-        // 2. 通过 ComponentRegistrar 获取 NodeMapManager + 构建 DOM
-        const registry = ComponentRegistrar.getInstance();
-        this.nodeMapMgr = registry.createNodeMapManager('Msgbox', this)!;
-        this.el = this.nodeMapMgr.buildDOM();
+        // 2. 通过 TemplateManager 编译模板 + 构建 DOM
+        const tplCache = TemplateManager.get(MSGBOX_TEMPLATE);
+        const fragment = tplCache.templateCache!.content.cloneNode(true) as DocumentFragment;
+        this.el = (fragment.firstElementChild as HTMLElement) ?? document.createElement('div');
+        this._nodeEls = { root: this.el };
+        for (const name of tplCache.names) {
+            if (name === 'root') continue;
+            const path = tplCache.indexs[name];
+            if (!path) continue;
+            let current: Element = this.el;
+            for (const idx of path) {
+                if (!current.children[idx]) break;
+                current = current.children[idx];
+            }
+            this._nodeEls[name] = current as HTMLElement;
+        }
 
         // 3. 创建遮罩
         this.maskEl = document.createElement('div');
@@ -97,9 +109,9 @@ export class Msgbox extends ComposableBase {
         this._setText('msgbox:content', resolveI18nValue(options.content ?? ''));
 
         // 6. 根据类型配置按钮区域
-        const cancelBtn = this.nodeMapMgr.get('msgbox:cancel')?.el;
-        const confirmBtn = this.nodeMapMgr.get('msgbox:confirm')?.el;
-        const inputEl = this.nodeMapMgr.get('msgbox:field')?.el as HTMLInputElement | null;
+        const cancelBtn = this._nodeEls['msgbox:cancel'];
+        const confirmBtn = this._nodeEls['msgbox:confirm'];
+        const inputEl = this._nodeEls['msgbox:field'] as HTMLInputElement | undefined;
         this.inputEl = inputEl ?? null;
 
         if (type === 'alert') {
@@ -159,7 +171,7 @@ export class Msgbox extends ComposableBase {
     }
 
     _setText(key: string, text: string): void {
-        const el = this.nodeMapMgr.get(key)?.el;
+        const el = this._nodeEls[key];
         if (el) el.textContent = text;
     }
 
@@ -208,16 +220,12 @@ export class Msgbox extends ComposableBase {
 
             this._emitEvent(MSGBOX_FEEDBACK_EVENTS.CLOSED, { eventKey: this.eventKey });
 
-            this.nodeMapMgr.disposeAll();
+            this._nodeEls = {};
             this.dispose();
             this.onClose?.();
         };
     }
 }
-
-// ─── 模板注册 ──────────────────────────────────────────────
-
-ComponentRegistrar.getInstance().register(Msgbox as any, MSGBOX_TEMPLATE);
 
 Msgbox.use(MSGBOX_ABILITIES);
 

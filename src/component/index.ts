@@ -6,8 +6,6 @@
 
 // 浮层与模板
 
-export { ZIndexLevel, nextZIndex, releaseZIndex } from './z-index';
-
 // 孤儿组件注册触发（无自然 import 链，显式 import 触发底部 register/useTemplate 副作用）
 import './text/TextComponent';
 import './text/HrefComponent';
@@ -49,10 +47,6 @@ export {
     type ButtonGroupProps,
 } from './button-group/ButtonGroupComponent';
 export { buttonGroupCSS } from './button-group/button-group.css';
-export { BadgeComponent } from './badge/BadgeComponent';
-export { badgeCSS } from './badge/badge.css';
-export { TooltipComponent, type TooltipProps } from './tooltip/TooltipComponent';
-export { tooltipCSS } from './tooltip/tooltip.css';
 export { AlertComponent, type AlertType, type AlertProps } from './alert/AlertComponent';
 export { alertCSS } from './alert/alert.css';
 export {
@@ -161,9 +155,6 @@ export { navCSS } from './nav/nav.css';
 export { TreeNavComponent, type TreeNavProps } from './treenav/TreeNavComponent';
 export { TreeNavItemComponent, type TreeNavItemProps } from './treenav/TreeNavItemComponent';
 export { treeNavCSS } from './treenav/tree-nav.css';
-
-// 加载组件
-export { LoadingComponent } from './loading/LoadingComponent';
 
 // 事件枚举
 export {

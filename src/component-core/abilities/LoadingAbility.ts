@@ -29,14 +29,16 @@ export const LoadingAbility: AbilityDefinition = {
      *
      * @returns FloatDecl 或 undefined（无配置时）
      */
-    _getLoadingFloatDecl(): FloatDecl | undefined {
+_getLoadingFloatDecl(): FloatDecl | undefined {
         const cfg: LoadingOptions | undefined = this.loading;
         if (!cfg) return;
+
+        const { LoadingComponent } = require('../loading/LoadingComponent');
 
         const { maskMode, mask, ...loadingData } = cfg;
 
         return {
-            type: 'Loading',
+            type: LoadingComponent,
             trigger: 'manual',
             anchor: 'self',
             placement: 'anchor-center',
@@ -59,7 +61,19 @@ export const LoadingAbility: AbilityDefinition = {
      * this.showLoading('提交中...', 'global');
      */
     showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
-        this._ensureFloat('loading', this._getLoadingFloatDecl());
+        let decl = this._getLoadingFloatDecl();
+        if (!decl) {
+            const { LoadingComponent } = require('../loading/LoadingComponent');
+            decl = {
+                type: LoadingComponent,
+                trigger: 'manual',
+                anchor: 'self',
+                placement: 'anchor-center',
+                maskMode: maskMode ?? 'scoped',
+                mask: true,
+            };
+        }
+        this._ensureFloat('loading', decl);
         if (text !== undefined || maskMode !== undefined) {
             const data: Record<string, any> = {};
             if (text !== undefined) data.text = text;

@@ -33,9 +33,9 @@ export const ComponentDefs: Definitions = {
         domEvents: null,
         /** 事件监听 */
         listens: null,
-        /** 组件事件key，用于跨组件通信时发送和订阅事件的唯一标识符 */
-        ...COMPONENT_CORE_READONLY_OPTIONS,
     },
+
+    readonly: { ...COMPONENT_CORE_READONLY_OPTIONS },
 
     _onOptionChange(key: string, value: any, old: any, definition: OptionDefinition | any) {
         if (old === value) return;

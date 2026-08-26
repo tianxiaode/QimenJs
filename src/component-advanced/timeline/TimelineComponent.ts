@@ -82,7 +82,6 @@ class TimelineComponent extends ItemGroupPooledComponent {
     }
 }
 
-TimelineComponent.register();
 export { TimelineComponent };
 /** 时间线实例类型 */
 export type TimelineComponentInstance = InstanceType<typeof TimelineComponent>;

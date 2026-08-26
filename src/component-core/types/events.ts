@@ -412,8 +412,8 @@ export type FloatTrigger = 'click' | 'hover' | 'focus' | 'manual' | 'always';
  * 统一了所有浮动场景：下拉面板、菜单、提示框等。
  */
 export interface FloatDecl {
-    /** 浮动层组件类型（唯一特殊字段，去掉后剩余配置直接作为构造参数） */
-    type: string;
+    /** 浮动层组件类型（可选，省略时由具体的 Ability 提供默认类型） */
+    type?: string | { new (...args: any[]): any };
     /**
      * 锚定目标：
      * - 省略 → key 即为节点 name，自动锚定该节点

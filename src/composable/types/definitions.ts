@@ -6,6 +6,8 @@ export const OPTION_TARGET_TO_KEYS = {
     value: 'value',
     title: 'title',
     alt: 'alt',
+    style: 'style',
+    attribute: 'attribute',
 };
 
 export interface OptionDecl {
@@ -22,6 +24,7 @@ export type OptionDefinition = Record<string, OptionDecl | any>;
 export type Definitions = {
     options?: OptionDefinition;
     property?: Record<string, any>;
+    readonly?: Record<string, any>;
     [key: string]: any;
 };
 
@@ -41,6 +44,7 @@ export type InferOptions<T extends OptionDefinition> = {
 export type InferDefinitions<T extends Definitions> = (T['options'] extends OptionDefinition
     ? InferOptions<T['options']>
     : object) &
-    (T['property'] extends Record<string, any> ? T['property'] : object) & {
-        [K in keyof T as K extends 'options' | 'property' ? never : K]: T[K];
+    (T['property'] extends Record<string, any> ? T['property'] : object) &
+    (T['readonly'] extends Record<string, any> ? T['readonly'] : object) & {
+        [K in keyof T as K extends 'options' | 'property' | 'readonly' ? never : K]: T[K];
     };

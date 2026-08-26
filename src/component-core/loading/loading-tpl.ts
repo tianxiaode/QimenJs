@@ -1,6 +1,5 @@
-import type { TplNode } from '@/component-core';
+import type { TplNode } from '../types';
 
-/** 加载模板定义 */
 export const LOADING_TPL: TplNode = {
     tag: 'div',
     cls: 'q-loading',

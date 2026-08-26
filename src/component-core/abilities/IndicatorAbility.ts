@@ -40,7 +40,7 @@ export const IndicatorAbility: AbilityDefinition = {
 
         if (typeof indicator === 'function') {
             return {
-                type: (indicator as any).type || indicator.name,
+                type: indicator,
                 trigger: 'always',
                 placement: 'bottom',
             };

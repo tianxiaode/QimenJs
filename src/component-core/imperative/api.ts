@@ -9,6 +9,8 @@ import { MsgboxManager } from './MsgboxManager';
 import { Component } from '@/component-core';
 import { t } from '@/i18n/i18n-utils';
 import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType } from './types';
+import './msgbox.css';
+import './toast.css';
 
 /**
  * 显示 toast 消息提示
@@ -61,10 +63,8 @@ export const msgbox = {
     },
 };
 
-Component.setDefaultHandler({
-    error(ctx: any, _domain: string) {
-        const code = ctx?.error?.code || ctx?.code;
-        const message = code ? t(code, true) : ctx?.error?.message || ctx?.message || String(ctx);
-        toast({ message, type: 'error' });
-    },
+Component.setDefaultHandler((ctx: any, _domain: string) => {
+    const code = ctx?.error?.code || ctx?.code;
+    const message = code ? t(code, true) : ctx?.error?.message || ctx?.message || String(ctx);
+    toast({ message, type: 'error' });
 });

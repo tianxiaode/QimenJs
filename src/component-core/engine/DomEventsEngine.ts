@@ -399,10 +399,11 @@ export class DomEventsEngine {
      *   用于替换 emits 中的 '[action]' 和生成方法名
      */
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
-        const target = domEvt?.target as Element;
+        const originalEvent = domEvt?.data?.originalEvent;
+        const target = originalEvent?.target ?? domEvt?.target as Element;
         if (!target) return;
 
-        const eventType = domEvt?.type as string;
+        const eventType = domEvt?.data?.semantic ?? domEvt?.data?.signal as string;
         if (!eventType) return;
 
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
@@ -459,11 +460,15 @@ export class DomEventsEngine {
 
         let currentComponent: any;
         if (firstNode) {
-            // 第一段在 nodeMap 中找到
             currentComponent = firstNode.component ?? firstNode;
         } else {
-            // 第一段在 nodeMap 中找不到 → 按类型名查找（支持 isItemContainer 的 _items）
-            currentComponent = DomEventsEngine._findByType(instance, segments[0], target);
+            const el = instance.nodeElements?.[segments[0]];
+            if (el) {
+                currentComponent = { el };
+            } else {
+                currentComponent = instance.nodeInstances?.[segments[0]]
+                    ?? DomEventsEngine._findByType(instance, segments[0], target);
+            }
         }
         if (!currentComponent?.el) return null;
         if (!currentComponent.el.contains(target)) return null;
@@ -473,7 +478,6 @@ export class DomEventsEngine {
             const nestedNodeMap =
                 currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
 
-            // 先在 nodeMap 查找
             const nestedNode = nestedNodeMap[seg];
             if (nestedNode) {
                 const next = nestedNode.component ?? nestedNode;
@@ -482,7 +486,12 @@ export class DomEventsEngine {
                 continue;
             }
 
-            // nodeMap 找不到 → 按类型名查找
+            const el = currentComponent.nodeElements?.[seg];
+            if (el) {
+                currentComponent = { el };
+                continue;
+            }
+
             const byType = DomEventsEngine._findByType(currentComponent, seg, target);
             if (!byType) return null;
             currentComponent = byType;
@@ -551,7 +560,14 @@ export class DomEventsEngine {
             return component._items.map((item: any) => item.component);
         }
         const nodeMap = component.nodeMap ?? component.nodeMapMgr?.getAll?.() ?? {};
-        return Object.values(nodeMap).map((node: any) => node?.component ?? node);
+        if (Object.keys(nodeMap).length > 0) {
+            return Object.values(nodeMap).map((node: any) => node?.component ?? node);
+        }
+        const children: any[] = [];
+        if (component.nodeInstances) {
+            children.push(...Object.values(component.nodeInstances));
+        }
+        return children;
     }
 
     private static _matchAction(

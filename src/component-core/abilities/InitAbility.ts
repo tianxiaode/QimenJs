@@ -19,11 +19,7 @@ import type { AbilityDefinition } from '@/composable';
 import { TemplateManager } from '../engine/TemplateManager';
 import { ListensEngine } from '../engine/ListensEngine';
 import { DomEventsEngine } from '../engine/DomEventsEngine';
-import {
-    COMPONENT_CORE_OPTIONS_KEYS,
-    COMPONENT_CORE_READONLY_OPTIONS_KEYS,
-    SKELETON_CLS,
-} from '../constants';
+import { SKELETON_CLS } from '../constants';
 import { ComponentCoreOptions, IComponentCore } from '../types';
 import { object } from '@/utils';
 
@@ -73,10 +69,13 @@ export const InitAbility = {
         if (!options) return;
         // 将构造函数选项应用到组件实例
         if (options.options) {
+            const optionMap: Map<string, any> = this.getOptionMap();
+            const readonlyKeys = this.getReadonlyOptionKeys();
             for (const [key, value] of Object.entries(options.options)) {
-                if (COMPONENT_CORE_OPTIONS_KEYS.includes(key)) {
+                if (key === 'id') continue;
+                if (optionMap.has(key)) {
                     object.setProperty(this, key, value);
-                } else if (COMPONENT_CORE_READONLY_OPTIONS_KEYS.includes(key)) {
+                } else if (readonlyKeys.includes(key)) {
                     this[key] = value;
                 }
             }
@@ -147,10 +146,11 @@ export const InitAbility = {
         this._initPermission();
         this._initListensEvents();
         this._initDomEvents();
+        this._commitFloats();
         this.playEnter();
 
         if (typeof this.onAfterInit === 'function') {
-            this.onAfterInit();
+            this.onAfterInit(this.props);
         }
         this._emitMounted();
 

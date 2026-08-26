@@ -18,7 +18,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
-import { OVERLAY_ACTIONS } from '@/events';
+import { OVERLAY_ACTIONS, OverlayEventBus } from '@/events';
 import { getId } from '@/utils/string';
 import { FLOAT_CACHE_KEY, FLOAT_AUTO_KEYS } from '../constants/float';
 import type { FloatDecl } from '../types';
@@ -54,15 +54,8 @@ export const FloatAbility: AbilityDefinition = {
     },
 
     _emitInit(key: string, decl: FloatDecl): void {
-        const componentId = this._ensureComponentId();
-        this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${componentId}:${OVERLAY_ACTIONS.INIT}`)
-                .withType(OVERLAY_ACTIONS.INIT)
-                .withSource(componentId)
-                .withData({ component: this, floats: { [key]: decl } })
-                .build()
-        );
+        this._ensureComponentId();
+        OverlayEventBus.getInstance().emitInit(this, { [key]: decl });
     },
 
     _emitAction(key: string, action: string): void {

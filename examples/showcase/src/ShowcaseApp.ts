@@ -1,6 +1,7 @@
 import { Component } from '@qimenjs/component-core';
 import { NestedTest } from './NestedTest';
 import { EventTestPanel } from './EventTest';
+import { OverlayTest } from './FixesTest';
 
 export class ShowcaseApp extends Component {
     get tpl() {
@@ -31,6 +32,11 @@ export class ShowcaseApp extends Component {
                     tag: 'div',
                     name: 'eventTest',
                     type: EventTestPanel,
+                },
+                {
+                    tag: 'div',
+                    name: 'overlayTest',
+                    type: OverlayTest,
                 },
             ],
         };
