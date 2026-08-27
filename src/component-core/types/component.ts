@@ -112,8 +112,7 @@ export interface NodeOptions {
 
 export type NodeOptionsMap = Record<string, NodeOptions>;
 
-export interface ComponentCoreOptions {
-    options?: NodeOptions;
+export interface ComponentCoreOptions extends NodeOptions {
     /** 是否有父 */
     hasParent?: boolean;
     /** 要挂载的容器节点 */

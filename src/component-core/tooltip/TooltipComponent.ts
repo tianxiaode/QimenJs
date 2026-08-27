@@ -1,6 +1,6 @@
 import { FloatingComponent } from '../overlay/FloatingComponent';
 import type { TemplateDecl } from '../types';
-import type { Definitions } from '@/composable/types';
+import type { Definitions } from '@/composable';
 import { ArrowAbility } from '@qimenjs/component-abilities';
 import { ZIndexLevel, nextZIndex } from '../z-index';
 import { TOOLTIP_TPL } from './tooltip-tpl';
@@ -11,12 +11,10 @@ export class TooltipComponent extends FloatingComponent {
     get tpl(): TemplateDecl {
         return TOOLTIP_TPL;
     }
-    _anchor: HTMLElement | null = null;
-    _overlayOpen: boolean = false;
 
     open(): void {
-        this.el.style.display = '';
-        this.el.style.zIndex = String(nextZIndex(ZIndexLevel.tooltip));
+        this.hidden = false;
+        this.zIndex = nextZIndex(ZIndexLevel.tooltip);
         this._overlayOpen = true;
         if (this._anchor && typeof this.updateArrowPlacement === 'function') {
             const anchorRect = this._anchor.getBoundingClientRect();
@@ -26,11 +24,11 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     close(): void {
-        this.el.style.display = 'none';
+        this.hidden = true;
         this._overlayOpen = false;
     }
 
-    _inferPlacement(anchorRect: DOMRect, elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
+    _inferPlacement(anchorRect: DOMRect, _elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
         const spaceAbove = anchorRect.top;
         const spaceBelow = window.innerHeight - anchorRect.bottom;
         const spaceLeft = anchorRect.left;

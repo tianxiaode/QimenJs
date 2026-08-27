@@ -18,6 +18,9 @@ export interface IComposableBase {
      * 日志记录器
      * */
     logger: ILogger;
+    getPropertyMap(): Map<string, any>;
+    getOptionsMap(): Map<string, any>;
+    _onOptionChange(key: string, value: any, old: any, definition: any): void;
     /**
      * 获取能力状态，不存在时可用 creator 惰性创建
      *

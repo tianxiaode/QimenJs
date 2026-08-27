@@ -18,7 +18,8 @@
 
 import { ILogger, Logger } from '@/logger';
 import { withAbilities, withDefinitions } from './forge';
-import type { AbilityDefinition, Definitions, IComposableBase } from './types';
+import type { AbilityDefinition, Definitions, IComposableBase, IOptionHandler } from './types';
+import { OptionHandlerRegistrar } from './OptionHandlerRegistrar';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
@@ -79,6 +80,42 @@ export class ComposableBase implements IComposableBase {
     static define(definitions: Definitions) {
         withDefinitions(this, definitions);
         return this;
+    }
+
+    getPropertyMap(): Map<string, any> {
+        return (this.constructor as any)._propertyMap || new Map();
+    }
+
+    getOptionsMap(): Map<string, any> {
+        return (this.constructor as any)._optionMap || new Map();
+    }
+
+    /**
+     * 选项变化处理 — 子类覆盖 _resolveOptionHandler 对接具体注册表
+     */
+    _onOptionChange(key: string, value: any, old: any, definition: any): void {
+        if (old === value) return;
+        if (
+            (this as any)._beforeOptionChange &&
+            (this as any)._beforeOptionChange(key, value, old, definition) === false
+        ) {
+            return;
+        }
+
+        const name = definition ? 'target-to' : key;
+        const registry = OptionHandlerRegistrar.getInstance();
+        const handler: IOptionHandler | undefined =
+            name === 'target-to' ? registry.getTargetHandler(definition.to) : registry.get(key);
+
+        if (!handler) {
+            this.logger.warn('handler not found:', name, key, value, old, definition);
+            return;
+        }
+        const result = handler.handler(value, this as any, definition);
+        this.logger.info('[_onOptionChange]', name, key, value, old, definition, result);
+        if ((this as any)._afterOptionChange) {
+            (this as any)._afterOptionChange(name, result, key, value, old, definition);
+        }
     }
 
     /**

@@ -14,13 +14,18 @@ const BUILTIN_KEYS = new Set([
     'logger',
     'abilityStatesMap',
     'cleanups',
-    '_optionsMap',
+    '_optionMap',
+    '_clearPropertyKeys',
+    '_propertyMap',
+    '_onOptionChange',
     'abilityState',
     'setAbilityState',
     'onCleanup',
     'onBeforeDispose',
     'onDisposed',
     'dispose',
+    'getOptionsMap',
+    'getPropertyMap',
 ]);
 
 function applyAbilitie(proto: any, ability: AbilityDefinition): void {
@@ -108,7 +113,7 @@ export function withAbilities(target: any, abilities: readonly AbilityDefinition
 export function withDefinitions(target: any, definitions: Definitions): void {
     const proto = target.prototype;
 
-    const { clearKeys, optionsMap } = initConstructorProperties(proto);
+    const { clearKeys, optionsMap, propertyMap } = initConstructorProperties(proto);
 
     // ============================================================
     // 1. 处理 options → 生成 getter/setter
@@ -131,42 +136,15 @@ export function withDefinitions(target: any, definitions: Definitions): void {
                 writable: true,
             });
             clearKeys.add(key); // 2. 添加到 clearKeys
+            propertyMap.set(key, value);
         }
     }
 
     // ============================================================
-    // 3. 处理 readonly → 直接复制到组件实例 + 记录到 _readonlyKeys
-    // ============================================================
-    if (definitions.readonly) {
-        const roKeys = ctor._readonlyKeys;
-        for (const [key, value] of Object.entries(definitions.readonly)) {
-            Object.defineProperty(proto, key, {
-                value: value,
-                enumerable: true,
-                configurable: true,
-                writable: true,
-            });
-            clearKeys.add(key);
-            roKeys.add(key);
-        }
-    }
-
-    // ============================================================
-    // 4. 工具方法：getReadonlyOptionKeys()
-    // ============================================================
-    Object.defineProperty(proto, 'getReadonlyOptionKeys', {
-        value: function () {
-            return Array.from((this.constructor as any)._readonlyKeys || []);
-        },
-        enumerable: false,
-        configurable: true,
-    });
-
-    // ============================================================
-    // 5. 处理方法 → 直接复制到原型
+    // 3. 处理方法 → 直接复制到原型
     // ============================================================
     for (const [key, value] of Object.entries(definitions)) {
-        if (key === 'options' || key === 'property' || key === 'readonly') continue;
+        if (key === 'options' || key === 'property') continue;
         if (key === 'constructor') continue;
         if (BUILTIN_KEYS.has(key)) continue;
 
@@ -205,15 +183,20 @@ function initConstructorProperties(proto: any) {
         }
     }
 
-    if (!ctor._readonlyKeys) {
-        ctor._readonlyKeys = new Set<string>();
-        if (parent && parent._readonlyKeys) {
-            for (const key of parent._readonlyKeys) {
-                ctor._readonlyKeys.add(key);
+    if (!ctor._propertyMap) {
+        ctor._propertyMap = new Map<string, any>();
+        if (parent && parent._propertyMap) {
+            for (const [key, def] of parent._propertyMap) {
+                ctor._propertyMap.set(key, def);
             }
         }
     }
-    return { clearKeys: ctor._clearPropertyKeys, optionsMap: ctor._optionMap };
+
+    return {
+        clearKeys: ctor._clearPropertyKeys,
+        optionsMap: ctor._optionMap,
+        propertyMap: ctor._propertyMap,
+    };
 }
 
 export function injectOptions(
@@ -264,33 +247,4 @@ export function injectOptions(
             configurable: true,
         });
     }
-
-    // ============================================================
-    // ✅ 1. 工具方法
-    // ============================================================
-    Object.defineProperty(proto, 'getOptionMap', {
-        value: function () {
-            return (this.constructor as any)._optionMap || new Map();
-        },
-        enumerable: false,
-        configurable: true,
-    });
-
-    Object.defineProperty(proto, 'getOptionKeys', {
-        value: function () {
-            const map = this.getOptionMap();
-            return Array.from(map.keys());
-        },
-        enumerable: false,
-        configurable: true,
-    });
-
-    Object.defineProperty(proto, 'getOptionValue', {
-        value: function (key: string) {
-            const map = this.getOptionMap();
-            return map.get(key);
-        },
-        enumerable: false,
-        configurable: true,
-    });
 }

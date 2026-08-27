@@ -70,24 +70,15 @@ export const InitAbility = {
         // 将构造函数选项应用到组件实例
         if (options.options) {
             const optionMap: Map<string, any> = this.getOptionMap();
-            const readonlyKeys = this.getReadonlyOptionKeys();
+            const propertyMap: Map<string, any> = this.getPropertyMap();
             for (const [key, value] of Object.entries(options.options)) {
-                if (key === 'id') continue;
+                if (key === 'id' || key.startsWith('_')) continue;
                 if (optionMap.has(key)) {
                     object.setProperty(this, key, value);
-                } else if (readonlyKeys.includes(key)) {
+                } else if (propertyMap.has(key)) {
                     this[key] = value;
                 }
             }
-        }
-        if (options.attributes) {
-            this.setAttributes('root', options.attributes);
-        }
-        if (options.style) {
-            this.setStyles('root', options.style);
-        }
-        if (options.classes) {
-            this.addCls('root', options.classes);
         }
     },
 
@@ -107,7 +98,7 @@ export const InitAbility = {
             const options = node.options;
             const child = new (node.type as any)({
                 hasParent: true,
-                options,
+                ...options,
                 attributes: node.attributes,
                 style: node.style,
                 classes: node.classes,

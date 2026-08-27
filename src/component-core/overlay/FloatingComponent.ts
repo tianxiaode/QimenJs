@@ -3,18 +3,25 @@ import type { Definitions } from '@/composable/types';
 
 const FloatingComponentDefs: Definitions = {
     options: {
-        placement: { target: 'data-placement', to: 'attribute' },
-        offset: { target: '--offset', to: 'style' },
-        showDelay: { target: 'data-show-delay', to: 'attribute' },
-        hideDelay: { target: 'data-hide-delay', to: 'attribute' },
+        anchor: null,
+        placement: null,
+        offset: null,
+        showDelay: null,
+        hideDelay: null,
+        left: null,
+        top: null,
+        right: null,
+        bottom: null,
+        width: null,
+        height: null,
+        position: null,
+        zIndex: null,
+    },
+    property: {
+        _overlayOpen: false,
     },
 };
 
-export class FloatingComponent extends Component {
-    initOverlayHost(): void {
-        this.el.style.display = 'none';
-        this.el.style.position = 'fixed';
-    }
-}
+export class FloatingComponent extends Component {}
 
 FloatingComponent.define(FloatingComponentDefs);

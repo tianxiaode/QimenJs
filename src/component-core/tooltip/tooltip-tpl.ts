@@ -1,9 +1,9 @@
-import type { TplNode } from '../types';
+import type { TemplateDecl } from '../types';
 
-export const TOOLTIP_TPL: TplNode = {
+export const TOOLTIP_TPL: TemplateDecl = {
     tag: 'div',
     children: [
-        { tag: 'span', name: 'text', cls: 'q-tooltip__content' },
-        { tag: 'div', name: 'arrow', cls: 'q-arrow' },
+        { tag: 'span', name: 'text', classes: 'q-tooltip__content' },
+        { tag: 'div', name: 'arrow', classes: 'q-arrow' },
     ],
 };

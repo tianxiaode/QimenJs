@@ -1,4 +1,3 @@
-export * from './OptionHandlerRegistrar';
 export * from './option-handlers';
 export * from './EventForwarder';
 export * from './DomEventsEngine';
