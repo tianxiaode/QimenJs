@@ -2,7 +2,7 @@
  * ArrowAbility 单元测试
  */
 
-import { ArrowAbility } from '@/component-abilities/render/ArrowAbility';
+import { ArrowAbility } from '@/component-core/abilities/render/ArrowAbility';
 
 describe('ArrowAbility', () => {
     function createInstance(config?: { arrowName?: string }) {

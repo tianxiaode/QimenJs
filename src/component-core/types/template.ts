@@ -1,17 +1,5 @@
-import { IComponentCore, NodeMeta, NodeStyle, TemplateDecl } from './component';
-import { I18nOptions } from './options';
+import { NodeMeta } from './component';
 import { NodeIndexPathMap } from './index-path';
-
-export interface TplNode extends TemplateDecl {
-    cls?: string;
-    hidden?: boolean;
-    attrs?: Record<string, any>;
-    children?: TplNode[];
-    i18n?: I18nOptions | string;
-    style?: NodeStyle | string;
-    type?: IComponentCore | string | (new (...args: any[]) => any);
-    [key: string]: any;
-}
 
 export interface TemplateCache {
     /** 生成的 HTML 字符串 */

@@ -141,12 +141,44 @@ export const disabledHandler: IOptionHandler = {
     },
 };
 
+export const i18nHandler: IOptionHandler = {
+    name: 'i18n',
+    handler: (value: any, component: any) => {
+        for (const [name, val] of Object.entries(value)) {
+            component.setI18n(name, { ...(val as any) });
+        }
+        return true;
+    },
+};
+
+/** 视口位置处理器 — 处理 viewportPosition 选项 */
+export const viewportPositionHandler: IOptionHandler = {
+    name: 'viewportPosition',
+    handler: (value: any, component: any) => {
+        if (!value) return false;
+        component.setViewportPosition(value, 0, 16);
+        return true;
+    },
+};
+
 // ─── 注册所有处理器 ──────────────────────────────────────────
 const r = OptionHandlerRegistrar.getInstance();
-const POSITION_PROPS = ['left', 'top', 'right', 'bottom', 'width', 'height', 'position', 'zIndex'];
+const POSITION_PROPS = [
+    'left',
+    'top',
+    'right',
+    'bottom',
+    'width',
+    'height',
+    'position',
+    'zIndex',
+    'transform',
+];
 POSITION_PROPS.forEach(prop => {
     r.register(createStyleHandler(prop));
 });
+
+r.register(viewportPositionHandler);
 
 r.register(attributeHandler);
 r.register(styleHandler);
@@ -157,3 +189,4 @@ r.register(cursorHandler);
 r.register(hintHandler);
 r.register(hiddenHandler);
 r.register(disabledHandler);
+r.register(i18nHandler);

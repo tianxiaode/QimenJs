@@ -1,16 +1,6 @@
-/**
- * ToastManager — toast 实例管理器
- *
- * 单例模式，管理 toast 实例的创建、堆叠队列、销毁调度。
- * Toast 类内聚了 el 管理、节点缓存、事件绑定、动画、销毁等全部功能，
- * ToastManager 只负责队列调度和堆叠定位。
- *
- * eventKey 由 ToastOptions.eventKey 提供，不提供则不发系统事件。
- */
-
-import { type ViewportPosition } from '@/component-core/overlay';
+import { ViewportPosition } from '../types';
 import { Toast } from './Toast';
-import type { ToastOptions, ToastHandle, ToastPosition } from './types';
+import type { ToastOptions, ToastHandle, ToastPosition } from '../types';
 
 const MAX_COUNT = 5;
 const GAP = 16;
@@ -35,7 +25,16 @@ export class ToastManager {
         const position: ToastPosition = options.position ?? 'top-right';
         const id = this.nextId++;
 
-        const toast = new Toast(options);
+        const toast = new Toast({
+            options: {
+                toastType: options.toastType ?? 'info',
+                duration: options.duration ?? 3000,
+                position: options.position ?? 'top-right',
+                eventKey: options.eventKey,
+                title: options.title,
+                message: options.message,
+            },
+        });
 
         toast.onClose = () => {
             this.instances.delete(id);
@@ -47,7 +46,7 @@ export class ToastManager {
         this.enforceMaxCount(position);
         this.repositionAll(position);
 
-        return toast.handle;
+        return toast;
     }
 
     private repositionAll(position: ToastPosition): void {
@@ -55,7 +54,7 @@ export class ToastManager {
         let offset = 0;
 
         for (const toast of samePosition) {
-            toast.setViewportPosition(toast.el, position as ViewportPosition, offset, MARGIN);
+            toast.setViewportPosition(position as ViewportPosition, offset, MARGIN);
             offset += toast.el.offsetHeight + GAP;
         }
     }
@@ -75,8 +74,8 @@ export class ToastManager {
         if (samePosition.length <= MAX_COUNT) return;
 
         const oldest = samePosition[0];
-        if (!oldest.handle.isClosed) {
-            oldest.handle.close();
+        if (!oldest.isClosed) {
+            oldest.close();
         }
     }
 }

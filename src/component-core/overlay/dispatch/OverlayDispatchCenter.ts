@@ -2,7 +2,7 @@ import { RegistrarBase } from '@/registry';
 import { OverlayEventBus, OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
 import { OverlayRoot } from '../OverlayRoot';
-import { ZIndexLevel, nextZIndex } from '../../z-index';
+import { ZIndexLevel, zIndexManager } from '../../engine';
 import { positionOverlay, type Placement } from './positionOverlay';
 import { throttle } from '@/async';
 import type { ComponentClass } from '../../types';
@@ -332,7 +332,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const offset = def.offset ?? 4;
         const trigger = def.trigger ?? 'manual';
 
-        overlayEl.style.zIndex = String(nextZIndex(ZIndexLevel.dropdown));
+        overlayEl.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
         overlayEl.style.display = 'none';
         overlayEl.style.pointerEvents = 'auto';
 
@@ -553,7 +553,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         mask.style.width = `${rect.width}px`;
         mask.style.height = `${rect.height}px`;
         mask.style.backgroundColor = color ?? 'rgba(255, 255, 255, 0.7)';
-        mask.style.zIndex = String(nextZIndex(ZIndexLevel.mask));
+        mask.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.mask));
 
         OverlayRoot.getInstance().mountOverlay(mask);
         return mask;
@@ -571,7 +571,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             mask.style.width = '100%';
             mask.style.height = '100%';
             mask.style.backgroundColor = color ?? 'rgba(0, 0, 0, 0.5)';
-            mask.style.zIndex = String(nextZIndex(ZIndexLevel.mask));
+            mask.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.mask));
             mask.style.display = '';
 
             OverlayRoot.getInstance().mountOverlay(mask);

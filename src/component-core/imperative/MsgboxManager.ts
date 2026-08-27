@@ -9,7 +9,7 @@
  */
 
 import { Msgbox } from './Msgbox';
-import type { MsgboxOptions, MsgboxResult, MsgboxType } from './types';
+import type { MsgboxOptions, MsgboxResult } from '../types';
 
 export class MsgboxManager {
     private static instance: MsgboxManager;
@@ -25,13 +25,13 @@ export class MsgboxManager {
         return MsgboxManager.instance;
     }
 
-    create(options: MsgboxOptions & { type: MsgboxType }): Promise<MsgboxResult> {
+    create(options: MsgboxOptions): Promise<MsgboxResult> {
         let resolveFn!: (result: MsgboxResult) => void;
         const promise = new Promise<MsgboxResult>(resolve => {
             resolveFn = resolve;
         });
 
-        const instance = new Msgbox(options, resolveFn);
+        const instance = new Msgbox({ ...options, callback: resolveFn });
 
         instance.onClose = () => {
             this.instances.delete(instance);

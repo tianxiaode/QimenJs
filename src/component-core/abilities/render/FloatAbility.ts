@@ -20,8 +20,8 @@ import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS, OverlayEventBus } from '@/events';
 import { getId } from '@/utils/string';
-import { FLOAT_CACHE_KEY, FLOAT_AUTO_KEYS } from '../constants/float';
-import type { FloatDecl } from '../types';
+import { FLOAT_CACHE_KEY } from '../../constants';
+import type { FloatDecl } from '../../types';
 
 /** 浮层管理能力，提供 show/hide/toggle/update/attach/detach 等通用 API */
 export const FloatAbility: AbilityDefinition = {
@@ -118,23 +118,6 @@ export const FloatAbility: AbilityDefinition = {
             this._emitAction(key, OVERLAY_ACTIONS.DISPOSE);
             this._emitInit(key, next[key]);
         }
-    },
-
-    // ── 提交 ──
-
-    _commitFloats(): void {
-        for (const key of FLOAT_AUTO_KEYS) {
-            const getter = `_get${key.charAt(0).toUpperCase() + key.slice(1)}FloatDecl`;
-            const fn = (this as any)[getter];
-            if (typeof fn === 'function') {
-                const decl = fn.call(this) as FloatDecl | undefined;
-                if (decl) this.attachFloat(key, decl);
-            }
-        }
-
-        const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-        if (Object.keys(cache).length === 0) return;
-        this._syncFloats({}, cache);
     },
 
     // ── 结构变更方法 ──

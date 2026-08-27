@@ -136,9 +136,12 @@ export class Component extends ComposableBase {
         this.props = options ?? {};
         this._initializing = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));
-        this.onBeforeInit?.();
+        this.onBeforeInit();
         this._buildDOM(options);
     }
+
+    onBeforeInit(): void {}
+    onAfterInit(): void {}
 
     override onBeforeDispose(): void {
         this._disposing = true;

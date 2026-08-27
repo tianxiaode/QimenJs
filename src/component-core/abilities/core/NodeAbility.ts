@@ -13,7 +13,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { IComponentCore, NodeMeta } from '../types';
+import { IComponentCore, NodeMeta } from '../../types';
 
 /** 节点查询与解析能力，提供 nodeMap 只读访问、节点目标解析与 DOM 包含判定 */
 export const NodeAbility: AbilityDefinition = {

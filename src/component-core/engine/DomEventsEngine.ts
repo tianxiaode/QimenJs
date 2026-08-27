@@ -20,7 +20,6 @@ import type { DomEventsMap } from '../types/events';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { debounce, throttle } from '@qimenjs/async';
 import { EventForwarder } from './EventForwarder';
-import type { EventDataType } from './EventForwarder';
 
 /**
  * DomEventConfig 合法的属性键集合
@@ -400,10 +399,10 @@ export class DomEventsEngine {
      */
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
         const originalEvent = domEvt?.data?.originalEvent;
-        const target = originalEvent?.target ?? domEvt?.target as Element;
+        const target = originalEvent?.target ?? (domEvt?.target as Element);
         if (!target) return;
 
-        const eventType = domEvt?.data?.semantic ?? domEvt?.data?.signal as string;
+        const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
         if (!eventType) return;
 
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
@@ -466,8 +465,9 @@ export class DomEventsEngine {
             if (el) {
                 currentComponent = { el };
             } else {
-                currentComponent = instance.nodeInstances?.[segments[0]]
-                    ?? DomEventsEngine._findByType(instance, segments[0], target);
+                currentComponent =
+                    instance.nodeInstances?.[segments[0]] ??
+                    DomEventsEngine._findByType(instance, segments[0], target);
             }
         }
         if (!currentComponent?.el) return null;

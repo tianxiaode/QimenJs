@@ -40,38 +40,51 @@ jest.mock('crypto', () => ({
 }));
 
 jest.mock('@qimenjs/entity', () => ({}));
-jest.mock('@/overlay', () => ({}));
 jest.mock('@qimenjs/component', () => ({
     ZIndexLevel: { OVERLAY: 2000, modal: 2000 },
 }));
 jest.mock('@/composable', () => {
     class ComposableBase {
         static use() {}
+        static define() {}
         _zIndexLevel: any;
+        el = document.createElement('div');
+        animation: any;
         setViewportPosition() {}
         mountToOverlay() {}
         unmountFromOverlay() {}
-        playEnterAnimation() {}
-        playExitAnimation() {
-            const fake = { onfinish: null as (() => void) | null };
-            Promise.resolve().then(() => {
-                if (fake.onfinish) fake.onfinish();
-            });
-            return fake;
-        }
-        bindDomEvent() {}
         acquireZIndex() {
             return 2000;
         }
         releaseZIndex() {}
         systemEmit() {}
         dispose() {}
+        getNodeEl() {
+            return null;
+        }
+        playEnter() {}
+        playLeave() {
+            return Promise.resolve();
+        }
+        onBeforeInit() {}
+        onAfterInit() {}
     }
     return {
         ComposableBase,
         AbilityDefinition: {},
         InferAbilities: () => ({}),
     };
+});
+jest.mock('@/component-core/overlay', () => {
+    const { ComposableBase } = require('@/composable');
+    class FloatingComponent extends ComposableBase {
+        constructor(options?: any) {
+            super();
+            this.onBeforeInit();
+            this.onAfterInit();
+        }
+    }
+    return { FloatingComponent };
 });
 jest.mock('@/context', () => {
     const ctx = {
@@ -103,22 +116,9 @@ jest.mock('@/context', () => {
         EventContextBuilder: { create: () => ctx },
     };
 });
-jest.mock('@/component-core/engine/ComponentRegistrar', () => {
-    const fakeEl = document.createElement('div');
-    const fakeNodeMapMgr = {
-        buildDOM: () => fakeEl,
-        get: () => ({ el: document.createElement('div') }),
-        disposeAll: jest.fn(),
-    };
-    return {
-        ComponentRegistrar: {
-            getInstance: () => ({
-                register: jest.fn(),
-                createNodeMapManager: () => fakeNodeMapMgr,
-            }),
-        },
-    };
-});
+jest.mock('@/component-core/engine', () => ({
+    EventForwarder: { forward: jest.fn() },
+}));
 jest.mock('@/system-abilities', () => ({
     SystemEventBusAbility: { __name__: 'SystemEventBusAbility' },
 }));
@@ -135,6 +135,17 @@ describe('ToastManager', () => {
     beforeEach(() => {
         (ToastManager as any).instance = undefined;
         manager = ToastManager.getInstance();
+        jest.spyOn(HTMLElement.prototype, 'animate').mockImplementation(function () {
+            const anim = { onfinish: null as (() => void) | null };
+            Promise.resolve().then(() => {
+                anim.onfinish?.();
+            });
+            return anim as any;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     test('单例模式', () => {

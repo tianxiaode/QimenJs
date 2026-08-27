@@ -47,15 +47,6 @@ jest.mock('@/composable', () => {
         setViewportPosition() {}
         mountToOverlay() {}
         unmountFromOverlay() {}
-        playEnterAnimation() {}
-        playExitAnimation() {
-            const fake = { onfinish: null as (() => void) | null };
-            Promise.resolve().then(() => {
-                if (fake.onfinish) fake.onfinish();
-            });
-            return fake;
-        }
-        bindDomEvent() {}
         acquireZIndex() {
             return 2000;
         }
@@ -131,6 +122,15 @@ describe('MsgboxManager', () => {
     beforeEach(() => {
         (MsgboxManager as any).instance = undefined;
         manager = MsgboxManager.getInstance();
+        jest.spyOn(HTMLElement.prototype, 'animate').mockImplementation(function () {
+            const anim = { onfinish: null as (() => void) | null };
+            Promise.resolve().then(() => { anim.onfinish?.(); });
+            return anim as any;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     test('单例模式', () => {

@@ -2,8 +2,8 @@
  * DialogAbility — 对话框浮层能力
  *
  * 提供 dialog 浮层的快捷操作方法，底层通过 FloatAbility 的 show/hide/toggle/updateFloat 发送事件。
- * 采用懒加载模式：首次调用 showDialog 时通过 `_getDialogFloatDecl` 构建 FloatDecl 并注册，
- * 后续操作直接调用 FloatAbility 的通用方法。
+ * 通过 `_initDialog` 在初始化阶段根据配置自动注册浮层，
+ * 运行时通过 `showDialog` 懒加载（未配置时也可手动调用）。
  *
  * this.dialog 支持两种形式：
  * - 组件类：class MyDialog extends Component { ... }
@@ -23,24 +23,23 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../types';
+import type { FloatDecl } from '../../types';
 
 /** 对话框浮层能力，提供 show/hide/toggle/update 快捷方法 */
 export const DialogAbility: AbilityDefinition = {
-    /**
-     * 获取 dialog 浮层声明
-     *
-     * 支持组件类或配置对象两种形式。
-     *
-     * @returns FloatDecl 或 undefined（无配置时）
-     */
+    _initDialog(): void {
+        const decl = this._getDialogFloatDecl();
+        if (!decl) return;
+        this.attachFloat('dialog', decl);
+    },
+
     _getDialogFloatDecl(): FloatDecl | undefined {
         const dialog = this.dialog;
         if (!dialog) return;
 
         if (typeof dialog === 'function') {
             return {
-                type: (dialog as any).type || dialog.name,
+                type: dialog,
                 trigger: 'manual',
                 placement: 'center',
                 mask: true,
@@ -69,48 +68,20 @@ export const DialogAbility: AbilityDefinition = {
         };
     },
 
-    /**
-     * 显示对话框
-     *
-     * 首次调用时自动注册浮层声明。
-     *
-     * @example
-     * this.showDialog();
-     */
     showDialog(): void {
         this._ensureFloat('dialog', this._getDialogFloatDecl());
         this.showFloat('dialog');
     },
 
-    /**
-     * 隐藏对话框
-     *
-     * @example
-     * this.hideDialog();
-     */
     hideDialog(): void {
         this.hideFloat('dialog');
     },
 
-    /**
-     * 切换对话框显示/隐藏
-     *
-     * @example
-     * this.toggleDialog();
-     */
     toggleDialog(): void {
         this._ensureFloat('dialog', this._getDialogFloatDecl());
         this.toggleFloat('dialog');
     },
 
-    /**
-     * 更新对话框数据
-     *
-     * @param data - 更新数据
-     *
-     * @example
-     * this.updateDialog({ title: '新标题' });
-     */
     updateDialog(data: Record<string, any>): void {
         this.updateFloat('dialog', data);
     },

@@ -5,3 +5,6 @@ export * from './event';
 export * from './component';
 export * from './drag-drop';
 export * from './float';
+export * from './arrow';
+export * from './imperative-events';
+export * from './badge';

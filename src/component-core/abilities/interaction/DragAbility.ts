@@ -18,9 +18,9 @@
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
 import { DRAG_ACTIONS } from '@/events';
-import { getId } from '@/utils/string';
-import { DRAG_CACHE_KEY } from '../constants';
-import type { DragOptions } from '../types';
+import { string } from '@/utils';
+import { DRAG_CACHE_KEY } from '../../constants';
+import type { DragOptions } from '../../types';
 
 /** 拖拽能力，提供 attach/detach/start/stop 等 API */
 export const DragAbility: AbilityDefinition = {
@@ -46,7 +46,7 @@ export const DragAbility: AbilityDefinition = {
 
     _ensureDragComponentId(): string {
         if (!this.id) {
-            this.id = this.props?.id || getId('cmp');
+            this.id = this.props?.id || string.getId('cmp');
         }
         return this.id;
     },

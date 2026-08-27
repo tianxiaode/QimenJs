@@ -125,6 +125,18 @@ export interface I18nOptions {
 }
 
 /**
+ * 箭头配置
+ */
+export interface ArrowConfig {
+    /** 是否显示箭头，默认 true */
+    arrow?: boolean;
+    /** CSS 变量覆盖，如 { '--q-arrow-color': '#fff', '--q-arrow-size': '6px' } */
+    arrowVars?: Record<string, string>;
+    /** 箭头节点名称，默认 'arrow'（对应模板中 name 的 name 部分） */
+    arrowName?: string;
+}
+
+/**
  * 权限声明
  */
 export type PermissionOptions = string | string[];

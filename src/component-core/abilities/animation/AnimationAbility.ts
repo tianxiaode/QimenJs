@@ -20,7 +20,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { ANIMATION_PRESETS } from '../constants';
+import { ANIMATION_PRESETS } from '../../constants';
 
 /** 组件动画能力，支持声明式入场/离场动画配置与手动播放 */
 export const AnimationAbility = {

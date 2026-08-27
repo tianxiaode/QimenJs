@@ -12,7 +12,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { PermissionOptions } from '../types';
+import type { PermissionOptions } from '../../types';
 import { SYSTEM_EVENTS } from '@/events';
 
 const PERMISSION_SEPARATOR = ':';

@@ -1,5 +1,5 @@
 import { ILogger } from '@/logger';
-import { ComponentListen, ListenItem } from './events';
+import { DomEventsMap, ListenItem } from './events';
 import {
     AnimationOptions,
     BadgeOptions,
@@ -123,6 +123,8 @@ export interface ComponentCoreOptions extends NodeOptions {
     style?: NodeStyle;
     /** DOM 类 */
     classes?: NodeHTMLClass;
+    /** 本地化设置 */
+    i18n?: I18nOptions;
     /** DOM 样式 */
     [key: string]: any;
 }
@@ -211,7 +213,7 @@ export interface IComponentCore extends LifecycleHooks {
     /** 禁用css */
     disabledCls: string;
     /** 委托事件定义 */
-    domEvents?: ComponentListen;
+    domEvents?: DomEventsMap;
     /** 事件监听 */
     listens?: ListenItem[];
     /** 根 DOM 元素 */

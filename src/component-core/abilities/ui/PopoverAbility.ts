@@ -2,8 +2,8 @@
  * PopoverAbility — 弹出层能力
  *
  * 提供 popover 浮层的快捷操作方法，底层通过 FloatAbility 的 show/hide/toggle/updateFloat 发送事件。
- * 采用懒加载模式：首次调用 showPopover 时通过 `_getPopoverFloatDecl` 构建 FloatDecl 并注册，
- * 后续操作直接调用 FloatAbility 的通用方法。
+ * 通过 `_initPopover` 在初始化阶段根据配置自动注册浮层，
+ * 运行时通过 `showPopover` 懒加载（未配置时也可手动调用）。
  *
  * this.popover 支持两种形式：
  * - 组件类：class MyPopover extends Component { ... }
@@ -23,24 +23,23 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../types';
+import type { FloatDecl } from '../../types';
 
 /** 弹出层能力，提供 show/hide/toggle/update 快捷方法 */
 export const PopoverAbility: AbilityDefinition = {
-    /**
-     * 获取 popover 浮层声明
-     *
-     * 支持组件类或配置对象两种形式。
-     *
-     * @returns FloatDecl 或 undefined（无配置时）
-     */
+    _initPopover(): void {
+        const decl = this._getPopoverFloatDecl();
+        if (!decl) return;
+        this.attachFloat('popover', decl);
+    },
+
     _getPopoverFloatDecl(): FloatDecl | undefined {
         const popover = this.popover;
         if (!popover) return;
 
         if (typeof popover === 'function') {
             return {
-                type: (popover as any).type || popover.name,
+                type: popover,
                 trigger: 'click',
                 placement: 'bottom',
                 mask: false,
@@ -71,48 +70,20 @@ export const PopoverAbility: AbilityDefinition = {
         };
     },
 
-    /**
-     * 显示弹出层
-     *
-     * 首次调用时自动注册浮层声明。
-     *
-     * @example
-     * this.showPopover();
-     */
     showPopover(): void {
         this._ensureFloat('popover', this._getPopoverFloatDecl());
         this.showFloat('popover');
     },
 
-    /**
-     * 隐藏弹出层
-     *
-     * @example
-     * this.hidePopover();
-     */
     hidePopover(): void {
         this.hideFloat('popover');
     },
 
-    /**
-     * 切换弹出层显示/隐藏
-     *
-     * @example
-     * this.togglePopover();
-     */
     togglePopover(): void {
         this._ensureFloat('popover', this._getPopoverFloatDecl());
         this.toggleFloat('popover');
     },
 
-    /**
-     * 更新弹出层数据
-     *
-     * @param data - 更新数据
-     *
-     * @example
-     * this.updatePopover({ title: '新标题' });
-     */
     updatePopover(data: Record<string, any>): void {
         this.updateFloat('popover', data);
     },

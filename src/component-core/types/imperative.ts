@@ -2,7 +2,7 @@
  * 命令式 API 类型定义
  */
 
-import { ComponentCoreOptions } from '../types';
+import { ComponentCoreOptions } from './component';
 
 /** toast 类型 */
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
@@ -17,19 +17,17 @@ export type ToastPosition =
     | 'bottom';
 
 /** toast 配置选项 */
-export interface ToastOptions {
+export interface ToastOptions extends ComponentCoreOptions {
     /** 消息内容，必填 */
     message: string;
     /** 标题，可选。提供时使用 ToastNotification 增强模板 */
     title?: string;
     /** toast 类型，默认 'info' */
-    type?: ToastType;
+    toastType?: ToastType;
     /** 持续时间 ms，默认 3000，设为 0 则不自动关闭 */
     duration?: number;
     /** 显示位置，默认 'top-right' */
     position?: ToastPosition;
-    /** 事件标识，提供时通过 SystemEventBus 发送事件，不提供则不发 */
-    eventKey?: string;
 }
 
 /**

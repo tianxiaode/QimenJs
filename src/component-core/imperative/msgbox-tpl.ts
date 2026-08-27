@@ -1,6 +1,6 @@
 import type { TemplateDecl } from '@/component-core';
 
-export const MSGBOX_TEMPLATE: TemplateDecl = {
+export const MSGBOX_TPL: TemplateDecl = {
     tag: 'div',
     classes: 'q-msgbox',
     children: [
@@ -9,8 +9,8 @@ export const MSGBOX_TEMPLATE: TemplateDecl = {
             name: 'header',
             classes: 'q-msgbox__header',
             children: [
-                { tag: 'div', name: 'msgbox:text', classes: 'q-msgbox__title' },
-                { tag: 'div', name: 'msgbox:close', classes: 'q-msgbox__close' },
+                { tag: 'div', name: 'text', classes: 'q-msgbox__title' },
+                { tag: 'div', name: 'close', classes: 'q-msgbox__close' },
             ],
         },
         {
@@ -18,8 +18,13 @@ export const MSGBOX_TEMPLATE: TemplateDecl = {
             name: 'body',
             classes: 'q-msgbox__body',
             children: [
-                { tag: 'div', name: 'msgbox:content', classes: 'q-msgbox__content' },
-                { tag: 'input', name: 'msgbox:field', classes: 'q-msgbox__input', style: { display: 'none' } },
+                { tag: 'div', name: 'content', classes: 'q-msgbox__content' },
+                {
+                    tag: 'input',
+                    name: 'field',
+                    classes: 'q-msgbox__input hidden',
+                    style: { display: 'none' },
+                },
             ],
         },
         {
@@ -27,8 +32,20 @@ export const MSGBOX_TEMPLATE: TemplateDecl = {
             name: 'footer',
             classes: 'q-msgbox__footer',
             children: [
-                { tag: 'button', name: 'msgbox:cancel', classes: 'q-btn q-btn--default' },
-                { tag: 'button', name: 'msgbox:confirm', classes: 'q-btn q-btn--primary' },
+                {
+                    tag: 'button',
+                    name: 'cancel',
+                    i18n: { text: 'cancel' },
+                    options: { action: 'cancel' },
+                    classes: 'q-btn q-btn--default',
+                },
+                {
+                    tag: 'button',
+                    name: 'confirm',
+                    i18n: { text: 'confirm' },
+                    options: { action: 'confirm' },
+                    classes: 'q-btn q-btn--primary',
+                },
             ],
         },
     ],

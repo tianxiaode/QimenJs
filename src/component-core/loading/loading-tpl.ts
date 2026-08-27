@@ -1,10 +1,10 @@
-import type { TplNode } from '../types';
+import type { TemplateDecl } from '../types';
 
-export const LOADING_TPL: TplNode = {
+export const LOADING_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-loading',
+    classes: 'q-loading',
     children: [
-        { tag: 'div', name: 'spinner', cls: 'q-loading-spinner' },
-        { tag: 'div', name: 'text', cls: 'q-loading-text' },
+        { tag: 'div', name: 'spinner', classes: 'q-loading-spinner' },
+        { tag: 'div', name: 'text', classes: 'q-loading-text' },
     ],
 };

@@ -16,8 +16,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { BadgeOptions } from '../types/options';
-import { BADGE_SIZE_CONFIG, BADGE_POSITION_MAP, BADGE_STATE_KEY } from '../constants/badge';
+import { BadgeOptions } from '../../types';
+import { BADGE_SIZE_CONFIG, BADGE_POSITION_MAP, BADGE_STATE_KEY } from '../../constants';
 
 /** 角标能力，提供 badge 创建、文本更新、显示/隐藏与切换 */
 export const BadgeAbility: AbilityDefinition = {

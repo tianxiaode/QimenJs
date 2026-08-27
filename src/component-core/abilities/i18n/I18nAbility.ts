@@ -1,5 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
-import { I18nOptions } from '../types';
+import { I18nOptions } from '../../types';
 import { t } from '@/i18n';
 import { object } from '@/utils';
 import { SYSTEM_EVENTS } from '@/events';
@@ -136,8 +136,9 @@ export const I18nAbility: AbilityDefinition = {
      * 初始化i18n配置
      */
     _initI18n(): void {
-        const names = this._tplCache.i18ns || [];
-        if (names.length === 0) return;
+        const i18ns = this.i18n || {};
+        const names = this._tplCache.i18ns;
+        if (names.length === 0 || !i18ns) return;
         const off = this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this._applyI18n());
         this.onCleanup(off);
         this._applyI18n();

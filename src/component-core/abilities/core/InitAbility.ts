@@ -16,11 +16,9 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { TemplateManager } from '../engine/TemplateManager';
-import { ListensEngine } from '../engine/ListensEngine';
-import { DomEventsEngine } from '../engine/DomEventsEngine';
-import { SKELETON_CLS } from '../constants';
-import { ComponentCoreOptions, IComponentCore } from '../types';
+import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
+import { SKELETON_CLS } from '../../constants';
+import { ComponentCoreOptions, IComponentCore } from '../../types';
 import { object } from '@/utils';
 
 /** 组件初始化能力 */
@@ -129,7 +127,7 @@ export const InitAbility = {
     /**
      * 串联后续初始化
      *
-     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 动画播放
+     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 浮层注册 → 动画播放
      */
     _continueInit(childReady?: () => void) {
         this._initBadge();
@@ -137,12 +135,14 @@ export const InitAbility = {
         this._initPermission();
         this._initListensEvents();
         this._initDomEvents();
-        this._commitFloats();
+        this._initTooltip();
+        this._initDialog();
+        this._initPopover();
+        this._initIndicator();
+        this._initLoading();
         this.playEnter();
 
-        if (typeof this.onAfterInit === 'function') {
-            this.onAfterInit(this.props);
-        }
+        this.onAfterInit();
         this._emitMounted();
 
         if (childReady) {

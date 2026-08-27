@@ -16,7 +16,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { dragDispatchCenter } from '@/component-core/drag';
-import type { DragOptions } from '../types';
+import type { DragOptions } from '../../types';
 
 /** 放置区能力，提供 attach/detach/setDropZone 等 API */
 export const DropAbility: AbilityDefinition = {

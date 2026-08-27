@@ -1,11 +1,11 @@
-import { FloatingComponent } from '../overlay/FloatingComponent';
+import { FloatingComponent } from '../overlay';
 import type { TemplateDecl } from '../types';
 import type { Definitions } from '@/composable';
-import { ArrowAbility } from '@qimenjs/component-abilities';
-import { ZIndexLevel, nextZIndex } from '../z-index';
+import { ZIndexLevel, zIndexManager } from '../engine';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 import { InferAbility } from '@/composable';
 import './tooltip.css.ts';
+import { ArrowAbility } from '../abilities';
 
 export class TooltipComponent extends FloatingComponent {
     get tpl(): TemplateDecl {
@@ -14,7 +14,7 @@ export class TooltipComponent extends FloatingComponent {
 
     open(): void {
         this.hidden = false;
-        this.zIndex = nextZIndex(ZIndexLevel.tooltip);
+        this.zIndex = zIndexManager.acquire(ZIndexLevel.tooltip);
         this._overlayOpen = true;
         if (this._anchor && typeof this.updateArrowPlacement === 'function') {
             const anchorRect = this._anchor.getBoundingClientRect();

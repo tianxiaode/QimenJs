@@ -6,7 +6,7 @@
  */
 
 // 渲染能力
-export { ArrowAbility, type ArrowConfig } from './render';
+export { ArrowAbility } from '../component-core/abilities/render';
 
 // 分组选择能力
 export {
