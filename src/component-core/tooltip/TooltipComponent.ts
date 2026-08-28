@@ -18,11 +18,11 @@ export class TooltipComponent extends FloatingComponent {
         this.setOption('hidden', false);
         this.setOption('zIndex', zIndexManager.acquire(ZIndexLevel.tooltip));
         this._overlayOpen = true;
-        if (this._anchor && typeof this.updateArrowPlacement === 'function') {
+        if (typeof this.updateArrowPlacement === 'function') {
             requestAnimationFrame(() => {
-                const anchorRect = this._anchor.getBoundingClientRect();
-                const elRect = this.el.getBoundingClientRect();
-                this.updateArrowPlacement(this._inferPlacement(anchorRect, elRect));
+                const placement = (this as any)._actualPlacement ?? 'bottom';
+                const arrowPlacement = this._inferArrowPlacement(placement);
+                this.updateArrowPlacement(arrowPlacement);
             });
         }
     }
@@ -32,16 +32,14 @@ export class TooltipComponent extends FloatingComponent {
         this._overlayOpen = false;
     }
 
-    _inferPlacement(anchorRect: DOMRect, _elRect: DOMRect): 'top' | 'bottom' | 'left' | 'right' {
-        const spaceAbove = anchorRect.top;
-        const spaceBelow = window.innerHeight - anchorRect.bottom;
-        const spaceLeft = anchorRect.left;
-        const spaceRight = window.innerWidth - anchorRect.right;
-        const max = Math.max(spaceAbove, spaceBelow, spaceLeft, spaceRight);
-        if (max === spaceAbove) return 'bottom';
-        if (max === spaceBelow) return 'top';
-        if (max === spaceLeft) return 'right';
-        return 'left';
+    _inferArrowPlacement(placement: 'top' | 'bottom' | 'left' | 'right'): 'top' | 'bottom' | 'left' | 'right' {
+        const map: Record<string, 'top' | 'bottom' | 'left' | 'right'> = {
+            top: 'bottom',
+            bottom: 'top',
+            left: 'right',
+            right: 'left',
+        };
+        return map[placement];
     }
 
     onOverlayChange(data: any): void {

@@ -55,7 +55,8 @@ export class FloatingComponent extends Component {
             this.el.style.position = 'absolute';
         }
 
-        positionOverlay(this.el, anchor, p, offset ?? 4, true);
+        const actualPlacement = positionOverlay(this.el, anchor, p, offset ?? 4, true);
+        (this as any)._actualPlacement = actualPlacement;
         this.el.style.display = '';
     }
 

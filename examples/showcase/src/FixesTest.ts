@@ -7,7 +7,6 @@ export class OverlayTest extends Component {
     tooltip = {
         content: 'Tooltip via setDefaultOverlay',
         placement: 'top',
-        trigger: 'always',
     };
     loading = { text: '加载中...' };
 
