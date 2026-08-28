@@ -88,7 +88,7 @@ export class FloatingComponent extends Component {
         this._mask = new MaskComponent({
             scoped: config?.scoped,
             color: config?.color,
-            zIndex: zIndexManager.acquire(ZIndexLevel.mask),
+            zIndex: 1,
         });
         this._mask.mount();
         if (this._anchor) {

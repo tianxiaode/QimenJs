@@ -290,4 +290,15 @@ if (typeof window !== 'undefined') {
     window.__qimen_i18n_register__ = registerMessages;
     window.__qimen_i18n__ = i18n;
     window.qimenI18n = { I18nManager: I18nManager, i18n: i18n, registerMessages: registerMessages };
+
+    // 自动检测语言并动态加载对应语言包
+    (function () {
+        var locale = i18n.locale;
+        if (locale !== 'zh-CN' && locale !== 'en-US') {
+            locale = 'zh-CN';
+            i18n.locale = locale;
+        }
+        document.documentElement.lang = locale;
+        i18n.loadScript('/locales/' + locale + '.js');
+    })();
 }

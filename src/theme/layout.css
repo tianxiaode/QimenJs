@@ -1,7 +1,3 @@
-// theme/layout.css.ts
-
-/** 布局工具类 - 主题提供 */
-export const layoutCSS = `
 /* ===== Flex 布局 ===== */
 .flex { display: flex; }
 .inline-flex { display: inline-flex; }
@@ -59,4 +55,3 @@ export const layoutCSS = `
 .h-full { height: 100%; }
 .w-screen { width: 100vw; }
 .h-screen { height: 100vh; }
-`;

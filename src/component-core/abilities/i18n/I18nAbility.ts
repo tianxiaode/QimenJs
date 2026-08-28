@@ -95,9 +95,11 @@ export const I18nAbility: AbilityDefinition = {
         }
 
         // 提示（图片用 alt，其他用 title）
-        if (i18n.hint !== undefined && !el.getAttribute('title') && !el.getAttribute('alt')) {
+        if (i18n.hint !== undefined) {
             const attr = el.tagName === 'IMG' ? 'alt' : 'title';
-            el.setAttribute(attr, t(i18n.hint));
+            if (!el.getAttribute(attr)) {
+                el.setAttribute(attr, t(i18n.hint));
+            }
         }
 
         // 占位符

@@ -10,10 +10,7 @@ export * from './types';
 // 工具函数导出
 export { flattenTokens, tokensToCSSVariables } from './utils';
 
-// 框架运行时必须的全局样式
-export { skeletonCSS } from './skeleton.css';
-export { layoutCSS } from './layout.css';
-export { utilityCSS } from './utility.css';
+// 框架运行时必须的全局样式 — 通过 theme.css 统一 @import 管理
 // 预设主题导出
 export { lightTheme, lightThemeCSS } from './presets/light';
 export { darkTheme, darkThemeCSS } from './presets/dark';

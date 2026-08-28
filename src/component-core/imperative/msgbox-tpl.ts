@@ -14,7 +14,7 @@ export const MSGBOX_TPL: TemplateDecl = {
                     tag: 'div',
                     name: 'close',
                     classes: 'q-msgbox__close',
-                    i18n: { title: 'common:close' },
+                    i18n: { hint: 'common:close' },
                 },
             ],
         },

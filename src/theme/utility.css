@@ -1,5 +1,3 @@
-/** 通用工具类 - 主题提供 */
-export const utilityCSS = `
 /* ===== 显示/隐藏 ===== */
 .hidden { display: none !important; }
 .invisible { visibility: hidden !important; }
@@ -66,4 +64,3 @@ export const utilityCSS = `
 .overflow-hidden { overflow: var(--q-overflow-hidden); }
 .overflow-scroll { overflow: var(--q-overflow-scroll); }
 .overflow-auto { overflow: var(--q-overflow-auto); }
-`;
