@@ -28,7 +28,7 @@ export const BadgeAbility: AbilityDefinition = {
      * 通过 abilityState 保存 el 引用，追加到 this.el 末尾。
      */
     _initBadge() {
-        const cfg: BadgeOptions | undefined = this.badge;
+        const cfg: BadgeOptions | undefined = this.getOption('badge') as BadgeOptions | undefined;
         if (!cfg) return;
 
         const el = document.createElement('span');
