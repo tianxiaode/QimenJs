@@ -11,6 +11,7 @@
     background: var(--q-colors-text, #1a1a1a);
     color: var(--q-colors-bg, #fff);
     border: 1px solid var(--q-colors-border, #d9ccb8);
+    max-width: 200px;
 }
 
 .q-tooltip__content {

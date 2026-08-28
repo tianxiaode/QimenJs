@@ -20,9 +20,11 @@ export class TooltipComponent extends FloatingComponent {
         this._overlayOpen = true;
         if (typeof this.updateArrowPlacement === 'function') {
             requestAnimationFrame(() => {
-                const placement = (this as any)._actualPlacement ?? 'bottom';
-                const arrowPlacement = this._inferArrowPlacement(placement);
-                this.updateArrowPlacement(arrowPlacement);
+                requestAnimationFrame(() => {
+                    const placement = (this as any)._actualPlacement ?? 'bottom';
+                    const arrowPlacement = this._inferArrowPlacement(placement);
+                    this.updateArrowPlacement(arrowPlacement);
+                });
             });
         }
     }
