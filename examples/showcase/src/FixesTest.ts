@@ -137,6 +137,14 @@ export class OverlayTest extends Component {
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
                             },
                         },
+                        {
+                            type: Button,
+                            name: 'tooltipRightAutoFlip',
+                            options: {
+                                tooltip: { content: 'Tooltip Right Auto Flip', placement: 'right' },
+                            },
+                            style: { flex: 1, minWidth: '200px' },
+                        },
                     ],
                 },
                 {
