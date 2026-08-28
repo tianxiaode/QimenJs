@@ -110,28 +110,28 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            type: 'button',
+                            type: Button,
                             name: 'tooltipTop',
                             options: {
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
                         },
                         {
-                            type: 'button',
+                            type: Button,
                             name: 'tooltipBottom',
                             options: {
                                 tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
                             },
                         },
                         {
-                            type: 'button',
+                            type: Button,
                             name: 'tooltipLeft',
                             options: {
                                 tooltip: { content: 'Tooltip Left', placement: 'left' },
                             },
                         },
                         {
-                            type: 'button',
+                            type: Button,
                             name: 'tooltipRight',
                             options: {
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
