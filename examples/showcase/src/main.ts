@@ -5,6 +5,7 @@ import '@/theme/skeleton.css';
 import '@/theme/layout.css';
 import '@/theme/utility.css';
 import './showcase.css';
+import { Button } from './Button';
 import { OverlayTest } from './FixesTest';
 const app = document.getElementById('app')!;
 const shell = new ShowcaseApp();

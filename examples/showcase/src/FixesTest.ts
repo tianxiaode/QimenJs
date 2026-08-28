@@ -1,10 +1,6 @@
 import { Component, toast, msgbox } from '@qimenjs/component-core';
-import { TooltipAbility } from '@qimenjs/component-core';
+import { Button } from './Button';
 export class OverlayTest extends Component {
-    tooltip = {
-        content: 'Tooltip via setDefaultOverlay',
-        placement: 'top',
-    };
     loading = { text: '加载中...' };
 
     get tpl() {
@@ -114,71 +110,31 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'tooltipTop',
                             options: {
-                                text: 'Tooltip Top',
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #22c55e',
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                            },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'tooltipBottom',
                             options: {
-                                text: 'Tooltip Bottom',
                                 tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
                             },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #22c55e',
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                            },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'tooltipLeft',
                             options: {
-                                text: 'Tooltip Left',
                                 tooltip: { content: 'Tooltip Left', placement: 'left' },
-                            },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #22c55e',
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                cursor: 'pointer',
-                                fontSize: '14px',
                             },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'tooltipRight',
                             options: {
-                                text: 'Tooltip Right',
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
-                            },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #22c55e',
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                cursor: 'pointer',
-                                fontSize: '14px',
                             },
                         },
                     ],
@@ -241,167 +197,3 @@ export class OverlayTest extends Component {
         if (result) result.textContent = '[msgbox] Msgbox alert shown.';
     }
 }
-
-export class TooltipTopTest extends Component {
-    tooltip = {
-        content: 'Tooltip Top',
-        placement: 'top',
-    };
-    get tpl() {
-        return {
-            tag: 'div',
-            name: 'root',
-            style: {
-                border: '2px solid #22c55e',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
-            },
-            children: [
-                {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Tooltip Top Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
-                },
-                {
-                    tag: 'button',
-                    name: 'btn',
-                    options: { text: 'Hover me (top)' },
-                    style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #22c55e',
-                        background: '#f0fdf4',
-                        color: '#15803d',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    },
-                },
-            ],
-        };
-    }
-}
-
-export class TooltipBottomTest extends Component {
-    tooltip = {
-        content: 'Tooltip Bottom',
-        placement: 'bottom',
-    };
-    get tpl() {
-        return {
-            tag: 'div',
-            name: 'root',
-            style: {
-                border: '2px solid #22c55e',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
-            },
-            children: [
-                {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Tooltip Bottom Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
-                },
-                {
-                    tag: 'button',
-                    name: 'btn',
-                    options: { text: 'Hover me (bottom)' },
-                    style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #22c55e',
-                        background: '#f0fdf4',
-                        color: '#15803d',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    },
-                },
-            ],
-        };
-    }
-}
-
-export class TooltipLeftTest extends Component {
-    tooltip = {
-        content: 'Tooltip Left',
-        placement: 'left',
-    };
-    get tpl() {
-        return {
-            tag: 'div',
-            name: 'root',
-            style: {
-                border: '2px solid #22c55e',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
-            },
-            children: [
-                {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Tooltip Left Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
-                },
-                {
-                    tag: 'button',
-                    name: 'btn',
-                    options: { text: 'Hover me (left)' },
-                    style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #22c55e',
-                        background: '#f0fdf4',
-                        color: '#15803d',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    },
-                },
-            ],
-        };
-    }
-}
-
-export class TooltipRightTest extends Component {
-    tooltip = {
-        content: 'Tooltip Right',
-        placement: 'right',
-    };
-    get tpl() {
-        return {
-            tag: 'div',
-            name: 'root',
-            style: {
-                border: '2px solid #22c55e',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
-            },
-            children: [
-                {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Tooltip Right Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
-                },
-                {
-                    tag: 'button',
-                    name: 'btn',
-                    options: { text: 'Hover me (right)' },
-                    style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #22c55e',
-                        background: '#f0fdf4',
-                        color: '#15803d',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    },
-                },
-            ],
-        };
-    }
-
