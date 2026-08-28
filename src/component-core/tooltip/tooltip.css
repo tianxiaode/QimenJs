@@ -39,19 +39,19 @@
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent transparent var(--q-colors-text, #1a1a1a) transparent;
+    border-color: var(--q-colors-text, #1a1a1a) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--left {
     right: calc(var(--q-arrow-size, 6px) * -1);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent transparent transparent var(--q-colors-text, #1a1a1a);
+    border-color: var(--q-colors-text, #1a1a1a) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--right {
     left: calc(var(--q-arrow-size, 6px) * -1);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent var(--q-colors-text, #1a1a1a) transparent transparent;
+    border-color: transparent transparent transparent var(--q-colors-text, #1a1a1a);
 }
