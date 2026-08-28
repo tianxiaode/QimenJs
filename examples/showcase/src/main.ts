@@ -4,6 +4,7 @@ import '@/theme/light.css';
 import '@/theme/skeleton.css';
 import '@/theme/layout.css';
 import '@/theme/utility.css';
+import './showcase.css';
 const app = document.getElementById('app')!;
 const shell = new ShowcaseApp();
 app.appendChild(shell.el);

@@ -42,7 +42,7 @@
 }
 
 .q-msgbox__close::before {
-    content: '\e90a';
+    content: var(--q-icon-close, '\e90a');
     font-family: 'q-icon';
 }
 

@@ -19,9 +19,11 @@ export class TooltipComponent extends FloatingComponent {
         this.setOption('zIndex', zIndexManager.acquire(ZIndexLevel.tooltip));
         this._overlayOpen = true;
         if (this._anchor && typeof this.updateArrowPlacement === 'function') {
-            const anchorRect = this._anchor.getBoundingClientRect();
-            const elRect = this.el.getBoundingClientRect();
-            this.updateArrowPlacement(this._inferPlacement(anchorRect, elRect));
+            requestAnimationFrame(() => {
+                const anchorRect = this._anchor.getBoundingClientRect();
+                const elRect = this.el.getBoundingClientRect();
+                this.updateArrowPlacement(this._inferPlacement(anchorRect, elRect));
+            });
         }
     }
 

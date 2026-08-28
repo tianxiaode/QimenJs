@@ -11,6 +11,7 @@
     border-radius: 0;
     background: var(--q-colors-text, #1a1a1a);
     color: var(--q-colors-bg, #fff);
+    border: 1px solid var(--q-colors-border, #d9ccb8);
 }
 .q-tooltip__content {
     display: inline-flex;
@@ -18,5 +19,36 @@
     justify-content: center;
 }
 .q-tooltip .q-arrow {
-    --q-arrow-color: var(--q-colors-text, #1a1a1a);
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+.q-tooltip .q-arrow--top {
+    bottom: calc(var(--q-arrow-size, 6px) * -1);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: var(--q-arrow-color, var(--q-colors-text, #1a1a1a)) transparent transparent transparent;
+}
+.q-tooltip .q-arrow--bottom {
+    top: calc(var(--q-arrow-size, 6px) * -1);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent transparent var(--q-arrow-color, var(--q-colors-text, #1a1a1a)) transparent;
+}
+.q-tooltip .q-arrow--left {
+    right: calc(var(--q-arrow-size, 6px) * -1);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent transparent transparent var(--q-arrow-color, var(--q-colors-text, #1a1a1a));
+}
+.q-tooltip .q-arrow--right {
+    left: calc(var(--q-arrow-size, 6px) * -1);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent var(--q-arrow-color, var(--q-colors-text, #1a1a1a)) transparent transparent;
 }

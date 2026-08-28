@@ -1,0 +1,26 @@
+/* Showcase 覆盖样式 - 使用 FontAwesome 图标 */
+
+.q-msgbox__close::before {
+    --q-icon-close: '\f00d';
+    font-family: 'Font Awesome 7 Free';
+    font-weight: 900;
+}
+
+.q-toast__icon--info::before,
+.q-toast__icon--success::before,
+.q-toast__icon--warning::before,
+.q-toast__icon--error::before {
+    font-family: 'Font Awesome 7 Free';
+    font-weight: 900;
+}
+
+.q-toast__icon--info::before { --q-icon-info: '\f05a'; }
+.q-toast__icon--success::before { --q-icon-success: '\f058'; }
+.q-toast__icon--warning::before { --q-icon-warning: '\f071'; }
+.q-toast__icon--error::before { --q-icon-error: '\f057'; }
+
+.q-toast__close::before {
+    --q-icon-close: '\f00d';
+    font-family: 'Font Awesome 7 Free';
+    font-weight: 900;
+}

@@ -49,10 +49,10 @@
     font-family: 'q-icon';
 }
 
-.q-toast__icon--info::before { content: '\e923'; }
-.q-toast__icon--success::before { content: '\e920'; }
-.q-toast__icon--warning::before { content: '\e921'; }
-.q-toast__icon--error::before { content: '\e922'; }
+.q-toast__icon--info::before { content: var(--q-icon-info, '\e923'); }
+.q-toast__icon--success::before { content: var(--q-icon-success, '\e920'); }
+.q-toast__icon--warning::before { content: var(--q-icon-warning, '\e921'); }
+.q-toast__icon--error::before { content: var(--q-icon-error, '\e922'); }
 
 .q-toast__close {
     flex-shrink: 0;
@@ -74,6 +74,6 @@
 }
 
 .q-toast__close::before {
-    content: '\e90a';
+    content: var(--q-icon-close, '\e90a');
     font-family: 'q-icon';
 }
