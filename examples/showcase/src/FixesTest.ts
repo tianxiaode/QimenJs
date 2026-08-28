@@ -1,4 +1,5 @@
 import { Component, toast, msgbox } from '@qimenjs/component-core';
+import { TooltipAbility } from '@qimenjs/component-core';
 export class OverlayTest extends Component {
     tooltip = {
         content: 'Tooltip via setDefaultOverlay',
@@ -101,6 +102,81 @@ export class OverlayTest extends Component {
                                 border: '1px solid #ef4444',
                                 background: '#fef2f2',
                                 color: '#b91c1c',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                    ],
+                },
+                {
+                    tag: 'div',
+                    name: 'tooltipRow',
+                    style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
+                    children: [
+                        {
+                            tag: 'button',
+                            name: 'tooltipTop',
+                            options: {
+                                text: 'Tooltip Top',
+                                tooltip: { content: 'Tooltip Top', placement: 'top' },
+                            },
+                            style: {
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                        {
+                            tag: 'button',
+                            name: 'tooltipBottom',
+                            options: {
+                                text: 'Tooltip Bottom',
+                                tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
+                            },
+                            style: {
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                        {
+                            tag: 'button',
+                            name: 'tooltipLeft',
+                            options: {
+                                text: 'Tooltip Left',
+                                tooltip: { content: 'Tooltip Left', placement: 'left' },
+                            },
+                            style: {
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                        {
+                            tag: 'button',
+                            name: 'tooltipRight',
+                            options: {
+                                text: 'Tooltip Right',
+                                tooltip: { content: 'Tooltip Right', placement: 'right' },
+                            },
+                            style: {
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
                                 cursor: 'pointer',
                                 fontSize: '14px',
                             },
