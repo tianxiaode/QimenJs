@@ -1,9 +1,5 @@
 import { Component, toast, msgbox } from '@qimenjs/component-core';
 export class OverlayTest extends Component {
-    // tooltip = {
-    //     content: 'Tooltip via setDefaultOverlay',
-    //     placement: 'top',
-    // };
     tooltip = {
         content: 'Tooltip via setDefaultOverlay',
         placement: 'top',
@@ -138,6 +134,201 @@ export class OverlayTest extends Component {
             ],
         };
     }
+
+    domEvents = {
+        click: {
+            loadingBtn: { handler: true },
+            toastBtn: { handler: true },
+            msgboxBtn: { handler: true },
+        },
+    };
+
+    onLoadingBtnClick() {
+        this.showLoading();
+        const result = this.getNodeEl('resultText');
+        if (result) result.textContent = '[overlay] Loading shown. Check for spinner overlay.';
+        setTimeout(() => {
+            this.hideLoading();
+            if (result) result.textContent = '[overlay] Loading hidden after 2s.';
+        }, 2000);
+    }
+
+    onToastBtnClick() {
+        toast({ message: 'Operation successful!', toastType: 'success' });
+        const result = this.getNodeEl('resultText');
+        if (result) result.textContent = '[toast] Toast shown.';
+    }
+
+    onMsgboxBtnClick() {
+        msgbox.prompt('Hello', 'This is a message box alert.');
+        const result = this.getNodeEl('resultText');
+        if (result) result.textContent = '[msgbox] Msgbox alert shown.';
+    }
+}
+
+export class TooltipTopTest extends Component {
+    tooltip = {
+        content: 'Tooltip Top',
+        placement: 'top',
+    };
+    get tpl() {
+        return {
+            tag: 'div',
+            name: 'root',
+            style: {
+                border: '2px solid #22c55e',
+                borderRadius: '8px',
+                padding: '24px',
+                marginTop: '24px',
+            },
+            children: [
+                {
+                    tag: 'h2',
+                    name: 'sectionTitle',
+                    options: { text: 'Tooltip Top Test' },
+                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                },
+                {
+                    tag: 'button',
+                    name: 'btn',
+                    options: { text: 'Hover me (top)' },
+                    style: {
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: '1px solid #22c55e',
+                        background: '#f0fdf4',
+                        color: '#15803d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                    },
+                },
+            ],
+        };
+    }
+}
+
+export class TooltipBottomTest extends Component {
+    tooltip = {
+        content: 'Tooltip Bottom',
+        placement: 'bottom',
+    };
+    get tpl() {
+        return {
+            tag: 'div',
+            name: 'root',
+            style: {
+                border: '2px solid #22c55e',
+                borderRadius: '8px',
+                padding: '24px',
+                marginTop: '24px',
+            },
+            children: [
+                {
+                    tag: 'h2',
+                    name: 'sectionTitle',
+                    options: { text: 'Tooltip Bottom Test' },
+                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                },
+                {
+                    tag: 'button',
+                    name: 'btn',
+                    options: { text: 'Hover me (bottom)' },
+                    style: {
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: '1px solid #22c55e',
+                        background: '#f0fdf4',
+                        color: '#15803d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                    },
+                },
+            ],
+        };
+    }
+}
+
+export class TooltipLeftTest extends Component {
+    tooltip = {
+        content: 'Tooltip Left',
+        placement: 'left',
+    };
+    get tpl() {
+        return {
+            tag: 'div',
+            name: 'root',
+            style: {
+                border: '2px solid #22c55e',
+                borderRadius: '8px',
+                padding: '24px',
+                marginTop: '24px',
+            },
+            children: [
+                {
+                    tag: 'h2',
+                    name: 'sectionTitle',
+                    options: { text: 'Tooltip Left Test' },
+                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                },
+                {
+                    tag: 'button',
+                    name: 'btn',
+                    options: { text: 'Hover me (left)' },
+                    style: {
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: '1px solid #22c55e',
+                        background: '#f0fdf4',
+                        color: '#15803d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                    },
+                },
+            ],
+        };
+    }
+}
+
+export class TooltipRightTest extends Component {
+    tooltip = {
+        content: 'Tooltip Right',
+        placement: 'right',
+    };
+    get tpl() {
+        return {
+            tag: 'div',
+            name: 'root',
+            style: {
+                border: '2px solid #22c55e',
+                borderRadius: '8px',
+                padding: '24px',
+                marginTop: '24px',
+            },
+            children: [
+                {
+                    tag: 'h2',
+                    name: 'sectionTitle',
+                    options: { text: 'Tooltip Right Test' },
+                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                },
+                {
+                    tag: 'button',
+                    name: 'btn',
+                    options: { text: 'Hover me (right)' },
+                    style: {
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: '1px solid #22c55e',
+                        background: '#f0fdf4',
+                        color: '#15803d',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                    },
+                },
+            ],
+        };
+    }
+}
 
     domEvents = {
         click: {
