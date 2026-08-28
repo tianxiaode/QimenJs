@@ -57,6 +57,7 @@ export class FloatingComponent extends Component {
 
         const actualPlacement = positionOverlay(this.el, anchor, p, offset ?? 4, true);
         (this as any)._actualPlacement = actualPlacement;
+        console.log('[FloatingComponent.show] actualPlacement:', actualPlacement);
         this.el.style.display = '';
     }
 

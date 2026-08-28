@@ -72,6 +72,7 @@ export const ArrowAbility = {
     updateArrowPlacement(placement: string): void {
         const name = this.arrowName;
         if (!name) return;
+        console.log('[ArrowAbility.updateArrowPlacement] name:', name, 'placement:', placement);
         this.removeCls(name, ARROW_PLACEMENT_CLS.top);
         this.removeCls(name, ARROW_PLACEMENT_CLS.bottom);
         this.removeCls(name, ARROW_PLACEMENT_CLS.left);
