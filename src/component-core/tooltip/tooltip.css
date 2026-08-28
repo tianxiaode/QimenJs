@@ -28,28 +28,28 @@
 }
 
 .q-tooltip .q-arrow--top {
-    bottom: calc(var(--q-arrow-size, 6px));
+    bottom: calc(var(--q-arrow-size, 6px) * -1);
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
     border-color: var(--q-colors-bg, #fff) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--bottom {
-    top: calc(var(--q-arrow-size, 6px));
+    top: calc(var(--q-arrow-size, 6px) * -1);
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
     border-color: transparent transparent var(--q-colors-bg, #fff) transparent;
 }
 .q-tooltip .q-arrow--left {
-    right: calc(var(--q-arrow-size, 6px));
+    right: calc(var(--q-arrow-size, 6px) * -1);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
     border-color: transparent transparent transparent var(--q-colors-bg, #fff);
 }
 .q-tooltip .q-arrow--right {
-    left: calc(var(--q-arrow-size, 6px));
+    left: calc(var(--q-arrow-size, 6px) * -1);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
