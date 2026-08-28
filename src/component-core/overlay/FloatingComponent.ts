@@ -4,7 +4,7 @@ import { ZIndexLevel, zIndexManager } from '../engine';
 import type { Definitions } from '@/composable';
 import { OverlayRoot } from './OverlayRoot';
 import { positionOverlay, type Placement } from './dispatch/positionOverlay';
-import { MaskComponent } from './mask/MaskComponent';
+import { MaskComponent } from './mask';
 
 const FloatingComponentDefs: Definitions = {
     options: {
@@ -12,16 +12,7 @@ const FloatingComponentDefs: Definitions = {
         offset: null,
         showDelay: null,
         hideDelay: null,
-        left: null,
-        top: null,
-        right: null,
-        bottom: null,
-        width: null,
-        height: null,
-        position: null,
-        zIndex: null,
         viewportPosition: null,
-        transform: null,
     },
     property: {
         _overlayOpen: false,

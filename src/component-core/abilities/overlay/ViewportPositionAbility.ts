@@ -3,13 +3,12 @@ import type { AbilityDefinition } from '@/composable';
 
 export const ViewportPositionAbility: AbilityDefinition = {
     setViewportPosition(position: ViewportPosition, offset: number = 0, margin: number = 16): void {
-        this.top = null;
-        this.bottom = null;
-        this.left = null;
-        this.right = null;
-        this.transform = null;
-        this.position = 'fixed'; // 保存位置
-
+        this.el.style.top = null;
+        this.el.style.bottom = null;
+        this.el.style.left = null;
+        this.el.style.right = null;
+        this.el.style.transform = null; // 保存变换
+        this.el.style.position = 'fixed'; // 保存位置
         const isTop = position.startsWith('top');
         const isBottom = position.startsWith('bottom');
         const isLeft = position.endsWith('left');
@@ -18,25 +17,25 @@ export const ViewportPositionAbility: AbilityDefinition = {
         const isMiddle = position === 'center';
 
         if (isMiddle) {
-            this.top = '50%';
-            this.left = '50%';
-            this.transform = 'translate(-50%, -50%)';
+            this.el.style.top = '50%';
+            this.el.style.left = '50%';
+            this.el.style.transform = 'translate(-50%, -50%)';
             return;
         }
 
         if (isTop) {
-            this.top = `${margin + offset}px`;
+            this.el.style.top = `${margin + offset}px`;
         } else if (isBottom) {
-            this.bottom = `${margin + offset}px`;
+            this.el.style.bottom = `${margin + offset}px`;
         }
 
         if (isLeft) {
-            this.left = `${margin + offset}px`;
+            this.el.style.left = `${margin}px`;
         } else if (isRight) {
-            this.right = `${margin + offset}px`;
+            this.el.style.right = `${margin}px`;
         } else if (isCenter) {
-            this.left = '50%';
-            this.transform = 'translateX(-50%)';
+            this.el.style.left = '50%';
+            this.el.style.transform = 'translateX(-50%)';
         }
     },
 

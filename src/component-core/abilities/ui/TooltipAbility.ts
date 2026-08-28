@@ -20,13 +20,15 @@ export const TooltipAbility: AbilityDefinition = {
     _initTooltip(): void {
         const cfg: Tooltiptoptions = this.tooltip;
         if (!cfg) return;
-        this.attachFloat('tooltip', {
+        const decl = {
             type: 'tooltip',
             trigger: 'hover',
             placement: cfg.placement ?? 'top',
             showDelay: cfg.delay,
             data: { tooltip: cfg.content },
-        } as FloatDecl);
+        } as FloatDecl;
+        this.attachFloat('tooltip', decl);
+        this._emitInit('tooltip', decl);
     },
 
     updateTooltip(data: Record<string, any>): void {

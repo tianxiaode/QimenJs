@@ -1,18 +1,14 @@
-import {
-    Component,
-    toast,
-    msgbox,
-    TooltipComponent,
-    LoadingComponent,
-} from '@qimenjs/component-core';
-
+import { Component, toast, msgbox } from '@qimenjs/component-core';
 export class OverlayTest extends Component {
+    // tooltip = {
+    //     content: 'Tooltip via setDefaultOverlay',
+    //     placement: 'top',
+    // };
     tooltip = {
-        type: TooltipComponent,
         content: 'Tooltip via setDefaultOverlay',
         placement: 'top',
     };
-    loading = { type: LoadingComponent, text: '加载中...' };
+    loading = { text: '加载中...' };
 
     get tpl() {
         return {
@@ -58,7 +54,9 @@ export class OverlayTest extends Component {
                         {
                             tag: 'button',
                             name: 'tooltipHint',
-                            options: { text: 'Hover root area (tooltip)' },
+                            options: {
+                                text: 'Hover root area (tooltip)',
+                            },
                             style: {
                                 padding: '8px 16px',
                                 borderRadius: '6px',
@@ -166,7 +164,7 @@ export class OverlayTest extends Component {
     }
 
     onMsgboxBtnClick() {
-        msgbox.alert('Hello', 'This is a message box alert.');
+        msgbox.prompt('Hello', 'This is a message box alert.');
         const result = this.getNodeEl('resultText');
         if (result) result.textContent = '[msgbox] Msgbox alert shown.';
     }

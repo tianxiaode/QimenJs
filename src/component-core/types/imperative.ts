@@ -8,7 +8,7 @@ import { ComponentCoreOptions } from './component';
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
 /** toast 显示位置 */
-export type ToastPosition =
+export type ToastAlignment =
     | 'top-right'
     | 'top-left'
     | 'bottom-right'
@@ -27,7 +27,7 @@ export interface ToastOptions extends ComponentCoreOptions {
     /** 持续时间 ms，默认 3000，设为 0 则不自动关闭 */
     duration?: number;
     /** 显示位置，默认 'top-right' */
-    position?: ToastPosition;
+    alignment?: ToastAlignment;
 }
 
 /**

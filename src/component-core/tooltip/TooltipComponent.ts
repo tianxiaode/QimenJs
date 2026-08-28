@@ -4,7 +4,7 @@ import type { Definitions } from '@/composable';
 import { ZIndexLevel, zIndexManager } from '../engine';
 import { TOOLTIP_TPL } from './tooltip-tpl';
 import { InferAbility } from '@/composable';
-import './tooltip.css.ts';
+import './tooltip.css';
 import { ArrowAbility } from '../abilities';
 
 export class TooltipComponent extends FloatingComponent {
@@ -15,8 +15,8 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     open(): void {
-        this.hidden = false;
-        this.zIndex = zIndexManager.acquire(ZIndexLevel.tooltip);
+        this.setOption('hidden', false);
+        this.setOption('zIndex', zIndexManager.acquire(ZIndexLevel.tooltip));
         this._overlayOpen = true;
         if (this._anchor && typeof this.updateArrowPlacement === 'function') {
             const anchorRect = this._anchor.getBoundingClientRect();
@@ -26,7 +26,7 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     close(): void {
-        this.hidden = true;
+        this.setOption('hidden', true);
         this._overlayOpen = false;
     }
 
@@ -45,7 +45,7 @@ export class TooltipComponent extends FloatingComponent {
     onOverlayChange(data: any): void {
         if (!data) return;
         if (data.tooltip !== undefined) this.text = data.tooltip;
-        if (data.visible !== undefined) this.hidden = !data.visible;
+        if (data.visible !== undefined) this.setOption('hidden', !data.visible);
     }
 }
 

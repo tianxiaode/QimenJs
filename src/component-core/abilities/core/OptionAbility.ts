@@ -1,29 +1,28 @@
 import type { AbilityDefinition } from '@/composable';
 
 export const OptionAbility: AbilityDefinition = {
-    /**
-     * 获取选项值
-     */
-    _getOptions(nodeName: string) {
-        return this.getNode(nodeName).options ?? {};
+    getNodeOption(nodeName: string, key?: string): any {
+        const options = this.getNode(nodeName).options ?? {};
+        return key ? options[key] : options;
     },
 
-    /**
-     * 设置选项值
-     */
-    _getOption(nodeName: string, key: string): any | undefined {
-        return this._getOptions(nodeName)[key];
+    setNodeOption(nodeName: string, key: string, value: any): void {
+        const node = this.getNode(nodeName);
+        if (!node.options) {
+            node.options = {};
+        }
+        node.options[key] = value;
     },
 
     hasParent: {
         get(): boolean {
-            return this._hasParent ?? this._getOption('root', 'hasParent');
+            return this._hasParent ?? this.getNodeOption('root', 'hasParent');
         },
     },
 
     container: {
         get(): HTMLElement | undefined {
-            return this._getOption('root', 'container');
+            return this.getNodeOption('root', 'container');
         },
     },
 } satisfies AbilityDefinition;

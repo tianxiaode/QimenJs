@@ -1,7 +1,7 @@
 import { TOAST_TEMPLATE } from './toast-tpl';
 import { FloatingComponent } from '../overlay';
 import { EventContextBuilder } from '@/context';
-import type { TemplateDecl, ViewportPosition, ToastType } from '../types';
+import type { TemplateDecl, ToastType } from '../types';
 import type { Definitions } from '@/composable';
 import './toast.css';
 
@@ -43,8 +43,7 @@ export class Toast extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.logger.info('Toast initialized', this);
-        this.setStyle('pointerEvents', 'auto');
+        this.setStyle('root', 'pointerEvents', 'auto');
         const toastType: ToastType = this.toastType ?? 'info';
         this.addCls('root', `q-toast--${toastType}`);
         this.addCls('icon', `q-toast__icon--${toastType}`); // 添加样式类
@@ -53,8 +52,7 @@ export class Toast extends FloatingComponent {
             this.addCls('root', 'q-toast--titled');
         }
 
-        this.zIndex = this.acquireZIndex();
-        this.setViewportPosition(this.position as ViewportPosition, 0, 16);
+        this.setOption('zIndex', this.acquireZIndex());
         this.mountToOverlay(this.el);
 
         this.playEnter();
@@ -117,7 +115,9 @@ const ToastDefs: Definitions = {
     options: {
         toastType: 'info',
         duration: 3000,
-        position: 'top-right',
+        alignment: 'top-right',
+        minWidth: 200,
+        maxWidth: 300,
         title: { target: 'text', to: 'html', default: null },
         message: { target: 'message', to: 'html', default: null },
     },

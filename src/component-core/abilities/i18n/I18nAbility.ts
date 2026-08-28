@@ -43,7 +43,7 @@ export const I18nAbility: AbilityDefinition = {
         } else {
             this._dirtyI18n[nodeName] = { ...this._dirtyI18n[nodeName], ...i18n };
         }
-        this.debounce('I18nAbility:flush', () => this._flushI18n(), 0);
+        this.debounce('I18nAbility:flush', () => this._flushI18n(), 0)();
     },
 
     /**
@@ -89,24 +89,24 @@ export const I18nAbility: AbilityDefinition = {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
 
-        // 文本内容
-        if (i18n.text !== undefined) {
+        // 文本内容（已有内容时不覆盖，允许 option 优先级高于 i18n）
+        if (i18n.text !== undefined && !el.textContent) {
             el.textContent = t(i18n.text);
         }
 
         // 提示（图片用 alt，其他用 title）
-        if (i18n.hint !== undefined) {
+        if (i18n.hint !== undefined && !el.getAttribute('title') && !el.getAttribute('alt')) {
             const attr = el.tagName === 'IMG' ? 'alt' : 'title';
             el.setAttribute(attr, t(i18n.hint));
         }
 
         // 占位符
-        if (i18n.placeholder !== undefined) {
+        if (i18n.placeholder !== undefined && !el.getAttribute('placeholder')) {
             el.setAttribute('placeholder', t(i18n.placeholder));
         }
 
         // 值（仅表单元素）
-        if (i18n.value !== undefined && 'value' in el) {
+        if (i18n.value !== undefined && 'value' in el && !(el as HTMLInputElement).value) {
             (el as HTMLInputElement).value = t(i18n.value);
         }
 

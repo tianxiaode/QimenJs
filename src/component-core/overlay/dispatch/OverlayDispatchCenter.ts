@@ -341,7 +341,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             const OverlayClass = this._resolveComponentType(def.type, overlayKey);
             if (!OverlayClass) return;
             const overlayData = typeof def.data === 'function' ? def.data() : def.data;
-            overlayInst = new OverlayClass({ options: { ...overlayData } });
+            overlayInst = new OverlayClass({ ...overlayData });
         }
 
         const anchorEl = anchor ?? component?.el;

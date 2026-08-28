@@ -76,7 +76,6 @@ export function t(key: string, isError?: boolean): string {
         }
         return actualKey;
     }
-    console.log(i18n, actualKey);
     if (!i18n) return actualKey;
     return i18n.t(actualKey) || actualKey;
 }

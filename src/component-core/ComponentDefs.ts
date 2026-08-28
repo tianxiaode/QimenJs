@@ -29,6 +29,20 @@ export const ComponentDefs: Definitions = {
         attribute: null,
         /** 组件鼠标样式 — 控制组件的鼠标样式 */
         cursor: null,
+        /** 定位样式 */
+        left: null,
+        top: null,
+        right: null,
+        bottom: null,
+        width: null,
+        height: null,
+        minWidth: null,
+        maxWidth: null,
+        minHeight: null,
+        maxHeight: null,
+        position: null,
+        zIndex: null,
+        transform: null,
     },
 
     property: {

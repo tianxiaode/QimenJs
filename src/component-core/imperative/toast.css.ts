@@ -29,6 +29,8 @@ export const toastCSS = `
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     font-size: 14px;
     color: #334155;
+    min-width: 200px;
+    max-width: 300px;
     pointer-events: auto;
     z-index: 9999;
 }

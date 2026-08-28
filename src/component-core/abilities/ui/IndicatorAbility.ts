@@ -30,6 +30,7 @@ export const IndicatorAbility: AbilityDefinition = {
         const decl = this._getIndicatorFloatDecl();
         if (!decl) return;
         this.attachFloat('indicator', decl);
+        this._emitInit('indicator', decl);
     },
 
     _getIndicatorFloatDecl(): FloatDecl | undefined {

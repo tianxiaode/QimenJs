@@ -15,10 +15,10 @@ class LoadingComponent extends FloatingComponent {
         if (!data) return;
         const textEl = this.getNodeEl('text');
         if (data.text !== undefined) {
-            this.text = data.text;
+            this.setOption('text', data.text);
             if (textEl) textEl.style.display = data.text ? '' : 'none';
         }
-        if (data.visible !== undefined) this.hidden = !data.visible;
+        if (data.visible !== undefined) this.setOption('hidden', !data.visible);
     }
 }
 

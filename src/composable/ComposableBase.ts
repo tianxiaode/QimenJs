@@ -20,14 +20,43 @@ import { ILogger, Logger } from '@/logger';
 import { withAbilities, withDefinitions } from './forge';
 import type { AbilityDefinition, Definitions, IComposableBase, IOptionHandler } from './types';
 import { OptionHandlerRegistrar } from './OptionHandlerRegistrar';
+import { string } from '@/utils';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
+    private _optionData: Record<string, any> = {};
     private abilityStatesMap: Map<string, any> = new Map();
     private cleanups: (() => void)[] = [];
 
     constructor() {
         this.logger = Logger.for(this.constructor.name);
+
+        const map = this.getOptionsMap();
+        for (const [key, def] of map) {
+            let defaultValue: any = def;
+            if (typeof def === 'object' && def !== null) {
+                defaultValue = (def as any).default;
+            }
+            this._optionData[key] = defaultValue;
+        }
+    }
+
+    getOption(key: string): any {
+        return this._optionData[key];
+    }
+
+    setOption(key: string, value: any, silent?: boolean): void {
+        const old = this._optionData[key];
+        if (old === value) return;
+        this._optionData[key] = value;
+        const changeKey = `_on${string.capitalize(key)}Change`;
+        if (typeof (this as any)[changeKey] === 'function') {
+            (this as any)[changeKey](value, old);
+        }
+        if (!silent) {
+            const def = this.getOptionsMap().get(key);
+            this._onOptionChange(key, value, old, def);
+        }
     }
 
     /**
@@ -106,6 +135,7 @@ export class ComposableBase implements IComposableBase {
         const registry = OptionHandlerRegistrar.getInstance();
         const handler: IOptionHandler | undefined =
             name === 'target-to' ? registry.getTargetHandler(definition.to) : registry.get(key);
+
         if (!handler) {
             this.logger.warn('handler not found:', name, key, value, old, definition);
             return;
@@ -178,6 +208,7 @@ export class ComposableBase implements IComposableBase {
 
         this.ClearProperties();
         this.clearStates();
+        this._optionData = {};
         this.onDisposed();
     }
 

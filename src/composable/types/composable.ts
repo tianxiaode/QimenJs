@@ -20,6 +20,8 @@ export interface IComposableBase {
     logger: ILogger;
     getPropertyMap(): Map<string, any>;
     getOptionsMap(): Map<string, any>;
+    getOption(key: string): any;
+    setOption(key: string, value: any, silent?: boolean): void;
     _onOptionChange(key: string, value: any, old: any, definition: any): void;
     /**
      * 获取能力状态，不存在时可用 creator 惰性创建

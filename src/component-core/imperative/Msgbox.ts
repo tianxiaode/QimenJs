@@ -11,7 +11,6 @@ export class Msgbox extends FloatingComponent {
         return MSGBOX_TPL;
     }
 
-    maskEl!: HTMLElement;
     private _resolved = false;
 
     domEvents = {
@@ -48,42 +47,28 @@ export class Msgbox extends FloatingComponent {
         };
     }
 
-    _onMsgboxTypeChange(value: string) {
-        if (value === 'alert') {
+    onAfterInit(): void {
+        this.setStyle('root', 'pointerEvents', 'auto');
+        const type = this.getOption('msgboxType');
+        if (type === 'alert') {
             this.addCls('cancel', 'hidden');
-        } else if (value === 'prompt') {
+        } else if (type === 'prompt') {
             this.toggleCls('field', 'hidden');
         }
-    }
 
-    _setupMask(): void {
-        this.maskEl = document.createElement('div');
-        this.maskEl.classList.add('q-msgbox-mask');
-        this.maskEl.style.position = 'fixed';
-        this.maskEl.style.inset = '0';
-        this.maskEl.style.background = 'rgba(0,0,0,0.5)';
-        this.maskEl.style.zIndex = String(this.zIndex);
+        this.setOption('zIndex', this.acquireZIndex());
 
-        this.mountToOverlay(this.maskEl);
+        this._initMask({ color: 'rgba(0,0,0,0.5)' });
 
-        if (this.msgboxType === 'alert') {
-            this.bind(this.maskEl, 'click');
+        if (this.msgboxType === 'alert' && this._mask) {
+            this.bind(this._mask.el, 'click');
             this.on('dom:click', (e: any) => {
-                if (e.target === this.maskEl) {
+                const target = e?.data?.originalEvent?.target ?? e?.target;
+                if (target === this._mask!.el) {
                     this.close('cancel');
                 }
             });
         }
-    }
-
-    onAfterInit(): void {
-        this.logger.info('Toast initialized', this.getOptionsMap());
-
-        this.setStyle('pointerEvents', 'auto');
-
-        this.zIndex = this.acquireZIndex();
-
-        this._setupMask();
 
         this.setViewportPosition('center' as ViewportPosition);
         this.mountToOverlay(this.el);
@@ -96,6 +81,7 @@ export class Msgbox extends FloatingComponent {
     }
 
     _onConfirmClick(): void {
+        this.logger?.info?.('msgbox confirm click'); // Log the click
         this.close('confirm');
     }
 
@@ -114,14 +100,15 @@ export class Msgbox extends FloatingComponent {
         }
         this.callback?.(result);
 
-        const maskAnim = this.maskEl.animate([{ opacity: 1 }, { opacity: 0 }], {
-            duration: 150,
+        const maskEl = this._mask?.el;
+        const maskAnim = maskEl?.animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: 200,
             easing: 'ease-in',
         });
-        await Promise.all([this.playLeave(), maskAnim.finished]);
+        await Promise.all([this.playLeave(), maskAnim?.finished]);
 
         this.unmountFromOverlay(this.el);
-        this.unmountFromOverlay(this.maskEl);
+        this._removeMask();
         this.releaseZIndex();
 
         this.componentEmit(
@@ -147,6 +134,9 @@ const MsgboxDefs: Definitions = {
         msgboxType: 'alert',
         title: { target: 'title', to: 'text', default: null },
         content: { target: 'content', to: 'html', default: null },
+        confirmText: { target: 'confirm', to: 'text', default: '确定' },
+        cancelText: { target: 'cancel', to: 'text', default: '取消' },
+        value: { target: 'field', to: 'value', default: null },
     },
     property: {
         callback: null,
@@ -154,3 +144,4 @@ const MsgboxDefs: Definitions = {
 };
 
 Msgbox.define(MsgboxDefs);
+Msgbox.register();

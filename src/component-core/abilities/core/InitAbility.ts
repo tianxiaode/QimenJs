@@ -19,8 +19,6 @@ import type { AbilityDefinition } from '@/composable';
 import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
 import { SKELETON_CLS } from '../../constants';
 import { ComponentCoreOptions, IComponentCore } from '../../types';
-import { object } from '@/utils';
-
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -73,7 +71,7 @@ export const InitAbility = {
         for (const [key, value] of Object.entries(options)) {
             if (key === 'id' || key.startsWith('_')) continue;
             if (optionMap.has(key)) {
-                object.setProperty(this, key, value);
+                this.setOption(key, value);
             } else if (propertyMap.has(key)) {
                 this[key] = value;
             }
@@ -174,7 +172,9 @@ export const InitAbility = {
 
     /** 初始化 DOM 事件委托 */
     _initDomEvents(): void {
-        DomEventsEngine.bindDomEvents(this);
+        if (this.domEvents && Object.keys(this.domEvents).length > 0) {
+            DomEventsEngine.bindDomEvents(this);
+        }
     },
 
     /**

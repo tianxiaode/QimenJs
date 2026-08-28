@@ -31,6 +31,7 @@ export const DialogAbility: AbilityDefinition = {
         const decl = this._getDialogFloatDecl();
         if (!decl) return;
         this.attachFloat('dialog', decl);
+        this._emitInit('dialog', decl);
     },
 
     _getDialogFloatDecl(): FloatDecl | undefined {

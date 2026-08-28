@@ -172,7 +172,7 @@ class I18nManager {
 }
 
 function getByPath(obj, path) {
-    const keys = path.split('.');
+    const keys = path.split(':');
     let result = obj;
     for (const key of keys) {
         if (result && typeof result === 'object' && key in result) {
@@ -239,16 +239,16 @@ function formatPattern(d, pattern, config) {
 
     var result = pattern;
 
-    result = result.replace(/EEEE/g, function() {
+    result = result.replace(/EEEE/g, function () {
         return weekdays[dayOfWeek] || ('星期' + ['日', '一', '二', '三', '四', '五', '六'][dayOfWeek]);
     });
-    result = result.replace(/EEE/g, function() {
+    result = result.replace(/EEE/g, function () {
         return weekdaysShort[dayOfWeek] || weekdays[dayOfWeek] || '';
     });
-    result = result.replace(/MMMM/g, function() {
+    result = result.replace(/MMMM/g, function () {
         return months[month - 1] || (month + '月');
     });
-    result = result.replace(/MMM/g, function() {
+    result = result.replace(/MMM/g, function () {
         return monthsShort[month - 1] || months[month - 1] || '';
     });
     result = result.replace(/yyyy/g, String(year));

@@ -8,7 +8,6 @@
 
 import { Logger } from '@/logger';
 import type { AbilityDefinition, Definitions, OptionDefinition } from './types';
-import { string } from '@/utils';
 
 const BUILTIN_KEYS = new Set([
     'logger',
@@ -119,7 +118,7 @@ export function withDefinitions(target: any, definitions: Definitions): void {
     // 1. 处理 options → 生成 getter/setter
     // ============================================================
     if (definitions.options) {
-        injectOptions(proto, clearKeys, optionsMap, definitions.options); // 1. 处理 options → 生成 getter/setter
+        injectOptions(optionsMap, definitions.options); // 1. 处理 options → 生成 getter/setter
     }
 
     // ============================================================
@@ -199,52 +198,9 @@ function initConstructorProperties(proto: any) {
     };
 }
 
-export function injectOptions(
-    proto: any,
-    clearKeys: Set<string>,
-    optionMap: Map<string, any>,
-    optionDefs: OptionDefinition
-): void {
+export function injectOptions(optionMap: Map<string, any>, optionDefs: OptionDefinition): void {
     for (const [key, def] of Object.entries(optionDefs)) {
         if (key === '__name__' || key === 'isProperty') continue;
         optionMap.set(key, def);
-        const storeKey = `_${key}`;
-        clearKeys.add(storeKey);
-        let defaultValue = def;
-        if (typeof def === 'object') {
-            defaultValue = def?.default;
-        }
-
-        // ✅ 直接定义初始值（不经过 setter）
-        Object.defineProperty(proto, storeKey, {
-            value: defaultValue,
-            enumerable: false,
-            configurable: true,
-            writable: true,
-        });
-
-        // getter/setter
-        Object.defineProperty(proto, key, {
-            get: function () {
-                return this[storeKey];
-            },
-            set: function (value: any) {
-                const oldValue = this[storeKey];
-                const changeKey = `_on${string.capitalize(key)}Change`;
-                this[storeKey] = value;
-
-                if (typeof this[changeKey] === 'function') {
-                    // ✅ 触发变化通知
-                    this[changeKey](value, oldValue, def);
-                }
-
-                if (typeof this._onOptionChange === 'function') {
-                    // ✅ 触发变化通知
-                    this._onOptionChange(key, value, oldValue, def);
-                }
-            },
-            enumerable: true,
-            configurable: true,
-        });
     }
 }
