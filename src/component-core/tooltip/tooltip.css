@@ -42,14 +42,14 @@
     border-color: var(--q-colors-text, #1a1a1a) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--left {
-    left: calc(var(--q-arrow-size, 6px) * -1);
+    left: calc(var(--q-arrow-size, 6px) * -2);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
     border-color: transparent var(--q-colors-text, #1a1a1a) transparent transparent;
 }
 .q-tooltip .q-arrow--right {
-    right: calc(var(--q-arrow-size, 6px) * -1);
+    right: calc(var(--q-arrow-size, 6px) * -2);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
