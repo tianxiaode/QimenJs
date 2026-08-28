@@ -22,7 +22,7 @@ export const TooltipAbility: AbilityDefinition = {
         if (!cfg) return;
         const decl = {
             type: 'tooltip',
-            trigger: 'hover',
+            trigger: cfg.trigger ?? 'hover',
             placement: cfg.placement ?? 'top',
             showDelay: cfg.delay,
             data: { tooltip: cfg.content },

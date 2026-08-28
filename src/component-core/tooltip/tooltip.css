@@ -31,7 +31,28 @@
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: var(--q-arrow-color, var(--q-colors-text, #1a1a1a)) transparent transparent transparent;
+    border-color: var(--q-arrow-color, #fff) transparent transparent transparent;
+}
+.q-tooltip .q-arrow--bottom {
+    top: calc(var(--q-arrow-size, 6px) * -1);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent transparent var(--q-arrow-color, #fff) transparent;
+}
+.q-tooltip .q-arrow--left {
+    right: calc(var(--q-arrow-size, 6px) * -1);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent transparent transparent var(--q-arrow-color, #fff);
+}
+.q-tooltip .q-arrow--right {
+    left: calc(var(--q-arrow-size, 6px) * -1);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size, 6px);
+    border-color: transparent var(--q-arrow-color, #fff) transparent transparent;
 }
 
 .q-tooltip .q-arrow--bottom {

@@ -98,6 +98,7 @@ export interface Tooltiptoptions {
     placement?: 'top' | 'bottom' | 'left' | 'right';
     delay?: number;
     theme?: string;
+    trigger?: 'click' | 'hover' | 'focus' | 'manual' | 'always';
 }
 
 /** Loading 快捷配置，用于声明式创建加载浮层 */
