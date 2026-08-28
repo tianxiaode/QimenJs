@@ -58,23 +58,29 @@ export const AttributeAbility: AbilityDefinition = {
         return this.getNodeEl(nodeName).classList;
     },
 
-    hasCls(nodeName: string, cls: string): boolean {
-        return this.getNodeEl(nodeName).classList.contains(cls) || false;
+    _toClsTokens(cls: string | string[]): string[] {
+        const tokens = Array.isArray(cls) ? cls : cls.split(/\s+/);
+        return tokens.filter(Boolean);
     },
 
-    addCls(nodeName: string, cls: string): void {
-        const clsList: DOMTokenList = this.getCls(nodeName);
-        clsList.add(cls);
-    },
-
-    removeCls(nodeName: string, cls: string): void {
+    hasCls(nodeName: string, cls: string | string[]): boolean {
         const clsList = this.getCls(nodeName);
-        clsList.remove(cls);
+        return this._toClsTokens(cls).every((token: string) => clsList.contains(token));
     },
 
-    toggleCls(nodeName: string, cls: string, force?: boolean): void {
+    addCls(nodeName: string, cls: string | string[]): void {
+        this.getCls(nodeName).add(...this._toClsTokens(cls));
+    },
+
+    removeCls(nodeName: string, cls: string | string[]): void {
+        this.getCls(nodeName).remove(...this._toClsTokens(cls));
+    },
+
+    toggleCls(nodeName: string, cls: string | string[], force?: boolean): void {
         const clsList = this.getCls(nodeName);
-        clsList.toggle(cls, force);
+        for (const token of this._toClsTokens(cls)) {
+            clsList.toggle(token, force);
+        }
     },
 
     /**

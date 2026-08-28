@@ -8,6 +8,8 @@ import './tooltip.css.ts';
 import { ArrowAbility } from '../abilities';
 
 export class TooltipComponent extends FloatingComponent {
+    static type = 'tooltip';
+
     get tpl(): TemplateDecl {
         return TOOLTIP_TPL;
     }
@@ -55,5 +57,6 @@ const TooltipComponentDefs: Definitions = {
 
 TooltipComponent.use(ArrowAbility);
 TooltipComponent.define(TooltipComponentDefs);
+TooltipComponent.register();
 
 export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

@@ -8,7 +8,7 @@ import { ToastManager } from './ToastManager';
 import { MsgboxManager } from './MsgboxManager';
 import { Component } from '@/component-core';
 import { t } from '@/i18n/i18n-utils';
-import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType } from './types';
+import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType } from '../types';
 import './msgbox.css';
 import './toast.css';
 
@@ -39,11 +39,11 @@ function normalizeMsgboxArgs(
     titleOrOptions: string | MsgboxOptions,
     content?: string,
     type: MsgboxType = 'alert'
-): MsgboxOptions & { type: MsgboxType } {
+): MsgboxOptions {
     if (typeof titleOrOptions === 'string') {
-        return { title: titleOrOptions, content: content ?? '', type };
+        return { title: titleOrOptions, content: content ?? '', msgboxType: type };
     }
-    return { ...titleOrOptions, type };
+    return { ...titleOrOptions, msgboxType: type };
 }
 
 export const msgbox = {

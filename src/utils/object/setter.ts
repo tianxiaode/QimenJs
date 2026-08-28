@@ -9,10 +9,14 @@
  * @returns {Function|null} - setter 方法或 null
  */
 export function getSetter(object: any, key: string): any | null {
-    // 1. 检查 setter 语法 (set text)
-    const descriptor = Object.getOwnPropertyDescriptor(object, key);
-    if (descriptor?.set && typeof descriptor.set === 'function') {
-        return descriptor.set;
+    // 1. 检查 setter 语法 (set text)，遍历原型链
+    let proto = object;
+    while (proto) {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+        if (descriptor?.set && typeof descriptor.set === 'function') {
+            return descriptor.set;
+        }
+        proto = Object.getPrototypeOf(proto);
     }
 
     // 2. 检查 setText 方法

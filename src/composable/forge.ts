@@ -238,7 +238,7 @@ export function injectOptions(
                     this[changeKey](value, oldValue, def);
                 }
 
-                if (typeof this._markOptionChange === 'function') {
+                if (typeof this._onOptionChange === 'function') {
                     // ✅ 触发变化通知
                     this._onOptionChange(key, value, oldValue, def);
                 }

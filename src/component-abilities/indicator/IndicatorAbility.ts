@@ -23,7 +23,7 @@
 import type { AbilityDefinition } from '@/composable';
 import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events';
-import type { FloatDecl, IndicatorConfig, IndicatorType } from '@/component-core';
+import type { FloatDecl, IndicatorOptions, IndicatorType } from '@/component-core';
 
 const INDICATOR_TYPE_MAP: Record<string, string> = {
     dot: 'IndicatorDot',
@@ -36,7 +36,7 @@ const INDICATOR_TYPE_MAP: Record<string, string> = {
 const STATE_KEY = 'IndicatorAbility:state';
 
 interface IndicatorState {
-    config: IndicatorConfig;
+    config: IndicatorOptions;
     activeIndex: number;
 }
 
@@ -51,7 +51,7 @@ export const IndicatorAbility = {
      *
      * @param config - 指示器配置
      */
-    initIndicator(config: IndicatorConfig): void {
+    initIndicator(config: IndicatorOptions): void {
         this.setAbilityState(STATE_KEY, {
             config,
             activeIndex: config.activeIndex ?? 0,
@@ -61,7 +61,7 @@ export const IndicatorAbility = {
     /**
      * 获取指示器配置
      */
-    get indicatorConfig(): IndicatorConfig | undefined {
+    get indicatorConfig(): IndicatorOptions | undefined {
         const state = this.abilityState(STATE_KEY) as IndicatorState | undefined;
         return state?.config;
     },

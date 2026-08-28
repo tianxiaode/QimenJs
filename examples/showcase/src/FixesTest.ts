@@ -119,6 +119,7 @@ export class OverlayTest extends Component {
                     style: {
                         background: '#080808ff',
                         borderRadius: '6px',
+                        color: '#e2e8f0',
                         padding: '16px',
                         fontSize: '13px',
                         fontFamily: 'monospace',
@@ -159,7 +160,7 @@ export class OverlayTest extends Component {
     }
 
     onToastBtnClick() {
-        toast({ message: 'Operation successful!', type: 'success' });
+        toast({ message: 'Operation successful!', toastType: 'success' });
         const result = this.getNodeEl('resultText');
         if (result) result.textContent = '[toast] Toast shown.';
     }

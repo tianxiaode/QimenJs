@@ -8,7 +8,7 @@
  */
 
 import { CHILDREN_PLACEHOLDER, SKELETON_CLS, VOID_TAGS } from '../constants';
-import { TemplateCache, TemplateDecl, NodeAttributes, NodeMeta } from '../types';
+import { TemplateCache, TemplateDecl, NodeMeta } from '../types';
 import { StyleHelper } from './StyleHelper';
 import { string } from '@qimenjs/utils';
 
@@ -55,6 +55,10 @@ export class TemplateManager {
             cache.indexs[name] = indexPath;
             cache.nodes[name] = meta;
 
+            if (meta.i18n) {
+                cache.i18ns.push(name); // i18n
+            }
+
             if (isComponent) {
                 cache.childComponents.push(name);
                 return `<div class="${SKELETON_CLS}"></div>`;
@@ -74,39 +78,6 @@ export class TemplateManager {
         }
 
         return html;
-    }
-
-    /**
-     * 将 attrs 拆分为 attributes、style、classes（兼容 NodeMeta 现有字段）
-     */
-    static splitAttrs(attrs: NodeAttributes | undefined): {
-        attributes: NodeAttributes;
-        style: Record<string, any>;
-        classes: string | string[];
-    } {
-        const attributes: NodeAttributes = {};
-        let style: Record<string, any> = {};
-        let classes: string | string[] = [];
-
-        if (!attrs) return { attributes, style, classes };
-
-        for (const [key, val] of Object.entries(attrs)) {
-            if (val === undefined || val === null) continue;
-
-            if (key === 'style' && typeof val === 'object' && !Array.isArray(val)) {
-                style = { ...val };
-                continue;
-            }
-
-            if (key === 'class' || key === 'cls') {
-                classes = val;
-                continue;
-            }
-
-            attributes[key] = val;
-        }
-
-        return { attributes, style, classes };
     }
 
     /**

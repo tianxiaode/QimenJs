@@ -52,6 +52,7 @@ export const InitAbility = {
 
     _applyNodeMeta(options: ComponentCoreOptions): void {
         const names = this._tplCache.names;
+        this.logger.debug(`[prepare:apply node meta]`, `[${this.type}]:[${this.id}]`);
         for (const name of names) {
             const nodeMeta = this.getNode(name);
             if (!nodeMeta || nodeMeta.isComponent) continue;
@@ -66,16 +67,15 @@ export const InitAbility = {
         }
         if (!options) return;
         // 将构造函数选项应用到组件实例
-        if (options.options) {
-            const optionMap: Map<string, any> = this.getOptionMap();
-            const propertyMap: Map<string, any> = this.getPropertyMap();
-            for (const [key, value] of Object.entries(options.options)) {
-                if (key === 'id' || key.startsWith('_')) continue;
-                if (optionMap.has(key)) {
-                    object.setProperty(this, key, value);
-                } else if (propertyMap.has(key)) {
-                    this[key] = value;
-                }
+        this.logger.debug(`[prepare:apply options]`, `[${this.type}]:[${this.id}]`);
+        const optionMap: Map<string, any> = this.getOptionsMap();
+        const propertyMap: Map<string, any> = this.getPropertyMap();
+        for (const [key, value] of Object.entries(options)) {
+            if (key === 'id' || key.startsWith('_')) continue;
+            if (optionMap.has(key)) {
+                object.setProperty(this, key, value);
+            } else if (propertyMap.has(key)) {
+                this[key] = value;
             }
         }
     },
@@ -94,7 +94,13 @@ export const InitAbility = {
             const node = this.getNode(name);
             if (!node) continue;
             const options = node.options;
-            const child = new (node.type as any)({
+            const Ctor =
+                typeof node.type === 'string' ? this.resolveComponent(node.type) : node.type;
+            if (!Ctor) {
+                this.logger.warn?.(`[createChildren] 组件类型 "${node.type}" 未注册`);
+                continue;
+            }
+            const child = new (Ctor as any)({
                 hasParent: true,
                 ...options,
                 attributes: node.attributes,
@@ -130,6 +136,7 @@ export const InitAbility = {
      * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 浮层注册 → 动画播放
      */
     _continueInit(childReady?: () => void) {
+        this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
         this._initBadge();
         this._initI18n();
         this._initPermission();
@@ -150,6 +157,7 @@ export const InitAbility = {
         }
         this._readyResolve?.();
         this._initializing = false;
+        this.logger.debug(`[_continueInit][${this.id}]`, '后续初始化完成');
     },
 
     _onChildReady(nodeName: string) {
@@ -204,27 +212,5 @@ export const InitAbility = {
         if (!node) return;
         node.el = placeholder;
         node.instance = undefined;
-    },
-
-    /**
-     * 按子节点索引路径定位 DOM 元素
-     *
-     * @param root - 搜索起点元素
-     * @param path - 子节点索引路径（由编译时 indexPath 产出）
-     * @returns 定位到的 HTMLElement，路径不存在时返回 null
-     *
-     * @example
-     * ```ts
-     * // 编译时产出: indexPath['text'] = [0, 1]
-     * // 运行时定位: const el = findByPath(rootEl, [0, 1])
-     * ```
-     */
-    _findByPath(path: number[]): HTMLElement | null {
-        let current: Element = this._el;
-        for (const idx of path) {
-            if (!current.children[idx]) return null;
-            current = current.children[idx];
-        }
-        return current as HTMLElement;
     },
 } as AbilityDefinition;

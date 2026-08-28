@@ -50,11 +50,9 @@ export const LoadingAbility: AbilityDefinition = {
 
     _getLoadingFloatDecl(): FloatDecl {
         const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const LoadingComponent = require('../../loading').LoadingComponent;
         const { maskMode, mask, ...loadingData } = cfg;
         return {
-            type: LoadingComponent,
+            type: 'loading',
             trigger: 'manual',
             anchor: 'self',
             placement: 'anchor-center',

@@ -1,5 +1,5 @@
 export const OPTION_TARGET_TO_KEYS = {
-    text: 'textContent',
+    text: 'text',
     src: 'src',
     html: 'html',
     href: 'href',

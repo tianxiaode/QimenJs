@@ -1,4 +1,4 @@
-import { Component, ComponentListen } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 
 let counterId = 0;
 

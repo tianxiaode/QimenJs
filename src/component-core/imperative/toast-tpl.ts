@@ -11,7 +11,7 @@ export const TOAST_TEMPLATE: TemplateDecl = {
             classes: 'q-toast__body',
             children: [
                 { tag: 'div', name: 'message', classes: 'q-toast__message' },
-                { tag: 'div', name: 'text', classes: 'q-toast__text', style: { display: 'none' } },
+                { tag: 'div', name: 'text', classes: 'q-toast__text hidden' },
             ],
         },
         { tag: 'div', name: 'closeBtn', classes: 'q-toast__close' },

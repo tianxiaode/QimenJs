@@ -1,14 +1,12 @@
 import { RegistrarBase } from '@/registry';
-import { OverlayEventBus, OVERLAY_ACTIONS, OVERLAY_FEEDBACK_EVENTS } from '@/events';
+import { OverlayEventBus, OVERLAY_ACTIONS } from '@/events';
 import { EventContextBuilder } from '@/context';
-import { OverlayRoot } from '../OverlayRoot';
-import { ZIndexLevel, zIndexManager } from '../../engine';
-import { positionOverlay, type Placement } from './positionOverlay';
-import { throttle } from '@/async';
+import { ComponentRegistrar } from '../../ComponentRegistrar';
+import type { Placement } from './positionOverlay';
 import type { ComponentClass } from '../../types';
 
 export interface OverlayDefinition {
-    type: { new (...args: any[]): any };
+    type: string | { new (...args: any[]): any };
     trigger?: string;
     placement?: Placement;
     offset?: number;
@@ -23,15 +21,9 @@ export interface OverlayDefinition {
 interface OverlayInstance {
     overlay: any;
     overlayKey: string;
-    el: HTMLElement;
-    anchor: HTMLElement;
     component: any;
-    maskEl?: HTMLElement;
     clickOutsideHandler?: (e: MouseEvent) => void;
     escapeHandler?: (e: KeyboardEvent) => void;
-    resizeObserver?: ResizeObserver;
-    scrollHandler?: () => void;
-    resizeHandler?: () => void;
 }
 
 const OVERLAY_ACTION_LIST = Object.values(OVERLAY_ACTIONS);
@@ -45,14 +37,14 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
     protected storage = new Map<string, OverlayDefinition>();
 
     private readonly instances = new Map<string, OverlayInstance>();
-    private _activeMaskEl: HTMLElement | null = null;
-    private _activeMaskCount: number = 0;
     private readonly bus: OverlayEventBus;
 
     constructor() {
         super();
         this.bus = OverlayEventBus.getInstance();
-        this.bus.onInit((component, floats) => this._handleInit(component.id, { component, floats }));
+        this.bus.onInit((component, floats) =>
+            this._handleInit(component.id, { component, floats })
+        );
         this.logger.debug?.('[OverlayDispatchCenter] initialized');
     }
 
@@ -89,17 +81,33 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const prefix = `${componentId}:`;
         for (const [key, inst] of this.instances) {
             if (key.startsWith(prefix)) {
-                this._cleanupInstance(inst);
-                if (inst.maskEl) {
-                    this._releaseMask(inst.maskEl);
+                if (inst.clickOutsideHandler) {
+                    document.removeEventListener('mousedown', inst.clickOutsideHandler);
                 }
-                OverlayRoot.getInstance().unmountOverlay(inst.el);
+                if (inst.escapeHandler) {
+                    document.removeEventListener('keydown', inst.escapeHandler);
+                }
+                inst.overlay.dispose();
                 this.instances.delete(key);
             }
         }
         this.logger.debug?.(
             `[OverlayDispatchCenter] disposed all overlays for componentId="${componentId}"`
         );
+    }
+
+    private _resolveComponentType(
+        type: string | { new (...args: any[]): any },
+        overlayKey: string
+    ): ComponentClass | undefined {
+        if (typeof type === 'function') return type;
+        const ctor = ComponentRegistrar.getInstance().getByType(type);
+        if (!ctor) {
+            this.logger.warn?.(
+                `[OverlayDispatchCenter] overlayKey="${overlayKey}" type="${type}" not registered`
+            );
+        }
+        return ctor;
     }
 
     private _listenOverlayActions(overlayKey: string): void {
@@ -131,26 +139,30 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                 return;
             }
             if (existing && action === OVERLAY_ACTIONS.SHOW) {
-                existing.overlay.hidden = false;
-                OverlayRoot.getInstance().mountOverlay(existing.el);
-                if (!existing.maskEl) {
-                    const def = this.storage.get(overlayKey);
-                    if (def?.maskMode === 'scoped') {
-                        const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
-                        existing.maskEl = this._acquireScopedMask(existing.anchor, maskColor);
-                    } else if (def?.maskMode !== 'none' && def?.mask) {
-                        const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
-                        existing.maskEl = this._acquireMask(maskColor);
-                    }
+                const def = this.storage.get(overlayKey);
+                existing.overlay.show(
+                    data?.anchor ?? existing.component?.el,
+                    def?.placement,
+                    def?.offset
+                );
+                if (def) {
+                    this._applyMask(existing.overlay, def);
                 }
-                this._reposition(instanceKey);
                 return;
             }
             this._mountAndShow(instanceKey, overlayKey, data);
         } else if (action === OVERLAY_ACTIONS.HIDE) {
             this._closeOverlay(instanceKey, overlayKey);
         } else if (action === OVERLAY_ACTIONS.REPOSITION) {
-            this._reposition(instanceKey);
+            const existing = this.instances.get(instanceKey);
+            if (existing) {
+                const def = this.storage.get(overlayKey);
+                existing.overlay.reposition(
+                    data?.anchor ?? existing.component?.el,
+                    def?.placement,
+                    def?.offset
+                );
+            }
         } else if (action === OVERLAY_ACTIONS.CHANGE) {
             this._changeOverlay(instanceKey, overlayKey, data);
         } else if (action === OVERLAY_ACTIONS.DISPOSE) {
@@ -168,17 +180,11 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         for (const [nodeName, floatDef] of Object.entries(floats)) {
             const def = floatDef as Record<string, any>;
-            const anchor = component.nodeMap?.[nodeName]?.el ?? component.nodeElements?.[nodeName] ?? component.el;
+            const anchor = component.getNodeEl?.(nodeName) ?? component.el;
             const overlayKey = `${cid}:${nodeName}`;
 
-            const ctor: ComponentClass | undefined = typeof def.type === 'function'
-                ? def.type
-                : undefined;
-
-            if (!ctor) {
-                this.logger.warn?.(`[OverlayDispatchCenter] overlayKey="${overlayKey}" has no constructor`);
-                continue;
-            }
+            const ctor = this._resolveComponentType(def.type, overlayKey);
+            if (!ctor) continue;
 
             this.register(overlayKey, {
                 type: ctor,
@@ -302,6 +308,19 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         }
     }
 
+    private _applyMask(overlay: any, def: OverlayDefinition): void {
+        if (def.maskMode === 'scoped') {
+            overlay._initMask({
+                scoped: true,
+                color: typeof def.mask === 'string' ? def.mask : undefined,
+            });
+        } else if (def.maskMode !== 'none' && def.mask) {
+            overlay._initMask({
+                color: typeof def.mask === 'string' ? def.mask : undefined,
+            });
+        }
+    }
+
     /**
      * 挂载并显示浮层
      *
@@ -319,51 +338,29 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const { component, anchor, overlay } = data || {};
         let overlayInst = overlay;
         if (!overlayInst) {
-            const OverlayClass = def.type;
+            const OverlayClass = this._resolveComponentType(def.type, overlayKey);
+            if (!OverlayClass) return;
             const overlayData = typeof def.data === 'function' ? def.data() : def.data;
             overlayInst = new OverlayClass({ options: { ...overlayData } });
         }
 
-        const overlayEl = overlayInst.el;
-        if (!overlayEl) return;
-
         const anchorEl = anchor ?? component?.el;
-        const placement = def.placement ?? 'bottom';
-        const offset = def.offset ?? 4;
         const trigger = def.trigger ?? 'manual';
 
-        overlayEl.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
-        overlayEl.style.display = 'none';
-        overlayEl.style.pointerEvents = 'auto';
-
-        if (placement !== 'center' && placement !== 'anchor-center') {
-            overlayEl.style.position = 'absolute';
-        }
-
-        OverlayRoot.getInstance().mountOverlay(overlayEl);
-
-        const actualPlacement = positionOverlay(overlayEl, anchorEl, placement, offset, true);
-        overlayEl.style.display = '';
+        overlayInst.show(anchorEl, def.placement, def.offset);
+        this._applyMask(overlayInst, def);
 
         const inst: OverlayInstance = {
             overlay: overlayInst,
             overlayKey,
-            el: overlayEl,
-            anchor: anchorEl,
             component,
         };
 
-        if (def.maskMode === 'scoped') {
-            const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
-            inst.maskEl = this._acquireScopedMask(anchorEl, maskColor);
-        } else if (def.maskMode !== 'none' && def.mask) {
-            const maskColor = typeof def.mask === 'string' ? def.mask : undefined;
-            inst.maskEl = this._acquireMask(maskColor);
-        }
-
         if (trigger !== 'always' && !def.mask && def.closeOnClickOutside !== false) {
             inst.clickOutsideHandler = (e: MouseEvent) => {
-                if (!overlayEl.contains(e.target as Node) && !anchorEl.contains(e.target as Node)) {
+                const overlayEl = overlayInst.el;
+                const aEl = anchorEl;
+                if (!overlayEl.contains(e.target as Node) && !aEl.contains(e.target as Node)) {
                     this._closeOverlay(instanceKey, overlayKey);
                 }
             };
@@ -381,10 +378,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
 
         this.instances.set(instanceKey, inst);
 
-        overlayInst.hidden = false;
-
-        this._bindReposition(instanceKey, inst);
-
         this.bus.overlayEmit(
             EventContextBuilder.create()
                 .withEvent(`overlay:${overlayKey}:shown`)
@@ -394,81 +387,18 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
                     overlayKey,
                     component,
                     anchor,
-                    placement: actualPlacement,
+                    placement: def.placement ?? 'bottom',
                 })
                 .build()
         );
-    }
-
-    private _reposition(instanceKey: string): void {
-        const inst = this.instances.get(instanceKey);
-        if (!inst) return;
-
-        const def = this.storage.get(inst.overlayKey);
-        const placement = def?.placement ?? 'bottom';
-        const offset = def?.offset ?? 4;
-        positionOverlay(inst.el, inst.anchor, placement, offset, true);
-
-        if (inst.maskEl?.classList.contains('q-overlay-mask--scoped')) {
-            const rect = inst.anchor.getBoundingClientRect();
-            inst.maskEl.style.top = `${rect.top}px`;
-            inst.maskEl.style.left = `${rect.left}px`;
-            inst.maskEl.style.width = `${rect.width}px`;
-            inst.maskEl.style.height = `${rect.height}px`;
-        }
-    }
-
-    /**
-     * 绑定浮层重定位观察器
-     *
-     * 监听锚点 ResizeObserver + window scroll/resize，
-     * 变化时 throttle(16ms) 节流调用 _reposition，约 60fps 跟随。
-     */
-    private _bindReposition(instanceKey: string, inst: OverlayInstance): void {
-        const reposition = throttle(() => {
-            this._reposition(instanceKey);
-        }, 16);
-
-        inst.resizeObserver = new ResizeObserver(reposition);
-        inst.resizeObserver.observe(inst.anchor);
-
-        inst.scrollHandler = reposition;
-        inst.resizeHandler = reposition;
-
-        window.addEventListener('scroll', inst.scrollHandler, true);
-        window.addEventListener('resize', inst.resizeHandler);
-    }
-
-    /**
-     * 解绑浮层重定位观察器
-     */
-    private _unbindReposition(inst: OverlayInstance): void {
-        if (inst.resizeObserver) {
-            inst.resizeObserver.disconnect();
-            inst.resizeObserver = undefined;
-        }
-        if (inst.scrollHandler) {
-            window.removeEventListener('scroll', inst.scrollHandler, true);
-            inst.scrollHandler = undefined;
-        }
-        if (inst.resizeHandler) {
-            window.removeEventListener('resize', inst.resizeHandler);
-            inst.resizeHandler = undefined;
-        }
     }
 
     private _changeOverlay(instanceKey: string, overlayKey: string, data: any): void {
         const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
-        const def = this.storage.get(overlayKey);
         const changeData = data?.data ?? data;
-
-        if (def?.onOverlayChange) {
-            def.onOverlayChange(inst.overlay, changeData);
-        } else if (typeof inst.overlay.onOverlayChange === 'function') {
-            inst.overlay.onOverlayChange(changeData);
-        }
+        inst.overlay.update(changeData);
 
         this.bus.overlayEmit(
             EventContextBuilder.create()
@@ -488,8 +418,6 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
-        this._unbindReposition(inst);
-
         if (inst.clickOutsideHandler) {
             document.removeEventListener('mousedown', inst.clickOutsideHandler);
         }
@@ -497,14 +425,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             document.removeEventListener('keydown', inst.escapeHandler);
         }
 
-        inst.overlay.hidden = true;
-
-        if (inst.maskEl) {
-            this._releaseMask(inst.maskEl, overlayKey);
-            inst.maskEl = undefined;
-        }
-
-        OverlayRoot.getInstance().unmountOverlay(inst.el);
+        inst.overlay.hide();
 
         this.bus.overlayEmit(
             EventContextBuilder.create()
@@ -520,81 +441,15 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const inst = this.instances.get(instanceKey);
         if (!inst) return;
 
-        this._cleanupInstance(inst);
-
-        if (inst.maskEl) {
-            this._releaseMask(inst.maskEl, inst.overlayKey);
-        }
-
-        OverlayRoot.getInstance().unmountOverlay(inst.el);
-        this.instances.delete(instanceKey);
-    }
-
-    private _cleanupInstance(inst: OverlayInstance): void {
-        this._unbindReposition(inst);
         if (inst.clickOutsideHandler) {
             document.removeEventListener('mousedown', inst.clickOutsideHandler);
         }
         if (inst.escapeHandler) {
             document.removeEventListener('keydown', inst.escapeHandler);
         }
-        if (typeof inst.overlay.dispose === 'function') {
-            inst.overlay.dispose();
-        }
-    }
 
-    private _acquireScopedMask(anchorEl: HTMLElement, color?: string): HTMLElement {
-        const rect = anchorEl.getBoundingClientRect();
-        const mask = document.createElement('div');
-        mask.className = 'q-overlay-mask q-overlay-mask--scoped';
-        mask.style.position = 'fixed';
-        mask.style.top = `${rect.top}px`;
-        mask.style.left = `${rect.left}px`;
-        mask.style.width = `${rect.width}px`;
-        mask.style.height = `${rect.height}px`;
-        mask.style.backgroundColor = color ?? 'rgba(255, 255, 255, 0.7)';
-        mask.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.mask));
-
-        OverlayRoot.getInstance().mountOverlay(mask);
-        return mask;
-    }
-
-    private _acquireMask(color?: string): HTMLElement {
-        this._activeMaskCount++;
-
-        if (!this._activeMaskEl) {
-            const mask = document.createElement('div');
-            mask.className = 'q-overlay-mask';
-            mask.style.position = 'fixed';
-            mask.style.top = '0';
-            mask.style.left = '0';
-            mask.style.width = '100%';
-            mask.style.height = '100%';
-            mask.style.backgroundColor = color ?? 'rgba(0, 0, 0, 0.5)';
-            mask.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.mask));
-            mask.style.display = '';
-
-            OverlayRoot.getInstance().mountOverlay(mask);
-            this._activeMaskEl = mask;
-        }
-
-        return this._activeMaskEl;
-    }
-
-    private _releaseMask(maskEl: HTMLElement, overlayKey?: string): void {
-        if (maskEl.classList.contains('q-overlay-mask--scoped')) {
-            OverlayRoot.getInstance().unmountOverlay(maskEl);
-            return;
-        }
-
-        this._activeMaskCount--;
-        if (this._activeMaskCount <= 0) {
-            this._activeMaskCount = 0;
-            if (this._activeMaskEl) {
-                OverlayRoot.getInstance().unmountOverlay(this._activeMaskEl);
-                this._activeMaskEl = null;
-            }
-        }
+        inst.overlay.dispose();
+        this.instances.delete(instanceKey);
     }
 
     protected doInspect(): void {
@@ -602,31 +457,23 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
         const instances = [...this.instances.entries()].map(([key, inst]) => ({
             instanceKey: key,
             overlayType: inst.overlay.constructor.name,
-            zIndex: inst.el.style.zIndex,
-            hasMask: !!inst.maskEl,
         }));
 
         console.log('Definitions:', definitions);
         console.log('Instances:', instances);
-        console.log(
-            'Active mask:',
-            this._activeMaskEl ? 'yes' : 'no',
-            `count=${this._activeMaskCount}`
-        );
     }
 
     dispose(): void {
-        for (const [key, inst] of this.instances) {
-            this._cleanupInstance(inst);
-            OverlayRoot.getInstance().unmountOverlay(inst.el);
+        for (const [_key, inst] of this.instances) {
+            inst.overlay.dispose();
+            if (inst.clickOutsideHandler) {
+                document.removeEventListener('mousedown', inst.clickOutsideHandler);
+            }
+            if (inst.escapeHandler) {
+                document.removeEventListener('keydown', inst.escapeHandler);
+            }
         }
         this.instances.clear();
-
-        if (this._activeMaskEl) {
-            OverlayRoot.getInstance().unmountOverlay(this._activeMaskEl);
-            this._activeMaskEl = null;
-        }
-        this._activeMaskCount = 0;
 
         this.logger.debug?.('[OverlayDispatchCenter] all disposed');
     }

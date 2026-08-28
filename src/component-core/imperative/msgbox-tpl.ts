@@ -9,7 +9,7 @@ export const MSGBOX_TPL: TemplateDecl = {
             name: 'header',
             classes: 'q-msgbox__header',
             children: [
-                { tag: 'div', name: 'text', classes: 'q-msgbox__title' },
+                { tag: 'div', name: 'title', classes: 'q-msgbox__title' },
                 { tag: 'div', name: 'close', classes: 'q-msgbox__close' },
             ],
         },
@@ -35,14 +35,14 @@ export const MSGBOX_TPL: TemplateDecl = {
                 {
                     tag: 'button',
                     name: 'cancel',
-                    i18n: { text: 'cancel' },
+                    i18n: { text: 'common:cancel' },
                     options: { action: 'cancel' },
                     classes: 'q-btn q-btn--default',
                 },
                 {
                     tag: 'button',
                     name: 'confirm',
-                    i18n: { text: 'confirm' },
+                    i18n: { text: 'common:confirm' },
                     options: { action: 'confirm' },
                     classes: 'q-btn q-btn--primary',
                 },

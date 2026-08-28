@@ -20,10 +20,8 @@ export const TooltipAbility: AbilityDefinition = {
     _initTooltip(): void {
         const cfg: Tooltiptoptions = this.tooltip;
         if (!cfg) return;
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const TooltipComponent = require('../../tooltip').TooltipComponent;
         this.attachFloat('tooltip', {
-            type: TooltipComponent,
+            type: 'tooltip',
             trigger: 'hover',
             placement: cfg.placement ?? 'top',
             showDelay: cfg.delay,

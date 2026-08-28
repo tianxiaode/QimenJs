@@ -54,8 +54,9 @@ export type MsgboxType = 'alert' | 'confirm' | 'prompt';
 
 /** msgbox 配置选项 */
 export interface MsgboxOptions extends ComponentCoreOptions {
+    msgboxType?: MsgboxType;
     /** 标题，必填 */
-    title: string;
+    title?: string;
     /** 内容文本，可选 */
     content?: string;
 }

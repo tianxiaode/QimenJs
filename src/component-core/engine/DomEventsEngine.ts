@@ -378,10 +378,10 @@ export class DomEventsEngine {
             const handler = (domEvt: any) => {
                 DomEventsEngine.handleDelegatedEvent(instance, domEvt, rules);
             };
-            instance.on(domEventKey, handler);
+            const off = instance.on(domEventKey, handler);
 
             instance.onCleanup(() => {
-                instance.off(domEventKey, handler);
+                off();
             });
         }
     }

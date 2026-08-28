@@ -1,12 +1,12 @@
-import { MSGBOX_FEEDBACK_EVENTS } from '../constants';
 import { MSGBOX_TPL } from './msgbox-tpl';
 import { FloatingComponent } from '../overlay';
-import { EventForwarder } from '../engine';
+import { EventContextBuilder } from '@/context';
 import type { TemplateDecl, ViewportPosition } from '../types';
 import type { Definitions } from '@/composable';
 import './msgbox.css';
 
 export class Msgbox extends FloatingComponent {
+    static type = 'msgbox';
     get tpl(): TemplateDecl {
         return MSGBOX_TPL;
     }
@@ -48,7 +48,7 @@ export class Msgbox extends FloatingComponent {
         };
     }
 
-    onMsgTypeChange(value: string) {
+    _onMsgboxTypeChange(value: string) {
         if (value === 'alert') {
             this.addCls('cancel', 'hidden');
         } else if (value === 'prompt') {
@@ -77,6 +77,8 @@ export class Msgbox extends FloatingComponent {
     }
 
     onAfterInit(): void {
+        this.logger.info('Toast initialized', this.getOptionsMap());
+
         this.setStyle('pointerEvents', 'auto');
 
         this.zIndex = this.acquireZIndex();
@@ -122,7 +124,14 @@ export class Msgbox extends FloatingComponent {
         this.unmountFromOverlay(this.maskEl);
         this.releaseZIndex();
 
-        EventForwarder.forward(this, { system: [MSGBOX_FEEDBACK_EVENTS.CLOSED] });
+        this.componentEmit(
+            EventContextBuilder.create()
+                .withEvent('closed')
+                .withType('closed')
+                .withSource(this.eventKey ?? 'msgbox')
+                .withData({})
+                .build()
+        );
 
         this.dispose();
         this.onClose?.();
@@ -136,7 +145,7 @@ export class Msgbox extends FloatingComponent {
 const MsgboxDefs: Definitions = {
     options: {
         msgboxType: 'alert',
-        title: { target: 'text', to: 'text', default: null },
+        title: { target: 'title', to: 'text', default: null },
         content: { target: 'content', to: 'html', default: null },
     },
     property: {

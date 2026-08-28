@@ -1,8 +1,8 @@
 import type { AbilityDefinition } from '@/composable';
 import { I18nOptions } from '../../types';
 import { t } from '@/i18n';
-import { object } from '@/utils';
 import { SYSTEM_EVENTS } from '@/events';
+import { object } from '@/utils';
 
 export const I18nAbility: AbilityDefinition = {
     /**
@@ -51,7 +51,9 @@ export const I18nAbility: AbilityDefinition = {
      * @param nodeName 节点名称
      */
     _clearI18nDirty(nodeName: string): void {
-        delete this._dirtyI18n[nodeName];
+        if (nodeName in (this._dirtyI18n ?? {})) {
+            delete this._dirtyI18n[nodeName];
+        }
     },
 
     /**
@@ -60,12 +62,9 @@ export const I18nAbility: AbilityDefinition = {
     _flushI18n(): void {
         const names = this._tplCache.i18ns || [];
         for (const name of names) {
-            const dirty = this._getDirty(name);
-            if (dirty?.i18n && Object.keys(dirty.i18n).length > 0) {
-                this._applyI18n(name, dirty.i18n);
+            this._applyI18n(name);
 
-                this._clearI18nDirty(name);
-            }
+            this._clearI18nDirty(name);
         }
     },
 
@@ -74,8 +73,8 @@ export const I18nAbility: AbilityDefinition = {
      * @param nodeName 节点名称
      * @param i18n i18n配置
      */
-    _applyI18n(nodeName: string, i18n: I18nOptions): void {
-        if (!i18n || Object.keys(i18n).length === 0) return;
+    _applyI18n(nodeName: string): void {
+        const i18n = this.getI18n(nodeName);
 
         const isComponent = this.isComponent(nodeName);
 
@@ -138,9 +137,9 @@ export const I18nAbility: AbilityDefinition = {
     _initI18n(): void {
         const i18ns = this.i18n || {};
         const names = this._tplCache.i18ns;
-        if (names.length === 0 || !i18ns) return;
-        const off = this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this._applyI18n());
+        if (names.length === 0 && Object.keys(i18ns).length === 0) return;
+        const off = this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this._flushI18n());
         this.onCleanup(off);
-        this._applyI18n();
+        this._flushI18n();
     },
 } satisfies AbilityDefinition;

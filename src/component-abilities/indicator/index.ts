@@ -1,2 +1,2 @@
 export { IndicatorAbility } from './IndicatorAbility';
-export type { IndicatorType, IndicatorConfig } from '@/component-core';
+export type { IndicatorType, IndicatorOptions as IndicatorConfig } from '@/component-core';

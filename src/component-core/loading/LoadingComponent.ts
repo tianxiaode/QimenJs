@@ -5,6 +5,8 @@ import { LOADING_TPL } from './loading-tpl';
 import './loading.css';
 
 class LoadingComponent extends FloatingComponent {
+    static type = 'loading';
+
     get tpl(): TemplateDecl {
         return LOADING_TPL;
     }
@@ -27,6 +29,7 @@ const LoadingComponentDefs: Definitions = {
 };
 
 LoadingComponent.define(LoadingComponentDefs);
+LoadingComponent.register();
 
 export { LoadingComponent };
 export type LoadingComponentInstance = InstanceType<typeof LoadingComponent>;

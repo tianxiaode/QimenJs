@@ -106,13 +106,11 @@ export class ComposableBase implements IComposableBase {
         const registry = OptionHandlerRegistrar.getInstance();
         const handler: IOptionHandler | undefined =
             name === 'target-to' ? registry.getTargetHandler(definition.to) : registry.get(key);
-
         if (!handler) {
             this.logger.warn('handler not found:', name, key, value, old, definition);
             return;
         }
         const result = handler.handler(value, this as any, definition);
-        this.logger.info('[_onOptionChange]', name, key, value, old, definition, result);
         if ((this as any)._afterOptionChange) {
             (this as any)._afterOptionChange(name, result, key, value, old, definition);
         }

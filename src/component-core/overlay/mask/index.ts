@@ -1,0 +1,1 @@
+export { MaskComponent, type MaskOptions } from './MaskComponent';

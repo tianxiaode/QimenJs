@@ -26,11 +26,24 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import { string } from '@/utils';
-import { ComponentCoreOptions, TemplateDecl } from './types';
+import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
+import { ComponentRegistrar } from './ComponentRegistrar';
 
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
+    static type = 'component';
+    static register() {
+        ComponentRegistrar.getInstance().register(this);
+    }
+    resolveComponent(type: string): ComponentClass | undefined {
+        return ComponentRegistrar.getInstance().get(type);
+    }
+
+    get type(): string {
+        return (this.constructor as any).type ?? (this.constructor as any).name;
+    }
+
     static setDefaultHandler(
         error?: (ctx: any, domain: string) => void,
         loading?: (entityKey: string, isLoading: boolean) => void
@@ -129,11 +142,9 @@ export class Component extends ComposableBase {
 
     constructor(options?: ComponentCoreOptions) {
         super();
-        this.type = (this.constructor as any).name.replace(/Component$/, '');
-        this.id = this.id ?? options?.options?.id ?? string.getId(`cmp-${this.type}`);
-        this._hasParent = options?.hasParent ?? false;
+        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
+        this.hasParent = options?.hasParent ?? false;
         delete options?.id;
-        this.props = options ?? {};
         this._initializing = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));
         this.onBeforeInit();
@@ -184,6 +195,7 @@ export class Component extends ComposableBase {
 
 Component.use(COMPONENT_ABILITIES);
 Component.define(ComponentDefs);
+Component.register();
 
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}

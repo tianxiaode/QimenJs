@@ -1,7 +1,6 @@
-import { TOAST_FEEDBACK_EVENTS } from '../constants';
 import { TOAST_TEMPLATE } from './toast-tpl';
 import { FloatingComponent } from '../overlay';
-import { EventForwarder } from '../engine';
+import { EventContextBuilder } from '@/context';
 import type { TemplateDecl, ViewportPosition, ToastType } from '../types';
 import type { Definitions } from '@/composable';
 import './toast.css';
@@ -9,6 +8,7 @@ import './toast.css';
 const DEFAULT_DURATION = 3000;
 
 export class Toast extends FloatingComponent {
+    static type = 'toast';
     get tpl(): TemplateDecl {
         return TOAST_TEMPLATE;
     }
@@ -40,10 +40,11 @@ export class Toast extends FloatingComponent {
             duration: 200,
             easing: 'ease-out',
         };
-        this.el.style.pointerEvents = 'auto';
     }
 
     onAfterInit(): void {
+        this.logger.info('Toast initialized', this);
+        this.setStyle('pointerEvents', 'auto');
         const toastType: ToastType = this.toastType ?? 'info';
         this.addCls('root', `q-toast--${toastType}`);
         this.addCls('icon', `q-toast__icon--${toastType}`); // 添加样式类
@@ -81,7 +82,14 @@ export class Toast extends FloatingComponent {
             this.timerId = null;
         }
 
-        EventForwarder.forward(this, { system: [TOAST_FEEDBACK_EVENTS.CLOSED] });
+        this.componentEmit(
+            EventContextBuilder.create()
+                .withEvent('closed')
+                .withType('closed')
+                .withSource(this.eventKey ?? 'toast')
+                .withData({})
+                .build()
+        );
 
         await this.playLeave();
 
@@ -116,3 +124,4 @@ const ToastDefs: Definitions = {
 };
 
 Toast.define(ToastDefs);
+Toast.register();

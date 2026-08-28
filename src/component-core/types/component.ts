@@ -31,7 +31,7 @@ export type IndicatorType = 'dot' | 'number' | 'dash' | 'button' | 'tab';
 /**
  * 指示器配置
  */
-export interface IndicatorConfig {
+export interface IndicatorOptions {
     type: IndicatorType;
     placement?: string;
     trigger?: string;
