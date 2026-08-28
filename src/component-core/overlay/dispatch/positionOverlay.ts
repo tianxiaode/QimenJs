@@ -112,10 +112,6 @@ export function positionOverlay(
     const overlayRect = toRect(overlayEl);
     const viewport = getViewportRect();
 
-    console.log('[positionOverlay] anchorRect:', anchorRect);
-    console.log('[positionOverlay] overlayRect:', overlayRect);
-    console.log('[positionOverlay] placement:', placement);
-
     if (placement === 'center') {
         overlayEl.style.position = 'fixed';
         overlayEl.style.top = '50%';
@@ -165,9 +161,6 @@ export function positionOverlay(
     }
 
     aligned = keepInside(aligned, viewport);
-
-    console.log('[positionOverlay] aligned:', aligned);
-    console.log('[positionOverlay] actualPlacement:', actualPlacement);
 
     overlayEl.style.left = `${aligned.x}px`;
     overlayEl.style.top = `${aligned.y}px`;

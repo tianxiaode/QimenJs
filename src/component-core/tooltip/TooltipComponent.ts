@@ -23,7 +23,6 @@ export class TooltipComponent extends FloatingComponent {
                 requestAnimationFrame(() => {
                     const placement = (this as any)._actualPlacement ?? 'bottom';
                     const arrowPlacement = this._inferArrowPlacement(placement);
-                    console.log('[TooltipComponent.open] placement:', placement, 'arrowPlacement:', arrowPlacement);
                     this.updateArrowPlacement(arrowPlacement);
                 });
             });
@@ -43,7 +42,6 @@ export class TooltipComponent extends FloatingComponent {
             right: 'left',
         };
         const arrowPlacement = map[placement];
-        console.log('[TooltipComponent._inferArrowPlacement] placement:', placement, 'arrowPlacement:', arrowPlacement);
         return arrowPlacement;
     }
 
