@@ -6,7 +6,7 @@
  */
 
 import type { Rect } from '@/utils/geometry';
-import { alignCenterX, alignCenterY, keepInside } from '@/utils/geometry';
+import { alignCenterX, alignCenterY, keepInside, alignLeft, alignRight, alignTop, alignBottom } from '@/utils/geometry';
 
 /**
  * 弹出方向
@@ -144,6 +144,23 @@ export function positionOverlay(
         if (!isOverflowing(flipped, viewport)) {
             aligned = flipped;
             actualPlacement = flippedPlacement;
+        }
+    }
+
+    // 智能调整对齐方式，避免 tooltip 被截断
+    if (anchorPlacement === 'top' || anchorPlacement === 'bottom') {
+        // 水平方向：如果左侧超出，改为左对齐；如果右侧超出，改为右对齐
+        if (aligned.x < viewport.x) {
+            aligned = alignLeft(aligned, anchorRect);
+        } else if (aligned.x + aligned.width > viewport.x + viewport.width) {
+            aligned = alignRight(aligned, anchorRect);
+        }
+    } else {
+        // 垂直方向：如果顶部超出，改为顶对齐；如果底部超出，改为底对齐
+        if (aligned.y < viewport.y) {
+            aligned = alignTop(aligned, anchorRect);
+        } else if (aligned.y + aligned.height > viewport.y + viewport.height) {
+            aligned = alignBottom(aligned, anchorRect);
         }
     }
 
