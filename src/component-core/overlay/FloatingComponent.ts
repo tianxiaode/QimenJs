@@ -47,7 +47,6 @@ export class FloatingComponent extends Component {
         this._anchor = anchor;
         this.mountToOverlay(this.el);
         this.el.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
-        this.el.style.display = 'none';
         this.el.style.pointerEvents = 'auto';
 
         const p = placement ?? 'bottom';
@@ -58,7 +57,6 @@ export class FloatingComponent extends Component {
         const actualPlacement = positionOverlay(this.el, anchor, p, offset ?? 4, true);
         (this as any)._actualPlacement = actualPlacement;
         console.log('[FloatingComponent.show] actualPlacement:', actualPlacement);
-        this.el.style.display = '';
     }
 
     hide(): void {
