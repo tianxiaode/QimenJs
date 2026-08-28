@@ -35,7 +35,7 @@
     border-color: var(--q-colors-text, #1a1a1a) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--bottom {
-    top: calc(100% + var(--q-arrow-size, 6px));
+    top: calc(100% - var(--q-arrow-size, 6px));
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
