@@ -45,10 +45,10 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            tag: 'button',
-                            name: 'tooltipHint',
+                            type: Button,
+                            name: 'badgeBtn',
                             options: {
-                                text: 'Hover root area (tooltip)',
+                                badge: { text: '99' },
                             },
                             style: {
                                 padding: '8px 16px',

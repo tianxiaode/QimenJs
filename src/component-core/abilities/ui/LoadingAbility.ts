@@ -22,7 +22,7 @@ import type { FloatDecl, LoadingOptions } from '../../types';
 /** 加载浮层能力，提供 show/hide/update 快捷方法 */
 export const LoadingAbility: AbilityDefinition = {
     _initLoading(): void {
-        const cfg: LoadingOptions = this.getOption('loading');
+        const cfg: LoadingOptions = this.loading;
         if (!cfg) return;
         const delc = this._getLoadingFloatDecl();
         this.attachFloat('loading', delc);

@@ -166,28 +166,22 @@ function applyFunction(key: string, value: any, proto: any) {
 function initConstructorProperties(proto: any) {
     const ctor = proto.constructor;
     const parent = Object.getPrototypeOf(ctor);
-    if (!ctor._clearPropertyKeys) {
-        ctor._clearPropertyKeys = new Set<string>();
-        if (parent.constructor._clearPropertyKeys) {
-            ctor._clearPropertyKeys = new Set(parent.constructor._clearPropertyKeys);
+    ctor._clearPropertyKeys = new Set<string>();
+    if (parent._clearPropertyKeys) {
+        ctor._clearPropertyKeys = new Set(parent._clearPropertyKeys);
+    }
+
+    ctor._optionMap = new Map<string, any>();
+    if (parent && parent._optionMap) {
+        for (const [key, def] of parent._optionMap) {
+            ctor._optionMap.set(key, def);
         }
     }
 
-    if (!ctor._optionMap) {
-        ctor._optionMap = new Map<string, any>();
-        if (parent && parent._optionMap) {
-            for (const [key, def] of parent._optionMap) {
-                ctor._optionMap.set(key, def);
-            }
-        }
-    }
-
-    if (!ctor._propertyMap) {
-        ctor._propertyMap = new Map<string, any>();
-        if (parent && parent._propertyMap) {
-            for (const [key, def] of parent._propertyMap) {
-                ctor._propertyMap.set(key, def);
-            }
+    ctor._propertyMap = new Map<string, any>();
+    if (parent && parent._propertyMap) {
+        for (const [key, def] of parent._propertyMap) {
+            ctor._propertyMap.set(key, def);
         }
     }
 
@@ -200,7 +194,6 @@ function initConstructorProperties(proto: any) {
 
 export function injectOptions(optionMap: Map<string, any>, optionDefs: OptionDefinition): void {
     for (const [key, def] of Object.entries(optionDefs)) {
-        if (key === '__name__' || key === 'isProperty') continue;
         optionMap.set(key, def);
     }
 }

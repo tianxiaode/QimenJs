@@ -1,0 +1,11 @@
+.q-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: var(--q-colors-error, #ef4444);
+    color: var(--q-colors-bg, #fff);
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
