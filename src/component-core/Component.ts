@@ -29,7 +29,7 @@ import { string } from '@/utils';
 import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 import { ComponentRegistrar } from './ComponentRegistrar';
-
+import './badge.css';
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
 export class Component extends ComposableBase {
     static type = 'component';

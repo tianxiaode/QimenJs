@@ -18,7 +18,7 @@ import type { FloatDecl, Tooltiptoptions } from '../../types';
 /** 提示浮层能力，提供 updateTooltip 快捷方法 */
 export const TooltipAbility: AbilityDefinition = {
     _initTooltip(): void {
-        const cfg: Tooltiptoptions = this.getOption('tooltip') as Tooltiptoptions;
+        const cfg: Tooltiptoptions = this.tooltip as Tooltiptoptions;
         if (!cfg) return;
         const decl = {
             type: 'tooltip',

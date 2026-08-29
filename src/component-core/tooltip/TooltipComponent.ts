@@ -34,7 +34,9 @@ export class TooltipComponent extends FloatingComponent {
         this._overlayOpen = false;
     }
 
-    _inferArrowPlacement(placement: 'top' | 'bottom' | 'left' | 'right'): 'top' | 'bottom' | 'left' | 'right' {
+    _inferArrowPlacement(
+        placement: 'top' | 'bottom' | 'left' | 'right'
+    ): 'top' | 'bottom' | 'left' | 'right' {
         const map: Record<string, 'top' | 'bottom' | 'left' | 'right'> = {
             top: 'bottom',
             bottom: 'top',
