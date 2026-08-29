@@ -39,6 +39,8 @@ export interface IndicatorOptions {
     emits?: Record<string, string>;
     arrows?: boolean;
     defaultItemType?: string;
+    /** 指示项总数 */
+    count?: number;
 }
 
 /**
