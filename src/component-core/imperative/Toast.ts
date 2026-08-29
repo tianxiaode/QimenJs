@@ -52,7 +52,7 @@ export class Toast extends FloatingComponent {
             this.addCls('root', 'q-toast--titled');
         }
 
-        this.setOption('zIndex', this.acquireZIndex());
+        this.setData('zIndex', this.acquireZIndex());
         this.mountToOverlay(this.el);
 
         this.playEnter();

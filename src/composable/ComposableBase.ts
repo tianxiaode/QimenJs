@@ -17,46 +17,72 @@
  */
 
 import { ILogger, Logger } from '@/logger';
-import { withAbilities, withDefinitions } from './forge';
-import type { AbilityDefinition, Definitions, IComposableBase, IOptionHandler } from './types';
-import { OptionHandlerRegistrar } from './OptionHandlerRegistrar';
-import { string } from '@/utils';
+import { DATA_MAP_SYMBOL, DATA_SYMBOL, withAbilities, withDefinitions } from './forge';
+import type {
+    AbilityDefinition,
+    DataMap,
+    Definitions,
+    IComposableBase,
+    TargetToOptionDefinition,
+} from './types';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
-    private _optionData: Record<string, any> = {};
+    private [DATA_SYMBOL]: Record<string, any> = {};
     private abilityStatesMap: Map<string, any> = new Map();
+
     private cleanups: (() => void)[] = [];
 
     constructor() {
         this.logger = Logger.for(this.constructor.name);
-
-        const map = this.getOptionsMap();
-        for (const [key, def] of map) {
-            let defaultValue: any = def;
-            if (typeof def === 'object' && def !== null) {
-                defaultValue = (def as any).default;
-            }
-            this._optionData[key] = defaultValue;
-        }
     }
 
-    getOption(key: string): any {
-        return this._optionData[key];
+    getData(key: string): any {
+        return this._getData()[key] ?? this.getDefaultValue(key);
     }
 
-    setOption(key: string, value: any, silent?: boolean): void {
-        const old = this._optionData[key];
+    setData(key: string, value: any): void {
+        const data = this._getData();
+        const old = this.getData(key);
         if (old === value) return;
-        this._optionData[key] = value;
-        const changeKey = `_on${string.capitalize(key)}Change`;
-        if (typeof (this as any)[changeKey] === 'function') {
-            (this as any)[changeKey](value, old);
+        data[key] = value;
+        const def: TargetToOptionDefinition | undefined = this.targetToMap.get(key);
+        if (def?.change) {
+            const change = typeof def.change === 'string' ? (this as any)[def.change] : def.change;
+            if (typeof change === 'function') {
+                change.call(this, value, old, def);
+            }
         }
-        if (!silent) {
-            const def = this.getOptionsMap().get(key);
-            this._onOptionChange(key, value, old, def);
-        }
+
+        this._onOptionChange(key, value, old, def);
+    }
+
+    get targetToMap(): Map<string, TargetToOptionDefinition> {
+        return this.getDataMap().targetToMap;
+    }
+
+    get i18nOptions(): string[] {
+        return [...this.getDataMap().i18nOptions];
+    }
+
+    get optionsKeys(): Set<string> {
+        return this.getDataMap().optionsKeys;
+    }
+
+    get propertyKeys(): Set<string> {
+        return this.getDataMap().propertyKeys;
+    }
+
+    private getDataMap(): DataMap {
+        return (this.constructor as any)[DATA_MAP_SYMBOL];
+    }
+
+    private _getData(): Record<string, any> {
+        return this[DATA_SYMBOL];
+    }
+
+    private getDefaultValue(key: string): any {
+        return this.getDataMap().defaultValues[key];
     }
 
     /**
@@ -111,40 +137,7 @@ export class ComposableBase implements IComposableBase {
         return this;
     }
 
-    getPropertyMap(): Map<string, any> {
-        return (this.constructor as any)._propertyMap || new Map();
-    }
-
-    getOptionsMap(): Map<string, any> {
-        return (this.constructor as any)._optionMap || new Map();
-    }
-
-    /**
-     * 选项变化处理 — 子类覆盖 _resolveOptionHandler 对接具体注册表
-     */
-    _onOptionChange(key: string, value: any, old: any, definition: any): void {
-        if (old === value) return;
-        if (
-            (this as any)._beforeOptionChange &&
-            (this as any)._beforeOptionChange(key, value, old, definition) === false
-        ) {
-            return;
-        }
-
-        const name = definition ? 'target-to' : key;
-        const registry = OptionHandlerRegistrar.getInstance();
-        const handler: IOptionHandler | undefined =
-            name === 'target-to' ? registry.getTargetHandler(definition.to) : registry.get(key);
-
-        if (!handler) {
-            this.logger.warn('handler not found:', name, key, value, old, definition);
-            return;
-        }
-        const result = handler.handler(value, this as any, definition);
-        if ((this as any)._afterOptionChange) {
-            (this as any)._afterOptionChange(name, result, key, value, old, definition);
-        }
-    }
+    _onOptionChange(_key: string, _value: any, _old: any, _definition: any): void {}
 
     /**
      * 获取能力状态，不存在时可用 creator 惰性创建
@@ -194,46 +187,41 @@ export class ComposableBase implements IComposableBase {
      * 执行顺序：onBeforeDispose → onCleanup(LIFO) → 清理 abilityState → onDisposed
      */
     dispose(): void {
-        this.onBeforeDispose();
+        const self = this as any;
+        self.onBeforeDispose();
 
         const cleanups = this.cleanups;
         for (let i = cleanups.length - 1; i >= 0; i--) {
             try {
                 cleanups[i]();
             } catch (e) {
-                this.logger?.error?.(`Cleanup error:`, e);
+                self.logger?.error?.(`Cleanup error:`, e);
             }
         }
         cleanups.length = 0;
 
         this.ClearProperties();
-        this.clearStates();
-        this._optionData = {};
+        this.clearDataMap();
+        delete self[DATA_SYMBOL];
+        delete self[DATA_MAP_SYMBOL];
         this.onDisposed();
     }
 
     private ClearProperties(): void {
         const self = this as any;
-        const ctor = self.constructor as any;
-        const set = ctor._clearPropertyKeys;
-        for (const key of set.values()) {
-            if (key in self) {
-                delete self[key];
-            }
+        const keys = self.getDataMap().propertyClearKeys;
+        for (const key of keys) {
+            delete self[key];
         }
     }
 
-    private clearStates(): void {
-        const states = this.abilityStatesMap;
-        states.forEach(value => {
-            if (typeof value === 'object' && typeof value.cancel === 'function') {
-                try {
-                    value.cancel();
-                } catch (e) {
-                    this.logger?.error?.(`Debounce cancel error:`, e);
-                }
-            }
-        });
-        states.clear();
+    private clearDataMap(): void {
+        const dataMap = this.getDataMap();
+        dataMap.defaultValues = {};
+        dataMap.targetToMap = new Map();
+        dataMap.i18nOptions = [];
+        dataMap.optionsKeys = new Set();
+        dataMap.propertyKeys = new Set();
+        dataMap.propertyClearKeys = [];
     }
 }

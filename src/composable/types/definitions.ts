@@ -1,5 +1,20 @@
-export const OPTION_TARGET_TO_KEYS = {
-    text: 'text',
+export interface DataMap {
+    /** 默认值集合 */
+    defaultValues: Record<string, any>;
+    /** target to 配置的映射关系 */
+    targetToMap: Map<string, TargetToOptionDefinition>;
+    /** 带有本地化配置的配置key集合 */
+    i18nOptions: Array<string>;
+    /** 全部配置的key集合，用于拆分构造函数的配置 */
+    optionsKeys: Set<string>;
+    /** 需要从构造函数中获取值的属性集合 */
+    propertyKeys: Set<string>;
+    /** 用于销毁属性 */
+    propertyClearKeys: Array<string>;
+}
+
+export const TARGET_TO_OPTION__MAP = {
+    text: 'textContext',
     src: 'src',
     html: 'html',
     href: 'href',
@@ -10,74 +25,38 @@ export const OPTION_TARGET_TO_KEYS = {
     attribute: 'attribute',
 };
 
-export interface OptionDecl {
+export const TARGET_TO_OPTION_KEYS = Object.keys(TARGET_TO_OPTION__MAP);
+export const TARGET_TO_OPTION_KEYS_SET = new Set(TARGET_TO_OPTION_KEYS);
+export interface TargetToOptionDefinition {
     /** 目标节点 */
     target?: string;
     /** 映射到目标的属性，如value, text,src, link,href等 */
-    to?: keyof typeof OPTION_TARGET_TO_KEYS;
-
+    to?: keyof typeof TARGET_TO_OPTION_KEYS;
+    /** 本地化key */
+    i18n?: string;
+    /** 默认值，当目标节点不存在时使用 */
     default?: any;
+    /** 值改变时执行 */
+    change?: (value: any, old: any, def: TargetToOptionDefinition) => void;
 }
 
-export type OptionDefinition = Record<string, OptionDecl | any>;
+export type OptionDefinition = Record<string, TargetToOptionDefinition>;
 
 export type Definitions = {
-    options?: OptionDefinition;
-    property?: Record<string, any>;
-    readonly?: Record<string, any>;
-    [key: string]: any;
+    targetToOptions?: Record<string, TargetToOptionDefinition>;
+    options?: Record<string, any>;
+    privateField?: Record<string, any>;
+    fields?: Record<string, any>;
 };
-
-/**
- * 选项处理器接口
- *
- * 用于处理组件选项变更时的自定义逻辑
- *
- * @interface IOptionHandler
- */
-export interface IOptionHandler {
-    /**
-     * 处理器名称，用于标识和调试
-     */
-    name: string;
-
-    /**
-     * 处理选项变更
-     *
-     * @param key - 选项键名
-     * @param value - 新值
-     * @param old - 旧值
-     * @param definition - 选项定义
-     * @param instance - 实例
-     * @returns 是否已处理（true 表示已处理，不再执行默认逻辑）
-     */
-    handler: OptionHandlerFn;
-}
-
-/**
- * 选项处理器函数类型
- *
- * @type OptionHandlerFn
- */
-export type OptionHandlerFn = (value: any, instance: any, definition?: OptionDecl) => boolean;
 
 // ============================================================
 // 类型工具 - 对齐 InferAbilities
 // ============================================================
 
-export type InferOptionDefault<T> = T extends { default: infer D } ? D : any;
-
-export type InferOptions<T extends OptionDefinition> = {
-    [K in keyof T]: T[K] extends OptionDecl ? InferOptionDefault<T[K]> : T[K];
-};
-
 /**
  * ✅ 从 Definitions 推导类型（对齐 InferAbilities）
  */
-export type InferDefinitions<T extends Definitions> = (T['options'] extends OptionDefinition
-    ? InferOptions<T['options']>
+export type InferDefinitions<T extends Definitions> = (T['fields'] extends Record<string, any>
+    ? T['fields']
     : object) &
-    (T['property'] extends Record<string, any> ? T['property'] : object) &
-    (T['readonly'] extends Record<string, any> ? T['readonly'] : object) & {
-        [K in keyof T as K extends 'options' | 'property' | 'readonly' ? never : K]: T[K];
-    };
+    (T['privateField'] extends Record<string, any> ? T['privateField'] : object);

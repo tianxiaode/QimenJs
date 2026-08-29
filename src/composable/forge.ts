@@ -7,15 +7,24 @@
  */
 
 import { Logger } from '@/logger';
-import type { AbilityDefinition, Definitions, OptionDefinition } from './types';
+import type { AbilityDefinition, Definitions } from './types';
 
+export const DATA_MAP_SYMBOL = Symbol('data-map-symbol');
+export const DATA_SYMBOL = Symbol('data-symbol');
 const BUILTIN_KEYS = new Set([
     'logger',
     'abilityStatesMap',
     'cleanups',
-    '_optionMap',
-    '_clearPropertyKeys',
-    '_propertyMap',
+    'constructor',
+    'getData',
+    'setData',
+    'targetToOptionMap',
+    'i18nOptions',
+    'optionsKeys',
+    'propertyKeys',
+    'getDataMap',
+    '_getData',
+    'getDefaultValue',
     '_onOptionChange',
     'abilityState',
     'setAbilityState',
@@ -23,8 +32,8 @@ const BUILTIN_KEYS = new Set([
     'onBeforeDispose',
     'onDisposed',
     'dispose',
-    'getOptionsMap',
-    'getPropertyMap',
+    'ClearProperties',
+    'clearDataMap',
 ]);
 
 function applyAbilitie(proto: any, ability: AbilityDefinition): void {
@@ -109,91 +118,108 @@ export function withAbilities(target: any, abilities: readonly AbilityDefinition
 // forge.ts - withDefinitions 增强
 // ============================================================
 
+// ... 原有代码保持不变 ...
 export function withDefinitions(target: any, definitions: Definitions): void {
     const proto = target.prototype;
 
-    const { clearKeys, optionsMap, propertyMap } = initConstructorProperties(proto);
+    const dataMap = initConstructorProperties(proto);
 
     // ============================================================
     // 1. 处理 options → 生成 getter/setter
     // ============================================================
+
+    if (definitions.targetToOptions) {
+        for (const [key, def] of Object.entries(definitions.targetToOptions)) {
+            if (BUILTIN_KEYS.has(key)) continue;
+
+            dataMap.optionsKeys.add(key);
+            dataMap.targetToMap.set(key, def);
+            dataMap.defaultValues[key] = def.default;
+            if (def.i18n) {
+                dataMap.i18nOptions.push(key); // 3. 添加到 i18nOptions
+            }
+            defineGetterSetter(proto, key);
+        }
+    }
+
     if (definitions.options) {
-        injectOptions(optionsMap, definitions.options); // 1. 处理 options → 生成 getter/setter
+        for (const [key, def] of Object.entries(definitions.options)) {
+            if (BUILTIN_KEYS.has(key)) continue;
+
+            dataMap.optionsKeys.add(key);
+            dataMap.defaultValues[key] = def.default;
+            defineGetterSetter(proto, key);
+        }
     }
 
     // ============================================================
     // 2. 处理 property → 直接复制到组件实例
     // ============================================================
-    if (definitions.property) {
-        const props = definitions.property;
-        for (const [key, value] of Object.entries(props)) {
-            // 在原型上定义默认值
-            Object.defineProperty(proto, key, {
-                value: value,
-                enumerable: true,
-                configurable: true,
-                writable: true,
-            });
-            clearKeys.add(key); // 2. 添加到 clearKeys
-            propertyMap.set(key, value);
-        }
+    if (definitions.fields) {
+        applyProperties(proto, definitions.fields, dataMap);
     }
 
-    // ============================================================
-    // 3. 处理方法 → 直接复制到原型
-    // ============================================================
-    for (const [key, value] of Object.entries(definitions)) {
-        if (key === 'options' || key === 'property') continue;
-        if (key === 'constructor') continue;
+    if (definitions.privateField) {
+        applyProperties(proto, definitions.privateField, dataMap, true);
+    }
+}
+// ... 原有代码保持不变 ...
+
+function applyFunction(key: string, value: any, proto: any) {
+    const isInternal = typeof key === 'string' && key.startsWith('_');
+    defineProperty(proto, key, value, !isInternal); // 1. 处理 options → 生成 getter/setter
+}
+
+function applyProperties(
+    proto: any,
+    properties: Record<string, any>,
+    dataMap: Record<string, any>,
+    isPrivate = false
+) {
+    for (const [key, value] of Object.entries(properties)) {
         if (BUILTIN_KEYS.has(key)) continue;
 
-        if (typeof value === 'function') {
-            applyFunction(key, value, proto); // 5. 处理方法 → 直接复制到原型
+        const isInternal = typeof key === 'string' && key.startsWith('_');
+        defineProperty(proto, key, value, !isInternal);
+        dataMap.propertyClearKeys.push(key); // 2. 添加到 clearKeys
+        if (!isPrivate) {
+            dataMap.propertyKeys.add(key); // 3. 添加到 propertyKeys
         }
     }
 }
 
-function applyFunction(key: string, value: any, proto: any) {
-    const isInternal = typeof key === 'string' && key.startsWith('_');
+function defineProperty(proto: any, key: string, value: any, enumerable: boolean) {
     Object.defineProperty(proto, key, {
-        value,
-        enumerable: !isInternal,
+        value: value,
+        enumerable: enumerable,
         configurable: true,
         writable: true,
+    });
+}
+
+function defineGetterSetter(proto: any, key: string) {
+    Object.defineProperty(proto, key, {
+        get() {
+            return this.getData(key);
+        },
+        set(value) {
+            this.setData(key, value);
+        },
+        enumerable: true,
+        configurable: true,
     });
 }
 
 function initConstructorProperties(proto: any) {
     const ctor = proto.constructor;
     const parent = Object.getPrototypeOf(ctor);
-    ctor._clearPropertyKeys = new Set<string>();
-    if (parent._clearPropertyKeys) {
-        ctor._clearPropertyKeys = new Set(parent._clearPropertyKeys);
-    }
-
-    ctor._optionMap = new Map<string, any>();
-    if (parent && parent._optionMap) {
-        for (const [key, def] of parent._optionMap) {
-            ctor._optionMap.set(key, def);
-        }
-    }
-
-    ctor._propertyMap = new Map<string, any>();
-    if (parent && parent._propertyMap) {
-        for (const [key, def] of parent._propertyMap) {
-            ctor._propertyMap.set(key, def);
-        }
-    }
-
-    return {
-        clearKeys: ctor._clearPropertyKeys,
-        optionsMap: ctor._optionMap,
-        propertyMap: ctor._propertyMap,
+    ctor[DATA_MAP_SYMBOL] = {
+        defaultValues: { ...parent[DATA_MAP_SYMBOL].defaultValues },
+        targetToMap: new Map<string, any>(parent[DATA_MAP_SYMBOL].targetToMap),
+        i18nOptions: [],
+        optionsKeys: new Set<string>(parent[DATA_MAP_SYMBOL].optionsKeys),
+        propertyKeys: new Set<string>(parent[DATA_MAP_SYMBOL].propertyKeys), // 3. 添加到 propertyKeys
+        propertyClearKeys: [...parent[DATA_MAP_SYMBOL].propertyClearKeys],
     };
-}
-
-export function injectOptions(optionMap: Map<string, any>, optionDefs: OptionDefinition): void {
-    for (const [key, def] of Object.entries(optionDefs)) {
-        optionMap.set(key, def);
-    }
+    return ctor[DATA_MAP_SYMBOL]; // 4. 返回 dataMap
 }

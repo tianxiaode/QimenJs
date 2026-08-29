@@ -28,7 +28,6 @@ export class TemplateManager {
             html: '',
             names: [],
             childComponents: [],
-            i18ns: [],
             permissions: [],
             indexs: {},
             nodes: {},
@@ -54,10 +53,6 @@ export class TemplateManager {
             cache.names.push(name);
             cache.indexs[name] = indexPath;
             cache.nodes[name] = meta;
-
-            if (meta.i18n) {
-                cache.i18ns.push(name); // i18n
-            }
 
             if (isComponent) {
                 cache.childComponents.push(name);
@@ -131,7 +126,6 @@ export class TemplateManager {
         return {
             tag: tpl.tag,
             type: tpl.type,
-            i18n: tpl.i18n,
             permission: tpl.permission,
             isComponent: !!tpl.type,
             options: tpl.options,

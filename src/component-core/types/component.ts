@@ -136,7 +136,6 @@ export interface NodeMeta {
     type?: IComponentCore | string;
     options?: NodeOptions;
     attributes?: NodeAttributes;
-    i18n?: I18nOptions;
     permission?: PermissionOptions;
     classes?: NodeHTMLClass;
     style?: NodeStyle;
@@ -219,7 +218,7 @@ export interface IComponentCore extends LifecycleHooks {
     /** 事件监听 */
     listens?: ListenItem[];
     /** 根 DOM 元素 */
-    get el(): HTMLElement;
+    el?: HTMLElement;
     /** 模板声明 */
     get tpl(): TemplateDecl;
     /** 更新方法 */

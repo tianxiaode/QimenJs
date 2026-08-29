@@ -1,44 +1,66 @@
-import { Component } from '@qimenjs/component-core';
-import { DialogAbility, PopoverAbility, IndicatorAbility } from '@qimenjs/component-core';
+import { FloatingComponent } from '@qimenjs/component-core';
 
-export class DialogTest extends Component {
-    static type = 'dialogTest';
-    dialog = {
-        type: 'button',
-        title: '确认操作',
-        content: '确定要执行此操作吗？',
-    };
+export class DialogComponent extends FloatingComponent {
+    static type = 'dialog';
 
     get tpl() {
         return {
             tag: 'div',
             name: 'root',
             style: {
-                border: '2px solid #6366f1',
-                borderRadius: '8px',
+                background: '#fff',
                 padding: '24px',
-                marginTop: '24px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                minWidth: '300px',
             },
             children: [
                 {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Dialog Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                    tag: 'h3',
+                    name: 'title',
+                    options: { text: 'Dialog' },
+                    style: { color: '#1a1a1a', fontSize: '18px', marginBottom: '16px' },
                 },
                 {
-                    tag: 'button',
-                    name: 'dialogBtn',
-                    options: { text: 'Show Dialog' },
-                    style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #6366f1',
-                        background: '#eef2ff',
-                        color: '#4338ca',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    },
+                    tag: 'p',
+                    name: 'content',
+                    options: { text: 'This is a dialog content.' },
+                    style: { color: '#64748b', fontSize: '14px', lineHeight: '1.5' },
+                },
+                {
+                    tag: 'div',
+                    name: 'actions',
+                    style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' },
+                    children: [
+                        {
+                            tag: 'button',
+                            name: 'cancelBtn',
+                            options: { text: 'Cancel' },
+                            style: {
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid #d1d5db',
+                                background: '#fff',
+                                color: '#64748b',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                        {
+                            tag: 'button',
+                            name: 'confirmBtn',
+                            options: { text: 'Confirm' },
+                            style: {
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                background: '#6366f1',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                    ],
                 },
             ],
         };
@@ -46,124 +68,153 @@ export class DialogTest extends Component {
 
     domEvents = {
         click: {
-            dialogBtn: { handler: true },
+            cancelBtn: { handler: true },
+            confirmBtn: { handler: true },
         },
     };
 
-    onDialogBtnClick() {
-        this.showDialog();
+    open(): void {
+        this.setOption('hidden', false);
+        this._overlayOpen = true;
+    }
+
+    close(): void {
+        this.setOption('hidden', true);
+        this._overlayOpen = false;
+    }
+
+    onCancelBtnClick() {
+        this.close();
+    }
+
+    onConfirmBtnClick() {
+        this.close();
     }
 }
-DialogTest.use('DialogAbility');
-DialogTest.register();
+DialogComponent.register();
 
-export class PopoverTest extends Component {
-    static type = 'popoverTest';
-    popover = {
-        type: 'button',
-        title: 'Popover',
-        content: 'This is a popover content.',
-    };
+export class MenuComponent extends FloatingComponent {
+    static type = 'menu';
 
     get tpl() {
         return {
             tag: 'div',
             name: 'root',
             style: {
-                border: '2px solid #6366f1',
+                background: '#fff',
                 borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                padding: '8px 0',
+                minWidth: '150px',
             },
             children: [
                 {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Popover Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
-                },
-                {
-                    tag: 'button',
-                    name: 'popoverBtn',
-                    options: { text: 'Show Popover (click)' },
+                    tag: 'div',
+                    name: 'menuItem',
+                    options: { text: 'Option 1' },
                     style: {
                         padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #6366f1',
-                        background: '#eef2ff',
-                        color: '#4338ca',
                         cursor: 'pointer',
                         fontSize: '14px',
+                        color: '#1a1a1a',
+                    },
+                },
+                {
+                    tag: 'div',
+                    name: 'menuItem',
+                    options: { text: 'Option 2' },
+                    style: {
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#1a1a1a',
+                    },
+                },
+                {
+                    tag: 'div',
+                    name: 'menuItem',
+                    options: { text: 'Option 3' },
+                    style: {
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#1a1a1a',
                     },
                 },
             ],
         };
     }
 
-    domEvents = {
-        click: {
-            popoverBtn: { handler: true },
-        },
-    };
+    open(): void {
+        this.setOption('hidden', false);
+        this._overlayOpen = true;
+    }
 
-    onPopoverBtnClick() {
-        this.showPopover();
+    close(): void {
+        this.setOption('hidden', true);
+        this._overlayOpen = false;
     }
 }
-PopoverTest.use('PopoverAbility');
-PopoverTest.register();
+MenuComponent.register();
 
-export class IndicatorTest extends Component {
-    static type = 'indicatorTest';
-    indicator = {
-        type: 'button',
-        placement: 'bottom',
-    };
+export class IndicatorComponent extends FloatingComponent {
+    static type = 'indicator';
 
     get tpl() {
         return {
             tag: 'div',
             name: 'root',
             style: {
-                border: '2px solid #6366f1',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
+                display: 'flex',
+                gap: '8px',
+                padding: '4px 8px',
+                borderRadius: '9999px',
+                background: '#fff',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
             },
             children: [
                 {
-                    tag: 'h2',
-                    name: 'sectionTitle',
-                    options: { text: 'Indicator Test' },
-                    style: { color: '#334155', fontSize: '20px', marginBottom: '16px' },
+                    tag: 'div',
+                    name: 'dot1',
+                    style: {
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#3b82f6',
+                    },
                 },
                 {
-                    tag: 'button',
-                    name: 'indicatorBtn',
-                    options: { text: 'Show Indicator (always)' },
+                    tag: 'div',
+                    name: 'dot2',
                     style: {
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid #6366f1',
-                        background: '#eef2ff',
-                        color: '#4338ca',
-                        cursor: 'pointer',
-                        fontSize: '14px',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#eab308',
+                    },
+                },
+                {
+                    tag: 'div',
+                    name: 'dot3',
+                    style: {
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#ef4444',
                     },
                 },
             ],
         };
     }
 
-    domEvents = {
-        click: {
-            indicatorBtn: { handler: true },
-        },
-    };
+    open(): void {
+        this.setOption('hidden', false);
+        this._overlayOpen = true;
+    }
 
-    onIndicatorBtnClick() {
-        this.showIndicator();
+    close(): void {
+        this.setOption('hidden', true);
+        this._overlayOpen = false;
     }
 }
-IndicatorTest.use('IndicatorAbility');
-IndicatorTest.register();
+IndicatorComponent.register();

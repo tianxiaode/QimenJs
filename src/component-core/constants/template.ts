@@ -1,12 +1,3 @@
-/** 内容模式映射表，将模式名映射为节点属性定义数组 */
-export const CONTENT_MODE_MAP: Record<string, string[]> = {
-    text: ['text'],
-    html: ['text', 'html'],
-    value: ['value'],
-    src: ['src'],
-    link: ['text', 'href'],
-};
-
 /** 通用节点属性名列表，所有节点均可使用的属性 */
 export const COMMON_NODE_PROPS = [
     'cls',

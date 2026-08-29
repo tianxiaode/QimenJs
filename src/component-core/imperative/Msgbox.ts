@@ -56,7 +56,7 @@ export class Msgbox extends FloatingComponent {
             this.toggleCls('field', 'hidden');
         }
 
-        this.setOption('zIndex', this.acquireZIndex());
+        this.setData('zIndex', this.acquireZIndex());
 
         this._initMask({ color: 'rgba(0,0,0,0.5)' });
 

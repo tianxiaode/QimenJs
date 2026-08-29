@@ -1,10 +1,17 @@
-import { IOptionHandler, OPTION_TARGET_TO_KEYS, OptionDecl } from '@qimenjs/composable';
+import {
+    IOptionHandler,
+    TARGET_TO_OPTION_KEYS,
+    TargetToOptionDefinition,
+} from '@qimenjs/composable';
 import { HIDDEN_MODE_CSS_MAP } from '@/component-core/constants';
 import { OptionHandlerRegistrar } from '@qimenjs/composable';
 
 // ─── 工厂函数1: targetTo 处理器 ─────────────────────────────
 // 修复：target 未定义时使用 root 节点
-function registerTarget(key: string, fn: (el: HTMLElement, value: any, def: OptionDecl) => void) {
+function registerTarget(
+    key: string,
+    fn: (el: HTMLElement, value: any, def: TargetToOptionDefinition) => void
+) {
     OptionHandlerRegistrar.getInstance().registerTargetHandler(key, {
         name: key,
         handler(value: any, component: any, definition?: any) {
@@ -39,25 +46,25 @@ function createStyleHandler(styleName: string): IOptionHandler {
 }
 
 // ─── 注册 targetTo 子处理器 ──────────────────────────────────
-registerTarget(OPTION_TARGET_TO_KEYS.value, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.value, (el, v) => {
     (el as HTMLInputElement).value = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.href, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.href, (el, v) => {
     (el as HTMLAnchorElement).href = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.text, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.text, (el, v) => {
     el.textContent = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.html, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.html, (el, v) => {
     el.innerHTML = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.src, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.src, (el, v) => {
     (el as HTMLImageElement).src = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.title, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.title, (el, v) => {
     el.title = v;
 });
-registerTarget(OPTION_TARGET_TO_KEYS.alt, (el, v) => {
+registerTarget(TARGET_TO_OPTION_KEYS.alt, (el, v) => {
     (el as HTMLImageElement).alt = v;
 });
 

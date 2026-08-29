@@ -1,8 +1,9 @@
 import { Component, toast, msgbox } from '@qimenjs/component-core';
 import { Button } from './Button';
+import { DialogComponent, MenuComponent, IndicatorComponent } from './FloatsTest';
 export class OverlayTest extends Component {
     loading = { text: '加载中...' };
-
+    dialog = { type: DialogComponent };
     get tpl() {
         return {
             tag: 'div',
@@ -102,6 +103,25 @@ export class OverlayTest extends Component {
                                 fontSize: '14px',
                             },
                         },
+                        {
+                            tag: 'button',
+                            name: 'dialogBtn',
+                            options: { text: 'dialog' },
+                            style: {
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                            },
+                        },
+                        {
+                            type: Button,
+                            name: 'popoverBtn',
+                            options: { popover: { type: MenuComponent } },
+                        },
                     ],
                 },
                 {
@@ -149,25 +169,23 @@ export class OverlayTest extends Component {
                 },
                 {
                     tag: 'div',
-                    name: 'resultBox',
-                    style: {
-                        background: '#080808ff',
-                        borderRadius: '6px',
-                        color: '#e2e8f0',
-                        padding: '16px',
-                        fontSize: '13px',
-                        fontFamily: 'monospace',
-                        lineHeight: '1.6',
-                        minHeight: '60px',
-                        border: '1px solid #e2e8f0',
-                    },
+                    name: 'tooltipRow2',
+                    style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            tag: 'div',
-                            name: 'resultText',
-                            options: {
-                                text: '[overlay] Ready. Hover component root to see tooltip overlay.',
+                            type: Component,
+                            style: {
+                                flex: 1,
+                                height: '100px',
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                border: '1px solid #22c55e',
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                cursor: 'pointer',
+                                fontSize: '14px',
                             },
+                            options: { indicator: { type: IndicatorComponent } },
                         },
                     ],
                 },
@@ -180,28 +198,40 @@ export class OverlayTest extends Component {
             loadingBtn: { handler: true },
             toastBtn: { handler: true },
             msgboxBtn: { handler: true },
+            badgeBtn: { handler: true },
+            dialogBtn: { handler: true },
         },
     };
 
+    onBadgeBtnClick() {
+        let count = this.badgeCount || 0;
+        const dir = this.badgeDir || 'up';
+        count = dir == 'down' ? count - 1 : count + 1;
+        this.badgeCount = count;
+        const node = this.getComponent('badgeBtn');
+        this.badgeDir = count <= 0 ? 'up' : count >= 10 ? 'down' : dir;
+        if (count == 0) {
+            node.hideBadge();
+            return;
+        }
+        node.updateBadge(count);
+    }
+
     onLoadingBtnClick() {
         this.showLoading();
-        const result = this.getNodeEl('resultText');
-        if (result) result.textContent = '[overlay] Loading shown. Check for spinner overlay.';
         setTimeout(() => {
             this.hideLoading();
-            if (result) result.textContent = '[overlay] Loading hidden after 2s.';
         }, 2000);
     }
 
     onToastBtnClick() {
         toast({ message: 'Operation successful!', toastType: 'success' });
-        const result = this.getNodeEl('resultText');
-        if (result) result.textContent = '[toast] Toast shown.';
     }
 
     onMsgboxBtnClick() {
-        msgbox.prompt('Hello', 'This is a message box alert.');
-        const result = this.getNodeEl('resultText');
-        if (result) result.textContent = '[msgbox] Msgbox alert shown.';
+        msgbox.alert('Alert', 'This is an alert message.');
+    }
+    onDialogBtnClick() {
+        this.showDialog();
     }
 }

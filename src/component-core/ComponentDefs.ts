@@ -45,16 +45,7 @@ export const ComponentDefs: Definitions = {
         transform: null,
     },
 
-    property: {
-        // 内部状态（外部不可见）
-        _tplCache: null,
-        _dirtyAttributes: null,
-        _dirtyStyle: null,
-        _dirtyI18n: null,
-        _initializing: false,
-        _templateInitialized: false,
-        _disposing: false,
-
+    fields: {
         /** 组件id — 控制组件的唯一标识符 */
         id: null,
         /** 是否有父组件 — 控制组件是否为子组件容器 */
@@ -136,5 +127,16 @@ export const ComponentDefs: Definitions = {
         /**
          * 是否为容器 — 控制组件是否可容纳其他组件
          */
+    },
+
+    privateField: {
+        // 内部状态（外部不可见）
+        _tplCache: null,
+        _dirtyAttributes: null,
+        _dirtyStyle: null,
+        _i18n: {},
+        _initializing: false,
+        _templateInitialized: false,
+        _disposing: false,
     },
 };

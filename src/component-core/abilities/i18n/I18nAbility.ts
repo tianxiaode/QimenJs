@@ -25,63 +25,28 @@ export const I18nAbility: AbilityDefinition = {
      * @param nodeName 节点名称
      * @param i18n i18n配置
      */
-    setI18n(nodeName: string, i18n: I18nOptions): void {
-        this._markI18nDirty(nodeName, i18n);
+    setI18n(i18ns: Record<string, I18nOptions>): void {
+        object.deepMerge(this._i18n || {}, i18ns);
     },
 
-    /**
-     * 标记i18n配置为脏
-     * @param nodeName 节点名称
-     * @param i18n i18n配置
-     */
-    _markI18nDirty(nodeName: string, i18n: I18nOptions): void {
-        if (!this._dirtyI18n) {
-            this._dirtyI18n = {}; // 重置 dirty
-        }
-        if (!this._dirtyI18n[nodeName]) {
-            this._dirtyI18n[nodeName] = i18n; // 保存 dirty
-        } else {
-            this._dirtyI18n[nodeName] = { ...this._dirtyI18n[nodeName], ...i18n };
-        }
-        this.debounce('I18nAbility:flush', () => this._flushI18n(), 0)();
-    },
-
-    /**
-     * 清理i18n配置
-     * @param nodeName 节点名称
-     */
-    _clearI18nDirty(nodeName: string): void {
-        if (nodeName in (this._dirtyI18n ?? {})) {
-            delete this._dirtyI18n[nodeName];
-        }
+    setNodeI18n(nodeName: string, i18n: I18nOptions): void {
+        const old = this.getI18n(nodeName);
+        const newI18n = { ...old, ...i18n };
+        this._i18n[nodeName] = newI18n;
     },
 
     /**
      * 刷新i18n配置
      */
     _flushI18n(): void {
-        const names = this._tplCache.i18ns || [];
-        for (const name of names) {
-            this._applyI18n(name);
+        for (const [nodeName, i18n] of Object.entries(this._i18n || {})) {
+            const isComponent = this.isComponent(nodeName);
 
-            this._clearI18nDirty(name);
-        }
-    },
-
-    /**
-     * 应用i18n配置
-     * @param nodeName 节点名称
-     * @param i18n i18n配置
-     */
-    _applyI18n(nodeName: string): void {
-        const i18n = this.getI18n(nodeName);
-
-        const isComponent = this.isComponent(nodeName);
-
-        if (!isComponent) {
-            this._applyI18nToElement(nodeName, i18n);
-        } else {
-            this._applyI18nToComponent(nodeName, i18n);
+            if (!isComponent) {
+                this._applyI18nToElement(nodeName, i18n);
+            } else {
+                this._applyI18nToComponent(nodeName, i18n);
+            }
         }
     },
 
@@ -121,25 +86,14 @@ export const I18nAbility: AbilityDefinition = {
     _applyI18nToComponent(nodeName: string, i18n: I18nOptions): void {
         const component = this.getComponent(nodeName);
         if (!component) return;
-
-        for (const [key, value] of Object.entries(i18n)) {
-            if (key === 'custom') {
-                if (typeof value === 'function') {
-                    value(component, t);
-                }
-                continue;
-            }
-            object.setProperty(component, key, t(value));
-        }
+        component.setNodeI18n(nodeName, i18n);
     },
 
     /**
      * 初始化i18n配置
      */
     _initI18n(): void {
-        const i18ns = this.i18n || {};
-        const names = this._tplCache.i18ns;
-        if (names.length === 0 && Object.keys(i18ns).length === 0) return;
+        if (Object.keys(this._i18n || {}).length === 0) return;
         const off = this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this._flushI18n());
         this.onCleanup(off);
         this._flushI18n();

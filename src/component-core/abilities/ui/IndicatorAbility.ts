@@ -22,7 +22,6 @@
 import type { AbilityDefinition } from '@/composable';
 import type { IndicatorOptions } from '../../types';
 import { INDICATOR_PLACEMENT_MAP, INDICATOR_STATE_KEY, INDICATOR_TYPE_CLS } from '../../constants';
-import './indicator.css';
 
 interface IndicatorState {
     /** 根元素 */

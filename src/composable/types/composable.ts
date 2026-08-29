@@ -3,6 +3,7 @@
  */
 
 import type { ILogger } from '@qimenjs/logger';
+import { TargetToOptionDefinition } from './definitions';
 
 // ============================================
 // 基础接口
@@ -18,26 +19,13 @@ export interface IComposableBase {
      * 日志记录器
      * */
     logger: ILogger;
-    getPropertyMap(): Map<string, any>;
-    getOptionsMap(): Map<string, any>;
-    getOption(key: string): any;
-    setOption(key: string, value: any, silent?: boolean): void;
-    _onOptionChange(key: string, value: any, old: any, definition: any): void;
-    /**
-     * 获取能力状态，不存在时可用 creator 惰性创建
-     *
-     * @param key - 状态键，建议使用 `AbilityName:stateName` 格式避免冲突
-     * @param creator - 惰性创建函数，仅在状态不存在时调用
-     * @returns 状态值，或 undefined（未创建时）
-     */
-    abilityState<T>(key: string, creator?: () => T): T | undefined;
-    /**
-     * 设置能力状态
-     *
-     * @param key - 状态键
-     * @param value - 状态值
-     */
-    setAbilityState<T>(key: string, value: T): void;
+    getData(key: string): any;
+    setData(key: string, value: any): void;
+    get targetToMap(): Map<string, TargetToOptionDefinition>;
+    get i18nOptions(): string[];
+    get optionsKeys(): Set<string>;
+    get propertyKeys(): Set<string>;
+    _onOptionChange(_key: string, _value: any, _old: any, _definition: any): void;
     /**
      * 注册清理回调，dispose 时逆序执行
      *

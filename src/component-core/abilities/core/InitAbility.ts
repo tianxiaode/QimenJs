@@ -19,6 +19,7 @@ import type { AbilityDefinition } from '@/composable';
 import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
 import { SKELETON_CLS } from '../../constants';
 import { ComponentCoreOptions, IComponentCore } from '../../types';
+import { object } from '@/utils';
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -62,6 +63,9 @@ export const InitAbility = {
             if (classes) {
                 this.addCls(name, classes);
             }
+            if (nodeMeta.i18n) {
+                this._i18n[name] = { ...nodeMeta.i18n };
+            }
         }
         if (!options) return;
         // 将构造函数选项应用到组件实例
@@ -69,7 +73,11 @@ export const InitAbility = {
         const optionMap: Map<string, any> = this.getOptionsMap();
         const propertyMap: Map<string, any> = this.getPropertyMap();
         for (const [key, value] of Object.entries(options)) {
-            if (key === 'id' || key.startsWith('_')) continue;
+            if (key === 'id') continue;
+            if (key === 'i18n') {
+                object.deepMerge(this._i18n, value); // 合并 i18n
+                continue;
+            }
             if (optionMap.has(key)) {
                 this.setOption(key, value);
             } else if (propertyMap.has(key)) {
