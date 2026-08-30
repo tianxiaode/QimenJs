@@ -175,4 +175,4 @@ export const FloatAbility: AbilityDefinition = {
     updateFloat(key: string, data: Record<string, any>): void {
         this._emitChange(key, data);
     },
-};
+} satisfies AbilityDefinition;

@@ -34,4 +34,4 @@ export const TooltipAbility: AbilityDefinition = {
     updateTooltip(data: Record<string, any>): void {
         this.updateFloat('tooltip', data);
     },
-};
+} satisfies AbilityDefinition;

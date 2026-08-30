@@ -112,4 +112,4 @@ export const BadgeAbility: AbilityDefinition = {
             el.style.display = el.style.display === 'none' ? '' : 'none';
         }
     },
-} as AbilityDefinition;
+} satisfies AbilityDefinition;

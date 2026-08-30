@@ -62,4 +62,4 @@ export const LoadingAbility: AbilityDefinition = {
             data: loadingData,
         } as FloatDecl;
     },
-};
+} satisfies AbilityDefinition;

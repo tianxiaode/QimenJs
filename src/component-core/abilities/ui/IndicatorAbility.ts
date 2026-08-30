@@ -270,4 +270,4 @@ export const IndicatorAbility: AbilityDefinition = {
         const state = this.abilityState(INDICATOR_STATE_KEY) as IndicatorState | undefined;
         if (state) this._step(state, 1);
     },
-};
+} satisfies AbilityDefinition;

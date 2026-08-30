@@ -29,9 +29,14 @@ export const PermissionAbility: AbilityDefinition = {
 
         const queries: PermissionQuery[] = Array.isArray(permission) ? permission : [permission];
         return queries.some(query => {
-            const queryObj: PermissionQuery = typeof query === 'string'
-                ? this._resolvePermissionQuery(query, entityKey, domain)
-                : { action: query.action, entityKey: query.entityKey ?? entityKey, domain: query.domain ?? domain };
+            const queryObj: PermissionQuery =
+                typeof query === 'string'
+                    ? this._resolvePermissionQuery(query, entityKey, domain)
+                    : {
+                          action: query.action,
+                          entityKey: query.entityKey ?? entityKey,
+                          domain: query.domain ?? domain,
+                      };
             return this.checkPermission(queryObj);
         });
     },
@@ -62,7 +67,11 @@ export const PermissionAbility: AbilityDefinition = {
     /**
      * 将权限字符串解析为 PermissionQuery 对象
      */
-    _resolvePermissionQuery(permission: string, entityKey?: string, domain?: string): PermissionQuery {
+    _resolvePermissionQuery(
+        permission: string,
+        entityKey?: string,
+        domain?: string
+    ): PermissionQuery {
         const parts = permission.split(':');
         switch (parts.length) {
             case 1:

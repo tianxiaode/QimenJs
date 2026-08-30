@@ -86,4 +86,4 @@ export const DialogAbility: AbilityDefinition = {
     updateDialog(data: Record<string, any>): void {
         this.updateFloat('dialog', data);
     },
-};
+} satisfies AbilityDefinition;

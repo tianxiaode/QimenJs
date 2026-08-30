@@ -88,4 +88,4 @@ export const PopoverAbility: AbilityDefinition = {
     updatePopover(data: Record<string, any>): void {
         this.updateFloat('popover', data);
     },
-};
+} satisfies AbilityDefinition;
