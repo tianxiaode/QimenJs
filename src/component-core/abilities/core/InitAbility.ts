@@ -26,7 +26,7 @@ export const InitAbility = {
      *
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
-    _buildDOM(options: ComponentCoreOptions): void {
+    _buildDOM(options?: ComponentCoreOptions): void {
         this._setCache(TemplateManager.get(this.tpl));
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
@@ -47,7 +47,7 @@ export const InitAbility = {
         this._templateInitialized = true;
     },
 
-    _applyNodeMeta(options: ComponentCoreOptions): void {
+    _applyNodeMeta(options?: ComponentCoreOptions): void {
         const names = this._tplCache.names;
         this.logger.debug(`[prepare:apply node meta]`, `[${this.type}]:[${this.id}]`);
         for (const name of names) {

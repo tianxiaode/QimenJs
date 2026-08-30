@@ -92,8 +92,8 @@ export const DragAbility: AbilityDefinition = {
         const dragMode = this.drag;
         const cache = this.abilityState(DRAG_CACHE_KEY) ?? {};
 
-        // drag === false 或 undefined: 禁用所有拖拽
-        if (dragMode === false || dragMode === undefined) {
+        // drag === false、null 或 undefined: 禁用所有拖拽
+        if (dragMode === false || dragMode === null || dragMode === undefined) {
             if (Object.keys(cache).length > 0) {
                 this.setAbilityState(DRAG_CACHE_KEY, cache);
                 this._syncDrags({}, cache);
