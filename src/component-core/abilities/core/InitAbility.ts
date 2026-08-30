@@ -144,6 +144,8 @@ export const InitAbility = {
         this._initPopover();
         this._initIndicator();
         this._initLoading();
+        this._commitDrags();
+        this._commitDrops();
 
         this.onAfterInit();
         this.playEnter();
