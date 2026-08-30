@@ -28,8 +28,8 @@ export const DropAbility: AbilityDefinition = {
 
         const dropMode = this.drop;
 
-        // drop === false: 禁用所有放置区
-        if (dropMode === false) return;
+        // drop === false 或 undefined: 禁用所有放置区
+        if (dropMode === false || dropMode === undefined) return;
 
         const dropZone = this.dropZone;
         const el = this.el;
